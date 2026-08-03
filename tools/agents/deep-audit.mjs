@@ -238,6 +238,18 @@ export function audit() {
       soft.push({ kind: "quarantine", msg: `${id}: карантина ${q.length}/${v.length} (${Math.round(q.length / v.length * 100)}%) — произвежда много недоказани твърдения` });
   }
 
+  // 7d. ТВЪРДО: същата проверка за ФЛОТ-ШИРОКИТЕ инжектирани файлове (memory-preload ги слага в
+  // статичния префикс на ВСЕКИ агент — мъртъв път там струва ×флота, по-скъпо от в една памет).
+  // Гейтът за агентите (7b′) ги пропускаше, защото не са в списъка `ids`.
+  for (const f of ["_shared.md", "SECURITY.md", "PROCEDURE.md"]) {
+    if (!has(`${MEM}/${f}`)) continue;
+    for (const l of R(`${MEM}/${f}`).split("\n")) {
+      if (!/^[-*]\s|`/.test(l)) continue; // булет или ред със `код`
+      for (const p of brokenOwnedMemPaths(l))
+        hard.push({ kind: "dead-mem-path", msg: `_memory/${f} (инжектиран ×флота) цитира несъществуващ агент-слой път „${p}"` });
+    }
+  }
+
   return { hard, soft, counts: { agents: ids.length, products: products.length, specs: specs.length, tools: toolFiles.length } };
 }
 

@@ -149,6 +149,17 @@ test("ТВЪРДО: verified поука цитира несъществуващ 
   assert.deepEqual(audit().hard.filter((h) => h.kind === "dead-mem-path"), [], "след възстановяване — нула");
 });
 
+test("ТВЪРДО: мъртъв агент-слой път в ФЛОТ-ШИРОК файл (_shared.md, инжектиран ×флота)", () => {
+  // _shared.md влиза в статичния префикс на ВСЕКИ агент → мъртъв път там струва ×флота.
+  // Гейтът за агентите го пропускаше (_shared не е в списъка ids) — затова отделно покритие.
+  const found = withMemoryMutation("_shared", (md) =>
+    md + "\n- ТЕСТ ред с мъртъв път `tools/agents/nema-takuv-shared.mjs`\n",
+    () => audit().hard.filter((h) => h.kind === "dead-mem-path"));
+  assert.ok(found.some((h) => h.msg.includes("_shared.md") && h.msg.includes("nema-takuv-shared")),
+    "мъртъв път във флот-широк файл трябва да е ТВЪРД");
+  assert.deepEqual(audit().hard.filter((h) => h.kind === "dead-mem-path"), [], "след възстановяване — нула");
+});
+
 test("execWithoutBash: no-Bash агент с DoD команда → находка; проза/има-Bash → нула", () => {
   const md = [
     "tools: Read, Grep, Glob, WebFetch",
