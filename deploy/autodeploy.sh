@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -78,6 +78,15 @@ SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
 
+# vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
+# зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
+# слуша само на 127.0.0.1:7700 зад Nginx+TLS. Конфигът с тайните/паролата живее в
+# /etc/vps-dashboard/config.json (mode 600) — създава се веднъж от install.sh и се
+# пази между деплоите. Деплоят е rsync на кода + рестарт (билд не е нужен).
+VPSDASH_DIR="${VPSDASH_DIR:-/opt/vps-dashboard}"
+VPSDASH_SERVICE="${VPSDASH_SERVICE:-vps-dashboard}"
+VPSDASH_HEALTH_URL="${VPSDASH_HEALTH_URL:-http://127.0.0.1:7700/api/ping}"
+
 # adblock (Supreme AdBlock — ЧИСТ СТАТИЧЕН сайт, без билд/Node/база). Разширението
 # тегли filters.json от адреса; index/privacy са малка витрина + политика за
 # поверителност. Обслужва се от Caddy (авто-TLS). Файловете идват от репото
@@ -99,7 +108,24 @@ die()  { printf '\033[31m✘ %s\033[0m\n' "$*" >&2; exit 1; }
 [ "$(id -u)" = "0" ] || die "Пусни като root (sudo)."
 TS="$(date +%Y%m%d-%H%M%S)"
 
-# ── 1) Намери архива ──────────────────────────────────────────────────────────
+# ── 1) Намери архива (или ползвай вече разопакован release) ───────────────────
+# RELEASE_DIR=<път> прескача архива и разгръща от съществуващ release. Това е
+# ВРЪЩАНЕ НАЗАД (rollback): кодът на стария release вече е на диска, няма какво
+# да се разопакова. Панелът (vps-dashboard) ползва точно това.
+#   sudo RELEASE_DIR=/opt/few-few/releases/20260101-120000 bash .../autodeploy.sh
+if [ -n "${RELEASE_DIR:-}" ]; then
+  [ -d "$RELEASE_DIR" ] || die "Няма такъв release: $RELEASE_DIR"
+  # Приеми както корена на release-а, така и вложената папка от GitHub ZIP.
+  SRC="$RELEASE_DIR"
+  if [ ! -f "$SRC/CLAUDE.md" ]; then
+    shopt -s nullglob dotglob
+    rel_entries=( "$RELEASE_DIR"/* )
+    shopt -u nullglob dotglob
+    if [ "${#rel_entries[@]}" = "1" ] && [ -d "${rel_entries[0]}" ]; then SRC="${rel_entries[0]}"; fi
+  fi
+  log "Разгръщам от съществуващ release (без архив): $SRC"
+fi
+
 find_archive() {
   if [ -n "${ARCHIVE:-}" ]; then echo "$ARCHIVE"; return; fi
   # най-новият .zip/.tar.gz в ARCHIVE_DIR
@@ -108,42 +134,44 @@ find_archive() {
   [ -n "$a" ] || die "Няма архив в $ARCHIVE_DIR (качи .zip или .tar.gz)."
   echo "$a"
 }
-ARCHIVE_PATH="$(find_archive)"
-log "Архив: $ARCHIVE_PATH"
+if [ -z "${RELEASE_DIR:-}" ]; then
+  ARCHIVE_PATH="$(find_archive)"
+  log "Архив: $ARCHIVE_PATH"
 
-# ── 1б) Проверка на целостта (по избор) ───────────────────────────────────────
-# Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
-# случайно повреден или подменен архив не стига до сървъра.
-if [ -f "${ARCHIVE_PATH}.sha256" ]; then
-  log "Проверявам sha256…"
-  ( cd "$(dirname "$ARCHIVE_PATH")" \
-    && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
-    || die "sha256 не съвпада — спирам (повреден или подменен архив)."
-  ok "sha256 е валиден."
-else
-  warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
-fi
+  # ── 1б) Проверка на целостта (по избор) ─────────────────────────────────────
+  # Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
+  # случайно повреден или подменен архив не стига до сървъра.
+  if [ -f "${ARCHIVE_PATH}.sha256" ]; then
+    log "Проверявам sha256…"
+    ( cd "$(dirname "$ARCHIVE_PATH")" \
+      && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
+      || die "sha256 не съвпада — спирам (повреден или подменен архив)."
+    ok "sha256 е валиден."
+  else
+    warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
+  fi
 
-# ── 2) Разопаковай в нов release и нормализирай корена ────────────────────────
-REL="$RELEASES_DIR/$TS"
-mkdir -p "$REL"
-case "$ARCHIVE_PATH" in
-  *.zip)    command -v unzip >/dev/null || { apt-get update -y && apt-get install -y unzip; }
-            unzip -q "$ARCHIVE_PATH" -d "$REL" ;;
-  *.tar.gz) tar -xzf "$ARCHIVE_PATH" -C "$REL" ;;
-  *)        die "Непознат формат на архива." ;;
-esac
-# GitHub ZIP слага едно горно ниво (напр. few-few-main/). Влез в него.
-shopt -s nullglob dotglob
-entries=( "$REL"/* )
-if [ "${#entries[@]}" = "1" ] && [ -d "${entries[0]}" ] && [ ! -f "$REL/CLAUDE.md" ]; then
-  SRC="${entries[0]}"
-else
-  SRC="$REL"
+  # ── 2) Разопаковай в нов release и нормализирай корена ─────────────────────
+  REL="$RELEASES_DIR/$TS"
+  mkdir -p "$REL"
+  case "$ARCHIVE_PATH" in
+    *.zip)    command -v unzip >/dev/null || { apt-get update -y && apt-get install -y unzip; }
+              unzip -q "$ARCHIVE_PATH" -d "$REL" ;;
+    *.tar.gz) tar -xzf "$ARCHIVE_PATH" -C "$REL" ;;
+    *)        die "Непознат формат на архива." ;;
+  esac
+  # GitHub ZIP слага едно горно ниво (напр. few-few-main/). Влез в него.
+  shopt -s nullglob dotglob
+  entries=( "$REL"/* )
+  if [ "${#entries[@]}" = "1" ] && [ -d "${entries[0]}" ] && [ ! -f "$REL/CLAUDE.md" ]; then
+    SRC="${entries[0]}"
+  else
+    SRC="$REL"
+  fi
+  shopt -u nullglob dotglob
 fi
-shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedalitrasparenti" ] || [ -d "$SRC/ospedali" ] || die "Архивът не прилича на това репо ($SRC)."
-ok "Разопаковано в $SRC"
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || [ -d "$SRC/vizitka" ] || [ -d "$SRC/ospedalitrasparenti" ] || [ -d "$SRC/ospedali" ] || die "Източникът не прилича на това репо ($SRC)."
+ok "Източник за деплой: $SRC"
 
 deploy_failed=0
 
@@ -542,6 +570,83 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
+# Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
+# рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
+# се ИЗКЛЮЧВАТ — живеят извън release-а и оцеляват. Ако конфигът липсва (пръв деплой),
+# услугата няма да тръгне: пусни веднъж deploy/install.sh за да го създаде. Health +
+# rollback като medqr/mastilko. is-active 401 брои за „жив" (ping иска сесия).
+deploy_vpsdashboard() {
+  local d="$SRC/vpsdash"
+  [ -d "$d" ] || { warn "Няма vpsdash/ в архива — пропускам."; return; }
+  log "Разгръщам vps-dashboard (systemd, Node, нула зависимости)…"
+  command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+
+  # Пръв деплой без конфиг: НЕ пускаме услугата да гърми в loop — install.sh я
+  # вдига след като създаде тайните. Само разполагаме кода и предупреждаваме.
+  if [ ! -f /etc/vps-dashboard/config.json ]; then
+    warn "Няма /etc/vps-dashboard/config.json — това е пръв деплой."
+    warn "Пусни веднъж: sudo bash $d/deploy/install.sh (създава конфиг + тайни + вдига услугата)."
+    ( cd "$d" && bash deploy/install.sh </dev/null ) || warn "install.sh не мина автоматично — пусни го ръчно."
+    health "$VPSDASH_HEALTH_URL" "vps-dashboard" \
+      || [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null)" = "401" ] \
+      || deploy_failed=1
+    return
+  fi
+
+  # Бекъп на текущия код (конфигът и state са извън тази папка → непокътнати).
+  [ -d "$VPSDASH_DIR" ] && cp -a "$VPSDASH_DIR" "${VPSDASH_DIR}.bak-$TS"
+  mkdir -p "$VPSDASH_DIR"
+  rsync -a --delete --exclude .state/ --exclude node_modules/ "$d"/ "$VPSDASH_DIR"/
+  # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
+  install -m 644 "$VPSDASH_DIR/deploy/vps-dashboard.service" /etc/systemd/system/${VPSDASH_SERVICE}.service
+  systemctl daemon-reload
+  systemctl enable "$VPSDASH_SERVICE" >/dev/null 2>&1 || true
+
+  # ── Самодеплой: панелът обновява САМИЯ СЕБЕ СИ ──────────────────────────────
+  # Когато този скрипт е пуснат ОТ панела, той върви в cgroup-а на
+  # vps-dashboard.service. `systemctl restart` праща SIGTERM на целия cgroup
+  # (KillMode=control-group по подразбиране) → скриптът се самоубива тук и НИКОГА
+  # не стига до health/rollback, до `current` symlink-а и до чистенето. Затова при
+  # самодеплой рестартът се отлага в отделна преходна единица: скриптът довършва
+  # цикъла, панелът се вдига след няколко секунди.
+  if [ -n "${CSD_SELF_DEPLOY:-}" ] && command -v systemd-run >/dev/null; then
+    # Синтактична проверка на новия код ПРЕДИ да рестартираме (евтин предпазител —
+    # няма билд стъпка, но счупен файл не бива да сваля панела).
+    if ! ( cd "$VPSDASH_DIR" && node --check server.js ); then
+      deploy_failed=1
+      warn "vps-dashboard: новият код не минава node --check — НЕ рестартирам. Старият панел остава жив."
+      return
+    fi
+    systemd-run --quiet --on-active=5 --unit="csd-selfrestart-$TS" \
+      systemctl restart "$VPSDASH_SERVICE" \
+      && ok "vps-dashboard: рестартът е отложен с 5s (самодеплой) — панелът ще се вдигне сам." \
+      || { deploy_failed=1; warn "vps-dashboard: не успях да отложа рестарта."; }
+    return
+  fi
+
+  systemctl restart "$VPSDASH_SERVICE"
+  sleep 2
+  # /api/ping без сесия връща 401 → това е „жив". health() приема само 2xx/3xx,
+  # затова третираме 401 отделно като успех.
+  local code
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null || echo 000)"
+  if [ "$code" = "401" ] || [ "$code" = "200" ]; then
+    ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
+    rm -rf "${VPSDASH_DIR}.bak-$TS"
+    ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+  else
+    deploy_failed=1
+    warn "vps-dashboard health провал ($code) — връщам предишния код."
+    systemctl stop "$VPSDASH_SERVICE" || true
+    if [ -d "${VPSDASH_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude .state/ "${VPSDASH_DIR}.bak-$TS"/ "$VPSDASH_DIR"/
+      systemctl restart "$VPSDASH_SERVICE"
+    fi
+  fi
+}
+
 # ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
@@ -711,6 +816,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     adblock)    deploy_adblock ;;
+    vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
@@ -718,7 +824,18 @@ done
 # ── 4) Маркирай текущия release + почисти старите ─────────────────────────────
 ln -sfn "$SRC" "$CURRENT_LINK"
 ok "current → $SRC"
-ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf
+# Пази последните KEEP_RELEASES, НО никога не трий този, който току-що разгърнахме
+# (при rollback към стар release той може да е извън най-новите — иначе си трием
+# кода изпод краката, точно докато current сочи натам).
+CURRENT_REL="$(cd "$SRC" && pwd -P)"
+while read -r old; do
+  [ -n "$old" ] || continue
+  old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
+  case "$CURRENT_REL" in
+    "$old_real"|"$old_real"/*) continue ;;   # текущият release (или родителят му) — пропусни
+  esac
+  rm -rf "$old"
+done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
 
 if [ "$deploy_failed" = "0" ]; then
   ok "Деплой готов ($TS). Проекти: $PROJECTS"

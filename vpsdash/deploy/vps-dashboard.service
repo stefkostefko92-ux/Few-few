@@ -1,0 +1,76 @@
+# systemd unit за Carbon Stealth VPS Dashboard.
+# Панелът управлява systemd/docker/деплой → трябва root. Затова затягаме всичко
+# останало: no-new-privileges, скрит /home, защитен kernel. Слуша само на localhost
+# (127.0.0.1:7700) — публичният достъп минава през Nginx + TLS + Basic-auth по избор.
+[Unit]
+Description=Carbon Stealth VPS Dashboard
+Documentation=https://carbonstealth.eu
+After=network-online.target
+Wants=network-online.target
+# Границите за рестарт-цикъл живеят в [Unit], НЕ в [Service]. В [Service]
+# systemd ги игнорира мълчаливо — файлът изглежда защитен, а не е.
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/vps-dashboard
+Environment=NODE_ENV=production
+Environment=CSD_CONFIG=/etc/vps-dashboard/config.json
+# HOME за самия панел и за децата му (npm кеш, docker buildx state). Без него
+# всяко дете наследява HOME=/root, който при ProtectHome не се пише.
+Environment=HOME=/var/lib/vps-dashboard
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+# `KillMode=mixed`: SIGTERM само към главния процес, за да успее да затвори
+# нещата си; групата получава SIGKILL чак след таймаута. При подразбиращото се
+# `control-group` рестартът на панела убива и течащия деплой/бекъп/възстановяване
+# по средата — а възстановяване, прекъснато между `systemctl stop` и `cp`,
+# оставя продукта ДОЛУ.
+KillMode=mixed
+TimeoutStopSec=30
+# Панелът е този, който ТИ КАЗВА, че сървърът е зле — той трябва да преживее
+# OOM избора, не да е първата жертва.
+OOMScoreAdjust=-500
+# Панелът следи собствените си файлови дескриптори (`fdPct`), а systemd дава
+# 1024 soft по подразбиране — при много SSE клиенти и задачи това е малко.
+LimitNOFILE=65535
+# Панелът пуска системни команди (systemctl/docker/apt) → не може напълно да се
+# капсулира, но пазим това, което не му трябва.
+NoNewPrivileges=true
+# ВНИМАНИЕ, това е грешката, която направихме веднъж: `ProtectHome=read-only` +
+# `ReadWritePaths=/root` НЕ отваря /root за запис. Проверено срещу изходния код
+# на systemd v255 (src/core/namespace.c): при ЕДНАКВИ пътища `mount_path_compare`
+# подрежда по режим, а enum-ът MountMode е „ordered by priority" с MOUNT_READ_ONLY
+# ПРЕДИ MOUNT_READ_WRITE; `drop_duplicates()` пази ПЪРВИЯ (по-рестриктивния) и
+# OR-ва флага read_only. Влагането работи само за ПОД-директории, не за същия път.
+# Резултат при старата настройка: качването на архив от браузъра пада с EROFS,
+# а `autodeploy` (който само ЧЕТЕ) си върви — тоест провалът изглежда частичен и
+# необясним.
+#
+# /root ни трябва с ЗАПИС по канона на репото: archiveDir=/root, autodeploy.sh
+# търси архива там, PTY стартира там. Затова: скриваме реалните домашни папки с
+# tmpfs и връщаме точно /root чрез BindPaths.
+ProtectHome=tmpfs
+BindPaths=/root
+# Префиксът „-" значи „пропусни, ако я няма". Без него липсваща папка проваля
+# СТАРТА с 226/NAMESPACE (namespace.c:1543) — а /opt/few-few още не съществува
+# на девствен сървър, тоест услугата не тръгва и install.sh казва само
+# „не отговаря".
+ReadWritePaths=-/root -/var/lib/vps-dashboard -/etc/vps-dashboard -/opt/few-few
+# ProtectKernelTunables прави /proc/sys read-only, а `ufw enable` вика
+# `sysctl -p /etc/ufw/sysctl.conf` → „Read-only file system". Панелът управлява
+# защитната стена, затова тази защита се разменя срещу работеща функция.
+ProtectKernelTunables=false
+ProtectKernelModules=false
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# Логовете отиват в journald (journalctl -u vps-dashboard).
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
