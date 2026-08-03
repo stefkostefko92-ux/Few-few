@@ -14,6 +14,7 @@ import * as services from './services.js';
 import * as docker from './docker.js';
 import * as system from './system.js';
 import * as apthealth from './apthealth.js';
+import * as reclaim from './reclaim.js';
 import * as deploy from './deploy.js';
 import * as agents from './agents.js';
 import * as files from './files.js';
@@ -951,6 +952,25 @@ export function buildRouter(ctx) {
       J(async () => {
         if (!ctx.alerts) throw Object.assign(new Error('Алармите не са пуснати'), { status: 400 });
         return ctx.alerts.evaluate();
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Освобождаване на място ─────────────────────────────────────────────────
+  r.get('/api/reclaim', guard(J(() => reclaim.reclaimable(cfg))));
+  r.post(
+    '/api/reclaim/run',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        // Списъкът с пътища се смята НАНОВО на сървъра — не се приема от тялото.
+        // Клиентът казва само КОЯ категория; кои файлове влизат в нея е решение
+        // на сървъра. Иначе това е „изтрий каквото ти кажа" зад приятен интерфейс.
+        const fresh = await reclaim.reclaimable(cfg);
+        const item = fresh.items.find((i) => i.id === b.id);
+        if (!item) throw Object.assign(new Error('Няма такава категория (или вече е чиста).'), { status: 400 });
+        return jobs.start(reclaim.reclaimSpec(item.id, item), { user: req.user });
       }),
       { mutating: true }
     )

@@ -2230,9 +2230,58 @@ async function renderDesktop() {
 // ── Кой яде диска ────────────────────────────────────────────────────────────
 // Прогнозата казва „дискът ще се напълни след 3.2 дни" и оставя човека на SSH
 // промпт да налучква с `du`. Тази секция е втората половина на отговора.
+// „Какво може да се освободи" — другата половина на „кой яде диска". Първата
+// казва КЪДЕ отиват байтовете; тази казва кои от тях са боклук. Човек на пълен
+// диск иска второто.
+function reclaimCard(rec) {
+  if (!rec) return null;
+  const rows = (rec.items || []).map((it) => {
+    const size = it.human || fmtBytes(it.bytes || 0);
+    return el('tr', {}, [
+      el('td', {}, [
+        el('div', {}, [el('b', { text: it.title })]),
+        el('div', { class: 'muted', style: 'font-size:12px;margin-top:2px', text: it.why }),
+        it.note ? el('div', { style: 'font-size:12px;margin-top:2px;color:var(--warn)', text: `⚠ ${t(it.note)}` }) : null,
+      ]),
+      el('td', { class: 'mono', text: size }),
+      el('td', {}, [it.count ? el('span', { class: 'muted', text: `${it.count} бр.` }) : '']),
+      el('td', {}, [pill(it.safety === 'safe' ? 'ok' : 'warn', it.safety === 'safe' ? 'нищо не се губи' : 'прочети преди да триеш')]),
+      el('td', {}, [
+        el('button', {
+          class: 'btn btn-sm ' + (it.safety === 'safe' ? '' : 'btn-warn'),
+          text: '🧹 Освободи',
+          onclick: async () => {
+            const ok = await confirmDanger({
+              title: t(it.title),
+              what: [it.why, it.note || '', `${t('Освобождава')}: ${size}`].filter(Boolean),
+              expect: 'изтрий',
+              confirmLabel: 'Изтрий',
+              delayMs: 800,
+            });
+            if (ok) runJob('/reclaim/run', { id: it.id }, t(it.title));
+          },
+        }),
+      ]),
+    ]);
+  });
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Може да се освободи' }),
+      pill(rec.items?.length ? 'warn' : 'ok', rec.items?.length ? fmtBytes(rec.totalBytes) : 'няма боклук'),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Тук влиза САМО това, което по конструкция не може да е данни: кеш, който се пресваля, вече ротирани логове, ' +
+      'копия от деплоя. Docker томове, спрени контейнери и /tmp ги НЯМА нарочно — том е данни, а спрян контейнер ' +
+      'може да е спрян съзнателно.' }),
+    rows.length
+      ? el('div', { class: 'table-wrap' }, [tableEl(['Какво', 'Размер', 'Брой', 'Риск', ''], rows)])
+      : el('div', { class: 'empty', text: 'Нищо за чистене — машината е спретната.' }),
+  ]);
+}
+
 async function renderDisk() {
   const view = document.getElementById('view');
-  const d = await api('/disk');
+  const [d, rec] = await Promise.all([api('/disk'), api('/reclaim').catch(() => null)]);
   view.innerHTML = '';
 
   view.appendChild(
@@ -2241,6 +2290,9 @@ async function renderDisk() {
       'дърво, което на пълен диск е минути. Затова резултатът се кешира с дата, а прекъснато сканиране се показва ' +
       'като прекъснато, не като отговор.' })
   );
+
+  const rc = reclaimCard(rec);
+  if (rc) view.appendChild(rc);
 
   // Бързите числа — без задача.
   view.appendChild(
