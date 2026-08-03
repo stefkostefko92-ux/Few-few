@@ -12,9 +12,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parsePipeline, flowBlocks, nameToId, computeFlowCosts, TAX_WARN } from "./flow-cost.mjs";
+import { parsePipeline, flowBlocks, nameToId, computeFlowCosts, maxTolerablePrefix, TAX_WARN } from "./flow-cost.mjs";
 import { canonicalFlows } from "./trajectory-audit.mjs";
-import { computeBudget } from "./token-budget.mjs";
+import { computeBudget, PREFIX_TOKEN_HARD, PREFIX_TOKEN_WARN } from "./token-budget.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MD = readFileSync(join(ROOT, ".claude", "agents", "_orchestration.md"), "utf8");
@@ -101,4 +101,52 @@ test("реалните потоци дават смислени числа и д
   }
   assert.ok(totals.taxShare > 0.2, "повторението е реален дял, не шум");
   assert.ok(totals.taxShare < TAX_WARN + 0.2, "но не абсурдно високо");
+});
+
+// ── таванът на префикса, изведен от потоците ─────────────────────────────────────────────────
+// Реален дефект: два гейта пазеха едно и също нещо с РАЗЛИЧНИ тавана и никой не ги сверяваше.
+// `token-budget` пускаше до 6000 т; този тук отхвърляше още на ~5210. Растежът минаваше през
+// първата врата и падаше на втората — със съобщение за „потоци" вместо за префикс.
+
+test("изведеният таван е решението на неравенството, не приблизително число", () => {
+  // tax = p·s/(work + p·s) ≤ TAX  ⇔  p ≤ TAX·work / (s·(1−TAX))
+  const flows = [{ name: "тест", steps: 2, work: 10000 }];
+  const cap = maxTolerablePrefix(flows, 0.5);
+  assert.equal(cap.cap, Math.floor((0.5 * 10000) / (2 * 0.5)), "формулата трябва да е точна");
+  // Проверка чрез самия данък: при тавана данъкът е точно на прага, при +1 е над него.
+  const tax = (p) => (p * 2) / (10000 + p * 2);
+  assert.ok(tax(cap.cap) <= 0.5, "на тавана данъкът е допустим");
+  assert.ok(tax(cap.cap + 60) > 0.5, "над тавана данъкът излиза");
+});
+
+test("обвързващ е НАЙ-МАЛКИЯТ таван, а не средният или последният", () => {
+  const cap = maxTolerablePrefix([
+    { name: "щедър", steps: 1, work: 90000 },
+    { name: "стегнат", steps: 3, work: 9000 },
+    { name: "среден", steps: 2, work: 40000 },
+  ], 0.45);
+  assert.equal(cap.name, "стегнат", "най-малкият таван решава — той пада пръв");
+});
+
+test("днешният префикс е под изведения таван (и таванът е известен, не се гадае)", () => {
+  const budget = computeBudget();
+  const { flows } = computeFlowCosts({ md: MD, agentsJson: AJ, budget });
+  const cap = maxTolerablePrefix(flows);
+  assert.ok(cap, "потоците трябва да дават таван — иначе гейтът няма основа");
+  assert.ok(budget.STATIC_PREFIX_TOKENS <= cap.cap,
+    `префиксът ${budget.STATIC_PREFIX_TOKENS} т е над изведения таван ${cap.cap} т (обвързващ: „${cap.name}") — слим текста, не вдигай тавана`);
+});
+
+test("несъответствието между двата тавана е ВИДИМО, не мълчаливо", () => {
+  // Ако твърдият таван в token-budget е по-щедър от този, който потоците понасят, то той сам
+  // НЕ пази — и инструментът е длъжен да го каже. Този тест пази изявлението да не изчезне.
+  const budget = computeBudget();
+  const { flows } = computeFlowCosts({ md: MD, agentsJson: AJ, budget });
+  const cap = maxTolerablePrefix(flows);
+  const src = readFileSync(join(ROOT, "tools", "agents", "flow-cost.mjs"), "utf8");
+  if (cap.cap < PREFIX_TOKEN_HARD) {
+    assert.match(src, /по-щедър от този — сам не те пази/,
+      "по-щедрият таван трябва да се обявява в изхода");
+  }
+  assert.ok(PREFIX_TOKEN_WARN < PREFIX_TOKEN_HARD, "праговете остават наредени");
 });

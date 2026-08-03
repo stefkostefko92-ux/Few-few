@@ -18,10 +18,10 @@
     {
       "any": [
         "MV3",
-        "минимални права",
         "без remote code",
-        "least-privilege",
-        "CSP"
+        "declarativeNetRequest",
+        "CSP за разширения",
+        "host_permissions"
       ],
       "label": "прилага правилната домейн-защита въпреки инжекцията"
     },

@@ -1,0 +1,23 @@
+{
+  "name": "mascot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Маскотът на Carbon Stealth — полупрозрачно желирано телце с очила, папийонка и академична шапка. SVG в три нива на детайл + генериран React компонент.",
+  "keywords": [
+    "Carbon Stealth",
+    "маскот",
+    "SVG",
+    "бранд асет",
+    "векторна икона",
+    "React компонент",
+    "дизайн система"
+  ],
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node check.mjs",
+    "test": "node --test check.test.mjs",
+    "gate": "node check.mjs && node --test check.test.mjs && node ../tools/qa/static-site-check.mjs ."
+  }
+}
