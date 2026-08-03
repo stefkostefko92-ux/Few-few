@@ -134,13 +134,21 @@ export function pressureHealth({ file = PRESSURE, today = TODAY } = {}) {
 }
 
 // Измерването е трайно само ако преживява нов клон/сесия. Тренд във .gitignore = амнезия.
+// ВНИМАНИЕ за асиметрията с pressureHealth (умишлена, не пропуск): pressureHealth ГЕЙТВА при празен
+// файл, защото `--record` пълни pressure.jsonl ДЕТЕРМИНИСТИЧНО (само брои spec/тест файлове, нула
+// LLM) → празно = забравена евтина команда. trend.jsonl обаче се пълни само от ЖИВ eval ран
+// (headless-run.mjs, реални LLM извиквания + бюджет) → празнотата НЕ бива да гейтва детерминистичния
+// PR гейт (иначе CI зависи от скъпи живи евали). Затова: липса/gitignore ГЕЙТВА (каналът трябва да
+// оцелее), но празнота е само СЪВЕТ (`notes`, не `problems`) — видима, не блокираща. Не „поправяй"
+// това като добавиш празнотата в problems — точно това би вкарало живи евали в детерминистичния гейт.
 export function measurementHealth() {
-  const problems = [];
+  const problems = [], notes = [];
   const gi = existsSync(GITIGNORE) ? readFileSync(GITIGNORE, "utf8") : "";
   const trendIgnored = gi.split("\n").some((l) => l.trim() === "tools/agents/evals/trend.jsonl");
   if (trendIgnored) problems.push("trend.jsonl е в .gitignore — трендът на качеството не преживява нов клон/сесия (амнезия).");
   if (!existsSync(TREND)) problems.push("липсва tools/agents/evals/trend.jsonl — няма къде да се натрупва поведенческият тренд.");
-  return { trendIgnored, trendExists: existsSync(TREND), problems };
+  else if (!parseJsonl(TREND).length) notes.push("trend.jsonl е празен — поведенческият тренд още не е записван (иска жив eval ран; съветващо, не гейт).");
+  return { trendIgnored, trendExists: existsSync(TREND), problems, notes };
 }
 
 async function main() {
@@ -160,8 +168,9 @@ async function main() {
   const problems = [...health.problems, ...pHealth.problems];
   if (noRegression) problems.push(`${noRegression} записа в дневника без регресия — този клас грешка може да се върне тихо.`);
 
+  const notes = [...(health.notes || [])]; // съветващи — НЕ гейтват (виж measurementHealth)
   if (JSON_OUT) {
-    await emitJsonNow({ date: TODAY, rate, pressure, pressureHistory: pHealth.history, trendPoints, measurement: health, problems }, CHECK && problems.length ? 1 : 0);
+    await emitJsonNow({ date: TODAY, rate, pressure, pressureHistory: pHealth.history, trendPoints, measurement: health, problems, notes }, CHECK && problems.length ? 1 : 0);
   }
 
   console.log(`\n🌡  Дефектен процент на флота (термометър, не оценка)\n`);
@@ -199,6 +208,10 @@ async function main() {
     for (const p of problems) console.log(`    ${p}`);
   } else {
     console.log(`\n  \x1b[32m✓\x1b[0m Измерването е трайно: дневникът е в git, всеки дефект носи регресия, трендът се натрупва.`);
+  }
+  if (notes.length) {
+    console.log(`\n\x1b[33m▲ съветващо (не гейтва):\x1b[0m`);
+    for (const n of notes) console.log(`    ${n}`);
   }
   console.log("");
   process.exit(CHECK && problems.length ? 1 : 0);

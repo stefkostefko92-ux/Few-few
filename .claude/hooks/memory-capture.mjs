@@ -143,9 +143,13 @@ const looksInjection = (s) => INJECTION_RE.test(String(s));
 import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
 export { sourceIsReal };
 
+// ВНИМАНИЕ: анкерът трябва да СЪВПАДА с insertUnder (`^##` на ред). Дълго време ensureSections
+// тестваше БЕЗ `^` (substring) → ако „## Проверени поуки" се появи НЕ в началото на ред (напр.
+// в проза), ensureSections решаваше „секцията съществува" и не я добавяше, но insertUnder (с `^##`)
+// не я намираше и добавяше булета осиротял в КРАЯ на файла. Двата предиката трябва да съдят еднакво.
 function ensureSections(txt) {
-  if (!/##\s*Проверени поуки/.test(txt)) txt += `\n## Проверени поуки (verified)\n`;
-  if (!/##\s*Карантина/.test(txt)) txt += `\n## Карантина (непроверени — НЕ са факт)\n`;
+  if (!/^##\s*Проверени поуки/m.test(txt)) txt += `\n## Проверени поуки (verified)\n`;
+  if (!/^##\s*Карантина/m.test(txt)) txt += `\n## Карантина (непроверени — НЕ са факт)\n`;
   return txt;
 }
 function insertUnder(txt, heading, line) {

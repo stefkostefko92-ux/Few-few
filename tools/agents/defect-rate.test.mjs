@@ -85,6 +85,22 @@ test("здравето на измерването е зелено СЕГА (tre
   assert.deepEqual(h.problems, []);
 });
 
+test("асиметрия trend↔pressure е УМИШЛЕНА: празен trend е СЪВЕТ (notes), не гейт (problems)", () => {
+  // trend.jsonl се пълни само от жив eval ран (LLM+бюджет) → празнотата НЕ бива да гейтва
+  // детерминистичния PR гейт (за разлика от pressure, който --record пълни детерминистично).
+  // B1 (2026-08-03): ако някой „поправи" това като вкара празнотата в problems, вкарва живи
+  // евали в детерминистичния гейт — точно обратното на целта.
+  const h = measurementHealth();
+  assert.ok(Array.isArray(h.notes), "measurementHealth носи notes (съветващ канал)");
+  if (h.trendExists && !h.problems.length) {
+    // ако trend е празен днес → трябва да е в notes, НЕ в problems
+    const empty = h.notes.some((n) => /празен/.test(n));
+    const gated = h.problems.some((p) => /празен/.test(p));
+    assert.equal(gated, false, "празен trend НЕ бива да гейтва (иначе CI зависи от живи евали)");
+    if (empty) assert.ok(h.notes.length >= 1, "празнотата се докладва като съвет");
+  }
+});
+
 // ── История на натиска (нормализираният процент, който не лъже при падащ знаменател) ──
 
 test("normalizedRate: дефекти на 100 ед. натиск; нулев натиск → null, не деление на нула", () => {

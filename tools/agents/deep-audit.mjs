@@ -175,10 +175,35 @@ export function audit() {
     const o = []; for (let i = s + 1; i < L.length; i++) { if (/^##\s/.test(L[i])) break; if (L[i].trim().startsWith("- ")) o.push(L[i]); }
     return o;
   };
+  // confidence-таг (verified|unverified) от последния _(...)_ трейлър. ВНИМАНИЕ: текст/източник
+  // съдържат скоби И „;" — затова НЕ split[1] (счупи се на `[^)]*` при първата скоба); confidence
+  // е enum token, ограден с „;" (научено: позиционен парсер лъже при скоби в съдържанието).
+  const confidenceOf = (line) => {
+    const m = line.match(/_\((.*)\)_\s*$/); // greedy до последния )_ в края
+    if (!m) return null;
+    if (/;\s*unverified\s*(;|$)/i.test(m[1])) return "unverified";
+    if (/;\s*verified\s*(;|$)/i.test(m[1])) return "verified";
+    return null;
+  };
   for (const id of ids) {
     if (!has(`${MEM}/${id}.md`)) { hard.push({ kind: "memory", msg: `агент „${id}" няма файл с памет` }); continue; }
     const md = R(`${MEM}/${id}.md`);
-    const v = bullets(md, "Проверени поуки") || [], q = bullets(md, "Карантина");
+    // 7a. ТВЪРДО: дублирано заглавие на секция. ensureSections пише канонична форма, но исторически
+    // дрейф на текста („непроверено — не се чете" vs „непроверени — НЕ са факт") остави ДВЕ „## Карантина"
+    // в 5 файла → readerите четат само първата, вторият блок булети е невидим. Точно 1 от всяка.
+    const provHeads = (md.match(/^##\s*Проверени поуки/gm) || []).length;
+    const quarHeads = (md.match(/^##\s*Карантина/gm) || []).length;
+    if (provHeads > 1) hard.push({ kind: "memory-dup", msg: `${id}: ${provHeads}× заглавие „## Проверени поуки" (readerите четат само първото)` });
+    if (quarHeads > 1) hard.push({ kind: "memory-dup", msg: `${id}: ${quarHeads}× заглавие „## Карантина" (readerите четат само първото)` });
+    // 7b. ТВЪРДО: поука с таг `verified` под „## Карантина" = противоречие (секцията е „НЕ са факт")
+    // и се ИЗКЛЮЧВА от инжекцията → мъртво знание. Историческо остатъчно състояние от когато старият
+    // sourceIsReal беше по-строг и сваляше verified поуки в Карантина. Routing-ът днес е коректен;
+    // това пази срещу рецидив (ръчна редакция/стар импорт).
+    const q = bullets(md, "Карантина");
+    const buriedVerified = (q || []).filter((l) => confidenceOf(l) === "verified");
+    for (const l of buriedVerified) hard.push({ kind: "buried-lesson", msg: `${id}: поука с таг „verified" под „## Карантина" (мъртво знание): ${l.slice(6, 66).trim()}…` });
+    // 7c. съветващо: висок дял карантина
+    const v = bullets(md, "Проверени поуки") || [];
     if (q === null) soft.push({ kind: "memory", msg: `${id}: няма секция „Карантина"` });
     else if (v.length >= 20 && q.length / v.length > 0.30)
       soft.push({ kind: "quarantine", msg: `${id}: карантина ${q.length}/${v.length} (${Math.round(q.length / v.length * 100)}%) — произвежда много недоказани твърдения` });

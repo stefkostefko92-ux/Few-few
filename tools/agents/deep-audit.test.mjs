@@ -8,12 +8,25 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { audit, agentIds, productDirs, brokenToolRefs, execWithoutBash } from "./deep-audit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+
+/** Временно мутира РЕАЛЕН файл с памет (audit() чете от __dirname-корена, копие в /tmp гледа друг
+ *  корен и не възпроизвежда състоянието — научено: замърсен тест лъже). Възстановява byte-за-byte. */
+function withMemoryMutation(id, transform, fn) {
+  const path = join(ROOT, ".claude", "agents", "_memory", `${id}.md`);
+  const original = readFileSync(path, "utf8");
+  writeFileSync(path, transform(original));
+  try { return fn(); }
+  finally {
+    writeFileSync(path, original);
+    assert.equal(readFileSync(path, "utf8"), original, `${id}.md: възстановяването се провали`);
+  }
+}
 
 test("реалното репо няма ТВЪРДИ пропуски", () => {
   const { hard } = audit();
@@ -91,6 +104,24 @@ test("productDirs изключва служебните папки", () => {
   for (const skip of ["tools", "deploy", "docs", "agents-dashboard", "research", "client"])
     assert.ok(!p.includes(skip), `„${skip}" не е продукт`);
   assert.ok(p.includes("zabobovdol") && p.includes("medqr"), "реалните продукти са вътре");
+});
+
+test("ТВЪРДО: поука с таг verified под Карантина (мъртво знание) — 7 реални изцерени 2026-08-03", () => {
+  // Инжектирай verified-таг булет под Карантина в РЕАЛЕН файл → audit() трябва да го хване като hard.
+  // Скоби в източника нарочно — позиционен парсер (`split[1]` / `[^)]*`) би пропуснал точно тях.
+  const injected = withMemoryMutation("izpitatelya", (md) =>
+    md.replace(/^(##\s*Карантина.*)$/m, `$1\n- **2099-01-01:** ТЕСТ заровена поука _(тест (със скоби); verified; "източник (пак скоби)")_`),
+    () => audit().hard.filter((h) => h.kind === "buried-lesson"));
+  assert.ok(injected.some((h) => h.msg.includes("izpitatelya")), "verified под Карантина трябва да е ТВЪРД пропуск");
+  // след възстановяване — нула (пази да не сме оставили боклук)
+  assert.deepEqual(audit().hard.filter((h) => h.kind === "buried-lesson"), []);
+});
+
+test("ТВЪРДО: дублирано заглавие Карантина (readerите четат само първото) — 5 реални слети 2026-08-03", () => {
+  const found = withMemoryMutation("izpitatelya", (md) => md + "\n## Карантина (дубликат)\n- нещо\n",
+    () => audit().hard.filter((h) => h.kind === "memory-dup"));
+  assert.ok(found.some((h) => h.msg.includes("izpitatelya") && h.msg.includes("Карантина")), "двойна секция трябва да е ТВЪРД пропуск");
+  assert.deepEqual(audit().hard.filter((h) => h.kind === "memory-dup"), []);
 });
 
 test("execWithoutBash: no-Bash агент с DoD команда → находка; проза/има-Bash → нула", () => {
