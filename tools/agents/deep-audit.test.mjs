@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { audit, agentIds, productDirs, brokenToolRefs, execWithoutBash } from "./deep-audit.mjs";
+import { audit, agentIds, productDirs, brokenToolRefs, brokenOwnedMemPaths, execWithoutBash } from "./deep-audit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -122,6 +122,31 @@ test("ТВЪРДО: дублирано заглавие Карантина (read
     () => audit().hard.filter((h) => h.kind === "memory-dup"));
   assert.ok(found.some((h) => h.msg.includes("izpitatelya") && h.msg.includes("Карантина")), "двойна секция трябва да е ТВЪРД пропуск");
   assert.deepEqual(audit().hard.filter((h) => h.kind === "memory-dup"), []);
+});
+
+test("brokenOwnedMemPaths: хваща мъртъв АГЕНТ-СЛОЙ път, но е ИМУНЕН на 4-те FP класа", () => {
+  // РЕАЛНИЯТ клас (treydara): агент-слой път, който не съществува → находка.
+  assert.deepEqual(brokenOwnedMemPaths("виж tools/agents/memory-preload.mjs"), ["tools/agents/memory-preload.mjs"],
+    "стар грешен път (реалният е .claude/hooks/) трябва да се хване");
+  assert.deepEqual(brokenOwnedMemPaths("виж .claude/hooks/memory-preload.mjs"), [], "реалният път — чисто");
+  // FP-1 truncation: versions.json НЕ бива да се реже до versions.js (документиран FP, за малко повторен)
+  assert.deepEqual(brokenOwnedMemPaths("version-freshness чете tools/agents/versions.json"), [],
+    "разширението json не бива да се реже до js");
+  assert.deepEqual(brokenOwnedMemPaths("дневникът tools/agents/evals/errors.jsonl расте"), [], "jsonl не се реже");
+  // FP-2 upstream docs: docs/api.md (WiseLibs) НЕ е притежавана инфра → игнориран
+  assert.deepEqual(brokenOwnedMemPaths("better-sqlite3 (WiseLibs docs/api.md)"), [], "upstream docs не е наш анкер");
+  // FP-4 продуктов път: adblock/tools/… НЕ е анкер (продуктов, не коренен tools/)
+  assert.deepEqual(brokenOwnedMemPaths("adblock/tools/build_filters.mjs е ок"), [], "продуктов tools/ не се съди");
+  // node_modules — упстрийм типове, не наш код
+  assert.deepEqual(brokenOwnedMemPaths("tools/agents/node_modules/x/y.js"), [], "node_modules се пропуска");
+});
+
+test("ТВЪРДО: verified поука цитира несъществуващ агент-слой път (treydara класът)", () => {
+  const found = withMemoryMutation("izpitatelya", (md) =>
+    md.replace(/^(##\s*Проверени поуки.*)$/m, `$1\n- **2099-01-01:** ТЕСТ _(t; verified; "tools/agents/nema-takuv-fail.mjs:9")_`),
+    () => audit().hard.filter((h) => h.kind === "dead-mem-path"));
+  assert.ok(found.some((h) => h.msg.includes("izpitatelya") && h.msg.includes("nema-takuv-fail")), "мъртъв агент-слой път трябва да е ТВЪРД");
+  assert.deepEqual(audit().hard.filter((h) => h.kind === "dead-mem-path"), [], "след възстановяване — нула");
 });
 
 test("execWithoutBash: no-Bash агент с DoD команда → находка; проза/има-Bash → нула", () => {

@@ -63,6 +63,31 @@ export function brokenToolRefs(text) {
   return [...new Set(String(text || "").match(re) || [])].filter((p) => !has(p));
 }
 
+// Одит 2026-08-03: verified поука, цитираща файлов път, който вече не съществува, гние тихо (ledger
+// го отбеляза като НЕгейтван). Пълната проверка „всеки цитиран път съществува" НЕ е гейтваема —
+// доминирана от 4 неразделими FP класа: (1) upstream/library docs (`docs/api.md`=WiseLibs,
+// `docs/jwt/…`=jose), (2) нарочно-липсващ файл (самата находка Е отсъствието), (3) неточност но
+// съществува (`mastilko/globals.css` → реалният `mastilko/src/app/globals.css`), (4) продуктов
+// чурн. Затова гейтваме САМО ТЕСНИЯ ЧИСТ подмножество: пътища към АГЕНТ-СЛОЯ, който ПРИТЕЖАВАМЕ
+// (нискочурн, никога upstream/нарочно-липсващ). Точно този клас беше treydara дефектът
+// (`tools/agents/memory-preload.mjs` вместо `.claude/hooks/…`). Разширенията са ДЪЛГИ-ПЪРВО +
+// граница, иначе `js` реже `versions.json`→`versions.js` (документиран FP, за малко да го повторя).
+const OWNED_INFRA = [/^\.claude\/hooks\//, /^\.claude\/agents\//, /^\.claude\/settings\.json$/,
+  /^tools\/agents\//, /^tools\/hooks\//, /^tools\/lib\//, /^tools\/security\//, /^tools\/skills\//,
+  /^tools\/seo\//, /^tools\/qa\//, /^agents-dashboard\/[\w./-]+\.(?:mjs|js|json|html)$/];
+const MEM_PATH_RE = /([A-Za-z0-9_.\-]+(?:\/[A-Za-z0-9_.\-]+)+\.(?:jsonl|json|mjs|cjs|jsx|tsx|js|ts|md|sh|yml|yaml|css|html|txt)(?![A-Za-z0-9]))(?::[\d,\-]+)?/g;
+export function brokenOwnedMemPaths(bulletText) {
+  const noUrls = String(bulletText || "").replace(/https?:\/\/\S+/g, " ");
+  const out = [];
+  for (const m of noUrls.matchAll(MEM_PATH_RE)) {
+    const p = m[1];
+    if (p.includes("/node_modules/")) continue;
+    if (!OWNED_INFRA.some((re) => re.test(p))) continue; // само притежаваната инфра (FP-чисто)
+    if (!has(p)) out.push(p);
+  }
+  return [...new Set(out)];
+}
+
 /**
  * Редове, на които дефиницията нарежда да ИЗПЪЛНИ команда (`node/bash/npx tools/…`) като
  * ЗАДЪЛЖЕНИЕ (пусни/DoD/верификатор/гейт), докато `tools` няма Bash → неизпълним договор.
@@ -202,8 +227,12 @@ export function audit() {
     const q = bullets(md, "Карантина");
     const buriedVerified = (q || []).filter((l) => confidenceOf(l) === "verified");
     for (const l of buriedVerified) hard.push({ kind: "buried-lesson", msg: `${id}: поука с таг „verified" под „## Карантина" (мъртво знание): ${l.slice(6, 66).trim()}…` });
-    // 7c. съветващо: висок дял карантина
+    // 7b′. ТВЪРДО: verified поука цитира АГЕНТ-СЛОЙ път (моята инфра), който не съществува — мъртва
+    // препратка, която репо гейтовете не хващаха (treydara класът). Само притежаваната инфра (FP-чисто).
     const v = bullets(md, "Проверени поуки") || [];
+    for (const l of v) for (const p of brokenOwnedMemPaths(l))
+      hard.push({ kind: "dead-mem-path", msg: `${id}: verified поука цитира несъществуващ агент-слой път „${p}"` });
+    // 7c. съветващо: висок дял карантина
     if (q === null) soft.push({ kind: "memory", msg: `${id}: няма секция „Карантина"` });
     else if (v.length >= 20 && q.length / v.length > 0.30)
       soft.push({ kind: "quarantine", msg: `${id}: карантина ${q.length}/${v.length} (${Math.round(q.length / v.length * 100)}%) — произвежда много недоказани твърдения` });
