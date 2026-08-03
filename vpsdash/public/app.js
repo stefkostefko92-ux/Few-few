@@ -3184,9 +3184,65 @@ function uploadArchive(fileInput, bar, fill, info) {
 }
 
 // ── Ъпдейти ───────────────────────────────────────────────────────────────────────
+// Защо ъпдейтът не минава. Рисува се ВИНАГИ — и когато всичко е наред („нищо не
+// блокира" също е отговор), и най-вече когато apt е недостъпен: точно тогава
+// списъкът с пакети е празен, а причината е тук.
+function aptHealthCard(h) {
+  if (!h) return null;
+  const rows = [];
+  const boot = h.boot;
+  if (boot) {
+    const ok = boot.enoughForKernel;
+    rows.push(el('div', { class: 'metric-sub' }, [
+      el('b', { text: ok ? '✔ ' : '✘ ' }),
+      `${t('Място за ново ядро')} (${boot.mount}${boot.separate ? '' : t(', няма отделен дял')}): `,
+      el('b', { style: `color:var(--${ok ? 'ok' : 'danger'})`, text: fmtBytes(boot.availBytes) }),
+      ` ${t('свободни')} · ${boot.usePercent}%`,
+      ok ? '' : ` — ${t('ъпдейтите ще се провалят')}`,
+    ]));
+  }
+  const k = h.kernels;
+  if (k?.all?.length) {
+    rows.push(el('div', { class: 'metric-sub', text:
+      `${t('Ядра')}: ${k.all.length} (${t('текущо')} ${k.current || '—'}) · ${t('излишни')}: ${k.removable.length}` }));
+  }
+  const broken = h.dpkg?.broken || [];
+  rows.push(el('div', { class: 'metric-sub' }, [
+    el('b', { text: broken.length ? '✘ ' : '✔ ' }),
+    broken.length
+      ? `${t('Прекъснат dpkg')}: ${broken.slice(0, 6).join(', ')} — ${t('блокира ВСЕКИ ъпдейт')}`
+      : t('dpkg е в ред'),
+  ]));
+  if (h.holds?.length) {
+    rows.push(el('div', { class: 'metric-sub', text: `${t('Задържани пакети')}: ${h.holds.join(', ')}` }));
+  }
+  if (h.lock) {
+    rows.push(el('div', { class: 'metric-sub', text: `${t('apt е зает в момента')} — ${t('изчакай да свърши')}` }));
+  }
+  const fixes = [];
+  if (broken.length) {
+    fixes.push(el('button', { class: 'btn btn-warn btn-sm', text: '🔧 Довърши прекъснатия dpkg',
+      onclick: () => confirm('Пускам dpkg --configure -a?') && runJob('/updates/dpkg-repair', {}, 'dpkg --configure -a') }));
+  }
+  if (k?.removable?.length) {
+    fixes.push(el('button', { class: 'btn btn-warn btn-sm', text: `🧹 Изчисти ${k.removable.length} стари ядра`,
+      onclick: () => confirm(`Махам ${k.removable.length} стари ядра? Текущото и най-новото се ПАЗЯТ.`)
+        && runJob('/updates/kernel-clean', {}, 'Чистене на стари ядра') }));
+  }
+  const blocked = (boot && !boot.enoughForKernel) || broken.length;
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Може ли да се обновява' }),
+      pill(blocked ? 'bad' : 'ok', blocked ? 'блокирано' : 'нищо не блокира'),
+    ]),
+    rows,
+    fixes.length ? el('div', { class: 'toolbar' }, fixes) : null,
+  ]);
+}
+
 async function renderUpdates() {
   const view = document.getElementById('view');
-  const data = await api('/updates');
+  const [data, health] = await Promise.all([api('/updates'), api('/updates/health').catch(() => null)]);
   view.innerHTML = '';
   view.appendChild(
     el('div', { class: 'toolbar' }, [
@@ -3196,6 +3252,8 @@ async function renderUpdates() {
     ])
   );
   if (data.rebootRequired) view.appendChild(el('div', { class: 'toast warn', style: 'position:static;margin-bottom:14px', text: '⚠ Нужен е рестарт след последните ъпдейти.' }));
+  const hc = aptHealthCard(health);
+  if (hc) view.appendChild(hc);
   if (!data.available) {
     view.appendChild(el('div', { class: 'empty', text: 'apt недостъпен на този сървър.' }));
     return;

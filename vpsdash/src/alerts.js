@@ -22,6 +22,7 @@ import { safePath } from './accesslog.js';
 import { exposureMap, portChecks } from './ports.js';
 import { saveConfig } from './config.js';
 import { Guardians } from './guardians.js';
+import { aptHealth, aptConditions } from './apthealth.js';
 import { composeDigest, DigestSchedule } from './digest.js';
 import { backupAge } from './drill.js';
 
@@ -400,6 +401,11 @@ export class AlertEngine {
         /* няма last/wtmp на тази машина — не гадаем */
       }
     }
+    // Защо apt е блокиран. Кадансът е РЯДЪК (30 мин): `dpkg-query -W` изброява
+    // всички пакети — не е работа за всеки цикъл, а състоянието се мени бавно.
+    // Без този сигнал машината мълчи месеци и после се оказва без нито един
+    // ъпдейт за сигурност — най-тихата от всички повреди.
+    for (const c of await this.aptChecks()) out.push(c);
     for (const b of await this.flappingChecks()) out.push(b);
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);
@@ -543,6 +549,25 @@ export class AlertEngine {
       }
     }
     return out;
+  }
+
+  // Блокиран apt. Кадансът е рядък и резултатът се КЕШИРА: `dpkg-query -W`
+  // изброява всеки инсталиран пакет — минава за секунда, но няма никакъв смисъл
+  // на всеки цикъл, а състоянието се мени с дни, не с минути.
+  async aptChecks() {
+    if (this.cfg.alerts?.apt === false) return [];
+    const every = 30 * 60 * 1000;
+    const now = Date.now();
+    if (now - (this.lastAptAt || 0) >= every) {
+      this.lastAptAt = now;
+      try {
+        const snap = this.metrics?.latest || null;
+        this.lastApt = await aptHealth(snap?.disks || []);
+      } catch {
+        this.lastApt = null; // не гадаем — по-добре мълчание, отколкото измислена аларма
+      }
+    }
+    return this.lastApt ? aptConditions(this.lastApt) : [];
   }
 
   // Услуга в рестарт-цикъл. systemd я показва „active" — защото тя наистина е

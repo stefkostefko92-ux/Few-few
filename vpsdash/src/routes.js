@@ -13,6 +13,7 @@ import {
 import * as services from './services.js';
 import * as docker from './docker.js';
 import * as system from './system.js';
+import * as apthealth from './apthealth.js';
 import * as deploy from './deploy.js';
 import * as agents from './agents.js';
 import * as files from './files.js';
@@ -957,6 +958,32 @@ export function buildRouter(ctx) {
 
   // ── Ъпдейти + захранване ───────────────────────────────────────────────────
   r.get('/api/updates', guard(J(() => system.updatesInfo())));
+  // Защо apt не работи. Отделен маршрут от списъка с пакети: списъкът може да е
+  // празен ИМЕННО защото ъпдейтът е блокиран — двете отговарят на различни въпроси.
+  r.get(
+    '/api/updates/health',
+    guard(J(async () => {
+      const snap = metrics.latest || (await metrics.sample());
+      return apthealth.aptHealth(snap.disks || []);
+    }))
+  );
+  r.post(
+    '/api/updates/dpkg-repair',
+    guard(J(async (req) => jobs.start(apthealth.dpkgRepairSpec(), { user: req.user })), { mutating: true })
+  );
+  r.post(
+    '/api/updates/kernel-clean',
+    guard(
+      J(async (req) => {
+        // Списъкът се смята НА СЪРВЪРА, не се приема от клиента: тяло с чужди
+        // версии иначе би махнало работещото ядро.
+        const snap = metrics.latest || (await metrics.sample());
+        const h = await apthealth.aptHealth(snap.disks || []);
+        return jobs.start(apthealth.kernelCleanSpec(h.kernels?.removable), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
   r.post(
     '/api/updates/refresh',
     guard(J(async (req) => jobs.start(system.aptRefreshSpec(), { user: req.user })), { mutating: true })
