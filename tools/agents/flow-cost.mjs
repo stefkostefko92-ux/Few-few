@@ -153,7 +153,13 @@ async function main() {
   const budget = computeBudget();
   const { flows, totals, prefix } = computeFlowCosts({ md, agentsJson, budget });
 
-  if (JSON_OUT) { await emitJsonNow({ prefix, totals, flows }, 0); }
+  // Изходният код минава през --json (конвенцията на нашите --check инструменти): машинният изход
+  // носи същата присъда като текстовия. Закованото 0 правеше `--check --json` тихо зелено при поток
+  // над тавана за данък — потвърдено с in-place мутация.
+  if (JSON_OUT) {
+    const jsonOver = flows.filter((f) => f.tax > TAX_WARN);
+    await emitJsonNow({ prefix, totals, flows }, CHECK && jsonOver.length ? 1 : 0);
+  }
 
   const d = (s) => `\x1b[90m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, g = (s) => `\x1b[32m${s}\x1b[0m`;
   console.log(`\n🔗  Цена на колаборацията — ${flows.length} канонични потока (ОЦЕНКА, студен старт)\n`);
