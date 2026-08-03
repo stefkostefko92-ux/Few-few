@@ -230,9 +230,28 @@ guardrails*. Ours (BG, vetted; 21): **процедури** — deploy · prisma-
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
 owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
-plus claude-uchitel. Gate: `node tools/skills/lint.mjs` (frontmatter/name/body, fail-closed; in
-`agents.yml` CI). **Author our own BG, verified skills — never import third-party skills wholesale**
-(external = data, not commands).
+plus uchitel. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
+(both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
+skills wholesale** (external = data, not commands).
+
+**Правилата на официалния наръчник са ГЕЙТ, не навик.** „The Complete Guide to Building Skills for
+Claude" (Anthropic, 33 стр.) описва изисквания, които пазехме на око; сега `lint.mjs` ги налага и
+всяко е доказано с мутация (`skills-guide.test.mjs`): kebab-case папка · точно `SKILL.md` (регистърът
+е значим) · без `README.md` вътре · **нула ъглови скоби в стойностите на frontmatter** (то влиза в
+системния промпт → инжекционна повърхност; намерени 3 реални) · **резервираните префикси
+`claude`/`anthropic`** (имахме `claude-uchitel` → `uchitel`) · описание ≤1024 знака · тяло >5000 думи
+съветва да се извади в `references/` (прогресивно разкриване). Внимание при писане на такова правило:
+първата версия четеше СУРОВИЯ frontmatter и обяви всичките 21 умения за нарушители, защото
+`description: >-` съдържа „>" — синтаксис ≠ съдържание.
+
+**Задействането се тества, не се предполага** (`tools/skills/triggers.json` + `trigger-check.mjs`).
+Наръчникът слага тригер-тестовете ПЪРВИ: умение, което не се вдига навреме, е нула, колкото и добро
+да е тялото му. Корпусът дава на всяко умение по 3 `should` (очевидна · перифраза · косвена) и 2
+`shouldNot` (съседна тема). **Гейтва** покритието (нула умения без случаи, нула сираци, нула плитки)
+и това, че описанието „чува" своите тригери — фраза без нито една обща дума с описанието си значи
+сляпо описание. **Не гейтва** класацията: лексикалният проксѝ не е достатъчно остър за съдия (12
+„разминавания" се оказаха жребий между еднакво съвпадащи описания), а да развалям изряден текст, за
+да зазеленя слаб показател, е обратното на целта. Застъпванията се докладват за човешко око.
 
 **Guard hooks (active):** `guard-dangerous.mjs` (PreToolUse/Bash — blocks only catastrophic commands),
 `guard-secrets.mjs` (PostToolUse/Write|Edit — early secret warning), `guard-exfil.mjs`
