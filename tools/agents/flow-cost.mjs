@@ -18,7 +18,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { computeBudget } from "./token-budget.mjs";
+import { computeBudget, PREFIX_TOKEN_HARD } from "./token-budget.mjs";
 import { canonicalFlows } from "./trajectory-audit.mjs";
 import { emitJsonNow } from "../lib/emit.mjs";
 
@@ -33,6 +33,22 @@ const CHECK = argv.includes("--check");
 // Таван на данъка: дял от цената на потока, който отива само за повторение на префикса.
 // Над него веригата плаща повече за преповтаряне на доктрината, отколкото за самата работа.
 export const TAX_WARN = 0.45;
+
+// ── Истинският таван на префикса ──────────────────────────────────────────────────────────────
+// Два гейта пазеха префикса с РАЗЛИЧНИ и непроверени един спрямо друг тавана: `token-budget`
+// пускаше до PREFIX_TOKEN_HARD (6000 т), а този тук отхвърляше още на ~5210. Затова растежът
+// минаваше през първата врата и падаше на втората — със съобщение за „потоци", вместо за префикс.
+// Данъкът е tax = p·s / (work + p·s), значи допустимото p се решава точно:
+//     p ≤ TAX · work / (s · (1 − TAX))
+// `work` (системен промпт + лична памет) не зависи от префикса, затова таванът е пресмятаем.
+// Обвързващият е НАЙ-МАЛКИЯТ през потоците — обикновено едностъпков поток с лек агент, където
+// доктрината лесно надтежава специалистичното знание.
+export function maxTolerablePrefix(flows, tax = TAX_WARN) {
+  const caps = flows.filter((f) => f.steps > 0 && f.work > 0)
+    .map((f) => ({ name: f.name, cap: Math.floor((tax * f.work) / (f.steps * (1 - tax))) }));
+  if (!caps.length) return null;
+  return caps.reduce((a, b) => (b.cap < a.cap ? b : a));
+}
 
 /** Име за показване („Мобилджията") → id („mobildjiyata"). Потоците са писани с имена. */
 export function nameToId(agentsJson) {
@@ -152,6 +168,18 @@ async function main() {
   console.log(`  ${d(`Ако префиксът се плащаше веднъж на верига (system-ниво), спестеното е ~${totals.savedIfShared} т.`)}`);
   console.log(d(`  Това е данъкът върху колаборацията: цената да добавиш още една стъпка към поток е цял префикс,`));
   console.log(d(`  не „само още малко". Затова къси, целенасочени вериги са по-евтини от дълги обзорни.\n`));
+
+  // Числото, което прави провала ДЕЙСТВЕН: не „кои потоци", а докъде трябва да слезе префиксът.
+  const cap = maxTolerablePrefix(flows);
+  if (cap) {
+    const slack = cap.cap - prefix;
+    console.log(`  Таван на префикса, изведен от потоците: ~${cap.cap} т (обвързващ: „${cap.name}") · днес ${prefix} т`
+      + (slack >= 0 ? g(` · запас ${slack} т`) : y(` · ПРЕВИШЕН с ${-slack} т`)));
+    if (cap.cap < PREFIX_TOKEN_HARD) {
+      console.log(d(`  Твърдият таван в token-budget (${PREFIX_TOKEN_HARD} т) е по-щедър от този — сам не те пази.`));
+    }
+    console.log("");
+  }
 
   const over = flows.filter((f) => f.tax > TAX_WARN);
   if (over.length) console.log(y(`▲ ${over.length} потока плащат над ${(TAX_WARN * 100).toFixed(0)}% само за повторение: `) + over.map((f) => f.name).join(" · ") + "\n");
