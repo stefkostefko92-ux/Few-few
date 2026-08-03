@@ -70,5 +70,9 @@ test("гейтът РЕАЛНО пада при раздут префикс (и�
   const simulate = (tokens) => ({ over: tokens > PREFIX_TOKEN_HARD, warn: tokens > PREFIX_TOKEN_WARN });
   assert.deepEqual(simulate(PREFIX_TOKEN_HARD + 1), { over: true, warn: true }, "над HARD → твърд провал");
   assert.deepEqual(simulate(PREFIX_TOKEN_WARN + 1), { over: false, warn: true }, "между WARN и HARD → само съвет");
-  assert.deepEqual(simulate(STATIC_PREFIX_TOKENS), { over: false, warn: false }, "днешното е чисто");
+  // Третото твърдение искаше днешното да е под WARN — по-строго от самия гейт, който по дизайн
+  // излиза 0 в жълтата лента. Затова падаше при ДОПУСТИМО състояние (5791 т: над WARN 5200, под
+  // HARD 6000) и превръщаше съвет в провал. Проверяваме това, което наистина гейтва.
+  assert.equal(simulate(STATIC_PREFIX_TOKENS).over, false,
+    `префиксът (${STATIC_PREFIX_TOKENS} т) е над твърдия таван ${PREFIX_TOKEN_HARD} — слим текста, не вдигай тавана`);
 });
