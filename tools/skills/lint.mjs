@@ -104,6 +104,11 @@ export function lintSkill(dir, name) {
   for (const ref of new Set(body.match(/\btools\/[\w./-]+\.mjs\b/g) || [])) {
     if (!existsSync(join(ROOT, ref))) errs.push(`реферира несъществуващ инструмент ${ref}`);
   }
+  // `references/` е третото ниво на прогресивното разкриване по наръчника — препратка в празното
+  // значи, че подробностите просто ги няма, а тялото се е доверило, че са там.
+  for (const ref of new Set(body.match(/\breferences\/[\w./-]+/g) || [])) {
+    if (!existsSync(join(dir, ref))) errs.push(`реферира несъществуващ ${ref}`);
+  }
   return { name, errs, warns };
 }
 
