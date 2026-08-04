@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 235
+        "lessons": 240
       },
       "evolution": [
         {
@@ -554,9 +554,20 @@
           "date": "2026-08-04",
           "event": "v17.6 — учене",
           "detail": "Научи: GeoLite2 вече НЕ е под CC BY-SA 4.0 като лиценз — MaxMind ползва собствен GeoLite EULA,… (+5 още)"
+        },
+        {
+          "version": "18.1.0",
+          "date": "2026-08-04",
+          "event": "v18.1 — учене",
+          "detail": "Научи: Безплатните гео бази не са еднакви правно: MaxMind GeoLite2 EULA изрично забранява полз… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-04",
+          "type": "learning",
+          "summary": "Научи: „Безплатните гео бази не са еднакви правно: MaxMind GeoLite2 EULA изрично забранява полз…\" (+4 още)"
+        },
         {
           "date": "2026-08-04",
           "type": "learning",
