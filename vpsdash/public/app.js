@@ -5565,6 +5565,17 @@ async function boot() {
     showApp();
     document.getElementById('host-badge').textContent = me.nodeName;
     document.getElementById('ver').textContent = 'v' + me.version;
+    // Панелът върви от резервния конфиг: това трябва да се ВИЖДА, а не само да
+    // стои в journald. Иначе човек настройва прагове върху конфиг, който не е
+    // този на диска, и се чуди защо промените „не се хващат".
+    if (me.recovered) {
+      const bar = el('div', { class: 'banner banner-warn' }, [
+        el('b', { text: '⚠ Конфигът е повреден — панелът върви от резервно копие.' }),
+        el('div', { text: 'Настройките може да са по-стари от последните. Повреденият файл НЕ е пипан.' }),
+        el('div', { class: 'mono', style: 'font-size:11px;opacity:.8', raw: `${me.recovered.from} · ${me.recovered.reason}` }),
+      ]);
+      document.querySelector('.main').prepend(bar);
+    }
     buildNav();
     registerCommand({
       id: 'act:refresh', scope: 'nav', label: 'Опресни текущата секция', section: 'Действия', hint: 'r',

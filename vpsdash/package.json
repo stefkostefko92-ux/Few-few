@@ -27,6 +27,7 @@
     "test": "node --test test/*.test.js",
     "sweep": "node scripts/ui-sweep.mjs",
     "degraded": "node scripts/degraded-audit.mjs",
-    "a11y": "node scripts/a11y-audit.mjs"
+    "a11y": "node scripts/a11y-audit.mjs",
+    "corrupt": "node scripts/corrupt-audit.mjs"
   }
 }

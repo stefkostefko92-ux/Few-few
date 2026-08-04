@@ -388,3 +388,18 @@ tr.row-before td { background: rgba(255, 180, 84, 0.05); }
   /* Чекбоксовете в таблиците са най-малката цел изобщо. */
   input[type="checkbox"], input[type="radio"] { width: 26px; height: 26px; }
 }
+
+/* Лента отгоре за състояние на СЕБЕ СИ (повреден конфиг, върви от копие). Стои
+   ПРЕДИ съдържанието и не се скролва настрани — човек трябва да я види, преди
+   да настрои нещо върху конфиг, който не е този на диска. */
+.banner {
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin: 12px 16px 0;
+  line-height: 1.45;
+}
+.banner-warn {
+  background: color-mix(in srgb, var(--warn, #e0a33e) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn, #e0a33e) 55%, transparent);
+}
+

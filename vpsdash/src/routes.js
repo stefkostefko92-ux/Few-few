@@ -492,6 +492,10 @@ export function buildRouter(ctx) {
         peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name })),
         totpEnabled: Boolean(cfg.totp?.enabled),
         recoveryLeft: (cfg.totp?.recoveryHashes || []).length,
+        // Панелът върви от резервния конфиг → лентата отгоре го КАЗВА. Тихото
+        // възстановяване би скрило, че запис се е провалил, и човек би работил
+        // със стари настройки, вярвайки, че са текущите.
+        recovered: cfg.recovered || null,
       }))
     )
   );

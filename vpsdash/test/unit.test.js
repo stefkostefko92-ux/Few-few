@@ -18,6 +18,10 @@ import {
 import { Router } from '../src/httpd.js';
 import { assertUnit } from '../src/services.js';
 import { KNOWN_PROJECTS } from '../src/deploy.js';
+import { loadConfig } from '../src/config.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 test('парола: хеш и проверка', () => {
   const h = hashPassword('таен-парол-123');
@@ -146,4 +150,47 @@ test('конфиг: СЧУПЕН файл НЕ става копие (иначе
   const bak = JSON.parse(fsx.readFileSync(file + '.bak', 'utf8'));
   assert.equal(bak.passwordHash, 'ДОБРОТО', 'старото добро копие НЕ е презаписано с боклук');
   fsx.rmSync(dir, { recursive: true, force: true });
+});
+
+// ── Повреден конфиг: панелът върви от копието, но го КАЗВА ────────────────────
+test('конфиг: повреденият се възстановява от .bak, шумно и без презапис', () => {
+  // Точно в момента, в който конфигът е повреден (спряло захранване насред
+  // запис, пълен диск), панелът е най-нужен — без него човек не вижда нищо.
+  // Копието се пишеше, но НИКОЙ не го четеше: панелът умираше до спасението си.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-cfg-'));
+  const cfgPath = path.join(dir, 'config.json');
+  const good = {
+    passwordHash: 'x'.repeat(40),
+    sessionSecret: 's'.repeat(64),
+    nodeName: 'ДОБЪР',
+    paths: { stateDir: path.join(dir, 'state') },
+  };
+  fs.writeFileSync(`${cfgPath}.bak`, JSON.stringify(good));
+  fs.writeFileSync(cfgPath, '{"passwordHash":"x'); // отрязан по средата
+
+  const cfg = loadConfig({ configPath: cfgPath, allowDev: false });
+  assert.equal(cfg.nodeName, 'ДОБЪР', 'върви от копието');
+  assert.ok(cfg.recovered, 'и го КАЗВА — тихото възстановяване крие провалил се запис');
+  assert.match(cfg.recovered.from, /\.bak$/);
+  assert.equal(fs.readFileSync(cfgPath, 'utf8'), '{"passwordHash":"x', 'повреденият файл е ДОКАЗАТЕЛСТВО — не се пипа');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('конфиг: и копието да е негодно → падаме с ПЪРВОНАЧАЛНАТА причина', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-cfg2-'));
+  const cfgPath = path.join(dir, 'config.json');
+  fs.writeFileSync(cfgPath, 'боклук');
+  fs.writeFileSync(`${cfgPath}.bak`, 'също боклук');
+  assert.throws(() => loadConfig({ configPath: cfgPath, allowDev: false }), /Невалиден конфиг/);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('конфиг: копие БЕЗ passwordHash не се брои за спасение', () => {
+  // Иначе „възстановяването" би вдигнало панел без парола.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-cfg3-'));
+  const cfgPath = path.join(dir, 'config.json');
+  fs.writeFileSync(cfgPath, '{отрязан');
+  fs.writeFileSync(`${cfgPath}.bak`, JSON.stringify({ sessionSecret: 's'.repeat(64), nodeName: 'БЕЗ ПАРОЛА' }));
+  assert.throws(() => loadConfig({ configPath: cfgPath, allowDev: false }), /Невалиден конфиг/);
+  fs.rmSync(dir, { recursive: true, force: true });
 });
