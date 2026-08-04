@@ -18,6 +18,10 @@ import {
 } from "@/lib/ip";
 import { bestCountry, lookup, type LookupReport } from "@/lib/lookup";
 import { capabilities, isInvestigationMode } from "@/lib/mode";
+import { readCaseContext } from "@/lib/case-context";
+import { appendAudit } from "@/lib/audit";
+import CaseGate from "@/components/CaseGate";
+import FreezeButton from "@/components/FreezeButton";
 
 interface PageProps {
   params: Promise<{ ip: string }>;
@@ -147,7 +151,38 @@ function LocalAnalysis({ ip }: { ip: ParsedIp }) {
 // ── Мрежово: това, за което трябва да питаме други ────────────────────────
 
 async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
+  // В следствен режим справка без обосновка изобщо не тръгва: одиторският
+  // запис я изисква, а обосновка след видян резултат не е обосновка.
+  const caseContext = isInvestigationMode() ? await readCaseContext() : null;
+  if (isInvestigationMode() && !caseContext) {
+    return (
+      <Card
+        title="Преди справката"
+        hint="Всяка справка се записва в одиторския дневник заедно с основанието си."
+      >
+        <CaseGate />
+      </Card>
+    );
+  }
+
   const report = await lookup(ip);
+
+  if (caseContext) {
+    // Записва се СЛЕД справката, защото едва тогава се знае кои източници са
+    // отговорили — а точно те са проследимостта.
+    appendAudit({
+      ts: new Date().toISOString(),
+      actor: caseContext.session.sub,
+      actorUnit: caseContext.session.unit,
+      actorRole: caseContext.session.role,
+      action: "справка",
+      justification: caseContext.justification,
+      query: ip.normalized,
+      sources: [report.rdap, report.origin, report.ptr, report.provider, report.reputation, report.geoip]
+        .filter((source) => source?.status === "ok")
+        .map((source) => source!.source),
+    });
+  }
 
   if (!report.local.globallyRoutable) {
     return (
@@ -375,6 +410,12 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
       {/* Каква следа остави самата справка. Първото нещо, което разследващият
           трябва да види — не последното. */}
       {isInvestigationMode() ? <OpsecNotice report={report} /> : null}
+
+      {isInvestigationMode() ? (
+        <Card title="Замразяване за преписка">
+          <FreezeButton ip={ip.normalized} />
+        </Card>
+      ) : null}
 
       {/* Следствената справка е САМО за вътрешното издание. В публичния режим
           не се рендира изобщо — не е скрита с CSS, а изобщо не съществува в

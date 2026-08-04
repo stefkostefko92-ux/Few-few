@@ -60,6 +60,17 @@ npm run lint && npm run typecheck && npm test && npm run build
 | `IPLOOKUP_GEOIP_DB` | няма | Път до DB-IP City Lite. Свали я с `node scripts/fetch-geoip.mjs`. Без нея справката работи без гео слой. |
 | `IPLOOKUP_MODE` | `public` | `investigation` включва следствената справка и ИЗКЛЮЧВА издайническите източници. |
 | `IPLOOKUP_ALLOW_GEOFEED` · `IPLOOKUP_ALLOW_PROBE` | изключени | Отключват съответно geofeed и активната проверка в следствен режим. И двете уведомяват външна страна. |
+| `IPLOOKUP_SESSION_SECRET` | няма | Задължителна в следствен режим. Без нея входът връща 503. |
+| `IPLOOKUP_USERS_FILE` · `IPLOOKUP_AUDIT_DIR` · `IPLOOKUP_EVIDENCE_DIR` | `data/…` | Служители, одиторски дневник, замразени артефакти. |
+
+### Следствено издание — пускане
+
+```bash
+node scripts/add-user.mjs ivanov "Иван Иванов" "РПУ Дупница" operator
+node scripts/verify-audit.mjs        # проверява веригата на дневника
+```
+
+Пълните изисквания и какво още липсва: `SECURITY.md` → „Следствено издание“.
 
 Няма API ключове. Продуктът работи изцяло с безплатни, публични източници,
 разрешени за търговска употреба — списъкът и забраните са в `CLAUDE.md`.
