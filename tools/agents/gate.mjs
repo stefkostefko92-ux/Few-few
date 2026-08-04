@@ -49,6 +49,7 @@ const CHECKS = [
   { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
   { id: "version-freshness", desc: "версиите, които агентите цитират, са сверени в TTL (не 2–3 годишни спомени)", cmd: ["tools/agents/version-freshness.mjs", "--check"] },
+  { id: "memory-freshness", desc: "паметта има срок на годност (опашка за пресверяване, не еднократна сверка)", cmd: ["tools/agents/memory-freshness.mjs", "--check"] },
   { id: "claims-audit", desc: "правни/таксономични твърдения сверени в TTL + карта на зависимостта цяла", cmd: ["tools/agents/claims-audit.mjs", "--check"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
