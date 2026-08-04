@@ -199,6 +199,41 @@ test('невалиден вход дава 4xx, не 5xx (и нищо не из�
   assert.deepEqual(failures, [], 'невалиден вход не бива да е 5xx:\n' + failures.join('\n'));
 });
 
+// Тяло, което не е JSON ОБЕКТ, е грешка на подателя — не 500. `null`, `0`,
+// `"низ"` и `[]` са валиден JSON, но всеки маршрут после прави `body.поле` и
+// получава TypeError. Намерено с фузинг на 267 тела.
+test('тяло, което не е обект, дава 400 (не 500)', async () => {
+  const failures = [];
+  for (const raw of ['null', '0', '"низ"', '[]', 'true']) {
+    const res = await fetch(BASE + '/api/alerts/settings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-csd': '1', cookie, origin: BASE },
+      body: raw,
+    });
+    if (res.status !== 400) failures.push(`${raw} → ${res.status} (очаквано 400)`);
+  }
+  assert.deepEqual(failures, [], failures.join('\n'));
+});
+
+// „Записано" трябва да значи ЗАПИСАНО. Тяло с непознат формат минаваше през
+// избирателния patch без нито едно приложено поле и връщаше `ok: true` —
+// човекът вижда „готово", а прагът е стар.
+test('настройка, която НИЩО не е приложила, не се обявява за успех', async () => {
+  const H = { 'content-type': 'application/json', 'x-csd': '1', cookie, origin: BASE };
+  const bad = await fetch(BASE + '/api/alerts/settings', {
+    method: 'POST', headers: H, body: JSON.stringify({ thresholds: { diskPct: 5 } }), // липсва обвивката alerts
+  });
+  assert.equal(bad.status, 400, 'непознат формат трябва да е 400');
+  assert.match(await bad.text(), /Нищо не е разпознато/);
+
+  const good = await fetch(BASE + '/api/alerts/settings', {
+    method: 'POST', headers: H, body: JSON.stringify({ alerts: { thresholds: { diskPct: 79 } } }),
+  });
+  assert.equal(good.status, 200);
+  const body = JSON.parse(await good.text());
+  assert.deepEqual(body.applied, ['diskPct'], 'отговорът КАЗВА кое поле е приложено');
+});
+
 test('без сесия всичко е 401', async () => {
   for (const route of ['/api/overview', '/api/kernel', '/api/forecast', '/api/sessions', '/api/audit']) {
     const res = await fetch(BASE + route);

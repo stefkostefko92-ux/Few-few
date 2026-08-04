@@ -489,7 +489,7 @@ async function renderOverview() {
   const info = ov.info;
 
   view.innerHTML = '';
-  const rangeSel = el('select', {}, (hist.ranges || ['24h']).map((k) => el('option', { value: k, text: 'история: ' + k })));
+  const rangeSel = el('select', { 'aria-label': 'Период на историята' }, (hist.ranges || ['24h']).map((k) => el('option', { value: k, text: 'история: ' + k })));
   rangeSel.value = hist.range || range;
   rangeSel.onchange = () => {
     state.range = rangeSel.value;
@@ -1351,7 +1351,7 @@ function notifyChannelsCard(a) {
   const sev = {};
   const sevSel = (chan) => {
     const cur = (a.minSeverity || {})[chan] || '';
-    const s = el('select', { style: 'width:130px' }, [
+    const s = el('select', { style: 'width:130px', 'aria-label': 'Праг за известяване' }, [
       el('option', { value: '', text: 'всичко', selected: cur === '' }),
       el('option', { value: 'warning', text: '⚠ и по-тежко', selected: cur === 'warning' }),
       el('option', { value: 'critical', text: '🔴 само критично', selected: cur === 'critical' }),
@@ -2439,7 +2439,7 @@ function journalVacuum() {
 }
 
 function scanCard(d) {
-  const sel = el('select', {}, d.roots.map((r) => el('option', { value: r, text: r })));
+  const sel = el('select', { 'aria-label': 'Коренова папка за сканиране' }, d.roots.map((r) => el('option', { value: r, text: r })));
   const depth = el('input', { type: 'number', min: '1', max: '4', value: '2', style: 'width:70px' });
   const minMB = el('input', { type: 'number', min: '1', max: '102400', value: '50', style: 'width:90px' });
   const s = d.scan || {};
@@ -2566,7 +2566,7 @@ async function renderPorts() {
 // Смяна на порта на продукт — план, после прилагане.
 function portChangeCard(d) {
   const products = [...new Set(d.rows.map((r) => r.owner).filter((o) => o && o !== 'самият панел' && o !== 'десктоп'))];
-  const sel = el('select', { style: 'max-width:200px' }, [
+  const sel = el('select', { style: 'max-width:200px', 'aria-label': 'Избор' }, [
     el('option', { value: '', text: products.length ? '— избери продукт —' : '(няма познати продукти)' }),
     ...products.map((p) => el('option', { value: p, text: p })),
   ]);
@@ -2659,8 +2659,8 @@ async function renderFirewall() {
   // Добавяне на правило
   const f = {};
   const mk = (k, ph, w) => { const i = el('input', { type: 'text', placeholder: ph, style: `width:${w}` }); f[k] = i; return i; };
-  const actionSel = el('select', {}, ['allow', 'deny', 'reject', 'limit'].map((a) => el('option', { value: a, text: a })));
-  const protoSel = el('select', {}, [el('option', { value: '', text: 'без протокол' }), el('option', { value: 'tcp', text: 'tcp' }), el('option', { value: 'udp', text: 'udp' })]);
+  const actionSel = el('select', { 'aria-label': 'Действие на правилото' }, ['allow', 'deny', 'reject', 'limit'].map((a) => el('option', { value: a, text: a })));
+  const protoSel = el('select', { 'aria-label': 'Протокол' }, [el('option', { value: '', text: 'без протокол' }), el('option', { value: 'tcp', text: 'tcp' }), el('option', { value: 'udp', text: 'udp' })]);
   view.appendChild(
     el('div', { class: 'card', style: 'margin-top:14px' }, [
       el('h3', { text: 'Ново правило' }),
@@ -3047,7 +3047,7 @@ function measureCols(container) {
 // ── Процеси ────────────────────────────────────────────────────────────────────────
 async function renderProcesses() {
   const view = document.getElementById('view');
-  const sortSel = el('select', {}, [
+  const sortSel = el('select', { 'aria-label': 'Подредба' }, [
     el('option', { value: 'cpu', text: 'Подреди по CPU' }),
     el('option', { value: 'mem', text: 'Подреди по памет' }),
   ]);
@@ -3108,7 +3108,7 @@ async function renderLogs() {
   const view = document.getElementById('view');
   view.innerHTML = '';
   const unit = el('input', { type: 'text', placeholder: 'unit (напр. medqr.service) — празно = всичко' });
-  const prio = el('select', {}, [
+  const prio = el('select', { 'aria-label': 'Ниво на журнала' }, [
     el('option', { value: '', text: 'всички нива' }),
     el('option', { value: '3', text: 'error+ (≤3)' }),
     el('option', { value: '4', text: 'warning+ (≤4)' }),
@@ -3219,7 +3219,7 @@ async function renderDeploy() {
     checks[p] = c;
     projBox.appendChild(el('label', { class: 'muted' }, [c, document.createTextNode(' ' + p)]));
   }
-  const archSel = el('select', {}, [
+  const archSel = el('select', { 'aria-label': 'Архив' }, [
     el('option', { value: '', text: 'най-нов архив (авто)' }),
     ...st.archives.map((a) => el('option', { value: a.name, text: `${a.name} · ${fmtBytes(a.sizeBytes)}` })),
   ]);
@@ -4100,7 +4100,7 @@ async function renderInvestigate(at = null, windowMin = 30) {
   view.innerHTML = '';
 
   const when = el('input', { type: 'datetime-local', value: toLocalInput(d.at) });
-  const win = el('select', {}, [15, 30, 60, 180, 720].map((m) =>
+  const win = el('select', { 'aria-label': 'Прозорец във времето' }, [15, 30, 60, 180, 720].map((m) =>
     el('option', { value: String(m), text: m < 60 ? `± ${m} мин` : `± ${m / 60} ч`, selected: m === d.windowMin })
   ));
   view.appendChild(
@@ -4375,7 +4375,7 @@ async function renderRedis() {
 function quotaCard(q) {
   const quota = el('input', { type: 'number', min: '0', max: '10000', step: '0.5', placeholder: 'без квота', style: 'width:120px' });
   if (q.quotaTB != null) quota.value = String(q.quotaTB);
-  const dir = el('select', {}, [
+  const dir = el('select', { 'aria-label': 'Посока' }, [
     ['tx', 'изходящ (както таксува Hetzner)'],
     ['rx', 'входящ'],
     ['both', 'двете посоки'],

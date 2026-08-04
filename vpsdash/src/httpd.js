@@ -94,11 +94,22 @@ export async function readBody(req, { limit = 512 * 1024 } = {}) {
 export async function readJson(req) {
   const buf = await readBody(req);
   if (!buf.length) return {};
+  let parsed;
   try {
-    return JSON.parse(buf.toString('utf8'));
+    parsed = JSON.parse(buf.toString('utf8'));
   } catch {
     throw Object.assign(new Error('Невалиден JSON'), { status: 400 });
   }
+  // `null`, `0`, `"низ"` и `[]` са ВАЛИДЕН JSON, но не са тяло на заявка. Всеки
+  // маршрут после прави `body.поле` и получава TypeError → 500 „Вътрешна грешка".
+  // Това е същата лъжа като при системните грешки: вината е на подателя, а 5xx
+  // хранят SLO и алармата за процент грешки. Празният обект е и по-безопасната
+  // стойност: маршрутът вижда липсващи полета и си вдига своята 400 с обяснение,
+  // вместо да гръмне на първото четене.
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw Object.assign(new Error('Тялото трябва да е JSON обект.'), { status: 400 });
+  }
+  return parsed;
 }
 
 export function parseCookies(req) {

@@ -1477,4 +1477,13 @@ export const ENTRIES = [
   ['Всяко устройство, което е влязло и още има валиден токен. НЕПОЗНАТА сесия тук е сигнал за пробив — отмяната ѝ преживява рестарт на панела.', 'Every device that has signed in and still holds a valid token. An UNKNOWN session here is a breach signal — revoking it survives a panel restart.', 'Ogni dispositivo che ha effettuato l’accesso e ha ancora un token valido. Una sessione SCONOSCIUTA qui è un segnale di violazione — la revoca sopravvive a un riavvio del pannello.'],
   ['Бездействие', 'Idle timeout', 'Inattività'],
   ['таван на сесията', 'session cap', 'limite di sessione'],
+  ['Период на историята', 'History range', 'Intervallo di cronologia'],
+  ['Праг за известяване', 'Notification threshold', 'Soglia di notifica'],
+  ['Коренова папка за сканиране', 'Root folder to scan', 'Cartella radice da scansionare'],
+  ['Избор', 'Selection', 'Selezione'],
+  ['Действие на правилото', 'Rule action', 'Azione della regola'],
+  ['Протокол', 'Protocol', 'Protocollo'],
+  ['Подредба', 'Sort order', 'Ordinamento'],
+  ['Ниво на журнала', 'Log level', 'Livello del log'],
+  ['Прозорец във времето', 'Time window', 'Finestra temporale'],
 ];

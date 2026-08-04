@@ -360,3 +360,21 @@ tr.row-before td { background: rgba(255, 180, 84, 0.05); }
 }
 .ico-img.ico-gap { margin-right: 0.4em; }
 .icon-btn .ico-img { width: 20px; height: 20px; vertical-align: middle; }
+
+/* ── Пръст вместо мишка ────────────────────────────────────────────────────
+   WCAG 2.2 (2.5.8) иска минимум 24×24 CSS px и това беше спазено — но 24 е
+   ПРАГЪТ, не удобството. Apple препоръчва 44pt, Material 48dp, а този панел се
+   отваря най-често точно когато нещо гори и човекът е с телефон в ръка. Затова
+   на тесен екран целите растат; на десктоп нищо не се променя (там показалецът
+   е точен и по-големите бутони само ядат място).
+   Пипаме padding и min-height, НЕ font-size: шрифтът е част от плътността на
+   информацията, а тя на телефон и без това е на тясно. */
+@media (max-width: 820px) {
+  .btn-sm { padding: 9px 14px; min-height: 38px; }
+  .icon-btn { padding: 9px 12px; min-height: 38px; min-width: 38px; }
+  .lang-btn { padding: 9px 12px; min-height: 38px; }
+  /* Съседни бутони в лента се разделят, за да не се уцелва грешният. */
+  .toolbar { gap: 10px; }
+  /* Чекбоксовете в таблиците са най-малката цел изобщо. */
+  input[type="checkbox"] { width: 20px; height: 20px; }
+}
