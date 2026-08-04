@@ -8,7 +8,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { audit, agentIds, productDirs, brokenToolRefs, brokenOwnedMemPaths, execWithoutBash } from "./deep-audit.mjs";
@@ -172,4 +172,26 @@ test("execWithoutBash: no-Bash агент с DoD команда → находк
   assert.deepEqual(execWithoutBash(md, "Read, Bash, Grep"), []);
   // никаква команда → нула
   assert.deepEqual(execWithoutBash("- просто одит без инструменти", "Read"), []);
+});
+
+// ── Кръг 9 (2026-08-04): дефиницията не бива да сочи към агент/умение, което не съществува ──────
+// Проверено на живо: 169 пътя в 28-те дефиниции → 0 липсващи; 0 препратки към несъществуващ агент;
+// 0 към несъществуващо умение. Тоест кръгът НЕ поправя — заковава празнина в покритието.
+// `drift-lint` пази БРОЙКАТА на екипа и файловите пътища, но НЕ имената: преименуване на агент или
+// умение (имали сме такова: `claude-uchitel` → `uchitel`) би оставило мъртва препратка в чужда
+// дефиниция, а делегирането „възложи на агента X" мълчаливо няма адресат.
+test("нито една дефиниция не сочи към несъществуващ АГЕНТ или УМЕНИЕ", () => {
+  const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+  const names = new Set((reg.agents || reg).map((a) => a.name).filter(Boolean));
+  const skillsDir = join(ROOT, ".claude", "skills");
+  const skills = new Set(readdirSync(skillsDir).filter((f) => existsSync(join(skillsDir, f, "SKILL.md"))));
+  const bad = [];
+  for (const f of readdirSync(join(ROOT, ".claude", "agents")).filter((x) => x.endsWith(".md") && !x.startsWith("_") && x !== "README.md")) {
+    const src = readFileSync(join(ROOT, ".claude", "agents", f), "utf8");
+    for (const m of src.matchAll(/агент[аът]{1,2}\s+\*{0,2}([А-Я][а-яА-Я-]+)/g))
+      if (!names.has(m[1])) bad.push(`${f}: „агентът ${m[1]}" не е в регистъра`);
+    for (const m of src.matchAll(/(?:skill|умение(?:то)?)\s+\*{0,2}`?([a-z][a-z0-9-]{2,})`?/gi))
+      if (!skills.has(m[1])) bad.push(`${f}: умение „${m[1]}" няма SKILL.md`);
+  }
+  assert.deepEqual([...new Set(bad)], [], "мъртви препратки в дефиниции:\n  " + bad.join("\n  "));
 });
