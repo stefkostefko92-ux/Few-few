@@ -32,8 +32,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       # Нула зависимости → без npm ci и без npm кеш (няма lockfile).
-      - run: npm run lint
-      - run: npm test
+      # ЕДНА команда: съставът на гейта живее в scripts/gate.mjs, не тук. Точно
+      # такова дублиране дрейфва — CI-ят тихо става по-слаб от локалния гейт.
+      # Браузърните проверки се пропускат сами, ако Playwright липсва.
+      - run: npm run gate
       # Проверка, че деплой скриптовете са валиден bash + минават deploy-check.
       - name: bash syntax
         run: bash -n deploy/install.sh

@@ -18,16 +18,26 @@ Docker, процеси, journal логове, деплой (по канона н
 ## Команди (quality gate)
 ```bash
 cd vpsdash
-npm run lint     # node --check на всеки .js/.mjs (scripts/syntax-check.mjs)
-npm test         # node --test test/*.test.js
-npm run sweep    # браузърна обиколка на 37-те секции (иска Playwright)
-npm run degraded # машина БЕЗ инструменти: гърми ли, лъже ли с „нула проблема"
-npm run a11y     # достъпност в браузър: имена, контраст, цели ≥24px, фокус, lang
-npm run corrupt  # счупени собствени файлове: вдига ли се панелът и казва ли го
+npm run gate     # ПЪЛНИЯТ гейт — това пускаш преди commit/PR (~80 s)
+node scripts/gate.mjs --list   # какъв е съставът му
 npm start        # прод (иска /etc/vps-dashboard/config.json)
 npm run dev      # CSD_DEV=1 — ефимерен конфиг + еднократна парола в конзолата
 ```
-Гейтът е `npm run lint && npm test`. Пусни го преди commit/PR.
+Отделните проверки (за когато искаш само една):
+```bash
+npm run lint     # node --check на всеки .js/.mjs
+npm test         # node --test test/*.test.js
+npm run degraded # машина БЕЗ инструменти: гърми ли, лъже ли с „нула проблема"
+npm run corrupt  # счупени собствени файлове: вдига ли се панелът и казва ли го
+npm run sweep    # 37-те секции × 3 езика в истински Chromium (иска Playwright)
+npm run a11y     # достъпност: имена, контраст, цели ≥24px, фокус, lang
+```
+**Един гейт, едно място.** Съставът живее в `scripts/gate.mjs`, а
+`.github/workflows/vpsdash.yml` само го ВИКА (`npm run gate`). Не преписвай
+проверки в YAML — точно това дрейфва: CI-ят тихо става по-слаб от локалния
+гейт и никой не забелязва, докато не мине счупена промяна. `test/gate.test.js`
+пази да не се случи. Двете браузърни проверки се пропускат сами (изход 0), ако
+Playwright липсва — на CI-я е така.
 
 **Обиколката минава и на ТРИТЕ езика.** Преводът се закача само в `el()`/`toast()`,
 значи български проход не вижда нищо — там всеки низ е и ключ, и стойност.
@@ -161,6 +171,8 @@ public/                  index.html · app.js · ui.js · ansi.js · style.css
                          icons/ (PNG комплект на собственика: act-* за бутоните
                          през GLYPH_ICONS в ui.js · nav-* за секциите през
                          img: в SECTIONS · ui-* за топбара в index.html)
+scripts/gate.mjs         ПЪЛНИЯТ гейт (--list показва състава) — CI-ят вика САМО
+                         него; проверка не се преписва в YAML
 scripts/syntax-check.mjs zero-dep линтер
 scripts/ui-sweep.mjs     браузърна обиколка на всички секции (гейт срещу счупен
                          рендер; собствена врата CSD_SWEEP_PORT, по подр. 7791)
