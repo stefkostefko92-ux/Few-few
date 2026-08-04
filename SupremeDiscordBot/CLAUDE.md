@@ -1,11 +1,11 @@
-# SupremeDiscordBot/ — Supreme Bot (Discord SaaS)
+# supreme/ — Supreme Bot (Discord SaaS)
 
 Multi-tenant Discord bot management SaaS: ticket systems, forms, applications, AI
 auto-replies, round-robin assignment, white-label custom bots, Stripe
 subscriptions. Root rules live in the repo-root `CLAUDE.md`.
 
 _Stack: Node.js **plain JS (ESM)** · Express · discord.js v14 · React 18 + Vite ·
-Prisma + PostgreSQL · Redis · Docker · nginx. Three packages under `SupremeDiscordBot/`:
+Prisma + PostgreSQL · Redis · Docker · nginx. Three packages under `supreme/`:
 `backend/` (API), `bot/` (Discord gateway), `frontend/` (React SPA)._
 
 ## Commands (each package has its own; `cd` into it)
@@ -43,6 +43,6 @@ Full stack + Postgres + Redis come up via `docker-compose.yml`. See `README.md`
 - **Secrets at rest:** Discord OAuth tokens are encrypted; fail-fast on placeholder
   secrets (never ship `POSTGRES_PASSWORD=changeme`). Init Sentry before instrumented
   libs (`instrument.js`).
-- Legal/compliance artifacts live in `SupremeDiscordBot/legal/` (DPA, RoPA, breach procedure).
+- Legal/compliance artifacts live in `supreme/legal/` (DPA, RoPA, breach procedure).
 - Deployment: Docker Compose; ports bind to `127.0.0.1` only, TLS terminated by a
   host reverse proxy.
