@@ -16,8 +16,8 @@ import {
   specialRange,
   type ParsedIp,
 } from "@/lib/ip";
-import { bestCountry, lookup } from "@/lib/lookup";
-import { isInvestigationMode } from "@/lib/mode";
+import { bestCountry, lookup, type LookupReport } from "@/lib/lookup";
+import { capabilities, isInvestigationMode } from "@/lib/mode";
 
 interface PageProps {
   params: Promise<{ ip: string }>;
@@ -339,6 +339,10 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
         </Card>
       ) : null}
 
+      {/* Каква следа остави самата справка. Първото нещо, което разследващият
+          трябва да види — не последното. */}
+      {isInvestigationMode() ? <OpsecNotice report={report} /> : null}
+
       {/* Следствената справка е САМО за вътрешното издание. В публичния режим
           не се рендира изобщо — не е скрита с CSS, а изобщо не съществува в
           отговора. */}
@@ -351,12 +355,14 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
         </Card>
       ) : null}
 
-      <Card
-        title="Активна проверка"
-        hint="Всичко по-горе е справка в регистри — никой не научава, че си питал. Това под тук е различно."
-      >
-        <ActiveProbe ip={ip.normalized} />
-      </Card>
+      {capabilities().activeProbe ? (
+        <Card
+          title="Активна проверка"
+          hint="Всичко по-горе е справка в регистри. Това под тук се свързва с адреса и отсрещната страна го вижда."
+        >
+          <ActiveProbe ip={ip.normalized} />
+        </Card>
+      ) : null}
 
       <p className="text-xs text-text-faint">Справката отне {report.totalMs} ms.</p>
     </div>
@@ -392,6 +398,55 @@ function CountryLocation({ code }: { code: string }) {
         Канзас — грешка, която не повтаряме.
       </p>
     </>
+  );
+}
+
+/**
+ * Оперативната следа на справката.
+ *
+ * Всяка жива заявка казва на някого, че този адрес е бил проверен. При
+ * разследване това не е дребна подробност — регистрите са извън ЕС и логват, а
+ * geofeed заявката отива право при оператора на проверявания. Затова тук се
+ * изброява какво точно е напуснало сървъра, вместо да се предполага, че
+ * потребителят знае как работи вътрешността.
+ */
+function OpsecNotice({ report }: { report: LookupReport }) {
+  const allowed = capabilities();
+  const live: string[] = [];
+  if (report.rdap?.status !== "empty" && report.rdap?.ms) {
+    live.push(`${report.rdap.source} — регистърът вижда, че адресът е проверен, и логва заявката`);
+  }
+  if (report.origin?.ms) live.push(`${report.origin.source} — DNS заявка към трета страна`);
+  if (report.ptr?.ms) live.push(`${report.ptr.source} — DNS заявка, обикновено към зоната на оператора`);
+  if (allowed.geofeed && report.geofeed?.ms) {
+    live.push(`${report.geofeed.source} — заявката отиде ПРЯКО на сървъра на оператора`);
+  }
+
+  return (
+    <Card title="Оперативна следа на тази справка">
+      <ul className="space-y-1.5 text-sm text-text-muted">
+        {live.map((entry) => (
+          <li key={entry}>· {entry}</li>
+        ))}
+      </ul>
+      <p className="mt-3 text-sm text-text-muted">
+        Списъците с диапазони и репутация са изтеглени наведнъж и се четат локално — те не издават
+        конкретния адрес.
+      </p>
+      {!allowed.geofeed || !allowed.activeProbe ? (
+        <p className="mt-3 text-sm text-ok">
+          <span aria-hidden="true">✔</span> Изключени в този режим:{" "}
+          {[!allowed.geofeed ? "geofeed" : null, !allowed.activeProbe ? "активна проверка" : null]
+            .filter(Boolean)
+            .join(", ")}{" "}
+          — двете щяха да уведомят съответно оператора и самата цел.
+        </p>
+      ) : null}
+      <p className="mt-3 text-xs text-text-faint">
+        Справките към регистрите напускат ЕС (ARIN, APNIC). Ако това е недопустимо за конкретното
+        производство, работи само с локалния анализ.
+      </p>
+    </Card>
   );
 }
 

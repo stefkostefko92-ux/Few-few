@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { clientIpOptionsFromEnv, pickClientIp } from "@/lib/client-ip";
 import { isGloballyRoutable, parseIp } from "@/lib/ip";
+import { capabilities } from "@/lib/mode";
 import { RateLimiter } from "@/lib/rate-limit";
 import { probe } from "@/lib/sources/probe";
 
@@ -30,6 +31,19 @@ const Body = z.object({
 });
 
 export async function POST(request: Request) {
+  // Активната проверка отваря връзка към целта — тя вижда адреса на нашия
+  // сървър. В следствен режим това демаскира разследването, затова е изключена
+  // по подразбиране и се отключва само с изрично решение на органа.
+  if (!capabilities().activeProbe) {
+    return NextResponse.json(
+      {
+        error:
+          "Активната проверка е изключена в този режим: тя се свързва с целта и издава проверката. Включва се с IPLOOKUP_ALLOW_PROBE=1.",
+      },
+      { status: 403 },
+    );
+  }
+
   const options = clientIpOptionsFromEnv();
   const client = pickClientIp((name) => request.headers.get(name), options);
   // Няма ли разпознаваем адрес, всички такива заявки делят една кофа — по-добре

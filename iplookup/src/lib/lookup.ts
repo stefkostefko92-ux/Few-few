@@ -17,6 +17,7 @@ import { lookupGeofeed, type GeofeedEntry } from "./sources/geofeed";
 import { lookupProvider, type ProviderInfo } from "./sources/ranges";
 import { lookupReputation, type Reputation } from "./sources/reputation";
 import { geofeedUrlFrom, lookupRdap, type RdapNetwork } from "./sources/rdap";
+import { capabilities } from "./mode";
 
 /**
  * Сглобява пълната справка за един адрес.
@@ -83,7 +84,20 @@ export async function lookup(ip: ParsedIp): Promise<LookupReport> {
     lookupReputation(ip),
   ]);
 
-  const geofeed = await lookupGeofeed(ip, rdap.data ? geofeedUrlFrom(rdap.data) : null);
+  // Geofeed заявката отива ПРАВО на сървъра на оператора на търсения адрес —
+  // тоест издава, че някой проверява точно този префикс. В следствен режим това
+  // е оперативен теч и се прави само при изрично разрешение на органа.
+  const allowed = capabilities();
+  const geofeed = allowed.geofeed
+    ? await lookupGeofeed(ip, rdap.data ? geofeedUrlFrom(rdap.data) : null)
+    : {
+        status: "empty" as const,
+        message:
+          "Geofeed не беше изтеглен: заявката щеше да отиде директно на сървъра на оператора на този адрес и да издаде проверката. Включва се с IPLOOKUP_ALLOW_GEOFEED=1.",
+        source: "Geofeed на оператора (RFC 8805)",
+        sourceUrl: "https://www.rfc-editor.org/rfc/rfc8805.html",
+        ms: 0,
+      };
 
   return { ip, local, rdap, origin, ptr, provider, reputation, geofeed, totalMs: Date.now() - started };
 }
