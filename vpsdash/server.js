@@ -363,6 +363,13 @@ const server = http.createServer(async (req, res) => {
       statics(req, res, '/index.html');
       return;
     }
+    // Непознат `/api/*` път на НЕвписан заявител отговаря 401, не 404. Иначе
+    // разликата между двата кода е карта на API-то: чукаш наред и виждаш кое
+    // съществува, без нито веднъж да си доказал кой си. За ВПИСАН човек 404 си
+    // остава 404 — там е полезно при търсене на грешка.
+    if (url.pathname.startsWith('/api/') && !router.authenticate(req)) {
+      return sendError(res, 401, 'Не си вписан.');
+    }
     sendError(res, 404, 'Няма такъв ресурс');
   } catch (err) {
     const status = Number(err?.status) || 500;

@@ -29,6 +29,7 @@
     "numbers": "node scripts/numbers-audit.mjs",
     "destructive": "node scripts/destructive-audit.mjs",
     "notify": "node scripts/notify-audit.mjs",
+    "peer": "node scripts/peer-audit.mjs",
     "degraded": "node scripts/degraded-audit.mjs",
     "a11y": "node scripts/a11y-audit.mjs",
     "corrupt": "node scripts/corrupt-audit.mjs",
