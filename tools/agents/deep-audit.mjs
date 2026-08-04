@@ -74,8 +74,14 @@ export function brokenToolRefs(text) {
 // граница, иначе `js` реже `versions.json`→`versions.js` (документиран FP, за малко да го повторя).
 const OWNED_INFRA = [/^\.claude\/hooks\//, /^\.claude\/agents\//, /^\.claude\/settings\.json$/,
   /^tools\/agents\//, /^tools\/hooks\//, /^tools\/lib\//, /^tools\/security\//, /^tools\/skills\//,
-  /^tools\/seo\//, /^tools\/qa\//, /^agents-dashboard\/[\w./-]+\.(?:mjs|js|json|html)$/];
-const MEM_PATH_RE = /([A-Za-z0-9_.\-]+(?:\/[A-Za-z0-9_.\-]+)+\.(?:jsonl|json|mjs|cjs|jsx|tsx|js|ts|md|sh|yml|yaml|css|html|txt)(?![A-Za-z0-9]))(?::[\d,\-]+)?/g;
+  /^tools\/seo\//, /^tools\/qa\//, /^agents-dashboard\/[\w./-]+\.(?:mjs|js|json|html)$/,
+  // Кръг 4 (2026-08-04): `deploy/` в КОРЕНА е наша, нискочурн папка — там няма upstream докове,
+  // затова е безопасна за гейтване. Реален случай: паметта на VPS-аджията сочеше
+  // `deploy/systemd/ospedali.service`, а файлът живее в `ospedalitrasparenti/deploy/systemd/`
+  // (продуктът беше преименуван). Съдържанието на поуката беше вярно — сгрешен беше пътят, и то
+  // в поука за ИНЦИДЕНТ (crash-loop status=31/SYS), когато точният път струва най-много.
+  /^deploy\//];
+const MEM_PATH_RE = /([A-Za-z0-9_.\-]+(?:\/[A-Za-z0-9_.\-]+)+\.(?:jsonl|json|mjs|cjs|jsx|tsx|js|ts|md|sh|yml|yaml|css|html|txt|service|conf)(?![A-Za-z0-9]|\.\w))(?::[\d,\-]+)?/g;
 export function brokenOwnedMemPaths(bulletText) {
   const noUrls = String(bulletText || "").replace(/https?:\/\/\S+/g, " ");
   const out = [];
