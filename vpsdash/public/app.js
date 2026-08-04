@@ -1,6 +1,6 @@
 // Carbon Stealth VPS Dashboard — клиент (vanilla ES modules, нула зависимости).
 import {
-  el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml,
+  el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml, pctHtml, memPctOf,
   registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
 } from './ui.js';
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
@@ -498,8 +498,8 @@ async function renderOverview() {
   view.appendChild(el('div', { class: 'toolbar' }, [rangeSel, el('span', { class: 'muted', text: `${state.hist.length} точки (пазят се 7 дни на диска)` })]));
   view.appendChild(
     el('div', { class: 'grid grid-metrics' }, [
-      metricCard('CPU', 'cpu', `${m.cpuPct.toFixed(0)}<small>%</small>`, `${info.cpus} ядра · load ${m.load.map((x) => x.toFixed(2)).join(' ')}`),
-      metricCard('Памет', 'mem', `${((m.mem.used / m.mem.total) * 100).toFixed(0)}<small>%</small>`, `${fmtBytes(m.mem.used)} / ${fmtBytes(m.mem.total)}`),
+      metricCard('CPU', 'cpu', pctHtml(m.cpuPct), `${info.cpus} ядра · load ${m.load.map((x) => x.toFixed(2)).join(' ')}`),
+      metricCard('Памет', 'mem', pctHtml(memPctOf(m.mem)), `${fmtBytes(m.mem.used)} / ${fmtBytes(m.mem.total)}`),
       metricCard('Мрежа ▼', 'rx', fmtBps(m.net.rxBps), `качване ▲ ${fmtBps(m.net.txBps)}`),
       metricCard('Диск', 'disk', `${Math.max(0, ...m.disks.map((d) => d.usePercent))}<small>%</small>`, m.disks.map((d) => `${d.mount} ${d.usePercent}%`).join(' · ')),
     ])
@@ -545,8 +545,8 @@ async function renderOverview() {
   drawSpark('spark-disk', state.hist.map((p) => p.diskMax), 100);
 
   startMetrics((snap) => {
-    setHtml('mc-cpu', `${snap.cpuPct.toFixed(0)}<small>%</small>`);
-    setHtml('mc-mem', `${((snap.mem.used / snap.mem.total) * 100).toFixed(0)}<small>%</small>`);
+    setHtml('mc-cpu', pctHtml(snap.cpuPct));
+    setHtml('mc-mem', pctHtml(memPctOf(snap.mem)));
     setHtml('mc-rx', fmtBps(snap.net.rxBps));
     setHtml('mc-disk', `${Math.max(0, ...snap.disks.map((d) => d.usePercent))}<small>%</small>`);
     pushHist(snap);

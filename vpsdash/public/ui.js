@@ -91,7 +91,11 @@ export function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
+// „—" за НЕИЗМЕРЕНО. `Number(null) || 0` даваше „0 B" — число, което изглежда
+// като измерено. Разликата личи най-ясно при мрежата: „0 B/s" значи „нищо не
+// минава", а „—" значи „още не знам" (първата проба след рестарт няма делта).
 export function fmtBytes(n) {
+  if (n === null || n === undefined || !Number.isFinite(Number(n))) return '—';
   n = Number(n) || 0;
   const u = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
   let i = 0;
@@ -103,7 +107,22 @@ export function fmtBytes(n) {
 }
 
 export function fmtBps(n) {
-  return fmtBytes(n) + '/s';
+  const b = fmtBytes(n);
+  return b === '—' ? b : b + '/s';
+}
+
+// Процент за плочките: `null` е „—", не „0%". Табло, което твърди 0% CPU,
+// докато не знае, е по-лошо от табло, което си признава.
+export function pctHtml(v) {
+  return typeof v === 'number' && Number.isFinite(v)
+    ? `${v.toFixed(0)}<small>%</small>`
+    : '<small>—</small>';
+}
+
+// Процент заета памет от ЖИВА снимка (историята има друга форма — виж
+// `memPercent` в src/history.js). Връща null, когато липсва измерване.
+export function memPctOf(mem) {
+  return mem && typeof mem.used === 'number' && mem.total ? (mem.used / mem.total) * 100 : null;
 }
 
 export function fmtUptime(sec) {

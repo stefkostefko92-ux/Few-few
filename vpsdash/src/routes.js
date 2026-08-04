@@ -696,7 +696,11 @@ export function buildRouter(ctx) {
             cpu: detectAnomaly(cpuSeries),
             memory: detectAnomaly(memSeries),
           },
-          changePoint: changePoint(points.map((p) => ({ x: p.ts, y: p.cpu ?? 0 }))),
+          // Липсващата стойност се ИЗХВЪРЛЯ, не се замества с 0: `?? 0` рисува
+          // отвесен спад до нулата на всяко място, където няма измерване (напр.
+          // първата точка след рестарт на панела), и детекторът съобщава
+          // „поведението се промени тогава" — сочейки собствения си рестарт.
+          changePoint: changePoint(points.map((p) => ({ x: p.ts, y: p.cpu })).filter((p) => typeof p.y === 'number')),
           basedOnPoints: points.length,
         };
       })
