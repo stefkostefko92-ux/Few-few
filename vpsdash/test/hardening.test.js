@@ -8,6 +8,7 @@ import path from 'node:path';
 import { clientIp, sendJson, openSse } from '../src/httpd.js';
 import { loginAllowed, loginFailed, _resetLoginLimiter } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
+import { run } from '../src/exec.js';
 import { redactSecrets, writeFile, readFilePreview } from '../src/files.js';
 import { loadConfig } from '../src/config.js';
 
@@ -192,4 +193,15 @@ test('ротацията НЕ вдига фалшива тревога за от
   audit.log({ action: 'след.ротация' });
   assert.equal(audit.verify().ok, true, 'ротацията не е подправяне');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// ── Заклещена команда: вторият удар не се игнорира ───────────────────────────
+test('exec: команда, която ИГНОРИРА SIGTERM, все пак умира', async () => {
+  // Таймаутът на `execFile` праща само SIGTERM. Процес с trap го преживява и
+  // остава завинаги — панелът го пуска пак на всяка проба и машината се задавя.
+  const t0 = Date.now();
+  const r = await run('sh', ['-c', 'trap "" TERM; sleep 30'], { timeout: 700 });
+  const dt = Date.now() - t0;
+  assert.equal(r.ok, false, 'заклещената команда не е успех');
+  assert.ok(dt < 5000, `трябва да умре от втория удар, а отне ${dt} ms`);
 });

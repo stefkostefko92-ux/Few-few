@@ -396,8 +396,42 @@ server.on('upgrade', (req, socket, head) => {
 server.headersTimeout = 30000;
 server.requestTimeout = 0; // SSE/дълги задачи
 
+// Провал при вдигане на вратата — с ИМЕ на проблема, не суров стек. Заетата
+// врата е най-честият случай (панелът вече върви) и от `Unhandled 'error' event`
+// не личи нито коя врата, нито че вината не е в кода.
+server.on('error', (err) => {
+  const where = `${cfg.host}:${cfg.port}`;
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n✘ Врата ${where} е заета — панелът най-вероятно вече върви.`);
+    console.error('  Провери: systemctl status vps-dashboard  ·  ss -ltnp | grep ' + cfg.port);
+  } else if (err.code === 'EACCES') {
+    console.error(`\n✘ Няма право да слушам на ${where} (врати под 1024 искат root).`);
+  } else if (err.code === 'EADDRNOTAVAIL') {
+    console.error(`\n✘ Адресът ${cfg.host} не съществува на тази машина — провери "host" в конфига.`);
+  } else {
+    console.error(`\n✘ Не мога да вдигна ${where}: ${err.message}`);
+  }
+  if (process.env.CSD_TRACE) console.error(err);
+  process.exit(1);
+});
+
 server.listen(cfg.port, cfg.host, () => {
   console.log(`▸ Carbon Stealth VPS Dashboard — http://${cfg.host}:${cfg.port} (${cfg.nodeName})`);
+});
+
+// Отказал ФОНОВ обещаващ код (проба, аларма, бекъп по график) не бива да сваля
+// панела: от Node 15 насам необработеното отхвърляне убива процеса, а панелът е
+// точно това, с което човек гледа какво става — да умре при инцидент е обратното
+// на целта. Затова: шумно в journald, но продължаваме. Ако ЦЕЛИЯТ процес е в
+// неизвестно състояние (`uncaughtException`), излизаме — systemd вдига наново от
+// чисто (Restart=on-failure, RestartSec=3).
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? reason.stack || reason.message : String(reason);
+  console.error(`⚠ Необработено отхвърляне (панелът продължава): ${msg}`);
+});
+process.on('uncaughtException', (err) => {
+  console.error(`✘ Необработено изключение — спирам, за да ме вдигне systemd: ${err.stack || err.message}`);
+  process.exit(1);
 });
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
