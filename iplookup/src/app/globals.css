@@ -56,6 +56,20 @@ body {
   }
 }
 
+/* Силуетът на континентите: един статичен файл, кеширан от браузъра, оцветен
+   от темата през CSS маска. През `<img>` това не би станало — външният CSS не
+   стига до документа на картинката. */
+.world-silhouette {
+  -webkit-mask-image: url("/world-mask.svg");
+  mask-image: url("/world-mask.svg");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  background-color: var(--c-border-strong);
+  opacity: 0.5;
+}
+
 /* Скелетоните пулсират, докато източниците отговарят поетапно. Движението е
    бавно и еднопосочно — под 3 Hz, без мигане. */
 @keyframes skeleton-pulse {

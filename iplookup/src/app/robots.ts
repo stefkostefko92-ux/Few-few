@@ -10,7 +10,9 @@ import { SITE_URL } from "@/lib/site";
  */
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/ip/"] }],
+    // `/api/` също: активната проверка отваря връзки навън и няма никаква
+    // причина робот да я задейства.
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/ip/", "/api/"] }],
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

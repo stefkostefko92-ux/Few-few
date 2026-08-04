@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { Badge, Card, EmptyNote, Field, Fields } from "@/components/DataCard";
+import ActiveProbe from "@/components/ActiveProbe";
 import SearchForm from "@/components/SearchForm";
+import WorldMap, { countryCentre, formatCoordinates } from "@/components/WorldMap";
 import {
   embeddedIpv4,
   interfaceIdentifier,
@@ -265,10 +267,7 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
           </p>
         )}
 
-        <p className="mt-4 text-xs text-text-faint">
-          Нарочно не показваме координати и не рисуваме точка на карта. Точността по град е около 66% „в
-          рамките на 50 км“ — точка на карта създава увереност, каквато данните не носят.
-        </p>
+        {country ? <CountryLocation code={country.code} /> : null}
       </Card>
 
       <Card title="Тип на адреса" source={provider}>
@@ -338,12 +337,49 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
         </Card>
       ) : null}
 
+      <Card
+        title="Активна проверка"
+        hint="Всичко по-горе е справка в регистри — никой не научава, че си питал. Това под тук е различно."
+      >
+        <ActiveProbe ip={ip.normalized} />
+      </Card>
+
       <p className="text-xs text-text-faint">Справката отне {report.totalMs} ms.</p>
     </div>
   );
 }
 
 // ── Помощни изгледи ───────────────────────────────────────────────────────
+
+/**
+ * Картата и координатите на държавата.
+ *
+ * Координатите СЪЩЕСТВУВАТ, но са на географския център на държавата — и точно
+ * така са надписани. Разликата с останалите инструменти не е дали показваме
+ * число, а дали казваме на какво е число.
+ */
+function CountryLocation({ code }: { code: string }) {
+  const centre = countryCentre(code);
+  return (
+    <>
+      <WorldMap code={code} label={code} />
+      {centre ? (
+        <Fields>
+          <Field
+            label="Център на държавата"
+            value={formatCoordinates(centre.lat, centre.lon)}
+            note="Географският център на държавата, изчислен от очертанията ѝ. НЕ е местоположение на адреса и не бива да се ползва като такова."
+          />
+        </Fields>
+      ) : null}
+      <p className="mt-3 text-xs text-text-faint">
+        Точността по град при геолокация по IP е около 66% „в рамките на 50 км“, затова тук няма игличка
+        върху град. Един центроид по подразбиране навремето прати стотици милиони адреса към една ферма в
+        Канзас — грешка, която не повтаряме.
+      </p>
+    </>
+  );
+}
 
 function NetworkSkeleton() {
   return (
