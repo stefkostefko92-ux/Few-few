@@ -27,6 +27,30 @@ test("--check е ДАТА-НЕЧУВСТВИТЕЛНА (различна дат�
   assert.equal(run({ GENERATED_DATE: "2099-12-31" }).status, 0, "само датата не бива да пали дрейф");
 });
 
+test("--check е РЕД-НЕЧУВСТВИТЕЛНА (CI провалът 2026-08-04: друга ICU колация → друг ред)", () => {
+  // Реален CI провал: гейтът беше зелен локално (Node 22.22) и червен в CI (Node 22.23) БЕЗ нито
+  // един байт разлика в съдържанието — разликата беше само РЕДЪТ, защото генераторът подреждаше с
+  // `localeCompare` (зависи от локал/ICU). Тук: разбъркан ред със същото съдържание → пак зелено.
+  const original = readFileSync(OUT, "utf8");
+  const d = JSON.parse(original.match(/window\.__DOCS__ = ([\s\S]*?);\nvar docs/)[1]);
+  d.files = [...d.files].reverse();
+  const banner = "// АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md.mjs — не редактирай ръчно.\n";
+  writeFileSync(OUT, banner + "window.__DOCS__ = " + JSON.stringify(d, null, 2) + ";\nvar docs = window.__DOCS__;\n");
+  try {
+    assert.equal(run().status, 0, "различен РЕД при същото съдържание НЕ бива да пали гейта");
+  } finally {
+    writeFileSync(OUT, original);
+    assert.equal(readFileSync(OUT, "utf8"), original, "възстановяването се провали");
+  }
+});
+
+test("генераторът НЕ ползва localeCompare (артефакт за байтово сравнение иска локал-независим ред)", () => {
+  const src = readFileSync(TOOL, "utf8");
+  const code = src.replace(/^\s*\/\/.*$/gm, ""); // махни коментарите — там думата се СПОМЕНАВА
+  assert.ok(!/localeCompare/.test(code),
+    "localeCompare зависи от локал/ICU → редът се разминава между машини (реалният CI провал)");
+});
+
 test("--check ХВАЩА реален дрейф на съдържанието (byte-verify restore)", () => {
   const original = readFileSync(OUT, "utf8");
   // подмени съдържанието на един файл в payload-а → реален дрейф
