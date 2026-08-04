@@ -48,6 +48,11 @@ export function el(tag, props = {}, children = []) {
   for (const [k, v] of Object.entries(props)) {
     if (v == null || v === false) continue;
     if (k === 'text') node.textContent = t(v);
+    // `raw` = текст, който НЕ е наш низ: име на агент, път до скрипт, изход на
+    // чужда команда. Прекарването му през речника е безсмислено (никога няма да
+    // има превод) и вредно — трупа се в списъка с „непреведени" и заглушава
+    // истинските пропуски. Собствено име не се превежда на никой език.
+    else if (k === 'raw') node.textContent = v;
     else if (k === 'html') node.innerHTML = v;
     else if (k === 'class') node.className = v;
     else if (k === 'style') node.setAttribute('style', v);

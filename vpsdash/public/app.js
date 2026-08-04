@@ -702,7 +702,7 @@ async function renderProducts() {
           },
         }),
       ]),
-      el('div', { class: 'metric-sub', text: peer.targets.map((t) => t.url).join(' · ') || 'няма зададени probeTargets' }),
+      el('div', { class: 'metric-sub', text: peer.targets.map((tg) => tg.url).join(' · ') || 'няма зададени probeTargets' }),
     ]);
     view.appendChild(box);
   }
@@ -1153,7 +1153,13 @@ async function renderAlerts() {
               // Детайлите се режат по ширина: иначе дълъг текст изтласква
               // бутона „Заглуши" извън екрана и най-полезното действие става
               // невидимо (видяно на живо при 21 активни аларми).
-              el('td', { class: 'muted', style: 'max-width:520px;overflow:hidden;text-overflow:ellipsis', title: x.body, text: x.body }),
+              el('td', { class: 'muted', style: 'max-width:520px;overflow:hidden;text-overflow:ellipsis', title: x.body }, [
+                el('div', { text: x.body }),
+                // Суровият изход на чуждия инструмент — дословно (`raw`), защото
+                // това е текстът, който човек ще потърси. Държи се ОТДЕЛНО от
+                // изречението, за да остане то стабилно и преводимо.
+                x.detail ? el('div', { class: 'mono', style: 'font-size:11px;opacity:.75;white-space:pre-wrap', raw: x.detail }) : null,
+              ]),
               el('td', { class: 'muted', text: fmtWhen(new Date(x.since).toISOString()) }),
               el('td', {}, [
                 x.silenced
@@ -3984,16 +3990,16 @@ async function renderCron() {
       timers.available === false
         ? el('div', { class: 'empty', text: `Не мога да проверя: ${timers.reason || 'systemctl не отговори'}.` })
         : el('div', { class: 'table-wrap' }, [
-        tableEl(['Таймер', 'Активира', 'Следващо', 'Последно', 'Резултат', ''], (timers.timers || []).map((t) =>
+        tableEl(['Таймер', 'Активира', 'Следващо', 'Последно', 'Резултат', ''], (timers.timers || []).map((tm) =>
           el('tr', {}, [
-            el('td', { class: 'mono', text: t.unit }),
-            el('td', { class: 'muted', text: t.activates || '—' }),
-            el('td', { text: t.next || '—' }),
-            el('td', { class: 'muted', text: t.last || '—' }),
+            el('td', { class: 'mono', text: tm.unit }),
+            el('td', { class: 'muted', text: tm.activates || '—' }),
+            el('td', { text: tm.next || '—' }),
+            el('td', { class: 'muted', text: tm.last || '—' }),
             el('td', {}, [
-              t.ok == null
+              tm.ok == null
                 ? el('span', { class: 'muted', text: '—' })
-                : pill(t.ok ? 'ok' : 'bad', t.ok ? 'успех' : `${t.result}${t.exitStatus ? ' (' + t.exitStatus + ')' : ''}`),
+                : pill(tm.ok ? 'ok' : 'bad', tm.ok ? 'успех' : `${tm.result}${tm.exitStatus ? ' (' + tm.exitStatus + ')' : ''}`),
             ]),
             el('td', {}, [
               el('button', {
@@ -4001,14 +4007,14 @@ async function renderCron() {
                 onclick: async (e) => {
                   e.target.disabled = true;
                   try {
-                    const r = await api('/cron/run', { method: 'POST', body: { unit: t.unit } });
+                    const r = await api('/cron/run', { method: 'POST', body: { unit: tm.unit } });
                     toast(r.note, 'ok');
-                    setTimeout(() => showTimerHistory(t.unit, detail), 3000);
+                    setTimeout(() => showTimerHistory(tm.unit, detail), 3000);
                   } catch (err) { toast(err.message, 'bad'); }
                   e.target.disabled = false;
                 },
               }),
-              el('button', { class: 'btn btn-sm', text: '☰ История', onclick: () => showTimerHistory(t.unit, detail) }),
+              el('button', { class: 'btn btn-sm', text: '☰ История', onclick: () => showTimerHistory(tm.unit, detail) }),
             ]),
           ])
         )),
@@ -5185,18 +5191,21 @@ async function renderAgents() {
 
   view.appendChild(el('h3', { class: 'muted', text: 'Инструменти на агентите („ръцете“)', style: 'margin:4px 0 10px' }));
   view.appendChild(
-    el('div', { class: 'grid grid-metrics' }, tools.tools.map((t) =>
+    // Параметърът се казва `tool`, не `t`: „t" е преводачът и засенчването му
+    // тук значи, че всяко бъдещо `t('низ')` в тялото вика ИНСТРУМЕНТА.
+    el('div', { class: 'grid grid-metrics' }, tools.tools.map((tool) =>
       el('div', { class: 'card' }, [
-        el('div', { class: 'card-head' }, [el('h3', { text: t.title }), pill(t.present ? 'ok' : 'dim', t.present ? 'наличен' : 'липсва')]),
-        el('div', { class: 'metric-sub', text: `${t.owner} · ${t.script}` }),
+        el('div', { class: 'card-head' }, [el('h3', { text: tool.title }), pill(tool.present ? 'ok' : 'dim', tool.present ? 'наличен' : 'липсва')]),
+        // Име на агент + път до скрипт са СОБСТВЕНИ имена — `raw`, не `text`.
+        el('div', { class: 'metric-sub', raw: `${tool.owner} · ${tool.script}` }),
         el('button', {
           class: 'btn btn-sm btn-primary',
           text: '▶ Пусни',
-          disabled: !t.present,
+          disabled: !tool.present,
           onclick: async (e) => {
             e.target.disabled = true;
             try {
-              const job = await api('/agents/tools/run', { method: 'POST', body: { tool: t.id } });
+              const job = await api('/agents/tools/run', { method: 'POST', body: { tool: tool.id } });
               streamJob(job.id, job.title);
             } catch (err) {
               toast(err.message, 'bad');
@@ -5367,7 +5376,10 @@ async function renderAudit() {
         el('tr', {}, [
           el('td', { class: 'muted', text: fmtWhen(e.ts) }),
           el('td', {}, [pill(actionClass(e.action), e.action || '—')]),
-          el('td', { class: 'mono muted', text: auditDetail(e) }),
+          // Дневникът е ДОКАЗАТЕЛСТВО, не интерфейс: редът се показва дословно
+          // (`raw`), както е записан. Превод би го фалшифицирал — и се трупаше
+          // в списъка с „непреведени", заглушавайки истинските пропуски.
+          el('td', { class: 'mono muted', raw: auditDetail(e) }),
           el('td', { text: e.user || '—' }),
         ])
       )),

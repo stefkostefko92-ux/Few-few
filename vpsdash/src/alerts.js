@@ -362,7 +362,11 @@ export class AlertEngine {
     }
 
     const svc = await failedServicesSafe();
-    if (!svc.ok) this.stale.set('service:', `systemd не отговори (${svc.error})`);
+    // Причината и СУРОВИЯТ изход се пазят отделно: изречението е наше (значи
+    // преводимо и стабилно), а изходът на чуждия инструмент е доказателство —
+    // показва се дословно. Слети в един низ, те дават шаблон, който се мени с
+    // всяка машина и затова не може да се преведе на нито един език.
+    if (!svc.ok) this.stale.set('service:', { reason: 'systemd не отговори', detail: svc.error });
     for (const unit of svc.units) {
       out.push({
         key: `service:${unit}`,
@@ -426,7 +430,7 @@ export class AlertEngine {
 
     if (t.certDays) {
       const certs = await tlsCertsSafe();
-      if (!certs.ok) this.stale.set('cert:', `сертификатите не се четат (${certs.error})`);
+      if (!certs.ok) this.stale.set('cert:', { reason: 'сертификатите не се четат', detail: certs.error });
       for (const c of certs.certs) {
         if (c.daysLeft != null && c.daysLeft <= t.certDays) {
           out.push({
@@ -946,17 +950,10 @@ export class AlertEngine {
     // телеметрия" физически не можеше да пламне: човекът виждаше аларми, които
     // висят вечно, без нито един ред за причината. Мълчаливият пазач е по-лош от
     // липсващия, защото изглежда като работещ.
+    // `stale` се ползва и по-надолу (мълчащ източник не бива да „резолва"
+    // висящите си аларми) — затова живее тук, не вътре в помощника.
     const stale = this.stale || new Map();
-    for (const [prefix, reason] of stale) {
-      const affected = [...this.active.keys()].filter((k) => k.startsWith(prefix)).length;
-      conditions.push({
-        key: `stale:${prefix}`,
-        severity: affected ? 'warning' : 'info',
-        title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
-        body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
-        sustain: false,
-      });
-    }
+    conditions.push(...staleConditions(stale, this.active));
 
     const byKey = new Map(conditions.map((c) => [c.key, c]));
 
@@ -1285,4 +1282,31 @@ function fmtGb(bytes) {
 // Тест-достъпна чиста логика: решава дали условие трябва да пламне сега.
 export function shouldFire({ sustain, streak, need }) {
   return sustain === false || streak >= need;
+}
+
+// Условията „липсва телеметрия" — отделно и чисто, за да са тестваеми без да се
+// пуска цялата оценка (тя чука systemd, диска и мрежата).
+//
+// Ключовото: ПРИЧИНАТА (наше изречение) и СУРОВИЯТ изход на чуждия инструмент
+// живеят в различни полета. Слети в един низ, те дават шаблон, който се мени с
+// всяка машина — значи не може да се преведе на нито един език и завинаги стои в
+// списъка „непреведени". Разделени: изречението е стабилно, изходът се показва
+// дословно, а известието ги слепва веднъж на изхода (`notify`).
+export function staleConditions(stale, active = new Map()) {
+  const out = [];
+  for (const [prefix, info] of stale || new Map()) {
+    // Приема и стар формат (само низ), за да не гръмне при частичен ъпдейт.
+    const reason = typeof info === 'string' ? info : info.reason;
+    const detail = typeof info === 'string' ? null : info.detail;
+    const affected = [...active.keys()].filter((k) => k.startsWith(prefix)).length;
+    out.push({
+      key: `stale:${prefix}`,
+      severity: affected ? 'warning' : 'info',
+      title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
+      body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
+      detail: detail ? String(detail).trim().slice(0, 500) : null,
+      sustain: false,
+    });
+  }
+  return out;
 }

@@ -149,3 +149,41 @@ test('i18n: непознат низ остава непокътнат (дегр�
   assert.equal(translate(raw), raw, 'сървърните данни не се пипат');
   assert.equal(translate('произволен текст 123'), 'произволен текст 123');
 });
+
+// ── Чуждият изход НЕ се слепва с нашето изречение ────────────────────────────
+import { staleConditions } from '../src/alerts.js';
+import { notify } from '../src/notify.js';
+
+test('i18n: причината и суровият изход са ОТДЕЛНИ полета', () => {
+  // Слети („systemd не отговори (Failed to connect to bus: Host is down)…") те
+  // дават шаблон, който се мени с всяка машина — значи непреводим завинаги.
+  const [c] = staleConditions(new Map([['service:', { reason: 'systemd не отговори', detail: 'Failed to connect to bus: Host is down' }]]));
+  assert.equal(c.key, 'stale:service:');
+  assert.equal(c.detail, 'Failed to connect to bus: Host is down');
+  assert.equal(/Failed to connect/.test(c.body), false, 'чуждият изход НЕ бива да е в изречението');
+  assert.equal(c.body, 'systemd не отговори. Няма активни аларми от този източник, но проверката не работи.');
+});
+
+test('i18n: изречението е СЪЩОТО и когато има засегнати аларми', () => {
+  const active = new Map([['service:nginx', {}], ['service:redis', {}], ['disk:/', {}]]);
+  const [c] = staleConditions(new Map([['service:', { reason: 'systemd не отговори', detail: 'x' }]]), active);
+  assert.equal(c.severity, 'warning', 'засегнати аларми вдигат тежестта');
+  assert.match(c.body, /^systemd не отговори\. 2 активни аларми/, 'броят е само на този префикс');
+});
+
+test('i18n: старият формат (само низ) не гърми', () => {
+  const [c] = staleConditions(new Map([['cert:', 'сертификатите не се четат']]));
+  assert.equal(c.detail, null);
+  assert.match(c.body, /^сертификатите не се четат\./);
+});
+
+test('известие: разделените полета се слепват ПАК на изхода', async () => {
+  // Разделянето е заради превода, не за да се крие причината: човек, който е
+  // получил „проверката е сляпа" без причината, тръгва да я търси на сляпо.
+  const sent = [];
+  const cfg = { notify: { webhook: { url: 'http://127.0.0.1:1/недостижим' } } };
+  const alert = { severity: 'info', title: 'Липсва телеметрия: service', body: 'systemd не отговори. …', detail: 'Host is down' };
+  await notify(cfg, alert);
+  assert.equal(alert.body, 'systemd не отговори. …', 'оригиналът НЕ се мутира');
+  assert.equal(sent.length, 0);
+});

@@ -43,35 +43,47 @@ const pw = await new Promise((resolve, reject) => {
 const problems = [];
 const b = await chromium.launch({ executablePath: process.env.CSD_CHROMIUM || '/opt/pw-browsers/chromium' });
 try {
-  const pg = await b.newPage({ viewport: { width: 1400, height: 900 } });
-  pg.on('pageerror', (e) => problems.push('JS: ' + e.message.slice(0, 120)));
-  pg.on('response', (r) => { if (r.status() >= 500) problems.push(`${r.status()} ${r.url().replace(/^http:\/\/[^/]+/, '')}`); });
-  await pg.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
-  await pg.fill('#login-user', 'admin');
-  await pg.fill('#login-pass', pw);
-  await pg.click('button[type=submit]');
-  await pg.waitForSelector('nav', { timeout: 15000 });
-  const labels = await pg.locator('#nav button span:nth-child(2)').allTextContents();
-  for (const label of labels) {
-    await pg.click(`#nav button:has-text("${label}")`, { timeout: 8000 });
-    // Чака СКЕЛЕТЪТ да си отиде, не фиксирано време: „Ъпдейти" пита apt (~2 s) и
-    // при кратко чакане се мереше скелетът — а той няма текст, значи гейтът щеше
-    // да вика „празен изглед" за напълно здрава секция.
-    try {
-      await pg.waitForFunction(() => !document.querySelector('#view .skeleton'), null, { timeout: 25000 });
-    } catch {
-      problems.push(`${label}: не се дорендва за 25 s`);
-      continue;
+  // И трите езика: преводът се закача в `el()`/`toast()`, значи секция, която
+  // сглобява текст по друг път, се чупи САМО на превод. Български проход не го
+  // вижда изобщо — там всеки низ е и ключ, и стойност.
+  for (const lang of (process.env.CSD_SWEEP_LANGS || 'bg,en,it').split(',')) {
+    const pg = await b.newPage({ viewport: { width: 1400, height: 900 } });
+    pg.on('pageerror', (e) => problems.push(`[${lang}] JS: ` + e.message.slice(0, 120)));
+    pg.on('response', (r) => { if (r.status() >= 500) problems.push(`[${lang}] ${r.status()} ${r.url().replace(/^http:\/\/[^/]+/, '')}`); });
+    await pg.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+    await pg.evaluate((l) => localStorage.setItem('csd.lang', l), lang);
+    await pg.reload({ waitUntil: 'domcontentloaded' });
+    await pg.fill('#login-user', 'admin');
+    await pg.fill('#login-pass', pw);
+    await pg.click('button[type=submit]');
+    await pg.waitForSelector('nav', { timeout: 15000 });
+    const labels = await pg.locator('#nav button span:nth-child(2)').allTextContents();
+    for (const label of labels) {
+      await pg.click(`#nav button:has-text("${label}")`, { timeout: 8000 });
+      // Чака СКЕЛЕТЪТ да си отиде, не фиксирано време: „Ъпдейти" пита apt (~2 s)
+      // и при кратко чакане се мереше скелетът — а той няма текст, значи гейтът
+      // щеше да вика „празен изглед" за напълно здрава секция.
+      try {
+        await pg.waitForFunction(() => !document.querySelector('#view .skeleton'), null, { timeout: 25000 });
+      } catch {
+        problems.push(`[${lang}] ${label}: не се дорендва за 25 s`);
+        continue;
+      }
+      await pg.waitForTimeout(200);
+      const txt = ((await pg.locator('#view').textContent()) || '').trim();
+      // „Грешка: …" е как `go()` съобщава провалил се рендер — точно това търсим.
+      // На чужд език префиксът е преведен, затова се търси и по двата варианта.
+      if (/^(Грешка|Error|Errore):/.test(txt)) problems.push(`[${lang}] ${label}: ${txt.slice(0, 100)}`);
+      if (!txt) problems.push(`[${lang}] ${label}: празен изглед`);
     }
-    await pg.waitForTimeout(200);
-    const txt = ((await pg.locator('#view').textContent()) || '').trim();
-    // „Грешка: …" е как `go()` съобщава провалил се рендер — точно това търсим.
-    if (txt.startsWith('Грешка:')) problems.push(`${label}: ${txt.slice(0, 100)}`);
-    if (!txt) problems.push(`${label}: празен изглед`);
+    const missing = await pg.evaluate(() => [...(window.__i18nMissing || [])]);
+    if (missing.length) {
+      problems.push(`[${lang}] непреведени низове: ${missing.length}`);
+      if (process.env.CSD_SWEEP_LIST) fs.appendFileSync(process.env.CSD_SWEEP_LIST, missing.map((m) => lang + '\t' + JSON.stringify(m)).join('\n') + '\n');
+    }
+    console.log(`[${lang}] обиколени секции: ${labels.length}, непреведени: ${missing.length}`);
+    await pg.close();
   }
-  const missing = await pg.evaluate(() => [...(window.__i18nMissing || [])]);
-  if (missing.length) problems.push(`непреведени низове: ${missing.length} (${missing[0].slice(0, 60)}…)`);
-  console.log(`обиколени секции: ${labels.length}`);
 } finally {
   await b.close();
   child.kill('SIGTERM');

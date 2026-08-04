@@ -131,6 +131,11 @@ function sendEmail(cfg, alert) {
 
 // Праща по ВСИЧКИ конфигурирани канали. Никога не хвърля — връща резултатите.
 export async function notify(cfg, alert) {
+  // `detail` носи СУРОВИЯ изход на чужд инструмент (systemd, openssl). Държи се
+  // отделно от `body`, за да остане изречението стабилно и преводимо — но в
+  // известието трябва да ГО ИМА: „проверката е сляпа" без причината праща човека
+  // да я търси на сляпо. Затова каналите виждат едно тяло, слепено тук веднъж.
+  if (alert?.detail) alert = { ...alert, body: `${alert.body}\n\n${alert.detail}` };
   const results = await Promise.all([
     sendTelegram(cfg, alert).catch((e) => ({ channel: 'telegram', ok: false, error: e.message })),
     sendNtfy(cfg, alert).catch((e) => ({ channel: 'ntfy', ok: false, error: e.message })),
