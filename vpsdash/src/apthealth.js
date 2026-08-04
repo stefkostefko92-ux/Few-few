@@ -74,8 +74,14 @@ export function classifyKernels(files, current) {
     .filter(Boolean)
     .sort(cmpKernel);
   const newest = versions[versions.length - 1] || null;
+  // FAIL-CLOSED. Без ИЗВЕСТНО текущо ядро (`uname -r` се провали) списъкът за
+  // махане е ПРАЗЕН, не „всичко освен най-новото": иначе една неуспяла команда
+  // предлага да изтриеш ядрото, което върви в момента — машината не се вдига,
+  // а панелът също не се вдига, за да го поправиш. Тук „не знам" не бива да
+  // означава „действай", защото цената на грешката е самата машина.
+  if (!current) return { all: versions, current: null, newest, removable: [], unknown: true };
   const keep = new Set([current, newest].filter(Boolean));
-  return { all: versions, current: current || null, newest, removable: versions.filter((v) => !keep.has(v)) };
+  return { all: versions, current, newest, removable: versions.filter((v) => !keep.has(v)), unknown: false };
 }
 
 // Сортиране по версия: 6.8.0-40 е ПО-НОВО от 6.8.0-9, а лексикографски е обратното.
@@ -145,6 +151,8 @@ export function aptConditions(h) {
     });
   }
 
+  // `h.dpkg === null` значи НЕ ЗНАЕМ (командата се провали) — нито аларма, нито
+  // успокоение. Интерфейсът го казва изрично.
   if (h.dpkg?.broken?.length) {
     out.push({
       key: 'apt:dpkg-broken',
@@ -202,11 +210,14 @@ export async function aptHealth(disks) {
     const uname = await run('uname', ['-r'], { timeout: 5000 });
     out.kernels = classifyKernels(files, uname.ok ? uname.stdout.trim() : null);
 
+    // Провалената команда дава NULL, не празен списък. `{broken: []}` при липсващ
+    // `dpkg-query` е панелът, който твърди „dpkg е в ред", без да е питал —
+    // същата лъжа като „портът е защитен", когато ufw не е отговорил.
     const q = await run('dpkg-query', ['-W', '-f=${Package}|${Status}\n'], { timeout: 20000, env: { LC_ALL: 'C' } });
-    out.dpkg = q.ok ? parseDpkgStatus(q.stdout) : { broken: [], details: [] };
+    out.dpkg = q.ok ? parseDpkgStatus(q.stdout) : null;
 
     const holds = await run('apt-mark', ['showhold'], { timeout: 15000, env: { LC_ALL: 'C' } });
-    out.holds = holds.ok ? parseHolds(holds.stdout) : [];
+    out.holds = holds.ok ? parseHolds(holds.stdout) : null;
 
     // Кой държи lock-а. Наличието му НЕ е повреда (unattended-upgrades по таймер
     // е нормално) — затова е отделно поле, не аларма.

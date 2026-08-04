@@ -1412,9 +1412,79 @@ function notifyChannelsCard(a) {
 }
 
 // ── Настройки (2FA) ───────────────────────────────────────────────────────────
+// Активните сесии. Механизмът съществуваше ЦЯЛ (списък, поименна отмяна,
+// отмяна на всички, преживяваща рестарт), но нямаше нито един бутон — тоест
+// „кой е влязъл в панела ми и как да го изхвърля" беше въпрос без екран.
+// Непозната сесия тук е сигнал за пробив; без списък такъв сигнал няма как да
+// бъде забелязан.
+function sessionsCard(d) {
+  if (!d) return null;
+  const rows = (d.sessions || []).map((s) =>
+    el('tr', {}, [
+      el('td', {}, [
+        el('span', { class: 'mono', text: s.ip || '—' }),
+        s.jti === d.currentJti ? el('span', { class: 'pill pill-ok', style: 'margin-left:8px', text: 'това устройство' }) : null,
+      ]),
+      el('td', { class: 'muted', style: 'font-size:12px', text: (s.ua || '').slice(0, 60) || '—' }),
+      el('td', { class: 'muted', text: fmtWhen(new Date(s.lastSeen).toISOString()) }),
+      el('td', { class: 'muted', text: fmtWhen(new Date(s.issuedAt).toISOString()) }),
+      el('td', {}, [
+        el('button', {
+          class: 'btn btn-sm btn-warn', text: '⛔ Изхвърли',
+          onclick: async () => {
+            try {
+              await api('/sessions/revoke', { method: 'POST', body: { jti: s.jti } });
+              toast('Сесията е отменена');
+              go('settings');
+            } catch (e) { toast(e.message, 'bad'); }
+          },
+        }),
+      ]),
+    ])
+  );
+  return el('div', { class: 'card', style: 'margin-top:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Активни сесии' }),
+      pill(rows.length > 1 ? 'warn' : 'ok', `${rows.length}`),
+    ]),
+    // Сглобено от преведени части: числата иначе правят целия низ уникален и
+    // никой речников ключ не съвпада (доктрината за динамичните низове).
+    el('div', { class: 'metric-sub', text:
+      t('Всяко устройство, което е влязло и още има валиден токен. НЕПОЗНАТА сесия тук е сигнал за пробив — отмяната ѝ преживява рестарт на панела.') +
+      ` ${t('Бездействие')}: ${d.idleMinutes || 30} ${t('мин')} · ${t('таван на сесията')}: ${d.absoluteHours || 12} ${t('ч.')}` }),
+    rows.length
+      ? el('div', { class: 'table-wrap' }, [tableEl(['Адрес', 'Устройство', 'Последно', 'Влизане', ''], rows)])
+      : el('div', { class: 'empty', text: 'Няма активни сесии.' }),
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-danger btn-sm', text: '⛔ Изхвърли ВСИЧКИ (и себе си)',
+        onclick: async () => {
+          const ok = await confirmDanger({
+            title: 'Отмяна на всички сесии',
+            what: [
+              'Всяко влязло устройство пада, включително ТОВА.',
+              'Ще трябва да влезеш наново с паролата.',
+              'Ползва се при съмнение за пробив — отмяната преживява рестарт.',
+            ],
+            expect: 'изхвърли',
+            confirmLabel: 'Изхвърли всички',
+            delayMs: 800,
+          });
+          if (!ok) return;
+          try {
+            await api('/sessions/revoke-all', { method: 'POST' });
+            toast('Всички сесии са отменени — влез наново');
+            setTimeout(() => location.reload(), 900);
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+    ]),
+  ]);
+}
+
 async function renderSettings() {
   const view = document.getElementById('view');
-  const me = await api('/me');
+  const [me, sess] = await Promise.all([api('/me'), api('/sessions').catch(() => null)]);
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text: 'Панелът дава пълен контрол над сървъра — втори фактор е силно препоръчителен.' }));
 
@@ -1485,6 +1555,11 @@ async function renderSettings() {
       },
     }));
   }
+
+  // Сесиите са ВТОРАТА половина на сигурността тук: 2FA пази входа, този
+  // списък казва кой вече е вътре.
+  const sc = sessionsCard(sess);
+  if (sc) view.appendChild(sc);
 }
 
 // Показва резервните кодове ЕДИН ПЪТ. В конфига стоят само хешовете им, така че
@@ -3303,15 +3378,26 @@ function aptHealthCard(h) {
     rows.push(el('div', { class: 'metric-sub', text:
       `${t('Ядра')}: ${k.all.length} (${t('текущо')} ${k.current || '—'}) · ${t('излишни')}: ${k.removable.length}` }));
   }
-  const broken = h.dpkg?.broken || [];
-  rows.push(el('div', { class: 'metric-sub' }, [
-    el('b', { text: broken.length ? '✘ ' : '✔ ' }),
-    broken.length
-      ? `${t('Прекъснат dpkg')}: ${broken.slice(0, 6).join(', ')} — ${t('блокира ВСЕКИ ъпдейт')}`
-      : t('dpkg е в ред'),
-  ]));
-  if (h.holds?.length) {
+  // `null` значи НЕ ЗНАЕМ (командата се провали), а не „чисто". Панел, който
+  // твърди „в ред", без да е питал, е по-лош от панел, който мълчи.
+  if (h.dpkg === null) {
+    rows.push(el('div', { class: 'metric-sub' }, [el('b', { text: '? ' }), t('Състоянието на dpkg е НЕИЗВЕСТНО — dpkg-query не отговори.')]));
+  } else {
+    const broken = h.dpkg?.broken || [];
+    rows.push(el('div', { class: 'metric-sub' }, [
+      el('b', { text: broken.length ? '✘ ' : '✔ ' }),
+      broken.length
+        ? `${t('Прекъснат dpkg')}: ${broken.slice(0, 6).join(', ')} — ${t('блокира ВСЕКИ ъпдейт')}`
+        : t('dpkg е в ред'),
+    ]));
+  }
+  if (h.holds === null) {
+    rows.push(el('div', { class: 'metric-sub', text: t('Задържаните пакети са НЕИЗВЕСТНИ — apt-mark не отговори.') }));
+  } else if (h.holds?.length) {
     rows.push(el('div', { class: 'metric-sub', text: `${t('Задържани пакети')}: ${h.holds.join(', ')}` }));
+  }
+  if (k?.unknown) {
+    rows.push(el('div', { class: 'metric-sub', text: t('Кое ядро върви в момента е НЕИЗВЕСТНО — нищо не се предлага за махане.') }));
   }
   if (h.lock) {
     rows.push(el('div', { class: 'metric-sub', text: `${t('apt е зает в момента')} — ${t('изчакай да свърши')}` }));

@@ -249,6 +249,29 @@ export function saveConfig(cfg, patch, { configPath = CONFIG_PATH } = {}) {
   Object.assign(cfg, merged);
   if (cfg.dev) return cfg;
   const { dev, ...toWrite } = merged;
+
+  // Копие на ПОСЛЕДНОТО ВАЛИДНО състояние, преди да пишем отгоре.
+  //
+  // Атомарният запис по-долу (tmp → rename) пази от ПРЕКЪСВАНЕ — спиране на тока
+  // насред записа. Той обаче не пази от ЛОГИЧЕСКА грешка: код, който запише
+  // валиден, но погрешен конфиг, унищожава `passwordHash`, `sessionSecret`,
+  // `peerToken`, токените за известия и ключа за бекъпа на панела — тайни, които
+  // по конструкция не съществуват никъде другаде (нощният шифриран бекъп е до
+  // 24 часа стар).
+  //
+  // Копието се прави САМО от файл, който се чете като валиден конфиг. Иначе
+  // втори пореден лош запис би презаписал и спасителното копие с боклук — а
+  // резервно копие, за което не знаеш дали е цяло, е по-лошо от липсващо.
+  try {
+    const current = fs.readFileSync(configPath, 'utf8');
+    const parsed = JSON.parse(current);
+    if (parsed && parsed.passwordHash) {
+      fs.writeFileSync(`${configPath}.bak`, current, { mode: 0o600 });
+    }
+  } catch {
+    /* няма конфиг (първи запис) или е нечетим — няма какво да пазим */
+  }
+
   const tmp = `${configPath}.tmp-${process.pid}`;
   fs.writeFileSync(tmp, JSON.stringify(toWrite, null, 2), { mode: 0o600 });
   fs.renameSync(tmp, configPath);

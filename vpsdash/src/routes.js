@@ -394,6 +394,9 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => ({
         current: req.user,
+        // Кой ред е ТОВА устройство. Без него човек не различава своята сесия от
+        // чуждата и или не смее да отмени нищо, или изхвърля себе си по погрешка.
+        currentJti: req.jti || null,
         idleMinutes: cfg.idleMinutes || 30,
         absoluteHours: cfg.sessionTtlHours || 12,
         // Изтеклите отпадат ТУК, а не висят като живи. „Непозната сесия е
