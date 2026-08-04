@@ -141,6 +141,51 @@ export function checkHandoffViolation(finalText, agentIds) {
   };
 }
 
+/**
+ * Свежда участник в предаване до КАНОНИЧЕН id (или „човек"). Кръг 13, от жива улика: дневникът се
+ * пълнеше с „mobildjiyata" при един агент, „Социалджията"/„Летописецът" при друг, а `to` беше проза
+ * („AI-джията / човек-ревюър на паметта", „координатор"). `trajectory-audit` съединява по id, значи
+ * записите бяха неизползваеми — Кръг 11 поправи „нищо не се пише", това поправя „пише се, но не се
+ * съединява". Пробвам по ред: точен id → българско име от регистъра → id, срещнат в прозата →
+ * „човек" (човешки адресат е легитимен изход, не грешка) → празно (записът се отхвърля).
+ */
+export function normalizeActor(raw, roster = loadRoster()) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  // БЕЗ регистър не се нормализира — връща се суровото. Първата версия свеждаше всичко до „друг",
+  // тоест при липсващ `agents.json` (пясъчник, архив) ТРИЕШЕ данните, които трябваше да поправи.
+  // Fail-open значи „запази каквото имаш", не „изтрий го". Тестът го хвана.
+  if (!roster.byId.size) return s;
+  const low = s.toLowerCase();
+  if (roster.byId.has(low)) return low;
+  for (const [name, id] of roster.byName) if (low === name) return id;
+  // Прозаичен адресат: вземи първия познат участник, споменат в текста (по име или id).
+  for (const [name, id] of roster.byName) if (low.includes(name)) return id;
+  for (const id of roster.byId) if (low.includes(id)) return id;
+  if (/човек|собствен|owner|ръчно|human/i.test(s)) return "човек";
+  if (/оркестратор|главни(я|ят)\s+агент|координатор|\bmain\b/i.test(s)) return "оркестратор";
+  // Нерезолвнат, но НЕПРАЗЕН адресат се записва като „друг", не се изхвърля: изхвърленият запис
+  // къса цялата верига в дневника, а „празно значи неизмерено, не чисто". Суровият текст се пази
+  // в `toRaw`, за да е видимо КОЕ не е резолвнало, вместо да изглежда като липсваща стъпка.
+  return "друг";
+}
+
+let _roster = null;
+function loadRoster() {
+  if (_roster) return _roster;
+  const byId = new Set(), byName = new Map();
+  try {
+    const j = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+    for (const a of j.agents || []) {
+      if (a.id) byId.add(String(a.id).toLowerCase());
+      if (a.name) byName.set(String(a.name).toLowerCase(), String(a.id).toLowerCase());
+    }
+  } catch { /* без регистър нормализацията просто не разпознава — fail-open */ }
+  // AI-джията се пише и с тире, и без — двата варианта сочат един id.
+  if (byId.has("ai-djiyata")) byName.set("aidjiyata", "ai-djiyata");
+  return (_roster = { byId, byName });
+}
+
 // Записва ЕДИН „handoff" ред в _flows.jsonl от вече валидирания блок ПРЕДАВАНЕ. Съзнателно НЕ пише
 // „start"/„close" — те са решение на Президента; тук се лови само реалната стъпка на предаване.
 // Форматът е ИДЕНТИЧЕН с flow-ledger.mjs (t/ts/id/from/to/status), за да няма два несъвместими писача.
@@ -150,10 +195,14 @@ export function appendHandoffToLedger(finalText, payload = {}) {
   // Полетата идват от handoff.mjs с ЛАТИНСКИ ключове (from/to/status), не с българските етикети —
   // проверено на живо; първата ми версия деструктурираше „Към"/„Статус" и мълчаливо не записваше нищо.
   const f = parsed.fields;
-  const from = String(f.from || payload.agent_type || payload.subagent_type || payload.agent_name || "").trim();
-  const to = String(f.to || "").trim(), status = String(f.status || "").trim();
+  const from = normalizeActor(String(f.from || payload.agent_type || payload.subagent_type || payload.agent_name || ""));
+  const to = normalizeActor(String(f.to || ""));
+  const status = String(f.status || "").trim();
   if (!from || !to) return false;
   const rec = { t: "handoff", ts: new Date().toISOString(), id: "auto", from, to, status };
+  // Видимост кое НЕ е резолвнало — иначе „друг" изглежда като нормален участник.
+  if (from === "друг") rec.fromRaw = String(f.from || "").slice(0, 80);
+  if (to === "друг") rec.toRaw = String(f.to || "").slice(0, 80);
   appendFileSync(join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl"), JSON.stringify(rec) + "\n");
   return true;
 }

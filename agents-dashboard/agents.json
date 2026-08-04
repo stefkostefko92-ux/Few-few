@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 230
+        "lessons": 241
       },
       "evolution": [
         {
@@ -2435,7 +2435,7 @@
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 111
+        "lessons": 116
       },
       "evolution": [
         {
@@ -3216,7 +3216,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 149
+        "lessons": 157
       },
       "evolution": [
         {
@@ -4093,7 +4093,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 42
+        "lessons": 43
       },
       "evolution": [
         {
@@ -5096,7 +5096,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 102
+        "lessons": 107
       },
       "evolution": [
         {
@@ -5829,7 +5829,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 165
+        "lessons": 168
       },
       "evolution": [
         {
@@ -6641,7 +6641,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 129
+        "lessons": 130
       },
       "evolution": [
         {
@@ -7455,7 +7455,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 99
+        "lessons": 113
       },
       "evolution": [
         {
@@ -8202,7 +8202,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 150
+        "lessons": 165
       },
       "evolution": [
         {
@@ -8931,7 +8931,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 124
+        "lessons": 130
       },
       "evolution": [
         {
@@ -9588,7 +9588,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 105
+        "lessons": 107
       },
       "evolution": [
         {
@@ -10226,7 +10226,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 143
+        "lessons": 149
       },
       "evolution": [
         {
@@ -11079,7 +11079,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 151
+        "lessons": 159
       },
       "evolution": [
         {
@@ -11780,7 +11780,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 119
+        "lessons": 138
       },
       "evolution": [
         {
@@ -12744,7 +12744,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 176
+        "lessons": 179
       },
       "evolution": [
         {
@@ -12942,7 +12942,7 @@
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 82
+        "lessons": 86
       },
       "evolution": [
         {
@@ -13339,7 +13339,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 152
+        "lessons": 154
       },
       "evolution": [
         {
@@ -13525,7 +13525,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 154
+        "lessons": 155
       },
       "evolution": [
         {
@@ -13701,7 +13701,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 136
+        "lessons": 142
       },
       "evolution": [
         {
@@ -13860,7 +13860,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 154
+        "lessons": 163
       },
       "evolution": [
         {
@@ -14268,7 +14268,7 @@
           "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
           "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
         ],
-        "lessons": 99
+        "lessons": 101
       },
       "evolution": [
         {

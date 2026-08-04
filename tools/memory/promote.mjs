@@ -84,9 +84,23 @@ export function applyVerdicts(md, verdicts, today) {
   const v = sectionBounds(lines, "Проверени поуки");
   if (!q || !v) return { error: "липсва секция „Карантина“ или „Проверени поуки“" };
 
-  // Индекс: lid → номер на ред, само в Карантина.
+  // Индекс: lid → диапазон редове, само в Карантина. БЛОКОВО, не по суров ред.
+  //
+  // Реален дефект (Кръг 13): индексирах по `lines[i]`, а `quarantine-review` смята lid-а върху
+  // склеен БЛОК (`sectionBullets` лепи continuation редовете). Поука, чийто запис минава на втори
+  // ред — включително когато под нея е останал стар плейсхолдър `_(празно …)_` — получаваше два
+  // различни lid-а и ставаше НЕАДРЕСИРУЕМА. Хванато на живо: `skorostnika/e6503e11` (id от блок)
+  // срещу `2b83ba8e` (id от ред). Fail-closed го обяви като „няма такава поука" вместо да сгреши
+  // тихо — затова нищо не се повреди, но поуката не можеше да се промотира.
   const inQuar = new Map();
-  for (let i = q.start + 1; i < q.end; i++) if (lines[i].trim().startsWith("- ")) inQuar.set(lessonId(lines[i]), i);
+  for (let i = q.start + 1; i < q.end; i++) {
+    if (!lines[i].trim().startsWith("- ")) continue;
+    let end = i;
+    while (end + 1 < q.end && lines[end + 1].trim() !== "" && !lines[end + 1].trim().startsWith("- ")) end++;
+    const block = lines.slice(i, end + 1).map((l) => l.trim()).join(" ");
+    inQuar.set(lessonId(block), { i, end });
+    i = end;
+  }
 
   const promoted = [], refuted = [], kept = [], errors = [];
   const drop = new Set();
@@ -101,16 +115,17 @@ export function applyVerdicts(md, verdicts, today) {
     // lid-а, тоест „вече промотирана“ ПРИНЦИПНО не е разпознаваема по lid. Затова: непознат lid е
     // грешка. Идемпотентността се постига като вердиктите се генерират наново от `quarantine-review`.
     if (!inQuar.has(lid)) { errors.push(`${lid}: няма такава поука в Карантина на този агент`); continue; }
-    const i = inQuar.get(lid);
+    const { i, end } = inQuar.get(lid);
     if (rec.verdict === "остава") { kept.push(lid); continue; }
     if (rec.verdict === "опровергана") { lines[i] = refuteBullet(lines[i], rec.note, today); refuted.push(lid); continue; }
-    // потвърдена
+    // потвърдена — целият блок се мести, не само първият му ред
     const src = String(rec.source || "").trim();
     if (!isRealSource(src)) { errors.push(`${lid}: „потвърдена“ без реален източник (даден: „${src || "—"}“)`); continue; }
-    const nb = promoteBullet(lines[i], src, today);
+    const block = lines.slice(i, end + 1);
+    const nb = promoteBullet(block.join("\n"), src, today);
     if (!nb) { errors.push(`${lid}: не мога да разчета опашката _(обхват; увереност; източник)_`); continue; }
     promoted.push({ lid, line: nb });
-    drop.add(i);
+    for (let k = i; k <= end; k++) drop.add(k);
   }
 
   if (errors.length) return { error: errors.join("\n"), errors };

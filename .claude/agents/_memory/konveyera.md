@@ -10,6 +10,9 @@
 Версии на actions и лимити са време-чувствителни → потвърждавай на живо преди цитиране.
 
 ## Проверени поуки (verified)
+
+- **2026-07-16 (пресверена 2026-08-04):** Точните безплатни минути/множители за частни repo и лимитите на actions cache се менят периодично → не цитирай числа без жива проверка на billing страницата в момента на задачата. _("actions billing/лимити; verified; https://docs.github.com/en/billing/managing-billing-for-github-actions (проверен на живо днес))_
+- **2026-07-16 (пресверена 2026-08-04):** Дали текущият `.github/workflows/security.yml` в това репо ползва точните версии/стъпки, описани в CLAUDE.md, трябва да се провери в самия файл преди твърдение — CLAUDE.md описва намерението, не гарантира текущия YAML. _("репо security.yml актуалност; verified; .github/workflows/security.yml:34-47,49-69)_
 - **2026-07-28:** persist-credentials: false вече правилно приложено в security.yml:30,56 (единствените workflow-и с checkout, при които е коментирано изрично); останалите (cspos.yml, zabobovdol.yml и др.) нямат persist-credentials: false — по подразбиране true, GITHUB_TOKEN остава в .git/config на runner-а; те не push-ват нищо, но е излишна exfil повърхност при compromised трета стъпка в същия job. _(project; verified; "/home/user/Few-few/.github/workflows/security.yml:30 ; /home/user/Few-few/.github/workflows/cspos.yml:21")_
 - **2026-07-28:** OIDC (permissions.id-token: write) заменя дълготрайни cloud ключове — токенът е краткоживеещ и cloud-side trust policy проверява repo+ref+workflow claims; нашият репо засега няма cloud deploy стъпки в CI (деплой е ръчен ZIP+VPS-аджия), затова OIDC все още неприложимо тук, но е готовата next стъпка ако някога добавим push-CD. _(project; verified; "https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws")_
 - **2026-07-28:** Ubuntu 22.04 runner образ deprecation старт 2026-09-17, пълно спиране 2027-04-17 → мигрирай ubuntu-22.04/-latest workflow-и към 24.04/26.04 навреме, за да не гръмне build внезапно на дата в бъдещето. _(shared; verified; "https://github.blog/changelog/2026-05-14-github-actions-upcoming-image-migrations/")_
@@ -191,5 +194,3 @@
 
 ## Карантина (непроверени — НЕ са факт)
 - **2026-07-22:** Репото няма .github/dependabot.yml (проверено find) — SHA-пиновете на actions в момента не се обновяват автоматично. _(agent; unverified; "find .github -iname dependabot* → 0 резултата (2026-07-22)")_
-- **2026-07-16:** Точните безплатни минути/множители за частни repo и лимитите на actions cache се менят периодично → не цитирай числа без жива проверка на billing страницата в момента на задачата. _("actions billing/лимити; unverified; https://docs.github.com/en/billing/managing-billing-for-github-actions")_
-- **2026-07-16:** Дали текущият `.github/workflows/security.yml` в това репо ползва точните версии/стъпки, описани в CLAUDE.md, трябва да се провери в самия файл преди твърдение — CLAUDE.md описва намерението, не гарантира текущия YAML. _("репо security.yml актуалност; unverified; .github/workflows/security.yml (чети преди да твърдиш)")_
