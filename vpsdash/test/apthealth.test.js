@@ -68,6 +68,17 @@ test('apt: подредбата е по ЧИСЛО, не лексикограф�
   assert.deepEqual(k.removable, []);
 });
 
+test('apt: БЕЗ известно текущо ядро НИЩО не се предлага за махане', () => {
+  // `uname -r` се проваля (минимален контейнер, счупен PATH). Наивното
+  // „всичко освен най-новото" тогава предлага да изтриеш ЯДРОТО, КОЕТО ВЪРВИ —
+  // машината не се вдига, а панелът също не се вдига, за да го поправиш.
+  const files = ['/boot/vmlinuz-6.8.0-31', '/boot/vmlinuz-6.8.0-40', '/boot/vmlinuz-6.8.0-45'];
+  const k = classifyKernels(files, null);
+  assert.deepEqual(k.removable, [], 'fail-closed: не знам → не действам');
+  assert.equal(k.unknown, true, 'и го КАЗВА, вместо да мълчи');
+  assert.equal(k.all.length, 3, 'списъкът пак се показва — само действието е спряно');
+});
+
 test('apt: едно-единствено ядро не се пипа', () => {
   const k = classifyKernels(['/boot/vmlinuz-6.8.0-40-generic'], '6.8.0-40-generic');
   assert.deepEqual(k.removable, []);
@@ -112,6 +123,13 @@ test('apt: само истинските провали са грешка, не 
 });
 
 // ── Условията ────────────────────────────────────────────────────────────────
+test('apt: НЕИЗВЕСТНОТО състояние на dpkg не вдига аларма, но и не успокоява', () => {
+  // `dpkg: null` = командата се провали. Нито аларма (не знаем за проблем),
+  // нито „в ред" — интерфейсът го казва изрично.
+  const c = aptConditions({ boot: null, dpkg: null, holds: null, sources: [] });
+  assert.deepEqual(c, [], 'липсата на знание не е инцидент');
+});
+
 test('apt: здравата машина мълчи', () => {
   const c = aptConditions({
     boot: { mount: '/boot', availBytes: 600 * MB, usePercent: 40, enoughForKernel: true },

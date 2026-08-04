@@ -31,7 +31,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Fail-closed: DEV резервният режим (ефимерна парола) се допуска САМО при изричен
 // CSD_DEV=1. Иначе липсващ конфиг спира услугата вместо тихо да вдигне панела с
 // генерирана парола, отпечатана в journald.
-const cfg = loadConfig({ allowDev: Boolean(process.env.CSD_DEV) });
+// Провалът при старт е ЗАКОНЕН (fail-closed), но не бива да излиза като stack
+// trace. Човекът го чете в `journalctl` след неуспял рестарт — там му трябва
+// какво е счупено и къде, не пътят през модулния зареждач на Node. Причината и
+// поправката са на два реда; подробностите остават за `--stack`.
+let cfg;
+try {
+  cfg = loadConfig({ allowDev: Boolean(process.env.CSD_DEV) });
+} catch (err) {
+  const configPath = process.env.CSD_CONFIG || '/etc/vps-dashboard/config.json';
+  process.stderr.write(
+    `\n\u001b[31m✘ Панелът НЕ тръгва: ${err.message}\u001b[0m\n` +
+      `  Конфиг: ${configPath}\n` +
+      '  Провери: node -e \'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"))\' ' + configPath + '\n' +
+      '  Върни копие: ls -la ' + configPath + '.bak* 2>/dev/null || echo "(няма копие)"\n' +
+      '  Първа инсталация: sudo bash deploy/install.sh\n\n'
+  );
+  if (process.env.CSD_TRACE) process.stderr.write(String(err.stack) + '\n');
+  process.exit(1);
+}
 const audit = new Audit(cfg.paths.stateDir);
 const jobs = new Jobs(audit);
 const metrics = new MetricsCollector();

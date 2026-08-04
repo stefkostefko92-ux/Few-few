@@ -91,9 +91,31 @@ const GET_ROUTES = [
   '/api/compose/ps?project=demo', '/api/compose/logs?project=demo&lines=5', '/api/docker/logs?id=demo&lines=5',
   '/api/databases/sqlite/check?file=/tmp/csd-smoke-няма.db',
   '/api/accesslog', '/api/accesslog/files', '/api/backups/health', '/api/redis', '/api/volumes',
+  '/api/alerts/maintenance', '/api/alerts/digest', '/api/backups/schedule', '/api/backups/panel',
+  '/api/disk', '/api/reclaim', '/api/traffic', '/api/ports', '/api/desktop', '/api/updates/health',
+  '/api/volumes/archives', '/api/files?path=/tmp', '/api/services/status?unit=cron.service',
+  '/api/webserver/coverage',
+  '/api/jobs/няма-такава-задача', '/api/webserver/site?file=/etc/nginx/nginx.conf',
+  '/api/env/file?path=/tmp/csd-няма.env', '/api/files/read?path=/etc/hostname',
   // `/api/domains/preflight` съзнателно НЕ влиза: прави реален DNS + HTTP навън и
   // би направил теста зависим от мрежата в CI. Проверява се ръчно/в браузър.
 ];
+
+// Маршрутите, които СЪЗНАТЕЛНО стоят извън обиколката, с причината. Всичко
+// останало трябва да е покрито — и следващият тест го доказва.
+const INTENTIONALLY_SKIPPED = new Set([
+  '/api/domains/preflight', // реален DNS + HTTP навън → зависимост от мрежата в CI
+  '/api/ping', // няма сесия, покрит е от старта
+  '/api/events', // SSE — виси по дизайн, не се затваря сам
+  '/api/jobs/:id/stream', // SSE
+  '/api/logs/stream', // SSE
+  '/api/pty/:id/stream', // SSE
+  '/api/stream/metrics', // SSE — виси по дизайн
+  '/api/stream/journal', // SSE
+  '/api/domains/registration', // реален RDAP навън → зависимост от мрежата
+  '/api/security/headers', // реална HTTP заявка към живия сайт → мрежа
+  '/api/nodes/:id/crossprobe', // federation към peer, който в тест не съществува
+]);
 
 test('нито един GET маршрут не дава 5xx', async () => {
   const failures = [];
@@ -107,6 +129,33 @@ test('нито един GET маршрут не дава 5xx', async () => {
     }
   }
   assert.deepEqual(failures, [], 'маршрути с вътрешна грешка:\n' + failures.join('\n'));
+});
+
+// Ръчно поддържан списък ИЗОСТАВА тихо — беше изостанал с 16 маршрута, всеки от
+// които е точно случаят, за който този файл съществува (липсващ import се вижда
+// само при реална заявка). Затова списъкът вече се СВЕРЯВА с routes.js: нов
+// маршрут без ред тук пада теста, вместо да остане невидим до първия отворен
+// екран в производство.
+test('всеки GET маршрут в routes.js е в обиколката', async () => {
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'src', 'routes.js'), 'utf8');
+  const declared = [...src.matchAll(/r\.get\(\s*[\x27"`]([^\x27"`]+)[\x27"`]/g)]
+    .map((m) => m[1])
+    .filter((r) => r.startsWith('/api/'));
+  const covered = GET_ROUTES.map((r) => r.split('?')[0]);
+  // `/api/jobs/:id` се покрива от `/api/jobs/каквото-и-да-е` — буквалното
+  // сравнение би обявило параметризираните за непокрити завинаги.
+  const isCovered = (route) => {
+    if (covered.includes(route)) return true;
+    if (!route.includes(':')) return false;
+    const rx = new RegExp('^' + route.replace(/:[^/]+/g, '[^/]+') + '$');
+    return covered.some((c) => rx.test(c));
+  };
+  const missing = declared.filter((r) => !isCovered(r) && !INTENTIONALLY_SKIPPED.has(r));
+  assert.deepEqual(
+    missing,
+    [],
+    'непокрити GET маршрути — добави ги в GET_ROUTES или в INTENTIONALLY_SKIPPED с причина:\n' + missing.join('\n')
+  );
 });
 
 test('без сесия всичко е 401', async () => {

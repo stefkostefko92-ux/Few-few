@@ -111,3 +111,39 @@ test('известни проекти включват vpsdashboard', () => {
   assert.ok(KNOWN_PROJECTS.includes('vpsdashboard'));
   assert.ok(KNOWN_PROJECTS.includes('zabobovdol'));
 });
+
+// ── Копието на конфига преди запис ───────────────────────────────────────────
+test('конфиг: записът пази копие на ПОСЛЕДНОТО ВАЛИДНО състояние', async () => {
+  const fsx = await import('node:fs');
+  const osx = await import('node:os');
+  const pathx = await import('node:path');
+  const { saveConfig } = await import('../src/config.js');
+  const dir = fsx.mkdtempSync(pathx.join(osx.tmpdir(), 'csd-cfgbak-'));
+  const file = pathx.join(dir, 'config.json');
+  const original = { passwordHash: 'scrypt:първо', sessionSecret: 'тайна', port: 7700 };
+  fsx.writeFileSync(file, JSON.stringify(original), { mode: 0o600 });
+
+  saveConfig({ ...original }, { port: 8800 }, { configPath: file });
+  const bak = JSON.parse(fsx.readFileSync(file + '.bak', 'utf8'));
+  assert.equal(bak.port, 7700, 'копието е СТАРОТО състояние');
+  assert.equal(bak.sessionSecret, 'тайна', 'тайните оцеляват в копието');
+  assert.equal((fsx.statSync(file + '.bak').mode & 0o777), 0o600, 'копието също е 600');
+  assert.equal(JSON.parse(fsx.readFileSync(file, 'utf8')).port, 8800, 'новото е записано');
+  fsx.rmSync(dir, { recursive: true, force: true });
+});
+
+test('конфиг: СЧУПЕН файл НЕ става копие (иначе трие спасителното)', async () => {
+  const fsx = await import('node:fs');
+  const osx = await import('node:os');
+  const pathx = await import('node:path');
+  const { saveConfig } = await import('../src/config.js');
+  const dir = fsx.mkdtempSync(pathx.join(osx.tmpdir(), 'csd-cfgbak2-'));
+  const file = pathx.join(dir, 'config.json');
+  fsx.writeFileSync(file + '.bak', JSON.stringify({ passwordHash: 'ДОБРОТО', sessionSecret: 'пази ме' }));
+  fsx.writeFileSync(file, '{ счупен');
+
+  saveConfig({ passwordHash: 'ново' }, { port: 1 }, { configPath: file });
+  const bak = JSON.parse(fsx.readFileSync(file + '.bak', 'utf8'));
+  assert.equal(bak.passwordHash, 'ДОБРОТО', 'старото добро копие НЕ е презаписано с боклук');
+  fsx.rmSync(dir, { recursive: true, force: true });
+});
