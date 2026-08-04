@@ -111,6 +111,23 @@ export function execWithoutBash(md, toolset) {
   return out;
 }
 
+/**
+ * Ако ТЕКСТЪТ на поука започва с поле на самия ```learn блок, записът е повреден при захващането —
+ * връща името на полето, иначе null. Чиста функция (тества се срещу реалните низове от репото).
+ *
+ * Търси се САМО в началото на текста, СЛЕД като се махнат водещото „- **ДАТА:** “ и опашката
+ * „_( … )_“. Търсене навсякъде в реда би вдигало по легитимна проза („source: MDN“ вътре в поука).
+ */
+export function malformedLessonField(bullet) {
+  const body = String(bullet || "").trim()
+    .replace(/^-\s*/, "")
+    .replace(/^\*\*[^*]*\*\*:?\s*/, "")      // „**2026-07-29:**“
+    .replace(/_\([^)]*\)_\s*$/, "")
+    .trim();
+  const m = body.match(/^(agent|date|entries|statement|scope|confidence|source)\s*:/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
 export function audit() {
   const hard = [], soft = [];
   const ids = agentIds();
@@ -238,6 +255,18 @@ export function audit() {
     const v = bullets(md, "Проверени поуки") || [];
     for (const l of v) for (const p of brokenOwnedMemPaths(l))
       hard.push({ kind: "dead-mem-path", msg: `${id}: verified поука цитира несъществуващ агент-слой път „${p}"` });
+    // 7b″. ТВЪРДО (Кръг 13, 2026-08-04): поука, чийто ТЕКСТ започва с поле на самия `learn` блок
+    // (`agent:` / `date:` / `entries:` / `statement:` …) = ПОВРЕДЕН ЗАПИС. Открито при преглед на
+    // карантината: три записа при Скоростника, от които `skorostnika.md:56` беше самият ХЕДЪР на
+    // блока („agent: skorostnika date: 2026-07-29 entries:") — тоест съдържанието на поуката е
+    // изчезнало напълно, а на негово място стои синтаксис. Останалите два носеха цял текст с паразитен
+    // префикс „statement: ", като ЕДИНИЯТ беше в „Проверени поуки", тоест се инжектираше при всеки
+    // старт на агента. Такъв запис е по-лош от липсващ: заема място, брои се за знание в таблото и
+    // изглежда правдоподобно. Правилото е СТРУКТУРНО и еднозначно (ключ на поле в началото на текста),
+    // затова няма нужда да гадае проза — измерено: 3 съвпадения из целия флот, и трите реални.
+    for (const [sec, list] of [["Проверени поуки", v], ["Карантина", q || []]])
+      for (const l of list) if (malformedLessonField(l))
+        hard.push({ kind: "malformed-lesson", msg: `${id}: поука в „${sec}" започва с поле на learn блока „${malformedLessonField(l)}:" (повреден запис): ${l.slice(2, 70).trim()}…` });
     // 7c. съветващо: висок дял карантина
     if (q === null) soft.push({ kind: "memory", msg: `${id}: няма секция „Карантина"` });
     else if (v.length >= 20 && q.length / v.length > 0.30)
