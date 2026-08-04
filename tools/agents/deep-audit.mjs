@@ -112,6 +112,35 @@ export function execWithoutBash(md, toolset) {
 }
 
 /**
+ * Котви към ПРЕИМЕНУВАНА продуктова папка (Кръг 14, 2026-08-04). Регистърът `renames.json` е явен —
+ * тук НЕ се гадае кой корен е мъртъв. Причината: наивното правило „несъществуващ пръв сегмент" беше
+ * измерено и дава 87 „мъртви корена", от които реални са 3 — останалите са URL сегменти, под-пътища
+ * и файлови имена. Затова гейтваме само това, което собственикът ЗНАЕ, че е преименувал.
+ *
+ * Гейтва се само ПЪТ-подобната форма (`old/нещо.ext`) — тя е счупена котва. Прозаичното споменаване
+ * на старото име („ospedali дизайнът…") е остаряло наименование, не мъртва препратка: докладва се.
+ */
+export function renamedPathHits(text, renames) {
+  const anchors = [], prose = [];
+  for (const { old, new: nu } of renames) {
+    const esc = old.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Класът трябва да включва „/“ — иначе се хваща само `old/файл.ext`, а НЕ дълбокото
+    // `old/bot/src/index.js`, което е най-честата форма. Първата версия го изпускаше и гейтът щеше
+    // да е зелен по слепота; тестът го хвана. („Гейт, чийто обхват е по-тесен от това, което
+    // проверява, е зелен по слепота" — вече записано веднъж за тригера на CI.)
+    // `{1,6}` режеше 7-буквени разширения: `.service` ставаше `.servic`. Това е ТРЕТИЯТ случай на
+    // същия truncation клас в този репо (първите два: `versions.json` → `versions.js`,
+    // `nginx.conf.example` → `nginx.conf`). Границата `(?![A-Za-z])` спира частичното съвпадение.
+    const REST = "[\\w./-]+\\.[a-zA-Z]{2,10}(?![A-Za-z])";
+    for (const m of String(text).matchAll(new RegExp(`(?<![\\w/@.-])${esc}/${REST}`, "g")))
+      anchors.push({ hit: m[0], old, nu });
+    for (const m of String(text).matchAll(new RegExp(`(?<![\\w/@.-])${esc}/(?!${REST})`, "g")))
+      prose.push({ hit: m[0], old, nu });
+  }
+  return { anchors, prose };
+}
+
+/**
  * Ако ТЕКСТЪТ на поука започва с поле на самия ```learn блок, записът е повреден при захващането —
  * връща името на полето, иначе null. Чиста функция (тества се срещу реалните низове от репото).
  *
@@ -130,6 +159,17 @@ export function malformedLessonField(bullet) {
 
 export function audit() {
   const hard = [], soft = [];
+
+  // Регистър на преименуванията. Той сам подлежи на проверка: застоял ред (старата папка пак
+  // съществува, или новата я няма) значи регистърът лъже — по-лошо от липсващ регистър.
+  let RENAMES = [];
+  try { RENAMES = JSON.parse(R("tools/agents/renames.json")).renames || []; }
+  catch { hard.push({ kind: "renames", msg: "tools/agents/renames.json липсва или не се парсва" }); }
+  for (const r of RENAMES) {
+    if (has(r.old)) hard.push({ kind: "renames", msg: `renames.json: „${r.old}" ВСЕ ОЩЕ съществува — редът е застоял` });
+    if (!has(r.new)) hard.push({ kind: "renames", msg: `renames.json: „${r.new}" не съществува — преименуването не е такова` });
+  }
+  let proseOld = 0;
   const ids = agentIds();
 
   // 1. Регистър ↔ дефиниция: инструменти/модел/усилие (кара injection гейта да лъже, ако дрейфне).
@@ -267,11 +307,21 @@ export function audit() {
     for (const [sec, list] of [["Проверени поуки", v], ["Карантина", q || []]])
       for (const l of list) if (malformedLessonField(l))
         hard.push({ kind: "malformed-lesson", msg: `${id}: поука в „${sec}" започва с поле на learn блока „${malformedLessonField(l)}:" (повреден запис): ${l.slice(2, 70).trim()}…` });
+    // 7b‴. ТВЪРДО (Кръг 14): котва към ПРЕИМЕНУВАНА папка. Измерено при пресверката на карантината:
+    // `vps-dashboard`→`vpsdash` обезсили 14 поуки на Наблюдателя и 4 на VPS-аджията НАВЕДНЪЖ, а
+    // `supreme`→`SupremeDiscordBot` развали котви при 4 агента — без никакъв сигнал дотогава.
+    const rn = renamedPathHits(md, RENAMES);
+    for (const h of rn.anchors)
+      hard.push({ kind: "renamed-path", msg: `${id}: котва към преименувана папка „${h.hit}" (→ ${h.nu}/…)` });
+    proseOld += rn.prose.length;   // прозаично старо име — козметично, само брой
     // 7c. съветващо: висок дял карантина
     if (q === null) soft.push({ kind: "memory", msg: `${id}: няма секция „Карантина"` });
     else if (v.length >= 20 && q.length / v.length > 0.30)
       soft.push({ kind: "quarantine", msg: `${id}: карантина ${q.length}/${v.length} (${Math.round(q.length / v.length * 100)}%) — произвежда много недоказани твърдения` });
   }
+  // Прозаично старо име („ospedali дизайнът…") е остаряло НАИМЕНОВАНИЕ, не счупена котва — затова
+  // се брои, не гейтва. Гейт по него би принудил масово пренаписване на историческа проза.
+  if (proseOld) soft.push({ kind: "renamed-prose", msg: `${proseOld} прозаични споменавания на преименувани папки (козметично — котвите са чисти)` });
 
   // 7d. ТВЪРДО: същата проверка за ФЛОТ-ШИРОКИТЕ инжектирани файлове (memory-preload ги слага в
   // статичния префикс на ВСЕКИ агент — мъртъв път там струва ×флота, по-скъпо от в една памет).

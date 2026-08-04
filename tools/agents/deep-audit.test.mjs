@@ -241,3 +241,59 @@ test("паметта на флота е чиста от повредени за�
       if (l.trim().startsWith("- ") && malformedLessonField(l)) bad.push(`${f}: ${l.slice(0, 80)}`);
   assert.deepEqual(bad, [], "повреден запис в паметта — виж deep-audit [malformed-lesson]");
 });
+
+// ── Кръг 14 (2026-08-04): котви към ПРЕИМЕНУВАНА папка ──────────────────────────────────────────
+// Открито при пресверката на цялата карантина: преименуване на продуктова папка обезсилва наведнъж
+// всяка поука, закотвена в нея. `vps-dashboard/`→`vpsdash/` (комит f9138190) уби 14 поуки на
+// Наблюдателя и 4 на VPS-аджията; `supreme/`→`SupremeDiscordBot/` (b0f96d78) развали котви при
+// четири агента; `ospedali/`→`ospedalitrasparenti/` — още. Дотогава нямаше НИКАКЪВ сигнал.
+//
+// ЗАЩО ЯВЕН РЕГИСТЪР, а не „несъществуващ пръв сегмент": измерено върху паметта — широкото правило
+// дава 87 „мъртви корена", от които реални са 3; останалите са URL сегменти (`unpkg.com/`), под-пътища
+// (`apps/`, `packages/`, `routes/`) и файлови имена. Пореден случай от същия урок: гейтвай това, което
+// собственикът ЗНАЕ, не това, което детекторът гадае.
+import { renamedPathHits } from "./deep-audit.mjs";
+
+const RN = [{ old: "supreme", new: "SupremeDiscordBot" }, { old: "vps-dashboard", new: "vpsdash" }];
+
+test("котва към преименувана папка СЕ хваща (реалният дефект)", () => {
+  const r = renamedPathHits("виж supreme/bot/src/index.js:89 за хендлърите", RN);
+  assert.equal(r.anchors.length, 1);
+  assert.equal(r.anchors[0].nu, "SupremeDiscordBot");
+});
+
+test("прозаично старо име се БРОИ, но не е котва (иначе гейтът иска пренаписване на историята)", () => {
+  const r = renamedPathHits("supreme/ дизайнът беше друг тогава", RN);
+  assert.equal(r.anchors.length, 0, "не е счупена котва");
+  assert.equal(r.prose.length, 1, "но се отчита като остаряло наименование");
+});
+
+// Границите, измерени върху реалната памет: широкото правило вдигаше по всяко от тези.
+for (const [text, why] of [
+  ["новият път е SupremeDiscordBot/bot/src/index.js", "новото име НЕ бива да се хваща"],
+  ["https://unpkg.com/discord.js@14.26.4/typings/index.d.ts", "URL сегмент, не репо път"],
+  ["Gaming/apps/web/src/main.ts е точката на вход", "легитимен под-път"],
+  ["инсталацията чете /etc/vps-dashboard/config.json", "старото име е ЛЕГИТИМНО за инсталацията"],
+])
+  test(`НЕ вдига: ${why}`, () => {
+    assert.equal(renamedPathHits(text, RN).anchors.length, 0, "правилото се е разширило — ще шуми");
+  });
+
+test("регистърът е честен: старите папки ги няма, новите ги има", () => {
+  const { renames } = JSON.parse(readFileSync(join(ROOT, "tools", "agents", "renames.json"), "utf8"));
+  assert.ok(renames.length >= 3, "трите известни преименувания трябва да са вписани");
+  for (const r of renames) {
+    assert.ok(!existsSync(join(ROOT, r.old)), `„${r.old}" още съществува — редът е застоял`);
+    assert.ok(existsSync(join(ROOT, r.new)), `„${r.new}" не съществува`);
+  }
+});
+
+test("паметта и дефинициите са чисти от котви към преименувани папки (регресия)", () => {
+  const { renames } = JSON.parse(readFileSync(join(ROOT, "tools", "agents", "renames.json"), "utf8"));
+  const bad = [];
+  for (const d of [join(ROOT, ".claude", "agents"), join(ROOT, ".claude", "agents", "_memory")])
+    for (const f of readdirSync(d).filter((x) => x.endsWith(".md")))
+      for (const h of renamedPathHits(readFileSync(join(d, f), "utf8"), renames).anchors)
+        bad.push(`${f}: ${h.hit}`);
+  assert.deepEqual(bad, [], "счупена котва след преименуване — виж deep-audit [renamed-path]");
+});
