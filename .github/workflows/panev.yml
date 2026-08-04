@@ -1,0 +1,53 @@
+name: panev
+
+on:
+  push:
+    paths:
+      - 'panev/**'
+      - '.github/workflows/panev.yml'
+  pull_request:
+    paths:
+      - 'panev/**'
+      - '.github/workflows/panev.yml'
+
+concurrency:
+  group: panev-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: panev/package-lock.json
+
+      # panev няма нито тестове, нито линт (виж package.json: start/dev/db:*/build:site).
+      # Не измисляме гейт, който не съществува — гейтваме това, което Е проверимо днес:
+      # инсталируемо дърво от зависимости (единственият сигнал за цялост при продукт с Stripe)
+      # и валиден синтаксис на целия сорс.
+      - name: Инсталируеми зависимости (lockfile е цял)
+        working-directory: panev
+        run: npm ci --no-audit --no-fund
+
+      - name: Синтаксис на целия сорс
+        working-directory: panev
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            node --check "$f" || { echo "::error file=panev/$f::синтактична грешка"; fail=1; }
+          done < <(find . -name '*.js' -o -name '*.mjs' | grep -v node_modules)
+          exit $fail
+
+      # СЪЗНАТЕЛНО БЕЗ `npm run build:site`: `site/build.mjs` импортва `site/data/i18n/{it,en,bg}.mjs`,
+      # а те НЕ са в репото — `panev/.gitignore` имаше неанкериран `data/`, който освен базата
+      # (`panev/data/`) криеше и `panev/site/data/`. Правилото е поправено на `/data/`, но самите
+      # файлове още липсват и билдът пада в чист клон (значи и в деплой архива). Щом собственикът
+      # ги комитне, добави тук стъпка `npm run build:site` — тя е истинският гейт за сайта.

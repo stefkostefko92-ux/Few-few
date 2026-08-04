@@ -37,7 +37,9 @@ function pathsOf(trigger) {
     if (/^\s{2}\S/.test(l) || /^\S/.test(l)) break;
     if (/^\s+paths:\s*$/.test(l)) { inPaths = true; continue; }
     if (inPaths) {
-      const m = l.match(/^\s+-\s+"([^"]+)"\s*$/);
+      // И двата стила кавички: agents.yml ползва двойни, продуктовите workflow-и — единични.
+      // (Първата версия четеше само двойни; безобидно преформатиране би обезсилило теста.)
+      const m = l.match(/^\s+-\s+["']([^"']+)["']\s*$/);
       if (m) { out.push(m[1]); continue; }
       if (/^\s*#/.test(l) || !l.trim()) continue;                  // коментар/празен ред
       if (/^\s+\w+:/.test(l)) inPaths = false;                     // следващ ключ
