@@ -24,6 +24,7 @@
     "start": "node server.js",
     "dev": "CSD_DEV=1 node --watch server.js",
     "lint": "node scripts/syntax-check.mjs",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "sweep": "node scripts/ui-sweep.mjs"
   }
 }

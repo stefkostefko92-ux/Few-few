@@ -20,10 +20,20 @@ Docker, процеси, journal логове, деплой (по канона н
 cd vpsdash
 npm run lint     # node --check на всеки .js/.mjs (scripts/syntax-check.mjs)
 npm test         # node --test test/*.test.js
+npm run sweep    # браузърна обиколка на 37-те секции (иска Playwright)
 npm start        # прод (иска /etc/vps-dashboard/config.json)
 npm run dev      # CSD_DEV=1 — ефимерен конфиг + еднократна парола в конзолата
 ```
 Гейтът е `npm run lint && npm test`. Пусни го преди commit/PR.
+
+**Пусни и `npm run sweep`, когато си пипал `public/`.** `node --check` вижда само
+синтаксис, `node --test` не рендва интерфейс — променлива в грешен обхват минава
+и двете и чупи ЦЯЛА секция. Реален случай: `const broken` беше деклариран вътре в
+`else`, а се ползваше след него → „Ъпдейти" отговаряше само `Грешка: broken is not
+defined`, при 380 зелени теста. Обиколката влиза във всяка секция с истински
+Chromium и пада при `Грешка:` в `#view`, празен изглед, JS изключение, 5xx или
+непреведен низ. Чака СКЕЛЕТЪТ да си отиде, не фиксирано време (apt отнема ~2 s).
+Пропуска се тихо (изход 0), ако Playwright липсва — не е зависимост на продукта.
 
 ## Оформление
 ```
@@ -137,6 +147,8 @@ public/                  index.html · app.js · ui.js · ansi.js · style.css
                          през GLYPH_ICONS в ui.js · nav-* за секциите през
                          img: в SECTIONS · ui-* за топбара в index.html)
 scripts/syntax-check.mjs zero-dep линтер
+scripts/ui-sweep.mjs     браузърна обиколка на всички секции (гейт срещу счупен
+                         рендер; собствена врата CSD_SWEEP_PORT, по подр. 7791)
 deploy/                  install.sh · set-password.sh · vps-dashboard.service ·
                          nginx.conf.example · desktop/docker-compose.yml
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
