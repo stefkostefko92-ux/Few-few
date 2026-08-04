@@ -1,0 +1,36 @@
+name: IP Lookup CI
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["iplookup/**", ".github/workflows/iplookup.yml"]
+  pull_request:
+    paths: ["iplookup/**", ".github/workflows/iplookup.yml"]
+
+concurrency:
+  group: iplookup-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: iplookup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: iplookup/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
