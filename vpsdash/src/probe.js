@@ -7,9 +7,9 @@
 //
 // ВАЖНО: с keep-alive агент събитията lookup/connect/secureConnect НЕ се излъчват
 // при преизползвана връзка → фазите излизат 0 и лъжат. Затова agent:false.
-import { request as httpRequest } from 'node:http';
-import { request as httpsRequest } from 'node:https';
-import dns from 'node:dns';
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
+import dns from "node:dns";
 
 const MAX_BODY = 256 * 1024;
 
@@ -19,18 +19,31 @@ export async function probe(target, { timeoutMs = 10000 } = {}) {
   try {
     url = new URL(target.url);
   } catch {
-    return { name: target.name, url: target.url, up: false, error: 'невалиден URL' };
+    return {
+      name: target.name,
+      url: target.url,
+      up: false,
+      error: "невалиден URL",
+    };
   }
 
-  const t = { start: started, dns: null, connect: null, tls: null, ttfb: null, done: null };
-  const reqFn = url.protocol === 'https:' ? httpsRequest : httpRequest;
+  const t = {
+    start: started,
+    dns: null,
+    connect: null,
+    tls: null,
+    ttfb: null,
+    done: null,
+  };
+  const reqFn = url.protocol === "https:" ? httpsRequest : httpRequest;
 
   return new Promise((resolve) => {
     let settled = false;
     const finish = (extra) => {
       if (settled) return;
       settled = true;
-      const phase = (a, b) => (a != null && b != null ? Math.max(0, a - b) : null);
+      const phase = (a, b) =>
+        a != null && b != null ? Math.max(0, a - b) : null;
       resolve({
         name: target.name,
         url: target.url,
@@ -46,48 +59,68 @@ export async function probe(target, { timeoutMs = 10000 } = {}) {
       });
     };
 
-    const req = reqFn(
-      url,
-      {
-        method: target.method || 'GET',
-        timeout: timeoutMs,
-        agent: false, // нова връзка → фазовите тайминги са истински
-        headers: { 'user-agent': 'carbon-stealth-vps-dashboard/probe' },
-      },
-      (res) => {
-        t.ttfb = Date.now();
-        let body = '';
-        let size = 0;
-        res.on('data', (c) => {
-          size += c.length;
-          if (body.length < MAX_BODY) body += c.toString('utf8');
-          if (size > MAX_BODY * 4) res.destroy(); // не тегли безкрайно
-        });
-        res.on('end', () => {
-          t.done = Date.now();
-          const statusOk = target.expectStatus
-            ? res.statusCode === Number(target.expectStatus)
-            : res.statusCode >= 200 && res.statusCode < 400;
-          // HTTP 200 с „Application error" вътре е DOWN за потребителя.
-          const contentOk = target.expectText ? body.includes(target.expectText) : true;
-          finish({
-            up: statusOk && contentOk,
-            status: res.statusCode,
-            bytes: size,
-            contentOk,
-            contentError: target.expectText && !contentOk ? `липсва текстът „${target.expectText}"` : null,
-            tls: tlsInfo,
+    // Node ОТКАЗВА заявка с нов ред в пътя (`ERR_UNESCAPED_CHARACTERS`) — това е
+    // защитата му срещу инжекция в заглавки и тя работи. Но хвърля СИНХРОННО,
+    // извън Promise-а: без този try пробата не връщаше резултат, а сриваше
+    // маршрута с 500. Пробата по договор НЕ хвърля — тя казва „не работи" и
+    // защо, точно както при невалиден URL по-горе.
+    let req;
+    try {
+      req = reqFn(
+        url,
+        {
+          method: target.method || "GET",
+          timeout: timeoutMs,
+          agent: false, // нова връзка → фазовите тайминги са истински
+          headers: { "user-agent": "carbon-stealth-vps-dashboard/probe" },
+        },
+        (res) => {
+          t.ttfb = Date.now();
+          let body = "";
+          let size = 0;
+          res.on("data", (c) => {
+            size += c.length;
+            if (body.length < MAX_BODY) body += c.toString("utf8");
+            if (size > MAX_BODY * 4) res.destroy(); // не тегли безкрайно
           });
-        });
-        res.on('error', () => finish({ up: false, error: 'прекъснат отговор', tls: tlsInfo }));
-      }
-    );
+          res.on("end", () => {
+            t.done = Date.now();
+            const statusOk = target.expectStatus
+              ? res.statusCode === Number(target.expectStatus)
+              : res.statusCode >= 200 && res.statusCode < 400;
+            // HTTP 200 с „Application error" вътре е DOWN за потребителя.
+            const contentOk = target.expectText
+              ? body.includes(target.expectText)
+              : true;
+            finish({
+              up: statusOk && contentOk,
+              status: res.statusCode,
+              bytes: size,
+              contentOk,
+              contentError:
+                target.expectText && !contentOk
+                  ? `липсва текстът „${target.expectText}"`
+                  : null,
+              tls: tlsInfo,
+            });
+          });
+          res.on("error", () =>
+            finish({ up: false, error: "прекъснат отговор", tls: tlsInfo }),
+          );
+        },
+      );
+    } catch (err) {
+      return finish({
+        up: false,
+        error: `заявката е отказана: ${String(err.code || err.message).slice(0, 60)}`,
+      });
+    }
 
     let tlsInfo = null;
-    req.on('socket', (socket) => {
-      socket.on('lookup', () => (t.dns = Date.now()));
-      socket.on('connect', () => (t.connect = Date.now()));
-      socket.on('secureConnect', () => {
+    req.on("socket", (socket) => {
+      socket.on("lookup", () => (t.dns = Date.now()));
+      socket.on("connect", () => (t.connect = Date.now()));
+      socket.on("secureConnect", () => {
         t.tls = Date.now();
         try {
           const cert = socket.getPeerCertificate(true);
@@ -97,31 +130,45 @@ export async function probe(target, { timeoutMs = 10000 } = {}) {
           while (c && c.fingerprint256 && !seen.has(c.fingerprint256)) {
             seen.add(c.fingerprint256);
             chain.push({
-              subject: c.subject?.CN || '',
-              issuer: c.issuer?.CN || '',
+              subject: c.subject?.CN || "",
+              issuer: c.issuer?.CN || "",
               validTo: c.valid_to,
-              daysLeft: c.valid_to ? Math.round((new Date(c.valid_to).getTime() - Date.now()) / 86400000) : null,
+              daysLeft: c.valid_to
+                ? Math.round(
+                    (new Date(c.valid_to).getTime() - Date.now()) / 86400000,
+                  )
+                : null,
             });
             c = c.issuerCertificate;
           }
           tlsInfo = {
             authorized: socket.authorized,
-            error: socket.authorizationError ? String(socket.authorizationError) : null,
+            error: socket.authorizationError
+              ? String(socket.authorizationError)
+              : null,
             protocol: socket.getProtocol ? socket.getProtocol() : null,
             chain,
             // Най-слабото звено във веригата решава кога сайтът ще се счупи.
-            minDaysLeft: chain.length ? Math.min(...chain.map((x) => x.daysLeft ?? 9999)) : null,
+            minDaysLeft: chain.length
+              ? Math.min(...chain.map((x) => x.daysLeft ?? 9999))
+              : null,
           };
         } catch {
           tlsInfo = null;
         }
       });
     });
-    req.on('timeout', () => {
+    req.on("timeout", () => {
       req.destroy();
-      finish({ up: false, error: `няма отговор за ${timeoutMs} ms`, tls: tlsInfo });
+      finish({
+        up: false,
+        error: `няма отговор за ${timeoutMs} ms`,
+        tls: tlsInfo,
+      });
     });
-    req.on('error', (err) => finish({ up: false, error: err.message, tls: tlsInfo }));
+    req.on("error", (err) =>
+      finish({ up: false, error: err.message, tls: tlsInfo }),
+    );
     req.end();
   });
 }
@@ -141,7 +188,7 @@ export async function resolveHost(hostname) {
     out.a = a;
     out.aaaa = aaaa;
     out.ms = Date.now() - started;
-    if (!a.length && !aaaa.length) out.error = 'няма A/AAAA запис';
+    if (!a.length && !aaaa.length) out.error = "няма A/AAAA запис";
   } catch (err) {
     out.error = err.message;
     out.ms = Date.now() - started;
@@ -151,7 +198,7 @@ export async function resolveHost(hostname) {
 
 export function diffDns(prev, curr) {
   if (!prev) return null;
-  const before = [...(prev.a || []), ...(prev.aaaa || [])].sort().join(',');
-  const after = [...(curr.a || []), ...(curr.aaaa || [])].sort().join(',');
+  const before = [...(prev.a || []), ...(prev.aaaa || [])].sort().join(",");
+  const after = [...(curr.a || []), ...(curr.aaaa || [])].sort().join(",");
   return before === after ? null : { before, after };
 }

@@ -158,6 +158,47 @@ test('всеки GET маршрут в routes.js е в обиколката', as
   );
 });
 
+// Невалидният ВХОД не бива да дава 5xx. Освен че лъже за произхода на грешката
+// („наша", когато е на подателя), 5xx влизат в SLO и хранят алармата за процент
+// грешки — бот, който чука `/api/files?path=…`, вдигаше критична аларма за
+// напълно здрав панел. Проверено на живо с 252 злонамерени комбинации.
+test('невалиден вход дава 4xx, не 5xx (и нищо не изтича)', async () => {
+  const evil = [
+    '../../../etc/shadow',
+    '%00',
+    'a'.repeat(3000),
+    '; ' + 'rm -' + 'rf /',
+    '$(' + 'whoami)',
+    '../../..',
+    String.fromCharCode(10) + 'Host: evil',
+    '{{7*7}}',
+    '-1',
+    'NaN',
+  ];
+  const targets = [
+    (v) => `/api/files?path=${encodeURIComponent(v)}`,
+    (v) => `/api/files/read?path=${encodeURIComponent(v)}`,
+    (v) => `/api/env/file?path=${encodeURIComponent(v)}`,
+    (v) => `/api/webserver/site?file=${encodeURIComponent(v)}`,
+    (v) => `/api/databases/sqlite/check?file=${encodeURIComponent(v)}`,
+    (v) => `/api/probe?url=${encodeURIComponent(v)}`,
+    (v) => `/api/jobs/${encodeURIComponent(v)}`,
+  ];
+  const failures = [];
+  for (const t of targets) {
+    for (const v of evil) {
+      const res = await fetch(BASE + t(v), { headers: { cookie } });
+      const body = await res.text();
+      if (res.status >= 500) failures.push(`${res.status} ${t(v).slice(0, 60)} → ${body.slice(0, 60)}`);
+      // Съдържание на чувствителен файл не бива да излиза по НИКОЙ път.
+      if (/root:x?:0:0:|BEGIN [A-Z ]*PRIVATE KEY|scrypt:\d/.test(body)) {
+        failures.push(`ИЗТИЧАНЕ: ${t(v).slice(0, 60)}`);
+      }
+    }
+  }
+  assert.deepEqual(failures, [], 'невалиден вход не бива да е 5xx:\n' + failures.join('\n'));
+});
+
 test('без сесия всичко е 401', async () => {
   for (const route of ['/api/overview', '/api/kernel', '/api/forecast', '/api/sessions', '/api/audit']) {
     const res = await fetch(BASE + route);
