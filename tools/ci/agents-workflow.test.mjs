@@ -15,7 +15,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -87,4 +87,22 @@ test("реалният пропуск: промяна САМО в продукт
   assert.ok(covers("vpsdash/CLAUDE.md"), "vpsdash/CLAUDE.md трябва да е покрит от тригера");
   assert.ok(covers("mascot/mascot.svg"), "mascot/ трябва да е покрит");
   assert.ok(covers("deploy/autodeploy.sh"), "deploy/ трябва да е покрит");
+});
+
+// ── Кръг 8 (2026-08-04): измерване, което не се ЗАПАЗВА, е нула ────────────────────────────────
+// Реален дефект: `behavioral-eval.yml` пускаше месечния поведенчески евал (реални API пари), но
+// нямаше НИТО артефакт, НИТО комит, а правата бяха `contents: read`. `evals/trend.jsonl` се пишеше
+// вътре в runner-а и умираше с него — затова трендът в git стоеше празен, макар механизмът да
+// съществува от седмици. Поведенческа регресия не се вижда от една точка: тренд без история е нула.
+test("behavioral-eval ЗАПАЗВА тренда обратно в репото (иначе рънът изпарява)", () => {
+  const wf = join(ROOT, ".github", "workflows", "behavioral-eval.yml");
+  assert.ok(existsSync(wf), "behavioral-eval.yml липсва");
+  const s = readFileSync(wf, "utf8");
+  const code = s.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n");
+  assert.match(code, /git add tools\/agents\/evals\/trend\.jsonl/, "трендът трябва да се комитва обратно");
+  assert.match(code, /git push/, "иначе комитът остава в runner-а");
+  assert.match(code, /contents:\s*write/, "job-ът се нуждае от право за запис");
+  assert.match(code, /^permissions:\s*\n\s+contents:\s*read/m, "глобалните права остават read (least-privilege)");
+  // Комит само при реална промяна — без празни комити всеки месец.
+  assert.match(code, /git diff --quiet -- tools\/agents\/evals\/trend\.jsonl/, "комит само при промяна");
 });
