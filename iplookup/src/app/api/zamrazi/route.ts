@@ -7,6 +7,7 @@ import { freezeEvidence } from "@/lib/evidence";
 import { parseIp } from "@/lib/ip";
 import { lookup } from "@/lib/lookup";
 import { isInvestigationMode } from "@/lib/mode";
+import { can, DENIED_MESSAGE } from "@/lib/permissions";
 import { geoIpStatus } from "@/lib/sources/geoip";
 
 /**
@@ -33,6 +34,10 @@ export async function POST(request: Request) {
       { error: "Няма задена преписка. Замразяване без основание не се прави." },
       { status: 409 },
     );
+  }
+
+  if (!can(context.session.role, "freeze")) {
+    return NextResponse.json({ error: DENIED_MESSAGE }, { status: 403 });
   }
 
   const parsed = Body.safeParse(await request.json().catch(() => null));

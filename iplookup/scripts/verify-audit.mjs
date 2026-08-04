@@ -15,9 +15,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
-const path =
-  process.argv[2] ||
-  join(process.env.IPLOOKUP_AUDIT_DIR?.trim() || join(process.cwd(), "data", "audit"), "audit.jsonl");
+const directory = process.env.IPLOOKUP_AUDIT_DIR?.trim() || join(process.cwd(), "data", "audit");
+const path = process.argv[2] || join(directory, "audit.jsonl");
 
 if (!existsSync(path)) {
   process.stderr.write(`Няма такъв дневник: ${path}\n`);
@@ -42,11 +41,44 @@ function canonicalize(value) {
 const sha256 = (text) => createHash("sha256").update(text, "utf8").digest("hex");
 const GENESIS = "0".repeat(64);
 
+/**
+ * Откъде трябва да започва тази верига.
+ *
+ * Три случая, и трите реални:
+ * · ЗАПЕЧАТАН АРХИВ — началото му е записано в собствения му печат. Ползването
+ *   на текущото продължение тук би обявило всеки архив за повреден, защото то
+ *   сочи звеното СЛЕД него.
+ * · ЖИВ ДНЕВНИК след въртене — започва от звеното в `continuation.txt`.
+ * · Първи дневник — от `GENESIS`.
+ */
+function resolveStart(target) {
+  const seal = target.replace(/\.jsonl$/, ".seal.json");
+  if (existsSync(seal)) {
+    try {
+      const parsed = JSON.parse(readFileSync(seal, "utf8"));
+      if (/^[0-9a-f]{64}$/.test(parsed.startsFrom ?? "")) return parsed.startsFrom;
+      return GENESIS;
+    } catch {
+      // Повреден печат: по-добре да се провери спрямо GENESIS и находката да
+      // излезе, отколкото да се приеме непроверимо начало.
+      return GENESIS;
+    }
+  }
+  const continuation = join(directory, "continuation.txt");
+  if (existsSync(continuation)) {
+    const saved = readFileSync(continuation, "utf8").trim();
+    if (/^[0-9a-f]{64}$/.test(saved)) return saved;
+  }
+  return GENESIS;
+}
+
+const startsFrom = resolveStart(path);
+
 const lines = readFileSync(path, "utf8").split("\n");
 const problems = [];
-let expectedPrev = GENESIS;
+let expectedPrev = startsFrom;
 let count = 0;
-let tip = GENESIS;
+let tip = startsFrom;
 
 for (let index = 0; index < lines.length; index++) {
   const line = lines[index].trim();
@@ -74,6 +106,9 @@ for (let index = 0; index < lines.length; index++) {
 }
 
 process.stdout.write(`Дневник: ${path}\nЗаписи: ${count}\n`);
+if (startsFrom !== GENESIS) {
+  process.stdout.write(`Продължение на запечатан архив от звено: ${startsFrom}\n`);
+}
 
 if (problems.length === 0) {
   // Последното звено се обявява САМО при цяла верига: при повреда то не значи

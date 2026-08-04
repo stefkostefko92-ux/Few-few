@@ -59,9 +59,34 @@ export interface AuditEntry {
 
 export type StoredAuditEntry = AuditEntry & ChainedRecord;
 
+function auditDir(): string {
+  return process.env.IPLOOKUP_AUDIT_DIR?.trim() || join(process.cwd(), "data", "audit");
+}
+
 function auditPath(): string {
-  const directory = process.env.IPLOOKUP_AUDIT_DIR?.trim() || join(process.cwd(), "data", "audit");
-  return join(directory, "audit.jsonl");
+  return join(auditDir(), "audit.jsonl");
+}
+
+/**
+ * Продължението след запечатване.
+ *
+ * Срокът на съхранение изисква старите записи да могат да се извадят, но
+ * веригата не понася изрязване: махнеш ли началото, всичко след него виси.
+ * Затова архивирането ЗАПЕЧАТВА текущия файл и оставя последното му звено тук.
+ * Новият дневник продължава от него, значи двата файла заедно остават една
+ * непрекъсната верига — а без архива новият файл честно показва, че началото му
+ * е другаде, вместо да се преструва, че историята започва от нула.
+ */
+function continuationPath(): string {
+  return join(auditDir(), "continuation.txt");
+}
+
+function chainStart(entries: readonly StoredAuditEntry[]): string {
+  if (entries.length > 0) return tipOf(entries);
+  const path = continuationPath();
+  if (!existsSync(path)) return GENESIS;
+  const saved = readFileSync(path, "utf8").trim();
+  return /^[0-9a-f]{64}$/.test(saved) ? saved : GENESIS;
 }
 
 function ensureFile(path: string): void {
@@ -104,7 +129,7 @@ export function appendAudit(entry: AuditEntry): StoredAuditEntry {
   ensureFile(path);
 
   const { entries } = readAudit();
-  const record = link(entry as unknown as Record<string, unknown>, tipOf(entries)) as unknown as StoredAuditEntry;
+  const record = link(entry as unknown as Record<string, unknown>, chainStart(entries)) as unknown as StoredAuditEntry;
   appendFileSync(path, `${JSON.stringify(record)}\n`, { mode: 0o600 });
   return record;
 }
@@ -119,18 +144,32 @@ export interface AuditIntegrity {
    * представя като валиден.
    */
   tip: string | null;
+  /** Началото на веригата: `GENESIS` или последното звено на запечатан архив. */
+  startsFrom: string;
   intact: boolean;
 }
 
-/** Проверява целостта на целия дневник. */
+/**
+ * Проверява целостта на целия дневник.
+ *
+ * Ако файлът е продължение на запечатан архив, първото звено се сверява с
+ * записаното продължение, а не с `GENESIS` — иначе всеки въртян дневник би
+ * изглеждал повреден от първия си ред.
+ */
 export function verifyAudit(): AuditIntegrity {
   const { entries, malformed } = readAudit();
-  const problems = verifyChain(entries as unknown as (Record<string, unknown> & ChainedRecord)[]);
+  const expectedStart = chainStart([]);
+  const problems = verifyChain(
+    entries as unknown as (Record<string, unknown> & ChainedRecord)[],
+    expectedStart,
+  );
   return {
     entryCount: entries.length,
     problems,
     malformedLines: malformed,
-    tip: problems.length > 0 ? null : entries.length === 0 ? GENESIS : tipOf(entries),
+    tip: problems.length > 0 ? null : entries.length === 0 ? expectedStart : tipOf(entries),
+    /** Откъде започва тази верига — `GENESIS` или звеното на запечатан архив. */
+    startsFrom: expectedStart,
     intact: problems.length === 0 && malformed.length === 0,
   };
 }

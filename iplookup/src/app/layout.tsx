@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import SessionBar from "@/components/SessionBar";
 import { KEYWORDS, PUBLISHER, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Към съдържанието
         </a>
+        <SessionBar />
         <Header />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
           {children}

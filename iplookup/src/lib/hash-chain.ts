@@ -89,9 +89,16 @@ export interface ChainProblem {
  * Връща ВСИЧКИ проблеми, не само първия: при инцидент е важно да се види
  * докъде стига повредата, а не само откъде започва.
  */
-export function verifyChain(records: readonly (Record<string, unknown> & ChainedRecord)[]): ChainProblem[] {
+export function verifyChain(
+  records: readonly (Record<string, unknown> & ChainedRecord)[],
+  /**
+   * Откъде трябва да започва веригата. По подразбиране `GENESIS`, но при
+   * дневник, който продължава запечатан архив, началото е звеното на архива.
+   */
+  startsFrom: string = GENESIS,
+): ChainProblem[] {
   const problems: ChainProblem[] = [];
-  let expectedPrev = GENESIS;
+  let expectedPrev = startsFrom;
 
   for (let index = 0; index < records.length; index++) {
     const record = records[index];

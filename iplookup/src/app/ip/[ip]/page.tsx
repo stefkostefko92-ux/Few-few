@@ -19,6 +19,7 @@ import {
 import { bestCountry, lookup, type LookupReport } from "@/lib/lookup";
 import { capabilities, isInvestigationMode } from "@/lib/mode";
 import { readCaseContext } from "@/lib/case-context";
+import { can, DENIED_MESSAGE } from "@/lib/permissions";
 import { appendAudit } from "@/lib/audit";
 import CaseGate from "@/components/CaseGate";
 import FreezeButton from "@/components/FreezeButton";
@@ -154,6 +155,17 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
   // В следствен режим справка без обосновка изобщо не тръгва: одиторският
   // запис я изисква, а обосновка след видян резултат не е обосновка.
   const caseContext = isInvestigationMode() ? await readCaseContext() : null;
+
+  // Одиторът не прави справки: който проверява законосъобразността на чуждите
+  // справки, не бива да е и източник на такива.
+  if (caseContext && !can(caseContext.session.role, "lookup")) {
+    return (
+      <Card title="Отказан достъп">
+        <p className="text-sm text-text-muted">{DENIED_MESSAGE}</p>
+      </Card>
+    );
+  }
+
   if (isInvestigationMode() && !caseContext) {
     return (
       <Card
@@ -411,7 +423,7 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
           трябва да види — не последното. */}
       {isInvestigationMode() ? <OpsecNotice report={report} /> : null}
 
-      {isInvestigationMode() ? (
+      {caseContext && can(caseContext.session.role, "freeze") ? (
         <Card title="Замразяване за преписка">
           <FreezeButton ip={ip.normalized} />
         </Card>
@@ -429,7 +441,7 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
         </Card>
       ) : null}
 
-      {capabilities().activeProbe ? (
+      {capabilities().activeProbe && (!caseContext || can(caseContext.session.role, "probe")) ? (
         <Card
           title="Активна проверка"
           hint="Всичко по-горе е справка в регистри. Това под тук се свързва с адреса и отсрещната страна го вижда."

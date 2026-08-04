@@ -114,3 +114,21 @@ test("пренаредени редове се хващат", () => {
   const swapped = [records[0]!, records[2]!, records[1]!];
   assert.ok(verifyChain(swapped).length > 0);
 });
+
+test("верига, продължаваща запечатан архив, е валидна от своето звено", () => {
+  // След въртене новият дневник започва от последното звено на архива, не от
+  // GENESIS. Без този параметър всеки въртян дневник би изглеждал повреден.
+  const sealed = chain([{ n: 1 }, { n: 2 }]);
+  const tip = tipOf(sealed);
+
+  const continued: (Record<string, unknown> & ChainedRecord)[] = [];
+  let prev = tip;
+  for (const payload of [{ n: 3 }, { n: 4 }]) {
+    const record = link(payload as Record<string, unknown>, prev);
+    continued.push(record);
+    prev = record.hash;
+  }
+
+  assert.deepEqual(verifyChain(continued, tip), [], "валидна спрямо звеното на архива");
+  assert.ok(verifyChain(continued).length > 0, "и НЕвалидна спрямо GENESIS — точно както трябва");
+});

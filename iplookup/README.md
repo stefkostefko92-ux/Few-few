@@ -68,9 +68,15 @@ npm run lint && npm run typecheck && npm test && npm run build
 ```bash
 node scripts/add-user.mjs ivanov "Иван Иванов" "РПУ Дупница" operator
 node scripts/verify-audit.mjs        # проверява веригата на дневника
+node scripts/rotate-audit.mjs        # запечатва дневника и започва нов
 ```
 
+Роли: `operator` (заявител) · `supervisor` (ръководител) · `auditor` (одитор).
+Одиторът нарочно не може да прави справки.
+
 Пълните изисквания и какво още липсва: `SECURITY.md` → „Следствено издание“.
+Инсталация: `docs/DEPLOY-ON-PREM.md`. Суровина за договора:
+`docs/PRILOJENIE-TEHNICHESKO.md`.
 
 Няма API ключове. Продуктът работи изцяло с безплатни, публични източници,
 разрешени за търговска употреба — списъкът и забраните са в `CLAUDE.md`.

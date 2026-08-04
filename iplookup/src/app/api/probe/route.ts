@@ -3,7 +3,10 @@ import { z } from "zod";
 
 import { clientIpOptionsFromEnv, pickClientIp } from "@/lib/client-ip";
 import { isGloballyRoutable, parseIp } from "@/lib/ip";
-import { capabilities } from "@/lib/mode";
+import { appendAudit } from "@/lib/audit";
+import { readCaseContext } from "@/lib/case-context";
+import { capabilities, isInvestigationMode } from "@/lib/mode";
+import { can, DENIED_MESSAGE } from "@/lib/permissions";
 import { RateLimiter } from "@/lib/rate-limit";
 import { probe } from "@/lib/sources/probe";
 
@@ -42,6 +45,22 @@ export async function POST(request: Request) {
       },
       { status: 403 },
     );
+  }
+
+  // В следствен режим проверката е и действие по разследване: иска роля,
+  // основание и запис в дневника. Тя е най-издайническото нещо тук — целта
+  // вижда нашия адрес — затова не бива да е по-леко проверена от справката.
+  const context = isInvestigationMode() ? await readCaseContext() : null;
+  if (isInvestigationMode()) {
+    if (!context) {
+      return NextResponse.json(
+        { error: "Няма задена преписка. Активна проверка без основание не се прави." },
+        { status: 409 },
+      );
+    }
+    if (!can(context.session.role, "probe")) {
+      return NextResponse.json({ error: DENIED_MESSAGE }, { status: 403 });
+    }
   }
 
   const options = clientIpOptionsFromEnv();
@@ -88,6 +107,23 @@ export async function POST(request: Request) {
   }
 
   const result = await probe(ip);
+
+  if (context) {
+    appendAudit({
+      ts: new Date().toISOString(),
+      actor: context.session.sub,
+      actorUnit: context.session.unit,
+      actorRole: context.session.role,
+      action: "активна-проверка",
+      justification: context.justification,
+      query: ip.normalized,
+      // Записваме кои портове са отговорили: това е действието, което целта е
+      // видяла, и то трябва да е възстановимо от дневника.
+      sources: result.ports.filter((port) => port.state === "open").map((port) => `порт ${port.port}`),
+      clientIp: client?.ip.normalized,
+    });
+  }
+
   return NextResponse.json(result, {
     // Резултатът е моментна снимка — кеширането му би подвело потребителя.
     headers: { "cache-control": "no-store" },
