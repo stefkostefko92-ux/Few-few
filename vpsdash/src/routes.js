@@ -925,9 +925,23 @@ export function buildRouter(ctx) {
             if (Number.isFinite(n) && n >= 0) patch.accesslog[k] = n;
           }
         }
+        // „Записано" трябва да значи ЗАПИСАНО. Маршрутът приема ЗАТВОРЕН списък
+        // полета (нарочно — вложеният обект е защитата срещу презаписване на
+        // тайни); но тяло, което не съвпада с формата, минаваше през него без
+        // нито едно приложено поле и връщаше `ok: true`. Човекът вижда „готово",
+        // прагът не е сменен, и следващият въпрос е „защо алармата пак гърми".
+        const applied = Object.keys(patch.alerts?.thresholds || {})
+          .concat(Object.keys(patch.alerts || {}).filter((k) => k !== 'thresholds'))
+          .concat(Object.keys(patch.accesslog || {}));
+        if (!applied.length) {
+          throw Object.assign(
+            new Error('Нищо не е разпознато в тялото — очаква се { alerts: { thresholds: {…} } } или { accesslog: {…} }.'),
+            { status: 400 }
+          );
+        }
         saveConfig(cfg, patch);
-        audit.log({ action: 'alerts.settings', user: req.user });
-        return { ok: true };
+        audit.log({ action: 'alerts.settings', fields: applied.join(','), user: req.user });
+        return { ok: true, applied };
       }),
       { mutating: true }
     )
