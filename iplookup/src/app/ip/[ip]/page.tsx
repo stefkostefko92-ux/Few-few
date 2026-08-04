@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { Badge, Card, EmptyNote, Field, Fields } from "@/components/DataCard";
 import ActiveProbe from "@/components/ActiveProbe";
+import CaseBrief from "@/components/CaseBrief";
 import SearchForm from "@/components/SearchForm";
 import WorldMap, { countryCentre, formatCoordinates } from "@/components/WorldMap";
 import {
@@ -16,6 +17,7 @@ import {
   type ParsedIp,
 } from "@/lib/ip";
 import { bestCountry, lookup } from "@/lib/lookup";
+import { isInvestigationMode } from "@/lib/mode";
 
 interface PageProps {
   params: Promise<{ ip: string }>;
@@ -334,6 +336,18 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
               адреса — не е удостоверение за добро поведение.
             </p>
           ) : null}
+        </Card>
+      ) : null}
+
+      {/* Следствената справка е САМО за вътрешното издание. В публичния режим
+          не се рендира изобщо — не е скрита с CSS, а изобщо не съществува в
+          отговора. */}
+      {isInvestigationMode() ? (
+        <Card
+          title="Следствена справка"
+          hint="Подготвя искането до оператора. Инструментът не локализира — той прави искането пълно, за да не се върне празно."
+        >
+          <CaseBrief ip={ip} report={report} />
         </Card>
       ) : null}
 
