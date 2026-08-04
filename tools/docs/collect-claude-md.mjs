@@ -63,7 +63,13 @@ const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2) + 
 
 if (CHECK) {
   const cur = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
-  if (cur !== body) { console.error("docs.js е остарял — пусни: node tools/docs/collect-claude-md.mjs"); process.exit(1); }
+  // ДАТА-НЕЧУВСТВИТЕЛНО: сравняваме СЪДЪРЖАНИЕТО (files), не `generated` датата. Иначе gate-ът е
+  // червен ВСЕКИ ден (днешна дата ≠ вградената) — точно затова проверката досега НЕ беше гейтвана и
+  // реален дрейф на съдържанието (променен CLAUDE.md без регенерация) минаваше невидим. Взимаме
+  // датата от съществуващия файл, за да остане само съдържанието като разлика.
+  const curDate = (cur.match(/"generated":\s*"([^"]+)"/) || [])[1] || generated;
+  const checkBody = banner + "window.__DOCS__ = " + JSON.stringify({ generated: curDate, files }, null, 2) + ";\nvar docs = window.__DOCS__;\n";
+  if (cur !== checkBody) { console.error("docs.js е остарял (съдържание на CLAUDE.md се е променило) — пусни: node tools/docs/collect-claude-md.mjs"); process.exit(1); }
   console.log(`docs.js е актуален (${files.length} файла).`);
   process.exit(0);
 }
