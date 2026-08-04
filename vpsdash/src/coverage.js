@@ -91,6 +91,21 @@ export function coveredDomains(cfg) {
   return set;
 }
 
+// Защо резултатът носи и СЪСТОЯНИЕТО на четенето: „нула сайта" има три много
+// различни причини — няма такъв уеб сървър на машината, папката не се чете
+// (права), или сървърът наистина няма нито един сайт. Първите две са „не знам",
+// третата е „наред". Смесени в едно число, панелът успокоява точно когато не
+// бива: жив сайт извън наблюдение изглежда като липса на сайтове.
+export function readSource(dir) {
+  try {
+    fs.readdirSync(dir);
+    return 'read';
+  } catch (err) {
+    if (err.code === 'ENOENT' || err.code === 'ENOTDIR') return 'missing';
+    return 'denied';
+  }
+}
+
 function readDirFiles(dir) {
   const out = [];
   let entries = [];
@@ -135,11 +150,20 @@ export function siteCoverage(cfg) {
   }
 
   const all = [...byCanon.values()].sort((a, b) => a.domain.localeCompare(b.domain));
+  const sources = { nginx: readSource(NGINX_ENABLED), caddy: readSource(CADDY_SITES) };
+  // Нито един четим източник → казваме „не знам", вместо „нула сайта".
+  // Отказан достъп е ОТДЕЛНО от липсващ: първото е проблем за оправяне
+  // (панелът върви без права), второто е нормално (няма такъв уеб сървър).
+  const denied = Object.entries(sources).filter(([, v]) => v === 'denied').map(([k]) => k);
+  const unknown = !Object.values(sources).includes('read');
   return {
     total: all.length,
     watched: all.filter((s) => s.watched).length,
     unwatched: all.filter((s) => !s.watched),
     sites: all,
+    sources,
+    denied,
+    unknown,
   };
 }
 

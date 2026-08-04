@@ -8,7 +8,7 @@ import path from 'node:path';
 import { clientIp, sendJson, openSse } from '../src/httpd.js';
 import { loginAllowed, loginFailed, _resetLoginLimiter } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
-import { run } from '../src/exec.js';
+import { run, runOk } from '../src/exec.js';
 import { redactSecrets, writeFile, readFilePreview } from '../src/files.js';
 import { loadConfig } from '../src/config.js';
 
@@ -204,4 +204,29 @@ test('exec: команда, която ИГНОРИРА SIGTERM, все пак �
   const dt = Date.now() - t0;
   assert.equal(r.ok, false, 'заклещената команда не е успех');
   assert.ok(dt < 5000, `трябва да умре от втория удар, а отне ${dt} ms`);
+});
+
+// ── Липсващ инструмент ≠ „Вътрешна грешка" ───────────────────────────────────
+test('exec: липсваща команда казва КОЯ липсва и кой пакет я носи', async () => {
+  // Панелът върви на машини, където `ps`/`docker`/`ufw` може да ги няма. Ако
+  // това стигне до потребителя като „Вътрешна грешка", човекът търси бъг в
+  // панела, вместо да инсталира пакета. Съобщението е безопасно (име на
+  // стандартен пакет) — затова носи `safe` и минава през маската на 5xx.
+  await assert.rejects(
+    () => runOk('няма-такава-команда-vpsdash', []),
+    (err) => {
+      assert.equal(err.status, 503, 'липсващ инструмент не е 502 „лоша врата"');
+      assert.equal(err.safe, true, 'без това съобщението се маскира');
+      assert.match(err.message, /липсва на тази машина/);
+      return true;
+    }
+  );
+  await assert.rejects(
+    () => runOk('ps', ['--няма-такъв-флаг-vpsdash']),
+    (err) => {
+      assert.equal(err.status, 502, 'СЪЩЕСТВУВАЩА команда, която се проваля, си остава 502');
+      assert.notEqual(err.safe, true, 'нейният stderr НЕ е безопасен за показване');
+      return true;
+    }
+  );
 });

@@ -1488,7 +1488,7 @@ export function buildRouter(ctx) {
 
   // ── Планирани задачи: редакция, „пусни сега", история ──────────────────────
   r.get('/api/cron/jobs', guard(J(() => cronedit.parseCrontab())));
-  r.get('/api/cron/timers', guard(J(() => cronedit.timersWithResults().then((timers) => ({ timers })))));
+  r.get('/api/cron/timers', guard(J(() => cronedit.timersWithResults())));
   r.get('/api/cron/history', guard(J((req, res, p, url) => cronedit.timerHistory(url.searchParams.get('unit')))));
   r.post(
     '/api/cron/add',

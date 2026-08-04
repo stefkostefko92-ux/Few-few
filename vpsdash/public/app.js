@@ -2717,13 +2717,33 @@ async function renderFirewall() {
 // безполезен без този въпрос: панел с 14 сайта и 3 проверки изглежда точно като
 // панел с 14 покрити — зелено навсякъде, защото за останалите няма кой да пита.
 function coverageCard(cov) {
-  if (!cov || !cov.total) return null;
+  if (!cov) return null;
+  // Три различни причини за „нула сайта": няма такъв уеб сървър, папката не се
+  // чете, или наистина няма сайтове. Само третата е „наред" — другите две са
+  // „не знам" и трябва да се КАЖАТ. Мълчаливата карта е по-лоша от липсваща:
+  // жив сайт извън наблюдение изглежда като липса на сайтове.
+  if (cov.unknown) {
+    return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: 'Кои сайтове се следят' }),
+        pill('warn', 'не мога да проверя'),
+      ]),
+      el('div', { class: 'metric-sub', text:
+        cov.denied?.length
+          ? 'Конфигурацията на уеб сървъра не се чете (няма права). Това НЕ значи „нула сайта" — значи, че панелът не вижда.'
+          : 'На тази машина няма нито /etc/nginx/sites-enabled, нито /etc/caddy/sites. Ако сайтовете се сервират другаде, панелът не може да ги изброи.' }),
+    ]);
+  }
+  if (!cov.total) return null;
   const gap = cov.unwatched.length;
   return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
     el('div', { class: 'card-head' }, [
       el('h3', { text: 'Кои сайтове се следят' }),
       pill(gap ? 'warn' : 'ok', `${cov.watched} ${t('от')} ${cov.total}`),
     ]),
+    cov.denied?.length
+      ? el('div', { class: 'metric-sub', text: `Внимание: ${cov.denied.join(', ')} не се чете (няма права) — списъкът може да е НЕПЪЛЕН.` })
+      : null,
     el('div', { class: 'metric-sub', text:
       'Липсващата проверка не гърми НИКОГА — тя мълчи, докато клиентът не се обади. Проверка към 127.0.0.1 не се брои ' +
       'за покритие на домейна: тя мери дали процесът е жив, не дали светът стига до него (изтекъл сертификат, счупен ' +
@@ -3945,7 +3965,7 @@ async function renderCron() {
   const view = document.getElementById('view');
   const [c, timers, jobs] = await Promise.all([
     api('/cron'),
-    api('/cron/timers').catch(() => ({ timers: [] })),
+    api('/cron/timers').catch((e) => ({ available: false, reason: e.message, timers: [] })),
     api('/cron/jobs').catch(() => ({ jobs: [] })),
   ]);
   view.innerHTML = '';
@@ -3958,7 +3978,12 @@ async function renderCron() {
   view.appendChild(
     el('div', { class: 'card', style: 'margin-bottom:16px' }, [
       el('h3', { text: 'systemd таймери' }),
-      el('div', { class: 'table-wrap' }, [
+      // Празна таблица при липсващ systemctl изглежда точно като „няма нито един
+      // таймер" — а това са противоположни неща. Първото значи, че панелът е
+      // СЛЯП за целия слой планирани задачи (бекъпи, сертификати, чистене).
+      timers.available === false
+        ? el('div', { class: 'empty', text: `Не мога да проверя: ${timers.reason || 'systemctl не отговори'}.` })
+        : el('div', { class: 'table-wrap' }, [
         tableEl(['Таймер', 'Активира', 'Следващо', 'Последно', 'Резултат', ''], (timers.timers || []).map((t) =>
           el('tr', {}, [
             el('td', { class: 'mono', text: t.unit }),

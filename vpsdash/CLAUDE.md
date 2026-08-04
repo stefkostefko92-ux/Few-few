@@ -21,6 +21,7 @@ cd vpsdash
 npm run lint     # node --check на всеки .js/.mjs (scripts/syntax-check.mjs)
 npm test         # node --test test/*.test.js
 npm run sweep    # браузърна обиколка на 37-те секции (иска Playwright)
+npm run degraded # машина БЕЗ инструменти: гърми ли, лъже ли с „нула проблема"
 npm start        # прод (иска /etc/vps-dashboard/config.json)
 npm run dev      # CSD_DEV=1 — ефимерен конфиг + еднократна парола в конзолата
 ```
@@ -149,6 +150,10 @@ public/                  index.html · app.js · ui.js · ansi.js · style.css
 scripts/syntax-check.mjs zero-dep линтер
 scripts/ui-sweep.mjs     браузърна обиколка на всички секции (гейт срещу счупен
                          рендер; собствена врата CSD_SWEEP_PORT, по подр. 7791)
+scripts/degraded-audit.mjs
+                         одит „деградирала машина" (празен PATH): гърми ли
+                         маршрут при липсващ инструмент и има ли „успокояваща
+                         нула" — празен отговор без признак, че данните липсват
 deploy/                  install.sh · set-password.sh · vps-dashboard.service ·
                          nginx.conf.example · desktop/docker-compose.yml
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
@@ -175,6 +180,19 @@ test/                    unit · level1 · level2 · ansi · hardening · sessio
   Bearer == своя `peerToken`.
 
 ## Доктрина на алармите (не я разваляй)
+- **„Празна нула" е лъжа, и се ГЕЙТВА** (`npm run degraded`). Липсващ `docker` не
+  е „нула контейнера", липсващ `systemctl` не е „нула таймера", нечетима папка на
+  nginx не е „нула сайта". Одитът пуска сървъра с ПРАЗЕН PATH и търси две неща:
+  маршрут, който гърми, и маршрут, който връща празно БЕЗ признак, че данните
+  липсват (`null`, `available:false`, `unknown`). Прегледаните изключения живеят
+  в `REVIEWED` вътре в скрипта, с причина — храпов механизъм: нов мълчащ маршрут
+  изскача веднага. Оттам излязоха: `ps` → „Вътрешна грешка" вместо „инсталирай
+  procps", покритието на сайтовете → `total:0` при нечетим nginx, таймерите →
+  празна таблица при липсващ systemctl.
+- **Липсващ инструмент не е 5xx без име.** `runOk` отделя ENOENT (503 + `safe:true`
+  + кой пакет го носи) от истинския провал на командата (502, чийто stderr си
+  остава маскиран). Маската на 5xx в `server.js` пуска САМО `safe` съобщенията —
+  те не издават вътрешности, а превръщат задънената улица в следваща стъпка.
 - **Кой пази пазача.** Най-тихият провал не е „сървърът падна", а „наблюдателят
   замлъкна". Никоя вътрешна проверка не открива собствената си смърт, затова има
   три отделни неща: (1) **мъртвецът-ключ** (`alerts.heartbeatUrl`) — пинг след

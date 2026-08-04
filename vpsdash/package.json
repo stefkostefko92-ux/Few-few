@@ -25,6 +25,7 @@
     "dev": "CSD_DEV=1 node --watch server.js",
     "lint": "node scripts/syntax-check.mjs",
     "test": "node --test test/*.test.js",
-    "sweep": "node scripts/ui-sweep.mjs"
+    "sweep": "node scripts/ui-sweep.mjs",
+    "degraded": "node scripts/degraded-audit.mjs"
   }
 }

@@ -367,7 +367,11 @@ const server = http.createServer(async (req, res) => {
   } catch (err) {
     const status = Number(err?.status) || 500;
     if (status >= 500) console.error(`[csd] ${req.method} ${url.pathname}:`, err);
-    sendError(res, status, status >= 500 ? 'Вътрешна грешка' : err.message);
+    // 5xx съобщенията се маскират (вътрешностите не са за пред потребител), с
+    // едно изключение: грешки, изрично отбелязани `safe` — например „командата
+    // „ps" липсва, инсталирай procps". Те не издават нищо и са ЕДИНСТВЕНОТО,
+    // което превръща „Вътрешна грешка" от задънена улица в следваща стъпка.
+    sendError(res, status, status >= 500 && !err?.safe ? 'Вътрешна грешка' : err.message);
   }
 });
 
