@@ -8,7 +8,7 @@
 // инструкцията да го пусне). Щит срещу цикъл: при stop_hook_active → exit 0 (само предупреждение).
 // Fail-open: всяка грешка на hook-а → exit 0 (никога не заклещваме агент заради счупен hook).
 
-import { readFileSync } from "node:fs";
+import { readFileSync , appendFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
@@ -141,6 +141,23 @@ export function checkHandoffViolation(finalText, agentIds) {
   };
 }
 
+// Записва ЕДИН „handoff" ред в _flows.jsonl от вече валидирания блок ПРЕДАВАНЕ. Съзнателно НЕ пише
+// „start"/„close" — те са решение на Президента; тук се лови само реалната стъпка на предаване.
+// Форматът е ИДЕНТИЧЕН с flow-ledger.mjs (t/ts/id/from/to/status), за да няма два несъвместими писача.
+export function appendHandoffToLedger(finalText, payload = {}) {
+  const parsed = validateHandoff(String(finalText || ""), { agentIds: null, requireBlock: true });
+  if (!parsed || !parsed.ok || !parsed.fields) return false;
+  // Полетата идват от handoff.mjs с ЛАТИНСКИ ключове (from/to/status), не с българските етикети —
+  // проверено на живо; първата ми версия деструктурираше „Към"/„Статус" и мълчаливо не записваше нищо.
+  const f = parsed.fields;
+  const from = String(f.from || payload.agent_type || payload.subagent_type || payload.agent_name || "").trim();
+  const to = String(f.to || "").trim(), status = String(f.status || "").trim();
+  if (!from || !to) return false;
+  const rec = { t: "handoff", ts: new Date().toISOString(), id: "auto", from, to, status };
+  appendFileSync(join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl"), JSON.stringify(rec) + "\n");
+  return true;
+}
+
 // Чиста логика — тестваема: {violations:[{file, gate}]}. `root` за релативизиране на абсолютни пътища (F1).
 export function checkDoD(uses, root) {
   const bashCmds = uses.filter((u) => u.name === "Bash").map((u) => String(u.input.command || ""));
@@ -168,8 +185,15 @@ function main() {
   let jsonl = "";
   try { jsonl = readFileSync(tPath, "utf8"); } catch { process.exit(0); }
   const violations = checkDoD(collectToolUses(jsonl), ROOT);
-  const hv = checkHandoffViolation(lastAssistantText(jsonl), knownAgentIds(join(ROOT, ".claude", "agents")));
+  const finalText = lastAssistantText(jsonl);
+  const hv = checkHandoffViolation(finalText, knownAgentIds(join(ROOT, ".claude", "agents")));
   if (hv) violations.push(hv);
+  // Кръг 11 (2026-08-04): дневникът на веригите се пълнеше САМО ако Президентът се сети да извика
+  // `flow-ledger.mjs` — дисциплина, не механизъм. Затова `_flows.jsonl` стоеше празен седмици и
+  // trajectory гейтът нямаше какво да съди („празно значи НЕИЗМЕРЕНО, не чисто" — CLAUDE.md).
+  // Куката вече ВАЛИДИРА блока ПРЕДАВАНЕ тук, значи има и данните: записваме ги, докато работата
+  // тече. Fail-open и без тайни — само идентификатори и статус.
+  try { appendHandoffToLedger(finalText, payload); } catch { /* дневникът е измерване, не гейт */ }
   // Гейт, ПУСНАТ но ЧЕРВЕН, дотук минаваше за изпълнен ангажимент. Отделен вид нарушение,
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
   const fg = checkFailedGates(collectToolResults(jsonl));
