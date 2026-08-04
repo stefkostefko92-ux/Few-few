@@ -151,6 +151,16 @@ td.mono, .mono { font-family: var(--mono); }
 /* Двойка етикет+поле в лента. Без това редът се разпада, а несъществуващ клас не
    вдига грешка никъде — същият капан като инлайн var(--…), който го няма. */
 .inline { display: inline-flex; align-items: center; gap: 6px; color: var(--txt-dim); font-size: 13px; }
+/* Целта за докосване (WCAG 2.2, SC 2.5.8 AA): минимум 24×24 CSS px, на ВСЯКО
+   устройство, не само на телефон. Подразбиращият се чекбокс е 13×13 — най-
+   малката цел в панела, и стои точно до необратимите действия (масов рестарт,
+   изтриване на бекъп). `accent-color` пази системния вид, докато го уголемяваме. */
+input[type="checkbox"], input[type="radio"] {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--accent, #4c8dff);
+}
+
 .toolbar input[type="text"], .toolbar input[type="search"], .toolbar input[type="number"], .toolbar select {
   background: var(--panel); border: 1px solid var(--line); color: var(--txt);
   padding: 7px 11px; border-radius: 8px; font-size: 13px;
@@ -376,5 +386,5 @@ tr.row-before td { background: rgba(255, 180, 84, 0.05); }
   /* Съседни бутони в лента се разделят, за да не се уцелва грешният. */
   .toolbar { gap: 10px; }
   /* Чекбоксовете в таблиците са най-малката цел изобщо. */
-  input[type="checkbox"] { width: 20px; height: 20px; }
+  input[type="checkbox"], input[type="radio"] { width: 26px; height: 26px; }
 }

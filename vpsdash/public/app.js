@@ -2872,8 +2872,13 @@ async function renderPty() {
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text: 'Истински интерактивен терминал (PTY): htop, nano, sudo, цветове, Ctrl+C. Всеки въведен ред влиза в одита.' }));
 
-  const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px' });
-  const screen = el('pre', { class: 'log-out term-screen', tabindex: '0', style: 'height:64vh;outline:none' });
+  const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px', 'aria-label': 'Работна папка за сесията' });
+  // Екранът е ФОКУСИРУЕМ (там отиват клавишите), значи екранният четец го обявява
+  // — без име чете само „група". `role="log"` + `aria-live` дават и обновяванията.
+  const screen = el('pre', {
+    class: 'log-out term-screen', tabindex: '0', style: 'height:64vh;outline:none',
+    role: 'log', 'aria-live': 'polite', 'aria-label': 'Екран на терминала',
+  });
   const status = el('span', { class: 'muted', text: 'няма сесия' });
   // Броят колони се МЕРИ, а не се гадае: сгрешена ширина значи, че всяка TUI
   // програма рисува в грешни колони и изгледът се разпада.
@@ -3277,7 +3282,7 @@ async function renderDeploy() {
   );
 
   // Качване на архив направо от браузъра (без scp).
-  const fileInput = el('input', { type: 'file', accept: '.zip,.tar.gz,application/zip,application/gzip' });
+  const fileInput = el('input', { type: 'file', accept: '.zip,.tar.gz,application/zip,application/gzip', 'aria-label': 'Архив за качване (.zip или .tar.gz)' });
   const upBar = el('div', { class: 'bar', style: 'display:none' });
   const upFill = el('i', { style: 'width:0%' });
   upBar.appendChild(upFill);
@@ -4134,7 +4139,7 @@ async function renderInvestigate(at = null, windowMin = 30) {
   const d = await api('/investigate?' + params);
   view.innerHTML = '';
 
-  const when = el('input', { type: 'datetime-local', value: toLocalInput(d.at) });
+  const when = el('input', { type: 'datetime-local', value: toLocalInput(d.at), 'aria-label': 'Момент за разследване' });
   const win = el('select', { 'aria-label': 'Прозорец във времето' }, [15, 30, 60, 180, 720].map((m) =>
     el('option', { value: String(m), text: m < 60 ? `± ${m} мин` : `± ${m / 60} ч`, selected: m === d.windowMin })
   ));
@@ -5138,7 +5143,7 @@ async function renderTerminal() {
   const view = document.getElementById('view');
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text: 'Пълен shell достъп (bash -lc), одитиран. Всяка команда се записва в дневника.' }));
-  const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px' });
+  const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px', 'aria-label': 'Работна папка (cwd)' });
   const out = el('pre', { class: 'log-out', text: 'Готов.' });
   const input = el('input', { type: 'text', placeholder: 'команда…', autocomplete: 'off' });
   view.appendChild(el('div', { class: 'toolbar' }, [el('span', { class: 'muted', text: 'cwd:' }), cwd]));

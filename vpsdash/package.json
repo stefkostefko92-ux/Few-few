@@ -26,6 +26,7 @@
     "lint": "node scripts/syntax-check.mjs",
     "test": "node --test test/*.test.js",
     "sweep": "node scripts/ui-sweep.mjs",
-    "degraded": "node scripts/degraded-audit.mjs"
+    "degraded": "node scripts/degraded-audit.mjs",
+    "a11y": "node scripts/a11y-audit.mjs"
   }
 }

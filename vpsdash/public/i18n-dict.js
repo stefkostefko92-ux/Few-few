@@ -1508,4 +1508,9 @@ export const ENTRIES = [
   ['сертификатите не се четат. Няма активни аларми от този източник, но проверката не работи.', 'the certificates cannot be read. No active alerts from this source, but the check is not working.', 'i certificati non si leggono. Nessun avviso attivo da questa fonte, ma il controllo non funziona.'],
   ['systemd не отговори. ⟦0⟧ активни аларми остават в сила — не знаем дали са отпаднали.', 'systemd did not respond. ⟦0⟧ active alerts stay in force — we do not know whether they have cleared.', 'systemd non ha risposto. ⟦0⟧ avvisi attivi restano in vigore — non sappiamo se siano cessati.'],
   ['сертификатите не се четат. ⟦0⟧ активни аларми остават в сила — не знаем дали са отпаднали.', 'the certificates cannot be read. ⟦0⟧ active alerts stay in force — we do not know whether they have cleared.', 'i certificati non si leggono. ⟦0⟧ avvisi attivi restano in vigore — non sappiamo se siano cessati.'],
+  ['Момент за разследване', 'Moment to investigate', 'Momento da investigare'],
+  ['Архив за качване (.zip или .tar.gz)', 'Archive to upload (.zip or .tar.gz)', 'Archivio da caricare (.zip o .tar.gz)'],
+  ['Работна папка за сесията', 'Working directory for the session', 'Cartella di lavoro della sessione'],
+  ['Екран на терминала', 'Terminal screen', 'Schermo del terminale'],
+  ['Работна папка (cwd)', 'Working directory (cwd)', 'Cartella di lavoro (cwd)'],
 ];
