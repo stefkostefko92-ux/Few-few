@@ -9,7 +9,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,6 +49,41 @@ test("генераторът НЕ ползва localeCompare (артефакт �
   const code = src.replace(/^\s*\/\/.*$/gm, ""); // махни коментарите — там думата се СПОМЕНАВА
   assert.ok(!/localeCompare/.test(code),
     "localeCompare зависи от локал/ICU → редът се разминава между машини (реалният CI провал)");
+});
+
+test("docs-sync.yml: main се лекува сам, БЕЗ безкраен цикъл и с най-малки права", () => {
+  // Решение на собственика (2026-08-04): docs.js е генериран артефакт, гейтването му в PR правеше
+  // отворените PR-и червени от чужд churn в main. Сега main регенерира и комитва сам. Тук пазим
+  // трите свойства, които правят това безопасно.
+  const wf = join(ROOT, ".github", "workflows", "docs-sync.yml");
+  assert.ok(existsSync(wf), "docs-sync.yml липсва — main няма да се лекува сам");
+  const s = readFileSync(wf, "utf8");
+  const code = s.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n"); // без коментарите
+
+  // 1) БЕЗ ЦИКЪЛ: тригерът НЕ слуша артефакта, който самият workflow комитва.
+  const onBlock = code.slice(0, code.indexOf("jobs:"));
+  assert.ok(!/agents-dashboard\/docs\.js/.test(onBlock),
+    "тригерът не бива да слуша docs.js — собственият комит би стартирал нов ран (безкраен цикъл)");
+  assert.match(onBlock, /\*\*\/CLAUDE\.md/, "тригерът трябва да слуша всички CLAUDE.md");
+
+  // 2) САМО main: артефактът се лекува там, където е канонично.
+  assert.match(onBlock, /branches:\s*\[main\]/, "само push в main");
+
+  // 3) НАЙ-МАЛКИ ПРАВА: contents: write само на job-а, не глобално.
+  assert.match(code, /^permissions:\s*\n\s+contents:\s*read/m, "глобалните права остават read");
+  assert.match(code, /contents:\s*write/, "job-ът, който комитва, има нужното право");
+
+  // 4) Комитва САМО артефакта и само при реална промяна.
+  assert.match(code, /git diff --quiet -- agents-dashboard\/docs\.js/, "комит само при реална промяна");
+  assert.match(code, /git add agents-dashboard\/docs\.js/, "комитва само артефакта");
+});
+
+test("docs-fresh е СЪВЕТВАЩ в гейта (иначе PR-ите причервяват от чужд churn в main)", () => {
+  const gate = readFileSync(join(ROOT, "tools", "agents", "gate.mjs"), "utf8");
+  const line = gate.split("\n").find((l) => /id:\s*"docs-fresh"/.test(l));
+  assert.ok(line, "docs-fresh липсва от gate.mjs");
+  assert.match(line, /required:\s*false/,
+    "докато main се лекува сам, docs-fresh не бива да е задължителен — иначе се връща въртележката");
 });
 
 test("--check ХВАЩА реален дрейф на съдържанието (byte-verify restore)", () => {

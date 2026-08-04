@@ -52,7 +52,11 @@ const CHECKS = [
   { id: "claims-audit", desc: "правни/таксономични твърдения сверени в TTL + карта на зависимостта цяла", cmd: ["tools/agents/claims-audit.mjs", "--check"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
-  { id: "docs-fresh", desc: "docs.js (таблото) отразява реалните CLAUDE.md — не показва остаряло съдържание", cmd: ["tools/docs/collect-claude-md.mjs", "--check"] },
+  // СЪВЕТВАЩО, не гейт (решение на собственика, 2026-08-04): docs.js е генериран артефакт и се съди
+  // срещу СЛЯТОТО дърво, затова всяка промяна по CLAUDE.md в main правеше отворените PR-и червени
+  // по-бързо, отколкото CI приключва. Сега main сам се лекува през `docs-sync.yml` (регенерира и
+  // комитва), а тук пазим само видимостта. Не го връщай на задължителен, без да махнеш авто-синхрона.
+  { id: "docs-fresh", desc: "docs.js (таблото) отразява реалните CLAUDE.md — main се лекува сам чрез docs-sync.yml", cmd: ["tools/docs/collect-claude-md.mjs", "--check"], required: false },
 ];
 
 if (LIST) {
