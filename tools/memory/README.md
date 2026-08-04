@@ -4,9 +4,14 @@
 дрейф. Claude Code субагентите са stateless — това е честният еквивалент на „учене".
 
 ```bash
-node tools/memory/curate.mjs            # dry-run: дубли / капване / противоречия
-node tools/memory/curate.mjs --write    # приложи дедуп + капване
+node tools/memory/curate.mjs            # dry-run: дубли / парафрази / числови противоречия / застаряване
+node tools/memory/curate.mjs --write    # приложи точния дедуп
+node tools/memory/curate.mjs --check    # ГЕЙТ (в gate.mjs): пада само при ТОЧНИ дубли
 ```
+
+`--check` е това, което CI пуска: гейтва **само** механичния дедуп (еднозначен, оправя се с
+`--write`) и прескача O(n²) сравненията по прилика — те са човешка преценка, не дефект, и струват
+~11s срещу 0.25s. Пълният ход (без `--check`) е за човек, не за конвейера.
 
 ## Как работи (read → act → verify → persist → curate)
 1. **Preload** — `.claude/hooks/memory-preload.mjs` (`SubagentStart`) инжектира секцията
@@ -19,9 +24,11 @@ node tools/memory/curate.mjs --write    # приложи дедуп + капва
    добавя и activity запис в таблото (`agents-dashboard/agents.json` + FALLBACK в `index.html`),
    та страницата на агентите да се обновява автоматично — атомичен запис + lock срещу
    паралелни субагенти; feed-ът е капнат, за да не подува.
-4. **Curate** — `curate.mjs` маха дубли, капва размера, маркира противоречия за човек.
+4. **Curate** — `curate.mjs` маха дубли, маркира парафрази/противоречия/застаряване за човек.
+   Викан е от `tools/agents/gate.mjs` (`memory-curate`) с `--check`; преди Кръг 12 не се викаше
+   от нищо и мълчеше върху реални дубли.
 
-Регистрация: `.claude/settings.json` (`SubagentStart` + `SubagentStop`, matcher = 10-те агента).
+Регистрация: `.claude/settings.json` (`SubagentStart` + `SubagentStop`, matcher = целият ростер).
 Схема на `learn` блока + законите: `.claude/agents/_memory/PROTOCOL.md`.
 
 ## Граница / безопасност

@@ -51,6 +51,11 @@ const CHECKS = [
   { id: "version-freshness", desc: "версиите, които агентите цитират, са сверени в TTL (не 2–3 годишни спомени)", cmd: ["tools/agents/version-freshness.mjs", "--check"] },
   { id: "memory-freshness", desc: "паметта има срок на годност (опашка за пресверяване, не еднократна сверка)", cmd: ["tools/agents/memory-freshness.mjs", "--check"] },
   { id: "claims-audit", desc: "правни/таксономични твърдения сверени в TTL + карта на зависимостта цяла", cmd: ["tools/agents/claims-audit.mjs", "--check"] },
+  // Кръг 12: `curate.mjs` беше СПОСОБЕН и записан като процедура в 5+ дефиниции, но не се викаше от
+  // нищо (нито гейт, нито кука, нито CI) — спящ инструмент, и точно тогава имаше 2 реални дубла.
+  // Гейтва се само ТОЧНИЯТ дедуп (`--check`, 0.25s): механичен и еднозначен. Пълният ход (парафрази,
+  // числови противоречия, застаряване) е ~11s O(n²) и иска ЧОВЕШКО решение — не влиза в пътя на PR.
+  { id: "memory-curate", desc: "паметта няма ТОЧНИ дубли (една поука, записана два пъти)", cmd: ["tools/memory/curate.mjs", "--check"] },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
   // СЪВЕТВАЩО, не гейт (решение на собственика, 2026-08-04): docs.js е генериран артефакт и се съди
