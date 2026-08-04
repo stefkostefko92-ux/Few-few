@@ -137,14 +137,19 @@ export function fmtUptime(sec) {
   return parts.join(' ');
 }
 
+// Връща ПРЕВЕДЕН текст. Дотук връщаше български („преди малко") и разчиташе, че
+// някой по-нагоре ще го преведе — което работи, само докато резултатът отива
+// направо в `el({text})`. Слепен в изречение („Най-старият запис е от X."),
+// сглобката става низ, който го няма в речника: половин английски, половин
+// български, и цялото се брои за непреведено.
 export function fmtWhen(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return String(iso);
   const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff >= 0 && diff < 60) return 'преди малко';
-  if (diff >= 0 && diff < 3600) return `преди ${Math.floor(diff / 60)} мин`;
-  if (diff >= 0 && diff < 86400) return `преди ${Math.floor(diff / 3600)} ч`;
+  if (diff >= 0 && diff < 60) return tHelper('преди малко');
+  if (diff >= 0 && diff < 3600) return tHelper(`преди ${Math.floor(diff / 60)} мин`);
+  if (diff >= 0 && diff < 86400) return tHelper(`преди ${Math.floor(diff / 3600)} ч`);
   return d.toLocaleString(langTag(), { dateStyle: 'short', timeStyle: 'short' });
 }
 

@@ -9,6 +9,7 @@ import { clientIp, sendJson, openSse } from '../src/httpd.js';
 import { loginAllowed, loginFailed, _resetLoginLimiter } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
 import { run, runOk } from '../src/exec.js';
+import { Audit } from '../src/audit.js';
 import { redactSecrets, writeFile, readFilePreview } from '../src/files.js';
 import { loadConfig } from '../src/config.js';
 
@@ -229,4 +230,68 @@ test('exec: липсваща команда казва КОЯ липсва и к
       return true;
     }
   );
+});
+
+// ── Ротацията на одита не бива да е тиха ─────────────────────────────────────
+test('одит: проверката минава ПРЕЗ завъртените файлове, не само през текущия', () => {
+  // Веднага след ротация `verify()` връщаше „ok, проверени 1" — зелено при
+  // непроверени сто хиляди записа. Точно обратното на целта на доказателство
+  // за цялост: то приспива, вместо да пази.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot-'));
+  const a = new Audit(dir);
+  for (let i = 0; i < 50; i++) a.log({ action: 'проба', i });
+  // Изкуствена ротация: преименуваме както го прави кодът при препълване.
+  fs.renameSync(path.join(dir, 'audit.jsonl'), path.join(dir, 'audit.jsonl.1'));
+  a.count = 0;
+  for (let i = 0; i < 5; i++) a.log({ action: 'след ротация', i });
+
+  const v = a.verify();
+  assert.equal(v.ok, true, 'веригата продължава ПРЕЗ файловете (prevHash не се нулира)');
+  assert.equal(v.checked, 55, `очакват се 55 проверени, а не 5 — получени ${v.checked}`);
+  assert.equal(v.files, 2);
+  assert.equal(v.rotated, 1);
+  assert.ok(v.oldest, 'хоризонтът се КАЗВА — иначе „цяла верига" не значи нищо');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('одит: ротацията пази ПОВЕЧЕ от едно поколение', () => {
+  // Беше `rename(file, file + '.1')` — предишният `.1` се презаписваше, тоест
+  // при всяка ротация най-старите следи изчезваха без ред някъде за това.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot2-'));
+  const a = new Audit(dir);
+  a.log({ action: 'първи' });
+  for (const gen of [1, 2, 3]) {
+    fs.writeFileSync(path.join(dir, 'audit.jsonl.' + gen), '{"поколение":' + gen + '}\n');
+  }
+  assert.deepEqual(
+    a.files().map((f) => path.basename(f)),
+    ['audit.jsonl.3', 'audit.jsonl.2', 'audit.jsonl.1', 'audit.jsonl'],
+    'най-старият е ПЪРВИ — веригата се чете хронологично'
+  );
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('одит: ДВЕ последователни ротации не изяждат най-старото поколение', () => {
+  // Мутационната проверка показа, че предишният тест не покриваше самото
+  // завъртане — само четенето след него. А точно завъртането губеше данни:
+  // `rename(file, file + '.1')` презаписваше предишния `.1`.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot3-'));
+  const prev = process.env.CSD_AUDIT_MAX_BYTES;
+  process.env.CSD_AUDIT_MAX_BYTES = '900'; // прагът е нисък, за да е ротацията истинска
+  try {
+    const a = new Audit(dir);
+    // Толкова записи, че да има ТОЧНО две-три завъртания: при повече от
+    // `KEEP_ROTATED` най-старото ЗАКОННО изпада и тестът би мерил друго нещо.
+    for (let i = 0; i < 20; i++) a.log({ action: 'пълнеж', i, data: 'x'.repeat(40) });
+    assert.ok(fs.existsSync(path.join(dir, 'audit.jsonl.1')), 'първо поколение съществува');
+    assert.ok(fs.existsSync(path.join(dir, 'audit.jsonl.2')), 'ВТОРОТО поколение също — то се губеше');
+    const v = a.verify();
+    assert.equal(v.ok, true, 'веригата остава цяла през всички поколения');
+    assert.ok(v.files >= 3, `очакват се поне 3 файла, намерени ${v.files}`);
+    assert.equal(v.checked, 20, `всички 20 записа през всички поколения, не само последното — ${v.checked}`);
+  } finally {
+    if (prev === undefined) delete process.env.CSD_AUDIT_MAX_BYTES;
+    else process.env.CSD_AUDIT_MAX_BYTES = prev;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

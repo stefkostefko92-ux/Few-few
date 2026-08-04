@@ -1513,4 +1513,9 @@ export const ENTRIES = [
   ['Работна папка за сесията', 'Working directory for the session', 'Cartella di lavoro della sessione'],
   ['Екран на терминала', 'Terminal screen', 'Schermo del terminale'],
   ['Работна папка (cwd)', 'Working directory (cwd)', 'Cartella di lavoro (cwd)'],
+  ['Най-старият запис е от', 'The oldest entry is from', 'La voce più vecchia è del'],
+  ['завъртени файла', 'rotated files', 'file ruotati'],
+  ['По-старото е изпаднало при ротацията — трайното копие е на другия VPS.', 'Anything older has fallen out with rotation — the durable copy is on the other VPS.', 'Quanto è più vecchio è caduto con la rotazione — la copia durevole è sull’altro VPS.'],
+  ['качване ▲ —', 'upload ▲ —', 'upload ▲ —'],
+  ['Най-старият запис е от ⟦0⟧. По-старото е изпаднало при ротацията — трайното копие е на другия VPS.', 'The oldest entry is from ⟦0⟧. Anything older has fallen out with rotation — the durable copy is on the other VPS.', 'La voce più vecchia è del ⟦0⟧. Quanto è più vecchio è caduto con la rotazione — la copia durevole è sull’altro VPS.'],
 ];
