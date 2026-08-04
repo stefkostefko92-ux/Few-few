@@ -511,3 +511,57 @@ test('трафикът, паднал до нула, се вижда — проб
   assert.equal(eng.trafficDrop(W, now).length, 0, 'без история няма присъда');
   fs.rmSync(eng.dir, { recursive: true, force: true });
 });
+
+// ── Паметта за СЪБИТИЯТА не расте вечно ─────────────────────────────────────
+test('аларми: паметта за transient събития ИЗТИЧА (иначе расте, докато панелът върви)', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const eng = Object.create(AlertEngine.prototype);
+  eng.transientSeen = new Map();
+  const now = Date.parse('2026-08-03T12:00:00Z');
+  const DAY = 24 * 3600 * 1000;
+
+  // Ключът на SSH входа носи ВРЕМЕТО в себе си → нов при всяко влизане.
+  eng.transientSeen.set('ssh:login:abc:1', now - 40 * DAY);
+  eng.transientSeen.set('ssh:login:abc:2', now - 2 * 3600 * 1000); // отпреди 2 часа
+  eng.transientSeen.set('oom:kill', now - 60 * 1000); // стабилен ключ, пресен
+
+  // Прагът е max(24 часа, 10 × cooldown). Задачата на картата е да ПОТИСКА
+  // повторение — запис отпреди денонощие вече не влияе на нито едно решение.
+  eng.pruneTransient(now, 60 * 1000);
+  assert.equal(eng.transientSeen.has('ssh:login:abc:1'), false, 'отпреди 40 дни отпада');
+  assert.ok(eng.transientSeen.has('ssh:login:abc:2'), 'в рамките на денонощието остава');
+  assert.ok(eng.transientSeen.has('oom:kill'), 'пресният остава — той още потиска повторение');
+});
+
+test('аларми: дълъг cooldown РАЗТЯГА прага (24 ч е минимум, не таван)', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const eng = Object.create(AlertEngine.prototype);
+  eng.transientSeen = new Map();
+  const now = Date.now();
+  const H = 3600 * 1000;
+  eng.transientSeen.set('x:1', now - 30 * H);
+  // cooldown 6 ч → праг 60 ч: запис отпреди 30 ч още потиска повторение и остава.
+  eng.pruneTransient(now, 6 * H);
+  assert.ok(eng.transientSeen.has('x:1'), 'при дълъг cooldown 30 ч е още „пресен"');
+});
+
+test('аларми: таван срещу ключ, който се сменя при ВСЯКО събитие', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const eng = Object.create(AlertEngine.prototype);
+  eng.transientSeen = new Map();
+  const now = Date.now();
+  // 900 входа в рамките на прага — без таван всички биха останали.
+  for (let i = 0; i < 900; i++) eng.transientSeen.set(`ssh:login:x:${i}`, now - i * 1000);
+  eng.pruneTransient(now, 60 * 1000);
+  assert.ok(eng.transientSeen.size <= 500, `таванът държи: ${eng.transientSeen.size}`);
+  assert.ok(eng.transientSeen.has('ssh:login:x:0'), 'НАЙ-НОВИТЕ оцеляват — те потискат повторение');
+  assert.equal(eng.transientSeen.has('ssh:login:x:899'), false, 'най-старите падат първи');
+});
+
+test('аларми: празната памет не гърми и не прави нищо', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const eng = Object.create(AlertEngine.prototype);
+  assert.doesNotThrow(() => eng.pruneTransient(Date.now(), 1000));
+  eng.transientSeen = new Map();
+  assert.doesNotThrow(() => eng.pruneTransient(Date.now(), 1000));
+});

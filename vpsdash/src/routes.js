@@ -308,10 +308,45 @@ export function buildRouter(ctx) {
     };
   };
 
+  // Системните грешки от `fs`/`child_process` нямат `status` → рутерът ги
+  // третираше като 500 „Вътрешна грешка". Това е ЛЪЖА за произхода: несъществуващ
+  // път или файл вместо папка е грешка във ВХОДА, не в панела. Освен подвеждащо,
+  // е и вредно: 5xx влизат в SLO и хранят алармата „процент грешки" — един бот,
+  // който чука `/api/files?path=…`, вдига критична аларма за напълно здрав панел.
+  // Затова познатите кодове се превеждат тук, на ЕДНО място, а не във всеки модул.
+  const ERRNO_STATUS = {
+    ENOENT: 404, // няма такъв път
+    ENOTDIR: 400, // компонент от пътя не е папка
+    EISDIR: 400, // папка там, където се иска файл
+    EACCES: 403, // няма права (панелът е root, но монтирането може да е ro/noexec)
+    EPERM: 403,
+    ENAMETOOLONG: 400,
+    ELOOP: 400, // символна връзка в кръг
+    EINVAL: 400,
+  };
   const J = (fn) => async (req, res, params, url) => {
-    const data = await fn(req, res, params, url);
+    let data;
+    try {
+      data = await fn(req, res, params, url);
+    } catch (err) {
+      const mapped = !err?.status && ERRNO_STATUS[err?.code];
+      if (mapped) throw Object.assign(new Error(errText(err, mapped)), { status: mapped });
+      throw err;
+    }
     if (data !== undefined) sendJson(res, 200, data);
   };
+
+  // Текстът е за ЧОВЕК, не преразказ на errno. Пътят не се повтаря в отговора —
+  // той идва от заявката и ехото му обратно е ненужна повърхност.
+  function errText(err, status) {
+    if (status === 404) return 'Няма такъв път.';
+    if (status === 403) return 'Няма права за този път.';
+    if (err?.code === 'ENOTDIR') return 'Пътят не е папка.';
+    if (err?.code === 'EISDIR') return 'Пътят е папка, а се иска файл.';
+    if (err?.code === 'ENAMETOOLONG') return 'Твърде дълъг път.';
+    if (err?.code === 'ELOOP') return 'Символната връзка сочи в кръг.';
+    return 'Невалиден път.';
+  }
 
   // ── Вход/сесия ─────────────────────────────────────────────────────────────
   r.get('/api/ping', (req, res) => {
