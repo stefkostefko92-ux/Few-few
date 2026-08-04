@@ -36,6 +36,7 @@ const ROOT = join(HERE, "..", "..");
 const LEDGER = join(HERE, "evals", "errors.jsonl");
 const TREND = join(HERE, "evals", "trend.jsonl");
 const PRESSURE = join(HERE, "evals", "pressure.jsonl");
+const FLOWS = join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl");
 const SPECS_DIR = join(HERE, "evals", "specs");
 const GITIGNORE = join(ROOT, ".gitignore");
 const PRESSURE_TTL_DAYS = 75; // месечни точки + толеранс — изтече ли, гейтът налага ново --record
@@ -141,14 +142,33 @@ export function pressureHealth({ file = PRESSURE, today = TODAY } = {}) {
 // PR гейт (иначе CI зависи от скъпи живи евали). Затова: липса/gitignore ГЕЙТВА (каналът трябва да
 // оцелее), но празнота е само СЪВЕТ (`notes`, не `problems`) — видима, не блокираща. Не „поправяй"
 // това като добавиш празнотата в problems — точно това би вкарало живи евали в детерминистичния гейт.
-export function measurementHealth() {
+// Одит 2026-08-04 (fail-open by absence): защитата беше ОБЪРНАТА — гейтваше се трайността САМО на
+// `trend.jsonl` (най-слабият канал, пълни се само от скъп жив eval ран), докато двата канала с
+// реално натрупана история минаваха БЕЗ никаква проверка: `errors.jsonl` (дневникът на дефектите,
+// „историята е част от знанието") и `_flows.jsonl` (дневникът на веригите, чийто ДОКУМЕНТИРАН
+// исторически бъг е точно gitignore-амнезия). Изтриеш ли ги — `error-ledger --check` и
+// `trajectory-audit --check` мълчат ЗЕЛЕНО и цялата история изчезва тихо. Затова трайността на
+// ВСИЧКИ канали живее тук (един собственик на понятието „измерването е трайно").
+// Асиметрията липсва/игнориран → ГЕЙТ, а празен → СЪВЕТ, е съзнателна: каналът трябва да оцелее
+// (структура), но празнотата е легитимно начално състояние (данни). Виж и pressureHealth.
+const CHANNELS = [
+  { path: TREND, rel: "tools/agents/evals/trend.jsonl", what: "поведенческият тренд", empty: "иска жив eval ран" },
+  { path: LEDGER, rel: "tools/agents/evals/errors.jsonl", what: "дневникът на дефектите (всеки с регресия)", empty: "нула записани дефекта" },
+  { path: FLOWS, rel: ".claude/agents/_memory/_flows.jsonl", what: "дневникът на веригите (trajectory)", empty: "нула записани вериги — неизмерено, не чисто" },
+];
+
+export function measurementHealth({ channels = CHANNELS, gitignorePath = GITIGNORE } = {}) {
   const problems = [], notes = [];
-  const gi = existsSync(GITIGNORE) ? readFileSync(GITIGNORE, "utf8") : "";
-  const trendIgnored = gi.split("\n").some((l) => l.trim() === "tools/agents/evals/trend.jsonl");
-  if (trendIgnored) problems.push("trend.jsonl е в .gitignore — трендът на качеството не преживява нов клон/сесия (амнезия).");
-  if (!existsSync(TREND)) problems.push("липсва tools/agents/evals/trend.jsonl — няма къде да се натрупва поведенческият тренд.");
-  else if (!parseJsonl(TREND).length) notes.push("trend.jsonl е празен — поведенческият тренд още не е записван (иска жив eval ран; съветващо, не гейт).");
-  return { trendIgnored, trendExists: existsSync(TREND), problems, notes };
+  const gi = existsSync(gitignorePath) ? readFileSync(gitignorePath, "utf8") : "";
+  const lines = gi.split("\n").map((l) => l.trim());
+  const ignoredOf = (rel) => lines.includes(rel) || lines.includes(rel.split("/").pop());
+  for (const c of channels) {
+    if (ignoredOf(c.rel)) problems.push(`${c.rel} е в .gitignore — ${c.what} не преживява нов клон/сесия (амнезия).`);
+    if (!existsSync(c.path)) problems.push(`липсва ${c.rel} — каналът за измерване е изчезнал (${c.what}).`);
+    else if (!parseJsonl(c.path).length) notes.push(`${c.rel} е празен — ${c.empty} (съветващо, не гейт).`);
+  }
+  const trend = channels.find((c) => c.path === TREND);
+  return { trendIgnored: trend ? ignoredOf(trend.rel) : false, trendExists: trend ? existsSync(trend.path) : false, problems, notes };
 }
 
 async function main() {
