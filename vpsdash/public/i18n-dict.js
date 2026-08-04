@@ -1450,4 +1450,11 @@ export const ENTRIES = [
   ['Трия ротираните логове', 'Deleting the rotated logs', 'Cancello i log ruotati'],
   ['Трия отчетите от сривове', 'Deleting the crash reports', 'Cancello i rapporti di crash'],
   ['Махам висящите Docker образи', 'Removing the dangling Docker images', 'Rimuovo le immagini Docker sospese'],
+  ['Кои сайтове се следят', 'Which sites are watched', 'Quali siti sono monitorati'],
+  ['от', 'of', 'di'],
+  ['Липсващата проверка не гърми НИКОГА — тя мълчи, докато клиентът не се обади. Проверка към 127.0.0.1 не се брои за покритие на домейна: тя мери дали процесът е жив, не дали светът стига до него (изтекъл сертификат, счупен server_name, ufw правило).', 'A missing check NEVER fires — it stays silent until the customer calls. A check against 127.0.0.1 does not count as covering the domain: it measures whether the process is alive, not whether the world reaches it (expired certificate, broken server_name, ufw rule).', 'Un controllo mancante non scatta MAI — resta in silenzio finché non chiama il cliente. Un controllo su 127.0.0.1 non vale come copertura del dominio: misura se il processo è vivo, non se il mondo lo raggiunge (certificato scaduto, server_name rotto, regola ufw).'],
+  ['👁 Започни да следиш', '👁 Start watching', '👁 Inizi a monitorare'],
+  ['Всеки жив сайт има проверка.', 'Every live site has a check.', 'Ogni sito attivo ha un controllo.'],
+  ['Този домейн не е сред живите vhost-ове.', 'This domain is not among the live vhosts.', 'Questo dominio non è tra i vhost attivi.'],
+  ['Добавена е проверка за ⟦0⟧', 'A check was added for ⟦0⟧', 'È stato aggiunto un controllo per ⟦0⟧'],
 ];

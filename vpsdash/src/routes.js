@@ -15,6 +15,7 @@ import * as docker from './docker.js';
 import * as system from './system.js';
 import * as apthealth from './apthealth.js';
 import * as reclaim from './reclaim.js';
+import * as coverage from './coverage.js';
 import * as deploy from './deploy.js';
 import * as agents from './agents.js';
 import * as files from './files.js';
@@ -952,6 +953,29 @@ export function buildRouter(ctx) {
       J(async () => {
         if (!ctx.alerts) throw Object.assign(new Error('Алармите не са пуснати'), { status: 400 });
         return ctx.alerts.evaluate();
+      }),
+      { mutating: true }
+    )
+  );
+
+  // ── Кои сайтове не се следят ───────────────────────────────────────────────
+  r.get('/api/webserver/coverage', guard(J(() => coverage.siteCoverage(cfg))));
+  r.post(
+    '/api/webserver/coverage/watch',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        // Домейнът се проверява СРЕЩУ реално намерените — не се вярва на тялото.
+        // Иначе това е „добави произволен изходящ адрес, който панелът да чука
+        // на всеки каданс" (същата заплаха като heartbeatUrl).
+        const found = coverage.siteCoverage(cfg);
+        const hit = found.sites.find((s) => s.domain === coverage.canonical(b.domain || ''));
+        if (!hit) throw Object.assign(new Error('Този домейн не е сред живите vhost-ове.'), { status: 400 });
+        const check = coverage.healthCheckFor(hit.domain);
+        const list = [...(cfg.healthChecks || []), check];
+        saveConfig(cfg, { healthChecks: list });
+        audit.log({ action: 'coverage.watch', domain: hit.domain, user: req.user });
+        return { ok: true, added: check };
       }),
       { mutating: true }
     )

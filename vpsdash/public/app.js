@@ -2638,15 +2638,60 @@ async function renderFirewall() {
 }
 
 // ── Уеб сървър ─────────────────────────────────────────────────────────────────
+// Кои живи сайтове панелът НЕ следи. Списъкът с vhost файлове е верен и почти
+// безполезен без този въпрос: панел с 14 сайта и 3 проверки изглежда точно като
+// панел с 14 покрити — зелено навсякъде, защото за останалите няма кой да пита.
+function coverageCard(cov) {
+  if (!cov || !cov.total) return null;
+  const gap = cov.unwatched.length;
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Кои сайтове се следят' }),
+      pill(gap ? 'warn' : 'ok', `${cov.watched} ${t('от')} ${cov.total}`),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Липсващата проверка не гърми НИКОГА — тя мълчи, докато клиентът не се обади. Проверка към 127.0.0.1 не се брои ' +
+      'за покритие на домейна: тя мери дали процесът е жив, не дали светът стига до него (изтекъл сертификат, счупен ' +
+      'server_name, ufw правило).' }),
+    gap
+      ? el('div', { class: 'table-wrap' }, [
+          tableEl(['Домейн', 'vhost', ''], cov.unwatched.map((s) =>
+            el('tr', {}, [
+              el('td', {}, [
+                el('b', { text: s.domain }),
+                s.aliases?.length ? el('div', { class: 'muted', style: 'font-size:12px', text: s.aliases.join(', ') }) : null,
+              ]),
+              el('td', { class: 'muted mono', text: `${s.server}/${s.file}` }),
+              el('td', {}, [
+                el('button', {
+                  class: 'btn btn-sm', text: '👁 Започни да следиш',
+                  onclick: async () => {
+                    try {
+                      await api('/webserver/coverage/watch', { method: 'POST', body: { domain: s.domain } });
+                      toast('Добавена е проверка за ' + s.domain);
+                      go('webserver');
+                    } catch (e) { toast(e.message, 'bad'); }
+                  },
+                }),
+              ]),
+            ])
+          )),
+        ])
+      : el('div', { class: 'empty', text: 'Всеки жив сайт има проверка.' }),
+  ]);
+}
+
 async function renderWebserver() {
   const view = document.getElementById('view');
-  const ws = await api('/webserver');
+  const [ws, cov] = await Promise.all([api('/webserver'), api('/webserver/coverage').catch(() => null)]);
   view.innerHTML = '';
   if (!ws.nginx && !ws.caddy) {
     view.innerHTML = '<div class="empty">Няма нито Nginx, нито Caddy на този сървър.</div>';
     return;
   }
   view.appendChild(el('p', { class: 'section-desc', text: 'Редакцията валидира конфига ПРЕДИ презареждане — счупен конфиг не стига до живия сървър (автоматичен откат).' }));
+  const cc = coverageCard(cov);
+  if (cc) view.appendChild(cc);
 
   for (const server of ['nginx', 'caddy']) {
     const s = ws[server];
