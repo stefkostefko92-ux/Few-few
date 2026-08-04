@@ -26,6 +26,10 @@ import { aptHealth, aptConditions } from './apthealth.js';
 import { composeDigest, DigestSchedule } from './digest.js';
 import { backupAge } from './drill.js';
 
+// Колко пъти подред се опитва наново, преди да се върнем към нормалния ритъм.
+// Три опита по каданс покриват мрежово трепване; повече е спам към мъртъв канал.
+export const MAX_NOTIFY_RETRIES = 3;
+
 export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic }) {
     this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
@@ -44,6 +48,9 @@ export class AlertEngine {
     this.file = path.join(cfg.paths.stateDir, 'alerts.json');
     this.active = new Map(); // key → { since, lastNotified, severity, title, body }
     this.streaks = new Map(); // key → колко последователни проверки е активно
+    // Преживява оценките нарочно: това е брой ПОСЛЕДОВАТЕЛНИ неуспешни
+    // известия по ключ. Нулиран на всеки каданс, таванът никога не се стига.
+    this.notifyRetries = new Map();
     this.log = []; // последните известия (за интерфейса)
     // „Кой пази пазача": кога за последно оценката МИНА докрай. Панелът показва
     // възрастта, а рестарт с изтрито състояние не изглежда като жив мониторинг.
@@ -1056,7 +1063,35 @@ export class AlertEngine {
       });
     }
 
-    for (const ev of events) await this.dispatch(ev);
+    // Известие, което НЕ е стигнало, не бива да се брои за изпратено.
+    //
+    // `lastNotified` се вписваше в момента на нареждане на събитието — ПРЕДИ да
+    // се знае дали каналът е приел. Значи две секунди мрежов проблем правеха
+    // критична аларма мълчалива за цял час (подразбиращият се cooldown), при
+    // това без нищо да го подсказва: панелът показва активна аларма, дневникът
+    // показва запис, а телефонът не е звъннал.
+    //
+    // Затова: пълен провал (имало е опит, нула доставени) връща часовника и
+    // следващата оценка опитва пак — но БРОЕНО. Канал, който е трайно мъртъв,
+    // иначе би произвеждал опит на всеки каданс завинаги; след третия опит се
+    // връщаме към нормалния ритъм и оставяме `notify:down` алармата да говори.
+    for (const ev of events) {
+      const entry = await this.dispatch(ev);
+      if (ev.type !== 'firing' || ev.oneShot) continue;
+      const tried = (entry?.failed?.length || 0) + (entry?.sent?.length || 0);
+      const delivered = entry?.sent?.length || 0;
+      const rec = this.active.get(ev.key);
+      if (!rec) continue;
+      if (tried > 0 && delivered === 0) {
+        const n = (this.notifyRetries.get(ev.key) || 0) + 1;
+        this.notifyRetries.set(ev.key, n);
+        if (n <= MAX_NOTIFY_RETRIES) rec.lastNotified = 0; // опитай пак следващия каданс
+      } else if (delivered > 0) {
+        this.notifyRetries.delete(ev.key);
+      }
+    }
+    // Броячите на изчезналите аларми си отиват с тях.
+    for (const key of [...this.notifyRetries.keys()]) if (!this.active.has(key)) this.notifyRetries.delete(key);
     this.lastEvalAt = Date.now();
     this.lastEvalError = null;
     this.save();

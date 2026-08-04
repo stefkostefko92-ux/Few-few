@@ -18,6 +18,7 @@ const CHECKS = [
   { id: 'test', why: 'модулните тестове', cmd: ['npm', 'test', '--silent'] },
   { id: 'numbers', why: 'числата срещу free/df//proc + границите на месеца', cmd: ['node', 'scripts/numbers-audit.mjs'] },
   { id: 'destructive', why: 'необратимите действия: одит · sudo · потвърждение по клас', cmd: ['node', 'scripts/destructive-audit.mjs'] },
+  { id: 'notify', why: 'известията от край до край срещу истински приемник', cmd: ['node', 'scripts/notify-audit.mjs'] },
   { id: 'degraded', why: 'машина без инструменти: гърми ли, лъже ли с „нула проблема"', cmd: ['node', 'scripts/degraded-audit.mjs'] },
   { id: 'corrupt', why: 'повредени собствени файлове: вдига ли се и казва ли го', cmd: ['node', 'scripts/corrupt-audit.mjs'] },
   { id: 'sweep', why: 'браузърна обиколка на 37-те секции × 3 езика', cmd: ['node', 'scripts/ui-sweep.mjs'], browser: true },
