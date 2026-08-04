@@ -30,6 +30,7 @@
     "destructive": "node scripts/destructive-audit.mjs",
     "notify": "node scripts/notify-audit.mjs",
     "peer": "node scripts/peer-audit.mjs",
+    "docs": "node scripts/docs-audit.mjs",
     "volume": "node scripts/volume-audit.mjs",
     "degraded": "node scripts/degraded-audit.mjs",
     "a11y": "node scripts/a11y-audit.mjs",
