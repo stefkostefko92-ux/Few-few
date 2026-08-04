@@ -7423,7 +7423,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 96
+        "lessons": 99
       },
       "evolution": [
         {
@@ -7773,9 +7773,20 @@
           "date": "2026-07-28",
           "event": "v14.6 — учене",
           "detail": "Научи: TikTok 2026: видим label задължителен за синтетични лица/гласове/AI фон/фотореалистични… (+9 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-08-04",
+          "event": "v14.9 — учене",
+          "detail": "Научи: IG официално капна хаштаговете на 5/пост+Reel от 19.12.2025 (@Creators announcement) — … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-04",
+          "type": "learning",
+          "summary": "Научи: „IG официално капна хаштаговете на 5/пост+Reel от 19.12.2025 (@Creators announcement) — …\" (+2 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
