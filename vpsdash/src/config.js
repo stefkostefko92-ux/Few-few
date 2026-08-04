@@ -215,12 +215,15 @@ export function loadConfig({ configPath = CONFIG_PATH, allowDev = true } = {}) {
       throw new Error(`Липсва конфиг ${configPath} — пусни deploy/install.sh веднъж на сървъра.`);
     }
     // Dev fallback: еднократна парола, ефимерни тайни, state в локална папка.
+    // `CSD_PORT`/`CSD_STATE_DIR` важат САМО тук — в продукция вратата идва от
+    // конфига (Nginx проксира натам) и променлива от средата не бива да я мести.
     const password = crypto.randomBytes(9).toString('base64url');
     const cfg = deepMerge(DEFAULTS, {
       nodeName: 'DEV',
       passwordHash: hashPassword(password),
       sessionSecret: crypto.randomBytes(32).toString('hex'),
-      paths: { stateDir: path.resolve('.state') },
+      port: Number(process.env.CSD_PORT) || DEFAULTS.port,
+      paths: { stateDir: process.env.CSD_STATE_DIR || path.resolve('.state') },
       dev: true,
     });
     // eslint-disable-next-line no-console

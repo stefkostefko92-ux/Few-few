@@ -3380,10 +3380,14 @@ function aptHealthCard(h) {
   }
   // `null` значи НЕ ЗНАЕМ (командата се провали), а не „чисто". Панел, който
   // твърди „в ред", без да е питал, е по-лош от панел, който мълчи.
+  // `broken` живее ИЗВЪН условието — по-надолу решава и кои бутони за поправка
+  // да се покажат, и дали картата е „блокирано". Декларацията му вътре в `else`
+  // счупи ЦЯЛАТА секция („broken is not defined"), а нито един тест не го хвана:
+  // те не рендват интерфейс. Точно затова браузърната обиколка е задължителна.
+  const broken = h.dpkg?.broken || [];
   if (h.dpkg === null) {
     rows.push(el('div', { class: 'metric-sub' }, [el('b', { text: '? ' }), t('Състоянието на dpkg е НЕИЗВЕСТНО — dpkg-query не отговори.')]));
   } else {
-    const broken = h.dpkg?.broken || [];
     rows.push(el('div', { class: 'metric-sub' }, [
       el('b', { text: broken.length ? '✘ ' : '✔ ' }),
       broken.length
