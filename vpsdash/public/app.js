@@ -1759,6 +1759,7 @@ function svcBtn(action, unit, label, cls = 'btn-sm') {
     class: `btn btn-sm ${cls}`,
     text: label,
     onclick: async (e) => {
+      if (!(await confirmStop(action, unit))) return;
       e.target.disabled = true;
       try {
         const r = await api('/services/action', { method: 'POST', body: { unit, action } });
@@ -1967,11 +1968,28 @@ function showDockerLimits(name) {
   );
 }
 
+// Потвърждение САМО за действията, които оставят нещо спряно. Рестартът се
+// натиска, защото вече нещо не е наред, и е самолекуващ се — модал пред него
+// учи човека да щрака, без да чете (и точно затова после щраква и пред „спри").
+// „Спри" е другото: услугата остава долу, докато човек не се върне.
+const STOPS_IT = new Set(['stop', 'kill', 'down', 'rm', 'disable']);
+async function confirmStop(action, what) {
+  if (!STOPS_IT.has(action)) return true;
+  return confirmDanger({
+    title: `${action} · ${what}`,
+    what: [`„${what}" остава СПРЯН, докато някой не го пусне отново.`,
+      'Рестартът се самовъзстановява; спирането — не.'],
+    expect: 'спри',
+    confirmLabel: action,
+  });
+}
+
 function dockerBtn(action, id, label, cls = 'btn-sm') {
   return el('button', {
     class: `btn btn-sm ${cls}`,
     text: label,
     onclick: async (e) => {
+      if (!(await confirmStop(action, id.slice(0, 12)))) return;
       e.target.disabled = true;
       try {
         await api('/docker/action', { method: 'POST', body: { id, action } });
@@ -2409,7 +2427,18 @@ async function renderDisk() {
           ? el('div', { class: 'toolbar' }, [
               el('button', {
                 class: 'btn btn-sm', text: '🧹 Изчисти build кеша',
-                onclick: () => runJob('/disk/builder-prune', {}, 'Чистене на Docker build кеша'),
+                onclick: async () => {
+                  // Кешът се възстановява сам, но следващият билд става минути
+                  // по-бавен — а понякога точно тогава бързаш.
+                  const ok = await confirmDanger({
+                    title: 'Чистене на build кеша',
+                    what: ['Кешът се възстановява сам при следващия билд — нищо не се губи безвъзвратно.',
+                      'Но първият билд след това е чувствително по-бавен.'],
+                    expect: 'изчисти',
+                    confirmLabel: 'Изчисти',
+                  });
+                  if (ok) runJob('/disk/builder-prune', {}, 'Чистене на Docker build кеша');
+                },
               }),
             ])
           : '',
@@ -2824,6 +2853,15 @@ async function renderWebserver() {
                 el('button', { class: 'btn btn-sm', text: 'Редактирай', onclick: () => editSite(server, site.name) }),
                 server === 'nginx'
                   ? el('button', { class: 'btn btn-sm', text: site.enabled ? 'Изключи' : 'Включи', onclick: async () => {
+                      // Изключването сваля сайта ЗА СВЕТА — посетителят получава 404
+                      // от уеб сървъра, а нищо в машината не изглежда счупено.
+                      if (site.enabled && !(await confirmDanger({
+                        title: `Изключване на ${site.name}`,
+                        what: [`Сайтът спира да се сервира — посетителите ще получават грешка.`,
+                          'Нищо друго не се променя: файлът остава, само връзката в sites-enabled пада.'],
+                        expect: 'изключи',
+                        confirmLabel: 'Изключи',
+                      }))) return;
                       try { await api('/webserver/enabled', { method: 'POST', body: { server, name: site.name, enabled: !site.enabled } }); toast('Готово'); go('webserver'); }
                       catch (e) { toast(e.message, 'bad'); }
                     } })
@@ -4010,6 +4048,15 @@ async function renderCron() {
               el('button', {
                 class: 'btn btn-sm', text: '▶ Пусни сега',
                 onclick: async (e) => {
+                  // Планираната задача може да е бекъп, миграция или чистене —
+                  // пускането ѝ извън реда си не е репетиция, а истинско пускане.
+                  if (!(await confirmDanger({
+                    title: `Пускане на ${tm.unit}`,
+                    what: ['Задачата се изпълнява СЕГА, наистина — не е проба.',
+                      'Ако е бекъп или чистене, ще направи точно каквото прави в 3 сутринта.'],
+                    expect: 'пусни',
+                    confirmLabel: 'Пусни',
+                  }))) return;
                   e.target.disabled = true;
                   try {
                     const r = await api('/cron/run', { method: 'POST', body: { unit: tm.unit } });
@@ -4983,7 +5030,17 @@ async function renderDomains() {
     onclick: () => doIssue(true),
   });
 
-  function doIssue(staging) {
+  async function doIssue(staging) {
+    // Let's Encrypt брои: 5 еднакви сертификата на седмица, 50 на домейн.
+    // Изчерпаш ли ги, чакаш ДНИ — точно затова има staging и точно затова
+    // истинското издаване се потвърждава, а пробното не.
+    if (!staging && !(await confirmDanger({
+      title: 'Издаване на истински сертификат',
+      what: ['Let\'s Encrypt има седмичен лимит (5 еднакви сертификата). Изчерпан лимит значи чакане с ДНИ.',
+        'Ако още изпробваш настройката, ползвай „Пробно издаване (staging)" — то не се брои.'],
+      expect: 'издай',
+      confirmLabel: 'Издай',
+    }))) return;
     runJob(
       '/domains/issue',
       { domain: domain.value.trim(), email: email.value.trim(), dnsPlugin: plugin.value.trim(), staging },

@@ -1002,6 +1002,11 @@ export function buildRouter(ctx) {
           title: 'Тестово известие',
           body: `Каналите работят. Изпратено от ${cfg.nodeName}.`,
         });
+        // Пробното известие е ИЗХОДЯЩО действие — тръгва към Telegram/ntfy/имейл
+        // с името на възела. Всичко, което напуска машината, оставя следа (същото
+        // правило като при адреса на мъртвеца-ключ), иначе открадната сесия има
+        // безшумен канал навън.
+        audit.log({ action: 'alerts.test', sent: entry.sent, failed: entry.failed, user: req.user });
         return { sent: entry.sent, failed: entry.failed };
       }),
       { mutating: true }
@@ -1839,6 +1844,8 @@ export function buildRouter(ctx) {
           sha256: req.headers['x-csd-sha256'],
           keep: Number(cfg.backups?.offsite?.keep) || 10,
           dir: ctx.backupSchedule.offsite,
+          audit,
+          user: req.user,
         })
       ),
       { mutating: true }

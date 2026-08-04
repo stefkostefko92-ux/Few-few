@@ -405,7 +405,13 @@ function putFile(peer, nodeId, file, sha256) {
 }
 
 // ── Приемане (другата страна на федерацията) ─────────────────────────────────
-export function receiveOffsite(req, { node, name, sha256, keep = 10, dir: baseDir }) {
+// `audit` е ЗАДЪЛЖИТЕЛЕН тук, не украса. Това е единственият вход, през който
+// ЧУЖДА машина пише файлове на тази — и не само пише: `pruneOffsite` ротира
+// старите, тоест може да изтласка истинските копия. Няма човек, когото да
+// питаме, и няма модал за потвърждение; вратата е peer токенът. Затова следата
+// е ЕДИНСТВЕНОТО, което остава след факта — с открадне ли се токен, одитът е
+// разликата между „знаем какво стана" и „бекъпите просто ги няма".
+export function receiveOffsite(req, { node, name, sha256, keep = 10, dir: baseDir, audit, user }) {
   const nodeId = assertNodeId(node);
   const base = assertShipName(name);
   if (!/^[0-9a-f]{64}$/.test(String(sha256 || ''))) {
@@ -426,7 +432,10 @@ export function receiveOffsite(req, { node, name, sha256, keep = 10, dir: baseDi
   // по име: прекъснат по-рано трансфер е оставил различен размер.
   try {
     const st = fs.statSync(finalPath);
-    if (st.size === declared) return Promise.resolve({ ok: true, name: base, duplicate: true, sizeBytes: st.size });
+    if (st.size === declared) {
+      audit?.log({ action: 'backup.offsite.receive', node: nodeId, name: base, duplicate: true, user: user || `peer:${nodeId}` });
+      return Promise.resolve({ ok: true, name: base, duplicate: true, sizeBytes: st.size });
+    }
   } catch {
     /* няма го — приемаме */
   }
@@ -479,14 +488,23 @@ export function receiveOffsite(req, { node, name, sha256, keep = 10, dir: baseDi
         fail(Object.assign(new Error(`Копието не съвпада (хеш ${sha === sha256 ? 'ок' : 'РАЗЛИЧЕН'}, ${size}/${declared} байта)`), { status: 400 }));
         return;
       }
+      let pruned = [];
       try {
         fs.renameSync(tmpPath, finalPath);
-        pruneOffsite(baseDir, nodeId, keep);
+        pruned = pruneOffsite(baseDir, nodeId, keep);
       } catch (err) {
         fail(err);
         return;
       }
-      resolve({ ok: true, name: base, sizeBytes: size, sha256: sha, node: nodeId });
+      // Изтласканите се ИЗБРОЯВАТ поименно: „приех едно" и „приех едно, а изхвърлих
+      // три" са различни събития, а второто е начинът да изчезнат бекъпи тихо.
+      audit?.log({
+        action: 'backup.offsite.receive',
+        node: nodeId, name: base, sizeBytes: size, sha256: sha,
+        pruned: pruned.length ? pruned : undefined,
+        user: user || `peer:${nodeId}`,
+      });
+      resolve({ ok: true, name: base, sizeBytes: size, sha256: sha, node: nodeId, pruned });
     });
 
     req.pipe(out);
