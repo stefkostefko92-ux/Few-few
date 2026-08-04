@@ -29,6 +29,7 @@ function report(overrides: Partial<LookupReport> = {}): LookupReport {
     provider: null,
     reputation: null,
     geofeed: null,
+    geoip: null,
     totalMs: 0,
   };
   return { ...base, ...overrides };

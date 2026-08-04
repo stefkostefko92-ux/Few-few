@@ -160,7 +160,7 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
   }
 
   const country = bestCountry(report);
-  const { rdap, origin, ptr, provider, reputation, geofeed } = report;
+  const { rdap, origin, ptr, provider, reputation, geofeed, geoip } = report;
 
   return (
     <div className="space-y-6">
@@ -268,6 +268,39 @@ async function NetworkAnalysis({ ip }: { ip: ParsedIp }) {
             <EmptyNote source={geofeed ?? emptySource()} />
           </p>
         )}
+
+        {/* Офлайн гео базата. Показва се СЛЕД geofeed-а, защото е предположение
+            на трета страна, а geofeed-ът е твърдение на самия оператор. */}
+        {geoip ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="card-title mb-2">Офлайн гео база</p>
+            {geoip.data ? (
+              <>
+                <Fields>
+                  <Field label="Държава" value={geoip.data.country} />
+                  <Field
+                    label="Град"
+                    value={geoip.data.city}
+                    mono={false}
+                    note="Предположение на базата данни, не факт. Кварталът се маха нарочно — базата няма откъде да го знае."
+                  />
+                  <Field
+                    label="Медианна грешка"
+                    value={`≈ ${geoip.data.medianErrorKm} км`}
+                    note="Измерена спрямо реални координати от оператори (RIPE Atlas и UNICEF Giga, 37 302 наблюдения)."
+                  />
+                </Fields>
+                {geoip.data.limitedBecause ? (
+                  <p className="mt-3 rounded-lg border border-warn p-3 text-sm text-text-muted">
+                    {geoip.data.limitedBecause}
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <EmptyNote source={geoip} />
+            )}
+          </div>
+        ) : null}
 
         {country ? <CountryLocation code={country.code} /> : null}
       </Card>

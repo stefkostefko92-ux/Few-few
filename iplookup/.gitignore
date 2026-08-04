@@ -6,3 +6,6 @@ out/
 .env.production
 *.tsbuildinfo
 next-env.d.ts
+
+# Офлайн гео базата (124 MB, месечни издания) — сваля се, не се комитва
+data/

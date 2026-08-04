@@ -76,6 +76,11 @@ export const DATA_SOURCES = [
     note: "Списъци, публикувани от самите доставчици.",
   },
   {
+    name: "IP Geolocation by DB-IP",
+    url: "https://db-ip.com",
+    note: "Офлайн гео база (DB-IP Lite), CC BY 4.0. Чете се от диск — справката не издава на никого кой адрес е проверен.",
+  },
+  {
     name: "Списък на изходните възли на Tor",
     url: "https://check.torproject.org/torbulkexitlist",
     note: "Поддържан от The Tor Project.",

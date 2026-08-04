@@ -18,6 +18,8 @@ import { lookupProvider, type ProviderInfo } from "./sources/ranges";
 import { lookupReputation, type Reputation } from "./sources/reputation";
 import { geofeedUrlFrom, lookupRdap, type RdapNetwork } from "./sources/rdap";
 import { capabilities } from "./mode";
+import { lookupGeoIp } from "./sources/geoip";
+import type { GeoClaim } from "./geo-guards";
 
 /**
  * Сглобява пълната справка за един адрес.
@@ -47,6 +49,8 @@ export interface LookupReport {
   provider: SourceResult<ProviderInfo> | null;
   reputation: SourceResult<Reputation> | null;
   geofeed: SourceResult<GeofeedEntry> | null;
+  /** Офлайн гео база — не издава на никого кой адрес е проверен. */
+  geoip: SourceResult<GeoClaim> | null;
   /** Общото време на справката — показва се, за да е видима цената. */
   totalMs: number;
 }
@@ -72,6 +76,7 @@ export async function lookup(ip: ParsedIp): Promise<LookupReport> {
       provider: null,
       reputation: null,
       geofeed: null,
+      geoip: null,
       totalMs: Date.now() - started,
     };
   }
@@ -99,7 +104,30 @@ export async function lookup(ip: ParsedIp): Promise<LookupReport> {
         ms: 0,
       };
 
-  return { ip, local, rdap, origin, ptr, provider, reputation, geofeed, totalMs: Date.now() - started };
+  // Гео базата е ОФЛАЙН — чете се от диск и не уведомява никого. Класът на
+  // мрежата идва от регистъра и решава докъде е защитимо твърдението.
+  const providerKind = provider.data?.kind;
+  const geoip = lookupGeoIp(ip, {
+    networkName: rdap.data?.name,
+    asName: origin.data?.asName,
+    hostnames: ptr.data?.names,
+    // Облак и CDN са обявени от самия доставчик — най-силното положително
+    // доказателство, че зад адреса стои сървър, а не движещо се устройство.
+    knownInfrastructure: providerKind === "cloud" || providerKind === "cdn",
+  });
+
+  return {
+    ip,
+    local,
+    rdap,
+    origin,
+    ptr,
+    provider,
+    reputation,
+    geofeed,
+    geoip,
+    totalMs: Date.now() - started,
+  };
 }
 
 /**
@@ -124,6 +152,19 @@ export function bestCountry(
   const relay = report.provider?.data;
   if (relay?.kind === "relay" && relay.region) {
     return { code: relay.region.slice(0, 2), basis: `обявено от ${relay.provider}`, confidence: "medium" };
+  }
+  // Гео базата бие регистъра за МЕСТОПОЛОЖЕНИЕ: регистърът казва къде е
+  // регистрирана организацията, което често е седалище в друга държава.
+  const geo = report.geoip?.data;
+  if (geo?.country) {
+    return {
+      code: geo.country,
+      basis:
+        geo.granularity === "city"
+          ? "офлайн гео база (DB-IP Lite) — предположение, не факт"
+          : "офлайн гео база, свита до държава",
+      confidence: "medium",
+    };
   }
   const rdapCountry = report.rdap?.data?.country;
   if (rdapCountry) {
