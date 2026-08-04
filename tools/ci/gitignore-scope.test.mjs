@@ -29,19 +29,37 @@ const productDirs = () => readdirSync(ROOT, { withFileTypes: true })
 const isIgnored = (rel) =>
   spawnSync("git", ["check-ignore", "-q", rel], { cwd: ROOT }).status === 0;
 
-test("нито един продуктов .gitignore не крие папка СОРС с неанкериран шаблон", () => {
-  // Опасни са само шаблоните за папки, които реално съдържат сорс в някои продукти.
-  const RISKY = /^(data|site|src|lib|public|assets|config|templates)\/$/;
+// ПОВЕДЕНЧЕСКИ, не шаблонен. Първата версия гейтваше самия ШАБЛОН (неанкериран `data/`) и това ме
+// накара да „поправя" превантивно три несвързани продукта — при което scope-check с право падна:
+// монорепо закон №1 е един продукт на промяна. Правило, което за да е зелено иска да пипнеш чужди
+// продукти, е сгрешено правило. Затова тук се съди ЕФЕКТЪТ: игнориран ли е файл, който кодът внася.
+// Неанкериран `data/` в продукт без вложена `data/` папка е безобиден и не бива да гейтва нищо.
+test("нито един продукт не ИГНОРИРА файл, който собственият му код внася", () => {
+  const SRC = /\.(mjs|js|ts|tsx|jsx)$/;
+  const SKIP_DIR = new Set(["node_modules", ".next", "dist", "build", ".git", "coverage"]);
   const offenders = [];
   for (const p of productDirs()) {
-    const gi = join(ROOT, p, ".gitignore");
-    if (!existsSync(gi)) continue;
-    readFileSync(gi, "utf8").split("\n").map((l) => l.trim()).forEach((l, i) => {
-      if (l.startsWith("#") || !l) return;
-      if (RISKY.test(l)) offenders.push(`${p}/.gitignore:${i + 1} → „${l}" (неанкериран: съвпада на ВСЯКА дълбочина; ползвай „/${l}")`);
-    });
+    const files = [];
+    (function walk(d) {
+      let ents; try { ents = readdirSync(d, { withFileTypes: true }); } catch { return; }
+      for (const e of ents) {
+        if (e.isDirectory()) { if (!SKIP_DIR.has(e.name)) walk(join(d, e.name)); }
+        else if (SRC.test(e.name)) files.push(join(d, e.name));
+      }
+    })(join(ROOT, p));
+    for (const f of files.slice(0, 400)) {            // таван: държим теста бърз
+      let src; try { src = readFileSync(f, "utf8"); } catch { continue; }
+      for (const m of src.matchAll(/(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g)) {
+        const target = join(dirname(f), m[1]).replace(ROOT + "/", "");
+        // Съди ПАПКАТА на целта: липсващ файл е друг проблем (може да е .ts→.js), скрит е този.
+        const dir = dirname(target);
+        if (isIgnored(dir) || isIgnored(target))
+          offenders.push(`${f.replace(ROOT + "/", "")} внася „${m[1]}" → „${target}", но git го ИГНОРИРА`);
+      }
+    }
   }
-  assert.deepEqual(offenders, [], "неанкерирани шаблони, които могат да скрият сорс:\n  " + offenders.join("\n  "));
+  assert.deepEqual([...new Set(offenders)], [],
+    "код внася файл, който .gitignore крие (невидим за CI, за деплой архива и за ревюто):\n  " + offenders.join("\n  "));
 });
 
 test("panev: замисълът е запазен — базата се игнорира, site/data НЕ се игнорира", () => {
