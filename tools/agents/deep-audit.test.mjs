@@ -9,6 +9,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
+import { writeAtomic } from "../lib/mutation.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { audit, agentIds, productDirs, brokenToolRefs, brokenOwnedMemPaths, execWithoutBash } from "./deep-audit.mjs";
@@ -20,10 +21,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 function withMemoryMutation(id, transform, fn) {
   const path = join(ROOT, ".claude", "agents", "_memory", `${id}.md`);
   const original = readFileSync(path, "utf8");
-  writeFileSync(path, transform(original));
+  writeAtomic(path, transform(original));
   try { return fn(); }
   finally {
-    writeFileSync(path, original);
+    writeAtomic(path, original);
     assert.equal(readFileSync(path, "utf8"), original, `${id}.md: възстановяването се провали`);
   }
 }
