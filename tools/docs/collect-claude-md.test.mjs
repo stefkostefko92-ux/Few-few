@@ -18,30 +18,44 @@ const TOOL = join(ROOT, "tools/docs/collect-claude-md.mjs");
 const OUT = join(ROOT, "agents-dashboard/docs.js");
 const run = (env = {}) => spawnSync(process.execPath, [TOOL, "--check"], { cwd: ROOT, encoding: "utf8", env: { ...process.env, ...env } });
 
-test("--check е ЗЕЛЕН днес (docs.js отразява реалните CLAUDE.md)", () => {
-  assert.equal(run().status, 0, "docs.js трябва да е свеж — пусни: node tools/docs/collect-claude-md.mjs");
-});
-
-test("--check е ДАТА-НЕЧУВСТВИТЕЛНА (различна дата НЕ пали фалшив дрейф)", () => {
-  // Дори с бъдеща GENERATED_DATE проверката трябва да мине — иначе gate-ът е червен всеки ден.
-  assert.equal(run({ GENERATED_DATE: "2099-12-31" }).status, 0, "само датата не бива да пали дрейф");
-});
-
-test("--check е РЕД-НЕЧУВСТВИТЕЛНА (CI провалът 2026-08-04: друга ICU колация → друг ред)", () => {
-  // Реален CI провал: гейтът беше зелен локално (Node 22.22) и червен в CI (Node 22.23) БЕЗ нито
-  // един байт разлика в съдържанието — разликата беше само РЕДЪТ, защото генераторът подреждаше с
-  // `localeCompare` (зависи от локал/ICU). Тук: разбъркан ред със същото съдържание → пак зелено.
+// ВАЖНО (CI провал 2026-08-04): тези тестове НЕ бива да зависят от това дали КОМИТНАТИЯТ docs.js е
+// свеж в момента. Първата им версия твърдеше „--check е зелен днес" и падаше в CI, защото main
+// продължаваше да мени CLAUDE.md, а артефактът се съди срещу СЛЯТОТО дърво. Точно тази зависимост
+// махнахме от гейта (docs-fresh е съветващ, main се лекува сам) — тя не бива да се върне през
+// тестовете. Затова тук първо РЕГЕНЕРИРАМЕ (тестваме ИНСТРУМЕНТА, не състоянието на репото), после
+// съдим, и накрая връщаме файла байт-за-байт.
+function withFreshDocs(fn) {
   const original = readFileSync(OUT, "utf8");
-  const d = JSON.parse(original.match(/window\.__DOCS__ = ([\s\S]*?);\nvar docs/)[1]);
-  d.files = [...d.files].reverse();
-  const banner = "// АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md.mjs — не редактирай ръчно.\n";
-  writeFileSync(OUT, banner + "window.__DOCS__ = " + JSON.stringify(d, null, 2) + ";\nvar docs = window.__DOCS__;\n");
   try {
-    assert.equal(run().status, 0, "различен РЕД при същото съдържание НЕ бива да пали гейта");
+    spawnSync(process.execPath, [TOOL], { cwd: ROOT, encoding: "utf8" }); // регенерирай
+    return fn();
   } finally {
     writeFileSync(OUT, original);
     assert.equal(readFileSync(OUT, "utf8"), original, "възстановяването се провали");
   }
+}
+
+test("след регенерация --check е зелен (инструментът е самосъгласуван)", () => {
+  withFreshDocs(() => assert.equal(run().status, 0, "генератор и проверка трябва да се съгласяват"));
+});
+
+test("--check е ДАТА-НЕЧУВСТВИТЕЛНА (различна дата НЕ пали фалшив дрейф)", () => {
+  // Дори с бъдеща GENERATED_DATE проверката трябва да мине — иначе гейтът е червен всеки ден.
+  withFreshDocs(() =>
+    assert.equal(run({ GENERATED_DATE: "2099-12-31" }).status, 0, "само датата не бива да пали дрейф"));
+});
+
+test("--check е РЕД-НЕЧУВСТВИТЕЛНА (CI провалът 2026-08-04: друга ICU колация → друг ред)", () => {
+  // Гейтът беше зелен локално и червен в CI БЕЗ байт разлика в съдържанието — различаваше се само
+  // РЕДЪТ (генераторът подреждаше с `localeCompare`, който зависи от локал/ICU).
+  withFreshDocs(() => {
+    const fresh = readFileSync(OUT, "utf8");
+    const d = JSON.parse(fresh.match(/window\.__DOCS__ = ([\s\S]*?);\nvar docs/)[1]);
+    d.files = [...d.files].reverse();
+    const banner = "// АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md.mjs — не редактирай ръчно.\n";
+    writeFileSync(OUT, banner + "window.__DOCS__ = " + JSON.stringify(d, null, 2) + ";\nvar docs = window.__DOCS__;\n");
+    assert.equal(run().status, 0, "различен РЕД при същото съдържание НЕ бива да пали гейта");
+  });
 });
 
 test("генераторът НЕ ползва localeCompare (артефакт за байтово сравнение иска локал-независим ред)", () => {
@@ -88,11 +102,15 @@ test("docs-fresh е СЪВЕТВАЩ в гейта (иначе PR-ите при�
 
 test("--check ХВАЩА реален дрейф на съдържанието (byte-verify restore)", () => {
   const original = readFileSync(OUT, "utf8");
-  // подмени съдържанието на един файл в payload-а → реален дрейф
-  const mutated = original.replace(/("content":\s*")/, '$1ДРЕЙФ-ТЕСТ ');
-  assert.notEqual(mutated, original, "мутацията трябва да промени файла");
-  writeFileSync(OUT, mutated);
   try {
+    // Първо регенерирай: иначе, ако артефактът вече е остарял (main мени CLAUDE.md), тестът щеше
+    // да мине ПРАЗНО — щеше да чете единица, дошла от чужд дрейф, а не от собствената мутация.
+    spawnSync(process.execPath, [TOOL], { cwd: ROOT, encoding: "utf8" });
+    assert.equal(run().status, 0, "предпоставка: след регенерация е зелено");
+    const fresh = readFileSync(OUT, "utf8");
+    const mutated = fresh.replace(/("content":\s*")/, '$1ДРЕЙФ-ТЕСТ ');
+    assert.notEqual(mutated, fresh, "мутацията трябва да промени файла");
+    writeFileSync(OUT, mutated);
     assert.equal(run().status, 1, "променен docs.js (различен от реалните CLAUDE.md) трябва да ПАДНЕ");
   } finally {
     writeFileSync(OUT, original);
