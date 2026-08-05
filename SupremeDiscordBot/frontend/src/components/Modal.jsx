@@ -13,14 +13,23 @@ export default function Modal({ open, onClose, title, children, maxWidth = "max-
   const previouslyFocused = useRef(null);
   const titleId = useId();
 
+  // Фокусът се мести в диалога САМО при отваряне. Държим го в отделен ефект
+  // с deps [open]: старият комбиниран ефект зависеше и от onClose, който
+  // почти навсякъде е inline стрелка → нова референция при ВСЕКИ render на
+  // родителя → ефектът се преизпълняваше и КРАДЕШЕ фокуса след всеки натиснат
+  // клавиш в контролиран input (бъг: „пиша 1 символ и губя фокуса").
   useEffect(() => {
     if (!open) return undefined;
     previouslyFocused.current = document.activeElement;
-
     const node = dialogRef.current;
-    // Move focus into the dialog
     const focusables = node?.querySelectorAll(FOCUSABLE);
     (focusables?.[0] || node)?.focus();
+    return () => { previouslyFocused.current?.focus?.(); };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const node = dialogRef.current;
 
     function onKeyDown(e) {
       if (e.key === "Escape") {
@@ -50,7 +59,6 @@ export default function Modal({ open, onClose, title, children, maxWidth = "max-
     return () => {
       document.removeEventListener("keydown", onKeyDown, true);
       document.body.style.overflow = prevOverflow;
-      previouslyFocused.current?.focus?.();
     };
   }, [open, onClose]);
 

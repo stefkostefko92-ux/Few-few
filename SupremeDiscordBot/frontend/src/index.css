@@ -210,7 +210,9 @@
            animate-fade-in;
   }
   .cs-modal {
-    @apply cs-card w-full max-w-md shadow-cs-lift;
+    /* max-h + overflow: дълги форми (панелния редактор) скролват ВЪТРЕ в
+       диалога — overlay-ят е fixed и страничният скрол не помага. */
+    @apply cs-card w-full max-w-md shadow-cs-lift max-h-[90vh] overflow-y-auto;
   }
 }
 
