@@ -699,12 +699,21 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
 
     // Предпазител: не пипаме тихо платен абонамент — админът първо да го
     // отмени в Stripe/Discord, иначе клиентът плаща за tier, който сме сменили.
+    // ВАЖНО: гейтваме БЕЗ `plan !== server.plan` — иначе задаване на СЪЩИЯ plan
+    // пропуска гейта, но по-долу пише planSource="manual" върху платения абонат
+    // → изключва го от MRR и разкача Stripe синхрона (находка на Разбивача).
+    // Агенция-покритите сървъри също се пазят (агенцията може да е платена).
+    const paidAgency = server.agency &&
+      ((server.agency.planSource === "stripe" && ["active", "trialing", "past_due"].includes(server.agency.stripeStatus)) ||
+       server.agency.planSource === "discord");
     const hasPaidSub =
       (server.planSource === "stripe" && ["active", "trialing", "past_due"].includes(server.stripeStatus)) ||
-      server.planSource === "discord";
-    if (hasPaidSub && plan !== server.plan) {
+      server.planSource === "discord" ||
+      paidAgency;
+    if (hasPaidSub) {
+      const src = paidAgency ? server.agency.planSource : server.planSource;
       return res.status(409).json({
-        error: `Server has an active ${server.planSource} subscription (${server.plan}). Cancel it in ${server.planSource === "stripe" ? "the Stripe Dashboard" : "Discord"} first, then set the manual plan.`,
+        error: `Server is covered by an active ${src} subscription. Cancel it in ${src === "stripe" ? "the Stripe Dashboard" : "Discord"} first, then set the manual plan.`,
         code: "ACTIVE_PAID_SUBSCRIPTION",
       });
     }
@@ -765,10 +774,15 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
           isPremium: false,
           billingInterval: null,
           archiveRetentionDays: 30,
+          // Чистим trial следите — иначе getServerTier може да върне активен
+          // пробен tier след ръчен revoke (Кодаджията).
+          trialEndsAt: null,
+          trialStartedAt: null,
+          pastDueSince: null,
         };
-        // Ако seat-ът идва от manual агенция — откачи; деактивирай агенцията,
-        // ако това е било последното ѝ seat.
-        if (server.agencyId && server.agency?.planSource === "manual") {
+        // Ако seat-ът идва от агенция — откачи. (manual: може да деактивираме
+        // агенцията; платена вече е блокирана горе от hasPaidSub гейта.)
+        if (server.agencyId) {
           data.agencyId = null;
           const remaining = await tx.server.count({
             where: { agencyId: server.agencyId, id: { not: server.id } },

@@ -59,10 +59,13 @@ export const client = new Client({
     // messageReactionAdd/Remove събития. Без него react → роля не работи.
     GatewayIntentBits.GuildMessageReactions,
   ],
-  // Message + Reaction partials: реакция върху съобщение отпреди рестарта на
-  // бота идва partial — без тях събитието изобщо не се емитва за некеширани
-  // съобщения (Reaction Roles v33).
-  partials: [Partials.Channel, Partials.Message, Partials.Reaction],
+  // Message + Reaction + User partials: реакция върху съобщение отпреди
+  // рестарта на бота идва partial — без Message/Reaction събитието изобщо не
+  // се емитва за некеширани съобщения. Без Partials.User пък
+  // messageReactionRemove НЕ се емитва за потребител извън кеша (discord.js
+  // MessageReactionRemove.handle излиза с false) → ролята остава при махната
+  // реакция след рестарт (находка на Кодаджията). Reaction Roles v33.
+  partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User],
 });
 
 // ─── Commands Collection ──────────────────────────────────────────────────────
@@ -269,16 +272,21 @@ app.post("/internal/reaction-role-spawn", async (req, res) => {
 
     const msg = await channel.send({ embeds: [buildReactionRoleEmbed(rrm)] });
 
-    // Началните реакции — последователно (rate limit friendly), best-effort:
-    // невалидно/чуждо custom emoji не бива да събори целия spawn.
-    for (const p of rrm.pairs) {
-      await msg.react(p.emoji).catch((err) =>
-        console.warn(`[ReactionRoles] react ${p.emoji} failed: ${err?.message}`)
-      );
-    }
-
-    clearRrmCache(rrm.messageId);
+    // Отговори с messageId ВЕДНАГА — до 20 msg.react() последователно могат да
+    // надхвърлят 10s timeout на notifyBot и backend-ът да не запише messageId,
+    // докато съобщението е живо (находка на Кодаджията). Реакциите се слагат
+    // след отговора (fire-and-forget, best-effort: чуждо/невалидно emoji не
+    // бива да събаря spawn-а).
     res.json({ ok: true, channelId, messageId: msg.id });
+
+    (async () => {
+      for (const p of rrm.pairs) {
+        await msg.react(p.emoji).catch((err) =>
+          console.warn(`[ReactionRoles] react ${p.emoji} failed: ${err?.message}`)
+        );
+      }
+      clearRrmCache(rrm.messageId);
+    })().catch(() => {});
   } catch (err) {
     console.error("reaction-role-spawn error:", err?.message);
     res.status(500).json({ error: err?.message });

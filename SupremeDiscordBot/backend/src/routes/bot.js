@@ -1097,11 +1097,21 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
       return res.status(400).json({ error: "Application already reviewed — discussion is for pending applications." });
     }
 
-    // Идемпотентност: вече отворен discussion канал → върни него.
-    const existingTicket = await prisma.ticket.findFirst({
-      where: { applicationId: app.id, status: { notIn: ["CLOSED", "ARCHIVED"] } },
+    // Идемпотентност: Ticket.applicationId е @unique → може да има само ЕДИН
+    // тикет за кандидатурата. Търсим БЕЗ статус филтър — иначе затворен тикет
+    // не се хваща тук, ботът създава Discord канал, а ticket.create гърми с
+    // P2002 (осиротял канал + 500). Активен → връщаме канала; затворен →
+    // 409 (дискусията вече е водена — не пресъздаваме нов канал). (Кодаджията)
+    const existingTicket = await prisma.ticket.findUnique({
+      where: { applicationId: app.id },
     });
     if (existingTicket) {
+      if (["CLOSED", "ARCHIVED"].includes(existingTicket.status)) {
+        return res.status(409).json({
+          error: "A discussion was already opened for this application (the channel was closed).",
+          code: "DISCUSSION_ALREADY_CLOSED",
+        });
+      }
       return res.json({
         ok: true,
         alreadyExists: true,

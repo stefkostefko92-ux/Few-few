@@ -4,7 +4,7 @@
 // пост извън кеша идва partial — тогава старото съдържание е неизвестно).
 // Закача се и на white-label клиентите (clientManager.loadEventModules).
 
-import { logServerEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, isEventCategoryEnabled } from "../utils/serverEventLog.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -18,6 +18,13 @@ export default {
   once: false,
   async execute(oldMessage, newMessage) {
     try {
+      // Евтин гейт ПРЕДИ REST fetch-а — иначе всяка редакция във всеки guild
+      // дърпа съобщението дори с изключено логване (Кодаджията). guildId е
+      // наличен и на partial съобщение.
+      const guildId = newMessage.guildId || newMessage.guild?.id;
+      if (!guildId) return;
+      if (!(await isEventCategoryEnabled(guildId, "messages"))) return;
+
       // Partial НОВО съобщение → дръпни го (без него няма какво да логнем).
       if (newMessage.partial) {
         newMessage = await newMessage.fetch().catch(() => null);

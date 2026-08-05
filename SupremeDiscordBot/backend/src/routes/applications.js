@@ -404,14 +404,20 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
     });
     if (!app) return res.status(404).json({ error: "Application not found" });
 
-    // Check if a discussion channel already exists (idempotent)
-    const existingTicket = await prisma.ticket.findFirst({
-      where: {
-        applicationId: app.id,
-        status: { notIn: ["CLOSED", "ARCHIVED"] },
-      },
+    // Идемпотентност: Ticket.applicationId е @unique → само ЕДИН тикет на
+    // кандидатура. Търсим БЕЗ статус филтър — затворен тикет иначе не се хваща,
+    // ботът прави канал, а create гърми с P2002 (осиротял канал). Активен →
+    // връщаме канала; затворен → 409 (не пресъздаваме). (Кодаджията)
+    const existingTicket = await prisma.ticket.findUnique({
+      where: { applicationId: app.id },
     });
     if (existingTicket) {
+      if (["CLOSED", "ARCHIVED"].includes(existingTicket.status)) {
+        return res.status(409).json({
+          error: "A discussion was already opened for this application (the channel was closed).",
+          code: "DISCUSSION_ALREADY_CLOSED",
+        });
+      }
       return res.json({
         ok: true,
         alreadyExists: true,

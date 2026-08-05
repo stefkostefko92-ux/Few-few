@@ -3,7 +3,7 @@
 // другите роли от същото съобщение + другите реакции на потребителя.
 // Изисква GuildMessageReactions intent + Partials.Message/Reaction (index.js).
 import { Events } from "discord.js";
-import { emojiKey, getRrmForMessage } from "../utils/reactionRoles.js";
+import { emojiKey, getRrmForMessage, isRoleSafeToSelfAssign } from "../utils/reactionRoles.js";
 
 export default {
   name: Events.MessageReactionAdd,
@@ -29,6 +29,18 @@ export default {
 
       const member = await message.guild.members.fetch(user.id).catch(() => null);
       if (!member) return;
+
+      // Privilege-escalation гард: никога не раздавай роля с опасни права през
+      // реакция (виж isRoleSafeToSelfAssign). Резолвваме ролята от guild-а.
+      const role = message.guild.roles.cache.get(pair.roleId)
+        || await message.guild.roles.fetch(pair.roleId).catch(() => null);
+      const botMember = message.guild.members.me;
+      if (!isRoleSafeToSelfAssign(role, botMember)) {
+        console.warn(`[ReactionRoles] refused unsafe role ${pair.roleId} in guild ${message.guildId} (managed/privileged/above-bot)`);
+        // Махни реакцията на потребителя — иначе стои като „работи", а не дава роля.
+        await reaction.users.remove(user.id).catch(() => {});
+        return;
+      }
 
       // Exclusive (radio): една роля от съобщението наведнъж.
       if (rrm.exclusive) {

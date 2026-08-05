@@ -83,9 +83,10 @@ async function loadEventModules() {
 async function createConfiguredClient(mainClient) {
   const client = new Client({
     intents: SHARED_INTENTS,
-    // Message + Reaction partials: Reaction Roles (v33) върху некеширани
-    // съобщения — виж същия коментар в bot/src/index.js.
-    partials: [Partials.Channel, Partials.Message, Partials.Reaction],
+    // Message + Reaction + User partials: Reaction Roles (v33) върху некеширани
+    // съобщения/потребители — виж същия коментар в bot/src/index.js
+    // (Partials.User е нужен, за да се емитва messageReactionRemove).
+    partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User],
   });
 
   // Share command collection (it's read-only after startup)

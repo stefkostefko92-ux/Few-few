@@ -1,6 +1,43 @@
 // bot/src/utils/reactionRoles.js
 // v33 — Reaction Roles: общи помощници за events/ и internal handler-ите.
+import { PermissionsBitField } from "discord.js";
 import api from "./api.js";
+
+// ─── Гард срещу privilege escalation (находка на Разбивача, 05.08.2026) ──────
+// Reaction role, вързан за роля с опасни права, превръща обикновена реакция в
+// self-service ескалация: член с права само да РЕАГИРА получава Administrator/
+// Manage*. Manage Server-админ, който конфигурира формата, може да НЯМА тези
+// права сам → заобикаля Discord йерархията през бота. Затова при РАЗДАВАНЕ
+// отказваме роля с някое от следните права (независимо от йерархията).
+const DANGEROUS_ROLE_PERMS = [
+  PermissionsBitField.Flags.Administrator,
+  PermissionsBitField.Flags.ManageGuild,
+  PermissionsBitField.Flags.ManageRoles,
+  PermissionsBitField.Flags.ManageChannels,
+  PermissionsBitField.Flags.ManageWebhooks,
+  PermissionsBitField.Flags.ManageGuildExpressions,
+  PermissionsBitField.Flags.BanMembers,
+  PermissionsBitField.Flags.KickMembers,
+  PermissionsBitField.Flags.ModerateMembers,
+  PermissionsBitField.Flags.MentionEveryone,
+  PermissionsBitField.Flags.ManageMessages,
+  PermissionsBitField.Flags.ManageNicknames,
+  PermissionsBitField.Flags.ViewAuditLog,
+];
+
+/**
+ * Безопасна ли е ролята за self-service раздаване през реакция?
+ * @param {import('discord.js').Role|null|undefined} role
+ * @returns {boolean} false ако липсва/managed/има опасно право/над бота
+ */
+export function isRoleSafeToSelfAssign(role, botMember) {
+  if (!role) return false;
+  if (role.managed) return false;                         // интеграционна роля (бот/буст) — не се дава ръчно
+  if (role.permissions.any(DANGEROUS_ROLE_PERMS)) return false;
+  // Над ботската роля Discord и без това отказва, но проверяваме изрично.
+  if (botMember && role.comparePositionTo(botMember.roles.highest) >= 0) return false;
+  return true;
+}
 
 // ─── Emoji ключ ──────────────────────────────────────────────────────────────
 // Каноничният формат, в който dashboard-ът пази двойките:
