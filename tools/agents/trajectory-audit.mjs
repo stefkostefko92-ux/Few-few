@@ -13,8 +13,11 @@
 //   node tools/agents/trajectory-audit.mjs --check    # гейт (провалена траектория → exit 1)
 //   node tools/agents/trajectory-audit.mjs --json
 //
-// Празен дневник (runtime, git-ignored) → НЕ е провал: няма какво да се съди. Структурата на самите
-// trajectory блокове се гейтва отделно и ТВЪРДО от `evals/eval.mjs --check`.
+// Празен дневник (runtime, git-tracked но пълнен на живо от flow-ledger.mjs) → НЕ е провал за ТОЗИ
+// гейт: няма верига за съждение. Но „празно значи НЕИЗМЕРЕНО, не чисто" (CLAUDE.md) — затова
+// покритието се съди отделно с `--coverage`, а структурата на самите trajectory блокове се гейтва
+// ТВЪРДО от `evals/eval.mjs --check`. (Бел.: дневникът е git-tracked, НЕ git-ignored — беше
+// игнориран някога и trajectory гейтът беше зелен от слепота; вече е проследен.)
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";

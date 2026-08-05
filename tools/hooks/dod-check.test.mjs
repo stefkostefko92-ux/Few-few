@@ -2,6 +2,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { collectToolUses, checkDoD, bashWrites, lastAssistantText, checkHandoffViolation, checkFailedGates, collectToolResults } from "../../.claude/hooks/dod-check.mjs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const jl = (objs) => objs.map((o) => JSON.stringify(o)).join("\n");
 
@@ -190,4 +196,33 @@ test("collectToolResults изважда текста на tool_result (вкл. �
   assert.match(res[0], /ЧЕРВЕН/);
   assert.equal(res[1], "# fail 0");
   assert.ok(checkFailedGates(res), "прочетеният червен резултат трябва да блокира");
+});
+
+// ── Кръг 11 (2026-08-04): веригата се пише от РАБОТАТА, не от дисциплина ────────────────────────
+// `_flows.jsonl` е ground truth за пътя на оркестрацията, но се пълнеше САМО ако Президентът се
+// сети да извика `flow-ledger.mjs` — дисциплина, не механизъм. Затова стоеше празен седмици и
+// trajectory гейтът нямаше какво да съди („празно значи НЕИЗМЕРЕНО, не чисто" — CLAUDE.md).
+// Куката вече валидира блока ПРЕДАВАНЕ на всеки SubagentStop, значи ИМА данните — сега ги записва.
+test("appendHandoffToLedger: валиден ПРЕДАВАНЕ блок → запис; без блок → нищо", () => {
+  const dir = mkdtempSync(join(tmpdir(), "flow-"));
+  try {
+    const mem = join(dir, ".claude", "agents", "_memory");
+    mkdirSync(mem, { recursive: true });
+    writeFileSync(join(mem, "_flows.jsonl"), "");
+    const good = "Готово.\n\n## ПРЕДАВАНЕ\n- От: izpitatelya\n- Към: kodadjiyata\n- Статус: наред\n"
+      + "- Находки: няма\n- Изход/артефакт: tools/x.test.mjs\n- Следваща стъпка: преглед\n";
+    const run = (text) => spawnSync(process.execPath, ["-e",
+      `import(${JSON.stringify(join(ROOT, ".claude/hooks/dod-check.mjs"))}).then(m=>console.log(m.appendHandoffToLedger(${JSON.stringify(text)},{agent_type:"izpitatelya"})))`],
+      { encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: dir } });
+    assert.match(run(good).stdout, /true/, "валидният блок трябва да се запише");
+    assert.match(run("Просто текст без блок").stdout, /false/, "без блок — нищо");
+    const lines = readFileSync(join(mem, "_flows.jsonl"), "utf8").split("\n").filter(Boolean);
+    assert.equal(lines.length, 1, "точно един запис");
+    const rec = JSON.parse(lines[0]);
+    assert.equal(rec.t, "handoff");
+    assert.equal(rec.from, "izpitatelya");
+    assert.equal(rec.to, "kodadjiyata");
+    // Форматът трябва да СЪВПАДА с flow-ledger.mjs — иначе имаме два несъвместими писача.
+    for (const k of ["t", "ts", "id", "from", "to", "status"]) assert.ok(k in rec, `липсва поле ${k}`);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

@@ -15,7 +15,26 @@
 // Договор: `withMutation(file, transform, fn)` прилага transform върху съдържанието, проверява че
 // е различно, пуска `fn(mutatedText)`, връща резултата му и ВИНАГИ връща файла в изходния вид.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, renameSync } from "node:fs";
+
+/**
+ * АТОМАРЕН запис (Кръг 14, 2026-08-04). `writeFileSync` първо СЪКРАЩАВА файла, после пише — а
+ * `node --test` пуска тестовите ФАЙЛОВЕ в паралелни процеси. Друг тест, който чете същия файл точно
+ * в този прозорец, вижда ПРАЗЕН файл и се проваля по причина, нямаща нищо общо с него.
+ *
+ * Доказано, не предположено: CI падна на `flow-cost.test` с „префиксът 5178 т е над изведения таван
+ * 4490 т (обвързващ: „Тестове")". Възпроизведох СЪСТОЯНИЕТО (не състезанието) — изпразване на
+ * `_memory/izpitatelya.md` дава точно 4490 и точно „Тестове"; а мутиращият тест мутира точно
+ * `izpitatelya`. Локално 6 паралелни пуска не хванаха състезанието — прозорецът е тесен, CI е
+ * по-натоварен и го отваря.
+ *
+ * `rename` е атомарен на POSIX: четецът вижда или старото, или новото съдържание, никога празно.
+ */
+export function writeAtomic(file, text) {
+  const tmp = `${file}.tmp-${process.pid}`;
+  writeFileSync(tmp, text);
+  renameSync(tmp, file);
+}
 
 export class MutationNotApplied extends Error {
   constructor(file) {
@@ -34,11 +53,11 @@ export function withMutation(file, transform, fn) {
   const original = readFileSync(file, "utf8");
   const mutated = transform(original);
   if (mutated === original) throw new MutationNotApplied(file);
-  writeFileSync(file, mutated);
+  writeAtomic(file, mutated);
   try {
     return fn(mutated);
   } finally {
-    writeFileSync(file, original);
+    writeAtomic(file, original);
     // Проверката не е излишна: тихо невъзстановен файл трови всички следващи проверки в сесията.
     const now = readFileSync(file, "utf8");
     if (now !== original) throw new Error(`${file} НЕ е възстановен след мутация — спри и провери ръчно`);

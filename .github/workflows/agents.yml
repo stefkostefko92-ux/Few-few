@@ -19,6 +19,16 @@ on:
       # Промяна в tools/seo/, tools/lib/, tools/qa/, tools/security/… минаваше БЕЗ нито един тест.
       # Гейт, чийто обхват е по-тесен от това, което проверява, е зелен по слепота.
       - "tools/**"
+      # Одит 2026-08-04: ГЕЙТЪТ Е ПО-ШИРОК ОТ ТРИГЕРА. deep-audit/drift-lint/docs-fresh валидират
+      # продуктовите CLAUDE.md и таблото docs.js; mascot-theme чете mascot/; deploy-check чете
+      # deploy/autodeploy.sh — но нито един от тези пътища не беше в тригера. Доказано на живо:
+      # два комита в main (122039bf, afb3909c) смениха vpsdash/CLAUDE.md и НИЩО друго → workflow-ът
+      # не се пусна, docs.js остаря на main без сигнал и първият PR, който сля base, изяде червеното.
+      - "CLAUDE.md"
+      - "**/CLAUDE.md"
+      - "agents-dashboard/docs.js"
+      - "mascot/**"
+      - "deploy/**"
       - ".github/workflows/agents.yml"
   pull_request:
     paths:
@@ -33,6 +43,16 @@ on:
       # Промяна в tools/seo/, tools/lib/, tools/qa/, tools/security/… минаваше БЕЗ нито един тест.
       # Гейт, чийто обхват е по-тесен от това, което проверява, е зелен по слепота.
       - "tools/**"
+      # Одит 2026-08-04: ГЕЙТЪТ Е ПО-ШИРОК ОТ ТРИГЕРА. deep-audit/drift-lint/docs-fresh валидират
+      # продуктовите CLAUDE.md и таблото docs.js; mascot-theme чете mascot/; deploy-check чете
+      # deploy/autodeploy.sh — но нито един от тези пътища не беше в тригера. Доказано на живо:
+      # два комита в main (122039bf, afb3909c) смениха vpsdash/CLAUDE.md и НИЩО друго → workflow-ът
+      # не се пусна, docs.js остаря на main без сигнал и първият PR, който сля base, изяде червеното.
+      - "CLAUDE.md"
+      - "**/CLAUDE.md"
+      - "agents-dashboard/docs.js"
+      - "mascot/**"
+      - "deploy/**"
       - ".github/workflows/agents.yml"
 
 # Least-privilege: гейтът само чете кода.
