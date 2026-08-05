@@ -1,6 +1,6 @@
 {
   "name": "supreme-bot",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "Supreme Bot — Discord SaaS bot gateway",
   "license": "UNLICENSED",
   "private": true,
