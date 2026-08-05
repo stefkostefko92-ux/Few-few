@@ -135,6 +135,7 @@ export default function StatusPage() {
           </div>
           <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
             <a href="/"        className="hover:text-cs-cyan transition-colors">Home</a>
+            <a href="/commands" className="hover:text-cs-cyan transition-colors">Commands</a>
             <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
             <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
             <a href="/accessibility" className="hover:text-cs-cyan transition-colors">Accessibility</a>

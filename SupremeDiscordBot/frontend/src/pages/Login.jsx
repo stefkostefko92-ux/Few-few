@@ -178,6 +178,11 @@ export default function Login() {
           </div>
         </section>
 
+        {/* PRODUCT TOUR — реални скрийншоти на dashboard-а (демо данни).
+            Прост tab превключвател (aria-pressed), без анимации — само смяна
+            на src; изображенията са с фиксирани размери (без CLS) + lazy. */}
+        <ProductTour />
+
         {/* PREMIUM UPSELL */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
@@ -602,6 +607,65 @@ function PricingCheck({ children }) {
 /* Accessible monthly/annual switch — a radiogroup of two aria-checked buttons,
    fully keyboard-operable. The annual choice carries a "2 months free" badge.
    Only a color transition (neutralized by prefers-reduced-motion) — no flashing. */
+/* Product tour: реални скрийншоти на dashboard-а с демо данни. Табовете са
+   истински бутони (aria-pressed, клавиатурно достъпни); смяната е само на
+   src — нула анимация (reduced-motion дисциплина). width/height пазят от CLS. */
+const TOUR_SCREENS = [
+  { key: "home",      label: "Overview",  alt: "Server overview — stats, setup checklist and feature cards" },
+  { key: "tickets",   label: "Tickets",   alt: "Ticket list with statuses, assignees and satisfaction ratings" },
+  { key: "panels",    label: "Panels",    alt: "Ticket panel builder with button styles and support roles" },
+  { key: "forms",     label: "Forms",     alt: "Application form builder with logic branching" },
+  { key: "analytics", label: "Analytics", alt: "Ticket analytics — volume, response times and staff leaderboard" },
+  { key: "premium",   label: "Premium",   alt: "Premium plans and billing management" },
+];
+
+function ProductTour() {
+  const [active, setActive] = useState(TOUR_SCREENS[0]);
+  return (
+    <section id="tour" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="cs-eyebrow mb-4 justify-center flex">→ See it in action</div>
+          <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
+            The dashboard, <span className="text-cs-cyan">for real.</span>
+          </h2>
+          <p className="text-cs-muted max-w-2xl mx-auto">
+            Not mockups — actual screenshots of the Supreme Bot dashboard running a live server.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2 mb-6" role="group" aria-label="Dashboard screenshots">
+          {TOUR_SCREENS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              aria-pressed={active.key === s.key}
+              onClick={() => setActive(s)}
+              className={`px-4 py-2 rounded-full font-mono text-xs uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
+                active.key === s.key
+                  ? "bg-cs-cyan text-black"
+                  : "border border-cs-border text-cs-muted hover:text-cs-text hover:border-cs-borderHi"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="rounded-xl border border-cs-border overflow-hidden shadow-2xl shadow-cs-cyan/5 bg-cs-panel">
+          <img
+            src={`/screens/${active.key}.webp`}
+            alt={active.alt}
+            width="1440"
+            height="900"
+            loading="lazy"
+            decoding="async"
+            className="w-full h-auto block"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BillingToggle({ interval, onChange }) {
   return (
     <div className="flex flex-col items-center gap-2 mb-10">

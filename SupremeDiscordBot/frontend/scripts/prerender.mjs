@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
+import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
@@ -246,7 +247,38 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   count++;
 }
 
-// 3) Legal / status routes — correct per-route head + a minimal heading so
+// 3) Public commands reference — full catalog as a crawlable snapshot (the
+//    AEO content for this route; mirrors PublicCommandsPage.jsx exactly so
+//    the snapshot and the live SPA never drift).
+{
+  const totalCommands = COMMAND_CATALOG.reduce((n, cat) => n + (cat.commands || []).length, 0);
+  const totalCategories = COMMAND_CATALOG.length;
+  const title = "Supreme Bot Commands — Full Reference";
+  const description = `Every Supreme Bot slash command and dashboard feature: ${totalCommands} commands across ${totalCategories} categories — tickets, forms, verification, polls, giveaways, automation, and more.`;
+  const PREMIUM_MARK = /\s*\(Premium\)\s*$/;
+  const stripPremium = (label) => label.replace(PREMIUM_MARK, "");
+  const isPremium = (label) => PREMIUM_MARK.test(label);
+  const catHtml = COMMAND_CATALOG.map((cat) => {
+    const cmds = (cat.commands || []).map((cmd) => `<li><code>${esc(stripPremium(cmd.name))}</code>${
+      isPremium(cmd.name) ? " (Premium)" : ""
+    } — <span>${esc(cmd.signature || "")}</span><p>${esc(cmd.description)}</p></li>`).join("");
+    const dashOnly = (cat.dashboardOnly || []).map((f) => `<li><strong>${esc(stripPremium(f.feature))}</strong>${
+      isPremium(f.feature) ? " (Premium)" : ""
+    } — dashboard-only<p>${esc(f.description)}</p></li>`).join("");
+    return `<section><h2>${esc(cat.icon)} ${esc(cat.category)}</h2><p>${esc(cat.description)}</p><ul>${cmds}${dashOnly}</ul></section>`;
+  }).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>${esc(title)}</h1>
+    <p>Supreme Bot has ${totalCommands} slash commands across ${totalCategories} categories — tickets, panels, forms &amp; applications, verification, polls, giveaways, scheduled &amp; sticky messages, integrations, and server administration. Most features are also reachable from the web dashboard; this page is the full reference (the same list <code>/help</code> shows in Discord).</p>
+    ${catHtml}
+  </div>`;
+  let html = withHead(template, { title, description, path: "/commands", lang: "en" });
+  html = injectRoot(html, snapshot);
+  writeRoute("/commands", html);
+  count++;
+}
+
+// 4) Legal / status routes — correct per-route head + a minimal heading so
 //    crawlers don't index them all under the homepage title.
 const STATIC_ROUTES = {
   "/status":        ["Service Status — Supreme Bot", "Real-time service status for Supreme Bot: uptime and component health for the database, Discord bot, API and web dashboard."],

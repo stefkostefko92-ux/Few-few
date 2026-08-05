@@ -11,6 +11,7 @@ Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 for
 - [Landing page](https://supreme.carbonstealth.eu/): Product overview, full feature list, pricing, FAQ, signup with Discord OAuth
 - Localized landing pages: [Български](https://supreme.carbonstealth.eu/bg), [Deutsch](https://supreme.carbonstealth.eu/de), [Español](https://supreme.carbonstealth.eu/es), [Français](https://supreme.carbonstealth.eu/fr), [Italiano](https://supreme.carbonstealth.eu/it), [Nederlands](https://supreme.carbonstealth.eu/nl), [Polski](https://supreme.carbonstealth.eu/pl)
 - [Service status](https://supreme.carbonstealth.eu/status): Real-time uptime monitoring and component health for database, bot, API, and web
+- [Commands reference](https://supreme.carbonstealth.eu/commands): Full list of Supreme Bot slash commands and dashboard features, grouped by category (tickets, forms, verification, polls, giveaways, automation)
 - [Terms of Service](https://supreme.carbonstealth.eu/terms): Legal terms governing use of Supreme Bot SaaS
 - [Privacy Policy](https://supreme.carbonstealth.eu/privacy): Data processing details, subprocessor list (Hetzner, Stripe, Google, Discord), data subject rights, retention policy
 - [Cookie Policy](https://supreme.carbonstealth.eu/cookies): Cookie usage details and consent management options

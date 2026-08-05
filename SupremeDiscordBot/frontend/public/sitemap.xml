@@ -148,6 +148,13 @@
   </url>
 
   <url>
+    <loc>https://supreme.carbonstealth.eu/commands</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://supreme.carbonstealth.eu/terms</loc>
     <lastmod>2026-06-27</lastmod>
     <changefreq>monthly</changefreq>

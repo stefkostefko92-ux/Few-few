@@ -18,6 +18,7 @@ const CookiesPage = lazy(() => import("./pages/CookiesPage"));
 const EulaPage = lazy(() => import("./pages/EulaPage"));
 const AccessibilityPage = lazy(() => import("./pages/AccessibilityPage"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
+const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -123,6 +124,7 @@ export default function App() {
               <Route path="/eula" element={<EulaPage />} />
               <Route path="/accessibility" element={<AccessibilityPage />} />
               <Route path="/status" element={<StatusPage />} />
+              <Route path="/commands" element={<PublicCommandsPage />} />
               {/* Catch-all */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
