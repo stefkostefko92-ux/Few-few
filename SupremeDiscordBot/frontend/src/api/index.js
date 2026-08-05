@@ -80,6 +80,8 @@ export const reviewApplication = (serverId, appId, action, note) =>
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const getAnalytics = () => api.get("/admin/analytics").then((r) => r.data);
+// Единственият източник на приходни числа (MRR/ARPU/churn/trial фуния).
+export const getRevenue = () => api.get("/admin/revenue").then((r) => r.data);
 export const getAdminUsers = (params) => api.get("/admin/users", { params }).then((r) => r.data);
 export const getAdminUser = (userId) => api.get(`/admin/users/${userId}`).then((r) => r.data);
 export const updateUserRole = (userId, role) => api.patch(`/admin/users/${userId}/role`, { role }).then((r) => r.data);

@@ -4,10 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart2, Users, Server, DollarSign, FileText,
   Shield, Ban, Search, Trash2, RotateCcw, Edit, MessageSquare,
-  Star, AlertTriangle, CheckCircle, Sparkles,
+  Star, AlertTriangle, CheckCircle, Sparkles, TrendingUp,
 } from "lucide-react";
 import api, {
-  getAnalytics, getAdminUsers, getAdminUser,
+  getAnalytics, getRevenue, getAdminUsers, getAdminUser,
   getPayments, getAuditLogs, getAdminServers, getAdminServer,
   deleteAdminServer, resetAdminServer, broadcastToServer, setServerPremium,
   deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer,
@@ -17,6 +17,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 
 const TABS = [
   { id: "analytics", label: "Analytics", icon: BarChart2 },
+  { id: "revenue",   label: "Revenue",   icon: TrendingUp },
   { id: "users",     label: "Users",     icon: Users },
   { id: "servers",   label: "Servers",   icon: Server },
   { id: "payments",  label: "Payments",  icon: DollarSign },
@@ -66,6 +67,7 @@ export default function AdminPage() {
       </div>
 
       {tab === "analytics" && <AnalyticsTab />}
+      {tab === "revenue"   && <RevenueTab />}
       {tab === "users"     && <UsersTab />}
       {tab === "servers"   && <ServersTab />}
       {tab === "payments"  && <PaymentsTab />}
@@ -102,9 +104,12 @@ function AnalyticsTab() {
         <Stat label="Applications"    value={data?.totalApplications ?? 0} />
         <Stat label="Panels"          value={data?.totalPanels ?? 0} />
         <Stat label="Premium %"       value={`${data?.premiumPercentage ?? 0}%`} />
-        <Stat label="MRR (USD)"       value={`$${(data?.mrr ?? 0).toFixed(2)}`} accent />
         <Stat label="Base Servers"    value={data?.baseServers ?? 0} />
       </div>
+
+      <p className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">
+        → Revenue (MRR, ARPU, churn, trial funnel) lives in the Revenue tab — one number, one definition.
+      </p>
 
       {data?.recentTickets?.length > 0 && (
         <div className="cs-card">
@@ -147,6 +152,174 @@ function SparklineChart({ data }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REVENUE — единственото място с приходни числа (GET /api/admin/revenue).
+// Всички суми са в EUR. Каталожните цени са с ВКЛЮЧЕН ДДС (tax_behavior=
+// inclusive), затова показваме бруто и нето-приблизител (÷1.20, BG ставка).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const eur = (n) => `€${Number(n ?? 0).toFixed(2)}`;
+const pct = (n) => `${Number(n ?? 0).toFixed(2)}%`;
+
+function RevenueTab() {
+  const { data, isLoading, isError, error } = useQuery({ queryKey: ["revenue"], queryFn: getRevenue });
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="status">
+        <span className="sr-only">Loading revenue…</span>
+        {Array.from({ length: 8 }).map((_, i) => <div key={i} className="cs-card h-28 animate-pulse" />)}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="border border-danger/40 bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">
+        Could not load revenue: {error?.response?.data?.error || error?.message}
+      </div>
+    );
+  }
+
+  const d = data || {};
+  const tiers = d.byTier || [];
+  const ex = d.excluded || {};
+  const diag = d.diagnostics || {};
+  const dataGaps = (diag.unknownInterval || 0) + (diag.unknownPlan || 0) + (ex.other?.count || 0);
+
+  return (
+    <div className="space-y-8">
+      {/* Headline */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <RevStat label="MRR (gross, VAT incl.)" value={eur(d.mrrGross)} sub={`net ≈ ${eur(d.mrrNet)}`} accent />
+        <RevStat label="ARR (gross)"            value={eur(d.arrGross)} sub={`net ≈ ${eur(d.arrNet)}`} />
+        <RevStat label="Active subscriptions"   value={d.paidSubscriptions ?? 0}
+                 sub={`${d.paidServers ?? 0} server · ${d.paidAgencies ?? 0} agency`} />
+        <RevStat label="ARPU (gross)"           value={eur(d.arpuGross)} sub={`net ≈ ${eur(d.arpuNet)} · per paid subscription`} />
+        <RevStat label={`Churn ${d.churn?.windowDays ?? 30}d`} value={pct(d.churn?.rate)}
+                 sub={`${d.churn?.canceled ?? 0} canceled / ${(d.churn?.activeNow ?? 0) + (d.churn?.canceled ?? 0)} base`} />
+        <RevStat label="Active trials"          value={d.trials?.active ?? 0}
+                 sub={`${d.trials?.used ?? 0} trials ever used`} />
+        <RevStat label="Trial → paid"           value={pct(d.trials?.conversionRate)}
+                 sub={`${d.trials?.converted ?? 0} of ${d.trials?.used ?? 0} (historical)`} />
+        <RevStat label="Cash collected (month)" value={eur(d.cashCollectedThisMonth)}
+                 sub="paid invoices this calendar month — not MRR" />
+      </div>
+
+      {/* Not in MRR */}
+      <div className="cs-card">
+        <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Not counted in MRR</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <RevStat label="Trialing (Stripe)" value={ex.trialing?.count ?? 0} sub={`${eur(ex.trialing?.potentialMrr)} potential`} />
+          <RevStat label="Gifted (manual)"   value={ex.gifted?.count ?? 0}   sub={`${eur(ex.gifted?.listValue)} list value given away`} />
+          <RevStat label="Past due"          value={ex.pastDue?.count ?? 0}  sub={`${eur(ex.pastDue?.atRiskMrr)} at risk`} />
+          <RevStat label="Discord billed"    value={ex.discord?.count ?? 0}  sub={`${eur(ex.discord?.listValue)} outside Stripe`} />
+        </div>
+      </div>
+
+      {/* Per-tier table */}
+      <div className="cs-card p-0 overflow-hidden">
+        <table className="cs-table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th className="text-right">Subs</th>
+              <th className="text-right">Monthly</th>
+              <th className="text-right">Yearly</th>
+              <th className="text-right">MRR (gross)</th>
+              <th className="text-right">MRR (net ≈)</th>
+              <th className="text-right">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.length === 0 ? (
+              <tr><td colSpan={7} className="text-cs-dim text-sm">No active paid subscriptions yet.</td></tr>
+            ) : tiers.map((t) => (
+              <tr key={t.plan}>
+                <td>
+                  <span className="text-cs-text font-medium">{t.label}</span>
+                  <span className="font-mono text-[10px] text-cs-dim ml-2">{t.plan}</span>
+                </td>
+                <td className="text-right font-mono text-xs text-cs-muted">{t.count}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{t.monthlyCount} · {eur(t.monthlyMrr)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{t.yearlyCount} · {eur(t.yearlyMrr)}</td>
+                <td className="text-right font-display font-bold text-cs-cyan">{eur(t.mrr)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{eur(t.mrr / (1 + (d.vatRate ?? 0.2)))}</td>
+                <td className="text-right font-mono text-xs text-cs-dim">
+                  {d.mrrGross > 0 ? pct((t.mrr / d.mrrGross) * 100) : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {tiers.length > 0 && (
+            <tfoot>
+              <tr>
+                <td className="text-cs-text font-semibold">Total</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{d.paidSubscriptions}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{d.interval?.monthlyCount} · {eur(d.interval?.monthlyMrr)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{d.interval?.yearlyCount} · {eur(d.interval?.yearlyMrr)}</td>
+                <td className="text-right font-display font-bold text-cs-cyan">{eur(d.mrrGross)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{eur(d.mrrNet)}</td>
+                <td className="text-right font-mono text-xs text-cs-dim">100%</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+
+      {/* Data gaps — мълчаливо изкривяване на числата е по-лошо от липсващо число */}
+      {dataGaps > 0 && (
+        <div className="border border-warning/40 bg-warning/5 px-4 py-3 text-xs text-warning space-y-1" role="status">
+          <div className="font-mono uppercase tracking-wider">⚠ Data gaps affecting the numbers</div>
+          {diag.unknownInterval > 0 && <div>{diag.unknownInterval} active subscription(s) without a billing interval — counted as monthly.</div>}
+          {diag.unknownPlan > 0 && <div>{diag.unknownPlan} subscription(s) on an unpriced plan — excluded entirely.</div>}
+          {ex.other?.count > 0 && <div>{ex.other.count} row(s) in another Stripe status (unpaid / disputed / refunded / unknown) — excluded.</div>}
+          {diag.grandfathered > 0 && <div>{diag.grandfathered} grandfathered row(s) without a plan, priced as White-label.</div>}
+        </div>
+      )}
+
+      {/* Methodology */}
+      <div className="cs-card text-xs text-cs-muted leading-relaxed space-y-2">
+        <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Methodology</h2>
+        <p>
+          MRR is derived from <strong className="text-cs-text">subscription state</strong> (Server + Agency), not from
+          the payment log: monthly plans at full list price, annual plans at price ÷ 12. Only
+          <code className="font-mono text-cs-cyan"> stripeStatus = active</code> counts.
+        </p>
+        <p>
+          Trialing, manually gifted, past-due and Discord-billed subscriptions are reported separately and are
+          <strong className="text-cs-text"> not</strong> in MRR. Agency-covered servers stay on plan
+          <code className="font-mono"> free</code>, so a seat is never billed twice — the agency subscription carries it.
+        </p>
+        <p>
+          Prices are list prices in <strong className="text-cs-text">EUR with VAT included</strong>; net is an
+          approximation (÷ 1.20, BG rate). Under EU OSS the rate follows the customer's country — the exact net/VAT
+          split is in the Stripe Tax report. Coupons and prorations are not reflected.
+        </p>
+        <p>
+          Churn is approximate: cancellations are dated by <code className="font-mono">updatedAt</code>, not by an exact
+          cancellation timestamp; deleted servers are not counted. Trial conversion is historical
+          (ever-trialed vs. premium now), not cohort-based.
+        </p>
+        <p className="text-cs-dim">
+          Generated {d.generatedAt ? new Date(d.generatedAt).toLocaleString() : "—"} · authoritative figures live in the
+          Stripe Dashboard.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function RevStat({ label, value, sub, accent }) {
+  return (
+    <div className="cs-stat">
+      <div className="cs-stat-label">{label}</div>
+      <div className={`cs-stat-value ${accent ? "text-cs-cyan" : ""}`}>{value}</div>
+      {sub && <div className="font-mono text-[10px] text-cs-dim mt-1">{sub}</div>}
     </div>
   );
 }
@@ -683,15 +856,18 @@ function PaymentsTab() {
   });
 
   const payments = data?.payments || [];
-  const mrr = data?.mrr || 0;
+  // КАСА, не MRR: сумата на реално платените фактури този календарен месец.
+  // (Полето по-рано се казваше `mrr` — виж routes/admin.js, секция REVENUE.)
+  const collected = data?.collectedThisMonth || 0;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="font-mono text-sm text-cs-muted">→ {data?.total ?? 0} transactions</div>
         <div className="cs-card py-2 px-4 text-sm">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mr-2">MRR (this month)</span>
-          <span className="font-display font-bold text-cs-cyan text-lg">${mrr.toFixed(2)}</span>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mr-2">Cash collected (this month)</span>
+          <span className="font-display font-bold text-cs-cyan text-lg">{eur(collected)}</span>
+          <span className="font-mono text-[10px] text-cs-dim ml-2">not MRR → Revenue tab</span>
         </div>
       </div>
 
@@ -715,7 +891,7 @@ function PaymentsTab() {
               <tr key={p.id}>
                 <td className="text-xs text-cs-muted">{new Date(p.createdAt).toLocaleString()}</td>
                 <td className="font-mono text-[10px] text-cs-dim">{p.serverId}</td>
-                <td className="font-display font-bold">${(p.amount / 100).toFixed(2)} <span className="text-xs text-cs-dim uppercase">{p.currency}</span></td>
+                <td className="font-display font-bold">{(p.amount / 100).toFixed(2)} <span className="text-xs text-cs-dim uppercase">{p.currency}</span></td>
                 <td>
                   {p.status === "paid"         ? <span className="cs-badge-success">Paid</span>
                   : p.status === "failed"      ? <span className="cs-badge-danger">Failed</span>

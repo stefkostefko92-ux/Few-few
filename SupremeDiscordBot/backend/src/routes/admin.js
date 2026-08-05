@@ -1,6 +1,7 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { planConfig } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
 
 const router = Router();
@@ -48,8 +49,9 @@ router.get("/analytics", async (req, res, next) => {
       count: Number(r.count) || 0,
     }));
 
-    const mrr = await calculateMRR();
-
+    // MRR НЕ се връща тук — единственият източник на приходни числа е
+    // GET /api/admin/revenue (виж секция REVENUE по-долу). Две „MRR" числа на
+    // две места = гарантирано разминаване.
     res.json({
       totalServers,
       premiumServers,
@@ -61,7 +63,6 @@ router.get("/analytics", async (req, res, next) => {
       totalForms,
       totalApplications,
       totalPanels,
-      mrr,
       recentTickets,
     });
   } catch (err) {
@@ -264,7 +265,7 @@ router.get("/payments", async (req, res, next) => {
   try {
     const where = { ...(status && { status }) };
 
-    const [payments, total, mrr] = await Promise.all([
+    const [payments, total, collectedThisMonth] = await Promise.all([
       prisma.paymentLog.findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -272,10 +273,13 @@ router.get("/payments", async (req, res, next) => {
         take: Number(limit),
       }),
       prisma.paymentLog.count({ where }),
-      calculateMRR(),
+      cashCollectedThisMonth(),
     ]);
 
-    res.json({ payments, total, mrr });
+    // `collectedThisMonth` е КАСА (реално платени фактури този календарен месец),
+    // НЕ MRR. Преди се връщаше под името `mrr` — грешно: сумата подскача при
+    // годишни фактури, нулира се на 1-во число и не вижда agency плащания.
+    res.json({ payments, total, collectedThisMonth });
   } catch (err) {
     next(err);
   }
@@ -310,20 +314,291 @@ router.get("/audit-logs", async (req, res, next) => {
   }
 });
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// REVENUE — единственият източник на приходни числа
+// ═══════════════════════════════════════════════════════════════════════════
+// Старият `calculateMRR()` сумираше paymentLog за текущия календарен месец и
+// го наричаше „MRR". Това е грешно на четири нива и е премахнато:
+//   1) КАСА ≠ RUN-RATE. Годишна фактура €99 влизаше в „MRR"-а на месеца си
+//      цялата (трябва €8.25/мес), а следващите 11 месеца — €0.
+//   2) Нулира се на 1-во число — на 1-ви „MRR" винаги е ~0.
+//   3) Не вижда agency абонаментите (paymentLog е вързан за serverId, agency
+//      фактурите не се логват там) → приходът беше системно занижен.
+//   4) Смяташе се в „долари" при тарифи в EUR (виж docs/PRICING.md).
+// Сега MRR се извежда от състоянието на абонаментите (Server/Agency), както
+// го прави и самият Stripe Billing.
 
-async function calculateMRR() {
+/**
+ * Каталожни цени в EUR с ВКЛЮЧЕН ДДС (tax_behavior=inclusive — виж
+ * scripts/stripe-setup.sh и docs/PRICING.md). Това са КАТАЛОЖНИ цени, не
+ * реално фактурирани суми: купон, proration или различна ДДС ставка по OSS
+ * правят реалната фактура различна. За точни фактурирани суми — Stripe
+ * Dashboard / paymentLog.
+ */
+export const PLAN_PRICES_EUR = {
+  premium:    { month: 9.99,  year: 99 },
+  whitelabel: { month: 19.99, year: 199 },
+  agency5:    { month: 39.99, year: 399 },
+  agency10:   { month: 79.99, year: 799 },
+};
+
+/**
+ * ДДС ставка за нето-приблизителя. BG стандартна ставка 20%.
+ * ВНИМАНИЕ: при OSS ДДС се дължи по ставката на държавата на потребителя, тоест
+ * нетото е ПРИБЛИЗИТЕЛНО. Точното разделяне нето/ДДС е в Stripe Tax отчета.
+ */
+export const VAT_RATE = 0.2;
+
+const round2 = (n) => Math.round(n * 100) / 100;
+
+/** Месечна стойност на един абонамент: месечен = пълна цена, годишен = /12. */
+function monthlyValue(plan, interval) {
+  const price = PLAN_PRICES_EUR[plan];
+  if (!price) return 0;
+  return interval === "year" ? price.year / 12 : price.month;
+}
+
+/**
+ * Нормализира плана на един сървър. Огледало на getServerTier() (lib/premium.js):
+ * заварените редове без `plan`, но с isPremium=true, са grandfather-нати към
+ * white-label. Agency-покритите сървъри стоят на plan="free" и НЕ носят собствен
+ * приход — приходът им е в реда на самата агенция (без това броим двойно).
+ */
+function normalizeServerPlan(s) {
+  if (s.plan && s.plan !== "free") return { plan: s.plan, grandfathered: false };
+  if (s.isPremium) return { plan: "whitelabel", grandfathered: true };
+  return { plan: null, grandfathered: false };
+}
+
+/**
+ * ЧИСТА функция (без DB) — цялата приходна аритметика на едно място, за да е
+ * тестваема. Вход: вече извлечените редове; изход: числата за таблото.
+ *
+ * МЕТОДИКА
+ * - MRR = Σ месечна стойност на абонаментите, които РЕАЛНО се таксуват сега:
+ *   stripeStatus === "active". Годишните влизат като цена/12.
+ * - `trialing` НЕ е приход (пробен период може да свърши без платежен метод) —
+ *   брои се отделно като „потенциален" MRR.
+ * - `planSource === "manual"` (подарени) НЕ е приход — отделен ред „gifted" с
+ *   каталожна стойност, за да се вижда колко подаряваме.
+ * - `planSource === "discord"` (Discord Premium Apps) е приход, но НЕ минава
+ *   през Stripe и Discord удържа комисиона → отделен ред, извън Stripe MRR.
+ * - `past_due` НЕ се брои в MRR (плащането е пропаднало; dunning тече) —
+ *   показва се като „приход в риск".
+ * - Churn 30d = отпаднали (stripeStatus="canceled" с updatedAt в прозореца) /
+ *   (активни сега + отпаднали в прозореца) ≈ активни в началото на прозореца.
+ *   ПРИБЛИЖЕНИЕ: `updatedAt` е „последна промяна", не „момент на отказ" — всяка
+ *   по-късна промяна по реда го мести в/извън прозореца; изтритите сървъри
+ *   изобщо не се броят. За точен churn — Stripe Billing отчетите.
+ */
+export function calculateMrr({ servers = [], agencies = [], now = new Date(), churnWindowDays = 30 } = {}) {
+  const cutoff = new Date(now.getTime() - churnWindowDays * 24 * 60 * 60 * 1000);
+
+  const tiers = new Map();
+  const tierRow = (plan) => {
+    if (!tiers.has(plan)) {
+      tiers.set(plan, {
+        plan,
+        label: planConfig(plan).label,
+        count: 0, mrr: 0,
+        monthlyCount: 0, monthlyMrr: 0,
+        yearlyCount: 0, yearlyMrr: 0,
+      });
+    }
+    return tiers.get(plan);
+  };
+
+  const excluded = {
+    trialing: { count: 0, potentialMrr: 0 },
+    gifted:   { count: 0, listValue: 0 },
+    discord:  { count: 0, listValue: 0 },
+    pastDue:  { count: 0, atRiskMrr: 0 },
+    other:    { count: 0 },
+  };
+  const diagnostics = { unknownInterval: 0, grandfathered: 0, unknownPlan: 0 };
+
+  let mrr = 0;
+  let paidServers = 0;
+  let paidAgencies = 0;
+  let canceled30d = 0;
+
+  /** Разпределя един абонамент (сървърен или agency) в кофа. */
+  function bucket({ plan, interval, planSource, stripeStatus, isServer }) {
+    if (!PLAN_PRICES_EUR[plan]) { diagnostics.unknownPlan++; return; }
+    const value = monthlyValue(plan, interval);
+
+    if (planSource === "manual") { excluded.gifted.count++; excluded.gifted.listValue += value; return; }
+    if (planSource === "discord") { excluded.discord.count++; excluded.discord.listValue += value; return; }
+    if (stripeStatus === "trialing") { excluded.trialing.count++; excluded.trialing.potentialMrr += value; return; }
+    if (stripeStatus === "past_due") { excluded.pastDue.count++; excluded.pastDue.atRiskMrr += value; return; }
+    if (stripeStatus !== "active") { excluded.other.count++; return; }
+
+    // Липсващ billingInterval при активен абонамент е ДУПКА В ДАННИТЕ: броим го
+    // като месечен (документираният default), но го отчитаме — ако е реално
+    // годишен, MRR е завишен с ~21% за този ред.
+    if (!interval) diagnostics.unknownInterval++;
+
+    const row = tierRow(plan);
+    row.count++;
+    row.mrr += value;
+    if (interval === "year") { row.yearlyCount++; row.yearlyMrr += value; }
+    else { row.monthlyCount++; row.monthlyMrr += value; }
+    mrr += value;
+    if (isServer) paidServers++; else paidAgencies++;
+  }
+
+  for (const s of servers) {
+    if (s.stripeStatus === "canceled" && s.updatedAt && new Date(s.updatedAt) >= cutoff) canceled30d++;
+    const { plan, grandfathered } = normalizeServerPlan(s);
+    if (!plan) continue;
+    if (grandfathered) diagnostics.grandfathered++;
+    // Ръчният grant се разпознава по planSource="manual" ИЛИ по заварения
+    // маркер stripeStatus="manual" (виж PATCH /servers/:id/premium) — иначе
+    // подаръкът би могъл да мине за платен абонамент.
+    const isGift = s.planSource === "manual" || s.stripeStatus === "manual";
+    bucket({
+      plan,
+      interval: s.billingInterval,
+      planSource: isGift ? "manual" : s.planSource,
+      stripeStatus: s.stripeStatus,
+      isServer: true,
+    });
+  }
+
+  for (const a of agencies) {
+    if (a.stripeStatus === "canceled" && a.updatedAt && new Date(a.updatedAt) >= cutoff) canceled30d++;
+    // Неактивна агенция не покрива нито един сървър → не е приход.
+    if (!a.active) continue;
+    bucket({
+      plan: a.plan,
+      interval: a.billingInterval,
+      planSource: a.planSource,
+      stripeStatus: a.stripeStatus,
+      isServer: false,
+    });
+  }
+
+  const paidSubscriptions = paidServers + paidAgencies;
+  const activeNow = paidSubscriptions;
+  const churnBase = activeNow + canceled30d;
+
+  // Trial фуния. ПРИБЛИЖЕНИЕ (исторически, не кохортен): `trialUsed` няма дата,
+  // затова конверсията е „колко от всякога пробвалите са премиум СЕГА" — който
+  // е конвертирал и после отпаднал, се брои като неконвертирал, а ръчен grant
+  // или agency място вдигат числителя. Точна кохортна конверсия иска
+  // trialStartedAt + история на абонамента.
+  const trialActive = servers.filter((s) => s.trialEndsAt && new Date(s.trialEndsAt) > now).length;
+  const trialUsed = servers.filter((s) => s.trialUsed).length;
+  const trialConverted = servers.filter((s) => s.trialUsed && s.isPremium).length;
+
+  const byTier = [...tiers.values()]
+    .sort((a, b) => planConfig(b.plan).rank - planConfig(a.plan).rank)
+    .map((t) => ({
+      ...t,
+      mrr: round2(t.mrr),
+      monthlyMrr: round2(t.monthlyMrr),
+      yearlyMrr: round2(t.yearlyMrr),
+    }));
+
+  const monthlyCount = byTier.reduce((n, t) => n + t.monthlyCount, 0);
+  const yearlyCount = byTier.reduce((n, t) => n + t.yearlyCount, 0);
+
+  return {
+    currency: "EUR",
+    vatRate: VAT_RATE,
+    // Бруто = с ДДС (цените са inclusive). Нето ≈ бруто / 1.20 (BG 20%).
+    mrrGross: round2(mrr),
+    mrrNet: round2(mrr / (1 + VAT_RATE)),
+    arrGross: round2(mrr * 12),
+    arrNet: round2((mrr * 12) / (1 + VAT_RATE)),
+    paidSubscriptions,
+    paidServers,
+    paidAgencies,
+    // ARPU на ПЛАТЕН АБОНАМЕНТ (сървърен или agency), не на сървър — една агенция
+    // покрива до 10 сървъра, деленето на сървъри би дало друго число.
+    arpuGross: paidSubscriptions ? round2(mrr / paidSubscriptions) : 0,
+    arpuNet: paidSubscriptions ? round2(mrr / (1 + VAT_RATE) / paidSubscriptions) : 0,
+    byTier,
+    interval: {
+      monthlyCount,
+      yearlyCount,
+      monthlyMrr: round2(byTier.reduce((n, t) => n + t.monthlyMrr, 0)),
+      yearlyMrr: round2(byTier.reduce((n, t) => n + t.yearlyMrr, 0)),
+    },
+    excluded: {
+      trialing: { count: excluded.trialing.count, potentialMrr: round2(excluded.trialing.potentialMrr) },
+      gifted:   { count: excluded.gifted.count,   listValue: round2(excluded.gifted.listValue) },
+      discord:  { count: excluded.discord.count,  listValue: round2(excluded.discord.listValue) },
+      pastDue:  { count: excluded.pastDue.count,  atRiskMrr: round2(excluded.pastDue.atRiskMrr) },
+      other:    { count: excluded.other.count },
+    },
+    churn: {
+      windowDays: churnWindowDays,
+      canceled: canceled30d,
+      activeNow,
+      rate: churnBase ? round2((canceled30d / churnBase) * 100) : 0,
+    },
+    trials: {
+      active: trialActive,
+      used: trialUsed,
+      converted: trialConverted,
+      conversionRate: trialUsed ? round2((trialConverted / trialUsed) * 100) : 0,
+    },
+    diagnostics,
+  };
+}
+
+/** КАСА за текущия календарен месец (реално платени фактури), в EUR. НЕ е MRR. */
+async function cashCollectedThisMonth() {
+  const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const result = await prisma.paymentLog.aggregate({
     _sum: { amount: true },
-    where: {
-      status: "paid",
-      createdAt: {
-        gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-      },
-    },
+    where: { status: "paid", createdAt: { gte: start } },
   });
-  return (result._sum.amount || 0) / 100; // Convert cents to dollars
+  return round2((result._sum.amount || 0) / 100); // amount е в центове (EUR)
 }
+
+// ─── GET /api/admin/revenue ───────────────────────────────────────────────────
+// Приходно табло за собственика. Числата се извеждат от състоянието на
+// абонаментите, НЕ от клиентски вход и НЕ от касата на месеца.
+
+router.get("/revenue", async (req, res, next) => {
+  try {
+    const now = new Date();
+    const [servers, agencies, cash] = await Promise.all([
+      // Изтегляме само редовете, релевантни за приход/фуния/churn — не целия
+      // сървърен списък. Агрегацията е в паметта (десетки/стотици реда).
+      prisma.server.findMany({
+        where: {
+          OR: [
+            { plan: { not: "free" } },
+            { isPremium: true },
+            { trialUsed: true },
+            { trialEndsAt: { gt: now } },
+            { stripeStatus: { in: ["canceled", "past_due", "unpaid", "trialing"] } },
+          ],
+        },
+        select: {
+          plan: true, billingInterval: true, planSource: true, stripeStatus: true,
+          isPremium: true, trialUsed: true, trialEndsAt: true, updatedAt: true,
+        },
+      }),
+      prisma.agency.findMany({
+        select: {
+          plan: true, billingInterval: true, planSource: true, stripeStatus: true,
+          active: true, updatedAt: true,
+        },
+      }),
+      cashCollectedThisMonth(),
+    ]);
+
+    const metrics = calculateMrr({ servers, agencies, now });
+    res.json({ ...metrics, cashCollectedThisMonth: cash, generatedAt: now.toISOString() });
+  } catch (err) {
+    console.error("[revenue] error:", err);
+    next(err);
+  }
+});
 
 // ─── PATCH /api/admin/servers/:serverId/premium ──────────────────────────────
 // Manually grant or revoke Premium on a server. Bypasses Stripe entirely.
