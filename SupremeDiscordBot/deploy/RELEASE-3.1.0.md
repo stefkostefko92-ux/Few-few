@@ -67,7 +67,7 @@ sudo PROJECTS="SupremeDiscordBot" bash /root/few-few-*/deploy/autodeploy.sh
 ## 3. След деплоя (проверки, 5 мин)
 
 ```bash
-curl -s https://supreme.carbonstealth.eu/api/health            # {"status":"ok"}
+curl -s https://supremebot.carbonstealth.eu/api/health            # {"status":"ok"}
 curl -s http://127.0.0.1:3001/health                           # gateway:"connected" (ботът)
 systemctl status supreme-backup.timer                          # active (waiting)
 bash /opt/few-few/current/SupremeDiscordBot/deploy/backup-postgres.sh  # първи ръчен рън
@@ -85,7 +85,7 @@ supreme_restore_test`).
 ## 4. SEO пинг (задължителен — нови страници/sitemap)
 
 ```bash
-node tools/seo/indexnow.mjs https://supreme.carbonstealth.eu
+node tools/seo/indexnow.mjs https://supremebot.carbonstealth.eu
 ```
 (4 нови страници + /commands + обновен sitemap; Google се хваща от sitemap-а.)
 

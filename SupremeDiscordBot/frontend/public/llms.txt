@@ -8,18 +8,18 @@ Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 for
 
 ## Documentation
 
-- [Landing page](https://supreme.carbonstealth.eu/): Product overview, full feature list, pricing, FAQ, signup with Discord OAuth
-- Localized landing pages: [Български](https://supreme.carbonstealth.eu/bg), [Deutsch](https://supreme.carbonstealth.eu/de), [Español](https://supreme.carbonstealth.eu/es), [Français](https://supreme.carbonstealth.eu/fr), [Italiano](https://supreme.carbonstealth.eu/it), [Nederlands](https://supreme.carbonstealth.eu/nl), [Polski](https://supreme.carbonstealth.eu/pl)
-- [Service status](https://supreme.carbonstealth.eu/status): Real-time uptime monitoring and component health for database, bot, API, and web
-- [Commands reference](https://supreme.carbonstealth.eu/commands): Full list of Supreme Bot slash commands and dashboard features, grouped by category (tickets, forms, verification, polls, giveaways, automation)
-- [Supreme Bot vs Ticket Tool](https://supreme.carbonstealth.eu/compare/ticket-tool-alternative): Sourced, dated feature and pricing comparison against Ticket Tool
-- [Supreme Bot vs Appy Bot](https://supreme.carbonstealth.eu/compare/appy-alternative): Sourced, dated feature and pricing comparison against Appy Bot
-- [How to choose the best Discord ticket bot](https://supreme.carbonstealth.eu/guides/best-discord-ticket-bot): Seven criteria for evaluating any ticket bot, with how Supreme Bot covers each
-- [GDPR & EU hosting for Discord communities](https://supreme.carbonstealth.eu/guides/gdpr-discord-bot): Why data residency and a DPA matter for a Discord bot, and what questions to ask any vendor
-- [Terms of Service](https://supreme.carbonstealth.eu/terms): Legal terms governing use of Supreme Bot SaaS
-- [Privacy Policy](https://supreme.carbonstealth.eu/privacy): Data processing details, subprocessor list (Hetzner, Stripe, Google, Discord), data subject rights, retention policy
-- [Cookie Policy](https://supreme.carbonstealth.eu/cookies): Cookie usage details and consent management options
-- [End-User License Agreement](https://supreme.carbonstealth.eu/eula): Software license terms governing customer use
+- [Landing page](https://supremebot.carbonstealth.eu/): Product overview, full feature list, pricing, FAQ, signup with Discord OAuth
+- Localized landing pages: [Български](https://supremebot.carbonstealth.eu/bg), [Deutsch](https://supremebot.carbonstealth.eu/de), [Español](https://supremebot.carbonstealth.eu/es), [Français](https://supremebot.carbonstealth.eu/fr), [Italiano](https://supremebot.carbonstealth.eu/it), [Nederlands](https://supremebot.carbonstealth.eu/nl), [Polski](https://supremebot.carbonstealth.eu/pl)
+- [Service status](https://supremebot.carbonstealth.eu/status): Real-time uptime monitoring and component health for database, bot, API, and web
+- [Commands reference](https://supremebot.carbonstealth.eu/commands): Full list of Supreme Bot slash commands and dashboard features, grouped by category (tickets, forms, verification, polls, giveaways, automation)
+- [Supreme Bot vs Ticket Tool](https://supremebot.carbonstealth.eu/compare/ticket-tool-alternative): Sourced, dated feature and pricing comparison against Ticket Tool
+- [Supreme Bot vs Appy Bot](https://supremebot.carbonstealth.eu/compare/appy-alternative): Sourced, dated feature and pricing comparison against Appy Bot
+- [How to choose the best Discord ticket bot](https://supremebot.carbonstealth.eu/guides/best-discord-ticket-bot): Seven criteria for evaluating any ticket bot, with how Supreme Bot covers each
+- [GDPR & EU hosting for Discord communities](https://supremebot.carbonstealth.eu/guides/gdpr-discord-bot): Why data residency and a DPA matter for a Discord bot, and what questions to ask any vendor
+- [Terms of Service](https://supremebot.carbonstealth.eu/terms): Legal terms governing use of Supreme Bot SaaS
+- [Privacy Policy](https://supremebot.carbonstealth.eu/privacy): Data processing details, subprocessor list (Hetzner, Stripe, Google, Discord), data subject rights, retention policy
+- [Cookie Policy](https://supremebot.carbonstealth.eu/cookies): Cookie usage details and consent management options
+- [End-User License Agreement](https://supremebot.carbonstealth.eu/eula): Software license terms governing customer use
 
 ## Positioning
 
@@ -38,21 +38,21 @@ GDPR-native data handling.
 
 ## Features
 
-- [Ticket System](https://supreme.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
-- [Application Forms](https://supreme.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
-- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features): White-label-tier feature (€19.99/server/month, also included in Agency plans) allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
-- [AI Auto-Replies](https://supreme.carbonstealth.eu/#features): Premium feature using AI (currently Google Gemini Flash) to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
-- [Verification System](https://supreme.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
-- [Polls & Giveaways](https://supreme.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll
-- [Sticky & Scheduled Messages](https://supreme.carbonstealth.eu/#features): Auto-reposting sticky messages and one-shot or recurring (daily/weekly/monthly) scheduled posts
-- [Public REST API](https://supreme.carbonstealth.eu/#features): Bearer-token authentication for building custom integrations and dashboards
-- [Webhook Integrations](https://supreme.carbonstealth.eu/#features): HMAC-signed outgoing webhooks on every platform event (Premium)
+- [Ticket System](https://supremebot.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
+- [Application Forms](https://supremebot.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
+- [White-Label Custom Bots](https://supremebot.carbonstealth.eu/#features): White-label-tier feature (€19.99/server/month, also included in Agency plans) allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
+- [AI Auto-Replies](https://supremebot.carbonstealth.eu/#features): Premium feature using AI (currently Google Gemini Flash) to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
+- [Verification System](https://supremebot.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
+- [Polls & Giveaways](https://supremebot.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll
+- [Sticky & Scheduled Messages](https://supremebot.carbonstealth.eu/#features): Auto-reposting sticky messages and one-shot or recurring (daily/weekly/monthly) scheduled posts
+- [Public REST API](https://supremebot.carbonstealth.eu/#features): Bearer-token authentication for building custom integrations and dashboards
+- [Webhook Integrations](https://supremebot.carbonstealth.eu/#features): HMAC-signed outgoing webhooks on every platform event (Premium)
 
 ## Compliance and infrastructure
 
-- [GDPR Privacy Settings](https://supreme.carbonstealth.eu/dashboard/privacy-settings): Self-service data export (Articles 15+20), account deletion (Article 17), consent withdrawal (Article 7.3)
-- [Robots policy](https://supreme.carbonstealth.eu/robots.txt): AI crawler permissions (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended allowed; CCBot and Bytespider blocked)
-- [Sitemap](https://supreme.carbonstealth.eu/sitemap.xml): Complete URL inventory with last-modified dates
+- [GDPR Privacy Settings](https://supremebot.carbonstealth.eu/dashboard/privacy-settings): Self-service data export (Articles 15+20), account deletion (Article 17), consent withdrawal (Article 7.3)
+- [Robots policy](https://supremebot.carbonstealth.eu/robots.txt): AI crawler permissions (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended allowed; CCBot and Bytespider blocked)
+- [Sitemap](https://supremebot.carbonstealth.eu/sitemap.xml): Complete URL inventory with last-modified dates
 
 ## Optional
 

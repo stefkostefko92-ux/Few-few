@@ -18,7 +18,7 @@ When reporting, please include:
 - Any relevant logs or screenshots
 
 A machine-readable disclosure policy is published at
-[`/.well-known/security.txt`](https://supreme.carbonstealth.eu/.well-known/security.txt)
+[`/.well-known/security.txt`](https://supremebot.carbonstealth.eu/.well-known/security.txt)
 (RFC 9116).
 
 ## Our commitment
@@ -35,7 +35,7 @@ A machine-readable disclosure policy is published at
 
 In scope:
 
-- `supreme.carbonstealth.eu` (web dashboard and public REST API)
+- `supremebot.carbonstealth.eu` (web dashboard and public REST API)
 - The Supreme Bot Discord application
 - This repository's source code
 

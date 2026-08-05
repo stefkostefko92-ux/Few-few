@@ -100,7 +100,7 @@
 - Likely consequences
 - Measures taken or proposed to address the breach
 
-7.3 Notification will be sent to the Customer's registered admin email and posted in the Supreme Bot status page at https://supreme.carbonstealth.eu/status.
+7.3 Notification will be sent to the Customer's registered admin email and posted in the Supreme Bot status page at https://supremebot.carbonstealth.eu/status.
 
 ## 8. International Transfers
 

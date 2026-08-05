@@ -4,9 +4,9 @@ import { COMMAND_CATALOG } from "../utils/commandsCatalog.js";
 import { BRAND } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
-const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supreme.carbonstealth.eu";
-const SUPPORT_URL = process.env.SUPPORT_URL || "https://supreme.carbonstealth.eu/support";
-const STATUS_URL = process.env.STATUS_URL || "https://supreme.carbonstealth.eu/status";
+const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
+const SUPPORT_URL = process.env.SUPPORT_URL || "https://supremebot.carbonstealth.eu/support";
+const STATUS_URL = process.env.STATUS_URL || "https://supremebot.carbonstealth.eu/status";
 
 export default {
   data: new SlashCommandBuilder()

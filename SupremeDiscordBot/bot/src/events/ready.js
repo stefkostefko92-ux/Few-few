@@ -17,6 +17,23 @@ export default {
     console.log(`✅ Logged in as ${client.user.tag}`);
     client.user.setActivity("Managing Tickets & Applications", { type: 3 });
 
+    // ─── Guild реконсилиация (регресия от 05.08.2026) ─────────────────────
+    // Регистрацията на сървър ставаше САМО на guildCreate — покана, получена
+    // докато ботът е бил долу (напр. crash loop), се губеше завинаги и
+    // сървърът оставаше невидим в dashboard-а. Затова на всеки старт
+    // upsert-ваме всички текущи guild-ове (registerServer е идемпотентен и
+    // чисти botRemovedAt). Fire-and-forget с малък наплив, за да не бавим
+    // ready пътя и да не удавим backend-а при много сървъри.
+    (async () => {
+      const { registerServer } = await import("../utils/api.js");
+      let ok = 0, fail = 0;
+      for (const guild of client.guilds.cache.values()) {
+        try { await registerServer(guild); ok++; }
+        catch { fail++; }
+      }
+      console.log(`[GuildSync] Реконсилирани ${ok} guild-а${fail ? `, ${fail} провала` : ""}`);
+    })().catch(() => {});
+
     // ─── Auto-deploy slash commands if they changed since last startup ─────
     try {
       const commands = [...client.commands.values()]

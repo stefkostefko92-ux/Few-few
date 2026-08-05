@@ -27,7 +27,7 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
-const SITE = "https://supreme.carbonstealth.eu";
+const SITE = "https://supremebot.carbonstealth.eu";
 
 // Keep in sync with src/components/Seo.jsx (LANDING_LOCALES + landingPath).
 const LANDING_LOCALES = ["en", "bg", "de", "es", "fr", "it", "nl", "pl"];

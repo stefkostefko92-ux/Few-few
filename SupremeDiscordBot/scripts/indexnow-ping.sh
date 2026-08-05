@@ -15,7 +15,7 @@
 # грешка тук никога не проваля деплоя (winner е живият сайт, ping-ът е бонус).
 set -u
 
-HOST="${INDEXNOW_HOST:-supreme.carbonstealth.eu}"
+HOST="${INDEXNOW_HOST:-supremebot.carbonstealth.eu}"
 KEY="${INDEXNOW_KEY:-09d438d11f84037ca203486287865836}"
 SITEMAP="$(dirname "$0")/../frontend/public/sitemap.xml"
 

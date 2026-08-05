@@ -9,7 +9,7 @@
 
 import { useEffect } from "react";
 
-export const SITE = "https://supreme.carbonstealth.eu";
+export const SITE = "https://supremebot.carbonstealth.eu";
 
 // Landing locales — every entry produces a hreflang alternate on landing routes.
 // "en" lives at the root; everything else at /<locale>.

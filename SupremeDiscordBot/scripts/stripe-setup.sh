@@ -15,13 +15,13 @@
 # Употреба:
 #   STRIPE_SECRET_KEY=sk_test_... bash scripts/stripe-setup.sh          # test mode
 #   STRIPE_SECRET_KEY=sk_live_... bash scripts/stripe-setup.sh          # live mode
-#   DOMAIN=https://supreme.carbonstealth.eu (по подразбиране)
+#   DOMAIN=https://supremebot.carbonstealth.eu (по подразбиране)
 #
 # ЗАБЕЛЕЖКА: ключът се подава само през env — никога не влиза в repo-то.
 set -euo pipefail
 
 : "${STRIPE_SECRET_KEY:?Задай STRIPE_SECRET_KEY=sk_test_... или sk_live_...}"
-DOMAIN="${DOMAIN:-https://supreme.carbonstealth.eu}"
+DOMAIN="${DOMAIN:-https://supremebot.carbonstealth.eu}"
 API="https://api.stripe.com/v1"
 AUTH=(-u "${STRIPE_SECRET_KEY}:")
 

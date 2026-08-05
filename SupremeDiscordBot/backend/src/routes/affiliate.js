@@ -96,7 +96,7 @@ router.get("/me", async (req, res, next) => {
 
     res.json({
       code: affiliate.code,
-      link: `${process.env.FRONTEND_URL || "https://supreme.carbonstealth.eu"}/api/affiliate/track?code=${affiliate.code}`,
+      link: `${process.env.FRONTEND_URL || "https://supremebot.carbonstealth.eu"}/api/affiliate/track?code=${affiliate.code}`,
       clicks: affiliate.clicks,
       signups: affiliate.signups,
       conversions: affiliate.conversions,

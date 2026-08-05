@@ -67,7 +67,7 @@ router.get("/me", async (req, res, next) => {
 
     res.json({
       code: user.referralCode,
-      shareUrl: `${process.env.FRONTEND_URL || "https://supreme.carbonstealth.eu"}/?ref=${user.referralCode}`,
+      shareUrl: `${process.env.FRONTEND_URL || "https://supremebot.carbonstealth.eu"}/?ref=${user.referralCode}`,
       payoutReady: !!user.stripeConnectedAccountId,
       commissionRate: COMMISSION_RATE,
       commissionMonths: COMMISSION_MONTHS,

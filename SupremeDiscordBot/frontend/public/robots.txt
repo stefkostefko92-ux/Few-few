@@ -250,5 +250,5 @@ User-agent: img2dataset
 Disallow: /
 
 # ─── Sitemap + host ─────────────────────────────────────────────────────────
-Sitemap: https://supreme.carbonstealth.eu/sitemap.xml
-Host: supreme.carbonstealth.eu
+Sitemap: https://supremebot.carbonstealth.eu/sitemap.xml
+Host: supremebot.carbonstealth.eu

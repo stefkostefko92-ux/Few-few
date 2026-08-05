@@ -6,7 +6,7 @@
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { t, resolveLangSync } from "../i18n/index.js";
 
-const STATUS_URL = process.env.STATUS_URL || "https://supreme.carbonstealth.eu/status";
+const STATUS_URL = process.env.STATUS_URL || "https://supremebot.carbonstealth.eu/status";
 
 const NETWORK_CODES = new Set(["ECONNREFUSED", "ETIMEDOUT", "ECONNABORTED", "ENOTFOUND", "ECONNRESET"]);
 

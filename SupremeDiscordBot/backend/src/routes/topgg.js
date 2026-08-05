@@ -1,7 +1,7 @@
 // backend/src/routes/topgg.js
 // top.gg vote webhook — приема гласове за бота от bot листинга.
 // Активира се при листване: top.gg → Edit → Webhooks → URL:
-//   https://supreme.carbonstealth.eu/api/topgg/webhook
+//   https://supremebot.carbonstealth.eu/api/topgg/webhook
 // + Authorization secret (същият в env TOPGG_WEBHOOK_AUTH).
 //
 // Засега само ЗАПИСВАМЕ гласа (audit trail + брояч за социално доказателство).

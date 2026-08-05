@@ -11,7 +11,7 @@ import { BRAND, SUCCESS } from "../utils/colors.js";
 import { t, resolveLang } from "../i18n/index.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
-const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supreme.carbonstealth.eu";
+const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
 
 export default {
   data: new SlashCommandBuilder()

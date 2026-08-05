@@ -5,8 +5,8 @@ import { checkBotPermissions, reinviteUrl } from "../utils/permissionCheck.js";
 import { BRAND, WARNING } from "../utils/colors.js";
 import { t, resolveLangForGuild } from "../i18n/index.js";
 
-const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supreme.carbonstealth.eu";
-const SUPPORT_URL = process.env.SUPPORT_URL || "https://supreme.carbonstealth.eu/support";
+const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
+const SUPPORT_URL = process.env.SUPPORT_URL || "https://supremebot.carbonstealth.eu/support";
 
 export default {
   name: "guildCreate",
