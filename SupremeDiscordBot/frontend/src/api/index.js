@@ -195,10 +195,12 @@ export const getPremiumCatalog = () =>
   api.get(`/automation/premium-catalog`).then((r) => r.data);
 
 export const getPolls       = (sid) => api.get(`/automation/${sid}/polls`).then((r) => r.data);
+export const createPoll     = (sid, data) => api.post(`/automation/${sid}/polls`, data).then((r) => r.data);
 export const closePoll      = (sid, id) => api.post(`/automation/${sid}/polls/${id}/close`).then((r) => r.data);
 export const deletePoll     = (sid, id) => api.delete(`/automation/${sid}/polls/${id}`).then((r) => r.data);
 
 export const getGiveaways   = (sid) => api.get(`/automation/${sid}/giveaways`).then((r) => r.data);
+export const createGiveaway = (sid, data) => api.post(`/automation/${sid}/giveaways`, data).then((r) => r.data);
 export const endGiveaway    = (sid, id) => api.post(`/automation/${sid}/giveaways/${id}/end`).then((r) => r.data);
 export const rerollGiveaway = (sid, id) => api.post(`/automation/${sid}/giveaways/${id}/reroll`).then((r) => r.data);
 export const deleteGiveaway = (sid, id) => api.delete(`/automation/${sid}/giveaways/${id}`).then((r) => r.data);

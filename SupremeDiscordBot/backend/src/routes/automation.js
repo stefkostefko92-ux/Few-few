@@ -4,6 +4,7 @@
 // this file is for dashboard UI.
 
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
@@ -13,6 +14,8 @@ import { pushPollUpdate } from "../lib/pollUpdate.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
+
+const snowflake = z.string().regex(/^\d{17,20}$/, "Invalid Discord ID");
 
 // ══════════════════════════════ POLLS ══════════════════════════════
 
@@ -25,6 +28,57 @@ router.get("/:serverId/polls", requireServerAdmin, async (req, res, next) => {
       take: 100,
     });
     res.json(polls.map((p) => ({ ...p, totalVotes: p._count.votes })));
+  } catch (err) { next(err); }
+});
+
+// ─── POST /:serverId/polls — създаване от dashboard-а ────────────────────────
+// Огледало на /poll командата: запис в базата → ботът поства embed-а с vote
+// бутоните (notifyBot POLL_SPAWN). При провал на бота записът се трие — не
+// оставяме "призрачна" анкета без Discord съобщение.
+const createPollSchema = z.object({
+  channelId: snowflake,
+  question: z.string().min(1).max(256),
+  options: z.array(z.string().min(1).max(100)).min(2).max(9),
+  multiChoice: z.boolean().default(false),
+  durationHours: z.number().int().min(1).max(24 * 30).optional().nullable(),
+});
+
+router.post("/:serverId/polls", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = createPollSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    const { channelId, question, options, multiChoice, durationHours } = parsed.data;
+
+    const poll = await prisma.poll.create({
+      data: {
+        serverId: req.params.serverId,
+        creatorId: req.user.id,
+        channelId,
+        question,
+        options,
+        multiChoice,
+        closesAt: durationHours ? new Date(Date.now() + durationHours * 3600 * 1000) : null,
+      },
+    });
+
+    const result = await notifyBot("POLL_SPAWN", {
+      serverId: req.params.serverId,
+      channelId,
+      poll,
+    });
+
+    if (!result?.messageId) {
+      await prisma.poll.delete({ where: { id: poll.id } }).catch(() => {});
+      return res.status(502).json({
+        error: "Bot is offline or failed to post the poll. Check the channel ID and that the bot can write there.",
+      });
+    }
+
+    const updated = await prisma.poll.update({
+      where: { id: poll.id },
+      data: { messageId: result.messageId },
+    });
+    res.status(201).json(updated);
   } catch (err) { next(err); }
 });
 
@@ -66,6 +120,59 @@ router.get("/:serverId/giveaways", requireServerAdmin, async (req, res, next) =>
       take: 100,
     });
     res.json(list.map((g) => ({ ...g, entryCount: g._count.entries })));
+  } catch (err) { next(err); }
+});
+
+// ─── POST /:serverId/giveaways — създаване от dashboard-а ────────────────────
+// Огледало на /giveaway start: запис → ботът поства embed-а с Enter бутона
+// (notifyBot GIVEAWAY_SPAWN). Scheduler-ът затваря по endsAt, както при
+// командата. При провал на бота записът се трие.
+const createGiveawaySchema = z.object({
+  channelId: snowflake,
+  prize: z.string().min(1).max(256),
+  description: z.string().max(1000).optional().nullable(),
+  winnerCount: z.number().int().min(1).max(20).default(1),
+  durationMinutes: z.number().int().min(1).max(60 * 24 * 30),
+  requiredRoleIds: z.array(snowflake).max(10).default([]),
+});
+
+router.post("/:serverId/giveaways", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = createGiveawaySchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    const { channelId, prize, description, winnerCount, durationMinutes, requiredRoleIds } = parsed.data;
+
+    const giveaway = await prisma.giveaway.create({
+      data: {
+        serverId: req.params.serverId,
+        creatorId: req.user.id,
+        channelId,
+        prize,
+        description: description || null,
+        winnerCount,
+        endsAt: new Date(Date.now() + durationMinutes * 60 * 1000),
+        requiredRoleIds,
+      },
+    });
+
+    const result = await notifyBot("GIVEAWAY_SPAWN", {
+      serverId: req.params.serverId,
+      channelId,
+      giveaway,
+    });
+
+    if (!result?.messageId) {
+      await prisma.giveaway.delete({ where: { id: giveaway.id } }).catch(() => {});
+      return res.status(502).json({
+        error: "Bot is offline or failed to post the giveaway. Check the channel ID and that the bot can write there.",
+      });
+    }
+
+    const updated = await prisma.giveaway.update({
+      where: { id: giveaway.id },
+      data: { messageId: result.messageId },
+    });
+    res.status(201).json(updated);
   } catch (err) { next(err); }
 });
 

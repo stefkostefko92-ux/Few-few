@@ -8,8 +8,8 @@ import {
   SmilePlus, Pencil, Send,
 } from "lucide-react";
 import {
-  getPolls, closePoll, deletePoll,
-  getGiveaways, endGiveaway, rerollGiveaway, deleteGiveaway,
+  getPolls, createPoll, closePoll, deletePoll,
+  getGiveaways, createGiveaway, endGiveaway, rerollGiveaway, deleteGiveaway,
   getStickies, upsertSticky, deleteSticky,
   getScheduled, createScheduled, deleteScheduled,
   getWebhooks, getWebhookEvents, createWebhook, updateWebhook, deleteWebhook,
@@ -20,6 +20,7 @@ import { PremiumBadge, PremiumLockCard } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import EmojiPicker from "../components/EmojiPicker";
 
 const TABS = [
   { id: "polls",     label: "Polls",      icon: BarChart3 },
@@ -76,23 +77,97 @@ export default function AutomationPage() {
 }
 
 // ══════════════════════════════ POLLS ══════════════════════════════
+const defaultPollForm = () => ({ channelId: "", question: "", optionsText: "", multiChoice: false, durationHours: "" });
+
 function PollsTab() {
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(defaultPollForm());
   const { data: polls = [], isLoading, isError } = useQuery({
     queryKey: ["polls", serverId],
     queryFn: () => getPolls(serverId),
   });
   const closeM  = useMutation({ mutationFn: (id) => closePoll(serverId, id),  onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }) });
   const deleteM = useMutation({ mutationFn: (id) => deletePoll(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }) });
+  const createM = useMutation({
+    mutationFn: (data) => createPoll(serverId, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["polls", serverId] }); setCreating(false); setForm(defaultPollForm()); },
+  });
+
+  const submitPoll = (e) => {
+    e.preventDefault();
+    const options = form.optionsText.split("\n").map((o) => o.trim()).filter(Boolean).slice(0, 9);
+    createM.mutate({
+      channelId: form.channelId.trim(),
+      question: form.question.trim(),
+      options,
+      multiChoice: form.multiChoice,
+      durationHours: form.durationHours ? Number(form.durationHours) : null,
+    });
+  };
+
+  const newPollModal = (
+    <Modal open={creating} onClose={() => setCreating(false)} title="New poll" maxWidth="max-w-lg">
+      <form onSubmit={submitPoll} className="space-y-3">
+        <label className="block">
+          <span className="cs-label">Channel ID *</span>
+          <input className="cs-input font-mono text-xs" required value={form.channelId}
+            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
+            placeholder="Right-click channel → Copy Channel ID" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Question *</span>
+          <input className="cs-input" required maxLength={256} value={form.question}
+            onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
+            placeholder="What should we play on Friday?" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Options * (one per line, 2–9)</span>
+          <textarea className="cs-textarea" rows={4} required value={form.optionsText}
+            onChange={(e) => setForm((f) => ({ ...f, optionsText: e.target.value }))}
+            placeholder={"Minecraft\nValorant\nAmong Us"} />
+        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="accent-cs-cyan" checked={form.multiChoice}
+              onChange={(e) => setForm((f) => ({ ...f, multiChoice: e.target.checked }))} />
+            <span className="text-sm text-cs-text">Multi-choice</span>
+          </label>
+          <label className="block flex-1">
+            <span className="cs-label">Auto-close after (hours, optional)</span>
+            <input type="number" min="1" max="720" className="cs-input" value={form.durationHours}
+              onChange={(e) => setForm((f) => ({ ...f, durationHours: e.target.value }))}
+              placeholder="Leave empty = manual close" />
+          </label>
+        </div>
+        {createM.isError && (
+          <p className="text-danger text-sm" role="alert">
+            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : "Failed to create poll — check the channel ID and options."}
+          </p>
+        )}
+        <div className="flex justify-end gap-3">
+          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">Cancel</button>
+          <button type="submit" className="cs-btn-primary" disabled={createM.isPending}>
+            {createM.isPending ? "Posting…" : "Post poll"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
   if (isError) return <ErrorCard msg="Couldn't load polls — please retry." />;
-  if (!polls.length) return <Empty icon={BarChart3} msg="No polls yet. Run /poll in Discord to create one." />;
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <button onClick={() => { setForm(defaultPollForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> New Poll
+        </button>
+      </div>
+      {!polls.length && <Empty icon={BarChart3} msg="No polls yet. Create one here or run /poll in Discord." />}
       {polls.map((p) => (
         <div key={p.id} className="cs-card flex items-center justify-between">
           <div className="flex-1">
@@ -133,15 +208,22 @@ function PollsTab() {
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
         onCancel={() => setConfirmState(null)}
       />
+      {newPollModal}
     </div>
   );
 }
 
 // ══════════════════════════════ GIVEAWAYS ══════════════════════════════
+const defaultGiveawayForm = () => ({
+  channelId: "", prize: "", description: "", winnerCount: 1, durationMinutes: 60, requiredRoleIds: "",
+});
+
 function GiveawaysTab() {
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(defaultGiveawayForm());
   const { data: giveaways = [], isLoading, isError } = useQuery({
     queryKey: ["giveaways", serverId],
     queryFn: () => getGiveaways(serverId),
@@ -149,13 +231,88 @@ function GiveawaysTab() {
   const endM    = useMutation({ mutationFn: (id) => endGiveaway(serverId, id),    onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
   const rerollM = useMutation({ mutationFn: (id) => rerollGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
   const deleteM = useMutation({ mutationFn: (id) => deleteGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
+  const createM = useMutation({
+    mutationFn: (data) => createGiveaway(serverId, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["giveaways", serverId] }); setCreating(false); setForm(defaultGiveawayForm()); },
+  });
+
+  const submitGiveaway = (e) => {
+    e.preventDefault();
+    createM.mutate({
+      channelId: form.channelId.trim(),
+      prize: form.prize.trim(),
+      description: form.description.trim() || null,
+      winnerCount: Number(form.winnerCount) || 1,
+      durationMinutes: Number(form.durationMinutes) || 60,
+      requiredRoleIds: form.requiredRoleIds.split(",").map((s) => s.trim()).filter(Boolean),
+    });
+  };
+
+  const newGiveawayModal = (
+    <Modal open={creating} onClose={() => setCreating(false)} title="New giveaway" maxWidth="max-w-lg">
+      <form onSubmit={submitGiveaway} className="space-y-3">
+        <label className="block">
+          <span className="cs-label">Channel ID *</span>
+          <input className="cs-input font-mono text-xs" required value={form.channelId}
+            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
+            placeholder="Right-click channel → Copy Channel ID" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Prize *</span>
+          <input className="cs-input" required maxLength={256} value={form.prize}
+            onChange={(e) => setForm((f) => ({ ...f, prize: e.target.value }))}
+            placeholder="Discord Nitro (1 month)" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Description</span>
+          <textarea className="cs-textarea" rows={2} maxLength={1000} value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            placeholder="Optional details shown in the giveaway embed" />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="cs-label">Winners</span>
+            <input type="number" min="1" max="20" className="cs-input" value={form.winnerCount}
+              onChange={(e) => setForm((f) => ({ ...f, winnerCount: e.target.value }))} />
+          </label>
+          <label className="block">
+            <span className="cs-label">Duration (minutes) *</span>
+            <input type="number" min="1" max="43200" required className="cs-input" value={form.durationMinutes}
+              onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))} />
+          </label>
+        </div>
+        <label className="block">
+          <span className="cs-label">Required role IDs (comma-separated, optional)</span>
+          <input className="cs-input font-mono text-xs" value={form.requiredRoleIds}
+            onChange={(e) => setForm((f) => ({ ...f, requiredRoleIds: e.target.value }))}
+            placeholder="Only members with these roles can enter" />
+        </label>
+        {createM.isError && (
+          <p className="text-danger text-sm" role="alert">
+            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : "Failed to create giveaway — check the channel ID."}
+          </p>
+        )}
+        <div className="flex justify-end gap-3">
+          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">Cancel</button>
+          <button type="submit" className="cs-btn-primary" disabled={createM.isPending}>
+            {createM.isPending ? "Posting…" : "Start giveaway"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
   if (isError) return <ErrorCard msg="Couldn't load giveaways — please retry." />;
-  if (!giveaways.length) return <Empty icon={Gift} msg="No giveaways yet. Run /giveaway start in Discord." />;
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <button onClick={() => { setForm(defaultGiveawayForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> New Giveaway
+        </button>
+      </div>
+      {!giveaways.length && <Empty icon={Gift} msg="No giveaways yet. Create one here or run /giveaway start in Discord." />}
       {giveaways.map((g) => (
         <div key={g.id} className="cs-card">
           <div className="flex items-start justify-between">
@@ -212,6 +369,7 @@ function GiveawaysTab() {
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
         onCancel={() => setConfirmState(null)}
       />
+      {newGiveawayModal}
     </div>
   );
 }
@@ -757,9 +915,10 @@ function ReactionRolesTab() {
             </div>
             <div className="space-y-2">
               {form.pairs.map((p, i) => (
-                <div key={i} className="grid grid-cols-[70px_1fr_1fr_28px] gap-2 items-center">
+                <div key={i} className="grid grid-cols-[70px_34px_1fr_1fr_28px] gap-2 items-center">
                   <input className="cs-input text-center" placeholder="🎮" aria-label={`Emoji for pair ${i + 1}`}
                     value={p.emoji} onChange={(e) => updatePair(i, "emoji", e.target.value)} />
+                  <EmojiPicker buttonLabel={`Pick emoji for pair ${i + 1}`} onSelect={(e) => updatePair(i, "emoji", e)} />
                   <input className="cs-input font-mono text-xs" placeholder="Role ID" aria-label={`Role ID for pair ${i + 1}`}
                     value={p.roleId} onChange={(e) => updatePair(i, "roleId", e.target.value)} />
                   <input className="cs-input text-xs" placeholder="Label (optional)" aria-label={`Label for pair ${i + 1}`}

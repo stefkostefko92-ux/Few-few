@@ -188,6 +188,62 @@ app.post("/internal/form-spawn", async (req, res) => {
   }
 });
 
+// ── Poll / Giveaway spawn от dashboard-а ─────────────────────────────────────
+// Постват СЪЩИТЕ embeds като /poll и /giveaway (преизползваме builder-ите от
+// командите), така че vote/enter бутоните минават през съществуващите
+// interaction handler-и. Записът вече е създаден от backend-а; тук само
+// пращаме съобщението и връщаме messageId.
+app.post("/internal/poll-spawn", async (req, res) => {
+  const { serverId, channelId, poll } = req.body || {};
+  if (!serverId || !channelId || !poll?.id) {
+    return res.status(400).json({ error: "serverId, channelId and poll required" });
+  }
+  try {
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (!channel?.isTextBased?.()) {
+      return res.status(404).json({ error: "Channel not found or not text-based" });
+    }
+    // Cross-tenant guard: channelId е потребителски вход от dashboard-а.
+    if ((channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ error: "Channel belongs to a different server" });
+    }
+
+    const { buildPollMessage } = await import("./commands/poll.js");
+    const { embeds, components } = buildPollMessage(poll, poll.options.map(() => 0));
+    const msg = await channel.send({ embeds, components });
+    res.json({ ok: true, channelId, messageId: msg.id });
+  } catch (err) {
+    console.error("poll-spawn error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
+app.post("/internal/giveaway-spawn", async (req, res) => {
+  const { serverId, channelId, giveaway } = req.body || {};
+  if (!serverId || !channelId || !giveaway?.id) {
+    return res.status(400).json({ error: "serverId, channelId and giveaway required" });
+  }
+  try {
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (!channel?.isTextBased?.()) {
+      return res.status(404).json({ error: "Channel not found or not text-based" });
+    }
+    if ((channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ error: "Channel belongs to a different server" });
+    }
+
+    const { buildGiveawayMessage } = await import("./commands/giveaway.js");
+    const { embeds, components } = buildGiveawayMessage(giveaway, 0);
+    const msg = await channel.send({ embeds, components });
+    res.json({ ok: true, channelId, messageId: msg.id });
+  } catch (err) {
+    console.error("giveaway-spawn error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
 // ── Reaction Roles spawn / update / delete (v33) ─────────────────────────────
 // Постанова embed с двойките emoji → роля и слага началните реакции, така че
 // членовете само да кликат. Update редактира embed-а и синхронизира реакциите;
