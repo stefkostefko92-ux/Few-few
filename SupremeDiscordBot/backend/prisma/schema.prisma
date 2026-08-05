@@ -183,7 +183,8 @@ model Agency {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  servers Server[]
+  servers     Server[]
+  paymentLogs PaymentLog[]
 
   @@index([ownerUserId])
   @@map("agencies")
@@ -555,7 +556,12 @@ model AuditLog {
 
 model PaymentLog {
   id              String   @id @default(cuid())
-  serverId        String
+  // Точно ЕДНО от двете е попълнено: плащането е или на сървър, или на агенция.
+  // Prisma не може да изрази „ровно едно", затова инвариантът се пази в кода
+  // (единствените писачи са webhook-ите в routes/stripe.js и ръчният запис в
+  // routes/admin.js) и се проверява от тест.
+  serverId        String?
+  agencyId        String?
   stripeInvoiceId String?  @unique
   amount          Int // in cents
   currency        String   @default("eur") // F6 — продуктът таксува в евро (ЕС)
@@ -563,8 +569,10 @@ model PaymentLog {
   description     String?
   createdAt       DateTime @default(now())
 
-  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  server Server? @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  agency Agency? @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
+  @@index([agencyId])
   @@map("payment_logs")
 }
 
