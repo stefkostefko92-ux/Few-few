@@ -133,15 +133,68 @@ app.post("/internal/panel-update", async (req, res) => {
   }
 });
 
+// ── Form spawn от dashboard-а ────────────────────────────────────────────────
+// Постът е идентичен с /form spawn (commands/form.js) — същият customId
+// `form_direct:<formId>`, така че бутонът се обработва от съществуващия
+// handler в interactionCreate.js. Данните за формата идват в payload-а от
+// backend-а (той вече я е заредил и валидирал ownership-а), без втори
+// round-trip. Вика се от backend/src/routes/forms.js → notifyBot("FORM_SPAWN").
+app.post("/internal/form-spawn", async (req, res) => {
+  const { serverId, formId, channelId, formName, formDescription, buttonLabel } = req.body || {};
+  if (!serverId || !formId || !channelId) {
+    return res.status(400).json({ error: "serverId, formId and channelId required" });
+  }
+  try {
+    // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (!channel?.isTextBased?.()) {
+      return res.status(404).json({ error: "Channel not found or not text-based" });
+    }
+    // Cross-tenant guard: channelId е потребителски вход от dashboard-а —
+    // админ на сървър A не бива да може да пости в канал на сървър B.
+    if ((channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ error: "Channel belongs to a different server" });
+    }
+
+    const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = await import("discord.js");
+    const { INFO } = await import("./utils/colors.js");
+
+    const btn = new ButtonBuilder()
+      .setCustomId(`form_direct:${formId}`)
+      .setLabel(String(buttonLabel || "Apply Now").slice(0, 80)) // Discord button label limit
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji("📋");
+
+    const msg = await channel.send({
+      embeds: [{
+        title: formName || "Application",
+        description: formDescription || "Click the button below to apply.",
+        color: INFO,
+      }],
+      components: [new ActionRowBuilder().addComponents(btn)],
+    });
+
+    res.json({ ok: true, channelId, messageId: msg.id });
+  } catch (err) {
+    console.error("form-spawn error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
 // ── Verification panel spawn / update (v1.7) ────────────────────────────────
 app.post("/internal/verification-spawn", async (req, res) => {
-  const { panelId, channelId } = req.body;
+  const { panelId, serverId, channelId } = req.body;
   if (!panelId || !channelId) return res.status(400).json({ error: "panelId and channelId required" });
   try {
     const { buildVerificationMessage } = await import("./utils/verificationEmbed.js");
     const { data: panel } = await api.get(`/verification/bot/${panelId}`);
-    const channel = await client.channels.fetch(channelId);
+    const channel = await client.channels.fetch(channelId).catch(() => null);
     if (!channel) return res.status(404).json({ error: "Channel not found" });
+    // Cross-tenant guard: channelId е потребителски вход от dashboard-а.
+    if (serverId && (channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ error: "Channel belongs to a different server" });
+    }
     const { embeds, components } = buildVerificationMessage(panel);
     const msg = await channel.send({ embeds, components });
     // Confirm spawn back to backend

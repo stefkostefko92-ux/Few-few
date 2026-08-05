@@ -7,6 +7,11 @@ export async function handlePanelSpawn(client, { panelId, serverId, channelId })
   const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId);
 
   if (!channel) throw new Error(`Channel ${channelId} not found`);
+  // Cross-tenant guard: channelId е потребителски вход от dashboard-а — админ
+  // на сървър A не бива да може да пости панел в канал на сървър B.
+  if (serverId && (channel.guildId || channel.guild?.id) !== serverId) {
+    throw new Error("Channel belongs to a different server");
+  }
 
   const { embeds, components } = buildPanelMessage(panel);
   const msg = await channel.send({ embeds, components });

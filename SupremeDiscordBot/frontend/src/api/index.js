@@ -59,6 +59,8 @@ export const createForm = (serverId, data) => api.post(`/forms/${serverId}`, dat
 export const updateForm = (serverId, formId, data) => api.put(`/forms/${serverId}/${formId}`, data).then((r) => r.data);
 export const deleteForm = (serverId, formId, force = false) =>
   api.delete(`/forms/${serverId}/${formId}${force ? "?force=true" : ""}`).then((r) => r.data);
+export const spawnForm = (serverId, formId, channelId) =>
+  api.post(`/forms/${serverId}/${formId}/spawn`, { channelId }).then((r) => r.data);
 
 // ─── Tickets ──────────────────────────────────────────────────────────────────
 export const getTickets = (serverId, params) => api.get(`/tickets/${serverId}`, { params }).then((r) => r.data);

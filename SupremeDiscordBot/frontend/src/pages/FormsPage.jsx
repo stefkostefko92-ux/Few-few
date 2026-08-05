@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText } from "lucide-react";
-import { getForms, createForm, updateForm, deleteForm } from "../api";
+import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText, Send } from "lucide-react";
+import { getForms, createForm, updateForm, deleteForm, spawnForm } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
@@ -94,6 +94,7 @@ export default function FormsPage() {
   const [expandedQ, setExpandedQ] = useState(0);
   const [confirmState, setConfirmState] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [spawnInputs, setSpawnInputs] = useState({}); // formId → channelId
 
   const { data: forms = [], isLoading } = useQuery({
     queryKey: ["forms", serverId],
@@ -130,6 +131,15 @@ export default function FormsPage() {
       qc.invalidateQueries({ queryKey: ["forms", serverId] });
       toast.success("Form deleted.");
     },
+  });
+
+  const spawnMut = useMutation({
+    mutationFn: ({ formId, channelId }) => spawnForm(serverId, formId, channelId),
+    onSuccess: (_data, { formId }) => {
+      setSpawnInputs((s) => ({ ...s, [formId]: "" }));
+      toast.success("Form posted to channel.");
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || "Failed to post form — check the channel ID."),
   });
 
   // Step 2 of cascade delete: form has applications, confirm force-delete.
@@ -263,7 +273,24 @@ export default function FormsPage() {
                   <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
                   {f.description && <p className="text-xs text-cs-muted mt-1">{f.description}</p>}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
+                  <div className="flex items-center gap-1">
+                    <input
+                      placeholder="Channel ID"
+                      aria-label="Channel ID to post form in"
+                      className="cs-input text-xs w-28 py-1"
+                      value={spawnInputs[f.id] || ""}
+                      onChange={(e) => setSpawnInputs((s) => ({ ...s, [f.id]: e.target.value }))}
+                    />
+                    <button
+                      className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
+                      disabled={!spawnInputs[f.id] || spawnMut.isPending}
+                      onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim() })}
+                    >
+                      <Send className="w-3 h-3" /> Post to channel
+                    </button>
+                  </div>
                   <button
                     aria-label="Edit form"
                     title="Edit form"
