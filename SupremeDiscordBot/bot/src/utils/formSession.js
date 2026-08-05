@@ -18,6 +18,35 @@ import {
 import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
 
 import { sessionStore } from "./sessionStore.js";
+
+// ─── Споделена regex валидация (DM сесия + modal път) ────────────────────────
+// ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата,
+// а входът е необработен потребителски текст в споделен bot процес.
+// Два слоя (без тежка зависимост като re2):
+//   1) Твърд кап на входа (64 знака) — при толкова кратък вход дори
+//      експоненциален backtracking (напр. `(a+)+$`) свършва мигновено.
+//   2) Отхвърляме опасни шаблони: вложени quantifier-и са класическият
+//      катастрофичен backtracking; такъв шаблон не се изпълнява изобщо.
+// Малформиран шаблон → приемаме отговора (не наказваме потребителя за грешка
+// в конфигурацията). Връща { ok } — съобщението за грешка е на извикващия.
+const REGEX_INPUT_MAX = 64;
+const NESTED_QUANTIFIER = /(\([^)]*[+*}][^)]*\)|\[[^\]]*\][+*}]|[+*}])\s*[+*]|\)\s*\{\d+,?\d*\}\s*[+*{]/;
+
+export function validateAnswerAgainstRegex(question, content) {
+  if (!question?.validationRegex) return { ok: true };
+  if ((content || "").length > REGEX_INPUT_MAX) return { ok: false };
+  if (NESTED_QUANTIFIER.test(question.validationRegex)) {
+    console.warn(`[formSession] rejected risky validationRegex (nested quantifier) on question ${question.id}: ${question.validationRegex}`);
+    return { ok: true }; // не изпълняваме опасния шаблон — приемаме отговора
+  }
+  try {
+    return { ok: new RegExp(question.validationRegex).test(content) };
+  } catch {
+    console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
+    return { ok: true };
+  }
+}
+
 // sessionStore: Redis-backed with in-memory fallback (see sessionStore.js)
 
 // Timeout на per-question collector-ите. Изравнен с обещаните 15 мин И с Redis
@@ -214,36 +243,14 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     //      катастрофичен backtracking. По-добре да откажем шаблона, отколкото
     //      да блокираме event loop-а.
     // Малформиран шаблон се хваща от try/catch.
-    const REGEX_INPUT_MAX = 64;
-    // Груб детектор за вложени quantifier-и: (...)* / (...)+ / (...){n,} следван
-    // от още един quantifier. Не е пълен ReDoS анализ, но хваща типичните капани.
-    const NESTED_QUANTIFIER = /(\([^)]*[+*}][^)]*\)|\[[^\]]*\][+*}]|[+*}])\s*[+*]|\)\s*\{\d+,?\d*\}\s*[+*{]/;
     if (question.validationRegex) {
-      if (content.length > REGEX_INPUT_MAX) {
+      const verdict = validateAnswerAgainstRegex(question, content);
+      if (!verdict.ok) {
         await dmChannel.send(
           `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
         );
         await sendQuestion(client, dmChannel, session, sessionKey);
         return;
-      }
-      if (NESTED_QUANTIFIER.test(question.validationRegex)) {
-        // Потенциално катастрофичен шаблон — не го изпълняваме върху потребителски
-        // вход. Логваме и приемаме отговора, вместо да рискуваме event loop-а.
-        console.warn(`[formSession] rejected risky validationRegex (nested quantifier) on question ${question.id}: ${question.validationRegex}`);
-      } else {
-        try {
-          const re = new RegExp(question.validationRegex);
-          if (!re.test(content)) {
-            await dmChannel.send(
-              `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
-            );
-            await sendQuestion(client, dmChannel, session, sessionKey);
-            return;
-          }
-        } catch {
-          // Malformed regex in form config — log but accept the answer rather than block user
-          console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
-        }
       }
     }
 
@@ -297,6 +304,17 @@ async function finishSession(client, dmChannel, session, sessionKey) {
     // No panel category means there is no ticket channel to create
     // (e.g. /form spawn or /apply with a stub panel) — store the answers
     // as a submission record so they are never silently discarded.
+    await handleApplicationSubmission(client, session);
+  } else {
+    await handleTicketFromForm(client, session);
+  }
+}
+
+// ─── Shared finishing path (also used by the modal submit handler — v2.9) ────
+// Same branching finishSession() uses below, minus the DM-only "thank you"
+// send: the modal path acks with its own ephemeral confirmation instead.
+export async function submitFormAnswers(client, session) {
+  if (session.form.isApplication || !session.panel?.categoryId) {
     await handleApplicationSubmission(client, session);
   } else {
     await handleTicketFromForm(client, session);

@@ -105,6 +105,33 @@ export async function sendEntitlement(type, entitlement) {
   return data;
 }
 
+// ─── Canned responses (/tag) — v2.9 ────────────────────────────────────────
+
+export async function getTags(serverId) {
+  const { data } = await api.get(`/bot/tag/${serverId}`);
+  return data;
+}
+
+export async function createTag(serverId, name, content, createdBy, isPremium) {
+  const { data } = await api.post("/bot/tag", { serverId, name, content, createdBy, isPremium });
+  return data;
+}
+
+export async function deleteTag(serverId, name) {
+  const { data } = await api.delete(`/bot/tag/${serverId}/${encodeURIComponent(name)}`);
+  return data;
+}
+
+export async function useTag(serverId, name) {
+  const { data } = await api.post(`/bot/tag/${serverId}/${encodeURIComponent(name)}/use`);
+  return data;
+}
+
+export async function getStats(serverId) {
+  const { data } = await api.get(`/bot/stats/${serverId}`);
+  return data;
+}
+
 // Startup convergence: POST the application's FULL active entitlement list so
 // the backend can grant anything missed while offline and revoke servers whose
 // entitlement expired/was refunded meanwhile. Discord never redelivers

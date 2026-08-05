@@ -721,6 +721,27 @@ model StickyMessage {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// v2.9 — CANNED RESPONSES (/tag) — #1 staff request (Ticket Tool parity)
+// ─────────────────────────────────────────────────────────────────────────────
+// No `serverId` relation field on Server on purpose (same pattern as
+// StickyMessage/ScheduledMessage above) — the bot always scopes reads/writes
+// by serverId itself; a formal relation isn't needed for the query patterns here.
+
+model CannedResponse {
+  id         String   @id @default(cuid())
+  serverId   String
+  name       String // kebab-case, ≤32 chars — validated bot-side before create
+  content    String   @db.Text // ≤1500 chars — validated bot-side before create
+  usageCount Int      @default(0)
+  createdBy  String // Discord user id
+  createdAt  DateTime @default(now())
+
+  @@unique([serverId, name])
+  @@index([serverId])
+  @@map("canned_responses")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v1.8 — WEBHOOKS (event integrations)
 // ─────────────────────────────────────────────────────────────────────────────
 

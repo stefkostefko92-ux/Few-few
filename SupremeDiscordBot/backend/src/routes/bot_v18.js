@@ -327,6 +327,132 @@ router.delete("/schedule/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ══════════════════════════════ CANNED RESPONSES (/tag) ══════════════════════
+// v2.9 — Ticket Tool parity, #1 staff request. Name is unique per server
+// (kebab-case, ≤32 chars) and content ≤1500 — the bot validates both before
+// calling here, but we re-validate server-side too (never trust the client).
+const TAG_NAME_MAX = 32;
+const TAG_CONTENT_MAX = 1500;
+const TAG_LIMIT_FREE = 50;
+// TODO(premium): raise to 200 for Premium servers once tier is easy to check
+// here (bot_v18 routes don't currently join Server.plan on every call).
+const TAG_LIMIT_PREMIUM = 200;
+
+router.get("/tag/:serverId", async (req, res, next) => {
+  try {
+    const tags = await prisma.cannedResponse.findMany({
+      where: { serverId: req.params.serverId },
+      orderBy: { name: "asc" },
+    });
+    res.json(tags);
+  } catch (err) { next(err); }
+});
+
+router.post("/tag", async (req, res, next) => {
+  const { serverId, name, content, createdBy, isPremium } = req.body;
+  if (!serverId || !name || !content || !createdBy) {
+    return res.status(400).json({ error: "Invalid payload" });
+  }
+  const cleanName = String(name).trim().toLowerCase().slice(0, TAG_NAME_MAX);
+  if (!/^[a-z0-9-]{1,32}$/.test(cleanName)) {
+    return res.status(400).json({ error: "Tag name must be kebab-case, ≤32 chars (a-z, 0-9, -)." });
+  }
+  const cleanContent = String(content).slice(0, TAG_CONTENT_MAX);
+  try {
+    const count = await prisma.cannedResponse.count({ where: { serverId } });
+    const limit = isPremium ? TAG_LIMIT_PREMIUM : TAG_LIMIT_FREE;
+    if (count >= limit) {
+      return res.status(400).json({ error: `Tag limit reached (${limit}). Delete an existing tag first.` });
+    }
+    const tag = await prisma.cannedResponse.create({
+      data: { serverId, name: cleanName, content: cleanContent, createdBy },
+    });
+    res.status(201).json(tag);
+  } catch (err) {
+    if (err?.code === "P2002") {
+      return res.status(409).json({ error: `A tag named "${cleanName}" already exists.` });
+    }
+    next(err);
+  }
+});
+
+router.delete("/tag/:serverId/:name", async (req, res, next) => {
+  try {
+    const result = await prisma.cannedResponse.deleteMany({
+      where: { serverId: req.params.serverId, name: req.params.name },
+    });
+    if (result.count === 0) return res.status(404).json({ error: "Tag not found" });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.post("/tag/:serverId/:name/use", async (req, res, next) => {
+  try {
+    const tag = await prisma.cannedResponse.findUnique({
+      where: { serverId_name: { serverId: req.params.serverId, name: req.params.name } },
+    });
+    if (!tag) return res.status(404).json({ error: "Tag not found" });
+    const updated = await prisma.cannedResponse.update({
+      where: { id: tag.id },
+      data: { usageCount: { increment: 1 } },
+    });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// ══════════════════════════════ /stats (bot-secret analytics read) ═══════════
+// v2.9 — analytics.js requires a dashboard session (requireAuth+loadUser), which
+// the bot doesn't have; this is a read-only, serverId-scoped mirror for the
+// /stats slash command (mirrors the leaderboard/overview queries in analytics.js).
+router.get("/stats/:serverId", async (req, res, next) => {
+  try {
+    const serverId = req.params.serverId;
+    const now = Date.now();
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      open7d, closed7d, open30d, closed30d, openTotal,
+      closedForAvg, closedGrouped,
+    ] = await Promise.all([
+      prisma.ticket.count({ where: { serverId, createdAt: { gte: sevenDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, status: "CLOSED", closedAt: { gte: sevenDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, createdAt: { gte: thirtyDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, status: "CLOSED", closedAt: { gte: thirtyDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, status: "OPEN" } }),
+      prisma.ticket.findMany({
+        where: { serverId, feedbackRating: { not: null }, closedAt: { gte: thirtyDaysAgo } },
+        select: { feedbackRating: true },
+      }),
+      prisma.ticket.groupBy({
+        by: ["assigneeId"],
+        where: { serverId, assigneeId: { not: null }, status: "CLOSED", closedAt: { gte: thirtyDaysAgo } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const avgFeedback = closedForAvg.length
+      ? closedForAvg.reduce((sum, t) => sum + t.feedbackRating, 0) / closedForAvg.length
+      : null;
+
+    const topStaff = closedGrouped
+      .sort((a, b) => b._count._all - a._count._all)
+      .slice(0, 3)
+      .map((c) => ({ userId: c.assigneeId, closed: c._count._all }));
+
+    res.json({
+      open: { total: openTotal },
+      tickets: {
+        opened7d: open7d, closed7d,
+        opened30d: open30d, closed30d,
+      },
+      topStaff30d: topStaff,
+      avgFeedback30d: avgFeedback !== null ? Math.round(avgFeedback * 10) / 10 : null,
+      feedbackCount30d: closedForAvg.length,
+    });
+  } catch (err) { next(err); }
+});
+
 // ══════════════════════════════ SERVER EVENT LOG ═════════════════════════════
 // Per-guild config the bot reads (cached) before deciding whether to log an event.
 router.get("/:serverId/eventlog-config", async (req, res, next) => {
