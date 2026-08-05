@@ -37,6 +37,8 @@ export default {
   "ticket.deleteConfirmPrompt": "🗑️ Това ще изтрие завинаги канала и препратката към преписа му. Сигурен ли си?",
   "ticket.deleteConfirmYes": "Да, изтрий",
   "ticket.deleteScheduled": "🗑️ Този канал ще бъде изтрит след 5 секунди.",
+  "ticket.priorityUpdated": "🎯 Приоритетът е зададен на **{{priority}}**.",
+  "ticket.priorityStaffOnly": "❌ Само член на екипа за поддръжка може да променя приоритета на билет.",
 
   "panel.spawned": "Панелът е създаден в {{channel}}.",
   "panel.defaultButtonLabel": "Отвори билет",

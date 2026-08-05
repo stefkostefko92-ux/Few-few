@@ -78,6 +78,9 @@ const createPanelSchema = z.object({
   // v1.7 verification gate
   requireVerifiedRoleIds:    z.array(z.string()).optional(),
   verificationDeniedMessage: z.string().max(2000).optional().nullable(),
+  // v30 — default priority applied to tickets opened from this panel.
+  // Optional so existing dashboard payloads (without the field yet) still pass.
+  defaultPriority:      z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
   buttons: z.array(z.object({
     label: z.string().min(1).max(80),
     emoji: z.string().optional(),

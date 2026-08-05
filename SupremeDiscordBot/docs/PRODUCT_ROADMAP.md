@@ -66,7 +66,7 @@
 - `ToastHost` за успех/грешка + retry бутони; мъртвия CSS вън
 - Drawer a11y (aria-expanded, Escape, focus trap — образецът е в Modal.jsx)
 
-## 🟡 Ниво 2 — растеж и паритет — В ХОД (готови: /commands, canned responses, modal форми, context menus, /stats, vote webhook; в ход: bot i18n, сравнителни страници)
+## 🟡 Ниво 2 — растеж и паритет — ✅ КОДОВАТА ЧАСТ ИЗПЪЛНЕНА (07.08.2026: /commands, canned responses, modal форми, context menus, /stats, vote webhook, bot i18n ×8 езика, сравнителни страници, ticket priorities). Остава само ръчното: листване в директориите + терминологичен вкус PL/NL.
 
 - **Листване**: описания/банери/скрийншоти веднъж → top.gg + discordbotlist +
   discords.com; винаги като **„Supreme Bot by Carbon Stealth"** (името

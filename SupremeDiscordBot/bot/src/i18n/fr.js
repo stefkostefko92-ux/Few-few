@@ -39,6 +39,8 @@ export default {
   "ticket.deleteConfirmPrompt": "🗑️ Cela supprimera définitivement le salon et la référence à sa transcription. Êtes-vous sûr ?",
   "ticket.deleteConfirmYes": "Oui, supprimer",
   "ticket.deleteScheduled": "🗑️ Ce salon sera supprimé dans 5 secondes.",
+  "ticket.priorityUpdated": "🎯 Priorité définie sur **{{priority}}**.",
+  "ticket.priorityStaffOnly": "❌ Seuls les membres de l'équipe de support peuvent changer la priorité du ticket.",
 
   "panel.spawned": "Panneau créé dans {{channel}}.",
   "panel.defaultButtonLabel": "Ouvrir un ticket",

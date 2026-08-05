@@ -37,6 +37,8 @@ export default {
   "ticket.deleteConfirmPrompt": "🗑️ Questo eliminerà definitivamente il canale e il riferimento alla sua trascrizione. Sei sicuro?",
   "ticket.deleteConfirmYes": "Sì, elimina",
   "ticket.deleteScheduled": "🗑️ Questo canale verrà eliminato tra 5 secondi.",
+  "ticket.priorityUpdated": "🎯 Priorità impostata su **{{priority}}**.",
+  "ticket.priorityStaffOnly": "❌ Solo un membro dello staff può cambiare la priorità del ticket.",
 
   "panel.spawned": "Pannello creato in {{channel}}.",
   "panel.defaultButtonLabel": "Apri Ticket",

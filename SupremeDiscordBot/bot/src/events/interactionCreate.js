@@ -8,6 +8,7 @@ import { buildTicketOpenEmbed, buildStatusEmbed } from "../utils/embed.js";
 import { runFormSession, submitFormAnswers, validateAnswerAgainstRegex } from "../utils/formSession.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND, SUCCESS, DANGER, WARNING, INFO } from "../utils/colors.js";
+import { priorityField } from "../utils/priority.js";
 import { startSetupWizard, handleSetupComponent } from "../commands/setup.js";
 import { isStaffMember } from "../utils/staffCheck.js";
 import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
@@ -742,6 +743,8 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
       .setEmoji("📜"),
   );
 
+  const openField = priorityField(ticketResult?.priority);
+
   const welcomeMessage = await channel.send({
     content: staffMention || undefined,
     allowedMentions: { parse: ["roles"] },
@@ -749,6 +752,7 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
       title: `Ticket #${String(ticketNumber ?? "").padStart(padding, "0")}`,
       description: welcomeContent,
       color: welcomeColor,
+      fields: openField ? [openField] : undefined,
       footer: { text: `${panel.name} · Ticket ID: ${ticketResult.id.slice(0, 8)}` },
       timestamp: new Date().toISOString(),
     }],

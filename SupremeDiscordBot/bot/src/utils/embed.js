@@ -1,5 +1,6 @@
 // bot/src/utils/embed.js
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder } from "discord.js";
+import { priorityField } from "./priority.js";
 
 /**
  * Build the Discord embed + button rows for a Panel.
@@ -140,14 +141,21 @@ export function buildReviewEmbed(application, formName, user, questions) {
 
 /**
  * Build the "ticket opened" embed shown in a new ticket thread/channel.
+ * `priority` is optional and only rendered as a field when it's not the
+ * NORMAL default (see priorityField) — keeps the common case uncluttered.
  */
-export function buildTicketOpenEmbed(creator, panelName) {
-  return new EmbedBuilder()
+export function buildTicketOpenEmbed(creator, panelName, priority) {
+  const embed = new EmbedBuilder()
     .setTitle("🎫 Ticket Opened")
     .setDescription(`Welcome, <@${creator.id}>! A staff member will be with you shortly.`)
     .setColor(0x57f287)
     .addFields({ name: "Category", value: panelName || "General" })
     .setTimestamp();
+
+  const field = priorityField(priority);
+  if (field) embed.addFields(field);
+
+  return embed;
 }
 
 /**

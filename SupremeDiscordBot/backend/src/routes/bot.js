@@ -209,7 +209,7 @@ router.post("/ticket/create", async (req, res, next) => {
           select: {
             id: true, name: true,
             maxOpenPerUser: true, maxOpenPerUserPanel: true,
-            supportRoleIds: true, counterPadding: true,
+            supportRoleIds: true, counterPadding: true, defaultPriority: true,
           },
         })
       : null;
@@ -276,6 +276,7 @@ router.post("/ticket/create", async (req, res, next) => {
           channelId: channelId || null,
           status: assigneeId ? "CLAIMED" : "OPEN",
           assigneeId: assigneeId || null,
+          priority: panel?.defaultPriority || "NORMAL",
           number: nextNumber,
           lastActivityAt: new Date(),
         },
@@ -461,6 +462,45 @@ router.post("/ticket/:ticketId/unclaim", async (req, res, next) => {
       where: { id: req.params.ticketId },
       data: { assigneeId: null, status: "OPEN", lastActivityAt: new Date() },
     });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// ─── PATCH /api/bot/ticket/:ticketId/priority (v30) ───────────────────────────
+// Bot sets a ticket's priority from `/ticket priority`. Staff-only check
+// happens bot-side (same pattern as /ticket close/claim) before this call;
+// the enum is still re-validated server-side — never trust the client value.
+
+const TICKET_PRIORITIES = ["LOW", "NORMAL", "HIGH", "URGENT"];
+
+router.patch("/ticket/:ticketId/priority", async (req, res, next) => {
+  const { priority, actorId } = req.body;
+  if (!TICKET_PRIORITIES.includes(priority)) {
+    return res.status(400).json({ error: `priority must be one of ${TICKET_PRIORITIES.join(", ")}` });
+  }
+  try {
+    const existing = await prisma.ticket.findUnique({
+      where: { id: req.params.ticketId },
+      select: { serverId: true },
+    });
+    if (!existing) return res.status(404).json({ error: "Ticket not found" });
+
+    const updated = await prisma.ticket.update({
+      where: { id: req.params.ticketId },
+      data: { priority, lastActivityAt: new Date() },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: actorId || null,
+        actorTag: actorId ? undefined : "SYSTEM",
+        serverId: existing.serverId,
+        action: "TICKET_PRIORITY_CHANGED",
+        targetId: req.params.ticketId,
+        metadata: { priority },
+      },
+    });
+
     res.json(updated);
   } catch (err) { next(err); }
 });

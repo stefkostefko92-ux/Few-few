@@ -34,6 +34,12 @@ export default {
       ? `${stats.avgFeedback30d} / 5 ⭐ (${stats.feedbackCount30d} rating${stats.feedbackCount30d === 1 ? "" : "s"})`
       : "_No feedback ratings in the last 30 days._";
 
+    // v30 — one line: how the currently-open tickets break down by priority.
+    const byPriority = stats.open?.byPriority;
+    const openByPriorityLine = byPriority
+      ? `⚪ Low ${byPriority.LOW ?? 0} · 🔵 Normal ${byPriority.NORMAL ?? 0} · 🟠 High ${byPriority.HIGH ?? 0} · 🔴 Urgent ${byPriority.URGENT ?? 0}`
+      : "_Not available._";
+
     const embed = new EmbedBuilder()
       .setTitle("📊 Server Stats")
       .setColor(BRAND)
@@ -44,6 +50,7 @@ export default {
         { name: "Opened (30d)", value: String(stats.tickets?.opened30d ?? 0), inline: true },
         { name: "Closed (30d)", value: String(stats.tickets?.closed30d ?? 0), inline: true },
         { name: "Avg. feedback (30d)", value: avgFeedback, inline: true },
+        { name: "Open by priority", value: openByPriorityLine, inline: false },
         { name: "🏆 Top staff (30d, by tickets closed)", value: topStaffLines, inline: false },
       )
       .setTimestamp(new Date());

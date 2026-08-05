@@ -40,6 +40,8 @@ export default {
   "ticket.deleteConfirmPrompt": "🗑️ This will permanently delete the channel and its transcript reference. Are you sure?",
   "ticket.deleteConfirmYes": "Yes, delete",
   "ticket.deleteScheduled": "🗑️ This channel will be deleted in 5 seconds.",
+  "ticket.priorityUpdated": "🎯 Priority set to **{{priority}}**.",
+  "ticket.priorityStaffOnly": "❌ Only support team members can change ticket priority.",
 
   // Panels
   "panel.spawned": "Panel spawned in {{channel}}.",

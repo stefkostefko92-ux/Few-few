@@ -14,12 +14,22 @@ const STATUS_COLORS = {
   ARCHIVED: "text-cs-muted bg-gray-500/10",
 };
 
+// Договор с backend (миграция v30): LOW | NORMAL | HIGH | URGENT.
+// NORMAL се показва приглушено — приоритетът шуми само когато е различен.
+const PRIORITY_COLORS = {
+  URGENT: "text-danger bg-red-500/10",
+  HIGH:   "text-cs-gold bg-yellow-500/10",
+  NORMAL: "text-cs-muted bg-gray-500/10",
+  LOW:    "text-cs-dim bg-gray-500/5",
+};
+
 const LIMIT = 20;
 
 export default function TicketsPage() {
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -28,9 +38,10 @@ export default function TicketsPage() {
   const [closeReason, setCloseReason] = useState("");
 
   const { data, isLoading, isError, isRefetching, refetch } = useQuery({
-    queryKey: ["tickets", serverId, statusFilter, search, dateFrom, dateTo, page],
+    queryKey: ["tickets", serverId, statusFilter, priorityFilter, search, dateFrom, dateTo, page],
     queryFn: () => getTickets(serverId, {
       status: statusFilter || undefined,
+      priority: priorityFilter || undefined,
       search: search || undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
@@ -39,9 +50,10 @@ export default function TicketsPage() {
     }),
   });
 
-  const hasFilters = !!(statusFilter || search || dateFrom || dateTo);
+  const hasFilters = !!(statusFilter || priorityFilter || search || dateFrom || dateTo);
   const clearFilters = () => {
     setStatusFilter("");
+    setPriorityFilter("");
     setSearch("");
     setDateFrom("");
     setDateTo("");
@@ -136,6 +148,18 @@ export default function TicketsPage() {
             <option value="CLOSED">Closed</option>
             <option value="ARCHIVED">Archived</option>
           </select>
+          <select
+            className="cs-input w-40"
+            value={priorityFilter}
+            onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
+            aria-label="Filter tickets by priority"
+          >
+            <option value="">All Priorities</option>
+            <option value="URGENT">Urgent</option>
+            <option value="HIGH">High</option>
+            <option value="NORMAL">Normal</option>
+            <option value="LOW">Low</option>
+          </select>
         </div>
       </div>
 
@@ -190,6 +214,7 @@ export default function TicketsPage() {
               <thead>
                 <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">
                   <th className="text-left px-4 py-3">Status</th>
+                  <th className="text-left px-4 py-3">Priority</th>
                   <th className="text-left px-4 py-3">#</th>
                   <th className="text-left px-4 py-3">Creator</th>
                   <th className="text-left px-4 py-3">Assigned To</th>
@@ -205,6 +230,11 @@ export default function TicketsPage() {
                     <td className="px-4 py-3">
                       <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${STATUS_COLORS[ticket.status]}`}>
                         {ticket.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${PRIORITY_COLORS[ticket.priority] || PRIORITY_COLORS.NORMAL}`}>
+                        {(ticket.priority || "NORMAL").charAt(0) + (ticket.priority || "NORMAL").slice(1).toLowerCase()}
                       </span>
                     </td>
                     <td className="px-4 py-3">

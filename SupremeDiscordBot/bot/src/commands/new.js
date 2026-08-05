@@ -7,6 +7,7 @@ import api from "../utils/api.js";
 import { checkCooldown } from "../utils/cooldowns.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
+import { priorityField } from "../utils/priority.js";
 import { t, resolveLang } from "../i18n/index.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
@@ -128,6 +129,8 @@ export default {
         await channel.setName(`${channelPrefix}-${String(number).padStart(padding, "0")}-${creator.username.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30)}`).catch(() => {});
       }
 
+      const openField = priorityField(ticketResult?.data?.priority);
+
       await channel.send({
         embeds: [{
           title: `🎫 Ticket #${String(number ?? "").padStart(padding, "0")}`,
@@ -136,6 +139,7 @@ export default {
             reason && `**Reason**: ${reason}`,
           ].filter(Boolean).join("\n"),
           color: BRAND,
+          fields: openField ? [openField] : undefined,
           timestamp: new Date().toISOString(),
         }],
       });

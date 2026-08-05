@@ -413,7 +413,7 @@ router.get("/stats/:serverId", async (req, res, next) => {
 
     const [
       open7d, closed7d, open30d, closed30d, openTotal,
-      closedForAvg, closedGrouped,
+      closedForAvg, closedGrouped, openByPriorityGrouped,
     ] = await Promise.all([
       prisma.ticket.count({ where: { serverId, createdAt: { gte: sevenDaysAgo } } }),
       prisma.ticket.count({ where: { serverId, status: "CLOSED", closedAt: { gte: sevenDaysAgo } } }),
@@ -429,6 +429,12 @@ router.get("/stats/:serverId", async (req, res, next) => {
         where: { serverId, assigneeId: { not: null }, status: "CLOSED", closedAt: { gte: thirtyDaysAgo } },
         _count: { _all: true },
       }),
+      // v30 — open tickets (OPEN or CLAIMED) grouped by priority, for /stats.
+      prisma.ticket.groupBy({
+        by: ["priority"],
+        where: { serverId, status: { in: ["OPEN", "CLAIMED"] } },
+        _count: { _all: true },
+      }),
     ]);
 
     const avgFeedback = closedForAvg.length
@@ -440,8 +446,13 @@ router.get("/stats/:serverId", async (req, res, next) => {
       .slice(0, 3)
       .map((c) => ({ userId: c.assigneeId, closed: c._count._all }));
 
+    // v30 — always report all 4 buckets (0 for priorities with no open tickets)
+    // so the bot doesn't need to guess which keys are present.
+    const openByPriority = { LOW: 0, NORMAL: 0, HIGH: 0, URGENT: 0 };
+    for (const g of openByPriorityGrouped) openByPriority[g.priority] = g._count._all;
+
     res.json({
-      open: { total: openTotal },
+      open: { total: openTotal, byPriority: openByPriority },
       tickets: {
         opened7d: open7d, closed7d,
         opened30d: open30d, closed30d,

@@ -4,6 +4,8 @@ import api from "../utils/api.js";
 import { buildStatusEmbed } from "../utils/embed.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { INFO } from "../utils/colors.js";
+import { TICKET_PRIORITIES, priorityColor } from "../utils/priority.js";
+import { t, resolveLang } from "../i18n/index.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
@@ -33,6 +35,19 @@ export default {
       sub.setName("close")
         .setDescription("Close this ticket and generate an archive")
         .addStringOption((opt) => opt.setName("reason").setDescription("Reason for closing").setRequired(false))
+    )
+    .addSubcommand((sub) =>
+      sub.setName("priority")
+        .setDescription("Set this ticket's priority")
+        .addStringOption((opt) =>
+          opt.setName("level").setDescription("Priority level").setRequired(true)
+            .addChoices(
+              { name: "Low", value: "LOW" },
+              { name: "Normal", value: "NORMAL" },
+              { name: "High", value: "HIGH" },
+              { name: "Urgent", value: "URGENT" },
+            )
+        )
     ),
 
   async execute(interaction) {
@@ -45,7 +60,7 @@ export default {
       ticket = data;
     } catch {}
 
-    if (!ticket && ["add", "remove", "claim", "unclaim", "close"].includes(sub)) {
+    if (!ticket && ["add", "remove", "claim", "unclaim", "close", "priority"].includes(sub)) {
       return interaction.reply({ content: "❌ This channel is not a ticket.", flags: MessageFlags.Ephemeral });
     }
 
@@ -65,6 +80,12 @@ export default {
     if (["add", "remove", "claim", "unclaim"].includes(sub) && !isStaff) {
       return interaction.reply({
         content: "❌ Only support team members can perform this action.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    if (sub === "priority" && !isStaff) {
+      return interaction.reply({
+        content: t("ticket.priorityStaffOnly", await resolveLang(interaction)),
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -123,6 +144,23 @@ export default {
         });
       } catch (err) {
         await interaction.editReply(friendlyError(err, interaction));
+      }
+    }
+
+    else if (sub === "priority") {
+      const level = interaction.options.getString("level");
+      if (!TICKET_PRIORITIES.includes(level)) {
+        await interaction.editReply("❌ Invalid priority level.");
+      } else {
+        try {
+          await api.patch(`/bot/ticket/${ticket.id}/priority`, { priority: level, actorId: interaction.user.id });
+          const lang = await resolveLang(interaction);
+          await interaction.editReply({
+            embeds: [buildStatusEmbed("🎯 Ticket Priority", t("ticket.priorityUpdated", lang, { priority: level }), priorityColor(level))],
+          });
+        } catch (err) {
+          await interaction.editReply(friendlyError(err, interaction));
+        }
       }
     }
 

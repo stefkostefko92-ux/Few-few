@@ -264,6 +264,9 @@ model Panel {
   // ─── v1.7 Verification gate ──────────────────────────────────────────────
   requireVerifiedRoleIds    String[] @default([]) // User must have ALL these roles to open ticket
   verificationDeniedMessage String?  @db.Text // Custom "you need X role" message
+  // ─── v30 Ticket priority ──────────────────────────────────────────────────
+  // Applied to every ticket created from this panel unless overridden later.
+  defaultPriority           TicketPriority @default(NORMAL)
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
 
@@ -449,6 +452,9 @@ model Ticket {
   creatorId            String
   assigneeId           String?
   status               TicketStatus @default(OPEN)
+  // v30 — staff-set urgency, independent of status. Defaults from
+  // Panel.defaultPriority at creation time; changed via /ticket priority.
+  priority             TicketPriority @default(NORMAL)
   // Discord IDs
   channelId            String? // Thread or channel ID
   // Linked application (escalation)
@@ -483,6 +489,7 @@ model Ticket {
 
   @@index([serverId, status])
   @@index([creatorId])
+  @@index([serverId, priority])
   @@map("tickets")
 }
 
@@ -491,6 +498,14 @@ enum TicketStatus {
   CLAIMED
   CLOSED
   ARCHIVED
+}
+
+// v30 — staff-facing urgency label for tickets/panels (Ticket Tool parity).
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }
 
 model TicketMessage {

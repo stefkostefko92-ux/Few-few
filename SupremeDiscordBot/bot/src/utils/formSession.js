@@ -404,7 +404,7 @@ async function handleTicketFromForm(client, session) {
       ],
     });
 
-    await channel.send({ embeds: [buildTicketOpenEmbed(member.user, panel.name)] });
+    await channel.send({ embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority)] });
 
     const transcript = session.questions
       .map((q) => `**${q.label}**\n${session.answers[q.id] || "*No answer*"}`)

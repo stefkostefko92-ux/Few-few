@@ -37,12 +37,13 @@ router.use(requireAuth, loadUser);
 // ─── GET /api/tickets/:serverId ───────────────────────────────────────────────
 
 router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
-  const { status, search, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
+  const { status, priority, search, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
 
   try {
     const where = {
       serverId: req.params.serverId,
       ...(status && { status }),
+      ...(priority && { priority }),
       ...(search && {
         OR: [
           { id: { contains: search } },

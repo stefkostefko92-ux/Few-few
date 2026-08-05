@@ -39,6 +39,8 @@ export default {
   "ticket.deleteConfirmPrompt": "🗑️ Hiermee worden het kanaal en de verwijzing naar de transcriptie definitief verwijderd. Weet je het zeker?",
   "ticket.deleteConfirmYes": "Ja, verwijderen",
   "ticket.deleteScheduled": "🗑️ Dit kanaal wordt over 5 seconden verwijderd.",
+  "ticket.priorityUpdated": "🎯 Prioriteit ingesteld op **{{priority}}**.",
+  "ticket.priorityStaffOnly": "❌ Alleen leden van het supportteam kunnen de ticketprioriteit wijzigen.",
 
   "panel.spawned": "Panel geplaatst in {{channel}}.",
   "panel.defaultButtonLabel": "Ticket openen",
