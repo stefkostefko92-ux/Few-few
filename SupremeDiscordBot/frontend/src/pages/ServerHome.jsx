@@ -73,7 +73,7 @@ export default function ServerHome() {
         <h2 className="text-lg font-semibold text-cs-text mb-2">Bot not set up for this server</h2>
         <p className="text-cs-muted text-sm">The bot hasn't been added to this server yet, or hasn't synced.</p>
         <a
-          href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=8&scope=bot+applications.commands&guild_id=${serverId}`}
+          href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814288&scope=bot+applications.commands&guild_id=${serverId}`}
           target="_blank"
           rel="noopener noreferrer"
           className="cs-btn-primary mt-4 inline-flex items-center gap-2"

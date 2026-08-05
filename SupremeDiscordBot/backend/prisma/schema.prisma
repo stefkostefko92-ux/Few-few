@@ -58,6 +58,8 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([expiresAt])
   @@map("sessions")
 }
 
@@ -262,6 +264,7 @@ model Panel {
   buttons PanelButton[]
   tickets Ticket[]
 
+  @@index([serverId])
   @@map("panels")
 }
 
@@ -379,6 +382,7 @@ model Form {
   panelButtons PanelButton[]
   cooldowns    FormCooldown[]
 
+  @@index([serverId])
   @@map("forms")
 }
 
@@ -415,6 +419,7 @@ model FormQuestion {
 
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
 
+  @@index([formId])
   @@map("form_questions")
 }
 
@@ -469,6 +474,8 @@ model Ticket {
   application Application?    @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   messages    TicketMessage[]
 
+  @@index([serverId, status])
+  @@index([creatorId])
   @@map("tickets")
 }
 
@@ -490,6 +497,7 @@ model TicketMessage {
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
+  @@index([ticketId])
   @@map("ticket_messages")
 }
 
@@ -519,6 +527,8 @@ model Application {
   form   Form   @relation(fields: [formId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
+  @@index([serverId, status])
+  @@index([userId])
   @@map("applications")
 }
 
@@ -546,6 +556,7 @@ model AuditLog {
   server Server? @relation(fields: [serverId], references: [id], onDelete: SetNull)
   actor  User?   @relation("AuditActor", fields: [actorId], references: [id])
 
+  @@index([serverId])
   @@map("audit_logs")
 }
 
@@ -565,6 +576,7 @@ model PaymentLog {
 
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+  @@index([serverId])
   @@map("payment_logs")
 }
 

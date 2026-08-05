@@ -99,9 +99,17 @@ for (const file of eventFiles) {
 const app = express();
 app.use(express.json());
 
-// Health check — no auth required (used by docker healthcheck)
+// Health check — no auth required (used by docker healthcheck + status page).
+// Liveness трябва да отразява РЕАЛНАТА зависимост (Discord gateway), не само
+// че HTTP сървърът слуша — иначе паднал gateway се води "operational" и
+// docker restart политиката никога не рестартира бота.
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", uptime: process.uptime() });
+  const gatewayReady = client.isReady();
+  res.status(gatewayReady ? 200 : 503).json({
+    status: gatewayReady ? "ok" : "degraded",
+    gateway: gatewayReady ? "connected" : "disconnected",
+    uptime: process.uptime(),
+  });
 });
 
 app.use(requireBotSecret);
