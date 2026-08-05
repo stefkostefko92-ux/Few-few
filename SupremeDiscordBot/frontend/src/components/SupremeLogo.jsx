@@ -15,7 +15,7 @@ export default function SupremeLogo({ size = 40, className = "", animated = true
       style={{
         height: size,
         width: "auto",
-        filter: "drop-shadow(0 0 10px rgba(240,194,76,0.25))",
+        filter: "drop-shadow(0 0 10px rgba(143,230,0,0.3))",
       }}
     />
   );

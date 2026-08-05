@@ -2,7 +2,7 @@
 // Единна цветова палитра за всички embed-и на бота. Преди това цветовете
 // бяха разпилени литерали (0x00e5ff, 0x57f287, 0x4ade80…) навсякъде — сменяш
 // брандинга на едно място вместо да grep-ваш 70 файла.
-export const BRAND   = 0x00e5ff; // Supreme Bot brand cyan — неутрални/инфо embed-и
+export const BRAND   = 0x8fe600; // Supreme Bot brand — неоново зелено (2026 ребранд)
 export const SUCCESS = 0x57f287; // Одобрено / отворено / завършено успешно
 export const DANGER  = 0xed4245; // Затворено / изтрито / грешка / отказ
 export const WARNING = 0xfbbf24; // Потвърждение / внимание / чакащо действие

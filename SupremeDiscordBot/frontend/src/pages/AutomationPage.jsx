@@ -378,14 +378,14 @@ function GiveawaysTab() {
 function StickyTab() {
   const { serverId } = useParams();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ channelId: "", content: "", embedTitle: "", embedColor: "#33b1ff" });
+  const [form, setForm] = useState({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" });
   const [confirmState, setConfirmState] = useState(null);
   const { data: stickies = [], isLoading, isError } = useQuery({
     queryKey: ["stickies", serverId],
     queryFn: () => getStickies(serverId),
   });
   const saveM   = useMutation({ mutationFn: (data) => upsertSticky(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stickies", serverId] }); setForm({ channelId: "", content: "", embedTitle: "", embedColor: "#33b1ff" }); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stickies", serverId] }); setForm({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" }); } });
   const deleteM = useMutation({ mutationFn: (chId) => deleteSticky(serverId, chId), onSuccess: () => qc.invalidateQueries({ queryKey: ["stickies", serverId] }) });
 
   return (

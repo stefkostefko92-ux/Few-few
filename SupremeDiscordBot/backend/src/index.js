@@ -15,6 +15,19 @@ import rateLimit from "express-rate-limit";
 
 // ─── Startup validation ───────────────────────────────────────────────────────
 const REQUIRED_ENV = ["DATABASE_URL", "SESSION_SECRET", "ENCRYPTION_KEY", "DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_REDIRECT_URI", "MAIN_OWNER_ID", "API_SECRET", "FRONTEND_URL"];
+
+// FRONTEND_URL с вътрешния порт (напр. :8080, който е 127.0.0.1-only зад
+// reverse proxy-то) прави ВСИЧКИ редиректи и линкове мъртви за външен клиент:
+// OAuth callback-ът праща браузъра на :8080 → нищо не зарежда, а относителните
+// линкове (футър и т.н.) наследяват порта. Не е фатално за старта (dev ползва
+// localhost:5173), но в продукция е винаги грешка → крещим силно в лога.
+if (process.env.NODE_ENV === "production" && /:\d+\/?$/.test(process.env.FRONTEND_URL || "")) {
+  console.error(
+    `⚠️  FRONTEND_URL (${process.env.FRONTEND_URL}) съдържа порт — в продукция това чупи ` +
+    "OAuth редиректите и линковете (порт 8080 е достъпен само от 127.0.0.1). " +
+    "Задай FRONTEND_URL=https://supremebot.carbonstealth.eu (без порт) и рестартирай."
+  );
+}
 // Optional — AI replies work without this but require it for the platform-level key
 if (!process.env.GEMINI_API_KEY) console.warn("⚠️  GEMINI_API_KEY not set — AI auto-replies will be disabled unless servers provide their own key");
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);

@@ -23,7 +23,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  html { background: #06070e; }
+  html { background: #050804; }
   html, body, #root {
     width: 100%;
     min-height: 100vh;
@@ -45,7 +45,7 @@
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(180deg, rgba(7, 8, 16, 0.70) 0%, rgba(7, 8, 16, 0.82) 55%, rgba(7, 8, 16, 0.92) 100%),
+      linear-gradient(180deg, rgba(5, 8, 4, 0.70) 0%, rgba(5, 8, 4, 0.82) 55%, rgba(5, 8, 4, 0.92) 100%),
       url("/bg-cosmos.jpg") center center / cover no-repeat;
     pointer-events: none;
   }
@@ -62,14 +62,14 @@
 
   ::-webkit-scrollbar       { @apply w-1.5 h-1.5; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a36; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #33b1ff; }
+  ::-webkit-scrollbar-thumb { background: #263420; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #8fe600; }
 
-  ::selection { background: #33b1ff; color: #000; }
+  ::selection { background: #8fe600; color: #000; }
 
   /* Focus ring matches cyan accent */
   :focus-visible {
-    outline: 2px solid #33b1ff;
+    outline: 2px solid #8fe600;
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -219,8 +219,8 @@
 @layer utilities {
   .grid-bg {
     background-image:
-      linear-gradient(rgba(42, 42, 54, 0.4) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(42, 42, 54, 0.4) 1px, transparent 1px);
+      linear-gradient(rgba(38, 52, 32, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(38, 52, 32, 0.4) 1px, transparent 1px);
     background-size: 80px 80px;
   }
   .text-balance { text-wrap: balance; }
@@ -255,7 +255,7 @@
 
 @keyframes supreme-crown-glow {
   0%, 100% { filter: drop-shadow(0 0 3px rgba(240, 194, 76, 0.75)); }
-  50%      { filter: drop-shadow(0 0 8px rgba(51, 177, 255, 0.9)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(143, 230, 0, 0.9)); }
 }
 
 .supreme-logo-animated .supreme-ring-outer {
@@ -277,21 +277,21 @@
   animation: supreme-pulse 2s ease-in-out infinite;
 }
 
-/* Supreme wordmark — gold→royal-blue, echoing the brand banner (gold text,
-   blue energy). "SUPREME" is molten gold; "BOT" is bright silver-white. */
+/* Supreme wordmark — silver-chrome→neon-green, echoing the 2026 brand board
+   (chrome "SUPREME" over neon green energy). "BOT" is bright silver-white. */
 .supreme-wordmark-supreme {
-  background: linear-gradient(96deg, #f7d878 0%, #f0c24c 42%, #e0a93a 68%, #33b1ff 100%);
+  background: linear-gradient(96deg, #ffffff 0%, #d9dfd4 38%, #aab5a2 62%, #8fe600 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 22px rgba(240, 194, 76, 0.45);
+  text-shadow: 0 0 22px rgba(143, 230, 0, 0.4);
   letter-spacing: -0.02em;
 }
 .supreme-wordmark-bot {
   color: #f4f4f0;
   margin-left: 0.25em;
   letter-spacing: -0.02em;
-  text-shadow: 0 0 18px rgba(51, 177, 255, 0.35);
+  text-shadow: 0 0 18px rgba(143, 230, 0, 0.35);
 }
 
 /* Honor prefers-reduced-motion — neutralize all motion app-wide (WCAG 2.3.3) */
@@ -411,7 +411,7 @@ html, body {
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(40% 50% at 20% 25%, rgba(51, 177, 255, 0.16), transparent 70%),
+    radial-gradient(40% 50% at 20% 25%, rgba(143, 230, 0, 0.16), transparent 70%),
     radial-gradient(35% 45% at 82% 18%, rgba(139, 92, 246, 0.12), transparent 70%),
     radial-gradient(45% 55% at 65% 88%, rgba(240, 194, 76, 0.10), transparent 70%);
   filter: blur(18px);
@@ -428,12 +428,12 @@ html, body {
    dashed lines); the flow animation is added only when motion is welcome. */
 .hero-funnel path {
   fill: none;
-  stroke: rgba(51, 177, 255, 0.4);
+  stroke: rgba(143, 230, 0, 0.4);
   stroke-width: 1;
   stroke-dasharray: 3 7;
 }
 .hero-core-dot {
-  fill: #33b1ff;
+  fill: #8fe600;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -458,6 +458,6 @@ html, body {
 }
 
 @keyframes hero-core-glow {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(51, 177, 255, 0.35), 0 0 26px rgba(51, 177, 255, 0.12); }
-  50%      { box-shadow: 0 0 0 1px rgba(51, 177, 255, 0.65), 0 0 42px rgba(51, 177, 255, 0.28); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(143, 230, 0, 0.35), 0 0 26px rgba(143, 230, 0, 0.12); }
+  50%      { box-shadow: 0 0 0 1px rgba(143, 230, 0, 0.65), 0 0 42px rgba(143, 230, 0, 0.28); }
 }
