@@ -4,11 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-<<<<<<< HEAD
     "updated": "2026-07-30",
-=======
-    "updated": "2026-08-05",
->>>>>>> f21ed484a (auto: diskordjiyata научи — памет + версия + табло)
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1056,7 +1052,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 266
+        "lessons": 273
       },
       "evolution": [
         {
@@ -3209,7 +3205,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 148
+        "lessons": 154
       },
       "evolution": [
         {
@@ -3562,7 +3558,6 @@
         },
         {
           "version": "10.5.0",
-<<<<<<< HEAD
           "date": "2026-07-13",
           "event": "v10.5 — учене",
           "detail": "Научи: Ospedali Trasparenti (статичен ETL сайт) генерира цялото SEO от src/build-site.js + src… (+1 още)"
@@ -3620,16 +3615,10 @@
           "date": "2026-07-29",
           "event": "v14.6 — учене",
           "detail": "Научи: tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…"
-=======
-          "date": "2026-08-05",
-          "event": "v10.5 — учене",
-          "detail": "Научи: Supreme Bot (supreme.carbonstealth.eu) не е листнат в нито една Discord бот директория,… (+5 още)"
->>>>>>> 1e35a943b (auto: seo научи — памет + версия + табло)
         }
       ],
       "activity": [
         {
-<<<<<<< HEAD
           "date": "2026-07-29",
           "type": "learning",
           "summary": "Научи: „tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…\" · 1 в карантина"
@@ -3693,11 +3682,6 @@
           "date": "2026-07-13",
           "type": "learning",
           "summary": "Научи: „Ospedali Trasparenti (статичен ETL сайт) генерира цялото SEO от src/build-site.js + src…\" (+1 още)"
-=======
-          "date": "2026-08-05",
-          "type": "learning",
-          "summary": "Научи: „Supreme Bot (supreme.carbonstealth.eu) не е листнат в нито една Discord бот директория,…\" (+5 още)"
->>>>>>> 1e35a943b (auto: seo научи — памет + версия + табло)
         },
         {
           "date": "2026-07-09",
@@ -4290,7 +4274,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 124
+        "lessons": 130
       },
       "evolution": [
         {
@@ -5802,7 +5786,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 156
+        "lessons": 160
       },
       "evolution": [
         {
@@ -8153,7 +8137,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 150
+        "lessons": 160
       },
       "evolution": [
         {
@@ -10177,7 +10161,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 143
+        "lessons": 149
       },
       "evolution": [
         {
@@ -11709,7 +11693,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 119
+        "lessons": 129
       },
       "evolution": [
         {
@@ -11995,7 +11979,6 @@
           "detail": "Научи: Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId … (+8 още)"
         },
         {
-<<<<<<< HEAD
           "version": "11.3.0",
           "date": "2026-07-24",
           "event": "v11.3 — учене",
@@ -12018,17 +12001,10 @@
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: Components v2 (flag IS_COMPONENTS_V2, 1<<15 message flags) е нов модел съобщения — ведн… (+5 още)"
-=======
-          "version": "10.3.0",
-          "date": "2026-08-05",
-          "event": "v10.3 — учене",
-          "detail": "Научи: Discord поддържа локализация на самите slash команди (name_localizations/description_lo… (+4 още)"
->>>>>>> f21ed484a (auto: diskordjiyata научи — памет + версия + табло)
         }
       ],
       "activity": [
         {
-<<<<<<< HEAD
           "date": "2026-07-28",
           "type": "learning",
           "summary": "Научи: „Components v2 (flag IS_COMPONENTS_V2, 1<<15 message flags) е нов модел съобщения — ведн…\" (+5 още)"
@@ -12047,11 +12023,6 @@
           "date": "2026-07-24",
           "type": "learning",
           "summary": "Научи: „discord.js стабилна линия вече v14.27.0 (последна публикувана ~7 дни преди 2026-07-24) …\" (+10 още)"
-=======
-          "date": "2026-08-05",
-          "type": "learning",
-          "summary": "Научи: „Discord поддържа локализация на самите slash команди (name_localizations/description_lo…\" (+4 още)"
->>>>>>> f21ed484a (auto: diskordjiyata научи — памет + версия + табло)
         },
         {
           "date": "2026-07-06",
@@ -13254,7 +13225,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 152
+        "lessons": 154
       },
       "evolution": [
         {

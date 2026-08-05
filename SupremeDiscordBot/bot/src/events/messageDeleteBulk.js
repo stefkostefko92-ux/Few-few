@@ -4,7 +4,7 @@
 // съдържанието на N съобщения — логваме броя, канала и actor-а (audit log
 // MessageBulkDelete пише КАНАЛА като target, не потребител).
 
-import { logServerEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, isEventCategoryEnabled } from "../utils/serverEventLog.js";
 import { AuditLogEvent } from "discord.js";
 
 export default {
@@ -14,6 +14,9 @@ export default {
     try {
       const guild = channel?.guild;
       if (!guild?.id) return;
+
+      // Гейт ПРЕДИ скъпия audit fetch (виж messageDelete.js).
+      if (!(await isEventCategoryEnabled(guild.id, "messages"))) return;
 
       // Actor best-effort: bulk-delete audit записът сочи канала, затова
       // не минаваме през fetchAuditActor (той сверява target user id).

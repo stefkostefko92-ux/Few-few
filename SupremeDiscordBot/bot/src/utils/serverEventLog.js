@@ -141,6 +141,18 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
 }
 
 /**
+ * Евтина проверка (кеширана) дали категория е включена за guild-а — за event
+ * handler-и, които вършат СКЪПА работа ПРЕДИ logServerEvent (напр.
+ * fetchAuditLogs в messageDelete). Без нея audit fetch-ът се случва на всяко
+ * изтрито съобщение във ВСЕКИ guild, дори с изключено логване (rate-limit
+ * риск — находка на Дискорджията, 05.08.2026).
+ */
+export async function isEventCategoryEnabled(serverId, category) {
+  const config = await getEventLogConfig(serverId);
+  return !!(config?.enabled && Array.isArray(config.categories) && config.categories.includes(category));
+}
+
+/**
  * Логни едно server-event: (а) прати embed в конфигурирания лог канал,
  * (б) прати payload към backend за DB запис. Fail-safe — никога не хвърля.
  *

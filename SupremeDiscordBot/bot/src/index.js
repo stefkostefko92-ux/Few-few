@@ -503,7 +503,8 @@ app.post("/internal/application-discuss", async (req, res) => {
       type: ChannelType.GuildText,
       parent: category?.id || null,
       permissionOverwrites,
-      reason: `Application discussion: ${formName} #${applicationId.slice(-8)}`,
+      // Discord audit reason лимит: 512 знака — режем потребителското име на формата
+      reason: `Application discussion: ${String(formName || "").slice(0, 400)} #${applicationId.slice(-8)}`,
     });
 
     // Welcome embed with context

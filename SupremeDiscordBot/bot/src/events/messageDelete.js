@@ -4,7 +4,7 @@
 // когато трие ДРУГ потребител (модератор); самоизтриване няма actor.
 // Partials.Message: изтрит стар пост извън кеша идва без автор/съдържание.
 
-import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -24,6 +24,10 @@ export default {
       // неизвестен и пускаме лога (по-добре запис с "(unknown)", отколкото
       // сляпо петно за изтритото).
       if (message.author?.bot) return;
+
+      // Гейт ПРЕДИ скъпия audit fetch — иначе всяко изтрито съобщение във
+      // всеки guild бие fetchAuditLogs дори с изключено логване (rate limit).
+      if (!(await isEventCategoryEnabled(guild.id, "messages"))) return;
 
       const actor = message.author?.id
         ? await fetchAuditActor(guild, AuditLogEvent.MessageDelete, message.author.id)
