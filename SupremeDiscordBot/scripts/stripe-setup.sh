@@ -79,6 +79,20 @@ echo "  ✓ Тарифите са готови (цените са с включ�
 # смяна на план е ИЗКЛЮЧЕНА, т.е. съществуващ абонат няма път за upgrade.
 # Създаваме конфигурация със subscription_update за 4-те продукта и я подаваме
 # от backend-а (STRIPE_PORTAL_CONFIGURATION_ID) при създаване на portal сесия.
+#
+# cancellation_reason: churn анкета при отказ — Stripe събира причината и я
+# показва в Dashboard → Billing → Revenue recovery/Churn. `options` е
+# ЗАДЪЛЖИТЕЛЕН, когато cancellation_reason е включен (проверено на живо
+# 2026-08-05: docs.stripe.com/api/customer_portal/configurations/create).
+# Валидни стойности: customer_service · low_quality · missing_features · other ·
+# switched_service · too_complex · too_expensive · unused. Взимаме 5-те, които
+# водят до действие от наша страна; „other" остава за свободен коментар.
+#
+# ВНИМАНИЕ (идемпотентност): блокът по-долу СЪЗДАВА конфигурация само ако още
+# няма такава с този marker — НЕ обновява съществуваща. За да влезе анкетата в
+# вече създаден портал: или POST /v1/billing_portal/configurations/$PORTAL_ID
+# със същите -d полета, или се вдига PORTAL_MARKER (нова конфигурация + нов
+# STRIPE_PORTAL_CONFIGURATION_ID в backend/.env).
 PORTAL_MARKER="supreme_v3_portal"
 # id-то е в НАЧАЛОТО на всеки config обект, metadata.marker — в КРАЯ (много
 # редове по-долу), затова grep -B2 не ги сдвоява. Сплескваме JSON-а и взимаме
@@ -98,6 +112,12 @@ if [ -z "$PORTAL_ID" ]; then
     -d "features[payment_method_update][enabled]=true" \
     -d "features[subscription_cancel][enabled]=true" \
     -d "features[subscription_cancel][mode]=at_period_end" \
+    -d "features[subscription_cancel][cancellation_reason][enabled]=true" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=too_expensive" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=missing_features" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=switched_service" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=unused" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=other" \
     -d "features[subscription_update][enabled]=true" \
     -d "features[subscription_update][default_allowed_updates][]=price" \
     -d "features[subscription_update][proration_behavior]=create_prorations" \
@@ -119,6 +139,21 @@ if [ -z "$PORTAL_ID" ]; then
     || echo "  ⚠ Portal конфигурацията не се създаде — smяната на план ще иска ръчна настройка (Dashboard → Settings → Billing → Customer portal)."
 else
   echo "  ✓ Portal конфигурацията вече съществува: $PORTAL_ID"
+  # Идемпотентен ъпдейт: по-стара конфигурация (създадена преди exit survey
+  # промяната) няма cancellation_reason — добавяме го върху СЪЩОТО id, за да
+  # влезе на живия акаунт без нов marker/env промяна.
+  echo "→ Обновявам cancellation_reason (exit survey) върху $PORTAL_ID ..."
+  curl -sS "${AUTH[@]}" "$API/billing_portal/configurations/$PORTAL_ID" \
+    -d "features[subscription_cancel][enabled]=true" \
+    -d "features[subscription_cancel][mode]=at_period_end" \
+    -d "features[subscription_cancel][cancellation_reason][enabled]=true" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=too_expensive" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=missing_features" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=switched_service" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=unused" \
+    -d "features[subscription_cancel][cancellation_reason][options][]=other" >/dev/null \
+    && echo "  ✓ Exit survey активен." \
+    || echo "  ⚠ Ъпдейтът не мина — провери ръчно в Dashboard → Billing → Customer portal."
 fi
 
 # ─── 2. Webhook endpoint (7-те събития, които backend-ът обработва) ──────────

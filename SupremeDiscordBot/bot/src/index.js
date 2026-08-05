@@ -656,6 +656,44 @@ app.post("/internal/admin-broadcast", async (req, res) => {
   }
 });
 
+// ── Direct message to a user (транзакционни известия от backend-а) ───────────
+// Продуктът няма имейл инфраструктура → каналът за известия по абонамента
+// (изтичащ пробен период, провалено плащане) е Discord DM. Вика се от
+// backend/src/services/botNotifier.js → dmUser().
+// requireBotSecret е закачен и глобално по-горе (app.use) — тук е повторен
+// изрично, за да е самодокументиращо, че route-ът е авторизиран.
+//
+// Затворени DM-и НЕ са грешка на сървъра: Discord връща 50007 („Cannot send
+// messages to this user"), когато получателят е спрял DM от сървъри или е
+// блокирал бота. Отговаряме 200 с { ok:false, reason } — иначе backend-ът би
+// го отчел като провал и би ретрайвал известие, което никога няма да мине.
+app.post("/internal/dm-user", requireBotSecret, async (req, res) => {
+  const { userId, embed } = req.body || {};
+  if (!userId || typeof userId !== "string" || !embed || typeof embed !== "object") {
+    return res.status(400).json({ error: "userId (string) and embed (object) required" });
+  }
+
+  try {
+    const sent = await client.users
+      .send(userId, {
+        embeds: [embed],
+        // allowedMentions guard: съдържанието се сглобява от backend-а, но
+        // забраняваме всякакви пингове по презумпция (defense in depth).
+        allowedMentions: { parse: [] },
+      })
+      .catch((err) => {
+        // 50007 = DM затворен/блокиран бот; 10013 = непознат потребител.
+        console.warn(`[dm-user] ${userId}: ${err?.code ?? "?"} ${err?.message ?? err}`);
+        return null;
+      });
+
+    if (!sent) return res.json({ ok: false, reason: "dm_unreachable" });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const BOT_API_PORT = process.env.BOT_API_PORT || 3001;
 app.listen(BOT_API_PORT, () => {
   console.log(`🤖 Bot internal API running on port ${BOT_API_PORT}`);

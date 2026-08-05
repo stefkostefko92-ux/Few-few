@@ -102,7 +102,9 @@ router.post("/checkout", requireAuth, loadUser, requireStripe, async (req, res, 
     const session = await stripe.checkout.sessions.create(
       {
         customer: customerId,
-        payment_method_types: ["card"],
+        // Без payment_method_types: Stripe dynamic payment methods (Dashboard
+        // управлява методите; EU локални методи вдигат конверсията) — същото
+        // решение като per-server checkout-а.
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
         subscription_data: { metadata: { agencyId: agency.id, plan, interval, kind: "agency" } },

@@ -31,3 +31,29 @@ export async function notifyBot(event, data) {
     return null;
   }
 }
+
+/**
+ * Изпраща лично съобщение (DM) до Discord потребител през бота.
+ * Продуктът няма имейл инфраструктура → това е каналът за транзакционни
+ * известия по абонамента (изтичащ пробен период, провалено плащане).
+ *
+ * Ползва СЪЩИЯ вътрешен канал като notifyBot (x-bot-secret / API_SECRET) —
+ * не въвежда нов secret.
+ *
+ * Връща:
+ *   { ok: true }                      — доставено
+ *   { ok: false, reason: "..." }      — ТРАЙНА пречка (DM затворен, блокиран
+ *                                       бот, непознат потребител) → няма смисъл
+ *                                       от повторен опит
+ *   null                              — ВРЕМЕНЕН провал (ботът е недостъпен,
+ *                                       timeout, 5xx) → повикващият може да
+ *                                       опита пак по-късно
+ * Никога не хвърля — известието е страничен ефект, не бизнес-ефект.
+ *
+ * @param {string} userId Discord user ID (снежинка)
+ * @param {object} embed  Discord embed обект (title/description/color/fields…)
+ */
+export async function dmUser(userId, embed) {
+  if (!userId || !embed) return { ok: false, reason: "missing_userId_or_embed" };
+  return notifyBot("DM_USER", { userId, embed });
+}

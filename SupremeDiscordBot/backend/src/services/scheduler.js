@@ -239,14 +239,73 @@ cron.schedule("* * * * *", async () => {
   } catch (err) { console.error("[Scheduler] scheduled msg:", err.message); }
 });
 
-// ─── Job 7: Trial expiry notifications (v2.0) ─────────────────────
+// ─── Job 7: Trial expiry notifications (v2.0; DM канал — v3.1) ────────────────
 // Runs daily at 9am UTC. Logs servers whose trial expires in 3 days,
 // and audit-logs expired trials (but doesn't block access — premium helper
 // already returns isPremium=false when trialEndsAt < now).
+//
+// v3.1 — известията вече РЕАЛНО стигат до собственика: продуктът няма имейл
+// инфраструктура, затова каналът е Discord DM през бота (botNotifier.dmUser).
+//
+// Веднъж на сървър: маркер в auditLog (TRIAL_EXPIRING_DM / TRIAL_EXPIRED_DM).
+// Отделен от съществуващите TRIAL_EXPIRING_SOON/TRIAL_EXPIRED записи — те се
+// пишат при ВСЯКО пускане на job-а (дневник), затова НЕ стават за дедуп ключ.
+//
+// Ред на действията (умишлен): маркерът се пише ПРЕДИ DM-а → най-много един
+// опит, никакъв спам при срив между двете. Ако транспортът към бота падне
+// (ботът е рестартиран/офлайн → dmUser връща null), маркерът се ТРИЕ, за да
+// има нов опит утре. Трайна пречка (затворен DM → { ok:false }) оставя
+// маркера — повторният опит не би минал.
+const TRIAL_DM_COLOR = 0x00e5ff;
+
+async function sendTrialDm({ server, action, embed }) {
+  // Вече известен за този етап → пропускаме.
+  const already = await prisma.auditLog.findFirst({
+    where: { serverId: server.id, action },
+    select: { id: true },
+  });
+  if (already) return false;
+
+  const marker = await prisma.auditLog.create({
+    data: {
+      actorId: null,
+      actorTag: "SYSTEM",
+      serverId: server.id,
+      action,
+      targetId: server.ownerId,
+    },
+  });
+
+  const { dmUser } = await import("./botNotifier.js");
+  const result = await dmUser(server.ownerId, embed).catch(() => null);
+
+  if (result === null) {
+    // Временен провал (ботът е недостъпен) → махаме маркера, опитваме утре.
+    await prisma.auditLog.delete({ where: { id: marker.id } }).catch(() => {});
+    return false;
+  }
+  if (result.ok !== true) {
+    // Трайна пречка — записваме причината, но НЕ повтаряме.
+    await prisma.auditLog
+      .update({ where: { id: marker.id }, data: { metadata: { delivered: false, reason: result.reason } } })
+      .catch(() => {});
+    return false;
+  }
+  await prisma.auditLog
+    .update({ where: { id: marker.id }, data: { metadata: { delivered: true } } })
+    .catch(() => {});
+  return true;
+}
+
 cron.schedule("0 9 * * *", async () => {
   try {
     const now = new Date();
     const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const premiumUrl = (serverId) => `${process.env.FRONTEND_URL}/dashboard/${serverId}/premium`;
+    // Discord timestamp markdown — показва датата в ЛОКАЛНАТА зона на четящия,
+    // вместо да налагаме UTC форматиране от сървъра.
+    const discordDate = (d) => `<t:${Math.floor(d.getTime() / 1000)}:D>`;
+    const discordRelative = (d) => `<t:${Math.floor(d.getTime() / 1000)}:R>`;
 
     // Servers whose trial expires in the next 3 days and are not on Premium
     const expiring = await prisma.server.findMany({
@@ -270,6 +329,35 @@ cron.schedule("0 9 * * *", async () => {
           metadata: { hoursLeft, trialEndsAt: s.trialEndsAt },
         },
       }).catch(() => {});
+
+      // Известие до собственика на сървъра (веднъж). Текстът е на английски —
+      // източникът на истината за bot UI низовете (backend/src/i18n/en.js).
+      // Локализацията bg/it иска нови i18n ключове → отделна задача (Преводач).
+      await sendTrialDm({
+        server: s,
+        action: "TRIAL_EXPIRING_DM",
+        embed: {
+          title: "⏰ Your Supreme Bot trial is ending",
+          description:
+            `The Premium trial for **${s.name}** ends on ${discordDate(s.trialEndsAt)} ` +
+            `(${discordRelative(s.trialEndsAt)}).\n\n` +
+            "Keep your Premium features — AI auto-replies, verification, unlimited ticket " +
+            "archives, giveaways, webhooks and the REST API — by subscribing before then.\n\n" +
+            // Не е бутон за поръчка: линкът само отваря страницата с тарифите.
+            // Обвързващият бутон с етикет по чл. 8(2) Дир. 2011/83/ЕС е там.
+            `**[View plans and pricing](${premiumUrl(s.id)})**`,
+          color: TRIAL_DM_COLOR,
+          footer: {
+            // Без правни твърдения в едно изречение: пълната преддоговорна
+            // информация (цена с ДДС, 14-дневен отказ, чл. 16(а)/8(8) искане)
+            // се показва на страницата за плащане, където се сключва договорът.
+            text:
+              "Supreme Bot · You receive this because you own this Discord server. " +
+              "Prices include VAT; your 14-day withdrawal rights are explained at checkout.",
+          },
+          timestamp: new Date().toISOString(),
+        },
+      }).catch((err) => console.error(`[Scheduler] trial DM ${s.id}:`, err.message));
     }
 
     // Servers whose trial just expired (within the last 24h)
@@ -279,7 +367,7 @@ cron.schedule("0 9 * * *", async () => {
         isPremium: false,
         trialEndsAt: { gte: yesterday, lt: now },
       },
-      select: { id: true, name: true },
+      select: { id: true, name: true, ownerId: true },
     });
 
     for (const s of justExpired) {
@@ -293,6 +381,24 @@ cron.schedule("0 9 * * *", async () => {
           targetId: s.id,
         },
       }).catch(() => {});
+
+      await sendTrialDm({
+        server: s,
+        action: "TRIAL_EXPIRED_DM",
+        embed: {
+          title: "Your Supreme Bot trial has ended",
+          description:
+            `The Premium trial for **${s.name}** has expired and the server is back on the free tier.\n\n` +
+            "**What you no longer have:** AI auto-replies · verification panels · " +
+            "round-robin assignment · giveaways · webhooks · REST API · unlimited " +
+            "ticket archives (archives now clear after 30 days).\n\n" +
+            "Your configuration is kept — subscribing restores everything as it was.\n\n" +
+            `**[View plans and pricing](${premiumUrl(s.id)})**`,
+          color: TRIAL_DM_COLOR,
+          footer: { text: "Supreme Bot · You receive this because you own this Discord server." },
+          timestamp: new Date().toISOString(),
+        },
+      }).catch((err) => console.error(`[Scheduler] trial-expired DM ${s.id}:`, err.message));
     }
   } catch (err) {
     console.error("[Scheduler] trial expiry check:", err.message);

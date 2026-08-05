@@ -21,7 +21,13 @@ router.get("/login", (req, res) => {
     client_id: process.env.DISCORD_CLIENT_ID,
     redirect_uri: process.env.DISCORD_REDIRECT_URI,
     response_type: "code",
-    scope: "identify guilds",
+    // `email` — иска се САМО за транзакционни известия по абонамента (изтичащ
+    // пробен период, провалено плащане). Основание: GDPR чл. 6(1)(б) —
+    // изпълнение на договора. Ако Discord върне сесия без имейл (потребителят
+    // може да откаже scope-а), логинът пак минава — имейлът е незадължителен.
+    // ВНИМАНИЕ: разширен scope → Discord показва отново екрана за съгласие на
+    // вече свързаните потребители (очаквано, не е грешка).
+    scope: "identify email guilds",
     state,
   });
   req.session.save(() => res.redirect(`https://discord.com/oauth2/authorize?${params}`));
@@ -63,6 +69,16 @@ router.get("/callback", async (req, res) => {
     });
     const discordUser = userRes.data;
 
+    // Имейлът идва от /users/@me само при одобрен scope `email`. Пазим го
+    // единствено за транзакционни известия по абонамента (GDPR чл. 6(1)(б) —
+    // изпълнение на договора). Празен низ третираме като липсващ, за да не
+    // запишем "" в базата. Непотвърден имейл (verified=false) НЕ записваме —
+    // изпращане до непотвърден адрес е доставка към чужд/неверен получател.
+    const email =
+      typeof discordUser.email === "string" && discordUser.email.trim() && discordUser.verified === true
+        ? discordUser.email.trim()
+        : null;
+
     // 3. Determine global role
     //    Main Owner is hardcoded from env — cannot be changed through the UI
     const isMainOwner = discordUser.id === process.env.MAIN_OWNER_ID;
@@ -75,12 +91,16 @@ router.get("/callback", async (req, res) => {
         username: discordUser.username,
         discriminator: discordUser.discriminator || "0",
         avatar: discordUser.avatar,
+        email,
         globalRole: isMainOwner ? "MAIN_OWNER" : "USER",
       },
       update: {
         username: discordUser.username,
         discriminator: discordUser.discriminator || "0",
         avatar: discordUser.avatar,
+        // Само при наличен имейл — иначе логин без одобрен `email` scope би
+        // ИЗТРИЛ вече записания адрес и би спрял транзакционните известия.
+        ...(email && { email }),
         // Preserve existing role except if this is the Main Owner
         ...(isMainOwner && { globalRole: "MAIN_OWNER" }),
       },

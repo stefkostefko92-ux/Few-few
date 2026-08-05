@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { stripePriceId, planFromStripePrice, PLANS } from "../lib/premium.js";
+import { dmUser } from "../services/botNotifier.js";
 
 // Single-server tiers sold via the per-server checkout. Agency (multi-server)
 // plans are sold through /api/agency (routes/agency.js).
@@ -188,7 +189,19 @@ router.post(
     const session = await stripe.checkout.sessions.create(
       {
         customer: customerId,
-        payment_method_types: ["card"],
+        // БЕЗ payment_method_types: така Checkout ползва dynamic payment methods —
+        // методите се управляват от Stripe Dashboard (Settings → Payment methods)
+        // и Stripe показва подходящите за държавата/валутата/сумата на клиента.
+        // Хардкоднатият ["card"] изключваше локалните ЕС методи (SEPA Direct
+        // Debit, iDEAL, Bancontact…), които вдигат конверсията в ЕС.
+        // ВНИМАНИЕ (отложени методи): ако в Dashboard се включи метод с
+        // ОТЛОЖЕНО потвърждение (SEPA Direct Debit, bank transfer), първата
+        // сесия може да завърши с payment_status="unpaid"/"processing" —
+        // guard-ът по-долу в checkout.session.completed вече не активира при
+        // unpaid без subscription, а реалната активация идва през invoice.paid /
+        // customer.subscription.updated. За пълно покритие трябва да се слушат
+        // и checkout.session.async_payment_succeeded/_failed (днес НЕ са в
+        // enabled_events на webhook-а — виж scripts/stripe-setup.sh).
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
         subscription_data: {
@@ -473,7 +486,31 @@ router.post("/webhook", requireStripe, async (req, res) => {
               ? addMonths(referral.firstPaymentAt, 12)
               : null;
             if (!referral.firstPaymentAt || Date.now() < windowEnd.getTime()) {
-              const commission = Math.floor(invoice.amount_paid * 0.20); // 20%
+              // Комисионната е върху НЕТО (без ДДС). ДДС-то е държавно перо,
+              // което само минава през нас — 20% върху брутото значеше да
+              // плащаме афилиейта и върху данъка (при BG 20% inclusive:
+              // 999 бруто → 167 ДДС; 20% от бруто = 199 вместо 166 → +20%
+              // надплащане на всяка фактура).
+              //
+              // ПОЛЕ: в API 2026-06-24.dahlia скаларното `invoice.tax` е
+              // ПРЕМАХНАТО (заедно с `total_tax_amounts`) — вж. stripe SDK
+              // v22.3.0 CHANGELOG (Basil, „Remove support for … `tax`, and
+              // `total_tax_amounts` on `Invoice`" / „Add support for
+              // `total_taxes` on `CreditNote` and `Invoice`"). Заместителят
+              // `total_taxes` е МАСИВ от { amount, tax_behavior, … } —
+              // „aggregate tax information of all line items"
+              // (docs.stripe.com/api/invoices/object). Затова сумираме.
+              // Сумата важи и при двата tax_behavior: при `inclusive` (нашите
+              // цени, вж. scripts/stripe-setup.sh) данъкът е ВЪТРЕ в сумата,
+              // при `exclusive` е добавен отгоре — и в двата случая е част от
+              // amount_paid, значи се вади.
+              const taxTotal = Array.isArray(invoice.total_taxes)
+                ? invoice.total_taxes.reduce((sum, t) => sum + (t?.amount ?? 0), 0)
+                : 0;
+              // Защита срещу отрицателна база: при частично плащане/приложен
+              // кредитен баланс amount_paid може да е под пълния данък.
+              const netPaid = Math.max(0, invoice.amount_paid - taxTotal);
+              const commission = Math.floor(netPaid * 0.20); // 20% от нетото
               await tx.affiliateReferral.update({
                 where: { id: referral.id },
                 data: {
@@ -517,7 +554,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
-        await runOnce(async (tx) => {
+        const didFail = await runOnce(async (tx) => {
           await tx.server.update({
             where: { id: server.id },
             data: {
@@ -540,6 +577,36 @@ router.post("/webhook", requireStripe, async (req, res) => {
             },
           });
         });
+
+        // Dunning известие до собственика — СТРАНИЧЕН ефект, нарочно ИЗВЪН
+        // runOnce транзакцията: DM-ът не е бизнес-ефект и не бива да проваля
+        // или забавя webhook-а (Stripe брои не-2xx/>5s за провал и ретрайва).
+        // Fire-and-forget: не чакаме резултата, dmUser никога не хвърля.
+        //
+        // Идемпотентност: пращаме САМО когато runOnce реално е приложил ефекта
+        // (didFail === true), т.е. точно веднъж на event.id. Преддоставка на
+        // същото събитие → без втори DM. Всеки НОВ неуспешен опит на Smart
+        // Retries е ново събитие с нов id → ново, желано напомняне.
+        //
+        // Линкът е към нашето табло (auth-gated), НЕ към Stripe portal сесия:
+        // portal URL-ът дава достъп до фактури/платежен метод БЕЗ логин, а DM
+        // може да бъде препратен или видян от друг.
+        if (didFail) {
+          dmUser(server.ownerId, {
+            title: "⚠️ Payment failed for your Supreme Bot subscription",
+            description:
+              `We couldn't charge your payment method for **${server.name}**.\n\n` +
+              "Your Premium features stay active for now while we retry automatically, " +
+              "but they will be switched off if the payment keeps failing.\n\n" +
+              "Most common causes: expired card, insufficient funds, or a bank block " +
+              "requiring 3-D Secure confirmation.\n\n" +
+              `**[Update your payment method](${process.env.FRONTEND_URL}/dashboard/${server.id}/premium)** ` +
+              "— open “Manage subscription” there to reach the secure Stripe billing portal.",
+            color: 0xff6b6b,
+            footer: { text: "Supreme Bot · You receive this because you own this Discord server." },
+            timestamp: new Date().toISOString(),
+          }).catch(() => {});
+        }
         break;
       }
 

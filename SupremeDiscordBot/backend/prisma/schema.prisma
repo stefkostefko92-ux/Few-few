@@ -18,6 +18,13 @@ model User {
   username                 String
   discriminator            String     @default("0")
   avatar                   String?
+  // v3.1 — имейл от Discord OAuth (scope `email`). Пази се ЕДИНСТВЕНО за
+  // транзакционни известия по абонамента (изтичащ пробен период, провалено
+  // плащане, фактура). Основание по GDPR: чл. 6(1)(б) — необходимост за
+  // изпълнение на договора за услугата, НЕ съгласие и НЕ маркетинг (маркетинг
+  // би искал отделно основание/opt-in). Nullable: Discord може да не върне
+  // имейл (потребител без потвърден имейл / отказан scope).
+  email                    String?
   globalRole               GlobalRole @default(USER)
   isBlacklisted            Boolean    @default(false)
   language                 String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
