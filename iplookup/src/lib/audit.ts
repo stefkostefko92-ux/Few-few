@@ -1,5 +1,3 @@
-import "server-only";
-
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -17,6 +15,10 @@ import { GENESIS, link, tipOf, verifyChain, type ChainProblem, type ChainedRecor
  *
  * Това е пълна противоположност на публичното издание, където заявките
  * нарочно НЕ се пазят. Двете не могат да делят инсталация — виж `mode.ts`.
+ *
+ * Няма `server-only`: истинската преграда пред клиента е `node:fs`, който не
+ * съществува в браузър, а този модул трябва да е тестваем без Next. Кодът, който
+ * доказва цялост, е последното място, което бива да остане непокрито.
  *
  * Формат: JSONL, дописване без пренаписване, всеки ред носи хеша на предишния.
  * Избран е пред база данни, защото при локална инсталация един файл се

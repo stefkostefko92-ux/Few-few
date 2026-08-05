@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { Badge, Card, Field, Fields } from "@/components/DataCard";
@@ -44,16 +45,25 @@ export default async function AuditPage() {
   // Най-новите отгоре: при проверка се гледа последното, не първото.
   const recent = [...entries].reverse().slice(0, 200);
 
-  appendAudit({
-    ts: new Date().toISOString(),
-    actor: session.sub,
-    actorUnit: session.unit,
-    actorRole: session.role,
-    action: "проверка-на-дневника",
-    justification: "надзор по чл. 25",
-    query: "",
-    sources: [],
-  });
+  // Next зарежда страници предварително при посочване на връзка. Такова
+  // зареждане НЕ е преглед на дневника и не бива да се вписва — иначе дневникът
+  // се пълни с прегледи, които никой не е правил, и истинските се губят в шума.
+  const requestHeaders = await headers();
+  const isPrefetch =
+    requestHeaders.get("next-router-prefetch") === "1" || requestHeaders.get("purpose") === "prefetch";
+
+  if (!isPrefetch) {
+    appendAudit({
+      ts: new Date().toISOString(),
+      actor: session.sub,
+      actorUnit: session.unit,
+      actorRole: session.role,
+      action: "проверка-на-дневника",
+      justification: "надзор по чл. 25",
+      query: "",
+      sources: [],
+    });
+  }
 
   return (
     <div className="space-y-6">

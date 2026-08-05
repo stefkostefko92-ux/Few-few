@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 const directory = process.env.IPLOOKUP_AUDIT_DIR?.trim() || join(process.cwd(), "data", "audit");
 const path = process.argv[2] || join(directory, "audit.jsonl");
@@ -64,7 +64,11 @@ function resolveStart(target) {
       return GENESIS;
     }
   }
-  const continuation = join(directory, "continuation.txt");
+  // Продължението се търси ДО САМИЯ ФАЙЛ, не в папката от променливата на
+  // средата. Иначе проверка по изричен път без зададена променлива обявява
+  // фалшива „прекъсната връзка" на първия ред — уж находка, а всъщност
+  // погрешно начало.
+  const continuation = join(dirname(target), "continuation.txt");
   if (existsSync(continuation)) {
     const saved = readFileSync(continuation, "utf8").trim();
     if (/^[0-9a-f]{64}$/.test(saved)) return saved;

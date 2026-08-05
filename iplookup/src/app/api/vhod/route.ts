@@ -4,6 +4,7 @@ import { z } from "zod";
 import { appendAudit } from "@/lib/audit";
 import { clientIpOptionsFromEnv, pickClientIp } from "@/lib/client-ip";
 import { isInvestigationMode } from "@/lib/mode";
+import { RateLimiter } from "@/lib/rate-limit";
 import { DEFAULT_SESSION_SECONDS, issueToken } from "@/lib/session";
 import { authenticate } from "@/lib/users";
 
@@ -23,6 +24,19 @@ const Body = z.object({
 });
 
 const COOKIE = "carbonip_session";
+
+/**
+ * Спирачка срещу подбор на парола.
+ *
+ * Две кофи, защото двете атаки са различни: една парола срещу много
+ * идентификатора (password spraying) се вижда само по адреса, а много пароли
+ * срещу един идентификатор — само по него. Едната кофа сама пропуска другата.
+ *
+ * Броят е нарочно нисък: човек, който помни паролата си, не бърка пет пъти за
+ * четвърт час, а инсталацията е на едно РПУ, не публичен сайт.
+ */
+const perIdentifier = new RateLimiter(5, 15 * 60_000);
+const perAddress = new RateLimiter(20, 15 * 60_000);
 
 export async function POST(request: Request) {
   if (!isInvestigationMode()) {
@@ -44,6 +58,30 @@ export async function POST(request: Request) {
   }
 
   const client = pickClientIp((name) => request.headers.get(name), clientIpOptionsFromEnv());
+  const addressKey = client?.ip.normalized ?? "unknown";
+
+  const byIdentifier = perIdentifier.check(parsed.data.id.trim());
+  const byAddress = perAddress.check(addressKey);
+  if (!byIdentifier.allowed || !byAddress.allowed) {
+    const retryAfter = Math.max(byIdentifier.retryAfterSeconds, byAddress.retryAfterSeconds);
+    // Отказът също се вписва: серия такива редове е самата следа от атаката.
+    appendAudit({
+      ts: new Date().toISOString(),
+      actor: parsed.data.id.slice(0, 64),
+      actorUnit: "—",
+      actorRole: "—",
+      action: "вход",
+      justification: "спрян от ограничението за опити",
+      query: "",
+      sources: [],
+      clientIp: client?.ip.normalized,
+    });
+    return NextResponse.json(
+      { error: `Твърде много опити. Опитай пак след ${retryAfter} s.` },
+      { status: 429, headers: { "retry-after": String(retryAfter) } },
+    );
+  }
+
   const user = authenticate(parsed.data.id, parsed.data.password);
 
   if (!user) {
@@ -74,11 +112,18 @@ export async function POST(request: Request) {
     clientIp: client?.ip.normalized,
   });
 
+  // Успешният вход не бива да оставя човека наказан за по-раншна грешка.
+  perIdentifier.forget(parsed.data.id.trim());
+
   const response = NextResponse.json({ ok: true, name: user.name, role: user.role });
   const token = await issueToken({ sub: user.id, unit: user.unit, role: user.role }, secret);
   response.cookies.set(COOKIE, token, {
     httpOnly: true,
-    sameSite: "lax",
+    // СТРОГА, не „lax": справката е GET със странични ефекти (тръгват заявки
+    // навън и се пише одиторски запис). При „lax" подхвърлена връзка от чужд
+    // сайт би носила бисквитката при навигация — тоест би накарала служител да
+    // изтече заявка и да остави запис на свое име и по своята преписка.
+    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: DEFAULT_SESSION_SECONDS,

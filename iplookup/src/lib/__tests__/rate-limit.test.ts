@@ -52,3 +52,12 @@ test("reset изчиства броенето", () => {
   limiter.reset();
   assert.equal(limiter.check("a", 0).allowed, true);
 });
+
+test("forget изчиства само своя ключ", () => {
+  const limiter = new RateLimiter(1, 60_000);
+  limiter.check("a", 0);
+  limiter.check("b", 0);
+  limiter.forget("a");
+  assert.equal(limiter.check("a", 0).allowed, true, "изчистеният ключ отново може");
+  assert.equal(limiter.check("b", 0).allowed, false, "чуждият ключ остава наказан");
+});
