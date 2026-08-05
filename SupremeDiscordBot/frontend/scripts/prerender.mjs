@@ -21,6 +21,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
+import {
+  TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, CHECKED_DATE,
+} from "../src/data/growthContent.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
@@ -52,12 +55,19 @@ function replaceOnce(html, regex, replacement, label) {
 
 // Apply the common <head> overrides (title, description trio, canonical, og:url,
 // og:locale, html lang) to a copy of the template.
-function withHead(template, { title, description, path, lang }) {
+function withHead(template, { title, description, path, lang, keywords }) {
   const url = `${SITE}${path}`;
   let h = template;
   h = replaceOnce(h, /<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`, "title");
   h = replaceOnce(h, /(<meta name="description" content=")[\s\S]*?("\s*\/>)/,
     `$1${esc(description)}$2`, "meta description");
+  // Per-route keyword override — root CLAUDE.md rule: ≥5 keywords, always incl.
+  // "Carbon Stealth". Optional: routes that don't pass `keywords` keep the
+  // default set already in index.html (which also satisfies the rule).
+  if (keywords && keywords.length) {
+    h = replaceOnce(h, /(<meta name="keywords" content=")[\s\S]*?("\s*\/>)/,
+      `$1${esc(keywords.join(", "))}$2`, "meta keywords");
+  }
   h = replaceOnce(h, /(<meta property="og:description" content=")[\s\S]*?("\s*\/>)/,
     `$1${esc(description)}$2`, "og:description");
   h = replaceOnce(h, /(<meta name="twitter:description" content=")[\s\S]*?("\s*\/>)/,
@@ -278,7 +288,76 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   count++;
 }
 
-// 4) Legal / status routes — correct per-route head + a minimal heading so
+// 4) Growth Level-2 content pages (docs/PRODUCT_ROADMAP.md) — /compare and
+//    /guides. Answer-first paragraph + the comparison table as a real <table>
+//    (the AEO meat: non-JS crawlers can quote cells directly), FAQ as
+//    Q/A pairs. Data comes from src/data/growthContent.js — the SAME object
+//    the live React pages render — so the snapshot can never drift from the
+//    live page's numbers.
+function compareSnapshot(d) {
+  const rows = d.rows.map(
+    ([cap, supreme, competitor]) => `<tr><td>${esc(cap)}</td><td>${esc(supreme)}</td><td>${esc(competitor)}</td></tr>`
+  ).join("");
+  const faq = d.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
+  const sources = d.sourceUrls.map((u) => `<a href="${esc(u)}">${esc(u)}</a>`).join(", ");
+  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>Supreme Bot vs ${esc(d.competitor)}</h1>
+    <p>${esc(d.answer)}</p>
+    <p><small>Checked ${esc(CHECKED_DATE)} against ${sources}. Prices as published by each vendor, not converted.</small></p>
+    <section><h2>Feature &amp; pricing comparison</h2><table><thead><tr><th>Capability</th><th>Supreme Bot</th><th>${esc(d.competitor)}</th></tr></thead><tbody>${rows}</tbody></table></section>
+    <section><h2>Frequently asked questions</h2>${faq}</section>
+  </div>`;
+}
+
+for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
+  const keywords = d === TICKET_TOOL_COMPARE
+    ? ["discord ticket bot", "ticket tool alternative", "best discord ticket bot", "supreme bot", "discord bot comparison", "carbon stealth"]
+    : ["discord application bot", "appy bot alternative", "discord ticket bot", "supreme bot", "discord bot comparison", "carbon stealth"];
+  let html = withHead(template, { title: d.title, description: d.description, path: d.path, lang: "en", keywords });
+  html = injectRoot(html, compareSnapshot(d));
+  writeRoute(d.path, html);
+  count++;
+}
+
+{
+  const d = BEST_TICKET_BOT_GUIDE;
+  const criteria = d.criteria.map(
+    (c) => `<div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p><p><strong>How Supreme Bot covers this:</strong> ${esc(c.supreme)}</p></div>`
+  ).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>How to choose the best Discord ticket bot</h1>
+    <p>${esc(d.answer)}</p>
+    ${criteria}
+    <section><h2>Other bots worth evaluating</h2><p>${esc(d.mentions)}</p></section>
+  </div>`;
+  let html = withHead(template, {
+    title: d.title, description: d.description, path: d.path, lang: "en",
+    keywords: ["best discord ticket bot", "discord ticket bot", "how to choose a discord bot", "supreme bot", "discord support tool", "carbon stealth"],
+  });
+  html = injectRoot(html, snapshot);
+  writeRoute(d.path, html);
+  count++;
+}
+
+{
+  const d = GDPR_GUIDE;
+  const sections = d.sections.map((s) => `<div><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></div>`).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>GDPR &amp; EU hosting for Discord communities</h1>
+    <p>${esc(d.answer)}</p>
+    ${sections}
+    <p><small>${esc(d.disclaimer)}</small></p>
+  </div>`;
+  let html = withHead(template, {
+    title: d.title, description: d.description, path: d.path, lang: "en",
+    keywords: ["gdpr discord bot", "eu hosted discord bot", "discord data residency", "supreme bot", "discord dpa", "carbon stealth"],
+  });
+  html = injectRoot(html, snapshot);
+  writeRoute(d.path, html);
+  count++;
+}
+
+// 5) Legal / status routes — correct per-route head + a minimal heading so
 //    crawlers don't index them all under the homepage title.
 const STATIC_ROUTES = {
   "/status":        ["Service Status — Supreme Bot", "Real-time service status for Supreme Bot: uptime and component health for the database, Discord bot, API and web dashboard."],

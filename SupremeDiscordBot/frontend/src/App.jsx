@@ -19,6 +19,11 @@ const EulaPage = lazy(() => import("./pages/EulaPage"));
 const AccessibilityPage = lazy(() => import("./pages/AccessibilityPage"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
 const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage"));
+// Growth Level-2 content pages (docs/PRODUCT_ROADMAP.md) — public, no auth.
+const CompareTicketToolPage = lazy(() => import("./pages/CompareTicketToolPage"));
+const CompareAppyPage = lazy(() => import("./pages/CompareAppyPage"));
+const BestTicketBotGuidePage = lazy(() => import("./pages/BestTicketBotGuidePage"));
+const GdprDiscordBotGuidePage = lazy(() => import("./pages/GdprDiscordBotGuidePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -125,6 +130,12 @@ export default function App() {
               <Route path="/accessibility" element={<AccessibilityPage />} />
               <Route path="/status" element={<StatusPage />} />
               <Route path="/commands" element={<PublicCommandsPage />} />
+
+              {/* Growth Level-2 content pages (docs/PRODUCT_ROADMAP.md) — public. */}
+              <Route path="/compare/ticket-tool-alternative" element={<CompareTicketToolPage />} />
+              <Route path="/compare/appy-alternative" element={<CompareAppyPage />} />
+              <Route path="/guides/best-discord-ticket-bot" element={<BestTicketBotGuidePage />} />
+              <Route path="/guides/gdpr-discord-bot" element={<GdprDiscordBotGuidePage />} />
               {/* Catch-all */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

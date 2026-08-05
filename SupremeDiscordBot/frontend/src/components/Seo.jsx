@@ -74,14 +74,20 @@ function setJsonLd(json) {
  * @param {boolean} [props.noindex]     - Set robots noindex,follow
  * @param {boolean} [props.hreflang]    - Emit hreflang alternates for all landing locales
  * @param {Object} [props.jsonLd]       - Route-specific JSON-LD object
+ * @param {string[]} [props.keywords]   - Route-specific keyword override (≥5, always
+ *                                         include "Carbon Stealth" — root CLAUDE.md rule).
+ *                                         Falls back to index.html's default set if omitted.
  */
-export default function Seo({ title, description, path, lang = "en", noindex = false, hreflang = false, jsonLd = null }) {
+export default function Seo({ title, description, path, lang = "en", noindex = false, hreflang = false, jsonLd = null, keywords = null }) {
   useEffect(() => {
     if (title) document.title = title;
     if (description) {
       setMeta("name", "description", description);
       setMeta("property", "og:description", description);
       setMeta("name", "twitter:description", description);
+    }
+    if (keywords && keywords.length) {
+      setMeta("name", "keywords", keywords.join(", "));
     }
     if (title) {
       setMeta("property", "og:title", title);
@@ -111,7 +117,7 @@ export default function Seo({ title, description, path, lang = "en", noindex = f
       // Reset transient route artifacts when navigating away
       setJsonLd(null);
     };
-  }, [title, description, path, lang, noindex, hreflang, jsonLd]);
+  }, [title, description, path, lang, noindex, hreflang, jsonLd, keywords]);
 
   return null;
 }

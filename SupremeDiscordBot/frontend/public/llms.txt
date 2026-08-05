@@ -12,6 +12,10 @@ Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 for
 - Localized landing pages: [Български](https://supreme.carbonstealth.eu/bg), [Deutsch](https://supreme.carbonstealth.eu/de), [Español](https://supreme.carbonstealth.eu/es), [Français](https://supreme.carbonstealth.eu/fr), [Italiano](https://supreme.carbonstealth.eu/it), [Nederlands](https://supreme.carbonstealth.eu/nl), [Polski](https://supreme.carbonstealth.eu/pl)
 - [Service status](https://supreme.carbonstealth.eu/status): Real-time uptime monitoring and component health for database, bot, API, and web
 - [Commands reference](https://supreme.carbonstealth.eu/commands): Full list of Supreme Bot slash commands and dashboard features, grouped by category (tickets, forms, verification, polls, giveaways, automation)
+- [Supreme Bot vs Ticket Tool](https://supreme.carbonstealth.eu/compare/ticket-tool-alternative): Sourced, dated feature and pricing comparison against Ticket Tool
+- [Supreme Bot vs Appy Bot](https://supreme.carbonstealth.eu/compare/appy-alternative): Sourced, dated feature and pricing comparison against Appy Bot
+- [How to choose the best Discord ticket bot](https://supreme.carbonstealth.eu/guides/best-discord-ticket-bot): Seven criteria for evaluating any ticket bot, with how Supreme Bot covers each
+- [GDPR & EU hosting for Discord communities](https://supreme.carbonstealth.eu/guides/gdpr-discord-bot): Why data residency and a DPA matter for a Discord bot, and what questions to ask any vendor
 - [Terms of Service](https://supreme.carbonstealth.eu/terms): Legal terms governing use of Supreme Bot SaaS
 - [Privacy Policy](https://supreme.carbonstealth.eu/privacy): Data processing details, subprocessor list (Hetzner, Stripe, Google, Discord), data subject rights, retention policy
 - [Cookie Policy](https://supreme.carbonstealth.eu/cookies): Cookie usage details and consent management options
