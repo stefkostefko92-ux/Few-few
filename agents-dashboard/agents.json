@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-30",
+    "updated": "2026-08-05",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1052,7 +1052,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 273
+        "lessons": 276
       },
       "evolution": [
         {
@@ -1654,9 +1654,20 @@
           "date": "2026-07-29",
           "event": "v17.3 — учене",
           "detail": "Научи: Поука с file:line в паметта на агент гние тихо — репо гейтовете не я проверяват. `node … (+2 още)"
+        },
+        {
+          "version": "17.6.0",
+          "date": "2026-08-05",
+          "event": "v17.6 — учене",
+          "detail": "Научи: discord.js v14 не емитва messageReactionRemove за потребител извън client.users кеша, а… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-05",
+          "type": "learning",
+          "summary": "Научи: „discord.js v14 не емитва messageReactionRemove за потребител извън client.users кеша, а…\" (+2 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
