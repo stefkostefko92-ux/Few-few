@@ -2,6 +2,8 @@
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { sendPremiumRequired } from "../utils/premiumRequired.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { DANGER, INFO } from "../utils/colors.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -49,7 +51,7 @@ export default {
             embeds: [{
               title: "❌ Not a Premium Server",
               description: `This server is on the **Base (Free)** plan.\n\n🔗 Upgrade at: ${process.env.FRONTEND_URL}`,
-              color: 0xed4245,
+              color: DANGER,
             }],
           });
         }
@@ -71,7 +73,7 @@ export default {
           }],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -96,7 +98,7 @@ export default {
         });
         await interaction.editReply("✅ White-label bot settings updated! Changes will apply on next bot restart.");
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -121,11 +123,11 @@ export default {
           embeds: [{
             title: "📦 Export Ready",
             description: `Head to the dashboard to download your **${type}** export as a CSV file.\n\n🔗 ${process.env.FRONTEND_URL}/dashboard/${interaction.guildId}/premium`,
-            color: 0x5865f2,
+            color: INFO,
           }],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
   },

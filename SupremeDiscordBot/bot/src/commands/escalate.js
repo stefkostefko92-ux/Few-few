@@ -5,6 +5,8 @@
 
 import { SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { WARNING } from "../utils/colors.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -67,7 +69,7 @@ export default {
         reason,
       });
     } catch (err) {
-      return interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+      return interaction.editReply(friendlyError(err, interaction));
     }
 
     // Move channel to new open category + update permissions
@@ -102,7 +104,7 @@ export default {
           reason && `**Reason**: ${reason}`,
           (added.length || removed.length) && `_Support team updated._`,
         ].filter(Boolean).join("\n"),
-        color: 0xfbbf24,
+        color: WARNING,
         timestamp: new Date().toISOString(),
       }],
     });

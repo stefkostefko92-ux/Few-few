@@ -3,7 +3,10 @@ import { REST, Routes, Events } from "discord.js";
 import crypto from "crypto";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 
-const COMMAND_HASH_FILE = "/tmp/supreme-bot-commands.hash";
+// Configurable so Docker Compose can bind-mount a volume here — a plain /tmp
+// path is lost on every container restart, which forces a needless global
+// command re-deploy (and its ~1h propagation delay) on every deploy.
+const COMMAND_HASH_FILE = process.env.COMMANDS_HASH_FILE || "/tmp/supreme-bot-commands.hash";
 
 export default {
   // Events.ClientReady (v15 преименува "ready" → "clientReady"); използваме

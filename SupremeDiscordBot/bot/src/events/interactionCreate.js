@@ -1,8 +1,11 @@
 // bot/src/events/interactionCreate.js
-import { MessageFlags, ActionRowBuilder, ButtonBuilder, ChannelType } from "discord.js";
+import { MessageFlags, ActionRowBuilder, ButtonBuilder, ChannelType, ThreadAutoArchiveDuration } from "discord.js";
 import api, { isBlacklisted, getPanel, createTicket } from "../utils/api.js";
 import { buildTicketOpenEmbed, buildStatusEmbed } from "../utils/embed.js";
 import { runFormSession } from "../utils/formSession.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { BRAND, SUCCESS, DANGER, WARNING, INFO } from "../utils/colors.js";
+import { startSetupWizard, handleSetupComponent } from "../commands/setup.js";
 
 // ─── Blacklist TTL кеш ──────────────────────────────────────────────────────
 // Всяка slash команда проверява blacklist статуса срещу backend-а. Синхронният
@@ -57,6 +60,19 @@ export default {
       if (interaction.isAutocomplete()) {
         const command = interaction.client.commands.get(interaction.commandName);
         if (command?.autocomplete) await command.autocomplete(interaction);
+        return;
+      }
+
+      // ── Setup wizard (v1.9) ────────────────────────────────────────────────
+      if (interaction.isButton() && interaction.customId === "setup:start") {
+        await startSetupWizard(interaction);
+        return;
+      }
+      if (
+        interaction.customId?.startsWith("setup:wizard:") &&
+        (interaction.isButton() || interaction.isRoleSelectMenu() || interaction.isChannelSelectMenu())
+      ) {
+        await handleSetupComponent(interaction);
         return;
       }
 
@@ -130,7 +146,7 @@ export default {
         const embed = {
           title: `${cat.icon} ${cat.category}`,
           description: cat.description,
-          color: 0x00e5ff,
+          color: BRAND,
           fields: [],
         };
         (cat.commands || []).forEach((cmd) => {
@@ -186,7 +202,7 @@ export default {
         const Sentry = await import("@sentry/node");
         Sentry.captureException(err);
       }
-      const errMsg = { content: "❌ An error occurred. Please try again.", flags: MessageFlags.Ephemeral };
+      const errMsg = { ...friendlyError(err, interaction, "An error occurred. Please try again."), flags: MessageFlags.Ephemeral };
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(errMsg).catch(() => {});
       } else {
@@ -205,7 +221,12 @@ async function handlePanelButtonClick(interaction, panelId, buttonId) {
   try {
     panel = await getPanel(panelId);
   } catch (err) {
-    return interaction.editReply("❌ Panel not found. Ask an admin to re-spawn it.");
+    // 404 → the panel really is gone; anything else (timeout/5xx) is a
+    // backend hiccup, not a missing panel — don't tell the user to re-spawn it.
+    const notFound = err?.response?.status === 404;
+    return interaction.editReply(
+      friendlyError(err, interaction, notFound ? "Panel not found. Ask an admin to re-spawn it." : undefined)
+    );
   }
 
   const button = panel.buttons.find((b) => b.id === buttonId);
@@ -267,39 +288,73 @@ async function createTicketFromPanel(interaction, panel, formAnswers) {
     return `${channelNamePrefix}-${pad}-${uname}`.slice(0, 100);
   }
 
-  // Tickets are always created as proper channels (not threads).
-  // If no category configured, create at guild root.
+  const isThreadMode = (panel.buttonStyle || "").toUpperCase() === "THREAD";
   const openCategory = panel.categoryOpenId || panel.categoryId || null;
 
-  // Full channel mode with proper permission overwrites
-  const permissionOverwrites = [
-    { id: guild.id, deny: ["ViewChannel"] },
-    { id: interaction.user.id, allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"] },
-    ...(panel.supportRoleIds || []).map((roleId) => ({
-      id: roleId,
-      allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "ManageMessages", "AttachFiles", "EmbedLinks"],
-    })),
-    // Observer roles — can see but not talk
-    ...(panel.observerRoleIds || []).map((roleId) => ({
-      id: roleId,
-      allow: ["ViewChannel", "ReadMessageHistory"],
-      deny: ["SendMessages"],
-    })),
-  ];
+  if (isThreadMode) {
+    // ─── THREAD mode — spawn a private thread off the panel's channel instead
+    // of a whole new channel. Private threads have no permission overwrites of
+    // their own (unlike channels), so access is controlled purely by thread
+    // membership: the creator + cached members of the support roles.
+    const parentChannel = interaction.channel;
+    if (!parentChannel?.threads) {
+      return interaction.editReply("❌ This channel doesn't support threads. Ask an admin to switch the panel to channel mode or re-spawn it in a text channel.");
+    }
+    try {
+      channel = await parentChannel.threads.create({
+        name: buildChannelName(Date.now().toString().slice(-5)), // temp name, renamed below
+        autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+        type: 12, // GuildPrivateThread — avoid extra import just for the enum
+        invitable: false,
+        reason: `Ticket opened by ${interaction.user.tag}`,
+      });
+      await channel.members.add(interaction.user.id).catch(() => {});
+      for (const roleId of panel.supportRoleIds || []) {
+        const role = guild.roles.cache.get(roleId);
+        if (!role) continue;
+        // Best-effort — role.members needs GUILD_MEMBERS cache; skip silently if empty.
+        for (const member of role.members.values()) {
+          await channel.members.add(member.id).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.error("Failed to create ticket thread:", err.message);
+      return interaction.editReply(
+        `❌ Failed to create ticket thread: ${err.message}\n` +
+        `Ensure the bot has **Create Private Threads** and **Manage Threads** permission in this channel.`
+      );
+    }
+  } else {
+    // Full channel mode with proper permission overwrites
+    const permissionOverwrites = [
+      { id: guild.id, deny: ["ViewChannel"] },
+      { id: interaction.user.id, allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"] },
+      ...(panel.supportRoleIds || []).map((roleId) => ({
+        id: roleId,
+        allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "ManageMessages", "AttachFiles", "EmbedLinks"],
+      })),
+      // Observer roles — can see but not talk
+      ...(panel.observerRoleIds || []).map((roleId) => ({
+        id: roleId,
+        allow: ["ViewChannel", "ReadMessageHistory"],
+        deny: ["SendMessages"],
+      })),
+    ];
 
-  try {
-    channel = await guild.channels.create({
-      name: buildChannelName(Date.now().toString().slice(-5)), // temp name, renamed below
-      parent: openCategory,  // null = guild root if no category set
-      permissionOverwrites,
-    });
-  } catch (err) {
-    console.error("Failed to create ticket channel:", err.message);
-    return interaction.editReply(
-      `❌ Failed to create ticket channel: ${err.message}\n` +
-      `Ensure the bot has **Manage Channels** permission` +
-      (openCategory ? ` on the category <#${openCategory}>.` : ` in this server, or configure a category in the panel settings.`)
-    );
+    try {
+      channel = await guild.channels.create({
+        name: buildChannelName(Date.now().toString().slice(-5)), // temp name, renamed below
+        parent: openCategory,  // null = guild root if no category set
+        permissionOverwrites,
+      });
+    } catch (err) {
+      console.error("Failed to create ticket channel:", err.message);
+      return interaction.editReply(
+        `❌ Failed to create ticket channel: ${err.message}\n` +
+        `Ensure the bot has **Manage Channels** permission` +
+        (openCategory ? ` on the category <#${openCategory}>.` : ` in this server, or configure a category in the panel settings.`)
+      );
+    }
   }
 
   // ─── Register ticket in DB (gets the atomic counter number) ─────────────────
@@ -417,10 +472,10 @@ async function createTicketFromPanel(interaction, panel, formAnswers) {
 }
 
 function parseColor(hex) {
-  if (!hex) return 0x00e5ff;
+  if (!hex) return BRAND;
   const clean = hex.replace("#", "");
   const n = parseInt(clean, 16);
-  return Number.isFinite(n) ? n : 0x00e5ff;
+  return Number.isFinite(n) ? n : BRAND;
 }
 
 async function logTicketEvent(guild, logChannelId, eventType, data) {
@@ -453,7 +508,7 @@ async function logTicketEvent(guild, logChannelId, eventType, data) {
     embeds: [{
       title: `${icons[eventType] || "ℹ️"} Ticket ${eventType} · ${ticketTag}`,
       description: lines,
-      color: color ?? 0x00e5ff,
+      color: color ?? BRAND,
       timestamp: new Date().toISOString(),
     }],
   }).catch(() => {});
@@ -502,7 +557,7 @@ async function handleAppReview(interaction, appId, action) {
       embeds: [buildStatusEmbed(
         actionLabels[action] || action,
         `Application ${action}d by **${interaction.user.username}**`,
-        action === "approve" ? 0x57f287 : action === "deny" ? 0xed4245 : 0x5865f2
+        action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO
       )],
     });
 
@@ -562,7 +617,13 @@ async function handleTicketAction(interaction, action, ticketId) {
       case "reopen":
         if (!isStaff) return denyTicketAction(interaction);
         return handleTicketReopen(interaction, ticket, panel);
-      case "delete":        return handleTicketDelete(interaction, ticket, panel);
+      case "delete":
+        if (!isStaff) return denyTicketAction(interaction);
+        return handleTicketDeletePrompt(interaction, ticket, panel);
+      case "delete-confirm":
+        if (!isStaff) return denyTicketAction(interaction);
+        return handleTicketDelete(interaction, ticket, panel);
+      case "delete-cancel": return interaction.update({ components: [] }).catch(() => {});
       default:
         return interaction.reply({ content: "❌ Unknown ticket action.", flags: MessageFlags.Ephemeral });
     }
@@ -596,14 +657,17 @@ async function handleTicketClosePrompt(interaction, ticket, panel) {
   );
 
   return interaction.reply({
-    embeds: [{ description: askMsg, color: 0xfbbf24 }],
+    embeds: [{ description: askMsg, color: WARNING }],
     components: [row],
-    ephemeral: false,
   });
 }
 
-async function handleTicketCloseFinalize(interaction, ticket, panel) {
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
+// Exported so /ticket close (ticket.js) shares the exact same close behavior
+// as the Close button — archive + mod buttons, never an outright delete.
+export async function handleTicketCloseFinalize(interaction, ticket, panel, reason = null) {
+  if (!interaction.deferred && !interaction.replied) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
+  }
   console.log(`[ticket:close] 🔵 START — ticketId=${ticket.id}`);
 
   // Call backend to close (sets status=CLOSED, closedAt, closeReason, generates transcript)
@@ -611,20 +675,23 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
   try {
     const { data } = await api.post(`/bot/ticket/${ticket.id}/close`, {
       closedById: interaction.user.id,
-      reason: null,
+      reason,
     });
     closeResult = data;
     console.log(`[ticket:close] ✅ Backend OK — archiveUrl=${data?.archiveUrl}, fullArchiveUrl=${data?.fullArchiveUrl}, transcriptChannelId=${data?.transcriptChannelId}`);
   } catch (err) {
     console.error(`[ticket:close] ❌ Backend FAILED:`, err?.response?.data || err.message);
-    return interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+    return interaction.editReply(friendlyError(err, interaction));
   }
 
   const channel = interaction.channel;
   const guild = interaction.guild;
+  const isThread = typeof channel?.isThread === "function" && channel.isThread();
 
-  // Move to closed category (if configured)
-  if (panel?.categoryClosedId && channel?.parent?.id !== panel.categoryClosedId) {
+  // Move to closed category (if configured). Threads have no setParent — their
+  // "closed" state is archive+lock instead (done at the end of this function,
+  // after the close message has been posted into the thread).
+  if (!isThread && panel?.categoryClosedId && channel?.parent?.id !== panel.categoryClosedId) {
     await channel.setParent(panel.categoryClosedId, { lockPermissions: false }).catch(() => {});
   }
 
@@ -677,7 +744,7 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
                 `**Creator:** ${creatorMention}\n` +
                 `**Closed by:** <@${interaction.user.id}>\n` +
                 `**Panel:** ${panel?.name || "Unknown"}`,
-              color: 0x00e5ff,
+              color: BRAND,
               url: transcriptUrl,
               timestamp: new Date().toISOString(),
               footer: { text: `Ticket ID: ${ticket.id}` },
@@ -705,15 +772,16 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
     new ButtonBuilder().setCustomId(`ticket:delete:${ticket.id}`).setLabel("Delete").setStyle(4).setEmoji("🗑️"),
     new ButtonBuilder().setCustomId(`ticket:transcript:${ticket.id}`).setLabel("View Transcript").setStyle(2).setEmoji("📜"),
   );
+  const closeHeader = reason ? `Closed by <@${interaction.user.id}>.\n**Reason:** ${reason}` : `Closed by <@${interaction.user.id}>.`;
   const closeEmbedDesc = transcriptUrl
-    ? `Closed by <@${interaction.user.id}>.\n\n[📜 View Full Transcript](${transcriptUrl})\n\nModerators: use the buttons below.`
-    : `Closed by <@${interaction.user.id}>.\n\nModerators: use the buttons below.`;
+    ? `${closeHeader}\n\n[📜 View Full Transcript](${transcriptUrl})\n\nModerators: use the buttons below.`
+    : `${closeHeader}\n\nModerators: use the buttons below.`;
 
   await channel.send({
     embeds: [{
       title: "🔒 Ticket Closed",
       description: closeEmbedDesc,
-      color: 0xef4444,
+      color: DANGER,
       timestamp: new Date().toISOString(),
     }],
     components: [modRow],
@@ -734,7 +802,7 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
         await creator.send({
           embeds: [{
             description: interpolate(panel.dmOnCloseMessage, ctx),
-            color: 0x00e5ff,
+            color: BRAND,
             footer: { text: guild?.name },
           }],
         });
@@ -757,7 +825,7 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
           embeds: [{
             title: "How was your support experience?",
             description: `Please rate the service you received in ticket **#${String(ticket.number ?? "").padStart(panel?.counterPadding ?? 4, "0")}**.`,
-            color: 0x00e5ff,
+            color: BRAND,
             footer: { text: guild?.name },
           }],
           components: [row],
@@ -771,8 +839,16 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
     await logTicketEvent?.(guild, panel.logChannelId, "CLOSE", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
       channel, user: { id: ticket.creatorId, username: "user" }, actor: interaction.user,
-      color: 0xef4444,
+      color: DANGER,
     }).catch(() => {});
+  }
+
+  // Threads have no category/permission-overwrite based "closed" state —
+  // lock + archive instead, done LAST so the close/transcript messages above
+  // still land while the thread is open.
+  if (isThread) {
+    await channel.setLocked(true).catch(() => {});
+    await channel.setArchived(true).catch(() => {});
   }
 
   await interaction.editReply("✅ Ticket closed.");
@@ -796,7 +872,7 @@ async function handleTicketClaim(interaction, ticket, panel) {
   await interaction.editReply({
     embeds: [{
       description: `👋 Ticket claimed by <@${interaction.user.id}>`,
-      color: 0x00e5ff,
+      color: BRAND,
     }],
   });
 
@@ -804,13 +880,13 @@ async function handleTicketClaim(interaction, ticket, panel) {
     const { logTicketEvent } = await import("./interactionCreate.js").catch(() => ({}));
     await logTicketEvent?.(interaction.guild, panel.logChannelId, "CLAIM", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
-      channel: interaction.channel, actor: interaction.user, color: 0x00e5ff,
+      channel: interaction.channel, actor: interaction.user, color: BRAND,
     }).catch(() => {});
   }
 }
 
 async function handleTicketTranscript(interaction, ticket, panel) {
-  await interaction.deferReply({ ephemeral: false });
+  await interaction.deferReply();
   try {
     const res = await api.post(`/bot/ticket/${ticket.id}/transcript`, {});
     if (res.data?.url) {
@@ -851,7 +927,7 @@ async function handleTicketReopen(interaction, ticket, panel) {
     embeds: [{
       title: "🔓 Ticket Reopened",
       description: `Reopened by <@${interaction.user.id}>.`,
-      color: 0x4ade80,
+      color: SUCCESS,
       timestamp: new Date().toISOString(),
     }],
   });
@@ -860,22 +936,34 @@ async function handleTicketReopen(interaction, ticket, panel) {
     const { logTicketEvent } = await import("./interactionCreate.js").catch(() => ({}));
     await logTicketEvent?.(interaction.guild, panel.logChannelId, "REOPEN", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
-      channel, actor: interaction.user, color: 0x4ade80,
+      channel, actor: interaction.user, color: SUCCESS,
     }).catch(() => {});
   }
 
   await interaction.editReply("✅ Ticket reopened.");
 }
 
-async function handleTicketDelete(interaction, ticket, panel) {
-  // Only staff can delete
-  if (!isTicketStaff(interaction, panel)) {
-    return interaction.reply({ content: "❌ Only support team members can delete tickets.", flags: MessageFlags.Ephemeral });
-  }
+// Deletion is destructive and irreversible — same two-step confirm pattern as
+// close (handleTicketClosePrompt/Finalize above), so a stray click can't wipe
+// a ticket channel.
+async function handleTicketDeletePrompt(interaction, ticket, panel) {
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`ticket:delete-confirm:${ticket.id}`).setLabel("Yes, delete").setStyle(4).setEmoji("🗑️"),
+    new ButtonBuilder().setCustomId(`ticket:delete-cancel:${ticket.id}`).setLabel("Cancel").setStyle(2)
+  );
 
-  await interaction.reply({
-    embeds: [{ description: "🗑️ This channel will be deleted in 5 seconds.", color: 0xef4444 }],
+  return interaction.reply({
+    embeds: [{ description: "🗑️ This will permanently delete the channel and its transcript reference. Are you sure?", color: DANGER }],
+    components: [row],
+    flags: MessageFlags.Ephemeral,
   });
+}
+
+async function handleTicketDelete(interaction, ticket, panel) {
+  await interaction.update({
+    embeds: [{ description: "🗑️ This channel will be deleted in 5 seconds.", color: DANGER }],
+    components: [],
+  }).catch(() => {});
 
   // Generate transcript before delete (fire-and-forget)
   api.post(`/bot/ticket/${ticket.id}/transcript`, {}).catch(() => {});
@@ -893,7 +981,7 @@ async function handleTicketDelete(interaction, ticket, panel) {
     const { logTicketEvent } = await import("./interactionCreate.js").catch(() => ({}));
     await logTicketEvent?.(interaction.guild, panel.logChannelId, "DELETE", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
-      channel: interaction.channel, actor: interaction.user, color: 0xef4444,
+      channel: interaction.channel, actor: interaction.user, color: DANGER,
     }).catch(() => {});
   }
 }
@@ -913,7 +1001,7 @@ async function handleFeedback(interaction, ticketId, rating) {
     await interaction.editReply({
       embeds: [{
         description: `Thanks for your feedback! You rated **${rating} / 5** ${"⭐".repeat(rating)}`,
-        color: 0x4ade80,
+        color: SUCCESS,
       }],
       components: [],
     });
@@ -1072,7 +1160,7 @@ async function completeVerification(interaction, panel, success, answer) {
         embeds: [{
           title: "✅ Verification Successful",
           description: result.dmSuccess,
-          color: 0x4ade80,
+          color: SUCCESS,
           footer: { text: interaction.guild?.name || "" },
         }],
       });
@@ -1088,7 +1176,7 @@ async function completeVerification(interaction, panel, success, answer) {
           embeds: [{
             title: "✅ User Verified",
             description: `<@${interaction.user.id}> (${interaction.user.tag}) passed verification on panel **${panel.name}**.`,
-            color: 0x4ade80,
+            color: SUCCESS,
             footer: failed.length ? { text: `⚠️ ${failed.length} role(s) failed to apply — check hierarchy` } : undefined,
             timestamp: new Date().toISOString(),
           }],

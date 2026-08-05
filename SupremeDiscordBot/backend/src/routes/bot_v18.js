@@ -94,7 +94,37 @@ async function recountPoll(pollId, optionCount) {
   return Array.from({ length: optionCount }, (_, i) => votes.filter((v) => v.option === i).length);
 }
 
+// GET /api/bot/guild/:guildId/applications/pending — за /form review autocomplete
+// (label = кандидат + форма, value = пълния cuid). Само PENDING — review-ва се
+// само каквото още не е решено.
+router.get("/guild/:guildId/applications/pending", async (req, res, next) => {
+  try {
+    const apps = await prisma.application.findMany({
+      where: { serverId: req.params.guildId, status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: { form: { select: { name: true } }, user: { select: { username: true } } },
+    });
+    res.json(apps.map((a) => ({ id: a.id, formName: a.form?.name, username: a.user?.username })));
+  } catch (err) { next(err); }
+});
+
 // ══════════════════════════════ GIVEAWAYS ══════════════════════════════
+
+// GET /api/bot/guild/:guildId/giveaways — за /giveaway end|reroll autocomplete
+// (label = резюме, value = пълния cuid). Скоупнато по serverId — bot-secret
+// пази endpoint-а, но пак не искаме кръстосан достъп между сървъри.
+router.get("/guild/:guildId/giveaways", async (req, res, next) => {
+  try {
+    const giveaways = await prisma.giveaway.findMany({
+      where: { serverId: req.params.guildId },
+      orderBy: { endsAt: "desc" },
+      take: 50,
+      select: { id: true, prize: true, endsAt: true, endedAt: true },
+    });
+    res.json(giveaways);
+  } catch (err) { next(err); }
+});
 
 router.post("/giveaway/create", async (req, res, next) => {
   const { serverId, creatorId, channelId, prize, description, winnerCount, endsAt, requiredRoleIds } = req.body;

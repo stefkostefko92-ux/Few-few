@@ -2,6 +2,8 @@
 // /sticky set/remove and /schedule add/list/remove
 import { MessageFlags, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { BRAND } from "../utils/colors.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -34,9 +36,26 @@ export default {
         .addSubcommand((s) =>
           s.setName("remove")
             .setDescription("Remove a scheduled message")
-            .addStringOption((o) => o.setName("id").setDescription("Scheduled message ID").setRequired(true))
+            .addStringOption((o) => o.setName("id").setDescription("Scheduled message ID").setRequired(true).setAutocomplete(true))
         )
     ),
+
+  async autocomplete(interaction) {
+    const sub = interaction.options.getSubcommand();
+    if (sub !== "remove") return interaction.respond([]);
+    const focused = interaction.options.getFocused().toLowerCase();
+    try {
+      const { data } = await api.get(`/bot/schedule/${interaction.guildId}`);
+      const filtered = (data || []).filter((m) => m.id.toLowerCase().includes(focused)).slice(0, 25);
+      // label = съкратен текст + кога, value = ПЪЛНИЯТ id (никога не съкращаваме value-то).
+      await interaction.respond(filtered.map((m) => ({
+        name: `${(m.content || "").slice(0, 50)} — ${new Date(m.sendAt).toLocaleString()}`.slice(0, 100),
+        value: m.id,
+      })));
+    } catch {
+      await interaction.respond([]);
+    }
+  },
 
   async execute(interaction) {
     if (!interaction.member.permissions.has("ManageGuild")) {
@@ -61,7 +80,7 @@ export default {
           });
           await interaction.editReply("📌 Sticky message set for this channel.");
         } catch (err) {
-          await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+          await interaction.editReply(friendlyError(err, interaction));
         }
       }
 
@@ -71,7 +90,7 @@ export default {
           await api.delete(`/bot/sticky/${interaction.channelId}`);
           await interaction.editReply("🗑️ Sticky removed.");
         } catch (err) {
-          await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+          await interaction.editReply(friendlyError(err, interaction));
         }
       }
     }
@@ -107,7 +126,7 @@ export default {
           });
           await interaction.editReply(`📅 Scheduled for <t:${Math.floor(sendAt.getTime() / 1000)}:F>\nID: \`${data.id}\``);
         } catch (err) {
-          await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+          await interaction.editReply(friendlyError(err, interaction));
         }
       }
 
@@ -121,10 +140,10 @@ export default {
             return `\`${m.id.slice(0, 8)}\` <#${m.channelId}> <t:${ts}:R>${m.recurrence ? ` (${m.recurrence})` : ""}${m.sentAt ? " ✅" : ""}`;
           }).join("\n");
           await interaction.editReply({
-            embeds: [new EmbedBuilder().setTitle("📅 Scheduled Messages").setDescription(lines).setColor(0x00e5ff)],
+            embeds: [new EmbedBuilder().setTitle("📅 Scheduled Messages").setDescription(lines).setColor(BRAND)],
           });
         } catch (err) {
-          await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+          await interaction.editReply(friendlyError(err, interaction));
         }
       }
 
@@ -137,7 +156,7 @@ export default {
           await api.delete(`/bot/schedule/${id}`, { data: { serverId: interaction.guildId } });
           await interaction.editReply(`🗑️ Removed.`);
         } catch (err) {
-          await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+          await interaction.editReply(friendlyError(err, interaction));
         }
       }
     }

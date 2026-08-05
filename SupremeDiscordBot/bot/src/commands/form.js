@@ -1,6 +1,8 @@
 // bot/src/commands/form.js
 import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { INFO } from "../utils/colors.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -21,7 +23,7 @@ export default {
       sub.setName("review")
         .setDescription("Manually approve or deny an application")
         .addStringOption((opt) =>
-          opt.setName("id").setDescription("Application ID").setRequired(true)
+          opt.setName("id").setDescription("Application ID").setRequired(true).setAutocomplete(true)
         )
         .addStringOption((opt) =>
           opt.setName("action").setDescription("approve or deny").setRequired(true)
@@ -36,9 +38,30 @@ export default {
     ),
 
   async autocomplete(interaction) {
+    const focusedOption = interaction.options.getFocused(true);
+    const focused = String(focusedOption.value || "").toLowerCase();
+
+    // /form review <id> — autocomplete от pending applications, label четим,
+    // value = ПЪЛНИЯ cuid (никога не съкращаваме value-то).
+    if (focusedOption.name === "id") {
+      try {
+        const { data } = await api.get(`/bot/guild/${interaction.guildId}/applications/pending`);
+        const filtered = (data || [])
+          .filter((a) => a.id.toLowerCase().includes(focused) || (a.username || "").toLowerCase().includes(focused))
+          .slice(0, 25);
+        await interaction.respond(filtered.map((a) => ({
+          name: `${a.username || "unknown"} — ${a.formName || "form"}`.slice(0, 100),
+          value: a.id,
+        })));
+      } catch {
+        await interaction.respond([]);
+      }
+      return;
+    }
+
+    // /form spawn <name> — autocomplete от application-type форми.
     try {
       const { data } = await api.get(`/bot/server/${interaction.guildId}`);
-      const focused = interaction.options.getFocused().toLowerCase();
       const appForms = (data.forms || []).filter(
         (f) => f.isApplication && f.name.toLowerCase().includes(focused)
       );
@@ -73,14 +96,14 @@ export default {
           embeds: [{
             title: form.name,
             description: form.description || "Click the button below to apply.",
-            color: 0x5865f2,
+            color: INFO,
           }],
           components: [row],
         });
 
         await interaction.editReply("✅ Form button posted!");
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -99,7 +122,7 @@ export default {
         });
         await interaction.editReply(`✅ Application **${appId}** ${action}d successfully.`);
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
   },

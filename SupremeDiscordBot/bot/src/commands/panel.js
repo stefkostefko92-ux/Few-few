@@ -2,6 +2,7 @@
 import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import api, { markPanelSpawned } from "../utils/api.js";
 import { buildPanelMessage } from "../utils/embed.js";
+import { friendlyError } from "../utils/friendlyError.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -44,7 +45,7 @@ export default {
         await markPanelSpawned(panel.id, interaction.channelId, msg.id);
         await interaction.editReply(`✅ Panel **${panel.name}** spawned successfully!`);
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
   },
