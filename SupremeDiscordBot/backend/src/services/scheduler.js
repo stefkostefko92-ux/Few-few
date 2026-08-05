@@ -467,4 +467,143 @@ cron.schedule("5 0 * * *", async () => {
   }
 });
 
+// ─── Job 9: SLA breach detection (v31 — Premium) ─────────────────────────────
+// Runs every 10 minutes. For panels with an SLA configured, flags tickets that
+// missed the first-response or resolution target and DMs the assignee (or the
+// server owner if unclaimed). `slaBreachedAt` is the "already notified" marker
+// — once set we never re-check that ticket again (no spam on every run).
+// Batched (take 200 per dimension per panel) + try/catch per ticket so one bad
+// row can't take down the whole job.
+
+const SLA_BREACH_COLOR = 0xed4245; // Discord "danger" red
+
+function slaDashboardUrl(serverId, ticketId) {
+  return `${process.env.FRONTEND_URL || ""}/dashboard/${serverId}/tickets/${ticketId}`;
+}
+
+async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
+  const { dmUser } = await import("./botNotifier.js");
+  const targetUserId = ticket.assigneeId || ticket.server?.ownerId;
+  if (!targetUserId) return;
+
+  const label = type === "first_response" ? "First-response" : "Resolution";
+  const ticketLabel = ticket.number != null ? `#${ticket.number}` : ticket.id;
+
+  await dmUser(targetUserId, {
+    title: `⚠️ SLA breached — ${label}`,
+    description:
+      `Ticket **${ticketLabel}** in **${panel?.name || "unknown panel"}** missed its ` +
+      `${label.toLowerCase()} SLA by ~${minutesLate} min.\n\n` +
+      `**[Open ticket](${slaDashboardUrl(ticket.serverId, ticket.id)})**`,
+    color: SLA_BREACH_COLOR,
+    timestamp: new Date().toISOString(),
+  }).catch(() => null);
+}
+
+cron.schedule("*/10 * * * *", async () => {
+  try {
+    const now = new Date();
+    const panels = await prisma.panel.findMany({
+      where: {
+        OR: [
+          { slaFirstResponseMinutes: { not: null } },
+          { slaResolutionMinutes: { not: null } },
+        ],
+        server: effectivePremiumWhere(now), // SLA is a Premium feature — agency/trial covered too
+      },
+      select: {
+        id: true, name: true, serverId: true,
+        slaFirstResponseMinutes: true, slaResolutionMinutes: true,
+      },
+    });
+
+    if (!panels.length) return;
+
+    let breached = 0;
+
+    for (const panel of panels) {
+      // ── (a) First-response breach ──────────────────────────────────────
+      if (panel.slaFirstResponseMinutes) {
+        const cutoff = new Date(now.getTime() - panel.slaFirstResponseMinutes * 60 * 1000);
+        const overdue = await prisma.ticket.findMany({
+          where: {
+            panelId: panel.id,
+            status: { in: ["OPEN", "CLAIMED"] },
+            firstResponseAt: null,
+            slaBreachedAt: null,
+            createdAt: { lt: cutoff },
+          },
+          select: { id: true, serverId: true, number: true, assigneeId: true, createdAt: true },
+          take: 200,
+        });
+
+        for (const t of overdue) {
+          try {
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaBreachedAt: now } });
+            const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaFirstResponseMinutes;
+            await prisma.auditLog.create({
+              data: {
+                actorId: null,
+                actorTag: "SYSTEM",
+                serverId: t.serverId,
+                action: "SLA_BREACH",
+                targetId: t.id,
+                metadata: { type: "first_response", panelId: panel.id, minutesLate },
+              },
+            });
+            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
+            await notifySlaBreach({ ticket: { ...t, server }, panel, type: "first_response", minutesLate });
+            breached++;
+          } catch (err) {
+            console.error(`[sla] first-response breach failed for ticket ${t.id}:`, err.message);
+          }
+        }
+      }
+
+      // ── (b) Resolution breach ──────────────────────────────────────────
+      if (panel.slaResolutionMinutes) {
+        const cutoff = new Date(now.getTime() - panel.slaResolutionMinutes * 60 * 1000);
+        const overdue = await prisma.ticket.findMany({
+          where: {
+            panelId: panel.id,
+            status: { in: ["OPEN", "CLAIMED"] },
+            slaBreachedAt: null,
+            createdAt: { lt: cutoff },
+          },
+          select: { id: true, serverId: true, number: true, assigneeId: true, createdAt: true },
+          take: 200,
+        });
+
+        for (const t of overdue) {
+          try {
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaBreachedAt: now } });
+            const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaResolutionMinutes;
+            await prisma.auditLog.create({
+              data: {
+                actorId: null,
+                actorTag: "SYSTEM",
+                serverId: t.serverId,
+                action: "SLA_BREACH",
+                targetId: t.id,
+                metadata: { type: "resolution", panelId: panel.id, minutesLate },
+              },
+            });
+            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
+            await notifySlaBreach({ ticket: { ...t, server }, panel, type: "resolution", minutesLate });
+            breached++;
+          } catch (err) {
+            console.error(`[sla] resolution breach failed for ticket ${t.id}:`, err.message);
+          }
+        }
+      }
+    }
+
+    if (breached > 0) {
+      console.log(`[Scheduler] SLA breach check: flagged ${breached} tickets`);
+    }
+  } catch (err) {
+    console.error("[Scheduler] SLA breach check error:", err.message);
+  }
+});
+
 console.log("[Scheduler] Background jobs started");

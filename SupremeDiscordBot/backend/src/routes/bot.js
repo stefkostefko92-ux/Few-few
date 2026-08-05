@@ -358,6 +358,21 @@ router.post("/ticket/:ticketId/message", async (req, res, next) => {
         attachments: attachments || [],
       },
     });
+
+    // v31 — SLA first-response marker. Приближение: първото съобщение от
+    // НЕ-създателя на тикета се брои за "първи отговор" (не различаваме
+    // staff от друг потребител, добавен по-късно в канала — известно
+    // ограничение, приемливо за целите на SLA известяването).
+    const ticketForSla = await prisma.ticket.findUnique({
+      where: { id: req.params.ticketId },
+      select: { creatorId: true, firstResponseAt: true },
+    });
+    if (ticketForSla && !ticketForSla.firstResponseAt && authorId !== ticketForSla.creatorId) {
+      await prisma.ticket
+        .update({ where: { id: req.params.ticketId }, data: { firstResponseAt: new Date() } })
+        .catch(() => {});
+    }
+
     res.json(message);
   } catch (err) {
     next(err);

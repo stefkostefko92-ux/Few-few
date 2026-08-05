@@ -25,6 +25,8 @@ const PANEL_PREMIUM_FIELDS = {
   inactivityCloseHours: "panel.inactivityAutoClose",
   autoCloseOnLeave:     "panel.autoCloseOnLeave",
   categoryClosedId:     "panel.multipleCategories",
+  slaFirstResponseMinutes: "panel.sla",
+  slaResolutionMinutes:    "panel.sla",
 };
 
 // ─── GET /api/panels/:serverId ────────────────────────────────────────────────
@@ -81,6 +83,9 @@ const createPanelSchema = z.object({
   // v30 — default priority applied to tickets opened from this panel.
   // Optional so existing dashboard payloads (without the field yet) still pass.
   defaultPriority:      z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
+  // v31 — SLA targets in minutes (Premium). null clears/disables; max 20160 = 2 weeks.
+  slaFirstResponseMinutes: z.number().int().positive().max(20160).optional().nullable(),
+  slaResolutionMinutes:    z.number().int().positive().max(20160).optional().nullable(),
   buttons: z.array(z.object({
     label: z.string().min(1).max(80),
     emoji: z.string().optional(),

@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw } from "lucide-react";
-import { getTickets, closeTicket, claimTicket, exportTicketPDF } from "../api";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare } from "lucide-react";
+import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } from "../api";
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
+import { useToast } from "../contexts/ToastContext";
 
 const STATUS_COLORS = {
   OPEN: "text-success bg-green-500/10",
@@ -36,6 +37,9 @@ export default function TicketsPage() {
   const [page, setPage] = useState(1);
   const [closingId, setClosingId] = useState(null);
   const [closeReason, setCloseReason] = useState("");
+  const [replyingId, setReplyingId] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const toast = useToast();
 
   const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["tickets", serverId, statusFilter, priorityFilter, search, dateFrom, dateTo, page],
@@ -97,6 +101,16 @@ export default function TicketsPage() {
     mutationFn: (ticketId) => claimTicket(serverId, ticketId),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); },
     onError: (err) => setClaimError(err?.response?.data?.error || "Failed to claim ticket"),
+  });
+
+  const replyMut = useMutation({
+    mutationFn: ({ ticketId, content }) => replyToTicket(serverId, ticketId, content),
+    onSuccess: () => {
+      toast.success("Reply sent to the ticket channel");
+      setReplyingId(null);
+      setReplyText("");
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || "Failed to send the reply"),
   });
 
   const tickets = data?.tickets || [];
@@ -278,6 +292,16 @@ export default function TicketsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
+                        {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
+                          <button
+                            onClick={() => { setReplyingId(ticket.id); setReplyText(""); }}
+                            title="Reply from dashboard"
+                            aria-label="Reply from dashboard"
+                            className="text-cs-cyan hover:text-white transition-colors p-1"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+                        )}
                         {ticket.status === "OPEN" && (
                           <button
                             onClick={() => claimMut.mutate(ticket.id)}
@@ -370,6 +394,32 @@ export default function TicketsPage() {
           </button>
         </div>
       )}
+
+      {/* Reply Modal — same pattern as the close modal (closingId/closeReason) */}
+      <Modal open={!!replyingId} onClose={() => setReplyingId(null)} title="Reply to Ticket" maxWidth="max-w-md">
+        <label className="block mb-1">
+          <span className="cs-label">Reply</span>
+          <textarea
+            className="cs-input min-h-[110px] resize-y"
+            placeholder="Type your reply — the bot will post it in the ticket channel…"
+            maxLength={1500}
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            autoFocus
+          />
+        </label>
+        <div className="text-xs text-cs-muted text-right mb-4">{replyText.length}/1500</div>
+        <div className="flex gap-3 justify-end">
+          <button className="cs-btn-ghost" onClick={() => setReplyingId(null)}>Cancel</button>
+          <button
+            className="cs-btn-primary"
+            disabled={replyMut.isPending || !replyText.trim()}
+            onClick={() => replyMut.mutate({ ticketId: replyingId, content: replyText.trim() })}
+          >
+            {replyMut.isPending ? "Sending…" : "Send"}
+          </button>
+        </div>
+      </Modal>
 
       {/* Close Ticket Modal */}
       <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close Ticket" maxWidth="max-w-md">

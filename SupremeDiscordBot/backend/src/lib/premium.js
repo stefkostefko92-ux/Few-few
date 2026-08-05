@@ -32,6 +32,7 @@ export const PREMIUM_FEATURES = {
   "panel.autoCloseOnLeave":    { label: "Auto-Close on User Leave",    category: "Tickets" },
   "panel.multipleCategories":  { label: "Separate Open/Closed Categories", category: "Tickets" },
   "panel.unlimitedCount":      { label: "Unlimited Panels",            category: "Tickets" },
+  "panel.sla":                 { label: "SLA Tracking",                category: "Tickets" },
 
   // ─── Ticket actions ────────────────────────────────────────────────────
   "ticket.claim":              { label: "Ticket Claiming",             category: "Tickets" },

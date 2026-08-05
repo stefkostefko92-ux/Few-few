@@ -57,3 +57,27 @@ export async function dmUser(userId, embed) {
   if (!userId || !embed) return { ok: false, reason: "missing_userId_or_embed" };
   return notifyBot("DM_USER", { userId, embed });
 }
+
+/**
+ * Публикува отговор от dashboard-а в Discord тикет канала — ботът праща embed
+ * от името на staff члена („Име · via dashboard"), без staff-ът да влиза в
+ * Discord. Ползва СЪЩИЯ вътрешен канал като notifyBot (x-bot-secret).
+ *
+ * Връща:
+ *   { ok: true, messageId }      — доставено в канала
+ *   { ok: false, reason: "..." } — ботът отказа (несъществуващ канал и т.н.)
+ *   null                         — ботът е недостъпен (timeout, 5xx, мрежа)
+ * Никога не хвърля — повикващият решава как да докладва провала.
+ *
+ * @param {object} p
+ * @param {string} p.channelId  Discord channel/thread ID на тикета
+ * @param {string} p.content    Изчистеният текст на отговора (без mass mentions)
+ * @param {string} p.authorName Показвано име на staff члена
+ * @param {string} p.authorId   Discord user ID на staff члена (за одит в бота)
+ * @param {string} p.ticketId   Ticket ID (за логове)
+ * @param {number} [p.number]   Пореден номер на тикета (за footer „Ticket #N")
+ */
+export async function sendTicketReply({ channelId, content, authorName, authorId, ticketId, number }) {
+  if (!channelId || !content) return { ok: false, reason: "missing_channelId_or_content" };
+  return notifyBot("TICKET_REPLY", { channelId, content, authorName, authorId, ticketId, number });
+}

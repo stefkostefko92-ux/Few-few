@@ -67,6 +67,8 @@ export const closeTicket = (serverId, ticketId, reason) =>
   api.post(`/tickets/${serverId}/${ticketId}/close`, { reason }).then((r) => r.data);
 export const claimTicket = (serverId, ticketId) =>
   api.post(`/tickets/${serverId}/${ticketId}/claim`).then((r) => r.data);
+export const replyToTicket = (serverId, ticketId, content) =>
+  api.post(`/tickets/${serverId}/${ticketId}/reply`, { content }).then((r) => r.data);
 
 // ─── Applications ─────────────────────────────────────────────────────────────
 export const getApplications = (serverId, params) =>

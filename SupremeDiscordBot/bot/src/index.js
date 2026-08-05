@@ -191,6 +191,52 @@ app.post("/internal/ticket-claimed", async (req, res) => {
   }
 });
 
+// Отговор на тикет от dashboard-а — ботът публикува embed в тикет канала от
+// името на staff члена („Име · via dashboard"), без staff-ът да влиза в Discord.
+// Вика се от backend/src/services/botNotifier.js → sendTicketReply().
+app.post("/internal/ticket-reply", async (req, res) => {
+  const { channelId, content, authorName, ticketId, number } = req.body || {};
+  if (!channelId || typeof channelId !== "string" || !content || typeof content !== "string") {
+    return res.status(400).json({ ok: false, reason: "channelId (string) and content (string) required" });
+  }
+
+  try {
+    const { INFO } = await import("./utils/colors.js");
+
+    // Fallback към REST fetch — кешът може да е студен след рестарт/sharding;
+    // работи и за thread-базирани тикети (channels.fetch връща и threads).
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (!channel?.isTextBased?.()) {
+      return res.status(502).json({ ok: false, reason: "Ticket channel not found or not text-based" });
+    }
+
+    const pad = number != null ? `#${String(number).padStart(4, "0")}` : ticketId ? `· ${ticketId.slice(-8)}` : "";
+    const sent = await channel
+      .send({
+        embeds: [{
+          author: { name: `${authorName || "Staff"} · via dashboard` },
+          description: content.slice(0, 1500),
+          color: INFO,
+          footer: { text: `Ticket ${pad}`.trim() },
+          timestamp: new Date().toISOString(),
+        }],
+        // allowedMentions guard: съдържанието идва от dashboard вход — никакви
+        // пингове (вкл. @everyone/@here), backend-ът вече чисти, но defense in depth.
+        allowedMentions: { parse: [] },
+      })
+      .catch((err) => {
+        console.error(`[ticket-reply] ${ticketId ?? channelId}: ${err?.code ?? "?"} ${err?.message ?? err}`);
+        return null;
+      });
+
+    if (!sent) return res.status(502).json({ ok: false, reason: "Failed to send the reply to Discord" });
+    res.json({ ok: true, messageId: sent.id });
+  } catch (err) {
+    res.status(502).json({ ok: false, reason: err.message });
+  }
+});
+
 // v2.2 — Open a private discussion channel with applicant (pre-decision)
 app.post("/internal/application-discuss", async (req, res) => {
   try {

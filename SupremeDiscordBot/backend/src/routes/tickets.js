@@ -1,9 +1,10 @@
 // backend/src/routes/tickets.js
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, sendTicketReply } from "../services/botNotifier.js";
 import { requirePremium } from "../lib/premium.js";
 import { ensureArchiveToken, tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
 
@@ -225,7 +226,77 @@ router.post("/:serverId/:ticketId/unclaim", requireServerAdmin, async (req, res,
   }
 });
 
+// ─── POST /api/tickets/:serverId/:ticketId/reply ──────────────────────────────
+// Отговор на тикет директно от dashboard-а — ботът публикува embed в тикет
+// канала от името на staff члена, без той да влиза в Discord.
 
+const replySchema = z.object({
+  content: z
+    .string()
+    .trim()
+    .min(1, "Reply cannot be empty")
+    .max(1500, "Reply is too long (max 1500 characters)"),
+});
+
+router.post("/:serverId/:ticketId/reply", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = replySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues?.[0]?.message || "Invalid reply" });
+    }
+
+    // Mass-mention неутрализация: @everyone/@here стават плейн текст (без "@").
+    // Ботът праща и allowedMentions:{parse:[]} — defense in depth.
+    const content = parsed.data.content.replace(/@(everyone|here)/g, "$1");
+
+    const ticket = await prisma.ticket.findFirst({
+      // IDOR guard: тикетът трябва да принадлежи точно на ТОЗИ сървър —
+      // никога lookup само по ticketId от клиента.
+      where: { id: req.params.ticketId, serverId: req.params.serverId },
+      select: { id: true, status: true, channelId: true, number: true },
+    });
+
+    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    if (ticket.status === "CLOSED" || ticket.status === "ARCHIVED") {
+      return res.status(400).json({ error: "Ticket is closed — it can no longer receive replies" });
+    }
+    if (!ticket.channelId) {
+      return res.status(400).json({ error: "Ticket has no Discord channel to reply into" });
+    }
+
+    const result = await sendTicketReply({
+      channelId: ticket.channelId,
+      content,
+      authorName: req.user.username,
+      authorId: req.user.id,
+      ticketId: ticket.id,
+      number: ticket.number,
+    });
+
+    if (!result?.ok) {
+      return res.status(502).json({
+        error: "The bot is unreachable right now — the reply was not delivered. Please try again in a moment.",
+      });
+    }
+
+    // Записваме TicketMessage директно: messageCreate listener-ът на бота
+    // ИГНОРИРА бот съобщения (bot/src/events/messageCreate.js:
+    // `if (message.author.bot) return`), затова embed-ът от бота никога няма
+    // да се логне сам в transcript-а — този запис е каноничният, няма дублаж.
+    const message = await prisma.ticketMessage.create({
+      data: {
+        ticketId: ticket.id,
+        authorId: req.user.id,
+        authorTag: `${req.user.username} (via dashboard)`,
+        content,
+      },
+    });
+
+    res.status(201).json(message);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Note: PDF export is handled by /api/export/:serverId/ticket/:ticketId/pdf (see export.js)
 // which uses pdfkit to generate a real PDF. This route previously returned HTML
