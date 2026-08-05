@@ -1,0 +1,57 @@
+{
+  "name": "iplookup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Карбон IP — пълна справка за публичен IP адрес: мрежа (RDAP), автономна система, геолокация, обратен DNS, тип на връзката и репутация. Без реклами, без проследяване.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "homepage": "https://iplookup.carbonstealth.eu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "iplookup"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "ip-lookup",
+    "whois",
+    "rdap",
+    "asn",
+    "geolocation",
+    "reverse-dns",
+    "bulgaria",
+    "privacy",
+    "Carbon Stealth"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/lib/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "mmdb-lib": "^3.0.3",
+    "next": "^15.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.19",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

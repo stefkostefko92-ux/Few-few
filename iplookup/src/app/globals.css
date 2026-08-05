@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-bg text-text font-sans antialiased;
+  /* „Карбонова решетка“ — брандовият материал на маскота, сведен до фон:
+     две много слаби диагонални линии. Чист CSS, нула байта, нула JS. */
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--c-accent) 4%, transparent) 0 1px,
+      transparent 1px 14px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--c-accent) 4%, transparent) 0 1px,
+      transparent 1px 14px
+    );
+}
+
+::selection {
+  @apply bg-accent text-on-accent;
+}
+
+/* Фокусът се вижда навсякъде — клавиатурната навигация е равноправна. */
+:focus-visible {
+  @apply outline outline-2 outline-offset-2 outline-accent-strong;
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-border bg-surface;
+  }
+  .card-title {
+    @apply text-sm font-semibold uppercase tracking-wide text-text-muted;
+  }
+  /* Всяка техническа стойност: равноширок шрифт + разрешено пренасяне, защото
+     IPv6 адресите и RDAP имената са дълги и не бива да разпъват страницата. */
+  .value-mono {
+    @apply break-all font-mono text-text;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5
+      font-semibold text-on-accent transition hover:bg-accent-strong
+      disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border
+      bg-surface px-4 py-2 font-medium text-text-muted transition
+      hover:border-border-strong hover:text-text;
+  }
+  .field-input {
+    @apply w-full rounded-lg border border-border bg-surface px-4 py-3 font-mono text-text
+      placeholder:font-sans placeholder:text-text-faint focus:border-accent focus:outline-none;
+  }
+}
+
+/* Силуетът на континентите: един статичен файл, кеширан от браузъра, оцветен
+   от темата през CSS маска. През `<img>` това не би станало — външният CSS не
+   стига до документа на картинката. */
+.world-silhouette {
+  -webkit-mask-image: url("/world-mask.svg");
+  mask-image: url("/world-mask.svg");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  background-color: var(--c-border-strong);
+  opacity: 0.5;
+}
+
+/* Скелетоните пулсират, докато източниците отговарят поетапно. Движението е
+   бавно и еднопосочно — под 3 Hz, без мигане. */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+.skeleton {
+  @apply rounded bg-surface-raised;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Нула движение, не „по-малко“ — включително скелетоните и всички преходи. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton {
+    opacity: 0.5;
+  }
+}
