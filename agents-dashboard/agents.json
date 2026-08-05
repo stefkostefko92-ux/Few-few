@@ -1052,7 +1052,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 276
+        "lessons": 278
       },
       "evolution": [
         {
@@ -1660,9 +1660,20 @@
           "date": "2026-08-05",
           "event": "v17.6 — учене",
           "detail": "Научи: discord.js v14 не емитва messageReactionRemove за потребител извън client.users кеша, а… (+2 още)"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-08-05",
+          "event": "v17.8 — учене",
+          "detail": "Научи: Ticket.applicationId е @unique, а всички idempotency проверки за application discussion… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-05",
+          "type": "learning",
+          "summary": "Научи: „Ticket.applicationId е @unique, а всички idempotency проверки за application discussion…\" (+1 още)"
+        },
         {
           "date": "2026-08-05",
           "type": "learning",
