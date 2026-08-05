@@ -4,7 +4,11 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
+<<<<<<< HEAD
     "updated": "2026-07-30",
+=======
+    "updated": "2026-08-05",
+>>>>>>> f21ed484a (auto: diskordjiyata научи — памет + версия + табло)
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -11979,6 +11983,7 @@
           "detail": "Научи: Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId … (+8 още)"
         },
         {
+<<<<<<< HEAD
           "version": "11.3.0",
           "date": "2026-07-24",
           "event": "v11.3 — учене",
@@ -12001,10 +12006,17 @@
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: Components v2 (flag IS_COMPONENTS_V2, 1<<15 message flags) е нов модел съобщения — ведн… (+5 още)"
+=======
+          "version": "10.3.0",
+          "date": "2026-08-05",
+          "event": "v10.3 — учене",
+          "detail": "Научи: Discord поддържа локализация на самите slash команди (name_localizations/description_lo… (+4 още)"
+>>>>>>> f21ed484a (auto: diskordjiyata научи — памет + версия + табло)
         }
       ],
       "activity": [
         {
+<<<<<<< HEAD
           "date": "2026-07-28",
           "type": "learning",
           "summary": "Научи: „Components v2 (flag IS_COMPONENTS_V2, 1<<15 message flags) е нов модел съобщения — ведн…\" (+5 още)"
@@ -12023,6 +12035,11 @@
           "date": "2026-07-24",
           "type": "learning",
           "summary": "Научи: „discord.js стабилна линия вече v14.27.0 (последна публикувана ~7 дни преди 2026-07-24) …\" (+10 още)"
+=======
+          "date": "2026-08-05",
+          "type": "learning",
+          "summary": "Научи: „Discord поддържа локализация на самите slash команди (name_localizations/description_lo…\" (+4 още)"
+>>>>>>> f21ed484a (auto: diskordjiyata научи — памет + версия + табло)
         },
         {
           "date": "2026-07-06",
