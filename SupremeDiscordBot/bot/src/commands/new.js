@@ -7,6 +7,8 @@ import api from "../utils/api.js";
 import { checkCooldown } from "../utils/cooldowns.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
+import { t, resolveLang } from "../i18n/index.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const COOLDOWN_SECONDS = 10;
 
@@ -14,6 +16,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("new")
     .setDescription("Open a new support ticket")
+    .setDescriptionLocalizations(CMD_DESC_L10N.new)
     .addStringOption((opt) =>
       opt.setName("panel").setDescription("Panel name to open ticket for").setRequired(false).setAutocomplete(true)
     )
@@ -40,7 +43,8 @@ export default {
   async execute(interaction) {
     const remaining = checkCooldown("new", interaction.user.id, COOLDOWN_SECONDS);
     if (remaining > 0) {
-      return interaction.reply({ content: `⏳ Please wait ${remaining}s before opening another ticket this way.`, flags: MessageFlags.Ephemeral });
+      const lang = await resolveLang(interaction);
+      return interaction.reply({ content: t("cooldown.newTicket", lang, { seconds: remaining }), flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });

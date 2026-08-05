@@ -6,6 +6,7 @@ import api from "../utils/api.js";
 import { checkCooldown } from "../utils/cooldowns.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { WARNING, MUTED } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const COOLDOWN_SECONDS = 10;
 
@@ -13,6 +14,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("giveaway")
     .setDescription("Manage giveaways")
+    .setDescriptionLocalizations(CMD_DESC_L10N.giveaway)
     .addSubcommand((s) =>
       s.setName("start")
         .setDescription("Start a new giveaway")

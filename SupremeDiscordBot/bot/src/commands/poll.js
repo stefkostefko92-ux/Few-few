@@ -6,6 +6,7 @@ import api from "../utils/api.js";
 import { checkCooldown } from "../utils/cooldowns.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { MUTED, BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const COOLDOWN_SECONDS = 10;
 
@@ -13,6 +14,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("poll")
     .setDescription("Create a poll")
+    .setDescriptionLocalizations(CMD_DESC_L10N.poll)
     .addStringOption((o) => o.setName("question").setDescription("Poll question").setRequired(true).setMaxLength(256))
     .addStringOption((o) => o.setName("options").setDescription("Comma-separated options (2-9)").setRequired(true))
     .addBooleanOption((o) => o.setName("multi_choice").setDescription("Allow voting for multiple options").setRequired(false))

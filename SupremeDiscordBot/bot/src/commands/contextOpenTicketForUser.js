@@ -4,10 +4,12 @@
 // express "ManageMessages OR this server's dynamic support role").
 import { ContextMenuCommandBuilder, ApplicationCommandType } from "discord.js";
 import { handleOpenTicketForUserContextMenu } from "../events/interactionCreate.js";
+import { CMD_NAME_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new ContextMenuCommandBuilder()
     .setName("Open ticket for user")
+    .setNameLocalizations(CMD_NAME_L10N["Open ticket for user"])
     .setType(ApplicationCommandType.User),
 
   async execute(interaction) {

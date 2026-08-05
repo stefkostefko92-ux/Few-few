@@ -3,11 +3,13 @@ import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { checkBotPermissions, reinviteUrl } from "../utils/permissionCheck.js";
 import { SUCCESS, WARNING } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("debug")
-    .setDescription("Check the bot's permissions and status in this server"),
+    .setDescription("Check the bot's permissions and status in this server")
+    .setDescriptionLocalizations(CMD_DESC_L10N.debug),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });

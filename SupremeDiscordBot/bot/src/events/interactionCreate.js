@@ -10,6 +10,7 @@ import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND, SUCCESS, DANGER, WARNING, INFO } from "../utils/colors.js";
 import { startSetupWizard, handleSetupComponent } from "../commands/setup.js";
 import { isStaffMember } from "../utils/staffCheck.js";
+import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
 
 // ─── Blacklist TTL кеш ──────────────────────────────────────────────────────
 // Всяка slash команда проверява blacklist статуса срещу backend-а. Синхронният
@@ -53,8 +54,9 @@ export default {
           blacklisted = await isBlacklistedCached(interaction.user.id);
         } catch { /* backend unreachable — allow the command */ }
         if (blacklisted) {
+          const lang = await resolveLang(interaction);
           return interaction.reply({
-            content: "❌ You have been blacklisted from using this bot.",
+            content: t("error.blacklisted", lang),
             flags: MessageFlags.Ephemeral,
           });
         }
@@ -146,7 +148,8 @@ export default {
         const selected = interaction.values[0];
         const cat = COMMAND_CATALOG.find((c) => c.category === selected);
         if (!cat) {
-          return interaction.reply({ content: "❌ Category not found.", flags: MessageFlags.Ephemeral });
+          const lang = await resolveLang(interaction);
+          return interaction.reply({ content: t("error.categoryNotFound", lang), flags: MessageFlags.Ephemeral });
         }
         const { default: helpCmd } = await import("../commands/help.js");
         // Re-render the same embed the /help command would produce for this category
@@ -215,8 +218,9 @@ export default {
       // modal submit, го потвърждаваме ephemeral, за да не вижда потребителят
       // „This interaction failed".
       if (interaction.isModalSubmit()) {
+        const lang = await resolveLang(interaction);
         await interaction.reply({
-          content: "❌ This form is no longer active. Please start over.",
+          content: t("error.formExpired", lang),
           flags: MessageFlags.Ephemeral,
         }).catch(() => {});
         return;
@@ -272,7 +276,7 @@ async function handlePanelButtonClick(interaction, panelId, buttonId) {
       return;
     }
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    await interaction.editReply("📬 Check your DMs to complete the form!");
+    await interaction.editReply(t("form.dmCheck", await resolveLang(interaction)));
     await runFormSession(interaction, button.form, panel);
   } else {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -319,6 +323,7 @@ function buildFormModal(form, panelId, buttonId) {
 async function handleFormModalSubmit(interaction) {
   const [, panelId, buttonId, formId] = interaction.customId.split(":");
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const lang = await resolveLang(interaction);
 
   let panel;
   try {
@@ -330,7 +335,7 @@ async function handleFormModalSubmit(interaction) {
   const button = panel.buttons.find((b) => b.id === buttonId);
   const form = button?.form;
   if (!form || form.id !== formId) {
-    return interaction.editReply("❌ This form is no longer available. Please try again.");
+    return interaction.editReply(t("form.notAvailable", lang));
   }
 
   const questions = [...form.questions].sort((a, b) => a.order - b.order).slice(0, MODAL_MAX_QUESTIONS);
@@ -348,8 +353,7 @@ async function handleFormModalSubmit(interaction) {
   }
   if (invalid.length) {
     return interaction.editReply(
-      `❌ Some answers don't match the expected format: **${invalid.slice(0, 3).join("**, **")}**. ` +
-      "Please press the panel button and try again."
+      t("form.invalidAnswersModal", lang, { fields: invalid.slice(0, 3).join("**, **") })
     );
   }
 
@@ -366,10 +370,10 @@ async function handleFormModalSubmit(interaction) {
     await submitFormAnswers(interaction.client, session);
   } catch (err) {
     console.error("Failed to submit modal form:", err.message);
-    return interaction.editReply("❌ Something went wrong submitting the form. Please try again.");
+    return interaction.editReply(t("form.submitFailed", lang));
   }
 
-  await interaction.editReply("✅ Submitted! Thank you.");
+  await interaction.editReply(t("form.submittedConfirm", lang));
 }
 
 // ─── Context menus (v2.9) — ticket creation + tag reply ──────────────────────
@@ -566,7 +570,7 @@ async function handleFormDirectClick(interaction, formId) {
   const form = serverData?.forms?.find((f) => f.id === formId);
   if (!form) return interaction.editReply("❌ Form not found.");
 
-  await interaction.editReply("📬 Check your DMs to start the form!");
+  await interaction.editReply(t("form.dmCheck", await resolveLang(interaction)));
   await runFormSession(interaction, form, { id: null, name: form.name, supportRoleIds: [], categoryId: null });
 }
 
@@ -814,7 +818,7 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
     }).catch(() => {});
   }
 
-  await interaction.editReply(`✅ Your ticket has been created: ${channel}`);
+  await interaction.editReply(t("ticket.opened", await resolveLang(interaction), { channel: String(channel) }));
 }
 
 function parseColor(hex) {
@@ -925,19 +929,21 @@ function isTicketStaff(interaction, panel) {
 }
 
 // Единен ephemeral отказ за тикет действия без права.
-function denyTicketAction(interaction) {
+async function denyTicketAction(interaction) {
+  const lang = await resolveLang(interaction);
   return interaction.reply({
-    content: "❌ Only support team members can perform this action.",
+    content: t("ticket.staffOnly", lang),
     flags: MessageFlags.Ephemeral,
   });
 }
 
 async function handleTicketAction(interaction, action, ticketId) {
   try {
+    const lang = await resolveLang(interaction);
     // Look up the ticket + its panel (for config)
     const { data: ticket } = await api.get(`/bot/ticket/${ticketId}`).catch(() => ({ data: null }));
     if (!ticket) {
-      return interaction.reply({ content: "❌ This ticket no longer exists.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: t("ticket.notFound", lang), flags: MessageFlags.Ephemeral });
     }
     const panel = ticket.panel || (ticket.panelId ? await api.get(`/bot/panel/${ticket.panelId}`).then(r => r.data).catch(() => null) : null);
 
@@ -971,7 +977,7 @@ async function handleTicketAction(interaction, action, ticketId) {
         return handleTicketDelete(interaction, ticket, panel);
       case "delete-cancel": return interaction.update({ components: [] }).catch(() => {});
       default:
-        return interaction.reply({ content: "❌ Unknown ticket action.", flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: t("ticket.unknownAction", lang), flags: MessageFlags.Ephemeral });
     }
   } catch (err) {
     console.error("[ticket-action]", action, err?.response?.data || err?.message);
@@ -996,10 +1002,11 @@ async function handleTicketClosePrompt(interaction, ticket, panel) {
     panel:  { name: panel?.name },
   };
   const askMsg = interpolate(panel?.closeAskMessage || defaultCloseAskMessage(), ctx);
+  const lang = await resolveLang(interaction);
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`ticket:close-confirm:${ticket.id}`).setLabel("Yes, close").setStyle(4).setEmoji("🔒"),
-    new ButtonBuilder().setCustomId(`ticket:close-cancel:${ticket.id}`).setLabel("Cancel").setStyle(2)
+    new ButtonBuilder().setCustomId(`ticket:close-confirm:${ticket.id}`).setLabel(t("ticket.closeConfirmYes", lang)).setStyle(4).setEmoji("🔒"),
+    new ButtonBuilder().setCustomId(`ticket:close-cancel:${ticket.id}`).setLabel(t("ticket.closeConfirmCancel", lang)).setStyle(2)
   );
 
   return interaction.reply({
@@ -1014,6 +1021,7 @@ export async function handleTicketCloseFinalize(interaction, ticket, panel, reas
   if (!interaction.deferred && !interaction.replied) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   }
+  const lang = await resolveLang(interaction);
   console.log(`[ticket:close] 🔵 START — ticketId=${ticket.id}`);
 
   // Call backend to close (sets status=CLOSED, closedAt, closeReason, generates transcript)
@@ -1197,17 +1205,19 @@ export async function handleTicketCloseFinalize(interaction, ticket, panel, reas
     await channel.setArchived(true).catch(() => {});
   }
 
-  await interaction.editReply("✅ Ticket closed.");
+  await interaction.editReply(t("ticket.closedConfirm", lang));
 }
 
 async function handleTicketClaim(interaction, ticket, panel) {
   // Проверката за права остава ПРЕДИ defer (ephemeral отказ).
   if (!isTicketStaff(interaction, panel)) {
-    return interaction.reply({ content: "❌ Only support team members can claim tickets.", flags: MessageFlags.Ephemeral });
+    const lang = await resolveLang(interaction);
+    return interaction.reply({ content: t("ticket.claimStaffOnly", lang), flags: MessageFlags.Ephemeral });
   }
 
   // Defer преди backend заявката — claim обявата е публична, затова defer публичен.
   await interaction.deferReply().catch(() => {});
+  const lang = await resolveLang(interaction);
 
   try {
     await api.post(`/bot/ticket/${ticket.id}/claim`, { userId: interaction.user.id });
@@ -1217,7 +1227,7 @@ async function handleTicketClaim(interaction, ticket, panel) {
 
   await interaction.editReply({
     embeds: [{
-      description: `👋 Ticket claimed by <@${interaction.user.id}>`,
+      description: t("ticket.claimedConfirm", lang, { user: `<@${interaction.user.id}>` }),
       color: BRAND,
     }],
   });
@@ -1233,12 +1243,13 @@ async function handleTicketClaim(interaction, ticket, panel) {
 
 async function handleTicketTranscript(interaction, ticket, panel) {
   await interaction.deferReply();
+  const lang = await resolveLang(interaction);
   try {
     const res = await api.post(`/bot/ticket/${ticket.id}/transcript`, {});
     if (res.data?.url) {
-      await interaction.editReply(`📜 Transcript: ${res.data.url}`);
+      await interaction.editReply(t("ticket.transcriptLink", lang, { url: res.data.url }));
     } else {
-      await interaction.editReply("📜 Transcript saved to archive channel.");
+      await interaction.editReply(t("ticket.transcriptSaved", lang));
     }
   } catch (err) {
     await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
@@ -1247,6 +1258,7 @@ async function handleTicketTranscript(interaction, ticket, panel) {
 
 async function handleTicketReopen(interaction, ticket, panel) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const lang = await resolveLang(interaction);
 
   try {
     await api.post(`/bot/ticket/${ticket.id}/reopen`, { reopenerId: interaction.user.id });
@@ -1271,8 +1283,8 @@ async function handleTicketReopen(interaction, ticket, panel) {
 
   await channel.send({
     embeds: [{
-      title: "🔓 Ticket Reopened",
-      description: `Reopened by <@${interaction.user.id}>.`,
+      title: t("ticket.reopenedTitle", lang),
+      description: t("ticket.reopenedBody", lang, { user: `<@${interaction.user.id}>` }),
       color: SUCCESS,
       timestamp: new Date().toISOString(),
     }],
@@ -1286,28 +1298,30 @@ async function handleTicketReopen(interaction, ticket, panel) {
     }).catch(() => {});
   }
 
-  await interaction.editReply("✅ Ticket reopened.");
+  await interaction.editReply(t("ticket.reopenedConfirm", lang));
 }
 
 // Deletion is destructive and irreversible — same two-step confirm pattern as
 // close (handleTicketClosePrompt/Finalize above), so a stray click can't wipe
 // a ticket channel.
 async function handleTicketDeletePrompt(interaction, ticket, panel) {
+  const lang = await resolveLang(interaction);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`ticket:delete-confirm:${ticket.id}`).setLabel("Yes, delete").setStyle(4).setEmoji("🗑️"),
-    new ButtonBuilder().setCustomId(`ticket:delete-cancel:${ticket.id}`).setLabel("Cancel").setStyle(2)
+    new ButtonBuilder().setCustomId(`ticket:delete-confirm:${ticket.id}`).setLabel(t("ticket.deleteConfirmYes", lang)).setStyle(4).setEmoji("🗑️"),
+    new ButtonBuilder().setCustomId(`ticket:delete-cancel:${ticket.id}`).setLabel(t("ticket.closeConfirmCancel", lang)).setStyle(2)
   );
 
   return interaction.reply({
-    embeds: [{ description: "🗑️ This will permanently delete the channel and its transcript reference. Are you sure?", color: DANGER }],
+    embeds: [{ description: t("ticket.deleteConfirmPrompt", lang), color: DANGER }],
     components: [row],
     flags: MessageFlags.Ephemeral,
   });
 }
 
 async function handleTicketDelete(interaction, ticket, panel) {
+  const lang = await resolveLang(interaction);
   await interaction.update({
-    embeds: [{ description: "🗑️ This channel will be deleted in 5 seconds.", color: DANGER }],
+    embeds: [{ description: t("ticket.deleteScheduled", lang), color: DANGER }],
     components: [],
   }).catch(() => {});
 
@@ -1364,12 +1378,13 @@ const pendingMathChallenges = new Map(); // `${userId}:${panelId}` → { answer,
 const MATH_CHALLENGE_TTL = 5 * 60 * 1000;
 
 async function handleVerificationStart(interaction, panelId) {
+  const lang = await resolveLang(interaction);
   let panel;
   try {
     const { data } = await api.get(`/verification/bot/${panelId}`);
     panel = data;
   } catch {
-    return interaction.reply({ content: "❌ Verification panel not found.", flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: t("verify.panelNotFound", lang), flags: MessageFlags.Ephemeral });
   }
 
   // Anti-bot: minimum account age
@@ -1378,7 +1393,7 @@ async function handleVerificationStart(interaction, panelId) {
     const requiredMs = panel.minAccountAgeDays * 24 * 60 * 60 * 1000;
     if (accountAge < requiredMs) {
       return interaction.reply({
-        content: `❌ Your account must be at least **${panel.minAccountAgeDays} days old** to verify here.`,
+        content: t("verify.accountTooNewHere", lang, { days: panel.minAccountAgeDays }),
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -1404,10 +1419,10 @@ async function handleVerificationStart(interaction, panelId) {
     const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder: Row } = await import("discord.js");
     const modal = new ModalBuilder()
       .setCustomId(`verify_math:${panel.id}`)
-      .setTitle("Verification Challenge");
+      .setTitle(t("verify.modalTitle", lang));
     const input = new TextInputBuilder()
       .setCustomId("answer")
-      .setLabel(`What is ${question}?`)
+      .setLabel(t("verify.modalQuestionLabel", lang, { question }))
       .setStyle(TextInputStyle.Short)
       .setRequired(true)
       .setMaxLength(10);
@@ -1424,12 +1439,13 @@ async function handleVerificationStart(interaction, panelId) {
 }
 
 async function handleVerificationMathSubmit(interaction, panelId) {
+  const lang = await resolveLang(interaction);
   const challengeKey = `${interaction.user.id}:${panelId}`;
   const challenge = pendingMathChallenges.get(challengeKey);
   pendingMathChallenges.delete(challengeKey);
   if (!challenge || challenge.expiresAt <= Date.now()) {
     return interaction.reply({
-      content: "⏰ Verification challenge expired. Please click Verify again.",
+      content: t("verify.challengeExpired", lang),
       flags: MessageFlags.Ephemeral,
     });
   }
@@ -1442,7 +1458,7 @@ async function handleVerificationMathSubmit(interaction, panelId) {
     const { data } = await api.get(`/verification/bot/${panelId}`);
     panel = data;
   } catch {
-    return interaction.reply({ content: "❌ Verification panel not found.", flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: t("verify.panelNotFound", lang), flags: MessageFlags.Ephemeral });
   }
 
   await completeVerification(interaction, panel, correct, userAnswer);
@@ -1452,6 +1468,7 @@ async function completeVerification(interaction, panel, success, answer) {
   // Defer преди backend заявката + прилагането на ролите (може да отнеме >3s).
   // Извиква се от бутон (BUTTON/REACTION) и от modal submit (MATH) — и двата
   // очакват отговор до 3s, затова ack-ваме ephemeral веднага, после editReply.
+  const lang = await resolveLang(interaction);
   if (!interaction.deferred && !interaction.replied) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   }
@@ -1474,7 +1491,7 @@ async function completeVerification(interaction, panel, success, answer) {
 
   if (!success) {
     return interaction.editReply({
-      content: result.failureMessage || "❌ Incorrect answer. Please try again.",
+      content: result.failureMessage || t("verify.wrongAnswer", lang),
     });
   }
 
@@ -1495,7 +1512,7 @@ async function completeVerification(interaction, panel, success, answer) {
   }
 
   const successMsg = result.successMessage
-    || `✅ You're verified, <@${interaction.user.id}>!${added.length ? ` Roles granted: ${added.length}` : ""}`;
+    || `${t("verify.defaultSuccess", lang, { user: `<@${interaction.user.id}>` })}${added.length ? t("verify.rolesGrantedSuffix", lang, { count: added.length }) : ""}`;
 
   await interaction.editReply({ content: successMsg });
 
@@ -1546,8 +1563,9 @@ export function checkVerificationGate(interaction, panel) {
   return {
     allowed: false,
     missing,
-    message: panel.verificationDeniedMessage
-      || `❌ You need to verify first before opening a ticket. Please visit the verification channel and complete the challenge.`,
+    // Sync-only locale guess (interaction.locale) — this check runs before
+    // any defer, so it must stay synchronous to not eat into the 3s budget.
+    message: panel.verificationDeniedMessage || t("verify.gateBlocked", resolveLangSync(interaction)),
   };
 }
 

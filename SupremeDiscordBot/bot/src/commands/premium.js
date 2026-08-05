@@ -4,11 +4,13 @@ import api from "../utils/api.js";
 import { sendPremiumRequired } from "../utils/premiumRequired.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { DANGER, INFO } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("premium")
     .setDescription("⭐ Premium server commands")
+    .setDescriptionLocalizations(CMD_DESC_L10N.premium)
     .addSubcommand((sub) =>
       sub.setName("status")
         .setDescription("Show your server's Premium subscription status")

@@ -3,11 +3,13 @@ import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, 
 import api from "../utils/api.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { INFO } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("form")
     .setDescription("Manage application forms")
+    .setDescriptionLocalizations(CMD_DESC_L10N.form)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand((sub) =>
       sub.setName("spawn")

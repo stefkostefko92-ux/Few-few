@@ -18,6 +18,7 @@ import {
 import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
 
 import { sessionStore } from "./sessionStore.js";
+import { t, resolveLang } from "../i18n/index.js";
 
 // ─── Споделена regex валидация (DM сесия + modal път) ────────────────────────
 // ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата,
@@ -62,8 +63,10 @@ const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 минути
  * @param {Object} panel    - Panel that triggered this form (may be a stub for /apply)
  */
 export async function runFormSession(interaction, form, panel) {
+  const lang = await resolveLang(interaction);
+
   if (!form?.questions?.length) {
-    await interaction.editReply("❌ This form has no questions configured.").catch(() => {});
+    await interaction.editReply(t("form.noQuestions", lang)).catch(() => {});
     return;
   }
 
@@ -72,7 +75,7 @@ export async function runFormSession(interaction, form, panel) {
   if (await sessionStore.has(sessionKey)) {
     try {
       const dmChannel = await interaction.user.createDM();
-      await dmChannel.send("⚠️ You already have an active form session. Please complete it first.");
+      await dmChannel.send(t("form.alreadyActive", lang));
     } catch {}
     return;
   }
@@ -80,7 +83,10 @@ export async function runFormSession(interaction, form, panel) {
   const questions = [...form.questions].sort((a, b) => a.order - b.order);
 
   // Note: session must be JSON-serialisable for Redis storage.
-  // Collectors are NOT stored — they are recreated per question.
+  // Collectors are NOT stored — they are recreated per question. `lang` is
+  // resolved once here (from the opening interaction) and carried in the
+  // session so the whole DM flow — which has no interaction after this —
+  // stays in the user's language.
   const session = {
     form,
     panel,
@@ -90,6 +96,7 @@ export async function runFormSession(interaction, form, panel) {
     userId: interaction.user.id,
     guildId: interaction.guildId,
     channelId: interaction.channelId,
+    lang,
   };
 
   await sessionStore.set(sessionKey, session);
@@ -100,9 +107,7 @@ export async function runFormSession(interaction, form, panel) {
   } catch (err) {
     console.error("Failed to DM user for form:", err.message);
     await sessionStore.delete(sessionKey);
-    await interaction.editReply(
-      "❌ I couldn't send you a DM. Please enable DMs from server members and try again."
-    ).catch(() => {});
+    await interaction.editReply(t("form.dmFailed", lang)).catch(() => {});
   }
 }
 
@@ -110,6 +115,7 @@ export async function runFormSession(interaction, form, panel) {
 
 async function sendQuestion(client, dmChannel, session, sessionKey) {
   const question = session.questions[session.currentIndex];
+  const lang = session.lang || "en";
 
   if (!question) {
     await finishSession(client, dmChannel, session, sessionKey);
@@ -118,16 +124,16 @@ async function sendQuestion(client, dmChannel, session, sessionKey) {
 
   const num = session.currentIndex + 1;
   const total = session.questions.length;
-  const requiredLabel = question.required ? "*(required)*" : "*(optional — type `skip` to skip)*";
+  const requiredLabel = question.required ? t("form.requiredLabel", lang) : t("form.optionalLabel", lang);
 
   await dmChannel.send({
     embeds: [{
-      title: `📋 ${session.form.name} — Question ${num}/${total}`,
+      title: t("form.questionTitle", lang, { form: session.form.name, num, total }),
       description: `**${question.label}**${
         question.placeholder ? `\n_${question.placeholder}_` : ""
       }\n\n${requiredLabel}`,
       color: 0x5865f2,
-      footer: { text: 'Type "cancel" at any time to abort.' },
+      footer: { text: t("form.cancelHint", lang) },
     }],
   });
 
@@ -148,10 +154,11 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
 
   const isMulti = question.type === "MULTI_SELECT";
   const maxValues = isMulti ? Math.min(choices.length, 25) : 1;
+  const lang = session.lang || "en";
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId(`form_select:${sessionKey}:${question.id}`)
-    .setPlaceholder("Choose an option...")
+    .setPlaceholder(t("form.selectPlaceholder", lang))
     .setMinValues(1)
     .setMaxValues(maxValues)
     .addOptions(
@@ -182,12 +189,13 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
-      dmChannel.send("⏰ Form session timed out. Please start over.").catch(() => {});
+      dmChannel.send(t("form.timeout", session.lang || "en")).catch(() => {});
     }
   });
 }
 
 async function sendTextQuestion(client, dmChannel, session, sessionKey, question) {
+  const lang = session.lang || "en";
   const collector = dmChannel.createMessageCollector({
     filter: (m) => m.author.id === session.userId,
     time: SESSION_TIMEOUT_MS,
@@ -199,13 +207,13 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
 
     if (content.toLowerCase() === "cancel") {
       await sessionStore.delete(sessionKey);
-      await dmChannel.send("❌ Form session cancelled.");
+      await dmChannel.send(t("form.cancelled", lang));
       return;
     }
 
     if (content.toLowerCase() === "skip") {
       if (question.required) {
-        await dmChannel.send("⚠️ This question is required. Please provide an answer.");
+        await dmChannel.send(t("form.requiredWarning", lang));
         await sendQuestion(client, dmChannel, session, sessionKey);
         return;
       }
@@ -214,17 +222,13 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     }
 
     if (question.minLength && content.length < question.minLength) {
-      await dmChannel.send(
-        `⚠️ Answer too short (minimum ${question.minLength} characters). Please try again.`
-      );
+      await dmChannel.send(t("form.tooShort", lang, { min: question.minLength }));
       await sendQuestion(client, dmChannel, session, sessionKey);
       return;
     }
 
     if (question.maxLength && content.length > question.maxLength) {
-      await dmChannel.send(
-        `⚠️ Answer too long (maximum ${question.maxLength} characters). Please try again.`
-      );
+      await dmChannel.send(t("form.tooLong", lang, { max: question.maxLength }));
       await sendQuestion(client, dmChannel, session, sessionKey);
       return;
     }
@@ -247,7 +251,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
       const verdict = validateAnswerAgainstRegex(question, content);
       if (!verdict.ok) {
         await dmChannel.send(
-          `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
+          t("form.invalidFormat", lang, { reason: question.validationMessage || "Answer does not match the expected format. Please try again." })
         );
         await sendQuestion(client, dmChannel, session, sessionKey);
         return;
@@ -260,7 +264,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
-      dmChannel.send("⏰ Form session timed out. Please start over.").catch(() => {});
+      dmChannel.send(t("form.timeout", lang)).catch(() => {});
     }
   });
 }
@@ -291,11 +295,12 @@ async function processAnswer(client, dmChannel, session, sessionKey, question, a
 
 async function finishSession(client, dmChannel, session, sessionKey) {
   await sessionStore.delete(sessionKey);
+  const lang = session.lang || "en";
 
   await dmChannel.send({
     embeds: [{
-      title: "✅ Form Submitted!",
-      description: "Thank you for completing the form. Your submission has been recorded.",
+      title: t("form.submittedTitle", lang),
+      description: t("form.submittedBody", lang),
       color: 0x57f287,
     }],
   });

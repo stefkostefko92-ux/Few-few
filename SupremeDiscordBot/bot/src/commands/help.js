@@ -2,6 +2,7 @@
 import { MessageFlags, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from "discord.js";
 import { COMMAND_CATALOG } from "../utils/commandsCatalog.js";
 import { BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supreme.carbonstealth.eu";
 const SUPPORT_URL = process.env.SUPPORT_URL || "https://supreme.carbonstealth.eu/support";
@@ -11,6 +12,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("help")
     .setDescription("Show every command the bot supports and what it does.")
+    .setDescriptionLocalizations(CMD_DESC_L10N.help)
     .addStringOption((o) =>
       o.setName("category")
         .setDescription("Filter by category")

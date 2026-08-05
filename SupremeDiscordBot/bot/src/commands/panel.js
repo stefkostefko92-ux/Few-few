@@ -3,11 +3,13 @@ import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits } from "discord.
 import api, { markPanelSpawned } from "../utils/api.js";
 import { buildPanelMessage } from "../utils/embed.js";
 import { friendlyError } from "../utils/friendlyError.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("panel")
     .setDescription("Manage ticket panels")
+    .setDescriptionLocalizations(CMD_DESC_L10N.panel)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand((sub) =>
       sub.setName("spawn")

@@ -4,6 +4,7 @@
 // от нормален приложен отказ (404/403/валидация), и винаги слага correlation ID
 // (interaction.id), за да може потребител да го даде на support при нужда.
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+import { t, resolveLangSync } from "../i18n/index.js";
 
 const STATUS_URL = process.env.STATUS_URL || "https://supreme.carbonstealth.eu/status";
 
@@ -20,15 +21,19 @@ export function friendlyError(err, interaction, fallbackMessage) {
   const correlationId = interaction?.id || "unknown";
   const status = err?.response?.status;
   const isNetworkIssue = NETWORK_CODES.has(err?.code) || (status && status >= 500) || (!status && !err?.response && err?.code);
+  // Sync-only locale guess (interaction.locale, no DB hop) — this is an
+  // already-degraded error path, not worth the extra Server.language lookup
+  // resolveLang() would otherwise do.
+  const lang = resolveLangSync(interaction);
 
   if (isNetworkIssue) {
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Check status").setURL(STATUS_URL)
+      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(t("error.serviceUnavailable.button", lang)).setURL(STATUS_URL)
     );
     return {
       embeds: [{
-        title: "⚠️ Service temporarily unavailable",
-        description: `The backend didn't respond in time — this is usually temporary. Please try again in a moment.\n\n_Correlation ID: \`${correlationId}\`_`,
+        title: t("error.serviceUnavailable.title", lang),
+        description: t("error.serviceUnavailable.body", lang, { id: correlationId }),
         color: 0xfbbf24,
       }],
       components: [row],

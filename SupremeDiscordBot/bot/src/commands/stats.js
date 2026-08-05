@@ -6,11 +6,13 @@ import { MessageFlags, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } 
 import api from "../utils/api.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("stats")
     .setDescription("Show ticket + staff performance stats for this server")
+    .setDescriptionLocalizations(CMD_DESC_L10N.stats)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {

@@ -7,11 +7,13 @@ import { SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { WARNING } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("escalate")
     .setDescription("Move this ticket to a different panel / support team")
+    .setDescriptionLocalizations(CMD_DESC_L10N.escalate)
     .addStringOption((opt) =>
       opt.setName("panel").setDescription("Target panel").setRequired(true).setAutocomplete(true)
     )

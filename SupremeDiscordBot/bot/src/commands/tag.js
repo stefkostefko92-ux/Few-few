@@ -7,6 +7,7 @@ import { getTags, createTag, deleteTag, useTag, getServer } from "../utils/api.j
 import { isStaffMember } from "../utils/staffCheck.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const NAME_MAX = 32;
 const CONTENT_MAX = 1500;
@@ -22,6 +23,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("tag")
     .setDescription("Manage canned responses (saved replies)")
+    .setDescriptionLocalizations(CMD_DESC_L10N.tag)
     .addSubcommand((s) =>
       s.setName("use")
         .setDescription("Post a saved reply in this channel")

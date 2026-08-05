@@ -3,10 +3,12 @@
 // of the top 25 canned responses by usage, posts the chosen one in the channel.
 import { ContextMenuCommandBuilder, ApplicationCommandType } from "discord.js";
 import { handleReplyWithTagContextMenu } from "../events/interactionCreate.js";
+import { CMD_NAME_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new ContextMenuCommandBuilder()
     .setName("Reply with tag")
+    .setNameLocalizations(CMD_NAME_L10N["Reply with tag"])
     .setType(ApplicationCommandType.Message),
 
   async execute(interaction) {

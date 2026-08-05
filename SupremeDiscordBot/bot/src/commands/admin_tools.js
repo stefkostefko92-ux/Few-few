@@ -4,11 +4,13 @@ import { MessageFlags, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("admin")
     .setDescription("Admin tools (Manage Server)")
+    .setDescriptionLocalizations(CMD_DESC_L10N.admin)
     .addSubcommandGroup((g) =>
       g.setName("sticky")
         .setDescription("Sticky messages — auto-repost at bottom of channel")

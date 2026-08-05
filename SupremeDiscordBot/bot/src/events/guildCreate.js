@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { registerServer } from "../utils/api.js";
 import { checkBotPermissions, reinviteUrl } from "../utils/permissionCheck.js";
 import { BRAND, WARNING } from "../utils/colors.js";
+import { t, resolveLangForGuild } from "../i18n/index.js";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supreme.carbonstealth.eu";
 const SUPPORT_URL = process.env.SUPPORT_URL || "https://supreme.carbonstealth.eu/support";
@@ -44,16 +45,21 @@ function findWelcomeChannel(guild) {
 
 async function sendWelcome(guild) {
   const { missing } = checkBotPermissions(guild);
+  // Server just registered (registerServer above) — freshly created, so
+  // language is still the DB default ("en") unless the owner pre-set it via
+  // some other server on the same account; still worth resolving instead of
+  // hardcoding, for consistency with every other localized surface.
+  const lang = await resolveLangForGuild(guild.id);
 
   const embed = {
-    title: "👋 Thanks for adding Supreme Bot!",
+    title: t("welcome.title", lang),
     description: [
-      "I run **ticket panels**, **application forms**, **polls & giveaways**, **verification gates**, and **scheduled/sticky messages** — all managed from the dashboard.",
+      t("welcome.intro", lang),
       "",
-      "**Quick start:**",
-      "1. Click **Quick Setup** below (or run `/setup wizard`) to pick support roles + a ticket category.",
-      "2. Open the dashboard to build panels, forms, and automation.",
-      "3. Run `/help` any time for the full command list.",
+      t("welcome.quickStart", lang),
+      t("welcome.step1", lang),
+      t("welcome.step2", lang),
+      t("welcome.step3", lang),
     ].join("\n"),
     color: missing.length ? WARNING : BRAND,
     timestamp: new Date().toISOString(),
@@ -61,15 +67,15 @@ async function sendWelcome(guild) {
 
   if (missing.length) {
     embed.fields = [{
-      name: `⚠️ Missing ${missing.length} permission(s)`,
-      value: `${missing.map((m) => m.name).join(", ")}\n[Re-invite with correct permissions](${reinviteUrl(guild.client.user.id)})`,
+      name: t("welcome.missingPerms", lang, { count: missing.length }),
+      value: `${missing.map((m) => m.name).join(", ")}\n[${t("welcome.reinvite", lang)}](${reinviteUrl(guild.client.user.id)})`,
     }];
   }
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Open Dashboard").setURL(`${DASHBOARD_URL}/dashboard/${guild.id}`),
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Support").setURL(SUPPORT_URL),
-    new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId("setup:start").setLabel("Quick Setup").setEmoji("⚡"),
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(t("welcome.dashboardButton", lang)).setURL(`${DASHBOARD_URL}/dashboard/${guild.id}`),
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(t("welcome.supportButton", lang)).setURL(SUPPORT_URL),
+    new ButtonBuilder().setStyle(ButtonStyle.Primary).setCustomId("setup:start").setLabel(t("welcome.quickSetupButton", lang)).setEmoji("⚡"),
   );
 
   const payload = { embeds: [embed], components: [row] };
