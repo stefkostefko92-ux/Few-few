@@ -1,12 +1,12 @@
 // frontend/src/pages/Dashboard.jsx
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, AlertCircle, Star } from "lucide-react";
+import { PlusCircle, AlertCircle, RefreshCw, Star } from "lucide-react";
 import { getServers } from "../api";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { data: servers = [], isLoading, error } = useQuery({
+  const { data: servers = [], isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["servers"],
     queryFn: getServers,
   });
@@ -28,17 +28,26 @@ export default function Dashboard() {
         </div>
       )}
 
-      {error && (
+      {!isLoading && isError && (
         <div
           role="alert"
-          className="flex items-center gap-3 text-danger bg-danger/10 border border-danger/20 rounded-xl p-4"
+          className="flex flex-col items-center gap-3 text-center text-danger bg-danger/10 border border-danger/20 rounded-xl p-8"
         >
-          <AlertCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-          Failed to load servers. Please refresh.
+          <AlertCircle className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+          <p>Failed to load servers.</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
+            {isRefetching ? "Retrying…" : "Retry"}
+          </button>
         </div>
       )}
 
-      {!isLoading && (
+      {!isLoading && !isError && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {servers.map((server) => (
             <ServerCard

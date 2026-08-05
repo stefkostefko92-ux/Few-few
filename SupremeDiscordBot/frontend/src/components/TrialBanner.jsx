@@ -2,7 +2,7 @@
 // Appears at the top of the dashboard when:
 //   1. Server is eligible for trial (never used, not premium) → "Start 14-day trial"
 //   2. Trial is active → "X days left"
-//   3. Trial is about to expire (≤ 3 days) → amber warning
+//   3. Trial is about to expire (≤ 3 days) → warning-token urgency state
 import { useParams, Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Star, Clock, AlertTriangle, X, XCircle } from "lucide-react";
@@ -53,10 +53,10 @@ export default function TrialBanner() {
   // Eligible — not yet used, not premium
   if (trial.eligible && !dismissed) {
     return (
-      <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border-b border-amber-500/30 px-4 py-3">
+      <div className="bg-gradient-to-r from-cs-gold/15 via-cs-gold/10 to-transparent border-b border-cs-gold/30 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3 flex-1">
-            <Star className="w-5 h-5 text-amber-400 fill-current flex-shrink-0" />
+            <Star className="w-5 h-5 text-cs-gold fill-current flex-shrink-0" />
             <div>
               <div className="text-sm text-cs-text font-bold">
                 Try Premium free for 14 days
@@ -70,7 +70,7 @@ export default function TrialBanner() {
             <button
               onClick={() => startMut.mutate()}
               disabled={startMut.isPending}
-              className="px-4 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+              className="px-4 py-1.5 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
             >
               {startMut.isPending ? "Starting…" : "Start Free Trial"}
             </button>
@@ -94,17 +94,17 @@ export default function TrialBanner() {
   if (trial.active && trial.daysLeft > 0) {
     const urgent = trial.daysLeft <= 3;
     return (
-      <div className={`border-b px-4 py-2 ${urgent ? "bg-amber-500/15 border-amber-500/40" : "bg-cs-cyan/10 border-cs-cyan/30"}`}>
+      <div className={`border-b px-4 py-2 ${urgent ? "bg-warning/15 border-warning/40" : "bg-cs-cyan/10 border-cs-cyan/30"}`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3 flex-1">
             {urgent
-              ? <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              ? <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0" />
               : <Clock className="w-4 h-4 text-cs-cyan flex-shrink-0" />}
             <div className="text-sm">
               <span className="text-cs-text font-bold">
                 {urgent ? "Trial ending soon: " : "Premium trial active: "}
               </span>
-              <span className={urgent ? "text-amber-300" : "text-cs-muted"}>
+              <span className={urgent ? "text-warning" : "text-cs-muted"}>
                 {trial.daysLeft} {trial.daysLeft === 1 ? "day" : "days"} left
               </span>
             </div>
@@ -114,7 +114,7 @@ export default function TrialBanner() {
               to={`/dashboard/${serverId}/premium`}
               className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
                 urgent
-                  ? "bg-amber-500 hover:bg-amber-400 text-black"
+                  ? "bg-warning hover:bg-warning/80 text-black"
                   : "bg-cs-cyan hover:bg-cs-cyan/80 text-black"
               }`}
             >
@@ -163,7 +163,7 @@ export default function TrialBanner() {
           <div className="flex items-center gap-2">
             <Link
               to={`/dashboard/${serverId}/premium`}
-              className="px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition-colors"
+              className="px-3 py-1 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors"
             >
               Subscribe to keep access
             </Link>

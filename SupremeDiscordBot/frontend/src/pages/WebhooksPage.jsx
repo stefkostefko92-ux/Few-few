@@ -8,6 +8,7 @@ import {
 } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
 
 const defaultForm = () => ({
   name: "",
@@ -111,10 +112,13 @@ export default function WebhooksPage() {
       )}
 
       {!isLoading && !isError && hooks.length === 0 && (
-        <div className="cs-card text-center py-12">
-          <WebhookIcon className="w-12 h-12 text-cs-dim mx-auto mb-4" />
-          <p className="text-cs-muted">No webhooks configured yet.</p>
-        </div>
+        <EmptyState
+          icon={WebhookIcon}
+          title="No webhooks configured yet"
+          description="Get an HTTP POST when tickets, applications, giveaways or verification events happen."
+          ctaLabel="Create first webhook"
+          onCtaClick={openNew}
+        />
       )}
 
       <div className="space-y-3">

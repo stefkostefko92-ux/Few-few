@@ -9,14 +9,14 @@ import { Link, useParams } from "react-router-dom";
 export function PremiumBadge({ small = false }) {
   if (small) {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[9px] font-bold uppercase tracking-wider border border-amber-500/30">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-[9px] font-bold uppercase tracking-wider border border-cs-gold/30">
         <Star className="w-2.5 h-2.5 fill-current" />
         Premium
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold uppercase tracking-wider border border-amber-500/30">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-[10px] font-bold uppercase tracking-wider border border-cs-gold/30">
       <Star className="w-3 h-3 fill-current" />
       Premium
     </span>
@@ -38,7 +38,7 @@ export function PremiumGate({ locked, feature, children, className = "" }) {
       <div className="absolute inset-0 flex items-center justify-center bg-cs-black/40 backdrop-blur-[1px] rounded-lg">
         <Link
           to={`/dashboard/${serverId}/premium`}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider border border-amber-500/40 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cs-gold/20 hover:bg-cs-gold/30 text-cs-gold text-xs font-bold uppercase tracking-wider border border-cs-gold/40 transition-colors"
         >
           <Lock className="w-3 h-3" />
           {feature ? `Upgrade: ${feature}` : "Premium Required"}
@@ -54,15 +54,15 @@ export function PremiumGate({ locked, feature, children, className = "" }) {
 export function PremiumLockCard({ feature, description }) {
   const { serverId } = useParams();
   return (
-    <div className="cs-card border-amber-500/30 bg-amber-500/5 text-center py-10">
-      <Lock className="w-10 h-10 text-amber-400 mx-auto mb-3" />
+    <div className="cs-card border-cs-gold/30 bg-cs-gold/5 text-center py-10">
+      <Lock className="w-10 h-10 text-cs-gold mx-auto mb-3" />
       <h3 className="text-cs-text font-bold text-lg mb-2">Premium Feature</h3>
       <p className="text-cs-muted text-sm max-w-md mx-auto mb-4">
         {description || `${feature} is available with a Premium subscription.`}
       </p>
       <Link
         to={`/dashboard/${serverId}/premium`}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors"
       >
         <Star className="w-3 h-3 fill-current" />
         Upgrade to Premium

@@ -17,6 +17,7 @@ import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge, PremiumLockCard } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
 
 const TABS = [
   { id: "polls",     label: "Polls",      icon: BarChart3 },
@@ -84,7 +85,7 @@ function PollsTab() {
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
   if (isError) return <ErrorCard msg="Couldn't load polls — please retry." />;
-  if (!polls.length) return <Empty msg="No polls yet. Run /poll in Discord to create one." />;
+  if (!polls.length) return <Empty icon={BarChart3} msg="No polls yet. Run /poll in Discord to create one." />;
 
   return (
     <div className="space-y-3">
@@ -147,7 +148,7 @@ function GiveawaysTab() {
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
   if (isError) return <ErrorCard msg="Couldn't load giveaways — please retry." />;
-  if (!giveaways.length) return <Empty msg="No giveaways yet. Run /giveaway start in Discord." />;
+  if (!giveaways.length) return <Empty icon={Gift} msg="No giveaways yet. Run /giveaway start in Discord." />;
 
   return (
     <div className="space-y-3">
@@ -159,7 +160,7 @@ function GiveawaysTab() {
                 <span className="text-cs-text font-bold">🎉 {g.prize}</span>
                 {g.endedAt
                   ? <span className="cs-badge text-cs-dim">Ended</span>
-                  : <span className="cs-badge text-amber-400">Active</span>}
+                  : <span className="cs-badge text-cs-gold">Active</span>}
               </div>
               <p className="text-xs text-cs-muted mt-1">
                 {g.winnerCount} winner{g.winnerCount > 1 ? "s" : ""} · {g.entryCount} entr{g.entryCount === 1 ? "y" : "ies"} ·
@@ -254,7 +255,7 @@ function StickyTab() {
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
       {!isLoading && isError && <ErrorCard msg="Couldn't load sticky messages — please retry." />}
-      {!isLoading && !isError && !stickies.length && <Empty msg="No sticky messages." />}
+      {!isLoading && !isError && !stickies.length && <Empty icon={Pin} msg="No sticky messages yet — create one above." />}
 
       <div className="space-y-3">
         {stickies.map((s) => (
@@ -347,7 +348,7 @@ function ScheduledTab() {
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
       {!isLoading && isError && <ErrorCard msg="Couldn't load scheduled messages — please retry." />}
-      {!isLoading && !isError && !scheduled.length && <Empty msg="No scheduled messages." />}
+      {!isLoading && !isError && !scheduled.length && <Empty icon={CalendarClock} msg="No scheduled messages yet — create one above." />}
 
       <div className="space-y-3">
         {scheduled.map((m) => (
@@ -440,7 +441,7 @@ function WebhooksTab() {
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
       {!isLoading && isError && <ErrorCard msg="Couldn't load webhooks — please retry." />}
-      {!isLoading && !isError && !hooks.length && <Empty msg="No webhooks configured." />}
+      {!isLoading && !isError && !hooks.length && <Empty icon={Webhook} msg="No webhooks configured yet — create one above." />}
 
       <div className="space-y-3">
         {hooks.map((h) => (
@@ -451,7 +452,7 @@ function WebhooksTab() {
                 {h.enabled
                   ? <span className="cs-badge text-success">Enabled</span>
                   : <span className="cs-badge text-cs-dim">Disabled</span>}
-                {h.failCount > 0 && <span className="cs-badge text-amber-400">{h.failCount} fails</span>}
+                {h.failCount > 0 && <span className="cs-badge text-warning">{h.failCount} fails</span>}
               </div>
               <p className="text-xs font-mono text-cs-dim mt-1 truncate">{h.url}</p>
               <p className="text-xs text-cs-muted mt-1">
@@ -540,10 +541,8 @@ function WebhooksTab() {
   );
 }
 
-function Empty({ msg }) {
-  return (
-    <div className="cs-card text-center py-10 text-cs-muted">{msg}</div>
-  );
+function Empty({ msg, icon }) {
+  return <EmptyState icon={icon} title={msg} className="!py-10" />;
 }
 
 function ErrorCard({ msg }) {

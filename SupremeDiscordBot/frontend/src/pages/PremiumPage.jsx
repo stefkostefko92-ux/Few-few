@@ -137,17 +137,17 @@ export default function PremiumPage() {
     return (
       <div className="p-8">
         <h1 className="text-2xl font-bold text-cs-text mb-4">Premium</h1>
-        <div role="alert" className="cs-card bg-yellow-500/10 border-yellow-500/20 text-center py-10">
+        <div role="alert" className="cs-card bg-warning/10 border-warning/20 text-center py-10">
           {stripeMissing ? (
             <>
-              <p className="text-yellow-300 font-semibold mb-2">Payments unavailable</p>
+              <p className="text-warning font-semibold mb-2">Payments unavailable</p>
               <p className="text-cs-muted text-sm">
                 Payments are temporarily unavailable. Please contact support.
               </p>
             </>
           ) : (
             <>
-              <p className="text-yellow-300 font-semibold mb-2">Couldn't load subscription status</p>
+              <p className="text-warning font-semibold mb-2">Couldn't load subscription status</p>
               <p className="text-cs-muted text-sm">
                 {error?.response?.data?.error || "Something went wrong. Please try again later."}
               </p>
@@ -173,12 +173,12 @@ export default function PremiumPage() {
 
       {/* Current Status Banner */}
       {isPremium && (
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
+        <div className="bg-cs-gold/10 border border-cs-gold/20 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+            <Star className="w-6 h-6 text-cs-gold fill-cs-gold" />
             <div>
               <p className="font-semibold text-cs-text">Premium Active</p>
-              <p className="text-sm text-yellow-300/70">
+              <p className="text-sm text-cs-gold/70">
                 {status?.stripeStatus === "trialing" && sub?.currentPeriodEnd
                   ? `Free trial — ends ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
                   : sub?.cancelAtPeriodEnd

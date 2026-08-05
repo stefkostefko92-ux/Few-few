@@ -16,7 +16,7 @@ export default function StatusPage() {
   const overall = data?.status || "unknown";
   const overallConfig = {
     operational: { color: "text-green-400", bg: "bg-green-500/10 border-green-500/30", icon: CheckCircle2, label: "All systems operational" },
-    degraded:    { color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30", icon: AlertTriangle, label: "Partial outage" },
+    degraded:    { color: "text-warning", bg: "bg-warning/10 border-warning/30", icon: AlertTriangle, label: "Partial outage" },
     down:        { color: "text-red-400",   bg: "bg-red-500/10 border-red-500/30",     icon: XCircle,      label: "Major outage" },
     unknown:     { color: "text-cs-dim",    bg: "bg-cs-surface border-cs-border",      icon: AlertTriangle, label: "Status unknown" },
   }[overall] || { color: "text-cs-dim", bg: "", icon: AlertTriangle, label: "Unknown" };
@@ -149,7 +149,7 @@ function ServiceRow({ icon: Icon, name, description, status, latency }) {
   const config = {
     operational: { color: "text-green-400", label: "Operational", StatusIcon: CheckCircle2 },
     down:        { color: "text-red-400",   label: "Down",        StatusIcon: XCircle },
-    degraded:    { color: "text-amber-400", label: "Degraded",    StatusIcon: AlertTriangle },
+    degraded:    { color: "text-warning", label: "Degraded",    StatusIcon: AlertTriangle },
   }[status] || { color: "text-cs-dim", label: "Unknown", StatusIcon: AlertTriangle };
   const { StatusIcon } = config;
 

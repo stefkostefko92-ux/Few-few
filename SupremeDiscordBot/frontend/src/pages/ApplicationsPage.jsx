@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare } from "lucide-react";
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users } from "lucide-react";
 import { getApplications, getApplication, reviewApplication, deleteApplication, openApplicationDiscussion } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
 
 const STATUS_COLORS = {
-  PENDING: "text-yellow-400 bg-yellow-500/10",
+  PENDING: "text-warning bg-warning/10",
   APPROVED: "text-success bg-green-500/10",
   DENIED: "text-danger bg-red-500/10",
   INTERVIEW: "text-cs-muted bg-gray-500/10",  // Legacy — no longer assignable
@@ -141,9 +142,23 @@ export default function ApplicationsPage() {
           Couldn't load applications — please retry.
         </div>
       ) : applications.length === 0 ? (
-        <div className="cs-card text-center py-16 text-cs-muted">
-          No applications found.
-        </div>
+        statusFilter ? (
+          <EmptyState
+            icon={Users}
+            title="No applications match this filter"
+            description="Try a different status filter."
+            ctaLabel="Show all statuses"
+            onCtaClick={() => { setStatusFilter(""); setPage(1); }}
+          />
+        ) : (
+          <EmptyState
+            icon={Users}
+            title="No applications yet"
+            description="Applications will show up here once members submit a form."
+            ctaLabel="Set up a form"
+            ctaTo={`/dashboard/${serverId}/forms`}
+          />
+        )
       ) : (
         <div className="space-y-3">
           {applications.map((app) => {

@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText } from "lucide-react";
 import { getForms, createForm, updateForm, deleteForm } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
+import { useToast } from "../contexts/ToastContext";
 
 const QUESTION_TYPES = [
   { value: "SHORT_TEXT", label: "Short Text" },
@@ -98,19 +100,36 @@ export default function FormsPage() {
     queryFn: () => getForms(serverId),
   });
 
+  const toast = useToast();
+
   const createMut = useMutation({
     mutationFn: (data) => createForm(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["forms", serverId] }); setEditing(false); setEditingId(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["forms", serverId] });
+      setEditing(false);
+      setEditingId(null);
+      toast.success("Form created.");
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || "Failed to create form."),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ formId, data }) => updateForm(serverId, formId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["forms", serverId] }); setEditing(false); setEditingId(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["forms", serverId] });
+      setEditing(false);
+      setEditingId(null);
+      toast.success("Form updated.");
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || "Failed to update form."),
   });
 
   const deleteMut = useMutation({
     mutationFn: ({ formId, force }) => deleteForm(serverId, formId, force),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["forms", serverId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["forms", serverId] });
+      toast.success("Form deleted.");
+    },
   });
 
   // Step 2 of cascade delete: form has applications, confirm force-delete.
@@ -222,10 +241,13 @@ export default function FormsPage() {
       {isLoading ? (
         <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />)}</div>
       ) : forms.length === 0 ? (
-        <div className="cs-card text-center py-12">
-          <p className="text-cs-muted mb-4">No forms yet</p>
-          <button onClick={() => setEditing(true)} className="cs-btn-primary">Create First Form</button>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="No forms yet"
+          description="Build a logic-branching questionnaire for tickets or applications."
+          ctaLabel="Create first form"
+          onCtaClick={() => { setForm(defaultForm()); setEditing(true); }}
+        />
       ) : (
         <div className="space-y-4">
           {forms.map((f) => (
@@ -332,7 +354,7 @@ export default function FormsPage() {
                     </summary>
                     <div className="pt-4 space-y-3">
                       {!isPremium && (
-                        <div className="cs-card !p-3 !bg-amber-500/5 border-amber-500/30 text-xs text-amber-300">
+                        <div className="cs-card !p-3 !bg-cs-gold/5 border-cs-gold/30 text-xs text-cs-gold">
                           <strong>Premium required</strong> — these advanced features (auto-role on accept/deny, custom DM messages, cooldowns) need a Premium subscription.
                         </div>
                       )}

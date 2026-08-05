@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Send, Pencil, Copy } from "lucide-react";
+import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
 import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, duplicatePanel, getForms } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
+import { useToast } from "../contexts/ToastContext";
 
 const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
 const STYLE_COLORS = {
@@ -113,19 +115,36 @@ export default function PanelsPage() {
     queryFn: () => getForms(serverId),
   });
 
+  const toast = useToast();
+  const mutErrorMsg = (err, fallback) => err?.response?.data?.error || fallback;
+
   const createMut = useMutation({
     mutationFn: (data) => createPanel(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["panels", serverId] }); setEditing(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["panels", serverId] });
+      setEditing(null);
+      toast.success("Panel created.");
+    },
+    onError: (err) => toast.error(mutErrorMsg(err, "Failed to create panel.")),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ panelId, data }) => updatePanel(serverId, panelId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["panels", serverId] }); setEditing(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["panels", serverId] });
+      setEditing(null);
+      toast.success("Panel updated.");
+    },
+    onError: (err) => toast.error(mutErrorMsg(err, "Failed to update panel.")),
   });
 
   const deleteMut = useMutation({
     mutationFn: (panelId) => deletePanel(serverId, panelId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["panels", serverId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["panels", serverId] });
+      toast.success("Panel deleted.");
+    },
+    onError: (err) => toast.error(mutErrorMsg(err, "Failed to delete panel.")),
   });
 
   const spawnMut = useMutation({
@@ -133,12 +152,18 @@ export default function PanelsPage() {
     onSuccess: (_data, { panelId }) => {
       setSpawnInputs((s) => ({ ...s, [panelId]: "" }));
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
+      toast.success("Panel spawned to channel.");
     },
+    onError: (err) => toast.error(mutErrorMsg(err, "Failed to spawn panel — check the channel ID.")),
   });
 
   const duplicateMut = useMutation({
     mutationFn: (panelId) => duplicatePanel(serverId, panelId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["panels", serverId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["panels", serverId] });
+      toast.success("Panel duplicated.");
+    },
+    onError: (err) => toast.error(mutErrorMsg(err, "Failed to duplicate panel.")),
   });
 
   const openNew = () => { setForm(defaultForm()); setEditing("new"); };
@@ -203,10 +228,13 @@ export default function PanelsPage() {
           ))}
         </div>
       ) : panels.length === 0 ? (
-        <div className="cs-card text-center py-12">
-          <p className="text-cs-muted mb-4">No panels yet</p>
-          <button onClick={openNew} className="cs-btn-primary">Create First Panel</button>
-        </div>
+        <EmptyState
+          icon={LayoutIcon}
+          title="No panels yet"
+          description="Create a button panel so members can open tickets with one click."
+          ctaLabel="Create first panel"
+          onCtaClick={openNew}
+        />
       ) : (
         <div className="space-y-4">
           {panels.map((panel) => (
@@ -262,7 +290,7 @@ export default function PanelsPage() {
                     title={isPremium ? "Duplicate panel" : "Duplicate panel (Premium)"}
                     onClick={() => isPremium ? duplicateMut.mutate(panel.id) : window.dispatchEvent(new CustomEvent("premium-required", { detail: { error: "Panel duplication requires Premium.", featureLabel: "Panel Duplicate" } }))}
                     disabled={duplicateMut.isPending}
-                    className={`transition-colors p-1 disabled:opacity-40 ${isPremium ? "text-cs-cyan hover:opacity-80" : "text-amber-400 hover:text-amber-300"}`}
+                    className={`transition-colors p-1 disabled:opacity-40 ${isPremium ? "text-cs-cyan hover:opacity-80" : "text-cs-gold hover:text-cs-goldDim"}`}
                   >
                     <Copy className="w-4 h-4" />
                   </button>

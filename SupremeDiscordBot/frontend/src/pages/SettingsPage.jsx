@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity } from "lucide-react";
 import { getServer, updateServer } from "../api";
+import { useToast } from "../contexts/ToastContext";
 
 export default function SettingsPage() {
   const { serverId } = useParams();
@@ -50,12 +51,15 @@ export default function SettingsPage() {
     }
   }, [server]);
 
+  const toast = useToast();
   const mutation = useMutation({
     mutationFn: (data) => updateServer(serverId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["server", serverId] });
       setForm((f) => f ? { ...f, customBotToken: "" } : f);
+      toast.success("Settings saved.");
     },
+    onError: (err) => toast.error(err?.response?.data?.error || "Failed to save settings."),
   });
 
   if (isLoading || !form) {
@@ -216,7 +220,7 @@ export default function SettingsPage() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
+              <Zap className="w-5 h-5 text-cs-gold" />
               <h2 className="font-semibold text-cs-text">AI Auto-Replies</h2>
             </div>
             {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}

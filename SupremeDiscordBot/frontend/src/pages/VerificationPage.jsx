@@ -11,6 +11,7 @@ import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
 
 const TYPES = [
   { value: "BUTTON",   label: "One-click button",    hint: "User clicks a button → instantly verified" },
@@ -145,10 +146,13 @@ export default function VerificationPage() {
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 
       {!isLoading && panels.length === 0 && (
-        <div className="cs-card text-center py-12">
-          <ShieldCheck className="w-12 h-12 text-cs-dim mx-auto mb-4" />
-          <p className="text-cs-muted">No verification panels yet. Create one to start gating tickets.</p>
-        </div>
+        <EmptyState
+          icon={ShieldCheck}
+          title="No verification panels yet"
+          description="Create one to gate ticket panels behind a button-click or math captcha verification."
+          ctaLabel="Create first panel"
+          onCtaClick={openNew}
+        />
       )}
 
       <div className="space-y-3">
@@ -236,7 +240,7 @@ export default function VerificationPage() {
                 </select>
                 <p className="text-xs text-cs-dim mt-1">{TYPES.find((t) => t.value === form.type)?.hint}</p>
                 {form.type === "MATH" && !isPremium && (
-                  <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
+                  <p className="text-xs text-cs-gold mt-1 flex items-center gap-1">
                     <PremiumBadge small /> Math captcha requires Premium
                   </p>
                 )}

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, DollarSign, TrendingUp, Users, Gift, CheckCircle2 } from "lucide-react";
 import { getAffiliate, updateAffiliatePayout, requestAffiliatePayout } from "../api";
+import EmptyState from "../components/EmptyState";
 
 function formatMoney(cents) {
   return `€${(cents / 100).toFixed(2)}`;
@@ -41,10 +42,10 @@ export default function AffiliatePage() {
     <div className="p-8 max-w-5xl">
       <div className="mb-8">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-          <Gift className="w-7 h-7 text-amber-400" /> Affiliate Program
+          <Gift className="w-7 h-7 text-cs-gold" /> Affiliate Program
         </h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
-          Earn <strong className="text-amber-400">{Math.round((aff?.commissionRate || 0.2) * 100)}% recurring commission</strong> on
+          Earn <strong className="text-cs-gold">{Math.round((aff?.commissionRate || 0.2) * 100)}% recurring commission</strong> on
           every paid Premium subscription from servers you refer, for <strong>{aff?.durationMonths || 12} months</strong>.
           Minimum payout: {formatMoney(aff?.minPayoutCents || 2500)}.
         </p>
@@ -82,7 +83,7 @@ export default function AffiliatePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="cs-card">
           <h3 className="text-sm text-cs-muted uppercase tracking-wider font-mono mb-2">Pending Balance</h3>
-          <div className="text-3xl font-black text-amber-400 mb-2">{formatMoney(aff?.pendingEarnings || 0)}</div>
+          <div className="text-3xl font-black text-cs-gold mb-2">{formatMoney(aff?.pendingEarnings || 0)}</div>
           <p className="text-xs text-cs-dim mb-4">
             {aff?.eligibleForPayout
               ? "Eligible for payout."
@@ -91,7 +92,7 @@ export default function AffiliatePage() {
           <button
             onClick={() => payoutRequestM.mutate()}
             disabled={!aff?.eligibleForPayout || !aff?.paypalEmail || payoutRequestM.isPending}
-            className="cs-btn-primary bg-amber-500 hover:bg-amber-400 text-black border-amber-500 disabled:opacity-40"
+            className="cs-btn-primary bg-cs-gold hover:bg-cs-goldDim text-black border-cs-gold disabled:opacity-40"
           >
             {payoutRequestM.isPending ? "Requesting…" : "Request Payout"}
           </button>
@@ -164,12 +165,12 @@ export default function AffiliatePage() {
                     <td className="py-2 pr-4">
                       <span className={`cs-badge ${
                         r.status === "active" ? "text-success" :
-                        r.status === "churned" ? "text-danger" : "text-amber-400"
+                        r.status === "churned" ? "text-danger" : "text-warning"
                       }`}>
                         {r.status}
                       </span>
                     </td>
-                    <td className="py-2 pr-4 text-amber-400 font-mono">{formatMoney(r.totalEarnings)}</td>
+                    <td className="py-2 pr-4 text-cs-gold font-mono">{formatMoney(r.totalEarnings)}</td>
                     <td className="py-2 text-cs-dim font-mono text-xs">
                       {new Date(r.createdAt).toLocaleDateString()}
                     </td>
@@ -179,9 +180,12 @@ export default function AffiliatePage() {
             </table>
           </div>
         ) : (
-          <div className="text-cs-dim text-sm">
-            No referrals yet. Share your link to start earning.
-          </div>
+          <EmptyState
+            icon={Gift}
+            title="No referrals yet"
+            description="Share your referral link above — you'll see signups and earnings here."
+            className="!border-0 !p-0"
+          />
         )}
       </div>
     </div>
@@ -190,12 +194,12 @@ export default function AffiliatePage() {
 
 function StatCard({ icon: Icon, label, value, accent }) {
   return (
-    <div className={`cs-card !p-4 ${accent ? "border-amber-500/40" : ""}`}>
+    <div className={`cs-card !p-4 ${accent ? "border-cs-gold/40" : ""}`}>
       <div className="flex items-center gap-2 mb-2">
-        <Icon className={`w-4 h-4 ${accent ? "text-amber-400" : "text-cs-muted"}`} />
+        <Icon className={`w-4 h-4 ${accent ? "text-cs-gold" : "text-cs-muted"}`} />
         <span className="text-xs text-cs-muted uppercase tracking-wider font-mono">{label}</span>
       </div>
-      <div className={`text-2xl font-black ${accent ? "text-amber-400" : "text-cs-text"}`}>{value}</div>
+      <div className={`text-2xl font-black ${accent ? "text-cs-gold" : "text-cs-text"}`}>{value}</div>
     </div>
   );
 }

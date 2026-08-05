@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star } from "lucide-react";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw } from "lucide-react";
 import { getTickets, closeTicket, claimTicket, exportTicketPDF } from "../api";
 import Modal from "../components/Modal";
+import EmptyState from "../components/EmptyState";
 
 const STATUS_COLORS = {
   OPEN: "text-success bg-green-500/10",
@@ -26,7 +27,7 @@ export default function TicketsPage() {
   const [closingId, setClosingId] = useState(null);
   const [closeReason, setCloseReason] = useState("");
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["tickets", serverId, statusFilter, search, dateFrom, dateTo, page],
     queryFn: () => getTickets(serverId, {
       status: statusFilter || undefined,
@@ -37,6 +38,15 @@ export default function TicketsPage() {
       limit: LIMIT,
     }),
   });
+
+  const hasFilters = !!(statusFilter || search || dateFrom || dateTo);
+  const clearFilters = () => {
+    setStatusFilter("");
+    setSearch("");
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+  };
 
   const closeMut = useMutation({
     mutationFn: ({ ticketId, reason }) => closeTicket(serverId, ticketId, reason),
@@ -143,13 +153,36 @@ export default function TicketsPage() {
           ))}
         </div>
       ) : isError ? (
-        <div role="alert" className="cs-card text-center py-16 text-danger">
-          Couldn't load tickets — please retry.
+        <div role="alert" className="cs-card text-center py-16 text-danger flex flex-col items-center gap-3">
+          <span>Couldn't load tickets — please retry.</span>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
+            {isRefetching ? "Retrying…" : "Retry"}
+          </button>
         </div>
       ) : tickets.length === 0 ? (
-        <div className="cs-card text-center py-16 text-cs-muted">
-          No tickets found for this filter.
-        </div>
+        hasFilters ? (
+          <EmptyState
+            icon={Ticket}
+            title="No tickets match this filter"
+            description="Try adjusting the search, date range, or status filter."
+            ctaLabel="Clear filters"
+            onCtaClick={clearFilters}
+          />
+        ) : (
+          <EmptyState
+            icon={Ticket}
+            title="No tickets yet"
+            description="Tickets will show up here once members start using a ticket panel."
+            ctaLabel="Set up a panel"
+            ctaTo={`/dashboard/${serverId}/panels`}
+          />
+        )
       ) : (
         <>
           <div className="cs-card p-0 overflow-hidden">

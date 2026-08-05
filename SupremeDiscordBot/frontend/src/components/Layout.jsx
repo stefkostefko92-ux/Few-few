@@ -1,5 +1,5 @@
 // frontend/src/components/Layout.jsx
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, NavLink, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -12,8 +12,12 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { getServers, logout } from "../api";
 import PremiumToast from "./PremiumToast";
+import ToastHost from "./ToastHost";
 import TrialBanner from "./TrialBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
+
+const FOCUSABLE =
+  'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 
@@ -37,6 +41,44 @@ export default function Layout() {
 
   const isSuperUser = ["MAIN_OWNER", "SUPER_USER"].includes(user?.globalRole);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const drawerRef = useRef(null);
+  const toggleBtnRef = useRef(null);
+
+  // Drawer a11y (mirrors Modal.jsx): Escape closes, Tab is trapped inside the
+  // drawer while open, and focus returns to the hamburger toggle on close.
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const node = drawerRef.current;
+    const focusables = node?.querySelectorAll(FOCUSABLE);
+    focusables?.[0]?.focus();
+
+    function onKeyDown(e) {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setMobileOpen(false);
+        return;
+      }
+      if (e.key === "Tab" && node) {
+        const items = node.querySelectorAll(FOCUSABLE);
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown, true);
+      toggleBtnRef.current?.focus?.();
+    };
+  }, [mobileOpen]);
 
   return (
     <div className="flex h-screen bg-cs-black overflow-hidden">
@@ -50,9 +92,12 @@ export default function Layout() {
       {/* Mobile top bar — brand + hamburger, visible only on small screens */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-cs-bg border-b border-cs-border h-14 flex items-center justify-between px-4">
         <button
-          onClick={() => setMobileOpen(true)}
+          ref={toggleBtnRef}
+          onClick={() => setMobileOpen((v) => !v)}
           className="p-2 rounded-lg text-cs-text hover:text-cs-cyan"
           aria-label="Open menu"
+          aria-expanded={mobileOpen}
+          aria-controls="dashboard-sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -73,6 +118,8 @@ export default function Layout() {
 
       {/* Sidebar — drawer on mobile, static on md+ */}
       <aside
+        id="dashboard-sidebar"
+        ref={drawerRef}
         onClick={(e) => {
           // Auto-close drawer when user clicks a nav link on mobile
           if (e.target.tagName === "A" || e.target.closest("a")) {
@@ -108,7 +155,7 @@ export default function Layout() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-4 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto py-4 space-y-0.5" aria-label="Dashboard navigation">
           {serverId && (
             <NavLink to="/dashboard" className="flex items-center gap-2 mx-3 px-3 py-2 text-cs-dim hover:text-cs-cyan text-xs font-mono uppercase tracking-wider transition-colors border-l-2 border-transparent">
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -257,6 +304,8 @@ export default function Layout() {
 
       {/* Premium upgrade toasts */}
       <PremiumToast />
+      {/* Success/error toasts for mutations (Panels, Forms, Settings, …) */}
+      <ToastHost />
     </div>
   );
 }

@@ -13,6 +13,8 @@ import Seo from "../components/Seo";
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
+// Same permission set as Dashboard.jsx's "Add to a Server" invite link.
+const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814288&scope=bot+applications.commands`;
 
 export default function Login() {
   const { user, loading } = useAuth();
@@ -69,6 +71,7 @@ export default function Login() {
             <a href="#pricing" className="hover:text-cs-cyan transition-colors">PRICING</a>
             <a href="#faq" className="hover:text-cs-cyan transition-colors">FAQ</a>
             <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
+            <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer" className="cs-btn-secondary text-xs">Invite Bot</a>
             <button onClick={handleLogin} className="cs-btn-primary text-xs">SIGN IN →</button>
           </div>
           <button onClick={handleLogin} className="md:hidden cs-btn-primary text-xs">SIGN IN</button>
@@ -114,6 +117,14 @@ export default function Login() {
               <p className="text-xs text-cs-dim mt-6 font-mono leading-relaxed">
                 Free forever on the base tier · 14-day Premium trial, no card · Cancel anytime · EU-hosted, GDPR-native
               </p>
+              <a
+                href={BOT_INVITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-3 text-xs text-cs-dim hover:text-cs-cyan transition-colors font-mono"
+              >
+                Already have an account? Invite the bot directly →
+              </a>
             </div>
 
             {/* Right column — the "6 → 1" convergence motif. Purely decorative

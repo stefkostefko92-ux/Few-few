@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import CookieConsent from "./components/CookieConsent";
 
 // Eager: the landing page is the LCP-critical entry point — keep it in the
@@ -77,6 +78,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <ToastProvider>
         <BrowserRouter>
           <Suspense fallback={<Spinner />}>
             <Routes>
@@ -127,6 +129,7 @@ export default function App() {
           </Suspense>
           <CookieConsent />
         </BrowserRouter>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

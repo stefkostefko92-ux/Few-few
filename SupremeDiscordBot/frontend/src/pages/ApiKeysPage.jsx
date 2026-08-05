@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Key, Plus, Trash2, Copy, Eye, CheckCircle2, AlertTriangle } from "lucide-react";
 import { getApiKeys, createApiKey, revokeApiKey, getApiScopes } from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
 
 export default function ApiKeysPage() {
   const { serverId } = useParams();
@@ -73,7 +74,7 @@ export default function ApiKeysPage() {
             <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0" aria-hidden="true" />
             <div className="flex-1">
               <h2 className="text-cs-text font-bold">Key created: {newlyCreated.name}</h2>
-              <p className="text-xs text-amber-400 mt-1 mb-3">
+              <p className="text-xs text-warning mt-1 mb-3">
                 ⚠️ {newlyCreated.warning}
               </p>
               <div className="flex items-center gap-2">
@@ -148,10 +149,13 @@ export default function ApiKeysPage() {
         </div>
       )}
       {!isLoading && !keys.length && !creating && (
-        <div className="cs-card text-center py-10">
-          <Key className="w-10 h-10 text-cs-dim mx-auto mb-3" />
-          <p className="text-cs-muted">No API keys yet.</p>
-        </div>
+        <EmptyState
+          icon={Key}
+          title="No API keys yet"
+          description="Generate a key to access the public REST API at /public/v1 with bearer-token authentication."
+          ctaLabel="Create first key"
+          onCtaClick={() => setCreating(true)}
+        />
       )}
 
       <div className="space-y-3">

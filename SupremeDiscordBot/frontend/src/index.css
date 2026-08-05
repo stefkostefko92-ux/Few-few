@@ -140,7 +140,6 @@
            focus:outline-none focus:border-cs-cyan focus:shadow-cs-cyan-sm
            transition-colors rounded-xl;
   }
-  .cs-input-sm { @apply px-3 py-1.5 text-xs; }
   .cs-select { @apply cs-input appearance-none cursor-pointer pr-10; }
   .cs-textarea { @apply cs-input font-mono text-xs leading-relaxed resize-y; }
 
@@ -161,24 +160,6 @@
   .cs-label {
     @apply block text-[10px] font-mono font-bold uppercase tracking-[0.15em]
            text-cs-muted mb-2;
-  }
-
-  .cs-kbd {
-    @apply inline-block px-1.5 py-0.5 text-[10px] font-mono
-           bg-cs-panel border border-cs-border text-cs-muted rounded-sm;
-  }
-
-  /* ─── Nav (sidebar) ─── */
-  .cs-nav-link {
-    @apply flex items-center gap-3 px-3 py-2.5
-           text-sm font-medium
-           text-cs-muted
-           border-l-2 border-transparent
-           transition-colors duration-150
-           hover:text-cs-text hover:bg-cs-surface hover:border-cs-border;
-  }
-  .cs-nav-link-active {
-    @apply text-cs-cyan bg-cs-surface border-cs-cyan;
   }
 
   /* ─── Page header ─── */
@@ -221,8 +202,6 @@
   .cs-stat-value {
     @apply text-4xl font-display font-extrabold tracking-tight-4 text-cs-text;
   }
-  .cs-stat-delta-up   { @apply text-success text-xs font-mono; }
-  .cs-stat-delta-down { @apply text-danger  text-xs font-mono; }
 
   /* ─── Modal / overlay ─── */
   .cs-overlay {
@@ -233,50 +212,9 @@
   .cs-modal {
     @apply cs-card w-full max-w-md shadow-cs-lift;
   }
-  .cs-modal-lg { @apply max-w-2xl; }
-
-  /* ─── Utility text ─── */
-  .cs-text-cyan   { color: #33b1ff; }
-  .cs-text-muted  { @apply text-cs-muted; }
-  .cs-text-dim    { @apply text-cs-dim; }
-  .cs-mono        { @apply font-mono; }
-
-  /* ─── Legacy aliases (for pages not yet updated) ─── */
-  .card            { @apply cs-card; }
-  .card-glow       { @apply cs-card; }
-  .btn-primary     { @apply cs-btn-primary; }
-  .btn-secondary   { @apply cs-btn-secondary; }
-  .btn-ghost       { @apply cs-btn-ghost; }
-  .btn-danger      { @apply cs-btn-danger; }
-  .btn-success     { @apply cs-btn cs-btn-secondary; }
-  .input           { @apply cs-input; }
-  .input-sm        { @apply cs-input-sm; }
-  .label           { @apply cs-label; }
-  .badge           { @apply cs-badge; }
-  .badge-premium   { @apply cs-badge-premium; }
-  .badge-base      { @apply cs-badge-muted; }
-  .badge-manual    { @apply cs-badge-manual; }
-  .badge-success   { @apply cs-badge-success; }
-  .badge-danger    { @apply cs-badge-danger; }
-  .nav-link        { @apply cs-nav-link; }
-  .nav-link-active { @apply cs-nav-link cs-nav-link-active; }
-  .nav-link-inactive { @apply cs-nav-link; }
-  .heading-stealth { @apply cs-heading font-display font-bold text-white; }
-  .text-gradient-stealth { @apply text-cs-cyan; }
-  .stat-tile       { @apply cs-stat; }
-  .stat-tile-label { @apply cs-stat-label; }
-  .stat-tile-value { @apply cs-stat-value; }
-  .glass           { @apply cs-panel; }
 }
 
 @layer utilities {
-  .scanline-bg::before {
-    content: "";
-    @apply pointer-events-none absolute inset-0;
-    background: linear-gradient(180deg, transparent 0%, rgba(51, 177, 255, 0.015) 50%, transparent 100%);
-    background-size: 100% 4px;
-    mix-blend-mode: overlay;
-  }
   .grid-bg {
     background-image:
       linear-gradient(rgba(42, 42, 54, 0.4) 1px, transparent 1px),

@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Ticket, FileText, Layout, Star, Users,
   ShieldCheck, Zap, LineChart, Key, BookOpen, Webhook, Settings, Bot,
+  CheckCircle2, Circle, ArrowRight,
 } from "lucide-react";
-import { getServer, getServerStats } from "../api";
+import { getServer, getServerStats, getPanels, getForms } from "../api";
 
 export default function ServerHome() {
   const { serverId } = useParams();
@@ -18,6 +19,18 @@ export default function ServerHome() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["stats", serverId],
     queryFn: () => getServerStats(serverId),
+    enabled: !!server,
+  });
+  // Getting-started checklist — derived from real data already fetched
+  // elsewhere in the dashboard (panels/forms), no new backend endpoint.
+  const { data: panels } = useQuery({
+    queryKey: ["panels", serverId],
+    queryFn: () => getPanels(serverId),
+    enabled: !!server,
+  });
+  const { data: forms } = useQuery({
+    queryKey: ["forms", serverId],
+    queryFn: () => getForms(serverId),
     enabled: !!server,
   });
 
@@ -124,6 +137,9 @@ export default function ServerHome() {
         </div>
       ) : null}
 
+      {/* Getting started */}
+      <GettingStarted serverId={serverId} panels={panels} forms={forms} />
+
       {/* Navigation cards */}
       <h2 className="text-lg font-semibold text-cs-text mb-4">Manage this server</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -145,6 +161,101 @@ export default function ServerHome() {
       </div>
     </div>
   );
+}
+
+/* First-run checklist — steps are computed from data already fetched on this
+   page (panels, forms) plus the invite that got us here. Collapses to a
+   compact "All set" summary once every step is done instead of disappearing,
+   so returning users still see the confirmation once. */
+function GettingStarted({ serverId, panels, forms }) {
+  const steps = [
+    {
+      label: "Invite the bot to your server",
+      done: true, // reaching this page at all means the bot is added & synced
+      to: null,
+    },
+    {
+      label: "Create a ticket panel",
+      done: (panels?.length ?? 0) > 0,
+      to: `/dashboard/${serverId}/panels`,
+      cta: "Create panel",
+    },
+    {
+      label: "Spawn a panel in a channel",
+      done: (panels || []).some((p) => p.channelId),
+      to: `/dashboard/${serverId}/panels`,
+      cta: "Spawn panel",
+    },
+    {
+      label: "Build an application form",
+      done: (forms?.length ?? 0) > 0,
+      to: `/dashboard/${serverId}/forms`,
+      cta: "Create form",
+    },
+  ];
+
+  const allDone = steps.every((s) => s.done);
+  const remaining = steps.filter((s) => !s.done).length;
+
+  if (allDone) {
+    return (
+      <details className="cs-card mb-8 group">
+        <summary className="cursor-pointer select-none list-none flex items-center gap-2 text-sm text-success font-semibold">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          Setup complete — all first steps done
+          <ArrowRight className="w-3.5 h-3.5 ml-auto transition-transform group-open:rotate-90" aria-hidden="true" />
+        </summary>
+        <ol className="mt-4 space-y-2">
+          {steps.map((s) => (
+            <ChecklistRow key={s.label} step={s} />
+          ))}
+        </ol>
+      </details>
+    );
+  }
+
+  return (
+    <div className="cs-card mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-cs-text">First steps</h2>
+        <span className="text-xs text-cs-muted font-mono">{steps.length - remaining}/{steps.length} done</span>
+      </div>
+      <ol className="space-y-2">
+        {steps.map((s) => (
+          <ChecklistRow key={s.label} step={s} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function ChecklistRow({ step }) {
+  const content = (
+    <>
+      {step.done
+        ? <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" aria-hidden="true" />
+        : <Circle className="w-4 h-4 text-cs-dim flex-shrink-0" aria-hidden="true" />}
+      <span className={`text-sm flex-1 ${step.done ? "text-cs-muted line-through" : "text-cs-text"}`}>
+        {step.label}
+      </span>
+      {!step.done && step.to && (
+        <span className="text-xs text-cs-cyan font-mono flex items-center gap-1 flex-shrink-0">
+          {step.cta} <ArrowRight className="w-3 h-3" aria-hidden="true" />
+        </span>
+      )}
+    </>
+  );
+
+  if (!step.done && step.to) {
+    return (
+      <li>
+        <Link to={step.to} className="flex items-center gap-2.5 py-1.5 hover:opacity-80 transition-opacity">
+          {content}
+        </Link>
+      </li>
+    );
+  }
+  return <li className="flex items-center gap-2.5 py-1.5">{content}</li>;
 }
 
 function StatCard({ label, value, color }) {
