@@ -4,11 +4,15 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
-import { guard, jsonError, requireRole, requireSession } from "@/lib/auth";
+import { guard, jsonError, requireRead, requireRole, requireSession } from "@/lib/auth";
 
 export async function GET(req: Request) {
   return guard(async () => {
-    await requireRole("MANAGER");
+    // ЧЕТЯЩ маршрут → `requireRead`, за да го вижда и одиторският профил.
+    // Дотук стоеше зад `requireRole("MANAGER")`, тоест дневникът беше достъпен само за роля,
+    // която и ПИШЕ (цени, стоки, настройки) — това не е „аналог на администраторския, но само
+    // за четене“ по Прил. № 29, т. 19.
+    await requireRead("MANAGER");
     const url = new URL(req.url);
     const take = Math.min(parseInt(url.searchParams.get("take") ?? "100", 10), 500);
     const action = url.searchParams.get("action") ?? undefined;

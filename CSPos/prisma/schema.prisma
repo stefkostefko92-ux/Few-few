@@ -24,6 +24,12 @@ model User {
   operatorCode Int       @unique
   pinHash      String // bcrypt на 4–8 цифрен ПИН
   role         String    @default("CASHIER") // ADMIN | MANAGER | CASHIER
+  // Одиторски профил (Прил. № 29, т. 19): „аналог на администраторския, но САМО за четене“.
+  // Нарочно е ОТДЕЛЕН признак, а не четвърта роля: йерархията е линейна (CASHIER<MANAGER<ADMIN)
+  // и одиторът не се вписва в нея — където и да го сложиш, или получава правата за писане на
+  // MANAGER, или не вижда дневника. Флагът се наслагва ВЪРХУ ролята: MANAGER+readOnly вижда
+  // каквото MANAGER вижда, но всеки пишещ маршрут го отказва.
+  readOnly     Boolean   @default(false)
   active       Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
