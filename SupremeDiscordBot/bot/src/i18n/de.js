@@ -142,4 +142,14 @@ export default {
   "ai.disclosure.fieldName": "⚠️ KI-Hinweis",
   "ai.disclosure.body": "Diese Antwort wurde von einem KI-Sprachmodell ({{model}}) generiert. Sie kann Fehler oder Ungenauigkeiten enthalten. Ein menschliches Team-Mitglied meldet sich in Kürze zur Bestätigung.",
   "ai.disclosure.footer": "Supreme Bot · Automatische KI-Antwort · Powered by Google Gemini",
+
+  // Wissensdatenbank (v32) — automatisch vorgeschlagener Artikel bei neuen Tickets
+  "kb.suggest.title": "💡 Das könnte helfen: {{title}}",
+  "kb.suggest.footer": "Vorschlag aus der Wissensdatenbank",
+  "kb.suggest.helpfulButton": "Hilfreich",
+  "kb.suggest.notHelpfulButton": "Nicht hilfreich",
+  "kb.suggest.disclaimer": "_Automatisch vorgeschlagen — ein Team-Mitglied meldet sich trotzdem._",
+  "kb.feedback.thanksHelpful": "✅ Danke für dein Feedback!",
+  "kb.feedback.thanksNotHelpful": "📝 Danke — ein Team-Mitglied schaut sich das genauer an.",
+  "kb.feedback.error": "❌ Beim Speichern deines Feedbacks ist etwas schiefgelaufen.",
 };

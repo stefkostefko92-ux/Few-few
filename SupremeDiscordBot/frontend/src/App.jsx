@@ -41,6 +41,7 @@ const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const CommandsPage = lazy(() => import("./pages/CommandsPage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
+const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 // AffiliatePage изключен за launch (одит C1/C2 — да не се рекламира неплащана комисионна)
 // const AffiliatePage = lazy(() => import("./pages/AffiliatePage"));
@@ -111,6 +112,7 @@ export default function App() {
                 <Route path=":serverId/automation" element={<AutomationPage />} />
                 <Route path=":serverId/commands" element={<CommandsPage />} />
                 <Route path=":serverId/webhooks" element={<WebhooksPage />} />
+                <Route path=":serverId/kb" element={<KnowledgeBasePage />} />
                 <Route path=":serverId/analytics" element={<AnalyticsPage />} />
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
                 {/* Affiliate route изключен за launch — програмата не плаща комисионни (одит C1/C2) */}

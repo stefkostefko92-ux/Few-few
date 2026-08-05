@@ -50,6 +50,7 @@ import apikeysRouter from "./routes/apikeys.js";
 import v1Router from "./routes/v1.js";
 import referralRouter from "./routes/referral.js";
 import gdprRouter from "./routes/gdpr.js";
+import kbRouter from "./routes/kb.js";
 import { scheduleRetention } from "./jobs/dataRetention.js";
 import { scheduleDunning } from "./jobs/dunning.js";
 import "./services/scheduler.js"; // Start background jobs
@@ -189,6 +190,7 @@ app.use("/api/trial", trialRouter);           // v2.0 Premium trial system
 // app.use("/api/affiliate", affiliateRouter); // ИЗКЛЮЧЕН за launch — програмата не начислява комисионни (одит C1/C2)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)
+app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashboard-authed)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
 // NOTE: apikeysRouter is intentionally not mounted — its routes would shadow

@@ -164,6 +164,18 @@ export const deleteWebhook = (serverId, id) =>
   api.delete(`/${serverId}/webhooks/${id}`).then((r) => r.data);
 export const getWebhookEvents = () => api.get(`/events`).then((r) => r.data);
 
+// ─── v32 Knowledge Base ────────────────────────────────────────────────────
+export const getKbArticles = (serverId) =>
+  api.get(`/kb/${serverId}`).then((r) => r.data);
+export const createKbArticle = (serverId, data) =>
+  api.post(`/kb/${serverId}`, data).then((r) => r.data);
+export const updateKbArticle = (serverId, id, data) =>
+  api.put(`/kb/${serverId}/${id}`, data).then((r) => r.data);
+export const toggleKbArticle = (serverId, id) =>
+  api.post(`/kb/${serverId}/${id}/toggle`).then((r) => r.data);
+export const deleteKbArticle = (serverId, id) =>
+  api.delete(`/kb/${serverId}/${id}`).then((r) => r.data);
+
 // ─── v1.8 Automation (polls, giveaways, sticky, scheduled, webhooks) ──────────
 export const getCommandsCatalog = () =>
   api.get(`/automation/commands-catalog`).then((r) => r.data);

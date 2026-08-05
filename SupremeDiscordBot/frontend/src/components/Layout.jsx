@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard, Ticket, FileText, Layout as LayoutIcon,
   Star, Shield, ShieldCheck, LogOut, ChevronLeft, Settings, Users, ExternalLink, Webhook,
-  Zap, BookOpen,
+  Zap, BookOpen, Lightbulb,
   LineChart, Key,
   Menu, X as CloseIcon,
 } from "lucide-react";
@@ -185,6 +185,7 @@ export default function Layout() {
               <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>Analytics</NavItem>
               <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>API Keys</NavItem>
               <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>Commands</NavItem>
+              <NavItem to={`/dashboard/${serverId}/kb`} icon={Lightbulb}>Knowledge Base</NavItem>
               <NavItem to={`/dashboard/${serverId}/webhooks`} icon={Webhook}>Webhooks</NavItem>
               <NavItem to={`/dashboard/${serverId}/premium`}      icon={Star}>
                 Premium

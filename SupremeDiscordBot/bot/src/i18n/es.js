@@ -142,4 +142,14 @@ export default {
   "ai.disclosure.fieldName": "⚠️ Aviso de IA",
   "ai.disclosure.body": "Esta respuesta ha sido generada por un modelo de lenguaje de IA ({{model}}). Puede contener errores o imprecisiones. Un miembro del equipo te escribirá en breve para confirmarla.",
   "ai.disclosure.footer": "Supreme Bot · Respuesta automática de IA · Powered by Google Gemini",
+
+  // Base de conocimiento (v32) — artículo sugerido automáticamente en tickets nuevos
+  "kb.suggest.title": "💡 Esto podría ayudar: {{title}}",
+  "kb.suggest.footer": "Sugerencia de la Base de conocimiento",
+  "kb.suggest.helpfulButton": "Útil",
+  "kb.suggest.notHelpfulButton": "No útil",
+  "kb.suggest.disclaimer": "_Sugerido automáticamente — un miembro del equipo te atenderá igualmente._",
+  "kb.feedback.thanksHelpful": "✅ ¡Gracias por tu opinión!",
+  "kb.feedback.thanksNotHelpful": "📝 Gracias — un miembro del equipo lo revisará con más detalle.",
+  "kb.feedback.error": "❌ Algo salió mal al guardar tu opinión.",
 };

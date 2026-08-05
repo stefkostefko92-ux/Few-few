@@ -3,7 +3,9 @@ import {
   MessageFlags, ActionRowBuilder, ButtonBuilder, ChannelType, ThreadAutoArchiveDuration,
   ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder,
 } from "discord.js";
-import api, { isBlacklisted, getPanel, createTicket, getTags, useTag } from "../utils/api.js";
+import api, {
+  isBlacklisted, getPanel, createTicket, getTags, useTag, suggestKbArticle, sendKbFeedback,
+} from "../utils/api.js";
 import { buildTicketOpenEmbed, buildStatusEmbed } from "../utils/embed.js";
 import { runFormSession, submitFormAnswers, validateAnswerAgainstRegex } from "../utils/formSession.js";
 import { friendlyError } from "../utils/friendlyError.js";
@@ -11,7 +13,7 @@ import { BRAND, SUCCESS, DANGER, WARNING, INFO } from "../utils/colors.js";
 import { priorityField } from "../utils/priority.js";
 import { startSetupWizard, handleSetupComponent } from "../commands/setup.js";
 import { isStaffMember } from "../utils/staffCheck.js";
-import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
+import { t, resolveLang, resolveLangSync, resolveLangForGuild } from "../i18n/index.js";
 
 // ─── Blacklist TTL кеш ──────────────────────────────────────────────────────
 // Всяка slash команда проверява blacklist статуса срещу backend-а. Синхронният
@@ -210,6 +212,13 @@ export default {
       if (interaction.isButton() && interaction.customId.startsWith("feedback:")) {
         const [, ticketId, rating] = interaction.customId.split(":");
         await handleFeedback(interaction, ticketId, Number(rating));
+        return;
+      }
+
+      // ── Knowledge Base suggestion feedback (👍/👎, v32) ─────────────────────
+      if (interaction.isButton() && interaction.customId.startsWith("kb_fb:")) {
+        const [, articleId, helpfulFlag] = interaction.customId.split(":");
+        await handleKbFeedback(interaction, articleId, helpfulFlag === "1");
         return;
       }
 
@@ -798,6 +807,17 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
     });
   }
 
+  // ─── Knowledge Base auto-suggestion (v32, Premium/Free — gated by article count,
+  // not this feature) ─────────────────────────────────────────────────────────
+  // Fire-and-forget: never blocks/slows ticket creation on a KB lookup hiccup.
+  // Query text = whatever context we have for "what is this ticket about":
+  // quoted message > form answers > panel name (always available as a last resort).
+  const kbQuery = quotedMessage
+    || (formAnswers ? Object.values(formAnswers).join(" ") : null)
+    || panel.name
+    || "";
+  suggestAndPostKbArticle(channel, guild.id, kbQuery).catch(() => {});
+
   // ─── DM on open ────────────────────────────────────────────────────────────
   if (panel.dmOnOpen && panel.dmOnOpenMessage) {
     try {
@@ -823,6 +843,74 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   }
 
   await interaction.editReply(t("ticket.opened", await resolveLang(interaction), { channel: String(channel) }));
+}
+
+// ─── Knowledge Base auto-suggestion (v32) ──────────────────────────────────
+// Called fire-and-forget from createTicketFromPanel — a backend hiccup here
+// must never affect ticket creation, hence the caller wraps us in .catch(()=>{}).
+const KB_SNIPPET_MAX = 600;
+
+async function suggestAndPostKbArticle(channel, guildId, query) {
+  if (!query) return;
+  const article = await suggestKbArticle(guildId, query);
+  if (!article) return;
+
+  const lang = await resolveLangForGuild(guildId);
+  const snippet = article.content.length > KB_SNIPPET_MAX
+    ? `${article.content.slice(0, KB_SNIPPET_MAX)}…`
+    : article.content;
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`kb_fb:${article.id}:1`)
+      .setLabel(t("kb.suggest.helpfulButton", lang))
+      .setStyle(3) // Success
+      .setEmoji("👍"),
+    new ButtonBuilder()
+      .setCustomId(`kb_fb:${article.id}:0`)
+      .setLabel(t("kb.suggest.notHelpfulButton", lang))
+      .setStyle(4) // Danger
+      .setEmoji("👎"),
+  );
+
+  await channel.send({
+    embeds: [{
+      title: t("kb.suggest.title", lang, { title: article.title }),
+      description: `${snippet}\n\n${t("kb.suggest.disclaimer", lang)}`,
+      footer: { text: t("kb.suggest.footer", lang) },
+      color: INFO,
+    }],
+    components: [row],
+  }).catch(() => {});
+}
+
+// ── Knowledge Base suggestion feedback (👍/👎 on the suggested-article embed) ─
+async function handleKbFeedback(interaction, articleId, helpful) {
+  // deferUpdate acks the button immediately (no visible "thinking" state) —
+  // same pattern as handleFeedback below.
+  await interaction.deferUpdate().catch(() => {});
+  const lang = await resolveLang(interaction);
+  try {
+    await sendKbFeedback(articleId, helpful);
+    // Disable both buttons after a successful vote so the counters can't be
+    // trivially inflated by repeat-clicking the same message.
+    const row = interaction.message.components?.[0];
+    if (row) {
+      const disabledRow = new ActionRowBuilder().addComponents(
+        row.components.map((c) => ButtonBuilder.from(c).setDisabled(true))
+      );
+      await interaction.editReply({ components: [disabledRow] }).catch(() => {});
+    }
+    await interaction.followUp({
+      content: t(helpful ? "kb.feedback.thanksHelpful" : "kb.feedback.thanksNotHelpful", lang),
+      flags: MessageFlags.Ephemeral,
+    }).catch(() => {});
+  } catch {
+    await interaction.followUp({
+      content: t("kb.feedback.error", lang),
+      flags: MessageFlags.Ephemeral,
+    }).catch(() => {});
+  }
 }
 
 function parseColor(hex) {

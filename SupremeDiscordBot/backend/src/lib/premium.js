@@ -83,6 +83,7 @@ export const BASE_LIMITS = {
   scheduledPerServer: 0,
   recurringScheduled: false,
   transcriptRetentionDays: 30,
+  kbArticles:         3, // v32 — Knowledge Base
 };
 
 export const PREMIUM_LIMITS = {
@@ -95,6 +96,7 @@ export const PREMIUM_LIMITS = {
   scheduledPerServer: 100,
   recurringScheduled: true,
   transcriptRetentionDays: null, // null = forever
+  kbArticles:         50, // v32 — Knowledge Base
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

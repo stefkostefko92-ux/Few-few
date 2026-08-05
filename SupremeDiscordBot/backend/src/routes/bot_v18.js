@@ -7,6 +7,7 @@ import { requireBotSecret } from "../middleware/auth.js";
 import { fireWebhooks } from "../services/webhooks.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { pickRandom } from "../lib/shuffle.js";
+import { findBestMatch } from "../lib/kbMatch.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -398,6 +399,46 @@ router.post("/tag/:serverId/:name/use", async (req, res, next) => {
     });
     res.json(updated);
   } catch (err) { next(err); }
+});
+
+// ══════════════════════════════ KNOWLEDGE BASE (v32 — suggest + feedback) ═════
+// GET  /bot/kb/:serverId/suggest?q=... — best-match article for a new ticket's
+//      opening text. Read-only; increments usageCount on a hit so the "top
+//      article" stats stay meaningful. Fire-and-forget from the bot's
+//      createTicketFromPanel — never blocks ticket creation.
+// POST /bot/kb/:articleId/feedback — 👍/👎 button vote on a suggested article.
+
+router.get("/kb/:serverId/suggest", async (req, res, next) => {
+  const q = String(req.query.q || "").trim();
+  if (!q) return res.json({ article: null });
+  try {
+    const articles = await prisma.kbArticle.findMany({
+      where: { serverId: req.params.serverId, enabled: true },
+    });
+    const match = findBestMatch(articles, q);
+    if (!match) return res.json({ article: null });
+    const updated = await prisma.kbArticle.update({
+      where: { id: match.id },
+      data: { usageCount: { increment: 1 } },
+    });
+    res.json({ article: updated });
+  } catch (err) { next(err); }
+});
+
+router.post("/kb/:articleId/feedback", async (req, res, next) => {
+  const helpful = !!req.body.helpful;
+  try {
+    const article = await prisma.kbArticle.update({
+      where: { id: req.params.articleId },
+      data: helpful
+        ? { helpfulCount: { increment: 1 } }
+        : { notHelpfulCount: { increment: 1 } },
+    });
+    res.json(article);
+  } catch (err) {
+    if (err?.code === "P2025") return res.status(404).json({ error: "Article not found" });
+    next(err);
+  }
 });
 
 // ══════════════════════════════ /stats (bot-secret analytics read) ═══════════

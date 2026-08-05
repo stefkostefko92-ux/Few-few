@@ -142,4 +142,14 @@ export default {
   "ai.disclosure.fieldName": "⚠️ AI-vermelding",
   "ai.disclosure.body": "Dit antwoord is gegenereerd door een AI-taalmodel ({{model}}). Het kan fouten of onnauwkeurigheden bevatten. Een teamlid neemt binnenkort contact op ter bevestiging.",
   "ai.disclosure.footer": "Supreme Bot · Automatisch AI-antwoord · Powered by Google Gemini",
+
+  // Kennisbank (v32) — automatisch voorgesteld artikel bij nieuwe tickets
+  "kb.suggest.title": "💡 Dit kan helpen: {{title}}",
+  "kb.suggest.footer": "Suggestie uit de Kennisbank",
+  "kb.suggest.helpfulButton": "Nuttig",
+  "kb.suggest.notHelpfulButton": "Niet nuttig",
+  "kb.suggest.disclaimer": "_Automatisch voorgesteld — een teamlid neemt sowieso nog contact op._",
+  "kb.feedback.thanksHelpful": "✅ Bedankt voor je feedback!",
+  "kb.feedback.thanksNotHelpful": "📝 Bedankt — een teamlid bekijkt dit nader.",
+  "kb.feedback.error": "❌ Er ging iets mis bij het opslaan van je feedback.",
 };

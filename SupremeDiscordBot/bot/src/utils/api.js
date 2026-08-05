@@ -132,6 +132,18 @@ export async function getStats(serverId) {
   return data;
 }
 
+// ─── Knowledge Base (v32) — auto-suggest on new tickets ────────────────────
+
+export async function suggestKbArticle(serverId, query) {
+  const { data } = await api.get(`/bot/kb/${serverId}/suggest`, { params: { q: query || "" } });
+  return data.article || null;
+}
+
+export async function sendKbFeedback(articleId, helpful) {
+  const { data } = await api.post(`/bot/kb/${articleId}/feedback`, { helpful });
+  return data;
+}
+
 // Startup convergence: POST the application's FULL active entitlement list so
 // the backend can grant anything missed while offline and revoke servers whose
 // entitlement expired/was refunded meanwhile. Discord never redelivers

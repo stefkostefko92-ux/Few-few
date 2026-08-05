@@ -140,4 +140,14 @@ export default {
   "ai.disclosure.fieldName": "⚠️ AI разкритие",
   "ai.disclosure.body": "Този отговор е генериран от AI езиков модел ({{model}}). Възможно е да съдържа грешки или неточности. Член на екипа ще се свърже с теб скоро за потвърждение.",
   "ai.disclosure.footer": "Supreme Bot · Автоматичен AI отговор · Powered by Google Gemini",
+
+  // База знания (v32) — автоматично предложена статия при нов билет
+  "kb.suggest.title": "💡 Това може да помогне: {{title}}",
+  "kb.suggest.footer": "Предложение от Базата знания",
+  "kb.suggest.helpfulButton": "Полезно",
+  "kb.suggest.notHelpfulButton": "Не помогна",
+  "kb.suggest.disclaimer": "_Предложено автоматично — член на екипа пак ще се свърже с теб._",
+  "kb.feedback.thanksHelpful": "✅ Благодарим за обратната връзка!",
+  "kb.feedback.thanksNotHelpful": "📝 Благодарим — член на екипа ще разгледа по-внимателно.",
+  "kb.feedback.error": "❌ Възникна проблем при запазването на обратната връзка.",
 };

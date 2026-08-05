@@ -160,6 +160,7 @@ model Server {
   verificationPanels VerificationPanel[]
   auditLogs          AuditLog[]
   paymentLogs        PaymentLog[]
+  kbArticles         KbArticle[]
   agency             Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([agencyId])
@@ -878,6 +879,34 @@ model AffiliateReferral {
   @@unique([affiliateId, referredServerId])
   @@index([referredServerId])
   @@map("affiliate_referrals")
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// v32 — KNOWLEDGE BASE (staff-written articles, auto-suggested on new tickets)
+// ═════════════════════════════════════════════════════════════════════════════
+// The Ticket Tool differentiator: staff write short articles with keywords;
+// the bot suggests the best match as an embed on new tickets (see
+// lib/kbMatch.js for the pure scoring function + routes/bot_v18.js for the
+// bot-secret suggest/feedback endpoints). Count is gated by plan (see
+// BASE_LIMITS.kbArticles / PREMIUM_LIMITS.kbArticles in lib/premium.js).
+model KbArticle {
+  id              String   @id @default(cuid())
+  serverId        String
+  title           String // ≤120 chars — validated in routes/kb.js
+  content         String   @db.Text // ≤4000 chars
+  keywords        String[] @default([]) // up to 10, lowercase — validated in routes/kb.js
+  enabled         Boolean  @default(true)
+  usageCount      Int      @default(0) // Incremented each time the bot suggests this article
+  helpfulCount    Int      @default(0) // kb_fb:{id}:1 votes
+  notHelpfulCount Int      @default(0) // kb_fb:{id}:0 votes
+  createdBy       String // Discord user id
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@map("kb_articles")
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
