@@ -432,6 +432,7 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
       applicationId: app.id,
       formName: app.form.name,
       managerRoleIds: app.form.managerRoleIds || [],
+      discussCategoryId: app.form.discussCategoryId || null, // v34 — фиксирана категория
       transcript,
     });
 

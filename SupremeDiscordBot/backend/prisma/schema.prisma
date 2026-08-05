@@ -390,6 +390,7 @@ model Form {
   closedAt            DateTime? // Applications closed — rejects new submissions
   requireVerification Boolean   @default(false) // Captcha-style "solve to submit"
   transcriptChannelId String? // Where to post application transcript on approve/deny
+  discussCategoryId   String? // v34 — Discord category where discuss channels open (null = auto-pick)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 

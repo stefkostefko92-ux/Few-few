@@ -1122,6 +1122,7 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
       applicationId: app.id,
       formName: app.form.name,
       managerRoleIds: app.form.managerRoleIds || [],
+      discussCategoryId: app.form.discussCategoryId || null, // v34 — фиксирана категория
       transcript,
     });
 

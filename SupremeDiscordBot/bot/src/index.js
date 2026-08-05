@@ -455,18 +455,35 @@ app.post("/internal/application-discuss", async (req, res) => {
   try {
     const {
       serverId, applicantId, applicantTag, reviewerId, reviewerTag,
-      applicationId, formName, managerRoleIds = [], transcript,
+      applicationId, formName, managerRoleIds = [], discussCategoryId, transcript,
     } = req.body;
 
     const guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId).catch(() => null);
     if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
 
-    // Look for an "applications" or "tickets" or "reviews" category
     const { ChannelType } = await import("discord.js");
-    const category = guild.channels.cache.find(
-      (c) => c.type === ChannelType.GuildCategory &&
-        /applicat|review|ticket|staff/i.test(c.name)
-    );
+
+    // v34 — формата може да фиксира категорията (Form.discussCategoryId).
+    // Cross-tenant guard: ID-то е потребителски вход от dashboard-а — трябва
+    // да е КАТЕГОРИЯ в СЪЩИЯ guild, иначе го игнорираме и падаме на авто-избор.
+    let category = null;
+    if (discussCategoryId) {
+      const fixed = guild.channels.cache.get(discussCategoryId)
+        || await guild.channels.fetch(discussCategoryId).catch(() => null);
+      if (fixed?.type === ChannelType.GuildCategory && fixed.guildId === guild.id) {
+        category = fixed;
+      } else {
+        console.warn(`[application-discuss] discussCategoryId ${discussCategoryId} не е категория в guild ${guild.id} — авто-избор`);
+      }
+    }
+
+    // Fallback: „applications" / „tickets" / „reviews" / „staff" категория по име
+    if (!category) {
+      category = guild.channels.cache.find(
+        (c) => c.type === ChannelType.GuildCategory &&
+          /applicat|review|ticket|staff/i.test(c.name)
+      );
+    }
 
     const applicantUser = await client.users.fetch(applicantId).catch(() => null);
     const cleanName = (applicantTag || "applicant").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60) || "applicant";

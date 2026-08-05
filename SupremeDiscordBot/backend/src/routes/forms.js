@@ -82,6 +82,8 @@ const createFormSchema = z.object({
   isApplication: z.boolean().default(false),
   reviewChannelId: z.string().optional(),
   transcriptChannelId: z.string().optional(),
+  // v34 — Discord категория за discuss каналите (празно = авто-избор по име)
+  discussCategoryId: z.string().optional(),
   // Appy.bot-style fields — all optional, backward-compatible
   acceptRoleIds:   z.array(z.string()).optional(),
   denyRoleIds:     z.array(z.string()).optional(),
@@ -135,6 +137,7 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     // Normalise empty strings to null for optional fields
     if (rest.reviewChannelId === "") rest.reviewChannelId = null;
     if (rest.transcriptChannelId === "") rest.transcriptChannelId = null;
+    if (rest.discussCategoryId === "") rest.discussCategoryId = null;
     if (rest.acceptMessage === "") rest.acceptMessage = null;
     if (rest.denyMessage === "") rest.denyMessage = null;
 
@@ -205,6 +208,7 @@ router.put("/:serverId/:formId", requireServerAdmin, async (req, res, next) => {
     const { questions, closed, ...rest } = parsed.data;
     if (rest.reviewChannelId === "") rest.reviewChannelId = null;
     if (rest.transcriptChannelId === "") rest.transcriptChannelId = null;
+    if (rest.discussCategoryId === "") rest.discussCategoryId = null;
     if (rest.acceptMessage === "")   rest.acceptMessage   = null;
     if (rest.denyMessage === "")     rest.denyMessage     = null;
 

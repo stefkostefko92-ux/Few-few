@@ -38,6 +38,7 @@ function formToState(f) {
     isApplication: f.isApplication,
     reviewChannelId: f.reviewChannelId || "",
     transcriptChannelId: f.transcriptChannelId || "",
+    discussCategoryId: f.discussCategoryId || "",
     // Appy.bot-style fields
     acceptRoleIds:  (f.acceptRoleIds || []).join(","),
     denyRoleIds:    (f.denyRoleIds || []).join(","),
@@ -71,6 +72,7 @@ const defaultForm = () => ({
   isApplication: false,
   reviewChannelId: "",
   transcriptChannelId: "",
+  discussCategoryId: "",
   acceptRoleIds:  "",
   denyRoleIds:    "",
   removeRoleIds:  "",
@@ -363,6 +365,14 @@ export default function FormsPage() {
                   <label className="block">
                     <span className="cs-label">Review Channel ID</span>
                     <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder="Discord channel ID for review embeds" />
+                  </label>
+                )}
+
+                {form.isApplication && (
+                  <label className="block">
+                    <span className="cs-label">Discussion Category ID</span>
+                    <input className="cs-input" value={form.discussCategoryId} onChange={(e) => setForm((f) => ({ ...f, discussCategoryId: e.target.value }))} placeholder="Discord CATEGORY ID for “Open a ticket” discussion channels (optional)" />
+                    <p className="text-xs text-cs-dim mt-1">Where private applicant discussion channels are created. Right-click a category → Copy Channel ID. Empty = auto-pick by name (applications/tickets/reviews/staff).</p>
                   </label>
                 )}
 
