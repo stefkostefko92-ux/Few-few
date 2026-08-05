@@ -89,3 +89,25 @@ describe("resolveLangSync (interaction.locale only, no DB hop)", () => {
     expect(resolveLangSync(undefined)).toBe("en");
   });
 });
+
+// ─── Discord лимити на локализациите (регресия за crash-а от 05.08.2026) ─────
+// setNameLocalizations валидира ≤32, setDescriptionLocalizations ≤100 —
+// нарушение УБИВА бота при стартиране (crash loop), а node --check не го лови.
+import { CMD_NAME_L10N, CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+
+describe("command localization length limits", () => {
+  it("all name localizations are ≤32 chars (Discord hard limit)", () => {
+    for (const [cmd, locs] of Object.entries(CMD_NAME_L10N)) {
+      for (const [loc, s] of Object.entries(locs)) {
+        expect(s.length, `${cmd} [${loc}]: "${s}"`).toBeLessThanOrEqual(32);
+      }
+    }
+  });
+  it("all description localizations are ≤100 chars (Discord hard limit)", () => {
+    for (const [cmd, locs] of Object.entries(CMD_DESC_L10N)) {
+      for (const [loc, s] of Object.entries(locs)) {
+        expect(s.length, `${cmd} [${loc}]: "${s}"`).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+});
