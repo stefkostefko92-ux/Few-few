@@ -185,6 +185,41 @@ router.post(
     const trialDays = Number(process.env.STRIPE_TRIAL_DAYS ?? 14);
     const grantStripeTrial = trialDays > 0 && server.trialUsed !== true;
 
+    // ── Афилиейт атрибуция ───────────────────────────────────────────────────
+    // Веригата беше СКЪСАНА на последното звено: `GET /api/affiliate/track` сетва
+    // бисквитка `bp_ref`, но нищо не я четеше, затова AffiliateReferral НИКОГА не
+    // се създаваше (нула `.create` в целия монорепо) и 20% комисионна не се
+    // начисляваше на никого. Тук се затваря.
+    //
+    // Две уговорки, научени при поправката:
+    //  1) Бекендът НЯМА `cookie-parser`, значи `req.cookies` е undefined — четем
+    //     хедъра ръчно, иначе поправката щеше да изглежда жива и да не прави нищо.
+    //  2) `sameSite: "lax"` не праща бисквитката при cross-site XHR, затова
+    //     приемаме и явен `ref` от тялото. Това НЕ отслабва нищо: и бисквитката се
+    //     сетва по потребителска заявка (`/track?code=…`), тоест и двата входа са
+    //     еднакво клиентски твърдени — както е във всяка афилиейт програма.
+    //     Реалният контрол срещу злоупотреба е забраната за само-рефериране.
+    //
+    // Атрибуцията се ПРЕНАСЯ през metadata и се материализира чак в ПРОВЕРЕНИЯ
+    // webhook — никакво начисление от redirect.
+    let affiliateId = null;
+    try {
+      const cookieRef = String(req.headers.cookie || "")
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith("bp_ref="))
+        ?.slice("bp_ref=".length);
+      const raw = String(cookieRef || req.body?.ref || "").trim();
+      if (raw) {
+        // `bp_ref` носи id; `?ref=` носи човешкия код — приемаме и двете форми.
+        const aff = await prisma.affiliateCode.findFirst({ where: { OR: [{ id: raw }, { code: raw }] } });
+        // Само-рефериране не носи комисионна. Полето е `userId` (Discord id на
+        // собственика), НЕ `ownerUserId` — първата ми версия ползваше грешното
+        // име и „защитата" пропускаше всичко.
+        if (aff && aff.userId !== req.user.id) affiliateId = aff.id;
+      }
+    } catch { /* атрибуцията е bonus — никога не блокира плащане */ }
+
     const session = await stripe.checkout.sessions.create(
       {
         customer: customerId,
@@ -194,7 +229,7 @@ router.post(
         subscription_data: {
           // M1 — без trial_period_days, ако trialUsed===true (вече е ползван).
           ...(grantStripeTrial && { trial_period_days: trialDays }),
-          metadata: { serverId, plan, interval },
+          metadata: { serverId, plan, interval, ...(affiliateId && { affiliateId }) },
         },
         // M3 — Stripe Tax: автоматично изчислява ДДС по местоназначение и
         // събира tax ID (reverse charge за B2B в ЕС). Изисква активни Tax
@@ -209,7 +244,7 @@ router.post(
         billing_address_collection: "required",
         success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
-        metadata: { serverId, plan, interval },
+        metadata: { serverId, plan, interval, ...(affiliateId && { affiliateId }) },
       },
       // L1 — Idempotency-Key със стабилен ключ за кратък прозорец: при ретрай на
       // същия POST (timeout/мрежа) Stripe връща СЪЩАТА сесия вместо да създаде
@@ -391,6 +426,31 @@ router.post("/webhook", requireStripe, async (req, res) => {
               description: "Premium subscription started",
             },
           });
+
+          // Афилиейт реферал — материализира се ЧАК ТУК, в проверения webhook, и
+          // вътре в СЪЩАТА `runOnce` транзакция (ключирана по event.id), значи
+          // повторно доставяне не създава втори ред. Освен това `@@unique
+          // [affiliateId, referredServerId]` прави записа идемпотентен и при
+          // повторен checkout на същия сървър.
+          //
+          // Само СЪЗДАВА връзката; начисляването на 20% остава в `invoice.paid`,
+          // където сумата идва от `invoice.amount_paid` (сървърна, цели центове).
+          // Така самият checkout не носи пари на никого — плащането ги носи.
+          const affId = session.metadata?.affiliateId;
+          if (affId) {
+            const exists = await tx.affiliateReferral.findUnique({
+              where: { affiliateId_referredServerId: { affiliateId: affId, referredServerId: serverId } },
+            });
+            if (!exists) {
+              await tx.affiliateReferral.create({
+                data: { affiliateId: affId, referredServerId: serverId, status: "pending" },
+              });
+              await tx.affiliateCode.update({
+                where: { id: affId },
+                data: { signups: { increment: 1 } },
+              });
+            }
+          }
         });
 
         if (did) console.log(`✅ Server ${serverId} upgraded to Premium`);
@@ -406,6 +466,23 @@ router.post("/webhook", requireStripe, async (req, res) => {
         if (agency) {
           await runOnce(async (tx) => {
             await tx.agency.update({ where: { id: agency.id }, data: { active: true, stripeStatus: "active", pastDueSince: null } });
+            // Този `break` по-долу прескачаше `paymentLog.create` в сървърния клон,
+            // значи ВСЯКО agency плащане липсваше във финансовия регистър — а
+            // `calculateMRR()` (routes/admin.js) агрегира точно `paymentLog`.
+            // Резултат: agency приходите не се виждаха никъде в отчета.
+            //
+            // `stripeInvoiceId` е @unique — при повторно доставяне на същия invoice
+            // записът пада с P2002 и `runOnce` го хваща като „вече обработено".
+            await tx.paymentLog.create({
+              data: {
+                agencyId: agency.id,
+                stripeInvoiceId: invoice.id,
+                amount: invoice.amount_paid,
+                currency: invoice.currency || "eur",
+                status: "paid",
+                description: "Agency subscription payment",
+              },
+            });
           });
           break;
         }
