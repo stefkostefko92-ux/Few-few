@@ -1,14 +1,18 @@
 // bot/src/__tests__/i18n.test.js
-// Key parity: bg/it must translate every key that exists in en (the source of
-// truth). de/es/fr/nl/pl are intentional English placeholders (re-export en.js)
-// pending the Преводач agent — excluded here on purpose.
+// Key parity: every non-source locale must translate every key that exists in
+// en (the source of truth) — bg/it/de/es/fr/nl/pl. No placeholders left.
 import { describe, it, expect } from "vitest";
 import en from "../i18n/en.js";
 import bg from "../i18n/bg.js";
 import itLocale from "../i18n/it.js";
+import de from "../i18n/de.js";
+import es from "../i18n/es.js";
+import fr from "../i18n/fr.js";
+import nl from "../i18n/nl.js";
+import pl from "../i18n/pl.js";
 import { t, SUPPORTED_LANGUAGES, resolveLangSync } from "../i18n/index.js";
 
-const FULLY_TRANSLATED = { bg, it: itLocale };
+const FULLY_TRANSLATED = { bg, it: itLocale, de, es, fr, nl, pl };
 
 describe("i18n key parity", () => {
   const enKeys = Object.keys(en).sort();
@@ -24,6 +28,18 @@ describe("i18n key parity", () => {
       const enKeySet = new Set(enKeys);
       const orphans = Object.keys(locale).filter((k) => !enKeySet.has(k));
       expect(orphans).toEqual([]);
+    });
+
+    // A dropped/renamed {{var}} renders literally in a live Discord message
+    // (or silently loses information) — the most dangerous translation bug.
+    it(`${lang} keeps exactly the same {{placeholders}} as en`, () => {
+      const vars = (s) =>
+        (String(s).match(/\{\{\s*\w+\s*\}\}/g) || [])
+          .map((v) => v.replace(/\s/g, ""))
+          .sort()
+          .join(",");
+      const mismatched = enKeys.filter((k) => vars(locale[k]) !== vars(en[k]));
+      expect(mismatched).toEqual([]);
     });
   }
 
@@ -50,9 +66,12 @@ describe("t() fallback safety", () => {
     expect(() => t("ticket.opened", "xx", { channel: "#x" })).not.toThrow();
   });
 
-  it("de/es/fr/nl/pl placeholders resolve (re-export en, not undefined)", () => {
-    for (const lang of ["de", "es", "fr", "nl", "pl"]) {
-      expect(t("ticket.staffOnly", lang)).toBe(en["ticket.staffOnly"]);
+  it("de/es/fr/nl/pl are real translations, not en re-exports", () => {
+    for (const [lang, locale] of Object.entries({ de, es, fr, nl, pl })) {
+      expect(locale).not.toBe(en);
+      const s = t("ticket.staffOnly", lang);
+      expect(s).toBeTruthy();
+      expect(s).not.toBe(en["ticket.staffOnly"]);
     }
   });
 });

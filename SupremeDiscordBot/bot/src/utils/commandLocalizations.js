@@ -12,9 +12,8 @@
 // lowest-effort i18n win for slash commands.
 //
 // de/es/fr/nl/pl entries here ARE real short translations (command
-// descriptions are one sentence — safe to do directly, unlike the longer
-// in-bot copy in i18n/{de,es,fr,nl,pl}.js which are English placeholders
-// pending the Преводач agent).
+// descriptions are one sentence). The full in-bot copy in i18n/*.js is now
+// also fully translated for all 8 locales (key-parity gated by i18n.test.js).
 
 export const CMD_DESC_L10N = {
   admin: {
