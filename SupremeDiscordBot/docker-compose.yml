@@ -20,6 +20,13 @@ services:
     image: postgres:16-alpine
     container_name: supremebot_postgres
     restart: unless-stopped
+    # Ротация на логовете — без таван json-file расте, докато напълни диска
+    # (и събори всички services). 10MB × 3 файла на контейнер.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-discordbot}
       POSTGRES_USER: ${POSTGRES_USER:-bot}
@@ -42,6 +49,11 @@ services:
     image: redis:7-alpine
     container_name: supremebot_redis
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
     ports:
       - "127.0.0.1:6381:6379"  # bind to localhost only
@@ -62,6 +74,11 @@ services:
       dockerfile: Dockerfile
     container_name: supremebot_backend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       postgres:
         condition: service_healthy
@@ -88,6 +105,11 @@ services:
       dockerfile: Dockerfile
     container_name: supremebot_bot
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       backend:
         condition: service_healthy
@@ -116,6 +138,11 @@ services:
       dockerfile: Dockerfile
     container_name: supremebot_frontend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       backend:
         condition: service_started

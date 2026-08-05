@@ -71,6 +71,9 @@ MASTILKO_HEALTH_URL="${MASTILKO_HEALTH_URL:-http://127.0.0.1:3200/}"
 # на сървъра в SupremeDiscordBot/.env (корен, postgres), SupremeDiscordBot/backend/.env, SupremeDiscordBot/bot/.env
 # и SupremeDiscordBot/frontend/.env (build-time VITE_*); пренасят се при всеки деплой.
 SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
+# Бекъпи на Supreme Bot: pre-deploy снимка (некриптирана, краткоживееща, пазим 5)
+# + дневният криптиран бекъп от supreme-backup.timer (DPA §5.1). Общ път, mode 700.
+SUPREME_BACKUP_DIR="${SUPREME_BACKUP_DIR:-/var/backups/supreme}"
 
 # eternaltouch (Eternal Touch — Docker Compose модел) — app:4300 + postgres:5437
 # слушат само на 127.0.0.1, зад Nginx. Тайните живеят в eternaltouch/.env на
@@ -507,6 +510,10 @@ deploy_supreme() {
       cp -a "$CURRENT_LINK/SupremeDiscordBot/$f" "$d/$f"; ok "Пренесох SupremeDiscordBot/$f"
     fi
   done
+  # Дъмп ПРЕДИ миграция (по модела на medqr/zabobovdol). Миграциите се пускат
+  # автоматично в backend entrypoint-а при `up`, затова застраховката трябва да
+  # е направена ПРЕДИ deploy.sh. Fail-closed: няма дъмп → няма деплой.
+  supreme_pre_deploy_dump || { deploy_failed=1; return; }
   ( cd "$d"
     # Собственият deploy.sh: проверява .env-ите, билдва, вдига, чака backend health
     # (миграциите се пускат автоматично в backend entrypoint-а) и регистрира
@@ -515,7 +522,65 @@ deploy_supreme() {
   )
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
-  health "$SUPREME_HEALTH_URL" "SupremeDiscordBot" || deploy_failed=1
+  if health "$SUPREME_HEALTH_URL" "SupremeDiscordBot"; then
+    supreme_install_backup_timer "$d"
+  else
+    deploy_failed=1
+  fi
+}
+
+# Бекъп на базата на Supreme Bot ПРЕДИ миграциите.
+# Връща 0 и когато базата още не съществува (пръв деплой — няма какво да губим);
+# връща 1 само когато базата ВЪРВИ, но дъмпът се проваля → деплоят спира.
+supreme_pre_deploy_dump() {
+  local pg="supremebot_postgres"
+  if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$pg"; then
+    log "Supreme: няма работеща база (пръв деплой?) — прескачам дъмпа преди миграция."
+    return 0
+  fi
+  local user db out
+  user="$(docker exec "$pg" printenv POSTGRES_USER 2>/dev/null | tr -d '\r')"; user="${user:-bot}"
+  db="$(docker exec "$pg" printenv POSTGRES_DB 2>/dev/null | tr -d '\r')";     db="${db:-discordbot}"
+  mkdir -p "$SUPREME_BACKUP_DIR"; chmod 700 "$SUPREME_BACKUP_DIR"
+  out="$SUPREME_BACKUP_DIR/pre-deploy-$TS.dump"
+  ( umask 077
+    docker exec "$pg" pg_dump -Fc --no-owner --no-acl -U "$user" "$db" > "$out" ) || {
+    rm -f "$out"
+    warn "Supreme: pg_dump преди миграция се провали — НЕ деплойвам без застраховка."
+    return 1
+  }
+  local size; size="$(stat -c '%s' "$out" 2>/dev/null || echo 0)"
+  if [ "$size" -lt 1024 ]; then
+    rm -f "$out"
+    warn "Supreme: дъмпът преди миграция е само ${size}B — приемам го за провален, спирам деплоя."
+    return 1
+  fi
+  ok "Supreme: снимка на базата преди миграция: $out ($(du -h "$out" | awk '{print $1}'))"
+  # Пазим последните 5 pre-deploy снимки (дневните криптирани бекъпи са отделно).
+  ls -1t "$SUPREME_BACKUP_DIR"/pre-deploy-*.dump 2>/dev/null | tail -n +6 | xargs -r rm -f
+  return 0
+}
+
+# Самоинсталиране на дневния криптиран бекъп (DPA §5.1). Идемпотентно: пуска се
+# при всеки успешен деплой, обновява скрипта и единиците, вдига таймера веднъж.
+supreme_install_backup_timer() {
+  local d="$1"
+  command -v systemctl >/dev/null || { warn "Supreme: няма systemd — бекъп таймерът не е инсталиран."; return 0; }
+  [ -f "$d/deploy/backup-postgres.sh" ] || { warn "Supreme: липсва deploy/backup-postgres.sh в архива — бекъпът НЕ е инсталиран."; return 0; }
+  install -m 700 "$d/deploy/backup-postgres.sh"  /usr/local/sbin/supreme-backup-postgres
+  install -m 700 "$d/deploy/restore-postgres.sh" /usr/local/sbin/supreme-restore-postgres
+  install -m 644 "$d/deploy/supreme-backup.service" /etc/systemd/system/supreme-backup.service
+  install -m 644 "$d/deploy/supreme-backup.timer"   /etc/systemd/system/supreme-backup.timer
+  mkdir -p "$SUPREME_BACKUP_DIR"; chmod 700 "$SUPREME_BACKUP_DIR"
+  systemctl daemon-reload
+  systemctl enable --now supreme-backup.timer >/dev/null 2>&1 \
+    && ok "Supreme: дневен криптиран бекъп активен (supreme-backup.timer, 03:00 UTC)." \
+    || warn "Supreme: не успях да вдигна supreme-backup.timer — виж systemctl status."
+  if [ ! -s /root/.supreme-backup-pass ]; then
+    warn "Supreme: ЛИПСВА /root/.supreme-backup-pass — бекъпите ще се провалят до създаването ѝ:"
+    warn "  umask 077; openssl rand -base64 48 > /root/.supreme-backup-pass; chmod 600 /root/.supreme-backup-pass"
+    warn "  (запази паролата И извън сървъра — без нея бекъпите не се отварят). Виж SupremeDiscordBot/deploy/BACKUP.md"
+  fi
 }
 
 # ── Health check ──────────────────────────────────────────────────────────────

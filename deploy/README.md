@@ -35,6 +35,11 @@
   `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
   Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
+  **Бекъпи:** `pg_dump` ПРЕДИ миграциите в `/var/backups/supreme/pre-deploy-<TS>.dump`
+  (провал на дъмпа спира деплоя), а след успешен health се инсталира дневният
+  криптиран бекъп (`supreme-backup.timer`, 03:00 UTC, 30 дни задържане — DPA §5.1).
+  Еднократно ръчно: паролата `/root/.supreme-backup-pass` + първи тестов restore →
+  `SupremeDiscordBot/deploy/BACKUP.md`.
 - **eternaltouch** (Eternal Touch): пренася `eternaltouch/.env` (или го генерира с random
   secrets при пръв деплой — `SMTP_PASS` остава `CHANGE_ME` за ръчно попълване веднъж),
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
