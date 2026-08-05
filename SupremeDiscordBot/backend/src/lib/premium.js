@@ -84,6 +84,7 @@ export const BASE_LIMITS = {
   recurringScheduled: false,
   transcriptRetentionDays: 30,
   kbArticles:         3, // v32 — Knowledge Base
+  reactionRoleMessages: 2, // v33 — Reaction Roles
 };
 
 export const PREMIUM_LIMITS = {
@@ -97,6 +98,7 @@ export const PREMIUM_LIMITS = {
   recurringScheduled: true,
   transcriptRetentionDays: null, // null = forever
   kbArticles:         50, // v32 — Knowledge Base
+  reactionRoleMessages: 25, // v33 — Reaction Roles
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

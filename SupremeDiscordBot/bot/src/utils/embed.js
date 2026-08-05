@@ -134,7 +134,15 @@ export function buildReviewEmbed(application, formName, user, questions) {
     .setStyle(ButtonStyle.Danger)
     .setEmoji("❌");
 
-  const row = new ActionRowBuilder().addComponents(approveBtn, denyBtn);
+  // Отваря личен discussion канал с кандидата ПРЕДИ решение (status остава
+  // PENDING) — същият flow като „Open discussion" в dashboard-а.
+  const discussBtn = new ButtonBuilder()
+    .setCustomId(`app_review:${application.id}:discuss`)
+    .setLabel("Open a ticket")
+    .setStyle(ButtonStyle.Secondary)
+    .setEmoji("🎫");
+
+  const row = new ActionRowBuilder().addComponents(approveBtn, denyBtn, discussBtn);
 
   return { embeds: [embed], components: [row] };
 }

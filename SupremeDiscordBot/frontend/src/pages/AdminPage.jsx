@@ -9,7 +9,7 @@ import {
 import api, {
   getAnalytics, getRevenue, getAdminUsers, getAdminUser,
   getPayments, getAuditLogs, getAdminServers, getAdminServer,
-  deleteAdminServer, resetAdminServer, broadcastToServer, setServerPremium,
+  deleteAdminServer, resetAdminServer, broadcastToServer, setServerPlan,
   deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer,
 } from "../api";
 import Modal from "../components/Modal";
@@ -555,9 +555,22 @@ function UserDetailModal({ userId, onClose }) {
 // SERVERS (full CRUD)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Всички ръчно задаваеми планове (PLANS в backend/src/lib/premium.js).
+const PLAN_OPTIONS = [
+  { value: "free",       label: "Free",        note: "Revokes all premium features (base limits)." },
+  { value: "premium",    label: "Premium",     note: "Unlimited panels/forms, AI replies, round-robin, webhooks, API." },
+  { value: "whitelabel", label: "White-label", note: "Premium + custom bot under the customer's own brand." },
+  { value: "agency5",    label: "Agency 5",    note: "White-label for up to 5 servers — creates a manual Agency owned by the server owner; they attach the other servers themselves." },
+  { value: "agency10",   label: "Agency 10",   note: "White-label for up to 10 servers — creates a manual Agency owned by the server owner; they attach the other servers themselves." },
+];
+
+// Кратък етикет за Plan колоната.
+const PLAN_BADGE = { premium: "Premium", whitelabel: "White-label", agency5: "Agency 5", agency10: "Agency 10" };
+
 function ServersTab() {
   const qc = useQueryClient();
-  const [confirmPremium, setConfirmPremium] = useState(null);
+  const [confirmPlan, setConfirmPlan] = useState(null); // { server }
+  const [selectedPlan, setSelectedPlan] = useState("premium");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmReset, setConfirmReset] = useState(null);
   const [editServer, setEditServer] = useState(null);
@@ -574,9 +587,9 @@ function ServersTab() {
     qc.invalidateQueries({ queryKey: ["analytics"] });
   };
 
-  const setPremium = useMutation({
-    mutationFn: ({ serverId, enabled, reason }) => setServerPremium(serverId, enabled, reason),
-    onSuccess: () => { invalidate(); setConfirmPremium(null); setReason(""); },
+  const setPlanMut = useMutation({
+    mutationFn: ({ serverId, plan, reason }) => setServerPlan(serverId, plan, reason),
+    onSuccess: () => { invalidate(); setConfirmPlan(null); setReason(""); },
   });
 
   const delServer = useMutation({
@@ -632,11 +645,15 @@ function ServersTab() {
                   </div>
                 </td>
                 <td>
-                  {s.isPremium
-                    ? s.stripeStatus === "manual"
-                      ? <span className="cs-badge-manual"><Sparkles className="w-3 h-3" aria-hidden="true" /> Manual</span>
-                      : <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>
-                    : <span className="cs-badge-muted">Base</span>}
+                  {s.agencyId
+                    ? <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Agency seat</span>
+                    : s.plan && s.plan !== "free"
+                      ? s.planSource === "manual"
+                        ? <span className="cs-badge-manual"><Sparkles className="w-3 h-3" aria-hidden="true" /> {PLAN_BADGE[s.plan] || s.plan} · manual</span>
+                        : <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> {PLAN_BADGE[s.plan] || s.plan}</span>
+                      : s.isPremium
+                        ? <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>
+                        : <span className="cs-badge-muted">Base</span>}
                 </td>
                 <td className="text-cs-muted font-mono text-xs">{s._count.tickets}</td>
                 <td className="text-cs-muted font-mono text-xs">{s._count.panels}</td>
@@ -644,21 +661,15 @@ function ServersTab() {
                 <td className="text-cs-dim text-xs">{new Date(s.createdAt).toLocaleDateString()}</td>
                 <td className="text-right">
                   <div className="flex gap-1 justify-end items-center">
-                    {s.isPremium ? (
-                      <button
-                        onClick={() => setConfirmPremium({ server: s, action: "revoke" })}
-                        className="cs-btn-sm text-danger hover:bg-danger/10 border border-danger/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
-                        title="Revoke Premium"
-                        aria-label={`Revoke Premium for ${s.name}`}
-                      >Revoke</button>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmPremium({ server: s, action: "grant" })}
-                        className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
-                        title="Grant Premium"
-                        aria-label={`Grant Premium for ${s.name}`}
-                      >✦ Grant</button>
-                    )}
+                    <button
+                      onClick={() => {
+                        setSelectedPlan(s.agencyId ? "agency5" : (s.plan && s.plan !== "free" ? s.plan : "premium"));
+                        setConfirmPlan({ server: s });
+                      }}
+                      className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
+                      title="Change plan"
+                      aria-label={`Change plan for ${s.name}`}
+                    >✦ Plan</button>
                     <button onClick={() => setEditServer(s)}       className="cs-btn-ghost cs-btn-sm" title="Edit" aria-label={`Edit ${s.name}`}><Edit className="w-3.5 h-3.5" aria-hidden="true" /></button>
                     <button onClick={() => setBroadcastServer(s)}  className="cs-btn-ghost cs-btn-sm" title="Broadcast" aria-label={`Broadcast to ${s.name}`}><MessageSquare className="w-3.5 h-3.5" aria-hidden="true" /></button>
                     <button onClick={() => setConfirmReset(s)}     className="cs-btn-ghost cs-btn-sm text-warning hover:bg-warning/10" title="Reset" aria-label={`Reset ${s.name}`}><RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /></button>
@@ -671,32 +682,33 @@ function ServersTab() {
         </table>
       </div>
 
-      {confirmPremium && (
+      {confirmPlan && (
         <ConfirmModal
-          title={confirmPremium.action === "grant" ? "Grant Premium" : "Revoke Premium"}
-          danger={confirmPremium.action === "revoke"}
-          confirmLabel={confirmPremium.action === "grant" ? "✦ Grant Premium" : "Revoke"}
-          onCancel={() => { setConfirmPremium(null); setReason(""); }}
-          onConfirm={() => setPremium.mutate({ serverId: confirmPremium.server.id, enabled: confirmPremium.action === "grant", reason })}
-          loading={setPremium.isPending}
-          error={setPremium.error?.response?.data?.error}
+          title="Change plan"
+          danger={selectedPlan === "free"}
+          confirmLabel={selectedPlan === "free" ? "Revoke (set Free)" : `✦ Set ${PLAN_OPTIONS.find((p) => p.value === selectedPlan)?.label}`}
+          onCancel={() => { setConfirmPlan(null); setReason(""); }}
+          onConfirm={() => setPlanMut.mutate({ serverId: confirmPlan.server.id, plan: selectedPlan, reason })}
+          loading={setPlanMut.isPending}
+          error={setPlanMut.error?.response?.data?.error}
         >
           <div className="mb-4">
             <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">Server</div>
-            <div className="font-semibold text-cs-text">{confirmPremium.server.name}</div>
-            <div className="font-mono text-[10px] text-cs-dim">{confirmPremium.server.id}</div>
+            <div className="font-semibold text-cs-text">{confirmPlan.server.name}</div>
+            <div className="font-mono text-[10px] text-cs-dim">{confirmPlan.server.id}</div>
           </div>
-          {confirmPremium.action === "grant" ? (
-            <div className="border border-premium/40 bg-premium/5 px-3 py-2 text-xs text-premium mb-4">
-              ✦ Grants Premium WITHOUT charging Stripe. Unlimited panels/forms, PDF export, AI replies, round-robin, white-label.
-            </div>
-          ) : (
-            <div className="border border-danger/40 bg-danger/5 px-3 py-2 text-xs text-danger mb-4">
-              ⚠ Flips Premium flag off. Stripe subscription (if any) stays active — cancel manually in Stripe if needed.
-            </div>
-          )}
+
+          <label className="cs-label">Plan (manual, no Stripe charge — excluded from MRR)</label>
+          <select className="cs-input mb-2" value={selectedPlan} onChange={(e) => setSelectedPlan(e.target.value)}>
+            {PLAN_OPTIONS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+          <div className={`border px-3 py-2 text-xs mb-4 ${selectedPlan === "free" ? "border-danger/40 bg-danger/5 text-danger" : "border-premium/40 bg-premium/5 text-premium"}`}>
+            {PLAN_OPTIONS.find((p) => p.value === selectedPlan)?.note}
+            {selectedPlan === "free" && " Active Stripe subscription (if any) stays active — cancel it in Stripe first."}
+          </div>
+
           <label className="cs-label">Reason (optional, audit-logged)</label>
-          <input className="cs-input" placeholder={confirmPremium.action === "grant" ? "e.g. Partnership, trial extension" : "e.g. Terms violation"} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <input className="cs-input" placeholder={selectedPlan === "free" ? "e.g. Terms violation" : "e.g. Partnership, sponsor deal"} value={reason} onChange={(e) => setReason(e.target.value)} />
         </ConfirmModal>
       )}
 

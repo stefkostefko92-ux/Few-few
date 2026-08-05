@@ -675,6 +675,146 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
   }
 });
 
+// ─── PATCH /api/admin/servers/:serverId/plan ──────────────────────────────────
+// Ръчна смяна на ЦЕЛИЯ tier (free | premium | whitelabel | agency5 | agency10).
+// Надгражда /premium (само premium/whitelabel): позволява и Agency планове —
+// създава/преизползва manual Agency, притежавана от собственика на сървъра,
+// и закача сървъра като първо seat. Останалите seats собственикът закача сам
+// от Agency UI-то. planSource="manual" → изключен от MRR (виж /revenue).
+// Активен Stripe/Discord абонамент НЕ се отменя оттук — само Stripe Dashboard.
+
+router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next) => {
+  const { plan, reason } = req.body;
+  const VALID_PLANS = ["free", "premium", "whitelabel", "agency5", "agency10"];
+  if (!VALID_PLANS.includes(plan)) {
+    return res.status(400).json({ error: `plan must be one of: ${VALID_PLANS.join(", ")}` });
+  }
+
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
+      include: { agency: true },
+    });
+    if (!server) return res.status(404).json({ error: "Server not found" });
+
+    // Предпазител: не пипаме тихо платен абонамент — админът първо да го
+    // отмени в Stripe/Discord, иначе клиентът плаща за tier, който сме сменили.
+    const hasPaidSub =
+      (server.planSource === "stripe" && ["active", "trialing", "past_due"].includes(server.stripeStatus)) ||
+      server.planSource === "discord";
+    if (hasPaidSub && plan !== server.plan) {
+      return res.status(409).json({
+        error: `Server has an active ${server.planSource} subscription (${server.plan}). Cancel it in ${server.planSource === "stripe" ? "the Stripe Dashboard" : "Discord"} first, then set the manual plan.`,
+        code: "ACTIVE_PAID_SUBSCRIPTION",
+      });
+    }
+
+    let updated;
+
+    if (plan === "agency5" || plan === "agency10") {
+      const seatLimit = plan === "agency5" ? 5 : 10;
+      updated = await prisma.$transaction(async (tx) => {
+        // Преизползвай съществуваща manual агенция на същия собственик (идемпотентно).
+        let agency = await tx.agency.findFirst({
+          where: { ownerUserId: server.ownerId, planSource: "manual" },
+        });
+        if (agency) {
+          agency = await tx.agency.update({
+            where: { id: agency.id },
+            data: { plan, seatLimit, active: true },
+          });
+        } else {
+          agency = await tx.agency.create({
+            data: { ownerUserId: server.ownerId, plan, seatLimit, planSource: "manual", active: true },
+          });
+        }
+        // Закачи server → agency seat. Server.plan остава "free" по архитектура:
+        // agency-покритите сървъри резолвват tier-а си от агенцията (premium.js).
+        return tx.server.update({
+          where: { id: server.id },
+          data: {
+            agencyId: agency.id,
+            plan: "free",
+            planSource: null,
+            isPremium: true, // backward-compat флаг
+            premiumSince: server.premiumSince || new Date(),
+            archiveRetentionDays: null,
+          },
+        });
+      });
+    } else if (plan === "premium" || plan === "whitelabel") {
+      updated = await prisma.server.update({
+        where: { id: server.id },
+        data: {
+          plan,
+          planSource: "manual",
+          isPremium: true,
+          premiumSince: server.premiumSince || new Date(),
+          stripeStatus: server.stripeStatus || "manual",
+          archiveRetentionDays: null,
+          // Смъкване от manual agency seat, ако е имало
+          ...(server.agency?.planSource === "manual" && { agencyId: null }),
+        },
+      });
+    } else {
+      // plan === "free" → пълен revoke (plan-first: само isPremium=false не стига)
+      updated = await prisma.$transaction(async (tx) => {
+        const data = {
+          plan: "free",
+          planSource: null,
+          isPremium: false,
+          billingInterval: null,
+          archiveRetentionDays: 30,
+        };
+        // Ако seat-ът идва от manual агенция — откачи; деактивирай агенцията,
+        // ако това е било последното ѝ seat.
+        if (server.agencyId && server.agency?.planSource === "manual") {
+          data.agencyId = null;
+          const remaining = await tx.server.count({
+            where: { agencyId: server.agencyId, id: { not: server.id } },
+          });
+          if (remaining === 0) {
+            await tx.agency.update({ where: { id: server.agencyId }, data: { active: false } });
+          }
+        }
+        return tx.server.update({ where: { id: server.id }, data });
+      });
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        serverId: req.params.serverId,
+        action: "PLAN_CHANGED_MANUAL",
+        targetId: req.params.serverId,
+        metadata: {
+          from: server.plan,
+          fromAgency: server.agencyId || null,
+          to: plan,
+          reason: reason || null,
+          changedBy: req.user.username,
+        },
+      },
+    });
+
+    if (plan !== "free") {
+      await prisma.paymentLog.create({
+        data: {
+          serverId: req.params.serverId,
+          amount: 0,
+          currency: "usd",
+          status: "manual_grant",
+          description: `Plan "${plan}" manually set by ${req.user.username}${reason ? ` — ${reason}` : ""}`,
+        },
+      });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── GET /api/admin/servers/:serverId ─────────────────────────────────────────
 // Full server detail with related counts — admin view of any server
 

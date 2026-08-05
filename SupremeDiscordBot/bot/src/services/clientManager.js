@@ -45,6 +45,9 @@ const SHARED_INTENTS = [
   // (guildBanAdd/Remove). Без него white-label ботът не вижда GUILD_BAN_*.
   GatewayIntentBits.GuildModeration,
   GatewayIntentBits.DirectMessages,
+  // Непривилегирован intent (1<<10): Reaction Roles (v33) — без него
+  // white-label ботът не получава messageReactionAdd/Remove.
+  GatewayIntentBits.GuildMessageReactions,
 ];
 
 /**
@@ -80,7 +83,9 @@ async function loadEventModules() {
 async function createConfiguredClient(mainClient) {
   const client = new Client({
     intents: SHARED_INTENTS,
-    partials: [Partials.Channel],
+    // Message + Reaction partials: Reaction Roles (v33) върху некеширани
+    // съобщения — виж същия коментар в bot/src/index.js.
+    partials: [Partials.Channel, Partials.Message, Partials.Reaction],
   });
 
   // Share command collection (it's read-only after startup)

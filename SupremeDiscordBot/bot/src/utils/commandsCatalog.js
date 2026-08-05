@@ -227,6 +227,9 @@ export const COMMAND_CATALOG = [
       { feature: "Panel duplicate",
         description: "Copy an existing ticket panel with all its configuration. Ticket counter resets to 0, message ID is cleared.",
         dashboard: "Panels page · panel row · Duplicate action" },
+      { feature: "Reaction Roles",
+        description: "Members react to a message to get a role, remove the reaction to lose it. Exclusive (one-role) mode supported; up to 20 emoji → role pairs per message.",
+        dashboard: "Automation page · Reaction Roles tab · New Message → Post to channel" },
     ],
   },
 

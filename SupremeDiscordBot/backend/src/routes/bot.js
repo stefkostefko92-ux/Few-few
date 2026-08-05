@@ -10,6 +10,7 @@ import { decrypt } from "../lib/crypto.js";
 import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
 import { getServerTier } from "../lib/premium.js";
+import { buildTranscript } from "../lib/appTranscript.js";
 
 const router = Router();
 
@@ -1015,7 +1016,143 @@ router.post("/application/:appId/review", async (req, res, next) => {
       }).catch((e) => console.warn("[bot review] apply-outcome failed:", e.message));
     });
 
+    // Транскрипт в конфигурирания канал — паритет с dashboard review пътя
+    // (applications.js APPLICATION_TRANSCRIPT); Discord-бутонният път досега
+    // не постваше транскрипт.
+    if (form.transcriptChannelId) {
+      const transcript = buildTranscript(form.questions, application.answers);
+      import("../services/botNotifier.js").then(({ notifyBot }) => {
+        notifyBot("APPLICATION_TRANSCRIPT", {
+          serverId: application.serverId,
+          channelId: form.transcriptChannelId,
+          applicationId: application.id,
+          formName: form.name,
+          applicantId: application.userId,
+          applicantTag: application.user?.username || "Unknown",
+          action,
+          reviewerTag: reviewerTag || "staff",
+          reviewerId: reviewerId || null,
+          note: note || null,
+          transcript,
+        }).catch((e) => console.warn("[bot review] transcript post failed:", e.message));
+      });
+    }
+
     res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── GET /api/bot/reaction-roles/message/:messageId ──────────────────────────
+// Ботът резолвва Discord messageId → reaction-role mapping (при реакция).
+router.get("/reaction-roles/message/:messageId", async (req, res, next) => {
+  try {
+    const rrm = await prisma.reactionRoleMessage.findUnique({
+      where: { messageId: req.params.messageId },
+      include: { pairs: true },
+    });
+    if (!rrm) return res.status(404).json({ error: "Not a reaction role message" });
+    res.json(rrm);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── GET /api/bot/reaction-roles/:rrmId ──────────────────────────────────────
+// Ботът зарежда конфигурацията при spawn/update (вика се от internal handler-а).
+router.get("/reaction-roles/:rrmId", async (req, res, next) => {
+  try {
+    const rrm = await prisma.reactionRoleMessage.findUnique({
+      where: { id: req.params.rrmId },
+      include: { pairs: true },
+    });
+    if (!rrm) return res.status(404).json({ error: "Reaction role message not found" });
+    res.json(rrm);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── POST /api/bot/application/:appId/discuss ────────────────────────────────
+// Called by the bot when staff clicks "Open a ticket" on the review embed.
+// Mirrors /api/applications/:serverId/:appId/discuss (dashboard) — opens a
+// private discussion channel with the applicant, status stays PENDING.
+router.post("/application/:appId/discuss", async (req, res, next) => {
+  const { serverId, reviewerId, reviewerTag } = req.body;
+  if (!serverId || !reviewerId) {
+    return res.status(400).json({ error: "serverId and reviewerId are required" });
+  }
+
+  try {
+    const app = await prisma.application.findFirst({
+      where: { id: req.params.appId, serverId },
+      include: {
+        form: { include: { questions: { orderBy: { order: "asc" } } } },
+        user: true,
+      },
+    });
+    if (!app) return res.status(404).json({ error: "Application not found" });
+    if (app.status !== "PENDING") {
+      return res.status(400).json({ error: "Application already reviewed — discussion is for pending applications." });
+    }
+
+    // Идемпотентност: вече отворен discussion канал → върни него.
+    const existingTicket = await prisma.ticket.findFirst({
+      where: { applicationId: app.id, status: { notIn: ["CLOSED", "ARCHIVED"] } },
+    });
+    if (existingTicket) {
+      return res.json({
+        ok: true,
+        alreadyExists: true,
+        channelId: existingTicket.channelId,
+        ticketId: existingTicket.id,
+      });
+    }
+
+    const transcript = buildTranscript(app.form.questions, app.answers);
+
+    const { notifyBot } = await import("../services/botNotifier.js");
+    const botResult = await notifyBot("APPLICATION_DISCUSS", {
+      serverId,
+      applicantId: app.userId,
+      applicantTag: app.user?.username || "applicant",
+      reviewerId,
+      reviewerTag: reviewerTag || "staff",
+      applicationId: app.id,
+      formName: app.form.name,
+      managerRoleIds: app.form.managerRoleIds || [],
+      transcript,
+    });
+
+    if (!botResult?.ok || !botResult?.channelId) {
+      return res.status(502).json({
+        error: botResult?.error || "Bot failed to create discussion channel",
+      });
+    }
+
+    const ticket = await prisma.ticket.create({
+      data: {
+        serverId,
+        creatorId: app.userId,
+        applicationId: app.id,
+        channelId: botResult.channelId,
+        status: "OPEN",
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: reviewerId,
+        actorTag: reviewerTag || "BOT",
+        serverId,
+        action: "APPLICATION_DISCUSSION_STARTED",
+        targetId: app.id,
+        metadata: { channelId: botResult.channelId, ticketId: ticket.id, via: "discord_button" },
+      },
+    }).catch(() => {});
+
+    res.json({ ok: true, channelId: botResult.channelId, ticketId: ticket.id });
   } catch (err) {
     next(err);
   }

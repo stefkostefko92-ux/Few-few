@@ -55,8 +55,14 @@ export const client = new Client({
     // получаваме GUILD_BAN_* събития.
     GatewayIntentBits.GuildModeration,
     GatewayIntentBits.DirectMessages,
+    // Непривилегирован intent (1<<10): нужен за Reaction Roles (v33) —
+    // messageReactionAdd/Remove събития. Без него react → роля не работи.
+    GatewayIntentBits.GuildMessageReactions,
   ],
-  partials: [Partials.Channel],
+  // Message + Reaction partials: реакция върху съобщение отпреди рестарта на
+  // бота идва partial — без тях събитието изобщо не се емитва за некеширани
+  // съобщения (Reaction Roles v33).
+  partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 });
 
 // ─── Commands Collection ──────────────────────────────────────────────────────
@@ -178,6 +184,104 @@ app.post("/internal/form-spawn", async (req, res) => {
     res.json({ ok: true, channelId, messageId: msg.id });
   } catch (err) {
     console.error("form-spawn error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
+// ── Reaction Roles spawn / update / delete (v33) ─────────────────────────────
+// Постанова embed с двойките emoji → роля и слага началните реакции, така че
+// членовете само да кликат. Update редактира embed-а и синхронизира реакциите;
+// delete маха съобщението. Вика се от backend/src/routes/reactionroles.js.
+app.post("/internal/reaction-role-spawn", async (req, res) => {
+  const { rrmId, serverId, channelId } = req.body || {};
+  if (!rrmId || !serverId || !channelId) {
+    return res.status(400).json({ error: "rrmId, serverId and channelId required" });
+  }
+  try {
+    const { buildReactionRoleEmbed, clearRrmCache } = await import("./utils/reactionRoles.js");
+    const { data: rrm } = await api.get(`/bot/reaction-roles/${rrmId}`);
+
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (!channel?.isTextBased?.()) {
+      return res.status(404).json({ error: "Channel not found or not text-based" });
+    }
+    // Cross-tenant guard: channelId е потребителски вход от dashboard-а.
+    if ((channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ error: "Channel belongs to a different server" });
+    }
+
+    const msg = await channel.send({ embeds: [buildReactionRoleEmbed(rrm)] });
+
+    // Началните реакции — последователно (rate limit friendly), best-effort:
+    // невалидно/чуждо custom emoji не бива да събори целия spawn.
+    for (const p of rrm.pairs) {
+      await msg.react(p.emoji).catch((err) =>
+        console.warn(`[ReactionRoles] react ${p.emoji} failed: ${err?.message}`)
+      );
+    }
+
+    clearRrmCache(rrm.messageId);
+    res.json({ ok: true, channelId, messageId: msg.id });
+  } catch (err) {
+    console.error("reaction-role-spawn error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
+app.post("/internal/reaction-role-update", async (req, res) => {
+  const { rrmId } = req.body || {};
+  if (!rrmId) return res.status(400).json({ error: "rrmId required" });
+  try {
+    const { buildReactionRoleEmbed, emojiKey, clearRrmCache } = await import("./utils/reactionRoles.js");
+    const { data: rrm } = await api.get(`/bot/reaction-roles/${rrmId}`);
+    if (!rrm.channelId || !rrm.messageId) return res.json({ ok: true, skipped: "not yet spawned" });
+
+    const channel = client.channels.cache.get(rrm.channelId)
+      || await client.channels.fetch(rrm.channelId).catch(() => null);
+    if (!channel) return res.status(404).json({ error: "Channel no longer exists" });
+
+    const msg = await channel.messages.fetch(rrm.messageId).catch(() => null);
+    if (!msg) return res.status(404).json({ error: "Message no longer exists" });
+
+    await msg.edit({ embeds: [buildReactionRoleEmbed(rrm)] });
+
+    // Синхронизирай реакциите: добави липсващите, махни вече несъществуващите.
+    const wanted = new Set(rrm.pairs.map((p) => p.emoji));
+    for (const p of rrm.pairs) {
+      const existing = msg.reactions.cache.find((r) => emojiKey(r.emoji) === p.emoji);
+      if (!existing) await msg.react(p.emoji).catch(() => {});
+    }
+    for (const r of msg.reactions.cache.values()) {
+      if (!wanted.has(emojiKey(r.emoji))) {
+        // Маха реакцията за ВСИЧКИ (изисква Manage Messages) — best-effort.
+        await r.remove().catch(() => {});
+      }
+    }
+
+    clearRrmCache(rrm.messageId);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("reaction-role-update error:", err?.message);
+    res.status(500).json({ error: err?.message });
+  }
+});
+
+app.post("/internal/reaction-role-delete", async (req, res) => {
+  const { serverId, channelId, messageId } = req.body || {};
+  if (!channelId || !messageId) return res.status(400).json({ error: "channelId and messageId required" });
+  try {
+    const { clearRrmCache } = await import("./utils/reactionRoles.js");
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (channel && serverId && (channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ error: "Channel belongs to a different server" });
+    }
+    const msg = channel ? await channel.messages.fetch(messageId).catch(() => null) : null;
+    if (msg) await msg.delete().catch(() => {});
+    clearRrmCache(messageId);
+    res.json({ ok: true, deleted: !!msg });
+  } catch (err) {
     res.status(500).json({ error: err?.message });
   }
 });

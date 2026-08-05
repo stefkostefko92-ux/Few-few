@@ -3,6 +3,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { buildTranscript } from "../lib/appTranscript.js";
 
 const router = Router();
 
@@ -465,13 +466,5 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
   } catch (err) { next(err); }
 });
 
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildTranscript(questions, answers) {
-  return questions
-    .map((q) => `**${q.label}**\n${answers[q.id] || "*No answer*"}`)
-    .join("\n\n");
-}
 
 export default router;

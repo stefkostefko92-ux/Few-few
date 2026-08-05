@@ -62,6 +62,14 @@ export const deleteForm = (serverId, formId, force = false) =>
 export const spawnForm = (serverId, formId, channelId) =>
   api.post(`/forms/${serverId}/${formId}/spawn`, { channelId }).then((r) => r.data);
 
+// ─── Reaction Roles (v33) ─────────────────────────────────────────────────────
+export const getReactionRoles = (serverId) => api.get(`/reactionroles/${serverId}`).then((r) => r.data);
+export const createReactionRole = (serverId, data) => api.post(`/reactionroles/${serverId}`, data).then((r) => r.data);
+export const updateReactionRole = (serverId, id, data) => api.put(`/reactionroles/${serverId}/${id}`, data).then((r) => r.data);
+export const deleteReactionRole = (serverId, id) => api.delete(`/reactionroles/${serverId}/${id}`).then((r) => r.data);
+export const spawnReactionRole = (serverId, id, channelId) =>
+  api.post(`/reactionroles/${serverId}/${id}/spawn`, { channelId }).then((r) => r.data);
+
 // ─── Tickets ──────────────────────────────────────────────────────────────────
 export const getTickets = (serverId, params) => api.get(`/tickets/${serverId}`, { params }).then((r) => r.data);
 export const getTicket = (serverId, ticketId) => api.get(`/tickets/${serverId}/${ticketId}`).then((r) => r.data);
@@ -98,6 +106,8 @@ export const broadcastToServer = (serverId, channelId, title, message) =>
   api.post(`/admin/servers/${serverId}/broadcast`, { channelId, title, message }).then((r) => r.data);
 export const setServerPremium = (serverId, enabled, reason) =>
   api.patch(`/admin/servers/${serverId}/premium`, { enabled, reason }).then((r) => r.data);
+export const setServerPlan = (serverId, plan, reason) =>
+  api.patch(`/admin/servers/${serverId}/plan`, { plan, reason }).then((r) => r.data);
 export const deleteAdminUser = (userId) => api.delete(`/admin/users/${userId}?confirm=true`).then((r) => r.data);
 export const deleteAdminPayment = (paymentId) => api.delete(`/admin/payments/${paymentId}?confirm=true`).then((r) => r.data);
 export const purgeAuditLogs = (olderThanDays) =>

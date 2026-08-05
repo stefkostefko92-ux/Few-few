@@ -117,6 +117,13 @@ export default {
         return;
       }
 
+      // ── Application Review Modal Submit (reason for approve/deny) ───────────
+      if (interaction.isModalSubmit() && interaction.customId.startsWith("app_review_modal:")) {
+        const [, appId, action] = interaction.customId.split(":");
+        await handleAppReviewModalSubmit(interaction, appId, action);
+        return;
+      }
+
       // ── Ticket Action Buttons (Close/Claim/Transcript/Confirm/Cancel/Reopen/Delete)
       if (interaction.isButton() && interaction.customId.startsWith("ticket:")) {
         const [, action, ticketId] = interaction.customId.split(":");
@@ -969,11 +976,65 @@ async function handleAppReview(interaction, appId, action) {
     });
   }
 
+  // ── Open a ticket (discussion канал с кандидата, решението остава PENDING) ──
+  if (action === "discuss") {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    try {
+      const { data } = await api.post(`/bot/application/${appId}/discuss`, {
+        serverId: interaction.guildId,
+        reviewerId: interaction.user.id,
+        reviewerTag: interaction.user.username,
+      });
+      await interaction.editReply(
+        data.alreadyExists
+          ? `💬 Discussion channel already open: <#${data.channelId}>`
+          : `✅ Discussion channel opened: <#${data.channelId}>`
+      );
+    } catch (err) {
+      await interaction.editReply(`❌ Error: ${err?.response?.data?.error || err.message}`);
+    }
+    return;
+  }
+
+  // ── Approve / Deny → модал с причина, решението пада в modal submit-а ───────
+  // (стари review embeds без discuss бутон ползват същите customId-та → и те
+  // получават новия поток без миграция на съобщенията)
+  const isApprove = action === "approve";
+  const modal = new ModalBuilder()
+    .setCustomId(`app_review_modal:${appId}:${action}`)
+    .setTitle(isApprove ? "Approve application" : "Deny application");
+
+  const reasonInput = new TextInputBuilder()
+    .setCustomId("reason")
+    .setLabel(isApprove ? "Reason / note for approval" : "Reason for denial")
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true)
+    .setMaxLength(1000)
+    .setPlaceholder(
+      isApprove
+        ? "Sent to the applicant in their DM ({note} in custom messages)."
+        : "Sent to the applicant so they know why."
+    );
+
+  modal.addComponents(new ActionRowBuilder().addComponents(reasonInput));
+  await interaction.showModal(modal);
+}
+
+async function handleAppReviewModalSubmit(interaction, appId, action) {
+  if (!interaction.member.permissions.has("ManageGuild")) {
+    return interaction.reply({
+      content: "❌ You need Manage Server permission to review applications.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const note = interaction.fields.getTextInputValue("reason")?.trim() || null;
 
   try {
     await api.post(`/bot/application/${appId}/review`, {
       action,
+      note,
       serverId: interaction.guildId,
       reviewerId: interaction.user.id,
       reviewerTag: interaction.user.username,
@@ -984,24 +1045,28 @@ async function handleAppReview(interaction, appId, action) {
       deny: "❌ Denied",
     };
 
-    // Disable all buttons on the review embed
+    // Disable all buttons on the review embed. Модалът е отворен от бутон на
+    // съобщение → interaction.message е наличен на ModalSubmitInteraction.
     // Must use ButtonBuilder.from() — message components are read-only ButtonComponent, not ButtonBuilder
-    const disabledRows = interaction.message.components.map((row) => {
-      const newRow = new ActionRowBuilder();
-      newRow.addComponents(
-        row.components.map((btn) => ButtonBuilder.from(btn).setDisabled(true))
-      );
-      return newRow;
-    });
+    if (interaction.message) {
+      const disabledRows = interaction.message.components.map((row) => {
+        const newRow = new ActionRowBuilder();
+        newRow.addComponents(
+          row.components.map((btn) => ButtonBuilder.from(btn).setDisabled(true))
+        );
+        return newRow;
+      });
 
-    await interaction.message.edit({ components: disabledRows }).catch(() => {});
-    await interaction.message.reply({
-      embeds: [buildStatusEmbed(
-        actionLabels[action] || action,
-        `Application ${action}d by **${interaction.user.username}**`,
-        action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO
-      )],
-    });
+      await interaction.message.edit({ components: disabledRows }).catch(() => {});
+      await interaction.message.reply({
+        embeds: [buildStatusEmbed(
+          actionLabels[action] || action,
+          `Application ${action}d by **${interaction.user.username}**` +
+            (note ? `\n**Reason:** ${note.slice(0, 900)}` : ""),
+          action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO
+        )],
+      }).catch(() => {});
+    }
 
     await interaction.editReply("✅ Done!");
   } catch (err) {

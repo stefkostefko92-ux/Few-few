@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3, Gift, Pin, CalendarClock, Webhook, Trash2, Plus, CheckCircle2, RefreshCw,
+  SmilePlus, Pencil, Send,
 } from "lucide-react";
 import {
   getPolls, closePoll, deletePoll,
@@ -12,6 +13,7 @@ import {
   getStickies, upsertSticky, deleteSticky,
   getScheduled, createScheduled, deleteScheduled,
   getWebhooks, getWebhookEvents, createWebhook, updateWebhook, deleteWebhook,
+  getReactionRoles, createReactionRole, updateReactionRole, deleteReactionRole, spawnReactionRole,
 } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge, PremiumLockCard } from "../components/PremiumBadge";
@@ -22,6 +24,7 @@ import EmptyState from "../components/EmptyState";
 const TABS = [
   { id: "polls",     label: "Polls",      icon: BarChart3 },
   { id: "giveaways", label: "Giveaways",  icon: Gift },
+  { id: "reactionroles", label: "Reaction Roles", icon: SmilePlus },
   { id: "sticky",    label: "Sticky",     icon: Pin,           premium: true },
   { id: "scheduled", label: "Scheduled",  icon: CalendarClock, premium: true },
   { id: "webhooks",  label: "Webhooks",   icon: Webhook,       premium: true },
@@ -36,7 +39,7 @@ export default function AutomationPage() {
       <div className="mb-6">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">Automation</h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
-          Manage polls, giveaways, sticky messages, scheduled posts, and webhook integrations.
+          Manage polls, giveaways, reaction roles, sticky messages, scheduled posts, and webhook integrations.
           Everything here can also be triggered by slash commands in Discord — see <strong>Commands</strong> for the full list.
         </p>
       </div>
@@ -64,6 +67,7 @@ export default function AutomationPage() {
 
       {tab === "polls"     && <PollsTab />}
       {tab === "giveaways" && <GiveawaysTab />}
+      {tab === "reactionroles" && <ReactionRolesTab />}
       {tab === "sticky"    && (isPremium ? <StickyTab /> : <PremiumLockCard feature="Sticky Messages" description="Keep important info pinned at the bottom of channels — auto-reposted as new messages arrive." />)}
       {tab === "scheduled" && (isPremium ? <ScheduledTab /> : <PremiumLockCard feature="Scheduled Messages" description="Schedule one-shot or recurring messages (daily/weekly/monthly)." />)}
       {tab === "webhooks"  && (isPremium ? <WebhooksTab />  : <PremiumLockCard feature="Webhook Integrations" description="Receive real-time event payloads at your own URL, HMAC-signed for verification." />)}
@@ -535,6 +539,270 @@ function WebhooksTab() {
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
+        onCancel={() => setConfirmState(null)}
+      />
+    </div>
+  );
+}
+
+// ══════════════════════════════ REACTION ROLES (v33) ══════════════════════════════
+const defaultRrmPair = () => ({ emoji: "", roleId: "", label: "" });
+const defaultRrmForm = () => ({
+  title: "",
+  description: "",
+  color: "#5865F2",
+  exclusive: false,
+  pairs: [defaultRrmPair()],
+});
+
+function ReactionRolesTab() {
+  const { serverId } = useParams();
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(null); // null | "new" | rrmId
+  const [form, setForm] = useState(defaultRrmForm());
+  const [spawnInputs, setSpawnInputs] = useState({}); // rrmId → channelId
+  const [confirmState, setConfirmState] = useState(null);
+  const [actionError, setActionError] = useState(null);
+
+  const { data: messages = [], isLoading, isError } = useQuery({
+    queryKey: ["reactionroles", serverId],
+    queryFn: () => getReactionRoles(serverId),
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["reactionroles", serverId] });
+  const errMsg = (err, fallback) => err?.response?.data?.error?.formErrors?.join?.(", ")
+    || (typeof err?.response?.data?.error === "string" ? err.response.data.error : null)
+    || fallback;
+
+  const createM = useMutation({
+    mutationFn: (data) => createReactionRole(serverId, data),
+    onSuccess: () => { invalidate(); setEditing(null); },
+    onError: (err) => setActionError(errMsg(err, "Failed to create reaction role message.")),
+  });
+  const updateM = useMutation({
+    mutationFn: ({ id, data }) => updateReactionRole(serverId, id, data),
+    onSuccess: () => { invalidate(); setEditing(null); },
+    onError: (err) => setActionError(errMsg(err, "Failed to update reaction role message.")),
+  });
+  const deleteM = useMutation({
+    mutationFn: (id) => deleteReactionRole(serverId, id),
+    onSuccess: invalidate,
+    onError: (err) => setActionError(errMsg(err, "Failed to delete reaction role message.")),
+  });
+  const spawnM = useMutation({
+    mutationFn: ({ id, channelId }) => spawnReactionRole(serverId, id, channelId),
+    onSuccess: (_d, { id }) => { setSpawnInputs((s) => ({ ...s, [id]: "" })); invalidate(); },
+    onError: (err) => setActionError(errMsg(err, "Failed to post — check the channel ID.")),
+  });
+
+  const openEdit = (m) => {
+    setForm({
+      title: m.title,
+      description: m.description || "",
+      color: m.color || "#5865F2",
+      exclusive: m.exclusive,
+      pairs: m.pairs.map((p) => ({ emoji: p.emoji, roleId: p.roleId, label: p.label || "" })),
+    });
+    setEditing(m.id);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setActionError(null);
+    const payload = {
+      ...form,
+      description: form.description || null,
+      pairs: form.pairs
+        .filter((p) => p.emoji.trim() && p.roleId.trim())
+        .map((p) => ({ emoji: p.emoji.trim(), roleId: p.roleId.trim(), label: p.label.trim() || null })),
+    };
+    if (!payload.pairs.length) { setActionError("Add at least one emoji → role pair."); return; }
+    if (editing === "new") createM.mutate(payload);
+    else updateM.mutate({ id: editing, data: payload });
+  };
+
+  const updatePair = (i, key, val) =>
+    setForm((f) => ({ ...f, pairs: f.pairs.map((p, idx) => (idx === i ? { ...p, [key]: val } : p)) }));
+
+  if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
+  if (isError) return <ErrorCard msg="Couldn't load reaction roles — please retry." />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-cs-muted max-w-xl">
+          Members react to a message to get a role — remove the reaction to remove it.
+          Exclusive mode allows one role per message (self-service pick-one).
+        </p>
+        <button
+          onClick={() => { setForm(defaultRrmForm()); setEditing("new"); setActionError(null); }}
+          className="cs-btn-primary flex items-center gap-2 flex-shrink-0"
+        >
+          <Plus className="w-4 h-4" /> New Message
+        </button>
+      </div>
+
+      {!messages.length ? (
+        <Empty icon={SmilePlus} msg="No reaction role messages yet. Create one and post it to a channel." />
+      ) : (
+        messages.map((m) => (
+          <div key={m.id} className="cs-card">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: m.color }} />
+                  <h3 className="font-semibold text-cs-text truncate">{m.title}</h3>
+                  {m.exclusive && <span className="cs-badge text-cs-cyan">Exclusive</span>}
+                  {m.messageId
+                    ? <span className="cs-badge text-success">Live</span>
+                    : <span className="cs-badge text-cs-dim">Not posted</span>}
+                </div>
+                <p className="text-xs text-cs-muted mt-1">
+                  {m.pairs.length} role{m.pairs.length === 1 ? "" : "s"}
+                  {m.channelId && <> · channel <code className="text-xs">{m.channelId}</code></>}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {m.pairs.map((p) => (
+                    <span key={p.id} className="bg-cs-bg text-cs-text text-xs px-2 py-0.5 rounded">
+                      {p.emoji.includes(":") ? `:${p.emoji.split(":")[0]}:` : p.emoji} → {p.label || p.roleId}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1">
+                  <input
+                    placeholder="Channel ID"
+                    aria-label="Channel ID to post reaction role message in"
+                    className="cs-input text-xs w-28 py-1"
+                    value={spawnInputs[m.id] || ""}
+                    onChange={(e) => setSpawnInputs((s) => ({ ...s, [m.id]: e.target.value }))}
+                  />
+                  <button
+                    className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
+                    disabled={!spawnInputs[m.id] || spawnM.isPending}
+                    onClick={() => spawnM.mutate({ id: m.id, channelId: spawnInputs[m.id].trim() })}
+                  >
+                    <Send className="w-3 h-3" /> {m.messageId ? "Re-post" : "Post to channel"}
+                  </button>
+                </div>
+                <button
+                  aria-label="Edit reaction role message"
+                  title="Edit"
+                  className="text-cs-muted hover:text-white transition-colors p-1"
+                  onClick={() => openEdit(m)}
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  aria-label="Delete reaction role message"
+                  title="Delete"
+                  className="text-danger hover:text-red-300 transition-colors p-1"
+                  onClick={() => setConfirmState({
+                    title: "Delete reaction role message",
+                    message: `Delete "${m.title}"? The Discord message will be removed too.`,
+                    onConfirm: () => { deleteM.mutate(m.id); setConfirmState(null); },
+                  })}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* Create / Edit modal */}
+      <Modal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing === "new" ? "New reaction role message" : "Edit reaction role message"}
+        maxWidth="max-w-2xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <label className="block col-span-2">
+              <span className="cs-label">Title *</span>
+              <input className="cs-input" required value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="Pick your roles" />
+            </label>
+            <label className="block">
+              <span className="cs-label">Color</span>
+              <input type="color" className="cs-input h-10 p-1" value={form.color}
+                onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
+            </label>
+          </div>
+          <label className="block">
+            <span className="cs-label">Description</span>
+            <textarea className="cs-textarea" rows={2} value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              placeholder="React below to receive a role." />
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="accent-cs-cyan" checked={form.exclusive}
+              onChange={(e) => setForm((f) => ({ ...f, exclusive: e.target.checked }))} />
+            <span className="text-sm text-cs-text">Exclusive — one role per member (new reaction replaces the old one)</span>
+          </label>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-cs-text">Emoji → Role pairs ({form.pairs.length}/20)</h3>
+              <button type="button" disabled={form.pairs.length >= 20}
+                onClick={() => setForm((f) => ({ ...f, pairs: [...f.pairs, defaultRrmPair()] }))}
+                className="text-cs-cyan text-sm flex items-center gap-1 disabled:opacity-40">
+                <Plus className="w-3 h-3" /> Add pair
+              </button>
+            </div>
+            <div className="space-y-2">
+              {form.pairs.map((p, i) => (
+                <div key={i} className="grid grid-cols-[70px_1fr_1fr_28px] gap-2 items-center">
+                  <input className="cs-input text-center" placeholder="🎮" aria-label={`Emoji for pair ${i + 1}`}
+                    value={p.emoji} onChange={(e) => updatePair(i, "emoji", e.target.value)} />
+                  <input className="cs-input font-mono text-xs" placeholder="Role ID" aria-label={`Role ID for pair ${i + 1}`}
+                    value={p.roleId} onChange={(e) => updatePair(i, "roleId", e.target.value)} />
+                  <input className="cs-input text-xs" placeholder="Label (optional)" aria-label={`Label for pair ${i + 1}`}
+                    value={p.label} onChange={(e) => updatePair(i, "label", e.target.value)} />
+                  <button type="button" aria-label={`Remove pair ${i + 1}`}
+                    disabled={form.pairs.length <= 1}
+                    onClick={() => setForm((f) => ({ ...f, pairs: f.pairs.filter((_, idx) => idx !== i) }))}
+                    className="text-danger hover:text-red-300 disabled:opacity-30 p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-cs-dim mt-2">
+              Emoji: paste a standard emoji (🎮) or a custom one as <code>name:id</code>.
+              Role ID: right-click the role in Discord → Copy Role ID (the bot's role must be above it).
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">Cancel</button>
+            <button type="submit" className="cs-btn-primary" disabled={createM.isPending || updateM.isPending}>
+              {(createM.isPending || updateM.isPending) ? "Saving…" : editing === "new" ? "Create" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {actionError && (
+        <div role="alert" className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-3">
+          <span>❌ {actionError}</span>
+          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="text-red-300 hover:text-red-200">✕</button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!confirmState}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        destructive
+        confirmLabel="Delete"
+        loading={deleteM.isPending}
+        onConfirm={() => confirmState?.onConfirm()}
         onCancel={() => setConfirmState(null)}
       />
     </div>

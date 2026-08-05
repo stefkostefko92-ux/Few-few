@@ -161,6 +161,7 @@ model Server {
   auditLogs          AuditLog[]
   paymentLogs        PaymentLog[]
   kbArticles         KbArticle[]
+  reactionRoleMessages ReactionRoleMessage[]
   agency             Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([agencyId])
@@ -932,4 +933,45 @@ model DailyMetric {
   @@unique([serverId, date])
   @@index([serverId, date])
   @@map("daily_metrics")
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// v33 — REACTION ROLES (react → get a role)
+// ═════════════════════════════════════════════════════════════════════════════
+// Едно съобщение (embed) с N двойки emoji → роля. Ботът слуша
+// messageReactionAdd/Remove и дава/маха ролята. `exclusive` = radio режим:
+// максимум една роля от съобщението — нов реакт маха предишния.
+
+model ReactionRoleMessage {
+  id          String   @id @default(cuid())
+  serverId    String
+  title       String
+  description String?
+  color       String   @default("#5865F2")
+  exclusive   Boolean  @default(false)
+  // Попълват се при spawn в Discord (null = още не е публикувано)
+  channelId   String?
+  messageId   String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pairs  ReactionRolePair[]
+  server Server             @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@map("reaction_role_messages")
+}
+
+model ReactionRolePair {
+  id       String  @id @default(cuid())
+  rrmId    String
+  // Unicode emoji ("🎮") или custom emoji идентификатор ("name:123456789")
+  emoji    String
+  roleId   String
+  label    String?
+
+  rrm ReactionRoleMessage @relation(fields: [rrmId], references: [id], onDelete: Cascade)
+
+  @@unique([rrmId, emoji])
+  @@map("reaction_role_pairs")
 }
