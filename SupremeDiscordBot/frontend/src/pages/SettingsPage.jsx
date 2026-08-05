@@ -47,6 +47,7 @@ export default function SettingsPage() {
         eventLogCat_voice:      (server.eventLogCategories || []).includes("voice"),
         eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
         eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
+        eventLogCat_messages:   (server.eventLogCategories || []).includes("messages"),
       });
     }
   }, [server]);
@@ -96,6 +97,7 @@ export default function SettingsPage() {
         form.eventLogCat_voice && "voice",
         form.eventLogCat_members && "members",
         form.eventLogCat_moderation && "moderation",
+        form.eventLogCat_messages && "messages",
       ].filter(Boolean),
       ...(server.isPremium && {
         customBotName: form.customBotName || null,
@@ -196,6 +198,7 @@ export default function SettingsPage() {
                     ["eventLogCat_voice", "Voice — mute / deaf / join / leave / move"],
                     ["eventLogCat_members", "Members — roles / nickname / timeout / join / leave"],
                     ["eventLogCat_moderation", "Moderation — ban / unban / kick"],
+                    ["eventLogCat_messages", "Messages — edits / deletes / bulk purges (logs content)"],
                   ].map(([key, label]) => (
                     <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
                       <input

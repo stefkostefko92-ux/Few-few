@@ -146,7 +146,7 @@ model Server {
   // Server event logging (member/voice/moderation activity) — per-server opt-in
   eventLogEnabled    Boolean  @default(false)
   eventLogChannelId  String?
-  eventLogCategories String[] @default(["voice", "members", "moderation"])
+  eventLogCategories String[] @default(["voice", "members", "moderation", "messages"])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

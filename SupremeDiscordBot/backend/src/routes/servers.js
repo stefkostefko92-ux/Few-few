@@ -190,7 +190,7 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(eventLogEnabled !== undefined && { eventLogEnabled: Boolean(eventLogEnabled) }),
         ...(eventLogChannelId !== undefined && { eventLogChannelId: eventLogChannelId || null }),
         ...(Array.isArray(eventLogCategories) && {
-          eventLogCategories: eventLogCategories.filter((c) => ["voice", "members", "moderation"].includes(c)),
+          eventLogCategories: eventLogCategories.filter((c) => ["voice", "members", "moderation", "messages"].includes(c)),
         }),
       },
     });

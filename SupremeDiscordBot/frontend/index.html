@@ -6,6 +6,20 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="theme-color" content="#8fe600" />
   <meta name="color-scheme" content="dark" />
+  <script>
+    // Канонизация на порта: продукционният домейн се сервира САМО без порт
+    // (вътрешният :8080 е 127.0.0.1-only зад reverse proxy-то). Отворен стар
+    // bookmark/таб/OAuth редирект с порт → мигновено пренасочване към чистия
+    // URL, преди да се зареди приложението. Относителните линкове (футър и
+    // т.н.) наследяват origin-а, така че това чисти и тях. Dev (localhost/
+    // 127.0.0.1) не се пипа.
+    (function () {
+      var l = window.location;
+      if (l.hostname === "supremebot.carbonstealth.eu" && l.port) {
+        l.replace("https://supremebot.carbonstealth.eu" + l.pathname + l.search + l.hash);
+      }
+    })();
+  </script>
 
   <!-- Mobile / PWA -->
   <meta name="application-name" content="Supreme Bot" />

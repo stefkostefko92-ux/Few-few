@@ -1,7 +1,9 @@
 // bot/src/utils/serverEventLog.js
 // Споделен util за "Server Event Logging" — логва действия на членове (глас,
-// членове, модерация; БЕЗ съдържание на съобщения) САМО в конфигуриран Discord
-// канал. НЕ се пази в базата и НЕ се показва в dashboard-а (по желание на owner-а).
+// членове, модерация) и съобщения (редакция/изтриване — категория "messages",
+// добавена по желание на owner-а; съдържанието отива САМО в лог канала на
+// СЪЩИЯ guild) в конфигуриран Discord канал. НЕ се пази в базата и НЕ се
+// показва в dashboard-а (по желание на owner-а).
 //
 // Ползва се от event модулите под /events/ (voiceStateUpdate, guildMemberUpdate,
 // guildBanAdd/Remove, guildMemberAdd/Remove), затова се закача И на главния
@@ -33,6 +35,7 @@ const CATEGORY_COLORS = {
   voice: 0x5865f2,       // blurple
   members: 0x57f287,     // green
   moderation: 0xed4245,  // red
+  messages: 0xf59e0b,    // amber
 };
 
 // Човеко-четими заглавия по action string (exact strings — сверява се с backend).
@@ -65,6 +68,10 @@ const ACTION_LABELS = {
   member_ban: "🔨 Member Banned",
   member_unban: "♻️ Member Unbanned",
   member_kick: "👢 Member Kicked",
+  // messages
+  message_edit: "✏️ Message Edited",
+  message_delete: "🗑️ Message Deleted",
+  message_bulk_delete: "🗑️ Messages Bulk Deleted",
 };
 
 /**
@@ -118,6 +125,11 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
     fields.push({ name: "After", value: String(meta.after).slice(0, 1024), inline: true });
   }
   if (meta.reason) fields.push({ name: "Reason", value: String(meta.reason).slice(0, 1024), inline: false });
+  // messages категория
+  if (meta.content) fields.push({ name: "Content", value: String(meta.content).slice(0, 1024), inline: false });
+  if (meta.attachments) fields.push({ name: "Attachments", value: String(meta.attachments), inline: true });
+  if (meta.count) fields.push({ name: "Count", value: String(meta.count), inline: true });
+  if (meta.messageUrl) fields.push({ name: "Message", value: `[Jump to message](${meta.messageUrl})`, inline: true });
 
   return {
     title: ACTION_LABELS[action] || action,
