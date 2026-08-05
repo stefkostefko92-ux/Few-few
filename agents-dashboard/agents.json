@@ -3562,6 +3562,7 @@
         },
         {
           "version": "10.5.0",
+<<<<<<< HEAD
           "date": "2026-07-13",
           "event": "v10.5 — учене",
           "detail": "Научи: Ospedali Trasparenti (статичен ETL сайт) генерира цялото SEO от src/build-site.js + src… (+1 още)"
@@ -3619,10 +3620,16 @@
           "date": "2026-07-29",
           "event": "v14.6 — учене",
           "detail": "Научи: tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…"
+=======
+          "date": "2026-08-05",
+          "event": "v10.5 — учене",
+          "detail": "Научи: Supreme Bot (supreme.carbonstealth.eu) не е листнат в нито една Discord бот директория,… (+5 още)"
+>>>>>>> 1e35a943b (auto: seo научи — памет + версия + табло)
         }
       ],
       "activity": [
         {
+<<<<<<< HEAD
           "date": "2026-07-29",
           "type": "learning",
           "summary": "Научи: „tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…\" · 1 в карантина"
@@ -3686,6 +3693,11 @@
           "date": "2026-07-13",
           "type": "learning",
           "summary": "Научи: „Ospedali Trasparenti (статичен ETL сайт) генерира цялото SEO от src/build-site.js + src…\" (+1 още)"
+=======
+          "date": "2026-08-05",
+          "type": "learning",
+          "summary": "Научи: „Supreme Bot (supreme.carbonstealth.eu) не е листнат в нито една Discord бот директория,…\" (+5 още)"
+>>>>>>> 1e35a943b (auto: seo научи — памет + версия + табло)
         },
         {
           "date": "2026-07-09",
