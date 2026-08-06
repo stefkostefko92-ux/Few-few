@@ -819,10 +819,21 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { isPremium: true, plan: true, billingInterval: true, premiumSince: true, stripeStatus: true, stripeSubscriptionId: true },
+      select: {
+        isPremium: true, plan: true, billingInterval: true, premiumSince: true,
+        stripeStatus: true, stripeSubscriptionId: true,
+        // Agency seat: сурово server.plan остава "free" за покрит сървър —
+        // без това Premium страницата предлагаше ПОКУПКА на сървър, който
+        // вече е white-label през агенция (реален UX капан, открит при
+        // изграждането на Agency UI).
+        agencyId: true,
+        agency: { select: { plan: true, active: true, ownerUserId: true } },
+      },
     });
 
     if (!server) return res.status(404).json({ error: "Server not found" });
+
+    const agencyCovered = !!(server.agencyId && server.agency?.active);
 
     let subscriptionDetails = null;
     if (server.stripeSubscriptionId) {
@@ -846,7 +857,19 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
       }
     }
 
-    res.json({ ...server, subscriptionDetails });
+    // Effective поглед: agency seat дава white-label tier на сървъра, дори
+    // собствената му колона plan да е "free". Суровите полета остават за
+    // обратна съвместимост; agency обектът никога не изтича навън целият
+    // (само планът и дали викащият е собственикът на агенцията).
+    const { agency, agencyId, ...raw } = server;
+    res.json({
+      ...raw,
+      isPremium: raw.isPremium || agencyCovered,
+      effectivePlan: agencyCovered && (!raw.plan || raw.plan === "free") ? agency.plan : raw.plan,
+      agencyCovered,
+      agencyOwnedByMe: agencyCovered && agency.ownerUserId === req.user.id,
+      subscriptionDetails,
+    });
   } catch (err) {
     next(err);
   }

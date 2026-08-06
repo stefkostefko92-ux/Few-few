@@ -1,13 +1,31 @@
 // frontend/src/pages/Dashboard.jsx
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PlusCircle, AlertCircle, RefreshCw, Star } from "lucide-react";
 import { getServers } from "../api";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 
 export default function Dashboard() {
   const { t } = useT();
   const navigate = useNavigate();
+  const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Agency checkout връщане: ?agency=active / ?agency=canceled (success_url
+  // на /agency/checkout сочи насам). Тост веднъж + чист URL — както
+  // per-server ?upgraded= на ServerHome.
+  useEffect(() => {
+    const agency = searchParams.get("agency");
+    if (agency === "active") toast.success(t("agency.checkoutSuccess"));
+    else if (agency === "canceled") toast.error(t("agency.checkoutCanceled"));
+    else return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("agency");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { data: servers = [], isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["servers"],
     queryFn: getServers,

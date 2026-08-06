@@ -6,9 +6,10 @@
 // намалена плътност вместо скелет (без скок на оформлението); всяка графика
 // има четим близнак (table view / директни етикети); статусните цветове идват
 // с иконка и текст, никога само цвят.
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "../contexts/ToastContext";
 import {
   Ticket, FileText, Layout, Star, Users, ShieldCheck, Zap, LineChart, Key,
   BookOpen, Webhook, Settings, Bot, CheckCircle2, Circle, ArrowRight,
@@ -25,7 +26,24 @@ const PERIODS = [7, 14, 30];
 export default function ServerHome() {
   const { serverId } = useParams();
   const { t } = useT();
+  const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [days, setDays] = useState(14);
+
+  // Stripe checkout връщане (per-server): ?upgraded=true / ?canceled=true.
+  // Дотук редиректът беше НЯМ — потребителят плащаше и кацаше без никаква
+  // обратна връзка. Тостваме веднъж и чистим URL-а (bookmark/refresh не
+  // повтарят съобщението). Активацията идва от webhook-а — затова „within a
+  // few seconds", не „активиран е".
+  useEffect(() => {
+    if (searchParams.get("upgraded") === "true") toast.success(t("premium.upgraded"));
+    else if (searchParams.get("canceled") === "true") toast.error(t("premium.checkoutCanceled"));
+    else return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("upgraded"); next.delete("canceled");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: server, isLoading: serverLoading, isError: serverError } = useQuery({
     queryKey: ["server", serverId],

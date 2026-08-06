@@ -134,6 +134,15 @@ export const getStripeStatus = (serverId) =>
 export const createAgencyCheckout = (body = {}) =>
   api.post(`/agency/checkout`, body).then((r) => r.data);
 
+// Agency управление (собственикът на агенцията): моят план + seats,
+// закачане/махане на сървър seat, Stripe billing portal на агенцията.
+export const getMyAgency = () => api.get(`/agency/mine`).then((r) => r.data);
+export const attachAgencyServer = (agencyId, serverId) =>
+  api.post(`/agency/${agencyId}/servers/${serverId}`).then((r) => r.data);
+export const detachAgencyServer = (agencyId, serverId) =>
+  api.delete(`/agency/${agencyId}/servers/${serverId}`).then((r) => r.data);
+export const openAgencyPortal = () => api.post(`/agency/portal`).then((r) => r.data);
+
 // ─── Export (Premium) ─────────────────────────────────────────────────────────
 // These return Blob URLs for direct download — use with an anchor tag.
 

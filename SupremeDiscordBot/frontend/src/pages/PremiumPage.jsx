@@ -1,10 +1,14 @@
 // frontend/src/pages/PremiumPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Star, Zap, Check, ExternalLink, CreditCard, Download, Crown, Building2 } from "lucide-react";
-import api, { getStripeStatus, openPortal, createAgencyCheckout, exportTicketsCSV, exportApplicationsCSV } from "../api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Star, Zap, Check, ExternalLink, CreditCard, Download, Crown, Building2, Server as ServerIcon, Trash2 } from "lucide-react";
+import api, {
+  getStripeStatus, openPortal, createAgencyCheckout, exportTicketsCSV, exportApplicationsCSV,
+  getServers, getMyAgency, attachAgencyServer, detachAgencyServer, openAgencyPortal,
+} from "../api";
 import { useT } from "../contexts/I18nContext";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const BASE_FEATURE_KEYS = [
   "premium.feat.base1",
@@ -55,6 +59,12 @@ export default function PremiumPage() {
     queryKey: ["stripeStatus", serverId],
     queryFn: () => getStripeStatus(serverId),
   });
+
+  // Account-ниво Agency план (ако викащият притежава такъв) — независим от
+  // сървърния абонамент. Управляващата карта живее тук, защото Premium
+  // страницата е билинг домът; seats се закачат per сървър.
+  const { data: mineData } = useQuery({ queryKey: ["my-agency"], queryFn: getMyAgency });
+  const myAgency = mineData?.agency || null;
 
   // v3.0 — избор на план (premium | whitelabel) и период (month | year).
   const [plan, setPlan] = useState("premium");
@@ -181,7 +191,9 @@ export default function PremiumPage() {
             <div>
               <p className="font-semibold text-cs-text">{t("premium.activeStatus")}</p>
               <p className="text-sm text-cs-gold/70">
-                {status?.stripeStatus === "trialing" && sub?.currentPeriodEnd
+                {status?.agencyCovered && !status?.stripeSubscriptionId
+                  ? t("agency.covered")
+                  : status?.stripeStatus === "trialing" && sub?.currentPeriodEnd
                   ? t("premium.freeTrialEnds", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
                   : sub?.cancelAtPeriodEnd
                   ? t("premium.cancelsOn", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
@@ -189,16 +201,24 @@ export default function PremiumPage() {
                   ? t("premium.renewsOn", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
                   : t("premium.activeSubscription")}
               </p>
+              {status?.agencyCovered && !status?.agencyOwnedByMe && (
+                <p className="text-xs text-cs-dim mt-0.5">{t("agency.coveredNotOwner")}</p>
+              )}
             </div>
           </div>
-          <button
-            onClick={() => portalMut.mutate()}
-            disabled={portalMut.isPending}
-            className="cs-btn-ghost flex items-center gap-2 text-sm"
-          >
-            <CreditCard className="w-4 h-4" />
-            {portalMut.isPending ? t("premium.loading") : t("premium.manageBilling")}
-          </button>
+          {/* Agency-покрит сървър няма собствен Stripe customer — per-server
+              портал би върнал 404. Собственикът на агенцията управлява от
+              agency портала; чужд seat няма billing бутон изобщо. */}
+          {(!status?.agencyCovered || status?.stripeSubscriptionId) && (
+            <button
+              onClick={() => portalMut.mutate()}
+              disabled={portalMut.isPending}
+              className="cs-btn-ghost flex items-center gap-2 text-sm"
+            >
+              <CreditCard className="w-4 h-4" />
+              {portalMut.isPending ? t("premium.loading") : t("premium.manageBilling")}
+            </button>
+          )}
         </div>
       )}
 
@@ -371,8 +391,13 @@ export default function PremiumPage() {
         </div>
       </div>
 
+      {/* Agency управление — картата на СОБСТВЕНИКА на агенцията (account-
+          ниво, независимо от този сървър). Покупката по-долу се крие при
+          активна агенция: backend-ът бездруго връща 400 „already active". */}
+      {myAgency && <AgencyManageCard agency={myAgency} serverId={serverId} t={t} />}
+
       {/* Agency — up to 5 / up to 10 servers, one subscription */}
-      {!isPremium && (
+      {!isPremium && !myAgency?.active && (
         <div className="mt-10 max-w-3xl">
           <div className="flex items-center gap-2 mb-4">
             <Building2 className="w-5 h-5 text-cs-cyan" />
@@ -517,6 +542,190 @@ export default function PremiumPage() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ─── Agency управляваща карта ─────────────────────────────────────────────────
+   Вижда я само собственикът на агенция (getMyAgency връща null иначе).
+   Seats се закачат/махат тук; лимитът и authz живеят в backend-а
+   (advisory lock срещу надвишаване при race). */
+function AgencyManageCard({ agency, serverId, t }) {
+  const qc = useQueryClient();
+  const [confirmDetach, setConfirmDetach] = useState(null); // {id, name} | null
+  const [pickedServer, setPickedServer] = useState("");
+  const [actionError, setActionError] = useState(null);
+
+  // Сървърите, които администрирам — кандидати за закачане (без вече закачените).
+  const { data: myServers = [] } = useQuery({ queryKey: ["servers"], queryFn: getServers });
+  const attachedIds = new Set((agency.servers || []).map((s) => s.id));
+  const candidates = myServers.filter((s) => !attachedIds.has(s.id));
+  const seatsFree = agency.seatLimit - agency.seatsUsed;
+  const currentAttached = attachedIds.has(serverId);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["my-agency"] });
+    qc.invalidateQueries({ queryKey: ["stripeStatus", serverId] });
+    qc.invalidateQueries({ queryKey: ["server", serverId] });
+    qc.invalidateQueries({ queryKey: ["servers"] });
+  };
+
+  const attachMut = useMutation({
+    mutationFn: (sid) => attachAgencyServer(agency.id, sid),
+    onSuccess: () => { setActionError(null); setPickedServer(""); invalidate(); },
+    onError: (err) => {
+      const code = err?.response?.data?.code;
+      setActionError(code === "SEAT_LIMIT"
+        ? t("agency.seatLimitReached")
+        : t("agency.attachFailed", { error: err?.response?.data?.error || err.message }));
+    },
+  });
+  const detachMut = useMutation({
+    mutationFn: (sid) => detachAgencyServer(agency.id, sid),
+    onSuccess: () => { setActionError(null); setConfirmDetach(null); invalidate(); },
+    onError: (err) => {
+      setConfirmDetach(null);
+      setActionError(t("agency.detachFailed", { error: err?.response?.data?.error || err.message }));
+    },
+  });
+  const portalMut = useMutation({
+    mutationFn: openAgencyPortal,
+    onSuccess: (data) => { window.location.href = data.url; },
+  });
+
+  return (
+    <div className="mt-10 max-w-3xl">
+      <div className="flex items-center gap-2 mb-4">
+        <Building2 className="w-5 h-5 text-cs-cyan" />
+        <h2 className="text-lg font-semibold text-cs-text">{t("agency.manageTitle")}</h2>
+      </div>
+      <div className="cs-card space-y-5">
+        {/* План + статус + billing */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="cs-badge-premium"><Crown className="w-3 h-3" aria-hidden="true" /> {PLAN_LABEL[agency.plan] || agency.plan}</span>
+            {agency.active
+              ? <span className="cs-badge text-success">{t("agency.statusActive")}</span>
+              : <span className="cs-badge text-warning">{t("agency.statusPending")}</span>}
+          </div>
+          <button
+            onClick={() => portalMut.mutate()}
+            disabled={portalMut.isPending}
+            className="cs-btn-ghost flex items-center gap-2 text-sm border border-cs-border"
+          >
+            <CreditCard className="w-4 h-4" aria-hidden="true" />
+            {portalMut.isPending ? t("premium.loading") : t("premium.manageBilling")}
+          </button>
+        </div>
+
+        {!agency.active && (
+          <p className="text-xs text-warning">{t("agency.pendingNote")}</p>
+        )}
+
+        {/* Seats — директен етикет + лента */}
+        <div>
+          <div className="flex items-baseline justify-between mb-1">
+            <span className="text-xs text-cs-muted uppercase tracking-wider font-mono">{t("agency.seats")}</span>
+            <span className="text-sm text-cs-text font-semibold tabular-nums">
+              {t("agency.seatsUsed", { used: agency.seatsUsed, limit: agency.seatLimit })}
+            </span>
+          </div>
+          <div className="h-2 bg-cs-surface rounded overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-cs-cyan to-cs-gold transition-all"
+              style={{ width: `${Math.min(100, (agency.seatsUsed / Math.max(1, agency.seatLimit)) * 100)}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-cs-dim mt-1">{t("agency.upgradeHint")}</p>
+        </div>
+
+        {/* Закачени сървъри */}
+        <div>
+          <h3 className="text-sm font-semibold text-cs-text mb-2">{t("agency.attachedServers")}</h3>
+          {agency.servers?.length ? (
+            <ul className="space-y-2">
+              {agency.servers.map((s) => (
+                <li key={s.id} className="flex items-center justify-between gap-3 py-1.5 border-b border-cs-border last:border-b-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {s.icon
+                      ? <img src={s.icon} alt="" className="w-6 h-6 rounded" />
+                      : <ServerIcon className="w-4 h-4 text-cs-dim" aria-hidden="true" />}
+                    <span className="text-sm text-cs-text truncate">{s.name}</span>
+                    {s.id === serverId && <span className="cs-badge text-cs-cyan flex-shrink-0">{t("agency.thisServer")}</span>}
+                  </div>
+                  <button
+                    onClick={() => setConfirmDetach({ id: s.id, name: s.name })}
+                    disabled={detachMut.isPending}
+                    aria-label={t("agency.detachAria", { name: s.name })}
+                    className="text-danger hover:text-red-300 p-1.5 flex items-center gap-1.5 text-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> {t("agency.detach")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-cs-dim">{t("agency.noServers")}</p>
+          )}
+        </div>
+
+        {/* Закачане — текущият сървър с един клик; другите през избор */}
+        {agency.active && seatsFree > 0 && (
+          <div className="flex flex-wrap items-center gap-3">
+            {!currentAttached && (
+              <button
+                onClick={() => attachMut.mutate(serverId)}
+                disabled={attachMut.isPending}
+                className="cs-btn-primary flex items-center gap-2 text-sm"
+              >
+                <Star className="w-4 h-4" aria-hidden="true" />
+                {attachMut.isPending ? t("agency.attaching") : t("agency.attachThis")}
+              </button>
+            )}
+            {candidates.length > 0 && (
+              <div className="flex items-center gap-2">
+                <label htmlFor="agency-attach-picker" className="sr-only">{t("agency.attachOtherLabel")}</label>
+                <select
+                  id="agency-attach-picker"
+                  className="cs-input !w-56 text-sm"
+                  value={pickedServer}
+                  onChange={(e) => setPickedServer(e.target.value)}
+                >
+                  <option value="">{t("agency.selectPh")}</option>
+                  {candidates.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => pickedServer && attachMut.mutate(pickedServer)}
+                  disabled={!pickedServer || attachMut.isPending}
+                  className="cs-btn-secondary text-sm disabled:opacity-50"
+                >
+                  {attachMut.isPending ? t("agency.attaching") : t("agency.attach")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        {agency.active && seatsFree <= 0 && (
+          <p className="text-xs text-warning">{t("agency.seatLimitReached")}</p>
+        )}
+
+        {actionError && (
+          <p role="alert" className="text-danger text-sm">{actionError}</p>
+        )}
+      </div>
+
+      <ConfirmDialog
+        open={!!confirmDetach}
+        title={t("agency.detachTitle")}
+        message={confirmDetach ? t("agency.detachMsg", { name: confirmDetach.name }) : ""}
+        confirmLabel={t("agency.detach")}
+        destructive
+        loading={detachMut.isPending}
+        onConfirm={() => confirmDetach && detachMut.mutate(confirmDetach.id)}
+        onCancel={() => setConfirmDetach(null)}
+      />
     </div>
   );
 }
