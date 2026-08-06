@@ -95,6 +95,7 @@ export default function Dashboard() {
 }
 
 function ServerCard({ server, onActivate, inviteUrl }) {
+  const { t } = useT();
   const avatar = server.icon ? (
     <img src={server.icon} alt={server.name} className="w-12 h-12 rounded-full flex-shrink-0" />
   ) : (
