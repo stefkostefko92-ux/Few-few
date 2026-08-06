@@ -3,11 +3,17 @@
 #
 # Прави (идемпотентно — безопасно за повторно пускане, ключ по lookup_key):
 #   1. Продукти + цени (месечни и годишни) за всички тарифи:
-#        Premium      €9.99/мес · €99/год
-#        White-label  €19.99/мес · €199/год
-#        Agency 5     €39.99/мес · €399/год   (до 5 сървъра)
-#        Agency 10    €79.99/мес · €799/год   (до 10 сървъра)
+#        Premium      €4.99/мес · €49/год
+#        White-label  €9.99/мес · €99/год
+#        Agency 5     €19.99/мес · €199/год   (до 5 сървъра)
+#        Agency 10    €39.99/мес · €399/год   (до 10 сървъра)
 #      → отпечатва STRIPE_PRICE_* за backend/.env (имената съвпадат с lib/premium.js)
+#      Ценова ПРОМЯНА: Stripe цените са неизменими — при разминаване в сумата
+#      скриптът създава НОВА цена и МЕСТИ lookup key-а върху нея
+#      (transfer_lookup_key). Старата цена остава жива: съществуващите абонати
+#      са grandfather-нати на нея — добави стария price id в СПИСЪКА на същия
+#      STRIPE_PRICE_* env (запетая-разделен, новият ПЪРВИ) — lib/premium.js
+#      разпознава всички id-та в списъка, а за checkout ползва първия.
 #   2. Webhook endpoint към /api/stripe/webhook със 7-те събития, които кодът
 #      обработва → отпечатва STRIPE_WEBHOOK_SECRET (само при създаване)
 #   3. Данъчна регистрация България (ЗДДС, standard) за Stripe Tax
@@ -41,37 +47,60 @@ product_of_price() { # $1=price id → product id
 create_product() { # $1=name $2=description → prod id
   curl -sS "${AUTH[@]}" "$API/products" -d name="$1" -d "description=$2" | jq_id prod
 }
+price_amount() { # $1=price id → unit_amount (cents)
+  curl -sS "${AUTH[@]}" "$API/prices/$1" | grep -o '"unit_amount": *[0-9]*' | head -1 | grep -o '[0-9]*$'
+}
 create_price() { # $1=product $2=amount(cents) $3=interval(month|year) $4=lookup_key → price id
+  # transfer_lookup_key: ако ключът вече седи на СТАРА цена (ценова промяна),
+  # Stripe го мести върху новата; при чист ключ флагът е безвреден.
   curl -sS "${AUTH[@]}" "$API/prices" \
     -d product="$1" -d currency=eur -d unit_amount="$2" \
     -d "recurring[interval]=$3" -d tax_behavior=inclusive -d lookup_key="$4" \
+    -d transfer_lookup_key=true \
     | jq_id price
 }
 
-# Ensure a tier's monthly+yearly price exists; echoes "MONTH_ID|YEAR_ID".
+# Ensure a tier's monthly+yearly price exists AT THE DESIRED AMOUNT;
+# echoes "MONTH_ID|YEAR_ID|OLD_MONTH_ID|OLD_YEAR_ID" (old ids празни без промяна).
+# Съществуваща цена с ГРЕШНА сума → нова цена + преместен lookup key; старата
+# остава активна за grandfather-нати абонати (Stripe цените са неизменими).
 ensure_tier() { # $1=key_base $2=name $3=desc $4=month_cents $5=year_cents
   local mk="${1}_monthly" yk="${1}_yearly"
-  local mid yid prod
+  local mid yid prod old_mid="" old_yid="" amt
   mid=$(price_by_lookup "$mk"); yid=$(price_by_lookup "$yk")
   if [ -n "$mid" ]; then prod=$(product_of_price "$mid")
   elif [ -n "$yid" ]; then prod=$(product_of_price "$yid")
   else prod=$(create_product "$2" "$3"); fi
   [ -n "$prod" ] || { echo "✗ Продуктът $2 не се създаде — провери ключа." >&2; exit 1; }
-  [ -z "$mid" ] && mid=$(create_price "$prod" "$4" month "$mk")
-  [ -z "$yid" ] && yid=$(create_price "$prod" "$5" year "$yk")
-  echo "${mid}|${yid}"
+  if [ -n "$mid" ]; then
+    amt=$(price_amount "$mid")
+    if [ "$amt" != "$4" ]; then
+      echo "  ↺ $mk: €$(awk "BEGIN{printf \"%.2f\", $amt/100}") → €$(awk "BEGIN{printf \"%.2f\", $4/100}") (нова цена, старата остава за текущите абонати)" >&2
+      old_mid="$mid"; mid=$(create_price "$prod" "$4" month "$mk")
+    fi
+  else mid=$(create_price "$prod" "$4" month "$mk"); fi
+  if [ -n "$yid" ]; then
+    amt=$(price_amount "$yid")
+    if [ "$amt" != "$5" ]; then
+      echo "  ↺ $yk: €$(awk "BEGIN{printf \"%.2f\", $amt/100}") → €$(awk "BEGIN{printf \"%.2f\", $5/100}") (нова цена, старата остава за текущите абонати)" >&2
+      old_yid="$yid"; yid=$(create_price "$prod" "$5" year "$yk")
+    fi
+  else yid=$(create_price "$prod" "$5" year "$yk"); fi
+  echo "${mid}|${yid}|${old_mid}|${old_yid}"
 }
 
 echo "→ Създавам/проверявам тарифите..."
-PREMIUM=$(ensure_tier    supreme_premium    "Supreme Bot Premium"     "Up to 50 panels/forms, AI auto-replies, verification, giveaways, webhooks, REST API, unlimited retention. Per server." 999   9900)
-WHITELABEL=$(ensure_tier supreme_whitelabel "Supreme Bot White-label" "Premium + white-label custom bot (your own Discord bot token, your brand). Per server."                          1999 19900)
-AGENCY5=$(ensure_tier    supreme_agency5    "Supreme Bot Agency 5"    "White-label tier for up to 5 servers, one subscription, reseller-friendly."                                       3999 39900)
-AGENCY10=$(ensure_tier   supreme_agency10   "Supreme Bot Agency 10"   "White-label tier for up to 10 servers, one subscription, reseller-friendly."                                      7999 79900)
+PREMIUM=$(ensure_tier    supreme_premium    "Supreme Bot Premium"     "Up to 50 panels/forms, AI auto-replies, verification, giveaways, webhooks, REST API, unlimited retention. Per server." 499   4900)
+WHITELABEL=$(ensure_tier supreme_whitelabel "Supreme Bot White-label" "Premium + white-label custom bot (your own Discord bot token, your brand). Per server."                          999  9900)
+AGENCY5=$(ensure_tier    supreme_agency5    "Supreme Bot Agency 5"    "White-label tier for up to 5 servers, one subscription, reseller-friendly."                                       1999 19900)
+AGENCY10=$(ensure_tier   supreme_agency10   "Supreme Bot Agency 10"   "White-label tier for up to 10 servers, one subscription, reseller-friendly."                                      3999 39900)
 
-PREM_M=${PREMIUM%|*};      PREM_Y=${PREMIUM#*|}
-WL_M=${WHITELABEL%|*};     WL_Y=${WHITELABEL#*|}
-A5_M=${AGENCY5%|*};        A5_Y=${AGENCY5#*|}
-A10_M=${AGENCY10%|*};      A10_Y=${AGENCY10#*|}
+# 4 полета: нов месечен | нов годишен | стар месечен | стар годишен
+# (старите са празни, когато сумата не се е променила)
+IFS='|' read -r PREM_M PREM_Y PREM_OM PREM_OY <<< "$PREMIUM"
+IFS='|' read -r WL_M   WL_Y   WL_OM   WL_OY   <<< "$WHITELABEL"
+IFS='|' read -r A5_M   A5_Y   A5_OM   A5_OY   <<< "$AGENCY5"
+IFS='|' read -r A10_M  A10_Y  A10_OM  A10_OY  <<< "$AGENCY10"
 echo "  ✓ Тарифите са готови (цените са с включен ДДС)."
 
 # ─── 1б. Customer Portal конфигурация (plan switch Premium↔White-label) ──────
@@ -154,6 +183,30 @@ else
     -d "features[subscription_cancel][cancellation_reason][options][]=other" >/dev/null \
     && echo "  ✓ Exit survey активен." \
     || echo "  ⚠ Ъпдейтът не мина — провери ръчно в Dashboard → Billing → Customer portal."
+  # Идемпотентен ъпдейт №2: plan-switch цените. При ценова промяна старата
+  # конфигурация сочи СТАРИТЕ price id-та → порталът би предлагал смяна към
+  # старите (по-скъпи) цени. Пренаписваме subscription_update с ТЕКУЩИТЕ.
+  echo "→ Обновявам plan-switch цените върху $PORTAL_ID ..."
+  PREM_PROD=$(product_of_price "$PREM_M"); WL_PROD=$(product_of_price "$WL_M")
+  A5_PROD=$(product_of_price "$A5_M");     A10_PROD=$(product_of_price "$A10_M")
+  curl -sS "${AUTH[@]}" "$API/billing_portal/configurations/$PORTAL_ID" \
+    -d "features[subscription_update][enabled]=true" \
+    -d "features[subscription_update][default_allowed_updates][]=price" \
+    -d "features[subscription_update][proration_behavior]=create_prorations" \
+    -d "features[subscription_update][products][0][product]=$PREM_PROD" \
+    -d "features[subscription_update][products][0][prices][]=$PREM_M" \
+    -d "features[subscription_update][products][0][prices][]=$PREM_Y" \
+    -d "features[subscription_update][products][1][product]=$WL_PROD" \
+    -d "features[subscription_update][products][1][prices][]=$WL_M" \
+    -d "features[subscription_update][products][1][prices][]=$WL_Y" \
+    -d "features[subscription_update][products][2][product]=$A5_PROD" \
+    -d "features[subscription_update][products][2][prices][]=$A5_M" \
+    -d "features[subscription_update][products][2][prices][]=$A5_Y" \
+    -d "features[subscription_update][products][3][product]=$A10_PROD" \
+    -d "features[subscription_update][products][3][prices][]=$A10_M" \
+    -d "features[subscription_update][products][3][prices][]=$A10_Y" >/dev/null \
+    && echo "  ✓ Plan-switch цените са актуални." \
+    || echo "  ⚠ Ъпдейтът на цените не мина — провери ръчно в Dashboard → Billing → Customer portal."
 fi
 
 # ─── 2. Webhook endpoint (7-те събития, които backend-ът обработва) ──────────
@@ -194,14 +247,20 @@ echo ""
 echo "══ Готово. Попълни в backend/.env: ══"
 echo "  STRIPE_SECRET_KEY=<ключът, с който пусна скрипта>"
 echo "  STRIPE_WEBHOOK_SECRET=<whsec_... отгоре или от Dashboard>"
-echo "  STRIPE_PRICE_PREMIUM_MONTH=${PREM_M}"
-echo "  STRIPE_PRICE_PREMIUM_YEAR=${PREM_Y}"
-echo "  STRIPE_PRICE_WHITELABEL_MONTH=${WL_M}"
-echo "  STRIPE_PRICE_WHITELABEL_YEAR=${WL_Y}"
-echo "  STRIPE_PRICE_AGENCY5_MONTH=${A5_M}"
-echo "  STRIPE_PRICE_AGENCY5_YEAR=${A5_Y}"
-echo "  STRIPE_PRICE_AGENCY10_MONTH=${A10_M}"
-echo "  STRIPE_PRICE_AGENCY10_YEAR=${A10_Y}"
+# При ценова промяна: старият id се добавя СЛЕД новия (запетая) — lib/premium.js
+# разпознава всички id-та от списъка (grandfather при подновяване), а за
+# checkout взима ПЪРВИЯ (новата цена).
+env_line() { # $1=име $2=нов id $3=стар id ("" ако няма)
+  if [ -n "$3" ]; then echo "  $1=$2,$3"; else echo "  $1=$2"; fi
+}
+env_line STRIPE_PRICE_PREMIUM_MONTH    "$PREM_M" "$PREM_OM"
+env_line STRIPE_PRICE_PREMIUM_YEAR     "$PREM_Y" "$PREM_OY"
+env_line STRIPE_PRICE_WHITELABEL_MONTH "$WL_M"   "$WL_OM"
+env_line STRIPE_PRICE_WHITELABEL_YEAR  "$WL_Y"   "$WL_OY"
+env_line STRIPE_PRICE_AGENCY5_MONTH    "$A5_M"   "$A5_OM"
+env_line STRIPE_PRICE_AGENCY5_YEAR     "$A5_Y"   "$A5_OY"
+env_line STRIPE_PRICE_AGENCY10_MONTH   "$A10_M"  "$A10_OM"
+env_line STRIPE_PRICE_AGENCY10_YEAR    "$A10_Y"  "$A10_OY"
 echo "  STRIPE_PORTAL_CONFIGURATION_ID=${PORTAL_ID:-<виж Dashboard>}"
 echo ""
 echo "══ РЪЧНИ стъпки (Dashboard/НАП — API не ги покрива) ══"

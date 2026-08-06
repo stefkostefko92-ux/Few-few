@@ -10,10 +10,10 @@ Supreme Bot се продава на **тарифи (tiers)**, обезпече�
 | Tier | Цена/мес | Цена/год | Сървъри | Какво включва |
 |------|----------|----------|---------|----------------|
 | **Free** | €0 | — | 1 | 1 панел, 2 формуляра (до 5 въпроса), 1 верификация, 30-дневни transcript-и |
-| **Premium** | €9.99 | €99 | 1 | Всичко ОСВЕН white-label: до 50 панела/формуляра/въпроса, верификация, giveaways, poll-ове, sticky + scheduled/recurring, AI отговори, round-robin, webhooks, REST API, безсрочни transcript-и |
-| **White-label** | €19.99 | €199 | 1 | Premium + собствен бранд бот (качваш свой Discord bot token) |
-| **Agency 5** | €39.99 | €399 | до 5 | White-label tier за 5 сървъра, един абонамент, reseller-friendly |
-| **Agency 10** | €79.99 | €799 | до 10 | White-label tier за 10 сървъра |
+| **Premium** | €4.99 | €49 | 1 | Всичко ОСВЕН white-label: до 50 панела/формуляра/въпроса, верификация, giveaways, poll-ове, sticky + scheduled/recurring, AI отговори, round-robin, webhooks, REST API, безсрочни transcript-и |
+| **White-label** | €9.99 | €99 | 1 | Premium + собствен бранд бот (качваш свой Discord bot token) |
+| **Agency 5** | €19.99 | €199 | до 5 | White-label tier за 5 сървъра, един абонамент, reseller-friendly |
+| **Agency 10** | €39.99 | €399 | до 10 | White-label tier за 10 сървъра |
 
 - Цените са в **EUR, с включен ДДС** (`tax_behavior=inclusive`); Stripe Tax
   начислява 20% BG ДДС по местоназначение.

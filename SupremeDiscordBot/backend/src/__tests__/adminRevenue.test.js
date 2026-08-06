@@ -29,26 +29,26 @@ describe("calculateMrr — run-rate, не каса", () => {
     const r = calculateMrr({
       now: NOW,
       servers: [
-        active({ plan: "premium", billingInterval: "month" }),    // 9.99
-        active({ plan: "premium", billingInterval: "year" }),     // 99/12 = 8.25
-        active({ plan: "whitelabel", billingInterval: "month" }), // 19.99
+        active({ plan: "premium", billingInterval: "month" }),    // 4.99
+        active({ plan: "premium", billingInterval: "year" }),     // 49/12 = 4.08(3)
+        active({ plan: "whitelabel", billingInterval: "month" }), // 9.99
       ],
       agencies: [
-        { plan: "agency5", billingInterval: "year", planSource: "stripe", stripeStatus: "active", active: true }, // 399/12 = 33.25
+        { plan: "agency5", billingInterval: "year", planSource: "stripe", stripeStatus: "active", active: true }, // 199/12 = 16.58(3)
       ],
     });
 
-    expect(r.mrrGross).toBe(71.48);
-    expect(r.mrrNet).toBe(59.57); // бруто/1.20 — цените са с включен ДДС
-    expect(r.arrGross).toBe(857.76);
+    expect(r.mrrGross).toBe(35.65);
+    expect(r.mrrNet).toBe(29.71); // бруто/1.20 — цените са с включен ДДС
+    expect(r.arrGross).toBe(427.76);
     expect(r.paidSubscriptions).toBe(4);
     expect(r.paidServers).toBe(3);
     expect(r.paidAgencies).toBe(1);
-    expect(r.arpuGross).toBe(17.87);
+    expect(r.arpuGross).toBe(8.91);
     expect(r.interval).toMatchObject({ monthlyCount: 2, yearlyCount: 2 });
 
     const premium = r.byTier.find((t) => t.plan === "premium");
-    expect(premium).toMatchObject({ count: 2, mrr: 18.24, monthlyCount: 1, yearlyCount: 1 });
+    expect(premium).toMatchObject({ count: 2, mrr: 9.07, monthlyCount: 1, yearlyCount: 1 });
   });
 
   it("годишният НЕ влиза цял (регресия срещу стария calculateMRR)", () => {
@@ -56,7 +56,7 @@ describe("calculateMrr — run-rate, не каса", () => {
       now: NOW,
       servers: [active({ plan: "premium", billingInterval: "year" })],
     });
-    expect(r.mrrGross).toBe(8.25);
+    expect(r.mrrGross).toBe(4.08);
     expect(r.mrrGross).not.toBe(PLAN_PRICES_EUR.premium.year);
   });
 });
@@ -75,12 +75,12 @@ describe("calculateMrr — кой НЕ е приход", () => {
       ],
     });
 
-    expect(r.mrrGross).toBe(9.99); // само активният по Stripe
+    expect(r.mrrGross).toBe(4.99); // само активният по Stripe
     expect(r.paidSubscriptions).toBe(1);
-    expect(r.excluded.trialing).toEqual({ count: 1, potentialMrr: 9.99 });
-    expect(r.excluded.gifted).toEqual({ count: 1, listValue: 19.99 });
-    expect(r.excluded.pastDue).toEqual({ count: 1, atRiskMrr: 9.99 });
-    expect(r.excluded.discord).toEqual({ count: 1, listValue: 9.99 });
+    expect(r.excluded.trialing).toEqual({ count: 1, potentialMrr: 4.99 });
+    expect(r.excluded.gifted).toEqual({ count: 1, listValue: 9.99 });
+    expect(r.excluded.pastDue).toEqual({ count: 1, atRiskMrr: 4.99 });
+    expect(r.excluded.discord).toEqual({ count: 1, listValue: 4.99 });
   });
 
   it("agency място не се брои втори път: покритият сървър стои на plan=free", () => {
@@ -96,7 +96,7 @@ describe("calculateMrr — кой НЕ е приход", () => {
       ],
     });
 
-    expect(r.mrrGross).toBe(79.99);
+    expect(r.mrrGross).toBe(39.99);
     expect(r.paidSubscriptions).toBe(1);
   });
 });
@@ -144,7 +144,7 @@ describe("calculateMrr — заварени/повредени редове", ()
       now: NOW,
       servers: [{ plan: "free", isPremium: true, billingInterval: "month", planSource: "stripe", stripeStatus: "active" }],
     });
-    expect(r.mrrGross).toBe(19.99);
+    expect(r.mrrGross).toBe(9.99);
     expect(r.diagnostics.grandfathered).toBe(1);
   });
 
@@ -153,7 +153,7 @@ describe("calculateMrr — заварени/повредени редове", ()
       now: NOW,
       servers: [active({ plan: "premium", billingInterval: null })],
     });
-    expect(r.mrrGross).toBe(9.99);
+    expect(r.mrrGross).toBe(4.99);
     expect(r.diagnostics.unknownInterval).toBe(1);
   });
 
@@ -185,7 +185,7 @@ describe("GET /api/admin/revenue", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.currency).toBe("EUR");
-    expect(res.body.mrrGross).toBe(88.24); // 99/12 + 79.99
+    expect(res.body.mrrGross).toBe(44.07); // 49/12 + 39.99
     expect(res.body.paidServers).toBe(1);
     expect(res.body.paidAgencies).toBe(1);
     // Касата е отделно число и НЕ участва в MRR.

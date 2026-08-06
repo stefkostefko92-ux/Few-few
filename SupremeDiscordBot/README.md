@@ -266,7 +266,7 @@ docker compose exec bot     npm test
 - HTML transcripts (30-day retention)
 - Core slash commands
 
-### Premium (€9.99/server/month · 14-day free trial)
+### Premium (€4.99/server/month · 14-day free trial)
 - Unlimited panels, forms, questions
 - HTML transcripts (forever) + real PDF export (pdfkit) + CSV export
 - AI auto-replies (Google Gemini Flash)

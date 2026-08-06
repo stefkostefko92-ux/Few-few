@@ -249,7 +249,7 @@ export default function Login() {
                   <CompareRow label="AI replies"              free="—"                    premium="AI-powered (assistive)" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
                   <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
-                  <CompareRow label="Price"                   free="€0, forever"          premium="€9.99/mo · €99/yr · 14-day trial" />
+                  <CompareRow label="Price"                   free="€0, forever"          premium="€4.99/mo · €49/yr · 14-day trial" />
                 </tbody>
               </table>
             </div>
@@ -360,7 +360,7 @@ export default function Login() {
               />
               <FaqItem
                 q="How is pricing calculated?"
-                a="Premium is billed per server — €9.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade."
+                a="Premium is billed per server — €4.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade."
               />
               <FaqItem
                 q="Where is my data stored?"
@@ -368,7 +368,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
-                a="Yes — on the White-label tier (€19.99/mo or €199/yr) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. Agencies can cover up to 5 or 10 servers under one White-label subscription (Agency 5 / Agency 10)."
+                a="Yes — on the White-label tier (€9.99/mo or €99/yr) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. Agencies can cover up to 5 or 10 servers under one White-label subscription (Agency 5 / Agency 10)."
               />
               <FaqItem
                 q="What happens if I cancel — can I take my data?"
@@ -428,7 +428,7 @@ export default function Login() {
                 badge="Recommended"
                 name="Premium"
                 tagline="For servers where support is a job, not a side task."
-                price={billing === "year" ? "€99" : "€9.99"}
+                price={billing === "year" ? "€49" : "€4.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 trial="14-day free trial, no card"
                 onCta={handleLogin}
@@ -449,7 +449,7 @@ export default function Login() {
                 icon={Crown}
                 name="White-label"
                 tagline="Run Supreme under your own brand."
-                price={billing === "year" ? "€199" : "€19.99"}
+                price={billing === "year" ? "€99" : "€9.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 onCta={handleLogin}
                 cta="Get White-label"
@@ -469,7 +469,7 @@ export default function Login() {
                 name="Agency 5"
                 seats="Up to 5 servers"
                 tagline="White-label for up to 5 servers, one subscription. Reseller-friendly."
-                price={billing === "year" ? "€399" : "€39.99"}
+                price={billing === "year" ? "€199" : "€19.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 onCta={handleLogin}
                 cta="Get Agency 5"
@@ -486,7 +486,7 @@ export default function Login() {
                 name="Agency 10"
                 seats="Up to 10 servers"
                 tagline="White-label for up to 10 servers, one subscription."
-                price={billing === "year" ? "€799" : "€79.99"}
+                price={billing === "year" ? "€399" : "€39.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 onCta={handleLogin}
                 cta="Get Agency 10"

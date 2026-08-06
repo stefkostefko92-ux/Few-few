@@ -37,11 +37,13 @@ const WHITELABEL_FEATURE_KEYS = [
 ];
 
 // VAT-inclusive EUR prices per plan/interval. Annual ≈ 2 months free.
+// Дисплейните цени ТРЯБВА да съвпадат със Stripe price-овете (scripts/
+// stripe-setup.sh) — иначе преддоговорната информация лъже (ЗЗП/CRD чл. 6).
 const PLAN_PRICING = {
-  premium:    { month: "€9.99",  year: "€99"  },
-  whitelabel: { month: "€19.99", year: "€199" },
-  agency5:    { month: "€39.99", year: "€399" },
-  agency10:   { month: "€79.99", year: "€799" },
+  premium:    { month: "€4.99",  year: "€49"  },
+  whitelabel: { month: "€9.99",  year: "€99"  },
+  agency5:    { month: "€19.99", year: "€199" },
+  agency10:   { month: "€39.99", year: "€399" },
 };
 
 const PLAN_LABEL = {

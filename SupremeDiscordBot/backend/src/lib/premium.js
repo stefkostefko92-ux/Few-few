@@ -5,10 +5,10 @@
 //
 // v3.0 tier ladder (see docs/PRICING.md):
 //   free       — base limits, no premium features
-//   premium    — €9.99/mo · €99/yr — all premium features EXCEPT white-label
-//   whitelabel — €19.99/mo · €199/yr — premium + white-label custom bot
-//   agency5    — €39.99/mo · €399/yr — white-label tier for up to 5 servers
-//   agency10   — €79.99/mo · €799/yr — white-label tier for up to 10 servers
+//   premium    — €4.99/mo · €49/yr — all premium features EXCEPT white-label
+//   whitelabel — €9.99/mo · €99/yr — premium + white-label custom bot
+//   agency5    — €19.99/mo · €199/yr — white-label tier for up to 5 servers
+//   agency10   — €39.99/mo · €399/yr — white-label tier for up to 10 servers
 //
 // `Server.isPremium` (boolean) is retained and kept in sync (true ⇔ plan≠free)
 // for backward-compat; the authoritative value is the resolved plan.
@@ -139,7 +139,15 @@ export function planHasFeature(plan, featureKey) {
 function stripePriceMap() {
   const e = process.env;
   const m = new Map();
-  const add = (id, plan, interval) => { if (id) m.set(id, { plan, interval }); };
+  // Всеки env може да носи СПИСЪК от price id-та (запетая-разделен): при
+  // ценова промяна Stripe цените са неизменими → новата е ПЪРВА (checkout),
+  // старите остават в списъка, за да се разпознават при подновяване на
+  // grandfather-нати абонати (иначе webhook-ът би ги „свалил" на грешен план).
+  const add = (ids, plan, interval) => {
+    for (const id of String(ids || "").split(",").map((s) => s.trim()).filter(Boolean)) {
+      m.set(id, { plan, interval });
+    }
+  };
   add(e.STRIPE_PRICE_PREMIUM_MONTH,    "premium",    "month");
   add(e.STRIPE_PRICE_PREMIUM_YEAR,     "premium",    "year");
   add(e.STRIPE_PRICE_WHITELABEL_MONTH, "whitelabel", "month");
@@ -160,10 +168,12 @@ export function planFromStripePrice(priceId) {
   return stripePriceMap().get(priceId) || null;
 }
 
-/** Look up the configured Stripe price id for a (plan, interval) pair. */
+/** Look up the configured Stripe price id for a (plan, interval) pair.
+ *  При списък (ценова промяна) checkout-ът ползва ПЪРВИЯ — текущата цена. */
 export function stripePriceId(plan, interval) {
   const key = `STRIPE_PRICE_${plan.toUpperCase()}_${interval === "year" ? "YEAR" : "MONTH"}`;
-  return process.env[key] || null;
+  const raw = process.env[key] || "";
+  return raw.split(",").map((s) => s.trim()).filter(Boolean)[0] || null;
 }
 
 function discordSkuMap() {

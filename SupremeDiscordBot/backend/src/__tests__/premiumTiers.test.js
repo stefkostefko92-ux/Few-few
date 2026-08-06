@@ -67,6 +67,17 @@ describe("Stripe price ↔ plan mapping", () => {
     expect(stripePriceId("premium", "month")).toBe("price_pm");
     expect(stripePriceId("agency10", "year")).toBe("price_a10y");
   });
+
+  // Ценова промяна (2026-08): env-ът може да носи СПИСЪК "нов,стар" — новата
+  // цена е за checkout, старата остава разпознаваема при подновяване на
+  // grandfather-нат абонат. Без това webhook-ът „сваля" стар абонат на
+  // default план при всяка фактура.
+  it("comma-list env: всички id-та се разпознават, checkout взима първия", () => {
+    process.env.STRIPE_PRICE_PREMIUM_MONTH = "price_pm_new, price_pm_old";
+    expect(planFromStripePrice("price_pm_new")).toEqual({ plan: "premium", interval: "month" });
+    expect(planFromStripePrice("price_pm_old")).toEqual({ plan: "premium", interval: "month" });
+    expect(stripePriceId("premium", "month")).toBe("price_pm_new");
+  });
 });
 
 describe("Discord SKU ↔ plan mapping", () => {

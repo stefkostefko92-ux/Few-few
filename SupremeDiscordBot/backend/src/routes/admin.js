@@ -336,11 +336,14 @@ router.get("/audit-logs", async (req, res, next) => {
  * Dashboard / paymentLog.
  */
 export const PLAN_PRICES_EUR = {
-  premium:    { month: 9.99,  year: 99 },
-  whitelabel: { month: 19.99, year: 199 },
-  agency5:    { month: 39.99, year: 399 },
-  agency10:   { month: 79.99, year: 799 },
+  premium:    { month: 4.99,  year: 49 },
+  whitelabel: { month: 9.99,  year: 99 },
+  agency5:    { month: 19.99, year: 199 },
+  agency10:   { month: 39.99, year: 399 },
 };
+// Ценова промяна 2026-08: grandfather-нати абонати остават на старите (по-
+// високи) цени в Stripe — за тях каталожният MRR по-долу е ЗАНИЖЕН. Точните
+// суми са в Stripe Dashboard; това тук е run-rate приблизител по каталог.
 
 /**
  * ДДС ставка за нето-приблизителя. BG стандартна ставка 20%.

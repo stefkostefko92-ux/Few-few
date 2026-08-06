@@ -88,9 +88,9 @@ export default function TermsPage() {
 
         <p><strong>5.2 Paid Subscriptions.</strong> Paid features are available via recurring
         subscriptions in the following tiers (prices in EUR, VAT included where applicable):
-        Premium (€9.99/server/month or €99/year), White-label (€19.99/server/month or €199/year),
-        Agency 5 (€39.99/month or €399/year, up to 5 servers) and Agency 10 (€79.99/month or
-        €799/year, up to 10 servers). Billing is monthly or annual, as selected at checkout.
+        Premium (€4.99/server/month or €49/year), White-label (€9.99/server/month or €99/year),
+        Agency 5 (€19.99/month or €199/year, up to 5 servers) and Agency 10 (€39.99/month or
+        €399/year, up to 10 servers). Billing is monthly or annual, as selected at checkout.
         By subscribing, you:</p>
         <ul>
           <li>Authorise us and our payment processor (Stripe, Inc.) to charge your designated payment method on a recurring basis for the selected billing period; purchases made through Discord's Premium App checkout are processed by Discord Inc. as merchant of record;</li>

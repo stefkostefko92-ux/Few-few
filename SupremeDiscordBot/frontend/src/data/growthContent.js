@@ -22,10 +22,10 @@ export const CHECKED_DATE = "August 2026";
 // EN pricing block. Do not restate numbers by hand elsewhere; import this.
 export const SUPREME_TIERS = {
   free: { name: "Free", price: "€0", per: "/ month, forever" },
-  premium: { name: "Premium", price: "€9.99", per: "/ month", priceYearly: "€99", perYear: "/ year" },
-  whitelabel: { name: "White-label", price: "€19.99", per: "/ month", priceYearly: "€199", perYear: "/ year" },
-  agency5: { name: "Agency 5", price: "€39.99", per: "/ month", priceYearly: "€399", perYear: "/ year" },
-  agency10: { name: "Agency 10", price: "€79.99", per: "/ month", priceYearly: "€799", perYear: "/ year" },
+  premium: { name: "Premium", price: "€4.99", per: "/ month", priceYearly: "€49", perYear: "/ year" },
+  whitelabel: { name: "White-label", price: "€9.99", per: "/ month", priceYearly: "€99", perYear: "/ year" },
+  agency5: { name: "Agency 5", price: "€19.99", per: "/ month", priceYearly: "€199", perYear: "/ year" },
+  agency10: { name: "Agency 10", price: "€39.99", per: "/ month", priceYearly: "€399", perYear: "/ year" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -37,11 +37,11 @@ export const TICKET_TOOL_COMPARE = {
   description: "A factual, sourced comparison of Supreme Bot and Ticket Tool: pricing, ticket limits, application forms, verification, AI replies, API, and EU hosting — checked August 2026.",
   competitor: "Ticket Tool",
   sourceUrls: ["https://ticket-tool.app/pricing", "https://ticket-tool.app/features"],
-  answer: "Supreme Bot and Ticket Tool are both Discord ticket-management bots. The main differences: Supreme Bot bundles standalone application forms, member verification and giveaways into every tier at no extra cost, includes AI auto-replies from the Premium tier (€9.99/server/month), and is EU-hosted (Hetzner, Germany) with a GDPR data-processing agreement. Ticket Tool is priced per feature tier ($0 / $5 / $12 per server/month) with AI, API access and unlimited retention reserved for its $12 Pro tier, and does not state a hosting region or GDPR posture on its site.",
+  answer: "Supreme Bot and Ticket Tool are both Discord ticket-management bots. The main differences: Supreme Bot bundles standalone application forms, member verification and giveaways into every tier at no extra cost, includes AI auto-replies from the Premium tier (€4.99/server/month), and is EU-hosted (Hetzner, Germany) with a GDPR data-processing agreement. Ticket Tool is priced per feature tier ($0 / $5 / $12 per server/month) with AI, API access and unlimited retention reserved for its $12 Pro tier, and does not state a hosting region or GDPR posture on its site.",
   rows: [
     ["Free tier price", "€0 / server / forever", "$0 / server / forever"],
-    ["Entry paid tier", "€9.99 / server / month (Premium)", "$5 / server / month (Community)"],
-    ["Top single-server tier", "€19.99 / server / month (White-label)", "$12 / server / month (Pro)"],
+    ["Entry paid tier", "€4.99 / server / month (Premium)", "$5 / server / month (Community)"],
+    ["Top single-server tier", "€9.99 / server / month (White-label)", "$12 / server / month (Pro)"],
     ["Ticket panels (free)", "1", "3"],
     ["Ticket panels (paid)", "Up to 50 (Premium)", "Unlimited (Community+)"],
     ["Transcript retention (free)", "30 days", "30 days"],
@@ -50,15 +50,15 @@ export const TICKET_TOOL_COMPARE = {
     ["Member verification", "Button or math captcha + account-age gate, all tiers", "Not listed as a feature on their site"],
     ["Giveaways", "Unlimited, all tiers (role-gated, scheduled end, re-roll)", "Not listed as a feature on their site"],
     ["AI features", "AI-drafted first-response suggestions, Premium tier, human-in-the-loop, EU AI Act Art. 50 disclosure", "AI ticket assist (draft replies/summaries) + AI flow nodes, Pro tier only, 5M tokens/month included"],
-    ["Public REST API", "Included from Premium (€9.99/mo)", "Included from Pro ($12/mo)"],
+    ["Public REST API", "Included from Premium (€4.99/mo)", "Included from Pro ($12/mo)"],
     ["Webhooks", "20 HMAC-signed integrations, Premium", "10 webhook nodes (Community) · unlimited (Pro)"],
-    ["White-label custom bot", "€19.99 / server / month (own Discord token, own brand)", "Enterprise tier only — custom pricing"],
-    ["Multi-server / agency plan", "Agency 5: €39.99/mo · Agency 10: €79.99/mo", "Team: $25/mo for 3 servers (+$8/extra server)"],
+    ["White-label custom bot", "€9.99 / server / month (own Discord token, own brand)", "Enterprise tier only — custom pricing"],
+    ["Multi-server / agency plan", "Agency 5: €19.99/mo · Agency 10: €39.99/mo", "Team: $25/mo for 3 servers (+$8/extra server)"],
     ["EU hosting / GDPR", "Hetzner (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
   ],
   faq: [
     { q: "Is Supreme Bot a Ticket Tool alternative?", a: "Yes. Supreme Bot covers the same core job — button-panel ticket creation, staff claim/escalation, and transcripts — and adds application forms, verification and giveaways in the same subscription, which Ticket Tool prices or scopes differently (see the table above)." },
-    { q: "Which is cheaper?", a: "Ticket Tool's Free and Community ($5/server/month) tiers are cheaper entry points if you only need tickets. Supreme Bot's Premium (€9.99/server/month) includes application forms, verification, giveaways, AI replies and a REST API in the same price — features that on Ticket Tool require the $12/month Pro tier for AI and API access, and do not include standalone applications at any tier." },
+    { q: "Which is cheaper?", a: "Ticket Tool's Free and Community ($5/server/month) tiers are cheaper entry points if you only need tickets. Supreme Bot's Premium (€4.99/server/month) includes application forms, verification, giveaways, AI replies and a REST API in the same price — features that on Ticket Tool require the $12/month Pro tier for AI and API access, and do not include standalone applications at any tier." },
     { q: "Does Ticket Tool offer application forms like Appy Bot?", a: "Ticket Tool's ticket panels support intake fields (text, dropdowns, priority) attached to a ticket, but we found no separate standalone application/approval workflow on their site as of August 2026 — that is a distinct product category (see our Appy Bot comparison)." },
     { q: "Is Supreme Bot GDPR-compliant?", a: "Supreme Bot is hosted on Hetzner servers in Germany, offers a Data Processing Agreement, and gives server owners self-service data export and deletion (GDPR Art. 15, 17, 20). Ticket Tool does not state a hosting region or GDPR posture on its public site." },
   ],
@@ -73,10 +73,10 @@ export const APPY_COMPARE = {
   description: "A factual, sourced comparison of Supreme Bot and Appy Bot: pricing, application forms, tickets, verification, giveaways, and EU hosting — checked August 2026.",
   competitor: "Appy Bot",
   sourceUrls: ["https://appy.bot/", "https://appy.bot/premium"],
-  answer: "Supreme Bot and Appy Bot both offer Discord application/questionnaire forms. Appy Bot is priced per server in GBP (Free / £4.99 Premium / £9.99 Custom Bot) and is application-forms-first, with ticket panels as a secondary feature. Supreme Bot is priced in EUR (Free / €9.99 Premium) and adds a full ticket system (claim, escalate, round-robin), AI auto-replies, a public REST API, HMAC webhooks and EU hosting (Hetzner, Germany) with a GDPR data-processing agreement at the same Premium price — none of which Appy Bot states on its site.",
+  answer: "Supreme Bot and Appy Bot both offer Discord application/questionnaire forms. Appy Bot is priced per server in GBP (Free / £4.99 Premium / £9.99 Custom Bot) and is application-forms-first, with ticket panels as a secondary feature. Supreme Bot is priced in EUR (Free / €4.99 Premium) and adds a full ticket system (claim, escalate, round-robin), AI auto-replies, a public REST API, HMAC webhooks and EU hosting (Hetzner, Germany) with a GDPR data-processing agreement at the same Premium price — none of which Appy Bot states on its site.",
   rows: [
     ["Free tier price", "€0 / server / forever", "£0 / server / forever"],
-    ["Paid tier (single server)", "€9.99 / server / month (Premium)", "£4.99 / server / month (Premium x1)"],
+    ["Paid tier (single server)", "€4.99 / server / month (Premium)", "£4.99 / server / month (Premium x1)"],
     ["Application forms (free)", "2 forms, 5 questions each", "2 forms, 10 questions each"],
     ["Application forms (paid)", "50 forms, 50 questions each (Premium)", "50 forms, 100 questions each (Premium x1)"],
     ["Form logic branching", "Yes, Premium — conditional branching + regex validation", "Regex validation, Premium — no branching stated"],
@@ -85,14 +85,14 @@ export const APPY_COMPARE = {
     ["Giveaways", "Unlimited, all tiers, role-gated + scheduled + re-roll", "Included, tier/limits not specified on their site"],
     ["AI auto-replies", "Premium tier, human-in-the-loop, EU AI Act Art. 50 disclosure", "Not stated on their site"],
     ["Public REST API / webhooks", "Public REST API + 20 HMAC webhooks, Premium", "Not stated on their site"],
-    ["Custom-branded bot", "White-label tier, €19.99/mo — own Discord token, fully own brand", "Custom Bot tier, £9.99/mo — custom avatar, username & status (their bot)"],
-    ["Multi-server discount", "Agency 5: €39.99/mo · Agency 10: €79.99/mo", "Premium x3: £8.99/mo for 3 servers (40% off)"],
+    ["Custom-branded bot", "White-label tier, €9.99/mo — own Discord token, fully own brand", "Custom Bot tier, £9.99/mo — custom avatar, username & status (their bot)"],
+    ["Multi-server discount", "Agency 5: €19.99/mo · Agency 10: €39.99/mo", "Premium x3: £8.99/mo for 3 servers (40% off)"],
     ["EU hosting / GDPR", "Hetzner (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
   ],
   faq: [
     { q: "Is Supreme Bot an Appy Bot alternative?", a: "Yes. Supreme Bot matches Appy Bot's application-forms use case (multi-question forms, review workflow, auto-role on approval) and adds a full ticket system, verification, giveaways, AI replies and an EU-hosted, GDPR-documented backend in the same subscription." },
     { q: "Does Supreme Bot support conditional/branching forms?", a: "Yes — Premium-tier forms support conditional logic branching and regex validation on answers. Appy Bot's Premium tier lists regex validation but we found no mention of conditional branching on their site as of August 2026." },
-    { q: "Can I white-label the bot under my own name?", a: "Both offer a branded option: Supreme Bot's White-label tier (€19.99/server/month) lets you upload your own Discord bot token and run it fully under your own brand; Appy Bot's Custom Bot tier (£9.99/month) lets you set a custom avatar, username and status on their bot. These are not the same thing — check which fits your use case." },
+    { q: "Can I white-label the bot under my own name?", a: "Both offer a branded option: Supreme Bot's White-label tier (€9.99/server/month) lets you upload your own Discord bot token and run it fully under your own brand; Appy Bot's Custom Bot tier (£9.99/month) lets you set a custom avatar, username and status on their bot. These are not the same thing — check which fits your use case." },
     { q: "Which has better verification against bots/raids?", a: "Supreme Bot includes a button or math captcha plus an account-age requirement on every tier, including Free. Appy Bot's website captcha is on Free; in-Discord verification is a Premium (£4.99/mo) feature." },
   ],
 };
@@ -129,7 +129,7 @@ export const BEST_TICKET_BOT_GUIDE = {
     {
       title: "5. Pricing model — per server, per feature, or per team",
       body: "Bots price themselves differently: flat per-server tiers, per-feature add-ons (AI, API access locked behind a higher tier), or per-team multi-server bundles. Model your actual server count and feature needs against the real price, not the headline number.",
-      supreme: "Supreme Bot is a flat per-server tier (Free / €9.99 Premium / €19.99 White-label), plus Agency 5 (€39.99/mo) and Agency 10 (€79.99/mo) multi-server bundles for agencies managing several communities under one subscription.",
+      supreme: "Supreme Bot is a flat per-server tier (Free / €4.99 Premium / €9.99 White-label), plus Agency 5 (€19.99/mo) and Agency 10 (€39.99/mo) multi-server bundles for agencies managing several communities under one subscription.",
     },
     {
       title: "6. AI features — and whether they're disclosed",
