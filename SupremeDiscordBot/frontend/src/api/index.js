@@ -36,6 +36,8 @@ export default api;
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const getMe = () => api.get("/auth/me").then((r) => r.data);
+// Обновява предпочитания на акаунта (език) — изборът пътува с потребителя.
+export const updateMe = (data) => api.patch("/auth/me", data).then((r) => r.data);
 export const logout = () => api.post("/auth/logout");
 
 // ─── Servers ──────────────────────────────────────────────────────────────────

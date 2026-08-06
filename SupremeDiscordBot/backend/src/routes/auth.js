@@ -5,6 +5,7 @@ import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
+import { SUPPORTED_LANGUAGES, isSupportedLanguage } from "../lib/languages.js";
 
 const router = Router();
 
@@ -161,9 +162,8 @@ router.get("/me", requireAuth, loadUser, (req, res) => {
 // PATCH /api/auth/me — update user preferences (language etc.)
 router.patch("/me", requireAuth, loadUser, async (req, res, next) => {
   const { language } = req.body || {};
-  const allowedLangs = ["en", "bg", "it"];
-  if (language && !allowedLangs.includes(language)) {
-    return res.status(400).json({ error: `Unsupported language. Allowed: ${allowedLangs.join(", ")}` });
+  if (language && !isSupportedLanguage(language)) {
+    return res.status(400).json({ error: `Unsupported language. Allowed: ${SUPPORTED_LANGUAGES.join(", ")}` });
   }
   try {
     const updated = await (await import("../lib/prisma.js")).prisma.user.update({

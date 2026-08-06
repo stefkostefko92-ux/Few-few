@@ -10,10 +10,12 @@
 import { useId, useMemo, useState } from "react";
 import { Table2, LineChart as LineIcon } from "lucide-react";
 import { SERIES, GRID, AXIS_TEXT } from "./palette";
+import { useT } from "../../contexts/I18nContext";
 
 const PAD = { top: 14, right: 54, bottom: 24, left: 34 };
 
 export default function AreaChart({ data = [], height = 220, className = "" }) {
+  const { t } = useT();
   const gid = useId().replace(/:/g, "");
   const [hover, setHover] = useState(null); // индекс на активната точка
   const [asTable, setAsTable] = useState(false);
@@ -35,7 +37,7 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
   }, [data, H]);
 
   if (!data.length) {
-    return <div className={`text-sm text-cs-muted py-10 text-center ${className}`}>No activity in this period yet.</div>;
+    return <div className={`text-sm text-cs-muted py-10 text-center ${className}`}>{t("overview.byPanel.empty")}</div>;
   }
 
   const line = (key) => pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p[key].toFixed(1)}`).join(" ");
@@ -56,7 +58,7 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
         <ChartToggle asTable={asTable} onToggle={() => setAsTable(false)} />
         <div className="overflow-x-auto max-h-[220px] overflow-y-auto mt-2">
           <table className="cs-table text-xs w-full">
-            <thead><tr><th>Day</th><th className="text-right">Opened</th><th className="text-right">Closed</th></tr></thead>
+            <thead><tr><th>{t("overview.chart.day")}</th><th className="text-right">{t("overview.chart.opened")}</th><th className="text-right">{t("overview.chart.closed")}</th></tr></thead>
             <tbody>
               {data.map((d) => (
                 <tr key={d.day}>
@@ -80,7 +82,7 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
           {Object.entries(SERIES).map(([key, s]) => (
             <span key={key} className="flex items-center gap-1.5 text-xs text-cs-muted">
               <span className="w-2.5 h-2.5 rounded-sm" style={{ background: s.stroke }} aria-hidden="true" />
-              {s.label}
+              {key === "opened" ? t("overview.chart.opened") : t("overview.chart.closed")}
             </span>
           ))}
         </div>
@@ -150,8 +152,8 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
       <div className="h-5 mt-1 text-xs text-cs-muted font-mono" aria-live="polite">
         {hover != null && (
           <span>
-            {pts[hover].day} · <span style={{ color: SERIES.opened.stroke }}>{pts[hover].opened} opened</span>
-            {" · "}<span style={{ color: SERIES.closed.stroke }}>{pts[hover].closed} closed</span>
+            {pts[hover].day} · <span style={{ color: SERIES.opened.stroke }}>{pts[hover].opened} {t("overview.chart.opened").toLowerCase()}</span>
+            {" · "}<span style={{ color: SERIES.closed.stroke }}>{pts[hover].closed} {t("overview.chart.closed").toLowerCase()}</span>
           </span>
         )}
       </div>
@@ -160,13 +162,15 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
 }
 
 function ChartToggle({ asTable, onToggle }) {
+  const { t } = useT();
+  const label = asTable ? t("overview.chart.showChart") : t("overview.chart.showTable");
   return (
     <button
       type="button"
       onClick={onToggle}
       className="text-cs-dim hover:text-cs-cyan transition-colors p-1"
-      title={asTable ? "Show chart" : "Show table view"}
-      aria-label={asTable ? "Show chart" : "Show table view"}
+      title={label}
+      aria-label={label}
     >
       {asTable ? <LineIcon className="w-3.5 h-3.5" /> : <Table2 className="w-3.5 h-3.5" />}
     </button>

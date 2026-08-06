@@ -5,6 +5,7 @@ import axios from "axios";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { encrypt, decrypt, decryptSafe } from "../lib/crypto.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
 
 const router = Router();
@@ -133,6 +134,9 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     stickyMessagesEnabled,
     // Server event logging
     eventLogEnabled, eventLogChannelId, eventLogCategories,
+    // Език на бота за ТОЗИ сървър — резервен, когато Discord клиентският
+    // locale на потребителя не е сред поддържаните (виж bot/src/i18n).
+    language,
   } = req.body;
 
   try {
@@ -192,6 +196,9 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(Array.isArray(eventLogCategories) && {
           eventLogCategories: eventLogCategories.filter((c) => ["voice", "members", "moderation", "messages"].includes(c)),
         }),
+        // Език на бота за сървъра — валидиран срещу поддържаните; невалиден се
+        // игнорира тихо, вместо да записва боклук.
+        ...(language !== undefined && isSupportedLanguage(language) && { language }),
       },
     });
 

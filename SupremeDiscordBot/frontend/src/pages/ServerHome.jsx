@@ -18,11 +18,13 @@ import { getServer, getPanels, getForms, getDashboard, getStatus } from "../api"
 import StatTile from "../components/StatTile";
 import AreaChart from "../components/charts/AreaChart";
 import BarList from "../components/charts/BarList";
+import { useT } from "../contexts/I18nContext";
 
 const PERIODS = [7, 14, 30];
 
 export default function ServerHome() {
   const { serverId } = useParams();
+  const { t } = useT();
   const [days, setDays] = useState(14);
 
   const { data: server, isLoading: serverLoading, isError: serverError } = useQuery({
@@ -52,14 +54,14 @@ export default function ServerHome() {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-64 text-center" role="alert">
         <Bot className="w-10 h-10 text-cs-cyan mb-3" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-cs-text mb-2">Bot not set up for this server</h2>
-        <p className="text-cs-muted text-sm">The bot hasn't been added to this server yet, or hasn't synced.</p>
+        <h2 className="text-lg font-semibold text-cs-text mb-2">{t("overview.notSetup.title")}</h2>
+        <p className="text-cs-muted text-sm">{t("overview.notSetup.body")}</p>
         <a
           href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814288&scope=bot+applications.commands&guild_id=${serverId}`}
           target="_blank" rel="noopener noreferrer"
           className="cs-btn-primary mt-4 inline-flex items-center gap-2"
         >
-          Invite Bot to Server
+          {t("overview.notSetup.invite")}
         </a>
       </div>
     );
@@ -85,7 +87,7 @@ export default function ServerHome() {
               <h1 className="cs-heading font-display font-bold text-cs-text text-2xl truncate">{server?.name}</h1>
               {server?.isPremium && <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>}
             </div>
-            <p className="text-cs-dim text-xs font-mono mt-0.5">Overview · real-time statistics and server health</p>
+            <p className="text-cs-dim text-xs font-mono mt-0.5">{t("overview.subtitle")}</p>
           </div>
         </div>
 
@@ -102,7 +104,7 @@ export default function ServerHome() {
                   : "border-cs-border text-cs-muted hover:text-cs-text"
               }`}
             >
-              {p} days
+              {t(`overview.range.${p}`)}
             </button>
           ))}
         </div>
@@ -116,14 +118,14 @@ export default function ServerHome() {
             Array.from({ length: 4 }).map((_, i) => <div key={i} className="cs-card h-[104px] animate-pulse bg-cs-panel" />)
           ) : (
             <>
-              <StatTile icon={Ticket} label="Tickets opened" value={k?.ticketsOpened?.value}
-                deltaPct={k?.ticketsOpened?.deltaPct} hint={`last ${days} days`} />
-              <StatTile icon={CheckCircle2} label="Tickets closed" value={k?.ticketsClosed?.value}
-                deltaPct={k?.ticketsClosed?.deltaPct} hint={`last ${days} days`} />
-              <StatTile icon={Timer} label="Avg first reply" value={k?.avgFirstResponseMin} unit="min"
-                invertDelta hint={k?.avgFirstResponseMin == null ? "no replies tracked yet" : "lower is better"} />
-              <StatTile icon={ClipboardList} label="Applications" value={k?.applications?.value}
-                deltaPct={k?.applications?.deltaPct} hint={`${live?.pendingApplications ?? 0} pending review`} />
+              <StatTile icon={Ticket} label={t("overview.kpi.opened")} value={k?.ticketsOpened?.value}
+                deltaPct={k?.ticketsOpened?.deltaPct} hint={t("overview.kpi.lastDays", { days })} />
+              <StatTile icon={CheckCircle2} label={t("overview.kpi.closed")} value={k?.ticketsClosed?.value}
+                deltaPct={k?.ticketsClosed?.deltaPct} hint={t("overview.kpi.lastDays", { days })} />
+              <StatTile icon={Timer} label={t("overview.kpi.firstReply")} value={k?.avgFirstResponseMin} unit="min"
+                invertDelta hint={k?.avgFirstResponseMin == null ? t("overview.kpi.noReplies") : t("overview.kpi.lowerBetter")} />
+              <StatTile icon={ClipboardList} label={t("overview.kpi.applications")} value={k?.applications?.value}
+                deltaPct={k?.applications?.deltaPct} hint={t("overview.kpi.pendingReview", { n: live?.pendingApplications ?? 0 })} />
             </>
           )}
         </div>
@@ -133,9 +135,9 @@ export default function ServerHome() {
           <section className="cs-card xl:col-span-2" aria-labelledby="activity-h">
             <div className="flex items-center justify-between mb-3">
               <h2 id="activity-h" className="font-semibold text-cs-text flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> Ticket activity
+                <Activity className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> {t("overview.activity")}
               </h2>
-              <span className="text-xs font-mono text-cs-dim">last {days} days</span>
+              <span className="text-xs font-mono text-cs-dim">{t("overview.kpi.lastDays", { days })}</span>
             </div>
             {dashLoading
               ? <div className="h-[300px] animate-pulse bg-cs-panel rounded" />
@@ -151,27 +153,27 @@ export default function ServerHome() {
         {/* ── Разпределение + последни тикети + бързи действия ─────────── */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
           <section className="cs-card" aria-labelledby="dist-h">
-            <h2 id="dist-h" className="font-semibold text-cs-text mb-3">Tickets by panel</h2>
-            <BarList items={dash?.distribution || []} emptyLabel="No tickets in this period." />
+            <h2 id="dist-h" className="font-semibold text-cs-text mb-3">{t("overview.byPanel")}</h2>
+            <BarList items={dash?.distribution || []} emptyLabel={t("overview.byPanel.empty")} />
           </section>
 
           <section className="cs-card" aria-labelledby="recent-h">
             <div className="flex items-center justify-between mb-3">
-              <h2 id="recent-h" className="font-semibold text-cs-text">Recent tickets</h2>
+              <h2 id="recent-h" className="font-semibold text-cs-text">{t("overview.recentTickets")}</h2>
               <Link to={`/dashboard/${serverId}/tickets`} className="text-xs text-cs-cyan hover:opacity-80 flex items-center gap-1">
-                View all <ChevronRight className="w-3 h-3" aria-hidden="true" />
+                {t("common.viewAll")} <ChevronRight className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>
             <RecentTickets tickets={dash?.recentTickets} serverId={serverId} />
           </section>
 
           <section className="cs-card" aria-labelledby="qa-h">
-            <h2 id="qa-h" className="font-semibold text-cs-text mb-3">Quick actions</h2>
+            <h2 id="qa-h" className="font-semibold text-cs-text mb-3">{t("overview.quickActions")}</h2>
             <div className="space-y-2">
-              <QuickAction to={`/dashboard/${serverId}/panels`} icon={Plus} label="Create ticket panel" />
-              <QuickAction to={`/dashboard/${serverId}/forms`} icon={FileText} label="Build application form" />
-              <QuickAction to={`/dashboard/${serverId}/automation`} icon={Send} label="Start giveaway or poll" />
-              <QuickAction to={`/dashboard/${serverId}/analytics`} icon={LineChart} label="Open full analytics" />
+              <QuickAction to={`/dashboard/${serverId}/panels`} icon={Plus} label={t("overview.qa.createPanel")} />
+              <QuickAction to={`/dashboard/${serverId}/forms`} icon={FileText} label={t("overview.qa.buildForm")} />
+              <QuickAction to={`/dashboard/${serverId}/automation`} icon={Send} label={t("overview.qa.startGiveaway")} />
+              <QuickAction to={`/dashboard/${serverId}/analytics`} icon={LineChart} label={t("overview.qa.openAnalytics")} />
             </div>
           </section>
         </div>
@@ -179,7 +181,7 @@ export default function ServerHome() {
 
       <GettingStarted serverId={serverId} panels={panels} forms={forms} />
 
-      <h2 className="text-sm font-mono uppercase tracking-wider text-cs-dim mb-3">Manage this server</h2>
+      <h2 className="text-sm font-mono uppercase tracking-wider text-cs-dim mb-3">{t("nav.manageServer")}</h2>
       <NavGrid serverId={serverId} />
     </div>
   );
@@ -187,22 +189,23 @@ export default function ServerHome() {
 
 /* ─── Живо състояние ─────────────────────────────────────────────────── */
 function LiveStatePanel({ live, loading, satisfaction }) {
+  const { t } = useT();
   return (
     <section className="cs-card" aria-labelledby="live-h">
       <h2 id="live-h" className="font-semibold text-cs-text mb-3 flex items-center gap-2">
-        <Inbox className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> Right now
+        <Inbox className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> {t("overview.rightNow")}
       </h2>
       {loading ? (
         <div className="h-20 animate-pulse bg-cs-panel rounded" />
       ) : (
         <dl className="space-y-2.5">
-          <Row label="Open tickets" value={live?.openTickets ?? 0} />
-          <Row label="Claimed by staff" value={live?.claimedTickets ?? 0} />
-          <Row label="Applications pending" value={live?.pendingApplications ?? 0} />
+          <Row label={t("overview.openTickets")} value={live?.openTickets ?? 0} />
+          <Row label={t("overview.claimedByStaff")} value={live?.claimedTickets ?? 0} />
+          <Row label={t("overview.applicationsPending")} value={live?.pendingApplications ?? 0} />
           <Row
-            label="Satisfaction"
+            label={t("overview.satisfaction")}
             value={satisfaction?.avg != null ? `${satisfaction.avg} / 5` : "—"}
-            hint={satisfaction?.count ? `${satisfaction.count} rating${satisfaction.count === 1 ? "" : "s"}` : "no ratings yet"}
+            hint={satisfaction?.count ? t("overview.ratings", { n: satisfaction.count }) : t("overview.noRatings")}
           />
         </dl>
       )}
@@ -224,6 +227,8 @@ function Row({ label, value, hint }) {
 
 /* ─── Здраве на платформата ──────────────────────────────────────────── */
 function SystemStatusPanel({ status }) {
+  const { t } = useT();
+  // Имената на услугите остават непреведени (собствени имена: API, Database…).
   const services = [
     ["API", status?.services?.api?.status],
     ["Database", status?.services?.database?.status],
@@ -232,7 +237,7 @@ function SystemStatusPanel({ status }) {
   ];
   return (
     <section className="cs-card" aria-labelledby="sys-h">
-      <h2 id="sys-h" className="font-semibold text-cs-text mb-3">System status</h2>
+      <h2 id="sys-h" className="font-semibold text-cs-text mb-3">{t("overview.systemStatus")}</h2>
       <ul className="space-y-2">
         {services.map(([name, s]) => (
           <li key={name} className="flex items-center justify-between gap-3">
@@ -247,13 +252,14 @@ function SystemStatusPanel({ status }) {
 
 // Статусът НИКОГА не е само цвят — иконка + дума придружават всяка точка.
 function StatusPill({ status }) {
+  const { t } = useT();
   const map = {
-    operational: { cls: "text-success", dot: "bg-success", label: "Operational", Icon: CheckCircle2 },
-    ok: { cls: "text-success", dot: "bg-success", label: "Operational", Icon: CheckCircle2 },
-    degraded: { cls: "text-warning", dot: "bg-warning", label: "Degraded", Icon: AlertCircle },
-    down: { cls: "text-danger", dot: "bg-danger", label: "Down", Icon: AlertCircle },
+    operational: { cls: "text-success", dot: "bg-success", label: t("overview.status.operational"), Icon: CheckCircle2 },
+    ok: { cls: "text-success", dot: "bg-success", label: t("overview.status.operational"), Icon: CheckCircle2 },
+    degraded: { cls: "text-warning", dot: "bg-warning", label: t("overview.status.degraded"), Icon: AlertCircle },
+    down: { cls: "text-danger", dot: "bg-danger", label: t("overview.status.down"), Icon: AlertCircle },
   };
-  const s = map[status] || { cls: "text-cs-dim", dot: "bg-cs-dim", label: "Unknown", Icon: Circle };
+  const s = map[status] || { cls: "text-cs-dim", dot: "bg-cs-dim", label: t("overview.status.unknown"), Icon: Circle };
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${s.cls}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} aria-hidden="true" />
@@ -316,20 +322,22 @@ function QuickAction({ to, icon: Icon, label }) {
 
 /* ─── Навигация ──────────────────────────────────────────────────────── */
 function NavGrid({ serverId }) {
+  const { t } = useT();
   const ACCENT = "bg-cs-cyanGlow text-cs-cyan";
+  // key = nav.<key> за заглавието и navDesc.<key> за описанието.
   const cards = [
-    { to: "panels", icon: Layout, label: "Panels", desc: "Visual button panels for tickets", color: ACCENT },
-    { to: "forms", icon: FileText, label: "Forms", desc: "Logic-branching questionnaires", color: ACCENT },
-    { to: "tickets", icon: Ticket, label: "Tickets", desc: "View & manage support tickets", color: ACCENT },
-    { to: "applications", icon: Users, label: "Applications", desc: "Review member applications", color: ACCENT },
-    { to: "verification", icon: ShieldCheck, label: "Verification", desc: "Gate new members with verification", color: ACCENT },
-    { to: "automation", icon: Zap, label: "Automation", desc: "Polls, giveaways, reaction roles & more", color: ACCENT },
-    { to: "analytics", icon: LineChart, label: "Analytics", desc: "Ticket & member insights", color: ACCENT },
-    { to: "apikeys", icon: Key, label: "API Keys", desc: "Programmatic access tokens", color: ACCENT },
-    { to: "commands", icon: BookOpen, label: "Commands", desc: "Configure slash commands", color: ACCENT },
-    { to: "webhooks", icon: Webhook, label: "Webhooks", desc: "Outbound event notifications", color: ACCENT },
-    { to: "premium", icon: Star, label: "Premium", desc: "Subscription & advanced features", color: "bg-premium/10 text-premium" },
-    { to: "settings", icon: Settings, label: "Settings", desc: "General bot configuration", color: "bg-cs-panel text-cs-muted" },
+    { to: "panels", key: "panels", icon: Layout, color: ACCENT },
+    { to: "forms", key: "forms", icon: FileText, color: ACCENT },
+    { to: "tickets", key: "tickets", icon: Ticket, color: ACCENT },
+    { to: "applications", key: "applications", icon: Users, color: ACCENT },
+    { to: "verification", key: "verification", icon: ShieldCheck, color: ACCENT },
+    { to: "automation", key: "automation", icon: Zap, color: ACCENT },
+    { to: "analytics", key: "analytics", icon: LineChart, color: ACCENT },
+    { to: "apikeys", key: "apikeys", icon: Key, color: ACCENT },
+    { to: "commands", key: "commands", icon: BookOpen, color: ACCENT },
+    { to: "webhooks", key: "webhooks", icon: Webhook, color: ACCENT },
+    { to: "premium", key: "premium", icon: Star, color: "bg-premium/10 text-premium" },
+    { to: "settings", key: "settings", icon: Settings, color: "bg-cs-panel text-cs-muted" },
   ];
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -339,8 +347,8 @@ function NavGrid({ serverId }) {
             <c.icon className="w-4.5 h-4.5" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-cs-text text-sm">{c.label}</h3>
-            <p className="text-xs text-cs-muted mt-0.5">{c.desc}</p>
+            <h3 className="font-semibold text-cs-text text-sm">{t(`nav.${c.key}`)}</h3>
+            <p className="text-xs text-cs-muted mt-0.5">{t(`navDesc.${c.key}`)}</p>
           </div>
         </Link>
       ))}

@@ -2,12 +2,15 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity } from "lucide-react";
+import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
 import { getServer, updateServer } from "../api";
 import { useToast } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
+import { LANGUAGE_OPTIONS } from "../i18n/dashboard";
 
 export default function SettingsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
 
   const { data: server, isLoading } = useQuery({
@@ -48,6 +51,8 @@ export default function SettingsPage() {
         eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
         eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
         eventLogCat_messages:   (server.eventLogCategories || []).includes("messages"),
+        // Език на бота за сървъра (fallback за членове с неподдържан Discord език)
+        language:               server.language || "en",
       });
     }
   }, [server]);
@@ -99,6 +104,7 @@ export default function SettingsPage() {
         form.eventLogCat_moderation && "moderation",
         form.eventLogCat_messages && "messages",
       ].filter(Boolean),
+      language: form.language,
       ...(server.isPremium && {
         customBotName: form.customBotName || null,
         customBotAvatar: form.customBotAvatar || null,
@@ -151,6 +157,27 @@ export default function SettingsPage() {
                 onChange={(e) => set("archiveChannelId", e.target.value)}
               />
             </div>
+          </label>
+        </div>
+
+        {/* ── Език на бота за сървъра ─────────────────────────────────── */}
+        <div className="cs-card space-y-4">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-cs-cyan" />
+            <h2 className="font-semibold text-cs-text">{t("language.botForServer")}</h2>
+          </div>
+          <p className="text-sm text-cs-muted">{t("language.botForServer.hint")}</p>
+          <label className="block max-w-xs">
+            <span className="cs-label">{t("language.label")}</span>
+            <select
+              className="cs-input"
+              value={form.language}
+              onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
+            >
+              {LANGUAGE_OPTIONS.map((o) => (
+                <option key={o.code} value={o.code}>{o.label}</option>
+              ))}
+            </select>
           </label>
         </div>
 

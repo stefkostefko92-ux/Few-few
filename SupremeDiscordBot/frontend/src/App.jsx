@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { I18nProvider } from "./contexts/I18nContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import CookieConsent from "./components/CookieConsent";
 
@@ -85,6 +86,8 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        {/* I18nProvider ЧЕТЕ user.language от AuthProvider → вътре е */}
+        <I18nProvider>
         <ToastProvider>
         <BrowserRouter>
           <Suspense fallback={<Spinner />}>
@@ -145,6 +148,7 @@ export default function App() {
           <CookieConsent />
         </BrowserRouter>
         </ToastProvider>
+        </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
