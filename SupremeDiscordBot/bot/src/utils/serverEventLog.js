@@ -37,6 +37,7 @@ const CATEGORY_COLORS = {
   members: SUCCESS,     // green
   moderation: DANGER,  // red
   messages: WARNING,    // amber
+  server: MUTED,        // структурни промени (канали/роли) — неутрално
 };
 
 // Човеко-четими заглавия по action string (exact strings — сверява се с backend).
@@ -73,6 +74,14 @@ const ACTION_LABELS = {
   message_edit: "✏️ Message Edited",
   message_delete: "🗑️ Message Deleted",
   message_bulk_delete: "🗑️ Messages Bulk Deleted",
+  // server (структура: канали и роли)
+  channel_create: "📁 Channel Created",
+  channel_update: "✏️ Channel Updated",
+  channel_delete: "🗑️ Channel Deleted",
+  role_create: "🏷️ Role Created",
+  role_update: "✏️ Role Updated",
+  role_permissions_update: "🔐 Role Permissions Changed",
+  role_delete: "🗑️ Role Deleted",
 };
 
 /**

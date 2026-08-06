@@ -21,7 +21,8 @@ const APPLY = process.argv.includes("--apply");
 async function main() {
   const servers = await prisma.server.findMany({
     select: {
-      id: true, name: true, isPremium: true, plan: true, agencyId: true,
+      id: true, name: true, isPremium: true, plan: true, planSource: true,
+      stripeSubscriptionId: true, agencyId: true,
       agency: { select: { active: true, plan: true } },
     },
   });
@@ -30,9 +31,16 @@ async function main() {
   for (const s of servers) {
     const ownPaid = !!s.plan && s.plan !== "free";
     const agencyCovered = !!(s.agencyId && s.agency?.active);
-    const shouldBe = ownPaid || agencyCovered;
+    // Заварен grandfather — виж syncServerPaidFlag в lib/premium.js. Без тази
+    // проверка скриптът СВАЛЯ платен достъп на реални абонати отпреди `plan`.
+    const legacyGrandfather = s.isPremium && !ownPaid && !agencyCovered
+      && (!!s.stripeSubscriptionId || !!s.planSource);
+    const shouldBe = ownPaid || agencyCovered || legacyGrandfather;
     if (s.isPremium !== shouldBe) {
-      drift.push({ ...s, shouldBe, reason: agencyCovered ? "agency seat" : (ownPaid ? "own plan" : "no paid source") });
+      drift.push({
+        ...s, shouldBe,
+        reason: agencyCovered ? "agency seat" : (ownPaid ? "own plan" : "no paid source"),
+      });
     }
   }
 

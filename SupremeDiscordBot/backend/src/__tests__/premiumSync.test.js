@@ -62,6 +62,32 @@ describe("syncServerPaidFlag — колоната = платено състоя�
     expect(await syncServerPaidFlag("nope")).toBe(false);
     expect(prismaMock.server.update).not.toHaveBeenCalled();
   });
+
+  // ─── ЗАВАРЕН GRANDFATHER (парично-критично) ─────────────────────────────
+  // Редове отпреди въвеждането на `plan` носят isPremium=true + plan="free".
+  // getServerTier ги признава за white-label абонати. Ранна версия на sync-а
+  // ги броеше за неплатени и МЪЛЧАЛИВО сваляше платен достъп на реален
+  // абонат (находка на одита; backfill скриптът щеше да го направи масово).
+  it("заварен абонат (isPremium=true, plan=free, има stripeSubscriptionId) НЕ се сваля", async () => {
+    seed([{ id: "g1", isPremium: true, plan: "free", planSource: null,
+            stripeSubscriptionId: "sub_123", agencyId: null, agency: null }]);
+    expect(await syncServerPaidFlag("g1")).toBe(true);
+    expect(store.server.get("g1").isPremium).toBe(true);
+    expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+
+  it("заварен абонат с planSource (Discord/manual) също НЕ се сваля", async () => {
+    seed([{ id: "g2", isPremium: true, plan: "free", planSource: "discord",
+            stripeSubscriptionId: null, agencyId: null, agency: null }]);
+    expect(await syncServerPaidFlag("g2")).toBe(true);
+  });
+
+  it("но истински free сървър (без следа от абонамент) СЕ сваля", async () => {
+    seed([{ id: "g3", isPremium: true, plan: "free", planSource: null,
+            stripeSubscriptionId: null, agencyId: null, agency: null }]);
+    expect(await syncServerPaidFlag("g3")).toBe(false);
+    expect(store.server.get("g3").isPremium).toBe(false);
+  });
 });
 
 describe("syncAgencyServersPaidFlag — всички покрити наведнъж", () => {

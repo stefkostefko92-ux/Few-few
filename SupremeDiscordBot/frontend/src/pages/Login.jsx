@@ -594,8 +594,9 @@ export default function Login() {
 }
 
 function FeatureCard({ icon: Icon, title, badge, children }) {
+  const tiltRef = useTiltCard();
   return (
-    <div className="cs-card hover:border-cs-cyan/50 transition-colors">
+    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
       <div className="flex items-start justify-between mb-3">
         <Icon className="w-6 h-6 text-cs-cyan" />
         {badge && <span className="cs-badge text-[9px] text-success">{badge}</span>}
@@ -607,8 +608,9 @@ function FeatureCard({ icon: Icon, title, badge, children }) {
 }
 
 function TrustCard({ icon: Icon, title, body }) {
+  const tiltRef = useTiltCard();
   return (
-    <div className="cs-card hover:border-cs-cyan/50 transition-colors">
+    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
       <div className="mb-3"><Icon className="w-6 h-6 text-cs-cyan" aria-hidden="true" /></div>
       <h3 className="text-cs-text font-bold mb-2 text-sm">{title}</h3>
       <p className="text-xs text-cs-muted leading-relaxed">{body}</p>
@@ -735,11 +737,12 @@ function BillingToggle({ interval, onChange }) {
    from the billing interval; the price block is an aria-live region so the change
    is announced when the toggle flips. */
 function PricingCard({ icon: Icon, name, tagline, seats, price, per, trial, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
+  const tiltRef = useTiltCard(highlighted ? 6 : 4);
   const cardCls = highlighted
-    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative"
+    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
     : "cs-card flex flex-col";
   return (
-    <div className={cardCls}>
+    <div ref={tiltRef} className={cardCls}>
       {highlighted && badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
           {badge}
@@ -858,19 +861,12 @@ function HeroConverge() {
           ))}
         </div>
 
-        {/* Funnel: eight signals converge to a single point. */}
+        {/* Funnel: eight signals converge to a single point — canvas 2D, not
+            SVG. Particles actually travel along each curve toward the core
+            (see SignalFunnel.jsx); reduced-motion draws the static curves
+            once and never starts a loop. */}
         <div className="hero-funnel relative h-14 my-1.5">
-          <svg viewBox="0 0 320 56" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-            {funnelTops.map((x, i) => (
-              <path
-                key={x}
-                d={`M ${x} 2 C ${x} 30 160 26 160 54`}
-                className="hero-flow"
-                style={{ animationDelay: `${i * 0.4}s` }}
-              />
-            ))}
-            <circle cx="160" cy="54" r="2.5" className="hero-core-dot" />
-          </svg>
+          <SignalFunnel tops={funnelTops} />
         </div>
 
         {/* The one core. */}
@@ -885,16 +881,6 @@ function HeroConverge() {
         </div>
       </div>
     </div>
-  );
-}
-
-function Logo() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="flex-shrink-0">
-      <rect x="1" y="1" width="30" height="30" stroke="#8fe600" strokeWidth="1.5"/>
-      <path d="M16 4 L28 16 L16 28 L4 16 Z" stroke="#8fe600" strokeWidth="1.5" fill="#8fe600" fillOpacity="0.15"/>
-      <circle cx="16" cy="16" r="3" fill="#8fe600"/>
-    </svg>
   );
 }
 

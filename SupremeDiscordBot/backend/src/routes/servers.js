@@ -9,7 +9,7 @@ import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
 
 // Категориите на Server Activity Logging — един източник за валидация.
-const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages"];
+const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages", "server"];
 const SNOWFLAKE = /^\d{17,20}$/;
 
 /**

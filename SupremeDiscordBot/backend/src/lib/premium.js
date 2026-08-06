@@ -298,12 +298,25 @@ export function effectiveFreeWhere(now = new Date()) {
 export async function syncServerPaidFlag(serverId, tx = prisma) {
   const server = await tx.server.findUnique({
     where: { id: serverId },
-    select: { isPremium: true, plan: true, agencyId: true, agency: { select: { active: true } } },
+    select: {
+      isPremium: true, plan: true, planSource: true, stripeSubscriptionId: true,
+      agencyId: true, agency: { select: { active: true } },
+    },
   });
   if (!server) return false;
+
   const ownPaid = !!server.plan && server.plan !== "free";
   const agencyCovered = !!(server.agencyId && server.agency?.active);
-  const shouldBe = ownPaid || agencyCovered;
+
+  // ЗАВАРЕН GRANDFATHER (критично): редове отпреди въвеждането на `plan`
+  // носят isPremium=true и plan="free"/null. getServerTier (виж по-горе) ги
+  // признава за white-label абонати. Ако тук ги сметнем за неплатени, sync-ът
+  // МЪЛЧАЛИВО СВАЛЯ платен достъп на реален абонат — необратимо и парично.
+  // Затова: никога не сваляме ред, който още изглежда като истински абонамент.
+  const legacyGrandfather = server.isPremium && !ownPaid && !agencyCovered
+    && (!!server.stripeSubscriptionId || !!server.planSource);
+
+  const shouldBe = ownPaid || agencyCovered || legacyGrandfather;
   if (server.isPremium !== shouldBe) {
     await tx.server.update({ where: { id: serverId }, data: { isPremium: shouldBe } });
   }

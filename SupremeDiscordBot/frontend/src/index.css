@@ -424,24 +424,13 @@ html, body {
           mask-image: radial-gradient(120% 78% at 50% 0%, #000 28%, transparent 74%);
 }
 
-/* Funnel connectors — dashed cyan "signals". Static by default (intentional
-   dashed lines); the flow animation is added only when motion is welcome. */
-.hero-funnel path {
-  fill: none;
-  stroke: rgba(143, 230, 0, 0.4);
-  stroke-width: 1;
-  stroke-dasharray: 3 7;
-}
-.hero-core-dot {
-  fill: #8fe600;
-}
+/* The "eight signals converge" funnel is now drawn on a <canvas> (see
+   SignalFunnel.jsx) — no SVG, and the reduced-motion / rAF-pause discipline
+   lives in JS there instead of a CSS animation. */
 
 @media (prefers-reduced-motion: no-preference) {
   .hero-aurora {
     animation: hero-aurora-drift 26s ease-in-out infinite alternate;
-  }
-  .hero-funnel path.hero-flow {
-    animation: hero-flow-dash 2.6s linear infinite;
   }
   .hero-converge-core {
     animation: hero-core-glow 4s ease-in-out infinite;
@@ -451,10 +440,6 @@ html, body {
 @keyframes hero-aurora-drift {
   0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
   100% { transform: translate3d(2%, 2%, 0) scale(1.08); }
-}
-
-@keyframes hero-flow-dash {
-  to { stroke-dashoffset: -100; }
 }
 
 @keyframes hero-core-glow {

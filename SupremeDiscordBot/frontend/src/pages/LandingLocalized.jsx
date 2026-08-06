@@ -4,7 +4,7 @@
 // own title/description/canonical/hreflang plus a translated FAQPage JSON-LD
 // (the visible FAQ below keeps content parity with the structured data, as
 // Google requires).
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, lazy, Suspense } from "react";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe, Building2,
@@ -13,6 +13,13 @@ import {
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
+
+// Own chunk — this whole page is already lazy-loaded from App.jsx, so the
+// extra split just keeps the WebGL code out of the locale's initial chunk
+// until the hero is actually near the viewport (see ShaderHero.jsx).
+const ShaderHero = lazy(() => import("../components/ShaderHero"));
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
@@ -45,6 +52,10 @@ export default function LandingLocalized({ locale }) {
   // Billing interval for the pricing section — a real keyboard-operable control
   // (radiogroup below). Free is always €0; paid tiers switch price/per.
   const [interval, setInterval] = useState("month");
+  const rootRef = useRef(null);
+  useScrollReveal(rootRef);
+  const heroCtaRef = useMagnetic();
+  const finalCtaRef = useMagnetic();
 
   const handleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/login`;
@@ -79,7 +90,7 @@ export default function LandingLocalized({ locale }) {
   if (!t) return null;
 
   return (
-    <div className="relative min-h-screen bg-transparent overflow-hidden">
+    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title={t.title}
         description={t.description}
@@ -110,9 +121,13 @@ export default function LandingLocalized({ locale }) {
           </div>
         </header>
 
-        {/* HERO */}
-        <section className="px-6 sm:px-8 pt-16 pb-24 flex items-center justify-center">
-          <div className="w-full max-w-4xl text-center">
+        {/* HERO — WebGL is scoped to just this section (see Login.jsx for the
+            full rationale). */}
+        <section className="relative px-6 sm:px-8 pt-16 pb-24 flex items-center justify-center overflow-hidden">
+          <Suspense fallback={null}>
+            <ShaderHero />
+          </Suspense>
+          <div className="relative z-10 w-full max-w-4xl text-center">
             <div className="cs-eyebrow mb-4 justify-center flex">{t.eyebrow}</div>
             <h1 className="font-display font-black text-5xl sm:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
               {t.h1a}<br />
@@ -122,7 +137,7 @@ export default function LandingLocalized({ locale }) {
               {t.sub}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+              <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
                 <span>{t.cta}</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
@@ -137,22 +152,16 @@ export default function LandingLocalized({ locale }) {
         {/* FEATURES */}
         <section id="features" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
+            <div data-reveal className="text-center mb-16">
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 {t.featuresHeading}
               </h2>
               <p className="text-cs-muted max-w-2xl mx-auto">{t.featuresSub}</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.features.map((f, i) => {
                 const Icon = FEATURE_ICONS[f.key] || Sparkles;
-                return (
-                  <div key={f.title} className="cs-card hover:border-cs-cyan/50 transition-colors">
-                    <Icon className="w-6 h-6 text-cs-cyan mb-3" />
-                    <h3 className="text-cs-text font-bold mb-2">{f.title}</h3>
-                    <p className="text-sm text-cs-muted leading-relaxed">{f.desc}</p>
-                  </div>
-                );
+                return <FeatureTile key={f.title} icon={Icon} title={f.title} desc={f.desc} />;
               })}
             </div>
           </div>
@@ -160,7 +169,7 @@ export default function LandingLocalized({ locale }) {
 
         {/* EU TRUST */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-3xl mx-auto text-center">
+          <div data-reveal className="max-w-3xl mx-auto text-center">
             <Globe className="w-8 h-8 text-cs-cyan mx-auto mb-4" />
             <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-8">
               {t.euHeading}
@@ -179,12 +188,12 @@ export default function LandingLocalized({ locale }) {
         {/* FAQ — visible content parity with the FAQPage JSON-LD above */}
         <section id="faq" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
+            <div data-reveal className="text-center mb-12">
               <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
                 {t.faqHeading}
               </h2>
             </div>
-            <div className="space-y-3">
+            <div data-reveal className="space-y-3">
               {t.faq.map(({ q, a }) => (
                 <details key={q} className="cs-card group cursor-pointer hover:border-cs-cyan/50 transition-colors">
                   <summary className="flex items-center justify-between gap-4 list-none select-none">
@@ -202,12 +211,12 @@ export default function LandingLocalized({ locale }) {
         {t.compare && (
           <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
             <div className="max-w-3xl mx-auto">
-              <div className="text-center mb-10">
+              <div data-reveal className="text-center mb-10">
                 <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
                   {t.compare.heading}
                 </h2>
               </div>
-              <div className="cs-card overflow-x-auto">
+              <div data-reveal className="cs-card overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr className="border-b border-cs-border text-left">
@@ -234,7 +243,7 @@ export default function LandingLocalized({ locale }) {
         {/* PRICING */}
         <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
+            <div data-reveal className="text-center mb-10">
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 {t.pricingHeading}
               </h2>
@@ -243,7 +252,7 @@ export default function LandingLocalized({ locale }) {
             {t.pricingToggle && (
               <BillingToggle labels={t.pricingToggle} interval={interval} onChange={setInterval} />
             )}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <TierCard icon={Zap} tier={t.tiers.free} interval={interval} onCta={handleLogin} />
               <TierCard icon={Star} tier={t.tiers.premium} interval={interval} onCta={handleLogin} highlighted />
               <TierCard icon={Crown} tier={t.tiers.whitelabel} interval={interval} onCta={handleLogin} />
@@ -261,12 +270,12 @@ export default function LandingLocalized({ locale }) {
         </section>
 
         {/* FINAL CTA */}
-        <section className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
+        <section data-reveal className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
           <h2 className="font-display font-black text-3xl sm:text-5xl text-cs-text mb-6">
             {t.finalH}
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">{t.finalSub}</p>
-          <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
             <span>{t.finalCta}</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
@@ -345,16 +354,30 @@ function BillingToggle({ labels, interval, onChange }) {
   );
 }
 
+// One feature card in the grid — real 3D pointer tilt (skipped under
+// reduced-motion / touch, see useTiltCard in useMicroInteractions.js).
+function FeatureTile({ icon: Icon, title, desc }) {
+  const tiltRef = useTiltCard();
+  return (
+    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
+      <Icon className="w-6 h-6 text-cs-cyan mb-3" />
+      <h3 className="text-cs-text font-bold mb-2">{title}</h3>
+      <p className="text-sm text-cs-muted leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
 function TierCard({ icon: Icon, tier, interval = "month", onCta, ctaHref, highlighted = false, compact = false }) {
+  const tiltRef = useTiltCard(highlighted ? 6 : 4);
   // Free has no yearly price; paid tiers switch on the interval toggle.
   const yearly = interval === "year" && tier.priceYearly;
   const price = yearly ? tier.priceYearly : tier.price;
   const per = yearly ? tier.perYear : tier.per;
   const cardCls = highlighted
-    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative"
+    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
     : "cs-card flex flex-col";
   return (
-    <div className={cardCls}>
+    <div ref={tiltRef} className={cardCls}>
       {highlighted && tier.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
           {tier.badge}
