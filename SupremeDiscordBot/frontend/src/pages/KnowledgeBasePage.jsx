@@ -10,6 +10,7 @@ import {
   getKbArticles, createKbArticle, updateKbArticle, toggleKbArticle, deleteKbArticle,
 } from "../api";
 import { useToast } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
@@ -21,6 +22,7 @@ const KEYWORDS_MAX = 10;
 const defaultForm = () => ({ title: "", content: "", keywords: [], enabled: true });
 
 export default function KnowledgeBasePage() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const toast = useToast();
