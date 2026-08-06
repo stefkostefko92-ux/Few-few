@@ -1063,7 +1063,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 296
+        "lessons": 301
       },
       "evolution": [
         {
@@ -1713,9 +1713,20 @@
           "date": "2026-08-06",
           "event": "v19.4 — учене",
           "detail": "Научи: SupremeDiscordBot: agency seat покритие се резолвира в getServerTier през agency.active… (+1 още)"
+        },
+        {
+          "version": "19.9.0",
+          "date": "2026-08-06",
+          "event": "v19.9 — учене",
+          "detail": "Научи: В SupremeDiscordBot колоната Server.isPremium има ТРИ семантики наведнъж (собствен план… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot колоната Server.isPremium има ТРИ семантики наведнъж (собствен план…\" (+4 още)"
+        },
         {
           "date": "2026-08-06",
           "type": "learning",
