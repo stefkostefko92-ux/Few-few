@@ -184,11 +184,25 @@ export async function shutdownCustomClient(serverId) {
 
 /**
  * Restart the client for a server — used when the admin updates the bot token.
- * Atomic: old client is destroyed only after the new one successfully logs in.
+ * НАИСТИНА атомарно: вдигаме НОВИЯ клиент пръв и сваляме стария ЕДВА след
+ * успешен login. Ако новият токен е невалиден (boot връща null), пазим стария
+ * работещ клиент — иначе грешен токен сваляше напълно работещ white-label бот
+ * офлайн (одит HIGH). bootCustomClient презаписва customClients при успех, а
+ * при провал картата остава на стария клиент.
  */
 export async function restartCustomClient(serverId, mainClient) {
-  await shutdownCustomClient(serverId);
-  return bootCustomClient(serverId, mainClient);
+  const old = customClients.get(serverId);
+  const fresh = await bootCustomClient(serverId, mainClient);
+  if (fresh) {
+    // Новият е онлайн → чак сега махаме стария (ако е различна инстанция).
+    if (old && old !== fresh) {
+      try { await old.destroy(); } catch (err) { console.error(`[ClientManager] old client destroy for ${serverId}:`, err?.message); }
+    }
+    return fresh;
+  }
+  // Новият токен не тръгна → НЕ оставяй сървъра без бот; старият продължава.
+  console.warn(`[ClientManager] restart за ${serverId}: новият токен не тръгна — пазя работещия стар клиент`);
+  return old || null;
 }
 
 /**

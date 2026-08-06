@@ -1026,4 +1026,19 @@ async function shutdown(signal) {
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
 
+// Process-level предпазна мрежа: неуловен rejection/exception в СПОДЕЛЕНИЯ бот
+// не бива да сваля процеса за всички наематели тихо. Логваме (+ Sentry, ако е
+// конфигуриран) и оставаме живи при unhandledRejection; при uncaughtException
+// правим грациозен shutdown (състоянието е неизвестно — процес-мениджърът ще
+// рестартира чисто).
+process.on("unhandledRejection", (reason) => {
+  console.error("[bot] Unhandled promise rejection:", reason);
+  try { Sentry.captureException(reason); } catch { /* Sentry optional */ }
+});
+process.on("uncaughtException", (err) => {
+  console.error("[bot] Uncaught exception:", err);
+  try { Sentry.captureException(err); } catch { /* Sentry optional */ }
+  shutdown("uncaughtException");
+});
+
 client.login(process.env.BOT_TOKEN);

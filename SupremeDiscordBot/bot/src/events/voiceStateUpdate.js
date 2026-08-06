@@ -8,7 +8,7 @@
 // Rate-limit внимание: audit log се пипа САМО при server_mute/server_deaf
 // (best-effort актьор), НЕ при self_* или join/leave — гласовете шумят силно.
 
-import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -24,6 +24,12 @@ export default {
     try {
       const guild = newState.guild || oldState.guild;
       if (!guild?.id) return;
+
+      // Евтин гейт ПРЕДИ audit-log fetch-овете — иначе всяко voice събитие във
+      // всеки guild бие fetchAuditLogs дори с изключена категория (rate limit,
+      // същата находка като messageDelete). logServerEvent пак гейтва, но
+      // едва СЛЕД скъпия fetch.
+      if (!(await isEventCategoryEnabled(guild.id, "voice"))) return;
 
       const client = newState.client;
       const member = newState.member || oldState.member;
