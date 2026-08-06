@@ -470,6 +470,7 @@ export default {
   "settings.cat.members": "Członkowie — role / pseudonim / limit czasu / dołączenie / opuszczenie",
   "settings.cat.moderation": "Moderacja — ban / zdjęcie bana / wyrzucenie",
   "settings.cat.messages": "Wiadomości — edycje / usunięcia / masowe czyszczenie (zapisuje treść)",
+  "settings.cat.server": "Serwer — tworzenie / edycja / usuwanie kanałów, role i zmiany uprawnień",
   "settings.vars": "Zmienne: {user}, {user.name}, {server}, {server.members}, {date}, {time}",
   "settings.aiPromptPlaceholder": "Jesteś agentem wsparcia dla Acme Corp. Zawsze najpierw poproś o numer zamówienia użytkownika.",
   "settings.save": "Zapisz ustawienia",

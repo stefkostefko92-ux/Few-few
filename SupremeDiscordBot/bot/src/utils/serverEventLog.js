@@ -253,5 +253,50 @@ export async function fetchAuditActor(guild, type, targetId, maxAgeMs = 5000) {
   }
 }
 
+/**
+ * Кой е преместил члена между гласови канали.
+ *
+ * MemberMove записите в audit log-а НЕ носят потребителя като `target` (за
+ * разлика от MemberUpdate) — те са агрегирани: `extra.channel` е ЦЕЛЕВИЯТ
+ * канал, `extra.count` колко души са преместени наведнъж. Затова общият
+ * fetchAuditActor (който сравнява target.id) никога не намираше нищо и
+ * преместването се приписваше на самия човек.
+ *
+ * Сверяваме по целеви канал + свежест. Ако човекът се е преместил САМ,
+ * Discord изобщо не пише запис — липсата на съвпадение значи „сам се премести",
+ * което е точно разграничението, което искаме.
+ */
+export async function fetchVoiceMoveActor(guild, toChannelId, maxAgeMs = 5000) {
+  if (!toChannelId) return null;
+  try {
+    const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberMove, limit: 5 });
+    const now = Date.now();
+    const entry = logs.entries.find(
+      (e) => e.extra?.channel?.id === toChannelId && now - e.createdTimestamp <= maxAgeMs,
+    );
+    if (!entry?.executor) return null;
+    const ex = entry.executor;
+    const tag = ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username;
+    return { executorId: ex.id, executorTag: tag };
+  } catch {
+    return null; // няма ViewAuditLog право — тихо
+  }
+}
+
+/** Кой е изключил члена от гласов канал (Discord: MemberDisconnect). */
+export async function fetchVoiceDisconnectActor(guild, maxAgeMs = 5000) {
+  try {
+    const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberDisconnect, limit: 5 });
+    const now = Date.now();
+    const entry = logs.entries.find((e) => now - e.createdTimestamp <= maxAgeMs);
+    if (!entry?.executor) return null;
+    const ex = entry.executor;
+    const tag = ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username;
+    return { executorId: ex.id, executorTag: tag };
+  } catch {
+    return null;
+  }
+}
+
 export { AuditLogEvent };
 export { eventLogConfigCache };

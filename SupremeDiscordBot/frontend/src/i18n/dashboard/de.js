@@ -470,6 +470,7 @@ export default {
   "settings.cat.members": "Mitglieder — Rollen / Spitzname / Timeout / Beitritt / Austritt",
   "settings.cat.moderation": "Moderation — Bann / Bann aufheben / Kick",
   "settings.cat.messages": "Nachrichten — Bearbeitungen / Löschungen / Massenlöschungen (protokolliert Inhalt)",
+  "settings.cat.server": "Server — Kanäle erstellen / bearbeiten / löschen, Rollen und Rechteänderungen",
   "settings.vars": "Variablen: {user}, {user.name}, {server}, {server.members}, {date}, {time}",
   "settings.aiPromptPlaceholder": "Du bist ein Support-Agent für Acme Corp. Frage immer zuerst nach der Bestellnummer des Nutzers.",
   "settings.save": "Einstellungen speichern",

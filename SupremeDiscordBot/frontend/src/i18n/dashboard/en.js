@@ -481,6 +481,7 @@ export default {
   "settings.cat.members": "Members — roles / nickname / timeout / join / leave",
   "settings.cat.moderation": "Moderation — ban / unban / kick",
   "settings.cat.messages": "Messages — edits / deletes / bulk purges (logs content)",
+  "settings.cat.server": "Server — channel create / edit / delete, roles & permission changes",
   "settings.vars": "Variables: {user}, {user.name}, {server}, {server.members}, {date}, {time}",
   "settings.aiPromptPlaceholder": "You are a support agent for Acme Corp. Always ask for the user's order number first.",
   "settings.save": "Save Settings",

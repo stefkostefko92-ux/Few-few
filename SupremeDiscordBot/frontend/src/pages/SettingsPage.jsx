@@ -51,11 +51,13 @@ export default function SettingsPage() {
         eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
         eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
         eventLogCat_messages:   (server.eventLogCategories || []).includes("messages"),
+        eventLogCat_server:     (server.eventLogCategories || []).includes("server"),
         // v37 — по избор СВОЙ канал за всяка категория (празно = общият канал).
         eventLogCh_voice:       server.eventLogChannels?.voice || "",
         eventLogCh_members:     server.eventLogChannels?.members || "",
         eventLogCh_moderation:  server.eventLogChannels?.moderation || "",
         eventLogCh_messages:    server.eventLogChannels?.messages || "",
+        eventLogCh_server:      server.eventLogChannels?.server || "",
         // Език на бота за сървъра (fallback за членове с неподдържан Discord език)
         language:               server.language || "en",
       });
@@ -108,12 +110,14 @@ export default function SettingsPage() {
         form.eventLogCat_members && "members",
         form.eventLogCat_moderation && "moderation",
         form.eventLogCat_messages && "messages",
+        form.eventLogCat_server && "server",
       ].filter(Boolean),
       // Пращаме канал само за ВКЛЮЧЕНИ категории с попълнена стойност —
       // иначе изключена категория би оставила висящ канал в базата.
       eventLogChannels: Object.fromEntries(
         [["voice", form.eventLogCat_voice], ["members", form.eventLogCat_members],
-         ["moderation", form.eventLogCat_moderation], ["messages", form.eventLogCat_messages]]
+         ["moderation", form.eventLogCat_moderation], ["messages", form.eventLogCat_messages],
+         ["server", form.eventLogCat_server]]
           .filter(([cat, on]) => on && (form[`eventLogCh_${cat}`] || "").trim())
           .map(([cat]) => [cat, form[`eventLogCh_${cat}`].trim()])
       ),
@@ -240,6 +244,7 @@ export default function SettingsPage() {
                     ["eventLogCat_members", t("settings.cat.members"), "members"],
                     ["eventLogCat_moderation", t("settings.cat.moderation"), "moderation"],
                     ["eventLogCat_messages", t("settings.cat.messages"), "messages"],
+                    ["eventLogCat_server", t("settings.cat.server"), "server"],
                   ].map(([key, label, cat]) => (
                     <div key={key} className="flex flex-wrap items-center gap-2">
                       <label className="flex items-center gap-2 cursor-pointer text-sm text-cs-text flex-1 min-w-[220px]">

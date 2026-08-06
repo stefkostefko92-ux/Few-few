@@ -470,6 +470,7 @@ export default {
   "settings.cat.members": "Leden — rollen / bijnaam / time-out / deelnemen / verlaten",
   "settings.cat.moderation": "Moderatie — verbannen / verbanning opheffen / kicken",
   "settings.cat.messages": "Berichten — bewerkingen / verwijderingen / bulkopschoningen (logt inhoud)",
+  "settings.cat.server": "Server — kanalen aanmaken / bewerken / verwijderen, rollen en rechtenwijzigingen",
   "settings.vars": "Variabelen: {user}, {user.name}, {server}, {server.members}, {date}, {time}",
   "settings.aiPromptPlaceholder": "Je bent een supportmedewerker voor Acme Corp. Vraag altijd eerst naar het bestelnummer van de gebruiker.",
   "settings.save": "Instellingen opslaan",

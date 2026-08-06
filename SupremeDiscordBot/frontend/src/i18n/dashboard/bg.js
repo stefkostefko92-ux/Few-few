@@ -470,6 +470,7 @@ export default {
   "settings.cat.members": "Членове — роли / прякор / временно ограничение / влизане / излизане",
   "settings.cat.moderation": "Модерация — бан / премахване на бан / изритване",
   "settings.cat.messages": "Съобщения — редакции / изтривания / масови изчиствания (записва съдържанието)",
+  "settings.cat.server": "Сървър — създаване / редакция / изтриване на канали, роли и промени по правата",
   "settings.vars": "Променливи: {user}, {user.name}, {server}, {server.members}, {date}, {time}",
   "settings.aiPromptPlaceholder": "Ти си агент за поддръжка на Acme Corp. Винаги първо питай за номера на поръчката на потребителя.",
   "settings.save": "Запази настройките",

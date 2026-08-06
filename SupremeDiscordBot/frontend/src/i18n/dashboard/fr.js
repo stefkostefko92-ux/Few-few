@@ -470,6 +470,7 @@ export default {
   "settings.cat.members": "Membres — rôles / surnom / exclusion temporaire / arrivée / départ",
   "settings.cat.moderation": "Modération — bannir / débannir / expulser",
   "settings.cat.messages": "Messages — modifications / suppressions / purges en masse (enregistre le contenu)",
+  "settings.cat.server": "Serveur — création / modification / suppression de salons, rôles et changements de permissions",
   "settings.vars": "Variables : {user}, {user.name}, {server}, {server.members}, {date}, {time}",
   "settings.aiPromptPlaceholder": "Vous êtes un agent d'assistance pour Acme Corp. Demandez toujours d'abord le numéro de commande de l'utilisateur.",
   "settings.save": "Enregistrer les paramètres",
