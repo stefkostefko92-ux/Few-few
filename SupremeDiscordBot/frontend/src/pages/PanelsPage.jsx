@@ -114,6 +114,7 @@ export default function PanelsPage() {
   const [groupMode, setGroupMode] = useState(false);
   const [groupIds, setGroupIds] = useState([]);
   const [groupChannel, setGroupChannel] = useState("");
+  const [groupStyle, setGroupStyle] = useState("DROPDOWN");
   const [confirmState, setConfirmState] = useState(null);
 
   const { data: panels = [], isLoading } = useQuery({
@@ -170,7 +171,7 @@ export default function PanelsPage() {
   });
 
   const spawnGroupMut = useMutation({
-    mutationFn: ({ panelIds, channelId }) => spawnPanelGroup(serverId, panelIds, channelId),
+    mutationFn: ({ panelIds, channelId }) => spawnPanelGroup(serverId, panelIds, channelId, groupStyle),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
       setGroupMode(false); setGroupIds([]); setGroupChannel("");
@@ -296,6 +297,16 @@ export default function PanelsPage() {
                     value={groupChannel}
                     onChange={(e) => setGroupChannel(e.target.value)}
                   />
+                  <select
+                    className="cs-input py-1 text-sm w-52"
+                    value={groupStyle}
+                    onChange={(e) => setGroupStyle(e.target.value)}
+                    aria-label={t("panels.group.style")}
+                  >
+                    <option value="DROPDOWN">{t("panels.group.style.dropdown")}</option>
+                    <option value="BUTTONS">{t("panels.group.style.buttons")}</option>
+                    <option value="STACK">{t("panels.group.style.stack")}</option>
+                  </select>
                   <span className="text-xs text-cs-muted tabular-nums">
                     {t("panels.group.selected", { n: groupIds.length })}
                   </span>

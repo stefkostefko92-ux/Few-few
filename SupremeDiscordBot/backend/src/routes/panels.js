@@ -257,6 +257,11 @@ router.post("/:serverId/:panelId/spawn", requireServerAdmin, async (req, res, ne
 const spawnGroupSchema = z.object({
   channelId: z.string().regex(/^\d{17,20}$/, "Invalid Discord channel ID"),
   panelIds: z.array(z.string()).min(2, "Pick at least two panels").max(10),
+  // Как изглежда групата в Discord:
+  //   DROPDOWN — всички опции в ЕДНО падащо меню
+  //   BUTTONS  — всички опции като общи бутони
+  //   STACK    — отделен блок за всеки панел (заварено поведение)
+  mode: z.enum(["DROPDOWN", "BUTTONS", "STACK"]).default("DROPDOWN"),
 });
 
 router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next) => {
@@ -264,7 +269,7 @@ router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next)
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0]?.message || "Invalid payload" });
   }
-  const { channelId, panelIds } = parsed.data;
+  const { channelId, panelIds, mode } = parsed.data;
 
   try {
     // Multi-tenant: ВСИЧКИ панели трябва да са на ТОЗИ сървър — клиентът подава
@@ -283,6 +288,7 @@ router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next)
       panels: ordered,
       serverId: req.params.serverId,
       channelId,
+      mode,
     });
     if (!result?.messageId) {
       return res.status(502).json({ error: "Bot is offline or failed to post the panels. Try again shortly." });
@@ -296,7 +302,7 @@ router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next)
     await prisma.$transaction(
       posted.map((id, idx) => prisma.panel.update({
         where: { id },
-        data: { channelId: result.channelId, messageId: result.messageId, groupOrder: idx },
+        data: { channelId: result.channelId, messageId: result.messageId, groupOrder: idx, groupMode: mode },
       }))
     );
     // Панелите, които ботът е прескочил, НЕ бива да носят този messageId —
@@ -305,7 +311,7 @@ router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next)
     if (skippedIds.length) {
       await prisma.panel.updateMany({
         where: { id: { in: skippedIds }, serverId: req.params.serverId },
-        data: { messageId: null, groupOrder: null },
+        data: { messageId: null, groupOrder: null, groupMode: null },
       });
     }
 

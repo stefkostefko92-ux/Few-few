@@ -103,6 +103,18 @@ export default {
         return;
       }
 
+      // Слято ГРУПОВО меню: опциите идват от няколко панела, затова панелът е
+      // в самата стойност (`<panelId>:<btnId>`), а не в customId. Оттам нататък
+      // е същият път — тикетът пази настройките на СВОЯ панел.
+      if (interaction.isStringSelectMenu() && interaction.customId === "panel_select_multi") {
+        const [panelId, buttonId] = String(interaction.values[0] || "").split(":");
+        if (!panelId || !buttonId) {
+          return interaction.reply({ content: "❌ This option is no longer valid.", flags: MessageFlags.Ephemeral });
+        }
+        await handlePanelButtonClick(interaction, panelId, buttonId);
+        return;
+      }
+
       // ── Form Direct Buttons (from /form spawn) ─────────────────────────────
       if (interaction.isButton() && interaction.customId.startsWith("form_direct:")) {
         const formId = interaction.customId.replace("form_direct:", "");

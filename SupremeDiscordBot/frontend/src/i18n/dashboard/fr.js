@@ -769,4 +769,8 @@ export default {
   "settings.perCategoryHint": "Laissez vide le salon d'une catégorie pour utiliser le salon principal ci-dessus.",
   "settings.useMainChannel": "Utiliser le salon principal",
   "settings.channelForCategory": "Salon de journalisation pour {category}",
+  "panels.group.style": "Disposition du groupe",
+  "panels.group.style.dropdown": "Un menu déroulant (toutes les options fusionnées)",
+  "panels.group.style.buttons": "Boutons (toutes les options fusionnées)",
+  "panels.group.style.stack": "Bloc distinct par panneau",
 };

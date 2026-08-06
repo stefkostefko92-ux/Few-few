@@ -769,4 +769,8 @@ export default {
   "settings.perCategoryHint": "Laat het kanaal van een categorie leeg om het hoofdkanaal hierboven te gebruiken.",
   "settings.useMainChannel": "Hoofdkanaal gebruiken",
   "settings.channelForCategory": "Logkanaal voor {category}",
+  "panels.group.style": "Groepsindeling",
+  "panels.group.style.dropdown": "Eén vervolgkeuzemenu (alle opties samengevoegd)",
+  "panels.group.style.buttons": "Knoppen (alle opties samengevoegd)",
+  "panels.group.style.stack": "Apart blok per paneel",
 };

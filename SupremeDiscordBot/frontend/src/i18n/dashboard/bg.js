@@ -769,4 +769,8 @@ export default {
   "settings.perCategoryHint": "Остави канала на дадена категория празен, за да ползва общия канал по-горе.",
   "settings.useMainChannel": "Общият канал",
   "settings.channelForCategory": "Лог канал за {category}",
+  "panels.group.style": "Вид на групата",
+  "panels.group.style.dropdown": "Едно падащо меню (всички опции слети)",
+  "panels.group.style.buttons": "Бутони (всички опции слети)",
+  "panels.group.style.stack": "Отделен блок за всеки панел",
 };

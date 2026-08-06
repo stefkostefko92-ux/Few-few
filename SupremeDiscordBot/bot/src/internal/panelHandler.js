@@ -41,7 +41,9 @@ export async function handlePanelUpdate(client, { panelId, serverId }) {
     : null;
 
   if (group) {
-    const { embeds, components } = buildMultiPanelMessage(group);
+    // Режимът на групата се пази на панелите (groupMode) — иначе редакция би
+    // разпаднала слятото меню обратно на отделни блокове.
+    const { embeds, components } = buildMultiPanelMessage(group, { mode: panel.groupMode || "STACK" });
     await msg.edit({ embeds, components });
     return;
   }
@@ -55,7 +57,7 @@ export async function handlePanelUpdate(client, { panelId, serverId }) {
  * Всички панели получават един и същ channelId/messageId — така редакцията
  * после ги разпознава като група и пресглобява цялото съобщение.
  */
-export async function handleMultiPanelSpawn(client, { panels, serverId, channelId }) {
+export async function handleMultiPanelSpawn(client, { panels, serverId, channelId, mode }) {
   if (!Array.isArray(panels) || !panels.length) throw new Error("panels required");
 
   const channel = client.channels.cache.get(channelId)
@@ -66,7 +68,7 @@ export async function handleMultiPanelSpawn(client, { panels, serverId, channelI
     throw new Error("Channel belongs to a different server");
   }
 
-  const { embeds, components, skipped } = buildMultiPanelMessage(panels);
+  const { embeds, components, skipped } = buildMultiPanelMessage(panels, { mode });
   if (!embeds.length) throw new Error("Nothing to post — all panels exceeded Discord limits");
 
   const msg = await channel.send({ embeds, components });

@@ -244,6 +244,10 @@ model Panel {
   // Без нея редакцията подреждаше по createdAt и разбъркваше избрания от
   // потребителя ред. NULL за самостоятелните панели.
   groupOrder                Int?
+  // Как изглежда групата: DROPDOWN (едно слято меню) | BUTTONS (общи бутони)
+  // | STACK (отделен блок за всеки панел). Пази се, за да не разпадне
+  // редакцията слятото меню обратно на блокове.
+  groupMode                 String?
   // Ticket settings
   categoryId                String? // Discord category for new tickets (legacy, use categoryOpenId)
   supportRoleIds            String[] // Roles that can see tickets

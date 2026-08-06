@@ -769,4 +769,8 @@ export default {
   "settings.perCategoryHint": "Zostaw kanał kategorii pusty, aby użyć głównego kanału powyżej.",
   "settings.useMainChannel": "Użyj głównego kanału",
   "settings.channelForCategory": "Kanał logów dla {category}",
+  "panels.group.style": "Układ grupy",
+  "panels.group.style.dropdown": "Jedna lista rozwijana (wszystkie opcje połączone)",
+  "panels.group.style.buttons": "Przyciski (wszystkie opcje połączone)",
+  "panels.group.style.stack": "Osobny blok dla każdego panelu",
 };

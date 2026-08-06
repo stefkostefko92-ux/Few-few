@@ -780,4 +780,8 @@ export default {
   "settings.perCategoryHint": "Leave a category's channel empty to use the main channel above.",
   "settings.useMainChannel": "Use main channel",
   "settings.channelForCategory": "Log channel for {category}",
+  "panels.group.style": "Group layout",
+  "panels.group.style.dropdown": "One dropdown (all options merged)",
+  "panels.group.style.buttons": "Buttons (all options merged)",
+  "panels.group.style.stack": "Separate block per panel",
 };

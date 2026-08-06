@@ -769,4 +769,8 @@ export default {
   "settings.perCategoryHint": "Deja vacío el canal de una categoría para usar el canal principal de arriba.",
   "settings.useMainChannel": "Usar canal principal",
   "settings.channelForCategory": "Canal de registro para {category}",
+  "panels.group.style": "Diseño del grupo",
+  "panels.group.style.dropdown": "Un desplegable (todas las opciones unidas)",
+  "panels.group.style.buttons": "Botones (todas las opciones unidas)",
+  "panels.group.style.stack": "Bloque separado por panel",
 };

@@ -55,8 +55,8 @@ export const spawnPanel = (serverId, panelId, channelId) =>
   api.post(`/panels/${serverId}/${panelId}/spawn`, { channelId }).then((r) => r.data);
 
 // Няколко панела в ЕДНО съобщение (до 10 embed-а / 5 реда — таваните на Discord).
-export const spawnPanelGroup = (serverId, panelIds, channelId) =>
-  api.post(`/panels/${serverId}/spawn-group`, { panelIds, channelId }).then((r) => r.data);
+export const spawnPanelGroup = (serverId, panelIds, channelId, mode = "DROPDOWN") =>
+  api.post(`/panels/${serverId}/spawn-group`, { panelIds, channelId, mode }).then((r) => r.data);
 
 // ─── Forms ────────────────────────────────────────────────────────────────────
 export const getForms = (serverId) => api.get(`/forms/${serverId}`).then((r) => r.data);

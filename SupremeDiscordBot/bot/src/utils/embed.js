@@ -99,7 +99,14 @@ export const MAX_EMBED_CHARS_PER_MESSAGE = 6000;
  * се побират в лимитите (по-добре частично съобщение + ясен доклад, отколкото
  * заявка, която Discord отхвърля цялата).
  */
-export function buildMultiPanelMessage(panels) {
+export function buildMultiPanelMessage(panels, { mode = "STACK" } = {}) {
+  // MERGE режими: панелите се СЛИВАТ в един контрол (както прави Ticket Tool),
+  // вместо да се редят като отделни блокове. Всяка опция помни от кой панел
+  // идва, затова тикетът пак се отваря с правилните настройки.
+  if (mode === "DROPDOWN" || mode === "BUTTONS") {
+    return buildMergedPanelMessage(panels, mode);
+  }
+
   const embeds = [];
   const components = [];
   const skipped = [];
@@ -129,6 +136,84 @@ export function buildMultiPanelMessage(panels) {
   }
 
   return { embeds, components, skipped };
+}
+
+/**
+ * СЛЯТО групово съобщение: един embed + един контрол, събрал опциите на всички
+ * избрани панели (както Ticket Tool). Първият панел дава външния вид (заглавие,
+ * описание, цвят) — той е „обвивката" на групата.
+ *
+ * Всяка опция помни от кой панел идва:
+ *   • DROPDOWN → customId `panel_select_multi`, value `<panelId>:<btnId>`
+ *   • BUTTONS  → customId `panel_button:<panelId>:<btnId>` (същият като досега,
+ *     значи бутонният път изобщо не иска нов handler)
+ * Така отвореният тикет пази настройките на СВОЯ панел (категория, роли, SLA).
+ */
+function buildMergedPanelMessage(panels, mode) {
+  const list = panels.filter((p) => (p.buttons || []).length > 0);
+  const skipped = [];
+  if (!list.length) return { embeds: [], components: [], skipped };
+
+  const head = list[0];
+  const parsed = parseInt(String(head.color || "").replace("#", ""), 16);
+  const embed = new EmbedBuilder()
+    .setTitle(head.title)
+    .setColor(Number.isNaN(parsed) ? BRAND : parsed)
+    .setTimestamp();
+  if (head.description) embed.setDescription(head.description);
+  if (head.thumbnailUrl) embed.setThumbnail(head.thumbnailUrl);
+  if (head.imageUrl) embed.setImage(head.imageUrl);
+
+  // Плосък списък от всички опции, в реда на панелите.
+  const entries = [];
+  for (const panel of list) {
+    for (const btn of panel.buttons) entries.push({ panel, btn });
+  }
+
+  const styleMap = {
+    PRIMARY: ButtonStyle.Primary, SECONDARY: ButtonStyle.Secondary,
+    SUCCESS: ButtonStyle.Success, DANGER: ButtonStyle.Danger,
+  };
+
+  if (mode === "DROPDOWN") {
+    const fit = entries.slice(0, 25);
+    for (const e of entries.slice(25)) {
+      skipped.push({ id: e.panel.id, name: `${e.panel.name} → ${e.btn.label}`, reason: "options" });
+    }
+    const select = new StringSelectMenuBuilder()
+      .setCustomId("panel_select_multi")
+      .setPlaceholder(head.selectPlaceholder || "Select an option…")
+      .setMinValues(1).setMaxValues(1)
+      .addOptions(fit.map(({ panel, btn }) => {
+        const opt = { label: btn.label.slice(0, 100), value: `${panel.id}:${btn.id}` };
+        // Описанието подсказва от кой панел е опцията, когато имената се
+        // припокриват между панели.
+        if (list.length > 1 && panel.name) opt.description = String(panel.name).slice(0, 100);
+        if (btn.emoji) opt.emoji = btn.emoji;
+        return opt;
+      }));
+    return { embeds: [embed], components: [new ActionRowBuilder().addComponents(select)], skipped };
+  }
+
+  // BUTTONS — до 25 (5 реда × 5)
+  const fit = entries.slice(0, 25);
+  for (const e of entries.slice(25)) {
+    skipped.push({ id: e.panel.id, name: `${e.panel.name} → ${e.btn.label}`, reason: "buttons" });
+  }
+  const rows = [];
+  for (let i = 0; i < fit.length; i += 5) {
+    rows.push(new ActionRowBuilder().addComponents(
+      fit.slice(i, i + 5).map(({ panel, btn }) => {
+        const b = new ButtonBuilder()
+          .setCustomId(`panel_button:${panel.id}:${btn.id}`)
+          .setLabel(btn.label)
+          .setStyle(styleMap[btn.style] || ButtonStyle.Primary);
+        if (btn.emoji) b.setEmoji(btn.emoji);
+        return b;
+      })
+    ));
+  }
+  return { embeds: [embed], components: rows, skipped };
 }
 
 /** Знаците, които Discord брои към лимита от 6000 на съобщение. */

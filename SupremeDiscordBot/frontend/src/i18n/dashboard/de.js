@@ -769,4 +769,8 @@ export default {
   "settings.perCategoryHint": "Lass den Kanal einer Kategorie leer, um den Hauptkanal oben zu verwenden.",
   "settings.useMainChannel": "Hauptkanal verwenden",
   "settings.channelForCategory": "Log-Kanal für {category}",
+  "panels.group.style": "Gruppen-Layout",
+  "panels.group.style.dropdown": "Ein Dropdown (alle Optionen zusammengeführt)",
+  "panels.group.style.buttons": "Schaltflächen (alle Optionen zusammengeführt)",
+  "panels.group.style.stack": "Eigener Block pro Panel",
 };
