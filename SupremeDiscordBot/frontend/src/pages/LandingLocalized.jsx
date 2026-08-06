@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe, Building2,
+  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList,
 } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
@@ -16,7 +17,27 @@ import { LANDING_TRANSLATIONS } from "../i18n/landing";
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
 
-const FEATURE_ICONS = [Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock, Webhook, Sparkles];
+// Иконите се търсят по КЛЮЧ, не по позиция. Преди беше позиционен масив и
+// точно това се счупи: добавихме карта в средата на преводите и всяка следваща
+// получи чуждата икона (верификацията излезе с графика, анкетите с подарък).
+// С ключ пренареждането или добавянето на карта е безобидно, а непозната
+// стойност пада на Sparkles вместо да размести всичко след себе си.
+const FEATURE_ICONS = {
+  ticket: Ticket,
+  forms: FileText,
+  reactionRoles: SmilePlus,
+  verification: ShieldCheck,
+  polls: BarChart3,
+  giveaways: Gift,
+  sticky: Pin,
+  scheduled: CalendarClock,
+  webhooks: Webhook,
+  ai: Sparkles,
+  activityLog: ScrollText,
+  welcomer: UserPlus,
+  knowledgeBase: BookOpen,
+  canned: ClipboardList,
+};
 
 export default function LandingLocalized({ locale }) {
   const t = LANDING_TRANSLATIONS[locale];
@@ -124,7 +145,7 @@ export default function LandingLocalized({ locale }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.features.map((f, i) => {
-                const Icon = FEATURE_ICONS[i] || Sparkles;
+                const Icon = FEATURE_ICONS[f.key] || Sparkles;
                 return (
                   <div key={f.title} className="cs-card hover:border-cs-cyan/50 transition-colors">
                     <Icon className="w-6 h-6 text-cs-cyan mb-3" />

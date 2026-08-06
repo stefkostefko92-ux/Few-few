@@ -38,11 +38,16 @@ GDPR-native data handling.
 
 ## Features
 
-- [Ticket System](https://supremebot.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
-- [Application Forms](https://supremebot.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
+- [Ticket System](https://supremebot.carbonstealth.eu/#features): Visual button panels, automatic channel creation, priority levels, round-robin staff assignment (Premium), staff replies sent straight from the web dashboard, and persistent HTML transcripts that survive Discord channel deletion and record edited and deleted messages (30-day retention on Free, unlimited on Premium)
+- [Application Forms](https://supremebot.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, approve/deny with a reason sent to the applicant, an optional private discussion channel with the applicant before the decision, and auto-role grant on approval
 - [White-Label Custom Bots](https://supremebot.carbonstealth.eu/#features): White-label-tier feature (€19.99/server/month, also included in Agency plans) allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
 - [AI Auto-Replies](https://supremebot.carbonstealth.eu/#features): Premium feature using AI (currently Google Gemini Flash) to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
 - [Verification System](https://supremebot.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
+- [Reaction Roles](https://supremebot.carbonstealth.eu/#features): Members react to a message to receive a role and remove the reaction to drop it; up to 20 emoji-to-role pairs per message, exclusive (one-role-at-a-time) mode, and the bot places the initial reactions automatically
+- [Server Activity Logging](https://supremebot.carbonstealth.eu/#features): Voice, member, moderation and message events relayed to the server's own log channel, including edited and deleted messages with the original text preserved; events are never stored in our database
+- [Welcomer and Autorole](https://supremebot.carbonstealth.eu/#features): Channel or DM greeting for new members plus automatic role assignment, with separate rules for humans and bots
+- [Knowledge Base](https://supremebot.carbonstealth.eu/#features): Staff-written articles that the bot automatically suggests when a matching ticket opens, with helpfulness tracking (3 articles on Free, 50 on Premium)
+- [Canned Responses and SLA timers](https://supremebot.carbonstealth.eu/#features): Saved replies inserted with one command, plus first-response and resolution timers that flag a ticket before it goes stale
 - [Polls & Giveaways](https://supremebot.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll
 - [Sticky & Scheduled Messages](https://supremebot.carbonstealth.eu/#features): Auto-reposting sticky messages and one-shot or recurring (daily/weekly/monthly) scheduled posts
 - [Public REST API](https://supremebot.carbonstealth.eu/#features): Bearer-token authentication for building custom integrations and dashboards

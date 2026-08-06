@@ -6,6 +6,7 @@ import {
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
   Lock, ScrollText, Shield, Building2, MessageCircle,
   Layers, Shuffle, Database, Palette, Minus,
+  SmilePlus, BookOpen, ClipboardList, UserPlus,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
@@ -148,19 +149,22 @@ export default function Login() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
-                A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, two-step close, rich transcripts, and archive links.
+                A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, priority levels, two-step close, rich transcripts and archive links. Staff can reply straight from the dashboard.
               </FeatureCard>
               <FeatureCard icon={FileText} title="Forms & Applications" badge="Free">
-                Multi-step questionnaires with validation, review workflow, and application approval — replaces Appy.bot entirely.
+                Multi-step questionnaires with validation and conditional branching, a review workflow with approve/deny reasons, and a private discussion channel with the applicant before you decide — replaces Appy.bot entirely.
+              </FeatureCard>
+              <FeatureCard icon={SmilePlus} title="Reaction Roles" badge="Free">
+                Members react to a message to get a role and remove the reaction to drop it. Up to 20 emoji-to-role pairs per message, exclusive (pick-one) mode, and the bot places the reactions for you.
               </FeatureCard>
               <FeatureCard icon={ShieldCheck} title="Verification & Anti-Bot">
                 One-click button or math captcha. Account age gates. Brute-force protection. Gate ticket panels behind verification.
               </FeatureCard>
               <FeatureCard icon={BarChart3} title="Polls" badge="Free">
-                Live-updating embed polls with up to 9 options, single/multi-choice, auto-close timers.
+                Live-updating embed polls with up to 9 options, single/multi-choice, auto-close timers — start one from the dashboard or with a slash command.
               </FeatureCard>
               <FeatureCard icon={Gift} title="Giveaways" badge="Free">
-                Prize drawings with required-role gating, auto-end scheduler, reroll support.
+                Prize drawings with required-role gating, auto-end scheduler and reroll support — start one from the dashboard or with a slash command.
               </FeatureCard>
               <FeatureCard icon={Pin} title="Sticky Messages">
                 Keep important info pinned at the bottom of channels — auto-reposted as new messages arrive.
@@ -173,6 +177,18 @@ export default function Login() {
               </FeatureCard>
               <FeatureCard icon={Sparkles} title="AI Auto-Replies">
                 The AI drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
+              </FeatureCard>
+              <FeatureCard icon={ScrollText} title="Server Activity Logging" badge="Free">
+                Voice, member, moderation and message events relayed to your own log channel — including edited and deleted messages, with the original text kept.
+              </FeatureCard>
+              <FeatureCard icon={UserPlus} title="Welcomer & Autorole" badge="Free">
+                Greet new members in a channel or by DM, and assign roles automatically — separate rules for humans and bots.
+              </FeatureCard>
+              <FeatureCard icon={BookOpen} title="Knowledge Base">
+                Write answers once; the bot suggests the matching article the moment a ticket opens — and tracks whether it actually helped.
+              </FeatureCard>
+              <FeatureCard icon={ClipboardList} title="Canned Responses & SLA">
+                Saved replies your team can drop in with one command, plus first-response and resolution timers that flag a ticket before it goes stale.
               </FeatureCard>
             </div>
           </div>
