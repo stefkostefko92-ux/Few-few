@@ -9,6 +9,7 @@ import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 
 const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
@@ -95,6 +96,7 @@ function panelToForm(panel) {
 
 export default function PanelsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
   const { isPremium } = usePremium();
 
@@ -123,9 +125,9 @@ export default function PanelsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
       setEditing(null);
-      toast.success("Panel created.");
+      toast.success(t("panels.created"));
     },
-    onError: (err) => toast.error(mutErrorMsg(err, "Failed to create panel.")),
+    onError: (err) => toast.error(mutErrorMsg(err, t("panels.createFailed"))),
   });
 
   const updateMut = useMutation({
@@ -135,16 +137,16 @@ export default function PanelsPage() {
       setEditing(null);
       toast.success("Panel updated.");
     },
-    onError: (err) => toast.error(mutErrorMsg(err, "Failed to update panel.")),
+    onError: (err) => toast.error(mutErrorMsg(err, t("panels.updateFailed"))),
   });
 
   const deleteMut = useMutation({
     mutationFn: (panelId) => deletePanel(serverId, panelId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
-      toast.success("Panel deleted.");
+      toast.success(t("panels.deleted"));
     },
-    onError: (err) => toast.error(mutErrorMsg(err, "Failed to delete panel.")),
+    onError: (err) => toast.error(mutErrorMsg(err, t("panels.deleteFailed"))),
   });
 
   const spawnMut = useMutation({
@@ -152,18 +154,18 @@ export default function PanelsPage() {
     onSuccess: (_data, { panelId }) => {
       setSpawnInputs((s) => ({ ...s, [panelId]: "" }));
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
-      toast.success("Panel spawned to channel.");
+      toast.success(t("panels.spawned"));
     },
-    onError: (err) => toast.error(mutErrorMsg(err, "Failed to spawn panel — check the channel ID.")),
+    onError: (err) => toast.error(mutErrorMsg(err, t("panels.spawnFailed"))),
   });
 
   const duplicateMut = useMutation({
     mutationFn: (panelId) => duplicatePanel(serverId, panelId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
-      toast.success("Panel duplicated.");
+      toast.success(t("panels.duplicated"));
     },
-    onError: (err) => toast.error(mutErrorMsg(err, "Failed to duplicate panel.")),
+    onError: (err) => toast.error(mutErrorMsg(err, t("panels.duplicateFailed"))),
   });
 
   const openNew = () => { setForm(defaultForm()); setEditing("new"); };
@@ -192,7 +194,7 @@ export default function PanelsPage() {
 
   const addButton = () => {
     if (form.buttons.length >= 5) return;
-    setForm((f) => ({ ...f, buttons: [...f.buttons, { label: "New Button", emoji: "", style: "PRIMARY", formId: "" }] }));
+    setForm((f) => ({ ...f, buttons: [...f.buttons, { label: t("panels.newButton"), emoji: "", style: "PRIMARY", formId: "" }] }));
   };
 
   const updateButton = (i, key, val) => {
@@ -212,11 +214,11 @@ export default function PanelsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-cs-text">Panels</h1>
-          <p className="text-cs-muted text-sm mt-1">Create visual button panels for ticket creation</p>
+          <h1 className="text-2xl font-bold text-cs-text">{t("panels.title")}</h1>
+          <p className="text-cs-muted text-sm mt-1">{t("panels.subtitle")}</p>
         </div>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Panel
+          <Plus className="w-4 h-4" /> {t("panels.new")}
         </button>
       </div>
 
@@ -230,9 +232,9 @@ export default function PanelsPage() {
       ) : panels.length === 0 ? (
         <EmptyState
           icon={LayoutIcon}
-          title="No panels yet"
-          description="Create a button panel so members can open tickets with one click."
-          ctaLabel="Create first panel"
+          title={t("panels.empty.title")}
+          description={t("panels.empty.body")}
+          ctaLabel={t("panels.empty.cta")}
           onCtaClick={openNew}
         />
       ) : (
@@ -262,7 +264,7 @@ export default function PanelsPage() {
                   <div className="flex items-center gap-1">
                     <input
                       placeholder="Channel ID"
-                      aria-label="Channel ID to post panel in"
+                      aria-label={t("panels.channelToPost")}
                       className="cs-input text-xs w-28 py-1"
                       value={spawnInputs[panel.id] || ""}
                       onChange={(e) => setSpawnInputs((s) => ({ ...s, [panel.id]: e.target.value }))}
@@ -277,8 +279,8 @@ export default function PanelsPage() {
                   </div>
 
                   <button
-                    aria-label="Edit panel"
-                    title="Edit panel"
+                    aria-label={t("panels.edit")}
+                    title={t("panels.edit")}
                     onClick={() => openEdit(panel)}
                     className="text-cs-muted hover:text-white transition-colors p-1"
                   >
@@ -296,11 +298,11 @@ export default function PanelsPage() {
                   </button>
 
                   <button
-                    aria-label="Delete panel"
-                    title="Delete panel"
+                    aria-label={t("panels.delete")}
+                    title={t("panels.delete")}
                     className="text-danger hover:text-red-300 transition-colors p-1"
                     onClick={() => setConfirmState({
-                      title: "Delete panel",
+                      title: t("panels.delete"),
                       message: `Delete panel "${panel.name}"?`,
                       onConfirm: () => { deleteMut.mutate(panel.id); setConfirmState(null); },
                     })}
@@ -337,10 +339,10 @@ export default function PanelsPage() {
                   <span className="cs-label">Internal Name *</span>
                   <input className="cs-input" required value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="Support Panel" />
+                    placeholder={t("panels.ph.supportPanel")} />
                 </label>
                 <label className="block">
-                  <span className="cs-label">Embed Color</span>
+                  <span className="cs-label">{t("panels.embedColor")}</span>
                   <input type="color" className="cs-input h-10 cursor-pointer" value={form.color}
                     onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
                 </label>
@@ -350,30 +352,30 @@ export default function PanelsPage() {
                 <span className="cs-label">Embed Title *</span>
                 <input className="cs-input" required value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  placeholder="🎫 Support Tickets" />
+                  placeholder={t("panels.ph.title")} />
               </label>
 
               <label className="block">
-                <span className="cs-label">Embed Description</span>
+                <span className="cs-label">{t("panels.embedDescription")}</span>
                 <textarea className="cs-input" rows={2} value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  placeholder="Click a button below to open a ticket." />
+                  placeholder={t("panels.ph.clickButton")} />
               </label>
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="cs-label">Ticket Naming Template</span>
+                  <span className="cs-label">{t("panels.namingTemplate")}</span>
                   <input className="cs-input" value={form.namingTemplate}
                     onChange={(e) => setForm((f) => ({ ...f, namingTemplate: e.target.value }))}
-                    placeholder="ticket-{username}" />
-                  <p className="text-xs text-cs-muted mt-1">{"Variables: {username}, {id}, {count}"}</p>
+                    placeholder={t("panels.ph.namingTemplate")} />
+                  <p className="text-xs text-cs-muted mt-1">{t("panels.varsSimple")}</p>
                 </label>
                 <label className="block">
                   <span className="cs-label">Max Open Tickets / User</span>
                   <input type="number" className="cs-input" min={1} max={10}
                     value={form.maxOpenPerUser}
                     onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUser: Number(e.target.value) }))} />
-                  <p className="text-xs text-cs-muted mt-1">How many open tickets one user can have</p>
+                  <p className="text-xs text-cs-muted mt-1">{t("panels.maxOpen")}</p>
                 </label>
               </div>
 
@@ -384,52 +386,52 @@ export default function PanelsPage() {
                 <div className="pt-4 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <label className="block">
-                      <span className="cs-label">Open Category ID</span>
+                      <span className="cs-label">{t("panels.openCategory")}</span>
                       <input className="cs-input font-mono text-xs" value={form.categoryOpenId}
                         onChange={(e) => setForm((f) => ({ ...f, categoryOpenId: e.target.value }))}
-                        placeholder="Discord category where tickets open" />
+                        placeholder={t("panels.ph.categoryOpen")} />
                     </label>
                     <label className="block">
-                      <span className="cs-label">Closed Category ID</span>
+                      <span className="cs-label">{t("panels.closedCategory")}</span>
                       <input className="cs-input font-mono text-xs" value={form.categoryClosedId}
                         onChange={(e) => setForm((f) => ({ ...f, categoryClosedId: e.target.value }))}
-                        placeholder="Where tickets move after close" />
+                        placeholder={t("panels.ph.categoryClosed")} />
                     </label>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="block">
-                      <span className="cs-label">Log Channel ID</span>
+                      <span className="cs-label">{t("panels.logChannel")}</span>
                       <input className="cs-input font-mono text-xs" value={form.logChannelId}
                         onChange={(e) => setForm((f) => ({ ...f, logChannelId: e.target.value }))}
-                        placeholder="Staff event log" />
+                        placeholder={t("panels.ph.staffLog")} />
                     </label>
                     <label className="block">
-                      <span className="cs-label">Transcript Channel ID</span>
+                      <span className="cs-label">{t("panels.transcriptChannel")}</span>
                       <input className="cs-input font-mono text-xs" value={form.transcriptChannelId}
                         onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))}
-                        placeholder="HTML transcripts on delete" />
+                        placeholder={t("panels.ph.htmlTranscripts")} />
                     </label>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <label className="block">
-                      <span className="cs-label">Channel Name Prefix</span>
+                      <span className="cs-label">{t("panels.channelPrefix")}</span>
                       <input className="cs-input" value={form.channelNamePrefix}
                         onChange={(e) => setForm((f) => ({ ...f, channelNamePrefix: e.target.value }))}
-                        placeholder="ticket" />
+                        placeholder={t("panels.ph.prefix")} />
                     </label>
                     <label className="block">
-                      <span className="cs-label">Counter Padding</span>
+                      <span className="cs-label">{t("panels.counterPadding")}</span>
                       <input type="number" className="cs-input" min={1} max={8} value={form.counterPadding}
                         onChange={(e) => setForm((f) => ({ ...f, counterPadding: e.target.value }))} />
                       <p className="text-xs text-cs-dim mt-1">4 = "0042"</p>
                     </label>
                     <label className="block">
-                      <span className="cs-label">Button Style</span>
+                      <span className="cs-label">{t("panels.buttonStyle")}</span>
                       <select className="cs-select" value={form.buttonStyle}
                         onChange={(e) => setForm((f) => ({ ...f, buttonStyle: e.target.value }))}>
-                        <option value="BUTTON">Buttons</option>
-                        <option value="DROPDOWN">Dropdown</option>
-                        <option value="THREAD">Private Threads</option>
+                        <option value="BUTTON">{t("panels.buttons")}</option>
+                        <option value="DROPDOWN">{t("panels.dropdown")}</option>
+                        <option value="THREAD">{t("panels.privateThreads")}</option>
                       </select>
                     </label>
                   </div>
@@ -443,14 +445,14 @@ export default function PanelsPage() {
                     <span className="cs-label">Welcome Message (markdown + variables)</span>
                     <textarea className="cs-textarea" rows={4} value={form.welcomeMessage}
                       onChange={(e) => setForm((f) => ({ ...f, welcomeMessage: e.target.value }))}
-                      placeholder="Hello {user}, welcome to your ticket #{ticket.count}. Support will be with you shortly." />
+                      placeholder={t("panels.ph.welcomeDm")} />
                     <p className="text-xs text-cs-dim mt-1">
-                      {"Variables: {user}, {user.name}, {ticket}, {ticket.count}, {ticket.number}, {server}, {panel.name}, {staff}, {date}, {time}"}
+                      {t("panels.varsFull")}
                     </p>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="block">
-                      <span className="cs-label">Welcome Embed Color</span>
+                      <span className="cs-label">{t("panels.welcomeEmbedColor")}</span>
                       <input type="color" className="cs-input h-10" value={form.welcomeEmbedColor}
                         onChange={(e) => setForm((f) => ({ ...f, welcomeEmbedColor: e.target.value }))} />
                     </label>
@@ -458,20 +460,20 @@ export default function PanelsPage() {
                       <span className="cs-label">Max Tickets Per User (this panel)</span>
                       <input type="number" className="cs-input" min={0} value={form.maxOpenPerUserPanel}
                         onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUserPanel: e.target.value }))}
-                        placeholder="Leave empty for no panel-specific limit" />
+                        placeholder={t("panels.ph.limit")} />
                     </label>
                   </div>
                   <label className="block">
                     <span className="cs-label">Support Role IDs (comma-separated)</span>
                     <input className="cs-input font-mono text-xs" value={form.supportRoleIds}
                       onChange={(e) => setForm((f) => ({ ...f, supportRoleIds: e.target.value }))}
-                      placeholder="Full ticket access" />
+                      placeholder={t("panels.ph.fullAccess")} />
                   </label>
                   <label className="block">
                     <span className="cs-label">Observer Role IDs (view-only)</span>
                     <input className="cs-input font-mono text-xs" value={form.observerRoleIds}
                       onChange={(e) => setForm((f) => ({ ...f, observerRoleIds: e.target.value }))}
-                      placeholder="Can see but not talk in tickets" />
+                      placeholder={t("panels.ph.readOnly")} />
                   </label>
                 </div>
               </details>
@@ -487,10 +489,10 @@ export default function PanelsPage() {
                   </label>
                   {form.closeAskEnabled && (
                     <label className="block">
-                      <span className="cs-label">Close Confirmation Message</span>
+                      <span className="cs-label">{t("panels.closeConfirm")}</span>
                       <textarea className="cs-textarea" rows={2} value={form.closeAskMessage}
                         onChange={(e) => setForm((f) => ({ ...f, closeAskMessage: e.target.value }))}
-                        placeholder="Are you sure you want to close this ticket, {user}?" />
+                        placeholder={t("panels.ph.closeConfirm")} />
                     </label>
                   )}
                 </div>
@@ -503,28 +505,28 @@ export default function PanelsPage() {
                     <input type="checkbox" checked={form.dmOnOpen}
                       onChange={(e) => setForm((f) => ({ ...f, dmOnOpen: e.target.checked }))}
                       className="accent-cs-cyan" />
-                    <span className="text-sm text-cs-text">DM the user when their ticket opens</span>
+                    <span className="text-sm text-cs-text">{t("panels.dmOnOpen")}</span>
                   </label>
                   {form.dmOnOpen && (
                     <label className="block">
-                      <span className="cs-label">Open DM Message</span>
+                      <span className="cs-label">{t("panels.openDm")}</span>
                       <textarea className="cs-textarea" rows={3} value={form.dmOnOpenMessage}
                         onChange={(e) => setForm((f) => ({ ...f, dmOnOpenMessage: e.target.value }))}
-                        placeholder="Your ticket in {server} has been created! We'll respond soon." />
+                        placeholder={t("panels.ph.openDm")} />
                     </label>
                   )}
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.dmOnClose}
                       onChange={(e) => setForm((f) => ({ ...f, dmOnClose: e.target.checked }))}
                       className="accent-cs-cyan" />
-                    <span className="text-sm text-cs-text">DM the user when their ticket closes</span>
+                    <span className="text-sm text-cs-text">{t("panels.dmOnClose")}</span>
                   </label>
                   {form.dmOnClose && (
                     <label className="block">
-                      <span className="cs-label">Close DM Message</span>
+                      <span className="cs-label">{t("panels.closeDm")}</span>
                       <textarea className="cs-textarea" rows={3} value={form.dmOnCloseMessage}
                         onChange={(e) => setForm((f) => ({ ...f, dmOnCloseMessage: e.target.value }))}
-                        placeholder="Your ticket in {server} has been closed. Thanks for reaching out!" />
+                        placeholder={t("panels.ph.closeDm")} />
                     </label>
                   )}
                 </div>
@@ -537,7 +539,7 @@ export default function PanelsPage() {
                     <span className="cs-label">Inactivity Auto-Close (hours)</span>
                     <input type="number" className="cs-input" min={1} value={form.inactivityCloseHours}
                       onChange={(e) => setForm((f) => ({ ...f, inactivityCloseHours: e.target.value }))}
-                      placeholder="24 = close after 1 day of no activity" />
+                      placeholder={t("panels.ph.inactivity")} />
                   </label>
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.autoCloseOnLeave}
@@ -564,13 +566,13 @@ export default function PanelsPage() {
                     <span className="cs-label">Required Role IDs (comma-separated — user must have ALL)</span>
                     <input className="cs-input font-mono text-xs" value={form.requireVerifiedRoleIds}
                       onChange={(e) => setForm((f) => ({ ...f, requireVerifiedRoleIds: e.target.value }))}
-                      placeholder="Verified, Member" />
+                      placeholder={t("panels.ph.verifiedRoles")} />
                   </label>
                   <label className="block">
                     <span className="cs-label">Custom Denied Message (shown when user lacks required roles)</span>
                     <textarea className="cs-textarea" rows={3} value={form.verificationDeniedMessage}
                       onChange={(e) => setForm((f) => ({ ...f, verificationDeniedMessage: e.target.value }))}
-                      placeholder="❌ You need to verify first. Please visit #verify to complete the challenge." />
+                      placeholder={t("panels.ph.verifyGate")} />
                   </label>
                 </div>
               </details>
@@ -592,11 +594,11 @@ export default function PanelsPage() {
                         <input className="cs-input w-16 py-1 text-sm" value={btn.emoji}
                           aria-label={`Button ${i + 1} emoji`}
                           onChange={(e) => updateButton(i, "emoji", e.target.value)}
-                          placeholder="🎫" />
+                          placeholder={t("panels.ph.emoji")} />
                         <input className="cs-input flex-1 min-w-[100px] py-1 text-sm" value={btn.label}
                           aria-label={`Button ${i + 1} label`}
                           onChange={(e) => updateButton(i, "label", e.target.value)}
-                          placeholder="Button Label" required />
+                          placeholder={t("panels.ph.buttonLabel")} required />
                         <select className="cs-input py-1 text-sm w-28" value={btn.style}
                           aria-label={`Button ${i + 1} style`}
                           onChange={(e) => updateButton(i, "style", e.target.value)}>
@@ -605,7 +607,7 @@ export default function PanelsPage() {
                         {form.buttons.length > 1 && (
                           <button type="button" onClick={() => removeButton(i)}
                             aria-label={`Remove button ${i + 1}`}
-                            title="Remove button"
+                            title={t("panels.removeButton")}
                             className="text-danger hover:text-red-300 transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -621,14 +623,14 @@ export default function PanelsPage() {
                         >
                           <option value="">🎫 Create ticket directly</option>
                           {forms.filter((f) => !f.isApplication).length > 0 && (
-                            <optgroup label="📝 Ask questions first (form)">
+                            <optgroup label={t("panels.askFirst")}>
                               {forms.filter((f) => !f.isApplication).map((f) => (
                                 <option key={f.id} value={f.id}>{f.name}</option>
                               ))}
                             </optgroup>
                           )}
                           {forms.filter((f) => f.isApplication).length > 0 && (
-                            <optgroup label="📋 Submit as application">
+                            <optgroup label={t("panels.submitAsApp")}>
                               {forms.filter((f) => f.isApplication).map((f) => (
                                 <option key={f.id} value={f.id}>{f.name}</option>
                               ))}
@@ -643,14 +645,14 @@ export default function PanelsPage() {
 
               {mutError && (
                 <p className="text-danger text-sm">
-                  ❌ {mutError?.response?.data?.error || "Operation failed"}
+                  ❌ {mutError?.response?.data?.error || t("common.operationFailed")}
                 </p>
               )}
 
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">Cancel</button>
                 <button type="submit" className="cs-btn-primary" disabled={isPending}>
-                  {isPending ? "Saving…" : editing === "new" ? "Create Panel" : "Save Changes"}
+                  {isPending ? t("common.saving") : editing === "new" ? t("common.createPanel") : t("common.saveChanges")}
                 </button>
               </div>
             </form>
@@ -661,7 +663,7 @@ export default function PanelsPage() {
         title={confirmState?.title}
         message={confirmState?.message}
         destructive
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         loading={deleteMut.isPending}
         onConfirm={() => { confirmState?.onConfirm(); }}
         onCancel={() => setConfirmState(null)}
