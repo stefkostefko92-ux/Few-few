@@ -84,13 +84,13 @@ export default function Login() {
             {/* Left column — copy. The H1 here is the LCP element: plain text,
                 fully opaque, no entrance animation, so it paints on first frame. */}
             <div className="text-center lg:text-left">
-              <div className="cs-eyebrow mb-4 inline-flex">→ One bot replaces six. Built in the EU.</div>
+              <div className="cs-eyebrow mb-4 inline-flex">→ One bot replaces eight. Built in the EU.</div>
               <h1 className="font-display font-black text-5xl sm:text-6xl xl:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
-                Six bots. Six bills.<br />
+                Eight bots. Eight bills.<br />
                 <span className="text-cs-cyan">One dashboard.</span>
               </h1>
               <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-8 text-pretty max-w-2xl mx-auto lg:mx-0">
-                Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
+                Tickets, applications, verification, reaction roles, giveaways, activity logging, scheduled messages, webhooks and AI-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
               {error && (
@@ -129,7 +129,7 @@ export default function Login() {
             </div>
 
             {/* Right column — the "6 → 1" convergence motif. Purely decorative
-                (aria-hidden): six single-purpose bots funnel into one core. */}
+                (aria-hidden): eight single-purpose bots funnel into one core. */}
             <HeroConverge />
           </div>
         </section>
@@ -143,7 +143,7 @@ export default function Login() {
                 Everything, <span className="text-cs-cyan">integrated.</span>
               </h2>
               <p className="text-cs-muted max-w-2xl mx-auto">
-                Stop paying €5–20/month for 6 different bots that don't talk to each other.
+                Stop paying €5–20/month for 8 different bots that don't talk to each other.
               </p>
             </div>
 
@@ -802,7 +802,7 @@ function CompareRow({ label, free, premium }) {
   );
 }
 
-/* Hero "6 → 1" convergence motif — six single-purpose bots funnel into one
+/* Hero "8 → 1" convergence motif — eight single-purpose bots funnel into one
    Supreme core. Purely decorative (aria-hidden): a screen reader skips it and
    loses nothing, since the headline + copy already state the value. All motion
    is CSS-only and gated behind prefers-reduced-motion in index.css. */
@@ -811,17 +811,21 @@ function HeroConverge() {
     { icon: Ticket,        label: "Ticket bot" },
     { icon: FileText,      label: "Application bot" },
     { icon: ShieldCheck,   label: "Verify bot" },
+    { icon: SmilePlus,     label: "Reaction-role bot" },
     { icon: Gift,          label: "Giveaway bot" },
     { icon: CalendarClock, label: "Scheduler bot" },
+    { icon: ScrollText,    label: "Logging bot" },
     { icon: Webhook,       label: "Webhook relay" },
   ];
-  const funnelTops = [20, 76, 132, 188, 244, 300];
+  // По една крива на заместен бот — броят ТРЯБВА да съвпада с `replaced`,
+  // иначе фунията рисува повече или по-малко потоци от чиповете отгоре.
+  const funnelTops = [20, 60, 100, 140, 180, 220, 260, 300];
 
   return (
     <div aria-hidden className="hero-converge relative mx-auto w-full max-w-md lg:max-w-none">
       <div className="cs-card !p-6 sm:!p-7 bg-cs-surface/70 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-4">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-dim">Before · six bots</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-dim">Before · eight bots</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-cyan">After · one</span>
         </div>
 
@@ -837,7 +841,7 @@ function HeroConverge() {
           ))}
         </div>
 
-        {/* Funnel: six signals converge to a single point. */}
+        {/* Funnel: eight signals converge to a single point. */}
         <div className="hero-funnel relative h-14 my-1.5">
           <svg viewBox="0 0 320 56" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
             {funnelTops.map((x, i) => (

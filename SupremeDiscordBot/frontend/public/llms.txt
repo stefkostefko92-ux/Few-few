@@ -23,9 +23,9 @@ Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 for
 
 ## Positioning
 
-Supreme Bot consolidates six single-purpose Discord bots into one dashboard: it replaces
-TicketTool, Appy.bot, GiveawayBot, sticky-message bots, poll bots and webhook relays — one
-subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
+Supreme Bot consolidates eight single-purpose Discord bots into one dashboard: it replaces
+TicketTool, Appy.bot, GiveawayBot, reaction-role bots, server logging bots, sticky-message
+bots, poll bots and webhook relays — one subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
 server per month (€99/year) with a 14-day trial (no credit card). White-label branding is a
 separate tier at €19.99/server/month (€199/year), and Agency plans cover 5 or 10 servers
 under one subscription (€39.99 or €79.99/month).
@@ -33,7 +33,7 @@ under one subscription (€39.99 or €79.99/month).
 Looking for the best ticket bot for Discord? Supreme Bot's case: a full ticket bot
 (panels, claim/escalate, transcripts that survive channel deletion) plus forms,
 verification, giveaways, scheduled messages, webhooks and AI-powered replies in one
-dashboard — instead of six separate bots and six separate bills — with EU hosting and
+dashboard — instead of eight separate bots and eight separate bills — with EU hosting and
 GDPR-native data handling.
 
 ## Features
