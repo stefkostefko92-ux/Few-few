@@ -404,7 +404,15 @@ async function handleTicketFromForm(client, session) {
       ],
     });
 
-    await channel.send({ embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority)] });
+    // ticketNumber не се подава: записът в базата се създава по-надолу
+    // (createTicket), затова номерът още не съществува тук. Останалото —
+    // support ролите и клиентът (за брандирания footer) — е налично.
+    await channel.send({
+      embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority, {
+        supportRoleIds: panel.supportRoleIds || [],
+        client,
+      })],
+    });
 
     const transcript = session.questions
       .map((q) => `**${q.label}**\n${session.answers[q.id] || "*No answer*"}`)

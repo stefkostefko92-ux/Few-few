@@ -238,6 +238,9 @@ export const getApiScopes   = () => api.get(`/apikeys/scopes`).then((r) => r.dat
 
 // ─── v2.1 Status ───────────────────────────────────────────────────────────
 export const getStatus = () => api.get(`/status`).then((r) => r.data);
+// Overview екранът — един call вместо пет (KPI + серия + разпределение + SLA)
+export const getDashboard = (serverId, days = 14) =>
+  api.get(`/analytics/${serverId}/dashboard`, { params: { days } }).then((r) => r.data);
 
 // ─── v2.1 Application delete ────────────────────────────────────────────────
 export const deleteApplication = (sid, appId) =>

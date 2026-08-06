@@ -1,6 +1,23 @@
 // bot/src/utils/embed.js
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder } from "discord.js";
 import { priorityField } from "./priority.js";
+import { BRAND, SUCCESS, WARNING, withFooter } from "./colors.js";
+
+// Аватар на потребител (или дефолтният на Discord) — за author/thumbnail
+// линиите на embed-ите. Без него ревюта и тикети изглеждат като сух текст.
+function avatarUrl(user) {
+  if (!user) return undefined;
+  if (user.avatar) return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
+  if (typeof user.displayAvatarURL === "function") return user.displayAvatarURL({ size: 128 });
+  return undefined;
+}
+
+function userTag(user) {
+  if (!user) return "Unknown";
+  return user.discriminator && user.discriminator !== "0"
+    ? `${user.username}#${user.discriminator}`
+    : user.username;
+}
 
 /**
  * Build the Discord embed + button rows for a Panel.
@@ -11,7 +28,10 @@ import { priorityField } from "./priority.js";
  *   THREAD:   same as BUTTON but tickets spawn as threads (handled at interaction time)
  */
 export function buildPanelMessage(panel) {
-  const colorInt = parseInt(panel.color?.replace("#", "") || "5865F2", 16);
+  // Резервният цвят е брандовият, не Discord blurple — панел без зададен цвят
+  // не бива да изглежда като чужд бот.
+  const parsed = parseInt(String(panel.color || "").replace("#", ""), 16);
+  const colorInt = Number.isNaN(parsed) ? BRAND : parsed;
 
   const embed = new EmbedBuilder()
     .setTitle(panel.title)
@@ -79,27 +99,34 @@ export function buildReviewEmbed(application, formName, user, questions) {
   const answers = application.answers || {};
 
   const title = `📋 New Application — ${formName}`;
-  const authorName = user.discriminator && user.discriminator !== "0" ? `${user.username}#${user.discriminator}` : user.username;
+  const authorName = userTag(user);
   const footerText = `Application ID: ${application.id}`;
 
   const embed = new EmbedBuilder()
     .setTitle(title)
-    .setColor(0xffd700)
-    .setAuthor({
-      name: authorName,
-      iconURL: user.avatar
-        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-        : undefined,
-    })
+    // WARNING = „чака решение" от единната палитра (преди беше сурово 0xffd700).
+    .setColor(WARNING)
+    .setAuthor({ name: authorName, iconURL: avatarUrl(user) })
+    .setThumbnail(avatarUrl(user) || null)
     .setTimestamp()
     .setFooter({ text: footerText });
+
+  // Кой кандидатства — като кликаем ментион, не само като име в author реда.
+  if (user?.id) {
+    embed.addFields({ name: "Applicant", value: `<@${user.id}>`, inline: true });
+  }
 
   // Discord embed лимити: макс 25 полета И сумарно ≤6000 знака (title + author.name
   // + footer.text + всички field.name + field.value). Ако надхвърлим тихо, цялото
   // review съобщение изчезва. Акумулираме дължината и спираме при ~5900 (буфер за
   // бележката), като добавяме поле-индикатор колко въпроса са пропуснати.
   const TOTAL_CAP = 5900;
-  let total = title.length + authorName.length + footerText.length;
+  // „Applicant" полето по-горе вече яде от двата бюджета: ~30 знака и 1 слот.
+  // Затова таванът на отговорите пада на 23 → 1 (applicant) + 23 + 1
+  // (truncated) = 25, точно лимита на Discord.
+  const APPLICANT_FIELD_LEN = user?.id ? 30 : 0;
+  const MAX_ANSWER_FIELDS = user?.id ? 23 : 24;
+  let total = title.length + authorName.length + footerText.length + APPLICANT_FIELD_LEN;
   let fieldCount = 0;
   let skipped = 0;
   for (const q of questions) {
@@ -107,7 +134,7 @@ export function buildReviewEmbed(application, formName, user, questions) {
     const name = q.label.slice(0, 256);
     const value = (String(answer ?? "").trim() || "*No answer*").slice(0, 1024);
     // Резервираме ~120 знака за евентуалната "и още N…" бележка.
-    if (fieldCount >= 24 || total + name.length + value.length > TOTAL_CAP - 120) {
+    if (fieldCount >= MAX_ANSWER_FIELDS || total + name.length + value.length > TOTAL_CAP - 120) {
       skipped = questions.length - fieldCount;
       break;
     }
@@ -152,18 +179,39 @@ export function buildReviewEmbed(application, formName, user, questions) {
  * `priority` is optional and only rendered as a field when it's not the
  * NORMAL default (see priorityField) — keeps the common case uncluttered.
  */
-export function buildTicketOpenEmbed(creator, panelName, priority) {
+export function buildTicketOpenEmbed(creator, panelName, priority, opts = {}) {
+  const { ticketNumber, padding = 4, supportRoleIds = [], client } = opts;
+  const ref = ticketNumber != null ? `#${String(ticketNumber).padStart(padding, "0")}` : null;
+
   const embed = new EmbedBuilder()
-    .setTitle("🎫 Ticket Opened")
-    .setDescription(`Welcome, <@${creator.id}>! A staff member will be with you shortly.`)
-    .setColor(0x57f287)
-    .addFields({ name: "Category", value: panelName || "General" })
+    .setTitle(ref ? `🎫 Ticket ${ref}` : "🎫 Ticket opened")
+    .setColor(SUCCESS)
+    .setAuthor({ name: userTag(creator), iconURL: avatarUrl(creator) })
+    .setDescription(
+      `Welcome <@${creator.id}> — your ticket is open and the team has been notified.\n\n` +
+      "**While you wait**, add anything that helps us solve this faster: what you " +
+      "expected, what happened instead, and screenshots if you have them."
+    )
+    .addFields(
+      { name: "Category", value: panelName || "General", inline: true },
+      { name: "Opened", value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
+    )
     .setTimestamp();
 
   const field = priorityField(priority);
-  if (field) embed.addFields(field);
+  if (field) embed.addFields({ ...field, inline: true });
 
-  return embed;
+  // Кой отговаря — прави обещанието конкретно вместо „някой ще дойде".
+  if (supportRoleIds.length) {
+    embed.addFields({
+      name: "Handled by",
+      value: supportRoleIds.slice(0, 5).map((r) => `<@&${r}>`).join(" "),
+      inline: false,
+    });
+  }
+
+  // Брандиран footer, освен ако сървърът върти собствен white-label бот.
+  return client ? withFooter(embed, client) : embed;
 }
 
 /**
