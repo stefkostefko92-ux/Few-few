@@ -20,46 +20,45 @@ import { PremiumBadge, PremiumLockCard } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import { useT } from "../contexts/I18nContext";
 import EmojiPicker from "../components/EmojiPicker";
 
 const TABS = [
-  { id: "polls",     label: "Polls",      icon: BarChart3 },
-  { id: "giveaways", label: "Giveaways",  icon: Gift },
-  { id: "reactionroles", label: "Reaction Roles", icon: SmilePlus },
-  { id: "sticky",    label: "Sticky",     icon: Pin,           premium: true },
-  { id: "scheduled", label: "Scheduled",  icon: CalendarClock, premium: true },
-  { id: "webhooks",  label: "Webhooks",   icon: Webhook,       premium: true },
+  { id: "polls",     tKey: "auto.tab.polls",         icon: BarChart3 },
+  { id: "giveaways", tKey: "auto.tab.giveaways",      icon: Gift },
+  { id: "reactionroles", tKey: "auto.tab.reactionRoles", icon: SmilePlus },
+  { id: "sticky",    tKey: "auto.tab.sticky",         icon: Pin,           premium: true },
+  { id: "scheduled", tKey: "auto.tab.scheduled",      icon: CalendarClock, premium: true },
+  { id: "webhooks",  tKey: "auto.tab.webhooks",       icon: Webhook,       premium: true },
 ];
 
 export default function AutomationPage() {
+  const { t } = useT();
   const [tab, setTab] = useState("polls");
   const { isPremium } = usePremium();
 
   return (
     <div className="p-8 max-w-6xl">
       <div className="mb-6">
-        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">Automation</h1>
-        <p className="text-cs-muted mt-2 max-w-2xl">
-          Manage polls, giveaways, reaction roles, sticky messages, scheduled posts, and webhook integrations.
-          Everything here can also be triggered by slash commands in Discord — see <strong>Commands</strong> for the full list.
-        </p>
+        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">{t("auto.title")}</h1>
+        <p className="text-cs-muted mt-2 max-w-2xl">{t("auto.subtitle")}</p>
       </div>
 
       <div className="flex gap-1 mb-6 border-b border-cs-border">
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
-          const showBadge = t.premium && !isPremium;
+        {TABS.map((tb) => {
+          const Icon = tb.icon;
+          const active = tab === tb.id;
+          const showBadge = tb.premium && !isPremium;
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tb.id}
+              onClick={() => setTab(tb.id)}
               className={`px-4 py-2 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
                 active ? "border-cs-cyan text-cs-cyan" : "border-transparent text-cs-muted hover:text-white"
               }`}
             >
               <Icon className="w-4 h-4" />
-              {t.label}
+              {t(tb.tKey)}
               {showBadge && <PremiumBadge small />}
             </button>
           );
@@ -69,9 +68,9 @@ export default function AutomationPage() {
       {tab === "polls"     && <PollsTab />}
       {tab === "giveaways" && <GiveawaysTab />}
       {tab === "reactionroles" && <ReactionRolesTab />}
-      {tab === "sticky"    && (isPremium ? <StickyTab /> : <PremiumLockCard feature="Sticky Messages" description="Keep important info pinned at the bottom of channels — auto-reposted as new messages arrive." />)}
-      {tab === "scheduled" && (isPremium ? <ScheduledTab /> : <PremiumLockCard feature="Scheduled Messages" description="Schedule one-shot or recurring messages (daily/weekly/monthly)." />)}
-      {tab === "webhooks"  && (isPremium ? <WebhooksTab />  : <PremiumLockCard feature="Webhook Integrations" description="Receive real-time event payloads at your own URL, HMAC-signed for verification." />)}
+      {tab === "sticky"    && (isPremium ? <StickyTab /> : <PremiumLockCard feature={t("auto.sticky.title")} description={t("auto.sticky.desc")} />)}
+      {tab === "scheduled" && (isPremium ? <ScheduledTab /> : <PremiumLockCard feature={t("auto.sched.title")} description={t("auto.sched.desc")} />)}
+      {tab === "webhooks"  && (isPremium ? <WebhooksTab />  : <PremiumLockCard feature={t("auto.wh.title")} description={t("auto.wh.desc")} />)}
     </div>
   );
 }
@@ -80,6 +79,7 @@ export default function AutomationPage() {
 const defaultPollForm = () => ({ channelId: "", question: "", optionsText: "", multiChoice: false, durationHours: "" });
 
 function PollsTab() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
@@ -144,7 +144,7 @@ function PollsTab() {
         </div>
         {createM.isError && (
           <p className="text-danger text-sm" role="alert">
-            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : "Failed to create poll — check the channel ID and options."}
+            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : t("auto.polls.createFailed")}
           </p>
         )}
         <div className="flex justify-end gap-3">
@@ -158,7 +158,7 @@ function PollsTab() {
   );
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
-  if (isError) return <ErrorCard msg="Couldn't load polls — please retry." />;
+  if (isError) return <ErrorCard msg={t("auto.polls.loadError")} />;
 
   return (
     <div className="space-y-3">
@@ -167,7 +167,7 @@ function PollsTab() {
           <Plus className="w-4 h-4" /> New Poll
         </button>
       </div>
-      {!polls.length && <Empty icon={BarChart3} msg="No polls yet. Create one here or run /poll in Discord." />}
+      {!polls.length && <Empty icon={BarChart3} msg={t("auto.polls.empty")} />}
       {polls.map((p) => (
         <div key={p.id} className="cs-card flex items-center justify-between">
           <div className="flex-1">
@@ -188,8 +188,8 @@ function PollsTab() {
               <button onClick={() => closeM.mutate(p.id)} className="cs-btn-secondary text-xs">Close</button>
             )}
             <button
-              onClick={() => setConfirmState({ title: "Delete Poll", message: "Delete this poll?", onConfirm: () => deleteM.mutate(p.id) })}
-              aria-label="Delete poll"
+              onClick={() => setConfirmState({ title: t("auto.polls.delete"), message: t("auto.polls.deleteConfirm"), onConfirm: () => deleteM.mutate(p.id) })}
+              aria-label={t("auto.polls.delete")}
               title="Delete poll"
               className="text-danger hover:text-red-300 p-2"
             >
@@ -202,7 +202,7 @@ function PollsTab() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
@@ -219,6 +219,7 @@ const defaultGiveawayForm = () => ({
 });
 
 function GiveawaysTab() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
@@ -289,7 +290,7 @@ function GiveawaysTab() {
         </label>
         {createM.isError && (
           <p className="text-danger text-sm" role="alert">
-            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : "Failed to create giveaway — check the channel ID."}
+            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : t("auto.give.createFailed")}
           </p>
         )}
         <div className="flex justify-end gap-3">
@@ -303,7 +304,7 @@ function GiveawaysTab() {
   );
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
-  if (isError) return <ErrorCard msg="Couldn't load giveaways — please retry." />;
+  if (isError) return <ErrorCard msg={t("auto.give.loadError")} />;
 
   return (
     <div className="space-y-3">
@@ -312,7 +313,7 @@ function GiveawaysTab() {
           <Plus className="w-4 h-4" /> New Giveaway
         </button>
       </div>
-      {!giveaways.length && <Empty icon={Gift} msg="No giveaways yet. Create one here or run /giveaway start in Discord." />}
+      {!giveaways.length && <Empty icon={Gift} msg={t("auto.give.empty")} />}
       {giveaways.map((g) => (
         <div key={g.id} className="cs-card">
           <div className="flex items-start justify-between">
@@ -336,7 +337,7 @@ function GiveawaysTab() {
             <div className="flex items-center gap-2">
               {!g.endedAt && (
                 <button
-                  onClick={() => setConfirmState({ title: "End Giveaway", message: "End giveaway early?", confirmLabel: "End Now", destructive: false, onConfirm: () => endM.mutate(g.id) })}
+                  onClick={() => setConfirmState({ title: t("auto.give.end"), message: t("auto.give.endConfirm"), confirmLabel: "End Now", destructive: false, onConfirm: () => endM.mutate(g.id) })}
                   className="cs-btn-secondary text-xs"
                 >
                   End Now
@@ -348,8 +349,8 @@ function GiveawaysTab() {
                 </button>
               )}
               <button
-                onClick={() => setConfirmState({ title: "Delete Giveaway", message: "Delete this giveaway?", destructive: true, onConfirm: () => deleteM.mutate(g.id) })}
-                aria-label="Delete giveaway"
+                onClick={() => setConfirmState({ title: t("auto.give.delete"), message: t("auto.give.deleteConfirm"), destructive: true, onConfirm: () => deleteM.mutate(g.id) })}
+                aria-label={t("auto.give.delete")}
                 title="Delete giveaway"
                 className="text-danger hover:text-red-300 p-2"
               >
@@ -376,6 +377,7 @@ function GiveawaysTab() {
 
 // ══════════════════════════════ STICKY ══════════════════════════════
 function StickyTab() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [form, setForm] = useState({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" });
@@ -416,7 +418,7 @@ function StickyTab() {
       </form>
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
-      {!isLoading && isError && <ErrorCard msg="Couldn't load sticky messages — please retry." />}
+      {!isLoading && isError && <ErrorCard msg={t("auto.sticky.loadError")} />}
       {!isLoading && !isError && !stickies.length && <Empty icon={Pin} msg="No sticky messages yet — create one above." />}
 
       <div className="space-y-3">
@@ -428,8 +430,8 @@ function StickyTab() {
               <p className="text-sm text-cs-text mt-1 line-clamp-2">{s.content}</p>
             </div>
             <button
-              onClick={() => setConfirmState({ title: "Delete Sticky", message: "Delete this sticky message?", onConfirm: () => deleteM.mutate(s.channelId) })}
-              aria-label="Delete sticky message"
+              onClick={() => setConfirmState({ title: t("auto.sticky.delete"), message: t("auto.sticky.deleteConfirm"), onConfirm: () => deleteM.mutate(s.channelId) })}
+              aria-label={t("auto.sticky.delete")}
               title="Delete sticky message"
               className="text-danger p-2"
             >
@@ -455,6 +457,7 @@ function StickyTab() {
 
 // ══════════════════════════════ SCHEDULED ══════════════════════════════
 function ScheduledTab() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [form, setForm] = useState({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" });
@@ -509,8 +512,8 @@ function ScheduledTab() {
       </form>
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
-      {!isLoading && isError && <ErrorCard msg="Couldn't load scheduled messages — please retry." />}
-      {!isLoading && !isError && !scheduled.length && <Empty icon={CalendarClock} msg="No scheduled messages yet — create one above." />}
+      {!isLoading && isError && <ErrorCard msg={t("auto.sched.loadError")} />}
+      {!isLoading && !isError && !scheduled.length && <Empty icon={CalendarClock} msg={t("auto.sched.empty")} />}
 
       <div className="space-y-3">
         {scheduled.map((m) => (
@@ -528,8 +531,8 @@ function ScheduledTab() {
               <p className="text-xs text-cs-muted mt-1">{new Date(m.sendAt).toLocaleString()}</p>
             </div>
             <button
-              onClick={() => setConfirmState({ title: "Delete Scheduled Message", message: "Delete this scheduled message?", onConfirm: () => deleteM.mutate(m.id) })}
-              aria-label="Delete scheduled message"
+              onClick={() => setConfirmState({ title: t("auto.sched.delete"), message: t("auto.sched.deleteConfirm"), onConfirm: () => deleteM.mutate(m.id) })}
+              aria-label={t("auto.sched.delete")}
               title="Delete scheduled message"
               className="text-danger p-2"
             >
@@ -555,6 +558,7 @@ function ScheduledTab() {
 
 // ══════════════════════════════ WEBHOOKS ══════════════════════════════
 function WebhooksTab() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | id
@@ -582,7 +586,7 @@ function WebhooksTab() {
     e.preventDefault();
     setFormError(null);
     if (!form.events.length) {
-      setFormError("Select at least one event to subscribe to.");
+      setFormError(t("auto.wh.needEvent"));
       return;
     }
     if (editing === "new") createM.mutate(form);
@@ -602,7 +606,7 @@ function WebhooksTab() {
       </div>
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
-      {!isLoading && isError && <ErrorCard msg="Couldn't load webhooks — please retry." />}
+      {!isLoading && isError && <ErrorCard msg={t("auto.wh.loadError")} />}
       {!isLoading && !isError && !hooks.length && <Empty icon={Webhook} msg="No webhooks configured yet — create one above." />}
 
       <div className="space-y-3">
@@ -625,7 +629,7 @@ function WebhooksTab() {
             <div className="flex items-center gap-2 ml-4">
               <button onClick={() => openEdit(h)} className="cs-btn-secondary text-xs">Edit</button>
               <button
-                onClick={() => setConfirmState({ title: "Delete Webhook", message: `Delete "${h.name}"? This cannot be undone.`, onConfirm: () => deleteM.mutate(h.id) })}
+                onClick={() => setConfirmState({ title: t("auto.wh.delete"), message: `Delete "${h.name}"? This cannot be undone.`, onConfirm: () => deleteM.mutate(h.id) })}
                 aria-label={`Delete webhook ${h.name}`}
                 title="Delete webhook"
                 className="text-danger p-2"
@@ -714,6 +718,7 @@ const defaultRrmForm = () => ({
 });
 
 function ReactionRolesTab() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | rrmId
@@ -735,22 +740,22 @@ function ReactionRolesTab() {
   const createM = useMutation({
     mutationFn: (data) => createReactionRole(serverId, data),
     onSuccess: () => { invalidate(); setEditing(null); },
-    onError: (err) => setActionError(errMsg(err, "Failed to create reaction role message.")),
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.createFailed"))),
   });
   const updateM = useMutation({
     mutationFn: ({ id, data }) => updateReactionRole(serverId, id, data),
     onSuccess: () => { invalidate(); setEditing(null); },
-    onError: (err) => setActionError(errMsg(err, "Failed to update reaction role message.")),
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.updateFailed"))),
   });
   const deleteM = useMutation({
     mutationFn: (id) => deleteReactionRole(serverId, id),
     onSuccess: invalidate,
-    onError: (err) => setActionError(errMsg(err, "Failed to delete reaction role message.")),
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.deleteFailed"))),
   });
   const spawnM = useMutation({
     mutationFn: ({ id, channelId }) => spawnReactionRole(serverId, id, channelId),
     onSuccess: (_d, { id }) => { setSpawnInputs((s) => ({ ...s, [id]: "" })); invalidate(); },
-    onError: (err) => setActionError(errMsg(err, "Failed to post — check the channel ID.")),
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.postFailed"))),
   });
 
   const openEdit = (m) => {
@@ -774,7 +779,7 @@ function ReactionRolesTab() {
         .filter((p) => p.emoji.trim() && p.roleId.trim())
         .map((p) => ({ emoji: p.emoji.trim(), roleId: p.roleId.trim(), label: p.label.trim() || null })),
     };
-    if (!payload.pairs.length) { setActionError("Add at least one emoji → role pair."); return; }
+    if (!payload.pairs.length) { setActionError(t("auto.rr.needPair")); return; }
     if (editing === "new") createM.mutate(payload);
     else updateM.mutate({ id: editing, data: payload });
   };
@@ -783,7 +788,7 @@ function ReactionRolesTab() {
     setForm((f) => ({ ...f, pairs: f.pairs.map((p, idx) => (idx === i ? { ...p, [key]: val } : p)) }));
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
-  if (isError) return <ErrorCard msg="Couldn't load reaction roles — please retry." />;
+  if (isError) return <ErrorCard msg={t("auto.rr.loadError")} />;
 
   return (
     <div className="space-y-4">
@@ -801,7 +806,7 @@ function ReactionRolesTab() {
       </div>
 
       {!messages.length ? (
-        <Empty icon={SmilePlus} msg="No reaction role messages yet. Create one and post it to a channel." />
+        <Empty icon={SmilePlus} msg={t("auto.rr.empty")} />
       ) : (
         messages.map((m) => (
           <div key={m.id} className="cs-card">
@@ -832,7 +837,7 @@ function ReactionRolesTab() {
                 <div className="flex items-center gap-1">
                   <input
                     placeholder="Channel ID"
-                    aria-label="Channel ID to post reaction role message in"
+                    aria-label={t("auto.rr.channelToPost")}
                     className="cs-input text-xs w-28 py-1"
                     value={spawnInputs[m.id] || ""}
                     onChange={(e) => setSpawnInputs((s) => ({ ...s, [m.id]: e.target.value }))}
@@ -846,7 +851,7 @@ function ReactionRolesTab() {
                   </button>
                 </div>
                 <button
-                  aria-label="Edit reaction role message"
+                  aria-label={t("auto.rr.edit")}
                   title="Edit"
                   className="text-cs-muted hover:text-white transition-colors p-1"
                   onClick={() => openEdit(m)}
@@ -854,11 +859,11 @@ function ReactionRolesTab() {
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
-                  aria-label="Delete reaction role message"
+                  aria-label={t("auto.rr.delete")}
                   title="Delete"
                   className="text-danger hover:text-red-300 transition-colors p-1"
                   onClick={() => setConfirmState({
-                    title: "Delete reaction role message",
+                    title: t("auto.rr.delete"),
                     message: `Delete "${m.title}"? The Discord message will be removed too.`,
                     onConfirm: () => { deleteM.mutate(m.id); setConfirmState(null); },
                   })}
@@ -950,7 +955,7 @@ function ReactionRolesTab() {
       {actionError && (
         <div role="alert" className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-3">
           <span>❌ {actionError}</span>
-          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="text-red-300 hover:text-red-200">✕</button>
+          <button type="button" aria-label={t("auto.dismissError")} onClick={() => setActionError(null)} className="text-red-300 hover:text-red-200">✕</button>
         </div>
       )}
 
