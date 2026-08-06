@@ -8,6 +8,7 @@ import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
+import { requirePremium } from "../lib/premium.js";
 
 const router = Router();
 
@@ -42,7 +43,7 @@ mgmt.get("/:serverId/api-keys", requireServerAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-mgmt.post("/:serverId/api-keys", requireServerAdmin, async (req, res, next) => {
+mgmt.post("/:serverId/api-keys", requireServerAdmin, requirePremium("integrations.restApi"), async (req, res, next) => {
   const { name, scopes, expiresInDays } = req.body;
   if (!name || typeof name !== "string") return res.status(400).json({ error: "name required" });
   if (!Array.isArray(scopes) || scopes.length === 0) {

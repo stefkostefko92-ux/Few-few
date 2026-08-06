@@ -59,6 +59,7 @@ export const PREMIUM_FEATURES = {
 
   // ─── Integrations ──────────────────────────────────────────────────────
   "integrations.webhooks":     { label: "Webhook Integrations",        category: "Integrations" },
+  "integrations.restApi":      { label: "Public REST API",             category: "Integrations" },
   "integrations.roundRobin":   { label: "Round-Robin Assignment",      category: "Integrations" },
   "integrations.aiReplies":    { label: "AI Auto-Replies",             category: "Integrations" },
   // White-label lives one tier above the rest.

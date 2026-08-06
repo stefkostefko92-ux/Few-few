@@ -9,12 +9,30 @@ import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js"
 import { decrypt } from "../lib/crypto.js";
 import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
-import { getServerTier } from "../lib/premium.js";
+import { getServerTier, planHasFeature } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
 
 const router = Router();
 
 router.use(requireBotSecret);
+
+// Гейт за ПЛАТЕНА тикет функция по бот-пътя. Уеб-пътят (tickets.js) ползва
+// requirePremium(featureKey) middleware, но там serverId е в path-а; тук е само
+// :ticketId, затова резолвираме тарифата от самия тикет. Връща serverId при
+// достъп, или изпраща 403 и връща null (извикващият прекратява).
+async function gateTicketFeature(req, res, featureKey) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: req.params.ticketId },
+    select: { serverId: true },
+  });
+  if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return null; }
+  const tier = await getServerTier(ticket.serverId);
+  if (!planHasFeature(tier.plan, featureKey)) {
+    res.status(403).json({ error: "This action requires Premium", code: "PREMIUM_REQUIRED", feature: featureKey });
+    return null;
+  }
+  return ticket.serverId;
+}
 
 // ─── GET /api/bot/server/:serverId ────────────────────────────────────────────
 // Bot fetches server config to know which features are enabled
@@ -468,6 +486,7 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
 router.post("/ticket/:ticketId/claim", async (req, res, next) => {
   const { userId } = req.body;
   try {
+    if (!(await gateTicketFeature(req, res, "ticket.claim"))) return;
     const updated = await prisma.ticket.update({
       where: { id: req.params.ticketId },
       data: { assigneeId: userId, status: "CLAIMED", lastActivityAt: new Date() },
@@ -685,6 +704,7 @@ router.post("/ticket/:ticketId/rename", async (req, res, next) => {
   const { newName, actorId } = req.body;
   if (!newName) return res.status(400).json({ error: "newName required" });
   try {
+    if (!(await gateTicketFeature(req, res, "ticket.rename"))) return;
     const existing = await prisma.ticket.findUnique({
       where: { id: req.params.ticketId },
       select: { channelId: true, serverId: true },
@@ -721,6 +741,7 @@ router.post("/ticket/:ticketId/escalate", async (req, res, next) => {
   if (!newPanelId) return res.status(400).json({ error: "newPanelId required" });
 
   try {
+    if (!(await gateTicketFeature(req, res, "ticket.escalate"))) return;
     const ticket = await prisma.ticket.findUnique({
       where: { id: req.params.ticketId },
       select: { serverId: true, panelId: true },
