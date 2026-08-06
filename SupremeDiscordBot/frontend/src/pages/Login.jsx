@@ -1,5 +1,5 @@
 // frontend/src/pages/Login.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
@@ -10,7 +10,15 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
+import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
+
+// Own chunk, downloaded post-idle — never sits on this eager/LCP-critical
+// page's main bundle. See ShaderHero.jsx for the full accessibility/perf
+// discipline (reduced-motion gate, FPS watchdog, IntersectionObserver).
+const ShaderHero = lazy(() => import("../components/ShaderHero"));
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
@@ -26,6 +34,10 @@ export default function Login() {
   // Billing interval for the pricing section (monthly | annual). Real
   // keyboard-operable control below (radiogroup of aria-checked buttons).
   const [billing, setBilling] = useState("month");
+  const rootRef = useRef(null);
+  useScrollReveal(rootRef);
+  const heroCtaRef = useMagnetic();
+  const finalCtaRef = useMagnetic();
 
   useEffect(() => {
     if (!loading && user) navigate("/dashboard");
@@ -36,7 +48,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen bg-transparent overflow-hidden">
+    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
         description="Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
@@ -78,9 +90,14 @@ export default function Login() {
           <button onClick={handleLogin} className="md:hidden cs-btn-primary text-xs">SIGN IN</button>
         </header>
 
-        {/* HERO */}
-        <section className="px-6 sm:px-8 pt-16 pb-24">
-          <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+        {/* HERO — the WebGL spectacle is SCOPED to just this section (not the
+            whole page), so the raymarched raymarch cost stays bounded to a
+            few hundred px of viewport instead of the full document height. */}
+        <section className="relative px-6 sm:px-8 pt-16 pb-24 overflow-hidden">
+          <Suspense fallback={null}>
+            <ShaderHero />
+          </Suspense>
+          <div className="relative z-10 w-full max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
             {/* Left column — copy. The H1 here is the LCP element: plain text,
                 fully opaque, no entrance animation, so it paints on first frame. */}
             <div className="text-center lg:text-left">
@@ -106,7 +123,7 @@ export default function Login() {
               )}
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
-                <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+                <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
                   <DiscordIcon />
                   <span>Start free with Discord</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
@@ -137,7 +154,7 @@ export default function Login() {
         {/* FEATURES */}
         <section id="features" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
+            <div data-reveal className="text-center mb-16">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Features</div>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 Everything, <span className="text-cs-cyan">integrated.</span>
@@ -147,7 +164,7 @@ export default function Login() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
                 A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, priority levels, two-step close, rich transcripts and archive links. Staff can reply straight from the dashboard.
               </FeatureCard>
@@ -202,14 +219,14 @@ export default function Login() {
         {/* PREMIUM UPSELL */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-14">
+            <div data-reveal className="text-center mb-14">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Why teams upgrade</div>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 Free gets you running. <span className="text-cs-cyan">Premium gets you scaling.</span>
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
               <OutcomeBullet icon={Sparkles} title="Answer first, triage later.">
                 AI auto-replies draft the first response to common questions — so staff pick up conversations that are already moving.
               </OutcomeBullet>
@@ -231,7 +248,7 @@ export default function Login() {
             </div>
 
             {/* Scannable Free-vs-Premium comparison */}
-            <div className="cs-card !p-0 overflow-hidden mb-10">
+            <div data-reveal className="cs-card !p-0 overflow-hidden mb-10">
               <table className="cs-table w-full">
                 <thead>
                   <tr>
@@ -273,7 +290,7 @@ export default function Login() {
             <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-10">
               Replace these. <span className="text-cs-cyan">All of them.</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div data-reveal className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
                 ["TicketTool", "€5/mo"], ["Appy.bot", "€5/mo"], ["GiveawayBot", "€3/mo"],
                 ["Stickyboard", "€4/mo"], ["Dyno Poll", "€2/mo"], ["Webhook.io", "€10/mo"],
@@ -294,14 +311,14 @@ export default function Login() {
         {/* ═══════════ TRUST / SOCIAL PROOF ═══════════ */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
+            <div data-reveal className="text-center mb-12">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Built for reliability</div>
               <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
                 Why teams <span className="text-cs-cyan">trust</span> Supreme Bot
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <TrustCard
                 icon={Lock}
                 title="EU-only data residency"
@@ -346,14 +363,14 @@ export default function Login() {
         {/* FAQ */}
         <section id="faq" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
+            <div data-reveal className="text-center mb-12">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Frequently Asked</div>
               <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
                 Common <span className="text-cs-cyan">questions</span>
               </h2>
             </div>
 
-            <div className="space-y-3">
+            <div data-reveal className="space-y-3">
               <FaqItem
                 q="Will I be charged for the 14-day trial?"
                 a="No. Starting a trial needs no credit card, and nothing is charged during or after it unless you actively choose to subscribe. If you don't subscribe, the server reverts to the Free tier automatically when the trial ends — there is nothing to cancel and nothing is billed. Your panels, forms and settings stay exactly as you left them."
@@ -393,7 +410,7 @@ export default function Login() {
         {/* PRICING */}
         <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
+            <div data-reveal className="text-center mb-10">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Pricing</div>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 Simple. <span className="text-cs-cyan">Per server.</span>
@@ -404,7 +421,7 @@ export default function Login() {
             <BillingToggle interval={billing} onChange={setBilling} />
 
             {/* Free · Premium · White-label */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <PricingCard
                 icon={Zap}
                 name="Free"
@@ -505,14 +522,14 @@ export default function Login() {
         </section>
 
         {/* FINAL CTA */}
-        <section className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
+        <section data-reveal className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
           <h2 className="font-display font-black text-3xl sm:text-5xl text-cs-text mb-6">
             Ready to <span className="text-cs-cyan">consolidate</span>?
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">
             Takes 60 seconds. Sign in with Discord, pick a server, start your 14-day trial.
           </p>
-          <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
             <DiscordIcon />
             <span>Get Started Free</span>
             <ArrowRight className="w-4 h-4 ml-1" />
