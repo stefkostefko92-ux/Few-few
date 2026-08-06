@@ -54,6 +54,10 @@ export const deletePanel = (serverId, panelId) => api.delete(`/panels/${serverId
 export const spawnPanel = (serverId, panelId, channelId) =>
   api.post(`/panels/${serverId}/${panelId}/spawn`, { channelId }).then((r) => r.data);
 
+// Няколко панела в ЕДНО съобщение (до 10 embed-а / 5 реда — таваните на Discord).
+export const spawnPanelGroup = (serverId, panelIds, channelId) =>
+  api.post(`/panels/${serverId}/spawn-group`, { panelIds, channelId }).then((r) => r.data);
+
 // ─── Forms ────────────────────────────────────────────────────────────────────
 export const getForms = (serverId) => api.get(`/forms/${serverId}`).then((r) => r.data);
 export const getForm = (serverId, formId) => api.get(`/forms/${serverId}/${formId}`).then((r) => r.data);

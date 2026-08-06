@@ -923,7 +923,7 @@ function ReactionRolesTab() {
                 <div key={i} className="grid grid-cols-[70px_34px_1fr_1fr_28px] gap-2 items-center">
                   <input className="cs-input text-center" placeholder="🎮" aria-label={`Emoji for pair ${i + 1}`}
                     value={p.emoji} onChange={(e) => updatePair(i, "emoji", e.target.value)} />
-                  <EmojiPicker buttonLabel={`Pick emoji for pair ${i + 1}`} onSelect={(e) => updatePair(i, "emoji", e)} />
+                  <EmojiPicker buttonLabel={t("emoji.pickForPair", { n: i + 1 })} onSelect={(e) => updatePair(i, "emoji", e)} />
                   <input className="cs-input font-mono text-xs" placeholder="Role ID" aria-label={`Role ID for pair ${i + 1}`}
                     value={p.roleId} onChange={(e) => updatePair(i, "roleId", e.target.value)} />
                   <input className="cs-input text-xs" placeholder="Label (optional)" aria-label={`Label for pair ${i + 1}`}

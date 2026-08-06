@@ -12,6 +12,7 @@ import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import EmojiPicker from "../components/EmojiPicker";
 import { useT } from "../contexts/I18nContext";
 
 const TYPES = [
@@ -266,6 +267,20 @@ export default function VerificationPage() {
               <label className="block">
                 <span className="cs-label">Button Label</span>
                 <input className="cs-input" value={form.buttonLabel} onChange={(e) => set("buttonLabel", e.target.value)} />
+              </label>
+              {/* buttonEmoji живееше в state-а и се пращаше към API-то, но нямаше
+                  НИКАКЪВ вход — полето беше недостижимо от дашборда. */}
+              <label className="block">
+                <span className="cs-label">{t("verify.buttonEmoji")}</span>
+                <div className="flex items-center gap-2">
+                  <input className="cs-input w-24" value={form.buttonEmoji}
+                    onChange={(e) => set("buttonEmoji", e.target.value)}
+                    placeholder={t("panels.ph.emoji")} />
+                  <EmojiPicker
+                    buttonLabel={t("emoji.pickForButton")}
+                    onSelect={(e) => set("buttonEmoji", e)}
+                  />
+                </div>
               </label>
               <label className="block">
                 <span className="cs-label">Button Style</span>

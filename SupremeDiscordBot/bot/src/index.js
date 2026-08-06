@@ -24,7 +24,7 @@ import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
 import express from "express";
 import { requireBotSecret } from "./middleware/secret.js";
-import { handlePanelSpawn, handlePanelUpdate } from "./internal/panelHandler.js";
+import { handlePanelSpawn, handlePanelUpdate, handleMultiPanelSpawn } from "./internal/panelHandler.js";
 import { handleTicketClose, handleTicketClaim } from "./internal/ticketHandler.js";
 import { handleApplicationReviewed } from "./internal/applicationHandler.js";
 import { bootAllCustomClients, shutdownCustomClient } from "./services/clientManager.js";
@@ -130,6 +130,18 @@ app.post("/internal/panel-spawn", async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error("panel-spawn error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Няколко панела в ЕДНО съобщение. customId-тата вече носят panelId, затова
+// съществуващите interaction handler-и работят без промяна.
+app.post("/internal/multi-panel-spawn", async (req, res) => {
+  try {
+    const result = await handleMultiPanelSpawn(client, req.body);
+    res.json(result);
+  } catch (err) {
+    console.error("multi-panel-spawn error:", err);
     res.status(500).json({ error: err.message });
   }
 });

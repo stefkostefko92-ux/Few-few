@@ -3,12 +3,13 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
-import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, duplicatePanel, getForms } from "../api";
+import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, spawnPanelGroup, duplicatePanel, getForms } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import EmojiPicker from "../components/EmojiPicker";
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 
@@ -109,6 +110,10 @@ export default function PanelsPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(defaultForm());
   const [spawnInputs, setSpawnInputs] = useState({});
+  // Групово публикуване (няколко панела → едно съобщение)
+  const [groupMode, setGroupMode] = useState(false);
+  const [groupIds, setGroupIds] = useState([]);
+  const [groupChannel, setGroupChannel] = useState("");
   const [confirmState, setConfirmState] = useState(null);
 
   const { data: panels = [], isLoading } = useQuery({
@@ -160,6 +165,22 @@ export default function PanelsPage() {
       setSpawnInputs((s) => ({ ...s, [panelId]: "" }));
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
       toast.success(t("panels.spawned"));
+    },
+    onError: (err) => toast.error(mutErrorMsg(err, t("panels.spawnFailed"))),
+  });
+
+  const spawnGroupMut = useMutation({
+    mutationFn: ({ panelIds, channelId }) => spawnPanelGroup(serverId, panelIds, channelId),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["panels", serverId] });
+      setGroupMode(false); setGroupIds([]); setGroupChannel("");
+      // Ботът може да е прескочил панели, които не се побират в лимитите на
+      // Discord — казваме го честно, вместо да рапортуваме пълен успех.
+      if (data?.skipped?.length) {
+        toast.error(t("panels.group.partial", { posted: data.posted, skipped: data.skipped.length }));
+      } else {
+        toast.success(t("panels.group.posted", { n: data?.posted ?? 0 }));
+      }
     },
     onError: (err) => toast.error(mutErrorMsg(err, t("panels.spawnFailed"))),
   });
@@ -244,8 +265,71 @@ export default function PanelsPage() {
         />
       ) : (
         <div className="space-y-4">
+          {/* ─── Групово публикуване: няколко панела в ЕДНО съобщение ───────
+              Discord дава 10 embed-а и 5 реда компоненти на съобщение; всеки
+              панел яде 1 embed + 1 ред (падащо меню) или по 1 ред на 5 бутона.
+              Бекендът маркира всички с общ messageId, за да се пресглобяват
+              заедно при редакция. */}
+          {panels.length >= 2 && (
+            <div className="cs-card border-cs-cyan/30">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
+                <div className="flex items-center gap-2">
+                  <LayoutIcon className="w-4 h-4 text-cs-cyan" aria-hidden="true" />
+                  <span className="font-semibold text-cs-text">{t("panels.group.title")}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setGroupMode((v) => !v); setGroupIds([]); }}
+                  className="cs-btn-secondary text-xs"
+                >
+                  {groupMode ? t("common.cancel") : t("panels.group.start")}
+                </button>
+              </div>
+              <p className="text-xs text-cs-dim">{t("panels.group.hint")}</p>
+
+              {groupMode && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <input
+                    className="cs-input flex-1 min-w-[180px] py-1 text-sm"
+                    placeholder={t("panels.ph.channelId")}
+                    aria-label={t("panels.group.channel")}
+                    value={groupChannel}
+                    onChange={(e) => setGroupChannel(e.target.value)}
+                  />
+                  <span className="text-xs text-cs-muted tabular-nums">
+                    {t("panels.group.selected", { n: groupIds.length })}
+                  </span>
+                  <button
+                    type="button"
+                    className="cs-btn-primary text-xs flex items-center gap-2 disabled:opacity-40"
+                    disabled={groupIds.length < 2 || !groupChannel || spawnGroupMut.isPending}
+                    onClick={() => spawnGroupMut.mutate({ panelIds: groupIds, channelId: groupChannel })}
+                  >
+                    <Send className="w-3 h-3" aria-hidden="true" />
+                    {spawnGroupMut.isPending ? t("common.sending") : t("panels.group.post")}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {panels.map((panel) => (
-            <div key={panel.id} className="cs-card">
+            <div key={panel.id} className={`cs-card ${groupMode && groupIds.includes(panel.id) ? "border-cs-cyan" : ""}`}>
+              {groupMode && (
+                <label className="flex items-center gap-2 mb-2 text-sm text-cs-text cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="accent-cs-cyan"
+                    checked={groupIds.includes(panel.id)}
+                    onChange={() => setGroupIds((ids) =>
+                      ids.includes(panel.id) ? ids.filter((x) => x !== panel.id) : [...ids, panel.id])}
+                  />
+                  {t("panels.group.include")}
+                  {groupIds.includes(panel.id) && (
+                    <span className="text-xs text-cs-cyan tabular-nums">#{groupIds.indexOf(panel.id) + 1}</span>
+                  )}
+                </label>
+              )}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ background: panel.color }} />
@@ -612,6 +696,10 @@ export default function PanelsPage() {
                           aria-label={`Button ${i + 1} emoji`}
                           onChange={(e) => updateButton(i, "emoji", e.target.value)}
                           placeholder={t("panels.ph.emoji")} />
+                        <EmojiPicker
+                          buttonLabel={t("emoji.pickForOption", { n: i + 1 })}
+                          onSelect={(e) => updateButton(i, "emoji", e)}
+                        />
                         <input className="cs-input flex-1 min-w-[100px] py-1 text-sm" value={btn.label}
                           aria-label={`Button ${i + 1} label`}
                           onChange={(e) => updateButton(i, "label", e.target.value)}

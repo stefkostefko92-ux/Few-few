@@ -250,6 +250,60 @@ router.post("/:serverId/:panelId/spawn", requireServerAdmin, async (req, res, ne
   }
 });
 
+// ─── POST /api/panels/:serverId/spawn-group ───────────────────────────────────
+// Публикува НЯКОЛКО панела като ЕДНО съобщение (до 10 embed-а / 5 реда
+// компоненти — таваните на Discord). Всички получават общ messageId, така че
+// последваща редакция пресглобява цялото съобщение (виж /bot/panel siblings).
+const spawnGroupSchema = z.object({
+  channelId: z.string().regex(/^\d{17,20}$/, "Invalid Discord channel ID"),
+  panelIds: z.array(z.string()).min(2, "Pick at least two panels").max(10),
+});
+
+router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next) => {
+  const parsed = spawnGroupSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message || "Invalid payload" });
+  }
+  const { channelId, panelIds } = parsed.data;
+
+  try {
+    // Multi-tenant: ВСИЧКИ панели трябва да са на ТОЗИ сървър — клиентът подава
+    // списък от id-та, значи е недоверен вход (cross-tenant IDOR иначе).
+    const panels = await prisma.panel.findMany({
+      where: { id: { in: panelIds }, serverId: req.params.serverId },
+      include: { buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } } },
+    });
+    if (panels.length !== panelIds.length) {
+      return res.status(404).json({ error: "One or more panels not found on this server" });
+    }
+    // Пази реда, който потребителят е избрал (findMany не го гарантира).
+    const ordered = panelIds.map((id) => panels.find((p) => p.id === id));
+
+    const result = await notifyBot("MULTI_PANEL_SPAWN", {
+      panels: ordered,
+      serverId: req.params.serverId,
+      channelId,
+    });
+    if (!result?.messageId) {
+      return res.status(502).json({ error: "Bot is offline or failed to post the panels. Try again shortly." });
+    }
+
+    await prisma.panel.updateMany({
+      where: { id: { in: result.posted || [] } },
+      data: { channelId: result.channelId, messageId: result.messageId },
+    });
+
+    res.json({
+      ok: true,
+      messageId: result.messageId,
+      posted: result.posted?.length || 0,
+      skipped: result.skipped || [],
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 // Guards against cross-server access: the panelId in the URL must belong to

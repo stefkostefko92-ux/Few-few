@@ -860,6 +860,19 @@ router.get("/panel/:panelId", async (req, res, next) => {
       const tier = await getServerTier(panel.server.id);
       panel.server.isPremium = tier.isPremium;
     }
+
+    // Групово съобщение: няколко панела делят един messageId. Редакцията на
+    // ЕДИН панел трябва да пресглоби ЦЯЛОТО съобщение, иначе останалите
+    // изчезват от него. Подаваме съседите подредени, за да е стабилен редът.
+    if (panel.channelId && panel.messageId) {
+      const siblings = await prisma.panel.findMany({
+        where: { channelId: panel.channelId, messageId: panel.messageId },
+        include: { buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } } },
+        orderBy: { createdAt: "asc" },
+      });
+      if (siblings.length > 1) panel.siblings = siblings;
+    }
+
     res.json(panel);
   } catch (err) {
     next(err);

@@ -78,6 +78,45 @@ export function buildPanelMessage(panel) {
   return { embeds: [embed], components: rows };
 }
 
+// Discord тавани за ЕДНО съобщение (проверени в API документацията):
+//   • 10 embed-а
+//   • 5 реда компоненти (action rows)
+// Панел в DROPDOWN режим яде 1 ред; в BUTTON режим — по 1 ред на всеки 5 бутона.
+export const MAX_EMBEDS_PER_MESSAGE = 10;
+export const MAX_ROWS_PER_MESSAGE = 5;
+
+/**
+ * Сглобява НЯКОЛКО панела в ЕДНО съобщение.
+ *
+ * Работи, защото customId-тата вече носят panelId
+ * (`panel_button:<panelId>:<btnId>` и `panel_select:<panelId>`) — значи
+ * съществуващите interaction handler-и не различават дали панелът е сам в
+ * съобщението, или е трети по ред. Нула промени по обработката.
+ *
+ * Връща { embeds, components, skipped } — `skipped` са панелите, които не
+ * се побират в лимитите (по-добре частично съобщение + ясен доклад, отколкото
+ * заявка, която Discord отхвърля цялата).
+ */
+export function buildMultiPanelMessage(panels) {
+  const embeds = [];
+  const components = [];
+  const skipped = [];
+
+  for (const panel of panels) {
+    const built = buildPanelMessage(panel);
+    const nextEmbeds = embeds.length + built.embeds.length;
+    const nextRows = components.length + built.components.length;
+    if (nextEmbeds > MAX_EMBEDS_PER_MESSAGE || nextRows > MAX_ROWS_PER_MESSAGE) {
+      skipped.push({ id: panel.id, name: panel.name, reason: nextRows > MAX_ROWS_PER_MESSAGE ? "rows" : "embeds" });
+      continue;
+    }
+    embeds.push(...built.embeds);
+    components.push(...built.components);
+  }
+
+  return { embeds, components, skipped };
+}
+
 /**
  * Build an application review embed (Approve / Deny buttons).
  */
