@@ -777,4 +777,7 @@ export default {
   "panels.group.include": "Include in group",
   "panels.group.posted": "Posted {n} panels as one message.",
   "panels.group.partial": "Posted {posted}, skipped {skipped} — they didn't fit Discord's limits.",
+  "settings.perCategoryHint": "Leave a category's channel empty to use the main channel above.",
+  "settings.useMainChannel": "Use main channel",
+  "settings.channelForCategory": "Log channel for {category}",
 };

@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Inclure dans le groupe",
   "panels.group.posted": "{n} panneaux publiés en un message.",
   "panels.group.partial": "{posted} publiés, {skipped} ignorés — ils ne rentraient pas dans les limites de Discord.",
+  "settings.perCategoryHint": "Laissez vide le salon d'une catégorie pour utiliser le salon principal ci-dessus.",
+  "settings.useMainChannel": "Utiliser le salon principal",
+  "settings.channelForCategory": "Salon de journalisation pour {category}",
 };

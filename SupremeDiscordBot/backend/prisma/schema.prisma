@@ -147,6 +147,10 @@ model Server {
   eventLogEnabled    Boolean  @default(false)
   eventLogChannelId  String?
   eventLogCategories String[] @default(["voice", "members", "moderation", "messages"])
+  // v37 — по избор СВОЙ канал за всяка категория: { "voice": "123", "members": "456" }.
+  // Липсваща категория пада обратно към общия eventLogChannelId, така че
+  // заварените конфигурации продължават да работят без промяна.
+  eventLogChannels   Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

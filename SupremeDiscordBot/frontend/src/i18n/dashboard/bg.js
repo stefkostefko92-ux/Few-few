@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Включи в групата",
   "panels.group.posted": "Публикувани {n} панела в едно съобщение.",
   "panels.group.partial": "Публикувани {posted}, прескочени {skipped} — не се побраха в лимитите на Discord.",
+  "settings.perCategoryHint": "Остави канала на дадена категория празен, за да ползва общия канал по-горе.",
+  "settings.useMainChannel": "Общият канал",
+  "settings.channelForCategory": "Лог канал за {category}",
 };

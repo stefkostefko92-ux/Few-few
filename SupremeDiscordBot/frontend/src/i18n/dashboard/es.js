@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Incluir en el grupo",
   "panels.group.posted": "{n} paneles publicados como un mensaje.",
   "panels.group.partial": "Publicados {posted}, omitidos {skipped} — no cabían en los límites de Discord.",
+  "settings.perCategoryHint": "Deja vacío el canal de una categoría para usar el canal principal de arriba.",
+  "settings.useMainChannel": "Usar canal principal",
+  "settings.channelForCategory": "Canal de registro para {category}",
 };

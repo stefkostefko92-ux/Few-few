@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Aan groep toevoegen",
   "panels.group.posted": "{n} panelen als één bericht geplaatst.",
   "panels.group.partial": "{posted} geplaatst, {skipped} overgeslagen — ze pasten niet binnen Discords limieten.",
+  "settings.perCategoryHint": "Laat het kanaal van een categorie leeg om het hoofdkanaal hierboven te gebruiken.",
+  "settings.useMainChannel": "Hoofdkanaal gebruiken",
+  "settings.channelForCategory": "Logkanaal voor {category}",
 };

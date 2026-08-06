@@ -8,6 +8,26 @@ import { notifyBot } from "../services/botNotifier.js";
 import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
 
+// Категориите на Server Activity Logging — един източник за валидация.
+const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages"];
+const SNOWFLAKE = /^\d{17,20}$/;
+
+/**
+ * Изчиства per-категория лог каналите от клиентския вход.
+ * Пази само познати категории с валиден Discord snowflake; празна/невалидна
+ * стойност се ИЗХВЪРЛЯ (категорията пада обратно към общия eventLogChannelId).
+ * Връща null при празен резултат, за да не трупаме празни обекти в базата.
+ */
+function sanitizeEventLogChannels(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  const out = {};
+  for (const cat of EVENT_LOG_CATEGORIES) {
+    const v = input[cat];
+    if (typeof v === "string" && SNOWFLAKE.test(v.trim())) out[cat] = v.trim();
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 const router = Router();
 
 // Strip sensitive credentials from server responses.
@@ -150,7 +170,7 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     autoroleIds, autoroleBotIds,
     stickyMessagesEnabled,
     // Server event logging
-    eventLogEnabled, eventLogChannelId, eventLogCategories,
+    eventLogEnabled, eventLogChannelId, eventLogCategories, eventLogChannels,
     // Език на бота за ТОЗИ сървър — резервен, когато Discord клиентският
     // locale на потребителя не е сред поддържаните (виж bot/src/i18n).
     language,
@@ -211,7 +231,13 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(eventLogEnabled !== undefined && { eventLogEnabled: Boolean(eventLogEnabled) }),
         ...(eventLogChannelId !== undefined && { eventLogChannelId: eventLogChannelId || null }),
         ...(Array.isArray(eventLogCategories) && {
-          eventLogCategories: eventLogCategories.filter((c) => ["voice", "members", "moderation", "messages"].includes(c)),
+          eventLogCategories: eventLogCategories.filter((c) => EVENT_LOG_CATEGORIES.includes(c)),
+        }),
+        // v37 — по избор СВОЙ канал за всяка категория. Приемаме само познати
+        // категории и валидни Discord snowflake-и; празна стойност изчиства
+        // записа (значи „ползвай общия канал"). Клиентски вход → не се вярва.
+        ...(eventLogChannels !== undefined && {
+          eventLogChannels: sanitizeEventLogChannels(eventLogChannels),
         }),
         // Език на бота за сървъра — валидиран срещу поддържаните; невалиден се
         // игнорира тихо, вместо да записва боклук.

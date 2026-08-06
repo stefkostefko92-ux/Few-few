@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Zur Gruppe hinzufügen",
   "panels.group.posted": "{n} Panels als eine Nachricht gepostet.",
   "panels.group.partial": "{posted} gepostet, {skipped} übersprungen — sie passten nicht in Discords Limits.",
+  "settings.perCategoryHint": "Lass den Kanal einer Kategorie leer, um den Hauptkanal oben zu verwenden.",
+  "settings.useMainChannel": "Hauptkanal verwenden",
+  "settings.channelForCategory": "Log-Kanal für {category}",
 };

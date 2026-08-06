@@ -51,6 +51,11 @@ export default function SettingsPage() {
         eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
         eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
         eventLogCat_messages:   (server.eventLogCategories || []).includes("messages"),
+        // v37 — по избор СВОЙ канал за всяка категория (празно = общият канал).
+        eventLogCh_voice:       server.eventLogChannels?.voice || "",
+        eventLogCh_members:     server.eventLogChannels?.members || "",
+        eventLogCh_moderation:  server.eventLogChannels?.moderation || "",
+        eventLogCh_messages:    server.eventLogChannels?.messages || "",
         // Език на бота за сървъра (fallback за членове с неподдържан Discord език)
         language:               server.language || "en",
       });
@@ -104,6 +109,14 @@ export default function SettingsPage() {
         form.eventLogCat_moderation && "moderation",
         form.eventLogCat_messages && "messages",
       ].filter(Boolean),
+      // Пращаме канал само за ВКЛЮЧЕНИ категории с попълнена стойност —
+      // иначе изключена категория би оставила висящ канал в базата.
+      eventLogChannels: Object.fromEntries(
+        [["voice", form.eventLogCat_voice], ["members", form.eventLogCat_members],
+         ["moderation", form.eventLogCat_moderation], ["messages", form.eventLogCat_messages]]
+          .filter(([cat, on]) => on && (form[`eventLogCh_${cat}`] || "").trim())
+          .map(([cat]) => [cat, form[`eventLogCh_${cat}`].trim()])
+      ),
       language: form.language,
       ...(server.isPremium && {
         customBotName: form.customBotName || null,
@@ -220,22 +233,35 @@ export default function SettingsPage() {
               </label>
               <div>
                 <span className="cs-label">{t("settings.categoriesToLog")}</span>
+                <p className="text-xs text-cs-dim mt-1 mb-2">{t("settings.perCategoryHint")}</p>
                 <div className="flex flex-col gap-2 mt-1">
                   {[
-                    ["eventLogCat_voice", t("settings.cat.voice")],
-                    ["eventLogCat_members", t("settings.cat.members")],
-                    ["eventLogCat_moderation", t("settings.cat.moderation")],
-                    ["eventLogCat_messages", t("settings.cat.messages")],
-                  ].map(([key, label]) => (
-                    <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
+                    ["eventLogCat_voice", t("settings.cat.voice"), "voice"],
+                    ["eventLogCat_members", t("settings.cat.members"), "members"],
+                    ["eventLogCat_moderation", t("settings.cat.moderation"), "moderation"],
+                    ["eventLogCat_messages", t("settings.cat.messages"), "messages"],
+                  ].map(([key, label, cat]) => (
+                    <div key={key} className="flex flex-wrap items-center gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-cs-text flex-1 min-w-[220px]">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded accent-cs-cyan"
+                          checked={form[key]}
+                          onChange={(e) => set(key, e.target.checked)}
+                        />
+                        {label}
+                      </label>
+                      {/* Собствен канал за категорията. Празно = ползвай общия
+                          по-горе, затова placeholder-ът го казва изрично. */}
                       <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded accent-cs-cyan"
-                        checked={form[key]}
-                        onChange={(e) => set(key, e.target.checked)}
+                        className="cs-input w-56 py-1 text-sm font-mono disabled:opacity-40"
+                        value={form[`eventLogCh_${cat}`] || ""}
+                        onChange={(e) => set(`eventLogCh_${cat}`, e.target.value)}
+                        disabled={!form[key]}
+                        aria-label={t("settings.channelForCategory", { category: label })}
+                        placeholder={t("settings.useMainChannel")}
                       />
-                      {label}
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>

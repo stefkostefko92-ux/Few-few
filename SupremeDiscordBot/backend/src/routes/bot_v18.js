@@ -511,13 +511,19 @@ router.get("/:serverId/eventlog-config", async (req, res, next) => {
   try {
     const s = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { eventLogEnabled: true, eventLogChannelId: true, eventLogCategories: true },
+      select: {
+        eventLogEnabled: true, eventLogChannelId: true, eventLogCategories: true,
+        eventLogChannels: true,
+      },
     });
-    if (!s) return res.json({ enabled: false, channelId: null, categories: [] });
+    if (!s) return res.json({ enabled: false, channelId: null, categories: [], channels: {} });
     res.json({
       enabled: s.eventLogEnabled,
       channelId: s.eventLogChannelId,
       categories: s.eventLogCategories || [],
+      // v37 — per-категория канали; ботът пада обратно към channelId, ако
+      // за дадена категория няма запис.
+      channels: s.eventLogChannels || {},
     });
   } catch (err) { next(err); }
 });

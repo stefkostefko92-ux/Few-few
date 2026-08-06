@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Dodaj do grupy",
   "panels.group.posted": "Opublikowano {n} paneli jako jedną wiadomość.",
   "panels.group.partial": "Opublikowano {posted}, pominięto {skipped} — nie zmieściły się w limitach Discorda.",
+  "settings.perCategoryHint": "Zostaw kanał kategorii pusty, aby użyć głównego kanału powyżej.",
+  "settings.useMainChannel": "Użyj głównego kanału",
+  "settings.channelForCategory": "Kanał logów dla {category}",
 };

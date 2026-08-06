@@ -766,4 +766,7 @@ export default {
   "panels.group.include": "Includi nel gruppo",
   "panels.group.posted": "{n} pannelli pubblicati come un messaggio.",
   "panels.group.partial": "Pubblicati {posted}, saltati {skipped} — non rientravano nei limiti di Discord.",
+  "settings.perCategoryHint": "Lascia vuoto il canale di una categoria per usare il canale principale sopra.",
+  "settings.useMainChannel": "Usa canale principale",
+  "settings.channelForCategory": "Canale di log per {category}",
 };

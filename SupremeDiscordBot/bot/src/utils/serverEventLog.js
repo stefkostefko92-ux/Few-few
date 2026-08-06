@@ -180,10 +180,13 @@ export async function logServerEvent(client, guild, evt) {
     const { category, action, actorId, actorTag, targetId, targetTag, channelId, metadata } = evt;
 
     // (а) Прати embed в лог канала (fail-safe — липсващ канал/права само warn-ва).
-    if (config.channelId) {
+    // v37 — всяка категория може да сочи към СВОЙ канал; липсва ли запис за
+    // нея, пада обратно към общия. Така заварените конфигурации не се променят.
+    const targetChannelId = config.channels?.[category] || config.channelId;
+    if (targetChannelId) {
       try {
-        const logChannel = client.channels.cache.get(config.channelId)
-          || await client.channels.fetch(config.channelId).catch(() => null);
+        const logChannel = client.channels.cache.get(targetChannelId)
+          || await client.channels.fetch(targetChannelId).catch(() => null);
         // Guard: only log to a channel that belongs to THIS guild — otherwise an
         // admin could point eventLogChannelId at a channel in another server where
         // the bot is present and relay this guild's activity there.
@@ -195,10 +198,10 @@ export async function logServerEvent(client, guild, evt) {
             allowedMentions: { parse: [] },
           });
         } else {
-          console.warn(`[event-log] log channel ${config.channelId} not found or not text-based for guild ${guild.id}`);
+          console.warn(`[event-log] log channel ${targetChannelId} (category ${category}) not found or not text-based for guild ${guild.id}`);
         }
       } catch (err) {
-        console.warn(`[event-log] failed to post embed to ${config.channelId}: ${err?.message}`);
+        console.warn(`[event-log] failed to post embed to ${targetChannelId} (category ${category}): ${err?.message}`);
       }
     }
     // Events are relayed to the server's own log channel only — NOT stored in
