@@ -4,31 +4,32 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Star, Zap, Check, ExternalLink, CreditCard, Download, Crown, Building2 } from "lucide-react";
 import api, { getStripeStatus, openPortal, createAgencyCheckout, exportTicketsCSV, exportApplicationsCSV } from "../api";
+import { useT } from "../contexts/I18nContext";
 
-const BASE_FEATURES = [
-  "1 ticket panel",
-  "2 application forms (up to 5 questions)",
-  "1 verification panel",
-  "Persistent transcripts (30-day retention)",
-  "Basic slash commands",
+const BASE_FEATURE_KEYS = [
+  "premium.feat.base1",
+  "premium.feat.base2",
+  "premium.feat.base3",
+  "premium.feat.base4",
+  "premium.feat.base5",
 ];
 
 // v3.0 — Premium no longer bundles white-label; it lives on its own plan.
-const PREMIUM_FEATURES = [
-  "Up to 50 panels, forms & 50 questions each",
-  "Math captcha + account-age gates",
-  "Claim · escalate · round-robin assignment",
-  "Sticky + scheduled + recurring messages",
-  "Giveaways, polls & advanced analytics",
-  "AI auto-replies — human in the loop",
-  "Webhooks (HMAC) + public REST API",
-  "Unlimited transcript retention + CSV/PDF export",
+const PREMIUM_FEATURE_KEYS = [
+  "premium.feat.prem1",
+  "premium.feat.prem2",
+  "premium.feat.prem3",
+  "premium.feat.prem4",
+  "premium.feat.prem5",
+  "premium.feat.prem6",
+  "premium.feat.prem7",
+  "premium.feat.prem8",
 ];
 
-const WHITELABEL_FEATURES = [
-  "Everything in Premium",
-  "White-label custom bot — upload your own token",
-  "Runs under your own brand (name & avatar)",
+const WHITELABEL_FEATURE_KEYS = [
+  "premium.feat.wl1",
+  "premium.feat.wl2",
+  "premium.feat.wl3",
 ];
 
 // VAT-inclusive EUR prices per plan/interval. Annual ≈ 2 months free.
@@ -47,6 +48,7 @@ const PLAN_LABEL = {
 };
 
 export default function PremiumPage() {
+  const { t } = useT();
   const { serverId } = useParams();
 
   const { data: status, isLoading, isError, error } = useQuery({
@@ -112,7 +114,7 @@ export default function PremiumPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      setExportError(err?.response?.data?.error || "Export failed. Make sure this server has Premium.");
+      setExportError(err?.response?.data?.error || t("premium.exportFailed"));
     } finally {
       setExporting(null);
     }
@@ -136,20 +138,20 @@ export default function PremiumPage() {
     const stripeMissing = error?.response?.status === 503;
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold text-cs-text mb-4">Premium</h1>
+        <h1 className="text-2xl font-bold text-cs-text mb-4">{t("premium.badge")}</h1>
         <div role="alert" className="cs-card bg-warning/10 border-warning/20 text-center py-10">
           {stripeMissing ? (
             <>
-              <p className="text-warning font-semibold mb-2">Payments unavailable</p>
+              <p className="text-warning font-semibold mb-2">{t("premium.paymentsUnavailable")}</p>
               <p className="text-cs-muted text-sm">
-                Payments are temporarily unavailable. Please contact support.
+                {t("premium.paymentsUnavailableBody")}
               </p>
             </>
           ) : (
             <>
-              <p className="text-warning font-semibold mb-2">Couldn't load subscription status</p>
+              <p className="text-warning font-semibold mb-2">{t("premium.statusLoadFailed")}</p>
               <p className="text-cs-muted text-sm">
-                {error?.response?.data?.error || "Something went wrong. Please try again later."}
+                {error?.response?.data?.error || t("premium.genericError")}
               </p>
             </>
           )}
@@ -160,15 +162,15 @@ export default function PremiumPage() {
 
   const isPremium = status?.isPremium;
   const sub = status?.subscriptionDetails;
-  const upgradeFeatures = plan === "whitelabel" ? WHITELABEL_FEATURES : PREMIUM_FEATURES;
+  const upgradeFeatureKeys = plan === "whitelabel" ? WHITELABEL_FEATURE_KEYS : PREMIUM_FEATURE_KEYS;
   const upgradePrice = PLAN_PRICING[plan][interval];
-  const perLabel = interval === "year" ? "per server / year" : "per server / month";
+  const perLabel = interval === "year" ? t("premium.perServerYear") : t("premium.perServerMonth");
 
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-cs-text">Premium</h1>
-        <p className="text-cs-muted text-sm mt-1">Unlock advanced features for this server</p>
+        <h1 className="text-2xl font-bold text-cs-text">{t("premium.badge")}</h1>
+        <p className="text-cs-muted text-sm mt-1">{t("premium.subtitle")}</p>
       </div>
 
       {/* Current Status Banner */}
@@ -177,15 +179,15 @@ export default function PremiumPage() {
           <div className="flex items-center gap-3">
             <Star className="w-6 h-6 text-cs-gold fill-cs-gold" />
             <div>
-              <p className="font-semibold text-cs-text">Premium Active</p>
+              <p className="font-semibold text-cs-text">{t("premium.activeStatus")}</p>
               <p className="text-sm text-cs-gold/70">
                 {status?.stripeStatus === "trialing" && sub?.currentPeriodEnd
-                  ? `Free trial — ends ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
+                  ? t("premium.freeTrialEnds", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
                   : sub?.cancelAtPeriodEnd
-                  ? `Cancels on ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
+                  ? t("premium.cancelsOn", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
                   : sub?.currentPeriodEnd
-                  ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString()}`
-                  : "Active subscription"}
+                  ? t("premium.renewsOn", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
+                  : t("premium.activeSubscription")}
               </p>
             </div>
           </div>
@@ -195,7 +197,7 @@ export default function PremiumPage() {
             className="cs-btn-ghost flex items-center gap-2 text-sm"
           >
             <CreditCard className="w-4 h-4" />
-            {portalMut.isPending ? "Loading…" : "Manage Billing"}
+            {portalMut.isPending ? t("premium.loading") : t("premium.manageBilling")}
           </button>
         </div>
       )}
@@ -205,21 +207,21 @@ export default function PremiumPage() {
         {/* Base */}
         <div className={`cs-card flex flex-col ${!isPremium ? "border-cs-cyan/30" : ""}`}>
           <div className="mb-6">
-            <p className="text-xs font-semibold text-cs-muted uppercase tracking-wider mb-2">Base Plan</p>
-            <p className="text-3xl font-bold text-cs-text">Free</p>
-            <p className="text-sm text-cs-muted mt-1">Forever</p>
+            <p className="text-xs font-semibold text-cs-muted uppercase tracking-wider mb-2">{t("premium.basePlan")}</p>
+            <p className="text-3xl font-bold text-cs-text">{t("premium.priceFree")}</p>
+            <p className="text-sm text-cs-muted mt-1">{t("premium.forever")}</p>
           </div>
           <ul className="space-y-2 flex-1">
-            {BASE_FEATURES.map((f) => (
-              <li key={f} className="flex items-start gap-2 text-sm text-cs-text">
+            {BASE_FEATURE_KEYS.map((k) => (
+              <li key={k} className="flex items-start gap-2 text-sm text-cs-text">
                 <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
-                {f}
+                {t(k)}
               </li>
             ))}
           </ul>
           {!isPremium && (
             <div className="mt-6 bg-cs-bg rounded-lg px-4 py-2 text-center text-sm text-cs-muted">
-              Current Plan
+              {t("premium.currentPlan")}
             </div>
           )}
         </div>
@@ -228,7 +230,7 @@ export default function PremiumPage() {
         <div className={`cs-card flex flex-col border-cs-gold/30 ${isPremium ? "ring-1 ring-cs-gold/20" : ""}`}>
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <p className="text-xs font-semibold text-cs-gold uppercase tracking-wider">Paid Plans</p>
+              <p className="text-xs font-semibold text-cs-gold uppercase tracking-wider">{t("premium.paidPlans")}</p>
               <Star className="w-3 h-3 text-cs-gold fill-cs-gold" />
             </div>
 
@@ -258,7 +260,7 @@ export default function PremiumPage() {
 
                 {/* Interval toggle — Monthly vs Annual (≈2 months free) */}
                 <div role="radiogroup" aria-label="Billing interval" className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60 mb-1">
-                  {[["month", "Monthly"], ["year", "Annual"]].map(([value, label]) => {
+                  {[["month", t("premium.monthly")], ["year", t("premium.annual")]].map(([value, label]) => {
                     const active = interval === value;
                     return (
                       <button
@@ -277,7 +279,7 @@ export default function PremiumPage() {
                   })}
                 </div>
                 {interval === "year" && (
-                  <p className="text-[11px] text-cs-gold font-mono">≈ 2 months free vs monthly</p>
+                  <p className="text-[11px] text-cs-gold font-mono">{t("premium.twoMonthsFree")}</p>
                 )}
               </>
             )}
@@ -291,19 +293,21 @@ export default function PremiumPage() {
             </p>
             <p className="text-sm text-cs-muted mt-1">
               {isPremium
-                ? `${PLAN_LABEL[status?.plan] || "Premium"} · per server / ${status?.billingInterval === "year" ? "year" : "month"}`
+                ? (status?.billingInterval === "year"
+                    ? t("premium.planPerYear", { plan: PLAN_LABEL[status?.plan] || "Premium" })
+                    : t("premium.planPerMonth", { plan: PLAN_LABEL[status?.plan] || "Premium" }))
                 : `${PLAN_LABEL[plan]} · ${perLabel}`}
             </p>
           </div>
 
           <ul className="space-y-2 flex-1">
             <li className="text-xs text-cs-muted font-semibold uppercase tracking-wide mb-1">
-              {plan === "whitelabel" && !isPremium ? "Everything in Premium, plus:" : "Everything in Base, plus:"}
+              {plan === "whitelabel" && !isPremium ? t("premium.everythingPremium") : t("premium.everythingBase")}
             </li>
-            {(isPremium ? PREMIUM_FEATURES : upgradeFeatures).map((f) => (
-              <li key={f} className="flex items-start gap-2 text-sm text-cs-text">
+            {(isPremium ? PREMIUM_FEATURE_KEYS : upgradeFeatureKeys).map((k) => (
+              <li key={k} className="flex items-start gap-2 text-sm text-cs-text">
                 <Zap className="w-4 h-4 text-cs-gold flex-shrink-0 mt-0.5" />
-                {f}
+                {t(k)}
               </li>
             ))}
           </ul>
@@ -316,15 +320,16 @@ export default function PremiumPage() {
                 className="w-full cs-btn-ghost flex items-center justify-center gap-2 border border-cs-gold/20"
               >
                 <ExternalLink className="w-4 h-4" />
-                {portalMut.isPending ? "Loading…" : "Manage Subscription"}
+                {portalMut.isPending ? t("premium.loading") : t("premium.manageSubscription")}
               </button>
             ) : (
               <>
                 {/* F7 — обща цена с ДДС + авто-подновяване (преддоговорна
                     информация, чл. 6(1)(д),(о) Дир. 2011/83 / ЗЗП чл. 47) */}
                 <p className="text-xs text-cs-muted mb-3">
-                  {upgradePrice}/{interval === "year" ? "year" : "month"}, VAT included where applicable ·
-                  renews automatically each {interval === "year" ? "year" : "month"} until cancelled
+                  {interval === "year"
+                    ? t("premium.priceLineYear", { price: upgradePrice })
+                    : t("premium.priceLineMonth", { price: upgradePrice })}
                 </p>
 
                 {/* F7 — задължителна, неотметната по подразбиране отметка за
@@ -343,11 +348,7 @@ export default function PremiumPage() {
                     className="mt-0.5 w-6 h-6 flex-shrink-0 accent-cs-gold rounded focus:outline-none focus:ring-2 focus:ring-cs-gold focus:ring-offset-2 focus:ring-offset-dark-300"
                   />
                   <span>
-                    I expressly request that the subscription (a digital service) starts
-                    immediately. I understand that if I withdraw before it is fully performed I owe a
-                    proportionate amount for what was provided, and that my 14-day right of withdrawal
-                    is lost only once the service has been fully performed (Art. 16(a) &amp; 14(3),
-                    Directive 2011/83/EU).
+                    {t("premium.consent")}
                   </span>
                 </label>
 
@@ -357,11 +358,11 @@ export default function PremiumPage() {
                   className="w-full bg-cs-gold hover:bg-cs-goldDim text-black font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-cs-gold"
                 >
                   <Star className="w-4 h-4 fill-black" />
-                  {checkoutMut.isPending ? "Redirecting…" : `Upgrade to ${PLAN_LABEL[plan]}`}
+                  {checkoutMut.isPending ? t("premium.redirecting") : t("premium.upgradePlan", { plan: PLAN_LABEL[plan] })}
                 </button>
                 {checkoutMut.isError && (
                   <p role="alert" className="text-danger text-sm mt-3">
-                    {checkoutMut.error?.response?.data?.error || "Couldn't start checkout. Please try again."}
+                    {checkoutMut.error?.response?.data?.error || t("premium.checkoutFailed")}
                   </p>
                 )}
               </>
@@ -375,15 +376,15 @@ export default function PremiumPage() {
         <div className="mt-10 max-w-3xl">
           <div className="flex items-center gap-2 mb-4">
             <Building2 className="w-5 h-5 text-cs-cyan" />
-            <h2 className="text-lg font-semibold text-cs-text">Agency — one subscription, many servers</h2>
+            <h2 className="text-lg font-semibold text-cs-text">{t("premium.agencyTitle")}</h2>
           </div>
           <div className="cs-card">
             <p className="text-sm text-cs-muted mb-4">
-              White-label across multiple servers under a single, reseller-friendly subscription.
+              {t("premium.agencyDesc")}
             </p>
 
             <div role="radiogroup" aria-label="Agency plan" className="grid grid-cols-2 gap-3 mb-4">
-              {[["agency5", "Up to 5 servers"], ["agency10", "Up to 10 servers"]].map(([value, seats]) => {
+              {[["agency5", t("premium.upTo5")], ["agency10", t("premium.upTo10")]].map(([value, seats]) => {
                 const active = agencyPlan === value;
                 return (
                   <button
@@ -411,7 +412,7 @@ export default function PremiumPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div role="radiogroup" aria-label="Agency billing interval" className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60">
-                {[["month", "Monthly"], ["year", "Annual"]].map(([value, label]) => {
+                {[["month", t("premium.monthly")], ["year", t("premium.annual")]].map(([value, label]) => {
                   const active = agencyInterval === value;
                   return (
                     <button
@@ -435,7 +436,7 @@ export default function PremiumPage() {
                 className="cs-btn-primary flex items-center gap-2 disabled:opacity-50"
               >
                 <Building2 className="w-4 h-4" />
-                {agencyMut.isPending ? "Redirecting…" : `Get ${PLAN_LABEL[agencyPlan]}`}
+                {agencyMut.isPending ? t("premium.redirecting") : t("premium.getPlan", { plan: PLAN_LABEL[agencyPlan] })}
               </button>
             </div>
             {/* F7 — чл. 16(а): за дигитална УСЛУГА правото на отказ се губи
@@ -449,18 +450,15 @@ export default function PremiumPage() {
                 className="mt-0.5 accent-cs-cyan"
               />
               <span>
-                I expressly request that the subscription (a digital service) starts immediately.
-                I understand that if I withdraw before it is fully performed I owe a proportionate
-                amount for what was provided, and that my 14-day right of withdrawal is lost only
-                once the service has been fully performed (Art. 16(a), Directive 2011/83/EU).
+                {t("premium.consentAgency")}
               </span>
             </label>
             <p className="text-[11px] text-cs-dim mt-2">
-              Renews automatically each {agencyInterval === "year" ? "year" : "month"} until cancelled · VAT included where applicable
+              {agencyInterval === "year" ? t("premium.agencyRenewYear") : t("premium.agencyRenewMonth")}
             </p>
             {agencyMut.isError && (
               <p role="alert" className="text-danger text-sm mt-3">
-                {agencyMut.error?.response?.data?.error || "Agency checkout is not available yet. Please try again later."}
+                {agencyMut.error?.response?.data?.error || t("premium.agencyCheckoutSoon")}
               </p>
             )}
           </div>
@@ -470,10 +468,10 @@ export default function PremiumPage() {
       {/* Export Section (Premium only) */}
       {isPremium && (
         <div className="mt-10 max-w-2xl">
-          <h2 className="text-lg font-semibold text-cs-text mb-4">Data Export</h2>
+          <h2 className="text-lg font-semibold text-cs-text mb-4">{t("premium.dataExport")}</h2>
           <div className="cs-card space-y-4">
             <p className="text-sm text-cs-muted">
-              Download all your server's data as CSV files for analysis, backups, or migration.
+              {t("premium.dataExportDesc")}
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -482,7 +480,7 @@ export default function PremiumPage() {
                 className="cs-btn-primary flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
-                {exporting === "tickets" ? "Exporting…" : "Export Tickets (CSV)"}
+                {exporting === "tickets" ? t("premium.exporting") : t("premium.exportTickets")}
               </button>
               <button
                 onClick={() => handleExport("applications")}
@@ -490,11 +488,11 @@ export default function PremiumPage() {
                 className="cs-btn-ghost flex items-center gap-2 border border-white/10"
               >
                 <Download className="w-4 h-4" />
-                {exporting === "applications" ? "Exporting…" : "Export Applications (CSV)"}
+                {exporting === "applications" ? t("premium.exporting") : t("premium.exportApplications")}
               </button>
             </div>
             <p className="text-xs text-cs-muted">
-              PDF exports for individual tickets are available from the Tickets page.
+              {t("premium.pdfNote")}
             </p>
             {exportError && (
               <p role="alert" className="text-danger text-sm">{exportError}</p>
@@ -505,13 +503,13 @@ export default function PremiumPage() {
 
       {/* FAQ */}
       <div className="mt-10 max-w-2xl space-y-4">
-        <h2 className="text-lg font-semibold text-cs-text">Frequently Asked Questions</h2>
+        <h2 className="text-lg font-semibold text-cs-text">{t("premium.faqTitle")}</h2>
         {[
-          { q: "What happens if I cancel?", a: "Your server reverts to the Base plan at the end of the billing period. Your data and settings are preserved." },
-          { q: "Can I use Premium on multiple servers?", a: "Premium and White-label are per-server. To cover several servers under one subscription, use an Agency plan (up to 5 or 10 servers)." },
-          { q: "What is the White-label bot?", a: "On the White-label plan your server runs its own Discord bot token, so the bot appears with your own name, avatar, and status instead of the shared bot." },
-          { q: "Monthly or annual?", a: "Both. Annual billing is roughly two months free compared to paying monthly." },
-          { q: "How do I get a refund?", a: "Contact support within 7 days of your purchase for a full refund. EU/EEA consumers additionally have a 14-day statutory right of withdrawal (see Terms §6) — if you withdraw before the service is fully performed, you pay only a proportionate amount for what was provided." },
+          { q: t("premium.faq.cancelQ"), a: t("premium.faq.cancelA") },
+          { q: t("premium.faq.multiServer"), a: t("premium.faq.multiServerA") },
+          { q: t("premium.faq.whitelabelQ"), a: t("premium.faq.whitelabelA") },
+          { q: t("premium.faq.intervalQ"), a: t("premium.faq.intervalA") },
+          { q: t("premium.faq.refundQ"), a: t("premium.faq.refundA") },
         ].map(({ q, a }) => (
           <div key={q} className="cs-card">
             <p className="font-medium text-cs-text mb-1">{q}</p>
