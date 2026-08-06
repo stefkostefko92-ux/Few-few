@@ -4,6 +4,7 @@
 
 import api from "../utils/api.js";
 import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { DANGER } from "../utils/colors.js";
 
 export default {
   name: "guildMemberRemove",
@@ -64,7 +65,7 @@ export default {
             embeds: [{
               title: "🔒 Ticket Auto-Closed",
               description: `<@${member.id}> has left the server. This ticket has been automatically closed.`,
-              color: 0xef4444,
+              color: DANGER,
               timestamp: new Date().toISOString(),
             }],
           }).catch(() => {});

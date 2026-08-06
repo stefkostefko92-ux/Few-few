@@ -1,23 +1,9 @@
 // bot/src/utils/embed.js
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder } from "discord.js";
 import { priorityField } from "./priority.js";
-import { BRAND, SUCCESS, WARNING, withFooter } from "./colors.js";
-
-// Аватар на потребител (или дефолтният на Discord) — за author/thumbnail
-// линиите на embed-ите. Без него ревюта и тикети изглеждат като сух текст.
-function avatarUrl(user) {
-  if (!user) return undefined;
-  if (user.avatar) return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
-  if (typeof user.displayAvatarURL === "function") return user.displayAvatarURL({ size: 128 });
-  return undefined;
-}
-
-function userTag(user) {
-  if (!user) return "Unknown";
-  return user.discriminator && user.discriminator !== "0"
-    ? `${user.username}#${user.discriminator}`
-    : user.username;
-}
+// Палитрата и помощниците живеят в colors.js — един източник за цвят, аватар,
+// таг и релативно време, за да не се дублират из файловете.
+import { BRAND, SUCCESS, WARNING, withFooter, brandEmbed, avatarUrl, userTag } from "./colors.js";
 
 /**
  * Build the Discord embed + button rows for a Panel.
@@ -217,10 +203,16 @@ export function buildTicketOpenEmbed(creator, panelName, priority, opts = {}) {
 /**
  * Build a status embed for closed/approved/denied items.
  */
-export function buildStatusEmbed(title, description, color = 0x57f287) {
-  return new EmbedBuilder()
-    .setTitle(title)
-    .setDescription(description)
-    .setColor(color)
-    .setTimestamp();
+export function buildStatusEmbed(title, description, color = SUCCESS, opts = {}) {
+  // Минава през общия строител → един цвят, един timestamp, един footer.
+  // `client` е по избор: подаде ли се, embed-ът получава брандиран footer
+  // (и нищо, ако сървърът върти собствен white-label бот).
+  return brandEmbed({
+    title,
+    description,
+    color,
+    client: opts.client,
+    footer: opts.footer,
+    fields: opts.fields,
+  });
 }

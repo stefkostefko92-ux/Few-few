@@ -1063,7 +1063,8 @@ async function handleAppReviewModalSubmit(interaction, appId, action) {
           actionLabels[action] || action,
           `Application ${action}d by **${interaction.user.username}**` +
             (note ? `\n**Reason:** ${note.slice(0, 900)}` : ""),
-          action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO
+          action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO,
+          { client: interaction.client }
         )],
       }).catch(() => {});
     }

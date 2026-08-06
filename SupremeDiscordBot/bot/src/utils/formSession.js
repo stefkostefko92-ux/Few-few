@@ -16,6 +16,7 @@ import {
   updateApplicationReviewMessage,
 } from "./api.js";
 import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
+import { SUCCESS, INFO } from "./colors.js";
 
 import { sessionStore } from "./sessionStore.js";
 import { t, resolveLang } from "../i18n/index.js";
@@ -132,7 +133,7 @@ async function sendQuestion(client, dmChannel, session, sessionKey) {
       description: `**${question.label}**${
         question.placeholder ? `\n_${question.placeholder}_` : ""
       }\n\n${requiredLabel}`,
-      color: 0x5865f2,
+      color: INFO,
       footer: { text: t("form.cancelHint", lang) },
     }],
   });
@@ -301,7 +302,7 @@ async function finishSession(client, dmChannel, session, sessionKey) {
     embeds: [{
       title: t("form.submittedTitle", lang),
       description: t("form.submittedBody", lang),
-      color: 0x57f287,
+      color: SUCCESS,
     }],
   });
 
@@ -422,7 +423,7 @@ async function handleTicketFromForm(client, session) {
       embeds: [{
         title: "📋 Form Submission",
         description: transcript.slice(0, 4096),
-        color: 0x5865f2,
+        color: INFO,
       }],
     });
 

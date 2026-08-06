@@ -31,6 +31,8 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
           messages: { orderBy: { createdAt: "asc" } },
           creator: true,
           assignee: true,
+          // Виж tickets.js — транскриптът се брандира според white-label бота.
+          server: { select: { name: true, customBotName: true } },
         },
       });
 

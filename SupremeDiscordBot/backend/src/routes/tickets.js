@@ -120,7 +120,14 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
   try {
     const ticket = await prisma.ticket.findFirst({
       where: { id: req.params.ticketId, serverId: req.params.serverId },
-      include: { messages: { orderBy: { createdAt: "asc" } }, creator: true },
+      include: {
+        messages: { orderBy: { createdAt: "asc" } },
+        creator: true,
+        assignee: true,
+        // Нужен на транскрипта: при white-label бот брандът в архива е на
+        // клиента, а нашето име не се появява (виж utils/archive.js).
+        server: { select: { name: true, customBotName: true } },
+      },
     });
 
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });

@@ -1,5 +1,6 @@
 // bot/src/internal/applicationHandler.js
 import { buildStatusEmbed } from "../utils/embed.js";
+import { SUCCESS, DANGER, MUTED } from "../utils/colors.js";
 
 export async function handleApplicationReviewed(client, {
   serverId, applicationId, action, reviewMessageId, reviewChannelId, reviewerTag, note
@@ -23,17 +24,18 @@ export async function handleApplicationReviewed(client, {
   await msg.edit({ components: disabledComponents }).catch(() => {});
 
   const actionConfig = {
-    approve: { title: "✅ Application Approved", color: 0x57f287 },
-    deny: { title: "❌ Application Denied", color: 0xed4245 },
+    approve: { title: "✅ Application Approved", color: SUCCESS },
+    deny: { title: "❌ Application Denied", color: DANGER },
   };
 
-  const config = actionConfig[action] || { title: "Updated", color: 0x99aab5 };
+  const config = actionConfig[action] || { title: "Updated", color: MUTED };
 
   await msg.reply({
     embeds: [buildStatusEmbed(
       config.title,
       `Reviewed by **${reviewerTag}**${note ? `\n**Note:** ${note}` : ""}`,
-      config.color
+      config.color,
+      { client }
     )],
   });
 }

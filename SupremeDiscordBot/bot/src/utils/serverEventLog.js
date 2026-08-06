@@ -15,6 +15,7 @@
 
 import api from "./api.js";
 import { AuditLogEvent } from "discord.js";
+import { SUCCESS, DANGER, WARNING, INFO, MUTED } from "./colors.js";
 
 // ─── Per-guild конфиг кеш (като ticketCaches) ────────────────────────────────
 // serverId → { config, expiresAt }. config = { enabled, channelId, categories }
@@ -32,10 +33,10 @@ setInterval(() => {
 
 // Цвят по категория (за визуално разграничаване в лог канала).
 const CATEGORY_COLORS = {
-  voice: 0x5865f2,       // blurple
-  members: 0x57f287,     // green
-  moderation: 0xed4245,  // red
-  messages: 0xf59e0b,    // amber
+  voice: INFO,       // blurple
+  members: SUCCESS,     // green
+  moderation: DANGER,  // red
+  messages: WARNING,    // amber
 };
 
 // Човеко-четими заглавия по action string (exact strings — сверява се с backend).
@@ -133,7 +134,7 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
 
   return {
     title: ACTION_LABELS[action] || action,
-    color: CATEGORY_COLORS[category] ?? 0x99aab5,
+    color: CATEGORY_COLORS[category] ?? MUTED,
     fields: fields.slice(0, 25), // Discord лимит: ≤25 полета
     footer: { text: `${category} · ${action}` },
     timestamp: new Date().toISOString(),

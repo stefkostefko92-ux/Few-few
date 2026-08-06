@@ -3,7 +3,7 @@ import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { sendPremiumRequired } from "../utils/premiumRequired.js";
 import { friendlyError } from "../utils/friendlyError.js";
-import { DANGER, INFO } from "../utils/colors.js";
+import { DANGER, INFO, WARNING } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
@@ -71,7 +71,7 @@ export default {
               { name: "Premium Since", value: premiumSince, inline: true },
               { name: "Manage Billing", value: `[Dashboard](${process.env.FRONTEND_URL})`, inline: true },
             ],
-            color: 0xffd700,
+            color: WARNING,
           }],
         });
       } catch (err) {

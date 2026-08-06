@@ -1,91 +1,205 @@
 // backend/src/utils/archive.js
+//
+// Самостоятелен HTML транскрипт на тикет. Това е ЕДИНСТВЕНИЯТ ни артефакт,
+// който напуска Discord: клиентът го сваля, архивира и праща на трети хора
+// (свой екип, клиент, понякога адвокат). Затова:
+//
+//  * НУЛА външни ресурси — стилът е inline, логото е inline SVG. Файлът трябва
+//    да изглежда еднакво отворен от диск, от нашия домейн и прикачен в имейл.
+//  * Носи НАШИЯ бранд, не облика на Discord (беше стилизиран с #36393f /
+//    #5865f2 / Whitney — тоест продавахме чуждо лице).
+//  * При white-label бот брандът е НА КЛИЕНТА: точно за това плаща — нашето
+//    име и лого не се появяват никъде.
+//  * Има печатен изглед: екипите разпечатват транскрипти за преписки, а тъмна
+//    тема на хартия е кофти шега към тонера.
+
+// Палитрата е същата като на dashboard-а (frontend/tailwind.config.js cs.*) —
+// една истина за бранда, а не приблизително същото зелено.
+const C = {
+  bg: "#070a06",
+  surface: "#0d130b",
+  panel: "#141d10",
+  border: "#24301e",
+  borderHi: "#4b5a44",
+  text: "#f0f0eb",
+  muted: "#aaaaaa",
+  dim: "#9a9a9a",
+  accent: "#8fe600",
+};
+
+// Марката като inline SVG — щит с ромб, четим и на 24px. Без външен файл,
+// защото свален транскрипт няма как да дръпне /logo-mark.png.
+const LOGO_SVG = `<svg width="34" height="34" viewBox="0 0 32 32" role="img" aria-label="Supreme Bot" style="display:block;">
+  <path d="M16 2 L28 7 v9c0 7-5.2 12.3-12 14-6.8-1.7-12-7-12-14V7z" fill="none" stroke="${C.accent}" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M16 10 l5 6-5 6-5-6z" fill="${C.accent}"/>
+</svg>`;
 
 /**
- * Generate a self-contained HTML transcript for a ticket.
- * All styling is inline so the archive is viewable without external resources.
+ * @param {object} ticket  тикет с include: messages, creator, assignee, (server)
+ * @param {object} [opts]
+ * @param {boolean} [opts.whiteLabel] явно превключване; иначе се извежда от
+ *        ticket.server.customBotName
+ * @param {string}  [opts.brandName] име за white-label заглавието
  */
-export function generateHtmlTranscript(ticket) {
+export function generateHtmlTranscript(ticket, opts = {}) {
   const messages = ticket.messages || [];
-  const createdAt = new Date(ticket.createdAt).toLocaleString("en-US");
-  const closedAt = ticket.closedAt ? new Date(ticket.closedAt).toLocaleString("en-US") : "N/A";
+  const customBotName = ticket.server?.customBotName || null;
+  const whiteLabel = opts.whiteLabel ?? Boolean(customBotName);
+  const brandName = opts.brandName || customBotName || ticket.server?.name || "Support";
+
+  const fmt = (d) => (d ? new Date(d).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : null);
+  const createdAt = fmt(ticket.createdAt) || "—";
+  const closedAt = fmt(ticket.closedAt) || "Still open";
+  const duration = humanDuration(ticket.createdAt, ticket.closedAt);
+  const ref = ticket.number != null ? `#${String(ticket.number).padStart(4, "0")}` : ticket.id.slice(-8);
 
   const messagesHtml = messages.length === 0
-    ? '<p style="color:#999;text-align:center;padding:20px;">No messages recorded.</p>'
-    : messages.map((msg) => {
-        const time = new Date(msg.createdAt).toLocaleString("en-US");
-        const avatarLetter = (msg.authorTag || "?")[0].toUpperCase();
-        const attachmentsHtml = msg.attachments?.length
-          ? msg.attachments.map((url) =>
-              `<a href="${esc(url)}" target="_blank" style="display:block;color:#00b0f4;font-size:12px;margin-top:4px;">${esc(url)}</a>`
-            ).join("")
-          : "";
-
-        return `
-          <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #2f3136;">
-            <div style="width:38px;height:38px;border-radius:50%;background:#5865f2;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;flex-shrink:0;">${avatarLetter}</div>
-            <div style="flex:1;">
-              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
-                <span style="font-weight:600;color:#e3e5e8;">${esc(msg.authorTag)}</span>
-                <span style="font-size:11px;color:#72767d;">${time}</span>
-              </div>
-              <div style="color:#dcddde;white-space:pre-wrap;word-break:break-word;">${esc(msg.content)}</div>
-              ${attachmentsHtml}
-            </div>
-          </div>`;
-      }).join("");
+    ? `<p style="color:${C.dim};text-align:center;padding:28px 0;font-size:14px;">No messages were recorded in this ticket.</p>`
+    : messages.map((msg) => messageRow(msg, ticket)).join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticket Archive — ${esc(ticket.id)}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ticket ${esc(ref)} — ${esc(brandName)}</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #36393f; color: #dcddde; min-height: 100vh; }
-    a { color: #00b0f4; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: ${C.bg}; color: ${C.text}; line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 48px; }
+    .card {
+      background: ${C.surface}; border: 1px solid ${C.border};
+      border-radius: 14px; padding: 24px; margin-bottom: 16px;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+    a { color: ${C.accent}; word-break: break-all; }
+    h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+    h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+    .label {
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: ${C.dim};
+    }
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .meta {
+      background: ${C.panel}; border: 1px solid ${C.border};
+      border-radius: 9px; padding: 10px 12px;
+    }
+    .meta p + p { margin-top: 3px; font-size: 13px; color: ${C.text}; word-break: break-word; }
+    .msg { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid ${C.border}; }
+    .msg:last-child { border-bottom: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px;
+      background: ${C.panel}; border: 1px solid ${C.border}; color: ${C.accent};
+    }
+    .chip {
+      font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+      border: 1px solid ${C.borderHi}; color: ${C.muted};
+      border-radius: 999px; padding: 1px 7px;
+    }
+    .chip-staff { border-color: ${C.accent}; color: ${C.accent}; }
+    .content { white-space: pre-wrap; word-break: break-word; color: ${C.text}; font-size: 14px; }
+    .qa + .qa { margin-top: 14px; }
+    footer { text-align: center; font-size: 11px; color: ${C.dim}; margin-top: 20px; }
+
+    /* Печат: транскриптите се разпечатват за преписки — тъмната тема става
+       черен лист. Обръщаме на хартиен изглед и махаме декорацията. */
+    @media print {
+      body { background: #fff; color: #111; }
+      .card, .meta { background: #fff; border-color: #ccc; }
+      .avatar { background: #f2f2f2; border-color: #ccc; color: #333; }
+      .content, .meta p + p, h1, h2 { color: #111; }
+      .label, footer, .chip { color: #555; }
+      a { color: #0645ad; }
+      .wrap { max-width: none; padding: 0; }
+    }
   </style>
 </head>
 <body>
-  <div style="max-width:800px;margin:0 auto;padding:20px;">
-    <!-- Header -->
-    <div style="background:#2f3136;border-radius:8px;padding:24px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div style="width:48px;height:48px;background:#5865f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;">🎫</div>
-        <div>
-          <h1 style="font-size:20px;font-weight:700;color:white;">Ticket Archive</h1>
-          <p style="font-size:13px;color:#72767d;">ID: ${esc(ticket.id)}</p>
+  <div class="wrap">
+    <header class="card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+        ${whiteLabel ? "" : LOGO_SVG}
+        <div style="flex:1;min-width:0;">
+          <h1>Ticket transcript ${esc(ref)}</h1>
+          <p class="mono" style="font-size:11px;color:${C.dim};margin-top:2px;">
+            ${esc(brandName)} &bull; ID ${esc(ticket.id)}
+          </p>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-        ${metaCard("🕐 Opened", createdAt)}
-        ${metaCard("🔒 Closed", closedAt)}
-        ${metaCard("👤 Creator", ticket.creator?.username || "Unknown")}
-        ${metaCard("🛡️ Assigned To", ticket.assignee?.username || "Unassigned")}
-        ${ticket.closeReason ? metaCard("📝 Close Reason", ticket.closeReason) : ""}
+      <div class="meta-grid">
+        ${metaCard("Opened", createdAt)}
+        ${metaCard("Closed", closedAt)}
+        ${duration ? metaCard("Duration", duration) : ""}
+        ${metaCard("Opened by", ticket.creator?.username || "Unknown")}
+        ${metaCard("Handled by", ticket.assignee?.username || "Unassigned")}
+        ${metaCard("Messages", String(messages.length))}
+        ${ticket.priority && ticket.priority !== "NORMAL" ? metaCard("Priority", ticket.priority) : ""}
+        ${ticket.closeReason ? metaCard("Close reason", ticket.closeReason) : ""}
       </div>
-    </div>
+    </header>
 
     ${ticket.application ? applicationSection(ticket.application) : ""}
 
-    <!-- Messages -->
-    <div style="background:#2f3136;border-radius:8px;padding:24px;">
-      <h2 style="font-size:16px;font-weight:600;color:white;margin-bottom:16px;">💬 Messages (${messages.length})</h2>
+    <main class="card">
+      <h2>Conversation <span class="mono" style="color:${C.dim};font-weight:400;">(${messages.length})</span></h2>
       ${messagesHtml}
-    </div>
+    </main>
 
-    <p style="text-align:center;font-size:11px;color:#72767d;margin-top:16px;">
-      Generated by Discord SaaS Bot Platform &bull; ${new Date().toLocaleString("en-US")}
-    </p>
+    <footer>
+      ${whiteLabel
+        ? `${esc(brandName)} &bull; generated ${esc(fmt(new Date()))}`
+        : `Generated by <strong style="color:${C.muted};">Supreme Bot</strong> &bull; ${esc(fmt(new Date()))}`}
+    </footer>
   </div>
 </body>
 </html>`;
 }
 
+// Един ред съобщение. Ролята (Member/Staff) се извежда от автора спрямо
+// създателя на тикета — в модела няма флаг, но точно това разграничение прави
+// транскрипта четим при преглед след месеци.
+function messageRow(msg, ticket) {
+  const time = msg.createdAt
+    ? new Date(msg.createdAt).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })
+    : "";
+  const tag = msg.authorTag || "Unknown";
+  const letter = tag[0]?.toUpperCase() || "?";
+  const isCreator = msg.authorId && ticket.creatorId && msg.authorId === ticket.creatorId;
+  const chip = isCreator
+    ? `<span class="chip">Member</span>`
+    : `<span class="chip chip-staff">Staff</span>`;
+
+  const attachments = (msg.attachments || []).length
+    ? `<div style="margin-top:6px;">${msg.attachments.map((url) =>
+        `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12px;">📎 ${esc(url)}</a>`
+      ).join("")}</div>`
+    : "";
+
+  return `<div class="msg">
+    <div class="avatar" aria-hidden="true">${esc(letter)}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+        <span style="font-weight:600;font-size:14px;">${esc(tag)}</span>
+        ${chip}
+        <span class="mono" style="font-size:11px;color:${C.dim};">${esc(time)}</span>
+      </div>
+      <div class="content">${esc(msg.content || "")}</div>
+      ${attachments}
+    </div>
+  </div>`;
+}
+
 function metaCard(label, value) {
-  return `<div style="background:#36393f;border-radius:6px;padding:10px;">
-    <p style="font-size:11px;color:#72767d;margin-bottom:4px;">${label}</p>
-    <p style="font-size:13px;color:#e3e5e8;word-break:break-word;">${esc(String(value))}</p>
+  return `<div class="meta">
+    <p class="label">${esc(label)}</p>
+    <p>${esc(String(value))}</p>
   </div>`;
 }
 
@@ -94,17 +208,29 @@ function applicationSection(application) {
   const questions = application.form?.questions || [];
 
   const qaHtml = questions.map((q) => {
-    const answer = answers[q.id] || "*No answer provided*";
-    return `<div style="margin-bottom:14px;">
-      <p style="font-size:12px;font-weight:600;color:#72767d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${esc(q.label)}</p>
-      <p style="color:#dcddde;white-space:pre-wrap;">${esc(String(answer))}</p>
+    const answer = answers[q.id] || "No answer provided";
+    return `<div class="qa">
+      <p class="label">${esc(q.label)}</p>
+      <p class="content" style="margin-top:3px;">${esc(String(answer))}</p>
     </div>`;
   }).join("");
 
-  return `<div style="background:#2f3136;border-radius:8px;padding:24px;margin-bottom:16px;">
-    <h2 style="font-size:16px;font-weight:600;color:white;margin-bottom:16px;">📋 Application Transcript</h2>
-    ${qaHtml || '<p style="color:#72767d;">No questions found.</p>'}
-  </div>`;
+  return `<section class="card">
+    <h2>Application answers</h2>
+    ${qaHtml || `<p style="color:${C.dim};font-size:14px;">No questions found.</p>`}
+  </section>`;
+}
+
+// „2h 14m" — по-полезно от две дати, които читателят вади наум.
+function humanDuration(from, to) {
+  if (!from || !to) return null;
+  const ms = new Date(to) - new Date(from);
+  if (!Number.isFinite(ms) || ms < 0) return null;
+  const mins = Math.round(ms / 60000);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ${mins % 60}m`;
+  return `${Math.floor(hours / 24)}d ${hours % 24}h`;
 }
 
 function esc(str) {

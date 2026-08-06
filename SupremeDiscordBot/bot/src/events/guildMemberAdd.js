@@ -9,6 +9,7 @@
 import api from "../utils/api.js";
 import { interpolate } from "../utils/variables.js";
 import { logServerEvent } from "../utils/serverEventLog.js";
+import { BRAND } from "../utils/colors.js";
 
 export default {
   name: "guildMemberAdd",
@@ -83,7 +84,11 @@ export default {
             title: `Welcome to ${member.guild.name}!`,
             description: content,
             color: parseHex(server.welcomerEmbedColor),
+            // Иконата на сървъра в DM-а: получателят вижда ОТКЪДЕ идва
+            // съобщението, вместо гола кутия от непознат бот.
+            thumbnail: member.guild.iconURL ? { url: member.guild.iconURL({ size: 128 }) } : undefined,
             footer: { text: member.guild.name },
+            timestamp: new Date().toISOString(),
           }],
         });
       } catch { /* DMs disabled */ }
@@ -92,7 +97,7 @@ export default {
 };
 
 function parseHex(hex) {
-  if (!hex) return 0x00e5ff;
+  if (!hex) return BRAND;
   const n = parseInt(hex.replace("#", ""), 16);
-  return Number.isFinite(n) ? n : 0x00e5ff;
+  return Number.isFinite(n) ? n : BRAND;
 }

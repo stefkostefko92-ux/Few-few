@@ -17,6 +17,7 @@ import {
   Events,
 } from "discord.js";
 import api, { getServer } from "./utils/api.js";
+import { BRAND, SUCCESS, DANGER, WARNING, INFO, MUTED } from "./utils/colors.js";
 import { getTranslator, SUPPORTED_LANGUAGES } from "./i18n/index.js";
 import { readdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -526,7 +527,7 @@ app.post("/internal/application-discuss", async (req, res) => {
           `Staff (<@${reviewerId}>${managerRoleIds.length ? ` + ${managerRoleIds.map((r) => `<@&${r}>`).join(" ")}` : ""}) ` +
           `want to discuss your application before making a decision.\n\n` +
           `Feel free to answer any follow-up questions here. This channel will be closed once a decision is made.`,
-        color: 0x00e5ff,
+        color: BRAND,
         footer: { text: `Application ID: ${applicationId}` },
         timestamp: new Date().toISOString(),
       }],
@@ -538,7 +539,7 @@ app.post("/internal/application-discuss", async (req, res) => {
         embeds: [{
           title: "📝 Original Application",
           description: transcript.slice(0, 4000),
-          color: 0x99aab5,
+          color: MUTED,
         }],
       });
     }
@@ -584,10 +585,10 @@ app.post("/internal/application-transcript", async (req, res) => {
     if (!channel?.isTextBased?.()) return res.status(404).json({ error: "Transcript channel not found or not text-based" });
 
     const statusConfig = {
-      approve: { title: "✅ Application Approved", color: 0x57f287 },
-      deny:    { title: "❌ Application Denied",   color: 0xed4245 },
+      approve: { title: "✅ Application Approved", color: SUCCESS },
+      deny:    { title: "❌ Application Denied",   color: DANGER },
     };
-    const cfg = statusConfig[action] || { title: "📋 Application Reviewed", color: 0x00e5ff };
+    const cfg = statusConfig[action] || { title: "📋 Application Reviewed", color: BRAND };
 
     const embed = {
       title: `${cfg.title} — ${formName}`,
@@ -626,7 +627,7 @@ app.post("/internal/ticket-assigned", async (req, res) => {
             { name: "Ticket ID", value: ticketId, inline: true },
             ...(channelId ? [{ name: "Channel", value: `<#${channelId}>`, inline: true }] : []),
           ],
-          color: 0x5865f2,
+          color: INFO,
           footer: { text: "You can claim or unclaim it with /ticket claim" },
         }],
       }).catch(() => {}); // User may have DMs disabled — not critical
@@ -639,7 +640,7 @@ app.post("/internal/ticket-assigned", async (req, res) => {
         await channel.send({
           embeds: [{
             description: `🛡️ This ticket has been assigned to <@${assigneeId}> via round-robin.`,
-            color: 0x5865f2,
+            color: INFO,
           }],
         }).catch(() => {});
       }
@@ -662,7 +663,7 @@ app.post("/internal/ticket-auto-closed", async (req, res) => {
         embeds: [{
           title: "🔒 Ticket Auto-Closed",
           description: `This ticket has been automatically closed after **${hours}h** of inactivity.\n\nStaff can use the buttons above to reopen or delete.`,
-          color: 0xef4444,
+          color: DANGER,
           timestamp: new Date().toISOString(),
         }],
       }).catch(() => {});
@@ -675,7 +676,7 @@ app.post("/internal/ticket-auto-closed", async (req, res) => {
           embeds: [{
             title: `🕛 Ticket Auto-Closed · #${pad}`,
             description: `**Channel**: <#${channelId}>\n**Reason**: ${hours}h inactivity`,
-            color: 0xfbbf24,
+            color: WARNING,
             timestamp: new Date().toISOString(),
           }],
         }).catch(() => {});
@@ -718,13 +719,17 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
     if (dmMessage) {
       try {
         const user = await client.users.fetch(userId);
-        const color = action === "approve" ? 0x57f287 : action === "deny" ? 0xed4245 : 0x00e5ff;
+        const color = action === "approve" ? SUCCESS : action === "deny" ? DANGER : BRAND;
         const title = action === "approve" ? "✅ Application Approved" : action === "deny" ? "❌ Application Denied" : "📋 Application Update";
         await user.send({
           embeds: [{
             title,
             description: dmMessage,
             color,
+            // Иконата на сървъра — това е най-важното DM-съобщение, което
+            // изпращаме (одобрен/отказан кандидат); получателят трябва да
+            // вижда веднага от кой сървър идва.
+            thumbnail: guild?.iconURL?.({ size: 128 }) ? { url: guild.iconURL({ size: 128 }) } : undefined,
             footer: { text: guild?.name || "Application outcome" },
             timestamp: new Date().toISOString(),
           }],
@@ -892,7 +897,7 @@ app.post("/internal/ai-reply", async (req, res) => {
         },
         title: tr("ai.disclosure.title"),
         description: content,
-        color: 0x5865f2,
+        color: INFO,
         fields: [
           {
             name: tr("ai.disclosure.fieldName"),
@@ -926,7 +931,7 @@ app.post("/internal/admin-broadcast", async (req, res) => {
       embeds: [{
         title: `📢 ${title || "Platform Notice"}`,
         description: message,
-        color: 0x00e5ff,
+        color: BRAND,
         footer: { text: `— Supreme Bot admin${senderTag ? ` (${senderTag})` : ""}` },
         timestamp: new Date().toISOString(),
       }],

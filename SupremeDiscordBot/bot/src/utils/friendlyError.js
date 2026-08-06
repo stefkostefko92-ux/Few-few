@@ -4,6 +4,7 @@
 // от нормален приложен отказ (404/403/валидация), и винаги слага correlation ID
 // (interaction.id), за да може потребител да го даде на support при нужда.
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+import { WARNING } from "./colors.js";
 import { t, resolveLangSync } from "../i18n/index.js";
 
 const STATUS_URL = process.env.STATUS_URL || "https://supremebot.carbonstealth.eu/status";
@@ -34,7 +35,7 @@ export function friendlyError(err, interaction, fallbackMessage) {
       embeds: [{
         title: t("error.serviceUnavailable.title", lang),
         description: t("error.serviceUnavailable.body", lang, { id: correlationId }),
-        color: 0xfbbf24,
+        color: WARNING,
       }],
       components: [row],
     };

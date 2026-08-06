@@ -31,9 +31,9 @@ describe("generateHtmlTranscript", () => {
     expect(html).toContain("TestUser");
   });
 
-  it("shows 'No messages recorded' when messages is empty", () => {
+  it("shows an empty-state notice when messages is empty", () => {
     const html = generateHtmlTranscript(baseTicket);
-    expect(html).toContain("No messages recorded");
+    expect(html).toMatch(/No messages were recorded/i);
   });
 
   it("includes message content when messages exist", () => {
@@ -82,5 +82,56 @@ describe("generateHtmlTranscript", () => {
       application: null,
     };
     expect(() => generateHtmlTranscript(minimal)).not.toThrow();
+  });
+
+  // ─── Брандиране (регресии от визуалния одит, 06.08.2026) ────────────────
+  describe("branding", () => {
+    it("carries OUR brand, not Discord's default skin", () => {
+      const html = generateHtmlTranscript(baseTicket);
+      expect(html).toContain("Supreme Bot");
+      expect(html).toContain("#8fe600");            // брандово зелено
+      expect(html).not.toMatch(/#36393f|#2f3136|#5865f2/i); // Discord chrome
+      expect(html).not.toContain("Whitney");        // шрифтът на Discord
+    });
+
+    it("stays self-contained — no external resource references", () => {
+      const html = generateHtmlTranscript(baseTicket);
+      // Свален на диска транскрипт не може да дърпа нищо по мрежата; линковете
+      // към прикачени файлове са съдържание, не ресурси на документа.
+      expect(html).not.toMatch(/<link[^>]+href=|<script[^>]+src=|url\(https?:/i);
+      expect(html).not.toMatch(/<img[^>]+src="https?:/i);
+    });
+
+    it("hides our brand for a white-label bot — the customer pays for their own", () => {
+      const wl = { ...baseTicket, server: { customBotName: "Acme Helpdesk", name: "Acme" } };
+      const html = generateHtmlTranscript(wl);
+      expect(html).toContain("Acme Helpdesk");
+      expect(html).not.toContain("Supreme Bot");
+    });
+
+    it("honours an explicit whiteLabel override", () => {
+      const html = generateHtmlTranscript(baseTicket, { whiteLabel: true, brandName: "Nova Support" });
+      expect(html).toContain("Nova Support");
+      expect(html).not.toContain("Supreme Bot");
+    });
+
+    it("ships a print stylesheet — transcripts get printed for records", () => {
+      const html = generateHtmlTranscript(baseTicket);
+      expect(html).toContain("@media print");
+    });
+
+    it("labels who spoke: the requester is Member, everyone else Staff", () => {
+      const ticket = {
+        ...baseTicket,
+        creatorId: "user-1",
+        messages: [
+          { id: "m1", authorId: "user-1", authorTag: "Requester", content: "hi", attachments: [], createdAt: new Date() },
+          { id: "m2", authorId: "staff-9", authorTag: "Agent", content: "hello", attachments: [], createdAt: new Date() },
+        ],
+      };
+      const html = generateHtmlTranscript(ticket);
+      expect(html).toContain(">Member<");
+      expect(html).toContain(">Staff<");
+    });
   });
 });
