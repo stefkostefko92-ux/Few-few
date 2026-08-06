@@ -13,6 +13,7 @@ import {
   Partials,
   REST,
   Routes,
+  Events,
 } from "discord.js";
 import { readdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -137,7 +138,7 @@ export async function bootCustomClient(serverId, mainClient) {
     const client = await createConfiguredClient(mainClient);
 
     // Register slash commands once the client is ready
-    client.once("ready", async () => {
+    client.once(Events.ClientReady, async () => {
       console.log(`🤖 White-label ready for ${serverId}: ${client.user.tag}`);
 
       const commands = [...mainClient.commands.values()].map((c) => c.data.toJSON());

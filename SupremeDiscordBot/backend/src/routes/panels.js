@@ -8,6 +8,18 @@ import { validatePremiumFields, getServerTier } from "../lib/premium.js";
 
 const router = Router();
 
+// Cross-tenant guard за button.formId: връща { status, body } при референс към
+// форма извън сървъра, иначе null. Ползва се в create и update.
+async function assertFormsOwned(buttons, serverId) {
+  const ids = [...new Set((buttons || []).map((b) => b.formId).filter(Boolean))];
+  if (!ids.length) return null;
+  const owned = await prisma.form.count({ where: { id: { in: ids }, serverId } });
+  if (owned !== ids.length) {
+    return { status: 400, body: { error: "A button references a form that doesn't belong to this server." } };
+  }
+  return null;
+}
+
 router.use(requireAuth, loadUser);
 
 const PREMIUM_PANEL_LIMIT = 50;
@@ -117,6 +129,10 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     const premErr = await validatePremiumFields(req.params.serverId, parsed.data, PANEL_PREMIUM_FIELDS);
     if (premErr) return res.status(premErr.status).json(premErr.body);
 
+    // Cross-tenant guard (F6): button.formId трябва да е форма на ТОЗИ сървър.
+    const formErr = await assertFormsOwned(parsed.data.buttons, req.params.serverId);
+    if (formErr) return res.status(formErr.status).json(formErr.body);
+
     const { buttons, ...rest } = parsed.data;
 
     const panel = await prisma.panel.create({
@@ -153,6 +169,10 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
     // Validate premium-only fields
     const premErr = await validatePremiumFields(req.params.serverId, parsed.data, PANEL_PREMIUM_FIELDS);
     if (premErr) return res.status(premErr.status).json(premErr.body);
+
+    // Cross-tenant guard (F6): button.formId трябва да е форма на ТОЗИ сървър.
+    const formErr = await assertFormsOwned(parsed.data.buttons, req.params.serverId);
+    if (formErr) return res.status(formErr.status).json(formErr.body);
 
     const { buttons, ...rest } = parsed.data;
 

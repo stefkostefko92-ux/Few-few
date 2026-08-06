@@ -26,6 +26,15 @@ router.get("/archives/:ticketId", async (req, res, next) => {
     if (!archiveTokenMatches(ticket, req.query.t)) return res.status(404).send("Archive not found");
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // CSP на архивния HTML (F8, defense-in-depth): транскриптът е генериран от
+    // потребителско съдържание — заключваме до self стилове/картинки, нула
+    // скриптове/обекти/форми, за да не може вграден вектор да изпълни JS в
+    // нашия origin. Съгласувано с inline print-стиловете (self позволява
+    // <style>, но 'unsafe-inline' е нужен само за style; скриптове са забранени).
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'none'; img-src 'self' https://cdn.discordapp.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"
+    );
     res.send(ticket.archiveHtml);
   } catch (err) {
     next(err);
