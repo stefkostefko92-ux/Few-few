@@ -63,9 +63,9 @@ export default function SettingsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["server", serverId] });
       setForm((f) => f ? { ...f, customBotToken: "" } : f);
-      toast.success("Settings saved.");
+      toast.success(t("settings.saved"));
     },
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to save settings."),
+    onError: (err) => toast.error(err?.response?.data?.error || t("settings.saveFailed")),
   });
 
   if (isLoading || !form) {
@@ -124,17 +124,17 @@ export default function SettingsPage() {
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-cs-text">Server Settings</h1>
-        <p className="text-cs-muted text-sm mt-1">Configure bot behaviour for this server</p>
+        <p className="text-cs-muted text-sm mt-1">{t("settings.subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* ── General ─────────────────────────────────────────────────── */}
         <div className="cs-card space-y-4">
-          <h2 className="font-semibold text-cs-text">General</h2>
+          <h2 className="font-semibold text-cs-text">{t("settings.general")}</h2>
 
           <label className="block">
-            <span className="cs-label">Log Channel ID</span>
+            <span className="cs-label">{t("settings.logChannel")}</span>
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
               <input
@@ -147,7 +147,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Archive Channel ID</span>
+            <span className="cs-label">{t("settings.archiveChannel")}</span>
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
               <input
@@ -201,7 +201,7 @@ export default function SettingsPage() {
               checked={form.eventLogEnabled}
               onChange={(e) => set("eventLogEnabled", e.target.checked)}
             />
-            <span className="text-sm text-cs-text">Enable activity logging</span>
+            <span className="text-sm text-cs-text">{t("settings.enableLogging")}</span>
           </label>
 
           {form.eventLogEnabled && (
@@ -219,13 +219,13 @@ export default function SettingsPage() {
                 </div>
               </label>
               <div>
-                <span className="cs-label">Categories to log</span>
+                <span className="cs-label">{t("settings.categoriesToLog")}</span>
                 <div className="flex flex-col gap-2 mt-1">
                   {[
-                    ["eventLogCat_voice", "Voice — mute / deaf / join / leave / move"],
-                    ["eventLogCat_members", "Members — roles / nickname / timeout / join / leave"],
-                    ["eventLogCat_moderation", "Moderation — ban / unban / kick"],
-                    ["eventLogCat_messages", "Messages — edits / deletes / bulk purges (logs content)"],
+                    ["eventLogCat_voice", t("settings.cat.voice")],
+                    ["eventLogCat_members", t("settings.cat.members")],
+                    ["eventLogCat_moderation", t("settings.cat.moderation")],
+                    ["eventLogCat_messages", t("settings.cat.messages")],
                   ].map(([key, label]) => (
                     <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
                       <input
@@ -352,7 +352,7 @@ export default function SettingsPage() {
           </div>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Name</span>
+            <span className="cs-label">{t("settings.customBotName")}</span>
             <input
               className="cs-input"
               placeholder="My Awesome Bot"
@@ -364,7 +364,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Avatar URL</span>
+            <span className="cs-label">{t("settings.customBotAvatar")}</span>
             <input
               className="cs-input"
               placeholder="https://example.com/avatar.png"
@@ -376,7 +376,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Token</span>
+            <span className="cs-label">{t("settings.customBotToken")}</span>
             <input
               className="cs-input font-mono text-sm"
               type="password"
@@ -407,7 +407,7 @@ export default function SettingsPage() {
             <input type="checkbox" checked={form.welcomerEnabled}
               onChange={(e) => set("welcomerEnabled", e.target.checked)}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Enable welcome message in a channel</span>
+            <span className="text-sm text-cs-text">{t("settings.enableWelcome")}</span>
           </label>
 
           {form.welcomerEnabled && (
@@ -428,7 +428,7 @@ export default function SettingsPage() {
                 </p>
               </label>
               <label className="block">
-                <span className="cs-label">Embed Color</span>
+                <span className="cs-label">{t("settings.embedColor")}</span>
                 <input type="color" className="cs-input h-10" value={form.welcomerEmbedColor}
                   onChange={(e) => set("welcomerEmbedColor", e.target.value)} />
               </label>
@@ -439,7 +439,7 @@ export default function SettingsPage() {
             <input type="checkbox" checked={form.welcomerDmEnabled}
               onChange={(e) => set("welcomerDmEnabled", e.target.checked)}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Also DM the new member</span>
+            <span className="text-sm text-cs-text">{t("settings.alsoDm")}</span>
           </label>
 
           {form.welcomerDmEnabled && (
@@ -475,7 +475,7 @@ export default function SettingsPage() {
 
         {mutation.isError && (
           <p role="alert" className="text-danger text-sm">
-            {mutation.error?.response?.data?.error || "Failed to save settings"}
+            {mutation.error?.response?.data?.error || t("settings.saveFailed")}
           </p>
         )}
 
@@ -490,7 +490,7 @@ export default function SettingsPage() {
             disabled={mutation.isPending}
           >
             <Save className="w-4 h-4" />
-            {mutation.isPending ? "Saving…" : "Save Settings"}
+            {mutation.isPending ? t("common.saving") : t("settings.save")}
           </button>
         </div>
       </form>

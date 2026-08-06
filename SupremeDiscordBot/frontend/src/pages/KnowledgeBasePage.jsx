@@ -41,22 +41,22 @@ export default function KnowledgeBasePage() {
   const createMut = useMutation({
     mutationFn: (data) => createKbArticle(serverId, data),
     onSuccess: () => { invalidate(); setEditing(null); toast.success("Article created."); },
-    onError: (err) => setFormError(err?.response?.data?.error || "Failed to create article."),
+    onError: (err) => setFormError(err?.response?.data?.error || t("kb.createFailed")),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => updateKbArticle(serverId, id, data),
     onSuccess: () => { invalidate(); setEditing(null); toast.success("Article updated."); },
-    onError: (err) => setFormError(err?.response?.data?.error || "Failed to update article."),
+    onError: (err) => setFormError(err?.response?.data?.error || t("kb.updateFailed")),
   });
   const toggleMut = useMutation({
     mutationFn: (id) => toggleKbArticle(serverId, id),
     onSuccess: invalidate,
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to toggle article."),
+    onError: (err) => toast.error(err?.response?.data?.error || t("kb.toggleFailed")),
   });
   const deleteMut = useMutation({
     mutationFn: (id) => deleteKbArticle(serverId, id),
     onSuccess: () => { invalidate(); toast.success("Article deleted."); },
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to delete article."),
+    onError: (err) => toast.error(err?.response?.data?.error || t("kb.deleteFailed")),
   });
 
   const openNew = () => { setForm(defaultForm()); setKeywordDraft(""); setFormError(null); setEditing("new"); };
@@ -89,7 +89,7 @@ export default function KnowledgeBasePage() {
     e.preventDefault();
     setFormError(null);
     if (!form.title.trim() || !form.content.trim()) {
-      setFormError("Title and content are required.");
+      setFormError(t("kb.needTitleContent"));
       return;
     }
     const payload = {
@@ -131,9 +131,9 @@ export default function KnowledgeBasePage() {
       {!isLoading && !isError && articles.length === 0 && (
         <EmptyState
           icon={Lightbulb}
-          title="No knowledge base articles yet"
-          description="Add your first article — Supreme Bot will start suggesting it on matching tickets right away."
-          ctaLabel="Create first article"
+          title={t("kb.empty.title")}
+          description={t("kb.empty.body")}
+          ctaLabel={t("kb.empty.cta")}
           onCtaClick={openNew}
         />
       )}
@@ -164,7 +164,7 @@ export default function KnowledgeBasePage() {
               >
                 {a.enabled ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
               </button>
-              <button onClick={() => openEdit(a)} aria-label={`Edit article ${a.title}`} title="Edit article" className="text-cs-cyan hover:opacity-80 p-2">
+              <button onClick={() => openEdit(a)} aria-label={`Edit article ${a.title}`} title={t("kb.edit")} className="text-cs-cyan hover:opacity-80 p-2">
                 <Pencil className="w-4 h-4" />
               </button>
               <button
@@ -174,7 +174,7 @@ export default function KnowledgeBasePage() {
                   onConfirm: () => deleteMut.mutate(a.id),
                 })}
                 aria-label={`Delete article ${a.title}`}
-                title="Delete article"
+                title={t("kb.delete")}
                 className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
@@ -195,14 +195,14 @@ export default function KnowledgeBasePage() {
             <span className="cs-label">Title</span>
             <input className="cs-input" required maxLength={TITLE_MAX} value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              placeholder="How do I get a refund?" />
+              placeholder={t("kb.ph.title")} />
           </label>
 
           <label className="block">
             <span className="cs-label">Content</span>
             <textarea className="cs-input min-h-[140px]" required maxLength={CONTENT_MAX} value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              placeholder="Explain the answer — this is what staff and members will see." />
+              placeholder={t("kb.ph.content")} />
             <p className="text-xs text-cs-dim mt-1">{form.content.length} / {CONTENT_MAX}</p>
           </label>
 
@@ -225,7 +225,7 @@ export default function KnowledgeBasePage() {
               onChange={(e) => setKeywordDraft(e.target.value)}
               onKeyDown={onKeywordKeyDown}
               onBlur={addKeyword}
-              placeholder="Type a keyword and press Enter…"
+              placeholder={t("kb.ph.keyword")}
             />
             <p className="text-xs text-cs-dim mt-1">
               The bot matches these against the ticket's opening text (lowercase, substring match).

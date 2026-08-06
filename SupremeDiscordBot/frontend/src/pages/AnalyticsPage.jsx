@@ -9,6 +9,7 @@ import {
 } from "../api";
 
 export default function AnalyticsPage() {
+  const { t } = useT();
   const { serverId } = useParams();
 
   const overviewQ = useQuery({ queryKey: ["analytics-overview", serverId], queryFn: () => getAnalyticsOverview(serverId) });
@@ -35,13 +36,13 @@ export default function AnalyticsPage() {
 
       {/* ═══ KPI cards ═══ */}
       {overviewQ.isError ? (
-        <RetryCard className="mb-8" message="Couldn't load the overview metrics." onRetry={() => overviewQ.refetch()} isRefetching={overviewQ.isRefetching} />
+        <RetryCard className="mb-8" message={t("analytics.err.overview")} onRetry={() => overviewQ.refetch()} isRefetching={overviewQ.isRefetching} />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Kpi icon={Ticket} label="Total Tickets"     value={overview?.tickets?.total ?? "—"} />
+          <Kpi icon={Ticket} label={t("analytics.totalTickets")}     value={overview?.tickets?.total ?? "—"} />
           <Kpi icon={Ticket} label="Open"              value={overview?.tickets?.open ?? "—"} accent />
           <Kpi icon={FileText} label="Applications"    value={overview?.applications?.total ?? "—"} />
-          <Kpi icon={TrendingUp} label="Approval Rate" value={overview?.applications?.approvalRate !== undefined ? `${overview.applications.approvalRate}%` : "—"} />
+          <Kpi icon={TrendingUp} label={t("analytics.approvalRate")} value={overview?.applications?.approvalRate !== undefined ? `${overview.applications.approvalRate}%` : "—"} />
         </div>
       )}
 
@@ -50,7 +51,7 @@ export default function AnalyticsPage() {
         <h2 className="text-lg font-bold text-cs-text mb-1">Ticket Activity Heatmap</h2>
         <p className="text-xs text-cs-muted mb-4">UTC · Last 90 days · {heatmap?.total ?? 0} tickets</p>
         {heatmapQ.isError ? (
-          <RetryCard message="Couldn't load the activity heatmap." onRetry={() => heatmapQ.refetch()} isRefetching={heatmapQ.isRefetching} />
+          <RetryCard message={t("analytics.err.heatmap")} onRetry={() => heatmapQ.refetch()} isRefetching={heatmapQ.isRefetching} />
         ) : heatmap?.grid ? <Heatmap grid={heatmap.grid} /> : (
           <div className="h-48 animate-pulse bg-cs-surface rounded" role="status">
             <span className="sr-only">Loading heatmap…</span>
@@ -66,7 +67,7 @@ export default function AnalyticsPage() {
           </h2>
           <p className="text-xs text-cs-muted mb-4">30 days · Sorted by activity</p>
           {leaderboardQ.isError ? (
-            <RetryCard message="Couldn't load the leaderboard." onRetry={() => leaderboardQ.refetch()} isRefetching={leaderboardQ.isRefetching} />
+            <RetryCard message={t("analytics.err.leaderboard")} onRetry={() => leaderboardQ.refetch()} isRefetching={leaderboardQ.isRefetching} />
           ) : leaderboard?.leaderboard?.length ? (
             <div className="space-y-2">
               {leaderboard.leaderboard.map((s, i) => (
@@ -101,7 +102,7 @@ export default function AnalyticsPage() {
           </h2>
           <p className="text-xs text-cs-muted mb-4">90 days · Conversion stages</p>
           {funnelQ.isError ? (
-            <RetryCard message="Couldn't load the funnel." onRetry={() => funnelQ.refetch()} isRefetching={funnelQ.isRefetching} />
+            <RetryCard message={t("analytics.err.funnel")} onRetry={() => funnelQ.refetch()} isRefetching={funnelQ.isRefetching} />
           ) : funnel?.stages?.length ? (
             <div className="space-y-3">
               {funnel.stages.map((st) => (

@@ -4,10 +4,12 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Key, Plus, Trash2, Copy, Eye, CheckCircle2, AlertTriangle } from "lucide-react";
 import { getApiKeys, createApiKey, revokeApiKey, getApiScopes } from "../api";
+import { useT } from "../contexts/I18nContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 
 export default function ApiKeysPage() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
@@ -81,7 +83,7 @@ export default function ApiKeysPage() {
                 <code className="flex-1 bg-cs-black border border-green-500/30 px-3 py-2 text-xs font-mono text-green-300 rounded break-all">
                   {newlyCreated.key}
                 </code>
-                <button onClick={copyKey} className="cs-btn-primary flex items-center gap-2" aria-label="Copy API key to clipboard">
+                <button onClick={copyKey} className="cs-btn-primary flex items-center gap-2" aria-label={t("apikeys.copyKey")}>
                   {copied ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
                   {copied ? "Copied" : "Copy"}
                 </button>
@@ -111,7 +113,7 @@ export default function ApiKeysPage() {
           <label className="block">
             <span className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-1">Name</span>
             <input required className="cs-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Production integration" />
+              placeholder={t("apikeys.ph.name")} />
           </label>
 
           <fieldset>
@@ -130,7 +132,7 @@ export default function ApiKeysPage() {
             <span className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-1">Expires in (days, optional)</span>
             <input type="number" min={1} max={3650} className="cs-input" value={form.expiresInDays}
               onChange={(e) => setForm({ ...form, expiresInDays: e.target.value })}
-              placeholder="Leave blank for no expiry" />
+              placeholder={t("apikeys.ph.expiry")} />
           </label>
 
           <div className="flex justify-end gap-2">
@@ -151,9 +153,9 @@ export default function ApiKeysPage() {
       {!isLoading && !keys.length && !creating && (
         <EmptyState
           icon={Key}
-          title="No API keys yet"
-          description="Generate a key to access the public REST API at /public/v1 with bearer-token authentication."
-          ctaLabel="Create first key"
+          title={t("apikeys.empty.title")}
+          description={t("apikeys.empty.body")}
+          ctaLabel={t("apikeys.empty.cta")}
           onCtaClick={() => setCreating(true)}
         />
       )}
@@ -179,7 +181,7 @@ export default function ApiKeysPage() {
               onClick={() => setConfirmRevoke(k)}
               className="text-danger hover:text-red-300 p-2"
               aria-label={`Revoke API key ${k.name}`}
-              title="Revoke key"
+              title={t("apikeys.revoke")}
             >
               <Trash2 className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -197,7 +199,7 @@ export default function ApiKeysPage() {
 
       <ConfirmDialog
         open={!!confirmRevoke}
-        title="Revoke API Key"
+        title={t("apikeys.revokeTitle")}
         message={confirmRevoke ? `Revoke "${confirmRevoke.name}"? This cannot be undone.` : ""}
         confirmLabel="Revoke Key"
         destructive
