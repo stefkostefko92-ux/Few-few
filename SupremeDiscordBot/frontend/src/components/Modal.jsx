@@ -4,11 +4,13 @@
 // restored on close, and Tab focus trapped within the dialog.
 import { useEffect, useRef, useId } from "react";
 import { X } from "lucide-react";
+import { useT } from "../contexts/I18nContext";
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
 
 export default function Modal({ open, onClose, title, children, maxWidth = "max-w-lg" }) {
+  const { t } = useT();
   const dialogRef = useRef(null);
   const previouslyFocused = useRef(null);
   const titleId = useId();
@@ -82,7 +84,7 @@ export default function Modal({ open, onClose, title, children, maxWidth = "max-
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t("common.closeDialog")}
             className="text-cs-muted hover:text-cs-text transition-colors p-1.5 rounded-lg hover:bg-white/5"
           >
             <X className="w-5 h-5" aria-hidden="true" />

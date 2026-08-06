@@ -9,8 +9,10 @@ import { Star, Clock, AlertTriangle, X, XCircle } from "lucide-react";
 import { useState } from "react";
 import { getTrialStatus, startTrial, cancelTrial } from "../api";
 import ConfirmDialog from "./ConfirmDialog";
+import { useT } from "../contexts/I18nContext";
 
 export default function TrialBanner() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [dismissed, setDismissed] = useState(
@@ -44,7 +46,7 @@ export default function TrialBanner() {
     },
     onError: (err) => {
       setConfirmCancel(false);
-      setCancelError(`Failed to cancel: ${err?.response?.data?.error || err.message}`);
+      setCancelError(t("trial.cancelFailed", { error: err?.response?.data?.error || err.message }));
     },
   });
 
@@ -59,10 +61,10 @@ export default function TrialBanner() {
             <Star className="w-5 h-5 text-cs-gold fill-current flex-shrink-0" />
             <div>
               <div className="text-sm text-cs-text font-bold">
-                Try Premium free for 14 days
+                {t("trial.tryFree")}
               </div>
               <div className="text-xs text-cs-muted">
-                Unlock all features — no credit card required, no auto-charge.
+                {t("trial.tryFreeDesc")}
               </div>
             </div>
           </div>
@@ -72,7 +74,7 @@ export default function TrialBanner() {
               disabled={startMut.isPending}
               className="px-4 py-1.5 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
             >
-              {startMut.isPending ? "Starting…" : "Start Free Trial"}
+              {startMut.isPending ? t("trial.starting") : t("trial.startFree")}
             </button>
             <button
               onClick={() => {
@@ -80,7 +82,7 @@ export default function TrialBanner() {
                 setDismissed(true);
               }}
               className="text-cs-dim hover:text-white p-1"
-              aria-label="Dismiss"
+              aria-label={t("common.dismiss")}
             >
               <X className="w-4 h-4" />
             </button>
@@ -102,10 +104,10 @@ export default function TrialBanner() {
               : <Clock className="w-4 h-4 text-cs-cyan flex-shrink-0" />}
             <div className="text-sm">
               <span className="text-cs-text font-bold">
-                {urgent ? "Trial ending soon: " : "Premium trial active: "}
+                {urgent ? t("trial.endingSoon") : t("trial.activePrefix")}
               </span>
               <span className={urgent ? "text-warning" : "text-cs-muted"}>
-                {trial.daysLeft} {trial.daysLeft === 1 ? "day" : "days"} left
+                {trial.daysLeft === 1 ? t("trial.dayLeft", { count: trial.daysLeft }) : t("trial.daysLeft", { count: trial.daysLeft })}
               </span>
             </div>
           </div>
@@ -118,24 +120,24 @@ export default function TrialBanner() {
                   : "bg-cs-cyan hover:bg-cs-cyan/80 text-black"
               }`}
             >
-              Subscribe →
+              {t("trial.subscribe")}
             </Link>
             <button
               onClick={() => setConfirmCancel(true)}
               disabled={cancelMut.isPending}
               className="px-3 py-1 rounded-full bg-transparent border border-cs-border text-cs-muted hover:text-danger hover:border-red-500/50 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40"
-              title="End trial early"
+              title={t("trial.endEarly")}
             >
-              {cancelMut.isPending ? "Cancelling…" : "Cancel Trial"}
+              {cancelMut.isPending ? t("trial.cancelling") : t("trial.cancelTrial")}
             </button>
           </div>
         </div>
         <ConfirmDialog
           open={confirmCancel}
-          title="Cancel your trial?"
-          message="You'll lose Premium features immediately. This can't be undone — the trial is one-time per server."
-          confirmLabel="Cancel trial"
-          cancelLabel="Keep trial"
+          title={t("trial.cancelTitle")}
+          message={t("trial.cancelMsg")}
+          confirmLabel={t("trial.cancelConfirm")}
+          cancelLabel={t("trial.keepTrial")}
           destructive
           loading={cancelMut.isPending}
           onConfirm={() => cancelMut.mutate()}
@@ -156,8 +158,8 @@ export default function TrialBanner() {
           <div className="flex items-center gap-3 flex-1">
             <AlertTriangle className="w-4 h-4 text-danger flex-shrink-0" />
             <div className="text-sm">
-              <span className="text-cs-text font-bold">Your Premium trial has ended.</span>
-              <span className="text-cs-muted ml-2">Premium features are now locked.</span>
+              <span className="text-cs-text font-bold">{t("trial.ended")}</span>
+              <span className="text-cs-muted ml-2">{t("trial.lockedNow")}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -165,7 +167,7 @@ export default function TrialBanner() {
               to={`/dashboard/${serverId}/premium`}
               className="px-3 py-1 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors"
             >
-              Subscribe to keep access
+              {t("trial.subscribeKeep")}
             </Link>
             <button
               onClick={() => {
@@ -173,7 +175,7 @@ export default function TrialBanner() {
                 setDismissed(true);
               }}
               className="text-cs-dim hover:text-white p-1"
-              aria-label="Dismiss"
+              aria-label={t("common.dismiss")}
             >
               <X className="w-4 h-4" />
             </button>
