@@ -12,6 +12,11 @@ import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 
+// Discord таван: 25 опции в падащо меню, 25 бутона (5 реда × 5). Ботът вече
+// реди бутоните по редове (utils/embed.js), а backend-ът валидира същото число
+// (routes/panels.js) — трите места трябва да се движат заедно.
+const MAX_PANEL_BUTTONS = 25;
+
 const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
 const STYLE_COLORS = {
   PRIMARY: "bg-cs-cyan",
@@ -193,7 +198,7 @@ export default function PanelsPage() {
   };
 
   const addButton = () => {
-    if (form.buttons.length >= 5) return;
+    if (form.buttons.length >= MAX_PANEL_BUTTONS) return;
     setForm((f) => ({ ...f, buttons: [...f.buttons, { label: t("panels.newButton"), emoji: "", style: "PRIMARY", formId: "" }] }));
   };
 
@@ -425,15 +430,6 @@ export default function PanelsPage() {
                         onChange={(e) => setForm((f) => ({ ...f, counterPadding: e.target.value }))} />
                       <p className="text-xs text-cs-dim mt-1">4 = "0042"</p>
                     </label>
-                    <label className="block">
-                      <span className="cs-label">{t("panels.buttonStyle")}</span>
-                      <select className="cs-select" value={form.buttonStyle}
-                        onChange={(e) => setForm((f) => ({ ...f, buttonStyle: e.target.value }))}>
-                        <option value="BUTTON">{t("panels.buttons")}</option>
-                        <option value="DROPDOWN">{t("panels.dropdown")}</option>
-                        <option value="THREAD">{t("panels.privateThreads")}</option>
-                      </select>
-                    </label>
                   </div>
                 </div>
               </details>
@@ -579,12 +575,33 @@ export default function PanelsPage() {
 
               {/* Buttons */}
               <div>
+                {/* Начинът на показване живее ТУК, до самите опции — беше
+                    заровен в свитата секция „Categories & Channels", където
+                    никой не го намираше. Той диктува и тавана: Discord дава 25
+                    опции в падащо меню и 25 бутона (5 реда × 5). */}
+                <label className="block mb-3">
+                  <span className="cs-label">{t("panels.displayStyle")}</span>
+                  <select className="cs-select" value={form.buttonStyle}
+                    onChange={(e) => setForm((f) => ({ ...f, buttonStyle: e.target.value }))}>
+                    <option value="BUTTON">{t("panels.style.buttons")}</option>
+                    <option value="DROPDOWN">{t("panels.style.dropdown")}</option>
+                    <option value="THREAD">{t("panels.style.threads")}</option>
+                  </select>
+                  <p className="text-xs text-cs-dim mt-1">
+                    {form.buttonStyle === "DROPDOWN"
+                      ? t("panels.style.dropdownHint")
+                      : t("panels.style.buttonsHint")}
+                  </p>
+                </label>
+
                 <div className="flex items-center justify-between mb-2">
-                  <span className="cs-label">Buttons ({form.buttons.length}/5)</span>
+                  <span className="cs-label">
+                    {form.buttonStyle === "DROPDOWN" ? t("panels.options") : t("panels.buttonsLabel")} ({form.buttons.length}/{MAX_PANEL_BUTTONS})
+                  </span>
                   <button type="button" onClick={addButton}
-                    disabled={form.buttons.length >= 5}
+                    disabled={form.buttons.length >= MAX_PANEL_BUTTONS}
                     className="text-cs-cyan hover:text-cs-cyan text-sm transition-colors disabled:opacity-40">
-                    + Add Button
+                    {form.buttonStyle === "DROPDOWN" ? t("panels.addOption") : t("panels.addButton")}
                   </button>
                 </div>
                 <div className="space-y-2">

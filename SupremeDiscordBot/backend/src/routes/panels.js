@@ -98,12 +98,14 @@ const createPanelSchema = z.object({
   // v31 — SLA targets in minutes (Premium). null clears/disables; max 20160 = 2 weeks.
   slaFirstResponseMinutes: z.number().int().positive().max(20160).optional().nullable(),
   slaResolutionMinutes:    z.number().int().positive().max(20160).optional().nullable(),
+  // До 25 опции: Discord позволява 25 в падащо меню (DROPDOWN) и 25 бутона
+  // (5 реда × 5). Ботът вече реди бутоните по редове — виж utils/embed.js.
   buttons: z.array(z.object({
     label: z.string().min(1).max(80),
     emoji: z.string().optional(),
     style: z.enum(["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"]).optional(),
     formId: z.string().optional(),
-  })).min(1).max(5),
+  })).min(1).max(25),
 });
 
 router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
