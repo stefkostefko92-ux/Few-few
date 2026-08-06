@@ -1063,7 +1063,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 278
+        "lessons": 281
       },
       "evolution": [
         {
@@ -1677,9 +1677,20 @@
           "date": "2026-08-05",
           "event": "v17.8 — учене",
           "detail": "Научи: Ticket.applicationId е @unique, а всички idempotency проверки за application discussion… (+1 още)"
+        },
+        {
+          "version": "18.1.0",
+          "date": "2026-08-06",
+          "event": "v18.1 — учене",
+          "detail": "Научи: react-router v6: useParams() в РОДИТЕЛСКИ layout маршрут ВИЖДА параметрите на дъщерния … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „react-router v6: useParams() в РОДИТЕЛСКИ layout маршрут ВИЖДА параметрите на дъщерния …\" (+2 още)"
+        },
         {
           "date": "2026-08-05",
           "type": "learning",
