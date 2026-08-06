@@ -135,3 +135,52 @@ describe("generateHtmlTranscript", () => {
     });
   });
 });
+
+// ─── v36: одитна следа за редактирани/изтрити съобщения ────────────────────
+// Продукционен доклад: „от логовете не се запазваха изтритите и променените
+// съобщения". Транскриптът е одитен документ — изтриването не бива да е начин
+// да изчистиш следите си от него.
+describe("одитна следа на съобщенията (v36)", () => {
+  const withStates = {
+    ...baseTicket,
+    creatorId: "user-1",
+    messages: [
+      { id: "m1", authorId: "user-1", authorTag: "marina", content: "Втора версия",
+        originalContent: "Първа версия", editedAt: new Date(), deletedAt: null,
+        attachments: [], createdAt: new Date() },
+      { id: "m2", authorId: "user-1", authorTag: "marina", content: "Съжалявам, грешка",
+        originalContent: null, editedAt: null, deletedAt: new Date(),
+        attachments: [], createdAt: new Date() },
+    ],
+  };
+
+  it("маркира редактирано съобщение И показва първоначалния текст", () => {
+    const html = generateHtmlTranscript(withStates);
+    expect(html).toContain(">Edited<");
+    expect(html).toContain("Първа версия");
+    expect(html).toContain("Втора версия");
+  });
+
+  it("НЕ скрива изтритото съобщение — маркира го", () => {
+    const html = generateHtmlTranscript(withStates);
+    expect(html).toContain(">Deleted<");
+    expect(html).toContain("Съжалявам, грешка");   // съдържанието се пази
+    expect(html).toContain("msg-deleted");          // и се показва зачертано
+  });
+
+  it("съобщение без промени не носи излишни етикети", () => {
+    const clean = {
+      ...baseTicket,
+      messages: [{ id: "m9", authorId: "u", authorTag: "x", content: "hi", attachments: [], createdAt: new Date() }],
+    };
+    const html = generateHtmlTranscript(clean);
+    expect(html).not.toContain(">Edited<");
+    expect(html).not.toContain(">Deleted<");
+  });
+
+  it("кирилицата оцелява в HTML-а (не е mojibake)", () => {
+    const html = generateHtmlTranscript(withStates);
+    expect(html).toContain("Първа версия");
+    expect(html).toMatch(/<meta charset="UTF-8">/i);
+  });
+});

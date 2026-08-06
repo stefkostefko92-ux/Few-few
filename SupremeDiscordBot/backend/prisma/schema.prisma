@@ -531,10 +531,21 @@ model TicketMessage {
   content     String
   attachments String[]
   createdAt   DateTime @default(now())
+  // ─── v36 Одитна следа на редакции/изтривания ──────────────────────────
+  // Discord ID-то на съобщението. БЕЗ него редакция или изтриване нямаше как
+  // да се свърже със записания ред — затова транскриптът показваше вечно
+  // първоначалния текст и не знаеше, че съобщение е изтрито.
+  messageId       String?
+  // Първоначалният текст, запазен при ПЪРВАТА редакция (после не се пипа —
+  // транскриптът трябва да показва какво е било казано, не последната версия).
+  originalContent String?
+  editedAt        DateTime?
+  deletedAt       DateTime?
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
+  @@index([messageId])
   @@map("ticket_messages")
 }
 

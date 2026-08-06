@@ -5,6 +5,25 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import PDFDocument from "pdfkit";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// ─── Шрифтове с кирилица ─────────────────────────────────────────────────────
+// PDFKit носи само 14-те стандартни PDF шрифта (Helvetica/Times/Courier) — те
+// са Latin-1 и физически нямат кирилски глифи. Български транскрипт излизаше
+// празен. DejaVu Sans покрива кирилица (и гръцки), лицензът е свободен
+// (Bitstream Vera + Public Domain — виж assets/fonts/LICENSE-DejaVu.txt) и
+// шрифтът е ВГРАДЕН в репото: контейнерът е node:alpine и няма системни
+// шрифтове, на които да разчитаме.
+const FONTS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "assets", "fonts");
+const FONT = "Body";
+const FONT_BOLD = "BodyBold";
+
+function registerFonts(doc) {
+  doc.registerFont(FONT, join(FONTS_DIR, "DejaVuSans.ttf"));
+  doc.registerFont(FONT_BOLD, join(FONTS_DIR, "DejaVuSans-Bold.ttf"));
+  doc.font(FONT);
+}
 import { getServerTier } from "../lib/premium.js";
 
 const router = Router();
@@ -137,6 +156,11 @@ router.get("/:serverId/ticket/:ticketId/pdf", requireServerAdmin, async (req, re
 
     // ── Build PDF ─────────────────────────────────────────────────────────
     const doc = new PDFDocument({ margin: 40, size: "A4" });
+    // Вградените в PDFKit шрифтове (Helvetica и др.) са AFM с WinAnsi кодиране —
+    // те НЯМАТ кирилски глифи, затова българският текст излизаше празен/счупен.
+    // Регистрираме TTF с кирилица; имената FONT/FONT_BOLD се ползват навсякъде
+    // по-долу вместо литерала "Helvetica".
+    registerFonts(doc);
     const filename = `ticket-${ticket.id}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
@@ -149,9 +173,9 @@ router.get("/:serverId/ticket/:ticketId/pdf", requireServerAdmin, async (req, re
 
     // Header
     doc.rect(0, 0, doc.page.width, 80).fill(BLUE);
-    doc.fill("white").fontSize(20).font("Helvetica-Bold")
+    doc.fill("white").fontSize(20).font(FONT_BOLD)
       .text("🎫 Ticket Archive", 40, 25);
-    doc.fontSize(10).font("Helvetica")
+    doc.fontSize(10).font(FONT)
       .text(`ID: ${ticket.id}`, 40, 52);
 
     doc.moveDown(3);
@@ -167,25 +191,25 @@ router.get("/:serverId/ticket/:ticketId/pdf", requireServerAdmin, async (req, re
     ];
     if (ticket.closeReason) meta.push(["Close Reason", ticket.closeReason]);
 
-    doc.font("Helvetica-Bold").fontSize(12).fill(DARK).text("Ticket Details");
+    doc.font(FONT_BOLD).fontSize(12).fill(DARK).text("Ticket Details");
     doc.moveDown(0.3);
 
     meta.forEach(([label, value]) => {
-      doc.font("Helvetica-Bold").fontSize(9).fill(GRAY).text(label.toUpperCase(), { continued: false });
-      doc.font("Helvetica").fontSize(10).fill(DARK).text(String(value));
+      doc.font(FONT_BOLD).fontSize(9).fill(GRAY).text(label.toUpperCase(), { continued: false });
+      doc.font(FONT).fontSize(10).fill(DARK).text(String(value));
       doc.moveDown(0.2);
     });
 
     // Application transcript (if applicable)
     if (ticket.application) {
       doc.moveDown(0.5);
-      doc.font("Helvetica-Bold").fontSize(12).fill(DARK).text("Application Transcript");
+      doc.font(FONT_BOLD).fontSize(12).fill(DARK).text("Application Transcript");
       doc.moveDown(0.3);
 
       const answers = ticket.application.answers || {};
       (ticket.application.form?.questions || []).forEach((q) => {
-        doc.font("Helvetica-Bold").fontSize(9).fill(GRAY).text(q.label.toUpperCase());
-        doc.font("Helvetica").fontSize(10).fill(DARK)
+        doc.font(FONT_BOLD).fontSize(9).fill(GRAY).text(q.label.toUpperCase());
+        doc.font(FONT).fontSize(10).fill(DARK)
           .text(String(answers[q.id] || "—"), { width: 500 });
         doc.moveDown(0.3);
       });
@@ -193,22 +217,31 @@ router.get("/:serverId/ticket/:ticketId/pdf", requireServerAdmin, async (req, re
 
     // Messages
     doc.moveDown(0.5);
-    doc.font("Helvetica-Bold").fontSize(12).fill(DARK)
+    doc.font(FONT_BOLD).fontSize(12).fill(DARK)
       .text(`Messages (${ticket.messages.length})`);
     doc.moveDown(0.3);
 
     if (ticket.messages.length === 0) {
-      doc.font("Helvetica").fontSize(10).fill(GRAY).text("No messages recorded.");
+      doc.font(FONT).fontSize(10).fill(GRAY).text("No messages recorded.");
     } else {
       ticket.messages.forEach((msg) => {
         const time = new Date(msg.createdAt).toLocaleString("en-US");
-        doc.font("Helvetica-Bold").fontSize(9).fill(BLUE).text(msg.authorTag, { continued: true });
-        doc.font("Helvetica").fill(GRAY).text(`   ${time}`);
-        doc.font("Helvetica").fontSize(10).fill(DARK)
-          .text(msg.content || "[attachment]", { width: 510 });
+        // v36 — състоянието се пише до автора, а изтритото съобщение НЕ се
+        // премълчава: одитният документ трябва да показва, че е било казано
+        // и после махнато.
+        const state = [msg.deletedAt ? "deleted" : null, msg.editedAt ? "edited" : null]
+          .filter(Boolean).join(", ");
+        doc.font(FONT_BOLD).fontSize(9).fill(BLUE).text(msg.authorTag, { continued: true });
+        doc.font(FONT).fill(GRAY).text(`   ${time}${state ? `   [${state}]` : ""}`);
+        doc.font(FONT).fontSize(10).fill(msg.deletedAt ? GRAY : DARK)
+          .text(msg.content || "[attachment]", { width: 510, strike: Boolean(msg.deletedAt) });
+        if (msg.editedAt && msg.originalContent) {
+          doc.font(FONT).fontSize(9).fill(GRAY)
+            .text(`Original: ${msg.originalContent}`, { width: 500, indent: 12 });
+        }
         if (msg.attachments?.length) {
           msg.attachments.forEach((url) => {
-            doc.font("Helvetica").fontSize(8).fill(BLUE).text(url, { link: url });
+            doc.font(FONT).fontSize(8).fill(BLUE).text(url, { link: url });
           });
         }
         doc.moveDown(0.4);

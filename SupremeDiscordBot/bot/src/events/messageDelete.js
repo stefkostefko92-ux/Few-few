@@ -5,6 +5,7 @@
 // Partials.Message: изтрит стар пост извън кеша идва без автор/съдържание.
 
 import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
+import { markTicketMessage } from "../utils/api.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -24,6 +25,13 @@ export default {
       // неизвестен и пускаме лога (по-добре запис с "(unknown)", отколкото
       // сляпо петно за изтритото).
       if (message.author?.bot) return;
+
+      // ── Одитна следа в ТИКЕТ транскрипта (v36) ──────────────────────────
+      // Върви НЕЗАВИСИМО от Server Event Logging: изтриването не бива да е
+      // начин да изчистиш следите си от одитния документ. Backend-ът връща
+      // 204 за съобщения извън тикет канал. Съдържанието се запазва — само
+      // се маркира като изтрито.
+      markTicketMessage(message.id, "delete").catch(() => {});
 
       // Гейт ПРЕДИ скъпия audit fetch — иначе всяко изтрито съобщение във
       // всеки guild бие fetchAuditLogs дори с изключено логване (rate limit).

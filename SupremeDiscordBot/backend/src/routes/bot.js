@@ -343,7 +343,7 @@ router.post("/ticket/create", async (req, res, next) => {
 // Bot logs a message to the ticket transcript
 
 router.post("/ticket/:ticketId/message", async (req, res, next) => {
-  const { authorId, authorTag, content, attachments } = req.body;
+  const { authorId, authorTag, content, attachments, messageId } = req.body;
 
   if (!authorId || !authorTag) {
     return res.status(400).json({ error: "authorId and authorTag are required" });
@@ -357,6 +357,8 @@ router.post("/ticket/:ticketId/message", async (req, res, next) => {
         authorTag,
         content: content || "",
         attachments: attachments || [],
+        // v36 — без Discord ID-то не можем да намерим реда при редакция/изтриване.
+        messageId: messageId || null,
       },
     });
 
@@ -1039,6 +1041,50 @@ router.post("/application/:appId/review", async (req, res, next) => {
     }
 
     res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── PATCH /api/bot/ticket-message/:messageId ────────────────────────────────
+// v36 — одитна следа: съобщение в тикет канал беше РЕДАКТИРАНО или ИЗТРИТО.
+// Ботът вика това от messageUpdate/messageDelete. Ако съобщението не е част от
+// тикет (или е отпреди v36, тоест без записан messageId) — тихо 204: това е
+// нормалният случай за всяко съобщение в сървъра, не грешка.
+router.patch("/ticket-message/:messageId", async (req, res, next) => {
+  const { action, content } = req.body || {};
+  if (!["edit", "delete"].includes(action)) {
+    return res.status(400).json({ error: "action must be edit or delete" });
+  }
+
+  try {
+    const existing = await prisma.ticketMessage.findFirst({
+      where: { messageId: req.params.messageId },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!existing) return res.status(204).end();
+
+    if (action === "delete") {
+      // Съдържанието се ЗАПАЗВА — транскриптът трябва да показва какво е било
+      // казано и че после е изтрито (иначе изтриването е начин да изчистиш
+      // следите си от одитния запис).
+      const updated = await prisma.ticketMessage.update({
+        where: { id: existing.id },
+        data: { deletedAt: existing.deletedAt || new Date() },
+      });
+      return res.json({ ok: true, id: updated.id });
+    }
+
+    // edit: пазим ПЪРВОНАЧАЛНИЯ текст само при първата редакция.
+    const updated = await prisma.ticketMessage.update({
+      where: { id: existing.id },
+      data: {
+        originalContent: existing.originalContent ?? existing.content,
+        content: String(content ?? "").slice(0, 4000),
+        editedAt: new Date(),
+      },
+    });
+    res.json({ ok: true, id: updated.id });
   } catch (err) {
     next(err);
   }

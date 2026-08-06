@@ -5,6 +5,7 @@
 // Закача се и на white-label клиентите (clientManager.loadEventModules).
 
 import { logServerEvent, isEventCategoryEnabled } from "../utils/serverEventLog.js";
+import { markTicketMessage } from "../utils/api.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -18,11 +19,25 @@ export default {
   once: false,
   async execute(oldMessage, newMessage) {
     try {
+      const guildId = newMessage.guildId || newMessage.guild?.id;
+      if (!guildId) return;
+
+      // ── Одитна следа в ТИКЕТ транскрипта (v36) ──────────────────────────
+      // Независимо от Server Event Logging: транскриптът е одитен документ и
+      // трябва да знае, че съобщение е редактирано, дори собственикът да не е
+      // включил логването на съобщения. Backend-ът връща 204 за съобщения
+      // извън тикет канал, затова е евтино и тихо.
+      if (!newMessage.author?.bot) {
+        const newContent = newMessage.partial ? null : (newMessage.content ?? null);
+        if (newContent !== null) {
+          markTicketMessage(newMessage.id, "edit", newContent).catch(() => {});
+        }
+      }
+
+      // ── Server Event Logging (отделна, изборна функция) ─────────────────
       // Евтин гейт ПРЕДИ REST fetch-а — иначе всяка редакция във всеки guild
       // дърпа съобщението дори с изключено логване (Кодаджията). guildId е
       // наличен и на partial съобщение.
-      const guildId = newMessage.guildId || newMessage.guild?.id;
-      if (!guildId) return;
       if (!(await isEventCategoryEnabled(guildId, "messages"))) return;
 
       // Partial НОВО съобщение → дръпни го (без него няма какво да логнем).

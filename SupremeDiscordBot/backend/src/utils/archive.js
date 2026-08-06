@@ -104,6 +104,14 @@ export function generateHtmlTranscript(ticket, opts = {}) {
       border-radius: 999px; padding: 1px 7px;
     }
     .chip-staff { border-color: ${C.accent}; color: ${C.accent}; }
+    /* v36 — изтрито/редактирано: видимо, но не крещящо */
+    .chip-deleted { border-color: #a05252; color: #d98b8b; }
+    .msg-deleted .content { text-decoration: line-through; color: ${C.muted}; }
+    .original {
+      margin-top: 6px; padding: 6px 10px; border-left: 2px solid ${C.borderHi};
+      background: ${C.panel}; border-radius: 0 6px 6px 0;
+    }
+    .original div { font-size: 13px; color: ${C.muted}; white-space: pre-wrap; word-break: break-word; }
     .content { white-space: pre-wrap; word-break: break-word; color: ${C.text}; font-size: 14px; }
     .qa + .qa { margin-top: 14px; }
     footer { text-align: center; font-size: 11px; color: ${C.dim}; margin-top: 20px; }
@@ -182,15 +190,30 @@ function messageRow(msg, ticket) {
       ).join("")}</div>`
     : "";
 
-  return `<div class="msg">
+  // v36 — одитната следа. Изтритото съобщение НЕ изчезва: показва се зачертано
+  // и маркирано, защото транскриптът е одитен документ, а не жив чат.
+  const deleted = Boolean(msg.deletedAt);
+  const edited = Boolean(msg.editedAt);
+  const stateChips =
+    (deleted ? `<span class="chip chip-deleted">Deleted</span>` : "") +
+    (edited ? `<span class="chip">Edited</span>` : "");
+
+  // При редакция показваме и двете версии — „какво е било казано" е точно
+  // въпросът, заради който се вади транскрипт.
+  const original = edited && msg.originalContent
+    ? `<div class="original"><span class="label">Original</span><div>${esc(msg.originalContent)}</div></div>`
+    : "";
+
+  return `<div class="msg${deleted ? " msg-deleted" : ""}">
     <div class="avatar" aria-hidden="true">${esc(letter)}</div>
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
         <span style="font-weight:600;font-size:14px;">${esc(tag)}</span>
-        ${chip}
+        ${chip}${stateChips}
         <span class="mono" style="font-size:11px;color:${C.dim};">${esc(time)}</span>
       </div>
       <div class="content">${esc(msg.content || "")}</div>
+      ${original}
       ${attachments}
     </div>
   </div>`;
