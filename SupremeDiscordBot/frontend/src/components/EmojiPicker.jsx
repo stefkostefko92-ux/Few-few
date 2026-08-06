@@ -68,7 +68,7 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
   };
 
   return (
-    <div className="relative" ref={rootRef}>
+    <>
       <button
         type="button"
         aria-label={buttonLabel || "Open emoji picker"}
@@ -80,45 +80,56 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
         <SmilePlus className="w-4 h-4 text-cs-cyan" aria-hidden="true" />
       </button>
 
+      {/* Центриран overlay вместо absolute dropdown: старият вариант се
+          позиционираше спрямо бутона и се РЕЖЕШЕ от overflow-а на модала
+          (виждаше се клипнат под реда). Fixed + центриране го изважда над
+          всичко и го отваря в средата на панела, независимо от контейнера. */}
       {open && (
         <div
-          role="dialog"
-          aria-label="Emoji picker"
-          className="absolute z-50 mt-1 right-0 w-72 max-h-80 overflow-y-auto cs-card !p-3 shadow-cs-lift border border-cs-border bg-cs-panel"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-cs-black/60 p-4"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
-          <input
-            autoFocus
-            className="cs-input text-sm mb-2 w-full"
-            placeholder="Search category…"
-            aria-label="Filter emoji categories"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
-          {CATEGORIES
-            .filter((c) => !filter || c.name.toLowerCase().includes(filter.toLowerCase()))
-            .map((cat) => (
-              <div key={cat.name} className="mb-2">
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-cs-dim mb-1">{cat.name}</div>
-                <div className="grid grid-cols-8 gap-0.5">
-                  {cat.emojis.map((e) => (
-                    <button
-                      key={e}
-                      type="button"
-                      onClick={() => pick(e)}
-                      className="text-lg leading-none p-1 rounded hover:bg-cs-bg focus:bg-cs-bg"
-                      aria-label={`Select ${e}`}
-                    >
-                      {e}
-                    </button>
-                  ))}
+          <div
+            ref={rootRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Emoji picker"
+            className="w-full max-w-md max-h-[80vh] overflow-y-auto cs-card !p-4 shadow-cs-lift border border-cs-border bg-cs-panel"
+          >
+            <input
+              autoFocus
+              className="cs-input text-sm mb-3 w-full"
+              placeholder="Search category…"
+              aria-label="Filter emoji categories"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            {CATEGORIES
+              .filter((c) => !filter || c.name.toLowerCase().includes(filter.toLowerCase()))
+              .map((cat) => (
+                <div key={cat.name} className="mb-3">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-cs-dim mb-1.5">{cat.name}</div>
+                  <div className="grid grid-cols-10 gap-0.5">
+                    {cat.emojis.map((e) => (
+                      <button
+                        key={e}
+                        type="button"
+                        onClick={() => pick(e)}
+                        className="text-xl leading-none p-1.5 rounded hover:bg-cs-bg focus:bg-cs-bg"
+                        aria-label={`Select ${e}`}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          <p className="text-[10px] text-cs-dim mt-1">
-            Custom server emoji? Type it in the field as <code>name:id</code>.
-          </p>
+              ))}
+            <p className="text-[10px] text-cs-dim mt-1">
+              Custom server emoji? Type it in the field as <code>name:id</code>.
+            </p>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

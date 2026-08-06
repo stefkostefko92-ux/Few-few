@@ -214,7 +214,7 @@
         "offers": {
           "@type": "AggregateOffer",
           "lowPrice": "0",
-          "highPrice": "79.99",
+          "highPrice": "39.99",
           "priceCurrency": "EUR",
           "offerCount": 5,
           "offers": [
@@ -229,6 +229,21 @@
             {
               "@type": "Offer",
               "name": "Premium",
+              "price": "4.99",
+              "priceCurrency": "EUR",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "4.99",
+                "priceCurrency": "EUR",
+                "billingDuration": "P1M",
+                "referenceQuantity": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
+              },
+              "description": "Per server: €4.99/month or €49/year. Up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin assignment, webhooks, public REST API, unlimited transcript retention, advanced analytics, priority support. 14-day free trial without credit card. VAT included.",
+              "category": "subscription"
+            },
+            {
+              "@type": "Offer",
+              "name": "White-label",
               "price": "9.99",
               "priceCurrency": "EUR",
               "priceSpecification": {
@@ -238,38 +253,23 @@
                 "billingDuration": "P1M",
                 "referenceQuantity": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
               },
-              "description": "Per server: €9.99/month or €99/year. Up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin assignment, webhooks, public REST API, unlimited transcript retention, advanced analytics, priority support. 14-day free trial without credit card. VAT included.",
-              "category": "subscription"
-            },
-            {
-              "@type": "Offer",
-              "name": "White-label",
-              "price": "19.99",
-              "priceCurrency": "EUR",
-              "priceSpecification": {
-                "@type": "UnitPriceSpecification",
-                "price": "19.99",
-                "priceCurrency": "EUR",
-                "billingDuration": "P1M",
-                "referenceQuantity": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
-              },
-              "description": "Per server: €19.99/month or €199/year. Everything in Premium plus the white-label custom bot — upload your own Discord bot token and run Supreme under your own brand (name and avatar). VAT included.",
+              "description": "Per server: €9.99/month or €99/year. Everything in Premium plus the white-label custom bot — upload your own Discord bot token and run Supreme under your own brand (name and avatar). VAT included.",
               "category": "subscription"
             },
             {
               "@type": "Offer",
               "name": "Agency 5",
-              "price": "39.99",
+              "price": "19.99",
               "priceCurrency": "EUR",
-              "description": "€39.99/month or €399/year. White-label tier for up to 5 servers under one reseller-friendly subscription. VAT included.",
+              "description": "€19.99/month or €199/year. White-label tier for up to 5 servers under one reseller-friendly subscription. VAT included.",
               "category": "subscription"
             },
             {
               "@type": "Offer",
               "name": "Agency 10",
-              "price": "79.99",
+              "price": "39.99",
               "priceCurrency": "EUR",
-              "description": "€79.99/month or €799/year. White-label tier for up to 10 servers under one reseller-friendly subscription. VAT included.",
+              "description": "€39.99/month or €399/year. White-label tier for up to 10 servers under one reseller-friendly subscription. VAT included.",
               "category": "subscription"
             }
           ]
@@ -320,7 +320,7 @@
             "name": "How much does Supreme Bot cost?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Supreme Bot has a free tier with 1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, and persistent HTML transcripts (30-day retention). Premium costs 9.99 EUR per server per month (or 99 EUR/year) and includes up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin ticket assignment, webhooks, a public REST API, unlimited transcript retention, advanced analytics, and priority support, with a 14-day free trial and no credit card required. The White-label tier costs 19.99 EUR per server per month (or 199 EUR/year) and adds the white-label custom bot with your own name, avatar, and token. Agency plans cover multiple servers under one subscription: Agency 5 (up to 5 servers) is 39.99 EUR/month or 399 EUR/year, and Agency 10 (up to 10 servers) is 79.99 EUR/month or 799 EUR/year. All prices include VAT where applicable."
+              "text": "Supreme Bot has a free tier with 1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, and persistent HTML transcripts (30-day retention). Premium costs 4.99 EUR per server per month (or 99 EUR/year) and includes up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin ticket assignment, webhooks, a public REST API, unlimited transcript retention, advanced analytics, and priority support, with a 14-day free trial and no credit card required. The White-label tier costs 9.99 EUR per server per month (or 199 EUR/year) and adds the white-label custom bot with your own name, avatar, and token. Agency plans cover multiple servers under one subscription: Agency 5 (up to 5 servers) is 19.99 EUR/month or 399 EUR/year, and Agency 10 (up to 10 servers) is 39.99 EUR/month or 799 EUR/year. All prices include VAT where applicable."
             }
           },
           {
@@ -336,7 +336,7 @@
             "name": "Can I use my own bot token with Supreme Bot?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Subscribers on the White-label tier (€19.99/month or €199/year per server) or an Agency plan can provide their own Discord bot token through the dashboard. This allows servers to use their own branded bot with a custom name and avatar — called a white-label bot. Tokens are encrypted with AES-256-GCM before being stored and are never exposed back to users."
+              "text": "Yes. Subscribers on the White-label tier (€9.99/month or €99/year per server) or an Agency plan can provide their own Discord bot token through the dashboard. This allows servers to use their own branded bot with a custom name and avatar — called a white-label bot. Tokens are encrypted with AES-256-GCM before being stored and are never exposed back to users."
             }
           },
           {
@@ -486,7 +486,7 @@
               "itemOffered": {
                 "@type": "Service",
                 "name": "Premium Tier",
-                "description": "€9.99/server/month or €99/year — up to 50 panels, AI auto-replies, round-robin, webhooks, REST API, unlimited retention, advanced analytics"
+                "description": "€4.99/server/month or €49/year — up to 50 panels, AI auto-replies, round-robin, webhooks, REST API, unlimited retention, advanced analytics"
               }
             },
             {
@@ -494,7 +494,7 @@
               "itemOffered": {
                 "@type": "Service",
                 "name": "White-label Tier",
-                "description": "€19.99/server/month or €199/year — everything in Premium plus a white-label custom bot under your own brand"
+                "description": "€9.99/server/month or €99/year — everything in Premium plus a white-label custom bot under your own brand"
               }
             },
             {
@@ -502,7 +502,7 @@
               "itemOffered": {
                 "@type": "Service",
                 "name": "Agency Plans",
-                "description": "Agency 5 (€39.99/month or €399/year, up to 5 servers) and Agency 10 (€79.99/month or €799/year, up to 10 servers) — white-label across multiple servers under one subscription"
+                "description": "Agency 5 (€19.99/month or €199/year, up to 5 servers) and Agency 10 (€39.99/month or €399/year, up to 10 servers) — white-label across multiple servers under one subscription"
               }
             }
           ]
