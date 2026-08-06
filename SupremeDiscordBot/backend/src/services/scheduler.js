@@ -307,11 +307,16 @@ cron.schedule("0 9 * * *", async () => {
     const discordDate = (d) => `<t:${Math.floor(d.getTime() / 1000)}:D>`;
     const discordRelative = (d) => `<t:${Math.floor(d.getTime() / 1000)}:R>`;
 
-    // Servers whose trial expires in the next 3 days and are not on Premium
+    // Servers whose trial expires in the next 3 days and are not on Premium.
+    // Изключваме agency-покрити: те са платени през агенцията, а не собствен
+    // trial → не бива да получават „trial-ът ти изтича" DM (суровият isPremium
+    // може да е застоял, затова и явната agency проверка).
+    const notAgencyCovered = { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] };
     const expiring = await prisma.server.findMany({
       where: {
         isPremium: false,
         trialEndsAt: { gte: now, lte: in3Days },
+        ...notAgencyCovered,
       },
       select: { id: true, name: true, trialEndsAt: true, ownerId: true },
     });
@@ -366,6 +371,7 @@ cron.schedule("0 9 * * *", async () => {
       where: {
         isPremium: false,
         trialEndsAt: { gte: yesterday, lt: now },
+        ...notAgencyCovered,
       },
       select: { id: true, name: true, ownerId: true },
     });

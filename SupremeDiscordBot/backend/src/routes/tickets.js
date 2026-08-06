@@ -38,7 +38,11 @@ router.use(requireAuth, loadUser);
 // ─── GET /api/tickets/:serverId ───────────────────────────────────────────────
 
 router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
-  const { status, priority, search, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
+  const { status, priority, search, dateFrom, dateTo } = req.query;
+  // Клампваме page/limit — клиентски подаван `limit` беше неограничен `take`
+  // (напр. limit=999999 → пълно изсипване + натиск върху базата).
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const page = Math.max(1, Number(req.query.page) || 1);
 
   try {
     const where = {

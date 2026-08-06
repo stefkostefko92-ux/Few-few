@@ -28,8 +28,13 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
       ? Math.ceil((server.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
       : 0;
 
+    // Правото на trial отчита ЕФЕКТИВНИЯ tier: agency-покрит сървър вече е
+    // платен → не е eligible (иначе би „изгорил" trial-а безсмислено; суровият
+    // isPremium може да е застоял до синхронизацията).
+    const { isPremium: effectivePremium } = await getServerTier(req.params.serverId);
+
     res.json({
-      eligible: !server.trialUsed && !server.isPremium,
+      eligible: !server.trialUsed && !effectivePremium,
       active,
       daysLeft,
       trialUsed: server.trialUsed,
@@ -50,7 +55,8 @@ router.post("/:serverId/start", requireServerAdmin, async (req, res, next) => {
       select: { trialUsed: true, isPremium: true },
     });
     if (!server) return res.status(404).json({ error: "Server not found" });
-    if (server.isPremium) {
+    const { isPremium: effectivePremium } = await getServerTier(req.params.serverId);
+    if (effectivePremium) {
       return res.status(400).json({ error: "This server is already on Premium." });
     }
     if (server.trialUsed) {

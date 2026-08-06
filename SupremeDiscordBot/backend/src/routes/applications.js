@@ -113,7 +113,10 @@ function formatDuration(seconds) {
 // ─── GET /api/applications/:serverId ─────────────────────────────────────────────
 
 router.get("/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, res, next) => {
-  const { status, formId, search, page = 1, limit = 20 } = req.query;
+  const { status, formId, search } = req.query;
+  // Клампваме page/limit (клиентски `limit` беше неограничен `take`).
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const page = Math.max(1, Number(req.query.page) || 1);
 
   try {
     const where = {

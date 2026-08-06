@@ -251,6 +251,12 @@ router.get("/:serverId/stickies", requireServerAdmin, async (req, res, next) => 
 router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automation.sticky"), async (req, res, next) => {
   const { channelId, content, embedTitle, embedColor } = req.body;
   if (!channelId || !content) return res.status(400).json({ error: "channelId and content required" });
+  if (typeof content !== "string" || content.length > 2000) {
+    return res.status(400).json({ error: "content must be a string up to 2000 chars" });
+  }
+  if (!/^\d{17,20}$/.test(String(channelId))) {
+    return res.status(400).json({ error: "Invalid channelId" });
+  }
   try {
     // Enforce count limit
     const { limits } = await getServerTier(req.params.serverId);
@@ -312,6 +318,19 @@ router.get("/:serverId/scheduled", requireServerAdmin, async (req, res, next) =>
 router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automation.scheduled"), async (req, res, next) => {
   const { channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence } = req.body;
   if (!channelId || !content || !sendAt) return res.status(400).json({ error: "channelId, content, sendAt required" });
+  // Валидирай recurrence — иначе неразпознат низ тихо ставаше „monthly" в
+  // scheduler.js (клиентска стойност → неочаквано поведение). Празно/липсва =
+  // еднократно.
+  if (recurrence != null && !["daily", "weekly", "monthly"].includes(recurrence)) {
+    return res.status(400).json({ error: "recurrence must be daily, weekly or monthly" });
+  }
+  // Разумни тавани на входа (без цяла Zod схема — таргетирана валидация).
+  if (typeof content !== "string" || content.length > 2000) {
+    return res.status(400).json({ error: "content must be a string up to 2000 chars" });
+  }
+  if (Number.isNaN(new Date(sendAt).getTime())) {
+    return res.status(400).json({ error: "sendAt must be a valid date" });
+  }
   try {
     const { limits } = await getServerTier(req.params.serverId);
     if (recurrence && !limits.recurringScheduled) {

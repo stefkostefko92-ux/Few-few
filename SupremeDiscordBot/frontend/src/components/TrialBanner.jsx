@@ -6,7 +6,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Star, Clock, AlertTriangle, X, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getTrialStatus, startTrial, cancelTrial } from "../api";
 import ConfirmDialog from "./ConfirmDialog";
 import { useT } from "../contexts/I18nContext";
@@ -18,6 +18,13 @@ export default function TrialBanner() {
   const [dismissed, setDismissed] = useState(
     typeof window !== "undefined" && localStorage.getItem(`trial-banner-dismissed-${serverId}`) === "1"
   );
+  // TrialBanner живее в Layout-а и НЕ се демонтира при смяна на сървър, затова
+  // useState инициализаторът (веднъж, с първия serverId) правеше „скрит" на
+  // сървър A да важи и за сървър B. Пречитаме per-server флага при смяна.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setDismissed(localStorage.getItem(`trial-banner-dismissed-${serverId}`) === "1");
+  }, [serverId]);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [cancelError, setCancelError] = useState(null);
 

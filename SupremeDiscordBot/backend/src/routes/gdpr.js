@@ -145,9 +145,19 @@ router.post("/delete-account", async (req, res, next) => {
       },
     }).catch(() => 0);
 
-    if (activeServers > 0) {
+    // Agency абонаментите не са вързани за сървър (Agency.ownerUserId), затова
+    // отделна проверка — иначе изтриването на акаунт минаваше при активна
+    // Agency (клиентът продължаваше да плаща абонамент за изтрит акаунт).
+    const activeAgencies = await prisma.agency.count({
+      where: { ownerUserId: userId, active: true, stripeSubscriptionId: { not: null } },
+    }).catch(() => 0);
+
+    if (activeServers > 0 || activeAgencies > 0) {
+      const parts = [];
+      if (activeServers > 0) parts.push(`${activeServers} active Premium subscription(s)`);
+      if (activeAgencies > 0) parts.push(`${activeAgencies} active Agency subscription(s)`);
       return res.status(400).json({
-        error: `You have ${activeServers} active Premium subscription(s). Please cancel them via your server's Premium page before deleting your account.`,
+        error: `You have ${parts.join(" and ")}. Please cancel them (Premium page / Agency billing portal) before deleting your account.`,
         code: "ACTIVE_SUBSCRIPTIONS",
       });
     }

@@ -126,8 +126,17 @@ router.get("/callback", async (req, res) => {
       },
     });
 
-    req.session.userId = user.id;
-    req.session.save(() => res.redirect(`${process.env.FRONTEND_URL}/dashboard`));
+    // Session fixation защита: регенерирай session id при login, за да не може
+    // предварително подхвърлена от нападателя сесия да се повиши до
+    // автентикирана (OWASP A07). Пренасяме userId в НОВАТА сесия.
+    req.session.regenerate((regenErr) => {
+      if (regenErr) {
+        console.error("Session regenerate error:", regenErr.message);
+        return res.redirect(`${process.env.FRONTEND_URL}/?error=session_failed`);
+      }
+      req.session.userId = user.id;
+      req.session.save(() => res.redirect(`${process.env.FRONTEND_URL}/dashboard`));
+    });
   } catch (err) {
     console.error("OAuth callback error:", err?.response?.data || err.message);
     res.redirect(`${process.env.FRONTEND_URL}/?error=oauth_failed`);

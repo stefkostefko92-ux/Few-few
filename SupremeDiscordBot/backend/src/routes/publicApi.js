@@ -8,7 +8,7 @@ import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { requirePremium } from "../lib/premium.js";
+import { requirePremium, getServerTier } from "../lib/premium.js";
 
 const router = Router();
 
@@ -177,18 +177,24 @@ function requireScope(scope) {
 }
 
 const api = Router();
-api.use(apiLimiter);
+// Ред: auth ПРЕДИ limiter — иначе keyGenerator (req.apiKey?.id) тече преди
+// authenticateApiKey да е сетнал req.apiKey → пада на req.ip, тоест лимитът
+// беше per-IP вместо per-key (един клиент зад споделен IP изяждаше квотата на
+// друг). Сега лимитът е реално per-key.
 api.use(authenticateApiKey);
+api.use(apiLimiter);
 
 // GET /public/v1/me — server info about the key's owner
 api.get("/me", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.serverId },
-      select: { id: true, name: true, icon: true, isPremium: true },
+      select: { id: true, name: true, icon: true },
     });
+    // Ефективен tier (agency/trial не са в суровата колона).
+    const { isPremium, plan } = await getServerTier(req.serverId);
     res.json({
-      server,
+      server: server ? { ...server, isPremium, plan } : null,
       keyId: req.apiKey.id,
       scopes: req.apiKey.scopes,
     });
