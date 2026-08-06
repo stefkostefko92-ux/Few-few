@@ -165,6 +165,70 @@ describe("logServerEvent — категория server и per-category кана�
     expect(sent[0].id).toBe("general-log");
   });
 
+  it("рисува metadata на категория server (роля + кои права) — иначе embed-ът е празен", async () => {
+    apiGet.mockResolvedValue({
+      data: { enabled: true, channelId: "general-log", categories: ["server"] },
+    });
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "server",
+      action: "role_permissions_update",
+      actorId: "mod1",
+      metadata: {
+        role: "<@&r1>",
+        name: "Moderators",
+        granted: "BanMembers, KickMembers",
+        revoked: "ManageGuild",
+      },
+    });
+    const names = sent[0].payload.embeds[0].fields.map((f) => f.name);
+    expect(names).toEqual(expect.arrayContaining(["Actor", "Role", "Name", "Granted", "Revoked"]));
+    const granted = sent[0].payload.embeds[0].fields.find((f) => f.name === "Granted");
+    expect(granted.value).toBe("BanMembers, KickMembers");
+  });
+
+  it("непознат metadata ключ пак се показва (заглавие = ключът), не изчезва тихо", async () => {
+    apiGet.mockResolvedValue({
+      data: { enabled: true, channelId: "general-log", categories: ["server"] },
+    });
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "server",
+      action: "channel_update",
+      metadata: { somethingNew: "стойност" },
+    });
+    const f = sent[0].payload.embeds[0].fields.find((x) => x.name === "SomethingNew");
+    expect(f?.value).toBe("стойност");
+  });
+
+  it("дълга стойност се реже на 1024 (лимит на Discord поле)", async () => {
+    apiGet.mockResolvedValue({
+      data: { enabled: true, channelId: "general-log", categories: ["server"] },
+    });
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "server",
+      action: "role_permissions_update",
+      metadata: { granted: "X".repeat(3000) },
+    });
+    const f = sent[0].payload.embeds[0].fields.find((x) => x.name === "Granted");
+    expect(f.value).toHaveLength(1024);
+  });
+
+  it("празни/обектни metadata стойности не раждат празни полета", async () => {
+    apiGet.mockResolvedValue({
+      data: { enabled: true, channelId: "general-log", categories: ["server"] },
+    });
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "server",
+      action: "channel_update",
+      metadata: { name: "", type: null, nested: { a: 1 }, ok: "да" },
+    });
+    const names = sent[0].payload.embeds[0].fields.map((f) => f.name);
+    expect(names).toEqual(["Ok"]);
+  });
+
   it("изключена категория „server“ → нищо не се праща", async () => {
     apiGet.mockResolvedValue({
       data: { enabled: true, channelId: "general-log", categories: ["voice"] },

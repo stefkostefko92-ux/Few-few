@@ -84,6 +84,34 @@ const ACTION_LABELS = {
   role_delete: "🗑️ Role Deleted",
 };
 
+// Ключове от metadata, които buildEventEmbed рисува ПОИМЕННО (с точен ред и
+// формат). Всичко извън този списък минава през общия проход накрая.
+const RENDERED_META_KEYS = new Set([
+  "roleIds", "fromChannelId", "toChannelId", "before", "after", "reason",
+  "content", "attachments", "count", "messageUrl",
+]);
+
+// Човеко-четими заглавия за общия проход (липсва ли ключ — заглавието е самият
+// ключ с главна буква, така новите ключове се показват, вместо да изчезват).
+const META_LABELS = {
+  name: "Name",
+  type: "Type",
+  role: "Role",
+  roleId: "Role ID",
+  channelId: "Channel ID",
+  granted: "Granted",
+  revoked: "Revoked",
+  color: "Color",
+  hoisted: "Hoisted",
+  mentionable: "Mentionable",
+  permissions: "Permission Overwrites",
+  topicBefore: "Topic (before)",
+  topicAfter: "Topic (after)",
+  nsfw: "NSFW",
+  slowmode: "Slowmode",
+  category: "Category",
+};
+
 /**
  * Прочети (кеширано) per-guild event-log конфига от backend.
  * @returns {Promise<{enabled:boolean, channelId:string|null, categories:string[]}|null>}
@@ -140,6 +168,22 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
   if (meta.attachments) fields.push({ name: "Attachments", value: String(meta.attachments), inline: true });
   if (meta.count) fields.push({ name: "Count", value: String(meta.count), inline: true });
   if (meta.messageUrl) fields.push({ name: "Message", value: `[Jump to message](${meta.messageUrl})`, inline: true });
+
+  // Всичко ОСТАНАЛО от metadata (категория "server" го ползва обилно: name/type/
+  // role/granted/revoked/slowmode/permissions…). Без този проход embed-ът
+  // мълчаливо изхвърляше всеки непознат ключ — тоест лог за промяна на права
+  // излизаше с ЕДИНСТВЕНО заглавие и Actor, без да казва коя роля и кои права.
+  for (const [key, value] of Object.entries(meta)) {
+    if (RENDERED_META_KEYS.has(key)) continue;
+    if (value === undefined || value === null || value === "") continue;
+    if (typeof value === "object") continue; // масиви/обекти нямат смислен вид тук
+    const text = String(value);
+    fields.push({
+      name: META_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1),
+      value: text.slice(0, 1024),
+      inline: text.length <= 40,
+    });
+  }
 
   return {
     title: ACTION_LABELS[action] || action,
