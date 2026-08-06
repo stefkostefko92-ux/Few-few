@@ -13,7 +13,12 @@
 import { PrismaClient, type Prisma } from '@prisma/client';
 
 import { fetchBulgarianServers, type CfxServer } from '../src/lib/cfx';
-import { displayName, parseServerAddress, formatServerAddress } from '../src/lib/fivem';
+import {
+  displayName,
+  formatServerAddress,
+  isPrivatePlaceholder,
+  parseServerAddress,
+} from '../src/lib/fivem';
 import { isValidSlug, slugify } from '../src/lib/slug';
 
 const prisma = new PrismaClient();
@@ -21,7 +26,9 @@ const prisma = new PrismaClient();
 /** Първият публичен адрес; частните заместители на Cfx нямат такъв. */
 function pickAddress(server: CfxServer): string | null {
   for (const endpoint of server.connectEndPoints) {
-    if (endpoint.includes('private-placeholder')) continue;
+    // Общият guard, не собствено `includes`: същата проверка липсваше в
+    // `resolveJoinCode` и оттам плейсхолдърът влизаше през задната врата.
+    if (isPrivatePlaceholder(endpoint)) continue;
     const parsed = parseServerAddress(endpoint);
     if (parsed) return formatServerAddress(parsed);
   }

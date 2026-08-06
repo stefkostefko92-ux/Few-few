@@ -5,14 +5,19 @@
  */
 export function PlayersChart({
   values,
+  labels,
   label,
   emptyLabel,
   peakLabel,
+  playersLabel,
 }: {
   values: number[];
+  /** Етикет на всяка кофа („14 ч.“), в реда на `values`. */
+  labels: string[];
   label: string;
   emptyLabel: string;
   peakLabel: string;
+  playersLabel: string;
 }) {
   const peak = Math.max(...values, 0);
   if (values.length === 0 || peak === 0) {
@@ -36,18 +41,26 @@ export function PlayersChart({
           // изглежда като жива.
           const height = Math.max(2, (value / peak) * (H - 4));
           return (
-            <rect
-              key={index}
-              x={index * 12 + 2}
-              y={H - height}
-              width={8}
-              height={height}
-              rx={2}
-              // cyan-600, не cyan-700. Измерено срещу реалния фон на картата
-              // (`ink-900/70` върху `ink-950`): cyan-700 дава ≈3,1:1 — точно на
-              // ръба на 1.4.11 за нетекстово съдържание, cyan-600 дава ≈4,8:1.
-              className={value === peak ? 'fill-cyan-300' : 'fill-cyan-600'}
-            />
+            // <g>, а не <rect> с <title>: мишката трябва да хване и празното над
+            // ниския стълб, иначе при 2 играча целта е 2 пиксела висока.
+            // Прозрачният `hit` покрива цялата колона, видимият стълб е под него.
+            <g key={index}>
+              {/* Часът и МАКСИМУМЪТ за него — кофата вече е максимум, не средно
+                  (виж `bucketByHour`), значи това е точно „най-многото играчи“. */}
+              <title>{`${labels[index] ?? ''} · ${peakLabel} ${value} ${playersLabel}`}</title>
+              <rect
+                x={index * 12 + 2}
+                y={H - height}
+                width={8}
+                height={height}
+                rx={2}
+                // cyan-600, не cyan-700. Измерено срещу реалния фон на картата
+                // (`ink-900/70` върху `ink-950`): cyan-700 дава ≈3,1:1 — точно на
+                // ръба на 1.4.11 за нетекстово съдържание, cyan-600 дава ≈4,8:1.
+                className={value === peak ? 'fill-cyan-300' : 'fill-cyan-600'}
+              />
+              <rect x={index * 12} y={0} width={12} height={H} className="fill-transparent" />
+            </g>
           );
         })}
       </svg>

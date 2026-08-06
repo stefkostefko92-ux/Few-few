@@ -14,6 +14,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Сроковете от политиката за поверителност — единственият им друг източник. */
 export const RETENTION = {
+  /**
+   * Имена на играчи: 1 ден — предпазител, не същински срок.
+   *
+   * Политиката обещава МОМЕНТНА снимка и нормално `refresh-servers` я
+   * презаписва на 3 минути. Тук се лови само редът, спрял да се опреснява
+   * (сървър извън `APPROVED`, спрян cron): един ден без опресняване вече не е
+   * „сега играят“ по никое четене на думата.
+   */
+  playerNameDays: 1,
   /** Заявки за листване: 24 месеца. */
   submissionDays: 730,
   /** Сигнали по DSA: 24 месеца. */
@@ -115,6 +124,15 @@ async function main() {
     }),
     prisma.serverSnapshot.deleteMany({
       where: { at: { lt: before(RETENTION.snapshotDays) } },
+    }),
+    // Имена на играчи, останали без да се опресняват. Нормално ги чисти самият
+    // `refresh-servers` (презаписва ги на 3 мин и ги изпразва при офлайн) —
+    // това тук е предпазителят за реда, който по някаква причина е спрял да се
+    // опреснява: сървър, извън `APPROVED`, спрян cron, забита партида. Без него
+    // „моментна снимка“ в /privacy може тихо да стане вечен запис.
+    prisma.server.updateMany({
+      where: { playersSeenAt: { lt: before(RETENTION.playerNameDays) } },
+      data: { playerNames: [], playersSeenAt: null },
     }),
     prisma.streamer.deleteMany({
       where: {

@@ -10,9 +10,13 @@
  *  2. **Таван на всичко** — таймаут И поточно четене с броене на байтовете.
  *     `(await res.text()).slice(0, CAP)` НЕ е таван: буферира цялото тяло,
  *     преди да реже (измерено: 40 MB за 315 ms).
- *  3. **`players.json` не се пипа** — връща имена и identifiers (steam:/
- *     license:/discord:) на реални хора. Нужна ни е само бройката, а тя е в
- *     `dynamic.json`.
+ *  3. **От `players.json` се четат САМО имената.** Отговорът съдържа и
+ *     `identifiers` (`steam:`/`license:`/`discord:`/`ip:`) — трайни
+ *     идентификатори през услуги. Те не се четат, не се предават нататък и
+ *     нямат поле в схемата; `readPlayerNames` връща низове и нищо друго.
+ *     Дърпа се само при `withPlayers` и само след като сървърът е отговорил
+ *     жив. Това е единственият вход на ЛИЧНИ ДАННИ от чужд сървър — режимът
+ *     му е описан в `/privacy`.
  */
 
 import { lookup } from 'node:dns/promises';
@@ -26,8 +30,10 @@ import {
   formatServerAddress,
   infoJsonSchema,
   isPrivateIpv4,
+  isPrivatePlaceholder,
   isValidIpv4,
   parseServerAddress,
+  readPlayerNames,
   type DynamicJson,
   type InfoJson,
   type ProbeOutcome,
@@ -171,22 +177,36 @@ async function fetchProbe(ip: string, port: number, path: string, hostHeader: st
   }
 }
 
-export type ProbeResult = ServerStatus & { address: string };
+export type ProbeResult = ServerStatus & {
+  address: string;
+  /**
+   * Имената на играчите онлайн, или `null` когато не знаем (сървърът е скрил
+   * `players.json`, отговорил е с боклук, или изобщо не сме питали).
+   *
+   * `null` и `[]` НЕ са едно и също и точно затова е nullable: празен масив
+   * значи „проверено, няма никого“, а `null` — „нямаме видимост“. Слеем ли ги,
+   * страницата ще твърди „никой не играе“ за сървър, който просто не ни казва.
+   */
+  playerNames: string[] | null;
+};
 
 /**
  * Пингва един сървър. Никога не хвърля — статусът на чужда машина не е
  * причина да падне цялото опресняване.
  */
-export async function probeServer(rawAddress: string): Promise<ProbeResult> {
+export async function probeServer(
+  rawAddress: string,
+  { withPlayers = false }: { withPlayers?: boolean } = {},
+): Promise<ProbeResult> {
   const address = parseServerAddress(rawAddress);
-  if (!address) return { ...offline('UNREACHABLE'), address: rawAddress };
+  if (!address) return { ...offline('UNREACHABLE'), address: rawAddress, playerNames: null };
 
   const formatted = formatServerAddress(address);
   let ip: string;
   try {
     ip = await resolvePublicIpv4(address.host);
   } catch {
-    return { ...offline('UNREACHABLE'), address: formatted };
+    return { ...offline('UNREACHABLE'), address: formatted, playerNames: null };
   }
 
   const [dynamicRes, infoRes] = await Promise.all([
@@ -197,12 +217,25 @@ export async function probeServer(rawAddress: string): Promise<ProbeResult> {
   // Скритият endpoint значи жив сървър с вдигнат `sv_requestParanoia`, а не
   // мъртъв сървър. Решава го само `dynamic.json` — ако той е дал данни, а е
   // скрит само `info.json`, показваме реалните числа и рамка UNKNOWN.
-  if (dynamicRes.kind === 'hidden') return { ...offline('HIDDEN'), address: formatted };
-  if (dynamicRes.kind === 'unreachable') return { ...offline('OFFLINE'), address: formatted };
+  if (dynamicRes.kind === 'hidden')
+    return { ...offline('HIDDEN'), address: formatted, playerNames: null };
+  if (dynamicRes.kind === 'unreachable')
+    return { ...offline('OFFLINE'), address: formatted, playerNames: null };
 
   const dynamic = safeParse<DynamicJson>(dynamicJsonSchema, dynamicRes.value);
   const info = infoRes.kind === 'json' ? safeParse<InfoJson>(infoJsonSchema, infoRes.value) : null;
-  return { ...buildStatus(info, dynamic), address: formatted };
+
+  // `players.json` се дърпа ЧАК СЛЕД като знаем, че сървърът е жив — трета
+  // заявка към мъртъв адрес е чист хазарт с чуждия и с нашия ресурс. Той е и
+  // най-голямото от трите тела, затова не върви в `Promise.all` по-горе.
+  let playerNames: string[] | null = null;
+  if (withPlayers) {
+    const res = await fetchProbe(ip, address.port, '/players.json', formatted);
+    // Скрит или счупен → `null` („не знаем“), никога `[]` („няма никого“).
+    playerNames = res.kind === 'json' ? readPlayerNames(res.value) : null;
+  }
+
+  return { ...buildStatus(info, dynamic), address: formatted, playerNames };
 }
 
 function offline(outcome: ProbeOutcome): ServerStatus {
@@ -255,6 +288,12 @@ export async function resolveJoinCode(code: string): Promise<ServerAddress | nul
     if (text === null) return null;
     const body: unknown = JSON.parse(text);
     for (const endpoint of readConnectEndPoints(body)) {
+      // `isPrivatePlaceholder` ПРЕДИ парсването: заместителят на Cfx за
+      // „private“ сървър се парсва като напълно валиден адрес, а
+      // `isPrivateIpv4` не го лови (измерено — за име връща `false`). Без този
+      // ред функцията връщаше `private-placeholder.cfx.re:30120` като истински
+      // адрес и го заключваше в базата.
+      if (isPrivatePlaceholder(endpoint)) continue;
       const parsed = parseServerAddress(endpoint);
       if (parsed && !isPrivateIpv4(parsed.host)) return parsed;
     }

@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
+import { PlayerList } from '@/components/PlayerList';
 
 import type { Dictionary } from '@/i18n';
 import type { Locale } from '@/i18n/config';
@@ -55,6 +56,12 @@ export function ServerCard({
         <Badge name={STATUS_ICON[server.lastProbe]} size={24} />
         <span>{status}</span>
       </p>
+
+      {/* Кой играе — само за онлайн сървър. На офлайн списъкът е или празен,
+          или остатък, и в двата случая подвеждащ. */}
+      {server.online && (
+        <PlayerList names={server.playerNames} seenAt={server.playersSeenAt} t={t} />
+      )}
 
       <ul className="mt-3 flex flex-wrap gap-2 text-xs text-silver-500">
         <li className="flex items-center gap-1 rounded border border-white/10 px-2 py-0.5">

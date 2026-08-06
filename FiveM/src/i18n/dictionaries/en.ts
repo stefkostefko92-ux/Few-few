@@ -99,6 +99,13 @@ export const en: Dictionary = {
       'This server was found in the public Cfx.re list rather than submitted by its owner. If you represent the server and want to edit or remove the listing, write to us.',
     chartLabel: 'Players over the last 24 hours',
     chartPeak: 'peak',
+    chartPlayers: 'players',
+    playersOpen: 'See who is playing',
+    playersTitle: 'Players online now',
+    playersHidden: 'This server does not publish its player names.',
+    playersNone: 'Nobody is playing right now.',
+    playersNote:
+      'Names come from the server itself and are overwritten on every check — we keep no history. If you are on the list and would rather not be shown, write to us and we will remove you.',
     chartEmpty: 'Not enough history for this server yet.',
     lastChecked: 'Last checked',
   },

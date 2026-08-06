@@ -58,7 +58,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
 
   const [summary, history] = await Promise.all([
     reviewSummary(server.id),
-    playersLastDay(server.id),
+    playersLastDay(server.id, locale),
   ]);
   const joinUrl = server.cfxJoinCode ? cfxJoinUrl(server.cfxJoinCode) : null;
   const iconUrl =
@@ -181,10 +181,12 @@ export default async function ServerPage({ params, searchParams }: Props) {
       )}
 
       <PlayersChart
-        values={history}
+        values={history.values}
+        labels={history.labels}
         label={t.server.chartLabel}
         peakLabel={t.server.chartPeak}
         emptyLabel={t.server.chartEmpty}
+        playersLabel={t.server.chartPlayers}
       />
 
       {server.source === 'DISCOVERED' && (

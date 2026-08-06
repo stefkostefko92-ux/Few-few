@@ -122,6 +122,51 @@ export function parseServerAddress(input: string | null | undefined): ServerAddr
   return { host, port };
 }
 
+/**
+ * Cfx.re дава на „private“ сървърите заместител вместо адрес:
+ * `https://private-placeholder.cfx.re/`. Той **се парсва** като валиден адрес
+ * (`private-placeholder.cfx.re:30120`), но не резолвира — тоест мине ли през
+ * guard, всяко пингване към него е вечно „няма отговор“.
+ *
+ * ЗАЩО е тук, а не като `includes` на две места. Точно това беше дефектът:
+ * `discover-servers.pickAddress` имаше проверката, `resolveJoinCode` — не.
+ * `isPrivateIpv4` не помага и това е ИЗМЕРЕНО: за име (не IPv4) връща `false`,
+ * значи плейсхолдърът минаваше. Резултатът за „NLR Roleplay | Whitelisted“:
+ * откриването го пише онлайн от живия списък, опресняването до 3 мин го
+ * събаря на UNREACHABLE и ЗАПИСВА плейсхолдъра в `address` — след което
+ * клонът за възстановяване вече не се задейства и сървърът е заключен офлайн.
+ */
+export function isPrivatePlaceholder(endpoint: string | null | undefined): boolean {
+  return typeof endpoint === 'string' && endpoint.toLowerCase().includes('private-placeholder');
+}
+
+/** Адрес, към който има смисъл да се прави заявка. */
+export function isProbeableAddress(raw: string | null | undefined): boolean {
+  return !!raw && !isPrivatePlaceholder(raw) && parseServerAddress(raw) !== null;
+}
+
+/**
+ * Колко дълго присъствието в публичния списък на Cfx.re се брои за
+ * доказателство, че сървърът работи. Откриването върви на 45 минути, значи
+ * два пробега плюс запас — иначе един пропуснат пробег би обявил жив сървър
+ * за мъртъв.
+ */
+export const LIST_TRUST_MS = 100 * 60_000;
+
+/**
+ * Има ли сървърът пресни доказателства от СПИСЪКА, че работи.
+ *
+ * Ползва се за сървърите без пингваем адрес („private“ при Cfx). За тях
+ * „няма отговор“ е твърдение за НАШАТА видимост, не за тяхното състояние —
+ * а списъкът вече ни каза, че са живи, и дори с колко играчи. Да ги пишем
+ * офлайн значи да пренапишем данни с липсата на собствената си достъпност.
+ */
+export function listSaysOnline(lastSeenInListAt: Date | null, now: Date = new Date()): boolean {
+  if (!lastSeenInListAt) return false;
+  const age = now.getTime() - lastSeenInListAt.getTime();
+  return age >= 0 && age < LIST_TRUST_MS;
+}
+
 export function formatServerAddress(address: ServerAddress): string {
   return `${address.host}:${address.port}`;
 }
@@ -203,6 +248,50 @@ export const dynamicJsonSchema = z
 
 export type InfoJson = z.infer<typeof infoJsonSchema>;
 export type DynamicJson = z.infer<typeof dynamicJsonSchema>;
+
+/**
+ * `/players.json` — имената на играчите онлайн.
+ *
+ * ВНИМАНИЕ, това е ЕДИНСТВЕНОТО място, където от чужд сървър влизат ЛИЧНИ
+ * ДАННИ. Отговорът съдържа и `identifiers` (`steam:`/`license:`/`discord:`/
+ * `ip:`) — трайни идентификатори през услуги, с които човек се проследява
+ * извън играта. Схемата ги **не описва и кодът не ги чете**: `readPlayerNames`
+ * връща само изчистени имена. Решението е съзнателно — показваме кой играе,
+ * не строим регистър кой кой е.
+ */
+const playerEntrySchema = z
+  .object({
+    name: z.string().optional(),
+    // `id` и `ping` се приемат, за да не отпада записът, но НЕ се ползват.
+    id: z.coerce.number().optional(),
+    ping: z.coerce.number().optional(),
+  })
+  .passthrough();
+
+export const playersJsonSchema = z.array(playerEntrySchema);
+
+/** Таван на имената, които пазим за един сървър. */
+export const MAX_PLAYER_NAMES = 256;
+
+/**
+ * Чете имената от `/players.json` — и НИЩО друго.
+ *
+ * Всяко име минава през `displayName` (цветни кодове, управляващи символи,
+ * двупосочни маркери), защото идва от чужд сървър и се показва на страница:
+ * име с `</script>` или с RTL маркер е нападение, не име. Дубликати се пазят —
+ * двама играчи с еднакъв ник са двама играчи.
+ */
+export function readPlayerNames(value: unknown): string[] {
+  const parsed = playersJsonSchema.safeParse(value);
+  if (!parsed.success) return [];
+  const names: string[] = [];
+  for (const entry of parsed.data) {
+    if (names.length >= MAX_PLAYER_NAMES) break;
+    const name = displayName(entry.name, '');
+    if (name) names.push(name);
+  }
+  return names;
+}
 
 // ── Класификация на отговора ────────────────────────────────────────────────
 

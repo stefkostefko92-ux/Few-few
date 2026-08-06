@@ -2,7 +2,7 @@ import type { Prisma } from '@prisma/client';
 
 import { prisma } from './db';
 import { compareFeatured, compareServers } from './rating';
-import { bucketByHour, HOUR_MS } from './snapshots';
+import { bucketByHour, bucketHourLabels, HOUR_MS } from './snapshots';
 
 /** Публичните полета на сървър — нищо повече не напуска базата. */
 export const publicServerSelect = {
@@ -19,6 +19,10 @@ export const publicServerSelect = {
   iconVersion: true,
   players: true,
   maxPlayers: true,
+  // ЛИЧНИ ДАННИ — единственото такова поле в публичния набор. Излиза, защото
+  // списъкът с играчи е обявена функция; режимът е в `/privacy`.
+  playerNames: true,
+  playersSeenAt: true,
   lastOnlineAt: true,
   featuredUntil: true,
 } satisfies Prisma.ServerSelect;
@@ -147,19 +151,27 @@ export async function getPublicServer(slug: string) {
 /**
  * Историята на играчите за последните 24 часа, свита в кофи по час.
  * Празен масив значи „няма измерване“ — графиката го различава от „0 играчи“.
+ *
+ * Стойностите и етикетите се смятат от ЕДИН `now`. Смятани поотделно на
+ * викащата страна, двете можеха да паднат от двете страни на кръгъл час и
+ * графиката да покаже стойност под грешен час.
  */
-export async function playersLastDay(serverId: string): Promise<number[]> {
+export async function playersLastDay(
+  serverId: string,
+  locale = 'bg',
+): Promise<{ values: number[]; labels: string[] }> {
+  const now = new Date();
   try {
-    const since = new Date(Date.now() - 24 * HOUR_MS);
+    const since = new Date(now.getTime() - 24 * HOUR_MS);
     const rows = await prisma.serverSnapshot.findMany({
       where: { serverId, at: { gte: since } },
       select: { at: true, players: true },
       orderBy: { at: 'asc' },
     });
-    return bucketByHour(rows);
+    return { values: bucketByHour(rows, 24, now), labels: bucketHourLabels(24, now, locale) };
   } catch (error) {
     console.error('[servers] историята на играчите не се прочете', error);
-    return [];
+    return { values: [], labels: [] };
   }
 }
 

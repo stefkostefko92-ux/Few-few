@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { bucketByHour, HOUR_MS, type Point } from '../snapshots';
+import { bucketByHour, bucketHourLabels, HOUR_MS, type Point } from '../snapshots';
 
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 const agoMin = (minutes: number, players: number): Point => ({
@@ -44,4 +44,28 @@ test('прозорецът е параметър — 6 часа значат 6 �
   assert.equal(buckets.length, 6);
   assert.equal(buckets[5], 5);
   assert.ok(!buckets.includes(99), 'точка отвъд по-късия прозорец е влязла');
+});
+
+// ── Етикети на кофите (надписът при hover) ──────────────────────────────────
+
+test('етикетите вървят в СЪЩИЯ ред като кофите и последната е текущият час', () => {
+  const now = new Date('2026-08-02T12:30:00Z'); // 15:30 в София (лятно време)
+  const labels = bucketHourLabels(24, now);
+  assert.equal(labels.length, 24);
+  assert.equal(labels[23], '15 ч.', 'последната кофа трябва да е текущият час');
+  assert.equal(labels[22], '14 ч.');
+  assert.equal(labels[0], '16 ч.', '24 часа назад е същият час предния ден');
+  // ICU за `bg-BG` сам добавя „ ч.“ — оттам идваше „15 ч. ч.“.
+  assert.ok(!labels.some((l) => l.includes('ч. ч.')), 'удвоен суфикс');
+});
+
+test('английският сайт получава английски етикет, не български', () => {
+  const now = new Date('2026-08-02T12:30:00Z');
+  assert.equal(bucketHourLabels(24, now, 'en')[23], '15:00');
+});
+
+test('часът е в София, не в часовата зона на сървъра (VPS-ът е UTC)', () => {
+  // Зимно време: София е UTC+2, значи 22:00 UTC е 00 ч. на следващия ден.
+  const labels = bucketHourLabels(2, new Date('2026-01-15T22:00:00Z'));
+  assert.equal(labels[1], '00 ч.', 'без изрична зона тук щеше да пише 22 ч.');
 });

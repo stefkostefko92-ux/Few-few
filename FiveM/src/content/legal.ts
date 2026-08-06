@@ -28,7 +28,7 @@ export type LegalSet = { privacy: LegalDoc; terms: LegalDoc; impresumLabels: Rec
 const bg: LegalSet = {
   privacy: {
     title: 'Политика за поверителност',
-    effective: '2026-08-01',
+    effective: '2026-08-02',
     description:
       'Какви данни обработва FiveM BG, на какво основание, за колко време и кой още ги вижда. Без бисквитки за проследяване.',
     blocks: [
@@ -54,7 +54,7 @@ const bg: LegalSet = {
         ul: [
           'Няма бисквитки за проследяване, няма рекламни пиксели, няма аналитика, няма профилиране.',
           'Няма автоматизирано вземане на решения по чл. 22 ОРЗД. Всяка заявка, ревю и сигнал се преглеждат от човек.',
-          'Не четем и не съхраняваме списъците с играчи на сървърите (players.json) — имената и идентификаторите (Steam, Discord, лиценз) на играчите не влизат при нас. Пазим само общия брой играчи.',
+          'Не съхраняваме ИДЕНТИФИКАТОРИТЕ на играчите (Steam, Discord, лиценз, IP). От `players.json` четем само показваното име и то като моментна снимка — виж раздела „Кой играе сега“ по-долу. Идентификаторите нямат поле в базата ни.',
           'Не публикуваме IP адреса на листнат сървър.',
         ],
       },
@@ -68,6 +68,25 @@ const bg: LegalSet = {
       },
       {
         p: 'Ревютата са анонимни и нямаме как да свържем автор с акаунт. Ако си автор и искаш изтриване, посочи текста и датата — ще намерим записа и ще го изтрием (чл. 11, ал. 2 ОРЗД).',
+      },
+      { h: 'Кой играе сега — имена на играчи от самите сървъри' },
+      {
+        p: 'До броя играчи на всеки сървър има разгъващ се списък „Виж кой играе“. Имената идват от `players.json` — публичен адрес, който самият FiveM сървър обявява — а не от вас. Значи и тук важи чл. 14 ОРЗД и задължителната информация е тази секция.',
+      },
+      {
+        ul: [
+          'Категории данни: САМО показваното име (никнеймът) в момента на проверката. Същият отговор на сървъра съдържа и трайни идентификатори (steam:, license:, discord:, ip:) — тях НЕ ги четем, не ги предаваме и нямаме поле, в което да ги запишем. Това е техническо ограничение в кода, не обещание.',
+          'Източник: `players.json` на съответния сървър, четен от нас на всеки 3 минути. Сървър, който е скрил този адрес (`sv_requestParanoia`), просто не показва списък — не се опитваме да го заобиколим.',
+          'Основание: чл. 6, ал. 1, б. „е“ ОРЗД — законен интерес на играча да види дали в даден сървър има хора и познати, преди да влезе. Никнеймът е публично видим за всеки в самия сървър и в неговия публичен списък.',
+          'Срок: списъкът е МОМЕНТНА СНИМКА, не история. Презаписва се цял при всяка проверка и се изпразва в мига, в който сървърът падне офлайн. Не пазим кой кога е играл, не строим график на присъствие и не свързваме име с име през сървъри.',
+          'Няма профилиране и няма автоматизирано решение по чл. 22 ОРЗД. Никнеймът не се ползва за нищо друго освен за показването му в този списък.',
+        ],
+      },
+      {
+        p: 'Преценката, накратко. ЗА: никнеймът е публично видим за всеки, който влезе в сървъра, а самият сървър го публикува на общодостъпен адрес; „има ли хора вътре и кои“ е основният въпрос преди влизане. ПРОТИВ: ние го събираме на едно място и го показваме извън контекста на самата игра, което усилва видимостта отвъд очакванията на играча (Съобр. 47). Затова: без идентификатори, без история, без архив, без индексиране на самите имена, и сваляне по искане. Ако си непълнолетен, кажи ни — при дете тежестта пада на другата страна (Съобр. 38) и те махаме веднага.',
+      },
+      {
+        p: 'Право на възражение (чл. 21 ОРЗД): пиши ни на privacy@carbonstealth.eu с никнейма и сървъра — спираме показването му. Не уведомяваме всеки играч поотделно: имената се четат автоматично и нямаме адрес за връзка, което чл. 14, ал. 5, б. „б“ допуска при несъразмерни усилия; тази секция е публична преди първото показване и при всяко нейно четене.',
       },
       { h: 'Стриймъри — данни, които НЕ сме получили от вас' },
       {
@@ -105,7 +124,7 @@ const bg: LegalSet = {
   },
   terms: {
     title: 'Общи условия',
-    effective: '2026-08-01',
+    effective: '2026-08-02',
     description:
       'Условия за ползване на директорията FiveM BG: листване, модерация, ревюта, класиране и сигнали за незаконно съдържание.',
     blocks: [
@@ -181,7 +200,7 @@ const bg: LegalSet = {
 const en: LegalSet = {
   privacy: {
     title: 'Privacy policy',
-    effective: '2026-08-01',
+    effective: '2026-08-02',
     description:
       'What data FiveM BG processes, on what legal basis, for how long, and who else sees it. No tracking cookies.',
     blocks: [
@@ -207,7 +226,7 @@ const en: LegalSet = {
         ul: [
           'No tracking cookies, no advertising pixels, no analytics, no profiling.',
           'No automated decision-making under Art. 22 GDPR. Every submission, review and report is reviewed by a person.',
-          'We do not read or store the servers’ player lists (players.json) — players’ names and identifiers (Steam, Discord, licence) never reach us. We keep only the total player count.',
+          'We do not store players’ IDENTIFIERS (Steam, Discord, licence, IP). From `players.json` we read only the display name, and only as a snapshot — see “Who is playing now” below. The identifiers have no field in our database.',
           'We do not publish a listed server’s IP address.',
         ],
       },
@@ -221,6 +240,25 @@ const en: LegalSet = {
       },
       {
         p: 'Reviews are anonymous and we cannot link an author to an account. If you are an author and want your review deleted, quote the text and the date — we will find the record and delete it (Art. 11(2) GDPR).',
+      },
+      { h: 'Who is playing now — player names from the servers themselves' },
+      {
+        p: 'Next to each server’s player count there is an expandable “See who is playing” list. The names come from `players.json` — a public endpoint the FiveM server itself exposes — not from you. So Art. 14 GDPR applies here too, and this section is the information it requires.',
+      },
+      {
+        ul: [
+          'Categories of data: ONLY the display name (nickname) at the moment of the check. The same server response also contains persistent identifiers (steam:, license:, discord:, ip:) — we do NOT read them, do not pass them on, and have no field to store them in. That is a constraint in the code, not a promise.',
+          'Source: `players.json` of the server in question, read by us every 3 minutes. A server that hides this endpoint (`sv_requestParanoia`) simply shows no list — we make no attempt to work around it.',
+          'Basis: Art. 6(1)(f) GDPR — the player’s legitimate interest in seeing whether a server has people, and who, before joining. The nickname is publicly visible to everyone inside the server and in its own public listing.',
+          'Retention: the list is a SNAPSHOT, not a history. It is overwritten in full on every check and emptied the moment the server goes offline. We do not keep who played when, build no attendance timeline, and link no name to a name across servers.',
+          'No profiling and no automated decision under Art. 22 GDPR. The nickname is used for nothing other than showing it in this list.',
+        ],
+      },
+      {
+        p: 'The balancing test, briefly. FOR: the nickname is visible to anyone who joins the server, and the server itself publishes it at a public endpoint; “are there people inside, and who” is the main question before joining. AGAINST: we aggregate it in one place and show it outside the context of the game itself, which amplifies visibility beyond a player’s expectations (Recital 47). Hence: no identifiers, no history, no archive, no indexing of the names themselves, and removal on request. If you are a minor, tell us — for a child the balance tips the other way (Recital 38) and we remove you immediately.',
+      },
+      {
+        p: 'Right to object (Art. 21 GDPR): write to privacy@carbonstealth.eu with the nickname and the server and we stop showing it. We do not notify each player individually: the names are read automatically and we have no contact address, which Art. 14(5)(b) allows where the effort would be disproportionate; this section is public before the first display and on every reading of it.',
       },
       { h: 'Streamers — data we did NOT obtain from you' },
       {
@@ -258,7 +296,7 @@ const en: LegalSet = {
   },
   terms: {
     title: 'Terms of use',
-    effective: '2026-08-01',
+    effective: '2026-08-02',
     description:
       'Terms for using the FiveM BG directory: listings, moderation, reviews, ranking and reports of illegal content.',
     blocks: [

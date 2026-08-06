@@ -92,6 +92,15 @@ model Server {
   /// Последният опит за пингване (успешен или не).
   lastCheckedAt DateTime?
 
+  /// Имената на играчите онлайн, от `/players.json` на самия сървър.
+  /// ЛИЧНИ ДАННИ: презаписва се цяло при всяко опресняване (на 3 мин) — не
+  /// пазим история и не пазим `identifiers` (steam:/license:/discord:), които
+  /// същият отговор съдържа. Виж `readPlayerNames` и `/privacy`.
+  playerNames   String[] @default([])
+  /// Кога списъкът с имена е потвърден. `null` значи „нямаме видимост“ —
+  /// различно от празен списък, който значи „проверено, няма никого“.
+  playersSeenAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
