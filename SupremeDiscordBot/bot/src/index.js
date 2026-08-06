@@ -836,10 +836,17 @@ app.post("/internal/giveaway-ended", async (req, res) => {
 
 // ── v1.8 Scheduled message sending
 app.post("/internal/scheduled-message-send", async (req, res) => {
-  const { channelId, content, embedTitle, embedDescription, embedColor } = req.body;
+  const { channelId, content, embedTitle, embedDescription, embedColor, serverId } = req.body;
   try {
     const channel = await client.channels.fetch(channelId).catch(() => null);
     if (!channel) return res.json({ ok: false });
+
+    // Cross-tenant guard (F2): каналът ТРЯБВА да е в guild-а на сървъра, който
+    // е насрочил съобщението — иначе чужд channelId в записа би инжектирал
+    // съдържание в друг сървър. Огледало на sticky/panel sender-ите по-горе.
+    if (serverId && (channel.guildId || channel.guild?.id) !== serverId) {
+      return res.status(403).json({ ok: false, error: "channel not in server guild" });
+    }
 
     if (embedTitle || embedDescription) {
       await channel.send({

@@ -61,11 +61,23 @@ router.get("/", async (req, res, next) => {
     // Cross-reference with our DB to get premium status etc.
     // Exclude servers where the bot has been kicked (botRemovedAt != null).
     const serverIds = adminGuilds.map((g) => g.id);
+    // Ефективно premium в списъка: собствен план ИЛИ активен trial ИЛИ активна
+    // агенция (agency seat не сетва суровия isPremium — виж premium.js). Без
+    // agency/trial проверката badge-ът липсваше на платени сървъри.
+    const now = new Date();
     const dbServers = await prisma.server.findMany({
       where: { id: { in: serverIds }, botRemovedAt: null },
-      select: { id: true, isPremium: true, stripeStatus: true },
+      select: {
+        id: true, isPremium: true, stripeStatus: true, trialEndsAt: true,
+        agencyId: true, agency: { select: { active: true } },
+      },
     });
     const dbMap = Object.fromEntries(dbServers.map((s) => [s.id, s]));
+
+    const effectivePremium = (s) =>
+      !!s && (s.isPremium
+        || (s.trialEndsAt && s.trialEndsAt > now)
+        || (s.agencyId && s.agency?.active));
 
     const result = adminGuilds.map((g) => ({
       id: g.id,
@@ -74,7 +86,7 @@ router.get("/", async (req, res, next) => {
         ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith("a_") ? "gif" : "png"}`
         : null,
       botAdded: !!dbMap[g.id],
-      isPremium: dbMap[g.id]?.isPremium || false,
+      isPremium: !!effectivePremium(dbMap[g.id]),
     }));
 
     res.json(result);
@@ -96,16 +108,21 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     if (!server) return res.status(404).json({ error: "Server not found" });
 
-    // v2.0 — Enrich with computed trial state
+    // v2.0 — Enrich with computed tier state. getServerTier резолвира
+    // собствен план + активен trial + AGENCY seat — суровият isPremium
+    // изпускаше agency-покритите сървъри (dashboard ги показваше безплатни
+    // дори платената функция да работи; при стара колона — обратното).
     const now = new Date();
     const trialActive = !!(server.trialEndsAt && server.trialEndsAt > now);
-    const effectivePremium = !!server.isPremium || trialActive;
+    const tier = await getServerTier(req.params.serverId);
     const trialDaysLeft = trialActive
       ? Math.ceil((server.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
       : 0;
 
     const response = sanitizeServer(server);
-    response.isPremium = effectivePremium;   // trial counts as premium
+    response.isPremium = tier.isPremium;     // собствен план ИЛИ trial ИЛИ agency
+    response.plan = tier.plan;
+    response.hasWhiteLabel = tier.hasWhiteLabel;
     response.isTrial = trialActive;
     response.trialDaysLeft = trialDaysLeft;
     response.trialUsed = server.trialUsed;

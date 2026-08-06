@@ -25,6 +25,7 @@
 // ON ERROR: логва, но НЕ хвърля — провал на job-а не бива да събаря backend-а.
 
 import { prisma } from "../lib/prisma.js";
+import { syncServerPaidFlag } from "../lib/premium.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GRACE_DAYS = Number(process.env.DUNNING_GRACE_DAYS ?? 14);
@@ -96,6 +97,11 @@ export async function runDunningJob() {
       try {
         await prisma.$transaction(async (tx) => {
           await tx.agency.update({ where: { id: agency.id }, data: { active: false } });
+          // Паричен инвариант: деактивацията прави покритите сървъри неплатени
+          // → синхронизирай суровата isPremium (иначе остават grandfather-нат
+          // безплатен white-label; същият пропуск като webhook пътищата).
+          const members = await tx.server.findMany({ where: { agencyId: agency.id }, select: { id: true } });
+          for (const s of members) await syncServerPaidFlag(s.id, tx);
           await tx.auditLog.create({
             data: {
               actorId: null,

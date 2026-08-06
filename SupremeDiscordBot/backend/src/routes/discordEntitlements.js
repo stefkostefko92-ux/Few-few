@@ -22,7 +22,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
-import { planFromDiscordSku } from "../lib/premium.js";
+import { planFromDiscordSku, syncServerPaidFlag } from "../lib/premium.js";
 
 const router = Router();
 
@@ -133,15 +133,20 @@ async function revokeServer(serverId, entitlementId, reason) {
   }
 
   try {
-    await prisma.server.update({
-      where: { id: serverId },
-      data: {
-        isPremium: false,
-        plan: "free",
-        planSource: null,
-        discordEntitlementId: null,
-        discordSkuId: null,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.server.update({
+        where: { id: serverId },
+        data: {
+          plan: "free",
+          planSource: null,
+          discordEntitlementId: null,
+          discordSkuId: null,
+        },
+      });
+      // НЕ хардкодвай isPremium:false — сървърът може да е покрит от АКТИВНА
+      // агенция (agency seat не зависи от Discord entitlement). Recompute-ни:
+      // остава premium при agency покритие, иначе → free.
+      await syncServerPaidFlag(serverId, tx);
     });
   } catch (err) {
     if (err?.code === "P2025") return { ignored: "server vanished" };

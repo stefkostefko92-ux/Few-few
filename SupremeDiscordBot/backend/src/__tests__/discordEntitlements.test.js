@@ -95,9 +95,15 @@ describe("POST /entitlement — revoke", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.revoked).toBe(true);
+    // Revoke чисти плановите полета; isPremium се пресмята отделно през
+    // syncServerPaidFlag (за да не изгаси agency-покрит сървър) → false тук.
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g1" },
-      data: { isPremium: false, plan: "free", planSource: null, discordEntitlementId: null, discordSkuId: null },
+      data: { plan: "free", planSource: null, discordEntitlementId: null, discordSkuId: null },
+    });
+    expect(prismaMock.server.update).toHaveBeenCalledWith({
+      where: { id: "g1" },
+      data: { isPremium: false },
     });
   });
 
@@ -158,7 +164,11 @@ describe("POST /entitlements/reconcile", () => {
     expect(res.body.revoked).toBe(1);
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g2" },
-      data: expect.objectContaining({ isPremium: false, plan: "free", planSource: null }),
+      data: expect.objectContaining({ plan: "free", planSource: null }),
+    });
+    expect(prismaMock.server.update).toHaveBeenCalledWith({
+      where: { id: "g2" },
+      data: { isPremium: false },
     });
   });
 

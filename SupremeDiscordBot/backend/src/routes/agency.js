@@ -7,7 +7,7 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { PLANS, AGENCY_PLANS, stripePriceId } from "../lib/premium.js";
+import { PLANS, AGENCY_PLANS, stripePriceId, syncServerPaidFlag } from "../lib/premium.js";
 
 const router = Router();
 
@@ -168,6 +168,10 @@ router.post("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServer
       const used = await tx.server.count({ where: { agencyId } });
       if (used >= agency.seatLimit) return { code: "FULL" };
       await tx.server.update({ where: { id: serverId }, data: { agencyId } });
+      // Синхронизирай суровата isPremium колона В СЪЩАТА транзакция — иначе
+      // покритият сървър остава isPremium=false и всеки четец на суровата
+      // колона (bot config, dashboard, panel функции) го мисли за безплатен.
+      await syncServerPaidFlag(serverId, tx);
       await tx.auditLog.create({ data: { actorId: req.user.id, serverId, action: "AGENCY_SEAT_ADDED", targetId: agencyId } });
       return { code: "OK", seatsUsed: used + 1 };
     });
@@ -191,7 +195,12 @@ router.delete("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServ
     const server = await prisma.server.findUnique({ where: { id: serverId }, select: { agencyId: true } });
     if (server?.agencyId !== agencyId) return res.status(404).json({ error: "Server is not on this agency plan" });
 
-    await prisma.server.update({ where: { id: serverId }, data: { agencyId: null } });
+    await prisma.$transaction(async (tx) => {
+      await tx.server.update({ where: { id: serverId }, data: { agencyId: null } });
+      // Разкачен сървър: recompute — може още да има СОБСТВЕН платен план
+      // (тогава остава premium), иначе пада на free.
+      await syncServerPaidFlag(serverId, tx);
+    });
     await prisma.auditLog.create({ data: { actorId: req.user.id, serverId, action: "AGENCY_SEAT_REMOVED", targetId: agencyId } }).catch(() => {});
     res.json({ ok: true });
   } catch (err) { next(err); }

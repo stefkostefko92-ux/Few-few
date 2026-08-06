@@ -284,6 +284,38 @@ export function effectiveFreeWhere(now = new Date()) {
   };
 }
 
+/**
+ * Синхронизира суровата `Server.isPremium` колона спрямо ПЛАТЕНОТО състояние:
+ * собствен план (≠free) ИЛИ активен agency seat. Trial НЕ участва тук — той
+ * живее в `trialEndsAt` и се OR-ва при четене (виж effectivePremiumWhere).
+ *
+ * Викай след ВСЕКИ agency преход (attach/detach seat, активация/деактивация на
+ * агенция). Без това колоната остава false за agency-покрит сървър, а всички
+ * четци на суровата колона (bot config, dashboard, panel функции) го третират
+ * като безплатен — платената функция мълчи. Идемпотентно; тихо при липсващ ред.
+ */
+export async function syncServerPaidFlag(serverId, tx = prisma) {
+  const server = await tx.server.findUnique({
+    where: { id: serverId },
+    select: { isPremium: true, plan: true, agencyId: true, agency: { select: { active: true } } },
+  });
+  if (!server) return false;
+  const ownPaid = !!server.plan && server.plan !== "free";
+  const agencyCovered = !!(server.agencyId && server.agency?.active);
+  const shouldBe = ownPaid || agencyCovered;
+  if (server.isPremium !== shouldBe) {
+    await tx.server.update({ where: { id: serverId }, data: { isPremium: shouldBe } });
+  }
+  return shouldBe;
+}
+
+/** Синхронизира всички сървъри, покрити от дадена агенция (при активация/край). */
+export async function syncAgencyServersPaidFlag(agencyId, tx = prisma) {
+  const servers = await tx.server.findMany({ where: { agencyId }, select: { id: true } });
+  for (const s of servers) await syncServerPaidFlag(s.id, tx);
+  return servers.length;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // ENFORCEMENT HELPERS
 // ═══════════════════════════════════════════════════════════════════════════

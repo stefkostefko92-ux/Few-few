@@ -364,7 +364,7 @@ async function handleFormModalSubmit(interaction) {
     } catch { /* field wasn't rendered (shouldn't happen — same list built the modal) */ }
     // Същата guarded валидация като DM пътя (ReDoS-защитена) — modal-ът не
     // бива тихо да заобикаля validationRegex на формата.
-    if (q.validationRegex && !validateAnswerAgainstRegex(q, answers[q.id] || "").ok) {
+    if (q.validationRegex && !(await validateAnswerAgainstRegex(q, answers[q.id] || "")).ok) {
       invalid.push(q.label);
     }
   }

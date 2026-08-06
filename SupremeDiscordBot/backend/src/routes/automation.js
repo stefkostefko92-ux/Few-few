@@ -261,6 +261,16 @@ router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automatio
         code: "LIMIT_REACHED",
       });
     }
+    // Cross-tenant IDOR guard: StickyMessage.channelId е ГЛОБАЛНО @unique, тоест
+    // upsert само по channelId би презаписал sticky на ДРУГ сървър, ако
+    // атакуващият познава чужд channelId (requireServerAdmin пази serverId, не
+    // че каналът е в него). Затова първо проверяваме собствеността на реда.
+    const existingSticky = await prisma.stickyMessage.findUnique({
+      where: { channelId }, select: { serverId: true },
+    });
+    if (existingSticky && existingSticky.serverId !== req.params.serverId) {
+      return res.status(409).json({ error: "This channel already has a sticky on another server." });
+    }
     const sticky = await prisma.stickyMessage.upsert({
       where: { channelId },
       create: {

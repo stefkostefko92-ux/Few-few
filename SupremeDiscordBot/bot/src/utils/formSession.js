@@ -22,31 +22,60 @@ import { sessionStore } from "./sessionStore.js";
 import { t, resolveLang } from "../i18n/index.js";
 
 // ─── Споделена regex валидация (DM сесия + modal път) ────────────────────────
-// ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата,
-// а входът е необработен потребителски текст в споделен bot процес.
-// Два слоя (без тежка зависимост като re2):
-//   1) Твърд кап на входа (64 знака) — при толкова кратък вход дори
-//      експоненциален backtracking (напр. `(a+)+$`) свършва мигновено.
-//   2) Отхвърляме опасни шаблони: вложени quantifier-и са класическият
-//      катастрофичен backtracking; такъв шаблон не се изпълнява изобщо.
-// Малформиран шаблон → приемаме отговора (не наказваме потребителя за грешка
-// в конфигурацията). Връща { ok } — съобщението за грешка е на извикващия.
-const REGEX_INPUT_MAX = 64;
-const NESTED_QUANTIFIER = /(\([^)]*[+*}][^)]*\)|\[[^\]]*\][+*}]|[+*}])\s*[+*]|\)\s*\{\d+,?\d*\}\s*[+*{]/;
+// ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата
+// (задава я админ на сървъра), входът е необработен потребителски текст, а
+// процесът на бота е СПОДЕЛЕН между всички наематели. Злонамерен админ може да
+// сложи катастрофичен шаблон (`(a|a)*$`, `(a+)+$`, …) и всяко подаване да
+// замрази event loop-а за ВСИЧКИ сървъри.
+//
+// Патърн-блоклист + кап на входа НЕ е достатъчен: blocklist-ите теч(ат)
+// (alternation-overlap го заобикаля), а катастрофичният backtracking е
+// експоненциален в дължината на входа — 64 знака пак виси. Затова недоверения
+// regex се изпълнява в WORKER thread с твърд timeout: катастрофичен шаблон
+// блокира еднократния worker (който убиваме), не главния loop. Зависимост:
+// нула (вграденото `node:worker_threads`), за разлика от re2 (нативен билд).
+import { Worker } from "node:worker_threads";
+
+const REGEX_INPUT_MAX = 512;      // разумен таван на входа (не защита сам по себе си)
+// Щедър timeout: катастрофичният backtracking върви в ИЗОЛИРАН worker и НЕ
+// блокира главния event loop — единствената цена е колко чака подаващият
+// потребител. Затова таванът покрива уверено worker startup-а под натоварване
+// (иначе легитимен regex „изтича" фалшиво), без да отваря DoS към другите
+// наематели. 1s: легитимните свършват за <5ms, катастрофичните се убиват.
+const REGEX_TIMEOUT_MS = 1000;
+
+// Самостоятелен worker: компилира и тества, връща булев резултат.
+const WORKER_SRC = `
+  const { parentPort, workerData } = require("node:worker_threads");
+  try {
+    const re = new RegExp(workerData.pattern);
+    parentPort.postMessage({ ok: re.test(workerData.content) });
+  } catch {
+    parentPort.postMessage({ ok: true, malformed: true }); // грешен шаблон → приемаме
+  }
+`;
 
 export function validateAnswerAgainstRegex(question, content) {
-  if (!question?.validationRegex) return { ok: true };
-  if ((content || "").length > REGEX_INPUT_MAX) return { ok: false };
-  if (NESTED_QUANTIFIER.test(question.validationRegex)) {
-    console.warn(`[formSession] rejected risky validationRegex (nested quantifier) on question ${question.id}: ${question.validationRegex}`);
-    return { ok: true }; // не изпълняваме опасния шаблон — приемаме отговора
-  }
-  try {
-    return { ok: new RegExp(question.validationRegex).test(content) };
-  } catch {
-    console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
-    return { ok: true };
-  }
+  if (!question?.validationRegex) return Promise.resolve({ ok: true });
+  if ((content || "").length > REGEX_INPUT_MAX) return Promise.resolve({ ok: false });
+
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    let worker;
+    try {
+      worker = new Worker(WORKER_SRC, { eval: true, workerData: { pattern: question.validationRegex, content: content || "" } });
+    } catch {
+      return finish({ ok: true }); // не можем да стартираме worker → не наказвай потребителя
+    }
+    const timer = setTimeout(() => {
+      console.warn(`[formSession] validationRegex timeout (>${REGEX_TIMEOUT_MS}ms, катастрофичен?) q${question.id}: ${question.validationRegex}`);
+      worker.terminate().catch(() => {});
+      finish({ ok: true }); // не изпълнявай опасния шаблон срещу event loop-а — приеми
+    }, REGEX_TIMEOUT_MS);
+    worker.once("message", (m) => { clearTimeout(timer); worker.terminate().catch(() => {}); finish({ ok: !!m.ok }); });
+    worker.once("error", () => { clearTimeout(timer); finish({ ok: true }); });
+  });
 }
 
 // sessionStore: Redis-backed with in-memory fallback (see sessionStore.js)
@@ -249,7 +278,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     //      да блокираме event loop-а.
     // Малформиран шаблон се хваща от try/catch.
     if (question.validationRegex) {
-      const verdict = validateAnswerAgainstRegex(question, content);
+      const verdict = await validateAnswerAgainstRegex(question, content);
       if (!verdict.ok) {
         await dmChannel.send(
           t("form.invalidFormat", lang, { reason: question.validationMessage || "Answer does not match the expected format. Please try again." })

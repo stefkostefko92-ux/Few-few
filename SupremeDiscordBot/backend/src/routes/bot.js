@@ -38,7 +38,11 @@ router.get("/server/:serverId", async (req, res, next) => {
       return res.json({ id: req.params.serverId, isPremium: false, panels: [], forms: [] });
     }
 
-    res.json(server);
+    // Ботът гейтва функциите на server.isPremium — суровата колона изпуска
+    // agency-покритите (и trial) сървъри. Наложи ЕФЕКТИВНИЯ tier, за да
+    // работят платените функции под бота при agency seat.
+    const tier = await getServerTier(req.params.serverId);
+    res.json({ ...server, isPremium: tier.isPremium, plan: tier.plan, hasWhiteLabel: tier.hasWhiteLabel });
   } catch (err) {
     next(err);
   }
@@ -825,10 +829,16 @@ router.get("/panel/:panelId", async (req, res, next) => {
       where: { id: req.params.panelId },
       include: {
         buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } },
-        server: { select: { isPremium: true } },
+        server: { select: { id: true, isPremium: true } },
       },
     });
     if (!panel) return res.status(404).json({ error: "Panel not found" });
+    // Ефективен tier (agency/trial не са в суровата колона) — панелните
+    // функции се гейтват на panel.server.isPremium.
+    if (panel.server?.id) {
+      const tier = await getServerTier(panel.server.id);
+      panel.server.isPremium = tier.isPremium;
+    }
     res.json(panel);
   } catch (err) {
     next(err);
@@ -868,13 +878,16 @@ router.patch("/server/:serverId", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { isPremium: true, trialEndsAt: true },
+      select: { id: true },
     });
-
     if (!server) return res.status(404).json({ error: "Server not found" });
-    const isEffectivePremium = !!server.isPremium || (server.trialEndsAt && server.trialEndsAt > new Date());
-    if (!isEffectivePremium) {
-      return res.status(403).json({ error: "White-label settings require Premium" });
+
+    // White-label е ОТДЕЛЕН tier (White-label/Agency), не „Premium или trial".
+    // Дотук гейтът пускаше обикновен Premium (и trial) да сетва custom bot —
+    // платена White-label функция, раздавана под цената си (premium bypass).
+    const { hasWhiteLabel } = await getServerTier(req.params.serverId);
+    if (!hasWhiteLabel) {
+      return res.status(403).json({ error: "Custom bot settings require the White-label tier" });
     }
 
     const updated = await prisma.server.update({
