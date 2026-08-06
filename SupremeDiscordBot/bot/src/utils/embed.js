@@ -84,6 +84,8 @@ export function buildPanelMessage(panel) {
 // Панел в DROPDOWN режим яде 1 ред; в BUTTON режим — по 1 ред на всеки 5 бутона.
 export const MAX_EMBEDS_PER_MESSAGE = 10;
 export const MAX_ROWS_PER_MESSAGE = 5;
+//   • 6000 знака СБОРНО във всички embed-и на съобщението
+export const MAX_EMBED_CHARS_PER_MESSAGE = 6000;
 
 /**
  * Сглобява НЯКОЛКО панела в ЕДНО съобщение.
@@ -101,20 +103,41 @@ export function buildMultiPanelMessage(panels) {
   const embeds = [];
   const components = [];
   const skipped = [];
+  let totalChars = 0;
 
   for (const panel of panels) {
     const built = buildPanelMessage(panel);
     const nextEmbeds = embeds.length + built.embeds.length;
     const nextRows = components.length + built.components.length;
-    if (nextEmbeds > MAX_EMBEDS_PER_MESSAGE || nextRows > MAX_ROWS_PER_MESSAGE) {
-      skipped.push({ id: panel.id, name: panel.name, reason: nextRows > MAX_ROWS_PER_MESSAGE ? "rows" : "embeds" });
+    // Discord брои СБОРНАТА дължина на всички embed-и в съобщението (6000).
+    // Без тази проверка десет дълги панела минаваха лимитите за брой, но
+    // Discord отхвърляше ЦЯЛАТА заявка и потребителят виждаше само
+    // „Bot is offline" — вместо ясно кой панел не се е побрал.
+    const chars = built.embeds.reduce((n, e) => n + embedCharCount(e), 0);
+    const reason =
+      nextEmbeds > MAX_EMBEDS_PER_MESSAGE ? "embeds"
+      : nextRows > MAX_ROWS_PER_MESSAGE ? "rows"
+      : totalChars + chars > MAX_EMBED_CHARS_PER_MESSAGE ? "chars"
+      : null;
+    if (reason) {
+      skipped.push({ id: panel.id, name: panel.name, reason });
       continue;
     }
     embeds.push(...built.embeds);
     components.push(...built.components);
+    totalChars += chars;
   }
 
   return { embeds, components, skipped };
+}
+
+/** Знаците, които Discord брои към лимита от 6000 на съобщение. */
+function embedCharCount(embed) {
+  const d = typeof embed?.toJSON === "function" ? embed.toJSON() : (embed || {});
+  let n = (d.title?.length || 0) + (d.description?.length || 0)
+    + (d.footer?.text?.length || 0) + (d.author?.name?.length || 0);
+  for (const f of d.fields || []) n += (f.name?.length || 0) + (f.value?.length || 0);
+  return n;
 }
 
 /**

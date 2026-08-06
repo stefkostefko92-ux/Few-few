@@ -288,10 +288,26 @@ router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next)
       return res.status(502).json({ error: "Bot is offline or failed to post the panels. Try again shortly." });
     }
 
-    await prisma.panel.updateMany({
-      where: { id: { in: result.posted || [] } },
-      data: { channelId: result.channelId, messageId: result.messageId },
-    });
+    // Записваме позицията, за да е стабилен редът при по-късна редакция
+    // (иначе съседите се подреждаха по createdAt и групата се разбъркваше).
+    // updateMany е скоупнат и по serverId — multi-tenant правилото важи и за
+    // вътрешни списъци, не само за клиентски подадени id-та.
+    const posted = result.posted || [];
+    await prisma.$transaction(
+      posted.map((id, idx) => prisma.panel.update({
+        where: { id },
+        data: { channelId: result.channelId, messageId: result.messageId, groupOrder: idx },
+      }))
+    );
+    // Панелите, които ботът е прескочил, НЕ бива да носят този messageId —
+    // иначе остават сираци, сочещи съобщение, в което ги няма.
+    const skippedIds = (result.skipped || []).map((x) => x.id).filter(Boolean);
+    if (skippedIds.length) {
+      await prisma.panel.updateMany({
+        where: { id: { in: skippedIds }, serverId: req.params.serverId },
+        data: { messageId: null, groupOrder: null },
+      });
+    }
 
     res.json({
       ok: true,

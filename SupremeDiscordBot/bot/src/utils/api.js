@@ -81,8 +81,11 @@ export async function submitApplication(serverId, formId, userId, answers, revie
   return data;
 }
 
-export async function getPanel(panelId) {
-  const { data } = await api.get(`/bot/panel/${panelId}`);
+// `withSiblings` иска и останалите панели от СЪЩОТО групово съобщение — нужно
+// САМО при редакция (пресглобяване). НЕ го ползвай на горещия път (клик на
+// бутон): там всяка допълнителна заявка яде от 3-секундния ack бюджет.
+export async function getPanel(panelId, { withSiblings = false } = {}) {
+  const { data } = await api.get(`/bot/panel/${panelId}${withSiblings ? "?siblings=1" : ""}`);
   return data;
 }
 

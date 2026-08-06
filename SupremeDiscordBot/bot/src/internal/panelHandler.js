@@ -22,7 +22,7 @@ export async function handlePanelSpawn(client, { panelId, serverId, channelId })
 }
 
 export async function handlePanelUpdate(client, { panelId, serverId }) {
-  const panel = await getPanel(panelId);
+  const panel = await getPanel(panelId, { withSiblings: true });
   if (!panel.channelId || !panel.messageId) return;
 
   const channel = client.channels.cache.get(panel.channelId)

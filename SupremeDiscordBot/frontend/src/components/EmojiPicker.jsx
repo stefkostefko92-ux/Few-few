@@ -52,12 +52,22 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
     const onDocClick = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
     };
-    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    // capture + stopPropagation: Modal слуша Escape СЪЩО в capture фаза, а той
+    // е монтиран по-рано, значи щеше да спечели и да затвори ЦЕЛИЯ модал —
+    // потребителят губеше несъхранената форма само защото е искал да откаже
+    // избора на емоджи. Тук поглъщаме клавиша, докато picker-ът е отворен.
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        e.preventDefault();
+        setOpen(false);
+      }
+    };
     document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("keydown", onKey, true);
     };
   }, [open]);
 

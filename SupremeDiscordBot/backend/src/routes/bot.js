@@ -863,12 +863,17 @@ router.get("/panel/:panelId", async (req, res, next) => {
 
     // Групово съобщение: няколко панела делят един messageId. Редакцията на
     // ЕДИН панел трябва да пресглоби ЦЯЛОТО съобщение, иначе останалите
-    // изчезват от него. Подаваме съседите подредени, за да е стабилен редът.
-    if (panel.channelId && panel.messageId) {
+    // изчезват от него.
+    // ВАЖНО: само по ИЗРИЧНА заявка (?siblings=1). Този маршрут е и на ГОРЕЩИЯ
+    // път — вика се при всеки клик на бутон/меню, преди 3-секундния ack бюджет
+    // на Discord. Безусловната втора заявка там е чиста загуба.
+    if (req.query.siblings === "1" && panel.channelId && panel.messageId) {
       const siblings = await prisma.panel.findMany({
         where: { channelId: panel.channelId, messageId: panel.messageId },
         include: { buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } } },
-        orderBy: { createdAt: "asc" },
+        // Редът, избран от потребителя при публикуване (groupOrder); createdAt
+        // е само резервен за заварени групи отпреди полето.
+        orderBy: [{ groupOrder: "asc" }, { createdAt: "asc" }],
       });
       if (siblings.length > 1) panel.siblings = siblings;
     }

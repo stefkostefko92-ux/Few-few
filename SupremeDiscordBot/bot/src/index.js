@@ -107,7 +107,10 @@ for (const file of eventFiles) {
 // ─── Internal HTTP Server (receives events from backend) ─────────────────────
 
 const app = express();
-app.use(express.json());
+// 1mb вместо дефолтните 100kb: груповото публикуване праща до 10 панела с
+// вградените им форми и въпроси в едно тяло — при по-големи конфигурации
+// дефолтът връщаше 413 и UI-ят показваше подвеждащото „Bot is offline".
+app.use(express.json({ limit: "1mb" }));
 
 // Health check — no auth required (used by docker healthcheck + status page).
 // Liveness трябва да отразява РЕАЛНАТА зависимост (Discord gateway), не само

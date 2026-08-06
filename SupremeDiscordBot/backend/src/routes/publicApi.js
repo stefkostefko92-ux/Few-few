@@ -8,7 +8,7 @@ import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { requirePremium, getServerTier } from "../lib/premium.js";
+import { requirePremium, getServerTier, planHasFeature } from "../lib/premium.js";
 
 const router = Router();
 
@@ -154,6 +154,18 @@ async function authenticateApiKey(req, res, next) {
   }
   if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
     return res.status(401).json({ error: "API key expired" });
+  }
+
+  // Тарифен гейт при ПОЛЗВАНЕ, не само при издаване: ключ, издаден по време на
+  // 14-дневния trial (или преди изтичане на абонамента), иначе продължаваше да
+  // работи вечно — платена функция, раздавана безплатно. Проверката е върху
+  // ЕФЕКТИВНИЯ tier (собствен план + активен trial + agency seat).
+  const tier = await getServerTier(apiKey.serverId);
+  if (!planHasFeature(tier.plan, "integrations.restApi")) {
+    return res.status(403).json({
+      error: "The REST API requires an active Premium plan on this server.",
+      code: "PREMIUM_REQUIRED",
+    });
   }
 
   // Async update lastUsedAt + requestCount — don't block

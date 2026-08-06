@@ -240,6 +240,10 @@ model Panel {
   // Discord IDs after panel is spawned
   channelId                 String?
   messageId                 String?
+  // v37 — позиция в ГРУПОВО съобщение (няколко панела, общ messageId).
+  // Без нея редакцията подреждаше по createdAt и разбъркваше избрания от
+  // потребителя ред. NULL за самостоятелните панели.
+  groupOrder                Int?
   // Ticket settings
   categoryId                String? // Discord category for new tickets (legacy, use categoryOpenId)
   supportRoleIds            String[] // Roles that can see tickets
