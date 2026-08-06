@@ -7,8 +7,14 @@
 // inline скриптове (затова първият опит не работеше на живо).
 (function () {
   const l = window.location;
-  if (l.hostname === "supremebot.carbonstealth.eu" && l.port) {
-    l.replace("https://supremebot.carbonstealth.eu" + l.pathname + l.search + l.hash);
+  const isLocalDev = l.hostname === "localhost" || l.hostname === "127.0.0.1" || l.hostname === "[::1]";
+  if (isLocalDev) return; // dev сървърите (5173/4173) си остават с порт
+  // :8080 е ВЪТРЕШНИЯТ порт на контейнера (127.0.0.1-only зад nginx) — публично
+  // не бива да се появява никога. Каноникализираме за ЛЮБОЙ хост, не само за
+  // продукционния домейн: стар bookmark, алиас (www.), IP или OAuth редирект с
+  // порт водеха до относителни футър линкове, наследили „:8080".
+  if (l.port === "8080") {
+    l.replace("https://" + l.hostname + l.pathname + l.search + l.hash);
   }
 })();
 
