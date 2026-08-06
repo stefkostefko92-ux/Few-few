@@ -238,6 +238,8 @@ export default {
   "panels.edit": "Paneel bewerken",
   "panels.delete": "Paneel verwijderen",
   "panels.duplicate": "Paneel dupliceren",
+  "panels.spawned": "Paneel in het kanaal geplaatst.",
+  "panels.duplicated": "Paneel gedupliceerd.",
   "panels.duplicatePremium": "Paneel dupliceren (Premium)",
   "panels.duplicateReq": "Het dupliceren van panelen vereist Premium.",
   "panels.duplicateLabel": "Paneelduplicaat",

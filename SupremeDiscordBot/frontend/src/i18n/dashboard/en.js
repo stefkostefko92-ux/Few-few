@@ -246,6 +246,8 @@ export default {
   "panels.edit": "Edit panel",
   "panels.delete": "Delete panel",
   "panels.duplicate": "Duplicate panel",
+  "panels.spawned": "Panel posted to the channel.",
+  "panels.duplicated": "Panel duplicated.",
   "panels.duplicatePremium": "Duplicate panel (Premium)",
   "panels.duplicateReq": "Panel duplication requires Premium.",
   "panels.duplicateLabel": "Panel Duplicate",

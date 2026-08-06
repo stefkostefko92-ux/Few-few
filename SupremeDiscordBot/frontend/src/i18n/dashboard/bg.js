@@ -238,6 +238,8 @@ export default {
   "panels.edit": "Редактирай панел",
   "panels.delete": "Изтрий панел",
   "panels.duplicate": "Дублирай панел",
+  "panels.spawned": "Панелът е публикуван в канала.",
+  "panels.duplicated": "Панелът е дублиран.",
   "panels.duplicatePremium": "Дублирай панел (Premium)",
   "panels.duplicateReq": "Дублирането на панел изисква Premium.",
   "panels.duplicateLabel": "Дублиране на панел",

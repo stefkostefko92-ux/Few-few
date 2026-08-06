@@ -238,6 +238,8 @@ export default {
   "panels.edit": "Modifica pannello",
   "panels.delete": "Elimina pannello",
   "panels.duplicate": "Duplica pannello",
+  "panels.spawned": "Pannello pubblicato nel canale.",
+  "panels.duplicated": "Pannello duplicato.",
   "panels.duplicatePremium": "Duplica pannello (Premium)",
   "panels.duplicateReq": "La duplicazione dei pannelli richiede Premium.",
   "panels.duplicateLabel": "Duplicato del pannello",

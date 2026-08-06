@@ -238,6 +238,8 @@ export default {
   "panels.edit": "Modifier le panneau",
   "panels.delete": "Supprimer le panneau",
   "panels.duplicate": "Dupliquer le panneau",
+  "panels.spawned": "Panneau publié dans le salon.",
+  "panels.duplicated": "Panneau dupliqué.",
   "panels.duplicatePremium": "Dupliquer le panneau (Premium)",
   "panels.duplicateReq": "La duplication de panneau nécessite Premium.",
   "panels.duplicateLabel": "Duplicata de panneau",
