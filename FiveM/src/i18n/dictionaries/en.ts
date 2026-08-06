@@ -25,6 +25,7 @@ export const en: Dictionary = {
     support: 'Support us',
     skipToContent: 'Skip to content',
     main: 'Main navigation',
+    menu: 'Menu',
     language: 'Language',
   },
   footer: {

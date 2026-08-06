@@ -7,6 +7,8 @@ import { JsonLd } from '@/components/JsonLd';
 import { Icon } from '@/components/Icon';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Mascot } from '@/components/Mascot';
+import { MobileNav } from '@/components/MobileNav';
+import { NavLink } from '@/components/NavLink';
 import { HTML_LANG, isLocale, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n';
 import { BASE_KEYWORDS, SITE_NAME, SITE_URL, siteJsonLd } from '@/lib/seo';
@@ -48,7 +50,9 @@ export default async function LocaleLayout({ children, params }: Props) {
   const t = getDictionary(locale);
 
   const nav = [
-    { href: `/${locale}`, label: t.nav.servers, icon: 'servers' },
+    // `exact`: `/bg` е представка на всяка друга страница — без него
+    // „Сървъри“ щеше да свети активно навсякъде из сайта.
+    { href: `/${locale}`, label: t.nav.servers, icon: 'servers', exact: true },
     { href: `/${locale}/rules`, label: t.nav.rules, icon: 'rules' },
     { href: `/${locale}/tutorials`, label: t.nav.tutorials, icon: 'tutorials' },
     { href: `/${locale}/streamers`, label: t.nav.streamers, icon: 'share' },
@@ -77,14 +81,20 @@ export default async function LocaleLayout({ children, params }: Props) {
           {t.nav.skipToContent}
         </a>
 
-        <header className="border-b border-white/10">
+        {/* `sticky` + `backdrop-blur`: на телефон навигацията е на един палец
+            разстояние през целия списък, а не на върха на дълга страница.
+            `z-40` е под панела на менюто, който е `z-40` в СЪЩИЯ контекст. */}
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/85 backdrop-blur">
           {/* Трикольорът от логото — тънка лента, за да не се повтаря знамето. */}
           <div className="flag-rule h-[3px]" aria-hidden="true" />
           <nav
             aria-label={t.nav.main}
-            className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4"
+            className="mx-auto flex max-w-6xl items-center gap-x-6 gap-y-3 px-4 py-3"
           >
-            <Link href={`/${locale}`} className="flex items-center">
+            <Link
+              href={`/${locale}`}
+              className="flex shrink-0 items-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
+            >
               {/* Пътят е низ, а не статичен импорт: типът на `*.png` идва от
                   `next-env.d.ts`, който се генерира от `next build` и е
                   git-ignored — а гейтът пуска typecheck ПРЕДИ build, тоест в
@@ -95,22 +105,39 @@ export default async function LocaleLayout({ children, params }: Props) {
                 width={1280}
                 height={324}
                 priority
-                className="h-8 w-auto"
+                // Логото расте, но не безразборно: при 1280×324 (≈3,95:1)
+                // `h-12` дава ≈190 px ширина — още се събира до хамбургера на
+                // 360 px екран. `sizes` пази Next да не сервира 1280 px файл
+                // за 190 px кутия.
+                sizes="(min-width: 640px) 190px, 158px"
+                className="h-10 w-auto sm:h-12"
               />
             </Link>
 
-            <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-silver-400">
+            {/* ── Настолна навигация ─────────────────────────────────────── */}
+            {/* `flex-nowrap` + `shrink-0`: като flex-елемент `ul`-ът се свиваше
+                до 714 px при налични 1248 и се пренасяше ВЪТРЕШНО на два реда,
+                макар да има място (измерено). Прагът е `lg`, а не `md`: при
+                768 px, нито при 1024, седемте раздела не се събират: измерено,
+                нужни са 1120 px само за навигацията, тоест до 1152 виждаше
+                хоризонтален прелив. Там хамбургерът е по-добрият отговор. */}
+            <ul className="hidden shrink-0 flex-nowrap gap-x-4 text-sm text-silver-400 xl:flex">
               {nav.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="flex items-center gap-1.5 hover:text-cyan-300">
+                  <NavLink
+                    href={item.href}
+                    exact={item.exact}
+                    className="flex items-center gap-1.5 rounded py-1 transition-colors hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+                    activeClassName="text-cyan-300 underline decoration-cyan-400 decoration-2 underline-offset-8"
+                  >
                     <Icon group="ui" name={item.icon} size={15} />
                     {item.label}
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
             </ul>
 
-            <div className="ms-auto flex items-center gap-4">
+            <div className="ms-auto hidden items-center gap-4 xl:flex">
               {/* Външна покана: `noopener` е задължителен, `nofollow` — защото
                   не предаваме тежест на чужд домейн. */}
               <a
@@ -122,6 +149,45 @@ export default async function LocaleLayout({ children, params }: Props) {
                 {t.nav.discord}
               </a>
               <LanguageSwitch locale={locale} label={t.nav.language} />
+            </div>
+
+            {/* ── Телефон: хамбургер ─────────────────────────────────────── */}
+            <div className="ms-auto xl:hidden">
+              <MobileNav
+                label={t.nav.menu}
+                openIcon={<Icon group="ui" name="menu" size={22} />}
+                closeIcon={<Icon group="ui" name="close" size={22} />}
+              >
+                <ul className="flex flex-col gap-1 text-base text-silver-300">
+                  {nav.map((item) => (
+                    <li key={item.href}>
+                      <NavLink
+                        href={item.href}
+                        exact={item.exact}
+                        // 44 px висока цел за пръст (WCAG 2.5.8 иска ≥24, но
+                        // 44 е употребимото на телефон).
+                        className="flex min-h-11 items-center gap-2.5 rounded-lg px-2 hover:bg-white/5 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
+                        activeClassName="bg-cyan-500/10 text-cyan-300"
+                      >
+                        <Icon group="ui" name={item.icon} size={18} />
+                        {item.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+                  <a
+                    href={DISCORD_INVITE}
+                    rel="noopener nofollow"
+                    className="flex min-h-11 items-center gap-2 text-sm text-silver-400 hover:text-cyan-300"
+                  >
+                    <Icon group="brand" name="discord" size={18} />
+                    {t.nav.discord}
+                  </a>
+                  <LanguageSwitch locale={locale} label={t.nav.language} />
+                </div>
+              </MobileNav>
             </div>
           </nav>
         </header>

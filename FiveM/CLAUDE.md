@@ -83,6 +83,11 @@ src/app/news/           Новини и туториали (SEO гръбнак).
 scripts/refresh-servers.ts  Cron: пингва всички одобрени сървъри на порции,
                         пише Server.online/players + ServerSnapshot.
 prisma/schema.prisma    Server · ServerSnapshot · Review · Submission · Report · Post.
+src/components/MobileNav.tsx  Хамбургерът (под `xl`). Клиентско е САМО
+                        състоянието отворено/затворено; съдържанието идва като
+                        `children` и се рендира на сървъра, защото `Icon` чете
+                        от диска и не може да се изпълни в браузъра.
+src/components/NavLink.tsx  Връзка с `aria-current="page"` (иска `usePathname`).
 src/components/PlayerList.tsx  „Кой играе сега“ — `<details>`, нула клиентски JS.
                         Различава „няма видимост“ (playersSeenAt=null) от
                         „няма никого“ (празен списък при налична проверка).

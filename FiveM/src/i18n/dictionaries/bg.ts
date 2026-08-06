@@ -22,6 +22,7 @@ export const bg = {
     support: 'Подкрепи',
     skipToContent: 'Към съдържанието',
     main: 'Основна навигация',
+    menu: 'Меню',
     language: 'Език',
   },
   footer: {
