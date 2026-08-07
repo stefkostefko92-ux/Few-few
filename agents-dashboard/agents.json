@@ -8335,7 +8335,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 160
+        "lessons": 163
       },
       "evolution": [
         {
@@ -8673,9 +8673,20 @@
           "date": "2026-07-29",
           "event": "v15.9 — учене",
           "detail": "Научи: CRD 2011/83 чл. 8(2): плащащ бутон при дистанционен електронен договор трябва да е обоз… (+2 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-08-07",
+          "event": "v16.2 — учене",
+          "detail": "Научи: Уникален бизнес-ключ в ефекта на webhook handler (напр. PaymentLog.stripeInvoiceId @uni… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Уникален бизнес-ключ в ефекта на webhook handler (напр. PaymentLog.stripeInvoiceId @uni…\" (+2 още)"
+        },
         {
           "date": "2026-08-07",
           "type": "quarantine",
