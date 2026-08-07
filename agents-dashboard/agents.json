@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 226
+        "lessons": 231
       },
       "evolution": [
         {
@@ -548,9 +548,20 @@
           "date": "2026-08-06",
           "event": "v16.7 — учене",
           "detail": "Научи: Официалната заглавка на чл.15 ОРЗД на нидерландски е 'Recht van inzage van de betrokken… (+1 още)"
+        },
+        {
+          "version": "17.2.0",
+          "date": "2026-08-07",
+          "event": "v17.2 — учене",
+          "detail": "Научи: Коментар в кода, който твърди отсъствие на поле ('User model has no email'), е чест изт… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Коментар в кода, който твърди отсъствие на поле ('User model has no email'), е чест изт…\" (+4 още)"
+        },
         {
           "date": "2026-08-06",
           "type": "learning",
