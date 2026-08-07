@@ -84,9 +84,17 @@ supreme_restore_test`).
 
 ## 4. SEO пинг (задължителен — нови страници/sitemap)
 
+`autodeploy.sh` вече го прави сам след успешен health. Ръчно (от корена на
+release-а) ключът се подава ЯВНО — Supreme го сервира на `<key>.txt`, а не на
+конвенционалния `/indexnow-key.txt`:
+
 ```bash
-node tools/seo/indexnow.mjs https://supremebot.carbonstealth.eu
+KEY=$(basename SupremeDiscordBot/frontend/public/[0-9a-f]*.txt .txt)
+node tools/seo/indexnow.mjs https://supremebot.carbonstealth.eu \
+  --key-file "SupremeDiscordBot/frontend/public/$KEY.txt" \
+  --key-location "https://supremebot.carbonstealth.eu/$KEY.txt"
 ```
+
 (4 нови страници + /commands + обновен sitemap; Google се хваща от sitemap-а.)
 
 ## 5. Rollback план
