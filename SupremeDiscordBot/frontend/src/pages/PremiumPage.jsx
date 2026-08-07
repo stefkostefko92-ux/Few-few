@@ -380,7 +380,20 @@ export default function PremiumPage() {
                   className="w-full bg-cs-gold hover:bg-cs-goldDim text-black font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-cs-gold"
                 >
                   <Star className="w-4 h-4 fill-black" />
-                  {checkoutMut.isPending ? t("premium.redirecting") : t("premium.upgradePlan", { plan: PLAN_LABEL[plan] })}
+                  {/* Чл. 8(2) от Директива 2011/83/ЕС: бутонът, който задейства
+                      поръчката, трябва да е обозначен ЧЕТИМО и НЕДВУСМИСЛЕНО с
+                      „поръчка със задължение за плащане" или равностойно. „Upgrade
+                      to Premium" не е равностойно — то не казва, че се плаща. При
+                      неизпълнение потребителят НЕ Е ОБВЪРЗАН от договора, тоест
+                      всяко плащане е оспоримо. Затова текстът носи и глагола, и
+                      цената, и периода. */}
+                  {checkoutMut.isPending
+                    ? t("premium.redirecting")
+                    : t("premium.subscribeAndPay", {
+                        plan: PLAN_LABEL[plan],
+                        price: upgradePrice,
+                        period: interval === "year" ? t("premium.perYearShort") : t("premium.perMonthShort"),
+                      })}
                 </button>
                 {checkoutMut.isError && (
                   <p role="alert" className="text-danger text-sm mt-3">

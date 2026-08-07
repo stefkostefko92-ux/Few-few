@@ -107,6 +107,12 @@ export default function TermsPage() {
         convert to a paid subscription at the end of the trial period and your payment method
         will be charged.</p>
 
+        <p><strong>5.3a Confirming an order.</strong> The button that places a paid
+        order is labelled with the action and the exact amount and billing period
+        (e.g. &quot;Subscribe to Premium — €4.99/mo&quot;), so it is unambiguous that
+        clicking it creates an obligation to pay, as required by Article 8(2) of
+        Directive 2011/83/EU.</p>
+
         <p><strong>5.4 Cancellation.</strong> You may cancel your subscription at any time via
         the Billing Portal accessible from the Premium page. Cancellation takes effect at the
         end of the current billing period. You retain Premium access until that date. We do not
