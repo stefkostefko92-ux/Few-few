@@ -15,9 +15,14 @@ import { AlertTriangle, CreditCard } from "lucide-react";
 import { getServer, openPortal } from "../api";
 import { useT } from "../contexts/I18nContext";
 
-// Статусите на Stripe, при които парите не са влезли. `canceled` НЕ е тук —
-// тогава абонаментът вече е приключил и говори TrialBanner/PremiumPage.
-const AT_RISK = new Set(["past_due", "unpaid", "incomplete"]);
+// Статусите на Stripe, при които парите не са влезли И вината е в плащането.
+//
+// `canceled` НЕ е тук — тогава абонаментът е приключил и говорят
+// TrialBanner/PremiumPage. `incomplete` също НЕ е: при асинхронни методи
+// (SEPA/ACH) плащането се обработва с ДНИ и това е нормален ход, не провал —
+// червен „Payment failed" върху обработващо се плащане е лъжа към клиента
+// (Продавача, 07.08.2026).
+const AT_RISK = new Set(["past_due", "unpaid"]);
 
 export default function PastDueBanner() {
   const { t } = useT();

@@ -101,7 +101,7 @@ describe("checkout.session.completed", () => {
       type: "checkout.session.completed",
       data: {
         object: {
-          metadata: { kind: "agency", agencyId: "ag1", interval: "month" },
+          payment_status: "paid", metadata: { kind: "agency", agencyId: "ag1", interval: "month" },
           subscription: "sub_a1",
         },
       },
@@ -302,6 +302,10 @@ describe("invoice.payment_failed", () => {
     prismaMock.processedStripeEvent.create.mockRejectedValue(
       Object.assign(new Error("Unique constraint failed"), { code: "P2002" })
     );
+    // Маркерът СЪЩЕСТВУВА → колизията е точно дубъл на събитие. Без този ред
+    // тестът не различаваше „вече обработено“ от чужда unique колизия (напр.
+    // PaymentLog.stripeInvoiceId), а точно това разграничение пази пари.
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue({ id: "seen" });
 
     const res = await post(failedEvent("evt_fail_dup"));
 
@@ -441,6 +445,10 @@ describe("idempotency", () => {
     prismaMock.processedStripeEvent.create.mockRejectedValue(
       Object.assign(new Error("Unique constraint failed"), { code: "P2002" })
     );
+    // Маркерът СЪЩЕСТВУВА → колизията е точно дубъл на събитие. Без този ред
+    // тестът не различаваше „вече обработено“ от чужда unique колизия (напр.
+    // PaymentLog.stripeInvoiceId), а точно това разграничение пази пари.
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue({ id: "seen" });
 
     const event = {
       id: "evt_dup",
@@ -455,5 +463,26 @@ describe("idempotency", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ received: true });
     expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("идемпотентността не гълта чужди unique колизии", () => {
+  it("P2002 БЕЗ наличен маркер → 500, за да ретрайне Stripe (клиентът е платил)", async () => {
+    prismaMock.processedStripeEvent.create.mockRejectedValue(
+      Object.assign(new Error("Unique constraint failed on PaymentLog.stripeInvoiceId"), { code: "P2002" }),
+    );
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue(null); // маркер няма
+    // Без сървър handler-ът излиза преди runOnce и P2002 изобщо не се случва.
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", ownerId: "owner_1", name: "S" });
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+
+    const res = await post({
+      id: "evt_foreign_collision",
+      type: "invoice.payment_failed",
+      data: { object: { customer: "cus_1", id: "in_1", amount_due: 499, currency: "eur" } },
+    });
+
+    // 500 → Stripe ретрайва. 200 би значело „обработено“ и събитието се губи.
+    expect(res.status).toBe(500);
   });
 });

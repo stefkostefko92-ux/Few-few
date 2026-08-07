@@ -142,10 +142,22 @@ export async function runRetentionJob() {
 
     const candidates = await prisma.server.findMany({
       where: {
-        botRemovedAt: { not: null, lt: thirtyDaysAgo },
-        NOT: { stripeStatus: { in: ACTIVE_PAID } },
-        // Веднъж изчистен → не го пипаме пак (маркерът е и одитната следа).
-        auditLogs: { none: { action: "SERVER_DATA_PURGED" } },
+        AND: [
+          { botRemovedAt: { not: null, lt: thirtyDaysAgo } },
+          // NULL-БЕЗОПАСНО. `NOT: { stripeStatus: { in: [...] } }` се превежда
+          // като `NOT (stripeStatus IN (...))`, което при stripeStatus IS NULL
+          // дава NULL, а не TRUE → редът отпада. Тоест БЕЗПЛАТНИТЕ сървъри (най-
+          // честият случай, статус никога не е писан) НИКОГА не се чистеха и
+          // цялата поправка по чл. 5(1)(д) беше мъртва. Намерено от Кодаджията,
+          // доказано срещу реален Prisma 5.22 — тестът ми не го хвана, защото
+          // имитираше филтъра с JS `includes` вместо да гледа формата на where.
+          { OR: [{ stripeStatus: null }, { stripeStatus: { notIn: ACTIVE_PAID } }] },
+          // Плащащ по ДРУГ път (активен agency seat или течащ trial) също не се
+          // пипа — статусът в Stripe не покрива тези случаи.
+          effectiveFreeWhere(),
+          // Веднъж изчистен → не го пипаме пак (маркерът е и одитната следа).
+          { auditLogs: { none: { action: "SERVER_DATA_PURGED" } } },
+        ],
       },
       select: { id: true },
     });

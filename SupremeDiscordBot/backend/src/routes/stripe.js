@@ -303,6 +303,13 @@ router.post("/webhook", requireStripe, async (req, res) => {
   //
   // Помощник: обвива даден ефект в транзакция с маркер за идемпотентност.
   // Връща true ако ефектът е изпълнен, false ако събитието вече е обработено.
+  // Единствените статуси, при които сесията е реално платена. Старият гард беше
+  // `unpaid && !subscription` — тоест „unpaid" СЪС subscription даваше Premium.
+  // При асинхронни методи (SEPA/ACH) плащането се обработва с дни, а сесията вече
+  // носи subscription; истинският сигнал идва по-късно с invoice.paid, съответно
+  // checkout.session.async_payment_failed. (Продавача, 07.08.2026)
+  const PAID_SESSION_STATUSES = new Set(["paid", "no_payment_required"]);
+
   async function runOnce(effect) {
     try {
       await prisma.$transaction(async (tx) => {
@@ -314,9 +321,29 @@ router.post("/webhook", requireStripe, async (req, res) => {
       });
       return true;
     } catch (err) {
+      // P2002 значи „вече обработено“ САМО ако е ударил маркера. Ефектът пише и
+      // в PaymentLog, чийто stripeInvoiceId е @unique — легитимна колизия там
+      // (invoice.paid след invoice.payment_failed за СЪЩАТА фактура) се четеше
+      // като дубъл на събитие: цялата транзакция се отменяше, връщахме 200 и
+      // Stripe не ретрайваше. Клиентът е платил, достъпът не се възстановява.
+      //
+      // Няма ли маркер, ХВЪРЛЯМЕ (Stripe ретрайва). Повторният опит е безобиден
+      // — маркерът пази идемпотентността, — докато мълчаливото гълтане губи пари.
       if (err?.code === "P2002") {
-        console.log(`↩️  Stripe event ${event.id} (${event.type}) вече обработено — пропускам`);
-        return false;
+        // Дубъл ли е събитието, или колизията е другаде? Не гадаем по err.meta
+        // (формата ѝ зависи от версията на Prisma) — питаме базата: маркерът се
+        // записва САМО от committed runOnce, значи наличието му е доказателство,
+        // че това събитие вече е минало.
+        const seen = await prisma.processedStripeEvent
+          .findUnique({ where: { id: event.id } })
+          .catch(() => null);
+        if (seen) {
+          console.log(`↩️  Stripe event ${event.id} (${event.type}) вече обработено — пропускам`);
+          return false;
+        }
+        console.error(
+          `⚠️  P2002 в ефекта на ${event.id} (${event.type}) — НЕ е дубъл на събитие (маркерът липсва); хвърлям, за да ретрайне Stripe`,
+        );
       }
       throw err;
     }
@@ -330,6 +357,14 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Agency (multi-server) checkout → activate the Agency, not a server.
         if (session.metadata?.kind === "agency" && session.metadata?.agencyId) {
           const agencyId = session.metadata.agencyId;
+          // Същият гард като при сървърния клон — тук изобщо липсваше, значи
+          // неплатена agency сесия активираше агенция с до 10 сървъра.
+          if (!PAID_SESSION_STATUSES.has(session.payment_status)) {
+            console.warn(
+              `⚠️  agency checkout ${agencyId} с payment_status=${session.payment_status} — пропускам активацията`
+            );
+            break;
+          }
           const did = await runOnce(async (tx) => {
             await tx.agency.update({
               where: { id: agencyId },
@@ -361,9 +396,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // "unpaid" БЕЗ subscription означава, че няма нито плащане, нито абонамент
         // → НЕ даваме достъп; реалната активация ще дойде по-късно през
         // invoice.paid / customer.subscription.updated.
-        if (session.payment_status === "unpaid" && !session.subscription) {
+        if (!PAID_SESSION_STATUSES.has(session.payment_status)) {
           console.warn(
-            `⚠️  checkout.session.completed за ${serverId} с payment_status=unpaid и без subscription — пропускам активацията`
+            `⚠️  checkout.session.completed за ${serverId} с payment_status=${session.payment_status} — пропускам активацията (реалната ще дойде през invoice.paid)`
           );
           break;
         }

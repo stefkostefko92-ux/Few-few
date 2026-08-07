@@ -10,6 +10,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const db = {
+  lastWhere: null,
   servers: [],
   deleted: [],      // { table, serverId }
   auditCreated: [], // { serverId, action }
@@ -24,7 +25,7 @@ const del = (table) => ({
 
 vi.mock("../lib/prisma.js", () => ({
   prisma: {
-    server: { findMany: vi.fn(({ where }) => filterServers(where)) },
+    server: { findMany: vi.fn((args) => { db.lastWhere = args?.where; return filterServers(args?.where); }) },
     ticket: { ...del("ticket"), findMany: vi.fn(() => []) },
     application: del("application"),
     form: del("form"),
@@ -45,14 +46,22 @@ vi.mock("../lib/prisma.js", () => ({
   },
 }));
 
-vi.mock("../lib/premium.js", () => ({ effectiveFreeWhere: () => ({}) }));
+// effectiveFreeWhere НЕ се мокне: тя е чиста функция и точно нейната форма е
+// предмет на проверката по-долу. Мок с `() => ({})` криеше факта, че гардът за
+// плащащите по друг път изобщо липсва в заявката.
 
 const ACTIVE_PAID = ["active", "past_due", "trialing", "unpaid", "incomplete"];
 
 function filterServers(where) {
-  // Достатъчно вярна имитация на условията, които job-ът поставя.
-  if (!where?.botRemovedAt) return [];
-  const cutoff = where.botRemovedAt.lt;
+  // ВНИМАНИЕ: това е ГРУБА имитация само за да върне кандидати. Тя НЕ доказва
+  // нищо за реалната SQL семантика — първата ѝ версия пресмяташе филтъра с JS
+  // `includes` и заради това зелен тест скри, че `NOT { in: [...] }` изхвърля
+  // редовете с stripeStatus = NULL. Затова формата на `where` се проверява
+  // ОТДЕЛНО, в описанието „формата на заявката“ по-долу.
+  const and = where?.AND;
+  const botRemoved = and?.find?.((c) => c.botRemovedAt)?.botRemovedAt;
+  if (!botRemoved) return [];
+  const cutoff = botRemoved.lt;
   return db.servers
     .filter((s) => s.botRemovedAt && s.botRemovedAt < cutoff)
     .filter((s) => !ACTIVE_PAID.includes(s.stripeStatus))
@@ -122,5 +131,41 @@ describe("retention 2 — какво НЕ се трие от одитния дн
     await runRetentionJob();
     const call = prisma.auditLog.deleteMany.mock.calls.find((c) => c[0]?.where?.action?.notIn);
     expect(call?.[0].where.action.notIn).toContain("SERVER_DATA_PURGED");
+  });
+});
+
+// ─── Формата на заявката (а не пресметнат в JS резултат) ─────────────────────
+// Кодаджията показа защо това е нужно: първата версия на секцията ползваше
+// `NOT: { stripeStatus: { in: [...] } }`, което в SQL е `NOT (col IN (...))` и
+// при col IS NULL дава NULL → редът отпада. Тоест БЕЗПЛАТНИТЕ сървъри (най-
+// честият случай) никога не се чистеха, а тестът беше зелен, защото имитираше
+// филтъра с JS `includes`. Тук асертираме самата заявка.
+describe("формата на заявката за кандидати", () => {
+  beforeEach(() => { db.lastWhere = null; });
+
+  it("не ползва NOT { in } — NULL статусът трябва да минава", async () => {
+    await runRetentionJob();
+    expect(JSON.stringify(db.lastWhere)).not.toContain('"NOT"');
+  });
+
+  it("има изричен клон за stripeStatus === null", async () => {
+    await runRetentionJob();
+    const clause = db.lastWhere.AND.find((c) => Array.isArray(c.OR) && c.OR.some((o) => "stripeStatus" in o));
+    expect(clause, "липсва OR клон по stripeStatus").toBeTruthy();
+    expect(clause.OR).toEqual(
+      expect.arrayContaining([{ stripeStatus: null }, { stripeStatus: { notIn: expect.any(Array) } }]),
+    );
+  });
+
+  it("изключва плащащите по друг път (agency seat / активен trial)", async () => {
+    await runRetentionJob();
+    const flat = JSON.stringify(db.lastWhere);
+    expect(flat).toContain("trialEndsAt");   // от effectiveFreeWhere
+    expect(flat).toContain("agencyId");
+  });
+
+  it("не пипа вече изчистените (маркерът е дедуп ключ)", async () => {
+    await runRetentionJob();
+    expect(JSON.stringify(db.lastWhere)).toContain("SERVER_DATA_PURGED");
   });
 });

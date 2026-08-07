@@ -152,7 +152,16 @@ const globalLimiter = rateLimit({
   // Never limit health checks; never throttle the Stripe webhook — it is
   // signature-verified + idempotent, and 429s would make Stripe retry (a burst
   // of events from few egress IPs could otherwise trip the per-IP limit).
-  skip: (req) => req.path === "/api/health" || req.path === "/api/stripe/webhook",
+  // ВНИМАНИЕ: лимитерът е монтиран с app.use("/api", …), затова `req.path` е
+  // ОТНОСИТЕЛЕН на mount точката ("/stripe/webhook"), не пълният път. Условието
+  // по-долу дълго време сравняваше с "/api/stripe/webhook" и НИКОГА не съвпадаше
+  // — тоест инвариантът „webhook-ът е извън лимитера“ беше записан, но не
+  // изпълнен. Ползваме originalUrl (без query частта), който е абсолютен.
+  // Проверено с изпълнен express експеримент (Продавача, 07.08.2026).
+  skip: (req) => {
+    const path = (req.originalUrl || "").split("?")[0];
+    return path === "/api/health" || path === "/api/stripe/webhook";
+  },
 });
 
 // Stricter limiter for auth endpoints to prevent brute force / OAuth abuse
