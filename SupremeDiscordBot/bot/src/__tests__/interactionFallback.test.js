@@ -81,3 +81,82 @@ describe("обратната връзка за тикет ack-ва винаги"
     expect(block).toContain("deferUpdate");
   });
 });
+
+// ─── Cross-tenant гард по вътрешните маршрути (Кодаджията, 07.08.2026) ───────
+// `client.channels.fetch(id)` търси през ВСИЧКИ guild-ове, в които е ботът —
+// това е споделен бот, значи чужди сървъри. Маршрутите приемаха `serverId`
+// именно за да го сверят, но го подминаваха: админ на сървър A можеше да зададе
+// channelId от сървър B и съобщенията ни отиваха там.
+describe("вътрешните маршрути резолвват канали В РАМКИТЕ на guild-а", () => {
+  const RAW = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../index.js"),
+    "utf-8",
+  );
+  // Коментарите се махат: обяснението на самия гард СПОМЕНАВА забранения
+  // шаблон, а тест, който брои споменавания в проза, е тест за правописа.
+  const INDEX = RAW.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+
+  it("има помощник guildChannel, който минава през guild.channels", () => {
+    expect(INDEX).toContain("async function guildChannel(");
+    const i = INDEX.indexOf("async function guildChannel(");
+    const body = INDEX.slice(i, i + 600);
+    expect(body).toContain("guild.channels");
+    expect(body).not.toContain("client.channels.fetch");
+  });
+
+  it("НИТО един маршрут със serverId не резолвва глобално", () => {
+    const routes = [...INDEX.matchAll(/app\.(post|get)\("(\/[^"]+)"/g)]
+      .map((m) => ({ at: m.index, name: m[2] }));
+    routes.push({ at: INDEX.length, name: "<край>" });
+    const offenders = [];
+    for (let i = 0; i < routes.length - 1; i++) {
+      const block = INDEX.slice(routes[i].at, routes[i + 1].at);
+      if (/\bserverId\b/.test(block) && block.includes("client.channels.fetch")) {
+        offenders.push(routes[i].name);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("всеки, който вика guildChannel(serverId, …), реално приема serverId", () => {
+    const routes = [...INDEX.matchAll(/app\.post\("(\/internal\/[^"]+)"/g)]
+      .map((m) => ({ at: m.index, name: m[1] }));
+    routes.push({ at: INDEX.length, name: "<край>" });
+    const broken = [];
+    for (let i = 0; i < routes.length - 1; i++) {
+      const block = INDEX.slice(routes[i].at, routes[i + 1].at);
+      if (block.includes("guildChannel(serverId") &&
+          !/const \{[^}]*\bserverId\b[^}]*\} = req\.body/.test(block)) {
+        broken.push(routes[i].name);
+      }
+    }
+    // ReferenceError по време на работа — синтактичната проверка не го хваща.
+    expect(broken).toEqual([]);
+  });
+});
+
+describe("резултатът от кандидатурата казва истината", () => {
+  const INDEX = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../index.js"),
+    "utf-8",
+  );
+  const BLOCK = INDEX.slice(INDEX.indexOf('app.post("/internal/application-apply-outcome"'), INDEX.indexOf('// ── Poll closed'));
+
+  it("не връща твърдо ok:true — отчита дали ролите реално са раздадени", () => {
+    expect(BLOCK).not.toContain("ok: true, ...result");
+    expect(BLOCK).toContain("result.ok =");
+  });
+
+  it("съобщава дали guild-ът и членът са намерени", () => {
+    expect(BLOCK).toContain("guildFound");
+    expect(BLOCK).toContain("memberFound");
+  });
+
+  it("напусналият кандидат оставя следа в лога", () => {
+    expect(BLOCK).toMatch(/console\.warn/);
+  });
+
+  it("провалено МАХАНЕ на роля вече не изчезва", () => {
+    expect(BLOCK).toContain("rolesRemoveFailed");
+  });
+});

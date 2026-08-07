@@ -186,7 +186,7 @@ cron.schedule("* * * * *", async () => {
     for (const g of due) {
       const winners = pickRandom(g.entries, g.winnerCount).map(e => e.userId);
       await prisma.giveaway.update({ where: { id: g.id }, data: { endedAt: new Date(), winnerIds: winners } });
-      await notifyBot("GIVEAWAY_ENDED", { giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
+      await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
   } catch (err) { console.error("[Scheduler] giveaway end:", err.message); }
 });

@@ -138,6 +138,23 @@ app.get("/health", (_req, res) => {
 
 app.use(requireBotSecret);
 
+// ─── Резолвиране на канал В РАМКИТЕ на guild-а ───────────────────────────────
+// `client.channels.fetch(id)` търси през ВСИЧКИ guild-ове, в които е ботът —
+// това е споделен бот, значи чужди сървъри. Маршрутите приемаха `serverId`
+// именно за да го сверят, но го подминаваха: админ на сървър A можеше да зададе
+// channelId от сървър B и нашите съобщения отиваха там (Кодаджията, 07.08.2026).
+//
+// `guild.channels.fetch` хвърля GuildChannelUnowned за чужд канал — точно
+// гардът, който липсваше. Кешът се пробва пръв, за да не плащаме REST.
+async function guildChannel(serverId, channelId) {
+  if (!serverId || !channelId) return null;
+  const guild = client.guilds.cache.get(serverId)
+    || await client.guilds.fetch(serverId).catch(() => null);
+  if (!guild) return null;
+  return guild.channels.cache.get(channelId)
+    || await guild.channels.fetch(channelId).catch(() => null);
+}
+
 app.post("/internal/panel-spawn", async (req, res) => {
   try {
     const result = await handlePanelSpawn(client, req.body);
@@ -182,8 +199,7 @@ app.post("/internal/form-spawn", async (req, res) => {
   }
   try {
     // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel?.isTextBased?.()) {
       return res.status(404).json({ error: "Channel not found or not text-based" });
     }
@@ -229,8 +245,7 @@ app.post("/internal/poll-spawn", async (req, res) => {
     return res.status(400).json({ error: "serverId, channelId and poll required" });
   }
   try {
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel?.isTextBased?.()) {
       return res.status(404).json({ error: "Channel not found or not text-based" });
     }
@@ -255,8 +270,7 @@ app.post("/internal/giveaway-spawn", async (req, res) => {
     return res.status(400).json({ error: "serverId, channelId and giveaway required" });
   }
   try {
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel?.isTextBased?.()) {
       return res.status(404).json({ error: "Channel not found or not text-based" });
     }
@@ -287,8 +301,7 @@ app.post("/internal/reaction-role-spawn", async (req, res) => {
     const { buildReactionRoleEmbed, clearRrmCache } = await import("./utils/reactionRoles.js");
     const { data: rrm } = await api.get(`/bot/reaction-roles/${rrmId}`);
 
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel?.isTextBased?.()) {
       return res.status(404).json({ error: "Channel not found or not text-based" });
     }
@@ -363,8 +376,7 @@ app.post("/internal/reaction-role-delete", async (req, res) => {
   if (!channelId || !messageId) return res.status(400).json({ error: "channelId and messageId required" });
   try {
     const { clearRrmCache } = await import("./utils/reactionRoles.js");
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (channel && serverId && (channel.guildId || channel.guild?.id) !== serverId) {
       return res.status(403).json({ error: "Channel belongs to a different server" });
     }
@@ -384,7 +396,7 @@ app.post("/internal/verification-spawn", async (req, res) => {
   try {
     const { buildVerificationMessage } = await import("./utils/verificationEmbed.js");
     const { data: panel } = await api.get(`/verification/bot/${panelId}`);
-    const channel = await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel) return res.status(404).json({ error: "Channel not found" });
     // Cross-tenant guard: channelId е потребителски вход от dashboard-а.
     if (serverId && (channel.guildId || channel.guild?.id) !== serverId) {
@@ -683,7 +695,7 @@ app.post("/internal/ticket-assigned", async (req, res) => {
 app.post("/internal/ticket-auto-closed", async (req, res) => {
   const { channelId, serverId, hours, logChannelId, number, padding } = req.body;
   try {
-    const channel = await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (channel) {
       await channel.send({
         embeds: [{
@@ -695,7 +707,7 @@ app.post("/internal/ticket-auto-closed", async (req, res) => {
       }).catch(() => {});
     }
     if (logChannelId) {
-      const logCh = await client.channels.fetch(logChannelId).catch(() => null);
+      const logCh = await guildChannel(serverId, logChannelId);
       if (logCh) {
         const pad = String(number ?? "").padStart(padding ?? 4, "0");
         await logCh.send({
@@ -718,12 +730,17 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
   const { serverId, userId, rolesToAdd = [], rolesToRemove = [], dmMessage, action } = req.body;
   if (!serverId || !userId) return res.status(400).json({ error: "serverId and userId required" });
 
-  const result = { rolesAdded: [], rolesFailed: [], rolesRemoved: [], dmSent: false };
+  const result = {
+    rolesAdded: [], rolesFailed: [], rolesRemoved: [], rolesRemoveFailed: [],
+    dmSent: false, guildFound: false, memberFound: false,
+  };
 
   try {
     const guild = await client.guilds.fetch(serverId).catch(() => null);
+    result.guildFound = !!guild;
     if (guild) {
       const member = await guild.members.fetch(userId).catch(() => null);
+      result.memberFound = !!member;
       if (member) {
         for (const roleId of rolesToAdd) {
           try {
@@ -737,9 +754,22 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
           try {
             await member.roles.remove(roleId, "Application approved");
             result.rolesRemoved.push(roleId);
-          } catch { /* ignore silently — role may already be gone */ }
+          } catch (err) {
+            // Досега този провал изчезваше напълно. Ролята може наистина вече
+            // да я няма (нормално), но може и ботът да няма права — а това
+            // трябва да се вижда.
+            result.rolesRemoveFailed.push({ roleId, reason: err.message });
+          }
         }
+      } else {
+        // Кандидатът е напуснал сървъра между подаването и решението — рутинно.
+        // Досега блокът просто се прескачаше, маршрутът връщаше ok:true с празен
+        // rolesAdded, а DM-ът въпреки това казваше „✅ Application Approved“.
+        // Кандидатът чете „одобрен“ и няма ролята; никой не научава.
+        console.warn(`[apply-outcome] членът ${userId} не е в guild ${serverId} — ${rolesToAdd.length} роли НЕ са раздадени`);
       }
+    } else {
+      console.warn(`[apply-outcome] guild ${serverId} е недостъпен — ${rolesToAdd.length} роли НЕ са раздадени`);
     }
 
     if (dmMessage) {
@@ -764,7 +794,12 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
       } catch { /* user has DMs disabled — not fatal */ }
     }
 
-    res.json({ ok: true, ...result });
+    // `ok` вече отразява РЕАЛНОСТТА, не факта, че не е хвърлено изключение:
+    // поискани роли, нито една раздадена → не е наред, колкото и да е рутинна
+    // причината. Иначе таблото и одитът записват успех, какъвто няма.
+    const rolesRequested = rolesToAdd.length > 0;
+    result.ok = !rolesRequested || result.rolesAdded.length > 0;
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -823,9 +858,9 @@ app.post("/internal/poll-update", requireBotSecret, async (req, res) => {
 
 // ── v1.8 Giveaway ended by scheduler — update Discord message + announce winners
 app.post("/internal/giveaway-ended", async (req, res) => {
-  const { channelId, messageId, prize, winners, giveawayId } = req.body;
+  const { serverId, channelId, messageId, prize, winners, giveawayId } = req.body;
   try {
-    const channel = await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel) return res.json({ ok: false, reason: "channel not found" });
 
     // Update the giveaway message
@@ -864,7 +899,7 @@ app.post("/internal/giveaway-ended", async (req, res) => {
 app.post("/internal/scheduled-message-send", async (req, res) => {
   const { channelId, content, embedTitle, embedDescription, embedColor, serverId } = req.body;
   try {
-    const channel = await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel) return res.json({ ok: false });
 
     // Cross-tenant guard (F2): каналът ТРЯБВА да е в guild-а на сървъра, който
@@ -953,11 +988,11 @@ app.post("/internal/ai-reply", async (req, res) => {
 
 // Admin broadcast — send a system message to a specific server channel
 app.post("/internal/admin-broadcast", async (req, res) => {
-  const { channelId, title, message, senderTag } = req.body;
+  const { serverId, channelId, title, message, senderTag } = req.body;
   if (!channelId || !message) return res.status(400).json({ error: "channelId and message required" });
 
   try {
-    const channel = await client.channels.fetch(channelId).catch(() => null);
+    const channel = await guildChannel(serverId, channelId);
     if (!channel) return res.status(404).json({ error: "Channel not found or bot lacks access" });
 
     await channel.send({

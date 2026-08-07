@@ -193,6 +193,9 @@ router.post("/:serverId/giveaways/:id/end", requireServerAdmin, async (req, res,
     });
 
     notifyBot("GIVEAWAY_ENDED", {
+      // serverId е задължителен: ботът резолвва канала В РАМКИТЕ на guild-а,
+      // иначе channelId се търси през всички сървъри (cross-tenant).
+      serverId: g.serverId,
       giveawayId: g.id, channelId: g.channelId, messageId: g.messageId,
       prize: g.prize, winners,
     }).catch(() => {});
