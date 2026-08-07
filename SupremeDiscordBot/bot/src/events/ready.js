@@ -2,6 +2,7 @@
 import { REST, Routes, Events } from "discord.js";
 import crypto from "crypto";
 import { readFileSync, writeFileSync, existsSync } from "fs";
+import { reportShardingPressure } from "../utils/shardingWatch.js";
 
 // Configurable so Docker Compose can bind-mount a volume here — a plain /tmp
 // path is lost on every container restart, which forces a needless global
@@ -16,6 +17,12 @@ export default {
   async execute(client) {
     console.log(`✅ Logged in as ${client.user.tag}`);
     client.user.setActivity("Managing Tickets & Applications", { type: 3 });
+
+    // Растежът към прага за sharding (2500) е стена, не наклон — над него
+    // Discord отказва Identify и ботът НЕ тръгва. Викаме предварително, при
+    // всеки старт и веднъж дневно, за да не ни изненада.
+    reportShardingPressure(client.guilds.cache.size);
+    setInterval(() => reportShardingPressure(client.guilds.cache.size), 24 * 60 * 60 * 1000).unref?.();
 
     // ─── Guild реконсилиация (регресия от 05.08.2026) ─────────────────────
     // Регистрацията на сървър ставаше САМО на guildCreate — покана, получена

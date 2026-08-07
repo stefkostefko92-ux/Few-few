@@ -266,3 +266,44 @@ describe("права за поканата — одитният дневник",
     expect(sum).toBe(BigInt(INVITE_PERMISSIONS_INT));
   });
 });
+
+// ─── Аларма за прага на sharding (07.08.2026) ────────────────────────────────
+// Discord отказва Identify над 2500 guild-а — това е стена, не наклон. Тестът
+// пази праговете да не се разместят мълчаливо при рефактор.
+describe("assessShardingPressure", () => {
+  it("мълчи под прага за планиране", async () => {
+    const { assessShardingPressure } = await import("../utils/shardingWatch.js");
+    expect(assessShardingPressure(0).level).toBe("ok");
+    expect(assessShardingPressure(1499).level).toBe("ok");
+    expect(assessShardingPressure(1499).message).toBeNull();
+  });
+
+  it("вика на 1500 (планирай) и на 2000 (трябва да е готово)", async () => {
+    const { assessShardingPressure } = await import("../utils/shardingWatch.js");
+    expect(assessShardingPressure(1500).level).toBe("plan");
+    expect(assessShardingPressure(1999).level).toBe("plan");
+    expect(assessShardingPressure(2000).level).toBe("urgent");
+    expect(assessShardingPressure(2499).level).toBe("urgent");
+  });
+
+  it("на твърдия лимит е critical — ботът е на ръба да не тръгне", async () => {
+    const { assessShardingPressure, HARD_LIMIT } = await import("../utils/shardingWatch.js");
+    expect(HARD_LIMIT).toBe(2500);
+    expect(assessShardingPressure(2500).level).toBe("critical");
+    expect(assessShardingPressure(9000).level).toBe("critical");
+  });
+
+  it("всяко ниво над ok носи съобщение с път към документа", async () => {
+    const { assessShardingPressure } = await import("../utils/shardingWatch.js");
+    for (const n of [1500, 2000, 2500]) {
+      expect(assessShardingPressure(n).message).toContain("SHARDING.md");
+    }
+  });
+
+  it("боклук на входа не хвърля", async () => {
+    const { assessShardingPressure } = await import("../utils/shardingWatch.js");
+    for (const bad of [undefined, null, NaN, "х"]) {
+      expect(assessShardingPressure(bad).level).toBe("ok");
+    }
+  });
+});
