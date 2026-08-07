@@ -510,6 +510,12 @@ deploy_supreme() {
       cp -a "$CURRENT_LINK/SupremeDiscordBot/$f" "$d/$f"; ok "Пренесох SupremeDiscordBot/$f"
     fi
   done
+  # v40 — Redis вече иска парола (`--requirepass` в docker-compose.yml). Старият
+  # .env на сървъра няма REDIS_PASSWORD, а compose е нарочно fail-closed → без
+  # този блок ПЪРВИЯТ деплой след промяната умира с неразбираема грешка от
+  # интерполацията. Тайната се генерира на сървъра; идемпотентно.
+  supreme_ensure_redis_password "$d"
+
   # Дъмп ПРЕДИ миграция (по модела на medqr/zabobovdol). Миграциите се пускат
   # автоматично в backend entrypoint-а при `up`, затова застраховката трябва да
   # е направена ПРЕДИ deploy.sh. Fail-closed: няма дъмп → няма деплой.
@@ -527,6 +533,58 @@ deploy_supreme() {
   else
     deploy_failed=1
   fi
+}
+
+# v40 — тайната за Redis: генерирай, ако липсва, и изравни REDIS_URL.
+#
+# ЗАЩО: docker-compose.yml вече пуска Redis с `--requirepass` и е нарочно
+# fail-closed (`${REDIS_PASSWORD:?...}`). Пренесеният от сървъра .env е от преди
+# промяната и няма такава променлива → ПЪРВИЯТ деплой след нея умира с грешка от
+# интерполацията на compose, а не с нещо разбираемо. Тайната се ражда НА СЪРВЪРА
+# (никога в репото или архива), mode 600.
+#
+# Само добавя/поправя; НИКОГА не презаписва вече зададена парола — смяната ѝ би
+# обезсилила живите сесии на формите при рестарт на Redis. Идемпотентно.
+supreme_ensure_redis_password() {
+  local d="$1"
+  local root="$d/.env"
+  local pass=""
+
+  [ -f "$root" ] || { warn "Supreme: няма .env — deploy.sh ще каже какво липсва."; return 0; }
+
+  pass="$(sed -n 's/^REDIS_PASSWORD=//p' "$root" | head -1 | tr -d '\r' | tr -d "\"'")"
+
+  if [ -z "$pass" ]; then
+    if ! command -v openssl >/dev/null; then
+      warn "Supreme: липсва openssl — сложи REDIS_PASSWORD ръчно в SupremeDiscordBot/.env"
+      return 0
+    fi
+    pass="$(openssl rand -base64 24 | tr -d '/+=')"
+    # Пренасочването стои на СЪЩИЯ ред като printf — тайната отива във файла,
+    # никога в stdout. Така е видимо и за човек, и за deploy-check.mjs, който
+    # различава запис от лог точно по това.
+    printf '\n# v40 — авто-генерирана от autodeploy.sh (Redis --requirepass).\nREDIS_PASSWORD=%s\n' "$pass" >> "$root"
+    chmod 600 "$root"
+    ok "Supreme: генерирах REDIS_PASSWORD в SupremeDiscordBot/.env (mode 600)."
+  fi
+
+  # REDIS_URL в backend/.env и bot/.env — само ако още е БЕЗ парола.
+  local f
+  for f in backend/.env bot/.env; do
+    [ -f "$d/$f" ] || continue
+    if grep -qE '^REDIS_URL=.*//:[^@]+@' "$d/$f"; then
+      continue                                   # вече носи парола — не пипаме
+    fi
+    if grep -qE '^REDIS_URL=' "$d/$f"; then
+      # Вмъкваме „:<парола>@“ веднага след схемата; хостът и портът остават.
+      sed -i "s|^\(REDIS_URL=\"\?\)redis://|\1redis://:${pass}@|" "$d/$f"
+      ok "Supreme: изравних REDIS_URL в $f."
+    else
+      printf '\nREDIS_URL="redis://:%s@redis:6379"\n' "$pass" >> "$d/$f"
+      ok "Supreme: добавих REDIS_URL в $f."
+    fi
+    chmod 600 "$d/$f"
+  done
 }
 
 # Бекъп на базата на Supreme Bot ПРЕДИ миграциите.

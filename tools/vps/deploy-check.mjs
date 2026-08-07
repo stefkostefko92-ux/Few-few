@@ -22,7 +22,23 @@ export function lintShell(src, rel) {
     add("HIGH", "no-strict-mode", "Липсва `set -euo pipefail` — грешка в стъпка не спира скрипта → риск от полу-деплой. Добави го в началото.");
 
   // 2) Ехо/ексфилтрация на тайна
-  if (/(echo|printf|cat)\s+[^\n]*(SECRET|PASSWORD|TOKEN|API_KEY|PRIVATE_KEY|_KEY)\b/i.test(src))
+  //
+  // Проверката гони ЛОГ, не запис. `printf 'X=%s\n' "$pass" >> "$env_file"` е
+  // как една тайна ЛЕГИТИМНО се ражда на сървъра (autodeploy генерира
+  // REDIS_PASSWORD в .env, mode 600) — тя никога не минава през stdout и не
+  // стига до CI/journalctl. Първата версия не различаваше двете и обяви точно
+  // този запис за изтичане. Затова редът се брои за нарушение САМО ако НЯМА
+  // пренасочване към файл — или ако пренасочва към самия stdout/stderr.
+  const LOGS_A_SECRET =
+    /(echo|printf|cat)\s+[^\n]*(SECRET|PASSWORD|TOKEN|API_KEY|PRIVATE_KEY|_KEY)\b/i;
+  const REDIRECT_TO_FILE = />>?\s*("?\$?\{?[A-Za-z_./][^\n|&]*)/;
+  const REDIRECT_TO_STD = />>?\s*("?\/dev\/(stdout|stderr|fd\/[12])"?|&[12])/;
+  const secretToLog = lines.some((l) => {
+    if (!LOGS_A_SECRET.test(l)) return false;
+    if (REDIRECT_TO_STD.test(l)) return true;        // /dev/stdout е ЛОГ
+    return !REDIRECT_TO_FILE.test(l);                // без пренасочване → ЛОГ
+  });
+  if (secretToLog)
     add("HIGH", "secret-echo", "Тайна се извежда в лог (`echo`/`cat` на SECRET/PASSWORD/TOKEN) — попада в CI/journalctl. Никога не печатай тайни.");
   if (/curl[^\n]*(-d|--data)[^\n]*\$\{?[A-Z_]*(SECRET|TOKEN|KEY|PASSWORD)/i.test(src))
     add("HIGH", "secret-exfil", "Тайна се праща навън през curl (`-d $TOKEN`) — ексфилтрация. Тайните остават на машината (mode 600), не пътуват.");

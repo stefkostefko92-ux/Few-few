@@ -54,3 +54,41 @@ test("чист деплой (strict + omit + health) → без HIGH", () => {
   const f = lintShell("#!/bin/bash\nset -euo pipefail\nnpm ci --omit=dev\nsystemctl restart medqr\ncurl -f http://localhost/health || rollback", "deploy.sh");
   assert.ok(!f.some((x) => x.sev === "HIGH"));
 });
+
+// ─── secret-echo: ЛОГ ≠ ЗАПИС (07.08.2026) ──────────────────────────────────
+// Проверката гони тайна, попаднала в CI/journalctl. Но тайна, ЗАПИСАНА във файл,
+// е точно как една тайна легитимно се ражда на сървъра (autodeploy генерира
+// REDIS_PASSWORD в .env, mode 600) — тя никога не минава през stdout. Първата
+// версия не различаваше двете и обяви собствения ни запис за изтичане.
+// Разхлабване на детектор иска доказателство, че още хваща истинското — оттук
+// нататък четирите изтичания и двата записа са закотвени.
+
+test("запис на тайна във ФАЙЛ не е изтичане", () => {
+  const f = lintShell('set -euo pipefail\nprintf "PASSWORD=%s\\n" "$secret_value" >> "$env_file"', "deploy.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("запис в път с променлива също не е изтичане", () => {
+  const f = lintShell('set -euo pipefail\nprintf "TOKEN=%s\\n" "$tok" >> "$d/.env"', "deploy.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("гол echo на тайна ОЩЕ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "PASSWORD=$secret_value"', "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("пренасочване към /dev/stdout е ЛОГ, не запис", () => {
+  const f = lintShell('set -euo pipefail\nprintf "SECRET=%s\\n" "$secret_value" > /dev/stdout', "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("пренасочване към stderr (>&2) е ЛОГ, не запис", () => {
+  const f = lintShell('set -euo pipefail\nprintf "API_KEY=%s\\n" "$k" >&2', "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("cat на частен ключ ОЩЕ е изтичане", () => {
+  const f = lintShell("set -euo pipefail\ncat /root/.private_key", "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
