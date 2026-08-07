@@ -258,11 +258,9 @@ export async function getServerTier(serverId) {
     ? Math.ceil((server.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
     : 0;
 
-  // Own paid plan. Fall back to isPremium=true (legacy rows without `plan`) →
-  // treat as white-label so grandfathered subscribers keep what they had.
-  let paidPlan = server?.plan && server.plan !== "free"
-    ? server.plan
-    : (server?.isPremium ? "whitelabel" : "free");
+  // Собственият платен план. Колоната `plan` е ЕДИНСТВЕНИЯТ авторитет тук —
+  // сурово `isPremium` НЕ се превежда в тарифа на това място (виж по-долу).
+  let paidPlan = server?.plan && server.plan !== "free" ? server.plan : "free";
 
   // v40 — ОТМЕНЕН, но платен до края на периода. Клиентът е платил текущия
   // период и го ползва докрай; `plan` вече е паднал на "free", затова тук
@@ -281,6 +279,26 @@ export async function getServerTier(serverId) {
   if (server?.agencyId && server.agency?.active) {
     paidPlan = higherPlan(paidPlan, server.agency.plan || "free");
   }
+
+  // ПОСЛЕДНА инстанция: платено е (сурово `isPremium`), но никой по-конкретен
+  // източник не каза КОЯ тарифа.
+  //
+  // Дефектът (червен екип, 07.08.2026): този клон стоеше ПРЪВ и превеждаше
+  // `isPremium` направо в „whitelabel“. Само че v40 нарочно пише точно това
+  // състояние — при отмяна с гратис `stripe.js` записва `isPremium: true` +
+  // `plan: "free"` (виж routes/stripe.js:839-840). Резултат: ВСЕКИ отменен
+  // Premium клиент получаваше White-label — тарифа с +1 ранг, за която не е
+  // плащал, и то тъкмо докато си тръгва. Същото при out-of-order webhook:
+  // `syncServerPaidFlag` вдига `isPremium` по жив абонамент, преди `plan` да е
+  // записан.
+  //
+  // „Наследени“ редове тук вече НЯМА: миграция v27 попълни
+  // `plan='whitelabel'` за всеки `isPremium=true` ред
+  // (`20260709000000_v27_tiers_agency_discord/migration.sql:15-16`), тоест
+  // истински наследник не стига дотук с `plan='free'`. Затова падаме на
+  // НАЙ-НИСКАТА платена тарифа: знаем, че е платено, не знаем за какво —
+  // при съмнение даваме по-малкото, а не по-голямото.
+  if (paidPlan === "free" && server?.isPremium) paidPlan = "premium";
 
   const trialPlan = isTrial ? "premium" : "free";
   const plan = higherPlan(paidPlan, trialPlan);

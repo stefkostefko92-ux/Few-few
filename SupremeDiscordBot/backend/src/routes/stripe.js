@@ -120,7 +120,23 @@ router.post(
     // паралелен абонамент → двойно таксуване). Смяната Premium↔White-label
     // става през Customer Portal (subscription_update е включен от
     // scripts/stripe-setup.sh; webhook-ът синхронизира новата тарифа).
-    if (server.isPremium) {
+    //
+    // Гардът пита „има ли ЖИВ източник на права“, а НЕ „има ли достъп“.
+    // Разликата е гратисът: при отмяна ред 839 нарочно оставя `isPremium: true`
+    // (клиентът е платил периода), затова стар гард върху суровата колона
+    // ЗАКЛЮЧВАШЕ отменения клиент извън касата — а порталът няма какво да му
+    // поднови, защото абонаментът в Stripe вече го няма (`stripeSubscriptionId`
+    // е нулиран на ред 846). Годишен план, отменен на ден 1 = цяла година, в
+    // която клиентът иска да плати и не може. Точно обратното на коментара на
+    // ред 818-819, който твърди, че отмяната не блокира нова покупка.
+    // (Червен екип, 07.08.2026)
+    //
+    // `planSource` покрива и неплатените през Stripe живи права — Discord
+    // entitlement и ръчен подарък от админ — които втори Checkout би дублирал.
+    // Пробният период не сетва нито едно от двете, значи пробният потребител
+    // може да купи (иначе не бихме конвертирали нито един trial).
+    const liveGrant = !!(server.stripeSubscriptionId || server.planSource);
+    if (liveGrant) {
       return res.status(400).json({
         error: "This server already has an active subscription. Change plans from the billing portal (Manage Subscription).",
         code: "USE_PORTAL",
@@ -312,7 +328,32 @@ async function liveSubscription(subId) {
 // таксуване по спорна карта.
 
 /** Статуси, при които парите са върнати — гратис НЕ се дава. */
-const MONEY_BACK_STATUSES = new Set(["refunded", "disputed"]);
+/**
+ * Статуси, при които ТЕКУЩИЯТ период е реално платен — единствените, които
+ * заслужават гратис след отмяна.
+ *
+ * ЗАЩО ALLOWLIST (червен екип, 07.08.2026): гратисът се даваше на всичко, което
+ * не е `refunded`/`disputed` — denylist от два статуса. Само че „не са върнати
+ * пари“ НЕ значи „платено е“. Пропадне ли картата, Stripe изчерпва Smart Retries
+ * (`past_due` → `unpaid`) и отменя абонамента; `customer.subscription.deleted`
+ * идва с `current_period_end` в БЪДЕЩЕТО, защото периодът е започнал — просто
+ * фактурата за него никога не е платена. При годишен план това е до ~12 месеца
+ * пълен достъп, подарен на човек, който не е платил нито стотинка за него.
+ *
+ * Същият дефектен клас като fail-open denylist-а в `lib/premium.js`: изброяваш
+ * лошите и всяко ново състояние влиза през вратата като добро. Тук изброяваме
+ * добрите — ново/непознато състояние не дава достъп.
+ *
+ * `trialing` е вътре нарочно: пробният период е ДАДЕН, а не платен, и отмяна по
+ * време на пробата пак го оставя до края му. Всеки друг статус (`past_due`,
+ * `unpaid`, `incomplete`, `refunded`, `disputed`, липсващ) → нула гратис.
+ */
+const PAID_PERIOD_STATUSES = new Set(["active", "trialing"]);
+
+/** Заслужава ли този абонат достъп до края на периода след отмяна? */
+function periodWasPaid(status) {
+  return PAID_PERIOD_STATUSES.has(String(status || "").toLowerCase());
+}
 
 /**
  * Край на платения период. В API 2026-06-24.dahlia `current_period_end` живее
@@ -780,8 +821,11 @@ router.post("/webhook", requireStripe, async (req, res) => {
           // Върнати пари → без гратис. Статусът е записан от charge.refunded /
           // charge.dispute.created, които идват ПРЕДИ или СЛЕД това събитие —
           // затова и там зануляваме accessUntil (двупосочна защита).
-          const moneyBack = MONEY_BACK_STATUSES.has(String(agency.stripeStatus || "").toLowerCase());
-          const graceUntil = !moneyBack && paidThrough && paidThrough > new Date() ? paidThrough : null;
+          // Гратис само ако периодът е бил ПЛАТЕН (виж PAID_PERIOD_STATUSES).
+          // Изчерпан дунинг (`past_due` → `unpaid`) не е „отмяна“, а неплащане.
+          const graceUntil = periodWasPaid(agency.stripeStatus) && paidThrough && paidThrough > new Date()
+            ? paidThrough
+            : null;
 
           const did = await runOnce(async (tx) => {
             await tx.agency.update({
@@ -819,8 +863,12 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // не блокира нова покупка), а платеното живее в accessUntil+gracePlan,
         // които getServerTier чете. Върнати ли са парите (refunded/disputed),
         // гратис НЯМА — достъпът пада в същата секунда.
-        const moneyBack = MONEY_BACK_STATUSES.has(String(server.stripeStatus || "").toLowerCase());
-        const graceUntil = !moneyBack && paidThrough && paidThrough > new Date() ? paidThrough : null;
+        // Гратис само ако периодът е бил ПЛАТЕН (виж PAID_PERIOD_STATUSES).
+        // Изчерпан дунинг (`past_due` → `unpaid`) не е „отмяна“, а неплащане:
+        // периодът е започнал, фактурата за него — никога платена.
+        const graceUntil = periodWasPaid(server.stripeStatus) && paidThrough && paidThrough > new Date()
+          ? paidThrough
+          : null;
         // Тарифата, за която е платено: собствената колона, иначе цената по
         // абонамента. Без нея gracePlan би върнал „premium“ на whitelabel клиент.
         const gracePlan = graceUntil
