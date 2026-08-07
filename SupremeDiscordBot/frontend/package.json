@@ -18,7 +18,8 @@
     "preview": "vite preview",
     "prerender": "node scripts/prerender.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "budget": "node scripts/bundle-budget.mjs"
   },
   "dependencies": {
     "@fontsource/inter-tight": "^5.2.7",

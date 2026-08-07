@@ -47,6 +47,26 @@ async function jobFail(name, err) {
   } catch { /* Sentry по избор — логът остава */ }
 }
 
+/**
+ * Пулс на успешно изпълнение — записва се САМО за дневните/седмичните задачи.
+ *
+ * ЗАЩО (Наблюдателят, одит 07.08.2026): провалът вече се чува през `jobFail`,
+ * но задача, която ПРЕСТАНЕ ДА СЕ ПУСКА, не се проваля — тя просто мълчи, и
+ * няма как да я различиш от „нямаше работа“. Точно това ни се случи: три задачи
+ * споделяха ключ за заключване и две никога не се изпълняваха.
+ *
+ * Не измисляме нова таблица: `audit_logs` вече има индекс по `createdAt`, а
+ * заявката „последен пулс по задача“ е един GROUP BY. Само дневните, защото
+ * минутните биха залели дневника.
+ */
+async function jobHeartbeat(name, meta = {}) {
+  try {
+    await prisma.auditLog.create({
+      data: { actorTag: "SCHEDULER", action: `JOB_OK_${name.toUpperCase().replace(/-/g, "_")}`, targetId: name, metadata: meta },
+    });
+  } catch { /* пулсът никога не бива да поваля задачата */ }
+}
+
 const running = new Set();
 function job(name, fn) {
   return async () => {
@@ -119,6 +139,7 @@ cron.schedule("0 3 * * *", job("archive-cleanup", async () => {
     if (deferred > 0) {
       console.log(`[Scheduler] Archive cleanup: ${deferred} сървъра пропуснати — още в прозореца за експорт`);
     }
+    await jobHeartbeat("archive-cleanup", { cleaned, deferred });
   } catch (err) {
     await jobFail("archive-cleanup", err);
   }
@@ -166,6 +187,7 @@ cron.schedule("0 4 * * 0", job("retention-weekly", async () => {
     if (result.count > 0) {
       console.log(`[Scheduler] Enforced 30-day retention on ${result.count} downgraded servers`);
     }
+    await jobHeartbeat("retention-weekly", { enforced: result.count });
   } catch (err) {
     await jobFail("retention-weekly", err);
   }
@@ -519,6 +541,7 @@ cron.schedule("0 9 * * *", job("trial-expiry-dm", async () => {
         },
       }).catch((err) => console.error(`[Scheduler] trial-expired DM ${s.id}:`, err.message));
     }
+    await jobHeartbeat("trial-expiry-dm");
   } catch (err) {
     await jobFail("trial-expiry-dm", err);
   }
@@ -581,6 +604,7 @@ cron.schedule("5 0 * * *", job("daily-metrics-rollup", async () => {
       });
     }
     console.log(`[Scheduler] Daily metrics snapshotted for ${activeServers.length} servers`);
+    await jobHeartbeat("daily-metrics-rollup");
   } catch (err) {
     await jobFail("daily-metrics-rollup", err);
   }
