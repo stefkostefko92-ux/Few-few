@@ -182,6 +182,7 @@ app.post("/internal/panel-update", async (req, res) => {
     await handlePanelUpdate(client, req.body);
     res.json({ ok: true });
   } catch (err) {
+    console.error("panel-update error:", err?.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -404,8 +405,13 @@ app.post("/internal/verification-spawn", async (req, res) => {
     }
     const { embeds, components } = buildVerificationMessage(panel);
     const msg = await channel.send({ embeds, components });
-    // Confirm spawn back to backend
-    await api.patch(`/verification/bot/${panelId}/spawned`, { channelId, messageId: msg.id });
+    // Панелът ВЕЧЕ е публикуван в Discord. Ако това потвърждение хвърли, целият
+    // маршрут връщаше 500 → backend-ът показва „Bot did not respond" → админът
+    // натиска пак → ВТОРИ жив панел в канала. Извикването е и излишно:
+    // routes/verification.js записва същото след успешен отговор.
+    // (Кодаджията, 07.08.2026)
+    await api.patch(`/verification/bot/${panelId}/spawned`, { channelId, messageId: msg.id })
+      .catch((err) => console.warn(`[verification-spawn] потвърждението към backend-а се провали: ${err?.message}`));
     res.json({ ok: true, channelId, messageId: msg.id });
   } catch (err) {
     console.error("verification-spawn error:", err?.message);
@@ -673,8 +679,13 @@ app.post("/internal/ticket-assigned", async (req, res) => {
 
     // Also send a notification in the ticket channel
     if (channelId) {
-      const channel = client.channels.cache.get(channelId);
-      if (channel && assignee) {
+      // Единственият маршрут без REST fallback: архивиран thread-тикет не е в
+      // кеша → известието мълчеше, а маршрутът връщаше ok:true.
+      const channel = client.channels.cache.get(channelId)
+        || await client.channels.fetch(channelId).catch(() => null);
+      // Текстът ползва assigneeId, не обекта `assignee` — да връзваме
+      // известието за успешен users.fetch беше излишна причина да мълчи.
+      if (channel) {
         await channel.send({
           embeds: [{
             description: `🛡️ This ticket has been assigned to <@${assigneeId}> via round-robin.`,
@@ -1075,6 +1086,21 @@ client.once(Events.ClientReady, async () => {
   // is what catches grants/expiries missed while the bot was offline.
   const { runEntitlementReconcile } = await import("./utils/entitlementReconcile.js");
   await runEntitlementReconcile(client);
+
+  // ...И ПЕРИОДИЧНО. Само при старт не е достатъчно: Discord не преизпраща
+  // entitlement събития, а естественият край на абонамент идва като едно
+  // ENTITLEMENT_UPDATE с минал ends_at. Изпуснем ли го (мрежов трепет, кратко
+  // прекъсване на gateway-а без рестарт на процеса), сървърът остава платен
+  // ЗАВИНАГИ — до следващия рестарт, който при стабилен контейнер може да е
+  // след месеци. Дневната проверка затваря прозореца.
+  // (Разбивача, 07.08.2026)
+  const RECONCILE_INTERVAL_MS = Number(process.env.ENTITLEMENT_RECONCILE_MS || 6 * 60 * 60 * 1000);
+  setInterval(() => {
+    runEntitlementReconcile(client).catch((err) =>
+      console.error(`[entitlements] периодичната реконсилиация се провали: ${err?.message}`),
+    );
+  }, RECONCILE_INTERVAL_MS).unref?.();
+  console.log(`✅ Entitlement реконсилиация на всеки ${Math.round(RECONCILE_INTERVAL_MS / 3600000)}ч`);
 });
 
 // Graceful shutdown — destroy white-label sessions and the main client so

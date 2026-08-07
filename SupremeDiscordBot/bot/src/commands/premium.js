@@ -19,10 +19,13 @@ export default {
       sub.setName("custombot")
         .setDescription("⭐ Update your white-label bot's appearance")
         .addStringOption((opt) =>
-          opt.setName("name").setDescription("New bot name").setRequired(false)
+          // Discord ограничава името на бота до 32 знака, а URL-ите — на практика
+          // до няколкостотин. Без таван потребителят получава грешка чак от
+          // Discord API, вместо от формата.
+          opt.setName("name").setDescription("New bot name").setRequired(false).setMaxLength(32)
         )
         .addStringOption((opt) =>
-          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false)
+          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false).setMaxLength(512)
         )
     )
     .addSubcommand((sub) =>

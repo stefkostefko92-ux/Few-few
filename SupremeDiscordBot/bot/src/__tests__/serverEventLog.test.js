@@ -347,3 +347,62 @@ describe("staff-only командите не изтичат данни през 
     }
   });
 });
+
+// ─── Чуждото съдържание не става кликаем линк (Разбивача, 07.08.2026) ────────
+// Discord рендира markdown в embed. Име на канал/тема/съобщение идва от ЧУЖД
+// сървър, значи `[безобидно](https://зло)` става линк В НАШИЯ лог и модератор,
+// който преглежда събитията, кликва по него.
+describe("логът обезврежда markdown линкове от чуждо съдържание", () => {
+  beforeEach(() => {
+    eventLogConfigCache.clear();
+    apiGet.mockReset();
+    apiGet.mockResolvedValue({
+      data: { enabled: true, channelId: "log", categories: ["messages", "server"] },
+    });
+  });
+
+  const field = (sent, name) => sent[0].payload.embeds[0].fields.find((f) => f.name === name);
+
+  it("съдържанието на съобщение не образува линк", async () => {
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "messages",
+      action: "message_delete",
+      metadata: { content: "[кликни тук](https://зло.example)" },
+    });
+    expect(field(sent, "Content").value).not.toContain("[");
+    expect(field(sent, "Content").value).toContain("кликни тук");
+  });
+
+  it("непознат ключ през общия проход също се обезврежда", async () => {
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "server",
+      action: "channel_update",
+      metadata: { topicBefore: "[линк](https://зло.example)" },
+    });
+    expect(field(sent, "Topic (before)").value).not.toContain("[");
+  });
+
+  it("before/after и reason минават през същото обезвреждане", async () => {
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "server",
+      action: "channel_update",
+      metadata: { before: "[a](x)", after: "[b](y)", reason: "[c](z)" },
+    });
+    for (const n of ["Before", "After", "Reason"]) {
+      expect(field(sent, n).value, n).not.toContain("[");
+    }
+  });
+
+  it("рязането на 1024 знака се запазва", async () => {
+    const sent = [];
+    await logServerEvent(fakeClient(sent), { id: "g1" }, {
+      category: "messages",
+      action: "message_delete",
+      metadata: { content: "я".repeat(3000) },
+    });
+    expect(field(sent, "Content").value).toHaveLength(1024);
+  });
+});

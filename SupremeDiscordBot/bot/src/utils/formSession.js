@@ -101,8 +101,17 @@ export async function runFormSession(interaction, form, panel) {
   }
 
   const sessionKey = `${interaction.user.id}:${form.id}`;
+  // Ключът на сесията носи formId, тоест един потребител можеше да води ДВЕ
+  // РАЗЛИЧНИ форми едновременно. И двете създават collector върху СЪЩИЯ DM
+  // канал с филтър „автор == потребителят" → един отговор влиза и в двете
+  // сесии: въпросите се разминават, отговорите се смесват, кандидатурата
+  // излиза безсмислена. (Качествения, 07.08.2026)
+  //
+  // В DM няма как да различим за коя форма е отговорът, затова инвариантът е
+  // една активна форма на потребител — с изричен ключ-ключалка.
+  const userLockKey = `lock:${interaction.user.id}`;
 
-  if (await sessionStore.has(sessionKey)) {
+  if (await sessionStore.has(sessionKey) || await sessionStore.has(userLockKey)) {
     try {
       const dmChannel = await interaction.user.createDM();
       await dmChannel.send(t("form.alreadyActive", lang));
@@ -130,6 +139,7 @@ export async function runFormSession(interaction, form, panel) {
   };
 
   await sessionStore.set(sessionKey, session);
+  await sessionStore.set(userLockKey, { formId: form.id });
 
   try {
     const dmChannel = await interaction.user.createDM();
@@ -137,6 +147,7 @@ export async function runFormSession(interaction, form, panel) {
   } catch (err) {
     console.error("Failed to DM user for form:", err.message);
     await sessionStore.delete(sessionKey);
+    await sessionStore.delete(`lock:${session.userId}`);
     await interaction.editReply(t("form.dmFailed", lang)).catch(() => {});
   }
 }
@@ -219,6 +230,7 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
+      await sessionStore.delete(`lock:${session.userId}`);
       dmChannel.send(t("form.timeout", session.lang || "en")).catch(() => {});
     }
   });
@@ -237,6 +249,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
 
     if (content.toLowerCase() === "cancel") {
       await sessionStore.delete(sessionKey);
+      await sessionStore.delete(`lock:${session.userId}`);
       await dmChannel.send(t("form.cancelled", lang));
       return;
     }
@@ -294,6 +307,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
+      await sessionStore.delete(`lock:${session.userId}`);
       dmChannel.send(t("form.timeout", lang)).catch(() => {});
     }
   });
@@ -325,6 +339,7 @@ async function processAnswer(client, dmChannel, session, sessionKey, question, a
 
 async function finishSession(client, dmChannel, session, sessionKey) {
   await sessionStore.delete(sessionKey);
+  await sessionStore.delete(`lock:${session.userId}`);
   const lang = session.lang || "en";
 
   await dmChannel.send({

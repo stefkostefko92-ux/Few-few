@@ -6,6 +6,7 @@
 
 import { logServerEvent, isEventCategoryEnabled } from "../utils/serverEventLog.js";
 import { AuditLogEvent } from "discord.js";
+import { markTicketMessage } from "../utils/api.js";
 
 export default {
   name: "messageDeleteBulk",
@@ -14,6 +15,20 @@ export default {
     try {
       const guild = channel?.guild;
       if (!guild?.id) return;
+
+      // Одитна следа в ТИКЕТ транскрипта — независимо от Server Event Logging.
+      // messageDelete прави точно това от v36; масовото изтриване го НЕ правеше,
+      // тоест `/purge` в тикет канал беше начин да изчистиш следите си от
+      // одитния документ: транскриптът продължаваше да твърди, че съобщенията
+      // съществуват. Backend-ът връща 204 за съобщения извън тикет канал.
+      //
+      // Discord ограничава bulk delete до 100 съобщения, затова цикълът е
+      // ограничен по конструкция. Пращаме ги последователно и НЕ чакаме —
+      // маркирането е странична функция и не бива да бави handler-а.
+      // (Разбивача, 07.08.2026)
+      for (const id of (messages?.keys?.() ?? [])) {
+        markTicketMessage(id, "delete").catch(() => {});
+      }
 
       // Гейт ПРЕДИ скъпия audit fetch (виж messageDelete.js).
       if (!(await isEventCategoryEnabled(guild.id, "messages"))) return;

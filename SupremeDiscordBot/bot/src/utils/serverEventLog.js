@@ -138,6 +138,16 @@ async function getEventLogConfig(serverId) {
   return config;
 }
 
+// Съдържанието в лога идва от ЧУЖД сървър (име на канал, тема, съдържание на
+// съобщение, причина). Discord рендира markdown в embed, значи
+// `[безобиден текст](https://зло)` става кликаем линк В НАШИЯ лог — модератор,
+// който преглежда събитията, вижда само текста и кликва. Обезвреждаме
+// отварящата скоба с пълноширинен вариант: изглежда почти същото, но не
+// образува линк. Останалият markdown е козметичен. (Разбивача, 07.08.2026)
+function safeText(value, max = 1024) {
+  return String(value).replace(/\[/g, "［").slice(0, max);
+}
+
 /**
  * Построй чист embed за едно събитие.
  */
@@ -157,14 +167,14 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
   if (meta.fromChannelId) fields.push({ name: "From", value: `<#${meta.fromChannelId}>`, inline: true });
   if (meta.toChannelId) fields.push({ name: "To", value: `<#${meta.toChannelId}>`, inline: true });
   if (meta.before !== undefined && meta.before !== null && meta.before !== "") {
-    fields.push({ name: "Before", value: String(meta.before).slice(0, 1024), inline: true });
+    fields.push({ name: "Before", value: safeText(meta.before), inline: true });
   }
   if (meta.after !== undefined && meta.after !== null && meta.after !== "") {
-    fields.push({ name: "After", value: String(meta.after).slice(0, 1024), inline: true });
+    fields.push({ name: "After", value: safeText(meta.after), inline: true });
   }
-  if (meta.reason) fields.push({ name: "Reason", value: String(meta.reason).slice(0, 1024), inline: false });
+  if (meta.reason) fields.push({ name: "Reason", value: safeText(meta.reason), inline: false });
   // messages категория
-  if (meta.content) fields.push({ name: "Content", value: String(meta.content).slice(0, 1024), inline: false });
+  if (meta.content) fields.push({ name: "Content", value: safeText(meta.content), inline: false });
   if (meta.attachments) fields.push({ name: "Attachments", value: String(meta.attachments), inline: true });
   if (meta.count) fields.push({ name: "Count", value: String(meta.count), inline: true });
   if (meta.messageUrl) fields.push({ name: "Message", value: `[Jump to message](${meta.messageUrl})`, inline: true });
@@ -177,10 +187,15 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
     if (RENDERED_META_KEYS.has(key)) continue;
     if (value === undefined || value === null || value === "") continue;
     if (typeof value === "object") continue; // масиви/обекти нямат смислен вид тук
-    const text = String(value);
+    // Съдържанието идва от ЧУЖД сървър (име на канал, тема, съдържание на
+    // съобщение). В embed Discord рендира markdown, значи `[текст](https://зло)`
+    // става кликаем линк В НАШИЯ лог — модератор, който чете лога, вижда
+    // безобиден текст и кликва. Обезвреждаме отварящата скоба; останалият
+    // markdown е козметичен. (Разбивача, 07.08.2026)
+    const text = safeText(value);
     fields.push({
       name: META_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1),
-      value: text.slice(0, 1024),
+      value: text,
       inline: text.length <= 40,
     });
   }
