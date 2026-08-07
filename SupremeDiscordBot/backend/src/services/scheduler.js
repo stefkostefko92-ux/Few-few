@@ -253,9 +253,24 @@ cron.schedule("* * * * *", job("* * * * *", async () => {
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
 cron.schedule("* * * * *", job("* * * * *", async () => {
   try {
-    const due = await prisma.scheduledMessage.findMany({
+    const dueRaw = await prisma.scheduledMessage.findMany({
       where: { sentAt: null, sendAt: { lte: new Date() } },
     });
+    if (!dueRaw.length) return;
+
+    // Premium-gated (както Job 1/SLA): без tier проверка насрочените/повтарящите
+    // се съобщения на сървър, паднал на free (seat detach, отмяна, дунинг),
+    // продължаваха да се изпращат ВЕЧНО. `scheduled_messages` няма FK към Server
+    // (orphan таблица), затова филтрираме на две стъпки: питаме кои от засегнатите
+    // сървъри са ЕФЕКТИВНО premium и пропускаме останалите. (Одит 07.08.2026)
+    const serverIds = [...new Set(dueRaw.map((m) => m.serverId))];
+    const premiumIds = new Set(
+      (await prisma.server.findMany({
+        where: { id: { in: serverIds }, ...effectivePremiumWhere() },
+        select: { id: true },
+      })).map((s) => s.id),
+    );
+    const due = dueRaw.filter((m) => premiumIds.has(m.serverId));
     if (!due.length) return;
     const { notifyBot } = await import("./botNotifier.js");
     for (const m of due) {

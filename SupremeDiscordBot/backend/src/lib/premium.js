@@ -133,6 +133,37 @@ export function planHasFeature(plan, featureKey) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// TIER SANITIZATION — гейт при ЧЕТЕНЕ, не само при запис
+// ═══════════════════════════════════════════════════════════════════════════
+// Premium полетата на панела се записваха гейтнати (validatePremiumFields), но
+// ботът ги ИЗПЪЛНЯВА суров, ако са truthy — независимо от tier. Значи свален на
+// free сървър (seat detach, отмяна, дунинг) продължаваше да праща DM при отваряне,
+// да добавя observer роли, да авто-затваря по неактивност и т.н. от запазените
+// стойности. Тук ги нулираме според ЕФЕКТИВНИЯ план, преди конфигът да стигне
+// до бота. Всяко поле → своя feature ключ. (Одит 07.08.2026)
+const PANEL_FEATURE_STRIP = {
+  "panel.dmOnOpen":            (p) => { p.dmOnOpen = false; p.dmOnOpenMessage = null; },
+  "panel.dmOnClose":           (p) => { p.dmOnClose = false; p.dmOnCloseMessage = null; },
+  // Двустъпковото затваряне (closeAskEnabled) е базово; само CUSTOM текстът е premium.
+  "panel.closeAskMessage":     (p) => { p.closeAskMessage = null; },
+  "panel.feedbackEnabled":     (p) => { p.feedbackEnabled = false; },
+  "panel.inactivityAutoClose": (p) => { p.inactivityCloseHours = null; },
+  "panel.autoCloseOnLeave":    (p) => { p.autoCloseOnLeave = false; },
+  "panel.observerRoles":       (p) => { p.observerRoleIds = []; },
+  "panel.sla":                 (p) => { p.slaFirstResponseMinutes = null; p.slaResolutionMinutes = null; },
+  "panel.multipleCategories":  (p) => { p.categoryClosedId = null; },
+};
+
+/** Нулира premium полетата на панел, които планът не покрива. Мутира и връща p. */
+export function sanitizePanelForTier(panel, plan) {
+  if (!panel) return panel;
+  for (const [featureKey, strip] of Object.entries(PANEL_FEATURE_STRIP)) {
+    if (!planHasFeature(plan, featureKey)) strip(panel);
+  }
+  return panel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // STRIPE PRICE ↔ PLAN and DISCORD SKU ↔ PLAN mapping (env-driven)
 // ═══════════════════════════════════════════════════════════════════════════
 // Populate these envs from scripts/stripe-setup.sh output / Discord Dev Portal.

@@ -8,6 +8,7 @@ import { fireWebhooks } from "../services/webhooks.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { findBestMatch } from "../lib/kbMatch.js";
+import { getServerTier, planHasFeature } from "../lib/premium.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -246,6 +247,13 @@ router.post("/sticky", async (req, res, next) => {
   const { serverId, channelId, content, embedTitle, embedColor, createdBy } = req.body;
   if (!serverId || !channelId || !content) return res.status(400).json({ error: "Invalid payload" });
   try {
+    // Tier гейт (paritet с dashboard automation.js): sticky е premium. Слаш
+    // командата минаваше право към upsert без проверка → free сървър създаваше
+    // premium функция. (Одит 07.08.2026)
+    const tier = await getServerTier(serverId);
+    if (!planHasFeature(tier.plan, "automation.sticky")) {
+      return res.status(403).json({ error: "Sticky messages require Premium.", code: "PREMIUM_REQUIRED" });
+    }
     const sticky = await prisma.stickyMessage.upsert({
       where: { channelId },
       create: { serverId, channelId, content, embedTitle, embedColor, createdBy },
@@ -267,6 +275,13 @@ router.get("/sticky/channel/:channelId", async (req, res, next) => {
     const sticky = await prisma.stickyMessage.findUnique({
       where: { channelId: req.params.channelId },
     });
+    // Ботът препубликува sticky по този GET. Ако сървърът вече НЯМА premium
+    // (seat detach, отмяна, дунинг), връщаме null → репостът спира. Иначе
+    // премахната функция продължаваше да работи от запазения ред. (Одит 07.08.2026)
+    if (sticky) {
+      const tier = await getServerTier(sticky.serverId);
+      if (!planHasFeature(tier.plan, "automation.sticky")) return res.json(null);
+    }
     res.json(sticky);
   } catch (err) { next(err); }
 });
@@ -287,6 +302,15 @@ router.post("/schedule", async (req, res, next) => {
   const { serverId, channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence, createdBy } = req.body;
   if (!serverId || !channelId || !content || !sendAt) return res.status(400).json({ error: "Invalid payload" });
   try {
+    // Tier гейт (paritet с dashboard): насрочените са premium, повтарящите се —
+    // само при план с `recurringScheduled`. Слаш командата минаваше без проверка.
+    const tier = await getServerTier(serverId);
+    if (!planHasFeature(tier.plan, "automation.scheduled")) {
+      return res.status(403).json({ error: "Scheduled messages require Premium.", code: "PREMIUM_REQUIRED" });
+    }
+    if (recurrence && !tier.limits.recurringScheduled) {
+      return res.status(403).json({ error: "Recurring messages require a higher plan.", code: "PREMIUM_REQUIRED" });
+    }
     const m = await prisma.scheduledMessage.create({
       data: {
         serverId, channelId, content,

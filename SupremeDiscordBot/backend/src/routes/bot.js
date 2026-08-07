@@ -9,7 +9,7 @@ import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js"
 import { decrypt } from "../lib/crypto.js";
 import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
-import { getServerTier, planHasFeature } from "../lib/premium.js";
+import { getServerTier, planHasFeature, sanitizePanelForTier } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
 
 const router = Router();
@@ -838,6 +838,12 @@ router.get("/user/:userId/open-tickets/:guildId", async (req, res, next) => {
       },
       include: { panel: { select: { autoCloseOnLeave: true, counterPadding: true } } },
     });
+    // autoCloseOnLeave е premium — ботът затваря тикета, когато създателят
+    // напусне. Без tier проверка запазеният флаг работеше на free сървър.
+    const tier = await getServerTier(req.params.guildId);
+    if (!planHasFeature(tier.plan, "panel.autoCloseOnLeave")) {
+      for (const t of tickets) if (t.panel) t.panel.autoCloseOnLeave = false;
+    }
     res.json(tickets);
   } catch (err) { next(err); }
 });
@@ -856,9 +862,15 @@ router.get("/panel/:panelId", async (req, res, next) => {
     if (!panel) return res.status(404).json({ error: "Panel not found" });
     // Ефективен tier (agency/trial не са в суровата колона) — панелните
     // функции се гейтват на panel.server.isPremium.
+    let effectivePlan = "free";
     if (panel.server?.id) {
       const tier = await getServerTier(panel.server.id);
+      effectivePlan = tier.plan;
       panel.server.isPremium = tier.isPremium;
+      // Нулирай premium полетата, които планът не покрива — иначе ботът
+      // изпълнява запазените стойности (DM при отваряне, observer роли, SLA,
+      // авто-затваряне) на сървър, който вече не плаща за тях.
+      sanitizePanelForTier(panel, effectivePlan);
     }
 
     // Групово съобщение: няколко панела делят един messageId. Редакцията на
@@ -875,7 +887,10 @@ router.get("/panel/:panelId", async (req, res, next) => {
         // е само резервен за заварени групи отпреди полето.
         orderBy: [{ groupOrder: "asc" }, { createdAt: "asc" }],
       });
-      if (siblings.length > 1) panel.siblings = siblings;
+      // Същият сървър (един messageId) → същият план. Санитизирай и тях.
+      if (siblings.length > 1) {
+        panel.siblings = siblings.map((s) => sanitizePanelForTier(s, effectivePlan));
+      }
     }
 
     res.json(panel);

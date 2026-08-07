@@ -7,7 +7,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
-import { validatePremiumFields, getServerTier } from "../lib/premium.js";
+import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
 const VERIFICATION_PREMIUM_FIELDS = {
@@ -27,6 +27,16 @@ router.get("/bot/:panelId", requireBotSecret, async (req, res, next) => {
       where: { id: req.params.panelId },
     });
     if (!panel) return res.status(404).json({ error: "Verification panel not found" });
+    // Tier санитизация при ЧЕТЕНЕ: MATH captcha и минимална възраст на акаунта са
+    // premium. Свален на free сървър пазеше стойностите → ботът ги налагаше. При
+    // недостатъчен план сваляме MATH до базовия BUTTON и махаме възрастовия праг.
+    const tier = await getServerTier(panel.serverId);
+    if (panel.type === "MATH" && !planHasFeature(tier.plan, "verification.mathCaptcha")) {
+      panel.type = "BUTTON";
+    }
+    if (panel.minAccountAgeDays && !planHasFeature(tier.plan, "verification.accountAge")) {
+      panel.minAccountAgeDays = null;
+    }
     res.json(panel);
   } catch (err) { next(err); }
 });

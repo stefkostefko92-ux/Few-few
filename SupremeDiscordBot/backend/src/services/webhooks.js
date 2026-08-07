@@ -9,6 +9,7 @@ import { lookup as dnsLookup } from "dns/promises";
 import { lookup as dnsLookupCb } from "dns";
 import { isIP } from "net";
 import { prisma } from "../lib/prisma.js";
+import { getServerTier, planHasFeature } from "../lib/premium.js";
 
 const VALID_EVENTS = [
   "TICKET_OPEN", "TICKET_CLOSE", "TICKET_REOPEN", "TICKET_DELETE",
@@ -96,6 +97,14 @@ const ssrfSafeAgent = new https.Agent({ lookup: ssrfSafeLookup });
 export async function fireWebhooks(serverId, event, payload) {
   if (!VALID_EVENTS.includes(event)) return;
   try {
+    // Webhook интеграциите са premium (BASE_LIMITS.webhooks = 0). Гейтваме на
+    // ИЗПЪЛНЕНИЕ, не само при създаване: сървър, паднал на free (seat detach,
+    // отмяна, дунинг), пазеше конфигурираните webhook-и в базата и продължаваше
+    // да пуска POST-ове към чужд endpoint — и приход, и данни за тикети навън.
+    // (Одит 07.08.2026)
+    const tier = await getServerTier(serverId);
+    if (!planHasFeature(tier.plan, "integrations.webhooks")) return;
+
     const hooks = await prisma.webhook.findMany({
       where: { serverId, enabled: true, events: { has: event } },
     });
