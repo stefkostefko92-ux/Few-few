@@ -11,7 +11,7 @@ import { COMMAND_CATALOG } from "../data/commandsCatalog";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
 
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814288&scope=bot+applications.commands`;
+const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
 const totalCommands = COMMAND_CATALOG.reduce((n, cat) => n + (cat.commands || []).length, 0);
 const totalCategories = COMMAND_CATALOG.length;

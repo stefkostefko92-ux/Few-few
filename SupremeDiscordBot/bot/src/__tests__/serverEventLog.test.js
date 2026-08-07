@@ -241,3 +241,28 @@ describe("logServerEvent — категория server и per-category кана�
     expect(sent).toHaveLength(0);
   });
 });
+
+// ─── Правила на Discord (07.08.2026) ──────────────────────────────────────────
+
+describe("права за поканата — одитният дневник", () => {
+  it("INVITE_PERMISSIONS_INT съдържа ViewAuditLog, иначе „кой го направи“ мълчи", async () => {
+    const { PermissionsBitField } = await import("discord.js");
+    const { INVITE_PERMISSIONS_INT, REQUIRED_PERMISSIONS } = await import("../utils/permissionCheck.js");
+    const audit = PermissionsBitField.Flags.ViewAuditLog;
+    expect(BigInt(INVITE_PERMISSIONS_INT) & audit).toBe(audit);
+    expect(REQUIRED_PERMISSIONS.some((r) => r.flag === audit)).toBe(true);
+  });
+
+  it("поканата НЕ иска Administrator (least privilege)", async () => {
+    const { PermissionsBitField } = await import("discord.js");
+    const { INVITE_PERMISSIONS_INT } = await import("../utils/permissionCheck.js");
+    const admin = PermissionsBitField.Flags.Administrator;
+    expect(BigInt(INVITE_PERMISSIONS_INT) & admin).toBe(0n);
+  });
+
+  it("целият списък REQUIRED_PERMISSIONS се сумира точно до INVITE_PERMISSIONS_INT", async () => {
+    const { INVITE_PERMISSIONS_INT, REQUIRED_PERMISSIONS } = await import("../utils/permissionCheck.js");
+    const sum = REQUIRED_PERMISSIONS.reduce((a, r) => a | BigInt(r.flag), 0n);
+    expect(sum).toBe(BigInt(INVITE_PERMISSIONS_INT));
+  });
+});

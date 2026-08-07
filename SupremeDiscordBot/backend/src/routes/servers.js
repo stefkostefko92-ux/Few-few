@@ -1,6 +1,7 @@
 // backend/src/routes/servers.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { fetchUserGuilds } from "../lib/discordRest.js";
 import axios from "axios";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { encrypt, decrypt, decryptSafe } from "../lib/crypto.js";
@@ -55,19 +56,21 @@ router.get("/", async (req, res, next) => {
 
     if (!session) return res.json([]);
 
-    let guildsRes;
+    let discordGuilds;
     try {
-      guildsRes = await axios.get("https://discord.com/api/v10/users/@me/guilds", {
-        headers: { Authorization: `Bearer ${decryptSafe(session.accessToken)}` },
-      });
+      // Кеширано 30s + уважава Retry-After — виж lib/discordRest.js.
+      discordGuilds = await fetchUserGuilds(decryptSafe(session.accessToken));
     } catch (discordErr) {
       if (discordErr?.response?.status === 401) {
         return res.status(401).json({ error: "Discord token expired — please log in again" });
       }
+      if (discordErr?.response?.status === 429) {
+        const retry = Number(discordErr.response.headers?.["retry-after"]) || 5;
+        res.set("Retry-After", String(Math.ceil(retry)));
+        return res.status(503).json({ error: "Discord is rate limiting us — try again shortly" });
+      }
       throw discordErr;
     }
-
-    const discordGuilds = guildsRes.data;
 
     // Filter to guilds where user is admin (has MANAGE_GUILD permission = bit 0x20)
     const adminGuilds = discordGuilds.filter((g) => {

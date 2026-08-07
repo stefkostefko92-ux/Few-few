@@ -75,7 +75,7 @@ export default function ServerHome() {
         <h2 className="text-lg font-semibold text-cs-text mb-2">{t("overview.notSetup.title")}</h2>
         <p className="text-cs-muted text-sm">{t("overview.notSetup.body")}</p>
         <a
-          href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814288&scope=bot+applications.commands&guild_id=${serverId}`}
+          href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands&guild_id=${serverId}`}
           target="_blank" rel="noopener noreferrer"
           className="cs-btn-primary mt-4 inline-flex items-center gap-2"
         >

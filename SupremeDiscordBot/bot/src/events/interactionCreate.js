@@ -575,7 +575,12 @@ async function handleTagReplySelect(interaction) {
 
   const channel = interaction.guild?.channels.cache.get(channelId) || interaction.channel;
   try {
-    await channel.send({ content: tag.content });
+    // allowedMentions гард: съдържанието на тага е свободен текст, писан от
+    // персонала (или през таблото). Без този гард един таг с „@everyone" прави
+    // бота машина за масов пинг — точно поведението, за което Discord сваля
+    // приложения. Потребители и роли остават позволени: отговорът на поддръжката
+    // често трябва да спомене човека или екипа.
+    await channel.send({ content: tag.content, allowedMentions: { parse: ["users", "roles"] } });
   } catch (err) {
     return interaction.editReply(`❌ Failed to post the tag: ${err.message}`);
   }

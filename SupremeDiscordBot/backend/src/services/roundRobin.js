@@ -7,6 +7,7 @@
 import { prisma } from "../lib/prisma.js";
 import { getServerTier } from "../lib/premium.js";
 import axios from "axios";
+import { discordRequest } from "../lib/discordRest.js";
 
 /**
  * Pick the next assignee for a ticket using round-robin logic.
@@ -73,10 +74,16 @@ async function fetchRoleMembers(guildId, roleId, botToken) {
   const MAX_PAGES = 10; // up to 10k members
   try {
     for (let page = 0; page < MAX_PAGES; page++) {
-      const res = await axios.get(
-        `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000&after=${after}`,
-        { headers: { Authorization: `Bot ${botToken}` }, timeout: 8000 }
-      );
+      // discordRequest уважава Retry-After при 429 и спира при глобален лимит.
+      // Пагинацията беше най-агресивният ни ръчен път: до 10 последователни
+      // заявки към скъп маршрут, БЕЗ никаква обработка на лимита, при това на
+      // пътя за създаване на тикет (тоест точно когато сървърът е натоварен).
+      const res = await discordRequest({
+        method: "get",
+        url: `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000&after=${after}`,
+        headers: { Authorization: `Bot ${botToken}` },
+        timeout: 8000,
+      });
       const batch = res.data || [];
       for (const m of batch) {
         if (!m.user.bot && m.roles.includes(roleId)) members.push(m.user.id);

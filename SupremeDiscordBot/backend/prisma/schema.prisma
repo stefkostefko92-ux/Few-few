@@ -146,7 +146,13 @@ model Server {
   // Server event logging (member/voice/moderation activity) — per-server opt-in
   eventLogEnabled    Boolean  @default(false)
   eventLogChannelId  String?
-  eventLogCategories String[] @default(["voice", "members", "moderation", "messages"])
+  // v38 — „messages" НЕ е по подразбиране. Тя е единствената категория, която
+  // чете съдържание на съобщения извън тикет каналите, тоест единствената, която
+  // ползва привилегирования MessageContent intent за нещо различно от тикет
+  // транскрипта. Да се включва мълчаливо заедно с общия ключ значи сървър да
+  // започне да записва чужди разговори без отделно решение на администратора.
+  // Заварените сървъри не се пипат — default важи само за нови редове.
+  eventLogCategories String[] @default(["voice", "members", "moderation"])
   // v37 — по избор СВОЙ канал за всяка категория: { "voice": "123", "members": "456" }.
   // Липсваща категория пада обратно към общия eventLogChannelId, така че
   // заварените конфигурации продължават да работят без промяна.

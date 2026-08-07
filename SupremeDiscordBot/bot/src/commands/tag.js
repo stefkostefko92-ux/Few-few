@@ -85,7 +85,9 @@ async function handleUse(interaction, name) {
   } catch (err) {
     return interaction.editReply(friendlyError(err, interaction, `Tag "${name}" not found.`));
   }
-  await interaction.editReply({ content: tag.content });
+  // Същият гард като в бутонния път (interactionCreate) — тагът е свободен
+  // текст, а този отговор е ПУБЛИЧЕН (deferReply без Ephemeral).
+  await interaction.editReply({ content: tag.content, allowedMentions: { parse: ["users", "roles"] } });
 }
 
 async function handleAdd(interaction) {
