@@ -64,6 +64,9 @@ router.get("/export", async (req, res, next) => {
           username: user.username,
           discriminator: user.discriminator,
           avatar: user.avatar,
+          // Чл. 15(1) иска ВСИЧКИ лични данни, които обработваме — имейлът от
+          // OAuth scope `email` беше пропуснат.
+          email: user.email,
           globalRole: user.globalRole,
           language: user.language,
           referralCode: user.referralCode,
@@ -171,8 +174,11 @@ router.post("/delete-account", async (req, res, next) => {
           username: `[deleted-user-${userId.slice(-6)}]`,
           discriminator: "0",
           avatar: null,
-          // Note: User model has no email/accessToken/refreshToken — those live
-          // in the Session model and are deleted in the next step.
+          // Имейлът ИМА поле на User (schema.prisma) — идва от OAuth scope
+          // `email`. Стар коментар тук твърдеше обратното и заради него имейлът
+          // преживяваше „изтриването": чл. 17 дефект, намерен при одита 07.08.2026.
+          email: null,
+          // accessToken/refreshToken живеят в Session и падат на следващата стъпка.
         },
       });
 

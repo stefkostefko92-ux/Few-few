@@ -9,6 +9,7 @@
 //   Abuse reports: 1 year after resolution
 //   Anonymized users: maintained (for referential integrity)
 //   Transaction records: 7 years (legal obligation, NEVER auto-delete)
+//   Servers with the bot removed: purged 30 days after removal
 //
 // ON ERROR: logs but does NOT throw. Retention run failure must not crash backend.
 
@@ -23,6 +24,7 @@ export async function runRetentionJob() {
     ticketsAnonymized: 0,
     auditLogsDeleted: 0,
     abuseReportsDeleted: 0,
+    removedServersPurged: 0,
     errors: [],
   };
 
@@ -105,6 +107,28 @@ export async function runRetentionJob() {
   } catch (err) {
     console.error(`[retention] ❌ Abuse report retention failed:`, err.message);
     results.errors.push({ type: "abuse", error: err.message });
+  }
+
+  // ── 3б. Изчисти сървърите, от които ботът е махнат преди 30+ дни ───────────
+  // Политиката обещава „Until server is removed" (PrivacyPage), но досега
+  // `botRemovedAt` беше САМО маркер: единствените му консуматори бяха филтър за
+  // таблото и изчистване при повторна покана. Данните на клиент, махнал бота,
+  // живееха безсрочно — нарушение на чл. 5(1)(д) и на собственото ни обещание.
+  //
+  // 30 дни гратис, защото повторната покана е нормален сценарий (bot.js нулира
+  // маркера) и защото съвпада с прозореца за транскрипти на Free. Изтриването на
+  // реда Server каскадира към всичко закачено (22 релации с onDelete: Cascade),
+  // затова една заявка чисти тикети, панели, форми, ключове и настройки наведнъж.
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * MS_PER_DAY);
+    const purged = await prisma.server.deleteMany({
+      where: { botRemovedAt: { not: null, lt: thirtyDaysAgo } },
+    });
+    results.removedServersPurged = purged.count;
+    console.log(`[retention] ✅ Removed servers purged: ${purged.count}`);
+  } catch (err) {
+    console.error(`[retention] ❌ Removed-server purge failed:`, err.message);
+    results.errors.push({ type: "removedServers", error: err.message });
   }
 
   // ── 4. Log the run itself for compliance evidence ───────────────────────────

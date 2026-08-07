@@ -54,8 +54,8 @@ export default function PrivacyPage() {
             <tbody className="text-cs-muted">
               <Tr>
                 <Td>Identity</Td>
-                <Td>Discord user ID, username, avatar hash, discriminator</Td>
-                <Td>Authenticate you; display your profile in dashboard</Td>
+                <Td>Discord user ID, username, avatar hash, discriminator, email address</Td>
+                <Td>Authenticate you; display your profile in dashboard; contact you about your subscription and service notices</Td>
                 <Td>Art. 6(1)(b) — contract performance</Td>
                 <Td>Until account deletion</Td>
               </Tr>
