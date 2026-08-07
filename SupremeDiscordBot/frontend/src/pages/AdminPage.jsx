@@ -636,7 +636,7 @@ function ServersTab() {
                 <td>
                   <div className="flex items-center gap-3">
                     {s.icon
-                      ? <img src={`https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=32`} className="w-8 h-8 border border-cs-border" alt="" />
+                      ? <img src={s.icon} className="w-8 h-8 border border-cs-border" alt="" />
                       : <div className="w-8 h-8 border border-cs-border bg-cs-panel flex items-center justify-center text-xs font-bold text-cs-cyan">{s.name[0]}</div>}
                     <div>
                       <div className="text-cs-text font-medium">{s.name}</div>

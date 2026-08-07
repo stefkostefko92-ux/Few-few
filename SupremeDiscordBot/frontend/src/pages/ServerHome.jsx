@@ -95,7 +95,11 @@ export default function ServerHome() {
           Заменя стария ред „иконка + име + значка Premium“. Показва ТАРИФАТА
           поименно, състоянието на бота и заетите места при agency — всичко от
           реалния отговор, нула догаждане в клиента. */}
-      <ServerCrest server={server} botOnline={status?.services?.bot?.status === "ok"} />
+      {/* `/api/status` говори на речника operational|degraded|down. Тук се
+          сравняваше с "ok" — думата от ВЪТРЕШНИЯ `/health` на бота, която
+          backend-ът вече е превел. Значи условието беше винаги невярно и гербът
+          пишеше „БОТЪТ Е ОФЛАЙН" на напълно жив бот. (07.08.2026) */}
+      <ServerCrest server={server} botOnline={status?.services?.bot?.status === "operational"} />
 
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <p className="text-cs-dim text-xs font-mono">{t("overview.subtitle")}</p>
