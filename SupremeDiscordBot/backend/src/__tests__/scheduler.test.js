@@ -56,3 +56,37 @@ describe("scheduler", () => {
     expect(bare, `гол callback без job(): ${bare.join(" · ")}`).toEqual([]);
   });
 });
+
+// ─── Провалът на задача се ЧУВА ─────────────────────────────────────────────
+// ДЕФЕКТЪТ (Наблюдателят, одит 07.08.2026): обвивката `job()` имаше Sentry
+// клон, но той беше НЕДОСТИЖИМ — всяка от десетте задачи има собствен
+// try/catch, който гълта грешката и пише само в конзолата. Cron задача можеше
+// да се проваля при всяко задействане месеци наред без нито едно събитие в
+// таблото. Този клас вече ни изгоря: три задачи споделяха ключ за заключване и
+// две никога не се изпълняваха — открихме го при одит, не от аларма.
+describe("нито един провал не се гълта мълчаливо", () => {
+  const src = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "services", "scheduler.js"),
+    "utf-8",
+  );
+  const code = src.split("\n").filter((l) => !l.trim().startsWith("//") && !l.trim().startsWith("*")).join("\n");
+
+  it("нула гол console.error в catch — всичко минава през jobFail", () => {
+    // Гол лог значи провал, видим само за човек, който точно тогава гледа
+    // контейнерния лог. `jobFail` е единственият път навън.
+    expect(code).not.toMatch(/console\.error\(\s*"\[Scheduler\]/);
+  });
+
+  it("jobFail докладва в Sentry, не само в конзолата", () => {
+    const fn = code.slice(code.indexOf("async function jobFail"));
+    const body = fn.slice(0, fn.indexOf("\n}"));
+    expect(body).toContain("captureException");
+    expect(body).toContain("tags: { job: name }"); // без таг не се вижда КОЯ задача
+  });
+
+  it("всяка от 10-те задачи има СВОЕ име в jobFail — не общо „scheduler“", () => {
+    const names = [...code.matchAll(/jobFail\("([a-z-]+)"/g)].map((m) => m[1]);
+    expect(new Set(names).size, `имената се повтарят: ${names.join(", ")}`).toBe(names.length);
+    expect(names.length).toBeGreaterThanOrEqual(10);
+  });
+});

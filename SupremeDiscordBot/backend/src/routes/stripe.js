@@ -315,7 +315,19 @@ function subscriptionIdFromInvoice(invoice) {
  */
 async function liveSubscription(subId) {
   if (!subId) return null;
-  const sub = await stripe.subscriptions.retrieve(String(subId));
+  let sub;
+  try {
+    sub = await stripe.subscriptions.retrieve(String(subId));
+  } catch (err) {
+    // `resource_missing` не е мрежова грешка, а ОКОНЧАТЕЛЕН отговор: този
+    // абонамент вече го няма, значи отговорът на „жив ли е“ е не и няма да се
+    // промени. Хвърлянето тук връщаше 500, Stripe ретрайваше с дни и всеки
+    // опит раждаше нов инцидент — шум, който изглежда като авария, при напълно
+    // знаен изход. Всичко останало (мрежа, 5xx, лимит) ОСТАВА хвърлено: там
+    // ретраят е точно каквото искаме.
+    if (err?.code === "resource_missing" || err?.statusCode === 404) return null;
+    throw err;
+  }
   return LIVE_SUBSCRIPTION_STATUSES.has(sub?.status) ? sub : null;
 }
 
@@ -625,6 +637,20 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Agency invoice → keep the agency active (recurring payment).
         const agency = await prisma.agency.findFirst({ where: { stripeCustomerId: String(customer) } });
         if (agency) {
+          // Същият гард като сървърния път по-долу — липсваше само тук, а
+          // асиметрията е дупка: Stripe ретрайва webhook-и с дни и доставя
+          // извън ред, значи закъснял `invoice.paid` след refund/chargeback
+          // връщаше `active: true` + `stripeStatus: "active"` върху агенция,
+          // която току-що беше отнета — и то безсрочно, защото нищо после не я
+          // сваля. Agency 10 е €399/година върху 10 сървъра.
+          // (Продавача, одит 07.08.2026)
+          const agencySub = await liveSubscription(subscriptionIdFromInvoice(invoice));
+          if (!agencySub) {
+            console.warn(
+              `⚠️ invoice.paid за агенция ${agency.id}: абонаментът вече не е активен — НЕ провизирам (закъсняло/повторно събитие)`,
+            );
+            break;
+          }
           const did = await runOnce(async (tx) => {
             await tx.agency.update({ where: { id: agency.id }, data: { active: true, stripeStatus: "active", pastDueSince: null } });
           });
@@ -655,8 +681,16 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Целият ефект е в ЕДНА транзакция,
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
-        // Reflect the paid tier (a portal plan-change lands here as an invoice).
-        const paidTier = planFromInvoice(invoice);
+        // Тарифата се чете от ЖИВИЯ абонамент, не от редовете на фактурата.
+        //
+        // При смяна на план през портала Stripe издава прорационна фактура с
+        // редове за ДВЕ различни цени — кредит по старата и такса по новата — а
+        // `planFromInvoice` взима първия ред с цена, без правило кой е
+        // меродавен. Клиент, качил се Premium → White-label, можеше да получи
+        // обратно premium. Абонаментът носи текущите items, значи той е
+        // истината; фактурата остава резерва за случаите без жив обект.
+        // (Продавача, одит 07.08.2026)
+        const paidTier = planFromSubscription(paidSub) || planFromInvoice(invoice);
         // Тих drift guard: платена фактура, чиято цена не мапва към тарифа,
         // значи env price map е разминат с реалния Stripe акаунт — достъпът
         // пак се дава (isPremium), но етикетът на тарифата би застоял.

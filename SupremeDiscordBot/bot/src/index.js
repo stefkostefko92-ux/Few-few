@@ -1,14 +1,13 @@
 // bot/src/index.js
 import "dotenv/config";
+// Sentry.init живее в instrument.js и се внася ПЪРВО, за да се вдигне преди
+// discord.js/express. Досега init стоеше тук като top-level израз — текстово
+// преди импортите, но в ESM всички import декларации се оценяват преди тялото
+// на модула, значи инструментираните библиотеки се зареждаха първи и Sentry
+// нямаше какво да закърпи. (Наблюдателят, одит 07.08.2026)
+import "./instrument.js";
 import * as Sentry from "@sentry/node";
 
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || "development",
-  });
-  console.log("✅ Sentry error monitoring active (bot)");
-}
 import {
   Client,
   GatewayIntentBits,
@@ -27,7 +26,7 @@ import { requireBotSecret } from "./middleware/secret.js";
 import { handlePanelSpawn, handlePanelUpdate, handleMultiPanelSpawn } from "./internal/panelHandler.js";
 import { handleTicketClose, handleTicketClaim } from "./internal/ticketHandler.js";
 import { handleApplicationReviewed } from "./internal/applicationHandler.js";
-import { bootAllCustomClients, shutdownCustomClient } from "./services/clientManager.js";
+import { bootAllCustomClients, shutdownCustomClient, customClients } from "./services/clientManager.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -129,9 +128,26 @@ app.use(express.json({ limit: "1mb" }));
 // docker restart политиката никога не рестартира бота.
 app.get("/health", (_req, res) => {
   const gatewayReady = client.isReady();
+  // Бранд ботовете влизат в ТЯЛОТО, но НЕ в кода.
+  //
+  // Паднал white-label клиент е чужд проблем (изтекъл/сменен токен на клиента),
+  // а този код управлява docker restart политиката: сложим ли го в статуса,
+  // грешният токен на един клиент рестартира ЦЕЛИЯ ни бот в цикъл. Числата
+  // обаче трябва да се виждат — иначе „всички бранд ботове мълчат" е състояние
+  // без нито един сигнал. (Наблюдателят, одит 07.08.2026)
+  let brandTotal = 0, brandReady = 0;
+  try {
+    for (const c of customClients.values()) {
+      brandTotal += 1;
+      if (c?.isReady?.()) brandReady += 1;
+    }
+  } catch { /* здравната проверка никога не гърми заради статистика */ }
+
   res.status(gatewayReady ? 200 : 503).json({
     status: gatewayReady ? "ok" : "degraded",
     gateway: gatewayReady ? "connected" : "disconnected",
+    // Проба с keyword match може да следи именно това: brandDown > 0.
+    brandBots: { total: brandTotal, ready: brandReady, down: brandTotal - brandReady },
     uptime: process.uptime(),
   });
 });

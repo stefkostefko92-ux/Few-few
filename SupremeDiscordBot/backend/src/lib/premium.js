@@ -163,6 +163,24 @@ export function sanitizePanelForTier(panel, plan) {
   return panel;
 }
 
+/**
+ * Колко дълго СЛЕД края на платения период клиентът още може да си вземе данните.
+ *
+ * Живее тук, защото го ползват две несвързани места и трябва да са СЪГЛАСНИ:
+ * `routes/export.js` (пуска експорта) и `services/scheduler.js` (отлага метлата).
+ * Разминат ли се, правото на експорт остава на хартия — метлата минава първа.
+ * Основание: чл. 16(4) Дир. (ЕС) 2019/770 (ЗПЦСЦУПС).
+ */
+export const EXPORT_GRACE_DAYS = 30;
+
+/** Още ли е в прозореца за експорт този сървър? Котва: край на платения период. */
+export function inExportWindow(server, now = Date.now()) {
+  const anchor = [server?.accessUntil, server?.trialEndsAt]
+    .filter(Boolean)
+    .sort((a, b) => b - a)[0];
+  return !!anchor && anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000 > now;
+}
+
 // ─── Форми ────────────────────────────────────────────────────────────────────
 // ЗАЩО (червен екип, одит 07.08.2026): premium полетата на формите се гейтваха
 // САМО при запис (`routes/forms.js`). Тоест клиент, който е конфигурирал

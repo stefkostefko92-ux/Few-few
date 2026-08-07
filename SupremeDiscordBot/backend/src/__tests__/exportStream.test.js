@@ -21,7 +21,13 @@ vi.mock("../middleware/auth.js", () => ({
 }));
 
 const getServerTier = vi.fn();
-vi.mock("../lib/premium.js", () => ({ getServerTier: (...a) => getServerTier(...a) }));
+// Частичен мок: подменяме САМО разрешаването на тарифата. `inExportWindow` е
+// чиста функция и трябва да е истинската — тя решава дали клиентът още може да
+// си вземе данните след края на платения период (чл. 16(4) Дир. 2019/770).
+vi.mock("../lib/premium.js", async (orig) => ({
+  ...(await orig()),
+  getServerTier: (...a) => getServerTier(...a),
+}));
 
 const { default: exportRouter } = await import("../routes/export.js");
 

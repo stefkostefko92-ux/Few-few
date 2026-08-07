@@ -24,19 +24,40 @@ function registerFonts(doc) {
   doc.registerFont(FONT_BOLD, join(FONTS_DIR, "DejaVuSans-Bold.ttf"));
   doc.font(FONT);
 }
-import { getServerTier } from "../lib/premium.js";
+import { getServerTier, inExportWindow } from "../lib/premium.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
 
-// ─── Helper: require Premium (active trials count as premium) ────────────────
+/**
+ * Право на експорт: активен платен план ИЛИ прозорецът след края му.
+ *
+ * ЗАЩО ПРОЗОРЕЦЪТ (Правният Разбирач, одит 07.08.2026): експортът беше гейтнат
+ * само на активен Premium, а метлата връща `archiveRetentionDays` на 30 при
+ * загуба на достъп и трие архивите. Тоест в мига, в който клиентът сваля плана,
+ * той губи И данните, И единственото средство да си ги вземе — а чл. 16(4) от
+ * Дир. (ЕС) 2019/770 (ЗПЦСЦУПС) му дава право да получи предоставеното от него
+ * съдържание безплатно и в машинночетим формат ИМЕННО при прекратяване.
+ * Обещанието в лендинга („експортирай, когато поискаш“) беше празно точно
+ * когато има значение.
+ *
+ * Котвата е краят на платения период (`accessUntil`), а при пробен период —
+ * `trialEndsAt`. Няма ли нито едно от двете, сървърът никога не е имал платен
+ * достъп и няма какво да наследява.
+ */
 async function requirePremium(req, res) {
-  const { isPremium } = await getServerTier(req.params.serverId);
-  if (!isPremium) {
-    res.status(403).json({ error: "This export feature requires Premium" });
-    return false;
-  }
-  return true;
+  const serverId = req.params.serverId;
+  const { isPremium } = await getServerTier(serverId);
+  if (isPremium) return true;
+
+  const server = await prisma.server.findUnique({
+    where: { id: serverId },
+    select: { accessUntil: true, trialEndsAt: true },
+  });
+  if (inExportWindow(server)) return true;
+
+  res.status(403).json({ error: "This export feature requires Premium" });
+  return false;
 }
 
 // ─── Helper: CSV ред от обект ────────────────────────────────────────────────
