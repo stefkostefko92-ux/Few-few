@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 15
     steps:
       # Пинат по SHA (не по подвижен таг) — supply-chain дисциплина. actions/checkout v4.2.2.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Node версия (зависимости няма — инструментите са zero-dep)
         run: node --version
       # Списъкът със стъпки живееше преписан на ръка тук И в agents-sweep.yml — и двата бяха се
