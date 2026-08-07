@@ -6055,7 +6055,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 160
+        "lessons": 167
       },
       "evolution": [
         {
@@ -6441,9 +6441,20 @@
           "date": "2026-07-28",
           "event": "v15.7 — учене",
           "detail": "Научи: systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У… (+12 още)"
+        },
+        {
+          "version": "16.4.0",
+          "date": "2026-08-07",
+          "event": "v16.4 — учене",
+          "detail": "Научи: Одит на работното дърво не е одит на това, което ще се деплойне: при workflow „GitHub Z… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Одит на работното дърво не е одит на това, което ще се деплойне: при workflow „GitHub Z…\" (+6 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
