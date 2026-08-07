@@ -695,7 +695,7 @@ export default {
   "privacy.deleteFailed": "Verwijderen mislukt",
   "privacy.exportTitle": "Exporteer je gegevens",
   "privacy.exportDesc": "Artikel 15 (recht van inzage) + Artikel 20 (overdraagbaarheid van gegevens). Download een JSON-bestand met alle persoonsgegevens die we over je bewaren.",
-  "privacy.exportIncludes": "Bevat: profiel, servers die je beheert, tickets, aanmeldingen, API-sleutels, affiliatecodes, auditlogboekvermeldingen.",
+  "privacy.exportIncludes": "Bevat: profiel, servers die je beheert, tickets, aanmeldingen, API-sleutels, auditlogboekvermeldingen.",
   "privacy.preparing": "Export voorbereiden…",
   "privacy.downloadBtn": "Mijn gegevens downloaden (JSON)",
   "privacy.subprocessorsTitle": "Subverwerkers",

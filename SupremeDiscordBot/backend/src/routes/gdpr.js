@@ -21,7 +21,7 @@ router.get("/export", async (req, res, next) => {
     const userId = req.user.id;
 
     // Collect all data tied to this user ID
-    const [user, servers, tickets, ticketMessages, applications, auditLogs, affiliateCode, apiKeys, sessions] = await Promise.all([
+    const [user, servers, tickets, ticketMessages, applications, auditLogs, apiKeys, sessions] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
       // Server membership — relation is `members` (ServerMember[]), not `users`
       prisma.server.findMany({
@@ -37,8 +37,6 @@ router.get("/export", async (req, res, next) => {
       prisma.ticketMessage.findMany({ where: { authorId: userId } }),
       prisma.application.findMany({ where: { userId } }),
       prisma.auditLog.findMany({ where: { actorId: userId }, take: 1000, orderBy: { createdAt: "desc" } }),
-      // AffiliateCode field is `userId`, not `ownerId`
-      prisma.affiliateCode.findMany({ where: { userId } }).catch(() => []),
       prisma.apiKey.findMany({
         where: { userId },
         select: { id: true, name: true, scopes: true, createdAt: true, lastUsedAt: true, revokedAt: true },
@@ -69,8 +67,6 @@ router.get("/export", async (req, res, next) => {
           email: user.email,
           globalRole: user.globalRole,
           language: user.language,
-          referralCode: user.referralCode,
-          referredByCode: user.referredByCode,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           // Note: OAuth tokens (accessToken, refreshToken) are stored in the
@@ -81,7 +77,6 @@ router.get("/export", async (req, res, next) => {
         ticket_messages_sent: ticketMessages,
         applications_submitted: applications,
         api_keys: apiKeys,
-        affiliate_codes: affiliateCode,
         active_sessions: sessions,
         audit_log_entries: auditLogs,
       },
@@ -121,7 +116,6 @@ router.get("/export", async (req, res, next) => {
 //   2. Personal fields (username, avatar) are nullified/anonymized
 //   3. Tokens revoked
 //   4. User ID retained in audit logs as "[deleted user]"
-//   5. Affiliate code disabled (stops new commissions)
 //
 // NOTE: Discord user ID is pseudonymous by nature. Discord itself allows users
 // to delete their Discord account which renders our ID useless.
@@ -191,15 +185,7 @@ router.post("/delete-account", async (req, res, next) => {
         data: { revokedAt: new Date() },
       }).catch(() => {});
 
-      // 4. Clear affiliate payout email (stops new payouts; historical commission
-      // records preserved for accounting). AffiliateCode has no `active` field;
-      // setting paypalEmail to null prevents future payouts.
-      await tx.affiliateCode.updateMany({
-        where: { userId },
-        data: { paypalEmail: null },
-      }).catch(() => {});
-
-      // 5. Audit trail — immutable record of deletion request
+      // 4. Audit trail — immutable record of deletion request
       await tx.auditLog.create({
         data: {
           actorId: userId,

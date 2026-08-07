@@ -28,10 +28,6 @@ model User {
   globalRole               GlobalRole @default(USER)
   isBlacklisted            Boolean    @default(false)
   language                 String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
-  // v2.1 Affiliate program
-  referralCode             String?    @unique // User's own code for sharing (assigned on first visit)
-  referredByCode           String? // Code of the user who referred this user
-  stripeConnectedAccountId String?    @unique // For payout
   createdAt                DateTime   @default(now())
   updatedAt                DateTime   @updatedAt
 
@@ -43,7 +39,6 @@ model User {
   assignedTickets Ticket[]             @relation("TicketAssignee")
   applications    Application[]
   apiKeys         ApiKey[]
-  commissions     ReferralCommission[]
 
   @@map("users")
 }
@@ -94,9 +89,8 @@ model Server {
   trialUsed             Boolean   @default(false) // Each server gets one 14-day trial
   trialStartedAt        DateTime?
   trialEndsAt           DateTime?
-  // v2.1 Localization + Affiliate
+  // v2.1 Localization
   language              String    @default("en") // Server-wide bot UI language
-  referredByCode        String? // Code of the user who referred this server's owner
   stripeCustomerId      String?   @unique
   stripeSubscriptionId  String?   @unique
   stripeStatus          String? // active, canceled, past_due, trialing
@@ -847,69 +841,6 @@ model ApiKey {
   @@index([serverId, revokedAt])
   @@index([keyHash])
   @@map("api_keys")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// v2.1 — REFERRAL COMMISSIONS
-// ─────────────────────────────────────────────────────────────────────────────
-
-model ReferralCommission {
-  id               String    @id @default(cuid())
-  referrerId       String // User ID who referred
-  referredServerId String // Server that was referred
-  stripeInvoiceId  String    @unique // Source invoice from Stripe
-  amountCents      Int // Customer paid amount in cents
-  commissionCents  Int // 20% of amount, what we owe referrer
-  currency         String    @default("eur") // F6 — продуктът таксува в евро (ЕС)
-  status           String    @default("pending") // pending, paid, refunded
-  payoutId         String? // Stripe payout ID when paid out
-  paidAt           DateTime?
-  createdAt        DateTime  @default(now())
-
-  user User @relation(fields: [referrerId], references: [id], onDelete: Cascade)
-
-  @@index([referrerId, status])
-  @@index([createdAt])
-  @@map("referral_commissions")
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// v2.1 — AFFILIATE PROGRAM
-// ═════════════════════════════════════════════════════════════════════════════
-
-model AffiliateCode {
-  id              String   @id @default(cuid())
-  userId          String   @unique // Discord user ID — one code per user
-  code            String   @unique // Human-readable code
-  clicks          Int      @default(0)
-  signups         Int      @default(0)
-  conversions     Int      @default(0) // Paid subscriptions attributed
-  totalEarnings   Int      @default(0) // Cents, lifetime
-  pendingEarnings Int      @default(0) // Cents, available for payout
-  paidEarnings    Int      @default(0) // Cents, already paid out
-  paypalEmail     String? // For payouts
-  createdAt       DateTime @default(now())
-
-  referrals AffiliateReferral[]
-
-  @@map("affiliate_codes")
-}
-
-model AffiliateReferral {
-  id               String    @id @default(cuid())
-  affiliateId      String
-  referredServerId String
-  status           String    @default("pending") // pending | active | churned
-  firstPaymentAt   DateTime?
-  lastPaymentAt    DateTime?
-  totalEarnings    Int       @default(0) // Cents commission from this referral
-  createdAt        DateTime  @default(now())
-
-  affiliate AffiliateCode @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-
-  @@unique([affiliateId, referredServerId])
-  @@index([referredServerId])
-  @@map("affiliate_referrals")
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

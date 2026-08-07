@@ -171,7 +171,6 @@ export default function Layout() {
             <>
               <SectionLabel>Navigation</SectionLabel>
               <NavItem to="/dashboard" icon={LayoutDashboard} end>Dashboard</NavItem>
-              {/* Affiliate скрит за launch — програмата не е функционална (одит C1/C2); включи пак след referral attribution */}
               {isSuperUser && (
                 <NavItem to="/dashboard/admin" icon={Shield} accent>Super Admin</NavItem>
               )}

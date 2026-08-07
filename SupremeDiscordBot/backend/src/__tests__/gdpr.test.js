@@ -22,8 +22,6 @@ const USER = {
   email: "stefan@example.com",
   globalRole: "USER",
   language: "bg",
-  referralCode: null,
-  referredByCode: null,
   createdAt: new Date("2026-01-01"),
   updatedAt: new Date("2026-01-02"),
 };
@@ -45,7 +43,7 @@ function app() {
 beforeEach(() => {
   vi.clearAllMocks();
   prismaMock.user.findUnique.mockResolvedValue({ ...USER });
-  for (const m of ["server", "serverMember", "ticket", "ticketMessage", "application", "apiKey", "auditLog", "session", "affiliateCode"]) {
+  for (const m of ["server", "serverMember", "ticket", "ticketMessage", "application", "apiKey", "auditLog", "session"]) {
     prismaMock[m].findMany.mockResolvedValue([]);
     prismaMock[m].deleteMany.mockResolvedValue({ count: 0 });
     prismaMock[m].updateMany.mockResolvedValue({ count: 0 });

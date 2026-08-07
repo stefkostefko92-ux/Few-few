@@ -706,7 +706,7 @@ export default {
   "privacy.deleteFailed": "Deletion failed",
   "privacy.exportTitle": "Export your data",
   "privacy.exportDesc": "Article 15 (right of access) + Article 20 (data portability). Download a JSON file containing all personal data we hold about you.",
-  "privacy.exportIncludes": "Includes: profile, servers you manage, tickets, applications, API keys, affiliate codes, audit log entries.",
+  "privacy.exportIncludes": "Includes: profile, servers you manage, tickets, applications, API keys, audit log entries.",
   "privacy.preparing": "Preparing export…",
   "privacy.downloadBtn": "Download my data (JSON)",
   "privacy.subprocessorsTitle": "Subprocessors",

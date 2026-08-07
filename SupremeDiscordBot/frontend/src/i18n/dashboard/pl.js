@@ -695,7 +695,7 @@ export default {
   "privacy.deleteFailed": "Usuwanie nie powiodło się",
   "privacy.exportTitle": "Wyeksportuj swoje dane",
   "privacy.exportDesc": "Artykuł 15 (prawo dostępu) + Artykuł 20 (przenoszenie danych). Pobierz plik JSON zawierający wszystkie dane osobowe, które przechowujemy na Twój temat.",
-  "privacy.exportIncludes": "Zawiera: profil, serwery, którymi zarządzasz, zgłoszenia, aplikacje, klucze API, kody afiliacyjne, wpisy dziennika audytu.",
+  "privacy.exportIncludes": "Zawiera: profil, serwery, którymi zarządzasz, zgłoszenia, aplikacje, klucze API, wpisy dziennika audytu.",
   "privacy.preparing": "Przygotowywanie eksportu…",
   "privacy.downloadBtn": "Pobierz moje dane (JSON)",
   "privacy.subprocessorsTitle": "Podmioty podprzetwarzające",

@@ -695,7 +695,7 @@ export default {
   "privacy.deleteFailed": "Löschung fehlgeschlagen",
   "privacy.exportTitle": "Ihre Daten exportieren",
   "privacy.exportDesc": "Artikel 15 (Auskunftsrecht) + Artikel 20 (Datenübertragbarkeit). Laden Sie eine JSON-Datei mit allen personenbezogenen Daten herunter, die wir über Sie speichern.",
-  "privacy.exportIncludes": "Enthält: Profil, von Ihnen verwaltete Server, Tickets, Bewerbungen, API-Schlüssel, Affiliate-Codes, Audit-Log-Einträge.",
+  "privacy.exportIncludes": "Enthält: Profil, von Ihnen verwaltete Server, Tickets, Bewerbungen, API-Schlüssel, Audit-Log-Einträge.",
   "privacy.preparing": "Export wird vorbereitet…",
   "privacy.downloadBtn": "Meine Daten herunterladen (JSON)",
   "privacy.subprocessorsTitle": "Unterauftragsverarbeiter",

@@ -240,10 +240,6 @@ export const getAnalyticsFunnel      = (sid) => api.get(`/analytics/${sid}/funne
 export const getAnalyticsTimeseries  = (sid, from, to, metric) =>
   api.get(`/analytics/${sid}/timeseries`, { params: { from, to, metric } }).then((r) => r.data);
 
-// ─── v2.1 Affiliate ────────────────────────────────────────────────────────
-export const getAffiliate           = () => api.get(`/affiliate/me`).then((r) => r.data);
-export const updateAffiliatePayout  = (paypalEmail) => api.patch(`/affiliate/me`, { paypalEmail }).then((r) => r.data);
-export const requestAffiliatePayout = () => api.post(`/affiliate/payout`).then((r) => r.data);
 
 // ─── v2.1 Public API keys ──────────────────────────────────────────────────
 export const getApiKeys     = (sid) => api.get(`/apikeys/${sid}/api-keys`).then((r) => r.data);

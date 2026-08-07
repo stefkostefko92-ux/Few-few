@@ -58,19 +58,6 @@ function requireStripe(req, res, next) {
 // H2 — добавя календарни месеци към дата (за прозореца на афилиейт комисионната).
 // Коректно обработва месеци с различна дължина: ако целевият месец е по-къс
 // (напр. 31 ян + 1 месец), нормализира към последния ден на месеца, а не прелива
-// в следващия.
-function addMonths(date, months) {
-  const d = new Date(date.getTime());
-  const targetMonth = d.getUTCMonth() + months;
-  const day = d.getUTCDate();
-  d.setUTCDate(1);
-  d.setUTCMonth(targetMonth);
-  const daysInTarget = new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)
-  ).getUTCDate();
-  d.setUTCDate(Math.min(day, daysInTarget));
-  return d;
-}
 
 // B4 — намиране на сървъра за subscription събитие. Първо по
 // stripeSubscriptionId; ако още не е записан (out-of-order доставка:
@@ -472,7 +459,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
-        // Целият ефект (payment log + affiliate комисионна) е в ЕДНА транзакция,
+        // Целият ефект е в ЕДНА транзакция,
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
         // Reflect the paid tier (a portal plan-change lands here as an invoice).
@@ -536,62 +523,6 @@ router.post("/webhook", requireStripe, async (req, res) => {
             },
           });
 
-          // v2.1 — Affiliate commission tracking (20% for 12 months)
-          const referral = await tx.affiliateReferral.findFirst({
-            where: { referredServerId: server.id, status: { in: ["pending", "active"] } },
-          });
-          if (referral) {
-            // H2 — прозорецът на комисионната е КАЛЕНДАРНИ 12 месеца от първото
-            // плащане, не 12*30=360 дни. addMonths коректно прескача месеци с
-            // различна дължина и високосни години.
-            const windowEnd = referral.firstPaymentAt
-              ? addMonths(referral.firstPaymentAt, 12)
-              : null;
-            if (!referral.firstPaymentAt || Date.now() < windowEnd.getTime()) {
-              // Комисионната е върху НЕТО (без ДДС). ДДС-то е държавно перо,
-              // което само минава през нас — 20% върху брутото значеше да
-              // плащаме афилиейта и върху данъка (при BG 20% inclusive:
-              // 999 бруто → 167 ДДС; 20% от бруто = 199 вместо 166 → +20%
-              // надплащане на всяка фактура).
-              //
-              // ПОЛЕ: в API 2026-06-24.dahlia скаларното `invoice.tax` е
-              // ПРЕМАХНАТО (заедно с `total_tax_amounts`) — вж. stripe SDK
-              // v22.3.0 CHANGELOG (Basil, „Remove support for … `tax`, and
-              // `total_tax_amounts` on `Invoice`" / „Add support for
-              // `total_taxes` on `CreditNote` and `Invoice`"). Заместителят
-              // `total_taxes` е МАСИВ от { amount, tax_behavior, … } —
-              // „aggregate tax information of all line items“
-              // (docs.stripe.com/api/invoices/object). Затова сумираме.
-              // Сумата важи и при двата tax_behavior: при `inclusive` (нашите
-              // цени, вж. scripts/stripe-setup.sh) данъкът е ВЪТРЕ в сумата,
-              // при `exclusive` е добавен отгоре — и в двата случая е част от
-              // amount_paid, значи се вади.
-              const taxTotal = Array.isArray(invoice.total_taxes)
-                ? invoice.total_taxes.reduce((sum, t) => sum + (t?.amount ?? 0), 0)
-                : 0;
-              // Защита срещу отрицателна база: при частично плащане/приложен
-              // кредитен баланс amount_paid може да е под пълния данък.
-              const netPaid = Math.max(0, invoice.amount_paid - taxTotal);
-              const commission = Math.floor(netPaid * 0.20); // 20% от нетото
-              await tx.affiliateReferral.update({
-                where: { id: referral.id },
-                data: {
-                  status: "active",
-                  firstPaymentAt: referral.firstPaymentAt || new Date(),
-                  lastPaymentAt: new Date(),
-                  totalEarnings: { increment: commission },
-                },
-              });
-              await tx.affiliateCode.update({
-                where: { id: referral.affiliateId },
-                data: {
-                  totalEarnings:   { increment: commission },
-                  pendingEarnings: { increment: commission },
-                  conversions:     referral.firstPaymentAt ? undefined : { increment: 1 },
-                },
-              });
-            }
-          }
         });
         break;
       }

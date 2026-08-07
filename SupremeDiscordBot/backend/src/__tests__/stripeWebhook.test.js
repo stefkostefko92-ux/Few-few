@@ -156,7 +156,6 @@ describe("invoice.paid", () => {
 
   beforeEach(() => {
     prismaMock.agency.findFirst.mockResolvedValue(null); // not an agency invoice
-    prismaMock.affiliateReferral.findFirst.mockResolvedValue(null); // no referral
   });
 
   it("grants access and syncs the plan from a mapped price", async () => {
@@ -210,57 +209,7 @@ describe("invoice.paid", () => {
     expect(prismaMock.server.update).not.toHaveBeenCalled();
   });
 
-  // Комисионната е върху НЕТО. ДДС-то само минава през нас — 20% върху брутото
-  // значи да плащаме афилиейта и върху държавното перо.
-  it("pays the affiliate 20% of the NET amount (invoice.total_taxes subtracted)", async () => {
-    prismaMock.server.findFirst.mockResolvedValue({
-      id: "s3", stripeCustomerId: "cus_1", plan: "premium", premiumSince: new Date(),
-    });
-    prismaMock.affiliateReferral.findFirst.mockResolvedValue({
-      id: "ref1", affiliateId: "aff1", firstPaymentAt: null,
-    });
 
-    const event = invoiceEvent();
-    // €9.99 с ВКЛЮЧЕНО 20% ДДС (tax_behavior=inclusive, вж. stripe-setup.sh):
-    // бруто 999, ДДС 167 → нето 832 → комисионна floor(832*0.20) = 166.
-    // Върху брутото щеше да е 199 — 20% надплащане на всяка фактура.
-    event.data.object.total_taxes = [{ amount: 167, tax_behavior: "inclusive" }];
-
-    const res = await post(event);
-
-    expect(res.status).toBe(200);
-    expect(prismaMock.affiliateReferral.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ totalEarnings: { increment: 166 } }),
-      })
-    );
-    expect(prismaMock.affiliateCode.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          totalEarnings: { increment: 166 },
-          pendingEarnings: { increment: 166 },
-        }),
-      })
-    );
-  });
-
-  it("falls back to the gross amount when total_taxes is absent (no tax collected)", async () => {
-    prismaMock.server.findFirst.mockResolvedValue({
-      id: "s4", stripeCustomerId: "cus_1", plan: "premium", premiumSince: new Date(),
-    });
-    prismaMock.affiliateReferral.findFirst.mockResolvedValue({
-      id: "ref2", affiliateId: "aff2", firstPaymentAt: null,
-    });
-
-    const res = await post(invoiceEvent()); // няма total_taxes
-
-    expect(res.status).toBe(200);
-    expect(prismaMock.affiliateReferral.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ totalEarnings: { increment: 199 } }), // floor(999*0.2)
-      })
-    );
-  });
 });
 
 describe("invoice.payment_failed", () => {

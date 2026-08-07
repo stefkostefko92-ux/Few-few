@@ -695,7 +695,7 @@ export default {
   "privacy.deleteFailed": "Eliminazione non riuscita",
   "privacy.exportTitle": "Esporta i tuoi dati",
   "privacy.exportDesc": "Articolo 15 (diritto di accesso) + Articolo 20 (portabilità dei dati). Scarica un file JSON contenente tutti i dati personali che conserviamo su di te.",
-  "privacy.exportIncludes": "Include: profilo, server che gestisci, ticket, candidature, chiavi API, codici affiliato, voci del registro di audit.",
+  "privacy.exportIncludes": "Include: profilo, server che gestisci, ticket, candidature, chiavi API, voci del registro di audit.",
   "privacy.preparing": "Preparazione dell'esportazione…",
   "privacy.downloadBtn": "Scarica i miei dati (JSON)",
   "privacy.subprocessorsTitle": "Subresponsabili del trattamento",

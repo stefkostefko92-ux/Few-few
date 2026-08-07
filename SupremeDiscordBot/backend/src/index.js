@@ -54,14 +54,12 @@ import botV18Router from "./routes/bot_v18.js";
 import webhooksRouter from "./routes/webhooks.js";
 import automationRouter from "./routes/automation.js";
 import trialRouter from "./routes/trial.js";
-import affiliateRouter from "./routes/affiliate.js";
 import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
 import archiveRouter from "./routes/archive.js";
 import apikeysRouter from "./routes/apikeys.js";
 import v1Router from "./routes/v1.js";
-import referralRouter from "./routes/referral.js";
 import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
 import reactionRolesRouter from "./routes/reactionroles.js";
@@ -222,7 +220,6 @@ app.use("/api/verification", verificationRouter);
 app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/schedule bot endpoints
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
 app.use("/api/trial", trialRouter);           // v2.0 Premium trial system
-// app.use("/api/affiliate", affiliateRouter); // ИЗКЛЮЧЕН за launch — програмата не начислява комисионни (одит C1/C2)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)
 app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashboard-authed)
@@ -233,7 +230,6 @@ app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript v
 // apiKeyManagementRouter on the same path. The file is kept solely for
 // its `requireApiKey` middleware export, used by v1.js.
 app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
-// app.use("/api/referral", referralRouter);  // ИЗКЛЮЧЕН за launch — счупена/дублирана affiliate система (одит C2)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
 
 // ── webhooksRouter е ПОСЛЕДЕН, и това е СЪЩЕСТВЕНО ──────────────────────────
