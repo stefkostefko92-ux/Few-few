@@ -15,6 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { listDumps, restorePreviewSpec, resticConfigured } from './backups.js';
+import { plural } from './text.js';
 
 const STATE = 'drill.json';
 const DAY_MS = 24 * 3600000;
@@ -146,8 +147,8 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
       out.push({
         key: 'backup:stale',
         severity: age.ageDays > maxAgeDays * 3 ? 'critical' : 'warning',
-        title: `Бекъпът е на ${age.ageDays} дни`,
-        body: `Най-новият е „${age.newest}" от ${age.at} (праг ${maxAgeDays} дни). Ако задачата е спряла, ще разбереш чак в деня, в който ти трябва.`,
+        title: `Бекъпът е на ${plural(age.ageDays, 'ден', 'дни')}`,
+        body: `Най-новият е „${age.newest}" от ${age.at} (праг ${plural(maxAgeDays, 'ден', 'дни')}). Ако задачата е спряла, ще разбереш чак в деня, в който ти трябва.`,
         sustain: false,
         repeatEvery: DAY_MS,
       });
@@ -183,8 +184,8 @@ export function backupChecks(cfg, drillStore, now = Date.now()) {
         out.push({
           key: 'backup:drill-old',
           severity: 'warning',
-          title: `От ${Math.round(days)} дни няма успешна проба за възстановяване`,
-          body: `Каданс ${interval} дни. Бекъп, който никога не си възстановявал, е обещание, не гаранция.`,
+          title: `От ${plural(Math.round(days), 'ден', 'дни')} няма успешна проба за възстановяване`,
+          body: `Каданс ${plural(interval, 'ден', 'дни')}. Бекъп, който никога не си възстановявал, е обещание, не гаранция.`,
           sustain: false,
         repeatEvery: DAY_MS,
         });

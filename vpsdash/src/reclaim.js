@@ -22,6 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { run } from './exec.js';
+import { plural } from './text.js';
 
 // ЗАТВОРЕН списък. Нов ред тук е съзнателно решение, не конфигурация — иначе
 // това става „изтрий произволен път като root" с приятен интерфейс (същата
@@ -230,7 +231,7 @@ async function danglingImages() {
     title: 'Висящи Docker образи',
     why: 'Слоеве без таг, останали от предишни билдове. Никой контейнер не ги ползва. Томовете и спрените контейнери НЕ се пипат.',
     bytes: 0,
-    human: human || `${ids.length} образа`,
+    human: human || `${plural(ids.length, 'образ', 'образа')}`,
     count: ids.length,
     safety: 'safe',
     sudo: false,

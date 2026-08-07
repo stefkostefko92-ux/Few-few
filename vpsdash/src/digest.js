@@ -18,6 +18,7 @@
 //    навън са на един език (същата граница като при алармите).
 import fs from 'node:fs';
 import path from 'node:path';
+import { plural } from './text.js';
 
 const STATE = 'digest.json';
 const HOUR_MS = 3600000;
@@ -58,7 +59,7 @@ export function composeDigest(d) {
   if (d.backup) {
     const b = d.backup;
     if (!b.hasBackup) lines.push('❌ Бекъп: НЯМА нито един дъмп.');
-    else lines.push(`${b.ageDays <= (b.maxAgeDays ?? 2) ? '✅' : '❌'} Бекъп: най-новият е на ${b.ageDays} дни${b.lastDrillOkDays != null ? `, последна успешна проба преди ${b.lastDrillOkDays} дни` : ', проба за възстановяване няма'}.`);
+    else lines.push(`${b.ageDays <= (b.maxAgeDays ?? 2) ? '✅' : '❌'} Бекъп: най-новият е на ${plural(b.ageDays, 'ден', 'дни')}${b.lastDrillOkDays != null ? `, последна успешна проба преди ${plural(b.lastDrillOkDays, 'ден', 'дни')}` : ', проба за възстановяване няма'}.`);
     if (b.offsiteEnabled) lines.push(`   · копия на другия VPS: включено${b.offsiteShipped ? ` (изнесени ${b.offsiteShipped})` : ''}`);
     else lines.push('   · offsite изнасяне: ИЗКЛЮЧЕНО (бекъп на същия диск не е бекъп)');
   }
@@ -78,12 +79,12 @@ export function composeDigest(d) {
 
   // Дискове: само тези с прогноза или над прага.
   for (const disk of (d.disks || []).slice(0, 3)) {
-    lines.push(`⚠ Диск ${disk.mount}: ${disk.usePercent}%${disk.etaDays ? `, пълен след ~${disk.etaDays} дни` : ''}.`);
+    lines.push(`⚠ Диск ${disk.mount}: ${disk.usePercent}%${disk.etaDays ? `, пълен след ~${plural(disk.etaDays, 'ден', 'дни')}` : ''}.`);
   }
 
   // Чакащи неща с краен срок.
   if (d.updates?.security > 0) lines.push(`⚠ Ъпдейти за сигурност: ${d.updates.security} чакат.`);
-  for (const cert of (d.expiring || []).slice(0, 3)) lines.push(`⚠ ${cert.what} изтича след ${cert.daysLeft} дни (${cert.name}).`);
+  for (const cert of (d.expiring || []).slice(0, 3)) lines.push(`⚠ ${cert.what} изтича след ${plural(cert.daysLeft, 'ден', 'дни')} (${cert.name}).`);
 
   lines.push(`— панелът е жив; проверки на всеки ${d.checkIntervalSec ?? 60}s, това е седмичният пулс към теб.`);
   return lines.join('\n');

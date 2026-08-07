@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { run } from './exec.js';
+import { plural } from './text.js';
 
 const WEIGHTS = { critical: 25, high: 12, medium: 6, low: 2 };
 
@@ -111,7 +112,7 @@ export async function posture() {
     add({
       id: 'exposed-ports',
       severity: 'high',
-      title: `${notExpected.length} услуги слушат на всички интерфейси`,
+      title: `${plural(notExpected.length, 'услуга', 'услуги')} слушат на всички интерфейси`,
       why: `${notExpected.map((e) => `${e.proc} на ${e.local}`).join(', ')}. Приложение, вързано на 0.0.0.0, е достъпно отвън дори да мислиш, че е зад Nginx.`,
       fix: 'Върни ги на 127.0.0.1 (в конфига на приложението/compose: „127.0.0.1:3000:3000") и ги пускай само през reverse proxy.',
     });
@@ -132,7 +133,7 @@ export async function posture() {
         id: 'nopasswd',
         severity: 'medium',
         title: 'Има sudo без парола (NOPASSWD)',
-        why: `${lines.length} правила. Всеки процес на този потребител става root без нито едно доказване.`,
+        why: `${plural(lines.length, 'правило', 'правила')}. Всеки процес на този потребител става root без нито едно доказване.`,
         fix: 'Прегледай /etc/sudoers.d/ и махни NOPASSWD, където не е нужно (typично остава само за конкретна команда).',
       });
     }

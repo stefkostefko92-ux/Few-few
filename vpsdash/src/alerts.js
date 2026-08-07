@@ -25,6 +25,7 @@ import { Guardians } from './guardians.js';
 import { aptHealth, aptConditions } from './apthealth.js';
 import { composeDigest, DigestSchedule } from './digest.js';
 import { backupAge } from './drill.js';
+import { plural } from './text.js';
 
 // Колко пъти подред се опитва наново, преди да се върнем към нормалния ритъм.
 // Три опита по каданс покриват мрежово трепване; повече е спам към мъртъв канал.
@@ -444,7 +445,7 @@ export class AlertEngine {
             key: `cert:${c.domain}`,
             severity: c.daysLeft <= 3 ? 'critical' : 'warning',
             title: 'TLS сертификат изтича',
-            body: `${c.domain} изтича след ${c.daysLeft} дни (${c.expiresAt})`,
+            body: `${c.domain} изтича след ${plural(c.daysLeft, 'ден', 'дни')} (${c.expiresAt})`,
             sustain: false,
             // Хоризонт седмици → напомняне веднъж на ден. При плоския час това
             // бяха 336 критични съобщения за един изтичащ сертификат.
@@ -694,7 +695,7 @@ export class AlertEngine {
         out.push({
           key: `domain:${name}`,
           severity: info.daysLeft <= 7 ? 'critical' : 'warning',
-          title: `Регистрацията на ${name} изтича след ${info.daysLeft} дни`,
+          title: `Регистрацията на ${name} изтича след ${plural(info.daysLeft, 'ден', 'дни')}`,
           body: `Изтича на ${info.expiresAt}. Сертификатът не помага — при изтекъл домейн сайтът просто изчезва, а връщането е скъпо и бавно.`,
           sustain: false,
           repeatEvery: 24 * 3600000,
@@ -752,7 +753,7 @@ export class AlertEngine {
       severity: 'critical',
       title: 'Известията не стигат до никого',
       body:
-        `Последното известие (${new Date(h.ts).toLocaleString('bg-BG')}) не мина по нито един от ${h.attempted} канала: ` +
+        `Последното известие (${new Date(h.ts).toLocaleString('bg-BG')}) не мина по нито един от ${plural(h.attempted, 'канал', 'канала')}: ` +
         `${(h.failures || []).join(', ') || 'без подробности'}. Този панел е единственото място, където виждаш алармите.`,
       sustain: false,
     });

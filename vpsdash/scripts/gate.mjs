@@ -22,6 +22,8 @@ const CHECKS = [
   { id: 'peer', why: 'мъртъв · бавен · лъжещ · враждебен съсед', cmd: ['node', 'scripts/peer-audit.mjs'] },
   { id: 'volume', why: 'реални обеми: 100k одит + 30k точки история', cmd: ['node', 'scripts/volume-audit.mjs'] },
   { id: 'docs', why: 'документите срещу реалността: пътища · команди · домейн · секции', cmd: ['node', 'scripts/docs-audit.mjs'] },
+  { id: 'wiring', why: 'връзките: мъртви маршрути, липсващи икони, дублирани преводи', cmd: ['node', 'scripts/wiring-audit.mjs'] },
+  { id: 'text', why: 'текстът: съгласуване по число, терминология, речник', cmd: ['node', 'scripts/text-audit.mjs'] },
   { id: 'degraded', why: 'машина без инструменти: гърми ли, лъже ли с „нула проблема"', cmd: ['node', 'scripts/degraded-audit.mjs'] },
   { id: 'corrupt', why: 'повредени собствени файлове: вдига ли се и казва ли го', cmd: ['node', 'scripts/corrupt-audit.mjs'] },
   { id: 'sweep', why: 'браузърна обиколка на 37-те секции × 3 езика', cmd: ['node', 'scripts/ui-sweep.mjs'], browser: true },

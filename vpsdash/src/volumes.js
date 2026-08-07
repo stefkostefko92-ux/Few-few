@@ -21,6 +21,7 @@ import fs from 'node:fs';
 import { run } from './exec.js';
 import { DUMP_DIR } from './databases.js';
 import { assertDockerName } from './docker.js';
+import { plural } from './text.js';
 
 // Томове, чието СЪДЪРЖАНИЕ не бива да се архивира суров tar — за тях има
 // логически дъмп, който е последователен.
@@ -178,7 +179,7 @@ export function backupAllVolumesSpec(items) {
     `mkdir -p ${DUMP_DIR}`,
     'TS=$(date +%Y%m%d-%H%M%S)',
     'rc=0',
-    `echo "▸ ${worth.length} тома/папки за архивиране…"`,
+    `echo "▸ ${plural(worth.length, 'том', 'тома')}/папки за архивиране…"`,
   ];
   for (const i of worth) {
     if (i.type === 'volume') {
@@ -205,7 +206,7 @@ export function backupAllVolumesSpec(items) {
   }
   lines.push(`ls -lh ${DUMP_DIR} | tail -20`, 'exit $rc');
   return {
-    title: `Архив на ${worth.length} тома/папки`,
+    title: `Архив на ${plural(worth.length, 'том', 'тома')}/папки`,
     cmd: 'bash',
     args: ['-c', lines.join('\n')],
     exclusive: 'backup',

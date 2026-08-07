@@ -26,6 +26,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseNetDevPerIface } from './kernel.js';
+import { plural } from './text.js';
 
 const STATE = 'traffic.json';
 const KEEP_MONTHS = 13;
@@ -215,7 +216,7 @@ export function trafficChecks(cfg, store, now = Date.now()) {
       title: `Квотата за трафик е МИНАТА (${s.usedPct}%)`,
       body:
         `${label} трафик ${fmtTB(s.used)} от ${fmtTB(s.quotaBytes)} за ${s.month}. Оттук нататък всеки байт се ` +
-        `таксува отделно. Остават ${s.daysLeft} дни до нулиране.`,
+        `таксува отделно. Остават ${plural(s.daysLeft, 'ден', 'дни')} до нулиране.`,
       sustain: false,
       repeatEvery: 24 * 3600000,
     });
@@ -239,7 +240,7 @@ export function trafficChecks(cfg, store, now = Date.now()) {
       key: 'traffic:quota',
       severity: 'warning',
       title: `${s.usedPct}% от квотата за трафик`,
-      body: `${label} трафик ${fmtTB(s.used)} от ${fmtTB(s.quotaBytes)}, остават ${s.daysLeft} дни до нулиране.`,
+      body: `${label} трафик ${fmtTB(s.used)} от ${fmtTB(s.quotaBytes)}, остават ${plural(s.daysLeft, 'ден', 'дни')} до нулиране.`,
       sustain: false,
       repeatEvery: 24 * 3600000,
     });

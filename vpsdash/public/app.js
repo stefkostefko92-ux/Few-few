@@ -1,6 +1,6 @@
 // Carbon Stealth VPS Dashboard — клиент (vanilla ES modules, нула зависимости).
 import {
-  el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml, pctHtml, memPctOf,
+  el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml, pctHtml, memPctOf, plural,
   registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
 } from './ui.js';
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
@@ -88,6 +88,7 @@ function askSudo() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         if (data.usedRecovery) toast(`Използва се резервен код — остават ${data.recoveryLeft}`, 'warn');
+        startSudoCountdown(data.until || Date.now() + (data.remainingMs || 0));
         finish(true);
       } catch (e) {
         err.textContent = e.message;
@@ -108,6 +109,49 @@ function askSudo() {
     pass.focus();
   });
   return sudoPending;
+}
+
+// ── Живо състояние на повишените права ───────────────────────────────────────
+// Даваш парола за ЕДНО действие и оставаш с отключен панел още пет минути. Дотук
+// това беше невидимо: нищо на екрана не казваше, че браузърът ти в момента може
+// да изключи сървъра без да пита. А маршрутът за отказване съществуваше от
+// самото начало — просто нямаше как да се стигне до него.
+let sudoTimer = null;
+function startSudoCountdown(until) {
+  const badge = document.getElementById('sudo-badge');
+  const left = document.getElementById('sudo-left');
+  if (!badge || !left) return;
+  clearInterval(sudoTimer);
+  const tick = () => {
+    const ms = until - Date.now();
+    if (ms <= 0) {
+      badge.classList.add('hidden');
+      clearInterval(sudoTimer);
+      sudoTimer = null;
+      return;
+    }
+    const s = Math.ceil(ms / 1000);
+    left.textContent = `${t('отключено')} ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    badge.classList.remove('hidden');
+  };
+  tick();
+  sudoTimer = setInterval(tick, 1000);
+}
+
+function wireSudoLock() {
+  const btn = document.getElementById('sudo-lock');
+  if (!btn) return;
+  btn.onclick = async () => {
+    try {
+      await api('/sudo/revoke', { method: 'POST' });
+      clearInterval(sudoTimer);
+      sudoTimer = null;
+      document.getElementById('sudo-badge')?.classList.add('hidden');
+      toast('Заключено — следващото необратимо действие ще поиска парола отново.', 'ok');
+    } catch (e) {
+      toast(e.message, 'bad');
+    }
+  };
 }
 
 function sseUrl(pathname) {
@@ -495,10 +539,10 @@ async function renderOverview() {
     state.range = rangeSel.value;
     go('overview');
   };
-  view.appendChild(el('div', { class: 'toolbar' }, [rangeSel, el('span', { class: 'muted', text: `${state.hist.length} точки (пазят се 7 дни на диска)` })]));
+  view.appendChild(el('div', { class: 'toolbar' }, [rangeSel, el('span', { class: 'muted', text: `${plural(state.hist.length, 'точка', 'точки')} (пазят се 7 дни на диска)` })]));
   view.appendChild(
     el('div', { class: 'grid grid-metrics' }, [
-      metricCard('CPU', 'cpu', pctHtml(m.cpuPct), `${info.cpus} ядра · load ${m.load.map((x) => x.toFixed(2)).join(' ')}`),
+      metricCard('CPU', 'cpu', pctHtml(m.cpuPct), `${plural(info.cpus, 'ядро', 'ядра')} · load ${m.load.map((x) => x.toFixed(2)).join(' ')}`),
       metricCard('Памет', 'mem', pctHtml(memPctOf(m.mem)), `${fmtBytes(m.mem.used)} / ${fmtBytes(m.mem.total)}`),
       metricCard('Мрежа ▼', 'rx', fmtBps(m.net.rxBps), `качване ▲ ${fmtBps(m.net.txBps)}`),
       metricCard('Диск', 'disk', `${Math.max(0, ...m.disks.map((d) => d.usePercent))}<small>%</small>`, m.disks.map((d) => `${d.mount} ${d.usePercent}%`).join(' · ')),
@@ -571,7 +615,10 @@ function pushHist(snap) {
 }
 
 function metricCard(title, key, valHtml, sub) {
-  return el('div', { class: 'card' }, [
+  // Собствен клас: живите плочки се държат различно от обикновените карти
+  // (издигат се при посочване, числото носи сияние). Без него ефектът щеше да
+  // важи за ВСЯКА карта, включително дългите текстови — там е шум.
+  return el('div', { class: 'card metric-card' }, [
     el('div', { class: 'card-head' }, [el('h3', { text: title })]),
     el('div', { class: 'metric-val', id: `mc-${key}`, html: valHtml }),
     el('canvas', { class: 'spark', id: `spark-${key}` }),
@@ -808,7 +855,7 @@ function renderProbeResults(container, results, note) {
             el('td', {}, [
               r.tls
                 ? pill(r.tls.authorized === false ? 'bad' : r.tls.minDaysLeft <= 14 ? 'warn' : 'ok',
-                    r.tls.authorized === false ? 'невалиден' : `${r.tls.minDaysLeft} дни`)
+                    r.tls.authorized === false ? 'невалиден' : `${plural(r.tls.minDaysLeft, 'ден', 'дни')}`)
                 : el('span', { class: 'muted', text: '—' }),
             ]),
           ])
@@ -891,7 +938,7 @@ async function renderDiagnostics() {
   view.appendChild(el('h3', { class: 'muted', text: 'Прогнози', style: 'margin:22px 0 10px' }));
   view.appendChild(
     el('div', { class: 'card' }, [
-      el('div', { class: 'metric-sub', text: `Върху ${f.basedOnPoints} точки история. Мълчи, ако трендът не е статистически значим — по-добре нищо, отколкото фалшива тревога.` }),
+      el('div', { class: 'metric-sub', text: `Върху ${plural(f.basedOnPoints, 'точка', 'точки')} история. Мълчи, ако трендът не е статистически значим — по-добре нищо, отколкото фалшива тревога.` }),
       el('div', { class: 'table-wrap' }, [
         tableEl(['Дял', 'Прогноза', 'Темп', 'Основа'], (f.disks || []).map((d) =>
           el('tr', {}, [
@@ -902,7 +949,7 @@ async function renderDiagnostics() {
                 : el('span', { class: 'muted', text: d.reason || '—' }),
             ]),
             el('td', { class: 'mono', text: d.ok && d.slopePerDay != null ? `${d.slopePerDay.toFixed(2)} %/ден` : '—' }),
-            el('td', { class: 'muted', text: `${d.points} точки` }),
+            el('td', { class: 'muted', text: `${plural(d.points, 'точка', 'точки')}` }),
           ])
         )),
       ]),
@@ -1209,7 +1256,7 @@ async function renderAlerts() {
       el('div', { class: 'toolbar' }, [thRow('cpuPct', 'CPU', '%'), thRow('memPct', 'Памет', '%')]),
       el('div', { class: 'metric-sub', style: 'margin-top:8px', text: 'Грешки от РЕАЛНИЯ трафик (access log). Пробата пита един адрес и вижда 200; потребителите в същия момент може да получават 500 на плащането.' }),
       el('div', { class: 'toolbar' }, [alRow('errorPct', 'Дял 5xx', '%'), alRow('minRequests', 'Минимум заявки', 'бр.')]),
-      el('div', { class: 'metric-sub', text: `Праг трябва да се задържи ${a.sustainSamples} проверки (на ${a.checkIntervalSec}s); повторно известие най-рано след ${a.cooldownMin} мин.` }),
+      el('div', { class: 'metric-sub', text: `Праг трябва да се задържи ${plural(a.sustainSamples, 'проверка', 'проверки')} (на ${a.checkIntervalSec}s); повторно известие най-рано след ${a.cooldownMin} мин.` }),
       el('div', { class: 'toolbar' }, [el('button', { class: 'btn btn-primary btn-sm', text: 'Запази праговете', onclick: async (e) => {
         e.target.disabled = true;
         const thresholds = {};
@@ -1324,7 +1371,7 @@ function monitorHealthCard(h) {
         class: 'metric-sub',
         style: n.delivered ? '' : 'color:var(--danger)',
         text: n.delivered
-          ? `Последно известие: доставено по ${n.delivered} от ${n.attempted} канала.`
+          ? `Последно известие: доставено по ${n.delivered} от ${plural(n.attempted, 'канал', 'канала')}.`
           : `⚠ Последното известие НЕ стигна до никого (${(n.failures || []).join(', ') || 'без подробности'}).`,
       })
     );
@@ -1676,7 +1723,7 @@ async function renderServices() {
           el('td', { class: 'mono', text: s.unit }),
           el('td', {}, [pill(s.active === 'active' ? 'ok' : s.active === 'failed' ? 'bad' : 'dim', s.sub || s.active)]),
           // Памет по cgroup — стабилна през рестартите на процеса, за разлика от ps.
-          el('td', { class: 'mono', text: s.memoryBytes != null ? fmtBytes(s.memoryBytes) : '—', title: s.oomKills ? `убит от OOM ${s.oomKills} пъти` : '' }),
+          el('td', { class: 'mono', text: s.memoryBytes != null ? fmtBytes(s.memoryBytes) : '—', title: s.oomKills ? `убит от OOM ${plural(s.oomKills, 'път', 'пъти')}` : '' }),
           el('td', { text: s.enabled || '—' }),
           el('td', { class: 'muted', text: (s.description || '').slice(0, 60) }),
           el('td', {}, [
@@ -2555,7 +2602,7 @@ async function renderPorts() {
   acceptBtn.onclick = async () => {
     if (!confirm(`Приемам ${c.изложени} изложени порта за нормални.\n\nСлед това всеки НОВО изложен порт вдига аларма.`)) return;
     acceptBtn.disabled = true;
-    try { const r = await api('/ports/accept', { method: 'POST' }); toast(`Приети ${r.accepted.length} порта като база`); go('ports'); }
+    try { const r = await api('/ports/accept', { method: 'POST' }); toast(`Приети ${plural(r.accepted.length, 'порт', 'порта')} като база`); go('ports'); }
     catch (e) { toast(e.message, 'bad'); acceptBtn.disabled = false; }
   };
   view.appendChild(
@@ -3514,7 +3561,7 @@ async function renderUpdates() {
     view.appendChild(el('div', { class: 'empty', text: 'apt недостъпен на този сървър.' }));
     return;
   }
-  view.appendChild(el('p', { class: 'section-desc', text: `${data.packages.length} пакета за ъпдейт` }));
+  view.appendChild(el('p', { class: 'section-desc', text: `${plural(data.packages.length, 'пакет', 'пакета')} за ъпдейт` }));
   view.appendChild(
     el('div', { class: 'table-wrap' }, [
       tableEl(['Пакет', 'Текуща', 'Нова', 'Канал'], data.packages.map((p) =>
@@ -3547,7 +3594,7 @@ async function renderSecurity() {
           pill(kind, `${post.score}/100 · ${post.grade}`),
         ]),
         barEl(post.score),
-        el('div', { class: 'metric-sub', text: `${post.problems.length} находки от ${post.checks} проверки. ${post.note}` }),
+        el('div', { class: 'metric-sub', text: `${post.problems.length} находки от ${plural(post.checks, 'проверка', 'проверки')}. ${post.note}` }),
         ...post.problems.map((p) =>
           el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'danger' : p.severity === 'high' ? 'warn' : 'txt-dim') + ')' }, [
             el('div', {}, [pill(p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim', p.severity), document.createTextNode(' '), el('strong', { text: p.title })]),
@@ -3581,7 +3628,7 @@ async function renderSecurity() {
                 el('tr', {}, [
                   el('td', { class: 'mono', text: c.domain }),
                   el('td', { class: 'muted', text: fmtWhen(c.expiresAt) }),
-                  el('td', {}, [pill(c.daysLeft > 20 ? 'ok' : c.daysLeft > 7 ? 'warn' : 'bad', `${c.daysLeft ?? '?'} дни`)]),
+                  el('td', {}, [pill(c.daysLeft > 20 ? 'ok' : c.daysLeft > 7 ? 'warn' : 'bad', `${plural(c.daysLeft ?? '?', 'ден', 'дни')}`)]),
                 ])
               )),
             ])
@@ -3791,7 +3838,7 @@ function volumeRestoreCard(archives, vols) {
     el('div', { class: 'card', style: 'margin-bottom:16px' }, [
       el('div', { class: 'card-head' }, [
         el('h3', { text: 'Възстановяване на томове и папки' }),
-        pill('dim', `${archives.length} архива`),
+        pill('dim', `${plural(archives.length, 'архив', 'архива')}`),
       ]),
       el('div', { class: 'metric-sub', text:
         'Две стъпки, като при базите: „преглед" показва съдържанието, без да пипа нищо; „възстанови" прави защитна ' +
@@ -3828,7 +3875,7 @@ function panelBackupCard(panel) {
   return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
     el('div', { class: 'card-head' }, [
       el('h3', { text: 'Бекъп на самия панел' }),
-      pill(panel.backups.length ? 'ok' : 'warn', panel.backups.length ? `${panel.backups.length} архива` : 'още няма'),
+      pill(panel.backups.length ? 'ok' : 'warn', panel.backups.length ? `${plural(panel.backups.length, 'архив', 'архива')}` : 'още няма'),
     ]),
     el('div', { class: 'metric-sub', text:
       'Конфигът (паролата, peer токенът, каналите — тайни, които не съществуват никъде другаде) и паметта на панела ' +
@@ -3888,12 +3935,12 @@ async function renderBackups() {
         el('div', { class: 'card' }, [
           el('div', { class: 'card-head' }, [
             el('h3', { text: 'Възраст на бекъпа' }),
-            pill(ageKind, age.hasBackup ? `${age.ageDays} дни` : 'НЯМА'),
+            pill(ageKind, age.hasBackup ? `${plural(age.ageDays, 'ден', 'дни')}` : 'НЯМА'),
           ]),
           el('div', { class: 'metric-sub', text: age.hasBackup
             ? `Най-нов: ${age.newest} · ${fmtBytes(age.sizeBytes)} · ${fmtWhen(age.at)}`
             : 'В папката с дъмпове няма нищо. Спрял крон не вдига грешка сам — затова се следи възрастта.' }),
-          el('div', { class: 'metric-sub', text: `Праг за аларма: ${h.maxAgeDays} дни.` }),
+          el('div', { class: 'metric-sub', text: `Праг за аларма: ${plural(h.maxAgeDays, 'ден', 'дни')}.` }),
           age.suspiciouslySmall
             ? el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: '⚠ Файлът е практически празен — по-опасно от липсващ, защото изглежда като успех.' })
             : '',
@@ -3901,12 +3948,12 @@ async function renderBackups() {
         el('div', { class: 'card' }, [
           el('div', { class: 'card-head' }, [
             el('h3', { text: 'Проба за възстановяване' }),
-            pill(drillKind, h.lastOkAt ? `преди ${h.lastOkAgeDays} дни` : 'никога'),
+            pill(drillKind, h.lastOkAt ? `преди ${plural(h.lastOkAgeDays, 'ден', 'дни')}` : 'никога'),
           ]),
           el('div', { class: 'metric-sub', text:
             'Бекъп, който никога не си възстановявал, е обещание, не гаранция. Пробата разопакова най-новия дъмп в /tmp, ' +
             'проверява целостта и брои таблиците — живото остава недокоснато.' }),
-          el('div', { class: 'metric-sub', text: `Каданс: на ${h.drillIntervalDays} дни${h.due ? ' · дължи се сега' : ''}.` }),
+          el('div', { class: 'metric-sub', text: `Каданс: на ${plural(h.drillIntervalDays, 'ден', 'дни')}${h.due ? ' · дължи се сега' : ''}.` }),
           h.lastResult && !h.lastResult.ok
             ? el('div', { class: 'metric-sub', style: 'color:var(--danger)', text: `⚠ Последната проба се провали (${fmtWhen(h.lastResult.ts)}).` })
             : '',
@@ -4482,7 +4529,7 @@ function quotaCard(q) {
     )),
     q.quotaBytes
       ? el('div', { class: 'metric-sub', text:
-          `Изминали ${q.monthFraction}% от месеца, остават ${q.daysLeft} дни. ` +
+          `Изминали ${q.monthFraction}% от месеца, остават ${plural(q.daysLeft, 'ден', 'дни')}. ` +
           (q.warmedUp
             ? `Прогноза за края: ${fmtBytes(q.projected)} (${q.projectedPct}%)` +
               (q.quotaAtDay ? ` · квотата пада на ${q.quotaAtDay}-о число.` : ' · квотата не се стига този месец.')
@@ -4651,7 +4698,7 @@ async function renderIntegrity() {
       if (!ok) return;
       try {
         const r = await api('/security/integrity/baseline', { method: 'POST' });
-        toast(`Отпечатък от ${r.count} файла`, 'ok');
+        toast(`Отпечатък от ${plural(r.count, 'файл', 'файла')}`, 'ok');
         go('integrity');
       } catch (e) { toast(e.message, 'bad'); }
     },
@@ -4669,7 +4716,7 @@ async function renderIntegrity() {
   view.appendChild(
     el('div', { class: 'card' }, [
       el('div', { class: 'card-head' }, [
-        el('h3', { text: `Отпечатък от ${fmtWhen(d.takenAt)} · ${d.tracked} файла` }),
+        el('h3', { text: `Отпечатък от ${fmtWhen(d.takenAt)} · ${plural(d.tracked, 'файл', 'файла')}` }),
         pill(d.clean ? 'ok' : 'warn', d.clean ? 'няма промени' : `${total} промени`),
       ]),
       d.clean
@@ -4963,7 +5010,7 @@ async function renderDomains() {
           el('td', { class: 'mono', text: c.name }),
           el('td', { class: 'mono', text: c.domains.join(', ') || '—' }),
           el('td', { text: c.expiresAt ? fmtWhen(c.expiresAt) : '—' }),
-          el('td', {}, [c.daysLeft == null ? '—' : pill(c.daysLeft <= 7 ? 'bad' : c.daysLeft <= 21 ? 'warn' : 'ok', `${c.daysLeft} дни`)]),
+          el('td', {}, [c.daysLeft == null ? '—' : pill(c.daysLeft <= 7 ? 'bad' : c.daysLeft <= 21 ? 'warn' : 'ok', `${plural(c.daysLeft, 'ден', 'дни')}`)]),
         ])
       )),
     ])
@@ -4982,7 +5029,7 @@ async function renderDomains() {
         el('td', { class: 'mono', text: d.domain }),
         el('td', { class: 'muted', text: d.expiresAt ? fmtWhen(d.expiresAt) : d.error || '—' }),
         el('td', {}, [d.daysLeft == null ? el('span', { class: 'muted', text: '—' })
-          : pill(d.daysLeft <= 7 ? 'bad' : d.daysLeft <= 30 ? 'warn' : 'ok', `${d.daysLeft} дни`)]),
+          : pill(d.daysLeft <= 7 ? 'bad' : d.daysLeft <= 30 ? 'warn' : 'ok', `${plural(d.daysLeft, 'ден', 'дни')}`)]),
         el('td', {}, [d.onHold ? pill('bad', 'HOLD') : el('span', { class: 'muted mono', text: (d.status || []).join(', ') || '—' })]),
       ])
     )));
@@ -5304,7 +5351,7 @@ async function renderAgents() {
   // Паметта на агентите е самонаучаващият се слой — ако файлът за някой агент
   // спре да расте, неговият цикъл е спрял и това не се вижда никъде другаде.
   if (mem.memories?.length) {
-    view.appendChild(el('h3', { class: 'muted', text: `Памет на агентите (${mem.memories.length} файла)`, style: 'margin:22px 0 10px' }));
+    view.appendChild(el('h3', { class: 'muted', text: `Памет на агентите (${plural(mem.memories.length, 'файл', 'файла')})`, style: 'margin:22px 0 10px' }));
     view.appendChild(
       el('div', { class: 'table-wrap' }, [
         tableEl(['Файл', 'Размер', 'Последна промяна'], mem.memories
@@ -5429,7 +5476,7 @@ async function renderAudit() {
                       const r = await api('/audit/ship/now', { method: 'POST' });
                       const okN = (r.results || []).filter((x) => x.ok).length;
                       const bad = (r.results || []).filter((x) => !x.ok);
-                      toast(bad.length ? `${okN} успешни, ${bad.length} провалени: ${bad[0].error || ''}` : `Изнесено към ${okN} възела`, bad.length ? 'warn' : 'ok');
+                      toast(bad.length ? `${okN} успешни, ${bad.length} провалени: ${bad[0].error || ''}` : `Изнесено към ${plural(okN, 'възел', 'възела')}`, bad.length ? 'warn' : 'ok');
                       go('audit');
                     } catch (err) { toast(err.message, 'bad'); e.target.disabled = false; }
                   },
@@ -5642,6 +5689,7 @@ async function boot() {
       document.querySelector('.main').prepend(bar);
     }
     buildNav();
+    wireSudoLock();
     registerCommand({
       id: 'act:refresh', scope: 'nav', label: 'Опресни текущата секция', section: 'Действия', hint: 'r',
       run: () => go(state.section),
