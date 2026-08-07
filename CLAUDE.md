@@ -16,7 +16,7 @@ file holds only what is true across all products. Keep it that way.
 |-----|---------|-------|-------|
 | `zabobovdol/` | За Бобов дол — граждански портал | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · zabobovdol.carbonstealth.eu |
 | `medqr/` | MedQR — спешен мед. профил (QR/NFC) | Express · EJS · SQLite · plain JS ESM | BG/EN · medqr.carbonstealth.eu |
-| `SupremeDiscordBot/` | Supreme Bot — Discord SaaS | Express · discord.js v14 · React 18+Vite · Prisma · PostgreSQL · Redis · Docker · plain JS ESM | supreme.carbonstealth.eu |
+| `SupremeDiscordBot/` | Supreme Bot — Discord SaaS | Express · discord.js v14 · React 18+Vite · Prisma · PostgreSQL · Redis · Docker · plain JS ESM | supremebot.carbonstealth.eu |
 | `treydar/` | Трейдъра — spot трейдинг бот (Binance) | Node · CCXT · plain JS ESM | self-hosted · риск-първо, **НЕ** инвест. съвет |
 | `Gaming/` | АСО — premium browser gaming portal | TS monorepo (`apps/api·marketing·web`) | multi-lang |
 | `Minyor/` | ФК „Миньор“ Бобов дол — клубен сайт | Next.js · React · TS · Prisma | BG |

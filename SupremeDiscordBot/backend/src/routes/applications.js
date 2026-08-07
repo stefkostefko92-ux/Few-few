@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { buildTranscript } from "../lib/appTranscript.js";
+import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 
 const router = Router();
 
@@ -135,7 +136,12 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmi
     // ─── Role application + always-DM notification ──────────────────────────
     // Applies to approve and deny. Users ALWAYS get a DM notification,
     // even if no custom acceptMessage/denyMessage is configured.
-    const form = application.form;
+    // Същият гейт като по ботовия път: авто-ролите и персонализираните DM-и са
+    // платени функции (`form.autoRoleOnReview`, `form.customDmMessages`), а се
+    // четяха сурови от базата. Свален сървър продължаваше да ги изпълнява.
+    // (Червен екип, кръг 2, 07.08.2026)
+    const { plan } = await getServerTier(application.serverId);
+    const form = sanitizeFormForTier(application.form, plan);
     if (action === "approve" || action === "deny") {
       const rolesToAdd    = action === "approve" ? (form.acceptRoleIds || []) : (form.denyRoleIds || []);
       const rolesToRemove = action === "approve" ? (form.removeRoleIds || []) : [];

@@ -971,6 +971,11 @@ router.get("/panel/:panelId", async (req, res, next) => {
       // изпълнява запазените стойности (DM при отваряне, observer роли, SLA,
       // авто-затваряне) на сървър, който вече не плаща за тях.
       sanitizePanelForTier(panel, effectivePlan);
+      // Формите ЗАД бутоните също. Санитизираше се само панелът, а това е
+      // ГОРЕЩИЯТ път: ботът чете оттук точно преди да покаже формата, значи
+      // `validationRegex` и условното разклоняване (платени функции) работеха
+      // на свален план. (Червен екип, кръг 2, 07.08.2026)
+      for (const btn of panel.buttons || []) sanitizeFormForTier(btn.form, effectivePlan);
     }
 
     // Групово съобщение: няколко панела делят един messageId. Редакцията на
@@ -991,7 +996,13 @@ router.get("/panel/:panelId", async (req, res, next) => {
       // → същият план. Санитизираме само при ЗНАЕН план (виж по-горе защо).
       if (siblings.length > 1) {
         panel.siblings = effectivePlan
-          ? siblings.map((s) => sanitizePanelForTier(s, effectivePlan))
+          ? siblings.map((sib) => {
+              sanitizePanelForTier(sib, effectivePlan);
+              // И формите зад бутоните им — иначе групираните панели са дупка,
+              // еднаква с тази в основния. (Червен екип, кръг 2)
+              for (const btn of sib.buttons || []) sanitizeFormForTier(btn.form, effectivePlan);
+              return sib;
+            })
           : siblings;
       }
     }
@@ -1131,7 +1142,11 @@ router.post("/application/:appId/review", async (req, res, next) => {
 
   try {
     const application = await prisma.application.findFirst({
-      where: { id: req.params.appId, ...(serverId && { serverId }) },
+      // Скоупът е ЗАДЪЛЖИТЕЛЕН, не по желание: и двата викащи в бота пращат
+      // `serverId` (`events/interactionCreate.js`, `commands/form.js`), затова
+      // условният вариант само отваряше врата за объркан/компрометиран бот да
+      // ревюира чужда кандидатура. (Качествения, кръг 2)
+      where: { id: req.params.appId, serverId },
       include: {
         form: { include: { questions: { orderBy: { order: "asc" } } } },
         user: true,
@@ -1168,7 +1183,13 @@ router.post("/application/:appId/review", async (req, res, next) => {
     // Grant/remove roles + DM the applicant. The Discord-button path previously
     // only changed status, so approvals granted no role and sent no notification —
     // this mirrors the dashboard review path (applications.js APPLICATION_APPLY_OUTCOME).
-    const form = application.form;
+    // Платените действия при преглед (авто-роли `form.autoRoleOnReview`,
+    // персонализиран DM `form.customDmMessages`) се четяха СУРОВИ от базата и
+    // се изпълняваха независимо от тарифата: свален сървър продължаваше да
+    // раздава Discord роли и да праща свой текст. Гейтът стоеше само при запис.
+    // (Червен екип, кръг 2, 07.08.2026)
+    const { plan } = await getServerTier(application.serverId);
+    const form = sanitizeFormForTier(application.form, plan);
     const rolesToAdd    = action === "approve" ? (form.acceptRoleIds || []) : (form.denyRoleIds || []);
     const rolesToRemove = action === "approve" ? (form.removeRoleIds || []) : [];
     const customMessage = action === "approve" ? form.acceptMessage : form.denyMessage;

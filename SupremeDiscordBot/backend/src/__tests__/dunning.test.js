@@ -76,7 +76,15 @@ describe("заседнал past_due", () => {
 });
 
 describe("v40 — изтекъл гратис след отмяна", () => {
-  it("гаси accessUntil/gracePlan и оставя одитна следа", async () => {
+  it("гаси gracePlan, но ПАЗИ accessUntil — котвата на прозореца за експорт", async () => {
+    // Промяната е нарочна (одит кръг 2, 07.08.2026): `accessUntil` вече не е
+    // само флаг за достъп, а котвата на 30-дневния прозорец за експорт
+    // (`lib/premium.js` → `inExportWindow`), обещан в `legal/DPA.md` §9.1.
+    // Зануляването тук правеше прозореца ≤24 часа — клиентът получаваше 403 на
+    // експорта и метлата почваше да трие архивите му същата нощ.
+    //
+    // Оставането е безвредно: всеки четец сравнява с датата, значи изтекла
+    // стойност не дава достъп. `gracePlan` става маркерът „вече обработен“.
     rows.expiredServers = [
       { id: "s9", accessUntil: new Date("2026-01-01"), gracePlan: "whitelabel" },
     ];
@@ -86,8 +94,20 @@ describe("v40 — изтекъл гратис след отмяна", () => {
     expect(res.graceExpired).toBe(1);
     const update = serverUpdates().at(-1);
     expect(update.where).toEqual({ id: "s9" });
-    expect(update.data).toEqual({ accessUntil: null, gracePlan: null });
+    expect(update.data).toEqual({ gracePlan: null });
+    expect(update.data, "accessUntil пак се занулява — прозорецът за експорт умира")
+      .not.toHaveProperty("accessUntil");
     expect(auditActions()).toContain("PREMIUM_GRACE_EXPIRED");
+  });
+
+  it("не избира наново вече обработените — иначе одитът се пълни всяка нощ", async () => {
+    // `accessUntil` остава, значи маркерът за „обработен“ е `gracePlan`.
+    await runDunningJob();
+    const graceQuery = prismaMock.server.findMany.mock.calls
+      .map((c) => c[0].where)
+      .find((w) => w?.accessUntil);
+    expect(graceQuery.gracePlan, "липсва маркер за обработеност → безкраен одитен спам")
+      .toHaveProperty("not", null);
   });
 
   it("търси само ИЗТЕКЛИ редове — жив гратис не се пипа", async () => {

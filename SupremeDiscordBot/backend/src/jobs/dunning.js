@@ -145,10 +145,25 @@ export async function runDunningJob() {
     // customer.subscription.deleted записва докога е платено (accessUntil), а
     // Stripe НЕ праща нищо в момента на изтичането. Без тази метла отмененият
     // клиент пази тарифата си завинаги — точно обратното на намерението.
-    // Зануляваме accessUntil/gracePlan: докато стоят, всички четци (getServerTier,
-    // effectivePremiumWhere) правят по едно сравнение с датата на всяка заявка.
+    // `accessUntil` ОСТАВА — зануляваме само `gracePlan`.
+    //
+    // ДЕФЕКТЪТ (Кодаджията + червен екип, кръг 2, 07.08.2026): преди тук се
+    // зануляваха и двете. Но `accessUntil` вече не е само флаг за достъп — той е
+    // КОТВАТА на 30-дневния прозорец за експорт (`lib/premium.js` →
+    // `inExportWindow`), а прозорецът е обещан в `legal/DPA.md` §9.1 и стои зад
+    // чл. 16(4) Дир. (ЕС) 2019/770. Зануляването при първото дневно пускане след
+    // изтичането правеше прозореца ≤24 часа: клиентът получаваше 403 на експорта
+    // и метлата почваше да трие архивите му същата нощ.
+    //
+    // Оставането е безвредно за достъпа: всеки четец сравнява с датата
+    // (`accessUntil > now` в `getServerTier`, `{ gt: now }` в
+    // `effectivePremiumWhere`), значи изтекла стойност не дава нищо. Тя е
+    // исторически факт („платено е до X"), не жив флаг.
+    //
+    // `gracePlan` става маркерът „вече обработен" — иначе същите редове щяха да
+    // се избират всяка нощ и да пълнят одитния дневник.
     const expired = await prisma.server.findMany({
-      where: { accessUntil: { not: null, lte: startedAt } },
+      where: { accessUntil: { not: null, lte: startedAt }, gracePlan: { not: null } },
       select: { id: true, accessUntil: true, gracePlan: true },
       take: 500,
     });
@@ -157,7 +172,9 @@ export async function runDunningJob() {
         await prisma.$transaction(async (tx) => {
           await tx.server.update({
             where: { id: server.id },
-            data: { accessUntil: null, gracePlan: null },
+            // `accessUntil` НЕ се зануляв — виж коментара по-горе (котва на
+            // прозореца за експорт). Само планът пада.
+            data: { gracePlan: null },
           });
           await tx.auditLog.create({
             data: {

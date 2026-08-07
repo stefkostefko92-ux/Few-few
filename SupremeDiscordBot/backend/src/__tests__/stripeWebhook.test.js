@@ -383,7 +383,17 @@ describe("charge.refunded", () => {
     });
   });
 
-  it("a partial refund keeps access (never looks up the server)", async () => {
+  it("частично връщане ПАЗИ достъпа, но оставя следа", async () => {
+    // Промяната е нарочна (червен екип, кръг 2, 07.08.2026). Преди тук се
+    // излизаше рано и НЕ се пипаше нищо — вярно за достъпа, но по-късна отмяна
+    // виждаше `stripeStatus: "active"`, минаваше през allowlist-а и подаряваше
+    // остатъка от периода. Годишен White-label: ~90 € върнати И 11 месеца
+    // безплатно. Затова сега се записва `partially_refunded` (извън allowlist-а),
+    // БЕЗ да се пипат `isPremium`/`plan` — клиентът е платил остатъка.
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({
+      id: "s1", stripeCustomerId: "cus_1", stripeSubscriptionId: "sub_1",
+    });
     const event = {
       id: "evt_cr2",
       type: "charge.refunded",
@@ -393,8 +403,11 @@ describe("charge.refunded", () => {
     const res = await post(event);
 
     expect(res.status).toBe(200);
-    expect(prismaMock.server.findFirst).not.toHaveBeenCalled();
-    expect(prismaMock.server.update).not.toHaveBeenCalled();
+    const update = prismaMock.server.update.mock.calls.at(-1)?.[0];
+    expect(update?.data).toEqual({ stripeStatus: "partially_refunded" });
+    // Достъпът НЕ се пипа — това е разликата спрямо пълното връщане.
+    expect(update?.data).not.toHaveProperty("isPremium");
+    expect(update?.data).not.toHaveProperty("plan");
   });
 });
 

@@ -16,7 +16,7 @@ import {
   updateApplicationReviewMessage,
 } from "./api.js";
 import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
-import { SUCCESS, INFO } from "./colors.js";
+import { SUCCESS, INFO, DANGER } from "./colors.js";
 
 import { sessionStore } from "./sessionStore.js";
 import { t, resolveLang } from "../i18n/index.js";
@@ -342,6 +342,29 @@ async function finishSession(client, dmChannel, session, sessionKey) {
   await sessionStore.delete(`lock:${session.userId}`);
   const lang = session.lang || "en";
 
+  // ПОТВЪРЖДАВАМЕ СЛЕД ПОДАВАНЕТО, не преди.
+  //
+  // ДЕФЕКТЪТ (Кодаджията, одит кръг 2, 07.08.2026): „Формулярът е изпратен“ се
+  // пращаше ПЪРВО, а самото подаване чак после — и ако сървърът го откажеше
+  // (затворена форма, изчерпан таван, активен cooldown — правила, за които
+  // клиентът ПЛАЩА), отказът се гълташе в общ catch. Кандидатът виждаше зелена
+  // отметка за кандидатура, която не съществува, а екипът не получаваше нищо.
+  // Платената функция работеше, а човекът срещу нея беше излъган.
+  if (session.form.isApplication || !session.panel?.categoryId) {
+    // No panel category means there is no ticket channel to create
+    // (e.g. /form spawn or /apply with a stub panel) — store the answers
+    // as a submission record so they are never silently discarded.
+    const result = await handleApplicationSubmission(client, session);
+    if (result && !result.ok) {
+      await dmChannel.send({
+        embeds: [{ title: t("form.submitFailed", lang), description: rejectionText(result, lang), color: DANGER }],
+      }).catch(() => {});
+      return;
+    }
+  } else {
+    await handleTicketFromForm(client, session);
+  }
+
   await dmChannel.send({
     embeds: [{
       title: t("form.submittedTitle", lang),
@@ -349,15 +372,6 @@ async function finishSession(client, dmChannel, session, sessionKey) {
       color: SUCCESS,
     }],
   });
-
-  if (session.form.isApplication || !session.panel?.categoryId) {
-    // No panel category means there is no ticket channel to create
-    // (e.g. /form spawn or /apply with a stub panel) — store the answers
-    // as a submission record so they are never silently discarded.
-    await handleApplicationSubmission(client, session);
-  } else {
-    await handleTicketFromForm(client, session);
-  }
 }
 
 // ─── Shared finishing path (also used by the modal submit handler — v2.9) ────
@@ -365,19 +379,25 @@ async function finishSession(client, dmChannel, session, sessionKey) {
 // send: the modal path acks with its own ephemeral confirmation instead.
 export async function submitFormAnswers(client, session) {
   if (session.form.isApplication || !session.panel?.categoryId) {
-    await handleApplicationSubmission(client, session);
-  } else {
-    await handleTicketFromForm(client, session);
+    // Връща `{ok:false, code}` при отказ по правило — викащият ТРЯБВА да го
+    // покаже, иначе кандидатът вижда потвърждение за нищо. (Одит кръг 2)
+    return handleApplicationSubmission(client, session);
   }
+  await handleTicketFromForm(client, session);
+  return { ok: true };
 }
 
 // ─── Application submission ───────────────────────────────────────────────────
 
+/**
+ * @returns {Promise<{ok:true}|{ok:false, code?:string, remainingSeconds?:number}>}
+ *   Отказът се ВРЪЩА, за да може викащият да каже на човека какво е станало.
+ */
 async function handleApplicationSubmission(client, session) {
   try {
     // Step 1: Create the application record first to get its real DB ID.
     // We pass null for reviewMessageId — we'll update it after posting the embed.
-    const application = await submitApplication(
+    const result = await submitApplication(
       session.guildId,
       session.form.id,
       session.userId,
@@ -386,19 +406,24 @@ async function handleApplicationSubmission(client, session) {
       null   // reviewChannelId updated below
     );
 
+    // Правилата на формата (затворена · cooldown · таван) са ПЛАТЕНА функция.
+    // Отказът трябва да стигне до кандидата, не до лога. (Одит кръг 2)
+    if (!result.ok) return result;
+    const application = result.application;
+
     if (!application?.id) {
       console.error("submitApplication returned no ID");
-      return;
+      return { ok: false, code: "UNKNOWN" };
     }
 
     // Step 2: Post review embed in the server using the REAL application ID.
     const reviewChannelId = session.form.reviewChannelId;
-    if (!reviewChannelId) return; // No review channel configured — application saved, no embed
+    if (!reviewChannelId) return { ok: true }; // няма канал за ревю — записана е, без embed
 
     const reviewChannel = client.channels.cache.get(reviewChannelId);
     if (!reviewChannel) {
       console.error(`Review channel ${reviewChannelId} not found in cache`);
-      return;
+      return { ok: true }; // записана Е — липсва само embed-ът за екипа
     }
 
     const discordUser = await client.users.fetch(session.userId);
@@ -414,9 +439,43 @@ async function handleApplicationSubmission(client, session) {
 
     // Step 3: Update the application with the Discord message reference
     await updateApplicationReviewMessage(application.id, msg.id, reviewChannelId);
+    return { ok: true };
   } catch (err) {
     console.error("Failed to submit application:", err.message);
+    return { ok: false, code: "ERROR" };
   }
+}
+
+/**
+ * Съобщението, което кандидатът вижда при ОТКАЗ по правило на формата.
+ * Езикът е този на сесията — отказът е част от продукта, не техническа грешка.
+ */
+export function rejectionText(result, lang) {
+  switch (result.code) {
+    case "FORM_CLOSED":
+      return t("form.closedByAdmin", lang);
+    case "MAX_SUBMISSIONS":
+      return t("form.maxSubmissionsReached", lang);
+    case "COOLDOWN":
+      return t("form.cooldownActive", lang, { time: formatRemaining(result.remainingSeconds) });
+    default:
+      // Непозната причина → не измисляме. Общият текст е по-честен от грешен.
+      return result.error || t("form.submitFailed", lang);
+  }
+}
+
+/**
+ * Оставащото време в компактен, ЕЗИКОВО НЕУТРАЛЕН вид („45s“ · „12m“ · „3h“ ·
+ * „2d“), защото се вмъква в `{{time}}` на `form.cooldownActive`, който вече е
+ * преведен на 8-те езика. Нарочно НЕ въвеждаме четири нови ключа × 8 локала за
+ * имена на единици — това е дълг, който после се разсинхронизира.
+ */
+function formatRemaining(seconds) {
+  const s = Math.max(0, Number(seconds) || 0);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.ceil(s / 60)}m`;
+  if (s < 86400) return `${Math.ceil(s / 3600)}h`;
+  return `${Math.ceil(s / 86400)}d`;
 }
 
 // ─── Ticket from form ─────────────────────────────────────────────────────────

@@ -52,6 +52,7 @@ export default {
   "form.submitted": "✅ Bedankt! Je antwoorden zijn ontvangen.",
   "form.cooldownActive": "❌ Je kunt over {{time}} opnieuw inzenden.",
   "form.closedByAdmin": "❌ Dit formulier is momenteel gesloten.",
+  "form.maxSubmissionsReached": "❌ Je hebt dit formulier al het maximale aantal keren ingediend.",
   "form.invalidAnswer": "❌ Ongeldig antwoord. {{reason}}",
   "form.alreadyActive": "⚠️ Je hebt al een lopende formuliersessie. Rond die eerst af.",
   "form.dmFailed": "❌ Ik kon je geen DM sturen. Sta DM's van serverleden toe en probeer het opnieuw.",

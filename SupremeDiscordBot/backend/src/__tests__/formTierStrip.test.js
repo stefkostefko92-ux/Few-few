@@ -29,7 +29,7 @@ vi.mock("../lib/premium.js", async (orig) => {
   };
 });
 
-const { sanitizeFormForTier } = await import("../lib/premium.js");
+const { sanitizeFormForTier, BASE_FORM_COOLDOWN_SECONDS } = await import("../lib/premium.js");
 const { submitApplication } = await import("../services/applicationSubmit.js");
 
 const form = (over = {}) => ({
@@ -43,10 +43,21 @@ const form = (over = {}) => ({
 });
 
 describe("безплатният план губи премиум полетата", () => {
-  it("cooldown и таван падат", () => {
+  it("персонализираният cooldown пада до БАЗОВ праг, не до нула", () => {
+    // Нулата беше регресия (червен екип, кръг 2): свалянето на плана махаше и
+    // последната пречка пред спама, а преди санитайзера конфигурираният
+    // cooldown важеше за всяка тарифа. Платеното е „сам си избираш срока“;
+    // защитата от злоупотреба пази НАС и остава.
     const f = sanitizeFormForTier(form(), "free");
-    expect(f.cooldownSeconds).toBe(0);
-    expect(f.maxSubmissions).toBeNull();
+    expect(f.cooldownSeconds).toBe(BASE_FORM_COOLDOWN_SECONDS);
+    expect(f.cooldownSeconds).toBeGreaterThan(0);
+    expect(f.maxSubmissions).toBeNull(); // таванът си е изцяло платен
+  });
+
+  it("подаването ВСЕ ОЩЕ проверява нещо на free — иначе е отворена врата", () => {
+    const f = sanitizeFormForTier(form(), "free");
+    const guarded = !!((f.cooldownSeconds && f.cooldownSeconds > 0) || f.maxSubmissions);
+    expect(guarded, "free тарифата остана без НИКАКВА проверка при подаване").toBe(true);
   });
 
   it("автоматичните роли при преглед падат", () => {
@@ -102,8 +113,8 @@ describe("нула сривове по краищата", () => {
   });
 
   it("форма без въпроси минава", () => {
-    const f = sanitizeFormForTier({ cooldownSeconds: 60, maxSubmissions: 2 }, "free");
-    expect(f.cooldownSeconds).toBe(0);
+    const f = sanitizeFormForTier({ cooldownSeconds: 86400, maxSubmissions: 2 }, "free");
+    expect(f.cooldownSeconds).toBe(BASE_FORM_COOLDOWN_SECONDS);
   });
 });
 
@@ -131,9 +142,23 @@ describe("подаването УВАЖАВА тарифата, не само з
     expect(r).toMatchObject({ ok: false, status: 429, code: "MAX_SUBMISSIONS" });
   });
 
-  it("свален план: таванът вече не важи — платена функция без плащане не работи", async () => {
+  it("свален план: ТАВАНЪТ вече не важи (платена функция без плащане не работи)", async () => {
     tierPlan = "free";
+    // Подавал е веднъж отдавна — таванът би го спрял при платен план, базовият
+    // cooldown вече е изтекъл, значи минава.
+    prismaMock.formCooldown.findUnique.mockResolvedValue({
+      submissionCount: 5, lastSubmittedAt: new Date(Date.now() - 3600_000),
+    });
     const r = await submitApplication(BODY);
     expect(r.ok).toBe(true);
+  });
+
+  it("свален план: БАЗОВИЯТ cooldown обаче важи — не е отворена врата", async () => {
+    tierPlan = "free";
+    prismaMock.formCooldown.findUnique.mockResolvedValue({
+      submissionCount: 1, lastSubmittedAt: new Date(), // току-що
+    });
+    const r = await submitApplication(BODY);
+    expect(r).toMatchObject({ ok: false, code: "COOLDOWN" });
   });
 });

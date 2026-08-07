@@ -7,7 +7,7 @@ import api, {
   isBlacklisted, getPanel, createTicket, getTags, useTag, suggestKbArticle, sendKbFeedback,
 } from "../utils/api.js";
 import { buildTicketOpenEmbed, buildStatusEmbed } from "../utils/embed.js";
-import { runFormSession, submitFormAnswers, validateAnswerAgainstRegex } from "../utils/formSession.js";
+import { runFormSession, submitFormAnswers, validateAnswerAgainstRegex, rejectionText } from "../utils/formSession.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND, SUCCESS, DANGER, WARNING, INFO } from "../utils/colors.js";
 import { priorityField } from "../utils/priority.js";
@@ -415,11 +415,19 @@ async function handleFormModalSubmit(interaction) {
     channelId: interaction.channelId,
   };
 
+  let result;
   try {
-    await submitFormAnswers(interaction.client, session);
+    result = await submitFormAnswers(interaction.client, session);
   } catch (err) {
     console.error("Failed to submit modal form:", err.message);
     return interaction.editReply(t("form.submitFailed", lang));
+  }
+
+  // Отказът по правило на формата (затворена · таван · cooldown) НЕ е успех.
+  // Дотук се потвърждаваше безусловно и кандидатът виждаше зелена отметка за
+  // кандидатура, която сървърът е отхвърлил. (Кодаджията, одит кръг 2)
+  if (result && !result.ok) {
+    return interaction.editReply(rejectionText(result, lang));
   }
 
   await interaction.editReply(t("form.submittedConfirm", lang));

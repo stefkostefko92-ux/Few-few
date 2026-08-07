@@ -191,10 +191,29 @@ export function inExportWindow(server, now = Date.now()) {
 //
 // Това е дефектен клас Г: гейт на ЗАПИСА, не на ИЗПЪЛНЕНИЕТО. Записът е само
 // една от вратите; изпълнението е единственото място, което наистина решава.
+/**
+ * Базов cooldown между подавания за БЕЗПЛАТНАТА тарифа.
+ *
+ * ЗАЩО НЕ НУЛА (червен екип, кръг 2, 07.08.2026): първата версия на санитайзера
+ * зануляваше `cooldownSeconds` на free — тоест свалянето на плана махаше и
+ * последната пречка пред спама. Преди санитайзера конфигурираният cooldown
+ * важеше за всяка тарифа, значи поправката ОТСЛАБИ безплатния план вместо само
+ * да отнеме платената функция.
+ *
+ * Платеното е „сам си избираш cooldown-а и таван на подаванията“. Защитата от
+ * злоупотреба не е платена функция — тя пази НАС. Затова free пада на базов
+ * праг, не на нула. Таванът (`maxSubmissions`) си остава изцяло платен: 60
+ * секунди вече спират спама, а „максимум N кандидатури“ е продуктово правило.
+ */
+export const BASE_FORM_COOLDOWN_SECONDS = 60;
+
 const FORM_FEATURE_STRIP = {
   "form.autoRoleOnReview": (f) => { f.acceptRoleIds = []; f.denyRoleIds = []; f.removeRoleIds = []; },
   "form.customDmMessages": (f) => { f.acceptMessage = null; f.denyMessage = null; },
-  "form.cooldowns":        (f) => { f.cooldownSeconds = 0; f.maxSubmissions = null; },
+  "form.cooldowns":        (f) => {
+    f.cooldownSeconds = BASE_FORM_COOLDOWN_SECONDS;
+    f.maxSubmissions = null;
+  },
 };
 
 const QUESTION_FEATURE_STRIP = {

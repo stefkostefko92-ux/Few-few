@@ -380,6 +380,23 @@ function periodWasPaid(status) {
 }
 
 /**
+ * Статуси, които `customer.subscription.deleted` НЕ бива да презаписва.
+ *
+ * ЗАЩО (червен екип, кръг 2, 07.08.2026): след refund/chargeback Stripe праща и
+ * `subscription.deleted` (нашата собствена отмяна го поражда), а той пишеше
+ * `canceled` върху `refunded`/`disputed`. Достъпът си оставаше отнет — решението
+ * за гратиса вече е взето по-горе — но СИГНАЛЪТ за злоупотреба изчезваше от
+ * реда. „Отменил е" и „поискал е чарджбек" са различни клиенти, а колоната
+ * започваше да ги показва еднакво.
+ */
+const STICKY_STATUSES = new Set(["refunded", "disputed", "partially_refunded"]);
+
+/** Новият статус, освен ако редът вече не носи по-важен (money-back) сигнал. */
+function keepStickyStatus(current, next) {
+  return STICKY_STATUSES.has(String(current || "").toLowerCase()) ? current : next;
+}
+
+/**
  * Край на платения период. В API 2026-06-24.dahlia `current_period_end` живее
  * на нивото на subscription ITEM, не на самия абонамент (същото откритие като
  * в GET /status/:serverId) — затова четем оттам и вземаме най-късния елемент.
@@ -785,6 +802,24 @@ router.post("/webhook", requireStripe, async (req, res) => {
       case "invoice.payment_failed": {
         const invoice = event.data.object;
 
+        // ЗАСТОЯЛО СЪБИТИЕ не бива да сваля жив платец.
+        //
+        // `invoice.paid` вече иска абонаментът да е жив СЕГА, а този клон
+        // нямаше нищо: пишеше `past_due` + `pastDueSince` безусловно. Stripe
+        // ретрайва до 3 дни при не-2xx и не гарантира ред, значи ретрайнат
+        // `payment_failed` СЛЕД успешното плащане слагаше ПЛАТЕН клиент в
+        // дунинг — а `jobs/dunning.js` му сваля достъпа след 14 дни. При
+        // годишен план няма следващо събитие, което да го спаси. Отгоре на
+        // това `PaymentLog` за платената фактура се обръщаше на „failed".
+        // (Червен екип, кръг 2, 07.08.2026)
+        const failedSub = await liveSubscription(subscriptionIdFromInvoice(invoice));
+        if (failedSub && (failedSub.status === "active" || failedSub.status === "trialing")) {
+          console.warn(
+            `⚠️ invoice.payment_failed за ${invoice.customer}: абонаментът е ${failedSub.status} — застояло/повторно събитие, НЕ свалям`,
+          );
+          break;
+        }
+
         // Agency dunning: mark past_due (grace); unpaid/canceled later deactivates.
         const agency = await prisma.agency.findFirst({ where: { stripeCustomerId: String(invoice.customer) } });
         if (agency) {
@@ -891,7 +926,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               data: {
                 active: !!graceUntil,
                 accessUntil: graceUntil,
-                stripeStatus: "canceled",
+                stripeStatus: keepStickyStatus(agency.stripeStatus, "canceled"),
                 stripeSubscriptionId: null,
                 pastDueSince: null,
               },
@@ -948,7 +983,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               // planSource също пада: иначе остатъчното "stripe" блокира
               // по-късен Discord re-grant (mutual-exclusion guard-а).
               planSource: null,
-              stripeStatus: "canceled",
+              stripeStatus: keepStickyStatus(server.stripeStatus, "canceled"),
               stripeSubscriptionId: null,
               pastDueSince: null, // C3 — приключен абонамент, маркерът отпада.
               accessUntil: graceUntil,
@@ -1197,7 +1232,38 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // withdrawal under Art. 14(3)) → keep access. Requires the charge.refunded
         // event enabled on the Stripe webhook endpoint.
         const charge = event.data.object;
-        if (charge.amount_refunded < charge.amount) break; // partial refund → keep access
+        if (charge.amount_refunded < charge.amount) {
+          // ЧАСТИЧНО връщане: достъпът ОСТАВА (клиентът е платил остатъка), но
+          // състоянието трябва да се отбележи, иначе по-късна отмяна дава
+          // ГРАТИС за същия период — тоест връщаме част от парите И подаряваме
+          // остатъка от периода. При годишен White-label това е ~€90 обратно
+          // плюс 11 месеца безплатно. Allowlist-ът `PAID_PERIOD_STATUSES` не
+          // хващаше този вход, защото съди по колона, която частичното връщане
+          // нарочно не пипаше. (Червен екип, кръг 2, 07.08.2026)
+          //
+          // `partially_refunded` НЕ е в allowlist-а → нула гратис при отмяна.
+          // `isPremium`/`plan` НЕ се пипат — достъпът тече до края на периода.
+          const partialTarget = charge.customer
+            ? await prisma.server.findFirst({ where: { stripeCustomerId: String(charge.customer) } })
+            : null;
+          if (partialTarget) {
+            await runOnce(async (tx) => {
+              await tx.server.update({
+                where: { id: partialTarget.id },
+                data: { stripeStatus: "partially_refunded" },
+              });
+              await tx.auditLog.create({
+                data: {
+                  actorTag: "STRIPE", serverId: partialTarget.id,
+                  action: "PREMIUM_PARTIAL_REFUND", targetId: partialTarget.id,
+                  metadata: { chargeId: charge.id, refunded: charge.amount_refunded, total: charge.amount },
+                },
+              });
+            });
+            console.log(`↩️ Server ${partialTarget.id} — частично връщане, достъпът остава, гратис НЯМА`);
+          }
+          break;
+        }
         // Същото като при chargeback: клиентът може да е агенция.
         const refundedAgency = charge.customer
           ? await prisma.agency.findFirst({ where: { stripeCustomerId: charge.customer } })
