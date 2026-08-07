@@ -506,8 +506,26 @@ router.post("/webhook", requireStripe, async (req, res) => {
             },
           });
 
-          await tx.paymentLog.create({
-            data: {
+          // UPSERT, не create. `PaymentLog.stripeInvoiceId` е @unique, а
+          // ЕДНА И СЪЩА фактура минава през ДВА handler-а: payment_failed при
+          // всеки неуспешен опит на Smart Retries, после paid при успеха.
+          // Вторият create хвърляше P2002 — а сблъсъкът е ДЕТЕРМИНИРАН, значи
+          // политиката „P2002 без маркер → хвърли, за да ретрайне Stripe"
+          // ставаше безкраен цикъл: клиентът Е ПЛАТИЛ, isPremium никога не се
+          // вдига, pastDueSince не се нулира и дунингът му отнема достъпа след
+          // 14 дни. (Продавача, 07.08.2026)
+          //
+          // Ретраят не може да разреши детерминиран сблъсък — записът трябва да
+          // е идемпотентен сам по себе си.
+          await tx.paymentLog.upsert({
+            where: { stripeInvoiceId: invoice.id },
+            update: {
+              amount: invoice.amount_paid,
+              currency: invoice.currency || "eur",
+              status: "paid",
+              description: "Recurring subscription payment",
+            },
+            create: {
               serverId: server.id,
               stripeInvoiceId: invoice.id,
               amount: invoice.amount_paid,
@@ -609,8 +627,16 @@ router.post("/webhook", requireStripe, async (req, res) => {
             },
           });
 
-          await tx.paymentLog.create({
-            data: {
+          // Виж бележката при invoice.paid — същата фактура, същият @unique ключ.
+          await tx.paymentLog.upsert({
+            where: { stripeInvoiceId: invoice.id },
+            update: {
+              amount: invoice.amount_due,
+              currency: invoice.currency || "eur",
+              status: "failed",
+              description: "Payment failed",
+            },
+            create: {
               serverId: server.id,
               stripeInvoiceId: invoice.id,
               amount: invoice.amount_due,

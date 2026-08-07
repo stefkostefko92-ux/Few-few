@@ -64,12 +64,16 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
           { creator: { username: { contains: search, mode: "insensitive" } } },
         ],
       }),
-      ...(dateFrom || dateTo ? {
-        createdAt: {
-          ...(dateFrom && { gte: new Date(dateFrom) }),
-          ...(dateTo && { lte: new Date(dateTo + "T23:59:59Z") }),
-        },
-      } : {}),
+      // Невалидна дата дава Invalid Date, което Prisma отхвърля с грешка,
+      // носеща нашия изходен код. Валидираме ТУК и просто пренебрегваме боклука.
+      ...(() => {
+        const from = dateFrom ? new Date(dateFrom) : null;
+        const to = dateTo ? new Date(dateTo + "T23:59:59Z") : null;
+        const okFrom = from && !Number.isNaN(from.getTime());
+        const okTo = to && !Number.isNaN(to.getTime());
+        if (!okFrom && !okTo) return {};
+        return { createdAt: { ...(okFrom && { gte: from }), ...(okTo && { lte: to }) } };
+      })(),
     };
 
     const [tickets, total] = await Promise.all([

@@ -45,8 +45,20 @@ export async function runRetentionJob() {
         // seats and trials don't set the raw isPremium flag, and deleting a
         // paying agency customer's transcripts is irreversible data loss.
         server: effectiveFreeWhere(),
-        // Skip already-anonymized
-        NOT: { archiveHtml: { startsWith: "<!-- anonymized" } },
+        // Skip already-anonymized.
+        //
+        // ВНИМАНИЕ — СЪЩИЯТ КЛАС, който вече ни удари в секция 3б:
+        // `NOT: { archiveHtml: { startsWith: … } }` в SQL е
+        // `NOT (col LIKE '…%')`, което при col IS NULL дава NULL, не TRUE →
+        // редът отпада. А scheduler.js (Job 1) вече е занулил archiveHtml за
+        // точно тези тикети. Резултат: кандидатите бяха ПРАЗНИ, значи
+        // ticketMessage.deleteMany НЕ СЕ ИЗПЪЛНЯВАШЕ никога и съобщенията на
+        // Free сървърите живееха вечно — обещанието за 30 дни беше на хартия.
+        // (Качествения, 07.08.2026)
+        OR: [
+          { archiveHtml: null },
+          { NOT: { archiveHtml: { startsWith: "<!-- anonymized" } } },
+        ],
       },
       select: { id: true, serverId: true },
       take: 500, // batch to avoid locking DB

@@ -68,6 +68,7 @@ import reactionRolesRouter from "./routes/reactionroles.js";
 import { scheduleRetention } from "./jobs/dataRetention.js";
 import { scheduleDunning } from "./jobs/dunning.js";
 import "./services/scheduler.js"; // Start background jobs
+import { prisma } from "./lib/prisma.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -187,7 +188,19 @@ app.use("/api/auth", authLimiter);
 app.use("/api/bot", botLimiter);
 
 // ─── Health check MUST come before any auth-protected routers ──────────────
-app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+app.get("/api/health", async (_req, res) => {
+  // Статично `{status:"ok"}` значеше, че контейнерът се обявява за здрав при
+  // МЪРТВА база — Docker никога не го рестартира, а всяка заявка се проваля.
+  // Liveness трябва да отразява реалната зависимост, не факта, че Express слуша.
+  // (Наблюдателят, 07.08.2026)
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", database: "up", uptime: process.uptime() });
+  } catch (err) {
+    console.error("[health] базата е недостъпна:", err?.message);
+    res.status(503).json({ status: "degraded", database: "down", uptime: process.uptime() });
+  }
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
@@ -207,7 +220,6 @@ app.use("/api/bot", botRouter); // Internal bot <-> API communication
 app.use("/api/export", exportRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/schedule bot endpoints
-app.use("/api", webhooksRouter);              // /api/:serverId/webhooks + /api/events + /api/:serverId/panels/:panelId/duplicate
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
 app.use("/api/trial", trialRouter);           // v2.0 Premium trial system
 // app.use("/api/affiliate", affiliateRouter); // ИЗКЛЮЧЕН за launch — програмата не начислява комисионни (одит C1/C2)
@@ -224,6 +236,23 @@ app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
 // app.use("/api/referral", referralRouter);  // ИЗКЛЮЧЕН за launch — счупена/дублирана affiliate система (одит C2)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
 
+// ── webhooksRouter е ПОСЛЕДЕН, и това е СЪЩЕСТВЕНО ──────────────────────────
+// Той се монтира на ГОЛ "/api" (маршрутите му са с форма /api/:serverId/webhooks,
+// /api/events, /api/:serverId/panels/:panelId/duplicate), а вътре има
+// router.use(requireAuth, loadUser). В Express 4 това middleware се изпълнява за
+// ВСЯКА заявка под /api, която стигне дотук — БЕЗ значение дали някой негов
+// маршрут съвпада.
+//
+// Досега стоеше по средата на списъка, затова всичко монтирано СЛЕД него минаваше
+// първо през сесийната автентикация. За session-authed рутери това беше само
+// двойна работа, но /api/v1 е BEARER-authed (API ключ, не сесия) → requireAuth
+// го отрязваше с 401, преди v1Router изобщо да бъде достигнат.
+// Тоест ЦЯЛОТО публично REST API — платена Premium функция — беше мъртво.
+// (Кодаджията, 07.08.2026; доказано с изпълнен Express репро)
+//
+// Ако добавяш нов рутер под /api, добави го НАД този ред.
+app.use("/api", webhooksRouter);
+
 // ─── Error handler ────────────────────────────────────────────────────────────
 
 // Sentry must capture errors before the response is sent
@@ -231,11 +260,23 @@ if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);
 }
 
-app.use((err, _req, res, _next) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    error: err.message || "Internal Server Error",
-  });
+app.use((err, req, res, _next) => {
+  // `err.message` НЕ отива при клиента. Prisma слага в съобщението пълния път
+  // до файла, ОКОЛНИТЕ РЕДОВЕ ИЗХОДЕН КОД и самата заявка — тоест невалидна
+  // дата в query параметър връщаше на всеки любопитен наш сорс и вътрешната ни
+  // схема. `errorFormat` по подразбиране носи сниппета и в production.
+  // (Разбивача, 07.08.2026 — доказано с PoC)
+  //
+  // Клиентът получава общо съобщение + идентификатор, с който да намерим точния
+  // случай в логовете. 4xx-ите, които сами си слагат `status` и `expose`,
+  // остават четими — те са предвидени съобщения, не изтекли вътрешности.
+  const status = err.status || 500;
+  const id = Math.random().toString(36).slice(2, 10);
+  console.error(`[err ${id}] ${req.method} ${req.originalUrl}`, err);
+  if (status < 500 && err.expose !== false && err.message) {
+    return res.status(status).json({ error: err.message, errorId: id });
+  }
+  res.status(status).json({ error: "Internal Server Error", errorId: id });
 });
 
 const server = app.listen(PORT, () => {

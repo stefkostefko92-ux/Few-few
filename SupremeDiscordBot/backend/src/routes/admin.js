@@ -4,6 +4,24 @@ import { prisma } from "../lib/prisma.js";
 import { planConfig } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
 
+// Активен ПЛАТЕН абонамент (Stripe, Discord или покриваща агенция). Ръчните
+// админски действия не бива да го презаписват: клиентът продължава да плаща, а
+// planSource="manual" го изважда от MRR и разкачва Stripe синхрона.
+//
+// Логиката живееше САМО в /plan. Близнакът /premium я нямаше — класически
+// „поправено на единия близнак". (Кодаджията, 07.08.2026)
+function activePaidSubscription(server) {
+  const LIVE = ["active", "trialing", "past_due"];
+  const paidAgency = server.agency &&
+    ((server.agency.planSource === "stripe" && LIVE.includes(server.agency.stripeStatus)) ||
+     server.agency.planSource === "discord");
+  const own =
+    (server.planSource === "stripe" && LIVE.includes(server.stripeStatus)) ||
+    server.planSource === "discord";
+  if (!own && !paidAgency) return null;
+  return paidAgency ? server.agency.planSource : server.planSource;
+}
+
 const router = Router();
 
 router.use(requireAuth, loadUser, requireSuperUser);
@@ -74,7 +92,10 @@ router.get("/analytics", async (req, res, next) => {
 // ─── GET /api/admin/users ─────────────────────────────────────────────────────
 
 router.get("/users", async (req, res, next) => {
-  const { query, role, page = 1, limit = 50 } = req.query;
+  // Таван на limit: без него `?limit=1000000` изтегля цялата таблица в паметта.
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+  const { query, role } = req.query;
 
   try {
     const where = {
@@ -90,12 +111,18 @@ router.get("/users", async (req, res, next) => {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        include: {
+        // Изричен select: досега `include` връщаше ЦЕЛИЯ ред, тоест имейлите на
+        // всички потребители влизаха в отговора, без някой да ги е поискал.
+        // Минимизация на данните — админският списък има нужда от профил и
+        // броячи, не от контактите.
+        select: {
+          id: true, username: true, discriminator: true, avatar: true,
+          globalRole: true, isBlacklisted: true, language: true, createdAt: true,
           _count: { select: { tickets: true, applications: true, serverMembers: true } },
         },
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip: (page - 1) * limit,
+        take: limit,
       }),
       prisma.user.count({ where }),
     ]);
@@ -623,8 +650,20 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
   const plan = MANUAL_PLANS.has(req.body?.plan) ? req.body.plan : "premium";
 
   try {
-    const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
+    const server = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
+      include: { agency: true },
+    });
     if (!server) return res.status(404).json({ error: "Server not found" });
+
+    // Същият гейт като в близнака /plan — липсваше тук.
+    const paidSrc = activePaidSubscription(server);
+    if (enabled && paidSrc) {
+      return res.status(409).json({
+        error: `Server is covered by an active ${paidSrc} subscription. Cancel it in ${paidSrc === "stripe" ? "the Stripe Dashboard" : "Discord"} first.`,
+        code: "ACTIVE_PAID_SUBSCRIPTION",
+      });
+    }
 
     const updated = await prisma.server.update({
       where: { id: req.params.serverId },
@@ -645,6 +684,11 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
           planSource: null,
           billingInterval: null,
           archiveRetentionDays: 30,
+          // Без това getServerTier връща активен ПРОБЕН tier след ръчен revoke —
+          // достъпът си остава. /plan вече го чисти; тук липсваше.
+          trialEndsAt: null,
+          trialStartedAt: null,
+          pastDueSince: null,
         }),
       },
     });
@@ -706,15 +750,8 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
     // пропуска гейта, но по-долу пише planSource="manual" върху платения абонат
     // → изключва го от MRR и разкача Stripe синхрона (находка на Разбивача).
     // Агенция-покритите сървъри също се пазят (агенцията може да е платена).
-    const paidAgency = server.agency &&
-      ((server.agency.planSource === "stripe" && ["active", "trialing", "past_due"].includes(server.agency.stripeStatus)) ||
-       server.agency.planSource === "discord");
-    const hasPaidSub =
-      (server.planSource === "stripe" && ["active", "trialing", "past_due"].includes(server.stripeStatus)) ||
-      server.planSource === "discord" ||
-      paidAgency;
-    if (hasPaidSub) {
-      const src = paidAgency ? server.agency.planSource : server.planSource;
+    const src = activePaidSubscription(server);
+    if (src) {
       return res.status(409).json({
         error: `Server is covered by an active ${src} subscription. Cancel it in ${src === "stripe" ? "the Stripe Dashboard" : "Discord"} first, then set the manual plan.`,
         code: "ACTIVE_PAID_SUBSCRIPTION",
@@ -956,16 +993,6 @@ router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
       return res.status(403).json({ error: "Cannot delete the Main Owner" });
     }
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: req.user.id,
-        actorTag: req.user.username,
-        action: "USER_DELETED",
-        targetId: req.params.userId,
-        metadata: { username: user.username, deletedBy: req.user.username },
-      },
-    });
-
     // Check for created tickets/applications — if any, refuse (RESTRICT would fail anyway)
     const [ticketCount, appCount] = await Promise.all([
       prisma.ticket.count({ where: { creatorId: req.params.userId } }),
@@ -980,6 +1007,20 @@ router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
         applicationCount: appCount,
       });
     }
+
+    // Одитният запис се пише СЛЕД като всички откази са минали. Досега стоеше
+    // ПРЕДИ проверката: отказано изтриване пак оставяше „USER_DELETED" в
+    // дневника, тоест одитът твърдеше, че потребител е изтрит, а той съществува.
+    // (Кодаджията, 07.08.2026)
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        actorTag: req.user.username,
+        action: "USER_DELETED",
+        targetId: req.params.userId,
+        metadata: { username: user.username, deletedBy: req.user.username },
+      },
+    });
 
     await prisma.user.delete({ where: { id: req.params.userId } });
     res.json({ ok: true, deleted: req.params.userId });

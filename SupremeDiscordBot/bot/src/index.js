@@ -1134,4 +1134,14 @@ process.on("uncaughtException", (err) => {
   shutdown("uncaughtException");
 });
 
-client.login(process.env.BOT_TOKEN);
+// Без .catch отказът на login (невалиден токен, DisallowedIntents, мрежа) се
+// поглъщаше от unhandledRejection handler-а по-горе, който НАРОЧНО оставя
+// процеса жив. Резултат: контейнерът стои `Up (unhealthy)` завинаги — Docker не
+// рестартира по health, а само по изход на процеса. Ботът никога не влиза, а
+// нищо не го поправя. (Наблюдателят, 07.08.2026)
+client.login(process.env.BOT_TOKEN).catch((err) => {
+  console.error(`[bot] LOGIN се провали: ${err?.code || ""} ${err?.message}`);
+  try { Sentry.captureException(err); } catch { /* Sentry optional */ }
+  // Излизаме с грешка, за да сработи restart политиката на Docker.
+  process.exit(1);
+});

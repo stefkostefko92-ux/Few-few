@@ -9,13 +9,46 @@ import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
 import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
 
+// ─── Обвивка на планираните задачи ───────────────────────────────────────────
+// node-cron НЕ чака предното изпълнение: три от задачите тук вървят всяка минута
+// и правят HTTP извиквания с 10-секунден timeout в последователен цикъл. Бавен
+// ран се застъпва със следващия и едно и също съобщение тръгва два пъти.
+// Освен това провалът вътре в cron callback се поглъщаше напълно — никой не
+// слуша `execution:failed` на node-cron, значи спрял дунинг или спряло GDPR
+// изтриване са напълно невидими. (Наблюдателят + Качествения, 07.08.2026)
+const running = new Set();
+function job(name, fn) {
+  return async () => {
+    if (running.has(name)) {
+      console.warn(`[Scheduler] ${name} още върви — пропускам това задействане (застъпване)`);
+      return;
+    }
+    running.add(name);
+    const started = Date.now();
+    try {
+      await fn();
+    } catch (err) {
+      console.error(`[Scheduler] ${name} се провали: ${err?.message}`);
+      try {
+        const Sentry = await import("@sentry/node");
+        Sentry.captureException(err, { tags: { job: name } });
+      } catch { /* Sentry по избор */ }
+    } finally {
+      running.delete(name);
+      const ms = Date.now() - started;
+      if (ms > 30_000) console.warn(`[Scheduler] ${name} отне ${Math.round(ms / 1000)}s`);
+    }
+  };
+}
+
+
 // ─── Job 1: Archive cleanup ───────────────────────────────────────────────────
 // Runs daily at 03:00 UTC.
 // Deletes archiveHtml from tickets older than the server's retention policy.
 // Premium servers: null retention = keep forever.
 // Base servers: 30-day default (archiveRetentionDays = 30).
 
-cron.schedule("0 3 * * *", async () => {
+cron.schedule("0 3 * * *", job("0 3 * * *", async () => {
   console.log("[Scheduler] Running archive cleanup...");
   try {
     // Get all servers that have a defined retention period
@@ -48,14 +81,14 @@ cron.schedule("0 3 * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] Archive cleanup error:", err.message);
   }
-});
+}));
 
 // ─── Job 2: Expired session cleanup ──────────────────────────────────────────
 // Runs every hour. Removes Discord OAuth2 sessions that have expired.
 // connect-pg-simple handles express sessions separately (pruneSessionInterval).
 // This job cleans our custom sessions table used for Discord API calls.
 
-cron.schedule("0 * * * *", async () => {
+cron.schedule("0 * * * *", job("0 * * * *", async () => {
   try {
     const result = await prisma.session.deleteMany({
       where: { expiresAt: { lt: new Date() } },
@@ -66,13 +99,13 @@ cron.schedule("0 * * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] Session cleanup error:", err.message);
   }
-});
+}));
 
 // ─── Job 3: Premium archive retention enforcement ────────────────────────────
 // When a server downgrades from Premium to Base, their retention becomes 30 days.
 // This job enforces that — runs weekly on Sunday at 04:00 UTC.
 
-cron.schedule("0 4 * * 0", async () => {
+cron.schedule("0 4 * * 0", job("0 4 * * 0", async () => {
   try {
     // Set archiveRetentionDays = 30 for any non-premium server that has null retention
     // (null means "forever" which is a Premium perk)
@@ -95,13 +128,13 @@ cron.schedule("0 4 * * 0", async () => {
   } catch (err) {
     console.error("[Scheduler] Retention enforcement error:", err.message);
   }
-});
+}));
 
 // ─── Job 4: Inactivity auto-close (v1.5 — Premium) ───────────────────────────
 // Runs every 30 minutes. Closes tickets that have had no activity for X hours
 // (configured per panel via inactivityCloseHours).
 
-cron.schedule("*/30 * * * *", async () => {
+cron.schedule("*/30 * * * *", job("*/30 * * * *", async () => {
   try {
     // Get all panels that have inactivity close configured
     const panels = await prisma.panel.findMany({
@@ -172,10 +205,10 @@ cron.schedule("*/30 * * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] Inactivity close error:", err.message);
   }
-});
+}));
 
 // ─── Job 5: Giveaway auto-end (v1.8) ───────────────────
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * *", job("* * * * *", async () => {
   try {
     const due = await prisma.giveaway.findMany({
       where: { endedAt: null, endsAt: { lte: new Date() } },
@@ -189,12 +222,12 @@ cron.schedule("* * * * *", async () => {
       await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
   } catch (err) { console.error("[Scheduler] giveaway end:", err.message); }
-});
+}));
 
 // ─── Job 5b: Poll auto-close ───────────────────
 // The /poll duration_hours option sets closesAt; without this job it was dead
 // (polls never closed). Closes due polls and re-renders the Discord message.
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * *", job("* * * * *", async () => {
   try {
     const due = await prisma.poll.findMany({
       where: { closedAt: null, closesAt: { lte: new Date() } },
@@ -206,10 +239,10 @@ cron.schedule("* * * * *", async () => {
       await pushPollUpdate(p.id);
     }
   } catch (err) { console.error("[Scheduler] poll close:", err.message); }
-});
+}));
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * *", job("* * * * *", async () => {
   try {
     const due = await prisma.scheduledMessage.findMany({
       where: { sentAt: null, sendAt: { lte: new Date() } },
@@ -261,7 +294,7 @@ cron.schedule("* * * * *", async () => {
       await prisma.scheduledMessage.update({ where: { id: m.id }, data: update });
     }
   } catch (err) { console.error("[Scheduler] scheduled msg:", err.message); }
-});
+}));
 
 // ─── Job 7: Trial expiry notifications (v2.0; DM канал — v3.1) ────────────────
 // Runs daily at 9am UTC. Logs servers whose trial expires in 3 days,
@@ -321,7 +354,7 @@ async function sendTrialDm({ server, action, embed }) {
   return true;
 }
 
-cron.schedule("0 9 * * *", async () => {
+cron.schedule("0 9 * * *", job("0 9 * * *", async () => {
   try {
     const now = new Date();
     const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -433,12 +466,12 @@ cron.schedule("0 9 * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] trial expiry check:", err.message);
   }
-});
+}));
 
 // ─── Job 8: Daily metrics snapshot (v2.1) ───────────────────────────
 // Runs at 00:05 UTC every day. Aggregates yesterday's ticket/form/app/verification
 // activity into daily_metrics for fast analytics queries.
-cron.schedule("5 0 * * *", async () => {
+cron.schedule("5 0 * * *", job("5 0 * * *", async () => {
   try {
     const now = new Date();
     const yesterday = new Date(now);
@@ -495,7 +528,7 @@ cron.schedule("5 0 * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] daily metrics:", err.message);
   }
-});
+}));
 
 // ─── Job 9: SLA breach detection (v31 — Premium) ─────────────────────────────
 // Runs every 10 minutes. For panels with an SLA configured, flags tickets that
@@ -530,7 +563,7 @@ async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
   }).catch(() => null);
 }
 
-cron.schedule("*/10 * * * *", async () => {
+cron.schedule("*/10 * * * *", job("*/10 * * * *", async () => {
   try {
     const now = new Date();
     const panels = await prisma.panel.findMany({
@@ -634,6 +667,6 @@ cron.schedule("*/10 * * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] SLA breach check error:", err.message);
   }
-});
+}));
 
 console.log("[Scheduler] Background jobs started");

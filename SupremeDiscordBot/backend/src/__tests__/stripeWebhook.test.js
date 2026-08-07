@@ -486,3 +486,46 @@ describe("идемпотентността не гълта чужди unique к�
     expect(res.status).toBe(500);
   });
 });
+
+// ─── Дунинг → успех за СЪЩАТА фактура (Продавача, 07.08.2026) ───────────────
+// PaymentLog.stripeInvoiceId е @unique, а една фактура минава през ДВА
+// handler-а: payment_failed при всеки неуспешен опит на Smart Retries, после
+// paid при успеха. Докато записът беше `create`, вторият хвърляше P2002 — а
+// сблъсъкът е ДЕТЕРМИНИРАН, значи политиката „P2002 без маркер → хвърли, за да
+// ретрайне Stripe" ставаше безкраен цикъл: клиентът е платил, достъпът никога
+// не се възстановява и дунингът му го отнема след 14 дни.
+describe("една фактура през два handler-а не зацикля", () => {
+  it("invoice.paid СЛЕД invoice.payment_failed за същата фактура минава", async () => {
+    prismaMock.processedStripeEvent.create.mockResolvedValue({ id: "evt_ok" });
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", ownerId: "o1", name: "S" });
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.paymentLog.upsert.mockResolvedValue({});
+
+    const res = await post({
+      id: "evt_paid_after_failed",
+      type: "invoice.paid",
+      data: { object: { customer: "cus_1", id: "in_same", amount_paid: 499, currency: "eur", lines: { data: [] } } },
+    });
+
+    expect(res.status).toBe(200);
+  });
+
+  it("записът е UPSERT по фактурата, не CREATE — иначе вторият път е P2002", async () => {
+    prismaMock.processedStripeEvent.create.mockResolvedValue({ id: "e2" });
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", ownerId: "o1", name: "S" });
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.paymentLog.upsert.mockResolvedValue({});
+
+    await post({
+      id: "evt_failed_upsert",
+      type: "invoice.payment_failed",
+      data: { object: { customer: "cus_1", id: "in_same", amount_due: 499, currency: "eur" } },
+    });
+
+    expect(prismaMock.paymentLog.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { stripeInvoiceId: "in_same" } }),
+    );
+    expect(prismaMock.paymentLog.create).not.toHaveBeenCalled();
+  });
+});
