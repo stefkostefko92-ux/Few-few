@@ -13597,7 +13597,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 162
+        "lessons": 164
       },
       "evolution": [
         {
@@ -13665,9 +13665,20 @@
           "date": "2026-08-07",
           "event": "v16.2 — учене",
           "detail": "Научи: SupremeDiscordBot bot команди: авторизацията почти навсякъде е РЪЧНА проверка вътре в e… (+1 още)"
+        },
+        {
+          "version": "16.4.0",
+          "date": "2026-08-07",
+          "event": "v16.4 — учене",
+          "detail": "Научи: SupremeDiscordBot bot команди: авторизацията е РЪЧНА проверка вътре в execute() (не set… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot bot команди: авторизацията е РЪЧНА проверка вътре в execute() (не set…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
