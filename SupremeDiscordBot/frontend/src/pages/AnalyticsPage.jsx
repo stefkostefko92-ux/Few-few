@@ -52,10 +52,20 @@ export default function AnalyticsPage() {
         <p className="text-xs text-cs-muted mb-4">{t("analytics.heatmapMeta", { count: heatmap?.total ?? 0 })}</p>
         {heatmapQ.isError ? (
           <RetryCard message={t("analytics.err.heatmap")} onRetry={() => heatmapQ.refetch()} isRefetching={heatmapQ.isRefetching} t={t} />
-        ) : heatmap?.grid ? <Heatmap grid={heatmap.grid} t={t} /> : (
+        ) : heatmap?.grid ? <Heatmap grid={heatmap.grid} t={t} /> : heatmapQ.isLoading ? (
           <div className="h-48 animate-pulse bg-cs-surface rounded" role="status">
             <span className="sr-only">{t("analytics.loadingHeatmap")}</span>
           </div>
+        ) : (
+          // Успяла заявка без решетка НЕ е „зарежда се“. Дотук двата случая
+          // споделяха един клон, значи отговор без `grid` даваше ВЕЧЕН скелет —
+          // страницата твърди, че още работи, след като заявката е приключила.
+          // Днес backend-ът винаги връща 7×24 решетка (нули при нула тикети),
+          // тоест не е живо, но конфликтът „зареждане срещу празно“ е точно
+          // класът тихи провали, който гоним другаде. (Одит на екраните)
+          <p className="h-48 flex items-center justify-center text-sm text-cs-muted">
+            {t("analytics.heatmapEmpty")}
+          </p>
         )}
       </section>
 
@@ -176,9 +186,14 @@ function Heatmap({ grid, t }) {
             <div className="text-[10px] text-cs-dim font-mono pr-2 flex items-center">{days[d]}</div>
             {row.map((val, h) => {
               const intensity = val / maxVal;
+              // Марковият акцент, не суров синьо. Тази клетка беше
+              // `rgba(51, 177, 255)` — единственото синьо в иначе изцяло
+              // неоново-зелен продукт, при това инлайн. Гейтът за цветове лови
+              // само `#rrggbb`, затова `rgba()` мина покрай него.
+              // (Одит на екраните, 07.08.2026)
               const bg = intensity === 0
                 ? "rgba(255,255,255,0.04)"
-                : `rgba(51, 177, 255, ${Math.max(0.15, intensity)})`;
+                : `rgba(143, 230, 0, ${Math.max(0.15, intensity)})`;
               return (
                 <div
                   key={`${d}-${h}`}

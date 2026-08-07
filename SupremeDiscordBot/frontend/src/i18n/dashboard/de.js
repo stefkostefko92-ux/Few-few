@@ -556,6 +556,7 @@ export default {
   "analytics.funnelMeta": "90 Tage · Konversionsstufen",
   "analytics.noApps": "Keine Bewerbungsdaten.",
   "analytics.loadingHeatmap": "Heatmap wird geladen…",
+  "analytics.heatmapEmpty": "Noch keine Ticket-Aktivität für das Diagramm.",
   "analytics.retry": "Erneut versuchen",
   "analytics.retrying": "Wird wiederholt…",
   "analytics.days": "So,Mo,Di,Mi,Do,Fr,Sa",

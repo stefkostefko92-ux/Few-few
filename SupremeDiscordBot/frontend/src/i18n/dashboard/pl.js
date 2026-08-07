@@ -556,6 +556,7 @@ export default {
   "analytics.funnelMeta": "90 dni · Etapy konwersji",
   "analytics.noApps": "Brak danych aplikacji.",
   "analytics.loadingHeatmap": "Ładowanie mapy cieplnej…",
+  "analytics.heatmapEmpty": "Brak aktywności zgłoszeń do pokazania.",
   "analytics.retry": "Ponów",
   "analytics.retrying": "Ponawianie…",
   "analytics.days": "Nie,Pon,Wto,Śro,Czw,Pią,Sob",

@@ -556,6 +556,7 @@ export default {
   "analytics.funnelMeta": "90 дни · Етапи на конверсия",
   "analytics.noApps": "Няма данни за кандидатури.",
   "analytics.loadingHeatmap": "Зареждане на топлинната карта…",
+  "analytics.heatmapEmpty": "Още няма активност по тикети за графиката.",
   "analytics.retry": "Опитай отново",
   "analytics.retrying": "Повторен опит…",
   "analytics.days": "Нд,Пн,Вт,Ср,Чт,Пт,Сб",

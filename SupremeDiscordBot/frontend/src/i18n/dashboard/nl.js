@@ -556,6 +556,7 @@ export default {
   "analytics.funnelMeta": "90 dagen · Conversiefasen",
   "analytics.noApps": "Geen aanvraaggegevens.",
   "analytics.loadingHeatmap": "Heatmap laden…",
+  "analytics.heatmapEmpty": "Nog geen ticketactiviteit om weer te geven.",
   "analytics.retry": "Opnieuw proberen",
   "analytics.retrying": "Opnieuw proberen…",
   "analytics.days": "Zo,Ma,Di,Wo,Do,Vr,Za",

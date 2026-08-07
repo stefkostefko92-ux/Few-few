@@ -509,6 +509,7 @@ export default {
   "analytics.funnelMeta": "90 days · Conversion stages",
   "analytics.noApps": "No application data.",
   "analytics.loadingHeatmap": "Loading heatmap…",
+  "analytics.heatmapEmpty": "No ticket activity to chart yet.",
   "analytics.retry": "Retry",
   "analytics.retrying": "Retrying…",
   "analytics.days": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",

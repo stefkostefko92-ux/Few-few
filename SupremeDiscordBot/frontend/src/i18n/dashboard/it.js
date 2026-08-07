@@ -556,6 +556,7 @@ export default {
   "analytics.funnelMeta": "90 giorni · Fasi di conversione",
   "analytics.noApps": "Nessun dato sulle candidature.",
   "analytics.loadingHeatmap": "Caricamento della mappa di calore…",
+  "analytics.heatmapEmpty": "Non c\u2019è ancora attività sui ticket da mostrare.",
   "analytics.retry": "Riprova",
   "analytics.retrying": "Nuovo tentativo…",
   "analytics.days": "Dom,Lun,Mar,Mer,Gio,Ven,Sab",
