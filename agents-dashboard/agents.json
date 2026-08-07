@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 308
+        "lessons": 312
       },
       "evolution": [
         {
@@ -1759,9 +1759,20 @@
           "date": "2026-08-07",
           "event": "v20.6 — учене",
           "detail": "Научи: Всеки мой отговор трябва да завършва с блока „## ПРЕДАВАНЕ“, иначе SubagentStop гейтът …"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-08-07",
+          "event": "v21.0 — учене",
+          "detail": "Научи: В SupremeDiscordBot вътрешните маршрути на бота трябва да резолвват канали през guild.c… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot вътрешните маршрути на бота трябва да резолвват канали през guild.c…\" (+3 още)"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
