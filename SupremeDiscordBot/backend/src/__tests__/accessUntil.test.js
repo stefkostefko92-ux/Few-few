@@ -34,7 +34,7 @@ const stripeInstance = {
   paymentIntents: { retrieve: vi.fn() },
 };
 vi.mock("stripe", () => ({ default: vi.fn(() => stripeInstance) }));
-vi.mock("../services/botNotifier.js", () => ({ notifyBot: vi.fn(), dmUser: vi.fn() }));
+vi.mock("../services/botNotifier.js", () => ({ notifyBot: vi.fn(), dmUser: vi.fn(), reconcileWhitelabel: vi.fn() }));
 
 const stripeRouter = (await import("../routes/stripe.js")).default;
 

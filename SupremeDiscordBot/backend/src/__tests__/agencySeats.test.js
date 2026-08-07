@@ -54,14 +54,28 @@ describe("POST /:agencyId/servers/:serverId — seat assign", () => {
     expect(prismaMock.server.update).not.toHaveBeenCalled();
   });
 
-  it("returns OTHER_AGENCY (409) when the server is already claimed by a different agency", async () => {
+  it("returns OTHER_AGENCY (409) when the server is claimed by an ACTIVE different agency", async () => {
     prismaMock.agency.findUnique.mockResolvedValue({ id: "ag1", ownerUserId: "u1", active: true, seatLimit: 5 });
-    prismaMock.server.findUnique.mockResolvedValue({ agencyId: "ag2" });
+    prismaMock.server.findUnique.mockResolvedValue({ agencyId: "ag2", agency: { active: true } });
 
     const res = await request(buildApp()).post("/api/agency/ag1/servers/s1");
 
     expect(res.status).toBe(409);
     expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+
+  it("ПОЗВОЛЯВА преместване, ако старата агенция е МЪРТВА (F2 — не заключвай за терминална агенция)", async () => {
+    prismaMock.agency.findUnique.mockResolvedValue({ id: "ag1", ownerUserId: "u1", active: true, seatLimit: 5 });
+    // Сървърът още сочи ag2, но ag2 е деактивирана (отмяна/refund/дунинг).
+    prismaMock.server.findUnique.mockResolvedValue({ agencyId: "ag2", agency: { active: false } });
+    prismaMock.server.count.mockResolvedValue(0);
+
+    const res = await request(buildApp()).post("/api/agency/ag1/servers/s1");
+
+    expect(res.status).toBe(200);
+    expect(prismaMock.server.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "s1" }, data: { agencyId: "ag1" } }),
+    );
   });
 
   it("returns 404 when the target server doesn't exist", async () => {

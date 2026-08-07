@@ -1,7 +1,7 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { planConfig } from "../lib/premium.js";
+import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
 
 // Активен ПЛАТЕН абонамент (Stripe, Discord или покриваща агенция). Ръчните
@@ -42,7 +42,10 @@ router.get("/analytics", async (req, res, next) => {
       recentTicketsRaw,
     ] = await Promise.all([
       prisma.server.count(),
-      prisma.server.count({ where: { isPremium: true } }),
+      // ЕФЕКТИВНО premium: собствен план ИЛИ trial ИЛИ гратис ИЛИ активна
+      // агенция. Суровият `isPremium: true` изпускаше trial и agency-покрити
+      // сървъри → админ статистиката за платени под-отчиташе. (Одит 07.08.2026)
+      prisma.server.count({ where: effectivePremiumWhere() }),
       prisma.ticket.count(),
       prisma.user.count(),
       prisma.ticket.count({ where: { status: "OPEN" } }),
@@ -675,6 +678,10 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
           premiumSince: server.premiumSince || new Date(),
           stripeStatus: server.stripeStatus || "manual",
           archiveRetentionDays: null, // forever
+          // Нов ръчен план замества стар гратис — иначе higherPlan(plan, gracePlan)
+          // би вдигнал ефективния tier над зададения. (Одит 07.08.2026)
+          accessUntil: null,
+          gracePlan: null,
         }),
         // Revoke: getServerTier е plan-first — само isPremium=false НЕ отнема
         // достъпа; plan трябва да падне на free (както при всички webhook
@@ -689,6 +696,10 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
           trialEndsAt: null,
           trialStartedAt: null,
           pastDueSince: null,
+          // И гратисът пада: ръчният revoke е окончателен, не оставя достъп до
+          // край на период. Без това „revoked“ сървър пазеше gracePlan tier.
+          accessUntil: null,
+          gracePlan: null,
         }),
       },
     });
@@ -801,6 +812,9 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
           premiumSince: server.premiumSince || new Date(),
           stripeStatus: server.stripeStatus || "manual",
           archiveRetentionDays: null,
+          // Нов ръчен план замества стар гратис (over-grant guard).
+          accessUntil: null,
+          gracePlan: null,
           // Смъкване от manual agency seat, ако е имало
           ...(server.agency?.planSource === "manual" && { agencyId: null }),
         },
@@ -819,6 +833,9 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
           trialEndsAt: null,
           trialStartedAt: null,
           pastDueSince: null,
+          // И гратисът пада: ръчният revoke е окончателен.
+          accessUntil: null,
+          gracePlan: null,
         };
         // Ако seat-ът идва от агенция — откачи. (manual: може да деактивираме
         // агенцията; платена вече е блокирана горе от hasPaidSub гейта.)

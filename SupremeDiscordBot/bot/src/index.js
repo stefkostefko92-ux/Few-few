@@ -609,6 +609,22 @@ app.post("/internal/whitelabel-update", async (req, res) => {
   }
 });
 
+// Извиква се, когато tier на сървър може да е паднал БЕЗ смяна на токена: махане
+// от agency seat, отмяна/refund/dispute на агенцията, дунинг деактивация. Пълната
+// реконсилиация привежда работещите бранд ботове към ЕФЕКТИВНИЯ tier — сваля тези
+// без право, вдига новите. Нарочно НЕ ползваме per-server `restartCustomClient`:
+// той е за смяна на ТОКЕН (пази стария клиент при неуспех) и би изтекъл gateway
+// сесия за все още валиден сървър. Метлата е идемпотентна и евтина (един GET).
+app.post("/internal/whitelabel-reconcile", async (req, res) => {
+  try {
+    const { reconcileCustomClients } = await import("./services/clientManager.js");
+    const result = await reconcileCustomClients(client);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post("/internal/application-reviewed", async (req, res) => {
   try {
     await handleApplicationReviewed(client, req.body);
@@ -1101,6 +1117,20 @@ client.once(Events.ClientReady, async () => {
     );
   }, RECONCILE_INTERVAL_MS).unref?.();
   console.log(`✅ Entitlement реконсилиация на всеки ${Math.round(RECONCILE_INTERVAL_MS / 3600000)}ч`);
+
+  // White-label реконсилиация — същата доктрина за БРАНД БОТОВЕТЕ. `bootAll`
+  // горе е само старт; tier може да падне по пътища, които не пипат токена
+  // (agency seat detach, отмяна/refund на агенцията, дунинг, изтичане на grace).
+  // Незабавното сваляне идва през WHITELABEL_UPDATE, но тази метла е застраховката
+  // срещу пропуснато известие — привежда работещите клиенти към ефективния tier.
+  const { reconcileCustomClients } = await import("./services/clientManager.js");
+  const WL_RECONCILE_MS = Number(process.env.WHITELABEL_RECONCILE_MS || 6 * 60 * 60 * 1000);
+  setInterval(() => {
+    reconcileCustomClients(client).catch((err) =>
+      console.error(`[ClientManager] периодичната white-label реконсилиация се провали: ${err?.message}`),
+    );
+  }, WL_RECONCILE_MS).unref?.();
+  console.log(`✅ White-label реконсилиация на всеки ${Math.round(WL_RECONCILE_MS / 3600000)}ч`);
 });
 
 // Graceful shutdown — destroy white-label sessions and the main client so

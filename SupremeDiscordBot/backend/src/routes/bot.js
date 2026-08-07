@@ -974,13 +974,23 @@ router.get("/servers/with-custom-tokens", async (req, res, next) => {
     // white-label: собствен whitelabel/agency план, активен agency seat, или
     // legacy grandfather (isPremium без plan → whitelabel fallback). Trial дава
     // само Premium → не бутва бранд бот (/token така или иначе би върнал null).
+    // Кой сървър трябва да върви с БРАНД бот СЕГА = ефективен tier ≥ white-label.
+    // Трите начина да имаш white-label: собствен whitelabel/agency план, активен
+    // agency seat, или v40 гратис с whitelabel/agency `gracePlan` (отменен, но
+    // платен до края). Старият клон `{ isPremium:true, plan:"free" }` е МАХНАТ:
+    // той будеше бранд бот и за premium-tier гратис (gracePlan="premium"), който
+    // НЕ носи white-label — и беше остатък от fail-open grandfather. Сега
+    // множеството съвпада точно с `getServerTier().hasWhiteLabel`, което
+    // `/token` гейтва — иначе метлата на бота вечно вдига и сваля разминат сървър.
+    const now = new Date();
+    const WL_PLANS = ["whitelabel", "agency5", "agency10"];
     const servers = await prisma.server.findMany({
       where: {
         customBotToken: { not: null },
         OR: [
-          { plan: { in: ["whitelabel", "agency5", "agency10"] } },
+          { plan: { in: WL_PLANS } },
           { agency: { is: { active: true } } },
-          { AND: [{ isPremium: true }, { plan: "free" }] },
+          { AND: [{ accessUntil: { gt: now } }, { gracePlan: { in: WL_PLANS } }] },
         ],
       },
       select: { id: true, name: true },

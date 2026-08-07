@@ -311,57 +311,65 @@ export function effectiveFreeWhere(now = new Date()) {
  * четци на суровата колона (bot config, dashboard, panel функции) го третират
  * като безплатен — платената функция мълчи. Идемпотентно; тихо при липсващ ред.
  */
-// Статуси на Stripe, които значат „този абонамент е приключил“. `past_due` и
-// `incomplete` НЕ са тук: те са в гратис/дунинг и достъпът остава нарочно.
-const TERMINATED_STRIPE_STATUSES = new Set([
-  "canceled", "cancelled", "incomplete_expired", "disputed", "unpaid",
-  // Пълно възстановяване на плащането — пише се от stripe.js (charge.refunded).
-  // Липсваше в първата версия на списъка: клиент, поискал refund, минаваше през
-  // grandfather клаузата и оставаше платен (червен екип, 07.08.2026).
-  "refunded",
-]);
+// Статуси на Stripe, при които СОБСТВЕН абонамент е ЖИВ и плаща. Allowlist, не
+// denylist — това е урокът от червения екип (07.08.2026):
+//
+// Старата версия пазеше isPremium, ако статусът НЕ е в списък с „прекратени“.
+// Това е fail-OPEN: всеки статус, който не сме предвидили (`paused`,
+// `incomplete`, празен, бъдещ Stripe статус), минаваше за „още плаща“. В комбо
+// с това, че закачането на agency seat вдига isPremium, се получаваше
+// резурекция: закачи сървър с МЪРТЪВ абонамент на агенция → isPremium=true;
+// откачи го → „не е в терминалния списък“ → остава платен ЗАВИНАГИ, без никой
+// да плаща. Allowlist-ът е fail-CLOSED: пазим достъп само при ПОЛОЖИТЕЛНО
+// доказателство за жив абонамент.
+//
+// `past_due` е тук нарочно: дунинг гратис (jobs/dunning.js сваля достъпа отделно
+// след 14 дни, като пише `unpaid`). Всичко друго — прекратено, непълно,
+// паузирано, непознато — НЕ пази достъп през тази клауза.
+const LIVE_OWN_SUB_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 export async function syncServerPaidFlag(serverId, tx = prisma) {
   const server = await tx.server.findUnique({
     where: { id: serverId },
     select: {
       isPremium: true, plan: true, planSource: true, stripeSubscriptionId: true,
-      stripeStatus: true,
+      stripeStatus: true, accessUntil: true, archiveRetentionDays: true,
       agencyId: true, agency: { select: { active: true } },
     },
   });
   if (!server) return false;
 
+  const now = new Date();
   const ownPaid = !!server.plan && server.plan !== "free";
   const agencyCovered = !!(server.agencyId && server.agency?.active);
 
-  // ЗАВАРЕН GRANDFATHER (критично): редове отпреди въвеждането на `plan`
-  // носят isPremium=true и plan="free"/null. getServerTier (виж по-горе) ги
-  // признава за white-label абонати. Ако тук ги сметнем за неплатени, sync-ът
-  // МЪЛЧАЛИВО СВАЛЯ платен достъп на реален абонат — необратимо и парично.
-  // Затова: никога не сваляме ред, който още изглежда като истински абонамент.
-  //
-  // ОБАЧЕ (червен екип, 07.08.2026): само „има subscription id“ НЕ е достатъчно.
-  // Абонамент, който е ПРЕКРАТЕН (отменен, изтекъл, оспорен, неплатен), оставя
-  // след себе си planSource и stripeSubscriptionId. Комбинирано с това, че
-  // самият sync вдига isPremium при закачане на agency seat, се получаваше
-  // самозахранващ се цикъл: закачаш сървър с мъртъв абонамент на агенция →
-  // isPremium=true; сваляш го → grandfather вижда „isPremium + subscription id“
-  // и го оставя платен ЗАВИНАГИ, без никой да плаща.
-  //
-  // Затова прекратеният статус е окончателен отказ: заварен абонат е този,
-  // за когото НЯМА доказателство, че абонаментът е свършил (status липсва или
-  // е жив), а не всеки, който някога е имал абонамент.
-  const terminated = TERMINATED_STRIPE_STATUSES.has(
-    String(server.stripeStatus || "").toLowerCase(),
-  );
+  // v40 — ОТМЕНЕН, но платен до края на периода. Живият гратис Е платено
+  // състояние: суровата колона трябва да го отразява, иначе четците на
+  // isPremium (bot config, dashboard, panel функции) мълчаливо го третират като
+  // безплатен, докато `getServerTier` едновременно връща платения план — двете
+  // се разминават. (Червен екип R2, 07.08.2026)
+  const graceActive = !!(server.accessUntil && server.accessUntil > now);
 
-  const legacyGrandfather = server.isPremium && !ownPaid && !agencyCovered && !terminated
+  // Собствен абонамент, ЖИВ по статуса си, но с още незаписан `plan` (out-of-
+  // order webhook: subscription.updated ПРЕДИ checkout.session.completed).
+  // Изисква ПОЛОЖИТЕЛНО доказателство: жив статус + реален собствен абонамент.
+  const status = String(server.stripeStatus || "").toLowerCase();
+  const ownSubLive = !ownPaid
+    && LIVE_OWN_SUB_STATUSES.has(status)
     && (!!server.stripeSubscriptionId || !!server.planSource);
 
-  const shouldBe = ownPaid || agencyCovered || legacyGrandfather;
-  if (server.isPremium !== shouldBe) {
-    await tx.server.update({ where: { id: serverId }, data: { isPremium: shouldBe } });
+  const shouldBe = ownPaid || agencyCovered || graceActive || ownSubLive;
+
+  const data = {};
+  if (server.isPremium !== shouldBe) data.isPremium = shouldBe;
+  // Ретенцията на транскрипти е premium (null = безсрочно). При СВАЛЯНЕ я връщаме
+  // на базовите 30 дни ТУК, синхронно — иначе сваленият сървър пазеше транскрипти
+  // безсрочно до неделния клийнъп (до 7 дни прозорец). Пипаме само когато е била
+  // „безсрочно“ (null) — не разваляме друга стойност. (Кодаджията одит 07.08.2026)
+  if (!shouldBe && server.archiveRetentionDays === null) data.archiveRetentionDays = 30;
+
+  if (Object.keys(data).length) {
+    await tx.server.update({ where: { id: serverId }, data });
   }
   return shouldBe;
 }

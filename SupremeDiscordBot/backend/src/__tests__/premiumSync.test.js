@@ -63,28 +63,48 @@ describe("syncServerPaidFlag — колоната = платено състоя�
     expect(prismaMock.server.update).not.toHaveBeenCalled();
   });
 
-  // ─── ЗАВАРЕН GRANDFATHER (парично-критично) ─────────────────────────────
-  // Редове отпреди въвеждането на `plan` носят isPremium=true + plan="free".
-  // getServerTier ги признава за white-label абонати. Ранна версия на sync-а
-  // ги броеше за неплатени и МЪЛЧАЛИВО сваляше платен достъп на реален
-  // абонат (находка на одита; backfill скриптът щеше да го направи масово).
-  it("заварен абонат (isPremium=true, plan=free, има stripeSubscriptionId) НЕ се сваля", async () => {
-    seed([{ id: "g1", isPremium: true, plan: "free", planSource: null,
-            stripeSubscriptionId: "sub_123", agencyId: null, agency: null }]);
+  // ─── FAIL-CLOSED: пазим достъп само при ПОЛОЖИТЕЛНО доказателство ─────────
+  // Червеният екип (07.08.2026) обърна политиката от denylist на allowlist.
+  // Старата версия пазеше isPremium, ако статусът НЕ е „прекратен“ — fail-OPEN:
+  // всеки непредвиден статус (paused/incomplete/празен) минаваше за „още плаща“,
+  // а закачането на agency seat вдига isPremium → attach→detach резурекция.
+  // Сега: жив статус ИЛИ жив гратис ИЛИ собствен план ИЛИ активна агенция.
+  it("собствен абонамент с ЖИВ статус (active), но незаписан plan → остава платен", async () => {
+    // Out-of-order webhook: subscription.updated дойде ПРЕДИ checkout.completed.
+    seed([{ id: "g1", isPremium: true, plan: "free", planSource: "stripe",
+            stripeSubscriptionId: "sub_123", stripeStatus: "active",
+            accessUntil: null, agencyId: null, agency: null }]);
     expect(await syncServerPaidFlag("g1")).toBe(true);
     expect(store.server.get("g1").isPremium).toBe(true);
-    expect(prismaMock.server.update).not.toHaveBeenCalled();
   });
 
-  it("заварен абонат с planSource (Discord/manual) също НЕ се сваля", async () => {
-    seed([{ id: "g2", isPremium: true, plan: "free", planSource: "discord",
-            stripeSubscriptionId: null, agencyId: null, agency: null }]);
-    expect(await syncServerPaidFlag("g2")).toBe(true);
+  it("past_due (дунинг гратис) остава платен — дунингът сваля отделно след 14 дни", async () => {
+    seed([{ id: "gp", isPremium: true, plan: "free", planSource: "stripe",
+            stripeSubscriptionId: "sub_x", stripeStatus: "past_due",
+            accessUntil: null, agencyId: null, agency: null }]);
+    expect(await syncServerPaidFlag("gp")).toBe(true);
   });
 
-  it("но истински free сървър (без следа от абонамент) СЕ сваля", async () => {
+  it("голи маркери БЕЗ жив статус (subscriptionId + planSource, статус празен) → СВАЛЯ (fail-closed)", async () => {
+    // Точно резурекционната дупка: празен/непознат статус вече НЕ пази достъп.
+    seed([{ id: "g2", isPremium: true, plan: "free", planSource: "stripe",
+            stripeSubscriptionId: "sub_dead", stripeStatus: "",
+            accessUntil: null, agencyId: null, agency: null }]);
+    expect(await syncServerPaidFlag("g2")).toBe(false);
+    expect(store.server.get("g2").isPremium).toBe(false);
+  });
+
+  it("жив гратис (accessUntil в бъдещето) е платено състояние (v40)", async () => {
+    seed([{ id: "gg", isPremium: false, plan: "free", planSource: null,
+            stripeSubscriptionId: null, stripeStatus: "canceled",
+            accessUntil: new Date(Date.now() + 10 * 864e5), agencyId: null, agency: null }]);
+    expect(await syncServerPaidFlag("gg")).toBe(true);
+  });
+
+  it("истински free сървър (без следа от абонамент) СЕ сваля", async () => {
     seed([{ id: "g3", isPremium: true, plan: "free", planSource: null,
-            stripeSubscriptionId: null, agencyId: null, agency: null }]);
+            stripeSubscriptionId: null, stripeStatus: null,
+            accessUntil: null, agencyId: null, agency: null }]);
     expect(await syncServerPaidFlag("g3")).toBe(false);
     expect(store.server.get("g3").isPremium).toBe(false);
   });
@@ -143,13 +163,17 @@ describe("grandfather гардът не възкресява прекратен 
     expect(await syncServerPaidFlag("grace")).toBe(true);
   });
 
-  it("заварен ред БЕЗ статус остава платен — това е първоначалната цел на гарда", async () => {
+  it("ред БЕЗ жив статус (null) + голи маркери → СВАЛЯ (fail-closed, червен екип R1)", async () => {
+    // Обръщане на политиката: празен/липсващ статус вече НЕ е доказателство за
+    // жив абонамент. Само `active`/`trialing`/`past_due` или жив accessUntil пазят
+    // достъп. Пре-launch няма реални заварени редове; резурекционната дупка е
+    // по-скъпа от хипотетичния legacy абонат.
     seed([{
       id: "legacy", isPremium: true, plan: "free",
       planSource: "stripe", stripeSubscriptionId: "sub_old", stripeStatus: null,
-      agencyId: null, agency: null,
+      accessUntil: null, agencyId: null, agency: null,
     }]);
-    expect(await syncServerPaidFlag("legacy")).toBe(true);
+    expect(await syncServerPaidFlag("legacy")).toBe(false);
   });
 });
 

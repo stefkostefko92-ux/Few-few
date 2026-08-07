@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { stripePriceId, planFromStripePrice, PLANS, syncAgencyServersPaidFlag, syncServerPaidFlag, getServerTier } from "../lib/premium.js";
-import { dmUser } from "../services/botNotifier.js";
+import { dmUser, reconcileWhitelabel } from "../services/botNotifier.js";
 
 // Single-server tiers sold via the per-server checkout. Agency (multi-server)
 // plans are sold through /api/agency (routes/agency.js).
@@ -466,6 +466,8 @@ router.post("/webhook", requireStripe, async (req, res) => {
             // суровата isPremium колона (четци на суровата колона: bot config,
             // dashboard, panel функции). Извън runOnce — след commit-а.
             await syncAgencyServersPaidFlag(agencyId).catch(() => {});
+            // Активирана агенция → член-сървъри с токен вдигат бранд бот сега.
+            reconcileWhitelabel();
             console.log(`✅ Agency ${agencyId} activated`);
           }
           break;
@@ -587,7 +589,10 @@ router.post("/webhook", requireStripe, async (req, res) => {
           });
           // Recovery от past_due обратно в active → покритите сървъри пак стават
           // платени; синхронизирай суровата колона (симетрично на cancel пътя).
-          if (did) await syncAgencyServersPaidFlag(agency.id).catch(() => {});
+          if (did) {
+            await syncAgencyServersPaidFlag(agency.id).catch(() => {});
+            reconcileWhitelabel(); // tier на членовете се промени → сверявай бранд ботовете
+          }
           break;
         }
 
@@ -795,6 +800,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
             // Recompute: сървър със СОБСТВЕН план остава premium, иначе → free.
             // При активен гратис агенцията още е `active`, значи нищо не пада.
             await syncAgencyServersPaidFlag(agency.id).catch(() => {});
+            reconcileWhitelabel(); // отмяна/grace на агенция → сверявай бранд ботовете
             console.log(
               graceUntil
                 ? `⏳ Agency ${agency.id} отменена — местата живеят до ${graceUntil.toISOString()}`
@@ -825,7 +831,12 @@ router.post("/webhook", requireStripe, async (req, res) => {
           await tx.server.update({
             where: { id: server.id },
             data: {
-              isPremium: false,
+              // Гратисът Е платено състояние → суровата колона трябва да го
+              // отразява, иначе четците на isPremium (списъкът с сървъри, bot
+              // config) показват отменен-но-платен сървър като безплатен, докато
+              // getServerTier връща платения gracePlan — разминаване. При churn
+              // (без гратис) пада на false. (Одит 07.08.2026)
+              isPremium: !!graceUntil,
               plan: "free",
               billingInterval: null,
               // planSource също пада: иначе остатъчното "stripe" блокира
@@ -852,6 +863,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
 
         if (did) {
+          // Собствен план падна → сверявай бранд бота на ТОЗИ сървър. При grace с
+          // whitelabel клиентът остава (tier още покрива); без grace — слиза.
+          reconcileWhitelabel(server.id);
           console.log(
             graceUntil
               ? `⏳ Server ${server.id} отменен — достъп (${gracePlan}) до ${graceUntil.toISOString()}`
@@ -914,6 +928,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
           // + собствен план), затова е коректен и за трите посоки.
           await syncAgencyServersPaidFlag(agencyForSub.id).catch(() => {});
           for (const id of droppedIds) await syncServerPaidFlag(id).catch(() => {});
+          reconcileWhitelabel(); // agency status/seat промяна → сверявай бранд ботовете
           break;
         }
 
@@ -1027,6 +1042,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
             await tx.auditLog.create({ data: { actorTag: "STRIPE", action: "AGENCY_REVOKED_DISPUTE", targetId: disputedAgency.id, metadata: { disputeId: dispute.id, canceledSubscriptionId: agencySubId ?? null } } });
           });
           await syncAgencyServersPaidFlag(disputedAgency.id).catch(() => {});
+          reconcileWhitelabel(); // chargeback → член-сървърите губят бранд бот
           await cancelSubscriptionNow(agencySubId, `chargeback ${dispute.id}`);
           console.log(`⚠️ Agency ${disputedAgency.id} отнета — chargeback`);
           break;
@@ -1065,6 +1081,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // провалът му вече не може да отмени записа (достъпът Е отнет). Хвърля
         // при истинска грешка → Stripe ретрайва → маркерът спира двойния ефект.
         await cancelSubscriptionNow(disputedSubId, `chargeback ${dispute.id}`);
+        reconcileWhitelabel(server.id); // chargeback → бранд ботът на сървъра слиза
         console.log(`⚠️ Server ${server.id} Premium revoked — chargeback/dispute`);
         break;
       }
@@ -1091,6 +1108,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
             await tx.auditLog.create({ data: { actorTag: "STRIPE", action: "AGENCY_REVOKED_REFUND", targetId: refundedAgency.id, metadata: { chargeId: charge.id, canceledSubscriptionId: agencySubId ?? null } } });
           });
           await syncAgencyServersPaidFlag(refundedAgency.id).catch(() => {});
+          reconcileWhitelabel(); // refund → член-сървърите губят бранд бот
           await cancelSubscriptionNow(agencySubId, `refund ${charge.id}`);
           console.log(`↩️ Agency ${refundedAgency.id} отнета — пълно връщане`);
           break;
@@ -1121,6 +1139,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
           await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_REFUND", targetId: server.id, metadata: { chargeId: charge.id, canceledSubscriptionId: refundedSubId ?? null } } });
         });
         await cancelSubscriptionNow(refundedSubId, `refund ${charge.id}`);
+        reconcileWhitelabel(server.id); // refund → бранд ботът на сървъра слиза
         console.log(`↩️ Server ${server.id} Premium revoked — full refund`);
         break;
       }

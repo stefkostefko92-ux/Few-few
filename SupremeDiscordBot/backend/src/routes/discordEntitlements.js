@@ -23,6 +23,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { planFromDiscordSku, syncServerPaidFlag } from "../lib/premium.js";
+import { reconcileWhitelabel } from "../services/botNotifier.js";
 
 const router = Router();
 
@@ -163,6 +164,11 @@ async function revokeServer(serverId, entitlementId, reason) {
       metadata: { entitlementId, reason },
     },
   });
+
+  // Discord entitlement отпадна → ако сървърът е ползвал бранд бот през него,
+  // клиентът трябва да СЛЕЗЕ (освен ако не е покрит по друг път — reconcile-ът
+  // чете ефективния tier, не приема сляпо, че пада).
+  reconcileWhitelabel(serverId);
 
   return { revoked: true };
 }

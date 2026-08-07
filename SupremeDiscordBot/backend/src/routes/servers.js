@@ -102,14 +102,19 @@ router.get("/", async (req, res, next) => {
       where: { id: { in: serverIds }, botRemovedAt: null },
       select: {
         id: true, isPremium: true, stripeStatus: true, trialEndsAt: true,
+        accessUntil: true,
         agencyId: true, agency: { select: { active: true } },
       },
     });
     const dbMap = Object.fromEntries(dbServers.map((s) => [s.id, s]));
 
+    // Огледало на effectivePremiumWhere (premium.js): собствен план ИЛИ активен
+    // trial ИЛИ v40 гратис ИЛИ активна агенция. Без `accessUntil` отменен-но-
+    // платен сървър (gracePlan) се показваше като безплатен в списъка.
     const effectivePremium = (s) =>
       !!s && (s.isPremium
         || (s.trialEndsAt && s.trialEndsAt > now)
+        || (s.accessUntil && s.accessUntil > now)
         || (s.agencyId && s.agency?.active));
 
     const result = adminGuilds.map((g) => ({

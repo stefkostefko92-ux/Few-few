@@ -321,6 +321,68 @@ export async function bootAllCustomClients(mainClient) {
 }
 
 /**
+ * Реконсилиация: приведи РАБОТЕЩИТЕ white-label клиенти в съответствие с това
+ * КОИ сървъри имат право на white-label бот СЕГА.
+ *
+ * ЗАЩО СЪЩЕСТВУВА (одит 07.08.2026): white-label клиентът се вдигаше при старт
+ * (`bootAllCustomClients`) и се сваляше само когато токенът се смени
+ * (`WHITELABEL_UPDATE` от servers.js). Но tier може да падне по НАПЪЛНО ДРУГИ
+ * пътища, които не пипат токена: махане на сървър от agency seat, отмяна/refund/
+ * chargeback на агенцията, дунинг деактивация, изтичане на grace. По всички тях
+ * `customBotToken` си остава в базата — сменя се само ЕФЕКТИВНИЯТ план. Резултат:
+ * бранд ботът продължаваше да обслужва сървър, който вече не плаща за него, до
+ * следващ рестарт на процеса (при стабилен контейнер — месеци).
+ *
+ * `/bot/servers/with-custom-tokens` е единственият източник на истина за „кой
+ * трябва да върви“ (гейтва на ефективния tier, не на суровата колона). Тук само
+ * караме работещото множество да съвпадне с него: вдигаме липсващите, сваляме
+ * излишните. Идемпотентно — безопасно е да се вика колкото често искаш.
+ *
+ * Огледало на `runEntitlementReconcile` за Discord монетизацията: Discord/Stripe
+ * не преизпращат всяко събитие, затова периодичната метла е това, което лови
+ * пропуснатото.
+ */
+export async function reconcileCustomClients(mainClient) {
+  let eligible;
+  try {
+    const { data } = await api.get("/bot/servers/with-custom-tokens");
+    eligible = new Set((data || []).map((s) => s.id));
+  } catch (err) {
+    // Fail-closed срещу ГРЕШНО сваляне: ако backend-ът е недостъпен, НЕ приемаме
+    // „нула права“ и не сваляме живи клиенти. По-добре временно надживял клиент,
+    // отколкото да свалим всички бранд ботове заради мрежов трепет.
+    console.error("[ClientManager] reconcile: backend недостъпен — пропускам:", err?.message);
+    return { booted: 0, shutDown: 0, skipped: true };
+  }
+
+  let shutDown = 0;
+  // 1) Свали работещи клиенти, които вече НЯМАТ право.
+  for (const serverId of [...customClients.keys()]) {
+    if (!eligible.has(serverId)) {
+      console.log(`[ClientManager] reconcile: ${serverId} вече няма white-label tier — свалям`);
+      await shutdownCustomClient(serverId);
+      shutDown++;
+    }
+  }
+
+  // 2) Вдигни имащи право, които не вървят (напр. seat закачен без смяна на токен).
+  let booted = 0;
+  const toBoot = [...eligible].filter((id) => !customClients.get(id)?.isReady());
+  const BATCH = 5;
+  for (let i = 0; i < toBoot.length; i += BATCH) {
+    const batch = toBoot.slice(i, i + BATCH);
+    const results = await Promise.allSettled(batch.map((id) => bootCustomClient(id, mainClient)));
+    booted += results.filter((r) => r.status === "fulfilled" && r.value).length;
+    if (i + BATCH < toBoot.length) await new Promise((r) => setTimeout(r, 2000));
+  }
+
+  if (shutDown || booted) {
+    console.log(`[ClientManager] reconcile: вдигнати ${booted}, свалени ${shutDown}`);
+  }
+  return { booted, shutDown, skipped: false };
+}
+
+/**
  * Graceful shutdown of all white-label clients (called on SIGTERM/SIGINT).
  */
 export async function shutdownAllCustomClients() {

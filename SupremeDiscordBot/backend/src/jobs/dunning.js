@@ -33,6 +33,7 @@
 
 import { prisma } from "../lib/prisma.js";
 import { syncServerPaidFlag } from "../lib/premium.js";
+import { reconcileWhitelabel } from "../services/botNotifier.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GRACE_DAYS = Number(process.env.DUNNING_GRACE_DAYS ?? 14);
@@ -218,6 +219,13 @@ export async function runDunningJob() {
   } catch (err) {
     console.error(`[dunning] ❌ Job се провали:`, err.message);
     result.errors.push({ type: "dunning", error: err.message });
+  }
+
+  // Ако нещо е паднало (сървър, агенция или изтекъл гратис), приведи бранд
+  // ботовете към новия tier — иначе бранд бот на свален сървър виси до рестарт.
+  // Едно пълно сверяване покрива всички засегнати наведнъж; fire-and-forget.
+  if (result.downgraded || result.agenciesDeactivated || result.graceExpired) {
+    reconcileWhitelabel();
   }
 
   const duration = Date.now() - startedAt.getTime();

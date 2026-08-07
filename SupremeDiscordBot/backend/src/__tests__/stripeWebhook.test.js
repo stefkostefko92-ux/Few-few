@@ -37,6 +37,7 @@ const dmUserMock = vi.fn();
 vi.mock("../services/botNotifier.js", () => ({
   notifyBot: vi.fn(),
   dmUser: (...args) => dmUserMock(...args),
+  reconcileWhitelabel: vi.fn(),
 }));
 
 const stripeRouter = (await import("../routes/stripe.js")).default;
