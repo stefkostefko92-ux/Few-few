@@ -4,7 +4,7 @@
 
 import api from "../utils/api.js";
 import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
-import { DANGER } from "../utils/colors.js";
+import { DANGER, WARNING } from "../utils/colors.js";
 
 export default {
   name: "guildMemberRemove",
@@ -53,14 +53,35 @@ export default {
         const panel = ticket.panel;
         if (!panel?.autoCloseOnLeave) continue;
 
-        // Close the ticket via backend
-        await api.post(`/bot/ticket/${ticket.id}/close`, {
-          reason: "Ticket creator left the server",
-        }).catch(() => {});
+        // Close the ticket via backend.
+        // `.catch(() => {})` тук значеше, че провалено затваряне минава НЕЗАБЕЛЯЗАНО
+        // и въпреки това публикуваме „🔒 Ticket Auto-Closed“ в канала. Персоналът
+        // чете, че тикетът е затворен, а в базата той е отворен: брои се в
+        // лимитите, стои в таблото и никой не го поглежда пак.
+        // (Разбивача, 07.08.2026)
+        let closed = true;
+        try {
+          await api.post(`/bot/ticket/${ticket.id}/close`, {
+            reason: "Ticket creator left the server",
+          });
+        } catch (err) {
+          closed = false;
+          console.warn(`[guildMemberRemove] тикет ${ticket.id} НЕ беше затворен: ${err?.message}`);
+        }
 
         // Optionally delete the channel — keeps it if just closed
         const ch = await member.guild.channels.fetch(ticket.channelId).catch(() => null);
-        if (ch) {
+        if (ch && !closed) {
+          // Казваме истината: тикетът остава отворен и иска ръчно затваряне.
+          await ch.send({
+            embeds: [{
+              title: "⚠️ Auto-close failed",
+              description: `<@${member.id}> has left the server, but this ticket could not be closed automatically. Please close it manually.`,
+              color: WARNING,
+              timestamp: new Date().toISOString(),
+            }],
+          }).catch(() => {});
+        } else if (ch) {
           await ch.send({
             embeds: [{
               title: "🔒 Ticket Auto-Closed",

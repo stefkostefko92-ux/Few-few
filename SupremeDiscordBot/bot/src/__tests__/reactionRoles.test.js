@@ -3,6 +3,9 @@
 import { describe, it, expect } from "vitest";
 import { PermissionsBitField } from "discord.js";
 import { emojiKey, isRoleSafeToSelfAssign } from "../utils/reactionRoles.js";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 // Минимален "role" дубъл, съвместим с това, което гардът чете.
 function fakeRole({ permsBits = 0n, managed = false, position = 1 } = {}) {
@@ -56,5 +59,34 @@ describe("emojiKey — каноничен ключ unicode/custom", () => {
   });
   it("custom emoji → name:id", () => {
     expect(emojiKey({ name: "pepe", id: "123456789012345678" })).toBe("pepe:123456789012345678");
+  });
+});
+
+// ─── Autorole ползва СЪЩИЯ гард срещу ескалация (Разбивача, 07.08.2026) ──────
+// Reaction Roles имаха гарда от 05.08.2026; autorole беше без него, при това е
+// по-опасен: прилага се автоматично на ВСЕКИ влизащ, без негово действие. Админ
+// с Manage Server (който сам може да няма Administrator) задаваше autorole към
+// администраторска роля и всеки нов член ставаше администратор.
+describe("autorole минава през гарда за опасни роли", () => {
+  const SRC = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../events/guildMemberAdd.js"),
+    "utf-8",
+  );
+
+  it("guildMemberAdd внася isRoleSafeToSelfAssign", () => {
+    expect(SRC).toContain("isRoleSafeToSelfAssign");
+  });
+
+  it("проверката стои ПРЕДИ roles.add, не след него", () => {
+    const guard = SRC.indexOf("isRoleSafeToSelfAssign(role");
+    const add = SRC.indexOf('member.roles.add(roleId, "Autorole on join")');
+    expect(guard).toBeGreaterThan(-1);
+    expect(add).toBeGreaterThan(-1);
+    expect(guard).toBeLessThan(add);
+  });
+
+  it("отказаната роля оставя следа — иначе конфигурацията мълчи", () => {
+    const i = SRC.indexOf("isRoleSafeToSelfAssign(role");
+    expect(SRC.slice(i, i + 400)).toMatch(/console\.warn/);
   });
 });
