@@ -214,6 +214,10 @@ export async function bootCustomClient(serverId, mainClient, { force = false } =
       } catch (err) {
         console.error(`[ClientManager] Command registration failed for ${serverId}:`, err?.message);
       }
+
+      // Брандиране: само името при вдигане. Аватарът иска изрична промяна —
+      // виж applyBranding защо (лимит ~2 смени/час и невъзможно сравнение).
+      await applyBranding(client, serverId, { withAvatar: false });
     });
 
     await client.login(data.token);
@@ -231,6 +235,59 @@ export async function bootCustomClient(serverId, mainClient, { force = false } =
     return await promise;
   } finally {
     bootLocks.delete(serverId);
+  }
+}
+
+/**
+ * Прилага брандирането (име + аватар) към ЖИВИЯ Discord бот.
+ *
+ * Дупката, която затваря (докладвана от собственика, 07.08.2026): полетата се
+ * записваха в базата и брандираха HTML транскрипта, но НИКОГА не стигаха до
+ * Discord — в целия бот единственото `client.user.*` извикване беше
+ * `setActivity`. Клиентът плаща White-label, попълва име и снимка, интерфейсът
+ * казва „запазено“, а ботът си остава със старото. Главното обещание на
+ * тарифата не работеше.
+ *
+ * Дисциплина:
+ *   • Името се сменя САМО ако наистина се различава. Discord дава на бота ~2
+ *     смени на час; сляпо прилагане при всеки boot изгаря лимита и после
+ *     истинската промяна не минава.
+ *   • Аватарът се праща само когато е поискан ИЗРИЧНО (`withAvatar`) — при
+ *     рестарт заради смяна на настройките, не при всяко вдигане: не можем да
+ *     сравним локален URL с хеша в Discord, значи всеки boot би пращал наново.
+ *   • Провалът НИКОГА не спира бота: без бранд той пак обслужва тикетите.
+ */
+async function applyBranding(client, serverId, { withAvatar = false } = {}) {
+  let branding;
+  try {
+    const { data } = await api.get(`/bot/server/${serverId}/branding`);
+    branding = data;
+  } catch (err) {
+    console.warn(`[ClientManager] брандиране за ${serverId}: не се прочете — ${err?.message}`);
+    return;
+  }
+  if (!branding) return;
+
+  if (branding.name && client.user?.username !== branding.name) {
+    try {
+      await client.user.setUsername(branding.name);
+      console.log(`[ClientManager] ${serverId}: името на бота → „${branding.name}“`);
+    } catch (err) {
+      // 50035 = невалидно име (заето/забранена дума); 429 = изчерпан лимит.
+      const why = err?.code === 429 || err?.status === 429
+        ? "Discord ограничава смените на име (~2/час) — ще мине по-късно"
+        : err?.message;
+      console.warn(`[ClientManager] ${serverId}: името не се смени — ${why}`);
+    }
+  }
+
+  if (withAvatar && branding.avatarDataUri) {
+    try {
+      await client.user.setAvatar(branding.avatarDataUri);
+      console.log(`[ClientManager] ${serverId}: аватарът на бота е обновен`);
+    } catch (err) {
+      console.warn(`[ClientManager] ${serverId}: аватарът не се смени — ${err?.message}`);
+    }
   }
 }
 
@@ -267,6 +324,9 @@ export async function restartCustomClient(serverId, mainClient) {
   // никога не влизаше в сила.
   const fresh = await bootCustomClient(serverId, mainClient, { force: true });
   if (fresh) {
+    // Рестартът идва от ИЗРИЧНА промяна на настройките (WHITELABEL_UPDATE) —
+    // тук аватарът наистина трябва да се приложи.
+    await applyBranding(fresh, serverId, { withAvatar: true });
     // Новият е онлайн → чак сега махаме стария (ако е различна инстанция).
     if (old && old !== fresh) {
       try { await old.destroy(); } catch (err) { console.error(`[ClientManager] old client destroy for ${serverId}:`, err?.message); }

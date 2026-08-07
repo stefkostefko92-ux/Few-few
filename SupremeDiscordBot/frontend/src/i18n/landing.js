@@ -451,7 +451,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Wat gebeurt er als de proefperiode van 14 dagen afloopt — word ik dan iets in rekening gebracht?", a: "Nee. De proefperiode vereist geen creditcard, dus er valt niets in rekening te brengen en niets op te zeggen. Als je geen abonnement neemt, valt de server na 14 dagen automatisch terug op het gratis abonnement — je panels, formulieren en transcripties blijven behouden. Neem een abonnement wanneer je er klaar voor bent." },
       { q: "Waar worden mijn gegevens opgeslagen?", a: "Alle gegevens staan in de EU. AVG-conform by design — geen doorgifte buiten de Unie. Bot-tokens worden versleuteld met AES-256-GCM." },
-      { q: "Kan ik mijn eigen Discord-bot gebruiken?", a: "Ja — met het White-label-abonnement (€ 19,99/maand of € 199/jaar; ook inbegrepen in de Agency-abonnementen) upload je je eigen bot-token voor een white-label-ervaring met eigen naam en avatar." },
+      { q: "Kan ik mijn eigen Discord-bot gebruiken?", a: "Ja — met het White-label-abonnement (€9,99/maand of €99/jaar; ook inbegrepen in de Agency-abonnementen) upload je je eigen bot-token voor een white-label-ervaring met eigen naam en avatar." },
       { q: "Wat gebeurt er als ik opzeg?", a: "Geen lock-in. Zeg op elk moment op via het dashboard — de server valt terug op het gratis abonnement en je data blijft toegankelijk." },
       { q: "Worden meerdere servers ondersteund?", a: "Ja — koppel onbeperkt Discord-servers vanuit één account. Elke server heeft eigen instellingen en facturering." },
       { q: "Hoe krijg ik support?", a: "Word lid van onze Discord-server — directe support van het team dat Supreme Bot heeft gebouwd." },

@@ -166,6 +166,24 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
     response.trialUsed = server.trialUsed;
     response.trialEndsAt = server.trialEndsAt;
 
+    // Покритие от агенция + заетост на местата. Гербът на командния екран го
+    // показва поименно („3/5 места“) — числото е РЕАЛНО, брои се тук, не се
+    // догажда в клиента. Само за покрит сървър: за останалите е излишна заявка.
+    if (server.agencyId) {
+      const agency = await prisma.agency.findUnique({
+        where: { id: server.agencyId },
+        select: { active: true, plan: true, seatLimit: true },
+      });
+      response.agencyCovered = !!agency?.active;
+      if (agency?.active) {
+        response.agencyPlan = agency.plan;
+        response.agencySeatLimit = agency.seatLimit;
+        response.agencySeatsUsed = await prisma.server.count({ where: { agencyId: server.agencyId } });
+      }
+    } else {
+      response.agencyCovered = false;
+    }
+
     res.json(response);
   } catch (err) {
     next(err);
@@ -186,7 +204,6 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     welcomerEnabled, welcomerChannelId, welcomerMessage, welcomerEmbedColor,
     welcomerDmEnabled, welcomerDmMessage,
     autoroleIds, autoroleBotIds,
-    stickyMessagesEnabled,
     // Server event logging
     eventLogEnabled, eventLogChannelId, eventLogCategories, eventLogChannels,
     // Език на бота за ТОЗИ сървър — резервен, когато Discord клиентският
@@ -244,7 +261,12 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(welcomerDmMessage !== undefined && { welcomerDmMessage: welcomerDmMessage || null }),
         ...(Array.isArray(autoroleIds) && { autoroleIds }),
         ...(Array.isArray(autoroleBotIds) && { autoroleBotIds }),
-        ...(stickyMessagesEnabled !== undefined && { stickyMessagesEnabled: Boolean(stickyMessagesEnabled) }),
+        // `stickyMessagesEnabled` е МАХНАТО от приеманите полета: нищо не го
+        // четеше. Реалният превключвател е `enabled` на всяко sticky съобщение
+        // (StickyMessage.enabled) и той РАБОТИ. Сървърният ключ беше замислен
+        // като главен прекъсвач, но никога не се стигна до свързването му —
+        // API-то го приемаше и го игнорираше. Колоната остава в базата (данните
+        // не се пипат), просто вече не се преструваме, че значи нещо.
         // Server event logging (free feature — no premium gate)
         ...(eventLogEnabled !== undefined && { eventLogEnabled: Boolean(eventLogEnabled) }),
         ...(eventLogChannelId !== undefined && { eventLogChannelId: eventLogChannelId || null }),

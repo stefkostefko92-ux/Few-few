@@ -326,7 +326,7 @@ export default function Login() {
               />
               <TrustCard
                 icon={Zap}
-                title="99.9% uptime SLA"
+                title="99.9% uptime target"
                 body="Monitored 24/7 with auto-recovery. See live status at /status — we're transparent."
               />
               <TrustCard
@@ -516,7 +516,7 @@ export default function Login() {
             </div>
 
             <p className="text-center text-xs text-cs-dim font-mono mt-8">
-              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime · EU hosting · GDPR · Cancel anytime
+              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime target · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>

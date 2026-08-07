@@ -663,9 +663,38 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   const padding             = panel.counterPadding ?? 4;
 
   // Helper — build final channel name using ticket number
+  //
+  // `namingTemplate` е настройка в таблото („Шаблон за име на тикет“), преведена
+  // на 8 езика и валидирана в backend-а — но досега ботът НЕ я четеше и строеше
+  // името само от префикса. Тоест клиент пишеше `support-{username}` и получаваше
+  // `ticket-0001-username`. Видима настройка, която не прави нищо. (Одит 07.08.2026)
+  //
+  // Discord иска: малки букви, без интервали, ≤100 знака. Затова резултатът се
+  // санитизира ЗАДЪЛЖИТЕЛНО — шаблонът е потребителски вход.
   function buildChannelName(number) {
     const uname = creator.username.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30) || "user";
     const pad   = String(number ?? 0).padStart(padding, "0");
+
+    const tpl = (panel.namingTemplate || "").trim();
+    if (tpl) {
+      const filled = tpl
+        .replace(/\{username\}/gi, uname)
+        .replace(/\{number\}/gi, pad)
+        .replace(/\{count\}/gi, pad)
+        .replace(/\{userid\}/gi, creator.id)
+        .replace(/\{prefix\}/gi, channelNamePrefix);
+      const safe = filled
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+        .replace(/-{2,}/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 100);
+      // Празен резултат (шаблон само от забранени знаци) → падаме на познатото
+      // име, вместо да пуснем невалидно към Discord.
+      if (safe) return safe;
+    }
+
     return `${channelNamePrefix}-${pad}-${uname}`.slice(0, 100);
   }
 

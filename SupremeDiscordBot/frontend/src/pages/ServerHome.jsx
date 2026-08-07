@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { getServer, getPanels, getForms, getDashboard, getStatus } from "../api";
 import StatTile from "../components/StatTile";
+import ServerCrest from "../components/ServerCrest";
 import AreaChart from "../components/charts/AreaChart";
 import BarList from "../components/charts/BarList";
 import { useT } from "../contexts/I18nContext";
@@ -90,24 +91,14 @@ export default function ServerHome() {
 
   return (
     <div className="p-8 max-w-[1400px]">
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4 min-w-0">
-          {server?.icon ? (
-            <img src={server.icon} alt="" className="w-14 h-14 rounded-xl border border-cs-border" />
-          ) : (
-            <div className="w-14 h-14 rounded-xl bg-cs-cyanGlow border border-cs-cyan/30 flex items-center justify-center">
-              <span className="text-xl font-bold text-cs-cyan">{server?.name?.[0]}</span>
-            </div>
-          )}
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="cs-heading font-display font-bold text-cs-text text-2xl truncate">{server?.name}</h1>
-              {server?.isPremium && <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>}
-            </div>
-            <p className="text-cs-dim text-xs font-mono mt-0.5">{t("overview.subtitle")}</p>
-          </div>
-        </div>
+      {/* ── Герб ───────────────────────────────────────────────────────────
+          Заменя стария ред „иконка + име + значка Premium“. Показва ТАРИФАТА
+          поименно, състоянието на бота и заетите места при agency — всичко от
+          реалния отговор, нула догаждане в клиента. */}
+      <ServerCrest server={server} botOnline={status?.services?.bot?.status === "ok"} />
+
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <p className="text-cs-dim text-xs font-mono">{t("overview.subtitle")}</p>
 
         {/* Един филтър-ред над всичко, което скоупва */}
         <div className="flex items-center gap-2" role="group" aria-label="Time range">

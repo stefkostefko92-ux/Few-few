@@ -17,98 +17,24 @@ const router = Router();
 //   - Track submission count in form_cooldowns
 
 router.post("/submit", requireBotSecret, async (req, res, next) => {
-  const { serverId, formId, userId, answers, reviewMessageId, reviewChannelId } = req.body;
-
-  if (!serverId || !formId || !userId || !answers) {
-    return res.status(400).json({ error: "serverId, formId, userId and answers are required" });
-  }
-
   try {
-    // Load form to check gating rules
-    const form = await prisma.form.findUnique({
-      where: { id: formId },
-      select: {
-        id: true, serverId: true,
-        closedAt: true, cooldownSeconds: true, maxSubmissions: true,
-        pingRoleIds: true,
-      },
-    });
-    if (!form || form.serverId !== serverId) {
-      return res.status(404).json({ error: "Form not found" });
-    }
-    if (form.closedAt) {
-      return res.status(403).json({ error: "Applications are currently closed for this form", code: "FORM_CLOSED" });
-    }
-
-    // Cooldown / max-submissions check
-    if ((form.cooldownSeconds && form.cooldownSeconds > 0) || form.maxSubmissions) {
-      const cooldown = await prisma.formCooldown.findUnique({
-        where: { formId_userId: { formId, userId } },
+    // Правилата живеят в services/applicationSubmit.js — ЕДИН източник и за
+    // уеб пътя, и за бота. Копие тук би дрейфнало (както се случи веднъж:
+    // ботът викаше друг маршрут и минаваше БЕЗ проверки).
+    const r = await submitApplication(req.body);
+    if (!r.ok) {
+      return res.status(r.status).json({
+        error: r.error,
+        ...(r.code && { code: r.code }),
+        ...(r.remainingSeconds != null && { remainingSeconds: r.remainingSeconds }),
       });
-
-      if (cooldown) {
-        if (form.maxSubmissions && cooldown.submissionCount >= form.maxSubmissions) {
-          return res.status(429).json({
-            error: `You have reached the maximum of ${form.maxSubmissions} submissions for this form`,
-            code: "MAX_SUBMISSIONS",
-          });
-        }
-        if (form.cooldownSeconds && form.cooldownSeconds > 0) {
-          const elapsed = (Date.now() - cooldown.lastSubmittedAt.getTime()) / 1000;
-          if (elapsed < form.cooldownSeconds) {
-            const remaining = Math.ceil(form.cooldownSeconds - elapsed);
-            return res.status(429).json({
-              error: `Please wait ${formatDuration(remaining)} before submitting again`,
-              code: "COOLDOWN",
-              remainingSeconds: remaining,
-            });
-          }
-        }
-      }
     }
-
-    // Ensure the user record exists — the applicant may not have logged into
-    // the dashboard yet, so we create a minimal stub if needed.
-    await prisma.user.upsert({
-      where: { id: userId },
-      create: { id: userId, username: userId, discriminator: "0" },
-      update: {},
-    });
-
-    const application = await prisma.application.create({
-      data: {
-        serverId,
-        formId,
-        userId,
-        answers,
-        reviewMessageId: reviewMessageId || null,
-        reviewChannelId: reviewChannelId || null,
-        status: "PENDING",
-      },
-    });
-
-    // Update cooldown tracker
-    await prisma.formCooldown.upsert({
-      where: { formId_userId: { formId, userId } },
-      create: { formId, userId, lastSubmittedAt: new Date(), submissionCount: 1 },
-      update: { lastSubmittedAt: new Date(), submissionCount: { increment: 1 } },
-    });
-
-    res.status(201).json({
-      ...application,
-      pingRoleIds: form.pingRoleIds || [],
-    });
+    res.status(201).json({ ...r.application, pingRoleIds: r.pingRoleIds });
   } catch (err) {
     next(err);
   }
 });
 
-function formatDuration(seconds) {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.ceil(seconds / 60)}m`;
-  if (seconds < 86400) return `${Math.ceil(seconds / 3600)}h`;
-  return `${Math.ceil(seconds / 86400)}d`;
-}
 
 // ─── GET /api/applications/:serverId ─────────────────────────────────────────────
 

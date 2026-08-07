@@ -57,7 +57,7 @@ function job(name, fn) {
 // Premium servers: null retention = keep forever.
 // Base servers: 30-day default (archiveRetentionDays = 30).
 
-cron.schedule("0 3 * * *", job("0 3 * * *", async () => {
+cron.schedule("0 3 * * *", job("archive-cleanup", async () => {
   console.log("[Scheduler] Running archive cleanup...");
   try {
     // Get all servers that have a defined retention period
@@ -97,7 +97,7 @@ cron.schedule("0 3 * * *", job("0 3 * * *", async () => {
 // connect-pg-simple handles express sessions separately (pruneSessionInterval).
 // This job cleans our custom sessions table used for Discord API calls.
 
-cron.schedule("0 * * * *", job("0 * * * *", async () => {
+cron.schedule("0 * * * *", job("session-cleanup", async () => {
   try {
     const result = await prisma.session.deleteMany({
       where: { expiresAt: { lt: new Date() } },
@@ -114,7 +114,7 @@ cron.schedule("0 * * * *", job("0 * * * *", async () => {
 // When a server downgrades from Premium to Base, their retention becomes 30 days.
 // This job enforces that — runs weekly on Sunday at 04:00 UTC.
 
-cron.schedule("0 4 * * 0", job("0 4 * * 0", async () => {
+cron.schedule("0 4 * * 0", job("retention-weekly", async () => {
   try {
     // Set archiveRetentionDays = 30 for any non-premium server that has null retention
     // (null means "forever" which is a Premium perk)
@@ -143,7 +143,7 @@ cron.schedule("0 4 * * 0", job("0 4 * * 0", async () => {
 // Runs every 30 minutes. Closes tickets that have had no activity for X hours
 // (configured per panel via inactivityCloseHours).
 
-cron.schedule("*/30 * * * *", job("*/30 * * * *", async () => {
+cron.schedule("*/30 * * * *", job("inactivity-autoclose", async () => {
   try {
     // Get all panels that have inactivity close configured
     const panels = await prisma.panel.findMany({
@@ -217,7 +217,7 @@ cron.schedule("*/30 * * * *", job("*/30 * * * *", async () => {
 }), TZ);
 
 // ─── Job 5: Giveaway auto-end (v1.8) ───────────────────
-cron.schedule("* * * * *", job("* * * * *", async () => {
+cron.schedule("* * * * *", job("giveaway-autoend", async () => {
   try {
     const due = await prisma.giveaway.findMany({
       where: { endedAt: null, endsAt: { lte: new Date() } },
@@ -236,7 +236,7 @@ cron.schedule("* * * * *", job("* * * * *", async () => {
 // ─── Job 5b: Poll auto-close ───────────────────
 // The /poll duration_hours option sets closesAt; without this job it was dead
 // (polls never closed). Closes due polls and re-renders the Discord message.
-cron.schedule("* * * * *", job("* * * * *", async () => {
+cron.schedule("* * * * *", job("poll-autoclose", async () => {
   try {
     const due = await prisma.poll.findMany({
       where: { closedAt: null, closesAt: { lte: new Date() } },
@@ -251,7 +251,7 @@ cron.schedule("* * * * *", job("* * * * *", async () => {
 }), TZ);
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
-cron.schedule("* * * * *", job("* * * * *", async () => {
+cron.schedule("* * * * *", job("scheduled-messages", async () => {
   try {
     const dueRaw = await prisma.scheduledMessage.findMany({
       where: { sentAt: null, sendAt: { lte: new Date() } },
@@ -378,7 +378,7 @@ async function sendTrialDm({ server, action, embed }) {
   return true;
 }
 
-cron.schedule("0 9 * * *", job("0 9 * * *", async () => {
+cron.schedule("0 9 * * *", job("trial-expiry-dm", async () => {
   try {
     const now = new Date();
     const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -495,7 +495,7 @@ cron.schedule("0 9 * * *", job("0 9 * * *", async () => {
 // ─── Job 8: Daily metrics snapshot (v2.1) ───────────────────────────
 // Runs at 00:05 UTC every day. Aggregates yesterday's ticket/form/app/verification
 // activity into daily_metrics for fast analytics queries.
-cron.schedule("5 0 * * *", job("5 0 * * *", async () => {
+cron.schedule("5 0 * * *", job("daily-metrics-rollup", async () => {
   try {
     const now = new Date();
     const yesterday = new Date(now);
@@ -587,7 +587,7 @@ async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
   }).catch(() => null);
 }
 
-cron.schedule("*/10 * * * *", job("*/10 * * * *", async () => {
+cron.schedule("*/10 * * * *", job("sla-watch", async () => {
   try {
     const now = new Date();
     const panels = await prisma.panel.findMany({

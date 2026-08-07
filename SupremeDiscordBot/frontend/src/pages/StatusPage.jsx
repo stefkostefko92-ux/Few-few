@@ -104,7 +104,15 @@ export default function StatusPage() {
 
         {/* ═══ SLA info ═══ */}
         <div className="border-t border-cs-border pt-6 text-xs text-cs-dim font-mono space-y-1">
-          <p>Uptime commitment: 99.9% · Premium | 99.95% · Enterprise — measured monthly, backed by service credits</p>
+          {/* Обявявахме „99.9% Premium | 99.95% Enterprise — backed by service
+              credits“. Три неверни неща наведнъж: „Enterprise“ план НЕ съществува
+              в ценоразписа, service credits ги НЯМА в Общите условия/EULA, а
+              EULA §12.1 изрично казва, че специфична гаранция за uptime не се
+              предлага (Premium може да ДОГОВОРИ SLA). Реклама на договорна
+              гаранция, която никой документ не подкрепя, е заблуждаваща търговска
+              практика (Дир. 2005/29/ЕО) — и първият клиент, поискал кредит, го
+              открива. Текстът вече казва каквото е вярно: цел, не гаранция. */}
+          <p>Uptime target: 99.9% — monitored continuously. No contractual SLA is included by default; Premium subscribers may negotiate one (EULA §12.1).</p>
           <p>Infrastructure: Hetzner (Germany) · EU-only data residency</p>
           <p>Status checks refresh every 30 seconds · Cache: 30s</p>
           <p className="pt-2">

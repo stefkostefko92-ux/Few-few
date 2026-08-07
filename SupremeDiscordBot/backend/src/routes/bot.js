@@ -11,6 +11,9 @@ import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
 import { getServerTier, planHasFeature, sanitizePanelForTier } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
+import { submitApplication } from "../services/applicationSubmit.js";
+import axios from "axios";
+import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
 const router = Router();
 
@@ -124,6 +127,61 @@ router.get("/server/:serverId/token", async (req, res, next) => {
       // Decryption failed — token may have been stored before encryption was added
       res.json({ token: null, warning: "Token could not be decrypted — please re-enter it" });
     }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── GET /api/bot/server/:serverId/branding ──────────────────────────────────
+// Брандирането на white-label бота: име + аватар, готови за прилагане.
+//
+// ЗАЩО СЪЩЕСТВУВА (одит 07.08.2026 — докладвано от собственика): полетата
+// `customBotName`/`customBotAvatar` се ЗАПИСВАХА и се четяха САМО за брандиране
+// на HTML транскрипта. Никъде — нито веднъж — не се пращаха към Discord. Тоест
+// клиент плаща White-label, попълва име и снимка, интерфейсът казва „запазено“,
+// а ботът в Discord си остава със старото име и аватар ЗАВИНАГИ. Главното
+// обещание на тарифата не работеше.
+//
+// Discord приема аватара като data URI (base64), НЕ като адрес — затова
+// свалянето е тук, а не в бота: сървърът вече носи втвърдения SSRF агент
+// (потребителски URL, свален от НАШАТА машина, е точно тази повърхност).
+router.get("/server/:serverId/branding", async (req, res, next) => {
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
+      select: { customBotName: true, customBotAvatar: true },
+    });
+    if (!server) return res.status(404).json({ error: "Server not found" });
+
+    // Брандирането е част от White-label — гейтваме на ЕФЕКТИВНИЯ tier, същия
+    // източник като `/token`. Паднал план → нула брандиране.
+    const { hasWhiteLabel } = await getServerTier(req.params.serverId);
+    if (!hasWhiteLabel) return res.json({ name: null, avatarDataUri: null });
+
+    let avatarDataUri = null;
+    if (server.customBotAvatar) {
+      try {
+        const urlError = await validateWebhookUrl(server.customBotAvatar);
+        if (urlError) throw new Error(urlError);
+        const img = await axios.get(server.customBotAvatar, {
+          responseType: "arraybuffer",
+          timeout: 10_000,
+          maxRedirects: 0,          // редирект може да отскочи към вътрешен адрес
+          httpsAgent: ssrfSafeAgent, // проверява РЕАЛНО свързвания IP (anti-rebinding)
+          maxContentLength: 8 * 1024 * 1024, // Discord таван е 10MB; 8 стигат
+        });
+        const type = String(img.headers["content-type"] || "").split(";")[0].trim();
+        if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(type)) {
+          throw new Error(`неподдържан тип: ${type || "неизвестен"}`);
+        }
+        avatarDataUri = `data:${type};base64,${Buffer.from(img.data).toString("base64")}`;
+      } catch (err) {
+        // Свалянето е ПО ЖЕЛАНИЕ: счупен адрес не бива да спира смяната на името.
+        console.warn(`[branding] ${req.params.serverId}: аватарът не се свали — ${err.message}`);
+      }
+    }
+
+    res.json({ name: server.customBotName || null, avatarDataUri });
   } catch (err) {
     next(err);
   }
@@ -392,9 +450,24 @@ router.post("/ticket/:ticketId/message", async (req, res, next) => {
       where: { id: req.params.ticketId },
       select: { creatorId: true, firstResponseAt: true },
     });
-    if (ticketForSla && !ticketForSla.firstResponseAt && authorId !== ticketForSla.creatorId) {
+    if (ticketForSla) {
+      const firstResponse =
+        !ticketForSla.firstResponseAt && authorId !== ticketForSla.creatorId;
+      // `lastActivityAt` се вдига при ВСЯКО съобщение.
+      //
+      // Досега се пипаше само при създаване, claim/unclaim и смяна на приоритет
+      // — а авто-затварянето по неактивност (scheduler.js) съди точно по него.
+      // Резултат: тикет, в който хората активно си пишат, се брои за „мъртъв“ и
+      // Premium функцията го затваря НАСРЕД разговора. Точно обратното на това,
+      // за което клиентът плаща. (Одит 07.08.2026)
       await prisma.ticket
-        .update({ where: { id: req.params.ticketId }, data: { firstResponseAt: new Date() } })
+        .update({
+          where: { id: req.params.ticketId },
+          data: {
+            lastActivityAt: new Date(),
+            ...(firstResponse && { firstResponseAt: new Date() }),
+          },
+        })
         .catch(() => {});
     }
 
@@ -799,13 +872,24 @@ router.get("/guild/:guildId/panels", async (req, res, next) => {
 // ─── POST /api/bot/application/submit ────────────────────────────────────────
 
 router.post("/application/submit", async (req, res, next) => {
-  const { serverId, formId, userId, answers, reviewMessageId, reviewChannelId } = req.body;
-
   try {
-    const application = await prisma.application.create({
-      data: { serverId, formId, userId, answers, reviewMessageId, reviewChannelId },
-    });
-    res.json(application);
+    // Правилата на формата (затворена · cooldown · таван на подаванията) живеят
+    // в ЕДИН модул и важат за ВСЕКИ път. Досега тук стоеше гол `create` без нито
+    // една проверка — а формата се попълва ПРЕЗ БОТА, значи единственият реален
+    // път беше и единственият незащитен: „максимум 1 кандидатура“ и cooldown-ът
+    // (Premium функция) не правеха нищо, а затворена форма продължаваше да
+    // приема. (Одит 07.08.2026)
+    const r = await submitApplication(req.body);
+    if (!r.ok) {
+      return res.status(r.status).json({
+        error: r.error,
+        ...(r.code && { code: r.code }),
+        ...(r.remainingSeconds != null && { remainingSeconds: r.remainingSeconds }),
+      });
+    }
+    // Формата на отговора остава каквато ботът вече чака (`application`), плюс
+    // `pingRoleIds` — същото като по уеб пътя.
+    res.json({ ...r.application, pingRoleIds: r.pingRoleIds });
   } catch (err) {
     next(err);
   }

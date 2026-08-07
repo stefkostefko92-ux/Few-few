@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 327
+        "lessons": 333
       },
       "evolution": [
         {
@@ -1789,9 +1789,31 @@
           "date": "2026-08-07",
           "event": "v22.5 — учене",
           "detail": "Научи: SupremeDiscordBot: bot/src няма НИТО ЕДИН import на getServerTier/planHasFeature — цели… (+4 още)"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-08-07",
+          "event": "v22.9 — учене",
+          "detail": "Научи: node-cron 4.5.0 извиква всички задачи със СЪЩИЯ cron израз в един timers tick, последов… (+3 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-08-07",
+          "event": "v23.1 — учене",
+          "detail": "Научи: `const` деклариран ВЪТРЕ в try е недостъпен в catch (ReferenceError) — типичен капан, к… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „`const` деклариран ВЪТРЕ в try е недостъпен в catch (ReferenceError) — типичен капан, к…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „node-cron 4.5.0 извиква всички задачи със СЪЩИЯ cron израз в един timers tick, последов…\" (+3 още)"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
@@ -4499,7 +4521,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 130
+        "lessons": 137
       },
       "evolution": [
         {
@@ -4873,9 +4895,31 @@
           "date": "2026-07-28",
           "event": "v16.0 — учене",
           "detail": "Научи: ICU MessageFormat третира ASCII апострофа ' като escape-знак — в италиански/френски низ… (+11 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-08-07",
+          "event": "v16.6 — учене",
+          "detail": "Научи: Паритетът на ключове и плейсхолдъри може да е 100% зелен, а продуктът пак да лъже за це… (+5 още)"
+        },
+        {
+          "version": "16.7.0",
+          "date": "2026-08-07",
+          "event": "v16.7 — учене",
+          "detail": "Научи: Одиторски доклад без блок „## ПРЕДАВАНЕ“ къса веригата и DoD гейтът (dod-check.mjs на S…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Одиторски доклад без блок „## ПРЕДАВАНЕ“ къса веригата и DoD гейтът (dod-check.mjs на S…\""
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Паритетът на ключове и плейсхолдъри може да е 100% зелен, а продуктът пак да лъже за це…\" (+5 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",

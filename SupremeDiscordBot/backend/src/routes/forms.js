@@ -96,7 +96,11 @@ const createFormSchema = z.object({
   cooldownSeconds: z.number().int().min(0).max(86400 * 30).optional(),
   maxSubmissions:  z.number().int().min(0).optional().nullable(),
   closed:          z.boolean().optional(),
-  requireVerification: z.boolean().optional(),
+  // `requireVerification` е МАХНАТО: колоната съществува в схемата, но нищо
+  // никога не я четеше — нито ботът, нито таблото. API-то я приемаше и мълчаливо
+  // я игнорираше, тоест обещаваше поведение, което го няма. Приета настройка,
+  // която не прави нищо, е по-лоша от липсваща: тя лъже интегратора.
+  // (Одит 07.08.2026 — същият клас като белия етикет и лимитите на формите.)
   questions: z.array(questionSchema).min(1).max(50), // raised from 25 → 50 for Premium
 });
 

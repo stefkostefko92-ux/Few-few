@@ -19,11 +19,16 @@ import TrialBanner from "./TrialBanner";
 import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
+import { APP_VERSION_LABEL, RELEASE_NAME } from "../version";
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
+
+// Аватар по подразбиране на Discord — резерва, когато потребителят няма свой
+// или отговорът не носи avatarUrl.
+const DEFAULT_AVATAR = "https://cdn.discordapp.com/embed/avatars/0.png";
 
 export default function Layout() {
   const { serverId } = useParams();
@@ -152,8 +157,10 @@ export default function Layout() {
             <SupremeLogo size={36} />
             <div>
               <SupremeWordmark className="text-base leading-none" />
+              {/* Версията идва от package.json през Vite define — закованият низ
+                  тук беше разминат с цял мажор (v2.3 при реални 3.1.0). */}
               <div className="font-mono text-[8px] tracking-[0.25em] uppercase text-cs-dim mt-0.5">
-                v2.3 SUPREME
+                {APP_VERSION_LABEL} {RELEASE_NAME}
               </div>
             </div>
           </a>
@@ -233,16 +240,24 @@ export default function Layout() {
         {/* User footer */}
         <div className="p-3 border-t border-cs-border bg-cs-surface">
           <div className="flex items-center gap-3">
+            {/* `src` НИКОГА не бива да е undefined: тогава браузърът рисува
+                счупено изображение с alt текста, което разпъва реда и реже
+                ролята — а `onError` не се задейства без src, значи резервата
+                по-долу не пази. Backend-ът винаги връща avatarUrl (пада на
+                аватара по подразбиране на Discord), но тук не разчитаме на това. */}
             <img
-              src={user?.avatarUrl}
-              alt={user?.username}
-              className="w-9 h-9 border border-cs-cyan/30"
-              onError={(e) => { e.target.onerror = null; e.target.src = `https://cdn.discordapp.com/embed/avatars/0.png`; }}
+              src={user?.avatarUrl || DEFAULT_AVATAR}
+              alt=""
+              className="w-9 h-9 flex-shrink-0 border border-cs-cyan/30"
+              onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR; }}
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-cs-text truncate leading-tight">{user?.username}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-cs-cyan truncate">
-                {user?.globalRole?.replaceAll("_", " ")}
+              {/* Ролята беше суров enum („MAIN OWNER“) — непреведен и твърде
+                  дълъг за лентата, затова се режеше на „MAIN O…“. Сега е къс
+                  преведен етикет, който се събира без отрязване. */}
+              <p className="text-[9px] font-mono uppercase tracking-wider text-cs-cyan truncate">
+                {t(`role.${user?.globalRole || "USER"}`)}
               </p>
             </div>
             <LanguageSwitcher compact />

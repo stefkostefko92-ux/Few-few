@@ -51,26 +51,34 @@ describe("POST /ticket/:ticketId/message — first-response marker", () => {
       .send({ authorId: "staff1", authorTag: "staff#0001", content: "hi" });
 
     expect(res.status).toBe(200);
+    // v3.2 — update-ът вече вдига и `lastActivityAt` при ВСЯКО съобщение
+    // (иначе авто-затварянето по неактивност убива активни тикети). Затова
+    // очакването е обектно съвпадение, не точен обект.
     expect(prismaMock.ticket.update).toHaveBeenCalledWith({
       where: { id: "t1" },
-      data: { firstResponseAt: expect.any(Date) },
+      data: expect.objectContaining({ firstResponseAt: expect.any(Date), lastActivityAt: expect.any(Date) }),
     });
   });
 
   it("does NOT set firstResponseAt when the creator sends their own (e.g. follow-up) message", async () => {
     prismaMock.ticketMessage.create.mockResolvedValue({ id: "m2", ticketId: "t1" });
     prismaMock.ticket.findUnique.mockResolvedValue({ creatorId: "creator1", firstResponseAt: null });
+    prismaMock.ticket.update.mockResolvedValue({ id: "t1" });
 
     const res = await request(buildApp())
       .post("/api/bot/ticket/t1/message")
       .send({ authorId: "creator1", authorTag: "creator#0001", content: "still waiting?" });
 
     expect(res.status).toBe(200);
-    expect(prismaMock.ticket.update).not.toHaveBeenCalled();
+    // Update-ът СЕ прави (за lastActivityAt), но НЕ пипа първия отговор.
+    const data = prismaMock.ticket.update.mock.calls.at(-1)?.[0]?.data;
+    expect(data?.lastActivityAt).toBeInstanceOf(Date);
+    expect(data?.firstResponseAt).toBeUndefined();
   });
 
   it("does NOT overwrite an already-set firstResponseAt", async () => {
     prismaMock.ticketMessage.create.mockResolvedValue({ id: "m3", ticketId: "t1" });
+    prismaMock.ticket.update.mockResolvedValue({ id: "t1" });
     prismaMock.ticket.findUnique.mockResolvedValue({
       creatorId: "creator1",
       firstResponseAt: new Date("2026-08-01T00:00:00Z"),
@@ -81,7 +89,9 @@ describe("POST /ticket/:ticketId/message — first-response marker", () => {
       .send({ authorId: "staff2", authorTag: "staff2#0001", content: "second reply" });
 
     expect(res.status).toBe(200);
-    expect(prismaMock.ticket.update).not.toHaveBeenCalled();
+    const data2 = prismaMock.ticket.update.mock.calls.at(-1)?.[0]?.data;
+    expect(data2?.lastActivityAt).toBeInstanceOf(Date);
+    expect(data2?.firstResponseAt).toBeUndefined();
   });
 });
 
