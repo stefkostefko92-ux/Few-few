@@ -14,6 +14,7 @@ import {
   REST,
   Routes,
   Events,
+  Guild,
 } from "discord.js";
 import { readdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -22,6 +23,9 @@ import api from "../utils/api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
+
+// Ключалки срещу едновременни boot-ове за един и същ сървър.
+const bootLocks = new Map(); // serverId → Promise<Client|null>
 
 // Map: serverId → Discord.js Client instance
 const customClients = new Map();
@@ -81,7 +85,34 @@ async function loadEventModules() {
  * Create a Client, attach all event modules, copy command collection,
  * and return the still-unlogged-in instance.
  */
-async function createConfiguredClient(mainClient) {
+// ─── Обвързване с наетия guild (H1, решение на собственика 07.08.2026) ───────
+// White-label клиентът се вдига ЗА ЕДИН сървър — този, за който е платено. Но
+// event handler-ите се закачаха глобално и действаха по guild-а от самото
+// събитие. Значи собственикът на custom бота можеше да го покани навсякъде и
+// нашата инфраструктура обслужваше неограничено сървъри срещу един абонамент
+// (а guildCreate дори ги регистрираше като нови безплатни сървъри).
+//
+// Избраното поведение: клиентът работи САМО в обвързания guild; събития от
+// другаде се пропускат с еднократно предупреждение на guild.
+function guildIdFromArgs(args) {
+  for (const a of args) {
+    if (!a) continue;
+    if (a instanceof Guild) return a.id;
+    if (typeof a.guildId === "string") return a.guildId;
+    if (a.guild?.id) return a.guild.id;
+    if (a.message?.guild?.id) return a.message.guild.id;   // MessageReaction
+    if (typeof a.first === "function") {                   // Collection (bulk delete)
+      const f = a.first();
+      if (f?.guild?.id) return f.guild.id;
+      if (typeof f?.guildId === "string") return f.guildId;
+    }
+  }
+  return null; // DM / не може да се определи → не блокираме (form сесиите живеят в DM)
+}
+
+const warnedForeign = new Set(); // `${serverId}:${guildId}` — по едно предупреждение
+
+async function createConfiguredClient(mainClient, boundServerId) {
   const client = new Client({
     intents: SHARED_INTENTS,
     // Message + Reaction + User partials: Reaction Roles (v33) върху некеширани
@@ -101,7 +132,20 @@ async function createConfiguredClient(mainClient) {
   // Attach every event handler the main client has
   const events = await loadEventModules();
   for (const ev of events) {
-    const fn = (...args) => ev.execute(...args);
+    const fn = (...args) => {
+      const gid = guildIdFromArgs(args);
+      if (boundServerId && gid && gid !== boundServerId) {
+        const key = `${boundServerId}:${gid}`;
+        if (!warnedForeign.has(key)) {
+          warnedForeign.add(key);
+          console.warn(
+            `[white-label] клиентът на ${boundServerId} получи събитие от НЕОБВЪРЗАН guild ${gid} — пропускам (лицензът покрива един сървър)`,
+          );
+        }
+        return undefined;
+      }
+      return ev.execute(...args);
+    };
     if (ev.once) client.once(ev.name, fn);
     else         client.on(ev.name, fn);
   }
@@ -122,20 +166,38 @@ async function createConfiguredClient(mainClient) {
  * Fetches the decrypted token from the backend, logs in, registers commands
  * under the white-label bot's own application ID.
  */
-export async function bootCustomClient(serverId, mainClient) {
-  // Already running — reuse
+export async function bootCustomClient(serverId, mainClient, { force = false } = {}) {
+  // Already running — reuse. ОСВЕН при force: рестартът след смяна на токена
+  // минаваше точно оттук и връщаше СТАРИЯ жив клиент, тоест новият токен
+  // никога не влизаше в сила, а таблото рапортуваше успех.
+  // (Качествения, 07.08.2026)
   const existing = customClients.get(serverId);
-  if (existing?.isReady()) return existing;
+  if (!force && existing?.isReady()) return existing;
 
+  // Ключалка срещу check-then-act: два едновременни boot-а (напр. ready
+  // реконсилиация + ръчен рестарт) създаваха ДВА клиента за един сървър —
+  // единият оставаше завинаги без референция и течеше gateway сесия.
+  const inFlight = bootLocks.get(serverId);
+  if (inFlight) return inFlight;
+
+  const promise = (async () => {
   try {
     // Fetch decrypted token via the bot-secret-protected endpoint
     const { data } = await api.get(`/bot/server/${serverId}/token`);
     if (!data?.token) {
-      console.log(`[ClientManager] No custom token for ${serverId} — skipping`);
+      // Няма токен — планът е спрян или админът го е изтрил. Работещият клиент
+      // трябва да СЛЕЗЕ, иначе white-label ботът продължава да обслужва сървър,
+      // за който вече не се плаща.
+      if (customClients.has(serverId)) {
+        console.log(`[ClientManager] токенът за ${serverId} вече го няма — свалям работещия клиент`);
+        await shutdownCustomClient(serverId);
+      } else {
+        console.log(`[ClientManager] No custom token for ${serverId} — skipping`);
+      }
       return null;
     }
 
-    const client = await createConfiguredClient(mainClient);
+    const client = await createConfiguredClient(mainClient, serverId);
 
     // Register slash commands once the client is ready
     client.once(Events.ClientReady, async () => {
@@ -161,6 +223,14 @@ export async function bootCustomClient(serverId, mainClient) {
     // Common: Invalid token (revoked), Used token (bot already running elsewhere), DisallowedIntents
     console.error(`[ClientManager] boot failed for ${serverId}: ${err?.code || ""} ${err?.message}`);
     return null;
+  }
+  })();
+
+  bootLocks.set(serverId, promise);
+  try {
+    return await promise;
+  } finally {
+    bootLocks.delete(serverId);
   }
 }
 
@@ -193,7 +263,9 @@ export async function shutdownCustomClient(serverId) {
  */
 export async function restartCustomClient(serverId, mainClient) {
   const old = customClients.get(serverId);
-  const fresh = await bootCustomClient(serverId, mainClient);
+  // force: без него boot-ът вижда живия клиент и връща него — новият токен
+  // никога не влизаше в сила.
+  const fresh = await bootCustomClient(serverId, mainClient, { force: true });
   if (fresh) {
     // Новият е онлайн → чак сега махаме стария (ако е различна инстанция).
     if (old && old !== fresh) {

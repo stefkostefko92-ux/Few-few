@@ -217,7 +217,31 @@ cron.schedule("* * * * *", async () => {
     if (!due.length) return;
     const { notifyBot } = await import("./botNotifier.js");
     for (const m of due) {
-      await notifyBot("SCHEDULED_MESSAGE_SEND", m).catch(()=>{});
+      // Резултатът СЕ ЧЕТЕ. Досега `.catch(()=>{})` изяждаше провала и редът
+      // веднага се маркираше като изпратен — еднократно съобщение, чийто канал е
+      // изтрит или ботът е офлайн, изчезваше без следа, а таблото твърдеше
+      // „изпратено“. (Кодаджията, 07.08.2026)
+      const sent = await notifyBot("SCHEDULED_MESSAGE_SEND", m).catch(() => null);
+
+      if (sent?.ok !== true) {
+        // Не маркираме — ще опитаме пак на следващата минута. Но НЕ вечно:
+        // след 24 часа безуспешни опити се отказваме с одитен запис, иначе
+        // счупен канал би генерирал шум завинаги.
+        const ageMs = Date.now() - new Date(m.sendAt).getTime();
+        if (ageMs < 24 * 60 * 60 * 1000) {
+          console.warn(`[Scheduler] насрочено съобщение ${m.id} НЕ е изпратено — ще опитам пак`);
+          continue;
+        }
+        console.error(`[Scheduler] насрочено съобщение ${m.id} се отказва след 24ч опити`);
+        await prisma.auditLog.create({
+          data: {
+            actorId: null, actorTag: "SYSTEM_SCHEDULER", serverId: m.serverId,
+            action: "SCHEDULED_MESSAGE_FAILED", targetId: m.id,
+            metadata: { channelId: m.channelId, sendAt: m.sendAt },
+          },
+        }).catch(() => {});
+      }
+
       const update = { sentAt: new Date() };
       if (m.recurrence) {
         const now = new Date();

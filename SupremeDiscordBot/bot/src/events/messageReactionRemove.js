@@ -10,19 +10,25 @@ export default {
     try {
       if (user.bot) return;
 
+      // Същият ред като в messageReactionAdd: евтините проверки ПРЕДИ REST-а.
+      // Иначе всяка махната реакция върху некеширано съобщение, в който и да е
+      // наш guild, струва извикване към Discord. (Разбивача, 07.08.2026)
+      const messageId = reaction.message?.id;
+      if (!messageId) return;
+
+      const rrm = await getRrmForMessage(messageId);
+      if (!rrm) return;
+
+      const key = emojiKey(reaction.emoji);
+      const pair = rrm.pairs.find((p) => p.emoji === key);
+      if (!pair) return;
+
       if (reaction.partial) {
         reaction = await reaction.fetch().catch(() => null);
         if (!reaction) return;
       }
       const message = reaction.message;
       if (!message?.guildId) return;
-
-      const rrm = await getRrmForMessage(message.id);
-      if (!rrm) return;
-
-      const key = emojiKey(reaction.emoji);
-      const pair = rrm.pairs.find((p) => p.emoji === key);
-      if (!pair) return;
 
       const member = await message.guild.members.fetch(user.id).catch(() => null);
       if (!member) return;

@@ -900,7 +900,13 @@ app.post("/internal/scheduled-message-send", async (req, res) => {
   const { channelId, content, embedTitle, embedDescription, embedColor, serverId } = req.body;
   try {
     const channel = await guildChannel(serverId, channelId);
-    if (!channel) return res.json({ ok: false });
+    // 502, НЕ 200. При 200 планировчикът смяташе заявката за успешна и маркираше
+    // съобщението като изпратено — еднократно насрочено съобщение, чийто канал е
+    // изтрит, се губеше безвъзвратно, а таблото показваше „изпратено“.
+    // (Кодаджията, 07.08.2026)
+    if (!channel) {
+      return res.status(502).json({ ok: false, reason: "channel not found or not in this guild" });
+    }
 
     // Cross-tenant guard (F2): каналът ТРЯБВА да е в guild-а на сървъра, който
     // е насрочил съобщението — иначе чужд channelId в записа би инжектирал

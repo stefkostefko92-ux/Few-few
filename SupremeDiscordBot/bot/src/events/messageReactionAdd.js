@@ -12,20 +12,32 @@ export default {
     try {
       if (user.bot) return;
 
-      // Partials: съобщението може да не е в кеша (реакция върху стар пост).
+      // РЕДЪТ Е СЪЩЕСТВЕН. Досега `reaction.fetch()` (REST заявка) се правеше
+      // ПЪРВО, преди кешираната справка — тоест ВСЯКА реакция върху некеширано
+      // съобщение, в ВСЕКИ наш guild, включително такива без нито един reaction
+      // role, струваше извикване към Discord. Шумен сървър можеше сам да ни
+      // изяде лимита и да засегне всички останали клиенти.
+      //
+      // И id-то на съобщението, и емоджито идват в gateway payload-а дори при
+      // partial реакция, затова и двете евтини проверки минават ПРЕДИ fetch-а.
+      // (Разбивача, 07.08.2026)
+      const messageId = reaction.message?.id;
+      if (!messageId) return;
+
+      const rrm = await getRrmForMessage(messageId);
+      if (!rrm) return;
+
+      const key = emojiKey(reaction.emoji);
+      const pair = rrm.pairs.find((p) => p.emoji === key);
+      if (!pair) return;
+
+      // Чак сега — има съвпадение, значи REST заявката е оправдана.
       if (reaction.partial) {
         reaction = await reaction.fetch().catch(() => null);
         if (!reaction) return;
       }
       const message = reaction.message;
       if (!message?.guildId) return;
-
-      const rrm = await getRrmForMessage(message.id);
-      if (!rrm) return;
-
-      const key = emojiKey(reaction.emoji);
-      const pair = rrm.pairs.find((p) => p.emoji === key);
-      if (!pair) return;
 
       const member = await message.guild.members.fetch(user.id).catch(() => null);
       if (!member) return;

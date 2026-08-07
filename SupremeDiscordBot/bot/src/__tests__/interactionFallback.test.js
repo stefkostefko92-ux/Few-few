@@ -160,3 +160,60 @@ describe("резултатът от кандидатурата казва ист
     expect(BLOCK).toContain("rolesRemoveFailed");
   });
 });
+
+// ─── White-label: обвързване, ключалка, смяна на токен ──────────────────────
+// H1 (решение на собственика 07.08.2026): клиентът обслужва САМО сървъра, за
+// който е платено. Плюс трите дефекта на Качествения в същия файл.
+describe("white-label клиентът е обвързан и се управлява коректно", () => {
+  const CM = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../services/clientManager.js"),
+    "utf-8",
+  );
+
+  it("event handler-ите се сверяват с обвързания сървър", () => {
+    expect(CM).toContain("guildIdFromArgs");
+    expect(CM).toContain("boundServerId");
+    const i = CM.indexOf("const fn = (...args) =>");
+    const block = CM.slice(i, i + 700);
+    expect(block).toContain("boundServerId");
+  });
+
+  it("createConfiguredClient получава сървъра, за който е платено", () => {
+    expect(CM).toContain("createConfiguredClient(mainClient, boundServerId)");
+    expect(CM).toContain("createConfiguredClient(mainClient, serverId)");
+  });
+
+  it("рестартът форсира нов login — иначе смяната на токен е no-op", () => {
+    expect(CM).toContain("{ force: true }");
+    const i = CM.indexOf("if (!force && existing?.isReady())");
+    expect(i, "reuse кратът не уважава force").toBeGreaterThan(-1);
+  });
+
+  it("има ключалка срещу два едновременни boot-а за един сървър", () => {
+    expect(CM).toContain("bootLocks");
+    const i = CM.indexOf("const inFlight = bootLocks.get(serverId)");
+    expect(i).toBeGreaterThan(-1);
+  });
+
+  it("липсващ токен сваля работещия клиент, не само пропуска", () => {
+    const i = CM.indexOf("if (!data?.token)");
+    const block = CM.slice(i, i + 600);
+    expect(block).toContain("shutdownCustomClient");
+  });
+});
+
+describe("реакциите не бият Discord преди кеша", () => {
+  for (const f of ["messageReactionAdd.js", "messageReactionRemove.js"]) {
+    it(`${f}: справката в кеша е ПРЕДИ reaction.fetch()`, () => {
+      const src = readFileSync(
+        join(dirname(fileURLToPath(import.meta.url)), `../events/${f}`),
+        "utf-8",
+      ).split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+      const lookup = src.indexOf("getRrmForMessage(");
+      const fetch = src.indexOf("reaction.fetch()");
+      expect(lookup).toBeGreaterThan(-1);
+      expect(fetch).toBeGreaterThan(-1);
+      expect(lookup, "REST заявката се прави преди кеша").toBeLessThan(fetch);
+    });
+  }
+});
