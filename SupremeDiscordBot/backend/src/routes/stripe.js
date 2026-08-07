@@ -332,14 +332,22 @@ function paidThroughFromSubscription(sub) {
 }
 
 /**
- * Отменя абонамента в Stripe веднага (refund/chargeback). Тихо подминава вече
- * несъществуващ/отменен абонамент — Stripe връща `resource_missing`, което тук
- * значи „вече е спрян“, не грешка. Всичко друго се хвърля: премълчан провал
- * значи следващо таксуване по карта, чиито пари вече сме върнали.
+ * Отменя абонамента в Stripe веднага (refund/chargeback).
+ *
+ * ИДЕМПОТЕНТНА по устройство, защото се вика ИЗВЪН `runOnce`: ако провалът ѝ
+ * върне 500, Stripe ретрайва цялото събитие, маркерът вече е записан, значи
+ * DB ефектът се пропуска, а ТАЗИ функция трябва да мине пак. Затова:
+ *   • несъществуващ абонамент (`resource_missing`) → не е грешка;
+ *   • вече отменен → не е грешка (Stripe отказва update на `canceled`, което
+ *     иначе би вдигнало 500 в безкраен цикъл при всеки ретрай).
+ * Всичко друго се хвърля: премълчан провал значи следващо таксуване по карта,
+ * чиито пари вече сме върнали.
  */
 async function cancelSubscriptionNow(subscriptionId, why) {
   if (!subscriptionId) return false;
   try {
+    const sub = await stripe.subscriptions.retrieve(String(subscriptionId));
+    if (sub?.status === "canceled") return false; // вече спрян — нищо за правене
     await stripe.subscriptions.cancel(String(subscriptionId));
     console.log(`🛑 Stripe абонамент ${subscriptionId} отменен веднага — ${why}`);
     return true;
@@ -1012,7 +1020,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
           await runOnce(async (tx) => {
             await tx.agency.update({
               where: { id: disputedAgency.id },
-              data: { active: false, accessUntil: null, stripeStatus: "disputed", stripeSubscriptionId: null, pastDueSince: null },
+              // id-то остава — виж бележката при сървърите: ретраят на отмяната
+              // в Stripe има нужда от него.
+              data: { active: false, accessUntil: null, stripeStatus: "disputed", pastDueSince: null },
             });
             await tx.auditLog.create({ data: { actorTag: "STRIPE", action: "AGENCY_REVOKED_DISPUTE", targetId: disputedAgency.id, metadata: { disputeId: dispute.id, canceledSubscriptionId: agencySubId ?? null } } });
           });
@@ -1040,7 +1050,13 @@ router.post("/webhook", requireStripe, async (req, res) => {
               isPremium: false, plan: "free", billingInterval: null,
               stripeStatus: "disputed",
               accessUntil: null, gracePlan: null,
-              stripeSubscriptionId: null,
+              // `stripeSubscriptionId` НЕ се занулява тук. Отмяната в Stripe
+              // става ИЗВЪН транзакцията: провали ли се, връщаме 500, Stripe
+              // ретрайва, маркерът вече е записан → този update се пропуска.
+              // Занулен ли беше id-то, ретраят не намира какво да отмени и
+              // абонаментът остава ЖИВ по картата, чиито пари сме върнали.
+              // Не е и вредно да остане: `stripeStatus` е в списъка с прекратени
+              // статуси, значи никакъв grandfather не минава през него.
             },
           });
           await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_DISPUTE", targetId: server.id, metadata: { disputeId: dispute.id, canceledSubscriptionId: disputedSubId ?? null } } });
@@ -1068,7 +1084,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
           await runOnce(async (tx) => {
             await tx.agency.update({
               where: { id: refundedAgency.id },
-              data: { active: false, accessUntil: null, stripeStatus: "refunded", stripeSubscriptionId: null, pastDueSince: null },
+              // id-то остава — виж бележката при сървърите: ретраят на отмяната
+              // в Stripe има нужда от него.
+              data: { active: false, accessUntil: null, stripeStatus: "refunded", pastDueSince: null },
             });
             await tx.auditLog.create({ data: { actorTag: "STRIPE", action: "AGENCY_REVOKED_REFUND", targetId: refundedAgency.id, metadata: { chargeId: charge.id, canceledSubscriptionId: agencySubId ?? null } } });
           });
@@ -1091,7 +1109,13 @@ router.post("/webhook", requireStripe, async (req, res) => {
               isPremium: false, plan: "free", billingInterval: null,
               stripeStatus: "refunded",
               accessUntil: null, gracePlan: null,
-              stripeSubscriptionId: null,
+              // `stripeSubscriptionId` НЕ се занулява тук. Отмяната в Stripe
+              // става ИЗВЪН транзакцията: провали ли се, връщаме 500, Stripe
+              // ретрайва, маркерът вече е записан → този update се пропуска.
+              // Занулен ли беше id-то, ретраят не намира какво да отмени и
+              // абонаментът остава ЖИВ по картата, чиито пари сме върнали.
+              // Не е и вредно да остане: `stripeStatus` е в списъка с прекратени
+              // статуси, значи никакъв grandfather не минава през него.
             },
           });
           await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_REFUND", targetId: server.id, metadata: { chargeId: charge.id, canceledSubscriptionId: refundedSubId ?? null } } });

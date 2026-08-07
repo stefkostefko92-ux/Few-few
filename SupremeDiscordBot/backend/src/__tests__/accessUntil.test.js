@@ -74,6 +74,9 @@ function deletedEvent({ id = "evt_del", periodEnd = inDays(20), price = "price_p
 beforeEach(() => {
   vi.resetAllMocks();
   stripeInstance.webhooks.constructEvent.mockImplementation((raw) => raw);
+  // `cancelSubscriptionNow` първо ЧЕТЕ абонамента (за да пропусне вече отменен).
+  // Задава се СЛЕД resetAllMocks, иначе се изтрива веднага.
+  stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_1", status: "active" });
 });
 
 describe("ОТМЯНА → достъп до края на платения период", () => {
@@ -181,13 +184,40 @@ describe("REFUND → достъпът пада веднага и абонаме�
   it("вече несъществуващ абонамент не е грешка (resource_missing)", async () => {
     prismaMock.agency.findFirst.mockResolvedValue(null);
     prismaMock.server.findFirst.mockResolvedValue({ id: "s1", stripeSubscriptionId: "sub_gone" });
-    stripeInstance.subscriptions.cancel.mockRejectedValue(
+    stripeInstance.subscriptions.retrieve.mockRejectedValue(
       Object.assign(new Error("No such subscription"), { code: "resource_missing" }),
     );
 
     const res = await post(refundEvent);
 
     expect(res.status).toBe(200);
+  });
+
+  it("ВЕЧЕ отменен абонамент не се отменя пак — иначе ретраят цикли на 500", async () => {
+    // Stripe отказва update на `canceled` абонамент. Функцията се вика ИЗВЪН
+    // runOnce, значи при ретрай минава пак: без тази проверка всеки ретрай
+    // получава 400 → връщаме 500 → безкраен цикъл.
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", stripeSubscriptionId: "sub_1" });
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_1", status: "canceled" });
+
+    const res = await post(refundEvent);
+
+    expect(res.status).toBe(200);
+    expect(stripeInstance.subscriptions.cancel).not.toHaveBeenCalled();
+  });
+
+  it("ПАЗИ stripeSubscriptionId — ретраят на отмяната има нужда от него", async () => {
+    // Занулено ли беше id-то в транзакцията, при ретрай (маркерът вече записан →
+    // DB ефектът се пропуска) нямаше какво да се отмени и абонаментът оставаше
+    // ЖИВ по картата, чиито пари сме върнали. Дефект, въведен и хванат на
+    // 07.08.2026 при собствена проверка.
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", stripeSubscriptionId: "sub_1" });
+
+    await post(refundEvent);
+
+    expect(lastServerUpdate()).not.toHaveProperty("stripeSubscriptionId");
   });
 
   it("истинска грешка при отмяната връща 500 → Stripe ретрайва", async () => {
