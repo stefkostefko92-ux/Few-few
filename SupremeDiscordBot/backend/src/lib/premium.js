@@ -163,6 +163,44 @@ export function sanitizePanelForTier(panel, plan) {
   return panel;
 }
 
+// ─── Форми ────────────────────────────────────────────────────────────────────
+// ЗАЩО (червен екип, одит 07.08.2026): premium полетата на формите се гейтваха
+// САМО при запис (`routes/forms.js`). Тоест клиент, който е конфигурирал
+// cooldown, таван на подаванията, regex валидация и разклоняване, докато е
+// плащал, продължаваше да ги ползва след свалянето на плана — `routes/bot.js`
+// връщаше формите сурови, а `applicationSubmit.js` изпълняваше правилата, без
+// изобщо да пита за тарифа. Панелите вече бяха покрити; формите — не.
+//
+// Това е дефектен клас Г: гейт на ЗАПИСА, не на ИЗПЪЛНЕНИЕТО. Записът е само
+// една от вратите; изпълнението е единственото място, което наистина решава.
+const FORM_FEATURE_STRIP = {
+  "form.autoRoleOnReview": (f) => { f.acceptRoleIds = []; f.denyRoleIds = []; f.removeRoleIds = []; },
+  "form.customDmMessages": (f) => { f.acceptMessage = null; f.denyMessage = null; },
+  "form.cooldowns":        (f) => { f.cooldownSeconds = 0; f.maxSubmissions = null; },
+};
+
+const QUESTION_FEATURE_STRIP = {
+  "form.validationRegex":      (q) => { q.validationRegex = null; q.validationMessage = null; },
+  "form.conditionalBranching": (q) => { q.branches = null; },
+};
+
+/**
+ * Нулира premium полетата на форма (и на въпросите ѝ), които планът не покрива.
+ * Мутира и връща формата — същият договор като `sanitizePanelForTier`.
+ */
+export function sanitizeFormForTier(form, plan) {
+  if (!form) return form;
+  for (const [featureKey, strip] of Object.entries(FORM_FEATURE_STRIP)) {
+    if (!planHasFeature(plan, featureKey)) strip(form);
+  }
+  for (const q of form.questions || []) {
+    for (const [featureKey, strip] of Object.entries(QUESTION_FEATURE_STRIP)) {
+      if (!planHasFeature(plan, featureKey)) strip(q);
+    }
+  }
+  return form;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // STRIPE PRICE ↔ PLAN and DISCORD SKU ↔ PLAN mapping (env-driven)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -192,6 +230,31 @@ function stripePriceMap() {
   // grandfather those subscribers into the white-label tier.
   add(e.STRIPE_PRICE_ID, "whitelabel", "month");
   return m;
+}
+
+/**
+ * Кои платени двойки (тарифа × период) НЯМАТ конфигурирана Stripe цена.
+ *
+ * ЗАЩО (VPS-аджията, одит 07.08.2026): `.env.example` носеше само наследения
+ * `STRIPE_PRICE_ID`, а `stripePriceMap()` е тих — липсващ env просто не влиза в
+ * картата. Деплой по образеца значи ЧАСТИЧНО конфигурирани цени, а частичното
+ * е по-опасно от липсващото: checkout за конфигурираните тарифи работи, но
+ * webhook-ът не може да върже платената цена към план и пада на резервния клон
+ * (`routes/stripe.js`), който дава „premium“. Клиент плаща Agency 10 за €39.99
+ * и получава Premium. Нищо не гърми, парите влизат, правата са грешни.
+ *
+ * Затова стартът изброява липсите на глас, вместо да ги преглътне.
+ */
+export function missingStripePrices() {
+  const gaps = [];
+  for (const plan of ["premium", "whitelabel", "agency5", "agency10"]) {
+    for (const interval of ["month", "year"]) {
+      if (!stripePriceId(plan, interval)) {
+        gaps.push(`STRIPE_PRICE_${plan.toUpperCase()}_${interval.toUpperCase()}`);
+      }
+    }
+  }
+  return gaps;
 }
 
 /** Resolve { plan, interval } for a Stripe price id, or null if unknown. */

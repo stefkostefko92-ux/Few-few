@@ -9,7 +9,7 @@ import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js"
 import { decrypt } from "../lib/crypto.js";
 import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
-import { getServerTier, planHasFeature, sanitizePanelForTier } from "../lib/premium.js";
+import { getServerTier, planHasFeature, sanitizePanelForTier, sanitizeFormForTier } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
 import axios from "axios";
@@ -63,6 +63,19 @@ router.get("/server/:serverId", async (req, res, next) => {
     // agency-покритите (и trial) сървъри. Наложи ЕФЕКТИВНИЯ tier, за да
     // работят платените функции под бота при agency seat.
     const tier = await getServerTier(req.params.serverId);
+
+    // Свалянето на плана трябва да СВАЛЯ и функциите. Досега тук формите и
+    // панелите излизаха сурови: клиент, конфигурирал cooldown, таван на
+    // подаванията, regex валидация и разклоняване, докато е плащал, продължаваше
+    // да ги ползва след свалянето — гейтът стоеше само при ЗАПИС
+    // (`routes/forms.js`). Ботът чете точно този отговор, значи тук е мястото,
+    // където правилото или важи, или не. (Червен екип, одит 07.08.2026)
+    for (const panel of server.panels || []) {
+      sanitizePanelForTier(panel, tier.plan);
+      for (const btn of panel.buttons || []) sanitizeFormForTier(btn.form, tier.plan);
+    }
+    for (const form of server.forms || []) sanitizeFormForTier(form, tier.plan);
+
     res.json({ ...server, isPremium: tier.isPremium, plan: tier.plan, hasWhiteLabel: tier.hasWhiteLabel });
   } catch (err) {
     next(err);

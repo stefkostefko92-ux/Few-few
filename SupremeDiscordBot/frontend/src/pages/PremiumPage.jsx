@@ -476,7 +476,18 @@ export default function PremiumPage() {
                 className="cs-btn-primary flex items-center gap-2 disabled:opacity-50"
               >
                 <Building2 className="w-4 h-4" />
-                {agencyMut.isPending ? t("premium.redirecting") : t("premium.getPlan", { plan: PLAN_LABEL[agencyPlan] })}
+                {/* Чл. 8(2) важи за ВСЕКИ плащащ бутон поотделно — цената в
+                    съседната карта не спасява надпис „Get Agency 5“. По CJEU
+                    C-249/21 значение има само текстът НА бутона, затова тук
+                    стои същият низ като при личните тарифи: глагол + цена +
+                    период. (Правният Разбирач + Продавача, 07.08.2026) */}
+                {agencyMut.isPending
+                  ? t("premium.redirecting")
+                  : t("premium.subscribeAndPay", {
+                      plan: PLAN_LABEL[agencyPlan],
+                      price: PLAN_PRICING[agencyPlan][agencyInterval],
+                      period: agencyInterval === "year" ? t("premium.perYearShort") : t("premium.perMonthShort"),
+                    })}
               </button>
             </div>
             {/* F7 — чл. 16(а): за дигитална УСЛУГА правото на отказ се губи

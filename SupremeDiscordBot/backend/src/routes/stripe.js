@@ -1195,7 +1195,22 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
     res.json({ received: true });
   } catch (err) {
+    // Провалът на webhook е ПАРИЧЕН инцидент: Stripe ще ретрайва, но ако
+    // причината е трайна (бъг, схема, недостъпна база), правата на платил
+    // клиент мълчаливо не се дават. Досега това стигаше само до `console.error`
+    // — `next(err)` не се вика, значи Sentry error handler-ът на index.js
+    // никога не го вижда и в таблото няма нито едно събитие. Затова тук
+    // залавяме изрично, с типа на събитието като таг, за да се вижда КОЙ
+    // webhook гори. (Наблюдателят, одит 07.08.2026)
     console.error("Stripe webhook processing error:", err);
+    try {
+      const Sentry = await import("@sentry/node");
+      Sentry.captureException(err, {
+        tags: { webhook: "stripe", eventType: event?.type || "unknown" },
+        extra: { eventId: event?.id || null },
+      });
+    } catch { /* Sentry по избор — логът остава */ }
+    // 500 нарочно: това е сигналът, по който Stripe ретрайва.
     res.status(500).json({ error: "Webhook processing failed" });
   }
 });

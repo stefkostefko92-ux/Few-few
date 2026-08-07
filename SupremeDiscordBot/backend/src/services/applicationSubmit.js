@@ -16,6 +16,7 @@
 // маршрута само я викат.
 
 import { prisma } from "../lib/prisma.js";
+import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 
 function formatDuration(seconds) {
   if (seconds < 60) return `${seconds}s`;
@@ -49,6 +50,15 @@ export async function submitApplication({
   if (!form || form.serverId !== serverId) {
     return { ok: false, status: 404, error: "Form not found" };
   }
+
+  // Правилата важат само докато планът ги покрива. Cooldown и таван на
+  // подаванията са Premium (`form.cooldowns`); записани веднъж, те си оставаха
+  // в базата и продължаваха да СЕ ИЗПЪЛНЯВАТ след свалянето на плана, защото
+  // гейтът стоеше само при запис в `routes/forms.js`. Затваряне на формата
+  // (`closedAt`) е базова функция и остава при всяка тарифа.
+  // (Червен екип, одит 07.08.2026)
+  const { plan } = await getServerTier(serverId);
+  sanitizeFormForTier(form, plan);
   if (form.closedAt) {
     return { ok: false, status: 403, error: "Applications are currently closed for this form", code: "FORM_CLOSED" };
   }
