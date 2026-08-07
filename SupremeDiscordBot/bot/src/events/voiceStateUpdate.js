@@ -60,7 +60,7 @@ export default {
           // Преместен ОТ някого, или се е преместил сам? MemberMove записът се
           // сверява по целевия канал (той няма потребител като target).
           // Липсва запис → сам се е преместил, тогава актьорът е самият човек и
-          // embed-ът не показва излишно поле „Actor".
+          // embed-ът не показва излишно поле „Actor“.
           const mover = await fetchVoiceMoveActor(guild, newCh);
           await emit({
             action: "voice_move",

@@ -76,7 +76,11 @@ age_h=$(( ( $(date +%s) - $(stat -c %Y "$ARCHIVE") ) / 3600 ))
 ok "Свежест: $age_h ч."
 
 DRILL_DB="supreme_drill_$(date +%Y%m%d%H%M%S)"
+# Фиксиран /tmp/... писан от root е symlink капан: непривилегирован потребител
+# подготвя връзка към чужд файл и pg_restore го презаписва (червен екип, 07.08.2026).
+ERR_LOG="$(mktemp -t supreme-drill-XXXXXX.err)"
 cleanup() {
+  rm -f "$ERR_LOG"
   pg psql -U "$POSTGRES_USER" -d postgres -q -c "DROP DATABASE IF EXISTS \"$DRILL_DB\";" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -88,8 +92,8 @@ pg psql -U "$POSTGRES_USER" -d postgres -q -c "CREATE DATABASE \"$DRILL_DB\";" >
 
 if ! gpg --batch --yes --quiet --pinentry-mode loopback --no-symkey-cache \
         --passphrase-file "$PASSPHRASE_FILE" --decrypt "$ARCHIVE" 2>/dev/null \
-     | pg pg_restore -U "$POSTGRES_USER" -d "$DRILL_DB" --no-owner --no-privileges 2>/tmp/drill-restore.err; then
-  warn "pg_restore върна грешка; последните редове:"; tail -5 /tmp/drill-restore.err >&2 || true
+     | pg pg_restore -U "$POSTGRES_USER" -d "$DRILL_DB" --no-owner --no-privileges 2>"$ERR_LOG"; then
+  warn "pg_restore върна грешка; последните редове:"; tail -5 "$ERR_LOG" >&2 || true
   die "Възстановяването се провали."
 fi
 ok "Възстановено в $DRILL_DB"

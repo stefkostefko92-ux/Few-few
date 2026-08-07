@@ -3,7 +3,7 @@
 // Разделя ПРАВАТА от козметиката: промяна на permissions е отделно действие
 // (`role_permissions_update`), защото е чувствителна от гледна точка на
 // сигурността и собственикът иска да я вижда открояваща се, а не смесена с
-// „някой смени цвета на ролята".
+// „някой смени цвета на ролята“.
 import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 import { PermissionsBitField } from "discord.js";
 

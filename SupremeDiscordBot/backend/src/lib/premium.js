@@ -295,10 +295,14 @@ export function effectiveFreeWhere(now = new Date()) {
  * четци на суровата колона (bot config, dashboard, panel функции) го третират
  * като безплатен — платената функция мълчи. Идемпотентно; тихо при липсващ ред.
  */
-// Статуси на Stripe, които значат „този абонамент е приключил". `past_due` и
+// Статуси на Stripe, които значат „този абонамент е приключил“. `past_due` и
 // `incomplete` НЕ са тук: те са в гратис/дунинг и достъпът остава нарочно.
 const TERMINATED_STRIPE_STATUSES = new Set([
   "canceled", "cancelled", "incomplete_expired", "disputed", "unpaid",
+  // Пълно възстановяване на плащането — пише се от stripe.js (charge.refunded).
+  // Липсваше в първата версия на списъка: клиент, поискал refund, минаваше през
+  // grandfather клаузата и оставаше платен (червен екип, 07.08.2026).
+  "refunded",
 ]);
 
 export async function syncServerPaidFlag(serverId, tx = prisma) {
@@ -321,12 +325,12 @@ export async function syncServerPaidFlag(serverId, tx = prisma) {
   // МЪЛЧАЛИВО СВАЛЯ платен достъп на реален абонат — необратимо и парично.
   // Затова: никога не сваляме ред, който още изглежда като истински абонамент.
   //
-  // ОБАЧЕ (червен екип, 07.08.2026): само „има subscription id" НЕ е достатъчно.
+  // ОБАЧЕ (червен екип, 07.08.2026): само „има subscription id“ НЕ е достатъчно.
   // Абонамент, който е ПРЕКРАТЕН (отменен, изтекъл, оспорен, неплатен), оставя
   // след себе си planSource и stripeSubscriptionId. Комбинирано с това, че
   // самият sync вдига isPremium при закачане на agency seat, се получаваше
   // самозахранващ се цикъл: закачаш сървър с мъртъв абонамент на агенция →
-  // isPremium=true; сваляш го → grandfather вижда „isPremium + subscription id"
+  // isPremium=true; сваляш го → grandfather вижда „isPremium + subscription id“
   // и го оставя платен ЗАВИНАГИ, без никой да плаща.
   //
   // Затова прекратеният статус е окончателен отказ: заварен абонат е този,

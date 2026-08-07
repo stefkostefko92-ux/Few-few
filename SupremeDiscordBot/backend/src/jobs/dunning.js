@@ -14,7 +14,8 @@
 // Premium безсрочно без плащане. Този job е независимата сървърна защита:
 //
 //   Ако stripeStatus === "past_due" И pastDueSince е по-старо от GRACE_DAYS (14)
-//   → сваляме isPremium=false (достъпът се отнема), запазвайки stripeStatus.
+//   → сваляме isPremium=false и маркираме stripeStatus="unpaid" (окончателно;
+//     "past_due" значи ГРАТИС и не бива да остава след отнемането).
 //
 // 14 дни съответства на препоръчания Stripe Smart Retries прозорец (~2 седмици).
 // Това е ПОДСИГУРЯВАНЕ — реалното отнемане обикновено идва по-рано през webhook.
@@ -56,9 +57,17 @@ export async function runDunningJob() {
         await prisma.$transaction(async (tx) => {
           await tx.server.update({
             where: { id: server.id },
-            // Сваляме достъпа, но запазваме stripeStatus="past_due" и
-            // pastDueSince — за одит и за да не се „активира“ пак случайно.
-            data: { isPremium: false, plan: "free", billingInterval: null },
+            // Сваляме достъпа И маркираме статуса като окончателен.
+            //
+            // Досега тук се запазваше "past_due" — с намерението „да не се
+            // активира пак случайно". Постигаше се обратното: "past_due" значи
+            // ГРАТИС (дунингът още тече), затова е нарочно извън списъка с
+            // прекратени статуси в premium.js. Резултат: сървър, на когото
+            // ТОЗИ job вече е отнел достъпа, минаваше през grandfather клаузата
+            // при следващ agency-seat цикъл и ставаше платен завинаги.
+            // "unpaid" е собственият статус на Stripe за „опитите свършиха“ и
+            // е недвусмислен. pastDueSince остава за одит.
+            data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "unpaid" },
           });
           await tx.auditLog.create({
             data: {

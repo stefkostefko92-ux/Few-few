@@ -245,7 +245,7 @@ export default {
       // Note: обичайните форми минават през DM collectors (runFormSession);
       // "form_modal:" (по-горе) е единственото изключение. Ако стигне непознат
       // modal submit, го потвърждаваме ephemeral, за да не вижда потребителят
-      // „This interaction failed".
+      // „This interaction failed“.
       if (interaction.isModalSubmit()) {
         const lang = await resolveLang(interaction);
         await interaction.reply({
@@ -576,7 +576,7 @@ async function handleTagReplySelect(interaction) {
   const channel = interaction.guild?.channels.cache.get(channelId) || interaction.channel;
   try {
     // allowedMentions гард: съдържанието на тага е свободен текст, писан от
-    // персонала (или през таблото). Без този гард един таг с „@everyone" прави
+    // персонала (или през таблото). Без този гард един таг с „@everyone“ прави
     // бота машина за масов пинг — точно поведението, за което Discord сваля
     // приложения. Потребители и роли остават позволени: отговорът на поддръжката
     // често трябва да спомене човека или екипа.

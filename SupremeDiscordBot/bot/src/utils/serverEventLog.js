@@ -307,7 +307,7 @@ export async function fetchAuditActor(guild, type, targetId, maxAgeMs = 5000) {
  * преместването се приписваше на самия човек.
  *
  * Сверяваме по целеви канал + свежест. Ако човекът се е преместил САМ,
- * Discord изобщо не пише запис — липсата на съвпадение значи „сам се премести",
+ * Discord изобщо не пише запис — липсата на съвпадение значи „сам се премести“,
  * което е точно разграничението, което искаме.
  */
 export async function fetchVoiceMoveActor(guild, toChannelId, maxAgeMs = 5000) {

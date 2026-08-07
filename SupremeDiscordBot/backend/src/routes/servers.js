@@ -35,7 +35,17 @@ const router = Router();
 // customBotToken is write-only — never returned to the client.
 function sanitizeServer(server) {
   if (!server) return server;
-  const { customBotToken: _token, ...safe } = server;
+  // customBotToken е write-only. Stripe идентификаторите също не влизат в
+  // отговора: таблото се нуждае от СЪСТОЯНИЕТО (stripeStatus, pastDueSince —
+  // past-due банерът), не от id-тата. Изнесен customer/subscription id е удобна
+  // отправна точка за социално инженерство към поддръжката на Stripe и няма
+  // причина да го вижда всеки с Manage Server (червен екип, 07.08.2026).
+  const {
+    customBotToken: _token,
+    stripeCustomerId: _cus,
+    stripeSubscriptionId: _sub,
+    ...safe
+  } = server;
   return safe;
 }
 

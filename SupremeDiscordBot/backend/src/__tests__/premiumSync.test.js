@@ -107,17 +107,17 @@ describe("syncAgencyServersPaidFlag — всички покрити наведн
 
 // ─── Изтичане на приходи през grandfather гарда (червен екип, 07.08.2026) ─────
 // Гардът беше добавен, за да НЕ сваля заварени абонати (isPremium=true при
-// plan="free"). Но условието му беше „има stripeSubscriptionId ИЛИ planSource",
+// plan="free"). Но условието му беше „има stripeSubscriptionId ИЛИ planSource“,
 // а прекратеният абонамент оставя и двете. Понеже самият sync вдига isPremium
 // при закачане на agency seat, се получаваше самозахранващ се цикъл:
 //   закачаш сървър с МЪРТЪВ абонамент на агенция → isPremium=true
-//   сваляш seat-а → гардът вижда „isPremium + subscription id" → остава платен
+//   сваляш seat-а → гардът вижда „isPremium + subscription id“ → остава платен
 // завинаги, безплатно. Разбивача го доказа с PoC; тук го заковаваме.
 describe("grandfather гардът не възкресява прекратен абонамент", () => {
   const TERMINATED = ["canceled", "cancelled", "incomplete_expired", "disputed", "unpaid"];
 
   for (const status of TERMINATED) {
-    it(`статус „${status}" → сваляне от agency seat връща сървъра на безплатен`, async () => {
+    it(`статус „${status}“ → сваляне от agency seat връща сървъра на безплатен`, async () => {
       seed([{
         id: "victim", isPremium: false, plan: "free",
         planSource: "stripe", stripeSubscriptionId: "sub_dead", stripeStatus: status,
@@ -150,5 +150,34 @@ describe("grandfather гардът не възкресява прекратен 
       agencyId: null, agency: null,
     }]);
     expect(await syncServerPaidFlag("legacy")).toBe(true);
+  });
+});
+
+// Двата пътя, оцелели след първата поправка (червен екип, втори кръг).
+describe("grandfather гардът — остатъчните статуси след отнемане", () => {
+  it("„refunded“ (пълно възстановяване) не възкресява достъпа", async () => {
+    seed([{
+      id: "ref", isPremium: false, plan: "free",
+      planSource: "stripe", stripeSubscriptionId: "sub_x", stripeStatus: "refunded",
+      agencyId: null, agency: null,
+    }]);
+    const s = store.server.get("ref");
+    s.agencyId = "ag1"; s.agency = { active: true };
+    expect(await syncServerPaidFlag("ref")).toBe(true);
+    s.agencyId = null; s.agency = null;
+    expect(await syncServerPaidFlag("ref")).toBe(false);
+  });
+
+  it("„unpaid“ след изчерпан дунинг гратис не възкресява достъпа", async () => {
+    seed([{
+      id: "dun", isPremium: false, plan: "free",
+      planSource: "stripe", stripeSubscriptionId: "sub_y", stripeStatus: "unpaid",
+      agencyId: null, agency: null,
+    }]);
+    const s = store.server.get("dun");
+    s.agencyId = "ag1"; s.agency = { active: true };
+    await syncServerPaidFlag("dun");
+    s.agencyId = null; s.agency = null;
+    expect(await syncServerPaidFlag("dun")).toBe(false);
   });
 });

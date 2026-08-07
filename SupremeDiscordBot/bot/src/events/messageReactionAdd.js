@@ -37,7 +37,7 @@ export default {
       const botMember = message.guild.members.me;
       if (!isRoleSafeToSelfAssign(role, botMember)) {
         console.warn(`[ReactionRoles] refused unsafe role ${pair.roleId} in guild ${message.guildId} (managed/privileged/above-bot)`);
-        // Махни реакцията на потребителя — иначе стои като „работи", а не дава роля.
+        // Махни реакцията на потребителя — иначе стои като „работи“, а не дава роля.
         await reaction.users.remove(user.id).catch(() => {});
         return;
       }

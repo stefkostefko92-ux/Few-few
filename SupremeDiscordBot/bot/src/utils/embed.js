@@ -119,7 +119,7 @@ export function buildMultiPanelMessage(panels, { mode = "STACK" } = {}) {
     // Discord брои СБОРНАТА дължина на всички embed-и в съобщението (6000).
     // Без тази проверка десет дълги панела минаваха лимитите за брой, но
     // Discord отхвърляше ЦЯЛАТА заявка и потребителят виждаше само
-    // „Bot is offline" — вместо ясно кой панел не се е побрал.
+    // „Bot is offline“ — вместо ясно кой панел не се е побрал.
     const chars = built.embeds.reduce((n, e) => n + embedCharCount(e), 0);
     const reason =
       nextEmbeds > MAX_EMBEDS_PER_MESSAGE ? "embeds"
@@ -141,7 +141,7 @@ export function buildMultiPanelMessage(panels, { mode = "STACK" } = {}) {
 /**
  * СЛЯТО групово съобщение: един embed + един контрол, събрал опциите на всички
  * избрани панели (както Ticket Tool). Първият панел дава външния вид (заглавие,
- * описание, цвят) — той е „обвивката" на групата.
+ * описание, цвят) — той е „обвивката“ на групата.
  *
  * Всяка опция помни от кой панел идва:
  *   • DROPDOWN → customId `panel_select_multi`, value `<panelId>:<btnId>`
@@ -237,7 +237,7 @@ export function buildReviewEmbed(application, formName, user, questions) {
 
   const embed = new EmbedBuilder()
     .setTitle(title)
-    // WARNING = „чака решение" от единната палитра (преди беше сурово 0xffd700).
+    // WARNING = „чака решение“ от единната палитра (преди беше сурово 0xffd700).
     .setColor(WARNING)
     .setAuthor({ name: authorName, iconURL: avatarUrl(user) })
     .setThumbnail(avatarUrl(user) || null)
@@ -254,7 +254,7 @@ export function buildReviewEmbed(application, formName, user, questions) {
   // review съобщение изчезва. Акумулираме дължината и спираме при ~5900 (буфер за
   // бележката), като добавяме поле-индикатор колко въпроса са пропуснати.
   const TOTAL_CAP = 5900;
-  // „Applicant" полето по-горе вече яде от двата бюджета: ~30 знака и 1 слот.
+  // „Applicant“ полето по-горе вече яде от двата бюджета: ~30 знака и 1 слот.
   // Затова таванът на отговорите пада на 23 → 1 (applicant) + 23 + 1
   // (truncated) = 25, точно лимита на Discord.
   const APPLICANT_FIELD_LEN = user?.id ? 30 : 0;
@@ -295,7 +295,7 @@ export function buildReviewEmbed(application, formName, user, questions) {
     .setEmoji("❌");
 
   // Отваря личен discussion канал с кандидата ПРЕДИ решение (status остава
-  // PENDING) — същият flow като „Open discussion" в dashboard-а.
+  // PENDING) — същият flow като „Open discussion“ в dashboard-а.
   const discussBtn = new ButtonBuilder()
     .setCustomId(`app_review:${application.id}:discuss`)
     .setLabel("Open a ticket")
@@ -334,7 +334,7 @@ export function buildTicketOpenEmbed(creator, panelName, priority, opts = {}) {
   const field = priorityField(priority);
   if (field) embed.addFields({ ...field, inline: true });
 
-  // Кой отговаря — прави обещанието конкретно вместо „някой ще дойде".
+  // Кой отговаря — прави обещанието конкретно вместо „някой ще дойде“.
   if (supportRoleIds.length) {
     embed.addFields({
       name: "Handled by",

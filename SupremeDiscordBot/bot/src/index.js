@@ -45,7 +45,7 @@ export const client = new Client({
     //      документ за собственика на сървъра.
     //   2. AI auto-reply — съдържанието на въпроса отива към LLM доставчик, за
     //      да се предложи отговор (разкрито в политиката за поверителност).
-    //   3. Server Activity Logging, категория „messages" — редакция/изтриване на
+    //   3. Server Activity Logging, категория „messages“ — редакция/изтриване на
     //      съобщение се препраща в лог канала на СЪЩИЯ guild. Изборна е, НЕ е
     //      включена по подразбиране (v38) и се вдига само от администратор с
     //      Manage Server. Съдържанието не се пази в нашата база и не се показва
@@ -120,7 +120,7 @@ for (const file of eventFiles) {
 const app = express();
 // 1mb вместо дефолтните 100kb: груповото публикуване праща до 10 панела с
 // вградените им форми и въпроси в едно тяло — при по-големи конфигурации
-// дефолтът връщаше 413 и UI-ят показваше подвеждащото „Bot is offline".
+// дефолтът връщаше 413 и UI-ят показваше подвеждащото „Bot is offline“.
 app.use(express.json({ limit: "1mb" }));
 
 // Health check — no auth required (used by docker healthcheck + status page).
@@ -440,7 +440,7 @@ app.post("/internal/ticket-claimed", async (req, res) => {
 });
 
 // Отговор на тикет от dashboard-а — ботът публикува embed в тикет канала от
-// името на staff члена („Име · via dashboard"), без staff-ът да влиза в Discord.
+// името на staff члена („Име · via dashboard“), без staff-ът да влиза в Discord.
 // Вика се от backend/src/services/botNotifier.js → sendTicketReply().
 app.post("/internal/ticket-reply", async (req, res) => {
   const { channelId, content, authorName, ticketId, number } = req.body || {};
@@ -512,7 +512,7 @@ app.post("/internal/application-discuss", async (req, res) => {
       }
     }
 
-    // Fallback: „applications" / „tickets" / „reviews" / „staff" категория по име
+    // Fallback: „applications“ / „tickets“ / „reviews“ / „staff“ категория по име
     if (!category) {
       category = guild.channels.cache.find(
         (c) => c.type === ChannelType.GuildCategory &&

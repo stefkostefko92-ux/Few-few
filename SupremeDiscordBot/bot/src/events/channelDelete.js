@@ -40,8 +40,8 @@ export default {
         actorId: actor?.executorId || null,
         actorTag: actor?.executorTag || null,
         // НАРОЧНО без top-level channelId (за разлика от channelCreate/Update):
-        // то се рисува като <#id>, а изтрит канал излиза „#deleted-channel" —
-        // безполезно. Суровият id в metadata се показва като „Channel ID" и
+        // то се рисува като <#id>, а изтрит канал излиза „#deleted-channel“ —
+        // безполезно. Суровият id в metadata се показва като „Channel ID“ и
         // остава използваем за одитна следа.
         metadata: {
           name: channel.name || "(unknown)",

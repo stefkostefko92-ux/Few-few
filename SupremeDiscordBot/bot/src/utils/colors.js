@@ -42,7 +42,7 @@ export function withFooter(embed, client) {
  * @param {object} [o.author]             { name, iconURL }
  * @param {string} [o.thumbnail]
  * @param {string} [o.image]
- * @param {string} [o.footer]             допълва се с „· Supreme Bot"
+ * @param {string} [o.footer]             допълва се с „· Supreme Bot“
  * @param {boolean}[o.timestamp=true]
  * @param {import("discord.js").Client} [o.client] нужен за white-label проверката
  */
@@ -64,7 +64,7 @@ export function brandEmbed({
 
 /**
  * Аватар на потребител за author/thumbnail редовете. Без него embed-ите са
- * гол текст в кутия — разликата между „бот" и „продукт" в Discord.
+ * гол текст в кутия — разликата между „бот“ и „продукт“ в Discord.
  */
 export function avatarUrl(user) {
   if (!user) return undefined;
@@ -73,7 +73,7 @@ export function avatarUrl(user) {
   return undefined;
 }
 
-/** „name#1234" за старите акаунти, „name" за новите. */
+/** „name#1234“ за старите акаунти, „name“ за новите. */
 export function userTag(user) {
   if (!user) return "Unknown";
   return user.discriminator && user.discriminator !== "0"
@@ -81,7 +81,7 @@ export function userTag(user) {
     : user.username;
 }
 
-/** Discord релативен времеви маркер — „преди 3 минути" на езика на четящия. */
+/** Discord релативен времеви маркер — „преди 3 минути“ на езика на четящия. */
 export function relTime(date = new Date()) {
   return `<t:${Math.floor(new Date(date).getTime() / 1000)}:R>`;
 }
