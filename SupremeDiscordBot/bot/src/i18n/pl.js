@@ -7,6 +7,8 @@ export default {
   "error.unauthorized": "Nie masz uprawnień.",
   "error.blacklisted": "❌ Masz zakaz korzystania z tego bota.",
   "error.formExpired": "❌ Ten formularz nie jest już aktywny. Zacznij od nowa.",
+  "error.componentExpired": "❌ Ten przycisk już nie działa — panel, do którego należy, został zmieniony lub usunięty. Poproś administratora o ponowne opublikowanie.",
+  "error.ticketCreateFailed": "❌ Nie udało się otworzyć zgłoszenia — nasza usługa jest chwilowo niedostępna. Spróbuj ponownie za chwilę.",
   "error.categoryNotFound": "❌ Nie znaleziono kategorii.",
   "error.serviceUnavailable.title": "⚠️ Usługa chwilowo niedostępna",
   "error.serviceUnavailable.body": "Serwer nie odpowiedział na czas — zwykle jest to chwilowe. Spróbuj ponownie za moment.\n\n_ID korelacji: `{{id}}`_",

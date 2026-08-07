@@ -1,5 +1,5 @@
 // bot/src/commands/debug.js
-import { MessageFlags, SlashCommandBuilder } from "discord.js";
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { checkBotPermissions, reinviteUrl } from "../utils/permissionCheck.js";
 import { SUCCESS, WARNING } from "../utils/colors.js";
@@ -9,7 +9,12 @@ export default {
   data: new SlashCommandBuilder()
     .setName("debug")
     .setDescription("Check the bot's permissions and status in this server")
-    .setDescriptionLocalizations(CMD_DESC_L10N.debug),
+    .setDescriptionLocalizations(CMD_DESC_L10N.debug)
+    // Нямаше НИКАКВА авторизация, а commandsCatalog.js твърдеше „Manage Server“.
+    // Всеки член виждаше вътрешна диагностика: достижим ли е backend-ът, кои
+    // права липсват и линк за повторна покана. Разминаването документация↔код е
+    // и втори дефект: каталогът лъжеше (Изпитателят, 07.08.2026).
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });

@@ -307,3 +307,43 @@ describe("assessShardingPressure", () => {
     }
   });
 });
+
+// ─── Авторизация на командите (одит на Изпитателя, 07.08.2026) ───────────────
+// autocomplete() е ОТДЕЛЕН тип взаимодействие: Discord го доставя, без да мине
+// през проверката в execute(). Затова staff-only команди трябва да гейтват или
+// на ниво платформа (setDefaultMemberPermissions — тогава Discord не доставя
+// нищо), или изрично в самия autocomplete handler.
+describe("staff-only командите не изтичат данни през autocomplete", () => {
+  const read = async (f) => {
+    const { readFileSync } = await import("fs");
+    const { fileURLToPath } = await import("url");
+    const { dirname, join } = await import("path");
+    return readFileSync(join(dirname(fileURLToPath(import.meta.url)), `../commands/${f}`), "utf-8");
+  };
+
+  it("/debug иска Manage Server (нямаше НИКАКВА проверка, а каталогът твърдеше обратното)", async () => {
+    expect(await read("debug.js")).toContain("setDefaultMemberPermissions");
+  });
+
+  it("admin_tools и giveaway са гейтнати на ниво платформа — това спира и autocomplete", async () => {
+    for (const f of ["admin_tools.js", "giveaway.js"]) {
+      expect(await read(f), f).toContain("setDefaultMemberPermissions");
+    }
+  });
+
+  it("tag и escalate гейтват в самия autocomplete (staff-ът им е по роли, не по право)", async () => {
+    for (const f of ["tag.js", "escalate.js"]) {
+      const src = await read(f);
+      const i = src.indexOf("async autocomplete(");
+      expect(i, `${f}: няма autocomplete`).toBeGreaterThan(-1);
+      const head = src.slice(i, i + 900);
+      expect(head, `${f}: autocomplete без гард`).toContain("isStaffForAutocomplete");
+    }
+  });
+
+  it("публичните команди НЕ са гейтнати по погрешка", async () => {
+    for (const f of ["apply.js", "new.js"]) {
+      expect(await read(f), f).not.toContain("setDefaultMemberPermissions");
+    }
+  });
+});

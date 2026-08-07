@@ -7,6 +7,8 @@ export default {
   "error.unauthorized": "You don't have permission.",
   "error.blacklisted": "❌ You have been blacklisted from using this bot.",
   "error.formExpired": "❌ This form is no longer active. Please start over.",
+  "error.componentExpired": "❌ This button no longer works — the panel it belongs to was changed or removed. Ask an admin to repost it.",
+  "error.ticketCreateFailed": "❌ Couldn't open your ticket — our service is temporarily unavailable. Please try again in a moment.",
   "error.categoryNotFound": "❌ Category not found.",
   "error.serviceUnavailable.title": "⚠️ Service temporarily unavailable",
   "error.serviceUnavailable.body": "The backend didn't respond in time — this is usually temporary. Please try again in a moment.\n\n_Correlation ID: `{{id}}`_",

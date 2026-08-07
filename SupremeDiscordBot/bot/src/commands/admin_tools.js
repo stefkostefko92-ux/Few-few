@@ -1,6 +1,6 @@
 // bot/src/commands/admin_tools.js
 // /sticky set/remove and /schedule add/list/remove
-import { MessageFlags, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
@@ -11,6 +11,12 @@ export default {
     .setName("admin")
     .setDescription("Admin tools (Manage Server)")
     .setDescriptionLocalizations(CMD_DESC_L10N.admin)
+    // Проверката за ManageGuild беше САМО в execute(). autocomplete() обаче е
+    // отделен тип взаимодействие, което Discord доставя независимо — затова
+    // падащото меню показваше данни на всеки, преди командата да откаже достъп.
+    // setDefaultMemberPermissions гейтва и двете на ниво платформа; runtime
+    // проверката остава (защита в дълбочина).
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommandGroup((g) =>
       g.setName("sticky")
         .setDescription("Sticky messages — auto-repost at bottom of channel")

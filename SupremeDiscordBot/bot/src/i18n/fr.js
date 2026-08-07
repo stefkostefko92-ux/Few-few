@@ -7,6 +7,8 @@ export default {
   "error.unauthorized": "Vous n'avez pas la permission.",
   "error.blacklisted": "❌ L'utilisation de ce bot vous a été interdite.",
   "error.formExpired": "❌ Ce formulaire n'est plus actif. Veuillez recommencer.",
+  "error.componentExpired": "❌ Ce bouton ne fonctionne plus — le panneau auquel il appartient a été modifié ou supprimé. Demandez à un administrateur de le republier.",
+  "error.ticketCreateFailed": "❌ Impossible d'ouvrir votre ticket — notre service est temporairement indisponible. Réessayez dans un instant.",
   "error.categoryNotFound": "❌ Catégorie introuvable.",
   "error.serviceUnavailable.title": "⚠️ Service temporairement indisponible",
   "error.serviceUnavailable.body": "Le serveur n'a pas répondu à temps — c'est généralement temporaire. Veuillez réessayer dans un instant.\n\n_ID de corrélation : `{{id}}`_",

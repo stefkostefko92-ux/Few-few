@@ -255,6 +255,26 @@ export default {
         return;
       }
 
+      // ── Резервен отговор за НЕПОЗНАТ бутон / select ─────────────────────────
+      // Дотук е верига от startsWith проверки. Modal submit имаше резервен
+      // клон, компонентите — НЕ: непознат customId просто излизаше от try-а без
+      // никакъв отговор, Discord показваше „This interaction failed“ след 3
+      // секунди, а в логовете нямаше нищо. Това не е хипотетично: панел,
+      // публикуван преди месеци, после изтрит или преконфигуриран, оставя живи
+      // бутони с customId, който вече не се разпознава — всяко натискане тихо
+      // се проваля. (Дискорджията, 07.08.2026)
+      if (interaction.isMessageComponent()) {
+        console.warn(
+          `[interaction] непознат ${interaction.isButton() ? "бутон" : "компонент"} customId=${interaction.customId} guild=${interaction.guildId}`,
+        );
+        const lang = await resolveLang(interaction);
+        await interaction.reply({
+          content: t("error.componentExpired", lang),
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => {});
+        return;
+      }
+
     } catch (err) {
       console.error("Interaction error:", err);
       if (process.env.SENTRY_DSN) {
@@ -719,13 +739,30 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   }
 
   // ─── Register ticket in DB (gets the atomic counter number) ─────────────────
-  const ticketResult = await createTicket(
-    guild.id,
-    panel.id,
-    creator.id,
-    channel.id,
-    null
-  );
+  // Каналът/thread-ът ВЕЧЕ съществува в Discord. Ако регистрацията се провали с
+  // ИЗКЛЮЧЕНИЕ (мрежа, 5xx, timeout — всичко без познат `code` в тялото), досега
+  // то излиташе нагоре и каналът оставаше осиротял ЗАВИНАГИ: празен тикет канал,
+  // който никой не поддържа и никой не може да затвори през бота. Познатите
+  // кодове (MAX_TICKETS_REACHED) вече чистеха — сега чисти и изключението.
+  // (Дискорджията, 07.08.2026)
+  let ticketResult;
+  try {
+    ticketResult = await createTicket(
+      guild.id,
+      panel.id,
+      creator.id,
+      channel.id,
+      null
+    );
+  } catch (err) {
+    console.error(`[ticket] регистрацията се провали за guild=${guild.id} panel=${panel.id}: ${err?.message}`);
+    await channel.delete().catch((delErr) => {
+      // Ако и чистенето не мине, поне оставяме следа — иначе каналът виси нямо.
+      console.error(`[ticket] осиротял канал ${channel.id} НЕ можа да бъде изтрит: ${delErr?.message}`);
+    });
+    const lang = await resolveLang(interaction);
+    return interaction.editReply(t("error.ticketCreateFailed", lang));
+  }
 
   // Backend may refuse due to limits
   if (ticketResult?.code === "MAX_TICKETS_REACHED" || ticketResult?.code === "PANEL_LIMIT_REACHED") {
@@ -1523,7 +1560,15 @@ async function handleTicketDelete(interaction, ticket, panel) {
 
 // ─── Feedback rating (post-close DM) ──────────────────────────────────────────
 async function handleFeedback(interaction, ticketId, rating) {
-  if (rating < 1 || rating > 5) return;
+  // Гол `return` тук значеше НУЛЕВ ack: Discord показва „This interaction
+  // failed" след 3 секунди, а в логовете няма нищо. Стойността идва от нашия
+  // собствен customId, значи извън диапазона = наш дефект, не потребителски
+  // вход — затова го логваме, вместо да го гълтаме. (Дискорджията, 07.08.2026)
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    console.warn(`[feedback] невалидна оценка ${rating} за тикет ${ticketId} (customId=${interaction.customId})`);
+    await interaction.deferUpdate().catch(() => {});
+    return;
+  }
   // deferUpdate ack-ва компонента веднага (type 6, без "loading" визуализация),
   // за да не изтече 3-секундният бюджет преди backend заявката. После editReply
   // редактира съобщението с бутоните.

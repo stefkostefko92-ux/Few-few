@@ -4,7 +4,7 @@
 // instead of re-typing the same answer for every ticket.
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import { getTags, createTag, deleteTag, useTag, getServer } from "../utils/api.js";
-import { isStaffMember } from "../utils/staffCheck.js";
+import { isStaffMember, isStaffForAutocomplete } from "../utils/staffCheck.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
@@ -43,6 +43,13 @@ export default {
     .addSubcommand((s) => s.setName("list").setDescription("List all canned responses")),
 
   async autocomplete(interaction) {
+    // autocomplete е ОТДЕЛЕН тип взаимодействие — Discord го доставя, без да
+    // мине през проверката в execute(). Без този гард падащото меню показваше
+    // вътрешни имена на всеки член (Изпитателят, 07.08.2026). Staff-ът тук е по
+    // потребителски роли, не по Discord право, затова гейтът е runtime, не
+    // setDefaultMemberPermissions — иначе легитимен модератор без ManageGuild
+    // би загубил командата.
+    if (!(await isStaffForAutocomplete(interaction))) return interaction.respond([]);
     const focused = interaction.options.getFocused().toLowerCase();
     try {
       const tags = await getTags(interaction.guildId);

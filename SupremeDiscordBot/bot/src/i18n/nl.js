@@ -7,6 +7,8 @@ export default {
   "error.unauthorized": "Je hebt hier geen rechten voor.",
   "error.blacklisted": "❌ Je bent uitgesloten van het gebruik van deze bot.",
   "error.formExpired": "❌ Dit formulier is niet meer actief. Begin opnieuw.",
+  "error.componentExpired": "❌ Deze knop werkt niet meer — het paneel waartoe hij behoort is gewijzigd of verwijderd. Vraag een beheerder om het opnieuw te plaatsen.",
+  "error.ticketCreateFailed": "❌ Je ticket kon niet worden geopend — onze dienst is tijdelijk niet beschikbaar. Probeer het zo meteen opnieuw.",
   "error.categoryNotFound": "❌ Categorie niet gevonden.",
   "error.serviceUnavailable.title": "⚠️ Dienst tijdelijk niet beschikbaar",
   "error.serviceUnavailable.body": "De server reageerde niet op tijd — meestal is dat tijdelijk. Probeer het zo meteen opnieuw.\n\n_Correlatie-ID: `{{id}}`_",
