@@ -11,6 +11,7 @@ import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
 import { getServerTier, planHasFeature, sanitizePanelForTier } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
+import { submitApplication } from "../services/applicationSubmit.js";
 import axios from "axios";
 import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
@@ -871,13 +872,24 @@ router.get("/guild/:guildId/panels", async (req, res, next) => {
 // ─── POST /api/bot/application/submit ────────────────────────────────────────
 
 router.post("/application/submit", async (req, res, next) => {
-  const { serverId, formId, userId, answers, reviewMessageId, reviewChannelId } = req.body;
-
   try {
-    const application = await prisma.application.create({
-      data: { serverId, formId, userId, answers, reviewMessageId, reviewChannelId },
-    });
-    res.json(application);
+    // Правилата на формата (затворена · cooldown · таван на подаванията) живеят
+    // в ЕДИН модул и важат за ВСЕКИ път. Досега тук стоеше гол `create` без нито
+    // една проверка — а формата се попълва ПРЕЗ БОТА, значи единственият реален
+    // път беше и единственият незащитен: „максимум 1 кандидатура“ и cooldown-ът
+    // (Premium функция) не правеха нищо, а затворена форма продължаваше да
+    // приема. (Одит 07.08.2026)
+    const r = await submitApplication(req.body);
+    if (!r.ok) {
+      return res.status(r.status).json({
+        error: r.error,
+        ...(r.code && { code: r.code }),
+        ...(r.remainingSeconds != null && { remainingSeconds: r.remainingSeconds }),
+      });
+    }
+    // Формата на отговора остава каквато ботът вече чака (`application`), плюс
+    // `pingRoleIds` — същото като по уеб пътя.
+    res.json({ ...r.application, pingRoleIds: r.pingRoleIds });
   } catch (err) {
     next(err);
   }
