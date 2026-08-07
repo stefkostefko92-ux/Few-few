@@ -92,3 +92,43 @@ test("cat на частен ключ ОЩЕ е изтичане", () => {
   const f = lintShell("set -euo pipefail\ncat /root/.private_key", "deploy.sh");
   assert.ok(codes(f).has("secret-echo"));
 });
+
+// ─── Незащитен subshell под `set -e` ────────────────────────────────────────
+// Реален дефект (07.08.2026): `( cd "$d"; bash deploy.sh )` без `||` в
+// autodeploy.sh. При `set -e` провалът на ЕДИН продукт прекратява целия пробег —
+// следващите остават неразгърнати, symlink-ът и резюмето се прескачат, а базата
+// вече е мигрирана. Три блока наведнъж.
+
+test("subshell с bash deploy.sh без гард е нарушение", () => {
+  const f = lintShell('set -euo pipefail\n( cd "$d"\n  bash deploy.sh\n)\n', "autodeploy.sh");
+  assert.ok(codes(f).has("unguarded-subshell"));
+});
+
+test("същият subshell с `|| { … }` е чист", () => {
+  const f = lintShell('set -euo pipefail\n( cd "$d"\n  bash deploy.sh\n) || { warn "паднa"; deploy_failed=1; return; }\n', "autodeploy.sh");
+  assert.ok(!codes(f).has("unguarded-subshell"));
+});
+
+test("едноредов вариант също се лови", () => {
+  const f = lintShell('set -euo pipefail\n( cd "$d" && bash deploy.sh )\n', "autodeploy.sh");
+  assert.ok(codes(f).has("unguarded-subshell"));
+});
+
+test("тривиален subshell (без деплой команда) не е нарушение", () => {
+  const f = lintShell('set -euo pipefail\n( cd "$d" && pwd )\n', "autodeploy.sh");
+  assert.ok(!codes(f).has("unguarded-subshell"));
+});
+
+test("без `set -e` правилото не важи — там subshell не убива пробега", () => {
+  const f = lintShell('#!/bin/bash\n( cd "$d" && bash deploy.sh )\n', "x.sh");
+  assert.ok(!codes(f).has("unguarded-subshell"));
+});
+
+test("реалният autodeploy.sh минава правилото", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { join, dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
+  assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("unguarded-subshell"));
+});
