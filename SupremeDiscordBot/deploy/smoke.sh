@@ -18,8 +18,17 @@
 set -uo pipefail
 
 BASE="${BASE:-http://127.0.0.1:8080}"
-API="${API:-http://127.0.0.1:3000}"
-BOT="${BOT:-http://127.0.0.1:3001}"
+# Backend-ът и ботът са `expose`, НЕ `ports` — нарочно, само фронтендът има
+# публични портове (виж docker-compose.yml). Значи `127.0.0.1:3000` от хоста
+# НИКОГА не отговаря, а nginx проксира `/api` към `backend:3000`.
+#
+# Първата версия на този файл питаше директно портовете и обяви четири здрави
+# неща за счупени при реален деплой. Проверката трябва да минава оттам, откъдето
+# минава и клиентът. (Поправено 07.08.2026 след фалшива тревога в продукция.)
+API="${API:-$BASE}"
+# Директорията с docker-compose.yml — за проверката на бота, който няма публичен
+# маршрут. Изведена от мястото на този скрипт.
+COMPOSE_DIR="${COMPOSE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 TIMEOUT="${TIMEOUT:-10}"
 
 pass=0; fail=0
@@ -29,7 +38,9 @@ note() { printf '  \033[33m·\033[0m %s\n' "$1"; }
 
 # `curl -s -o /dev/null -w %{http_code}` не хвърля при 4xx/5xx — точно каквото
 # искаме: интересува ни КОДЪТ, не дали curl е сърдит.
-code() { curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$1" 2>/dev/null || echo "000"; }
+# `-w %{http_code}` вече печата „000" при провал на връзката, а curl излиза
+# ненулево — старото `|| echo "000"` добавяше ВТОРО „000" и изходът беше „000000".
+code() { curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 body() { curl -s --max-time "$TIMEOUT" "$1" 2>/dev/null || echo ""; }
 
 echo "── Smoke: $BASE ──"
@@ -61,13 +72,18 @@ elif [ "$c" = "503" ]; then bad "компонент е паднал — виж $
 else bad "probe върна $c"; fi
 
 # ─── 4. Ботът е свързан с Discord ───────────────────────────────────────────
-b="$(body "$BOT/health")"
-if echo "$b" | grep -q '"gateway":"connected"'; then
-  ok "ботът е свързан с Discord"
-  down=$(echo "$b" | grep -o '"down":[0-9]*' | head -1 | cut -d: -f2)
-  [ "${down:-0}" != "0" ] && note "паднали бранд ботове: $down (чужди токени — не блокира деплоя)"
+# Ботът е вътрешен (`expose: 3001`) — само backend-ът го вика. Питаме го отвътре.
+if command -v docker >/dev/null && [ -f "$COMPOSE_DIR/docker-compose.yml" ]; then
+  b="$(cd "$COMPOSE_DIR" && docker compose exec -T bot wget -qO- --timeout="$TIMEOUT" http://localhost:3001/health 2>/dev/null || echo "")"
+  if echo "$b" | grep -q '"gateway":"connected"'; then
+    ok "ботът е свързан с Discord"
+    down=$(echo "$b" | grep -o '"down":[0-9]*' | head -1 | cut -d: -f2)
+    [ "${down:-0}" != "0" ] && note "паднали бранд ботове: $down (чужди токени — не блокира деплоя)"
+  else
+    bad "ботът не е свързан: ${b:-без отговор от контейнера}"
+  fi
 else
-  bad "ботът не е свързан: ${b:-без отговор}"
+  note "проверката на бота е пропусната (няма docker/compose от тук)"
 fi
 
 # ─── 5. Автентикацията отхвърля НЕлогнат ────────────────────────────────────
