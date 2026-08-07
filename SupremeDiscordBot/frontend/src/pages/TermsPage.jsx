@@ -135,6 +135,13 @@ export default function TermsPage() {
           violations of these Terms.
         </p>
         <p>
+          <strong>Effect of a refund or chargeback on access.</strong> A full refund or a card
+          chargeback ends the subscription immediately: the subscription is cancelled, Premium
+          features are switched off at once and no further charges are made. This is different
+          from a plain cancellation, which leaves access on until the end of the period you have
+          already paid for (see 5.4).
+        </p>
+        <p>
           <strong>Purchases made through Discord.</strong> For subscriptions purchased through
           Discord's Premium App checkout, Discord Inc. is the merchant of record: refund
           requests and the exercise of withdrawal rights for those purchases are handled under

@@ -123,12 +123,14 @@ describe("getServerTier — legacy grandfather fallback", () => {
 });
 
 describe("effectivePremiumWhere / effectiveFreeWhere", () => {
-  it("effectivePremiumWhere ORs isPremium, active trial and active agency", () => {
+  it("effectivePremiumWhere ORs isPremium, active trial, гратис и active agency", () => {
     const now = new Date("2026-01-01T00:00:00Z");
     expect(effectivePremiumWhere(now)).toEqual({
       OR: [
         { isPremium: true },
         { trialEndsAt: { gt: now } },
+        // v40 — отменен, но платен до края: суровата колона е false, достъпът не.
+        { accessUntil: { gt: now } },
         { agency: { is: { active: true } } },
       ],
     });
@@ -140,8 +142,80 @@ describe("effectivePremiumWhere / effectiveFreeWhere", () => {
       AND: [
         { isPremium: false },
         { OR: [{ trialEndsAt: null }, { trialEndsAt: { lte: now } }] },
+        { OR: [{ accessUntil: null }, { accessUntil: { lte: now } }] },
         { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] },
       ],
+    });
+  });
+});
+
+describe("getServerTier — гратис след отмяна (v40)", () => {
+  const DAY = 86_400_000;
+
+  it("отмененият клиент пази ПЛАТЕНАТА тарифа до accessUntil, макар plan да е free", async () => {
+    prismaMock.server.findUnique.mockResolvedValue({
+      isPremium: false, plan: "free", trialEndsAt: null, agencyId: null, agency: null,
+      accessUntil: new Date(Date.now() + 10 * DAY), gracePlan: "whitelabel",
+      planSource: null, stripeStatus: "canceled",
+    });
+
+    const tier = await getServerTier("s1");
+
+    expect(tier.plan).toBe("whitelabel");
+    expect(tier.isPremium).toBe(true);
+    // Платил е за white-label — гратисът връща точно него, не „premium“.
+    expect(tier.hasWhiteLabel).toBe(true);
+  });
+
+  it("изтекъл accessUntil не дава нищо", async () => {
+    prismaMock.server.findUnique.mockResolvedValue({
+      isPremium: false, plan: "free", trialEndsAt: null, agencyId: null, agency: null,
+      accessUntil: new Date(Date.now() - DAY), gracePlan: "whitelabel",
+      planSource: null, stripeStatus: "canceled",
+    });
+
+    const tier = await getServerTier("s1");
+
+    expect(tier.plan).toBe("free");
+    expect(tier.isPremium).toBe(false);
+  });
+
+  it("липсващ gracePlan пада на premium, не на free (не наказваме стар ред)", async () => {
+    prismaMock.server.findUnique.mockResolvedValue({
+      isPremium: false, plan: "free", trialEndsAt: null, agencyId: null, agency: null,
+      accessUntil: new Date(Date.now() + DAY), gracePlan: null,
+      planSource: null, stripeStatus: "canceled",
+    });
+
+    expect((await getServerTier("s1")).plan).toBe("premium");
+  });
+
+  it("гратисът НИКОГА не сваля жив по-висок план", async () => {
+    // Отмени premium, после купи agency-покритие / white-label: остатъчният
+    // gracePlan не бива да смъква новия план.
+    prismaMock.server.findUnique.mockResolvedValue({
+      isPremium: true, plan: "whitelabel", trialEndsAt: null, agencyId: null, agency: null,
+      accessUntil: new Date(Date.now() + DAY), gracePlan: "premium",
+      planSource: "stripe", stripeStatus: "active",
+    });
+
+    expect((await getServerTier("s1")).plan).toBe("whitelabel");
+  });
+
+  it("refund зануляваше accessUntil → никакъв гратис (парите са върнати)", async () => {
+    prismaMock.server.findUnique.mockResolvedValue({
+      isPremium: false, plan: "free", trialEndsAt: null, agencyId: null, agency: null,
+      accessUntil: null, gracePlan: null, planSource: null, stripeStatus: "refunded",
+    });
+
+    expect((await getServerTier("s1")).isPremium).toBe(false);
+  });
+
+  it("effectivePremiumWhere/effectiveFreeWhere знаят за accessUntil", async () => {
+    const now = new Date();
+    expect(effectivePremiumWhere(now).OR).toContainEqual({ accessUntil: { gt: now } });
+    expect(effectiveFreeWhere(now).AND).toContainEqual({
+      OR: [{ accessUntil: null }, { accessUntil: { lte: now } }],
     });
   });
 });

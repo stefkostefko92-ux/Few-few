@@ -17,6 +17,7 @@ import PremiumToast from "./PremiumToast";
 import ToastHost from "./ToastHost";
 import TrialBanner from "./TrialBanner";
 import PastDueBanner from "./PastDueBanner";
+import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 
 const FOCUSABLE =
@@ -267,6 +268,8 @@ export default function Layout() {
       <main id="main-content" className="flex-1 overflow-y-auto bg-cs-black flex flex-col">
         {/* Провалено плащане стои НАД пробния период — то е по-спешното. */}
         <PastDueBanner />
+        {/* v40 — отменен, но платен до края: показваме докога работи. */}
+        <GraceBanner />
         {/* v2.0 — Trial banner appears on per-server pages */}
         <TrialBanner />
         <div className="flex-1">

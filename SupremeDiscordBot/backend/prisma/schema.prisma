@@ -98,6 +98,19 @@ model Server {
   // сваля isPremium=false ако past_due е по-старо от 14 дни (виж jobs/dunning.js).
   // Изчиства се при връщане към active/trialing.
   pastDueSince          DateTime?
+  // v40 — ДОСТЪП ДО КРАЙНИЯ СРОК (решение на собственика, 07.08.2026).
+  // Клиент, който ОТМЕНИ абонамента си, ползва услугата до края на платения
+  // период — той вече е платил за него. Stripe праща customer.subscription.deleted
+  // в момента на отмяната (при незабавна отмяна) или в края на периода, затова
+  // моментът на събитието НЕ е моментът на отнемане. Тук пазим докога е платено.
+  //
+  // НЕ важи при refund/chargeback: там парите се връщат, значи достъпът пада
+  // веднага и това поле се занулява.
+  accessUntil           DateTime?
+  // Тарифата, за която е платено — пази се отделно, защото `plan` пада на
+  // "free" в момента на отмяната. Без нея гратисният период би върнал „premium“
+  // на клиент, платил whitelabel, т.е. тихо отнета функция, за която има пари.
+  gracePlan             String?
   // White-label custom bot token (White-label / Agency tiers)
   customBotToken        String?
   customBotName         String?
@@ -191,6 +204,9 @@ model Agency {
   stripeSubscriptionId String?   @unique
   stripeStatus         String? // active, canceled, past_due, trialing
   pastDueSince         DateTime?
+  // v40 — същата семантика като при Server: отмяна → местата живеят до края на
+  // платения период; refund/chargeback → падат веднага (полето се занулява).
+  accessUntil          DateTime?
   // Discord native monetization
   discordEntitlementId String?   @unique
   discordSkuId         String?

@@ -3,7 +3,7 @@ import { Router } from "express";
 import Stripe from "stripe";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { stripePriceId, planFromStripePrice, PLANS, syncAgencyServersPaidFlag, syncServerPaidFlag } from "../lib/premium.js";
+import { stripePriceId, planFromStripePrice, PLANS, syncAgencyServersPaidFlag, syncServerPaidFlag, getServerTier } from "../lib/premium.js";
 import { dmUser } from "../services/botNotifier.js";
 
 // Single-server tiers sold via the per-server checkout. Agency (multi-server)
@@ -303,6 +303,52 @@ async function liveSubscription(subId) {
   return LIVE_SUBSCRIPTION_STATUSES.has(sub?.status) ? sub : null;
 }
 
+// ─── v40 · ДОСТЪП ДО КРАЯ НА ПЛАТЕНИЯ ПЕРИОД (решение на собственика) ────────
+// Две различни неща, които досега се третираха еднакво:
+//   • ОТМЯНА          → клиентът е платил текущия период → ползва го докрай;
+//   • REFUND/CHARGEBACK → парите се връщат → достъпът пада ВЕДНАГА.
+// Затова отмяната пише accessUntil+gracePlan, а връщането на пари ги занулява
+// и на всичкото отгоре отменя самия абонамент в Stripe, за да няма следващо
+// таксуване по спорна карта.
+
+/** Статуси, при които парите са върнати — гратис НЕ се дава. */
+const MONEY_BACK_STATUSES = new Set(["refunded", "disputed"]);
+
+/**
+ * Край на платения период. В API 2026-06-24.dahlia `current_period_end` живее
+ * на нивото на subscription ITEM, не на самия абонамент (същото откритие като
+ * в GET /status/:serverId) — затова четем оттам и вземаме най-късния елемент.
+ * `cancel_at` печели, ако Stripe вече е насрочил края.
+ * @returns {Date|null}
+ */
+function paidThroughFromSubscription(sub) {
+  const seconds = sub?.items?.data?.reduce(
+    (max, it) => Math.max(max, Number(it?.current_period_end) || 0),
+    0,
+  ) || Number(sub?.cancel_at) || 0;
+  if (!seconds) return null;
+  const at = new Date(seconds * 1000);
+  return Number.isFinite(at.getTime()) ? at : null;
+}
+
+/**
+ * Отменя абонамента в Stripe веднага (refund/chargeback). Тихо подминава вече
+ * несъществуващ/отменен абонамент — Stripe връща `resource_missing`, което тук
+ * значи „вече е спрян“, не грешка. Всичко друго се хвърля: премълчан провал
+ * значи следващо таксуване по карта, чиито пари вече сме върнали.
+ */
+async function cancelSubscriptionNow(subscriptionId, why) {
+  if (!subscriptionId) return false;
+  try {
+    await stripe.subscriptions.cancel(String(subscriptionId));
+    console.log(`🛑 Stripe абонамент ${subscriptionId} отменен веднага — ${why}`);
+    return true;
+  } catch (err) {
+    if (err?.code === "resource_missing" || err?.statusCode === 404) return false;
+    throw err;
+  }
+}
+
 router.post("/webhook", requireStripe, async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
@@ -495,6 +541,11 @@ router.post("/webhook", requireStripe, async (req, res) => {
               // отварянето на сесията и това събитие, оставането му в бъдещето
               // даваше втори безплатен период след отмяна в Stripe.
               trialEndsAt: new Date(),
+              // v40 — нова покупка гаси гратиса от предишна отмяна: живият план
+              // вече покрива достъпа, а остатъчен accessUntil би надживял и
+              // следващата отмяна (гратис върху гратис).
+              accessUntil: null,
+              gracePlan: null,
               // Reset archiveRetentionDays to null (forever) for premium
               archiveRetentionDays: null,
             },
@@ -706,18 +757,41 @@ router.post("/webhook", requireStripe, async (req, res) => {
       case "customer.subscription.deleted": {
         const sub = event.data.object;
 
-        // Agency subscription ended → deactivate; member servers immediately
-        // lose the tier via getServerTier (agency.active=false).
+        // v40 — докога е платено. При ОТМЯНА местата/планът живеят дотогава.
+        const paidThrough = paidThroughFromSubscription(sub);
+
+        // Agency subscription ended → местата остават до края на платения
+        // период (`active` пада чак когато accessUntil мине — виж jobs/dunning).
         const agency = await findAgencyForSub(sub);
         if (agency) {
+          // Върнати пари → без гратис. Статусът е записан от charge.refunded /
+          // charge.dispute.created, които идват ПРЕДИ или СЛЕД това събитие —
+          // затова и там зануляваме accessUntil (двупосочна защита).
+          const moneyBack = MONEY_BACK_STATUSES.has(String(agency.stripeStatus || "").toLowerCase());
+          const graceUntil = !moneyBack && paidThrough && paidThrough > new Date() ? paidThrough : null;
+
           const did = await runOnce(async (tx) => {
-            await tx.agency.update({ where: { id: agency.id }, data: { active: false, stripeStatus: "canceled", stripeSubscriptionId: null, pastDueSince: null } });
+            await tx.agency.update({
+              where: { id: agency.id },
+              data: {
+                active: !!graceUntil,
+                accessUntil: graceUntil,
+                stripeStatus: "canceled",
+                stripeSubscriptionId: null,
+                pastDueSince: null,
+              },
+            });
           });
           if (did) {
             // Край на агенцията → покритите сървъри губят платения tier.
             // Recompute: сървър със СОБСТВЕН план остава premium, иначе → free.
+            // При активен гратис агенцията още е `active`, значи нищо не пада.
             await syncAgencyServersPaidFlag(agency.id).catch(() => {});
-            console.log(`❌ Agency ${agency.id} subscription canceled`);
+            console.log(
+              graceUntil
+                ? `⏳ Agency ${agency.id} отменена — местата живеят до ${graceUntil.toISOString()}`
+                : `❌ Agency ${agency.id} subscription canceled`,
+            );
           }
           break;
         }
@@ -725,6 +799,19 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // B4 — lookup с fallback по sub.metadata.serverId (out-of-order).
         const server = await findServerForSubscription(sub);
         if (!server) break;
+
+        // v40 — ОТМЯНА ≠ REFUND. Отмененият клиент е платил текущия период и го
+        // ползва докрай: `plan` пада на "free" (за да няма ново таксуване и да
+        // не блокира нова покупка), а платеното живее в accessUntil+gracePlan,
+        // които getServerTier чете. Върнати ли са парите (refunded/disputed),
+        // гратис НЯМА — достъпът пада в същата секунда.
+        const moneyBack = MONEY_BACK_STATUSES.has(String(server.stripeStatus || "").toLowerCase());
+        const graceUntil = !moneyBack && paidThrough && paidThrough > new Date() ? paidThrough : null;
+        // Тарифата, за която е платено: собствената колона, иначе цената по
+        // абонамента. Без нея gracePlan би върнал „premium“ на whitelabel клиент.
+        const gracePlan = graceUntil
+          ? (server.plan && server.plan !== "free" ? server.plan : planFromSubscription(sub)?.plan || "premium")
+          : null;
 
         const did = await runOnce(async (tx) => {
           await tx.server.update({
@@ -739,11 +826,30 @@ router.post("/webhook", requireStripe, async (req, res) => {
               stripeStatus: "canceled",
               stripeSubscriptionId: null,
               pastDueSince: null, // C3 — приключен абонамент, маркерът отпада.
+              accessUntil: graceUntil,
+              gracePlan,
             },
           });
+          if (graceUntil) {
+            await tx.auditLog.create({
+              data: {
+                actorTag: "STRIPE",
+                serverId: server.id,
+                action: "PREMIUM_GRACE_UNTIL_PERIOD_END",
+                targetId: server.id,
+                metadata: { accessUntil: graceUntil.toISOString(), gracePlan, subscriptionId: sub.id },
+              },
+            });
+          }
         });
 
-        if (did) console.log(`❌ Server ${server.id} subscription canceled (churn)`);
+        if (did) {
+          console.log(
+            graceUntil
+              ? `⏳ Server ${server.id} отменен — достъп (${gracePlan}) до ${graceUntil.toISOString()}`
+              : `❌ Server ${server.id} subscription canceled (churn)`,
+          );
+        }
         break;
       }
 
@@ -895,6 +1001,27 @@ router.post("/webhook", requireStripe, async (req, res) => {
           const pi = await stripe.paymentIntents.retrieve(String(dispute.payment_intent));
           customerId = pi?.customer || null;
         }
+        // Клиентът може да е АГЕНЦИЯ — тя няма ред в `servers`, затова без този
+        // клон chargeback по agency абонамент не отнемаше нищо (най-скъпият
+        // план оставаше жив с върнати пари).
+        const disputedAgency = customerId
+          ? await prisma.agency.findFirst({ where: { stripeCustomerId: customerId } })
+          : null;
+        if (disputedAgency) {
+          const agencySubId = disputedAgency.stripeSubscriptionId;
+          await runOnce(async (tx) => {
+            await tx.agency.update({
+              where: { id: disputedAgency.id },
+              data: { active: false, accessUntil: null, stripeStatus: "disputed", stripeSubscriptionId: null, pastDueSince: null },
+            });
+            await tx.auditLog.create({ data: { actorTag: "STRIPE", action: "AGENCY_REVOKED_DISPUTE", targetId: disputedAgency.id, metadata: { disputeId: dispute.id, canceledSubscriptionId: agencySubId ?? null } } });
+          });
+          await syncAgencyServersPaidFlag(disputedAgency.id).catch(() => {});
+          await cancelSubscriptionNow(agencySubId, `chargeback ${dispute.id}`);
+          console.log(`⚠️ Agency ${disputedAgency.id} отнета — chargeback`);
+          break;
+        }
+
         const server = customerId
           ? await prisma.server.findFirst({ where: { stripeCustomerId: customerId } })
           : null;
@@ -902,10 +1029,26 @@ router.post("/webhook", requireStripe, async (req, res) => {
           console.warn(`⚠️ dispute ${dispute.id}: няма сървър за customer ${customerId ?? "неизвестен"}`);
           break;
         }
+        // v40 — парите се теглят обратно: спираме и самия абонамент, за да няма
+        // следващо таксуване по оспорена карта, и зануляваме гратиса (ако
+        // subscription.deleted е дошло преди това и е дало достъп до края).
+        const disputedSubId = server.stripeSubscriptionId;
         await runOnce(async (tx) => {
-          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "disputed" } });
-          await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_DISPUTE", targetId: server.id, metadata: { disputeId: dispute.id } } });
+          await tx.server.update({
+            where: { id: server.id },
+            data: {
+              isPremium: false, plan: "free", billingInterval: null,
+              stripeStatus: "disputed",
+              accessUntil: null, gracePlan: null,
+              stripeSubscriptionId: null,
+            },
+          });
+          await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_DISPUTE", targetId: server.id, metadata: { disputeId: dispute.id, canceledSubscriptionId: disputedSubId ?? null } } });
         });
+        // Извън транзакцията: мрежово извикване не бива да държи ред заключен, а
+        // провалът му вече не може да отмени записа (достъпът Е отнет). Хвърля
+        // при истинска грешка → Stripe ретрайва → маркерът спира двойния ефект.
+        await cancelSubscriptionNow(disputedSubId, `chargeback ${dispute.id}`);
         console.log(`⚠️ Server ${server.id} Premium revoked — chargeback/dispute`);
         break;
       }
@@ -916,14 +1059,44 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // event enabled on the Stripe webhook endpoint.
         const charge = event.data.object;
         if (charge.amount_refunded < charge.amount) break; // partial refund → keep access
+        // Същото като при chargeback: клиентът може да е агенция.
+        const refundedAgency = charge.customer
+          ? await prisma.agency.findFirst({ where: { stripeCustomerId: charge.customer } })
+          : null;
+        if (refundedAgency) {
+          const agencySubId = refundedAgency.stripeSubscriptionId;
+          await runOnce(async (tx) => {
+            await tx.agency.update({
+              where: { id: refundedAgency.id },
+              data: { active: false, accessUntil: null, stripeStatus: "refunded", stripeSubscriptionId: null, pastDueSince: null },
+            });
+            await tx.auditLog.create({ data: { actorTag: "STRIPE", action: "AGENCY_REVOKED_REFUND", targetId: refundedAgency.id, metadata: { chargeId: charge.id, canceledSubscriptionId: agencySubId ?? null } } });
+          });
+          await syncAgencyServersPaidFlag(refundedAgency.id).catch(() => {});
+          await cancelSubscriptionNow(agencySubId, `refund ${charge.id}`);
+          console.log(`↩️ Agency ${refundedAgency.id} отнета — пълно връщане`);
+          break;
+        }
+
         const server = charge.customer
           ? await prisma.server.findFirst({ where: { stripeCustomerId: charge.customer } })
           : null;
         if (!server) break;
+        // v40 — върнати пари: и абонаментът спира, и гратисът се занулява.
+        const refundedSubId = server.stripeSubscriptionId;
         await runOnce(async (tx) => {
-          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "refunded" } });
-          await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_REFUND", targetId: server.id, metadata: { chargeId: charge.id } } });
+          await tx.server.update({
+            where: { id: server.id },
+            data: {
+              isPremium: false, plan: "free", billingInterval: null,
+              stripeStatus: "refunded",
+              accessUntil: null, gracePlan: null,
+              stripeSubscriptionId: null,
+            },
+          });
+          await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_REFUND", targetId: server.id, metadata: { chargeId: charge.id, canceledSubscriptionId: refundedSubId ?? null } } });
         });
+        await cancelSubscriptionNow(refundedSubId, `refund ${charge.id}`);
         console.log(`↩️ Server ${server.id} Premium revoked — full refund`);
         break;
       }
@@ -945,6 +1118,8 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
       select: {
         isPremium: true, plan: true, billingInterval: true, premiumSince: true,
         stripeStatus: true, stripeSubscriptionId: true, trialEndsAt: true,
+        // v40 — отменен, но платен до края: планът е "free", достъпът не е.
+        accessUntil: true, gracePlan: true,
         // Agency seat: сурово server.plan остава "free" за покрит сървър —
         // без това Premium страницата предлагаше ПОКУПКА на сървър, който
         // вече е white-label през агенция (реален UX капан, открит при
@@ -985,12 +1160,21 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
     // собствената му колона plan да е "free". Суровите полета остават за
     // обратна съвместимост; agency обектът никога не изтича навън целият
     // (само планът и дали викащият е собственикът на агенцията).
+    // v40 — резолвът на плана вече не се преписва тук. Локалната формула не
+    // знаеше за гратиса след отмяна (accessUntil/gracePlan) и връщаше „free“ на
+    // клиент, който ползва платен период — дашбордът му предлагаше да купи
+    // това, за което вече е платил. getServerTier е източникът на истината.
+    const tier = await getServerTier(req.params.serverId);
+    const graceActive = !!(server.accessUntil && server.accessUntil > new Date());
+
     const { agency, agencyId, ...raw } = server;
     res.json({
       ...raw,
-      isPremium: raw.isPremium || agencyCovered || trialActive,
+      isPremium: tier.isPremium,
       isTrial: trialActive,
-      effectivePlan: agencyCovered && (!raw.plan || raw.plan === "free") ? agency.plan : raw.plan,
+      effectivePlan: tier.plan,
+      // Гратис след отмяна — фронтендът показва „достъп до …“ вместо „купи“.
+      graceActive,
       agencyCovered,
       agencyOwnedByMe: agencyCovered && agency.ownerUserId === req.user.id,
       subscriptionDetails,

@@ -25,8 +25,9 @@ const stripeInstance = {
   customers: { create: vi.fn() },
   checkout: { sessions: { create: vi.fn() } },
   billingPortal: { sessions: { create: vi.fn() } },
-  subscriptions: { retrieve: vi.fn() },
+  subscriptions: { retrieve: vi.fn(), cancel: vi.fn() },
   charges: { retrieve: vi.fn() },
+  paymentIntents: { retrieve: vi.fn() },
 };
 vi.mock("stripe", () => ({ default: vi.fn(() => stripeInstance) }));
 

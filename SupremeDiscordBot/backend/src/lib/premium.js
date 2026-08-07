@@ -216,6 +216,7 @@ export async function getServerTier(serverId) {
     where: { id: serverId },
     select: {
       isPremium: true, plan: true, trialEndsAt: true, agencyId: true,
+      accessUntil: true, gracePlan: true, planSource: true, stripeStatus: true,
       agency: { select: { plan: true, active: true, seatLimit: true } },
     },
   });
@@ -231,6 +232,19 @@ export async function getServerTier(serverId) {
   let paidPlan = server?.plan && server.plan !== "free"
     ? server.plan
     : (server?.isPremium ? "whitelabel" : "free");
+
+  // v40 — ОТМЕНЕН, но платен до края на периода. Клиентът е платил текущия
+  // период и го ползва докрай; `plan` вече е паднал на "free", затова тук
+  // връщаме тарифата, за която е платено (`gracePlan`). При refund/chargeback
+  // и двете колони се зануляват, значи този клон не се задейства — точно
+  // каквото искаме: върнати пари → отнет достъп веднага.
+  //
+  // `higherPlan`, а не присвояване: gracePlan никога не бива да СВАЛЯ жив план
+  // (напр. клиент отмени, после веднага купи по-висок — accessUntil още стои).
+  const graceActive = !!(server?.accessUntil && server.accessUntil > now);
+  if (graceActive) {
+    paidPlan = higherPlan(paidPlan, server.gracePlan || "premium");
+  }
 
   // Agency seat overrides when the agency is active and actually covers us.
   if (server?.agencyId && server.agency?.active) {
@@ -269,6 +283,7 @@ export function effectivePremiumWhere(now = new Date()) {
     OR: [
       { isPremium: true },
       { trialEndsAt: { gt: now } },
+      { accessUntil: { gt: now } },   // v40 — отменен, но платен до края
       { agency: { is: { active: true } } },
     ],
   };
@@ -280,6 +295,7 @@ export function effectiveFreeWhere(now = new Date()) {
     AND: [
       { isPremium: false },
       { OR: [{ trialEndsAt: null }, { trialEndsAt: { lte: now } }] },
+      { OR: [{ accessUntil: null }, { accessUntil: { lte: now } }] },  // v40
       { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] },
     ],
   };
