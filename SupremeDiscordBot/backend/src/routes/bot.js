@@ -392,9 +392,24 @@ router.post("/ticket/:ticketId/message", async (req, res, next) => {
       where: { id: req.params.ticketId },
       select: { creatorId: true, firstResponseAt: true },
     });
-    if (ticketForSla && !ticketForSla.firstResponseAt && authorId !== ticketForSla.creatorId) {
+    if (ticketForSla) {
+      const firstResponse =
+        !ticketForSla.firstResponseAt && authorId !== ticketForSla.creatorId;
+      // `lastActivityAt` се вдига при ВСЯКО съобщение.
+      //
+      // Досега се пипаше само при създаване, claim/unclaim и смяна на приоритет
+      // — а авто-затварянето по неактивност (scheduler.js) съди точно по него.
+      // Резултат: тикет, в който хората активно си пишат, се брои за „мъртъв“ и
+      // Premium функцията го затваря НАСРЕД разговора. Точно обратното на това,
+      // за което клиентът плаща. (Одит 07.08.2026)
       await prisma.ticket
-        .update({ where: { id: req.params.ticketId }, data: { firstResponseAt: new Date() } })
+        .update({
+          where: { id: req.params.ticketId },
+          data: {
+            lastActivityAt: new Date(),
+            ...(firstResponse && { firstResponseAt: new Date() }),
+          },
+        })
         .catch(() => {});
     }
 

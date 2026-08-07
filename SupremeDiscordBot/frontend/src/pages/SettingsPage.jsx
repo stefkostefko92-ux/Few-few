@@ -125,14 +125,25 @@ export default function SettingsPage() {
           .map(([cat]) => [cat, form[`eventLogCh_${cat}`].trim()])
       ),
       language: form.language,
+      // Premium функции — AI отговори и round-robin.
       ...(server.isPremium && {
-        customBotName: form.customBotName || null,
-        customBotAvatar: form.customBotAvatar || null,
-        ...(form.customBotToken && { customBotToken: form.customBotToken }),
         aiRepliesEnabled: form.aiRepliesEnabled,
         aiRepliesPrompt: form.aiRepliesPrompt || null,
         roundRobinEnabled: form.roundRobinEnabled,
         roundRobinRoleId: form.roundRobinRoleId || null,
+      }),
+      // White-label полетата се пращат САМО при план, който ги носи.
+      //
+      // Досега целият блок висеше на `isPremium`, а той е ИСТИНА и за обикновен
+      // Premium (който НЕ включва white-label). Бекендът отказва с 403, щом
+      // полето ПРИСЪСТВА в тялото (`!== undefined`) — а `customBotName: null` е
+      // присъствие. Резултат: Premium клиент не можеше да запази НИКАКВА
+      // настройка. Грубият флаг вместо точния е класическият източник на такъв
+      // 403. (Одит 07.08.2026)
+      ...(server.hasWhiteLabel && {
+        customBotName: form.customBotName || null,
+        customBotAvatar: form.customBotAvatar || null,
+        ...(form.customBotToken && { customBotToken: form.customBotToken }),
       }),
     };
     mutation.mutate(payload);
