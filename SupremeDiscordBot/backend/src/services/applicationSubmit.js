@@ -16,6 +16,7 @@
 // маршрута само я викат.
 
 import { prisma } from "../lib/prisma.js";
+import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 
 function formatDuration(seconds) {
   if (seconds < 60) return `${seconds}s`;
@@ -49,57 +50,106 @@ export async function submitApplication({
   if (!form || form.serverId !== serverId) {
     return { ok: false, status: 404, error: "Form not found" };
   }
+
+  // Правилата важат само докато планът ги покрива. Cooldown и таван на
+  // подаванията са Premium (`form.cooldowns`); записани веднъж, те си оставаха
+  // в базата и продължаваха да СЕ ИЗПЪЛНЯВАТ след свалянето на плана, защото
+  // гейтът стоеше само при запис в `routes/forms.js`. Затваряне на формата
+  // (`closedAt`) е базова функция и остава при всяка тарифа.
+  // (Червен екип, одит 07.08.2026)
+  const { plan } = await getServerTier(serverId);
+  sanitizeFormForTier(form, plan);
   if (form.closedAt) {
     return { ok: false, status: 403, error: "Applications are currently closed for this form", code: "FORM_CLOSED" };
   }
 
-  if ((form.cooldownSeconds && form.cooldownSeconds > 0) || form.maxSubmissions) {
-    const cooldown = await prisma.formCooldown.findUnique({
-      where: { formId_userId: { formId, userId } },
-    });
-    if (cooldown) {
-      if (form.maxSubmissions && cooldown.submissionCount >= form.maxSubmissions) {
-        return {
-          ok: false, status: 429, code: "MAX_SUBMISSIONS",
-          error: `You have reached the maximum of ${form.maxSubmissions} submissions for this form`,
-        };
-      }
-      if (form.cooldownSeconds && form.cooldownSeconds > 0) {
-        const elapsed = (Date.now() - cooldown.lastSubmittedAt.getTime()) / 1000;
-        if (elapsed < form.cooldownSeconds) {
-          const remaining = Math.ceil(form.cooldownSeconds - elapsed);
-          return {
-            ok: false, status: 429, code: "COOLDOWN",
-            error: `Please wait ${formatDuration(remaining)} before submitting again`,
-            remainingSeconds: remaining,
-          };
+  const guarded = !!((form.cooldownSeconds && form.cooldownSeconds > 0) || form.maxSubmissions);
+
+  // Проверката и записът в ЕДНА Serializable транзакция.
+  //
+  // Дефектът (червен екип, 07.08.2026): четенето на `formCooldown` и вдигането
+  // на брояча стояха отделно. Две едновременни подавания четат `count = 0`,
+  // двете минават покрай `maxSubmissions: 1` и двете записват — таванът се
+  // заобикаля с двоен клик. Същият TOCTOU, който вече поправихме за лимитите
+  // на панелите (`lib/withinLimit.js`); тук лимитът е БРОЯЧ в колона, не брой
+  // редове, затова транзакцията е тук, а не през онзи помощник.
+  try {
+    const application = await prisma.$transaction(
+      async (tx) => {
+        if (guarded) {
+          const cooldown = await tx.formCooldown.findUnique({
+            where: { formId_userId: { formId, userId } },
+          });
+          if (cooldown) {
+            if (form.maxSubmissions && cooldown.submissionCount >= form.maxSubmissions) {
+              throw reject({
+                ok: false, status: 429, code: "MAX_SUBMISSIONS",
+                error: `You have reached the maximum of ${form.maxSubmissions} submissions for this form`,
+              });
+            }
+            if (form.cooldownSeconds && form.cooldownSeconds > 0) {
+              const elapsed = (Date.now() - cooldown.lastSubmittedAt.getTime()) / 1000;
+              if (elapsed < form.cooldownSeconds) {
+                const remaining = Math.ceil(form.cooldownSeconds - elapsed);
+                throw reject({
+                  ok: false, status: 429, code: "COOLDOWN",
+                  error: `Please wait ${formatDuration(remaining)} before submitting again`,
+                  remainingSeconds: remaining,
+                });
+              }
+            }
+          }
         }
-      }
+
+        // Кандидатстващият може никога да не е влизал в таблото, а
+        // `applications` има външен ключ към `users` с RESTRICT — без този stub
+        // вмъкването гърми.
+        await tx.user.upsert({
+          where: { id: userId },
+          create: { id: userId, username: userId, discriminator: "0" },
+          update: {},
+        });
+
+        const row = await tx.application.create({
+          data: {
+            serverId, formId, userId, answers,
+            reviewMessageId: reviewMessageId || null,
+            reviewChannelId: reviewChannelId || null,
+            status: "PENDING",
+          },
+        });
+
+        await tx.formCooldown.upsert({
+          where: { formId_userId: { formId, userId } },
+          create: { formId, userId, lastSubmittedAt: new Date(), submissionCount: 1 },
+          update: { lastSubmittedAt: new Date(), submissionCount: { increment: 1 } },
+        });
+
+        return row;
+      },
+      { isolationLevel: "Serializable" },
+    );
+
+    return { ok: true, application, pingRoleIds: form.pingRoleIds || [] };
+  } catch (err) {
+    if (err?.__reject) return err.__reject;
+    // P2034 = сериализационен конфликт (Postgres 40001): друго подаване на СЪЩИЯ
+    // потребител за същата форма е спечелило състезанието. Не ретрайваме сами —
+    // при достигнат таван ретраят би стигнал до същия отказ, а двойният клик не
+    // бива да ражда два записа.
+    if (err?.code === "P2034") {
+      return {
+        ok: false, status: 429, code: "CONCURRENT",
+        error: "Another submission is already being processed. Please try again.",
+      };
     }
+    throw err;
   }
+}
 
-  // Кандидатстващият може никога да не е влизал в таблото, а `applications`
-  // има външен ключ към `users` с RESTRICT — без този stub вмъкването гърми.
-  await prisma.user.upsert({
-    where: { id: userId },
-    create: { id: userId, username: userId, discriminator: "0" },
-    update: {},
-  });
-
-  const application = await prisma.application.create({
-    data: {
-      serverId, formId, userId, answers,
-      reviewMessageId: reviewMessageId || null,
-      reviewChannelId: reviewChannelId || null,
-      status: "PENDING",
-    },
-  });
-
-  await prisma.formCooldown.upsert({
-    where: { formId_userId: { formId, userId } },
-    create: { formId, userId, lastSubmittedAt: new Date(), submissionCount: 1 },
-    update: { lastSubmittedAt: new Date(), submissionCount: { increment: 1 } },
-  });
-
-  return { ok: true, application, pingRoleIds: form.pingRoleIds || [] };
+/** Отказ, пренесен през `throw` — единственият начин да върнеш транзакция. */
+function reject(payload) {
+  const err = new Error(payload.code || "REJECTED");
+  err.__reject = payload;
+  return err;
 }

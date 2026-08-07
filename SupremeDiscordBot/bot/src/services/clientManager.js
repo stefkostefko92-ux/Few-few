@@ -257,7 +257,7 @@ export async function bootCustomClient(serverId, mainClient, { force = false } =
  *     сравним локален URL с хеша в Discord, значи всеки boot би пращал наново.
  *   • Провалът НИКОГА не спира бота: без бранд той пак обслужва тикетите.
  */
-async function applyBranding(client, serverId, { withAvatar = false } = {}) {
+export async function applyBranding(client, serverId, { withAvatar = false } = {}) {
   let branding;
   try {
     const { data } = await api.get(`/bot/server/${serverId}/branding`);
@@ -268,26 +268,30 @@ async function applyBranding(client, serverId, { withAvatar = false } = {}) {
   }
   if (!branding) return;
 
-  if (branding.name && client.user?.username !== branding.name) {
-    try {
-      await client.user.setUsername(branding.name);
-      console.log(`[ClientManager] ${serverId}: името на бота → „${branding.name}“`);
-    } catch (err) {
-      // 50035 = невалидно име (заето/забранена дума); 429 = изчерпан лимит.
-      const why = err?.code === 429 || err?.status === 429
-        ? "Discord ограничава смените на име (~2/час) — ще мине по-късно"
-        : err?.message;
-      console.warn(`[ClientManager] ${serverId}: името не се смени — ${why}`);
-    }
-  }
+  // ЕДНА заявка за име+аватар, не две.
+  //
+  // `setUsername()` и `setAvatar()` не са независими извиквания: и двете правят
+  // `this.edit()` вътрешно (discord.js v14 `ClientUser.js:83,97`), тоест един и
+  // същ `PATCH /users/@me` и един и същ bucket с лимит ~2/час. Клиент, който
+  // смени И името, И снимката наведнъж, харчеше ДВА опита вместо един — при
+  // втора такава промяна в същия час третата заявка увисва в опашката с часове
+  // и брандирането „не работи“ без нито един ред грешка. Точно оплакването,
+  // заради което този код беше написан. (Дискорджията, одит 07.08.2026)
+  const patch = {};
+  if (branding.name && client.user?.username !== branding.name) patch.username = branding.name;
+  if (withAvatar && branding.avatarDataUri) patch.avatar = branding.avatarDataUri;
+  if (Object.keys(patch).length === 0) return;
 
-  if (withAvatar && branding.avatarDataUri) {
-    try {
-      await client.user.setAvatar(branding.avatarDataUri);
-      console.log(`[ClientManager] ${serverId}: аватарът на бота е обновен`);
-    } catch (err) {
-      console.warn(`[ClientManager] ${serverId}: аватарът не се смени — ${err?.message}`);
-    }
+  const what = Object.keys(patch).join("+");
+  try {
+    await client.user.edit(patch);
+    console.log(`[ClientManager] ${serverId}: брандирането е приложено (${what})`);
+  } catch (err) {
+    // 50035 = невалидно име (заето/забранена дума); 429 = изчерпан лимит.
+    const why = err?.code === 429 || err?.status === 429
+      ? "Discord ограничава смените на профил (~2/час) — ще мине по-късно"
+      : err?.message;
+    console.warn(`[ClientManager] ${serverId}: брандирането не се приложи (${what}) — ${why}`);
   }
 }
 

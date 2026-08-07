@@ -60,6 +60,7 @@
 | Stripe Payments Europe Ltd | Payment processing | Ireland (EU) | Within EEA |
 | Google LLC (Gemini API) | AI inference (optional, Premium feature) | USA | Standard Contractual Clauses |
 | Discord Inc. | Authentication + bot delivery | USA | Standard Contractual Clauses |
+| Functional Software, Inc. (Sentry) | Error monitoring and performance tracing | USA / EU region | Standard Contractual Clauses |
 
 4.3 Supreme Bot will provide 30 days' notice of any intended changes to sub-processors (via email to the Customer's admin contact) and publish an updated list at the Customer's dashboard under Privacy Settings.
 
@@ -70,8 +71,8 @@
 5.1 Supreme Bot implements:
 
 - **Encryption at rest:** AES-256-GCM for sensitive fields (bot tokens, API keys)
-- **Encryption in transit:** TLS 1.3 for all client-server and inter-service communication
-- **Access control:** Role-based access control (RBAC), multi-factor authentication for admin access
+- **Encryption in transit:** TLS 1.2+ (TLS 1.3 preferred) for all client-server and inter-service communication
+- **Access control:** Role-based access control (RBAC). Dashboard sign-in is delegated to Discord OAuth2 — multi-factor authentication is therefore governed by the administrator's own Discord account settings, and Supreme Bot does not operate a separate password or MFA system
 - **Audit logging:** Immutable audit log of all privileged operations, retained for 2 years
 - **Session security:** HTTP-only secure cookies, SameSite=Lax, automatic token rotation
 - **Rate limiting:** Multi-tier rate limits preventing brute-force and DoS attacks
@@ -112,7 +113,18 @@
 
 ## 9. Return or Deletion
 
-9.1 Upon termination, Customer has 30 days to export data via `/api/gdpr/export`.
+9.1 Upon termination, Customer has 30 days to export the server's data (ticket
+transcripts, applications, panel and form configuration) from the dashboard in
+CSV and PDF form. This export remains available to the Customer's administrators
+for 30 days after the paid period ends.
+
+> Note (audit 2026-08-07): this clause previously pointed to `/api/gdpr/export`.
+> That endpoint serves an Article 15/20 *data subject* request — it returns the
+> data of the natural person calling it (their own profile, tickets, messages,
+> API keys, sessions) — not the server-scope data this DPA governs, for which
+> the Customer is the controller. A named endpoint is not a discharged
+> obligation; Article 28(3)(h) requires the mechanism to actually return what
+> the controller entrusted.
 
 9.2 After 30 days, Supreme Bot will anonymize all personal data, retaining only:
 - Transaction records (for 7 years per EU tax law)

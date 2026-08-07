@@ -163,6 +163,62 @@ export function sanitizePanelForTier(panel, plan) {
   return panel;
 }
 
+/**
+ * Колко дълго СЛЕД края на платения период клиентът още може да си вземе данните.
+ *
+ * Живее тук, защото го ползват две несвързани места и трябва да са СЪГЛАСНИ:
+ * `routes/export.js` (пуска експорта) и `services/scheduler.js` (отлага метлата).
+ * Разминат ли се, правото на експорт остава на хартия — метлата минава първа.
+ * Основание: чл. 16(4) Дир. (ЕС) 2019/770 (ЗПЦСЦУПС).
+ */
+export const EXPORT_GRACE_DAYS = 30;
+
+/** Още ли е в прозореца за експорт този сървър? Котва: край на платения период. */
+export function inExportWindow(server, now = Date.now()) {
+  const anchor = [server?.accessUntil, server?.trialEndsAt]
+    .filter(Boolean)
+    .sort((a, b) => b - a)[0];
+  return !!anchor && anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000 > now;
+}
+
+// ─── Форми ────────────────────────────────────────────────────────────────────
+// ЗАЩО (червен екип, одит 07.08.2026): premium полетата на формите се гейтваха
+// САМО при запис (`routes/forms.js`). Тоест клиент, който е конфигурирал
+// cooldown, таван на подаванията, regex валидация и разклоняване, докато е
+// плащал, продължаваше да ги ползва след свалянето на плана — `routes/bot.js`
+// връщаше формите сурови, а `applicationSubmit.js` изпълняваше правилата, без
+// изобщо да пита за тарифа. Панелите вече бяха покрити; формите — не.
+//
+// Това е дефектен клас Г: гейт на ЗАПИСА, не на ИЗПЪЛНЕНИЕТО. Записът е само
+// една от вратите; изпълнението е единственото място, което наистина решава.
+const FORM_FEATURE_STRIP = {
+  "form.autoRoleOnReview": (f) => { f.acceptRoleIds = []; f.denyRoleIds = []; f.removeRoleIds = []; },
+  "form.customDmMessages": (f) => { f.acceptMessage = null; f.denyMessage = null; },
+  "form.cooldowns":        (f) => { f.cooldownSeconds = 0; f.maxSubmissions = null; },
+};
+
+const QUESTION_FEATURE_STRIP = {
+  "form.validationRegex":      (q) => { q.validationRegex = null; q.validationMessage = null; },
+  "form.conditionalBranching": (q) => { q.branches = null; },
+};
+
+/**
+ * Нулира premium полетата на форма (и на въпросите ѝ), които планът не покрива.
+ * Мутира и връща формата — същият договор като `sanitizePanelForTier`.
+ */
+export function sanitizeFormForTier(form, plan) {
+  if (!form) return form;
+  for (const [featureKey, strip] of Object.entries(FORM_FEATURE_STRIP)) {
+    if (!planHasFeature(plan, featureKey)) strip(form);
+  }
+  for (const q of form.questions || []) {
+    for (const [featureKey, strip] of Object.entries(QUESTION_FEATURE_STRIP)) {
+      if (!planHasFeature(plan, featureKey)) strip(q);
+    }
+  }
+  return form;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // STRIPE PRICE ↔ PLAN and DISCORD SKU ↔ PLAN mapping (env-driven)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -192,6 +248,31 @@ function stripePriceMap() {
   // grandfather those subscribers into the white-label tier.
   add(e.STRIPE_PRICE_ID, "whitelabel", "month");
   return m;
+}
+
+/**
+ * Кои платени двойки (тарифа × период) НЯМАТ конфигурирана Stripe цена.
+ *
+ * ЗАЩО (VPS-аджията, одит 07.08.2026): `.env.example` носеше само наследения
+ * `STRIPE_PRICE_ID`, а `stripePriceMap()` е тих — липсващ env просто не влиза в
+ * картата. Деплой по образеца значи ЧАСТИЧНО конфигурирани цени, а частичното
+ * е по-опасно от липсващото: checkout за конфигурираните тарифи работи, но
+ * webhook-ът не може да върже платената цена към план и пада на резервния клон
+ * (`routes/stripe.js`), който дава „premium“. Клиент плаща Agency 10 за €39.99
+ * и получава Premium. Нищо не гърми, парите влизат, правата са грешни.
+ *
+ * Затова стартът изброява липсите на глас, вместо да ги преглътне.
+ */
+export function missingStripePrices() {
+  const gaps = [];
+  for (const plan of ["premium", "whitelabel", "agency5", "agency10"]) {
+    for (const interval of ["month", "year"]) {
+      if (!stripePriceId(plan, interval)) {
+        gaps.push(`STRIPE_PRICE_${plan.toUpperCase()}_${interval.toUpperCase()}`);
+      }
+    }
+  }
+  return gaps;
 }
 
 /** Resolve { plan, interval } for a Stripe price id, or null if unknown. */
@@ -258,11 +339,9 @@ export async function getServerTier(serverId) {
     ? Math.ceil((server.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
     : 0;
 
-  // Own paid plan. Fall back to isPremium=true (legacy rows without `plan`) →
-  // treat as white-label so grandfathered subscribers keep what they had.
-  let paidPlan = server?.plan && server.plan !== "free"
-    ? server.plan
-    : (server?.isPremium ? "whitelabel" : "free");
+  // Собственият платен план. Колоната `plan` е ЕДИНСТВЕНИЯТ авторитет тук —
+  // сурово `isPremium` НЕ се превежда в тарифа на това място (виж по-долу).
+  let paidPlan = server?.plan && server.plan !== "free" ? server.plan : "free";
 
   // v40 — ОТМЕНЕН, но платен до края на периода. Клиентът е платил текущия
   // период и го ползва докрай; `plan` вече е паднал на "free", затова тук
@@ -281,6 +360,26 @@ export async function getServerTier(serverId) {
   if (server?.agencyId && server.agency?.active) {
     paidPlan = higherPlan(paidPlan, server.agency.plan || "free");
   }
+
+  // ПОСЛЕДНА инстанция: платено е (сурово `isPremium`), но никой по-конкретен
+  // източник не каза КОЯ тарифа.
+  //
+  // Дефектът (червен екип, 07.08.2026): този клон стоеше ПРЪВ и превеждаше
+  // `isPremium` направо в „whitelabel“. Само че v40 нарочно пише точно това
+  // състояние — при отмяна с гратис `stripe.js` записва `isPremium: true` +
+  // `plan: "free"` (виж routes/stripe.js:839-840). Резултат: ВСЕКИ отменен
+  // Premium клиент получаваше White-label — тарифа с +1 ранг, за която не е
+  // плащал, и то тъкмо докато си тръгва. Същото при out-of-order webhook:
+  // `syncServerPaidFlag` вдига `isPremium` по жив абонамент, преди `plan` да е
+  // записан.
+  //
+  // „Наследени“ редове тук вече НЯМА: миграция v27 попълни
+  // `plan='whitelabel'` за всеки `isPremium=true` ред
+  // (`20260709000000_v27_tiers_agency_discord/migration.sql:15-16`), тоест
+  // истински наследник не стига дотук с `plan='free'`. Затова падаме на
+  // НАЙ-НИСКАТА платена тарифа: знаем, че е платено, не знаем за какво —
+  // при съмнение даваме по-малкото, а не по-голямото.
+  if (paidPlan === "free" && server?.isPremium) paidPlan = "premium";
 
   const trialPlan = isTrial ? "premium" : "free";
   const plan = higherPlan(paidPlan, trialPlan);

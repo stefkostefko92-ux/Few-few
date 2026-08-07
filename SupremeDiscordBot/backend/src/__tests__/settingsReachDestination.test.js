@@ -26,9 +26,13 @@ const read = (rel) => (existsSync(join(ROOT, rel)) ? readFileSync(join(ROOT, rel
 // настройка → { файл, който я КОНСУМИРА, и низът, доказващ консумацията }
 const MUST_REACH = [
   // ── White-label брандиране ──────────────────────────────────────────────
-  { setting: "customBotName",   in: "bot/src/services/clientManager.js", proof: "setUsername" },
-  { setting: "customBotAvatar", in: "bot/src/services/clientManager.js", proof: "setAvatar" },
+  // Име и аватар пътуват в ЕДИН `client.user.edit()` — `setUsername`/`setAvatar`
+  // правят същата PATCH заявка вътрешно и харчеха двойно от лимита ~2/час.
+  { setting: "customBotName",   in: "bot/src/services/clientManager.js", proof: "patch.username" },
+  { setting: "customBotAvatar", in: "bot/src/services/clientManager.js", proof: "patch.avatar" },
   { setting: "customBotToken",  in: "bot/src/services/clientManager.js", proof: "client.login" },
+  // Самото писане към Discord — без него горните две са само локални променливи.
+  { setting: "брандиране→Discord", in: "bot/src/services/clientManager.js", proof: "client.user.edit(" },
 
   // ── Правила на формите (Premium) ────────────────────────────────────────
   { setting: "cooldownSeconds", in: "backend/src/services/applicationSubmit.js", proof: "COOLDOWN" },

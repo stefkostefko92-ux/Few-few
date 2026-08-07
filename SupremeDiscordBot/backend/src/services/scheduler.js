@@ -7,7 +7,7 @@ import cron from "node-cron";
 import { prisma } from "../lib/prisma.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
-import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
+import { effectivePremiumWhere, effectiveFreeWhere, inExportWindow } from "../lib/premium.js";
 
 // ─── Обвивка на планираните задачи ───────────────────────────────────────────
 // node-cron НЕ чака предното изпълнение: три от задачите тук вървят всяка минута
@@ -25,6 +25,28 @@ import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
 // не предположение. CRON_TZ позволява промяна без пипане на кода.
 const TZ = { timezone: process.env.CRON_TZ || "UTC" };
 
+/**
+ * Провал на задача: лог + Sentry. ЕДИНСТВЕНИЯТ начин да се съобщи за грешка тук.
+ *
+ * ЗАЩО (Наблюдателят, одит 07.08.2026): обвивката `job()` по-долу има Sentry
+ * клон, но той е НЕДОСТИЖИМ — всяка от десетте задачи има собствен try/catch,
+ * който гълта грешката и пише само в конзолата. Тоест cron задача можеше да се
+ * проваля при ВСЯКО задействане месеци наред без нито едно събитие в таблото.
+ * Точно този клас вече ни изгоря веднъж: три задачи споделяха ключ за
+ * заключване и две от тях никога не се изпълняваха — открихме го при одит, не
+ * от аларма.
+ *
+ * Умишлено НЕ махаме вътрешните catch: те са там, за да не сваля една паднала
+ * задача останалите. Променяме само това, че провалът вече се ЧУВА.
+ */
+async function jobFail(name, err) {
+  console.error(`[Scheduler] ${name}:`, err?.message);
+  try {
+    const Sentry = await import("@sentry/node");
+    Sentry.captureException(err, { tags: { job: name } });
+  } catch { /* Sentry по избор — логът остава */ }
+}
+
 const running = new Set();
 function job(name, fn) {
   return async () => {
@@ -37,11 +59,7 @@ function job(name, fn) {
     try {
       await fn();
     } catch (err) {
-      console.error(`[Scheduler] ${name} се провали: ${err?.message}`);
-      try {
-        const Sentry = await import("@sentry/node");
-        Sentry.captureException(err, { tags: { job: name } });
-      } catch { /* Sentry по избор */ }
+      await jobFail(name, err);
     } finally {
       running.delete(name);
       const ms = Date.now() - started;
@@ -63,11 +81,22 @@ cron.schedule("0 3 * * *", job("archive-cleanup", async () => {
     // Get all servers that have a defined retention period
     const servers = await prisma.server.findMany({
       where: { archiveRetentionDays: { not: null } },
-      select: { id: true, archiveRetentionDays: true },
+      select: { id: true, archiveRetentionDays: true, accessUntil: true, trialEndsAt: true },
     });
 
+    // Прозорецът за експорт е ПРЕДИ метлата.
+    //
+    // При загуба на достъп `syncServerPaidFlag` връща `archiveRetentionDays` на
+    // 30, а 30-те дни се броят от ЗАТВАРЯНЕТО на тикета — значи архив, затворен
+    // преди три месеца, изчезва до 24 часа след свалянето на плана. Клиентът
+    // има право да си вземе съдържанието при прекратяване (чл. 16(4) Дир. (ЕС)
+    // 2019/770), а `routes/export.js` вече му дава 30 дни след края на платения
+    // период. Ако метлата мине първа, това право е на хартия.
+    // (Правният Разбирач, одит 07.08.2026)
     let cleaned = 0;
+    let deferred = 0;
     for (const server of servers) {
+      if (inExportWindow(server)) { deferred += 1; continue; }
       const cutoff = new Date(
         Date.now() - server.archiveRetentionDays * 24 * 60 * 60 * 1000
       );
@@ -87,8 +116,11 @@ cron.schedule("0 3 * * *", job("archive-cleanup", async () => {
     if (cleaned > 0) {
       console.log(`[Scheduler] Archive cleanup: cleared HTML from ${cleaned} tickets`);
     }
+    if (deferred > 0) {
+      console.log(`[Scheduler] Archive cleanup: ${deferred} сървъра пропуснати — още в прозореца за експорт`);
+    }
   } catch (err) {
-    console.error("[Scheduler] Archive cleanup error:", err.message);
+    await jobFail("archive-cleanup", err);
   }
 }), TZ);
 
@@ -106,7 +138,7 @@ cron.schedule("0 * * * *", job("session-cleanup", async () => {
       console.log(`[Scheduler] Cleaned ${result.count} expired Discord sessions`);
     }
   } catch (err) {
-    console.error("[Scheduler] Session cleanup error:", err.message);
+    await jobFail("session-cleanup", err);
   }
 }), TZ);
 
@@ -135,7 +167,7 @@ cron.schedule("0 4 * * 0", job("retention-weekly", async () => {
       console.log(`[Scheduler] Enforced 30-day retention on ${result.count} downgraded servers`);
     }
   } catch (err) {
-    console.error("[Scheduler] Retention enforcement error:", err.message);
+    await jobFail("retention-weekly", err);
   }
 }), TZ);
 
@@ -212,7 +244,7 @@ cron.schedule("*/30 * * * *", job("inactivity-autoclose", async () => {
       }
     }
   } catch (err) {
-    console.error("[Scheduler] Inactivity close error:", err.message);
+    await jobFail("inactivity-autoclose", err);
   }
 }), TZ);
 
@@ -230,7 +262,7 @@ cron.schedule("* * * * *", job("giveaway-autoend", async () => {
       await prisma.giveaway.update({ where: { id: g.id }, data: { endedAt: new Date(), winnerIds: winners } });
       await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
-  } catch (err) { console.error("[Scheduler] giveaway end:", err.message); }
+  } catch (err) { await jobFail("giveaway-autoend", err); }
 }), TZ);
 
 // ─── Job 5b: Poll auto-close ───────────────────
@@ -247,7 +279,7 @@ cron.schedule("* * * * *", job("poll-autoclose", async () => {
       await prisma.poll.update({ where: { id: p.id }, data: { closedAt: new Date() } });
       await pushPollUpdate(p.id);
     }
-  } catch (err) { console.error("[Scheduler] poll close:", err.message); }
+  } catch (err) { await jobFail("poll-autoclose", err); }
 }), TZ);
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
@@ -317,7 +349,7 @@ cron.schedule("* * * * *", job("scheduled-messages", async () => {
       }
       await prisma.scheduledMessage.update({ where: { id: m.id }, data: update });
     }
-  } catch (err) { console.error("[Scheduler] scheduled msg:", err.message); }
+  } catch (err) { await jobFail("scheduled-messages", err); }
 }), TZ);
 
 // ─── Job 7: Trial expiry notifications (v2.0; DM канал — v3.1) ────────────────
@@ -488,7 +520,7 @@ cron.schedule("0 9 * * *", job("trial-expiry-dm", async () => {
       }).catch((err) => console.error(`[Scheduler] trial-expired DM ${s.id}:`, err.message));
     }
   } catch (err) {
-    console.error("[Scheduler] trial expiry check:", err.message);
+    await jobFail("trial-expiry-dm", err);
   }
 }), TZ);
 
@@ -550,7 +582,7 @@ cron.schedule("5 0 * * *", job("daily-metrics-rollup", async () => {
     }
     console.log(`[Scheduler] Daily metrics snapshotted for ${activeServers.length} servers`);
   } catch (err) {
-    console.error("[Scheduler] daily metrics:", err.message);
+    await jobFail("daily-metrics-rollup", err);
   }
 }), TZ);
 
@@ -689,7 +721,7 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
       console.log(`[Scheduler] SLA breach check: flagged ${breached} tickets`);
     }
   } catch (err) {
-    console.error("[Scheduler] SLA breach check error:", err.message);
+    await jobFail("sla-watch", err);
   }
 }), TZ);
 

@@ -14,6 +14,15 @@ import { createPrismaMock } from "./testUtils/prismaMock.js";
 const prismaMock = createPrismaMock();
 vi.mock("../lib/prisma.js", () => ({ prisma: prismaMock }));
 
+// Тарифата: тези тестове съдят ПРАВИЛАТА, значи планът трябва да ги покрива.
+// (Санитайзърът по тарифа се тества отделно в `formTierStrip.test.js`.)
+let plan = "premium";
+vi.mock("../lib/premium.js", async (orig) => {
+  const actual = await orig();
+  return { ...actual, getServerTier: vi.fn(async () => ({ plan, isPremium: true })) };
+});
+
+
 const { submitApplication } = await import("../services/applicationSubmit.js");
 
 const BODY = { serverId: "s1", formId: "f1", userId: "u1", answers: { q1: "да" } };

@@ -99,26 +99,45 @@ describe("getServerTier — agency seat", () => {
   });
 });
 
-describe("getServerTier — legacy grandfather fallback", () => {
-  it("isPremium=true with no plan column set falls back to white-label", async () => {
+// Тези два теста ПРЕДИ кодираха „isPremium=true → whitelabel“ (наследство от
+// стария единствен платен tier). Правилото се смени нарочно на 07.08.2026 и
+// подробното защо живее в `gracePlanEscalation.test.js`. Накратко: v40 нарочно
+// записва `isPremium: true` + `plan: "free"` при отмяна с гратис, тоест старото
+// правило подаряваше White-label на всеки отменен Premium клиент. Истински
+// наследени редове тук няма — миграция v27 попълни `plan='whitelabel'` за всеки
+// `isPremium=true` ред.
+describe("getServerTier — сурово isPremium без по-конкретен източник", () => {
+  it("isPremium=true без колона plan → НАЙ-НИСКАТА платена тарифа", async () => {
     prismaMock.server.findUnique.mockResolvedValue({
       isPremium: true, plan: null, trialEndsAt: null, agencyId: null, agency: null,
     });
 
     const tier = await getServerTier("s1");
 
-    expect(tier.plan).toBe("whitelabel");
-    expect(tier.hasWhiteLabel).toBe(true);
+    expect(tier.plan).toBe("premium");
+    expect(tier.isPremium).toBe(true);   // платено Е — достъпът остава
+    expect(tier.hasWhiteLabel).toBe(false); // но не подаряваме горната тарифа
   });
 
-  it("isPremium=true with plan explicitly 'free' also grandfathers to white-label", async () => {
+  it("isPremium=true с plan='free' → същото: premium, не white-label", async () => {
     prismaMock.server.findUnique.mockResolvedValue({
       isPremium: true, plan: "free", trialEndsAt: null, agencyId: null, agency: null,
     });
 
     const tier = await getServerTier("s1");
 
+    expect(tier.plan).toBe("premium");
+  });
+
+  it("записаният plan винаги бие сурового isPremium", async () => {
+    prismaMock.server.findUnique.mockResolvedValue({
+      isPremium: true, plan: "whitelabel", trialEndsAt: null, agencyId: null, agency: null,
+    });
+
+    const tier = await getServerTier("s1");
+
     expect(tier.plan).toBe("whitelabel");
+    expect(tier.hasWhiteLabel).toBe(true);
   });
 });
 

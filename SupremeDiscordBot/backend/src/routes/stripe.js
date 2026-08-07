@@ -120,7 +120,23 @@ router.post(
     // паралелен абонамент → двойно таксуване). Смяната Premium↔White-label
     // става през Customer Portal (subscription_update е включен от
     // scripts/stripe-setup.sh; webhook-ът синхронизира новата тарифа).
-    if (server.isPremium) {
+    //
+    // Гардът пита „има ли ЖИВ източник на права“, а НЕ „има ли достъп“.
+    // Разликата е гратисът: при отмяна ред 839 нарочно оставя `isPremium: true`
+    // (клиентът е платил периода), затова стар гард върху суровата колона
+    // ЗАКЛЮЧВАШЕ отменения клиент извън касата — а порталът няма какво да му
+    // поднови, защото абонаментът в Stripe вече го няма (`stripeSubscriptionId`
+    // е нулиран на ред 846). Годишен план, отменен на ден 1 = цяла година, в
+    // която клиентът иска да плати и не може. Точно обратното на коментара на
+    // ред 818-819, който твърди, че отмяната не блокира нова покупка.
+    // (Червен екип, 07.08.2026)
+    //
+    // `planSource` покрива и неплатените през Stripe живи права — Discord
+    // entitlement и ръчен подарък от админ — които втори Checkout би дублирал.
+    // Пробният период не сетва нито едно от двете, значи пробният потребител
+    // може да купи (иначе не бихме конвертирали нито един trial).
+    const liveGrant = !!(server.stripeSubscriptionId || server.planSource);
+    if (liveGrant) {
       return res.status(400).json({
         error: "This server already has an active subscription. Change plans from the billing portal (Manage Subscription).",
         code: "USE_PORTAL",
@@ -299,7 +315,19 @@ function subscriptionIdFromInvoice(invoice) {
  */
 async function liveSubscription(subId) {
   if (!subId) return null;
-  const sub = await stripe.subscriptions.retrieve(String(subId));
+  let sub;
+  try {
+    sub = await stripe.subscriptions.retrieve(String(subId));
+  } catch (err) {
+    // `resource_missing` не е мрежова грешка, а ОКОНЧАТЕЛЕН отговор: този
+    // абонамент вече го няма, значи отговорът на „жив ли е“ е не и няма да се
+    // промени. Хвърлянето тук връщаше 500, Stripe ретрайваше с дни и всеки
+    // опит раждаше нов инцидент — шум, който изглежда като авария, при напълно
+    // знаен изход. Всичко останало (мрежа, 5xx, лимит) ОСТАВА хвърлено: там
+    // ретраят е точно каквото искаме.
+    if (err?.code === "resource_missing" || err?.statusCode === 404) return null;
+    throw err;
+  }
   return LIVE_SUBSCRIPTION_STATUSES.has(sub?.status) ? sub : null;
 }
 
@@ -312,20 +340,57 @@ async function liveSubscription(subId) {
 // таксуване по спорна карта.
 
 /** Статуси, при които парите са върнати — гратис НЕ се дава. */
-const MONEY_BACK_STATUSES = new Set(["refunded", "disputed"]);
+/**
+ * Статуси, при които ТЕКУЩИЯТ период е реално платен — единствените, които
+ * заслужават гратис след отмяна.
+ *
+ * ЗАЩО ALLOWLIST (червен екип, 07.08.2026): гратисът се даваше на всичко, което
+ * не е `refunded`/`disputed` — denylist от два статуса. Само че „не са върнати
+ * пари“ НЕ значи „платено е“. Пропадне ли картата, Stripe изчерпва Smart Retries
+ * (`past_due` → `unpaid`) и отменя абонамента; `customer.subscription.deleted`
+ * идва с `current_period_end` в БЪДЕЩЕТО, защото периодът е започнал — просто
+ * фактурата за него никога не е платена. При годишен план това е до ~12 месеца
+ * пълен достъп, подарен на човек, който не е платил нито стотинка за него.
+ *
+ * Същият дефектен клас като fail-open denylist-а в `lib/premium.js`: изброяваш
+ * лошите и всяко ново състояние влиза през вратата като добро. Тук изброяваме
+ * добрите — ново/непознато състояние не дава достъп.
+ *
+ * `trialing` е вътре нарочно: пробният период е ДАДЕН, а не платен, и отмяна по
+ * време на пробата пак го оставя до края му. Всеки друг статус (`past_due`,
+ * `unpaid`, `incomplete`, `refunded`, `disputed`, липсващ) → нула гратис.
+ */
+const PAID_PERIOD_STATUSES = new Set(["active", "trialing"]);
+
+/** Заслужава ли този абонат достъп до края на периода след отмяна? */
+function periodWasPaid(status) {
+  return PAID_PERIOD_STATUSES.has(String(status || "").toLowerCase());
+}
 
 /**
  * Край на платения период. В API 2026-06-24.dahlia `current_period_end` живее
  * на нивото на subscription ITEM, не на самия абонамент (същото откритие като
  * в GET /status/:serverId) — затова четем оттам и вземаме най-късния елемент.
- * `cancel_at` печели, ако Stripe вече е насрочил края.
+ * `cancel_at` печели, ако Stripe вече е насрочил края — и това наистина е така,
+ * а не само в текста.
+ *
+ * ДЕФЕКТЪТ (червен екип, 07.08.2026): коментарът обещаваше приоритет на
+ * `cancel_at`, но кодът пишеше `items… || cancel_at`, тоест го достигаше САМО
+ * когато items не дадат нищо. При насрочена ранна отмяна (`cancel_at` преди
+ * края на периода) достъпът се даваше до по-късната дата — раздавахме повече,
+ * отколкото сме обещали. Правилната посока при две валидни дати е ПО-РАННАТА:
+ * достъпът свършва, когато абонаментът свършва.
+ *
  * @returns {Date|null}
  */
 function paidThroughFromSubscription(sub) {
-  const seconds = sub?.items?.data?.reduce(
+  const periodEnd = sub?.items?.data?.reduce(
     (max, it) => Math.max(max, Number(it?.current_period_end) || 0),
     0,
-  ) || Number(sub?.cancel_at) || 0;
+  ) || 0;
+  const cancelAt = Number(sub?.cancel_at) || 0;
+  // И двете налични → по-ранната. Само едната → тя.
+  const seconds = periodEnd && cancelAt ? Math.min(periodEnd, cancelAt) : (periodEnd || cancelAt);
   if (!seconds) return null;
   const at = new Date(seconds * 1000);
   return Number.isFinite(at.getTime()) ? at : null;
@@ -584,6 +649,20 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Agency invoice → keep the agency active (recurring payment).
         const agency = await prisma.agency.findFirst({ where: { stripeCustomerId: String(customer) } });
         if (agency) {
+          // Същият гард като сървърния път по-долу — липсваше само тук, а
+          // асиметрията е дупка: Stripe ретрайва webhook-и с дни и доставя
+          // извън ред, значи закъснял `invoice.paid` след refund/chargeback
+          // връщаше `active: true` + `stripeStatus: "active"` върху агенция,
+          // която току-що беше отнета — и то безсрочно, защото нищо после не я
+          // сваля. Agency 10 е €399/година върху 10 сървъра.
+          // (Продавача, одит 07.08.2026)
+          const agencySub = await liveSubscription(subscriptionIdFromInvoice(invoice));
+          if (!agencySub) {
+            console.warn(
+              `⚠️ invoice.paid за агенция ${agency.id}: абонаментът вече не е активен — НЕ провизирам (закъсняло/повторно събитие)`,
+            );
+            break;
+          }
           const did = await runOnce(async (tx) => {
             await tx.agency.update({ where: { id: agency.id }, data: { active: true, stripeStatus: "active", pastDueSince: null } });
           });
@@ -614,8 +693,16 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Целият ефект е в ЕДНА транзакция,
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
-        // Reflect the paid tier (a portal plan-change lands here as an invoice).
-        const paidTier = planFromInvoice(invoice);
+        // Тарифата се чете от ЖИВИЯ абонамент, не от редовете на фактурата.
+        //
+        // При смяна на план през портала Stripe издава прорационна фактура с
+        // редове за ДВЕ различни цени — кредит по старата и такса по новата — а
+        // `planFromInvoice` взима първия ред с цена, без правило кой е
+        // меродавен. Клиент, качил се Premium → White-label, можеше да получи
+        // обратно premium. Абонаментът носи текущите items, значи той е
+        // истината; фактурата остава резерва за случаите без жив обект.
+        // (Продавача, одит 07.08.2026)
+        const paidTier = planFromSubscription(paidSub) || planFromInvoice(invoice);
         // Тих drift guard: платена фактура, чиято цена не мапва към тарифа,
         // значи env price map е разминат с реалния Stripe акаунт — достъпът
         // пак се дава (isPremium), но етикетът на тарифата би застоял.
@@ -780,8 +867,11 @@ router.post("/webhook", requireStripe, async (req, res) => {
           // Върнати пари → без гратис. Статусът е записан от charge.refunded /
           // charge.dispute.created, които идват ПРЕДИ или СЛЕД това събитие —
           // затова и там зануляваме accessUntil (двупосочна защита).
-          const moneyBack = MONEY_BACK_STATUSES.has(String(agency.stripeStatus || "").toLowerCase());
-          const graceUntil = !moneyBack && paidThrough && paidThrough > new Date() ? paidThrough : null;
+          // Гратис само ако периодът е бил ПЛАТЕН (виж PAID_PERIOD_STATUSES).
+          // Изчерпан дунинг (`past_due` → `unpaid`) не е „отмяна“, а неплащане.
+          const graceUntil = periodWasPaid(agency.stripeStatus) && paidThrough && paidThrough > new Date()
+            ? paidThrough
+            : null;
 
           const did = await runOnce(async (tx) => {
             await tx.agency.update({
@@ -819,8 +909,12 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // не блокира нова покупка), а платеното живее в accessUntil+gracePlan,
         // които getServerTier чете. Върнати ли са парите (refunded/disputed),
         // гратис НЯМА — достъпът пада в същата секунда.
-        const moneyBack = MONEY_BACK_STATUSES.has(String(server.stripeStatus || "").toLowerCase());
-        const graceUntil = !moneyBack && paidThrough && paidThrough > new Date() ? paidThrough : null;
+        // Гратис само ако периодът е бил ПЛАТЕН (виж PAID_PERIOD_STATUSES).
+        // Изчерпан дунинг (`past_due` → `unpaid`) не е „отмяна“, а неплащане:
+        // периодът е започнал, фактурата за него — никога платена.
+        const graceUntil = periodWasPaid(server.stripeStatus) && paidThrough && paidThrough > new Date()
+          ? paidThrough
+          : null;
         // Тарифата, за която е платено: собствената колона, иначе цената по
         // абонамента. Без нея gracePlan би върнал „premium“ на whitelabel клиент.
         const gracePlan = graceUntil
@@ -1147,7 +1241,22 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
     res.json({ received: true });
   } catch (err) {
+    // Провалът на webhook е ПАРИЧЕН инцидент: Stripe ще ретрайва, но ако
+    // причината е трайна (бъг, схема, недостъпна база), правата на платил
+    // клиент мълчаливо не се дават. Досега това стигаше само до `console.error`
+    // — `next(err)` не се вика, значи Sentry error handler-ът на index.js
+    // никога не го вижда и в таблото няма нито едно събитие. Затова тук
+    // залавяме изрично, с типа на събитието като таг, за да се вижда КОЙ
+    // webhook гори. (Наблюдателят, одит 07.08.2026)
     console.error("Stripe webhook processing error:", err);
+    try {
+      const Sentry = await import("@sentry/node");
+      Sentry.captureException(err, {
+        tags: { webhook: "stripe", eventType: event?.type || "unknown" },
+        extra: { eventId: event?.id || null },
+      });
+    } catch { /* Sentry по избор — логът остава */ }
+    // 500 нарочно: това е сигналът, по който Stripe ретрайва.
     res.status(500).json({ error: "Webhook processing failed" });
   }
 });

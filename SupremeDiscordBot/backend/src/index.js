@@ -36,6 +36,23 @@ if (missing.length) {
   process.exit(1);
 }
 
+// Живият Stripe с непълна карта на цените е по-опасен от изключен Stripe:
+// checkout за конфигурираните тарифи работи, но webhook-ът не разпознава цената
+// и пада на резервния клон „premium“ — клиент плаща Agency 10 и получава
+// Premium. Парите влизат, правата са грешни, нищо не гърми. Крещим при старт.
+// (VPS-аджията, одит 07.08.2026)
+if (process.env.STRIPE_SECRET_KEY) {
+  const { missingStripePrices } = await import("./lib/premium.js");
+  const gaps = missingStripePrices();
+  if (gaps.length) {
+    console.error(
+      `❌ Stripe е активен, но ${gaps.length} цени липсват: ${gaps.join(", ")}. ` +
+      "Плащане по такава тарифа ще даде ГРЕШЕН план. Пусни scripts/stripe-setup.sh " +
+      "и попълни стойностите от изхода му."
+    );
+  }
+}
+
 import authRouter from "./routes/auth.js";
 import serversRouter from "./routes/servers.js";
 import panelsRouter from "./routes/panels.js";

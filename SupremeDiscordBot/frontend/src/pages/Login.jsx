@@ -322,7 +322,7 @@ export default function Login() {
               <TrustCard
                 icon={Lock}
                 title="EU-only data residency"
-                body="Hosted in the EU (Germany, Hetzner). GDPR-native. Your data never leaves the EU."
+                body="Hosted and stored in the EU (Germany, Hetzner). GDPR-native. Discord, Google and Sentry are recipients in the US under Standard Contractual Clauses."
               />
               <TrustCard
                 icon={Zap}
@@ -354,7 +354,7 @@ export default function Login() {
             <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-cs-dim border-t border-cs-border/50 pt-8">
               <div className="flex items-center gap-2"><span className="text-success">●</span> All systems operational</div>
               <div>GDPR compliant</div>
-              <div>Ad-free · no telemetry</div>
+              <div>Ad-free · no advertising trackers</div>
               <div>Cancel anytime · no lock-in</div>
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Where is my data stored?"
-                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. We are GDPR-native — no transfers outside the EU. Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
+                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
@@ -389,7 +389,7 @@ export default function Login() {
               />
               <FaqItem
                 q="What happens if I cancel — can I take my data?"
-                a="No lock-in. Cancel anytime from the dashboard; the server reverts to the Free tier. All your data (panels, forms, applications, transcripts) stays accessible, and you can export transcripts to CSV whenever you want — GDPR data portability, EU-hosted. Nothing is deleted just because you downgrade."
+                a="No lock-in. Cancel anytime from the dashboard — access continues until the end of the period you paid for, then the server reverts to the Free tier. Panels, forms, applications and settings are kept; transcripts of tickets closed more than 30 days ago are deleted on the Free tier. Export what you need to CSV or PDF before the period ends."
               />
               <FaqItem
                 q="Do you support multiple servers?"
@@ -401,7 +401,7 @@ export default function Login() {
               />
               <FaqItem
                 q="How do I get support?"
-                a="Join our Discord server — direct support from the team that built Supreme Bot (not outsourced). Premium customers get priority responses."
+                a="Join our Discord server — direct support from the team that built Supreme Bot (not outsourced). Response times are best-effort; no contractual SLA is included."
               />
             </div>
           </div>
@@ -516,7 +516,7 @@ export default function Login() {
             </div>
 
             <p className="text-center text-xs text-cs-dim font-mono mt-8">
-              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime target · EU hosting · GDPR · Cancel anytime
+              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>
