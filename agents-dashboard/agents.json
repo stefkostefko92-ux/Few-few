@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-08-06",
+    "updated": "2026-08-07",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -11814,7 +11814,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 129
+        "lessons": 131
       },
       "evolution": [
         {
@@ -12122,9 +12122,20 @@
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: Components v2 (flag IS_COMPONENTS_V2, 1<<15 message flags) е нов модел съобщения — ведн… (+5 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-08-07",
+          "event": "v14.9 — учене",
+          "detail": "Научи: MessageContent intent review проверява РЕАЛНОТО поведение на бота срещу декларираната ц… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „MessageContent intent review проверява РЕАЛНОТО поведение на бота срещу декларираната ц…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
