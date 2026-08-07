@@ -10358,7 +10358,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 149
+        "lessons": 151
       },
       "evolution": [
         {
@@ -10762,9 +10762,20 @@
           "date": "2026-07-28",
           "event": "v14.1 — учене",
           "detail": "Научи: WebGPU е Baseline от яну 2026, но реални дупки остават: Linux Firefox без стабилна подд… (+5 още)"
+        },
+        {
+          "version": "14.3.0",
+          "date": "2026-08-07",
+          "event": "v14.3 — учене",
+          "detail": "Научи: В SupremeDiscordBot frontend react-query план на ключове: ['servers'] (мн.ч., сайдбар+с… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot frontend react-query план на ключове: ['servers'] (мн.ч., сайдбар+с…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
