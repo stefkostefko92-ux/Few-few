@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 307
+        "lessons": 308
       },
       "evolution": [
         {
@@ -1753,9 +1753,20 @@
           "date": "2026-08-07",
           "event": "v20.5 — учене",
           "detail": "Научи: Prisma 5.x генерира буквално `NOT col IN (...)` за `NOT: { col: { in: [...] } }` и `col… (+4 още)"
+        },
+        {
+          "version": "20.6.0",
+          "date": "2026-08-07",
+          "event": "v20.6 — учене",
+          "detail": "Научи: Всеки мой отговор трябва да завършва с блока „## ПРЕДАВАНЕ“, иначе SubagentStop гейтът …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Всеки мой отговор трябва да завършва с блока „## ПРЕДАВАНЕ“, иначе SubagentStop гейтът …\""
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
