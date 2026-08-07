@@ -728,6 +728,7 @@ export default {
   "privacy.terms": "Regulamin",
   "privacy.privacyPolicy": "Polityka prywatności",
   "privacy.cookies": "Polityka plików cookie",
+  "privacy.cookiePrefs": "Ustawienia plików cookie",
   "privacy.eula": "EULA",
   "privacy.deleteTitle": "Usuń konto",
   "privacy.deleteDesc": "Artykuł 17 (prawo do usunięcia danych). Trwale usuń swoje dane osobowe. Twój profil (nazwa użytkownika, awatar, tokeny, adres e-mail) zostaje usunięty.",

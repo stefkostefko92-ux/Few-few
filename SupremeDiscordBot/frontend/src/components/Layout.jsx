@@ -20,6 +20,7 @@ import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 import { APP_VERSION_LABEL, RELEASE_NAME } from "../version";
+import { openCookiePreferences } from "./CookieConsent";
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
@@ -325,6 +326,16 @@ export default function Layout() {
               <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
               <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
               <a href="/cookies" className="hover:text-cs-cyan transition-colors">Cookies</a>
+              {/* Чл. 7(3) ОРЗД: оттеглянето трябва да е толкова лесно, колкото
+                  даването. Дотук банерът се показваше само веднъж и решението
+                  беше необратимо. (Одит 07.08.2026) */}
+              <button
+                type="button"
+                onClick={openCookiePreferences}
+                className="hover:text-cs-cyan transition-colors uppercase tracking-widest"
+              >
+                {t("privacy.cookiePrefs")}
+              </button>
               <a href="/eula"    className="hover:text-cs-cyan transition-colors">EULA</a>
               <a href="/accessibility" className="hover:text-cs-cyan transition-colors">Accessibility</a>
             </div>

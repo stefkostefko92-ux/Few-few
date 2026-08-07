@@ -478,10 +478,35 @@ router.post("/webhook", requireStripe, async (req, res) => {
   // checkout.session.async_payment_failed. (Продавача, 07.08.2026)
   const PAID_SESSION_STATUSES = new Set(["paid", "no_payment_required"]);
 
+  // Ключ за advisory lock-а: сериализираме по КЛИЕНТ, не глобално. Два
+  // webhook-а за различни клиенти не се засичат; два за един клиент — да.
+  //
+  // ЗАЩО (Продавача, одит 07.08.2026): идемпотентността по `event.id` пази от
+  // ДУБЪЛ, но не от КОНКУРЕНЦИЯ. Handler-ите четат реда ИЗВЪН транзакцията
+  // (`findFirst` преди `runOnce`) и после пишат вътре — класически загубен
+  // ъпдейт, ако Stripe достави две събития за същия клиент едновременно
+  // (напр. `invoice.paid` и `customer.subscription.updated`). Едното решение се
+  // взима по СТАРО състояние и презаписва другото.
+  //
+  // `pg_advisory_xact_lock` се държи до края на транзакцията и се пуска сам —
+  // без ръчно освобождаване, значи не може да остане заключено при изключение.
+  function lockKeyFor(ev) {
+    const obj = ev?.data?.object || {};
+    const raw = String(
+      obj.customer || obj.stripeCustomerId || obj.id || ev.id || "",
+    );
+    // Стабилен 32-битов хеш (djb2) — advisory lock-ът иска число.
+    let h = 5381;
+    for (let i = 0; i < raw.length; i++) h = ((h << 5) + h + raw.charCodeAt(i)) | 0;
+    return h;
+  }
+
   async function runOnce(effect) {
     try {
       await prisma.$transaction(async (tx) => {
-        // Маркерът е ПЪРВ — при дубъл P2002 спира преди ефекта.
+        // ПЪРВИЯТ ред в транзакцията: сериализира събитията за този клиент.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKeyFor(event)}::int)`;
+        // Маркерът е втори — при дубъл P2002 спира преди ефекта.
         await tx.processedStripeEvent.create({
           data: { id: event.id, type: event.type },
         });
@@ -1145,6 +1170,106 @@ router.post("/webhook", requireStripe, async (req, res) => {
         if (premiumOff) {
           console.log(`❌ Server ${server.id} достъп отнет (статус: ${sub.status})`);
         }
+        break;
+      }
+
+      // ─── Спорът е ПРИКЛЮЧИЛ ────────────────────────────────────────────
+      // Досега слушахме само `created` и оставяхме клиента отнет ЗАВИНАГИ дори
+      // когато спорът се реши в НАША полза — тоест парите се връщат при нас, а
+      // достъпът остава спрян. Клиентът е платил и няма услуга; нищо в системата
+      // не го поправя само. (Продавача, одит 07.08.2026)
+      case "charge.dispute.closed": {
+        const dispute = event.data.object;
+        // `won` = банката ни даде право; `lost`/`warning_closed` = парите си
+        // отиват и отнемането е правилно, значи нищо не правим.
+        if (dispute.status !== "won") {
+          console.log(`⚖️ Спор ${dispute.id} приключи като „${dispute.status}“ — достъпът остава отнет.`);
+          break;
+        }
+        let customerId = dispute.customer || null;
+        if (!customerId && dispute.charge) {
+          const ch = await stripe.charges.retrieve(String(dispute.charge));
+          customerId = ch?.customer ? String(ch.customer) : null;
+        }
+        if (!customerId) break;
+
+        const wonServer = await prisma.server.findFirst({ where: { stripeCustomerId: customerId } });
+        if (!wonServer) break;
+        // Възстановяваме САМО ако абонаментът наистина е жив в Stripe — иначе
+        // печеленето на стар спор би възкресило отдавна прекратен клиент.
+        const wonSub = await liveSubscription(wonServer.stripeSubscriptionId);
+        if (!wonSub) {
+          console.warn(`⚖️ Спор ${dispute.id} спечелен, но абонаментът на ${wonServer.id} не е жив — НЕ възстановявам сам.`);
+          break;
+        }
+        const wonTier = planFromSubscription(wonSub);
+        await runOnce(async (tx) => {
+          await tx.server.update({
+            where: { id: wonServer.id },
+            data: {
+              isPremium: true,
+              stripeStatus: wonSub.status,
+              ...(wonTier && { plan: wonTier.plan, billingInterval: wonTier.interval, planSource: "stripe" }),
+            },
+          });
+          await tx.auditLog.create({
+            data: {
+              actorTag: "STRIPE", serverId: wonServer.id,
+              action: "PREMIUM_RESTORED_DISPUTE_WON", targetId: wonServer.id,
+              metadata: { disputeId: dispute.id },
+            },
+          });
+        });
+        reconcileWhitelabel(wonServer.id);
+        console.log(`⚖️ Спор ${dispute.id} спечелен — достъпът на ${wonServer.id} е върнат.`);
+        break;
+      }
+
+      // ─── SCA при ПОДНОВЯВАНЕ ───────────────────────────────────────────────
+      // Stripe праща това, а НЕ `payment_failed`, когато картата иска само
+      // потвърждение с 3DS. Дунинг известието висеше само на `payment_failed`,
+      // значи системата мълчеше точно когато на клиента му трябва едно
+      // натискане — и след няколко дни абонаментът пада „необяснимо“.
+      // (Продавача, одит 07.08.2026)
+      case "invoice.payment_action_required": {
+        const invoice = event.data.object;
+        const actionServer = invoice.customer
+          ? await prisma.server.findFirst({ where: { stripeCustomerId: String(invoice.customer) } })
+          : null;
+        if (!actionServer) break;
+
+        const did = await runOnce(async (tx) => {
+          await tx.auditLog.create({
+            data: {
+              actorTag: "STRIPE", serverId: actionServer.id,
+              action: "PAYMENT_ACTION_REQUIRED", targetId: actionServer.id,
+              metadata: { invoiceId: invoice.id, hostedUrl: invoice.hosted_invoice_url || null },
+            },
+          });
+        });
+        if (did && actionServer.ownerId) {
+          // Достъпът НЕ се пипа — клиентът не е пропуснал плащане, а само не е
+          // потвърдил. Свалянето тук би било наказание за банкова процедура.
+          //
+          // Линкът е към НАШЕТО табло, не към `hosted_invoice_url`: последният
+          // отваря плащането БЕЗ логин, а DM може да бъде препратен. Същата
+          // причина, поради която dunning известието по-горе също не праща
+          // Stripe адрес. Самият Stripe и без това праща имейл за това събитие.
+          Promise.resolve(dmUser(actionServer.ownerId, {
+            title: "🔐 Плащането иска потвърждение от банката ти",
+            description:
+              `Подновяването на абонамента за **${actionServer.name}** е спряно на` +
+              " 3-D Secure проверка — банката иска да потвърдиш плащането.\n\n" +
+              "Premium функциите остават активни. Ако не потвърдиш, плащането ще" +
+              " пропадне и след няколко опита достъпът ще спре.\n\n" +
+              `**[Отвори билинга](${process.env.FRONTEND_URL}/dashboard/${actionServer.id}/premium)**` +
+              " — оттам стигаш до защитения портал на Stripe. Проверù и имейла си.",
+            color: 0xf0c24c,
+            footer: { text: "Supreme Bot · Получаваш това, защото си собственик на този Discord сървър." },
+            timestamp: new Date().toISOString(),
+          })).catch(() => {});
+        }
+        console.log(`🔐 ${actionServer.id}: плащането иска 3DS потвърждение`);
         break;
       }
 

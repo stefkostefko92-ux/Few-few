@@ -739,6 +739,7 @@ export default {
   "privacy.terms": "Terms of Service",
   "privacy.privacyPolicy": "Privacy Policy",
   "privacy.cookies": "Cookie Policy",
+  "privacy.cookiePrefs": "Cookie settings",
   "privacy.eula": "EULA",
   "privacy.deleteTitle": "Delete account",
   "privacy.deleteDesc": "Article 17 (right to erasure). Permanently delete your personal data. Your profile (username, avatar, tokens, email) is removed.",

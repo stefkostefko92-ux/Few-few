@@ -728,6 +728,7 @@ export default {
   "privacy.terms": "Общи условия",
   "privacy.privacyPolicy": "Политика за поверителност",
   "privacy.cookies": "Политика за бисквитки",
+  "privacy.cookiePrefs": "Настройки за бисквитки",
   "privacy.eula": "EULA",
   "privacy.deleteTitle": "Изтриване на акаунт",
   "privacy.deleteDesc": "Член 17 (право на изтриване). Изтрийте окончателно личните си данни. Профилът ви (потребителско име, аватар, токени, имейл) се премахва.",

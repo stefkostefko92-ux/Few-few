@@ -728,6 +728,7 @@ export default {
   "privacy.terms": "Servicevoorwaarden",
   "privacy.privacyPolicy": "Privacybeleid",
   "privacy.cookies": "Cookiebeleid",
+  "privacy.cookiePrefs": "Cookie-instellingen",
   "privacy.eula": "EULA",
   "privacy.deleteTitle": "Account verwijderen",
   "privacy.deleteDesc": "Artikel 17 (recht op gegevenswissing). Verwijder je persoonsgegevens permanent. Je profiel (gebruikersnaam, avatar, tokens, e-mail) wordt verwijderd.",

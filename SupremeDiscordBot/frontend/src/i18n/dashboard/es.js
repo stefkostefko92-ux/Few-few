@@ -728,6 +728,7 @@ export default {
   "privacy.terms": "Términos del servicio",
   "privacy.privacyPolicy": "Política de privacidad",
   "privacy.cookies": "Política de cookies",
+  "privacy.cookiePrefs": "Ajustes de cookies",
   "privacy.eula": "EULA",
   "privacy.deleteTitle": "Eliminar cuenta",
   "privacy.deleteDesc": "Artículo 17 (derecho de supresión). Elimina permanentemente tus datos personales. Tu perfil (nombre de usuario, avatar, tokens, correo electrónico) se elimina.",
