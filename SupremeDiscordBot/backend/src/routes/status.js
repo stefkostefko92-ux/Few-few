@@ -86,13 +86,38 @@ async function computeStatus() {
           timeout: 2000,
         });
         sock.once("connect", () => {
-          // Send PING, expect +PONG back
+          // AUTH ПРЕДИ PING, ако адресът носи парола.
+          //
+          // ДЕФЕКТЪТ (реален деплой, 07.08.2026): проверката пращаше гол PING.
+          // Откакто Redis върви с `--requirepass` (v40), сървърът отговаря
+          // `-NOAUTH Authentication required` и проверката обявяваше ЗДРАВ Redis
+          // за паднал. Самото приложение се свързва вярно — паролата е в
+          // `REDIS_URL` — тоест това беше чиста фалшива тревога, и то от вида,
+          // който после вдига аларма всяка минута, докато някой спре да ѝ вярва.
+          //
+          // RESP inline команди: `AUTH [user] pass`. Redis 6+ приема и двете
+          // форми; без потребител се праща само паролата.
+          const pass = url.password ? decodeURIComponent(url.password) : "";
+          const user = url.username ? decodeURIComponent(url.username) : "";
+          const wantsAuth = !!pass;
+          if (wantsAuth) {
+            sock.write(user ? `AUTH ${user} ${pass}\r\n` : `AUTH ${pass}\r\n`);
+          }
           sock.write("PING\r\n");
-          sock.once("data", (buf) => {
-            sock.end();
-            if (buf.toString().startsWith("+PONG")) resolve();
-            else reject(new Error("unexpected response: " + buf.toString()));
-          });
+
+          // При AUTH отговорите са ДВА (+OK, после +PONG) и могат да дойдат в
+          // един пакет или в два — затова трупаме, вместо да четем веднъж.
+          let buf = "";
+          const onData = (chunk) => {
+            buf += chunk.toString();
+            if (buf.includes("+PONG")) { sock.end(); return resolve(); }
+            // Грешка от Redis започва с `-` (напр. `-ERR invalid password`).
+            if (buf.startsWith("-") || buf.includes("\r\n-")) {
+              sock.end();
+              return reject(new Error("unexpected response: " + buf.trim()));
+            }
+          };
+          sock.on("data", onData);
         });
         sock.once("error", reject);
         sock.once("timeout", () => { sock.destroy(); reject(new Error("timeout")); });
