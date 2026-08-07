@@ -88,7 +88,9 @@ function ssrfSafeLookup(hostname, options, callback) {
     cb(null, address, family);
   });
 }
-const ssrfSafeAgent = new https.Agent({ lookup: ssrfSafeLookup });
+// Изнесен: същият гард пази и свалянето на аватара за white-label бота
+// (потребителски URL, свален от НАШИЯ сървър — точно SSRF повърхността).
+export const ssrfSafeAgent = new https.Agent({ lookup: ssrfSafeLookup });
 
 /**
  * Fire a webhook event to all enabled, subscribed webhooks for a server.
