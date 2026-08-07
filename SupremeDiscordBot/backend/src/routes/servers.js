@@ -166,6 +166,24 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
     response.trialUsed = server.trialUsed;
     response.trialEndsAt = server.trialEndsAt;
 
+    // Покритие от агенция + заетост на местата. Гербът на командния екран го
+    // показва поименно („3/5 места“) — числото е РЕАЛНО, брои се тук, не се
+    // догажда в клиента. Само за покрит сървър: за останалите е излишна заявка.
+    if (server.agencyId) {
+      const agency = await prisma.agency.findUnique({
+        where: { id: server.agencyId },
+        select: { active: true, plan: true, seatLimit: true },
+      });
+      response.agencyCovered = !!agency?.active;
+      if (agency?.active) {
+        response.agencyPlan = agency.plan;
+        response.agencySeatLimit = agency.seatLimit;
+        response.agencySeatsUsed = await prisma.server.count({ where: { agencyId: server.agencyId } });
+      }
+    } else {
+      response.agencyCovered = false;
+    }
+
     res.json(response);
   } catch (err) {
     next(err);
