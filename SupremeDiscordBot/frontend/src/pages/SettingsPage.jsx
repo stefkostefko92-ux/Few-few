@@ -69,6 +69,9 @@ export default function SettingsPage() {
     mutationFn: (data) => updateServer(serverId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["server", serverId] });
+      // Виж бележката в TrialBanner: сайдбарът и списъкът със сървъри четат
+      // ДРУГ ключ и остават стари без това.
+      qc.invalidateQueries({ queryKey: ["servers"] });
       setForm((f) => f ? { ...f, customBotToken: "" } : f);
       toast.success(t("settings.saved"));
     },

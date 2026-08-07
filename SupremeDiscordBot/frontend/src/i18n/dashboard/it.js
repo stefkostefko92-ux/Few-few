@@ -451,6 +451,7 @@ export default {
   "auto.wh.events": "Eventi",
   "auto.wh.needEvent": "Seleziona almeno un evento a cui iscriverti.",
   "auto.dismissError": "Ignora errore",
+  "auto.actionFailed": "Azione non riuscita. Riprova.",
   // ─── Партида 4 ───
   "settings.title": "Impostazioni",
   "settings.subtitle": "Configura il comportamento del bot per questo server",
@@ -535,6 +536,9 @@ export default {
   "dashboard.yourServers": "I tuoi server",
   "dashboard.addToServer": "Aggiungi a un server",
   "dashboard.botActive": "Bot attivo",
+  "dashboard.selectServer": "Seleziona un server per gestirne le impostazioni del bot.",
+  "dashboard.loadFailed": "Impossibile caricare i server.",
+  "dashboard.inviteBot": "+ Invita il bot",
   "common.retrying": "Nuovo tentativo…",
   "common.title": "Titolo",
   "common.content": "Contenuto",

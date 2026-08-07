@@ -41,6 +41,12 @@ export default function TrialBanner() {
       qc.invalidateQueries({ queryKey: ["trial", serverId] });
       qc.invalidateQueries({ queryKey: ["server", serverId] });
       qc.invalidateQueries({ queryKey: ["premium-catalog"] });
+      // ["servers"] (мн.ч.) е ОТДЕЛЕН ключ от ["server", id] — храни Premium
+      // баджа в сайдбара и списъка в Dashboard. Само PremiumPage го
+      // инвалидираше, а клиентът е с refetchOnWindowFocus:false, значи баджът
+      // оставаше с грешен план, докато потребителят не презареди на ръка.
+      // (Дизайнера, 07.08.2026)
+      qc.invalidateQueries({ queryKey: ["servers"] });
     },
   });
 
@@ -50,6 +56,7 @@ export default function TrialBanner() {
       setConfirmCancel(false);
       qc.invalidateQueries({ queryKey: ["trial", serverId] });
       qc.invalidateQueries({ queryKey: ["server", serverId] });
+      qc.invalidateQueries({ queryKey: ["servers"] });
     },
     onError: (err) => {
       setConfirmCancel(false);

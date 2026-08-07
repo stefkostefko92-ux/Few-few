@@ -37,7 +37,7 @@ export default function Dashboard() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-cs-text mb-2">{t("dashboard.yourServers")}</h1>
-        <p className="text-cs-muted">Select a server to manage its bot settings.</p>
+        <p className="text-cs-muted">{t("dashboard.selectServer")}</p>
       </div>
 
       {isLoading && (
@@ -54,7 +54,7 @@ export default function Dashboard() {
           className="flex flex-col items-center gap-3 text-center text-danger bg-danger/10 border border-danger/20 rounded-xl p-8"
         >
           <AlertCircle className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
-          <p>Failed to load servers.</p>
+          <p>{t("dashboard.loadFailed")}</p>
           <button
             type="button"
             onClick={() => refetch()}
@@ -62,7 +62,7 @@ export default function Dashboard() {
             className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
-            {isRefetching ? t("common.retrying") : "Retry"}
+            {isRefetching ? t("common.retrying") : t("common.retry")}
           </button>
         </div>
       )}
@@ -147,7 +147,7 @@ function ServerCard({ server, onActivate, inviteUrl }) {
           rel="noopener noreferrer"
           className="text-xs text-cs-cyan hover:underline mt-0.5 block"
         >
-          + Invite Bot
+          {t("dashboard.inviteBot")}
         </a>
       </div>
     </div>

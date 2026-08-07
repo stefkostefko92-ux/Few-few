@@ -461,6 +461,7 @@ export default {
   "auto.wh.events": "Events",
   "auto.wh.needEvent": "Select at least one event to subscribe to.",
   "auto.dismissError": "Dismiss error",
+  "auto.actionFailed": "Action failed. Please try again.",
 
   // ─── Партида 4: Settings/Analytics/KB/ApiKeys/Premium/Commands/Dashboard ───
   "settings.title": "Settings",
@@ -563,6 +564,9 @@ export default {
   "dashboard.yourServers": "Your Servers",
   "dashboard.addToServer": "Add to a Server",
   "dashboard.botActive": "Bot Active",
+  "dashboard.selectServer": "Select a server to manage its bot settings.",
+  "dashboard.loadFailed": "Failed to load servers.",
+  "dashboard.inviteBot": "+ Invite Bot",
   "common.retrying": "Retrying…",
   "common.title": "Title",
   "common.content": "Content",

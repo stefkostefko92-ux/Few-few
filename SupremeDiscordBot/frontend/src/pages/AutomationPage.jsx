@@ -21,6 +21,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 import EmojiPicker from "../components/EmojiPicker";
 
 const TABS = [
@@ -31,6 +32,12 @@ const TABS = [
   { id: "scheduled", tKey: "auto.tab.scheduled",      icon: CalendarClock, premium: true },
   { id: "webhooks",  tKey: "auto.tab.webhooks",       icon: Webhook,       premium: true },
 ];
+
+// Провалена мутация ТРЯБВА да каже нещо. Тази страница беше системното
+// изключение от конвенцията на приложението: 14 от 18 мутации нямаха onError и
+// изобщо не внасяха toast — натискаш „Изтрий", заявката пада, нищо не се случва
+// и нищо не пише. (Дизайнера, 07.08.2026)
+const mutErr = (err) => err?.response?.data?.error || null;
 
 export default function AutomationPage() {
   const { t } = useT();
@@ -80,6 +87,7 @@ const defaultPollForm = () => ({ channelId: "", question: "", optionsText: "", m
 
 function PollsTab() {
   const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
@@ -89,11 +97,12 @@ function PollsTab() {
     queryKey: ["polls", serverId],
     queryFn: () => getPolls(serverId),
   });
-  const closeM  = useMutation({ mutationFn: (id) => closePoll(serverId, id),  onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }) });
-  const deleteM = useMutation({ mutationFn: (id) => deletePoll(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }) });
+  const closeM  = useMutation({ mutationFn: (id) => closePoll(serverId, id),  onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const deleteM = useMutation({ mutationFn: (id) => deletePoll(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
   const createM = useMutation({
     mutationFn: (data) => createPoll(serverId, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["polls", serverId] }); setCreating(false); setForm(defaultPollForm()); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
   });
 
   const submitPoll = (e) => {
@@ -220,6 +229,7 @@ const defaultGiveawayForm = () => ({
 
 function GiveawaysTab() {
   const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
@@ -229,12 +239,13 @@ function GiveawaysTab() {
     queryKey: ["giveaways", serverId],
     queryFn: () => getGiveaways(serverId),
   });
-  const endM    = useMutation({ mutationFn: (id) => endGiveaway(serverId, id),    onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
-  const rerollM = useMutation({ mutationFn: (id) => rerollGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
-  const deleteM = useMutation({ mutationFn: (id) => deleteGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
+  const endM    = useMutation({ mutationFn: (id) => endGiveaway(serverId, id),    onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const rerollM = useMutation({ mutationFn: (id) => rerollGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const deleteM = useMutation({ mutationFn: (id) => deleteGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
   const createM = useMutation({
     mutationFn: (data) => createGiveaway(serverId, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["giveaways", serverId] }); setCreating(false); setForm(defaultGiveawayForm()); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
   });
 
   const submitGiveaway = (e) => {
@@ -378,6 +389,7 @@ function GiveawaysTab() {
 // ══════════════════════════════ STICKY ══════════════════════════════
 function StickyTab() {
   const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [form, setForm] = useState({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" });
@@ -387,8 +399,10 @@ function StickyTab() {
     queryFn: () => getStickies(serverId),
   });
   const saveM   = useMutation({ mutationFn: (data) => upsertSticky(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stickies", serverId] }); setForm({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" }); } });
-  const deleteM = useMutation({ mutationFn: (chId) => deleteSticky(serverId, chId), onSuccess: () => qc.invalidateQueries({ queryKey: ["stickies", serverId] }) });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stickies", serverId] }); setForm({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" }); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
+  });
+  const deleteM = useMutation({ mutationFn: (chId) => deleteSticky(serverId, chId), onSuccess: () => qc.invalidateQueries({ queryKey: ["stickies", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
 
   return (
     <div className="space-y-6">
@@ -458,6 +472,7 @@ function StickyTab() {
 // ══════════════════════════════ SCHEDULED ══════════════════════════════
 function ScheduledTab() {
   const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [form, setForm] = useState({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" });
@@ -467,8 +482,10 @@ function ScheduledTab() {
     queryFn: () => getScheduled(serverId),
   });
   const createM = useMutation({ mutationFn: (data) => createScheduled(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scheduled", serverId] }); setForm({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" }); } });
-  const deleteM = useMutation({ mutationFn: (id) => deleteScheduled(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["scheduled", serverId] }) });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scheduled", serverId] }); setForm({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" }); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
+  });
+  const deleteM = useMutation({ mutationFn: (id) => deleteScheduled(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["scheduled", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
 
   return (
     <div className="space-y-6">
@@ -559,6 +576,7 @@ function ScheduledTab() {
 // ══════════════════════════════ WEBHOOKS ══════════════════════════════
 function WebhooksTab() {
   const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | id
@@ -568,9 +586,9 @@ function WebhooksTab() {
   const { data: hooks = [], isLoading, isError } = useQuery({ queryKey: ["webhooks", serverId], queryFn: () => getWebhooks(serverId) });
   const { data: events = {} } = useQuery({ queryKey: ["webhook-events"], queryFn: getWebhookEvents });
 
-  const createM = useMutation({ mutationFn: (data) => createWebhook(serverId, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); } });
-  const updateM = useMutation({ mutationFn: ({ id, data }) => updateWebhook(serverId, id, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); } });
-  const deleteM = useMutation({ mutationFn: (id) => deleteWebhook(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks", serverId] }) });
+  const createM = useMutation({ mutationFn: (data) => createWebhook(serverId, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); }, onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const updateM = useMutation({ mutationFn: ({ id, data }) => updateWebhook(serverId, id, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); }, onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const deleteM = useMutation({ mutationFn: (id) => deleteWebhook(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
 
   const openNew = () => { setForm({ name: "", url: "", secret: "", events: [], enabled: true }); setFormError(null); setEditing("new"); };
   const openEdit = (h) => { setForm({ name: h.name, url: h.url, secret: h.secret || "", events: h.events, enabled: h.enabled }); setFormError(null); setEditing(h.id); };
@@ -719,6 +737,7 @@ const defaultRrmForm = () => ({
 
 function ReactionRolesTab() {
   const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | rrmId

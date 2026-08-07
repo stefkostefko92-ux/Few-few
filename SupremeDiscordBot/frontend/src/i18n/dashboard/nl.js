@@ -451,6 +451,7 @@ export default {
   "auto.wh.events": "Events",
   "auto.wh.needEvent": "Selecteer minstens één event om je op te abonneren.",
   "auto.dismissError": "Fout sluiten",
+  "auto.actionFailed": "Actie mislukt. Probeer het opnieuw.",
   // ─── Партида 4 ───
   "settings.title": "Instellingen",
   "settings.subtitle": "Configureer het botgedrag voor deze server",
@@ -535,6 +536,9 @@ export default {
   "dashboard.yourServers": "Jouw servers",
   "dashboard.addToServer": "Aan een server toevoegen",
   "dashboard.botActive": "Bot actief",
+  "dashboard.selectServer": "Selecteer een server om de botinstellingen te beheren.",
+  "dashboard.loadFailed": "Servers konden niet worden geladen.",
+  "dashboard.inviteBot": "+ Bot uitnodigen",
   "common.retrying": "Opnieuw proberen…",
   "common.title": "Titel",
   "common.content": "Inhoud",

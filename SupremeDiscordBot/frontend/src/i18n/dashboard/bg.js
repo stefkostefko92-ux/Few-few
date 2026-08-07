@@ -451,6 +451,7 @@ export default {
   "auto.wh.events": "Събития",
   "auto.wh.needEvent": "Изберете поне едно събитие за абониране.",
   "auto.dismissError": "Затвори грешката",
+  "auto.actionFailed": "Действието не бе изпълнено. Опитайте отново.",
   // ─── Партида 4 ───
   "settings.title": "Настройки",
   "settings.subtitle": "Конфигурирайте поведението на бота за този сървър",
@@ -535,6 +536,9 @@ export default {
   "dashboard.yourServers": "Вашите сървъри",
   "dashboard.addToServer": "Добави към сървър",
   "dashboard.botActive": "Ботът е активен",
+  "dashboard.selectServer": "Изберете сървър, за да управлявате настройките на бота.",
+  "dashboard.loadFailed": "Сървърите не се заредиха.",
+  "dashboard.inviteBot": "+ Покани бота",
   "common.retrying": "Повторен опит…",
   "common.title": "Заглавие",
   "common.content": "Съдържание",
