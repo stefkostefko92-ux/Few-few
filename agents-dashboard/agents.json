@@ -8635,6 +8635,11 @@
         {
           "date": "2026-08-07",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „checkout.session.completed НЕ значи платено дори когато session.subscription е попълнен…\" (+3)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „Express: в middleware, монтиран с app.use('/api', mw), req.path е ОТНОСИТЕЛЕН на mount …\" (+5)"
         },
         {
