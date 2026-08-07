@@ -8755,6 +8755,11 @@
       "activity": [
         {
           "date": "2026-08-07",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Stripe: асинхронните методи (SEPA/ACH) правят абонамента `active` направо, а при по-къс…\" (+5)"
+        },
+        {
+          "date": "2026-08-07",
           "type": "learning",
           "summary": "Научи: „Уникален бизнес-ключ в ефекта на webhook handler (напр. PaymentLog.stripeInvoiceId @uni…\" (+2 още)"
         },
