@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 331
+        "lessons": 333
       },
       "evolution": [
         {
@@ -1795,9 +1795,20 @@
           "date": "2026-08-07",
           "event": "v22.9 — учене",
           "detail": "Научи: node-cron 4.5.0 извиква всички задачи със СЪЩИЯ cron израз в един timers tick, последов… (+3 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-08-07",
+          "event": "v23.1 — учене",
+          "detail": "Научи: `const` деклариран ВЪТРЕ в try е недостъпен в catch (ReferenceError) — типичен капан, к… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „`const` деклариран ВЪТРЕ в try е недостъпен в catch (ReferenceError) — типичен капан, к…\" (+1 още)"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
