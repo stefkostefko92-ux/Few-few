@@ -3,7 +3,7 @@ import { Router } from "express";
 import Stripe from "stripe";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { stripePriceId, planFromStripePrice, PLANS, syncAgencyServersPaidFlag, syncServerPaidFlag, getServerTier } from "../lib/premium.js";
+import { stripePriceId, planFromStripePrice, PLANS, syncAgencyServersPaidFlag, syncServerPaidFlag, getServerTier, LIVE_OWN_SUB_STATUSES } from "../lib/premium.js";
 import { dmUser, reconcileWhitelabel } from "../services/botNotifier.js";
 
 // Single-server tiers sold via the per-server checkout. Agency (multi-server)
@@ -131,12 +131,24 @@ router.post(
     // ред 818-819, който твърди, че отмяната не блокира нова покупка.
     // (Червен екип, 07.08.2026)
     //
-    // `planSource` покрива и неплатените през Stripe живи права — Discord
-    // entitlement и ръчен подарък от админ — които втори Checkout би дублирал.
-    // Пробният период не сетва нито едно от двете, значи пробният потребител
-    // може да купи (иначе не бихме конвертирали нито един trial).
-    const liveGrant = !!(server.stripeSubscriptionId || server.planSource);
-    if (liveGrant) {
+    // ВНИМАНИЕ — първата версия на този гард беше `stripeSubscriptionId ||
+    // planSource` и носеше СЪЩИЯ дефект, който поправяше, само на друг път:
+    // при refund/chargeback и двете колони НАРОЧНО остават (ред 1223-1230 —
+    // отмяната в Stripe става извън транзакцията и ретраят има нужда от id-то).
+    // Значи клиент, на когото сме върнали парите, оставаше заключен извън
+    // касата ЗАВИНАГИ — нищо после не чисти тези полета. А върнатият клиент е
+    // точно този, който може да се върне и да плати пак.
+    //
+    // Затова питаме за ЖИВОСТ, не за наличие, и то през allowlist:
+    //   • жив Stripe абонамент → втори Checkout би таксувал двойно;
+    //   • живи права от друг източник (Discord entitlement, ръчен подарък) —
+    //     те нямат Stripe статус, затова се съдят по `isPremium`; отнемат ли се,
+    //     `planSource` се занулява (`routes/admin.js`, `discordEntitlements.js`).
+    // Пробният период не сетва нито едно от двете → пробният потребител купува.
+    const subStatus = String(server.stripeStatus || "").toLowerCase();
+    const liveStripeSub = !!server.stripeSubscriptionId && LIVE_OWN_SUB_STATUSES.has(subStatus);
+    const liveOtherGrant = !!server.planSource && server.planSource !== "stripe" && !!server.isPremium;
+    if (liveStripeSub || liveOtherGrant) {
       return res.status(400).json({
         error: "This server already has an active subscription. Change plans from the billing portal (Manage Subscription).",
         code: "USE_PORTAL",

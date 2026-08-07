@@ -456,7 +456,7 @@ export function effectiveFreeWhere(now = new Date()) {
 // `past_due` е тук нарочно: дунинг гратис (jobs/dunning.js сваля достъпа отделно
 // след 14 дни, като пише `unpaid`). Всичко друго — прекратено, непълно,
 // паузирано, непознато — НЕ пази достъп през тази клауза.
-const LIVE_OWN_SUB_STATUSES = new Set(["active", "trialing", "past_due"]);
+export const LIVE_OWN_SUB_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 export async function syncServerPaidFlag(serverId, tx = prisma) {
   const server = await tx.server.findUnique({
