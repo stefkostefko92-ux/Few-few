@@ -1,6 +1,6 @@
 // backend/src/__tests__/adminRevenue.test.js
 // Заключва приходната аритметика на таблото (money-critical). Регресия срещу
-// старото „MRR" = Σ paymentLog за календарния месец, което смесваше КАСА с
+// старото „MRR“ = Σ paymentLog за календарния месец, което смесваше КАСА с
 // RUN-RATE (годишна фактура €99 влизаше цяла в месеца си), нулираше се на
 // 1-во число и не виждаше agency абонаментите.
 import { describe, it, expect, vi, beforeEach } from "vitest";

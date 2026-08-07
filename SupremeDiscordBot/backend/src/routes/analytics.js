@@ -101,7 +101,7 @@ router.get("/:serverId/dashboard", requireServerAdmin, async (req, res, next) =>
       : [];
     const panelName = new Map(panels.map((p) => [p.id, p.name]));
 
-    // Top 5 + „Other" — над 5 категории таблото става нечетимо.
+    // Top 5 + „Other“ — над 5 категории таблото става нечетимо.
     const distribution = byPanelRaw
       .map((r) => ({
         label: r.panelId ? (panelName.get(r.panelId) || "Deleted panel") : "No panel",

@@ -20,7 +20,7 @@ router.get("/", async (_req, res) => {
     timestamp: new Date().toISOString(),
     services: {
       // Самият API отговаря на тази заявка — значи работи. Досега този ключ
-      // липсваше и dashboard-ът показваше „API — Unknown" до три зелени реда,
+      // липсваше и dashboard-ът показваше „API — Unknown“ до три зелени реда,
       // което изглежда като авария, а е просто непопълнено поле.
       api: { status: "operational", uptime: Math.round(process.uptime()) },
     },

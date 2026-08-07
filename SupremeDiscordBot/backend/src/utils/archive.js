@@ -198,7 +198,7 @@ function messageRow(msg, ticket) {
     (deleted ? `<span class="chip chip-deleted">Deleted</span>` : "") +
     (edited ? `<span class="chip">Edited</span>` : "");
 
-  // При редакция показваме и двете версии — „какво е било казано" е точно
+  // При редакция показваме и двете версии — „какво е било казано“ е точно
   // въпросът, заради който се вади транскрипт.
   const original = edited && msg.originalContent
     ? `<div class="original"><span class="label">Original</span><div>${esc(msg.originalContent)}</div></div>`
@@ -244,7 +244,7 @@ function applicationSection(application) {
   </section>`;
 }
 
-// „2h 14m" — по-полезно от две дати, които читателят вади наум.
+// „2h 14m“ — по-полезно от две дати, които читателят вади наум.
 function humanDuration(from, to) {
   if (!from || !to) return null;
   const ms = new Date(to) - new Date(from);

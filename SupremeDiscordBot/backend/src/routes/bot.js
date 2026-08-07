@@ -921,7 +921,7 @@ router.patch("/server/:serverId", async (req, res, next) => {
     });
     if (!server) return res.status(404).json({ error: "Server not found" });
 
-    // White-label е ОТДЕЛЕН tier (White-label/Agency), не „Premium или trial".
+    // White-label е ОТДЕЛЕН tier (White-label/Agency), не „Premium или trial“.
     // Дотук гейтът пускаше обикновен Premium (и trial) да сетва custom bot —
     // платена White-label функция, раздавана под цената си (premium bypass).
     const { hasWhiteLabel } = await getServerTier(req.params.serverId);

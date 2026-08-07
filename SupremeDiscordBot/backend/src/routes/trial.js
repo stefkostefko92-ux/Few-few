@@ -29,7 +29,7 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
       : 0;
 
     // Правото на trial отчита ЕФЕКТИВНИЯ tier: agency-покрит сървър вече е
-    // платен → не е eligible (иначе би „изгорил" trial-а безсмислено; суровият
+    // платен → не е eligible (иначе би „изгорил“ trial-а безсмислено; суровият
     // isPremium може да е застоял до синхронизацията).
     const { isPremium: effectivePremium } = await getServerTier(req.params.serverId);
 

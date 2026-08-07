@@ -76,7 +76,7 @@ cron.schedule("0 4 * * 0", async () => {
   try {
     // Set archiveRetentionDays = 30 for any non-premium server that has null retention
     // (null means "forever" which is a Premium perk)
-    // „Ефективно free" — agency-покрити/trial сървъри пазят unlimited retention.
+    // „Ефективно free“ — agency-покрити/trial сървъри пазят unlimited retention.
     // updateMany не поддържа relation филтри → findMany + updateMany по id.
     const downgraded = await prisma.server.findMany({
       where: { ...effectiveFreeWhere(), archiveRetentionDays: null },
@@ -309,7 +309,7 @@ cron.schedule("0 9 * * *", async () => {
 
     // Servers whose trial expires in the next 3 days and are not on Premium.
     // Изключваме agency-покрити: те са платени през агенцията, а не собствен
-    // trial → не бива да получават „trial-ът ти изтича" DM (суровият isPremium
+    // trial → не бива да получават „trial-ът ти изтича“ DM (суровият isPremium
     // може да е застоял, затова и явната agency проверка).
     const notAgencyCovered = { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] };
     const expiring = await prisma.server.findMany({

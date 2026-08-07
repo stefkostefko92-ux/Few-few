@@ -58,7 +58,7 @@ export async function discordRequest(config) {
       const isGlobal = !!err?.response?.data?.global || err?.response?.headers?.["x-ratelimit-global"];
       const waitMs = retryAfterMs(err);
 
-      // Глобалният лимит значи „целият бот е задавен" — да го дълбаем е точно
+      // Глобалният лимит значи „целият бот е задавен“ — да го дълбаем е точно
       // това, за което Discord наказва. Отказваме веднага и нагоре.
       if (isGlobal) {
         console.warn(`[discord-rest] ГЛОБАЛЕН rate limit (${config.url}) — спирам, не повтарям`);

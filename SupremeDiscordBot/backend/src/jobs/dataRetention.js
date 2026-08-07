@@ -9,7 +9,9 @@
 //   Abuse reports: 1 year after resolution
 //   Anonymized users: maintained (for referential integrity)
 //   Transaction records: 7 years (legal obligation, NEVER auto-delete)
-//   Servers with the bot removed: purged 30 days after removal
+//   Servers with the bot removed: personal data purged 30 days after removal
+//     (the Server row, PaymentLog and AuditLog survive — financial records
+//      carry a 7-year legal obligation and cascade off Server)
 //
 // ON ERROR: logs but does NOT throw. Retention run failure must not crash backend.
 
@@ -82,7 +84,10 @@ export async function runRetentionJob() {
       where: {
         createdAt: { lt: twoYearsAgo },
         // Don't delete records with legal retention implications
-        action: { notIn: ["GDPR_ACCOUNT_DELETED", "GDPR_DATA_EXPORT", "ABUSE_REPORT"] },
+        // SERVER_DATA_PURGED е едновременно дедуп ключ за секция 3б И
+        // доказателство, че изтриването е извършено — изтрием ли го след 2
+        // години, губим и следата, и защитата от повторно пускане.
+        action: { notIn: ["GDPR_ACCOUNT_DELETED", "GDPR_DATA_EXPORT", "ABUSE_REPORT", "SERVER_DATA_PURGED"] },
       },
     });
     results.auditLogsDeleted = deleted.count;
@@ -109,23 +114,60 @@ export async function runRetentionJob() {
     results.errors.push({ type: "abuse", error: err.message });
   }
 
-  // ── 3б. Изчисти сървърите, от които ботът е махнат преди 30+ дни ───────────
-  // Политиката обещава „Until server is removed" (PrivacyPage), но досега
-  // `botRemovedAt` беше САМО маркер: единствените му консуматори бяха филтър за
-  // таблото и изчистване при повторна покана. Данните на клиент, махнал бота,
-  // живееха безсрочно — нарушение на чл. 5(1)(д) и на собственото ни обещание.
+  // ── 3б. Изчисти ЛИЧНИТЕ данни на сървъри без бот от 30+ дни ────────────────
+  // Политиката обещава „Until server is removed“ (PrivacyPage), но `botRemovedAt`
+  // беше само маркер: единствените консуматори бяха филтър за таблото и
+  // изчистване при повторна покана. Данните на клиент, махнал бота, живееха
+  // безсрочно — чл. 5(1)(д) и нарушено собствено обещание.
   //
-  // 30 дни гратис, защото повторната покана е нормален сценарий (bot.js нулира
-  // маркера) и защото съвпада с прозореца за транскрипти на Free. Изтриването на
-  // реда Server каскадира към всичко закачено (22 релации с onDelete: Cascade),
-  // затова една заявка чисти тикети, панели, форми, ключове и настройки наведнъж.
+  // ВНИМАНИЕ — първата версия на тази секция триеше самия ред Server. Това е
+  // ГРЕШНО: PaymentLog и AuditLog висят на него с onDelete: Cascade, тоест
+  // изтриването унищожаваше финансовите записи, за които заглавието на ТОЗИ файл
+  // казва „7 години, НИКОГА не се трият автоматично“, плюс GDPR доказателствата,
+  // които секция 2 изрично пази. Коментарът в routes/bot.js:134 обяснява същото:
+  // мекото изтриване е нарочно, за да оцелеят абонаментът и историята на
+  // плащанията при повторна покана.
+  //
+  // Затова трием ЛИЧНИТЕ данни (тикети и съобщенията в тях, кандидатури, форми,
+  // панели, verification, reaction roles, статии, членства), а обвивката Server
+  // + PaymentLog + AuditLog остават. Това е и правилният прочит на чл. 17(3)(б):
+  // задължението по счетоводното законодателство надделява за финансовите
+  // записи, но не оправдава пазенето на чужди разговори.
+  //
+  // Сървър с ЖИВ платен абонамент се прескача: бот, махнат по погрешка, докато
+  // клиентът плаща, не бива да си губи данните — той всеки момент може да върне бота.
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * MS_PER_DAY);
-    const purged = await prisma.server.deleteMany({
-      where: { botRemovedAt: { not: null, lt: thirtyDaysAgo } },
+    const ACTIVE_PAID = ["active", "past_due", "trialing", "unpaid", "incomplete"];
+
+    const candidates = await prisma.server.findMany({
+      where: {
+        botRemovedAt: { not: null, lt: thirtyDaysAgo },
+        NOT: { stripeStatus: { in: ACTIVE_PAID } },
+        // Веднъж изчистен → не го пипаме пак (маркерът е и одитната следа).
+        auditLogs: { none: { action: "SERVER_DATA_PURGED" } },
+      },
+      select: { id: true },
     });
-    results.removedServersPurged = purged.count;
-    console.log(`[retention] ✅ Removed servers purged: ${purged.count}`);
+
+    for (const { id: serverId } of candidates) {
+      await prisma.$transaction([
+        // Ticket трие TicketMessage по каскада; същото за Application/Form полета.
+        prisma.ticket.deleteMany({ where: { serverId } }),
+        prisma.application.deleteMany({ where: { serverId } }),
+        prisma.form.deleteMany({ where: { serverId } }),
+        prisma.panel.deleteMany({ where: { serverId } }),
+        prisma.verificationPanel.deleteMany({ where: { serverId } }),
+        prisma.reactionRoleMessage.deleteMany({ where: { serverId } }),
+        prisma.kbArticle.deleteMany({ where: { serverId } }),
+        prisma.serverMember.deleteMany({ where: { serverId } }),
+        prisma.auditLog.create({
+          data: { actorId: null, actorTag: "SYSTEM", serverId, action: "SERVER_DATA_PURGED", targetId: serverId },
+        }),
+      ]);
+      results.removedServersPurged += 1;
+    }
+    console.log(`[retention] ✅ Removed-server data purged: ${results.removedServersPurged}`);
   } catch (err) {
     console.error(`[retention] ❌ Removed-server purge failed:`, err.message);
     results.errors.push({ type: "removedServers", error: err.message });

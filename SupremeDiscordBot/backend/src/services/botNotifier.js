@@ -60,7 +60,7 @@ export async function dmUser(userId, embed) {
 
 /**
  * Публикува отговор от dashboard-а в Discord тикет канала — ботът праща embed
- * от името на staff члена („Име · via dashboard"), без staff-ът да влиза в
+ * от името на staff члена („Име · via dashboard“), без staff-ът да влиза в
  * Discord. Ползва СЪЩИЯ вътрешен канал като notifyBot (x-bot-secret).
  *
  * Връща:
@@ -75,7 +75,7 @@ export async function dmUser(userId, embed) {
  * @param {string} p.authorName Показвано име на staff члена
  * @param {string} p.authorId   Discord user ID на staff члена (за одит в бота)
  * @param {string} p.ticketId   Ticket ID (за логове)
- * @param {number} [p.number]   Пореден номер на тикета (за footer „Ticket #N")
+ * @param {number} [p.number]   Пореден номер на тикета (за footer „Ticket #N“)
  */
 export async function sendTicketReply({ channelId, content, authorName, authorId, ticketId, number }) {
   if (!channelId || !content) return { ok: false, reason: "missing_channelId_or_content" };

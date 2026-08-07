@@ -31,7 +31,7 @@ describe("поддържани езици", () => {
     const botLocales = readdirSync(BOT_I18N)
       .filter((f) => /^[a-z]{2}\.js$/.test(f))
       .map((f) => f.replace(".js", ""))
-      // index.js регистрира само реалните locale-и; „ex.js" не е сред тях.
+      // index.js регистрира само реалните locale-и; „ex.js“ не е сред тях.
       .filter((code) => SUPPORTED_LANGUAGES.includes(code));
     for (const code of SUPPORTED_LANGUAGES) {
       expect(botLocales, `ботът няма locale файл за ${code}`).toContain(code);

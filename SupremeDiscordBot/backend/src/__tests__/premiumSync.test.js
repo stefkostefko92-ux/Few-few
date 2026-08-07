@@ -104,3 +104,51 @@ describe("syncAgencyServersPaidFlag — всички покрити наведн
     expect(store.server.get("c").isPremium).toBe(false); // недокосната
   });
 });
+
+// ─── Изтичане на приходи през grandfather гарда (червен екип, 07.08.2026) ─────
+// Гардът беше добавен, за да НЕ сваля заварени абонати (isPremium=true при
+// plan="free"). Но условието му беше „има stripeSubscriptionId ИЛИ planSource",
+// а прекратеният абонамент оставя и двете. Понеже самият sync вдига isPremium
+// при закачане на agency seat, се получаваше самозахранващ се цикъл:
+//   закачаш сървър с МЪРТЪВ абонамент на агенция → isPremium=true
+//   сваляш seat-а → гардът вижда „isPremium + subscription id" → остава платен
+// завинаги, безплатно. Разбивача го доказа с PoC; тук го заковаваме.
+describe("grandfather гардът не възкресява прекратен абонамент", () => {
+  const TERMINATED = ["canceled", "cancelled", "incomplete_expired", "disputed", "unpaid"];
+
+  for (const status of TERMINATED) {
+    it(`статус „${status}" → сваляне от agency seat връща сървъра на безплатен`, async () => {
+      seed([{
+        id: "victim", isPremium: false, plan: "free",
+        planSource: "stripe", stripeSubscriptionId: "sub_dead", stripeStatus: status,
+        agencyId: null, agency: null,
+      }]);
+      const s = store.server.get("victim");
+
+      s.agencyId = "ag1"; s.agency = { active: true };
+      expect(await syncServerPaidFlag("victim")).toBe(true);
+
+      s.agencyId = null; s.agency = null;
+      expect(await syncServerPaidFlag("victim")).toBe(false);
+      expect(store.server.get("victim").isPremium).toBe(false);
+    });
+  }
+
+  it("ЖИВ абонамент в дунинг (past_due) НЕ се сваля — гратисът е нарочен", async () => {
+    seed([{
+      id: "grace", isPremium: true, plan: "free",
+      planSource: "stripe", stripeSubscriptionId: "sub_live", stripeStatus: "past_due",
+      agencyId: null, agency: null,
+    }]);
+    expect(await syncServerPaidFlag("grace")).toBe(true);
+  });
+
+  it("заварен ред БЕЗ статус остава платен — това е първоначалната цел на гарда", async () => {
+    seed([{
+      id: "legacy", isPremium: true, plan: "free",
+      planSource: "stripe", stripeSubscriptionId: "sub_old", stripeStatus: null,
+      agencyId: null, agency: null,
+    }]);
+    expect(await syncServerPaidFlag("legacy")).toBe(true);
+  });
+});

@@ -390,7 +390,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               premiumSince: new Date(),
               stripeSubscriptionId: session.subscription,
               stripeStatus: initialStatus,
-              // B3 — „един trial на сървър" независимо от пътя: маркираме
+              // B3 — „един trial на сървър“ независимо от пътя: маркираме
               // trialUsed=true при всяка успешна checkout сесия (вкл. Stripe
               // trial). Иначе Stripe-trial → cancel → локален trial = двоен
               // безплатен период. Единственият друг writer е trial route-ът.
@@ -507,7 +507,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               // `total_tax_amounts` on `Invoice`" / „Add support for
               // `total_taxes` on `CreditNote` and `Invoice`"). Заместителят
               // `total_taxes` е МАСИВ от { amount, tax_behavior, … } —
-              // „aggregate tax information of all line items"
+              // „aggregate tax information of all line items“
               // (docs.stripe.com/api/invoices/object). Затова сумираме.
               // Сумата важи и при двата tax_behavior: при `inclusive` (нашите
               // цени, вж. scripts/stripe-setup.sh) данъкът е ВЪТРЕ в сумата,
@@ -711,7 +711,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
           //   • downgrade → разкачените задържат isPremium=true → безплатен
           //     white-label завинаги (red-team HIGH);
           //   • деактивация през updated (offA) → всички покрити остават
-          //     „платени" без плащане.
+          //     „платени“ без плащане.
           // syncServerPaidFlag recompute-ва от текущото състояние (agency.active
           // + собствен план), затова е коректен и за трите посоки.
           await syncAgencyServersPaidFlag(agencyForSub.id).catch(() => {});
@@ -760,7 +760,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
             where: { id: server.id },
             data: {
               // B4 — статусът е автентичният sub.status (не хардкоднат
-              // „trialing"). Ако сървърът е намерен по metadata (stripeSubscriptionId
+              // „trialing“). Ако сървърът е намерен по metadata (stripeSubscriptionId
               // още липсва при out-of-order), го записваме сега.
               ...(server.stripeSubscriptionId ? {} : { stripeSubscriptionId: sub.id }),
               stripeStatus: sub.status,

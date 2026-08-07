@@ -70,7 +70,7 @@ describe("Stripe price ↔ plan mapping", () => {
 
   // Ценова промяна (2026-08): env-ът може да носи СПИСЪК "нов,стар" — новата
   // цена е за checkout, старата остава разпознаваема при подновяване на
-  // grandfather-нат абонат. Без това webhook-ът „сваля" стар абонат на
+  // grandfather-нат абонат. Без това webhook-ът „сваля“ стар абонат на
   // default план при всяка фактура.
   it("comma-list env: всички id-та се разпознават, checkout взима първия", () => {
     process.env.STRIPE_PRICE_PREMIUM_MONTH = "price_pm_new, price_pm_old";

@@ -143,7 +143,7 @@ function stripePriceMap() {
   // Всеки env може да носи СПИСЪК от price id-та (запетая-разделен): при
   // ценова промяна Stripe цените са неизменими → новата е ПЪРВА (checkout),
   // старите остават в списъка, за да се разпознават при подновяване на
-  // grandfather-нати абонати (иначе webhook-ът би ги „свалил" на грешен план).
+  // grandfather-нати абонати (иначе webhook-ът би ги „свалил“ на грешен план).
   const add = (ids, plan, interval) => {
     for (const id of String(ids || "").split(",").map((s) => s.trim()).filter(Boolean)) {
       m.set(id, { plan, interval });
@@ -255,7 +255,7 @@ export async function getServerTier(serverId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PRISMA WHERE FRAGMENTS — „ефективно premium"
+// PRISMA WHERE FRAGMENTS — „ефективно premium“
 // ═══════════════════════════════════════════════════════════════════════════
 // Agency seat НЕ сетва Server.isPremium/plan (покритието се резолвира в
 // getServerTier през agency.active), а trial живее само в trialEndsAt. Затова
@@ -295,11 +295,18 @@ export function effectiveFreeWhere(now = new Date()) {
  * четци на суровата колона (bot config, dashboard, panel функции) го третират
  * като безплатен — платената функция мълчи. Идемпотентно; тихо при липсващ ред.
  */
+// Статуси на Stripe, които значат „този абонамент е приключил". `past_due` и
+// `incomplete` НЕ са тук: те са в гратис/дунинг и достъпът остава нарочно.
+const TERMINATED_STRIPE_STATUSES = new Set([
+  "canceled", "cancelled", "incomplete_expired", "disputed", "unpaid",
+]);
+
 export async function syncServerPaidFlag(serverId, tx = prisma) {
   const server = await tx.server.findUnique({
     where: { id: serverId },
     select: {
       isPremium: true, plan: true, planSource: true, stripeSubscriptionId: true,
+      stripeStatus: true,
       agencyId: true, agency: { select: { active: true } },
     },
   });
@@ -313,7 +320,23 @@ export async function syncServerPaidFlag(serverId, tx = prisma) {
   // признава за white-label абонати. Ако тук ги сметнем за неплатени, sync-ът
   // МЪЛЧАЛИВО СВАЛЯ платен достъп на реален абонат — необратимо и парично.
   // Затова: никога не сваляме ред, който още изглежда като истински абонамент.
-  const legacyGrandfather = server.isPremium && !ownPaid && !agencyCovered
+  //
+  // ОБАЧЕ (червен екип, 07.08.2026): само „има subscription id" НЕ е достатъчно.
+  // Абонамент, който е ПРЕКРАТЕН (отменен, изтекъл, оспорен, неплатен), оставя
+  // след себе си planSource и stripeSubscriptionId. Комбинирано с това, че
+  // самият sync вдига isPremium при закачане на agency seat, се получаваше
+  // самозахранващ се цикъл: закачаш сървър с мъртъв абонамент на агенция →
+  // isPremium=true; сваляш го → grandfather вижда „isPremium + subscription id"
+  // и го оставя платен ЗАВИНАГИ, без никой да плаща.
+  //
+  // Затова прекратеният статус е окончателен отказ: заварен абонат е този,
+  // за когото НЯМА доказателство, че абонаментът е свършил (status липсва или
+  // е жив), а не всеки, който някога е имал абонамент.
+  const terminated = TERMINATED_STRIPE_STATUSES.has(
+    String(server.stripeStatus || "").toLowerCase(),
+  );
+
+  const legacyGrandfather = server.isPremium && !ownPaid && !agencyCovered && !terminated
     && (!!server.stripeSubscriptionId || !!server.planSource);
 
   const shouldBe = ownPaid || agencyCovered || legacyGrandfather;

@@ -238,7 +238,7 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         }),
         // v37 — по избор СВОЙ канал за всяка категория. Приемаме само познати
         // категории и валидни Discord snowflake-и; празна стойност изчиства
-        // записа (значи „ползвай общия канал"). Клиентски вход → не се вярва.
+        // записа (значи „ползвай общия канал“). Клиентски вход → не се вярва.
         ...(eventLogChannels !== undefined && {
           eventLogChannels: sanitizeEventLogChannels(eventLogChannels),
         }),

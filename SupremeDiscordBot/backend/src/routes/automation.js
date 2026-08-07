@@ -318,7 +318,7 @@ router.get("/:serverId/scheduled", requireServerAdmin, async (req, res, next) =>
 router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automation.scheduled"), async (req, res, next) => {
   const { channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence } = req.body;
   if (!channelId || !content || !sendAt) return res.status(400).json({ error: "channelId, content, sendAt required" });
-  // Валидирай recurrence — иначе неразпознат низ тихо ставаше „monthly" в
+  // Валидирай recurrence — иначе неразпознат низ тихо ставаше „monthly“ в
   // scheduler.js (клиентска стойност → неочаквано поведение). Празно/липсва =
   // еднократно.
   if (recurrence != null && !["daily", "weekly", "monthly"].includes(recurrence)) {
