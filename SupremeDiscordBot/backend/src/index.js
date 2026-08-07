@@ -181,9 +181,23 @@ const botLimiter = rateLimit({
   message: { error: "Bot endpoint rate limit exceeded" },
 });
 
+// Публичният архив на транскрипти. Той е ИЗВЪН /api, значи глобалният лимитер
+// изобщо не го покриваше — единственият напълно неавтентикиран маршрут, който
+// чете от базата и при липсващ транскрипт го ГЕНЕРИРА наново (скъпо: всички
+// съобщения на тикета + сглобяване на HTML). Токенът пази съдържанието, но не
+// пази ресурса: познат линк, пуснат в цикъл, е безплатен товар върху базата.
+const archiveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many requests — please slow down",
+});
+
 app.use("/api", globalLimiter);
 app.use("/api/auth", authLimiter);
 app.use("/api/bot", botLimiter);
+app.use("/archive", archiveLimiter);
 
 // ─── Health check MUST come before any auth-protected routers ──────────────
 app.get("/api/health", async (_req, res) => {

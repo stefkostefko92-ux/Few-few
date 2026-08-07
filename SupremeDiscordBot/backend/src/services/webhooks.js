@@ -140,7 +140,23 @@ async function deliverWebhook(hook, bodyStr) {
       timeout: 10000,
       maxRedirects: 0, // redirects could bounce the request to internal targets
       httpsAgent: ssrfSafeAgent, // re-checks the resolved IP at connect time (anti-rebinding)
+      // Отговорът е ЧУЖД и НЕ ни трябва — ползваме само статуса. Без таван
+      // враждебен (или просто счупен) приемник може да върне гигабайти и да
+      // напълни паметта ни; таймаутът не помага, докато байтовете си текат.
+      // 64 KiB стигат за всяко смислено потвърждение.
+      maxContentLength: 64 * 1024,
+      maxBodyLength: 1024 * 1024,
+      // Не парсваме чуждото тяло — суров текст, който после изхвърляме.
+      responseType: "text",
+      // Всеки HTTP статус е „доставено“ за нашата сметка; 4xx/5xx се четат
+      // по-долу. Без това axios хвърля и губим реалния статус в лога.
+      validateStatus: () => true,
     });
+    if (res.status >= 400) {
+      const err = new Error(`webhook отговори ${res.status}`);
+      err.response = { status: res.status };
+      throw err;
+    }
     await prisma.webhook.update({
       where: { id: hook.id },
       data: {

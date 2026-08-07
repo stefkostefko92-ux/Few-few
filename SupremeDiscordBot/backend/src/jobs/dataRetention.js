@@ -185,6 +185,27 @@ export async function runRetentionJob() {
         prisma.reactionRoleMessage.deleteMany({ where: { serverId } }),
         prisma.kbArticle.deleteMany({ where: { serverId } }),
         prisma.serverMember.deleteMany({ where: { serverId } }),
+        // ─── Таблици БЕЗ външен ключ към Server ────────────────────────────
+        // Тези седем носят `serverId` като гол низ, без релация и без каскада.
+        // Затова нищо не ги достигаше: нито тази секция (не бяха изброени),
+        // нито изтриване на реда Server (той нарочно оцелява). Резултат — гласове
+        // в анкети и участия в томболи (Discord user ID = лични данни), съдържание
+        // на планирани/лепкави съобщения и адреси+тайни на webhook-и живееха
+        // безсрочно на сървър, махнал бота преди месеци. Точно същият клас
+        // пропуск като NULL-филтъра по-горе: правилото беше написано, но не
+        // достигаше редовете. (Одит 07.08.2026)
+        //
+        // Poll → PollVote и Giveaway → GiveawayEntry падат по каскада (там ИМА
+        // релация), затова се трият само родителите.
+        prisma.poll.deleteMany({ where: { serverId } }),
+        prisma.giveaway.deleteMany({ where: { serverId } }),
+        prisma.scheduledMessage.deleteMany({ where: { serverId } }),
+        prisma.stickyMessage.deleteMany({ where: { serverId } }),
+        prisma.cannedResponse.deleteMany({ where: { serverId } }),
+        prisma.webhook.deleteMany({ where: { serverId } }),
+        // DailyMetric е агрегат (само броячи, нула лични данни), но е безполезен
+        // за сървър без бот и расте по ред на ден — чистим го заедно с останалото.
+        prisma.dailyMetric.deleteMany({ where: { serverId } }),
         prisma.auditLog.create({
           data: { actorId: null, actorTag: "SYSTEM", serverId, action: "SERVER_DATA_PURGED", targetId: serverId },
         }),

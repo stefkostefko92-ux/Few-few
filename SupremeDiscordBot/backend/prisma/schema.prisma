@@ -50,6 +50,22 @@ enum GlobalRole {
   USER
 }
 
+// Хранилището на express сесиите (connect-pg-simple). Таблицата се СЪЗДАВА от
+// самата библиотека (`createTableIfMissing: true`) и от initial миграцията, но
+// не съществуваше в тази схема — а Prisma смята схемата за истината. Първият
+// `prisma migrate dev` щеше да я обяви за дрейф и да генерира DROP TABLE:
+// всички влезли потребители изхвърчат, и то не от бъг, а от рутинна миграция.
+// Моделът е тук ЕДИНСТВЕНО за да я знае Prisma — приложението никога не пише
+// през него (пише express-session).
+model ExpressSession {
+  sid    String   @id
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_express_sessions_expire")
+  @@map("express_sessions")
+}
+
 model Session {
   id           String   @id @default(cuid())
   userId       String
@@ -182,6 +198,9 @@ model Server {
   agency             Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([agencyId])
+  @@index([trialEndsAt])
+  // v40 — метлата за изтекъл гратис сканира точно по тази колона.
+  @@index([accessUntil])
   @@map("servers")
 }
 
@@ -217,6 +236,7 @@ model Agency {
   servers Server[]
 
   @@index([ownerUserId])
+  @@index([accessUntil])
   @@map("agencies")
 }
 
@@ -533,6 +553,13 @@ model Ticket {
   @@index([serverId, status])
   @@index([creatorId])
   @@index([serverId, priority])
+  // Ботът търси тикет по канал при ВСЯКО съобщение в тикет-канал — индексът
+  // съществуваше само в SQL миграция, значи `prisma migrate dev` щеше да го
+  // изтрие като „дрейф“ и да върне пълно сканиране в най-горещия път.
+  @@index([channelId])
+  // Списъци и експорти подреждат по createdAt (и курсорът в export.js стъпва
+  // на него) — без индекс всяка страница сортира цялата таблица на сървъра.
+  @@index([serverId, createdAt])
   @@map("tickets")
 }
 
@@ -633,6 +660,8 @@ model AuditLog {
   actor  User?   @relation("AuditActor", fields: [actorId], references: [id])
 
   @@index([serverId])
+  // Ретенцията трие по възраст, а админският изглед подрежда по време.
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -690,6 +719,10 @@ model Poll {
 
   votes PollVote[]
 
+  // Дашбордът чете анкетите на сървър, а планировчикът търси падежиралите —
+  // моделът нямаше НИТО ЕДИН индекс, тоест и двете бяха пълно сканиране.
+  @@index([serverId])
+  @@index([closesAt, closedAt])
   @@map("polls")
 }
 

@@ -41,3 +41,45 @@ describe("nginx.conf — редиректите не изтичат вътреш
     expect(live).not.toMatch(/try_files\s+\$uri\s+\$uri\/\s/);
   });
 });
+
+describe("nginx.conf — upstream-ите се резолвират по време на заявка", () => {
+  // `proxy_pass http://backend:3000;` с ЛИТЕРАЛНО име се резолвира ВЕДНЪЖ, при
+  // старт. Пресъздаден backend контейнер получава нов IP, а nginx чука на стария
+  // → 502 за всичко, докато не се рестартира ФРОНТЕНДЪТ. Обикновен
+  // `docker compose up -d backend` поваля сайта, без нищо да сочи причината.
+  it("има resolver към вградения DNS на Docker", () => {
+    expect(live).toMatch(/resolver\s+127\.0\.0\.11\b/);
+  });
+
+  it("нито един proxy_pass не ползва литерално име на контейнер", () => {
+    const literal = [...live.matchAll(/proxy_pass\s+http:\/\/([^;$\s]+)/g)].map((m) => m[1]);
+    expect(literal, `литерален upstream: ${literal.join(" · ")}`).toEqual([]);
+  });
+
+  it("proxy_pass с променлива носи явен $request_uri", () => {
+    // С променлива nginx НЕ добавя пътя автоматично — без това всяка заявка
+    // отива на „/“ и целият API става 404.
+    const passes = [...live.matchAll(/proxy_pass\s+([^;]+);/g)].map((m) => m[1].trim());
+    expect(passes.length).toBeGreaterThan(0);
+    for (const p of passes) expect(p, p).toContain("$request_uri");
+  });
+});
+
+describe("CSP на /archive съвпада с този на backend-а", () => {
+  // Два РАЗЛИЧНИ CSP хедъра се прилагат като СЕЧЕНИЕ — разминаване тихо блокира
+  // легитимни ресурси и никой не разбира защо.
+  it("двата низа са идентични", async () => {
+    const { readFileSync } = await import("fs");
+    const { join } = await import("path");
+    const archive = readFileSync(
+      join(__dirname, "..", "..", "..", "backend", "src", "routes", "archive.js"),
+      "utf8",
+    );
+    const fromBackend = [...archive.matchAll(/^\s*"([a-z-]+ [^"]*)",$/gm)]
+      .map((m) => m[1])
+      .join("; ");
+    const fromNginx = live.match(/add_header Content-Security-Policy "([^"]+)"/)?.[1];
+    expect(fromNginx, "nginx няма CSP за /archive").toBeTruthy();
+    expect(fromNginx).toBe(fromBackend);
+  });
+});

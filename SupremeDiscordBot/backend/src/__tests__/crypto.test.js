@@ -43,3 +43,44 @@ describe("AES-256-GCM crypto", () => {
     expect(() => decrypt(tampered)).toThrow();
   });
 });
+
+describe("decryptSafe — какво връща при провал (07.08.2026)", () => {
+  it("наследен открит текст минава непокътнат", async () => {
+    const { decryptSafe } = await import("../lib/crypto.js");
+    expect(decryptSafe("plain-legacy-token")).toBe("plain-legacy-token");
+    // Открит текст СЪС двоеточия — старата проверка `split(":").length === 3`
+    // го броеше за наш шифротекст и се опитваше да го дешифрира.
+    expect(decryptSafe("Bearer:foo:bar")).toBe("Bearer:foo:bar");
+  });
+
+  it("нашият шифротекст се дешифрира", async () => {
+    const { encrypt, decryptSafe } = await import("../lib/crypto.js");
+    expect(decryptSafe(encrypt("tok_123"))).toBe("tok_123");
+  });
+
+  it("НЕ връща шифротекста при грешен ключ — иначе го пращаме на Discord", async () => {
+    const { encrypt, decryptSafe } = await import("../lib/crypto.js");
+    const cipher = encrypt("tok_123");
+    const original = process.env.ENCRYPTION_KEY;
+    process.env.ENCRYPTION_KEY = "b".repeat(64); // сменен ключ
+    try {
+      // null → повикващият иска нов вход. Суровият шифротекст би тръгнал
+      // нататък като OAuth токен и би дал объркващо 401 без диагноза.
+      expect(decryptSafe(cipher)).toBeNull();
+    } finally {
+      process.env.ENCRYPTION_KEY = original;
+    }
+  });
+
+  it("НЕ връща шифротекста при ЛИПСВАЩ ключ", async () => {
+    const { encrypt, decryptSafe } = await import("../lib/crypto.js");
+    const cipher = encrypt("tok_123");
+    const original = process.env.ENCRYPTION_KEY;
+    delete process.env.ENCRYPTION_KEY;
+    try {
+      expect(decryptSafe(cipher)).toBeNull();
+    } finally {
+      process.env.ENCRYPTION_KEY = original;
+    }
+  });
+});

@@ -39,23 +39,69 @@ async function requirePremium(req, res) {
   return true;
 }
 
-// ─── Helper: build CSV string from array of objects ──────────────────────────
-function toCSV(rows, columns) {
-  const header = columns.map((c) => `"${c.label}"`).join(",");
-  const lines = rows.map((row) =>
-    columns
-      .map((c) => {
-        const val = typeof c.value === "function" ? c.value(row) : row[c.key] ?? "";
-        let s = String(val);
-        // CSV formula-injection guard: a cell that a spreadsheet would treat as
-        // a formula (starts with = + - @ tab or CR) is user-controlled here
-        // (usernames, close reasons, answers), so prefix a single quote to neutralize it.
-        if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
-        return `"${s.replace(/"/g, '""')}"`;
-      })
-      .join(",")
-  );
-  return [header, ...lines].join("\r\n");
+// ─── Helper: CSV ред от обект ────────────────────────────────────────────────
+function csvRow(row, columns) {
+  return columns
+    .map((c) => {
+      const val = typeof c.value === "function" ? c.value(row) : row[c.key] ?? "";
+      let s = String(val);
+      // CSV formula-injection guard: a cell that a spreadsheet would treat as
+      // a formula (starts with = + - @ tab or CR) is user-controlled here
+      // (usernames, close reasons, answers), so prefix a single quote to neutralize it.
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return `"${s.replace(/"/g, '""')}"`;
+    })
+    .join(",");
+}
+
+// ─── СТРИЙМ, не един голям низ ───────────────────────────────────────────────
+// Старата версия дърпаше ЦЯЛАТА таблица с `findMany` без `take`, после
+// сглобяваше един низ и го подаваше на `res.send`. Три копия на всичко в
+// паметта наведнъж (редове → масив низове → съединен низ). Сървър с 100k тикета
+// (с join-натите съобщения) поваля процеса — и то през напълно легитимна,
+// платена функция. Нищо не сочеше проблема: нито лимит, нито предупреждение.
+//
+// Сега вадим на партиди по курсор и пишем всяка партида веднага. Паметта е
+// ограничена от партидата, а изтеглянето започва мигновено.
+const CSV_BATCH = 1000;
+// Таван — иначе една заявка може да държи връзка към базата с часове. Достигне
+// ли се, казваме го В ФАЙЛА и в лога: тихо отрязан експорт изглежда като пълен.
+const CSV_MAX_ROWS = 200_000;
+
+/**
+ * @param {object} o
+ * @param {import("express").Response} o.res
+ * @param {string} o.filename
+ * @param {Array} o.columns
+ * @param {(cursorId: string|null) => Promise<Array>} o.page  партида по курсор
+ */
+async function streamCsv({ res, filename, columns, page }) {
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  // BOM за Excel + заглавен ред. След първия write вече НЕ можем да върнем
+  // JSON грешка — затова цялата авторизация е приключила преди този ред.
+  res.write("﻿" + columns.map((c) => `"${c.label}"`).join(",") + "\r\n");
+
+  let cursor = null;
+  let total = 0;
+  for (;;) {
+    const rows = await page(cursor);
+    if (!rows.length) break;
+    res.write(rows.map((r) => csvRow(r, columns)).join("\r\n") + "\r\n");
+    total += rows.length;
+    cursor = rows.at(-1).id;
+    if (rows.length < CSV_BATCH) break;
+    if (total >= CSV_MAX_ROWS) {
+      // Видим ред във файла — не тих отказ.
+      res.write(`"[TRUNCATED at ${CSV_MAX_ROWS} rows — contact support for a full export]"\r\n`);
+      console.warn(`[export] ${filename}: отрязан на ${CSV_MAX_ROWS} реда`);
+      break;
+    }
+    // Даваме въздух на event loop-а между партидите — при 200 партиди без това
+    // маршрутът държи цикъла зает и всички други заявки чакат.
+    await new Promise((r) => setImmediate(r));
+  }
+  res.end();
 }
 
 // ─── GET /api/export/:serverId/tickets ────────────────────────────────────────
@@ -64,34 +110,43 @@ router.get("/:serverId/tickets", requireServerAdmin, async (req, res, next) => {
   try {
     if (!(await requirePremium(req, res))) return;
 
-    const tickets = await prisma.ticket.findMany({
-      where: { serverId: req.params.serverId },
-      include: {
-        creator: { select: { username: true } },
-        assignee: { select: { username: true } },
-        panel: { select: { name: true } },
-        _count: { select: { messages: true } },
-      },
-      orderBy: { createdAt: "desc" },
+    await streamCsv({
+      res,
+      filename: `tickets-${req.params.serverId}-${Date.now()}.csv`,
+      columns: [
+        { label: "Ticket ID",    key: "id" },
+        { label: "Status",       key: "status" },
+        { label: "Creator",      value: (r) => r.creator?.username ?? "" },
+        { label: "Assigned To",  value: (r) => r.assignee?.username ?? "Unassigned" },
+        { label: "Panel",        value: (r) => r.panel?.name ?? "" },
+        { label: "Messages",     value: (r) => r._count.messages },
+        { label: "Close Reason", key: "closeReason" },
+        { label: "Opened At",    value: (r) => new Date(r.createdAt).toISOString() },
+        { label: "Closed At",    value: (r) => r.closedAt ? new Date(r.closedAt).toISOString() : "" },
+      ],
+      // `id` \u0432\u044A\u0432 `orderBy` \u043D\u0435 \u0435 \u0443\u043A\u0440\u0430\u0441\u0430: `createdAt` \u043D\u0435 \u0435 \u0443\u043D\u0438\u043A\u0430\u043B\u0435\u043D \u0438 \u0431\u0435\u0437 \u043D\u0435\u0433\u043E
+      // \u043A\u0443\u0440\u0441\u043E\u0440\u044A\u0442 \u043C\u043E\u0436\u0435 \u0434\u0430 \u043F\u0440\u0435\u0441\u043A\u043E\u0447\u0438 \u0438\u043B\u0438 \u043F\u043E\u0432\u0442\u043E\u0440\u0438 \u0440\u0435\u0434\u043E\u0432\u0435 \u043F\u0440\u0438 \u0435\u0434\u043D\u0430\u043A\u0432\u0438 \u0432\u0440\u0435\u043C\u0435\u043D\u0430.
+      page: (cursor) => prisma.ticket.findMany({
+        where: { serverId: req.params.serverId },
+        include: {
+          creator: { select: { username: true } },
+          assignee: { select: { username: true } },
+          panel: { select: { name: true } },
+          _count: { select: { messages: true } },
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: CSV_BATCH,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      }),
     });
-
-    const csv = toCSV(tickets, [
-      { label: "Ticket ID",    key: "id" },
-      { label: "Status",       key: "status" },
-      { label: "Creator",      value: (r) => r.creator?.username ?? "" },
-      { label: "Assigned To",  value: (r) => r.assignee?.username ?? "Unassigned" },
-      { label: "Panel",        value: (r) => r.panel?.name ?? "" },
-      { label: "Messages",     value: (r) => r._count.messages },
-      { label: "Close Reason", key: "closeReason" },
-      { label: "Opened At",    value: (r) => new Date(r.createdAt).toISOString() },
-      { label: "Closed At",    value: (r) => r.closedAt ? new Date(r.closedAt).toISOString() : "" },
-    ]);
-
-    const filename = `tickets-${req.params.serverId}-${Date.now()}.csv`;
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send("\uFEFF" + csv); // BOM for Excel UTF-8 compatibility
   } catch (err) {
+    // \u041F\u0440\u043E\u0432\u0430\u043B \u0421\u041B\u0415\u0414 \u043F\u044A\u0440\u0432\u0438\u044F write \u043D\u0435 \u043C\u043E\u0436\u0435 \u0434\u0430 \u0432\u044A\u0440\u043D\u0435 JSON \u2014 \u0437\u0430\u0433\u043B\u0430\u0432\u0438\u044F\u0442\u0430 \u0441\u0430 \u0442\u0440\u044A\u0433\u043D\u0430\u043B\u0438.
+    // \u0421\u043A\u044A\u0441\u0432\u0430\u043C\u0435 \u0432\u0440\u044A\u0437\u043A\u0430\u0442\u0430, \u0437\u0430 \u0434\u0430 \u0432\u0438\u0434\u0438 \u043A\u043B\u0438\u0435\u043D\u0442\u044A\u0442 \u043D\u0435\u043F\u044A\u043B\u043D\u043E \u0438\u0437\u0442\u0435\u0433\u043B\u044F\u043D\u0435, \u0432\u043C\u0435\u0441\u0442\u043E \u0434\u0430
+    // \u043F\u043E\u043B\u0443\u0447\u0438 \u043C\u044A\u043B\u0447\u0430\u043B\u0438\u0432\u043E \u043E\u0442\u0440\u044F\u0437\u0430\u043D \u0444\u0430\u0439\u043B, \u043A\u043E\u0439\u0442\u043E \u0438\u0437\u0433\u043B\u0435\u0436\u0434\u0430 \u043F\u044A\u043B\u0435\u043D.
+    if (res.headersSent) {
+      console.error("[export] \u043F\u0440\u043E\u0432\u0430\u043B \u043F\u043E \u0441\u0440\u0435\u0434\u0430\u0442\u0430 \u043D\u0430 \u0441\u0442\u0440\u0438\u0439\u043C\u0430:", err.message);
+      return res.destroy(err);
+    }
     next(err);
   }
 });
@@ -102,32 +157,36 @@ router.get("/:serverId/applications", requireServerAdmin, async (req, res, next)
   try {
     if (!(await requirePremium(req, res))) return;
 
-    const applications = await prisma.application.findMany({
-      where: { serverId: req.params.serverId },
-      include: {
-        form: { select: { name: true } },
-        user: { select: { username: true } },
-      },
-      orderBy: { createdAt: "desc" },
+    await streamCsv({
+      res,
+      filename: `applications-${req.params.serverId}-${Date.now()}.csv`,
+      columns: [
+        { label: "Application ID", key: "id" },
+        { label: "Status",         key: "status" },
+        { label: "Applicant",      value: (r) => r.user?.username ?? "" },
+        { label: "Form",           value: (r) => r.form?.name ?? "" },
+        { label: "Review Note",    key: "reviewNote" },
+        { label: "Submitted At",   value: (r) => new Date(r.createdAt).toISOString() },
+        { label: "Updated At",     value: (r) => new Date(r.updatedAt).toISOString() },
+        // Flatten answers as a JSON column — cleaner than trying to map dynamic questions
+        { label: "Answers (JSON)", value: (r) => JSON.stringify(r.answers) },
+      ],
+      page: (cursor) => prisma.application.findMany({
+        where: { serverId: req.params.serverId },
+        include: {
+          form: { select: { name: true } },
+          user: { select: { username: true } },
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: CSV_BATCH,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      }),
     });
-
-    const csv = toCSV(applications, [
-      { label: "Application ID", key: "id" },
-      { label: "Status",         key: "status" },
-      { label: "Applicant",      value: (r) => r.user?.username ?? "" },
-      { label: "Form",           value: (r) => r.form?.name ?? "" },
-      { label: "Review Note",    key: "reviewNote" },
-      { label: "Submitted At",   value: (r) => new Date(r.createdAt).toISOString() },
-      { label: "Updated At",     value: (r) => new Date(r.updatedAt).toISOString() },
-      // Flatten answers as a JSON column — cleaner than trying to map dynamic questions
-      { label: "Answers (JSON)", value: (r) => JSON.stringify(r.answers) },
-    ]);
-
-    const filename = `applications-${req.params.serverId}-${Date.now()}.csv`;
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send("\uFEFF" + csv);
   } catch (err) {
+    if (res.headersSent) {
+      console.error("[export] провал по средата на стрийма:", err.message);
+      return res.destroy(err);
+    }
     next(err);
   }
 });

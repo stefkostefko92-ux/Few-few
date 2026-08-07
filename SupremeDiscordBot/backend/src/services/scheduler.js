@@ -16,6 +16,15 @@ import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
 // Освен това провалът вътре в cron callback се поглъщаше напълно — никой не
 // слуша `execution:failed` на node-cron, значи спрял дунинг или спряло GDPR
 // изтриване са напълно невидими. (Наблюдателят + Качествения, 07.08.2026)
+// ─── ЧАСОВА ЗОНА ─────────────────────────────────────────────────────────────
+// node-cron без `timezone` ползва ЛОКАЛНАТА зона на процеса. Всеки коментар тук
+// пише „UTC“, но нищо не го налагаше: сменен TZ в контейнера (или базов образ с
+// друга зона) размества всяко разписание безшумно. Най-опасен е „5 0 * * *“ —
+// дневната ролка на метриките смята „вчера“, тоест при изместена граница на
+// деня редовете се дублират или зейва дупка. Явната зона го прави декларация,
+// не предположение. CRON_TZ позволява промяна без пипане на кода.
+const TZ = { timezone: process.env.CRON_TZ || "UTC" };
+
 const running = new Set();
 function job(name, fn) {
   return async () => {
@@ -81,7 +90,7 @@ cron.schedule("0 3 * * *", job("0 3 * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] Archive cleanup error:", err.message);
   }
-}));
+}), TZ);
 
 // ─── Job 2: Expired session cleanup ──────────────────────────────────────────
 // Runs every hour. Removes Discord OAuth2 sessions that have expired.
@@ -99,7 +108,7 @@ cron.schedule("0 * * * *", job("0 * * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] Session cleanup error:", err.message);
   }
-}));
+}), TZ);
 
 // ─── Job 3: Premium archive retention enforcement ────────────────────────────
 // When a server downgrades from Premium to Base, their retention becomes 30 days.
@@ -128,7 +137,7 @@ cron.schedule("0 4 * * 0", job("0 4 * * 0", async () => {
   } catch (err) {
     console.error("[Scheduler] Retention enforcement error:", err.message);
   }
-}));
+}), TZ);
 
 // ─── Job 4: Inactivity auto-close (v1.5 — Premium) ───────────────────────────
 // Runs every 30 minutes. Closes tickets that have had no activity for X hours
@@ -205,7 +214,7 @@ cron.schedule("*/30 * * * *", job("*/30 * * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] Inactivity close error:", err.message);
   }
-}));
+}), TZ);
 
 // ─── Job 5: Giveaway auto-end (v1.8) ───────────────────
 cron.schedule("* * * * *", job("* * * * *", async () => {
@@ -222,7 +231,7 @@ cron.schedule("* * * * *", job("* * * * *", async () => {
       await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
   } catch (err) { console.error("[Scheduler] giveaway end:", err.message); }
-}));
+}), TZ);
 
 // ─── Job 5b: Poll auto-close ───────────────────
 // The /poll duration_hours option sets closesAt; without this job it was dead
@@ -239,7 +248,7 @@ cron.schedule("* * * * *", job("* * * * *", async () => {
       await pushPollUpdate(p.id);
     }
   } catch (err) { console.error("[Scheduler] poll close:", err.message); }
-}));
+}), TZ);
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
 cron.schedule("* * * * *", job("* * * * *", async () => {
@@ -294,7 +303,7 @@ cron.schedule("* * * * *", job("* * * * *", async () => {
       await prisma.scheduledMessage.update({ where: { id: m.id }, data: update });
     }
   } catch (err) { console.error("[Scheduler] scheduled msg:", err.message); }
-}));
+}), TZ);
 
 // ─── Job 7: Trial expiry notifications (v2.0; DM канал — v3.1) ────────────────
 // Runs daily at 9am UTC. Logs servers whose trial expires in 3 days,
@@ -466,7 +475,7 @@ cron.schedule("0 9 * * *", job("0 9 * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] trial expiry check:", err.message);
   }
-}));
+}), TZ);
 
 // ─── Job 8: Daily metrics snapshot (v2.1) ───────────────────────────
 // Runs at 00:05 UTC every day. Aggregates yesterday's ticket/form/app/verification
@@ -528,7 +537,7 @@ cron.schedule("5 0 * * *", job("5 0 * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] daily metrics:", err.message);
   }
-}));
+}), TZ);
 
 // ─── Job 9: SLA breach detection (v31 — Premium) ─────────────────────────────
 // Runs every 10 minutes. For panels with an SLA configured, flags tickets that
@@ -667,6 +676,6 @@ cron.schedule("*/10 * * * *", job("*/10 * * * *", async () => {
   } catch (err) {
     console.error("[Scheduler] SLA breach check error:", err.message);
   }
-}));
+}), TZ);
 
 console.log("[Scheduler] Background jobs started");

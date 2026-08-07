@@ -100,6 +100,17 @@ setInterval(() => {
  * @returns {Promise<Array>}
  */
 export async function fetchUserGuilds(accessToken) {
+  // Празен токен значи „сесията е нечетима“ (decryptSafe върна null при сгрешен
+  // ENCRYPTION_KEY). Без този гард пращахме `Bearer null` на Discord и чакахме
+  // 401 — един безсмислен изход навън и кеш ключ `null`, споделен между
+  // потребители. Формата на грешката е като на реален 401, за да я хванат
+  // същите клонове по маршрутите.
+  if (!accessToken) {
+    const err = new Error("Discord access token is unavailable");
+    err.response = { status: 401, headers: {} };
+    throw err;
+  }
+
   const now = Date.now();
   const hit = guildCache.get(accessToken);
   if (hit && hit.expiresAt > now) return hit.guilds;

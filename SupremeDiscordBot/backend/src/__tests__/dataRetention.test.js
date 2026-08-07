@@ -34,6 +34,14 @@ vi.mock("../lib/prisma.js", () => ({
     reactionRoleMessage: del("reactionRoleMessage"),
     kbArticle: del("kbArticle"),
     serverMember: del("serverMember"),
+    // Седемте без външен ключ към Server — точно тези нищо не достигаше.
+    poll: del("poll"),
+    giveaway: del("giveaway"),
+    scheduledMessage: del("scheduledMessage"),
+    stickyMessage: del("stickyMessage"),
+    cannedResponse: del("cannedResponse"),
+    webhook: del("webhook"),
+    dailyMetric: del("dailyMetric"),
     ticketMessage: { deleteMany: vi.fn(() => ({ count: 0 })) },
     auditLog: {
       deleteMany: vi.fn(() => ({ count: 0 })),
@@ -167,5 +175,34 @@ describe("формата на заявката за кандидати", () => {
   it("не пипа вече изчистените (маркерът е дедуп ключ)", async () => {
     await runRetentionJob();
     expect(JSON.stringify(db.lastWhere)).toContain("SERVER_DATA_PURGED");
+  });
+});
+
+describe("таблици БЕЗ външен ключ към Server (одит 07.08.2026)", () => {
+  // `serverId` е гол низ в седем модела — нито релация, нито каскада. Затова
+  // нито тази секция ги достигаше (не бяха изброени), нито изтриване на реда
+  // Server (той нарочно оцелява). Гласове в анкети и участия в томболи носят
+  // Discord user ID = лични данни.
+  const ORPHANS = [
+    "poll", "giveaway", "scheduledMessage", "stickyMessage",
+    "cannedResponse", "webhook", "dailyMetric",
+  ];
+
+  it.each(ORPHANS)("%s се чисти при изчистване на сървър без бот", async (table) => {
+    db.servers.push({ id: "s1", botRemovedAt: old, stripeStatus: null });
+    await runRetentionJob();
+    expect(db.deleted).toContainEqual({ table, serverId: "s1" });
+  });
+
+  it("НЕ пипа нищо от тях за сървър с ЖИВ платен абонамент", async () => {
+    db.servers.push({ id: "s1", botRemovedAt: old, stripeStatus: "active" });
+    await runRetentionJob();
+    expect(db.deleted).toEqual([]);
+  });
+
+  it("НЕ пипа нищо от тях за скоро махнат бот (под 30 дни)", async () => {
+    db.servers.push({ id: "s1", botRemovedAt: recent, stripeStatus: null });
+    await runRetentionJob();
+    expect(db.deleted).toEqual([]);
   });
 });
