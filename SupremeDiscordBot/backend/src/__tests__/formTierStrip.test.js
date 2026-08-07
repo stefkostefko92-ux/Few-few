@@ -131,13 +131,17 @@ describe("подаването УВАЖАВА тарифата, не само з
     prismaMock.formCooldown.findUnique.mockResolvedValue({
       submissionCount: 1, lastSubmittedAt: new Date(),
     });
-    prismaMock.formCooldown.upsert.mockResolvedValue({});
+    prismaMock.formCooldown.updateMany.mockResolvedValue({ count: 1 });
+  prismaMock.formCooldown.create.mockResolvedValue({});
     prismaMock.user.upsert.mockResolvedValue({});
     prismaMock.application.create.mockResolvedValue({ id: "a1" });
   });
 
   it("платен план: таванът СПИРА второто подаване", async () => {
     tierPlan = "premium";
+    prismaMock.formCooldown.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.formCooldown.create.mockRejectedValue(Object.assign(new Error("unique"), { code: "P2002" }));
+
     const r = await submitApplication(BODY);
     expect(r).toMatchObject({ ok: false, status: 429, code: "MAX_SUBMISSIONS" });
   });
@@ -155,6 +159,9 @@ describe("подаването УВАЖАВА тарифата, не само з
 
   it("свален план: БАЗОВИЯТ cooldown обаче важи — не е отворена врата", async () => {
     tierPlan = "free";
+    prismaMock.formCooldown.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.formCooldown.create.mockRejectedValue(Object.assign(new Error("unique"), { code: "P2002" }));
+
     prismaMock.formCooldown.findUnique.mockResolvedValue({
       submissionCount: 1, lastSubmittedAt: new Date(), // току-що
     });

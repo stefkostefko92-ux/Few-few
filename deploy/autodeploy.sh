@@ -555,9 +555,24 @@ deploy_supreme() {
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
   if health "$SUPREME_HEALTH_URL" "SupremeDiscordBot"; then
+    # Health-check-ът казва само „нещо отговаря на 8080". Smoke тестът пита
+    # ПРОДУКТА: React корен, пререндирани маршрути, база, Redis, Discord
+    # gateway, гардът за вход, Stripe цените, правните страници, SEO
+    # артефактите. Точно тихите провали, които един 200 подминава.
+    # (Одит, 07.08.2026)
+    if bash "$d/deploy/smoke.sh"; then
+      ok "SupremeDiscordBot: smoke мина"
+    else
+      warn "SupremeDiscordBot: smoke ПАДНА — деплоят е горе, но нещо не работи."
+      deploy_failed=1
+      supreme_rollback_hint "$d"
+    fi
     supreme_install_backup_timer "$d"
+    supreme_install_restore_drill_timer "$d"
+    supreme_ping_indexnow "$d"
   else
     deploy_failed=1
+    supreme_rollback_hint "$d"
   fi
 }
 
@@ -581,6 +596,50 @@ supreme_rollback_hint() {
   fi
   warn "ВНИМАНИЕ: миграциите вече са приложени. Ако новата схема е несъвместима"
   warn "със стария код, първо провери 'npx prisma migrate status' в backend контейнера."
+}
+
+# IndexNow след деплой — правилото на репото (root CLAUDE.md) иска подаване след
+# всяка промяна, засягаща откриваемост. Ключът вече се материализира в web root;
+# липсваше само самото извикване, затова досега беше РЪЧНА стъпка, която лесно се
+# забравя. Не е фатално: при провал минава при следващия деплой.
+supreme_ping_indexnow() {
+  local d="$1"
+  local key_file
+  key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1)"
+  [ -n "$key_file" ] || { warn "Supreme: няма IndexNow ключ в frontend/public — пропускам."; return 0; }
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "https://supremebot.carbonstealth.eu" ) \
+    || warn "Supreme: IndexNow подаването пропадна — не е фатално, минава при следващия деплой."
+}
+
+# Репетицията за възстановяване е БЕЗПОЛЕЗНА, ако никой не я пуска. Бекъпите си
+# имаха таймер, самата репетиция — не, тоест „можем ли да възстановим" беше
+# надежда, не факт. Седмично, в неделя през нощта. (Одит, 07.08.2026)
+supreme_install_restore_drill_timer() {
+  local d="$1"
+  local drill="$d/deploy/restore-drill.sh"
+  [ -f "$drill" ] || return 0
+  install -m 700 "$drill" /usr/local/sbin/supreme-restore-drill
+  cat > /etc/systemd/system/supreme-restore-drill.service <<'UNIT'
+[Unit]
+Description=Supreme — репетиция на възстановяването от последния бекъп
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/supreme-restore-drill
+UNIT
+  cat > /etc/systemd/system/supreme-restore-drill.timer <<'UNIT'
+[Unit]
+Description=Седмична репетиция на възстановяването (бекъп, който не е репетиран, е надежда)
+[Timer]
+OnCalendar=Sun 04:30
+Persistent=true
+RandomizedDelaySec=900
+[Install]
+WantedBy=timers.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable --now supreme-restore-drill.timer >/dev/null 2>&1 \
+    || warn "supreme-restore-drill.timer не се активира — провери ръчно."
+  ok "репетицията за възстановяване е седмична (supreme-restore-drill.timer)"
 }
 
 # v40 — тайната за Redis: генерирай, ако липсва, и изравни REDIS_URL.

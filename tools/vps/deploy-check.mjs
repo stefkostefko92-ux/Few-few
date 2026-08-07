@@ -18,8 +18,20 @@ export function lintShell(src, rel) {
   const lines = src.split("\n");
 
   // 1) set -euo pipefail (без него грешките текат тихо → полу-деплой)
-  if (!/set\s+-[a-z]*e[a-z]*o?\s+pipefail|set\s+-e[uo]*\b/.test(src) && !/set\s+-e\b/.test(src))
-    add("HIGH", "no-strict-mode", "Липсва `set -euo pipefail` — грешка в стъпка не спира скрипта → риск от полу-деплой. Добави го в началото.");
+  //
+  // ИЗКЛЮЧЕНИЕ с ИЗРИЧЕН отказ: диагностичен скрипт (smoke тест, здравна
+  // проверка) нарочно НЕ ползва `-e` — иначе спира на първата провалена
+  // проверка и не докладва останалите, тоест губи точно смисъла си. Такъв
+  // скрипт трябва да го КАЖЕ на място с маркер и причина, и пак да пази
+  // `-u` и `-o pipefail`. Мълчаливо липсващо `-e` си остава нарушение.
+  const optsOut = /#\s*deploy-check:\s*allow-no-errexit\s*—\s*\S/.test(src);
+  const hasErrexit = /set\s+-[a-z]*e/.test(src);
+  if (!hasErrexit && optsOut) {
+    if (!/set\s+-[a-z]*u/.test(src) || !/pipefail/.test(src))
+      add("HIGH", "weak-strict-mode", "Отказът от `-e` е допустим за диагностичен скрипт, но `-u` и `-o pipefail` остават задължителни.");
+  } else if (!hasErrexit) {
+    add("HIGH", "no-strict-mode", "Липсва `set -euo pipefail` — грешка в стъпка не спира скрипта → риск от полу-деплой. Добави го в началото (или `# deploy-check: allow-no-errexit — <причина>`, ако е диагностичен).");
+  }
 
   // 2) Ехо/ексфилтрация на тайна
   //
