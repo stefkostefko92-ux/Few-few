@@ -63,6 +63,52 @@ export function lintShell(src, rel) {
   if ((src.match(/\bsudo\b/g) || []).length > 8)
     add("INFO", "sudo-heavy", "Много `sudo` извиквания — обмисли еднократна ескалация или изрична обосновка (least privilege).");
 
+  // 8) Незащитен subshell под `set -e` — един проект убива целия пробег
+  //
+  // ЗАЩО (VPS-аджията, одит 07.08.2026): `( cd "$d"; bash deploy.sh )` без `||`
+  // изглежда безобидно, но при `set -e` ненулевият изход на subshell-а прекратява
+  // ЦЕЛИЯ скрипт насред пробега. В монорепо autodeploy това значи, че провалът на
+  // един продукт оставя всички следващи неразгърнати, а symlink-ът и резюмето се
+  // прескачат — при вече мигрирана база и вдигнати контейнери. Намерено в три
+  // блока наведнъж (zabobovdol, supreme, eternaltouch).
+  //
+  // Ловим само subshell, който ИЗПЪЛНЯВА нещо съществено (`bash …`/`npm …`), не
+  // всяко `( cd … && ls )`; и само когато скриптът наистина е под `set -e`.
+  if (/set\s+-[a-z]*e/.test(src)) {
+    const unguarded = [];
+    // Две форми: многоредова (затварящата скоба е в начало на ред) и едноредова.
+    // И в двата случая гледаме какво следва СЛЕД затварящата скоба.
+    const FORMS = [
+      /^[ \t]*\(\s*cd\s[\s\S]*?^[ \t]*\)(.*)$/gm,   // ( cd …\n  bash …\n)
+      /^[ \t]*\(\s*cd\s[^)\n]*\)(.*)$/gm,           // ( cd … && bash … )
+    ];
+    for (const re of FORMS) {
+      let m;
+      while ((m = re.exec(src)) !== null) {
+        const body = m[0];
+        let after = m[1] || "";
+        if (!/\b(bash|sh|npm|pnpm|yarn|docker)\b/.test(body)) continue;  // тривиален subshell
+        // Гардът често е пренесен на следващ ред: `) \` + `  || { … }`.
+        // Първата версия на това правило не следваше пренасянето и обяви пет
+        // напълно защитени блока за нарушители — синтаксис, не съдържание.
+        let tail = src.slice(m.index + m[0].length);
+        while (/\\\s*$/.test(after)) {
+          const nl = tail.indexOf("\n");
+          if (nl === -1) break;
+          const next = tail.slice(nl + 1, tail.indexOf("\n", nl + 1) === -1 ? undefined : tail.indexOf("\n", nl + 1));
+          after = next;
+          tail = tail.slice(nl + 1);
+        }
+        if (/\|\||&&\s*\{|;\s*then/.test(after)) continue;               // има гард
+        const head = body.split("\n")[0].trim();
+        if (!unguarded.includes(head)) unguarded.push(head);
+      }
+    }
+    if (unguarded.length)
+      add("HIGH", "unguarded-subshell",
+        `Subshell с деплой команда без \`|| { … }\` при \`set -e\` (${unguarded.length} бр.) — провалът на един продукт прекратява целия autodeploy и оставя следващите неразгърнати. Добави \`|| { warn …; deploy_failed=1; return; }\`.`);
+  }
+
   return out;
 }
 

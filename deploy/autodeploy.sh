@@ -193,6 +193,11 @@ deploy_zabobovdol() {
   rm -rf "$d/backups"
   ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
   ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
+  # `|| { … return; }` НЕ е украса: скриптът върви под `set -euo pipefail`, значи
+  # ненулев изход от subshell-а убива ЦЕЛИЯ autodeploy насред пробега — всички
+  # следващи проекти в $PROJECTS остават неразгърнати, symlink-ът и резюмето се
+  # прескачат, а базата вече е мигрирана и контейнерите вдигнати. Провалът на
+  # един продукт трябва да е провал на ЕДИН продукт. (VPS-аджията, одит 07.08.2026)
   ( cd "$d"
     if [ -f .env ]; then
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)
@@ -201,7 +206,7 @@ deploy_zabobovdol() {
       warn "Няма zabobovdol/.env — пускам setup-env.sh интерактивно."
       bash scripts/setup-env.sh && bash scripts/deploy.sh
     fi
-  )
+  ) || { warn "zabobovdol: deploy.sh се провали — продължавам с останалите проекти."; deploy_failed=1; return; }
   # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
   local url="$ZBD_HEALTH_URL"
   if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
@@ -225,7 +230,8 @@ deploy_medqr() {
     --exclude data/ --exclude node_modules/ --exclude .env \
     "$d"/ "$MEDQR_DIR"/
   chown -R medqr:medqr "$MEDQR_DIR"
-  ( cd "$MEDQR_DIR" && sudo -u medqr npm ci --omit=dev )
+  ( cd "$MEDQR_DIR" && sudo -u medqr npm ci --omit=dev ) \
+    || { warn "medqr: npm ci се провали след rsync — кодът вече е сменен, връщам предишния."; medqr_rollback; deploy_failed=1; return; }
   # Консистентен snapshot на базата ПРЕДИ рестарт — миграциите се пускат при старт
   # (db.js), затова пазим възстановима точка. Не разчитаме на cp заради WAL.
   local db="$MEDQR_DIR/data/medqr.sqlite"
@@ -243,18 +249,27 @@ deploy_medqr() {
   else
     deploy_failed=1
     warn "medqr health провал — връщам предишния код и базата."
-    systemctl stop "$MEDQR_SERVICE" || true
-    if [ -f "$dbbak" ]; then
-      cp -a "$dbbak" "$db"
-      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
-      chown medqr:medqr "$db"
-    fi
-    if [ -d "${MEDQR_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
-      chown -R medqr:medqr "$MEDQR_DIR"
-    fi
-    systemctl restart "$MEDQR_SERVICE"
+    medqr_rollback "${db:-}" "${dbbak:-}"
   fi
+}
+
+# Откатът на medqr — изваден във функция, защото има ДВА пътя дотук:
+# провален health (по-долу) и провален `npm ci` СЛЕД rsync (кодът вече е сменен,
+# зависимостите ги няма). Второто дълго време просто убиваше целия autodeploy.
+# (VPS-аджията, одит 07.08.2026)
+medqr_rollback() {
+  local db="${1:-}" dbbak="${2:-}"
+  systemctl stop "$MEDQR_SERVICE" || true
+  if [ -n "$dbbak" ] && [ -f "$dbbak" ]; then
+    cp -a "$dbbak" "$db"
+    rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+    chown medqr:medqr "$db"
+  fi
+  if [ -d "${MEDQR_DIR}.bak-$TS" ]; then
+    rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
+    chown -R medqr:medqr "$MEDQR_DIR"
+  fi
+  systemctl restart "$MEDQR_SERVICE"
 }
 
 # ── 3b') vizitka — systemd (огледално на medqr) ───────────────────────────────
@@ -271,7 +286,8 @@ deploy_vizitka() {
     --exclude data/ --exclude node_modules/ --exclude .env \
     "$d"/ "$VIZITKA_DIR"/
   chown -R vizitka:vizitka "$VIZITKA_DIR"
-  ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev )
+  ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev ) \
+    || { warn "vizitka: npm ci се провали — пропускам рестарта, старата услуга остава жива."; deploy_failed=1; return; }
   # Снимка на базата ПРЕДИ рестарт — миграциите се пускат при старт (db.js).
   local db="$VIZITKA_DIR/data/vizitka.db"
   local dbbak="${db}.pre-$TS"
@@ -403,7 +419,8 @@ deploy_nexus() {
     ( cd "$NEXUS_DIR/source" && bash scripts/release-gate.sh ) \
       || die "nexus release gate провал — деплоят е спрян (виж ✗ редовете)."
   fi
-  ( cd "$NEXUS_DIR/source" && docker compose build )
+  ( cd "$NEXUS_DIR/source" && docker compose build ) \
+    || { warn "nexus: docker compose build се провали — старите контейнери остават живи."; deploy_failed=1; return; }
   # Bind mount-ът е root:root на хоста, а контейнерът върви като 'app'
   # (Dockerfile USER app) → без chown ПЪРВИЯТ boot не може да създаде
   # SQLite базата и умира тихо (открито на живия деплой 02.07). Взимаме
@@ -411,7 +428,8 @@ deploy_nexus() {
   app_uid=$(docker run --rm --entrypoint sh nexus-dominion:latest -c 'id -u app' 2>/dev/null || echo 100)
   app_gid=$(docker run --rm --entrypoint sh nexus-dominion:latest -c 'id -g app' 2>/dev/null || echo 101)
   chown -R "$app_uid:$app_gid" "$NEXUS_STATE_DIR/data"
-  ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
+  ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans ) \
+    || { warn "nexus: docker compose up се провали — старите контейнери остават както са."; deploy_failed=1; return; }
   sleep 5
   if health "$NEXUS_HEALTH_URL" "nexus"; then
     # Content seed на ВСЕКИ деплой (идемпотентен INSERT OR REPLACE по slug):
@@ -438,7 +456,10 @@ deploy_nexus() {
     if [ -d "$NEXUS_DIR/source.bak-$TS" ]; then
       rm -rf "$NEXUS_DIR/source"
       mv "$NEXUS_DIR/source.bak-$TS" "$NEXUS_DIR/source"
-      ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
+      # Това е САМИЯТ откат — провалът му е последната лоша новина, но не бива
+      # да прекратява пробега преди резюмето и преди останалите продукти.
+      ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans ) \
+        || warn "nexus: и откатът не успя да вдигне предишната версия — иска ръчна намеса."
     fi
   fi
 }
@@ -520,12 +541,17 @@ deploy_supreme() {
   # автоматично в backend entrypoint-а при `up`, затова застраховката трябва да
   # е направена ПРЕДИ deploy.sh. Fail-closed: няма дъмп → няма деплой.
   supreme_pre_deploy_dump || { deploy_failed=1; return; }
+  # `|| { … return; }` НЕ е украса: скриптът върви под `set -euo pipefail`, значи
+  # ненулев изход от subshell-а убива ЦЕЛИЯ autodeploy насред пробега — всички
+  # следващи проекти в $PROJECTS остават неразгърнати, symlink-ът и резюмето се
+  # прескачат, а базата вече е мигрирана и контейнерите вдигнати. Провалът на
+  # един продукт трябва да е провал на ЕДИН продукт. (VPS-аджията, одит 07.08.2026)
   ( cd "$d"
     # Собственият deploy.sh: проверява .env-ите, билдва, вдига, чака backend health
     # (миграциите се пускат автоматично в backend entrypoint-а) и регистрира
     # slash командите. Ако нещо липсва, той се проваля с ясна грешка.
     bash deploy.sh
-  )
+  ) || { warn "SupremeDiscordBot: deploy.sh се провали."; deploy_failed=1; supreme_rollback_hint "$d"; return; }
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
   if health "$SUPREME_HEALTH_URL" "SupremeDiscordBot"; then
@@ -533,6 +559,28 @@ deploy_supreme() {
   else
     deploy_failed=1
   fi
+}
+
+# ── Откат на Supreme: РЪЧЕН, и това е нарочно ────────────────────────────────
+# medqr/vizitka/mastilko се връщат сами (rsync на .bak + рестарт на systemd unit).
+# Supreme е Docker Compose със СПОДЕЛЕНА Postgres база, върху която entrypoint-ът
+# вече е пуснал `prisma migrate deploy` — връщане на кода назад НЕ връща схемата,
+# а нова схема със стар код е по-лошо състояние от текущото. Затова тук не
+# гадаем: печатаме точната команда и оставяме човек да реши.
+#
+# (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
+supreme_rollback_hint() {
+  local prev
+  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p)"
+  warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
+  if [ -n "$prev" ]; then
+    warn "Предишен release: ${prev%/}"
+    warn "Откат на КОДА:  RELEASE_DIR='${prev%/}' bash '${prev%/}/deploy/autodeploy.sh'"
+  else
+    warn "Няма предишен release — това е първият деплой."
+  fi
+  warn "ВНИМАНИЕ: миграциите вече са приложени. Ако новата схема е несъвместима"
+  warn "със стария код, първо провери 'npx prisma migrate status' в backend контейнера."
 }
 
 # v40 — тайната за Redis: генерирай, ако липсва, и изравни REDIS_URL.
@@ -689,7 +737,8 @@ EOF
     warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
-  ( cd "$d" && bash deploy.sh )   # idempotent: docker up --build, seed (upsert), nginx, certbot
+  ( cd "$d" && bash deploy.sh ) \
+    || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
@@ -945,18 +994,40 @@ for p in $PROJECTS; do
 done
 
 # ── 4) Маркирай текущия release + почисти старите ─────────────────────────────
-ln -sfn "$SRC" "$CURRENT_LINK"
-ok "current → $SRC"
+# Само УСПЕШЕН пробег става `current`.
+#
+# Дотук symlink-ът се вдигаше безусловно: провалил се деплой пак ставаше
+# „текущият", тоест следващият откат сочеше към счупеното, а човек, който гледа
+# `current`, вижда версия, която никога не е тръгнала. (VPS-аджията, 07.08.2026)
+if [ "$deploy_failed" = "0" ]; then
+  ln -sfn "$SRC" "$CURRENT_LINK"
+  ok "current → $SRC"
+else
+  warn "current НЕ е преместен — $SRC се разгърна с грешки."
+  warn "Текущ: $(readlink -f "$CURRENT_LINK" 2>/dev/null || echo '(няма)')"
+fi
 # Пази последните KEEP_RELEASES, НО никога не трий този, който току-що разгърнахме
 # (при rollback към стар release той може да е извън най-новите — иначе си трием
 # кода изпод краката, точно докато current сочи натам).
-CURRENT_REL="$(cd "$SRC" && pwd -P)"
+# Пази ДВЕ неща, не едно: това, което току-що разгърнахме ($SRC), И това, което
+# `current` реално сочи. При провал те се разминават — symlink-ът остава на
+# стария release, а той може да е достатъчно назад, за да попадне под ножа. Тогава
+# щяхме да изтрием кода, който в момента обслужва продукцията.
+# (VPS-аджията, одит 07.08.2026)
+KEEP_REL="$(cd "$SRC" && pwd -P)"
+LIVE_REL="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
 while read -r old; do
   [ -n "$old" ] || continue
   old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
-  case "$CURRENT_REL" in
-    "$old_real"|"$old_real"/*) continue ;;   # текущият release (или родителят му) — пропусни
-  esac
+  [ -n "$old_real" ] || continue
+  keep=0
+  for protected in "$KEEP_REL" "$LIVE_REL"; do
+    [ -n "$protected" ] || continue
+    case "$protected" in
+      "$old_real"|"$old_real"/*) keep=1 ;;
+    esac
+  done
+  [ "$keep" = "1" ] && continue
   rm -rf "$old"
 done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
 
