@@ -8,7 +8,7 @@ export default function TermsPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Terms of Service" updated="27 June 2026">
+    <LegalPage title="Terms of Service" updated="7 August 2026">
       <Seo
         title="Terms of Service — Supreme Bot"
         description="Terms of Service for Supreme Bot, the multi-tenant Discord bot SaaS platform by Carbon Stealth VCC."
@@ -36,15 +36,15 @@ export default function TermsPage() {
       <S title="2. Eligibility">
         <p>You may use the Service only if:</p>
         <ul>
-          <li>You are at least 13 years of age, or such higher minimum age as required by Discord's Terms of Service or the law of your jurisdiction;</li>
+          <li>You are at least 14 years of age &mdash; the threshold set by Bulgarian law (Personal Data Protection Act), where we are established &mdash; or such higher minimum age as required by Discord&rsquo;s Terms of Service or the law of your jurisdiction;</li>
           <li>You are not prohibited from using the Service under applicable law;</li>
           <li>You have not previously been suspended or removed from the Service; and</li>
           <li>Your use complies with all applicable laws and regulations, including Discord's Terms of Service and Community Guidelines.</li>
         </ul>
         <p>
-          Users in the European Economic Area (EEA) under the age of 16 (or such lower age as
-          permitted by their member state under Article 8 of the GDPR) must have parental or
-          guardian consent to use the Service.
+          Users in the European Economic Area (EEA) below their member state&rsquo;s Article 8 GDPR
+          threshold must have parental or guardian consent to use the Service. That threshold is
+          16 by default, lowered by some member states to as little as 13; in Bulgaria it is 14.
         </p>
       </S>
 

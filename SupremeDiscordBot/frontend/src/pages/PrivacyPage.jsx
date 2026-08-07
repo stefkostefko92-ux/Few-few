@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Privacy Policy" updated="27 June 2026">
+    <LegalPage title="Privacy Policy" updated="7 August 2026">
       <Seo
         title="Privacy Policy — Supreme Bot"
         description="Privacy Policy for Supreme Bot: what data we process, EU data residency, GDPR rights, subprocessors, and retention periods."

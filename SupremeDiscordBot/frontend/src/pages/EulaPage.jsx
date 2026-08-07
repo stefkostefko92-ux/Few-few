@@ -12,7 +12,7 @@ export default function EulaPage() {
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="End User License Agreement (EULA)" updated="27 June 2026">
+    <LegalPage title="End User License Agreement (EULA)" updated="7 August 2026">
       <Seo
         title="End User License Agreement — Supreme Bot"
         description="End User License Agreement for Supreme Bot: SaaS access, bot deployment, premium features, white-label terms, and API usage."
@@ -314,7 +314,13 @@ export default function EulaPage() {
           When the AI auto-reply feature is enabled, newly submitted ticket messages are sent to
           Google LLC ("Google", Gemini API) for processing via their API. By enabling this feature, you
           acknowledge and consent to this data transfer. Google processes data subject to their
-          API Data Usage Policies and a Standard Contractual Clause arrangement.
+          API Data Usage Policies and a Standard Contractual Clause arrangement.{" "}
+          <strong className="text-cs-text">
+            On the free Gemini API tier, Google may use submitted content to improve its own
+            services, including human review.
+          </strong>{" "}
+          Do not enable this feature for tickets that may carry sensitive information, and inform
+          your members before enabling it. See also Section 11.
         </p>
         <p>
           <strong className="text-cs-text">9.2 Operator Responsibility.</strong>{" "}

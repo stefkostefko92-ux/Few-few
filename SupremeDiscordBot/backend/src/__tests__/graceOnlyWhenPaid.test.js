@@ -135,3 +135,46 @@ describe("платеният период СЕ дава докрай — пра�
     expect(data.accessUntil).toBeInstanceOf(Date);
   });
 });
+
+describe("насрочена ранна отмяна съкращава достъпа", () => {
+  // ДЕФЕКТЪТ (червен екип, 07.08.2026): docstring-ът обещаваше приоритет на
+  // `cancel_at`, но кодът беше `items… || cancel_at` — достигаше го САМО когато
+  // items не дадат нищо. При насрочен ранен край достъпът се даваше до
+  // ПО-КЪСНАТА дата, тоест раздавахме повече от обещаното.
+  async function cancelWith(subOverride) {
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({
+      id: "s1", plan: "premium", isPremium: true, stripeStatus: "active",
+      stripeSubscriptionId: "sub_1", stripeCustomerId: "cus_1",
+    });
+    const event = {
+      id: `evt_cancelat_${++evt}`,
+      type: "customer.subscription.deleted",
+      data: { object: {
+        id: "sub_1", metadata: {}, status: "canceled",
+        items: { data: [{ current_period_end: IN_11_MONTHS, price: { id: "price_py" } }] },
+        ...subOverride,
+      } },
+    };
+    stripeInstance.webhooks.constructEvent.mockReturnValue(event);
+    await post(event);
+    return prismaMock.server.update.mock.calls.at(-1)?.[0]?.data;
+  }
+
+  it("cancel_at ПРЕДИ края на периода → достъпът свършва тогава", async () => {
+    const early = Math.floor(Date.now() / 1000) + 7 * 86400; // след седмица
+    const data = await cancelWith({ cancel_at: early });
+    expect(data.accessUntil.getTime()).toBe(early * 1000);
+  });
+
+  it("cancel_at СЛЕД края на периода → периодът пак командва", async () => {
+    const late = IN_11_MONTHS + 30 * 86400;
+    const data = await cancelWith({ cancel_at: late });
+    expect(data.accessUntil.getTime()).toBe(IN_11_MONTHS * 1000);
+  });
+
+  it("без cancel_at → краят на периода, както преди", async () => {
+    const data = await cancelWith({});
+    expect(data.accessUntil.getTime()).toBe(IN_11_MONTHS * 1000);
+  });
+});

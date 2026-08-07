@@ -371,14 +371,26 @@ function periodWasPaid(status) {
  * Край на платения период. В API 2026-06-24.dahlia `current_period_end` живее
  * на нивото на subscription ITEM, не на самия абонамент (същото откритие като
  * в GET /status/:serverId) — затова четем оттам и вземаме най-късния елемент.
- * `cancel_at` печели, ако Stripe вече е насрочил края.
+ * `cancel_at` печели, ако Stripe вече е насрочил края — и това наистина е така,
+ * а не само в текста.
+ *
+ * ДЕФЕКТЪТ (червен екип, 07.08.2026): коментарът обещаваше приоритет на
+ * `cancel_at`, но кодът пишеше `items… || cancel_at`, тоест го достигаше САМО
+ * когато items не дадат нищо. При насрочена ранна отмяна (`cancel_at` преди
+ * края на периода) достъпът се даваше до по-късната дата — раздавахме повече,
+ * отколкото сме обещали. Правилната посока при две валидни дати е ПО-РАННАТА:
+ * достъпът свършва, когато абонаментът свършва.
+ *
  * @returns {Date|null}
  */
 function paidThroughFromSubscription(sub) {
-  const seconds = sub?.items?.data?.reduce(
+  const periodEnd = sub?.items?.data?.reduce(
     (max, it) => Math.max(max, Number(it?.current_period_end) || 0),
     0,
-  ) || Number(sub?.cancel_at) || 0;
+  ) || 0;
+  const cancelAt = Number(sub?.cancel_at) || 0;
+  // И двете налични → по-ранната. Само едната → тя.
+  const seconds = periodEnd && cancelAt ? Math.min(periodEnd, cancelAt) : (periodEnd || cancelAt);
   if (!seconds) return null;
   const at = new Date(seconds * 1000);
   return Number.isFinite(at.getTime()) ? at : null;
