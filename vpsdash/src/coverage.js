@@ -17,8 +17,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const NGINX_ENABLED = '/etc/nginx/sites-enabled';
-const CADDY_SITES = '/etc/caddy/sites';
+// Пътищата на живата машина. Изнесени в обект, за да могат тестовете да подадат
+// СВОИ — иначе тестът твърди нещо за МАШИНАТА, на която върви, вместо за кода.
+// Точно това ни счупи CI-я: `ubuntu-latest` на GitHub носи инсталиран nginx,
+// значи `/etc/nginx/sites-enabled` СЪЩЕСТВУВА там и „нито един четим източник"
+// беше верно локално, но невярно в CI. Тестът минаваше на една машина и падаше
+// на друга, без нищо в кода да се е променило. (07.08.2026)
+export const DEFAULT_SOURCES = {
+  nginx: '/etc/nginx/sites-enabled',
+  caddy: '/etc/caddy/sites',
+};
 
 // Имена, които НЕ са домейн: заместващият знак на nginx, локалните и IP адресите.
 // Пуснем ли ги нататък, панелът предлага да следи „_" — и човек спира да чете
@@ -130,13 +138,13 @@ function readDirFiles(dir) {
 
 // Само ВКЛЮЧЕНИТЕ сайтове (`sites-enabled`). Файл в `sites-available` без връзка
 // не се сервира от никого — да предлагаме проверка за него е чист шум.
-export function siteCoverage(cfg) {
+export function siteCoverage(cfg, sourceDirs = DEFAULT_SOURCES) {
   const covered = coveredDomains(cfg);
   const sites = [];
-  for (const { file, text } of readDirFiles(NGINX_ENABLED)) {
+  for (const { file, text } of readDirFiles(sourceDirs.nginx)) {
     for (const d of parseServerNames(text)) sites.push({ domain: d, file, server: 'nginx' });
   }
-  for (const { file, text } of readDirFiles(CADDY_SITES)) {
+  for (const { file, text } of readDirFiles(sourceDirs.caddy)) {
     for (const d of parseCaddyNames(text)) sites.push({ domain: d, file, server: 'caddy' });
   }
 
@@ -150,7 +158,7 @@ export function siteCoverage(cfg) {
   }
 
   const all = [...byCanon.values()].sort((a, b) => a.domain.localeCompare(b.domain));
-  const sources = { nginx: readSource(NGINX_ENABLED), caddy: readSource(CADDY_SITES) };
+  const sources = { nginx: readSource(sourceDirs.nginx), caddy: readSource(sourceDirs.caddy) };
   // Нито един четим източник → казваме „не знам", вместо „нула сайта".
   // Отказан достъп е ОТДЕЛНО от липсващ: първото е проблем за оправяне
   // (панелът върви без права), второто е нормално (няма такъв уеб сървър).
