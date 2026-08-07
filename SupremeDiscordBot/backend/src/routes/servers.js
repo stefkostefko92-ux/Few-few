@@ -204,7 +204,6 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     welcomerEnabled, welcomerChannelId, welcomerMessage, welcomerEmbedColor,
     welcomerDmEnabled, welcomerDmMessage,
     autoroleIds, autoroleBotIds,
-    stickyMessagesEnabled,
     // Server event logging
     eventLogEnabled, eventLogChannelId, eventLogCategories, eventLogChannels,
     // Език на бота за ТОЗИ сървър — резервен, когато Discord клиентският
@@ -262,7 +261,12 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(welcomerDmMessage !== undefined && { welcomerDmMessage: welcomerDmMessage || null }),
         ...(Array.isArray(autoroleIds) && { autoroleIds }),
         ...(Array.isArray(autoroleBotIds) && { autoroleBotIds }),
-        ...(stickyMessagesEnabled !== undefined && { stickyMessagesEnabled: Boolean(stickyMessagesEnabled) }),
+        // `stickyMessagesEnabled` е МАХНАТО от приеманите полета: нищо не го
+        // четеше. Реалният превключвател е `enabled` на всяко sticky съобщение
+        // (StickyMessage.enabled) и той РАБОТИ. Сървърният ключ беше замислен
+        // като главен прекъсвач, но никога не се стигна до свързването му —
+        // API-то го приемаше и го игнорираше. Колоната остава в базата (данните
+        // не се пипат), просто вече не се преструваме, че значи нещо.
         // Server event logging (free feature — no premium gate)
         ...(eventLogEnabled !== undefined && { eventLogEnabled: Boolean(eventLogEnabled) }),
         ...(eventLogChannelId !== undefined && { eventLogChannelId: eventLogChannelId || null }),
