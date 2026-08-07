@@ -13565,7 +13565,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 157
+        "lessons": 160
       },
       "evolution": [
         {
@@ -13621,9 +13621,20 @@
           "date": "2026-08-07",
           "event": "v15.7 — учене",
           "detail": "Научи: SupremeDiscordBot (клон discord-bot-audit-seo-p5edww, HEAD 1259509c9): dataRetention.js… (+2 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-08-07",
+          "event": "v16.0 — учене",
+          "detail": "Научи: SupremeDiscordBot (HEAD 1259509c9): dataRetention.js и gdpr.js нямат нито един тест — п… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot (HEAD 1259509c9): dataRetention.js и gdpr.js нямат нито един тест — п…\" (+2 още)"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
