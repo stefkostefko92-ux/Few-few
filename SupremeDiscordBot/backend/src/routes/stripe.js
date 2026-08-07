@@ -270,6 +270,39 @@ router.post(
 // ─── POST /api/stripe/webhook ─────────────────────────────────────────────────
 // Handle Stripe events (raw body required — mounted before express.json())
 
+// ─── Живият абонамент е истината, не снимката в събитието ────────────────────
+// Webhook събитията носят СНИМКА от момента на изпращане. Доставката може да
+// закъснее, да се повтори или да дойде извън ред — и тогава провизирането по
+// снимката ВЪЗКРЕСЯВА достъп, който вече е отнет:
+//   • закъснял `invoice.paid` след `customer.subscription.deleted` връщаше пълния
+//     платен tier, а нищо не го сваляше после (syncServerPaidFlag вижда ownPaid,
+//     дунингът гледа само past_due);
+//   • повторен `checkout.session.completed` пишеше хардкоднат статус „trialing"
+//     върху реалния past_due/canceled.
+// Затова питаме Stripe какъв е абонаментът СЕГА. Това пази и обратния ред
+// (invoice.paid ПРЕДИ checkout.completed) — по-добро от сравнение с локалния id.
+// (Продавача, 07.08.2026)
+const LIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
+
+// Местата по agency план — единственият източник на истина при активация.
+const AGENCY_SEATS = { agency5: 5, agency10: 10 };
+
+/** id-то на абонамента от фактура (SDK 22.x: няма скаларно invoice.subscription). */
+function subscriptionIdFromInvoice(invoice) {
+  return invoice?.parent?.subscription_details?.subscription || null;
+}
+
+/**
+ * Върни абонамента от Stripe, ако е ЖИВ; иначе null.
+ * При грешка в мрежата ХВЪРЛЯМЕ — по-добре Stripe да ретрайне, отколкото да
+ * провизираме на сляпо или тихо да пропуснем плащане.
+ */
+async function liveSubscription(subId) {
+  if (!subId) return null;
+  const sub = await stripe.subscriptions.retrieve(String(subId));
+  return LIVE_SUBSCRIPTION_STATUSES.has(sub?.status) ? sub : null;
+}
+
 router.post("/webhook", requireStripe, async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
@@ -360,6 +393,16 @@ router.post("/webhook", requireStripe, async (req, res) => {
                 stripeSubscriptionId: session.subscription || undefined,
                 stripeStatus: "active",
                 billingInterval: session.metadata.interval === "year" ? "year" : "month",
+                // Планът и местата идват от МЕТАДАННИТЕ на платената сесия.
+                // Досега се четяха от реда Agency, който agency.js мутира при
+                // ВСЯКО отваряне на checkout (pending редът се преизползва):
+                // отваряш agency10, не плащаш, отваряш agency5 (редът става 5),
+                // плащаш първия таб → Stripe таксува 39,99 €, а получаваш 5
+                // места. И обратното. (Продавача, 07.08.2026)
+                ...(AGENCY_SEATS[session.metadata.plan] && {
+                  plan: session.metadata.plan,
+                  seatLimit: AGENCY_SEATS[session.metadata.plan],
+                }),
                 pastDueSince: null,
               },
             });
@@ -390,10 +433,41 @@ router.post("/webhook", requireStripe, async (req, res) => {
           break;
         }
 
-        // Determine initial status — trialing if trial_end is set, else active
-        const initialStatus = session.subscription
-          ? "trialing"  // will be updated by subscription.updated event
-          : "active";
+        // Статусът идва от ЖИВИЯ абонамент, не от литерал. Досега тук се пишеше
+        // хардкоднато „trialing" при всяка сесия с абонамент — дори без пробен
+        // период, — а закъсняла/повторна доставка презаписваше реалния
+        // past_due/canceled и връщаше достъпа. (Продавача, 07.08.2026)
+        const liveSub = await liveSubscription(session.subscription);
+        if (session.subscription && !liveSub) {
+          console.warn(
+            `⚠️  checkout.session.completed за ${serverId}: абонаментът вече не е активен — пропускам (закъсняло/повторно събитие)`,
+          );
+          break;
+        }
+        const initialStatus = liveSub?.status || "active";
+
+        // ДВОЙНО ТАКСУВАНЕ: гардът при създаване на сесия чете server.isPremium,
+        // който се вдига чак оттук, а idempotency key-ът включва плана — значи
+        // сесия за „premium" и сесия за „whitelabel" в един ден са ДВЕ сесии.
+        // Платят ли се и двете, вторият completed презаписваше
+        // stripeSubscriptionId, а първият абонамент оставаше жив и се таксуваше
+        // месечно, невидим за нас. Отменяме по-стария. (Продавача, 07.08.2026)
+        const existingSub = (await prisma.server.findUnique({
+          where: { id: serverId }, select: { stripeSubscriptionId: true },
+        }))?.stripeSubscriptionId;
+        if (existingSub && session.subscription && existingSub !== session.subscription) {
+          console.warn(`⚠️  ${serverId} има ВТОРИ абонамент — отменям стария ${existingSub}`);
+          await stripe.subscriptions
+            .cancel(existingSub, undefined, { idempotencyKey: `dup-cancel-${event.id}` })
+            .catch((err) => console.error(`[stripe] неуспешна отмяна на дублиран ${existingSub}: ${err?.message}`));
+          await prisma.auditLog.create({
+            data: {
+              actorId: null, actorTag: "STRIPE", serverId,
+              action: "DUPLICATE_SUBSCRIPTION_CANCELED", targetId: existingSub,
+              metadata: { kept: session.subscription, eventId: event.id },
+            },
+          }).catch(() => {});
+        }
 
         // Tier from checkout metadata (set at session creation). Fallback keeps
         // legacy single-price sessions working (→ whitelabel, matching the old
@@ -417,6 +491,10 @@ router.post("/webhook", requireStripe, async (req, res) => {
               // trial). Иначе Stripe-trial → cancel → локален trial = двоен
               // безплатен период. Единственият друг writer е trial route-ът.
               trialUsed: true,
+              // И ЛОКАЛНИЯТ пробен период приключва: ако е бил стартиран между
+              // отварянето на сесията и това събитие, оставането му в бъдещето
+              // даваше втори безплатен период след отмяна в Stripe.
+              trialEndsAt: new Date(),
               // Reset archiveRetentionDays to null (forever) for premium
               archiveRetentionDays: null,
             },
@@ -459,6 +537,16 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
+        // Абонаментът трябва да е ЖИВ СЕГА. Закъснял/ретрайнат invoice.paid след
+        // отмяна иначе възкресяваше платения tier безсрочно и безплатно.
+        const paidSub = await liveSubscription(subscriptionIdFromInvoice(invoice));
+        if (!paidSub) {
+          console.warn(
+            `⚠️ invoice.paid за ${server.id}: абонаментът вече не е активен — НЕ провизирам (закъсняло/повторно събитие)`,
+          );
+          break;
+        }
+
         // Целият ефект е в ЕДНА транзакция,
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
@@ -489,6 +577,10 @@ router.post("/webhook", requireStripe, async (req, res) => {
               // Немапната цена + текущ plan=free → безопасен под premium (не
               // разчитаме на grandfather fallback-а, който дава whitelabel).
               ...(!paidTier && server.plan === "free" && { plan: "premium", planSource: "stripe" }),
+              // Статусът идва от ЖИВИЯ абонамент, не остава „past_due"/„unpaid"
+              // след успешно събиране — иначе UI банерът и всеки бъдещ гейт по
+              // статус четат застояла истина.
+              stripeStatus: paidSub.status,
               pastDueSince: null,
             },
           });
@@ -790,14 +882,26 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Chargeback — reclaim access immediately (funds are being pulled back).
         // Requires this event to be enabled on the Stripe webhook endpoint.
         const dispute = event.data.object;
+        // Dispute НЯМА поле `customer` (SDK 22.x: само charge и payment_intent),
+        // значи винаги минаваме през retrieve. Ако той се провали и сме го
+        // гълтали, customerId оставаше null → break → 200 → събитието се губи
+        // ЗАВИНАГИ, а парите вече са изтеглени. Сега хвърляме, за да ретрайне
+        // Stripe. (Продавача, 07.08.2026)
         let customerId = dispute.customer || null;
         if (!customerId && dispute.charge) {
-          try { customerId = (await stripe.charges.retrieve(dispute.charge)).customer; } catch { /* best effort */ }
+          customerId = (await stripe.charges.retrieve(dispute.charge)).customer;
+        }
+        if (!customerId && dispute.payment_intent) {
+          const pi = await stripe.paymentIntents.retrieve(String(dispute.payment_intent));
+          customerId = pi?.customer || null;
         }
         const server = customerId
           ? await prisma.server.findFirst({ where: { stripeCustomerId: customerId } })
           : null;
-        if (!server) break;
+        if (!server) {
+          console.warn(`⚠️ dispute ${dispute.id}: няма сървър за customer ${customerId ?? "неизвестен"}`);
+          break;
+        }
         await runOnce(async (tx) => {
           await tx.server.update({ where: { id: server.id }, data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "disputed" } });
           await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_DISPUTE", targetId: server.id, metadata: { disputeId: dispute.id } } });

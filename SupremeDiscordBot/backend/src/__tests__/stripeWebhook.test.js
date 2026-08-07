@@ -58,6 +58,9 @@ function post(event) {
 beforeEach(() => {
   vi.resetAllMocks();
   stripeInstance.webhooks.constructEvent.mockImplementation((raw) => raw); // reset to identity, tests override via post()
+  // Живият абонамент е истината — invoice.paid го чете, преди да провизира.
+  // Задава се СЛЕД resetAllMocks, иначе се изтрива веднага.
+  stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_live", status: "active" });
 });
 
 describe("checkout.session.completed", () => {
@@ -138,7 +141,7 @@ describe("checkout.session.completed", () => {
 });
 
 describe("invoice.paid", () => {
-  function invoiceEvent({ id = "evt_inv1", priceId = "price_pm", customer = "cus_1" } = {}) {
+  function invoiceEvent({ id = "evt_inv1", priceId = "price_pm", customer = "cus_1", subscription = "sub_live" } = {}) {
     return {
       id,
       type: "invoice.paid",
@@ -148,6 +151,10 @@ describe("invoice.paid", () => {
           customer,
           amount_paid: 999,
           currency: "eur",
+          // SDK 22.x: скаларното invoice.subscription е премахнато — абонаментът
+          // се чете оттук. Handler-ът го зарежда от Stripe, за да види ЖИВИЯ
+          // статус, вместо да вярва на снимката в събитието.
+          parent: { subscription_details: { subscription } },
           lines: { data: [{ price: { id: priceId } }] },
         },
       },
@@ -454,7 +461,7 @@ describe("една фактура през два handler-а не зацикля
     const res = await post({
       id: "evt_paid_after_failed",
       type: "invoice.paid",
-      data: { object: { customer: "cus_1", id: "in_same", amount_paid: 499, currency: "eur", lines: { data: [] } } },
+      data: { object: { customer: "cus_1", parent: { subscription_details: { subscription: "sub_live" } }, id: "in_same", amount_paid: 499, currency: "eur", lines: { data: [] } } },
     });
 
     expect(res.status).toBe(200);
@@ -476,5 +483,103 @@ describe("една фактура през два handler-а не зацикля
       expect.objectContaining({ where: { stripeInvoiceId: "in_same" } }),
     );
     expect(prismaMock.paymentLog.create).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Живият абонамент е истината (Продавача, 07.08.2026) ────────────────────
+// Webhook събитията носят СНИМКА. Закъсняла, повторена или извън ред доставка
+// провизираше по нея и ВЪЗКРЕСЯВАШЕ достъп, който вече е отнет.
+describe("не провизираме по застояла снимка", () => {
+  beforeEach(() => {
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({
+      id: "s1", stripeCustomerId: "cus_1", plan: "free", premiumSince: null,
+    });
+  });
+
+  it("invoice.paid за ОТМЕНЕН абонамент не дава достъп", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_dead", status: "canceled" });
+    const res = await post({
+      id: "evt_late_paid",
+      type: "invoice.paid",
+      data: { object: {
+        id: "in_late", customer: "cus_1", amount_paid: 999, currency: "eur",
+        parent: { subscription_details: { subscription: "sub_dead" } },
+        lines: { data: [{ price: { id: "price_pm" } }] },
+      } },
+    });
+    expect(res.status).toBe(200);
+    expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+
+  it("invoice.paid записва РЕАЛНИЯ статус, не оставя past_due след успех", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_live", status: "active" });
+    await post({
+      id: "evt_status",
+      type: "invoice.paid",
+      data: { object: {
+        id: "in_ok", customer: "cus_1", amount_paid: 999, currency: "eur",
+        parent: { subscription_details: { subscription: "sub_live" } },
+        lines: { data: [{ price: { id: "price_pm" } }] },
+      } },
+    });
+    expect(prismaMock.server.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ stripeStatus: "active" }) }),
+    );
+  });
+
+  it("checkout.session.completed за отменен абонамент не връща достъпа", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_x", status: "canceled" });
+    const res = await post({
+      id: "evt_late_checkout",
+      type: "checkout.session.completed",
+      data: { object: {
+        metadata: { serverId: "s1", plan: "premium", interval: "month" },
+        subscription: "sub_x", payment_status: "paid",
+      } },
+    });
+    expect(res.status).toBe(200);
+    expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("двоен абонамент за един сървър", () => {
+  it("вторият платен checkout ОТМЕНЯ първия — иначе се таксуват и двата", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_new", status: "active" });
+    prismaMock.server.findUnique.mockResolvedValue({ stripeSubscriptionId: "sub_old" });
+    stripeInstance.subscriptions.cancel = vi.fn().mockResolvedValue({});
+
+    await post({
+      id: "evt_dup",
+      type: "checkout.session.completed",
+      data: { object: {
+        metadata: { serverId: "s1", plan: "premium", interval: "month" },
+        subscription: "sub_new", payment_status: "paid",
+      } },
+    });
+
+    expect(stripeInstance.subscriptions.cancel).toHaveBeenCalledWith(
+      "sub_old", undefined, expect.objectContaining({ idempotencyKey: expect.stringContaining("evt_dup") }),
+    );
+  });
+});
+
+describe("agency местата идват от ПЛАТЕНАТА сесия", () => {
+  it("agency10 сесия дава 10 места, независимо какво пише в реда", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_a", status: "active" });
+    await post({
+      id: "evt_ag10",
+      type: "checkout.session.completed",
+      data: { object: {
+        payment_status: "paid",
+        metadata: { kind: "agency", agencyId: "ag1", plan: "agency10", interval: "month" },
+        subscription: "sub_a",
+      } },
+    });
+    expect(prismaMock.agency.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ plan: "agency10", seatLimit: 10 }),
+      }),
+    );
   });
 });

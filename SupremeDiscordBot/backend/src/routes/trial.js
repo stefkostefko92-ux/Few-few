@@ -69,13 +69,29 @@ router.post("/:serverId/start", requireServerAdmin, async (req, res, next) => {
     const now = new Date();
     const endsAt = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
 
-    const updated = await prisma.server.update({
-      where: { id: req.params.serverId },
+    // Условен запис: `trialUsed` е и гардът, и ефектът, затова проверката и
+    // записът трябва да са АТОМАРНИ. Досега между findUnique и update стоеше
+    // цяло мрежово извикване (getServerTier), а Stripe checkout вдига trialUsed
+    // от webhook-а — тоест два паралелни пътя (Stripe trial + този маршрут)
+    // виждаха trialUsed=false и даваха ДВА пробни периода, общо 28 безплатни
+    // дни. `updateMany` с условие в WHERE прави проверката част от записа.
+    // (Продавача, 07.08.2026)
+    const { count } = await prisma.server.updateMany({
+      where: { id: req.params.serverId, trialUsed: false },
       data: {
         trialUsed: true,
         trialStartedAt: now,
         trialEndsAt: endsAt,
       },
+    });
+    if (!count) {
+      return res.status(400).json({
+        error: "This server has already used its free trial. Upgrade to Premium to continue.",
+        code: "TRIAL_USED",
+      });
+    }
+    const updated = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
       select: { trialStartedAt: true, trialEndsAt: true },
     });
 
