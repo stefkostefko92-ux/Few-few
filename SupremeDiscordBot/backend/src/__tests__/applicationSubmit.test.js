@@ -35,7 +35,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   prismaMock.form.findUnique.mockResolvedValue(form());
   prismaMock.formCooldown.findUnique.mockResolvedValue(null);
-  prismaMock.formCooldown.upsert.mockResolvedValue({});
+  prismaMock.formCooldown.updateMany.mockResolvedValue({ count: 1 });
+  prismaMock.formCooldown.create.mockResolvedValue({});
   prismaMock.user.upsert.mockResolvedValue({});
   prismaMock.application.create.mockResolvedValue({ id: "a1" });
 });
@@ -45,7 +46,8 @@ describe("успешен път", () => {
     const r = await submitApplication(BODY);
     expect(r.ok).toBe(true);
     expect(prismaMock.application.create).toHaveBeenCalled();
-    expect(prismaMock.formCooldown.upsert).toHaveBeenCalled();
+    // Мястото се заявява с УСЛОВЕН ъпдейт (виж applicationRace.test.js защо).
+    expect(prismaMock.formCooldown.updateMany).toHaveBeenCalled();
   });
 
   it("създава stub потребител — FK към users е RESTRICT", async () => {
@@ -67,6 +69,8 @@ describe("правилата на формата СПИРАТ подаванет
 
   it("достигнат таван на подаванията → 429, нула запис", async () => {
     prismaMock.form.findUnique.mockResolvedValue(form({ maxSubmissions: 1 }));
+    prismaMock.formCooldown.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.formCooldown.create.mockRejectedValue(Object.assign(new Error("unique"), { code: "P2002" }));
     prismaMock.formCooldown.findUnique.mockResolvedValue({ submissionCount: 1, lastSubmittedAt: new Date(0) });
     const r = await submitApplication(BODY);
     expect(r).toMatchObject({ ok: false, status: 429, code: "MAX_SUBMISSIONS" });
@@ -75,6 +79,8 @@ describe("правилата на формата СПИРАТ подаванет
 
   it("активен cooldown → 429 с оставащото време", async () => {
     prismaMock.form.findUnique.mockResolvedValue(form({ cooldownSeconds: 3600 }));
+    prismaMock.formCooldown.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.formCooldown.create.mockRejectedValue(Object.assign(new Error("unique"), { code: "P2002" }));
     prismaMock.formCooldown.findUnique.mockResolvedValue({ submissionCount: 1, lastSubmittedAt: new Date(Date.now() - 60_000) });
     const r = await submitApplication(BODY);
     expect(r).toMatchObject({ ok: false, status: 429, code: "COOLDOWN" });

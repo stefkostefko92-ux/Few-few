@@ -25,8 +25,21 @@ import { LANDING_TRANSLATIONS } from "../i18n/landing.js";
 const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (...p) => readFileSync(join(SRC, ...p), "utf8");
 
-/** Целият видим текст: лендинг преводи + английските литерали в Login.jsx. */
-const ALL_TEXT = JSON.stringify(LANDING_TRANSLATIONS) + read("pages", "Login.jsx");
+/**
+ * Целият текст, който стига до потребител ИЛИ до машина.
+ *
+ * `index.html` влезе тук след пропуск (одит, кръг 2): гейтът пазеше преводите и
+ * Login.jsx, а същите твърдения („priority support“, „EU data sovereignty“)
+ * живееха и в JSON-LD блока — тоест поправихме видимия текст, а структурираните
+ * данни продължаваха да казват старото на Google и на AI двигателите.
+ * Структурирани данни, които противоречат на видимата страница, са и SEO риск,
+ * и същата подвеждаща практика. Гейт, който гледа две от три места, не е гейт.
+ */
+const ALL_TEXT = [
+  JSON.stringify(LANDING_TRANSLATIONS),
+  read("pages", "Login.jsx"),
+  readFileSync(join(SRC, "..", "index.html"), "utf8"),   // JSON-LD + мета
+].join("\n");
 
 const FORBIDDEN = [
   // ── Абсолютно отрицание на трансфери извън ЕС ────────────────────────────

@@ -122,16 +122,24 @@ describe("агенцията НЕ се възкресява от закъсня�
     );
   });
 
-  it("гардът е СИМЕТРИЧЕН — същата проверка стои и на сървърния път", () => {
-    // Асиметрията беше самият дефект; един `liveSubscription` е недостатъчен.
-    const src = new URL("../routes/stripe.js", import.meta.url);
-    const code = require("node:fs").readFileSync(src, "utf-8")
-      .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
-    const at = code.indexOf('case "invoice.paid"');
-    const handler = code.slice(at, code.indexOf('case "', at + 10) || undefined);
-    expect((handler.match(/liveSubscription\(/g) || []).length,
-      "invoice.paid има само един гард за жив абонамент — агенция и сървър трябва да са симетрични",
-    ).toBeGreaterThanOrEqual(2);
+  it("гардът е СИМЕТРИЧЕН — сървърният път се държи ЕДНАКВО", async () => {
+    // Първата версия броеше срещания на `liveSubscription(` в текста на
+    // handler-а. Доказано безполезно (Изпитателят, кръг 2): гард, неутрализиран
+    // с `if (false && …)`, оставя низа в кода и теста зелен. Асиметрията беше
+    // самият дефект, значи трябва да се съди по ПОВЕДЕНИЕ, не по присъствие.
+    //
+    // Затова: същият вход, но насочен към СЪРВЪР вместо към агенция, при мъртъв
+    // абонамент — очакваме същия отказ да се провизира.
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({
+      id: "s1", stripeCustomerId: "cus_s", plan: "premium", premiumSince: new Date(),
+    });
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_1", status: "canceled" });
+
+    const res = await fire("cus_s");
+    expect(res.status).toBe(200);
+    expect(prismaMock.server.update, "сървърният път провизира при МЪРТЪВ абонамент — асиметрия с агенцийния")
+      .not.toHaveBeenCalled();
   });
 });
 

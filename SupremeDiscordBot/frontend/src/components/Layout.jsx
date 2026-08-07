@@ -20,6 +20,7 @@ import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 import { APP_VERSION_LABEL, RELEASE_NAME } from "../version";
+import { openCookiePreferences } from "./CookieConsent";
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
@@ -226,10 +227,15 @@ export default function Layout() {
             <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
           </a>
           <div className="flex gap-3 px-3 pt-1 pb-2">
-            <LegalLink href="/terms">T</LegalLink>
-            <LegalLink href="/privacy">P</LegalLink>
-            <LegalLink href="/cookies">C</LegalLink>
-            <LegalLink href="/eula">E</LegalLink>
+            {/* Съкратени до буква заради тясната лента — но НАЗВАНИЕТО остава.
+                Без него екранният четец обявява „Т“, „П“, „С“, „Е“: връзка без
+                разпознаваема цел (WCAG 2.4.4), и то точно към документите,
+                които по закон трябва да са намираеми. (Одит на екраните,
+                07.08.2026) */}
+            <LegalLink href="/terms"   label={t("privacy.terms")}>T</LegalLink>
+            <LegalLink href="/privacy" label={t("privacy.privacyPolicy")}>P</LegalLink>
+            <LegalLink href="/cookies" label={t("privacy.cookies")}>C</LegalLink>
+            <LegalLink href="/eula"    label={t("privacy.eula")}>E</LegalLink>
             <a href="https://carbonstealth.eu" target="_blank" rel="noopener"
                className="ml-auto font-mono text-[9px] uppercase tracking-wider text-cs-dim hover:text-cs-cyan transition-colors">
               CS.EU
@@ -320,6 +326,16 @@ export default function Layout() {
               <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
               <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
               <a href="/cookies" className="hover:text-cs-cyan transition-colors">Cookies</a>
+              {/* Чл. 7(3) ОРЗД: оттеглянето трябва да е толкова лесно, колкото
+                  даването. Дотук банерът се показваше само веднъж и решението
+                  беше необратимо. (Одит 07.08.2026) */}
+              <button
+                type="button"
+                onClick={openCookiePreferences}
+                className="hover:text-cs-cyan transition-colors uppercase tracking-widest"
+              >
+                {t("privacy.cookiePrefs")}
+              </button>
               <a href="/eula"    className="hover:text-cs-cyan transition-colors">EULA</a>
               <a href="/accessibility" className="hover:text-cs-cyan transition-colors">Accessibility</a>
             </div>
@@ -362,15 +378,18 @@ function NavItem({ to, icon: Icon, end, accent, children }) {
   );
 }
 
-function LegalLink({ href, children }) {
+function LegalLink({ href, children, label }) {
   return (
     <a
       href={href}
+      // `title` за мишката, `aria-label` за четеца. Буквата остава видима.
+      title={label}
+      aria-label={label}
       className="w-5 h-5 flex items-center justify-center font-mono text-[10px] font-bold
                  text-cs-dim hover:text-cs-cyan border border-cs-border hover:border-cs-cyan
                  transition-colors"
     >
-      {children}
+      <span aria-hidden="true">{children}</span>
     </a>
   );
 }

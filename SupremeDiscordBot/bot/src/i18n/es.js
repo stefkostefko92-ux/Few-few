@@ -52,6 +52,7 @@ export default {
   "form.submitted": "✅ ¡Gracias! Hemos recibido tus respuestas.",
   "form.cooldownActive": "❌ Podrás enviarlo de nuevo en {{time}}.",
   "form.closedByAdmin": "❌ Este formulario está cerrado ahora mismo.",
+  "form.maxSubmissionsReached": "❌ Ya has enviado este formulario el número máximo de veces.",
   "form.invalidAnswer": "❌ Respuesta no válida. {{reason}}",
   "form.alreadyActive": "⚠️ Ya tienes una sesión de formulario activa. Complétala primero.",
   "form.dmFailed": "❌ No he podido enviarte un MD. Activa los mensajes directos de los miembros del servidor e inténtalo de nuevo.",

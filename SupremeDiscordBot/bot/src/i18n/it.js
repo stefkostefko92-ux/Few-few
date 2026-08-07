@@ -50,6 +50,7 @@ export default {
   "form.submitted": "✅ Grazie! La tua risposta è stata ricevuta.",
   "form.cooldownActive": "❌ Puoi inviare di nuovo tra {{time}}.",
   "form.closedByAdmin": "❌ Questo modulo è attualmente chiuso.",
+  "form.maxSubmissionsReached": "❌ Hai già inviato questo modulo il numero massimo di volte.",
   "form.invalidAnswer": "❌ Risposta non valida. {{reason}}",
   "form.alreadyActive": "⚠️ Hai già una sessione attiva per questo modulo. Completala prima.",
   "form.dmFailed": "❌ Non sono riuscito a inviarti un DM. Abilita i DM dai membri del server e riprova.",

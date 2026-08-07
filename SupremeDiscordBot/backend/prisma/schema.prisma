@@ -58,7 +58,10 @@ enum GlobalRole {
 // Моделът е тук ЕДИНСТВЕНО за да я знае Prisma — приложението никога не пише
 // през него (пише express-session).
 model ExpressSession {
-  sid    String   @id
+  // `@db.VarChar` НЕ е украса: таблицата се създава от `connect-pg-simple`
+  // (виж migration v40), който я декларира като `character varying`. Без този
+  // атрибут Prisma очаква TEXT и `migrate diff` вечно докладва разлика.
+  sid    String   @id @db.VarChar
   sess   Json     @db.Json
   expire DateTime @db.Timestamp(6)
 
@@ -390,12 +393,13 @@ model VerificationPanel {
   cooldownMinutes   Int      @default(10) // Cooldown after maxAttempts
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   server   Server                @relation(fields: [serverId], references: [id], onDelete: Cascade)
   attempts VerificationAttempt[]
 
   @@map("verification_panels")
+  @@index([serverId])
 }
 
 model VerificationAttempt {
@@ -560,7 +564,16 @@ model Ticket {
   // Списъци и експорти подреждат по createdAt (и курсорът в export.js стъпва
   // на него) — без индекс всяка страница сортира цялата таблица на сървъра.
   @@index([serverId, createdAt])
+  // Гейтът „максимум N отворени тикета на този панел за този потребител“
+  // (`routes/bot.js` при СЪЗДАВАНЕ на тикет — горещият път) филтрира по трите
+  // колони наведнъж. Без индекс това е скан по всички тикети на панела при
+  // всяко отваряне. Редът е по селективност: panelId стеснява най-много,
+  // creatorId свежда до шепа редове, status довършва брояча без връщане към
+  // таблицата. (Скоростника, одит кръг 2, 07.08.2026)
+  @@index([panelId, creatorId, status])
   @@map("tickets")
+  @@index([panelId, number])
+  @@index([status, lastActivityAt])
 }
 
 enum TicketStatus {
@@ -710,7 +723,7 @@ model Poll {
   channelId   String
   messageId   String?
   question    String
-  options     String[]
+  options     String[] @default([])
   multiChoice Boolean   @default(false)
   anonymous   Boolean   @default(false)
   closesAt    DateTime?
@@ -816,9 +829,8 @@ model StickyMessage {
   enabled          Boolean  @default(true)
   createdBy        String
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime @default(now()) @updatedAt
 
-  @@index([channelId])
   @@map("sticky_messages")
 }
 
@@ -860,7 +872,7 @@ model Webhook {
   failCount      Int       @default(0)
   createdBy      String
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  updatedAt      DateTime  @default(now()) @updatedAt
 
   @@index([serverId, enabled])
   @@map("webhooks")

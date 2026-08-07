@@ -138,6 +138,59 @@ describe("жив източник на права ВСЕ ОЩЕ блокира �
   });
 });
 
+describe("върнатият клиент може да се върне и да плати пак", () => {
+  // ДЕФЕКТЪТ (самопроверка, 07.08.2026): първата версия на гарда беше
+  // `stripeSubscriptionId || planSource` — тоест същият дефект, който поправяше,
+  // само на друг път. При refund/chargeback ДВЕТЕ колони НАРОЧНО остават
+  // (`stripe.js` ги пази, защото отмяната в Stripe става извън транзакцията и
+  // ретраят има нужда от id-то). Значи клиент, на когото сме върнали парите,
+  // оставаше заключен извън касата ЗАВИНАГИ — нищо после не чисти тези полета.
+  // А върнатият клиент е точно този, който може да се върне и да плати пак.
+  it("refund → стигат до Checkout, въпреки останалите колони", async () => {
+    prismaMock.server.findUnique.mockResolvedValue(server({
+      isPremium: false, plan: "free",
+      stripeStatus: "refunded",
+      stripeSubscriptionId: "sub_стар",   // нарочно НЕ се занулява
+      planSource: "stripe",               // също остава
+    }));
+    const res = await buy();
+    expect(res.body.code).not.toBe("USE_PORTAL");
+    expect(res.status).toBe(200);
+  });
+
+  it("chargeback → същото", async () => {
+    prismaMock.server.findUnique.mockResolvedValue(server({
+      stripeStatus: "disputed", stripeSubscriptionId: "sub_стар", planSource: "stripe",
+    }));
+    const res = await buy();
+    expect(res.status).toBe(200);
+  });
+
+  it("изчерпан дунинг (unpaid) → също може да купи наново", async () => {
+    prismaMock.server.findUnique.mockResolvedValue(server({
+      stripeStatus: "unpaid", stripeSubscriptionId: "sub_стар", planSource: "stripe",
+    }));
+    const res = await buy();
+    expect(res.status).toBe(200);
+  });
+
+  it("застоял planSource='stripe' без жив абонамент НЕ блокира", async () => {
+    prismaMock.server.findUnique.mockResolvedValue(server({
+      stripeStatus: "canceled", stripeSubscriptionId: null, planSource: "stripe",
+    }));
+    const res = await buy();
+    expect(res.status).toBe(200);
+  });
+
+  it("отнет ръчен подарък (planSource занулен) НЕ блокира", async () => {
+    prismaMock.server.findUnique.mockResolvedValue(server({
+      isPremium: false, planSource: null,
+    }));
+    const res = await buy();
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("гардът не се връща към суровата колона", () => {
   it("самó isPremium, без нито един жив източник, НЕ блокира", async () => {
     // Ако някой пак напише `if (server.isPremium)`, този тест пада.

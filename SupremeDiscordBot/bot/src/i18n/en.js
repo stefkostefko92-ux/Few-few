@@ -55,6 +55,7 @@ export default {
   "form.submitted": "✅ Thank you! Your submission has been received.",
   "form.cooldownActive": "❌ You can submit again in {{time}}.",
   "form.closedByAdmin": "❌ This form is currently closed.",
+  "form.maxSubmissionsReached": "❌ You have already submitted this form the maximum number of times.",
   "form.invalidAnswer": "❌ Invalid answer. {{reason}}",
   "form.alreadyActive": "⚠️ You already have an active form session. Please complete it first.",
   "form.dmFailed": "❌ I couldn't send you a DM. Please enable DMs from server members and try again.",

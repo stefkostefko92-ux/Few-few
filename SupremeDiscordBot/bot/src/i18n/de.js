@@ -52,6 +52,7 @@ export default {
   "form.submitted": "✅ Danke! Deine Antworten wurden empfangen.",
   "form.cooldownActive": "❌ Du kannst in {{time}} erneut absenden.",
   "form.closedByAdmin": "❌ Dieses Formular ist derzeit geschlossen.",
+  "form.maxSubmissionsReached": "❌ Du hast dieses Formular bereits so oft eingereicht, wie erlaubt ist.",
   "form.invalidAnswer": "❌ Ungültige Antwort. {{reason}}",
   "form.alreadyActive": "⚠️ Du hast bereits eine laufende Formular-Sitzung. Bitte schließe sie zuerst ab.",
   "form.dmFailed": "❌ Ich konnte dir keine DM senden. Erlaube DMs von Servermitgliedern und versuch es erneut.",

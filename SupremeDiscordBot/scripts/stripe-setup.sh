@@ -223,6 +223,8 @@ if [ "$EXISTING_WH" -eq 0 ]; then
     -d "enabled_events[]=customer.subscription.deleted" \
     -d "enabled_events[]=charge.refunded" \
     -d "enabled_events[]=charge.dispute.created" \
+    -d "enabled_events[]=charge.dispute.closed" \
+    -d "enabled_events[]=invoice.payment_action_required" \
     -d description="Supreme Bot backend — подписан, идемпотентен по event.id")
   WH_SECRET=$(echo "$WH_JSON" | grep -o '"secret": *"whsec_[^"]*"' | sed 's/.*"\(whsec_[^"]*\)"/\1/')
   echo "  ✓ Webhook създаден."

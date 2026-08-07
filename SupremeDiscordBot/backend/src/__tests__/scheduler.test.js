@@ -90,3 +90,35 @@ describe("нито един провал не се гълта мълчаливо
     expect(names.length).toBeGreaterThanOrEqual(10);
   });
 });
+
+
+// ─── Пулс на дневните задачи ────────────────────────────────────────────────
+// `jobFail` прави провала чуваем, но задача, която ПРЕСТАНЕ ДА СЕ ПУСКА, не се
+// проваля — просто мълчи, и не се различава от „нямаше работа". Точно това ни
+// се случи с трите задачи, споделящи ключ за заключване.
+describe("дневните задачи оставят пулс, за да се вижда, че още работят", () => {
+  const src2 = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "services", "scheduler.js"),
+    "utf-8",
+  );
+  const code2 = src2.split("\n").filter((l) => !l.trim().startsWith("//") && !l.trim().startsWith("*")).join("\n");
+
+  it("има помощник, който пише в одитния дневник", () => {
+    expect(code2).toContain("async function jobHeartbeat");
+    expect(code2).toMatch(/action:\s*`JOB_OK_/);
+  });
+
+  it("пулсът НИКОГА не поваля задачата — той е диагностика, не работа", () => {
+    const fn = code2.slice(code2.indexOf("async function jobHeartbeat"));
+    const body = fn.slice(0, fn.indexOf("\n}"));
+    expect(body, "пулсът може да хвърли и да събори задачата").toContain("catch");
+  });
+
+  it("покрити са именно ДНЕВНИТЕ/седмичните, не минутните", () => {
+    // Минутна задача би заляла дневника; дневната мълчи незабелязано.
+    for (const name of ["archive-cleanup", "retention-weekly", "trial-expiry-dm", "daily-metrics-rollup"]) {
+      expect(code2, `${name} няма пулс`).toContain(`jobHeartbeat("${name}"`);
+    }
+    expect(code2, "минутна задача пише пулс — това ще залее одита").not.toContain('jobHeartbeat("scheduled-messages"');
+  });
+});

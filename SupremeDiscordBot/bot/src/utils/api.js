@@ -74,11 +74,36 @@ export async function closeTicketApi(ticketId, closedById, reason) {
   return data;
 }
 
+/**
+ * Подава кандидатура. Връща `{ ok: true, application }` или `{ ok: false, ... }`.
+ *
+ * ЗАЩО не хвърля (Кодаджията, одит кръг 2, 07.08.2026): сървърът вече отказва с
+ * 403/429 при затворена форма, изчерпан таван или активен cooldown — правила,
+ * които клиентът ПЛАЩА. Дотук тези отговори излизаха като axios изключение,
+ * `formSession` го гълташе в общ catch и кандидатът получаваше „подадено“.
+ * Тоест платената функция работеше, а човекът срещу нея беше лъган.
+ */
 export async function submitApplication(serverId, formId, userId, answers, reviewMessageId, reviewChannelId) {
-  const { data } = await api.post("/bot/application/submit", {
-    serverId, formId, userId, answers, reviewMessageId, reviewChannelId,
-  });
-  return data;
+  try {
+    const { data } = await api.post("/bot/application/submit", {
+      serverId, formId, userId, answers, reviewMessageId, reviewChannelId,
+    });
+    return { ok: true, application: data };
+  } catch (err) {
+    const res = err?.response;
+    // Само ОТКАЗ по правило се превежда; мрежов/сървърен срив се вдига нагоре,
+    // за да не се представи авария за „формата е затворена“.
+    if (res && res.status >= 400 && res.status < 500) {
+      return {
+        ok: false,
+        status: res.status,
+        code: res.data?.code || null,
+        error: res.data?.error || null,
+        remainingSeconds: res.data?.remainingSeconds ?? null,
+      };
+    }
+    throw err;
+  }
 }
 
 // `withSiblings` иска и останалите панели от СЪЩОТО групово съобщение — нужно

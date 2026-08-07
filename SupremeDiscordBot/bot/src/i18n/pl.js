@@ -52,6 +52,7 @@ export default {
   "form.submitted": "✅ Dziękujemy! Twoje odpowiedzi zostały odebrane.",
   "form.cooldownActive": "❌ Możesz wysłać ponownie za {{time}}.",
   "form.closedByAdmin": "❌ Ten formularz jest obecnie zamknięty.",
+  "form.maxSubmissionsReached": "❌ Ten formularz został już wysłany maksymalną liczbę razy.",
   "form.invalidAnswer": "❌ Nieprawidłowa odpowiedź. {{reason}}",
   "form.alreadyActive": "⚠️ Masz już aktywną sesję formularza. Najpierw ją dokończ.",
   "form.dmFailed": "❌ Nie udało mi się wysłać Ci prywatnej wiadomości. Włącz wiadomości od członków serwera i spróbuj ponownie.",
