@@ -117,11 +117,36 @@ describe("syncAgencyServersPaidFlag — всички покрити наведн
       { id: "b", isPremium: false, plan: "free", agencyId: "ag1", agency: { active: true } },
       { id: "c", isPremium: false, plan: "free", agencyId: "ag2", agency: { active: true } }, // друга агенция
     ]);
-    const n = await syncAgencyServersPaidFlag("ag1");
-    expect(n).toBe(2);
+    const r = await syncAgencyServersPaidFlag("ag1");
+    expect(r).toMatchObject({ total: 2, synced: 2, failed: [] });
     expect(store.server.get("a").isPremium).toBe(true);
     expect(store.server.get("b").isPremium).toBe(true);
     expect(store.server.get("c").isPremium).toBe(false); // недокосната
+  });
+
+  // Кръстосано въздействие: проблем по ЕДИН сървър не бива да остави ДРУГИТЕ
+  // на същата агенция със стар флаг. Голият `for … await` прекъсваше цикъла, а
+  // всичките повиквания са `.catch(() => {})` → тихо и частично. (Одит 07.08.2026)
+  it("провал по ЕДИН сървър НЕ спира синхрона на останалите", async () => {
+    seed([
+      { id: "ok1", isPremium: false, plan: "free", agencyId: "ag1", agency: { active: true } },
+      { id: "boom", isPremium: false, plan: "free", agencyId: "ag1", agency: { active: true } },
+      { id: "ok2", isPremium: false, plan: "free", agencyId: "ag1", agency: { active: true } },
+    ]);
+    const realUpdate = prismaMock.server.update.getMockImplementation();
+    prismaMock.server.update.mockImplementation(async (args) => {
+      if (args.where.id === "boom") throw new Error("P2025: ред изчезна");
+      return realUpdate(args);
+    });
+
+    const r = await syncAgencyServersPaidFlag("ag1");
+
+    expect(r.total).toBe(3);
+    expect(r.synced).toBe(2);
+    expect(r.failed).toEqual([{ serverId: "boom", error: "P2025: ред изчезна" }]);
+    // Ключовото: СЛЕДВАЩИЯТ след счупения пак е синхронизиран.
+    expect(store.server.get("ok1").isPremium).toBe(true);
+    expect(store.server.get("ok2").isPremium).toBe(true);
   });
 });
 

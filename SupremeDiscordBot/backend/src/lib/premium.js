@@ -408,8 +408,32 @@ export async function syncServerPaidFlag(serverId, tx = prisma) {
 /** Синхронизира всички сървъри, покрити от дадена агенция (при активация/край). */
 export async function syncAgencyServersPaidFlag(agencyId, tx = prisma) {
   const servers = await tx.server.findMany({ where: { agencyId }, select: { id: true } });
-  for (const s of servers) await syncServerPaidFlag(s.id, tx);
-  return servers.length;
+
+  // ВСЕКИ сървър се синхронизира НЕЗАВИСИМО. Първата версия беше гол
+  // `for … await` без улавяне: един проблемен ред (изчезнал между findMany и
+  // update → P2025, или мигновена DB грешка) прекъсваше цикъла и ОСТАНАЛИТЕ
+  // сървъри на агенцията оставаха със стар `isPremium`. А всичките шест
+  // повиквания са обвити в `.catch(() => {})`, значи провалът беше и ТИХ:
+  // промяна по ЕДИН сървър оставяше ДРУГИ наематели в грешно състояние, без
+  // следа. Точно класът „едно действие чупи чужд сървър“. (Одит 07.08.2026)
+  const failed = [];
+  for (const s of servers) {
+    try {
+      await syncServerPaidFlag(s.id, tx);
+    } catch (err) {
+      failed.push({ serverId: s.id, error: err?.message });
+    }
+  }
+
+  if (failed.length) {
+    // НЕ хвърляме: частичният синхрон не бива да отменя вече записания паричен
+    // ефект на webhook-а. Но мълчанието е по-лошо от шума — казваме кои.
+    console.error(
+      `[premium] syncAgencyServersPaidFlag(${agencyId}): ${failed.length}/${servers.length} се провалиха —`,
+      failed.map((f) => `${f.serverId}: ${f.error}`).join(" · "),
+    );
+  }
+  return { total: servers.length, synced: servers.length - failed.length, failed };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

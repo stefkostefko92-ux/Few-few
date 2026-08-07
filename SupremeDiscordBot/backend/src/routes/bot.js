@@ -862,7 +862,10 @@ router.get("/panel/:panelId", async (req, res, next) => {
     if (!panel) return res.status(404).json({ error: "Panel not found" });
     // Ефективен tier (agency/trial не са в суровата колона) — панелните
     // функции се гейтват на panel.server.isPremium.
-    let effectivePlan = "free";
+    // `null` = НЕ знаем плана (сървърът не е резолвнат). Различава се от "free":
+    // с "free" по подразбиране един неуспял резолв би ОКАСТРИЛ панелите на
+    // платен клиент. Санитизация се прави само при ЗНАЕН план.
+    let effectivePlan = null;
     if (panel.server?.id) {
       const tier = await getServerTier(panel.server.id);
       effectivePlan = tier.plan;
@@ -887,9 +890,12 @@ router.get("/panel/:panelId", async (req, res, next) => {
         // е само резервен за заварени групи отпреди полето.
         orderBy: [{ groupOrder: "asc" }, { createdAt: "asc" }],
       });
-      // Същият сървър (един messageId) → същият план. Санитизирай и тях.
+      // Същият сървър (messageId е уникален за канал, каналът — за една гилдия)
+      // → същият план. Санитизираме само при ЗНАЕН план (виж по-горе защо).
       if (siblings.length > 1) {
-        panel.siblings = siblings.map((s) => sanitizePanelForTier(s, effectivePlan));
+        panel.siblings = effectivePlan
+          ? siblings.map((s) => sanitizePanelForTier(s, effectivePlan))
+          : siblings;
       }
     }
 
@@ -985,31 +991,29 @@ router.patch("/application/:id", async (req, res, next) => {
 
 router.get("/servers/with-custom-tokens", async (req, res, next) => {
   try {
-    // White-label ботове бутват само сървъри, чийто ефективен tier носи
-    // white-label: собствен whitelabel/agency план, активен agency seat, или
-    // legacy grandfather (isPremium без plan → whitelabel fallback). Trial дава
-    // само Premium → не бутва бранд бот (/token така или иначе би върнал null).
-    // Кой сървър трябва да върви с БРАНД бот СЕГА = ефективен tier ≥ white-label.
-    // Трите начина да имаш white-label: собствен whitelabel/agency план, активен
-    // agency seat, или v40 гратис с whitelabel/agency `gracePlan` (отменен, но
-    // платен до края). Старият клон `{ isPremium:true, plan:"free" }` е МАХНАТ:
-    // той будеше бранд бот и за premium-tier гратис (gracePlan="premium"), който
-    // НЕ носи white-label — и беше остатък от fail-open grandfather. Сега
-    // множеството съвпада точно с `getServerTier().hasWhiteLabel`, което
-    // `/token` гейтва — иначе метлата на бота вечно вдига и сваля разминат сървър.
-    const now = new Date();
-    const WL_PLANS = ["whitelabel", "agency5", "agency10"];
-    const servers = await prisma.server.findMany({
-      where: {
-        customBotToken: { not: null },
-        OR: [
-          { plan: { in: WL_PLANS } },
-          { agency: { is: { active: true } } },
-          { AND: [{ accessUntil: { gt: now } }, { gracePlan: { in: WL_PLANS } }] },
-        ],
-      },
+    // ЕДИН източник на истина за „кой има право на бранд бот“.
+    //
+    // Тук стоеше ВТОРА, паралелна дефиниция на white-label правото (Prisma
+    // `where` с планове/агенция/гратис), докато `/token` гейтваше на
+    // `getServerTier().hasWhiteLabel`. Две дефиниции на едно правило дрейфват —
+    // и цената е кръстосана: метлата на бота сваля клиенти по СВОЯ списък, тоест
+    // разминаване по ЕДИН сървър можеше да свали бранд бота на ДРУГИ наематели
+    // (или вечно да ги вдига и сваля в цикъл).
+    //
+    // Затова: филтрираме кандидатите (имат токен) през СЪЩАТА функция, която
+    // решава и при `/token`. Множеството е малко по конструкция — токен имат
+    // само white-label/agency клиенти. (Одит 07.08.2026)
+    const candidates = await prisma.server.findMany({
+      where: { customBotToken: { not: null } },
       select: { id: true, name: true },
     });
+
+    const servers = [];
+    for (const c of candidates) {
+      const { hasWhiteLabel } = await getServerTier(c.id);
+      if (hasWhiteLabel) servers.push(c);
+    }
+
     res.json(servers);
   } catch (err) {
     next(err);
