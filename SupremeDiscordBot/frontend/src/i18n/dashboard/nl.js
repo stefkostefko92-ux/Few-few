@@ -543,7 +543,7 @@ export default {
   "common.title": "Titel",
   "common.content": "Inhoud",
   "common.clear": "Wissen",
-  "analytics.title": "Analytics",
+  "analytics.title": "Analyses",
   "analytics.subtitle": "Prestatie-inzichten over tickets, aanvragen en verificatie. Dagelijkse momentopname van statistieken om 00:05 UTC; heatmap beslaat de laatste 90 dagen.",
   "analytics.open": "Open",
   "analytics.heatmapMeta": "UTC · Laatste 90 dagen · {count} tickets",

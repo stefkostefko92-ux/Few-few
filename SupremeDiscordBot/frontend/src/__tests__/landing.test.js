@@ -103,3 +103,57 @@ describe("landing · маркетингови твърдения", () => {
     expect(flowCount, "кривите на фунията не съвпадат с чиповете").toBe(chipCount);
   });
 });
+
+// ─── Цените в FAQ съвпадат с ЦЕНОРАЗПИСА, на всеки локал ────────────────────
+// Реална издънка (07.08.2026): холандското FAQ обявяваше White-label за
+// „€ 19,99/maand of € 199/jaar“, докато таблицата на СЪЩАТА страница казваше
+// €9,99/€99 — 19,99/199 са цените на Agency 5. Шест локала бяха верни, един не.
+//
+// ВНИМАНИЕ при писането на такъв гейт: първата версия проверяваше само дали
+// сумата СЪЩЕСТВУВА някъде в ценоразписа — и мутацията мина, защото €19,99 е
+// напълно валидна цена (на Agency 5). Гейт, който не може да падне, е нула.
+// Затова правилото е по БЛИЗОСТ: всяка сума принадлежи на НАЙ-БЛИЗКОТО име на
+// план преди нея. Това е тясна евристика, не общо NLP — и точно тя лови дефекта.
+describe("landing FAQ — нула цени, разминати с ценоразписа", () => {
+  it("всяка цена в FAQ принадлежи на най-близкия споменат план", () => {
+    const MONEY = /€\s?(\d+(?:[.,]\d{2})?)/g;
+    const norm = (v) => String(v).replace(/[€\s]/g, "").replace(",", ".");
+
+    const problems = [];
+    for (const [loc, pack] of Object.entries(LANDING_TRANSLATIONS)) {
+      const tiers = pack?.tiers;
+      const faq = pack?.faq;
+      if (!tiers || !Array.isArray(faq)) continue;
+
+      // Име на план → неговите законни суми.
+      const byName = [];
+      for (const tier of Object.values(tiers)) {
+        if (!tier?.name) continue;
+        const allowed = new Set(["0"]);
+        for (const k of ["price", "priceYearly"]) if (tier[k]) allowed.add(norm(tier[k]));
+        byName.push({ name: tier.name, allowed });
+      }
+
+      for (const { q, a } of faq) {
+        const text = `${q} ${a}`;
+        for (const m of text.matchAll(MONEY)) {
+          const value = norm(m[1]);
+          // Най-близкото име на план ПРЕДИ тази сума.
+          let nearest = null;
+          let nearestAt = -1;
+          for (const tier of byName) {
+            const at = text.lastIndexOf(tier.name, m.index);
+            if (at !== -1 && at > nearestAt) { nearestAt = at; nearest = tier; }
+          }
+          if (!nearest) continue; // сума без споменат план — не съдим
+          if (!nearest.allowed.has(value)) {
+            problems.push(
+              `${loc}: „${nearest.name}“ е обявен с €${m[1]}, а реалните му цени са ${[...nearest.allowed].filter((x) => x !== "0").join(" / ")}`,
+            );
+          }
+        }
+      }
+    }
+    expect(problems, problems.join("\n")).toEqual([]);
+  });
+});

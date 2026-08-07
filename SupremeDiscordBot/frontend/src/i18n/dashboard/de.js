@@ -543,7 +543,7 @@ export default {
   "common.title": "Titel",
   "common.content": "Inhalt",
   "common.clear": "Löschen",
-  "analytics.title": "Analytics",
+  "analytics.title": "Analysen",
   "analytics.subtitle": "Leistungseinblicke über Tickets, Bewerbungen und Verifizierung. Tägliche Metrik-Momentaufnahme um 00:05 UTC; Heatmap umfasst die letzten 90 Tage.",
   "analytics.open": "Offen",
   "analytics.heatmapMeta": "UTC · Letzte 90 Tage · {count} Tickets",
