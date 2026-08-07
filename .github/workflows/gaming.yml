@@ -32,7 +32,7 @@ jobs:
       # от КОРЕНА на монорепото, където няма package.json/packageManager → corepack не резолвва
       # версия, пътят не съществува и post-стъпката проваля ЦЕЛИЯ job с Path Validation Error,
       # въпреки зеления билд. Turbo кешът на продукта вече пази повечето време.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: corepack enable
