@@ -10,10 +10,18 @@ const router = Router();
 // Cache for 30s — status checks are cheap but we don't want to hammer services
 let cache = { data: null, expiresAt: 0 };
 
-router.get("/", async (_req, res) => {
-  if (cache.data && cache.expiresAt > Date.now()) {
-    return res.json(cache.data);
-  }
+/**
+ * Сглобява състоянието на всички компоненти (или връща кеша, ако е свеж).
+ *
+ * ЗАЩО е функция (самопроверка, 07.08.2026): `/probe` беше добавен, за да даде
+ * състоянието като HTTP КОД за външна проба. Но при СТУДЕН кеш той падаше на
+ * собствена, по-слаба проверка — само `SELECT 1` — и връщаше 200, макар Redis
+ * или ботът да са паднали. Проба, която лъже, е по-лоша от липсваща: това е
+ * точно fail-open поведението, което гоним навсякъде другаде. Сега двата
+ * маршрута смятат едно и също нещо.
+ */
+async function computeStatus() {
+  if (cache.data && cache.expiresAt > Date.now()) return cache.data;
 
   const results = {
     status: "operational",
@@ -118,11 +126,15 @@ router.get("/", async (_req, res) => {
   } catch { /* silent */ }
 
   cache = { data: results, expiresAt: Date.now() + 30 * 1000 };
-  res.json(results);
+  return results;
+}
+
+router.get("/", async (_req, res) => {
+  res.json(await computeStatus());
 });
 
 // ─── GET /api/status/probe ───────────────────────────────────────────────────
-// Същата преценка, изразена като HTTP КОД, не като поле в тялото.
+// Същата преценка като `/api/status`, изразена като HTTP КОД, не като поле.
 //
 // ЗАЩО отделен маршрут (Наблюдателят, одит 07.08.2026): `/api/status` връща 200
 // винаги — състоянието живее само в тялото. Външна проба по подразбиране гледа
@@ -132,16 +144,19 @@ router.get("/", async (_req, res) => {
 // вместо да покаже точно каква е повредата — тоест поправката би счупила
 // единствения екран, чиято работа е да показва повреди.
 //
-// Затова пробата е отделна: празно тяло, само код. 200 = всичко работи,
-// 503 = поне един компонент е паднал. Насочи Uptime Kuma / UptimeRobot насам.
+// Тялото е празно нарочно: това е сигнал за машина, не за човек. За подробности
+// пробата да сочи `/api/status`.
+//
+// Различен от `/api/health`: той е LIVENESS на този контейнер (жива ли е базата
+// ми — по него docker решава дали да ме рестартира). Пробата е за СИСТЕМАТА:
+// база + Redis + Discord gateway на бота. Паднал бот не бива да рестартира
+// backend-а, но трябва да вдигне аларма.
 router.get("/probe", async (_req, res) => {
-  const fresh = cache && cache.expiresAt > Date.now() ? cache.data : null;
-  if (fresh) return res.status(fresh.status === "operational" ? 200 : 503).end();
-  // Без кеш — питаме най-евтиното, което доказва живот от край до край.
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.status(200).end();
+    const { status } = await computeStatus();
+    res.status(status === "operational" ? 200 : 503).end();
   } catch {
+    // Самото сглобяване се провали → не знаем нищо → fail-closed.
     res.status(503).end();
   }
 });
