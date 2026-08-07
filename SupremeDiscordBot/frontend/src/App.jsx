@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { I18nProvider } from "./contexts/I18nContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import CookieConsent from "./components/CookieConsent";
 
@@ -43,8 +44,6 @@ const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
-// AffiliatePage изключен за launch (одит C1/C2 — да не се рекламира неплащана комисионна)
-// const AffiliatePage = lazy(() => import("./pages/AffiliatePage"));
 const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
 
 const queryClient = new QueryClient({
@@ -85,6 +84,8 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        {/* I18nProvider ЧЕТЕ user.language от AuthProvider → вътре е */}
+        <I18nProvider>
         <ToastProvider>
         <BrowserRouter>
           <Suspense fallback={<Spinner />}>
@@ -115,7 +116,6 @@ export default function App() {
                 <Route path=":serverId/kb" element={<KnowledgeBasePage />} />
                 <Route path=":serverId/analytics" element={<AnalyticsPage />} />
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
-                {/* Affiliate route изключен за launch — програмата не плаща комисионни (одит C1/C2) */}
                 <Route path=":serverId/premium" element={<PremiumPage />} />
                 <Route path=":serverId/settings" element={<SettingsPage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />
@@ -145,6 +145,7 @@ export default function App() {
           <CookieConsent />
         </BrowserRouter>
         </ToastProvider>
+        </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

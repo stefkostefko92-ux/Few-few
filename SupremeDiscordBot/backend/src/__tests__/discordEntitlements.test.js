@@ -84,9 +84,15 @@ describe("POST /entitlement — grant", () => {
 
 describe("POST /entitlement — revoke", () => {
   it("revokes only when planSource=discord AND the entitlementId matches exactly", async () => {
-    prismaMock.server.findUnique.mockResolvedValue({
-      id: "g1", planSource: "discord", discordEntitlementId: "ent1", discordSkuId: "sku_prem",
-    });
+    // Стейтфул мок: реалният Prisma чете ОБНОВЕНИЯ ред вътре в транзакцията,
+    // затова syncServerPaidFlag вижда planSource=null и сваля premium-а.
+    // Статичен мок би върнал planSource="discord" и grandfather защитата
+    // (lib/premium.js) щеше да задържи premium — фалшив провал.
+    let row = { id: "g1", isPremium: true, plan: "premium", planSource: "discord",
+                stripeSubscriptionId: null, discordEntitlementId: "ent1", discordSkuId: "sku_prem",
+                agencyId: null, agency: null };
+    prismaMock.server.findUnique.mockImplementation(async () => ({ ...row }));
+    prismaMock.server.update.mockImplementation(async ({ data }) => { row = { ...row, ...data }; return row; });
 
     const res = await authed("post", "/api/discord/entitlement").send({
       type: "delete",
@@ -95,9 +101,15 @@ describe("POST /entitlement — revoke", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.revoked).toBe(true);
+    // Revoke чисти плановите полета; isPremium се пресмята отделно през
+    // syncServerPaidFlag (за да не изгаси agency-покрит сървър) → false тук.
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g1" },
-      data: { isPremium: false, plan: "free", planSource: null, discordEntitlementId: null, discordSkuId: null },
+      data: { plan: "free", planSource: null, discordEntitlementId: null, discordSkuId: null },
+    });
+    expect(prismaMock.server.update).toHaveBeenCalledWith({
+      where: { id: "g1" },
+      data: { isPremium: false },
     });
   });
 
@@ -139,14 +151,21 @@ describe("POST /entitlements/reconcile", () => {
   it("revokes discord-provisioned servers whose entitlement disappeared from the active set", async () => {
     // One active entitlement (g1, granted no-op) + one discord-provisioned
     // server (g2) whose entitlement is no longer active → revoked.
-    prismaMock.server.findUnique.mockImplementation(({ where }) => {
-      if (where.id === "g1") {
-        return Promise.resolve({ id: "g1", plan: "premium", planSource: "discord", stripeSubscriptionId: null, discordEntitlementId: "ent1" });
-      }
-      if (where.id === "g2") {
-        return Promise.resolve({ id: "g2", planSource: "discord", discordEntitlementId: "ent-gone", discordSkuId: "sku_prem" });
-      }
-      return Promise.resolve(null);
+    // Стейтфул (както при revoke по-горе): syncServerPaidFlag чете реда СЛЕД
+    // update-а в същата транзакция, затова planSource вече е null и grandfather
+    // защитата не се задейства.
+    const rows = {
+      g1: { id: "g1", isPremium: true, plan: "premium", planSource: "discord",
+            stripeSubscriptionId: null, discordEntitlementId: "ent1", agencyId: null, agency: null },
+      g2: { id: "g2", isPremium: true, plan: "premium", planSource: "discord",
+            stripeSubscriptionId: null, discordEntitlementId: "ent-gone", discordSkuId: "sku_prem",
+            agencyId: null, agency: null },
+    };
+    prismaMock.server.findUnique.mockImplementation(async ({ where }) =>
+      rows[where.id] ? { ...rows[where.id] } : null);
+    prismaMock.server.update.mockImplementation(async ({ where, data }) => {
+      rows[where.id] = { ...rows[where.id], ...data };
+      return rows[where.id];
     });
     prismaMock.server.findMany.mockResolvedValue([{ id: "g2", discordEntitlementId: "ent-gone" }]);
 
@@ -158,7 +177,11 @@ describe("POST /entitlements/reconcile", () => {
     expect(res.body.revoked).toBe(1);
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g2" },
-      data: expect.objectContaining({ isPremium: false, plan: "free", planSource: null }),
+      data: expect.objectContaining({ plan: "free", planSource: null }),
+    });
+    expect(prismaMock.server.update).toHaveBeenCalledWith({
+      where: { id: "g2" },
+      data: { isPremium: false },
     });
   });
 

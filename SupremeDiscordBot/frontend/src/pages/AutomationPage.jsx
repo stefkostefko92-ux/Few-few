@@ -5,57 +5,67 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3, Gift, Pin, CalendarClock, Webhook, Trash2, Plus, CheckCircle2, RefreshCw,
+  SmilePlus, Pencil, Send,
 } from "lucide-react";
 import {
-  getPolls, closePoll, deletePoll,
-  getGiveaways, endGiveaway, rerollGiveaway, deleteGiveaway,
+  getPolls, createPoll, closePoll, deletePoll,
+  getGiveaways, createGiveaway, endGiveaway, rerollGiveaway, deleteGiveaway,
   getStickies, upsertSticky, deleteSticky,
   getScheduled, createScheduled, deleteScheduled,
   getWebhooks, getWebhookEvents, createWebhook, updateWebhook, deleteWebhook,
+  getReactionRoles, createReactionRole, updateReactionRole, deleteReactionRole, spawnReactionRole,
 } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge, PremiumLockCard } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
+import EmojiPicker from "../components/EmojiPicker";
 
 const TABS = [
-  { id: "polls",     label: "Polls",      icon: BarChart3 },
-  { id: "giveaways", label: "Giveaways",  icon: Gift },
-  { id: "sticky",    label: "Sticky",     icon: Pin,           premium: true },
-  { id: "scheduled", label: "Scheduled",  icon: CalendarClock, premium: true },
-  { id: "webhooks",  label: "Webhooks",   icon: Webhook,       premium: true },
+  { id: "polls",     tKey: "auto.tab.polls",         icon: BarChart3 },
+  { id: "giveaways", tKey: "auto.tab.giveaways",      icon: Gift },
+  { id: "reactionroles", tKey: "auto.tab.reactionRoles", icon: SmilePlus },
+  { id: "sticky",    tKey: "auto.tab.sticky",         icon: Pin,           premium: true },
+  { id: "scheduled", tKey: "auto.tab.scheduled",      icon: CalendarClock, premium: true },
+  { id: "webhooks",  tKey: "auto.tab.webhooks",       icon: Webhook,       premium: true },
 ];
 
+// Провалена мутация ТРЯБВА да каже нещо. Тази страница беше системното
+// изключение от конвенцията на приложението: 14 от 18 мутации нямаха onError и
+// изобщо не внасяха toast — натискаш „Изтрий", заявката пада, нищо не се случва
+// и нищо не пише. (Дизайнера, 07.08.2026)
+const mutErr = (err) => err?.response?.data?.error || null;
+
 export default function AutomationPage() {
+  const { t } = useT();
   const [tab, setTab] = useState("polls");
   const { isPremium } = usePremium();
 
   return (
     <div className="p-8 max-w-6xl">
       <div className="mb-6">
-        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">Automation</h1>
-        <p className="text-cs-muted mt-2 max-w-2xl">
-          Manage polls, giveaways, sticky messages, scheduled posts, and webhook integrations.
-          Everything here can also be triggered by slash commands in Discord — see <strong>Commands</strong> for the full list.
-        </p>
+        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">{t("auto.title")}</h1>
+        <p className="text-cs-muted mt-2 max-w-2xl">{t("auto.subtitle")}</p>
       </div>
 
       <div className="flex gap-1 mb-6 border-b border-cs-border">
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
-          const showBadge = t.premium && !isPremium;
+        {TABS.map((tb) => {
+          const Icon = tb.icon;
+          const active = tab === tb.id;
+          const showBadge = tb.premium && !isPremium;
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tb.id}
+              onClick={() => setTab(tb.id)}
               className={`px-4 py-2 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
                 active ? "border-cs-cyan text-cs-cyan" : "border-transparent text-cs-muted hover:text-white"
               }`}
             >
               <Icon className="w-4 h-4" />
-              {t.label}
+              {t(tb.tKey)}
               {showBadge && <PremiumBadge small />}
             </button>
           );
@@ -64,31 +74,109 @@ export default function AutomationPage() {
 
       {tab === "polls"     && <PollsTab />}
       {tab === "giveaways" && <GiveawaysTab />}
-      {tab === "sticky"    && (isPremium ? <StickyTab /> : <PremiumLockCard feature="Sticky Messages" description="Keep important info pinned at the bottom of channels — auto-reposted as new messages arrive." />)}
-      {tab === "scheduled" && (isPremium ? <ScheduledTab /> : <PremiumLockCard feature="Scheduled Messages" description="Schedule one-shot or recurring messages (daily/weekly/monthly)." />)}
-      {tab === "webhooks"  && (isPremium ? <WebhooksTab />  : <PremiumLockCard feature="Webhook Integrations" description="Receive real-time event payloads at your own URL, HMAC-signed for verification." />)}
+      {tab === "reactionroles" && <ReactionRolesTab />}
+      {tab === "sticky"    && (isPremium ? <StickyTab /> : <PremiumLockCard feature={t("auto.sticky.title")} description={t("auto.sticky.desc")} />)}
+      {tab === "scheduled" && (isPremium ? <ScheduledTab /> : <PremiumLockCard feature={t("auto.sched.title")} description={t("auto.sched.desc")} />)}
+      {tab === "webhooks"  && (isPremium ? <WebhooksTab />  : <PremiumLockCard feature={t("auto.wh.title")} description={t("auto.wh.desc")} />)}
     </div>
   );
 }
 
 // ══════════════════════════════ POLLS ══════════════════════════════
+const defaultPollForm = () => ({ channelId: "", question: "", optionsText: "", multiChoice: false, durationHours: "" });
+
 function PollsTab() {
+  const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(defaultPollForm());
   const { data: polls = [], isLoading, isError } = useQuery({
     queryKey: ["polls", serverId],
     queryFn: () => getPolls(serverId),
   });
-  const closeM  = useMutation({ mutationFn: (id) => closePoll(serverId, id),  onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }) });
-  const deleteM = useMutation({ mutationFn: (id) => deletePoll(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }) });
+  const closeM  = useMutation({ mutationFn: (id) => closePoll(serverId, id),  onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const deleteM = useMutation({ mutationFn: (id) => deletePoll(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["polls", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const createM = useMutation({
+    mutationFn: (data) => createPoll(serverId, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["polls", serverId] }); setCreating(false); setForm(defaultPollForm()); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
+  });
+
+  const submitPoll = (e) => {
+    e.preventDefault();
+    const options = form.optionsText.split("\n").map((o) => o.trim()).filter(Boolean).slice(0, 9);
+    createM.mutate({
+      channelId: form.channelId.trim(),
+      question: form.question.trim(),
+      options,
+      multiChoice: form.multiChoice,
+      durationHours: form.durationHours ? Number(form.durationHours) : null,
+    });
+  };
+
+  const newPollModal = (
+    <Modal open={creating} onClose={() => setCreating(false)} title="New poll" maxWidth="max-w-lg">
+      <form onSubmit={submitPoll} className="space-y-3">
+        <label className="block">
+          <span className="cs-label">Channel ID *</span>
+          <input className="cs-input font-mono text-xs" required value={form.channelId}
+            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
+            placeholder="Right-click channel → Copy Channel ID" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Question *</span>
+          <input className="cs-input" required maxLength={256} value={form.question}
+            onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
+            placeholder="What should we play on Friday?" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Options * (one per line, 2–9)</span>
+          <textarea className="cs-textarea" rows={4} required value={form.optionsText}
+            onChange={(e) => setForm((f) => ({ ...f, optionsText: e.target.value }))}
+            placeholder={"Minecraft\nValorant\nAmong Us"} />
+        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="accent-cs-cyan" checked={form.multiChoice}
+              onChange={(e) => setForm((f) => ({ ...f, multiChoice: e.target.checked }))} />
+            <span className="text-sm text-cs-text">Multi-choice</span>
+          </label>
+          <label className="block flex-1">
+            <span className="cs-label">Auto-close after (hours, optional)</span>
+            <input type="number" min="1" max="720" className="cs-input" value={form.durationHours}
+              onChange={(e) => setForm((f) => ({ ...f, durationHours: e.target.value }))}
+              placeholder="Leave empty = manual close" />
+          </label>
+        </div>
+        {createM.isError && (
+          <p className="text-danger text-sm" role="alert">
+            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : t("auto.polls.createFailed")}
+          </p>
+        )}
+        <div className="flex justify-end gap-3">
+          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">Cancel</button>
+          <button type="submit" className="cs-btn-primary" disabled={createM.isPending}>
+            {createM.isPending ? "Posting…" : "Post poll"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
-  if (isError) return <ErrorCard msg="Couldn't load polls — please retry." />;
-  if (!polls.length) return <Empty icon={BarChart3} msg="No polls yet. Run /poll in Discord to create one." />;
+  if (isError) return <ErrorCard msg={t("auto.polls.loadError")} />;
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <button onClick={() => { setForm(defaultPollForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> New Poll
+        </button>
+      </div>
+      {!polls.length && <Empty icon={BarChart3} msg={t("auto.polls.empty")} />}
       {polls.map((p) => (
         <div key={p.id} className="cs-card flex items-center justify-between">
           <div className="flex-1">
@@ -109,8 +197,8 @@ function PollsTab() {
               <button onClick={() => closeM.mutate(p.id)} className="cs-btn-secondary text-xs">Close</button>
             )}
             <button
-              onClick={() => setConfirmState({ title: "Delete Poll", message: "Delete this poll?", onConfirm: () => deleteM.mutate(p.id) })}
-              aria-label="Delete poll"
+              onClick={() => setConfirmState({ title: t("auto.polls.delete"), message: t("auto.polls.deleteConfirm"), onConfirm: () => deleteM.mutate(p.id) })}
+              aria-label={t("auto.polls.delete")}
               title="Delete poll"
               className="text-danger hover:text-red-300 p-2"
             >
@@ -123,35 +211,120 @@ function PollsTab() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
         onCancel={() => setConfirmState(null)}
       />
+      {newPollModal}
     </div>
   );
 }
 
 // ══════════════════════════════ GIVEAWAYS ══════════════════════════════
+const defaultGiveawayForm = () => ({
+  channelId: "", prize: "", description: "", winnerCount: 1, durationMinutes: 60, requiredRoleIds: "",
+});
+
 function GiveawaysTab() {
+  const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [confirmState, setConfirmState] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(defaultGiveawayForm());
   const { data: giveaways = [], isLoading, isError } = useQuery({
     queryKey: ["giveaways", serverId],
     queryFn: () => getGiveaways(serverId),
   });
-  const endM    = useMutation({ mutationFn: (id) => endGiveaway(serverId, id),    onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
-  const rerollM = useMutation({ mutationFn: (id) => rerollGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
-  const deleteM = useMutation({ mutationFn: (id) => deleteGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }) });
+  const endM    = useMutation({ mutationFn: (id) => endGiveaway(serverId, id),    onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const rerollM = useMutation({ mutationFn: (id) => rerollGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const deleteM = useMutation({ mutationFn: (id) => deleteGiveaway(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["giveaways", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const createM = useMutation({
+    mutationFn: (data) => createGiveaway(serverId, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["giveaways", serverId] }); setCreating(false); setForm(defaultGiveawayForm()); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
+  });
+
+  const submitGiveaway = (e) => {
+    e.preventDefault();
+    createM.mutate({
+      channelId: form.channelId.trim(),
+      prize: form.prize.trim(),
+      description: form.description.trim() || null,
+      winnerCount: Number(form.winnerCount) || 1,
+      durationMinutes: Number(form.durationMinutes) || 60,
+      requiredRoleIds: form.requiredRoleIds.split(",").map((s) => s.trim()).filter(Boolean),
+    });
+  };
+
+  const newGiveawayModal = (
+    <Modal open={creating} onClose={() => setCreating(false)} title="New giveaway" maxWidth="max-w-lg">
+      <form onSubmit={submitGiveaway} className="space-y-3">
+        <label className="block">
+          <span className="cs-label">Channel ID *</span>
+          <input className="cs-input font-mono text-xs" required value={form.channelId}
+            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
+            placeholder="Right-click channel → Copy Channel ID" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Prize *</span>
+          <input className="cs-input" required maxLength={256} value={form.prize}
+            onChange={(e) => setForm((f) => ({ ...f, prize: e.target.value }))}
+            placeholder="Discord Nitro (1 month)" />
+        </label>
+        <label className="block">
+          <span className="cs-label">Description</span>
+          <textarea className="cs-textarea" rows={2} maxLength={1000} value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            placeholder="Optional details shown in the giveaway embed" />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="cs-label">Winners</span>
+            <input type="number" min="1" max="20" className="cs-input" value={form.winnerCount}
+              onChange={(e) => setForm((f) => ({ ...f, winnerCount: e.target.value }))} />
+          </label>
+          <label className="block">
+            <span className="cs-label">Duration (minutes) *</span>
+            <input type="number" min="1" max="43200" required className="cs-input" value={form.durationMinutes}
+              onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))} />
+          </label>
+        </div>
+        <label className="block">
+          <span className="cs-label">Required role IDs (comma-separated, optional)</span>
+          <input className="cs-input font-mono text-xs" value={form.requiredRoleIds}
+            onChange={(e) => setForm((f) => ({ ...f, requiredRoleIds: e.target.value }))}
+            placeholder="Only members with these roles can enter" />
+        </label>
+        {createM.isError && (
+          <p className="text-danger text-sm" role="alert">
+            {typeof createM.error?.response?.data?.error === "string" ? createM.error.response.data.error : t("auto.give.createFailed")}
+          </p>
+        )}
+        <div className="flex justify-end gap-3">
+          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">Cancel</button>
+          <button type="submit" className="cs-btn-primary" disabled={createM.isPending}>
+            {createM.isPending ? "Posting…" : "Start giveaway"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 
   if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
-  if (isError) return <ErrorCard msg="Couldn't load giveaways — please retry." />;
-  if (!giveaways.length) return <Empty icon={Gift} msg="No giveaways yet. Run /giveaway start in Discord." />;
+  if (isError) return <ErrorCard msg={t("auto.give.loadError")} />;
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <button onClick={() => { setForm(defaultGiveawayForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> New Giveaway
+        </button>
+      </div>
+      {!giveaways.length && <Empty icon={Gift} msg={t("auto.give.empty")} />}
       {giveaways.map((g) => (
         <div key={g.id} className="cs-card">
           <div className="flex items-start justify-between">
@@ -175,7 +348,7 @@ function GiveawaysTab() {
             <div className="flex items-center gap-2">
               {!g.endedAt && (
                 <button
-                  onClick={() => setConfirmState({ title: "End Giveaway", message: "End giveaway early?", confirmLabel: "End Now", destructive: false, onConfirm: () => endM.mutate(g.id) })}
+                  onClick={() => setConfirmState({ title: t("auto.give.end"), message: t("auto.give.endConfirm"), confirmLabel: "End Now", destructive: false, onConfirm: () => endM.mutate(g.id) })}
                   className="cs-btn-secondary text-xs"
                 >
                   End Now
@@ -187,8 +360,8 @@ function GiveawaysTab() {
                 </button>
               )}
               <button
-                onClick={() => setConfirmState({ title: "Delete Giveaway", message: "Delete this giveaway?", destructive: true, onConfirm: () => deleteM.mutate(g.id) })}
-                aria-label="Delete giveaway"
+                onClick={() => setConfirmState({ title: t("auto.give.delete"), message: t("auto.give.deleteConfirm"), destructive: true, onConfirm: () => deleteM.mutate(g.id) })}
+                aria-label={t("auto.give.delete")}
                 title="Delete giveaway"
                 className="text-danger hover:text-red-300 p-2"
               >
@@ -208,23 +381,28 @@ function GiveawaysTab() {
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
         onCancel={() => setConfirmState(null)}
       />
+      {newGiveawayModal}
     </div>
   );
 }
 
 // ══════════════════════════════ STICKY ══════════════════════════════
 function StickyTab() {
+  const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ channelId: "", content: "", embedTitle: "", embedColor: "#33b1ff" });
+  const [form, setForm] = useState({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" });
   const [confirmState, setConfirmState] = useState(null);
   const { data: stickies = [], isLoading, isError } = useQuery({
     queryKey: ["stickies", serverId],
     queryFn: () => getStickies(serverId),
   });
   const saveM   = useMutation({ mutationFn: (data) => upsertSticky(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stickies", serverId] }); setForm({ channelId: "", content: "", embedTitle: "", embedColor: "#33b1ff" }); } });
-  const deleteM = useMutation({ mutationFn: (chId) => deleteSticky(serverId, chId), onSuccess: () => qc.invalidateQueries({ queryKey: ["stickies", serverId] }) });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stickies", serverId] }); setForm({ channelId: "", content: "", embedTitle: "", embedColor: "#8fe600" }); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
+  });
+  const deleteM = useMutation({ mutationFn: (chId) => deleteSticky(serverId, chId), onSuccess: () => qc.invalidateQueries({ queryKey: ["stickies", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
 
   return (
     <div className="space-y-6">
@@ -254,7 +432,7 @@ function StickyTab() {
       </form>
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
-      {!isLoading && isError && <ErrorCard msg="Couldn't load sticky messages — please retry." />}
+      {!isLoading && isError && <ErrorCard msg={t("auto.sticky.loadError")} />}
       {!isLoading && !isError && !stickies.length && <Empty icon={Pin} msg="No sticky messages yet — create one above." />}
 
       <div className="space-y-3">
@@ -266,8 +444,8 @@ function StickyTab() {
               <p className="text-sm text-cs-text mt-1 line-clamp-2">{s.content}</p>
             </div>
             <button
-              onClick={() => setConfirmState({ title: "Delete Sticky", message: "Delete this sticky message?", onConfirm: () => deleteM.mutate(s.channelId) })}
-              aria-label="Delete sticky message"
+              onClick={() => setConfirmState({ title: t("auto.sticky.delete"), message: t("auto.sticky.deleteConfirm"), onConfirm: () => deleteM.mutate(s.channelId) })}
+              aria-label={t("auto.sticky.delete")}
               title="Delete sticky message"
               className="text-danger p-2"
             >
@@ -293,6 +471,8 @@ function StickyTab() {
 
 // ══════════════════════════════ SCHEDULED ══════════════════════════════
 function ScheduledTab() {
+  const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [form, setForm] = useState({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" });
@@ -302,8 +482,10 @@ function ScheduledTab() {
     queryFn: () => getScheduled(serverId),
   });
   const createM = useMutation({ mutationFn: (data) => createScheduled(serverId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scheduled", serverId] }); setForm({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" }); } });
-  const deleteM = useMutation({ mutationFn: (id) => deleteScheduled(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["scheduled", serverId] }) });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scheduled", serverId] }); setForm({ channelId: "", content: "", sendAt: "", recurrence: "", embedTitle: "" }); },
+    onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")),
+  });
+  const deleteM = useMutation({ mutationFn: (id) => deleteScheduled(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["scheduled", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
 
   return (
     <div className="space-y-6">
@@ -347,8 +529,8 @@ function ScheduledTab() {
       </form>
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
-      {!isLoading && isError && <ErrorCard msg="Couldn't load scheduled messages — please retry." />}
-      {!isLoading && !isError && !scheduled.length && <Empty icon={CalendarClock} msg="No scheduled messages yet — create one above." />}
+      {!isLoading && isError && <ErrorCard msg={t("auto.sched.loadError")} />}
+      {!isLoading && !isError && !scheduled.length && <Empty icon={CalendarClock} msg={t("auto.sched.empty")} />}
 
       <div className="space-y-3">
         {scheduled.map((m) => (
@@ -366,8 +548,8 @@ function ScheduledTab() {
               <p className="text-xs text-cs-muted mt-1">{new Date(m.sendAt).toLocaleString()}</p>
             </div>
             <button
-              onClick={() => setConfirmState({ title: "Delete Scheduled Message", message: "Delete this scheduled message?", onConfirm: () => deleteM.mutate(m.id) })}
-              aria-label="Delete scheduled message"
+              onClick={() => setConfirmState({ title: t("auto.sched.delete"), message: t("auto.sched.deleteConfirm"), onConfirm: () => deleteM.mutate(m.id) })}
+              aria-label={t("auto.sched.delete")}
               title="Delete scheduled message"
               className="text-danger p-2"
             >
@@ -393,6 +575,8 @@ function ScheduledTab() {
 
 // ══════════════════════════════ WEBHOOKS ══════════════════════════════
 function WebhooksTab() {
+  const { t } = useT();
+  const toast = useToast();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | id
@@ -402,9 +586,9 @@ function WebhooksTab() {
   const { data: hooks = [], isLoading, isError } = useQuery({ queryKey: ["webhooks", serverId], queryFn: () => getWebhooks(serverId) });
   const { data: events = {} } = useQuery({ queryKey: ["webhook-events"], queryFn: getWebhookEvents });
 
-  const createM = useMutation({ mutationFn: (data) => createWebhook(serverId, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); } });
-  const updateM = useMutation({ mutationFn: ({ id, data }) => updateWebhook(serverId, id, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); } });
-  const deleteM = useMutation({ mutationFn: (id) => deleteWebhook(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks", serverId] }) });
+  const createM = useMutation({ mutationFn: (data) => createWebhook(serverId, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); }, onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const updateM = useMutation({ mutationFn: ({ id, data }) => updateWebhook(serverId, id, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); }, onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
+  const deleteM = useMutation({ mutationFn: (id) => deleteWebhook(serverId, id), onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks", serverId] }), onError: (err) => toast.error(mutErr(err) || t("auto.actionFailed")) });
 
   const openNew = () => { setForm({ name: "", url: "", secret: "", events: [], enabled: true }); setFormError(null); setEditing("new"); };
   const openEdit = (h) => { setForm({ name: h.name, url: h.url, secret: h.secret || "", events: h.events, enabled: h.enabled }); setFormError(null); setEditing(h.id); };
@@ -420,7 +604,7 @@ function WebhooksTab() {
     e.preventDefault();
     setFormError(null);
     if (!form.events.length) {
-      setFormError("Select at least one event to subscribe to.");
+      setFormError(t("auto.wh.needEvent"));
       return;
     }
     if (editing === "new") createM.mutate(form);
@@ -440,7 +624,7 @@ function WebhooksTab() {
       </div>
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
-      {!isLoading && isError && <ErrorCard msg="Couldn't load webhooks — please retry." />}
+      {!isLoading && isError && <ErrorCard msg={t("auto.wh.loadError")} />}
       {!isLoading && !isError && !hooks.length && <Empty icon={Webhook} msg="No webhooks configured yet — create one above." />}
 
       <div className="space-y-3">
@@ -463,7 +647,7 @@ function WebhooksTab() {
             <div className="flex items-center gap-2 ml-4">
               <button onClick={() => openEdit(h)} className="cs-btn-secondary text-xs">Edit</button>
               <button
-                onClick={() => setConfirmState({ title: "Delete Webhook", message: `Delete "${h.name}"? This cannot be undone.`, onConfirm: () => deleteM.mutate(h.id) })}
+                onClick={() => setConfirmState({ title: t("auto.wh.delete"), message: `Delete "${h.name}"? This cannot be undone.`, onConfirm: () => deleteM.mutate(h.id) })}
                 aria-label={`Delete webhook ${h.name}`}
                 title="Delete webhook"
                 className="text-danger p-2"
@@ -535,6 +719,273 @@ function WebhooksTab() {
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
+        onCancel={() => setConfirmState(null)}
+      />
+    </div>
+  );
+}
+
+// ══════════════════════════════ REACTION ROLES (v33) ══════════════════════════════
+const defaultRrmPair = () => ({ emoji: "", roleId: "", label: "" });
+const defaultRrmForm = () => ({
+  title: "",
+  description: "",
+  color: "#5865F2",
+  exclusive: false,
+  pairs: [defaultRrmPair()],
+});
+
+function ReactionRolesTab() {
+  const { t } = useT();
+  const toast = useToast();
+  const { serverId } = useParams();
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(null); // null | "new" | rrmId
+  const [form, setForm] = useState(defaultRrmForm());
+  const [spawnInputs, setSpawnInputs] = useState({}); // rrmId → channelId
+  const [confirmState, setConfirmState] = useState(null);
+  const [actionError, setActionError] = useState(null);
+
+  const { data: messages = [], isLoading, isError } = useQuery({
+    queryKey: ["reactionroles", serverId],
+    queryFn: () => getReactionRoles(serverId),
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["reactionroles", serverId] });
+  const errMsg = (err, fallback) => err?.response?.data?.error?.formErrors?.join?.(", ")
+    || (typeof err?.response?.data?.error === "string" ? err.response.data.error : null)
+    || fallback;
+
+  const createM = useMutation({
+    mutationFn: (data) => createReactionRole(serverId, data),
+    onSuccess: () => { invalidate(); setEditing(null); },
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.createFailed"))),
+  });
+  const updateM = useMutation({
+    mutationFn: ({ id, data }) => updateReactionRole(serverId, id, data),
+    onSuccess: () => { invalidate(); setEditing(null); },
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.updateFailed"))),
+  });
+  const deleteM = useMutation({
+    mutationFn: (id) => deleteReactionRole(serverId, id),
+    onSuccess: invalidate,
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.deleteFailed"))),
+  });
+  const spawnM = useMutation({
+    mutationFn: ({ id, channelId }) => spawnReactionRole(serverId, id, channelId),
+    onSuccess: (_d, { id }) => { setSpawnInputs((s) => ({ ...s, [id]: "" })); invalidate(); },
+    onError: (err) => setActionError(errMsg(err, t("auto.rr.postFailed"))),
+  });
+
+  const openEdit = (m) => {
+    setForm({
+      title: m.title,
+      description: m.description || "",
+      color: m.color || "#5865F2",
+      exclusive: m.exclusive,
+      pairs: m.pairs.map((p) => ({ emoji: p.emoji, roleId: p.roleId, label: p.label || "" })),
+    });
+    setEditing(m.id);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setActionError(null);
+    const payload = {
+      ...form,
+      description: form.description || null,
+      pairs: form.pairs
+        .filter((p) => p.emoji.trim() && p.roleId.trim())
+        .map((p) => ({ emoji: p.emoji.trim(), roleId: p.roleId.trim(), label: p.label.trim() || null })),
+    };
+    if (!payload.pairs.length) { setActionError(t("auto.rr.needPair")); return; }
+    if (editing === "new") createM.mutate(payload);
+    else updateM.mutate({ id: editing, data: payload });
+  };
+
+  const updatePair = (i, key, val) =>
+    setForm((f) => ({ ...f, pairs: f.pairs.map((p, idx) => (idx === i ? { ...p, [key]: val } : p)) }));
+
+  if (isLoading) return <div className="cs-card h-32 animate-pulse" />;
+  if (isError) return <ErrorCard msg={t("auto.rr.loadError")} />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-cs-muted max-w-xl">
+          Members react to a message to get a role — remove the reaction to remove it.
+          Exclusive mode allows one role per message (self-service pick-one).
+        </p>
+        <button
+          onClick={() => { setForm(defaultRrmForm()); setEditing("new"); setActionError(null); }}
+          className="cs-btn-primary flex items-center gap-2 flex-shrink-0"
+        >
+          <Plus className="w-4 h-4" /> New Message
+        </button>
+      </div>
+
+      {!messages.length ? (
+        <Empty icon={SmilePlus} msg={t("auto.rr.empty")} />
+      ) : (
+        messages.map((m) => (
+          <div key={m.id} className="cs-card">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: m.color }} />
+                  <h3 className="font-semibold text-cs-text truncate">{m.title}</h3>
+                  {m.exclusive && <span className="cs-badge text-cs-cyan">Exclusive</span>}
+                  {m.messageId
+                    ? <span className="cs-badge text-success">Live</span>
+                    : <span className="cs-badge text-cs-dim">Not posted</span>}
+                </div>
+                <p className="text-xs text-cs-muted mt-1">
+                  {m.pairs.length} role{m.pairs.length === 1 ? "" : "s"}
+                  {m.channelId && <> · channel <code className="text-xs">{m.channelId}</code></>}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {m.pairs.map((p) => (
+                    <span key={p.id} className="bg-cs-bg text-cs-text text-xs px-2 py-0.5 rounded">
+                      {p.emoji.includes(":") ? `:${p.emoji.split(":")[0]}:` : p.emoji} → {p.label || p.roleId}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1">
+                  <input
+                    placeholder="Channel ID"
+                    aria-label={t("auto.rr.channelToPost")}
+                    className="cs-input text-xs w-28 py-1"
+                    value={spawnInputs[m.id] || ""}
+                    onChange={(e) => setSpawnInputs((s) => ({ ...s, [m.id]: e.target.value }))}
+                  />
+                  <button
+                    className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
+                    disabled={!spawnInputs[m.id] || spawnM.isPending}
+                    onClick={() => spawnM.mutate({ id: m.id, channelId: spawnInputs[m.id].trim() })}
+                  >
+                    <Send className="w-3 h-3" /> {m.messageId ? "Re-post" : "Post to channel"}
+                  </button>
+                </div>
+                <button
+                  aria-label={t("auto.rr.edit")}
+                  title="Edit"
+                  className="text-cs-muted hover:text-white transition-colors p-1"
+                  onClick={() => openEdit(m)}
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  aria-label={t("auto.rr.delete")}
+                  title="Delete"
+                  className="text-danger hover:text-red-300 transition-colors p-1"
+                  onClick={() => setConfirmState({
+                    title: t("auto.rr.delete"),
+                    message: `Delete "${m.title}"? The Discord message will be removed too.`,
+                    onConfirm: () => { deleteM.mutate(m.id); setConfirmState(null); },
+                  })}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* Create / Edit modal */}
+      <Modal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing === "new" ? "New reaction role message" : "Edit reaction role message"}
+        maxWidth="max-w-2xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <label className="block col-span-2">
+              <span className="cs-label">Title *</span>
+              <input className="cs-input" required value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="Pick your roles" />
+            </label>
+            <label className="block">
+              <span className="cs-label">Color</span>
+              <input type="color" className="cs-input h-10 p-1" value={form.color}
+                onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
+            </label>
+          </div>
+          <label className="block">
+            <span className="cs-label">Description</span>
+            <textarea className="cs-textarea" rows={2} value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              placeholder="React below to receive a role." />
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="accent-cs-cyan" checked={form.exclusive}
+              onChange={(e) => setForm((f) => ({ ...f, exclusive: e.target.checked }))} />
+            <span className="text-sm text-cs-text">Exclusive — one role per member (new reaction replaces the old one)</span>
+          </label>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-cs-text">Emoji → Role pairs ({form.pairs.length}/20)</h3>
+              <button type="button" disabled={form.pairs.length >= 20}
+                onClick={() => setForm((f) => ({ ...f, pairs: [...f.pairs, defaultRrmPair()] }))}
+                className="text-cs-cyan text-sm flex items-center gap-1 disabled:opacity-40">
+                <Plus className="w-3 h-3" /> Add pair
+              </button>
+            </div>
+            <div className="space-y-2">
+              {form.pairs.map((p, i) => (
+                <div key={i} className="grid grid-cols-[70px_34px_1fr_1fr_28px] gap-2 items-center">
+                  <input className="cs-input text-center" placeholder="🎮" aria-label={`Emoji for pair ${i + 1}`}
+                    value={p.emoji} onChange={(e) => updatePair(i, "emoji", e.target.value)} />
+                  <EmojiPicker buttonLabel={t("emoji.pickForPair", { n: i + 1 })} onSelect={(e) => updatePair(i, "emoji", e)} />
+                  <input className="cs-input font-mono text-xs" placeholder="Role ID" aria-label={`Role ID for pair ${i + 1}`}
+                    value={p.roleId} onChange={(e) => updatePair(i, "roleId", e.target.value)} />
+                  <input className="cs-input text-xs" placeholder="Label (optional)" aria-label={`Label for pair ${i + 1}`}
+                    value={p.label} onChange={(e) => updatePair(i, "label", e.target.value)} />
+                  <button type="button" aria-label={`Remove pair ${i + 1}`}
+                    disabled={form.pairs.length <= 1}
+                    onClick={() => setForm((f) => ({ ...f, pairs: f.pairs.filter((_, idx) => idx !== i) }))}
+                    className="text-danger hover:text-red-300 disabled:opacity-30 p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-cs-dim mt-2">
+              Emoji: paste a standard emoji (🎮) or a custom one as <code>name:id</code>.
+              Role ID: right-click the role in Discord → Copy Role ID (the bot's role must be above it).
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">Cancel</button>
+            <button type="submit" className="cs-btn-primary" disabled={createM.isPending || updateM.isPending}>
+              {(createM.isPending || updateM.isPending) ? "Saving…" : editing === "new" ? "Create" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {actionError && (
+        <div role="alert" className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-3">
+          <span>❌ {actionError}</span>
+          <button type="button" aria-label={t("auto.dismissError")} onClick={() => setActionError(null)} className="text-red-300 hover:text-red-200">✕</button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!confirmState}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        destructive
+        confirmLabel="Delete"
+        loading={deleteM.isPending}
+        onConfirm={() => confirmState?.onConfirm()}
         onCancel={() => setConfirmState(null)}
       />
     </div>

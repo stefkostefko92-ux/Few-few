@@ -8,6 +8,7 @@ import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
+import { requirePremium, getServerTier, planHasFeature } from "../lib/premium.js";
 
 const router = Router();
 
@@ -42,7 +43,7 @@ mgmt.get("/:serverId/api-keys", requireServerAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-mgmt.post("/:serverId/api-keys", requireServerAdmin, async (req, res, next) => {
+mgmt.post("/:serverId/api-keys", requireServerAdmin, requirePremium("integrations.restApi"), async (req, res, next) => {
   const { name, scopes, expiresInDays } = req.body;
   if (!name || typeof name !== "string") return res.status(400).json({ error: "name required" });
   if (!Array.isArray(scopes) || scopes.length === 0) {
@@ -155,6 +156,18 @@ async function authenticateApiKey(req, res, next) {
     return res.status(401).json({ error: "API key expired" });
   }
 
+  // Тарифен гейт при ПОЛЗВАНЕ, не само при издаване: ключ, издаден по време на
+  // 14-дневния trial (или преди изтичане на абонамента), иначе продължаваше да
+  // работи вечно — платена функция, раздавана безплатно. Проверката е върху
+  // ЕФЕКТИВНИЯ tier (собствен план + активен trial + agency seat).
+  const tier = await getServerTier(apiKey.serverId);
+  if (!planHasFeature(tier.plan, "integrations.restApi")) {
+    return res.status(403).json({
+      error: "The REST API requires an active Premium plan on this server.",
+      code: "PREMIUM_REQUIRED",
+    });
+  }
+
   // Async update lastUsedAt + requestCount — don't block
   prisma.apiKey.update({
     where: { id: apiKey.id },
@@ -176,18 +189,24 @@ function requireScope(scope) {
 }
 
 const api = Router();
-api.use(apiLimiter);
+// Ред: auth ПРЕДИ limiter — иначе keyGenerator (req.apiKey?.id) тече преди
+// authenticateApiKey да е сетнал req.apiKey → пада на req.ip, тоест лимитът
+// беше per-IP вместо per-key (един клиент зад споделен IP изяждаше квотата на
+// друг). Сега лимитът е реално per-key.
 api.use(authenticateApiKey);
+api.use(apiLimiter);
 
 // GET /public/v1/me — server info about the key's owner
 api.get("/me", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.serverId },
-      select: { id: true, name: true, icon: true, isPremium: true },
+      select: { id: true, name: true, icon: true },
     });
+    // Ефективен tier (agency/trial не са в суровата колона).
+    const { isPremium, plan } = await getServerTier(req.serverId);
     res.json({
-      server,
+      server: server ? { ...server, isPremium, plan } : null,
       keyId: req.apiKey.id,
       scopes: req.apiKey.scopes,
     });

@@ -17,11 +17,7 @@ export async function isStaffMember(interaction) {
   if (perms?.has?.("ManageMessages") || perms?.has?.("ManageGuild")) return true;
 
   try {
-    const server = await getServer(interaction.guildId);
-    const roleIds = new Set();
-    for (const panel of server?.panels || []) {
-      for (const r of panel.supportRoleIds || []) roleIds.add(r);
-    }
+    const roleIds = await supportRoleIds(interaction.guildId);
     if (!roleIds.size) return false;
     return [...roleIds].some((r) => interaction.member?.roles?.cache?.has(r));
   } catch {
@@ -31,3 +27,42 @@ export async function isStaffMember(interaction) {
     return false;
   }
 }
+
+// ─── Кеш на support ролите (30s) ─────────────────────────────────────────────
+// Проверката се вика и от autocomplete handler-ите, а те се задействат на ВСЕКИ
+// натиснат клавиш. Без кеш това е по едно backend извикване на буква — затова
+// резултатът се пази кратко, по същия модел като eventLogConfigCache.
+// Кешираме и празния резултат: сървър без support роли не бива да се пита пак
+// на всяка буква.
+const staffRoleCache = new Map(); // guildId → { roleIds:Set, expiresAt:number }
+const STAFF_CACHE_TTL = 30_000;
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of staffRoleCache) if (v.expiresAt <= now) staffRoleCache.delete(k);
+}, STAFF_CACHE_TTL).unref?.();
+
+async function supportRoleIds(guildId) {
+  const now = Date.now();
+  const hit = staffRoleCache.get(guildId);
+  if (hit && hit.expiresAt > now) return hit.roleIds;
+
+  const server = await getServer(guildId);
+  const roleIds = new Set();
+  for (const panel of server?.panels || []) {
+    for (const r of panel.supportRoleIds || []) roleIds.add(r);
+  }
+  staffRoleCache.set(guildId, { roleIds, expiresAt: now + STAFF_CACHE_TTL });
+  return roleIds;
+}
+
+/**
+ * Гард за autocomplete: същият критерий като isStaffMember, но предназначен за
+ * handler-и, които Discord вика на всеки клавиш. При отказ ПОВИКВАЩИЯТ трябва
+ * да отговори с празен списък — autocomplete няма как да покаже грешка.
+ */
+export async function isStaffForAutocomplete(interaction) {
+  return isStaffMember(interaction);
+}
+
+export const __testing = { staffRoleCache, STAFF_CACHE_TTL };

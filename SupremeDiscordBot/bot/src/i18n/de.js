@@ -7,6 +7,8 @@ export default {
   "error.unauthorized": "Du hast keine Berechtigung.",
   "error.blacklisted": "❌ Du wurdest von der Nutzung dieses Bots ausgeschlossen.",
   "error.formExpired": "❌ Dieses Formular ist nicht mehr aktiv. Bitte fang von vorne an.",
+  "error.componentExpired": "❌ Diese Schaltfläche funktioniert nicht mehr — das zugehörige Panel wurde geändert oder entfernt. Bitten Sie einen Administrator, es neu zu posten.",
+  "error.ticketCreateFailed": "❌ Ticket konnte nicht geöffnet werden — unser Dienst ist vorübergehend nicht erreichbar. Bitte versuchen Sie es gleich erneut.",
   "error.categoryNotFound": "❌ Kategorie nicht gefunden.",
   "error.serviceUnavailable.title": "⚠️ Dienst vorübergehend nicht verfügbar",
   "error.serviceUnavailable.body": "Das Backend hat nicht rechtzeitig geantwortet — das ist meist nur vorübergehend. Bitte versuch es gleich noch einmal.\n\n_Korrelations-ID: `{{id}}`_",

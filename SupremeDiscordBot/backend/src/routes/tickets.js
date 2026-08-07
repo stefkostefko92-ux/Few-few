@@ -26,6 +26,15 @@ router.get("/archives/:ticketId", async (req, res, next) => {
     if (!archiveTokenMatches(ticket, req.query.t)) return res.status(404).send("Archive not found");
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // CSP на архивния HTML (F8, defense-in-depth): транскриптът е генериран от
+    // потребителско съдържание — заключваме до self стилове/картинки, нула
+    // скриптове/обекти/форми, за да не може вграден вектор да изпълни JS в
+    // нашия origin. Съгласувано с inline print-стиловете (self позволява
+    // <style>, но 'unsafe-inline' е нужен само за style; скриптове са забранени).
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'none'; img-src 'self' https://cdn.discordapp.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"
+    );
     res.send(ticket.archiveHtml);
   } catch (err) {
     next(err);
@@ -38,7 +47,11 @@ router.use(requireAuth, loadUser);
 // ─── GET /api/tickets/:serverId ───────────────────────────────────────────────
 
 router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
-  const { status, priority, search, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
+  const { status, priority, search, dateFrom, dateTo } = req.query;
+  // Клампваме page/limit — клиентски подаван `limit` беше неограничен `take`
+  // (напр. limit=999999 → пълно изсипване + натиск върху базата).
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const page = Math.max(1, Number(req.query.page) || 1);
 
   try {
     const where = {
@@ -51,12 +64,16 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
           { creator: { username: { contains: search, mode: "insensitive" } } },
         ],
       }),
-      ...(dateFrom || dateTo ? {
-        createdAt: {
-          ...(dateFrom && { gte: new Date(dateFrom) }),
-          ...(dateTo && { lte: new Date(dateTo + "T23:59:59Z") }),
-        },
-      } : {}),
+      // Невалидна дата дава Invalid Date, което Prisma отхвърля с грешка,
+      // носеща нашия изходен код. Валидираме ТУК и просто пренебрегваме боклука.
+      ...(() => {
+        const from = dateFrom ? new Date(dateFrom) : null;
+        const to = dateTo ? new Date(dateTo + "T23:59:59Z") : null;
+        const okFrom = from && !Number.isNaN(from.getTime());
+        const okTo = to && !Number.isNaN(to.getTime());
+        if (!okFrom && !okTo) return {};
+        return { createdAt: { ...(okFrom && { gte: from }), ...(okTo && { lte: to }) } };
+      })(),
     };
 
     const [tickets, total] = await Promise.all([
@@ -120,7 +137,14 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
   try {
     const ticket = await prisma.ticket.findFirst({
       where: { id: req.params.ticketId, serverId: req.params.serverId },
-      include: { messages: { orderBy: { createdAt: "asc" } }, creator: true },
+      include: {
+        messages: { orderBy: { createdAt: "asc" } },
+        creator: true,
+        assignee: true,
+        // Нужен на транскрипта: при white-label бот брандът в архива е на
+        // клиента, а нашето име не се появява (виж utils/archive.js).
+        server: { select: { name: true, customBotName: true } },
+      },
     });
 
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });

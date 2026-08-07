@@ -3,7 +3,7 @@ import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { sendPremiumRequired } from "../utils/premiumRequired.js";
 import { friendlyError } from "../utils/friendlyError.js";
-import { DANGER, INFO } from "../utils/colors.js";
+import { DANGER, INFO, WARNING } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
@@ -19,10 +19,13 @@ export default {
       sub.setName("custombot")
         .setDescription("⭐ Update your white-label bot's appearance")
         .addStringOption((opt) =>
-          opt.setName("name").setDescription("New bot name").setRequired(false)
+          // Discord ограничава името на бота до 32 знака, а URL-ите — на практика
+          // до няколкостотин. Без таван потребителят получава грешка чак от
+          // Discord API, вместо от формата.
+          opt.setName("name").setDescription("New bot name").setRequired(false).setMaxLength(32)
         )
         .addStringOption((opt) =>
-          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false)
+          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false).setMaxLength(512)
         )
     )
     .addSubcommand((sub) =>
@@ -71,7 +74,7 @@ export default {
               { name: "Premium Since", value: premiumSince, inline: true },
               { name: "Manage Billing", value: `[Dashboard](${process.env.FRONTEND_URL})`, inline: true },
             ],
-            color: 0xffd700,
+            color: WARNING,
           }],
         });
       } catch (err) {

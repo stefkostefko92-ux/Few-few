@@ -15,6 +15,19 @@ import rateLimit from "express-rate-limit";
 
 // ─── Startup validation ───────────────────────────────────────────────────────
 const REQUIRED_ENV = ["DATABASE_URL", "SESSION_SECRET", "ENCRYPTION_KEY", "DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_REDIRECT_URI", "MAIN_OWNER_ID", "API_SECRET", "FRONTEND_URL"];
+
+// FRONTEND_URL с вътрешния порт (напр. :8080, който е 127.0.0.1-only зад
+// reverse proxy-то) прави ВСИЧКИ редиректи и линкове мъртви за външен клиент:
+// OAuth callback-ът праща браузъра на :8080 → нищо не зарежда, а относителните
+// линкове (футър и т.н.) наследяват порта. Не е фатално за старта (dev ползва
+// localhost:5173), но в продукция е винаги грешка → крещим силно в лога.
+if (process.env.NODE_ENV === "production" && /:\d+\/?$/.test(process.env.FRONTEND_URL || "")) {
+  console.error(
+    `⚠️  FRONTEND_URL (${process.env.FRONTEND_URL}) съдържа порт — в продукция това чупи ` +
+    "OAuth редиректите и линковете (порт 8080 е достъпен само от 127.0.0.1). " +
+    "Задай FRONTEND_URL=https://supremebot.carbonstealth.eu (без порт) и рестартирай."
+  );
+}
 // Optional — AI replies work without this but require it for the platform-level key
 if (!process.env.GEMINI_API_KEY) console.warn("⚠️  GEMINI_API_KEY not set — AI auto-replies will be disabled unless servers provide their own key");
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
@@ -41,19 +54,19 @@ import botV18Router from "./routes/bot_v18.js";
 import webhooksRouter from "./routes/webhooks.js";
 import automationRouter from "./routes/automation.js";
 import trialRouter from "./routes/trial.js";
-import affiliateRouter from "./routes/affiliate.js";
 import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
 import archiveRouter from "./routes/archive.js";
 import apikeysRouter from "./routes/apikeys.js";
 import v1Router from "./routes/v1.js";
-import referralRouter from "./routes/referral.js";
 import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
+import reactionRolesRouter from "./routes/reactionroles.js";
 import { scheduleRetention } from "./jobs/dataRetention.js";
 import { scheduleDunning } from "./jobs/dunning.js";
 import "./services/scheduler.js"; // Start background jobs
+import { prisma } from "./lib/prisma.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -138,7 +151,16 @@ const globalLimiter = rateLimit({
   // Never limit health checks; never throttle the Stripe webhook — it is
   // signature-verified + idempotent, and 429s would make Stripe retry (a burst
   // of events from few egress IPs could otherwise trip the per-IP limit).
-  skip: (req) => req.path === "/api/health" || req.path === "/api/stripe/webhook",
+  // ВНИМАНИЕ: лимитерът е монтиран с app.use("/api", …), затова `req.path` е
+  // ОТНОСИТЕЛЕН на mount точката ("/stripe/webhook"), не пълният път. Условието
+  // по-долу дълго време сравняваше с "/api/stripe/webhook" и НИКОГА не съвпадаше
+  // — тоест инвариантът „webhook-ът е извън лимитера“ беше записан, но не
+  // изпълнен. Ползваме originalUrl (без query частта), който е абсолютен.
+  // Проверено с изпълнен express експеримент (Продавача, 07.08.2026).
+  skip: (req) => {
+    const path = (req.originalUrl || "").split("?")[0];
+    return path === "/api/health" || path === "/api/stripe/webhook";
+  },
 });
 
 // Stricter limiter for auth endpoints to prevent brute force / OAuth abuse
@@ -159,12 +181,38 @@ const botLimiter = rateLimit({
   message: { error: "Bot endpoint rate limit exceeded" },
 });
 
+// Публичният архив на транскрипти. Той е ИЗВЪН /api, значи глобалният лимитер
+// изобщо не го покриваше — единственият напълно неавтентикиран маршрут, който
+// чете от базата и при липсващ транскрипт го ГЕНЕРИРА наново (скъпо: всички
+// съобщения на тикета + сглобяване на HTML). Токенът пази съдържанието, но не
+// пази ресурса: познат линк, пуснат в цикъл, е безплатен товар върху базата.
+const archiveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many requests — please slow down",
+});
+
 app.use("/api", globalLimiter);
 app.use("/api/auth", authLimiter);
 app.use("/api/bot", botLimiter);
+app.use("/archive", archiveLimiter);
 
 // ─── Health check MUST come before any auth-protected routers ──────────────
-app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+app.get("/api/health", async (_req, res) => {
+  // Статично `{status:"ok"}` значеше, че контейнерът се обявява за здрав при
+  // МЪРТВА база — Docker никога не го рестартира, а всяка заявка се проваля.
+  // Liveness трябва да отразява реалната зависимост, не факта, че Express слуша.
+  // (Наблюдателят, 07.08.2026)
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", database: "up", uptime: process.uptime() });
+  } catch (err) {
+    console.error("[health] базата е недостъпна:", err?.message);
+    res.status(503).json({ status: "degraded", database: "down", uptime: process.uptime() });
+  }
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
@@ -184,21 +232,36 @@ app.use("/api/bot", botRouter); // Internal bot <-> API communication
 app.use("/api/export", exportRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/schedule bot endpoints
-app.use("/api", webhooksRouter);              // /api/:serverId/webhooks + /api/events + /api/:serverId/panels/:panelId/duplicate
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
 app.use("/api/trial", trialRouter);           // v2.0 Premium trial system
-// app.use("/api/affiliate", affiliateRouter); // ИЗКЛЮЧЕН за launch — програмата не начислява комисионни (одит C1/C2)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)
 app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashboard-authed)
+app.use("/api/reactionroles", reactionRolesRouter); // v3.2 Reaction roles CRUD + spawn (dashboard-authed)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
 // NOTE: apikeysRouter is intentionally not mounted — its routes would shadow
 // apiKeyManagementRouter on the same path. The file is kept solely for
 // its `requireApiKey` middleware export, used by v1.js.
 app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
-// app.use("/api/referral", referralRouter);  // ИЗКЛЮЧЕН за launch — счупена/дублирана affiliate система (одит C2)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
+
+// ── webhooksRouter е ПОСЛЕДЕН, и това е СЪЩЕСТВЕНО ──────────────────────────
+// Той се монтира на ГОЛ "/api" (маршрутите му са с форма /api/:serverId/webhooks,
+// /api/events, /api/:serverId/panels/:panelId/duplicate), а вътре има
+// router.use(requireAuth, loadUser). В Express 4 това middleware се изпълнява за
+// ВСЯКА заявка под /api, която стигне дотук — БЕЗ значение дали някой негов
+// маршрут съвпада.
+//
+// Досега стоеше по средата на списъка, затова всичко монтирано СЛЕД него минаваше
+// първо през сесийната автентикация. За session-authed рутери това беше само
+// двойна работа, но /api/v1 е BEARER-authed (API ключ, не сесия) → requireAuth
+// го отрязваше с 401, преди v1Router изобщо да бъде достигнат.
+// Тоест ЦЯЛОТО публично REST API — платена Premium функция — беше мъртво.
+// (Кодаджията, 07.08.2026; доказано с изпълнен Express репро)
+//
+// Ако добавяш нов рутер под /api, добави го НАД този ред.
+app.use("/api", webhooksRouter);
 
 // ─── Error handler ────────────────────────────────────────────────────────────
 
@@ -207,11 +270,23 @@ if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);
 }
 
-app.use((err, _req, res, _next) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    error: err.message || "Internal Server Error",
-  });
+app.use((err, req, res, _next) => {
+  // `err.message` НЕ отива при клиента. Prisma слага в съобщението пълния път
+  // до файла, ОКОЛНИТЕ РЕДОВЕ ИЗХОДЕН КОД и самата заявка — тоест невалидна
+  // дата в query параметър връщаше на всеки любопитен наш сорс и вътрешната ни
+  // схема. `errorFormat` по подразбиране носи сниппета и в production.
+  // (Разбивача, 07.08.2026 — доказано с PoC)
+  //
+  // Клиентът получава общо съобщение + идентификатор, с който да намерим точния
+  // случай в логовете. 4xx-ите, които сами си слагат `status` и `expose`,
+  // остават четими — те са предвидени съобщения, не изтекли вътрешности.
+  const status = err.status || 500;
+  const id = Math.random().toString(36).slice(2, 10);
+  console.error(`[err ${id}] ${req.method} ${req.originalUrl}`, err);
+  if (status < 500 && err.expose !== false && err.message) {
+    return res.status(status).json({ error: err.message, errorId: id });
+  }
+  res.status(status).json({ error: "Internal Server Error", errorId: id });
 });
 
 const server = app.listen(PORT, () => {

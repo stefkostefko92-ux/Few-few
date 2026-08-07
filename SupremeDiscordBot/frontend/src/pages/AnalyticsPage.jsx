@@ -7,8 +7,10 @@ import {
   getAnalyticsOverview, getAnalyticsHeatmap,
   getAnalyticsLeaderboard, getAnalyticsFunnel,
 } from "../api";
+import { useT } from "../contexts/I18nContext";
 
 export default function AnalyticsPage() {
+  const { t } = useT();
   const { serverId } = useParams();
 
   const overviewQ = useQuery({ queryKey: ["analytics-overview", serverId], queryFn: () => getAnalyticsOverview(serverId) });
@@ -25,35 +27,34 @@ export default function AnalyticsPage() {
     <div className="p-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-          <BarChart3 className="w-7 h-7 text-cs-cyan" /> Analytics
+          <BarChart3 className="w-7 h-7 text-cs-cyan" /> {t("analytics.title")}
         </h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
-          Performance insights across tickets, applications, and verification.
-          Daily metrics snapshot at 00:05 UTC; heatmap covers last 90 days.
+          {t("analytics.subtitle")}
         </p>
       </div>
 
       {/* ═══ KPI cards ═══ */}
       {overviewQ.isError ? (
-        <RetryCard className="mb-8" message="Couldn't load the overview metrics." onRetry={() => overviewQ.refetch()} isRefetching={overviewQ.isRefetching} />
+        <RetryCard className="mb-8" message={t("analytics.err.overview")} onRetry={() => overviewQ.refetch()} isRefetching={overviewQ.isRefetching} t={t} />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Kpi icon={Ticket} label="Total Tickets"     value={overview?.tickets?.total ?? "—"} />
-          <Kpi icon={Ticket} label="Open"              value={overview?.tickets?.open ?? "—"} accent />
-          <Kpi icon={FileText} label="Applications"    value={overview?.applications?.total ?? "—"} />
-          <Kpi icon={TrendingUp} label="Approval Rate" value={overview?.applications?.approvalRate !== undefined ? `${overview.applications.approvalRate}%` : "—"} />
+          <Kpi icon={Ticket} label={t("analytics.totalTickets")}     value={overview?.tickets?.total ?? "—"} />
+          <Kpi icon={Ticket} label={t("analytics.open")}             value={overview?.tickets?.open ?? "—"} accent />
+          <Kpi icon={FileText} label={t("analytics.applications")}   value={overview?.applications?.total ?? "—"} />
+          <Kpi icon={TrendingUp} label={t("analytics.approvalRate")} value={overview?.applications?.approvalRate !== undefined ? `${overview.applications.approvalRate}%` : "—"} />
         </div>
       )}
 
       {/* ═══ Heatmap ═══ */}
       <section className="cs-card mb-6">
-        <h2 className="text-lg font-bold text-cs-text mb-1">Ticket Activity Heatmap</h2>
-        <p className="text-xs text-cs-muted mb-4">UTC · Last 90 days · {heatmap?.total ?? 0} tickets</p>
+        <h2 className="text-lg font-bold text-cs-text mb-1">{t("analytics.heatmap")}</h2>
+        <p className="text-xs text-cs-muted mb-4">{t("analytics.heatmapMeta", { count: heatmap?.total ?? 0 })}</p>
         {heatmapQ.isError ? (
-          <RetryCard message="Couldn't load the activity heatmap." onRetry={() => heatmapQ.refetch()} isRefetching={heatmapQ.isRefetching} />
-        ) : heatmap?.grid ? <Heatmap grid={heatmap.grid} /> : (
+          <RetryCard message={t("analytics.err.heatmap")} onRetry={() => heatmapQ.refetch()} isRefetching={heatmapQ.isRefetching} t={t} />
+        ) : heatmap?.grid ? <Heatmap grid={heatmap.grid} t={t} /> : (
           <div className="h-48 animate-pulse bg-cs-surface rounded" role="status">
-            <span className="sr-only">Loading heatmap…</span>
+            <span className="sr-only">{t("analytics.loadingHeatmap")}</span>
           </div>
         )}
       </section>
@@ -62,11 +63,11 @@ export default function AnalyticsPage() {
         {/* ═══ Leaderboard ═══ */}
         <section className="cs-card">
           <h2 className="text-lg font-bold text-cs-text mb-1 flex items-center gap-2">
-            <Award className="w-5 h-5 text-cs-gold" /> Staff Leaderboard
+            <Award className="w-5 h-5 text-cs-gold" /> {t("analytics.leaderboard")}
           </h2>
-          <p className="text-xs text-cs-muted mb-4">30 days · Sorted by activity</p>
+          <p className="text-xs text-cs-muted mb-4">{t("analytics.leaderboardMeta")}</p>
           {leaderboardQ.isError ? (
-            <RetryCard message="Couldn't load the leaderboard." onRetry={() => leaderboardQ.refetch()} isRefetching={leaderboardQ.isRefetching} />
+            <RetryCard message={t("analytics.err.leaderboard")} onRetry={() => leaderboardQ.refetch()} isRefetching={leaderboardQ.isRefetching} t={t} />
           ) : leaderboard?.leaderboard?.length ? (
             <div className="space-y-2">
               {leaderboard.leaderboard.map((s, i) => (
@@ -83,25 +84,25 @@ export default function AnalyticsPage() {
                     <span className="font-mono text-xs text-cs-text">&lt;@{s.userId}&gt;</span>
                   </div>
                   <div className="flex items-center gap-4 text-xs">
-                    <span className="text-cs-cyan">{s.claimed} claimed</span>
-                    <span className="text-success">{s.closed} closed</span>
+                    <span className="text-cs-cyan">{t("analytics.claimed", { count: s.claimed })}</span>
+                    <span className="text-success">{t("analytics.closed", { count: s.closed })}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-cs-dim text-sm">No staff activity in last 30 days.</div>
+            <div className="text-cs-dim text-sm">{t("analytics.noStaff")}</div>
           )}
         </section>
 
         {/* ═══ Funnel ═══ */}
         <section className="cs-card">
           <h2 className="text-lg font-bold text-cs-text mb-1 flex items-center gap-2">
-            <Users className="w-5 h-5 text-cs-cyan" /> Application Funnel
+            <Users className="w-5 h-5 text-cs-cyan" /> {t("analytics.funnel")}
           </h2>
-          <p className="text-xs text-cs-muted mb-4">90 days · Conversion stages</p>
+          <p className="text-xs text-cs-muted mb-4">{t("analytics.funnelMeta")}</p>
           {funnelQ.isError ? (
-            <RetryCard message="Couldn't load the funnel." onRetry={() => funnelQ.refetch()} isRefetching={funnelQ.isRefetching} />
+            <RetryCard message={t("analytics.err.funnel")} onRetry={() => funnelQ.refetch()} isRefetching={funnelQ.isRefetching} t={t} />
           ) : funnel?.stages?.length ? (
             <div className="space-y-3">
               {funnel.stages.map((st) => (
@@ -120,7 +121,7 @@ export default function AnalyticsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-cs-dim text-sm">No application data.</div>
+            <div className="text-cs-dim text-sm">{t("analytics.noApps")}</div>
           )}
         </section>
       </div>
@@ -140,7 +141,7 @@ function Kpi({ icon: Icon, label, value, accent }) {
   );
 }
 
-function RetryCard({ message, onRetry, isRefetching, className = "" }) {
+function RetryCard({ message, onRetry, isRefetching, className = "", t }) {
   return (
     <div role="alert" className={`flex flex-col items-center justify-center gap-3 text-center py-8 ${className}`}>
       <p className="text-danger text-sm">{message}</p>
@@ -151,14 +152,14 @@ function RetryCard({ message, onRetry, isRefetching, className = "" }) {
         className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
       >
         <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
-        {isRefetching ? "Retrying…" : "Retry"}
+        {isRefetching ? t("analytics.retrying") : t("analytics.retry")}
       </button>
     </div>
   );
 }
 
-function Heatmap({ grid }) {
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function Heatmap({ grid, t }) {
+  const days = t("analytics.days").split(",");
   const maxVal = Math.max(1, ...grid.flat());
 
   return (
@@ -184,8 +185,8 @@ function Heatmap({ grid }) {
                   className="w-4 h-4 rounded-sm"
                   style={{ background: bg }}
                   role="img"
-                  aria-label={`${days[d]} ${h}:00 — ${val} tickets`}
-                  title={`${days[d]} ${h}:00 — ${val} tickets`}
+                  aria-label={t("analytics.cell", { day: days[d], hour: h, count: val })}
+                  title={t("analytics.cell", { day: days[d], hour: h, count: val })}
                 />
               );
             })}

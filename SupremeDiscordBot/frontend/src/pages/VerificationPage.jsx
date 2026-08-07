@@ -12,6 +12,8 @@ import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import EmojiPicker from "../components/EmojiPicker";
+import { useT } from "../contexts/I18nContext";
 
 const TYPES = [
   { value: "BUTTON",   label: "One-click button",    hint: "User clicks a button → instantly verified" },
@@ -36,7 +38,7 @@ const defaultForm = () => ({
   name: "",
   title: "✅ Verify to access the server",
   description: "Click the button below to verify you're not a bot.",
-  color: "#33b1ff",
+  color: "#8fe600",
   type: "BUTTON",
   buttonLabel: "Verify",
   buttonEmoji: "",
@@ -72,6 +74,7 @@ function panelToForm(p) {
 
 export default function VerificationPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
   const { isPremium } = usePremium();
   const [editing, setEditing] = useState(null); // null | "new" | panelId
@@ -148,9 +151,9 @@ export default function VerificationPage() {
       {!isLoading && panels.length === 0 && (
         <EmptyState
           icon={ShieldCheck}
-          title="No verification panels yet"
-          description="Create one to gate ticket panels behind a button-click or math captcha verification."
-          ctaLabel="Create first panel"
+          title={t("nav.verification")}
+          description={t("verify.empty.body")}
+          ctaLabel={t("verify.empty.cta")}
           onCtaClick={openNew}
         />
       )}
@@ -175,8 +178,8 @@ export default function VerificationPage() {
                 <>
                   <input
                     className="cs-input font-mono text-xs w-48"
-                    placeholder="Channel ID to post in"
-                    aria-label="Channel ID to post panel in"
+                    placeholder={t("verify.channelPlaceholder")}
+                    aria-label={t("verify.channelToPost")}
                     value={spawnInputs[p.id] || ""}
                     onChange={(e) => setSpawnInputs((s) => ({ ...s, [p.id]: e.target.value }))}
                   />
@@ -184,8 +187,8 @@ export default function VerificationPage() {
                     onClick={() => spawnInputs[p.id] && spawnMut.mutate({ panelId: p.id, channelId: spawnInputs[p.id] })}
                     disabled={!spawnInputs[p.id] || spawnMut.isPending}
                     className="cs-btn-secondary p-2 disabled:opacity-40"
-                    aria-label="Post to channel"
-                    title="Post to channel"
+                    aria-label={t("verify.postToChannel")}
+                    title={t("verify.postToChannel")}
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -196,12 +199,12 @@ export default function VerificationPage() {
               </button>
               <button
                 onClick={() => setConfirmState({
-                  title: "Delete verification panel",
+                  title: t("verify.delete"),
                   message: `Delete "${p.name}"?`,
                   onConfirm: () => { deleteMut.mutate(p.id); setConfirmState(null); },
                 })}
-                aria-label="Delete panel"
-                title="Delete panel"
+                aria-label={t("verify.delete")}
+                title={t("verify.delete")}
                 className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
@@ -214,7 +217,7 @@ export default function VerificationPage() {
       <Modal
         open={!!editing}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New verification panel" : "Edit verification panel"}
+        title={editing === "new" ? t("verify.new") : t("verify.edit")}
         maxWidth="max-w-2xl"
       >
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -264,6 +267,20 @@ export default function VerificationPage() {
               <label className="block">
                 <span className="cs-label">Button Label</span>
                 <input className="cs-input" value={form.buttonLabel} onChange={(e) => set("buttonLabel", e.target.value)} />
+              </label>
+              {/* buttonEmoji живееше в state-а и се пращаше към API-то, но нямаше
+                  НИКАКЪВ вход — полето беше недостижимо от дашборда. */}
+              <label className="block">
+                <span className="cs-label">{t("verify.buttonEmoji")}</span>
+                <div className="flex items-center gap-2">
+                  <input className="cs-input w-24" value={form.buttonEmoji}
+                    onChange={(e) => set("buttonEmoji", e.target.value)}
+                    placeholder={t("panels.ph.emoji")} />
+                  <EmojiPicker
+                    buttonLabel={t("emoji.pickForButton")}
+                    onSelect={(e) => set("buttonEmoji", e)}
+                  />
+                </div>
               </label>
               <label className="block">
                 <span className="cs-label">Button Style</span>
@@ -315,7 +332,7 @@ export default function VerificationPage() {
                       value={isPremium ? form.minAccountAgeDays : ""}
                       disabled={!isPremium}
                       onChange={(e) => set("minAccountAgeDays", e.target.value)}
-                      placeholder={isPremium ? "Leave empty = no check" : "Premium only"}
+                      placeholder={isPremium ? t("verify.noCheck") : t("verify.premiumOnly")}
                     />
                   </label>
                   <label className="block">
@@ -347,7 +364,7 @@ export default function VerificationPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">Cancel</button>
               <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
-                {editing === "new" ? "Create Panel" : "Save Changes"}
+                {editing === "new" ? t("common.createPanel") : t("common.saveChanges")}
               </button>
             </div>
           </form>
@@ -358,7 +375,7 @@ export default function VerificationPage() {
         title={confirmState?.title}
         message={confirmState?.message}
         destructive
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         loading={deleteMut.isPending}
         onConfirm={() => { confirmState?.onConfirm(); }}
         onCancel={() => setConfirmState(null)}

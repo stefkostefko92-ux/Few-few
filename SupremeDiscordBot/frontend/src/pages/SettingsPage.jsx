@@ -2,12 +2,15 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity } from "lucide-react";
+import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
 import { getServer, updateServer } from "../api";
 import { useToast } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
+import { LANGUAGE_OPTIONS } from "../i18n/dashboard";
 
 export default function SettingsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
 
   const { data: server, isLoading } = useQuery({
@@ -36,7 +39,7 @@ export default function SettingsPage() {
         welcomerEnabled:    server.welcomerEnabled || false,
         welcomerChannelId:  server.welcomerChannelId || "",
         welcomerMessage:    server.welcomerMessage || "",
-        welcomerEmbedColor: server.welcomerEmbedColor || "#33b1ff",
+        welcomerEmbedColor: server.welcomerEmbedColor || "#8fe600",
         welcomerDmEnabled:  server.welcomerDmEnabled || false,
         welcomerDmMessage:  server.welcomerDmMessage || "",
         autoroleIds:        (server.autoroleIds || []).join(","),
@@ -47,6 +50,16 @@ export default function SettingsPage() {
         eventLogCat_voice:      (server.eventLogCategories || []).includes("voice"),
         eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
         eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
+        eventLogCat_messages:   (server.eventLogCategories || []).includes("messages"),
+        eventLogCat_server:     (server.eventLogCategories || []).includes("server"),
+        // v37 — по избор СВОЙ канал за всяка категория (празно = общият канал).
+        eventLogCh_voice:       server.eventLogChannels?.voice || "",
+        eventLogCh_members:     server.eventLogChannels?.members || "",
+        eventLogCh_moderation:  server.eventLogChannels?.moderation || "",
+        eventLogCh_messages:    server.eventLogChannels?.messages || "",
+        eventLogCh_server:      server.eventLogChannels?.server || "",
+        // Език на бота за сървъра (fallback за членове с неподдържан Discord език)
+        language:               server.language || "en",
       });
     }
   }, [server]);
@@ -56,10 +69,13 @@ export default function SettingsPage() {
     mutationFn: (data) => updateServer(serverId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["server", serverId] });
+      // Виж бележката в TrialBanner: сайдбарът и списъкът със сървъри четат
+      // ДРУГ ключ и остават стари без това.
+      qc.invalidateQueries({ queryKey: ["servers"] });
       setForm((f) => f ? { ...f, customBotToken: "" } : f);
-      toast.success("Settings saved.");
+      toast.success(t("settings.saved"));
     },
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to save settings."),
+    onError: (err) => toast.error(err?.response?.data?.error || t("settings.saveFailed")),
   });
 
   if (isLoading || !form) {
@@ -96,7 +112,19 @@ export default function SettingsPage() {
         form.eventLogCat_voice && "voice",
         form.eventLogCat_members && "members",
         form.eventLogCat_moderation && "moderation",
+        form.eventLogCat_messages && "messages",
+        form.eventLogCat_server && "server",
       ].filter(Boolean),
+      // Пращаме канал само за ВКЛЮЧЕНИ категории с попълнена стойност —
+      // иначе изключена категория би оставила висящ канал в базата.
+      eventLogChannels: Object.fromEntries(
+        [["voice", form.eventLogCat_voice], ["members", form.eventLogCat_members],
+         ["moderation", form.eventLogCat_moderation], ["messages", form.eventLogCat_messages],
+         ["server", form.eventLogCat_server]]
+          .filter(([cat, on]) => on && (form[`eventLogCh_${cat}`] || "").trim())
+          .map(([cat]) => [cat, form[`eventLogCh_${cat}`].trim()])
+      ),
+      language: form.language,
       ...(server.isPremium && {
         customBotName: form.customBotName || null,
         customBotAvatar: form.customBotAvatar || null,
@@ -116,17 +144,17 @@ export default function SettingsPage() {
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-cs-text">Server Settings</h1>
-        <p className="text-cs-muted text-sm mt-1">Configure bot behaviour for this server</p>
+        <p className="text-cs-muted text-sm mt-1">{t("settings.subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* ── General ─────────────────────────────────────────────────── */}
         <div className="cs-card space-y-4">
-          <h2 className="font-semibold text-cs-text">General</h2>
+          <h2 className="font-semibold text-cs-text">{t("settings.general")}</h2>
 
           <label className="block">
-            <span className="cs-label">Log Channel ID</span>
+            <span className="cs-label">{t("settings.logChannel")}</span>
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
               <input
@@ -139,7 +167,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Archive Channel ID</span>
+            <span className="cs-label">{t("settings.archiveChannel")}</span>
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
               <input
@@ -149,6 +177,27 @@ export default function SettingsPage() {
                 onChange={(e) => set("archiveChannelId", e.target.value)}
               />
             </div>
+          </label>
+        </div>
+
+        {/* ── Език на бота за сървъра ─────────────────────────────────── */}
+        <div className="cs-card space-y-4">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-cs-cyan" />
+            <h2 className="font-semibold text-cs-text">{t("language.botForServer")}</h2>
+          </div>
+          <p className="text-sm text-cs-muted">{t("language.botForServer.hint")}</p>
+          <label className="block max-w-xs">
+            <span className="cs-label">{t("language.label")}</span>
+            <select
+              className="cs-input"
+              value={form.language}
+              onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
+            >
+              {LANGUAGE_OPTIONS.map((o) => (
+                <option key={o.code} value={o.code}>{o.label}</option>
+              ))}
+            </select>
           </label>
         </div>
 
@@ -172,7 +221,7 @@ export default function SettingsPage() {
               checked={form.eventLogEnabled}
               onChange={(e) => set("eventLogEnabled", e.target.checked)}
             />
-            <span className="text-sm text-cs-text">Enable activity logging</span>
+            <span className="text-sm text-cs-text">{t("settings.enableLogging")}</span>
           </label>
 
           {form.eventLogEnabled && (
@@ -190,22 +239,37 @@ export default function SettingsPage() {
                 </div>
               </label>
               <div>
-                <span className="cs-label">Categories to log</span>
+                <span className="cs-label">{t("settings.categoriesToLog")}</span>
+                <p className="text-xs text-cs-dim mt-1 mb-2">{t("settings.perCategoryHint")}</p>
                 <div className="flex flex-col gap-2 mt-1">
                   {[
-                    ["eventLogCat_voice", "Voice — mute / deaf / join / leave / move"],
-                    ["eventLogCat_members", "Members — roles / nickname / timeout / join / leave"],
-                    ["eventLogCat_moderation", "Moderation — ban / unban / kick"],
-                  ].map(([key, label]) => (
-                    <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
+                    ["eventLogCat_voice", t("settings.cat.voice"), "voice"],
+                    ["eventLogCat_members", t("settings.cat.members"), "members"],
+                    ["eventLogCat_moderation", t("settings.cat.moderation"), "moderation"],
+                    ["eventLogCat_messages", t("settings.cat.messages"), "messages"],
+                    ["eventLogCat_server", t("settings.cat.server"), "server"],
+                  ].map(([key, label, cat]) => (
+                    <div key={key} className="flex flex-wrap items-center gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-cs-text flex-1 min-w-[220px]">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded accent-cs-cyan"
+                          checked={form[key]}
+                          onChange={(e) => set(key, e.target.checked)}
+                        />
+                        {label}
+                      </label>
+                      {/* Собствен канал за категорията. Празно = ползвай общия
+                          по-горе, затова placeholder-ът го казва изрично. */}
                       <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded accent-cs-cyan"
-                        checked={form[key]}
-                        onChange={(e) => set(key, e.target.checked)}
+                        className="cs-input w-56 py-1 text-sm font-mono disabled:opacity-40"
+                        value={form[`eventLogCh_${cat}`] || ""}
+                        onChange={(e) => set(`eventLogCh_${cat}`, e.target.value)}
+                        disabled={!form[key]}
+                        aria-label={t("settings.channelForCategory", { category: label })}
+                        placeholder={t("settings.useMainChannel")}
                       />
-                      {label}
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -322,7 +386,7 @@ export default function SettingsPage() {
           </div>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Name</span>
+            <span className="cs-label">{t("settings.customBotName")}</span>
             <input
               className="cs-input"
               placeholder="My Awesome Bot"
@@ -334,7 +398,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Avatar URL</span>
+            <span className="cs-label">{t("settings.customBotAvatar")}</span>
             <input
               className="cs-input"
               placeholder="https://example.com/avatar.png"
@@ -346,7 +410,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Token</span>
+            <span className="cs-label">{t("settings.customBotToken")}</span>
             <input
               className="cs-input font-mono text-sm"
               type="password"
@@ -377,7 +441,7 @@ export default function SettingsPage() {
             <input type="checkbox" checked={form.welcomerEnabled}
               onChange={(e) => set("welcomerEnabled", e.target.checked)}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Enable welcome message in a channel</span>
+            <span className="text-sm text-cs-text">{t("settings.enableWelcome")}</span>
           </label>
 
           {form.welcomerEnabled && (
@@ -398,7 +462,7 @@ export default function SettingsPage() {
                 </p>
               </label>
               <label className="block">
-                <span className="cs-label">Embed Color</span>
+                <span className="cs-label">{t("settings.embedColor")}</span>
                 <input type="color" className="cs-input h-10" value={form.welcomerEmbedColor}
                   onChange={(e) => set("welcomerEmbedColor", e.target.value)} />
               </label>
@@ -409,7 +473,7 @@ export default function SettingsPage() {
             <input type="checkbox" checked={form.welcomerDmEnabled}
               onChange={(e) => set("welcomerDmEnabled", e.target.checked)}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Also DM the new member</span>
+            <span className="text-sm text-cs-text">{t("settings.alsoDm")}</span>
           </label>
 
           {form.welcomerDmEnabled && (
@@ -445,7 +509,7 @@ export default function SettingsPage() {
 
         {mutation.isError && (
           <p role="alert" className="text-danger text-sm">
-            {mutation.error?.response?.data?.error || "Failed to save settings"}
+            {mutation.error?.response?.data?.error || t("settings.saveFailed")}
           </p>
         )}
 
@@ -460,7 +524,7 @@ export default function SettingsPage() {
             disabled={mutation.isPending}
           >
             <Save className="w-4 h-4" />
-            {mutation.isPending ? "Saving…" : "Save Settings"}
+            {mutation.isPending ? t("common.saving") : t("settings.save")}
           </button>
         </div>
       </form>

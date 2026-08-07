@@ -3,6 +3,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { buildTranscript } from "../lib/appTranscript.js";
 
 const router = Router();
 
@@ -112,7 +113,10 @@ function formatDuration(seconds) {
 // ─── GET /api/applications/:serverId ─────────────────────────────────────────────
 
 router.get("/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, res, next) => {
-  const { status, formId, search, page = 1, limit = 20 } = req.query;
+  const { status, formId, search } = req.query;
+  // Клампваме page/limit (клиентски `limit` беше неограничен `take`).
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const page = Math.max(1, Number(req.query.page) || 1);
 
   try {
     const where = {
@@ -403,14 +407,20 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
     });
     if (!app) return res.status(404).json({ error: "Application not found" });
 
-    // Check if a discussion channel already exists (idempotent)
-    const existingTicket = await prisma.ticket.findFirst({
-      where: {
-        applicationId: app.id,
-        status: { notIn: ["CLOSED", "ARCHIVED"] },
-      },
+    // Идемпотентност: Ticket.applicationId е @unique → само ЕДИН тикет на
+    // кандидатура. Търсим БЕЗ статус филтър — затворен тикет иначе не се хваща,
+    // ботът прави канал, а create гърми с P2002 (осиротял канал). Активен →
+    // връщаме канала; затворен → 409 (не пресъздаваме). (Кодаджията)
+    const existingTicket = await prisma.ticket.findUnique({
+      where: { applicationId: app.id },
     });
     if (existingTicket) {
+      if (["CLOSED", "ARCHIVED"].includes(existingTicket.status)) {
+        return res.status(409).json({
+          error: "A discussion was already opened for this application (the channel was closed).",
+          code: "DISCUSSION_ALREADY_CLOSED",
+        });
+      }
       return res.json({
         ok: true,
         alreadyExists: true,
@@ -431,6 +441,7 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
       applicationId: app.id,
       formName: app.form.name,
       managerRoleIds: app.form.managerRoleIds || [],
+      discussCategoryId: app.form.discussCategoryId || null, // v34 — фиксирана категория
       transcript,
     });
 
@@ -465,13 +476,5 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
   } catch (err) { next(err); }
 });
 
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildTranscript(questions, answers) {
-  return questions
-    .map((q) => `**${q.label}**\n${answers[q.id] || "*No answer*"}`)
-    .join("\n\n");
-}
 
 export default router;

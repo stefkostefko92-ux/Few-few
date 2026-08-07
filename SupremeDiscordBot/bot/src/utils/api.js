@@ -48,10 +48,24 @@ export async function createTicket(serverId, panelId, creatorId, channelId, firs
   }
 }
 
-export async function logTicketMessage(ticketId, authorId, authorTag, content, attachments = []) {
+export async function logTicketMessage(ticketId, authorId, authorTag, content, attachments = [], messageId = null) {
   const { data } = await api.post(`/bot/ticket/${ticketId}/message`, {
-    authorId, authorTag, content, attachments,
+    authorId, authorTag, content, attachments, messageId,
   });
+  return data;
+}
+
+/**
+ * v36 — отбелязва в тикет транскрипта, че съобщение е редактирано или изтрито.
+ * Съобщение извън тикет канал → backend връща 204 и няма какво да правим,
+ * затова повикващият може да игнорира резултата.
+ *
+ * @param {string} messageId Discord ID на съобщението
+ * @param {"edit"|"delete"} action
+ * @param {string} [content] новият текст (само при edit)
+ */
+export async function markTicketMessage(messageId, action, content) {
+  const { data } = await api.patch(`/bot/ticket-message/${messageId}`, { action, content });
   return data;
 }
 
@@ -67,8 +81,11 @@ export async function submitApplication(serverId, formId, userId, answers, revie
   return data;
 }
 
-export async function getPanel(panelId) {
-  const { data } = await api.get(`/bot/panel/${panelId}`);
+// `withSiblings` иска и останалите панели от СЪЩОТО групово съобщение — нужно
+// САМО при редакция (пресглобяване). НЕ го ползвай на горещия път (клик на
+// бутон): там всяка допълнителна заявка яде от 3-секундния ack бюджет.
+export async function getPanel(panelId, { withSiblings = false } = {}) {
+  const { data } = await api.get(`/bot/panel/${panelId}${withSiblings ? "?siblings=1" : ""}`);
   return data;
 }
 

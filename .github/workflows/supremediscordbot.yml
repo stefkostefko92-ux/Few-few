@@ -22,6 +22,7 @@ jobs:
   # Продуктът е три отделни пакета (backend · bot · frontend), всеки със свой lock и скриптове.
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: SupremeDiscordBot/backend
@@ -57,6 +58,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: SupremeDiscordBot/frontend
@@ -70,4 +72,5 @@ jobs:
           cache: npm
           cache-dependency-path: SupremeDiscordBot/frontend/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build

@@ -18,7 +18,12 @@ router.get("/", async (_req, res) => {
   const results = {
     status: "operational",
     timestamp: new Date().toISOString(),
-    services: {},
+    services: {
+      // Самият API отговаря на тази заявка — значи работи. Досега този ключ
+      // липсваше и dashboard-ът показваше „API — Unknown“ до три зелени реда,
+      // което изглежда като авария, а е просто непопълнено поле.
+      api: { status: "operational", uptime: Math.round(process.uptime()) },
+    },
     uptime: process.uptime(),
   };
 
@@ -40,14 +45,21 @@ router.get("/", async (_req, res) => {
   // Bot API
   try {
     const start = Date.now();
-    await axios.get(`${process.env.BOT_API_URL || "http://bot:3001"}/health`, {
+    // `validateStatus: () => true` караше axios да НЕ хвърля при 503, а после
+    // безусловно обявявахме бота за „operational". Ботът връща 503 точно когато
+    // gateway-ът е паднал — тоест публичната страница за състояние показваше
+    // зелено, докато нищо не работи. (Наблюдателят, 07.08.2026)
+    const r = await axios.get(`${process.env.BOT_API_URL || "http://bot:3001"}/health`, {
       timeout: 3000,
       validateStatus: () => true,
     });
+    const healthy = r.status >= 200 && r.status < 300 && r.data?.gateway !== "disconnected";
     results.services.bot = {
-      status: "operational",
+      status: healthy ? "operational" : "degraded",
       latencyMs: Date.now() - start,
+      ...(healthy ? {} : { detail: r.data?.gateway || `HTTP ${r.status}` }),
     };
+    if (!healthy) results.status = "degraded";
   } catch (err) {
     results.services.bot = { status: "down", error: "unreachable" };
     results.status = "degraded";

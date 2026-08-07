@@ -11,6 +11,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const TITLE_MAX = 120;
 const CONTENT_MAX = 4000;
@@ -59,17 +60,22 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
   const serverId = req.params.serverId;
   try {
     const { limits } = await getServerTier(serverId);
-    const count = await prisma.kbArticle.count({ where: { serverId } });
-    if (count >= limits.kbArticles) {
+    // Атомарно: count+create в една Serializable транзакция (lib/withinLimit.js).
+    const created = await createWithinLimit({
+      model: "kbArticle",
+      where: { serverId },
+      limit: limits.kbArticles,
+      create: (tx) => tx.kbArticle.create({
+      data: { ...parsed.data, serverId, createdBy: req.user.id },
+      }),
+    });
+    if (!created.ok) {
       return res.status(403).json({
         error: `Knowledge Base article limit reached (${limits.kbArticles}). Upgrade to Premium for more.`,
         code: "LIMIT_REACHED",
       });
     }
-    const article = await prisma.kbArticle.create({
-      data: { ...parsed.data, serverId, createdBy: req.user.id },
-    });
-    res.status(201).json(article);
+    res.status(201).json(created.row);
   } catch (err) { next(err); }
 });
 

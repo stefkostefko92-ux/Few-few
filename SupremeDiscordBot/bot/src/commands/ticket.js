@@ -3,7 +3,7 @@ import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { buildStatusEmbed } from "../utils/embed.js";
 import { friendlyError } from "../utils/friendlyError.js";
-import { INFO } from "../utils/colors.js";
+import { INFO, WARNING } from "../utils/colors.js";
 import { TICKET_PRIORITIES, priorityColor } from "../utils/priority.js";
 import { t, resolveLang } from "../i18n/index.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
@@ -140,7 +140,7 @@ export default {
       try {
         await api.post(`/bot/ticket/${ticket.id}/claim`, { userId: interaction.user.id });
         await interaction.editReply({
-          embeds: [buildStatusEmbed("🛡️ Ticket Claimed", `This ticket has been claimed by ${interaction.user}`, INFO)],
+          embeds: [buildStatusEmbed("🛡️ Ticket Claimed", `This ticket has been claimed by ${interaction.user}`, INFO, { client: interaction.client })],
         });
       } catch (err) {
         await interaction.editReply(friendlyError(err, interaction));
@@ -156,7 +156,7 @@ export default {
           await api.patch(`/bot/ticket/${ticket.id}/priority`, { priority: level, actorId: interaction.user.id });
           const lang = await resolveLang(interaction);
           await interaction.editReply({
-            embeds: [buildStatusEmbed("🎯 Ticket Priority", t("ticket.priorityUpdated", lang, { priority: level }), priorityColor(level))],
+            embeds: [buildStatusEmbed("🎯 Ticket Priority", t("ticket.priorityUpdated", lang, { priority: level }), priorityColor(level), { client: interaction.client })],
           });
         } catch (err) {
           await interaction.editReply(friendlyError(err, interaction));
@@ -168,7 +168,7 @@ export default {
       try {
         await api.post(`/bot/ticket/${ticket.id}/unclaim`);
         await interaction.editReply({
-          embeds: [buildStatusEmbed("🔓 Ticket Unclaimed", "This ticket is now open for any staff member.", 0xffd700)],
+          embeds: [buildStatusEmbed("🔓 Ticket Unclaimed", "This ticket is now open for any staff member.", WARNING, { client: interaction.client })],
         });
       } catch (err) {
         await interaction.editReply(friendlyError(err, interaction));

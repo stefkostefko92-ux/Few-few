@@ -1,5 +1,5 @@
 // bot/src/commands/giveaway.js
-import { MessageFlags,
+import { MessageFlags, PermissionFlagsBits,
   SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from "discord.js";
 import api from "../utils/api.js";
@@ -15,6 +15,12 @@ export default {
     .setName("giveaway")
     .setDescription("Manage giveaways")
     .setDescriptionLocalizations(CMD_DESC_L10N.giveaway)
+    // Проверката за ManageGuild беше САМО в execute(). autocomplete() обаче е
+    // отделен тип взаимодействие, което Discord доставя независимо — затова
+    // падащото меню показваше данни на всеки, преди командата да откаже достъп.
+    // setDefaultMemberPermissions гейтва и двете на ниво платформа; runtime
+    // проверката остава (защита в дълбочина).
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand((s) =>
       s.setName("start")
         .setDescription("Start a new giveaway")

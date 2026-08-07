@@ -4,6 +4,8 @@ import { prisma } from "../lib/prisma.js";
 import { z } from "zod";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
+import { notifyBot } from "../services/botNotifier.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 // ─── Premium field map ──────────────────────────────────────────────────────
 const FORM_PREMIUM_FIELDS = {
@@ -81,6 +83,8 @@ const createFormSchema = z.object({
   isApplication: z.boolean().default(false),
   reviewChannelId: z.string().optional(),
   transcriptChannelId: z.string().optional(),
+  // v34 — Discord категория за discuss каналите (празно = авто-избор по име)
+  discussCategoryId: z.string().optional(),
   // Appy.bot-style fields — all optional, backward-compatible
   acceptRoleIds:   z.array(z.string()).optional(),
   denyRoleIds:     z.array(z.string()).optional(),
@@ -104,13 +108,7 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     const { isPremium, limits } = await getServerTier(req.params.serverId);
 
     // Count limits
-    const formCount = await prisma.form.count({ where: { serverId: req.params.serverId } });
-    if (formCount >= limits.forms) {
-      return res.status(403).json({
-        error: `Form limit (${limits.forms}) reached.${!isPremium ? " Upgrade to Premium for 50." : ""}`,
-        code: "LIMIT_REACHED",
-      });
-    }
+    // Броенето и създаването са АТОМАРНИ (lib/withinLimit.js) — виж бележката там.
     if (parsed.data.questions.length > limits.questionsPerForm) {
       return res.status(403).json({
         error: `Question limit (${limits.questionsPerForm}) exceeded.${!isPremium ? " Upgrade to Premium." : ""}`,
@@ -134,10 +132,15 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     // Normalise empty strings to null for optional fields
     if (rest.reviewChannelId === "") rest.reviewChannelId = null;
     if (rest.transcriptChannelId === "") rest.transcriptChannelId = null;
+    if (rest.discussCategoryId === "") rest.discussCategoryId = null;
     if (rest.acceptMessage === "") rest.acceptMessage = null;
     if (rest.denyMessage === "") rest.denyMessage = null;
 
-    const form = await prisma.form.create({
+    const created = await createWithinLimit({
+      model: "form",
+      where: { serverId: req.params.serverId },
+      limit: limits.forms,
+      create: (tx) => tx.form.create({
       data: {
         serverId: req.params.serverId,
         ...rest,
@@ -159,9 +162,16 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
         },
       },
       include: { questions: { orderBy: { order: "asc" } } },
+      }),
     });
+    if (!created.ok) {
+      return res.status(403).json({
+        error: `Form limit (${limits.forms}) reached.${!isPremium ? " Upgrade to Premium for 50." : ""}`,
+        code: "LIMIT_REACHED",
+      });
+    }
 
-    res.status(201).json(form);
+    res.status(201).json(created.row);
   } catch (err) {
     next(err);
   }
@@ -204,6 +214,7 @@ router.put("/:serverId/:formId", requireServerAdmin, async (req, res, next) => {
     const { questions, closed, ...rest } = parsed.data;
     if (rest.reviewChannelId === "") rest.reviewChannelId = null;
     if (rest.transcriptChannelId === "") rest.transcriptChannelId = null;
+    if (rest.discussCategoryId === "") rest.discussCategoryId = null;
     if (rest.acceptMessage === "")   rest.acceptMessage   = null;
     if (rest.denyMessage === "")     rest.denyMessage     = null;
 
@@ -235,6 +246,58 @@ router.put("/:serverId/:formId", requireServerAdmin, async (req, res, next) => {
     });
 
     res.json(form);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── POST /api/forms/:serverId/:formId/spawn ──────────────────────────────────
+// Публикува формата като embed + бутон в Discord канал направо от dashboard-а —
+// същият пост като /form spawn (customId form_direct:<formId>), само че ботът
+// го изпраща по заявка на backend-а (notifyBot → /internal/form-spawn).
+
+const spawnFormSchema = z.object({
+  // Discord snowflake — числов низ 17–20 знака
+  channelId: z.string().regex(/^\d{17,20}$/, "Invalid Discord channel ID"),
+  buttonLabel: z.string().min(1).max(80).optional(), // Discord button label limit
+});
+
+router.post("/:serverId/:formId/spawn", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = spawnFormSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "A valid Discord channel ID is required (17–20 digits)." });
+    }
+
+    // Cross-tenant IDOR guard: формата трябва да принадлежи на URL serverId.
+    const form = await prisma.form.findFirst({
+      where: { id: req.params.formId, serverId: req.params.serverId },
+      select: { id: true, name: true, description: true, closedAt: true },
+    });
+    if (!form) return res.status(404).json({ error: "Form not found", code: "NOT_FOUND" });
+    if (form.closedAt) {
+      return res.status(409).json({
+        error: "This form is closed for submissions. Reopen it before posting.",
+        code: "FORM_CLOSED",
+      });
+    }
+
+    const result = await notifyBot("FORM_SPAWN", {
+      serverId: req.params.serverId,
+      formId: form.id,
+      channelId: parsed.data.channelId,
+      formName: form.name,
+      formDescription: form.description,
+      buttonLabel: parsed.data.buttonLabel,
+    });
+
+    if (!result?.messageId) {
+      return res.status(502).json({
+        error: "Bot is offline or failed to post the form. Check the channel ID and that the bot can write there.",
+      });
+    }
+
+    res.json({ ok: true, channelId: result.channelId, messageId: result.messageId });
   } catch (err) {
     next(err);
   }

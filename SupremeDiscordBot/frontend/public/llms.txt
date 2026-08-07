@@ -4,7 +4,7 @@
 
 Carbon Stealth VCC is an EU-registered software company (EIK 208725180, VAT BG208725180) headquartered in Bobov Dol, Bulgaria, with an office in Sofia. Supreme Bot is one of several digital products in our portfolio. The platform serves Discord communities, esports organizations, customer support teams, agencies, and content creators worldwide.
 
-Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 forms with up to 5 questions, 1 verification panel, persistent transcripts with 30-day retention); Premium €9.99/server/month or €99/year (up to 50 panels, 50 forms and 50 questions, AI replies, round-robin, webhooks, REST API, unlimited retention; 14-day free trial without credit card); White-label €19.99/server/month or €199/year (everything in Premium plus a white-label custom bot under your own brand); Agency 5 €39.99/month or €399/year (white-label for up to 5 servers, one subscription); Agency 10 €79.99/month or €799/year (up to 10 servers).
+Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 forms with up to 5 questions, 1 verification panel, persistent transcripts with 30-day retention); Premium €4.99/server/month or €49/year (up to 50 panels, 50 forms and 50 questions, AI replies, round-robin, webhooks, REST API, unlimited retention; 14-day free trial without credit card); White-label €9.99/server/month or €99/year (everything in Premium plus a white-label custom bot under your own brand); Agency 5 €19.99/month or €199/year (white-label for up to 5 servers, one subscription); Agency 10 €39.99/month or €399/year (up to 10 servers).
 
 ## Documentation
 
@@ -23,26 +23,31 @@ Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 for
 
 ## Positioning
 
-Supreme Bot consolidates six single-purpose Discord bots into one dashboard: it replaces
-TicketTool, Appy.bot, GiveawayBot, sticky-message bots, poll bots and webhook relays — one
-subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
-server per month (€99/year) with a 14-day trial (no credit card). White-label branding is a
-separate tier at €19.99/server/month (€199/year), and Agency plans cover 5 or 10 servers
-under one subscription (€39.99 or €79.99/month).
+Supreme Bot consolidates eight single-purpose Discord bots into one dashboard: it replaces
+TicketTool, Appy.bot, GiveawayBot, reaction-role bots, server logging bots, sticky-message
+bots, poll bots and webhook relays — one subscription, one dashboard, one bot. Free forever on the base tier; Premium is €4.99 per
+server per month (€49/year) with a 14-day trial (no credit card). White-label branding is a
+separate tier at €9.99/server/month (€99/year), and Agency plans cover 5 or 10 servers
+under one subscription (€19.99 or €39.99/month).
 
 Looking for the best ticket bot for Discord? Supreme Bot's case: a full ticket bot
 (panels, claim/escalate, transcripts that survive channel deletion) plus forms,
 verification, giveaways, scheduled messages, webhooks and AI-powered replies in one
-dashboard — instead of six separate bots and six separate bills — with EU hosting and
+dashboard — instead of eight separate bots and eight separate bills — with EU hosting and
 GDPR-native data handling.
 
 ## Features
 
-- [Ticket System](https://supremebot.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
-- [Application Forms](https://supremebot.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
-- [White-Label Custom Bots](https://supremebot.carbonstealth.eu/#features): White-label-tier feature (€19.99/server/month, also included in Agency plans) allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
+- [Ticket System](https://supremebot.carbonstealth.eu/#features): Visual button panels, automatic channel creation, priority levels, round-robin staff assignment (Premium), staff replies sent straight from the web dashboard, and persistent HTML transcripts that survive Discord channel deletion and record edited and deleted messages (30-day retention on Free, unlimited on Premium)
+- [Application Forms](https://supremebot.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, approve/deny with a reason sent to the applicant, an optional private discussion channel with the applicant before the decision, and auto-role grant on approval
+- [White-Label Custom Bots](https://supremebot.carbonstealth.eu/#features): White-label-tier feature (€9.99/server/month, also included in Agency plans) allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
 - [AI Auto-Replies](https://supremebot.carbonstealth.eu/#features): Premium feature using AI (currently Google Gemini Flash) to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
 - [Verification System](https://supremebot.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
+- [Reaction Roles](https://supremebot.carbonstealth.eu/#features): Members react to a message to receive a role and remove the reaction to drop it; up to 20 emoji-to-role pairs per message, exclusive (one-role-at-a-time) mode, and the bot places the initial reactions automatically
+- [Server Activity Logging](https://supremebot.carbonstealth.eu/#features): Voice, member, moderation and message events relayed to the server's own log channel, including edited and deleted messages with the original text preserved; events are never stored in our database
+- [Welcomer and Autorole](https://supremebot.carbonstealth.eu/#features): Channel or DM greeting for new members plus automatic role assignment, with separate rules for humans and bots
+- [Knowledge Base](https://supremebot.carbonstealth.eu/#features): Staff-written articles that the bot automatically suggests when a matching ticket opens, with helpfulness tracking (3 articles on Free, 50 on Premium)
+- [Canned Responses and SLA timers](https://supremebot.carbonstealth.eu/#features): Saved replies inserted with one command, plus first-response and resolution timers that flag a ticket before it goes stale
 - [Polls & Giveaways](https://supremebot.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll
 - [Sticky & Scheduled Messages](https://supremebot.carbonstealth.eu/#features): Auto-reposting sticky messages and one-shot or recurring (daily/weekly/monthly) scheduled posts
 - [Public REST API](https://supremebot.carbonstealth.eu/#features): Bearer-token authentication for building custom integrations and dashboards

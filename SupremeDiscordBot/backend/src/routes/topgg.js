@@ -11,6 +11,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
+import { timingSafeEqual } from "crypto";
 
 const router = Router();
 
@@ -22,12 +23,29 @@ const voteSchema = z.object({
   query: z.union([z.string(), z.record(z.string())]).optional(),
 });
 
+
+/** Constant-time сравнение на два низа (различната дължина също не изтича). */
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) {
+    // Сравняваме bb със себе си, за да отнеме сравнимо време, и връщаме false.
+    timingSafeEqual(bb, bb);
+    return false;
+  }
+  return timingSafeEqual(ba, bb);
+}
+
 // ─── POST /api/topgg/webhook ─────────────────────────────────────────────────
 router.post("/webhook", async (req, res, next) => {
   const secret = process.env.TOPGG_WEBHOOK_AUTH;
   if (!secret) return res.status(503).json({ error: "top.gg webhook is not configured." });
   // top.gg праща тайната в Authorization header-а точно както е въведена.
-  if (req.headers.authorization !== secret) {
+  // Сравнението е constant-time: наивното `!==` изтича дължина и позиция на
+  // първото разминаване по време, а тайната е познаваема отвън (webhook се
+  // вика от чужд хост). Същият модел като requireBotSecret.
+  if (!timingSafeEqualStr(req.headers.authorization, secret)) {
     return res.status(403).json({ error: "Invalid authorization" });
   }
 

@@ -103,6 +103,18 @@ export default {
         return;
       }
 
+      // Слято ГРУПОВО меню: опциите идват от няколко панела, затова панелът е
+      // в самата стойност (`<panelId>:<btnId>`), а не в customId. Оттам нататък
+      // е същият път — тикетът пази настройките на СВОЯ панел.
+      if (interaction.isStringSelectMenu() && interaction.customId === "panel_select_multi") {
+        const [panelId, buttonId] = String(interaction.values[0] || "").split(":");
+        if (!panelId || !buttonId) {
+          return interaction.reply({ content: "❌ This option is no longer valid.", flags: MessageFlags.Ephemeral });
+        }
+        await handlePanelButtonClick(interaction, panelId, buttonId);
+        return;
+      }
+
       // ── Form Direct Buttons (from /form spawn) ─────────────────────────────
       if (interaction.isButton() && interaction.customId.startsWith("form_direct:")) {
         const formId = interaction.customId.replace("form_direct:", "");
@@ -114,6 +126,13 @@ export default {
       if (interaction.isButton() && interaction.customId.startsWith("app_review:")) {
         const [, appId, action] = interaction.customId.split(":");
         await handleAppReview(interaction, appId, action);
+        return;
+      }
+
+      // ── Application Review Modal Submit (reason for approve/deny) ───────────
+      if (interaction.isModalSubmit() && interaction.customId.startsWith("app_review_modal:")) {
+        const [, appId, action] = interaction.customId.split(":");
+        await handleAppReviewModalSubmit(interaction, appId, action);
         return;
       }
 
@@ -226,11 +245,31 @@ export default {
       // Note: обичайните форми минават през DM collectors (runFormSession);
       // "form_modal:" (по-горе) е единственото изключение. Ако стигне непознат
       // modal submit, го потвърждаваме ephemeral, за да не вижда потребителят
-      // „This interaction failed".
+      // „This interaction failed“.
       if (interaction.isModalSubmit()) {
         const lang = await resolveLang(interaction);
         await interaction.reply({
           content: t("error.formExpired", lang),
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => {});
+        return;
+      }
+
+      // ── Резервен отговор за НЕПОЗНАТ бутон / select ─────────────────────────
+      // Дотук е верига от startsWith проверки. Modal submit имаше резервен
+      // клон, компонентите — НЕ: непознат customId просто излизаше от try-а без
+      // никакъв отговор, Discord показваше „This interaction failed“ след 3
+      // секунди, а в логовете нямаше нищо. Това не е хипотетично: панел,
+      // публикуван преди месеци, после изтрит или преконфигуриран, оставя живи
+      // бутони с customId, който вече не се разпознава — всяко натискане тихо
+      // се проваля. (Дискорджията, 07.08.2026)
+      if (interaction.isMessageComponent()) {
+        console.warn(
+          `[interaction] непознат ${interaction.isButton() ? "бутон" : "компонент"} customId=${interaction.customId} guild=${interaction.guildId}`,
+        );
+        const lang = await resolveLang(interaction);
+        await interaction.reply({
+          content: t("error.componentExpired", lang),
           flags: MessageFlags.Ephemeral,
         }).catch(() => {});
         return;
@@ -357,7 +396,7 @@ async function handleFormModalSubmit(interaction) {
     } catch { /* field wasn't rendered (shouldn't happen — same list built the modal) */ }
     // Същата guarded валидация като DM пътя (ReDoS-защитена) — modal-ът не
     // бива тихо да заобикаля validationRegex на формата.
-    if (q.validationRegex && !validateAnswerAgainstRegex(q, answers[q.id] || "").ok) {
+    if (q.validationRegex && !(await validateAnswerAgainstRegex(q, answers[q.id] || "")).ok) {
       invalid.push(q.label);
     }
   }
@@ -556,7 +595,12 @@ async function handleTagReplySelect(interaction) {
 
   const channel = interaction.guild?.channels.cache.get(channelId) || interaction.channel;
   try {
-    await channel.send({ content: tag.content });
+    // allowedMentions гард: съдържанието на тага е свободен текст, писан от
+    // персонала (или през таблото). Без този гард един таг с „@everyone“ прави
+    // бота машина за масов пинг — точно поведението, за което Discord сваля
+    // приложения. Потребители и роли остават позволени: отговорът на поддръжката
+    // често трябва да спомене човека или екипа.
+    await channel.send({ content: tag.content, allowedMentions: { parse: ["users", "roles"] } });
   } catch (err) {
     return interaction.editReply(`❌ Failed to post the tag: ${err.message}`);
   }
@@ -695,13 +739,30 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   }
 
   // ─── Register ticket in DB (gets the atomic counter number) ─────────────────
-  const ticketResult = await createTicket(
-    guild.id,
-    panel.id,
-    creator.id,
-    channel.id,
-    null
-  );
+  // Каналът/thread-ът ВЕЧЕ съществува в Discord. Ако регистрацията се провали с
+  // ИЗКЛЮЧЕНИЕ (мрежа, 5xx, timeout — всичко без познат `code` в тялото), досега
+  // то излиташе нагоре и каналът оставаше осиротял ЗАВИНАГИ: празен тикет канал,
+  // който никой не поддържа и никой не може да затвори през бота. Познатите
+  // кодове (MAX_TICKETS_REACHED) вече чистеха — сега чисти и изключението.
+  // (Дискорджията, 07.08.2026)
+  let ticketResult;
+  try {
+    ticketResult = await createTicket(
+      guild.id,
+      panel.id,
+      creator.id,
+      channel.id,
+      null
+    );
+  } catch (err) {
+    console.error(`[ticket] регистрацията се провали за guild=${guild.id} panel=${panel.id}: ${err?.message}`);
+    await channel.delete().catch((delErr) => {
+      // Ако и чистенето не мине, поне оставяме следа — иначе каналът виси нямо.
+      console.error(`[ticket] осиротял канал ${channel.id} НЕ можа да бъде изтрит: ${delErr?.message}`);
+    });
+    const lang = await resolveLang(interaction);
+    return interaction.editReply(t("error.ticketCreateFailed", lang));
+  }
 
   // Backend may refuse due to limits
   if (ticketResult?.code === "MAX_TICKETS_REACHED" || ticketResult?.code === "PANEL_LIMIT_REACHED") {
@@ -969,11 +1030,65 @@ async function handleAppReview(interaction, appId, action) {
     });
   }
 
+  // ── Open a ticket (discussion канал с кандидата, решението остава PENDING) ──
+  if (action === "discuss") {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    try {
+      const { data } = await api.post(`/bot/application/${appId}/discuss`, {
+        serverId: interaction.guildId,
+        reviewerId: interaction.user.id,
+        reviewerTag: interaction.user.username,
+      });
+      await interaction.editReply(
+        data.alreadyExists
+          ? `💬 Discussion channel already open: <#${data.channelId}>`
+          : `✅ Discussion channel opened: <#${data.channelId}>`
+      );
+    } catch (err) {
+      await interaction.editReply(`❌ Error: ${err?.response?.data?.error || err.message}`);
+    }
+    return;
+  }
+
+  // ── Approve / Deny → модал с причина, решението пада в modal submit-а ───────
+  // (стари review embeds без discuss бутон ползват същите customId-та → и те
+  // получават новия поток без миграция на съобщенията)
+  const isApprove = action === "approve";
+  const modal = new ModalBuilder()
+    .setCustomId(`app_review_modal:${appId}:${action}`)
+    .setTitle(isApprove ? "Approve application" : "Deny application");
+
+  const reasonInput = new TextInputBuilder()
+    .setCustomId("reason")
+    .setLabel(isApprove ? "Reason / note for approval" : "Reason for denial")
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true)
+    .setMaxLength(1000)
+    .setPlaceholder(
+      isApprove
+        ? "Sent to the applicant in their DM ({note} in custom messages)."
+        : "Sent to the applicant so they know why."
+    );
+
+  modal.addComponents(new ActionRowBuilder().addComponents(reasonInput));
+  await interaction.showModal(modal);
+}
+
+async function handleAppReviewModalSubmit(interaction, appId, action) {
+  if (!interaction.member.permissions.has("ManageGuild")) {
+    return interaction.reply({
+      content: "❌ You need Manage Server permission to review applications.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const note = interaction.fields.getTextInputValue("reason")?.trim() || null;
 
   try {
     await api.post(`/bot/application/${appId}/review`, {
       action,
+      note,
       serverId: interaction.guildId,
       reviewerId: interaction.user.id,
       reviewerTag: interaction.user.username,
@@ -984,24 +1099,29 @@ async function handleAppReview(interaction, appId, action) {
       deny: "❌ Denied",
     };
 
-    // Disable all buttons on the review embed
+    // Disable all buttons on the review embed. Модалът е отворен от бутон на
+    // съобщение → interaction.message е наличен на ModalSubmitInteraction.
     // Must use ButtonBuilder.from() — message components are read-only ButtonComponent, not ButtonBuilder
-    const disabledRows = interaction.message.components.map((row) => {
-      const newRow = new ActionRowBuilder();
-      newRow.addComponents(
-        row.components.map((btn) => ButtonBuilder.from(btn).setDisabled(true))
-      );
-      return newRow;
-    });
+    if (interaction.message) {
+      const disabledRows = interaction.message.components.map((row) => {
+        const newRow = new ActionRowBuilder();
+        newRow.addComponents(
+          row.components.map((btn) => ButtonBuilder.from(btn).setDisabled(true))
+        );
+        return newRow;
+      });
 
-    await interaction.message.edit({ components: disabledRows }).catch(() => {});
-    await interaction.message.reply({
-      embeds: [buildStatusEmbed(
-        actionLabels[action] || action,
-        `Application ${action}d by **${interaction.user.username}**`,
-        action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO
-      )],
-    });
+      await interaction.message.edit({ components: disabledRows }).catch(() => {});
+      await interaction.message.reply({
+        embeds: [buildStatusEmbed(
+          actionLabels[action] || action,
+          `Application ${action}d by **${interaction.user.username}**` +
+            (note ? `\n**Reason:** ${note.slice(0, 900)}` : ""),
+          action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO,
+          { client: interaction.client }
+        )],
+      }).catch(() => {});
+    }
 
     await interaction.editReply("✅ Done!");
   } catch (err) {
@@ -1440,7 +1560,15 @@ async function handleTicketDelete(interaction, ticket, panel) {
 
 // ─── Feedback rating (post-close DM) ──────────────────────────────────────────
 async function handleFeedback(interaction, ticketId, rating) {
-  if (rating < 1 || rating > 5) return;
+  // Гол `return` тук значеше НУЛЕВ ack: Discord показва „This interaction
+  // failed" след 3 секунди, а в логовете няма нищо. Стойността идва от нашия
+  // собствен customId, значи извън диапазона = наш дефект, не потребителски
+  // вход — затова го логваме, вместо да го гълтаме. (Дискорджията, 07.08.2026)
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    console.warn(`[feedback] невалидна оценка ${rating} за тикет ${ticketId} (customId=${interaction.customId})`);
+    await interaction.deferUpdate().catch(() => {});
+    return;
+  }
   // deferUpdate ack-ва компонента веднага (type 6, без "loading" визуализация),
   // за да не изтече 3-секундният бюджет преди backend заявката. После editReply
   // редактира съобщението с бутоните.

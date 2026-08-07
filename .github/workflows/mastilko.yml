@@ -20,6 +20,7 @@ jobs:
   quality:
     name: Lint · typecheck · test · build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: mastilko

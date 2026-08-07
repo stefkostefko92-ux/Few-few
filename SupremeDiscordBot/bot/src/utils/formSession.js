@@ -16,36 +16,66 @@ import {
   updateApplicationReviewMessage,
 } from "./api.js";
 import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
+import { SUCCESS, INFO } from "./colors.js";
 
 import { sessionStore } from "./sessionStore.js";
 import { t, resolveLang } from "../i18n/index.js";
 
 // ─── Споделена regex валидация (DM сесия + modal път) ────────────────────────
-// ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата,
-// а входът е необработен потребителски текст в споделен bot процес.
-// Два слоя (без тежка зависимост като re2):
-//   1) Твърд кап на входа (64 знака) — при толкова кратък вход дори
-//      експоненциален backtracking (напр. `(a+)+$`) свършва мигновено.
-//   2) Отхвърляме опасни шаблони: вложени quantifier-и са класическият
-//      катастрофичен backtracking; такъв шаблон не се изпълнява изобщо.
-// Малформиран шаблон → приемаме отговора (не наказваме потребителя за грешка
-// в конфигурацията). Връща { ok } — съобщението за грешка е на извикващия.
-const REGEX_INPUT_MAX = 64;
-const NESTED_QUANTIFIER = /(\([^)]*[+*}][^)]*\)|\[[^\]]*\][+*}]|[+*}])\s*[+*]|\)\s*\{\d+,?\d*\}\s*[+*{]/;
+// ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата
+// (задава я админ на сървъра), входът е необработен потребителски текст, а
+// процесът на бота е СПОДЕЛЕН между всички наематели. Злонамерен админ може да
+// сложи катастрофичен шаблон (`(a|a)*$`, `(a+)+$`, …) и всяко подаване да
+// замрази event loop-а за ВСИЧКИ сървъри.
+//
+// Патърн-блоклист + кап на входа НЕ е достатъчен: blocklist-ите теч(ат)
+// (alternation-overlap го заобикаля), а катастрофичният backtracking е
+// експоненциален в дължината на входа — 64 знака пак виси. Затова недоверения
+// regex се изпълнява в WORKER thread с твърд timeout: катастрофичен шаблон
+// блокира еднократния worker (който убиваме), не главния loop. Зависимост:
+// нула (вграденото `node:worker_threads`), за разлика от re2 (нативен билд).
+import { Worker } from "node:worker_threads";
+
+const REGEX_INPUT_MAX = 512;      // разумен таван на входа (не защита сам по себе си)
+// Щедър timeout: катастрофичният backtracking върви в ИЗОЛИРАН worker и НЕ
+// блокира главния event loop — единствената цена е колко чака подаващият
+// потребител. Затова таванът покрива уверено worker startup-а под натоварване
+// (иначе легитимен regex „изтича“ фалшиво), без да отваря DoS към другите
+// наематели. 1s: легитимните свършват за <5ms, катастрофичните се убиват.
+const REGEX_TIMEOUT_MS = 1000;
+
+// Самостоятелен worker: компилира и тества, връща булев резултат.
+const WORKER_SRC = `
+  const { parentPort, workerData } = require("node:worker_threads");
+  try {
+    const re = new RegExp(workerData.pattern);
+    parentPort.postMessage({ ok: re.test(workerData.content) });
+  } catch {
+    parentPort.postMessage({ ok: true, malformed: true }); // грешен шаблон → приемаме
+  }
+`;
 
 export function validateAnswerAgainstRegex(question, content) {
-  if (!question?.validationRegex) return { ok: true };
-  if ((content || "").length > REGEX_INPUT_MAX) return { ok: false };
-  if (NESTED_QUANTIFIER.test(question.validationRegex)) {
-    console.warn(`[formSession] rejected risky validationRegex (nested quantifier) on question ${question.id}: ${question.validationRegex}`);
-    return { ok: true }; // не изпълняваме опасния шаблон — приемаме отговора
-  }
-  try {
-    return { ok: new RegExp(question.validationRegex).test(content) };
-  } catch {
-    console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
-    return { ok: true };
-  }
+  if (!question?.validationRegex) return Promise.resolve({ ok: true });
+  if ((content || "").length > REGEX_INPUT_MAX) return Promise.resolve({ ok: false });
+
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    let worker;
+    try {
+      worker = new Worker(WORKER_SRC, { eval: true, workerData: { pattern: question.validationRegex, content: content || "" } });
+    } catch {
+      return finish({ ok: true }); // не можем да стартираме worker → не наказвай потребителя
+    }
+    const timer = setTimeout(() => {
+      console.warn(`[formSession] validationRegex timeout (>${REGEX_TIMEOUT_MS}ms, катастрофичен?) q${question.id}: ${question.validationRegex}`);
+      worker.terminate().catch(() => {});
+      finish({ ok: true }); // не изпълнявай опасния шаблон срещу event loop-а — приеми
+    }, REGEX_TIMEOUT_MS);
+    worker.once("message", (m) => { clearTimeout(timer); worker.terminate().catch(() => {}); finish({ ok: !!m.ok }); });
+    worker.once("error", () => { clearTimeout(timer); finish({ ok: true }); });
+  });
 }
 
 // sessionStore: Redis-backed with in-memory fallback (see sessionStore.js)
@@ -71,8 +101,17 @@ export async function runFormSession(interaction, form, panel) {
   }
 
   const sessionKey = `${interaction.user.id}:${form.id}`;
+  // Ключът на сесията носи formId, тоест един потребител можеше да води ДВЕ
+  // РАЗЛИЧНИ форми едновременно. И двете създават collector върху СЪЩИЯ DM
+  // канал с филтър „автор == потребителят" → един отговор влиза и в двете
+  // сесии: въпросите се разминават, отговорите се смесват, кандидатурата
+  // излиза безсмислена. (Качествения, 07.08.2026)
+  //
+  // В DM няма как да различим за коя форма е отговорът, затова инвариантът е
+  // една активна форма на потребител — с изричен ключ-ключалка.
+  const userLockKey = `lock:${interaction.user.id}`;
 
-  if (await sessionStore.has(sessionKey)) {
+  if (await sessionStore.has(sessionKey) || await sessionStore.has(userLockKey)) {
     try {
       const dmChannel = await interaction.user.createDM();
       await dmChannel.send(t("form.alreadyActive", lang));
@@ -100,6 +139,7 @@ export async function runFormSession(interaction, form, panel) {
   };
 
   await sessionStore.set(sessionKey, session);
+  await sessionStore.set(userLockKey, { formId: form.id });
 
   try {
     const dmChannel = await interaction.user.createDM();
@@ -107,6 +147,7 @@ export async function runFormSession(interaction, form, panel) {
   } catch (err) {
     console.error("Failed to DM user for form:", err.message);
     await sessionStore.delete(sessionKey);
+    await sessionStore.delete(`lock:${session.userId}`);
     await interaction.editReply(t("form.dmFailed", lang)).catch(() => {});
   }
 }
@@ -132,7 +173,7 @@ async function sendQuestion(client, dmChannel, session, sessionKey) {
       description: `**${question.label}**${
         question.placeholder ? `\n_${question.placeholder}_` : ""
       }\n\n${requiredLabel}`,
-      color: 0x5865f2,
+      color: INFO,
       footer: { text: t("form.cancelHint", lang) },
     }],
   });
@@ -189,6 +230,7 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
+      await sessionStore.delete(`lock:${session.userId}`);
       dmChannel.send(t("form.timeout", session.lang || "en")).catch(() => {});
     }
   });
@@ -207,6 +249,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
 
     if (content.toLowerCase() === "cancel") {
       await sessionStore.delete(sessionKey);
+      await sessionStore.delete(`lock:${session.userId}`);
       await dmChannel.send(t("form.cancelled", lang));
       return;
     }
@@ -248,7 +291,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     //      да блокираме event loop-а.
     // Малформиран шаблон се хваща от try/catch.
     if (question.validationRegex) {
-      const verdict = validateAnswerAgainstRegex(question, content);
+      const verdict = await validateAnswerAgainstRegex(question, content);
       if (!verdict.ok) {
         await dmChannel.send(
           t("form.invalidFormat", lang, { reason: question.validationMessage || "Answer does not match the expected format. Please try again." })
@@ -264,6 +307,7 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
+      await sessionStore.delete(`lock:${session.userId}`);
       dmChannel.send(t("form.timeout", lang)).catch(() => {});
     }
   });
@@ -295,13 +339,14 @@ async function processAnswer(client, dmChannel, session, sessionKey, question, a
 
 async function finishSession(client, dmChannel, session, sessionKey) {
   await sessionStore.delete(sessionKey);
+  await sessionStore.delete(`lock:${session.userId}`);
   const lang = session.lang || "en";
 
   await dmChannel.send({
     embeds: [{
       title: t("form.submittedTitle", lang),
       description: t("form.submittedBody", lang),
-      color: 0x57f287,
+      color: SUCCESS,
     }],
   });
 
@@ -404,7 +449,15 @@ async function handleTicketFromForm(client, session) {
       ],
     });
 
-    await channel.send({ embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority)] });
+    // ticketNumber не се подава: записът в базата се създава по-надолу
+    // (createTicket), затова номерът още не съществува тук. Останалото —
+    // support ролите и клиентът (за брандирания footer) — е налично.
+    await channel.send({
+      embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority, {
+        supportRoleIds: panel.supportRoleIds || [],
+        client,
+      })],
+    });
 
     const transcript = session.questions
       .map((q) => `**${q.label}**\n${session.answers[q.id] || "*No answer*"}`)
@@ -414,7 +467,7 @@ async function handleTicketFromForm(client, session) {
       embeds: [{
         title: "📋 Form Submission",
         description: transcript.slice(0, 4096),
-        color: 0x5865f2,
+        color: INFO,
       }],
     });
 

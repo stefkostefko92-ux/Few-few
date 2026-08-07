@@ -15,11 +15,23 @@ export const REQUIRED_PERMISSIONS = [
   { flag: PermissionsBitField.Flags.ReadMessageHistory, name: "Read Message History" },
   { flag: PermissionsBitField.Flags.CreatePrivateThreads, name: "Create Private Threads" },
   { flag: PermissionsBitField.Flags.ManageThreads, name: "Manage Threads" },
+  // Беше в числото за поканата, но липсваше в списъка — тоест /debug и welcome
+  // embed-ът обявяваха „всички права са налице“ на сървър, на който ботът не
+  // може да пише в собствения си private-thread тикет. Дрейфът излезе, когато
+  // тест започна да сверява сумата на списъка с числото.
+  { flag: PermissionsBitField.Flags.SendMessagesInThreads, name: "Send Messages in Threads" },
+  // Server Activity Logging: БЕЗ това право fetchAuditLogs хвърля „Missing
+  // Permissions", нашите резолвъри го гълтат тихо (fail-safe) и полето „Actor“
+  // НИКОГА не се появява — тоест „кой изрита / кой премести / кой смени
+  // правата" мълчи по целия лог. Само четене на одитния дневник; не дава
+  // никакво действие.
+  { flag: PermissionsBitField.Flags.ViewAuditLog, name: "View Audit Log" },
 ];
 
 // Same bits, as an integer — used to build the re-invite URL (matches the
 // permissions above; keep in sync if REQUIRED_PERMISSIONS changes).
-export const INVITE_PERMISSIONS_INT = 361045814288;
+// 361045814288 (без одитния дневник) | 1<<7 = 361045814416.
+export const INVITE_PERMISSIONS_INT = 361045814416;
 
 /**
  * @param {import("discord.js").Guild} guild

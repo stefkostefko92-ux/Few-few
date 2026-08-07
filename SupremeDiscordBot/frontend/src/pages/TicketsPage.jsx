@@ -7,6 +7,7 @@ import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } 
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
 import { useToast } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
 
 const STATUS_COLORS = {
   OPEN: "text-success bg-green-500/10",
@@ -28,6 +29,7 @@ const LIMIT = 20;
 
 export default function TicketsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -91,7 +93,7 @@ export default function TicketsPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      setPdfError("Couldn't export the PDF transcript — please try again.");
+      setPdfError(t("tickets.pdfFailed"));
     } finally {
       setPdfExporting(null);
     }
@@ -100,7 +102,7 @@ export default function TicketsPage() {
   const claimMut = useMutation({
     mutationFn: (ticketId) => claimTicket(serverId, ticketId),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); },
-    onError: (err) => setClaimError(err?.response?.data?.error || "Failed to claim ticket"),
+    onError: (err) => setClaimError(err?.response?.data?.error || t("tickets.claimFailed")),
   });
 
   const replyMut = useMutation({
@@ -110,7 +112,7 @@ export default function TicketsPage() {
       setReplyingId(null);
       setReplyText("");
     },
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to send the reply"),
+    onError: (err) => toast.error(err?.response?.data?.error || t("tickets.replyFailed")),
   });
 
   const tickets = data?.tickets || [];
@@ -121,16 +123,16 @@ export default function TicketsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-cs-text">Tickets</h1>
+          <h1 className="text-2xl font-bold text-cs-text">{t("tickets.title")}</h1>
           <p className="text-cs-muted text-sm mt-1">
-            {data?.total ?? 0} total tickets
+            {t("tickets.totalCount", { n: data?.total ?? 0 })}
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <input
             className="cs-input w-52"
-            placeholder="Search by creator or ID…"
-            aria-label="Search tickets by creator or ID"
+            placeholder={t("tickets.searchPlaceholder")}
+            aria-label={t("tickets.search")}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
@@ -139,39 +141,39 @@ export default function TicketsPage() {
             className="cs-input w-40"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            title="From date"
-            aria-label="From date"
+            title={t("tickets.fromDate")}
+            aria-label={t("tickets.fromDate")}
           />
           <input
             type="date"
             className="cs-input w-40"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            title="To date"
-            aria-label="To date"
+            title={t("tickets.toDate")}
+            aria-label={t("tickets.toDate")}
           />
           <select
             className="cs-input w-40"
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            aria-label="Filter tickets by status"
+            aria-label={t("tickets.filterByStatus")}
           >
-            <option value="">All Statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="CLAIMED">Claimed</option>
-            <option value="CLOSED">Closed</option>
-            <option value="ARCHIVED">Archived</option>
+            <option value="">{t("common.allStatuses")}</option>
+            <option value="OPEN">{t("status.open")}</option>
+            <option value="CLAIMED">{t("status.claimed")}</option>
+            <option value="CLOSED">{t("status.closed")}</option>
+            <option value="ARCHIVED">{t("status.archived")}</option>
           </select>
           <select
             className="cs-input w-40"
             value={priorityFilter}
             onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
-            aria-label="Filter tickets by priority"
+            aria-label={t("tickets.filterByPriority")}
           >
-            <option value="">All Priorities</option>
-            <option value="URGENT">Urgent</option>
-            <option value="HIGH">High</option>
-            <option value="NORMAL">Normal</option>
+            <option value="">{t("priority.all")}</option>
+            <option value="URGENT">{t("priority.urgent")}</option>
+            <option value="HIGH">{t("priority.high")}</option>
+            <option value="NORMAL">{t("priority.normal")}</option>
             <option value="LOW">Low</option>
           </select>
         </div>
@@ -207,17 +209,17 @@ export default function TicketsPage() {
         hasFilters ? (
           <EmptyState
             icon={Ticket}
-            title="No tickets match this filter"
+            title={t("tickets.filtered.title")}
             description="Try adjusting the search, date range, or status filter."
-            ctaLabel="Clear filters"
+            ctaLabel={t("tickets.filtered.cta")}
             onCtaClick={clearFilters}
           />
         ) : (
           <EmptyState
             icon={Ticket}
-            title="No tickets yet"
+            title={t("tickets.empty.title")}
             description="Tickets will show up here once members start using a ticket panel."
-            ctaLabel="Set up a panel"
+            ctaLabel={t("tickets.empty.cta")}
             ctaTo={`/dashboard/${serverId}/panels`}
           />
         )
@@ -227,15 +229,15 @@ export default function TicketsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">
-                  <th className="text-left px-4 py-3">Status</th>
-                  <th className="text-left px-4 py-3">Priority</th>
+                  <th className="text-left px-4 py-3">{t("common.status")}</th>
+                  <th className="text-left px-4 py-3">{t("common.priority")}</th>
                   <th className="text-left px-4 py-3">#</th>
-                  <th className="text-left px-4 py-3">Creator</th>
-                  <th className="text-left px-4 py-3">Assigned To</th>
-                  <th className="text-left px-4 py-3">Panel</th>
-                  <th className="text-left px-4 py-3">Rating</th>
-                  <th className="text-left px-4 py-3">Opened</th>
-                  <th className="text-left px-4 py-3">Actions</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.creator")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.assignedTo")}</th>
+                  <th className="text-left px-4 py-3">{t("common.panel")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.rating")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.opened")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -243,7 +245,7 @@ export default function TicketsPage() {
                   <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3">
                       <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${STATUS_COLORS[ticket.status]}`}>
-                        {ticket.status}
+                        {t(`status.${ticket.status.toLowerCase()}`)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -269,7 +271,7 @@ export default function TicketsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-cs-muted">
-                      {ticket.assignee?.username ?? <span className="text-cs-muted italic">Unassigned</span>}
+                      {ticket.assignee?.username ?? <span className="text-cs-muted italic">{t("tickets.unassigned")}</span>}
                     </td>
                     <td className="px-4 py-3 text-cs-muted">
                       {ticket.panel?.name ?? "—"}
@@ -295,8 +297,8 @@ export default function TicketsPage() {
                         {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
                           <button
                             onClick={() => { setReplyingId(ticket.id); setReplyText(""); }}
-                            title="Reply from dashboard"
-                            aria-label="Reply from dashboard"
+                            title={t("tickets.replyFromDashboard")}
+                            aria-label={t("tickets.replyFromDashboard")}
                             className="text-cs-cyan hover:text-white transition-colors p-1"
                           >
                             <MessageSquare className="w-4 h-4" />
@@ -306,8 +308,8 @@ export default function TicketsPage() {
                           <button
                             onClick={() => claimMut.mutate(ticket.id)}
                             disabled={claimMut.isPending}
-                            title="Claim ticket"
-                            aria-label="Claim ticket"
+                            title={t("tickets.claim")}
+                            aria-label={t("tickets.claim")}
                             className="text-blue-400 hover:text-blue-300 transition-colors p-1"
                           >
                             <Shield className="w-4 h-4" />
@@ -319,8 +321,8 @@ export default function TicketsPage() {
                               href={ticket.archiveUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title="View transcript"
-                              aria-label="View transcript"
+                              title={t("tickets.viewTranscript")}
+                              aria-label={t("tickets.viewTranscript")}
                               className="text-cs-cyan hover:text-white transition-colors p-1"
                             >
                               <ExternalLink className="w-4 h-4" />
@@ -328,8 +330,8 @@ export default function TicketsPage() {
                             <button
                               onClick={() => handlePdfExport(ticket.id)}
                               disabled={pdfExporting === ticket.id}
-                              title="Download PDF transcript"
-                              aria-label="Download PDF transcript"
+                              title={t("tickets.downloadPdf")}
+                              aria-label={t("tickets.downloadPdf")}
                               className="text-purple-400 hover:text-purple-300 transition-colors p-1 disabled:opacity-40"
                             >
                               <FileText className="w-4 h-4" />
@@ -339,8 +341,8 @@ export default function TicketsPage() {
                         {ticket.status !== "CLOSED" && ticket.status !== "ARCHIVED" && (
                           <button
                             onClick={() => { setClosingId(ticket.id); setCloseReason(""); }}
-                            title="Close ticket"
-                            aria-label="Close ticket"
+                            title={t("tickets.close")}
+                            aria-label={t("tickets.close")}
                             className="text-danger hover:text-red-300 transition-colors p-1"
                           >
                             <X className="w-4 h-4" />
@@ -386,7 +388,7 @@ export default function TicketsPage() {
           </span>
           <button
             type="button"
-            aria-label="Dismiss"
+            aria-label={t("common.dismiss")}
             onClick={() => setClaimError(null)}
             className="text-danger hover:text-red-300"
           >
@@ -396,12 +398,12 @@ export default function TicketsPage() {
       )}
 
       {/* Reply Modal — same pattern as the close modal (closingId/closeReason) */}
-      <Modal open={!!replyingId} onClose={() => setReplyingId(null)} title="Reply to Ticket" maxWidth="max-w-md">
+      <Modal open={!!replyingId} onClose={() => setReplyingId(null)} title={t("tickets.reply")} maxWidth="max-w-md">
         <label className="block mb-1">
-          <span className="cs-label">Reply</span>
+          <span className="cs-label">{t("common.reply")}</span>
           <textarea
             className="cs-input min-h-[110px] resize-y"
-            placeholder="Type your reply — the bot will post it in the ticket channel…"
+            placeholder={t("tickets.replyPlaceholder")}
             maxLength={1500}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
@@ -410,13 +412,13 @@ export default function TicketsPage() {
         </label>
         <div className="text-xs text-cs-muted text-right mb-4">{replyText.length}/1500</div>
         <div className="flex gap-3 justify-end">
-          <button className="cs-btn-ghost" onClick={() => setReplyingId(null)}>Cancel</button>
+          <button className="cs-btn-ghost" onClick={() => setReplyingId(null)}>{t("common.cancel")}</button>
           <button
             className="cs-btn-primary"
             disabled={replyMut.isPending || !replyText.trim()}
             onClick={() => replyMut.mutate({ ticketId: replyingId, content: replyText.trim() })}
           >
-            {replyMut.isPending ? "Sending…" : "Send"}
+            {replyMut.isPending ? t("common.sending") : t("common.reply")}
           </button>
         </div>
       </Modal>

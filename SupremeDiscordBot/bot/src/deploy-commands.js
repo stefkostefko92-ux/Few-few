@@ -32,7 +32,7 @@ try {
 
   // Изричен exit: командните файлове дърпат Redis/timers при import, които
   // държат event loop-а жив → без exit скриптът виси СЛЕД успеха и deploy.sh
-  // остава закован на [4/5] (после Ctrl+C печата подвеждащо „failed").
+  // остава закован на [4/5] (после Ctrl+C печата подвеждащо „failed“).
   process.exit(0);
 } catch (err) {
   console.error("Failed to deploy commands:", err);

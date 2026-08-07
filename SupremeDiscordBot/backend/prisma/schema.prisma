@@ -28,10 +28,6 @@ model User {
   globalRole               GlobalRole @default(USER)
   isBlacklisted            Boolean    @default(false)
   language                 String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
-  // v2.1 Affiliate program
-  referralCode             String?    @unique // User's own code for sharing (assigned on first visit)
-  referredByCode           String? // Code of the user who referred this user
-  stripeConnectedAccountId String?    @unique // For payout
   createdAt                DateTime   @default(now())
   updatedAt                DateTime   @updatedAt
 
@@ -43,7 +39,6 @@ model User {
   assignedTickets Ticket[]             @relation("TicketAssignee")
   applications    Application[]
   apiKeys         ApiKey[]
-  commissions     ReferralCommission[]
 
   @@map("users")
 }
@@ -53,6 +48,22 @@ enum GlobalRole {
   SUPER_USER
   SUPPORT_STAFF
   USER
+}
+
+// Хранилището на express сесиите (connect-pg-simple). Таблицата се СЪЗДАВА от
+// самата библиотека (`createTableIfMissing: true`) и от initial миграцията, но
+// не съществуваше в тази схема — а Prisma смята схемата за истината. Първият
+// `prisma migrate dev` щеше да я обяви за дрейф и да генерира DROP TABLE:
+// всички влезли потребители изхвърчат, и то не от бъг, а от рутинна миграция.
+// Моделът е тук ЕДИНСТВЕНО за да я знае Prisma — приложението никога не пише
+// през него (пише express-session).
+model ExpressSession {
+  sid    String   @id
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_express_sessions_expire")
+  @@map("express_sessions")
 }
 
 model Session {
@@ -94,9 +105,8 @@ model Server {
   trialUsed             Boolean   @default(false) // Each server gets one 14-day trial
   trialStartedAt        DateTime?
   trialEndsAt           DateTime?
-  // v2.1 Localization + Affiliate
+  // v2.1 Localization
   language              String    @default("en") // Server-wide bot UI language
-  referredByCode        String? // Code of the user who referred this server's owner
   stripeCustomerId      String?   @unique
   stripeSubscriptionId  String?   @unique
   stripeStatus          String? // active, canceled, past_due, trialing
@@ -104,6 +114,19 @@ model Server {
   // сваля isPremium=false ако past_due е по-старо от 14 дни (виж jobs/dunning.js).
   // Изчиства се при връщане към active/trialing.
   pastDueSince          DateTime?
+  // v40 — ДОСТЪП ДО КРАЙНИЯ СРОК (решение на собственика, 07.08.2026).
+  // Клиент, който ОТМЕНИ абонамента си, ползва услугата до края на платения
+  // период — той вече е платил за него. Stripe праща customer.subscription.deleted
+  // в момента на отмяната (при незабавна отмяна) или в края на периода, затова
+  // моментът на събитието НЕ е моментът на отнемане. Тук пазим докога е платено.
+  //
+  // НЕ важи при refund/chargeback: там парите се връщат, значи достъпът пада
+  // веднага и това поле се занулява.
+  accessUntil           DateTime?
+  // Тарифата, за която е платено — пази се отделно, защото `plan` пада на
+  // "free" в момента на отмяната. Без нея гратисният период би върнал „premium“
+  // на клиент, платил whitelabel, т.е. тихо отнета функция, за която има пари.
+  gracePlan             String?
   // White-label custom bot token (White-label / Agency tiers)
   customBotToken        String?
   customBotName         String?
@@ -146,7 +169,17 @@ model Server {
   // Server event logging (member/voice/moderation activity) — per-server opt-in
   eventLogEnabled    Boolean  @default(false)
   eventLogChannelId  String?
+  // v38 — „messages" НЕ е по подразбиране. Тя е единствената категория, която
+  // чете съдържание на съобщения извън тикет каналите, тоест единствената, която
+  // ползва привилегирования MessageContent intent за нещо различно от тикет
+  // транскрипта. Да се включва мълчаливо заедно с общия ключ значи сървър да
+  // започне да записва чужди разговори без отделно решение на администратора.
+  // Заварените сървъри не се пипат — default важи само за нови редове.
   eventLogCategories String[] @default(["voice", "members", "moderation"])
+  // v37 — по избор СВОЙ канал за всяка категория: { "voice": "123", "members": "456" }.
+  // Липсваща категория пада обратно към общия eventLogChannelId, така че
+  // заварените конфигурации продължават да работят без промяна.
+  eventLogChannels   Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,9 +194,13 @@ model Server {
   auditLogs          AuditLog[]
   paymentLogs        PaymentLog[]
   kbArticles         KbArticle[]
+  reactionRoleMessages ReactionRoleMessage[]
   agency             Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([agencyId])
+  @@index([trialEndsAt])
+  // v40 — метлата за изтекъл гратис сканира точно по тази колона.
+  @@index([accessUntil])
   @@map("servers")
 }
 
@@ -186,6 +223,9 @@ model Agency {
   stripeSubscriptionId String?   @unique
   stripeStatus         String? // active, canceled, past_due, trialing
   pastDueSince         DateTime?
+  // v40 — същата семантика като при Server: отмяна → местата живеят до края на
+  // платения период; refund/chargeback → падат веднага (полето се занулява).
+  accessUntil          DateTime?
   // Discord native monetization
   discordEntitlementId String?   @unique
   discordSkuId         String?
@@ -196,6 +236,7 @@ model Agency {
   servers Server[]
 
   @@index([ownerUserId])
+  @@index([accessUntil])
   @@map("agencies")
 }
 
@@ -235,6 +276,14 @@ model Panel {
   // Discord IDs after panel is spawned
   channelId                 String?
   messageId                 String?
+  // v37 — позиция в ГРУПОВО съобщение (няколко панела, общ messageId).
+  // Без нея редакцията подреждаше по createdAt и разбъркваше избрания от
+  // потребителя ред. NULL за самостоятелните панели.
+  groupOrder                Int?
+  // Как изглежда групата: DROPDOWN (едно слято меню) | BUTTONS (общи бутони)
+  // | STACK (отделен блок за всеки панел). Пази се, за да не разпадне
+  // редакцията слятото меню обратно на блокове.
+  groupMode                 String?
   // Ticket settings
   categoryId                String? // Discord category for new tickets (legacy, use categoryOpenId)
   supportRoleIds            String[] // Roles that can see tickets
@@ -389,6 +438,7 @@ model Form {
   closedAt            DateTime? // Applications closed — rejects new submissions
   requireVerification Boolean   @default(false) // Captcha-style "solve to submit"
   transcriptChannelId String? // Where to post application transcript on approve/deny
+  discussCategoryId   String? // v34 — Discord category where discuss channels open (null = auto-pick)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -503,6 +553,13 @@ model Ticket {
   @@index([serverId, status])
   @@index([creatorId])
   @@index([serverId, priority])
+  // Ботът търси тикет по канал при ВСЯКО съобщение в тикет-канал — индексът
+  // съществуваше само в SQL миграция, значи `prisma migrate dev` щеше да го
+  // изтрие като „дрейф“ и да върне пълно сканиране в най-горещия път.
+  @@index([channelId])
+  // Списъци и експорти подреждат по createdAt (и курсорът в export.js стъпва
+  // на него) — без индекс всяка страница сортира цялата таблица на сървъра.
+  @@index([serverId, createdAt])
   @@map("tickets")
 }
 
@@ -529,10 +586,21 @@ model TicketMessage {
   content     String
   attachments String[]
   createdAt   DateTime @default(now())
+  // ─── v36 Одитна следа на редакции/изтривания ──────────────────────────
+  // Discord ID-то на съобщението. БЕЗ него редакция или изтриване нямаше как
+  // да се свърже със записания ред — затова транскриптът показваше вечно
+  // първоначалния текст и не знаеше, че съобщение е изтрито.
+  messageId       String?
+  // Първоначалният текст, запазен при ПЪРВАТА редакция (после не се пипа —
+  // транскриптът трябва да показва какво е било казано, не последната версия).
+  originalContent String?
+  editedAt        DateTime?
+  deletedAt       DateTime?
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
+  @@index([messageId])
   @@map("ticket_messages")
 }
 
@@ -592,6 +660,8 @@ model AuditLog {
   actor  User?   @relation("AuditActor", fields: [actorId], references: [id])
 
   @@index([serverId])
+  // Ретенцията трие по възраст, а админският изглед подрежда по време.
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -649,6 +719,10 @@ model Poll {
 
   votes PollVote[]
 
+  // Дашбордът чете анкетите на сървър, а планировчикът търси падежиралите —
+  // моделът нямаше НИТО ЕДИН индекс, тоест и двете бяха пълно сканиране.
+  @@index([serverId])
+  @@index([closesAt, closedAt])
   @@map("polls")
 }
 
@@ -818,69 +892,6 @@ model ApiKey {
   @@map("api_keys")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// v2.1 — REFERRAL COMMISSIONS
-// ─────────────────────────────────────────────────────────────────────────────
-
-model ReferralCommission {
-  id               String    @id @default(cuid())
-  referrerId       String // User ID who referred
-  referredServerId String // Server that was referred
-  stripeInvoiceId  String    @unique // Source invoice from Stripe
-  amountCents      Int // Customer paid amount in cents
-  commissionCents  Int // 20% of amount, what we owe referrer
-  currency         String    @default("eur") // F6 — продуктът таксува в евро (ЕС)
-  status           String    @default("pending") // pending, paid, refunded
-  payoutId         String? // Stripe payout ID when paid out
-  paidAt           DateTime?
-  createdAt        DateTime  @default(now())
-
-  user User @relation(fields: [referrerId], references: [id], onDelete: Cascade)
-
-  @@index([referrerId, status])
-  @@index([createdAt])
-  @@map("referral_commissions")
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// v2.1 — AFFILIATE PROGRAM
-// ═════════════════════════════════════════════════════════════════════════════
-
-model AffiliateCode {
-  id              String   @id @default(cuid())
-  userId          String   @unique // Discord user ID — one code per user
-  code            String   @unique // Human-readable code
-  clicks          Int      @default(0)
-  signups         Int      @default(0)
-  conversions     Int      @default(0) // Paid subscriptions attributed
-  totalEarnings   Int      @default(0) // Cents, lifetime
-  pendingEarnings Int      @default(0) // Cents, available for payout
-  paidEarnings    Int      @default(0) // Cents, already paid out
-  paypalEmail     String? // For payouts
-  createdAt       DateTime @default(now())
-
-  referrals AffiliateReferral[]
-
-  @@map("affiliate_codes")
-}
-
-model AffiliateReferral {
-  id               String    @id @default(cuid())
-  affiliateId      String
-  referredServerId String
-  status           String    @default("pending") // pending | active | churned
-  firstPaymentAt   DateTime?
-  lastPaymentAt    DateTime?
-  totalEarnings    Int       @default(0) // Cents commission from this referral
-  createdAt        DateTime  @default(now())
-
-  affiliate AffiliateCode @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-
-  @@unique([affiliateId, referredServerId])
-  @@index([referredServerId])
-  @@map("affiliate_referrals")
-}
-
 // ═════════════════════════════════════════════════════════════════════════════
 // v32 — KNOWLEDGE BASE (staff-written articles, auto-suggested on new tickets)
 // ═════════════════════════════════════════════════════════════════════════════
@@ -932,4 +943,45 @@ model DailyMetric {
   @@unique([serverId, date])
   @@index([serverId, date])
   @@map("daily_metrics")
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// v33 — REACTION ROLES (react → get a role)
+// ═════════════════════════════════════════════════════════════════════════════
+// Едно съобщение (embed) с N двойки emoji → роля. Ботът слуша
+// messageReactionAdd/Remove и дава/маха ролята. `exclusive` = radio режим:
+// максимум една роля от съобщението — нов реакт маха предишния.
+
+model ReactionRoleMessage {
+  id          String   @id @default(cuid())
+  serverId    String
+  title       String
+  description String?
+  color       String   @default("#5865F2")
+  exclusive   Boolean  @default(false)
+  // Попълват се при spawn в Discord (null = още не е публикувано)
+  channelId   String?
+  messageId   String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pairs  ReactionRolePair[]
+  server Server             @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@map("reaction_role_messages")
+}
+
+model ReactionRolePair {
+  id       String  @id @default(cuid())
+  rrmId    String
+  // Unicode emoji ("🎮") или custom emoji идентификатор ("name:123456789")
+  emoji    String
+  roleId   String
+  label    String?
+
+  rrm ReactionRoleMessage @relation(fields: [rrmId], references: [id], onDelete: Cascade)
+
+  @@unique([rrmId, emoji])
+  @@map("reaction_role_pairs")
 }

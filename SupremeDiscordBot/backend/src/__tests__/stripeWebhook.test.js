@@ -25,8 +25,9 @@ const stripeInstance = {
   customers: { create: vi.fn() },
   checkout: { sessions: { create: vi.fn() } },
   billingPortal: { sessions: { create: vi.fn() } },
-  subscriptions: { retrieve: vi.fn() },
+  subscriptions: { retrieve: vi.fn(), cancel: vi.fn() },
   charges: { retrieve: vi.fn() },
+  paymentIntents: { retrieve: vi.fn() },
 };
 vi.mock("stripe", () => ({ default: vi.fn(() => stripeInstance) }));
 
@@ -36,6 +37,7 @@ const dmUserMock = vi.fn();
 vi.mock("../services/botNotifier.js", () => ({
   notifyBot: vi.fn(),
   dmUser: (...args) => dmUserMock(...args),
+  reconcileWhitelabel: vi.fn(),
 }));
 
 const stripeRouter = (await import("../routes/stripe.js")).default;
@@ -58,6 +60,9 @@ function post(event) {
 beforeEach(() => {
   vi.resetAllMocks();
   stripeInstance.webhooks.constructEvent.mockImplementation((raw) => raw); // reset to identity, tests override via post()
+  // Живият абонамент е истината — invoice.paid го чете, преди да провизира.
+  // Задава се СЛЕД resetAllMocks, иначе се изтрива веднага.
+  stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_live", status: "active" });
 });
 
 describe("checkout.session.completed", () => {
@@ -101,7 +106,7 @@ describe("checkout.session.completed", () => {
       type: "checkout.session.completed",
       data: {
         object: {
-          metadata: { kind: "agency", agencyId: "ag1", interval: "month" },
+          payment_status: "paid", metadata: { kind: "agency", agencyId: "ag1", interval: "month" },
           subscription: "sub_a1",
         },
       },
@@ -138,7 +143,7 @@ describe("checkout.session.completed", () => {
 });
 
 describe("invoice.paid", () => {
-  function invoiceEvent({ id = "evt_inv1", priceId = "price_pm", customer = "cus_1" } = {}) {
+  function invoiceEvent({ id = "evt_inv1", priceId = "price_pm", customer = "cus_1", subscription = "sub_live" } = {}) {
     return {
       id,
       type: "invoice.paid",
@@ -148,6 +153,10 @@ describe("invoice.paid", () => {
           customer,
           amount_paid: 999,
           currency: "eur",
+          // SDK 22.x: скаларното invoice.subscription е премахнато — абонаментът
+          // се чете оттук. Handler-ът го зарежда от Stripe, за да види ЖИВИЯ
+          // статус, вместо да вярва на снимката в събитието.
+          parent: { subscription_details: { subscription } },
           lines: { data: [{ price: { id: priceId } }] },
         },
       },
@@ -156,7 +165,6 @@ describe("invoice.paid", () => {
 
   beforeEach(() => {
     prismaMock.agency.findFirst.mockResolvedValue(null); // not an agency invoice
-    prismaMock.affiliateReferral.findFirst.mockResolvedValue(null); // no referral
   });
 
   it("grants access and syncs the plan from a mapped price", async () => {
@@ -210,57 +218,7 @@ describe("invoice.paid", () => {
     expect(prismaMock.server.update).not.toHaveBeenCalled();
   });
 
-  // Комисионната е върху НЕТО. ДДС-то само минава през нас — 20% върху брутото
-  // значи да плащаме афилиейта и върху държавното перо.
-  it("pays the affiliate 20% of the NET amount (invoice.total_taxes subtracted)", async () => {
-    prismaMock.server.findFirst.mockResolvedValue({
-      id: "s3", stripeCustomerId: "cus_1", plan: "premium", premiumSince: new Date(),
-    });
-    prismaMock.affiliateReferral.findFirst.mockResolvedValue({
-      id: "ref1", affiliateId: "aff1", firstPaymentAt: null,
-    });
 
-    const event = invoiceEvent();
-    // €9.99 с ВКЛЮЧЕНО 20% ДДС (tax_behavior=inclusive, вж. stripe-setup.sh):
-    // бруто 999, ДДС 167 → нето 832 → комисионна floor(832*0.20) = 166.
-    // Върху брутото щеше да е 199 — 20% надплащане на всяка фактура.
-    event.data.object.total_taxes = [{ amount: 167, tax_behavior: "inclusive" }];
-
-    const res = await post(event);
-
-    expect(res.status).toBe(200);
-    expect(prismaMock.affiliateReferral.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ totalEarnings: { increment: 166 } }),
-      })
-    );
-    expect(prismaMock.affiliateCode.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          totalEarnings: { increment: 166 },
-          pendingEarnings: { increment: 166 },
-        }),
-      })
-    );
-  });
-
-  it("falls back to the gross amount when total_taxes is absent (no tax collected)", async () => {
-    prismaMock.server.findFirst.mockResolvedValue({
-      id: "s4", stripeCustomerId: "cus_1", plan: "premium", premiumSince: new Date(),
-    });
-    prismaMock.affiliateReferral.findFirst.mockResolvedValue({
-      id: "ref2", affiliateId: "aff2", firstPaymentAt: null,
-    });
-
-    const res = await post(invoiceEvent()); // няма total_taxes
-
-    expect(res.status).toBe(200);
-    expect(prismaMock.affiliateReferral.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ totalEarnings: { increment: 199 } }), // floor(999*0.2)
-      })
-    );
-  });
 });
 
 describe("invoice.payment_failed", () => {
@@ -302,6 +260,10 @@ describe("invoice.payment_failed", () => {
     prismaMock.processedStripeEvent.create.mockRejectedValue(
       Object.assign(new Error("Unique constraint failed"), { code: "P2002" })
     );
+    // Маркерът СЪЩЕСТВУВА → колизията е точно дубъл на събитие. Без този ред
+    // тестът не различаваше „вече обработено“ от чужда unique колизия (напр.
+    // PaymentLog.stripeInvoiceId), а точно това разграничение пази пари.
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue({ id: "seen" });
 
     const res = await post(failedEvent("evt_fail_dup"));
 
@@ -441,6 +403,10 @@ describe("idempotency", () => {
     prismaMock.processedStripeEvent.create.mockRejectedValue(
       Object.assign(new Error("Unique constraint failed"), { code: "P2002" })
     );
+    // Маркерът СЪЩЕСТВУВА → колизията е точно дубъл на събитие. Без този ред
+    // тестът не различаваше „вече обработено“ от чужда unique колизия (напр.
+    // PaymentLog.stripeInvoiceId), а точно това разграничение пази пари.
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue({ id: "seen" });
 
     const event = {
       id: "evt_dup",
@@ -455,5 +421,167 @@ describe("idempotency", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ received: true });
     expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("идемпотентността не гълта чужди unique колизии", () => {
+  it("P2002 БЕЗ наличен маркер → 500, за да ретрайне Stripe (клиентът е платил)", async () => {
+    prismaMock.processedStripeEvent.create.mockRejectedValue(
+      Object.assign(new Error("Unique constraint failed on PaymentLog.stripeInvoiceId"), { code: "P2002" }),
+    );
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue(null); // маркер няма
+    // Без сървър handler-ът излиза преди runOnce и P2002 изобщо не се случва.
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", ownerId: "owner_1", name: "S" });
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+
+    const res = await post({
+      id: "evt_foreign_collision",
+      type: "invoice.payment_failed",
+      data: { object: { customer: "cus_1", id: "in_1", amount_due: 499, currency: "eur" } },
+    });
+
+    // 500 → Stripe ретрайва. 200 би значело „обработено“ и събитието се губи.
+    expect(res.status).toBe(500);
+  });
+});
+
+// ─── Дунинг → успех за СЪЩАТА фактура (Продавача, 07.08.2026) ───────────────
+// PaymentLog.stripeInvoiceId е @unique, а една фактура минава през ДВА
+// handler-а: payment_failed при всеки неуспешен опит на Smart Retries, после
+// paid при успеха. Докато записът беше `create`, вторият хвърляше P2002 — а
+// сблъсъкът е ДЕТЕРМИНИРАН, значи политиката „P2002 без маркер → хвърли, за да
+// ретрайне Stripe" ставаше безкраен цикъл: клиентът е платил, достъпът никога
+// не се възстановява и дунингът му го отнема след 14 дни.
+describe("една фактура през два handler-а не зацикля", () => {
+  it("invoice.paid СЛЕД invoice.payment_failed за същата фактура минава", async () => {
+    prismaMock.processedStripeEvent.create.mockResolvedValue({ id: "evt_ok" });
+    prismaMock.processedStripeEvent.findUnique.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", ownerId: "o1", name: "S" });
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.paymentLog.upsert.mockResolvedValue({});
+
+    const res = await post({
+      id: "evt_paid_after_failed",
+      type: "invoice.paid",
+      data: { object: { customer: "cus_1", parent: { subscription_details: { subscription: "sub_live" } }, id: "in_same", amount_paid: 499, currency: "eur", lines: { data: [] } } },
+    });
+
+    expect(res.status).toBe(200);
+  });
+
+  it("записът е UPSERT по фактурата, не CREATE — иначе вторият път е P2002", async () => {
+    prismaMock.processedStripeEvent.create.mockResolvedValue({ id: "e2" });
+    prismaMock.server.findFirst.mockResolvedValue({ id: "s1", ownerId: "o1", name: "S" });
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.paymentLog.upsert.mockResolvedValue({});
+
+    await post({
+      id: "evt_failed_upsert",
+      type: "invoice.payment_failed",
+      data: { object: { customer: "cus_1", id: "in_same", amount_due: 499, currency: "eur" } },
+    });
+
+    expect(prismaMock.paymentLog.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { stripeInvoiceId: "in_same" } }),
+    );
+    expect(prismaMock.paymentLog.create).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Живият абонамент е истината (Продавача, 07.08.2026) ────────────────────
+// Webhook събитията носят СНИМКА. Закъсняла, повторена или извън ред доставка
+// провизираше по нея и ВЪЗКРЕСЯВАШЕ достъп, който вече е отнет.
+describe("не провизираме по застояла снимка", () => {
+  beforeEach(() => {
+    prismaMock.agency.findFirst.mockResolvedValue(null);
+    prismaMock.server.findFirst.mockResolvedValue({
+      id: "s1", stripeCustomerId: "cus_1", plan: "free", premiumSince: null,
+    });
+  });
+
+  it("invoice.paid за ОТМЕНЕН абонамент не дава достъп", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_dead", status: "canceled" });
+    const res = await post({
+      id: "evt_late_paid",
+      type: "invoice.paid",
+      data: { object: {
+        id: "in_late", customer: "cus_1", amount_paid: 999, currency: "eur",
+        parent: { subscription_details: { subscription: "sub_dead" } },
+        lines: { data: [{ price: { id: "price_pm" } }] },
+      } },
+    });
+    expect(res.status).toBe(200);
+    expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+
+  it("invoice.paid записва РЕАЛНИЯ статус, не оставя past_due след успех", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_live", status: "active" });
+    await post({
+      id: "evt_status",
+      type: "invoice.paid",
+      data: { object: {
+        id: "in_ok", customer: "cus_1", amount_paid: 999, currency: "eur",
+        parent: { subscription_details: { subscription: "sub_live" } },
+        lines: { data: [{ price: { id: "price_pm" } }] },
+      } },
+    });
+    expect(prismaMock.server.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ stripeStatus: "active" }) }),
+    );
+  });
+
+  it("checkout.session.completed за отменен абонамент не връща достъпа", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_x", status: "canceled" });
+    const res = await post({
+      id: "evt_late_checkout",
+      type: "checkout.session.completed",
+      data: { object: {
+        metadata: { serverId: "s1", plan: "premium", interval: "month" },
+        subscription: "sub_x", payment_status: "paid",
+      } },
+    });
+    expect(res.status).toBe(200);
+    expect(prismaMock.server.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("двоен абонамент за един сървър", () => {
+  it("вторият платен checkout ОТМЕНЯ първия — иначе се таксуват и двата", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_new", status: "active" });
+    prismaMock.server.findUnique.mockResolvedValue({ stripeSubscriptionId: "sub_old" });
+    stripeInstance.subscriptions.cancel = vi.fn().mockResolvedValue({});
+
+    await post({
+      id: "evt_dup",
+      type: "checkout.session.completed",
+      data: { object: {
+        metadata: { serverId: "s1", plan: "premium", interval: "month" },
+        subscription: "sub_new", payment_status: "paid",
+      } },
+    });
+
+    expect(stripeInstance.subscriptions.cancel).toHaveBeenCalledWith(
+      "sub_old", undefined, expect.objectContaining({ idempotencyKey: expect.stringContaining("evt_dup") }),
+    );
+  });
+});
+
+describe("agency местата идват от ПЛАТЕНАТА сесия", () => {
+  it("agency10 сесия дава 10 места, независимо какво пише в реда", async () => {
+    stripeInstance.subscriptions.retrieve.mockResolvedValue({ id: "sub_a", status: "active" });
+    await post({
+      id: "evt_ag10",
+      type: "checkout.session.completed",
+      data: { object: {
+        payment_status: "paid",
+        metadata: { kind: "agency", agencyId: "ag1", plan: "agency10", interval: "month" },
+        subscription: "sub_a",
+      } },
+    });
+    expect(prismaMock.agency.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ plan: "agency10", seatLimit: 10 }),
+      }),
+    );
   });
 });

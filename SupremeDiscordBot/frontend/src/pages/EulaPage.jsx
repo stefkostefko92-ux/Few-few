@@ -209,7 +209,7 @@ export default function EulaPage() {
         </p>
         <ul>
           <li>
-            <strong className="text-cs-text">Premium</strong> (€9.99/server/month or €99/year) —
+            <strong className="text-cs-text">Premium</strong> (€4.99/server/month or €49/year) —
             in addition to all Free Tier features with the applicable limits removed: up to 50
             panels, forms, and questions per form; HTML ticket transcripts retained indefinitely
             (no 30-day deletion); PDF export of individual ticket transcripts; CSV export of all
@@ -217,13 +217,13 @@ export default function EulaPage() {
             ticket assignment; webhook integrations and the public REST API.
           </li>
           <li>
-            <strong className="text-cs-text">White-label</strong> (€19.99/server/month or
-            €199/year) — everything in Premium plus the White-label Bot (custom token, name,
+            <strong className="text-cs-text">White-label</strong> (€9.99/server/month or
+            €99/year) — everything in Premium plus the White-label Bot (custom token, name,
             avatar — subject to Section 8).
           </li>
           <li>
-            <strong className="text-cs-text">Agency 5 / Agency 10</strong> (€39.99/month or
-            €399/year for up to 5 servers; €79.99/month or €799/year for up to 10 servers) —
+            <strong className="text-cs-text">Agency 5 / Agency 10</strong> (€19.99/month or
+            €199/year for up to 5 servers; €39.99/month or €399/year for up to 10 servers) —
             one subscription granting the White-label tier to the covered servers, assigned and
             removed by the subscription owner up to the seat limit.
           </li>

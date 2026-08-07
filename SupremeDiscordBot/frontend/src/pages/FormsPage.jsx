@@ -2,21 +2,24 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText } from "lucide-react";
-import { getForms, createForm, updateForm, deleteForm } from "../api";
+import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText, Send } from "lucide-react";
+import { getForms, createForm, updateForm, deleteForm, spawnForm } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 
+// value → преводен ключ; label се резолвва при рендиране (t() е hook, живее
+// в компонента, не на модулно ниво).
 const QUESTION_TYPES = [
-  { value: "SHORT_TEXT", label: "Short Text" },
-  { value: "PARAGRAPH", label: "Paragraph" },
-  { value: "SELECT", label: "Single Choice" },
-  { value: "MULTI_SELECT", label: "Multi Choice" },
-  { value: "NUMBER", label: "Number" },
+  { value: "SHORT_TEXT", key: "forms.qType.short" },
+  { value: "PARAGRAPH", key: "forms.qType.paragraph" },
+  { value: "SELECT", key: "forms.qType.single" },
+  { value: "MULTI_SELECT", key: "forms.qType.multi" },
+  { value: "NUMBER", key: "forms.qType.number" },
 ];
 
 const defaultQuestion = () => ({
@@ -38,6 +41,7 @@ function formToState(f) {
     isApplication: f.isApplication,
     reviewChannelId: f.reviewChannelId || "",
     transcriptChannelId: f.transcriptChannelId || "",
+    discussCategoryId: f.discussCategoryId || "",
     // Appy.bot-style fields
     acceptRoleIds:  (f.acceptRoleIds || []).join(","),
     denyRoleIds:    (f.denyRoleIds || []).join(","),
@@ -71,6 +75,7 @@ const defaultForm = () => ({
   isApplication: false,
   reviewChannelId: "",
   transcriptChannelId: "",
+  discussCategoryId: "",
   acceptRoleIds:  "",
   denyRoleIds:    "",
   removeRoleIds:  "",
@@ -86,6 +91,7 @@ const defaultForm = () => ({
 
 export default function FormsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
   const { isPremium } = usePremium();
   const [editing, setEditing] = useState(false);
@@ -94,6 +100,7 @@ export default function FormsPage() {
   const [expandedQ, setExpandedQ] = useState(0);
   const [confirmState, setConfirmState] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [spawnInputs, setSpawnInputs] = useState({}); // formId → channelId
 
   const { data: forms = [], isLoading } = useQuery({
     queryKey: ["forms", serverId],
@@ -108,9 +115,9 @@ export default function FormsPage() {
       qc.invalidateQueries({ queryKey: ["forms", serverId] });
       setEditing(false);
       setEditingId(null);
-      toast.success("Form created.");
+      toast.success(t("forms.created"));
     },
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to create form."),
+    onError: (err) => toast.error(err?.response?.data?.error || t("forms.createFailed")),
   });
 
   const updateMut = useMutation({
@@ -119,28 +126,37 @@ export default function FormsPage() {
       qc.invalidateQueries({ queryKey: ["forms", serverId] });
       setEditing(false);
       setEditingId(null);
-      toast.success("Form updated.");
+      toast.success(t("common.saved"));
     },
-    onError: (err) => toast.error(err?.response?.data?.error || "Failed to update form."),
+    onError: (err) => toast.error(err?.response?.data?.error || t("forms.updateFailed")),
   });
 
   const deleteMut = useMutation({
     mutationFn: ({ formId, force }) => deleteForm(serverId, formId, force),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["forms", serverId] });
-      toast.success("Form deleted.");
+      toast.success(t("forms.deleted"));
     },
+  });
+
+  const spawnMut = useMutation({
+    mutationFn: ({ formId, channelId }) => spawnForm(serverId, formId, channelId),
+    onSuccess: (_data, { formId }) => {
+      setSpawnInputs((s) => ({ ...s, [formId]: "" }));
+      toast.success(t("forms.posted"));
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || t("forms.postFailed")),
   });
 
   // Step 2 of cascade delete: form has applications, confirm force-delete.
   const askCascadeDelete = (form, count) => {
     setConfirmState({
-      title: "Form has submissions",
+      title: t("forms.hasSubmissions"),
       message:
         `This form has ${count} application submission${count === 1 ? "" : "s"}.\n\n` +
         `Deleting will remove the form AND all ${count} submissions.\n` +
         `Cancel to keep everything.`,
-      confirmLabel: "Delete everything",
+      confirmLabel: t("common.deleteEverything"),
       onConfirm: async () => {
         setActionError(null);
         try {
@@ -158,9 +174,9 @@ export default function FormsPage() {
   const handleDelete = (form) => {
     setActionError(null);
     setConfirmState({
-      title: "Delete form",
+      title: t("forms.delete"),
       message: `Delete form "${form.name}"?`,
-      confirmLabel: "Delete",
+      confirmLabel: t("common.delete"),
       onConfirm: async () => {
         try {
           await deleteMut.mutateAsync({ formId: form.id, force: false });
@@ -243,9 +259,9 @@ export default function FormsPage() {
       ) : forms.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="No forms yet"
-          description="Build a logic-branching questionnaire for tickets or applications."
-          ctaLabel="Create first form"
+          title={t("forms.empty.title")}
+          description={t("forms.empty.body")}
+          ctaLabel={t("forms.empty.cta")}
           onCtaClick={() => { setForm(defaultForm()); setEditing(true); }}
         />
       ) : (
@@ -263,18 +279,35 @@ export default function FormsPage() {
                   <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
                   {f.description && <p className="text-xs text-cs-muted mt-1">{f.description}</p>}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
+                  <div className="flex items-center gap-1">
+                    <input
+                      placeholder="Channel ID"
+                      aria-label={t("forms.channelToPost")}
+                      className="cs-input text-xs w-28 py-1"
+                      value={spawnInputs[f.id] || ""}
+                      onChange={(e) => setSpawnInputs((s) => ({ ...s, [f.id]: e.target.value }))}
+                    />
+                    <button
+                      className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
+                      disabled={!spawnInputs[f.id] || spawnMut.isPending}
+                      onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim() })}
+                    >
+                      <Send className="w-3 h-3" /> Post to channel
+                    </button>
+                  </div>
                   <button
-                    aria-label="Edit form"
-                    title="Edit form"
+                    aria-label={t("forms.edit")}
+                    title={t("forms.edit")}
                     className="text-cs-muted hover:text-white transition-colors p-1"
                     onClick={() => { setEditingId(f.id); setForm(formToState(f)); setEditing(true); }}
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    aria-label="Delete form"
-                    title="Delete form"
+                    aria-label={t("forms.delete")}
+                    title={t("forms.delete")}
                     className="text-danger hover:text-red-300 transition-colors p-1 flex-shrink-0"
                     onClick={() => handleDelete(f)}
                   >
@@ -318,30 +351,38 @@ export default function FormsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
                     <span className="cs-label">Form Name *</span>
-                    <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Staff Application" />
+                    <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("forms.ph.staffApp")} />
                   </label>
                   <label className="block">
                     <span className="cs-label">Type</span>
                     <select className="cs-input" value={String(form.isApplication)} onChange={(e) => setForm((f) => ({ ...f, isApplication: e.target.value === "true" }))}>
-                      <option value="false">Ticket Form</option>
-                      <option value="true">Application Form</option>
+                      <option value="false">{t("forms.type.ticket")}</option>
+                      <option value="true">{t("forms.type.application")}</option>
                     </select>
                   </label>
                 </div>
                 <label className="block">
-                  <span className="cs-label">Description</span>
-                  <input className="cs-input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Short description" />
+                  <span className="cs-label">{t("common.description")}</span>
+                  <input className="cs-input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder={t("forms.ph.shortDesc")} />
                 </label>
                 {form.isApplication && (
                   <label className="block">
-                    <span className="cs-label">Review Channel ID</span>
-                    <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder="Discord channel ID for review embeds" />
+                    <span className="cs-label">{t("forms.reviewChannel")}</span>
+                    <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder={t("forms.ph.reviewChannel")} />
+                  </label>
+                )}
+
+                {form.isApplication && (
+                  <label className="block">
+                    <span className="cs-label">{t("forms.discussCategory")}</span>
+                    <input className="cs-input" value={form.discussCategoryId} onChange={(e) => setForm((f) => ({ ...f, discussCategoryId: e.target.value }))} placeholder="Discord CATEGORY ID for “Open a ticket” discussion channels (optional)" />
+                    <p className="text-xs text-cs-dim mt-1">Where private applicant discussion channels are created. Right-click a category → Copy Channel ID. Empty = auto-pick by name (applications/tickets/reviews/staff).</p>
                   </label>
                 )}
 
                 <label className="block">
-                  <span className="cs-label">Transcript Channel ID</span>
-                  <input className="cs-input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder="Where to post application transcripts on approve/deny (optional)" />
+                  <span className="cs-label">{t("forms.transcriptChannel")}</span>
+                  <input className="cs-input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder={t("forms.ph.transcript")} />
                   <p className="text-xs text-cs-dim mt-1">Leave empty to disable. Post is triggered on approve/deny.</p>
                 </label>
 
@@ -361,24 +402,24 @@ export default function FormsPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <label className="block">
                           <span className="cs-label">Accept → add role IDs (comma-separated)</span>
-                          <input className="cs-input font-mono text-xs" value={form.acceptRoleIds} onChange={(e) => setForm((f) => ({ ...f, acceptRoleIds: e.target.value }))} placeholder="123456789, 987654321" />
+                          <input className="cs-input font-mono text-xs" value={form.acceptRoleIds} onChange={(e) => setForm((f) => ({ ...f, acceptRoleIds: e.target.value }))} placeholder={t("forms.ph.roleIds")} />
                         </label>
                         <label className="block">
                           <span className="cs-label">Accept → remove role IDs</span>
-                          <input className="cs-input font-mono text-xs" value={form.removeRoleIds} onChange={(e) => setForm((f) => ({ ...f, removeRoleIds: e.target.value }))} placeholder="Pending, Applicant..." />
+                          <input className="cs-input font-mono text-xs" value={form.removeRoleIds} onChange={(e) => setForm((f) => ({ ...f, removeRoleIds: e.target.value }))} placeholder={t("forms.ph.removeRoles")} />
                         </label>
                       </div>
                       <label className="block">
                         <span className="cs-label">Deny → add role IDs</span>
-                        <input className="cs-input font-mono text-xs" value={form.denyRoleIds} onChange={(e) => setForm((f) => ({ ...f, denyRoleIds: e.target.value }))} placeholder="e.g. Verified-No role" />
+                        <input className="cs-input font-mono text-xs" value={form.denyRoleIds} onChange={(e) => setForm((f) => ({ ...f, denyRoleIds: e.target.value }))} placeholder={t("forms.ph.denyRole")} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Application Managers (role IDs, can review alongside admins)</span>
-                        <input className="cs-input font-mono text-xs" value={form.managerRoleIds} onChange={(e) => setForm((f) => ({ ...f, managerRoleIds: e.target.value }))} placeholder="Recruiter, HR" />
+                        <input className="cs-input font-mono text-xs" value={form.managerRoleIds} onChange={(e) => setForm((f) => ({ ...f, managerRoleIds: e.target.value }))} placeholder={t("forms.ph.managers")} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Ping these roles on new submission</span>
-                        <input className="cs-input font-mono text-xs" value={form.pingRoleIds} onChange={(e) => setForm((f) => ({ ...f, pingRoleIds: e.target.value }))} placeholder="Staff, Recruiter" />
+                        <input className="cs-input font-mono text-xs" value={form.pingRoleIds} onChange={(e) => setForm((f) => ({ ...f, pingRoleIds: e.target.value }))} placeholder={t("forms.ph.pingRoles")} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Accept DM message (markdown; {"{user}"}, {"{note}"})</span>
@@ -395,7 +436,7 @@ export default function FormsPage() {
                         </label>
                         <label className="block">
                           <span className="cs-label">Max submissions per user</span>
-                          <input className="cs-input" type="number" min="0" value={form.maxSubmissions} onChange={(e) => setForm((f) => ({ ...f, maxSubmissions: e.target.value }))} placeholder="Leave empty = unlimited" />
+                          <input className="cs-input" type="number" min="0" value={form.maxSubmissions} onChange={(e) => setForm((f) => ({ ...f, maxSubmissions: e.target.value }))} placeholder={t("forms.ph.maxSub")} />
                         </label>
                         <label className="flex items-center gap-2 mt-6">
                           <input type="checkbox" checked={form.closed} onChange={(e) => setForm((f) => ({ ...f, closed: e.target.checked }))} className="accent-cs-cyan" />
@@ -436,7 +477,7 @@ export default function FormsPage() {
                         </button>
                         <div className="flex items-center gap-2">
                           {form.questions.length > 1 && (
-                            <button type="button" aria-label={`Remove question ${i + 1}`} title="Remove question" onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-danger hover:text-red-300 transition-colors">
+                            <button type="button" aria-label={`Remove question ${i + 1}`} title={t("forms.removeQuestion")} onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-danger hover:text-red-300 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
@@ -449,19 +490,19 @@ export default function FormsPage() {
                           <div className="grid grid-cols-2 gap-3">
                             <label className="block">
                               <span className="cs-label text-xs">Question Label *</span>
-                              <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder="What is your age?" />
+                              <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder={t("forms.ph.question")} />
                             </label>
                             <label className="block">
                               <span className="cs-label text-xs">Type</span>
                               <select className="cs-input py-1.5 text-sm" value={q.type} onChange={(e) => updateQuestion(i, "type", e.target.value)}>
-                                {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                {QUESTION_TYPES.map((qt) => <option key={qt.value} value={qt.value}>{t(qt.key)}</option>)}
                               </select>
                             </label>
                           </div>
 
                           <label className="block">
                             <span className="cs-label text-xs">Placeholder</span>
-                            <input className="cs-input py-1.5 text-sm" value={q.placeholder} onChange={(e) => updateQuestion(i, "placeholder", e.target.value)} placeholder="Optional hint text" />
+                            <input className="cs-input py-1.5 text-sm" value={q.placeholder} onChange={(e) => updateQuestion(i, "placeholder", e.target.value)} placeholder={t("forms.ph.hint")} />
                           </label>
 
                           <div className="flex items-center gap-3">
@@ -470,11 +511,11 @@ export default function FormsPage() {
                               Required
                             </label>
                             <label className="block flex-1">
-                              <span className="cs-label text-xs">Min Length</span>
+                              <span className="cs-label text-xs">{t("forms.minLength")}</span>
                               <input type="number" className="cs-input py-1 text-sm" value={q.minLength} onChange={(e) => updateQuestion(i, "minLength", e.target.value)} placeholder="0" />
                             </label>
                             <label className="block flex-1">
-                              <span className="cs-label text-xs">Max Length</span>
+                              <span className="cs-label text-xs">{t("forms.maxLength")}</span>
                               <input type="number" className="cs-input py-1 text-sm" value={q.maxLength} onChange={(e) => updateQuestion(i, "maxLength", e.target.value)} placeholder="1000" />
                             </label>
                           </div>
@@ -516,7 +557,7 @@ export default function FormsPage() {
           <span>❌ {actionError}</span>
           <button
             type="button"
-            aria-label="Dismiss error"
+            aria-label={t("forms.dismissError")}
             title="Dismiss"
             onClick={() => setActionError(null)}
             className="text-red-300 hover:text-red-200"

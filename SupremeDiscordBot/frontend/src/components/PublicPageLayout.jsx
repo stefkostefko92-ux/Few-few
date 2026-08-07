@@ -6,7 +6,7 @@
 // one place so it does not drift across four near-identical pages.
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814288&scope=bot+applications.commands`;
+const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
 export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4xl" }) {
   return (

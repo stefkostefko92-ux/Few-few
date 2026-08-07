@@ -10,10 +10,14 @@ import {
   Menu, X as CloseIcon,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useT } from "../contexts/I18nContext";
 import { getServers, logout } from "../api";
+import LanguageSwitcher from "./LanguageSwitcher";
 import PremiumToast from "./PremiumToast";
 import ToastHost from "./ToastHost";
 import TrialBanner from "./TrialBanner";
+import PastDueBanner from "./PastDueBanner";
+import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 
 const FOCUSABLE =
@@ -24,6 +28,7 @@ const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 export default function Layout() {
   const { serverId } = useParams();
   const { user, setUser } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
 
   const { data: servers = [] } = useQuery({
@@ -167,7 +172,6 @@ export default function Layout() {
             <>
               <SectionLabel>Navigation</SectionLabel>
               <NavItem to="/dashboard" icon={LayoutDashboard} end>Dashboard</NavItem>
-              {/* Affiliate скрит за launch — програмата не е функционална (одит C1/C2); включи пак след referral attribution */}
               {isSuperUser && (
                 <NavItem to="/dashboard/admin" icon={Shield} accent>Super Admin</NavItem>
               )}
@@ -175,27 +179,27 @@ export default function Layout() {
           ) : (
             <>
               <SectionLabel truncate>{currentServer?.name || "Server"}</SectionLabel>
-              <NavItem to={`/dashboard/${serverId}`}              icon={LayoutDashboard} end>Overview</NavItem>
-              <NavItem to={`/dashboard/${serverId}/panels`}       icon={LayoutIcon}>Panels</NavItem>
-              <NavItem to={`/dashboard/${serverId}/forms`}        icon={FileText}>Forms</NavItem>
-              <NavItem to={`/dashboard/${serverId}/tickets`}      icon={Ticket}>Tickets</NavItem>
-              <NavItem to={`/dashboard/${serverId}/applications`} icon={Users}>Applications</NavItem>
-              <NavItem to={`/dashboard/${serverId}/verification`} icon={ShieldCheck}>Verification</NavItem>
-              <NavItem to={`/dashboard/${serverId}/automation`} icon={Zap}>Automation</NavItem>
-              <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>Analytics</NavItem>
-              <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>API Keys</NavItem>
-              <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>Commands</NavItem>
-              <NavItem to={`/dashboard/${serverId}/kb`} icon={Lightbulb}>Knowledge Base</NavItem>
-              <NavItem to={`/dashboard/${serverId}/webhooks`} icon={Webhook}>Webhooks</NavItem>
+              <NavItem to={`/dashboard/${serverId}`}              icon={LayoutDashboard} end>{t("nav.overview")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/panels`}       icon={LayoutIcon}>{t("nav.panels")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/forms`}        icon={FileText}>{t("nav.forms")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/tickets`}      icon={Ticket}>{t("nav.tickets")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/applications`} icon={Users}>{t("nav.applications")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/verification`} icon={ShieldCheck}>{t("nav.verification")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/automation`} icon={Zap}>{t("nav.automation")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>{t("nav.analytics")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>{t("nav.apikeys")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>{t("nav.commands")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/kb`} icon={Lightbulb}>{t("nav.knowledgeBase")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/webhooks`} icon={Webhook}>{t("nav.webhooks")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/premium`}      icon={Star}>
-                Premium
+                {t("nav.premium")}
                 {currentServer?.isPremium && (
                   <span className="ml-auto cs-badge-premium !text-[8px] !px-1.5 !py-0">
                     Active
                   </span>
                 )}
               </NavItem>
-              <NavItem to={`/dashboard/${serverId}/settings`}     icon={Settings}>Settings</NavItem>
+              <NavItem to={`/dashboard/${serverId}/settings`}     icon={Settings}>{t("nav.settings")}</NavItem>
             </>
           )}
         </nav>
@@ -211,7 +215,7 @@ export default function Layout() {
             <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .038.058 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
             </svg>
-            <span>SUPPORT</span>
+            <span>{t("nav.support")}</span>
             <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
           </a>
           <div className="flex gap-3 px-3 pt-1 pb-2">
@@ -241,17 +245,18 @@ export default function Layout() {
                 {user?.globalRole?.replaceAll("_", " ")}
               </p>
             </div>
+            <LanguageSwitcher compact />
             <a
               href="/dashboard/privacy-settings"
               className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
-              title="Privacy & Data"
+              title={t("nav.privacy")}
             >
               <Shield className="w-4 h-4" />
             </a>
             <button
               onClick={handleLogout}
               className="text-cs-dim hover:text-danger p-2 transition-colors"
-              title="Logout"
+              title={t("nav.logout")}
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -261,6 +266,10 @@ export default function Layout() {
 
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-y-auto bg-cs-black flex flex-col">
+        {/* Провалено плащане стои НАД пробния период — то е по-спешното. */}
+        <PastDueBanner />
+        {/* v40 — отменен, но платен до края: показваме докога работи. */}
+        <GraceBanner />
         {/* v2.0 — Trial banner appears on per-server pages */}
         <TrialBanner />
         <div className="flex-1">

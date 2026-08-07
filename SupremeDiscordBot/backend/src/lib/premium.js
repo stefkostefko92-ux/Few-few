@@ -5,10 +5,10 @@
 //
 // v3.0 tier ladder (see docs/PRICING.md):
 //   free       — base limits, no premium features
-//   premium    — €9.99/mo · €99/yr — all premium features EXCEPT white-label
-//   whitelabel — €19.99/mo · €199/yr — premium + white-label custom bot
-//   agency5    — €39.99/mo · €399/yr — white-label tier for up to 5 servers
-//   agency10   — €79.99/mo · €799/yr — white-label tier for up to 10 servers
+//   premium    — €4.99/mo · €49/yr — all premium features EXCEPT white-label
+//   whitelabel — €9.99/mo · €99/yr — premium + white-label custom bot
+//   agency5    — €19.99/mo · €199/yr — white-label tier for up to 5 servers
+//   agency10   — €39.99/mo · €399/yr — white-label tier for up to 10 servers
 //
 // `Server.isPremium` (boolean) is retained and kept in sync (true ⇔ plan≠free)
 // for backward-compat; the authoritative value is the resolved plan.
@@ -59,6 +59,7 @@ export const PREMIUM_FEATURES = {
 
   // ─── Integrations ──────────────────────────────────────────────────────
   "integrations.webhooks":     { label: "Webhook Integrations",        category: "Integrations" },
+  "integrations.restApi":      { label: "Public REST API",             category: "Integrations" },
   "integrations.roundRobin":   { label: "Round-Robin Assignment",      category: "Integrations" },
   "integrations.aiReplies":    { label: "AI Auto-Replies",             category: "Integrations" },
   // White-label lives one tier above the rest.
@@ -84,6 +85,7 @@ export const BASE_LIMITS = {
   recurringScheduled: false,
   transcriptRetentionDays: 30,
   kbArticles:         3, // v32 — Knowledge Base
+  reactionRoleMessages: 2, // v33 — Reaction Roles
 };
 
 export const PREMIUM_LIMITS = {
@@ -97,6 +99,7 @@ export const PREMIUM_LIMITS = {
   recurringScheduled: true,
   transcriptRetentionDays: null, // null = forever
   kbArticles:         50, // v32 — Knowledge Base
+  reactionRoleMessages: 25, // v33 — Reaction Roles
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -130,6 +133,37 @@ export function planHasFeature(plan, featureKey) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// TIER SANITIZATION — гейт при ЧЕТЕНЕ, не само при запис
+// ═══════════════════════════════════════════════════════════════════════════
+// Premium полетата на панела се записваха гейтнати (validatePremiumFields), но
+// ботът ги ИЗПЪЛНЯВА суров, ако са truthy — независимо от tier. Значи свален на
+// free сървър (seat detach, отмяна, дунинг) продължаваше да праща DM при отваряне,
+// да добавя observer роли, да авто-затваря по неактивност и т.н. от запазените
+// стойности. Тук ги нулираме според ЕФЕКТИВНИЯ план, преди конфигът да стигне
+// до бота. Всяко поле → своя feature ключ. (Одит 07.08.2026)
+const PANEL_FEATURE_STRIP = {
+  "panel.dmOnOpen":            (p) => { p.dmOnOpen = false; p.dmOnOpenMessage = null; },
+  "panel.dmOnClose":           (p) => { p.dmOnClose = false; p.dmOnCloseMessage = null; },
+  // Двустъпковото затваряне (closeAskEnabled) е базово; само CUSTOM текстът е premium.
+  "panel.closeAskMessage":     (p) => { p.closeAskMessage = null; },
+  "panel.feedbackEnabled":     (p) => { p.feedbackEnabled = false; },
+  "panel.inactivityAutoClose": (p) => { p.inactivityCloseHours = null; },
+  "panel.autoCloseOnLeave":    (p) => { p.autoCloseOnLeave = false; },
+  "panel.observerRoles":       (p) => { p.observerRoleIds = []; },
+  "panel.sla":                 (p) => { p.slaFirstResponseMinutes = null; p.slaResolutionMinutes = null; },
+  "panel.multipleCategories":  (p) => { p.categoryClosedId = null; },
+};
+
+/** Нулира premium полетата на панел, които планът не покрива. Мутира и връща p. */
+export function sanitizePanelForTier(panel, plan) {
+  if (!panel) return panel;
+  for (const [featureKey, strip] of Object.entries(PANEL_FEATURE_STRIP)) {
+    if (!planHasFeature(plan, featureKey)) strip(panel);
+  }
+  return panel;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // STRIPE PRICE ↔ PLAN and DISCORD SKU ↔ PLAN mapping (env-driven)
 // ═══════════════════════════════════════════════════════════════════════════
 // Populate these envs from scripts/stripe-setup.sh output / Discord Dev Portal.
@@ -137,7 +171,15 @@ export function planHasFeature(plan, featureKey) {
 function stripePriceMap() {
   const e = process.env;
   const m = new Map();
-  const add = (id, plan, interval) => { if (id) m.set(id, { plan, interval }); };
+  // Всеки env може да носи СПИСЪК от price id-та (запетая-разделен): при
+  // ценова промяна Stripe цените са неизменими → новата е ПЪРВА (checkout),
+  // старите остават в списъка, за да се разпознават при подновяване на
+  // grandfather-нати абонати (иначе webhook-ът би ги „свалил“ на грешен план).
+  const add = (ids, plan, interval) => {
+    for (const id of String(ids || "").split(",").map((s) => s.trim()).filter(Boolean)) {
+      m.set(id, { plan, interval });
+    }
+  };
   add(e.STRIPE_PRICE_PREMIUM_MONTH,    "premium",    "month");
   add(e.STRIPE_PRICE_PREMIUM_YEAR,     "premium",    "year");
   add(e.STRIPE_PRICE_WHITELABEL_MONTH, "whitelabel", "month");
@@ -158,10 +200,12 @@ export function planFromStripePrice(priceId) {
   return stripePriceMap().get(priceId) || null;
 }
 
-/** Look up the configured Stripe price id for a (plan, interval) pair. */
+/** Look up the configured Stripe price id for a (plan, interval) pair.
+ *  При списък (ценова промяна) checkout-ът ползва ПЪРВИЯ — текущата цена. */
 export function stripePriceId(plan, interval) {
   const key = `STRIPE_PRICE_${plan.toUpperCase()}_${interval === "year" ? "YEAR" : "MONTH"}`;
-  return process.env[key] || null;
+  const raw = process.env[key] || "";
+  return raw.split(",").map((s) => s.trim()).filter(Boolean)[0] || null;
 }
 
 function discordSkuMap() {
@@ -203,6 +247,7 @@ export async function getServerTier(serverId) {
     where: { id: serverId },
     select: {
       isPremium: true, plan: true, trialEndsAt: true, agencyId: true,
+      accessUntil: true, gracePlan: true, planSource: true, stripeStatus: true,
       agency: { select: { plan: true, active: true, seatLimit: true } },
     },
   });
@@ -218,6 +263,19 @@ export async function getServerTier(serverId) {
   let paidPlan = server?.plan && server.plan !== "free"
     ? server.plan
     : (server?.isPremium ? "whitelabel" : "free");
+
+  // v40 — ОТМЕНЕН, но платен до края на периода. Клиентът е платил текущия
+  // период и го ползва докрай; `plan` вече е паднал на "free", затова тук
+  // връщаме тарифата, за която е платено (`gracePlan`). При refund/chargeback
+  // и двете колони се зануляват, значи този клон не се задейства — точно
+  // каквото искаме: върнати пари → отнет достъп веднага.
+  //
+  // `higherPlan`, а не присвояване: gracePlan никога не бива да СВАЛЯ жив план
+  // (напр. клиент отмени, после веднага купи по-висок — accessUntil още стои).
+  const graceActive = !!(server?.accessUntil && server.accessUntil > now);
+  if (graceActive) {
+    paidPlan = higherPlan(paidPlan, server.gracePlan || "premium");
+  }
 
   // Agency seat overrides when the agency is active and actually covers us.
   if (server?.agencyId && server.agency?.active) {
@@ -242,7 +300,7 @@ export async function getServerTier(serverId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PRISMA WHERE FRAGMENTS — „ефективно premium"
+// PRISMA WHERE FRAGMENTS — „ефективно premium“
 // ═══════════════════════════════════════════════════════════════════════════
 // Agency seat НЕ сетва Server.isPremium/plan (покритието се резолвира в
 // getServerTier през agency.active), а trial живее само в trialEndsAt. Затова
@@ -256,6 +314,7 @@ export function effectivePremiumWhere(now = new Date()) {
     OR: [
       { isPremium: true },
       { trialEndsAt: { gt: now } },
+      { accessUntil: { gt: now } },   // v40 — отменен, но платен до края
       { agency: { is: { active: true } } },
     ],
   };
@@ -267,9 +326,114 @@ export function effectiveFreeWhere(now = new Date()) {
     AND: [
       { isPremium: false },
       { OR: [{ trialEndsAt: null }, { trialEndsAt: { lte: now } }] },
+      { OR: [{ accessUntil: null }, { accessUntil: { lte: now } }] },  // v40
       { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] },
     ],
   };
+}
+
+/**
+ * Синхронизира суровата `Server.isPremium` колона спрямо ПЛАТЕНОТО състояние:
+ * собствен план (≠free) ИЛИ активен agency seat. Trial НЕ участва тук — той
+ * живее в `trialEndsAt` и се OR-ва при четене (виж effectivePremiumWhere).
+ *
+ * Викай след ВСЕКИ agency преход (attach/detach seat, активация/деактивация на
+ * агенция). Без това колоната остава false за agency-покрит сървър, а всички
+ * четци на суровата колона (bot config, dashboard, panel функции) го третират
+ * като безплатен — платената функция мълчи. Идемпотентно; тихо при липсващ ред.
+ */
+// Статуси на Stripe, при които СОБСТВЕН абонамент е ЖИВ и плаща. Allowlist, не
+// denylist — това е урокът от червения екип (07.08.2026):
+//
+// Старата версия пазеше isPremium, ако статусът НЕ е в списък с „прекратени“.
+// Това е fail-OPEN: всеки статус, който не сме предвидили (`paused`,
+// `incomplete`, празен, бъдещ Stripe статус), минаваше за „още плаща“. В комбо
+// с това, че закачането на agency seat вдига isPremium, се получаваше
+// резурекция: закачи сървър с МЪРТЪВ абонамент на агенция → isPremium=true;
+// откачи го → „не е в терминалния списък“ → остава платен ЗАВИНАГИ, без никой
+// да плаща. Allowlist-ът е fail-CLOSED: пазим достъп само при ПОЛОЖИТЕЛНО
+// доказателство за жив абонамент.
+//
+// `past_due` е тук нарочно: дунинг гратис (jobs/dunning.js сваля достъпа отделно
+// след 14 дни, като пише `unpaid`). Всичко друго — прекратено, непълно,
+// паузирано, непознато — НЕ пази достъп през тази клауза.
+const LIVE_OWN_SUB_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+export async function syncServerPaidFlag(serverId, tx = prisma) {
+  const server = await tx.server.findUnique({
+    where: { id: serverId },
+    select: {
+      isPremium: true, plan: true, planSource: true, stripeSubscriptionId: true,
+      stripeStatus: true, accessUntil: true, archiveRetentionDays: true,
+      agencyId: true, agency: { select: { active: true } },
+    },
+  });
+  if (!server) return false;
+
+  const now = new Date();
+  const ownPaid = !!server.plan && server.plan !== "free";
+  const agencyCovered = !!(server.agencyId && server.agency?.active);
+
+  // v40 — ОТМЕНЕН, но платен до края на периода. Живият гратис Е платено
+  // състояние: суровата колона трябва да го отразява, иначе четците на
+  // isPremium (bot config, dashboard, panel функции) мълчаливо го третират като
+  // безплатен, докато `getServerTier` едновременно връща платения план — двете
+  // се разминават. (Червен екип R2, 07.08.2026)
+  const graceActive = !!(server.accessUntil && server.accessUntil > now);
+
+  // Собствен абонамент, ЖИВ по статуса си, но с още незаписан `plan` (out-of-
+  // order webhook: subscription.updated ПРЕДИ checkout.session.completed).
+  // Изисква ПОЛОЖИТЕЛНО доказателство: жив статус + реален собствен абонамент.
+  const status = String(server.stripeStatus || "").toLowerCase();
+  const ownSubLive = !ownPaid
+    && LIVE_OWN_SUB_STATUSES.has(status)
+    && (!!server.stripeSubscriptionId || !!server.planSource);
+
+  const shouldBe = ownPaid || agencyCovered || graceActive || ownSubLive;
+
+  const data = {};
+  if (server.isPremium !== shouldBe) data.isPremium = shouldBe;
+  // Ретенцията на транскрипти е premium (null = безсрочно). При СВАЛЯНЕ я връщаме
+  // на базовите 30 дни ТУК, синхронно — иначе сваленият сървър пазеше транскрипти
+  // безсрочно до неделния клийнъп (до 7 дни прозорец). Пипаме само когато е била
+  // „безсрочно“ (null) — не разваляме друга стойност. (Кодаджията одит 07.08.2026)
+  if (!shouldBe && server.archiveRetentionDays === null) data.archiveRetentionDays = 30;
+
+  if (Object.keys(data).length) {
+    await tx.server.update({ where: { id: serverId }, data });
+  }
+  return shouldBe;
+}
+
+/** Синхронизира всички сървъри, покрити от дадена агенция (при активация/край). */
+export async function syncAgencyServersPaidFlag(agencyId, tx = prisma) {
+  const servers = await tx.server.findMany({ where: { agencyId }, select: { id: true } });
+
+  // ВСЕКИ сървър се синхронизира НЕЗАВИСИМО. Първата версия беше гол
+  // `for … await` без улавяне: един проблемен ред (изчезнал между findMany и
+  // update → P2025, или мигновена DB грешка) прекъсваше цикъла и ОСТАНАЛИТЕ
+  // сървъри на агенцията оставаха със стар `isPremium`. А всичките шест
+  // повиквания са обвити в `.catch(() => {})`, значи провалът беше и ТИХ:
+  // промяна по ЕДИН сървър оставяше ДРУГИ наематели в грешно състояние, без
+  // следа. Точно класът „едно действие чупи чужд сървър“. (Одит 07.08.2026)
+  const failed = [];
+  for (const s of servers) {
+    try {
+      await syncServerPaidFlag(s.id, tx);
+    } catch (err) {
+      failed.push({ serverId: s.id, error: err?.message });
+    }
+  }
+
+  if (failed.length) {
+    // НЕ хвърляме: частичният синхрон не бива да отменя вече записания паричен
+    // ефект на webhook-а. Но мълчанието е по-лошо от шума — казваме кои.
+    console.error(
+      `[premium] syncAgencyServersPaidFlag(${agencyId}): ${failed.length}/${servers.length} се провалиха —`,
+      failed.map((f) => `${f.serverId}: ${f.error}`).join(" · "),
+    );
+  }
+  return { total: servers.length, synced: servers.length - failed.length, failed };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

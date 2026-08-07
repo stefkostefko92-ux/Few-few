@@ -5,6 +5,8 @@ export default {
   "error.unauthorized": "Non hai l'autorizzazione.",
   "error.blacklisted": "❌ Ti è stato vietato l'uso di questo bot.",
   "error.formExpired": "❌ Questo modulo non è più attivo. Ricomincia da capo.",
+  "error.componentExpired": "❌ Questo pulsante non funziona più: il pannello a cui appartiene è stato modificato o rimosso. Chiedi a un amministratore di ripubblicarlo.",
+  "error.ticketCreateFailed": "❌ Impossibile aprire il ticket: il nostro servizio è temporaneamente non disponibile. Riprova tra poco.",
   "error.categoryNotFound": "❌ Categoria non trovata.",
   "error.serviceUnavailable.title": "⚠️ Servizio temporaneamente non disponibile",
   "error.serviceUnavailable.body": "Il server non ha risposto in tempo — di solito è temporaneo. Riprova tra un momento.\n\n_ID di correlazione: `{{id}}`_",
