@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const router = Router();
 
@@ -116,16 +117,11 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
     if (!server) return res.status(404).json({ error: "Server not found" });
 
-    // Enforce panel limits — uses getServerTier() which honors active trial
+    // Enforce panel limits — uses getServerTier() which honors active trial.
+    // Самото броене+създаване е АТОМАРНО (виж lib/withinLimit.js): досега между
+    // count() и create() нямаше нищо и две едновременни заявки минаваха и двете.
     const { isPremium } = await getServerTier(req.params.serverId);
-    const panelCount = await prisma.panel.count({ where: { serverId: req.params.serverId } });
     const limit = isPremium ? PREMIUM_PANEL_LIMIT : BASE_PANEL_LIMIT;
-    if (panelCount >= limit) {
-      return res.status(403).json({
-        error: `Panel limit reached (${limit}). ${!isPremium ? "Upgrade to Premium for unlimited panels." : ""}`,
-        code: "LIMIT_REACHED",
-      });
-    }
 
     // Validate premium-only fields
     const premErr = await validatePremiumFields(req.params.serverId, parsed.data, PANEL_PREMIUM_FIELDS);
@@ -137,7 +133,11 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     const { buttons, ...rest } = parsed.data;
 
-    const panel = await prisma.panel.create({
+    const created = await createWithinLimit({
+      model: "panel",
+      where: { serverId: req.params.serverId },
+      limit,
+      create: (tx) => tx.panel.create({
       data: {
         serverId: req.params.serverId,
         ...rest,
@@ -151,7 +151,16 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
         },
       },
       include: { buttons: true },
+      }),
     });
+
+    if (!created.ok) {
+      return res.status(403).json({
+        error: `Panel limit reached (${limit}). ${!isPremium ? "Upgrade to Premium for unlimited panels." : ""}`,
+        code: "LIMIT_REACHED",
+      });
+    }
+    const panel = created.row;
 
     await logAudit(req.user.id, req.params.serverId, "PANEL_CREATED", panel.id, { name: panel.name });
     res.status(201).json(panel);

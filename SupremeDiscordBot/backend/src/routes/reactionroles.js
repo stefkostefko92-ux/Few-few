@@ -8,6 +8,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const router = Router();
 
@@ -56,27 +57,29 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
 
     const { isPremium, limits } = await getServerTier(req.params.serverId);
-    const count = await prisma.reactionRoleMessage.count({
+    const { pairs, ...rest } = parsed.data;
+    // Атомарно count+create (lib/withinLimit.js).
+    const created = await createWithinLimit({
+      model: "reactionRoleMessage",
       where: { serverId: req.params.serverId },
+      limit: limits.reactionRoleMessages,
+      create: (tx) => tx.reactionRoleMessage.create({
+        data: {
+          serverId: req.params.serverId,
+          ...rest,
+          pairs: { create: pairs.map((p) => ({ emoji: p.emoji, roleId: p.roleId, label: p.label || null })) },
+        },
+        include: { pairs: true },
+      }),
     });
-    if (count >= limits.reactionRoleMessages) {
+    if (!created.ok) {
       return res.status(403).json({
         error: `Reaction role message limit (${limits.reactionRoleMessages}) reached.${!isPremium ? " Upgrade to Premium for 25." : ""}`,
         code: "LIMIT_REACHED",
       });
     }
 
-    const { pairs, ...rest } = parsed.data;
-    const rrm = await prisma.reactionRoleMessage.create({
-      data: {
-        serverId: req.params.serverId,
-        ...rest,
-        pairs: { create: pairs.map((p) => ({ emoji: p.emoji, roleId: p.roleId, label: p.label || null })) },
-      },
-      include: { pairs: true },
-    });
-
-    res.status(201).json(rrm);
+    res.status(201).json(created.row);
   } catch (err) {
     next(err);
   }

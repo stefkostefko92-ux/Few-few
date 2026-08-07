@@ -8,6 +8,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const VERIFICATION_PREMIUM_FIELDS = {
   minAccountAgeDays: "verification.accountAge",
@@ -147,20 +148,25 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
       const premErr = await validatePremiumFields(req.params.serverId, parsed.data, VERIFICATION_PREMIUM_FIELDS);
       if (premErr) return res.status(premErr.status).json(premErr.body);
     }
-    const existing = await prisma.verificationPanel.count({ where: { serverId: req.params.serverId } });
-    if (existing >= limits.verificationPanels) {
+    // Атомарно: count+create в една Serializable транзакция (lib/withinLimit.js).
+    const created = await createWithinLimit({
+      model: "verificationPanel",
+      where: { serverId: req.params.serverId },
+      limit: limits.verificationPanels,
+      create: (tx) => tx.verificationPanel.create({
+      data: {
+        serverId: req.params.serverId,
+        ...parsed.data,
+      },
+      }),
+    });
+    if (!created.ok) {
       return res.status(403).json({
         error: `Verification panel limit reached (${limits.verificationPanels}).`,
         code: "LIMIT_REACHED",
       });
     }
-
-    const panel = await prisma.verificationPanel.create({
-      data: {
-        serverId: req.params.serverId,
-        ...parsed.data,
-      },
-    });
+    const panel = created.row;
 
     await prisma.auditLog.create({
       data: {

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 // ─── Premium field map ──────────────────────────────────────────────────────
 const FORM_PREMIUM_FIELDS = {
@@ -107,13 +108,7 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     const { isPremium, limits } = await getServerTier(req.params.serverId);
 
     // Count limits
-    const formCount = await prisma.form.count({ where: { serverId: req.params.serverId } });
-    if (formCount >= limits.forms) {
-      return res.status(403).json({
-        error: `Form limit (${limits.forms}) reached.${!isPremium ? " Upgrade to Premium for 50." : ""}`,
-        code: "LIMIT_REACHED",
-      });
-    }
+    // Броенето и създаването са АТОМАРНИ (lib/withinLimit.js) — виж бележката там.
     if (parsed.data.questions.length > limits.questionsPerForm) {
       return res.status(403).json({
         error: `Question limit (${limits.questionsPerForm}) exceeded.${!isPremium ? " Upgrade to Premium." : ""}`,
@@ -141,7 +136,11 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
     if (rest.acceptMessage === "") rest.acceptMessage = null;
     if (rest.denyMessage === "") rest.denyMessage = null;
 
-    const form = await prisma.form.create({
+    const created = await createWithinLimit({
+      model: "form",
+      where: { serverId: req.params.serverId },
+      limit: limits.forms,
+      create: (tx) => tx.form.create({
       data: {
         serverId: req.params.serverId,
         ...rest,
@@ -163,9 +162,16 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
         },
       },
       include: { questions: { orderBy: { order: "asc" } } },
+      }),
     });
+    if (!created.ok) {
+      return res.status(403).json({
+        error: `Form limit (${limits.forms}) reached.${!isPremium ? " Upgrade to Premium for 50." : ""}`,
+        code: "LIMIT_REACHED",
+      });
+    }
 
-    res.status(201).json(form);
+    res.status(201).json(created.row);
   } catch (err) {
     next(err);
   }

@@ -11,6 +11,7 @@ import { notifyBot } from "../services/botNotifier.js";
 import { requirePremium, getServerTier, BASE_LIMITS, PREMIUM_LIMITS } from "../lib/premium.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
@@ -263,13 +264,10 @@ router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automatio
   try {
     // Enforce count limit
     const { limits } = await getServerTier(req.params.serverId);
-    const existing = await prisma.stickyMessage.count({ where: { serverId: req.params.serverId } });
-    if (existing >= limits.stickiesPerServer) {
-      return res.status(403).json({
-        error: `Sticky limit reached (${limits.stickiesPerServer}). Upgrade Premium for more.`,
-        code: "LIMIT_REACHED",
-      });
-    }
+    // Sticky е upsert по channelId, значи лимитът важи само когато се СЪЗДАВА
+    // нов ред. Проверката и записът минават в една Serializable транзакция
+    // по-долу — иначе две едновременни заявки за РАЗЛИЧНИ канали и двете
+    // виждат „под лимита" и го надскачат.
     // Cross-tenant IDOR guard: StickyMessage.channelId е ГЛОБАЛНО @unique, тоест
     // upsert само по channelId би презаписал sticky на ДРУГ сървър, ако
     // атакуващият познава чужд channelId (requireServerAdmin пази serverId, не
@@ -280,7 +278,14 @@ router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automatio
     if (existingSticky && existingSticky.serverId !== req.params.serverId) {
       return res.status(409).json({ error: "This channel already has a sticky on another server." });
     }
-    const sticky = await prisma.stickyMessage.upsert({
+    const sticky = await prisma.$transaction(async (tx) => {
+      if (!existingSticky) {
+        const count = await tx.stickyMessage.count({ where: { serverId: req.params.serverId } });
+        if (count >= limits.stickiesPerServer) {
+          const e = new Error("LIMIT_REACHED"); e.__limit = true; throw e;
+        }
+      }
+      return tx.stickyMessage.upsert({
       where: { channelId },
       create: {
         serverId: req.params.serverId,
@@ -291,9 +296,18 @@ router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automatio
         content, embedTitle, embedColor: embedColor || "#00e5ff",
         enabled: true, currentMessageId: null,
       },
-    });
+      });
+    }, { isolationLevel: "Serializable" });
     res.json(sticky);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err?.__limit || err?.code === "P2034") {
+      return res.status(403).json({
+        error: `Sticky limit reached (${limits.stickiesPerServer}). Upgrade Premium for more.`,
+        code: "LIMIT_REACHED",
+      });
+    }
+    next(err);
+  }
 });
 
 router.delete("/:serverId/stickies/:channelId", requireServerAdmin, async (req, res, next) => {
@@ -343,16 +357,13 @@ router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automati
         feature: "automation.recurring",
       });
     }
-    const existing = await prisma.scheduledMessage.count({
+    // Атомарно count+create (lib/withinLimit.js) — иначе две едновременни
+    // заявки минават и двете покрай лимита.
+    const created = await createWithinLimit({
+      model: "scheduledMessage",
       where: { serverId: req.params.serverId, sentAt: null },
-    });
-    if (existing >= limits.scheduledPerServer) {
-      return res.status(403).json({
-        error: `Scheduled message limit reached (${limits.scheduledPerServer}).`,
-        code: "LIMIT_REACHED",
-      });
-    }
-    const m = await prisma.scheduledMessage.create({
+      limit: limits.scheduledPerServer,
+      create: (tx) => tx.scheduledMessage.create({
       data: {
         serverId: req.params.serverId,
         channelId, content,
@@ -363,8 +374,15 @@ router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automati
         recurrence: recurrence || null,
         createdBy: req.user.id,
       },
+      }),
     });
-    res.status(201).json(m);
+    if (!created.ok) {
+      return res.status(403).json({
+        error: `Scheduled message limit reached (${limits.scheduledPerServer}).`,
+        code: "LIMIT_REACHED",
+      });
+    }
+    res.status(201).json(created.row);
   } catch (err) { next(err); }
 });
 
