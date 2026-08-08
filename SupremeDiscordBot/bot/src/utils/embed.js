@@ -286,13 +286,13 @@ export function buildReviewEmbed(application, formName, user, questions) {
     .setCustomId(`app_review:${application.id}:approve`)
     .setLabel("Approve")
     .setStyle(ButtonStyle.Success)
-    .setEmoji("✅");
+    .setEmoji("👍");
 
   const denyBtn = new ButtonBuilder()
     .setCustomId(`app_review:${application.id}:deny`)
     .setLabel("Deny")
     .setStyle(ButtonStyle.Danger)
-    .setEmoji("❌");
+    .setEmoji("👎");
 
   // Отваря личен discussion канал с кандидата ПРЕДИ решение (status остава
   // PENDING) — същият flow като „Open discussion“ в dashboard-а.

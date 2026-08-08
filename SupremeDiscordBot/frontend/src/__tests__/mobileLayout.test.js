@@ -134,6 +134,30 @@ describe("каналите и ролите се ИЗБИРАТ, не се пиш
     expect(bad, `полето е падащо меню, а подсказката иска ID: ${bad.join(", ")}`).toEqual([]);
   });
 
+  it("и ПРЕВЕДЕНИТЕ етикети/подсказки не обещават ID", async () => {
+    // Категориите на панела („Open Category ID") и spawn полето на Verification
+    // се промъкнаха ТОЧНО оттук: етикетът им е t("ключ"), а гейтът четеше само
+    // литерали в JSX-а. Текстът обаче живее в en.js — резолвваме ключа и
+    // проверяваме СТОЙНОСТТА. Изключение: picker.manual* — резервният ръчен
+    // вход, който легитимно казва „залепи ID".
+    const { default: en } = await import("../i18n/dashboard/en.js");
+    const PROMISES = /\b(Channel|Categor\w*|Role)\b[^"]*\bIDs?\b|\bIDs?\b[^"]*\b(Channel|Categor\w*|Role)/i;
+    const bad = [];
+    for (const f of jsx) {
+      if (EXEMPT.has(f)) continue;
+      const s = read(f);
+      for (const m of s.matchAll(/(?:cs-label">|placeholder=|aria-label=)\{t\("([^"]+)"/g)) {
+        const key = m[1];
+        if (key.startsWith("picker.manual")) continue;
+        const val = en[key];
+        if (typeof val === "string" && PROMISES.test(val)) {
+          bad.push(`${f}:${lineOf(s, m.index)} ${key}="${val}"`);
+        }
+      }
+    }
+    expect(bad, `текстът към човека обещава ръчно ID: ${bad.join(", ")}`).toEqual([]);
+  });
+
   it("етикетите не искат от човека да носи ID или CSV", () => {
     const bad = [];
     for (const f of jsx) {
