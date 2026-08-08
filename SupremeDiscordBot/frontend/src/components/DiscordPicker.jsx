@@ -21,7 +21,8 @@
 //     функция, с която ботът реално отказва (`roleAssignabilityReason`).
 //   • Запазена стойност за изчезнал канал/роля не се губи мълчаливо.
 //   • Всеки видим низ минава през `t()`.
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { AlertTriangle, X, ChevronDown, Search } from "lucide-react";
@@ -133,6 +134,9 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const boxRef = useRef(null);
+  const btnRef = useRef(null);
+  const listRef = useRef(null);
+  const [pos, setPos] = useState(null);
 
   const roles = data?.roles;
   const selected = useMemo(
@@ -141,13 +145,53 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
   );
 
   // Клик извън / Esc затварят списъка — иначе на телефон остава да виси.
+  // Списъкът е в ПОРТАЛ (виж по-долу), значи `boxRef.contains` не го покрива —
+  // проверяват се и двете дървета, иначе клик в самия списък го затваря.
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
+    const onDoc = (e) => {
+      if (boxRef.current?.contains(e.target)) return;
+      if (listRef.current?.contains(e.target)) return;
+      setOpen(false);
+    };
     const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  // ─── Позициониране през портал ────────────────────────────────────────────
+  // ЗАЩО: списъкът беше `position: absolute` вътре в реда си. Модалът обаче е
+  // `max-h-[90vh] overflow-y-auto` — отвориш ли полето близо до долния ръб,
+  // списъкът се РЕЖЕ от скрол-контейнера и опциите долу не се виждат без
+  // превъртане. Порталът го изнася в <body> с `position: fixed`, значи никой
+  // прародител не може да го отреже; позицията се смята от реалния правоъгълник
+  // на бутона и се обръща НАГОРЕ, когато мястото под него не стига. Следи
+  // scroll (capture — хваща и скрола ВЪТРЕ в модала) и resize. (08.08.2026)
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const below = window.innerHeight - r.bottom;
+      const above = r.top;
+      const up = below < 240 && above > below;
+      const maxH = Math.max(160, Math.min(288, (up ? above : below) - 12));
+      setPos({
+        left: r.left,
+        width: r.width,
+        top: up ? undefined : r.bottom + 4,
+        bottom: up ? window.innerHeight - r.top + 4 : undefined,
+        maxH,
+      });
+    };
+    place();
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    return () => {
+      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", place);
+    };
   }, [open]);
 
   if (isError || (!isLoading && !roles)) {
@@ -188,7 +232,7 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
         )}
       </div>
 
-      <button type="button" id={id} onClick={() => setOpen((o) => !o)} disabled={isLoading}
+      <button type="button" id={id} ref={btnRef} onClick={() => setOpen((o) => !o)} disabled={isLoading}
               aria-expanded={open} aria-haspopup="listbox"
               className="cs-input flex items-center justify-between gap-2 text-left">
         <span className="text-cs-muted text-sm">
@@ -197,8 +241,15 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
         <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
 
-      {open && (
-        <div className="absolute z-30 mt-1 w-full max-h-72 overflow-y-auto rounded-xl border border-cs-border bg-cs-bg shadow-2xl">
+      {open && pos && createPortal(
+        <div
+          ref={listRef}
+          /* z над .cs-overlay (z-50): списъкът трябва да стои над модала, в
+             който живее полето му. fixed + портал = никой overflow не го реже. */
+          data-picker-portal=""
+          style={{ position: "fixed", left: pos.left, width: pos.width, top: pos.top, bottom: pos.bottom, maxHeight: pos.maxH, zIndex: 60 }}
+          className="overflow-y-auto rounded-xl border border-cs-border bg-cs-bg shadow-2xl"
+        >
           <div className="sticky top-0 bg-cs-bg border-b border-cs-border p-2">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-cs-dim" aria-hidden="true" />
@@ -224,7 +275,8 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
               );
             })}
           </ul>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* Обобщено предупреждение под полето — избраното вече е направено, но
