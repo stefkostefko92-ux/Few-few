@@ -66,21 +66,49 @@ else bad "backend/база: ${h:-без отговор}"; fi
 
 # ─── 3. Съставното състояние (база + Redis + Discord gateway) ───────────────
 # `/api/status/probe` е нарочно направен за машина: празно тяло, само код.
-c=$(code "$API/api/status/probe")
+#
+# ТЪРПЕНИЕ (реален деплой, 08.08.2026): деплоят ПРЕСЪЗДАВА контейнера на бота
+# при промяна в кода му, а Discord gateway-ът се свързва секунди СЛЕД старта.
+# Smoke-ът тичаше веднага и хващаше точно този прозорец: „компонент е паднал"
+# + „ботът не е свързан" на напълно здрав деплой. Деплоят спря, `current` не
+# мръдна, а 20 секунди по-късно всичко беше зелено. Проверка на стартиращо
+# нещо БЕЗ прозорец за стартиране мери момента, не системата.
+c=""
+for _ in $(seq 1 12); do
+  c=$(code "$API/api/status/probe")
+  [ "$c" = "200" ] && break
+  sleep 5
+done
 if [ "$c" = "200" ]; then ok "всички компоненти са здрави"
-elif [ "$c" = "503" ]; then bad "компонент е паднал — виж $API/api/status"
-else bad "probe върна $c"; fi
+elif [ "$c" = "503" ]; then bad "компонент е паднал и след 60s изчакване — виж $API/api/status"
+else bad "probe върна $c след 60s изчакване"; fi
 
 # ─── 4. Ботът е свързан с Discord ───────────────────────────────────────────
 # Ботът е вътрешен (`expose: 3001`) — само backend-ът го вика. Питаме го отвътре.
 if command -v docker >/dev/null && [ -f "$COMPOSE_DIR/docker-compose.yml" ]; then
-  b="$(cd "$COMPOSE_DIR" && docker compose exec -T bot wget -qO- --timeout="$TIMEOUT" http://localhost:3001/health 2>/dev/null || echo "")"
+  # node fetch вместо wget: busybox wget при 503 НЕ печата тялото и излиза с
+  # грешка — тоест „стартирам, gateway още не е свързан" (503 degraded) беше
+  # неразличимо от „контейнерът е мъртъв". Node е гарантиран в образа на бота,
+  # а fetch връща тялото при всеки код. Плюс същото търпение като пробата.
+  bot_health() {
+    (cd "$COMPOSE_DIR" && docker compose exec -T bot node -e \
+      'fetch("http://localhost:3001/health").then((r)=>r.text()).then((t)=>console.log(t)).catch(()=>process.exit(1))' \
+      2>/dev/null) || echo ""
+  }
+  b=""
+  for _ in $(seq 1 12); do
+    b="$(bot_health)"
+    echo "$b" | grep -q '"gateway":"connected"' && break
+    sleep 5
+  done
   if echo "$b" | grep -q '"gateway":"connected"'; then
     ok "ботът е свързан с Discord"
     down=$(echo "$b" | grep -o '"down":[0-9]*' | head -1 | cut -d: -f2)
     [ "${down:-0}" != "0" ] && note "паднали бранд ботове: $down (чужди токени — не блокира деплоя)"
+  elif echo "$b" | grep -q '"gateway"'; then
+    bad "ботът е жив, но gateway не се свърза за 60s: $b"
   else
-    bad "ботът не е свързан: ${b:-без отговор от контейнера}"
+    bad "ботът не отговори за 60s — контейнерът не работи (docker compose logs bot)"
   fi
 else
   note "проверката на бота е пропусната (няма docker/compose от тук)"
