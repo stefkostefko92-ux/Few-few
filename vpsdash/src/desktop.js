@@ -119,6 +119,12 @@ export function actionSpec(cfg, action) {
   return {
     title: `Десктоп: ${{ up: 'пускане', down: 'спиране', pull: 'обновяване на образа' }[action]}`,
     shell: `cd ${JSON.stringify(path.dirname(file))} && docker compose --env-file desktop.env -f ${JSON.stringify(file)} ${args}`,
+    // `desktop.port` мени и КЪДЕ проксира панелът, и КЪДЕ публикува compose —
+    // иначе настройката е вързана наполовина: сменяш порта, панелът чука на
+    // новия, контейнерът слуша на стария и рамката остава празна БЕЗ грешка.
+    // Средата на процеса бие `--env-file` при заместване в compose, значи
+    // конфигът остава единственият източник на истина.
+    env: { DESKTOP_PORT: String(desktopPort(cfg)) },
     exclusive: 'desktop',
     timeoutMs: 30 * 60 * 1000,
   };

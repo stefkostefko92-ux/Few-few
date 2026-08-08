@@ -239,6 +239,31 @@ test('десктоп: действията са затворен списък и
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test('десктоп: портът от конфига стига И до compose, не само до проксито', () => {
+  // Вързана НАПОЛОВИНА настройка е по-лоша от липсваща: панелът проксира към
+  // новия порт, контейнерът публикува на стария и рамката остава празна БЕЗ
+  // никаква грешка. Открито на живо, когато 3010 се оказа зает от друг процес
+  // и compose падна с „port is already allocated" — а панелът нямаше как да
+  // предложи изход, защото портът беше закован във файла.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-port-'));
+  const file = path.join(dir, 'docker-compose.yml');
+  fs.writeFileSync(file, 'services: {}\n');
+  fs.writeFileSync(path.join(dir, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+
+  for (const port of [3010, 3999]) {
+    const spec = actionSpec({ desktop: { composeFile: file, port }, paths: {} }, 'up');
+    assert.equal(spec.env?.DESKTOP_PORT, String(port), `портът ${port} трябва да стигне до compose`);
+  }
+  // И шипваният compose файл трябва наистина да ЧЕТЕ променливата — иначе
+  // подаването ѝ е театър.
+  const shipped = fs.readFileSync(
+    path.join(import.meta.dirname, '..', 'deploy', 'desktop', 'docker-compose.yml'),
+    'utf8'
+  );
+  assert.match(shipped, /127\.0\.0\.1:\$\{DESKTOP_PORT:-3010\}:3000/);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('десктоп: липсващият Docker е „спрян", не „грешка"', async () => {
   // Compose файлът се намира спрямо самия модул → работи при всяко APP_DIR и в
   // dev режим (по-рано беше зашит към /opt/vps-dashboard и мълчеше навсякъде
