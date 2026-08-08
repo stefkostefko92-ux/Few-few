@@ -1566,4 +1566,6 @@ export const ENTRIES = [
   ['Скорост ⟦0⟧× (праг ⟦1⟧×) — изгаряш ⟦2⟧% от бюджета за ⟦3⟧ час. ⟦4⟧ лоши от ⟦5⟧ проби за последните ⟦6⟧ ч.', 'Rate ⟦0⟧× (threshold ⟦1⟧×) — you burn ⟦2⟧% of the budget in ⟦3⟧ hours. ⟦4⟧ bad out of ⟦5⟧ probes in the last ⟦6⟧ h.', 'Tasso ⟦0⟧× (soglia ⟦1⟧×) — brucia il ⟦2⟧% del budget in ⟦3⟧ ore. ⟦4⟧ negative su ⟦5⟧ sonde nelle ultime ⟦6⟧ h.'],
   ['Продължителността е цяло число ⟦0⟧–⟦1⟧ минута', 'The duration is an integer ⟦0⟧–⟦1⟧ minutes', 'La durata è un intero ⟦0⟧–⟦1⟧ minuti'],
   ['Каданс: на ⟦0⟧ ден · дължи се сега.', 'Cadence: every ⟦0⟧ days · due now.', 'Cadenza: ogni ⟦0⟧ giorni · dovuto ora.'],
+  ['Десктопът иска СОБСТВЕНА парола — диалогът е негов, не на панела (това е вторият слой). Потребител:', 'The desktop asks for its OWN password — the dialog is its own, not the panel\'s (this is the second layer). User:', 'Il desktop chiede la PROPRIA password — la finestra è sua, non del pannello (è il secondo livello). Utente:'],
+  [' · паролата е в desktop.env на сървъра.', ' · the password is in desktop.env on the server.', ' · la password è in desktop.env sul server.'],
 ];

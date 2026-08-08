@@ -2357,6 +2357,17 @@ async function renderDesktop() {
 
   // Рамката е от СЪЩИЯ произход (`/desktop/` минава през панела), затова CSP-то
   // остава стегнато — нищо чуждо не се отваря.
+  // Диалогът за парола е на КОНТЕЙНЕРА, но браузърът показва домейна на ПАНЕЛА
+  // — тоест изглежда точно като фишинг върху собствения ти адрес, а човек няма
+  // откъде да знае какво име да въведе. Мълчанието тук струваше една вечер.
+  view.appendChild(
+    el('div', { class: 'muted', style: 'margin:8px 0;font-size:13px' }, [
+      el('span', { text: 'Десктопът иска СОБСТВЕНА парола — диалогът е негов, не на панела (това е вторият слой). Потребител:' }),
+      ' ',
+      el('b', { class: 'mono', raw: d.user || 'csd' }),
+      el('span', { text: ' · паролата е в desktop.env на сървъра.' }),
+    ])
+  );
   const frame = el('iframe', {
     src: '/desktop/',
     style: 'width:100%;height:76vh;border:1px solid var(--line);border-radius:var(--radius);background:#000',

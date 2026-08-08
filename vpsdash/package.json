@@ -1,6 +1,6 @@
 {
   "name": "vps-dashboard",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
   "description": "Carbon Stealth VPS Dashboard — пълен контролен панел за VPS сървърите: метрики, услуги, Docker, логове, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал и агентския флот. Нула runtime зависимости.",

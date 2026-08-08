@@ -27,6 +27,9 @@ import { run } from './exec.js';
 export const CONTAINER = 'csd-desktop';
 export const PREFIX = '/desktop';
 const DEFAULT_PORT = 3010;
+// Съвпада с `CUSTOM_USER=${DESKTOP_USER:-csd}` в compose файла — двете места трябва
+// да казват едно и също, иначе панелът показва име, с което входът не минава.
+const DEFAULT_USER = 'csd';
 
 export function desktopPort(cfg) {
   const n = Number(cfg?.desktop?.port);
@@ -65,6 +68,23 @@ export function envFile(cfg) {
   return f ? path.join(path.dirname(f), 'desktop.env') : null;
 }
 
+// Потребителското ИМЕ за десктопа — и НИЩО друго от този файл.
+// Паролата живее в същия файл и не напуска сървъра при никакви обстоятелства,
+// затова тук се чете ЕДИН точно назован ключ, вместо да се връща разбор на
+// файла: „вземи всичко и после махни тайното" е една забравена променлива
+// разстояние от изтичане.
+export function desktopUser(cfg) {
+  const f = envFile(cfg);
+  if (!f) return DEFAULT_USER;
+  try {
+    const m = fs.readFileSync(f, 'utf8').match(/^\s*(?:export\s+)?DESKTOP_USER\s*=\s*(.*)$/m);
+    const v = (m?.[1] || '').trim().replace(/^['"]|['"]$/g, '');
+    return v || DEFAULT_USER;
+  } catch {
+    return DEFAULT_USER;
+  }
+}
+
 export async function status(cfg) {
   const file = composeFile(cfg);
   const env = envFile(cfg);
@@ -72,6 +92,11 @@ export async function status(cfg) {
     available: Boolean(file),
     composeFile: file,
     envConfigured: Boolean(env && fs.existsSync(env)),
+    // Десктопът иска СОБСТВЕНА парола (KasmVNC пази сесията с Basic-auth) и
+    // диалогът показва домейна на ПАНЕЛА — тоест изглежда точно като фишинг
+    // върху собствения ти адрес. Без името тук човек няма какво да въведе и
+    // логично се усъмнява. Показваме КОЙ пита и с кое име; паролата — никога.
+    user: desktopUser(cfg),
     port: desktopPort(cfg),
     running: false,
     state: null,
@@ -134,12 +159,47 @@ export function actionSpec(cfg, action) {
 // Обикновени заявки. Пътят се препраща КАКТО Е (`/desktop/...`), защото
 // контейнерът е нагласен със `SUBFOLDER=/desktop/` — тоест той сам очаква
 // префикса. Отрязването му тук би счупило вътрешните му връзки.
+// Панелът и десктопът делят ЕДИН произход (`/desktop/` е път на самия панел),
+// затова браузърът праща едни и същи бисквитки и на двамата. Сляпото триене
+// обаче чупи десктопа, а сляпото препращане изнася сесията на панела в чужд
+// контейнер. Затова: пуска се всичко ОСВЕН нашата сесийна бисквитка.
+export const PANEL_COOKIE = 'csd_sess';
+export function forwardCookies(raw) {
+  if (!raw) return undefined;
+  const keep = String(raw)
+    .split(';')
+    .filter((c) => c.trim() && !c.trim().toLowerCase().startsWith(`${PANEL_COOKIE.toLowerCase()}=`));
+  return keep.length ? keep.join(';').trim() : undefined;
+}
+
+// Заглавката с паролата се препраща САМО когато е `Basic` — тоест втория слой
+// на самия десктоп (KasmVNC пази сесията с Basic-auth). `Bearer` е жетонът на
+// ПАНЕЛА и няма работа в чужд контейнер.
+//
+// Дотук се триеше безусловно и това правеше десктопа НЕИЗПОЛЗВАЕМ: контейнерът
+// връща 401, браузърът пита за парола, потребителят я въвежда, проксито я
+// изхвърля, контейнерът пак връща 401 — безкраен цикъл, при който изглежда, че
+// „паролата е грешна". Хванато на живо: нито едно име не минаваше, защото до
+// контейнера изобщо не стигаха данни за вход.
+export function forwardAuth(raw) {
+  return /^basic\s/i.test(String(raw || '')) ? raw : undefined;
+}
+
+function upstreamHeaders(req, port) {
+  const headers = { ...req.headers };
+  const cookie = forwardCookies(req.headers.cookie);
+  const auth = forwardAuth(req.headers.authorization);
+  if (cookie) headers.cookie = cookie;
+  else delete headers.cookie;
+  if (auth) headers.authorization = auth;
+  else delete headers.authorization;
+  headers.host = `127.0.0.1:${port}`;
+  return headers;
+}
+
 export function proxyHttp(cfg, req, res) {
   const port = desktopPort(cfg);
-  const headers = { ...req.headers };
-  delete headers.cookie; // сесията на панела няма работа в чуждия контейнер
-  delete headers.authorization;
-  headers.host = `127.0.0.1:${port}`;
+  const headers = upstreamHeaders(req, port);
   const up = http.request(
     { host: '127.0.0.1', port, path: req.url, method: req.method, headers, timeout: 30000 },
     (r) => {
@@ -161,10 +221,11 @@ export function proxyHttp(cfg, req, res) {
 // ръкостискането нагоре и, ако мине, слепваме двата сокета байт за байт.
 export function proxyUpgrade(cfg, req, socket, head) {
   const port = desktopPort(cfg);
-  const headers = { ...req.headers };
-  delete headers.cookie;
-  delete headers.authorization;
-  headers.host = `127.0.0.1:${port}`;
+  // Същото правило и за сокета: VNC е WebSocket от първата до последната заявка,
+  // а KasmVNC пази сесията си с бисквитка, дадена след Basic-auth. Изхвърлиш ли
+  // я тук, ръкостискането се отказва и рамката остава черна, докато HTTP частта
+  // изглежда наред.
+  const headers = upstreamHeaders(req, port);
   const up = http.request({ host: '127.0.0.1', port, path: req.url, method: req.method, headers });
   up.on('upgrade', (upRes, upSocket, upHead) => {
     const lines = [`HTTP/1.1 ${upRes.statusCode} ${upRes.statusMessage}`];

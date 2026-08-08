@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { desktopPort, actionSpec, status } from '../src/desktop.js';
+import { desktopPort, actionSpec, status, forwardAuth, forwardCookies, PANEL_COOKIE, desktopUser } from '../src/desktop.js';
 
 // Реален изход на `redis-cli INFO`, съкратен до нужното.
 const INFO = `# Server
@@ -284,4 +284,27 @@ test('десктоп: compose файлът не сочи извън продук
   const s = await status({ paths: {}, desktop: {} });
   assert.ok(s.composeFile.endsWith('/deploy/desktop/docker-compose.yml'));
   assert.ok(!s.composeFile.includes('..'), 'пътят е нормализиран');
+});
+
+test('десктоп: паролата стига до контейнера, сесията на панела — не', () => {
+  // Хванато на живо: проксито триеше `authorization` безусловно, значи
+  // контейнерът НИКОГА не получаваше вход. Браузърът пита, човекът въвежда,
+  // проксито изхвърля, контейнерът пак пита — безкраен цикъл, при който
+  // изглежда, че „паролата е грешна". Нито едно име не можеше да проработи.
+  assert.equal(forwardAuth('Basic Y3NkOnRham5h'), 'Basic Y3NkOnRham5h', 'вторият слой трябва да минава');
+  assert.equal(forwardAuth('basic abc'), 'basic abc', 'схемата е нечувствителна към регистър');
+  // Жетонът на ПАНЕЛА няма работа в чужд контейнер.
+  for (const bad of ['Bearer таен-жетон', 'Digest x', '', null, undefined, 'Basicabc']) {
+    assert.equal(forwardAuth(bad), undefined, `„${bad}" не бива да се препраща`);
+  }
+
+  // Бисквитките: контейнерът си пази СВОЯТА сесия, нашата не напуска панела.
+  assert.equal(forwardCookies('kasm_session=abc'), 'kasm_session=abc');
+  assert.equal(forwardCookies(`${PANEL_COOKIE}=таен`), undefined, 'сесията на панела не излиза');
+  const mixed = forwardCookies(`${PANEL_COOKIE}=таен; kasm=1; other=2`);
+  assert.ok(!mixed.includes('таен'), 'нищо от сесията на панела');
+  assert.match(mixed, /kasm=1/);
+  assert.match(mixed, /other=2/);
+  assert.equal(forwardCookies(''), undefined);
+  assert.equal(forwardCookies(undefined), undefined);
 });
