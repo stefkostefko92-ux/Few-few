@@ -47,7 +47,13 @@ else
   log "Инсталирам кода в ${APP_DIR}…"
   mkdir -p "$APP_DIR"
   if command -v rsync >/dev/null; then
-    rsync -a --delete --exclude .state/ --exclude node_modules/ "$SRC_DIR"/ "$APP_DIR"/
+    # `deploy/desktop/desktop.env` е ТАЙНА, която живее до compose файла, тоест
+    # ВЪТРЕ в дървото на кода — а `--delete` го трие при всеки деплой. Резултатът
+    # изглежда като липсваща стъпка („сложи там DESKTOP_PASSWORD"), не като
+    # регресия: човек го създава, десктопът тръгва, следващият деплой го изтрива
+    # мълчаливо и съобщението се връща. Изключва се поименно.
+    rsync -a --delete --exclude .state/ --exclude node_modules/ \
+      --exclude deploy/desktop/desktop.env "$SRC_DIR"/ "$APP_DIR"/
   else
     # Без rsync няма `--delete`: изтритите в новата версия файлове оцеляват.
     # Казваме го, вместо да се преструваме, че е същото.

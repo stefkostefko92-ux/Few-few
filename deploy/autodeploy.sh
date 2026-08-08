@@ -839,7 +839,11 @@ deploy_vpsdashboard() {
   # Бекъп на текущия код (конфигът и state са извън тази папка → непокътнати).
   [ -d "$VPSDASH_DIR" ] && cp -a "$VPSDASH_DIR" "${VPSDASH_DIR}.bak-$TS"
   mkdir -p "$VPSDASH_DIR"
-  rsync -a --delete --exclude .state/ --exclude node_modules/ "$d"/ "$VPSDASH_DIR"/
+  # `deploy/desktop/desktop.env` е ТАЙНА вътре в дървото на кода (живее до compose
+  # файла) — `--delete` я трие при всеки деплой и панелът пак иска DESKTOP_PASSWORD.
+  # Тихата регресия изглежда като пропусната стъпка от инсталацията.
+  rsync -a --delete --exclude .state/ --exclude node_modules/ \
+    --exclude deploy/desktop/desktop.env "$d"/ "$VPSDASH_DIR"/
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
   install -m 644 "$VPSDASH_DIR/deploy/vps-dashboard.service" /etc/systemd/system/${VPSDASH_SERVICE}.service
   systemctl daemon-reload
