@@ -155,6 +155,13 @@ const PAGES = [
   { path: `/dashboard/${SID}/automation`, name: "automation" },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
+  { path: `/dashboard/${SID}/verification`, name: "verification" },
+  { path: `/dashboard/${SID}/webhooks`, name: "webhooks" },
+  { path: `/dashboard/${SID}/kb`, name: "kb" },
+  { path: `/dashboard/${SID}/analytics`, name: "analytics" },
+  { path: `/dashboard/${SID}/apikeys`, name: "apikeys" },
+  { path: `/dashboard/${SID}/applications`, name: "applications" },
+  { path: `/dashboard/${SID}/commands`, name: "commands" },
 ];
 
 const failures = [];
@@ -191,6 +198,54 @@ for (const view of [
       return { sw: el.scrollWidth, cw: el.clientWidth };
     });
     note(over.sw <= over.cw + 1, `${name}: без хоризонтален прелив (${over.sw}/${over.cw})`);
+
+    // ХОРИЗОНТАЛЕН ПРЕЛИВ ВЪВ ВСЕКИ СКРОЛ КОНТЕЙНЕР, не само в страницата.
+    // Проверката само на <html> е сляпа два пъти: `overflow-x: hidden` на body
+    // крие прелива, а Layout-ът скролва <main> — прелив ВЪТРЕ в main изобщо не
+    // стига до html. Точно така селектът за канал стърчеше от картата на
+    // формата (собственикът, снимка 08.08.2026), докато „проверката" беше
+    // зелена. Първата поправка тук прескачаше всичко под скролируем прародител
+    // — тоест целият дашборд беше изключен от проверката.
+    //
+    // Правило: контейнер, който може да скролва/реже (auto·scroll·hidden) и
+    // има scrollWidth > clientWidth, е дефект — ОСВЕН ако скролът е нарочен
+    // (класът казва overflow-x-auto: таблиците в скрол обвивка).
+    const sticking = await page.evaluate(() => {
+      const bad = [];
+      for (const el of document.querySelectorAll("body, body *")) {
+        if (el.scrollWidth <= el.clientWidth + 1) continue;
+        const st = getComputedStyle(el);
+        // Само реално СКРОЛИРУЕМИ (auto/scroll): при тях преливът се вижда
+        // като паниране под пръста. hidden/clip е нарочно рязане — дизайнов
+        // инструмент (sr-only, truncate, декоративни фонове), не дефект.
+        if (!/(auto|scroll)/.test(st.overflowX)) continue;
+        const cls = String(el.className);
+        if (cls.includes("overflow-x-auto")) continue;      // нарочен скрол
+        if (el.closest('[aria-hidden="true"]')) continue;    // декорация
+        // Контейнерът казва „има прелив", но виновникът е ДЕТЕ. Намираме
+        // най-широките потомци — иначе докладът сочи <main> и се гадае.
+        // Мери се ДЕСНИЯТ РЪБ спрямо контейнера, не ширината: първата версия
+        // питаше „кой е по-широк от 390" и върна „?" — виновникът беше тесен,
+        // но ИЗМЕСТЕН надясно (right=684 при width<390).
+        const base = el.getBoundingClientRect().left - el.scrollLeft;
+        const culprits = [];
+        for (const kid of el.querySelectorAll("*")) {
+          const right = kid.getBoundingClientRect().right - base;
+          if (right > el.clientWidth + 1 && !culprits.some((c) => c.el.contains(kid))) {
+            culprits.push({ el: kid, right });
+          }
+        }
+        culprits.sort((a, b) => b.right - a.right);
+        const who = culprits.slice(0, 3)
+          .map((c) => `<${c.el.tagName.toLowerCase()} class="${String(c.el.className).slice(0, 60)}" right=${Math.round(c.right)}>`)
+          .join(" » ");
+        bad.push(`<${el.tagName.toLowerCase()}> ${el.scrollWidth}>${el.clientWidth} виновници: ${who || "?"}`);
+        if (bad.length >= 5) break;
+      }
+      return bad;
+    });
+    note(sticking.length === 0,
+      `${name}: нула хоризонтални преливи в контейнерите${sticking.length ? " → " + sticking.join(" · ") : ""}`);
     await page.screenshot({ path: join(SHOTS, `${view.tag}-${name}.png`) });
   }
 

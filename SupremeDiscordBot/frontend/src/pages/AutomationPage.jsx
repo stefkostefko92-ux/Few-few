@@ -52,7 +52,7 @@ export default function AutomationPage() {
         <p className="text-cs-muted mt-2 max-w-2xl">{t("auto.subtitle")}</p>
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-cs-border">
+      <div className="flex gap-1 mb-6 border-b border-cs-border overflow-x-auto">
         {TABS.map((tb) => {
           const Icon = tb.icon;
           const active = tab === tb.id;
@@ -61,7 +61,7 @@ export default function AutomationPage() {
             <button
               key={tb.id}
               onClick={() => setTab(tb.id)}
-              className={`px-4 py-2 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
+              className={`px-4 py-2 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                 active ? "border-cs-cyan text-cs-cyan" : "border-transparent text-cs-muted hover:text-white"
               }`}
             >
@@ -826,7 +826,7 @@ function ReactionRolesTab() {
       ) : (
         messages.map((m) => (
           <div key={m.id} className="cs-card">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: m.color }} />
@@ -849,9 +849,9 @@ function ReactionRolesTab() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <div className="flex items-center gap-1">
-                  <div className="w-44">
+                  <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
                     <DiscordChannelSelect
                       kind="text"
                       value={spawnInputs[m.id] || ""}
