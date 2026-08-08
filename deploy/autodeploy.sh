@@ -602,12 +602,22 @@ supreme_rollback_hint() {
 # всяка промяна, засягаща откриваемост. Ключът вече се материализира в web root;
 # липсваше само самото извикване, затова досега беше РЪЧНА стъпка, която лесно се
 # забравя. Не е фатално: при провал минава при следващия деплой.
+#
+# ЗАЩО СЕ ПОДАВА ЯВНО (реален деплой, 07.08.2026): функцията НАМИРАШЕ ключа, а
+# после викаше инструмента без него — той падаше обратно към конвенционалния
+# `<siteUrl>/indexnow-key.txt`, какъвто Supreme НЯМА: ключът стои на `<key>.txt`.
+# И понеже фронтендът е SPA (`try_files … /index.html`), онзи адрес връща 200 с
+# index.html, а не 404 — тоест провалът изглеждаше като „липсващ ключ" за ключ,
+# който е налице и се сервира коректно. Едно правило, две определения.
 supreme_ping_indexnow() {
   local d="$1"
-  local key_file
+  local key_file key
   key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1)"
   [ -n "$key_file" ] || { warn "Supreme: няма IndexNow ключ в frontend/public — пропускам."; return 0; }
-  ( cd "$SRC" && node tools/seo/indexnow.mjs "https://supremebot.carbonstealth.eu" ) \
+  key="$(basename "$key_file" .txt)"
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "https://supremebot.carbonstealth.eu" \
+      --key-file "$key_file" \
+      --key-location "https://supremebot.carbonstealth.eu/${key}.txt" ) \
     || warn "Supreme: IndexNow подаването пропадна — не е фатално, минава при следващия деплой."
 }
 
