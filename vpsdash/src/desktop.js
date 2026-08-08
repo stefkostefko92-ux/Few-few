@@ -31,6 +31,32 @@ const DEFAULT_PORT = 3010;
 // да казват едно и също, иначе панелът показва име, с което входът не минава.
 const DEFAULT_USER = 'csd';
 
+// Образът и таванът на паметта минават през ЗАТВОРЕНА проверка, а не се подават
+// сурови: стойността от конфига стига до команден ред на docker. Име на образ по
+// правилата на OCI (регистър/път:таг), нищо друго — иначе полето е „изпълни
+// каквото ти кажа" през приятен интерфейс, точно като редактора на `.env` с
+// произволен път.
+const DEFAULT_IMAGE = 'lscr.io/linuxserver/webtop:ubuntu-mate';
+const IMAGE_RX = /^[a-z0-9][a-z0-9._-]*(?::\d+)?(?:\/[a-z0-9][a-z0-9._-]*)*(?::[\w][\w.-]{0,127})?$/;
+export function desktopImage(cfg) {
+  // Типът се проверява, не се коерцира. `String(42)` е `'42'`, а „42" Е валидно
+  // име на образ по правилата на OCI — тоест число в конфига минава проверката и
+  // машината тръгва да дърпа несъществуващ образ вместо да ползва работещото
+  // подразбиране. Същият клас капан като `Number(null) === 0` при часа на бекъпа.
+  const raw = cfg?.desktop?.image;
+  if (typeof raw !== 'string') return DEFAULT_IMAGE;
+  const v = raw.trim();
+  return v && IMAGE_RX.test(v) ? v : DEFAULT_IMAGE;
+}
+
+// Форматът на Docker: число + един от b/k/m/g. Празно/невалидно → подразбиране.
+const DEFAULT_MEM = '1500m';
+export function desktopMem(cfg) {
+  const raw = cfg?.desktop?.memLimit;
+  if (typeof raw !== 'string') return DEFAULT_MEM;
+  return /^\d+[bkmg]$/i.test(raw.trim()) ? raw.trim() : DEFAULT_MEM;
+}
+
 export function desktopPort(cfg) {
   const n = Number(cfg?.desktop?.port);
   return Number.isInteger(n) && n > 0 && n < 65536 ? n : DEFAULT_PORT;
@@ -149,7 +175,11 @@ export function actionSpec(cfg, action) {
     // новия, контейнерът слуша на стария и рамката остава празна БЕЗ грешка.
     // Средата на процеса бие `--env-file` при заместване в compose, значи
     // конфигът остава единственият източник на истина.
-    env: { DESKTOP_PORT: String(desktopPort(cfg)) },
+    env: {
+      DESKTOP_PORT: String(desktopPort(cfg)),
+      DESKTOP_IMAGE: desktopImage(cfg),
+      DESKTOP_MEM: desktopMem(cfg),
+    },
     exclusive: 'desktop',
     timeoutMs: 30 * 60 * 1000,
   };

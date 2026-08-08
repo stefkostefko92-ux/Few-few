@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { desktopPort, actionSpec, status, forwardAuth, forwardCookies, PANEL_COOKIE, desktopUser } from '../src/desktop.js';
+import { desktopPort, actionSpec, status, forwardAuth, forwardCookies, PANEL_COOKIE, desktopUser, desktopImage, desktopMem } from '../src/desktop.js';
 
 // Реален изход на `redis-cli INFO`, съкратен до нужното.
 const INFO = `# Server
@@ -307,4 +307,47 @@ test('десктоп: паролата стига до контейнера, с�
   assert.match(mixed, /other=2/);
   assert.equal(forwardCookies(''), undefined);
   assert.equal(forwardCookies(undefined), undefined);
+});
+
+test('десктоп: образът и таванът минават през ЗАТВОРЕНА проверка', () => {
+  // Стойността от конфига стига до команден ред на docker. Без проверка полето е
+  // „изпълни каквото ти кажа" през приятен интерфейс — същата заплаха като
+  // редактора на `.env` с произволен път.
+  assert.equal(desktopImage({}), 'lscr.io/linuxserver/webtop:ubuntu-mate', 'подразбиране: Ubuntu-подобен, не гол XFCE');
+  assert.equal(desktopImage({ desktop: { image: 'lscr.io/linuxserver/webtop:ubuntu-kde' } }), 'lscr.io/linuxserver/webtop:ubuntu-kde');
+  assert.equal(desktopImage({ desktop: { image: 'localhost:5000/my/webtop:v2' } }), 'localhost:5000/my/webtop:v2');
+  const INJECTION = ['ubuntu; poweroff', 'a b', '$(whoami)', '`id`', 'x && y', '--privileged', '', null, 42];
+  for (const bad of INJECTION) {
+    assert.equal(
+      desktopImage({ desktop: { image: bad } }),
+      'lscr.io/linuxserver/webtop:ubuntu-mate',
+      `„${bad}" трябваше да падне към подразбирането`
+    );
+  }
+
+  assert.equal(desktopMem({}), '1500m');
+  assert.equal(desktopMem({ desktop: { memLimit: '2g' } }), '2g');
+  for (const bad of ['2 g', '2gb', 'много', '$(x)', '-1g', '', null]) {
+    assert.equal(desktopMem({ desktop: { memLimit: bad } }), '1500m', `„${bad}" трябваше да падне към подразбирането`);
+  }
+
+  // И трите стойности трябва наистина да стигнат до compose, не само да се смятат.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-img-'));
+  const file = path.join(dir, 'docker-compose.yml');
+  fs.writeFileSync(file, 'services: {}\n');
+  fs.writeFileSync(path.join(dir, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  const spec = actionSpec(
+    { desktop: { composeFile: file, port: 3011, image: 'lscr.io/linuxserver/webtop:ubuntu-kde', memLimit: '2g' }, paths: {} },
+    'up'
+  );
+  assert.deepEqual(spec.env, {
+    DESKTOP_PORT: '3011',
+    DESKTOP_IMAGE: 'lscr.io/linuxserver/webtop:ubuntu-kde',
+    DESKTOP_MEM: '2g',
+  });
+  // И шипваният compose трябва да ги ЧЕТЕ — иначе подаването е театър.
+  const shipped = fs.readFileSync(path.join(import.meta.dirname, '..', 'deploy', 'desktop', 'docker-compose.yml'), 'utf8');
+  assert.match(shipped, /image:\s*\$\{DESKTOP_IMAGE:-/);
+  assert.match(shipped, /mem_limit:\s*\$\{DESKTOP_MEM:-/, 'без таван OOM убиецът избира базата, не десктопа');
+  fs.rmSync(dir, { recursive: true, force: true });
 });
