@@ -357,9 +357,15 @@ const server = http.createServer(async (req, res) => {
       await match.handler(req, res, match.params, url);
       return;
     }
-    if (req.method === 'GET' && statics(req, res, url.pathname)) return;
-    // SPA fallback: всичко останало (не-API GET) връща index.html.
-    if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
+    // `HEAD` е същото като `GET` без тяло и HTTP го изисква навсякъде, където
+    // има `GET` (RFC 9110). Дотук статиката го подминаваше и `curl -I https://…`
+    // връщаше 404 JSON — тоест всеки uptime монитор, който проверява с `HEAD`
+    // (обичайното, защото не тегли тялото), отчиташе панела за ПАДНАЛ, докато
+    // той работи. Тялото не изтича: Node сам го изхвърля при `HEAD`.
+    const readMethod = req.method === 'GET' || req.method === 'HEAD';
+    if (readMethod && statics(req, res, url.pathname)) return;
+    // SPA fallback: всичко останало (не-API четене) връща index.html.
+    if (readMethod && !url.pathname.startsWith('/api/')) {
       statics(req, res, '/index.html');
       return;
     }

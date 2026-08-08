@@ -260,6 +260,19 @@ test('статиката се сервира и не изтича файлове
   assert.doesNotMatch(body, /root:x:/, 'не бива да изтича /etc/passwd');
 });
 
+test('HEAD работи навсякъде, където работи GET (и не носи тяло)', async () => {
+  // HTTP го изисква (RFC 9110), а uptime мониторите проверяват точно с HEAD,
+  // защото не искат да теглят тялото. Дотук статиката приемаше само GET и
+  // `curl -I https://<панела>/` връщаше 404 JSON — тоест наблюдателят отчиташе
+  // ПАДНАЛ панел, докато той работи. Точно тази форма на провал панелът
+  // съществува, за да не допуска.
+  for (const p of ['/', '/app.js', '/style.css', '/някаква/секция']) {
+    const r = await fetch(BASE + p, { method: 'HEAD' });
+    assert.equal(r.status, 200, `HEAD ${p} трябва да е 200`);
+    assert.equal(await r.text(), '', `HEAD ${p} не бива да носи тяло`);
+  }
+});
+
 test('невалидни входове дават 4xx, не 5xx', async () => {
   const cases = [
     ['/api/services/status?unit=' + encodeURIComponent('невалидно име'), 400],
