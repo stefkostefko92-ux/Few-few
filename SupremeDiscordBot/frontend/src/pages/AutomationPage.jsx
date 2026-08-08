@@ -45,7 +45,7 @@ export default function AutomationPage() {
   const { isPremium } = usePremium();
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="mb-6">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">{t("auto.title")}</h1>
         <p className="text-cs-muted mt-2 max-w-2xl">{t("auto.subtitle")}</p>
@@ -281,7 +281,7 @@ function GiveawaysTab() {
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             placeholder="Optional details shown in the giveaway embed" />
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">Winners</span>
             <input type="number" min="1" max="20" className="cs-input" value={form.winnerCount}
@@ -412,7 +412,7 @@ function StickyTab() {
           <span className="cs-label">Channel ID</span>
           <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">Title (optional)</span>
             <input className="cs-input" value={form.embedTitle} onChange={(e) => setForm({ ...form, embedTitle: e.target.value })} />
@@ -494,7 +494,7 @@ function ScheduledTab() {
         createM.mutate({ ...form, recurrence: form.recurrence || null, sendAt: new Date(form.sendAt).toISOString() });
       }} className="cs-card space-y-3">
         <h3 className="text-cs-text font-bold">Schedule New Message</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">Channel ID</span>
             <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
@@ -504,7 +504,7 @@ function ScheduledTab() {
             <input required type="datetime-local" className="cs-input" value={form.sendAt} onChange={(e) => setForm({ ...form, sendAt: e.target.value })} />
           </label>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">Embed Title (optional)</span>
             <input className="cs-input" value={form.embedTitle} onChange={(e) => setForm({ ...form, embedTitle: e.target.value })} />
@@ -683,7 +683,7 @@ function WebhooksTab() {
 
           <fieldset>
             <legend className="cs-label">Events</legend>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               {(events.events || []).map((ev) => (
                 <label key={ev} className="flex items-center gap-2 text-sm text-cs-text">
                   <input type="checkbox" checked={form.events.includes(ev)} onChange={() => toggleEvent(ev)} className="accent-cs-cyan" />
@@ -903,7 +903,7 @@ function ReactionRolesTab() {
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <label className="block col-span-2">
               <span className="cs-label">Title *</span>
               <input className="cs-input" required value={form.title}

@@ -1,6 +1,7 @@
 // frontend/src/pages/FormsPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect from "../components/DiscordChannelSelect";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText, Send } from "lucide-react";
 import { getForms, createForm, updateForm, deleteForm, spawnForm } from "../api";
@@ -243,7 +244,7 @@ export default function FormsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-cs-text">Forms</h1>
@@ -348,7 +349,7 @@ export default function FormsPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic info */}
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="block">
                     <span className="cs-label">Form Name *</span>
                     <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("forms.ph.staffApp")} />
@@ -368,21 +369,37 @@ export default function FormsPage() {
                 {form.isApplication && (
                   <label className="block">
                     <span className="cs-label">{t("forms.reviewChannel")}</span>
-                    <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder={t("forms.ph.reviewChannel")} />
+                    <DiscordChannelSelect
+                      kind="text"
+                      value={form.reviewChannelId}
+                      onChange={(v) => setForm((f) => ({ ...f, reviewChannelId: v }))}
+                    />
                   </label>
                 )}
 
+                {/* Категорията, в която пада „Open a ticket“ от ревюто. Беше поле за
+                    19 цифри — тоест функцията изглеждаше липсваща, защото никой не
+                    минава през Developer Mode, за да я намери. (08.08.2026) */}
                 {form.isApplication && (
                   <label className="block">
                     <span className="cs-label">{t("forms.discussCategory")}</span>
-                    <input className="cs-input" value={form.discussCategoryId} onChange={(e) => setForm((f) => ({ ...f, discussCategoryId: e.target.value }))} placeholder="Discord CATEGORY ID for “Open a ticket” discussion channels (optional)" />
-                    <p className="text-xs text-cs-dim mt-1">Where private applicant discussion channels are created. Right-click a category → Copy Channel ID. Empty = auto-pick by name (applications/tickets/reviews/staff).</p>
+                    <DiscordChannelSelect
+                      kind="category"
+                      value={form.discussCategoryId}
+                      onChange={(v) => setForm((f) => ({ ...f, discussCategoryId: v }))}
+                      emptyLabel={t("channelSelect.autoPick")}
+                    />
+                    <p className="text-xs text-cs-dim mt-1">{t("forms.discussCategoryHint")}</p>
                   </label>
                 )}
 
                 <label className="block">
                   <span className="cs-label">{t("forms.transcriptChannel")}</span>
-                  <input className="cs-input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder={t("forms.ph.transcript")} />
+                  <DiscordChannelSelect
+                    kind="text"
+                    value={form.transcriptChannelId}
+                    onChange={(v) => setForm((f) => ({ ...f, transcriptChannelId: v }))}
+                  />
                   <p className="text-xs text-cs-dim mt-1">Leave empty to disable. Post is triggered on approve/deny.</p>
                 </label>
 
@@ -399,7 +416,7 @@ export default function FormsPage() {
                           <strong>Premium required</strong> — these advanced features (auto-role on accept/deny, custom DM messages, cooldowns) need a Premium subscription.
                         </div>
                       )}
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label className="block">
                           <span className="cs-label">Accept → add role IDs (comma-separated)</span>
                           <input className="cs-input font-mono text-xs" value={form.acceptRoleIds} onChange={(e) => setForm((f) => ({ ...f, acceptRoleIds: e.target.value }))} placeholder={t("forms.ph.roleIds")} />
@@ -429,7 +446,7 @@ export default function FormsPage() {
                         <span className="cs-label">Deny DM message</span>
                         <textarea className="cs-textarea" rows={3} value={form.denyMessage} onChange={(e) => setForm((f) => ({ ...f, denyMessage: e.target.value }))} placeholder="Sorry, {user}. You may re-apply in 7 days." />
                       </label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <label className="block">
                           <span className="cs-label">Cooldown (seconds)</span>
                           <input className="cs-input" type="number" min="0" value={form.cooldownSeconds} onChange={(e) => setForm((f) => ({ ...f, cooldownSeconds: e.target.value }))} placeholder="0 = none" />
@@ -487,7 +504,7 @@ export default function FormsPage() {
 
                       {expandedQ === i && (
                         <div className="px-3 pb-3 border-t border-white/5 pt-3 space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <label className="block">
                               <span className="cs-label text-xs">Question Label *</span>
                               <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder={t("forms.ph.question")} />

@@ -71,7 +71,7 @@ export default function ServerHome() {
 
   if (serverError) {
     return (
-      <div className="p-8 flex flex-col items-center justify-center min-h-64 text-center" role="alert">
+      <div className="p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-64 text-center" role="alert">
         <Bot className="w-10 h-10 text-cs-cyan mb-3" aria-hidden="true" />
         <h2 className="text-lg font-semibold text-cs-text mb-2">{t("overview.notSetup.title")}</h2>
         <p className="text-cs-muted text-sm">{t("overview.notSetup.body")}</p>
@@ -90,7 +90,7 @@ export default function ServerHome() {
   const live = dash?.live;
 
   return (
-    <div className="p-8 max-w-[1400px]">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px]">
       {/* ── Герб ───────────────────────────────────────────────────────────
           Заменя стария ред „иконка + име + значка Premium“. Показва ТАРИФАТА
           поименно, състоянието на бота и заетите места при agency — всичко от
@@ -425,7 +425,7 @@ function ChecklistRow({ step }) {
 
 function OverviewSkeleton() {
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-14 h-14 rounded-xl bg-cs-panel animate-pulse" />
         <div className="space-y-2">

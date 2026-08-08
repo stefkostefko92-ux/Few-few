@@ -35,7 +35,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState("analytics");
 
   return (
-    <div className="p-8 max-w-[1600px]">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px]">
       {/* Header */}
       <div className="mb-8">
         <div className="cs-eyebrow">→ Super Admin Panel</div>
@@ -222,7 +222,7 @@ function RevenueTab() {
       </div>
 
       {/* Per-tier table */}
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -370,7 +370,7 @@ function UsersTab() {
         </select>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -613,7 +613,7 @@ function ServersTab() {
         </div>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -883,7 +883,7 @@ function PaymentsTab() {
         </div>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -983,7 +983,7 @@ function AuditTab() {
         </button>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>

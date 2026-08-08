@@ -238,7 +238,7 @@ export default function PanelsPage() {
   const mutError = createMut.error || updateMut.error;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-cs-text">{t("panels.title")}</h1>
@@ -434,7 +434,7 @@ export default function PanelsPage() {
         maxWidth="max-w-2xl"
       >
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
                   <span className="cs-label">Internal Name *</span>
                   <input className="cs-input" required value={form.name}
@@ -462,7 +462,7 @@ export default function PanelsPage() {
                   placeholder={t("panels.ph.clickButton")} />
               </label>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
                   <span className="cs-label">{t("panels.namingTemplate")}</span>
                   <input className="cs-input" value={form.namingTemplate}
@@ -484,7 +484,7 @@ export default function PanelsPage() {
               <details className="cs-card !p-4 !bg-cs-panel">
                 <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Categories & Channels</summary>
                 <div className="pt-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
                       <span className="cs-label">{t("panels.openCategory")}</span>
                       <input className="cs-input font-mono text-xs" value={form.categoryOpenId}
@@ -498,7 +498,7 @@ export default function PanelsPage() {
                         placeholder={t("panels.ph.categoryClosed")} />
                     </label>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
                       <span className="cs-label">{t("panels.logChannel")}</span>
                       <input className="cs-input font-mono text-xs" value={form.logChannelId}
@@ -512,7 +512,7 @@ export default function PanelsPage() {
                         placeholder={t("panels.ph.htmlTranscripts")} />
                     </label>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <label className="block">
                       <span className="cs-label">{t("panels.channelPrefix")}</span>
                       <input className="cs-input" value={form.channelNamePrefix}
@@ -541,7 +541,7 @@ export default function PanelsPage() {
                       {t("panels.varsFull")}
                     </p>
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
                       <span className="cs-label">{t("panels.welcomeEmbedColor")}</span>
                       <input type="color" className="cs-input h-10" value={form.welcomeEmbedColor}

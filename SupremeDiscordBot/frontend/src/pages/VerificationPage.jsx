@@ -130,7 +130,7 @@ export default function VerificationPage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
@@ -221,7 +221,7 @@ export default function VerificationPage() {
         maxWidth="max-w-2xl"
       >
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block">
                 <span className="cs-label">Name (internal)</span>
                 <input className="cs-input" required value={form.name} onChange={(e) => set("name", e.target.value)} />
@@ -259,7 +259,7 @@ export default function VerificationPage() {
               <textarea className="cs-textarea" rows={2} value={form.description} onChange={(e) => set("description", e.target.value)} />
             </label>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="block">
                 <span className="cs-label">Color</span>
                 <input type="color" className="cs-input h-10" value={form.color} onChange={(e) => set("color", e.target.value)} />
@@ -299,7 +299,7 @@ export default function VerificationPage() {
               </label>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block">
                 <span className="cs-label">Grant Role IDs (CSV)</span>
                 <input className="cs-input font-mono text-xs" value={form.grantRoleIds} onChange={(e) => set("grantRoleIds", e.target.value)} placeholder="Verified, Member" />
@@ -322,7 +322,7 @@ export default function VerificationPage() {
             <details className="cs-card !p-3 !bg-cs-panel">
               <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Anti-Bot & Limits</summary>
               <div className="pt-3 space-y-3">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <label className="block">
                     <span className="cs-label flex items-center gap-1.5">
                       Min Account Age (days) {!isPremium && <PremiumBadge small />}

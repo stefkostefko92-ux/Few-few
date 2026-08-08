@@ -1,6 +1,7 @@
 // frontend/src/pages/SettingsPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect from "../components/DiscordChannelSelect";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
 import { getServer, updateServer } from "../api";
@@ -80,7 +81,7 @@ export default function SettingsPage() {
 
   if (isLoading || !form) {
     return (
-      <div className="p-8 space-y-4">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="cs-card h-16 animate-pulse bg-cs-panel" />
         ))}
@@ -152,7 +153,7 @@ export default function SettingsPage() {
   const isPremium = server?.isPremium;
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-cs-text">Server Settings</h1>
         <p className="text-cs-muted text-sm mt-1">{t("settings.subtitle")}</p>
@@ -457,11 +458,16 @@ export default function SettingsPage() {
 
           {form.welcomerEnabled && (
             <div className="pl-6 space-y-3">
+              {/* Канал от СПИСЪК, не 19 цифри на ръка. Сгрешена цифра тук е
+                  причина №1 за „welcomer-ът не работи" — и не гърми никъде.
+                  Picker-ът показва и дали ботът може да пише там. (08.08.2026) */}
               <label className="block">
-                <span className="cs-label">Welcome Channel ID</span>
-                <input className="cs-input font-mono text-xs" value={form.welcomerChannelId}
-                  onChange={(e) => set("welcomerChannelId", e.target.value)}
-                  placeholder="Discord channel ID" />
+                <span className="cs-label">Welcome Channel</span>
+                <DiscordChannelSelect
+                  kind="text"
+                  value={form.welcomerChannelId}
+                  onChange={(v) => set("welcomerChannelId", v)}
+                />
               </label>
               <label className="block">
                 <span className="cs-label">Welcome Message (supports variables)</span>

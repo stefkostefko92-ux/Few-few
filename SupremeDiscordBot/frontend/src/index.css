@@ -317,12 +317,13 @@
   main .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
   main .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
 
-  /* Grid single-column fallback when grid-cols-* hasn't specified mobile */
-  main .grid.grid-cols-2,
-  main .grid.grid-cols-3,
-  main .grid.grid-cols-4 {
-    grid-template-columns: 1fr !important;
-  }
+  /* Решетките се решават в JSX-а (`grid-cols-1 sm:grid-cols-N`), НЕ тук.
+     Едно време тук стоеше сляпо `grid-template-columns: 1fr !important` за
+     всички 2/3/4 колони. То застъпваше и ИЗРИЧНИТЕ решения на автора: редът с
+     четирите KPI плочки е писан `grid-cols-2 lg:grid-cols-4`, тоест „две в ред
+     на телефон" — а правилото го разпъваше в четири етажа. Днес всяка решетка с
+     ПОЛЕ за въвеждане носи собствена мобилна база; останалите се четат добре
+     на 2-3 колони. (Мобилен одит, 08.08.2026) */
 
   /* Flex rows become columns when they would overflow */
   main .flex.items-center.justify-between.mb-8,
@@ -332,12 +333,13 @@
     gap: 0.75rem;
   }
 
-  /* Tables — always horizontal scroll on narrow viewports */
-  main table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
+  /* Таблиците се плъзгат в ОБВИВКАТА си, а не като станат блок.
+     `display: block` върху <table> убива подравняването по колони — клетките
+     спират да са колони и таблицата изглежда счупена, не тясна. Затова
+     обвивката скролва (`overflow-x-auto` в JSX-а), таблицата си остава таблица,
+     а не се пречупва само редът на ЗАГЛАВИЯТА. (Мобилен одит, 08.08.2026) */
+  main table { width: 100%; }
+  main table thead th { white-space: nowrap; }
 
   /* Cards full-width on mobile */
   main .cs-card { padding: 1rem !important; }
@@ -351,20 +353,37 @@
   main h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
   main h3 { font-size: 1rem !important; line-height: 1.5rem !important; }
 
-  /* Buttons — allow wrap on tight spaces */
+  /* Бутоните се СТЕСНЯВАТ, но не се смаляват.
+     Правилото сваляше шрифта на 12px на телефон — тоест точно там, където се
+     цели с пръст, а не с мишка, целта ставаше по-малка. Пазим ширината, но
+     даваме височина за пръст: 44px е границата, под която уцелването се проваля
+     (WCAG 2.5.8 иска 24px; 44px е това, което реално работи). */
   main .cs-btn {
     padding-left: 0.875rem !important;
     padding-right: 0.875rem !important;
-    font-size: 0.75rem !important;
+    min-height: 44px;
   }
 
-  /* Input + select full width */
+  /* Полетата са 100% широки И 16px високи по шрифт.
+     16px не е естетика, а праг: iOS Safari ЗУУМВА цялата страница, щом фокусира
+     поле с шрифт под 16px. Полетата ни са `text-sm` (14px), тоест всяко
+     докосване на поле в таблото дърпаше оформлението и човек трябваше да свива
+     с пръсти обратно. Това е усещането „сайтът не е за телефон", по-силно от
+     всяко разместване. (Мобилен одит, 08.08.2026) */
   main input.cs-input,
   main select.cs-select,
-  main textarea.cs-textarea {
+  main textarea.cs-textarea,
+  main input[type="text"],
+  main input[type="number"],
+  main input[type="password"],
+  main input[type="email"],
+  main input[type="search"] {
     width: 100% !important;
     max-width: 100% !important;
+    font-size: 16px !important;
   }
+  main input.cs-input,
+  main select.cs-select { min-height: 44px; }
 
   /* Footer — stack links vertically when tight */
   footer .flex.items-center.gap-5 { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; }
@@ -392,7 +411,9 @@ html, body {
 /* 4. Form labels always readable on mobile */
 @media (max-width: 640px) {
   main .label { font-size: 0.75rem !important; }
-  main .font-mono { font-size: 0.7rem !important; }
+  /* 0.7rem = 11.2px. Долната граница на четимото на телефон е 12px — под нея
+     значките и заглавията на таблици се четат с присвиване. */
+  main .font-mono { font-size: 0.75rem !important; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */

@@ -520,6 +520,70 @@ app.post("/internal/ticket-reply", async (req, res) => {
 });
 
 // v2.2 — Open a private discussion channel with applicant (pre-decision)
+// ─── Списък на каналите в guild-а (за избор от таблото) ─────────────────────
+//
+// ЗАЩО (сигнал от собственика, 08.08.2026: „нямам опция да избера в коя
+// категория да се отварят тикетите"): таблото искаше СНЕЖИНКА, изписана на
+// ръка. Тоест „изборът" беше: включи Developer Mode в Discord → десен бутон →
+// Copy Channel ID → залепи 19 цифри в поле, което не може да ги провери. Това
+// не е избор, а домашно. И сгреши ли се една цифра, нищо не гърми — просто
+// мълчи (същият клас, който току-що ни изяде welcomer-а).
+//
+// Само ЧЕТЕНЕ: id, име, тип, позиция и дали ботът може да пише там. Нищо друго
+// от guild-а не напуска — това е чужд сървър, не наш.
+app.get("/internal/guild/:guildId/channels", async (req, res) => {
+  try {
+    const { ChannelType, PermissionsBitField } = await import("discord.js");
+    const guild = client.guilds.cache.get(req.params.guildId)
+      || await client.guilds.fetch(req.params.guildId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+
+    // `fetch()` вместо кеша: нов канал, направен преди минута, трябва да се
+    // вижда веднага — иначе човекът го създава и не го намира в списъка.
+    const all = await guild.channels.fetch().catch(() => guild.channels.cache);
+    const me = guild.members.me;
+
+    const WRITABLE = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
+    const out = { categories: [], text: [] };
+
+    for (const ch of all.values()) {
+      if (!ch) continue;
+      const row = { id: ch.id, name: ch.name, position: ch.rawPosition ?? 0 };
+      if (ch.type === ChannelType.GuildCategory) {
+        out.categories.push(row);
+      } else if (WRITABLE.includes(ch.type)) {
+        // Дали ботът може да пише ТУК — таблото го показва, за да не се избере
+        // канал, в който съобщението няма как да излезе.
+        const perms = me ? ch.permissionsFor(me) : null;
+        out.text.push({
+          ...row,
+          parentId: ch.parentId || null,
+          canSend: !!perms?.has([
+            PermissionsBitField.Flags.ViewChannel,
+            PermissionsBitField.Flags.SendMessages,
+            PermissionsBitField.Flags.EmbedLinks,
+          ]),
+        });
+      }
+    }
+    // Дали ботът може да СЪЗДАВА канал в дадена категория — същата логика,
+    // приложена към категорията, спестява „избрах я, а не работи".
+    for (const cat of out.categories) {
+      const ch = all.get(cat.id);
+      const perms = ch && me ? ch.permissionsFor(me) : null;
+      cat.canCreate = !!perms?.has(PermissionsBitField.Flags.ManageChannels);
+    }
+
+    const byPos = (a, b) => a.position - b.position || a.name.localeCompare(b.name);
+    out.categories.sort(byPos);
+    out.text.sort(byPos);
+    res.json({ ok: true, ...out });
+  } catch (err) {
+    console.error("[guild-channels]", err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/internal/application-discuss", async (req, res) => {
   try {
     const {

@@ -119,7 +119,7 @@ export default function TicketsPage() {
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -225,7 +225,7 @@ export default function TicketsPage() {
         )
       ) : (
         <>
-          <div className="cs-card p-0 overflow-hidden">
+          <div className="cs-card p-0 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">

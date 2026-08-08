@@ -40,7 +40,7 @@ export default function CommandsPage() {
   }, [catalog, query, activeCategory]);
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       <div className="mb-6">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
           <BookOpen className="w-7 h-7 text-cs-cyan" /> Commands
