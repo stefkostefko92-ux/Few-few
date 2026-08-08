@@ -34,7 +34,7 @@ export default function Dashboard() {
   const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-cs-text mb-2">{t("dashboard.yourServers")}</h1>
         <p className="text-cs-muted">{t("dashboard.selectServer")}</p>

@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
   const { data: funnel } = funnelQ;
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
           <BarChart3 className="w-7 h-7 text-cs-cyan" /> {t("analytics.title")}

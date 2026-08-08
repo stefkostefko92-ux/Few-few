@@ -248,7 +248,7 @@ export default function Login() {
             </div>
 
             {/* Scannable Free-vs-Premium comparison */}
-            <div data-reveal className="cs-card !p-0 overflow-hidden mb-10">
+            <div data-reveal className="cs-card !p-0 overflow-x-auto mb-10">
               <table className="cs-table w-full">
                 <thead>
                   <tr>

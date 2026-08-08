@@ -134,7 +134,7 @@ export default function PremiumPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="h-8 bg-cs-panel rounded w-48 animate-pulse mb-4" />
         <div className="grid grid-cols-2 gap-6">
           <div className="cs-card h-80 animate-pulse bg-cs-panel" />
@@ -149,7 +149,7 @@ export default function PremiumPage() {
     // failure (network, 401, 500) is not a configuration problem.
     const stripeMissing = error?.response?.status === 503;
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="text-2xl font-bold text-cs-text mb-4">{t("premium.badge")}</h1>
         <div role="alert" className="cs-card bg-warning/10 border-warning/20 text-center py-10">
           {stripeMissing ? (
@@ -179,7 +179,7 @@ export default function PremiumPage() {
   const perLabel = interval === "year" ? t("premium.perServerYear") : t("premium.perServerMonth");
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-cs-text">{t("premium.badge")}</h1>
         <p className="text-cs-muted text-sm mt-1">{t("premium.subtitle")}</p>

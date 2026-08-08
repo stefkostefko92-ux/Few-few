@@ -88,7 +88,7 @@ export default function WebhooksPage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function WebhooksPage() {
 
           <fieldset>
             <legend className="cs-label">{t("webhooks.eventsLabel")}</legend>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               {ALL_EVENTS.map((ev) => (
                 <label key={ev} className="flex items-center gap-2 text-sm text-cs-text cursor-pointer">
                   <input

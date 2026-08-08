@@ -2,7 +2,7 @@
 // Регресии за Reaction Roles гардовете (находки на Разбивача/Кодаджията, 05.08.2026).
 import { describe, it, expect } from "vitest";
 import { PermissionsBitField } from "discord.js";
-import { emojiKey, isRoleSafeToSelfAssign } from "../utils/reactionRoles.js";
+import { emojiKey, isRoleSafeToSelfAssign, roleAssignabilityReason } from "../utils/reactionRoles.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -88,5 +88,44 @@ describe("autorole минава през гарда за опасни роли",
   it("отказаната роля оставя следа — иначе конфигурацията мълчи", () => {
     const i = SRC.indexOf("isRoleSafeToSelfAssign(role");
     expect(SRC.slice(i, i + 400)).toMatch(/console\.warn/);
+  });
+});
+
+// ─── Причината, не само отказът (08.08.2026) ─────────────────────────────────
+// Ботът отказваше опасна роля ТИХО, а таблото я предлагаше все едно е наред.
+// Сега таблото пита СЪЩАТА функция и показва защо — но само ако функцията
+// връща РАЗЛИЧИМИ причини и остава единственият източник на истината.
+describe("roleAssignabilityReason — една дефиниция, две употреби", () => {
+  it("безопасна роля → null", () => {
+    expect(roleAssignabilityReason(fakeRole({ position: 3 }), botMember)).toBeNull();
+  });
+
+  it("интеграционна роля → managed", () => {
+    expect(roleAssignabilityReason(fakeRole({ managed: true, position: 3 }), botMember)).toBe("managed");
+  });
+
+  it("роля с опасно право → dangerous", () => {
+    const r = fakeRole({ permsBits: PermissionsBitField.Flags.Administrator, position: 3 });
+    expect(roleAssignabilityReason(r, botMember)).toBe("dangerous");
+  });
+
+  it("роля над бота → above_bot", () => {
+    expect(roleAssignabilityReason(fakeRole({ position: 20 }), botMember)).toBe("above_bot");
+  });
+
+  it("липсваща роля не гърми", () => {
+    expect(roleAssignabilityReason(null, botMember)).toBe("managed");
+  });
+
+  it("старият гард е ОБВИВКА върху новия — не второ мнение", () => {
+    const cases = [
+      fakeRole({ position: 3 }),
+      fakeRole({ managed: true, position: 3 }),
+      fakeRole({ permsBits: PermissionsBitField.Flags.BanMembers, position: 3 }),
+      fakeRole({ position: 20 }),
+    ];
+    for (const r of cases) {
+      expect(isRoleSafeToSelfAssign(r, botMember)).toBe(roleAssignabilityReason(r, botMember) === null);
+    }
   });
 });

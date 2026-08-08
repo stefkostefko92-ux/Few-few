@@ -2,6 +2,7 @@
 // Consolidated page with tabs: Polls, Giveaways, Sticky, Scheduled, Webhooks.
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3, Gift, Pin, CalendarClock, Webhook, Trash2, Plus, CheckCircle2, RefreshCw,
@@ -45,7 +46,7 @@ export default function AutomationPage() {
   const { isPremium } = usePremium();
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="mb-6">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">{t("auto.title")}</h1>
         <p className="text-cs-muted mt-2 max-w-2xl">{t("auto.subtitle")}</p>
@@ -121,19 +122,18 @@ function PollsTab() {
     <Modal open={creating} onClose={() => setCreating(false)} title="New poll" maxWidth="max-w-lg">
       <form onSubmit={submitPoll} className="space-y-3">
         <label className="block">
-          <span className="cs-label">Channel ID *</span>
-          <input className="cs-input font-mono text-xs" required value={form.channelId}
-            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
-            placeholder="Right-click channel → Copy Channel ID" />
+          <span className="cs-label">{t("ui.channelReq")}</span>
+          <DiscordChannelSelect kind="text" value={form.channelId}
+            onChange={(v) => setForm((f) => ({ ...f, channelId: v }))} />
         </label>
         <label className="block">
-          <span className="cs-label">Question *</span>
+          <span className="cs-label">{t("ui.questionReq")}</span>
           <input className="cs-input" required maxLength={256} value={form.question}
             onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
-            placeholder="What should we play on Friday?" />
+            placeholder={t("ui.ph.pollQuestion")} />
         </label>
         <label className="block">
-          <span className="cs-label">Options * (one per line, 2–9)</span>
+          <span className="cs-label">{t("ui.optionsReq")}</span>
           <textarea className="cs-textarea" rows={4} required value={form.optionsText}
             onChange={(e) => setForm((f) => ({ ...f, optionsText: e.target.value }))}
             placeholder={"Minecraft\nValorant\nAmong Us"} />
@@ -145,10 +145,10 @@ function PollsTab() {
             <span className="text-sm text-cs-text">Multi-choice</span>
           </label>
           <label className="block flex-1">
-            <span className="cs-label">Auto-close after (hours, optional)</span>
+            <span className="cs-label">{t("ui.autoCloseAfterH")}</span>
             <input type="number" min="1" max="720" className="cs-input" value={form.durationHours}
               onChange={(e) => setForm((f) => ({ ...f, durationHours: e.target.value }))}
-              placeholder="Leave empty = manual close" />
+              placeholder={t("ui.ph.leaveEmptyManual")} />
           </label>
         </div>
         {createM.isError && (
@@ -264,40 +264,37 @@ function GiveawaysTab() {
     <Modal open={creating} onClose={() => setCreating(false)} title="New giveaway" maxWidth="max-w-lg">
       <form onSubmit={submitGiveaway} className="space-y-3">
         <label className="block">
-          <span className="cs-label">Channel ID *</span>
-          <input className="cs-input font-mono text-xs" required value={form.channelId}
-            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
-            placeholder="Right-click channel → Copy Channel ID" />
+          <span className="cs-label">{t("ui.channelReq")}</span>
+          <DiscordChannelSelect kind="text" value={form.channelId}
+            onChange={(v) => setForm((f) => ({ ...f, channelId: v }))} />
         </label>
         <label className="block">
-          <span className="cs-label">Prize *</span>
+          <span className="cs-label">{t("ui.prizeReq")}</span>
           <input className="cs-input" required maxLength={256} value={form.prize}
             onChange={(e) => setForm((f) => ({ ...f, prize: e.target.value }))}
-            placeholder="Discord Nitro (1 month)" />
+            placeholder={t("ui.ph.prize")} />
         </label>
         <label className="block">
-          <span className="cs-label">Description</span>
+          <span className="cs-label">{t("ui.description")}</span>
           <textarea className="cs-textarea" rows={2} maxLength={1000} value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            placeholder="Optional details shown in the giveaway embed" />
+            placeholder={t("ui.ph.giveawayDetails")} />
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="cs-label">Winners</span>
+            <span className="cs-label">{t("ui.winners")}</span>
             <input type="number" min="1" max="20" className="cs-input" value={form.winnerCount}
               onChange={(e) => setForm((f) => ({ ...f, winnerCount: e.target.value }))} />
           </label>
           <label className="block">
-            <span className="cs-label">Duration (minutes) *</span>
+            <span className="cs-label">{t("ui.durationMinReq")}</span>
             <input type="number" min="1" max="43200" required className="cs-input" value={form.durationMinutes}
               onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))} />
           </label>
         </div>
         <label className="block">
-          <span className="cs-label">Required role IDs (comma-separated, optional)</span>
-          <input className="cs-input font-mono text-xs" value={form.requiredRoleIds}
-            onChange={(e) => setForm((f) => ({ ...f, requiredRoleIds: e.target.value }))}
-            placeholder="Only members with these roles can enter" />
+          <span className="cs-label">{t("ui.requiredRolesOpt")}</span>
+          <DiscordRoleSelect multi value={form.requiredRoleIds} onChange={(v) => setForm((f) => ({ ...f, requiredRoleIds: v }))} requireAssignable={false} />
         </label>
         {createM.isError && (
           <p className="text-danger text-sm" role="alert">
@@ -409,21 +406,21 @@ function StickyTab() {
       <form onSubmit={(e) => { e.preventDefault(); saveM.mutate(form); }} className="cs-card space-y-3">
         <h3 className="text-cs-text font-bold">Set Sticky Message</h3>
         <label className="block">
-          <span className="cs-label">Channel ID</span>
-          <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
+          <span className="cs-label">{t("ui.channel")}</span>
+          <DiscordChannelSelect kind="text" value={form.channelId} onChange={(v) => setForm({ ...form, channelId: v })} />
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="cs-label">Title (optional)</span>
+            <span className="cs-label">{t("ui.titleOpt")}</span>
             <input className="cs-input" value={form.embedTitle} onChange={(e) => setForm({ ...form, embedTitle: e.target.value })} />
           </label>
           <label className="block">
-            <span className="cs-label">Color</span>
+            <span className="cs-label">{t("ui.color")}</span>
             <input type="color" className="cs-input h-10" value={form.embedColor} onChange={(e) => setForm({ ...form, embedColor: e.target.value })} />
           </label>
         </div>
         <label className="block">
-          <span className="cs-label">Content</span>
+          <span className="cs-label">{t("ui.content")}</span>
           <textarea required rows={3} className="cs-textarea" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
         </label>
         <button type="submit" className="cs-btn-primary flex items-center gap-2" disabled={saveM.isPending}>
@@ -494,23 +491,23 @@ function ScheduledTab() {
         createM.mutate({ ...form, recurrence: form.recurrence || null, sendAt: new Date(form.sendAt).toISOString() });
       }} className="cs-card space-y-3">
         <h3 className="text-cs-text font-bold">Schedule New Message</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="cs-label">Channel ID</span>
-            <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
+            <span className="cs-label">{t("ui.channel")}</span>
+            <DiscordChannelSelect kind="text" value={form.channelId} onChange={(v) => setForm({ ...form, channelId: v })} />
           </label>
           <label className="block">
-            <span className="cs-label">Send At (local time)</span>
+            <span className="cs-label">{t("ui.sendAtLocal")}</span>
             <input required type="datetime-local" className="cs-input" value={form.sendAt} onChange={(e) => setForm({ ...form, sendAt: e.target.value })} />
           </label>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="cs-label">Embed Title (optional)</span>
+            <span className="cs-label">{t("ui.embedTitleOpt")}</span>
             <input className="cs-input" value={form.embedTitle} onChange={(e) => setForm({ ...form, embedTitle: e.target.value })} />
           </label>
           <label className="block">
-            <span className="cs-label">Recurrence</span>
+            <span className="cs-label">{t("ui.recurrence")}</span>
             <select className="cs-select" value={form.recurrence} onChange={(e) => setForm({ ...form, recurrence: e.target.value })}>
               <option value="">One-shot</option>
               <option value="daily">Daily</option>
@@ -520,7 +517,7 @@ function ScheduledTab() {
           </label>
         </div>
         <label className="block">
-          <span className="cs-label">Content</span>
+          <span className="cs-label">{t("ui.content")}</span>
           <textarea required rows={3} className="cs-textarea" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
         </label>
         <button type="submit" className="cs-btn-primary flex items-center gap-2" disabled={createM.isPending}>
@@ -667,23 +664,23 @@ function WebhooksTab() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className="cs-label">Name</span>
+            <span className="cs-label">{t("ui.name")}</span>
             <input required className="cs-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </label>
 
           <label className="block">
-            <span className="cs-label">URL</span>
+            <span className="cs-label">{t("ui.url")}</span>
             <input required type="url" className="cs-input font-mono text-xs" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://your-service.example.com/webhooks/supreme" />
           </label>
 
           <label className="block">
-            <span className="cs-label">HMAC Secret (optional)</span>
-            <input type="password" className="cs-input font-mono text-xs" value={form.secret} onChange={(e) => setForm({ ...form, secret: e.target.value })} placeholder="Used to sign payloads" />
+            <span className="cs-label">{t("ui.hmacSecretOpt")}</span>
+            <input type="password" className="cs-input font-mono text-xs" value={form.secret} onChange={(e) => setForm({ ...form, secret: e.target.value })} placeholder={t("ui.ph.signPayloads")} />
           </label>
 
           <fieldset>
-            <legend className="cs-label">Events</legend>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <legend className="cs-label">{t("ui.events")}</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               {(events.events || []).map((ev) => (
                 <label key={ev} className="flex items-center gap-2 text-sm text-cs-text">
                   <input type="checkbox" checked={form.events.includes(ev)} onChange={() => toggleEvent(ev)} className="accent-cs-cyan" />
@@ -854,13 +851,13 @@ function ReactionRolesTab() {
 
               <div className="flex items-center gap-2 flex-shrink-0">
                 <div className="flex items-center gap-1">
-                  <input
-                    placeholder="Channel ID"
-                    aria-label={t("auto.rr.channelToPost")}
-                    className="cs-input text-xs w-28 py-1"
-                    value={spawnInputs[m.id] || ""}
-                    onChange={(e) => setSpawnInputs((s) => ({ ...s, [m.id]: e.target.value }))}
-                  />
+                  <div className="w-44">
+                    <DiscordChannelSelect
+                      kind="text"
+                      value={spawnInputs[m.id] || ""}
+                      onChange={(v) => setSpawnInputs((s) => ({ ...s, [m.id]: v }))}
+                    />
+                  </div>
                   <button
                     className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
                     disabled={!spawnInputs[m.id] || spawnM.isPending}
@@ -903,24 +900,24 @@ function ReactionRolesTab() {
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <label className="block col-span-2">
-              <span className="cs-label">Title *</span>
+              <span className="cs-label">{t("ui.titleReq")}</span>
               <input className="cs-input" required value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Pick your roles" />
+                placeholder={t("ui.ph.pickYourRoles")} />
             </label>
             <label className="block">
-              <span className="cs-label">Color</span>
+              <span className="cs-label">{t("ui.color")}</span>
               <input type="color" className="cs-input h-10 p-1" value={form.color}
                 onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
             </label>
           </div>
           <label className="block">
-            <span className="cs-label">Description</span>
+            <span className="cs-label">{t("ui.description")}</span>
             <textarea className="cs-textarea" rows={2} value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder="React below to receive a role." />
+              placeholder={t("ui.ph.reactForRole")} />
           </label>
           <label className="flex items-center gap-2">
             <input type="checkbox" className="accent-cs-cyan" checked={form.exclusive}
@@ -943,9 +940,8 @@ function ReactionRolesTab() {
                   <input className="cs-input text-center" placeholder="🎮" aria-label={`Emoji for pair ${i + 1}`}
                     value={p.emoji} onChange={(e) => updatePair(i, "emoji", e.target.value)} />
                   <EmojiPicker buttonLabel={t("emoji.pickForPair", { n: i + 1 })} onSelect={(e) => updatePair(i, "emoji", e)} />
-                  <input className="cs-input font-mono text-xs" placeholder="Role ID" aria-label={`Role ID for pair ${i + 1}`}
-                    value={p.roleId} onChange={(e) => updatePair(i, "roleId", e.target.value)} />
-                  <input className="cs-input text-xs" placeholder="Label (optional)" aria-label={`Label for pair ${i + 1}`}
+                  <DiscordRoleSelect value={p.roleId} onChange={(v) => updatePair(i, "roleId", v)} />
+                  <input className="cs-input text-xs" placeholder={t("ui.labelOpt")} aria-label={`Label for pair ${i + 1}`}
                     value={p.label} onChange={(e) => updatePair(i, "label", e.target.value)} />
                   <button type="button" aria-label={`Remove pair ${i + 1}`}
                     disabled={form.pairs.length <= 1}
@@ -956,8 +952,7 @@ function ReactionRolesTab() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-cs-dim mt-2">
-              Emoji: paste a standard emoji (🎮) or a custom one as <code>name:id</code>.
+            <p className="text-xs text-cs-dim mt-2">{t("ui.hint.emojiCustom")}<code>name:id</code>.
               Role ID: right-click the role in Discord → Copy Role ID (the bot's role must be above it).
             </p>
           </div>

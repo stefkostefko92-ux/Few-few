@@ -53,7 +53,7 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function ApiKeysPage() {
         <h2 className="text-cs-text font-bold mb-2">Quick start</h2>
         <pre className="text-xs font-mono bg-cs-black p-3 rounded overflow-x-auto text-cs-cyan">{`curl ${window.location.origin}/public/v1/tickets \\
   -H "Authorization: Bearer bpk_live_..."`}</pre>
-        <p className="text-xs text-cs-dim mt-2">Rate limit: 300 req/min per key.</p>
+        <p className="text-xs text-cs-dim mt-2">{t("ui.hint.rateLimit")}</p>
       </div>
 
       <ConfirmDialog

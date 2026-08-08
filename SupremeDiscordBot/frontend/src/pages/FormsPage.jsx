@@ -1,6 +1,7 @@
 // frontend/src/pages/FormsPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText, Send } from "lucide-react";
 import { getForms, createForm, updateForm, deleteForm, spawnForm } from "../api";
@@ -243,7 +244,7 @@ export default function FormsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-cs-text">Forms</h1>
@@ -282,13 +283,10 @@ export default function FormsPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
                   <div className="flex items-center gap-1">
-                    <input
-                      placeholder="Channel ID"
-                      aria-label={t("forms.channelToPost")}
-                      className="cs-input text-xs w-28 py-1"
-                      value={spawnInputs[f.id] || ""}
-                      onChange={(e) => setSpawnInputs((s) => ({ ...s, [f.id]: e.target.value }))}
-                    />
+                    <div className="w-44">
+                      <DiscordChannelSelect kind="text" value={spawnInputs[f.id] || ""}
+                        onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
+                    </div>
                     <button
                       className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
                       disabled={!spawnInputs[f.id] || spawnMut.isPending}
@@ -348,13 +346,13 @@ export default function FormsPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic info */}
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="cs-label">Form Name *</span>
+                    <span className="cs-label">{t("ui.formNameReq")}</span>
                     <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("forms.ph.staffApp")} />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Type</span>
+                    <span className="cs-label">{t("ui.type")}</span>
                     <select className="cs-input" value={String(form.isApplication)} onChange={(e) => setForm((f) => ({ ...f, isApplication: e.target.value === "true" }))}>
                       <option value="false">{t("forms.type.ticket")}</option>
                       <option value="true">{t("forms.type.application")}</option>
@@ -368,22 +366,38 @@ export default function FormsPage() {
                 {form.isApplication && (
                   <label className="block">
                     <span className="cs-label">{t("forms.reviewChannel")}</span>
-                    <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder={t("forms.ph.reviewChannel")} />
+                    <DiscordChannelSelect
+                      kind="text"
+                      value={form.reviewChannelId}
+                      onChange={(v) => setForm((f) => ({ ...f, reviewChannelId: v }))}
+                    />
                   </label>
                 )}
 
+                {/* Категорията, в която пада „Open a ticket“ от ревюто. Беше поле за
+                    19 цифри — тоест функцията изглеждаше липсваща, защото никой не
+                    минава през Developer Mode, за да я намери. (08.08.2026) */}
                 {form.isApplication && (
                   <label className="block">
                     <span className="cs-label">{t("forms.discussCategory")}</span>
-                    <input className="cs-input" value={form.discussCategoryId} onChange={(e) => setForm((f) => ({ ...f, discussCategoryId: e.target.value }))} placeholder="Discord CATEGORY ID for “Open a ticket” discussion channels (optional)" />
-                    <p className="text-xs text-cs-dim mt-1">Where private applicant discussion channels are created. Right-click a category → Copy Channel ID. Empty = auto-pick by name (applications/tickets/reviews/staff).</p>
+                    <DiscordChannelSelect
+                      kind="category"
+                      value={form.discussCategoryId}
+                      onChange={(v) => setForm((f) => ({ ...f, discussCategoryId: v }))}
+                      emptyLabel={t("picker.autoPick")}
+                    />
+                    <p className="text-xs text-cs-dim mt-1">{t("forms.discussCategoryHint")}</p>
                   </label>
                 )}
 
                 <label className="block">
                   <span className="cs-label">{t("forms.transcriptChannel")}</span>
-                  <input className="cs-input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder={t("forms.ph.transcript")} />
-                  <p className="text-xs text-cs-dim mt-1">Leave empty to disable. Post is triggered on approve/deny.</p>
+                  <DiscordChannelSelect
+                    kind="text"
+                    value={form.transcriptChannelId}
+                    onChange={(v) => setForm((f) => ({ ...f, transcriptChannelId: v }))}
+                  />
+                  <p className="text-xs text-cs-dim mt-1">{t("ui.hint.transcriptOff")}</p>
                 </label>
 
                 {/* ─── Appy.bot-style fields (application forms only) ─── */}
@@ -399,43 +413,43 @@ export default function FormsPage() {
                           <strong>Premium required</strong> — these advanced features (auto-role on accept/deny, custom DM messages, cooldowns) need a Premium subscription.
                         </div>
                       )}
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label className="block">
-                          <span className="cs-label">Accept → add role IDs (comma-separated)</span>
-                          <input className="cs-input font-mono text-xs" value={form.acceptRoleIds} onChange={(e) => setForm((f) => ({ ...f, acceptRoleIds: e.target.value }))} placeholder={t("forms.ph.roleIds")} />
+                          <span className="cs-label">{t("ui.acceptAddRoles")}</span>
+                          <DiscordRoleSelect multi value={form.acceptRoleIds} onChange={(v) => setForm((f) => ({ ...f, acceptRoleIds: v }))} />
                         </label>
                         <label className="block">
-                          <span className="cs-label">Accept → remove role IDs</span>
-                          <input className="cs-input font-mono text-xs" value={form.removeRoleIds} onChange={(e) => setForm((f) => ({ ...f, removeRoleIds: e.target.value }))} placeholder={t("forms.ph.removeRoles")} />
+                          <span className="cs-label">{t("ui.acceptRemoveRoles")}</span>
+                          <DiscordRoleSelect multi value={form.removeRoleIds} onChange={(v) => setForm((f) => ({ ...f, removeRoleIds: v }))} requireAssignable={false} />
                         </label>
                       </div>
                       <label className="block">
-                        <span className="cs-label">Deny → add role IDs</span>
-                        <input className="cs-input font-mono text-xs" value={form.denyRoleIds} onChange={(e) => setForm((f) => ({ ...f, denyRoleIds: e.target.value }))} placeholder={t("forms.ph.denyRole")} />
+                        <span className="cs-label">{t("ui.denyAddRoles")}</span>
+                        <DiscordRoleSelect multi value={form.denyRoleIds} onChange={(v) => setForm((f) => ({ ...f, denyRoleIds: v }))} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Application Managers (role IDs, can review alongside admins)</span>
-                        <input className="cs-input font-mono text-xs" value={form.managerRoleIds} onChange={(e) => setForm((f) => ({ ...f, managerRoleIds: e.target.value }))} placeholder={t("forms.ph.managers")} />
+                        <span className="cs-label">{t("ui.appManagers")}</span>
+                        <DiscordRoleSelect multi value={form.managerRoleIds} onChange={(v) => setForm((f) => ({ ...f, managerRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Ping these roles on new submission</span>
-                        <input className="cs-input font-mono text-xs" value={form.pingRoleIds} onChange={(e) => setForm((f) => ({ ...f, pingRoleIds: e.target.value }))} placeholder={t("forms.ph.pingRoles")} />
+                        <span className="cs-label">{t("ui.pingRolesOnSubmit")}</span>
+                        <DiscordRoleSelect multi value={form.pingRoleIds} onChange={(v) => setForm((f) => ({ ...f, pingRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Accept DM message (markdown; {"{user}"}, {"{note}"})</span>
-                        <textarea className="cs-textarea" rows={3} value={form.acceptMessage} onChange={(e) => setForm((f) => ({ ...f, acceptMessage: e.target.value }))} placeholder="✅ Welcome to the team, {user}! Check out #rules next." />
+                        <textarea className="cs-textarea" rows={3} value={form.acceptMessage} onChange={(e) => setForm((f) => ({ ...f, acceptMessage: e.target.value }))} placeholder={t("ui.ph.acceptDm")} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Deny DM message</span>
-                        <textarea className="cs-textarea" rows={3} value={form.denyMessage} onChange={(e) => setForm((f) => ({ ...f, denyMessage: e.target.value }))} placeholder="Sorry, {user}. You may re-apply in 7 days." />
+                        <span className="cs-label">{t("ui.denyDmMessage")}</span>
+                        <textarea className="cs-textarea" rows={3} value={form.denyMessage} onChange={(e) => setForm((f) => ({ ...f, denyMessage: e.target.value }))} placeholder={t("ui.ph.denyDm")} />
                       </label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <label className="block">
-                          <span className="cs-label">Cooldown (seconds)</span>
-                          <input className="cs-input" type="number" min="0" value={form.cooldownSeconds} onChange={(e) => setForm((f) => ({ ...f, cooldownSeconds: e.target.value }))} placeholder="0 = none" />
+                          <span className="cs-label">{t("ui.cooldownSec")}</span>
+                          <input className="cs-input" type="number" min="0" value={form.cooldownSeconds} onChange={(e) => setForm((f) => ({ ...f, cooldownSeconds: e.target.value }))} placeholder={t("ui.zeroNone")} />
                         </label>
                         <label className="block">
-                          <span className="cs-label">Max submissions per user</span>
+                          <span className="cs-label">{t("ui.maxSubmissions")}</span>
                           <input className="cs-input" type="number" min="0" value={form.maxSubmissions} onChange={(e) => setForm((f) => ({ ...f, maxSubmissions: e.target.value }))} placeholder={t("forms.ph.maxSub")} />
                         </label>
                         <label className="flex items-center gap-2 mt-6">
@@ -487,7 +501,7 @@ export default function FormsPage() {
 
                       {expandedQ === i && (
                         <div className="px-3 pb-3 border-t border-white/5 pt-3 space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <label className="block">
                               <span className="cs-label text-xs">Question Label *</span>
                               <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder={t("forms.ph.question")} />

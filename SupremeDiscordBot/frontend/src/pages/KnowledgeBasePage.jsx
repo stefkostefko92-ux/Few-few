@@ -105,7 +105,7 @@ export default function KnowledgeBasePage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
@@ -194,14 +194,14 @@ export default function KnowledgeBasePage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className="cs-label">Title</span>
+            <span className="cs-label">{t("ui.title")}</span>
             <input className="cs-input" required maxLength={TITLE_MAX} value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               placeholder={t("kb.ph.title")} />
           </label>
 
           <label className="block">
-            <span className="cs-label">Content</span>
+            <span className="cs-label">{t("ui.content")}</span>
             <textarea className="cs-input min-h-[140px]" required maxLength={CONTENT_MAX} value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
               placeholder={t("kb.ph.content")} />
@@ -229,9 +229,7 @@ export default function KnowledgeBasePage() {
               onBlur={addKeyword}
               placeholder={t("kb.ph.keyword")}
             />
-            <p className="text-xs text-cs-dim mt-1">
-              The bot matches these against the ticket's opening text (lowercase, substring match).
-            </p>
+            <p className="text-xs text-cs-dim mt-1">{t("ui.hint.kbMatch")}</p>
           </div>
 
           <label className="flex items-center gap-2">
