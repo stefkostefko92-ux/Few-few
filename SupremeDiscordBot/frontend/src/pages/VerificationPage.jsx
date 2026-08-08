@@ -224,7 +224,7 @@ export default function VerificationPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block">
-                <span className="cs-label">Name (internal)</span>
+                <span className="cs-label">{t("ui.nameInternal")}</span>
                 <input className="cs-input" required value={form.name} onChange={(e) => set("name", e.target.value)} />
               </label>
               <label className="block">
@@ -252,21 +252,21 @@ export default function VerificationPage() {
             </div>
 
             <label className="block">
-              <span className="cs-label">Embed Title</span>
+              <span className="cs-label">{t("ui.embedTitle")}</span>
               <input className="cs-input" required value={form.title} onChange={(e) => set("title", e.target.value)} />
             </label>
             <label className="block">
-              <span className="cs-label">Embed Description</span>
+              <span className="cs-label">{t("ui.embedDescription")}</span>
               <textarea className="cs-textarea" rows={2} value={form.description} onChange={(e) => set("description", e.target.value)} />
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="block">
-                <span className="cs-label">Color</span>
+                <span className="cs-label">{t("ui.color")}</span>
                 <input type="color" className="cs-input h-10" value={form.color} onChange={(e) => set("color", e.target.value)} />
               </label>
               <label className="block">
-                <span className="cs-label">Button Label</span>
+                <span className="cs-label">{t("ui.buttonLabel")}</span>
                 <input className="cs-input" value={form.buttonLabel} onChange={(e) => set("buttonLabel", e.target.value)} />
               </label>
               {/* buttonEmoji живееше в state-а и се пращаше към API-то, но нямаше
@@ -284,7 +284,7 @@ export default function VerificationPage() {
                 </div>
               </label>
               <label className="block">
-                <span className="cs-label">Button Style</span>
+                <span className="cs-label">{t("ui.buttonStyle")}</span>
                 <select className="cs-select" value={form.buttonStyle} onChange={(e) => set("buttonStyle", e.target.value)}>
                   {BUTTON_STYLES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
@@ -293,7 +293,7 @@ export default function VerificationPage() {
 
             {form.type === "MATH" && (
               <label className="block">
-                <span className="cs-label">Math Difficulty</span>
+                <span className="cs-label">{t("ui.mathDifficulty")}</span>
                 <select className="cs-select" value={form.mathDifficulty} onChange={(e) => set("mathDifficulty", e.target.value)}>
                   {DIFFICULTIES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
                 </select>
@@ -302,22 +302,22 @@ export default function VerificationPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block">
-                <span className="cs-label">Roles granted on verification</span>
+                <span className="cs-label">{t("ui.rolesOnVerify")}</span>
                 <DiscordRoleSelect multi value={form.grantRoleIds} onChange={(v) => set("grantRoleIds", v)} />
               </label>
               <label className="block">
-                <span className="cs-label">Roles to remove</span>
+                <span className="cs-label">{t("ui.rolesToRemove")}</span>
                 <DiscordRoleSelect multi value={form.removeRoleIds} onChange={(v) => set("removeRoleIds", v)} requireAssignable={false} />
               </label>
             </div>
 
             <label className="block">
-              <span className="cs-label">Success Message</span>
-              <textarea className="cs-textarea" rows={2} value={form.successMessage} onChange={(e) => set("successMessage", e.target.value)} placeholder="✅ Welcome! You can now access the server." />
+              <span className="cs-label">{t("ui.successMessage")}</span>
+              <textarea className="cs-textarea" rows={2} value={form.successMessage} onChange={(e) => set("successMessage", e.target.value)} placeholder={t("ui.ph.verifySuccess")} />
             </label>
             <label className="block">
-              <span className="cs-label">Failure Message (MATH only)</span>
-              <textarea className="cs-textarea" rows={2} value={form.failureMessage} onChange={(e) => set("failureMessage", e.target.value)} placeholder="❌ Wrong answer. Try again." />
+              <span className="cs-label">{t("ui.failureMsgMath")}</span>
+              <textarea className="cs-textarea" rows={2} value={form.failureMessage} onChange={(e) => set("failureMessage", e.target.value)} placeholder={t("ui.ph.verifyFailure")} />
             </label>
 
             <details className="cs-card !p-3 !bg-cs-panel">
@@ -337,16 +337,16 @@ export default function VerificationPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Max Attempts</span>
+                    <span className="cs-label">{t("ui.maxAttempts")}</span>
                     <input type="number" min={1} max={100} className="cs-input" value={form.maxAttempts} onChange={(e) => set("maxAttempts", e.target.value)} />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Cooldown (minutes)</span>
+                    <span className="cs-label">{t("ui.cooldownMin")}</span>
                     <input type="number" min={1} className="cs-input" value={form.cooldownMinutes} onChange={(e) => set("cooldownMinutes", e.target.value)} />
                   </label>
                 </div>
                 <label className="block">
-                  <span className="cs-label">Log Channel</span>
+                  <span className="cs-label">{t("ui.logChannel")}</span>
                   <DiscordChannelSelect kind="text" value={form.logChannelId} onChange={(v) => set("logChannelId", v)} />
                 </label>
                 <label className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export default function VerificationPage() {
                 </label>
                 {form.dmOnSuccess && (
                   <label className="block">
-                    <span className="cs-label">DM Message</span>
+                    <span className="cs-label">{t("ui.dmMessage")}</span>
                     <textarea className="cs-textarea" rows={2} value={form.dmSuccessMessage} onChange={(e) => set("dmSuccessMessage", e.target.value)} />
                   </label>
                 )}

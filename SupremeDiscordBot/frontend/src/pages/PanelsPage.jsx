@@ -363,13 +363,10 @@ export default function PanelsPage() {
 
                   {/* Spawn input */}
                   <div className="flex items-center gap-1">
-                    <input
-                      placeholder="Channel ID"
-                      aria-label={t("panels.channelToPost")}
-                      className="cs-input text-xs w-28 py-1"
-                      value={spawnInputs[panel.id] || ""}
-                      onChange={(e) => setSpawnInputs((s) => ({ ...s, [panel.id]: e.target.value }))}
-                    />
+                    <div className="w-44">
+                      <DiscordChannelSelect kind="text" value={spawnInputs[panel.id] || ""}
+                        onChange={(v) => setSpawnInputs((s) => ({ ...s, [panel.id]: v }))} />
+                    </div>
                     <button
                       className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
                       disabled={!spawnInputs[panel.id] || spawnMut.isPending}
@@ -437,7 +434,7 @@ export default function PanelsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="cs-label">Internal Name *</span>
+                  <span className="cs-label">{t("ui.internalNameReq")}</span>
                   <input className="cs-input" required value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     placeholder={t("panels.ph.supportPanel")} />
@@ -450,7 +447,7 @@ export default function PanelsPage() {
               </div>
 
               <label className="block">
-                <span className="cs-label">Embed Title *</span>
+                <span className="cs-label">{t("ui.embedTitleReq")}</span>
                 <input className="cs-input" required value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder={t("panels.ph.title")} />
@@ -472,7 +469,7 @@ export default function PanelsPage() {
                   <p className="text-xs text-cs-muted mt-1">{t("panels.varsSimple")}</p>
                 </label>
                 <label className="block">
-                  <span className="cs-label">Max Open Tickets / User</span>
+                  <span className="cs-label">{t("ui.maxOpenPerUser")}</span>
                   <input type="number" className="cs-input" min={1} max={10}
                     value={form.maxOpenPerUser}
                     onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUser: Number(e.target.value) }))} />
@@ -534,7 +531,7 @@ export default function PanelsPage() {
                 <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Welcome Message & Roles</summary>
                 <div className="pt-4 space-y-3">
                   <label className="block">
-                    <span className="cs-label">Welcome Message (markdown + variables)</span>
+                    <span className="cs-label">{t("ui.welcomeMsgMd")}</span>
                     <textarea className="cs-textarea" rows={4} value={form.welcomeMessage}
                       onChange={(e) => setForm((f) => ({ ...f, welcomeMessage: e.target.value }))}
                       placeholder={t("panels.ph.welcomeDm")} />
@@ -549,18 +546,18 @@ export default function PanelsPage() {
                         onChange={(e) => setForm((f) => ({ ...f, welcomeEmbedColor: e.target.value }))} />
                     </label>
                     <label className="block">
-                      <span className="cs-label">Max Tickets Per User (this panel)</span>
+                      <span className="cs-label">{t("ui.maxPerUserPanel")}</span>
                       <input type="number" className="cs-input" min={0} value={form.maxOpenPerUserPanel}
                         onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUserPanel: e.target.value }))}
                         placeholder={t("panels.ph.limit")} />
                     </label>
                   </div>
                   <label className="block">
-                    <span className="cs-label">Support roles (full access)</span>
+                    <span className="cs-label">{t("ui.supportRolesFull")}</span>
                     <DiscordRoleSelect multi value={form.supportRoleIds} onChange={(v) => setForm((f) => ({ ...f, supportRoleIds: v }))} requireAssignable={false} />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Observer roles (view-only)</span>
+                    <span className="cs-label">{t("ui.observerRoles")}</span>
                     <DiscordRoleSelect multi value={form.observerRoleIds} onChange={(v) => setForm((f) => ({ ...f, observerRoleIds: v }))} requireAssignable={false} />
                   </label>
                 </div>
@@ -624,7 +621,7 @@ export default function PanelsPage() {
                 <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Automation {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="block">
-                    <span className="cs-label">Inactivity Auto-Close (hours)</span>
+                    <span className="cs-label">{t("ui.inactivityAutoClose")}</span>
                     <input type="number" className="cs-input" min={1} value={form.inactivityCloseHours}
                       onChange={(e) => setForm((f) => ({ ...f, inactivityCloseHours: e.target.value }))}
                       placeholder={t("panels.ph.inactivity")} />
@@ -647,15 +644,13 @@ export default function PanelsPage() {
               <details className="cs-card !p-4 !bg-cs-panel">
                 <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Verification Gate (v1.7)</summary>
                 <div className="pt-4 space-y-3">
-                  <p className="text-xs text-cs-dim">
-                    Require users to have specific roles before they can open a ticket on this panel. Pair with a Verification Panel (see sidebar) that grants these roles.
-                  </p>
+                  <p className="text-xs text-cs-dim">{t("ui.hint.requireRoles")}</p>
                   <label className="block">
-                    <span className="cs-label">Required roles (user must have ALL)</span>
+                    <span className="cs-label">{t("ui.requiredRolesAll")}</span>
                     <DiscordRoleSelect multi value={form.requireVerifiedRoleIds} onChange={(v) => setForm((f) => ({ ...f, requireVerifiedRoleIds: v }))} requireAssignable={false} />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Custom Denied Message (shown when user lacks required roles)</span>
+                    <span className="cs-label">{t("ui.customDeniedMsg")}</span>
                     <textarea className="cs-textarea" rows={3} value={form.verificationDeniedMessage}
                       onChange={(e) => setForm((f) => ({ ...f, verificationDeniedMessage: e.target.value }))}
                       placeholder={t("panels.ph.verifyGate")} />

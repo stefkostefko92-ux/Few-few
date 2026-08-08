@@ -283,13 +283,10 @@ export default function FormsPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
                   <div className="flex items-center gap-1">
-                    <input
-                      placeholder="Channel ID"
-                      aria-label={t("forms.channelToPost")}
-                      className="cs-input text-xs w-28 py-1"
-                      value={spawnInputs[f.id] || ""}
-                      onChange={(e) => setSpawnInputs((s) => ({ ...s, [f.id]: e.target.value }))}
-                    />
+                    <div className="w-44">
+                      <DiscordChannelSelect kind="text" value={spawnInputs[f.id] || ""}
+                        onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
+                    </div>
                     <button
                       className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
                       disabled={!spawnInputs[f.id] || spawnMut.isPending}
@@ -351,11 +348,11 @@ export default function FormsPage() {
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="cs-label">Form Name *</span>
+                    <span className="cs-label">{t("ui.formNameReq")}</span>
                     <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("forms.ph.staffApp")} />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Type</span>
+                    <span className="cs-label">{t("ui.type")}</span>
                     <select className="cs-input" value={String(form.isApplication)} onChange={(e) => setForm((f) => ({ ...f, isApplication: e.target.value === "true" }))}>
                       <option value="false">{t("forms.type.ticket")}</option>
                       <option value="true">{t("forms.type.application")}</option>
@@ -400,7 +397,7 @@ export default function FormsPage() {
                     value={form.transcriptChannelId}
                     onChange={(v) => setForm((f) => ({ ...f, transcriptChannelId: v }))}
                   />
-                  <p className="text-xs text-cs-dim mt-1">Leave empty to disable. Post is triggered on approve/deny.</p>
+                  <p className="text-xs text-cs-dim mt-1">{t("ui.hint.transcriptOff")}</p>
                 </label>
 
                 {/* ─── Appy.bot-style fields (application forms only) ─── */}
@@ -418,41 +415,41 @@ export default function FormsPage() {
                       )}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label className="block">
-                          <span className="cs-label">Accept → add roles</span>
+                          <span className="cs-label">{t("ui.acceptAddRoles")}</span>
                           <DiscordRoleSelect multi value={form.acceptRoleIds} onChange={(v) => setForm((f) => ({ ...f, acceptRoleIds: v }))} />
                         </label>
                         <label className="block">
-                          <span className="cs-label">Accept → remove roles</span>
+                          <span className="cs-label">{t("ui.acceptRemoveRoles")}</span>
                           <DiscordRoleSelect multi value={form.removeRoleIds} onChange={(v) => setForm((f) => ({ ...f, removeRoleIds: v }))} requireAssignable={false} />
                         </label>
                       </div>
                       <label className="block">
-                        <span className="cs-label">Deny → add roles</span>
+                        <span className="cs-label">{t("ui.denyAddRoles")}</span>
                         <DiscordRoleSelect multi value={form.denyRoleIds} onChange={(v) => setForm((f) => ({ ...f, denyRoleIds: v }))} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Application managers (can review alongside admins)</span>
+                        <span className="cs-label">{t("ui.appManagers")}</span>
                         <DiscordRoleSelect multi value={form.managerRoleIds} onChange={(v) => setForm((f) => ({ ...f, managerRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Ping these roles on new submission</span>
+                        <span className="cs-label">{t("ui.pingRolesOnSubmit")}</span>
                         <DiscordRoleSelect multi value={form.pingRoleIds} onChange={(v) => setForm((f) => ({ ...f, pingRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Accept DM message (markdown; {"{user}"}, {"{note}"})</span>
-                        <textarea className="cs-textarea" rows={3} value={form.acceptMessage} onChange={(e) => setForm((f) => ({ ...f, acceptMessage: e.target.value }))} placeholder="✅ Welcome to the team, {user}! Check out #rules next." />
+                        <textarea className="cs-textarea" rows={3} value={form.acceptMessage} onChange={(e) => setForm((f) => ({ ...f, acceptMessage: e.target.value }))} placeholder={t("ui.ph.acceptDm")} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Deny DM message</span>
-                        <textarea className="cs-textarea" rows={3} value={form.denyMessage} onChange={(e) => setForm((f) => ({ ...f, denyMessage: e.target.value }))} placeholder="Sorry, {user}. You may re-apply in 7 days." />
+                        <span className="cs-label">{t("ui.denyDmMessage")}</span>
+                        <textarea className="cs-textarea" rows={3} value={form.denyMessage} onChange={(e) => setForm((f) => ({ ...f, denyMessage: e.target.value }))} placeholder={t("ui.ph.denyDm")} />
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <label className="block">
-                          <span className="cs-label">Cooldown (seconds)</span>
-                          <input className="cs-input" type="number" min="0" value={form.cooldownSeconds} onChange={(e) => setForm((f) => ({ ...f, cooldownSeconds: e.target.value }))} placeholder="0 = none" />
+                          <span className="cs-label">{t("ui.cooldownSec")}</span>
+                          <input className="cs-input" type="number" min="0" value={form.cooldownSeconds} onChange={(e) => setForm((f) => ({ ...f, cooldownSeconds: e.target.value }))} placeholder={t("ui.zeroNone")} />
                         </label>
                         <label className="block">
-                          <span className="cs-label">Max submissions per user</span>
+                          <span className="cs-label">{t("ui.maxSubmissions")}</span>
                           <input className="cs-input" type="number" min="0" value={form.maxSubmissions} onChange={(e) => setForm((f) => ({ ...f, maxSubmissions: e.target.value }))} placeholder={t("forms.ph.maxSub")} />
                         </label>
                         <label className="flex items-center gap-2 mt-6">

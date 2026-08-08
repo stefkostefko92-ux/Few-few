@@ -116,6 +116,24 @@ describe("каналите и ролите се ИЗБИРАТ, не се пиш
     expect(bad, `ползвай <DiscordChannelSelect> / <DiscordRoleSelect>: ${bad.join(", ")}`).toEqual([]);
   });
 
+  it("нито един placeholder не иска ID", () => {
+    // Точно оттук се промъкнаха две полета в Reaction Roles: имената им са
+    // `spawnInputs[m.id]` и `p.roleId`, не `form.<нещо>ChannelId`, затова
+    // проверката по ИМЕ на променливата не ги видя. Текстът към човека обаче
+    // ги издава винаги — той е това, което човекът чете.
+    const bad = [];
+    for (const f of jsx) {
+      if (EXEMPT.has(f)) continue;
+      const s = read(f);
+      for (const m of s.matchAll(/placeholder="([^"]+)"/g)) {
+        if (/\b(Channel|Role|Category)\s?IDs?\b|Copy (Channel|Role) ID/i.test(m[1])) {
+          bad.push(`${f}:${lineOf(s, m.index)} „${m[1]}“`);
+        }
+      }
+    }
+    expect(bad, `полето е падащо меню, а подсказката иска ID: ${bad.join(", ")}`).toEqual([]);
+  });
+
   it("етикетите не искат от човека да носи ID или CSV", () => {
     const bad = [];
     for (const f of jsx) {

@@ -426,10 +426,10 @@ export default function TicketsPage() {
       {/* Close Ticket Modal */}
       <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close Ticket" maxWidth="max-w-md">
         <label className="block mb-4">
-          <span className="cs-label">Close Reason (optional)</span>
+          <span className="cs-label">{t("ui.closeReasonOpt")}</span>
           <input
             className="cs-input"
-            placeholder="Issue resolved, user inactive, etc."
+            placeholder={t("ui.ph.closeReason")}
             value={closeReason}
             onChange={(e) => setCloseReason(e.target.value)}
             autoFocus
