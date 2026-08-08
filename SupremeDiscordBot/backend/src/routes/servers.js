@@ -8,6 +8,7 @@ import { encrypt, decrypt, decryptSafe } from "../lib/crypto.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
+import { guildIconUrl } from "../lib/discordCdn.js";
 
 // Категориите на Server Activity Logging — един източник за валидация.
 const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages", "server"];
@@ -46,6 +47,11 @@ function sanitizeServer(server) {
     stripeSubscriptionId: _sub,
     ...safe
   } = server;
+  // `icon` в базата е СУРОВИЯТ хеш (ботът го записва така). Клиентът рисува
+  // `<img src={server.icon}>`, значи оттук излиза адрес или `null` — никога хеш.
+  // Хеш в `src` е относителен адрес → SPA fallback-ът връща index.html и
+  // иконката е счупено квадратче. (Виж lib/discordCdn.js.)
+  safe.icon = guildIconUrl(safe.id, safe.icon);
   return safe;
 }
 
@@ -120,9 +126,7 @@ router.get("/", async (req, res, next) => {
     const result = adminGuilds.map((g) => ({
       id: g.id,
       name: g.name,
-      icon: g.icon
-        ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith("a_") ? "gif" : "png"}`
-        : null,
+      icon: guildIconUrl(g.id, g.icon),
       botAdded: !!dbMap[g.id],
       isPremium: !!effectivePremium(dbMap[g.id]),
     }));

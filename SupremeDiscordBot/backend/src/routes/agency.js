@@ -9,6 +9,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { PLANS, AGENCY_PLANS, stripePriceId, syncServerPaidFlag } from "../lib/premium.js";
 import { reconcileWhitelabel } from "../services/botNotifier.js";
+import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
@@ -40,7 +41,11 @@ router.get("/mine", requireAuth, loadUser, async (req, res, next) => {
         id: agency.id, plan: agency.plan, seatLimit: agency.seatLimit,
         billingInterval: agency.billingInterval, active: agency.active,
         stripeStatus: agency.stripeStatus,
-        seatsUsed: agency.servers.length, servers: agency.servers,
+        // Иконките излизат като АДРЕС, не като суров хеш от базата — иначе
+        // `<img src>` е относителен път и SPA fallback-ът връща index.html
+        // (счупено квадратче в списъка „Сървъри на този план"). Виж discordCdn.js.
+        seatsUsed: agency.servers.length,
+        servers: agency.servers.map((s) => withIconUrl(s, 64)),
       },
     });
   } catch (err) { next(err); }

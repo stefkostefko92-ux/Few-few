@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { requirePremium, getServerTier, planHasFeature } from "../lib/premium.js";
+import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
@@ -206,7 +207,8 @@ api.get("/me", async (req, res, next) => {
     // Ефективен tier (agency/trial не са в суровата колона).
     const { isPremium, plan } = await getServerTier(req.serverId);
     res.json({
-      server: server ? { ...server, isPremium, plan } : null,
+      // `icon` е адрес, не суров хеш — виж lib/discordCdn.js.
+      server: server ? { ...withIconUrl(server), isPremium, plan } : null,
       keyId: req.apiKey.id,
       scopes: req.apiKey.scopes,
     });

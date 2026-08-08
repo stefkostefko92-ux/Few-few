@@ -1,6 +1,7 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { guildIconUrl } from "../lib/discordCdn.js";
 import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
 
@@ -260,6 +261,20 @@ router.patch("/users/:userId/blacklist", requireMainOwner, async (req, res, next
   }
 });
 
+// Админският изглед на сървър: без тайни, с адрес за иконката.
+// Едно определение — ползва се и от списъка, и от детайла.
+function adminServerView(server) {
+  if (!server) return server;
+  const {
+    customBotToken: _token,
+    stripeCustomerId: _cus,
+    stripeSubscriptionId: _sub,
+    ...safe
+  } = server;
+  safe.icon = guildIconUrl(safe.id, safe.icon);
+  return safe;
+}
+
 // ─── GET /api/admin/servers ───────────────────────────────────────────────────
 
 router.get("/servers", async (req, res, next) => {
@@ -281,7 +296,11 @@ router.get("/servers", async (req, res, next) => {
       prisma.server.count({ where }),
     ]);
 
-    res.json({ servers, total });
+    // Списъкът връщаше ЦЕЛИЯ запис — включително `customBotToken` (криптиран, но
+    // пак таен) и Stripe идентификаторите. Детайлният маршрут по-долу ги маха, а
+    // списъкът не: същият клас „едно правило, две определения". И `icon` излиза
+    // като АДРЕС, за да не строи всеки клиент URL сам. (07.08.2026)
+    res.json({ servers: servers.map(adminServerView), total });
   } catch (err) {
     next(err);
   }
@@ -899,9 +918,7 @@ router.get("/servers/:serverId", async (req, res, next) => {
       },
     });
     if (!server) return res.status(404).json({ error: "Server not found" });
-    // Never leak encrypted bot token
-    const { customBotToken: _t, ...safe } = server;
-    res.json(safe);
+    res.json(adminServerView(server));
   } catch (err) { next(err); }
 });
 

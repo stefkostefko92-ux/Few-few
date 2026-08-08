@@ -6,11 +6,21 @@
 //
 // Server-level settings loaded from backend.
 
+import { PermissionsBitField } from "discord.js";
 import api from "../utils/api.js";
 import { interpolate } from "../utils/variables.js";
 import { logServerEvent } from "../utils/serverEventLog.js";
 import { BRAND } from "../utils/colors.js";
 import { isRoleSafeToSelfAssign } from "../utils/reactionRoles.js";
+
+// Правата, БЕЗ които приветствието в канал физически не може да излезе.
+// Embed Links е в списъка, защото пращаме embed: без него Discord отказва
+// съобщението изцяло, а не го праща като обикновен текст.
+const WELCOME_PERMISSIONS = [
+  { flag: PermissionsBitField.Flags.ViewChannel, name: "View Channel" },
+  { flag: PermissionsBitField.Flags.SendMessages, name: "Send Messages" },
+  { flag: PermissionsBitField.Flags.EmbedLinks, name: "Embed Links" },
+];
 
 export default {
   name: "guildMemberAdd",
@@ -88,23 +98,7 @@ export default {
     };
 
     // ─── 2. Welcomer channel ──────────────────────────────────────────────────
-    if (server.welcomerEnabled && server.welcomerChannelId && server.welcomerMessage) {
-      const channel = await member.guild.channels.fetch(server.welcomerChannelId).catch(() => null);
-      if (channel) {
-        const content = interpolate(server.welcomerMessage, ctx);
-        const color = parseHex(server.welcomerEmbedColor);
-        await channel.send({
-          embeds: [{
-            title: `👋 Welcome to ${member.guild.name}!`,
-            description: content,
-            color,
-            thumbnail: { url: member.user.displayAvatarURL({ size: 128 }) },
-            footer: { text: `Member #${member.guild.memberCount}` },
-            timestamp: new Date().toISOString(),
-          }],
-        }).catch(() => {});
-      }
-    }
+    if (server.welcomerEnabled) await sendWelcomeToChannel(member, server, ctx);
 
     // ─── 3. Welcomer DM ───────────────────────────────────────────────────────
     if (server.welcomerDmEnabled && server.welcomerDmMessage) {
@@ -126,6 +120,71 @@ export default {
     }
   },
 };
+
+// ─── Приветствието в канал — с ПРИЧИНА при провал ───────────────────────────
+//
+// ЗАЩО ОТДЕЛНА ФУНКЦИЯ (сигнал от собственика, 07.08.2026: „welcome message in
+// channel doesn't work"): старият код беше едно `if` с три условия и
+// `.catch(() => {})` накрая. Тоест при ВСЯКА от петте различни причини да не се
+// изпрати — изключен канал, изтрит канал, чужд/сгрешен ID, липсващо право,
+// отказ от Discord — резултатът беше един и същ: нищо, никъде, без следа.
+// „Не работи" без причина не е диагностицируемо: собственикът гледа таблото,
+// вижда включена функция и няма как да разбере, че ботът няма Embed Links в
+// точно този канал.
+//
+// Функцията НЕ променя кога се праща — само прави мълчанието проговарящо.
+async function sendWelcomeToChannel(member, server, ctx) {
+  const guild = member.guild;
+  const where = `guild ${guild.id}`;
+
+  if (!server.welcomerChannelId) {
+    console.warn(`[welcomer] ${where}: включен е, но няма избран канал — Settings → Welcomer → Channel ID`);
+    return;
+  }
+  if (!server.welcomerMessage) {
+    console.warn(`[welcomer] ${where}: включен е, но съобщението е празно — нищо за пращане`);
+    return;
+  }
+
+  // `guild.channels.fetch` хвърля за чужд канал — точно каквото искаме: ID от
+  // друг сървър не бива да получи нашето съобщение.
+  const channel = await guild.channels.fetch(server.welcomerChannelId).catch((e) => {
+    console.warn(`[welcomer] ${where}: канал ${server.welcomerChannelId} не е намерен (${e?.message}) — изтрит, сгрешен ID или от друг сървър`);
+    return null;
+  });
+  if (!channel) return;
+  if (typeof channel.send !== "function") {
+    console.warn(`[welcomer] ${where}: канал ${channel.id} е от тип, в който не се пише (категория/форум?)`);
+    return;
+  }
+
+  // Проверката на правата ПРЕДИ пращането дава конкретното име на липсващото
+  // право. Без нея Discord връща само „Missing Permissions" и човекът гадае кое.
+  const me = guild.members.me;
+  const perms = me ? channel.permissionsFor(me) : null;
+  const missing = perms
+    ? WELCOME_PERMISSIONS.filter(({ flag }) => !perms.has(flag)).map(({ name }) => name)
+    : [];
+  if (missing.length) {
+    console.warn(`[welcomer] ${where}: ботът няма ${missing.join(", ")} в #${channel.name} — съобщението не може да се изпрати`);
+    return;
+  }
+
+  try {
+    await channel.send({
+      embeds: [{
+        title: `👋 Welcome to ${guild.name}!`,
+        description: interpolate(server.welcomerMessage, ctx),
+        color: parseHex(server.welcomerEmbedColor),
+        thumbnail: { url: member.user.displayAvatarURL({ size: 128 }) },
+        footer: { text: `Member #${guild.memberCount}` },
+        timestamp: new Date().toISOString(),
+      }],
+    });
+  } catch (err) {
+    console.warn(`[welcomer] ${where}: Discord отказа изпращането в #${channel.name}: ${err?.message}`);
+  }
+}
 
 function parseHex(hex) {
   if (!hex) return BRAND;

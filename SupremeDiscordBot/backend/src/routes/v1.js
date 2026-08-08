@@ -15,6 +15,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireApiKey } from "./apikeys.js";
 import { getServerTier } from "../lib/premium.js";
+import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
@@ -31,7 +32,8 @@ router.get("/server", requireApiKey("server:read"), async (req, res, next) => {
     if (!server) return res.json(null);
     // Ефективен tier (agency/trial не са в суровата колона).
     const { isPremium, plan } = await getServerTier(req.params.serverId);
-    res.json({ ...server, isPremium, plan });
+    // `icon` е адрес, не суров хеш — виж lib/discordCdn.js.
+    res.json({ ...withIconUrl(server), isPremium, plan });
   } catch (err) { next(err); }
 });
 
