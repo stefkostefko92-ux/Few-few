@@ -1,6 +1,7 @@
 // frontend/src/pages/VerificationPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Send, Pencil, ShieldCheck } from "lucide-react";
 import {
@@ -301,12 +302,12 @@ export default function VerificationPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block">
-                <span className="cs-label">Grant Role IDs (CSV)</span>
-                <input className="cs-input font-mono text-xs" value={form.grantRoleIds} onChange={(e) => set("grantRoleIds", e.target.value)} placeholder="Verified, Member" />
+                <span className="cs-label">Roles granted on verification</span>
+                <DiscordRoleSelect multi value={form.grantRoleIds} onChange={(v) => set("grantRoleIds", v)} />
               </label>
               <label className="block">
-                <span className="cs-label">Remove Role IDs (CSV)</span>
-                <input className="cs-input font-mono text-xs" value={form.removeRoleIds} onChange={(e) => set("removeRoleIds", e.target.value)} placeholder="Unverified" />
+                <span className="cs-label">Roles to remove</span>
+                <DiscordRoleSelect multi value={form.removeRoleIds} onChange={(v) => set("removeRoleIds", v)} requireAssignable={false} />
               </label>
             </div>
 
@@ -345,8 +346,8 @@ export default function VerificationPage() {
                   </label>
                 </div>
                 <label className="block">
-                  <span className="cs-label">Log Channel ID</span>
-                  <input className="cs-input font-mono text-xs" value={form.logChannelId} onChange={(e) => set("logChannelId", e.target.value)} placeholder="Staff log of verifications" />
+                  <span className="cs-label">Log Channel</span>
+                  <DiscordChannelSelect kind="text" value={form.logChannelId} onChange={(v) => set("logChannelId", v)} />
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={form.dmOnSuccess} onChange={(e) => set("dmOnSuccess", e.target.checked)} className="accent-cs-cyan" />

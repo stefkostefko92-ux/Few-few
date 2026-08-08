@@ -1,9 +1,9 @@
 // frontend/src/pages/SettingsPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import DiscordChannelSelect from "../components/DiscordChannelSelect";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
+import { Save, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
 import { getServer, updateServer } from "../api";
 import { useToast } from "../contexts/ToastContext";
 import { useT } from "../contexts/I18nContext";
@@ -167,28 +167,12 @@ export default function SettingsPage() {
 
           <label className="block">
             <span className="cs-label">{t("settings.logChannel")}</span>
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-              <input
-                className="cs-input pl-9"
-                placeholder="Discord channel ID for bot activity logs"
-                value={form.logChannelId}
-                onChange={(e) => set("logChannelId", e.target.value)}
-              />
-            </div>
+            <DiscordChannelSelect kind="text" value={form.logChannelId} onChange={(v) => set("logChannelId", v)} />
           </label>
 
           <label className="block">
             <span className="cs-label">{t("settings.archiveChannel")}</span>
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-              <input
-                className="cs-input pl-9"
-                placeholder="Channel where ticket transcripts are posted on close"
-                value={form.archiveChannelId}
-                onChange={(e) => set("archiveChannelId", e.target.value)}
-              />
-            </div>
+            <DiscordChannelSelect kind="text" value={form.archiveChannelId} onChange={(v) => set("archiveChannelId", v)} />
           </label>
         </div>
 
@@ -239,16 +223,8 @@ export default function SettingsPage() {
           {form.eventLogEnabled && (
             <div className="pl-6 space-y-3">
               <label className="block">
-                <span className="cs-label">Log Channel ID</span>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-                  <input
-                    className="cs-input pl-9 font-mono text-xs"
-                    placeholder="Discord channel ID where events are posted"
-                    value={form.eventLogChannelId}
-                    onChange={(e) => set("eventLogChannelId", e.target.value)}
-                  />
-                </div>
+                <span className="cs-label">Event log channel</span>
+                <DiscordChannelSelect kind="text" value={form.eventLogChannelId} onChange={(v) => set("eventLogChannelId", v)} />
               </label>
               <div>
                 <span className="cs-label">{t("settings.categoriesToLog")}</span>
@@ -365,18 +341,8 @@ export default function SettingsPage() {
 
           {form.roundRobinEnabled && (
             <label className="block">
-              <span className="cs-label">Support Role ID</span>
-              <div className="relative">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-                <input
-                  className="cs-input pl-9"
-                  placeholder="Discord role ID — members of this role will receive tickets"
-                  value={form.roundRobinRoleId}
-                  onChange={(e) => set("roundRobinRoleId", e.target.value)}
-                  disabled={!isPremium}
-                  tabIndex={isPremium ? undefined : -1}
-                />
-              </div>
+              <span className="cs-label">Support role</span>
+              <DiscordRoleSelect value={form.roundRobinRoleId} onChange={(v) => set("roundRobinRoleId", v)} requireAssignable={false} />
               <p className="text-xs text-cs-muted mt-1">
                 The bot must have permission to view members of this role.
               </p>
@@ -504,19 +470,15 @@ export default function SettingsPage() {
 
           <div className="border-t border-cs-border pt-4">
             <label className="block">
-              <span className="cs-label">Autorole — Role IDs for new users (comma-separated)</span>
-              <input className="cs-input font-mono text-xs" value={form.autoroleIds}
-                onChange={(e) => set("autoroleIds", e.target.value)}
-                placeholder="Member, Unverified" />
+              <span className="cs-label">Autorole — roles for new members</span>
+              <DiscordRoleSelect multi value={form.autoroleIds} onChange={(v) => set("autoroleIds", v)} />
               <p className="text-xs text-cs-dim mt-1">
                 Automatically assigned to every new member who joins.
               </p>
             </label>
             <label className="block mt-3">
-              <span className="cs-label">Autorole — Role IDs for new bots</span>
-              <input className="cs-input font-mono text-xs" value={form.autoroleBotIds}
-                onChange={(e) => set("autoroleBotIds", e.target.value)}
-                placeholder="Bots" />
+              <span className="cs-label">Autorole — roles for new bots</span>
+              <DiscordRoleSelect multi value={form.autoroleBotIds} onChange={(v) => set("autoroleBotIds", v)} />
               <p className="text-xs text-cs-dim mt-1">
                 Automatically assigned to bot accounts on join.
               </p>

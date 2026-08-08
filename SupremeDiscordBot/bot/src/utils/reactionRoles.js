@@ -26,17 +26,30 @@ const DANGEROUS_ROLE_PERMS = [
 ];
 
 /**
+ * ЗАЩО пречи ролята — една дефиниция, две употреби.
+ *
+ * Ботът отказваше такава роля ТИХО (само ред в лога), а таблото я предлагаше на
+ * човека, все едно е наред. За да няма второ, паралелно мнение в UI-я, таблото
+ * пита СЪЩАТА функция и показва причината ПРЕДИ избора. (08.08.2026)
+ *
+ * @returns {null|"managed"|"dangerous"|"above_bot"} null = безопасна
+ */
+export function roleAssignabilityReason(role, botMember) {
+  if (!role) return "managed";
+  if (role.managed) return "managed";                     // интеграционна роля (бот/буст) — не се дава ръчно
+  if (role.permissions.any(DANGEROUS_ROLE_PERMS)) return "dangerous";
+  // Над ботската роля Discord и без това отказва, но проверяваме изрично.
+  if (botMember && role.comparePositionTo(botMember.roles.highest) >= 0) return "above_bot";
+  return null;
+}
+
+/**
  * Безопасна ли е ролята за self-service раздаване през реакция?
  * @param {import('discord.js').Role|null|undefined} role
  * @returns {boolean} false ако липсва/managed/има опасно право/над бота
  */
 export function isRoleSafeToSelfAssign(role, botMember) {
-  if (!role) return false;
-  if (role.managed) return false;                         // интеграционна роля (бот/буст) — не се дава ръчно
-  if (role.permissions.any(DANGEROUS_ROLE_PERMS)) return false;
-  // Над ботската роля Discord и без това отказва, но проверяваме изрично.
-  if (botMember && role.comparePositionTo(botMember.roles.highest) >= 0) return false;
-  return true;
+  return roleAssignabilityReason(role, botMember) === null;
 }
 
 // ─── Emoji ключ ──────────────────────────────────────────────────────────────

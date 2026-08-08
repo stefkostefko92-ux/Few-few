@@ -2,6 +2,7 @@
 // Consolidated page with tabs: Polls, Giveaways, Sticky, Scheduled, Webhooks.
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3, Gift, Pin, CalendarClock, Webhook, Trash2, Plus, CheckCircle2, RefreshCw,
@@ -121,9 +122,9 @@ function PollsTab() {
     <Modal open={creating} onClose={() => setCreating(false)} title="New poll" maxWidth="max-w-lg">
       <form onSubmit={submitPoll} className="space-y-3">
         <label className="block">
-          <span className="cs-label">Channel ID *</span>
-          <input className="cs-input font-mono text-xs" required value={form.channelId}
-            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
+          <span className="cs-label">Channel *</span>
+          <DiscordChannelSelect kind="text" value={form.channelId}
+            onChange={(v) => setForm((f) => ({ ...f, channelId: v }))}
             placeholder="Right-click channel → Copy Channel ID" />
         </label>
         <label className="block">
@@ -264,9 +265,9 @@ function GiveawaysTab() {
     <Modal open={creating} onClose={() => setCreating(false)} title="New giveaway" maxWidth="max-w-lg">
       <form onSubmit={submitGiveaway} className="space-y-3">
         <label className="block">
-          <span className="cs-label">Channel ID *</span>
-          <input className="cs-input font-mono text-xs" required value={form.channelId}
-            onChange={(e) => setForm((f) => ({ ...f, channelId: e.target.value }))}
+          <span className="cs-label">Channel *</span>
+          <DiscordChannelSelect kind="text" value={form.channelId}
+            onChange={(v) => setForm((f) => ({ ...f, channelId: v }))}
             placeholder="Right-click channel → Copy Channel ID" />
         </label>
         <label className="block">
@@ -294,10 +295,8 @@ function GiveawaysTab() {
           </label>
         </div>
         <label className="block">
-          <span className="cs-label">Required role IDs (comma-separated, optional)</span>
-          <input className="cs-input font-mono text-xs" value={form.requiredRoleIds}
-            onChange={(e) => setForm((f) => ({ ...f, requiredRoleIds: e.target.value }))}
-            placeholder="Only members with these roles can enter" />
+          <span className="cs-label">Required roles (optional)</span>
+          <DiscordRoleSelect multi value={form.requiredRoleIds} onChange={(v) => setForm((f) => ({ ...f, requiredRoleIds: v }))} requireAssignable={false} />
         </label>
         {createM.isError && (
           <p className="text-danger text-sm" role="alert">
@@ -409,8 +408,8 @@ function StickyTab() {
       <form onSubmit={(e) => { e.preventDefault(); saveM.mutate(form); }} className="cs-card space-y-3">
         <h3 className="text-cs-text font-bold">Set Sticky Message</h3>
         <label className="block">
-          <span className="cs-label">Channel ID</span>
-          <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
+          <span className="cs-label">Channel</span>
+          <DiscordChannelSelect kind="text" value={form.channelId} onChange={(v) => setForm({ ...form, channelId: v })} />
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
@@ -496,8 +495,8 @@ function ScheduledTab() {
         <h3 className="text-cs-text font-bold">Schedule New Message</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="cs-label">Channel ID</span>
-            <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
+            <span className="cs-label">Channel</span>
+            <DiscordChannelSelect kind="text" value={form.channelId} onChange={(v) => setForm({ ...form, channelId: v })} />
           </label>
           <label className="block">
             <span className="cs-label">Send At (local time)</span>

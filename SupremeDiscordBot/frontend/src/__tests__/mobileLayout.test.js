@@ -92,3 +92,41 @@ describe("отстоянията не изяждат екрана", () => {
     expect(bad, `ползвай p-4 sm:p-6 lg:p-8: ${bad.join(", ")}`).toEqual([]);
   });
 });
+
+// ─── Никакво копиране на ID ───────────────────────────────────────────────────
+// Собственикът, 08.08.2026: „не искам да копирам ID-та". Полетата за канал,
+// категория и роля вече идват от каталога на guild-а. Този гейт пази връщането
+// назад — най-лесният начин да се регресира е новото поле да се напише „както
+// съседното", а съседното допреди днес беше `<input>` за снежинка.
+//
+// AdminPage е ИЗКЛЮЧЕН нарочно: това е суперпотребителският изглед на ЧУЖД
+// сървър, а каталогът е зад `requireServerAdmin` за конкретния сървър — там
+// списък няма откъде да дойде и ръчното ID е коректният вход.
+describe("каналите и ролите се ИЗБИРАТ, не се пишат", () => {
+  const ID_FIELD = /<input\b(?:(?!\/>)[\s\S])*?value=\{[^}]*\b\w*(ChannelId|CategoryId|RoleIds?)\b[^}]*\}(?:(?!\/>)[\s\S])*?\/>/g;
+  const EXEMPT = new Set(["AdminPage.jsx"]);
+
+  it("нито едно клиентско поле за канал/категория/роля не е текстов ID вход", () => {
+    const bad = [];
+    for (const f of jsx) {
+      if (EXEMPT.has(f)) continue;
+      const s = read(f);
+      for (const m of s.matchAll(ID_FIELD)) bad.push(`${f}:${lineOf(s, m.index)}`);
+    }
+    expect(bad, `ползвай <DiscordChannelSelect> / <DiscordRoleSelect>: ${bad.join(", ")}`).toEqual([]);
+  });
+
+  it("етикетите не искат от човека да носи ID или CSV", () => {
+    const bad = [];
+    for (const f of jsx) {
+      if (EXEMPT.has(f)) continue;
+      const s = read(f);
+      for (const m of s.matchAll(/className="cs-label">([^<]*)</g)) {
+        if (/\b(ID|IDs|CSV|comma-separated)\b/.test(m[1]) && /(channel|categor|role)/i.test(m[1])) {
+          bad.push(`${f}:${lineOf(s, m.index)} „${m[1].trim()}“`);
+        }
+      }
+    }
+    expect(bad, `етикетът обещава ръчно ID, а полето е падащо меню: ${bad.join(", ")}`).toEqual([]);
+  });
+});

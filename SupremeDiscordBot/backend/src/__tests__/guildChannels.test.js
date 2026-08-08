@@ -22,10 +22,10 @@ const read = (p) => readFileSync(join(SRC, p), "utf-8");
 const code = (p) => read(p).split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
 
 const servers = code("routes/servers.js");
-const handler = servers.slice(servers.indexOf('router.get("/:serverId/channels"'));
+const handler = servers.slice(servers.indexOf('router.get("/:serverId/directory"'));
 const body = handler.slice(0, handler.indexOf("export default"));
 
-describe("GET /api/servers/:serverId/channels", () => {
+describe("GET /api/servers/:serverId/directory", () => {
   it("минава през requireServerAdmin — иначе е списък с чужди канали", () => {
     expect(handler.slice(0, 200)).toContain("requireServerAdmin");
   });
@@ -48,20 +48,40 @@ describe("GET /api/servers/:serverId/channels", () => {
 
 describe("ботът връща само каквото таблото ползва", () => {
   const bot = code("../../bot/src/index.js");
-  const route = bot.slice(bot.indexOf('app.get("/internal/guild/:guildId/channels"'));
+  const route = bot.slice(bot.indexOf('app.get("/internal/guild/:guildId/directory"'));
   const fn = route.slice(0, route.indexOf('app.post("/internal/application-discuss"'));
 
   it("маршрутът съществува и е зад изискването за тайна", () => {
     expect(fn.length, "маршрутът липсва — таблото няма откъде да вземе каналите").toBeGreaterThan(100);
     // `app.use(requireBotSecret)` стои НАД него във файла — доказваме реда.
     expect(bot.indexOf("app.use(requireBotSecret)"))
-      .toBeLessThan(bot.indexOf('app.get("/internal/guild/:guildId/channels"'));
+      .toBeLessThan(bot.indexOf('app.get("/internal/guild/:guildId/directory"'));
   });
 
-  it("не изнася съобщения, членове или права на потребители", () => {
-    for (const leak of ["messages", "members.fetch", "roles.cache", "topic"]) {
+  it("не изнася съобщения, списък членове или теми на канали", () => {
+    // `roles.cache` НЕ е в списъка: тя е легитимният резервен път на
+    // `roles.fetch()`. Списъкът пази изхода да не порасне до неща, които
+    // таблото не рисува — съдържание, хора, описания на канали.
+    for (const leak of ["messages", "members.fetch", "topic", "presence"]) {
       expect(fn, `изнася ${leak} — това е чужд сървър`).not.toContain(leak);
     }
+  });
+
+  it("ролите излизат с ФЛАГ, не със сурови права", () => {
+    // Битовата маска на правата е повече, отколкото таблото рисува, и е точна
+    // карта на защитите на чуждия сървър. Излиза само изводът.
+    expect(fn).toMatch(/assignable/);
+    expect(fn, "не изнасяй permissions bitfield").not.toMatch(/permissions:\s*role\.permissions/);
+    expect(fn).not.toMatch(/permissions\.bitfield/);
+  });
+
+  it("причината идва от СЪЩАТА функция, с която ботът отказва роля", () => {
+    // Иначе таблото има второ мнение и предлага роля, която ботът тихо отказва.
+    expect(fn).toMatch(/roleAssignabilityReason/);
+  });
+
+  it("@everyone не се предлага за раздаване", () => {
+    expect(fn).toMatch(/role\.id === guild\.id/);
   });
 
   it("казва дали ботът може да пише/създава — предупреждението е ПРЕДИ избора", () => {
@@ -75,15 +95,15 @@ describe("ботът връща само каквото таблото полз�
 });
 
 describe("клиентът е fail-open", () => {
-  const sel = readFileSync(join(SRC, "..", "..", "frontend", "src", "components", "DiscordChannelSelect.jsx"), "utf-8");
+  const sel = readFileSync(join(SRC, "..", "..", "frontend", "src", "components", "DiscordPicker.jsx"), "utf-8");
 
   it("падне ли ботът, полето става текстово — настройката остава достъпна", () => {
     expect(sel).toMatch(/isError/);
     expect(sel).toMatch(/<input/);
-    expect(sel).toMatch(/channelSelect\.botUnreachable/);
+    expect(sel).toMatch(/picker\.botUnreachable/);
   });
 
   it("запазена стойност за непознат канал не се губи мълчаливо", () => {
-    expect(sel).toMatch(/channelSelect\.unknownKept/);
+    expect(sel).toMatch(/picker\.unknownKept/);
   });
 });

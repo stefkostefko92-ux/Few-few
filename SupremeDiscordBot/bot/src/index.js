@@ -27,6 +27,7 @@ import { handlePanelSpawn, handlePanelUpdate, handleMultiPanelSpawn } from "./in
 import { handleTicketClose, handleTicketClaim } from "./internal/ticketHandler.js";
 import { handleApplicationReviewed } from "./internal/applicationHandler.js";
 import { bootAllCustomClients, shutdownCustomClient, customClients } from "./services/clientManager.js";
+import { roleAssignabilityReason } from "./utils/reactionRoles.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -520,18 +521,23 @@ app.post("/internal/ticket-reply", async (req, res) => {
 });
 
 // v2.2 — Open a private discussion channel with applicant (pre-decision)
-// ─── Списък на каналите в guild-а (за избор от таблото) ─────────────────────
+// ─── Каталог на guild-а: канали + роли (за избор от таблото) ────────────────
 //
 // ЗАЩО (сигнал от собственика, 08.08.2026: „нямам опция да избера в коя
-// категория да се отварят тикетите"): таблото искаше СНЕЖИНКА, изписана на
-// ръка. Тоест „изборът" беше: включи Developer Mode в Discord → десен бутон →
-// Copy Channel ID → залепи 19 цифри в поле, което не може да ги провери. Това
-// не е избор, а домашно. И сгреши ли се една цифра, нищо не гърми — просто
-// мълчи (същият клас, който току-що ни изяде welcomer-а).
+// категория да се отварят тикетите" и „не искам да копирам ID-та"): таблото
+// искаше СНЕЖИНКА, изписана на ръка. Тоест „изборът" беше: включи Developer
+// Mode в Discord → десен бутон → Copy ID → залепи 19 цифри в поле, което не
+// може да ги провери. При ролите беше още по-зле — СПИСЪК от такива ID-та,
+// разделени със запетаи. Сгреши ли се цифра или се остави интервал, нищо не
+// гърми: просто мълчи (същият клас, който ни изяде welcomer-а).
 //
-// Само ЧЕТЕНЕ: id, име, тип, позиция и дали ботът може да пише там. Нищо друго
-// от guild-а не напуска — това е чужд сървър, не наш.
-app.get("/internal/guild/:guildId/channels", async (req, res) => {
+// ЕДИН маршрут за двете, защото всеки екран с настройки иска и двете — две
+// заявки за един екран са две възможности едната да липсва.
+//
+// Само ЧЕТЕНЕ и само каквото таблото рисува: id, име, позиция, цвят и дали
+// действието изобщо е възможно. Нищо друго от guild-а не напуска — това е чужд
+// сървър, не наш.
+app.get("/internal/guild/:guildId/directory", async (req, res) => {
   try {
     const { ChannelType, PermissionsBitField } = await import("discord.js");
     const guild = client.guilds.cache.get(req.params.guildId)
@@ -577,9 +583,32 @@ app.get("/internal/guild/:guildId/channels", async (req, res) => {
     const byPos = (a, b) => a.position - b.position || a.name.localeCompare(b.name);
     out.categories.sort(byPos);
     out.text.sort(byPos);
-    res.json({ ok: true, ...out });
+
+    // ─── Роли ────────────────────────────────────────────────────────────────
+    // `assignable` идва от СЪЩАТА функция, с която ботът реално отказва роля
+    // (`isRoleSafeToSelfAssign`) — не от втора, паралелна преценка в таблото.
+    // Иначе таблото щеше да предлага роля, която ботът после тихо отказва:
+    // точно разминаването „едно правило, две дефиниции", което ни изгоря вече
+    // няколко пъти. Причината се връща заедно с флага, за да пише КАКВО пречи.
+    const roles = [];
+    for (const role of (await guild.roles.fetch().catch(() => guild.roles.cache)).values()) {
+      if (!role || role.id === guild.id) continue;          // @everyone не се дава
+      const reason = roleAssignabilityReason(role, me);
+      roles.push({
+        id: role.id,
+        name: role.name,
+        color: role.hexColor === "#000000" ? null : role.hexColor,
+        position: role.rawPosition ?? 0,
+        assignable: reason === null,
+        reason,
+      });
+    }
+    // Най-високата роля най-отгоре — така ги вижда и собственикът в Discord.
+    roles.sort((a, b) => b.position - a.position || a.name.localeCompare(b.name));
+
+    res.json({ ok: true, ...out, roles });
   } catch (err) {
-    console.error("[guild-channels]", err.message);
+    console.error("[guild-directory]", err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });

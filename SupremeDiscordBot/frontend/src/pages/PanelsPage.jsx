@@ -1,6 +1,7 @@
 // frontend/src/pages/PanelsPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
 import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, spawnPanelGroup, duplicatePanel, getForms } from "../api";
@@ -501,14 +502,14 @@ export default function PanelsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
                       <span className="cs-label">{t("panels.logChannel")}</span>
-                      <input className="cs-input font-mono text-xs" value={form.logChannelId}
-                        onChange={(e) => setForm((f) => ({ ...f, logChannelId: e.target.value }))}
+                      <DiscordChannelSelect kind="text" value={form.logChannelId}
+                        onChange={(v) => setForm((f) => ({ ...f, logChannelId: v }))}
                         placeholder={t("panels.ph.staffLog")} />
                     </label>
                     <label className="block">
                       <span className="cs-label">{t("panels.transcriptChannel")}</span>
-                      <input className="cs-input font-mono text-xs" value={form.transcriptChannelId}
-                        onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))}
+                      <DiscordChannelSelect kind="text" value={form.transcriptChannelId}
+                        onChange={(v) => setForm((f) => ({ ...f, transcriptChannelId: v }))}
                         placeholder={t("panels.ph.htmlTranscripts")} />
                     </label>
                   </div>
@@ -555,16 +556,12 @@ export default function PanelsPage() {
                     </label>
                   </div>
                   <label className="block">
-                    <span className="cs-label">Support Role IDs (comma-separated)</span>
-                    <input className="cs-input font-mono text-xs" value={form.supportRoleIds}
-                      onChange={(e) => setForm((f) => ({ ...f, supportRoleIds: e.target.value }))}
-                      placeholder={t("panels.ph.fullAccess")} />
+                    <span className="cs-label">Support roles (full access)</span>
+                    <DiscordRoleSelect multi value={form.supportRoleIds} onChange={(v) => setForm((f) => ({ ...f, supportRoleIds: v }))} requireAssignable={false} />
                   </label>
                   <label className="block">
-                    <span className="cs-label">Observer Role IDs (view-only)</span>
-                    <input className="cs-input font-mono text-xs" value={form.observerRoleIds}
-                      onChange={(e) => setForm((f) => ({ ...f, observerRoleIds: e.target.value }))}
-                      placeholder={t("panels.ph.readOnly")} />
+                    <span className="cs-label">Observer roles (view-only)</span>
+                    <DiscordRoleSelect multi value={form.observerRoleIds} onChange={(v) => setForm((f) => ({ ...f, observerRoleIds: v }))} requireAssignable={false} />
                   </label>
                 </div>
               </details>
@@ -654,10 +651,8 @@ export default function PanelsPage() {
                     Require users to have specific roles before they can open a ticket on this panel. Pair with a Verification Panel (see sidebar) that grants these roles.
                   </p>
                   <label className="block">
-                    <span className="cs-label">Required Role IDs (comma-separated — user must have ALL)</span>
-                    <input className="cs-input font-mono text-xs" value={form.requireVerifiedRoleIds}
-                      onChange={(e) => setForm((f) => ({ ...f, requireVerifiedRoleIds: e.target.value }))}
-                      placeholder={t("panels.ph.verifiedRoles")} />
+                    <span className="cs-label">Required roles (user must have ALL)</span>
+                    <DiscordRoleSelect multi value={form.requireVerifiedRoleIds} onChange={(v) => setForm((f) => ({ ...f, requireVerifiedRoleIds: v }))} requireAssignable={false} />
                   </label>
                   <label className="block">
                     <span className="cs-label">Custom Denied Message (shown when user lacks required roles)</span>

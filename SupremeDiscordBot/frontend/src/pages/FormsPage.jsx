@@ -1,7 +1,7 @@
 // frontend/src/pages/FormsPage.jsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import DiscordChannelSelect from "../components/DiscordChannelSelect";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil, FileText, Send } from "lucide-react";
 import { getForms, createForm, updateForm, deleteForm, spawnForm } from "../api";
@@ -387,7 +387,7 @@ export default function FormsPage() {
                       kind="category"
                       value={form.discussCategoryId}
                       onChange={(v) => setForm((f) => ({ ...f, discussCategoryId: v }))}
-                      emptyLabel={t("channelSelect.autoPick")}
+                      emptyLabel={t("picker.autoPick")}
                     />
                     <p className="text-xs text-cs-dim mt-1">{t("forms.discussCategoryHint")}</p>
                   </label>
@@ -418,25 +418,25 @@ export default function FormsPage() {
                       )}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label className="block">
-                          <span className="cs-label">Accept → add role IDs (comma-separated)</span>
-                          <input className="cs-input font-mono text-xs" value={form.acceptRoleIds} onChange={(e) => setForm((f) => ({ ...f, acceptRoleIds: e.target.value }))} placeholder={t("forms.ph.roleIds")} />
+                          <span className="cs-label">Accept → add roles</span>
+                          <DiscordRoleSelect multi value={form.acceptRoleIds} onChange={(v) => setForm((f) => ({ ...f, acceptRoleIds: v }))} />
                         </label>
                         <label className="block">
-                          <span className="cs-label">Accept → remove role IDs</span>
-                          <input className="cs-input font-mono text-xs" value={form.removeRoleIds} onChange={(e) => setForm((f) => ({ ...f, removeRoleIds: e.target.value }))} placeholder={t("forms.ph.removeRoles")} />
+                          <span className="cs-label">Accept → remove roles</span>
+                          <DiscordRoleSelect multi value={form.removeRoleIds} onChange={(v) => setForm((f) => ({ ...f, removeRoleIds: v }))} requireAssignable={false} />
                         </label>
                       </div>
                       <label className="block">
-                        <span className="cs-label">Deny → add role IDs</span>
-                        <input className="cs-input font-mono text-xs" value={form.denyRoleIds} onChange={(e) => setForm((f) => ({ ...f, denyRoleIds: e.target.value }))} placeholder={t("forms.ph.denyRole")} />
+                        <span className="cs-label">Deny → add roles</span>
+                        <DiscordRoleSelect multi value={form.denyRoleIds} onChange={(v) => setForm((f) => ({ ...f, denyRoleIds: v }))} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Application Managers (role IDs, can review alongside admins)</span>
-                        <input className="cs-input font-mono text-xs" value={form.managerRoleIds} onChange={(e) => setForm((f) => ({ ...f, managerRoleIds: e.target.value }))} placeholder={t("forms.ph.managers")} />
+                        <span className="cs-label">Application managers (can review alongside admins)</span>
+                        <DiscordRoleSelect multi value={form.managerRoleIds} onChange={(v) => setForm((f) => ({ ...f, managerRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Ping these roles on new submission</span>
-                        <input className="cs-input font-mono text-xs" value={form.pingRoleIds} onChange={(e) => setForm((f) => ({ ...f, pingRoleIds: e.target.value }))} placeholder={t("forms.ph.pingRoles")} />
+                        <DiscordRoleSelect multi value={form.pingRoleIds} onChange={(v) => setForm((f) => ({ ...f, pingRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
                         <span className="cs-label">Accept DM message (markdown; {"{user}"}, {"{note}"})</span>

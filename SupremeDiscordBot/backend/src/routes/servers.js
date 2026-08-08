@@ -323,19 +323,20 @@ router.get("/:serverId/stats", requireServerAdmin, async (req, res, next) => {
   }
 });
 
-// ─── GET /api/servers/:serverId/channels ──────────────────────────────────────
-// Каналите и категориите на сървъра — за да може таблото да ги ПРЕДЛОЖИ вместо
-// да иска снежинка, изписана на ръка.
+// ─── GET /api/servers/:serverId/directory ─────────────────────────────────────
+// Каналите, категориите И ролите на сървъра — за да може таблото да ги ПРЕДЛОЖИ
+// вместо да иска снежинка, изписана на ръка (при ролите: СПИСЪК от снежинки,
+// разделени със запетаи).
 //
 // `requireServerAdmin` е гардът срещу междуклиентско надничане: guildId идва от
 // пътя, но middleware-ът вече е доказал, че този потребител е админ на ТОЗИ
 // сървър. Ботът не проверява повторно — затова маршрутът НЕ приема guildId от
 // тялото и не прокарва нищо друго нататък.
-router.get("/:serverId/channels", requireServerAdmin, async (req, res, next) => {
+router.get("/:serverId/directory", requireServerAdmin, async (req, res, next) => {
   const BOT_API_URL = process.env.BOT_API_URL || "http://bot:3001";
   try {
     const { data } = await axios.get(
-      `${BOT_API_URL}/internal/guild/${req.params.serverId}/channels`,
+      `${BOT_API_URL}/internal/guild/${req.params.serverId}/directory`,
       { headers: { "x-bot-secret": process.env.API_SECRET }, timeout: 8000 },
     );
     res.json(data);
