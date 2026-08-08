@@ -269,7 +269,7 @@ export default function FormsPage() {
         <div className="space-y-4">
           {forms.map((f) => (
             <div key={f.id} className="cs-card">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-cs-text">{f.name}</h3>
@@ -280,10 +280,10 @@ export default function FormsPage() {
                   <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
                   {f.description && <p className="text-xs text-cs-muted mt-1">{f.description}</p>}
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
                   <div className="flex items-center gap-1">
-                    <div className="w-44">
+                    <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
                       <DiscordChannelSelect kind="text" value={spawnInputs[f.id] || ""}
                         onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
                     </div>
