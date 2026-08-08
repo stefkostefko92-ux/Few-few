@@ -62,29 +62,48 @@ export function desktopPort(cfg) {
   return Number.isInteger(n) && n > 0 && n < 65536 ? n : DEFAULT_PORT;
 }
 
-// Compose файлът се търси в РЕЛИЙЗА, не на произволно място — същият канон като
-// autodeploy: това, което върви, идва от разгърнатия код.
+// Compose файлът се търси там, където стои и ТАЙНАТА до него.
+//
+// Този ред беше обърнат и това направи десктопа неизползваем след всеки деплой.
+// Логиката беше „каноничното е релийзът, както при autodeploy" — вярно за КОДА,
+// но фатално за файл, до който живее тайна: `deploy/desktop/desktop.env` е
+// изключен от rsync, за да ОЦЕЛЕЕ деплоя, но оцелява само в инсталационната
+// папка (`/opt/vps-dashboard`). Релийзът е нова папка при всяко разгръщане и
+// тайната по конструкция НЕ пътува с него. Значи панелът избираше compose файл,
+// до който няма и не може да има парола — и всяко пускане падаше с „Липсва
+// desktop.env", ден след като „поправихме" точно това изтриване.
+//
+// Затова редът е: първо кандидат, до който РЕАЛНО стои `desktop.env`; ако няма
+// такъв — инсталираният (спрямо модула, тоест кодът, който в момента върви),
+// после релийзът. Изборът се води от тайната, а не от подредба на константи.
 export function composeFile(cfg) {
   const candidates = [
     cfg?.desktop?.composeFile,
+    // Спрямо САМИЯ модул — това Е разгърнатият код (панелът върви от APP_DIR) и
+    // точно до него autodeploy пази `desktop.env`.
+    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'deploy', 'desktop', 'docker-compose.yml'),
     // И ДВЕТЕ имена на папката в релийза. Тя се казваше `vps-dashboard`, сега е
     // `vpsdash` — а стари релийзи под `current` носят старото. Един закован низ
     // тук значи, че преименуване в репото тихо изключва десктопа: първият
     // кандидат просто не съществува и никой не казва защо.
     ...['vpsdash', 'vps-dashboard'].map((dir) =>
       path.join(cfg?.paths?.currentLink || '/opt/few-few/current', dir, 'deploy', 'desktop', 'docker-compose.yml')),
-    // Спрямо САМИЯ модул — работи при всяко APP_DIR и в dev режим. Зашитият
-    // `/opt/vps-dashboard` беше същата грешка, която вече поправихме в unit
-    // файла: предполага една-единствена инсталация.
-    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'deploy', 'desktop', 'docker-compose.yml'),
   ].filter(Boolean);
-  return candidates.find((p) => {
+  const present = candidates.filter((p) => {
     try {
       return fs.statSync(p).isFile();
     } catch {
       return false;
     }
-  }) || null;
+  });
+  const withSecret = present.find((p) => {
+    try {
+      return fs.statSync(path.join(path.dirname(p), 'desktop.env')).isFile();
+    } catch {
+      return false;
+    }
+  });
+  return withSecret || present[0] || null;
 }
 
 // Паролата на самия десктоп живее в отделен файл до compose-а (mode 600), не в

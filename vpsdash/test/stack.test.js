@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { desktopPort, actionSpec, status, forwardAuth, forwardCookies, PANEL_COOKIE, desktopUser, desktopImage, desktopMem } from '../src/desktop.js';
+import { desktopPort, actionSpec, status, forwardAuth, forwardCookies, PANEL_COOKIE, desktopUser, desktopImage, desktopMem, composeFile } from '../src/desktop.js';
 
 // Реален изход на `redis-cli INFO`, съкратен до нужното.
 const INFO = `# Server
@@ -307,6 +307,39 @@ test('десктоп: паролата стига до контейнера, с�
   assert.match(mixed, /other=2/);
   assert.equal(forwardCookies(''), undefined);
   assert.equal(forwardCookies(undefined), undefined);
+});
+
+test('десктоп: compose файлът се избира по ТАЙНАТА до него, не по подредба', () => {
+  // Дефектът, който направи десктопа неизползваем след деплой: релийзът беше
+  // ПЪРВИ кандидат, а `desktop.env` е изключен от rsync, за да оцелее — тоест
+  // оцелява само в инсталационната папка. Релийзът е НОВА папка всеки път, значи
+  // избраният compose няма и не може да има парола до себе си.
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-pick-'));
+  const release = path.join(root, 'current', 'vpsdash', 'deploy', 'desktop');
+  const installed = path.join(root, 'installed', 'deploy', 'desktop');
+  for (const d of [release, installed]) fs.mkdirSync(d, { recursive: true });
+  fs.writeFileSync(path.join(release, 'docker-compose.yml'), 'services: {}\n');
+  fs.writeFileSync(path.join(installed, 'docker-compose.yml'), 'services: {}\n');
+  const cfg = { paths: { currentLink: path.join(root, 'current') } };
+
+  // Без тайна никъде → взима първия наличен, но НЕ гърми.
+  assert.ok(composeFile(cfg), 'при липсваща тайна пак трябва да върне файл');
+  // Тайната е до релийза → избира релийза.
+  fs.writeFileSync(path.join(release, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  assert.equal(path.dirname(composeFile(cfg)), release);
+  // Тайната е и до инсталирания → изричният кандидат пак печели, ако е зададен.
+  const explicit = path.join(installed, 'docker-compose.yml');
+  fs.writeFileSync(path.join(installed, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  assert.equal(composeFile({ ...cfg, desktop: { composeFile: explicit } }), explicit);
+  // Тайната САМО до инсталирания (реалният случай след деплой) → избира него,
+  // въпреки че релийзът също има compose файл.
+  fs.rmSync(path.join(release, 'desktop.env'));
+  assert.equal(
+    path.dirname(composeFile({ ...cfg, desktop: { composeFile: explicit } })),
+    installed,
+    'релийзът няма как да носи тайната — изборът трябва да я следва'
+  );
+  fs.rmSync(root, { recursive: true, force: true });
 });
 
 test('десктоп: образът и таванът минават през ЗАТВОРЕНА проверка', () => {
