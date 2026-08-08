@@ -473,7 +473,7 @@ export default function PanelsPage() {
                   <input type="number" className="cs-input" min={1} max={10}
                     value={form.maxOpenPerUser}
                     onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUser: Number(e.target.value) }))} />
-                  <p className="text-xs text-cs-muted mt-1">{t("panels.maxOpen")}</p>
+                  <p className="text-xs text-cs-dim mt-1">{t("ui.maxOpenPerUserHint")}</p>
                 </label>
               </div>
 
@@ -485,15 +485,13 @@ export default function PanelsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
                       <span className="cs-label">{t("panels.openCategory")}</span>
-                      <input className="cs-input font-mono text-xs" value={form.categoryOpenId}
-                        onChange={(e) => setForm((f) => ({ ...f, categoryOpenId: e.target.value }))}
-                        placeholder={t("panels.ph.categoryOpen")} />
+                      <DiscordChannelSelect kind="category" value={form.categoryOpenId}
+                        onChange={(v) => setForm((f) => ({ ...f, categoryOpenId: v }))} />
                     </label>
                     <label className="block">
                       <span className="cs-label">{t("panels.closedCategory")}</span>
-                      <input className="cs-input font-mono text-xs" value={form.categoryClosedId}
-                        onChange={(e) => setForm((f) => ({ ...f, categoryClosedId: e.target.value }))}
-                        placeholder={t("panels.ph.categoryClosed")} />
+                      <DiscordChannelSelect kind="category" value={form.categoryClosedId}
+                        onChange={(v) => setForm((f) => ({ ...f, categoryClosedId: v }))} />
                     </label>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -550,6 +548,7 @@ export default function PanelsPage() {
                       <input type="number" className="cs-input" min={0} value={form.maxOpenPerUserPanel}
                         onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUserPanel: e.target.value }))}
                         placeholder={t("panels.ph.limit")} />
+                      <p className="text-xs text-cs-dim mt-1">{t("ui.maxPerUserPanelHint")}</p>
                     </label>
                   </div>
                   <label className="block">

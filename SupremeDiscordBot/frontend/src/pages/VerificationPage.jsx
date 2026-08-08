@@ -177,13 +177,10 @@ export default function VerificationPage() {
             <div className="flex items-center gap-2">
               {!p.channelId && (
                 <>
-                  <input
-                    className="cs-input font-mono text-xs w-48"
-                    placeholder={t("verify.channelPlaceholder")}
-                    aria-label={t("verify.channelToPost")}
-                    value={spawnInputs[p.id] || ""}
-                    onChange={(e) => setSpawnInputs((s) => ({ ...s, [p.id]: e.target.value }))}
-                  />
+                  <div className="w-44">
+                    <DiscordChannelSelect kind="text" value={spawnInputs[p.id] || ""}
+                      onChange={(v) => setSpawnInputs((s) => ({ ...s, [p.id]: v }))} />
+                  </div>
                   <button
                     onClick={() => spawnInputs[p.id] && spawnMut.mutate({ panelId: p.id, channelId: spawnInputs[p.id] })}
                     disabled={!spawnInputs[p.id] || spawnMut.isPending}
