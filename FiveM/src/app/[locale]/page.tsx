@@ -2,22 +2,26 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
+import { Icon } from '@/components/Icon';
 import { Mascot } from '@/components/Mascot';
 import { ServerCard } from '@/components/ServerCard';
 import { getContent } from '@/content';
 import { getDictionary, resolveLocale } from '@/i18n';
 import { type Locale } from '@/i18n/config';
+import { prisma } from '@/lib/db';
 import { faqJsonLd, pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
+import { streamerCounts } from '@/lib/streamers-db';
 import { DISCORD_INVITE } from '@/lib/site';
 
 // Живият статус се мени постоянно — не се кешира между заявките.
 export const dynamic = 'force-dynamic';
 
-type Props = {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; sort?: string }>;
-};
+type Props = { params: Promise<{ locale: string }> };
+
+/** Колко сървъра показва тийзърът. Landing, не каталог — пълният е на /servers. */
+const TEASER = 6;
+const NEWS_TEASER = 3;
 
 /**
  * „Отговор отпред“ за AI отговарачите (AEO): въпросите се хранят от СЪЩИТЕ
@@ -44,7 +48,21 @@ function faqFor(locale: Locale) {
   return entries.filter((item): item is { question: string; answer: string } => Boolean(item));
 }
 
-export async function generateMetadata({ params }: Pick<Props, 'params'>) {
+/** Последните публикувани новини. Празно при празна база — не вали страницата. */
+async function latestNews(locale: Locale) {
+  try {
+    return await prisma.post.findMany({
+      where: { locale, publishedAt: { not: null, lte: new Date() } },
+      select: { slug: true, title: true, excerpt: true, publishedAt: true },
+      orderBy: { publishedAt: 'desc' },
+      take: NEWS_TEASER,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function generateMetadata({ params }: Props) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
@@ -58,129 +76,191 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
     // същи запитвания — сами си правехме канибализация в резултатите.
     keywords:
       locale === 'bg'
-        ? ['директория FiveM сървъри', 'онлайн статус FiveM', 'кой сървър е онлайн', 'whitelist сървъри']
-        : ['FiveM server directory', 'FiveM live status', 'which server is online', 'whitelisted servers'],
+        ? ['български FiveM сървъри', 'FiveM roleplay България', 'GTA V RP сървъри', 'FiveM BG общност']
+        : ['Bulgarian FiveM servers', 'FiveM roleplay Bulgaria', 'GTA V RP servers', 'FiveM BG community'],
   });
 }
 
-export default async function HomePage({ params, searchParams }: Props) {
+export default async function HomePage({ params }: Props) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
 
-  const { q, sort } = await searchParams;
-  const query = q?.trim().slice(0, 60) || undefined;
-  const chosen = sort === 'players' || sort === 'name' ? sort : 'default';
-  const servers = await listPublicServers({ query, sort: chosen });
+  // Всичко наведнъж: три независими четения не бива да чакат едно друго.
+  const [servers, streamers, news] = await Promise.all([
+    listPublicServers(),
+    streamerCounts(),
+    latestNews(locale),
+  ]);
+
   const online = servers.filter((server) => server.online);
   const totalPlayers = online.reduce((sum, server) => sum + server.players, 0);
+  const featured = servers.slice(0, TEASER);
   const faq = faqFor(locale);
 
-  const filters = [
-    { href: `/${locale}/servers/framework/esx`, label: 'ESX', badge: 'esx' },
-    { href: `/${locale}/servers/framework/qbcore`, label: 'QBCore', badge: 'qbcore' },
-    { href: `/${locale}/servers/framework/qbox`, label: 'Qbox', badge: 'qbox' },
-    { href: `/${locale}/servers/framework/ox_core`, label: 'ox_core', badge: 'ox-core' },
-    { href: `/${locale}/servers/whitelist`, label: t.filters.whitelist, badge: 'whitelist' },
+  const stats = [
+    { value: servers.length, label: t.home.statServers },
+    { value: online.length, label: t.home.statOnline },
+    { value: totalPlayers, label: t.home.statPlayers },
+    { value: streamers.live, label: t.home.statStreamers },
+  ];
+
+  const why = [
+    { icon: 'online', title: t.home.whyLiveTitle, body: t.home.whyLiveBody },
+    { icon: 'filter', title: t.home.whyFilterTitle, body: t.home.whyFilterBody },
+    { icon: 'promoted', title: t.home.whyHonestTitle, body: t.home.whyHonestBody },
+  ];
+
+  const steps = [
+    { icon: 'search', title: t.home.stepFindTitle, body: t.home.stepFindBody },
+    { icon: 'info', title: t.home.stepCheckTitle, body: t.home.stepCheckBody },
+    { icon: 'join', title: t.home.stepJoinTitle, body: t.home.stepJoinBody },
   ];
 
   return (
     <>
-      <section className="flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            <span className="text-chrome">{t.home.h1}</span>
-          </h1>
-          <p className="mt-3 max-w-2xl text-silver-400">{t.home.intro}</p>
-          {servers.length > 0 && (
-            <p className="mt-4 text-sm text-silver-500">
-              {online.length} {t.home.statsOnline} {servers.length} · {totalPlayers}{' '}
-              {t.home.statsPlayers}
+      {/* ── Герой ────────────────────────────────────────────────────────── */}
+      {/* Фонът е CSS, не картинка: конични/радиални градиенти тежат нула байта,
+          не мърдат LCP-то и не искат втора заявка. `-z-10` + `overflow-hidden`
+          го държат зад съдържанието, без да порасне хоризонталният скрол. */}
+      <section className="relative -mx-4 overflow-hidden px-4 pb-14 pt-10 sm:pt-16">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_20%_0%,rgba(34,211,238,0.14),transparent_65%),radial-gradient(45%_45%_at_85%_10%,rgba(16,185,129,0.10),transparent_60%)]"
+        />
+        <div className="flex flex-col-reverse items-start gap-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="flex items-center gap-2 text-sm text-cyan-300">
+              <Icon group="status" name="online" size={16} />
+              {t.home.heroKicker}
             </p>
-          )}
+            <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+              <span className="text-chrome">{t.home.h1}</span>
+            </h1>
+            <p className="mt-4 text-lg text-silver-400">{t.home.intro}</p>
+
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href={`/${locale}/servers`}
+                className="rounded-lg bg-cyan-500 px-5 py-2.5 font-medium text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+              >
+                {t.home.ctaBrowse}
+              </Link>
+              <Link
+                href={`/${locale}/submit`}
+                className="rounded-lg border border-white/15 px-5 py-2.5 transition-colors hover:border-cyan-500 hover:text-cyan-300"
+              >
+                {t.home.ctaSubmit}
+              </Link>
+            </div>
+          </div>
+
+          {/* Герой-кадър: пълното ниво (градиенти, ореол, мехурчета) си струва само
+              над 128 px. Погледът следи курсора, а анимацията мълчи при
+              prefers-reduced-motion — и двете са вградени в компонента. */}
+          <Mascot
+            detail="full"
+            size={196}
+            pose="wave"
+            expression="happy"
+            gaze="follow"
+            animated
+            title={null}
+            className="shrink-0"
+          />
         </div>
 
-        {/* Герой-кадър: пълното ниво (градиенти, ореол, мехурчета) си струва само
-            над 128 px. Погледът следи курсора, а анимацията мълчи при
-            prefers-reduced-motion — и двете са вградени в компонента. */}
-        <Mascot
-          detail="full"
-          size={168}
-          pose="wave"
-          expression="happy"
-          gaze="follow"
-          animated
-          title={null}
-          className="shrink-0"
-        />
+        {/* ── Живите числа ───────────────────────────────────────────────── */}
+        {servers.length > 0 && (
+          <dl className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-white/10 bg-ink-900/70 px-4 py-3"
+              >
+                <dt className="text-xs uppercase tracking-wide text-silver-500">{stat.label}</dt>
+                <dd className="mt-1 text-2xl font-semibold tabular-nums text-cyan-300">
+                  {stat.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </section>
 
-      <nav aria-label={t.home.filters} className="mt-6 flex flex-wrap gap-2 text-sm">
-        {filters.map((filter) => (
-          <Link
-            key={filter.href}
-            href={filter.href}
-            className="flex items-center gap-2 rounded-lg border border-white/15 py-1.5 pe-3 ps-2 hover:border-cyan-500 hover:text-cyan-300"
-          >
-            <Badge name={filter.badge} size={28} />
-            {filter.label}
-          </Link>
-        ))}
-      </nav>
-
-      <form className="mt-6 flex flex-wrap items-end gap-2" role="search">
-        <label className="flex flex-1 flex-col gap-1 text-sm sm:max-w-xs">
-          <span className="text-silver-500">{t.filters.search}</span>
-          <input
-            name="q"
-            defaultValue={query ?? ''}
-            maxLength={60}
-            className="rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-silver-500">{t.filters.sortLabel}</span>
-          <select
-            name="sort"
-            defaultValue={chosen}
-            className="rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
-          >
-            <option value="default">{t.filters.sortDefault}</option>
-            <option value="players">{t.filters.sortPlayers}</option>
-            <option value="name">{t.filters.sortName}</option>
-          </select>
-        </label>
-        <button className="rounded-lg border border-white/15 px-4 py-2 text-sm hover:border-cyan-500 hover:text-cyan-300">
-          {t.filters.searchButton}
-        </button>
-        {query && (
-          <span className="text-sm text-silver-500">
-            {servers.length} {t.filters.found}
-          </span>
-        )}
-      </form>
-
-      <section className="mt-10" aria-labelledby="servers-heading">
-        <h2 id="servers-heading" className="sr-only">
-          {t.home.serverList}
+      {/* ── Защо тук ─────────────────────────────────────────────────────── */}
+      <section className="mt-4" aria-labelledby="why-heading">
+        <h2 id="why-heading" className="text-2xl font-semibold tracking-tight">
+          {t.home.whyHeading}
         </h2>
-        {/* Чл. 7, ал. 4а от Дир. 2005/29/ЕО: параметрите на класирането трябва
-            да са в специален раздел, ПРЯКО достъпен от страницата с
-            резултатите. Общ линк „Условия“ в подвала не изпълнява това —
-            затова котвата води точно до раздела, а не до документа. */}
-        <p className="mb-4 text-sm text-silver-500">
-          <Link
-            href={`/${locale}/terms#kak-podrezhdame-sarvarite`}
-            className="text-cyan-300 underline underline-offset-2"
-          >
-            {t.home.rankingLink}
-          </Link>
-        </p>
-        {servers.length === 0 && query ? (
-          <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
-            {t.filters.noMatch}
+        <ul className="mt-6 grid gap-4 sm:grid-cols-3">
+          {why.map((item) => (
+            <li key={item.title} className="rounded-xl border border-white/10 bg-ink-900/70 p-5">
+              <Badge name={item.icon} size={32} />
+              <h3 className="mt-3 font-medium">{item.title}</h3>
+              <p className="mt-1.5 text-sm text-silver-400">{item.body}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ── Как работи ───────────────────────────────────────────────────── */}
+      <section className="mt-14" aria-labelledby="how-heading">
+        <h2 id="how-heading" className="text-2xl font-semibold tracking-tight">
+          {t.home.howHeading}
+        </h2>
+        <ol className="mt-6 grid gap-4 sm:grid-cols-3">
+          {steps.map((step, index) => (
+            <li key={step.title} className="rounded-xl border border-white/10 p-5">
+              <p className="flex items-center gap-2 text-sm text-cyan-300">
+                <span className="tabular-nums">{index + 1}</span>
+                <Icon group="ui" name={step.icon} size={16} />
+              </p>
+              <h3 className="mt-2 font-medium">{step.title}</h3>
+              <p className="mt-1.5 text-sm text-silver-400">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* ── Тийзър със сървъри ───────────────────────────────────────────── */}
+      {featured.length > 0 && (
+        <section className="mt-14" aria-labelledby="teaser-heading">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 id="teaser-heading" className="text-2xl font-semibold tracking-tight">
+              {t.home.teaserHeading}
+            </h2>
+            <Link
+              href={`/${locale}/servers`}
+              className="text-sm text-cyan-300 underline underline-offset-2"
+            >
+              {t.home.teaserAll} ({servers.length})
+            </Link>
+          </div>
+
+          {/* Тук СЪЩО има класирани резултати (промотираните са първи), значи
+              разкритието по чл. 7, ал. 4а от Дир. 2005/29/ЕО трябва да е и тук,
+              не само на /servers. Линк само от каталога би оставил landing-а с
+              платено класиране без обяснение — точно забранената практика. */}
+          <p className="mt-2 text-sm text-silver-500">
+            <Link
+              href={`/${locale}/terms#kak-podrezhdame-sarvarite`}
+              className="text-cyan-300 underline underline-offset-2"
+            >
+              {t.home.rankingLink}
+            </Link>
           </p>
-        ) : servers.length === 0 ? (
+
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((server) => (
+              <ServerCard key={server.slug} server={server} locale={locale} t={t} />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {servers.length === 0 && (
+        <section className="mt-14">
           <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
             {t.home.emptyLead}{' '}
             <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">
@@ -188,15 +268,68 @@ export default async function HomePage({ params, searchParams }: Props) {
             </Link>{' '}
             {t.home.emptyTail}
           </p>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {servers.map((server) => (
-              <ServerCard key={server.slug} server={server} locale={locale} t={t} />
+        </section>
+      )}
+
+      {/* ── Стриймъри ────────────────────────────────────────────────────── */}
+      {streamers.total > 0 && (
+        <section className="mt-14 rounded-xl border border-white/10 bg-ink-900/70 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">{t.home.streamersHeading}</h2>
+              <p className="mt-1 text-sm text-silver-400">
+                {streamers.live > 0
+                  ? `${streamers.live} ${t.home.streamersLive}`
+                  : t.home.streamersNone}
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/streamers`}
+              className="rounded-lg border border-white/15 px-4 py-2 text-sm hover:border-cyan-500 hover:text-cyan-300"
+            >
+              {t.home.streamersCta}
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ── Новини ───────────────────────────────────────────────────────── */}
+      {news.length > 0 && (
+        <section className="mt-14" aria-labelledby="news-heading">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 id="news-heading" className="text-2xl font-semibold tracking-tight">
+              {t.home.newsHeading}
+            </h2>
+            <Link
+              href={`/${locale}/news`}
+              className="text-sm text-cyan-300 underline underline-offset-2"
+            >
+              {t.home.newsAll}
+            </Link>
+          </div>
+          <ul className="mt-5 grid gap-4 sm:grid-cols-3">
+            {news.map((post) => (
+              <li key={post.slug} className="rounded-xl border border-white/10 p-5">
+                <h3 className="font-medium">
+                  <Link href={`/${locale}/news/${post.slug}`} className="hover:text-cyan-300">
+                    {post.title}
+                  </Link>
+                </h3>
+                <p className="mt-1.5 text-sm text-silver-400">{post.excerpt}</p>
+                {post.publishedAt && (
+                  <p className="mt-2 text-xs text-silver-500">
+                    <time dateTime={post.publishedAt.toISOString()}>
+                      {post.publishedAt.toISOString().slice(0, 10)}
+                    </time>
+                  </p>
+                )}
+              </li>
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
+      {/* ── Discord ──────────────────────────────────────────────────────── */}
       <section className="mt-14 rounded-xl border border-cyan-700/40 bg-cyan-900/10 p-5">
         <p className="text-silver-300">
           {t.home.discordLead}{' '}
@@ -211,6 +344,7 @@ export default async function HomePage({ params, searchParams }: Props) {
         </p>
       </section>
 
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <section className="mt-14" aria-labelledby="faq-heading">
         <h2 id="faq-heading" className="text-2xl font-semibold tracking-tight">
           {t.home.faqHeading}
@@ -226,7 +360,9 @@ export default async function HomePage({ params, searchParams }: Props) {
       </section>
 
       <JsonLd data={faqJsonLd(faq)} />
-      <JsonLd data={serverListJsonLd(locale, servers)} />
+      {/* ItemList само за показаните — обявяваме каквото се вижда, не целия
+          каталог. Пълният списък е обявен на /servers. */}
+      <JsonLd data={serverListJsonLd(locale, featured)} />
     </>
   );
 }

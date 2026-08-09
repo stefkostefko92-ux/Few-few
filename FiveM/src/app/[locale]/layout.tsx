@@ -49,10 +49,15 @@ export default async function LocaleLayout({ children, params }: Props) {
   const locale: Locale = raw;
   const t = getDictionary(locale);
 
-  const nav = [
-    // `exact`: `/bg` е представка на всяка друга страница — без него
-    // „Сървъри“ щеше да свети активно навсякъде из сайта.
-    { href: `/${locale}`, label: t.nav.servers, icon: 'servers', exact: true },
+  // Типът е явен, защото `exact` днес не се ползва от нито един раздел и без
+  // анотация TS го изхвърля от извода — а той пази реален капан: върне ли се
+  // връзка към `/{locale}`, без него тя свети активна на целия сайт.
+  const nav: { href: string; label: string; icon: string; exact?: boolean }[] = [
+    // „Начало“ НЯМА свой раздел нарочно: логото води там, а осмият раздел
+    // чупи прага, който е измерен — седем искат 1120 px само за навигацията,
+    // осем не се събират и при 1280. Каталогът вече е /servers, защото от
+    // landing-а насам началната убеждава, а /servers е инструментът.
+    { href: `/${locale}/servers`, label: t.nav.servers, icon: 'servers' },
     { href: `/${locale}/rules`, label: t.nav.rules, icon: 'rules' },
     { href: `/${locale}/tutorials`, label: t.nav.tutorials, icon: 'tutorials' },
     { href: `/${locale}/streamers`, label: t.nav.streamers, icon: 'share' },

@@ -26,6 +26,7 @@ const get = async (path) => (await fetch(BASE + path)).text();
 // ── 1. Всяка страница рендира ли се, на двата езика ─────────────────────────
 const PATHS = [
   '',
+  '/servers',
   '/rules',
   '/tutorials',
   '/streamers',
@@ -62,7 +63,7 @@ check(bad === 0, `${pages} адреса рендират се без грешк�
 // Име на сървър със `</script>` затваря блока — затова всичко минава през
 // `jsonLdString`, а от одита насам и през един компонент.
 let blocks = 0;
-for (const path of ['/bg', '/bg/rules', '/bg/tutorials', '/bg/faq', '/bg/streamers', '/en']) {
+for (const path of ['/bg', '/bg/servers', '/bg/rules', '/bg/tutorials', '/bg/faq', '/bg/streamers', '/en']) {
   const html = await get(path);
   const found = [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)];
   if (found.length === 0) check(false, `${path}: изчезнаха структурираните данни`);
@@ -109,8 +110,16 @@ check(
   terms.includes('id="kak-podrezhdame-sarvarite"'),
   'разделът за класирането има котва (чл. 7(4а) Дир. 2005/29)',
 );
-const home = await get('/bg');
-check(home.includes('#kak-podrezhdame-sarvarite'), 'резултатите сочат ПРЯКО към класирането');
+// Класирани резултати има на ДВЕ места от landing-а насам: тийзърът на
+// началната и пълният каталог. Чл. 7, ал. 4а иска разкритието да е пряко
+// достъпно от СТРАНИЦАТА С РЕЗУЛТАТИТЕ — тоест и на двете, не на едната.
+for (const path of ['/bg', '/bg/servers', '/en', '/en/servers']) {
+  const html = await get(path);
+  check(
+    html.includes('#kak-podrezhdame-sarvarite'),
+    `${path}: резултатите сочат ПРЯКО към класирането`,
+  );
+}
 const report = await get('/bg/report');
 check(
   report.includes('anonymousAllowed'),

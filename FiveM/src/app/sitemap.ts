@@ -10,6 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   /** Пътища без езиков префикс — умножават се по езиците. */
   const paths: Array<{ path: string; changeFrequency: 'hourly' | 'daily' | 'monthly' | 'yearly'; priority: number }> = [
     { path: '/', changeFrequency: 'hourly', priority: 1 },
+    { path: '/servers', changeFrequency: 'hourly', priority: 0.9 },
     { path: '/servers/whitelist', changeFrequency: 'daily', priority: 0.8 },
     { path: '/servers/framework/esx', changeFrequency: 'daily', priority: 0.8 },
     { path: '/servers/framework/qbcore', changeFrequency: 'daily', priority: 0.8 },

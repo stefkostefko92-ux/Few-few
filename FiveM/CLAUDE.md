@@ -71,7 +71,13 @@ src/lib/streamers-db.ts Публичните заявки за стриймър�
 scripts/discover-streamers.ts  Cron: живи излъчвания по платформа.
 src/lib/seo.ts          SITE_URL, BASE_KEYWORDS, pageMetadata (canonical+OG),
                         siteJsonLd/serverListJsonLd/faqJsonLd, jsonLdString.
-src/app/page.tsx        Директорията + FAQ („отговор отпред“ за AI отговарачите).
+src/app/page.tsx        LANDING: герой, живи числа, „защо тук“, „как работи“,
+                        тийзър със сървъри (6), стриймъри, новини, FAQ
+                        („отговор отпред“ за AI отговарачите).
+src/app/servers/        ПЪЛНИЯТ каталог — филтри, търсене, подредба. Дотук беше
+                        на началната; двете искат различно от посетителя.
+                        Разкритието за класирането стои и на ДВЕТЕ, защото и
+                        тийзърът е класиран резултат (чл. 7(4а) Дир. 2005/29).
 src/app/servers/[slug]/ Страница на сървър: статус, рамка, ревюта, „Влез“.
 src/app/submit/         Заявка за листване → модераторска опашка.
 src/app/actions/submit.ts  Заявка за листване: zod вход, honeypot, таван.
