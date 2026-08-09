@@ -122,3 +122,28 @@ describe("POST /api/gdpr/delete-account — гардове преди изтри
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 });
+
+// ─── Чл. 15 покрива и таблиците, които метлата познава (одит 09.08.2026) ─────
+// Асиметрията беше доказателството за пропуска: dataRetention.js ТРИЕШЕ
+// verification_attempts / poll_votes / giveaway_entries, а експортът ги
+// премълчаваше. Гейтът е структурен: разделите присъстват в изхода.
+describe("чл. 15 — новите раздели присъстват", () => {
+  it("експортът декларира всичките пет добавени секции", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "routes", "gdpr.js"), "utf-8");
+    for (const section of ["verification_attempts", "form_submission_counters", "poll_votes", "giveaway_entries", "server_memberships"]) {
+      expect(src, `${section} липсва от чл. 15 изхода`).toContain(section);
+    }
+  });
+
+  it("една счупена таблица НЕ събаря целия експорт (fail-open по раздел)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "routes", "gdpr.js"), "utf-8");
+    const block = src.slice(src.indexOf("verificationAttempt.findMany"), src.indexOf("serverMember.findMany") + 200);
+    expect(block).toContain("Promise.resolve().then");
+  });
+});

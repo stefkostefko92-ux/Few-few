@@ -4,6 +4,8 @@
 // Import this file once from index.js — it starts all crons automatically.
 
 import cron from "node-cron";
+import { runRetentionJob } from "../jobs/dataRetention.js";
+import { runDunningJob } from "../jobs/dunning.js";
 import { prisma } from "../lib/prisma.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
@@ -24,6 +26,8 @@ import { effectivePremiumWhere, effectiveFreeWhere, inExportWindow } from "../li
 // деня редовете се дублират или зейва дупка. Явната зона го прави декларация,
 // не предположение. CRON_TZ позволява промяна без пипане на кода.
 const TZ = { timezone: process.env.CRON_TZ || "UTC" };
+
+
 
 /**
  * Провал на задача: лог + Sentry. ЕДИНСТВЕНИЯТ начин да се съобщи за грешка тук.
@@ -59,11 +63,15 @@ async function jobFail(name, err) {
  * заявката „последен пулс по задача“ е един GROUP BY. Само дневните, защото
  * минутните биха залели дневника.
  */
+const lastBeat = new Map(); // job name → timestamp на последния записан пулс
+const HEARTBEAT_EVERY_MS = 60 * 60 * 1000;
+
 async function jobHeartbeat(name, meta = {}) {
   try {
     await prisma.auditLog.create({
       data: { actorTag: "SCHEDULER", action: `JOB_OK_${name.toUpperCase().replace(/-/g, "_")}`, targetId: name, metadata: meta },
     });
+    lastBeat.set(name, Date.now());
   } catch { /* пулсът никога не бива да поваля задачата */ }
 }
 
@@ -78,6 +86,15 @@ function job(name, fn) {
     const started = Date.now();
     try {
       await fn();
+      // Универсален пулс, ДРОСЕЛИРАН до 1/час на задача. Одитът на 09.08.2026
+      // показа дупката на стария подход „само дневните пишат": минутна задача,
+      // която спре, мълчи неразличимо от „нямаше работа" — а алармата в
+      // MONITORING.md гледа точно last-seen по JOB_OK_%. Дроселът пази одита
+      // от заливане (≤24 реда/ден на задача), а изричният jobHeartbeat в
+      // дневните задачи (с богата мета) опреснява same картата, значи не дублира.
+      if ((Date.now() - (lastBeat.get(name) || 0)) >= HEARTBEAT_EVERY_MS) {
+        await jobHeartbeat(name, { throttled: true });
+      }
     } catch (err) {
       await jobFail(name, err);
     } finally {
@@ -621,7 +638,9 @@ cron.schedule("5 0 * * *", job("daily-metrics-rollup", async () => {
 const SLA_BREACH_COLOR = 0xed4245; // Discord "danger" red
 
 function slaDashboardUrl(serverId, ticketId) {
-  return `${process.env.FRONTEND_URL || ""}/dashboard/${serverId}/tickets/${ticketId}`;
+  // Детайлен маршрут /tickets/:id няма (App.jsx има само списъка) — линкът
+  // водеше към 404. Списъкът е живият маршрут; тикетът се намира по номера.
+  return `${process.env.FRONTEND_URL || ""}/dashboard/${serverId}/tickets`;
 }
 
 async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
@@ -710,7 +729,9 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
           where: {
             panelId: panel.id,
             status: { in: ["OPEN", "CLAIMED"] },
-            slaBreachedAt: null,
+            // v44: СОБСТВЕН маркер. Дотук филтрираше по slaBreachedAt — тоест
+            // тикет с first-response пробив никога не вдигаше resolution аларма.
+            slaResolutionBreachedAt: null,
             createdAt: { lt: cutoff },
           },
           select: { id: true, serverId: true, number: true, assigneeId: true, createdAt: true },
@@ -719,7 +740,7 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
 
         for (const t of overdue) {
           try {
-            await prisma.ticket.update({ where: { id: t.id }, data: { slaBreachedAt: now } });
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaResolutionBreachedAt: now } });
             const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaResolutionMinutes;
             await prisma.auditLog.create({
               data: {
@@ -747,6 +768,30 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
   } catch (err) {
     await jobFail("sla-watch", err);
   }
+}), TZ);
+
+// ─── Осиновени задачи (одит 09.08.2026) ─────────────────────────────────────
+// ГДПР ретенцията и дунингът живееха на голи setTimeout в jobs/*.js: грешките
+// умираха в console.error, нула Sentry, нула пулс, нула застъпващ lock, зашита
+// зона. Тоест ЗАКОНОВОТО изтриване и ПАРИТЕ бяха точно в неохранявания
+// планировчик. Тук минават през job() като всички останали; часовете са
+// разместени спрямо archive-cleanup (03:00), защото двата пипат същите редове.
+
+cron.schedule("15 3 * * *", job("gdpr-retention", async () => {
+  const r = await runRetentionJob();
+  await jobHeartbeat("gdpr-retention", {
+    ticketsAnonymized: r?.ticketsAnonymized ?? 0,
+    auditLogsDeleted: r?.auditLogsDeleted ?? 0,
+    errors: r?.errors?.length ?? 0,
+  });
+  // Провалите на отделни записи се трупат в r.errors — това е ЧАСТИЧЕН провал
+  // и трябва да се чуе, не да пътува погребан в metadata JSON.
+  if (r?.errors?.length) await jobFail("gdpr-retention", new Error(`${r.errors.length} частични провала: ${r.errors[0].type}/${r.errors[0].error}`));
+}), TZ);
+
+cron.schedule("45 3 * * *", job("dunning", async () => {
+  const r = await runDunningJob();
+  await jobHeartbeat("dunning", { downgraded: r?.downgraded ?? 0, graceExpired: r?.graceExpired ?? 0 });
 }), TZ);
 
 console.log("[Scheduler] Background jobs started");

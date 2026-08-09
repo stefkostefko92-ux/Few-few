@@ -913,4 +913,8 @@ export default {
   "ui.ph.verifyFailure": "❌ Respuesta incorrecta. Inténtalo de nuevo.",
   "ui.maxOpenPerUserHint": "Cuenta los tickets abiertos de la persona en TODO el servidor. Se comprueba al abrir desde este panel.",
   "ui.maxPerUserPanelHint": "Cuenta solo los tickets abiertos desde este panel, además del límite del servidor. 0 = sin límite propio.",
+  "ui.slaFirstResponse": "SLA: primera respuesta (minutos)",
+  "ui.slaFirstResponseHint": "Alerta si el equipo no responde en este plazo. Vacío = desactivado.",
+  "ui.slaResolution": "SLA: resolución (minutos)",
+  "ui.slaResolutionHint": "Alerta si el ticket sigue abierto tras este plazo. Vacío = desactivado.",
 };

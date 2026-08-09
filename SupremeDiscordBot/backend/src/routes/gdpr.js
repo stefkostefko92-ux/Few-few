@@ -21,7 +21,11 @@ router.get("/export", async (req, res, next) => {
     const userId = req.user.id;
 
     // Collect all data tied to this user ID
-    const [user, servers, tickets, ticketMessages, applications, auditLogs, apiKeys, sessions] = await Promise.all([
+    // Одит 09.08.2026: декларацията „всички лични данни" пропускаше 5 таблици,
+    // които РЕТЕНЦИЯТА познава и трие (dataRetention.js) — асиметрия, доказваща
+    // пропуска. Чл. 15 отговор без тях е доказуемо непълен пред КЗЛД.
+    const [user, servers, tickets, ticketMessages, applications, auditLogs, apiKeys, sessions,
+           verificationAttempts, formCooldowns, pollVotes, giveawayEntries, memberships] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
       // Server membership — relation is `members` (ServerMember[]), not `users`
       prisma.server.findMany({
@@ -46,6 +50,18 @@ router.get("/export", async (req, res, next) => {
         where: { userId },
         select: { id: true, expiresAt: true, createdAt: true },
       }).catch(() => []),
+      // Promise.resolve().then(...) а не директно извикване: една липсваща/
+      // преименувана таблица е синхронен TypeError, който би съборил ЦЕЛИЯ
+      // експорт — а чл. 15 отговорът е по-добър непълен по един раздел,
+      // отколкото 500. Същото пази и тестовите мокове.
+      Promise.resolve().then(() => prisma.verificationAttempt.findMany({ where: { userId } })).catch(() => []),
+      Promise.resolve().then(() => prisma.formCooldown.findMany({
+        where: { userId },
+        select: { formId: true, submissionCount: true, lastSubmittedAt: true },
+      })).catch(() => []),
+      Promise.resolve().then(() => prisma.pollVote.findMany({ where: { userId }, select: { pollId: true, option: true, createdAt: true } })).catch(() => []),
+      Promise.resolve().then(() => prisma.giveawayEntry.findMany({ where: { userId }, select: { giveawayId: true, createdAt: true } })).catch(() => []),
+      Promise.resolve().then(() => prisma.serverMember.findMany({ where: { userId }, select: { serverId: true, serverRole: true, joinedAt: true } })).catch(() => []),
     ]);
 
     const payload = {
@@ -79,6 +95,11 @@ router.get("/export", async (req, res, next) => {
         api_keys: apiKeys,
         active_sessions: sessions,
         audit_log_entries: auditLogs,
+        verification_attempts: verificationAttempts,
+        form_submission_counters: formCooldowns,
+        poll_votes: pollVotes,
+        giveaway_entries: giveawayEntries,
+        server_memberships: memberships,
       },
       metadata: {
         gdpr_articles_addressed: ["Article 15 (right of access)", "Article 20 (right to data portability)"],

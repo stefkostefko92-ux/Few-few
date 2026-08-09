@@ -55,7 +55,7 @@ export async function runDunningJob() {
         stripeStatus: "past_due",
         pastDueSince: { not: null, lt: cutoff },
       },
-      select: { id: true, pastDueSince: true },
+      select: { id: true, name: true, ownerId: true, pastDueSince: true },
       take: 500, // batch
     });
 
@@ -94,6 +94,26 @@ export async function runDunningJob() {
         });
         result.downgraded++;
         console.log(`[dunning] ❌ Server ${server.id} → Premium отнет (past_due >${GRACE_DAYS}д)`);
+
+        // Известието Е част от отнемането (одит 09.08.2026): trial-ът DM-ва
+        // преди изтичане, а дунингът сваляше Premium МЪЛЧАЛИВО — клиентът
+        // научаваше от изчезналите функции. Продуктът няма имейл — каналът е
+        // Discord DM, както при trial-а. Провалът на DM-а не проваля
+        // отнемането: то е решението, известието е учтивост.
+        try {
+          const { dmUser } = await import("../services/botNotifier.js");
+          await dmUser(server.ownerId, {
+            title: "Premium was turned off — payment kept failing",
+            description:
+              `We retried the payment for **${server.name ?? server.id}** for ${GRACE_DAYS} days without success, ` +
+              `so the server is now on the Free plan. Your data and settings are kept.\n\n` +
+              `To turn Premium back on, update your payment method and resubscribe:\n` +
+              `${process.env.FRONTEND_URL || ""}/dashboard/${server.id}/premium`,
+            color: 0xf04747,
+          });
+        } catch (dmErr) {
+          console.warn(`[dunning] DM към собственика на ${server.id} не мина: ${dmErr?.message}`);
+        }
       } catch (err) {
         result.errors.push({ serverId: server.id, error: err.message });
       }
@@ -252,20 +272,7 @@ export async function runDunningJob() {
   return result;
 }
 
-// ─── Schedule — runs at 03:30 UTC daily (след retention job) ──────────────────
-export function scheduleDunning() {
-  const now = new Date();
-  const next = new Date(now);
-  next.setUTCHours(3, 30, 0, 0);
-  if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
-  const msUntil = next.getTime() - now.getTime();
+// Планирането живее в services/scheduler.js (одит 09.08.2026): там runDunningJob
+// минава през job() — застъпващ lock, Sentry при провал, почасов JOB_OK пулс и
+// CRON_TZ. Тази функция е само РАБОТАТА; никой тук не пуска setTimeout.
 
-  setTimeout(() => {
-    runDunningJob().catch((err) => console.error("[dunning] Unhandled error:", err));
-    setInterval(() => {
-      runDunningJob().catch((err) => console.error("[dunning] Unhandled error:", err));
-    }, 24 * 60 * 60 * 1000);
-  }, msUntil);
-
-  console.log(`[dunning] 📅 Планиран — следващ старт ${next.toISOString()}`);
-}

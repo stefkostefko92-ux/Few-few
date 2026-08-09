@@ -43,6 +43,14 @@ const MUST_REACH = [
   { setting: "namingTemplate",       in: "bot/src/events/interactionCreate.js", proof: "namingTemplate" },
   { setting: "channelNamePrefix",    in: "bot/src/events/interactionCreate.js", proof: "channelNamePrefix" },
   { setting: "inactivityCloseHours", in: "backend/src/services/scheduler.js",   proof: "inactivityCloseHours" },
+
+  // ── SLA (v31) — продавана Premium функция, която 3 дни нямаше UI ─────────
+  // Одит 09.08.2026: backend + scheduler + гейт готови, нула контроли в
+  // клиента. Двете котви: полето Е в PanelsPage И се консумира от sla-watch.
+  { setting: "slaFirstResponseMinutes (UI)", in: "frontend/src/pages/PanelsPage.jsx",       proof: "slaFirstResponseMinutes" },
+  { setting: "slaFirstResponseMinutes",      in: "backend/src/services/scheduler.js",       proof: "slaFirstResponseMinutes" },
+  { setting: "slaResolutionMinutes (UI)",    in: "frontend/src/pages/PanelsPage.jsx",       proof: "slaResolutionMinutes" },
+  { setting: "slaResolutionBreachedAt",      in: "backend/src/services/scheduler.js",       proof: "slaResolutionBreachedAt" },
   { setting: "autoCloseOnLeave",     in: "backend/src/routes/bot.js",           proof: "autoCloseOnLeave" },
 
   // ── Верификация ──────────────────────────────────────────────────────────

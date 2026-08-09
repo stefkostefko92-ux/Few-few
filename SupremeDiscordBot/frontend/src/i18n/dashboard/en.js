@@ -924,4 +924,8 @@ export default {
   "ui.ph.verifyFailure": "❌ Wrong answer. Try again.",
   "ui.maxOpenPerUserHint": "Counts the person’s open tickets across the whole server. Checked when they open a ticket from this panel.",
   "ui.maxPerUserPanelHint": "Counts only tickets opened from this panel, on top of the server-wide limit. 0 = no extra panel limit.",
+  "ui.slaFirstResponse": "SLA: first response (minutes)",
+  "ui.slaFirstResponseHint": "Alert if no staff reply within this time. Empty = off.",
+  "ui.slaResolution": "SLA: resolution (minutes)",
+  "ui.slaResolutionHint": "Alert if the ticket is still open after this time. Empty = off.",
 };

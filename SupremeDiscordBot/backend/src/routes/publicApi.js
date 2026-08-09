@@ -13,15 +13,11 @@ import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
-export const VALID_SCOPES = [
-  "tickets:read",   "tickets:write",
-  "forms:read",     "forms:write",
-  "applications:read", "applications:write",
-  "panels:read",
-  "polls:read",
-  "giveaways:read",
-  "analytics:read",
-];
+// Едно определение — lib/apiKeyAuth.js (одит 09.08.2026: двата дрейфнали
+// списъка направиха /api/v1/server вечно 403). Оттам идва и server:read;
+// *:write отпаднаха — маршрути за тях няма никъде.
+export { VALID_SCOPES } from "../lib/apiKeyAuth.js";
+import { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (dashboard-authed)

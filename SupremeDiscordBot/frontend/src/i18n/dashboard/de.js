@@ -913,4 +913,8 @@ export default {
   "ui.ph.verifyFailure": "❌ Falsche Antwort. Versuch es nochmal.",
   "ui.maxOpenPerUserHint": "Zählt die offenen Tickets der Person auf dem GESAMTEN Server. Geprüft beim Öffnen über dieses Panel.",
   "ui.maxPerUserPanelHint": "Zählt nur Tickets aus diesem Panel, zusätzlich zum serverweiten Limit. 0 = kein eigenes Limit.",
+  "ui.slaFirstResponse": "SLA: erste Antwort (Minuten)",
+  "ui.slaFirstResponseHint": "Alarm, wenn das Team nicht in dieser Zeit antwortet. Leer = aus.",
+  "ui.slaResolution": "SLA: Lösung (Minuten)",
+  "ui.slaResolutionHint": "Alarm, wenn das Ticket nach dieser Zeit noch offen ist. Leer = aus.",
 };
