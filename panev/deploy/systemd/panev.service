@@ -44,6 +44,13 @@ MemoryDenyWriteExecute=false
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources @mount
+# V8 в Node 20 ползва memory protection keys (PKU), за да държи JIT кода си
+# write-protected — при старт вика pkey_alloc(2). Той попада в @resources, а
+# seccomp УБИВА вместо да върне грешка: процесът умираше със SIGSYS (status=31)
+# за ~200 ms, преди да отвори порта. Връщаме точно тези три обратно — те не дават
+# права, а са самата хардуерна защита на паметта; редът е след ~-линията, защото
+# по-късните записи побеждават.
+SystemCallFilter=pkey_alloc pkey_free pkey_mprotect
 # Приложението слуша на 127.0.0.1:4102 (непривилегирован порт) → нула капабилити.
 CapabilityBoundingSet=
 AmbientCapabilities=

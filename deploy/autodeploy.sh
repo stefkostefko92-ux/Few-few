@@ -374,7 +374,16 @@ EOF
   # 2) Код. data/ (SQLite) и node_modules/ остават извън rsync → преживяват деплоя.
   # .env в директорията на кода се изключва нарочно: в продукция стойностите идват
   # от EnvironmentFile-а, а случаен .env от архива само би объркал.
-  [ -d "$PANEV_DIR" ] && cp -a "$PANEV_DIR" "${PANEV_DIR}.bak-$TS"
+  # Бекъп САМО при реален предишен деплой. bootstrap-vps.sh вече е създал
+  # $PANEV_DIR (той е HOME на системния потребител), затова „директорията
+  # съществува" НЕ значи „има какво да се върне": при първи деплой това правеше
+  # снимка на празна папка и откатът я връщаше с rsync --delete, т.е. ИЗТРИВАШЕ
+  # току-що качения код. Маркерът за истински предишен деплой е package.json.
+  local prev=0
+  if [ -f "$PANEV_DIR/package.json" ]; then
+    prev=1
+    cp -a "$PANEV_DIR" "${PANEV_DIR}.bak-$TS"
+  fi
   mkdir -p "$PANEV_DIR"
   # .npm/ е кешът на npm (HOME на потребителя е $PANEV_DIR) — пази го, за да не
   # тегли всичко наново при всеки деплой.
@@ -422,21 +431,26 @@ EOF
       || warn "panev: няма /etc/nginx/sites-enabled/panev.conf — сайтът върви само на 127.0.0.1:4102 (виж panev/DEPLOY.md)."
   else
     deploy_failed=1
-    warn "panev health провал — връщам предишния код и базата."
+    warn "panev health провал — спирам услугата и връщам базата (кодът само при наличен предишен деплой)."
     systemctl stop "$PANEV_SERVICE" || true
     if [ -f "$dbbak" ]; then
       cp -a "$dbbak" "$db"
       rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
       chown panev:panev "$db"
     fi
-    if [ -d "${PANEV_DIR}.bak-$TS" ]; then
+    if [ "$prev" = 1 ] && [ -d "${PANEV_DIR}.bak-$TS" ]; then
       rsync -a --delete --exclude data/ "${PANEV_DIR}.bak-$TS"/ "$PANEV_DIR"/
       chown -R panev:panev "$PANEV_DIR"
       chmod 755 "$PANEV_DIR"
       install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
       systemctl daemon-reload
+      systemctl restart "$PANEV_SERVICE" || true
+    else
+      # Първи деплой: няма предишна версия за връщане. Кодът ОСТАВА на диска —
+      # иначе следващият опит няма какво да рестартира, а диагнозата изчезва
+      # заедно с директорията. Услугата остава спряна; причината е в journalctl.
+      warn "panev: първи деплой — няма предишна версия. Кодът остава в $PANEV_DIR, услугата остава спряна (виж: journalctl -u $PANEV_SERVICE -b)."
     fi
-    systemctl restart "$PANEV_SERVICE" || true
   fi
 }
 
