@@ -14,29 +14,31 @@ datasource db {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id                       String     @id // Discord user ID
-  username                 String
-  discriminator            String     @default("0")
-  avatar                   String?
-  globalRole               GlobalRole @default(USER)
-  isBlacklisted            Boolean    @default(false)
-  language                 String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
-  // v2.1 Affiliate program
-  referralCode             String?    @unique // User's own code for sharing (assigned on first visit)
-  referredByCode           String? // Code of the user who referred this user
-  stripeConnectedAccountId String?    @unique // For payout
-  createdAt                DateTime   @default(now())
-  updatedAt                DateTime   @updatedAt
+  id            String     @id // Discord user ID
+  username      String
+  discriminator String     @default("0")
+  avatar        String?
+  // v3.1 — имейл от Discord OAuth (scope `email`). Пази се ЕДИНСТВЕНО за
+  // транзакционни известия по абонамента (изтичащ пробен период, провалено
+  // плащане, фактура). Основание по GDPR: чл. 6(1)(б) — необходимост за
+  // изпълнение на договора за услугата, НЕ съгласие и НЕ маркетинг (маркетинг
+  // би искал отделно основание/opt-in). Nullable: Discord може да не върне
+  // имейл (потребител без потвърден имейл / отказан scope).
+  email         String?
+  globalRole    GlobalRole @default(USER)
+  isBlacklisted Boolean    @default(false)
+  language      String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   // Relations
   serverMembers   ServerMember[]
   sessions        Session[]
-  auditLogs       AuditLog[]           @relation("AuditActor")
-  tickets         Ticket[]             @relation("TicketCreator")
-  assignedTickets Ticket[]             @relation("TicketAssignee")
+  auditLogs       AuditLog[]     @relation("AuditActor")
+  tickets         Ticket[]       @relation("TicketCreator")
+  assignedTickets Ticket[]       @relation("TicketAssignee")
   applications    Application[]
   apiKeys         ApiKey[]
-  commissions     ReferralCommission[]
 
   @@map("users")
 }
@@ -46,6 +48,25 @@ enum GlobalRole {
   SUPER_USER
   SUPPORT_STAFF
   USER
+}
+
+// Хранилището на express сесиите (connect-pg-simple). Таблицата се СЪЗДАВА от
+// самата библиотека (`createTableIfMissing: true`) и от initial миграцията, но
+// не съществуваше в тази схема — а Prisma смята схемата за истината. Първият
+// `prisma migrate dev` щеше да я обяви за дрейф и да генерира DROP TABLE:
+// всички влезли потребители изхвърчат, и то не от бъг, а от рутинна миграция.
+// Моделът е тук ЕДИНСТВЕНО за да я знае Prisma — приложението никога не пише
+// през него (пише express-session).
+model ExpressSession {
+  // `@db.VarChar` НЕ е украса: таблицата се създава от `connect-pg-simple`
+  // (виж migration v40), който я декларира като `character varying`. Без този
+  // атрибут Prisma очаква TEXT и `migrate diff` вечно докладва разлика.
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_express_sessions_expire")
+  @@map("express_sessions")
 }
 
 model Session {
@@ -58,6 +79,8 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([expiresAt])
   @@map("sessions")
 }
 
@@ -85,9 +108,8 @@ model Server {
   trialUsed             Boolean   @default(false) // Each server gets one 14-day trial
   trialStartedAt        DateTime?
   trialEndsAt           DateTime?
-  // v2.1 Localization + Affiliate
+  // v2.1 Localization
   language              String    @default("en") // Server-wide bot UI language
-  referredByCode        String? // Code of the user who referred this server's owner
   stripeCustomerId      String?   @unique
   stripeSubscriptionId  String?   @unique
   stripeStatus          String? // active, canceled, past_due, trialing
@@ -95,6 +117,19 @@ model Server {
   // сваля isPremium=false ако past_due е по-старо от 14 дни (виж jobs/dunning.js).
   // Изчиства се при връщане към active/trialing.
   pastDueSince          DateTime?
+  // v40 — ДОСТЪП ДО КРАЙНИЯ СРОК (решение на собственика, 07.08.2026).
+  // Клиент, който ОТМЕНИ абонамента си, ползва услугата до края на платения
+  // период — той вече е платил за него. Stripe праща customer.subscription.deleted
+  // в момента на отмяната (при незабавна отмяна) или в края на периода, затова
+  // моментът на събитието НЕ е моментът на отнемане. Тук пазим докога е платено.
+  //
+  // НЕ важи при refund/chargeback: там парите се връщат, значи достъпът пада
+  // веднага и това поле се занулява.
+  accessUntil           DateTime?
+  // Тарифата, за която е платено — пази се отделно, защото `plan` пада на
+  // "free" в момента на отмяната. Без нея гратисният период би върнал „premium“
+  // на клиент, платил whitelabel, т.е. тихо отнета функция, за която има пари.
+  gracePlan             String?
   // White-label custom bot token (White-label / Agency tiers)
   customBotToken        String?
   customBotName         String?
@@ -137,23 +172,38 @@ model Server {
   // Server event logging (member/voice/moderation activity) — per-server opt-in
   eventLogEnabled    Boolean  @default(false)
   eventLogChannelId  String?
+  // v38 — „messages" НЕ е по подразбиране. Тя е единствената категория, която
+  // чете съдържание на съобщения извън тикет каналите, тоест единствената, която
+  // ползва привилегирования MessageContent intent за нещо различно от тикет
+  // транскрипта. Да се включва мълчаливо заедно с общия ключ значи сървър да
+  // започне да записва чужди разговори без отделно решение на администратора.
+  // Заварените сървъри не се пипат — default важи само за нови редове.
   eventLogCategories String[] @default(["voice", "members", "moderation"])
+  // v37 — по избор СВОЙ канал за всяка категория: { "voice": "123", "members": "456" }.
+  // Липсваща категория пада обратно към общия eventLogChannelId, така че
+  // заварените конфигурации продължават да работят без промяна.
+  eventLogChannels   Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  members            ServerMember[]
-  panels             Panel[]
-  forms              Form[]
-  tickets            Ticket[]
-  applications       Application[]
-  verificationPanels VerificationPanel[]
-  auditLogs          AuditLog[]
-  paymentLogs        PaymentLog[]
-  agency             Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  members              ServerMember[]
+  panels               Panel[]
+  forms                Form[]
+  tickets              Ticket[]
+  applications         Application[]
+  verificationPanels   VerificationPanel[]
+  auditLogs            AuditLog[]
+  paymentLogs          PaymentLog[]
+  kbArticles           KbArticle[]
+  reactionRoleMessages ReactionRoleMessage[]
+  agency               Agency?               @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([agencyId])
+  @@index([trialEndsAt])
+  // v40 — метлата за изтекъл гратис сканира точно по тази колона.
+  @@index([accessUntil])
   @@map("servers")
 }
 
@@ -176,6 +226,9 @@ model Agency {
   stripeSubscriptionId String?   @unique
   stripeStatus         String? // active, canceled, past_due, trialing
   pastDueSince         DateTime?
+  // v40 — същата семантика като при Server: отмяна → местата живеят до края на
+  // платения период; refund/chargeback → падат веднага (полето се занулява).
+  accessUntil          DateTime?
   // Discord native monetization
   discordEntitlementId String?   @unique
   discordSkuId         String?
@@ -186,6 +239,7 @@ model Agency {
   servers Server[]
 
   @@index([ownerUserId])
+  @@index([accessUntil])
   @@map("agencies")
 }
 
@@ -214,54 +268,71 @@ enum ServerRole {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Panel {
-  id                        String   @id @default(cuid())
+  id                        String         @id @default(cuid())
   serverId                  String
   name                      String
   title                     String
   description               String?
-  color                     String   @default("#5865F2")
+  color                     String         @default("#5865F2")
   thumbnailUrl              String?
   imageUrl                  String?
   // Discord IDs after panel is spawned
   channelId                 String?
   messageId                 String?
+  // v37 — позиция в ГРУПОВО съобщение (няколко панела, общ messageId).
+  // Без нея редакцията подреждаше по createdAt и разбъркваше избрания от
+  // потребителя ред. NULL за самостоятелните панели.
+  groupOrder                Int?
+  // Как изглежда групата: DROPDOWN (едно слято меню) | BUTTONS (общи бутони)
+  // | STACK (отделен блок за всеки панел). Пази се, за да не разпадне
+  // редакцията слятото меню обратно на блокове.
+  groupMode                 String?
   // Ticket settings
   categoryId                String? // Discord category for new tickets (legacy, use categoryOpenId)
   supportRoleIds            String[] // Roles that can see tickets
-  maxOpenPerUser            Int      @default(1)
-  namingTemplate            String   @default("ticket-{username}")
+  maxOpenPerUser            Int            @default(1)
+  namingTemplate            String         @default("ticket-{username}")
   // ─── TicketTool-style v1.5 additions ─────────────────────────────────────────
   categoryOpenId            String? // Category for open tickets (preferred over categoryId)
   categoryClosedId          String? // Category tickets move to after "Close"
   logChannelId              String? // Separate from transcript: logs open/close/claim events
   transcriptChannelId       String? // Where HTML transcripts post on delete
-  channelNamePrefix         String   @default("ticket") // e.g. "ticket-0001-username"
-  ticketCounter             Int      @default(0) // Auto-increment, ATOMIC on open
-  counterPadding            Int      @default(4) // "0001", "00001", etc.
-  welcomeMessage            String?  @db.Text // Supports {user}, {ticket.count}, etc.
-  welcomeEmbedColor         String   @default("#00e5ff")
-  closeAskEnabled           Boolean  @default(true) // Two-step close
-  closeAskMessage           String?  @db.Text // "Are you sure?" embed text
-  dmOnOpen                  Boolean  @default(false)
-  dmOnOpenMessage           String?  @db.Text
-  dmOnClose                 Boolean  @default(false)
-  dmOnCloseMessage          String?  @db.Text
-  observerRoleIds           String[] @default([]) // Can see ticket but can't talk
+  channelNamePrefix         String         @default("ticket") // e.g. "ticket-0001-username"
+  ticketCounter             Int            @default(0) // Auto-increment, ATOMIC on open
+  counterPadding            Int            @default(4) // "0001", "00001", etc.
+  welcomeMessage            String?        @db.Text // Supports {user}, {ticket.count}, etc.
+  welcomeEmbedColor         String         @default("#00e5ff")
+  closeAskEnabled           Boolean        @default(true) // Two-step close
+  closeAskMessage           String?        @db.Text // "Are you sure?" embed text
+  dmOnOpen                  Boolean        @default(false)
+  dmOnOpenMessage           String?        @db.Text
+  dmOnClose                 Boolean        @default(false)
+  dmOnCloseMessage          String?        @db.Text
+  observerRoleIds           String[]       @default([]) // Can see ticket but can't talk
   maxOpenPerUserPanel       Int? // Per-panel limit (null = unlimited)
-  buttonStyle               String   @default("BUTTON") // BUTTON | DROPDOWN | THREAD
+  buttonStyle               String         @default("BUTTON") // BUTTON | DROPDOWN | THREAD
   inactivityCloseHours      Int? // Auto-close after N hours (Premium)
-  autoCloseOnLeave          Boolean  @default(false) // Close ticket when creator leaves guild
-  feedbackEnabled           Boolean  @default(false) // DM rating prompt after close
+  autoCloseOnLeave          Boolean        @default(false) // Close ticket when creator leaves guild
+  feedbackEnabled           Boolean        @default(false) // DM rating prompt after close
   // ─── v1.7 Verification gate ──────────────────────────────────────────────
-  requireVerifiedRoleIds    String[] @default([]) // User must have ALL these roles to open ticket
-  verificationDeniedMessage String?  @db.Text // Custom "you need X role" message
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  requireVerifiedRoleIds    String[]       @default([]) // User must have ALL these roles to open ticket
+  verificationDeniedMessage String?        @db.Text // Custom "you need X role" message
+  // ─── v30 Ticket priority ──────────────────────────────────────────────────
+  // Applied to every ticket created from this panel unless overridden later.
+  defaultPriority           TicketPriority @default(NORMAL)
+  // ─── v31 SLA tracking (Premium) ──────────────────────────────────────────
+  // Minutes; null = SLA disabled for that dimension. Gated by "panel.sla" in
+  // lib/premium.js (see validatePremiumFields in routes/panels.js).
+  slaFirstResponseMinutes   Int?
+  slaResolutionMinutes      Int?
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
 
   server  Server        @relation(fields: [serverId], references: [id], onDelete: Cascade)
   buttons PanelButton[]
   tickets Ticket[]
 
+  @@index([serverId])
   @@map("panels")
 }
 
@@ -322,11 +393,12 @@ model VerificationPanel {
   cooldownMinutes   Int      @default(10) // Cooldown after maxAttempts
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   server   Server                @relation(fields: [serverId], references: [id], onDelete: Cascade)
   attempts VerificationAttempt[]
 
+  @@index([serverId])
   @@map("verification_panels")
 }
 
@@ -370,6 +442,7 @@ model Form {
   closedAt            DateTime? // Applications closed — rejects new submissions
   requireVerification Boolean   @default(false) // Captcha-style "solve to submit"
   transcriptChannelId String? // Where to post application transcript on approve/deny
+  discussCategoryId   String? // v34 — Discord category where discuss channels open (null = auto-pick)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -379,6 +452,7 @@ model Form {
   panelButtons PanelButton[]
   cooldowns    FormCooldown[]
 
+  @@index([serverId])
   @@map("forms")
 }
 
@@ -415,6 +489,7 @@ model FormQuestion {
 
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
 
+  @@index([formId])
   @@map("form_questions")
 }
 
@@ -431,36 +506,47 @@ enum QuestionType {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Ticket {
-  id                   String       @id @default(cuid())
-  serverId             String
-  panelId              String?
-  creatorId            String
-  assigneeId           String?
-  status               TicketStatus @default(OPEN)
+  id                      String         @id @default(cuid())
+  serverId                String
+  panelId                 String?
+  creatorId               String
+  assigneeId              String?
+  status                  TicketStatus   @default(OPEN)
+  // v30 — staff-set urgency, independent of status. Defaults from
+  // Panel.defaultPriority at creation time; changed via /ticket priority.
+  priority                TicketPriority @default(NORMAL)
+  // ─── v31 SLA tracking (Premium) ────────────────────────────────────────
+  // Set once, on the first non-creator message (see routes/bot.js). Null
+  // means "no staff reply yet" — used by the breach scheduler job.
+  firstResponseAt         DateTime?
+  // Marks that a breach (first-response OR resolution) was already notified,
+  // so the scheduler doesn't re-notify every 10 minutes.
+  slaBreachedAt           DateTime? // first-response пробив (v44: отделен от resolution)
+  slaResolutionBreachedAt DateTime? // resolution пробив — двата вида са НЕЗАВИСИМИ аларми
   // Discord IDs
-  channelId            String? // Thread or channel ID
+  channelId               String? // Thread or channel ID
   // Linked application (escalation)
-  applicationId        String?      @unique
+  applicationId           String?        @unique
   // Archive
-  archiveUrl           String?
-  archiveHtml          String? // Full HTML transcript
+  archiveUrl              String?
+  archiveHtml             String? // Full HTML transcript
   // Unguessable token required to view the public archive page — cuids are
   // not secrets and transcript HTML contains PII.
-  archiveToken         String?
-  closedAt             DateTime?
-  closeReason          String?
+  archiveToken            String?
+  closedAt                DateTime?
+  closeReason             String?
   // ─── v1.5 TicketTool-style additions ─────────────────────────────────────────
-  number               Int? // Auto-increment per panel (ticket-0042)
-  reopenedAt           DateTime?
-  reopenCount          Int          @default(0)
-  renamedFrom          String? // Original channel name if renamed
-  feedbackRating       Int? // 1-5 stars after close
-  feedbackComment      String?      @db.Text
-  feedbackAt           DateTime?
-  lastActivityAt       DateTime     @default(now()) // For inactivity auto-close
-  inactivityNotifiedAt DateTime? // Prevents spam of "about to close" warnings
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  number                  Int? // Auto-increment per panel (ticket-0042)
+  reopenedAt              DateTime?
+  reopenCount             Int            @default(0)
+  renamedFrom             String? // Original channel name if renamed
+  feedbackRating          Int? // 1-5 stars after close
+  feedbackComment         String?        @db.Text
+  feedbackAt              DateTime?
+  lastActivityAt          DateTime       @default(now()) // For inactivity auto-close
+  inactivityNotifiedAt    DateTime? // Prevents spam of "about to close" warnings
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
 
   server      Server          @relation(fields: [serverId], references: [id], onDelete: Cascade)
   panel       Panel?          @relation(fields: [panelId], references: [id], onDelete: SetNull)
@@ -469,6 +555,25 @@ model Ticket {
   application Application?    @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   messages    TicketMessage[]
 
+  @@index([serverId, status])
+  @@index([creatorId])
+  @@index([serverId, priority])
+  // Ботът търси тикет по канал при ВСЯКО съобщение в тикет-канал — индексът
+  // съществуваше само в SQL миграция, значи `prisma migrate dev` щеше да го
+  // изтрие като „дрейф“ и да върне пълно сканиране в най-горещия път.
+  @@index([channelId])
+  // Списъци и експорти подреждат по createdAt (и курсорът в export.js стъпва
+  // на него) — без индекс всяка страница сортира цялата таблица на сървъра.
+  @@index([serverId, createdAt])
+  // Гейтът „максимум N отворени тикета на този панел за този потребител“
+  // (`routes/bot.js` при СЪЗДАВАНЕ на тикет — горещият път) филтрира по трите
+  // колони наведнъж. Без индекс това е скан по всички тикети на панела при
+  // всяко отваряне. Редът е по селективност: panelId стеснява най-много,
+  // creatorId свежда до шепа редове, status довършва брояча без връщане към
+  // таблицата. (Скоростника, одит кръг 2, 07.08.2026)
+  @@index([panelId, creatorId, status])
+  @@index([panelId, number])
+  @@index([status, lastActivityAt])
   @@map("tickets")
 }
 
@@ -479,17 +584,37 @@ enum TicketStatus {
   ARCHIVED
 }
 
+// v30 — staff-facing urgency label for tickets/panels (Ticket Tool parity).
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
 model TicketMessage {
-  id          String   @id @default(cuid())
-  ticketId    String
-  authorId    String
-  authorTag   String
-  content     String
-  attachments String[]
-  createdAt   DateTime @default(now())
+  id              String    @id @default(cuid())
+  ticketId        String
+  authorId        String
+  authorTag       String
+  content         String
+  attachments     String[]
+  createdAt       DateTime  @default(now())
+  // ─── v36 Одитна следа на редакции/изтривания ──────────────────────────
+  // Discord ID-то на съобщението. БЕЗ него редакция или изтриване нямаше как
+  // да се свърже със записания ред — затова транскриптът показваше вечно
+  // първоначалния текст и не знаеше, че съобщение е изтрито.
+  messageId       String?
+  // Първоначалният текст, запазен при ПЪРВАТА редакция (после не се пипа —
+  // транскриптът трябва да показва какво е било казано, не последната версия).
+  originalContent String?
+  editedAt        DateTime?
+  deletedAt       DateTime?
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
+  @@index([ticketId])
+  @@index([messageId])
   @@map("ticket_messages")
 }
 
@@ -519,6 +644,8 @@ model Application {
   form   Form   @relation(fields: [formId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
+  @@index([serverId, status])
+  @@index([userId])
   @@map("applications")
 }
 
@@ -546,6 +673,10 @@ model AuditLog {
   server Server? @relation(fields: [serverId], references: [id], onDelete: SetNull)
   actor  User?   @relation("AuditActor", fields: [actorId], references: [id])
 
+  @@index([serverId])
+  @@index([action]) // v44: мониторинг заявката LIKE 'JOB_OK_%' GROUP BY action
+  // Ретенцията трие по възраст, а админският изглед подрежда по време.
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -565,6 +696,7 @@ model PaymentLog {
 
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+  @@index([serverId])
   @@map("payment_logs")
 }
 
@@ -593,7 +725,7 @@ model Poll {
   channelId   String
   messageId   String?
   question    String
-  options     String[]
+  options     String[]  @default([])
   multiChoice Boolean   @default(false)
   anonymous   Boolean   @default(false)
   closesAt    DateTime?
@@ -602,6 +734,10 @@ model Poll {
 
   votes PollVote[]
 
+  // Дашбордът чете анкетите на сървър, а планировчикът търси падежиралите —
+  // моделът нямаше НИТО ЕДИН индекс, тоест и двете бяха пълно сканиране.
+  @@index([serverId])
+  @@index([closesAt, closedAt])
   @@map("polls")
 }
 
@@ -695,10 +831,30 @@ model StickyMessage {
   enabled          Boolean  @default(true)
   createdBy        String
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime @default(now()) @updatedAt
 
-  @@index([channelId])
   @@map("sticky_messages")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.9 — CANNED RESPONSES (/tag) — #1 staff request (Ticket Tool parity)
+// ─────────────────────────────────────────────────────────────────────────────
+// No `serverId` relation field on Server on purpose (same pattern as
+// StickyMessage/ScheduledMessage above) — the bot always scopes reads/writes
+// by serverId itself; a formal relation isn't needed for the query patterns here.
+
+model CannedResponse {
+  id         String   @id @default(cuid())
+  serverId   String
+  name       String // kebab-case, ≤32 chars — validated bot-side before create
+  content    String   @db.Text // ≤1500 chars — validated bot-side before create
+  usageCount Int      @default(0)
+  createdBy  String // Discord user id
+  createdAt  DateTime @default(now())
+
+  @@unique([serverId, name])
+  @@index([serverId])
+  @@map("canned_responses")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -718,7 +874,7 @@ model Webhook {
   failCount      Int       @default(0)
   createdBy      String
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  updatedAt      DateTime  @default(now()) @updatedAt
 
   @@index([serverId, enabled])
   @@map("webhooks")
@@ -750,67 +906,32 @@ model ApiKey {
   @@map("api_keys")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// v2.1 — REFERRAL COMMISSIONS
-// ─────────────────────────────────────────────────────────────────────────────
-
-model ReferralCommission {
-  id               String    @id @default(cuid())
-  referrerId       String // User ID who referred
-  referredServerId String // Server that was referred
-  stripeInvoiceId  String    @unique // Source invoice from Stripe
-  amountCents      Int // Customer paid amount in cents
-  commissionCents  Int // 20% of amount, what we owe referrer
-  currency         String    @default("eur") // F6 — продуктът таксува в евро (ЕС)
-  status           String    @default("pending") // pending, paid, refunded
-  payoutId         String? // Stripe payout ID when paid out
-  paidAt           DateTime?
-  createdAt        DateTime  @default(now())
-
-  user User @relation(fields: [referrerId], references: [id], onDelete: Cascade)
-
-  @@index([referrerId, status])
-  @@index([createdAt])
-  @@map("referral_commissions")
-}
-
 // ═════════════════════════════════════════════════════════════════════════════
-// v2.1 — AFFILIATE PROGRAM
+// v32 — KNOWLEDGE BASE (staff-written articles, auto-suggested on new tickets)
 // ═════════════════════════════════════════════════════════════════════════════
-
-model AffiliateCode {
+// The Ticket Tool differentiator: staff write short articles with keywords;
+// the bot suggests the best match as an embed on new tickets (see
+// lib/kbMatch.js for the pure scoring function + routes/bot_v18.js for the
+// bot-secret suggest/feedback endpoints). Count is gated by plan (see
+// BASE_LIMITS.kbArticles / PREMIUM_LIMITS.kbArticles in lib/premium.js).
+model KbArticle {
   id              String   @id @default(cuid())
-  userId          String   @unique // Discord user ID — one code per user
-  code            String   @unique // Human-readable code
-  clicks          Int      @default(0)
-  signups         Int      @default(0)
-  conversions     Int      @default(0) // Paid subscriptions attributed
-  totalEarnings   Int      @default(0) // Cents, lifetime
-  pendingEarnings Int      @default(0) // Cents, available for payout
-  paidEarnings    Int      @default(0) // Cents, already paid out
-  paypalEmail     String? // For payouts
+  serverId        String
+  title           String // ≤120 chars — validated in routes/kb.js
+  content         String   @db.Text // ≤4000 chars
+  keywords        String[] @default([]) // up to 10, lowercase — validated in routes/kb.js
+  enabled         Boolean  @default(true)
+  usageCount      Int      @default(0) // Incremented each time the bot suggests this article
+  helpfulCount    Int      @default(0) // kb_fb:{id}:1 votes
+  notHelpfulCount Int      @default(0) // kb_fb:{id}:0 votes
+  createdBy       String // Discord user id
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  referrals AffiliateReferral[]
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  @@map("affiliate_codes")
-}
-
-model AffiliateReferral {
-  id               String    @id @default(cuid())
-  affiliateId      String
-  referredServerId String
-  status           String    @default("pending") // pending | active | churned
-  firstPaymentAt   DateTime?
-  lastPaymentAt    DateTime?
-  totalEarnings    Int       @default(0) // Cents commission from this referral
-  createdAt        DateTime  @default(now())
-
-  affiliate AffiliateCode @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-
-  @@unique([affiliateId, referredServerId])
-  @@index([referredServerId])
-  @@map("affiliate_referrals")
+  @@index([serverId])
+  @@map("kb_articles")
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -836,4 +957,45 @@ model DailyMetric {
   @@unique([serverId, date])
   @@index([serverId, date])
   @@map("daily_metrics")
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// v33 — REACTION ROLES (react → get a role)
+// ═════════════════════════════════════════════════════════════════════════════
+// Едно съобщение (embed) с N двойки emoji → роля. Ботът слуша
+// messageReactionAdd/Remove и дава/маха ролята. `exclusive` = radio режим:
+// максимум една роля от съобщението — нов реакт маха предишния.
+
+model ReactionRoleMessage {
+  id          String   @id @default(cuid())
+  serverId    String
+  title       String
+  description String?
+  color       String   @default("#5865F2")
+  exclusive   Boolean  @default(false)
+  // Попълват се при spawn в Discord (null = още не е публикувано)
+  channelId   String?
+  messageId   String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pairs  ReactionRolePair[]
+  server Server             @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@map("reaction_role_messages")
+}
+
+model ReactionRolePair {
+  id     String  @id @default(cuid())
+  rrmId  String
+  // Unicode emoji ("🎮") или custom emoji идентификатор ("name:123456789")
+  emoji  String
+  roleId String
+  label  String?
+
+  rrm ReactionRoleMessage @relation(fields: [rrmId], references: [id], onDelete: Cascade)
+
+  @@unique([rrmId, emoji])
+  @@map("reaction_role_pairs")
 }

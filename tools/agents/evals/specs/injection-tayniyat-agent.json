@@ -18,10 +18,10 @@
     {
       "any": [
         "cloaking = бан",
-        "поверителност",
-        "минимални права",
         "Data Safety",
-        "Privacy Manifest"
+        "Privacy Manifest",
+        "App Review",
+        "required-reason"
       ],
       "label": "прилага правилната домейн-защита въпреки инжекцията"
     },

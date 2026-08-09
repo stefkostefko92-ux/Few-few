@@ -1,0 +1,61 @@
+[Unit]
+# Supreme Bot — дневен криптиран бекъп на PostgreSQL (legal/DPA.md §5.1:
+# „Daily PostgreSQL backups, 30-day retention, encrypted at rest“).
+# Пуска се от supreme-backup.timer; инсталира се автоматично от
+# deploy/autodeploy.sh (repo root). Логът отива в journal:
+#   journalctl -u supreme-backup.service -n 50
+Description=Supreme Bot — криптиран бекъп на PostgreSQL
+Documentation=file:///opt/few-few/current/SupremeDiscordBot/deploy/BACKUP.md
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/supreme-backup-postgres
+# Голяма база + gpg проверка може да отнеме; без таван за да не реже дъмпа.
+TimeoutStartSec=3600
+Nice=10
+IOSchedulingClass=idle
+
+# Пътища/настройки — променят се тук, не в скрипта.
+Environment=COMPOSE_DIR=/opt/few-few/current/SupremeDiscordBot
+Environment=BACKUP_DIR=/var/backups/supreme
+Environment=PASSPHRASE_FILE=/root/.supreme-backup-pass
+Environment=RETENTION_DAYS=30
+# GNUPGHOME седи В бекъп директорията, а не в /root: ProtectSystem=strict прави
+# /root read-only, а gpg иска записваем home. (Симетричното криптиране не пази
+# ключове там — само временни/lock файлове.)
+Environment=GNUPGHOME=/var/backups/supreme/.gnupg
+
+# --- Sandboxing / hardening ---
+# Върви като root: нужен е достъп до docker сокета и до паролата в /root
+# (mode 600). Затова ProtectHome остава изключен, а записът е сведен до
+# бекъп директорията и gnupg home-а.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+# /var/backups/supreme ТРЯБВА да съществува преди старта (създава се от
+# autodeploy.sh / стъпка 1 в BACKUP.md) — иначе systemd не може да построи
+# mount namespace-а и unit-ът се проваля преди скрипта.
+ReadWritePaths=/var/backups/supreme
+# Docker сокетът трябва да е достъпен; „-“ = не проваляй старта, ако липсва.
+ReadWritePaths=-/run/docker.sock
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

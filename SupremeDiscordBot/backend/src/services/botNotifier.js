@@ -31,3 +31,71 @@ export async function notifyBot(event, data) {
     return null;
   }
 }
+
+/**
+ * Изпраща лично съобщение (DM) до Discord потребител през бота.
+ * Продуктът няма имейл инфраструктура → това е каналът за транзакционни
+ * известия по абонамента (изтичащ пробен период, провалено плащане).
+ *
+ * Ползва СЪЩИЯ вътрешен канал като notifyBot (x-bot-secret / API_SECRET) —
+ * не въвежда нов secret.
+ *
+ * Връща:
+ *   { ok: true }                      — доставено
+ *   { ok: false, reason: "..." }      — ТРАЙНА пречка (DM затворен, блокиран
+ *                                       бот, непознат потребител) → няма смисъл
+ *                                       от повторен опит
+ *   null                              — ВРЕМЕНЕН провал (ботът е недостъпен,
+ *                                       timeout, 5xx) → повикващият може да
+ *                                       опита пак по-късно
+ * Никога не хвърля — известието е страничен ефект, не бизнес-ефект.
+ *
+ * @param {string} userId Discord user ID (снежинка)
+ * @param {object} embed  Discord embed обект (title/description/color/fields…)
+ */
+export async function dmUser(userId, embed) {
+  if (!userId || !embed) return { ok: false, reason: "missing_userId_or_embed" };
+  return notifyBot("DM_USER", { userId, embed });
+}
+
+/**
+ * Публикува отговор от dashboard-а в Discord тикет канала — ботът праща embed
+ * от името на staff члена („Име · via dashboard“), без staff-ът да влиза в
+ * Discord. Ползва СЪЩИЯ вътрешен канал като notifyBot (x-bot-secret).
+ *
+ * Връща:
+ *   { ok: true, messageId }      — доставено в канала
+ *   { ok: false, reason: "..." } — ботът отказа (несъществуващ канал и т.н.)
+ *   null                         — ботът е недостъпен (timeout, 5xx, мрежа)
+ * Никога не хвърля — повикващият решава как да докладва провала.
+ *
+ * @param {object} p
+ * @param {string} p.channelId  Discord channel/thread ID на тикета
+ * @param {string} p.content    Изчистеният текст на отговора (без mass mentions)
+ * @param {string} p.authorName Показвано име на staff члена
+ * @param {string} p.authorId   Discord user ID на staff члена (за одит в бота)
+ * @param {string} p.ticketId   Ticket ID (за логове)
+ * @param {number} [p.number]   Пореден номер на тикета (за footer „Ticket #N“)
+ */
+export async function sendTicketReply({ channelId, content, authorName, authorId, ticketId, number }) {
+  if (!channelId || !content) return { ok: false, reason: "missing_channelId_or_content" };
+  return notifyBot("TICKET_REPLY", { channelId, content, authorName, authorId, ticketId, number });
+}
+
+/**
+ * Каже на бота да приведе работещите white-label клиенти към ЕФЕКТИВНИЯ tier.
+ *
+ * Викай след ВСЯКА промяна, която може да смени дали сървър има право на бранд
+ * бот, БЕЗ да пипа `customBotToken`: agency seat attach/detach, отмяна/refund/
+ * chargeback на агенция, дунинг деактивация, изтичане на grace. Смяната на самия
+ * токен минава през WHITELABEL_UPDATE (servers.js) и не се нуждае от това.
+ *
+ * `single serverId` → целенасочен рестарт на един клиент; без него → пълна
+ * реконсилиация (за agency-wide преходи, където се засягат много сървъри).
+ * Fire-and-forget: провалът само отлага сваляне до периодичната метла на бота —
+ * никога не бива да поваля паричния път, който го извика.
+ */
+export async function reconcileWhitelabel(serverId) {
+  if (serverId) return notifyBot("WHITELABEL_UPDATE", { serverId }).catch(() => null);
+  return notifyBot("WHITELABEL_RECONCILE", {}).catch(() => null);
+}

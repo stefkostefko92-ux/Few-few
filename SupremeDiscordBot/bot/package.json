@@ -1,6 +1,6 @@
 {
   "name": "supreme-bot",
-  "version": "2.3.0",
+  "version": "3.2.0",
   "description": "Supreme Bot — Discord SaaS bot gateway",
   "license": "UNLICENSED",
   "private": true,
@@ -32,6 +32,9 @@
     "vitest": "^3.2.6"
   },
   "overrides": {
-    "undici": "^6.27.0"
+    "undici": "^6.28.0",
+    "body-parser": "^1.20.6",
+    "brace-expansion": "^5.0.9",
+    "postcss": "^8.5.25"
   }
 }

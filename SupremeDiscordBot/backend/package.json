@@ -1,6 +1,6 @@
 {
   "name": "supreme-bot-backend",
-  "version": "2.3.0",
+  "version": "3.2.0",
   "description": "Backend API for Supreme Bot Discord SaaS Platform",
   "license": "UNLICENSED",
   "private": true,
@@ -23,7 +23,8 @@
     "db:deploy": "prisma migrate deploy",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.js"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",

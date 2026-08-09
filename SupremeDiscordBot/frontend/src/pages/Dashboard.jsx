@@ -1,23 +1,43 @@
 // frontend/src/pages/Dashboard.jsx
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { PlusCircle, AlertCircle, Star } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { PlusCircle, AlertCircle, RefreshCw, Star } from "lucide-react";
 import { getServers } from "../api";
+import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 
 export default function Dashboard() {
+  const { t } = useT();
   const navigate = useNavigate();
-  const { data: servers = [], isLoading, error } = useQuery({
+  const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Agency checkout връщане: ?agency=active / ?agency=canceled (success_url
+  // на /agency/checkout сочи насам). Тост веднъж + чист URL — както
+  // per-server ?upgraded= на ServerHome.
+  useEffect(() => {
+    const agency = searchParams.get("agency");
+    if (agency === "active") toast.success(t("agency.checkoutSuccess"));
+    else if (agency === "canceled") toast.error(t("agency.checkoutCanceled"));
+    else return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("agency");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const { data: servers = [], isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["servers"],
     queryFn: getServers,
   });
 
-  const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=8&scope=bot+applications.commands`;
+  const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cs-text mb-2">Your Servers</h1>
-        <p className="text-cs-muted">Select a server to manage its bot settings.</p>
+        <h1 className="text-3xl font-bold text-cs-text mb-2">{t("dashboard.yourServers")}</h1>
+        <p className="text-cs-muted">{t("dashboard.selectServer")}</p>
       </div>
 
       {isLoading && (
@@ -28,17 +48,26 @@ export default function Dashboard() {
         </div>
       )}
 
-      {error && (
+      {!isLoading && isError && (
         <div
           role="alert"
-          className="flex items-center gap-3 text-danger bg-danger/10 border border-danger/20 rounded-xl p-4"
+          className="flex flex-col items-center gap-3 text-center text-danger bg-danger/10 border border-danger/20 rounded-xl p-8"
         >
-          <AlertCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-          Failed to load servers. Please refresh.
+          <AlertCircle className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+          <p>{t("dashboard.loadFailed")}</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
+            {isRefetching ? t("common.retrying") : t("common.retry")}
+          </button>
         </div>
       )}
 
-      {!isLoading && (
+      {!isLoading && !isError && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {servers.map((server) => (
             <ServerCard
@@ -57,7 +86,7 @@ export default function Dashboard() {
             className="cs-card border-dashed border-2 border-cs-border hover:border-cs-cyan/50 flex flex-col items-center justify-center gap-3 text-cs-muted hover:text-cs-cyan transition-colors cursor-pointer min-h-[100px]"
           >
             <PlusCircle className="w-8 h-8" />
-            <span className="font-medium">Add to a Server</span>
+            <span className="font-medium">{t("dashboard.addToServer")}</span>
           </a>
         </div>
       )}
@@ -66,6 +95,7 @@ export default function Dashboard() {
 }
 
 function ServerCard({ server, onActivate, inviteUrl }) {
+  const { t } = useT();
   const avatar = server.icon ? (
     <img src={server.icon} alt={server.name} className="w-12 h-12 rounded-full flex-shrink-0" />
   ) : (
@@ -92,7 +122,7 @@ function ServerCard({ server, onActivate, inviteUrl }) {
               </span>
             )}
           </div>
-          <span className="text-xs text-success mt-0.5 block">Bot Active</span>
+          <span className="text-xs text-success mt-0.5 block">{t("dashboard.botActive")}</span>
         </div>
       </button>
     );
@@ -117,7 +147,7 @@ function ServerCard({ server, onActivate, inviteUrl }) {
           rel="noopener noreferrer"
           className="text-xs text-cs-cyan hover:underline mt-0.5 block"
         >
-          + Invite Bot
+          {t("dashboard.inviteBot")}
         </a>
       </div>
     </div>

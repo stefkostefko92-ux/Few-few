@@ -1,18 +1,29 @@
 // frontend/src/pages/Login.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
   Lock, ScrollText, Shield, Building2, MessageCircle,
   Layers, Shuffle, Database, Palette, Minus,
+  SmilePlus, BookOpen, ClipboardList, UserPlus,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
+import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
+
+// Own chunk, downloaded post-idle — never sits on this eager/LCP-critical
+// page's main bundle. See ShaderHero.jsx for the full accessibility/perf
+// discipline (reduced-motion gate, FPS watchdog, IntersectionObserver).
+const ShaderHero = lazy(() => import("../components/ShaderHero"));
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
+// Same permission set as Dashboard.jsx's "Add to a Server" invite link.
+const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
 export default function Login() {
   const { user, loading } = useAuth();
@@ -23,6 +34,10 @@ export default function Login() {
   // Billing interval for the pricing section (monthly | annual). Real
   // keyboard-operable control below (radiogroup of aria-checked buttons).
   const [billing, setBilling] = useState("month");
+  const rootRef = useRef(null);
+  useScrollReveal(rootRef);
+  const heroCtaRef = useMagnetic();
+  const finalCtaRef = useMagnetic();
 
   useEffect(() => {
     if (!loading && user) navigate("/dashboard");
@@ -33,7 +48,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen bg-transparent overflow-hidden">
+    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
         description="Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
@@ -69,24 +84,30 @@ export default function Login() {
             <a href="#pricing" className="hover:text-cs-cyan transition-colors">PRICING</a>
             <a href="#faq" className="hover:text-cs-cyan transition-colors">FAQ</a>
             <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
+            <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer" className="cs-btn-secondary text-xs">Invite Bot</a>
             <button onClick={handleLogin} className="cs-btn-primary text-xs">SIGN IN →</button>
           </div>
           <button onClick={handleLogin} className="md:hidden cs-btn-primary text-xs">SIGN IN</button>
         </header>
 
-        {/* HERO */}
-        <section className="px-6 sm:px-8 pt-16 pb-24">
-          <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+        {/* HERO — the WebGL spectacle is SCOPED to just this section (not the
+            whole page), so the raymarched raymarch cost stays bounded to a
+            few hundred px of viewport instead of the full document height. */}
+        <section className="relative px-6 sm:px-8 pt-16 pb-24 overflow-hidden">
+          <Suspense fallback={null}>
+            <ShaderHero />
+          </Suspense>
+          <div className="relative z-10 w-full max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
             {/* Left column — copy. The H1 here is the LCP element: plain text,
                 fully opaque, no entrance animation, so it paints on first frame. */}
             <div className="text-center lg:text-left">
-              <div className="cs-eyebrow mb-4 inline-flex">→ One bot replaces six. Built in the EU.</div>
+              <div className="cs-eyebrow mb-4 inline-flex">→ One bot replaces eight. Built in the EU.</div>
               <h1 className="font-display font-black text-5xl sm:text-6xl xl:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
-                Six bots. Six bills.<br />
+                Eight bots. Eight bills.<br />
                 <span className="text-cs-cyan">One dashboard.</span>
               </h1>
               <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-8 text-pretty max-w-2xl mx-auto lg:mx-0">
-                Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
+                Tickets, applications, verification, reaction roles, giveaways, activity logging, scheduled messages, webhooks and AI-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
               {error && (
@@ -102,7 +123,7 @@ export default function Login() {
               )}
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
-                <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+                <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
                   <DiscordIcon />
                   <span>Start free with Discord</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
@@ -114,10 +135,18 @@ export default function Login() {
               <p className="text-xs text-cs-dim mt-6 font-mono leading-relaxed">
                 Free forever on the base tier · 14-day Premium trial, no card · Cancel anytime · EU-hosted, GDPR-native
               </p>
+              <a
+                href={BOT_INVITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-3 text-xs text-cs-dim hover:text-cs-cyan transition-colors font-mono"
+              >
+                Already have an account? Invite the bot directly →
+              </a>
             </div>
 
             {/* Right column — the "6 → 1" convergence motif. Purely decorative
-                (aria-hidden): six single-purpose bots funnel into one core. */}
+                (aria-hidden): eight single-purpose bots funnel into one core. */}
             <HeroConverge />
           </div>
         </section>
@@ -125,31 +154,34 @@ export default function Login() {
         {/* FEATURES */}
         <section id="features" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
+            <div data-reveal className="text-center mb-16">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Features</div>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 Everything, <span className="text-cs-cyan">integrated.</span>
               </h2>
               <p className="text-cs-muted max-w-2xl mx-auto">
-                Stop paying €5–20/month for 6 different bots that don't talk to each other.
+                Stop paying €5–20/month for 8 different bots that don't talk to each other.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
-                A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, two-step close, rich transcripts, and archive links.
+                A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, priority levels, two-step close, rich transcripts and archive links. Staff can reply straight from the dashboard.
               </FeatureCard>
               <FeatureCard icon={FileText} title="Forms & Applications" badge="Free">
-                Multi-step questionnaires with validation, review workflow, and application approval — replaces Appy.bot entirely.
+                Multi-step questionnaires with validation and conditional branching, a review workflow with approve/deny reasons, and a private discussion channel with the applicant before you decide — replaces Appy.bot entirely.
+              </FeatureCard>
+              <FeatureCard icon={SmilePlus} title="Reaction Roles" badge="Free">
+                Members react to a message to get a role and remove the reaction to drop it. Up to 20 emoji-to-role pairs per message, exclusive (pick-one) mode, and the bot places the reactions for you.
               </FeatureCard>
               <FeatureCard icon={ShieldCheck} title="Verification & Anti-Bot">
                 One-click button or math captcha. Account age gates. Brute-force protection. Gate ticket panels behind verification.
               </FeatureCard>
               <FeatureCard icon={BarChart3} title="Polls" badge="Free">
-                Live-updating embed polls with up to 9 options, single/multi-choice, auto-close timers.
+                Live-updating embed polls with up to 9 options, single/multi-choice, auto-close timers — start one from the dashboard or with a slash command.
               </FeatureCard>
               <FeatureCard icon={Gift} title="Giveaways" badge="Free">
-                Prize drawings with required-role gating, auto-end scheduler, reroll support.
+                Prize drawings with required-role gating, auto-end scheduler and reroll support — start one from the dashboard or with a slash command.
               </FeatureCard>
               <FeatureCard icon={Pin} title="Sticky Messages">
                 Keep important info pinned at the bottom of channels — auto-reposted as new messages arrive.
@@ -163,21 +195,38 @@ export default function Login() {
               <FeatureCard icon={Sparkles} title="AI Auto-Replies">
                 The AI drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
               </FeatureCard>
+              <FeatureCard icon={ScrollText} title="Server Activity Logging" badge="Free">
+                Voice, member, moderation and message events relayed to your own log channel — including edited and deleted messages, with the original text kept.
+              </FeatureCard>
+              <FeatureCard icon={UserPlus} title="Welcomer & Autorole" badge="Free">
+                Greet new members in a channel or by DM, and assign roles automatically — separate rules for humans and bots.
+              </FeatureCard>
+              <FeatureCard icon={BookOpen} title="Knowledge Base">
+                Write answers once; the bot suggests the matching article the moment a ticket opens — and tracks whether it actually helped.
+              </FeatureCard>
+              <FeatureCard icon={ClipboardList} title="Canned Responses & SLA">
+                Saved replies your team can drop in with one command, plus first-response and resolution timers that flag a ticket before it goes stale.
+              </FeatureCard>
             </div>
           </div>
         </section>
 
+        {/* PRODUCT TOUR — реални скрийншоти на dashboard-а (демо данни).
+            Прост tab превключвател (aria-pressed), без анимации — само смяна
+            на src; изображенията са с фиксирани размери (без CLS) + lazy. */}
+        <ProductTour />
+
         {/* PREMIUM UPSELL */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-14">
+            <div data-reveal className="text-center mb-14">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Why teams upgrade</div>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 Free gets you running. <span className="text-cs-cyan">Premium gets you scaling.</span>
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
               <OutcomeBullet icon={Sparkles} title="Answer first, triage later.">
                 AI auto-replies draft the first response to common questions — so staff pick up conversations that are already moving.
               </OutcomeBullet>
@@ -199,7 +248,7 @@ export default function Login() {
             </div>
 
             {/* Scannable Free-vs-Premium comparison */}
-            <div className="cs-card !p-0 overflow-hidden mb-10">
+            <div data-reveal className="cs-card !p-0 overflow-x-auto mb-10">
               <table className="cs-table w-full">
                 <thead>
                   <tr>
@@ -217,7 +266,7 @@ export default function Login() {
                   <CompareRow label="AI replies"              free="—"                    premium="AI-powered (assistive)" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
                   <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
-                  <CompareRow label="Price"                   free="€0, forever"          premium="€9.99/mo · €99/yr · 14-day trial" />
+                  <CompareRow label="Price"                   free="€0, forever"          premium="€4.99/mo · €49/yr · 14-day trial" />
                 </tbody>
               </table>
             </div>
@@ -241,7 +290,7 @@ export default function Login() {
             <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-10">
               Replace these. <span className="text-cs-cyan">All of them.</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div data-reveal className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
                 ["TicketTool", "€5/mo"], ["Appy.bot", "€5/mo"], ["GiveawayBot", "€3/mo"],
                 ["Stickyboard", "€4/mo"], ["Dyno Poll", "€2/mo"], ["Webhook.io", "€10/mo"],
@@ -262,22 +311,22 @@ export default function Login() {
         {/* ═══════════ TRUST / SOCIAL PROOF ═══════════ */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
+            <div data-reveal className="text-center mb-12">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Built for reliability</div>
               <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
                 Why teams <span className="text-cs-cyan">trust</span> Supreme Bot
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <TrustCard
                 icon={Lock}
                 title="EU-only data residency"
-                body="Hosted in the EU (Germany, Hetzner). GDPR-native. Your data never leaves the EU."
+                body="Hosted and stored in the EU (Germany, Hetzner). GDPR-native. Discord, Google and Sentry are recipients in the US under Standard Contractual Clauses."
               />
               <TrustCard
                 icon={Zap}
-                title="99.9% uptime SLA"
+                title="99.9% uptime target"
                 body="Monitored 24/7 with auto-recovery. See live status at /status — we're transparent."
               />
               <TrustCard
@@ -305,7 +354,7 @@ export default function Login() {
             <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-cs-dim border-t border-cs-border/50 pt-8">
               <div className="flex items-center gap-2"><span className="text-success">●</span> All systems operational</div>
               <div>GDPR compliant</div>
-              <div>Ad-free · no telemetry</div>
+              <div>Ad-free · no advertising trackers</div>
               <div>Cancel anytime · no lock-in</div>
             </div>
           </div>
@@ -314,33 +363,33 @@ export default function Login() {
         {/* FAQ */}
         <section id="faq" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
+            <div data-reveal className="text-center mb-12">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Frequently Asked</div>
               <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
                 Common <span className="text-cs-cyan">questions</span>
               </h2>
             </div>
 
-            <div className="space-y-3">
+            <div data-reveal className="space-y-3">
               <FaqItem
                 q="Will I be charged for the 14-day trial?"
                 a="No. Starting a trial needs no credit card, and nothing is charged during or after it unless you actively choose to subscribe. If you don't subscribe, the server reverts to the Free tier automatically when the trial ends — there is nothing to cancel and nothing is billed. Your panels, forms and settings stay exactly as you left them."
               />
               <FaqItem
                 q="How is pricing calculated?"
-                a="Premium is billed per server — €9.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade."
+                a="Premium is billed per server — €4.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade."
               />
               <FaqItem
                 q="Where is my data stored?"
-                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. We are GDPR-native — no transfers outside the EU. Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
+                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
-                a="Yes — on the White-label tier (€19.99/mo or €199/yr) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. Agencies can cover up to 5 or 10 servers under one White-label subscription (Agency 5 / Agency 10)."
+                a="Yes — on the White-label tier (€9.99/mo or €99/yr) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. Agencies can cover up to 5 or 10 servers under one White-label subscription (Agency 5 / Agency 10)."
               />
               <FaqItem
                 q="What happens if I cancel — can I take my data?"
-                a="No lock-in. Cancel anytime from the dashboard; the server reverts to the Free tier. All your data (panels, forms, applications, transcripts) stays accessible, and you can export transcripts to CSV whenever you want — GDPR data portability, EU-hosted. Nothing is deleted just because you downgrade."
+                a="No lock-in. Cancel anytime from the dashboard — access continues until the end of the period you paid for, then the server reverts to the Free tier. Panels, forms, applications and settings are kept; transcripts of tickets closed more than 30 days ago are deleted on the Free tier. Export what you need to CSV or PDF before the period ends."
               />
               <FaqItem
                 q="Do you support multiple servers?"
@@ -352,7 +401,7 @@ export default function Login() {
               />
               <FaqItem
                 q="How do I get support?"
-                a="Join our Discord server — direct support from the team that built Supreme Bot (not outsourced). Premium customers get priority responses."
+                a="Join our Discord server — direct support from the team that built Supreme Bot (not outsourced). Response times are best-effort; no contractual SLA is included."
               />
             </div>
           </div>
@@ -361,7 +410,7 @@ export default function Login() {
         {/* PRICING */}
         <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
+            <div data-reveal className="text-center mb-10">
               <div className="cs-eyebrow mb-4 justify-center flex">→ Pricing</div>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 Simple. <span className="text-cs-cyan">Per server.</span>
@@ -372,7 +421,7 @@ export default function Login() {
             <BillingToggle interval={billing} onChange={setBilling} />
 
             {/* Free · Premium · White-label */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <PricingCard
                 icon={Zap}
                 name="Free"
@@ -396,7 +445,7 @@ export default function Login() {
                 badge="Recommended"
                 name="Premium"
                 tagline="For servers where support is a job, not a side task."
-                price={billing === "year" ? "€99" : "€9.99"}
+                price={billing === "year" ? "€49" : "€4.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 trial="14-day free trial, no card"
                 onCta={handleLogin}
@@ -406,7 +455,7 @@ export default function Login() {
                   "Math captcha + account-age gates",
                   "Claim · escalate · round-robin",
                   "Sticky + scheduled + recurring messages",
-                  "Giveaways, polls & analytics",
+                  "Advanced analytics",
                   "AI auto-replies (assistive, human-in-the-loop)",
                   "Webhooks (HMAC) + public REST API",
                   "Unlimited transcript retention",
@@ -417,7 +466,7 @@ export default function Login() {
                 icon={Crown}
                 name="White-label"
                 tagline="Run Supreme under your own brand."
-                price={billing === "year" ? "€199" : "€19.99"}
+                price={billing === "year" ? "€99" : "€9.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 onCta={handleLogin}
                 cta="Get White-label"
@@ -437,7 +486,7 @@ export default function Login() {
                 name="Agency 5"
                 seats="Up to 5 servers"
                 tagline="White-label for up to 5 servers, one subscription. Reseller-friendly."
-                price={billing === "year" ? "€399" : "€39.99"}
+                price={billing === "year" ? "€199" : "€19.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 onCta={handleLogin}
                 cta="Get Agency 5"
@@ -454,7 +503,7 @@ export default function Login() {
                 name="Agency 10"
                 seats="Up to 10 servers"
                 tagline="White-label for up to 10 servers, one subscription."
-                price={billing === "year" ? "€799" : "€79.99"}
+                price={billing === "year" ? "€399" : "€39.99"}
                 per={billing === "year" ? "/ year" : "/ month"}
                 onCta={handleLogin}
                 cta="Get Agency 10"
@@ -467,20 +516,20 @@ export default function Login() {
             </div>
 
             <p className="text-center text-xs text-cs-dim font-mono mt-8">
-              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime · EU hosting · GDPR · Cancel anytime
+              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>
 
         {/* FINAL CTA */}
-        <section className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
+        <section data-reveal className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
           <h2 className="font-display font-black text-3xl sm:text-5xl text-cs-text mb-6">
             Ready to <span className="text-cs-cyan">consolidate</span>?
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">
             Takes 60 seconds. Sign in with Discord, pick a server, start your 14-day trial.
           </p>
-          <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
             <DiscordIcon />
             <span>Get Started Free</span>
             <ArrowRight className="w-4 h-4 ml-1" />
@@ -545,8 +594,9 @@ export default function Login() {
 }
 
 function FeatureCard({ icon: Icon, title, badge, children }) {
+  const tiltRef = useTiltCard();
   return (
-    <div className="cs-card hover:border-cs-cyan/50 transition-colors">
+    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
       <div className="flex items-start justify-between mb-3">
         <Icon className="w-6 h-6 text-cs-cyan" />
         {badge && <span className="cs-badge text-[9px] text-success">{badge}</span>}
@@ -558,8 +608,9 @@ function FeatureCard({ icon: Icon, title, badge, children }) {
 }
 
 function TrustCard({ icon: Icon, title, body }) {
+  const tiltRef = useTiltCard();
   return (
-    <div className="cs-card hover:border-cs-cyan/50 transition-colors">
+    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
       <div className="mb-3"><Icon className="w-6 h-6 text-cs-cyan" aria-hidden="true" /></div>
       <h3 className="text-cs-text font-bold mb-2 text-sm">{title}</h3>
       <p className="text-xs text-cs-muted leading-relaxed">{body}</p>
@@ -591,6 +642,65 @@ function PricingCheck({ children }) {
 /* Accessible monthly/annual switch — a radiogroup of two aria-checked buttons,
    fully keyboard-operable. The annual choice carries a "2 months free" badge.
    Only a color transition (neutralized by prefers-reduced-motion) — no flashing. */
+/* Product tour: реални скрийншоти на dashboard-а с демо данни. Табовете са
+   истински бутони (aria-pressed, клавиатурно достъпни); смяната е само на
+   src — нула анимация (reduced-motion дисциплина). width/height пазят от CLS. */
+const TOUR_SCREENS = [
+  { key: "home",      label: "Overview",  alt: "Server overview — stats, setup checklist and feature cards" },
+  { key: "tickets",   label: "Tickets",   alt: "Ticket list with statuses, assignees and satisfaction ratings" },
+  { key: "panels",    label: "Panels",    alt: "Ticket panel builder with button styles and support roles" },
+  { key: "forms",     label: "Forms",     alt: "Application form builder with logic branching" },
+  { key: "analytics", label: "Analytics", alt: "Ticket analytics — volume, response times and staff leaderboard" },
+  { key: "premium",   label: "Premium",   alt: "Premium plans and billing management" },
+];
+
+function ProductTour() {
+  const [active, setActive] = useState(TOUR_SCREENS[0]);
+  return (
+    <section id="tour" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="cs-eyebrow mb-4 justify-center flex">→ See it in action</div>
+          <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
+            The dashboard, <span className="text-cs-cyan">for real.</span>
+          </h2>
+          <p className="text-cs-muted max-w-2xl mx-auto">
+            Not mockups — actual screenshots of the Supreme Bot dashboard running a live server.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2 mb-6" role="group" aria-label="Dashboard screenshots">
+          {TOUR_SCREENS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              aria-pressed={active.key === s.key}
+              onClick={() => setActive(s)}
+              className={`px-4 py-2 rounded-full font-mono text-xs uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
+                active.key === s.key
+                  ? "bg-cs-cyan text-black"
+                  : "border border-cs-border text-cs-muted hover:text-cs-text hover:border-cs-borderHi"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="rounded-xl border border-cs-border overflow-hidden shadow-2xl shadow-cs-cyan/5 bg-cs-panel">
+          <img
+            src={`/screens/${active.key}.webp`}
+            alt={active.alt}
+            width="1440"
+            height="900"
+            loading="lazy"
+            decoding="async"
+            className="w-full h-auto block"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BillingToggle({ interval, onChange }) {
   return (
     <div className="flex flex-col items-center gap-2 mb-10">
@@ -627,11 +737,12 @@ function BillingToggle({ interval, onChange }) {
    from the billing interval; the price block is an aria-live region so the change
    is announced when the toggle flips. */
 function PricingCard({ icon: Icon, name, tagline, seats, price, per, trial, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
+  const tiltRef = useTiltCard(highlighted ? 6 : 4);
   const cardCls = highlighted
-    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative"
+    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
     : "cs-card flex flex-col";
   return (
-    <div className={cardCls}>
+    <div ref={tiltRef} className={cardCls}>
       {highlighted && badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
           {badge}
@@ -711,7 +822,7 @@ function CompareRow({ label, free, premium }) {
   );
 }
 
-/* Hero "6 → 1" convergence motif — six single-purpose bots funnel into one
+/* Hero "8 → 1" convergence motif — eight single-purpose bots funnel into one
    Supreme core. Purely decorative (aria-hidden): a screen reader skips it and
    loses nothing, since the headline + copy already state the value. All motion
    is CSS-only and gated behind prefers-reduced-motion in index.css. */
@@ -720,17 +831,21 @@ function HeroConverge() {
     { icon: Ticket,        label: "Ticket bot" },
     { icon: FileText,      label: "Application bot" },
     { icon: ShieldCheck,   label: "Verify bot" },
+    { icon: SmilePlus,     label: "Reaction-role bot" },
     { icon: Gift,          label: "Giveaway bot" },
     { icon: CalendarClock, label: "Scheduler bot" },
+    { icon: ScrollText,    label: "Logging bot" },
     { icon: Webhook,       label: "Webhook relay" },
   ];
-  const funnelTops = [20, 76, 132, 188, 244, 300];
+  // По една крива на заместен бот — броят ТРЯБВА да съвпада с `replaced`,
+  // иначе фунията рисува повече или по-малко потоци от чиповете отгоре.
+  const funnelTops = [20, 60, 100, 140, 180, 220, 260, 300];
 
   return (
     <div aria-hidden className="hero-converge relative mx-auto w-full max-w-md lg:max-w-none">
       <div className="cs-card !p-6 sm:!p-7 bg-cs-surface/70 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-4">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-dim">Before · six bots</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-dim">Before · eight bots</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-cyan">After · one</span>
         </div>
 
@@ -746,19 +861,12 @@ function HeroConverge() {
           ))}
         </div>
 
-        {/* Funnel: six signals converge to a single point. */}
+        {/* Funnel: eight signals converge to a single point — canvas 2D, not
+            SVG. Particles actually travel along each curve toward the core
+            (see SignalFunnel.jsx); reduced-motion draws the static curves
+            once and never starts a loop. */}
         <div className="hero-funnel relative h-14 my-1.5">
-          <svg viewBox="0 0 320 56" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-            {funnelTops.map((x, i) => (
-              <path
-                key={x}
-                d={`M ${x} 2 C ${x} 30 160 26 160 54`}
-                className="hero-flow"
-                style={{ animationDelay: `${i * 0.4}s` }}
-              />
-            ))}
-            <circle cx="160" cy="54" r="2.5" className="hero-core-dot" />
-          </svg>
+          <SignalFunnel tops={funnelTops} />
         </div>
 
         {/* The one core. */}
@@ -773,16 +881,6 @@ function HeroConverge() {
         </div>
       </div>
     </div>
-  );
-}
-
-function Logo() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="flex-shrink-0">
-      <rect x="1" y="1" width="30" height="30" stroke="#33b1ff" strokeWidth="1.5"/>
-      <path d="M16 4 L28 16 L16 28 L4 16 Z" stroke="#33b1ff" strokeWidth="1.5" fill="#33b1ff" fillOpacity="0.15"/>
-      <circle cx="16" cy="16" r="3" fill="#33b1ff"/>
-    </svg>
   );
 }
 

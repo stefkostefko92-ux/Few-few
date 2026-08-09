@@ -15,6 +15,7 @@ import { readFileSync, existsSync, writeFileSync, renameSync, mkdirSync, rmdirSy
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { parseFallback, replaceFallback } from "../../tools/lib/dashboard-fallback.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -53,6 +54,25 @@ function lastLearnBlock(text) {
   return last;
 }
 
+// Нормализира етикета на увереност. ТИХ ПРОВАЛ, който това затваря: `PROCEDURE.md` (red line 3)
+// учи всеки агент да ползва „Сигурно / Вероятно / Несигурно", а тук се приемаше само английското
+// `verified` — така поука, писана точно по нашата собствена процедура, мълчаливо падаше в Карантина.
+// В една вълна това изяде 22 поуки от 3 агента (letopisetsa 5/5, printadjiyata 5/8, 3d-maniac 8/11):
+// hook-ът връщаше успех, файлът се пишеше, версията просто не мърдаше и никой не разбираше.
+// Неразпознатите стойности пак падат към `unverified` — по-безопасната посока.
+export const CONFIDENCE_SYNONYMS = {
+  сигурно: "verified", потвърдено: "verified", проверено: "verified",
+  вероятно: "probable", "по-вероятно": "probable", likely: "probable",
+  несигурно: "unverified", непроверено: "unverified", quarantine: "unverified",
+  hypothesis: "unverified", hypothese: "unverified", incertain: "unverified",
+  uncertain: "unverified", unknown: "unverified",
+};
+export function normalizeConfidence(raw) {
+  const s = String(raw || "").trim().toLowerCase().replace(/^["']|["']$/g, "");
+  if (s === "verified" || s === "probable" || s === "unverified") return s;
+  return CONFIDENCE_SYNONYMS[s] || "unverified";
+}
+
 function parseLearn(block) {
   const res = { agent: null, date: null, lessons: [] };
   let cur = null;
@@ -64,7 +84,7 @@ function parseLearn(block) {
     // Приема и `text:`, и `lesson:` като начало на поука (агентите естествено варират ключа —
     // nabludatelya/analizatora ползваха `lesson:` и поуките им бяха тихо изхвърлени).
     else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
-    else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = m[1].trim().toLowerCase();
+    else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = normalizeConfidence(m[1]);
     else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = m[1].trim();
     else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
     else if (cur && (m = line.match(/^\s*re-?verify:\s*(\d{4}-\d{2}-\d{2}).*$/i))) cur.reverify = m[1].trim(); // #2 явен TTL за критичен факт
@@ -104,14 +124,24 @@ const INJECTION_RE = new RegExp(
 );
 const looksInjection = (s) => INJECTION_RE.test(String(s));
 
-// „Verified" иска РЕАЛЕН източник. Втвърдено: URL трябва да има истински ХОСТ (с точка,
-// напр. docs.anthropic.com) — отхвърля малформирани като https://zabobovdol/… (repo-path,
-// залепен на https://); ИЛИ реален file:line (път.разширение:ред); ИЛИ познат инструмент/eval.
-// Синтактична проверка (не семантична — hook-ът не отваря URL-а); curate + човек до push.
-const sourceIsReal = (src) =>
-  /https?:\/\/[^/\s]*\.[^/\s.][^/\s]*\//i.test(String(src)) ||           // URL с хост-с-точка + път
-  /[\w./-]+\.[a-z]{1,5}:\d+/i.test(String(src)) ||                         // file.ext:line
-  /\b(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)\b/i.test(String(src));
+// „Verified" иска РЕАЛЕН източник. Синтактична проверка (не семантична — hook-ът не отваря URL-а);
+// curate + човек до push.
+//
+// ИЗРАВНЕНО С `hasSource` (tools/agents/oversee-lib.mjs). Дълго време двете функции даваха РАЗЛИЧЕН
+// отговор за един и същ низ: куката (която решава дали поуката става ФАКТ) беше по-строга от
+// одитора (който после я преглежда). Резултат: 74 поуки с напълно реален източник заседнаха в
+// Карантина и никога не станаха знание — правни цитати с домейн без схема (`tita.bg/laws/427`),
+// репо-пътища без номер на ред (`bot/src/utils/serverEventLog.js`), `discord.com/developers/docs`.
+// Две дефиниции за едно понятие = тих отпад. Приемаме същите форми като `hasSource`; продължаваме
+// да отхвърляме празнотата („N/A", „само коефициенти налични") — там няма какво да се провери.
+// Внасяме КАНОНИЧНИЯ предикат — да не съществуват две дефиниции за „източник“ (точно това
+// заклещи 74 реални поуки в Карантина).
+// ВНИМАНИЕ: `export { x as y } from "..."` е РЕ-ЕКСПОРТ — изнася за други модули, но НЕ създава
+// локална променлива. Първата версия беше само ре-експорт и `sourceIsReal(...)` вътре в main()
+// хвърляше ReferenceError при ВСЯКО захващане — а fail-open catch-ът го маскираше до нула
+// симптоми: учебният цикъл на целия флот мълчеше и изглеждаше „празен ден", не счупен.
+import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
+export { sourceIsReal };
 
 function ensureSections(txt) {
   if (!/##\s*Проверени поуки/.test(txt)) txt += `\n## Проверени поуки (verified)\n`;
@@ -179,6 +209,19 @@ function bumpVersionBy(v, n) {
 
 // Прилага activity запис и (при проверено учене) вдига minor версията + timeline запис.
 // Връща true, ако нещо се е променило.
+// Брои булетите в раздела „Проверени поуки" на паметта. `null` при липсващ/нечетим файл —
+// тогава не пипаме полето (по-добре старо число, отколкото да занулим показателя).
+export function countVerified(agentId, dir = MEM_DIR) {
+  let txt;
+  try { txt = readFileSync(join(dir, `${agentId}.md`), "utf8"); } catch { return null; }
+  let inSec = false, n = 0;
+  for (const ln of txt.split("\n")) {
+    if (/^##\s/.test(ln)) { inSec = /verified|Проверени поуки/i.test(ln); continue; }
+    if (inSec && /^\s*-\s+\*\*/.test(ln)) n++;
+  }
+  return n;
+}
+
 function applyUpdate(obj, agentId, activityEntry, evoDetail, verifiedCount = 1) {
   const a = (obj.agents || []).find((x) => x.id === agentId);
   if (!a) return false;
@@ -187,6 +230,15 @@ function applyUpdate(obj, agentId, activityEntry, evoDetail, verifiedCount = 1) 
   a.activity = a.activity || [];
   if (!a.activity.some((x) => x.summary === activityEntry.summary)) {
     a.activity.unshift(activityEntry); // без cap — пазим целия поток на учене
+    changed = true;
+  }
+
+  // Реалният брой ПРОВЕРЕНИ поуки. Таблото дотук показваше `knowledge.sources` под етикет
+  // „ПОУКИ" — а това са изследователските източници ПРИ РАЖДАНЕТО на агента, статично число,
+  // което не мърда, колкото и да учи флотът. Поддържаме истинския брой тук, до самия запис.
+  const lessons = countVerified(agentId);
+  if (lessons != null && a.knowledge && a.knowledge.lessons !== lessons) {
+    a.knowledge.lessons = lessons;
     changed = true;
   }
 
@@ -225,24 +277,15 @@ function updateDashboard(agentId, entry, evoDetail, verifiedCount = 1) {
   // 2) вграден FALLBACK в index.html (за file:// преглед)
   if (existsSync(DASH_HTML)) {
     try {
-      let h = readFileSync(DASH_HTML, "utf8");
-      const s = h.indexOf("const FALLBACK = {");
-      if (s === -1) return;
-      const b = h.indexOf("{", s);
-      // String-aware скоба-матчер: скоби ВЪТРЕ в JSON низове (напр. поука с "{id}")
-      // не бива да броят — иначе parse гърми тихо и FALLBACK замръзва (реален бъг).
-      let d = 0, i = b, e = -1, inStr = false, esc = false;
-      for (; i < h.length; i++) {
-        const c = h[i];
-        if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
-        if (c === '"') { inStr = true; continue; }
-        if (c === "{") d++; else if (c === "}") { d--; if (d === 0) { e = i; break; } }
-      }
-      if (e === -1) return;
-      const fb = JSON.parse(h.slice(b, e + 1));
+      const h = readFileSync(DASH_HTML, "utf8");
+      // String-aware локаторът живее в tools/lib/dashboard-fallback.mjs — вторият консуматор
+      // (sync-dashboard.mjs) щеше да го ПРЕПИШЕ, а преписаният парсер дрейфва (днешният урок с
+      // двата списъка за тайни и двата брояча на поуки). Скоби ВЪТРЕ в JSON низове (поука с „{id}“)
+      // не бива да се броят — иначе parse гърми тихо и FALLBACK замръзва (реален бъг, поправен веднъж).
+      const fb = parseFallback(h);
+      if (!fb) return;
       if (applyUpdate(fb, agentId, entry, evoDetail, verifiedCount)) {
-        h = h.slice(0, b) + JSON.stringify(fb, null, 2) + h.slice(e + 1);
-        atomicWrite(DASH_HTML, h);
+        atomicWrite(DASH_HTML, replaceFallback(h, fb));
       }
     } catch { /* ignore */ }
   }
@@ -264,7 +307,9 @@ function bgGitSync(agentId) {
     `cd "${PROJECT_DIR}" || exit 0`,
     `git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html" 2>/dev/null`,
     `git diff --cached --quiet 2>/dev/null && exit 0`, // нищо staged → нищо за commit
-    `git -c user.name="agent-memory" -c user.email="noreply@carbonstealth.eu" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
+    // Имейлът е noreply@anthropic.com — иначе GitHub показва авто-комитите като Unverified
+    // (carbonstealth имейлът не е свързан с подписващ акаунт; stop-hook-git-check го лови).
+    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
     `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
     `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
     `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,
@@ -341,4 +386,8 @@ function main() {
   process.exit(0);
 }
 
-try { main(); } catch { process.exit(0); } // никога не блокирай агента заради паметта
+// Пусни main() САМО като CLI (SubagentStop hook) — иначе import от тест чете stdin и излиза,
+// което правеше файла нетестваем (за разлика от memory-preload.mjs, който вече има този гард).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  try { main(); } catch { process.exit(0); } // никога не блокирай агента заради паметта
+}

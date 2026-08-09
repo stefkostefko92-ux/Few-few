@@ -4,7 +4,10 @@
 // Защо: блокът „ПРЕДАВАНЕ" е текстов договор, но НИЩО не проверяваше, че веригата е завършила.
 // Президентът (AI-джията) записва тук старт на поток + всяко предаване + затваряне → незавършените
 // вериги стават ВИДИМИ (връзва се с „блокер с хистерезис": open поток с блокер, който не мърда).
-// Append-only JSONL; runtime данни → git-ignored (`.git-sync.lock`-стил, виж .gitignore).
+// Append-only JSONL и ПРОСЛЕДЕН в git. (Дотук тук пишеше „git-ignored" — остаряло и подвеждащо:
+// точно игнорирането направи trajectory гейта зелен от слепота, защото празен дневник се четеше
+// като „чисто" вместо като „неизмерено". Дневникът е ground truth за пътя на оркестрацията, значи
+// трябва да живее в историята, не в /tmp.)
 //
 //   node tools/agents/flow-ledger.mjs --start "SMTP" --lead vps-adjiyata --steps vps-adjiyata,kodadjiyata,pravniyat-razbirach
 //     → връща flow id
@@ -16,6 +19,7 @@
 import { readFileSync, writeFileSync, appendFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const LEDGER = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory", "_flows.jsonl");
 const argv = process.argv.slice(2);
@@ -76,7 +80,7 @@ const analyzed = [...flows.values()].map((f) => {
 const open = analyzed.filter((f) => !f.closed);
 const problem = analyzed.filter((f) => f.openBlocker || f.stale);
 
-if (JSON_OUT) { console.log(JSON.stringify({ total: analyzed.length, open: open.length, problem, flows: analyzed }, null, 2)); process.exit(problem.length ? 1 : 0); }
+if (JSON_OUT) { await emitJsonNow({ total: analyzed.length, open: open.length, problem, flows: analyzed }, problem.length ? 1 : 0); }
 
 console.log(`\n🔗  Flow ledger — ${analyzed.length} потока (${open.length} отворени)\n`);
 if (!analyzed.length) console.log("  (празно — президентът логва вериги с --start/--handoff/--close)");

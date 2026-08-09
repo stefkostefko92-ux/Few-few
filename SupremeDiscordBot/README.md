@@ -48,6 +48,12 @@ openssl rand -base64 32
 openssl rand -base64 24 | tr -d '/+='
 # → paste into .env → POSTGRES_PASSWORD (and update backend/.env DATABASE_URL to match)
 
+openssl rand -base64 24 | tr -d '/+='
+# → paste into .env → REDIS_PASSWORD
+# → AND into backend/.env + bot/.env → REDIS_URL="redis://:<that value>@redis:6379"
+#   (Redis runs with --requirepass; compose fails fast if REDIS_PASSWORD is unset.
+#    On an existing server autodeploy.sh generates it and rewrites both REDIS_URLs.)
+
 # 4. Fill in Discord + Stripe credentials (see tables below)
 
 # 5. Deploy
@@ -72,6 +78,7 @@ The deploy script will:
 | `POSTGRES_DB` | ✅ | `discordbot` |
 | `POSTGRES_USER` | ✅ | `bot` |
 | `POSTGRES_PASSWORD` | ✅ | — (required, no safe default) |
+| `REDIS_PASSWORD` | ✅ | — (required, no safe default; must match `REDIS_URL` in backend/.env and bot/.env) |
 
 ### `backend/.env`
 
@@ -266,7 +273,7 @@ docker compose exec bot     npm test
 - HTML transcripts (30-day retention)
 - Core slash commands
 
-### Premium (€9.99/server/month · 14-day free trial)
+### Premium (€4.99/server/month · 14-day free trial)
 - Unlimited panels, forms, questions
 - HTML transcripts (forever) + real PDF export (pdfkit) + CSV export
 - AI auto-replies (Google Gemini Flash)

@@ -56,7 +56,7 @@ export function buildVerificationMessage(panel) {
   // GuildMessageReactions intent + MessageReaction/User partials + постоянен
   // messageReactionAdd listener — по-тежко и по-чупливо от бутона, който вече
   // работи. Затова REACTION панелите рендерират същия бутон (виж handleVerificationStart)
-  // и не подканваме потребителя да „реагира", за да няма подвеждащ текст.
+  // и не подканваме потребителя да „реагира“, за да няма подвеждащ текст.
   const typeHint = {
     BUTTON:   "Click the button below to verify.",
     MATH:     "Click the button, then solve the simple math problem.",

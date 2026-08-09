@@ -3,6 +3,8 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { I18nProvider } from "./contexts/I18nContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import CookieConsent from "./components/CookieConsent";
 
 // Eager: the landing page is the LCP-critical entry point — keep it in the
@@ -17,6 +19,12 @@ const CookiesPage = lazy(() => import("./pages/CookiesPage"));
 const EulaPage = lazy(() => import("./pages/EulaPage"));
 const AccessibilityPage = lazy(() => import("./pages/AccessibilityPage"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
+const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage"));
+// Growth Level-2 content pages (docs/PRODUCT_ROADMAP.md) — public, no auth.
+const CompareTicketToolPage = lazy(() => import("./pages/CompareTicketToolPage"));
+const CompareAppyPage = lazy(() => import("./pages/CompareAppyPage"));
+const BestTicketBotGuidePage = lazy(() => import("./pages/BestTicketBotGuidePage"));
+const GdprDiscordBotGuidePage = lazy(() => import("./pages/GdprDiscordBotGuidePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -34,9 +42,9 @@ const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const CommandsPage = lazy(() => import("./pages/CommandsPage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
+const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
+const TagsPage = lazy(() => import("./pages/TagsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
-// AffiliatePage изключен за launch (одит C1/C2 — да не се рекламира неплащана комисионна)
-// const AffiliatePage = lazy(() => import("./pages/AffiliatePage"));
 const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
 
 const queryClient = new QueryClient({
@@ -77,6 +85,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        {/* I18nProvider ЧЕТЕ user.language от AuthProvider → вътре е */}
+        <I18nProvider>
+        <ToastProvider>
         <BrowserRouter>
           <Suspense fallback={<Spinner />}>
             <Routes>
@@ -103,9 +114,10 @@ export default function App() {
                 <Route path=":serverId/automation" element={<AutomationPage />} />
                 <Route path=":serverId/commands" element={<CommandsPage />} />
                 <Route path=":serverId/webhooks" element={<WebhooksPage />} />
+                <Route path=":serverId/kb" element={<KnowledgeBasePage />} />
+                <Route path=":serverId/tags" element={<TagsPage />} />
                 <Route path=":serverId/analytics" element={<AnalyticsPage />} />
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
-                {/* Affiliate route изключен за launch — програмата не плаща комисионни (одит C1/C2) */}
                 <Route path=":serverId/premium" element={<PremiumPage />} />
                 <Route path=":serverId/settings" element={<SettingsPage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />
@@ -121,12 +133,21 @@ export default function App() {
               <Route path="/eula" element={<EulaPage />} />
               <Route path="/accessibility" element={<AccessibilityPage />} />
               <Route path="/status" element={<StatusPage />} />
+              <Route path="/commands" element={<PublicCommandsPage />} />
+
+              {/* Growth Level-2 content pages (docs/PRODUCT_ROADMAP.md) — public. */}
+              <Route path="/compare/ticket-tool-alternative" element={<CompareTicketToolPage />} />
+              <Route path="/compare/appy-alternative" element={<CompareAppyPage />} />
+              <Route path="/guides/best-discord-ticket-bot" element={<BestTicketBotGuidePage />} />
+              <Route path="/guides/gdpr-discord-bot" element={<GdprDiscordBotGuidePage />} />
               {/* Catch-all */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
           <CookieConsent />
         </BrowserRouter>
+        </ToastProvider>
+        </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

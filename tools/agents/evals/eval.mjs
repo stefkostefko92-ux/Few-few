@@ -19,6 +19,7 @@ import { readdirSync, readFileSync, existsSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreOutput, validateSpec, summarize } from "./eval-lib.mjs";
+import { emitJsonNow } from "../../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SPECS_DIR = join(HERE, "specs");
@@ -34,14 +35,30 @@ function knownAgents() {
     return new Set(readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")));
   } catch { return null; }
 }
-// Агентите с външна повърхност = тези с WebFetch/WebSearch в инструментите си (agents.json —
-// каноничният регистър). Те четат недоверен външен вход → задължителен injection spec. Fail-open
-// на грешка при четене (не блокирай гейта заради липсващ регистър — другите проверки още пазят).
+// Агентите с външна повърхност = тези с WebFetch/WebSearch. Те четат недоверен външен вход →
+// задължителен injection spec.
+//
+// ИЗТОЧНИКЪТ НА ИСТИНАТА Е ДЕФИНИЦИЯТА, не `agents.json`. Първата версия четеше само регистъра и
+// точно това я заслепи: `prevodach` и `siydara` имаха WebFetch/WebSearch във frontmatter-а, но
+// НЕ и в `agents.json` (никой не гейтваше този разсинхрон). Гейтът рапортуваше „22/22 покрити",
+// докато два агента, които реално дърпат враждебно съдържание от мрежата, нямаха нито един
+// инжекционен spec. Затова тук взимаме ОБЕДИНЕНИЕТО на двата източника: разсинхрон в която и да е
+// посока разширява списъка, никога не го свива. Fail-closed по подразбиране.
 function externalSurfaceAgents() {
+  const hit = new Set();
+  const WEB = /WebFetch|WebSearch/;
+  try {
+    for (const f of readdirSync(AGENTS_DIR)) {
+      if (!f.endsWith(".md") || f.startsWith("_") || f === "README.md") continue;
+      const fm = readFileSync(join(AGENTS_DIR, f), "utf8").match(/^tools:\s*(.+)$/m);
+      if (fm && WEB.test(fm[1])) hit.add(f.replace(/\.md$/, ""));
+    }
+  } catch { /* дефинициите не се четат — регистърът долу още може да помогне */ }
   try {
     const aj = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
-    return aj.agents.filter((a) => /WebFetch|WebSearch/.test(a.tools || "")).map((a) => a.id);
-  } catch { return []; }
+    for (const a of aj.agents) if (WEB.test(String(a.tools || ""))) hit.add(a.id);
+  } catch { /* няма регистър — дефинициите отгоре вече дадоха списъка */ }
+  return [...hit].sort();
 }
 function loadSpecs() {
   if (!existsSync(SPECS_DIR)) return [];
@@ -56,7 +73,7 @@ const green = (s) => `\x1b[32m${s}\x1b[0m`, red = (s) => `\x1b[31m${s}\x1b[0m`, 
 
 // ── --list ──
 if (has("--list")) {
-  if (JSON_OUT) { console.log(JSON.stringify(specs.map((s) => ({ id: s.id, agent: s.agent, checks: (s.expect || []).length })), null, 2)); process.exit(0); }
+  if (JSON_OUT) { await emitJsonNow(specs.map((s) => ({ id: s.id, agent: s.agent, checks: (s.expect || []).length })), 0); }
   console.log(`\n📋  ${specs.length} golden spec-а:\n`);
   for (const s of specs) console.log(`  ${s.id ? green(s.id) : red(s._file)}  ${dim("· " + (s.agent || "?") + " · " + ((s.expect || []).length) + " проверки")}`);
   process.exit(0);

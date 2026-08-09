@@ -1,6 +1,6 @@
 # Гейт за агентския слой — „ръката" на Президента в CI (Конвейерът).
 # Пуска oversee.mjs (fail-closed) + unit тестовете за надзорната логика при всяка промяна по
-# .claude/agents, settings.json, hooks, таблото или tools/agents|memory. Досега надзорът беше само
+# .claude/agents, settings.json, hooks, таблото или tools/. Досега надзорът беше само
 # ръчен; вече един провал (сирак, рассинхрон FALLBACK↔agents.json, липсваща доктрина) блокира PR.
 name: agents
 
@@ -14,9 +14,11 @@ on:
       - ".claude/hooks/**"
       - "agents-dashboard/agents.json"
       - "agents-dashboard/index.html"
-      - "tools/agents/**"
-      - "tools/memory/**"
-      - "tools/skills/**"
+      # ЦЯЛОТО tools/, не три избрани папки. Стъпката по-долу пуска `find tools -name '*.test.mjs'`
+      # — тоест ВСИЧКИ тестове — но филтърът ги пускаше само при промяна в agents|memory|skills.
+      # Промяна в tools/seo/, tools/lib/, tools/qa/, tools/security/… минаваше БЕЗ нито един тест.
+      # Гейт, чийто обхват е по-тесен от това, което проверява, е зелен по слепота.
+      - "tools/**"
       - ".github/workflows/agents.yml"
   pull_request:
     paths:
@@ -26,9 +28,11 @@ on:
       - ".claude/hooks/**"
       - "agents-dashboard/agents.json"
       - "agents-dashboard/index.html"
-      - "tools/agents/**"
-      - "tools/memory/**"
-      - "tools/skills/**"
+      # ЦЯЛОТО tools/, не три избрани папки. Стъпката по-долу пуска `find tools -name '*.test.mjs'`
+      # — тоест ВСИЧКИ тестове — но филтърът ги пускаше само при промяна в agents|memory|skills.
+      # Промяна в tools/seo/, tools/lib/, tools/qa/, tools/security/… минаваше БЕЗ нито един тест.
+      # Гейт, чийто обхват е по-тесен от това, което проверява, е зелен по слепота.
+      - "tools/**"
       - ".github/workflows/agents.yml"
 
 # Least-privilege: гейтът само чете кода.
@@ -43,34 +47,16 @@ concurrency:
 jobs:
   oversee:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       # Пинат по SHA (не по подвижен таг) — supply-chain дисциплина. actions/checkout v4.2.2.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Node версия (зависимости няма — инструментите са zero-dep)
         run: node --version
-      - name: Надзор над екипа (fail-closed — изход 1 при твърд проблем)
-        run: node tools/agents/oversee.mjs
-      - name: Golden eval — структурна валидност на spec-овете (без агент)
-        run: node tools/agents/evals/eval.mjs --check
-      - name: Покритие на домейни (картата не сочи несъществуващи агенти)
-        run: node tools/agents/coverage.mjs --json > /dev/null
-      - name: Skills lint (frontmatter/name/тяло — fail-closed)
-        run: node tools/skills/lint.mjs
-      - name: Одит за най-малки права (advisory агенти без Write/Edit)
-        run: node tools/agents/tools-audit.mjs
-      - name: Свежест на дефинициите (без просрочени срокове)
-        run: node tools/agents/def-freshness.mjs
-      - name: Drift-lint (счупени референции + бройка/ростер consistency = твърд провал; memory дрейф = съвет)
-        run: node tools/agents/drift-lint.mjs
-      - name: Consistency-audit (zero-defect — противоречия/безизточникови verified в паметта; празен източник = твърд)
-        run: node tools/agents/consistency-audit.mjs --check
-      - name: Loop-audit (readiness на автоматизациите — автономия-стълба)
-        run: node tools/agents/loops/loop-audit.mjs
-      - name: Error-ledger (всяка реална грешка носи регресионен spec — fail-closed)
-        run: node tools/agents/error-ledger.mjs --check
-      - name: Токен-бюджет (гейт срещу разбягване на дефиниция; печат за логовете)
-        run: node tools/agents/token-budget.mjs --check
-      - name: Кандидати за _shared (дедуп на памет през агенти; информативно)
-        run: node tools/agents/shared-candidates.mjs
+      # Списъкът със стъпки живееше преписан на ръка тук И в agents-sweep.yml — и двата бяха се
+      # раздалечили. Вече има един източник: tools/agents/gate.mjs. Пуска ги паралелно (~0.8s
+      # стенен часовник срещу ~4.5 минути последователно) и печата изхода на всяка паднала.
+      - name: Пълен гейт на агентския слой (fail-closed)
+        run: node tools/agents/gate.mjs
       - name: Тестове на надзорната логика + скорера + рубриката + бюджета
         run: node --test $(find tools -name '*.test.mjs')

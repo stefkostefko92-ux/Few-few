@@ -8,7 +8,7 @@ export default function TermsPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Terms of Service" updated="27 June 2026">
+    <LegalPage title="Terms of Service" updated="7 August 2026">
       <Seo
         title="Terms of Service — Supreme Bot"
         description="Terms of Service for Supreme Bot, the multi-tenant Discord bot SaaS platform by Carbon Stealth VCC."
@@ -36,15 +36,15 @@ export default function TermsPage() {
       <S title="2. Eligibility">
         <p>You may use the Service only if:</p>
         <ul>
-          <li>You are at least 13 years of age, or such higher minimum age as required by Discord's Terms of Service or the law of your jurisdiction;</li>
+          <li>You are at least 14 years of age &mdash; the threshold set by Bulgarian law (Personal Data Protection Act), where we are established &mdash; or such higher minimum age as required by Discord&rsquo;s Terms of Service or the law of your jurisdiction;</li>
           <li>You are not prohibited from using the Service under applicable law;</li>
           <li>You have not previously been suspended or removed from the Service; and</li>
           <li>Your use complies with all applicable laws and regulations, including Discord's Terms of Service and Community Guidelines.</li>
         </ul>
         <p>
-          Users in the European Economic Area (EEA) under the age of 16 (or such lower age as
-          permitted by their member state under Article 8 of the GDPR) must have parental or
-          guardian consent to use the Service.
+          Users in the European Economic Area (EEA) below their member state&rsquo;s Article 8 GDPR
+          threshold must have parental or guardian consent to use the Service. That threshold is
+          16 by default, lowered by some member states to as little as 13; in Bulgaria it is 14.
         </p>
       </S>
 
@@ -88,9 +88,9 @@ export default function TermsPage() {
 
         <p><strong>5.2 Paid Subscriptions.</strong> Paid features are available via recurring
         subscriptions in the following tiers (prices in EUR, VAT included where applicable):
-        Premium (€9.99/server/month or €99/year), White-label (€19.99/server/month or €199/year),
-        Agency 5 (€39.99/month or €399/year, up to 5 servers) and Agency 10 (€79.99/month or
-        €799/year, up to 10 servers). Billing is monthly or annual, as selected at checkout.
+        Premium (€4.99/server/month or €49/year), White-label (€9.99/server/month or €99/year),
+        Agency 5 (€19.99/month or €199/year, up to 5 servers) and Agency 10 (€39.99/month or
+        €399/year, up to 10 servers). Billing is monthly or annual, as selected at checkout.
         By subscribing, you:</p>
         <ul>
           <li>Authorise us and our payment processor (Stripe, Inc.) to charge your designated payment method on a recurring basis for the selected billing period; purchases made through Discord's Premium App checkout are processed by Discord Inc. as merchant of record;</li>
@@ -106,6 +106,12 @@ export default function TermsPage() {
         ends, you will not be charged. If you do not cancel, your subscription will automatically
         convert to a paid subscription at the end of the trial period and your payment method
         will be charged.</p>
+
+        <p><strong>5.3a Confirming an order.</strong> The button that places a paid
+        order is labelled with the action and the exact amount and billing period
+        (e.g. &quot;Subscribe to Premium — €4.99/mo&quot;), so it is unambiguous that
+        clicking it creates an obligation to pay, as required by Article 8(2) of
+        Directive 2011/83/EU.</p>
 
         <p><strong>5.4 Cancellation.</strong> You may cancel your subscription at any time via
         the Billing Portal accessible from the Premium page. Cancellation takes effect at the
@@ -133,6 +139,13 @@ export default function TermsPage() {
           Refunds are not available for: subsequent billing periods, trials that have converted
           to paid subscriptions where more than 7 days have elapsed, or accounts terminated for
           violations of these Terms.
+        </p>
+        <p>
+          <strong>Effect of a refund or chargeback on access.</strong> A full refund or a card
+          chargeback ends the subscription immediately: the subscription is cancelled, Premium
+          features are switched off at once and no further charges are made. This is different
+          from a plain cancellation, which leaves access on until the end of the period you have
+          already paid for (see 5.4).
         </p>
         <p>
           <strong>Purchases made through Discord.</strong> For subscriptions purchased through

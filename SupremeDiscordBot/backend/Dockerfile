@@ -46,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 
 # tini ensures proper signal handling for graceful shutdown
 ENTRYPOINT ["/sbin/tini", "--", "/app/docker-entrypoint.sh"]
-CMD ["node", "src/index.js"]
+CMD ["node", "--import", "./src/instrument.js", "src/index.js"]

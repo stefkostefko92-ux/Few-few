@@ -3,17 +3,29 @@ import { MessageFlags,
   SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from "discord.js";
 import api from "../utils/api.js";
+import { checkCooldown } from "../utils/cooldowns.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { MUTED, BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+
+const COOLDOWN_SECONDS = 10;
 
 export default {
   data: new SlashCommandBuilder()
     .setName("poll")
     .setDescription("Create a poll")
+    .setDescriptionLocalizations(CMD_DESC_L10N.poll)
     .addStringOption((o) => o.setName("question").setDescription("Poll question").setRequired(true).setMaxLength(256))
     .addStringOption((o) => o.setName("options").setDescription("Comma-separated options (2-9)").setRequired(true))
     .addBooleanOption((o) => o.setName("multi_choice").setDescription("Allow voting for multiple options").setRequired(false))
     .addIntegerOption((o) => o.setName("duration_hours").setDescription("Auto-close after N hours").setRequired(false).setMinValue(1).setMaxValue(24 * 30)),
 
   async execute(interaction) {
+    const remaining = checkCooldown("poll", interaction.user.id, COOLDOWN_SECONDS);
+    if (remaining > 0) {
+      return interaction.reply({ content: `⏳ Please wait ${remaining}s before creating another poll.`, flags: MessageFlags.Ephemeral });
+    }
+
     const question = interaction.options.getString("question");
     const optionsRaw = interaction.options.getString("options");
     const multiChoice = interaction.options.getBoolean("multi_choice") || false;
@@ -38,7 +50,7 @@ export default {
       });
       poll = data;
     } catch (err) {
-      return interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+      return interaction.editReply(friendlyError(err, interaction));
     }
 
     const { embeds, components } = buildPollMessage(poll, options.map(() => 0));
@@ -69,7 +81,7 @@ export function buildPollMessage(poll, counts) {
   const embed = new EmbedBuilder()
     .setTitle(`📊 ${poll.question}`)
     .setDescription(lines + (poll.closesAt ? `\n\n⏰ Closes <t:${Math.floor(new Date(poll.closesAt).getTime() / 1000)}:R>` : ""))
-    .setColor(poll.closedAt ? 0x9ca3af : 0x00e5ff)
+    .setColor(poll.closedAt ? MUTED : BRAND)
     .setFooter({ text: poll.closedAt ? "Poll closed" : poll.multiChoice ? "Multiple choice" : "Single choice" })
     .setTimestamp();
 

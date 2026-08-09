@@ -25,9 +25,10 @@
 import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 import {
   STALE_DAYS, MERGE_THRESHOLD, TIME_SENSITIVE,
-  jaccard, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
+  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
 } from "./oversee-lib.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -117,6 +118,22 @@ for (const id of allIds) {
     if (fm && jrec.model && fm !== jrec.model) r.hard.push(`модел разсинхрон: frontmatter=${fm} ≠ agents.json=${jrec.model}`);
     if (!fe) r.hard.push("липсва effort във frontmatter (рутинг на усилие)");
     else if (jrec.effort && fe !== jrec.effort) r.hard.push(`усилие разсинхрон: frontmatter=${fe} ≠ agents.json=${jrec.effort}`);
+
+    // Синхрон на ИНСТРУМЕНТИТЕ. Дълго беше негейтван и точно това обезсили инжекционния гейт:
+    // `prevodach` и `siydara` имаха WebFetch/WebSearch в дефиницията, но не и в `agents.json`,
+    // затова проверката за injection покритие ги смяташе за агенти без външна повърхност и
+    // рапортуваше „всички покрити". Разсинхронът в набора инструменти не е козметика — той мени
+    // кой се смята за изложен на недоверено съдържание.
+    const ft = (md.match(/^tools:\s*(.+)$/m) || [])[1];
+    if (ft) {
+      const defTools = ft.split(",").map((s) => s.trim()).filter(Boolean).sort();
+      const jsonTools = (Array.isArray(jrec.tools) ? jrec.tools : []).map((s) => String(s).trim()).filter(Boolean).sort();
+      if (jsonTools.length && defTools.join(",") !== jsonTools.join(",")) {
+        const onlyDef = defTools.filter((t) => !jsonTools.includes(t));
+        const onlyJson = jsonTools.filter((t) => !defTools.includes(t));
+        r.hard.push(`инструменти разсинхрон: само в дефиниция [${onlyDef.join(", ") || "—"}] · само в agents.json [${onlyJson.join(", ") || "—"}]`);
+      }
+    }
   }
 
   if (hasMem) {
@@ -130,9 +147,12 @@ for (const id of allIds) {
     const unsourced = verified.filter((b) => !hasSource(b));
     r.unsourced = unsourced.length;
     if (unsourced.length) r.warn.push(`${unsourced.length}/${verified.length} проверени поуки без цитиран източник (закон „източник или нищо")`);
-    // почти-дубли
+    // почти-дубли. Токенизираме ВЕДНЪЖ на поука, не на всяко сравнение: при m поуки двойките са
+    // m²/2, а `jaccard` токенизира и двата низа всеки път → ~m² токенизации вместо m. Броенето на
+    // двойки остава същото (не клъстери — „3 еднакви" са 3 двойки, не 1).
     let dup = 0;
-    for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccard(verified[i], verified[j]) >= MERGE_THRESHOLD) dup++;
+    const vSets = verified.map((b) => toks(b));
+    for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccardSets(vSets[i], vSets[j]) >= MERGE_THRESHOLD) dup++;
     r.dups = dup;
     if (dup) r.warn.push(`${dup} почти-дубли (Jaccard ≥${MERGE_THRESHOLD}) → curate --merge-dups`);
     // застарели: време-чувствителни >STALE_DAYS, ИЛИ с явна минала „re-verify:" дата (#2)
@@ -177,6 +197,8 @@ if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва обща
 const dupKey = (k) => { const seen = new Set(), dups = new Set(); for (const a of aj.agents) { const v = a[k]; if (v == null) continue; if (seen.has(v)) dups.add(v); else seen.add(v); } return [...dups]; };
 for (const acc of dupKey("accent")) { team.push({ level: "hard", msg: `дублиран accent „${acc}" при два агента — сменѝ единия` }); hardFails++; }
 for (const nm of dupKey("name")) { team.push({ level: "hard", msg: `дублирано име „${nm}" при два агента` }); hardFails++; }
+// Емоджито е втората визуална идентичност (таблото, README, tooltips) — дубъл = двама с едно лице.
+for (const e of dupKey("emoji")) { team.push({ level: "hard", msg: `дублирано емоджи „${e}" при два агента — сменѝ единия` }); hardFails++; }
 
 // --- тренд: сравни с предишна снимка (по избор) → регресии ---
 const trend = [];
@@ -207,8 +229,7 @@ if (snapshotArg) {
 }
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, null, 2));
-  process.exit(hardFails || (STRICT && warns) ? 1 : 0);
+  await emitJsonNow({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, hardFails || (STRICT && warns) ? 1 : 0);
 }
 
 console.log(`\n🏛  Надзор над агентския екип — ${report.length} агента (${TODAY})\n`);

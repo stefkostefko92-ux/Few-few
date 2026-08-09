@@ -35,6 +35,9 @@ const WRITE = process.argv.includes("--write");
 // прилика (≥MERGE_THRESHOLD) — това е редундантност, не противоречие; средният диапазон
 // (SIM..MERGE) остава само флагнат за човек (закон: противоречие → стоп, не трий мълчаливо).
 const MERGE_DUPS = process.argv.includes("--merge-dups");
+// --merge-safe: слива близък-диапазон (SIM..MERGE) двойки САМО когато числовите им токени
+// СЪВПАДАТ (парафраз, не противоречие). Числа се разминават → НЕ пипа, флагва за човек.
+const MERGE_SAFE = process.argv.includes("--merge-safe");
 
 // Време-чувствителни факти (версии, „latest", дати, API дати) гният — flawlessness #8 (TTL/provenance).
 const TIME_SENSITIVE = /верси|latest|текущ|\bv?\d+\.\d+|\b20\d\d\b|API \d|stable|release/i;
@@ -53,6 +56,33 @@ function jaccard(a, b) {
   if (!A.size || !B.size) return 0;
   let inter = 0; for (const x of A) if (B.has(x)) inter++;
   return inter / (A.size + B.size - inter);
+}
+// БЕЛЕЖКА (Трейдъра + Разбивача, 2026-07-29): да свържеш ЕТИКЕТ с ЧИСЛО в свободна проза е
+// NLP-трудно — общ детектор върху ВСИЧКИ поуки или шуми (версии/URL: „edition 2≠4"), или
+// пропуска реалния случай. Затова НЕ правим това.
+// НО (2026-07-30): в БЛИЗКИЯ диапазон (Jaccard ≥ SIM) двата блока са ВЕЧЕ почти един и същ текст —
+// тогава сравняваме само МНОЖЕСТВАТА числа, без да свързваме етикет с число. Съвпадат → парафраз
+// (безопасно за сливане); разминават се → истинско числово противоречие (ξ 0.0065≠0.0019) → човек.
+// Това е тясно и надеждно точно защото прилика ≥SIM вече е гарантирала, че говорят за същото.
+export function numTokens(text) {
+  const t = String(text).toLowerCase()
+    .replace(/ /g, " ")
+    .replace(/(\d)[ ,](?=\d{3}\b)/g, "$1"); // махни хилядни разделители: 52,428,800 → 52428800
+  const out = new Set();
+  let m;
+  // числа/версии/прагове: 2026-06-24.dahlia, 8×1.25, 639-1, 0.05, 100. Lookbehind (?<!\p{L}) отрязва
+  // ИДЕНТИФИКАТОРНИ цифри залепени за буква (B2C, MV3, SHA256, 3DS) — те са имена, не КОЛИЧЕСТВА, и
+  // бяха източник на фалшиви „разлики" (една парафраза изброява „B2B/B2C", другата не). Реалните
+  // количествени противоречия (95.91≠96, 0.0065≠0.0019) са самостоятелни числа → пак се хващат.
+  const re = /(?<!\p{L})\d+(?:[.\-–×]\d+)*(?:\.[a-z]{2,})?/giu;
+  while ((m = re.exec(t))) out.add(m[0].replace(/[–]/g, "-"));
+  return out;
+}
+export function numDiff(a, b) {
+  const A = numTokens(a), B = numTokens(b);
+  const only = (X, Y) => [...X].filter((v) => !Y.has(v));
+  const onlyA = only(A, B), onlyB = only(B, A);
+  return { onlyA, onlyB, match: onlyA.length === 0 && onlyB.length === 0 };
 }
 
 function sectionBounds(lines, heading) {
@@ -79,7 +109,10 @@ function parseEntries(body) {
 }
 const blockText = (e) => e.lines.map((l) => l.trim()).join(" ");
 
-let totalDup = 0, totalCap = 0, totalConflict = 0, totalStale = 0, totalMerged = 0;
+// CLI guard: без него целият обход на паметта се пуска при `import` и виси — президентски
+// одит-клас „код на върха при import" (същият, за който имаме import-safety.test.mjs).
+function main() {
+let totalDup = 0, totalCap = 0, totalParaphrase = 0, totalNumConflict = 0, totalStale = 0, totalMerged = 0;
 
 for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "PROTOCOL.md")) {
   const file = join(MEM_DIR, f);
@@ -122,17 +155,37 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
       }
     }
 
-    // противоречия/близки дублати в средния диапазон (докладвай, не трий)
+    // близки дублати в средния диапазон: класифицирай по ЧИСЛОВИ ТОКЕНИ.
+    //  • числата съвпадат → ПАРАФРАЗ (безопасно сливане при --merge-safe/--merge-dups);
+    //  • числата се разминават → ИСТИНСКО числово противоречие → докладвай за ЧОВЕК, НЕ пипай (закон).
     const kept = live();
-    for (let a = 0; a < kept.length; a++)
+    for (let a = 0; a < kept.length; a++) {
+      if (dropped.has(kept[a])) continue;
       for (let c = a + 1; c < kept.length; c++) {
+        if (dropped.has(kept[c])) continue;
         const ta = blockText(entries[kept[a]]), tc = blockText(entries[kept[c]]);
-        if (jaccard(ta, tc) >= SIM_THRESHOLD) { report.push(`  ⚠ близки (${heading}): \n     • ${ta}\n     • ${tc}`); totalConflict++; }
+        if (jaccard(ta, tc) < SIM_THRESHOLD) continue;
+        const d = numDiff(ta, tc);
+        if (!d.match) {
+          report.push(`  ⚠ ЧИСЛА СЕ РАЗЛИЧАВАТ (${heading}) — човек решава, не пипам:\n     A само: ${d.onlyA.join(", ") || "—"}\n     B само: ${d.onlyB.join(", ") || "—"}\n     • ${ta.slice(0, 150)}\n     • ${tc.slice(0, 150)}`);
+          totalNumConflict++;
+        } else if (MERGE_SAFE || MERGE_DUPS) {
+          const drop = ta.length >= tc.length ? kept[c] : kept[a];
+          const keep = drop === kept[c] ? kept[a] : kept[c];
+          report.push(`  ⇉ слято-безопасно (${heading}; числа съвпадат = парафраз):\n     ✓ ${blockText(entries[keep]).slice(0, 100)}…\n     ✗ ${blockText(entries[drop]).slice(0, 100)}…`);
+          dropped.add(drop); totalMerged++; changed = true;
+          if (drop === kept[a]) break;
+        } else {
+          report.push(`  ≈ парафраз (${heading}; числа съвпадат — добави --merge-safe за сливане):\n     • ${ta.slice(0, 120)}\n     • ${tc.slice(0, 120)}`);
+          totalParaphrase++;
+        }
       }
+    }
 
     // застарели време-чувствителни проверени факти → флаг за повторна проверка (не трий)
     if (heading === "Проверени поуки")
       for (const i of kept) {
+        if (dropped.has(i)) continue;
         const t = blockText(entries[i]), d = lessonDate(t);
         if (d && TIME_SENSITIVE.test(t) && daysSince(d) > STALE_DAYS) {
           report.push(`  ⏳ застаряло (${Math.round(daysSince(d))}д, ${d}): ${t.slice(0, 110)}…`); totalStale++;
@@ -155,6 +208,11 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
   if (changed && WRITE) writeFileSync(file, lines.join("\n")), console.log(`  ✎ записан ${f}`);
 }
 
-console.log(`\ncurate: ${totalDup} дубли, ${totalMerged} слети парафрази${MERGE_DUPS ? "" : " (само dry — добави --merge-dups)"}, ${totalCap} капнати, ${totalConflict} за преглед (противоречия), ${totalStale} застарели (>${STALE_DAYS}д, време-чувствителни).` +
+const mergeHint = MERGE_SAFE || MERGE_DUPS ? "" : " (dry — добави --merge-safe за парафразите)";
+console.log(`\ncurate: ${totalDup} точни дубли, ${totalMerged} слети парафрази${mergeHint}, ${totalCap} капнати, ` +
+  `${totalParaphrase} парафрази за сливане, ${totalNumConflict} ЧИСЛОВИ противоречия (човек решава), ` +
+  `${totalStale} застарели (>${STALE_DAYS}д).` +
   (WRITE ? " [записано]" : " [dry-run — добави --write за прилагане]"));
-process.exit(0);
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) main();

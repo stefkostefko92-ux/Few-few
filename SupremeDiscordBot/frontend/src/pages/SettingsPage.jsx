@@ -1,12 +1,17 @@
 // frontend/src/pages/SettingsPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity } from "lucide-react";
+import { Save, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
 import { getServer, updateServer } from "../api";
+import { useToast } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
+import { LANGUAGE_OPTIONS } from "../i18n/dashboard";
 
 export default function SettingsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
 
   const { data: server, isLoading } = useQuery({
@@ -35,7 +40,7 @@ export default function SettingsPage() {
         welcomerEnabled:    server.welcomerEnabled || false,
         welcomerChannelId:  server.welcomerChannelId || "",
         welcomerMessage:    server.welcomerMessage || "",
-        welcomerEmbedColor: server.welcomerEmbedColor || "#33b1ff",
+        welcomerEmbedColor: server.welcomerEmbedColor || "#8fe600",
         welcomerDmEnabled:  server.welcomerDmEnabled || false,
         welcomerDmMessage:  server.welcomerDmMessage || "",
         autoroleIds:        (server.autoroleIds || []).join(","),
@@ -46,21 +51,37 @@ export default function SettingsPage() {
         eventLogCat_voice:      (server.eventLogCategories || []).includes("voice"),
         eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
         eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
+        eventLogCat_messages:   (server.eventLogCategories || []).includes("messages"),
+        eventLogCat_server:     (server.eventLogCategories || []).includes("server"),
+        // v37 — по избор СВОЙ канал за всяка категория (празно = общият канал).
+        eventLogCh_voice:       server.eventLogChannels?.voice || "",
+        eventLogCh_members:     server.eventLogChannels?.members || "",
+        eventLogCh_moderation:  server.eventLogChannels?.moderation || "",
+        eventLogCh_messages:    server.eventLogChannels?.messages || "",
+        eventLogCh_server:      server.eventLogChannels?.server || "",
+        // Език на бота за сървъра (fallback за членове с неподдържан Discord език)
+        language:               server.language || "en",
       });
     }
   }, [server]);
 
+  const toast = useToast();
   const mutation = useMutation({
     mutationFn: (data) => updateServer(serverId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["server", serverId] });
+      // Виж бележката в TrialBanner: сайдбарът и списъкът със сървъри четат
+      // ДРУГ ключ и остават стари без това.
+      qc.invalidateQueries({ queryKey: ["servers"] });
       setForm((f) => f ? { ...f, customBotToken: "" } : f);
+      toast.success(t("settings.saved"));
     },
+    onError: (err) => toast.error(err?.response?.data?.error || t("settings.saveFailed")),
   });
 
   if (isLoading || !form) {
     return (
-      <div className="p-8 space-y-4">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="cs-card h-16 animate-pulse bg-cs-panel" />
         ))}
@@ -92,15 +113,38 @@ export default function SettingsPage() {
         form.eventLogCat_voice && "voice",
         form.eventLogCat_members && "members",
         form.eventLogCat_moderation && "moderation",
+        form.eventLogCat_messages && "messages",
+        form.eventLogCat_server && "server",
       ].filter(Boolean),
+      // Пращаме канал само за ВКЛЮЧЕНИ категории с попълнена стойност —
+      // иначе изключена категория би оставила висящ канал в базата.
+      eventLogChannels: Object.fromEntries(
+        [["voice", form.eventLogCat_voice], ["members", form.eventLogCat_members],
+         ["moderation", form.eventLogCat_moderation], ["messages", form.eventLogCat_messages],
+         ["server", form.eventLogCat_server]]
+          .filter(([cat, on]) => on && (form[`eventLogCh_${cat}`] || "").trim())
+          .map(([cat]) => [cat, form[`eventLogCh_${cat}`].trim()])
+      ),
+      language: form.language,
+      // Premium функции — AI отговори и round-robin.
       ...(server.isPremium && {
-        customBotName: form.customBotName || null,
-        customBotAvatar: form.customBotAvatar || null,
-        ...(form.customBotToken && { customBotToken: form.customBotToken }),
         aiRepliesEnabled: form.aiRepliesEnabled,
         aiRepliesPrompt: form.aiRepliesPrompt || null,
         roundRobinEnabled: form.roundRobinEnabled,
         roundRobinRoleId: form.roundRobinRoleId || null,
+      }),
+      // White-label полетата се пращат САМО при план, който ги носи.
+      //
+      // Досега целият блок висеше на `isPremium`, а той е ИСТИНА и за обикновен
+      // Premium (който НЕ включва white-label). Бекендът отказва с 403, щом
+      // полето ПРИСЪСТВА в тялото (`!== undefined`) — а `customBotName: null` е
+      // присъствие. Резултат: Premium клиент не можеше да запази НИКАКВА
+      // настройка. Грубият флаг вместо точния е класическият източник на такъв
+      // 403. (Одит 07.08.2026)
+      ...(server.hasWhiteLabel && {
+        customBotName: form.customBotName || null,
+        customBotAvatar: form.customBotAvatar || null,
+        ...(form.customBotToken && { customBotToken: form.customBotToken }),
       }),
     };
     mutation.mutate(payload);
@@ -109,42 +153,47 @@ export default function SettingsPage() {
   const isPremium = server?.isPremium;
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-cs-text">Server Settings</h1>
-        <p className="text-cs-muted text-sm mt-1">Configure bot behaviour for this server</p>
+        <p className="text-cs-muted text-sm mt-1">{t("settings.subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* ── General ─────────────────────────────────────────────────── */}
         <div className="cs-card space-y-4">
-          <h2 className="font-semibold text-cs-text">General</h2>
+          <h2 className="font-semibold text-cs-text">{t("settings.general")}</h2>
 
           <label className="block">
-            <span className="cs-label">Log Channel ID</span>
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-              <input
-                className="cs-input pl-9"
-                placeholder="Discord channel ID for bot activity logs"
-                value={form.logChannelId}
-                onChange={(e) => set("logChannelId", e.target.value)}
-              />
-            </div>
+            <span className="cs-label">{t("settings.logChannel")}</span>
+            <DiscordChannelSelect kind="text" value={form.logChannelId} onChange={(v) => set("logChannelId", v)} />
           </label>
 
           <label className="block">
-            <span className="cs-label">Archive Channel ID</span>
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-              <input
-                className="cs-input pl-9"
-                placeholder="Channel where ticket transcripts are posted on close"
-                value={form.archiveChannelId}
-                onChange={(e) => set("archiveChannelId", e.target.value)}
-              />
-            </div>
+            <span className="cs-label">{t("settings.archiveChannel")}</span>
+            <DiscordChannelSelect kind="text" value={form.archiveChannelId} onChange={(v) => set("archiveChannelId", v)} />
+          </label>
+        </div>
+
+        {/* ── Език на бота за сървъра ─────────────────────────────────── */}
+        <div className="cs-card space-y-4">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-cs-cyan" />
+            <h2 className="font-semibold text-cs-text">{t("language.botForServer")}</h2>
+          </div>
+          <p className="text-sm text-cs-muted">{t("language.botForServer.hint")}</p>
+          <label className="block max-w-xs">
+            <span className="cs-label">{t("language.label")}</span>
+            <select
+              className="cs-input"
+              value={form.language}
+              onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
+            >
+              {LANGUAGE_OPTIONS.map((o) => (
+                <option key={o.code} value={o.code}>{o.label}</option>
+              ))}
+            </select>
           </label>
         </div>
 
@@ -168,40 +217,47 @@ export default function SettingsPage() {
               checked={form.eventLogEnabled}
               onChange={(e) => set("eventLogEnabled", e.target.checked)}
             />
-            <span className="text-sm text-cs-text">Enable activity logging</span>
+            <span className="text-sm text-cs-text">{t("settings.enableLogging")}</span>
           </label>
 
           {form.eventLogEnabled && (
             <div className="pl-6 space-y-3">
               <label className="block">
-                <span className="cs-label">Log Channel ID</span>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-                  <input
-                    className="cs-input pl-9 font-mono text-xs"
-                    placeholder="Discord channel ID where events are posted"
-                    value={form.eventLogChannelId}
-                    onChange={(e) => set("eventLogChannelId", e.target.value)}
-                  />
-                </div>
+                <span className="cs-label">{t("ui.eventLogChannel")}</span>
+                <DiscordChannelSelect kind="text" value={form.eventLogChannelId} onChange={(v) => set("eventLogChannelId", v)} />
               </label>
               <div>
-                <span className="cs-label">Categories to log</span>
+                <span className="cs-label">{t("settings.categoriesToLog")}</span>
+                <p className="text-xs text-cs-dim mt-1 mb-2">{t("settings.perCategoryHint")}</p>
                 <div className="flex flex-col gap-2 mt-1">
                   {[
-                    ["eventLogCat_voice", "Voice — mute / deaf / join / leave / move"],
-                    ["eventLogCat_members", "Members — roles / nickname / timeout / join / leave"],
-                    ["eventLogCat_moderation", "Moderation — ban / unban / kick"],
-                  ].map(([key, label]) => (
-                    <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
+                    ["eventLogCat_voice", t("settings.cat.voice"), "voice"],
+                    ["eventLogCat_members", t("settings.cat.members"), "members"],
+                    ["eventLogCat_moderation", t("settings.cat.moderation"), "moderation"],
+                    ["eventLogCat_messages", t("settings.cat.messages"), "messages"],
+                    ["eventLogCat_server", t("settings.cat.server"), "server"],
+                  ].map(([key, label, cat]) => (
+                    <div key={key} className="flex flex-wrap items-center gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-cs-text flex-1 min-w-[220px]">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded accent-cs-cyan"
+                          checked={form[key]}
+                          onChange={(e) => set(key, e.target.checked)}
+                        />
+                        {label}
+                      </label>
+                      {/* Собствен канал за категорията. Празно = ползвай общия
+                          по-горе, затова placeholder-ът го казва изрично. */}
                       <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded accent-cs-cyan"
-                        checked={form[key]}
-                        onChange={(e) => set(key, e.target.checked)}
+                        className="cs-input w-56 py-1 text-sm font-mono disabled:opacity-40"
+                        value={form[`eventLogCh_${cat}`] || ""}
+                        onChange={(e) => set(`eventLogCh_${cat}`, e.target.value)}
+                        disabled={!form[key]}
+                        aria-label={t("settings.channelForCategory", { category: label })}
+                        placeholder={t("settings.useMainChannel")}
                       />
-                      {label}
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -216,7 +272,7 @@ export default function SettingsPage() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
+              <Zap className="w-5 h-5 text-cs-gold" />
               <h2 className="font-semibold text-cs-text">AI Auto-Replies</h2>
             </div>
             {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
@@ -238,7 +294,7 @@ export default function SettingsPage() {
 
           {form.aiRepliesEnabled && (
             <label className="block">
-              <span className="cs-label">Custom System Prompt (optional)</span>
+              <span className="cs-label">{t("ui.customSystemPrompt")}</span>
               <textarea
                 className="cs-input text-sm"
                 rows={4}
@@ -285,18 +341,8 @@ export default function SettingsPage() {
 
           {form.roundRobinEnabled && (
             <label className="block">
-              <span className="cs-label">Support Role ID</span>
-              <div className="relative">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
-                <input
-                  className="cs-input pl-9"
-                  placeholder="Discord role ID — members of this role will receive tickets"
-                  value={form.roundRobinRoleId}
-                  onChange={(e) => set("roundRobinRoleId", e.target.value)}
-                  disabled={!isPremium}
-                  tabIndex={isPremium ? undefined : -1}
-                />
-              </div>
+              <span className="cs-label">{t("ui.supportRole")}</span>
+              <DiscordRoleSelect value={form.roundRobinRoleId} onChange={(v) => set("roundRobinRoleId", v)} requireAssignable={false} />
               <p className="text-xs text-cs-muted mt-1">
                 The bot must have permission to view members of this role.
               </p>
@@ -318,10 +364,10 @@ export default function SettingsPage() {
           </div>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Name</span>
+            <span className="cs-label">{t("settings.customBotName")}</span>
             <input
               className="cs-input"
-              placeholder="My Awesome Bot"
+              placeholder={t("ui.ph.botName")}
               value={form.customBotName}
               onChange={(e) => set("customBotName", e.target.value)}
               disabled={!isPremium}
@@ -330,7 +376,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Avatar URL</span>
+            <span className="cs-label">{t("settings.customBotAvatar")}</span>
             <input
               className="cs-input"
               placeholder="https://example.com/avatar.png"
@@ -342,11 +388,11 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="cs-label">Custom Bot Token</span>
+            <span className="cs-label">{t("settings.customBotToken")}</span>
             <input
               className="cs-input font-mono text-sm"
               type="password"
-              placeholder="Paste new token to update (leave blank to keep existing)"
+              placeholder={t("ui.ph.tokenUpdate")}
               value={form.customBotToken}
               onChange={(e) => set("customBotToken", e.target.value)}
               autoComplete="off"
@@ -373,28 +419,33 @@ export default function SettingsPage() {
             <input type="checkbox" checked={form.welcomerEnabled}
               onChange={(e) => set("welcomerEnabled", e.target.checked)}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Enable welcome message in a channel</span>
+            <span className="text-sm text-cs-text">{t("settings.enableWelcome")}</span>
           </label>
 
           {form.welcomerEnabled && (
             <div className="pl-6 space-y-3">
+              {/* Канал от СПИСЪК, не 19 цифри на ръка. Сгрешена цифра тук е
+                  причина №1 за „welcomer-ът не работи" — и не гърми никъде.
+                  Picker-ът показва и дали ботът може да пише там. (08.08.2026) */}
               <label className="block">
-                <span className="cs-label">Welcome Channel ID</span>
-                <input className="cs-input font-mono text-xs" value={form.welcomerChannelId}
-                  onChange={(e) => set("welcomerChannelId", e.target.value)}
-                  placeholder="Discord channel ID" />
+                <span className="cs-label">{t("ui.welcomeChannel")}</span>
+                <DiscordChannelSelect
+                  kind="text"
+                  value={form.welcomerChannelId}
+                  onChange={(v) => set("welcomerChannelId", v)}
+                />
               </label>
               <label className="block">
-                <span className="cs-label">Welcome Message (supports variables)</span>
+                <span className="cs-label">{t("ui.welcomeMsgVars")}</span>
                 <textarea className="cs-textarea" rows={3} value={form.welcomerMessage}
                   onChange={(e) => set("welcomerMessage", e.target.value)}
-                  placeholder="Welcome {user} to {server}! You are member #{server.members}." />
+                  placeholder={t("ui.ph.welcomeMember")} />
                 <p className="text-xs text-cs-dim mt-1">
                   {"Variables: {user}, {user.name}, {server}, {server.members}, {date}, {time}"}
                 </p>
               </label>
               <label className="block">
-                <span className="cs-label">Embed Color</span>
+                <span className="cs-label">{t("settings.embedColor")}</span>
                 <input type="color" className="cs-input h-10" value={form.welcomerEmbedColor}
                   onChange={(e) => set("welcomerEmbedColor", e.target.value)} />
               </label>
@@ -405,43 +456,35 @@ export default function SettingsPage() {
             <input type="checkbox" checked={form.welcomerDmEnabled}
               onChange={(e) => set("welcomerDmEnabled", e.target.checked)}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Also DM the new member</span>
+            <span className="text-sm text-cs-text">{t("settings.alsoDm")}</span>
           </label>
 
           {form.welcomerDmEnabled && (
             <label className="block pl-6">
-              <span className="cs-label">Welcome DM</span>
+              <span className="cs-label">{t("ui.welcomeDm")}</span>
               <textarea className="cs-textarea" rows={3} value={form.welcomerDmMessage}
                 onChange={(e) => set("welcomerDmMessage", e.target.value)}
-                placeholder="Welcome {user}! Check out #rules for server info." />
+                placeholder={t("ui.ph.welcomeDm")} />
             </label>
           )}
 
           <div className="border-t border-cs-border pt-4">
             <label className="block">
-              <span className="cs-label">Autorole — Role IDs for new users (comma-separated)</span>
-              <input className="cs-input font-mono text-xs" value={form.autoroleIds}
-                onChange={(e) => set("autoroleIds", e.target.value)}
-                placeholder="Member, Unverified" />
-              <p className="text-xs text-cs-dim mt-1">
-                Automatically assigned to every new member who joins.
-              </p>
+              <span className="cs-label">{t("ui.autoroleMembers")}</span>
+              <DiscordRoleSelect multi value={form.autoroleIds} onChange={(v) => set("autoroleIds", v)} />
+              <p className="text-xs text-cs-dim mt-1">{t("ui.hint.autoroleMembers")}</p>
             </label>
             <label className="block mt-3">
-              <span className="cs-label">Autorole — Role IDs for new bots</span>
-              <input className="cs-input font-mono text-xs" value={form.autoroleBotIds}
-                onChange={(e) => set("autoroleBotIds", e.target.value)}
-                placeholder="Bots" />
-              <p className="text-xs text-cs-dim mt-1">
-                Automatically assigned to bot accounts on join.
-              </p>
+              <span className="cs-label">{t("ui.autoroleBots")}</span>
+              <DiscordRoleSelect multi value={form.autoroleBotIds} onChange={(v) => set("autoroleBotIds", v)} />
+              <p className="text-xs text-cs-dim mt-1">{t("ui.hint.autoroleBots")}</p>
             </label>
           </div>
         </div>
 
         {mutation.isError && (
           <p role="alert" className="text-danger text-sm">
-            {mutation.error?.response?.data?.error || "Failed to save settings"}
+            {mutation.error?.response?.data?.error || t("settings.saveFailed")}
           </p>
         )}
 
@@ -456,7 +499,7 @@ export default function SettingsPage() {
             disabled={mutation.isPending}
           >
             <Save className="w-4 h-4" />
-            {mutation.isPending ? "Saving…" : "Save Settings"}
+            {mutation.isPending ? t("common.saving") : t("settings.save")}
           </button>
         </div>
       </form>

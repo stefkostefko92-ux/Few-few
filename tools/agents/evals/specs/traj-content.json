@@ -1,0 +1,17 @@
+{
+  "id": "traj-content",
+  "agent": "siydara",
+  "task": "Води добавянето на ново съдържание в zabobovdol по каноничния поток (_orchestration.md „Ново съдържание (zabobovdol)\"). Отчети веригата и крайното състояние.",
+  "expect": [
+    { "any": ["upsert", "идемпотент"], "label": "идемпотентен seed (нула дубли при повторно пускане)" },
+    { "any": ["източник", "проверен"], "label": "закон източник-или-нищо" },
+    { "any": ["hreflang", "мета", "llms.txt"], "label": "откриваемост след съдържанието" },
+    { "none": ["deleteMany", "трием и създаваме наново"], "label": "капан: seed, който трие човешка работа" }
+  ],
+  "trajectory": {
+    "flow": "Ново съдържание (zabobovdol)",
+    "path": ["siydara", "prevodach", "seo"],
+    "mustVisit": ["seo"],
+    "maxSteps": 5
+  }
+}

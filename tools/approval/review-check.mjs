@@ -14,6 +14,7 @@
 
 import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join, relative, basename, extname } from "node:path";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : ".";
 const JSON_OUT = process.argv.includes("--json");
@@ -116,8 +117,7 @@ findings.sort((a, b) => order[a.severity] - order[b.severity] || a.platform.loca
 const blockers = findings.filter((f) => f.severity === "block").length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ root: ROOT, scanned: files.length, findings, summary: { blockers, warns: findings.filter((f) => f.severity === "warn").length, infos: findings.filter((f) => f.severity === "info").length } }, null, 2));
-  process.exit(STRICT && blockers ? 1 : 0);
+  await emitJsonNow({ root: ROOT, scanned: files.length, findings, summary: { blockers, warns: findings.filter((f) => f.severity === "warn").length, infos: findings.filter((f) => f.severity === "info").length } }, STRICT && blockers ? 1 : 0);
 }
 
 const icon = { block: "✗", warn: "▲", info: "·" };

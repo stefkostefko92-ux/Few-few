@@ -20,6 +20,24 @@ services:
     image: postgres:16-alpine
     container_name: supremebot_postgres
     restart: unless-stopped
+    # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
+    # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
+    # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
+    # умира само виновният и `restart: unless-stopped` го вдига.
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 256m
+    mem_limit: 1g
+    # Ротация на логовете — без таван json-file расте, докато напълни диска
+    # (и събори всички services). 10MB × 3 файла на контейнер.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-discordbot}
       POSTGRES_USER: ${POSTGRES_USER:-bot}
@@ -42,13 +60,39 @@ services:
     image: redis:7-alpine
     container_name: supremebot_redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
+    # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
+    # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
+    # умира само виновният и `restart: unless-stopped` го вдига.
+    deploy:
+      resources:
+        limits:
+          memory: 192m
+        reservations:
+          memory: 64m
+    mem_limit: 192m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # REDIS_PASSWORD е ЗАДЪЛЖИТЕЛЕН (без несигурен подразбиращ се). Redis без
+    # `requirepass` приема всеки, който стигне до порта — а на споделен VPS това
+    # е всеки друг контейнер в мрежата и всеки локален процес през 127.0.0.1:6381.
+    # `--save ""` не се ползва: appendonly пази състоянието при рестарт.
+    command: >
+      redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set in SupremeDiscordBot/.env (no insecure default)}
     ports:
       - "127.0.0.1:6381:6379"  # bind to localhost only
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # Health check-ът също се автентикира — иначе рапортува „здрав“ през
+      # NOAUTH грешка (redis-cli печата грешката, но кодът за изход е 0).
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -62,6 +106,22 @@ services:
       dockerfile: Dockerfile
     container_name: supremebot_backend
     restart: unless-stopped
+    # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
+    # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
+    # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
+    # умира само виновният и `restart: unless-stopped` го вдига.
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+        reservations:
+          memory: 256m
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       postgres:
         condition: service_healthy
@@ -88,6 +148,22 @@ services:
       dockerfile: Dockerfile
     container_name: supremebot_bot
     restart: unless-stopped
+    # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
+    # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
+    # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
+    # умира само виновният и `restart: unless-stopped` го вдига.
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+        reservations:
+          memory: 256m
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       backend:
         condition: service_healthy
@@ -116,6 +192,22 @@ services:
       dockerfile: Dockerfile
     container_name: supremebot_frontend
     restart: unless-stopped
+    # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
+    # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
+    # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
+    # умира само виновният и `restart: unless-stopped` го вдига.
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+        reservations:
+          memory: 32m
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       backend:
         condition: service_started

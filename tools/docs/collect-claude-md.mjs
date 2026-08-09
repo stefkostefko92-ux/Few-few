@@ -55,7 +55,11 @@ const files = collect().map((abs) => {
 const generated = process.env.GENERATED_DATE || new Date().toISOString().slice(0, 10);
 const payload = { generated, files };
 const banner = "// АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md.mjs — не редактирай ръчно.\n";
-const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2) + ";\n";
+// Таблото (index.html → renderDocs) чете ГЛОБАЛНАТА `docs`, а не `window.__DOCS__` — без този
+// псевдоним проверката `typeof docs === "undefined"` винаги пада и Docs табът показва вечния
+// плейсхолдър „Документите се зареждат от docs.js при деплой". Пишем и двете: `__DOCS__` е
+// стабилното име за външни четци, `docs` е това, което рендерът реално ползва.
+const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2) + ";\nvar docs = window.__DOCS__;\n";
 
 if (CHECK) {
   const cur = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";

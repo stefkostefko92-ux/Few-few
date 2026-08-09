@@ -1,0 +1,125 @@
+name: supremediscordbot
+
+on:
+  push:
+    paths:
+      - 'SupremeDiscordBot/**'
+      - '.github/workflows/supremediscordbot.yml'
+  pull_request:
+    paths:
+      - 'SupremeDiscordBot/**'
+      - '.github/workflows/supremediscordbot.yml'
+
+concurrency:
+  group: supremediscordbot-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  # Продуктът е три отделни пакета (backend · bot · frontend), всеки със свой lock и скриптове.
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: SupremeDiscordBot/backend
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SupremeDiscordBot/backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm test
+
+  # ─── Интеграция срещу ЖИВ Postgres ─────────────────────────────────────────
+  # Отделна задача, защото иска услуга и е по-бавна. Доказва това, което 428-те
+  # unit теста НЕ МОГАТ: че миграциите се прилагат от нула, че схемата описва
+  # базата (нулев дрейф), че чуждите ключове и уникалните индекси държат, и че
+  # едновременните подавания дават точно един ред.
+  #
+  # Дотук нищо в CI не е докосвало база — миграция можеше да е счупена месеци.
+  # (Одит, 07.08.2026)
+  backend-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: SupremeDiscordBot/backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: supreme_it
+        ports:
+          - 5432:5432
+        # Без health-check стъпките тръгват, преди базата да приема връзки.
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/supreme_it
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SupremeDiscordBot/backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run test:integration
+
+  bot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: SupremeDiscordBot/bot
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SupremeDiscordBot/bot/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: SupremeDiscordBot/frontend
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: SupremeDiscordBot/frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      # Бюджет за размера на билда. Измерихме CWV веднъж с истински Chromium и
+      # поправихме CLS-а, но нищо не пречеше на следващия да го върне. Пълен
+      # Lighthouse на всеки PR е бавен и шумен (три пробега → три числа);
+      # размерът е детерминистичен и е реалната причина за регресиите на LCP/TBT.
+      # Полевите числа се сверяват след деплой с `tools/seo/cwv.mjs`.
+      - run: npm run budget

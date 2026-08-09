@@ -1,10 +1,12 @@
 // frontend/src/pages/CommandsPage.jsx
 import { useState, useMemo } from "react";
+import { useT } from "../contexts/I18nContext";
 import { useQuery } from "@tanstack/react-query";
 import { Search, BookOpen, Terminal, LayoutDashboard } from "lucide-react";
 import { getCommandsCatalog } from "../api";
 
 export default function CommandsPage() {
+  const { t } = useT();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
 
@@ -38,7 +40,7 @@ export default function CommandsPage() {
   }, [catalog, query, activeCategory]);
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       <div className="mb-6">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
           <BookOpen className="w-7 h-7 text-cs-cyan" /> Commands
@@ -57,12 +59,12 @@ export default function CommandsPage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search commands, features, descriptions…"
-            aria-label="Search commands, features, and descriptions"
+            placeholder={t("commands.searchPlaceholder")}
+            aria-label={t("commands.search")}
             className="flex-1 bg-transparent outline-none text-cs-text placeholder-cs-dim"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="text-cs-dim hover:text-white text-xs">Clear</button>
+            <button onClick={() => setQuery("")} className="text-cs-dim hover:text-white text-xs">{t("commands.clear")}</button>
           )}
         </div>
       </div>

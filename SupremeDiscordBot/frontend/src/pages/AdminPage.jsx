@@ -4,19 +4,20 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart2, Users, Server, DollarSign, FileText,
   Shield, Ban, Search, Trash2, RotateCcw, Edit, MessageSquare,
-  Star, AlertTriangle, CheckCircle, Sparkles,
+  Star, AlertTriangle, CheckCircle, Sparkles, TrendingUp,
 } from "lucide-react";
 import api, {
-  getAnalytics, getAdminUsers, getAdminUser,
+  getAnalytics, getRevenue, getAdminUsers, getAdminUser,
   getPayments, getAuditLogs, getAdminServers, getAdminServer,
-  deleteAdminServer, resetAdminServer, broadcastToServer, setServerPremium,
-  deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer,
+  deleteAdminServer, resetAdminServer, broadcastToServer, setServerPlan,
+  deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer, updateUserRole, setUserBlacklisted
 } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 
 const TABS = [
   { id: "analytics", label: "Analytics", icon: BarChart2 },
+  { id: "revenue",   label: "Revenue",   icon: TrendingUp },
   { id: "users",     label: "Users",     icon: Users },
   { id: "servers",   label: "Servers",   icon: Server },
   { id: "payments",  label: "Payments",  icon: DollarSign },
@@ -34,7 +35,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState("analytics");
 
   return (
-    <div className="p-8 max-w-[1600px]">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px]">
       {/* Header */}
       <div className="mb-8">
         <div className="cs-eyebrow">→ Super Admin Panel</div>
@@ -66,6 +67,7 @@ export default function AdminPage() {
       </div>
 
       {tab === "analytics" && <AnalyticsTab />}
+      {tab === "revenue"   && <RevenueTab />}
       {tab === "users"     && <UsersTab />}
       {tab === "servers"   && <ServersTab />}
       {tab === "payments"  && <PaymentsTab />}
@@ -102,9 +104,12 @@ function AnalyticsTab() {
         <Stat label="Applications"    value={data?.totalApplications ?? 0} />
         <Stat label="Panels"          value={data?.totalPanels ?? 0} />
         <Stat label="Premium %"       value={`${data?.premiumPercentage ?? 0}%`} />
-        <Stat label="MRR (USD)"       value={`$${(data?.mrr ?? 0).toFixed(2)}`} accent />
         <Stat label="Base Servers"    value={data?.baseServers ?? 0} />
       </div>
+
+      <p className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">
+        → Revenue (MRR, ARPU, churn, trial funnel) lives in the Revenue tab — one number, one definition.
+      </p>
 
       {data?.recentTickets?.length > 0 && (
         <div className="cs-card">
@@ -147,6 +152,174 @@ function SparklineChart({ data }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REVENUE — единственото място с приходни числа (GET /api/admin/revenue).
+// Всички суми са в EUR. Каталожните цени са с ВКЛЮЧЕН ДДС (tax_behavior=
+// inclusive), затова показваме бруто и нето-приблизител (÷1.20, BG ставка).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const eur = (n) => `€${Number(n ?? 0).toFixed(2)}`;
+const pct = (n) => `${Number(n ?? 0).toFixed(2)}%`;
+
+function RevenueTab() {
+  const { data, isLoading, isError, error } = useQuery({ queryKey: ["revenue"], queryFn: getRevenue });
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="status">
+        <span className="sr-only">Loading revenue…</span>
+        {Array.from({ length: 8 }).map((_, i) => <div key={i} className="cs-card h-28 animate-pulse" />)}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="border border-danger/40 bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">
+        Could not load revenue: {error?.response?.data?.error || error?.message}
+      </div>
+    );
+  }
+
+  const d = data || {};
+  const tiers = d.byTier || [];
+  const ex = d.excluded || {};
+  const diag = d.diagnostics || {};
+  const dataGaps = (diag.unknownInterval || 0) + (diag.unknownPlan || 0) + (ex.other?.count || 0);
+
+  return (
+    <div className="space-y-8">
+      {/* Headline */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <RevStat label="MRR (gross, VAT incl.)" value={eur(d.mrrGross)} sub={`net ≈ ${eur(d.mrrNet)}`} accent />
+        <RevStat label="ARR (gross)"            value={eur(d.arrGross)} sub={`net ≈ ${eur(d.arrNet)}`} />
+        <RevStat label="Active subscriptions"   value={d.paidSubscriptions ?? 0}
+                 sub={`${d.paidServers ?? 0} server · ${d.paidAgencies ?? 0} agency`} />
+        <RevStat label="ARPU (gross)"           value={eur(d.arpuGross)} sub={`net ≈ ${eur(d.arpuNet)} · per paid subscription`} />
+        <RevStat label={`Churn ${d.churn?.windowDays ?? 30}d`} value={pct(d.churn?.rate)}
+                 sub={`${d.churn?.canceled ?? 0} canceled / ${(d.churn?.activeNow ?? 0) + (d.churn?.canceled ?? 0)} base`} />
+        <RevStat label="Active trials"          value={d.trials?.active ?? 0}
+                 sub={`${d.trials?.used ?? 0} trials ever used`} />
+        <RevStat label="Trial → paid"           value={pct(d.trials?.conversionRate)}
+                 sub={`${d.trials?.converted ?? 0} of ${d.trials?.used ?? 0} (historical)`} />
+        <RevStat label="Cash collected (month)" value={eur(d.cashCollectedThisMonth)}
+                 sub="paid invoices this calendar month — not MRR" />
+      </div>
+
+      {/* Not in MRR */}
+      <div className="cs-card">
+        <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Not counted in MRR</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <RevStat label="Trialing (Stripe)" value={ex.trialing?.count ?? 0} sub={`${eur(ex.trialing?.potentialMrr)} potential`} />
+          <RevStat label="Gifted (manual)"   value={ex.gifted?.count ?? 0}   sub={`${eur(ex.gifted?.listValue)} list value given away`} />
+          <RevStat label="Past due"          value={ex.pastDue?.count ?? 0}  sub={`${eur(ex.pastDue?.atRiskMrr)} at risk`} />
+          <RevStat label="Discord billed"    value={ex.discord?.count ?? 0}  sub={`${eur(ex.discord?.listValue)} outside Stripe`} />
+        </div>
+      </div>
+
+      {/* Per-tier table */}
+      <div className="cs-card p-0 overflow-x-auto">
+        <table className="cs-table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th className="text-right">Subs</th>
+              <th className="text-right">Monthly</th>
+              <th className="text-right">Yearly</th>
+              <th className="text-right">MRR (gross)</th>
+              <th className="text-right">MRR (net ≈)</th>
+              <th className="text-right">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.length === 0 ? (
+              <tr><td colSpan={7} className="text-cs-dim text-sm">No active paid subscriptions yet.</td></tr>
+            ) : tiers.map((t) => (
+              <tr key={t.plan}>
+                <td>
+                  <span className="text-cs-text font-medium">{t.label}</span>
+                  <span className="font-mono text-[10px] text-cs-dim ml-2">{t.plan}</span>
+                </td>
+                <td className="text-right font-mono text-xs text-cs-muted">{t.count}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{t.monthlyCount} · {eur(t.monthlyMrr)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{t.yearlyCount} · {eur(t.yearlyMrr)}</td>
+                <td className="text-right font-display font-bold text-cs-cyan">{eur(t.mrr)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{eur(t.mrr / (1 + (d.vatRate ?? 0.2)))}</td>
+                <td className="text-right font-mono text-xs text-cs-dim">
+                  {d.mrrGross > 0 ? pct((t.mrr / d.mrrGross) * 100) : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {tiers.length > 0 && (
+            <tfoot>
+              <tr>
+                <td className="text-cs-text font-semibold">Total</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{d.paidSubscriptions}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{d.interval?.monthlyCount} · {eur(d.interval?.monthlyMrr)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{d.interval?.yearlyCount} · {eur(d.interval?.yearlyMrr)}</td>
+                <td className="text-right font-display font-bold text-cs-cyan">{eur(d.mrrGross)}</td>
+                <td className="text-right font-mono text-xs text-cs-muted">{eur(d.mrrNet)}</td>
+                <td className="text-right font-mono text-xs text-cs-dim">100%</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+
+      {/* Data gaps — мълчаливо изкривяване на числата е по-лошо от липсващо число */}
+      {dataGaps > 0 && (
+        <div className="border border-warning/40 bg-warning/5 px-4 py-3 text-xs text-warning space-y-1" role="status">
+          <div className="font-mono uppercase tracking-wider">⚠ Data gaps affecting the numbers</div>
+          {diag.unknownInterval > 0 && <div>{diag.unknownInterval} active subscription(s) without a billing interval — counted as monthly.</div>}
+          {diag.unknownPlan > 0 && <div>{diag.unknownPlan} subscription(s) on an unpriced plan — excluded entirely.</div>}
+          {ex.other?.count > 0 && <div>{ex.other.count} row(s) in another Stripe status (unpaid / disputed / refunded / unknown) — excluded.</div>}
+          {diag.grandfathered > 0 && <div>{diag.grandfathered} grandfathered row(s) without a plan, priced as White-label.</div>}
+        </div>
+      )}
+
+      {/* Methodology */}
+      <div className="cs-card text-xs text-cs-muted leading-relaxed space-y-2">
+        <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Methodology</h2>
+        <p>
+          MRR is derived from <strong className="text-cs-text">subscription state</strong> (Server + Agency), not from
+          the payment log: monthly plans at full list price, annual plans at price ÷ 12. Only
+          <code className="font-mono text-cs-cyan"> stripeStatus = active</code> counts.
+        </p>
+        <p>
+          Trialing, manually gifted, past-due and Discord-billed subscriptions are reported separately and are
+          <strong className="text-cs-text"> not</strong> in MRR. Agency-covered servers stay on plan
+          <code className="font-mono"> free</code>, so a seat is never billed twice — the agency subscription carries it.
+        </p>
+        <p>
+          Prices are list prices in <strong className="text-cs-text">EUR with VAT included</strong>; net is an
+          approximation (÷ 1.20, BG rate). Under EU OSS the rate follows the customer's country — the exact net/VAT
+          split is in the Stripe Tax report. Coupons and prorations are not reflected.
+        </p>
+        <p>
+          Churn is approximate: cancellations are dated by <code className="font-mono">updatedAt</code>, not by an exact
+          cancellation timestamp; deleted servers are not counted. Trial conversion is historical
+          (ever-trialed vs. premium now), not cohort-based.
+        </p>
+        <p className="text-cs-dim">
+          Generated {d.generatedAt ? new Date(d.generatedAt).toLocaleString() : "—"} · authoritative figures live in the
+          Stripe Dashboard.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function RevStat({ label, value, sub, accent }) {
+  return (
+    <div className="cs-stat">
+      <div className="cs-stat-label">{label}</div>
+      <div className={`cs-stat-value ${accent ? "text-cs-cyan" : ""}`}>{value}</div>
+      {sub && <div className="font-mono text-[10px] text-cs-dim mt-1">{sub}</div>}
     </div>
   );
 }
@@ -197,7 +370,7 @@ function UsersTab() {
         </select>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -289,7 +462,7 @@ function UserDetailModal({ userId, onClose }) {
   });
 
   const setRole = useMutation({
-    mutationFn: ({ role }) => api.patch(`/admin/users/${userId}/role?confirm=true`, { role }).then((r) => r.data),
+    mutationFn: ({ role }) => updateUserRole(userId, role),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["adminUsers"] });
       qc.invalidateQueries({ queryKey: ["adminUser", userId] });
@@ -297,7 +470,7 @@ function UserDetailModal({ userId, onClose }) {
   });
 
   const setBlacklist = useMutation({
-    mutationFn: ({ blacklisted }) => api.patch(`/admin/users/${userId}/blacklist?confirm=true`, { blacklisted }).then((r) => r.data),
+    mutationFn: ({ blacklisted }) => setUserBlacklisted(userId, blacklisted),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["adminUsers"] });
       qc.invalidateQueries({ queryKey: ["adminUser", userId] });
@@ -382,9 +555,22 @@ function UserDetailModal({ userId, onClose }) {
 // SERVERS (full CRUD)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Всички ръчно задаваеми планове (PLANS в backend/src/lib/premium.js).
+const PLAN_OPTIONS = [
+  { value: "free",       label: "Free",        note: "Revokes all premium features (base limits)." },
+  { value: "premium",    label: "Premium",     note: "Unlimited panels/forms, AI replies, round-robin, webhooks, API." },
+  { value: "whitelabel", label: "White-label", note: "Premium + custom bot under the customer's own brand." },
+  { value: "agency5",    label: "Agency 5",    note: "White-label for up to 5 servers — creates a manual Agency owned by the server owner; they attach the other servers themselves." },
+  { value: "agency10",   label: "Agency 10",   note: "White-label for up to 10 servers — creates a manual Agency owned by the server owner; they attach the other servers themselves." },
+];
+
+// Кратък етикет за Plan колоната.
+const PLAN_BADGE = { premium: "Premium", whitelabel: "White-label", agency5: "Agency 5", agency10: "Agency 10" };
+
 function ServersTab() {
   const qc = useQueryClient();
-  const [confirmPremium, setConfirmPremium] = useState(null);
+  const [confirmPlan, setConfirmPlan] = useState(null); // { server }
+  const [selectedPlan, setSelectedPlan] = useState("premium");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmReset, setConfirmReset] = useState(null);
   const [editServer, setEditServer] = useState(null);
@@ -401,9 +587,9 @@ function ServersTab() {
     qc.invalidateQueries({ queryKey: ["analytics"] });
   };
 
-  const setPremium = useMutation({
-    mutationFn: ({ serverId, enabled, reason }) => setServerPremium(serverId, enabled, reason),
-    onSuccess: () => { invalidate(); setConfirmPremium(null); setReason(""); },
+  const setPlanMut = useMutation({
+    mutationFn: ({ serverId, plan, reason }) => setServerPlan(serverId, plan, reason),
+    onSuccess: () => { invalidate(); setConfirmPlan(null); setReason(""); },
   });
 
   const delServer = useMutation({
@@ -427,7 +613,7 @@ function ServersTab() {
         </div>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -450,7 +636,7 @@ function ServersTab() {
                 <td>
                   <div className="flex items-center gap-3">
                     {s.icon
-                      ? <img src={`https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=32`} className="w-8 h-8 border border-cs-border" alt="" />
+                      ? <img src={s.icon} className="w-8 h-8 border border-cs-border" alt="" />
                       : <div className="w-8 h-8 border border-cs-border bg-cs-panel flex items-center justify-center text-xs font-bold text-cs-cyan">{s.name[0]}</div>}
                     <div>
                       <div className="text-cs-text font-medium">{s.name}</div>
@@ -459,11 +645,15 @@ function ServersTab() {
                   </div>
                 </td>
                 <td>
-                  {s.isPremium
-                    ? s.stripeStatus === "manual"
-                      ? <span className="cs-badge-manual"><Sparkles className="w-3 h-3" aria-hidden="true" /> Manual</span>
-                      : <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>
-                    : <span className="cs-badge-muted">Base</span>}
+                  {s.agencyId
+                    ? <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Agency seat</span>
+                    : s.plan && s.plan !== "free"
+                      ? s.planSource === "manual"
+                        ? <span className="cs-badge-manual"><Sparkles className="w-3 h-3" aria-hidden="true" /> {PLAN_BADGE[s.plan] || s.plan} · manual</span>
+                        : <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> {PLAN_BADGE[s.plan] || s.plan}</span>
+                      : s.isPremium
+                        ? <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>
+                        : <span className="cs-badge-muted">Base</span>}
                 </td>
                 <td className="text-cs-muted font-mono text-xs">{s._count.tickets}</td>
                 <td className="text-cs-muted font-mono text-xs">{s._count.panels}</td>
@@ -471,21 +661,15 @@ function ServersTab() {
                 <td className="text-cs-dim text-xs">{new Date(s.createdAt).toLocaleDateString()}</td>
                 <td className="text-right">
                   <div className="flex gap-1 justify-end items-center">
-                    {s.isPremium ? (
-                      <button
-                        onClick={() => setConfirmPremium({ server: s, action: "revoke" })}
-                        className="cs-btn-sm text-danger hover:bg-danger/10 border border-danger/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
-                        title="Revoke Premium"
-                        aria-label={`Revoke Premium for ${s.name}`}
-                      >Revoke</button>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmPremium({ server: s, action: "grant" })}
-                        className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
-                        title="Grant Premium"
-                        aria-label={`Grant Premium for ${s.name}`}
-                      >✦ Grant</button>
-                    )}
+                    <button
+                      onClick={() => {
+                        setSelectedPlan(s.agencyId ? "agency5" : (s.plan && s.plan !== "free" ? s.plan : "premium"));
+                        setConfirmPlan({ server: s });
+                      }}
+                      className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
+                      title="Change plan"
+                      aria-label={`Change plan for ${s.name}`}
+                    >✦ Plan</button>
                     <button onClick={() => setEditServer(s)}       className="cs-btn-ghost cs-btn-sm" title="Edit" aria-label={`Edit ${s.name}`}><Edit className="w-3.5 h-3.5" aria-hidden="true" /></button>
                     <button onClick={() => setBroadcastServer(s)}  className="cs-btn-ghost cs-btn-sm" title="Broadcast" aria-label={`Broadcast to ${s.name}`}><MessageSquare className="w-3.5 h-3.5" aria-hidden="true" /></button>
                     <button onClick={() => setConfirmReset(s)}     className="cs-btn-ghost cs-btn-sm text-warning hover:bg-warning/10" title="Reset" aria-label={`Reset ${s.name}`}><RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /></button>
@@ -498,32 +682,33 @@ function ServersTab() {
         </table>
       </div>
 
-      {confirmPremium && (
+      {confirmPlan && (
         <ConfirmModal
-          title={confirmPremium.action === "grant" ? "Grant Premium" : "Revoke Premium"}
-          danger={confirmPremium.action === "revoke"}
-          confirmLabel={confirmPremium.action === "grant" ? "✦ Grant Premium" : "Revoke"}
-          onCancel={() => { setConfirmPremium(null); setReason(""); }}
-          onConfirm={() => setPremium.mutate({ serverId: confirmPremium.server.id, enabled: confirmPremium.action === "grant", reason })}
-          loading={setPremium.isPending}
-          error={setPremium.error?.response?.data?.error}
+          title="Change plan"
+          danger={selectedPlan === "free"}
+          confirmLabel={selectedPlan === "free" ? "Revoke (set Free)" : `✦ Set ${PLAN_OPTIONS.find((p) => p.value === selectedPlan)?.label}`}
+          onCancel={() => { setConfirmPlan(null); setReason(""); }}
+          onConfirm={() => setPlanMut.mutate({ serverId: confirmPlan.server.id, plan: selectedPlan, reason })}
+          loading={setPlanMut.isPending}
+          error={setPlanMut.error?.response?.data?.error}
         >
           <div className="mb-4">
             <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">Server</div>
-            <div className="font-semibold text-cs-text">{confirmPremium.server.name}</div>
-            <div className="font-mono text-[10px] text-cs-dim">{confirmPremium.server.id}</div>
+            <div className="font-semibold text-cs-text">{confirmPlan.server.name}</div>
+            <div className="font-mono text-[10px] text-cs-dim">{confirmPlan.server.id}</div>
           </div>
-          {confirmPremium.action === "grant" ? (
-            <div className="border border-premium/40 bg-premium/5 px-3 py-2 text-xs text-premium mb-4">
-              ✦ Grants Premium WITHOUT charging Stripe. Unlimited panels/forms, PDF export, AI replies, round-robin, white-label.
-            </div>
-          ) : (
-            <div className="border border-danger/40 bg-danger/5 px-3 py-2 text-xs text-danger mb-4">
-              ⚠ Flips Premium flag off. Stripe subscription (if any) stays active — cancel manually in Stripe if needed.
-            </div>
-          )}
+
+          <label className="cs-label">Plan (manual, no Stripe charge — excluded from MRR)</label>
+          <select className="cs-input mb-2" value={selectedPlan} onChange={(e) => setSelectedPlan(e.target.value)}>
+            {PLAN_OPTIONS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+          <div className={`border px-3 py-2 text-xs mb-4 ${selectedPlan === "free" ? "border-danger/40 bg-danger/5 text-danger" : "border-premium/40 bg-premium/5 text-premium"}`}>
+            {PLAN_OPTIONS.find((p) => p.value === selectedPlan)?.note}
+            {selectedPlan === "free" && " Active Stripe subscription (if any) stays active — cancel it in Stripe first."}
+          </div>
+
           <label className="cs-label">Reason (optional, audit-logged)</label>
-          <input className="cs-input" placeholder={confirmPremium.action === "grant" ? "e.g. Partnership, trial extension" : "e.g. Terms violation"} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <input className="cs-input" placeholder={selectedPlan === "free" ? "e.g. Terms violation" : "e.g. Partnership, sponsor deal"} value={reason} onChange={(e) => setReason(e.target.value)} />
         </ConfirmModal>
       )}
 
@@ -683,19 +868,22 @@ function PaymentsTab() {
   });
 
   const payments = data?.payments || [];
-  const mrr = data?.mrr || 0;
+  // КАСА, не MRR: сумата на реално платените фактури този календарен месец.
+  // (Полето по-рано се казваше `mrr` — виж routes/admin.js, секция REVENUE.)
+  const collected = data?.collectedThisMonth || 0;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="font-mono text-sm text-cs-muted">→ {data?.total ?? 0} transactions</div>
         <div className="cs-card py-2 px-4 text-sm">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mr-2">MRR (this month)</span>
-          <span className="font-display font-bold text-cs-cyan text-lg">${mrr.toFixed(2)}</span>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mr-2">Cash collected (this month)</span>
+          <span className="font-display font-bold text-cs-cyan text-lg">{eur(collected)}</span>
+          <span className="font-mono text-[10px] text-cs-dim ml-2">not MRR → Revenue tab</span>
         </div>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>
@@ -715,7 +903,7 @@ function PaymentsTab() {
               <tr key={p.id}>
                 <td className="text-xs text-cs-muted">{new Date(p.createdAt).toLocaleString()}</td>
                 <td className="font-mono text-[10px] text-cs-dim">{p.serverId}</td>
-                <td className="font-display font-bold">${(p.amount / 100).toFixed(2)} <span className="text-xs text-cs-dim uppercase">{p.currency}</span></td>
+                <td className="font-display font-bold">{(p.amount / 100).toFixed(2)} <span className="text-xs text-cs-dim uppercase">{p.currency}</span></td>
                 <td>
                   {p.status === "paid"         ? <span className="cs-badge-success">Paid</span>
                   : p.status === "failed"      ? <span className="cs-badge-danger">Failed</span>
@@ -795,7 +983,7 @@ function AuditTab() {
         </button>
       </div>
 
-      <div className="cs-card p-0 overflow-hidden">
+      <div className="cs-card p-0 overflow-x-auto">
         <table className="cs-table">
           <thead>
             <tr>

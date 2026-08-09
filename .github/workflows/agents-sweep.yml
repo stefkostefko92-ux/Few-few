@@ -8,31 +8,37 @@ on:
     - cron: "17 6 * * 1" # понеделник 06:17 UTC (off-peak минута — не :00)
   workflow_dispatch: {}
 
+concurrency:
+  group: agents-sweep-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   sweep:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Node версия (zero-dep)
         run: node --version
-      - name: Loop-audit (readiness на автоматизациите)
-        run: node tools/agents/loops/loop-audit.mjs
+      # Един източник с agents.yml (tools/agents/gate.mjs). Дотук sweep-ът преписваше СВОЙ списък и
+      # беше по-СЛАБ от PR гейта — без consistency-audit, recovery-audit, trajectory-audit,
+      # loop-audit и defect-rate — тоест седмичният „пълен" sweep пропускаше пет проверки, без
+      # някой да го е решавал. Преписан на две места гейт дрейфва винаги.
       - name: Пълен гейт на агентския слой (loop „health-sweep")
-        run: |
-          node tools/agents/oversee.mjs
-          node tools/agents/drift-lint.mjs
-          node tools/agents/evals/eval.mjs --check
-          node tools/agents/coverage.mjs --json > /dev/null
-          node tools/skills/lint.mjs
-          node tools/agents/tools-audit.mjs
-          node tools/agents/def-freshness.mjs
-          node tools/agents/token-budget.mjs --check
-          node tools/vps/deploy-check.mjs deploy/autodeploy.sh
-          node tools/agents/error-ledger.mjs --check
-      - name: Doc-audit (advisory — доклад за застаряла/липсваща документация, не гейтва)
-        run: node tools/docs/doc-audit.mjs || true
+        run: node tools/agents/gate.mjs
+      - name: Дефектен процент (термометър — доклад за тренда, не гейт)
+        run: node tools/agents/defect-rate.mjs
       - name: Всички тестове
         run: node --test $(find tools -name '*.test.mjs')
+      # Реалният ПОВЕДЕНЧЕСКИ eval (жив LLM) — не може евтин PR гейт, затова тича по КАДАНС тук.
+      # Детерминистичният слой (invariant-check) вече е в гейта горе; това мери реалното поведение
+      # на агентите срещу golden spec-овете. Без ANTHROPIC_API_KEY secret → скрипта излиза 0 с ясно
+      # съобщение (гейтът не лъже червено заради липсваща конфигурация). Активира се, щом собственикът
+      # добави ключа като secret. Системният промпт носи СЪЩИЯ статичен префикс като продукцията.
+      - name: Поведенчески eval (жив LLM — скача без ключ)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node tools/agents/evals/headless-run.mjs

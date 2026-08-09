@@ -1,0 +1,34 @@
+name: kebab
+
+on:
+  push:
+    paths:
+      - 'kebab/**'
+      - '.github/workflows/kebab.yml'
+  pull_request:
+    paths:
+      - 'kebab/**'
+      - '.github/workflows/kebab.yml'
+
+concurrency:
+  group: kebab-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Статичен сайт без билд и без зависимости. Не измисляме гейт — проверяваме проверимото:
+      # локалните препратки съществуват, всяка страница носи ≥5 ключови думи с „Carbon Stealth",
+      # и има непразен <title> + lang (минимум за достъпност и SEO).
+      - name: Проверка на статичния сайт
+        run: node tools/qa/static-site-check.mjs kebab

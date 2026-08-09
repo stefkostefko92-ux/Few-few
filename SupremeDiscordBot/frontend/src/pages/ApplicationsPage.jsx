@@ -2,13 +2,15 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare } from "lucide-react";
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users } from "lucide-react";
 import { getApplications, getApplication, reviewApplication, deleteApplication, openApplicationDiscussion } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
+import { useT } from "../contexts/I18nContext";
 
 const STATUS_COLORS = {
-  PENDING: "text-yellow-400 bg-yellow-500/10",
+  PENDING: "text-warning bg-warning/10",
   APPROVED: "text-success bg-green-500/10",
   DENIED: "text-danger bg-red-500/10",
   INTERVIEW: "text-cs-muted bg-gray-500/10",  // Legacy — no longer assignable
@@ -16,6 +18,7 @@ const STATUS_COLORS = {
 
 export default function ApplicationsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("PENDING");
   const [search, setSearch] = useState("");
@@ -88,23 +91,23 @@ export default function ApplicationsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-cs-text">Applications</h1>
-          <p className="text-cs-muted text-sm mt-1">{data?.total ?? 0} total applications</p>
+          <h1 className="text-2xl font-bold text-cs-text">{t("apps.title")}</h1>
+          <p className="text-cs-muted text-sm mt-1">{t("apps.totalCount", { n: data?.total ?? 0 })}</p>
         </div>
         <select
           className="cs-input w-40"
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          aria-label="Filter applications by status"
+          aria-label={t("apps.filterByStatus")}
         >
           <option value="">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
-          <option value="DENIED">Denied</option>
+          <option value="PENDING">{t("appStatus.pending")}</option>
+          <option value="APPROVED">{t("appStatus.approved")}</option>
+          <option value="DENIED">{t("appStatus.denied")}</option>
         </select>
       </div>
 
@@ -120,7 +123,7 @@ export default function ApplicationsPage() {
           <span>{discussMessage.text}</span>
           <button
             type="button"
-            aria-label="Dismiss"
+            aria-label={t("common.dismiss")}
             onClick={() => setDiscussMessage(null)}
             className="hover:opacity-80"
           >
@@ -141,9 +144,23 @@ export default function ApplicationsPage() {
           Couldn't load applications — please retry.
         </div>
       ) : applications.length === 0 ? (
-        <div className="cs-card text-center py-16 text-cs-muted">
-          No applications found.
-        </div>
+        statusFilter ? (
+          <EmptyState
+            icon={Users}
+            title={t("apps.filtered.title")}
+            description={t("apps.filtered.body")}
+            ctaLabel={t("apps.filtered.cta")}
+            onCtaClick={() => { setStatusFilter(""); setPage(1); }}
+          />
+        ) : (
+          <EmptyState
+            icon={Users}
+            title={t("apps.empty.title")}
+            description={t("apps.empty.body")}
+            ctaLabel={t("apps.empty.cta")}
+            ctaTo={`/dashboard/${serverId}/forms`}
+          />
+        )
       ) : (
         <div className="space-y-3">
           {applications.map((app) => {
@@ -190,8 +207,8 @@ export default function ApplicationsPage() {
                     <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => openReview(app.id, "approve")}
-                        title="Approve"
-                        aria-label="Approve application"
+                        title={t("common.approve")}
+                        aria-label={t("common.approve")}
                         className="text-success hover:text-green-300 transition-colors p-1.5 hover:bg-green-500/10 rounded-lg"
                       >
                         <CheckCircle className="w-5 h-5" />
@@ -199,16 +216,16 @@ export default function ApplicationsPage() {
                       <button
                         onClick={() => discussMut.mutate(app.id)}
                         disabled={discussMut.isPending}
-                        title="Open private discussion channel with applicant"
-                        aria-label="Open private discussion channel with applicant"
+                        title={t("apps.openDiscussion")}
+                        aria-label={t("apps.openDiscussion")}
                         className="text-cs-cyan hover:text-cyan-300 transition-colors p-1.5 hover:bg-cyan-500/10 rounded-lg disabled:opacity-40"
                       >
                         <MessageSquare className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => openReview(app.id, "deny")}
-                        title="Deny"
-                        aria-label="Deny application"
+                        title={t("common.deny")}
+                        aria-label={t("common.deny")}
                         className="text-danger hover:text-red-300 transition-colors p-1.5 hover:bg-red-500/10 rounded-lg"
                       >
                         <XCircle className="w-5 h-5" />
@@ -220,13 +237,13 @@ export default function ApplicationsPage() {
                   <div onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setConfirmState({
-                        title: "Delete Application",
-                        message: "Delete this application? This cannot be undone.",
+                        title: t("apps.delete"),
+                        message: t("apps.deleteConfirm"),
                         onConfirm: () => deleteMut.mutate(app.id),
                       })}
                       disabled={deleteMut.isPending}
-                      title="Delete application"
-                      aria-label="Delete application"
+                      title={t("apps.delete")}
+                      aria-label={t("apps.delete")}
                       className="text-cs-muted hover:text-danger transition-colors p-1.5 hover:bg-red-500/10 rounded-lg disabled:opacity-40"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -244,9 +261,9 @@ export default function ApplicationsPage() {
                 {isOpen && (
                   <div className="mt-4 pt-4 border-t border-white/5">
                     {!fullApp ? (
-                      <p className="text-cs-muted text-sm">Loading answers…</p>
+                      <p className="text-cs-muted text-sm">{t("apps.loadingAnswers")}</p>
                     ) : questions.length === 0 ? (
-                      <p className="text-cs-muted text-sm italic">No questions recorded.</p>
+                      <p className="text-cs-muted text-sm italic">{t("apps.noQuestions")}</p>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {questions.map((q) => (
@@ -255,7 +272,7 @@ export default function ApplicationsPage() {
                               {q.label}
                             </p>
                             <p className="text-sm text-cs-text whitespace-pre-wrap">
-                              {answers[q.id] || <span className="italic text-cs-muted">No answer</span>}
+                              {answers[q.id] || <span className="italic text-cs-muted">{t("common.noAnswer")}</span>}
                             </p>
                           </div>
                         ))}
@@ -265,7 +282,7 @@ export default function ApplicationsPage() {
                     {/* Ticket link if escalated (legacy) */}
                     {fullApp?.ticket && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
-                        <span className="text-cs-muted">Linked ticket:</span>
+                        <span className="text-cs-muted">{t("apps.linkedTicket")}</span>
                         <span className="text-cs-muted">#{fullApp.ticket.channelId}</span>
                       </div>
                     )}
@@ -304,7 +321,7 @@ export default function ApplicationsPage() {
       <Modal
         open={!!reviewingId}
         onClose={() => setReviewingId(null)}
-        title={reviewAction === "approve" ? "✅ Approve Application" : reviewAction === "deny" ? "❌ Deny Application" : "Review Application"}
+        title={reviewAction === "approve" ? "✅ Approve Application" : reviewAction === "deny" ? "❌ Deny Application" : t("apps.review")}
         maxWidth="max-w-md"
       >
         <p className="text-sm text-cs-muted mb-4">
@@ -312,11 +329,11 @@ export default function ApplicationsPage() {
         </p>
 
         <label className="block mb-4">
-          <span className="cs-label">Review Note (optional)</span>
+          <span className="cs-label">{t("apps.reviewNote")}</span>
           <textarea
             className="cs-input"
             rows={2}
-            placeholder="Optional note sent to the applicant…"
+            placeholder={t("apps.notePlaceholder")}
             value={reviewNote}
             onChange={(e) => setReviewNote(e.target.value)}
             autoFocus
@@ -325,12 +342,12 @@ export default function ApplicationsPage() {
 
         {reviewMut.isError && (
           <p role="alert" className="text-danger text-sm mb-3">
-            {reviewMut.error?.response?.data?.error || "Failed to submit review"}
+            {reviewMut.error?.response?.data?.error || t("apps.reviewFailed")}
           </p>
         )}
 
         <div className="flex gap-3 justify-end">
-          <button className="cs-btn-ghost" onClick={() => setReviewingId(null)}>Cancel</button>
+          <button className="cs-btn-ghost" onClick={() => setReviewingId(null)}>{t("common.cancel")}</button>
           <button
             disabled={reviewMut.isPending}
             onClick={() => reviewMut.mutate({ appId: reviewingId, action: reviewAction, note: reviewNote })}
@@ -342,7 +359,7 @@ export default function ApplicationsPage() {
                 : "cs-btn-primary"
             }
           >
-            {reviewMut.isPending ? "Processing…" : reviewAction ? `Confirm ${reviewAction.charAt(0).toUpperCase() + reviewAction.slice(1)}` : "Confirm"}
+            {reviewMut.isPending ? t("common.processing") : reviewAction ? `Confirm ${reviewAction.charAt(0).toUpperCase() + reviewAction.slice(1)}` : "Confirm"}
           </button>
         </div>
       </Modal>
@@ -351,7 +368,7 @@ export default function ApplicationsPage() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteMut.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}

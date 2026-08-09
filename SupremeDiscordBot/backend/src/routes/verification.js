@@ -7,7 +7,8 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
-import { validatePremiumFields, getServerTier } from "../lib/premium.js";
+import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const VERIFICATION_PREMIUM_FIELDS = {
   minAccountAgeDays: "verification.accountAge",
@@ -26,6 +27,16 @@ router.get("/bot/:panelId", requireBotSecret, async (req, res, next) => {
       where: { id: req.params.panelId },
     });
     if (!panel) return res.status(404).json({ error: "Verification panel not found" });
+    // Tier санитизация при ЧЕТЕНЕ: MATH captcha и минимална възраст на акаунта са
+    // premium. Свален на free сървър пазеше стойностите → ботът ги налагаше. При
+    // недостатъчен план сваляме MATH до базовия BUTTON и махаме възрастовия праг.
+    const tier = await getServerTier(panel.serverId);
+    if (panel.type === "MATH" && !planHasFeature(tier.plan, "verification.mathCaptcha")) {
+      panel.type = "BUTTON";
+    }
+    if (panel.minAccountAgeDays && !planHasFeature(tier.plan, "verification.accountAge")) {
+      panel.minAccountAgeDays = null;
+    }
     res.json(panel);
   } catch (err) { next(err); }
 });
@@ -147,20 +158,25 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
       const premErr = await validatePremiumFields(req.params.serverId, parsed.data, VERIFICATION_PREMIUM_FIELDS);
       if (premErr) return res.status(premErr.status).json(premErr.body);
     }
-    const existing = await prisma.verificationPanel.count({ where: { serverId: req.params.serverId } });
-    if (existing >= limits.verificationPanels) {
+    // Атомарно: count+create в една Serializable транзакция (lib/withinLimit.js).
+    const created = await createWithinLimit({
+      model: "verificationPanel",
+      where: { serverId: req.params.serverId },
+      limit: limits.verificationPanels,
+      create: (tx) => tx.verificationPanel.create({
+      data: {
+        serverId: req.params.serverId,
+        ...parsed.data,
+      },
+      }),
+    });
+    if (!created.ok) {
       return res.status(403).json({
         error: `Verification panel limit reached (${limits.verificationPanels}).`,
         code: "LIMIT_REACHED",
       });
     }
-
-    const panel = await prisma.verificationPanel.create({
-      data: {
-        serverId: req.params.serverId,
-        ...parsed.data,
-      },
-    });
+    const panel = created.row;
 
     await prisma.auditLog.create({
       data: {

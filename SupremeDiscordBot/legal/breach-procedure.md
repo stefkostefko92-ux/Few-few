@@ -115,7 +115,7 @@ Three categories:
 2. **Affected data subjects notification (Article 34) — Required if HIGH RISK to rights and freedoms**
    - Via email (primary admin contact on file)
    - Via in-app banner in dashboard
-   - Via status page post at https://supreme.carbonstealth.eu/status
+   - Via status page post at https://supremebot.carbonstealth.eu/status
    - Via Discord DM if only Discord ID is known (with opt-out respected)
 
 3. **Customer DPA notification — Required for all breaches affecting Customer data**
@@ -189,9 +189,9 @@ On [date], we detected a security incident that may have affected your account d
 - [Specific recommendations: change Discord password, enable MFA, review recent logins, etc.]
 
 **For more information:**
-- Detailed technical post: https://supreme.carbonstealth.eu/status
+- Detailed technical post: https://supremebot.carbonstealth.eu/status
 - Contact: security@carbonstealth.eu
-- To request deletion of your data: https://supreme.carbonstealth.eu/dashboard/privacy-settings
+- To request deletion of your data: https://supremebot.carbonstealth.eu/dashboard/privacy-settings
 
 We sincerely apologize for this incident and are taking steps to prevent recurrence.
 

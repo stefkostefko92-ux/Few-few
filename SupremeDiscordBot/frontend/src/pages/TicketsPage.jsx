@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star } from "lucide-react";
-import { getTickets, closeTicket, claimTicket, exportTicketPDF } from "../api";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare } from "lucide-react";
+import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } from "../api";
 import Modal from "../components/Modal";
+import EmptyState from "../components/EmptyState";
+import { useToast } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
 
 const STATUS_COLORS = {
   OPEN: "text-success bg-green-500/10",
@@ -13,23 +16,38 @@ const STATUS_COLORS = {
   ARCHIVED: "text-cs-muted bg-gray-500/10",
 };
 
+// Договор с backend (миграция v30): LOW | NORMAL | HIGH | URGENT.
+// NORMAL се показва приглушено — приоритетът шуми само когато е различен.
+const PRIORITY_COLORS = {
+  URGENT: "text-danger bg-red-500/10",
+  HIGH:   "text-cs-gold bg-yellow-500/10",
+  NORMAL: "text-cs-muted bg-gray-500/10",
+  LOW:    "text-cs-dim bg-gray-500/5",
+};
+
 const LIMIT = 20;
 
 export default function TicketsPage() {
   const { serverId } = useParams();
+  const { t } = useT();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [closingId, setClosingId] = useState(null);
   const [closeReason, setCloseReason] = useState("");
+  const [replyingId, setReplyingId] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const toast = useToast();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["tickets", serverId, statusFilter, search, dateFrom, dateTo, page],
+  const { data, isLoading, isError, isRefetching, refetch } = useQuery({
+    queryKey: ["tickets", serverId, statusFilter, priorityFilter, search, dateFrom, dateTo, page],
     queryFn: () => getTickets(serverId, {
       status: statusFilter || undefined,
+      priority: priorityFilter || undefined,
       search: search || undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
@@ -37,6 +55,16 @@ export default function TicketsPage() {
       limit: LIMIT,
     }),
   });
+
+  const hasFilters = !!(statusFilter || priorityFilter || search || dateFrom || dateTo);
+  const clearFilters = () => {
+    setStatusFilter("");
+    setPriorityFilter("");
+    setSearch("");
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+  };
 
   const closeMut = useMutation({
     mutationFn: ({ ticketId, reason }) => closeTicket(serverId, ticketId, reason),
@@ -65,7 +93,7 @@ export default function TicketsPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      setPdfError("Couldn't export the PDF transcript — please try again.");
+      setPdfError(t("tickets.pdfFailed"));
     } finally {
       setPdfExporting(null);
     }
@@ -74,27 +102,37 @@ export default function TicketsPage() {
   const claimMut = useMutation({
     mutationFn: (ticketId) => claimTicket(serverId, ticketId),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); },
-    onError: (err) => setClaimError(err?.response?.data?.error || "Failed to claim ticket"),
+    onError: (err) => setClaimError(err?.response?.data?.error || t("tickets.claimFailed")),
+  });
+
+  const replyMut = useMutation({
+    mutationFn: ({ ticketId, content }) => replyToTicket(serverId, ticketId, content),
+    onSuccess: () => {
+      toast.success("Reply sent to the ticket channel");
+      setReplyingId(null);
+      setReplyText("");
+    },
+    onError: (err) => toast.error(err?.response?.data?.error || t("tickets.replyFailed")),
   });
 
   const tickets = data?.tickets || [];
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-cs-text">Tickets</h1>
+          <h1 className="text-2xl font-bold text-cs-text">{t("tickets.title")}</h1>
           <p className="text-cs-muted text-sm mt-1">
-            {data?.total ?? 0} total tickets
+            {t("tickets.totalCount", { n: data?.total ?? 0 })}
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <input
             className="cs-input w-52"
-            placeholder="Search by creator or ID…"
-            aria-label="Search tickets by creator or ID"
+            placeholder={t("tickets.searchPlaceholder")}
+            aria-label={t("tickets.search")}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
@@ -103,28 +141,40 @@ export default function TicketsPage() {
             className="cs-input w-40"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            title="From date"
-            aria-label="From date"
+            title={t("tickets.fromDate")}
+            aria-label={t("tickets.fromDate")}
           />
           <input
             type="date"
             className="cs-input w-40"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            title="To date"
-            aria-label="To date"
+            title={t("tickets.toDate")}
+            aria-label={t("tickets.toDate")}
           />
           <select
             className="cs-input w-40"
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            aria-label="Filter tickets by status"
+            aria-label={t("tickets.filterByStatus")}
           >
-            <option value="">All Statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="CLAIMED">Claimed</option>
-            <option value="CLOSED">Closed</option>
-            <option value="ARCHIVED">Archived</option>
+            <option value="">{t("common.allStatuses")}</option>
+            <option value="OPEN">{t("status.open")}</option>
+            <option value="CLAIMED">{t("status.claimed")}</option>
+            <option value="CLOSED">{t("status.closed")}</option>
+            <option value="ARCHIVED">{t("status.archived")}</option>
+          </select>
+          <select
+            className="cs-input w-40"
+            value={priorityFilter}
+            onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
+            aria-label={t("tickets.filterByPriority")}
+          >
+            <option value="">{t("priority.all")}</option>
+            <option value="URGENT">{t("priority.urgent")}</option>
+            <option value="HIGH">{t("priority.high")}</option>
+            <option value="NORMAL">{t("priority.normal")}</option>
+            <option value="LOW">{t("priority.low")}</option>
           </select>
         </div>
       </div>
@@ -143,27 +193,51 @@ export default function TicketsPage() {
           ))}
         </div>
       ) : isError ? (
-        <div role="alert" className="cs-card text-center py-16 text-danger">
-          Couldn't load tickets — please retry.
+        <div role="alert" className="cs-card text-center py-16 text-danger flex flex-col items-center gap-3">
+          <span>Couldn't load tickets — please retry.</span>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
+            {isRefetching ? "Retrying…" : "Retry"}
+          </button>
         </div>
       ) : tickets.length === 0 ? (
-        <div className="cs-card text-center py-16 text-cs-muted">
-          No tickets found for this filter.
-        </div>
+        hasFilters ? (
+          <EmptyState
+            icon={Ticket}
+            title={t("tickets.filtered.title")}
+            description="Try adjusting the search, date range, or status filter."
+            ctaLabel={t("tickets.filtered.cta")}
+            onCtaClick={clearFilters}
+          />
+        ) : (
+          <EmptyState
+            icon={Ticket}
+            title={t("tickets.empty.title")}
+            description="Tickets will show up here once members start using a ticket panel."
+            ctaLabel={t("tickets.empty.cta")}
+            ctaTo={`/dashboard/${serverId}/panels`}
+          />
+        )
       ) : (
         <>
-          <div className="cs-card p-0 overflow-hidden">
+          <div className="cs-card p-0 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">
-                  <th className="text-left px-4 py-3">Status</th>
+                  <th className="text-left px-4 py-3">{t("common.status")}</th>
+                  <th className="text-left px-4 py-3">{t("common.priority")}</th>
                   <th className="text-left px-4 py-3">#</th>
-                  <th className="text-left px-4 py-3">Creator</th>
-                  <th className="text-left px-4 py-3">Assigned To</th>
-                  <th className="text-left px-4 py-3">Panel</th>
-                  <th className="text-left px-4 py-3">Rating</th>
-                  <th className="text-left px-4 py-3">Opened</th>
-                  <th className="text-left px-4 py-3">Actions</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.creator")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.assignedTo")}</th>
+                  <th className="text-left px-4 py-3">{t("common.panel")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.rating")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.opened")}</th>
+                  <th className="text-left px-4 py-3">{t("tickets.col.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -171,7 +245,12 @@ export default function TicketsPage() {
                   <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3">
                       <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${STATUS_COLORS[ticket.status]}`}>
-                        {ticket.status}
+                        {t(`status.${ticket.status.toLowerCase()}`)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${PRIORITY_COLORS[ticket.priority] || PRIORITY_COLORS.NORMAL}`}>
+                        {(ticket.priority || "NORMAL").charAt(0) + (ticket.priority || "NORMAL").slice(1).toLowerCase()}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -192,7 +271,7 @@ export default function TicketsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-cs-muted">
-                      {ticket.assignee?.username ?? <span className="text-cs-muted italic">Unassigned</span>}
+                      {ticket.assignee?.username ?? <span className="text-cs-muted italic">{t("tickets.unassigned")}</span>}
                     </td>
                     <td className="px-4 py-3 text-cs-muted">
                       {ticket.panel?.name ?? "—"}
@@ -215,12 +294,22 @@ export default function TicketsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
+                        {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
+                          <button
+                            onClick={() => { setReplyingId(ticket.id); setReplyText(""); }}
+                            title={t("tickets.replyFromDashboard")}
+                            aria-label={t("tickets.replyFromDashboard")}
+                            className="text-cs-cyan hover:text-white transition-colors p-1"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+                        )}
                         {ticket.status === "OPEN" && (
                           <button
                             onClick={() => claimMut.mutate(ticket.id)}
                             disabled={claimMut.isPending}
-                            title="Claim ticket"
-                            aria-label="Claim ticket"
+                            title={t("tickets.claim")}
+                            aria-label={t("tickets.claim")}
                             className="text-blue-400 hover:text-blue-300 transition-colors p-1"
                           >
                             <Shield className="w-4 h-4" />
@@ -232,8 +321,8 @@ export default function TicketsPage() {
                               href={ticket.archiveUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title="View transcript"
-                              aria-label="View transcript"
+                              title={t("tickets.viewTranscript")}
+                              aria-label={t("tickets.viewTranscript")}
                               className="text-cs-cyan hover:text-white transition-colors p-1"
                             >
                               <ExternalLink className="w-4 h-4" />
@@ -241,8 +330,8 @@ export default function TicketsPage() {
                             <button
                               onClick={() => handlePdfExport(ticket.id)}
                               disabled={pdfExporting === ticket.id}
-                              title="Download PDF transcript"
-                              aria-label="Download PDF transcript"
+                              title={t("tickets.downloadPdf")}
+                              aria-label={t("tickets.downloadPdf")}
                               className="text-purple-400 hover:text-purple-300 transition-colors p-1 disabled:opacity-40"
                             >
                               <FileText className="w-4 h-4" />
@@ -252,8 +341,8 @@ export default function TicketsPage() {
                         {ticket.status !== "CLOSED" && ticket.status !== "ARCHIVED" && (
                           <button
                             onClick={() => { setClosingId(ticket.id); setCloseReason(""); }}
-                            title="Close ticket"
-                            aria-label="Close ticket"
+                            title={t("tickets.close")}
+                            aria-label={t("tickets.close")}
                             className="text-danger hover:text-red-300 transition-colors p-1"
                           >
                             <X className="w-4 h-4" />
@@ -299,7 +388,7 @@ export default function TicketsPage() {
           </span>
           <button
             type="button"
-            aria-label="Dismiss"
+            aria-label={t("common.dismiss")}
             onClick={() => setClaimError(null)}
             className="text-danger hover:text-red-300"
           >
@@ -308,13 +397,39 @@ export default function TicketsPage() {
         </div>
       )}
 
+      {/* Reply Modal — same pattern as the close modal (closingId/closeReason) */}
+      <Modal open={!!replyingId} onClose={() => setReplyingId(null)} title={t("tickets.reply")} maxWidth="max-w-md">
+        <label className="block mb-1">
+          <span className="cs-label">{t("common.reply")}</span>
+          <textarea
+            className="cs-input min-h-[110px] resize-y"
+            placeholder={t("tickets.replyPlaceholder")}
+            maxLength={1500}
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            autoFocus
+          />
+        </label>
+        <div className="text-xs text-cs-muted text-right mb-4">{replyText.length}/1500</div>
+        <div className="flex gap-3 justify-end">
+          <button className="cs-btn-ghost" onClick={() => setReplyingId(null)}>{t("common.cancel")}</button>
+          <button
+            className="cs-btn-primary"
+            disabled={replyMut.isPending || !replyText.trim()}
+            onClick={() => replyMut.mutate({ ticketId: replyingId, content: replyText.trim() })}
+          >
+            {replyMut.isPending ? t("common.sending") : t("common.reply")}
+          </button>
+        </div>
+      </Modal>
+
       {/* Close Ticket Modal */}
       <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close Ticket" maxWidth="max-w-md">
         <label className="block mb-4">
-          <span className="cs-label">Close Reason (optional)</span>
+          <span className="cs-label">{t("ui.closeReasonOpt")}</span>
           <input
             className="cs-input"
-            placeholder="Issue resolved, user inactive, etc."
+            placeholder={t("ui.ph.closeReason")}
             value={closeReason}
             onChange={(e) => setCloseReason(e.target.value)}
             autoFocus

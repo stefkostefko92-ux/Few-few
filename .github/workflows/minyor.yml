@@ -11,10 +11,19 @@ defaults:
   run:
     working-directory: Minyor
 
+concurrency:
+  group: minyor-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   quality:
     name: Lint, typecheck, build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
       AUTH_SECRET: ci_secret_at_least_32_characters_long_xxxxx

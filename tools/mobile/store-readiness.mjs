@@ -9,6 +9,7 @@
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const JSON_OUT = process.argv.includes("--json"); // CI-гейтваем изход: {pass, fails, warnings}
 const root = process.argv.slice(2).find((a) => !a.startsWith("--"));
@@ -109,8 +110,7 @@ findings.sort((a, b) => order[a.sev] - order[b.sev]);
 if (JSON_OUT) {
   const fails = findings.filter((f) => f.sev === "HIGH");
   const warnings = findings.filter((f) => f.sev !== "HIGH");
-  console.log(JSON.stringify({ pass: fails.length === 0, fails, warnings }, null, 2));
-  process.exit(fails.length ? 1 : 0);
+  await emitJsonNow({ pass: fails.length === 0, fails, warnings }, fails.length ? 1 : 0);
 }
 if (!findings.length) { console.log(`✅ store-readiness: чисто (${files.length} файла в ${root}).`); process.exit(0); }
 console.log(`store-readiness: ${findings.length} находки (${root})\n`);

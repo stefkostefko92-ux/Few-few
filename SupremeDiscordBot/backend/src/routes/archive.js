@@ -10,6 +10,33 @@ import { archiveTokenMatches, tokenizedArchiveUrl } from "../lib/archiveToken.js
 
 const router = Router();
 
+// ─── CSP за транскрипта ──────────────────────────────────────────────────────
+// Глобалният helmet изключва CSP („API-то не сервира HTML“) — но ТОЗИ маршрут
+// сервира HTML, и то с чуждо съдържание (съобщения на потребители) в него. Без
+// политика единственото, което стои между съхранен XSS и изпълнен скрипт, е
+// екранирането в generateHtmlTranscript. Тук слагаме втори, независим слой:
+// нула скриптове, нула кадри, нула изходящи връзки; вградените стилове са
+// разрешени, защото транскриптът носи собствен <style> блок.
+const ARCHIVE_CSP = [
+  "default-src 'none'",
+  "style-src 'unsafe-inline'",
+  // Аватарите и прикачените файлове идват от CDN-а на Discord.
+  "img-src 'self' https://cdn.discordapp.com https://media.discordapp.net data:",
+  "font-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+function secureHtml(res) {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Content-Security-Policy", ARCHIVE_CSP);
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  // Страницата съдържа лични данни — никакво индексиране.
+  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+}
+
 router.get("/ticket/:ticketId", async (req, res, next) => {
   try {
     let ticket = await prisma.ticket.findUnique({
@@ -20,6 +47,7 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
     // Transcripts contain PII — require the unguessable ?t= token and answer
     // 404 (not 403) so existence of a ticket ID can't be probed.
     if (!ticket || !archiveTokenMatches(ticket, req.query.t)) {
+      secureHtml(res);
       return res.status(404).send(notFoundPage("This ticket doesn't exist or has been permanently deleted."));
     }
 
@@ -31,10 +59,13 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
           messages: { orderBy: { createdAt: "asc" } },
           creator: true,
           assignee: true,
+          // Виж tickets.js — транскриптът се брандира според white-label бота.
+          server: { select: { name: true, customBotName: true } },
         },
       });
 
       if (!full) {
+        secureHtml(res);
         return res.status(404).send(notFoundPage("Ticket data incomplete."));
       }
 
@@ -49,8 +80,7 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
       ticket = { archiveHtml: html };
     }
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("X-Content-Type-Options", "nosniff");
+    secureHtml(res);
     res.setHeader("Cache-Control", "private, max-age=300");
     res.send(ticket.archiveHtml);
   } catch (err) {

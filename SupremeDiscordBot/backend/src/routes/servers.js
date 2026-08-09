@@ -1,11 +1,34 @@
 // backend/src/routes/servers.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { fetchUserGuilds } from "../lib/discordRest.js";
 import axios from "axios";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { encrypt, decrypt, decryptSafe } from "../lib/crypto.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
+import { guildIconUrl } from "../lib/discordCdn.js";
+
+// Категориите на Server Activity Logging — един източник за валидация.
+const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages", "server"];
+const SNOWFLAKE = /^\d{17,20}$/;
+
+/**
+ * Изчиства per-категория лог каналите от клиентския вход.
+ * Пази само познати категории с валиден Discord snowflake; празна/невалидна
+ * стойност се ИЗХВЪРЛЯ (категорията пада обратно към общия eventLogChannelId).
+ * Връща null при празен резултат, за да не трупаме празни обекти в базата.
+ */
+function sanitizeEventLogChannels(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  const out = {};
+  for (const cat of EVENT_LOG_CATEGORIES) {
+    const v = input[cat];
+    if (typeof v === "string" && SNOWFLAKE.test(v.trim())) out[cat] = v.trim();
+  }
+  return Object.keys(out).length ? out : null;
+}
 
 const router = Router();
 
@@ -13,7 +36,22 @@ const router = Router();
 // customBotToken is write-only — never returned to the client.
 function sanitizeServer(server) {
   if (!server) return server;
-  const { customBotToken: _token, ...safe } = server;
+  // customBotToken е write-only. Stripe идентификаторите също не влизат в
+  // отговора: таблото се нуждае от СЪСТОЯНИЕТО (stripeStatus, pastDueSince —
+  // past-due банерът), не от id-тата. Изнесен customer/subscription id е удобна
+  // отправна точка за социално инженерство към поддръжката на Stripe и няма
+  // причина да го вижда всеки с Manage Server (червен екип, 07.08.2026).
+  const {
+    customBotToken: _token,
+    stripeCustomerId: _cus,
+    stripeSubscriptionId: _sub,
+    ...safe
+  } = server;
+  // `icon` в базата е СУРОВИЯТ хеш (ботът го записва така). Клиентът рисува
+  // `<img src={server.icon}>`, значи оттук излиза адрес или `null` — никога хеш.
+  // Хеш в `src` е относителен адрес → SPA fallback-ът връща index.html и
+  // иконката е счупено квадратче. (Виж lib/discordCdn.js.)
+  safe.icon = guildIconUrl(safe.id, safe.icon);
   return safe;
 }
 
@@ -34,19 +72,21 @@ router.get("/", async (req, res, next) => {
 
     if (!session) return res.json([]);
 
-    let guildsRes;
+    let discordGuilds;
     try {
-      guildsRes = await axios.get("https://discord.com/api/v10/users/@me/guilds", {
-        headers: { Authorization: `Bearer ${decryptSafe(session.accessToken)}` },
-      });
+      // Кеширано 30s + уважава Retry-After — виж lib/discordRest.js.
+      discordGuilds = await fetchUserGuilds(decryptSafe(session.accessToken));
     } catch (discordErr) {
       if (discordErr?.response?.status === 401) {
         return res.status(401).json({ error: "Discord token expired — please log in again" });
       }
+      if (discordErr?.response?.status === 429) {
+        const retry = Number(discordErr.response.headers?.["retry-after"]) || 5;
+        res.set("Retry-After", String(Math.ceil(retry)));
+        return res.status(503).json({ error: "Discord is rate limiting us — try again shortly" });
+      }
       throw discordErr;
     }
-
-    const discordGuilds = guildsRes.data;
 
     // Filter to guilds where user is admin (has MANAGE_GUILD permission = bit 0x20)
     const adminGuilds = discordGuilds.filter((g) => {
@@ -60,20 +100,35 @@ router.get("/", async (req, res, next) => {
     // Cross-reference with our DB to get premium status etc.
     // Exclude servers where the bot has been kicked (botRemovedAt != null).
     const serverIds = adminGuilds.map((g) => g.id);
+    // Ефективно premium в списъка: собствен план ИЛИ активен trial ИЛИ активна
+    // агенция (agency seat не сетва суровия isPremium — виж premium.js). Без
+    // agency/trial проверката badge-ът липсваше на платени сървъри.
+    const now = new Date();
     const dbServers = await prisma.server.findMany({
       where: { id: { in: serverIds }, botRemovedAt: null },
-      select: { id: true, isPremium: true, stripeStatus: true },
+      select: {
+        id: true, isPremium: true, stripeStatus: true, trialEndsAt: true,
+        accessUntil: true,
+        agencyId: true, agency: { select: { active: true } },
+      },
     });
     const dbMap = Object.fromEntries(dbServers.map((s) => [s.id, s]));
+
+    // Огледало на effectivePremiumWhere (premium.js): собствен план ИЛИ активен
+    // trial ИЛИ v40 гратис ИЛИ активна агенция. Без `accessUntil` отменен-но-
+    // платен сървър (gracePlan) се показваше като безплатен в списъка.
+    const effectivePremium = (s) =>
+      !!s && (s.isPremium
+        || (s.trialEndsAt && s.trialEndsAt > now)
+        || (s.accessUntil && s.accessUntil > now)
+        || (s.agencyId && s.agency?.active));
 
     const result = adminGuilds.map((g) => ({
       id: g.id,
       name: g.name,
-      icon: g.icon
-        ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith("a_") ? "gif" : "png"}`
-        : null,
+      icon: guildIconUrl(g.id, g.icon),
       botAdded: !!dbMap[g.id],
-      isPremium: dbMap[g.id]?.isPremium || false,
+      isPremium: !!effectivePremium(dbMap[g.id]),
     }));
 
     res.json(result);
@@ -95,20 +150,43 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     if (!server) return res.status(404).json({ error: "Server not found" });
 
-    // v2.0 — Enrich with computed trial state
+    // v2.0 — Enrich with computed tier state. getServerTier резолвира
+    // собствен план + активен trial + AGENCY seat — суровият isPremium
+    // изпускаше agency-покритите сървъри (dashboard ги показваше безплатни
+    // дори платената функция да работи; при стара колона — обратното).
     const now = new Date();
     const trialActive = !!(server.trialEndsAt && server.trialEndsAt > now);
-    const effectivePremium = !!server.isPremium || trialActive;
+    const tier = await getServerTier(req.params.serverId);
     const trialDaysLeft = trialActive
       ? Math.ceil((server.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
       : 0;
 
     const response = sanitizeServer(server);
-    response.isPremium = effectivePremium;   // trial counts as premium
+    response.isPremium = tier.isPremium;     // собствен план ИЛИ trial ИЛИ agency
+    response.plan = tier.plan;
+    response.hasWhiteLabel = tier.hasWhiteLabel;
     response.isTrial = trialActive;
     response.trialDaysLeft = trialDaysLeft;
     response.trialUsed = server.trialUsed;
     response.trialEndsAt = server.trialEndsAt;
+
+    // Покритие от агенция + заетост на местата. Гербът на командния екран го
+    // показва поименно („3/5 места“) — числото е РЕАЛНО, брои се тук, не се
+    // догажда в клиента. Само за покрит сървър: за останалите е излишна заявка.
+    if (server.agencyId) {
+      const agency = await prisma.agency.findUnique({
+        where: { id: server.agencyId },
+        select: { active: true, plan: true, seatLimit: true },
+      });
+      response.agencyCovered = !!agency?.active;
+      if (agency?.active) {
+        response.agencyPlan = agency.plan;
+        response.agencySeatLimit = agency.seatLimit;
+        response.agencySeatsUsed = await prisma.server.count({ where: { agencyId: server.agencyId } });
+      }
+    } else {
+      response.agencyCovered = false;
+    }
 
     res.json(response);
   } catch (err) {
@@ -130,9 +208,11 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     welcomerEnabled, welcomerChannelId, welcomerMessage, welcomerEmbedColor,
     welcomerDmEnabled, welcomerDmMessage,
     autoroleIds, autoroleBotIds,
-    stickyMessagesEnabled,
     // Server event logging
-    eventLogEnabled, eventLogChannelId, eventLogCategories,
+    eventLogEnabled, eventLogChannelId, eventLogCategories, eventLogChannels,
+    // Език на бота за ТОЗИ сървър — резервен, когато Discord клиентският
+    // locale на потребителя не е сред поддържаните (виж bot/src/i18n).
+    language,
   } = req.body;
 
   try {
@@ -185,13 +265,27 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(welcomerDmMessage !== undefined && { welcomerDmMessage: welcomerDmMessage || null }),
         ...(Array.isArray(autoroleIds) && { autoroleIds }),
         ...(Array.isArray(autoroleBotIds) && { autoroleBotIds }),
-        ...(stickyMessagesEnabled !== undefined && { stickyMessagesEnabled: Boolean(stickyMessagesEnabled) }),
+        // `stickyMessagesEnabled` е МАХНАТО от приеманите полета: нищо не го
+        // четеше. Реалният превключвател е `enabled` на всяко sticky съобщение
+        // (StickyMessage.enabled) и той РАБОТИ. Сървърният ключ беше замислен
+        // като главен прекъсвач, но никога не се стигна до свързването му —
+        // API-то го приемаше и го игнорираше. Колоната остава в базата (данните
+        // не се пипат), просто вече не се преструваме, че значи нещо.
         // Server event logging (free feature — no premium gate)
         ...(eventLogEnabled !== undefined && { eventLogEnabled: Boolean(eventLogEnabled) }),
         ...(eventLogChannelId !== undefined && { eventLogChannelId: eventLogChannelId || null }),
         ...(Array.isArray(eventLogCategories) && {
-          eventLogCategories: eventLogCategories.filter((c) => ["voice", "members", "moderation"].includes(c)),
+          eventLogCategories: eventLogCategories.filter((c) => EVENT_LOG_CATEGORIES.includes(c)),
         }),
+        // v37 — по избор СВОЙ канал за всяка категория. Приемаме само познати
+        // категории и валидни Discord snowflake-и; празна стойност изчиства
+        // записа (значи „ползвай общия канал“). Клиентски вход → не се вярва.
+        ...(eventLogChannels !== undefined && {
+          eventLogChannels: sanitizeEventLogChannels(eventLogChannels),
+        }),
+        // Език на бота за сървъра — валидиран срещу поддържаните; невалиден се
+        // игнорира тихо, вместо да записва боклук.
+        ...(language !== undefined && isSupportedLanguage(language) && { language }),
       },
     });
 
@@ -226,6 +320,36 @@ router.get("/:serverId/stats", requireServerAdmin, async (req, res, next) => {
     res.json({ ticketCount, openTickets, applications, closedThisWeek });
   } catch (err) {
     next(err);
+  }
+});
+
+// ─── GET /api/servers/:serverId/directory ─────────────────────────────────────
+// Каналите, категориите И ролите на сървъра — за да може таблото да ги ПРЕДЛОЖИ
+// вместо да иска снежинка, изписана на ръка (при ролите: СПИСЪК от снежинки,
+// разделени със запетаи).
+//
+// `requireServerAdmin` е гардът срещу междуклиентско надничане: guildId идва от
+// пътя, но middleware-ът вече е доказал, че този потребител е админ на ТОЗИ
+// сървър. Ботът не проверява повторно — затова маршрутът НЕ приема guildId от
+// тялото и не прокарва нищо друго нататък.
+router.get("/:serverId/directory", requireServerAdmin, async (req, res, next) => {
+  const BOT_API_URL = process.env.BOT_API_URL || "http://bot:3001";
+  try {
+    const { data } = await axios.get(
+      `${BOT_API_URL}/internal/guild/${req.params.serverId}/directory`,
+      { headers: { "x-bot-secret": process.env.API_SECRET }, timeout: 8000 },
+    );
+    res.json(data);
+  } catch (err) {
+    // Падне ли ботът, таблото трябва да ПРОДЪЛЖИ да работи с ръчно въведен ID —
+    // затова 503 с ясен маркер, а не 500. Клиентът показва текстово поле.
+    const status = err?.response?.status === 404 ? 404 : 503;
+    res.status(status).json({
+      ok: false,
+      error: status === 404
+        ? "Ботът не е в този сървър."
+        : "Ботът е недостъпен — въведи ID ръчно.",
+    });
   }
 });
 

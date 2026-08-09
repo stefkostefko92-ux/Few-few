@@ -3,6 +3,8 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
+import { buildTranscript } from "../lib/appTranscript.js";
+import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 
 const router = Router();
 
@@ -16,103 +18,32 @@ const router = Router();
 //   - Track submission count in form_cooldowns
 
 router.post("/submit", requireBotSecret, async (req, res, next) => {
-  const { serverId, formId, userId, answers, reviewMessageId, reviewChannelId } = req.body;
-
-  if (!serverId || !formId || !userId || !answers) {
-    return res.status(400).json({ error: "serverId, formId, userId and answers are required" });
-  }
-
   try {
-    // Load form to check gating rules
-    const form = await prisma.form.findUnique({
-      where: { id: formId },
-      select: {
-        id: true, serverId: true,
-        closedAt: true, cooldownSeconds: true, maxSubmissions: true,
-        pingRoleIds: true,
-      },
-    });
-    if (!form || form.serverId !== serverId) {
-      return res.status(404).json({ error: "Form not found" });
-    }
-    if (form.closedAt) {
-      return res.status(403).json({ error: "Applications are currently closed for this form", code: "FORM_CLOSED" });
-    }
-
-    // Cooldown / max-submissions check
-    if ((form.cooldownSeconds && form.cooldownSeconds > 0) || form.maxSubmissions) {
-      const cooldown = await prisma.formCooldown.findUnique({
-        where: { formId_userId: { formId, userId } },
+    // Правилата живеят в services/applicationSubmit.js — ЕДИН източник и за
+    // уеб пътя, и за бота. Копие тук би дрейфнало (както се случи веднъж:
+    // ботът викаше друг маршрут и минаваше БЕЗ проверки).
+    const r = await submitApplication(req.body);
+    if (!r.ok) {
+      return res.status(r.status).json({
+        error: r.error,
+        ...(r.code && { code: r.code }),
+        ...(r.remainingSeconds != null && { remainingSeconds: r.remainingSeconds }),
       });
-
-      if (cooldown) {
-        if (form.maxSubmissions && cooldown.submissionCount >= form.maxSubmissions) {
-          return res.status(429).json({
-            error: `You have reached the maximum of ${form.maxSubmissions} submissions for this form`,
-            code: "MAX_SUBMISSIONS",
-          });
-        }
-        if (form.cooldownSeconds && form.cooldownSeconds > 0) {
-          const elapsed = (Date.now() - cooldown.lastSubmittedAt.getTime()) / 1000;
-          if (elapsed < form.cooldownSeconds) {
-            const remaining = Math.ceil(form.cooldownSeconds - elapsed);
-            return res.status(429).json({
-              error: `Please wait ${formatDuration(remaining)} before submitting again`,
-              code: "COOLDOWN",
-              remainingSeconds: remaining,
-            });
-          }
-        }
-      }
     }
-
-    // Ensure the user record exists — the applicant may not have logged into
-    // the dashboard yet, so we create a minimal stub if needed.
-    await prisma.user.upsert({
-      where: { id: userId },
-      create: { id: userId, username: userId, discriminator: "0" },
-      update: {},
-    });
-
-    const application = await prisma.application.create({
-      data: {
-        serverId,
-        formId,
-        userId,
-        answers,
-        reviewMessageId: reviewMessageId || null,
-        reviewChannelId: reviewChannelId || null,
-        status: "PENDING",
-      },
-    });
-
-    // Update cooldown tracker
-    await prisma.formCooldown.upsert({
-      where: { formId_userId: { formId, userId } },
-      create: { formId, userId, lastSubmittedAt: new Date(), submissionCount: 1 },
-      update: { lastSubmittedAt: new Date(), submissionCount: { increment: 1 } },
-    });
-
-    res.status(201).json({
-      ...application,
-      pingRoleIds: form.pingRoleIds || [],
-    });
+    res.status(201).json({ ...r.application, pingRoleIds: r.pingRoleIds });
   } catch (err) {
     next(err);
   }
 });
 
-function formatDuration(seconds) {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.ceil(seconds / 60)}m`;
-  if (seconds < 86400) return `${Math.ceil(seconds / 3600)}h`;
-  return `${Math.ceil(seconds / 86400)}d`;
-}
 
 // ─── GET /api/applications/:serverId ─────────────────────────────────────────────
 
 router.get("/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, res, next) => {
-  const { status, formId, search, page = 1, limit = 20 } = req.query;
+  const { status, formId, search } = req.query;
+  // Клампваме page/limit (клиентски `limit` беше неограничен `take`).
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const page = Math.max(1, Number(req.query.page) || 1);
 
   try {
     const where = {
@@ -205,7 +136,12 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmi
     // ─── Role application + always-DM notification ──────────────────────────
     // Applies to approve and deny. Users ALWAYS get a DM notification,
     // even if no custom acceptMessage/denyMessage is configured.
-    const form = application.form;
+    // Същият гейт като по ботовия път: авто-ролите и персонализираните DM-и са
+    // платени функции (`form.autoRoleOnReview`, `form.customDmMessages`), а се
+    // четяха сурови от базата. Свален сървър продължаваше да ги изпълнява.
+    // (Червен екип, кръг 2, 07.08.2026)
+    const { plan } = await getServerTier(application.serverId);
+    const form = sanitizeFormForTier(application.form, plan);
     if (action === "approve" || action === "deny") {
       const rolesToAdd    = action === "approve" ? (form.acceptRoleIds || []) : (form.denyRoleIds || []);
       const rolesToRemove = action === "approve" ? (form.removeRoleIds || []) : [];
@@ -403,14 +339,20 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
     });
     if (!app) return res.status(404).json({ error: "Application not found" });
 
-    // Check if a discussion channel already exists (idempotent)
-    const existingTicket = await prisma.ticket.findFirst({
-      where: {
-        applicationId: app.id,
-        status: { notIn: ["CLOSED", "ARCHIVED"] },
-      },
+    // Идемпотентност: Ticket.applicationId е @unique → само ЕДИН тикет на
+    // кандидатура. Търсим БЕЗ статус филтър — затворен тикет иначе не се хваща,
+    // ботът прави канал, а create гърми с P2002 (осиротял канал). Активен →
+    // връщаме канала; затворен → 409 (не пресъздаваме). (Кодаджията)
+    const existingTicket = await prisma.ticket.findUnique({
+      where: { applicationId: app.id },
     });
     if (existingTicket) {
+      if (["CLOSED", "ARCHIVED"].includes(existingTicket.status)) {
+        return res.status(409).json({
+          error: "A discussion was already opened for this application (the channel was closed).",
+          code: "DISCUSSION_ALREADY_CLOSED",
+        });
+      }
       return res.json({
         ok: true,
         alreadyExists: true,
@@ -431,6 +373,7 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
       applicationId: app.id,
       formName: app.form.name,
       managerRoleIds: app.form.managerRoleIds || [],
+      discussCategoryId: app.form.discussCategoryId || null, // v34 — фиксирана категория
       transcript,
     });
 
@@ -465,13 +408,5 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
   } catch (err) { next(err); }
 });
 
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildTranscript(questions, answers) {
-  return questions
-    .map((q) => `**${q.label}**\n${answers[q.id] || "*No answer*"}`)
-    .join("\n\n");
-}
 
 export default router;

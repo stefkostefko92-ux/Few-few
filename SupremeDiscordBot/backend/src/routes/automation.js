@@ -4,15 +4,19 @@
 // this file is for dashboard UI.
 
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { requirePremium, getServerTier, BASE_LIMITS, PREMIUM_LIMITS } from "../lib/premium.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
+
+const snowflake = z.string().regex(/^\d{17,20}$/, "Invalid Discord ID");
 
 // ══════════════════════════════ POLLS ══════════════════════════════
 
@@ -25,6 +29,57 @@ router.get("/:serverId/polls", requireServerAdmin, async (req, res, next) => {
       take: 100,
     });
     res.json(polls.map((p) => ({ ...p, totalVotes: p._count.votes })));
+  } catch (err) { next(err); }
+});
+
+// ─── POST /:serverId/polls — създаване от dashboard-а ────────────────────────
+// Огледало на /poll командата: запис в базата → ботът поства embed-а с vote
+// бутоните (notifyBot POLL_SPAWN). При провал на бота записът се трие — не
+// оставяме "призрачна" анкета без Discord съобщение.
+const createPollSchema = z.object({
+  channelId: snowflake,
+  question: z.string().min(1).max(256),
+  options: z.array(z.string().min(1).max(100)).min(2).max(9),
+  multiChoice: z.boolean().default(false),
+  durationHours: z.number().int().min(1).max(24 * 30).optional().nullable(),
+});
+
+router.post("/:serverId/polls", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = createPollSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    const { channelId, question, options, multiChoice, durationHours } = parsed.data;
+
+    const poll = await prisma.poll.create({
+      data: {
+        serverId: req.params.serverId,
+        creatorId: req.user.id,
+        channelId,
+        question,
+        options,
+        multiChoice,
+        closesAt: durationHours ? new Date(Date.now() + durationHours * 3600 * 1000) : null,
+      },
+    });
+
+    const result = await notifyBot("POLL_SPAWN", {
+      serverId: req.params.serverId,
+      channelId,
+      poll,
+    });
+
+    if (!result?.messageId) {
+      await prisma.poll.delete({ where: { id: poll.id } }).catch(() => {});
+      return res.status(502).json({
+        error: "Bot is offline or failed to post the poll. Check the channel ID and that the bot can write there.",
+      });
+    }
+
+    const updated = await prisma.poll.update({
+      where: { id: poll.id },
+      data: { messageId: result.messageId },
+    });
+    res.status(201).json(updated);
   } catch (err) { next(err); }
 });
 
@@ -69,6 +124,59 @@ router.get("/:serverId/giveaways", requireServerAdmin, async (req, res, next) =>
   } catch (err) { next(err); }
 });
 
+// ─── POST /:serverId/giveaways — създаване от dashboard-а ────────────────────
+// Огледало на /giveaway start: запис → ботът поства embed-а с Enter бутона
+// (notifyBot GIVEAWAY_SPAWN). Scheduler-ът затваря по endsAt, както при
+// командата. При провал на бота записът се трие.
+const createGiveawaySchema = z.object({
+  channelId: snowflake,
+  prize: z.string().min(1).max(256),
+  description: z.string().max(1000).optional().nullable(),
+  winnerCount: z.number().int().min(1).max(20).default(1),
+  durationMinutes: z.number().int().min(1).max(60 * 24 * 30),
+  requiredRoleIds: z.array(snowflake).max(10).default([]),
+});
+
+router.post("/:serverId/giveaways", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = createGiveawaySchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    const { channelId, prize, description, winnerCount, durationMinutes, requiredRoleIds } = parsed.data;
+
+    const giveaway = await prisma.giveaway.create({
+      data: {
+        serverId: req.params.serverId,
+        creatorId: req.user.id,
+        channelId,
+        prize,
+        description: description || null,
+        winnerCount,
+        endsAt: new Date(Date.now() + durationMinutes * 60 * 1000),
+        requiredRoleIds,
+      },
+    });
+
+    const result = await notifyBot("GIVEAWAY_SPAWN", {
+      serverId: req.params.serverId,
+      channelId,
+      giveaway,
+    });
+
+    if (!result?.messageId) {
+      await prisma.giveaway.delete({ where: { id: giveaway.id } }).catch(() => {});
+      return res.status(502).json({
+        error: "Bot is offline or failed to post the giveaway. Check the channel ID and that the bot can write there.",
+      });
+    }
+
+    const updated = await prisma.giveaway.update({
+      where: { id: giveaway.id },
+      data: { messageId: result.messageId },
+    });
+    res.status(201).json(updated);
+  } catch (err) { next(err); }
+});
+
 router.post("/:serverId/giveaways/:id/end", requireServerAdmin, async (req, res, next) => {
   try {
     const g = await prisma.giveaway.findFirst({
@@ -86,6 +194,9 @@ router.post("/:serverId/giveaways/:id/end", requireServerAdmin, async (req, res,
     });
 
     notifyBot("GIVEAWAY_ENDED", {
+      // serverId е задължителен: ботът резолвва канала В РАМКИТЕ на guild-а,
+      // иначе channelId се търси през всички сървъри (cross-tenant).
+      serverId: g.serverId,
       giveawayId: g.id, channelId: g.channelId, messageId: g.messageId,
       prize: g.prize, winners,
     }).catch(() => {});
@@ -144,17 +255,37 @@ router.get("/:serverId/stickies", requireServerAdmin, async (req, res, next) => 
 router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automation.sticky"), async (req, res, next) => {
   const { channelId, content, embedTitle, embedColor } = req.body;
   if (!channelId || !content) return res.status(400).json({ error: "channelId and content required" });
+  if (typeof content !== "string" || content.length > 2000) {
+    return res.status(400).json({ error: "content must be a string up to 2000 chars" });
+  }
+  if (!/^\d{17,20}$/.test(String(channelId))) {
+    return res.status(400).json({ error: "Invalid channelId" });
+  }
   try {
     // Enforce count limit
     const { limits } = await getServerTier(req.params.serverId);
-    const existing = await prisma.stickyMessage.count({ where: { serverId: req.params.serverId } });
-    if (existing >= limits.stickiesPerServer) {
-      return res.status(403).json({
-        error: `Sticky limit reached (${limits.stickiesPerServer}). Upgrade Premium for more.`,
-        code: "LIMIT_REACHED",
-      });
+    // Sticky е upsert по channelId, значи лимитът важи само когато се СЪЗДАВА
+    // нов ред. Проверката и записът минават в една Serializable транзакция
+    // по-долу — иначе две едновременни заявки за РАЗЛИЧНИ канали и двете
+    // виждат „под лимита" и го надскачат.
+    // Cross-tenant IDOR guard: StickyMessage.channelId е ГЛОБАЛНО @unique, тоест
+    // upsert само по channelId би презаписал sticky на ДРУГ сървър, ако
+    // атакуващият познава чужд channelId (requireServerAdmin пази serverId, не
+    // че каналът е в него). Затова първо проверяваме собствеността на реда.
+    const existingSticky = await prisma.stickyMessage.findUnique({
+      where: { channelId }, select: { serverId: true },
+    });
+    if (existingSticky && existingSticky.serverId !== req.params.serverId) {
+      return res.status(409).json({ error: "This channel already has a sticky on another server." });
     }
-    const sticky = await prisma.stickyMessage.upsert({
+    const sticky = await prisma.$transaction(async (tx) => {
+      if (!existingSticky) {
+        const count = await tx.stickyMessage.count({ where: { serverId: req.params.serverId } });
+        if (count >= limits.stickiesPerServer) {
+          const e = new Error("LIMIT_REACHED"); e.__limit = true; throw e;
+        }
+      }
+      return tx.stickyMessage.upsert({
       where: { channelId },
       create: {
         serverId: req.params.serverId,
@@ -165,9 +296,18 @@ router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automatio
         content, embedTitle, embedColor: embedColor || "#00e5ff",
         enabled: true, currentMessageId: null,
       },
-    });
+      });
+    }, { isolationLevel: "Serializable" });
     res.json(sticky);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err?.__limit || err?.code === "P2034") {
+      return res.status(403).json({
+        error: `Sticky limit reached (${limits.stickiesPerServer}). Upgrade Premium for more.`,
+        code: "LIMIT_REACHED",
+      });
+    }
+    next(err);
+  }
 });
 
 router.delete("/:serverId/stickies/:channelId", requireServerAdmin, async (req, res, next) => {
@@ -195,6 +335,19 @@ router.get("/:serverId/scheduled", requireServerAdmin, async (req, res, next) =>
 router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automation.scheduled"), async (req, res, next) => {
   const { channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence } = req.body;
   if (!channelId || !content || !sendAt) return res.status(400).json({ error: "channelId, content, sendAt required" });
+  // Валидирай recurrence — иначе неразпознат низ тихо ставаше „monthly“ в
+  // scheduler.js (клиентска стойност → неочаквано поведение). Празно/липсва =
+  // еднократно.
+  if (recurrence != null && !["daily", "weekly", "monthly"].includes(recurrence)) {
+    return res.status(400).json({ error: "recurrence must be daily, weekly or monthly" });
+  }
+  // Разумни тавани на входа (без цяла Zod схема — таргетирана валидация).
+  if (typeof content !== "string" || content.length > 2000) {
+    return res.status(400).json({ error: "content must be a string up to 2000 chars" });
+  }
+  if (Number.isNaN(new Date(sendAt).getTime())) {
+    return res.status(400).json({ error: "sendAt must be a valid date" });
+  }
   try {
     const { limits } = await getServerTier(req.params.serverId);
     if (recurrence && !limits.recurringScheduled) {
@@ -204,16 +357,13 @@ router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automati
         feature: "automation.recurring",
       });
     }
-    const existing = await prisma.scheduledMessage.count({
+    // Атомарно count+create (lib/withinLimit.js) — иначе две едновременни
+    // заявки минават и двете покрай лимита.
+    const created = await createWithinLimit({
+      model: "scheduledMessage",
       where: { serverId: req.params.serverId, sentAt: null },
-    });
-    if (existing >= limits.scheduledPerServer) {
-      return res.status(403).json({
-        error: `Scheduled message limit reached (${limits.scheduledPerServer}).`,
-        code: "LIMIT_REACHED",
-      });
-    }
-    const m = await prisma.scheduledMessage.create({
+      limit: limits.scheduledPerServer,
+      create: (tx) => tx.scheduledMessage.create({
       data: {
         serverId: req.params.serverId,
         channelId, content,
@@ -224,8 +374,15 @@ router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automati
         recurrence: recurrence || null,
         createdBy: req.user.id,
       },
+      }),
     });
-    res.status(201).json(m);
+    if (!created.ok) {
+      return res.status(403).json({
+        error: `Scheduled message limit reached (${limits.scheduledPerServer}).`,
+        code: "LIMIT_REACHED",
+      });
+    }
+    res.status(201).json(created.row);
   } catch (err) { next(err); }
 });
 

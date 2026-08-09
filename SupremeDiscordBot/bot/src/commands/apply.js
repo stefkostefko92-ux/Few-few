@@ -2,11 +2,13 @@
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { runFormSession } from "../utils/formSession.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("apply")
     .setDescription("Submit an application")
+    .setDescriptionLocalizations(CMD_DESC_L10N.apply)
     .addStringOption((opt) =>
       opt.setName("form").setDescription("Name of the application form").setRequired(true).setAutocomplete(true)
     ),

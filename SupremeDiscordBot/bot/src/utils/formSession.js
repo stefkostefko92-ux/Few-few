@@ -16,8 +16,68 @@ import {
   updateApplicationReviewMessage,
 } from "./api.js";
 import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
+import { SUCCESS, INFO, DANGER } from "./colors.js";
 
 import { sessionStore } from "./sessionStore.js";
+import { t, resolveLang } from "../i18n/index.js";
+
+// ─── Споделена regex валидация (DM сесия + modal път) ────────────────────────
+// ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата
+// (задава я админ на сървъра), входът е необработен потребителски текст, а
+// процесът на бота е СПОДЕЛЕН между всички наематели. Злонамерен админ може да
+// сложи катастрофичен шаблон (`(a|a)*$`, `(a+)+$`, …) и всяко подаване да
+// замрази event loop-а за ВСИЧКИ сървъри.
+//
+// Патърн-блоклист + кап на входа НЕ е достатъчен: blocklist-ите теч(ат)
+// (alternation-overlap го заобикаля), а катастрофичният backtracking е
+// експоненциален в дължината на входа — 64 знака пак виси. Затова недоверения
+// regex се изпълнява в WORKER thread с твърд timeout: катастрофичен шаблон
+// блокира еднократния worker (който убиваме), не главния loop. Зависимост:
+// нула (вграденото `node:worker_threads`), за разлика от re2 (нативен билд).
+import { Worker } from "node:worker_threads";
+
+const REGEX_INPUT_MAX = 512;      // разумен таван на входа (не защита сам по себе си)
+// Щедър timeout: катастрофичният backtracking върви в ИЗОЛИРАН worker и НЕ
+// блокира главния event loop — единствената цена е колко чака подаващият
+// потребител. Затова таванът покрива уверено worker startup-а под натоварване
+// (иначе легитимен regex „изтича“ фалшиво), без да отваря DoS към другите
+// наематели. 1s: легитимните свършват за <5ms, катастрофичните се убиват.
+const REGEX_TIMEOUT_MS = 1000;
+
+// Самостоятелен worker: компилира и тества, връща булев резултат.
+const WORKER_SRC = `
+  const { parentPort, workerData } = require("node:worker_threads");
+  try {
+    const re = new RegExp(workerData.pattern);
+    parentPort.postMessage({ ok: re.test(workerData.content) });
+  } catch {
+    parentPort.postMessage({ ok: true, malformed: true }); // грешен шаблон → приемаме
+  }
+`;
+
+export function validateAnswerAgainstRegex(question, content) {
+  if (!question?.validationRegex) return Promise.resolve({ ok: true });
+  if ((content || "").length > REGEX_INPUT_MAX) return Promise.resolve({ ok: false });
+
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    let worker;
+    try {
+      worker = new Worker(WORKER_SRC, { eval: true, workerData: { pattern: question.validationRegex, content: content || "" } });
+    } catch {
+      return finish({ ok: true }); // не можем да стартираме worker → не наказвай потребителя
+    }
+    const timer = setTimeout(() => {
+      console.warn(`[formSession] validationRegex timeout (>${REGEX_TIMEOUT_MS}ms, катастрофичен?) q${question.id}: ${question.validationRegex}`);
+      worker.terminate().catch(() => {});
+      finish({ ok: true }); // не изпълнявай опасния шаблон срещу event loop-а — приеми
+    }, REGEX_TIMEOUT_MS);
+    worker.once("message", (m) => { clearTimeout(timer); worker.terminate().catch(() => {}); finish({ ok: !!m.ok }); });
+    worker.once("error", () => { clearTimeout(timer); finish({ ok: true }); });
+  });
+}
+
 // sessionStore: Redis-backed with in-memory fallback (see sessionStore.js)
 
 // Timeout на per-question collector-ите. Изравнен с обещаните 15 мин И с Redis
@@ -33,17 +93,28 @@ const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 минути
  * @param {Object} panel    - Panel that triggered this form (may be a stub for /apply)
  */
 export async function runFormSession(interaction, form, panel) {
+  const lang = await resolveLang(interaction);
+
   if (!form?.questions?.length) {
-    await interaction.editReply("❌ This form has no questions configured.").catch(() => {});
+    await interaction.editReply(t("form.noQuestions", lang)).catch(() => {});
     return;
   }
 
   const sessionKey = `${interaction.user.id}:${form.id}`;
+  // Ключът на сесията носи formId, тоест един потребител можеше да води ДВЕ
+  // РАЗЛИЧНИ форми едновременно. И двете създават collector върху СЪЩИЯ DM
+  // канал с филтър „автор == потребителят" → един отговор влиза и в двете
+  // сесии: въпросите се разминават, отговорите се смесват, кандидатурата
+  // излиза безсмислена. (Качествения, 07.08.2026)
+  //
+  // В DM няма как да различим за коя форма е отговорът, затова инвариантът е
+  // една активна форма на потребител — с изричен ключ-ключалка.
+  const userLockKey = `lock:${interaction.user.id}`;
 
-  if (await sessionStore.has(sessionKey)) {
+  if (await sessionStore.has(sessionKey) || await sessionStore.has(userLockKey)) {
     try {
       const dmChannel = await interaction.user.createDM();
-      await dmChannel.send("⚠️ You already have an active form session. Please complete it first.");
+      await dmChannel.send(t("form.alreadyActive", lang));
     } catch {}
     return;
   }
@@ -51,7 +122,10 @@ export async function runFormSession(interaction, form, panel) {
   const questions = [...form.questions].sort((a, b) => a.order - b.order);
 
   // Note: session must be JSON-serialisable for Redis storage.
-  // Collectors are NOT stored — they are recreated per question.
+  // Collectors are NOT stored — they are recreated per question. `lang` is
+  // resolved once here (from the opening interaction) and carried in the
+  // session so the whole DM flow — which has no interaction after this —
+  // stays in the user's language.
   const session = {
     form,
     panel,
@@ -61,9 +135,11 @@ export async function runFormSession(interaction, form, panel) {
     userId: interaction.user.id,
     guildId: interaction.guildId,
     channelId: interaction.channelId,
+    lang,
   };
 
   await sessionStore.set(sessionKey, session);
+  await sessionStore.set(userLockKey, { formId: form.id });
 
   try {
     const dmChannel = await interaction.user.createDM();
@@ -71,9 +147,8 @@ export async function runFormSession(interaction, form, panel) {
   } catch (err) {
     console.error("Failed to DM user for form:", err.message);
     await sessionStore.delete(sessionKey);
-    await interaction.editReply(
-      "❌ I couldn't send you a DM. Please enable DMs from server members and try again."
-    ).catch(() => {});
+    await sessionStore.delete(`lock:${session.userId}`);
+    await interaction.editReply(t("form.dmFailed", lang)).catch(() => {});
   }
 }
 
@@ -81,6 +156,7 @@ export async function runFormSession(interaction, form, panel) {
 
 async function sendQuestion(client, dmChannel, session, sessionKey) {
   const question = session.questions[session.currentIndex];
+  const lang = session.lang || "en";
 
   if (!question) {
     await finishSession(client, dmChannel, session, sessionKey);
@@ -89,16 +165,16 @@ async function sendQuestion(client, dmChannel, session, sessionKey) {
 
   const num = session.currentIndex + 1;
   const total = session.questions.length;
-  const requiredLabel = question.required ? "*(required)*" : "*(optional — type `skip` to skip)*";
+  const requiredLabel = question.required ? t("form.requiredLabel", lang) : t("form.optionalLabel", lang);
 
   await dmChannel.send({
     embeds: [{
-      title: `📋 ${session.form.name} — Question ${num}/${total}`,
+      title: t("form.questionTitle", lang, { form: session.form.name, num, total }),
       description: `**${question.label}**${
         question.placeholder ? `\n_${question.placeholder}_` : ""
       }\n\n${requiredLabel}`,
-      color: 0x5865f2,
-      footer: { text: 'Type "cancel" at any time to abort.' },
+      color: INFO,
+      footer: { text: t("form.cancelHint", lang) },
     }],
   });
 
@@ -119,10 +195,11 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
 
   const isMulti = question.type === "MULTI_SELECT";
   const maxValues = isMulti ? Math.min(choices.length, 25) : 1;
+  const lang = session.lang || "en";
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId(`form_select:${sessionKey}:${question.id}`)
-    .setPlaceholder("Choose an option...")
+    .setPlaceholder(t("form.selectPlaceholder", lang))
     .setMinValues(1)
     .setMaxValues(maxValues)
     .addOptions(
@@ -153,12 +230,14 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
-      dmChannel.send("⏰ Form session timed out. Please start over.").catch(() => {});
+      await sessionStore.delete(`lock:${session.userId}`);
+      dmChannel.send(t("form.timeout", session.lang || "en")).catch(() => {});
     }
   });
 }
 
 async function sendTextQuestion(client, dmChannel, session, sessionKey, question) {
+  const lang = session.lang || "en";
   const collector = dmChannel.createMessageCollector({
     filter: (m) => m.author.id === session.userId,
     time: SESSION_TIMEOUT_MS,
@@ -170,13 +249,14 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
 
     if (content.toLowerCase() === "cancel") {
       await sessionStore.delete(sessionKey);
-      await dmChannel.send("❌ Form session cancelled.");
+      await sessionStore.delete(`lock:${session.userId}`);
+      await dmChannel.send(t("form.cancelled", lang));
       return;
     }
 
     if (content.toLowerCase() === "skip") {
       if (question.required) {
-        await dmChannel.send("⚠️ This question is required. Please provide an answer.");
+        await dmChannel.send(t("form.requiredWarning", lang));
         await sendQuestion(client, dmChannel, session, sessionKey);
         return;
       }
@@ -185,17 +265,13 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     }
 
     if (question.minLength && content.length < question.minLength) {
-      await dmChannel.send(
-        `⚠️ Answer too short (minimum ${question.minLength} characters). Please try again.`
-      );
+      await dmChannel.send(t("form.tooShort", lang, { min: question.minLength }));
       await sendQuestion(client, dmChannel, session, sessionKey);
       return;
     }
 
     if (question.maxLength && content.length > question.maxLength) {
-      await dmChannel.send(
-        `⚠️ Answer too long (maximum ${question.maxLength} characters). Please try again.`
-      );
+      await dmChannel.send(t("form.tooLong", lang, { max: question.maxLength }));
       await sendQuestion(client, dmChannel, session, sessionKey);
       return;
     }
@@ -214,36 +290,14 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     //      катастрофичен backtracking. По-добре да откажем шаблона, отколкото
     //      да блокираме event loop-а.
     // Малформиран шаблон се хваща от try/catch.
-    const REGEX_INPUT_MAX = 64;
-    // Груб детектор за вложени quantifier-и: (...)* / (...)+ / (...){n,} следван
-    // от още един quantifier. Не е пълен ReDoS анализ, но хваща типичните капани.
-    const NESTED_QUANTIFIER = /(\([^)]*[+*}][^)]*\)|\[[^\]]*\][+*}]|[+*}])\s*[+*]|\)\s*\{\d+,?\d*\}\s*[+*{]/;
     if (question.validationRegex) {
-      if (content.length > REGEX_INPUT_MAX) {
+      const verdict = await validateAnswerAgainstRegex(question, content);
+      if (!verdict.ok) {
         await dmChannel.send(
-          `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
+          t("form.invalidFormat", lang, { reason: question.validationMessage || "Answer does not match the expected format. Please try again." })
         );
         await sendQuestion(client, dmChannel, session, sessionKey);
         return;
-      }
-      if (NESTED_QUANTIFIER.test(question.validationRegex)) {
-        // Потенциално катастрофичен шаблон — не го изпълняваме върху потребителски
-        // вход. Логваме и приемаме отговора, вместо да рискуваме event loop-а.
-        console.warn(`[formSession] rejected risky validationRegex (nested quantifier) on question ${question.id}: ${question.validationRegex}`);
-      } else {
-        try {
-          const re = new RegExp(question.validationRegex);
-          if (!re.test(content)) {
-            await dmChannel.send(
-              `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
-            );
-            await sendQuestion(client, dmChannel, session, sessionKey);
-            return;
-          }
-        } catch {
-          // Malformed regex in form config — log but accept the answer rather than block user
-          console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
-        }
       }
     }
 
@@ -253,7 +307,8 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
   collector.on("end", async (_, reason) => {
     if (reason === "time") {
       await sessionStore.delete(sessionKey);
-      dmChannel.send("⏰ Form session timed out. Please start over.").catch(() => {});
+      await sessionStore.delete(`lock:${session.userId}`);
+      dmChannel.send(t("form.timeout", lang)).catch(() => {});
     }
   });
 }
@@ -284,32 +339,65 @@ async function processAnswer(client, dmChannel, session, sessionKey, question, a
 
 async function finishSession(client, dmChannel, session, sessionKey) {
   await sessionStore.delete(sessionKey);
+  await sessionStore.delete(`lock:${session.userId}`);
+  const lang = session.lang || "en";
 
-  await dmChannel.send({
-    embeds: [{
-      title: "✅ Form Submitted!",
-      description: "Thank you for completing the form. Your submission has been recorded.",
-      color: 0x57f287,
-    }],
-  });
-
+  // ПОТВЪРЖДАВАМЕ СЛЕД ПОДАВАНЕТО, не преди.
+  //
+  // ДЕФЕКТЪТ (Кодаджията, одит кръг 2, 07.08.2026): „Формулярът е изпратен“ се
+  // пращаше ПЪРВО, а самото подаване чак после — и ако сървърът го откажеше
+  // (затворена форма, изчерпан таван, активен cooldown — правила, за които
+  // клиентът ПЛАЩА), отказът се гълташе в общ catch. Кандидатът виждаше зелена
+  // отметка за кандидатура, която не съществува, а екипът не получаваше нищо.
+  // Платената функция работеше, а човекът срещу нея беше излъган.
   if (session.form.isApplication || !session.panel?.categoryId) {
     // No panel category means there is no ticket channel to create
     // (e.g. /form spawn or /apply with a stub panel) — store the answers
     // as a submission record so they are never silently discarded.
-    await handleApplicationSubmission(client, session);
+    const result = await handleApplicationSubmission(client, session);
+    if (result && !result.ok) {
+      await dmChannel.send({
+        embeds: [{ title: t("form.submitFailed", lang), description: rejectionText(result, lang), color: DANGER }],
+      }).catch(() => {});
+      return;
+    }
   } else {
     await handleTicketFromForm(client, session);
   }
+
+  await dmChannel.send({
+    embeds: [{
+      title: t("form.submittedTitle", lang),
+      description: t("form.submittedBody", lang),
+      color: SUCCESS,
+    }],
+  });
+}
+
+// ─── Shared finishing path (also used by the modal submit handler — v2.9) ────
+// Same branching finishSession() uses below, minus the DM-only "thank you"
+// send: the modal path acks with its own ephemeral confirmation instead.
+export async function submitFormAnswers(client, session) {
+  if (session.form.isApplication || !session.panel?.categoryId) {
+    // Връща `{ok:false, code}` при отказ по правило — викащият ТРЯБВА да го
+    // покаже, иначе кандидатът вижда потвърждение за нищо. (Одит кръг 2)
+    return handleApplicationSubmission(client, session);
+  }
+  await handleTicketFromForm(client, session);
+  return { ok: true };
 }
 
 // ─── Application submission ───────────────────────────────────────────────────
 
+/**
+ * @returns {Promise<{ok:true}|{ok:false, code?:string, remainingSeconds?:number}>}
+ *   Отказът се ВРЪЩА, за да може викащият да каже на човека какво е станало.
+ */
 async function handleApplicationSubmission(client, session) {
   try {
     // Step 1: Create the application record first to get its real DB ID.
     // We pass null for reviewMessageId — we'll update it after posting the embed.
-    const application = await submitApplication(
+    const result = await submitApplication(
       session.guildId,
       session.form.id,
       session.userId,
@@ -318,19 +406,24 @@ async function handleApplicationSubmission(client, session) {
       null   // reviewChannelId updated below
     );
 
+    // Правилата на формата (затворена · cooldown · таван) са ПЛАТЕНА функция.
+    // Отказът трябва да стигне до кандидата, не до лога. (Одит кръг 2)
+    if (!result.ok) return result;
+    const application = result.application;
+
     if (!application?.id) {
       console.error("submitApplication returned no ID");
-      return;
+      return { ok: false, code: "UNKNOWN" };
     }
 
     // Step 2: Post review embed in the server using the REAL application ID.
     const reviewChannelId = session.form.reviewChannelId;
-    if (!reviewChannelId) return; // No review channel configured — application saved, no embed
+    if (!reviewChannelId) return { ok: true }; // няма канал за ревю — записана е, без embed
 
     const reviewChannel = client.channels.cache.get(reviewChannelId);
     if (!reviewChannel) {
       console.error(`Review channel ${reviewChannelId} not found in cache`);
-      return;
+      return { ok: true }; // записана Е — липсва само embed-ът за екипа
     }
 
     const discordUser = await client.users.fetch(session.userId);
@@ -346,9 +439,43 @@ async function handleApplicationSubmission(client, session) {
 
     // Step 3: Update the application with the Discord message reference
     await updateApplicationReviewMessage(application.id, msg.id, reviewChannelId);
+    return { ok: true };
   } catch (err) {
     console.error("Failed to submit application:", err.message);
+    return { ok: false, code: "ERROR" };
   }
+}
+
+/**
+ * Съобщението, което кандидатът вижда при ОТКАЗ по правило на формата.
+ * Езикът е този на сесията — отказът е част от продукта, не техническа грешка.
+ */
+export function rejectionText(result, lang) {
+  switch (result.code) {
+    case "FORM_CLOSED":
+      return t("form.closedByAdmin", lang);
+    case "MAX_SUBMISSIONS":
+      return t("form.maxSubmissionsReached", lang);
+    case "COOLDOWN":
+      return t("form.cooldownActive", lang, { time: formatRemaining(result.remainingSeconds) });
+    default:
+      // Непозната причина → не измисляме. Общият текст е по-честен от грешен.
+      return result.error || t("form.submitFailed", lang);
+  }
+}
+
+/**
+ * Оставащото време в компактен, ЕЗИКОВО НЕУТРАЛЕН вид („45s“ · „12m“ · „3h“ ·
+ * „2d“), защото се вмъква в `{{time}}` на `form.cooldownActive`, който вече е
+ * преведен на 8-те езика. Нарочно НЕ въвеждаме четири нови ключа × 8 локала за
+ * имена на единици — това е дълг, който после се разсинхронизира.
+ */
+function formatRemaining(seconds) {
+  const s = Math.max(0, Number(seconds) || 0);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.ceil(s / 60)}m`;
+  if (s < 86400) return `${Math.ceil(s / 3600)}h`;
+  return `${Math.ceil(s / 86400)}d`;
 }
 
 // ─── Ticket from form ─────────────────────────────────────────────────────────
@@ -381,7 +508,15 @@ async function handleTicketFromForm(client, session) {
       ],
     });
 
-    await channel.send({ embeds: [buildTicketOpenEmbed(member.user, panel.name)] });
+    // ticketNumber не се подава: записът в базата се създава по-надолу
+    // (createTicket), затова номерът още не съществува тук. Останалото —
+    // support ролите и клиентът (за брандирания footer) — е налично.
+    await channel.send({
+      embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority, {
+        supportRoleIds: panel.supportRoleIds || [],
+        client,
+      })],
+    });
 
     const transcript = session.questions
       .map((q) => `**${q.label}**\n${session.answers[q.id] || "*No answer*"}`)
@@ -391,7 +526,7 @@ async function handleTicketFromForm(client, session) {
       embeds: [{
         title: "📋 Form Submission",
         description: transcript.slice(0, 4096),
-        color: 0x5865f2,
+        color: INFO,
       }],
     });
 
