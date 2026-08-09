@@ -10,7 +10,7 @@ import api, {
   getAnalytics, getRevenue, getAdminUsers, getAdminUser,
   getPayments, getAuditLogs, getAdminServers, getAdminServer,
   deleteAdminServer, resetAdminServer, broadcastToServer, setServerPlan,
-  deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer,
+  deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer, updateUserRole, setUserBlacklisted
 } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -462,7 +462,7 @@ function UserDetailModal({ userId, onClose }) {
   });
 
   const setRole = useMutation({
-    mutationFn: ({ role }) => api.patch(`/admin/users/${userId}/role?confirm=true`, { role }).then((r) => r.data),
+    mutationFn: ({ role }) => updateUserRole(userId, role),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["adminUsers"] });
       qc.invalidateQueries({ queryKey: ["adminUser", userId] });
@@ -470,7 +470,7 @@ function UserDetailModal({ userId, onClose }) {
   });
 
   const setBlacklist = useMutation({
-    mutationFn: ({ blacklisted }) => api.patch(`/admin/users/${userId}/blacklist?confirm=true`, { blacklisted }).then((r) => r.data),
+    mutationFn: ({ blacklisted }) => setUserBlacklisted(userId, blacklisted),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["adminUsers"] });
       qc.invalidateQueries({ queryKey: ["adminUser", userId] });

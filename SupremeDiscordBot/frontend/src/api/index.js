@@ -43,7 +43,6 @@ export const logout = () => api.post("/auth/logout");
 // ─── Servers ──────────────────────────────────────────────────────────────────
 export const getServers = () => api.get("/servers").then((r) => r.data);
 export const getServer = (id) => api.get(`/servers/${id}`).then((r) => r.data);
-export const getServerStats = (id) => api.get(`/servers/${id}/stats`).then((r) => r.data);
 export const updateServer = (id, data) => api.patch(`/servers/${id}`, data).then((r) => r.data);
 
 // ─── Panels ───────────────────────────────────────────────────────────────────
@@ -60,7 +59,6 @@ export const spawnPanelGroup = (serverId, panelIds, channelId, mode = "DROPDOWN"
 
 // ─── Forms ────────────────────────────────────────────────────────────────────
 export const getForms = (serverId) => api.get(`/forms/${serverId}`).then((r) => r.data);
-export const getForm = (serverId, formId) => api.get(`/forms/${serverId}/${formId}`).then((r) => r.data);
 export const createForm = (serverId, data) => api.post(`/forms/${serverId}`, data).then((r) => r.data);
 export const updateForm = (serverId, formId, data) => api.put(`/forms/${serverId}/${formId}`, data).then((r) => r.data);
 export const deleteForm = (serverId, formId, force = false) =>
@@ -78,7 +76,6 @@ export const spawnReactionRole = (serverId, id, channelId) =>
 
 // ─── Tickets ──────────────────────────────────────────────────────────────────
 export const getTickets = (serverId, params) => api.get(`/tickets/${serverId}`, { params }).then((r) => r.data);
-export const getTicket = (serverId, ticketId) => api.get(`/tickets/${serverId}/${ticketId}`).then((r) => r.data);
 export const closeTicket = (serverId, ticketId, reason) =>
   api.post(`/tickets/${serverId}/${ticketId}/close`, { reason }).then((r) => r.data);
 export const claimTicket = (serverId, ticketId) =>
@@ -100,9 +97,10 @@ export const getAnalytics = () => api.get("/admin/analytics").then((r) => r.data
 export const getRevenue = () => api.get("/admin/revenue").then((r) => r.data);
 export const getAdminUsers = (params) => api.get("/admin/users", { params }).then((r) => r.data);
 export const getAdminUser = (userId) => api.get(`/admin/users/${userId}`).then((r) => r.data);
-export const updateUserRole = (userId, role) => api.patch(`/admin/users/${userId}/role`, { role }).then((r) => r.data);
+export const updateUserRole = (userId, role) =>
+  api.patch(`/admin/users/${userId}/role?confirm=true`, { role }).then((r) => r.data);
 export const setUserBlacklisted = (userId, blacklisted) =>
-  api.patch(`/admin/users/${userId}/blacklist`, { blacklisted }).then((r) => r.data);
+  api.patch(`/admin/users/${userId}/blacklist?confirm=true`, { blacklisted }).then((r) => r.data);
 export const getAdminServers = (params) => api.get("/admin/servers", { params }).then((r) => r.data);
 export const getAdminServer = (serverId) => api.get(`/admin/servers/${serverId}`).then((r) => r.data);
 export const updateAdminServer = (serverId, data) => api.patch(`/admin/servers/${serverId}`, data).then((r) => r.data);
@@ -110,8 +108,6 @@ export const deleteAdminServer = (serverId) => api.delete(`/admin/servers/${serv
 export const resetAdminServer = (serverId) => api.post(`/admin/servers/${serverId}/reset?confirm=true`).then((r) => r.data);
 export const broadcastToServer = (serverId, channelId, title, message) =>
   api.post(`/admin/servers/${serverId}/broadcast`, { channelId, title, message }).then((r) => r.data);
-export const setServerPremium = (serverId, enabled, reason) =>
-  api.patch(`/admin/servers/${serverId}/premium`, { enabled, reason }).then((r) => r.data);
 export const setServerPlan = (serverId, plan, reason) =>
   api.patch(`/admin/servers/${serverId}/plan`, { plan, reason }).then((r) => r.data);
 export const deleteAdminUser = (userId) => api.delete(`/admin/users/${userId}?confirm=true`).then((r) => r.data);
@@ -125,8 +121,6 @@ export const getAuditLogs = (params) => api.get("/admin/audit-logs", { params })
 // serverId е PATH параметър (минава през requireServerAdmin authz на backend-а).
 // v3.0 — body носи plan ("premium" | "whitelabel"), interval ("month" | "year")
 // и withdrawalConsent (чл. 16(а) — задължително преди checkout).
-export const createCheckout = (serverId, body = {}) =>
-  api.post(`/stripe/create-checkout/${serverId}`, body).then((r) => r.data);
 export const openPortal = (serverId) =>
   api.post(`/stripe/portal/${serverId}`).then((r) => r.data);
 export const getStripeStatus = (serverId) =>
@@ -256,8 +250,6 @@ export const getDashboard = (serverId, days = 14) =>
 // ─── v2.1 Application delete ────────────────────────────────────────────────
 export const deleteApplication = (sid, appId) =>
   api.delete(`/applications/${sid}/${appId}`).then((r) => r.data);
-export const bulkDeleteApplications = (sid, filter) =>
-  api.post(`/applications/${sid}/bulk-delete`, filter).then((r) => r.data);
 
 // ─── v2.2 Application discussion ─────────────────────────────────────────────
 export const openApplicationDiscussion = (sid, appId) =>

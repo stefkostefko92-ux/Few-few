@@ -2,9 +2,6 @@
 // Nederlands — vertaald vanuit en.js (bron van waarheid). Aanspreekvorm: „je“
 // (net als de landingspagina, frontend/src/i18n/landing.js).
 export default {
-  "error.generic": "Er is iets misgegaan.",
-  "error.notFound": "Niet gevonden.",
-  "error.unauthorized": "Je hebt hier geen rechten voor.",
   "error.blacklisted": "❌ Je bent uitgesloten van het gebruik van deze bot.",
   "error.formExpired": "❌ Dit formulier is niet meer actief. Begin opnieuw.",
   "error.componentExpired": "❌ Deze knop werkt niet meer — het paneel waartoe hij behoort is gewijzigd of verwijderd. Vraag een beheerder om het opnieuw te plaatsen.",
@@ -15,19 +12,10 @@ export default {
   "error.serviceUnavailable.button": "Status bekijken",
 
   "ticket.opened": "✅ Je ticket is aangemaakt: {{channel}}",
-  "ticket.closed": "🔒 Ticket gesloten door {{user}}.\n**Reden:** {{reason}}",
   "ticket.closedConfirm": "✅ Ticket gesloten.",
-  "ticket.claimed": "🛡️ Ticket geclaimd door {{user}}.",
   "ticket.claimedConfirm": "👋 Ticket geclaimd door {{user}}",
   "ticket.claimStaffOnly": "❌ Alleen leden van het supportteam kunnen tickets claimen.",
-  "ticket.unclaimed": "🔓 Ticket vrijgegeven. Elk teamlid kan nu helpen.",
-  "ticket.notATicket": "❌ Dit is geen ticketkanaal.",
-  "ticket.limitReached": "❌ Je hebt al {{count}} open tickets. Sluit er een voordat je een nieuwe opent.",
-  "ticket.renamed": "✏️ Kanaal hernoemd naar `{{name}}`.",
-  "ticket.escalated": "⬆️ Ticket geëscaleerd naar {{panel}}.",
   "ticket.feedback.prompt": "Bedankt voor het gebruik van onze support! Geef je ervaring een beoordeling:",
-  "ticket.autoClosedInactivity": "⏱️ Dit ticket is automatisch gesloten na {{hours}} uur inactiviteit.",
-  "ticket.autoClosedLeave": "👋 Dit ticket is automatisch gesloten omdat de aanmaker de server heeft verlaten.",
   "ticket.staffOnly": "❌ Alleen leden van het supportteam kunnen deze actie uitvoeren.",
   "ticket.notFound": "❌ Dit ticket bestaat niet meer.",
   "ticket.unknownAction": "❌ Onbekende ticketactie.",
@@ -44,16 +32,11 @@ export default {
   "ticket.priorityUpdated": "🎯 Prioriteit ingesteld op **{{priority}}**.",
   "ticket.priorityStaffOnly": "❌ Alleen leden van het supportteam kunnen de ticketprioriteit wijzigen.",
 
-  "panel.spawned": "Panel geplaatst in {{channel}}.",
-  "panel.defaultButtonLabel": "Ticket openen",
 
-  "form.started": "Check je DM's om het formulier te beantwoorden.",
   "form.dmCheck": "📬 Check je DM's om het formulier af te ronden!",
-  "form.submitted": "✅ Bedankt! Je antwoorden zijn ontvangen.",
   "form.cooldownActive": "❌ Je kunt over {{time}} opnieuw inzenden.",
   "form.closedByAdmin": "❌ Dit formulier is momenteel gesloten.",
   "form.maxSubmissionsReached": "❌ Je hebt dit formulier al het maximale aantal keren ingediend.",
-  "form.invalidAnswer": "❌ Ongeldig antwoord. {{reason}}",
   "form.alreadyActive": "⚠️ Je hebt al een lopende formuliersessie. Rond die eerst af.",
   "form.dmFailed": "❌ Ik kon je geen DM sturen. Sta DM's van serverleden toe en probeer het opnieuw.",
   "form.noQuestions": "❌ Voor dit formulier zijn geen vragen ingesteld.",
@@ -74,13 +57,8 @@ export default {
   "form.invalidAnswersModal": "❌ Sommige antwoorden komen niet overeen met het verwachte formaat: **{{fields}}**. Druk op de knop in het panel en probeer het opnieuw.",
   "form.submitFailed": "❌ Er ging iets mis bij het verzenden van het formulier. Probeer het opnieuw.",
   "form.submittedConfirm": "✅ Verzonden! Bedankt.",
-  "application.approved": "✅ Je sollicitatie is goedgekeurd.",
-  "application.denied": "❌ Je sollicitatie is afgewezen.",
 
-  "verify.success": "✅ Je bent geverifieerd! Welkom.",
   "verify.wrongAnswer": "❌ Verkeerd antwoord. Probeer het opnieuw.",
-  "verify.rateLimited": "❌ Te veel pogingen. Probeer het over {{minutes}} minuten opnieuw.",
-  "verify.accountTooNew": "❌ Je account moet minstens {{days}} dagen oud zijn.",
   "verify.accountTooNewHere": "❌ Je account moet minstens **{{days}} dagen oud** zijn om hier te verifiëren.",
   "verify.gateBlocked": "❌ Je moet je eerst verifiëren. Ga naar het verificatiekanaal.",
   "verify.panelNotFound": "❌ Verificatiepanel niet gevonden.",
@@ -90,26 +68,10 @@ export default {
   "verify.defaultSuccess": "✅ Je bent geverifieerd, {{user}}!",
   "verify.rolesGrantedSuffix": " Toegekende rollen: {{count}}",
 
-  "poll.voted": "✅ Stem geregistreerd.",
-  "poll.voteRemoved": "Stem verwijderd.",
-  "poll.closed": "Deze poll is gesloten.",
-  "giveaway.entered": "🎉 Je doet mee! Succes!",
-  "giveaway.left": "Je doet niet meer mee aan de giveaway.",
-  "giveaway.missingRoles": "❌ Je hebt deze rollen nodig om mee te doen: {{roles}}",
-  "giveaway.ended": "Giveaway beëindigd.",
-  "giveaway.winnersAnnounce": "🎉 Gefeliciteerd {{winners}}! Gewonnen: **{{prize}}**!",
-  "giveaway.noWinners": "😔 De giveaway voor **{{prize}}** is geëindigd zonder geldige deelnemers.",
 
-  "sticky.set": "📌 Sticky-bericht ingesteld voor dit kanaal.",
-  "sticky.removed": "🗑️ Sticky-bericht verwijderd.",
-  "schedule.added": "📅 Gepland voor {{time}}",
 
   "premium.required": "❌ Deze functie vereist Premium.",
-  "premium.limitReached": "❌ Limiet bereikt: {{resource}} ({{limit}}). Upgrade naar Premium.",
-  "premium.trialStarted": "✨ Je Premium-proef van 14 dagen is gestart!",
-  "premium.trialEndingSoon": "⏰ Je Premium-proef eindigt over {{days}} dagen.",
 
-  "welcomer.default": "Welkom {{user}} bij {{server}}! We zijn nu met {{memberCount}} leden.",
 
   "welcome.title": "👋 Bedankt voor het toevoegen van Supreme Bot!",
   "welcome.intro": "Ik verzorg **ticketpanels**, **sollicitatieformulieren**, **polls & giveaways**, **verificatiepoorten** en **geplande/sticky-berichten** — allemaal beheerd vanuit het dashboard.",

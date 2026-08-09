@@ -291,8 +291,9 @@ const STATUS_CLS = {
 };
 
 function RecentTickets({ tickets, serverId }) {
+  const { t } = useT();
   if (!tickets?.length) {
-    return <p className="text-sm text-cs-muted py-6 text-center">No tickets yet.</p>;
+    return <p className="text-sm text-cs-muted py-6 text-center">{t("overview.recentTickets.empty")}</p>;
   }
   return (
     <ul className="space-y-2">

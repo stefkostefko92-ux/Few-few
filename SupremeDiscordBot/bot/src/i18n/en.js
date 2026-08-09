@@ -2,9 +2,6 @@
 // English — source of truth. All other languages translate against these keys.
 export default {
   // Errors
-  "error.generic": "Something went wrong.",
-  "error.notFound": "Not found.",
-  "error.unauthorized": "You don't have permission.",
   "error.blacklisted": "❌ You have been blacklisted from using this bot.",
   "error.formExpired": "❌ This form is no longer active. Please start over.",
   "error.componentExpired": "❌ This button no longer works — the panel it belongs to was changed or removed. Ask an admin to repost it.",
@@ -16,19 +13,10 @@ export default {
 
   // Tickets
   "ticket.opened": "✅ Your ticket has been created: {{channel}}",
-  "ticket.closed": "🔒 Ticket closed by {{user}}.\n**Reason:** {{reason}}",
   "ticket.closedConfirm": "✅ Ticket closed.",
-  "ticket.claimed": "🛡️ Ticket claimed by {{user}}.",
   "ticket.claimedConfirm": "👋 Ticket claimed by {{user}}",
   "ticket.claimStaffOnly": "❌ Only support team members can claim tickets.",
-  "ticket.unclaimed": "🔓 Ticket unclaimed. Any staff member can assist.",
-  "ticket.notATicket": "❌ This is not a ticket channel.",
-  "ticket.limitReached": "❌ You have {{count}} open tickets already. Close one before opening another.",
-  "ticket.renamed": "✏️ Channel renamed to `{{name}}`.",
-  "ticket.escalated": "⬆️ Ticket escalated to {{panel}}.",
   "ticket.feedback.prompt": "Thanks for using our support! Please rate your experience:",
-  "ticket.autoClosedInactivity": "⏱️ This ticket was auto-closed after {{hours}} hours of inactivity.",
-  "ticket.autoClosedLeave": "👋 This ticket was auto-closed because the creator left the server.",
   "ticket.staffOnly": "❌ Only support team members can perform this action.",
   "ticket.notFound": "❌ This ticket no longer exists.",
   "ticket.unknownAction": "❌ Unknown ticket action.",
@@ -46,17 +34,12 @@ export default {
   "ticket.priorityStaffOnly": "❌ Only support team members can change ticket priority.",
 
   // Panels
-  "panel.spawned": "Panel spawned in {{channel}}.",
-  "panel.defaultButtonLabel": "Open Ticket",
 
   // Forms / Applications
-  "form.started": "Check your DMs to answer the form.",
   "form.dmCheck": "📬 Check your DMs to complete the form!",
-  "form.submitted": "✅ Thank you! Your submission has been received.",
   "form.cooldownActive": "❌ You can submit again in {{time}}.",
   "form.closedByAdmin": "❌ This form is currently closed.",
   "form.maxSubmissionsReached": "❌ You have already submitted this form the maximum number of times.",
-  "form.invalidAnswer": "❌ Invalid answer. {{reason}}",
   "form.alreadyActive": "⚠️ You already have an active form session. Please complete it first.",
   "form.dmFailed": "❌ I couldn't send you a DM. Please enable DMs from server members and try again.",
   "form.noQuestions": "❌ This form has no questions configured.",
@@ -77,14 +60,9 @@ export default {
   "form.invalidAnswersModal": "❌ Some answers don't match the expected format: **{{fields}}**. Please press the panel button and try again.",
   "form.submitFailed": "❌ Something went wrong submitting the form. Please try again.",
   "form.submittedConfirm": "✅ Submitted! Thank you.",
-  "application.approved": "✅ Your application was approved.",
-  "application.denied": "❌ Your application was denied.",
 
   // Verification
-  "verify.success": "✅ You've been verified! Welcome.",
   "verify.wrongAnswer": "❌ Wrong answer. Try again.",
-  "verify.rateLimited": "❌ Too many attempts. Try again in {{minutes}} minutes.",
-  "verify.accountTooNew": "❌ Your account must be at least {{days}} days old.",
   "verify.accountTooNewHere": "❌ Your account must be at least **{{days}} days old** to verify here.",
   "verify.gateBlocked": "❌ You need to verify first. Please visit the verification channel.",
   "verify.panelNotFound": "❌ Verification panel not found.",
@@ -95,29 +73,13 @@ export default {
   "verify.rolesGrantedSuffix": " Roles granted: {{count}}",
 
   // Polls & Giveaways
-  "poll.voted": "✅ Vote recorded.",
-  "poll.voteRemoved": "Vote removed.",
-  "poll.closed": "This poll is closed.",
-  "giveaway.entered": "🎉 You're entered! Good luck!",
-  "giveaway.left": "You left the giveaway.",
-  "giveaway.missingRoles": "❌ You need these roles to enter: {{roles}}",
-  "giveaway.ended": "Giveaway ended.",
-  "giveaway.winnersAnnounce": "🎉 Congratulations {{winners}}! You won **{{prize}}**!",
-  "giveaway.noWinners": "😔 Giveaway for **{{prize}}** ended with no eligible entrants.",
 
   // Sticky & Scheduled
-  "sticky.set": "📌 Sticky message set for this channel.",
-  "sticky.removed": "🗑️ Sticky removed.",
-  "schedule.added": "📅 Scheduled for {{time}}",
 
   // Premium
   "premium.required": "❌ This feature requires Premium.",
-  "premium.limitReached": "❌ Limit reached: {{resource}} ({{limit}}). Upgrade to Premium.",
-  "premium.trialStarted": "✨ Your 14-day Premium trial has started!",
-  "premium.trialEndingSoon": "⏰ Your Premium trial ends in {{days}} days.",
 
   // Welcomer (member welcome message)
-  "welcomer.default": "Welcome {{user}} to {{server}}! We're now {{memberCount}} members strong.",
 
   // Welcome embed (posted by guildCreate when the bot joins a server)
   "welcome.title": "👋 Thanks for adding Supreme Bot!",
