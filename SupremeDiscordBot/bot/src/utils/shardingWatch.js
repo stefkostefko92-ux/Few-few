@@ -57,6 +57,11 @@ export function reportShardingPressure(guildCount) {
     if (!message) return level;
     const prefix = level === "plan" ? "⚠️  [sharding]" : "🚨 [sharding]";
     console.warn(`${prefix} ${message}`);
+    // Прагът е обявен като СТЕНА (виж горния коментар) — стена, която само
+    // шепне в stdout, не е аларма. Sentry е по избор: без DSN редът е no-op.
+    import("@sentry/node")
+      .then((S) => S.captureMessage(`${prefix} ${message}`, "warning"))
+      .catch(() => {});
     return level;
   } catch {
     return "ok";

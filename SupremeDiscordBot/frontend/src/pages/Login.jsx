@@ -455,7 +455,7 @@ export default function Login() {
                   "Math captcha + account-age gates",
                   "Claim · escalate · round-robin",
                   "Sticky + scheduled + recurring messages",
-                  "Giveaways, polls & analytics",
+                  "Advanced analytics",
                   "AI auto-replies (assistive, human-in-the-loop)",
                   "Webhooks (HMAC) + public REST API",
                   "Unlimited transcript retention",
