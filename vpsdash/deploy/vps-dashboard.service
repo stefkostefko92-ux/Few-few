@@ -84,7 +84,26 @@ ReadWritePaths=-/root -/var/lib/vps-dashboard -/etc/vps-dashboard -/opt/few-few
 ProtectKernelTunables=false
 ProtectKernelModules=false
 ProtectControlGroups=true
-RestrictSUIDSGID=true
+# RestrictSUIDSGID НЕ се включва — и това е разменена защита, не пропуск.
+#
+# Директивата слага seccomp филтър, който отказва `chmod` със setuid/setgid бит.
+# Пакетни postinst скриптове правят точно това напълно легитимно: `/var/crash`
+# на Ubuntu е с режим 3777 (setgid + sticky), затова при ъпдейт от панела
+# `apport` пада с „chmod: changing permissions of '/var/crash': Operation not
+# permitted", dpkg остава HALF-CONFIGURED и от този момент НИТО един ъпдейт не
+# минава — включително за сигурност. Измерено на живо при `apt upgrade`, в който
+# docker-ce мина, а apport не.
+#
+# Най-лошото беше вторият кръг: панелът правилно алармира „dpkg е прекъснат" и
+# предлага „Довърши прекъснатия dpkg", но и тази поправка върви ПОД същия unit,
+# значи удря същия филтър и пада по същия начин. Тоест защитата създаваше
+# състояние, което сама не позволява да бъде поправено от интерфейса — човек
+# трябва да влезе по SSH, за да излезе от цикъла.
+#
+# Затова: панелът върви като root по конструкция (управлява цялата машина), а
+# филтър, който блокира конфигурирането на пакети, е нетна ЗАГУБА за сигурността
+# — спира кръпките, вместо да спира нападател, който и без това е root. Същата
+# размяна като ProtectKernelTunables=false заради ufw, само че тази е по-скъпа.
 LockPersonality=true
 # Логовете отиват в journald (journalctl -u vps-dashboard).
 StandardOutput=journal

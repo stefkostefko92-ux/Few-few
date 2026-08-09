@@ -66,6 +66,24 @@ test('systemd unit: пътищата, които може да ги няма, с
   }
 });
 
+test('systemd unit: RestrictSUIDSGID остава ИЗКЛЮЧЕН — иначе apt чупи dpkg', () => {
+  const s = sections(read('deploy/vps-dashboard.service'));
+  const svc = s['[Service]'] || [];
+  const v = svc.find((l) => l.startsWith('RestrictSUIDSGID='))?.split('=')[1]?.trim();
+  // Изглежда като безплатно втвърдяване и точно затова някой ще го върне.
+  // Филтърът отказва chmod със setgid бит, а `/var/crash` на Ubuntu е 3777 →
+  // postinst на apport пада, dpkg остава half-configured и СПИРА всички ъпдейти,
+  // включително за сигурност. Вградената поправка също върви под този unit,
+  // значи не може да излезе от състоянието — трябва SSH.
+  if (v && !['false', 'no', '0', 'off'].includes(v.toLowerCase())) {
+    assert.fail(`RestrictSUIDSGID=${v} блокира postinst на пакети (apport/var/crash) и заключва dpkg`);
+  }
+  // И причината трябва да е записана, за да не се върне „за по-сигурно".
+  const txt = read('deploy/vps-dashboard.service');
+  assert.match(txt, /RestrictSUIDSGID/, 'решението се обяснява в самия файл, не се премълчава');
+  assert.match(txt, /var\/crash/, 'без конкретния случай коментарът е лозунг');
+});
+
 test('systemd unit: /root е с ЗАПИС, а не заключен от ProtectHome', () => {
   const s = sections(read('deploy/vps-dashboard.service'));
   const svc = s['[Service]'] || [];
