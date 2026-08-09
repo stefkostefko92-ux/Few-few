@@ -166,10 +166,13 @@ export default async function HomePage({ params }: Props) {
             {/* Затъмнението НЕ е вкус — то пази контраста на текста над
                 произволна снимка. Без него светъл кадър прави заглавието
                 нечетимо и пада 1.4.3. Плътността е избрана да държи
-                `silver-400` над 4,5:1 и при светъл фон. */}
+                `silver-400` над 4,5:1 ТАМ, КЪДЕТО СТОИ ТЕКСТЪТ — вляво.
+                Вдясно плътността пада до 35%, защото там няма текст, а
+                затъмнение по цялата ширина изяждаше снимката до невидимост
+                (първият опит: кадърът беше на място, но не се виждаше). */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950 via-ink-950/90 to-ink-950/70"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/35"
             />
           </>
         ) : (
