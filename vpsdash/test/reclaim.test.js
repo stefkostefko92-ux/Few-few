@@ -2,6 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { reclaimSpec, assertSafePath } from '../src/reclaim.js';
 
 // ── Затвореният списък от пътища ─────────────────────────────────────────────
@@ -113,4 +115,19 @@ test('build-cache действието чисти СЪЩОТО, което по�
   // командата трябва да е `-a` — иначе панелът обещава повече, отколкото прави.
   assert.deepEqual(spec.args, ['builder', 'prune', '-af']);
   assert.equal(spec.exclusive, 'docker', 'не бива да върви успоредно с друго docker действие');
+});
+
+test('висящите образи НЕ заемат числото на `system df`', () => {
+  // Измерено на живо: панелът показваше 13.8 GB до бутон, който освободи 0B.
+  // Числата са за РАЗЛИЧНИ множества — `system df · Images · RECLAIMABLE` брои
+  // и тагнатите неизползвани образи, а `image prune -f` (без `-a`) пипа само
+  // нетагнатите. Число до бутон е обещание; чуждо число е лъжа.
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'src', 'reclaim.js'), 'utf8');
+  const fn = src.slice(src.indexOf('async function danglingImages'), src.indexOf('async function buildCache'));
+  assert.ok(!/system['"],\s*['"]df/.test(fn) && !fn.includes("'system df'"), 'danglingImages не бива да чете `docker system df`');
+  assert.ok(/plural\(ids\.length/.test(fn), 'показва се броят — това е, което бутонът реално маха');
+  assert.match(fn, /note:/, 'липсата на размер трябва да е ОБЯСНЕНА, не премълчана');
+  // И командата остава без `-a` — това е съзнателно решение, не пропуск.
+  const spec = reclaimSpec('dangling-images', {});
+  assert.deepEqual(spec.args, ['image', 'prune', '-f']);
 });
