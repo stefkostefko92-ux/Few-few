@@ -1,3 +1,7 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
@@ -18,6 +22,27 @@ import { DISCORD_INVITE } from '@/lib/site';
 export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ locale: string }> };
+
+/**
+ * Снимката на героя е ПО ЖЕЛАНИЕ и се пуска само ако файлът наистина е там.
+ *
+ * Причината да се проверява, вместо да се зашие: `next/image` към липсващ файл
+ * дава счупен кадър и 404 на всяка заявка към началната. Така снимката е
+ * drop-in — слагаш файла, тя излиза; махаш го, героят пада обратно на
+ * градиента. Същият подход като `Icon`/`Badge`, които и днес четат от диска.
+ *
+ * ВНИМАНИЕ ЗА ПРАВАТА: тук НЕ върви кадър от GTA V или FiveM. Те са
+ * интелектуална собственост на Take-Two/Rockstar, а сайтът изрично обявява, че
+ * не е свързан с тях — снимка от играта прави точно обратното твърдение.
+ */
+const HERO_CANDIDATES = ['hero.webp', 'hero.jpg', 'hero.png'];
+
+function findHero(): string | null {
+  for (const file of HERO_CANDIDATES) {
+    if (existsSync(path.join(process.cwd(), 'public', 'brand', file))) return `/brand/${file}`;
+  }
+  return null;
+}
 
 /** Колко сървъра показва тийзърът. Landing, не каталог — пълният е на /servers. */
 const TEASER = 6;
@@ -97,6 +122,7 @@ export default async function HomePage({ params }: Props) {
   const totalPlayers = online.reduce((sum, server) => sum + server.players, 0);
   const featured = servers.slice(0, TEASER);
   const faq = faqFor(locale);
+  const heroImage = findHero();
 
   const stats = [
     { value: servers.length, label: t.home.statServers },
@@ -120,14 +146,40 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       {/* ── Герой ────────────────────────────────────────────────────────── */}
-      {/* Фонът е CSS, не картинка: конични/радиални градиенти тежат нула байта,
-          не мърдат LCP-то и не искат втора заявка. `-z-10` + `overflow-hidden`
-          го държат зад съдържанието, без да порасне хоризонталният скрол. */}
+      {/* `-z-10` + `overflow-hidden` държат фона зад съдържанието, без да
+          порасне хоризонталният скрол — измерено на 360/768/1280. */}
       <section className="relative -mx-4 overflow-hidden px-4 pb-14 pt-10 sm:pt-16">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_20%_0%,rgba(34,211,238,0.14),transparent_65%),radial-gradient(45%_45%_at_85%_10%,rgba(16,185,129,0.10),transparent_60%)]"
-        />
+        {heroImage ? (
+          <>
+            {/* Снимката е ФОН, не съдържание → `alt=""` и `aria-hidden`.
+                `priority` е задължителен: това е LCP елементът, а без него Next
+                го зарежда мързеливо и метриката се срива. */}
+            <Image
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              fill
+              priority
+              sizes="100vw"
+              className="pointer-events-none absolute inset-0 -z-10 object-cover"
+            />
+            {/* Затъмнението НЕ е вкус — то пази контраста на текста над
+                произволна снимка. Без него светъл кадър прави заглавието
+                нечетимо и пада 1.4.3. Плътността е избрана да държи
+                `silver-400` над 4,5:1 и при светъл фон. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950 via-ink-950/90 to-ink-950/70"
+            />
+          </>
+        ) : (
+          /* Без снимка героят пак не е гол: конични/радиални градиенти тежат
+             нула байта и не искат втора заявка. */
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_20%_0%,rgba(34,211,238,0.14),transparent_65%),radial-gradient(45%_45%_at_85%_10%,rgba(16,185,129,0.10),transparent_60%)]"
+          />
+        )}
         <div className="flex flex-col-reverse items-start gap-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-2xl">
             <p className="flex items-center gap-2 text-sm text-cyan-300">

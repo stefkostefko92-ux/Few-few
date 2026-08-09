@@ -52,6 +52,58 @@ type Props = {
 const VECTOR_GROUPS: IconGroup[] = ['status', 'framework', 'tag', 'ui', 'brand'];
 
 /**
+ * Растерните значки, изрязани от общия лист с ГРЕШНО отместване — само те
+ * падат към вектор.
+ *
+ * Списъкът е curated, не изчислен, и това е нарочно: „съдържа парче от
+ * съседната икона“ не се мери с код. Всяко име тук е гледано на контактен лист
+ * (`scripts/fix-badges.py` + рендер на 71-те) и носи или ЧУЖД текстов етикет
+ * („UPLOAD“ в `profile`, „FFLINE HIDD“ в `promoted`, „UNREACHAI“ в
+ * `discovered`), или направо чужд предмет (`tuning` показва куфарчето на
+ * `jobs`, `court` — гумата на `drift`).
+ *
+ * ВНИМАНИЕ при добавяне: това е ЧЕРЕН списък, не бял. Първата версия правеше
+ * обратното — предпочиташе вектор за ВСИЧКО, за което има SVG — и заради
+ * трийсетина счупени изхвърли и всички изрядни: брандираните 3D значки на
+ * рамките и статусите се смениха с плоски линейни глифове. Наличието на вектор
+ * НЕ е причина да не се ползва растерът.
+ */
+const MISCUT = new Set([
+  '18plus',
+  '18plus-badge',
+  'arrow-down',
+  'arrow-left',
+  'arrow-right',
+  'calendar',
+  'close',
+  'court',
+  'crafting',
+  'discovered',
+  'download',
+  'drift',
+  'economy',
+  'heavy-rp',
+  'housing',
+  'jobs',
+  'light-rp',
+  'menu',
+  'notification',
+  'offline-badge',
+  'profile',
+  'promoted',
+  'racing',
+  'settings',
+  'slots',
+  'success',
+  'transport',
+  'tuning',
+  'upload',
+  'verified-badge',
+  'vip',
+  'warning',
+]);
+
+/**
  * Има ли ЧИСТ вектор със същото име — и ако да, в коя група.
  *
  * ЗАЩО ВЕКТОРЪТ ПОБЕЖДАВА. Растерният пакет е изрязан от общ лист с грешно
@@ -81,9 +133,15 @@ const vectorCache = new Map<string, IconGroup | null>();
 const ICON_ROOT = path.join(process.cwd(), 'public', 'icons');
 
 export function Badge({ name, size = 40, title = null, className }: Props) {
-  const vector = NAME.test(name) ? vectorGroup(name) : null;
-  if (vector) {
-    return <Icon group={vector} name={name} size={size} title={title} className={className} />;
+  // Растерът Е дизайнът — цветните 3D значки са доставеният пакет и те носят
+  // бранда. Векторът е РЕЗЕРВА за две положения: значката е доказано изрязана
+  // накриво, или изобщо липсва като растер.
+  const useVector = MISCUT.has(name) || !exists(name);
+  if (useVector) {
+    const vector = NAME.test(name) ? vectorGroup(name) : null;
+    if (vector) {
+      return <Icon group={vector} name={name} size={size} title={title} className={className} />;
+    }
   }
 
   if (!exists(name)) return null;
