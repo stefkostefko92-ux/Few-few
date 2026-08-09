@@ -92,6 +92,7 @@ for (const path of [
   '/bg/admin/servers',
   '/bg/admin/streamers',
   '/bg/admin/integrations',
+  '/bg/admin/news',
   '/en/admin',
 ]) {
   const res = await fetch(BASE + path, { redirect: 'manual' });

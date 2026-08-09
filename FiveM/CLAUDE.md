@@ -79,7 +79,10 @@ src/app/actions/review.ts  Ревю от посетител (единствен�
 src/app/actions/report.ts  Сигнал по чл. 16 DSA (четирите задължителни елемента).
 src/app/impresum/       Импресум по чл. 4 ЗЕТ + точки за контакт по DSA.
 src/app/report/         Формата за сигнали (noindex).
-src/app/news/           Новини и туториали (SEO гръбнак).
+src/app/news/           Новини и туториали (SEO гръбнак). Пишат се от панела —
+                        `admin/news` + `savePost/publishPost/deletePostAction`.
+                        Новината се създава като ЧЕРНОВА (`publishedAt = null`)
+                        и излиза чак с изричното „Публикувай“.
 scripts/refresh-servers.ts  Cron: пингва всички одобрени сървъри на порции,
                         пише Server.online/players + ServerSnapshot.
 prisma/schema.prisma    Server · ServerSnapshot · Review · Submission · Report · Post.

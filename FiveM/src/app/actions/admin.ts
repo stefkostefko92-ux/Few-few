@@ -464,3 +464,98 @@ export async function handleReportAction(formData: FormData): Promise<void> {
   );
   revalidatePath('/', 'layout');
 }
+
+// ── Новини ──────────────────────────────────────────────────────────────────
+
+/**
+ * Новините бяха черна дупка в обратната посока на заявките: моделът `Post`
+ * съществува, `/news` го чете и sitemap-ът го обявява, но НЯМАШЕ нито един
+ * път за записване — тоест SEO гръбнакът на сайта не можеше да се напълни
+ * без ръчен SQL. Оттук нататък може.
+ *
+ * `body` е markdown-подобен обикновен текст: рендира се като абзаци, не като
+ * HTML. Това е нарочно — админският вход е доверен, но „доверен“ не е причина
+ * да отваряме път за скрипт в публична страница.
+ */
+const postSchema = z.object({
+  title: z.string().trim().min(3).max(160),
+  excerpt: z.string().trim().min(10).max(400),
+  body: z.string().trim().min(20).max(40_000),
+  locale: z.enum(['bg', 'en']),
+  author: z.string().trim().min(2).max(80),
+  slug: z.string().trim().max(80).optional(),
+});
+
+/** Уникален slug: заетият получава числов суфикс, вместо да гръмне на констрейнта. */
+async function freePostSlug(base: string, exceptId?: string): Promise<string> {
+  const start = isValidSlug(base) ? base : `novina-${Date.now()}`;
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const candidate = attempt === 0 ? start : `${start}-${attempt + 1}`.slice(0, 80);
+    const taken = await prisma.post.findUnique({ where: { slug: candidate }, select: { id: true } });
+    if (!taken || taken.id === exceptId) return candidate;
+  }
+  return `${start}-${Date.now()}`.slice(0, 80);
+}
+
+export async function savePostAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const parsed = postSchema.safeParse({
+    title: formData.get('title'),
+    excerpt: formData.get('excerpt'),
+    body: formData.get('body'),
+    locale: formData.get('postLocale'),
+    author: formData.get('author'),
+    slug: String(formData.get('slug') ?? '').trim() || undefined,
+  });
+  if (!parsed.success) return;
+  const data = parsed.data;
+
+  const id = String(formData.get('id') ?? '');
+  // Заглавието идва от нас, но пак минава през `displayName`: то влиза в
+  // `<title>` и в JSON-LD, а управляващ символ там чупи повече от вида.
+  const title = displayName(data.title, 'Без заглавие');
+  const slug = await freePostSlug(slugify(data.slug || title), id || undefined);
+
+  if (id) {
+    await prisma.post.update({
+      where: { id },
+      data: { title, excerpt: data.excerpt, body: data.body, locale: data.locale, author: data.author, slug },
+    });
+    await audit('post-edit', id, title);
+  } else {
+    const created = await prisma.post.create({
+      // `publishedAt` остава празно НАРОЧНО: новината се създава като чернова
+      // и излиза публично чак с изричното „Публикувай“. Нищо не става видимо
+      // от само себе си — същото правило като при заявките и ревютата.
+      data: { title, excerpt: data.excerpt, body: data.body, locale: data.locale, author: data.author, slug },
+    });
+    await audit('post-create', created.id, title);
+  }
+  revalidatePath('/', 'layout');
+}
+
+export async function publishPostAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+
+  const publish = String(formData.get('publish') ?? '') === '1';
+  await prisma.post.update({
+    where: { id },
+    data: { publishedAt: publish ? new Date() : null },
+  });
+  await audit(publish ? 'post-publish' : 'post-unpublish', id);
+  revalidatePath('/', 'layout');
+}
+
+export async function deletePostAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  // Новината е НАШЕ съдържание, не чуждо — изтриването е окончателно и не
+  // изисква „свален по възражение“ като при стриймърите.
+  await prisma.post.delete({ where: { id } });
+  await audit('post-delete', id);
+  revalidatePath('/', 'layout');
+}

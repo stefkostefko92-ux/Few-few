@@ -27,6 +27,7 @@ export default async function AdminLayout({
     { href: `/${locale}/admin/servers`, label: 'Сървъри', badge: 'online' },
     { href: `/${locale}/admin/queue`, label: 'Опашка', badge: 'notification' },
     { href: `/${locale}/admin/streamers`, label: 'Стриймъри', badge: 'twitch' },
+    { href: `/${locale}/admin/news`, label: 'Новини', badge: 'news' },
     { href: `/${locale}/admin/integrations`, label: 'Интеграции', badge: 'settings' },
   ];
 
