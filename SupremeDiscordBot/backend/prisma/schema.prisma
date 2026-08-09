@@ -674,6 +674,7 @@ model AuditLog {
   actor  User?   @relation("AuditActor", fields: [actorId], references: [id])
 
   @@index([serverId])
+  @@index([action]) // v44: мониторинг заявката LIKE 'JOB_OK_%' GROUP BY action
   // Ретенцията трие по възраст, а админският изглед подрежда по време.
   @@index([createdAt])
   @@map("audit_logs")
