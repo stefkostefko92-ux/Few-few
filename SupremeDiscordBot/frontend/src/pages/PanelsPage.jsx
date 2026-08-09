@@ -52,6 +52,8 @@ const defaultForm = () => ({
   maxOpenPerUserPanel: "",
   buttonStyle: "BUTTON",
   inactivityCloseHours: "",
+  slaFirstResponseMinutes: "",
+  slaResolutionMinutes: "",
   autoCloseOnLeave: false,
   feedbackEnabled: false,
   // v1.7 verification gate
@@ -87,6 +89,8 @@ function panelToForm(panel) {
     maxOpenPerUserPanel: panel.maxOpenPerUserPanel ?? "",
     buttonStyle: panel.buttonStyle || "BUTTON",
     inactivityCloseHours: panel.inactivityCloseHours ?? "",
+    slaFirstResponseMinutes: panel.slaFirstResponseMinutes ?? "",
+    slaResolutionMinutes: panel.slaResolutionMinutes ?? "",
     autoCloseOnLeave: !!panel.autoCloseOnLeave,
     feedbackEnabled: !!panel.feedbackEnabled,
     // v1.7 verification gate
@@ -210,6 +214,8 @@ export default function PanelsPage() {
       verificationDeniedMessage: form.verificationDeniedMessage || null,
       maxOpenPerUserPanel:  form.maxOpenPerUserPanel  === "" ? null : Number(form.maxOpenPerUserPanel),
       inactivityCloseHours: form.inactivityCloseHours === "" ? null : Number(form.inactivityCloseHours),
+      slaFirstResponseMinutes: form.slaFirstResponseMinutes === "" ? null : Number(form.slaFirstResponseMinutes),
+      slaResolutionMinutes: form.slaResolutionMinutes === "" ? null : Number(form.slaResolutionMinutes),
       counterPadding:       Number(form.counterPadding) || 4,
       maxOpenPerUser:       Number(form.maxOpenPerUser) || 1,
     };
@@ -625,6 +631,20 @@ export default function PanelsPage() {
                       onChange={(e) => setForm((f) => ({ ...f, inactivityCloseHours: e.target.value }))}
                       placeholder={t("panels.ph.inactivity")} />
                   </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label className="block">
+                      <span className="cs-label">{t("ui.slaFirstResponse")}</span>
+                      <input type="number" className="cs-input" min={1} max={20160} value={form.slaFirstResponseMinutes}
+                        onChange={(e) => setForm((f) => ({ ...f, slaFirstResponseMinutes: e.target.value }))} />
+                      <p className="text-xs text-cs-dim mt-1">{t("ui.slaFirstResponseHint")}</p>
+                    </label>
+                    <label className="block">
+                      <span className="cs-label">{t("ui.slaResolution")}</span>
+                      <input type="number" className="cs-input" min={1} max={20160} value={form.slaResolutionMinutes}
+                        onChange={(e) => setForm((f) => ({ ...f, slaResolutionMinutes: e.target.value }))} />
+                      <p className="text-xs text-cs-dim mt-1">{t("ui.slaResolutionHint")}</p>
+                    </label>
+                  </div>
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.autoCloseOnLeave}
                       onChange={(e) => setForm((f) => ({ ...f, autoCloseOnLeave: e.target.checked }))}

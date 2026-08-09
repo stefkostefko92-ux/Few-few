@@ -13,7 +13,7 @@
 //   GET /api/v1/giveaways         — list giveaways
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { requireApiKey } from "./apikeys.js";
+import { requireApiKey } from "../lib/apiKeyAuth.js";
 import { getServerTier } from "../lib/premium.js";
 import { withIconUrl } from "../lib/discordCdn.js";
 

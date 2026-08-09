@@ -913,4 +913,8 @@ export default {
   "ui.ph.verifyFailure": "❌ Zła odpowiedź. Spróbuj ponownie.",
   "ui.maxOpenPerUserHint": "Liczy otwarte zgłoszenia tej osoby na CAŁYM serwerze. Sprawdzane przy otwieraniu z tego panelu.",
   "ui.maxPerUserPanelHint": "Liczy tylko zgłoszenia z tego panelu, oprócz limitu serwera. 0 = brak osobnego limitu.",
+  "ui.slaFirstResponse": "SLA: pierwsza odpowiedź (minuty)",
+  "ui.slaFirstResponseHint": "Alarm, jeśli zespół nie odpowie w tym czasie. Puste = wyłączone.",
+  "ui.slaResolution": "SLA: rozwiązanie (minuty)",
+  "ui.slaResolutionHint": "Alarm, jeśli zgłoszenie po tym czasie jest nadal otwarte. Puste = wyłączone.",
 };

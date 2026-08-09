@@ -75,13 +75,10 @@ import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
 import archiveRouter from "./routes/archive.js";
-import apikeysRouter from "./routes/apikeys.js";
 import v1Router from "./routes/v1.js";
 import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
 import reactionRolesRouter from "./routes/reactionroles.js";
-import { scheduleRetention } from "./jobs/dataRetention.js";
-import { scheduleDunning } from "./jobs/dunning.js";
 import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
 
@@ -257,9 +254,10 @@ app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashb
 app.use("/api/reactionroles", reactionRolesRouter); // v3.2 Reaction roles CRUD + spawn (dashboard-authed)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
-// NOTE: apikeysRouter is intentionally not mounted — its routes would shadow
-// apiKeyManagementRouter on the same path. The file is kept solely for
-// its `requireApiKey` middleware export, used by v1.js.
+// apikeys.js (файлът-примамка) е ИЗТРИТ на 09.08.2026: немонтиран, но с втори
+// дрейфнал списък scope-ове, от който v1.js внасяше requireApiKey — направи
+// /api/v1/server вечно 403 и подлъга и одитори. Едното определение живее в
+// lib/apiKeyAuth.js.
 app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
 
@@ -308,10 +306,8 @@ app.use((err, req, res, _next) => {
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 Backend API running on http://localhost:${PORT}`);
-  // GDPR data retention — daily 03:00 UTC
-  scheduleRetention();
-  // C3 — Dunning guard: сваля Premium при past_due >14 дни — daily 03:30 UTC
-  scheduleDunning();
+  // ГДПР ретенцията и дунингът се планират от services/scheduler.js (job()
+  // обвивка: lock + Sentry + пулс + CRON_TZ) — одит 09.08.2026.
 });
 
 // ─── Graceful shutdown ────────────────────────────────────────────────────────

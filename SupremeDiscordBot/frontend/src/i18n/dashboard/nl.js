@@ -913,4 +913,8 @@ export default {
   "ui.ph.verifyFailure": "❌ Fout antwoord. Probeer opnieuw.",
   "ui.maxOpenPerUserHint": "Telt de open tickets van de persoon op de HELE server. Gecontroleerd bij openen via dit paneel.",
   "ui.maxPerUserPanelHint": "Telt alleen tickets van dit paneel, bovenop de serverlimiet. 0 = geen eigen limiet.",
+  "ui.slaFirstResponse": "SLA: eerste reactie (minuten)",
+  "ui.slaFirstResponseHint": "Alarm als het team niet binnen deze tijd reageert. Leeg = uit.",
+  "ui.slaResolution": "SLA: oplossing (minuten)",
+  "ui.slaResolutionHint": "Alarm als het ticket na deze tijd nog open is. Leeg = uit.",
 };

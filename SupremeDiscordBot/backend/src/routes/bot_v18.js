@@ -359,8 +359,6 @@ router.delete("/schedule/:id", async (req, res, next) => {
 const TAG_NAME_MAX = 32;
 const TAG_CONTENT_MAX = 1500;
 const TAG_LIMIT_FREE = 50;
-// TODO(premium): raise to 200 for Premium servers once tier is easy to check
-// here (bot_v18 routes don't currently join Server.plan on every call).
 const TAG_LIMIT_PREMIUM = 200;
 
 router.get("/tag/:serverId", async (req, res, next) => {
@@ -374,7 +372,10 @@ router.get("/tag/:serverId", async (req, res, next) => {
 });
 
 router.post("/tag", async (req, res, next) => {
-  const { serverId, name, content, createdBy, isPremium } = req.body;
+  // Тарифата се резолвира ТУК, не се вярва на req.body (одит 09.08.2026).
+  // Маршрутът е зад requireBotSecret, но правилото е едно: правата идват от
+  // getServerTier — единствената дефиниция — не от полето на повикващия.
+  const { serverId, name, content, createdBy } = req.body;
   if (!serverId || !name || !content || !createdBy) {
     return res.status(400).json({ error: "Invalid payload" });
   }
@@ -385,6 +386,7 @@ router.post("/tag", async (req, res, next) => {
   const cleanContent = String(content).slice(0, TAG_CONTENT_MAX);
   try {
     const count = await prisma.cannedResponse.count({ where: { serverId } });
+    const { isPremium } = await getServerTier(serverId);
     const limit = isPremium ? TAG_LIMIT_PREMIUM : TAG_LIMIT_FREE;
     if (count >= limit) {
       return res.status(400).json({ error: `Tag limit reached (${limit}). Delete an existing tag first.` });

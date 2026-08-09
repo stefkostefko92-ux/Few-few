@@ -122,3 +122,44 @@ describe("дневните задачи оставят пулс, за да се 
     expect(code2, "минутна задача пише пулс — това ще залее одита").not.toContain('jobHeartbeat("scheduled-messages"');
   });
 });
+
+// ─── Осиновяването на двата външни планировчика (одит 09.08.2026) ────────────
+// ГДПР ретенцията и дунингът живееха на голи setTimeout в jobs/*.js — нула
+// Sentry, нула пулс, нула lock, зашита зона. Тестовете заковават: (1) двете
+// минават през job() в scheduler.js, (2) в jobs/*.js НЕ остана собствено
+// планиране, (3) всички задачи пулсират през дроселирания универсален пулс.
+describe("ретенцията и дунингът са под предпазителите", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const sched = readFileSync(join(here, "..", "services", "scheduler.js"), "utf-8");
+  const strip = (x) => x.split("\n").filter((l) => !l.trim().startsWith("//") && !l.trim().startsWith("*")).join("\n");
+  const code = strip(sched);
+
+  it("двете задачи са в scheduler.js през job()", () => {
+    expect(code).toContain('job("gdpr-retention"');
+    expect(code).toContain('job("dunning"');
+  });
+
+  it("разместени са спрямо archive-cleanup (03:00) — пипат същите редове", () => {
+    expect(code).toMatch(/"15 3 \* \* \*"[\s\S]{0,80}gdpr-retention/);
+    expect(code).toMatch(/"45 3 \* \* \*"[\s\S]{0,80}dunning/);
+  });
+
+  it("в jobs/*.js не остана собствено планиране", () => {
+    for (const f of ["dataRetention.js", "dunning.js"]) {
+      const src = strip(readFileSync(join(here, "..", "jobs", f), "utf-8"));
+      expect(src, `${f} пак си пуска setTimeout — двоен планировчик`).not.toMatch(/setTimeout|setInterval|cron\.schedule/);
+    }
+  });
+
+  it("универсалният пулс е дроселиран, не липсващ", () => {
+    // Минутна задача, която спре, мълчи неразличимо от „нямаше работа" —
+    // затова ВСЯКА задача пулсира, но най-много веднъж на час.
+    expect(code).toContain("HEARTBEAT_EVERY_MS");
+    const wrapper = code.slice(code.indexOf("function job(name, fn)"));
+    expect(wrapper.slice(0, 1200)).toContain("jobHeartbeat(name");
+  });
+
+  it("частичните провали на ретенцията стигат до Sentry", () => {
+    expect(code).toMatch(/errors\?\.length.*jobFail|jobFail\("gdpr-retention"/s);
+  });
+});

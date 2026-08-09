@@ -244,22 +244,7 @@ export async function runRetentionJob() {
   return results;
 }
 
-// ─── Schedule — runs at 03:00 UTC daily ──────────────────────────────────────
-export function scheduleRetention() {
-  // Compute milliseconds until next 03:00 UTC
-  const now = new Date();
-  const next = new Date(now);
-  next.setUTCHours(3, 0, 0, 0);
-  if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
-  const msUntil = next.getTime() - now.getTime();
+// Планирането живее в services/scheduler.js (одит 09.08.2026): там runRetentionJob
+// минава през job() — застъпващ lock, Sentry при провал, почасов JOB_OK пулс и
+// CRON_TZ. Тази функция е само РАБОТАТА; никой тук не пуска setTimeout.
 
-  setTimeout(() => {
-    runRetentionJob().catch((err) => console.error("[retention] Unhandled error:", err));
-    // Then every 24 hours
-    setInterval(() => {
-      runRetentionJob().catch((err) => console.error("[retention] Unhandled error:", err));
-    }, 24 * 60 * 60 * 1000);
-  }, msUntil);
-
-  console.log(`[retention] 📅 Scheduled — next run at ${next.toISOString()}`);
-}

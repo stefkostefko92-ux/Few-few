@@ -913,4 +913,8 @@ export default {
   "ui.ph.verifyFailure": "❌ Risposta sbagliata. Riprova.",
   "ui.maxOpenPerUserHint": "Conta i ticket aperti della persona su TUTTO il server. Verificato quando apre da questo pannello.",
   "ui.maxPerUserPanelHint": "Conta solo i ticket aperti da questo pannello, oltre al limite del server. 0 = nessun limite proprio.",
+  "ui.slaFirstResponse": "SLA: prima risposta (minuti)",
+  "ui.slaFirstResponseHint": "Avviso se il team non risponde entro questo tempo. Vuoto = disattivato.",
+  "ui.slaResolution": "SLA: risoluzione (minuti)",
+  "ui.slaResolutionHint": "Avviso se il ticket è ancora aperto dopo questo tempo. Vuoto = disattivato.",
 };

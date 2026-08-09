@@ -30,5 +30,32 @@ describe("COMMAND_CATALOG", () => {
       "utf8"
     );
     expect(botFile).toBe(backendFile);
+    // Третото копие (frontend) дрейфна мълчаливо, защото гейтът пазеше само
+    // двете горе — Commands страницата показваше каталог без Reaction Roles.
+    const frontendFile = readFileSync(
+      path.join(__dirname, "../../../frontend/src/data/commandsCatalog.js"),
+      "utf8",
+    );
+    expect(botFile).toBe(frontendFile);
+  });
+});
+
+
+// ─── Каталогът не лъже за командите (одит 09.08.2026) ────────────────────────
+// /premium custombot и /premium export СЪЩЕСТВУВАХА (bot/src/commands/
+// premium.js), но каталогът ги премълчаваше → /help и Commands страницата
+// показваха продукт с 2 функции по-малко. /panel обещаваше "/panel <name>",
+// а реалната команда изисква subcommand spawn.
+import { COMMAND_CATALOG, getAllCommands } from "../utils/commandsCatalog.js";
+
+describe("каталог ↔ реалните команди", () => {
+  const all = getAllCommands();
+  it("документира подкомандите на /premium", () => {
+    expect(all.some((c) => c.name === "/premium custombot")).toBe(true);
+    expect(all.some((c) => c.name === "/premium export")).toBe(true);
+  });
+  it("/panel сигнатурата носи задължителния subcommand", () => {
+    const panel = all.find((c) => c.name === "/panel");
+    expect(panel.signature).toContain("spawn");
   });
 });
