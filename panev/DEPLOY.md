@@ -196,6 +196,7 @@ sudo systemctl restart panev
 | Симптом | Къде да гледаш |
 | --- | --- |
 | Услугата не тръгва | `journalctl -u panev -n 80` — най-често липсващ/къс `JWT_SECRET` (процесът излиза с код 1) |
+| `status=31/SYS`, `Result: core-dump`, умира за ~200 ms | seccomp е убил Node. Кой syscall: `dmesg -T \| grep -i 'comm="node"'` → `syscall=NNN`. Известен случай: **330 = `pkey_alloc`** (V8 ползва memory protection keys за JIT) — вече е върнат явно в `SystemCallFilter`. Ако номерът е друг, добави го на същия ред, вместо да махаш целия филтър |
 | 502 от nginx | услугата е спряна или порт ≠ 4102: `systemctl status panev`, `ss -ltnp \| grep 4102` |
 | Формата не праща имейл | `SMTP_PASS` липсва/грешна → `journalctl -u panev \| grep mailer`; запитването пак е в `/admin/messaggi.html` |
 | „Не мога да пиша“ в лога | systemd sandbox: записваем е само `/opt/panev/data` (`ReadWritePaths`) |
