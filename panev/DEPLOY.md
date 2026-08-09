@@ -215,6 +215,21 @@ sudo systemctl restart panev
    (Google не поддържа IndexNow).
 5. Тест на **restore** от бекъп (§6).
 
+### IndexNow
+
+Ключът живее в репото като `panev/d6e1a2e328c3fd92c84f47c85c1fb084.txt` (схемата
+`<key>.txt` в корена на сайта, както при mastilko) и се качва с обикновения rsync
+на autodeploy. Подаване след промяна по страници/sitemap/hreflang/JSON-LD:
+
+```bash
+node tools/seo/indexnow.mjs https://panevascensori.it \
+  --key-file panev/d6e1a2e328c3fd92c84f47c85c1fb084.txt \
+  --key-location https://panevascensori.it/d6e1a2e328c3fd92c84f47c85c1fb084.txt
+```
+
+Търсачките теглят `keyLocation`, за да докажат собствеността — **файлът трябва да е
+жив, преди да подадеш**, иначе цялата партида се отхвърля.
+
 ---
 
 Легаси: `panev/scripts/deploy.sh` и `panev/deploy.sh` бяха PM2 деплой към стар VPS
