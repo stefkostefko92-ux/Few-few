@@ -1085,7 +1085,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 342
+        "lessons": 343
       },
       "evolution": [
         {
@@ -1819,9 +1819,20 @@
           "date": "2026-08-09",
           "event": "v24.0 — учене",
           "detail": "Научи: SupremeDiscordBot има ДВА разминати списъка VALID_SCOPES — backend/src/routes/apikeys.j… (+4 още)"
+        },
+        {
+          "version": "24.1.0",
+          "date": "2026-08-09",
+          "event": "v24.1 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ се валидира машинно от tools/agents/handoff.mjs и адресатът трябв…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-09",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ се валидира машинно от tools/agents/handoff.mjs и адресатът трябв…\""
+        },
         {
           "date": "2026-08-09",
           "type": "learning",
