@@ -20,7 +20,9 @@ import { PrismaClient } from '@prisma/client';
 
 import { launchChromium } from '../../tools/lib/browser.mjs';
 
-const BASE = process.env.PROBE_BASE_URL ?? 'http://localhost:3010';
+// `127.0.0.1`, не `localhost`: compose публикува само IPv4, а Node пробва
+// `::1` пръв — виж бележката в `smoke.mjs`.
+const BASE = process.env.PROBE_BASE_URL ?? 'http://127.0.0.1:3010';
 const PASSWORD = process.env.PROBE_ADMIN_PASSWORD;
 
 if (!PASSWORD) {
