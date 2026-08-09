@@ -125,16 +125,45 @@ function pepper(): string {
   return processPepper;
 }
 
+/**
+ * Разчита `ADMIN_PASSWORD_HASH` във вида `соль:хеш` (шестнайсетичен).
+ *
+ * Обгръщащите кавички и празните места се МАХАТ, и това не е излишна
+ * толерантност — беше реален капан, възпроизведен: `npm run admin:hash`
+ * печаташе готовия ред `ADMIN_PASSWORD_HASH="соль:хеш"`, а `env_file` на
+ * Compose подава кавичките БУКВАЛНО на приложението. Тогава `split(':')` дава
+ * `"соль` и `хеш"`, `Buffer.from(…, 'hex')` спира на кавичката, дължините не
+ * съвпадат и вярната парола се отхвърля ЗАВИНАГИ с „Грешна парола“. Скриптът
+ * вече печата без кавички, но пейстнат стар изход не бива да заключва
+ * собственика вън от собствения му панел.
+ *
+ * Връща `null` при липсваща ИЛИ повредена стойност — двете са едно и също за
+ * викащия: панелът не е конфигуриран. Това е различно от „грешна парола“ и
+ * страницата го казва различно, иначе грешка в настройката се маскира като
+ * грешка на човека и се търси на грешното място (точно това се случи).
+ */
+export function parseStoredHash(raw: string | undefined): { salt: string; hash: Buffer } | null {
+  const cleaned = (raw ?? '').trim().replace(/^["']|["']$/g, '').trim();
+  if (!/^[0-9a-f]+:[0-9a-f]+$/i.test(cleaned)) return null;
+  const [salt, expected] = cleaned.split(':');
+  // Нечетен брой знаци не е валиден шестнайсетичен низ, а `Buffer.from` мълчи.
+  if (expected.length % 2 !== 0 || expected.length === 0 || salt.length === 0) return null;
+  return { salt, hash: Buffer.from(expected, 'hex') };
+}
+
+/** `true`, когато на сървъра има ИЗПОЛЗВАЕМ хеш (не просто непразна стойност). */
+export function adminHashConfigured(): boolean {
+  return parseStoredHash(process.env.ADMIN_PASSWORD_HASH) !== null;
+}
+
 /** Хешът е `соль:хеш` в шестнайсетичен вид — виж `npm run admin:hash`. */
 export function verifyPassword(password: string): boolean {
-  const stored = process.env.ADMIN_PASSWORD_HASH;
-  if (!stored || !stored.includes(':')) return false;
-  const [salt, expected] = stored.split(':');
+  const stored = parseStoredHash(process.env.ADMIN_PASSWORD_HASH);
+  if (!stored) return false;
   try {
-    const actual = scryptSync(password, salt, 64);
-    const expectedBuf = Buffer.from(expected, 'hex');
-    if (expectedBuf.length !== actual.length) return false;
-    return timingSafeEqual(actual, expectedBuf);
+    const actual = scryptSync(password, stored.salt, 64);
+    if (stored.hash.length !== actual.length) return false;
+    return timingSafeEqual(actual, stored.hash);
   } catch {
     return false;
   }

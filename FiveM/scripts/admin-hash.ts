@@ -14,4 +14,7 @@ if (!password || password.length < 12) {
 
 const salt = randomBytes(16).toString('hex');
 const hash = scryptSync(password, salt, 64).toString('hex');
-console.log(`ADMIN_PASSWORD_HASH="${salt}:${hash}"`);
+// БЕЗ кавички НАРОЧНО. Пейстнат в `.env`, редът с кавички стига до
+// приложението С тях (`env_file` на Compose не ги маха), `split(':')` се чупи
+// и вярната парола дава „Грешна парола“ завинаги. Възпроизведено.
+console.log(`ADMIN_PASSWORD_HASH=${salt}:${hash}`);

@@ -101,8 +101,9 @@ export const en: Dictionary = {
     chartLabel: 'Players over the last 24 hours',
     chartPeak: 'peak',
     chartPlayers: 'players',
-    playersOpen: 'See who is playing',
     playersTitle: 'Players online now',
+    playersOpen: 'See who is playing',
+    playersClose: 'Close',
     playersHidden: 'This server does not publish its player names.',
     playersNone: 'Nobody is playing right now.',
     playersNote:

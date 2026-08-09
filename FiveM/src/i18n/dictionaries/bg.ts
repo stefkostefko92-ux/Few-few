@@ -98,8 +98,9 @@ export const bg = {
     chartLabel: 'Играчи през последните 24 часа',
     chartPeak: 'най-много',
     chartPlayers: 'играчи',
-    playersOpen: 'Виж кой играе',
     playersTitle: 'Играчи онлайн сега',
+    playersOpen: 'Виж кой играе',
+    playersClose: 'Затвори',
     playersHidden: 'Този сървър не публикува имената на играчите си.',
     playersNone: 'В момента няма никого.',
     playersNote:

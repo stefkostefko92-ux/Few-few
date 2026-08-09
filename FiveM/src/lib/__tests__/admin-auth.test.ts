@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import { randomBytes, scryptSync } from 'node:crypto';
 import { test } from 'node:test';
 
-import { principalIp, trustedIpHeader, verifyPassword } from '../admin/auth';
+import {
+  adminHashConfigured,
+  parseStoredHash,
+  principalIp,
+  trustedIpHeader,
+  verifyPassword,
+} from '../admin/auth';
 
 /**
  * Защитата на панела е единственото в продукта, зад което стоят пари
@@ -105,4 +111,42 @@ test('еднакви пароли с различна сол дават разл
   // Ако солта не участва, два еднакви хеша в две инсталации биха издали, че
   // паролата е една и съща.
   assert.notEqual(hashFor('една и съща').split(':')[1], hashFor('една и съща').split(':')[1]);
+});
+
+// ── Кавичките в .env заключваха собственика вън от панела ───────────────────
+// `npm run admin:hash` печаташе готовия ред С кавички; `env_file` на Compose ги
+// подава БУКВАЛНО, `split(':')` се чупи и вярната парола дава „Грешна парола“
+// завинаги. Възпроизведено на живо, преди поправката.
+
+test('обгръщащи кавички и празни места не развалят хеша', () => {
+  const salt = 'a'.repeat(32);
+  const hash = scryptSync('дълга-парола-123', salt, 64).toString('hex');
+  const value = `${salt}:${hash}`;
+
+  for (const stored of [value, `"${value}"`, `'${value}'`, ` ${value} `, `"${value}" `]) {
+    const parsed = parseStoredHash(stored);
+    assert.notEqual(parsed, null, `не се разчете: ${JSON.stringify(stored)}`);
+    assert.equal(parsed?.salt, salt);
+  }
+});
+
+test('повреден хеш е „не е конфигуриран“, а НЕ „грешна парола“', () => {
+  // Разликата е диагностична: сгрешена настройка, представена като сгрешена
+  // парола, се търси на грешното място (точно това се случи на живо).
+  for (const broken of [undefined, '', 'няма-двоеточие', 'соль:', ':хеш', 'соль:zzzz', 'соль:abc']) {
+    assert.equal(parseStoredHash(broken), null, `прие се за валиден: ${JSON.stringify(broken)}`);
+  }
+});
+
+test('валиден хеш пуска вярната парола и спира грешната', () => {
+  const salt = 'b'.repeat(32);
+  const hash = scryptSync('правилната', salt, 64).toString('hex');
+  process.env.ADMIN_PASSWORD_HASH = `"${salt}:${hash}"`; // нарочно с кавички
+  try {
+    assert.equal(adminHashConfigured(), true, 'кавичките не бива да значат „няма хеш“');
+    assert.equal(verifyPassword('правилната'), true);
+    assert.equal(verifyPassword('грешната'), false);
+  } finally {
+    delete process.env.ADMIN_PASSWORD_HASH;
+  }
 });

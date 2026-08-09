@@ -1,6 +1,6 @@
 import { loginAction } from '@/app/actions/admin';
 import { Badge } from '@/components/Badge';
-import { isAdmin } from '@/lib/admin/auth';
+import { adminHashConfigured, isAdmin } from '@/lib/admin/auth';
 import { redirect } from 'next/navigation';
 import { resolveLocale } from '@/i18n';
 
@@ -23,7 +23,11 @@ export default async function LoginPage({ params, searchParams }: Props) {
   const { error } = await searchParams;
   if (await isAdmin()) redirect(`/${locale}/admin`);
 
-  const configured = Boolean(process.env.ADMIN_PASSWORD_HASH);
+  // ИЗПОЛЗВАЕМ хеш, не просто непразна стойност: повреден (напр. с кавички от
+  // стар `admin:hash`) се четеше като „конфигуриран“ и всяка вярна парола
+  // получаваше „Грешна парола“ — грешката в настройката се маскираше като
+  // грешка на човека.
+  const configured = adminHashConfigured();
   const message = ERRORS[configured ? (error ?? '') : 'missing'];
 
   return (
@@ -60,11 +64,6 @@ export default async function LoginPage({ params, searchParams }: Props) {
           Влез
         </button>
       </form>
-
-      <p className="mt-6 text-sm text-silver-500">
-        Паролата не се пази никъде — в env стои само scrypt хеш. Генерира се с{' '}
-        <code>npm run admin:hash</code> и се слага в <code>.env</code> на сървъра.
-      </p>
     </div>
   );
 }

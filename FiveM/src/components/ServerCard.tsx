@@ -50,18 +50,29 @@ export function ServerCard({
 
       {server.tagline && <p className="mt-1 text-sm text-silver-400">{server.tagline}</p>}
 
-      <p className="mt-3 flex items-center gap-2 text-sm text-silver-300">
-        {/* Иконата е декорация: статусът е и текст, защото цветът и формата
-            сами по себе си не са информация (WCAG 1.4.1). */}
-        <Badge name={STATUS_ICON[server.lastProbe]} size={24} />
-        <span>{status}</span>
-      </p>
-
-      {/* Кой играе — само за онлайн сървър. На офлайн списъкът е или празен,
-          или остатък, и в двата случая подвеждащ. */}
-      {server.online && (
-        <PlayerList names={server.playerNames} seenAt={server.playersSeenAt} t={t} />
-      )}
+      {/* Статусът Е бутонът към „кой играе“ — това е и мястото, където
+          посетителят гледа бройката. Иконата е декорация: статусът е и текст,
+          защото цветът и формата сами по себе си не са информация (WCAG 1.4.1). */}
+      <div className="mt-3 text-sm text-silver-300">
+        <PlayerList
+          names={server.playerNames}
+          seenAt={server.online ? server.playersSeenAt : null}
+          labels={{
+            title: t.server.playersTitle,
+            hidden: t.server.playersHidden,
+            none: t.server.playersNone,
+            note: t.server.playersNote,
+            close: t.server.playersClose,
+            open: t.server.playersOpen,
+          }}
+          trigger={
+            <>
+              <Badge name={STATUS_ICON[server.lastProbe]} size={24} />
+              <span>{status}</span>
+            </>
+          }
+        />
+      </div>
 
       <ul className="mt-3 flex flex-wrap gap-2 text-xs text-silver-500">
         <li className="flex items-center gap-1 rounded border border-white/10 px-2 py-0.5">
