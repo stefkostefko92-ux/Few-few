@@ -132,3 +132,39 @@ test("реалният autodeploy.sh минава правилото", async () 
   const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
   assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("unguarded-subshell"));
 });
+
+test("чистене с `ls` без `|| true` при pipefail се хваща", () => {
+  // Най-тихият провал в скрипта: празен шаблон → `ls` връща 2 → pipefail вдига
+  // конвейера → set -e прекратява БЕЗ нито един ред изход. Деплоят изглежда
+  // успешен, но `current` symlink-ът и чистенето на релийзи не се случват.
+  const src = 'set -euo pipefail\nls -1dt "$D".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf\n';
+  assert.ok(codes(lintShell(src, "x.sh")).has("cleanup-kills-script"));
+});
+
+test("същият ред с `|| true` е наред", () => {
+  const src = 'set -euo pipefail\nls -1dt "$D".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true\n';
+  assert.ok(!codes(lintShell(src, "x.sh")).has("cleanup-kills-script"));
+});
+
+test("присвояване и заместване на процес НЕ са нарушение", () => {
+  // `x="$(ls …)"` взима кода на присвояването, а `done < <(ls …)` не го
+  // разпространява — правило, което ги маркира, би шумяло без причина.
+  const a = 'set -euo pipefail\nprev="$(ls -1dt "$R"/*/ 2>/dev/null | sed -n 2p)"\n';
+  const b = 'set -euo pipefail\nwhile read -r x; do :; done < <(ls -1dt "$R"/*/ 2>/dev/null | tail -n +3)\n';
+  assert.ok(!codes(lintShell(a, "x.sh")).has("cleanup-kills-script"));
+  assert.ok(!codes(lintShell(b, "x.sh")).has("cleanup-kills-script"));
+});
+
+test("без pipefail правилото не важи", () => {
+  const src = '#!/bin/bash\nls -1dt "$D".bak-* | xargs -r rm -rf\n';
+  assert.ok(!codes(lintShell(src, "x.sh")).has("cleanup-kills-script"));
+});
+
+test("реалният autodeploy.sh минава и това правило", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { join, dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
+  assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("cleanup-kills-script"));
+});

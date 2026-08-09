@@ -245,7 +245,7 @@ deploy_medqr() {
   if health "$MEDQR_HEALTH_URL" "medqr"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
     # Пазим последните няколко pre-миграционни снимки; чистим по-старите.
-    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
     deploy_failed=1
     warn "medqr health провал — връщам предишния код и базата."
@@ -299,7 +299,7 @@ deploy_vizitka() {
   sleep 2
   if health "$VIZITKA_HEALTH_URL" "vizitka"; then
     rm -rf "${VIZITKA_DIR}.bak-$TS"
-    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
     deploy_failed=1
     warn "vizitka health провал — връщам предишния код и базата."
@@ -356,7 +356,7 @@ deploy_ospedali() {
   if health "$OSPEDALI_HEALTH_URL" "ospedali"; then
     rm -rf "${OSPEDALI_DIR}.bak-$TS"
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
-    ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
     [ -f "$OSPEDALI_DIR/server/.env" ] || warn "Няма $OSPEDALI_DIR/server/.env — сайтът работи, но админ паролата е случайна (виж journalctl -u ospedali). За продукция задай OSPEDALI_ADMIN_PASSWORD + OSPEDALI_SESSION_SECRET (виж ospedalitrasparenti/deploy/DEPLOY.md)."
     # IndexNow — активно уведоми търсачките (Bing/Yandex) за URL-ите. ВИНАГИ след
     # успешен деплой. Best-effort: иска сайтът да е жив зад публичния домейн+TLS, за
@@ -499,7 +499,7 @@ deploy_mastilko() {
   if health "$MASTILKO_HEALTH_URL" "mastilko"; then
     rm -rf "${MASTILKO_DIR}.bak-$TS"
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
-    ls -1dt "${MASTILKO_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1dt "${MASTILKO_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
     [ -f "$MASTILKO_DIR/.env" ] || warn "Няма $MASTILKO_DIR/.env — сайтът работи, но AI подсказките са изключени (виж mastilko/deploy/DEPLOY.md)."
     # Известяваме Bing/Yandex през IndexNow за обновените URL-и (не чупи деплоя).
     ( cd "$MASTILKO_DIR" && sudo -u mastilko node scripts/indexnow.mjs ) \
@@ -732,7 +732,7 @@ supreme_pre_deploy_dump() {
   fi
   ok "Supreme: снимка на базата преди миграция: $out ($(du -h "$out" | awk '{print $1}'))"
   # Пазим последните 5 pre-deploy снимки (дневните криптирани бекъпи са отделно).
-  ls -1t "$SUPREME_BACKUP_DIR"/pre-deploy-*.dump 2>/dev/null | tail -n +6 | xargs -r rm -f
+  ls -1t "$SUPREME_BACKUP_DIR"/pre-deploy-*.dump 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   return 0
 }
 
@@ -880,7 +880,7 @@ deploy_vpsdashboard() {
   if [ "$code" = "401" ] || [ "$code" = "200" ]; then
     ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
     rm -rf "${VPSDASH_DIR}.bak-$TS"
-    ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
   else
     deploy_failed=1
     warn "vps-dashboard health провал ($code) — връщам предишния код."
