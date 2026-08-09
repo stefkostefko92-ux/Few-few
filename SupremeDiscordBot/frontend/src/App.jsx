@@ -43,6 +43,7 @@ const CommandsPage = lazy(() => import("./pages/CommandsPage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
+const TagsPage = lazy(() => import("./pages/TagsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
 
@@ -114,6 +115,7 @@ export default function App() {
                 <Route path=":serverId/commands" element={<CommandsPage />} />
                 <Route path=":serverId/webhooks" element={<WebhooksPage />} />
                 <Route path=":serverId/kb" element={<KnowledgeBasePage />} />
+                <Route path=":serverId/tags" element={<TagsPage />} />
                 <Route path=":serverId/analytics" element={<AnalyticsPage />} />
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
                 <Route path=":serverId/premium" element={<PremiumPage />} />

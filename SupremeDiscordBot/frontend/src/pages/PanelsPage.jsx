@@ -32,6 +32,7 @@ const defaultForm = () => ({
   // Legacy
   namingTemplate: "ticket-{username}",
   maxOpenPerUser: 1,
+  defaultPriority: "NORMAL",
   // v1.5 — TicketTool parity
   channelNamePrefix: "ticket",
   counterPadding: 4,
@@ -70,6 +71,7 @@ function panelToForm(panel) {
     color: panel.color || "#5865F2",
     namingTemplate: panel.namingTemplate || "ticket-{username}",
     maxOpenPerUser: panel.maxOpenPerUser || 1,
+    defaultPriority: panel.defaultPriority || "NORMAL",
     channelNamePrefix: panel.channelNamePrefix || "ticket",
     counterPadding: panel.counterPadding ?? 4,
     categoryOpenId: panel.categoryOpenId || panel.categoryId || "",
@@ -218,6 +220,7 @@ export default function PanelsPage() {
       slaResolutionMinutes: form.slaResolutionMinutes === "" ? null : Number(form.slaResolutionMinutes),
       counterPadding:       Number(form.counterPadding) || 4,
       maxOpenPerUser:       Number(form.maxOpenPerUser) || 1,
+      defaultPriority:      form.defaultPriority,
     };
     if (editing === "new") {
       createMut.mutate(payload);
@@ -480,6 +483,17 @@ export default function PanelsPage() {
                     value={form.maxOpenPerUser}
                     onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUser: Number(e.target.value) }))} />
                   <p className="text-xs text-cs-dim mt-1">{t("ui.maxOpenPerUserHint")}</p>
+                </label>
+                <label className="block">
+                  <span className="cs-label">{t("ui.defaultPriority")}</span>
+                  <select className="cs-input" value={form.defaultPriority}
+                    onChange={(e) => setForm((f) => ({ ...f, defaultPriority: e.target.value }))}>
+                    <option value="LOW">{t("priority.low")}</option>
+                    <option value="NORMAL">{t("priority.normal")}</option>
+                    <option value="HIGH">{t("priority.high")}</option>
+                    <option value="URGENT">{t("priority.urgent")}</option>
+                  </select>
+                  <p className="text-xs text-cs-dim mt-1">{t("ui.defaultPriorityHint")}</p>
                 </label>
               </div>
 

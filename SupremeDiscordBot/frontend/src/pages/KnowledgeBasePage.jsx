@@ -189,7 +189,7 @@ export default function KnowledgeBasePage() {
       <Modal
         open={!!editing}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New Article" : "Edit Article"}
+        title={editing === "new" ? t("kb.new") : t("kb.edit")}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">

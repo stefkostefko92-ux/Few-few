@@ -2,9 +2,6 @@
 // Polski — tłumaczenie z en.js (źródło prawdy). Forma zwracania się: „Ty“
 // (tak samo jak landing, frontend/src/i18n/landing.js).
 export default {
-  "error.generic": "Coś poszło nie tak.",
-  "error.notFound": "Nie znaleziono.",
-  "error.unauthorized": "Nie masz uprawnień.",
   "error.blacklisted": "❌ Masz zakaz korzystania z tego bota.",
   "error.formExpired": "❌ Ten formularz nie jest już aktywny. Zacznij od nowa.",
   "error.componentExpired": "❌ Ten przycisk już nie działa — panel, do którego należy, został zmieniony lub usunięty. Poproś administratora o ponowne opublikowanie.",
@@ -15,19 +12,10 @@ export default {
   "error.serviceUnavailable.button": "Sprawdź status",
 
   "ticket.opened": "✅ Twój ticket został utworzony: {{channel}}",
-  "ticket.closed": "🔒 Ticket zamknięty przez {{user}}.\n**Powód:** {{reason}}",
   "ticket.closedConfirm": "✅ Ticket zamknięty.",
-  "ticket.claimed": "🛡️ Ticket przejęty przez {{user}}.",
   "ticket.claimedConfirm": "👋 Ticket przejęty przez {{user}}",
   "ticket.claimStaffOnly": "❌ Tylko członkowie zespołu wsparcia mogą przejmować tickety.",
-  "ticket.unclaimed": "🔓 Ticket zwolniony. Może pomóc dowolna osoba z zespołu.",
-  "ticket.notATicket": "❌ To nie jest kanał ticketu.",
-  "ticket.limitReached": "❌ Masz już {{count}} otwartych ticketów. Zamknij jeden, zanim otworzysz kolejny.",
-  "ticket.renamed": "✏️ Kanał przemianowany na `{{name}}`.",
-  "ticket.escalated": "⬆️ Ticket eskalowany do {{panel}}.",
   "ticket.feedback.prompt": "Dziękujemy za skorzystanie z naszego wsparcia! Oceń swoje doświadczenie:",
-  "ticket.autoClosedInactivity": "⏱️ Ten ticket został zamknięty automatycznie po {{hours}} godzinach bezczynności.",
-  "ticket.autoClosedLeave": "👋 Ten ticket został zamknięty automatycznie, ponieważ jego autor opuścił serwer.",
   "ticket.staffOnly": "❌ Tylko członkowie zespołu wsparcia mogą wykonać tę akcję.",
   "ticket.notFound": "❌ Ten ticket już nie istnieje.",
   "ticket.unknownAction": "❌ Nieznana akcja ticketu.",
@@ -44,16 +32,11 @@ export default {
   "ticket.priorityUpdated": "🎯 Priorytet ustawiono na **{{priority}}**.",
   "ticket.priorityStaffOnly": "❌ Tylko członkowie zespołu wsparcia mogą zmieniać priorytet ticketu.",
 
-  "panel.spawned": "Panel utworzony na kanale {{channel}}.",
-  "panel.defaultButtonLabel": "Otwórz ticket",
 
-  "form.started": "Sprawdź prywatne wiadomości, aby odpowiedzieć na formularz.",
   "form.dmCheck": "📬 Sprawdź prywatne wiadomości, aby dokończyć formularz!",
-  "form.submitted": "✅ Dziękujemy! Twoje odpowiedzi zostały odebrane.",
   "form.cooldownActive": "❌ Możesz wysłać ponownie za {{time}}.",
   "form.closedByAdmin": "❌ Ten formularz jest obecnie zamknięty.",
   "form.maxSubmissionsReached": "❌ Ten formularz został już wysłany maksymalną liczbę razy.",
-  "form.invalidAnswer": "❌ Nieprawidłowa odpowiedź. {{reason}}",
   "form.alreadyActive": "⚠️ Masz już aktywną sesję formularza. Najpierw ją dokończ.",
   "form.dmFailed": "❌ Nie udało mi się wysłać Ci prywatnej wiadomości. Włącz wiadomości od członków serwera i spróbuj ponownie.",
   "form.noQuestions": "❌ Ten formularz nie ma skonfigurowanych pytań.",
@@ -74,13 +57,8 @@ export default {
   "form.invalidAnswersModal": "❌ Niektóre odpowiedzi nie pasują do oczekiwanego formatu: **{{fields}}**. Naciśnij przycisk na panelu i spróbuj ponownie.",
   "form.submitFailed": "❌ Coś poszło nie tak przy wysyłaniu formularza. Spróbuj ponownie.",
   "form.submittedConfirm": "✅ Wysłane! Dziękujemy.",
-  "application.approved": "✅ Twoje zgłoszenie zostało zaakceptowane.",
-  "application.denied": "❌ Twoje zgłoszenie zostało odrzucone.",
 
-  "verify.success": "✅ Weryfikacja zakończona pomyślnie! Witamy.",
   "verify.wrongAnswer": "❌ Błędna odpowiedź. Spróbuj ponownie.",
-  "verify.rateLimited": "❌ Zbyt wiele prób. Spróbuj ponownie za {{minutes}} minut.",
-  "verify.accountTooNew": "❌ Twoje konto musi mieć co najmniej {{days}} dni.",
   "verify.accountTooNewHere": "❌ Twoje konto musi mieć co najmniej **{{days}} dni**, aby zweryfikować się tutaj.",
   "verify.gateBlocked": "❌ Najpierw musisz przejść weryfikację. Wejdź na kanał weryfikacji.",
   "verify.panelNotFound": "❌ Nie znaleziono panelu weryfikacji.",
@@ -90,26 +68,10 @@ export default {
   "verify.defaultSuccess": "✅ Weryfikacja zakończona, {{user}}!",
   "verify.rolesGrantedSuffix": " Przyznane role: {{count}}",
 
-  "poll.voted": "✅ Głos zapisany.",
-  "poll.voteRemoved": "Głos usunięty.",
-  "poll.closed": "Ta ankieta jest zamknięta.",
-  "giveaway.entered": "🎉 Bierzesz udział! Powodzenia!",
-  "giveaway.left": "Nie bierzesz już udziału w konkursie.",
-  "giveaway.missingRoles": "❌ Aby wziąć udział, potrzebujesz tych ról: {{roles}}",
-  "giveaway.ended": "Konkurs zakończony.",
-  "giveaway.winnersAnnounce": "🎉 Gratulacje {{winners}}! Nagroda: **{{prize}}**!",
-  "giveaway.noWinners": "😔 Konkurs o **{{prize}}** zakończył się bez uprawnionych uczestników.",
 
-  "sticky.set": "📌 Przypięta wiadomość ustawiona dla tego kanału.",
-  "sticky.removed": "🗑️ Przypięta wiadomość usunięta.",
-  "schedule.added": "📅 Zaplanowano na {{time}}",
 
   "premium.required": "❌ Ta funkcja wymaga Premium.",
-  "premium.limitReached": "❌ Osiągnięto limit: {{resource}} ({{limit}}). Przejdź na Premium.",
-  "premium.trialStarted": "✨ Twój 14-dniowy okres próbny Premium właśnie się rozpoczął!",
-  "premium.trialEndingSoon": "⏰ Twój okres próbny Premium kończy się za {{days}} dni.",
 
-  "welcomer.default": "Witaj {{user}} na {{server}}! Jest nas już {{memberCount}}.",
 
   "welcome.title": "👋 Dziękujemy za dodanie Supreme Bota!",
   "welcome.intro": "Obsługuję **panele ticketów**, **formularze rekrutacyjne**, **ankiety i konkursy**, **bramki weryfikacyjne** oraz **przypięte i zaplanowane wiadomości** — wszystkim zarządzasz z panelu zarządzania.",

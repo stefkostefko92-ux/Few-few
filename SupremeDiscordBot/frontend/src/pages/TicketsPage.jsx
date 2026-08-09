@@ -174,7 +174,7 @@ export default function TicketsPage() {
             <option value="URGENT">{t("priority.urgent")}</option>
             <option value="HIGH">{t("priority.high")}</option>
             <option value="NORMAL">{t("priority.normal")}</option>
-            <option value="LOW">Low</option>
+            <option value="LOW">{t("priority.low")}</option>
           </select>
         </div>
       </div>

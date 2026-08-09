@@ -78,6 +78,7 @@ import archiveRouter from "./routes/archive.js";
 import v1Router from "./routes/v1.js";
 import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
+import cannedRouter from "./routes/canned.js";
 import reactionRolesRouter from "./routes/reactionroles.js";
 import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
@@ -258,6 +259,7 @@ app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript v
 // дрейфнал списък scope-ове, от който v1.js внасяше requireApiKey — направи
 // /api/v1/server вечно 403 и подлъга и одитори. Едното определение живее в
 // lib/apiKeyAuth.js.
+app.use("/api/canned", cannedRouter);        // v29 табло за готовите отговори (одит 09.08.2026)
 app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
 

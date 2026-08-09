@@ -7,7 +7,7 @@ import {
   Star, Shield, ShieldCheck, LogOut, ChevronLeft, Settings, Users, ExternalLink, Webhook,
   Zap, BookOpen, Lightbulb,
   LineChart, Key,
-  Menu, X as CloseIcon,
+  Menu, X as CloseIcon, MessageSquareText,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
@@ -198,6 +198,7 @@ export default function Layout() {
               <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>{t("nav.apikeys")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>{t("nav.commands")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/kb`} icon={Lightbulb}>{t("nav.knowledgeBase")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/tags`}         icon={MessageSquareText}>{t("nav.tags")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/webhooks`} icon={Webhook}>{t("nav.webhooks")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/premium`}      icon={Star}>
                 {t("nav.premium")}
