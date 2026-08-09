@@ -48,6 +48,25 @@ em { font-style: normal; color: var(--accent); }
 .btn-warn { border-color: var(--warn); color: var(--warn); }
 .btn-ghost { background: transparent; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
+/* ИЗКЛЮЧЕН бутон трябва и да ИЗГЛЕЖДА изключен.
+   Дотук нямаше НИТО едно правило за :disabled — тоест кодът честно слагаше
+   `disabled`, а на екрана бутонът си оставаше ярък и подканващ. Натискаш и не
+   се случва нищо: изглежда като счупен панел, а всъщност е правилно спрян.
+   Три сигнала, защото цветът сам не стига (далтонизъм, силна светлина):
+   намалена наситеност, друг курсор и спрян hover. */
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+.btn:disabled:hover,
+.btn[aria-disabled='true']:hover {
+  background: var(--panel-2);
+  border-color: var(--line);
+  filter: grayscale(1);
+}
+.btn-primary:disabled:hover { background: var(--accent); }
 .icon-btn {
   background: transparent; border: none; color: var(--txt-dim);
   font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px;

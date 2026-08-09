@@ -61,7 +61,7 @@ const COOKIE = 'csd_sess';
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.1.2';
+export const VERSION = '1.1.3';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -1385,7 +1385,8 @@ export function buildRouter(ctx) {
 
   // ── Агентски флот + инструменти ────────────────────────────────────────────
   r.get('/api/agents/fleet', guard(J(() => agents.agentsFleet(cfg))));
-  r.get('/api/agents/tools', guard(J(() => ({ tools: agents.listAgentTools(cfg) }))));
+  // Отговорът вече Е `{ root, rootExists, tools }` — не го обвивай втори път.
+  r.get('/api/agents/tools', guard(J(() => agents.listAgentTools(cfg))));
   r.get('/api/agents/memories', guard(J(() => ({ memories: agents.agentMemories(cfg) }))));
   r.post(
     '/api/agents/tools/run',

@@ -5310,6 +5310,20 @@ async function renderAgents() {
   }
 
   view.appendChild(el('h3', { class: 'muted', text: 'Инструменти на агентите („ръцете“)', style: 'margin:4px 0 10px' }));
+  // ЕДИН symlink (`current`) държи целия слой. Когато сочи накриво, всеки
+  // инструмент поотделно пише „липсва" и човек тръгва да търси изчезнали
+  // скриптове — вместо да погледне връзката. Затова: щом ВСИЧКИ липсват, казваме
+  // общата причина веднъж, с пътя, и не оставяме десет еднакви загадки.
+  if (tools.tools.length && tools.tools.every((x) => !x.present)) {
+    view.appendChild(
+      el('div', { class: 'card', style: 'border-color:var(--warn);margin-bottom:12px' }, [
+        el('div', { class: 'metric-sub', text: tools.rootExists
+          ? 'Нито един инструмент не е намерен, а папката съществува — значи разгърнатият архив е непълен (липсва tools/).'
+          : 'Нито един инструмент не е намерен, защото самата папка липсва — деплоят не е стигнал до маркирането на release.' }),
+        el('div', { class: 'metric-sub', raw: `Панелът гледа в: ${tools.root}` }),
+      ])
+    );
+  }
   view.appendChild(
     // Параметърът се казва `tool`, не `t`: „t" е преводачът и засенчването му
     // тук значи, че всяко бъдещо `t('низ')` в тялото вика ИНСТРУМЕНТА.
@@ -5322,6 +5336,9 @@ async function renderAgents() {
           class: 'btn btn-sm btn-primary',
           text: '▶ Пусни',
           disabled: !tool.present,
+          // Изключеният бутон вече и ИЗГЛЕЖДА изключен (CSS `:disabled`), но
+          // „защо" се вижда само при посочване — затова причината е и в title.
+          title: tool.present ? 'Пусни инструмента' : 'Скриптът липсва в текущия release',
           onclick: async (e) => {
             e.target.disabled = true;
             try {
