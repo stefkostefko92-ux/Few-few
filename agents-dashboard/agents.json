@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-08-07",
+    "updated": "2026-08-09",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -12049,7 +12049,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 133
+        "lessons": 135
       },
       "evolution": [
         {
@@ -12369,9 +12369,20 @@
           "date": "2026-08-07",
           "event": "v15.1 — учене",
           "detail": "Научи: В interactionCreate.js verига от startsWith-проверки за button/select customId, липсата… (+1 още)"
+        },
+        {
+          "version": "15.3.0",
+          "date": "2026-08-09",
+          "event": "v15.3 — учене",
+          "detail": "Научи: В SupremeDiscordBot commandsCatalog.js съществува като две байт-идентични копия (bot/sr… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-09",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot commandsCatalog.js съществува като две байт-идентични копия (bot/sr…\" (+1 още)"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
