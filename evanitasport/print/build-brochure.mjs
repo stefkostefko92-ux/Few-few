@@ -22,9 +22,9 @@ const qr = await QRCode.toDataURL(URL + "/", {
 
 const logo = `data:image/png;base64,${readFileSync(join(ROOT, "images/logo_full.png")).toString("base64")}`;
 
-// Вградени брандови шрифтове (OFL): Cormorant Garamond носи кирилица,
-// Outfit е само латиница (за „EVANITA SPORT“/цифри) — кирилският текст
-// в Outfit контексти пада към DejaVu Sans (наличен в Chromium).
+// Вградени брандови шрифтове (OFL): Cormorant Garamond (кирилица+латиница)
+// за заглавията и Onest (вариативен, кирилица+латиница) за текста — същият
+// сет като на сайта, значи брошурата и екранът изглеждат еднакво.
 const CYR = "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116";
 const LAT = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD";
 const font = (file, fam, weight, style, range) =>
@@ -40,9 +40,8 @@ const fonts = [
   font("CormorantGaramond-500-normal-latin.woff2", "Cormorant Garamond", 500, "normal", LAT),
   font("CormorantGaramond-500-italic-cyrillic.woff2", "Cormorant Garamond", 500, "italic", CYR),
   font("CormorantGaramond-500-italic-latin.woff2", "Cormorant Garamond", 500, "italic", LAT),
-  font("Outfit-300-normal-latin.woff2", "Outfit", 300, "normal", LAT),
-  font("Outfit-500-normal-latin.woff2", "Outfit", 500, "normal", LAT),
-  font("Outfit-600-normal-latin.woff2", "Outfit", 600, "normal", LAT),
+  font("Onest-var-cyrillic.woff2", "Onest", "100 900", "normal", CYR),
+  font("Onest-var-latin.woff2", "Onest", "100 900", "normal", LAT),
 ].join("\n");
 
 const phoneIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.86 19.86 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13 1 .37 1.96.72 2.88a2 2 0 0 1-.45 2.11L8.09 10.09a16 16 0 0 0 6 6l1.38-1.38a2 2 0 0 1 2.11-.45c.92.35 1.88.59 2.88.72A2 2 0 0 1 22 16.92z"/></svg>`;
@@ -70,7 +69,7 @@ ${fonts}
     --rose:#9E2A3D;--wine:#5A1722;--wine-deep:#3D0F18;--ink:#1F141C;--gold:#C9A876;--viber:#7360F2;
     --line:rgba(31,20,28,.16);}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  html,body{font-family:'Outfit','DejaVu Sans',sans-serif;font-weight:300;color:var(--ink);}
+  html,body{font-family:'Onest','DejaVu Sans',sans-serif;font-weight:300;color:var(--ink);}
   .serif{font-family:'Cormorant Garamond',serif;}
   @page{size:148mm 210mm;margin:0;}
   .page{position:relative;width:148mm;height:210mm;overflow:hidden;background:var(--cream);}
@@ -84,7 +83,7 @@ ${fonts}
   .frame::after{bottom:-.45mm;right:-.45mm;border-left:none;border-top:none;}
   .f-inner{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;text-align:center;padding:13mm 12mm 0;}
   .logo{height:36mm;width:auto;}
-  .eyebrow{display:inline-flex;align-items:center;gap:3mm;margin-top:5mm;font-size:2.7mm;letter-spacing:.9mm;text-transform:uppercase;color:var(--wine);font-weight:500;font-family:'Outfit','DejaVu Sans',sans-serif;}
+  .eyebrow{display:inline-flex;align-items:center;gap:3mm;margin-top:5mm;font-size:2.7mm;letter-spacing:.9mm;text-transform:uppercase;color:var(--wine);font-weight:500;font-family:'Onest','DejaVu Sans',sans-serif;}
   .eyebrow::before,.eyebrow::after{content:"";width:9mm;height:.25mm;background:var(--rose);}
   h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:13.6mm;line-height:.94;letter-spacing:-.2mm;color:var(--wine-deep);margin-top:5.5mm;}
   h1 .it{font-style:italic;font-weight:400;color:var(--rose);display:block;}
