@@ -5,7 +5,7 @@ Kangoo Jumps и силови тренировки в Дупница (Евани�
 Евелина Георгиева). Root правилата живеят в кореновия `CLAUDE.md`.
 
 _Stack: **статичен** HTML/CSS/JS — без билд, без зависимости. Деплой: Nginx на
-VPS-а (виж `deploy.sh` + `nginx.conf`). Домейн: evanita.carbonstealth.eu._
+VPS-а (виж `deploy.sh` + `nginx.conf`). Домейн: evanita-bg.com._
 
 **Език на UI: български** (единствен). Код/коментари/commits — също български.
 
@@ -37,7 +37,7 @@ marketing/            вътрешни маркетинг документи (п
   съдържанието (график/FAQ/адрес).
 - Splash екранът се показва само първия път в сесията и се пропуска при
   `prefers-reduced-motion` — не връщай безусловния вариант.
-- SEO промяна → `node tools/seo/indexnow.mjs https://evanita.carbonstealth.eu`
+- SEO промяна → `node tools/seo/indexnow.mjs https://evanita-bg.com`
   (ключът е на `/indexnow-key.txt` в web root-а).
 - Гейт: `node tools/qa/static-site-check.mjs evanitasport` (CI:
   `.github/workflows/evanitasport.yml`).

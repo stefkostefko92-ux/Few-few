@@ -12,4 +12,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://evanita.carbonstealth.eu/sitemap.xml
+Sitemap: https://evanita-bg.com/sitemap.xml

@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
-const URL = "https://evanita.carbonstealth.eu";
+const URL = "https://evanita-bg.com";
 
 const qr = await QRCode.toDataURL(URL + "/", {
   errorCorrectionLevel: "H",
@@ -199,7 +199,7 @@ ${fonts}
         <div class="c-row">${phoneIcon}<div class="t"><b>+359 88 504 5112</b> · телефон и Viber</div></div>
         <div class="c-row">${clock}<div class="t">Понеделник – Петък · <b>08:00 – 20:00</b></div></div>
         <div class="c-row">${car}<div class="t">Безплатен паркинг пред входа</div></div>
-        <div class="c-url">evanita.carbonstealth.eu</div>
+        <div class="c-url">evanita-bg.com</div>
         <div class="c-credit">© 2026 Еванита Спорт ЕООД · Design &amp; Development: <b>Carbon Stealth VCC</b></div>
       </div>
     </div>

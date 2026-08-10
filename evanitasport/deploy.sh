@@ -4,7 +4,7 @@
 
 set -e
 
-DOMAIN="evanita.carbonstealth.eu"
+DOMAIN="evanita-bg.com"
 WEB_ROOT="/var/www/$DOMAIN"
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 
@@ -27,7 +27,7 @@ sudo ln -sf $NGINX_CONF /etc/nginx/sites-enabled/$DOMAIN
 
 # 3. Get SSL certificate
 echo "[3/6] Obtaining SSL certificate..."
-sudo certbot certonly --nginx -d $DOMAIN --non-interactive --agree-tos --email admin@carbonstealth.eu || echo "SSL cert may already exist"
+sudo certbot certonly --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos --email admin@carbonstealth.eu || echo "SSL cert may already exist"
 
 # 4. Test nginx config
 echo "[4/6] Testing nginx config..."
