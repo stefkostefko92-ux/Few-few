@@ -1,0 +1,15 @@
+# robots.txt — Evanita Sport
+User-agent: *
+Allow: /
+
+# AI ботове: съдържанието е свободно цитируемо за генеративни асистенти
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://evanita.carbonstealth.eu/sitemap.xml
