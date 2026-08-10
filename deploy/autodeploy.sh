@@ -395,7 +395,8 @@ EOF
   # достъп за четене през директорията (файловете са публични; data/ остава 700).
   chmod 755 "$PANEV_DIR"
   install -d -o panev -g panev -m 700 "$PANEV_DIR/data"
-  ( cd "$PANEV_DIR" && sudo -u panev npm ci --omit=dev )
+  ( cd "$PANEV_DIR" && sudo -u panev npm ci --omit=dev ) \
+    || { warn "panev: npm ci се провали — бекъпът е в ${PANEV_DIR}.bak-$TS."; deploy_failed=1; return; }
 
   # 3) Първо пускане → сийд (админ + каталог за /admin). Сийдът е идемпотентен,
   # но го пускаме само при липсваща база. Ако ADMIN_PASSWORD не е зададена,
@@ -423,8 +424,8 @@ EOF
   sleep 2
   if health "$PANEV_HEALTH_URL" "panev"; then
     rm -rf "${PANEV_DIR}.bak-$TS"
-    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
-    ls -1dt "${PANEV_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
+    ls -1dt "${PANEV_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
     grep -q '^SMTP_PASS=CHANGE_ME$' "$PANEV_ENV" 2>/dev/null \
       && warn "panev: SMTP_PASS все още е CHANGE_ME — формата пише в базата, но НЕ праща имейл."
     [ -e /etc/nginx/sites-enabled/panev.conf ] \
