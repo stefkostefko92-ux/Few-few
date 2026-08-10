@@ -21,6 +21,8 @@ apple-touch-icon.png  180×180 върху кремав фон (iOS не подд
 nginx.conf            server блок със security headers + CSP
 deploy.sh             ръчен деплой на VPS-а (копира файловете, certbot, reload)
 .well-known/          security.txt
+print/                печатна А5 брошура (build → PDF/PNG, вградени шрифтове/QR)
+marketing/            вътрешни маркетинг документи (промоции) — НЕ се деплойват
 ```
 
 ## Конвенции (важно)
