@@ -1,12 +1,19 @@
 #!/bin/bash
 # Deploy Evanita Sport to VPS
 # Run this ON the VPS after uploading the tarball
+#
+# Ред на стъпките (важно): пълният nginx конфиг сочи сертификата на Let's
+# Encrypt → не може да се инсталира ПРЕДИ сертификатът да съществува (nginx -t
+# пада с "cannot load certificate", а certbot-ът, който ползва nginx, пада
+# заедно с него — кокошката и яйцето). Затова при първи деплой: временен
+# HTTP-only конфиг → сертификат през webroot → чак тогава пълният конфиг.
 
 set -e
 
 DOMAIN="evanita-bg.com"
 WEB_ROOT="/var/www/$DOMAIN"
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
+CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 
 echo "═══════════════════════════════════════════"
 echo "  Deploying Evanita Sport"
@@ -20,14 +27,29 @@ sudo cp -r index.html 404.html css js images favicon.svg apple-touch-icon.png ro
 sudo chown -R www-data:www-data $WEB_ROOT
 sudo chmod -R 755 $WEB_ROOT
 
-# 2. Install nginx config
-echo "[2/6] Installing nginx config..."
+# 2. SSL certificate (bootstrap при първи деплой)
+if [ ! -f "$CERT" ]; then
+    echo "[2/6] No certificate yet — bootstrapping (HTTP-only nginx + webroot)..."
+    sudo tee $NGINX_CONF >/dev/null <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+    root $WEB_ROOT;
+}
+EOF
+    sudo ln -sf $NGINX_CONF /etc/nginx/sites-enabled/$DOMAIN
+    sudo nginx -t
+    sudo systemctl reload nginx
+    sudo certbot certonly --webroot -w $WEB_ROOT -d $DOMAIN -d www.$DOMAIN \
+        --non-interactive --agree-tos --email admin@carbonstealth.eu
+else
+    echo "[2/6] Certificate exists — skipping bootstrap."
+fi
+
+# 3. Install full nginx config (сертификатът вече съществува)
+echo "[3/6] Installing nginx config..."
 sudo cp nginx.conf $NGINX_CONF
 sudo ln -sf $NGINX_CONF /etc/nginx/sites-enabled/$DOMAIN
-
-# 3. Get SSL certificate
-echo "[3/6] Obtaining SSL certificate..."
-sudo certbot certonly --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos --email admin@carbonstealth.eu || echo "SSL cert may already exist"
 
 # 4. Test nginx config
 echo "[4/6] Testing nginx config..."
