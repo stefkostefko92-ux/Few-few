@@ -208,6 +208,8 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     welcomerEnabled, welcomerChannelId, welcomerMessage, welcomerEmbedColor,
     welcomerDmEnabled, welcomerDmMessage,
     autoroleIds, autoroleBotIds,
+    // v45 — „лепкави роли" (ролите се връщат при повторно присъединяване)
+    stickyRolesEnabled,
     // Server event logging
     eventLogEnabled, eventLogChannelId, eventLogCategories, eventLogChannels,
     // Език на бота за ТОЗИ сървър — резервен, когато Discord клиентският
@@ -265,6 +267,9 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(welcomerDmMessage !== undefined && { welcomerDmMessage: welcomerDmMessage || null }),
         ...(Array.isArray(autoroleIds) && { autoroleIds }),
         ...(Array.isArray(autoroleBotIds) && { autoroleBotIds }),
+        // v45 — „лепкави роли". Изрично opt-in: автоматичното връщане на роли
+        // има сигурностна тежест, затова се включва съзнателно, не по подразбиране.
+        ...(stickyRolesEnabled !== undefined && { stickyRolesEnabled: Boolean(stickyRolesEnabled) }),
         // `stickyMessagesEnabled` е МАХНАТО от приеманите полета: нищо не го
         // четеше. Реалният превключвател е `enabled` на всяко sticky съобщение
         // (StickyMessage.enabled) и той РАБОТИ. Сървърният ключ беше замислен

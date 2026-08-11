@@ -109,6 +109,23 @@ export async function runRetentionJob() {
     results.errors.push({ type: "audit", error: err.message });
   }
 
+  // ── 2б. Снимки на роли по-стари от 180 дни (v45 „лепкави роли") ────────────
+  // Списъкът с роли на конкретен човек е лични данни. Пази се точно колкото е
+  // полезен — за да върнем ролите на върнал се член. Половин година след
+  // напускането целта е отпаднала (чл. 5(1)(д) GDPR — ограничение на
+  // съхранението), затова снимката се изтрива.
+  try {
+    const cutoff = new Date(Date.now() - 180 * MS_PER_DAY);
+    const deleted = await prisma.memberRoleSnapshot.deleteMany({
+      where: { capturedAt: { lt: cutoff } },
+    });
+    results.roleSnapshotsDeleted = deleted.count;
+    console.log(`[retention] ✅ Role snapshots deleted: ${deleted.count}`);
+  } catch (err) {
+    console.error(`[retention] ❌ Role snapshot retention failed:`, err.message);
+    results.errors.push({ type: "roleSnapshots", error: err.message });
+  }
+
   // ── 3. Delete resolved abuse reports older than 1 year ──────────────────────
   try {
     const oneYearAgo = new Date(Date.now() - 365 * MS_PER_DAY);

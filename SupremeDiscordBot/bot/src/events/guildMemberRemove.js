@@ -43,6 +43,22 @@ export default {
       console.warn(`[guildMemberRemove] event-log error: ${err?.message}`);
     }
 
+    // ─── „Лепкави роли": заснемане на ролите при напускане ───────────────────
+    // Отделен try/catch — снимката е удобство, а не бива да пречи на
+    // авто-затварянето на тикети отдолу.
+    //
+    // `managed` роли се изключват СЕГА, а не при връщането: те се дават от
+    // интеграции (бот роли, Nitro буст) и Discord не позволява да се раздават
+    // ръчно — пазенето им би създало снимка, която обещава повече от реалното.
+    try {
+      const roleIds = [...member.roles.cache.values()]
+        .filter((r) => r.id !== member.guild.id && !r.managed)   // @everyone има id = guild id
+        .map((r) => r.id);
+      await api.post(`/bot/member-roles/${member.guild.id}/${member.id}`, { roleIds });
+    } catch (err) {
+      console.warn(`[guildMemberRemove] ролите на ${member.id} не бяха запазени: ${err?.message}`);
+    }
+
     try {
       const { data: tickets } = await api.get(`/bot/user/${member.id}/open-tickets/${member.guild.id}`)
         .catch(() => ({ data: [] }));

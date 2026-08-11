@@ -199,6 +199,77 @@ router.get("/server/:serverId/branding", async (req, res, next) => {
   }
 });
 
+// ─── „Лепкави роли" (v45) ────────────────────────────────────────────────────
+// Ролите на напусналия се пазят и се връщат, ако се присъедини отново.
+//
+// Разделението е нарочно: ботът решава КОИ роли са безопасни за връщане (само
+// той вижда йерархията и правата в Discord), а backend-ът само пази списъка.
+// Тук се пази и гейтът на настройката — сървър с изключена функция не бива да
+// трупа снимки на роли изобщо (минимизация на данните, GDPR чл. 5(1)(в)).
+
+// POST /api/bot/member-roles/:serverId/:userId — записва снимка при напускане
+router.post("/member-roles/:serverId/:userId", async (req, res, next) => {
+  const { serverId, userId } = req.params;
+  const roleIds = Array.isArray(req.body?.roleIds) ? req.body.roleIds : null;
+  if (!roleIds) return res.status(400).json({ error: "roleIds array required" });
+
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: serverId },
+      select: { stickyRolesEnabled: true },
+    });
+    // Изключена функция → нищо не се пази. Отговорът е ok, за да не гърми ботът.
+    if (!server?.stickyRolesEnabled) return res.json({ ok: true, skipped: "disabled" });
+
+    // Таван: Discord позволява до 250 роли на гилдия; ограничаваме и дължината
+    // на всеки ID, за да не пишем произволен обем от чужд вход.
+    const clean = roleIds
+      .filter((r) => typeof r === "string" && /^\d{17,20}$/.test(r))
+      .slice(0, 250);
+
+    if (clean.length === 0) {
+      // Член без роли: чистим стара снимка, вместо да пазим празна.
+      await prisma.memberRoleSnapshot.deleteMany({ where: { serverId, userId } });
+      return res.json({ ok: true, saved: 0 });
+    }
+
+    await prisma.memberRoleSnapshot.upsert({
+      where: { serverId_userId: { serverId, userId } },
+      create: { serverId, userId, roleIds: clean },
+      update: { roleIds: clean, capturedAt: new Date() },
+    });
+    res.json({ ok: true, saved: clean.length });
+  } catch (err) { next(err); }
+});
+
+// GET /api/bot/member-roles/:serverId/:userId — чете снимката при връщане
+router.get("/member-roles/:serverId/:userId", async (req, res, next) => {
+  const { serverId, userId } = req.params;
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: serverId },
+      select: { stickyRolesEnabled: true },
+    });
+    if (!server?.stickyRolesEnabled) return res.json({ roleIds: [], enabled: false });
+
+    const snap = await prisma.memberRoleSnapshot.findUnique({
+      where: { serverId_userId: { serverId, userId } },
+      select: { roleIds: true, capturedAt: true },
+    });
+    res.json({ roleIds: snap?.roleIds || [], capturedAt: snap?.capturedAt || null, enabled: true });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/bot/member-roles/:serverId/:userId — след успешно връщане
+router.delete("/member-roles/:serverId/:userId", async (req, res, next) => {
+  try {
+    await prisma.memberRoleSnapshot.deleteMany({
+      where: { serverId: req.params.serverId, userId: req.params.userId },
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 // ─── DELETE /api/bot/server/:serverId ─────────────────────────────────────────
 // Called by bot's guildDelete event when the bot is kicked/removed from a guild.
 // Soft-delete: mark botRemovedAt timestamp instead of hard-deleting so that:

@@ -25,7 +25,7 @@ router.get("/export", async (req, res, next) => {
     // които РЕТЕНЦИЯТА познава и трие (dataRetention.js) — асиметрия, доказваща
     // пропуска. Чл. 15 отговор без тях е доказуемо непълен пред КЗЛД.
     const [user, servers, tickets, ticketMessages, applications, auditLogs, apiKeys, sessions,
-           verificationAttempts, formCooldowns, pollVotes, giveawayEntries, memberships] = await Promise.all([
+           verificationAttempts, formCooldowns, pollVotes, giveawayEntries, memberships, roleSnapshots] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
       // Server membership — relation is `members` (ServerMember[]), not `users`
       prisma.server.findMany({
@@ -84,6 +84,12 @@ router.get("/export", async (req, res, next) => {
       Promise.resolve().then(() => prisma.pollVote.findMany({ where: { userId }, select: { pollId: true, option: true, createdAt: true } })).catch(() => []),
       Promise.resolve().then(() => prisma.giveawayEntry.findMany({ where: { userId }, select: { giveawayId: true, createdAt: true } })).catch(() => []),
       Promise.resolve().then(() => prisma.serverMember.findMany({ where: { userId }, select: { serverId: true, serverRole: true, joinedAt: true } })).catch(() => []),
+      // v45 — снимките на Discord роли („лепкави роли") са лични данни за
+      // субекта и подлежат на чл. 15 като всичко останало.
+      Promise.resolve().then(() => prisma.memberRoleSnapshot.findMany({
+        where: { userId },
+        select: { serverId: true, roleIds: true, capturedAt: true },
+      })).catch(() => []),
     ]);
 
     const payload = {
@@ -125,6 +131,7 @@ router.get("/export", async (req, res, next) => {
         poll_votes: pollVotes,
         giveaway_entries: giveawayEntries,
         server_memberships: memberships,
+        discord_role_snapshots: roleSnapshots,
       },
       metadata: {
         gdpr_articles_addressed: ["Article 15 (right of access)", "Article 20 (right to data portability)"],
@@ -231,6 +238,17 @@ router.post("/delete-account", async (req, res, next) => {
         where: { authorId: userId },
         data: { authorTag: `[deleted-user-${userId.slice(-6)}]` },
       }).catch(() => {});
+
+      // 1в. Снимките на Discord роли (v45) са лични данни без стойност след
+      // изтриване на акаунта — премахват се изцяло (чл. 17).
+      //
+      // Promise.resolve().then(...) а не пряко извикване: липсващ/непознат
+      // модел (например преди прилагане на миграцията) е СИНХРОНЕН TypeError,
+      // който би прекъснал цялата транзакция по изтриването — тоест едно ново
+      // поле би счупило правото на изтриване. Същата причина като в експорта.
+      await Promise.resolve()
+        .then(() => tx.memberRoleSnapshot.deleteMany({ where: { userId } }))
+        .catch(() => {});
 
       // 2. Delete all sessions (revokes OAuth tokens — they're stored here)
       await tx.session.deleteMany({ where: { userId } }).catch(() => {});
