@@ -4,6 +4,7 @@ import { timingSafeEqual } from "crypto";
 import { prisma } from "../lib/prisma.js";
 import { encrypt, decryptSafe } from "../lib/crypto.js";
 import { fetchUserGuilds } from "../lib/discordRest.js";
+import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 
 /**
  * Require the user to be logged in via Discord OAuth2 session.
@@ -75,17 +76,36 @@ export function requireMainOwner(req, res, next) {
  * Validate that the request comes from the internal bot service
  * using a shared API secret header.
  */
-export function requireBotSecret(req, res, next) {
+export async function requireBotSecret(req, res, next) {
+  // Дроселиране на неуспешните опити (виж lib/bruteForce.js). Ботът знае
+  // тайната си и НИКОГА не бърка — тоест всеки провал тук е или счупена
+  // конфигурация, или налучкване. И в двата случая заслужава спирачка.
+  try {
+    const blocked = await check("botsecret", req.ip);
+    if (blocked.blocked) {
+      res.setHeader("Retry-After", String(blocked.retryAfterSec));
+      return res.status(429).json({
+        error: "Too many failed attempts. Try again later.",
+        code: "TOO_MANY_FAILED_ATTEMPTS",
+        retryAfterSeconds: blocked.retryAfterSec,
+      });
+    }
+  } catch { /* защитата никога не сваля входа */ }
+
+  const deny = async () => {
+    await recordFailure("botsecret", req.ip).catch(() => {});
+    return res.status(401).json({ error: "Invalid bot secret" });
+  };
+
   const secret = req.headers["x-bot-secret"];
   const expected = process.env.API_SECRET;
-  if (!secret || !expected) {
-    return res.status(401).json({ error: "Invalid bot secret" });
-  }
+  if (!secret || !expected) return deny();
+
   const a = Buffer.from(String(secret));
   const b = Buffer.from(String(expected));
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
-    return res.status(401).json({ error: "Invalid bot secret" });
-  }
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return deny();
+
+  await recordSuccess("botsecret", req.ip).catch(() => {});
   next();
 }
 

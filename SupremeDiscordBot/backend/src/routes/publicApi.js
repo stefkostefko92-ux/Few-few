@@ -18,6 +18,7 @@ const router = Router();
 // *:write отпаднаха — маршрути за тях няма никъде.
 export { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { VALID_SCOPES } from "../lib/apiKeyAuth.js";
+import { bruteForceGuard, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (dashboard-authed)
@@ -131,13 +132,22 @@ const apiLimiter = rateLimit({
 });
 
 async function authenticateApiKey(req, res, next) {
+  // Всеки провал по този път се брои срещу подателя (виж lib/bruteForce.js).
+  // Ключовете са 192 бита ентропия, тоест налучкването е математически
+  // безнадеждно — но дроселирането е задължителният втори слой: спира и
+  // безплатния DoS (всеки опит е sha256 + заявка към базата), и разузнаването.
+  const fail = async (status, body) => {
+    await recordFailure("apikey", req.ip);
+    return res.status(status).json(body);
+  };
+
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing Bearer token" });
+    return fail(401, { error: "Missing Bearer token" });
   }
   const token = auth.slice(7);
   if (!token.startsWith("bpk_live_")) {
-    return res.status(401).json({ error: "Invalid API key format" });
+    return fail(401, { error: "Invalid API key format" });
   }
 
   const keyHash = crypto.createHash("sha256").update(token).digest("hex");
@@ -147,10 +157,12 @@ async function authenticateApiKey(req, res, next) {
   });
 
   if (!apiKey || apiKey.revokedAt) {
-    return res.status(401).json({ error: "Invalid or revoked API key" });
+    // Едно и също съобщение за „няма такъв ключ" и „ключът е отнет" — разликата
+    // би казала на налучкващия, че е познал съществуващ ключ.
+    return fail(401, { error: "Invalid or revoked API key" });
   }
   if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
-    return res.status(401).json({ error: "API key expired" });
+    return fail(401, { error: "API key expired" });
   }
 
   // Тарифен гейт при ПОЛЗВАНЕ, не само при издаване: ключ, издаден по време на
@@ -171,6 +183,9 @@ async function authenticateApiKey(req, res, next) {
     data: { lastUsedAt: new Date(), requestCount: { increment: 1 } },
   }).catch(() => {});
 
+  // Валиден ключ → историята на провалите се чисти, за да не носи наказание
+  // човек, който веднъж е сбъркал.
+  await recordSuccess("apikey", req.ip);
   req.apiKey = apiKey;
   req.serverId = apiKey.serverId;
   next();
@@ -185,12 +200,32 @@ function requireScope(scope) {
   };
 }
 
+// ПРЕДИ автентикацията: лимит по IP, който хваща и НЕУСПЕШНИТЕ опити.
+//
+// ДЕФЕКТЪТ (одит 11.08.2026): `apiLimiter` е монтиран СЛЕД `authenticateApiKey`
+// (нарочно — за да брои per-key), а `/public/v1` е извън `/api`, значи и
+// глобалният лимитер не го покрива. Резултат: невалиден ключ получаваше 401
+// преди който и да е лимитер да се е изпълнил → налучкването на API ключове
+// беше НАПЪЛНО НЕДРОСЕЛИРАНО. Двата слоя се допълват: този пази ВХОДА по IP,
+// долният пази квотата per-key.
+const preAuthLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip,
+  message: { error: "Too many requests — please slow down" },
+});
+
 const api = Router();
-// Ред: auth ПРЕДИ limiter — иначе keyGenerator (req.apiKey?.id) тече преди
-// authenticateApiKey да е сетнал req.apiKey → пада на req.ip, тоест лимитът
-// беше per-IP вместо per-key (един клиент зад споделен IP изяждаше квотата на
-// друг). Сега лимитът е реално per-key.
+// 1) вече блокираните не стигат до базата изобщо
+api.use(bruteForceGuard("apikey"));
+// 2) таван по IP ПРЕДИ автентикацията (покрива неуспешните опити)
+api.use(preAuthLimiter);
+// 3) автентикация — брои провалите си в bruteForce
 api.use(authenticateApiKey);
+// 4) щедрата per-key квота за РЕАЛНИТЕ клиенти (keyGenerator иска req.apiKey,
+//    затова стои след автентикацията — това беше и оригиналната причина за реда)
 api.use(apiLimiter);
 
 // GET /public/v1/me — server info about the key's owner

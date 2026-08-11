@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
-  TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, CHECKED_DATE,
+  TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
 } from "../src/data/growthContent.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -351,6 +351,31 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
   let html = withHead(template, {
     title: d.title, description: d.description, path: d.path, lang: "en",
     keywords: ["gdpr discord bot", "eu hosted discord bot", "discord data residency", "supreme bot", "discord dpa", "carbon stealth"],
+  });
+  html = injectRoot(html, snapshot);
+  writeRoute(d.path, html);
+  count++;
+}
+
+{
+  const d = PANEL_SETUP_GUIDE;
+  const optRows = (rows) => rows.map(
+    (r) => `<tr><td>${esc(r.name)}</td><td>${esc(r.body)}</td><td>${esc(r.values)}</td></tr>`
+  ).join("");
+  const layouts = d.layoutModes.map((m) => `<div><h3>${esc(m.name)}</h3><p>${esc(m.body)}</p></div>`).join("");
+  const limits = d.limits.map(([c, v]) => `<tr><td>${esc(c)}</td><td>${esc(v)}</td></tr>`).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>Ticket panel &amp; button setup</h1>
+    <p>${esc(d.answer)}</p>
+    <section><h2>The panel message</h2><table><thead><tr><th>Option</th><th>What it does</th><th>Values</th></tr></thead><tbody>${optRows(d.panelOptions)}</tbody></table></section>
+    <section><h2>Layouts</h2>${layouts}</section>
+    <section><h2>Button options</h2><table><thead><tr><th>Option</th><th>What it does</th><th>Values</th></tr></thead><tbody>${optRows(d.buttonOptions)}</tbody></table></section>
+    <section><h2>Close, claim &amp; the other actions are automatic</h2><p>${esc(d.inTicketButtons)}</p></section>
+    <section><h2>Limits</h2><table><tbody>${limits}</tbody></table></section>
+  </div>`;
+  let html = withHead(template, {
+    title: d.title, description: d.description, path: d.path, lang: "en",
+    keywords: ["discord ticket panel", "ticket panel setup", "discord ticket bot buttons", "supreme bot", "discord support tool", "carbon stealth"],
   });
   html = injectRoot(html, snapshot);
   writeRoute(d.path, html);

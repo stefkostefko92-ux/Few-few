@@ -43,6 +43,28 @@ describe("sanitizeEmoji", () => {
     expect(sanitizeEmoji(" ✅ ")).toEqual({ name: "✅" });
   });
 
+  // РЕАЛЕН продукционен провал (11.08.2026): панелът падна с
+  // `options[0].emoji.name[COMPONENT_INVALID_EMOJI]: Invalid emoji`, защото
+  // проверката беше `.test(s)` — вярна при ЧАСТИЧНО съвпадение. Стринг, който
+  // СЪДЪРЖА emoji, не е emoji.
+  it("отхвърля emoji + текст — стрингът трябва да Е emoji, не да съдържа", () => {
+    expect(sanitizeEmoji("🎫 Support")).toBeNull();
+    expect(sanitizeEmoji("Support 🎫")).toBeNull();
+    expect(sanitizeEmoji("Помощ 🎫")).toBeNull();
+    expect(sanitizeEmoji("a🎫")).toBeNull();
+  });
+
+  it("отхвърля НЯКОЛКО emoji — Discord иска точно едно", () => {
+    expect(sanitizeEmoji("🎫🎫")).toBeNull();
+    expect(sanitizeEmoji("😀😀😀")).toBeNull();
+  });
+
+  it("приема съставните emoji, които са ЕДНА графема", () => {
+    expect(sanitizeEmoji("👍🏽")).toEqual({ name: "👍🏽" });        // тон на кожата
+    expect(sanitizeEmoji("🇧🇬")).toEqual({ name: "🇧🇬" });        // флаг
+    expect(sanitizeEmoji("👨‍👩‍👧")).toEqual({ name: "👨‍👩‍👧" }); // ZWJ верига
+  });
+
   it("отхвърля garbage — точно това, което Discord API би върнал като 400", () => {
     expect(sanitizeEmoji("notanemoji")).toBeNull();
     expect(sanitizeEmoji("hello world")).toBeNull();

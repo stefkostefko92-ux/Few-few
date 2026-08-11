@@ -25,6 +25,7 @@ const CompareTicketToolPage = lazy(() => import("./pages/CompareTicketToolPage")
 const CompareAppyPage = lazy(() => import("./pages/CompareAppyPage"));
 const BestTicketBotGuidePage = lazy(() => import("./pages/BestTicketBotGuidePage"));
 const GdprDiscordBotGuidePage = lazy(() => import("./pages/GdprDiscordBotGuidePage"));
+const PanelSetupGuidePage = lazy(() => import("./pages/PanelSetupGuidePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -140,6 +141,7 @@ export default function App() {
               <Route path="/compare/appy-alternative" element={<CompareAppyPage />} />
               <Route path="/guides/best-discord-ticket-bot" element={<BestTicketBotGuidePage />} />
               <Route path="/guides/gdpr-discord-bot" element={<GdprDiscordBotGuidePage />} />
+              <Route path="/guides/ticket-panel-setup" element={<PanelSetupGuidePage />} />
               {/* Catch-all */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

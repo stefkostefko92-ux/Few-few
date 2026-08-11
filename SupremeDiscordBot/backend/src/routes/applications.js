@@ -96,7 +96,44 @@ router.get("/:serverId/:appId", requireAuth, loadUser, requireServerAdmin, async
     });
 
     if (!app) return res.status(404).json({ error: "Application not found" });
-    res.json(app);
+
+    // История на кандидата — предишните му кандидатури В ТОЗИ сървър.
+    // Ревюващият вижда „този вече е кандидатствал 3 пъти и е отказван два
+    // пъти", вместо да съди всяка кандидатура като първа.
+    //
+    // ВАЖНО (мултинаемност): скоупът е { serverId, userId } — история от ДРУГ
+    // сървър не е наша за показване, дори за същия Discord потребител.
+    const HISTORY_CAP = 50;
+    const history = await prisma.application.findMany({
+      where: {
+        serverId: req.params.serverId,
+        userId: app.userId,
+        id: { not: app.id },            // текущата не е част от историята си
+      },
+      select: {
+        // Няма поле `reviewedAt` — `updatedAt` е моментът на последната
+        // промяна, тоест на решението за вече ревюваните.
+        id: true, status: true, createdAt: true, updatedAt: true,
+        reviewerId: true, reviewNote: true,
+        form: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: HISTORY_CAP,
+    });
+
+    // Броячите се смятат от изтеглените редове — при таван 50 на кандидат
+    // в един сървър това е пълната картина на практика; `truncated` казва
+    // честно, ако не е.
+    const counts = { PENDING: 0, APPROVED: 0, DENIED: 0 };
+    for (const h of history) {
+      if (counts[h.status] !== undefined) counts[h.status]++;
+    }
+
+    res.json({
+      ...app,
+      history,
+      historyMeta: { total: history.length, counts, truncated: history.length === HISTORY_CAP },
+    });
   } catch (err) {
     next(err);
   }

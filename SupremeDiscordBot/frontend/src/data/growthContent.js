@@ -146,6 +146,66 @@ export const BEST_TICKET_BOT_GUIDE = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// /guides/ticket-panel-setup — how-to docs for panel + button configuration.
+// Mirrors the coverage of Ticket Tool's "Button Options" docs page, but for
+// OUR model: panel buttons are ticket TYPES (each opens a ticket, optionally
+// gated by a form); the in-ticket actions (close/claim/…) are automatic, not
+// per-button config. Every value here matches the live PanelsPage editor —
+// keep them in sync (BUTTON_STYLES, MAX_PANEL_BUTTONS, buttonStyle options).
+// ═══════════════════════════════════════════════════════════════════════════
+export const PANEL_SETUP_GUIDE = {
+  path: "/guides/ticket-panel-setup",
+  title: "Ticket Panel & Button Setup — Supreme Bot Guide",
+  description: "How to configure a Supreme Bot ticket panel: the panel message, each button's label, emoji, colour and linked form, the Buttons / Dropdown / Threads layouts, categories, support roles, SLA and per-user limits.",
+  answer: "A panel is the message your members click to open a ticket. Each button (or dropdown option) is a ticket type — for example \"Support\", \"Report\", \"Billing\" — and can carry its own label, emoji, colour and an optional application form that opens before the ticket. You build panels in the dashboard under Dashboard → your server → Panels; there is nothing to copy-paste by hand. The in-ticket actions (close, claim, transcript, reopen, delete) appear automatically for your staff, so you only configure the open buttons here.",
+
+  // The panel message itself.
+  panelOptions: [
+    { name: "Panel name", body: "Internal label used only in the dashboard to tell your panels apart. Never shown to members.", values: "Free text" },
+    { name: "Title", body: "The heading of the panel embed members see in the channel.", values: "Free text" },
+    { name: "Description", body: "The body text of the panel embed — explain what each button is for.", values: "Free text, Discord markdown" },
+    { name: "Colour", body: "Accent colour of the panel embed. Defaults to the Supreme brand colour if left blank.", values: "Hex colour (e.g. #5865F2)" },
+    { name: "Layout", body: "How the ticket types are presented — see the three layouts below.", values: "Buttons · Dropdown · Threads" },
+    { name: "Open category", body: "The Discord category where new ticket channels are created. Chosen from a dropdown — no ID copy-paste.", values: "Category picker" },
+    { name: "Closed category", body: "Optional category that closed tickets are moved to before archival.", values: "Category picker" },
+    { name: "Support roles", body: "The staff roles pinged in new tickets and allowed to claim, close, rename and escalate them. Members outside these roles cannot run staff ticket commands.", values: "One or more roles" },
+    { name: "Max open tickets per user", body: "Caps how many tickets one member can have open at once, so a single user cannot flood your queue. A per-panel override is also available.", values: "Number (default 1)" },
+    { name: "Default priority", body: "The priority stamped on tickets opened from this panel. Staff can change it later; SLA timers key off it.", values: "Low · Normal · High · Urgent" },
+    { name: "SLA timers (Premium)", body: "Target minutes for first response and for resolution. A breach raises an alert for staff — the two timers are independent.", values: "Minutes (Premium)" },
+    { name: "Welcome message", body: "An embed posted inside every new ticket — set expectations, link rules, or ask for details up front. Its accent colour is configurable.", values: "Free text + hex colour" },
+    { name: "Naming template", body: "Pattern for the ticket channel name, e.g. ticket-0042. Numbers auto-increment per panel.", values: "Template string" },
+  ],
+
+  // The three layouts a panel can use.
+  layoutModes: [
+    { name: "Buttons", body: "One button per ticket type, laid out in rows of five (up to 25 total). Best when you have a handful of clearly-labelled types you want visible at a glance." },
+    { name: "Dropdown", body: "A single select menu whose options are your ticket types (up to 25). Best when you have many types and want to keep the panel compact." },
+    { name: "Threads", body: "Same buttons as the Buttons layout, but each ticket opens as a thread instead of a channel — lighter-weight, and keeps everything under one parent channel." },
+  ],
+
+  // Per-button options — the direct analogue of Ticket Tool's "Button Options".
+  buttonOptions: [
+    { name: "Button label", body: "The text on the button (or the dropdown option). Optional only if you set an emoji — every button needs a label or an emoji to be valid. Trimmed to Discord's 80-character limit (100 for dropdown options).", values: "Text, ≤ 80 chars" },
+    { name: "Button emoji", body: "Shown before the label. Use a standard unicode emoji (🎫, ✅, ❤️) or a custom Discord emoji in the format <name:id> — or <a:name:id> for an animated one. A value that is not a real emoji is ignored, never breaking the panel.", values: "Unicode · <name:id> · <a:name:id>" },
+    { name: "Button colour", body: "One of Discord's four button styles. Colour is cosmetic — it does not change what the button does.", values: "Primary (blurple) · Secondary (grey) · Success (green) · Danger (red)" },
+    { name: "Linked form", body: "Optionally attach an application form. When set, clicking the button opens that form as a modal first; the member's answers are posted into the ticket the moment it opens. Leave blank to open a plain ticket.", values: "Any of your forms, or none" },
+  ],
+
+  // What Ticket Tool exposes as configurable buttons but we handle automatically.
+  inTicketButtons: "Unlike some bots, you do not configure close / cancel-close / reopen / confirm-close / delete / transcript / claim as separate buttons on the panel. Supreme Bot adds those actions automatically inside each ticket and shows them only to your support roles. That keeps the panel editor focused on the one thing you design — the ticket types members can open — while the ticket lifecycle stays consistent across every panel.",
+
+  // Hard limits, mostly Discord's, that the editor enforces for you.
+  limits: [
+    ["Buttons or dropdown options per panel", "25"],
+    ["Buttons per row (Buttons layout)", "5 (5 rows max)"],
+    ["Button label length", "80 characters"],
+    ["Dropdown option label length", "100 characters"],
+    ["Panels merged into one grouped message", "Dropdown · Buttons · Stack"],
+    ["Each button needs", "a label or an emoji"],
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // /guides/gdpr-discord-bot  — zero-competition, educational, no competitor mentions.
 // ═══════════════════════════════════════════════════════════════════════════
 export const GDPR_GUIDE = {

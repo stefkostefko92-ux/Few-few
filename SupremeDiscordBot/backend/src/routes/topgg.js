@@ -10,6 +10,7 @@
 // се събират, така че перкът може да е ретроактивен.
 import { Router } from "express";
 import { z } from "zod";
+import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { prisma } from "../lib/prisma.js";
 import { timingSafeEqual } from "crypto";
 
@@ -45,9 +46,19 @@ router.post("/webhook", async (req, res, next) => {
   // Сравнението е constant-time: наивното `!==` изтича дължина и позиция на
   // първото разминаване по време, а тайната е познаваема отвън (webhook се
   // вика от чужд хост). Същият модел като requireBotSecret.
+  // Дроселиране на неуспешните опити. Тази тайна е ВЪВЕДЕНА ОТ ЧОВЕК в env
+  // (за разлика от нашите 192-битови ключове), значи ентропията ѝ не е
+  // гарантирана — точно случаят, в който налучкването е реалистично.
+  const blocked = await check("topgg", req.ip);
+  if (blocked.blocked) {
+    res.setHeader("Retry-After", String(blocked.retryAfterSec));
+    return res.status(429).json({ error: "Too many failed attempts.", code: "TOO_MANY_FAILED_ATTEMPTS" });
+  }
   if (!timingSafeEqualStr(req.headers.authorization, secret)) {
+    await recordFailure("topgg", req.ip);
     return res.status(403).json({ error: "Invalid authorization" });
   }
+  await recordSuccess("topgg", req.ip);
 
   const parsed = voteSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid vote payload" });

@@ -9,6 +9,7 @@
 import crypto from "node:crypto";
 import { prisma } from "./prisma.js";
 import { getServerTier, planHasFeature } from "./premium.js";
+import { check, recordFailure, recordSuccess } from "./bruteForce.js";
 
 export const VALID_SCOPES = [
   "server:read",
@@ -26,21 +27,41 @@ export const VALID_SCOPES = [
 
 export function requireApiKey(...requiredScopes) {
   return async function apiKeyAuth(req, res, next) {
+    // Дроселиране на НЕУСПЕШНИТЕ опити (виж lib/bruteForce.js). Тук е вторият
+    // път за API ключове (/api/v1) — той е под глобалния лимитер, но 200/мин
+    // пак е много за налучкване на тайна, а вече блокираните не бива да стигат
+    // до базата изобщо.
+    const blocked = await check("apikey", req.ip);
+    if (blocked.blocked) {
+      res.setHeader("Retry-After", String(blocked.retryAfterSec));
+      return res.status(429).json({
+        error: "Too many failed attempts. Try again later.",
+        code: "TOO_MANY_FAILED_ATTEMPTS",
+        retryAfterSeconds: blocked.retryAfterSec,
+      });
+    }
+    const fail = async (status, body) => {
+      await recordFailure("apikey", req.ip);
+      return res.status(status).json(body);
+    };
+
     const auth = req.headers.authorization || "";
     if (!auth.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing or invalid Authorization header. Expected: Bearer bp_live_xxx" });
+      return fail(401, { error: "Missing or invalid Authorization header. Expected: Bearer bp_live_xxx" });
     }
     const token = auth.slice(7).trim();
-    if (!token) return res.status(401).json({ error: "Empty API key" });
+    if (!token) return fail(401, { error: "Empty API key" });
 
     const hash = crypto.createHash("sha256").update(token).digest("hex");
     const key = await prisma.apiKey.findUnique({ where: { keyHash: hash } });
 
     if (!key || key.revokedAt) {
-      return res.status(401).json({ error: "Invalid or revoked API key" });
+      // Едно съобщение за „няма такъв" и „отнет" — разликата би издала на
+      // налучкващия, че е познал съществуващ ключ.
+      return fail(401, { error: "Invalid or revoked API key" });
     }
     if (key.expiresAt && key.expiresAt < new Date()) {
-      return res.status(401).json({ error: "API key expired" });
+      return fail(401, { error: "API key expired" });
     }
     // Тарифен гейт при ПОЛЗВАНЕ (не само при издаване): ключ, издаден по време
     // на trial или преди downgrade, иначе работеше вечно — /api/v1/* сервираше
@@ -66,6 +87,8 @@ export function requireApiKey(...requiredScopes) {
       data: { lastUsedAt: new Date(), requestCount: { increment: 1 } },
     }).catch(() => {});
 
+    // Валиден ключ → чистим историята на провалите за този подател.
+    await recordSuccess("apikey", req.ip);
     req.apiKey = key;
     req.params.serverId = key.serverId;  // Force serverId from the key
     next();

@@ -20,6 +20,31 @@ import { useToast } from "../contexts/ToastContext";
 const MAX_PANEL_BUTTONS = 25;
 
 const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
+
+/**
+ * ПОДСКАЗКА за полето emoji — НЕ е авторитетът.
+ *
+ * Авторитетът е `sanitizeEmoji` в bot/src/utils/embed.js: той решава какво
+ * реално стига до Discord и мълчаливо изхвърля невалидното, за да не пада
+ * целият панел. Тази проверка съществува само за да КАЖЕ на човека веднага,
+ * вместо emoji-то му да изчезне без обяснение при публикуване (реален случай
+ * 11.08.2026: „🎫 Support" в полето за emoji → Discord отказа целия панел).
+ *
+ * Понеже е само подсказка, разминаване в краен случай не чупи нищо — показва
+ * или скрива един ред текст. Затова НЕ е дублиран авторитет.
+ */
+function emojiLooksValid(v) {
+  if (!v) return true;                                   // празно е напълно ок
+  const s = String(v).trim();
+  if (!s) return true;
+  if (/^<a?:\w{2,32}:\d{17,20}>$/.test(s)) return true;  // custom <:name:id>
+  if (/^\d{17,20}$/.test(s)) return true;                // голо ID
+  if (s.length > 32) return false;
+  if (typeof Intl?.Segmenter !== "function") return true; // стар браузър → без подсказка
+  const graphemes = [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(s)];
+  if (graphemes.length !== 1) return false;              // „emoji + текст" пада тук
+  return /\p{Extended_Pictographic}/u.test(s) || /\p{Regional_Indicator}/u.test(s) || /⃣/.test(s);
+}
 const STYLE_COLORS = {
   PRIMARY: "bg-cs-cyan",
   SECONDARY: "bg-gray-500",
@@ -255,7 +280,14 @@ export default function PanelsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-cs-text">{t("panels.title")}</h1>
-          <p className="text-cs-muted text-sm mt-1">{t("panels.subtitle")}</p>
+          <p className="text-cs-muted text-sm mt-1">
+            {t("panels.subtitle")}{" "}
+            {/* Контекстна връзка към публичната docs страница за настройка. */}
+            <a href="/guides/ticket-panel-setup" target="_blank" rel="noopener"
+               className="text-cs-cyan hover:underline whitespace-nowrap">
+              {t("panels.setupGuide")} →
+            </a>
+          </p>
         </div>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> {t("panels.new")}
@@ -729,8 +761,10 @@ export default function PanelsPage() {
                   {form.buttons.map((btn, i) => (
                     <div key={i} className="bg-cs-bg rounded-lg p-3 space-y-2">
                       <div className="flex gap-2 flex-wrap items-center">
-                        <input className="cs-input w-16 py-1 text-sm" value={btn.emoji}
+                        <input className={`cs-input w-16 py-1 text-sm ${emojiLooksValid(btn.emoji) ? "" : "border-warning"}`}
+                          value={btn.emoji}
                           aria-label={`Button ${i + 1} emoji`}
+                          aria-invalid={!emojiLooksValid(btn.emoji)}
                           onChange={(e) => updateButton(i, "emoji", e.target.value)}
                           placeholder={t("panels.ph.emoji")} />
                         <EmojiPicker
@@ -755,6 +789,11 @@ export default function PanelsPage() {
                           </button>
                         )}
                       </div>
+                      {!emojiLooksValid(btn.emoji) && (
+                        <p className="text-xs text-warning" role="alert">
+                          {t("panels.emojiInvalid")}
+                        </p>
+                      )}
                       <div className="flex gap-2 items-center">
                         <label className="text-xs text-cs-muted whitespace-nowrap" htmlFor={`button-action-${i}`}>Action:</label>
                         <select

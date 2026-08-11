@@ -1,0 +1,236 @@
+// backend/src/__tests__/bruteForce.test.js
+// Гейт на защитата срещу налучкване на тайни.
+//
+// ЗАЩО (заявка на собственика: „нищо да не може да се брутфорсва“): рейт
+// лимитерите броят ВСИЧКИ заявки еднакво и затова пазят ресурса, но не тайната.
+// Стандартът (NIST SP 800-63B §5.2.2, OWASP ASVS V2.2.1) иска дроселиране на
+// НЕУСПЕШНИТЕ опити с растящо наказание.
+//
+// Тестът пази свойствата, които правят защитата истинска, а не украса:
+//   1. блокира след праг и наказанието РАСТЕ
+//   2. успехът чисти историята (човешката грешка не се трупа вечно)
+//   3. източниците и обхватите са НЕЗАВИСИМИ (един нападател не заключва света)
+//   4. ПОДМРЕЖАТА хваща въртенето на IP-та — реалното заобикаляне на per-IP
+//   5. при масирана атака праговете се СВИВАТ, без да се блокират всички
+//   6. Redis дава трайност, а падналият Redis НИКОГА не отключва блокиран
+//   7. паметта е ОГРАНИЧЕНА (иначе самата защита е DoS вектор)
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import express from "express";
+import request from "supertest";
+import {
+  check, checkSync, recordFailure, recordSuccess, bruteForceGuard, subnetOf,
+  _resetBruteForceState, _stateSize,
+  BRUTE_FORCE_STEPS, BRUTE_FORCE_SUBNET_STEPS, BRUTE_FORCE_MAX_ENTRIES,
+  BRUTE_FORCE_GLOBAL_THRESHOLD, BRUTE_FORCE_TIGHTENED_STEP,
+} from "../lib/bruteForce.js";
+import { _setRedisForTests } from "../lib/redisClient.js";
+
+const auditCreate = vi.fn().mockResolvedValue({});
+vi.mock("../lib/prisma.js", () => ({ prisma: { auditLog: { create: (...a) => auditCreate(...a) } } }));
+
+const IP_STEP = [...BRUTE_FORCE_STEPS].sort((a, b) => a.failures - b.failures)[0];
+const NET_STEP = [...BRUTE_FORCE_SUBNET_STEPS].sort((a, b) => a.failures - b.failures)[0];
+
+/** Минимален Redis двойник: pipeline + mget + set + del върху Map. */
+function fakeRedis() {
+  const store = new Map();
+  const api = {
+    store,
+    async mget(keys) { return keys.map((k) => store.get(k) ?? null); },
+    async set(k, v) { store.set(k, v); return "OK"; },
+    async del(...keys) { for (const k of keys) store.delete(k); return keys.length; },
+    pipeline() {
+      const ops = [];
+      const p = {
+        incr(k) { ops.push(["incr", k]); return p; },
+        expire() { ops.push(["expire"]); return p; },
+        async exec() {
+          return ops.map(([op, k]) => {
+            if (op !== "incr") return [null, 1];
+            const next = (Number(store.get(k)) || 0) + 1;
+            store.set(k, String(next));
+            return [null, next];
+          });
+        },
+      };
+      return p;
+    },
+  };
+  return api;
+}
+
+beforeEach(() => {
+  _resetBruteForceState();
+  _setRedisForTests(false);   // по подразбиране: без Redis (само памет)
+  auditCreate.mockClear();
+});
+
+describe("прагове и растящо наказание", () => {
+  it("под прага НЕ блокира — нормалната човешка грешка минава", async () => {
+    for (let i = 0; i < IP_STEP.failures - 1; i++) await recordFailure("apikey", "1.2.3.4");
+    expect((await check("apikey", "1.2.3.4")).blocked).toBe(false);
+  });
+
+  it("на прага блокира и връща време за изчакване", async () => {
+    let last;
+    for (let i = 0; i < IP_STEP.failures; i++) last = await recordFailure("apikey", "1.2.3.4");
+    expect(last.blocked).toBe(true);
+    expect(last.retryAfterSec).toBeGreaterThan(0);
+  });
+
+  it("наказанието РАСТЕ с упорството — не е плоско", async () => {
+    const steps = [...BRUTE_FORCE_STEPS].sort((a, b) => a.failures - b.failures);
+    const seen = [];
+    let n = 0;
+    for (const s of steps) {
+      while (n < s.failures) { await recordFailure("botsecret", "9.9.9.9"); n++; }
+      seen.push((await check("botsecret", "9.9.9.9")).retryAfterSec);
+    }
+    for (let i = 1; i < seen.length; i++) expect(seen[i]).toBeGreaterThan(seen[i - 1]);
+  });
+});
+
+describe("успех и изолация", () => {
+  it("успехът чисти историята по източник", async () => {
+    for (let i = 0; i < IP_STEP.failures - 1; i++) await recordFailure("apikey", "1.2.3.4");
+    await recordSuccess("apikey", "1.2.3.4");
+    for (let i = 0; i < IP_STEP.failures - 1; i++) await recordFailure("apikey", "1.2.3.4");
+    expect((await check("apikey", "1.2.3.4")).blocked).toBe(false);
+  });
+
+  it("обхватите са НЕЗАВИСИМИ — блокиран за архив не значи блокиран за API", async () => {
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("archive", "8.8.8.8");
+    expect((await check("archive", "8.8.8.8")).blocked).toBe(true);
+    expect((await check("apikey", "8.8.8.8")).blocked).toBe(false);
+  });
+
+  it("одитът е ВЕДНЪЖ на блокировка и НЕ съдържа пълния адрес (GDPR)", async () => {
+    for (let i = 0; i < IP_STEP.failures + 8; i++) await recordFailure("apikey", "3.3.3.3");
+    await new Promise((r) => setTimeout(r, 10));
+    const ipBlocks = auditCreate.mock.calls.filter((c) => c[0].data.metadata.kind === "ip");
+    expect(ipBlocks).toHaveLength(1);
+    expect(JSON.stringify(ipBlocks[0][0].data.metadata)).not.toContain("3.3.3.3");
+  });
+});
+
+describe("слой 2 — подмрежата хваща въртенето на IP-та", () => {
+  it("subnetOf свежда IPv4 до /24, IPv6 до /64 и нормализира mapped адрес", () => {
+    expect(subnetOf("1.2.3.4")).toBe("1.2.3.0/24");
+    expect(subnetOf("::ffff:1.2.3.4")).toBe("1.2.3.0/24");   // един бюджет, не два
+    expect(subnetOf("2a04:4e42:8e:1:2:3:4:5")).toBe("2a04:4e42:8e:1::/64");
+  });
+
+  it("нападател, сменящ IP в една мрежа, пак бива спрян", async () => {
+    // Всеки адрес поотделно остава ПОД прага по източник…
+    const perIp = IP_STEP.failures - 1;
+    let sent = 0;
+    for (let host = 1; sent < NET_STEP.failures; host++) {
+      for (let i = 0; i < perIp && sent < NET_STEP.failures; i++, sent++) {
+        await recordFailure("apikey", `77.0.0.${host}`);
+      }
+    }
+    // …но подмрежата вижда сбора и блокира целия /24.
+    const res = await check("apikey", "77.0.0.250");
+    expect(res.blocked, "подмрежовият слой трябваше да спре въртенето на адреси").toBe(true);
+  });
+
+  it("успех по един адрес НЕ изтрива следата на подмрежата", async () => {
+    for (let i = 0; i < NET_STEP.failures; i++) await recordFailure("apikey", `78.0.0.${(i % 200) + 1}`);
+    await recordSuccess("apikey", "78.0.0.5");
+    expect((await check("apikey", "78.0.0.5")).blocked).toBe(true);
+  });
+});
+
+describe("слой 3 — адаптивно затягане при масирана атака", () => {
+  it("под атака прагът пада, но НЕ блокира всички без вина", async () => {
+    // Пълним глобалния брояч от много различни мрежи (без да палим подмрежов праг).
+    for (let i = 0; i < BRUTE_FORCE_GLOBAL_THRESHOLD; i++) {
+      await recordFailure("apikey", `10.${(i >> 8) & 255}.${i & 255}.1`);
+    }
+    // Нов източник: под нормалния праг (5), но над свития (2).
+    const ip = "199.199.199.199";
+    for (let i = 0; i < BRUTE_FORCE_TIGHTENED_STEP.failures; i++) await recordFailure("apikey", ip);
+    expect((await check("apikey", ip)).blocked).toBe(true);
+
+    // Който НЕ е бъркал, си остава свободен — затягането не е глобален отказ.
+    expect((await check("apikey", "203.0.113.7")).blocked).toBe(false);
+  });
+});
+
+describe("слой 4 — Redis трайност и поведение при отказ", () => {
+  it("блокировката се записва в Redis, за да преживее рестарт", async () => {
+    const redis = fakeRedis();
+    _setRedisForTests(redis);
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "4.4.4.4");
+    const keys = [...redis.store.keys()];
+    expect(keys.some((k) => k.startsWith("bf:blk:apikey:4.4.4.4"))).toBe(true);
+  });
+
+  it("след „рестарт“ (празна памет) блокировката от Redis важи", async () => {
+    const redis = fakeRedis();
+    _setRedisForTests(redis);
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "4.4.4.5");
+    _resetBruteForceState();                       // симулира рестарт на процеса
+    expect((await check("apikey", "4.4.4.5")).blocked).toBe(true);
+  });
+
+  it("паднал Redis НЕ отключва блокиран — паметта решава", async () => {
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "4.4.4.6");
+    _setRedisForTests({                             // всяка команда гърми
+      async mget() { throw new Error("redis down"); },
+      async set() { throw new Error("redis down"); },
+      async del() { throw new Error("redis down"); },
+      pipeline() { return { incr() { return this; }, expire() { return this; }, async exec() { throw new Error("redis down"); } }; },
+    });
+    expect((await check("apikey", "4.4.4.6")).blocked).toBe(true);
+  });
+
+  it("паднал Redis не хвърля при запис на провал", async () => {
+    _setRedisForTests({
+      async mget() { throw new Error("down"); },
+      async set() { throw new Error("down"); },
+      async del() { throw new Error("down"); },
+      pipeline() { return { incr() { return this; }, expire() { return this; }, async exec() { throw new Error("down"); } }; },
+    });
+    await expect(recordFailure("apikey", "4.4.4.7")).resolves.toBeTruthy();
+  });
+});
+
+describe("самата защита не е DoS вектор", () => {
+  // Стрес-тест: 23 000 последователни опита. Бавен е заради самите await-и,
+  // не заради защитата — затова таванът е вдигнат съзнателно, вместо да се
+  // свали броят и тестът да спре да доказва границата.
+  it("паметта е ограничена при нападател, който върти източници", async () => {
+    for (let i = 0; i < BRUTE_FORCE_MAX_ENTRIES + 3000; i++) {
+      await recordFailure("apikey", `12.${(i >> 16) & 255}.${(i >> 8) & 255}.${i & 255}`);
+    }
+    expect(_stateSize()).toBeLessThanOrEqual(BRUTE_FORCE_MAX_ENTRIES + 2);
+  }, 60_000);
+});
+
+describe("bruteForceGuard (Express)", () => {
+  function app() {
+    const a = express();
+    a.use(bruteForceGuard("apikey"));
+    a.get("/x", (_req, res) => res.json({ ok: true }));
+    return a;
+  }
+
+  it("пуска, докато няма блокировка", async () => {
+    expect((await request(app()).get("/x")).status).toBe(200);
+  });
+
+  it("блокираните получават 429 + Retry-After ПРЕДИ маршрута", async () => {
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "::ffff:127.0.0.1");
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "127.0.0.1");
+    const res = await request(app()).get("/x");
+    expect(res.status).toBe(429);
+    expect(res.headers["retry-after"]).toBeTruthy();
+    expect(res.body.code).toBe("TOO_MANY_FAILED_ATTEMPTS");
+  });
+
+  it("checkSync вижда същата блокировка без изчакване на Redis", async () => {
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "6.6.6.6");
+    expect(checkSync("apikey", "6.6.6.6").blocked).toBe(true);
+  });
+});

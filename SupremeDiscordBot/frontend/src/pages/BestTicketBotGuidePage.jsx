@@ -50,6 +50,9 @@ export default function BestTicketBotGuidePage() {
           <a href="/compare/appy-alternative" className="text-cs-cyan underline">
             Supreme Bot vs Appy Bot →
           </a>
+          <a href="/guides/ticket-panel-setup" className="text-cs-cyan underline">
+            Ticket panel &amp; button setup →
+          </a>
         </div>
       </div>
 
