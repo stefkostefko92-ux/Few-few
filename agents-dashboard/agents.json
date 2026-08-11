@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 238
+        "lessons": 241
       },
       "evolution": [
         {
@@ -566,9 +566,20 @@
           "date": "2026-08-11",
           "event": "v17.9 — учене",
           "detail": "Научи: SupremeDiscordBot: предишните GDPR Blocker-и (email в чл.15/17, TIA/breach-register лип… (+1 още)"
+        },
+        {
+          "version": "18.2.0",
+          "date": "2026-08-11",
+          "event": "v18.2 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-11",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе…\" (+2 още)"
+        },
         {
           "date": "2026-08-11",
           "type": "learning",
