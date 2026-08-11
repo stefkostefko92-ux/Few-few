@@ -185,6 +185,7 @@ export default {
   "panels.title": "Panele",
   "panels.subtitle": "Twórz wizualne panele przycisków do otwierania zgłoszeń",
   "panels.setupGuide": "Przewodnik konfiguracji",
+  "panels.emojiInvalid": "Musi być JEDNO emoji (lub <nazwa:id> dla własnego) — w przeciwnym razie zostanie zignorowane.",
   "panels.empty.title": "Brak paneli",
   "panels.empty.body": "Utwórz panel przycisków, aby członkowie mogli otwierać zgłoszenia jednym kliknięciem.",
   "panels.empty.cta": "Utwórz pierwszy panel",

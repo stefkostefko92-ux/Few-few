@@ -31,11 +31,23 @@ export function sanitizeEmoji(raw) {
   const custom = s.match(/^<(a?):(\w{2,32}):(\d{17,20})>$/);
   if (custom) return { animated: custom[1] === "a", name: custom[2], id: custom[3] };
   if (/^\d{17,20}$/.test(s)) return { id: s };
-  // Unicode emoji: пиктографски знак / emoji presentation / VS16 (покрива ❤️, 1️⃣)
-  if (s.length <= 16 && /\p{Extended_Pictographic}|\p{Emoji_Presentation}|\uFE0F/u.test(s)) {
-    return { name: s };
-  }
-  return null;
+
+  // Unicode emoji — стрингът трябва да Е emoji, не да СЪДЪРЖА emoji.
+  //
+  // ДЕФЕКТЪТ (продукция, 11.08.2026): проверката беше `.test(s)`, която е
+  // вярна и при ЧАСТИЧНО съвпадение. „🎫 Support" минаваше за emoji и
+  // Discord отказваше ЦЯЛОТО съобщение с
+  // `options[0].emoji.name[COMPONENT_INVALID_EMOJI]: Invalid emoji`.
+  // Сега броим графемите: точно една, и тя да е emoji. Покрива и
+  // съставните — флаг (два regional indicator-а), keycap, ZWJ вериги,
+  // тон на кожата — всяко от тях е ЕДНА графема.
+  if (s.length > 32) return null;
+  const graphemes = [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(s)];
+  if (graphemes.length !== 1) return null;
+  const isEmoji = /\p{Extended_Pictographic}/u.test(s)   // повечето emoji
+    || /\p{Regional_Indicator}/u.test(s)                 // флагове
+    || /\u20E3/.test(s);                                 // keycap
+  return isEmoji ? { name: s } : null;
 }
 
 export function buildPanelMessage(panel) {

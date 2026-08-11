@@ -185,6 +185,7 @@ export default {
   "panels.title": "Panelen",
   "panels.subtitle": "Maak visuele knoppanelen voor het aanmaken van tickets",
   "panels.setupGuide": "Installatiegids",
+  "panels.emojiInvalid": "Moet ÉÉN emoji zijn (of <naam:id> voor een eigen emoji) — anders wordt het genegeerd.",
   "panels.empty.title": "Nog geen panelen",
   "panels.empty.body": "Maak een knoppaneel zodat leden met één klik tickets kunnen openen.",
   "panels.empty.cta": "Eerste paneel maken",

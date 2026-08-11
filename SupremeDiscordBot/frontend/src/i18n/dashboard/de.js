@@ -185,6 +185,7 @@ export default {
   "panels.title": "Panels",
   "panels.subtitle": "Erstelle visuelle Button-Panels zum Öffnen von Tickets",
   "panels.setupGuide": "Einrichtungsanleitung",
+  "panels.emojiInvalid": "Muss EIN einzelnes Emoji sein (oder <name:id> für ein eigenes) — sonst wird es ignoriert.",
   "panels.empty.title": "Noch keine Panels",
   "panels.empty.body": "Erstelle ein Button-Panel, damit Mitglieder mit einem Klick Tickets öffnen können.",
   "panels.empty.cta": "Erstes Panel erstellen",

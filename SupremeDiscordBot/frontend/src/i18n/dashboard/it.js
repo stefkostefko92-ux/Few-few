@@ -185,6 +185,7 @@ export default {
   "panels.title": "Pannelli",
   "panels.subtitle": "Crea pannelli di pulsanti visivi per l’apertura dei ticket",
   "panels.setupGuide": "Guida alla configurazione",
+  "panels.emojiInvalid": "Deve essere UNA sola emoji (o <nome:id> per una personalizzata) — altrimenti viene ignorata.",
   "panels.empty.title": "Ancora nessun pannello",
   "panels.empty.body": "Crea un pannello di pulsanti così i membri possono aprire ticket con un clic.",
   "panels.empty.cta": "Crea il primo pannello",
