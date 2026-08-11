@@ -185,7 +185,7 @@ function buildMergedPanelMessage(panels, mode) {
       .setPlaceholder(head.selectPlaceholder || "Select an option…")
       .setMinValues(1).setMaxValues(1)
       .addOptions(fit.map(({ panel, btn }) => {
-        const opt = { label: btn.label.slice(0, 100), value: `${panel.id}:${btn.id}` };
+        const opt = { label: String(btn.label || "Open").slice(0, 100), value: `${panel.id}:${btn.id}` };
         // Описанието подсказва от кой панел е опцията, когато имената се
         // припокриват между панели.
         if (list.length > 1 && panel.name) opt.description = String(panel.name).slice(0, 100);
@@ -206,9 +206,13 @@ function buildMergedPanelMessage(panels, mode) {
       fit.slice(i, i + 5).map(({ panel, btn }) => {
         const b = new ButtonBuilder()
           .setCustomId(`panel_button:${panel.id}:${btn.id}`)
-          .setLabel(btn.label)
+          // Discord таванът за етикет на бутон е 80 — DROPDOWN клонът реже,
+          // този не режеше: един дълъг етикет събаряше ЦЯЛАТА група с
+          // необяснимо „Bot is offline" (одит 09.08.2026).
+          .setLabel(String(btn.label || "Open").slice(0, 80))
           .setStyle(styleMap[btn.style] || ButtonStyle.Primary);
-        if (btn.emoji) b.setEmoji(btn.emoji);
+        // Невалидно emoji хвърля при билд — панелът е ценен, emoji-то не е.
+        if (btn.emoji) { try { b.setEmoji(btn.emoji); } catch { /* без emoji */ } }
         return b;
       })
     ));
