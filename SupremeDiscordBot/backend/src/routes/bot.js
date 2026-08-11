@@ -12,6 +12,7 @@ import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiR
 import { getServerTier, planHasFeature, sanitizePanelForTier, sanitizeFormForTier } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
+import { writeAudit } from "../lib/auditLog.js";
 import axios from "axios";
 import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
@@ -97,14 +98,12 @@ router.post("/server/register", async (req, res, next) => {
       update: { name, icon: icon || null, botRemovedAt: null },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: ownerId || null,
-        actorTag: ownerId ? undefined : "SYSTEM",
-        serverId: id,
-        action: "BOT_JOINED",
-        targetId: id,
-      },
+    await writeAudit({
+      actorId: ownerId || null,
+      actorTag: ownerId ? undefined : "SYSTEM",
+      serverId: id,
+      action: "BOT_JOINED",
+      targetId: id,
     });
 
     res.json(server);
@@ -216,14 +215,12 @@ router.delete("/server/:serverId", async (req, res, next) => {
       data:  { botRemovedAt: new Date() },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: null,
-        actorTag: "SYSTEM",
-        serverId: req.params.serverId,
-        action: "BOT_REMOVED",
-        targetId: req.params.serverId,
-      },
+    await writeAudit({
+      actorId: null,
+      actorTag: "SYSTEM",
+      serverId: req.params.serverId,
+      action: "BOT_REMOVED",
+      targetId: req.params.serverId,
     });
     res.json({ ok: true });
   } catch (err) {
@@ -321,14 +318,14 @@ router.post("/ticket/create", async (req, res, next) => {
       return res.status(429).json({
         error: `You already have ${openCount} open ticket(s). Please wait for them to be resolved before opening a new one.`,
         code: "MAX_TICKETS_REACHED",
-      });
+    });
     }
 
     // ── 1b. Per-panel open limit (v1.5) ─────────────────────────────────────
     if (panel?.maxOpenPerUserPanel && panelId) {
       const panelOpenCount = await prisma.ticket.count({
         where: { panelId, creatorId, status: { in: ["OPEN", "CLAIMED"] } },
-      });
+    });
       if (panelOpenCount >= panel.maxOpenPerUserPanel) {
         return res.status(429).json({
           error: `You already have ${panelOpenCount} open ticket(s) for panel "${panel.name}".`,
@@ -353,7 +350,7 @@ router.post("/ticket/create", async (req, res, next) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${serverId + ":" + creatorId}))`;
       const openNow = await tx.ticket.count({
         where: { serverId, creatorId, status: { in: ["OPEN", "CLAIMED"] } },
-      });
+    });
       if (openNow >= maxOpen) {
         const e = new Error("MAX_TICKETS_REACHED"); e.code = "MAX_TICKETS_REACHED"; throw e;
       }
@@ -378,9 +375,9 @@ router.post("/ticket/create", async (req, res, next) => {
           number: nextNumber,
           lastActivityAt: new Date(),
         },
-      });
+    });
       return [created, { ticketCounter: nextNumber }];
-      });
+    });
     } catch (e) {
       if (e.code === "MAX_TICKETS_REACHED") {
         return res.status(429).json({
@@ -396,7 +393,7 @@ router.post("/ticket/create", async (req, res, next) => {
       const server = await prisma.server.findUnique({
         where: { id: serverId },
         select: { aiRepliesEnabled: true, aiRepliesPrompt: true, name: true },
-      });
+    });
       // getServerTier покрива собствен план + trial + agency seat — суровият
       // isPremium изпускаше agency-покрити сървъри (платена функция не работи).
       const { isPremium: isEffectivePremium } = await getServerTier(serverId);
@@ -429,7 +426,7 @@ router.post("/ticket/create", async (req, res, next) => {
     if (assigneeId) {
       import("../services/botNotifier.js").then(({ notifyBot }) => {
         notifyBot("TICKET_ASSIGNED", { channelId: channelId || null, assigneeId, ticketId: ticket.id });
-      });
+    });
     }
   } catch (err) {
     next(err);
@@ -621,15 +618,13 @@ router.patch("/ticket/:ticketId/priority", async (req, res, next) => {
       data: { priority, lastActivityAt: new Date() },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: actorId || null,
-        actorTag: actorId ? undefined : "SYSTEM",
-        serverId: existing.serverId,
-        action: "TICKET_PRIORITY_CHANGED",
-        targetId: req.params.ticketId,
-        metadata: { priority },
-      },
+    await writeAudit({
+      actorId: actorId || null,
+      actorTag: actorId ? undefined : "SYSTEM",
+      serverId: existing.serverId,
+      action: "TICKET_PRIORITY_CHANGED",
+      targetId: req.params.ticketId,
+      metadata: { priority },
     });
 
     res.json(updated);
@@ -661,14 +656,12 @@ router.post("/ticket/:ticketId/reopen", async (req, res, next) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: reopenerId || null,
-        actorTag: reopenerId ? undefined : "SYSTEM",
-        serverId: existing.serverId,
-        action: "TICKET_REOPENED",
-        targetId: req.params.ticketId,
-      },
+    await writeAudit({
+      actorId: reopenerId || null,
+      actorTag: reopenerId ? undefined : "SYSTEM",
+      serverId: existing.serverId,
+      action: "TICKET_REOPENED",
+      targetId: req.params.ticketId,
     });
 
     res.json(updated);
@@ -703,20 +696,18 @@ router.post("/ticket/:ticketId/delete", async (req, res, next) => {
           creator: true,
           assignee: true,
         },
-      });
+    });
       if (fullTicket) {
         archiveHtml = generateHtmlTranscript(fullTicket);
       }
     }
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: deleterId || null,
-        actorTag: deleterId ? undefined : "SYSTEM",
-        serverId: existing.serverId,
-        action: "TICKET_DELETED",
-        targetId: req.params.ticketId,
-      },
+    await writeAudit({
+      actorId: deleterId || null,
+      actorTag: deleterId ? undefined : "SYSTEM",
+      serverId: existing.serverId,
+      action: "TICKET_DELETED",
+      targetId: req.params.ticketId,
     });
 
     // Soft-delete: ARCHIVED status keeps the row + transcript forever.
@@ -806,14 +797,12 @@ router.post("/ticket/:ticketId/rename", async (req, res, next) => {
       data: { renamedFrom: newName, lastActivityAt: new Date() },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: actorId || null,
-        serverId: existing.serverId,
-        action: "TICKET_RENAMED",
-        targetId: req.params.ticketId,
-        metadata: { newName },
-      },
+    await writeAudit({
+      actorId: actorId || null,
+      serverId: existing.serverId,
+      action: "TICKET_RENAMED",
+      targetId: req.params.ticketId,
+      metadata: { newName },
     });
 
     res.json(updated);
@@ -852,14 +841,12 @@ router.post("/ticket/:ticketId/escalate", async (req, res, next) => {
       data: { panelId: newPanelId, lastActivityAt: new Date() },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: actorId || null,
-        serverId: ticket.serverId,
-        action: "TICKET_ESCALATED",
-        targetId: req.params.ticketId,
-        metadata: { fromPanelId: ticket.panelId, toPanelId: newPanelId, reason },
-      },
+    await writeAudit({
+      actorId: actorId || null,
+      serverId: ticket.serverId,
+      action: "TICKET_ESCALATED",
+      targetId: req.params.ticketId,
+      metadata: { fromPanelId: ticket.panelId, toPanelId: newPanelId, reason },
     });
 
     res.json(updated);
@@ -902,7 +889,7 @@ router.post("/application/submit", async (req, res, next) => {
         error: r.error,
         ...(r.code && { code: r.code }),
         ...(r.remainingSeconds != null && { remainingSeconds: r.remainingSeconds }),
-      });
+    });
     }
     // Формата на отговора остава каквато ботът вече чака (`application`), плюс
     // `pingRoleIds` — същото като по уеб пътя.
@@ -995,7 +982,7 @@ router.get("/panel/:panelId", async (req, res, next) => {
         // Редът, избран от потребителя при публикуване (groupOrder); createdAt
         // е само резервен за заварени групи отпреди полето.
         orderBy: [{ groupOrder: "asc" }, { createdAt: "asc" }],
-      });
+    });
       // Същият сървър (messageId е уникален за канал, каналът — за една гилдия)
       // → същият план. Санитизираме само при ЗНАЕН план (виж по-горе защо).
       if (siblings.length > 1) {
@@ -1173,15 +1160,13 @@ router.post("/application/:appId/review", async (req, res, next) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: reviewerId || null,
-        actorTag: reviewerTag || "BOT",
-        serverId: application.serverId,
-        action: `APPLICATION_${statusMap[action]}`,
-        targetId: application.id,
-        metadata: { note: note || null, via: "discord_button" },
-      },
+    await writeAudit({
+      actorId: reviewerId || null,
+      actorTag: reviewerTag || "BOT",
+      serverId: application.serverId,
+      action: `APPLICATION_${statusMap[action]}`,
+      targetId: application.id,
+      metadata: { note: note || null, via: "discord_button" },
     });
 
     // Grant/remove roles + DM the applicant. The Discord-button path previously
@@ -1240,7 +1225,7 @@ router.post("/application/:appId/review", async (req, res, next) => {
           note: note || null,
           transcript,
         }).catch((e) => console.warn("[bot review] transcript post failed:", e.message));
-      });
+    });
     }
 
     res.json(updated);
@@ -1274,7 +1259,7 @@ router.patch("/ticket-message/:messageId", async (req, res, next) => {
       const updated = await prisma.ticketMessage.update({
         where: { id: existing.id },
         data: { deletedAt: existing.deletedAt || new Date() },
-      });
+    });
       return res.json({ ok: true, id: updated.id });
     }
 
@@ -1366,7 +1351,7 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
         alreadyExists: true,
         channelId: existingTicket.channelId,
         ticketId: existingTicket.id,
-      });
+    });
     }
 
     const transcript = buildTranscript(app.form.questions, app.answers);
@@ -1388,7 +1373,7 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
     if (!botResult?.ok || !botResult?.channelId) {
       return res.status(502).json({
         error: botResult?.error || "Bot failed to create discussion channel",
-      });
+    });
     }
 
     const ticket = await prisma.ticket.create({
@@ -1401,16 +1386,15 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: reviewerId,
-        actorTag: reviewerTag || "BOT",
-        serverId,
-        action: "APPLICATION_DISCUSSION_STARTED",
-        targetId: app.id,
-        metadata: { channelId: botResult.channelId, ticketId: ticket.id, via: "discord_button" },
-      },
-    }).catch(() => {});
+    // writeAudit сам не хвърля — .catch() вече е излишен.
+    await writeAudit({
+      actorId: reviewerId,
+      actorTag: reviewerTag || "BOT",
+      serverId,
+      action: "APPLICATION_DISCUSSION_STARTED",
+      targetId: app.id,
+      metadata: { channelId: botResult.channelId, ticketId: ticket.id, via: "discord_button" },
+    });
 
     res.json({ ok: true, channelId: botResult.channelId, ticketId: ticket.id });
   } catch (err) {
