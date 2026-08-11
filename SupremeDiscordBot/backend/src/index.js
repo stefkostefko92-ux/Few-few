@@ -28,6 +28,23 @@ if (process.env.NODE_ENV === "production" && /:\d+\/?$/.test(process.env.FRONTEN
     "Задай FRONTEND_URL=https://supremebot.carbonstealth.eu (без порт) и рестартирай."
   );
 }
+
+// NODE_ENV не е в REQUIRED_ENV (dev легитимно върви без него), но cookie.secure,
+// HSTS и morgan форматът зависят от NODE_ENV === "production". Забравен NODE_ENV
+// при жив публичен https деплой тихо изключва Secure-cookie и HSTS — сесийната
+// cookie тръгва по чист HTTP. Ако видим признаци на продукция (публичен https
+// FRONTEND_URL без порт, не localhost), а NODE_ENV не е production → крещим.
+{
+  const fe = process.env.FRONTEND_URL || "";
+  const looksProd = /^https:\/\//.test(fe) && !/localhost|127\.0\.0\.1/.test(fe) && !/:\d+\/?$/.test(fe);
+  if (looksProd && process.env.NODE_ENV !== "production") {
+    console.error(
+      `⚠️  NODE_ENV=${process.env.NODE_ENV || "(unset)"} при публичен FRONTEND_URL (${fe}). ` +
+      "Secure-cookie и HSTS се задействат САМО при NODE_ENV=production — иначе " +
+      "сесийната cookie пътува без Secure флаг. Задай NODE_ENV=production и рестартирай."
+    );
+  }
+}
 // Optional — AI replies work without this but require it for the platform-level key
 if (!process.env.GEMINI_API_KEY) console.warn("⚠️  GEMINI_API_KEY not set — AI auto-replies will be disabled unless servers provide their own key");
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);

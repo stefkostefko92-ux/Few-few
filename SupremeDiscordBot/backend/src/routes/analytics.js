@@ -293,8 +293,16 @@ router.get("/:serverId/timeseries", requireServerAdmin, async (req, res, next) =
   try {
     const { from, to, metric } = req.query;
     const where = { serverId: req.params.serverId };
-    if (from) where.date = { ...where.date, gte: new Date(String(from)) };
-    if (to)   where.date = { ...where.date, lte: new Date(String(to)) };
+    // Невалидна дата от query (`from=глупост`) ставаше Invalid Date → Prisma
+    // хвърля → 500. Игнорираме неразпознатата граница, вместо да сриваме.
+    const parseDate = (v) => {
+      const d = new Date(String(v));
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+    const fromD = from ? parseDate(from) : null;
+    const toD = to ? parseDate(to) : null;
+    if (fromD) where.date = { ...where.date, gte: fromD };
+    if (toD)   where.date = { ...where.date, lte: toD };
 
     const metrics = await prisma.dailyMetric.findMany({
       where,

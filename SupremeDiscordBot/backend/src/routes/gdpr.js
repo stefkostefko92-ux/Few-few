@@ -37,10 +37,32 @@ router.get("/export", async (req, res, next) => {
         },
         select: { id: true, name: true, icon: true, isPremium: true, createdAt: true },
       }).catch(() => []),
-      prisma.ticket.findMany({ where: { creatorId: userId } }),
+      // Чл. 15(4): копието не бива да засяга правата на другите. Пълният запис
+      // носи `archiveHtml` (транскрипт с ЧУЖДИ съобщения — staff и др.) и
+      // `archiveToken` (таен ключ към публичния архив). И двете се изключват —
+      // allowlist на собствените данни на субекта, не denylist. Одит 11.08.2026.
+      prisma.ticket.findMany({
+        where: { creatorId: userId },
+        select: {
+          id: true, serverId: true, panelId: true, status: true, priority: true,
+          firstResponseAt: true, slaBreachedAt: true, slaResolutionBreachedAt: true,
+          channelId: true, applicationId: true, archiveUrl: true, closedAt: true,
+          closeReason: true, number: true, reopenedAt: true, reopenCount: true,
+          renamedFrom: true, feedbackRating: true, feedbackComment: true, feedbackAt: true,
+          lastActivityAt: true, inactivityNotifiedAt: true, createdAt: true, updatedAt: true,
+          creatorId: true, assigneeId: true,
+        },
+      }),
       prisma.ticketMessage.findMany({ where: { authorId: userId } }),
       prisma.application.findMany({ where: { userId } }),
-      prisma.auditLog.findMany({ where: { actorId: userId }, take: 1000, orderBy: { createdAt: "desc" } }),
+      // Чл. 15(1): субектът е лично данно и когато е ОБЕКТ на действие (напр.
+      // блокиране/изтриване от админ), не само когато е автор. Само actorId
+      // пропускаше именно записите ЗА него.
+      prisma.auditLog.findMany({
+        where: { OR: [{ actorId: userId }, { targetId: userId }] },
+        take: 1000,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.apiKey.findMany({
         where: { userId },
         select: { id: true, name: true, scopes: true, createdAt: true, lastUsedAt: true, revokedAt: true },
@@ -82,6 +104,9 @@ router.get("/export", async (req, res, next) => {
           // OAuth scope `email` беше пропуснат.
           email: user.email,
           globalRole: user.globalRole,
+          // Блокирането е факт, който обработваме ЗА субекта → чл. 15(1) иска
+          // да е видим в експорта.
+          isBlacklisted: user.isBlacklisted,
           language: user.language,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
@@ -196,6 +221,16 @@ router.post("/delete-account", async (req, res, next) => {
           // accessToken/refreshToken живеят в Session и падат на следващата стъпка.
         },
       });
+
+      // 1b. Псевдонимизирай денормализирания подпис в тикет-съобщенията.
+      // `authorTag` пази „User#1234" като СТРИНГ — пряко идентифициращо, което
+      // преживяваше анонимизацията (чл. 17 дефект). Съдържанието се пази
+      // (референтна цялост към чуждите тикети), но подписът се сверява с
+      // анонимизираното име.
+      await tx.ticketMessage.updateMany({
+        where: { authorId: userId },
+        data: { authorTag: `[deleted-user-${userId.slice(-6)}]` },
+      }).catch(() => {});
 
       // 2. Delete all sessions (revokes OAuth tokens — they're stored here)
       await tx.session.deleteMany({ where: { userId } }).catch(() => {});
