@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users } from "lucide-react";
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users, History } from "lucide-react";
 import { getApplications, getApplication, reviewApplication, deleteApplication, openApplicationDiscussion } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -281,6 +281,55 @@ export default function ApplicationsPage() {
                             </p>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* История на кандидата — предишните му кандидатури в ТОЗИ
+                        сървър. Ревюващият съди с контекст („вече отказван два
+                        пъти"), вместо всяка кандидатура да изглежда първа. */}
+                    {fullApp?.history?.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-white/5">
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <h3 className="text-sm font-semibold text-cs-text flex items-center gap-2">
+                            <History className="w-4 h-4 text-cs-cyan" aria-hidden="true" />
+                            {t("apps.history.title")}
+                          </h3>
+                          <span className="text-xs text-cs-muted">
+                            {t("apps.history.summary", {
+                              total: fullApp.historyMeta?.total ?? fullApp.history.length,
+                              approved: fullApp.historyMeta?.counts?.APPROVED ?? 0,
+                              denied: fullApp.historyMeta?.counts?.DENIED ?? 0,
+                            })}
+                          </span>
+                        </div>
+                        <ul className="space-y-2">
+                          {fullApp.history.map((h) => (
+                            <li key={h.id} className="bg-cs-bg rounded-lg p-3 flex flex-wrap items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {/* Суров статус — точно както го рендерира
+                                      списъкът по-горе (един изказ, едно място). */}
+                                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-xl ${STATUS_COLORS[h.status] || STATUS_COLORS.INTERVIEW}`}>
+                                    {h.status}
+                                  </span>
+                                  <span className="text-sm text-cs-text truncate">{h.form?.name || "—"}</span>
+                                </div>
+                                {h.reviewNote && (
+                                  <p className="text-xs text-cs-muted mt-1 whitespace-pre-wrap line-clamp-3">
+                                    {h.reviewNote}
+                                  </p>
+                                )}
+                              </div>
+                              <time className="text-xs text-cs-dim font-mono whitespace-nowrap"
+                                    dateTime={h.createdAt}>
+                                {new Date(h.createdAt).toLocaleDateString()}
+                              </time>
+                            </li>
+                          ))}
+                        </ul>
+                        {fullApp.historyMeta?.truncated && (
+                          <p className="text-xs text-cs-dim mt-2">{t("apps.history.truncated")}</p>
+                        )}
                       </div>
                     )}
 
