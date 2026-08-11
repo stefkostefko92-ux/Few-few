@@ -368,21 +368,28 @@ app.post("/internal/reaction-role-update", async (req, res) => {
 
     await msg.edit({ embeds: [buildReactionRoleEmbed(rrm)] });
 
-    // Синхронизирай реакциите: добави липсващите, махни вече несъществуващите.
-    const wanted = new Set(rrm.pairs.map((p) => p.emoji));
-    for (const p of rrm.pairs) {
-      const existing = msg.reactions.cache.find((r) => emojiKey(r.emoji) === p.emoji);
-      if (!existing) await msg.react(p.emoji).catch(() => {});
-    }
-    for (const r of msg.reactions.cache.values()) {
-      if (!wanted.has(emojiKey(r.emoji))) {
-        // Маха реакцията за ВСИЧКИ (изисква Manage Messages) — best-effort.
-        await r.remove().catch(() => {});
-      }
-    }
-
-    clearRrmCache(rrm.messageId);
+    // Отговори ВЕДНАГА след edit-а — до 20 react/remove последователно могат
+    // да надхвърлят timeout-а на notifyBot (същата находка като при spawn,
+    // виж по-горе). Реакциите се синхронизират след отговора (best-effort).
     res.json({ ok: true });
+
+    (async () => {
+      // Синхронизирай реакциите: добави липсващите, махни несъществуващите.
+      const wanted = new Set(rrm.pairs.map((p) => p.emoji));
+      for (const p of rrm.pairs) {
+        const existing = msg.reactions.cache.find((r) => emojiKey(r.emoji) === p.emoji);
+        if (!existing) await msg.react(p.emoji).catch((err) =>
+          console.warn(`[ReactionRoles] react ${p.emoji} failed: ${err?.message}`)
+        );
+      }
+      for (const r of msg.reactions.cache.values()) {
+        if (!wanted.has(emojiKey(r.emoji))) {
+          // Маха реакцията за ВСИЧКИ (изисква Manage Messages) — best-effort.
+          await r.remove().catch(() => {});
+        }
+      }
+      clearRrmCache(rrm.messageId);
+    })().catch(() => {});
   } catch (err) {
     console.error("reaction-role-update error:", err?.message);
     res.status(500).json({ error: err?.message });

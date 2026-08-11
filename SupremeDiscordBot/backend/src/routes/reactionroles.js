@@ -114,12 +114,17 @@ router.put("/:serverId/:id", requireServerAdmin, async (req, res, next) => {
     });
 
     // Ако вече е публикувано в Discord — обнови embed-а и реакциите на живо.
+    // Тих провал = „Запазено" в таблото + СТАРО съобщение в Discord (лъжещ
+    // успех). Записът е валиден, затова не грешка, а botWarning.
+    let botWarning = null;
     if (rrm.channelId && rrm.messageId) {
-      notifyBot("REACTION_ROLE_UPDATE", { rrmId: rrm.id, serverId: req.params.serverId })
-        .catch(() => {});
+      const r = await notifyBotVerbose("REACTION_ROLE_UPDATE", { rrmId: rrm.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(rrm);
+    res.json(botWarning ? { ...rrm, botWarning } : rrm);
   } catch (err) {
     next(err);
   }

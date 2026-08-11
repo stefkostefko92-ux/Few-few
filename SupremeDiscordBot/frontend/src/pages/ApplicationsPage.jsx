@@ -8,6 +8,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 
 const STATUS_COLORS = {
   PENDING: "text-warning bg-warning/10",
@@ -54,12 +55,16 @@ export default function ApplicationsPage() {
     },
   });
 
+  // Тих провал при изтриване = потвърждаваш, нищо не изчезва, никой не казва
+  // защо (клас „лъжеща грешка", одит 10.08.2026).
+  const toast = useToast();
   const deleteMut = useMutation({
     mutationFn: (appId) => deleteApplication(serverId, appId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["applications", serverId] });
       setExpanded(null);
     },
+    onError: (err) => toast.error(err?.response?.data?.error || t("auto.actionFailed")),
   });
 
   const discussMut = useMutation({

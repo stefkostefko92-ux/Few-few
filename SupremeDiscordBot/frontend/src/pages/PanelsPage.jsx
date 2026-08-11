@@ -150,10 +150,13 @@ export default function PanelsPage() {
 
   const updateMut = useMutation({
     mutationFn: ({ panelId, data }) => updatePanel(serverId, panelId, data),
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["panels", serverId] });
       setEditing(null);
-      toast.success("Panel updated.");
+      // botWarning = записът мина, но живото Discord съобщение НЕ се обнови —
+      // казваме го честно, вместо да рапортуваме пълен успех (лъжещ успех).
+      if (data?.botWarning) toast.error(data.botWarning);
+      else toast.success("Panel updated.");
     },
     onError: (err) => toast.error(mutErrorMsg(err, t("panels.updateFailed"))),
   });

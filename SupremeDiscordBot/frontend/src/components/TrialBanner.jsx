@@ -48,6 +48,8 @@ export default function TrialBanner() {
       // (Дизайнера, 07.08.2026)
       qc.invalidateQueries({ queryKey: ["servers"] });
     },
+    // Тих провал = „Start free trial" изщракваше и нищо (клас „лъжеща грешка").
+    onError: (err) => setCancelError(err?.response?.data?.error || t("auto.actionFailed")),
   });
 
   const cancelMut = useMutation({
@@ -102,6 +104,9 @@ export default function TrialBanner() {
             </button>
           </div>
         </div>
+        {cancelError && (
+          <p role="alert" className="max-w-7xl mx-auto mt-2 text-xs text-danger">{cancelError}</p>
+        )}
       </div>
     );
   }

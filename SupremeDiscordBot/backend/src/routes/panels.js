@@ -206,12 +206,18 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
       include: { buttons: true },
     });
 
-    // If panel is already spawned in Discord, push live update via bot
+    // If panel is already spawned in Discord, push live update via bot.
+    // Тих провал тук значи „Запазено" в таблото + СТАР панел в Discord —
+    // лъжещ успех. Записът е валиден, затова не връщаме грешка, а botWarning.
+    let botWarning = null;
     if (panel.messageId && panel.channelId) {
-      await notifyBot("PANEL_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      const r = await notifyBotVerbose("PANEL_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(panel);
+    res.json(botWarning ? { ...panel, botWarning } : panel);
   } catch (err) {
     next(err);
   }

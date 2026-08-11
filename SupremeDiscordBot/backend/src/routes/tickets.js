@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
-import { notifyBot, sendTicketReply } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";
 import { requirePremium } from "../lib/premium.js";
 import { ensureArchiveToken, tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
 
@@ -168,14 +168,19 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
       },
     });
 
-    // Tell bot to close Discord channel/thread and post archive link
-    await notifyBot("TICKET_CLOSE", {
+    // Tell bot to close Discord channel/thread and post archive link.
+    // Тих провал = „затворен" тикет в базата + ОТВОРЕН канал в Discord
+    // (лъжещ успех). Записът е валиден, затова не грешка, а botWarning.
+    const closeResult = await notifyBotVerbose("TICKET_CLOSE", {
       ticketId: ticket.id,
       serverId: req.params.serverId,
       channelId: ticket.channelId,
       archiveUrl,
       reason,
     });
+    const botWarning = closeResult?.botError
+      ? `Ticket closed, but the Discord channel was not: ${String(closeResult.botError).slice(0, 300)}`
+      : null;
 
     await prisma.auditLog.create({
       data: {
@@ -198,7 +203,7 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
       closedBy: req.user.id,
     }).catch(() => {});
 
-    res.json(updated);
+    res.json(botWarning ? { ...updated, botWarning } : updated);
   } catch (err) {
     next(err);
   }
@@ -218,14 +223,17 @@ router.post("/:serverId/:ticketId/claim", requireServerAdmin, requirePremium("ti
       data: { assigneeId: req.user.id, status: "CLAIMED" },
     });
 
-    await notifyBot("TICKET_CLAIMED", {
+    const claimResult = await notifyBotVerbose("TICKET_CLAIMED", {
       ticketId: ticket.id,
       serverId: req.params.serverId,
       channelId: ticket.channelId,
       claimerId: req.user.id,
     });
+    const botWarning = claimResult?.botError
+      ? `Claimed, but Discord was not notified: ${String(claimResult.botError).slice(0, 300)}`
+      : null;
 
-    res.json(ticket);
+    res.json(botWarning ? { ...ticket, botWarning } : ticket);
   } catch (err) {
     next(err);
   }

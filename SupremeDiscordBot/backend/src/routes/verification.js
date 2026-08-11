@@ -223,13 +223,17 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
       data: parsed.data,
     });
 
-    // Live-update spawned message if it exists
+    // Live-update spawned message if it exists.
+    // Тих провал = „Запазено" в таблото + СТАР панел в Discord (лъжещ успех).
+    let botWarning = null;
     if (panel.channelId && panel.messageId) {
-      notifyBot("VERIFICATION_UPDATE", { panelId: panel.id, serverId: req.params.serverId })
-        .catch(() => {});
+      const r = await notifyBotVerbose("VERIFICATION_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(panel);
+    res.json(botWarning ? { ...panel, botWarning } : panel);
   } catch (err) { next(err); }
 });
 

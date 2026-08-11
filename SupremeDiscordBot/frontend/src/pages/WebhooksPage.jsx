@@ -10,6 +10,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 
 const defaultForm = () => ({
   name: "",
@@ -39,17 +40,25 @@ export default function WebhooksPage() {
   });
   const ALL_EVENTS = eventsData?.events || [];
 
+  // Провалите потъваха безследно (нямаше onError) — модалът се затваряше или
+  // висеше без обяснение (класът „лъжеща грешка", одит 10.08.2026). Формените
+  // мутации показват грешката В модала (formError), delete — като toast.
+  const toast = useToast();
+  const mutErr = (err) => err?.response?.data?.error || t("auto.actionFailed");
   const createMut = useMutation({
     mutationFn: (data) => createWebhook(serverId, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); },
+    onError: (err) => setFormError(mutErr(err)),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => updateWebhook(serverId, id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); },
+    onError: (err) => setFormError(mutErr(err)),
   });
   const deleteMut = useMutation({
     mutationFn: (id) => deleteWebhook(serverId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks", serverId] }),
+    onError: (err) => toast.error(mutErr(err)),
   });
 
   const openNew = () => { setForm(defaultForm()); setFormError(null); setEditing("new"); };
