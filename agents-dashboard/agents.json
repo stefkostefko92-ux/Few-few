@@ -1107,7 +1107,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 347
+        "lessons": 349
       },
       "evolution": [
         {
@@ -1841,9 +1841,20 @@
           "date": "2026-08-11",
           "event": "v23.9 — учене",
           "detail": "Научи: Променлива, декларирана с const/let вътре в try, НЕ е достъпна в catch блока; в async E… (+3 още)"
+        },
+        {
+          "version": "24.1.0",
+          "date": "2026-08-11",
+          "event": "v24.1 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ е ГЕЙТ, не проза: `dod-check.mjs` на SubagentStop спира отговор б… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-11",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ е ГЕЙТ, не проза: `dod-check.mjs` на SubagentStop спира отговор б…\" (+1 още)"
+        },
         {
           "date": "2026-08-11",
           "type": "learning",
