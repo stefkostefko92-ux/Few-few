@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Key, Plus, Trash2, Copy, Eye, CheckCircle2, AlertTriangle } from "lucide-react";
 import { getApiKeys, createApiKey, revokeApiKey, getApiScopes } from "../api";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 
@@ -21,6 +22,10 @@ export default function ApiKeysPage() {
   const { data: keys = [], isLoading } = useQuery({ queryKey: ["apikeys", serverId], queryFn: () => getApiKeys(serverId) });
   const { data: scopes } = useQuery({ queryKey: ["apikey-scopes"], queryFn: getApiScopes });
 
+  // Провалите потъваха безследно (нямаше onError) — бутонът „изщракваше" и
+  // нищо не се случваше (класът „лъжеща грешка", одит 10.08.2026).
+  const toast = useToast();
+  const mutErr = (err) => err?.response?.data?.error || t("auto.actionFailed");
   const createM = useMutation({
     mutationFn: (data) => createApiKey(serverId, data),
     onSuccess: (result) => {
@@ -29,6 +34,7 @@ export default function ApiKeysPage() {
       setCreating(false);
       setForm({ name: "", scopes: [], expiresInDays: "" });
     },
+    onError: (err) => toast.error(mutErr(err)),
   });
 
   const revokeM = useMutation({
@@ -37,6 +43,7 @@ export default function ApiKeysPage() {
       qc.invalidateQueries({ queryKey: ["apikeys", serverId] });
       setConfirmRevoke(null);
     },
+    onError: (err) => { setConfirmRevoke(null); toast.error(mutErr(err)); },
   });
 
   const toggleScope = (scope) => {

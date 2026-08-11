@@ -14,6 +14,10 @@ import api, {
 } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { useToast } from "../contexts/ToastContext";
+
+// Админ конзолата е EN-only (изключена от i18n) — суров сървърен текст + резерва.
+const adminErr = (err) => err?.response?.data?.error || "Action failed. Please try again.";
 
 const TABS = [
   { id: "analytics", label: "Analytics", icon: BarChart2 },
@@ -456,17 +460,20 @@ function UsersTab() {
 
 function UserDetailModal({ userId, onClose }) {
   const qc = useQueryClient();
+  const toast = useToast();
   const { data: user, isLoading } = useQuery({
     queryKey: ["adminUser", userId],
     queryFn: () => getAdminUser(userId),
   });
 
+  // Тих провал = смяната „изщраква" и нищо (клас „лъжеща грешка").
   const setRole = useMutation({
     mutationFn: ({ role }) => updateUserRole(userId, role),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["adminUsers"] });
       qc.invalidateQueries({ queryKey: ["adminUser", userId] });
     },
+    onError: (err) => toast.error(adminErr(err)),
   });
 
   const setBlacklist = useMutation({
@@ -475,6 +482,7 @@ function UserDetailModal({ userId, onClose }) {
       qc.invalidateQueries({ queryKey: ["adminUsers"] });
       qc.invalidateQueries({ queryKey: ["adminUser", userId] });
     },
+    onError: (err) => toast.error(adminErr(err)),
   });
 
   return (
@@ -856,6 +864,7 @@ function BroadcastModal({ server, onClose }) {
 
 function PaymentsTab() {
   const qc = useQueryClient();
+  const toast = useToast();
   const [confirmDelete, setConfirmDelete] = useState(null);
   const { data, isLoading } = useQuery({ queryKey: ["payments"], queryFn: () => getPayments({ limit: 100 }) });
 
@@ -865,6 +874,8 @@ function PaymentsTab() {
       qc.invalidateQueries({ queryKey: ["payments"] });
       setConfirmDelete(null);
     },
+    // Тих провал = потвърждаваш изтриване, записът си стои (клас „лъжеща грешка").
+    onError: (err) => { setConfirmDelete(null); toast.error(adminErr(err)); },
   });
 
   const payments = data?.payments || [];

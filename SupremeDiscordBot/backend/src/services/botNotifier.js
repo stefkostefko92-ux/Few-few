@@ -53,6 +53,30 @@ export async function notifyBot(event, data) {
  * @param {string} userId Discord user ID (снежинка)
  * @param {object} embed  Discord embed обект (title/description/color/fields…)
  */
+/**
+ * Като notifyBot, но при провал връща { botError } вместо null — за маршрутите,
+ * които показват причината на човека. „Bot is offline" при жив бот (одит
+ * 09.08.2026: групово публикуване) беше точно това смачкване: ботът казваше
+ * „Channel X not found" / „Invalid emoji", backend-ът връщаше null, UI лъжеше.
+ */
+export async function notifyBotVerbose(event, data) {
+  const BOT_API_URL = process.env.BOT_API_URL || "http://bot:3001";
+  const API_SECRET = process.env.API_SECRET;
+  if (!API_SECRET) return { botError: "API_SECRET not set" };
+  try {
+    const res = await axios.post(
+      `${BOT_API_URL}/internal/${event.toLowerCase().replace(/_/g, "-")}`,
+      data,
+      { headers: { "x-bot-secret": API_SECRET }, timeout: 15000 },
+    );
+    return res.data;
+  } catch (err) {
+    const reason = err?.response?.data?.error || err?.message || "bot unreachable";
+    console.error(`notifyBotVerbose [${event}]:`, reason);
+    return { botError: reason };
+  }
+}
+
 export async function dmUser(userId, embed) {
   if (!userId || !embed) return { ok: false, reason: "missing_userId_or_embed" };
   return notifyBot("DM_USER", { userId, embed });

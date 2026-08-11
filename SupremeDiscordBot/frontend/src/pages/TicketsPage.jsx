@@ -68,11 +68,16 @@ export default function TicketsPage() {
 
   const closeMut = useMutation({
     mutationFn: ({ ticketId, reason }) => closeTicket(serverId, ticketId, reason),
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["tickets", serverId] });
       setClosingId(null);
       setCloseReason("");
+      // botWarning = тикетът е затворен в базата, но Discord каналът НЕ —
+      // казваме го честно, вместо да рапортуваме пълен успех (лъжещ успех).
+      if (data?.botWarning) toast.error(data.botWarning);
     },
+    // Провалът потъваше безследно — модалът си стоеше отворен без обяснение.
+    onError: (err) => toast.error(err?.response?.data?.error || t("auto.actionFailed")),
   });
 
   const [claimError, setClaimError] = useState(null);

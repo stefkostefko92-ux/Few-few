@@ -3,7 +3,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { z } from "zod";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
@@ -206,12 +206,18 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
       include: { buttons: true },
     });
 
-    // If panel is already spawned in Discord, push live update via bot
+    // If panel is already spawned in Discord, push live update via bot.
+    // Тих провал тук значи „Запазено" в таблото + СТАР панел в Discord —
+    // лъжещ успех. Записът е валиден, затова не връщаме грешка, а botWarning.
+    let botWarning = null;
     if (panel.messageId && panel.channelId) {
-      await notifyBot("PANEL_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      const r = await notifyBotVerbose("PANEL_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(panel);
+    res.json(botWarning ? { ...panel, botWarning } : panel);
   } catch (err) {
     next(err);
   }
@@ -238,14 +244,18 @@ router.post("/:serverId/:panelId/spawn", requireServerAdmin, async (req, res, ne
 
   try {
     if (!(await panelBelongsToServer(req))) return res.status(404).json({ error: "Panel not found" });
-    const result = await notifyBot("PANEL_SPAWN", {
+    const result = await notifyBotVerbose("PANEL_SPAWN", {
       panelId: req.params.panelId,
       serverId: req.params.serverId,
       channelId,
     });
 
     if (!result?.channelId) {
-      return res.status(502).json({ error: "Bot is offline or failed to spawn the panel. Try again shortly." });
+      return res.status(502).json({
+        error: result?.botError
+          ? `The bot could not post the panel: ${String(result.botError).slice(0, 300)}`
+          : "Bot is offline or failed to spawn the panel. Try again shortly.",
+      });
     }
 
     await prisma.panel.update({
@@ -293,14 +303,18 @@ router.post("/:serverId/spawn-group", requireServerAdmin, async (req, res, next)
     // Пази реда, който потребителят е избрал (findMany не го гарантира).
     const ordered = panelIds.map((id) => panels.find((p) => p.id === id));
 
-    const result = await notifyBot("MULTI_PANEL_SPAWN", {
+    const result = await notifyBotVerbose("MULTI_PANEL_SPAWN", {
       panels: ordered,
       serverId: req.params.serverId,
       channelId,
       mode,
     });
     if (!result?.messageId) {
-      return res.status(502).json({ error: "Bot is offline or failed to post the panels. Try again shortly." });
+      return res.status(502).json({
+        error: result?.botError
+          ? `The bot could not post the panels: ${String(result.botError).slice(0, 300)}`
+          : "Bot is offline or failed to post the panels. Try again shortly.",
+      });
     }
 
     // Записваме позицията, за да е стабилен редът при по-късна редакция

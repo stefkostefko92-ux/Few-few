@@ -8,11 +8,13 @@ import { Globe, Check, ChevronDown } from "lucide-react";
 import { updateMe } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 import { LANGUAGE_OPTIONS } from "../i18n/dashboard";
 
 export default function LanguageSwitcher({ compact = false }) {
   const { user, setUser } = useAuth();
   const { t } = useT();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
   const current = LANGUAGE_OPTIONS.find((l) => l.code === user?.language) || LANGUAGE_OPTIONS[0];
@@ -25,6 +27,9 @@ export default function LanguageSwitcher({ compact = false }) {
       setUser((u) => (u ? { ...u, language: code } : u));
       setOpen(false);
     },
+    // Тих провал = кликаш език, менюто се затваря, езикът не мърда и никой
+    // не казва защо (клас „лъжеща грешка", одит 10.08.2026).
+    onError: (err) => toast.error(err?.response?.data?.error || t("auto.actionFailed")),
   });
 
   useEffect(() => {

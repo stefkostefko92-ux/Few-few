@@ -7,7 +7,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { requirePremium, getServerTier, BASE_LIMITS, PREMIUM_LIMITS } from "../lib/premium.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
@@ -62,7 +62,7 @@ router.post("/:serverId/polls", requireServerAdmin, async (req, res, next) => {
       },
     });
 
-    const result = await notifyBot("POLL_SPAWN", {
+    const result = await notifyBotVerbose("POLL_SPAWN", {
       serverId: req.params.serverId,
       channelId,
       poll,
@@ -70,8 +70,12 @@ router.post("/:serverId/polls", requireServerAdmin, async (req, res, next) => {
 
     if (!result?.messageId) {
       await prisma.poll.delete({ where: { id: poll.id } }).catch(() => {});
+      // Истинската причина от бота, не измислена диагноза („Bot is offline"
+      // при жив бот подвежда — класът „лъжеща грешка", одит 10.08.2026).
       return res.status(502).json({
-        error: "Bot is offline or failed to post the poll. Check the channel ID and that the bot can write there.",
+        error: result?.botError
+          ? `The bot could not post the poll: ${String(result.botError).slice(0, 300)}`
+          : "Bot is offline or failed to post the poll. Check the channel ID and that the bot can write there.",
       });
     }
 
@@ -156,7 +160,7 @@ router.post("/:serverId/giveaways", requireServerAdmin, async (req, res, next) =
       },
     });
 
-    const result = await notifyBot("GIVEAWAY_SPAWN", {
+    const result = await notifyBotVerbose("GIVEAWAY_SPAWN", {
       serverId: req.params.serverId,
       channelId,
       giveaway,
@@ -165,7 +169,9 @@ router.post("/:serverId/giveaways", requireServerAdmin, async (req, res, next) =
     if (!result?.messageId) {
       await prisma.giveaway.delete({ where: { id: giveaway.id } }).catch(() => {});
       return res.status(502).json({
-        error: "Bot is offline or failed to post the giveaway. Check the channel ID and that the bot can write there.",
+        error: result?.botError
+          ? `The bot could not post the giveaway: ${String(result.botError).slice(0, 300)}`
+          : "Bot is offline or failed to post the giveaway. Check the channel ID and that the bot can write there.",
       });
     }
 

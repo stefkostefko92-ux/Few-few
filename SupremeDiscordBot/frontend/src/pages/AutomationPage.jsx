@@ -760,7 +760,11 @@ function ReactionRolesTab() {
   });
   const updateM = useMutation({
     mutationFn: ({ id, data }) => updateReactionRole(serverId, id, data),
-    onSuccess: () => { invalidate(); setEditing(null); },
+    onSuccess: (data) => {
+      invalidate(); setEditing(null);
+      // botWarning = записът мина, но живото Discord съобщение НЕ се обнови.
+      if (data?.botWarning) setActionError(data.botWarning);
+    },
     onError: (err) => setActionError(errMsg(err, t("auto.rr.updateFailed"))),
   });
   const deleteM = useMutation({

@@ -6,7 +6,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
@@ -223,13 +223,17 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
       data: parsed.data,
     });
 
-    // Live-update spawned message if it exists
+    // Live-update spawned message if it exists.
+    // Тих провал = „Запазено" в таблото + СТАР панел в Discord (лъжещ успех).
+    let botWarning = null;
     if (panel.channelId && panel.messageId) {
-      notifyBot("VERIFICATION_UPDATE", { panelId: panel.id, serverId: req.params.serverId })
-        .catch(() => {});
+      const r = await notifyBotVerbose("VERIFICATION_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(panel);
+    res.json(botWarning ? { ...panel, botWarning } : panel);
   } catch (err) { next(err); }
 });
 
@@ -266,14 +270,20 @@ router.post("/:serverId/:panelId/spawn", requireServerAdmin, async (req, res, ne
     });
     if (!owned) return res.status(404).json({ error: "Verification panel not found", code: "NOT_FOUND" });
 
-    const result = await notifyBot("VERIFICATION_SPAWN", {
+    const result = await notifyBotVerbose("VERIFICATION_SPAWN", {
       panelId: req.params.panelId,
       serverId: req.params.serverId,
       channelId,
     });
 
-    if (!result) return res.status(502).json({ error: "Bot did not respond" });
-    if (result.error) return res.status(400).json({ error: result.error });
+    // Истинската причина от бота, не измислена диагноза (клас „лъжеща грешка").
+    if (result?.botError) {
+      return res.status(502).json({
+        error: `The bot could not post the panel: ${String(result.botError).slice(0, 300)}`,
+      });
+    }
+    if (result?.error) return res.status(400).json({ error: result.error });
+    if (!result?.messageId) return res.status(502).json({ error: "Bot did not respond" });
 
     await prisma.verificationPanel.update({
       where: { id: req.params.panelId },

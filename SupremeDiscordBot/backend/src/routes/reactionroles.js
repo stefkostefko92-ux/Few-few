@@ -7,7 +7,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
 const router = Router();
@@ -114,12 +114,17 @@ router.put("/:serverId/:id", requireServerAdmin, async (req, res, next) => {
     });
 
     // Ако вече е публикувано в Discord — обнови embed-а и реакциите на живо.
+    // Тих провал = „Запазено" в таблото + СТАРО съобщение в Discord (лъжещ
+    // успех). Записът е валиден, затова не грешка, а botWarning.
+    let botWarning = null;
     if (rrm.channelId && rrm.messageId) {
-      notifyBot("REACTION_ROLE_UPDATE", { rrmId: rrm.id, serverId: req.params.serverId })
-        .catch(() => {});
+      const r = await notifyBotVerbose("REACTION_ROLE_UPDATE", { rrmId: rrm.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(rrm);
+    res.json(botWarning ? { ...rrm, botWarning } : rrm);
   } catch (err) {
     next(err);
   }
@@ -168,15 +173,18 @@ router.post("/:serverId/:id/spawn", requireServerAdmin, async (req, res, next) =
     });
     if (!owned) return res.status(404).json({ error: "Reaction role message not found", code: "NOT_FOUND" });
 
-    const result = await notifyBot("REACTION_ROLE_SPAWN", {
+    const result = await notifyBotVerbose("REACTION_ROLE_SPAWN", {
       rrmId: req.params.id,
       serverId: req.params.serverId,
       channelId: parsed.data.channelId,
     });
 
     if (!result?.messageId) {
+      // Истинската причина от бота, не измислена диагноза (клас „лъжеща грешка").
       return res.status(502).json({
-        error: "Bot is offline or failed to post the message. Check the channel ID and that the bot can write there.",
+        error: result?.botError
+          ? `The bot could not post the message: ${String(result.botError).slice(0, 300)}`
+          : "Bot is offline or failed to post the message. Check the channel ID and that the bot can write there.",
       });
     }
 

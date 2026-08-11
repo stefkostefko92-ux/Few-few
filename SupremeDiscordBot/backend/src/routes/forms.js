@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import { z } from "zod";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
 // ─── Premium field map ──────────────────────────────────────────────────────
@@ -286,7 +286,7 @@ router.post("/:serverId/:formId/spawn", requireServerAdmin, async (req, res, nex
       });
     }
 
-    const result = await notifyBot("FORM_SPAWN", {
+    const result = await notifyBotVerbose("FORM_SPAWN", {
       serverId: req.params.serverId,
       formId: form.id,
       channelId: parsed.data.channelId,
@@ -296,8 +296,11 @@ router.post("/:serverId/:formId/spawn", requireServerAdmin, async (req, res, nex
     });
 
     if (!result?.messageId) {
+      // Истинската причина от бота, не измислена диагноза (клас „лъжеща грешка").
       return res.status(502).json({
-        error: "Bot is offline or failed to post the form. Check the channel ID and that the bot can write there.",
+        error: result?.botError
+          ? `The bot could not post the form: ${String(result.botError).slice(0, 300)}`
+          : "Bot is offline or failed to post the form. Check the channel ID and that the bot can write there.",
       });
     }
 

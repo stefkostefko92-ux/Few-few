@@ -8,6 +8,7 @@ import api, {
   getServers, getMyAgency, attachAgencyServer, detachAgencyServer, openAgencyPortal,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 
 const BASE_FEATURE_KEYS = [
@@ -100,9 +101,13 @@ export default function PremiumPage() {
     onSuccess: (data) => { window.location.href = data.url; },
   });
 
+  // Провалът потъваше безследно — „Manage subscription" изщракваше и нищо
+  // (класът „лъжеща грешка", одит 10.08.2026).
+  const toast = useToast();
   const portalMut = useMutation({
     mutationFn: () => openPortal(serverId),
     onSuccess: (data) => { window.location.href = data.url; },
+    onError: (err) => toast.error(err?.response?.data?.error || t("auto.actionFailed")),
   });
 
   const [exportError, setExportError] = useState(null);
@@ -617,6 +622,10 @@ function AgencyManageCard({ agency, serverId, t }) {
   const portalMut = useMutation({
     mutationFn: openAgencyPortal,
     onSuccess: (data) => { window.location.href = data.url; },
+    // Тих провал = бутонът „изщраква" и нищо (клас „лъжеща грешка").
+    onError: (err) => {
+      setActionError(err?.response?.data?.error || t("auto.actionFailed"));
+    },
   });
 
   return (

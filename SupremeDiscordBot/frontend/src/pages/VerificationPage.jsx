@@ -15,6 +15,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import EmojiPicker from "../components/EmojiPicker";
 import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 
 const TYPES = [
   { value: "BUTTON",   label: "One-click button",    hint: "User clicks a button → instantly verified" },
@@ -77,6 +78,10 @@ export default function VerificationPage() {
   const { serverId } = useParams();
   const { t } = useT();
   const qc = useQueryClient();
+  const toast = useToast();
+  // Сървърната грешка пред общия резервен текст — иначе истинската причина
+  // (напр. „Math captcha requires Premium") се губи в „Action failed".
+  const errText = (err) => err?.response?.data?.error || t("auto.actionFailed");
   const { isPremium } = usePremium();
   const [editing, setEditing] = useState(null); // null | "new" | panelId
   const [form, setForm] = useState(defaultForm());
@@ -88,21 +93,33 @@ export default function VerificationPage() {
     queryFn: () => getVerificationPanels(serverId),
   });
 
+  // Тези мутации нямаха onError ИЗОБЩО — провал (спазън в несъществуващ канал,
+  // Premium гейт, бот без права) потъваше безследно и таблото се преструваше,
+  // че всичко е наред (класът „лъжеща грешка", одит 10.08.2026).
   const createMut = useMutation({
     mutationFn: (data) => createVerificationPanel(serverId, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["verification", serverId] }); setEditing(null); },
+    onError: (err) => toast.error(errText(err)),
   });
   const updateMut = useMutation({
     mutationFn: ({ panelId, data }) => updateVerificationPanel(serverId, panelId, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["verification", serverId] }); setEditing(null); },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["verification", serverId] });
+      setEditing(null);
+      // botWarning = записът мина, но живото Discord съобщение НЕ се обнови.
+      if (data?.botWarning) toast.error(data.botWarning);
+    },
+    onError: (err) => toast.error(errText(err)),
   });
   const deleteMut = useMutation({
     mutationFn: (panelId) => deleteVerificationPanel(serverId, panelId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["verification", serverId] }),
+    onError: (err) => toast.error(errText(err)),
   });
   const spawnMut = useMutation({
     mutationFn: ({ panelId, channelId }) => spawnVerificationPanel(serverId, panelId, channelId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["verification", serverId] }),
+    onError: (err) => toast.error(errText(err)),
   });
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
