@@ -2,6 +2,7 @@
 import {
   EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle,
 } from "discord.js";
+import { sanitizeEmoji } from "./embed.js";
 
 const styleMap = {
   PRIMARY:   ButtonStyle.Primary,
@@ -65,9 +66,13 @@ export function buildVerificationMessage(panel) {
 
   const btn = new ButtonBuilder()
     .setCustomId(`verify:${panel.id}`)
-    .setLabel(panel.buttonLabel || "Verify")
+    // Таван 80 (Discord) — по-дълъг етикет събаря целия панел при изпращане.
+    .setLabel(String(panel.buttonLabel || "Verify").slice(0, 80))
     .setStyle(styleMap[panel.buttonStyle] || ButtonStyle.Success);
-  if (panel.buttonEmoji) btn.setEmoji(panel.buttonEmoji);
+  // Невалидно emoji пада чак в Discord API (400 за цялото съобщение) —
+  // валидираме формата, вместо да разчитаме на try/catch (виж embed.js).
+  const emoji = sanitizeEmoji(panel.buttonEmoji);
+  if (emoji) btn.setEmoji(emoji);
 
   const row = new ActionRowBuilder().addComponents(btn);
 

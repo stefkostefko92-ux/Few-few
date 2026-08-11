@@ -13,6 +13,31 @@ import { BRAND, SUCCESS, WARNING, withFooter, brandEmbed, avatarUrl, userTag } f
  *   DROPDOWN: a single StringSelectMenu — each option maps to a button's formId/panel action
  *   THREAD:   same as BUTTON but tickets spawn as threads (handled at interaction time)
  */
+/**
+ * Свежда потребителско emoji до формата, който Discord API приема, или null.
+ *
+ * ВАЖНО (проверено срещу discord.js v14): невалиден стринг НЕ хвърля при
+ * билд — builders го увиват в { name: "каквото-и-да-е" } и заявката пада чак
+ * в Discord API (400 Invalid Emoji), събаряйки ЦЯЛОТО съобщение. Затова
+ * try/catch около setEmoji не пази нищо — валидираме формата сами:
+ *   • `<a:name:id>` / `<:name:id>` → custom emoji обект
+ *   • голо ID (17–20 цифри)       → { id }
+ *   • кратък unicode emoji         → { name }
+ * Всичко останало → null (панелът е ценен, emoji-то не е).
+ */
+export function sanitizeEmoji(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  const s = raw.trim();
+  const custom = s.match(/^<(a?):(\w{2,32}):(\d{17,20})>$/);
+  if (custom) return { animated: custom[1] === "a", name: custom[2], id: custom[3] };
+  if (/^\d{17,20}$/.test(s)) return { id: s };
+  // Unicode emoji: пиктографски знак / emoji presentation / VS16 (покрива ❤️, 1️⃣)
+  if (s.length <= 16 && /\p{Extended_Pictographic}|\p{Emoji_Presentation}|\uFE0F/u.test(s)) {
+    return { name: s };
+  }
+  return null;
+}
+
 export function buildPanelMessage(panel) {
   // Резервният цвят е брандовият, не Discord blurple — панел без зададен цвят
   // не бива да изглежда като чужд бот.
@@ -46,8 +71,9 @@ export function buildPanelMessage(panel) {
       .setMaxValues(1)
       .addOptions(
         panel.buttons.slice(0, 25).map((btn) => {
-          const opt = { label: btn.label.slice(0, 100), value: btn.id };
-          if (btn.emoji) opt.emoji = btn.emoji;
+          const opt = { label: String(btn.label || "Open").slice(0, 100), value: btn.id };
+          const emoji = sanitizeEmoji(btn.emoji);
+          if (emoji) opt.emoji = emoji;
           return opt;
         })
       );
@@ -65,10 +91,11 @@ export function buildPanelMessage(panel) {
       chunk.map((btn) => {
         const button = new ButtonBuilder()
           .setCustomId(`panel_button:${panel.id}:${btn.id}`)
-          .setLabel(btn.label)
+          // Таван 80 (Discord) + резервен етикет — null label събаря целия билд.
+          .setLabel(String(btn.label || "Open").slice(0, 80))
           .setStyle(styleMap[btn.style] || ButtonStyle.Primary);
-        // Only set emoji if provided — passing undefined throws
-        if (btn.emoji) button.setEmoji(btn.emoji);
+        const emoji = sanitizeEmoji(btn.emoji);
+        if (emoji) button.setEmoji(emoji);
         return button;
       })
     );
@@ -189,7 +216,8 @@ function buildMergedPanelMessage(panels, mode) {
         // Описанието подсказва от кой панел е опцията, когато имената се
         // припокриват между панели.
         if (list.length > 1 && panel.name) opt.description = String(panel.name).slice(0, 100);
-        if (btn.emoji) opt.emoji = btn.emoji;
+        const emoji = sanitizeEmoji(btn.emoji);
+        if (emoji) opt.emoji = emoji;
         return opt;
       }));
     return { embeds: [embed], components: [new ActionRowBuilder().addComponents(select)], skipped };
@@ -211,8 +239,10 @@ function buildMergedPanelMessage(panels, mode) {
           // необяснимо „Bot is offline" (одит 09.08.2026).
           .setLabel(String(btn.label || "Open").slice(0, 80))
           .setStyle(styleMap[btn.style] || ButtonStyle.Primary);
-        // Невалидно emoji хвърля при билд — панелът е ценен, emoji-то не е.
-        if (btn.emoji) { try { b.setEmoji(btn.emoji); } catch { /* без emoji */ } }
+        // Невалидно emoji НЕ хвърля при билд, а чак в Discord API (400 за
+        // цялото съобщение) — затова се валидира формата, не се лови грешка.
+        const emoji = sanitizeEmoji(btn.emoji);
+        if (emoji) b.setEmoji(emoji);
         return b;
       })
     ));
