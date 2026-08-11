@@ -136,8 +136,8 @@ async function authenticateApiKey(req, res, next) {
   // Ключовете са 192 бита ентропия, тоест налучкването е математически
   // безнадеждно — но дроселирането е задължителният втори слой: спира и
   // безплатния DoS (всеки опит е sha256 + заявка към базата), и разузнаването.
-  const fail = (status, body) => {
-    recordFailure("apikey", req.ip);
+  const fail = async (status, body) => {
+    await recordFailure("apikey", req.ip);
     return res.status(status).json(body);
   };
 
@@ -185,7 +185,7 @@ async function authenticateApiKey(req, res, next) {
 
   // Валиден ключ → историята на провалите се чисти, за да не носи наказание
   // човек, който веднъж е сбъркал.
-  recordSuccess("apikey", req.ip);
+  await recordSuccess("apikey", req.ip);
   req.apiKey = apiKey;
   req.serverId = apiKey.serverId;
   next();

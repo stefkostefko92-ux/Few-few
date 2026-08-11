@@ -31,7 +31,7 @@ export function requireApiKey(...requiredScopes) {
     // път за API ключове (/api/v1) — той е под глобалния лимитер, но 200/мин
     // пак е много за налучкване на тайна, а вече блокираните не бива да стигат
     // до базата изобщо.
-    const blocked = check("apikey", req.ip);
+    const blocked = await check("apikey", req.ip);
     if (blocked.blocked) {
       res.setHeader("Retry-After", String(blocked.retryAfterSec));
       return res.status(429).json({
@@ -40,8 +40,8 @@ export function requireApiKey(...requiredScopes) {
         retryAfterSeconds: blocked.retryAfterSec,
       });
     }
-    const fail = (status, body) => {
-      recordFailure("apikey", req.ip);
+    const fail = async (status, body) => {
+      await recordFailure("apikey", req.ip);
       return res.status(status).json(body);
     };
 
@@ -88,7 +88,7 @@ export function requireApiKey(...requiredScopes) {
     }).catch(() => {});
 
     // Валиден ключ → чистим историята на провалите за този подател.
-    recordSuccess("apikey", req.ip);
+    await recordSuccess("apikey", req.ip);
     req.apiKey = key;
     req.params.serverId = key.serverId;  // Force serverId from the key
     next();

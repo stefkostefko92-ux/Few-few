@@ -76,21 +76,24 @@ export function requireMainOwner(req, res, next) {
  * Validate that the request comes from the internal bot service
  * using a shared API secret header.
  */
-export function requireBotSecret(req, res, next) {
+export async function requireBotSecret(req, res, next) {
   // Дроселиране на неуспешните опити (виж lib/bruteForce.js). Ботът знае
   // тайната си и НИКОГА не бърка — тоест всеки провал тук е или счупена
   // конфигурация, или налучкване. И в двата случая заслужава спирачка.
-  const blocked = check("botsecret", req.ip);
-  if (blocked.blocked) {
-    res.setHeader("Retry-After", String(blocked.retryAfterSec));
-    return res.status(429).json({
-      error: "Too many failed attempts. Try again later.",
-      code: "TOO_MANY_FAILED_ATTEMPTS",
-      retryAfterSeconds: blocked.retryAfterSec,
-    });
-  }
-  const deny = () => {
-    recordFailure("botsecret", req.ip);
+  try {
+    const blocked = await check("botsecret", req.ip);
+    if (blocked.blocked) {
+      res.setHeader("Retry-After", String(blocked.retryAfterSec));
+      return res.status(429).json({
+        error: "Too many failed attempts. Try again later.",
+        code: "TOO_MANY_FAILED_ATTEMPTS",
+        retryAfterSeconds: blocked.retryAfterSec,
+      });
+    }
+  } catch { /* защитата никога не сваля входа */ }
+
+  const deny = async () => {
+    await recordFailure("botsecret", req.ip).catch(() => {});
     return res.status(401).json({ error: "Invalid bot secret" });
   };
 
@@ -102,7 +105,7 @@ export function requireBotSecret(req, res, next) {
   const b = Buffer.from(String(expected));
   if (a.length !== b.length || !timingSafeEqual(a, b)) return deny();
 
-  recordSuccess("botsecret", req.ip);
+  await recordSuccess("botsecret", req.ip).catch(() => {});
   next();
 }
 

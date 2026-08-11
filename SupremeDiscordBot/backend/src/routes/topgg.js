@@ -49,16 +49,16 @@ router.post("/webhook", async (req, res, next) => {
   // Дроселиране на неуспешните опити. Тази тайна е ВЪВЕДЕНА ОТ ЧОВЕК в env
   // (за разлика от нашите 192-битови ключове), значи ентропията ѝ не е
   // гарантирана — точно случаят, в който налучкването е реалистично.
-  const blocked = check("topgg", req.ip);
+  const blocked = await check("topgg", req.ip);
   if (blocked.blocked) {
     res.setHeader("Retry-After", String(blocked.retryAfterSec));
     return res.status(429).json({ error: "Too many failed attempts.", code: "TOO_MANY_FAILED_ATTEMPTS" });
   }
   if (!timingSafeEqualStr(req.headers.authorization, secret)) {
-    recordFailure("topgg", req.ip);
+    await recordFailure("topgg", req.ip);
     return res.status(403).json({ error: "Invalid authorization" });
   }
-  recordSuccess("topgg", req.ip);
+  await recordSuccess("topgg", req.ip);
 
   const parsed = voteSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid vote payload" });

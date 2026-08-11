@@ -1,38 +1,53 @@
 // backend/src/lib/bruteForce.js
 // Централна защита срещу налучкване на тайни (brute force / credential stuffing).
 //
-// ЗАЩО СЪЩЕСТВУВА (одит 11.08.2026): рейт лимитерите броят ВСИЧКИ заявки
-// еднакво. Това пази ресурса, но не пази ТАЙНАТА: 200 заявки/мин е нищо за
-// нормален клиент и цяло състояние за налучкващ. Стандартът иска дроселиране
-// точно на НЕУСПЕШНИТЕ опити, с нарастващо наказание:
+// ЗАЩО СЪЩЕСТВУВА: рейт лимитерите броят ВСИЧКИ заявки еднакво. Това пази
+// ресурса, но не пази ТАЙНАТА: 200 заявки/мин е нищо за нормален клиент и цяло
+// състояние за налучкващ. Стандартът иска дроселиране точно на НЕУСПЕШНИТЕ
+// опити, с нарастващо наказание:
 //   • NIST SP 800-63B §5.2.2 — ограничи неуспешните опити за автентикация
 //   • OWASP ASVS 4.0 V2.2.1 — anti-automation срещу налучкване на пълномощия
 //
-// Разликата е съществена: легитимният клиент почти никога не бърка тайната си,
-// затова праговете тук могат да са агресивни, без да пречат на никого.
+// ═══ ЧЕТИРИТЕ СЛОЯ ═══
 //
-// РЕШЕНИЯ ПО ДИЗАЙНА (всяко платено с конкретен риск):
-//  1. Броим по ПОДАДЕН КЛЮЧ (обикновено IP) в плъзгащ прозорец — не по общ
-//     брой, за да не наказваме цял свят заради един нападател.
-//  2. Наказанието РАСТЕ (1 мин → 5 → 30 → 24 ч). Бавното нарастване държи
-//     цената на налучкването експоненциална, а на човешката грешка — нулева.
-//  3. ПАМЕТТА Е ОГРАНИЧЕНА. Нападател, който върти IP-та, иначе би раздул
-//     Map-а до OOM — тоест самата защита става DoS вектор. Затова има таван
-//     на записите и изхвърляне на най-старите.
-//  4. Успех ЧИСТИ брояча — иначе човек, сбъркал няколко пъти преди месец,
-//     носи наказанието завинаги.
-//  5. Одитният запис се прави ВЕДНЪЖ на блокировка (не на заявка), иначе
-//     нападателят би ни карал да пишем в базата вместо себе си.
-//  6. Никога не хвърля. Провал в защитата не бива да сваля приложението;
-//     решението е „пускай", а инцидентът се логва (fail-open по НАЛИЧНОСТ,
-//     защото самата тайна си остава защитена криптографски).
+// 1. ПО ИЗТОЧНИК (IP) — плъзгащ прозорец с растящо наказание.
+//
+// 2. ПО ПОДМРЕЖА (/24 IPv4, /64 IPv6) — това затваря РЕАЛНОТО заобикаляне на
+//    per-IP защитата. Ботнет или прокси пул сменя адреси, но рядко сменя цели
+//    мрежи; per-IP брояч сам по себе си е безсилен срещу въртене на адреси.
+//    Праговете тук са по-високи, защото зад една /24 стоят и легитимни хора.
+//
+// 3. ГЛОБАЛНО ПО ОБХВАТ — адаптивно затягане. Ако общият брой провали за даден
+//    обхват скочи, праговете за всеки източник се СВИВАТ (5 → 2). Съзнателно
+//    НЕ блокираме всички: това би било самопричинен отказ на услугата, тоест
+//    нападателят би изключвал легитимните клиенти вместо нас. Легитимен клиент
+//    почти никога не бърка тайната си, затова свиването не го засяга.
+//
+// 4. ТРАЙНОСТ ПРЕЗ REDIS — броячите и блокировките преживяват рестарт и се
+//    ДЕЛЯТ между процеси/реплики. Паметта остава като винаги наличен резерв:
+//    решението е „по-лошото от двете", значи падналият Redis отслабва обхвата,
+//    но никога не сваля защитата и никога не отключва блокиран.
+//
+// ═══ ДРУГИ РЕШЕНИЯ ПО ДИЗАЙНА (всяко платено с конкретен риск) ═══
+//  • Наказанието РАСТЕ (1 мин → 5 → 30 → 24 ч): цената на налучкването е
+//    експоненциална, а на човешката грешка — нулева.
+//  • Успех ЧИСТИ брояча по източник — иначе сбъркал веднъж носи наказание вечно.
+//  • ПАМЕТТА Е ОГРАНИЧЕНА и изхвърлянето е О(изхвърлени) без сортиране. Първата
+//    версия сортираше целия Map при препълване — тоест точно при разпределена
+//    атака защитата гореше процесор и ставаше DoS усилвател (хванато от теста).
+//  • Одитният запис е ВЕДНЪЖ на блокировка, не на заявка — иначе нападателят
+//    би ни карал да пишем в базата вместо себе си.
+//  • Никога не хвърля и никога не чака: Redis е с бърз отказ (виж redisClient).
+import { getRedis } from "./redisClient.js";
 
-const WINDOW_MS = 15 * 60 * 1000;        // плъзгащ прозорец за броене
-const MAX_ENTRIES = 20_000;              // таван на паметта (виж решение 3)
+const WINDOW_MS = 15 * 60 * 1000;
+const WINDOW_SEC = Math.ceil(WINDOW_MS / 1000);
+const MAX_ENTRIES = 20_000;
+const EVICT_TO = Math.floor(MAX_ENTRIES * 0.9);
 const PRUNE_EVERY_MS = 60 * 1000;
 
-// Стълбата на наказанието — първият праг, който е надхвърлен, печели.
-// Подредена от най-тежкия надолу, за да не се налага сортиране при всяка заявка.
+// Стълбата по ИЗТОЧНИК. Подредена от най-тежката надолу — първият надхвърлен
+// праг печели, без да се сортира при всяка заявка.
 const STEPS = [
   { failures: 50, blockMs: 24 * 60 * 60 * 1000 },
   { failures: 20, blockMs: 30 * 60 * 1000 },
@@ -40,34 +55,60 @@ const STEPS = [
   { failures: 5,  blockMs: 60 * 1000 },
 ];
 
-/** @type {Map<string, {times:number[], blockedUntil:number, logged:boolean, seen:number}>} */
+// Стълбата по ПОДМРЕЖА — по-търпелива, защото зад една мрежа има и невинни.
+const SUBNET_STEPS = [
+  { failures: 250, blockMs: 6 * 60 * 60 * 1000 },
+  { failures: 100, blockMs: 30 * 60 * 1000 },
+  { failures: 40,  blockMs: 5 * 60 * 1000 },
+];
+
+// Над този брой провали в един обхват за прозореца смятаме, че тече атака,
+// и свиваме праговете по източник (слой 3).
+const GLOBAL_ATTACK_THRESHOLD = 100;
+const TIGHTENED_FIRST_STEP = { failures: 2, blockMs: 5 * 60 * 1000 };
+
+/** @type {Map<string, {times:number[], blockedUntil:number, logged:boolean}>} */
 const state = new Map();
+/** @type {Map<string, number[]>} глобални провали по обхват */
+const globalFails = new Map();
 let lastPrune = 0;
 
 const now = () => Date.now();
 const entryKey = (scope, key) => `${scope}:${key}`;
 
-// Целта при изхвърляне: слизаме под тавана със запас, за да не се пуска
-// чистенето на всяка следваща заявка (амортизирана цена).
-const EVICT_TO = Math.floor(MAX_ENTRIES * 0.9);
+// ─── Помощни ────────────────────────────────────────────────────────────────
 
 /**
- * Маха изчерпаните записи; при препълване реже най-старите (решение 3).
- *
- * ЦЕНАТА Е КРИТИЧНА, не козметична. Първата версия сортираше ЦЕЛИЯ Map при
- * всяко препълване — тоест точно при разпределена атака (сценарият, срещу
- * който пазим) защитата почваше да гори процесор на всяка заявка и ставаше
- * DoS усилвател. Хванато от собствения тест (таймаут). Сега:
- *   • пълното сканиране е ограничено ВЪВ ВРЕМЕТО (веднъж на минута);
- *   • изхвърлянето при препълване е О(изхвърлени), без сортиране — Map-ът
- *     в JS пази реда на вмъкване, значи итерацията вече върви „най-старите
- *     първо";
- *   • активните блокировки се прескачат, за да не може нападателят да се
- *     освободи, като залее Map-а с нови източници.
+ * Подмрежата на адреса: /24 за IPv4, /64 за IPv6.
+ * IPv4-mapped IPv6 („::ffff:1.2.3.4") се нормализира до IPv4 — иначе същият
+ * клиент би имал ДВА независими бюджета според това как е стигнал до нас.
  */
+export function subnetOf(ip) {
+  const s = String(ip || "");
+  const mapped = s.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  const addr = mapped ? mapped[1] : s;
+
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(addr)) {
+    return addr.split(".").slice(0, 3).join(".") + ".0/24";
+  }
+  if (addr.includes(":")) {
+    const groups = addr.split(":");
+    return groups.slice(0, 4).join(":") + "::/64";
+  }
+  return `unknown:${addr}`;
+}
+
+/** Съкратен адрес за одита — GDPR съобр. 30: мащабът се вижда, човекът не. */
+function keyLabel(key) {
+  const s = String(key);
+  if (s.includes("/")) return s;                       // подмрежата вече е обобщена
+  if (s.includes(":")) return s.split(":").slice(0, 3).join(":") + ":…";
+  const p = s.split(".");
+  return p.length === 4 ? `${p[0]}.${p[1]}.${p[2]}.x` : "…";
+}
+
 function prune() {
   const t = now();
-
   if (t - lastPrune >= PRUNE_EVERY_MS) {
     lastPrune = t;
     for (const [k, e] of state) {
@@ -75,19 +116,21 @@ function prune() {
         && (e.times.length === 0 || t - e.times[e.times.length - 1] > WINDOW_MS);
       if (stale) state.delete(k);
     }
+    for (const [k, arr] of globalFails) {
+      const kept = arr.filter((ts) => t - ts < WINDOW_MS);
+      if (kept.length) globalFails.set(k, kept); else globalFails.delete(k);
+    }
   }
-
   if (state.size <= MAX_ENTRIES) return;
 
-  // Първи проход: режем неблокираните, най-старите първо.
+  // Изхвърляне без сортиране: Map-ът пази реда на вмъкване, значи итерацията
+  // върви „най-старите първо". Активните блокировки се прескачат, за да не се
+  // освобождава нападателят, като залее Map-а с нови източници.
   for (const [k, e] of state) {
     if (state.size <= EVICT_TO) return;
-    if (e.blockedUntil > t) continue;         // активна блокировка — пази се
+    if (e.blockedUntil > t) continue;
     state.delete(k);
   }
-
-  // Втори проход: ако ВСИЧКО е активно блокирано и пак сме над тавана, режем
-  // най-старите въпреки това — паметта не бива да расте неограничено.
   for (const k of state.keys()) {
     if (state.size <= EVICT_TO) return;
     state.delete(k);
@@ -97,16 +140,11 @@ function prune() {
 function getEntry(scope, key) {
   const k = entryKey(scope, key);
   let e = state.get(k);
-  if (!e) {
-    e = { times: [], blockedUntil: 0, logged: false, seen: now() };
-    state.set(k, e);
-  }
-  e.seen = now();
+  if (!e) { e = { times: [], blockedUntil: 0, logged: false }; state.set(k, e); }
   return e;
 }
 
-/** Одитен запис при ЗАДЕЙСТВАНА блокировка — веднъж, извън горещия път. */
-function auditBlock(scope, key, failures, blockMs) {
+function auditBlock(scope, key, failures, blockMs, kind) {
   Promise.resolve()
     .then(async () => {
       const { prisma } = await import("./prisma.js");
@@ -115,73 +153,166 @@ function auditBlock(scope, key, failures, blockMs) {
           actorId: null,
           actorTag: "SYSTEM",
           action: "SECURITY_BRUTE_FORCE_BLOCK",
-          // Ключът е псевдонимизиран в metadata — виж коментара в blockedKeyLabel.
-          metadata: { scope, key: blockedKeyLabel(key), failures, blockMs },
+          metadata: { scope, kind, key: keyLabel(key), failures, blockMs },
         },
       });
     })
     .catch(() => { /* одитът никога не бива да чупи защитата */ });
 }
 
-/**
- * IP адресът е лични данни (GDPR съобр. 30). За одитната следа държим
- * съкратен вид: достатъчно да разпознаеш мащаба и мрежата на атаката,
- * недостатъчно да проследиш човек. Пълният адрес остава само в паметта
- * на процеса, докато трае блокировката.
- */
-function blockedKeyLabel(key) {
-  const s = String(key);
-  if (s.includes(":")) return s.split(":").slice(0, 3).join(":") + ":…";  // IPv6 префикс
-  const parts = s.split(".");
-  return parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.x` : "…";
+// ─── Redis слой (винаги по избор, никога задължителен) ──────────────────────
+
+async function redisBlockedUntil(scope, keys) {
+  const redis = getRedis();
+  if (!redis) return 0;
+  try {
+    const vals = await redis.mget(keys.map((k) => `bf:blk:${scope}:${k}`));
+    return vals.reduce((max, v) => Math.max(max, Number(v) || 0), 0);
+  } catch {
+    return 0;   // Redis недостъпен → разчитаме на паметта (никога не отключва)
+  }
 }
 
-/** Текущото състояние без да го променя. */
-export function check(scope, key) {
-  const e = state.get(entryKey(scope, key));
-  if (!e) return { blocked: false, retryAfterSec: 0 };
-  const left = e.blockedUntil - now();
-  return left > 0
-    ? { blocked: true, retryAfterSec: Math.ceil(left / 1000) }
+async function redisBump(scope, ip, net) {
+  const redis = getRedis();
+  if (!redis) return null;
+  try {
+    const p = redis.pipeline();
+    p.incr(`bf:ip:${scope}:${ip}`);   p.expire(`bf:ip:${scope}:${ip}`, WINDOW_SEC);
+    p.incr(`bf:net:${scope}:${net}`); p.expire(`bf:net:${scope}:${net}`, WINDOW_SEC);
+    p.incr(`bf:all:${scope}`);        p.expire(`bf:all:${scope}`, WINDOW_SEC);
+    const res = await p.exec();
+    if (!res) return null;
+    const num = (i) => Number(res[i]?.[1]) || 0;
+    return { ip: num(0), net: num(2), global: num(4) };
+  } catch {
+    return null;
+  }
+}
+
+async function redisSetBlock(scope, key, untilMs) {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    const ttl = Math.max(1, Math.ceil((untilMs - now()) / 1000));
+    await redis.set(`bf:blk:${scope}:${key}`, String(untilMs), "EX", ttl);
+  } catch { /* тихо — паметта пази същото */ }
+}
+
+async function redisClear(scope, ip) {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    await redis.del(`bf:ip:${scope}:${ip}`, `bf:blk:${scope}:${ip}`);
+  } catch { /* тихо */ }
+}
+
+// ─── Публичен интерфейс ─────────────────────────────────────────────────────
+
+/**
+ * Текущото състояние, без да го променя.
+ * Решението е ПО-ЛОШОТО от паметта и Redis — падналият Redis никога не отключва.
+ */
+export async function check(scope, key) {
+  const t = now();
+  const net = subnetOf(key);
+  const memUntil = Math.max(
+    state.get(entryKey(scope, key))?.blockedUntil || 0,
+    state.get(entryKey(scope, net))?.blockedUntil || 0,
+  );
+  const redisUntil = await redisBlockedUntil(scope, [key, net]);
+  const until = Math.max(memUntil, redisUntil);
+  return until > t
+    ? { blocked: true, retryAfterSec: Math.ceil((until - t) / 1000) }
     : { blocked: false, retryAfterSec: 0 };
 }
 
-/** Отбелязва НЕУСПЕШЕН опит и връща новото състояние. */
-export function recordFailure(scope, key) {
-  prune();
+/** Синхронна проверка само по паметта — за пътища, които не могат да чакат. */
+export function checkSync(scope, key) {
   const t = now();
-  const e = getEntry(scope, key);
-  e.times = e.times.filter((ts) => t - ts < WINDOW_MS);
-  e.times.push(t);
-
-  const step = STEPS.find((s) => e.times.length >= s.failures);
-  if (step) {
-    const until = t + step.blockMs;
-    // Наказанието само расте в рамките на един епизод — нов неуспех не
-    // скъсява вече наложена по-тежка блокировка.
-    if (until > e.blockedUntil) e.blockedUntil = until;
-    if (!e.logged) {
-      e.logged = true;
-      auditBlock(scope, key, e.times.length, step.blockMs);
-    }
-    return { blocked: true, retryAfterSec: Math.ceil((e.blockedUntil - t) / 1000) };
-  }
-  return { blocked: false, retryAfterSec: 0 };
+  const until = Math.max(
+    state.get(entryKey(scope, key))?.blockedUntil || 0,
+    state.get(entryKey(scope, subnetOf(key)))?.blockedUntil || 0,
+  );
+  return until > t
+    ? { blocked: true, retryAfterSec: Math.ceil((until - t) / 1000) }
+    : { blocked: false, retryAfterSec: 0 };
 }
 
-/** Успешна автентикация — чисти историята (решение 4). */
-export function recordSuccess(scope, key) {
-  state.delete(entryKey(scope, key));
+/** Отбелязва НЕУСПЕШЕН опит по всичките слоеве и връща новото състояние. */
+export async function recordFailure(scope, key) {
+  prune();
+  const t = now();
+  const net = subnetOf(key);
+
+  // Памет
+  const eIp = getEntry(scope, key);
+  eIp.times = eIp.times.filter((ts) => t - ts < WINDOW_MS);
+  eIp.times.push(t);
+
+  const eNet = getEntry(scope, net);
+  eNet.times = eNet.times.filter((ts) => t - ts < WINDOW_MS);
+  eNet.times.push(t);
+
+  const g = (globalFails.get(scope) || []).filter((ts) => t - ts < WINDOW_MS);
+  g.push(t);
+  globalFails.set(scope, g);
+
+  // Redis (ако е наличен) — броим по-голямото от двете, защото друг процес
+  // може вече да е видял част от същата атака.
+  const r = await redisBump(scope, key, net);
+  const ipCount = Math.max(eIp.times.length, r?.ip || 0);
+  const netCount = Math.max(eNet.times.length, r?.net || 0);
+  const globalCount = Math.max(g.length, r?.global || 0);
+
+  const underAttack = globalCount >= GLOBAL_ATTACK_THRESHOLD;
+
+  // Слой 1 + 3: източник, със свити прагове при атака
+  let step = STEPS.find((s) => ipCount >= s.failures);
+  if (!step && underAttack && ipCount >= TIGHTENED_FIRST_STEP.failures) {
+    step = TIGHTENED_FIRST_STEP;
+  }
+  if (step) await applyBlock(scope, key, eIp, t + step.blockMs, ipCount, step.blockMs, "ip");
+
+  // Слой 2: подмрежа
+  const netStep = SUBNET_STEPS.find((s) => netCount >= s.failures);
+  if (netStep) await applyBlock(scope, net, eNet, t + netStep.blockMs, netCount, netStep.blockMs, "subnet");
+
+  const until = Math.max(eIp.blockedUntil, eNet.blockedUntil);
+  return until > t
+    ? { blocked: true, retryAfterSec: Math.ceil((until - t) / 1000) }
+    : { blocked: false, retryAfterSec: 0 };
+}
+
+async function applyBlock(scope, key, entry, until, failures, blockMs, kind) {
+  // Наказанието само расте в рамките на епизода — нов провал не скъсява
+  // вече наложена по-тежка блокировка.
+  if (until > entry.blockedUntil) {
+    entry.blockedUntil = until;
+    await redisSetBlock(scope, key, until);
+  }
+  if (!entry.logged) {
+    entry.logged = true;
+    auditBlock(scope, key, failures, blockMs, kind);
+  }
 }
 
 /**
- * Express пазач: блокираните получават 429 + Retry-After ПРЕДИ маршрутът да
- * пипне базата. Така налучкването не струва нищо на нашата инфраструктура.
+ * Успешна автентикация — чисти историята ПО ИЗТОЧНИК.
+ * Подмрежата НЕ се чисти: един валиден ключ от мрежата не бива да изтрива
+ * следата от стотиците провали на съседа му (иначе нападателят би се
+ * освобождавал, като редува валиден и невалиден опит).
  */
+export async function recordSuccess(scope, key) {
+  state.delete(entryKey(scope, key));
+  await redisClear(scope, key);
+}
+
+/** Express пазач: блокираните се отрязват ПРЕДИ маршрутът да пипне базата. */
 export function bruteForceGuard(scope, keyFn = (req) => req.ip) {
-  return function bruteForceMiddleware(req, res, next) {
+  return async function bruteForceMiddleware(req, res, next) {
     try {
-      const { blocked, retryAfterSec } = check(scope, keyFn(req));
+      const { blocked, retryAfterSec } = await check(scope, keyFn(req));
       if (blocked) {
         res.setHeader("Retry-After", String(retryAfterSec));
         return res.status(429).json({
@@ -191,23 +322,23 @@ export function bruteForceGuard(scope, keyFn = (req) => req.ip) {
         });
       }
     } catch {
-      /* решение 6 — защитата никога не сваля приложението */
+      /* защитата никога не сваля приложението */
     }
     next();
   };
 }
 
-/** Само за тестове — чисти състоянието между случаите. */
+/** Само за тестове. */
 export function _resetBruteForceState() {
   state.clear();
+  globalFails.clear();
   lastPrune = 0;
 }
-
-/** Само за тестове/диагностика. */
-export function _stateSize() {
-  return state.size;
-}
+export function _stateSize() { return state.size; }
 
 export const BRUTE_FORCE_STEPS = STEPS;
+export const BRUTE_FORCE_SUBNET_STEPS = SUBNET_STEPS;
 export const BRUTE_FORCE_WINDOW_MS = WINDOW_MS;
 export const BRUTE_FORCE_MAX_ENTRIES = MAX_ENTRIES;
+export const BRUTE_FORCE_GLOBAL_THRESHOLD = GLOBAL_ATTACK_THRESHOLD;
+export const BRUTE_FORCE_TIGHTENED_STEP = TIGHTENED_FIRST_STEP;

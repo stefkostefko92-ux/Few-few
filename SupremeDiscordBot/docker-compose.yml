@@ -125,8 +125,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-bot}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in supreme/.env}@postgres:5432/${POSTGRES_DB:-discordbot}"
+      # Броячите срещу налучкване живеят тук — така блокировките преживяват
+      # рестарт и се делят между процеси (lib/bruteForce.js). Липсващ REDIS_URL
+      # НЕ сваля защитата: тя пада обратно към паметта, само по-забравчива.
+      REDIS_URL: "redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set in SupremeDiscordBot/.env}@redis:6379"
       NODE_ENV: production
     env_file:
       - ./backend/.env

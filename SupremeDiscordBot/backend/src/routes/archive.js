@@ -42,7 +42,7 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
   try {
     // Блокираните не стигат до базата — налучкването на токени не бива да
     // струва нищо на нашата инфраструктура (виж lib/bruteForce.js).
-    const blocked = check("archive", req.ip);
+    const blocked = await check("archive", req.ip);
     if (blocked.blocked) {
       secureHtml(res);
       res.setHeader("Retry-After", String(blocked.retryAfterSec));
@@ -59,11 +59,11 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
     if (!ticket || !archiveTokenMatches(ticket, req.query.t)) {
       // Всеки грешен токен се брои: това е ЕДИНСТВЕНИЯТ напълно публичен
       // маршрут, който сервира лични данни срещу тайна в URL-а.
-      recordFailure("archive", req.ip);
+      await recordFailure("archive", req.ip);
       secureHtml(res);
       return res.status(404).send(notFoundPage("This ticket doesn't exist or has been permanently deleted."));
     }
-    recordSuccess("archive", req.ip);
+    await recordSuccess("archive", req.ip);
 
     // Lazy-generate transcript if missing (for tickets closed before this feature)
     if (!ticket.archiveHtml) {
