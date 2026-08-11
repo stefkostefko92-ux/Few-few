@@ -181,6 +181,7 @@ export default {
   "common.deleteEverything": "Alles verwijderen",
   "panels.title": "Panelen",
   "panels.subtitle": "Maak visuele knoppanelen voor het aanmaken van tickets",
+  "panels.setupGuide": "Installatiegids",
   "panels.empty.title": "Nog geen panelen",
   "panels.empty.body": "Maak een knoppaneel zodat leden met één klik tickets kunnen openen.",
   "panels.empty.cta": "Eerste paneel maken",

@@ -181,6 +181,7 @@ export default {
   "common.deleteEverything": "Elimina tutto",
   "panels.title": "Pannelli",
   "panels.subtitle": "Crea pannelli di pulsanti visivi per l’apertura dei ticket",
+  "panels.setupGuide": "Guida alla configurazione",
   "panels.empty.title": "Ancora nessun pannello",
   "panels.empty.body": "Crea un pannello di pulsanti così i membri possono aprire ticket con un clic.",
   "panels.empty.cta": "Crea il primo pannello",

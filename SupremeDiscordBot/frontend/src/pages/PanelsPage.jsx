@@ -255,7 +255,14 @@ export default function PanelsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-cs-text">{t("panels.title")}</h1>
-          <p className="text-cs-muted text-sm mt-1">{t("panels.subtitle")}</p>
+          <p className="text-cs-muted text-sm mt-1">
+            {t("panels.subtitle")}{" "}
+            {/* Контекстна връзка към публичната docs страница за настройка. */}
+            <a href="/guides/ticket-panel-setup" target="_blank" rel="noopener"
+               className="text-cs-cyan hover:underline whitespace-nowrap">
+              {t("panels.setupGuide")} →
+            </a>
+          </p>
         </div>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> {t("panels.new")}

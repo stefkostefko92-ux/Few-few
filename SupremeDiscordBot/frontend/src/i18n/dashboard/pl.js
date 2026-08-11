@@ -181,6 +181,7 @@ export default {
   "common.deleteEverything": "Usuń wszystko",
   "panels.title": "Panele",
   "panels.subtitle": "Twórz wizualne panele przycisków do otwierania zgłoszeń",
+  "panels.setupGuide": "Przewodnik konfiguracji",
   "panels.empty.title": "Brak paneli",
   "panels.empty.body": "Utwórz panel przycisków, aby członkowie mogli otwierać zgłoszenia jednym kliknięciem.",
   "panels.empty.cta": "Utwórz pierwszy panel",

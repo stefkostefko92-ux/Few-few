@@ -181,6 +181,7 @@ export default {
   "common.deleteEverything": "Изтрий всичко",
   "panels.title": "Панели",
   "panels.subtitle": "Създайте визуални панели с бутони за отваряне на тикети",
+  "panels.setupGuide": "Ръководство за настройка",
   "panels.empty.title": "Все още няма панели",
   "panels.empty.body": "Създайте панел с бутони, за да могат членовете да отварят тикети с едно кликване.",
   "panels.empty.cta": "Създай първи панел",

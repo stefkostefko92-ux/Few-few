@@ -181,6 +181,7 @@ export default {
   "common.deleteEverything": "Tout supprimer",
   "panels.title": "Panneaux",
   "panels.subtitle": "Créez des panneaux de boutons visuels pour l’ouverture de tickets",
+  "panels.setupGuide": "Guide de configuration",
   "panels.empty.title": "Aucun panneau pour l’instant",
   "panels.empty.body": "Créez un panneau de boutons pour que les membres puissent ouvrir des tickets en un clic.",
   "panels.empty.cta": "Créer le premier panneau",

@@ -189,6 +189,7 @@ export default {
   "common.deleteEverything": "Delete everything",
   "panels.title": "Panels",
   "panels.subtitle": "Create visual button panels for ticket creation",
+  "panels.setupGuide": "Setup guide",
   "panels.empty.title": "No panels yet",
   "panels.empty.body": "Create a button panel so members can open tickets with one click.",
   "panels.empty.cta": "Create first panel",
