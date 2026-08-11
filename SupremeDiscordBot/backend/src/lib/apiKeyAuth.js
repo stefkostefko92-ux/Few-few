@@ -8,6 +8,7 @@
 // Файлът-примамка е изтрит; и издателят, и консуматорите внасят оттук.
 import crypto from "node:crypto";
 import { prisma } from "./prisma.js";
+import { getServerTier, planHasFeature } from "./premium.js";
 
 export const VALID_SCOPES = [
   "server:read",
@@ -40,6 +41,17 @@ export function requireApiKey(...requiredScopes) {
     }
     if (key.expiresAt && key.expiresAt < new Date()) {
       return res.status(401).json({ error: "API key expired" });
+    }
+    // Тарифен гейт при ПОЛЗВАНЕ (не само при издаване): ключ, издаден по време
+    // на trial или преди downgrade, иначе работеше вечно — /api/v1/* сервираше
+    // тикети и кандидатури на сървър БЕЗ активен план. publicApi.js (/public/v1)
+    // вече пазеше това; тук липсваше. Проверка върху ЕФЕКТИВНИЯ tier. Одит 11.08.2026.
+    const tier = await getServerTier(key.serverId);
+    if (!planHasFeature(tier.plan, "integrations.restApi")) {
+      return res.status(403).json({
+        error: "The REST API requires an active Premium plan on this server.",
+        code: "PREMIUM_REQUIRED",
+      });
     }
     // Scope check
     for (const scope of requiredScopes) {

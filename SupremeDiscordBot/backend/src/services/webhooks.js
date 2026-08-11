@@ -79,7 +79,11 @@ export async function validateWebhookUrl(rawUrl) {
 // по hostname.
 function ssrfSafeLookup(hostname, options, callback) {
   const cb = typeof options === "function" ? options : callback;
-  const opts = typeof options === "function" ? {} : options;
+  // Форсираме all:false: при all:true `address` е МАСИВ и ipIsPrivate(масив)
+  // не хваща частния адрес (пада в IPv6 клона върху "[object Object]") →
+  // байпас. Днешните Node defaults връщат единичен адрес, но нормализацията
+  // прави гарда устойчив, ако бъдещ axios/agent поиска всички адреси.
+  const opts = { ...(typeof options === "function" ? {} : options), all: false };
   dnsLookupCb(hostname, opts, (err, address, family) => {
     if (err) return cb(err);
     if (ipIsPrivate(address)) {

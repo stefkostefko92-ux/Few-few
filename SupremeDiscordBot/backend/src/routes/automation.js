@@ -228,6 +228,9 @@ router.post("/:serverId/giveaways/:id/reroll", requireServerAdmin, async (req, r
     });
 
     notifyBot("GIVEAWAY_ENDED", {
+      // serverId е задължителен и тук — иначе ботът търси channelId през ВСИЧКИ
+      // сървъри и reroll-ът не съобщава победителите (cross-tenant). Липсваше.
+      serverId: g.serverId,
       giveawayId: g.id, channelId: g.channelId, messageId: g.messageId,
       prize: g.prize, winners, reroll: true,
     }).catch(() => {});
@@ -267,9 +270,14 @@ router.post("/:serverId/stickies", requireServerAdmin, requirePremium("automatio
   if (!/^\d{17,20}$/.test(String(channelId))) {
     return res.status(400).json({ error: "Invalid channelId" });
   }
+  // Декларирано ПРЕД try — catch-ът долу чете limits.stickiesPerServer при
+  // LIMIT_REACHED/P2034. В try беше block-scoped → catch хвърляше
+  // ReferenceError точно по пътя на лимита (async rejection, Express 4 не я
+  // лови → заявката виси). Одит 11.08.2026.
+  let limits;
   try {
     // Enforce count limit
-    const { limits } = await getServerTier(req.params.serverId);
+    ({ limits } = await getServerTier(req.params.serverId));
     // Sticky е upsert по channelId, значи лимитът важи само когато се СЪЗДАВА
     // нов ред. Проверката и записът минават в една Serializable транзакция
     // по-долу — иначе две едновременни заявки за РАЗЛИЧНИ канали и двете

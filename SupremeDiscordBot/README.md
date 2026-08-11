@@ -183,9 +183,11 @@ Enable:
   ✓ Message Content Intent
 ```
 
-Bot invite URL (replace `CLIENT_ID`):
+Bot invite URL (replace `CLIENT_ID`). `permissions=361045814416` is the
+least-privilege bitmask the bot actually needs (see `bot/src/utils/permissionCheck.js`
+`INVITE_PERMISSIONS_INT`) — **never** invite with `permissions=8` (Administrator):
 ```
-https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=8
+https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=361045814416
 ```
 
 ### 3. Stripe Webhook

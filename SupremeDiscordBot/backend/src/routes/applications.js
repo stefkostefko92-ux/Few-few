@@ -5,6 +5,10 @@ import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../
 import { notifyBot } from "../services/botNotifier.js";
 import { buildTranscript } from "../lib/appTranscript.js";
 import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
+// POST /submit реферираше submitApplication без да го внася → ReferenceError
+// (латентен 500). Ботът днес вика каноничния /api/bot/application/submit, значи
+// маршрутът е резервен, но счупен резерв е по-лош от никакъв. Един източник.
+import { submitApplication } from "../services/applicationSubmit.js";
 
 const router = Router();
 

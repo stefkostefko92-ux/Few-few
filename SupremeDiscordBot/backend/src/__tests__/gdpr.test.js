@@ -21,6 +21,7 @@ const USER = {
   avatar: "abc",
   email: "stefan@example.com",
   globalRole: "USER",
+  isBlacklisted: true,
   language: "bg",
   createdAt: new Date("2026-01-01"),
   updatedAt: new Date("2026-01-02"),
@@ -75,6 +76,26 @@ describe("GET /api/gdpr/export — чл. 15", () => {
     expect(res.body.subject).toMatchObject({ id: "u1", type: "user" });
     expect(res.body.platform).toBe("Supreme Bot");
   });
+
+  it("включва статуса на блокиране (факт, обработван ЗА субекта — чл. 15(1))", async () => {
+    const res = await request(app()).get("/api/gdpr/export");
+    expect(res.body?.data?.profile?.isBlacklisted).toBe(true);
+  });
+
+  it("тегли одита и където субектът е ОБЕКТ (targetId), не само автор", async () => {
+    await request(app()).get("/api/gdpr/export");
+    const call = prismaMock.auditLog.findMany.mock.calls.at(-1);
+    expect(call[0].where).toEqual({ OR: [{ actorId: "u1" }, { targetId: "u1" }] });
+  });
+
+  it("НЕ изнася чужди лични данни: тикет-транскрипта и таен архив-токен (чл. 15(4))", async () => {
+    await request(app()).get("/api/gdpr/export");
+    const call = prismaMock.ticket.findMany.mock.calls.at(-1);
+    expect(call[0].select, "тикетите трябва да минат през allowlist select").toBeTruthy();
+    expect(call[0].select.archiveHtml).toBeUndefined();
+    expect(call[0].select.archiveToken).toBeUndefined();
+    expect(call[0].select.closeReason).toBe(true); // собствените данни остават
+  });
 });
 
 describe("POST /api/gdpr/delete-account — чл. 17", () => {
@@ -97,6 +118,14 @@ describe("POST /api/gdpr/delete-account — чл. 17", () => {
     expect(prismaMock.session.deleteMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: expect.objectContaining({ userId: "u1" }) }),
     );
+  });
+
+  it("псевдонимизира authorTag в тикет-съобщенията (пряко идентифициращ подпис)", async () => {
+    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    const call = prismaMock.ticketMessage.updateMany.mock.calls.at(-1);
+    expect(call, "ticketMessage.updateMany не е викан").toBeTruthy();
+    expect(call[0].where).toMatchObject({ authorId: "u1" });
+    expect(call[0].data.authorTag).toMatch(/^\[deleted-user-/);
   });
 });
 

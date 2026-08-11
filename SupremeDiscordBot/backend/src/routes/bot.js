@@ -276,6 +276,10 @@ router.get("/ticket/by-channel/:channelId", async (req, res, next) => {
   try {
     const ticket = await prisma.ticket.findFirst({
       where: { channelId: req.params.channelId, status: { notIn: ["CLOSED", "ARCHIVED"] } },
+      // panel носи supportRoleIds — /rename, /escalate, /ticket проверяват него
+      // за „staff“. Без include ticket.panel е undefined → само ManageGuild
+      // минаваше, а support-ролите бяха тихо изключени (fail-closed). Одит 11.08.2026.
+      include: { panel: { select: { supportRoleIds: true } } },
     });
     if (!ticket) return res.status(404).json({ error: "No active ticket for this channel" });
     res.json(ticket);

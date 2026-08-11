@@ -420,9 +420,17 @@ async function handleApplicationSubmission(client, session) {
     const reviewChannelId = session.form.reviewChannelId;
     if (!reviewChannelId) return { ok: true }; // няма канал за ревю — записана е, без embed
 
-    const reviewChannel = client.channels.cache.get(reviewChannelId);
+    // Cross-tenant guard: reviewChannelId е нескопиран потребителски вход
+    // (forms.js createFormSchema го приема като гол z.string()). Глобалният
+    // channel кеш резолвва канал в ЧУЖД guild → кандидатура с лични данни би
+    // се публикувала в чужд сървър. Резолвваме В РАМКИТЕ на guild-а на сесията
+    // и проверяваме принадлежността, преди да пуснем PII навън. Одит 11.08.2026.
+    const guild = client.guilds.cache.get(session.guildId);
+    const reviewChannel = guild
+      ? await guild.channels.fetch(reviewChannelId).catch(() => null)
+      : null;
     if (!reviewChannel) {
-      console.error(`Review channel ${reviewChannelId} not found in cache`);
+      console.error(`Review channel ${reviewChannelId} not found in guild ${session.guildId}`);
       return { ok: true }; // записана Е — липсва само embed-ът за екипа
     }
 
