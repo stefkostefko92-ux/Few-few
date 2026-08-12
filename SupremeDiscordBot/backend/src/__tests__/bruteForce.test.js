@@ -362,3 +362,50 @@ describe("bruteForceGuard (Express)", () => {
     expect(checkSync("apikey", "6.6.6.6").blocked).toBe(true);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Видимост на атаката за седмичния преглед (одит етап 13, 12.08.2026).
+//
+// `legal/breach-procedure.md` изброява „Rate limiter hits on auth endpoints
+// (weekly review)" като източник за ОТКРИВАНЕ на пробив. Източникът е
+// одиторският ред `SECURITY_BRUTE_FORCE_BLOCK`. Флагът `entry.logged` пази
+// ЕДИН ред на епизод (иначе всеки провал пише ред в базата — усилвател на
+// DoS), но не се въоръжаваше пак: източник, който удря дни наред, оставяше
+// ЕДИН ред за цялата кампания. Прегледът виждаше еднократна засечка вместо
+// продължаваща атака — тоест процедурата обещаваше откриваемост, която кодът
+// не даваше.
+describe("одиторската следа отразява ПОВТОРНИТЕ епизоди, не само първия", () => {
+  const flush = () => new Promise((r) => setTimeout(r, 10));
+
+  it("нов епизод след изтекла блокировка пише нов ред", async () => {
+    const real = Date.now;
+    let clock = real();
+    vi.spyOn(Date, "now").mockImplementation(() => clock);
+    try {
+      for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "77.77.77.77");
+      await flush();
+      expect(auditCreate).toHaveBeenCalledTimes(1);
+
+      // Напред след блокировката, но ВЪТРЕ в прозореца: записът оцелява
+      // прочистването, значи проверяваме точно повторното въоръжаване, а не
+      // случайно изтрит запис.
+      clock += IP_STEP.blockMs + 1000;
+      expect(IP_STEP.blockMs + 1000).toBeLessThan(15 * 60 * 1000);
+
+      await recordFailure("apikey", "77.77.77.77");
+      await flush();
+      expect(auditCreate, "втори епизод остана невидим за прегледа")
+        .toHaveBeenCalledTimes(2);
+    } finally {
+      Date.now = real;
+    }
+  });
+
+  it("но НЕ пише ред на всеки провал в рамките на един епизод", async () => {
+    // Обратната опасност: ред на всяко удряне прави от защитата усилвател на
+    // DoS срещу собствената ни база.
+    for (let i = 0; i < IP_STEP.failures + 15; i++) await recordFailure("apikey", "78.78.78.78");
+    await flush();
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+  });
+});

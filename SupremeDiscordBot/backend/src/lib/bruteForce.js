@@ -314,6 +314,16 @@ export async function recordFailure(scope, key) {
     eWide.times.push(t);
   }
 
+  // Ново ЗАПИСВАНЕ в одита за НОВ епизод. `logged` пази един ред на епизод
+  // (иначе всеки провал пише ред — усилвател на DoS срещу базата), но досега
+  // не се въоръжаваше пак: източник, който удря дни наред, оставяше ЕДИН ред
+  // за цялата кампания и седмичният преглед (breach-procedure.md, „Detection
+  // Sources") виждаше еднократна грешка вместо атака. Изтекла ли е предишната
+  // блокировка — следващата е нов епизод. Броят редове остава ограничен от
+  // стълбата (блокировките растат до часове), не от обема заявки.
+  const rearm = (e) => { if (e && e.logged && e.blockedUntil <= t) e.logged = false; };
+  rearm(eIp); rearm(eNet); rearm(eWide);
+
   const g = (globalFails.get(scope) || []).filter((ts) => t - ts < WINDOW_MS);
   g.push(t);
   globalFails.set(scope, g);
