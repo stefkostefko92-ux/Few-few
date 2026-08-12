@@ -405,7 +405,15 @@ export default function ReverseLabShowcase() {
     var mounted = true;
     var cleanup = null;
 
-    import("three").then(function (THREE) {
+    // Don't build the scene until the section is actually approaching. This
+    // component sits far below the fold, yet it used to parse three.js and
+    // create a WebGL context the moment the page mounted — competing with the
+    // hero for GPU and main thread while invisible. A browser also caps how
+    // many live WebGL contexts a page may hold, so idle ones are not free.
+    var startIO = null;
+    function boot() {
+      if (!mounted) return;
+      import("three").then(function (THREE) {
       if (!mounted || !el) return;
 
       var isMobile = window.innerWidth < 768;
@@ -760,7 +768,18 @@ gl_FragColor.rgb += uRim * _fres * 0.5;\n\
       };
     });
 
-    return function () { mounted = false; engineRef.current = null; if (cleanup) cleanup(); };
+    }   // end boot()
+
+    if ("IntersectionObserver" in window) {
+      startIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting && startIO) { startIO.disconnect(); startIO = null; boot(); }
+        });
+      }, { rootMargin: "300px" });      // start ~one screen early so it's ready
+      startIO.observe(el);
+    } else { boot(); }
+
+    return function () { mounted = false; if (startIO) startIO.disconnect(); engineRef.current = null; if (cleanup) cleanup(); };
   }, []);
 
   function handleTabClick(i) {

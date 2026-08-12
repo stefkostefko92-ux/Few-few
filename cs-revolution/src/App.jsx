@@ -1291,6 +1291,40 @@ function SEOInjector() {
 // ═══════════════════════════════════════════════════════════════
 // INTERACTIVE CONSTELLATION — Nodes that connect to cursor
 // ═══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// csVisibleLoop — run a rAF loop ONLY while the element is on screen
+// and the tab is in the foreground, optionally capped to a frame rate.
+//
+// Several canvases on this page animate continuously from mount, so a
+// visitor sitting on the hero was paying for the constellation, the ASCII
+// sculpture and the monument at the same time — six rAF loops competing
+// every frame. Off-screen work is invisible by definition; this makes it
+// free. Returns a cleanup function.
+// ══════════════════════════════════════════════════════════════
+function csVisibleLoop(el, step, fps) {
+  var raf = null, visible = true, last = 0;
+  var interval = fps ? 1000 / fps : 0;
+  function frame(now) {
+    if (!visible || document.hidden) { raf = null; return; }
+    if (!interval || now - last >= interval) { last = now; step(now); }
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); }
+  function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+  var io = null;
+  if (el && "IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { visible = e.isIntersecting; visible ? start() : stop(); });
+    }, { rootMargin: "200px" });
+    io.observe(el);
+  } else { start(); }
+  function onVis() { document.hidden ? stop() : start(); }
+  document.addEventListener("visibilitychange", onVis);
+  start();
+  return function () { stop(); document.removeEventListener("visibilitychange", onVis); if (io) io.disconnect(); };
+}
+
 function Constellation() {
   var ref = useRef(null);
   useEffect(function() {
@@ -1364,10 +1398,11 @@ function Constellation() {
           }
         }
       }
-      requestAnimationFrame(draw);
     }
-    draw();
-    return function() { window.removeEventListener("resize", resize); };
+    // was: an uncancelled requestAnimationFrame(draw) that ran forever, even
+    // off-screen and after unmount. Now paused off-screen and cleaned up.
+    var stopLoop = csVisibleLoop(ref.current, draw);
+    return function() { window.removeEventListener("resize", resize); stopLoop(); };
   }, []);
   return <canvas ref={ref} style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }} />;
 }
@@ -1540,9 +1575,11 @@ function ASCIISculpture() {
         lines.push(line);
       }
       setArt(lines.join("\n"));
-      requestAnimationFrame(generate);
     }
-    generate();
+    // 12 fps is indistinguishable for ASCII art and costs 5x less: this used
+    // to run setArt() — a full React re-render — on every single frame.
+    var stopLoop = csVisibleLoop(ref.current, generate, 12);
+    return function(){ stopLoop(); };
   }, []);
 
   return (
@@ -2300,10 +2337,9 @@ function Monument(props){
       // core
       ctx.fillStyle="rgba(0,229,255,"+(0.5+Math.sin(now*.002)*.2)+")";
       ctx.beginPath();ctx.arc(W/2,H/2,2.5,0,Math.PI*2);ctx.fill();
-      raf=requestAnimationFrame(frame);
     }
-    raf=requestAnimationFrame(frame);
-    return function(){cancelAnimationFrame(raf);window.removeEventListener("resize",fit)};
+    var stopLoop=csVisibleLoop(ref.current,frame);
+    return function(){stopLoop();window.removeEventListener("resize",fit)};
   },[mine]);
 
   var L={
