@@ -16,6 +16,7 @@
 // маршрута само я викат.
 
 import { prisma } from "../lib/prisma.js";
+import { ensureUserStub } from "../lib/ensureUser.js";
 import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 
 function formatDuration(seconds) {
@@ -135,11 +136,7 @@ export async function submitApplication({
   try {
     // Кандидатстващият може никога да не е влизал в таблото, а `applications`
     // има външен ключ към `users` с RESTRICT — без този stub вмъкването гърми.
-    await prisma.user.upsert({
-      where: { id: userId },
-      create: { id: userId, username: userId, discriminator: "0" },
-      update: {},
-    });
+    await ensureUserStub(prisma, userId);
 
     const application = await prisma.application.create({
       data: {

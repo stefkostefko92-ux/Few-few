@@ -13,6 +13,7 @@ import { getServerTier, planHasFeature, sanitizePanelForTier, sanitizeFormForTie
 import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
 import { writeAudit } from "../lib/auditLog.js";
+import { ensureUserStub, ensureUserStubs } from "../lib/ensureUser.js";
 import axios from "axios";
 import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
@@ -425,6 +426,12 @@ router.post("/ticket/create", async (req, res, next) => {
       if (openNow >= maxOpen) {
         const e = new Error("MAX_TICKETS_REACHED"); e.code = "MAX_TICKETS_REACHED"; throw e;
       }
+      // `tickets.creatorId` и `tickets.assigneeId` сочат към `users` с истински
+      // външен ключ, а и двете ID-та идват от Discord. Член, който никога не е
+      // влизал в таблото (тоест мнозинството), иначе НЕ МОЖЕ да отвори тикет.
+      // Stub-ът е в СЪЩАТА транзакция — откат не оставя сирак.
+      await ensureUserStubs(tx, [creatorId, assigneeId]);
+
       let nextNumber = null;
       if (panelId) {
         const bumped = await tx.panel.update({
@@ -645,6 +652,10 @@ router.post("/ticket/:ticketId/claim", async (req, res, next) => {
   const { userId } = req.body;
   try {
     if (!(await gateTicketFeature(req, res, "ticket.claim"))) return;
+    // `tickets.assigneeId` е външен ключ към `users`. Персонал, който работи
+    // само през Discord и никога не е отварял таблото, иначе не може да поеме
+    // тикет — точно хората, които го правят най-често.
+    await ensureUserStub(prisma, userId);
     const updated = await prisma.ticket.update({
       where: { id: req.params.ticketId },
       data: { assigneeId: userId, status: "CLAIMED", lastActivityAt: new Date() },
@@ -1447,6 +1458,8 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
     });
     }
 
+    // Кандидатът може да няма ред в `users` (външен ключ с RESTRICT).
+    await ensureUserStub(prisma, app.userId);
     const ticket = await prisma.ticket.create({
       data: {
         serverId,
