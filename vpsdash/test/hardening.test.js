@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { clientIp, sendJson, openSse } from '../src/httpd.js';
-import { loginAllowed, loginFailed, _resetLoginLimiter } from '../src/auth.js';
+import { loginAllowed, loginFailed, _resetLoginLimiter, attemptStart, globalDelayMs, bruteForceState, bearerAllowed, bearerFailed } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
 import { run, runOk } from '../src/exec.js';
 import { Audit } from '../src/audit.js';
@@ -294,4 +294,72 @@ test('одит: ДВЕ последователни ротации не изяж
     else process.env.CSD_AUDIT_MAX_BYTES = prev;
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// ── Брутфорс: трите дупки, всяка доказана като АТАКА ─────────────────────────
+
+test('паралелен залп НЕ минава лимита (проверката и отчитането са атомарни)', () => {
+  _resetLoginLimiter();
+  // Атаката: старият код проверяваше квотата, после чакаше (`await readJson`,
+  // scrypt) и чак тогава отчиташе провала. Стоте заявки, тръгнали заедно, виждат
+  // едно и също „свободно" състояние. Симулираме точно това — сто проверки БЕЗ
+  // нито едно отчитане между тях.
+  const burst = Array.from({ length: 100 }, () => loginAllowed('9.9.9.9'));
+  assert.equal(burst.filter(Boolean).length, 100, 'старият ред пропуска целия залп — затова беше дупка');
+
+  _resetLoginLimiter();
+  const atomic = Array.from({ length: 100 }, () => attemptStart('9.9.9.9'));
+  assert.equal(atomic.filter(Boolean).length, 5, 'слотът се заема веднага — минават точно 5, не 100');
+  assert.equal(attemptStart('9.9.9.9'), false, 'квотата остава изчерпана');
+  // Друг адрес не се влияе — лимитът е по източник, не общ таван на входа.
+  assert.equal(attemptStart('9.9.9.10'), true);
+});
+
+test('разпределена атака се лови ГЛОБАЛНО и бави, вместо да заключва', () => {
+  _resetLoginLimiter();
+  assert.equal(globalDelayMs(), 0, 'при спокойствие нула забавяне — иначе наказваме собственика');
+  // Сто адреса по един опит: всеки поотделно е под лимита, тоест броячът по IP
+  // не вижда нищо. Точно така изглежда ботнет.
+  for (let i = 0; i < 100; i++) attemptStart(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+  const d = globalDelayMs();
+  assert.ok(d > 0, 'общият шум трябва да се вижда, дори когато всеки адрес е „чист"');
+  assert.ok(d <= 5000, 'забавянето има таван — иначе става самопричинен отказ на услуга');
+  const st = bruteForceState();
+  assert.ok(st.recentFails >= 100 && st.addresses >= 100, 'състоянието се докладва за аларма/табло');
+  // И най-важното: НЕ блокира. Собственикът с вярната парола влиза, само по-бавно.
+  assert.equal(attemptStart('10.0.0.0'.replace('0.0', '9.9')), true);
+});
+
+test('грешен Bearer вече се брои и спира — беше безплатен и НЕВИДИМ опит', () => {
+  _resetLoginLimiter();
+  assert.equal(bearerAllowed('7.7.7.7'), true);
+  for (let i = 0; i < 10; i++) bearerFailed('7.7.7.7');
+  assert.equal(bearerAllowed('7.7.7.7'), false, 'налучкването на peerToken трябва да спре');
+  assert.equal(bearerAllowed('7.7.7.8'), true, 'друг адрес не е засегнат');
+  // Провалите по Bearer хранят и глобалния брояч — иначе атака по този вход
+  // остава невидима за забавянето.
+  assert.ok(bruteForceState().recentFails >= 10);
+});
+
+test('налучкването ГЪРМИ — защита без сигнал не позволява да реагираш', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  _resetLoginLimiter();
+  const a = Object.create(AlertEngine.prototype);
+  assert.deepEqual(a.bruteChecks(), [], 'при тишина не се вдига шум');
+
+  // Един ядосан човек, забравил паролата: малко опити, ЕДИН адрес.
+  for (let i = 0; i < 16; i++) attemptStart('5.5.5.5');
+  let f = a.bruteChecks();
+  assert.equal(f.length, 1);
+  assert.equal(f[0].severity, 'warning', 'един адрес е човек, не машина');
+  assert.match(f[0].body, /смени паролата/);
+
+  // Ботнет: същият общ брой, но пръснат. По адрес всеки е „чист" — точно
+  // затова прагът е върху СБОРА.
+  _resetLoginLimiter();
+  for (let i = 0; i < 20; i++) attemptStart(`172.16.0.${i}`);
+  f = a.bruteChecks();
+  assert.equal(f[0].severity, 'critical');
+  assert.match(f[0].title, /Разпределено/);
+  assert.match(f[0].body, /машина, не забравена парола/);
 });

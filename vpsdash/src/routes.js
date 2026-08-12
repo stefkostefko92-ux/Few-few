@@ -6,9 +6,11 @@ import {
   createSession,
   verifySession,
   tokenEqual,
-  loginAllowed,
-  loginFailed,
   loginSucceeded,
+  attemptStart,
+  globalDelayMs,
+  bearerAllowed,
+  bearerFailed,
 } from './auth.js';
 import * as services from './services.js';
 import * as docker from './docker.js';
@@ -61,7 +63,7 @@ const COOKIE = 'csd_sess';
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.1.5';
+export const VERSION = '1.2.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -217,8 +219,17 @@ export function buildRouter(ctx) {
   const auth = (req) => {
     // 1) Federation: Bearer peerToken (другият VPS / прокси).
     const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-    if (bearer && cfg.peerToken && tokenEqual(bearer, cfg.peerToken)) {
-      return { user: 'peer', peer: true };
+    if (bearer && cfg.peerToken) {
+      if (tokenEqual(bearer, cfg.peerToken)) return { user: 'peer', peer: true };
+      // Грешен Bearer беше безплатен опит: без брояч, без ред в одита, без
+      // аларма — тоест налучкването на токена, който дава пълен достъп, беше
+      // не просто възможно, а НЕВИДИМО.
+      const bip = clientIp(req, cfg.trustProxy);
+      if (bearerAllowed(bip)) {
+        bearerFailed(bip);
+        audit.log({ action: 'auth.bearerFail', ip: bip });
+      }
+      return null;
     }
     // 2) Браузър: подписано сесийно куки.
     const sess = verifySession(cfg.sessionSecret, parseCookies(req)[COOKIE], {
@@ -360,12 +371,25 @@ export function buildRouter(ctx) {
 
   r.post('/api/login', async (req, res) => {
     const ip = clientIp(req, cfg.trustProxy);
-    if (!loginAllowed(ip)) return sendError(res, 429, 'Твърде много опити — изчакай 10 минути.');
+    // Слотът се заема ПРЕДИ четенето на тялото и преди scrypt. Иначе между
+    // проверката и отчитането има точка на изчакване, през която сто паралелни
+    // заявки минават с един и същ „свободен" резултат.
+    if (!attemptStart(ip)) {
+      audit.log({ action: 'login.throttled', ip });
+      return sendError(res, 429, 'Твърде много опити — изчакай 10 минути.');
+    }
+    // Разпределена атака (много адреси, по малко опити от всеки) не се вижда от
+    // брояча по IP. Общият шум не БЛОКИРА — това би бил безплатен начин да
+    // заключиш собственика — а бави отговора. Човек с вярната парола губи
+    // секунди; налучкването става безсмислено.
+    const delay = globalDelayMs();
+    if (delay) await new Promise((r2) => setTimeout(r2, delay));
     const body = await readJson(req);
     const okUser = String(body.user || '') === cfg.adminUser;
     const okPass = verifyPassword(String(body.password || ''), cfg.passwordHash);
     if (!okUser || !okPass) {
-      loginFailed(ip);
+      // Слотът вече е зает от `attemptStart` — второ отчитане би направило
+      // лимита наполовина по-строг, отколкото пише в съобщението.
       audit.log({ action: 'login.fail', ip });
       return sendError(res, 401, 'Грешно име или парола.');
     }
@@ -379,7 +403,6 @@ export function buildRouter(ctx) {
         // веднага и се маха от конфига, за да не може да се ползва пак.
         const idx = verifyRecoveryCode(body.code, cfg.totp.recoveryHashes || []);
         if (idx < 0) {
-          loginFailed(ip);
           audit.log({ action: 'login.fail2fa', ip });
           return sendError(res, 401, body.code ? 'Грешен код от приложението.' : 'Нужен е код (2FA).');
         }

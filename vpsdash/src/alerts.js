@@ -12,6 +12,12 @@ import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts, memPercent } from './history.js';
+import { bruteForceState } from './auth.js';
+
+// Прагове за алармата „налучкване". Броят е ОБЩ (всички адреси), защото
+// разпределената атака е тихата — по адрес всеки изглежда безобиден.
+const BRUTE_ALERT_FAILS = 15;
+const BRUTE_ALERT_ADDRESSES = 5;
 import { evaluateBurn } from './slo.js';
 import { backupChecks } from './drill.js';
 import { scheduleChecks } from './backupsched.js';
@@ -422,6 +428,7 @@ export class AlertEngine {
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);
     for (const b of this.accessChecks()) out.push(b);
+    for (const b of this.bruteChecks()) out.push(b);
     // Нов изложен порт. Алармата НЕ е „порт 443 е отворен" (той трябва да е) —
     // а промяната спрямо приета базова линия, точно както рестарт-цикълът се
     // мери по разлика.
@@ -767,6 +774,39 @@ export class AlertEngine {
   // Броим само НОВОТО от последната проверка (курсорът е на този четец) — иначе
   // едно старо избухване гърми вечно. Първото четене само зарежда курсора:
   // без това стартът на панела вдига аларма за 24 MB история.
+  // Налучкване на паролата/токена — атака, която дотук беше НЕВИДИМА.
+  //
+  // Лимитерът я спираше, но мълчаливо: провалите влизаха в одита, който никой не
+  // чете в реално време. Тоест панелът знаеше, че някой го чука, и не казваше.
+  // По собствената ни доктрина това е по-лошо от липсваща защита — защитата без
+  // сигнал не позволява да реагираш (да блокираш мрежа, да смениш токен).
+  //
+  // Прагът е върху ОБЩИЯ брой провали, не по адрес: разпределената атака е
+  // тихата, а тя се вижда само в сбора.
+  bruteChecks() {
+    const st = bruteForceState();
+    if (st.recentFails < BRUTE_ALERT_FAILS) return [];
+    // „Много опити от МНОГО адреси" е друг разказ от „някой сбърка паролата
+    // пет пъти": второто е човек, първото е машина.
+    const distributed = st.addresses >= BRUTE_ALERT_ADDRESSES;
+    return [
+      {
+        key: 'brute-force',
+        severity: distributed || st.recentFails >= BRUTE_ALERT_FAILS * 3 ? 'critical' : 'warning',
+        title: distributed ? 'Разпределено налучкване на входа' : 'Много неуспешни опити за вход',
+        body:
+          `${plural(st.recentFails, 'неуспешен опит', 'неуспешни опита')} за последните 10 минути ` +
+          `от ${plural(st.addresses, 'адрес', 'адреса')}. ` +
+          (st.delayMs ? `Отговорът вече се бави с ${Math.round(st.delayMs)} ms, за да обезсмисли налучкването. ` : '') +
+          (distributed
+            ? 'Толкова адреси значи машина, не забравена парола — виж „Сигурност" и обмисли стесняване на списъка с разрешени адреси.'
+            : 'Ако не си ти, смени паролата и виж активните сесии.'),
+        sustain: false,
+        repeatEvery: 3600 * 1000,
+      },
+    ];
+  }
+
   accessChecks() {
     const out = [];
     if (!this.accesslog || this.cfg.accesslog?.enabled === false) return out;
