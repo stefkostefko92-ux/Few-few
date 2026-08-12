@@ -71,7 +71,7 @@ function ManualId({ value, onChange, id, multi }) {
 
 // ─── Канал / категория (един избор) ──────────────────────────────────────────
 
-export default function DiscordChannelSelect({ kind = "text", value, onChange, emptyLabel, id }) {
+export default function DiscordChannelSelect({ kind = "text", value, onChange, emptyLabel, id, ariaLabel }) {
   const { t } = useT();
   const { data, isLoading, isError } = useGuildDirectory();
 
@@ -84,7 +84,12 @@ export default function DiscordChannelSelect({ kind = "text", value, onChange, e
 
   return (
     <>
+      {/* `ariaLabel` е за местата БЕЗ външен <label htmlFor> — напр. бързият
+          избор на канал до бутона „Публикувай". Без него axe вдига select-name
+          (WCAG 4.1.2 / EAA). Не се слага по подразбиране, за да не изяде
+          по-конкретния етикет там, където го има. */}
       <select id={id} className="cs-input" value={value || ""} disabled={isLoading}
+              aria-label={ariaLabel || undefined}
               onChange={(e) => onChange(e.target.value)}>
         <option value="">{isLoading ? t("picker.loading") : (emptyLabel || t("picker.none"))}</option>
         {/* Стойност отпреди (или изтрит канал) — показваме я, вместо да я нулираме тихо. */}

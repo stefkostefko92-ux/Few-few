@@ -38,6 +38,7 @@
 //  • Одитният запис е ВЕДНЪЖ на блокировка, не на заявка — иначе нападателят
 //    би ни карал да пишем в базата вместо себе си.
 //  • Никога не хвърля и никога не чака: Redis е с бърз отказ (виж redisClient).
+import { isIP } from "node:net";
 import { getRedis } from "./redisClient.js";
 
 const WINDOW_MS = 15 * 60 * 1000;
@@ -62,6 +63,14 @@ const SUBNET_STEPS = [
   { failures: 40,  blockMs: 5 * 60 * 1000 },
 ];
 
+// Стълбата за ШИРОКАТА мрежа (/16, /48) — най-търпелива от трите. Тя пази от
+// нападател, който върти цял блок адреси (типично при IPv6 /48), без да пипа
+// нормални хора: легитимен трафик от цяла /16 рядко трупа стотици ПРОВАЛА.
+const WIDE_STEPS = [
+  { failures: 600, blockMs: 6 * 60 * 60 * 1000 },
+  { failures: 250, blockMs: 60 * 60 * 1000 },
+];
+
 // Над този брой провали в един обхват за прозореца смятаме, че тече атака,
 // и свиваме праговете по източник (слой 3).
 const GLOBAL_ATTACK_THRESHOLD = 100;
@@ -84,18 +93,45 @@ const entryKey = (scope, key) => `${scope}:${key}`;
  * клиент би имал ДВА независими бюджета според това как е стигнал до нас.
  */
 export function subnetOf(ip) {
-  const s = String(ip || "");
-  const mapped = s.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  const addr = mapped ? mapped[1] : s;
+  const addr = normalizeAddr(ip);
+  const version = isIP(addr);
+  if (version === 4) return addr.split(".").slice(0, 3).join(".") + ".0/24";
+  if (version === 6) return addr.split(":").slice(0, 4).join(":") + "::/64";
+  // НЕ е IP (напр. „panelId:userId" при верификация): мрежовите слоеве нямат
+  // смисъл — null, за да НЕ се създават фалшиви „подмрежови" кофи.
+  return null;
+}
 
-  if (/^\d+\.\d+\.\d+\.\d+$/.test(addr)) {
-    return addr.split(".").slice(0, 3).join(".") + ".0/24";
-  }
-  if (addr.includes(":")) {
-    const groups = addr.split(":");
-    return groups.slice(0, 4).join(":") + "::/64";
-  }
-  return `unknown:${addr}`;
+/**
+ * Нормализира IPv4-mapped IPv6 („::ffff:1.2.3.4" → „1.2.3.4"), иначе същият
+ * клиент би имал ДВА независими бюджета според как е стигнал до нас.
+ *
+ * РАЗПОЗНАВАНЕТО МИНАВА ПРЕЗ `net.isIP`, не през „има ли двоеточие". Първата
+ * версия използваше точно тази хлабава проверка и вземаше ключа
+ * „panelId:userId" (верификация) за IPv6 адрес — хванато от теста.
+ */
+function normalizeAddr(ip) {
+  const s = String(ip || "").trim();
+  const mapped = s.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  return mapped ? mapped[1] : s;
+}
+
+/**
+ * По-широката мрежа: /16 за IPv4, /48 за IPv6.
+ *
+ * ЗАЩО СЪЩЕСТВУВА ВТОРО НИВО (затягане, 11.08.2026): при IPv6 доставчиците
+ * раздават на един клиент цял /48, тоест 65 536 различни /64 мрежи. Слой,
+ * агрегиращ само по /64, е практически безсилен срещу такъв нападател — той
+ * сменя „мрежа" колкото пъти поиска, без да излиза от собствения си блок.
+ * Затова има и по-груба група, с още по-търпелив праг: тя не бива да пипа
+ * нормални хора, а хваща именно въртенето в цял блок.
+ */
+export function wideNetOf(ip) {
+  const addr = normalizeAddr(ip);
+  const version = isIP(addr);
+  if (version === 4) return addr.split(".").slice(0, 2).join(".") + ".0.0/16";
+  if (version === 6) return addr.split(":").slice(0, 3).join(":") + "::/48";
+  return null;   // виж бележката в subnetOf
 }
 
 /** Съкратен адрес за одита — GDPR съобр. 30: мащабът се вижда, човекът не. */
@@ -173,18 +209,33 @@ async function redisBlockedUntil(scope, keys) {
   }
 }
 
-async function redisBump(scope, ip, net) {
+async function redisBump(scope, ip, net, wide) {
   const redis = getRedis();
   if (!redis) return null;
   try {
+    // Индексите се строят динамично — не-IP ключ няма мрежови слоеве, значи
+    // фиксираните позиции биха чели чужди резултати.
     const p = redis.pipeline();
-    p.incr(`bf:ip:${scope}:${ip}`);   p.expire(`bf:ip:${scope}:${ip}`, WINDOW_SEC);
-    p.incr(`bf:net:${scope}:${net}`); p.expire(`bf:net:${scope}:${net}`, WINDOW_SEC);
-    p.incr(`bf:all:${scope}`);        p.expire(`bf:all:${scope}`, WINDOW_SEC);
+    const at = {};
+    let i = 0;
+    const bump = (name, key) => {
+      // `NX` е ЗАДЪЛЖИТЕЛНО: без него всяко увеличение подновява срока и
+      // броячът никога не изтича — от ПРОЗОРЕЧЕН става КУМУЛАТИВЕН. Бавен
+      // нападател (по един провал точно преди изтичане) трупа безкрайно, а
+      // решението е „по-лошото от памет и Redis", значи раздутата стойност
+      // печели и блокира невинни от същата мрежа. Червен екип, 12.08.2026.
+      p.incr(key); p.expire(key, WINDOW_SEC, "NX");
+      at[name] = i; i += 2;
+    };
+    bump("ip", `bf:ip:${scope}:${ip}`);
+    if (net) bump("net", `bf:net:${scope}:${net}`);
+    if (wide) bump("wide", `bf:wide:${scope}:${wide}`);
+    bump("global", `bf:all:${scope}`);
+
     const res = await p.exec();
     if (!res) return null;
-    const num = (i) => Number(res[i]?.[1]) || 0;
-    return { ip: num(0), net: num(2), global: num(4) };
+    const num = (name) => (at[name] === undefined ? 0 : Number(res[at[name]]?.[1]) || 0);
+    return { ip: num("ip"), net: num("net"), wide: num("wide"), global: num("global") };
   } catch {
     return null;
   }
@@ -216,11 +267,12 @@ async function redisClear(scope, ip) {
 export async function check(scope, key) {
   const t = now();
   const net = subnetOf(key);
-  const memUntil = Math.max(
-    state.get(entryKey(scope, key))?.blockedUntil || 0,
-    state.get(entryKey(scope, net))?.blockedUntil || 0,
+  const wide = wideNetOf(key);
+  const layers = [key, net, wide].filter(Boolean);
+  const memUntil = layers.reduce(
+    (max, k) => Math.max(max, state.get(entryKey(scope, k))?.blockedUntil || 0), 0,
   );
-  const redisUntil = await redisBlockedUntil(scope, [key, net]);
+  const redisUntil = await redisBlockedUntil(scope, layers);
   const until = Math.max(memUntil, redisUntil);
   return until > t
     ? { blocked: true, retryAfterSec: Math.ceil((until - t) / 1000) }
@@ -230,9 +282,8 @@ export async function check(scope, key) {
 /** Синхронна проверка само по паметта — за пътища, които не могат да чакат. */
 export function checkSync(scope, key) {
   const t = now();
-  const until = Math.max(
-    state.get(entryKey(scope, key))?.blockedUntil || 0,
-    state.get(entryKey(scope, subnetOf(key)))?.blockedUntil || 0,
+  const until = [key, subnetOf(key), wideNetOf(key)].filter(Boolean).reduce(
+    (max, k) => Math.max(max, state.get(entryKey(scope, k))?.blockedUntil || 0), 0,
   );
   return until > t
     ? { blocked: true, retryAfterSec: Math.ceil((until - t) / 1000) }
@@ -244,15 +295,34 @@ export async function recordFailure(scope, key) {
   prune();
   const t = now();
   const net = subnetOf(key);
+  const wide = wideNetOf(key);
 
   // Памет
   const eIp = getEntry(scope, key);
   eIp.times = eIp.times.filter((ts) => t - ts < WINDOW_MS);
   eIp.times.push(t);
 
-  const eNet = getEntry(scope, net);
-  eNet.times = eNet.times.filter((ts) => t - ts < WINDOW_MS);
-  eNet.times.push(t);
+  // Мрежовите слоеве съществуват само за истински IP адреси.
+  const eNet = net ? getEntry(scope, net) : null;
+  if (eNet) {
+    eNet.times = eNet.times.filter((ts) => t - ts < WINDOW_MS);
+    eNet.times.push(t);
+  }
+  const eWide = wide ? getEntry(scope, wide) : null;
+  if (eWide) {
+    eWide.times = eWide.times.filter((ts) => t - ts < WINDOW_MS);
+    eWide.times.push(t);
+  }
+
+  // Ново ЗАПИСВАНЕ в одита за НОВ епизод. `logged` пази един ред на епизод
+  // (иначе всеки провал пише ред — усилвател на DoS срещу базата), но досега
+  // не се въоръжаваше пак: източник, който удря дни наред, оставяше ЕДИН ред
+  // за цялата кампания и седмичният преглед (breach-procedure.md, „Detection
+  // Sources") виждаше еднократна грешка вместо атака. Изтекла ли е предишната
+  // блокировка — следващата е нов епизод. Броят редове остава ограничен от
+  // стълбата (блокировките растат до часове), не от обема заявки.
+  const rearm = (e) => { if (e && e.logged && e.blockedUntil <= t) e.logged = false; };
+  rearm(eIp); rearm(eNet); rearm(eWide);
 
   const g = (globalFails.get(scope) || []).filter((ts) => t - ts < WINDOW_MS);
   g.push(t);
@@ -260,9 +330,10 @@ export async function recordFailure(scope, key) {
 
   // Redis (ако е наличен) — броим по-голямото от двете, защото друг процес
   // може вече да е видял част от същата атака.
-  const r = await redisBump(scope, key, net);
+  const r = await redisBump(scope, key, net, wide);
   const ipCount = Math.max(eIp.times.length, r?.ip || 0);
-  const netCount = Math.max(eNet.times.length, r?.net || 0);
+  const netCount = eNet ? Math.max(eNet.times.length, r?.net || 0) : 0;
+  const wideCount = eWide ? Math.max(eWide.times.length, r?.wide || 0) : 0;
   const globalCount = Math.max(g.length, r?.global || 0);
 
   const underAttack = globalCount >= GLOBAL_ATTACK_THRESHOLD;
@@ -275,10 +346,14 @@ export async function recordFailure(scope, key) {
   if (step) await applyBlock(scope, key, eIp, t + step.blockMs, ipCount, step.blockMs, "ip");
 
   // Слой 2: подмрежа
-  const netStep = SUBNET_STEPS.find((s) => netCount >= s.failures);
+  const netStep = eNet && SUBNET_STEPS.find((s) => netCount >= s.failures);
   if (netStep) await applyBlock(scope, net, eNet, t + netStep.blockMs, netCount, netStep.blockMs, "subnet");
 
-  const until = Math.max(eIp.blockedUntil, eNet.blockedUntil);
+  // Слой 2б: широката мрежа (/16, /48) — хваща въртене в цял блок адреси.
+  const wideStep = eWide && WIDE_STEPS.find((s) => wideCount >= s.failures);
+  if (wideStep) await applyBlock(scope, wide, eWide, t + wideStep.blockMs, wideCount, wideStep.blockMs, "widenet");
+
+  const until = Math.max(eIp.blockedUntil, eNet?.blockedUntil || 0, eWide?.blockedUntil || 0);
   return until > t
     ? { blocked: true, retryAfterSec: Math.ceil((until - t) / 1000) }
     : { blocked: false, retryAfterSec: 0 };
@@ -338,6 +413,7 @@ export function _stateSize() { return state.size; }
 
 export const BRUTE_FORCE_STEPS = STEPS;
 export const BRUTE_FORCE_SUBNET_STEPS = SUBNET_STEPS;
+export const BRUTE_FORCE_WIDE_STEPS = WIDE_STEPS;
 export const BRUTE_FORCE_WINDOW_MS = WINDOW_MS;
 export const BRUTE_FORCE_MAX_ENTRIES = MAX_ENTRIES;
 export const BRUTE_FORCE_GLOBAL_THRESHOLD = GLOBAL_ATTACK_THRESHOLD;

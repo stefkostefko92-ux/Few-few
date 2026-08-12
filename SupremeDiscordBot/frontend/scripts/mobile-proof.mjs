@@ -164,6 +164,15 @@ const PAGES = [
   { path: `/dashboard/${SID}/commands`, name: "commands" },
 ];
 
+// ─── Достъпност: axe-core върху РЕАЛНО рендерираните страници ───────────────
+// ЗАЩО ТУК, а не с regex по JSX (одит етап 8, 12.08.2026): опитах да намеря
+// полета без достъпно име чрез търсене в изходния код и парсерът сгреши ТРИ
+// пъти (вложени скоби в JSX атрибути, преливане в съседен елемент). Изводът е,
+// че въпросът „има ли това поле достъпно име" се решава върху ДЪРВОТО, не
+// върху текста — а дървото го има точно тук, вече рендерирано.
+// EAA/EN 301 549 прави това правно изискване, не козметика.
+const AXE_SRC = readFileSync(new URL("../node_modules/axe-core/axe.min.js", import.meta.url), "utf8");
+
 const failures = [];
 const note = (ok, msg) => { console.log(`  ${ok ? "✓" : "✗"} ${msg}`); if (!ok) failures.push(msg); };
 
@@ -198,6 +207,23 @@ for (const view of [
       return { sw: el.scrollWidth, cw: el.clientWidth };
     });
     note(over.sw <= over.cw + 1, `${name}: без хоризонтален прелив (${over.sw}/${over.cw})`);
+
+    // Достъпност — само СЕРИОЗНИТЕ нарушения (serious/critical). Пълният набор
+    // би удавил сигнала в дребни препоръки; тези са тези, които реално спират
+    // човек с екранен четец или само с клавиатура.
+    if (view.tag === "desktop") {
+      await page.evaluate(AXE_SRC);
+      const a11y = await page.evaluate(async () => {
+        const r = await window.axe.run(document, {
+          resultTypes: ["violations"],
+          rules: { "color-contrast": { enabled: false } },   // мери се отделно, срещу палитрата
+        });
+        return r.violations
+          .filter((v) => v.impact === "serious" || v.impact === "critical")
+          .map((v) => `${v.id} ×${v.nodes.length}`);
+      });
+      note(a11y.length === 0, `${name}: достъпност — ${a11y.length ? a11y.join(", ") : "нула сериозни"}`);
+    }
 
     // ХОРИЗОНТАЛЕН ПРЕЛИВ ВЪВ ВСЕКИ СКРОЛ КОНТЕЙНЕР, не само в страницата.
     // Проверката само на <html> е сляпа два пъти: `overflow-x: hidden` на body

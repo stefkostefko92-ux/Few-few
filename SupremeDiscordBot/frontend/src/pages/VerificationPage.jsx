@@ -8,8 +8,6 @@ import {
   getVerificationPanels, createVerificationPanel, updateVerificationPanel,
   deleteVerificationPanel, spawnVerificationPanel,
 } from "../api";
-import { usePremium } from "../hooks/usePremium";
-import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
@@ -82,7 +80,6 @@ export default function VerificationPage() {
   // Сървърната грешка пред общия резервен текст — иначе истинската причина
   // (напр. „Math captcha requires Premium") се губи в „Action failed".
   const errText = (err) => err?.response?.data?.error || t("auto.actionFailed");
-  const { isPremium } = usePremium();
   const [editing, setEditing] = useState(null); // null | "new" | panelId
   const [form, setForm] = useState(defaultForm());
   const [spawnInputs, setSpawnInputs] = useState({});
@@ -250,18 +247,13 @@ export default function VerificationPage() {
                     <option
                       key={t.value}
                       value={t.value}
-                      disabled={t.value === "MATH" && !isPremium}
+
                     >
-                      {t.label}{t.value === "MATH" && !isPremium ? " (Premium)" : ""}
+                      {t.label}
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-cs-dim mt-1">{TYPES.find((t) => t.value === form.type)?.hint}</p>
-                {form.type === "MATH" && !isPremium && (
-                  <p className="text-xs text-cs-gold mt-1 flex items-center gap-1">
-                    <PremiumBadge small /> Math captcha requires Premium
-                  </p>
-                )}
               </label>
             </div>
 
@@ -340,14 +332,14 @@ export default function VerificationPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <label className="block">
                     <span className="cs-label flex items-center gap-1.5">
-                      Min Account Age (days) {!isPremium && <PremiumBadge small />}
+                      Min Account Age (days)
                     </span>
                     <input
                       type="number" min={0} className="cs-input disabled:opacity-50 disabled:cursor-not-allowed"
-                      value={isPremium ? form.minAccountAgeDays : ""}
-                      disabled={!isPremium}
+                      value={form.minAccountAgeDays}
+
                       onChange={(e) => set("minAccountAgeDays", e.target.value)}
-                      placeholder={isPremium ? t("verify.noCheck") : t("verify.premiumOnly")}
+                      placeholder={t("verify.noCheck")}
                     />
                   </label>
                   <label className="block">

@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { notifyBot, notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";
+import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { requirePremium } from "../lib/premium.js";
 import { ensureArchiveToken, tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
 
@@ -17,13 +18,31 @@ const router = Router();
 
 router.get("/archives/:ticketId", async (req, res, next) => {
   try {
+    // ВТОРАТА врата към същите транскрипти. `routes/archive.js` получи защита
+    // срещу налучкване на токени, а този маршрут — не: същите лични данни,
+    // същият вид тайна, по-слаба охрана. Класически „едно правило, две
+    // определения". Обхватът е СЪЩИЯТ („archive"), за да е един бюджетът —
+    // иначе нападателят просто редува двата адреса. (Одит етап 3, 12.08.2026)
+    const blocked = await check("archive", req.ip);
+    if (blocked.blocked) {
+      res.setHeader("Retry-After", String(blocked.retryAfterSec));
+      return res.status(429).send("Too many attempts. Please try again later.");
+    }
+
     const ticket = await prisma.ticket.findUnique({
       where: { id: req.params.ticketId },
       select: { archiveHtml: true, status: true, archiveToken: true },
     });
 
-    if (!ticket || !ticket.archiveHtml) return res.status(404).send("Archive not found");
-    if (!archiveTokenMatches(ticket, req.query.t)) return res.status(404).send("Archive not found");
+    if (!ticket || !ticket.archiveHtml) {
+      await recordFailure("archive", req.ip);
+      return res.status(404).send("Archive not found");
+    }
+    if (!archiveTokenMatches(ticket, req.query.t)) {
+      await recordFailure("archive", req.ip);
+      return res.status(404).send("Archive not found");
+    }
+    await recordSuccess("archive", req.ip);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
     // CSP на архивния HTML (F8, defense-in-depth): транскриптът е генериран от
@@ -297,6 +316,7 @@ router.post("/:serverId/:ticketId/reply", requireServerAdmin, async (req, res, n
     }
 
     const result = await sendTicketReply({
+      serverId: req.params.serverId,
       channelId: ticket.channelId,
       content,
       authorName: req.user.username,

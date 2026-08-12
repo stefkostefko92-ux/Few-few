@@ -12,6 +12,7 @@ import morgan from "morgan";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import rateLimit from "express-rate-limit";
+import { redisStore } from "./lib/rateLimitStore.js";
 
 // ─── Startup validation ───────────────────────────────────────────────────────
 const REQUIRED_ENV = ["DATABASE_URL", "SESSION_SECRET", "ENCRYPTION_KEY", "DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_REDIRECT_URI", "MAIN_OWNER_ID", "API_SECRET", "FRONTEND_URL"];
@@ -117,7 +118,17 @@ app.set("trust proxy", ["loopback", "uniquelocal"]);
 // HSTS is enforced in production only.
 app.use(
   helmet({
-    contentSecurityPolicy: false, // API doesn't serve HTML; frontend nginx sets its own CSP
+    // CSP е изключен ГЛОБАЛНО, но твърдението „API-то не сервира HTML" беше
+    // НЕВЯРНО (одит етап 10, 12.08.2026): архивните транскрипти се сервират
+    // точно оттук — `/archive/ticket/:id` и `/api/tickets/archives/:id` —
+    // и съдържат потребителско съдържание с лични данни.
+    //
+    // Днес това е безопасно, защото ВСЯКА от двете врати слага СВОЙ, по-строг
+    // CSP (`default-src 'none'`, нула скриптове) — виж routes/archive.js
+    // (secureHtml) и routes/tickets.js. Тоест защитата съществува, но е
+    // per-route: нов HTML маршрут БЕЗ собствен CSP няма да получи нищо по
+    // подразбиране. Който добавя такъв, слага и заглавията.
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     hsts: process.env.NODE_ENV === "production" ? {
       maxAge: 31536000, // 1 year
@@ -177,6 +188,7 @@ app.use(
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 200,
+  store: redisStore("rl:global"),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests — please slow down" },
@@ -191,7 +203,15 @@ const globalLimiter = rateLimit({
   // Проверено с изпълнен express експеримент (Продавача, 07.08.2026).
   skip: (req) => {
     const path = (req.originalUrl || "").split("?")[0];
-    return path === "/api/health" || path === "/api/stripe/webhook";
+    // `/api/bot` се пропуска СЪЗНАТЕЛНО: той има свой, по-подходящ лимитер
+    // (botLimiter, 600/мин). Досега важаха И ДВАТА, тоест реалният таван за
+    // бота беше 200/мин — един процес с един адрес, който при активен сървър
+    // (логване на съобщения, тикети, верификации) го надхвърля лесно и започва
+    // да получава 429 от собствения ни backend. Маршрутът и без това е зад
+    // requireBotSecret + защитата срещу налучкване. (Червен екип, 12.08.2026)
+    return path === "/api/health"
+      || path === "/api/stripe/webhook"
+      || path.startsWith("/api/bot/");
   },
 });
 
@@ -199,6 +219,7 @@ const globalLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
+  store: redisStore("rl:auth"),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many authentication attempts — please try again in 15 minutes" },
@@ -208,6 +229,7 @@ const authLimiter = rateLimit({
 const botLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 600, // 10/s — generous for message logging
+  store: redisStore("rl:bot"),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Bot endpoint rate limit exceeded" },
@@ -221,6 +243,7 @@ const botLimiter = rateLimit({
 const archiveLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
+  store: redisStore("rl:archive"),
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests — please slow down",

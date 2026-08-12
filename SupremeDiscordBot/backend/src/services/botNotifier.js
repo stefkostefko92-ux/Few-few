@@ -101,9 +101,9 @@ export async function dmUser(userId, embed) {
  * @param {string} p.ticketId   Ticket ID (за логове)
  * @param {number} [p.number]   Пореден номер на тикета (за footer „Ticket #N“)
  */
-export async function sendTicketReply({ channelId, content, authorName, authorId, ticketId, number }) {
+export async function sendTicketReply({ serverId, channelId, content, authorName, authorId, ticketId, number }) {
   if (!channelId || !content) return { ok: false, reason: "missing_channelId_or_content" };
-  return notifyBot("TICKET_REPLY", { channelId, content, authorName, authorId, ticketId, number });
+  return notifyBot("TICKET_REPLY", { serverId, channelId, content, authorName, authorId, ticketId, number });
 }
 
 /**

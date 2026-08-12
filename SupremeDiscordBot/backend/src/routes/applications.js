@@ -9,6 +9,7 @@ import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 // (латентен 500). Ботът днес вика каноничния /api/bot/application/submit, значи
 // маршрутът е резервен, но счупен резерв е по-лош от никакъв. Един източник.
 import { submitApplication } from "../services/applicationSubmit.js";
+import { ensureUserStub } from "../lib/ensureUser.js";
 
 const router = Router();
 
@@ -424,7 +425,10 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
       });
     }
 
-    // Create a ticket record linking to the application
+    // Create a ticket record linking to the application.
+    // `creatorId` сочи към `users` с външен ключ (RESTRICT) — кандидатът може
+    // никога да не е влизал в таблото.
+    await ensureUserStub(prisma, app.userId);
     const ticket = await prisma.ticket.create({
       data: {
         serverId: req.params.serverId,

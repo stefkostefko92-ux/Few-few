@@ -90,6 +90,50 @@ export default {
       }
     }
 
+    // ─── 1б. „Лепкави роли": връщане на ролите отпреди напускането ────────────
+    //
+    // Минава през СЪЩИЯ гард като autorole (`isRoleSafeToSelfAssign`), и то по
+    // по-силна причина: снимката е направена в миналото, а междувременно ролята
+    // може да е получила опасни права или да е вдигната над ботската. Връщаме
+    // само каквото е безопасно СЕГА, не каквото е било безопасно тогава.
+    //
+    // Ботовете се пропускат: техните роли са managed и се дават от интеграцията.
+    if (server.stickyRolesEnabled && !member.user.bot) {
+      try {
+        const { data } = await api.get(`/bot/member-roles/${member.guild.id}/${member.id}`);
+        const saved = Array.isArray(data?.roleIds) ? data.roleIds : [];
+        if (saved.length) {
+          const restored = [];
+          const skipped = [];
+          for (const roleId of saved) {
+            const role = member.guild.roles.cache.get(roleId)
+              || await member.guild.roles.fetch(roleId).catch(() => null);
+            if (!isRoleSafeToSelfAssign(role, botMember)) { skipped.push(roleId); continue; }
+            try {
+              await member.roles.add(roleId, "Sticky roles — restored on rejoin");
+              restored.push(roleId);
+            } catch (err) {
+              skipped.push(roleId);
+              console.warn(`[sticky-roles] ролята ${roleId} не беше върната на ${member.user.tag}: ${err.message}`);
+            }
+          }
+          if (skipped.length) {
+            console.warn(
+              `[sticky-roles] guild ${member.guild.id}: върнати ${restored.length}, пропуснати ${skipped.length} ` +
+              "(изтрити, managed, с опасни права или над ботската роля)",
+            );
+          }
+          // Снимката се чисти чак СЛЕД успешно връщане — ако ботът е бил офлайн
+          // или без права, тя остава за следващия опит.
+          if (restored.length) {
+            await api.delete(`/bot/member-roles/${member.guild.id}/${member.id}`).catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.warn(`[sticky-roles] връщането за ${member.id} пропадна: ${err?.message}`);
+      }
+    }
+
     // Build interpolation context for welcomer messages
     const ctx = {
       user: { id: member.id, username: member.user.username, tag: member.user.tag },

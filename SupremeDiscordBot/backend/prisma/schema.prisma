@@ -168,6 +168,12 @@ model Server {
   autoroleIds           String[]  @default([]) // Roles given to new members
   autoroleBotIds        String[]  @default([]) // Roles given to bots on join
   stickyMessagesEnabled Boolean   @default(false)
+  // v45 — „лепкави роли": ролите на напусналия се пазят и се връщат при
+  // повторно присъединяване. ИЗРИЧНО opt-in (default false): автоматичното
+  // връщане на роли е решение със сигурностна тежест — напуснал модератор,
+  // който се върне, иначе би си върнал достъпа сам. Опасните роли не се
+  // връщат никога (виж roleAssignabilityReason в бота).
+  stickyRolesEnabled    Boolean   @default(false)
 
   // Server event logging (member/voice/moderation activity) — per-server opt-in
   eventLogEnabled    Boolean  @default(false)
@@ -205,6 +211,7 @@ model Server {
   // v40 — метлата за изтекъл гратис сканира точно по тази колона.
   @@index([accessUntil])
   @@map("servers")
+  memberRoleSnapshots MemberRoleSnapshot[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -241,6 +248,27 @@ model Agency {
   @@index([ownerUserId])
   @@index([accessUntil])
   @@map("agencies")
+}
+
+/// v45 — снимка на Discord ролите на напуснал член, за да му бъдат върнати
+/// при повторно присъединяване („лепкави роли").
+///
+/// ВАЖНО: тук НЯМА външен ключ към `User`. Членът на Discord сървър почти
+/// никога не е наш потребител в таблото — външен ключ би провалял записа за
+/// всеки, който не е влизал при нас (точно дефектът, който събаряше
+/// регистрацията на сървъри през `AuditLog.actorId`).
+model MemberRoleSnapshot {
+  id         String   @id @default(cuid())
+  serverId   String
+  userId     String   // Discord ID — нарочно БЕЗ релация към User
+  roleIds    String[] @default([])
+  capturedAt DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, userId])
+  @@index([capturedAt]) // ретенцията чисти старите снимки по този индекс
+  @@map("member_role_snapshots")
 }
 
 model ServerMember {
@@ -557,6 +585,9 @@ model Ticket {
 
   @@index([serverId, status])
   @@index([creatorId])
+  // v46 — изтриването на акаунт (чл. 17) занулява assigneeId през SET NULL;
+  // без индекс това е сканиране на най-голямата таблица при всяко изтриване.
+  @@index([assigneeId])
   @@index([serverId, priority])
   // Ботът търси тикет по канал при ВСЯКО съобщение в тикет-канал — индексът
   // съществуваше само в SQL миграция, значи `prisma migrate dev` щеше да го
@@ -675,6 +706,12 @@ model AuditLog {
 
   @@index([serverId])
   @@index([action]) // v44: мониторинг заявката LIKE 'JOB_OK_%' GROUP BY action
+  // v46 — чл. 15 експортът търси субекта И като АКТЬОР, И като ОБЕКТ:
+  //   where: { OR: [{ actorId }, { targetId }] }
+  // Без тези два индекса заявката сканира ЦЯЛАТА таблица, а тя расте с всяко
+  // действие в продукта. Postgres НЕ индексира външните ключове сам.
+  @@index([actorId])
+  @@index([targetId])
   // Ретенцията трие по възраст, а админският изглед подрежда по време.
   @@index([createdAt])
   @@map("audit_logs")

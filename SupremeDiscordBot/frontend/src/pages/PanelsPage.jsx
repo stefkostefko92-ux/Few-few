@@ -408,7 +408,7 @@ export default function PanelsPage() {
                   {/* Spawn input */}
                   <div className="flex items-center gap-1">
                     <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
-                      <DiscordChannelSelect kind="text" value={spawnInputs[panel.id] || ""}
+                      <DiscordChannelSelect kind="text" ariaLabel={t("panels.spawnChannelAria")} value={spawnInputs[panel.id] || ""}
                         onChange={(v) => setSpawnInputs((s) => ({ ...s, [panel.id]: v }))} />
                     </div>
                     <button

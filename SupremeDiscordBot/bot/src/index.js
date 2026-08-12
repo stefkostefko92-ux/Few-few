@@ -359,8 +359,10 @@ app.post("/internal/reaction-role-update", async (req, res) => {
     const { data: rrm } = await api.get(`/bot/reaction-roles/${rrmId}`);
     if (!rrm.channelId || !rrm.messageId) return res.json({ ok: true, skipped: "not yet spawned" });
 
-    const channel = client.channels.cache.get(rrm.channelId)
-      || await client.channels.fetch(rrm.channelId).catch(() => null);
+    // guildChannel резолвира В РАМКИТЕ на сървъра. Глобалният резолв търси
+    // през ВСИЧКИ guild-ове на бота — потребителски channelId по този път е
+    // cross-tenant публикуване. (Одит етап 6, затворено 12.08.2026)
+    const channel = await guildChannel(rrm.serverId || serverId, rrm.channelId);
     if (!channel) return res.status(404).json({ error: "Channel no longer exists" });
 
     const msg = await channel.messages.fetch(rrm.messageId).catch(() => null);
@@ -450,7 +452,10 @@ app.post("/internal/verification-update", async (req, res) => {
     const { buildVerificationMessage } = await import("./utils/verificationEmbed.js");
     const { data: panel } = await api.get(`/verification/bot/${panelId}`);
     if (!panel.channelId || !panel.messageId) return res.json({ ok: true, skipped: "not yet spawned" });
-    const channel = await client.channels.fetch(panel.channelId).catch(() => null);
+    // guildChannel резолвира В РАМКИТЕ на сървъра. Глобалният резолв търси
+    // през ВСИЧКИ guild-ове на бота — потребителски channelId по този път е
+    // cross-tenant публикуване. (Одит етап 6, затворено 12.08.2026)
+    const channel = await guildChannel(panel.serverId || serverId, panel.channelId);
     if (!channel) return res.status(404).json({ error: "Channel no longer exists" });
     const msg = await channel.messages.fetch(panel.messageId).catch(() => null);
     if (!msg) return res.status(404).json({ error: "Message no longer exists" });
@@ -485,7 +490,7 @@ app.post("/internal/ticket-claimed", async (req, res) => {
 // името на staff члена („Име · via dashboard“), без staff-ът да влиза в Discord.
 // Вика се от backend/src/services/botNotifier.js → sendTicketReply().
 app.post("/internal/ticket-reply", async (req, res) => {
-  const { channelId, content, authorName, ticketId, number } = req.body || {};
+  const { serverId, channelId, content, authorName, ticketId, number } = req.body || {};
   if (!channelId || typeof channelId !== "string" || !content || typeof content !== "string") {
     return res.status(400).json({ ok: false, reason: "channelId (string) and content (string) required" });
   }
@@ -495,8 +500,10 @@ app.post("/internal/ticket-reply", async (req, res) => {
 
     // Fallback към REST fetch — кешът може да е студен след рестарт/sharding;
     // работи и за thread-базирани тикети (channels.fetch връща и threads).
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    // guildChannel резолвира В РАМКИТЕ на сървъра. Глобалният резолв търси
+    // през ВСИЧКИ guild-ове на бота — потребителски channelId по този път е
+    // cross-tenant публикуване. (Одит етап 6, затворено 12.08.2026)
+    const channel = await guildChannel(serverId, channelId);
     if (!channel?.isTextBased?.()) {
       return res.status(502).json({ ok: false, reason: "Ticket channel not found or not text-based" });
     }
@@ -788,7 +795,7 @@ app.post("/internal/application-transcript", async (req, res) => {
 });
 
 app.post("/internal/ticket-assigned", async (req, res) => {
-  const { channelId, assigneeId, ticketId } = req.body;
+  const { serverId, channelId, assigneeId, ticketId } = req.body;
   if (!assigneeId) return res.json({ ok: true });
 
   try {
@@ -813,8 +820,10 @@ app.post("/internal/ticket-assigned", async (req, res) => {
     if (channelId) {
       // Единственият маршрут без REST fallback: архивиран thread-тикет не е в
       // кеша → известието мълчеше, а маршрутът връщаше ok:true.
-      const channel = client.channels.cache.get(channelId)
-        || await client.channels.fetch(channelId).catch(() => null);
+      // guildChannel резолвира В РАМКИТЕ на сървъра. Глобалният резолв търси
+    // през ВСИЧКИ guild-ове на бота — потребителски channelId по този път е
+    // cross-tenant публикуване. (Одит етап 6, затворено 12.08.2026)
+    const channel = await guildChannel(serverId, channelId);
       // Текстът ползва assigneeId, не обекта `assignee` — да връзваме
       // известието за успешен users.fetch беше излишна причина да мълчи.
       if (channel) {
@@ -954,14 +963,16 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
 // бутоните. requireBotSecret е закачен и глобално по-горе (app.use) — тук е
 // повторен изрично, за да е самодокументиращо, че route-ът е авторизиран.
 app.post("/internal/poll-update", requireBotSecret, async (req, res) => {
-  const { channelId, messageId, question, options, multiChoice } = req.body;
+  const { serverId, channelId, messageId, question, options, multiChoice } = req.body;
   if (!channelId || !messageId || !question || !Array.isArray(options)) {
     return res.status(400).json({ error: "channelId, messageId, question, options[] required" });
   }
   try {
     // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    // guildChannel резолвира В РАМКИТЕ на сървъра. Глобалният резолв търси
+    // през ВСИЧКИ guild-ове на бота — потребителски channelId по този път е
+    // cross-tenant публикуване. (Одит етап 6, затворено 12.08.2026)
+    const channel = await guildChannel(serverId, channelId);
     if (!channel) {
       console.warn(`[poll-update] channel ${channelId} not found`);
       return res.status(404).json({ error: "Channel not found" });
@@ -1079,13 +1090,15 @@ app.post("/internal/scheduled-message-send", async (req, res) => {
 });
 
 app.post("/internal/ai-reply", async (req, res) => {
-  const { channelId, content, ticketId, language, model } = req.body;
+  const { serverId, channelId, content, ticketId, language, model } = req.body;
   if (!channelId || !content) return res.status(400).json({ error: "channelId and content required" });
 
   try {
     // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
-    const channel = client.channels.cache.get(channelId)
-      || await client.channels.fetch(channelId).catch(() => null);
+    // guildChannel резолвира В РАМКИТЕ на сървъра. Глобалният резолв търси
+    // през ВСИЧКИ guild-ове на бота — потребителски channelId по този път е
+    // cross-tenant публикуване. (Одит етап 6, затворено 12.08.2026)
+    const channel = await guildChannel(serverId, channelId);
     if (!channel) return res.status(404).json({ error: "Channel not found" });
 
     // EU AI Act Article 50 — разкритието трябва да е на езика на сървъра.

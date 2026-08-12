@@ -44,6 +44,7 @@ export default function SettingsPage() {
         welcomerDmEnabled:  server.welcomerDmEnabled || false,
         welcomerDmMessage:  server.welcomerDmMessage || "",
         autoroleIds:        (server.autoroleIds || []).join(","),
+        stickyRolesEnabled: server.stickyRolesEnabled || false,
         autoroleBotIds:     (server.autoroleBotIds || []).join(","),
         // Server event logging
         eventLogEnabled:       server.eventLogEnabled || false,
@@ -105,6 +106,7 @@ export default function SettingsPage() {
       welcomerDmEnabled:  form.welcomerDmEnabled,
       welcomerDmMessage:  form.welcomerDmMessage || null,
       autoroleIds:        csvToArr(form.autoroleIds),
+      stickyRolesEnabled: form.stickyRolesEnabled,
       autoroleBotIds:     csvToArr(form.autoroleBotIds),
       // Server event logging (all tiers)
       eventLogEnabled:    form.eventLogEnabled,
@@ -479,6 +481,21 @@ export default function SettingsPage() {
               <DiscordRoleSelect multi value={form.autoroleBotIds} onChange={(v) => set("autoroleBotIds", v)} />
               <p className="text-xs text-cs-dim mt-1">{t("ui.hint.autoroleBots")}</p>
             </label>
+          </div>
+
+          {/* v45 — „лепкави роли". Изрично opt-in заради сигурностната тежест:
+              напуснал модератор, който се върне, иначе би си върнал достъпа. */}
+          <div className="border-t border-cs-border pt-4">
+            <label className="flex items-center gap-3">
+              <input type="checkbox" checked={form.stickyRolesEnabled}
+                onChange={(e) => set("stickyRolesEnabled", e.target.checked)}
+                className="w-4 h-4 accent-cs-cyan" />
+              <span className="cs-label !mb-0">{t("ui.stickyRoles")}</span>
+            </label>
+            <p className="text-xs text-cs-dim mt-1">{t("ui.hint.stickyRoles")}</p>
+            {form.stickyRolesEnabled && (
+              <p className="text-xs text-warning mt-2" role="note">{t("ui.hint.stickyRolesWarning")}</p>
+            )}
           </div>
         </div>
 

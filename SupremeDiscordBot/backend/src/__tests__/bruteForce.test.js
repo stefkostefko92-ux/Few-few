@@ -18,9 +18,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import express from "express";
 import request from "supertest";
 import {
-  check, checkSync, recordFailure, recordSuccess, bruteForceGuard, subnetOf,
+  check, checkSync, recordFailure, recordSuccess, bruteForceGuard, subnetOf, wideNetOf,
   _resetBruteForceState, _stateSize,
-  BRUTE_FORCE_STEPS, BRUTE_FORCE_SUBNET_STEPS, BRUTE_FORCE_MAX_ENTRIES,
+  BRUTE_FORCE_STEPS, BRUTE_FORCE_SUBNET_STEPS, BRUTE_FORCE_WIDE_STEPS, BRUTE_FORCE_MAX_ENTRIES,
   BRUTE_FORCE_GLOBAL_THRESHOLD, BRUTE_FORCE_TIGHTENED_STEP,
 } from "../lib/bruteForce.js";
 import { _setRedisForTests } from "../lib/redisClient.js";
@@ -31,25 +31,53 @@ vi.mock("../lib/prisma.js", () => ({ prisma: { auditLog: { create: (...a) => aud
 const IP_STEP = [...BRUTE_FORCE_STEPS].sort((a, b) => a.failures - b.failures)[0];
 const NET_STEP = [...BRUTE_FORCE_SUBNET_STEPS].sort((a, b) => a.failures - b.failures)[0];
 
-/** Минимален Redis двойник: pipeline + mget + set + del върху Map. */
-function fakeRedis() {
-  const store = new Map();
+/**
+ * Redis двойник, който УВАЖАВА TTL и `NX`.
+ *
+ * ЗАЩО ТОЛКОВА ПОДРОБЕН (червен екип, 12.08.2026): първата версия правеше
+ * `expire()` НУЛЕВА операция. Заради това цял клас дефекти беше НЕВИДИМ за
+ * гейта — а точно там се оказа реален блокер: `EXPIRE` без `NX` подновява
+ * срока при ВСЯКО увеличение, значи броячът никога не изтича и от прозоречен
+ * става КУМУЛАТИВЕН. Двойник, който игнорира срока, не може да види разлика
+ * между двете. Часовникът е подаваем, за да се симулира изтичане без чакане.
+ */
+function fakeRedis(clock = { now: 0 }) {
+  const store = new Map();          // key → { value, expiresAt|null }
+  const live = (k) => {
+    const e = store.get(k);
+    if (!e) return null;
+    if (e.expiresAt !== null && e.expiresAt <= clock.now) { store.delete(k); return null; }
+    return e;
+  };
   const api = {
-    store,
-    async mget(keys) { return keys.map((k) => store.get(k) ?? null); },
-    async set(k, v) { store.set(k, v); return "OK"; },
+    store, clock,
+    async mget(keys) { return keys.map((k) => live(k)?.value ?? null); },
+    async set(k, v, _mode, ttlSec) {
+      store.set(k, { value: v, expiresAt: ttlSec ? clock.now + ttlSec * 1000 : null });
+      return "OK";
+    },
     async del(...keys) { for (const k of keys) store.delete(k); return keys.length; },
     pipeline() {
       const ops = [];
       const p = {
         incr(k) { ops.push(["incr", k]); return p; },
-        expire() { ops.push(["expire"]); return p; },
+        expire(k, sec, mode) { ops.push(["expire", k, sec, mode]); return p; },
         async exec() {
-          return ops.map(([op, k]) => {
-            if (op !== "incr") return [null, 1];
-            const next = (Number(store.get(k)) || 0) + 1;
-            store.set(k, String(next));
-            return [null, next];
+          return ops.map(([op, k, sec, mode]) => {
+            if (op === "incr") {
+              const cur = live(k);
+              const next = (Number(cur?.value) || 0) + 1;
+              store.set(k, { value: String(next), expiresAt: cur?.expiresAt ?? null });
+              return [null, next];
+            }
+            // EXPIRE: с `NX` слага срок САМО ако още няма такъв — точно
+            // разликата между прозоречен и кумулативен брояч.
+            const e = live(k);
+            if (e) {
+              if (mode === "NX" && e.expiresAt !== null) return [null, 0];
+              e.expiresAt = clock.now + sec * 1000;
+            }
+            return [null, 1];
           });
         },
       };
@@ -138,6 +166,106 @@ describe("слой 2 — подмрежата хваща въртенето на
     for (let i = 0; i < NET_STEP.failures; i++) await recordFailure("apikey", `78.0.0.${(i % 200) + 1}`);
     await recordSuccess("apikey", "78.0.0.5");
     expect((await check("apikey", "78.0.0.5")).blocked).toBe(true);
+  });
+});
+
+describe("слой 2б — широката мрежа затваря въртенето в цял блок", () => {
+  it("wideNetOf свежда IPv4 до /16, IPv6 до /48, нормализира mapped адрес", () => {
+    expect(wideNetOf("1.2.3.4")).toBe("1.2.0.0/16");
+    expect(wideNetOf("::ffff:1.2.3.4")).toBe("1.2.0.0/16");
+    expect(wideNetOf("2a04:4e42:8e:1:2:3:4:5")).toBe("2a04:4e42:8e::/48");
+  });
+
+  it("IPv6 нападател със СВОЙ /48 не се измъква, сменяйки /64 мрежи", async () => {
+    // Всяка /64 остава ПОД подмрежовия праг — точно поведението, което прави
+    // слой 2 безсилен при IPv6 (един /48 съдържа 65 536 различни /64).
+    const perNet = NET_STEP.failures - 1;
+    const wideStep = [...BRUTE_FORCE_WIDE_STEPS].sort((a, b) => a.failures - b.failures)[0];
+    let sent = 0;
+    for (let net = 0; sent < wideStep.failures; net++) {
+      for (let i = 0; i < perNet && sent < wideStep.failures; i++, sent++) {
+        await recordFailure("apikey", `2a04:4e42:8e:${net.toString(16)}::${i}`);
+      }
+    }
+    const res = await check("apikey", "2a04:4e42:8e:ffff::1");
+    expect(res.blocked, "широкият слой трябваше да хване въртенето в /48").toBe(true);
+  });
+
+  it("широкият слой НЕ пипа съседна мрежа извън блока", async () => {
+    const wideStep = [...BRUTE_FORCE_WIDE_STEPS].sort((a, b) => a.failures - b.failures)[0];
+    for (let i = 0; i < wideStep.failures; i++) {
+      await recordFailure("apikey", `2a04:4e42:8e:${(i % 300).toString(16)}::1`);
+    }
+    expect((await check("apikey", "2a04:4e42:8e:1::9")).blocked).toBe(true);
+    // Друг /48 на същия доставчик си остава свободен.
+    expect((await check("apikey", "2a04:4e42:99:1::9")).blocked).toBe(false);
+  });
+});
+
+describe("не-IP ключове (напр. потребител при верификация)", () => {
+  it("нямат мрежови слоеве — null, вместо фалшива група", () => {
+    expect(subnetOf("panel1:222222222222222222")).toBeNull();
+    expect(wideNetOf("panel1:222222222222222222")).toBeNull();
+  });
+
+  it("раждат ТОЧНО един запис, не три", async () => {
+    _resetBruteForceState();
+    await recordFailure("verify", "panel1:222222222222222222");
+    expect(_stateSize()).toBe(1);
+  });
+
+  it("ескалират нормално и се чистят при успех", async () => {
+    const key = "panel1:333333333333333333";
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("verify", key);
+    expect((await check("verify", key)).blocked).toBe(true);
+    await recordSuccess("verify", key);
+    expect((await check("verify", key)).blocked).toBe(false);
+  });
+
+  it("двама различни потребители не си пречат", async () => {
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("verify", "p:aaa");
+    expect((await check("verify", "p:aaa")).blocked).toBe(true);
+    expect((await check("verify", "p:bbb")).blocked).toBe(false);
+  });
+});
+
+describe("броячът в Redis е ПРОЗОРЕЧЕН, не кумулативен", () => {
+  // ЧЕРВЕН ЕКИП (12.08.2026, блокер): `EXPIRE` без `NX` подновява срока при
+  // всяко увеличение. Бавен нападател (по един провал точно преди изтичане)
+  // трупа брояча ВЕЧНО, а решението е „по-лошото от памет и Redis" — значи
+  // раздутата стойност от Redis печели и блокира невинни от същата мрежа.
+  // Същата поправка вече беше приложена в rateLimitStore.js — но не и тук.
+  it("бавните провали НЕ се трупат безкрайно — срокът не се подновява", async () => {
+    const clock = { now: Date.now() };
+    const redis = fakeRedis(clock);
+    _setRedisForTests(redis);
+
+    // По един провал на всеки „14 минути" (под 15-минутния прозорец), 20 пъти.
+    for (let i = 0; i < 20; i++) {
+      _resetBruteForceState();                 // паметта забравя (различен процес)
+      await recordFailure("apikey", "60.60.60.60");
+      clock.now += 14 * 60 * 1000;
+    }
+
+    const counter = redis.store.get("bf:ip:apikey:60.60.60.60");
+    const value = Number(counter?.value ?? 0);
+    expect(value, "броячът трябва да се нулира с прозореца, а не да расте вечно")
+      .toBeLessThanOrEqual(2);
+  });
+
+  it("срокът се слага веднъж и ключът реално изтича", async () => {
+    const clock = { now: Date.now() };
+    const redis = fakeRedis(clock);
+    _setRedisForTests(redis);
+
+    await recordFailure("apikey", "61.61.61.61");
+    await recordFailure("apikey", "61.61.61.61");
+    clock.now += 16 * 60 * 1000;               // след прозореца
+    _resetBruteForceState();
+    await recordFailure("apikey", "61.61.61.61");
+
+    expect(Number(redis.store.get("bf:ip:apikey:61.61.61.61")?.value))
+      .toBe(1);                                 // започва отначало
   });
 });
 
@@ -232,5 +360,52 @@ describe("bruteForceGuard (Express)", () => {
   it("checkSync вижда същата блокировка без изчакване на Redis", async () => {
     for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "6.6.6.6");
     expect(checkSync("apikey", "6.6.6.6").blocked).toBe(true);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Видимост на атаката за седмичния преглед (одит етап 13, 12.08.2026).
+//
+// `legal/breach-procedure.md` изброява „Rate limiter hits on auth endpoints
+// (weekly review)" като източник за ОТКРИВАНЕ на пробив. Източникът е
+// одиторският ред `SECURITY_BRUTE_FORCE_BLOCK`. Флагът `entry.logged` пази
+// ЕДИН ред на епизод (иначе всеки провал пише ред в базата — усилвател на
+// DoS), но не се въоръжаваше пак: източник, който удря дни наред, оставяше
+// ЕДИН ред за цялата кампания. Прегледът виждаше еднократна засечка вместо
+// продължаваща атака — тоест процедурата обещаваше откриваемост, която кодът
+// не даваше.
+describe("одиторската следа отразява ПОВТОРНИТЕ епизоди, не само първия", () => {
+  const flush = () => new Promise((r) => setTimeout(r, 10));
+
+  it("нов епизод след изтекла блокировка пише нов ред", async () => {
+    const real = Date.now;
+    let clock = real();
+    vi.spyOn(Date, "now").mockImplementation(() => clock);
+    try {
+      for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("apikey", "77.77.77.77");
+      await flush();
+      expect(auditCreate).toHaveBeenCalledTimes(1);
+
+      // Напред след блокировката, но ВЪТРЕ в прозореца: записът оцелява
+      // прочистването, значи проверяваме точно повторното въоръжаване, а не
+      // случайно изтрит запис.
+      clock += IP_STEP.blockMs + 1000;
+      expect(IP_STEP.blockMs + 1000).toBeLessThan(15 * 60 * 1000);
+
+      await recordFailure("apikey", "77.77.77.77");
+      await flush();
+      expect(auditCreate, "втори епизод остана невидим за прегледа")
+        .toHaveBeenCalledTimes(2);
+    } finally {
+      Date.now = real;
+    }
+  });
+
+  it("но НЕ пише ред на всеки провал в рамките на един епизод", async () => {
+    // Обратната опасност: ред на всяко удряне прави от защитата усилвател на
+    // DoS срещу собствената ни база.
+    for (let i = 0; i < IP_STEP.failures + 15; i++) await recordFailure("apikey", "78.78.78.78");
+    await flush();
+    expect(auditCreate).toHaveBeenCalledTimes(1);
   });
 });

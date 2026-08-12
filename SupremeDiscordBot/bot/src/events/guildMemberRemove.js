@@ -3,7 +3,7 @@
 // enabled, and auto-close their open tickets.
 
 import api from "../utils/api.js";
-import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, fetchRemovalCause } from "../utils/serverEventLog.js";
 import { DANGER, WARNING } from "../utils/colors.js";
 
 export default {
@@ -17,9 +17,16 @@ export default {
     // log запис MemberKick за този target в последните ~5s → member_kick (с
     // актьор + reason), иначе member_leave. Отделен try/catch — не бива да чупи
     // ticket auto-close логиката отдолу.
+    // `kick`/`ban` се пазят ИЗВЪН блока: „лепкавите роли" по-долу трябва да
+    // знаят дали напускането е доброволно (виж бележката там).
+    let kick = null;
+    let ban = null;
     try {
       const targetTag = member.user?.tag || member.user?.username || null;
-      const kick = await fetchAuditActor(member.guild, AuditLogEvent.MemberKick, member.id, 5000);
+      // ЕДНА заявка към audit log за двете причини (виж fetchRemovalCause).
+      const cause = await fetchRemovalCause(member.guild, member.id, 5000);
+      kick = cause?.kind === "kick" ? cause : null;
+      ban = cause?.kind === "ban" ? cause : null;
       if (kick) {
         await logServerEvent(member.client, member.guild, {
           category: "members",
@@ -41,6 +48,29 @@ export default {
       }
     } catch (err) {
       console.warn(`[guildMemberRemove] event-log error: ${err?.message}`);
+    }
+
+    // ─── „Лепкави роли": заснемане на ролите при напускане ───────────────────
+    // Отделен try/catch — снимката е удобство, а не бива да пречи на
+    // авто-затварянето на тикети отдолу.
+    //
+    // `managed` роли се изключват СЕГА, а не при връщането: те се дават от
+    // интеграции (бот роли, Nitro буст) и Discord не позволява да се раздават
+    // ръчно — пазенето им би създало снимка, която обещава повече от реалното.
+    // ПРОПУСКАМЕ при kick/ban. Иначе наказанието се самоанулира: изгонен
+    // модератор се връща и ботът ЛЮБЕЗНО му връща правата, които току-що са
+    // му отнети. Санкцията трябва да значи нещо. (Червен екип, 12.08.2026)
+    if (kick || ban) {
+      console.log(
+        `[sticky-roles] ${member.id} напусна принудително (${kick ? "kick" : "ban"}) — ролите НЕ се пазят`,
+      );
+    } else try {
+      const roleIds = [...member.roles.cache.values()]
+        .filter((r) => r.id !== member.guild.id && !r.managed)   // @everyone има id = guild id
+        .map((r) => r.id);
+      await api.post(`/bot/member-roles/${member.guild.id}/${member.id}`, { roleIds });
+    } catch (err) {
+      console.warn(`[guildMemberRemove] ролите на ${member.id} не бяха запазени: ${err?.message}`);
     }
 
     try {

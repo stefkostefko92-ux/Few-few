@@ -74,8 +74,17 @@ export async function runDunningJob() {
             // при следващ agency-seat цикъл и ставаше платен завинаги.
             // "unpaid" е собственият статус на Stripe за „опитите свършиха“ и
             // е недвусмислен. pastDueSince остава за одит.
-            data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "unpaid" },
+            // `isPremium` НЕ се хардкодва: свършва СОБСТВЕНИЯТ абонамент на
+            // сървъра, но той може да е покрит от АКТИВНА агенция — тогава
+            // премиумът му е напълно законен и идва от друго място.
+            // Хардкодваното false отнемаше платен достъп на агенционен клиент
+            // заради чужд, изтекъл личен абонамент. Същият файл вече го прави
+            // правилно по пътя за изтекъл гратис (по-долу) — тук беше
+            // пропуснато. (Одит етап 1, 12.08.2026)
+            data: { plan: "free", billingInterval: null, stripeStatus: "unpaid" },
           });
+          // Пресмята ефективния достъп (собствен план + trial + agency seat).
+          await syncServerPaidFlag(server.id, tx);
           await tx.auditLog.create({
             data: {
               actorId: null,

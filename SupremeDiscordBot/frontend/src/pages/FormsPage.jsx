@@ -284,7 +284,7 @@ export default function FormsPage() {
                   {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
                   <div className="flex items-center gap-1">
                     <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
-                      <DiscordChannelSelect kind="text" value={spawnInputs[f.id] || ""}
+                      <DiscordChannelSelect kind="text" ariaLabel={t("forms.spawnChannelAria")} value={spawnInputs[f.id] || ""}
                         onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
                     </div>
                     <button

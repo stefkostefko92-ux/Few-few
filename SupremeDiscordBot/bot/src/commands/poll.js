@@ -1,5 +1,5 @@
 // bot/src/commands/poll.js
-import { MessageFlags,
+import { MessageFlags, PermissionFlagsBits,
   SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from "discord.js";
 import api from "../utils/api.js";
@@ -15,6 +15,16 @@ export default {
     .setName("poll")
     .setDescription("Create a poll")
     .setDescriptionLocalizations(CMD_DESC_L10N.poll)
+    // Анкетата кара БОТА да публикува съобщение — тоест текст на всеки член
+    // излиза с авторитета на бота. Същата функция имаше ТРИ пътя и само този
+    // беше отворен: таблото иска `requireServerAdmin`, сестринската
+    // /giveaway иска ManageGuild, а /poll — само cooldown. Класът „едно
+    // правило, N определения". (Одит етап 5, 12.08.2026)
+    //
+    // `setDefaultMemberPermissions` е ПО ПОДРАЗБИРАНЕ: собственикът може да го
+    // отпусне за конкретни роли от Настройки → Интеграции, ако иска анкети от
+    // модератори. Затворено по подразбиране, отваря се съзнателно.
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addStringOption((o) => o.setName("question").setDescription("Poll question").setRequired(true).setMaxLength(256))
     .addStringOption((o) => o.setName("options").setDescription("Comma-separated options (2-9)").setRequired(true))
     .addBooleanOption((o) => o.setName("multi_choice").setDescription("Allow voting for multiple options").setRequired(false))

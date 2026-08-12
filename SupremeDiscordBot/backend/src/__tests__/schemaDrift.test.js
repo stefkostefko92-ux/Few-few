@@ -109,4 +109,20 @@ describe("горещите пътища имат индекс", () => {
   it("servers(accessUntil) — метлата за изтекъл гратис сканира по него", () => {
     expect(idx("servers")).toContain("accessUntil");
   });
+
+  // v46 (одит етап 11). Postgres НЕ индексира външните ключове сам, а тези три
+  // колони се ползват от РЕАЛНИ заявки. Проверката е отделна от общата за дрейф:
+  // тя пази ДВОЙКАТА схема↔миграция, но би останала зелена, ако някой махне
+  // индекса и от двете места.
+  it("audit_logs(actorId, targetId) — чл. 15 експортът търси и по двете", () => {
+    // routes/gdpr.js: where: { OR: [{ actorId }, { targetId }] }
+    // Без индекси това е пълно сканиране на таблицата, която расте с ВСЯКО
+    // действие в продукта.
+    expect(idx("audit_logs")).toContain("actorId");
+    expect(idx("audit_logs")).toContain("targetId");
+  });
+
+  it("tickets(assigneeId) — изтриването на акаунт занулява през SET NULL", () => {
+    expect(idx("tickets")).toContain("assigneeId");
+  });
 });
