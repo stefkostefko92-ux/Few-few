@@ -108,20 +108,31 @@ c_ok "webroot 755/644, logs 750, тайни 600"
 
 # ── 4. nginx ──────────────────────────────────────────────────────────────
 step "4/7  NGINX"
-# Rate-limit zones must live in the http{} block. Insert once, idempotently.
-if ! grep -q 'zone=cs_api' "$NGINX_MAIN"; then
-  awk '/^http[[:space:]]*\{/ && !done {
-    print;
-    print "";
+# Rate-limit zones must live in the http{} block. Add each one ONLY if it is
+# missing — a zone defined twice is a hard nginx error ("duplicate zone"), and
+# some of these may already exist anywhere under /etc/nginx, not just in
+# nginx.conf (conf.d/*, a snippet, an older install).
+NG_ALL="$(cat "$NGINX_MAIN" $(find /etc/nginx/conf.d -name '*.conf' 2>/dev/null) 2>/dev/null || cat "$NGINX_MAIN")"
+ZONES_TO_ADD=""
+add_zone(){ # name  directive
+  if echo "$NG_ALL" | grep -q "zone=$1[:space]*:" || echo "$NG_ALL" | grep -q "zone=$1:"; then
+    c_ok "Зона $1 вече съществува — пропускам"
+  else
+    ZONES_TO_ADD="${ZONES_TO_ADD}    $2\n"
+    c_ok "Зона $1 ще бъде добавена"
+  fi
+}
+add_zone cs_limit 'limit_req_zone $binary_remote_addr zone=cs_limit:10m rate=20r/s;'
+add_zone cs_api   'limit_req_zone $binary_remote_addr zone=cs_api:10m rate=1r/s;'
+add_zone cs_conn  'limit_conn_zone $binary_remote_addr zone=cs_conn:10m;'
+
+if [ -n "$ZONES_TO_ADD" ]; then
+  awk -v zones="$ZONES_TO_ADD" '/^http[[:space:]]*\{/ && !done {
+    print; print "";
     print "    # Carbon Stealth rate-limit zones (deploy-all.sh)";
-    print "    limit_req_zone $binary_remote_addr zone=cs_limit:10m rate=20r/s;";
-    print "    limit_req_zone $binary_remote_addr zone=cs_api:10m rate=1r/s;";
-    print "    limit_conn_zone $binary_remote_addr zone=cs_conn:10m;";
+    printf "%s", zones;
     done=1; next
   } { print }' "$NGINX_MAIN" > "$NGINX_MAIN.new" && mv "$NGINX_MAIN.new" "$NGINX_MAIN"
-  c_ok "Зоните cs_limit / cs_api / cs_conn добавени"
-else
-  c_ok "Зоните вече съществуват"
 fi
 
 cp "$SRC/nginx/carbonstealth.conf" "$NGINX_VHOST"
@@ -129,15 +140,18 @@ cp "$SRC/nginx/carbonstealth.conf" "$NGINX_VHOST"
 sed -i "s#fastcgi_pass unix:[^;]*;#fastcgi_pass unix:$FPM_SOCK;#g" "$NGINX_VHOST"
 ln -sf "$NGINX_VHOST" /etc/nginx/sites-enabled/carbonstealth.eu
 
-if nginx -t 2>/dev/null; then
+if nginx -t >/tmp/cs-nginx-test.log 2>&1; then
   systemctl reload nginx
   c_ok "nginx конфигурация валидна, презаредена"
 else
-  c_err "nginx -t се провали — ВРЪЩАМ старата конфигурация"
+  c_err "nginx -t се провали. Точната грешка:"
+  # show only real errors, not the deprecation warnings this box always emits
+  grep -iE '\[emerg\]|\[error\]' /tmp/cs-nginx-test.log | sed 's/^/      /' || cat /tmp/cs-nginx-test.log | sed 's/^/      /'
+  c_warn "Връщам старата конфигурация…"
   [ -f "$BACKUP/vhost.conf" ] && cp "$BACKUP/vhost.conf" "$NGINX_VHOST"
   [ -f "$BACKUP/nginx.conf" ] && cp "$BACKUP/nginx.conf" "$NGINX_MAIN"
-  nginx -t && systemctl reload nginx
-  die "nginx конфигурацията е върната. Виж грешката с: nginx -t"
+  if nginx -t >/dev/null 2>&1; then systemctl reload nginx; c_ok "Старата конфигурация е върната, сайтът работи"; fi
+  die "Конфигурацията е върната — пълният лог е в /tmp/cs-nginx-test.log"
 fi
 
 # ── 5. fail2ban ───────────────────────────────────────────────────────────
