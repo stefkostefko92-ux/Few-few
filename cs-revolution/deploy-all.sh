@@ -104,6 +104,28 @@ find "$WEBROOT" -type f -exec chmod 644 {} \;
 chmod 750 "$WEBROOT/api/logs"                                  # PII — not world-readable
 find "$WEBROOT/api/logs" -type f -exec chmod 600 {} \; 2>/dev/null || true
 [ -f "$WEBROOT/api/smtp-local.php" ] && chmod 600 "$WEBROOT/api/smtp-local.php"
+
+# smtp-local.php is written at runtime (admin panel or by hand), so it may
+# predate the self-guard the other include-only files carry. Add it in place —
+# `return` still works for config.php, but a direct HTTP hit now 404s without
+# depending on the nginx deny rule.
+if [ -f "$WEBROOT/api/smtp-local.php" ] && ! grep -q 'SCRIPT_FILENAME' "$WEBROOT/api/smtp-local.php"; then
+  python3 - "$WEBROOT/api/smtp-local.php" <<'PYG'
+import io,sys,re
+p=sys.argv[1]; s=io.open(p,encoding='utf-8').read()
+g=("if (isset($_SERVER['SCRIPT_FILENAME']) &&\n"
+   "    realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__)) {\n"
+   "    http_response_code(404);\n"
+   "    exit;\n"
+   "}\n")
+m=re.search(r'<\?php\s*\n?', s)
+if m and 'SCRIPT_FILENAME' not in s:
+    s = s[:m.end()] + g + s[m.end():]
+    io.open(p,'w',encoding='utf-8').write(s)
+    print("  guard добавен в smtp-local.php")
+PYG
+  chown www-data:www-data "$WEBROOT/api/smtp-local.php"; chmod 600 "$WEBROOT/api/smtp-local.php"
+fi
 c_ok "webroot 755/644, logs 750, тайни 600"
 
 # ── 4. nginx ──────────────────────────────────────────────────────────────
