@@ -660,7 +660,10 @@ gl_FragColor.rgb += uRim * _fres * 0.5;\n\
       function sizeToHost() {
         var w = Math.max(1, el.clientWidth), h = Math.max(1, el.clientHeight);
         var mobile = w < 768;
-        var maxDpr = mobile ? 1.5 : 2;
+        // Same reasoning as HeroSignature: this panel redraws continuously
+        // while visible, and the part is a smooth surface with no fine
+        // detail that a higher DPR would reveal.
+        var maxDpr = mobile ? 1.25 : 1.5;
         var dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
         renderer.setPixelRatio(dpr);
         renderer.setSize(w, h, false);

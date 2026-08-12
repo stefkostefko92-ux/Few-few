@@ -237,7 +237,13 @@ export default function HeroSignature() {
       function sizeToHost() {
         var w = Math.max(1, el.clientWidth), h = Math.max(1, el.clientHeight);
         var mobile = w < 768;
-        var maxDpr = mobile ? 1.5 : 2;
+        // This shader covers the whole viewport and redraws every frame, so
+        // pixel count is the dominant GPU cost: DPR 2 on a 1440x900 screen is
+        // 5.2M pixels/frame. The effect is a soft grid/gradient with no fine
+        // detail, so 1.35x is visually indistinguishable from 2x while costing
+        // ~55% fewer pixels — the difference between smooth and janky on
+        // integrated graphics.
+        var maxDpr = mobile ? 1.25 : 1.35;
         var dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
         renderer.setPixelRatio(dpr);
         renderer.setSize(w, h, false); // false: keep our own responsive CSS size
