@@ -585,6 +585,9 @@ model Ticket {
 
   @@index([serverId, status])
   @@index([creatorId])
+  // v46 — изтриването на акаунт (чл. 17) занулява assigneeId през SET NULL;
+  // без индекс това е сканиране на най-голямата таблица при всяко изтриване.
+  @@index([assigneeId])
   @@index([serverId, priority])
   // Ботът търси тикет по канал при ВСЯКО съобщение в тикет-канал — индексът
   // съществуваше само в SQL миграция, значи `prisma migrate dev` щеше да го
@@ -703,6 +706,12 @@ model AuditLog {
 
   @@index([serverId])
   @@index([action]) // v44: мониторинг заявката LIKE 'JOB_OK_%' GROUP BY action
+  // v46 — чл. 15 експортът търси субекта И като АКТЬОР, И като ОБЕКТ:
+  //   where: { OR: [{ actorId }, { targetId }] }
+  // Без тези два индекса заявката сканира ЦЯЛАТА таблица, а тя расте с всяко
+  // действие в продукта. Postgres НЕ индексира външните ключове сам.
+  @@index([actorId])
+  @@index([targetId])
   // Ретенцията трие по възраст, а админският изглед подрежда по време.
   @@index([createdAt])
   @@map("audit_logs")
