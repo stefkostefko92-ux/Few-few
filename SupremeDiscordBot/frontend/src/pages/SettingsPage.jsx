@@ -250,15 +250,23 @@ export default function SettingsPage() {
                         {label}
                       </label>
                       {/* Собствен канал за категорията. Празно = ползвай общия
-                          по-горе, затова placeholder-ът го казва изрично. */}
-                      <input
-                        className="cs-input w-56 py-1 text-sm font-mono disabled:opacity-40"
-                        value={form[`eventLogCh_${cat}`] || ""}
-                        onChange={(e) => set(`eventLogCh_${cat}`, e.target.value)}
-                        disabled={!form[key]}
-                        aria-label={t("settings.channelForCategory", { category: label })}
-                        placeholder={t("settings.useMainChannel")}
-                      />
+                          по-горе, затова празната опция го казва изрично.
+
+                          ИЗБОР ОТ СПИСЪК, не изписан snowflake: бекендът пази
+                          само валидни ID-та (`sanitizeEventLogChannels`), тоест
+                          една сгрешена цифра се ИЗХВЪРЛЯ мълчаливо — човекът
+                          вижда запазена настройка, а логовете продължават да
+                          отиват в общия канал. Точно този тих провал махаме. */}
+                      <div className="w-56">
+                        <DiscordChannelSelect
+                          kind="text"
+                          value={form[`eventLogCh_${cat}`] || ""}
+                          onChange={(v) => set(`eventLogCh_${cat}`, v)}
+                          disabled={!form[key]}
+                          ariaLabel={t("settings.channelForCategory", { category: label })}
+                          emptyLabel={t("settings.useMainChannel")}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

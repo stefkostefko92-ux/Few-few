@@ -53,15 +53,20 @@ function Warn({ children }) {
 }
 
 /** Текстово поле — резервният път, когато каталогът е недостъпен. */
-function ManualId({ value, onChange, id, multi }) {
+function ManualId({ value, onChange, id, multi, disabled, ariaLabel }) {
   const { t } = useT();
   return (
     <>
       <input
         id={id}
-        className="cs-input font-mono text-xs"
+        className="cs-input font-mono text-xs disabled:opacity-40"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        /* `disabled` и `ariaLabel` минават и по РЕЗЕРВНИЯ път: иначе поле,
+           заключено от изключена настройка, се отключва точно когато ботът е
+           недостъпен, а етикетът му изчезва за екранния четец. */
+        disabled={disabled}
+        aria-label={ariaLabel || undefined}
         placeholder={t(multi ? "picker.manualPlaceholderMulti" : "picker.manualPlaceholder")}
       />
       <Warn>{t("picker.botUnreachable")}</Warn>
@@ -71,7 +76,7 @@ function ManualId({ value, onChange, id, multi }) {
 
 // ─── Канал / категория (един избор) ──────────────────────────────────────────
 
-export default function DiscordChannelSelect({ kind = "text", value, onChange, emptyLabel, id, ariaLabel }) {
+export default function DiscordChannelSelect({ kind = "text", value, onChange, emptyLabel, id, ariaLabel, disabled = false }) {
   const { t } = useT();
   const { data, isLoading, isError } = useGuildDirectory();
 
@@ -79,7 +84,8 @@ export default function DiscordChannelSelect({ kind = "text", value, onChange, e
   const chosen = list?.find((c) => c.id === value);
 
   if (isError || (!isLoading && !list)) {
-    return <ManualId id={id} value={value} onChange={(v) => onChange(v.trim())} />;
+    return <ManualId id={id} value={value} onChange={(v) => onChange(v.trim())}
+                     disabled={disabled} ariaLabel={ariaLabel} />;
   }
 
   return (
@@ -88,7 +94,8 @@ export default function DiscordChannelSelect({ kind = "text", value, onChange, e
           избор на канал до бутона „Публикувай". Без него axe вдига select-name
           (WCAG 4.1.2 / EAA). Не се слага по подразбиране, за да не изяде
           по-конкретния етикет там, където го има. */}
-      <select id={id} className="cs-input" value={value || ""} disabled={isLoading}
+      <select id={id} className="cs-input disabled:opacity-40" value={value || ""}
+              disabled={disabled || isLoading}
               aria-label={ariaLabel || undefined}
               onChange={(e) => onChange(e.target.value)}>
         <option value="">{isLoading ? t("picker.loading") : (emptyLabel || t("picker.none"))}</option>
