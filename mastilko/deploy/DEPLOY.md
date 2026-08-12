@@ -5,6 +5,13 @@
 и пускаш скрипта. Този файл описва само **еднократната** настройка на сървъра
 и какво прави автоматиката.
 
+> **На кой сървър.** Мастилко живее на **отделен VPS** (Hetzner nbg1) — не на
+> машината с останалите продукти. `autodeploy.sh` (с `PROJECTS="mastilko"`) се
+> пуска **ТАМ**. Ако го пуснеш на грешния сървър, кодът се билдва и тръгва на
+> 3200, но `mastilko-bg.com` не се променя (Nginx на онази машина не сочи натам)
+> — деплоят „не се вижда". Провери, че си на правилния сървър:
+> `curl -s http://127.0.0.1:3200/vizitki | grep -q sp-clip && echo нов || echo стар`.
+
 ## Какво прави autodeploy.sh за mastilko (при всяко пускане)
 
 1. Създава системен потребител `mastilko` (ако липсва) — `nologin`, без права.
@@ -27,13 +34,20 @@
 ```bash
 # 1) DNS: A запис mastilko-bg.com → IP на сървъра (в панела на DNS).
 
-# 2) Nginx vhost + TLS
+# 2) Сертификат ПЪРВО (vhost-ът по-долу вече включва 443 блок, който иска cert).
+#    Издай го, докато домейнът сочи насам:
+certbot certonly --nginx -d mastilko-bg.com
+#    (при първи път без работещ vhost: `certbot certonly --standalone -d mastilko-bg.com`,
+#     след като спреш каквото слуша на 80 за момент.)
+
+# 3) Nginx vhost (пълен: 80 → 443 + прокси към :3200)
 cp /opt/few-few/current/mastilko/deploy/nginx-mastilko.conf /etc/nginx/sites-available/mastilko
 ln -sfn /etc/nginx/sites-available/mastilko /etc/nginx/sites-enabled/mastilko
 nginx -t && systemctl reload nginx
-certbot --nginx -d mastilko-bg.com --redirect
+#    ⚠ НЕ припокривай жив vhost с по-стара/по-къса версия — губиш 443 блока и TLS.
+#    Възстановяване след повреда: същият `cp` + reload (файлът е пълният конфиг).
 
-# 3) Тайните
+# 4) Тайните
 #    - GEMINI_API_KEY: по желание, само за AI подсказките.
 #    - SESSION_SECRET: за подписване на админ сесията (base64, без „$“).
 cat > /opt/mastilko/.env <<'EOF'
@@ -43,7 +57,7 @@ SESSION_SECRET=дълъг-случаен-низ-openssl-rand-base64-48
 EOF
 chmod 600 /opt/mastilko/.env && chown mastilko:mastilko /opt/mastilko/.env
 
-# 4) Създай админ за панела на банерите (bcrypt хеш → data/admins.json).
+# 5) Създай админ за панела на банерите (bcrypt хеш → data/admins.json).
 #    Пусни от папката на приложението, като насочиш към data/ на сървъра:
 sudo -u mastilko env MASTILKO_DATA_DIR=/opt/mastilko/data \
   node /opt/mastilko/scripts/hash-admin.mjs stefan МОЯТА-ПАРОЛА
