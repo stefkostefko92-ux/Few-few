@@ -99,11 +99,24 @@ attacker and not us. Each engaged block is written once to the audit log
 the shape of an attack, not enough to track a person (GDPR recital 30).
 
 Covered surfaces: public API keys (`/public/v1` and `/api/v1`), the internal bot
-secret, public archive transcript tokens, and the top.gg webhook secret (that one
-is operator-typed, so its entropy is not guaranteed — exactly the case where
-guessing is realistic). Member verification (captcha) is throttled separately and
-server-side, with a per-panel attempt cap and cooldown; the expected answer never
-reaches the client.
+secret, public archive transcript tokens, the top.gg webhook secret (that one is
+operator-typed, so its entropy is not guaranteed — exactly the case where guessing
+is realistic), and **member verification**.
+
+Verification deserves its own note, because it is the anti-raid feature and its
+answer space is small by design. A per-panel cap (5 attempts) with a flat cooldown
+(10 minutes) does not stop a patient bot: an EASY math challenge has roughly 17
+possible answers, so five guesses succeed about 29% of the time *per window* — and
+the window resets forever. Failed verifications therefore also feed the escalating
+ladder above, keyed per panel and member, so sustained guessing gets exponentially
+more expensive instead of resetting. A human who solves the challenge clears their
+counter and never notices. The expected answer is generated and held server-side
+and never reaches the client.
+
+Throttle keys are classified with `net.isIP`, not by "does it contain a colon" —
+the network-aggregation layers apply only to real addresses, so a non-address key
+(such as `panelId:userId`) is never mistaken for an IPv6 address and never forms a
+bogus shared bucket.
 
 Uniform failure messages are deliberate: "no such key" and "revoked key" return
 identical responses, so a guesser cannot learn that it hit a real key.

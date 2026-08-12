@@ -174,6 +174,33 @@ describe("слой 2б — широката мрежа затваря върте
   });
 });
 
+describe("не-IP ключове (напр. потребител при верификация)", () => {
+  it("нямат мрежови слоеве — null, вместо фалшива група", () => {
+    expect(subnetOf("panel1:222222222222222222")).toBeNull();
+    expect(wideNetOf("panel1:222222222222222222")).toBeNull();
+  });
+
+  it("раждат ТОЧНО един запис, не три", async () => {
+    _resetBruteForceState();
+    await recordFailure("verify", "panel1:222222222222222222");
+    expect(_stateSize()).toBe(1);
+  });
+
+  it("ескалират нормално и се чистят при успех", async () => {
+    const key = "panel1:333333333333333333";
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("verify", key);
+    expect((await check("verify", key)).blocked).toBe(true);
+    await recordSuccess("verify", key);
+    expect((await check("verify", key)).blocked).toBe(false);
+  });
+
+  it("двама различни потребители не си пречат", async () => {
+    for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("verify", "p:aaa");
+    expect((await check("verify", "p:aaa")).blocked).toBe(true);
+    expect((await check("verify", "p:bbb")).blocked).toBe(false);
+  });
+});
+
 describe("слой 3 — адаптивно затягане при масирана атака", () => {
   it("под атака прагът пада, но НЕ блокира всички без вина", async () => {
     // Пълним глобалния брояч от много различни мрежи (без да палим подмрежов праг).

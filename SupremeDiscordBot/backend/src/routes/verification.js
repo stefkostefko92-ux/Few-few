@@ -7,6 +7,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
+import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
@@ -62,14 +63,41 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
       },
     });
     if (recentAttempts >= panel.maxAttempts) {
+      // Плоският cooldown сам по себе си НЕ спира упорит бот. При MATH/EASY
+      // отговорите са ~17 възможни стойности: 5 опита на прозорец значи ~29%
+      // успех за прозорец, тоест за час почти сигурен пробив — а това е точно
+      // анти-рейд функцията. Затова провалът се брои и в общата стълба, чието
+      // наказание РАСТЕ (1 мин → 5 → 30 → 24 ч) и не се нулира с изтичането на
+      // прозореца. Легитимният човек решава задачата и никога не стига дотук.
+      await recordFailure("verify", `${panel.id}:${userId}`);
+      const esc = await check("verify", `${panel.id}:${userId}`);
+      const waitMinutes = esc.blocked
+        ? Math.max(panel.cooldownMinutes, Math.ceil(esc.retryAfterSec / 60))
+        : panel.cooldownMinutes;
       return res.status(429).json({
-        error: `Too many attempts. Please wait ${panel.cooldownMinutes} minutes before trying again.`,
+        error: `Too many attempts. Please wait ${waitMinutes} minutes before trying again.`,
         code: "VERIFICATION_COOLDOWN",
-        cooldownMinutes: panel.cooldownMinutes,
+        cooldownMinutes: waitMinutes,
+      });
+    }
+
+    // Ескалиралата блокировка важи и ПРЕДИ да се изчерпи прозорецът: иначе
+    // нападателят би получавал нови 5 опита на всеки cooldown, вечно.
+    const escalated = await check("verify", `${panel.id}:${userId}`);
+    if (escalated.blocked) {
+      return res.status(429).json({
+        error: `Too many attempts. Please wait ${Math.ceil(escalated.retryAfterSec / 60)} minutes before trying again.`,
+        code: "VERIFICATION_COOLDOWN",
+        cooldownMinutes: Math.ceil(escalated.retryAfterSec / 60),
       });
     }
 
     // Record attempt
+    // Успешна верификация чисти ескалацията — човек, който е сбъркал няколко
+    // пъти и после е решил задачата, не бива да носи наказание.
+    if (success) await recordSuccess("verify", `${panel.id}:${userId}`);
+    else await recordFailure("verify", `${panel.id}:${userId}`);
+
     await prisma.verificationAttempt.create({
       data: {
         verificationPanelId: panel.id,
