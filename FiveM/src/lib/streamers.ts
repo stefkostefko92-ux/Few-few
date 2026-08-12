@@ -152,3 +152,30 @@ export function groupByPlatform<T extends Sortable & { platform: StreamPlatformI
     streamers: streamers.filter((s) => s.platform === platform).sort(compareStreamers),
   })).filter((group) => group.streamers.length > 0);
 }
+
+/**
+ * Категорията на GTA V в каталога на Kick.
+ *
+ * Точното сравнение по име НЕ работи и това е измерено на живо: Kick я нарича
+ * **„Grand Theft Auto V (GTA)“** (id 8), тоест с наставка. Кодът търсеше
+ * буквално `grand theft auto v` или `gta v`, не намираше нищо и спираше ПРЕДИ
+ * заявката за излъчвания — външно това изглеждаше като „никой не излъчва“.
+ *
+ * Затова името се нормализира: махат се скобите („(GTA)“), реже се след
+ * двоеточие или тире („: Roleplay“), и чак тогава се сравнява. Сравнението
+ * остава ТОЧНО, а не „съдържа“ — в същия отговор стоят „Grand Theft Auto“,
+ * „Grand Theft Auto VI (GTA)“ и още петнайсет, а частичното съвпадение би
+ * хванало грешната и щеше да пълни сайта с чужди излъчвания.
+ */
+const GTA_V_NAMES = ['grand theft auto v', 'gta v', 'grand theft auto 5', 'gta 5'];
+
+export function isGtaVCategory(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const cleaned = name
+    .replace(/\([^)]*\)/g, ' ')
+    .split(/[:\-\u2013\u2014]/)[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  return GTA_V_NAMES.includes(cleaned);
+}

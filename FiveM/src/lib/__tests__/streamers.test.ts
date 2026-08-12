@@ -2,17 +2,18 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  MAX_VIEWERS,
+  PLATFORM_BADGE,
+  STREAM_PLATFORMS,
   channelKey,
   clampViewers,
   compareStreamers,
   groupByPlatform,
   isBulgarianLanguage,
+  isGtaVCategory,
   isStreamPlatform,
-  MAX_VIEWERS,
   normalizeChannel,
-  PLATFORM_BADGE,
   profileUrl,
-  STREAM_PLATFORMS,
 } from '../streamers';
 
 // ── Нормализиране на канала ─────────────────────────────────────────────────
@@ -163,4 +164,42 @@ test('вътре в секцията подредбата е по compareStreame
     group.streamers.map((s) => s.displayName),
     ['Първи', 'Втори', 'Трети'],
   );
+});
+
+// ── Категорията GTA V в Kick ────────────────────────────────────────────────
+// Регресия от жив пробег: Kick я нарича „Grand Theft Auto V (GTA)“ (id 8).
+// Точното сравнение не съвпадаше, кодът спираше ПРЕДИ заявката за излъчвания и
+// отвън изглеждаше като „никой не излъчва“.
+
+test('познава GTA V въпреки наставките, които Kick добавя', () => {
+  for (const name of [
+    'Grand Theft Auto V (GTA)',
+    'Grand Theft Auto V',
+    'GTA V',
+    'gta v',
+    'Grand Theft Auto V: Roleplay',
+    'GTA 5',
+  ]) {
+    assert.equal(isGtaVCategory(name), true, `не позна: ${name}`);
+  }
+});
+
+test('НЕ хваща съседните заглавия — те са в същия отговор', () => {
+  // Сравнението е точно, не „съдържа“: частично съвпадение би хванало и
+  // „Grand Theft Auto“, и шестицата, и сайтът щеше да се пълни с чужди
+  // излъчвания под български етикет.
+  for (const name of [
+    'Grand Theft Auto',
+    'Grand Theft Auto VI (GTA)',
+    'Grand Theft Auto IV',
+    'Grand Theft Auto III',
+    'Grand Theft Auto: Vice City',
+    'Grand Theft Auto: San Andreas',
+    'Grand Theft Auto: Liberty City Stories',
+    'Grand Theft Auto III: The Definitive Edition',
+    '',
+  ]) {
+    assert.equal(isGtaVCategory(name), false, `хвана грешната: ${name}`);
+  }
+  assert.equal(isGtaVCategory(null), false);
 });

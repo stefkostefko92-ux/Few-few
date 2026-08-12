@@ -20,6 +20,7 @@ import { displayName } from './fivem';
 import {
   clampViewers,
   isBulgarianLanguage,
+  isGtaVCategory,
   normalizeChannel,
   profileUrl,
   type StreamPlatformId,
@@ -197,12 +198,18 @@ async function kickCategoryId(auth: Record<string, string>): Promise<number | nu
   if (Number.isInteger(pinned) && pinned > 0) return pinned;
 
   const payload = await getJson(`${KICK_API}/categories?q=${encodeURIComponent('grand theft auto')}`, auth);
-  for (const row of rows(payload, 'data')) {
-    const name = text(row.name)?.toLowerCase() ?? '';
+  const candidates = rows(payload, 'data');
+  for (const row of candidates) {
     const id = typeof row.id === 'number' ? row.id : null;
-    if (id && (name === 'grand theft auto v' || name === 'gta v')) return id;
+    if (id && isGtaVCategory(text(row.name))) return id;
   }
-  console.error('[streamers] категорията GTA V не се намери в Kick');
+  // Имената СЕ ЛОГВАТ. Без тях „не се намери“ е задънена улица: точно това
+  // струваше един пробег, защото Kick беше преименувал категорията и никой не
+  // можеше да види на какво.
+  console.error(
+    `[streamers] категорията GTA V не се намери в Kick. Върнати: ` +
+      candidates.map((row) => `${row.id}=${JSON.stringify(row.name)}`).join(', '),
+  );
   return null;
 }
 
