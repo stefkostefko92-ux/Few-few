@@ -76,6 +76,7 @@ bash scripts/deploy.sh
 | `RESEND_API_KEY` | **да, на живо** | без него уведомленията по чл. 16 и чл. 17 DSA не тръгват. Липсата се логва, но обещанието остава неизпълнено |
 | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | по избор | откриване на стриймъри (dev.twitch.tv, безплатно) |
 | `KICK_CLIENT_ID`, `KICK_CLIENT_SECRET` | по избор | същото. Публичният списък на Kick е зад Cloudflare (403) — ключ няма как да се избегне |
+| `KICK_LANGUAGE`, `KICK_CATEGORY_ID` | по избор | заковават недокументирани стойности. Не намира ли Kick никого: `docker compose exec -T cron npx tsx scripts/kick-doctor.ts` |
 | `YOUTUBE_API_KEY` | по избор | същото. Квота: 100 ед. на заявка при 10 000/ден |
 
 Липсваща двойка просто пропуска платформата — cron-ът не пада. TikTok няма

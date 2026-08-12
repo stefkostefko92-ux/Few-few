@@ -232,3 +232,49 @@ test('`__proto__` в чуждия JSON не замърсява прототип�
   await discoverTwitch();
   assert.equal(({} as Record<string, unknown>).полюция, undefined, 'прототипът е замърсен');
 });
+
+// ── Kick: форматът на `language` не е документиран ──────────────────────────
+// Kick описва параметъра само като „Language of the livestream“. Грешната
+// стойност дава HTTP 200 с ПРАЗЕН списък — тоест изглежда като „никой не
+// излъчва“, а не като грешка. Затова форматите се пробват по ред.
+
+test('Kick пробва следващия формат на езика, ако първият върне празно', async () => {
+  const seen: string[] = [];
+  routes = {};
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('id.kick.com')) {
+      return new Response(JSON.stringify({ access_token: 'т' }), { status: 200 });
+    }
+    if (url.includes('/categories')) {
+      return new Response(JSON.stringify({ data: [{ id: 7, name: 'Grand Theft Auto V' }] }), { status: 200 });
+    }
+    const language = new URL(url).searchParams.get('language') ?? '';
+    seen.push(language);
+    // САМО пълното име дава редове — точно случаят, който чупеше откриването.
+    const data = language === 'Bulgarian' ? [{ slug: 'bgkick', language: 'Bulgarian', viewer_count: 4 }] : [];
+    return new Response(JSON.stringify({ data }), { status: 200 });
+  }) as typeof fetch;
+
+  const found = await discoverKick();
+  assert.deepEqual(seen, ['bg', 'Bulgarian'], `пробваните формати: ${seen.join(', ')}`);
+  assert.equal(found.length, 1, 'вторият формат трябваше да намери канала');
+  assert.equal(found[0].channel, 'bgkick');
+});
+
+test('KICK_LANGUAGE заковава формата — една заявка, без пробване', async () => {
+  const seen: string[] = [];
+  process.env.KICK_LANGUAGE = 'Bulgarian';
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('id.kick.com')) return new Response(JSON.stringify({ access_token: 'т' }), { status: 200 });
+    if (url.includes('/categories')) {
+      return new Response(JSON.stringify({ data: [{ id: 7, name: 'gta v' }] }), { status: 200 });
+    }
+    seen.push(new URL(url).searchParams.get('language') ?? '');
+    return new Response(JSON.stringify({ data: [{ slug: 'bgkick', language: 'Bulgarian' }] }), { status: 200 });
+  }) as typeof fetch;
+
+  await discoverKick();
+  assert.deepEqual(seen, ['Bulgarian'], 'закованият формат не бива да пробва другите');
+});

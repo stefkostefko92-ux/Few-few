@@ -206,6 +206,53 @@ async function kickCategoryId(auth: Record<string, string>): Promise<number | nu
   return null;
 }
 
+/**
+ * Кандидатите за стойност на `language` в заявката към Kick.
+ *
+ * ВНИМАНИЕ, това не е излишна предпазливост: документацията на Kick описва
+ * `language` само като „Language of the livestream“ и НЕ казва дали иска ISO
+ * код (`bg`) или името (`Bulgarian`). Разликата е невидима отвън — грешната
+ * стойност връща HTTP 200 с празен списък, тоест изглежда точно като „никой
+ * български не излъчва в момента“. Зашито `bg` беше залог на недокументирано
+ * поведение.
+ *
+ * Филтърът НЕ може просто да отпадне: категорията GTA V е огромна, лимитът е
+ * 100 реда без страниране и подредбата е по зрители — българските канали са
+ * малки и никога не биха попаднали в първата стотица.
+ */
+const KICK_LANGUAGES = ['bg', 'Bulgarian', 'bulgarian'];
+
+/**
+ * Пробва форматите по ред и връща първия, който дава редове. `KICK_LANGUAGE`
+ * в `.env` заковава стойността, щом веднъж е сверена — тогава заявката е една.
+ */
+async function kickBulgarianStreams(
+  category: number,
+  auth: Record<string, string>,
+): Promise<unknown> {
+  const pinned = process.env.KICK_LANGUAGE?.trim();
+  const candidates = pinned ? [pinned] : KICK_LANGUAGES;
+
+  let last: unknown = null;
+  for (const language of candidates) {
+    const payload = await getJson(
+      `${KICK_API}/livestreams?category_id=${category}` +
+        `&language=${encodeURIComponent(language)}&limit=100&sort=viewer_count`,
+      auth,
+    );
+    last = payload;
+    if (rows(payload, 'data').length > 0) {
+      if (!pinned && language !== KICK_LANGUAGES[0]) {
+        // Полезно за собственика: щом знаем кой формат работи, той може да се
+        // закове и да спести пробването при всеки пробег.
+        console.log(`[streamers] Kick прие език „${language}“ — закови го като KICK_LANGUAGE в .env`);
+      }
+      return payload;
+    }
+  }
+  return last;
+}
+
 export async function discoverKick(): Promise<FoundStream[]> {
   const id = process.env.KICK_CLIENT_ID;
   const secret = process.env.KICK_CLIENT_SECRET;
@@ -218,10 +265,7 @@ export async function discoverKick(): Promise<FoundStream[]> {
   const category = await kickCategoryId(auth);
   if (category === null) return [];
 
-  const payload = await getJson(
-    `${KICK_API}/livestreams?category_id=${category}&language=bg&limit=100&sort=viewer_count`,
-    auth,
-  );
+  const payload = await kickBulgarianStreams(category, auth);
 
   const found: FoundStream[] = [];
   for (const row of rows(payload, 'data')) {
