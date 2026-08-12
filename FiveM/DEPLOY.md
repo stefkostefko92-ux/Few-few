@@ -14,8 +14,11 @@
    dig +short A fivembulgaria.carbonstealth.eu    # трябва да върне IP-то на VPS-а
    curl -sI http://fivembulgaria.carbonstealth.eu/api/health | head -1   # 200 ОТВЪН
    ```
-2. **Nginx** — блокът е готов файл в репото, не откъс в документация:
+2. **Nginx** — блокът е готов файл в репото, не откъс в документация. Папката за
+   дневниците се създава ПРЕДИ `nginx -t`: сочи ли `access_log` към несъществуваща
+   директория, nginx не тръгва изобщо.
    ```bash
+   sudo install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria
    sudo cp /opt/few-few/current/FiveM/deploy/nginx.conf /etc/nginx/sites-available/fivembulgaria
    # `-sfn`, не `-s`: второто пускане на реда гърми с „File exists“ и спира
    # веригата с `&&` след него. Стъпката трябва да е повторяема.
@@ -26,11 +29,31 @@
    `nginx -t` показва `protocol options redefined` и `ssl_stapling ignored` за
    ЧУЖДИТЕ сайт-блокове на машината — те не идват от този файл и не пречат;
    гледай последния ред (`test is successful`).
-3. **Ротация на дневниците** — политиката обявява 14 дни, а по подразбиране
-   Ubuntu пази nginx дневниците 14 СЕДМИЦИ. Без този файл текстът лъже:
+
+   **`cp`-то е еднократно, буквално.** След `certbot --nginx` живият файл вече НЕ
+   е копие на репото — certbot е дописал в него `listen 443 ssl`, пътищата до
+   сертификата и пренасочването от 80. Презапишеш ли го от репото, TLS изчезва и
+   се връща при следващото `certbot renew` чак след дни. Промяна в `nginx.conf`
+   след издаден сертификат се нанася с `sed`/редактор върху живия файл (server
+   блокът е дублиран от certbot — гледай да пипнеш и двете места), после
+   `nginx -t && systemctl reload nginx`.
+3. **Ротация на дневниците** — политиката обявява 14 дни. Обявен срок без
+   изпълнител е нарушение на чл. 5, ал. 1, б. „д“ ОРЗД, затова файлът не е по
+   желание:
    ```bash
    sudo cp /opt/few-few/current/FiveM/deploy/logrotate.conf /etc/logrotate.d/fivembulgaria
-   sudo logrotate -d /etc/logrotate.d/fivembulgaria   # проба
+   # Пробата НЕ е върху нашия файл сам! `logrotate -d /etc/logrotate.d/fivembulgaria`
+   # чете само него и по определение не може да види сблъсък с пакетния конфиг.
+   # Сблъсъкът се вижда единствено от общия вход:
+   sudo logrotate -d /etc/logrotate.conf 2>&1 | grep -i duplicate   # трябва ПРАЗНО
+   ```
+   Излезе ли ред `duplicate log entry`, някой дневник е обявен два пъти (виж
+   защо е фатално в коментара на `deploy/logrotate.conf`) — оправя се, като
+   нашите дневници живеят в **подпапка** `/var/log/nginx/fivembulgaria/`, извън
+   глоба `/var/log/nginx/*.log` на пакетния конфиг. Сверявай срока и с реалността,
+   не само с конфига:
+   ```bash
+   sudo cat /etc/logrotate.d/nginx | grep -E 'daily|weekly|rotate|maxage'
    ```
 4. **Docker + Compose** на машината.
 
