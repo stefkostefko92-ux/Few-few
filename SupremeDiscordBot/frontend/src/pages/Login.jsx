@@ -563,6 +563,22 @@ export default function Login() {
                 <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
               </div>
             </div>
+            {/* Guides & comparisons — until now these five pages were reachable
+                only from INSIDE the dashboard (login required), from each other,
+                and from sitemap.xml. A visitor on the landing page had no path
+                to them at all, so the docs we wrote were effectively invisible
+                to the people they were written for — and orphan pages get no
+                internal link equity either. (Owner, 12.08.2026: "why isn't it
+                on the landing page anywhere?") */}
+            <nav aria-label="Guides and comparisons"
+                 className="flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">
+              <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">PANEL &amp; BUTTON SETUP</a>
+              <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">CHOOSING A TICKET BOT</a>
+              <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">GDPR FOR DISCORD BOTS</a>
+              <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">VS TICKET TOOL</a>
+              <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">VS APPY</a>
+            </nav>
+
             {/* Language versions — visible crawlable links matching the
                 hreflang alternates (Seo.jsx + sitemap.xml). */}
             <nav aria-label="Language" className="flex flex-wrap items-center justify-center gap-3 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">

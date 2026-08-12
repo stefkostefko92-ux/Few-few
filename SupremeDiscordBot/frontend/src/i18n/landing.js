@@ -84,6 +84,7 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "Отнема 60 секунди. Влезте с Discord, изберете сървър и започнете 14-дневния пробен период.",
     finalCta: "Започнете безплатно",
     footer: { terms: "Условия", privacy: "Поверителност", cookies: "Бисквитки", accessibility: "Достъпност", status: "Статус" },
+    guides: { heading: "Ръководства", panel: "Настройка на панели", best: "Избор на тикет бот", gdpr: "GDPR за ботове", vsTicketTool: "Срещу Ticket Tool", vsAppy: "Срещу Appy" },
   },
 
   de: {
@@ -165,6 +166,7 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "Dauert 60 Sekunden. Mit Discord anmelden, Server wählen, 14-tägige Testphase starten.",
     finalCta: "Kostenlos loslegen",
     footer: { terms: "AGB", privacy: "Datenschutz", cookies: "Cookies", accessibility: "Barrierefreiheit", status: "Status" },
+    guides: { heading: "Anleitungen", panel: "Panel-Einrichtung", best: "Ticket-Bot wählen", gdpr: "DSGVO für Bots", vsTicketTool: "vs. Ticket Tool", vsAppy: "vs. Appy" },
   },
 
   es: {
@@ -246,6 +248,7 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "Tarda 60 segundos. Inicia sesión con Discord, elige un servidor y empieza tu prueba de 14 días.",
     finalCta: "Empieza gratis",
     footer: { terms: "Términos", privacy: "Privacidad", cookies: "Cookies", accessibility: "Accesibilidad", status: "Estado" },
+    guides: { heading: "Guías", panel: "Configurar paneles", best: "Elegir bot de tickets", gdpr: "RGPD para bots", vsTicketTool: "vs. Ticket Tool", vsAppy: "vs. Appy" },
   },
 
   fr: {
@@ -327,6 +330,7 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "60 secondes suffisent. Connectez-vous avec Discord, choisissez un serveur, démarrez votre essai de 14 jours.",
     finalCta: "Commencer gratuitement",
     footer: { terms: "CGU", privacy: "Confidentialité", cookies: "Cookies", accessibility: "Accessibilité", status: "Statut" },
+    guides: { heading: "Guides", panel: "Configurer les panneaux", best: "Choisir un bot de tickets", gdpr: "RGPD pour les bots", vsTicketTool: "vs Ticket Tool", vsAppy: "vs Appy" },
   },
 
   it: {
@@ -408,6 +412,7 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "Bastano 60 secondi. Accedi con Discord, scegli un server e inizia la prova di 14 giorni.",
     finalCta: "Inizia gratis",
     footer: { terms: "Termini", privacy: "Privacy", cookies: "Cookie", accessibility: "Accessibilità", status: "Stato" },
+    guides: { heading: "Guide", panel: "Configurare i pannelli", best: "Scegliere il bot ticket", gdpr: "GDPR per i bot", vsTicketTool: "vs Ticket Tool", vsAppy: "vs Appy" },
   },
 
   nl: {
@@ -489,6 +494,7 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "Duurt 60 seconden. Log in met Discord, kies een server en start je proefperiode van 14 dagen.",
     finalCta: "Gratis aan de slag",
     footer: { terms: "Voorwaarden", privacy: "Privacy", cookies: "Cookies", accessibility: "Toegankelijkheid", status: "Status" },
+    guides: { heading: "Handleidingen", panel: "Panelen instellen", best: "Ticketbot kiezen", gdpr: "AVG voor bots", vsTicketTool: "vs. Ticket Tool", vsAppy: "vs. Appy" },
   },
 
   pl: {
@@ -570,5 +576,6 @@ export const LANDING_TRANSLATIONS = {
     finalSub: "Zajmie to 60 sekund. Zaloguj się przez Discord, wybierz serwer i rozpocznij 14-dniowy okres próbny.",
     finalCta: "Zacznij za darmo",
     footer: { terms: "Regulamin", privacy: "Prywatność", cookies: "Cookies", accessibility: "Dostępność", status: "Status" },
+    guides: { heading: "Poradniki", panel: "Konfiguracja paneli", best: "Wybór bota ticketów", gdpr: "RODO dla botów", vsTicketTool: "vs Ticket Tool", vsAppy: "vs Appy" },
   },
 };
