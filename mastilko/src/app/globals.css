@@ -122,7 +122,10 @@ body {
 .vivid .bg-ink {
   background-color: #3a86b9 !important;
 }
-.vivid header {
+/* САМО хедърът на сайта (пряко дете на <body>) — не бива да закача intro
+   <header>-ите на инструментите (`no-print mb-8`), иначе им лепва тъмна лента с
+   празно поле отдясно (виж скрийншота). Затова `body > header`, не всеки header. */
+.vivid body > header {
   background-color: rgba(10, 24, 38, 0.75) !important;
   border-color: rgba(111, 195, 240, 0.16);
 }
