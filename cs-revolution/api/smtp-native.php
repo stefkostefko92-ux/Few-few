@@ -9,6 +9,16 @@
  *   $o keys: host, port, secure('ssl'|'tls'), user, pass, from, from_name,
  *            to, reply_to, reply_name, subject, html, text
  */
+
+// Defence in depth: these files are libraries, never entry points. If one is
+// requested directly over HTTP (a misconfigured or replaced nginx, a future
+// vhost edit), refuse instead of trusting the web server to have blocked it.
+if (isset($_SERVER['SCRIPT_FILENAME']) &&
+    realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__)) {
+    http_response_code(404);
+    exit;
+}
+
 if (!function_exists('cs_smtp_send')) {
 
 function cs_smtp_send(array $o, string &$err = null): bool {

@@ -20,6 +20,16 @@
  * (https://www.register.it/assistenza/soluzione-invii-email/).
  */
 
+// Defence in depth: these files are libraries, never entry points. If one is
+// requested directly over HTTP (a misconfigured or replaced nginx, a future
+// vhost edit), refuse instead of trusting the web server to have blocked it.
+if (isset($_SERVER['SCRIPT_FILENAME']) &&
+    realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__)) {
+    http_response_code(404);
+    exit;
+}
+
+
 if (!function_exists('cs_env')) {
     function cs_env(string $key, string $default = ''): string {
         $v = getenv($key);

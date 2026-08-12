@@ -4,6 +4,16 @@
  * Auto-response for lead submissions + admin notification
  */
 
+// Defence in depth: these files are libraries, never entry points. If one is
+// requested directly over HTTP (a misconfigured or replaced nginx, a future
+// vhost edit), refuse instead of trusting the web server to have blocked it.
+if (isset($_SERVER['SCRIPT_FILENAME']) &&
+    realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__)) {
+    http_response_code(404);
+    exit;
+}
+
+
 function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
     $firstName = explode(' ', trim($name))[0] ?: 'there';
     
