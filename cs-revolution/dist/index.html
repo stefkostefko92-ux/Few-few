@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Carbon Stealth VCC | Sviluppo Siti Web, ERP e SEO | Agenzia Digitale</title>
+  <meta name="description" content="Agenzia digitale per Italia e Bulgaria: sviluppo siti web da €800, e-commerce, software ERP, app mobile e SEO/AEO. Preventivo gratuito in 24 ore." />
+  <meta name="theme-color" content="#00e5ff" />
+  <link rel="canonical" href="https://carbonstealth.eu/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate" hreflang="it" href="https://carbonstealth.eu/" />
+  <link rel="alternate" hreflang="en" href="https://carbonstealth.eu/en/" />
+  <link rel="alternate" hreflang="bg" href="https://carbonstealth.eu/bg/" />
+  <link rel="alternate" hreflang="x-default" href="https://carbonstealth.eu/" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- nav logo is in the first viewport: fetch it with the document, not after JS -->
+  <link rel="preload" as="image" href="/logo-nav.webp" fetchpriority="high" />
+    <!-- Fonts load non-render-blocking: swap to stylesheet once fetched, so the
+       first paint never waits on Google Fonts (worth ~1-2s on slow mobile). -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" /></noscript>
+  <style>
+    /* Metric-matched fallbacks: while Space Grotesk / Space Mono are still
+       loading, text is laid out at nearly the same size, so the webfont
+       swap doesn't reflow the hero (this was the site's CLS source). */
+    @font-face { font-family: 'SG-fallback'; src: local('Arial'); size-adjust: 96%;
+      ascent-override: 98%; descent-override: 24%; line-gap-override: 0%; }
+    @font-face { font-family: 'SM-fallback'; src: local('Courier New'); size-adjust: 108%;
+      ascent-override: 100%; descent-override: 26%; line-gap-override: 0%; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { width: 100%; min-height: 100vh; background: #000; }
+    body { overflow-x: hidden; }
+    /* ── Critical hero: painted from HTML so FCP/LCP never wait for the JS
+       bundle. React renders the real hero over it and #cs-boot is removed. ── */
+    /* Geometry mirrors the React hero (same paddings, same 1180px centred
+       column, same type scale) so swapping them causes no layout shift. */
+    /* fixed, not absolute: the boot layer sits outside document flow entirely,
+       so React mounting underneath it can never be recorded as a layout shift. */
+    #cs-boot { position: fixed; top: 0; left: 0; width: 100%; z-index: 2;
+      /* identical box to <section id="hero">: bottom-aligned, same paddings */
+      height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 0 clamp(20px,5vw,64px) clamp(40px,6vh,72px);
+      background: #0A0C0E; color: #C9D1D6;
+      font-family: 'Space Mono', 'SM-fallback', ui-monospace, monospace; }
+    #cs-boot > * { max-width: 1180px; width: 100%; margin-left: auto; margin-right: auto; }
+    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 53px;
+      max-width: none; background: rgba(0,0,0,.85);
+      border-bottom: 1px solid rgba(245,245,240,.08); }
+    #cs-boot .eb { display: flex; align-items: center; gap: 14px; font-size: 10px;
+      letter-spacing: .4em; color: #7C868D; margin-bottom: clamp(20px,4vh,40px); }
+    #cs-boot .eb i { width: 24px; height: 1px; background: #00e5ff; display: block; }
+    #cs-boot h1 { font-family: 'Space Grotesk', 'SG-fallback', 'Inter Tight', system-ui, sans-serif;
+      font-weight: 600; font-size: clamp(2.4rem,7vw,6.4rem); line-height: .98;
+      letter-spacing: -.03em; color: #C9D1D6; margin: 0; max-width: 18ch;
+      /* three lines reserved: the localized titles differ in length, so pin the
+         box height and the swap to React can't move anything below it */
+      min-height: calc(clamp(2.4rem,7vw,6.4rem) * .98 * 3); }
+    #cs-boot .sub { font-size: 11px; letter-spacing: .2em; color: #7C868D;
+      margin-top: 24px; text-transform: uppercase; }
+    /* The moment React paints anything into #root, the boot layer is gone in the
+       SAME frame — the browser never composites both, so the handover can't be
+       recorded as a layout shift. main.jsx then removes the node entirely. */
+    #root:not(:empty) ~ #cs-boot { display: none !important; }
+  </style>
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Carbon Stealth VCC" />
+  <meta property="og:title" content="Carbon Stealth VCC | Sviluppo Siti Web, ERP e SEO | Agenzia Digitale" />
+  <meta property="og:description" content="Agenzia web per Italia e Bulgaria: siti web da €800, e-commerce, software ERP, app mobile e SEO/AEO. Preventivo gratuito in 24 ore." />
+  <meta property="og:url" content="https://carbonstealth.eu/" />
+  <meta property="og:image" content="https://carbonstealth.eu/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="it_IT" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="bg_BG" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Carbon Stealth VCC | Sviluppo Siti Web, ERP e SEO" />
+  <meta name="twitter:description" content="Siti web da €800, e-commerce, software ERP, app e SEO/AEO per Italia e Bulgaria. Preventivo gratuito in 24 ore." />
+  <meta name="twitter:image" content="https://carbonstealth.eu/og-image.png" />
+  <!-- GEO -->
+  <meta name="geo.region" content="BG-14" />
+  <meta name="geo.placename" content="Bobov Dol" />
+  <meta name="geo.position" content="42.3482;23.0017" />
+  <meta name="ICBM" content="42.3482, 23.0017" />
+  <!-- Dublin Core -->
+  <meta name="DC.title" content="Carbon Stealth VCC" />
+  <meta name="DC.creator" content="Stefan Kostadinov" />
+  <meta name="DC.subject" content="Web Development, Software, ERP, SEO, AEO" />
+  <meta name="DC.language" content="it" />
+  <!-- Apple -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["Organization","LocalBusiness","ProfessionalService"],"@id":"https://carbonstealth.eu/#organization","name":"Carbon Stealth VCC","alternateName":["Carbon Stealth","Карбон Стелт","CarbonStealth","Carbon Stealth VCC","CS VCC"],"url":"https://carbonstealth.eu","logo":{"@type":"ImageObject","url":"https://carbonstealth.eu/logo.png","width":1373,"height":585},"image":"https://carbonstealth.eu/og-image.png","description":"Digital solutions agency: web development, ERP, mobile apps, game dev, IoT, reverse engineering, 3D printing, SEO/AEO optimization. Serving Italy, Bulgaria, and the EU.","foundingDate":"2024","founder":{"@type":"Person","@id":"https://carbonstealth.eu/#stefan","name":"Stefan Kostadinov","jobTitle":"CEO & Founder","worksFor":{"@id":"https://carbonstealth.eu/#organization"},"knowsAbout":["Web Development","Software Engineering","SEO","Reverse Engineering","3D Printing"]},"address":{"@type":"PostalAddress","streetAddress":"ul. Samuil 3","addressLocality":"Bobov Dol","postalCode":"2670","addressRegion":"Kyustendil","addressCountry":"BG"},"geo":{"@type":"GeoCoordinates","latitude":42.3482,"longitude":23.0017},"contactPoint":[{"@type":"ContactPoint","telephone":"+39-379-296-9699","contactType":"sales","areaServed":"IT","availableLanguage":["Italian","English"],"contactOption":"TollFree"},{"@type":"ContactPoint","telephone":"+359-877-414-874","contactType":"sales","areaServed":"BG","availableLanguage":["Bulgarian","English"],"contactOption":"TollFree"},{"@type":"ContactPoint","email":"info@carbonstealth.eu","contactType":"customer support","availableLanguage":["Italian","English","Bulgarian"]}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"09:00","closes":"18:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"10:00","closes":"14:00"}],"priceRange":"€€","areaServed":[{"@type":"Country","name":"Italy"},{"@type":"Country","name":"Bulgaria"},{"@type":"Country","name":"Germany"},{"@type":"Country","name":"France"},{"@type":"Country","name":"Spain"},{"@type":"AdministrativeArea","name":"European Union"}],"knowsLanguage":["it","en","bg"],"knowsAbout":["Web Development","React","Next.js","Node.js","PostgreSQL","ERP Systems","Mobile Apps","Game Development","FiveM","IoT","Embedded Systems","Reverse Engineering","3D Printing","CAD","SEO","AEO","GEO","Schema.org","Cloud Hosting","DevOps"],"sameAs":["https://www.linkedin.com/company/carbonstealth.vcc","https://github.com/carbonstealth","https://share.google/0XLOlO0r1ETbGpUkZ","https://carbonstealth.eu"],"vatID":"BG208725180","taxID":"BG208725180","currenciesAccepted":"EUR, BGN, USD","paymentAccepted":"Cash, Credit Card, Bank Transfer, Stripe, PayPal","slogan":"We build what others won't touch","hasOfferCatalog":{"@type":"OfferCatalog","name":"Digital Services","itemListElement":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Web Development"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"EUR","price":"800"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"E-Commerce"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"EUR","price":"1200"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"ERP Systems"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"EUR","price":"5000"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Mobile Apps"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"EUR","price":"3000"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"SEO/AEO"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"EUR","price":"500","unitText":"per month"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Cloud Hosting"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"EUR","price":"29","unitText":"per month"}}]}},{"@type":"WebSite","@id":"https://carbonstealth.eu/#website","url":"https://carbonstealth.eu","name":"Carbon Stealth VCC","publisher":{"@id":"https://carbonstealth.eu/#organization"},"inLanguage":["it","en","bg"]},{"@type":"ItemList","@id":"https://carbonstealth.eu/#services","name":"Services Offered","itemListElement":[{"@type":"ListItem","position":1,"url":"https://carbonstealth.eu/servizi/sviluppo-siti-web/","name":"Web Development"},{"@type":"ListItem","position":2,"url":"https://carbonstealth.eu/servizi/ecommerce/","name":"E-Commerce"},{"@type":"ListItem","position":3,"url":"https://carbonstealth.eu/servizi/sviluppo-software/","name":"Custom Software"},{"@type":"ListItem","position":4,"url":"https://carbonstealth.eu/servizi/erp/","name":"ERP Systems"},{"@type":"ListItem","position":5,"url":"https://carbonstealth.eu/servizi/app-mobile/","name":"Mobile Apps"},{"@type":"ListItem","position":6,"url":"https://carbonstealth.eu/servizi/seo/","name":"SEO and AEO"},{"@type":"ListItem","position":7,"url":"https://carbonstealth.eu/servizi/hosting/","name":"Cloud Hosting"}]},{"@type":"FAQPage","@id":"https://carbonstealth.eu/#faq","mainEntity":[{"@type":"Question","name":"What services does Carbon Stealth VCC offer?","acceptedAnswer":{"@type":"Answer","text":"Web development (React, Next.js, WordPress), e-commerce, custom software (Node.js, Python), ERP systems, mobile apps (iOS/Android), reverse engineering and 3D printing of parts and prototypes, SEO/AEO optimization, and managed cloud hosting."}},{"@type":"Question","name":"Where is Carbon Stealth VCC located?","acceptedAnswer":{"@type":"Answer","text":"Headquarters in Bobov Dol, Bulgaria (EIK: BG208725180, ul. Samuil 3, 2670). We serve clients remotely across Italy, Bulgaria, and the European Union."}},{"@type":"Question","name":"What languages does Carbon Stealth speak?","acceptedAnswer":{"@type":"Answer","text":"Italian, English, and Bulgarian. All client communication and project deliverables can be in any of these three languages."}},{"@type":"Question","name":"What is the typical project timeline?","acceptedAnswer":{"@type":"Answer","text":"Simple websites: 1-2 weeks. E-commerce: 3-6 weeks. Custom software and ERP: 2-6 months depending on scope. Quote response within 24 hours."}},{"@type":"Question","name":"Does Carbon Stealth provide ongoing support?","acceptedAnswer":{"@type":"Answer","text":"Yes. Managed hosting from €29/month, SEO/AEO monitoring from €500/month, and custom maintenance contracts. 99.9% uptime SLA."}},{"@type":"Question","name":"What is the minimum project budget?","acceptedAnswer":{"@type":"Answer","text":"Web development starts at €800. E-commerce €1,200. Custom software €2,000. ERP systems €5,000. Mobile apps €3,000. Free quote within 24 hours."}}]},{"@type":"BreadcrumbList","@id":"https://carbonstealth.eu/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://carbonstealth.eu/"}]}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","@id":"https://carbonstealth.eu/#webpage","url":"https://carbonstealth.eu/","name":"Carbon Stealth VCC — Digital Solutions Agency","isPartOf":{"@id":"https://carbonstealth.eu/#website"},"speakable":{"@type":"SpeakableSpecification","xpath":["/html/head/title","/html/head/meta[@name='description']/@content"]},"inLanguage":"it"}</script>
+<!-- Umami: uncomment after deploying analytics.carbonstealth.eu -->
+<!-- script defer src="https://analytics.carbonstealth.eu/cs-track.js" data-website-id="UMAMI_SITE_ID"></script -->
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","name":"Carbon Stealth Portfolio","numberOfItems":5,"itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"CreativeWork","name":"Nexus Dominion","description":"Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy.","url":"https://nexus.carbonstealth.eu","creator":{"@id":"https://carbonstealth.eu/#organization"}}},{"@type":"ListItem","position":2,"item":{"@type":"CreativeWork","name":"OU Nikola Vaptsarov","description":"Official school website for Nikola Vaptsarov Elementary, Bobov Dol. React SPA with news system.","url":"https://ouvaptsarov.com","creator":{"@id":"https://carbonstealth.eu/#organization"}}},{"@type":"ListItem","position":3,"item":{"@type":"CreativeWork","name":"ERP Ascensori","description":"Custom ERP system for elevator manufacturing. 7-level role hierarchy, production tracking, invoicing.","url":"https://erp.carbonstealth.eu","creator":{"@id":"https://carbonstealth.eu/#organization"}}},{"@type":"ListItem","position":4,"item":{"@type":"CreativeWork","name":"CS Anticheat v4.0","description":"Enterprise anti-cheat system for FiveM. 40+ detection modules, real-time monitoring.","url":"https://ac.carbonstealth.eu","creator":{"@id":"https://carbonstealth.eu/#organization"}}},{"@type":"ListItem","position":5,"item":{"@type":"CreativeWork","name":"Treti Mart","description":"Bulgarian marketplace platform for vehicles, real estate and services.","url":"https://tretimart.carbonstealth.eu","creator":{"@id":"https://carbonstealth.eu/#organization"}}}]}</script>
+  <link rel="alternate" type="application/rss+xml" title="Carbon Stealth Blog" href="/feed.xml" />
+  <script type="module" crossorigin src="/assets/index-A9Sg1kkW.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/react-DEQ385Nk.js">
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Instant-paint hero (removed by src/main.jsx as soon as React mounts).
+       Italian default matches the SPA's default locale; React swaps in the
+       user's language. This is the LCP element on a cold visit. -->
+  <div id="cs-boot" aria-hidden="true">
+    <!-- Reserves the exact height of the fixed nav React mounts (12px padding
+         + 28px logo + 12px + 1px border) so its arrival shifts nothing. -->
+    <div class="navpad"></div>
+    <div class="eb"><i></i>WEB &amp; SOFTWARE AGENCY — ITALY · BULGARIA</div>
+    <h1>Siti Web, E-commerce &amp; Software ERP</h1>
+    <div class="sub">SITI WEB · E-COMMERCE · APP · ERP · SEO/AEO · REVERSE ENGINEERING</div>
+  </div>
+  <noscript>
+    <div style="background:#000;color:#ccc;font-family:monospace;padding:40px;max-width:900px;margin:0 auto">
+      <h1 style="color:#00e5ff;font-size:2rem;margin-bottom:16px">Carbon Stealth VCC — Sviluppo Siti Web, E-commerce e Software ERP</h1>
+      <p>Agenzia digitale con sede a Bobov Dol, Bulgaria (EIK BG208725180). Sviluppo web, software ERP, app mobile, game dev, SEO/GEO/AEO.</p>
+      <h2 style="color:#00e5ff;margin-top:24px">Servizi</h2>
+      <ul>
+        <li><a href="/servizi/sviluppo-siti-web/">Sviluppo Siti Web</a> — da €800</li>
+        <li><a href="/servizi/ecommerce/">E-Commerce</a> — da €1.200</li>
+        <li><a href="/servizi/sviluppo-software/">Sviluppo Software</a> — da €2.000</li>
+        <li><a href="/servizi/erp/">ERP Professionale</a> — da €5.000</li>
+        <li><a href="/servizi/app-mobile/">App Mobile</a> — da €3.000</li>
+        <li><a href="/servizi/seo/">SEO / GEO / AEO</a> — da €500/mese</li>
+        <li><a href="/servizi/hosting/">Hosting Cloud</a> — da €29/mese</li>
+        <li>Reverse Engineering &amp; Stampa 3D — ricostruzione CAD, prototipi, ricambi</li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Azienda</h2><ul><li><a href="/team/">Il Team</a> · <a href="/en/team/">Team (EN)</a> · <a href="/bg/ekip/">Екип (BG)</a></li><li><a href="/carriere/">Lavora con Noi</a> · <a href="/en/careers/">Careers</a> · <a href="/bg/kariera/">Кариери</a></li><li><a href="/note-legali/">Note Legali</a> · <a href="/en/legal-notice/">Legal Notice</a> · <a href="/bg/imprint/">Правни данни</a></li></ul><h2 style="color:#00e5ff;margin-top:24px">Strumenti</h2>
+      <ul>
+        <li><a href="/test/">Analisi Gratuita del Sito</a> — velocità, SEO, Core Web Vitals (IT) · <a href="/en/test/">EN</a> · <a href="/bg/test/">BG</a></li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Portfolio</h2>
+      <ul>
+        <li><a href="/portfolio/">Nexus Dominion</a> — Browser MMO (React, Node.js, PostgreSQL)</li>
+        <li>ERP Ascensori — Enterprise ERP system (7-level roles)</li>
+        <li>CS Anti-Cheat v4.0 — FiveM anti-cheat (40+ modules)</li>
+        <li>Treti Mart — Bulgarian marketplace</li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Dove Lavoriamo</h2>
+      <p><a href="/geo/">Tutte le città →</a></p>
+      <ul>
+        <li>Italia: <a href="/geo/milano/">Milano</a>, <a href="/geo/roma/">Roma</a>, <a href="/geo/torino/">Torino</a>, <a href="/geo/firenze/">Firenze</a>, <a href="/geo/napoli/">Napoli</a>, <a href="/geo/bologna/">Bologna</a>, <a href="/geo/verona/">Verona</a>, <a href="/geo/genova/">Genova</a>, <a href="/geo/bari/">Bari</a>, <a href="/geo/padova/">Padova</a></li>
+        <li>Bulgaria: <a href="/geo/sofia/">Sofia</a>, <a href="/geo/plovdiv/">Plovdiv</a>, <a href="/geo/varna/">Varna</a>, <a href="/geo/burgas/">Burgas</a>, <a href="/geo/ruse/">Ruse</a>, <a href="/geo/stara-zagora/">Stara Zagora</a>, <a href="/geo/veliko-tarnovo/">Veliko Tarnovo</a>, <a href="/geo/blagoevgrad/">Blagoevgrad</a>, <a href="/geo/kyustendil/">Kyustendil</a>, <a href="/geo/dupnitsa/">Dupnitsa</a></li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Blog</h2>
+      <ul>
+        <li><a href="/blog/react-seo-2026/">Come Ottimizzare React per SEO nel 2026</a></li>
+        <li><a href="/blog/aeo-guida-completa/">AEO: Guida Completa</a></li>
+        <li><a href="/blog/fivem-anticheat-guide/">FiveM Anti-Cheat Guide</a></li>
+        <li><a href="/blog/erp-per-pmi/">ERP per PMI</a></li>
+        <li><a href="/blog/threejs-corporate-websites/">Three.js per Siti Aziendali</a></li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Contatti</h2>
+      <p>ul. Samuil 3, Bobov Dol 2670, Bulgaria<br>EIK: BG208725180<br>IT: +39 379 296 9699 | BG: +359 877 414 874<br>Email: info@carbonstealth.eu</p>
+      <h2 style="color:#00e5ff;margin-top:24px">English</h2>
+      <ul>
+        <li><a href="/en/">Home (English)</a></li>
+        <li><a href="/en/about/">About Us</a></li>
+        <li><a href="/en/services/web-development/">Web Development</a></li>
+        <li><a href="/en/contact/">Contact</a></li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Български</h2>
+      <ul>
+        <li><a href="/bg/">Начало</a></li>
+        <li><a href="/bg/za-nas/">За Нас</a></li>
+        <li><a href="/bg/uslugi/web-razrabotka/">Уеб Разработка</a></li>
+        <li><a href="/bg/kontakti/">Контакти</a></li>
+      </ul>
+      <h2 style="color:#00e5ff;margin-top:24px">Legal</h2>
+      <p style="margin-top:8px"><a href="/chi-siamo/">Chi Siamo</a> | <a href="/contatti/">Contatti</a> | <a href="/privacy/">Privacy</a> | <a href="/cookie/">Cookie</a> | <a href="/termini/">Termini</a></p>
+      <p style="margin-top:16px;color:#555;font-size:12px">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener" style="color:#00e5ff">Carbon Stealth VCC</a></p>
+    </div>
+  </noscript>
+
+<!-- Cookie banner handled by React SPA (uses localStorage key 'cs_cookie') -->
+
+</body>
+</html>
