@@ -20,10 +20,16 @@ export default function TextTools({ value, onChange }: Props) {
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
   const valueRef = useRef(value);
-  valueRef.current = value;
+  // Държим ref-а в синхрон СЛЕД рендер (не по време на рендер), за да чете
+  // onresult callback-ът винаги последната стойност без пресъздаване.
+  useEffect(() => {
+    valueRef.current = value;
+  });
 
   useEffect(() => {
     const w = window as any;
+    // Детекция на браузърна поддръжка — външна система, достъпна чак в клиента.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
     return () => recRef.current?.stop?.();
   }, []);

@@ -13,6 +13,7 @@ export function useQrDataUrl(text: string, dark: string = "#1B1B1B"): string | n
 
   useEffect(() => {
     if (!text) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUrl(null);
       return;
     }

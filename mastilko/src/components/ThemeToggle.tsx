@@ -31,7 +31,10 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
+    // Синхронизираме с темата, зададена от anti-flash скрипта върху <html>
+    // преди хидратацията — четем DOM класа веднъж при монтиране.
     const root = document.documentElement;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (root.classList.contains("vivid")) setTheme("vivid");
     else if (root.classList.contains("dark")) setTheme("dark");
     else setTheme("light");

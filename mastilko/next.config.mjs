@@ -11,6 +11,10 @@ const VIZITKA_ORIGIN = (
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  // Изображенията се смаляват в браузъра (unoptimized навсякъде) → изключваме
+  // глобално оптимизацията на Next: маха /_next/image повърхността (SVG DoS) и
+  // премахва зависимостта sharp (libvips CVE-та не се достигат).
+  images: { unoptimized: true },
   async headers() {
     return [
       {
@@ -26,8 +30,10 @@ const nextConfig = {
             value: "max-age=63072000; includeSubDomains",
           },
           {
+            // microphone=(self): нужно за диктовката (Web Speech API) в CV/писмо;
+            // камера и геолокация остават забранени.
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            value: "camera=(), microphone=(self), geolocation=()",
           },
           {
             // Втора линия срещу XSS: нищо външно (шрифтовете са self-hosted

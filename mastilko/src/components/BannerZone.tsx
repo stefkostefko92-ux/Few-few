@@ -23,6 +23,8 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
 
   useEffect(() => {
     try {
+      // Прочит от localStorage — достъпен чак в браузъра, веднъж при монтиране.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDismissed(
         new Set(JSON.parse(localStorage.getItem("mastilko-banners-x") || "[]")),
       );
