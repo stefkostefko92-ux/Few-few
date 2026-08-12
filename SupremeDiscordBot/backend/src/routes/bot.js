@@ -484,7 +484,7 @@ router.post("/ticket/create", async (req, res, next) => {
         }).then((reply) => {
           if (reply) {
             import("../services/botNotifier.js").then(({ notifyBot }) => {
-              notifyBot("AI_REPLY", { channelId, content: reply, ticketId: ticket.id, model: AI_MODEL_NAME });
+              notifyBot("AI_REPLY", { serverId, channelId, content: reply, ticketId: ticket.id, model: AI_MODEL_NAME });
             });
           }
         }).catch(() => {});
@@ -503,7 +503,7 @@ router.post("/ticket/create", async (req, res, next) => {
     // Notify the assigned staff member asynchronously
     if (assigneeId) {
       import("../services/botNotifier.js").then(({ notifyBot }) => {
-        notifyBot("TICKET_ASSIGNED", { channelId: channelId || null, assigneeId, ticketId: ticket.id });
+        notifyBot("TICKET_ASSIGNED", { serverId, channelId: channelId || null, assigneeId, ticketId: ticket.id });
     });
     }
   } catch (err) {

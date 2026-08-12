@@ -316,6 +316,7 @@ router.post("/:serverId/:ticketId/reply", requireServerAdmin, async (req, res, n
     }
 
     const result = await sendTicketReply({
+      serverId: req.params.serverId,
       channelId: ticket.channelId,
       content,
       authorName: req.user.username,

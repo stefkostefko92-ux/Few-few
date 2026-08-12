@@ -6,15 +6,15 @@
 // сървъри. Затова съществува помощникът `guildChannel(serverId, channelId)`,
 // който резолвира В РАМКИТЕ на guild-а и отказва канал от друг сървър.
 //
-// СЪСТОЯНИЕ КЪМ ОДИТ ЕТАП 6 (12.08.2026): половината вътрешни маршрути ползват
-// помощника, другата половина резолвират глобално. Проверено е, че днес това
-// НЕ е жива дупка — backend-ът подава `channelId`, взет от базата и вече
-// скопиран по serverId. Тоест рискът е ЛАТЕНТЕН: първият маршрут, който подаде
-// потребителски channelId, го превръща в cross-tenant публикуване.
+// СЪСТОЯНИЕ: ЗАТВОРЕНО (12.08.2026). При етап 6 половината вътрешни маршрути
+// резолвираха глобално (12 места). Не беше жива дупка — backend-ът подаваше
+// channelId от базата, вече скопиран — но беше латентен път: първият маршрут с
+// потребителски channelId го превръщаше в cross-tenant публикуване.
 //
-// Затварянето на останалите иска съгласувана промяна и в backend-а (тези
-// маршрути НЕ получават `serverId` в тялото), затова е отделна задача. Дотогава
-// този тест е ОГРАНИЧИТЕЛ: прави дълга видим и не позволява да расте.
+// Затварянето поиска съгласувана промяна: backend-ът вече праща `serverId` и
+// при TICKET_REPLY, TICKET_ASSIGNED, POLL_UPDATE и AI_REPLY, а ботът резолвира
+// през guildChannel навсякъде. Базата е 0 — тестът вече не търпи НИТО ЕДИН нов
+// глобален резолв.
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -24,12 +24,20 @@ const INDEX = join(dirname(fileURLToPath(import.meta.url)), "..", "index.js");
 
 // Базова линия, измерена при одита. Числото има право да ПАДА (затваряме дълг),
 // но не и да расте — нов глобален резолв значи нов латентен cross-tenant път.
-const BASELINE_GLOBAL_RESOLVES = 12;
+const BASELINE_GLOBAL_RESOLVES = 0;
 
 describe("скоупване на каналите в споделен бот", () => {
   const src = readFileSync(INDEX, "utf8");
-  const globalResolves = (src.match(/client\.channels\.(?:cache\.get|fetch)\(/g) || []).length;
-  const scopedResolves = (src.match(/await guildChannel\(/g) || []).length;
+  // Коментарите НЕ се броят: файлът обяснява точно този риск с думите
+  // `client.channels.fetch(id)`, и наивното броене наказваше документацията,
+  // вместо кода. Гейт, който кара човек да ИЗТРИЕ обяснението, за да мине,
+  // работи срещу себе си.
+  const codeOnly = src
+    .split("\n")
+    .filter((l) => !l.trim().startsWith("//"))
+    .join("\n");
+  const globalResolves = (codeOnly.match(/client\.channels\.(?:cache\.get|fetch)\(/g) || []).length;
+  const scopedResolves = (codeOnly.match(/await guildChannel\(/g) || []).length;
 
   it("помощникът guildChannel съществува и се ползва", () => {
     expect(src).toMatch(/async function guildChannel\(/);
