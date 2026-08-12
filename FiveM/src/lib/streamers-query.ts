@@ -16,6 +16,7 @@
  * пада, защото собственикът още не е взел ключ за YouTube.
  */
 
+import { readEnv } from './env';
 import { displayName } from './fivem';
 import {
   clampViewers,
@@ -120,8 +121,8 @@ async function twitchToken(id: string, secret: string): Promise<string | null> {
  * влязат публично без ръчен преглед.
  */
 export async function discoverTwitch(): Promise<FoundStream[]> {
-  const id = process.env.TWITCH_CLIENT_ID;
-  const secret = process.env.TWITCH_CLIENT_SECRET;
+  const id = readEnv('TWITCH_CLIENT_ID');
+  const secret = readEnv('TWITCH_CLIENT_SECRET');
   if (!id || !secret) return [];
 
   const token = await twitchToken(id, secret);
@@ -194,7 +195,7 @@ async function kickToken(id: string, secret: string): Promise<string | null> {
  * заявката, ако собственикът я е сверил веднъж.
  */
 async function kickCategoryId(auth: Record<string, string>): Promise<number | null> {
-  const pinned = Number(process.env.KICK_CATEGORY_ID);
+  const pinned = Number(readEnv('KICK_CATEGORY_ID'));
   if (Number.isInteger(pinned) && pinned > 0) return pinned;
 
   const payload = await getJson(`${KICK_API}/categories?q=${encodeURIComponent('grand theft auto')}`, auth);
@@ -237,7 +238,7 @@ async function kickBulgarianStreams(
   category: number,
   auth: Record<string, string>,
 ): Promise<unknown> {
-  const pinned = process.env.KICK_LANGUAGE?.trim();
+  const pinned = readEnv('KICK_LANGUAGE');
   const candidates = pinned ? [pinned] : KICK_LANGUAGES;
 
   let last: unknown = null;
@@ -261,8 +262,8 @@ async function kickBulgarianStreams(
 }
 
 export async function discoverKick(): Promise<FoundStream[]> {
-  const id = process.env.KICK_CLIENT_ID;
-  const secret = process.env.KICK_CLIENT_SECRET;
+  const id = readEnv('KICK_CLIENT_ID');
+  const secret = readEnv('KICK_CLIENT_SECRET');
   if (!id || !secret) return [];
 
   const token = await kickToken(id, secret);
@@ -312,7 +313,7 @@ export async function discoverKick(): Promise<FoundStream[]> {
 const YOUTUBE_QUERIES = ['FiveM Bulgaria', 'GTA RP България'];
 
 export async function discoverYouTube(): Promise<FoundStream[]> {
-  const key = process.env.YOUTUBE_API_KEY;
+  const key = readEnv('YOUTUBE_API_KEY');
   if (!key) return [];
 
   const found = new Map<string, FoundStream>();

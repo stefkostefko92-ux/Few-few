@@ -1,3 +1,4 @@
+import { readEnv } from '../env';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
@@ -202,4 +203,39 @@ test('НЕ хваща съседните заглавия — те са в съ�
     assert.equal(isGtaVCategory(name), false, `хвана грешната: ${name}`);
   }
   assert.equal(isGtaVCategory(null), false);
+});
+
+// ── Празни кавички в .env ───────────────────────────────────────────────────
+// `env_file` на Compose НЕ маха обгръщащите кавички: `KEY=""` стига до
+// приложението като двузнаковия низ `""`, който е ИСТИНЕН. Измерено с реален
+// контейнер. Същата причина счупи веднъж и входа в админ панела.
+
+test('празна стойност в кавички се чете като ЛИПСВАЩА, не като стойност', () => {
+  const saved = { ...process.env };
+  try {
+    process.env.PROBA = '""';
+    assert.equal(readEnv('PROBA'), undefined, '`""` е двузнаков низ и е истинен — трябва да падне');
+    process.env.PROBA = "''";
+    assert.equal(readEnv('PROBA'), undefined);
+    process.env.PROBA = '   ';
+    assert.equal(readEnv('PROBA'), undefined);
+    process.env.PROBA = '';
+    assert.equal(readEnv('PROBA'), undefined);
+    delete process.env.PROBA;
+    assert.equal(readEnv('PROBA'), undefined);
+  } finally {
+    process.env = saved;
+  }
+});
+
+test('истинската стойност оцелява, дори обвита в кавички', () => {
+  const saved = { ...process.env };
+  try {
+    process.env.PROBA = '"abc123"';
+    assert.equal(readEnv('PROBA'), 'abc123');
+    process.env.PROBA = ' abc123 ';
+    assert.equal(readEnv('PROBA'), 'abc123');
+  } finally {
+    process.env = saved;
+  }
 });

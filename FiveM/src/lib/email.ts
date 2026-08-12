@@ -11,17 +11,19 @@
  * no-op би създал точно илюзията, че обещанието се изпълнява.
  */
 
+import { readEnv } from './env';
+
 const API = 'https://api.resend.com/emails';
 
 export type Mail = { to: string; subject: string; body: string };
 
 function sender(): string {
-  return process.env.EMAIL_FROM ?? 'FiveM BG <no-reply@fivembulgaria.carbonstealth.eu>';
+  return readEnv('EMAIL_FROM') ?? 'FiveM BG <no-reply@fivembulgaria.carbonstealth.eu>';
 }
 
 /** Никога не хвърля: неизпратен имейл не бива да отменя взето решение. */
 export async function sendMail(mail: Mail): Promise<boolean> {
-  const key = process.env.RESEND_API_KEY;
+  const key = readEnv('RESEND_API_KEY');
   if (!key) {
     console.warn(`[email] няма RESEND_API_KEY — не е изпратено до ${mail.to}: ${mail.subject}`);
     return false;
