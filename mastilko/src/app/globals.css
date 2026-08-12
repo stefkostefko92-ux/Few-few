@@ -219,15 +219,19 @@ body {
   background-color: #0a1826;
   contain: strict;
 }
+/* БЕЗ filter:blur() и БЕЗ mix-blend-mode — те бяха ИСТИНСКАТА причина за лага:
+   докато капките падат над aurora-та, огромният blur(42px) + screen-blend слой
+   се пресемплираше на всеки кадър (измерено: ~10 fps с тях, ~50+ fps без тях, в
+   софтуерен растер — на реален GPU 60). Меката „мъгла" сега идва от самите
+   радиални градиенти (леко по-плътни, за да компенсират липсата на blur), а
+   движението е само translate (кеширана текстура), не scale/rotate (пре-растер). */
 .viv-aurora {
   position: absolute;
   inset: -25%;
   background:
-    radial-gradient(40% 50% at 20% 30%, rgba(58, 134, 185, 0.55), transparent 60%),
-    radial-gradient(45% 55% at 80% 25%, rgba(91, 180, 232, 0.45), transparent 60%),
-    radial-gradient(50% 60% at 60% 82%, rgba(23, 69, 106, 0.6), transparent 65%);
-  filter: blur(42px);
-  mix-blend-mode: screen;
+    radial-gradient(48% 58% at 20% 30%, rgba(58, 134, 185, 0.42), transparent 72%),
+    radial-gradient(52% 62% at 80% 25%, rgba(91, 180, 232, 0.34), transparent 72%),
+    radial-gradient(58% 68% at 60% 82%, rgba(23, 69, 106, 0.5), transparent 74%);
   will-change: transform;
   animation: viv-drift-a 34s ease-in-out infinite !important;
 }
@@ -236,9 +240,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(45% 55% at 72% 62%, rgba(111, 195, 240, 0.4), transparent 60%),
-    radial-gradient(50% 50% at 28% 72%, rgba(58, 134, 185, 0.4), transparent 60%);
-  mix-blend-mode: screen;
+    radial-gradient(52% 62% at 72% 62%, rgba(111, 195, 240, 0.28), transparent 72%),
+    radial-gradient(56% 58% at 28% 72%, rgba(58, 134, 185, 0.28), transparent 72%);
   will-change: transform;
   animation: viv-drift-b 46s ease-in-out infinite !important;
 }
@@ -355,26 +358,29 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 160px 160px;
 }
+/* Само translate3d → композиторът мести кеширана текстура, без пре-растер на
+   градиента (scale/rotate го форсираха всеки кадър). inset:-25% дава голям
+   резерв, така че ±5% отместване никога не оголва ръбовете. */
 @keyframes viv-drift-a {
   0% {
-    transform: translate3d(-4%, -3%, 0) scale(1.08) rotate(0deg);
+    transform: translate3d(-3%, -2%, 0);
   }
   50% {
-    transform: translate3d(6%, 5%, 0) scale(1.24) rotate(7deg);
+    transform: translate3d(4%, 3%, 0);
   }
   100% {
-    transform: translate3d(-4%, -3%, 0) scale(1.08) rotate(0deg);
+    transform: translate3d(-3%, -2%, 0);
   }
 }
 @keyframes viv-drift-b {
   0% {
-    transform: translate3d(5%, 4%, 0) scale(1.15) rotate(0deg);
+    transform: translate3d(4%, 3%, 0);
   }
   50% {
-    transform: translate3d(-6%, -4%, 0) scale(1) rotate(-6deg);
+    transform: translate3d(-4%, -2%, 0);
   }
   100% {
-    transform: translate3d(5%, 4%, 0) scale(1.15) rotate(0deg);
+    transform: translate3d(4%, 3%, 0);
   }
 }
 /* Капва отгоре (-25vh) до под екрана (118vh) с лек хоризонтален sway и фина
