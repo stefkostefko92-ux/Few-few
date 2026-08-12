@@ -18,9 +18,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import express from "express";
 import request from "supertest";
 import {
-  check, checkSync, recordFailure, recordSuccess, bruteForceGuard, subnetOf,
+  check, checkSync, recordFailure, recordSuccess, bruteForceGuard, subnetOf, wideNetOf,
   _resetBruteForceState, _stateSize,
-  BRUTE_FORCE_STEPS, BRUTE_FORCE_SUBNET_STEPS, BRUTE_FORCE_MAX_ENTRIES,
+  BRUTE_FORCE_STEPS, BRUTE_FORCE_SUBNET_STEPS, BRUTE_FORCE_WIDE_STEPS, BRUTE_FORCE_MAX_ENTRIES,
   BRUTE_FORCE_GLOBAL_THRESHOLD, BRUTE_FORCE_TIGHTENED_STEP,
 } from "../lib/bruteForce.js";
 import { _setRedisForTests } from "../lib/redisClient.js";
@@ -138,6 +138,39 @@ describe("слой 2 — подмрежата хваща въртенето на
     for (let i = 0; i < NET_STEP.failures; i++) await recordFailure("apikey", `78.0.0.${(i % 200) + 1}`);
     await recordSuccess("apikey", "78.0.0.5");
     expect((await check("apikey", "78.0.0.5")).blocked).toBe(true);
+  });
+});
+
+describe("слой 2б — широката мрежа затваря въртенето в цял блок", () => {
+  it("wideNetOf свежда IPv4 до /16, IPv6 до /48, нормализира mapped адрес", () => {
+    expect(wideNetOf("1.2.3.4")).toBe("1.2.0.0/16");
+    expect(wideNetOf("::ffff:1.2.3.4")).toBe("1.2.0.0/16");
+    expect(wideNetOf("2a04:4e42:8e:1:2:3:4:5")).toBe("2a04:4e42:8e::/48");
+  });
+
+  it("IPv6 нападател със СВОЙ /48 не се измъква, сменяйки /64 мрежи", async () => {
+    // Всяка /64 остава ПОД подмрежовия праг — точно поведението, което прави
+    // слой 2 безсилен при IPv6 (един /48 съдържа 65 536 различни /64).
+    const perNet = NET_STEP.failures - 1;
+    const wideStep = [...BRUTE_FORCE_WIDE_STEPS].sort((a, b) => a.failures - b.failures)[0];
+    let sent = 0;
+    for (let net = 0; sent < wideStep.failures; net++) {
+      for (let i = 0; i < perNet && sent < wideStep.failures; i++, sent++) {
+        await recordFailure("apikey", `2a04:4e42:8e:${net.toString(16)}::${i}`);
+      }
+    }
+    const res = await check("apikey", "2a04:4e42:8e:ffff::1");
+    expect(res.blocked, "широкият слой трябваше да хване въртенето в /48").toBe(true);
+  });
+
+  it("широкият слой НЕ пипа съседна мрежа извън блока", async () => {
+    const wideStep = [...BRUTE_FORCE_WIDE_STEPS].sort((a, b) => a.failures - b.failures)[0];
+    for (let i = 0; i < wideStep.failures; i++) {
+      await recordFailure("apikey", `2a04:4e42:8e:${(i % 300).toString(16)}::1`);
+    }
+    expect((await check("apikey", "2a04:4e42:8e:1::9")).blocked).toBe(true);
+    // Друг /48 на същия доставчик си остава свободен.
+    expect((await check("apikey", "2a04:4e42:99:1::9")).blocked).toBe(false);
   });
 });
 

@@ -75,6 +75,12 @@ four parts:
    rotates whole networks. Thresholds here are higher, because legitimate users
    share a network with the attacker. IPv4-mapped IPv6 addresses are normalised,
    so one client cannot obtain two independent budgets.
+2b. **Per wide network** (`/16` IPv4, `/48` IPv6), with the most patient
+   thresholds of all. IPv6 makes layer 2 weak on its own: providers hand a single
+   customer an entire `/48`, i.e. 65,536 distinct `/64` networks, so an attacker
+   changes "network" at will without leaving their own allocation. The coarse
+   layer catches exactly that rotation while staying far above what legitimate
+   traffic from a whole `/16` ever accumulates in *failures*.
 3. **Adaptive tightening.** When total failures for a scope spike, per-source
    thresholds contract (5 → 2). We deliberately do **not** block everyone under
    attack — that would be a self-inflicted denial of service, letting an attacker
@@ -106,10 +112,18 @@ Rate limiting itself rests on correct client identification: `trust proxy` is
 scoped to loopback and unique-local addresses, so `X-Forwarded-For` cannot be
 spoofed from outside to forge a fresh budget.
 
-**Residual limitation (documented honestly):** without `REDIS_URL` the counters
-degrade to process memory — still enforced, but forgotten on restart and not
-shared across replicas. Production sets `REDIS_URL`; the fallback exists so a
-Redis outage cannot take authentication down with it.
+The ordinary request-rate limiters (global, auth, bot, archive) are backed by the
+same Redis instance through a small custom store. Before that they used
+per-process memory, which left two holes: **every restart reset the quotas**, so
+an attacker only had to wait for (or provoke) a deploy, and a second replica
+would have meant each process enforcing its own counter — an effective ceiling of
+N times the advertised one.
+
+**Residual limitation (documented honestly):** without `REDIS_URL` both the
+failure counters and the rate limits degrade to process memory — still enforced,
+but forgotten on restart and not shared across replicas. Production sets
+`REDIS_URL`; the fallback exists so a Redis outage cannot take authentication
+down with it.
 
 ## Data protection
 

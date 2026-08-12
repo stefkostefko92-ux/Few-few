@@ -12,6 +12,7 @@ import morgan from "morgan";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import rateLimit from "express-rate-limit";
+import { redisStore } from "./lib/rateLimitStore.js";
 
 // ─── Startup validation ───────────────────────────────────────────────────────
 const REQUIRED_ENV = ["DATABASE_URL", "SESSION_SECRET", "ENCRYPTION_KEY", "DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_REDIRECT_URI", "MAIN_OWNER_ID", "API_SECRET", "FRONTEND_URL"];
@@ -177,6 +178,7 @@ app.use(
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 200,
+  store: redisStore("rl:global"),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests — please slow down" },
@@ -199,6 +201,7 @@ const globalLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
+  store: redisStore("rl:auth"),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many authentication attempts — please try again in 15 minutes" },
@@ -208,6 +211,7 @@ const authLimiter = rateLimit({
 const botLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 600, // 10/s — generous for message logging
+  store: redisStore("rl:bot"),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Bot endpoint rate limit exceeded" },
@@ -221,6 +225,7 @@ const botLimiter = rateLimit({
 const archiveLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
+  store: redisStore("rl:archive"),
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests — please slow down",
