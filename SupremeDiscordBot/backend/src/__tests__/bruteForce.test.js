@@ -31,25 +31,53 @@ vi.mock("../lib/prisma.js", () => ({ prisma: { auditLog: { create: (...a) => aud
 const IP_STEP = [...BRUTE_FORCE_STEPS].sort((a, b) => a.failures - b.failures)[0];
 const NET_STEP = [...BRUTE_FORCE_SUBNET_STEPS].sort((a, b) => a.failures - b.failures)[0];
 
-/** Минимален Redis двойник: pipeline + mget + set + del върху Map. */
-function fakeRedis() {
-  const store = new Map();
+/**
+ * Redis двойник, който УВАЖАВА TTL и `NX`.
+ *
+ * ЗАЩО ТОЛКОВА ПОДРОБЕН (червен екип, 12.08.2026): първата версия правеше
+ * `expire()` НУЛЕВА операция. Заради това цял клас дефекти беше НЕВИДИМ за
+ * гейта — а точно там се оказа реален блокер: `EXPIRE` без `NX` подновява
+ * срока при ВСЯКО увеличение, значи броячът никога не изтича и от прозоречен
+ * става КУМУЛАТИВЕН. Двойник, който игнорира срока, не може да види разлика
+ * между двете. Часовникът е подаваем, за да се симулира изтичане без чакане.
+ */
+function fakeRedis(clock = { now: 0 }) {
+  const store = new Map();          // key → { value, expiresAt|null }
+  const live = (k) => {
+    const e = store.get(k);
+    if (!e) return null;
+    if (e.expiresAt !== null && e.expiresAt <= clock.now) { store.delete(k); return null; }
+    return e;
+  };
   const api = {
-    store,
-    async mget(keys) { return keys.map((k) => store.get(k) ?? null); },
-    async set(k, v) { store.set(k, v); return "OK"; },
+    store, clock,
+    async mget(keys) { return keys.map((k) => live(k)?.value ?? null); },
+    async set(k, v, _mode, ttlSec) {
+      store.set(k, { value: v, expiresAt: ttlSec ? clock.now + ttlSec * 1000 : null });
+      return "OK";
+    },
     async del(...keys) { for (const k of keys) store.delete(k); return keys.length; },
     pipeline() {
       const ops = [];
       const p = {
         incr(k) { ops.push(["incr", k]); return p; },
-        expire() { ops.push(["expire"]); return p; },
+        expire(k, sec, mode) { ops.push(["expire", k, sec, mode]); return p; },
         async exec() {
-          return ops.map(([op, k]) => {
-            if (op !== "incr") return [null, 1];
-            const next = (Number(store.get(k)) || 0) + 1;
-            store.set(k, String(next));
-            return [null, next];
+          return ops.map(([op, k, sec, mode]) => {
+            if (op === "incr") {
+              const cur = live(k);
+              const next = (Number(cur?.value) || 0) + 1;
+              store.set(k, { value: String(next), expiresAt: cur?.expiresAt ?? null });
+              return [null, next];
+            }
+            // EXPIRE: с `NX` слага срок САМО ако още няма такъв — точно
+            // разликата между прозоречен и кумулативен брояч.
+            const e = live(k);
+            if (e) {
+              if (mode === "NX" && e.expiresAt !== null) return [null, 0];
+              e.expiresAt = clock.now + sec * 1000;
+            }
+            return [null, 1];
           });
         },
       };
@@ -198,6 +226,46 @@ describe("не-IP ключове (напр. потребител при вери
     for (let i = 0; i < IP_STEP.failures; i++) await recordFailure("verify", "p:aaa");
     expect((await check("verify", "p:aaa")).blocked).toBe(true);
     expect((await check("verify", "p:bbb")).blocked).toBe(false);
+  });
+});
+
+describe("броячът в Redis е ПРОЗОРЕЧЕН, не кумулативен", () => {
+  // ЧЕРВЕН ЕКИП (12.08.2026, блокер): `EXPIRE` без `NX` подновява срока при
+  // всяко увеличение. Бавен нападател (по един провал точно преди изтичане)
+  // трупа брояча ВЕЧНО, а решението е „по-лошото от памет и Redis" — значи
+  // раздутата стойност от Redis печели и блокира невинни от същата мрежа.
+  // Същата поправка вече беше приложена в rateLimitStore.js — но не и тук.
+  it("бавните провали НЕ се трупат безкрайно — срокът не се подновява", async () => {
+    const clock = { now: Date.now() };
+    const redis = fakeRedis(clock);
+    _setRedisForTests(redis);
+
+    // По един провал на всеки „14 минути" (под 15-минутния прозорец), 20 пъти.
+    for (let i = 0; i < 20; i++) {
+      _resetBruteForceState();                 // паметта забравя (различен процес)
+      await recordFailure("apikey", "60.60.60.60");
+      clock.now += 14 * 60 * 1000;
+    }
+
+    const counter = redis.store.get("bf:ip:apikey:60.60.60.60");
+    const value = Number(counter?.value ?? 0);
+    expect(value, "броячът трябва да се нулира с прозореца, а не да расте вечно")
+      .toBeLessThanOrEqual(2);
+  });
+
+  it("срокът се слага веднъж и ключът реално изтича", async () => {
+    const clock = { now: Date.now() };
+    const redis = fakeRedis(clock);
+    _setRedisForTests(redis);
+
+    await recordFailure("apikey", "61.61.61.61");
+    await recordFailure("apikey", "61.61.61.61");
+    clock.now += 16 * 60 * 1000;               // след прозореца
+    _resetBruteForceState();
+    await recordFailure("apikey", "61.61.61.61");
+
+    expect(Number(redis.store.get("bf:ip:apikey:61.61.61.61")?.value))
+      .toBe(1);                                 // започва отначало
   });
 });
 

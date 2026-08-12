@@ -17,9 +17,14 @@ export default {
     // log запис MemberKick за този target в последните ~5s → member_kick (с
     // актьор + reason), иначе member_leave. Отделен try/catch — не бива да чупи
     // ticket auto-close логиката отдолу.
+    // `kick`/`ban` се пазят ИЗВЪН блока: „лепкавите роли" по-долу трябва да
+    // знаят дали напускането е доброволно (виж бележката там).
+    let kick = null;
+    let ban = null;
     try {
       const targetTag = member.user?.tag || member.user?.username || null;
-      const kick = await fetchAuditActor(member.guild, AuditLogEvent.MemberKick, member.id, 5000);
+      kick = await fetchAuditActor(member.guild, AuditLogEvent.MemberKick, member.id, 5000);
+      ban = kick ? null : await fetchAuditActor(member.guild, AuditLogEvent.MemberBanAdd, member.id, 5000);
       if (kick) {
         await logServerEvent(member.client, member.guild, {
           category: "members",
@@ -50,7 +55,14 @@ export default {
     // `managed` роли се изключват СЕГА, а не при връщането: те се дават от
     // интеграции (бот роли, Nitro буст) и Discord не позволява да се раздават
     // ръчно — пазенето им би създало снимка, която обещава повече от реалното.
-    try {
+    // ПРОПУСКАМЕ при kick/ban. Иначе наказанието се самоанулира: изгонен
+    // модератор се връща и ботът ЛЮБЕЗНО му връща правата, които току-що са
+    // му отнети. Санкцията трябва да значи нещо. (Червен екип, 12.08.2026)
+    if (kick || ban) {
+      console.log(
+        `[sticky-roles] ${member.id} напусна принудително (${kick ? "kick" : "ban"}) — ролите НЕ се пазят`,
+      );
+    } else try {
       const roleIds = [...member.roles.cache.values()]
         .filter((r) => r.id !== member.guild.id && !r.managed)   // @everyone има id = guild id
         .map((r) => r.id);

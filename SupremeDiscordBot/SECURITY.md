@@ -113,6 +113,13 @@ more expensive instead of resetting. A human who solves the challenge clears the
 counter and never notices. The expected answer is generated and held server-side
 and never reaches the client.
 
+**What verification still cannot do.** The escalating ladder is keyed per member,
+because Discord never tells a bot a member's IP address. A raid using many
+throwaway accounts therefore gets a fresh ladder per account; what it does *not*
+get is unlimited attempts per account, and account-age gating (Premium) is the
+intended answer to disposable accounts. We state this rather than implying the
+captcha is raid-proof on its own.
+
 Throttle keys are classified with `net.isIP`, not by "does it contain a colon" —
 the network-aggregation layers apply only to real addresses, so a non-address key
 (such as `panelId:userId`) is never mistaken for an IPv6 address and never forms a

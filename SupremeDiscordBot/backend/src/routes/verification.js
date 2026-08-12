@@ -62,15 +62,19 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
         createdAt: { gte: since },
       },
     });
+    // Обхватът е ПО СЪРВЪР. Общият брояч в стълбата движи адаптивното
+    // затягане; ако обхватът беше просто „verify", един член, който спами
+    // своя сървър, би свил праговете за верификация на ВСИЧКИ наематели —
+    // cross-tenant griefing. (Червен екип, 12.08.2026)
+    const vScope = `verify:${panel.serverId}`;
+    const vKey = `${panel.id}:${userId}`;
+
     if (recentAttempts >= panel.maxAttempts) {
-      // Плоският cooldown сам по себе си НЕ спира упорит бот. При MATH/EASY
-      // отговорите са ~17 възможни стойности: 5 опита на прозорец значи ~29%
-      // успех за прозорец, тоест за час почти сигурен пробив — а това е точно
-      // анти-рейд функцията. Затова провалът се брои и в общата стълба, чието
-      // наказание РАСТЕ (1 мин → 5 → 30 → 24 ч) и не се нулира с изтичането на
-      // прозореца. Легитимният човек решава задачата и никога не стига дотук.
-      await recordFailure("verify", `${panel.id}:${userId}`);
-      const esc = await check("verify", `${panel.id}:${userId}`);
+      // ВАЖНО: тук НЕ броим провал. Опитът дори не е оценяван — отказваме го
+      // заради изчерпан лимит. Броенето тук даваше на нападателя безплатен
+      // лост: вече блокиран, той продължаваше да помпи брояча с всяка заявка.
+      // Стълбата се храни само от РЕАЛНО оценени провали (по-долу).
+      const esc = await check(vScope, vKey);
       const waitMinutes = esc.blocked
         ? Math.max(panel.cooldownMinutes, Math.ceil(esc.retryAfterSec / 60))
         : panel.cooldownMinutes;
@@ -83,7 +87,7 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
 
     // Ескалиралата блокировка важи и ПРЕДИ да се изчерпи прозорецът: иначе
     // нападателят би получавал нови 5 опита на всеки cooldown, вечно.
-    const escalated = await check("verify", `${panel.id}:${userId}`);
+    const escalated = await check(vScope, vKey);
     if (escalated.blocked) {
       return res.status(429).json({
         error: `Too many attempts. Please wait ${Math.ceil(escalated.retryAfterSec / 60)} minutes before trying again.`,
@@ -95,8 +99,8 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
     // Record attempt
     // Успешна верификация чисти ескалацията — човек, който е сбъркал няколко
     // пъти и после е решил задачата, не бива да носи наказание.
-    if (success) await recordSuccess("verify", `${panel.id}:${userId}`);
-    else await recordFailure("verify", `${panel.id}:${userId}`);
+    if (success) await recordSuccess(vScope, vKey);
+    else await recordFailure(vScope, vKey);
 
     await prisma.verificationAttempt.create({
       data: {
