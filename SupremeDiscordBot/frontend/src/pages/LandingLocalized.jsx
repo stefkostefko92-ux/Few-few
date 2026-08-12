@@ -307,6 +307,26 @@ export default function LandingLocalized({ locale }) {
                 <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
               </div>
             </div>
+            {/* Ръководства и сравнения. Дотук тези пет страници се стигаха САМО
+                отвътре в таблото (тоест иска вход), една от друга и от
+                sitemap.xml — посетител на началната страница нямаше НИКАКЪВ път
+                до тях. Документацията беше невидима точно за хората, за които е
+                писана, а страница без вътрешни връзки не получава и тежест при
+                обхождането. Съдържанието на самите страници е на английски;
+                етикетите тук са на езика на посетителя, за да се разбира какво
+                отваря. (Собственикът, 12.08.2026) */}
+            {t.guides && (
+              <nav aria-label={t.guides.heading}
+                   className="flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">
+                <span className="text-cs-muted uppercase tracking-[0.15em]">{t.guides.heading}</span>
+                <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">{t.guides.panel}</a>
+                <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">{t.guides.best}</a>
+                <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">{t.guides.gdpr}</a>
+                <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsTicketTool}</a>
+                <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsAppy}</a>
+              </nav>
+            )}
+
             <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
               Created and Designed by{" "}
               <a href="https://carbonstealth.eu" target="_blank" rel="noopener" className="text-cs-cyan underline">
