@@ -193,6 +193,8 @@ export default {
   "panels.title": "Panels",
   "panels.subtitle": "Create visual button panels for ticket creation",
   "panels.setupGuide": "Setup guide",
+  "forms.spawnChannelAria": "Channel to post the form in",
+  "panels.spawnChannelAria": "Channel to post the panel in",
   "panels.emojiInvalid": "Must be a SINGLE emoji (or <name:id> for a custom one) — otherwise it is ignored.",
   "panels.empty.title": "No panels yet",
   "panels.empty.body": "Create a button panel so members can open tickets with one click.",

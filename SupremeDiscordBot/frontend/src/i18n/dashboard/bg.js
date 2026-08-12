@@ -185,6 +185,8 @@ export default {
   "panels.title": "Панели",
   "panels.subtitle": "Създайте визуални панели с бутони за отваряне на тикети",
   "panels.setupGuide": "Ръководство за настройка",
+  "forms.spawnChannelAria": "Канал за публикуване на формата",
+  "panels.spawnChannelAria": "Канал за публикуване на панела",
   "panels.emojiInvalid": "Трябва да е ЕДНО emoji (или <име:id> за собствено) — иначе ще бъде пренебрегнато.",
   "panels.empty.title": "Все още няма панели",
   "panels.empty.body": "Създайте панел с бутони, за да могат членовете да отварят тикети с едно кликване.",

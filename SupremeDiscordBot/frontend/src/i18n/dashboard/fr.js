@@ -185,6 +185,8 @@ export default {
   "panels.title": "Panneaux",
   "panels.subtitle": "Créez des panneaux de boutons visuels pour l’ouverture de tickets",
   "panels.setupGuide": "Guide de configuration",
+  "forms.spawnChannelAria": "Salon où publier le formulaire",
+  "panels.spawnChannelAria": "Salon où publier le panneau",
   "panels.emojiInvalid": "Doit être UN seul emoji (ou <nom:id> pour un emoji personnalisé) — sinon il est ignoré.",
   "panels.empty.title": "Aucun panneau pour l’instant",
   "panels.empty.body": "Créez un panneau de boutons pour que les membres puissent ouvrir des tickets en un clic.",
