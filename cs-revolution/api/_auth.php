@@ -21,11 +21,16 @@ if (!function_exists('cs_admin_token')) {
         return is_string($t) ? trim($t) : '';
     }
 
-    /** Token presented by the caller: X-CS-Token header, then ?token=/?key=. */
+    /**
+     * Token presented by the caller — HEADER ONLY (X-CS-Token).
+     *
+     * Query-string auth (?token=/?key=) was removed on purpose: a token in the
+     * URL leaks into nginx access logs, browser history and Referer headers,
+     * and `?key=` collided with admin-data.php's own data-key parameter. The
+     * admin panel has always sent the header (see csAuthFetch in src/App.jsx).
+     */
     function cs_presented_token(): string {
-        $h = $_SERVER['HTTP_X_CS_TOKEN'] ?? '';
-        if ($h !== '') return trim($h);
-        return trim((string)($_GET['token'] ?? $_GET['key'] ?? ''));
+        return trim((string)($_SERVER['HTTP_X_CS_TOKEN'] ?? ''));
     }
 
     /** Returns true if the caller is an authorized admin (constant-time compare). */
@@ -37,9 +42,22 @@ if (!function_exists('cs_admin_token')) {
         return hash_equals($expected, $given);
     }
 
-    /** Hard gate for admin-only endpoints. Emits 401 JSON and exits on failure. */
+    /**
+     * Hard gate for admin-only endpoints. Emits 401 JSON and exits on failure.
+     * Brute-force hardened: every failed attempt is throttled and recorded, and
+     * a locked-out caller is refused (429) BEFORE the token is even compared.
+     */
     function cs_require_admin(): void {
-        if (cs_is_admin()) return;
+        $lock = cs_auth_lock_remaining();
+        if ($lock > 0) {
+            http_response_code(429);
+            header('Retry-After: ' . $lock);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false, 'error' => 'too_many_attempts', 'retry_after' => $lock]);
+            exit;
+        }
+        if (cs_is_admin()) { cs_auth_record_success(); return; }
+        cs_auth_record_failure();
         http_response_code(401);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok' => false, 'error' => 'unauthorized']);
@@ -51,10 +69,138 @@ if (!function_exists('cs_admin_token')) {
         return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     }
 
-    /** Keyed, irreversible pseudonym for an IP (GDPR-friendly rate-limit key). */
+    // ── Brute-force defence for the admin gate ───────────────────────────────
+    // Layered on purpose:
+    //  1. per-IP progressive lockout (exponential: a guesser gets slower fast),
+    //  2. a GLOBAL failure counter over a sliding window, so a distributed
+    //     attack from many IPs against one token still trips a slow-mode,
+    //  3. a mandatory delay on every failure (caps attempts/sec even before a
+    //     lockout applies, and masks any residual timing signal),
+    //  4. an append-only auth log so fail2ban can ban at the firewall.
+    // State lives in one JSON file under cs_log_dir(), keyed by the HASHED ip
+    // (cs_ip_key) so no raw IP is stored — GDPR data minimisation.
+
+    function cs_auth_state_file(): string { return cs_log_dir() . '/auth_throttle.json'; }
+
+    /** Read-modify-write the throttle state under a single exclusive lock. */
+    function cs_auth_with_state(callable $fn) {
+        $f  = cs_auth_state_file();
+        $fp = @fopen($f, 'c+');
+        if (!$fp) return $fn(['ips' => [], 'global' => []], false);
+        @flock($fp, LOCK_EX);
+        $raw = stream_get_contents($fp);
+        $st  = $raw !== '' ? json_decode($raw, true) : null;
+        if (!is_array($st)) $st = [];
+        if (!isset($st['ips']) || !is_array($st['ips']))       $st['ips'] = [];
+        if (!isset($st['global']) || !is_array($st['global'])) $st['global'] = [];
+
+        $now = time();
+        // prune: per-IP entries idle for >24h, and global stamps older than 10 min
+        foreach ($st['ips'] as $k => $v) {
+            $last = (int)($v['last'] ?? 0);
+            if ($now - $last > 86400 && (int)($v['until'] ?? 0) < $now) unset($st['ips'][$k]);
+        }
+        $st['global'] = array_values(array_filter($st['global'], static function ($t) use ($now) {
+            return $now - (int)$t <= 600;
+        }));
+        if (count($st['ips']) > 5000) $st['ips'] = array_slice($st['ips'], -2000, null, true); // bound the file
+
+        $out = $fn($st, true);
+        if (is_array($out)) {
+            ftruncate($fp, 0); rewind($fp);
+            fwrite($fp, json_encode($out));
+            fflush($fp);
+        }
+        @flock($fp, LOCK_UN); fclose($fp); @chmod($f, 0600);
+        return $out;
+    }
+
+    /** Seconds this caller must still wait, or 0 if allowed to try. */
+    function cs_auth_lock_remaining(): int {
+        $key = cs_ip_key();
+        $now = time();
+        $rem = 0;
+        cs_auth_with_state(function ($st) use ($key, $now, &$rem) {
+            $until = (int)($st['ips'][$key]['until'] ?? 0);
+            if ($until > $now) $rem = $until - $now;
+            // Distributed-attack slow mode: >100 failures across ALL IPs in 10
+            // minutes means someone is spraying. Everyone who has already failed
+            // at least once then waits, even if their own count is low.
+            if ($rem === 0 && count($st['global']) > 100 && (int)($st['ips'][$key]['fails'] ?? 0) > 0) {
+                $rem = 30;
+            }
+            return null; // read-only
+        });
+        return $rem;
+    }
+
+    /** Escalating lockout for a given failure count. */
+    function cs_auth_lock_seconds(int $fails): int {
+        if ($fails < 5)   return 0;      // room for honest typos
+        if ($fails < 10)  return 60;
+        if ($fails < 20)  return 300;
+        if ($fails < 50)  return 1800;
+        return 86400;
+    }
+
+    function cs_auth_record_failure(): void {
+        $key = cs_ip_key();
+        $now = time();
+        cs_auth_with_state(function ($st) use ($key, $now) {
+            $cur   = $st['ips'][$key] ?? ['fails' => 0, 'until' => 0, 'last' => 0];
+            $fails = (int)($cur['fails'] ?? 0) + 1;
+            $lock  = cs_auth_lock_seconds($fails);
+            $st['ips'][$key] = [
+                'fails' => $fails,
+                'until' => $lock > 0 ? $now + $lock : 0,
+                'last'  => $now,
+            ];
+            $st['global'][] = $now;
+            return $st;
+        });
+        // Append-only signal for fail2ban (real IP, security legitimate interest,
+        // short retention — rotate this file; see deploy/security/).
+        $flog = cs_log_dir() . '/auth_failures.log';
+        $new  = !file_exists($flog);
+        @file_put_contents(
+            $flog,
+            gmdate('c') . ' ip=' . cs_client_ip() . ' uri=' . cs_hdr_safe((string)($_SERVER['REQUEST_URI'] ?? '')) . "\n",
+            FILE_APPEND | LOCK_EX
+        );
+        if ($new) @chmod($flog, 0600);   // contains raw IPs — never world-readable
+        // Constant floor + jitter: caps attempts/sec and masks timing.
+        usleep(300000 + random_int(0, 200000)); // 300–500 ms
+    }
+
+    function cs_auth_record_success(): void {
+        $key = cs_ip_key();
+        cs_auth_with_state(function ($st) use ($key) {
+            unset($st['ips'][$key]);   // clean slate after a good login
+            return $st;
+        });
+    }
+
+    /**
+     * Keyed, irreversible pseudonym for an IP (GDPR-friendly rate-limit key).
+     * If CS_IP_SALT is unset we derive a per-install secret once and store it
+     * 0600 outside the webroot, instead of falling back to a shared constant a
+     * attacker could reproduce to correlate or pre-compute rate-limit keys.
+     */
     function cs_ip_key(string $ip = ''): string {
         if ($ip === '') $ip = cs_client_ip();
-        $secret = getenv('CS_IP_SALT') ?: 'cs-static-salt-change-me';
+        static $secret = null;
+        if ($secret === null) {
+            $secret = (string)(getenv('CS_IP_SALT') ?: '');
+            if ($secret === '') {
+                $f = cs_log_dir() . '/.ip_salt';
+                $secret = is_readable($f) ? trim((string)@file_get_contents($f)) : '';
+                if ($secret === '') {
+                    $secret = bin2hex(random_bytes(32));
+                    @file_put_contents($f, $secret, LOCK_EX);
+                    @chmod($f, 0600);
+                }
+            }
+        }
         return substr(hash_hmac('sha256', $ip, $secret), 0, 24);
     }
 

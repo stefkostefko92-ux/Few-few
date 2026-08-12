@@ -1,0 +1,27 @@
+# Carbon Stealth — ban repeated admin-token guessing at the firewall.
+# The app already throttles (api/_auth.php); this removes the attacker from
+# the network entirely so they stop consuming PHP workers.
+[carbonstealth-auth]
+enabled  = true
+filter   = carbonstealth-auth
+logpath  = /var/www/carbonstealth.eu/api/logs/auth_failures.log
+backend  = auto
+port     = http,https
+# 5 failures in 10 minutes -> 1 hour ban
+maxretry = 5
+findtime = 600
+bantime  = 3600
+# Repeat offenders get exponentially longer bans (up to a week)
+bantime.increment = true
+bantime.factor    = 4
+bantime.maxtime   = 604800
+action   = %(action_)s
+
+# Also ban generic HTTP abuse seen by nginx (404/403 scanning, 429 floods)
+[nginx-limit-req]
+enabled  = true
+filter   = nginx-limit-req
+logpath  = /var/log/nginx/carbonstealth.error.log
+maxretry = 10
+findtime = 300
+bantime  = 1800

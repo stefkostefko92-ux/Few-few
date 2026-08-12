@@ -1,0 +1,10 @@
+# Raw IPs live here only as long as they are useful for banning.
+/var/www/carbonstealth.eu/api/logs/auth_failures.log {
+    daily
+    rotate 7
+    missingok
+    notifempty
+    compress
+    delaycompress
+    create 0600 www-data www-data
+}
