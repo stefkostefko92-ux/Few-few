@@ -17,9 +17,13 @@
 //    renders null and the CSS `.hero-aurora` poster (index.css) — already
 //    present behind it — is the entire visual. That poster is not a
 //    "loading state": it is a deliberately designed static background.
-//  - FPS watchdog: rolling ~1.5s window; two consecutive sub-50fps windows
-//    trigger `WEBGL_lose_context` + unmount, falling back to the CSS poster.
-//    Low-end devices never get stuck rendering a slideshow.
+//  - Never starts on a SOFTWARE rasterizer (SwiftShader / llvmpipe / Basic
+//    Render). `failIfMajorPerformanceCaveat` is supposed to cover this and
+//    measurably does not — see `isSoftwareRenderer` below.
+//  - FPS watchdog: rolling 700ms window. Below 24fps it drops the context
+//    immediately; below 50fps it needs two consecutive windows (so a one-off
+//    stutter does not kill it). `WEBGL_lose_context` + fall back to the CSS
+//    poster. Low-end devices never get stuck rendering a slideshow.
 //  - devicePixelRatio capped (1.5 desktop / 1 mobile); raymarch step budget
 //    halves on narrow viewports.
 //  - rAF keeps scheduling but skips uniform updates + draw while
@@ -144,6 +148,29 @@ const CS_CYAN = [0x8f / 255, 0xe6 / 255, 0x00 / 255];
 const CS_GOLD = [0xf0 / 255, 0xc2 / 255, 0x4c / 255];
 const CS_BG = [0x07 / 255, 0x0a / 255, 0x06 / 255];
 
+// Софтуерен растеризатор — единственият случай, в който raymarch-ът НИКОГА
+// няма да е добре: всеки пиксел се смята на процесора, тоест точно на нишката,
+// която се бори за скрола.
+//
+// ЗАЩО НЕ СТИГА `failIfMajorPerformanceCaveat` (измерено, 12.08.2026): флагът
+// е сложен точно за това, но НЕ сработва — Chromium върху SwiftShader върна
+// напълно валиден WebGL2 контекст въпреки него. Мерено на живо:
+// `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device …), SwiftShader driver)`.
+// Затова разчитаме на ИМЕТО на растеризатора, а не на обещанието на флага.
+// Същото важи за виртуални машини, блокирани драйвери и стари лаптопи —
+// хората, които най-малко могат да си позволят шейдър на процесора.
+const SOFTWARE_GL = /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic/i;
+
+function isSoftwareRenderer(gl) {
+  try {
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    const name = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    return SOFTWARE_GL.test(String(name || ""));
+  } catch {
+    return false;   // не знаем ≠ лошо: пазачът по кадри остава втората линия
+  }
+}
+
 function compile(gl, type, src) {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, src);
@@ -198,6 +225,10 @@ export default function ShaderHero({ className = "" }) {
       failIfMajorPerformanceCaveat: true,
     });
     if (!gl) return; // no WebGL2 → CSS poster stays the whole experience
+    if (isSoftwareRenderer(gl)) {
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      return;        // CSS постерът е целият визуал — и е проектиран за това
+    }
 
     let program;
     try {
@@ -270,10 +301,23 @@ export default function ShaderHero({ className = "" }) {
 
       frameCount++;
       const elapsed = now - windowStart;
-      if (elapsed > 1500) {
+      // Прозорецът е 700ms, а не 1500ms, и има НЕЗАБАВЕН праг.
+      //
+      // ЗАЩО (измерено, 12.08.2026): старата настройка искаше ДВА последователни
+      // прозореца по 1.5s под 50fps, тоест до ~3 секунди накъсване, преди да се
+      // предаде. Измерено на софтуерна графика: първите две секунди вървяха с 11
+      // от 12 кадъра ИЗПУСНАТИ, после страницата се заключваше на 60fps. Тези три
+      // секунди са точно моментът, в който човек си съставя мнение за продукта —
+      // да ги изтърпи и после да се оправи, е по-лошо от никога да не е тръгвал.
+      //
+      // Две нива: катастрофално (<24fps) пада ВЕДНАГА, защото там няма какво да
+      // се доказва; просто слабо (<50fps) пази двупрозоречното изчакване, за да
+      // не гаси заради еднократно заекване (смяна на раздел, GC, чужд процес).
+      if (elapsed > 700) {
         const fps = (frameCount * 1000) / elapsed;
         frameCount = 0;
         windowStart = now;
+        if (fps < 24) { loseAndStop(); return; }
         if (fps < 50) {
           if (lowStreak) { loseAndStop(); return; }
           lowStreak = true;
