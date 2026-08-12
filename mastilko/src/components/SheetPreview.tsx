@@ -52,12 +52,15 @@ export default function SheetPreview({
     // min-w-0 позволява на grid клетката да се свие под ширината на листа
     // (иначе А4 = 794px издува колоната на телефон/таблет); overflow-hidden
     // клипва при преходни изчисления на мащаба.
-    <div ref={wrapRef} className="w-full min-w-0 overflow-hidden">
+    <div ref={wrapRef} className="sp-wrap w-full min-w-0 overflow-hidden">
       {/* @page е глобален; докато този лист е на екрана, задава ориентацията. */}
       {landscape && (
         <style>{"@media print{@page{size:A4 landscape;margin:0}}"}</style>
       )}
-      <div style={{ height: h * scale }} className="overflow-hidden">
+      {/* sp-wrap/sp-clip: при печат ги махаме с display:contents (globals.css),
+          за да падне скалирането и фиксираната височина и листовете да текат
+          един под друг — иначе няколко листа се застъпваха (виж @media print). */}
+      <div style={{ height: h * scale }} className="sp-clip overflow-hidden">
         <div
           className="print-area origin-top-left"
           style={{ transform: `scale(${scale})`, width: wPx }}
