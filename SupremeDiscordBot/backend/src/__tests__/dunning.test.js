@@ -67,6 +67,11 @@ describe("заседнал past_due", () => {
     // достъп на агенционен клиент заради чужд изтекъл абонамент.
     // (Одит етап 1, 12.08.2026)
     expect(serverUpdates()[0].data).not.toHaveProperty("isPremium");
+    // …а достъпът се ДЕЛЕГИРА на пресмятането. Другата половина от веригата е
+    // доказана отделно и БЕЗ мок в premiumSync.test.js („agency-покрит сървър
+    // става isPremium=true" при точно това състояние: plan „free" + активна
+    // агенция). Двете заедно доказват, че агенционен клиент оцелява дунинга.
+    expect(syncServerPaidFlag).toHaveBeenCalledWith("s1", expect.anything());
     expect(auditActions()).toContain("PREMIUM_REVOKED_DUNNING");
   });
 
