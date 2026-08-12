@@ -1,0 +1,4 @@
+
+# Deploy artifact built by deploy-all.sh / packaging — never commit (contains dist/)
+cs-revolution-vps.tar.gz
+*.tar.gz
