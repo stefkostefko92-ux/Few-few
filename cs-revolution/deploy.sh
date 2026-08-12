@@ -39,7 +39,7 @@ echo ""
 echo "═══ DEPLOYING API ═══"
 cp cs-revolution/api/*.php "$WEBROOT/api/"
 mkdir -p "$WEBROOT/api/logs"
-chmod 755 "$WEBROOT/api/logs"
+chmod 750 "$WEBROOT/api/logs"   # PII lives here — never world-readable
 echo "✓ API files deployed"
 
 # 5. NGINX CONFIG

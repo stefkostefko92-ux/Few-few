@@ -53,7 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              . "// Local SMTP overrides for api/config.php. Git-ignored (holds the password).\n"
              . "return " . var_export($cfg, true) . ";\n";
 
-        if (@file_put_contents($localFile, $php, LOCK_EX) !== false) {
+        if ((function($f,$c){ $t=$f.'.tmp.'.getmypid();
+        // tmp + rename is atomic on the same filesystem: an interrupted write
+        // can never leave a half-written config that @include silently ignores
+        if (@file_put_contents($t,$c,LOCK_EX)!==false) { @chmod($t,0600); @rename($t,$f); }
+    })($localFile, $php) !== false) {
             @chmod($localFile, 0600);
             echo json_encode(['ok'=>true,'message'=>'SMTP config saved']);
         } else {

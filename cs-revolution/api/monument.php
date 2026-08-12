@@ -61,6 +61,19 @@ if (is_file($gate) && (time() - (int)filemtime($gate)) < 43200) {
 }
 @touch($gate);
 
+// Sweep expired gate files. Without this each unique IP leaves a permanent
+// 0-byte file, so a large botnet could exhaust inodes ("disk full" with free
+// bytes). Probabilistic (1 in 50) so the cost is amortised, and bounded so one
+// request never walks a huge directory.
+if (random_int(1, 50) === 1) {
+    $cut = time() - 43200;
+    $n = 0;
+    foreach (glob($dir . '/monument-ip-*') ?: [] as $old) {
+        if (++$n > 500) break;
+        if (@filemtime($old) < $cut) @unlink($old);
+    }
+}
+
 $fh = fopen($dataFile, 'ab');
 if ($fh && flock($fh, LOCK_EX)) {
     fwrite($fh, $seed . ',' . time() . "\n");

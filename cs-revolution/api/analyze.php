@@ -34,16 +34,49 @@ function sanitizeUrl($raw) {
 
 // Rate limiter (per hashed IP), mirrors contact.php. Returns false when over.
 function cs_rate_limit($bucket, $max, $window) {
-    $f = cs_log_dir() . '/rl_' . $bucket . '_' . cs_ip_key(cs_client_ip()) . '.json';
-    $d = file_exists($f) ? json_decode((string)@file_get_contents($f), true) : null;
+    // One exclusive lock across the whole read-modify-write. Locking only the
+    // write lets N concurrent requests all read the same count, all pass the
+    // check and all write count+1 — collapsing the limit to effectively 1.
+    $f  = cs_log_dir() . '/rl_' . $bucket . '_' . cs_ip_key(cs_client_ip()) . '.json';
+    $fp = @fopen($f, 'c+');
+    if (!$fp) return true;                       // storage unavailable: don't hard-fail the site
+    @flock($fp, LOCK_EX);
+    $raw = stream_get_contents($fp);
+    $d   = $raw !== '' ? json_decode($raw, true) : null;
     if (!is_array($d) || time() > ($d['reset'] ?? 0)) $d = ['count' => 0, 'reset' => time() + $window];
-    if (($d['count'] ?? 0) >= $max) return false;
-    $d['count']++;
-    @file_put_contents($f, json_encode($d), LOCK_EX);
-    return true;
+    $allowed = ($d['count'] ?? 0) < $max;
+    if ($allowed) {
+        $d['count']++;
+        ftruncate($fp, 0); rewind($fp);
+        fwrite($fp, json_encode($d)); fflush($fp);
+    }
+    @flock($fp, LOCK_UN); fclose($fp); @chmod($f, 0600);
+    return $allowed;
+}
+
+/**
+ * Total wall-clock budget for ALL outbound requests in one analyze run.
+ *
+ * Without this the probes are serial and each has its own timeout
+ * (10+5+5+5+60+60), so a target that answers slowly on purpose could pin a
+ * PHP-FPM worker for ~145 s. A modest number of such requests exhausts the
+ * pool and takes the whole site down, and the per-IP rate limit does not help
+ * when the requests come from many hosts. One shared deadline caps the damage
+ * a single request can do regardless of how the target behaves.
+ */
+define('CS_OUTBOUND_BUDGET', 25.0);           // seconds, whole run
+if (!isset($GLOBALS['cs_budget_start'])) $GLOBALS['cs_budget_start'] = microtime(true);
+
+function cs_budget_left(): float {
+    return max(0.0, CS_OUTBOUND_BUDGET - (microtime(true) - $GLOBALS['cs_budget_start']));
 }
 
 function fetchUrl($url, $timeout = 15) {
+    // Never spend more than what is left of the shared budget.
+    $left = cs_budget_left();
+    if ($left < 1.0) return ['error' => 'budget_exhausted'];
+    $timeout = (int) max(1, min($timeout, floor($left)));
+
     // Pin curl to the exact vetted public IP so it cannot re-resolve to a
     // private/loopback address after validation (DNS-rebinding SSRF).
     $host = parse_url($url, PHP_URL_HOST);
@@ -95,6 +128,24 @@ $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 // ═══ ANALYZE ═══
 if ($action === 'analyze') {
     if (!cs_rate_limit('scan', 12, 3600)) jsonOut(['ok' => false, 'error' => 'Too many scans. Try again later.'], 429);
+
+    // Global concurrency cap. The per-IP limit above does nothing against a
+    // distributed flood, and every concurrent scan holds a PHP-FPM worker
+    // while it waits on someone else's server. Only N scans may run at once;
+    // the slot is released when the request ends (including on fatal error).
+    $csScanSlot = null;
+    for ($i = 0; $i < 3; $i++) {                       // 3 concurrent scans site-wide
+        $fp = @fopen(cs_log_dir() . '/scan_slot_' . $i . '.lock', 'c');
+        if ($fp && @flock($fp, LOCK_EX | LOCK_NB)) { $csScanSlot = $fp; break; }
+        if ($fp) fclose($fp);
+    }
+    if ($csScanSlot === null) {
+        header('Retry-After: 20');
+        jsonOut(['ok' => false, 'error' => 'Scanner busy. Try again in a moment.'], 503);
+    }
+    register_shutdown_function(function () use ($csScanSlot) {
+        if (is_resource($csScanSlot)) { @flock($csScanSlot, LOCK_UN); @fclose($csScanSlot); }
+    });
     $url = sanitizeUrl($input['url'] ?? $_GET['url'] ?? '');
     if (!$url) jsonOut(['ok' => false, 'error' => 'Invalid URL'], 400);
 
@@ -385,7 +436,9 @@ if ($action === 'analyze') {
             'consent' => true,
             'ab_variant' => $input['ab_variant'] ?? null,
         ];
+        $sNew = !file_exists($logPath);
         @file_put_contents($logPath, json_encode($logEntry) . "\n", FILE_APPEND | LOCK_EX);
+        if ($sNew) @chmod($logPath, 0600);   // IP + UA — owner only
     }
 
     jsonOut($result);
@@ -417,7 +470,9 @@ if ($action === 'lead') {
         'ip' => cs_client_ip(),
         'ua' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200),
     ];
+    $lNew = !file_exists($leadsPath);
     @file_put_contents($leadsPath, json_encode($leadEntry) . "\n", FILE_APPEND | LOCK_EX);
+    if ($lNew) @chmod($leadsPath, 0600);   // lead PII — owner only
 
     // Send email notification to info@carbonstealth.eu
     require_once __DIR__ . '/email-templates.php';

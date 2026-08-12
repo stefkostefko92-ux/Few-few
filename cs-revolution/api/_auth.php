@@ -123,12 +123,12 @@ if (!function_exists('cs_admin_token')) {
         cs_auth_with_state(function ($st) use ($key, $now, &$rem) {
             $until = (int)($st['ips'][$key]['until'] ?? 0);
             if ($until > $now) $rem = $until - $now;
-            // Distributed-attack slow mode: >100 failures across ALL IPs in 10
-            // minutes means someone is spraying. Everyone who has already failed
-            // at least once then waits, even if their own count is low.
-            if ($rem === 0 && count($st['global']) > 100 && (int)($st['ips'][$key]['fails'] ?? 0) > 0) {
-                $rem = 30;
-            }
+            // NOTE: the distributed-attack response deliberately lives in
+            // cs_auth_record_failure(), NOT here. This function runs BEFORE the
+            // token is compared, so blocking here during a spray would lock out
+            // the real admin too — handing an attacker a cheap DoS. Instead a
+            // spray makes every WRONG answer much more expensive, while a
+            // correct token still gets through instantly.
             return null; // read-only
         });
         return $rem;
@@ -146,16 +146,21 @@ if (!function_exists('cs_admin_token')) {
     function cs_auth_record_failure(): void {
         $key = cs_ip_key();
         $now = time();
-        cs_auth_with_state(function ($st) use ($key, $now) {
+        $spraying = false;
+        cs_auth_with_state(function ($st) use ($key, $now, &$spraying) {
             $cur   = $st['ips'][$key] ?? ['fails' => 0, 'until' => 0, 'last' => 0];
             $fails = (int)($cur['fails'] ?? 0) + 1;
-            $lock  = cs_auth_lock_seconds($fails);
+            $st['global'][] = $now;
+            // Under a distributed spray (>100 failures from all sources in 10
+            // min) a *single* wrong answer is already suspicious: lock this
+            // source immediately instead of granting it the usual 5 free tries.
+            $spraying = count($st['global']) > 100;
+            $lock = $spraying ? max(60, cs_auth_lock_seconds($fails)) : cs_auth_lock_seconds($fails);
             $st['ips'][$key] = [
                 'fails' => $fails,
                 'until' => $lock > 0 ? $now + $lock : 0,
                 'last'  => $now,
             ];
-            $st['global'][] = $now;
             return $st;
         });
         // Append-only signal for fail2ban (real IP, security legitimate interest,

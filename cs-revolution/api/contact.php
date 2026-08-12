@@ -48,18 +48,34 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_
 require_once __DIR__.'/config.php';
 
 // ── Rate limiting (IP-based, 5 requests/hour) ──
+// The whole read-modify-write is held under ONE exclusive lock. Locking only
+// the write (LOCK_EX on file_put_contents) does not help: N concurrent requests
+// all read count=0, all pass the check, and the limit collapses to 1.
 $rlDir = cs_log_dir();
 $ip = cs_client_ip();
 $rlFile = $rlDir.'/rl_'.cs_ip_key($ip).'.json';
-$rlData = file_exists($rlFile) ? json_decode(file_get_contents($rlFile), true) : ['count'=>0,'reset'=>time()+3600];
-if (time() > ($rlData['reset'] ?? 0)) $rlData = ['count'=>0,'reset'=>time()+3600];
-if (($rlData['count'] ?? 0) >= 5) {
+$rlOver = false;
+$rlFp = @fopen($rlFile, 'c+');
+if ($rlFp) {
+    @flock($rlFp, LOCK_EX);
+    $rlRaw  = stream_get_contents($rlFp);
+    $rlData = $rlRaw !== '' ? json_decode($rlRaw, true) : null;
+    if (!is_array($rlData)) $rlData = ['count'=>0,'reset'=>time()+3600];
+    if (time() > ($rlData['reset'] ?? 0)) $rlData = ['count'=>0,'reset'=>time()+3600];
+    if (($rlData['count'] ?? 0) >= 5) {
+        $rlOver = true;
+    } else {
+        $rlData['count']++;
+        ftruncate($rlFp, 0); rewind($rlFp);
+        fwrite($rlFp, json_encode($rlData)); fflush($rlFp);
+    }
+    @flock($rlFp, LOCK_UN); fclose($rlFp); @chmod($rlFile, 0600);
+}
+if ($rlOver) {
     http_response_code(429);
     echo json_encode(['ok'=>false,'error'=>'Too many requests. Try again later.']);
     exit;
 }
-$rlData['count']++;
-@file_put_contents($rlFile, json_encode($rlData));
 
 // ── Parse input ──
 $raw = file_get_contents('php://input');
@@ -86,14 +102,20 @@ if ($message === '' || strlen($message) < 5 || strlen($message) > 5000) {
     http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid message']); exit;
 }
 
-// reCAPTCHA v3 (if configured)
+// reCAPTCHA v3 (enforced whenever a secret is configured).
+// Previously the check sat behind `if ($token)`, so simply omitting the field
+// skipped it — the entire anti-bot control was opt-in for the caller.
 if (defined('RECAPTCHA_SECRET') && RECAPTCHA_SECRET !== '') {
-    $token = $data['recaptcha'] ?? '';
-    if ($token) {
-        $rc = json_decode(file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.RECAPTCHA_SECRET.'&response='.$token), true);
-        if (!($rc['success'] ?? false) || ($rc['score'] ?? 0) < 0.3) {
-            http_response_code(403); echo json_encode(['ok'=>false,'error'=>'Bot detected']); exit;
-        }
+    $token = (string)($data['recaptcha'] ?? '');
+    if ($token === '') {
+        http_response_code(403); echo json_encode(['ok'=>false,'error'=>'Bot detected']); exit;
+    }
+    $rcUrl = 'https://www.google.com/recaptcha/api/siteverify'
+           . '?secret=' . urlencode(RECAPTCHA_SECRET)
+           . '&response=' . urlencode($token);
+    $rc = json_decode((string)@file_get_contents($rcUrl), true);
+    if (!($rc['success'] ?? false) || ($rc['score'] ?? 0) < 0.3) {
+        http_response_code(403); echo json_encode(['ok'=>false,'error'=>'Bot detected']); exit;
     }
 }
 
@@ -132,25 +154,32 @@ $txt = "CARBON STEALTH VCC — New Contact\n"
      . str_repeat("-", 50) . "\n"
      . "Date: $ts | IP: $ip";
 
-// Auto-reply per lingua
+// Auto-reply per lingua.
+// SECURITY: the body must contain NO attacker-controlled text. This mail is
+// sent, over our authenticated SMTP, to whatever address the (public,
+// unauthenticated) form supplied — so echoing $name back would let anyone
+// send arbitrary wording from info@carbonstealth.eu to any victim, with
+// valid SPF/DKIM. Fixed greeting only.
 $ar = match($lang) {
     'it' => [
         'sub' => 'Messaggio ricevuto — risponderemo entro 24 ore',
-        'body'=> "Ciao $name,\n\nAbbiamo ricevuto la tua richiesta.\nIl team ti rispondera entro 24 ore lavorative.\n\nPer urgenze:\nIT: +39 379 296 9699 (WhatsApp)\nBG: +359 877 414 874\nEmail: info@carbonstealth.eu\n\nCordiali saluti,\nCarbon Stealth VCC\nhttps://carbonstealth.eu",
+        'body'=> "Ciao,\n\nAbbiamo ricevuto la tua richiesta.\nIl team ti rispondera entro 24 ore lavorative.\n\nPer urgenze:\nIT: +39 379 296 9699 (WhatsApp)\nBG: +359 877 414 874\nEmail: info@carbonstealth.eu\n\nCordiali saluti,\nCarbon Stealth VCC\nhttps://carbonstealth.eu",
     ],
     'bg' => [
         'sub' => 'Съобщението е получено — ще отговорим до 24 часа',
-        'body'=> "Здравейте $name,\n\nПолучихме вашето съобщение.\nЩе отговорим в рамките на 24 работни часа.\n\nЗа спешни въпроси:\nIT: +39 379 296 9699 (WhatsApp)\nBG: +359 877 414 874\nEmail: info@carbonstealth.eu\n\nС уважение,\nCarbon Stealth VCC\nhttps://carbonstealth.eu",
+        'body'=> "Здравейте,\n\nПолучихме вашето съобщение.\nЩе отговорим в рамките на 24 работни часа.\n\nЗа спешни въпроси:\nIT: +39 379 296 9699 (WhatsApp)\nBG: +359 877 414 874\nEmail: info@carbonstealth.eu\n\nС уважение,\nCarbon Stealth VCC\nhttps://carbonstealth.eu",
     ],
     default => [
         'sub' => 'Message received — we will reply within 24 hours',
-        'body'=> "Hi $name,\n\nWe received your message.\nOur team will reply within 24 business hours.\n\nFor urgent matters:\nIT: +39 379 296 9699 (WhatsApp)\nBG: +359 877 414 874\nEmail: info@carbonstealth.eu\n\nBest regards,\nCarbon Stealth VCC\nhttps://carbonstealth.eu",
+        'body'=> "Hi,\n\nWe received your message.\nOur team will reply within 24 business hours.\n\nFor urgent matters:\nIT: +39 379 296 9699 (WhatsApp)\nBG: +359 877 414 874\nEmail: info@carbonstealth.eu\n\nBest regards,\nCarbon Stealth VCC\nhttps://carbonstealth.eu",
     ],
 };
 
 // ── SEND ──
 $sent = false;
-$subj = "New contact: $name — $langFlag";
+// cs_hdr_safe strips CR/LF/NUL: strip_tags does NOT, so a name containing
+// "\r\nBcc: victim@x" would inject a header on the mail() fallback path.
+$subj = cs_hdr_safe("New contact: $name — $langFlag");
 
 // Attempt 1: PHPMailer SMTP
 $hasPM = file_exists(__DIR__.'/../vendor/autoload.php');
@@ -220,7 +249,10 @@ if (!$sent) {
 
 // Attempt 3: Log to file (never lose a message)
 $logEntry = date('c')." | $name | $email | $phone | $langFlag | ".substr($message,0,200)."\n";
-@file_put_contents(cs_log_dir().'/contacts_'.date('Y-m').'.log', $logEntry, FILE_APPEND|LOCK_EX);
+$cLog = cs_log_dir().'/contacts_'.date('Y-m').'.log';
+$cNew = !file_exists($cLog);
+@file_put_contents($cLog, $logEntry, FILE_APPEND|LOCK_EX);
+if ($cNew) @chmod($cLog, 0600);   // name/email/phone/message/IP — owner only
 
 if ($sent) {
     echo json_encode(['ok'=>true,'message'=>'sent']);

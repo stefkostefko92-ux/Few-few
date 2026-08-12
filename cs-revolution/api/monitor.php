@@ -153,7 +153,8 @@ foreach (array_slice($all_ips, 0, 10, true) as $ip => $cnt) {
 $data['top_ips'] = $top_ips;
 
 // Services status
-$data['php_fpm'] = trim(shell_exec('systemctl is-active php8.3-fpm 2>/dev/null') ?? 'unknown');
+$fpmUnit = 'php' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '-fpm';   // follow the running PHP
+$data['php_fpm'] = trim(shell_exec('systemctl is-active ' . escapeshellarg($fpmUnit) . ' 2>/dev/null') ?? 'unknown');
 $data['nginx'] = trim(shell_exec('systemctl is-active nginx 2>/dev/null') ?? 'unknown');
 
 // Real server versions
