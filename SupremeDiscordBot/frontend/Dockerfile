@@ -18,6 +18,9 @@ FROM nginxinc/nginx-unprivileged:alpine AS runtime
 # Copy built assets + nginx config
 COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
+# Базовите заглавия за сигурност — един източник, включен във всяка локация
+# (виж коментара в самия файл). Без него nginx отказва да стартира.
+COPY --chown=nginx:nginx nginx-security-headers.conf /etc/nginx/security-headers.conf
 
 # nginx-unprivileged uses port 8080 (no privileged binding)
 EXPOSE 8080

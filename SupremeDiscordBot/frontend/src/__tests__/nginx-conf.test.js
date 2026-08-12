@@ -83,3 +83,39 @@ describe("CSP на /archive съвпада с този на backend-а", () => {
     expect(fromNginx).toBe(fromBackend);
   });
 });
+
+// ─── Заглавия за сигурност: едно място, включено ВСЯКЪДЕ ────────────────────
+// В nginx `add_header` във вложен блок ЗАМЕСТВА наследените, а не ги допълва.
+// Затова заглавията се преписваха ръчно във всяка локация — и това вече беше
+// дрейфнало (одит етап 12, 12.08.2026): `/api` и `/public` нямаха НИТО ЕДНО,
+// а `/archive` беше без HSTS, при това точно тя сервира транскрипти по
+// СПОДЕЛЯНИ линкове, тоест често е първият контакт с домейна.
+describe("заглавия за сигурност", () => {
+  const snippetPath = new URL("../../nginx-security-headers.conf", import.meta.url);
+
+  it("всяка location блок включва общия файл", () => {
+    const locations = live.split("\n").filter((l) => /^\s*location\b/.test(l)).length;
+    const includes = live.split("\n").filter((l) => /include\s+\/etc\/nginx\/security-headers\.conf;/.test(l)).length;
+    expect(locations, "няма локации — тестът би бил сляп").toBeGreaterThan(0);
+    expect(includes, `${includes} включвания за ${locations} локации`).toBe(locations);
+  });
+
+  it("общият файл носи задължителния набор", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const snippet = await readFile(snippetPath, "utf8");
+    for (const h of ["X-Frame-Options", "X-Content-Type-Options", "Referrer-Policy",
+                     "Permissions-Policy", "Strict-Transport-Security"]) {
+      expect(snippet, `липсва ${h}`).toContain(h);
+    }
+  });
+
+  it("нула ръчни повторения — иначе дрейфът се връща", () => {
+    const dupes = live.split("\n").filter((l) =>
+      /^\s*add_header\s+(X-Frame-Options|X-Content-Type-Options|Referrer-Policy|Permissions-Policy|Strict-Transport-Security)\b/.test(l));
+    expect(dupes, `преписани на ръка: ${dupes.length}`).toEqual([]);
+  });
+
+  it("версията на nginx не изтича в Server заглавието", () => {
+    expect(live.split("\n").some((l) => /server_tokens\s+off;/.test(l))).toBe(true);
+  });
+});
