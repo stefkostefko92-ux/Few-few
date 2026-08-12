@@ -11,10 +11,6 @@ import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
-const VERIFICATION_PREMIUM_FIELDS = {
-  minAccountAgeDays: "verification.accountAge",
-};
-
 const router = Router();
 
 // ── Public-to-bot endpoint (x-bot-secret) ──────────────────────────────────
@@ -28,16 +24,11 @@ router.get("/bot/:panelId", requireBotSecret, async (req, res, next) => {
       where: { id: req.params.panelId },
     });
     if (!panel) return res.status(404).json({ error: "Verification panel not found" });
-    // Tier санитизация при ЧЕТЕНЕ: MATH captcha и минимална възраст на акаунта са
-    // premium. Свален на free сървър пазеше стойностите → ботът ги налагаше. При
-    // недостатъчен план сваляме MATH до базовия BUTTON и махаме възрастовия праг.
-    const tier = await getServerTier(panel.serverId);
-    if (panel.type === "MATH" && !planHasFeature(tier.plan, "verification.mathCaptcha")) {
-      panel.type = "BUTTON";
-    }
-    if (panel.minAccountAgeDays && !planHasFeature(tier.plan, "verification.accountAge")) {
-      panel.minAccountAgeDays = null;
-    }
+    // БЕЗ tier санитизация тук — верификацията е защитна функция и НЕ се
+    // сваля при изтекъл план. Досега MATH падаше до BUTTON, а възрастовият
+    // праг се нулираше: анти-рейд защитата отслабваше тихо точно когато
+    // клиентът спре да плаща, а вредата падаше върху членовете. Виж
+    // бележката в lib/premium.js.
     res.json(panel);
   } catch (err) { next(err); }
 });
@@ -179,17 +170,6 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     // Premium gates: MATH type + minAccountAgeDays + verification panel count
     const { isPremium, limits } = await getServerTier(req.params.serverId);
-    if (!isPremium) {
-      if (parsed.data.type === "MATH") {
-        return res.status(403).json({
-          error: "Math captcha verification requires Premium.",
-          code: "PREMIUM_REQUIRED",
-          feature: "verification.mathCaptcha",
-        });
-      }
-      const premErr = await validatePremiumFields(req.params.serverId, parsed.data, VERIFICATION_PREMIUM_FIELDS);
-      if (premErr) return res.status(premErr.status).json(premErr.body);
-    }
     // Атомарно: count+create в една Serializable транзакция (lib/withinLimit.js).
     const created = await createWithinLimit({
       model: "verificationPanel",
@@ -232,17 +212,6 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
 
     // Same premium gates on update
     const { isPremium } = await getServerTier(req.params.serverId);
-    if (!isPremium) {
-      if (parsed.data.type === "MATH") {
-        return res.status(403).json({
-          error: "Math captcha verification requires Premium.",
-          code: "PREMIUM_REQUIRED",
-          feature: "verification.mathCaptcha",
-        });
-      }
-      const premErr = await validatePremiumFields(req.params.serverId, parsed.data, VERIFICATION_PREMIUM_FIELDS);
-      if (premErr) return res.status(premErr.status).json(premErr.body);
-    }
 
     const existing = await prisma.verificationPanel.findFirst({
       where: { id: req.params.panelId, serverId: req.params.serverId },
