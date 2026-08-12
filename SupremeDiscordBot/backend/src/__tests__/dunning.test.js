@@ -58,9 +58,15 @@ describe("заседнал past_due", () => {
     const res = await runDunningJob();
 
     expect(res.downgraded).toBe(1);
-    expect(serverUpdates()[0].data).toMatchObject({
-      isPremium: false, plan: "free", stripeStatus: "unpaid",
-    });
+    // Собственият план пада и статусът става окончателен…
+    expect(serverUpdates()[0].data).toMatchObject({ plan: "free", stripeStatus: "unpaid" });
+    // …но `isPremium` НЕ се хардкодва тук. Свършва СОБСТВЕНИЯТ абонамент, а
+    // сървърът може да е покрит от активна агенция — тогава премиумът му е
+    // законен и идва от друго място. Затова достъпът се ПРЕСМЯТА
+    // (syncServerPaidFlag), вместо да се обявява. Хардкодът отнемаше платен
+    // достъп на агенционен клиент заради чужд изтекъл абонамент.
+    // (Одит етап 1, 12.08.2026)
+    expect(serverUpdates()[0].data).not.toHaveProperty("isPremium");
     expect(auditActions()).toContain("PREMIUM_REVOKED_DUNNING");
   });
 
