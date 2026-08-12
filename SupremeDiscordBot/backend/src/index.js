@@ -118,7 +118,17 @@ app.set("trust proxy", ["loopback", "uniquelocal"]);
 // HSTS is enforced in production only.
 app.use(
   helmet({
-    contentSecurityPolicy: false, // API doesn't serve HTML; frontend nginx sets its own CSP
+    // CSP е изключен ГЛОБАЛНО, но твърдението „API-то не сервира HTML" беше
+    // НЕВЯРНО (одит етап 10, 12.08.2026): архивните транскрипти се сервират
+    // точно оттук — `/archive/ticket/:id` и `/api/tickets/archives/:id` —
+    // и съдържат потребителско съдържание с лични данни.
+    //
+    // Днес това е безопасно, защото ВСЯКА от двете врати слага СВОЙ, по-строг
+    // CSP (`default-src 'none'`, нула скриптове) — виж routes/archive.js
+    // (secureHtml) и routes/tickets.js. Тоест защитата съществува, но е
+    // per-route: нов HTML маршрут БЕЗ собствен CSP няма да получи нищо по
+    // подразбиране. Който добавя такъв, слага и заглавията.
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     hsts: process.env.NODE_ENV === "production" ? {
       maxAge: 31536000, // 1 year
