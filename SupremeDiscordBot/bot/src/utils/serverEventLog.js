@@ -295,6 +295,41 @@ export async function logServerEvent(client, guild, evt) {
  * @param {number} [maxAgeMs=5000]  игнорирай стари записи (audit log е eventually consistent)
  * @returns {Promise<{ executorId: string|null, executorTag: string|null, reason: string|null }|null>}
  */
+/**
+ * Причината за напускане (kick / ban / доброволно) с ЕДНА заявка към audit log.
+ *
+ * ЗАЩО НЕ ДВЕ (одит етап 4, 12.08.2026): разграничаването искаше два отделни
+ * `fetchAuditActor` — по един на тип, тоест две обръщения към audit log при
+ * ВСЯКО напускане. Този маршрут е строго лимитиран от Discord, а четири други
+ * handler-а изрично гейтват точно преди такава заявка. Тук взимаме последните
+ * записи БЕЗ филтър по тип и разпознаваме и двете от един отговор.
+ *
+ * @returns {Promise<{kind:"kick"|"ban", executorId, executorTag, reason}|null>}
+ */
+export async function fetchRemovalCause(guild, targetId, maxAgeMs = 5000) {
+  try {
+    const logs = await guild.fetchAuditLogs({ limit: 15 });
+    const now = Date.now();
+    const entry = logs.entries.find(
+      (e) =>
+        (e.action === AuditLogEvent.MemberKick || e.action === AuditLogEvent.MemberBanAdd) &&
+        e.target?.id === targetId &&
+        now - e.createdTimestamp <= maxAgeMs,
+    );
+    if (!entry) return null;
+    const ex = entry.executor;
+    return {
+      kind: entry.action === AuditLogEvent.MemberKick ? "kick" : "ban",
+      executorId: ex?.id || null,
+      executorTag: ex ? (ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username) : null,
+      reason: entry.reason || null,
+    };
+  } catch {
+    // Липсва право ViewAuditLog или Discord отказа — не разпознаваме причината.
+    return null;
+  }
+}
+
 export async function fetchAuditActor(guild, type, targetId, maxAgeMs = 5000) {
   try {
     const logs = await guild.fetchAuditLogs({ type, limit: 5 });

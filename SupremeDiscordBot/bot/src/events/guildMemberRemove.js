@@ -3,7 +3,7 @@
 // enabled, and auto-close their open tickets.
 
 import api from "../utils/api.js";
-import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, fetchRemovalCause } from "../utils/serverEventLog.js";
 import { DANGER, WARNING } from "../utils/colors.js";
 
 export default {
@@ -23,8 +23,10 @@ export default {
     let ban = null;
     try {
       const targetTag = member.user?.tag || member.user?.username || null;
-      kick = await fetchAuditActor(member.guild, AuditLogEvent.MemberKick, member.id, 5000);
-      ban = kick ? null : await fetchAuditActor(member.guild, AuditLogEvent.MemberBanAdd, member.id, 5000);
+      // ЕДНА заявка към audit log за двете причини (виж fetchRemovalCause).
+      const cause = await fetchRemovalCause(member.guild, member.id, 5000);
+      kick = cause?.kind === "kick" ? cause : null;
+      ban = cause?.kind === "ban" ? cause : null;
       if (kick) {
         await logServerEvent(member.client, member.guild, {
           category: "members",
