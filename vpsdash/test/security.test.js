@@ -304,3 +304,38 @@ test('каналите искат sudo, праговете — не', () => {
   assert.equal(needsSudo('/api/alerts/silence', cfg, { mutating: true }), false);
   assert.equal(needsSudo('/api/alerts', cfg), false, 'четенето остава свободно');
 });
+
+// ── SSH: входната врата, проверена без жив sshd ──────────────────────────────
+test('„PasswordAuthentication no" НЕ значи, че паролите са изключени', async () => {
+  const { sshFindings } = await import('../src/posture.js');
+  const ids = (out) => new Set(sshFindings(out).map((f) => f.id));
+  const sev = (out, id) => sshFindings(out).find((f) => f.id === id)?.severity;
+
+  // Точно случаят на собственика: влиза с ключ, редът за пароли е „no" — а
+  // клавиатурно-интерактивната автентикация през PAM пуска парола въпреки това.
+  // Тежестта е КРИТИЧНА именно защото изглежда безопасно.
+  const заблуда = 'passwordauthentication no\nusepam yes\nkbdinteractiveauthentication yes\n';
+  assert.equal(sev(заблуда, 'ssh-kbdinteractive'), 'critical');
+  assert.match(sshFindings(заблуда).find((f) => f.id === 'ssh-kbdinteractive').title, /ВСЪЩНОСТ работят/);
+
+  // Затворено докрай → нито една находка по този вход.
+  const затворено = 'passwordauthentication no\nusepam yes\nkbdinteractiveauthentication no\nmaxauthtries 3\nallowusers ivan\nport 2222\npermitrootlogin no\n';
+  assert.equal(ids(затворено).has('ssh-kbdinteractive'), false);
+  assert.equal(ids(затворено).has('ssh-maxauthtries'), false, 'три опита е достатъчно строго');
+  assert.equal(ids(затворено).has('ssh-allowusers'), false);
+  assert.equal(ids(затворено).has('ssh-port'), false);
+
+  // Без PAM клавиатурно-интерактивната не пуска парола — не бива да плашим без причина.
+  assert.equal(ids('passwordauthentication no\nusepam no\nkbdinteractiveauthentication yes\n').has('ssh-kbdinteractive'), false);
+
+  // Празни пароли: акаунт без парола е вход без доказателство.
+  assert.equal(sev('permitemptypasswords yes\n', 'ssh-empty-pass'), 'critical');
+
+  // MaxAuthTries умножава скоростта на налучкване по брой връзки.
+  assert.equal(sev('maxauthtries 6\n', 'ssh-maxauthtries'), 'low');
+  assert.equal(ids('maxauthtries 3\n').has('ssh-maxauthtries'), false);
+
+  // Старите проверки не бива да са изгубени при изваждането в чиста функция.
+  assert.equal(sev('passwordauthentication yes\n', 'ssh-password'), 'critical');
+  assert.equal(sev('permitrootlogin yes\n', 'ssh-root'), 'high');
+});

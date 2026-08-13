@@ -59,11 +59,29 @@ import {
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
 } from './sudo.js';
 
-const COOKIE = 'csd_sess';
+// Името на сесийната бисквитка носи ЗАЩИТА, не е етикет.
+//
+// Заплахата е конкретна за тази инсталация: на `*.carbonstealth.eu` живеят
+// десетина продукта. Пробив в който и да е от тях (medqr, supremebot, …) дава
+// възможност да се сложи бисквитка `csd_sess` с `Domain=carbonstealth.eu` —
+// браузърът тогава праща ДВЕ с едно име, а `parseCookies` пази последната.
+// Тоест съсед може да подхлъзне сесия на панела, без изобщо да го докосне.
+//
+// Префиксът `__Host-` затваря това на ниво браузър: бисквитка с такова име се
+// приема САМО ако е `Secure`, с `Path=/` и БЕЗ `Domain`. Значи никой поддомейн
+// не може да я сложи — по конструкция, не по наша проверка.
+//
+// Условно е, защото браузърът отхвърля `__Host-` без `Secure`: по гол http
+// (локална разработка) панелът би станал невлизаем. Зад прокси приемаме САМО
+// префиксираната — иначе старото име остава като заобиколен път и цялата
+// защита е театър.
+const COOKIE_BASE = 'csd_sess';
+const COOKIE_HOST = `__Host-${COOKIE_BASE}`;
+const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.2.0';
+export const VERSION = '1.3.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -232,7 +250,7 @@ export function buildRouter(ctx) {
       return null;
     }
     // 2) Браузър: подписано сесийно куки.
-    const sess = verifySession(cfg.sessionSecret, parseCookies(req)[COOKIE], {
+    const sess = verifySession(cfg.sessionSecret, parseCookies(req)[cookieName(cfg)], {
       gen: cfg.sessionGen || 0,
       revoked: ctx.revokedSessions,
     });
@@ -260,7 +278,7 @@ export function buildRouter(ctx) {
 
   const setSessionCookie = (res, token, maxAgeSec) => {
     const secure = cfg.trustProxy ? '; Secure' : '';
-    res.setHeader('set-cookie', `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure}`);
+    res.setHeader('set-cookie', `${cookieName(cfg)}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure}`);
   };
 
   // Federation обхват: по подразбиране peer-ът е САМО ЗА ЧЕТЕНЕ. Компрометиран
@@ -445,7 +463,12 @@ export function buildRouter(ctx) {
       ctx.sessions.delete(who.sess.jti);
       audit.log({ action: 'logout', jti: who.sess.jti, user: who.user });
     }
-    res.setHeader('set-cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`);
+    res.setHeader('set-cookie', [
+      `${cookieName(cfg)}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${cfg.trustProxy ? '; Secure' : ''}`,
+      // И старото име — иначе бисквитка отпреди префикса виси в браузъра до
+      // изтичането си и „Изход" изглежда като че ли не е свършил работа.
+      `${COOKIE_BASE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`,
+    ]);
     sendJson(res, 200, { ok: true });
   });
 

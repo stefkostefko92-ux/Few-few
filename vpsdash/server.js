@@ -318,6 +318,25 @@ const server = http.createServer(async (req, res) => {
       // рамкиран ОТ никого.
       "frame-src 'self'"
   );
+  // Панелът не иска НИТО ЕДНО от тези устройства. Без изричен отказ, дупка в
+  // рамкирано съдържание може да ги поиска от името на нашия произход.
+  res.setHeader(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), ' +
+      'accelerometer=(), gyroscope=(), magnetometer=(), midi=(), display-capture=(), interest-cohort=()'
+  );
+  // Изолация на процеса в браузъра: чужд документ, отворен от нас (или отворил
+  // нас), не бива да дели контекст с панела. Затваря класа атаки, при които
+  // страничен канал чете памет от друг произход в същия процес.
+  res.setHeader('cross-origin-opener-policy', 'same-origin');
+  res.setHeader('cross-origin-resource-policy', 'same-origin');
+  // HSTS. Каноничното място е Nginx, но конфигурацията му може да дрейфне —
+  // а последицата (една заявка по http към жив панел) е открадната сесия.
+  // Затова панелът го праща и сам, но САМО зад прокси: по гол http хедърът е
+  // безсмислен, а при локална разработка би заключил браузъра към https.
+  if (cfg.trustProxy) {
+    res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload');
+  }
   let url;
   try {
     url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);

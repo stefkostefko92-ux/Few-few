@@ -217,7 +217,15 @@ export function forwardCookies(raw) {
   if (!raw) return undefined;
   const keep = String(raw)
     .split(';')
-    .filter((c) => c.trim() && !c.trim().toLowerCase().startsWith(`${PANEL_COOKIE.toLowerCase()}=`));
+    .filter((c) => {
+      const name = c.trim().split('=')[0].toLowerCase();
+      if (!name) return false;
+      // И ДВЕТЕ имена на нашата сесия. Зад прокси тя се казва
+      // `__Host-csd_sess`; филтър само по голото име би пропуснал точно
+      // работещия вариант в производство и би изнесъл сесията на панела в чужд
+      // контейнер — тоест защитата от префикса щеше да отвори друга дупка.
+      return name !== PANEL_COOKIE.toLowerCase() && name !== `__host-${PANEL_COOKIE.toLowerCase()}`;
+    });
   return keep.length ? keep.join(';').trim() : undefined;
 }
 

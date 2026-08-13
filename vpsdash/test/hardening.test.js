@@ -8,6 +8,7 @@ import path from 'node:path';
 import { clientIp, sendJson, openSse } from '../src/httpd.js';
 import { loginAllowed, loginFailed, _resetLoginLimiter, attemptStart, globalDelayMs, bruteForceState, bearerAllowed, bearerFailed } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
+import { forwardCookies } from '../src/desktop.js';
 import { run, runOk } from '../src/exec.js';
 import { Audit } from '../src/audit.js';
 import { redactSecrets, writeFile, readFilePreview } from '../src/files.js';
@@ -362,4 +363,50 @@ test('налучкването ГЪРМИ — защита без сигнал �
   assert.equal(f[0].severity, 'critical');
   assert.match(f[0].title, /Разпределено/);
   assert.match(f[0].body, /машина, не забравена парола/);
+});
+
+// ── Втвърдяване на ниво браузър ──────────────────────────────────────────────
+
+test('сесийната бисквитка носи __Host- зад прокси — съсед не може да я подхлъзне', async () => {
+  const { buildRouter } = await import('../src/routes.js');
+  assert.equal(typeof buildRouter, 'function');
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'src', 'routes.js'), 'utf8');
+  // Заплахата е конкретна: на *.carbonstealth.eu има десетина продукта. Пробив в
+  // който и да е дава възможност да сложи `csd_sess` с Domain=carbonstealth.eu;
+  // браузърът праща две с едно име, а последната печели. `__Host-` го затваря
+  // на ниво браузър: такова име се приема само Secure, Path=/ и БЕЗ Domain.
+  assert.match(src, /__Host-\$\{COOKIE_BASE\}/, 'липсва префиксът');
+  assert.match(src, /trustProxy \? COOKIE_HOST : COOKIE_BASE/, 'зад прокси се приема САМО префиксираната');
+  // Нито едно място не бива да е останало на закованото старо име.
+  assert.ok(!/parseCookies\(req\)\[COOKIE\]/.test(src), 'четенето трябва да минава през cookieName');
+  // Изходът чисти и двете — иначе стара бисквитка виси до изтичането си.
+  assert.ok(src.includes('${COOKIE_BASE}=; Path=/'), 'старото име също се чисти при изход');
+});
+
+test('десктоп проксито реже И ДВЕТЕ имена на панелната сесия', () => {
+  // Филтър само по голото име би пропуснал точно работещия в производство
+  // вариант — тоест защитата от префикса щеше да отвори друга дупка.
+  const out = forwardCookies('__Host-csd_sess=таен; kasm=1; csd_sess=старо; other=2');
+  assert.ok(!/csd_sess/.test(out), `сесията на панела НЕ бива да стига до контейнера: ${out}`);
+  assert.match(out, /kasm=1/);
+  assert.match(out, /other=2/);
+  assert.equal(forwardCookies('__Host-csd_sess=таен'), undefined, 'ако остане само тя — нищо не се праща');
+});
+
+test('панелът праща пълния набор защитни хедъри', () => {
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'server.js'), 'utf8');
+  for (const h of [
+    'content-security-policy',
+    'permissions-policy',
+    'cross-origin-opener-policy',
+    'cross-origin-resource-policy',
+    'x-content-type-options',
+    'referrer-policy',
+  ]) {
+    assert.match(src, new RegExp(`setHeader\\(\\s*'${h}'`), `липсва ${h}`);
+  }
+  // HSTS само зад прокси: по гол http е безсмислен, а при локална разработка
+  // би заключил браузъра към https и панелът става недостъпен.
+  assert.match(src, /if \(cfg\.trustProxy\)[\s\S]{0,120}strict-transport-security/, 'HSTS трябва да е условен');
+  assert.match(src, /max-age=63072000/, 'две години е прагът за preload списъка');
 });
