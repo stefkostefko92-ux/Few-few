@@ -39,13 +39,16 @@ import { plural } from './text.js';
 export const MAX_NOTIFY_RETRIES = 3;
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic, revoked, shipper }) {
     this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
     this.digest = new DigestSchedule(cfg.paths.stateDir); // седмичният пулс към човека
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
     this.traffic = traffic; // месечен трафик срещу квотата на хостера
+    // Двата контрола, чийто провал не личи по нищо друго (виж custodyChecks).
+    this.revoked = revoked; // отменените сесии стигат ли до диска
+    this.shipper = shipper; // копието на одита стига ли до другия VPS
     this.accesslog = accesslog; // за дела 5xx от РЕАЛНИЯ трафик
     this.cfg = cfg;
     this.metrics = metrics;
@@ -431,6 +434,7 @@ export class AlertEngine {
     for (const b of this.accessChecks()) out.push(b);
     for (const b of this.bruteChecks()) out.push(b);
     for (const b of await this.postureChecks()) out.push(b);
+    for (const b of this.custodyChecks()) out.push(b);
     // Нов изложен порт. Алармата НЕ е „порт 443 е отворен" (той трябва да е) —
     // а промяната спрямо приета базова линия, точно както рестарт-цикълът се
     // мери по разлика.
@@ -594,6 +598,69 @@ export class AlertEngine {
   // Блокиран apt. Кадансът е рядък и резултатът се КЕШИРА: `dpkg-query -W`
   // изброява всеки инсталиран пакет — минава за секунда, но няма никакъв смисъл
   // на всеки цикъл, а състоянието се мени с дни, не с минути.
+  // Двата контрола, чийто провал не се вижда по нищо друго.
+  //
+  // Общото им е, че при повреда всичко ИЗГЛЕЖДА наред: няма грешка на екрана,
+  // няма счупена функция, няма разлика в поведението. Точно затова трябва да
+  // гърмят сами.
+  //
+  //  · Отмяна на сесия, която не е стигнала до диска — „Изход от всички
+  //    устройства" е свършил работа само привидно: списъкът е в паметта, а при
+  //    първия рестарт откраднатият токен оживява.
+  //  · Спряло копие на одита към другия VPS — ако някой вземе root, локалният
+  //    дневник е негов; единственото останало доказателство е копието отвън.
+  custodyChecks() {
+    const out = [];
+    const rev = this.revoked?.health?.();
+    if (rev?.saveFailures) {
+      out.push({
+        key: 'revoke-not-persisted',
+        severity: 'critical',
+        title: 'Отменените сесии НЕ се записват на диска',
+        body:
+          `${plural(rev.saveFailures, 'провален запис', 'провалени записа')} (${rev.lastSaveError || 'без съобщение'}). ` +
+          'Докато панелът върви, отмяната държи; при първия рестарт отменените токени ОЖИВЯВАТ. ' +
+          'Провери мястото и правата на папката със състоянието.',
+        sustain: false,
+        repeatEvery: 3600 * 1000,
+      });
+    }
+
+    const ship = this.shipper?.status?.();
+    if (ship?.enabled) {
+      const every = Math.max(60, Number(ship.intervalSec) || 300) * 1000;
+      const silentFor = ship.lastOkAt ? Date.now() - ship.lastOkAt : null;
+      // Търпим няколко пропуснати цикъла (мрежата мига), но не и час мълчание.
+      const tolerance = Math.max(6 * every, 3600 * 1000);
+      if (silentFor === null && ship.lastRunAt) {
+        out.push({
+          key: 'audit-ship-never',
+          severity: 'critical',
+          title: 'Одитът НИКОГА не е стигал до другия VPS',
+          body:
+            'Изнасянето е включено, но нито един пробег не е успял: ' +
+            ((ship.lastResults || []).find((r) => !r.ok)?.error || 'без подробности') +
+            '. Копието отвън е единственото доказателство, което оцелява, ако някой вземе root.',
+          sustain: false,
+          repeatEvery: 12 * 3600 * 1000,
+        });
+      } else if (silentFor !== null && silentFor > tolerance) {
+        out.push({
+          key: 'audit-ship-stale',
+          severity: 'warning',
+          title: 'Копието на одита изостава',
+          body:
+            `Последно успешно изнасяне преди ${fmtDuration(silentFor)}. ` +
+            ((ship.lastResults || []).find((r) => !r.ok)?.error || '') +
+            ' Мълчаливо спряло копие е по-лошо от липсващо — създава увереност.',
+          sustain: false,
+          repeatEvery: 12 * 3600 * 1000,
+        });
+      }
+    }
+    return out;
+  }
+
   // Оценката за сигурност беше ЕКРАН, не пазач.
   //
   // `posture()` се викаше единствено от HTTP маршрута — тоест разширени права

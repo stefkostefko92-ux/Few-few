@@ -73,7 +73,16 @@ const traffic = new TrafficStore(cfg.paths.stateDir);
 // препратката е в мъртва зона до края на модула.
 const offsite = new OffsiteShipper({ cfg, audit, schedule: backupSchedule });
 offsite.start();
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic });
+// Обявени ТУК, преди алармите, защото `custodyChecks` ги чете: провалът и на
+// двата контрола не личи по нищо друго (отменена сесия, която не е стигнала до
+// диска; спряло копие на одита към другия VPS).
+const revokedSessions = new RevokedSessions(cfg.paths.stateDir);
+const shipper = new AuditShipper({ cfg, audit });
+const alerts = new AlertEngine({
+  cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic,
+  revoked: revokedSessions,
+  shipper,
+});
 alerts.start();
 
 // Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
@@ -251,7 +260,6 @@ const pty = new PtySessions(audit);
 
 // Копие на одита към другия VPS (ако е включено) — хеш-веригата открива
 // подправяне, но само копие извън машината го прави безполезно.
-const shipper = new AuditShipper({ cfg, audit });
 shipper.start();
 
 // Провалът на одита е шумен: дневник, който тихо не пише, е по-лош от липсващ.
@@ -294,7 +302,7 @@ const router = buildRouter({
   // изходът и поименната отмяна бяха илюзия точно в най-важния момент: рестарт
   // (деплой, ъпдейт, срив) го изчистваше и вече отменен откраднат токен
   // проработваше отново — до 12 часа.
-  revokedSessions: new RevokedSessions(cfg.paths.stateDir),
+  revokedSessions,
 });
 const statics = serveStatic(path.join(__dirname, 'public'));
 

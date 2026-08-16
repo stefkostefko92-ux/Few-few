@@ -565,3 +565,71 @@ test('аларми: празната памет не гърми и не прав
   eng.transientSeen = new Map();
   assert.doesNotThrow(() => eng.pruneTransient(Date.now(), 1000));
 });
+
+// ── Контролите, чийто провал не личи по нищо друго ───────────────────────────
+test('отменена сесия, която не е стигнала до диска, ГЪРМИ', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const mk = (rev, ship) => {
+    const a = Object.create(AlertEngine.prototype);
+    a.cfg = {};
+    a.revoked = rev;
+    a.shipper = ship;
+    return a;
+  };
+  assert.deepEqual(mk(null, null).custodyChecks(), [], 'без данни — мълчание, не гадаене');
+  assert.deepEqual(mk({ health: () => ({ saveFailures: 0 }) }, null).custodyChecks(), []);
+
+  // „Изход от всички устройства" изглежда, че е свършил работа: списъкът е в
+  // паметта. При първия рестарт откраднатият токен ОЖИВЯВА — а нищо не го казва.
+  const f = mk({ health: () => ({ saveFailures: 3, lastSaveError: 'ENOSPC' }) }, null).custodyChecks();
+  assert.equal(f[0].severity, 'critical');
+  assert.match(f[0].body, /ENOSPC/);
+  assert.match(f[0].body, /ОЖИВЯВАТ/, 'последицата се казва, не се подразбира');
+});
+
+test('спряло копие на одита към другия VPS ГЪРМИ', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const mk = (status) => {
+    const a = Object.create(AlertEngine.prototype);
+    a.cfg = {};
+    a.shipper = { status: () => status };
+    return a;
+  };
+  // Изключено изнасяне не е находка — това е избор, не повреда.
+  assert.deepEqual(mk({ enabled: false }).custodyChecks(), []);
+
+  // Нито един успешен пробег: контролът срещу подправяне никога не е работил.
+  const never = mk({ enabled: true, intervalSec: 300, lastRunAt: Date.now(), lastOkAt: null, lastResults: [{ ok: false, error: 'ECONNREFUSED' }] }).custodyChecks();
+  assert.equal(never[0].severity, 'critical');
+  assert.match(never[0].body, /ECONNREFUSED/);
+  assert.match(never[0].body, /root/, 'казва ЗАЩО копието отвън е важно');
+
+  // Работило е, но е замлъкнало отдавна.
+  const stale = mk({ enabled: true, intervalSec: 300, lastRunAt: Date.now(), lastOkAt: Date.now() - 9 * 3600000, lastResults: [] }).custodyChecks();
+  assert.equal(stale[0].severity, 'warning');
+  assert.match(stale[0].body, /по-лошо от липсващо/);
+
+  // Скорошен успех → тишина. Мрежата мига; няколко пропуснати цикъла се търпят.
+  assert.deepEqual(mk({ enabled: true, intervalSec: 300, lastRunAt: Date.now(), lastOkAt: Date.now() - 60000, lastResults: [] }).custodyChecks(), []);
+});
+
+test('провалът на записа се ЗАПОМНЯ, а не само се гълта', async () => {
+  const { RevokedSessions } = await import('../src/revoked.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rev-'));
+  const r = new RevokedSessions(dir);
+  r.add('jti-1', Date.now() + 60000);
+  assert.equal(r.health().saveFailures, 0);
+  assert.equal(r.has('jti-1'), true);
+
+  // Правим папката недостъпна за запис → следващият `save` се проваля.
+  let hooked = 0;
+  r.onSaveFailure = () => hooked++;
+  r.file = path.join(dir, 'няма-такава-папка', 'revoked.json');
+  r.add('jti-2', Date.now() + 60000);
+  assert.equal(r.health().saveFailures, 1, 'провалът се брои');
+  assert.ok(r.health().lastSaveError, 'причината се пази');
+  assert.equal(hooked, 1, 'куката за аларма се вика');
+  // И въпреки провала действието НЕ се чупи — сесията е отменена в паметта.
+  assert.equal(r.has('jti-2'), true);
+  fs.rmSync(dir, { recursive: true, force: true });
+});

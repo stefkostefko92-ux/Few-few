@@ -51,6 +51,18 @@ export class AuditShipper {
     for (const peer of this.cfg.peers || []) {
       out.push(await this.shipTo(peer).catch((e) => ({ peer: peer.id, ok: false, error: e.message })));
     }
+    // Резултатът се ЗАПОМНЯ, а не само се връща.
+    //
+    // Дотук цикълът беше `this.shipAll().catch(() => {})` — тоест провалът се
+    // изяждаше напълно, а `status()` показваше само курсорите, които при провал
+    // просто не мърдат. Значи копието на одита в другия VPS можеше да е мъртво
+    // със седмици и нищо да не го каже. Това е контролът срещу подправяне: ако
+    // някой вземе root, локалният дневник е негов — единственото, което остава,
+    // е копието отвън. Мълчаливо спряло копие е по-лошо от липсващо, защото
+    // създава увереност.
+    this.lastRunAt = Date.now();
+    this.lastResults = out;
+    if (out.length && out.every((r) => r.ok)) this.lastOkAt = Date.now();
     return out;
   }
 
@@ -76,6 +88,9 @@ export class AuditShipper {
       intervalSec: this.cfg.auditShip?.intervalSec || 300,
       cursors: this.cursors,
       mirrors: this.audit.mirrors(),
+      lastRunAt: this.lastRunAt || null,
+      lastOkAt: this.lastOkAt || null,
+      lastResults: this.lastResults || [],
     };
   }
 }

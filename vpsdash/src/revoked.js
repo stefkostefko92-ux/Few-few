@@ -34,12 +34,35 @@ export class RevokedSessions {
     }
   }
 
+  // Провалът на записа НЕ бива да е тих.
+  //
+  // Дискът наистина не бива да чупи изхода от системата — затова грешката се
+  // гълта. Но само гълтането прави отмяната ЛЪЖА: списъкът остава в паметта,
+  // изглежда, че сесията е убита, и при първия рестарт откраднатият токен
+  // ОЖИВЯВА. Одитът вече прави правилното (брои провалите и вика аларма); тук
+  // липсваше, а контролът е по-критичен: там губиш следа, тук губиш достъп.
   save() {
     try {
       fs.writeFileSync(this.file, JSON.stringify(Object.fromEntries(this.map)), { mode: 0o600 });
-    } catch {
-      /* дискът не бива да чупи изхода от системата */
+      this.lastSaveError = null;
+    } catch (err) {
+      this.saveFailures = (this.saveFailures || 0) + 1;
+      this.lastSaveError = err.message;
+      try {
+        this.onSaveFailure?.(err);
+      } catch {
+        /* аларма не бива да хвърля */
+      }
     }
+  }
+
+  // Състояние за алармата: „наистина ли са отменени тези сесии".
+  health() {
+    return {
+      revoked: this.map.size,
+      saveFailures: this.saveFailures || 0,
+      lastSaveError: this.lastSaveError || null,
+    };
   }
 
   // `expMs` е изтичането на САМИЯ токен: след него подписът и без това е мъртъв,
