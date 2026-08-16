@@ -13,6 +13,7 @@ import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts, memPercent } from './history.js';
 import { bruteForceState } from './auth.js';
+import { posture } from './posture.js';
 
 // Прагове за алармата „налучкване". Броят е ОБЩ (всички адреси), защото
 // разпределената атака е тихата — по адрес всеки изглежда безобиден.
@@ -429,6 +430,7 @@ export class AlertEngine {
     for (const b of await this.redisChecks()) out.push(b);
     for (const b of this.accessChecks()) out.push(b);
     for (const b of this.bruteChecks()) out.push(b);
+    for (const b of await this.postureChecks()) out.push(b);
     // Нов изложен порт. Алармата НЕ е „порт 443 е отворен" (той трябва да е) —
     // а промяната спрямо приета базова линия, точно както рестарт-цикълът се
     // мери по разлика.
@@ -592,6 +594,47 @@ export class AlertEngine {
   // Блокиран apt. Кадансът е рядък и резултатът се КЕШИРА: `dpkg-query -W`
   // изброява всеки инсталиран пакет — минава за секунда, но няма никакъв смисъл
   // на всеки цикъл, а състоянието се мени с дни, не с минути.
+  // Оценката за сигурност беше ЕКРАН, не пазач.
+  //
+  // `posture()` се викаше единствено от HTTP маршрута — тоест разширени права
+  // върху конфига, включени пароли по SSH или изгасена защитна стена стояха
+  // невидими, докато някой не отвори раздела. А точно това са промените, които
+  // стават сами: лош деплой, възстановен бекъп с чужд umask, „временно" пипване,
+  // което никой не връща. Панелът съществува, за да не чака да го попитат.
+  //
+  // Пуска се веднъж на час — прави няколко системни команди и няма смисъл на
+  // всеки тик. Гърми само за КРИТИЧНИ и ВИСОКИ находки: средните и ниските са
+  // съвети за подобрение, не инциденти, и биха превърнали алармата в шум.
+  async postureChecks() {
+    if (this.cfg.alerts?.posture === false) return [];
+    const every = 60 * 60 * 1000;
+    const now = Date.now();
+    if (now - (this.lastPostureAt || 0) >= every) {
+      this.lastPostureAt = now;
+      try {
+        this.lastPosture = await posture();
+      } catch {
+        this.lastPosture = null; // не гадаем — мълчание вместо измислена аларма
+      }
+    }
+    const found = (this.lastPosture?.findings || []).filter((f) => !f.ok && (f.severity === 'critical' || f.severity === 'high'));
+    if (!found.length) return [];
+    const worstOne = found.some((f) => f.severity === 'critical') ? 'critical' : 'warning';
+    return [
+      {
+        key: 'posture',
+        severity: worstOne,
+        title: `Сигурността се влоши: ${found[0].title}`,
+        body:
+          found.map((f) => `· ${f.title}`).join('\n') +
+          '\n\nПоправките са в „Сигурност" — всяка находка носи конкретната команда. ' +
+          'Тези промени рядко са нарочни: лош деплой, възстановен бекъп с чужд umask или „временно" пипване, което никой не е върнал.',
+        sustain: false,
+        repeatEvery: 12 * 3600 * 1000,
+      },
+    ];
+  }
+
   async aptChecks() {
     if (this.cfg.alerts?.apt === false) return [];
     const every = 30 * 60 * 1000;

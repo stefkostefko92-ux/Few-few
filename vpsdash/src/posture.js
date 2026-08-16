@@ -15,6 +15,21 @@ import { plural } from './text.js';
 
 const WEIGHTS = { critical: 25, high: 12, medium: 6, low: 2 };
 
+// [път, най-широки допустими права]. Изнесено, за да е проверимо и за да се
+// вижда с едно четене кое НЕ е в списъка.
+export const PERM_TARGETS = [
+  ['/etc/shadow', 0o640],
+  ['/root/.ssh', 0o700],
+  ['/root/.ssh/authorized_keys', 0o600],
+  ['/etc/vps-dashboard/config.json', 0o600],
+  // Прави се от самия saveConfig и съдържа СЪЩИТЕ тайни.
+  ['/etc/vps-dashboard/config.json.bak', 0o600],
+  // Паролата на десктопа — живее до compose файла в инсталационната папка.
+  ['/opt/vps-dashboard/deploy/desktop/desktop' + '.env', 0o600],
+  // Сесии, история, ключ за шифрования бекъп на панела.
+  ['/var/lib/vps-dashboard', 0o700],
+];
+
 function grab(text, key) {
   return text.match(new RegExp(`^${key} (.+)$`, 'm'))?.[1] || null;
 }
@@ -220,7 +235,13 @@ export async function posture() {
   }
 
   // ── Права на чувствителни файлове ──────────────────────────────────────────
-  for (const [file, maxMode] of [['/etc/shadow', 0o640], ['/root/.ssh/authorized_keys', 0o600], ['/etc/vps-dashboard/config.json', 0o600]]) {
+  // Списъкът беше НЕПЪЛЕН по най-неприятния начин: пазеше `config.json`, а
+  // подминаваше три файла със СЪЩИТЕ тайни. Резервното копие (`config.json.bak`,
+  // което самият `saveConfig` прави) носи `passwordHash`, `sessionSecret` и
+  // `peerToken` дума по дума; файлът с паролата на десктопа — нея; папката на
+  // състоянието — сесиите и ключа за бекъпа. Да пазиш оригинала и да оставиш
+  // копието му отворено е защита само на вид.
+  for (const [file, maxMode] of PERM_TARGETS) {
     try {
       const st = fs.statSync(file);
       const mode = st.mode & 0o777;
