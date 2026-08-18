@@ -1269,6 +1269,37 @@ export const ENTRIES = [
   ['Твърде много отворени сесии', 'Too many open sessions', 'Troppe sessioni aperte'],
   ['Твърде много редове в ⟦0⟧', 'Too many lines in ⟦0⟧', 'Troppe righe in ⟦0⟧'],
   ['Твърде широки права: ⟦0⟧', 'Permissions too broad: ⟦0⟧', 'Permessi troppo ampi: ⟦0⟧'],
+  // Одит на САМИЯ панел (posture.js · panelFindings).
+  ['Панелът е без втори фактор', 'The panel has no second factor', 'Il pannello è senza secondo fattore'],
+  [
+    'Панелът дава root над машината. С една парола цялата защита виси на това дали тя някога е изтичала другаде — а хората преизползват пароли.',
+    'The panel grants root over the machine. With only a password, the whole defence rests on whether that password ever leaked elsewhere — and people reuse passwords.',
+    'Il pannello dà root sulla macchina. Con la sola password, l’intera difesa dipende dal fatto che quella password non sia mai trapelata altrove — e le persone riutilizzano le password.',
+  ],
+  [
+    'Секция „Сигурност“ → включи 2FA и ЗАПИШИ резервните кодове извън машината.',
+    'Section “Security” → enable 2FA and WRITE DOWN the recovery codes off the machine.',
+    'Sezione «Sicurezza» → attivi la 2FA e ANNOTI i codici di recupero fuori dalla macchina.',
+  ],
+  [
+    'Потребителското име „⟦0⟧“ е първото, което ботовете пробват',
+    'The username “⟦0⟧” is the first one bots try',
+    'Il nome utente «⟦0⟧» è il primo che i bot provano',
+  ],
+  [
+    'Не е дупка сама по себе си — името не е тайна. Но е безплатна половина от задачата: налучкването започва оттам, а с непознато име всеки опит губи и втори неизвестен. Без 2FA това е реален риск.',
+    'Not a hole in itself — a username is not a secret. But it is half the work handed over for free: guessing starts there, and with an unknown name every attempt loses a second unknown too. Without 2FA this is a real risk.',
+    'Non è di per sé una falla — il nome utente non è un segreto. Ma è metà del lavoro regalata: il tentativo parte da lì, e con un nome sconosciuto ogni prova perde anche una seconda incognita. Senza 2FA è un rischio reale.',
+  ],
+  [
+    'Смени `adminUser` в конфига и рестартирай панела. Влез в ВТОРИ браузър, преди да затвориш текущата сесия.',
+    'Change `adminUser` in the config and restart the panel. Log in from a SECOND browser before closing the current session.',
+    'Cambi `adminUser` nella configurazione e riavvii il pannello. Acceda da un SECONDO browser prima di chiudere la sessione corrente.',
+  ],
+  ['Няма нито един резервен код за 2FA', 'No 2FA recovery codes left at all', 'Nessun codice di recupero 2FA rimasto'],
+  ['Остават само ⟦0⟧ резервни кода', 'Only ⟦0⟧ recovery codes left', 'Restano solo ⟦0⟧ codici di recupero'],
+  ['Жетонът към другия възел е къс', 'The token to the other node is short', 'Il token verso l’altro nodo è corto'],
+  ['Одитът не се копира към другия възел', 'The audit log is not mirrored to the other node', 'Il registro di audit non viene copiato sull’altro nodo'],
   ['текущият', 'the current one', 'quello attuale'],
   ['Текущо ⟦0⟧ спрямо обичайното ⟦1⟧ за последните ⟦2⟧ часа (⟦3⟧=⟦4⟧). Не е задължително проблем — просто не е както обикновено.', 'Currently ⟦0⟧ against the usual ⟦1⟧ over the last ⟦2⟧ hours (⟦3⟧=⟦4⟧). Not necessarily a problem — just not as usual.', 'Attualmente ⟦0⟧ contro il consueto ⟦1⟧ nelle ultime ⟦2⟧ ore (⟦3⟧=⟦4⟧). Non necessariamente un problema — solo non come al solito.'],
   ['Тестово известие', 'Test notification', 'Notifica di prova'],

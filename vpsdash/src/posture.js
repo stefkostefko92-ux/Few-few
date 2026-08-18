@@ -136,9 +136,118 @@ export function sshFindings(out) {
   return findings;
 }
 
-export async function posture() {
+// Оценката гледаше цялата машина и подминаваше САМИЯ панел.
+//
+// Това е сляпото петно на всеки одитор: проверява каквото управлява, не себе си.
+// А панелът е услугата с най-много права на тази машина — негова слаба
+// настройка тежи повече от всяка друга находка тук.
+//
+// Чиста функция, за да е проверима без жива инсталация.
+const GUESSABLE_USERS = new Set(['admin', 'administrator', 'root', 'user', 'vps', 'panel', 'test']);
+
+export function panelFindings(cfg = {}) {
   const findings = [];
   const add = (f) => findings.push(f);
+
+  if (!cfg.totp?.enabled) {
+    add({
+      id: 'panel-no-2fa',
+      severity: 'critical',
+      title: 'Панелът е без втори фактор',
+      why:
+        'Панелът дава root над машината. С една парола цялата защита виси на това дали тя някога е ' +
+        'изтичала другаде — а хората преизползват пароли.',
+      fix: 'Секция „Сигурност“ → включи 2FA и ЗАПИШИ резервните кодове извън машината.',
+    });
+  } else {
+    const left = (cfg.totp.recoveryHashes || []).length;
+    if (left === 0) {
+      add({
+        id: 'panel-no-recovery',
+        severity: 'high',
+        title: 'Няма нито един резервен код за 2FA',
+        why: 'Загубен или изтрит телефон значи заключен си извън собствения си сървър — остава само SSH.',
+        fix: 'Секция „Сигурност“ → издай нови резервни кодове и ги запиши ИЗВЪН машината.',
+      });
+    } else if (left <= 2) {
+      add({
+        id: 'panel-low-recovery',
+        severity: 'low',
+        title: `Остават само ${left} резервни кода`,
+        why: 'Всеки е еднократен. Свършат ли, връщането след загубен телефон минава само през SSH.',
+        fix: 'Издай нов комплект, докато още имаш достъп.',
+      });
+    }
+  }
+
+  if (GUESSABLE_USERS.has(String(cfg.adminUser || '').toLowerCase())) {
+    add({
+      id: 'panel-default-user',
+      severity: cfg.totp?.enabled ? 'low' : 'medium',
+      title: `Потребителското име „${cfg.adminUser}“ е първото, което ботовете пробват`,
+      why:
+        'Не е дупка сама по себе си — името не е тайна. Но е безплатна половина от задачата: ' +
+        'налучкването започва оттам, а с непознато име всеки опит губи и втори неизвестен. ' +
+        (cfg.totp?.enabled ? 'С включено 2FA тежестта е малка.' : 'Без 2FA това е реален риск.'),
+      fix: 'Смени `adminUser` в конфига и рестартирай панела. Влез в ВТОРИ браузър, преди да затвориш текущата сесия.',
+    });
+  }
+
+  const ttl = Number(cfg.sessionTtlHours);
+  if (Number.isFinite(ttl) && ttl > 24) {
+    add({
+      id: 'panel-long-session',
+      severity: 'low',
+      title: `Сесията живее до ${plural(ttl, 'час', 'часа')}`,
+      why: 'Открадната бисквитка важи толкова. Дълъг таван превръща еднократен пропуск в дълготраен достъп.',
+      fix: '`sessionTtlHours` до 12–24.',
+    });
+  }
+  const idle = Number(cfg.idleMinutes);
+  if (Number.isFinite(idle) && idle > 60) {
+    add({
+      id: 'panel-long-idle',
+      severity: 'low',
+      title: `Забравена сесия остава жива ${plural(idle, 'минута', 'минути')}`,
+      why: 'Отворен таб на чужд или общ компютър е root shell през цялото това време.',
+      fix: '`idleMinutes` до 30–60.',
+    });
+  }
+
+  // Общият жетон между възлите дава пълен достъп „user: peer". Къс жетон се
+  // налучква; тук няма как да проверим ентропията, но дължината е долна граница.
+  const pt = String(cfg.peerToken || '');
+  if (pt && pt.length < 32) {
+    add({
+      id: 'panel-weak-peertoken',
+      severity: 'high',
+      title: 'Жетонът към другия възел е къс',
+      why: `${pt.length} знака. Този жетон дава достъп до панела — къс жетон се налучква, а лимитерът само забавя.`,
+      fix: 'Издай нов от 48+ случайни знака и го смени и на ДВАТА възела.',
+    });
+  }
+
+  if ((cfg.peers || []).length && !cfg.auditShip?.enabled) {
+    add({
+      id: 'panel-no-auditship',
+      severity: 'low',
+      title: 'Одитът не се копира към другия възел',
+      why:
+        'Има съсед, но дневникът стои само тук. Вземе ли някой root, локалният одит е негов — ' +
+        'копието отвън е единственото, което оцелява.',
+      fix: 'Включи `auditShip.enabled` в конфига.',
+    });
+  }
+
+  return findings;
+}
+
+export async function posture(cfg = {}) {
+  const findings = [];
+  const add = (f) => findings.push(f);
+
+  // Самият панел ПЪРВИ: най-правата услуга на машината.
+  for (const f of panelFindings(cfg)) add(f);
 
   const [sshd, ufw, unattended, listen, f2b, sudoers, passwd] = await Promise.all([
     run('sshd', ['-T'], { timeout: 10000 }),

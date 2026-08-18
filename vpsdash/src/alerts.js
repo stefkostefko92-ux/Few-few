@@ -679,7 +679,7 @@ export class AlertEngine {
     if (now - (this.lastPostureAt || 0) >= every) {
       this.lastPostureAt = now;
       try {
-        this.lastPosture = await posture();
+        this.lastPosture = await posture(this.cfg);
       } catch {
         this.lastPosture = null; // не гадаем — мълчание вместо измислена аларма
       }

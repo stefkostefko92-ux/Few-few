@@ -402,3 +402,43 @@ test('сливането на конфига не приема опасни кл
   assert.equal(c2.constructor, Object, 'constructor остава непокътнат');
   assert.equal(c2.sessionTtlHours, 8);
 });
+
+test('оценката одитира и САМИЯ панел, не само машината', async () => {
+  const { panelFindings } = await import('../src/posture.js');
+  const ids = (c) => new Set(panelFindings(c).map((f) => f.id));
+  const sev = (c, id) => panelFindings(c).find((f) => f.id === id)?.severity;
+  // Сляпото петно на всеки одитор: проверява каквото управлява, не себе си.
+  // А панелът е услугата с най-много права на машината.
+  const здрав = {
+    adminUser: 'стефан',
+    totp: { enabled: true, recoveryHashes: new Array(10) },
+    sessionTtlHours: 12,
+    idleMinutes: 30,
+    peerToken: 'p'.repeat(48),
+    peers: [],
+  };
+  assert.deepEqual(panelFindings(здрав), [], 'изрядна настройка не бива да вдига шум');
+
+  // Липсващо 2FA е най-тежкото: една парола пази root над машината.
+  assert.equal(sev({ ...здрав, totp: { enabled: false } }, 'panel-no-2fa'), 'critical');
+
+  // Тежестта на познаваемото име ЗАВИСИ от 2FA — иначе съветът е догма, не оценка.
+  assert.equal(sev({ ...здрав, adminUser: 'admin' }, 'panel-default-user'), 'low');
+  assert.equal(sev({ ...здрав, adminUser: 'admin', totp: { enabled: false } }, 'panel-default-user'), 'medium');
+  assert.equal(ids({ ...здрав, adminUser: 'Root' }).has('panel-default-user'), true, 'сравнението е без регистър');
+
+  // Резервните кодове са ДОСТЪПНОСТ: без тях загубен телефон = заключен си вън.
+  assert.equal(sev({ ...здрав, totp: { enabled: true, recoveryHashes: [] } }, 'panel-no-recovery'), 'high');
+  assert.equal(sev({ ...здрав, totp: { enabled: true, recoveryHashes: new Array(2) } }, 'panel-low-recovery'), 'low');
+
+  // Къс общ жетон дава пълен достъп „user: peer" — лимитерът само забавя.
+  assert.equal(sev({ ...здрав, peerToken: 'къс' }, 'panel-weak-peertoken'), 'high');
+  // Без съсед изобщо няма находка за изнасяне на одита.
+  assert.equal(ids(здрав).has('panel-no-auditship'), false);
+  assert.equal(ids({ ...здрав, peers: [{ id: 'b' }] }).has('panel-no-auditship'), true);
+
+  // Дълга сесия/бездействие: открадната бисквитка важи толкова.
+  assert.equal(ids({ ...здрав, sessionTtlHours: 720 }).has('panel-long-session'), true);
+  assert.equal(ids({ ...здрав, idleMinutes: 1440 }).has('panel-long-idle'), true);
+  assert.equal(ids({ ...здрав, sessionTtlHours: 24, idleMinutes: 60 }).has('panel-long-session'), false);
+});

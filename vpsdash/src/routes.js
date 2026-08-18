@@ -28,7 +28,7 @@ import * as webserver from './webserver.js';
 import * as compose from './compose.js';
 import * as databases from './databases.js';
 import * as backups from './backups.js';
-import { verifyTotp, generateSecret, otpauthUri, generateRecoveryCodes, hashRecoveryCode, verifyRecoveryCode } from './totp.js';
+import { verifyTotp, generateSecret, otpauthUri, generateRecoveryCodes, hashRecoveryCode, verifyRecoveryCode, acceptStep } from './totp.js';
 import { saveConfig } from './config.js';
 import { configuredChannels } from './notify.js';
 import { RANGES, diskSeries, knownMounts, memPercent } from './history.js';
@@ -81,7 +81,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.6.0';
+export const VERSION = '1.7.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -425,9 +425,10 @@ export function buildRouter(ctx) {
     }
     // Втори фактор (ако е включен). Стъпката се пази, за да не мине същият код два пъти.
     if (cfg.totp?.enabled && cfg.totp?.secret) {
-      const step = verifyTotp(cfg.totp.secret, body.code);
-      if (step !== null && step !== ctx.lastTotpStep) {
-        ctx.lastTotpStep = step;
+      // `acceptStep` налага СТРОГО НАРАСТВАНЕ, не просто различие — иначе
+      // по-стар, но още валиден код минава след успешен вход (виж totp.js).
+      if (acceptStep(ctx, verifyTotp(cfg.totp.secret, body.code))) {
+        /* кодът е приет и изразходван */
       } else {
         // Резервен код — за когато телефонът го няма. Еднократен: изразходва се
         // веднага и се маха от конфига, за да не може да се ползва пак.
@@ -2138,7 +2139,7 @@ export function buildRouter(ctx) {
   );
 
   // ── Оценка за сигурност, целост на /etc, fail2ban ──────────────────────────
-  r.get('/api/security/posture', guard(J(() => posture.posture())));
+  r.get('/api/security/posture', guard(J(() => posture.posture(cfg))));
   r.get('/api/security/integrity', guard(J(() => posture.diffEtc(cfg.paths.stateDir))));
   r.post(
     '/api/security/integrity/baseline',

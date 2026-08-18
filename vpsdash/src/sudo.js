@@ -11,7 +11,7 @@
 // сесия (jti) — иначе потвърждаване в един браузър отключва действия в друг.
 import crypto from 'node:crypto';
 import { verifyPassword } from './auth.js';
-import { verifyTotp, verifyRecoveryCode } from './totp.js';
+import { verifyTotp, verifyRecoveryCode, acceptStep } from './totp.js';
 
 export const SUDO_TTL_MS = 5 * 60 * 1000;
 
@@ -187,11 +187,13 @@ export function confirmSudo(cfg, { password, code }, saveConfig, state = null) {
     if (!c) return { ok: false, error: 'Липсва код от приложението.' };
     const step = verifyTotp(cfg.totp.secret, c);
     // `verifyTotp` връща НОМЕРА на стъпката или null — не булево.
+    // Правилото е ЕДНО (`acceptStep` в totp.js) и е строго нарастване, не
+    // различие: прозорецът приема три стъпки, значи по-стар, но още валиден код
+    // минаваше след успешно потвърждаване.
     if (step !== null) {
-      if (state && state.lastTotpStep === step) {
+      if (!acceptStep(state, step)) {
         return { ok: false, error: 'Този код вече е използван — изчакай следващия.' };
       }
-      if (state) state.lastTotpStep = step;
       return { ok: true };
     }
     const idx = verifyRecoveryCode(c, cfg.totp.recoveryHashes || []);

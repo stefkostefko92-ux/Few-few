@@ -85,6 +85,64 @@ test("здравето на измерването е зелено СЕГА (tre
   assert.deepEqual(h.problems, []);
 });
 
+test("fail-open by absence: ЛИПСВАЩ канал ГЕЙТВА, а празен е само СЪВЕТ (и трите канала)", () => {
+  // Одит 2026-08-04: защитата беше ОБЪРНАТА — гейтваше се само trend.jsonl (най-слабият канал),
+  // докато errors.jsonl (80 записа история) и _flows.jsonl (документиран gitignore-бъг) минаваха
+  // без никаква проверка → изтриеш ги, гейтът мълчи зелено и историята изчезва тихо.
+  const dir = mkdtempSync(join(tmpdir(), "chan-"));
+  try {
+    const present = join(dir, "present.jsonl");
+    writeFileSync(present, JSON.stringify({ a: 1 }) + "\n");
+    const emptyF = join(dir, "empty.jsonl");
+    writeFileSync(emptyF, "");
+    const gone = join(dir, "gone.jsonl"); // нарочно НЕ се създава
+    const gi = join(dir, ".gitignore");
+    writeFileSync(gi, "node_modules\n");
+
+    const ch = (path, rel) => ({ path, rel, what: "канал", empty: "празно" });
+
+    // 1) наличен и непразен → чисто
+    let h = measurementHealth({ channels: [ch(present, "present.jsonl")], gitignorePath: gi });
+    assert.deepEqual(h.problems, [], "наличен непразен канал не бива да гейтва");
+
+    // 2) ЛИПСВАЩ → problem (гейт)
+    h = measurementHealth({ channels: [ch(gone, "gone.jsonl")], gitignorePath: gi });
+    assert.equal(h.problems.length, 1, "липсващ канал ТРЯБВА да гейтва");
+    assert.match(h.problems[0], /липсва/, "съобщението казва, че каналът е изчезнал");
+
+    // 3) ПРАЗЕН → само note (не гейт)
+    h = measurementHealth({ channels: [ch(emptyF, "empty.jsonl")], gitignorePath: gi });
+    assert.deepEqual(h.problems, [], "празен канал НЕ бива да гейтва (легитимно начално състояние)");
+    assert.equal(h.notes.length, 1, "празнотата се докладва като съвет");
+
+    // 4) в .gitignore → problem (амнезия при нов клон — историческият _flows бъг)
+    writeFileSync(gi, "node_modules\npresent.jsonl\n");
+    h = measurementHealth({ channels: [ch(present, "present.jsonl")], gitignorePath: gi });
+    assert.ok(h.problems.some((p) => /gitignore/.test(p)), "игнориран канал ТРЯБВА да гейтва");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("реалните ТРИ канала (тренд · дефекти · вериги) са налични и не са игнорирани ДНЕС", () => {
+  const h = measurementHealth();
+  assert.deepEqual(h.problems, [], "и трите канала трябва да са трайни:\n  " + h.problems.join("\n  "));
+});
+
+test("асиметрия trend↔pressure е УМИШЛЕНА: празен trend е СЪВЕТ (notes), не гейт (problems)", () => {
+  // trend.jsonl се пълни само от жив eval ран (LLM+бюджет) → празнотата НЕ бива да гейтва
+  // детерминистичния PR гейт (за разлика от pressure, който --record пълни детерминистично).
+  // B1 (2026-08-03): ако някой „поправи" това като вкара празнотата в problems, вкарва живи
+  // евали в детерминистичния гейт — точно обратното на целта.
+  const h = measurementHealth();
+  assert.ok(Array.isArray(h.notes), "measurementHealth носи notes (съветващ канал)");
+  if (h.trendExists && !h.problems.length) {
+    // ако trend е празен днес → трябва да е в notes, НЕ в problems
+    const empty = h.notes.some((n) => /празен/.test(n));
+    const gated = h.problems.some((p) => /празен/.test(p));
+    assert.equal(gated, false, "празен trend НЕ бива да гейтва (иначе CI зависи от живи евали)");
+    if (empty) assert.ok(h.notes.length >= 1, "празнотата се докладва като съвет");
+  }
+});
+
 // ── История на натиска (нормализираният процент, който не лъже при падащ знаменател) ──
 
 test("normalizedRate: дефекти на 100 ед. натиск; нулев натиск → null, не деление на нула", () => {
