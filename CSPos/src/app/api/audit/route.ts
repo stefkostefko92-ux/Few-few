@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
-import { guard, jsonError, requireRead, requireRole, requireSession } from "@/lib/auth";
+import { guard, jsonError, requireRead, requireSession } from "@/lib/auth";
 
 export async function GET(req: Request) {
   return guard(async () => {
