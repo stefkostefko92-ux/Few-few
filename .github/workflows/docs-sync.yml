@@ -28,6 +28,7 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write # ЕДИНСТВЕНАТА job с право на запис — само за да върне регенерирания артефакт
     steps:

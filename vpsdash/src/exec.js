@@ -31,10 +31,31 @@ export function run(cmd, args = [], { timeout = 15000, maxBuffer = 8 * 1024 * 10
   });
 }
 
+// Кой пакет носи кой инструмент — за да е съветът действие, не диагноза.
+const PACKAGE_OF = {
+  ps: 'procps', top: 'procps', free: 'procps', vmstat: 'procps',
+  ss: 'iproute2', ip: 'iproute2',
+  lsof: 'lsof', dig: 'dnsutils', curl: 'curl', rsync: 'rsync',
+  docker: 'docker.io (или Docker Engine)', ufw: 'ufw', 'fail2ban-client': 'fail2ban',
+  nginx: 'nginx', certbot: 'certbot', smartctl: 'smartmontools', sensors: 'lm-sensors',
+};
+
 // Помощник: върни stdout при успех, иначе хвърли с полезно съобщение.
 export async function runOk(cmd, args, opts) {
   const r = await run(cmd, args, opts);
   if (!r.ok) {
+    // ЛИПСВАЩ инструмент не е „вътрешна грешка": сървърът работи, просто на
+    // машината няма с какво да се провери. Съобщението е БЕЗОПАСНО за показване
+    // (име на стандартен пакет, нула вътрешности) — затова носи `safe`, за да
+    // мине през маската на 5xx. Иначе панелът казва „Вътрешна грешка" и човекът
+    // търси бъг в панела, вместо да инсталира пакета.
+    if (r.code === 'ENOENT') {
+      const pkg = PACKAGE_OF[cmd];
+      throw Object.assign(
+        new Error(`Командата „${cmd}" липсва на тази машина${pkg ? ` — инсталирай „${pkg}"` : ''}.`),
+        { status: 503, safe: true, missing: cmd }
+      );
+    }
     const msg = (r.stderr || r.stdout || r.error || 'неуспех').trim().slice(0, 500);
     throw Object.assign(new Error(`${cmd} ${args.join(' ')}: ${msg}`), { status: 502 });
   }

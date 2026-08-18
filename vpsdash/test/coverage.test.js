@@ -1,8 +1,11 @@
 // Кои живи сайтове панелът не следи.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-import { parseServerNames, parseCaddyNames, canonical, coveredDomains, healthCheckFor } from '../src/coverage.js';
+import { parseServerNames, parseCaddyNames, canonical, coveredDomains, healthCheckFor, siteCoverage, readSource } from '../src/coverage.js';
 
 // ── Разборът на nginx ────────────────────────────────────────────────────────
 test('покритие: server_name дава всички имена на реда', () => {
@@ -93,4 +96,40 @@ test('покритие: подхвърлен „домейн" не става UR
   for (const bad of ['x.com/../../etc', 'javascript:alert(1)', 'a b.com', '', 'localhost']) {
     assert.throws(() => healthCheckFor(bad), /Невалиден домейн/, `трябва да откаже: ${bad}`);
   }
+});
+
+// ── „Нула сайта" има три причини — само едната е „наред" ──────────────────────
+test('покритие: без нито един четим източник казва „не знам", не „нула сайта"', () => {
+  // Пътищата се ПОДАВАТ, не се четат от машината. Първата версия разчиташе, че
+  // на тестовата машина няма nginx — вярно локално, НЕВЯРНО на `ubuntu-latest`
+  // в GitHub Actions, който носи инсталиран nginx. Тестът минаваше тук и падаше
+  // там, без нищо в кода да се е променило: той твърдеше нещо за МАШИНАТА, а не
+  // за кода. (07.08.2026)
+  const NOWHERE = { nginx: '/nonexistent-nginx-хх', caddy: '/nonexistent-caddy-хх' };
+  const cov = siteCoverage({ healthChecks: [] }, NOWHERE);
+  assert.equal(cov.unknown, true, 'липсващ източник е НЕЗНАНИЕ, не потвърдена нула');
+  assert.equal(cov.sources.nginx, 'missing');
+  assert.equal(cov.sources.caddy, 'missing');
+  assert.deepEqual(cov.denied, [], 'липсващо ≠ отказано — второто е проблем за оправяне');
+});
+
+test('покритие: четим източник вече НЕ е „не знам" (обратната посока)', (t) => {
+  // Без този тест поправката горе би минала и ако `unknown` беше закован на true.
+  const dir = mkdtempSync(join(tmpdir(), 'cov-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  // Многоредово нарочно: разборът чете `server_name` РЕДОВЕ (виж parseServerNames).
+  // Едноредовият вариант дава нула сайта — първата версия на този тест го ползваше
+  // и щеше да „мине" срещу счупен разбор.
+  writeFileSync(join(dir, 'site.conf'), 'server {\n    server_name a.example.com;\n}\n');
+  const cov = siteCoverage({ healthChecks: [] }, { nginx: dir, caddy: '/nonexistent-caddy-хх' });
+  assert.equal(cov.sources.nginx, 'read');
+  assert.equal(cov.unknown, false, 'един четим източник стига, за да знаем');
+  assert.equal(cov.total, 1, 'и сайтът наистина се вижда');
+});
+
+test('покритие: отказаният достъп се различава от липсващата папка', () => {
+  // Разликата е практическа: „няма такъв уеб сървър" е нормално, „не ме пускат
+  // да чета" значи, че панелът върви с по-малко права, отколкото трябва.
+  assert.equal(readSource('/etc/nginx/sites-enabled-няма-такова'), 'missing');
+  assert.equal(readSource('/proc/1/mem'), 'missing', 'файл вместо папка = ENOTDIR, пак „няма"');
 });

@@ -5,6 +5,7 @@ import os from 'node:os';
 import { run } from './exec.js';
 import { compact } from './history.js';
 import { KernelSampler } from './kernel.js';
+import { isBilledIface } from './traffic.js';
 
 const HISTORY_STEP_MS = 30_000;
 const HISTORY_CAP = (24 * 3600 * 1000) / HISTORY_STEP_MS; // 24 часа
@@ -40,31 +41,60 @@ export function cpuPercent(prev, curr) {
 export function parseMeminfo(text) {
   const get = (key) => {
     const m = text.match(new RegExp(`^${key}:\\s+(\\d+) kB`, 'm'));
-    return m ? Number(m[1]) * 1024 : 0;
+    return m ? Number(m[1]) * 1024 : null;
   };
   const total = get('MemTotal');
-  const available = get('MemAvailable');
+  let available = get('MemAvailable');
+  // `MemAvailable` е от ядро 3.14 нагоре, но /proc може да е и орязан или
+  // нечетим. Липсата му даваше `available = 0` → `used = total` → панелът
+  // твърдеше 100% заета памет и вдигаше КРИТИЧНА аларма на здрава машина.
+  // Резервата е класическата сметка отпреди MemAvailable; ако и тя липсва,
+  // отговорът е „не знам", а не най-страшното число.
+  let estimated = false;
+  if (available === null) {
+    const free = get('MemFree');
+    const buffers = get('Buffers') ?? 0;
+    const cached = get('Cached') ?? 0;
+    if (free !== null) {
+      available = free + buffers + cached;
+      estimated = true;
+    }
+  }
+  const swapTotal = get('SwapTotal');
+  const swapFree = get('SwapFree');
   return {
     total,
     available,
-    used: total - available,
-    swapTotal: get('SwapTotal'),
-    swapUsed: get('SwapTotal') - get('SwapFree'),
+    // `null` се разпространява нарочно: „не знам" не бива да се закръгля до 0.
+    used: total !== null && available !== null ? total - available : null,
+    availableEstimated: estimated, // интерфейсът го казва, вместо да мълчи
+    swapTotal,
+    swapUsed: swapTotal !== null && swapFree !== null ? swapTotal - swapFree : null,
   };
 }
 
-// ── Мрежа: /proc/net/dev делта (bytes/s), без lo ──────────────────────────────
-export function parseNetDev(text) {
+// ── Мрежа: /proc/net/dev делта (bytes/s) ──────────────────────────────────────
+// Броят се само ФИЗИЧЕСКИТЕ интерфейси — същото правило като при месечния
+// трафик, и по същата причина: байт от контейнер минава И през `docker0`/`veth`,
+// И през `eth0`. Сборът от всички го брои двойно.
+//
+// Дотук „без lo" беше единственият филтър, значи живата скорост на обзора
+// показваше ~двойно на машина с Docker (а нашата е точно такава) — при това
+// СЪСЕДНО на месечния трафик, който брои правилно. Две числа на един екран,
+// разминати двукратно, са по-лоши от едно грешно: човек не знае кое да вярва.
+export function parseNetDev(text, counted = isBilledIface) {
   let rx = 0;
   let tx = 0;
+  const ifaces = [];
   for (const line of text.split('\n')) {
     const m = line.match(/^\s*([\w.@-]+):\s*(.+)$/);
-    if (!m || m[1] === 'lo') continue;
+    if (!m || m[1] === 'lo' || !counted(m[1])) continue;
     const f = m[2].trim().split(/\s+/).map(Number);
     rx += f[0] || 0;
     tx += f[8] || 0;
+    ifaces.push(m[1]);
   }
-  return { rx, tx };
+  return { rx, tx, ifaces };
 }
 
 // ── Дискове: df -kP (POSIX формат — стабилен за парсване) ─────────────────────
@@ -124,6 +154,11 @@ export class MetricsCollector {
     const net = parseNetDev(readProc('/proc/net/dev'));
     const dtSec = this.prevTs ? (now - this.prevTs) / 1000 : 0;
 
+    // И двете са ДЕЛТИ: първата проба (при всеки старт на панела) няма от какво
+    // да ги смята. `?? 0` превръщаше това незнание в „0% CPU · 0 B/s" — число,
+    // което изглежда като нормално число и влиза в историята, в прогнозата и в
+    // откриването на аномалии. Първата точка след всеки рестарт беше фалшива
+    // нула. `null` значи „не знам" по целия път и се показва като „—".
     const cpuPct = cpuPercent(this.prevCpu, cpu);
     const netRate =
       this.prevNet && dtSec > 0
@@ -131,7 +166,7 @@ export class MetricsCollector {
             rxBps: Math.max(0, (net.rx - this.prevNet.rx) / dtSec),
             txBps: Math.max(0, (net.tx - this.prevNet.tx) / dtSec),
           }
-        : { rxBps: 0, txBps: 0 };
+        : { rxBps: null, txBps: null };
 
     this.prevCpu = cpu;
     this.prevNet = net;
@@ -150,7 +185,7 @@ export class MetricsCollector {
       uptimeSec: os.uptime(),
       load: os.loadavg(),
       cpus: os.cpus().length,
-      cpuPct: cpuPct ?? 0,
+      cpuPct,
       mem,
       net: netRate,
       disks,

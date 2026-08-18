@@ -29,6 +29,12 @@ try {
 
   // For development, deploy to a specific guild instantly:
   // await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.DEV_GUILD_ID), { body: commands });
+
+  // Изричен exit: командните файлове дърпат Redis/timers при import, които
+  // държат event loop-а жив → без exit скриптът виси СЛЕД успеха и deploy.sh
+  // остава закован на [4/5] (после Ctrl+C печата подвеждащо „failed“).
+  process.exit(0);
 } catch (err) {
   console.error("Failed to deploy commands:", err);
+  process.exit(1);
 }

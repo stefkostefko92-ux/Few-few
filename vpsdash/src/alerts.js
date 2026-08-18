@@ -12,6 +12,13 @@ import { productHealth } from './deploy.js';
 import { nodesStatus } from './nodes.js';
 import { forecastToLimit, fmtDuration, detectAnomaly } from './forecast.js';
 import { diskSeries, knownMounts, memPercent } from './history.js';
+import { bruteForceState } from './auth.js';
+import { posture } from './posture.js';
+
+// Прагове за алармата „налучкване". Броят е ОБЩ (всички адреси), защото
+// разпределената атака е тихата — по адрес всеки изглежда безобиден.
+const BRUTE_ALERT_FAILS = 15;
+const BRUTE_ALERT_ADDRESSES = 5;
 import { evaluateBurn } from './slo.js';
 import { backupChecks } from './drill.js';
 import { scheduleChecks } from './backupsched.js';
@@ -25,15 +32,23 @@ import { Guardians } from './guardians.js';
 import { aptHealth, aptConditions } from './apthealth.js';
 import { composeDigest, DigestSchedule } from './digest.js';
 import { backupAge } from './drill.js';
+import { plural } from './text.js';
+
+// Колко пъти подред се опитва наново, преди да се върнем към нормалния ритъм.
+// Три опита по каданс покриват мрежово трепване; повече е спам към мъртъв канал.
+export const MAX_NOTIFY_RETRIES = 3;
 
 export class AlertEngine {
-  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic }) {
+  constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic, revoked, shipper }) {
     this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
     this.digest = new DigestSchedule(cfg.paths.stateDir); // седмичният пулс към човека
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
     this.traffic = traffic; // месечен трафик срещу квотата на хостера
+    // Двата контрола, чийто провал не личи по нищо друго (виж custodyChecks).
+    this.revoked = revoked; // отменените сесии стигат ли до диска
+    this.shipper = shipper; // копието на одита стига ли до другия VPS
     this.accesslog = accesslog; // за дела 5xx от РЕАЛНИЯ трафик
     this.cfg = cfg;
     this.metrics = metrics;
@@ -44,6 +59,9 @@ export class AlertEngine {
     this.file = path.join(cfg.paths.stateDir, 'alerts.json');
     this.active = new Map(); // key → { since, lastNotified, severity, title, body }
     this.streaks = new Map(); // key → колко последователни проверки е активно
+    // Преживява оценките нарочно: това е брой ПОСЛЕДОВАТЕЛНИ неуспешни
+    // известия по ключ. Нулиран на всеки каданс, таванът никога не се стига.
+    this.notifyRetries = new Map();
     this.log = []; // последните известия (за интерфейса)
     // „Кой пази пазача": кога за последно оценката МИНА докрай. Панелът показва
     // възрастта, а рестарт с изтрито състояние не изглежда като жив мониторинг.
@@ -362,7 +380,11 @@ export class AlertEngine {
     }
 
     const svc = await failedServicesSafe();
-    if (!svc.ok) this.stale.set('service:', `systemd не отговори (${svc.error})`);
+    // Причината и СУРОВИЯТ изход се пазят отделно: изречението е наше (значи
+    // преводимо и стабилно), а изходът на чуждия инструмент е доказателство —
+    // показва се дословно. Слети в един низ, те дават шаблон, който се мени с
+    // всяка машина и затова не може да се преведе на нито един език.
+    if (!svc.ok) this.stale.set('service:', { reason: 'systemd не отговори', detail: svc.error });
     for (const unit of svc.units) {
       out.push({
         key: `service:${unit}`,
@@ -410,6 +432,9 @@ export class AlertEngine {
     for (const b of await this.domainChecks()) out.push(b);
     for (const b of await this.redisChecks()) out.push(b);
     for (const b of this.accessChecks()) out.push(b);
+    for (const b of this.bruteChecks()) out.push(b);
+    for (const b of await this.postureChecks()) out.push(b);
+    for (const b of this.custodyChecks()) out.push(b);
     // Нов изложен порт. Алармата НЕ е „порт 443 е отворен" (той трябва да е) —
     // а промяната спрямо приета базова линия, точно както рестарт-цикълът се
     // мери по разлика.
@@ -426,14 +451,14 @@ export class AlertEngine {
 
     if (t.certDays) {
       const certs = await tlsCertsSafe();
-      if (!certs.ok) this.stale.set('cert:', `сертификатите не се четат (${certs.error})`);
+      if (!certs.ok) this.stale.set('cert:', { reason: 'сертификатите не се четат', detail: certs.error });
       for (const c of certs.certs) {
         if (c.daysLeft != null && c.daysLeft <= t.certDays) {
           out.push({
             key: `cert:${c.domain}`,
             severity: c.daysLeft <= 3 ? 'critical' : 'warning',
             title: 'TLS сертификат изтича',
-            body: `${c.domain} изтича след ${c.daysLeft} дни (${c.expiresAt})`,
+            body: `${c.domain} изтича след ${plural(c.daysLeft, 'ден', 'дни')} (${c.expiresAt})`,
             sustain: false,
             // Хоризонт седмици → напомняне веднъж на ден. При плоския час това
             // бяха 336 критични съобщения за един изтичащ сертификат.
@@ -573,6 +598,110 @@ export class AlertEngine {
   // Блокиран apt. Кадансът е рядък и резултатът се КЕШИРА: `dpkg-query -W`
   // изброява всеки инсталиран пакет — минава за секунда, но няма никакъв смисъл
   // на всеки цикъл, а състоянието се мени с дни, не с минути.
+  // Двата контрола, чийто провал не се вижда по нищо друго.
+  //
+  // Общото им е, че при повреда всичко ИЗГЛЕЖДА наред: няма грешка на екрана,
+  // няма счупена функция, няма разлика в поведението. Точно затова трябва да
+  // гърмят сами.
+  //
+  //  · Отмяна на сесия, която не е стигнала до диска — „Изход от всички
+  //    устройства" е свършил работа само привидно: списъкът е в паметта, а при
+  //    първия рестарт откраднатият токен оживява.
+  //  · Спряло копие на одита към другия VPS — ако някой вземе root, локалният
+  //    дневник е негов; единственото останало доказателство е копието отвън.
+  custodyChecks() {
+    const out = [];
+    const rev = this.revoked?.health?.();
+    if (rev?.saveFailures) {
+      out.push({
+        key: 'revoke-not-persisted',
+        severity: 'critical',
+        title: 'Отменените сесии НЕ се записват на диска',
+        body:
+          `${plural(rev.saveFailures, 'провален запис', 'провалени записа')} (${rev.lastSaveError || 'без съобщение'}). ` +
+          'Докато панелът върви, отмяната държи; при първия рестарт отменените токени ОЖИВЯВАТ. ' +
+          'Провери мястото и правата на папката със състоянието.',
+        sustain: false,
+        repeatEvery: 3600 * 1000,
+      });
+    }
+
+    const ship = this.shipper?.status?.();
+    if (ship?.enabled) {
+      const every = Math.max(60, Number(ship.intervalSec) || 300) * 1000;
+      const silentFor = ship.lastOkAt ? Date.now() - ship.lastOkAt : null;
+      // Търпим няколко пропуснати цикъла (мрежата мига), но не и час мълчание.
+      const tolerance = Math.max(6 * every, 3600 * 1000);
+      if (silentFor === null && ship.lastRunAt) {
+        out.push({
+          key: 'audit-ship-never',
+          severity: 'critical',
+          title: 'Одитът НИКОГА не е стигал до другия VPS',
+          body:
+            'Изнасянето е включено, но нито един пробег не е успял: ' +
+            ((ship.lastResults || []).find((r) => !r.ok)?.error || 'без подробности') +
+            '. Копието отвън е единственото доказателство, което оцелява, ако някой вземе root.',
+          sustain: false,
+          repeatEvery: 12 * 3600 * 1000,
+        });
+      } else if (silentFor !== null && silentFor > tolerance) {
+        out.push({
+          key: 'audit-ship-stale',
+          severity: 'warning',
+          title: 'Копието на одита изостава',
+          body:
+            `Последно успешно изнасяне преди ${fmtDuration(silentFor)}. ` +
+            ((ship.lastResults || []).find((r) => !r.ok)?.error || '') +
+            ' Мълчаливо спряло копие е по-лошо от липсващо — създава увереност.',
+          sustain: false,
+          repeatEvery: 12 * 3600 * 1000,
+        });
+      }
+    }
+    return out;
+  }
+
+  // Оценката за сигурност беше ЕКРАН, не пазач.
+  //
+  // `posture()` се викаше единствено от HTTP маршрута — тоест разширени права
+  // върху конфига, включени пароли по SSH или изгасена защитна стена стояха
+  // невидими, докато някой не отвори раздела. А точно това са промените, които
+  // стават сами: лош деплой, възстановен бекъп с чужд umask, „временно" пипване,
+  // което никой не връща. Панелът съществува, за да не чака да го попитат.
+  //
+  // Пуска се веднъж на час — прави няколко системни команди и няма смисъл на
+  // всеки тик. Гърми само за КРИТИЧНИ и ВИСОКИ находки: средните и ниските са
+  // съвети за подобрение, не инциденти, и биха превърнали алармата в шум.
+  async postureChecks() {
+    if (this.cfg.alerts?.posture === false) return [];
+    const every = 60 * 60 * 1000;
+    const now = Date.now();
+    if (now - (this.lastPostureAt || 0) >= every) {
+      this.lastPostureAt = now;
+      try {
+        this.lastPosture = await posture();
+      } catch {
+        this.lastPosture = null; // не гадаем — мълчание вместо измислена аларма
+      }
+    }
+    const found = (this.lastPosture?.findings || []).filter((f) => !f.ok && (f.severity === 'critical' || f.severity === 'high'));
+    if (!found.length) return [];
+    const worstOne = found.some((f) => f.severity === 'critical') ? 'critical' : 'warning';
+    return [
+      {
+        key: 'posture',
+        severity: worstOne,
+        title: `Сигурността се влоши: ${found[0].title}`,
+        body:
+          found.map((f) => `· ${f.title}`).join('\n') +
+          '\n\nПоправките са в „Сигурност" — всяка находка носи конкретната команда. ' +
+          'Тези промени рядко са нарочни: лош деплой, възстановен бекъп с чужд umask или „временно" пипване, което никой не е върнал.',
+        sustain: false,
+        repeatEvery: 12 * 3600 * 1000,
+      },
+    ];
+  }
+
   async aptChecks() {
     if (this.cfg.alerts?.apt === false) return [];
     const every = 30 * 60 * 1000;
@@ -683,7 +812,7 @@ export class AlertEngine {
         out.push({
           key: `domain:${name}`,
           severity: info.daysLeft <= 7 ? 'critical' : 'warning',
-          title: `Регистрацията на ${name} изтича след ${info.daysLeft} дни`,
+          title: `Регистрацията на ${name} изтича след ${plural(info.daysLeft, 'ден', 'дни')}`,
           body: `Изтича на ${info.expiresAt}. Сертификатът не помага — при изтекъл домейн сайтът просто изчезва, а връщането е скъпо и бавно.`,
           sustain: false,
           repeatEvery: 24 * 3600000,
@@ -741,7 +870,7 @@ export class AlertEngine {
       severity: 'critical',
       title: 'Известията не стигат до никого',
       body:
-        `Последното известие (${new Date(h.ts).toLocaleString('bg-BG')}) не мина по нито един от ${h.attempted} канала: ` +
+        `Последното известие (${new Date(h.ts).toLocaleString('bg-BG')}) не мина по нито един от ${plural(h.attempted, 'канал', 'канала')}: ` +
         `${(h.failures || []).join(', ') || 'без подробности'}. Този панел е единственото място, където виждаш алармите.`,
       sustain: false,
     });
@@ -755,6 +884,39 @@ export class AlertEngine {
   // Броим само НОВОТО от последната проверка (курсорът е на този четец) — иначе
   // едно старо избухване гърми вечно. Първото четене само зарежда курсора:
   // без това стартът на панела вдига аларма за 24 MB история.
+  // Налучкване на паролата/токена — атака, която дотук беше НЕВИДИМА.
+  //
+  // Лимитерът я спираше, но мълчаливо: провалите влизаха в одита, който никой не
+  // чете в реално време. Тоест панелът знаеше, че някой го чука, и не казваше.
+  // По собствената ни доктрина това е по-лошо от липсваща защита — защитата без
+  // сигнал не позволява да реагираш (да блокираш мрежа, да смениш токен).
+  //
+  // Прагът е върху ОБЩИЯ брой провали, не по адрес: разпределената атака е
+  // тихата, а тя се вижда само в сбора.
+  bruteChecks() {
+    const st = bruteForceState();
+    if (st.recentFails < BRUTE_ALERT_FAILS) return [];
+    // „Много опити от МНОГО адреси" е друг разказ от „някой сбърка паролата
+    // пет пъти": второто е човек, първото е машина.
+    const distributed = st.addresses >= BRUTE_ALERT_ADDRESSES;
+    return [
+      {
+        key: 'brute-force',
+        severity: distributed || st.recentFails >= BRUTE_ALERT_FAILS * 3 ? 'critical' : 'warning',
+        title: distributed ? 'Разпределено налучкване на входа' : 'Много неуспешни опити за вход',
+        body:
+          `${plural(st.recentFails, 'неуспешен опит', 'неуспешни опита')} за последните 10 минути ` +
+          `от ${plural(st.addresses, 'адрес', 'адреса')}. ` +
+          (st.delayMs ? `Отговорът вече се бави с ${Math.round(st.delayMs)} ms, за да обезсмисли налучкването. ` : '') +
+          (distributed
+            ? 'Толкова адреси значи машина, не забравена парола — виж „Сигурност" и обмисли стесняване на списъка с разрешени адреси.'
+            : 'Ако не си ти, смени паролата и виж активните сесии.'),
+        sustain: false,
+        repeatEvery: 3600 * 1000,
+      },
+    ];
+  }
+
   accessChecks() {
     const out = [];
     if (!this.accesslog || this.cfg.accesslog?.enabled === false) return out;
@@ -946,17 +1108,10 @@ export class AlertEngine {
     // телеметрия" физически не можеше да пламне: човекът виждаше аларми, които
     // висят вечно, без нито един ред за причината. Мълчаливият пазач е по-лош от
     // липсващия, защото изглежда като работещ.
+    // `stale` се ползва и по-надолу (мълчащ източник не бива да „резолва"
+    // висящите си аларми) — затова живее тук, не вътре в помощника.
     const stale = this.stale || new Map();
-    for (const [prefix, reason] of stale) {
-      const affected = [...this.active.keys()].filter((k) => k.startsWith(prefix)).length;
-      conditions.push({
-        key: `stale:${prefix}`,
-        severity: affected ? 'warning' : 'info',
-        title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
-        body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
-        sustain: false,
-      });
-    }
+    conditions.push(...staleConditions(stale, this.active));
 
     const byKey = new Map(conditions.map((c) => [c.key, c]));
 
@@ -1059,7 +1214,35 @@ export class AlertEngine {
       });
     }
 
-    for (const ev of events) await this.dispatch(ev);
+    // Известие, което НЕ е стигнало, не бива да се брои за изпратено.
+    //
+    // `lastNotified` се вписваше в момента на нареждане на събитието — ПРЕДИ да
+    // се знае дали каналът е приел. Значи две секунди мрежов проблем правеха
+    // критична аларма мълчалива за цял час (подразбиращият се cooldown), при
+    // това без нищо да го подсказва: панелът показва активна аларма, дневникът
+    // показва запис, а телефонът не е звъннал.
+    //
+    // Затова: пълен провал (имало е опит, нула доставени) връща часовника и
+    // следващата оценка опитва пак — но БРОЕНО. Канал, който е трайно мъртъв,
+    // иначе би произвеждал опит на всеки каданс завинаги; след третия опит се
+    // връщаме към нормалния ритъм и оставяме `notify:down` алармата да говори.
+    for (const ev of events) {
+      const entry = await this.dispatch(ev);
+      if (ev.type !== 'firing' || ev.oneShot) continue;
+      const tried = (entry?.failed?.length || 0) + (entry?.sent?.length || 0);
+      const delivered = entry?.sent?.length || 0;
+      const rec = this.active.get(ev.key);
+      if (!rec) continue;
+      if (tried > 0 && delivered === 0) {
+        const n = (this.notifyRetries.get(ev.key) || 0) + 1;
+        this.notifyRetries.set(ev.key, n);
+        if (n <= MAX_NOTIFY_RETRIES) rec.lastNotified = 0; // опитай пак следващия каданс
+      } else if (delivered > 0) {
+        this.notifyRetries.delete(ev.key);
+      }
+    }
+    // Броячите на изчезналите аларми си отиват с тях.
+    for (const key of [...this.notifyRetries.keys()]) if (!this.active.has(key)) this.notifyRetries.delete(key);
     this.lastEvalAt = Date.now();
     this.lastEvalError = null;
     this.save();
@@ -1285,4 +1468,31 @@ function fmtGb(bytes) {
 // Тест-достъпна чиста логика: решава дали условие трябва да пламне сега.
 export function shouldFire({ sustain, streak, need }) {
   return sustain === false || streak >= need;
+}
+
+// Условията „липсва телеметрия" — отделно и чисто, за да са тестваеми без да се
+// пуска цялата оценка (тя чука systemd, диска и мрежата).
+//
+// Ключовото: ПРИЧИНАТА (наше изречение) и СУРОВИЯТ изход на чуждия инструмент
+// живеят в различни полета. Слети в един низ, те дават шаблон, който се мени с
+// всяка машина — значи не може да се преведе на нито един език и завинаги стои в
+// списъка „непреведени". Разделени: изречението е стабилно, изходът се показва
+// дословно, а известието ги слепва веднъж на изхода (`notify`).
+export function staleConditions(stale, active = new Map()) {
+  const out = [];
+  for (const [prefix, info] of stale || new Map()) {
+    // Приема и стар формат (само низ), за да не гръмне при частичен ъпдейт.
+    const reason = typeof info === 'string' ? info : info.reason;
+    const detail = typeof info === 'string' ? null : info.detail;
+    const affected = [...active.keys()].filter((k) => k.startsWith(prefix)).length;
+    out.push({
+      key: `stale:${prefix}`,
+      severity: affected ? 'warning' : 'info',
+      title: `Липсва телеметрия: ${prefix.replace(':', '')}`,
+      body: `${reason}. ${affected ? `${affected} активни аларми остават в сила — не знаем дали са отпаднали.` : 'Няма активни аларми от този източник, но проверката не работи.'}`,
+      detail: detail ? String(detail).trim().slice(0, 500) : null,
+      sustain: false,
+    });
+  }
+  return out;
 }

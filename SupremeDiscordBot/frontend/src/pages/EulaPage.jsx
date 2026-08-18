@@ -12,7 +12,7 @@ export default function EulaPage() {
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="End User License Agreement (EULA)" updated="27 June 2026">
+    <LegalPage title="End User License Agreement (EULA)" updated="7 August 2026">
       <Seo
         title="End User License Agreement — Supreme Bot"
         description="End User License Agreement for Supreme Bot: SaaS access, bot deployment, premium features, white-label terms, and API usage."
@@ -209,7 +209,7 @@ export default function EulaPage() {
         </p>
         <ul>
           <li>
-            <strong className="text-cs-text">Premium</strong> (€9.99/server/month or €99/year) —
+            <strong className="text-cs-text">Premium</strong> (€4.99/server/month or €49/year) —
             in addition to all Free Tier features with the applicable limits removed: up to 50
             panels, forms, and questions per form; HTML ticket transcripts retained indefinitely
             (no 30-day deletion); PDF export of individual ticket transcripts; CSV export of all
@@ -217,13 +217,13 @@ export default function EulaPage() {
             ticket assignment; webhook integrations and the public REST API.
           </li>
           <li>
-            <strong className="text-cs-text">White-label</strong> (€19.99/server/month or
-            €199/year) — everything in Premium plus the White-label Bot (custom token, name,
+            <strong className="text-cs-text">White-label</strong> (€9.99/server/month or
+            €99/year) — everything in Premium plus the White-label Bot (custom token, name,
             avatar — subject to Section 8).
           </li>
           <li>
-            <strong className="text-cs-text">Agency 5 / Agency 10</strong> (€39.99/month or
-            €399/year for up to 5 servers; €79.99/month or €799/year for up to 10 servers) —
+            <strong className="text-cs-text">Agency 5 / Agency 10</strong> (€19.99/month or
+            €199/year for up to 5 servers; €39.99/month or €399/year for up to 10 servers) —
             one subscription granting the White-label tier to the covered servers, assigned and
             removed by the subscription owner up to the seat limit.
           </li>
@@ -314,7 +314,13 @@ export default function EulaPage() {
           When the AI auto-reply feature is enabled, newly submitted ticket messages are sent to
           Google LLC ("Google", Gemini API) for processing via their API. By enabling this feature, you
           acknowledge and consent to this data transfer. Google processes data subject to their
-          API Data Usage Policies and a Standard Contractual Clause arrangement.
+          API Data Usage Policies and a Standard Contractual Clause arrangement.{" "}
+          <strong className="text-cs-text">
+            On the free Gemini API tier, Google may use submitted content to improve its own
+            services, including human review.
+          </strong>{" "}
+          Do not enable this feature for tickets that may carry sensitive information, and inform
+          your members before enabling it. See also Section 11.
         </p>
         <p>
           <strong className="text-cs-text">9.2 Operator Responsibility.</strong>{" "}

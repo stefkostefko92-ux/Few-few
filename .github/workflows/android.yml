@@ -29,6 +29,7 @@ jobs:
   build:
     name: Build TWA (.apk + .aab)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: zabobovdol/android

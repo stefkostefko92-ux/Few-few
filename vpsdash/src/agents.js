@@ -80,13 +80,25 @@ export function agentsFleet(cfg) {
 
 export function listAgentTools(cfg) {
   const root = cfg.paths.currentLink;
-  return Object.entries(AGENT_TOOLS).map(([id, t]) => ({
-    id,
-    title: t.title,
-    owner: t.owner,
-    script: t.args[0],
-    present: fs.existsSync(path.join(root, t.args[0])),
-  }));
+  // `root` се връща изрично: „липсва" без път е съобщение, не диагноза. Целият
+  // слой зависи от ЕДИН symlink (`current`), а когато той сочи накриво, всеки
+  // инструмент поотделно изглежда изчезнал — човек тръгва да търси скриптове,
+  // вместо да погледне връзката. Пътят на екрана превръща десет еднакви „липсва"
+  // в един очевиден въпрос.
+  return {
+    root,
+    // Разликата „връзката я няма" ↔ „връзката сочи към дърво без tools/" е
+    // първото, което човек трябва да види: втората значи разгърнат, но непълен
+    // архив, а първата — че деплоят не е стигнал до маркирането на release-а.
+    rootExists: fs.existsSync(root),
+    tools: Object.entries(AGENT_TOOLS).map(([id, t]) => ({
+      id,
+      title: t.title,
+      owner: t.owner,
+      script: t.args[0],
+      present: fs.existsSync(path.join(root, t.args[0])),
+    })),
+  };
 }
 
 export function agentToolSpec(cfg, toolId) {

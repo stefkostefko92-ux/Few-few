@@ -1,291 +1,240 @@
 #!/usr/bin/env bash
-# ============================================================
-#  PANEV ASCENSORI — VPS Bootstrap (full unattended setup)
+# ─────────────────────────────────────────────────────────────────────────────
+#  PANEV ASCENSORI — еднократна подготовка на сървъра (Ubuntu 24.04, като root)
 #
-#  For a FRESH Ubuntu 22.04/24.04 VPS — installs Node.js 20,
-#  PM2, Nginx, Certbot, UFW rules, and runs scripts/deploy.sh.
+#  Прави това, което НЕ е част от деплоя на кода: пакети, системен потребител,
+#  /etc/panev/panev.env с ГЕНЕРИРАНИ тайни, systemd unit, nginx vhost (301 от
+#  www към каноничния non-www домейн), TLS през certbot, ufw и дневен бекъп.
 #
-#  Usage (as root on the VPS):
-#    cd /var/www/panevascensori
-#    bash scripts/bootstrap-vps.sh
+#  Кодът се качва ОТДЕЛНО, с каноничния поток на монорепото:
+#      sudo PROJECTS="panev" bash deploy/autodeploy.sh
 #
-#  Idempotent: safe to re-run.
-# ============================================================
+#  Употреба (от разопакования архив):
+#      sudo bash panev/scripts/bootstrap-vps.sh
+#      sudo DOMAIN=panevascensori.it CERTBOT_EMAIL=info@panevascensori.it \
+#           bash panev/scripts/bootstrap-vps.sh
+#
+#  Идемпотентен: повторно пускане НЕ презаписва вече генерирани тайни и не
+#  дублира cron ред. Нищо разрушително — не пипа базата в /opt/panev/data.
+# ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-if [[ "$(id -u)" != "0" ]]; then
-  echo "Questo script richiede privilegi root. Riesegui con: sudo bash $0"
-  exit 1
-fi
+[[ $EUID -eq 0 ]] || { echo "Пусни като root (sudo)." >&2; exit 1; }
 
-APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # .../panev
+APP_USER=panev
+APP_HOME=/opt/panev
+ENV_DIR=/etc/panev
+ENV_FILE="$ENV_DIR/panev.env"
+APP_PORT="${APP_PORT:-4102}"
+
+# Каноничният домейн е БЕЗ www — така са canonical/hreflang/sitemap/JSON-LD в
+# генерирания сайт. www.* съществува само за да прави 301 насам.
 DOMAIN="${DOMAIN:-panevascensori.it}"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-info@panevascensori.it}"
 
-BLUE='\033[0;34m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BOLD='\033[1m'; NC='\033[0m'
-log()    { echo -e "${BLUE}[bootstrap]${NC} $1"; }
-ok()     { echo -e "${GREEN}[bootstrap]${NC} ✓ $1"; }
-warn()   { echo -e "${YELLOW}[bootstrap]${NC} ⚠  $1"; }
-banner() { echo ""; echo -e "${BOLD}═══${NC} $1 ${BOLD}═══${NC}"; }
+say()  { printf '\n\033[1;36m▸ %s\033[0m\n' "$*"; }
+ok()   { printf '\033[32m  ✔ %s\033[0m\n' "$*"; }
+warn() { printf '\033[33m  ⚠ %s\033[0m\n' "$*"; }
+ask()  { local __v=$1 __p=$2 __d=${3:-} __in; read -rp "  $__p${__d:+ [$__d]}: " __in </dev/tty || true; printf -v "$__v" '%s' "${__in:-$__d}"; }
+asksecret() { local __v=$1 __p=$2 __d=${3:-} __in; read -rsp "  $__p${__d:+ (Enter = запази текущата)}: " __in </dev/tty || true; echo >/dev/tty; printf -v "$__v" '%s' "${__in:-$__d}"; }
 
-banner "PANEV VPS BOOTSTRAP"
-log "Dir:    $APP_DIR"
-log "Domain: $DOMAIN"
-log "Cert:   $CERTBOT_EMAIL"
+say "Подготовка за $DOMAIN (код: $HERE, инсталация: $APP_HOME)"
 
-# ── 1. System update ─────────────────────────────────────────
-banner "1. apt update"
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq curl gnupg ca-certificates git build-essential ufw unzip
-ok "Base packages installed"
-
-# ── 2. Node.js 20 ────────────────────────────────────────────
-banner "2. Node.js"
-NODE_OK=0
-if command -v node >/dev/null 2>&1; then
-  NODE_VER=$(node -e 'console.log(process.versions.node.split(".")[0])' 2>/dev/null || echo 0)
-  [[ "$NODE_VER" -ge 18 ]] && NODE_OK=1
+# ── 1. Пакети ────────────────────────────────────────────────────────────────
+say "Пакети"
+need=()
+command -v nginx   >/dev/null || need+=(nginx)
+command -v certbot >/dev/null || need+=(certbot python3-certbot-nginx)
+command -v sqlite3 >/dev/null || need+=(sqlite3)
+command -v rsync   >/dev/null || need+=(rsync)
+command -v openssl >/dev/null || need+=(openssl)
+command -v ufw     >/dev/null || need+=(ufw)
+if ((${#need[@]})); then
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -qq
+  apt-get install -y -qq "${need[@]}"
 fi
-if [[ "$NODE_OK" != "1" ]]; then
-  log "Installing Node.js 20…"
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - >/dev/null
-  apt-get install -y -qq nodejs
+NODE_MAJOR=0
+command -v node >/dev/null && NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+if (( NODE_MAJOR < 20 )); then
+  say "Node.js 20 (текущ: ${NODE_MAJOR:-няма})"
+  # БЕЗ пайп от мрежата към шел (това е изпълнение на непроверен отдалечен код
+  # като root — забранено от доктрината и от tools/vps/deploy-check.mjs).
+  # Добавяме хранилището на NodeSource ръчно: ключът влиза в keyring, а apt
+  # проверява подписа на всеки пакет — това е контролът за целостта.
+  command -v curl >/dev/null || apt-get install -y -qq curl
+  command -v gpg  >/dev/null || apt-get install -y -qq gnupg
+  install -d -m 755 /etc/apt/keyrings
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+    | gpg --dearmor --yes -o /etc/apt/keyrings/nodesource.gpg
+  chmod 644 /etc/apt/keyrings/nodesource.gpg
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" \
+    > /etc/apt/sources.list.d/nodesource.list
+  apt-get update -qq
+  DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nodejs
 fi
-ok "Node $(node -v) / npm $(npm -v)"
+ok "node $(node -v) · nginx $(nginx -v 2>&1 | cut -d/ -f2) · $(certbot --version 2>&1 | head -1)"
 
-# ── 3. PM2 ───────────────────────────────────────────────────
-banner "3. PM2"
-if ! command -v pm2 >/dev/null 2>&1; then
-  log "Installing PM2…"
-  npm install -g pm2 --silent --no-audit --no-fund
-fi
-ok "PM2 $(pm2 -v)"
+# ── 2. Потребител и директории ───────────────────────────────────────────────
+say "Системен потребител и директории"
+id -u "$APP_USER" >/dev/null 2>&1 || useradd --system --home-dir "$APP_HOME" --shell /usr/sbin/nologin "$APP_USER"
+install -d -o "$APP_USER" -g "$APP_USER" -m 755 "$APP_HOME"
+install -d -o "$APP_USER" -g "$APP_USER" -m 700 "$APP_HOME/data"   # SQLite — единственият записваем път
+# Групата е panev → услугата и сийдът могат да ЧЕТАТ файла вътре (самият файл
+# е 600 panev:panev); за всички останали папката е недостъпна.
+install -d -o root -g "$APP_USER" -m 750 "$ENV_DIR"
+ok "$APP_USER · $APP_HOME (data/ = 700) · $ENV_DIR"
 
-# ── 4. Nginx ─────────────────────────────────────────────────
-banner "4. Nginx"
-if ! command -v nginx >/dev/null 2>&1; then
-  log "Installing Nginx…"
-  apt-get install -y -qq nginx
-fi
-systemctl enable nginx >/dev/null 2>&1 || true
-systemctl start nginx >/dev/null 2>&1 || true
-ok "Nginx $(nginx -v 2>&1 | cut -d/ -f2)"
+# ── 3. Конфигурация с тайни (идемпотентно) ───────────────────────────────────
+say "Конфигурация: $ENV_FILE (mode 600)"
+prev() { [[ -f "$ENV_FILE" ]] && sed -n "s/^$1=//p" "$ENV_FILE" | head -n1 || true; }
 
-# ── 4b. PHP-FPM + sendmail ──────────────────────────────────
-banner "4b. PHP-FPM + mail"
-PHP_VERSION=""
-if ! command -v php >/dev/null 2>&1; then
-  log "Installing PHP 8.3 FPM + mailer…"
-  apt-get install -y -qq software-properties-common
-  apt-get install -y -qq php-fpm php-cli php-curl php-mbstring php-json \
-                         postfix mailutils 2>/dev/null || true
-  # Configure postfix to send as localhost (simplest — uses system mail)
-  # In production, may want to configure SMTP relay via Aruba later
-fi
-PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || echo "")
-if [[ -n "$PHP_VERSION" ]]; then
-  systemctl enable php${PHP_VERSION}-fpm >/dev/null 2>&1 || true
-  systemctl start php${PHP_VERSION}-fpm >/dev/null 2>&1 || true
-  ok "PHP $PHP_VERSION-FPM attivo"
-else
-  warn "PHP non installato — il form contatti userà solo Node API"
-fi
+JWT_SECRET="$(prev JWT_SECRET)"; JWT_SECRET="${JWT_SECRET:-$(openssl rand -hex 64)}"
+ADMIN_EMAIL="$(prev ADMIN_EMAIL)"; ADMIN_EMAIL="${ADMIN_EMAIL:-info@panevascensori.it}"
+SMTP_HOST="$(prev SMTP_HOST)";   SMTP_HOST="${SMTP_HOST:-smtps.aruba.it}"
+SMTP_PORT="$(prev SMTP_PORT)";   SMTP_PORT="${SMTP_PORT:-465}"
+SMTP_USER="$(prev SMTP_USER)";   SMTP_USER="${SMTP_USER:-info@panevascensori.it}"
+SMTP_PASS="$(prev SMTP_PASS)"
 
-# Ensure log file exists and is writable
-touch /var/log/panev-contact.log 2>/dev/null
-chmod 666 /var/log/panev-contact.log 2>/dev/null
+ask ADMIN_EMAIL "Админ имейл (вход в /admin)" "$ADMIN_EMAIL"
+echo "  SMTP на пощенската кутия $SMTP_USER — БЕЗ парола формата записва в базата, но НЕ праща имейл."
+asksecret SMTP_PASS "SMTP парола" "$SMTP_PASS"
 
+# Пишем директно във файла (mode 600) с heredoc — НИКОГА през echo/printf към
+# стандартния изход: тайна, минала през stdout, влиза в journalctl/CI лога.
+install -o "$APP_USER" -g "$APP_USER" -m 600 /dev/null "$ENV_FILE.new"
+cat > "$ENV_FILE.new" <<ENVEOF
+NODE_ENV=production
+PORT=$APP_PORT
+BASE_URL=https://$DOMAIN
+JWT_SECRET=$JWT_SECRET
+JWT_EXPIRES=4h
+ADMIN_EMAIL=$ADMIN_EMAIL
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=${SMTP_PASS:-CHANGE_ME}
+MAIL_FROM="Panev Ascensori <$SMTP_USER>"
+MAIL_TO_ADMIN=$ADMIN_EMAIL
+ENVEOF
+mv -f "$ENV_FILE.new" "$ENV_FILE"
+chmod 600 "$ENV_FILE"; chown "$APP_USER:$APP_USER" "$ENV_FILE"
+[[ -n "$SMTP_PASS" ]] || warn "SMTP_PASS остава CHANGE_ME — попълни го после в $ENV_FILE и: systemctl restart panev"
+ok "Тайните са само тук (600) — извън репото и извън деплой архива."
 
-# ── 5. Certbot ───────────────────────────────────────────────
-banner "5. Certbot"
-if ! command -v certbot >/dev/null 2>&1; then
-  log "Installing Certbot…"
-  apt-get install -y -qq certbot python3-certbot-nginx
-fi
-ok "Certbot $(certbot --version 2>&1 | head -1)"
+# ── 4. systemd unit ──────────────────────────────────────────────────────────
+say "systemd unit"
+install -m 644 "$HERE/deploy/systemd/panev.service" /etc/systemd/system/panev.service
+systemctl daemon-reload
+systemctl enable panev >/dev/null 2>&1 || true
+ok "panev.service инсталиран (стартира при качване на кода с autodeploy)"
 
-# ── 6. Firewall ──────────────────────────────────────────────
-banner "6. UFW Firewall"
-if ufw status | grep -q "Status: inactive"; then
-  log "Configuring UFW…"
-  ufw --force allow 22/tcp >/dev/null
-  ufw --force allow 80/tcp >/dev/null
-  ufw --force allow 443/tcp >/dev/null
-  ufw --force enable >/dev/null
-fi
-ok "UFW: $(ufw status | head -1)"
+# ── 5. Защитна стена ─────────────────────────────────────────────────────────
+say "ufw (22/80/443)"
+ufw allow 22/tcp  >/dev/null 2>&1 || true
+ufw allow 80/tcp  >/dev/null 2>&1 || true
+ufw allow 443/tcp >/dev/null 2>&1 || true
+ufw status | grep -q "Status: active" || ufw --force enable >/dev/null
+ok "$(ufw status | head -1)"
 
-# ── 7. Create data dir permissions ──────────────────────────
-banner "7. App directory"
-cd "$APP_DIR"
-mkdir -p data
-chmod 700 data
-ok "Data directory ready"
+# ── 6. nginx vhost + TLS ─────────────────────────────────────────────────────
+say "nginx vhost + TLS"
+# Ако домейнът е различен, подменяме го навсякъде в шаблона (вкл. пътищата към
+# сертификата и www. префикса).
+sed "s/panevascensori\.it/$DOMAIN/g" "$HERE/deploy/nginx/panev.conf" \
+  > /etc/nginx/sites-available/panev.conf
 
-# ── 8. Run deploy ────────────────────────────────────────────
-banner "8. Deploy"
-bash "$APP_DIR/scripts/deploy.sh"
-
-# ── 9. Nginx config install ──────────────────────────────────
-banner "9. Nginx config"
-NGINX_SRC="/tmp/nginx-panevascensori.conf"
-NGINX_DST="/etc/nginx/sites-available/panevascensori"
-
-if [[ -f "$NGINX_SRC" ]]; then
-  log "Installing nginx config…"
-
-  # If the file in sites-available still references letsencrypt certs that don't exist yet,
-  # install a HTTP-only version first so nginx can start, then certbot will upgrade it.
-  if [[ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
-    log "Let's Encrypt cert non trovato — install HTTP-only temporaneo"
-    PORT_ACTUAL=$(grep -E '^PORT=' "$APP_DIR/.env" | cut -d= -f2)
-    cat > "$NGINX_DST" <<EOF
-# Temporary HTTP config — certbot will upgrade to HTTPS
-upstream panev_backend { server 127.0.0.1:$PORT_ACTUAL; keepalive 32; }
+if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
+  # Пилето и яйцето: пълният vhost сочи още несъществуващ сертификат и чупи
+  # `nginx -t`. Затова първо вдигаме временен HTTP-only блок само за ACME,
+  # взимаме сертификата (за домейна И за www.), после активираме пълния vhost.
+  mkdir -p /var/www/html
+  cat > /etc/nginx/sites-available/panev-acme.conf <<NG
 server {
     listen 80;
     listen [::]:80;
     server_name $DOMAIN www.$DOMAIN;
-    client_max_body_size 2M;
-    location = /api/webhook {
-        proxy_pass http://panev_backend;
-        proxy_http_version 1.1;
-        proxy_request_buffering off;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-    location / {
-        proxy_pass http://panev_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header Connection "";
-    }
+    root /var/www/html;
+    location /.well-known/acme-challenge/ { allow all; }
 }
-EOF
-  else
-    cp "$NGINX_SRC" "$NGINX_DST"
-  fi
+NG
+  rm -f /etc/nginx/sites-enabled/panev.conf
+  ln -sf ../sites-available/panev-acme.conf /etc/nginx/sites-enabled/panev-acme.conf
+  nginx -t && systemctl reload nginx
+  # www. трябва да е в сертификата — иначе https://www.… гърми с cert-mismatch
+  # ПРЕДИ да стигне до 301 редиректа.
+  certbot certonly --webroot -w /var/www/html \
+    -d "$DOMAIN" -d "www.$DOMAIN" \
+    --non-interactive --agree-tos -m "$CERTBOT_EMAIL" || {
+      warn "certbot се провали — провери, че A/AAAA записите на $DOMAIN и www.$DOMAIN сочат този сървър."
+      warn "Оправи DNS и пусни пак този скрипт."
+    }
+  rm -f /etc/nginx/sites-enabled/panev-acme.conf
+fi
 
-  ln -sf "$NGINX_DST" /etc/nginx/sites-enabled/panevascensori
-  # Remove default if present
-  rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
-
-  if nginx -t >/dev/null 2>&1; then
+if [[ -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
+  ln -sf ../sites-available/panev.conf /etc/nginx/sites-enabled/panev.conf
+  if nginx -t; then
     systemctl reload nginx
-    ok "Nginx config attivo"
+    ok "vhost активен: https://$DOMAIN (www → 301)"
   else
-    warn "Nginx config ha errori — verifica con: nginx -t"
+    warn "nginx -t се провали — vhost-ът НЕ е презареден. Виж грешката по-горе."
   fi
 else
-  warn "Nginx config non generato dal deploy — skip"
+  warn "Няма сертификат за $DOMAIN — пълният HTTPS vhost НЕ е активиран. Пусни пак след DNS."
 fi
 
-# ── 10. SSL via Certbot ──────────────────────────────────────
-banner "10. SSL (Let's Encrypt)"
-if [[ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
-  ok "Certificato già presente per $DOMAIN"
-else
-  log "Richiedo certificato per $DOMAIN e www.$DOMAIN…"
-  if certbot --nginx --non-interactive --agree-tos \
-       -m "$CERTBOT_EMAIL" \
-       -d "$DOMAIN" -d "www.$DOMAIN" \
-       --redirect; then
-    ok "Certificato installato + HTTPS redirect attivo"
+# certbot renew hook: след подновяване nginx трябва да презареди сертификата.
+install -d -m 755 /etc/letsencrypt/renewal-hooks/deploy
+cat > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh <<'HOOK'
+#!/bin/sh
+# Презарежда nginx след успешно подновяване (ARI-базирано, systemd таймерът на
+# certbot проверява 2× дневно). Общ за всички сайтове на машината.
+systemctl reload nginx || true
+HOOK
+chmod 755 /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+systemctl enable --now certbot.timer >/dev/null 2>&1 || true
 
-    # Replace the temporary HTTP-only nginx config with the full HTTPS one
-    if [[ -f "$NGINX_SRC" ]]; then
-      log "Installing full HTTPS nginx config…"
-      cp "$NGINX_SRC" "$NGINX_DST"
-      if nginx -t >/dev/null 2>&1; then
-        systemctl reload nginx
-        ok "HTTPS config attivo"
-      else
-        warn "Full config ha errori — certbot config è sufficiente"
-      fi
-    fi
-  else
-    warn "Certbot ha fallito. Probabili cause:"
-    warn "  - DNS di $DOMAIN non punta a questo VPS"
-    warn "  - Port 80 bloccato"
-    warn "  - Limite rate di Let's Encrypt raggiunto"
-    warn "Riprova manualmente: certbot --nginx -d $DOMAIN -d www.$DOMAIN"
-  fi
-fi
-
-# ── 11. PM2 log rotation ─────────────────────────────────────
-banner "11. PM2 log rotation"
-if pm2 list 2>/dev/null | grep -q pm2-logrotate; then
-  ok "pm2-logrotate già installato"
-else
-  log "Installing pm2-logrotate module…"
-  pm2 install pm2-logrotate >/dev/null 2>&1 || warn "pm2 install pm2-logrotate failed"
-  pm2 set pm2-logrotate:max_size 10M     >/dev/null 2>&1 || true
-  pm2 set pm2-logrotate:retain 14        >/dev/null 2>&1 || true
-  pm2 set pm2-logrotate:compress true    >/dev/null 2>&1 || true
-  pm2 set pm2-logrotate:rotateInterval '0 2 * * *' >/dev/null 2>&1 || true
-  ok "Log rotation: max 10MB, retain 14 files, daily 02:00"
-fi
-
-# ── 12. Automated DB backups (cron) ──────────────────────────
-banner "12. Backup giornaliero"
-mkdir -p /var/backups/panev
-chmod 700 /var/backups/panev
-apt-get install -y -qq sqlite3 >/dev/null 2>&1 || true
-
-CRON_FILE="/etc/cron.d/panev-backup"
-if [[ ! -f "$CRON_FILE" ]]; then
-  log "Installing daily backup cron (03:15 UTC)…"
-  cat > "$CRON_FILE" <<EOF
-# Panev Ascensori — DB daily backup
+# ── 7. Дневен бекъп на базата + logrotate ────────────────────────────────────
+say "Дневен бекъп (03:15 UTC)"
+install -d -o "$APP_USER" -g "$APP_USER" -m 700 /var/backups/panev
+install -o "$APP_USER" -g "$APP_USER" -m 640 /dev/null /var/log/panev-backup.log
+cat > /etc/cron.d/panev-backup <<CRON
+# Panev Ascensori — дневен бекъп на SQLite базата
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-15 3 * * * root cd $APP_DIR && bash scripts/backup.sh >> /var/log/panev-backup.log 2>&1
+15 3 * * * $APP_USER $APP_HOME/scripts/backup.sh >> /var/log/panev-backup.log 2>&1
+CRON
+chmod 644 /etc/cron.d/panev-backup
+cat > /etc/logrotate.d/panev-backup <<'LR'
+/var/log/panev-backup.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 panev panev
+}
+LR
+ok "cron: /etc/cron.d/panev-backup · лог: /var/log/panev-backup.log"
+
+# ── Готово ───────────────────────────────────────────────────────────────────
+say "Подготовката приключи"
+cat <<EOF
+
+  Домейн:     https://$DOMAIN   (www.$DOMAIN → 301)
+  Тайни:      $ENV_FILE  (mode 600, $APP_USER:$APP_USER)
+  Услуга:     systemctl status panev   ·   journalctl -u panev -f
+  Порт:       127.0.0.1:$APP_PORT  (само локално, зад nginx)
+
+  Следваща стъпка — качи кода (от корена на разопакования архив):
+    sudo PROJECTS="panev" bash deploy/autodeploy.sh
+
+  След първия деплой:
+    • влез в https://$DOMAIN/admin/login.html и СМЕНИ паролата
+      (паролата от първия сийд се показва ВЕДНЪЖ в изхода на autodeploy)
+    • тествай формата на https://$DOMAIN/contatti (иска SMTP_PASS)
+    • тествай restore на бекъп поне веднъж (бекъп без тестван restore не е бекъп)
 EOF
-  chmod 644 "$CRON_FILE"
-  ok "Cron installato: /etc/cron.d/panev-backup (03:15 daily)"
-else
-  ok "Cron backup già presente"
-fi
-
-# Run first backup immediately to verify it works
-log "Test backup…"
-if bash "$APP_DIR/scripts/backup.sh" 2>&1 | head -5; then
-  ok "Test backup riuscito — vedi /var/backups/panev/"
-else
-  warn "Test backup fallito — controlla i log"
-fi
-
-# ── Done ─────────────────────────────────────────────────────
-banner "BOOTSTRAP COMPLETATO"
-
-echo ""
-echo -e "  ${GREEN}${BOLD}✓ Sito Panev Ascensori online${NC}"
-echo ""
-echo "  🌐  https://www.$DOMAIN/"
-echo "  🔐  https://www.$DOMAIN/admin/login.html"
-echo ""
-echo "  Login default:"
-echo "    Email:    info@panevascensori.it"
-echo "    Password: "
-echo ""
-echo -e "  ${YELLOW}⚠  CAMBIA LA PASSWORD AL PRIMO LOGIN${NC}"
-echo ""
-echo "  Comandi utili:"
-echo "    pm2 status panev-web        — stato app"
-echo "    pm2 logs panev-web          — log live"
-echo "    pm2 restart panev-web       — riavvio"
-echo "    bash deploy.sh              — re-deploy dopo modifiche"
-echo "    bash scripts/backup.sh      — backup manuale"
-echo "    ls /var/backups/panev/      — vedi backup giornalieri"
-echo "    nginx -t && systemctl reload nginx  — reload nginx"
-echo ""
-echo "  Monitoring:"
-echo "    curl https://www.$DOMAIN/api/health"
-echo ""
-echo "  Automazioni attive:"
-echo "    - DB backup giornaliero alle 03:15 UTC (30 daily + 12 weekly)"
-echo "    - PM2 log rotation: max 10MB/file, retain 14"
-echo "    - PM2 auto-start al boot"
-echo ""

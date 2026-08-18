@@ -48,6 +48,11 @@ export function el(tag, props = {}, children = []) {
   for (const [k, v] of Object.entries(props)) {
     if (v == null || v === false) continue;
     if (k === 'text') node.textContent = t(v);
+    // `raw` = текст, който НЕ е наш низ: име на агент, път до скрипт, изход на
+    // чужда команда. Прекарването му през речника е безсмислено (никога няма да
+    // има превод) и вредно — трупа се в списъка с „непреведени" и заглушава
+    // истинските пропуски. Собствено име не се превежда на никой език.
+    else if (k === 'raw') node.textContent = v;
     else if (k === 'html') node.innerHTML = v;
     else if (k === 'class') node.className = v;
     else if (k === 'style') node.setAttribute('style', v);
@@ -86,7 +91,11 @@ export function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
+// „—" за НЕИЗМЕРЕНО. `Number(null) || 0` даваше „0 B" — число, което изглежда
+// като измерено. Разликата личи най-ясно при мрежата: „0 B/s" значи „нищо не
+// минава", а „—" значи „още не знам" (първата проба след рестарт няма делта).
 export function fmtBytes(n) {
+  if (n === null || n === undefined || !Number.isFinite(Number(n))) return '—';
   n = Number(n) || 0;
   const u = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
   let i = 0;
@@ -98,7 +107,36 @@ export function fmtBytes(n) {
 }
 
 export function fmtBps(n) {
-  return fmtBytes(n) + '/s';
+  const b = fmtBytes(n);
+  return b === '—' ? b : b + '/s';
+}
+
+// Процент за плочките: `null` е „—", не „0%". Табло, което твърди 0% CPU,
+// докато не знае, е по-лошо от табло, което си признава.
+export function pctHtml(v) {
+  return typeof v === 'number' && Number.isFinite(v)
+    ? `${v.toFixed(0)}<small>%</small>`
+    : '<small>—</small>';
+}
+
+// Процент заета памет от ЖИВА снимка (историята има друга форма — виж
+// `memPercent` в src/history.js). Връща null, когато липсва измерване.
+export function memPctOf(mem) {
+  return mem && typeof mem.used === 'number' && mem.total ? (mem.used / mem.total) * 100 : null;
+}
+
+// Съгласуване по число. В българския „1" иска ЕДИНСТВЕНО число, а шаблонът
+// `${n} точки` дава „1 точки" — точно в най-честия случай: прясно пуснат панел,
+// първи запис, единствен диск. Не чупи нищо, не пада тест, вижда се само от
+// човека на екрана — и подкопава доверието точно когато панелът трябва да звучи
+// авторитетно.
+//
+// Преводът работи както винаги: „⟦0⟧ точка" и „⟦0⟧ точки" са два РАЗЛИЧНИ
+// шаблона в речника, което е вярно — английският и италианският имат свои
+// правила и не бива да наследяват нашите.
+export function plural(n, one, many) {
+  const num = Number(n);
+  return `${n} ${num === 1 ? one : many}`;
 }
 
 export function fmtUptime(sec) {
@@ -113,14 +151,19 @@ export function fmtUptime(sec) {
   return parts.join(' ');
 }
 
+// Връща ПРЕВЕДЕН текст. Дотук връщаше български („преди малко") и разчиташе, че
+// някой по-нагоре ще го преведе — което работи, само докато резултатът отива
+// направо в `el({text})`. Слепен в изречение („Най-старият запис е от X."),
+// сглобката става низ, който го няма в речника: половин английски, половин
+// български, и цялото се брои за непреведено.
 export function fmtWhen(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return String(iso);
   const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff >= 0 && diff < 60) return 'преди малко';
-  if (diff >= 0 && diff < 3600) return `преди ${Math.floor(diff / 60)} мин`;
-  if (diff >= 0 && diff < 86400) return `преди ${Math.floor(diff / 3600)} ч`;
+  if (diff >= 0 && diff < 60) return tHelper('преди малко');
+  if (diff >= 0 && diff < 3600) return tHelper(`преди ${Math.floor(diff / 60)} мин`);
+  if (diff >= 0 && diff < 86400) return tHelper(`преди ${Math.floor(diff / 3600)} ч`);
   return d.toLocaleString(langTag(), { dateStyle: 'short', timeStyle: 'short' });
 }
 

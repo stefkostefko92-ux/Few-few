@@ -190,9 +190,27 @@ const DEFAULTS = {
   ],
 };
 
+// Ключове, които НИКОГА не се сливат — независимо откъде идва patch-ът.
+//
+// `JSON.parse('{"__proto__":{…}}')` прави `__proto__` СОБСТВЕНО свойство, тоест
+// `Object.entries` го връща и `out[k] = v` задейства сетъра: прототипът на
+// резултата става обектът на подателя. Измерено: сливане с
+// `{"__proto__":{"peerScope":"full"}}` дава `merged.peerScope === "full"`, при
+// това БЕЗ да е собствено свойство — тоест не се записва на диска и не се вижда
+// при преглед на конфига.
+//
+// ЧЕСТНО за обхвата: днес това НЕ е експлоатируемо. Нито един от маршрутите не
+// подава сурово тяло насам — всеки строи изричен patch, а поразеният обект се
+// изхвърля веднага след разпръскването (то копира само собствени свойства).
+// Затварям го като БЪДЕЩА мина: `deepMerge` е обща помощна функция и един
+// бъдещ ред, който подаде тяло направо или прочете от `merged`, го прави жив.
+// Цената на предпазителя е три реда; цената на пропуска е ескалация на права.
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 function deepMerge(base, over) {
   const out = { ...base };
   for (const [k, v] of Object.entries(over || {})) {
+    if (FORBIDDEN_KEYS.has(k)) continue;
     if (v && typeof v === 'object' && !Array.isArray(v) && base[k] && typeof base[k] === 'object' && !Array.isArray(base[k])) {
       out[k] = deepMerge(base[k], v);
     } else {
@@ -202,12 +220,56 @@ function deepMerge(base, over) {
   return out;
 }
 
+// Прочита конфиг от даден път. Връща `null` при липсващ файл; хвърля при
+// повреден — така двата случая не се смесват (липсващ = първо пускане, повреден
+// = инцидент).
+function readConfigFile(p) {
+  let text;
+  try {
+    text = fs.readFileSync(p, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw new Error(`Конфигът ${p} не се чете: ${err.message}`);
+  }
+  const parsed = JSON.parse(text); // хвърля SyntaxError при отрязан/занулен файл
+  if (!parsed || typeof parsed !== 'object') throw new Error('Конфигът не е обект.');
+  if (!parsed.passwordHash) throw new Error('Конфигът няма passwordHash.');
+  if (!parsed.sessionSecret || parsed.sessionSecret.length < 32) {
+    throw new Error('Конфигът няма силен sessionSecret (≥32 знака).');
+  }
+  return parsed;
+}
+
 export function loadConfig({ configPath = CONFIG_PATH, allowDev = true } = {}) {
   let raw = null;
+  let recovered = null;
   try {
-    raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    raw = readConfigFile(configPath);
   } catch (err) {
-    if (err.code !== 'ENOENT') throw new Error(`Невалиден конфиг ${configPath}: ${err.message}`);
+    // Повреден конфиг (спряло захранване насред запис, пълен диск, лош сектор)
+    // е ТОЧНО моментът, в който панелът трябва да върви: без него човек няма как
+    // да види какво става с машината. `saveConfig` пази копие на последния
+    // ВАЛИДЕН конфиг — дотук то се пишеше, но никой не го четеше, значи панелът
+    // умираше до цялото си спасение.
+    //
+    // Възстановяването е ШУМНО и НЕ презаписва повредения файл: той е
+    // доказателство за случилото се, а тихото връщане към стари настройки крие,
+    // че запис се е провалил. Панелът показва състоянието, докато човек реши.
+    let fromBak = null;
+    try {
+      fromBak = readConfigFile(`${configPath}.bak`);
+    } catch {
+      /* и копието е негодно — падаме с първоначалната причина */
+    }
+    if (!fromBak) throw new Error(`Невалиден конфиг ${configPath}: ${err.message}`);
+    raw = fromBak;
+    recovered = { from: `${configPath}.bak`, reason: err.message };
+    // eslint-disable-next-line no-console
+    console.error(
+      `\n⚠ ${configPath} е ПОВРЕДЕН (${err.message}).\n` +
+      `  Панелът върви от резервното копие ${configPath}.bak — настройките може да са по-стари.\n` +
+      `  Повреденият файл НЕ е пипан. Сравни двата и презапиши, когато си сигурен.\n`
+    );
   }
 
   if (!raw) {
@@ -232,10 +294,7 @@ export function loadConfig({ configPath = CONFIG_PATH, allowDev = true } = {}) {
   }
 
   const cfg = deepMerge(DEFAULTS, raw);
-  if (!cfg.passwordHash) throw new Error('Конфигът няма passwordHash — пусни deploy/install.sh.');
-  if (!cfg.sessionSecret || cfg.sessionSecret.length < 32) {
-    throw new Error('Конфигът няма силен sessionSecret (≥32 знака).');
-  }
+  if (recovered) cfg.recovered = recovered; // панелът го показва, не мълчи
   return finalize(cfg);
 }
 

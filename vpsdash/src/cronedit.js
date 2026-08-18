@@ -170,13 +170,22 @@ export async function timerHistory(unit, { lines = 200 } = {}) {
 
 // Всички таймери с резултата от последното им пускане — това е екранът, който
 // отговаря на „минаха ли ми нощните задачи".
+// Връща и ДАЛИ изобщо е могло да се провери. Празен списък при липсващ или
+// провалил се `systemctl` изглежда точно като „няма нито един таймер" — а това
+// са противоположни неща: второто е наред, първото значи, че панелът е сляп за
+// целия слой планирани задачи (бекъпи, подновяване на сертификати, чистене).
 export async function timersWithResults() {
   const r = await run('systemctl', ['list-timers', '--all', '--no-pager', '--output=json'], { timeout: 15000 });
+  if (r.code === 'ENOENT') return { available: false, reason: 'няма systemctl на тази машина', timers: [] };
   let list = [];
   try {
     list = JSON.parse(r.stdout);
   } catch {
-    return [];
+    return {
+      available: false,
+      reason: r.ok ? 'systemctl отговори нещо, което не е JSON' : (r.stderr || 'systemctl се провали').trim().slice(0, 200),
+      timers: [],
+    };
   }
   const out = [];
   for (const t of list.slice(0, 100)) {
@@ -197,5 +206,5 @@ export async function timersWithResults() {
       exitStatus: res?.exitStatus ?? null,
     });
   }
-  return out;
+  return { available: true, timers: out };
 }

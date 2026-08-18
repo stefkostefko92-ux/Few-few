@@ -22,6 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { run } from './exec.js';
+import { plural } from './text.js';
 
 // ЗАТВОРЕН списък. Нов ред тук е съзнателно решение, не конфигурация — иначе
 // това става „изтрий произволен път като root" с приятен интерфейс (същата
@@ -217,21 +218,74 @@ async function danglingImages() {
   if (!r.ok) return null;
   const ids = r.stdout.split('\n').filter(Boolean);
   if (!ids.length) return null;
-  // `docker system df` дава реално възстановимото, вместо да сумираме слоеве
-  // (които се делят между образи и биха дали измислено голямо число).
-  const df = await run('docker', ['system', 'df', '--format', '{{.Type}}|{{.Reclaimable}}'], { timeout: 20000 });
-  let human = '';
-  if (df.ok) {
-    const line = df.stdout.split('\n').find((l) => l.startsWith('Images'));
-    if (line) human = (line.split('|')[1] || '').trim();
-  }
+  // ЧИСЛОТО ТУК НЕ ИДВА от `docker system df` — и това е поправка на лъжа.
+  //
+  // Старият код взимаше „Images · RECLAIMABLE" оттам с мотива, че сумирането на
+  // слоеве би надуло числото (слоевете се делят). Мотивът е верен, източникът —
+  // не: `system df` брои и ТАГНАТИТЕ неизползвани образи, а бутонът пуска
+  // `image prune -f` БЕЗ `-a`, тоест пипа само нетагнатите. Двете множества са
+  // различни. Измерено на живо: панелът показваше 13.8 GB, а командата
+  // освободи 0B — нула висящи образи при цели 13.8 GB неизползвани тагнати.
+  //
+  // Затова тук стои това, което бутонът РЕАЛНО ще махне: броят. Точен размер не
+  // се твърди, защото не е знаем предварително (споделените слоеве правят всяка
+  // сума измислена). По-добре без число, отколкото с чуждо: числото до бутон е
+  // обещание.
   return {
     id: 'dangling-images',
     title: 'Висящи Docker образи',
     why: 'Слоеве без таг, останали от предишни билдове. Никой контейнер не ги ползва. Томовете и спрените контейнери НЕ се пипат.',
     bytes: 0,
-    human: human || `${ids.length} образа`,
+    human: plural(ids.length, 'образ', 'образа'),
     count: ids.length,
+    safety: 'safe',
+    sudo: false,
+    note:
+      'Размерът не се показва нарочно: слоевете се делят между образи, затова сумата им е измислена, ' +
+      'а „възстановимото" от `docker system df` брои и тагнатите неизползвани образи, които този бутон НЕ пипа. ' +
+      'Те се махат поименно от секция „Docker" — умишлено, за да не изтриеш образа, с който вдигаш спрян продукт.',
+  };
+}
+
+// Build cache-ът на Docker расте с ВСЕКИ билд и никой не го гледа.
+//
+// Измерено на живо: 26.47 GB кеш при 26.45 GB възстановими — над 40% от целия
+// диск и над пет пъти повече от всичко останало в тази секция, взето заедно.
+// Дотук панелът показваше само висящите образи (13.8 GB) и подминаваше
+// по-големия консуматор — тоест отговаряше на „кой яде диска" с втория по ред.
+//
+// Това е и НАЙ-безопасното за триене на машината: кешът е чисто производно на
+// билда. Няма данни за губене, единствената последица е по-бавен следващ билд.
+// Затова тук `-a` е уместно, за разлика от `image prune -a` (той би махнал
+// образа, с който вдигаш продукта след рестарт).
+export function parseDockerSize(s) {
+  // „26.45GB" / „731.9MB" / „0B". Docker пише десетични единици (GB=10^9), не
+  // гибибайти — смятането като 1024^3 би надувало числото с ~7%.
+  const m = String(s || '').trim().match(/^([\d.]+)\s*([KMGT]?B)$/i);
+  if (!m) return 0;
+  const mult = { B: 1, KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 }[m[2].toUpperCase()];
+  return mult ? Math.round(Number(m[1]) * mult) : 0;
+}
+
+async function buildCache() {
+  const df = await run('docker', ['system', 'df', '--format', '{{.Type}}|{{.Size}}|{{.Reclaimable}}'], { timeout: 20000 });
+  if (!df.ok) return null;
+  const line = df.stdout.split('\n').find((l) => /^Build Cache\|/.test(l));
+  if (!line) return null;
+  const [, size, reclaimable] = line.split('|');
+  // Docker слага процент в скоби: „26.45GB (99%)". Числото е пред него.
+  const human = (reclaimable || '').trim().split(/\s+/)[0] || '';
+  const bytes = parseDockerSize(human);
+  if (bytes < 100 * 1e6) return null; // под 100 MB не си струва реда в списъка
+  return {
+    id: 'build-cache',
+    title: 'Docker build cache',
+    why:
+      'Междинни слоеве от предишни билдове. Расте с всеки деплой и никога не се чисти сам. ' +
+      'Чисто производно — няма данни за губене, само следващият билд ще е по-бавен.',
+    bytes,
+    human: human || String(size || '').trim(),
+    count: 0,
     safety: 'safe',
     sudo: false,
   };
@@ -239,7 +293,7 @@ async function danglingImages() {
 
 // ── Събирането ───────────────────────────────────────────────────────────────
 export async function reclaimable(cfg) {
-  const tasks = [aptCache(), rotatedLogs(), deployBackups(cfg), oldReleases(cfg), uploadedArchives(cfg), crashDumps(), danglingImages()];
+  const tasks = [aptCache(), rotatedLogs(), deployBackups(cfg), oldReleases(cfg), uploadedArchives(cfg), crashDumps(), danglingImages(), buildCache()];
   const settled = await Promise.allSettled(tasks);
   const items = settled
     .filter((r) => r.status === 'fulfilled' && r.value)
@@ -301,6 +355,19 @@ export function reclaimSpec(id, item) {
         shell: `find /var/crash -mindepth 1 -maxdepth 1 -print -exec rm -rf {} + | tail -30`,
         exclusive: 'system',
         timeoutMs: 5 * 60 * 1000,
+      };
+
+    case 'build-cache':
+      return {
+        title: 'Чистя Docker build cache',
+        cmd: 'docker',
+        // `-a` е уместно ТУК (и само тук): кешът е производен, най-лошото е
+        // по-бавен следващ билд. Показаното число идва от `docker system df`,
+        // затова командата трябва да освобождава СЪЩОТО — иначе панелът обещава
+        // повече, отколкото прави.
+        args: ['builder', 'prune', '-af'],
+        exclusive: 'docker',
+        timeoutMs: 15 * 60 * 1000,
       };
 
     case 'dangling-images':

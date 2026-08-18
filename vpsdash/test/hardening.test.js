@@ -6,9 +6,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { clientIp, sendJson, openSse } from '../src/httpd.js';
-import { loginAllowed, loginFailed, _resetLoginLimiter } from '../src/auth.js';
+import { loginAllowed, loginFailed, _resetLoginLimiter, attemptStart, globalDelayMs, bruteForceState, bearerAllowed, bearerFailed } from '../src/auth.js';
 import { stripEditing } from '../src/pty.js';
-import { run } from '../src/exec.js';
+import { forwardCookies } from '../src/desktop.js';
+import { run, runOk } from '../src/exec.js';
+import { Audit } from '../src/audit.js';
 import { redactSecrets, writeFile, readFilePreview } from '../src/files.js';
 import { loadConfig } from '../src/config.js';
 
@@ -204,4 +206,207 @@ test('exec: команда, която ИГНОРИРА SIGTERM, все пак �
   const dt = Date.now() - t0;
   assert.equal(r.ok, false, 'заклещената команда не е успех');
   assert.ok(dt < 5000, `трябва да умре от втория удар, а отне ${dt} ms`);
+});
+
+// ── Липсващ инструмент ≠ „Вътрешна грешка" ───────────────────────────────────
+test('exec: липсваща команда казва КОЯ липсва и кой пакет я носи', async () => {
+  // Панелът върви на машини, където `ps`/`docker`/`ufw` може да ги няма. Ако
+  // това стигне до потребителя като „Вътрешна грешка", човекът търси бъг в
+  // панела, вместо да инсталира пакета. Съобщението е безопасно (име на
+  // стандартен пакет) — затова носи `safe` и минава през маската на 5xx.
+  await assert.rejects(
+    () => runOk('няма-такава-команда-vpsdash', []),
+    (err) => {
+      assert.equal(err.status, 503, 'липсващ инструмент не е 502 „лоша врата"');
+      assert.equal(err.safe, true, 'без това съобщението се маскира');
+      assert.match(err.message, /липсва на тази машина/);
+      return true;
+    }
+  );
+  await assert.rejects(
+    () => runOk('ps', ['--няма-такъв-флаг-vpsdash']),
+    (err) => {
+      assert.equal(err.status, 502, 'СЪЩЕСТВУВАЩА команда, която се проваля, си остава 502');
+      assert.notEqual(err.safe, true, 'нейният stderr НЕ е безопасен за показване');
+      return true;
+    }
+  );
+});
+
+// ── Ротацията на одита не бива да е тиха ─────────────────────────────────────
+test('одит: проверката минава ПРЕЗ завъртените файлове, не само през текущия', () => {
+  // Веднага след ротация `verify()` връщаше „ok, проверени 1" — зелено при
+  // непроверени сто хиляди записа. Точно обратното на целта на доказателство
+  // за цялост: то приспива, вместо да пази.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot-'));
+  const a = new Audit(dir);
+  for (let i = 0; i < 50; i++) a.log({ action: 'проба', i });
+  // Изкуствена ротация: преименуваме както го прави кодът при препълване.
+  fs.renameSync(path.join(dir, 'audit.jsonl'), path.join(dir, 'audit.jsonl.1'));
+  a.count = 0;
+  for (let i = 0; i < 5; i++) a.log({ action: 'след ротация', i });
+
+  const v = a.verify();
+  assert.equal(v.ok, true, 'веригата продължава ПРЕЗ файловете (prevHash не се нулира)');
+  assert.equal(v.checked, 55, `очакват се 55 проверени, а не 5 — получени ${v.checked}`);
+  assert.equal(v.files, 2);
+  assert.equal(v.rotated, 1);
+  assert.ok(v.oldest, 'хоризонтът се КАЗВА — иначе „цяла верига" не значи нищо');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('одит: ротацията пази ПОВЕЧЕ от едно поколение', () => {
+  // Беше `rename(file, file + '.1')` — предишният `.1` се презаписваше, тоест
+  // при всяка ротация най-старите следи изчезваха без ред някъде за това.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot2-'));
+  const a = new Audit(dir);
+  a.log({ action: 'първи' });
+  for (const gen of [1, 2, 3]) {
+    fs.writeFileSync(path.join(dir, 'audit.jsonl.' + gen), '{"поколение":' + gen + '}\n');
+  }
+  assert.deepEqual(
+    a.files().map((f) => path.basename(f)),
+    ['audit.jsonl.3', 'audit.jsonl.2', 'audit.jsonl.1', 'audit.jsonl'],
+    'най-старият е ПЪРВИ — веригата се чете хронологично'
+  );
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('одит: ДВЕ последователни ротации не изяждат най-старото поколение', () => {
+  // Мутационната проверка показа, че предишният тест не покриваше самото
+  // завъртане — само четенето след него. А точно завъртането губеше данни:
+  // `rename(file, file + '.1')` презаписваше предишния `.1`.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-rot3-'));
+  const prev = process.env.CSD_AUDIT_MAX_BYTES;
+  process.env.CSD_AUDIT_MAX_BYTES = '900'; // прагът е нисък, за да е ротацията истинска
+  try {
+    const a = new Audit(dir);
+    // Толкова записи, че да има ТОЧНО две-три завъртания: при повече от
+    // `KEEP_ROTATED` най-старото ЗАКОННО изпада и тестът би мерил друго нещо.
+    for (let i = 0; i < 20; i++) a.log({ action: 'пълнеж', i, data: 'x'.repeat(40) });
+    assert.ok(fs.existsSync(path.join(dir, 'audit.jsonl.1')), 'първо поколение съществува');
+    assert.ok(fs.existsSync(path.join(dir, 'audit.jsonl.2')), 'ВТОРОТО поколение също — то се губеше');
+    const v = a.verify();
+    assert.equal(v.ok, true, 'веригата остава цяла през всички поколения');
+    assert.ok(v.files >= 3, `очакват се поне 3 файла, намерени ${v.files}`);
+    assert.equal(v.checked, 20, `всички 20 записа през всички поколения, не само последното — ${v.checked}`);
+  } finally {
+    if (prev === undefined) delete process.env.CSD_AUDIT_MAX_BYTES;
+    else process.env.CSD_AUDIT_MAX_BYTES = prev;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// ── Брутфорс: трите дупки, всяка доказана като АТАКА ─────────────────────────
+
+test('паралелен залп НЕ минава лимита (проверката и отчитането са атомарни)', () => {
+  _resetLoginLimiter();
+  // Атаката: старият код проверяваше квотата, после чакаше (`await readJson`,
+  // scrypt) и чак тогава отчиташе провала. Стоте заявки, тръгнали заедно, виждат
+  // едно и също „свободно" състояние. Симулираме точно това — сто проверки БЕЗ
+  // нито едно отчитане между тях.
+  const burst = Array.from({ length: 100 }, () => loginAllowed('9.9.9.9'));
+  assert.equal(burst.filter(Boolean).length, 100, 'старият ред пропуска целия залп — затова беше дупка');
+
+  _resetLoginLimiter();
+  const atomic = Array.from({ length: 100 }, () => attemptStart('9.9.9.9'));
+  assert.equal(atomic.filter(Boolean).length, 5, 'слотът се заема веднага — минават точно 5, не 100');
+  assert.equal(attemptStart('9.9.9.9'), false, 'квотата остава изчерпана');
+  // Друг адрес не се влияе — лимитът е по източник, не общ таван на входа.
+  assert.equal(attemptStart('9.9.9.10'), true);
+});
+
+test('разпределена атака се лови ГЛОБАЛНО и бави, вместо да заключва', () => {
+  _resetLoginLimiter();
+  assert.equal(globalDelayMs(), 0, 'при спокойствие нула забавяне — иначе наказваме собственика');
+  // Сто адреса по един опит: всеки поотделно е под лимита, тоест броячът по IP
+  // не вижда нищо. Точно така изглежда ботнет.
+  for (let i = 0; i < 100; i++) attemptStart(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+  const d = globalDelayMs();
+  assert.ok(d > 0, 'общият шум трябва да се вижда, дори когато всеки адрес е „чист"');
+  assert.ok(d <= 5000, 'забавянето има таван — иначе става самопричинен отказ на услуга');
+  const st = bruteForceState();
+  assert.ok(st.recentFails >= 100 && st.addresses >= 100, 'състоянието се докладва за аларма/табло');
+  // И най-важното: НЕ блокира. Собственикът с вярната парола влиза, само по-бавно.
+  assert.equal(attemptStart('10.0.0.0'.replace('0.0', '9.9')), true);
+});
+
+test('грешен Bearer вече се брои и спира — беше безплатен и НЕВИДИМ опит', () => {
+  _resetLoginLimiter();
+  assert.equal(bearerAllowed('7.7.7.7'), true);
+  for (let i = 0; i < 10; i++) bearerFailed('7.7.7.7');
+  assert.equal(bearerAllowed('7.7.7.7'), false, 'налучкването на peerToken трябва да спре');
+  assert.equal(bearerAllowed('7.7.7.8'), true, 'друг адрес не е засегнат');
+  // Провалите по Bearer хранят и глобалния брояч — иначе атака по този вход
+  // остава невидима за забавянето.
+  assert.ok(bruteForceState().recentFails >= 10);
+});
+
+test('налучкването ГЪРМИ — защита без сигнал не позволява да реагираш', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  _resetLoginLimiter();
+  const a = Object.create(AlertEngine.prototype);
+  assert.deepEqual(a.bruteChecks(), [], 'при тишина не се вдига шум');
+
+  // Един ядосан човек, забравил паролата: малко опити, ЕДИН адрес.
+  for (let i = 0; i < 16; i++) attemptStart('5.5.5.5');
+  let f = a.bruteChecks();
+  assert.equal(f.length, 1);
+  assert.equal(f[0].severity, 'warning', 'един адрес е човек, не машина');
+  assert.match(f[0].body, /смени паролата/);
+
+  // Ботнет: същият общ брой, но пръснат. По адрес всеки е „чист" — точно
+  // затова прагът е върху СБОРА.
+  _resetLoginLimiter();
+  for (let i = 0; i < 20; i++) attemptStart(`172.16.0.${i}`);
+  f = a.bruteChecks();
+  assert.equal(f[0].severity, 'critical');
+  assert.match(f[0].title, /Разпределено/);
+  assert.match(f[0].body, /машина, не забравена парола/);
+});
+
+// ── Втвърдяване на ниво браузър ──────────────────────────────────────────────
+
+test('сесийната бисквитка носи __Host- зад прокси — съсед не може да я подхлъзне', async () => {
+  const { buildRouter } = await import('../src/routes.js');
+  assert.equal(typeof buildRouter, 'function');
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'src', 'routes.js'), 'utf8');
+  // Заплахата е конкретна: на *.carbonstealth.eu има десетина продукта. Пробив в
+  // който и да е дава възможност да сложи `csd_sess` с Domain=carbonstealth.eu;
+  // браузърът праща две с едно име, а последната печели. `__Host-` го затваря
+  // на ниво браузър: такова име се приема само Secure, Path=/ и БЕЗ Domain.
+  assert.match(src, /__Host-\$\{COOKIE_BASE\}/, 'липсва префиксът');
+  assert.match(src, /trustProxy \? COOKIE_HOST : COOKIE_BASE/, 'зад прокси се приема САМО префиксираната');
+  // Нито едно място не бива да е останало на закованото старо име.
+  assert.ok(!/parseCookies\(req\)\[COOKIE\]/.test(src), 'четенето трябва да минава през cookieName');
+  // Изходът чисти и двете — иначе стара бисквитка виси до изтичането си.
+  assert.ok(src.includes('${COOKIE_BASE}=; Path=/'), 'старото име също се чисти при изход');
+});
+
+test('десктоп проксито реже И ДВЕТЕ имена на панелната сесия', () => {
+  // Филтър само по голото име би пропуснал точно работещия в производство
+  // вариант — тоест защитата от префикса щеше да отвори друга дупка.
+  const out = forwardCookies('__Host-csd_sess=таен; kasm=1; csd_sess=старо; other=2');
+  assert.ok(!/csd_sess/.test(out), `сесията на панела НЕ бива да стига до контейнера: ${out}`);
+  assert.match(out, /kasm=1/);
+  assert.match(out, /other=2/);
+  assert.equal(forwardCookies('__Host-csd_sess=таен'), undefined, 'ако остане само тя — нищо не се праща');
+});
+
+test('панелът праща пълния набор защитни хедъри', () => {
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'server.js'), 'utf8');
+  for (const h of [
+    'content-security-policy',
+    'permissions-policy',
+    'cross-origin-opener-policy',
+    'cross-origin-resource-policy',
+    'x-content-type-options',
+    'referrer-policy',
+  ]) {
+    assert.match(src, new RegExp(`setHeader\\(\\s*'${h}'`), `липсва ${h}`);
+  }
+  // HSTS само зад прокси: по гол http е безсмислен, а при локална разработка
+  // би заключил браузъра към https и панелът става недостъпен.
+  assert.match(src, /if \(cfg\.trustProxy\)[\s\S]{0,120}strict-transport-security/, 'HSTS трябва да е условен');
+  assert.match(src, /max-age=63072000/, 'две години е прагът за preload списъка');
 });

@@ -24,6 +24,22 @@ export function passesSeverity(alert, minSeverity) {
   return rank >= min;
 }
 
+// Стойностите на HTTP хедърите са latin-1 и НЕ търпят нов ред. Жетон, копиран от
+// уеб страница с прикачен `\n`, или ключ с кирилица, карат Node да хвърли
+// „Invalid character in header content" — каналът мълчи завинаги, а съобщението
+// не подсказва нищо. Затова: чисти се и се КАЗВА какво е станало.
+export function headerValue(raw, what = 'стойност') {
+  const v = String(raw ?? '');
+  if (/[\r\n]/.test(v)) {
+    throw Object.assign(new Error(`${what} съдържа нов ред — премахни го (най-често е залепнал при копиране).`), { status: 400 });
+  }
+  // eslint-disable-next-line no-control-regex
+  if (!/^[\x20-\xff]*$/.test(v)) {
+    throw Object.assign(new Error(`${what} съдържа знак извън latin-1 — HTTP хедърите не го носят.`), { status: 400 });
+  }
+  return v;
+}
+
 function post(url, { headers = {}, body, timeout = 10000 } = {}) {
   return new Promise((resolve) => {
     let u;
@@ -77,7 +93,14 @@ async function sendNtfy(cfg, alert) {
     Priority: alert.severity === 'critical' ? 'high' : alert.severity === 'warning' ? 'default' : 'low',
     Tags: alert.severity === 'ok' ? 'white_check_mark' : 'warning',
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    try {
+      headers.Authorization = `Bearer ${headerValue(token, 'Жетонът за ntfy')}`;
+    } catch (err) {
+      // Каналът пада, но КАЗВА защо — иначе остава мълчалив завинаги.
+      return { channel: 'ntfy', ok: false, error: err.message };
+    }
+  }
   const r = await post(`${String(server).replace(/\/$/, '')}/${encodeURIComponent(topic)}`, {
     headers,
     body: alert.body,
@@ -106,23 +129,75 @@ async function sendWebhook(cfg, alert) {
 
 // Имейл без SMTP библиотека: подаваме готово писмо на локалния sendmail.
 // Няма sendmail → каналът просто мълчи (fail-closed, без да чупи алармата).
+// Адресите влизат СУРОВИ в хедърите на писмото: нов ред в тях добавя нови
+// хедъри („Bcc: някой-друг"). Затова се чистят, преди да стигнат до sendmail.
+export function mailAddress(raw, what) {
+  const v = String(raw ?? '').trim();
+  if (/[\r\n]/.test(v)) {
+    throw Object.assign(new Error(`${what} съдържа нов ред — това добавя СКРИТИ хедъри в писмото.`), { status: 400 });
+  }
+  // Домейн БЕЗ точка е валиден за локална поща (`root@localhost`) — а именно тя
+  // е подразбирането ни. Първата версия на правилото искаше точка и отхвърляше
+  // собствения си подател: имейлът щеше да падне на всяка машина по подразбиране.
+  if (v && !/^[^\s@<>]+@[^\s@<>]+$/.test(v) && !/^.{1,80}<[^\s@<>]+@[^\s@<>]+>$/.test(v)) {
+    throw Object.assign(new Error(`${what} не прилича на адрес: „${v.slice(0, 60)}"`), { status: 400 });
+  }
+  return v;
+}
+
+// Чете се ПРИ ВСЯКО ПРАЩАНЕ, не веднъж при зареждане на модула: `import` се
+// изпълнява преди всеки ред от викащия файл (ESM повдига импортите), значи
+// константа тук би замръзнала със стойността отпреди тестът да е успял да
+// намести променливата. Подразбирането е за ПРОДУКЦИЯ — sendmail на натоварена
+// машина спокойно отнема секунди, а по-нисък таван би отрязвал успешни писма.
+const mailTimeout = () => Number(process.env.CSD_MAIL_TIMEOUT_MS) || 20000;
+
 function sendEmail(cfg, alert) {
-  const { to, from, minSeverity } = cfg.notify?.email || {};
+  const { to, from, minSeverity, sendmail } = cfg.notify?.email || {};
   if (!to) return Promise.resolve(null);
   if (!passesSeverity(alert, minSeverity)) return Promise.resolve({ channel: 'email', ok: true, skipped: 'под прага' });
+  let toAddr;
+  let fromAddr;
+  try {
+    toAddr = mailAddress(to, 'Адресът на получателя');
+    fromAddr = mailAddress(from || 'vps-dashboard@localhost', 'Адресът на подателя');
+  } catch (err) {
+    return Promise.resolve({ channel: 'email', ok: false, error: err.message });
+  }
   return new Promise((resolve) => {
     let child;
+    let done = false;
+    const finish = (r) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      resolve(r);
+    };
+    // Заклещен sendmail (пълна опашка, увиснал DNS, чакащ милтър) БЕЗ таван
+    // спираше цялото известяване: `notify()` чака всички канали, значи един
+    // блокиран процес заковава оценката на алармите завинаги — точно когато
+    // има инцидент. Останалите канали имат таймаут; този нямаше.
+    const ms = mailTimeout();
+    const timer = setTimeout(() => {
+      try { child?.kill('SIGKILL'); } catch { /* вече е мъртъв */ }
+      finish({ channel: 'email', ok: false, error: `sendmail не отговори за ${ms / 1000} s` });
+    }, ms);
+    timer.unref?.();
     try {
-      child = spawn('/usr/sbin/sendmail', ['-t', '-i'], { stdio: ['pipe', 'ignore', 'ignore'] });
+      // Пътят е настройваем: не всяка машина има точно /usr/sbin/sendmail
+      // (msmtp, ssmtp, /usr/lib/sendmail) — а и без това одитът няма как да
+      // провери таймаута срещу закован процес.
+      child = spawn(sendmail || '/usr/sbin/sendmail', ['-t', '-i'], { stdio: ['pipe', 'ignore', 'ignore'] });
     } catch {
-      resolve({ channel: 'email', ok: false, error: 'няма sendmail' });
+      finish({ channel: 'email', ok: false, error: 'няма sendmail' });
       return;
     }
-    child.on('error', () => resolve({ channel: 'email', ok: false, error: 'няма sendmail' }));
-    child.on('close', (code) => resolve({ channel: 'email', ok: code === 0, status: code }));
+    child.on('error', () => finish({ channel: 'email', ok: false, error: 'няма sendmail' }));
+    child.on('close', (code) => finish({ channel: 'email', ok: code === 0, status: code }));
     const subject = `[${cfg.nodeName}] ${alert.title}`;
+    child.stdin.on('error', () => finish({ channel: 'email', ok: false, error: 'sendmail затвори входа' }));
     child.stdin.end(
-      `To: ${to}\nFrom: ${from || 'vps-dashboard@localhost'}\n` +
+      `To: ${toAddr}\nFrom: ${fromAddr}\n` +
         `Subject: =?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=\n` +
         `Content-Type: text/plain; charset=utf-8\n\n${alert.body}\n`
     );
@@ -131,6 +206,11 @@ function sendEmail(cfg, alert) {
 
 // Праща по ВСИЧКИ конфигурирани канали. Никога не хвърля — връща резултатите.
 export async function notify(cfg, alert) {
+  // `detail` носи СУРОВИЯ изход на чужд инструмент (systemd, openssl). Държи се
+  // отделно от `body`, за да остане изречението стабилно и преводимо — но в
+  // известието трябва да ГО ИМА: „проверката е сляпа" без причината праща човека
+  // да я търси на сляпо. Затова каналите виждат едно тяло, слепено тук веднъж.
+  if (alert?.detail) alert = { ...alert, body: `${alert.body}\n\n${alert.detail}` };
   const results = await Promise.all([
     sendTelegram(cfg, alert).catch((e) => ({ channel: 'telegram', ok: false, error: e.message })),
     sendNtfy(cfg, alert).catch((e) => ({ channel: 'ntfy', ok: false, error: e.message })),

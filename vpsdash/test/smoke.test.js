@@ -131,6 +131,25 @@ test('нито един GET маршрут не дава 5xx', async () => {
   assert.deepEqual(failures, [], 'маршрути с вътрешна грешка:\n' + failures.join('\n'));
 });
 
+// 200 + валиден JSON НЕ значи използваем отговор. Обвиване с един слой повече
+// (`{tools:{tools:[…]}}`) минава и двете проверки, а интерфейсът вика `.map` на
+// обект и секцията остава празна — точно тихият провал, срещу който е панелът.
+// Затова маршрутите, чиято ФОРМА интерфейсът приема на доверие, се закотвят.
+test('маршрутите връщат формата, която интерфейсът чака', async () => {
+  const shapes = [
+    ['/api/agents/tools', (b) => Array.isArray(b.tools) && typeof b.root === 'string' && typeof b.rootExists === 'boolean'],
+    ['/api/agents/fleet', (b) => typeof b.available === 'boolean'],
+    // `/api/jobs` връща ГОЛ масив, не обвит обект — закотвяме реалността, не
+    // предположението: тъкмо тази разлика чупи интерфейса мълчаливо.
+    ['/api/jobs', (b) => Array.isArray(b)],
+  ];
+  for (const [route, ok] of shapes) {
+    const res = await fetch(BASE + route, { headers: { cookie } });
+    const body = await res.json();
+    assert.ok(ok(body), `${route} върна форма, която интерфейсът не може да ползва: ${JSON.stringify(body).slice(0, 160)}`);
+  }
+});
+
 // Ръчно поддържан списък ИЗОСТАВА тихо — беше изостанал с 16 маршрута, всеки от
 // които е точно случаят, за който този файл съществува (липсващ import се вижда
 // само при реална заявка). Затова списъкът вече се СВЕРЯВА с routes.js: нов
@@ -258,6 +277,19 @@ test('статиката се сервира и не изтича файлове
   const trav = await fetch(BASE + '/../../etc/passwd');
   const body = await trav.text();
   assert.doesNotMatch(body, /root:x:/, 'не бива да изтича /etc/passwd');
+});
+
+test('HEAD работи навсякъде, където работи GET (и не носи тяло)', async () => {
+  // HTTP го изисква (RFC 9110), а uptime мониторите проверяват точно с HEAD,
+  // защото не искат да теглят тялото. Дотук статиката приемаше само GET и
+  // `curl -I https://<панела>/` връщаше 404 JSON — тоест наблюдателят отчиташе
+  // ПАДНАЛ панел, докато той работи. Точно тази форма на провал панелът
+  // съществува, за да не допуска.
+  for (const p of ['/', '/app.js', '/style.css', '/някаква/секция']) {
+    const r = await fetch(BASE + p, { method: 'HEAD' });
+    assert.equal(r.status, 200, `HEAD ${p} трябва да е 200`);
+    assert.equal(await r.text(), '', `HEAD ${p} не бива да носи тяло`);
+  }
 });
 
 test('невалидни входове дават 4xx, не 5xx', async () => {

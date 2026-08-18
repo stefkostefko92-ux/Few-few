@@ -67,6 +67,7 @@ concurrency:
 jobs:
   oversee:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       # Пинат по SHA (не по подвижен таг) — supply-chain дисциплина. actions/checkout v4.2.2.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

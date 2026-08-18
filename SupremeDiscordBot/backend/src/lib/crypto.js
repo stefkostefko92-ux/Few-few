@@ -45,19 +45,43 @@ export function decrypt(ciphertext) {
   return decipher.update(Buffer.from(encryptedHex, "hex")) + decipher.final("utf8");
 }
 
+// Строгата форма на нашия шифротекст: 12-байтов IV, 16-байтов authTag, тяло.
+// Нужна е, за да различим „наследен открит текст“ от „наш шифротекст, който НЕ
+// се дешифрира“ — двете искат ПРОТИВОПОЛОЖНО поведение, а `split(":").length`
+// не ги различава (открит текст с две двоеточия минаваше за наш).
+const CIPHERTEXT_RE = /^[0-9a-f]{24}:[0-9a-f]{32}:[0-9a-f]*$/i;
+
+// Дедуплициран сигнал: липсващ/сгрешен ENCRYPTION_KEY е конфигурационна авария,
+// но не бива да залее лога с ред на всяка заявка.
+let keyFailureLogged = false;
+
 /**
  * Decrypt if the value looks like our iv:authTag:ciphertext format; otherwise
  * return it unchanged. Lets us roll out encryption of an existing column WITHOUT
  * a migration — legacy plaintext rows keep working and get re-encrypted on their
- * next write. Fail-open on any decrypt error (returns the raw value) so a read
- * path (e.g. token refresh) is never broken by an unexpected value.
+ * next write.
+ *
+ * ВАЖНО (07.08.2026): при провал на дешифрирането връщаме `null`, НЕ суровия
+ * шифротекст. Старото поведение „fail-open“ беше тихо и вредно: при липсващ или
+ * сгрешен ENCRYPTION_KEY шифротекстът тръгваше нататък като OAuth токен — тоест
+ * пращахме нашия шифротекст на Discord, получавахме объркващо 401 и никъде не
+ * пишеше, че истинската причина е конфигурацията. `null` кара повикващия да
+ * поиска нов вход (коректната последица), а логът казва защо.
  */
 export function decryptSafe(value) {
   if (!value) return value;
-  if (value.split(":").length !== 3) return value; // not our format → legacy plaintext
+  if (!CIPHERTEXT_RE.test(value)) return value; // не е нашият формат → наследен открит текст
   try {
     return decrypt(value);
-  } catch {
-    return value;
+  } catch (err) {
+    if (!keyFailureLogged) {
+      keyFailureLogged = true;
+      console.error(
+        `🔐 Дешифрирането се провали (${err.message}). Провери ENCRYPTION_KEY — ` +
+        "липсващ или сменен ключ прави ВСИЧКИ шифровани колони нечетими. " +
+        "Този ред се показва веднъж на процес.",
+      );
+    }
+    return null;
   }
 }

@@ -79,18 +79,28 @@ export class MetricsHistory {
 // ЕДИН източник на истината за формата на точката (по-рано беше дублиран и в
 // metrics.js). `v` е версия на схемата — старите редове нямат новите полета и
 // четците трябва да го знаят, вместо да четат undefined като нула.
+// Закръгля, но пази `null` като null. Без това `Math.round(null)` дава 0 —
+// незнанието се превръща в стойност, която изглежда като измерена.
+function num(v, factor) {
+  return typeof v === 'number' && Number.isFinite(v) ? Math.round(v * factor) / factor : null;
+}
+
 export function compact(snap) {
   return {
     v: 2,
     ts: snap.ts,
-    cpu: Math.round(snap.cpuPct * 10) / 10,
-    memUsed: snap.mem.used,
-    memTotal: snap.mem.total,
-    memAvail: snap.mem.available,
-    swapUsed: snap.mem.swapUsed,
-    load1: Math.round(snap.load[0] * 100) / 100,
-    rxBps: Math.round(snap.net.rxBps),
-    txBps: Math.round(snap.net.txBps),
+    // `null` значи „не знам" и МИНАВА като null. Закръгляне на null дава 0 —
+    // фалшива точка, която после храни прогнозата и откриването на аномалии.
+    // Първата проба след всеки рестарт е точно такъв случай (делтите нямат от
+    // какво да се смятат), затова това не е рядък ръб, а редовно събитие.
+    cpu: num(snap.cpuPct, 10),
+    memUsed: snap.mem.used ?? null,
+    memTotal: snap.mem.total ?? null,
+    memAvail: snap.mem.available ?? null,
+    swapUsed: snap.mem.swapUsed ?? null,
+    load1: num(snap.load?.[0], 100),
+    rxBps: num(snap.net.rxBps, 1),
+    txBps: num(snap.net.txBps, 1),
     diskMax: Math.max(0, ...(snap.disks || []).map((d) => d.usePercent)),
     // Per-дял: прогнозата за пълнене иска НЕПРЕКЪСНАТ ред за всеки дял. Максимумът
     // през всички дялове скача, когато се смени кой е максимумът → фалшив тренд.

@@ -73,7 +73,16 @@ const traffic = new TrafficStore(cfg.paths.stateDir);
 // препратката е в мъртва зона до края на модула.
 const offsite = new OffsiteShipper({ cfg, audit, schedule: backupSchedule });
 offsite.start();
-const alerts = new AlertEngine({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic });
+// Обявени ТУК, преди алармите, защото `custodyChecks` ги чете: провалът и на
+// двата контрола не личи по нищо друго (отменена сесия, която не е стигнала до
+// диска; спряло копие на одита към другия VPS).
+const revokedSessions = new RevokedSessions(cfg.paths.stateDir);
+const shipper = new AuditShipper({ cfg, audit });
+const alerts = new AlertEngine({
+  cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic,
+  revoked: revokedSessions,
+  shipper,
+});
 alerts.start();
 
 // Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
@@ -251,7 +260,6 @@ const pty = new PtySessions(audit);
 
 // Копие на одита към другия VPS (ако е включено) — хеш-веригата открива
 // подправяне, но само копие извън машината го прави безполезно.
-const shipper = new AuditShipper({ cfg, audit });
 shipper.start();
 
 // Провалът на одита е шумен: дневник, който тихо не пише, е по-лош от липсващ.
@@ -294,7 +302,7 @@ const router = buildRouter({
   // изходът и поименната отмяна бяха илюзия точно в най-важния момент: рестарт
   // (деплой, ъпдейт, срив) го изчистваше и вече отменен откраднат токен
   // проработваше отново — до 12 часа.
-  revokedSessions: new RevokedSessions(cfg.paths.stateDir),
+  revokedSessions,
 });
 const statics = serveStatic(path.join(__dirname, 'public'));
 
@@ -318,6 +326,25 @@ const server = http.createServer(async (req, res) => {
       // рамкиран ОТ никого.
       "frame-src 'self'"
   );
+  // Панелът не иска НИТО ЕДНО от тези устройства. Без изричен отказ, дупка в
+  // рамкирано съдържание може да ги поиска от името на нашия произход.
+  res.setHeader(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), ' +
+      'accelerometer=(), gyroscope=(), magnetometer=(), midi=(), display-capture=(), interest-cohort=()'
+  );
+  // Изолация на процеса в браузъра: чужд документ, отворен от нас (или отворил
+  // нас), не бива да дели контекст с панела. Затваря класа атаки, при които
+  // страничен канал чете памет от друг произход в същия процес.
+  res.setHeader('cross-origin-opener-policy', 'same-origin');
+  res.setHeader('cross-origin-resource-policy', 'same-origin');
+  // HSTS. Каноничното място е Nginx, но конфигурацията му може да дрейфне —
+  // а последицата (една заявка по http към жив панел) е открадната сесия.
+  // Затова панелът го праща и сам, но САМО зад прокси: по гол http хедърът е
+  // безсмислен, а при локална разработка би заключил браузъра към https.
+  if (cfg.trustProxy) {
+    res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload');
+  }
   let url;
   try {
     url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -357,17 +384,34 @@ const server = http.createServer(async (req, res) => {
       await match.handler(req, res, match.params, url);
       return;
     }
-    if (req.method === 'GET' && statics(req, res, url.pathname)) return;
-    // SPA fallback: всичко останало (не-API GET) връща index.html.
-    if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
+    // `HEAD` е същото като `GET` без тяло и HTTP го изисква навсякъде, където
+    // има `GET` (RFC 9110). Дотук статиката го подминаваше и `curl -I https://…`
+    // връщаше 404 JSON — тоест всеки uptime монитор, който проверява с `HEAD`
+    // (обичайното, защото не тегли тялото), отчиташе панела за ПАДНАЛ, докато
+    // той работи. Тялото не изтича: Node сам го изхвърля при `HEAD`.
+    const readMethod = req.method === 'GET' || req.method === 'HEAD';
+    if (readMethod && statics(req, res, url.pathname)) return;
+    // SPA fallback: всичко останало (не-API четене) връща index.html.
+    if (readMethod && !url.pathname.startsWith('/api/')) {
       statics(req, res, '/index.html');
       return;
+    }
+    // Непознат `/api/*` път на НЕвписан заявител отговаря 401, не 404. Иначе
+    // разликата между двата кода е карта на API-то: чукаш наред и виждаш кое
+    // съществува, без нито веднъж да си доказал кой си. За ВПИСАН човек 404 си
+    // остава 404 — там е полезно при търсене на грешка.
+    if (url.pathname.startsWith('/api/') && !router.authenticate(req)) {
+      return sendError(res, 401, 'Не си вписан.');
     }
     sendError(res, 404, 'Няма такъв ресурс');
   } catch (err) {
     const status = Number(err?.status) || 500;
     if (status >= 500) console.error(`[csd] ${req.method} ${url.pathname}:`, err);
-    sendError(res, status, status >= 500 ? 'Вътрешна грешка' : err.message);
+    // 5xx съобщенията се маскират (вътрешностите не са за пред потребител), с
+    // едно изключение: грешки, изрично отбелязани `safe` — например „командата
+    // „ps" липсва, инсталирай procps". Те не издават нищо и са ЕДИНСТВЕНОТО,
+    // което превръща „Вътрешна грешка" от задънена улица в следваща стъпка.
+    sendError(res, status, status >= 500 && !err?.safe ? 'Вътрешна грешка' : err.message);
   }
 });
 

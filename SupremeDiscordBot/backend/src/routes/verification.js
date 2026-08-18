@@ -6,12 +6,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
-import { notifyBot } from "../services/botNotifier.js";
-import { validatePremiumFields, getServerTier } from "../lib/premium.js";
-
-const VERIFICATION_PREMIUM_FIELDS = {
-  minAccountAgeDays: "verification.accountAge",
-};
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
+import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
+import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 
 const router = Router();
 
@@ -26,6 +24,11 @@ router.get("/bot/:panelId", requireBotSecret, async (req, res, next) => {
       where: { id: req.params.panelId },
     });
     if (!panel) return res.status(404).json({ error: "Verification panel not found" });
+    // БЕЗ tier санитизация тук — верификацията е защитна функция и НЕ се
+    // сваля при изтекъл план. Досега MATH падаше до BUTTON, а възрастовият
+    // праг се нулираше: анти-рейд защитата отслабваше тихо точно когато
+    // клиентът спре да плаща, а вредата падаше върху членовете. Виж
+    // бележката в lib/premium.js.
     res.json(panel);
   } catch (err) { next(err); }
 });
@@ -50,15 +53,46 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
         createdAt: { gte: since },
       },
     });
+    // Обхватът е ПО СЪРВЪР. Общият брояч в стълбата движи адаптивното
+    // затягане; ако обхватът беше просто „verify", един член, който спами
+    // своя сървър, би свил праговете за верификация на ВСИЧКИ наематели —
+    // cross-tenant griefing. (Червен екип, 12.08.2026)
+    const vScope = `verify:${panel.serverId}`;
+    const vKey = `${panel.id}:${userId}`;
+
     if (recentAttempts >= panel.maxAttempts) {
+      // ВАЖНО: тук НЕ броим провал. Опитът дори не е оценяван — отказваме го
+      // заради изчерпан лимит. Броенето тук даваше на нападателя безплатен
+      // лост: вече блокиран, той продължаваше да помпи брояча с всяка заявка.
+      // Стълбата се храни само от РЕАЛНО оценени провали (по-долу).
+      const esc = await check(vScope, vKey);
+      const waitMinutes = esc.blocked
+        ? Math.max(panel.cooldownMinutes, Math.ceil(esc.retryAfterSec / 60))
+        : panel.cooldownMinutes;
       return res.status(429).json({
-        error: `Too many attempts. Please wait ${panel.cooldownMinutes} minutes before trying again.`,
+        error: `Too many attempts. Please wait ${waitMinutes} minutes before trying again.`,
         code: "VERIFICATION_COOLDOWN",
-        cooldownMinutes: panel.cooldownMinutes,
+        cooldownMinutes: waitMinutes,
+      });
+    }
+
+    // Ескалиралата блокировка важи и ПРЕДИ да се изчерпи прозорецът: иначе
+    // нападателят би получавал нови 5 опита на всеки cooldown, вечно.
+    const escalated = await check(vScope, vKey);
+    if (escalated.blocked) {
+      return res.status(429).json({
+        error: `Too many attempts. Please wait ${Math.ceil(escalated.retryAfterSec / 60)} minutes before trying again.`,
+        code: "VERIFICATION_COOLDOWN",
+        cooldownMinutes: Math.ceil(escalated.retryAfterSec / 60),
       });
     }
 
     // Record attempt
+    // Успешна верификация чисти ескалацията — човек, който е сбъркал няколко
+    // пъти и после е решил задачата, не бива да носи наказание.
+    if (success) await recordSuccess(vScope, vKey);
+    else await recordFailure(vScope, vKey);
+
     await prisma.verificationAttempt.create({
       data: {
         verificationPanelId: panel.id,
@@ -136,31 +170,25 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     // Premium gates: MATH type + minAccountAgeDays + verification panel count
     const { isPremium, limits } = await getServerTier(req.params.serverId);
-    if (!isPremium) {
-      if (parsed.data.type === "MATH") {
-        return res.status(403).json({
-          error: "Math captcha verification requires Premium.",
-          code: "PREMIUM_REQUIRED",
-          feature: "verification.mathCaptcha",
-        });
-      }
-      const premErr = await validatePremiumFields(req.params.serverId, parsed.data, VERIFICATION_PREMIUM_FIELDS);
-      if (premErr) return res.status(premErr.status).json(premErr.body);
-    }
-    const existing = await prisma.verificationPanel.count({ where: { serverId: req.params.serverId } });
-    if (existing >= limits.verificationPanels) {
+    // Атомарно: count+create в една Serializable транзакция (lib/withinLimit.js).
+    const created = await createWithinLimit({
+      model: "verificationPanel",
+      where: { serverId: req.params.serverId },
+      limit: limits.verificationPanels,
+      create: (tx) => tx.verificationPanel.create({
+      data: {
+        serverId: req.params.serverId,
+        ...parsed.data,
+      },
+      }),
+    });
+    if (!created.ok) {
       return res.status(403).json({
         error: `Verification panel limit reached (${limits.verificationPanels}).`,
         code: "LIMIT_REACHED",
       });
     }
-
-    const panel = await prisma.verificationPanel.create({
-      data: {
-        serverId: req.params.serverId,
-        ...parsed.data,
-      },
-    });
+    const panel = created.row;
 
     await prisma.auditLog.create({
       data: {
@@ -184,17 +212,6 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
 
     // Same premium gates on update
     const { isPremium } = await getServerTier(req.params.serverId);
-    if (!isPremium) {
-      if (parsed.data.type === "MATH") {
-        return res.status(403).json({
-          error: "Math captcha verification requires Premium.",
-          code: "PREMIUM_REQUIRED",
-          feature: "verification.mathCaptcha",
-        });
-      }
-      const premErr = await validatePremiumFields(req.params.serverId, parsed.data, VERIFICATION_PREMIUM_FIELDS);
-      if (premErr) return res.status(premErr.status).json(premErr.body);
-    }
 
     const existing = await prisma.verificationPanel.findFirst({
       where: { id: req.params.panelId, serverId: req.params.serverId },
@@ -207,13 +224,17 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
       data: parsed.data,
     });
 
-    // Live-update spawned message if it exists
+    // Live-update spawned message if it exists.
+    // Тих провал = „Запазено" в таблото + СТАР панел в Discord (лъжещ успех).
+    let botWarning = null;
     if (panel.channelId && panel.messageId) {
-      notifyBot("VERIFICATION_UPDATE", { panelId: panel.id, serverId: req.params.serverId })
-        .catch(() => {});
+      const r = await notifyBotVerbose("VERIFICATION_UPDATE", { panelId: panel.id, serverId: req.params.serverId });
+      if (r?.botError) {
+        botWarning = `Saved, but the spawned message was not updated: ${String(r.botError).slice(0, 300)}`;
+      }
     }
 
-    res.json(panel);
+    res.json(botWarning ? { ...panel, botWarning } : panel);
   } catch (err) { next(err); }
 });
 
@@ -250,14 +271,20 @@ router.post("/:serverId/:panelId/spawn", requireServerAdmin, async (req, res, ne
     });
     if (!owned) return res.status(404).json({ error: "Verification panel not found", code: "NOT_FOUND" });
 
-    const result = await notifyBot("VERIFICATION_SPAWN", {
+    const result = await notifyBotVerbose("VERIFICATION_SPAWN", {
       panelId: req.params.panelId,
       serverId: req.params.serverId,
       channelId,
     });
 
-    if (!result) return res.status(502).json({ error: "Bot did not respond" });
-    if (result.error) return res.status(400).json({ error: result.error });
+    // Истинската причина от бота, не измислена диагноза (клас „лъжеща грешка").
+    if (result?.botError) {
+      return res.status(502).json({
+        error: `The bot could not post the panel: ${String(result.botError).slice(0, 300)}`,
+      });
+    }
+    if (result?.error) return res.status(400).json({ error: result.error });
+    if (!result?.messageId) return res.status(502).json({ error: "Bot did not respond" });
 
     await prisma.verificationPanel.update({
       where: { id: req.params.panelId },

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="theme-color" content="#33b1ff" />
+  <meta name="theme-color" content="#8fe600" />
   <meta name="color-scheme" content="dark" />
 
   <!-- Mobile / PWA -->
@@ -34,7 +34,7 @@
   <meta name="rating" content="general" />
   <meta name="distribution" content="global" />
   <meta name="revisit-after" content="7 days" />
-  <link rel="canonical" href="https://supreme.carbonstealth.eu/" />
+  <link rel="canonical" href="https://supremebot.carbonstealth.eu/" />
   <!-- hreflang: localized landing pages live at /bg /de /es /fr /it /nl /pl.
        Alternates are injected per-route by components/Seo.jsx (rendered DOM)
        and declared statically in sitemap.xml — keep all three in sync. -->
@@ -54,11 +54,11 @@
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Supreme Bot by Carbon Stealth" />
-  <meta property="og:url" content="https://supreme.carbonstealth.eu/" />
+  <meta property="og:url" content="https://supremebot.carbonstealth.eu/" />
   <meta property="og:title" content="Supreme Bot — Discord Ticket Bot &amp; SaaS Platform" />
   <meta property="og:description" content="Multi-tenant Discord bot management: tickets, forms, applications, AI auto-replies, white-label bots, Stripe subscriptions. Built by Carbon Stealth VCC." />
-  <meta property="og:image" content="https://supreme.carbonstealth.eu/og-image.png" />
-  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image" content="https://supremebot.carbonstealth.eu/og-image.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Supreme Bot Dashboard — Discord Bot SaaS by Carbon Stealth" />
@@ -79,7 +79,7 @@
   <meta name="twitter:creator" content="@CarbonStealth" />
   <meta name="twitter:title" content="Supreme Bot — Discord Ticket Bot &amp; SaaS Platform" />
   <meta name="twitter:description" content="Manage Discord tickets, forms, and applications from a modern web dashboard. White-label bots, AI replies, Stripe billing." />
-  <meta name="twitter:image" content="https://supreme.carbonstealth.eu/og-image.png" />
+  <meta name="twitter:image" content="https://supremebot.carbonstealth.eu/og-image.jpg" />
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <!-- FAVICONS                                                        -->
@@ -193,8 +193,8 @@
       },
       {
         "@type": "WebSite",
-        "@id": "https://supreme.carbonstealth.eu/#website",
-        "url": "https://supreme.carbonstealth.eu/",
+        "@id": "https://supremebot.carbonstealth.eu/#website",
+        "url": "https://supremebot.carbonstealth.eu/",
         "name": "Supreme Bot",
         "description": "Discord Bot SaaS Platform by Carbon Stealth",
         "publisher": { "@id": "https://carbonstealth.eu/#organization" },
@@ -202,19 +202,19 @@
       },
       {
         "@type": "SoftwareApplication",
-        "@id": "https://supreme.carbonstealth.eu/#software",
+        "@id": "https://supremebot.carbonstealth.eu/#software",
         "name": "Supreme Bot",
         "applicationCategory": "BusinessApplication",
         "applicationSubCategory": "Discord Bot Management",
         "operatingSystem": "Web Browser",
-        "url": "https://supreme.carbonstealth.eu/",
+        "url": "https://supremebot.carbonstealth.eu/",
         "keywords": "discord ticket bot, ticket bot, supreme bot, discord bot, ticket system, application forms, verification bot, giveaway bot, white-label discord bot, carbon stealth",
         "description": "Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform for ticket systems, application forms, AI auto-replies, round-robin assignment, white-label bots, and Stripe subscriptions.",
         "publisher": { "@id": "https://carbonstealth.eu/#organization" },
         "offers": {
           "@type": "AggregateOffer",
           "lowPrice": "0",
-          "highPrice": "79.99",
+          "highPrice": "39.99",
           "priceCurrency": "EUR",
           "offerCount": 5,
           "offers": [
@@ -229,6 +229,21 @@
             {
               "@type": "Offer",
               "name": "Premium",
+              "price": "4.99",
+              "priceCurrency": "EUR",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "4.99",
+                "priceCurrency": "EUR",
+                "billingDuration": "P1M",
+                "referenceQuantity": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
+              },
+              "description": "Per server: €4.99/month or €49/year. Up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin assignment, webhooks, public REST API, unlimited transcript retention and advanced analytics. Support response times are best-effort; no contractual SLA is included. 14-day free trial without credit card. VAT included.",
+              "category": "subscription"
+            },
+            {
+              "@type": "Offer",
+              "name": "White-label",
               "price": "9.99",
               "priceCurrency": "EUR",
               "priceSpecification": {
@@ -238,38 +253,23 @@
                 "billingDuration": "P1M",
                 "referenceQuantity": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
               },
-              "description": "Per server: €9.99/month or €99/year. Up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin assignment, webhooks, public REST API, unlimited transcript retention, advanced analytics, priority support. 14-day free trial without credit card. VAT included.",
-              "category": "subscription"
-            },
-            {
-              "@type": "Offer",
-              "name": "White-label",
-              "price": "19.99",
-              "priceCurrency": "EUR",
-              "priceSpecification": {
-                "@type": "UnitPriceSpecification",
-                "price": "19.99",
-                "priceCurrency": "EUR",
-                "billingDuration": "P1M",
-                "referenceQuantity": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
-              },
-              "description": "Per server: €19.99/month or €199/year. Everything in Premium plus the white-label custom bot — upload your own Discord bot token and run Supreme under your own brand (name and avatar). VAT included.",
+              "description": "Per server: €9.99/month or €99/year. Everything in Premium plus the white-label custom bot — upload your own Discord bot token and run Supreme under your own brand (name and avatar). VAT included.",
               "category": "subscription"
             },
             {
               "@type": "Offer",
               "name": "Agency 5",
-              "price": "39.99",
+              "price": "19.99",
               "priceCurrency": "EUR",
-              "description": "€39.99/month or €399/year. White-label tier for up to 5 servers under one reseller-friendly subscription. VAT included.",
+              "description": "€19.99/month or €199/year. White-label tier for up to 5 servers under one reseller-friendly subscription. VAT included.",
               "category": "subscription"
             },
             {
               "@type": "Offer",
               "name": "Agency 10",
-              "price": "79.99",
+              "price": "39.99",
               "priceCurrency": "EUR",
-              "description": "€79.99/month or €799/year. White-label tier for up to 10 servers under one reseller-friendly subscription. VAT included.",
+              "description": "€39.99/month or €399/year. White-label tier for up to 10 servers under one reseller-friendly subscription. VAT included.",
               "category": "subscription"
             }
           ]
@@ -293,12 +293,19 @@
           "Public REST API with bearer authentication",
           "GDPR-compliant data export and deletion",
           "Real-time service status page",
-          "Audit logs and analytics dashboard"
+          "Audit logs and analytics dashboard",
+          "Reaction roles (emoji-to-role, exclusive pick-one mode)",
+          "Server activity logging including edited and deleted messages",
+          "Welcomer messages and autorole",
+          "Knowledge base with automatic article suggestions on new tickets",
+          "Canned responses and SLA first-response timers",
+          "Ticket priority levels",
+          "Staff replies from the dashboard"
         ]
       },
       {
         "@type": "FAQPage",
-        "@id": "https://supreme.carbonstealth.eu/#faq",
+        "@id": "https://supremebot.carbonstealth.eu/#faq",
         "mainEntity": [
           {
             "@type": "Question",
@@ -313,7 +320,7 @@
             "name": "How much does Supreme Bot cost?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Supreme Bot has a free tier with 1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, and persistent HTML transcripts (30-day retention). Premium costs 9.99 EUR per server per month (or 99 EUR/year) and includes up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin ticket assignment, webhooks, a public REST API, unlimited transcript retention, advanced analytics, and priority support, with a 14-day free trial and no credit card required. The White-label tier costs 19.99 EUR per server per month (or 199 EUR/year) and adds the white-label custom bot with your own name, avatar, and token. Agency plans cover multiple servers under one subscription: Agency 5 (up to 5 servers) is 39.99 EUR/month or 399 EUR/year, and Agency 10 (up to 10 servers) is 79.99 EUR/month or 799 EUR/year. All prices include VAT where applicable."
+              "text": "Supreme Bot has a free tier with 1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, and persistent HTML transcripts (30-day retention). Premium costs 4.99 EUR per server per month (or 49 EUR/year) and includes up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin ticket assignment, webhooks, a public REST API, unlimited transcript retention, and advanced analytics, with a 14-day free trial and no credit card required. The White-label tier costs 9.99 EUR per server per month (or 99 EUR/year) and adds the white-label custom bot with your own name, avatar, and token. Agency plans cover multiple servers under one subscription: Agency 5 (up to 5 servers) is 19.99 EUR/month or 199 EUR/year, and Agency 10 (up to 10 servers) is 39.99 EUR/month or 399 EUR/year. All prices include VAT where applicable."
             }
           },
           {
@@ -329,7 +336,7 @@
             "name": "Can I use my own bot token with Supreme Bot?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Subscribers on the White-label tier (€19.99/month or €199/year per server) or an Agency plan can provide their own Discord bot token through the dashboard. This allows servers to use their own branded bot with a custom name and avatar — called a white-label bot. Tokens are encrypted with AES-256-GCM before being stored and are never exposed back to users."
+              "text": "Yes. Subscribers on the White-label tier (€9.99/month or €99/year per server) or an Agency plan can provide their own Discord bot token through the dashboard. This allows servers to use their own branded bot with a custom name and avatar — called a white-label bot. Tokens are encrypted with AES-256-GCM before being stored and are never exposed back to users."
             }
           },
           {
@@ -337,7 +344,7 @@
             "name": "How do I install the Supreme Bot in my Discord server?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Visit the Supreme Bot dashboard at supreme.carbonstealth.eu, log in with your Discord account, then click the invite link to add the bot to any Discord server where you have Manage Server permission. The bot registers slash commands automatically and is ready to use in under 60 seconds."
+              "text": "Visit the Supreme Bot dashboard at supremebot.carbonstealth.eu, log in with your Discord account, then click the invite link to add the bot to any Discord server where you have Manage Server permission. The bot registers slash commands automatically and is ready to use in under 60 seconds."
             }
           },
           {
@@ -353,7 +360,7 @@
             "name": "Where is Supreme Bot hosted?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Supreme Bot infrastructure is hosted in the European Union with data residency in Germany (Hetzner) and operational headquarters in Bulgaria. This guarantees GDPR compliance and EU data sovereignty for all customer data."
+              "text": "Supreme Bot infrastructure is hosted in the European Union with data residency in Germany (Hetzner) and operational headquarters in Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the United States; those transfers are governed by Standard Contractual Clauses, as set out in the Privacy Policy."
             }
           },
           {
@@ -368,7 +375,7 @@
       },
       {
         "@type": "BreadcrumbList",
-        "@id": "https://supreme.carbonstealth.eu/#breadcrumbs",
+        "@id": "https://supremebot.carbonstealth.eu/#breadcrumbs",
         "itemListElement": [
           {
             "@type": "ListItem",
@@ -380,7 +387,7 @@
             "@type": "ListItem",
             "position": 2,
             "name": "Supreme Bot",
-            "item": "https://supreme.carbonstealth.eu/"
+            "item": "https://supremebot.carbonstealth.eu/"
           }
         ]
       },
@@ -447,7 +454,7 @@
       },
       {
         "@type": "Service",
-        "@id": "https://supreme.carbonstealth.eu/#service",
+        "@id": "https://supremebot.carbonstealth.eu/#service",
         "serviceType": "Discord Bot Management SaaS",
         "name": "Supreme Bot — Discord Bot Management",
         "provider": { "@id": "https://carbonstealth.eu/#organization" },
@@ -479,7 +486,7 @@
               "itemOffered": {
                 "@type": "Service",
                 "name": "Premium Tier",
-                "description": "€9.99/server/month or €99/year — up to 50 panels, AI auto-replies, round-robin, webhooks, REST API, unlimited retention, advanced analytics"
+                "description": "€4.99/server/month or €49/year — up to 50 panels, AI auto-replies, round-robin, webhooks, REST API, unlimited retention, advanced analytics"
               }
             },
             {
@@ -487,7 +494,7 @@
               "itemOffered": {
                 "@type": "Service",
                 "name": "White-label Tier",
-                "description": "€19.99/server/month or €199/year — everything in Premium plus a white-label custom bot under your own brand"
+                "description": "€9.99/server/month or €99/year — everything in Premium plus a white-label custom bot under your own brand"
               }
             },
             {
@@ -495,7 +502,7 @@
               "itemOffered": {
                 "@type": "Service",
                 "name": "Agency Plans",
-                "description": "Agency 5 (€39.99/month or €399/year, up to 5 servers) and Agency 10 (€79.99/month or €799/year, up to 10 servers) — white-label across multiple servers under one subscription"
+                "description": "Agency 5 (€19.99/month or €199/year, up to 5 servers) and Agency 10 (€39.99/month or €399/year, up to 10 servers) — white-label across multiple servers under one subscription"
               }
             }
           ]
@@ -503,12 +510,12 @@
       },
       {
         "@type": "WebPage",
-        "@id": "https://supreme.carbonstealth.eu/#webpage",
-        "url": "https://supreme.carbonstealth.eu/",
+        "@id": "https://supremebot.carbonstealth.eu/#webpage",
+        "url": "https://supremebot.carbonstealth.eu/",
         "name": "Supreme Bot — Discord Bot SaaS Platform",
-        "isPartOf": { "@id": "https://supreme.carbonstealth.eu/#website" },
-        "about": { "@id": "https://supreme.carbonstealth.eu/#software" },
-        "breadcrumb": { "@id": "https://supreme.carbonstealth.eu/#breadcrumbs" },
+        "isPartOf": { "@id": "https://supremebot.carbonstealth.eu/#website" },
+        "about": { "@id": "https://supremebot.carbonstealth.eu/#software" },
+        "breadcrumb": { "@id": "https://supremebot.carbonstealth.eu/#breadcrumbs" },
         "speakable": {
           "@type": "SpeakableSpecification",
           "cssSelector": ["h1", "h2", ".speakable", "[data-speakable]"]
@@ -522,17 +529,17 @@
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <!-- MICROSOFT / TILE                                                -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
-  <meta name="msapplication-TileColor" content="#33b1ff" />
+  <meta name="msapplication-TileColor" content="#8fe600" />
 </head>
 <body>
   <!-- No-JS fallback for search engines that don't render SPA content well.
        Contains the key facts in plain HTML for crawlers + accessibility. -->
   <noscript>
-    <div style="max-width:720px;margin:48px auto;padding:24px;background:#000;color:#f0f0eb;border:1px solid #33b1ff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:720px;margin:48px auto;padding:24px;background:#000;color:#f0f0eb;border:1px solid #8fe600;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
       <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
       <p>Supreme Bot is a multi-tenant Discord bot management dashboard by Carbon Stealth VCC. It requires JavaScript to run.</p>
       <p>Features include ticket panels, logic-branching application forms, AI auto-replies, white-label bots, and Stripe subscription billing.</p>
-      <p>Visit <a href="https://carbonstealth.eu" style="color:#33b1ff;">carbonstealth.eu</a> for more Carbon Stealth products.</p>
+      <p>Visit <a href="https://carbonstealth.eu" style="color:#8fe600;">carbonstealth.eu</a> for more Carbon Stealth products.</p>
       <p>Contact: discord@carbonstealth.eu</p>
     </div>
   </noscript>

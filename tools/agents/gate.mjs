@@ -48,6 +48,7 @@ const CHECKS = [
   { id: "token-budget", desc: "таван на дефиниции И на статичния префикс (×флота)", cmd: ["tools/agents/token-budget.mjs", "--check"] },
   { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
+  { id: "workflow-lint", desc: "всеки CI job има таван на времето (висяща стъпка не се проваля — тя не свършва)", cmd: ["tools/ci/workflow-lint.mjs"] },
   { id: "version-freshness", desc: "версиите, които агентите цитират, са сверени в TTL (не 2–3 годишни спомени)", cmd: ["tools/agents/version-freshness.mjs", "--check"] },
   { id: "memory-freshness", desc: "паметта има срок на годност (опашка за пресверяване, не еднократна сверка)", cmd: ["tools/agents/memory-freshness.mjs", "--check"] },
   { id: "claims-audit", desc: "правни/таксономични твърдения сверени в TTL + карта на зависимостта цяла", cmd: ["tools/agents/claims-audit.mjs", "--check"] },
