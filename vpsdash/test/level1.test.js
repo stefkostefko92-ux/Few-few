@@ -119,3 +119,36 @@ test('saveConfig: слива, пази тайните, пише атомарно
   assert.equal(fs.statSync(file).mode & 0o777, 0o600);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('2FA: заснет по-СТАР код не минава след успешен вход', async () => {
+  const { acceptStep } = await import('../src/totp.js');
+  const { confirmSudo } = await import('../src/sudo.js');
+  const secret = generateSecret();
+  const now = Date.now();
+  const step = Math.floor(now / 1000 / 30);
+
+  // АТАКАТА. Прозорецът приема три стъпки едновременно (±1). Старата проверка
+  // беше за РАЗЛИЧИЕ: след вход с кода за стъпка S, код от S−1 — заснет
+  // тридесет секунди по-рано — минаваше, защото S−1 ≠ S.
+  const state = {};
+  assert.equal(acceptStep(state, step), true, 'текущият код влиза');
+  assert.equal(acceptStep(state, step - 1), false, 'ПО-СТАР код трябва да е мъртъв');
+  assert.equal(acceptStep(state, step), false, 'същият код не се ползва два пъти');
+  assert.equal(acceptStep(state, step + 1), true, 'следващият код влиза');
+  assert.equal(acceptStep(state, step), false, 'и назад вече не се връщаме');
+  // null/undefined (невалиден код) никога не се приема и не мърда брояча.
+  assert.equal(acceptStep(state, null), false);
+  assert.equal(state.lastTotpStep, step + 1, 'провален опит не бива да мести брояча');
+
+  // Същото правило важи и за sudo — дотук беше отделно копие на проверката.
+  const cfg = { totp: { enabled: true, secret, recoveryHashes: [] }, passwordHash: null };
+  const st = {};
+  const код = totp(secret, now);
+  const първо = confirmSudo(cfg, { password: 'x', code: код }, () => {}, st);
+  if (първо.ok) {
+    // Повторното подаване на СЪЩИЯ код трябва да е отказано с ясна причина.
+    const второ = confirmSudo(cfg, { password: 'x', code: код }, () => {}, st);
+    assert.equal(второ.ok, false);
+    assert.match(второ.error, /вече е използван/);
+  }
+});
