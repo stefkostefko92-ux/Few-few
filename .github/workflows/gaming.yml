@@ -26,7 +26,7 @@ jobs:
       run:
         working-directory: Gaming
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Продуктът декларира pnpm@10 в packageManager и има pnpm-lock.yaml — corepack го уважава.
       # БЕЗ cache: pnpm — проверено в CI (run 30453590507): setup-node вика `pnpm store path`
       # от КОРЕНА на монорепото, където няма package.json/packageManager → corepack не резолвва
