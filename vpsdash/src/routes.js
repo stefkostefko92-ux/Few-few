@@ -81,7 +81,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.5.0';
+export const VERSION = '1.6.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -246,6 +246,15 @@ export function buildRouter(ctx) {
       if (bearerAllowed(bip)) {
         bearerFailed(bip);
         audit.log({ action: 'auth.bearerFail', ip: bip });
+      } else {
+        // Лимитерът трябва да СПИРА, не само да млъква.
+        //
+        // Първата версия на тази поправка спираше единствено писането в одита —
+        // тоест нападателят получаваше неограничени опити, просто по-тихо.
+        // Открито от активния тест (`attack.test.js`), не от четене на кода:
+        // 25 грешни токена минаха с 401, нито един с 429. Лимит, който не
+        // отказва, е брояч, не защита.
+        req._bearerThrottled = true;
       }
       return null;
     }
@@ -311,7 +320,10 @@ export function buildRouter(ctx) {
   const guard = (handler, { mutating = false } = {}) => {
     return async (req, res, params, url) => {
       const who = auth(req);
-      if (!who) return sendError(res, 401, 'Не си вписан.');
+      if (!who) {
+        if (req._bearerThrottled) return sendError(res, 429, 'Твърде много опити с жетон — изчакай.');
+        return sendError(res, 401, 'Не си вписан.');
+      }
       if (mutating && !csrfOk(req, who)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
       if (who.peer && !peerAllowed(req, url)) {
         audit.log({ action: 'peer.denied', path: url.pathname, method: req.method });
