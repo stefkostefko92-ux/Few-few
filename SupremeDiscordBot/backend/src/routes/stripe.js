@@ -719,6 +719,23 @@ router.post("/webhook", requireStripe, async (req, res) => {
           }
           const did = await runOnce(async (tx) => {
             await tx.agency.update({ where: { id: agency.id }, data: { active: true, stripeStatus: "active", pastDueSince: null } });
+            // Този `break` по-долу прескачаше `paymentLog.create` в сървърния клон,
+            // значи ВСЯКО agency плащане липсваше във финансовия регистър — а
+            // `calculateMRR()` (routes/admin.js) агрегира точно `paymentLog`.
+            // Резултат: agency приходите не се виждаха никъде в отчета.
+            //
+            // `stripeInvoiceId` е @unique — при повторно доставяне на същия invoice
+            // записът пада с P2002 и `runOnce` го хваща като „вече обработено".
+            await tx.paymentLog.create({
+              data: {
+                agencyId: agency.id,
+                stripeInvoiceId: invoice.id,
+                amount: invoice.amount_paid,
+                currency: invoice.currency || "eur",
+                status: "paid",
+                description: "Agency subscription payment",
+              },
+            });
           });
           // Recovery от past_due обратно в active → покритите сървъри пак стават
           // платени; синхронизирай суровата колона (симетрично на cancel пътя).
