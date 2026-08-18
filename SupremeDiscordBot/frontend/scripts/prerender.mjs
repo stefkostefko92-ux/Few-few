@@ -109,6 +109,33 @@ function writeRoute(path, html) {
   writeFileSync(join(outDir, "index.html"), html, "utf8");
 }
 
+// ─── вътрешни връзки към ръководствата ───────────────────────────────────────
+// ЗАЩО (одит, 16.08.2026): футърът с тези пет връзки беше добавен в React-а
+// (#214), но снимката ТУК не е рендериран React — тя е ръчно поддържан HTML.
+// Тоест връзките ги виждаше само обхождач, който ИЗПЪЛНЯВА JavaScript, а тази
+// снимка съществува точно заради онези, които НЕ изпълняват (ClaudeBot,
+// PerplexityBot, GPTBot, OAI-SearchBot — изброени в заглавието на файла).
+// Поправката от #214 не стигаше до аудиторията, за която е писана.
+//
+// Етикетите идват от СЪЩИЯ обект, който храни футъра (`t.guides`), за да не
+// станат две определения на едно нещо — точно дефектът, гонен цяла сесия.
+const GUIDE_LINKS = [
+  ["/guides/ticket-panel-setup", "panel"],
+  ["/guides/best-discord-ticket-bot", "best"],
+  ["/guides/gdpr-discord-bot", "gdpr"],
+  ["/compare/ticket-tool-alternative", "vsTicketTool"],
+  ["/compare/appy-alternative", "vsAppy"],
+];
+
+function guideLinks(t) {
+  if (!t.guides) return "";
+  const items = GUIDE_LINKS
+    .filter(([, key]) => t.guides[key])
+    .map(([href, key]) => `<li><a href="${href}">${esc(t.guides[key])}</a></li>`)
+    .join("");
+  return items ? `<nav><h2>${esc(t.guides.heading)}</h2><ul>${items}</ul></nav>` : "";
+}
+
 // ─── content snapshot from a landing translation object ──────────────────────
 function landingSnapshot(t) {
   const features = t.features.map(
@@ -141,6 +168,7 @@ function landingSnapshot(t) {
     <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${tier(t.tiers.agency5)}${tier(t.tiers.agency10)}${
       t.priceNote ? `<p>${esc(t.priceNote)}</p>` : ""
     }</section>
+    ${guideLinks(t)}
   </div>`;
 }
 
@@ -250,6 +278,16 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
     <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>
     <section><h2>Frequently asked questions</h2>${faqHtml}</section>
+    ${guideLinks({
+      guides: {
+        heading: "Guides & comparisons",
+        panel: "Ticket panel & button setup",
+        best: "Choosing a Discord ticket bot",
+        gdpr: "GDPR for Discord bots",
+        vsTicketTool: "Supreme Bot vs Ticket Tool",
+        vsAppy: "Supreme Bot vs Appy",
+      },
+    })}
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
