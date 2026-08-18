@@ -32,7 +32,7 @@ jobs:
         with:
           fetch-depth: 0 # пълна история — за gitleaks
           persist-credentials: false # не оставяй GITHUB_TOKEN в git config (по-малка exfil повърхност)
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       # ТВЪРД ГЕЙТ: вграденият скенер (нула външни зависимости → нула supply-chain риск).
