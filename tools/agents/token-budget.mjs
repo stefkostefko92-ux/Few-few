@@ -173,12 +173,16 @@ const bloated = rows.filter((r) => r.bloated);
 const overHard = rows.filter((r) => r.overHard);
 
 if (JSON_OUT) {
+  // Изходният код МИНАВА през --json пътя: конвенцията на всички наши --check инструменти е
+  // машинният изход да носи същата присъда като текстовия. Заковаването на 0 тук правеше
+  // `--check --json` тихо зелено при превишен твърд таван — потвърдено с in-place мутация.
+  const jsonFailed = CHECK && (overHard.length || prefixOverHard) ? 1 : 0;
   await emitJsonNow({
     generatedNote: "оценка (евристичен Cyrillic-aware токенизатор); точни числа: count_tokens endpoint",
     defTokenWarn: DEF_TOKEN_WARN,
     prefixTokenWarn: PREFIX_TOKEN_WARN, prefixTokenHard: PREFIX_TOKEN_HARD,
     totals, prefixParts, rows,
-  }, 0);
+  }, jsonFailed);
 }
 
 console.log(`\n🪙  Токен-бюджет на екипа (${rows.length} агента) — ОЦЕНКА, не измерен ран\n`);

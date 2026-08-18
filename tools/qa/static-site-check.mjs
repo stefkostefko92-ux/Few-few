@@ -39,7 +39,8 @@ export function localTargets(html) {
   const out = new Set();
   for (const m of String(html).matchAll(/\b(?:href|src)\s*=\s*["']([^"']+)["']/gi)) {
     const t = m[1].trim();
-    if (!t || /^(?:https?:)?\/\//i.test(t) || /^(?:mailto|tel|data|javascript):/i.test(t) || t.startsWith("#")) continue;
+    // Всяка URI схема (mailto:, tel:, viber:, whatsapp:, data:…) е външна цел — не е локален файл.
+    if (!t || /^(?:https?:)?\/\//i.test(t) || /^[a-z][a-z0-9+.-]*:/i.test(t) || t.startsWith("#")) continue;
     out.add(t.split(/[?#]/)[0]);
   }
   return [...out];

@@ -2,48 +2,70 @@
 import { Fragment } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Users, TrendingUp, Ticket, FileText, Award } from "lucide-react";
+import { BarChart3, Users, TrendingUp, Ticket, FileText, Award, RefreshCw } from "lucide-react";
 import {
   getAnalyticsOverview, getAnalyticsHeatmap,
   getAnalyticsLeaderboard, getAnalyticsFunnel,
 } from "../api";
+import { useT } from "../contexts/I18nContext";
 
 export default function AnalyticsPage() {
+  const { t } = useT();
   const { serverId } = useParams();
 
-  const { data: overview } = useQuery({ queryKey: ["analytics-overview", serverId], queryFn: () => getAnalyticsOverview(serverId) });
-  const { data: heatmap }  = useQuery({ queryKey: ["analytics-heatmap", serverId],  queryFn: () => getAnalyticsHeatmap(serverId) });
-  const { data: leaderboard } = useQuery({ queryKey: ["analytics-leaderboard", serverId], queryFn: () => getAnalyticsLeaderboard(serverId) });
-  const { data: funnel } = useQuery({ queryKey: ["analytics-funnel", serverId], queryFn: () => getAnalyticsFunnel(serverId) });
+  const overviewQ = useQuery({ queryKey: ["analytics-overview", serverId], queryFn: () => getAnalyticsOverview(serverId) });
+  const heatmapQ  = useQuery({ queryKey: ["analytics-heatmap", serverId],  queryFn: () => getAnalyticsHeatmap(serverId) });
+  const leaderboardQ = useQuery({ queryKey: ["analytics-leaderboard", serverId], queryFn: () => getAnalyticsLeaderboard(serverId) });
+  const funnelQ = useQuery({ queryKey: ["analytics-funnel", serverId], queryFn: () => getAnalyticsFunnel(serverId) });
+
+  const { data: overview } = overviewQ;
+  const { data: heatmap } = heatmapQ;
+  const { data: leaderboard } = leaderboardQ;
+  const { data: funnel } = funnelQ;
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-          <BarChart3 className="w-7 h-7 text-cs-cyan" /> Analytics
+          <BarChart3 className="w-7 h-7 text-cs-cyan" /> {t("analytics.title")}
         </h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
-          Performance insights across tickets, applications, and verification.
-          Daily metrics snapshot at 00:05 UTC; heatmap covers last 90 days.
+          {t("analytics.subtitle")}
         </p>
       </div>
 
       {/* ═══ KPI cards ═══ */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Kpi icon={Ticket} label="Total Tickets"     value={overview?.tickets?.total ?? "—"} />
-        <Kpi icon={Ticket} label="Open"              value={overview?.tickets?.open ?? "—"} accent />
-        <Kpi icon={FileText} label="Applications"    value={overview?.applications?.total ?? "—"} />
-        <Kpi icon={TrendingUp} label="Approval Rate" value={overview?.applications?.approvalRate !== undefined ? `${overview.applications.approvalRate}%` : "—"} />
-      </div>
+      {overviewQ.isError ? (
+        <RetryCard className="mb-8" message={t("analytics.err.overview")} onRetry={() => overviewQ.refetch()} isRefetching={overviewQ.isRefetching} t={t} />
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Kpi icon={Ticket} label={t("analytics.totalTickets")}     value={overview?.tickets?.total ?? "—"} />
+          <Kpi icon={Ticket} label={t("analytics.open")}             value={overview?.tickets?.open ?? "—"} accent />
+          <Kpi icon={FileText} label={t("analytics.applications")}   value={overview?.applications?.total ?? "—"} />
+          <Kpi icon={TrendingUp} label={t("analytics.approvalRate")} value={overview?.applications?.approvalRate !== undefined ? `${overview.applications.approvalRate}%` : "—"} />
+        </div>
+      )}
 
       {/* ═══ Heatmap ═══ */}
       <section className="cs-card mb-6">
-        <h2 className="text-lg font-bold text-cs-text mb-1">Ticket Activity Heatmap</h2>
-        <p className="text-xs text-cs-muted mb-4">UTC · Last 90 days · {heatmap?.total ?? 0} tickets</p>
-        {heatmap?.grid ? <Heatmap grid={heatmap.grid} /> : (
+        <h2 className="text-lg font-bold text-cs-text mb-1">{t("analytics.heatmap")}</h2>
+        <p className="text-xs text-cs-muted mb-4">{t("analytics.heatmapMeta", { count: heatmap?.total ?? 0 })}</p>
+        {heatmapQ.isError ? (
+          <RetryCard message={t("analytics.err.heatmap")} onRetry={() => heatmapQ.refetch()} isRefetching={heatmapQ.isRefetching} t={t} />
+        ) : heatmap?.grid ? <Heatmap grid={heatmap.grid} t={t} /> : heatmapQ.isLoading ? (
           <div className="h-48 animate-pulse bg-cs-surface rounded" role="status">
-            <span className="sr-only">Loading heatmap…</span>
+            <span className="sr-only">{t("analytics.loadingHeatmap")}</span>
           </div>
+        ) : (
+          // Успяла заявка без решетка НЕ е „зарежда се“. Дотук двата случая
+          // споделяха един клон, значи отговор без `grid` даваше ВЕЧЕН скелет —
+          // страницата твърди, че още работи, след като заявката е приключила.
+          // Днес backend-ът винаги връща 7×24 решетка (нули при нула тикети),
+          // тоест не е живо, но конфликтът „зареждане срещу празно“ е точно
+          // класът тихи провали, който гоним другаде. (Одит на екраните)
+          <p className="h-48 flex items-center justify-center text-sm text-cs-muted">
+            {t("analytics.heatmapEmpty")}
+          </p>
         )}
       </section>
 
@@ -51,16 +73,18 @@ export default function AnalyticsPage() {
         {/* ═══ Leaderboard ═══ */}
         <section className="cs-card">
           <h2 className="text-lg font-bold text-cs-text mb-1 flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber-400" /> Staff Leaderboard
+            <Award className="w-5 h-5 text-cs-gold" /> {t("analytics.leaderboard")}
           </h2>
-          <p className="text-xs text-cs-muted mb-4">30 days · Sorted by activity</p>
-          {leaderboard?.leaderboard?.length ? (
+          <p className="text-xs text-cs-muted mb-4">{t("analytics.leaderboardMeta")}</p>
+          {leaderboardQ.isError ? (
+            <RetryCard message={t("analytics.err.leaderboard")} onRetry={() => leaderboardQ.refetch()} isRefetching={leaderboardQ.isRefetching} t={t} />
+          ) : leaderboard?.leaderboard?.length ? (
             <div className="space-y-2">
               {leaderboard.leaderboard.map((s, i) => (
                 <div key={s.userId} className="flex items-center justify-between py-2 border-b border-cs-border last:border-b-0">
                   <div className="flex items-center gap-3">
                     <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                      i === 0 ? "bg-amber-500 text-black" :
+                      i === 0 ? "bg-cs-gold text-black" :
                       i === 1 ? "bg-gray-300 text-black" :
                       i === 2 ? "bg-amber-700 text-white" :
                       "bg-cs-surface text-cs-muted"
@@ -70,24 +94,26 @@ export default function AnalyticsPage() {
                     <span className="font-mono text-xs text-cs-text">&lt;@{s.userId}&gt;</span>
                   </div>
                   <div className="flex items-center gap-4 text-xs">
-                    <span className="text-cs-cyan">{s.claimed} claimed</span>
-                    <span className="text-success">{s.closed} closed</span>
+                    <span className="text-cs-cyan">{t("analytics.claimed", { count: s.claimed })}</span>
+                    <span className="text-success">{t("analytics.closed", { count: s.closed })}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-cs-dim text-sm">No staff activity in last 30 days.</div>
+            <div className="text-cs-dim text-sm">{t("analytics.noStaff")}</div>
           )}
         </section>
 
         {/* ═══ Funnel ═══ */}
         <section className="cs-card">
           <h2 className="text-lg font-bold text-cs-text mb-1 flex items-center gap-2">
-            <Users className="w-5 h-5 text-cs-cyan" /> Application Funnel
+            <Users className="w-5 h-5 text-cs-cyan" /> {t("analytics.funnel")}
           </h2>
-          <p className="text-xs text-cs-muted mb-4">90 days · Conversion stages</p>
-          {funnel?.stages?.length ? (
+          <p className="text-xs text-cs-muted mb-4">{t("analytics.funnelMeta")}</p>
+          {funnelQ.isError ? (
+            <RetryCard message={t("analytics.err.funnel")} onRetry={() => funnelQ.refetch()} isRefetching={funnelQ.isRefetching} t={t} />
+          ) : funnel?.stages?.length ? (
             <div className="space-y-3">
               {funnel.stages.map((st) => (
                 <div key={st.label}>
@@ -97,7 +123,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="h-2 bg-cs-surface rounded overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-cs-cyan to-amber-400 transition-all"
+                      className="h-full bg-gradient-to-r from-cs-cyan to-cs-gold transition-all"
                       style={{ width: `${st.pct}%` }}
                     />
                   </div>
@@ -105,7 +131,7 @@ export default function AnalyticsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-cs-dim text-sm">No application data.</div>
+            <div className="text-cs-dim text-sm">{t("analytics.noApps")}</div>
           )}
         </section>
       </div>
@@ -125,8 +151,25 @@ function Kpi({ icon: Icon, label, value, accent }) {
   );
 }
 
-function Heatmap({ grid }) {
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function RetryCard({ message, onRetry, isRefetching, className = "", t }) {
+  return (
+    <div role="alert" className={`flex flex-col items-center justify-center gap-3 text-center py-8 ${className}`}>
+      <p className="text-danger text-sm">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        disabled={isRefetching}
+        className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
+        {isRefetching ? t("analytics.retrying") : t("analytics.retry")}
+      </button>
+    </div>
+  );
+}
+
+function Heatmap({ grid, t }) {
+  const days = t("analytics.days").split(",");
   const maxVal = Math.max(1, ...grid.flat());
 
   return (
@@ -143,17 +186,22 @@ function Heatmap({ grid }) {
             <div className="text-[10px] text-cs-dim font-mono pr-2 flex items-center">{days[d]}</div>
             {row.map((val, h) => {
               const intensity = val / maxVal;
+              // Марковият акцент, не суров синьо. Тази клетка беше
+              // `rgba(51, 177, 255)` — единственото синьо в иначе изцяло
+              // неоново-зелен продукт, при това инлайн. Гейтът за цветове лови
+              // само `#rrggbb`, затова `rgba()` мина покрай него.
+              // (Одит на екраните, 07.08.2026)
               const bg = intensity === 0
                 ? "rgba(255,255,255,0.04)"
-                : `rgba(51, 177, 255, ${Math.max(0.15, intensity)})`;
+                : `rgba(143, 230, 0, ${Math.max(0.15, intensity)})`;
               return (
                 <div
                   key={`${d}-${h}`}
                   className="w-4 h-4 rounded-sm"
                   style={{ background: bg }}
                   role="img"
-                  aria-label={`${days[d]} ${h}:00 — ${val} tickets`}
-                  title={`${days[d]} ${h}:00 — ${val} tickets`}
+                  aria-label={t("analytics.cell", { day: days[d], hour: h, count: val })}
+                  title={t("analytics.cell", { day: days[d], hour: h, count: val })}
                 />
               );
             })}

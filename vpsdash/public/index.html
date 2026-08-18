@@ -50,6 +50,15 @@
           <h1 id="section-title">Обзор</h1>
           <div class="topbar-right">
             <span id="stale-banner" class="stale hidden"></span>
+            <!-- Живо състояние на повишените права. Дотук те бяха НЕВИДИМИ: даваш
+                 парола за едно действие и оставаш с отключен панел още пет минути,
+                 без нищо да го показва. Сега се вижда, брои надолу и се заключва
+                 с един клик. -->
+            <span id="sudo-badge" class="sudo-badge hidden" role="status" aria-live="polite">
+              <span class="sudo-dot" aria-hidden="true"></span>
+              <span id="sudo-left" class="sudo-left"></span>
+              <button id="sudo-lock" class="sudo-lock" title="Заключи сега">Заключи</button>
+            </span>
             <span id="host-badge" class="badge"></span>
             <button id="btn-palette" class="icon-btn" title="Команди (Ctrl+K)"><img class="ico-img" src="/icons/ui-palette.png" alt="" /></button>
             <span id="conn-dot" class="dot" title="Връзка на живо"></span>

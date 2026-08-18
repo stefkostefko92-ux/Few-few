@@ -37,12 +37,27 @@ export const tailSource = (bullet) => {
   return m[1].split(";").pop().trim().replace(/^["'„“”]+|["'„“”]+$/g, "");
 };
 
+/**
+ * Стабилен къс идентификатор на поука (Кръг 13). Нужен е, за да може агент да адресира КОЯ точно
+ * поука е пресверил, без да ѝ преписва текста (преписването е канал за тиха промяна на съдържание).
+ * Хешът е върху НОРМАЛИЗИРАНИЯ пълен ред, значи е стабилен спрямо интервали и регистър, но се
+ * променя, ако текстът се промени — точно каквото искаме: променен текст = друга поука.
+ * FNV-1a: 32 бита стигат при ~500 записа, нула зависимости, детерминистичен между процеси.
+ */
+export function lessonId(bullet) {
+  const s = String(bullet).toLowerCase().replace(/\s+/g, " ").trim();
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16).padStart(8, "0");
+}
+
 export function reviewAgent(id, md) {
   const q = sectionBullets(md, "Карантина") || [];
   const items = q.map((b) => {
     const src = tailSource(b);
     const date = lessonDate(b);
     return {
+      lid: lessonId(b),
       text: b.replace(/^-\s*\*\*[\d-]+:\*\*\s*/, "").replace(/\s*_\(.*?\)_\s*$/, "").trim(),
       source: src,
       date,

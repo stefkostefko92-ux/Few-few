@@ -7,7 +7,9 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { PLANS, AGENCY_PLANS, stripePriceId } from "../lib/premium.js";
+import { PLANS, AGENCY_PLANS, stripePriceId, syncServerPaidFlag } from "../lib/premium.js";
+import { reconcileWhitelabel } from "../services/botNotifier.js";
+import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
@@ -39,7 +41,11 @@ router.get("/mine", requireAuth, loadUser, async (req, res, next) => {
         id: agency.id, plan: agency.plan, seatLimit: agency.seatLimit,
         billingInterval: agency.billingInterval, active: agency.active,
         stripeStatus: agency.stripeStatus,
-        seatsUsed: agency.servers.length, servers: agency.servers,
+        // Иконките излизат като АДРЕС, не като суров хеш от базата — иначе
+        // `<img src>` е относителен път и SPA fallback-ът връща index.html
+        // (счупено квадратче в списъка „Сървъри на този план"). Виж discordCdn.js.
+        seatsUsed: agency.servers.length,
+        servers: agency.servers.map((s) => withIconUrl(s, 64)),
       },
     });
   } catch (err) { next(err); }
@@ -102,7 +108,9 @@ router.post("/checkout", requireAuth, loadUser, requireStripe, async (req, res, 
     const session = await stripe.checkout.sessions.create(
       {
         customer: customerId,
-        payment_method_types: ["card"],
+        // Без payment_method_types: Stripe dynamic payment methods (Dashboard
+        // управлява методите; EU локални методи вдигат конверсията) — същото
+        // решение като per-server checkout-а.
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
         subscription_data: { metadata: { agencyId: agency.id, plan, interval, kind: "agency" } },
@@ -159,13 +167,24 @@ router.post("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServer
     // lock in routes/bot.js. The count + update happen under the same lock.
     const outcome = await prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"agency:" + agencyId}))`;
-      const target = await tx.server.findUnique({ where: { id: serverId }, select: { agencyId: true } });
+      const target = await tx.server.findUnique({
+        where: { id: serverId },
+        select: { agencyId: true, agency: { select: { active: true } } },
+      });
       if (!target) return { code: "NO_SERVER" };
       if (target.agencyId === agencyId) return { code: "ALREADY" };
-      if (target.agencyId) return { code: "OTHER_AGENCY" };
+      // Зает от ДРУГА агенция → отказ САМО ако тя е още ЖИВА. Терминалните
+      // agency пътища (отмяна/refund/dispute/дунинг) свалят `active`, но НЕ
+      // зануляват членския `agencyId` — без този клон сървър оставаше заключен
+      // за мъртва агенция и не можеше да мине към нова. (Червен екип F2, 07.08.2026)
+      if (target.agencyId && target.agency?.active) return { code: "OTHER_AGENCY" };
       const used = await tx.server.count({ where: { agencyId } });
       if (used >= agency.seatLimit) return { code: "FULL" };
       await tx.server.update({ where: { id: serverId }, data: { agencyId } });
+      // Синхронизирай суровата isPremium колона В СЪЩАТА транзакция — иначе
+      // покритият сървър остава isPremium=false и всеки четец на суровата
+      // колона (bot config, dashboard, panel функции) го мисли за безплатен.
+      await syncServerPaidFlag(serverId, tx);
       await tx.auditLog.create({ data: { actorId: req.user.id, serverId, action: "AGENCY_SEAT_ADDED", targetId: agencyId } });
       return { code: "OK", seatsUsed: used + 1 };
     });
@@ -175,13 +194,22 @@ router.post("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServer
       case "ALREADY":      return res.json({ ok: true, alreadyAssigned: true });
       case "OTHER_AGENCY": return res.status(409).json({ error: "Server is already covered by another agency plan." });
       case "FULL":         return res.status(409).json({ error: `Seat limit reached (${agency.seatLimit}).`, code: "SEAT_LIMIT" });
-      default:             return res.json({ ok: true, seatsUsed: outcome.seatsUsed, seatLimit: agency.seatLimit });
+      default:
+        // Сървърът вече носи white-label tier — ако има запазен customBotToken,
+        // бранд ботът трябва да се вдигне СЕГА, не чак при следващ рестарт.
+        reconcileWhitelabel(serverId);
+        return res.json({ ok: true, seatsUsed: outcome.seatsUsed, seatLimit: agency.seatLimit });
     }
   } catch (err) { next(err); }
 });
 
 // ─── DELETE /api/agency/:agencyId/servers/:serverId ───────────────────────────
-router.delete("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, res, next) => {
+// НЕ иска `requireServerAdmin` (за разлика от attach): освобождаването на СОБСТВЕНО
+// платено място е право на собственика на агенцията, а не на админа на сървъра.
+// Иначе изгонен от сървъра собственик плаща заложено място, което не може да
+// прекрати — платена услуга без изход (червен екип Н3, 07.08.2026). Гардът е
+// собствеността над агенцията (проверена в тялото), не ManageGuild над сървъра.
+router.delete("/:agencyId/servers/:serverId", requireAuth, loadUser, async (req, res, next) => {
   const { agencyId, serverId } = req.params;
   try {
     const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
@@ -189,8 +217,17 @@ router.delete("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServ
     const server = await prisma.server.findUnique({ where: { id: serverId }, select: { agencyId: true } });
     if (server?.agencyId !== agencyId) return res.status(404).json({ error: "Server is not on this agency plan" });
 
-    await prisma.server.update({ where: { id: serverId }, data: { agencyId: null } });
+    await prisma.$transaction(async (tx) => {
+      await tx.server.update({ where: { id: serverId }, data: { agencyId: null } });
+      // Разкачен сървър: recompute — може още да има СОБСТВЕН платен план
+      // (тогава остава premium), иначе пада на free.
+      await syncServerPaidFlag(serverId, tx);
+    });
     await prisma.auditLog.create({ data: { actorId: req.user.id, serverId, action: "AGENCY_SEAT_REMOVED", targetId: agencyId } }).catch(() => {});
+    // Сървърът вече НЯМА white-label tier (освен ако не носи собствен план) —
+    // работещият бранд бот трябва да СЛЕЗЕ веднага. Точно дупката, за която пита
+    // собственикът: без това ботът обслужваше сървър, който вече не плаща.
+    reconcileWhitelabel(serverId);
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

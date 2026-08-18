@@ -16,7 +16,7 @@ file holds only what is true across all products. Keep it that way.
 |-----|---------|-------|-------|
 | `zabobovdol/` | За Бобов дол — граждански портал | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · zabobovdol.carbonstealth.eu |
 | `medqr/` | MedQR — спешен мед. профил (QR/NFC) | Express · EJS · SQLite · plain JS ESM | BG/EN · medqr.carbonstealth.eu |
-| `SupremeDiscordBot/` | Supreme Bot — Discord SaaS | Express · discord.js v14 · React 18+Vite · Prisma · PostgreSQL · Redis · Docker · plain JS ESM | supreme.carbonstealth.eu |
+| `SupremeDiscordBot/` | Supreme Bot — Discord SaaS | Express · discord.js v14 · React 18+Vite · Prisma · PostgreSQL · Redis · Docker · plain JS ESM | supremebot.carbonstealth.eu |
 | `treydar/` | Трейдъра — spot трейдинг бот (Binance) | Node · CCXT · plain JS ESM | self-hosted · риск-първо, **НЕ** инвест. съвет |
 | `Gaming/` | АСО — premium browser gaming portal | TS monorepo (`apps/api·marketing·web`) | multi-lang |
 | `Minyor/` | ФК „Миньор“ Бобов дол — клубен сайт | Next.js · React · TS · Prisma | BG |
@@ -30,6 +30,7 @@ file holds only what is true across all products. Keep it that way.
 | `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 15 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
 | `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
+| `evanitasport/` | Evanita Sport — дамско студио за Kangoo Jumps и силови тренировки (Дупница) | static HTML/CSS/JS · Nginx | BG · evanita-bg.com |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |

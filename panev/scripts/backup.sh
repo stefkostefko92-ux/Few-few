@@ -4,8 +4,13 @@
 #  Target: /var/backups/panev/panev-YYYY-MM-DD.db.gz
 #  Retention: keep last 30 days + weekly (sunday) for 12 weeks
 #
-#  Automatically installed by bootstrap-vps.sh as daily cron at 03:15.
-#  Manual run:  bash scripts/backup.sh
+#  На VPS-а работи като потребител `panev` (cron от bootstrap-vps.sh, 03:15 UTC).
+#  Директориите се създават от bootstrap-vps.sh с правилния собственик.
+#  Ръчно пускане:  sudo -u panev /opt/panev/scripts/backup.sh
+#
+#  Бекъп без тестван restore НЕ е бекъп: снимката минава `PRAGMA integrity_check`
+#  ПРЕДИ да бъде архивирана, а възстановяването се проверява ръчно поне веднъж
+#  (виж panev/DEPLOY.md, „Възстановяване“).
 # ============================================================
 set -euo pipefail
 
@@ -15,8 +20,14 @@ BACKUP_DIR="${BACKUP_DIR:-/var/backups/panev}"
 RETENTION_DAILY=30    # days
 RETENTION_WEEKLY=12   # weeks
 
-mkdir -p "$BACKUP_DIR"
-chmod 700 "$BACKUP_DIR"
+if [[ ! -d "$BACKUP_DIR" ]]; then
+  mkdir -p "$BACKUP_DIR" 2>/dev/null || {
+    echo "[backup] Няма $BACKUP_DIR и не мога да я създам (правата са на root)." >&2
+    echo "[backup] Пусни: sudo install -d -o panev -g panev -m 700 $BACKUP_DIR" >&2
+    exit 1
+  }
+  chmod 700 "$BACKUP_DIR"
+fi
 
 DATE=$(date -u +"%Y-%m-%d")
 DOW=$(date -u +"%u")    # 1=Mon .. 7=Sun
@@ -42,6 +53,17 @@ else
     exit 1
   }
 fi
+# Провери целостта на СНИМКАТА (не на живата база) преди да я архивираме —
+# повреден бекъп, открит след 30 дни, е по-лош от липсващ бекъп.
+if command -v sqlite3 >/dev/null 2>&1; then
+  CHECK=$(sqlite3 "$SNAPSHOT" "PRAGMA integrity_check;" 2>&1 | head -1)
+  if [[ "$CHECK" != "ok" ]]; then
+    echo "[backup] ✗ integrity_check се провали: $CHECK" >&2
+    rm -f "$SNAPSHOT"
+    exit 1
+  fi
+fi
+
 gzip -f "$SNAPSHOT"
 chmod 600 "$ARCHIVE"
 

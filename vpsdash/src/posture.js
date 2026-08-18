@@ -11,32 +11,39 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { run } from './exec.js';
+import { plural } from './text.js';
 
 const WEIGHTS = { critical: 25, high: 12, medium: 6, low: 2 };
+
+// [път, най-широки допустими права]. Изнесено, за да е проверимо и за да се
+// вижда с едно четене кое НЕ е в списъка.
+export const PERM_TARGETS = [
+  ['/etc/shadow', 0o640],
+  ['/root/.ssh', 0o700],
+  ['/root/.ssh/authorized_keys', 0o600],
+  ['/etc/vps-dashboard/config.json', 0o600],
+  // Прави се от самия saveConfig и съдържа СЪЩИТЕ тайни.
+  ['/etc/vps-dashboard/config.json.bak', 0o600],
+  // Паролата на десктопа — живее до compose файла в инсталационната папка.
+  ['/opt/vps-dashboard/deploy/desktop/desktop' + '.env', 0o600],
+  // Сесии, история, ключ за шифрования бекъп на панела.
+  ['/var/lib/vps-dashboard', 0o700],
+];
 
 function grab(text, key) {
   return text.match(new RegExp(`^${key} (.+)$`, 'm'))?.[1] || null;
 }
 
-export async function posture() {
+// SSH анализът е ИЗВАДЕН в чиста функция, за да е проверим без жив `sshd`.
+// Входната врата е най-скъпото място за грешка — не бива да зависи от това
+// дали някой е пуснал ръчно точния сценарий на точната машина.
+export function sshFindings(out) {
   const findings = [];
   const add = (f) => findings.push(f);
 
-  const [sshd, ufw, unattended, listen, f2b, sudoers, passwd] = await Promise.all([
-    run('sshd', ['-T'], { timeout: 10000 }),
-    run('ufw', ['status'], { timeout: 8000 }),
-    run('systemctl', ['is-enabled', 'unattended-upgrades'], { timeout: 8000 }),
-    run('ss', ['-tlnpH'], { timeout: 8000 }),
-    run('fail2ban-client', ['status'], { timeout: 8000 }),
-    run('grep', ['-rh', 'NOPASSWD', '/etc/sudoers', '/etc/sudoers.d/'], { timeout: 8000 }),
-    run('awk', ['-F:', '($2 == "" ) { print $1 }', '/etc/shadow'], { timeout: 8000 }),
-  ]);
-
-  // ── SSH: входната врата ────────────────────────────────────────────────────
-  if (sshd.ok) {
-    const rootLogin = grab(sshd.stdout, 'permitrootlogin');
-    const passAuth = grab(sshd.stdout, 'passwordauthentication');
-    const port = grab(sshd.stdout, 'port');
+    const rootLogin = grab(out, 'permitrootlogin');
+    const passAuth = grab(out, 'passwordauthentication');
+    const port = grab(out, 'port');
     if (passAuth === 'yes') {
       add({
         id: 'ssh-password',
@@ -59,6 +66,64 @@ export async function posture() {
     } else if (rootLogin === 'prohibit-password') {
       add({ id: 'ssh-root-key', severity: 'low', ok: true, title: 'root влиза само с ключ', why: 'Разумна настройка.', fix: '' });
     }
+    // „PasswordAuthentication no" НЕ изключва паролите само по себе си.
+    //
+    // Това е най-скъпата заблуда в целия sshd конфиг: при `UsePAM yes` +
+    // `KbdInteractiveAuthentication yes` паролата продължава да работи — просто
+    // минава по друг път (клавиатурно-интерактивен, през PAM). Собственикът
+    // чете „no" на реда за пароли и смята вратата за затворена, а ботовете
+    // спокойно налучкват. Затова тежестта е КРИТИЧНА точно когато изглежда
+    // безопасно: пароли „изключени" + отворен втори път.
+    const kbd = grab(out, 'kbdinteractiveauthentication');
+    const usePam = grab(out, 'usepam');
+    if (kbd === 'yes' && usePam === 'yes') {
+      add({
+        id: 'ssh-kbdinteractive',
+        severity: passAuth === 'no' ? 'critical' : 'high',
+        title:
+          passAuth === 'no'
+            ? 'Паролите изглеждат изключени, но ВСЪЩНОСТ работят'
+            : 'SSH приема пароли и по втори път (клавиатурно-интерактивен)',
+        why:
+          'При `UsePAM yes` клавиатурно-интерактивната автентикация пуска парола независимо от ' +
+          '`PasswordAuthentication no`. Тоест редът, който четеш като „затворено", не затваря нищо — ' +
+          'а точно това е случаят, в който никой не проверява повторно.',
+        fix: '/etc/ssh/sshd_config: KbdInteractiveAuthentication no; после `sshd -T | grep -i kbd` за проверка; systemctl restart ssh',
+        note: 'Провери в ВТОРА сесия, че ключът ти още работи, преди да затвориш първата.',
+      });
+    }
+    if (grab(out, 'permitemptypasswords') === 'yes') {
+      add({
+        id: 'ssh-empty-pass',
+        severity: 'critical',
+        title: 'SSH допуска ПРАЗНИ пароли',
+        why: 'Акаунт без парола става вход без никакво доказателство за самоличност.',
+        fix: '/etc/ssh/sshd_config: PermitEmptyPasswords no; systemctl restart ssh',
+      });
+    }
+    const maxTries = Number(grab(out, 'maxauthtries'));
+    if (Number.isFinite(maxTries) && maxTries > 3) {
+      add({
+        id: 'ssh-maxauthtries',
+        severity: 'low',
+        title: `SSH позволява ${maxTries} опита на връзка`,
+        why:
+          'Всяка връзка дава толкова опита, преди да я затвори — тоест таванът умножава скоростта на ' +
+          'налучкване. При вход само с ключ 3 са повече от достатъчно.',
+        fix: '/etc/ssh/sshd_config: MaxAuthTries 3',
+      });
+    }
+    if (!grab(out, 'allowusers') && !grab(out, 'allowgroups')) {
+      add({
+        id: 'ssh-allowusers',
+        severity: 'low',
+        title: 'SSH няма списък с разрешени потребители',
+        why:
+          'Без `AllowUsers`/`AllowGroups` всеки съществуващ акаунт е потенциален вход — включително ' +
+          'служебен, създаден от пакет, за който никой не се сеща.',
+        fix: '/etc/ssh/sshd_config: AllowUsers <твоят потребител>; провери в ВТОРА сесия преди рестарт.',
+      });
+    }
     if (port === '22') {
       add({
         id: 'ssh-port',
@@ -67,7 +132,27 @@ export async function posture() {
         why: 'Не е дупка — само шум. Друг порт маха 99% от автоматичните опити от журнала.',
         fix: '/etc/ssh/sshd_config: Port <друг>; отвори го в ufw ПРЕДИ рестарта.',
       });
-    }
+  }
+  return findings;
+}
+
+export async function posture() {
+  const findings = [];
+  const add = (f) => findings.push(f);
+
+  const [sshd, ufw, unattended, listen, f2b, sudoers, passwd] = await Promise.all([
+    run('sshd', ['-T'], { timeout: 10000 }),
+    run('ufw', ['status'], { timeout: 8000 }),
+    run('systemctl', ['is-enabled', 'unattended-upgrades'], { timeout: 8000 }),
+    run('ss', ['-tlnpH'], { timeout: 8000 }),
+    run('fail2ban-client', ['status'], { timeout: 8000 }),
+    run('grep', ['-rh', 'NOPASSWD', '/etc/sudoers', '/etc/sudoers.d/'], { timeout: 8000 }),
+    run('awk', ['-F:', '($2 == "" ) { print $1 }', '/etc/shadow'], { timeout: 8000 }),
+  ]);
+
+  // ── SSH: входната врата ────────────────────────────────────────────────────
+  if (sshd.ok) {
+    for (const f of sshFindings(sshd.stdout)) add(f);
   } else {
     add({ id: 'ssh-unknown', severity: 'medium', title: 'SSH конфигът не можа да се прочете', why: '`sshd -T` не върна нищо — не знаем как е нагласена входната врата.', fix: 'Пусни `sshd -T` на сървъра и виж грешката.' });
   }
@@ -111,7 +196,7 @@ export async function posture() {
     add({
       id: 'exposed-ports',
       severity: 'high',
-      title: `${notExpected.length} услуги слушат на всички интерфейси`,
+      title: `${plural(notExpected.length, 'услуга', 'услуги')} слушат на всички интерфейси`,
       why: `${notExpected.map((e) => `${e.proc} на ${e.local}`).join(', ')}. Приложение, вързано на 0.0.0.0, е достъпно отвън дори да мислиш, че е зад Nginx.`,
       fix: 'Върни ги на 127.0.0.1 (в конфига на приложението/compose: „127.0.0.1:3000:3000") и ги пускай само през reverse proxy.',
     });
@@ -132,7 +217,7 @@ export async function posture() {
         id: 'nopasswd',
         severity: 'medium',
         title: 'Има sudo без парола (NOPASSWD)',
-        why: `${lines.length} правила. Всеки процес на този потребител става root без нито едно доказване.`,
+        why: `${plural(lines.length, 'правило', 'правила')}. Всеки процес на този потребител става root без нито едно доказване.`,
         fix: 'Прегледай /etc/sudoers.d/ и махни NOPASSWD, където не е нужно (typично остава само за конкретна команда).',
       });
     }
@@ -150,7 +235,13 @@ export async function posture() {
   }
 
   // ── Права на чувствителни файлове ──────────────────────────────────────────
-  for (const [file, maxMode] of [['/etc/shadow', 0o640], ['/root/.ssh/authorized_keys', 0o600], ['/etc/vps-dashboard/config.json', 0o600]]) {
+  // Списъкът беше НЕПЪЛЕН по най-неприятния начин: пазеше `config.json`, а
+  // подминаваше три файла със СЪЩИТЕ тайни. Резервното копие (`config.json.bak`,
+  // което самият `saveConfig` прави) носи `passwordHash`, `sessionSecret` и
+  // `peerToken` дума по дума; файлът с паролата на десктопа — нея; папката на
+  // състоянието — сесиите и ключа за бекъпа. Да пазиш оригинала и да оставиш
+  // копието му отворено е защита само на вид.
+  for (const [file, maxMode] of PERM_TARGETS) {
     try {
       const st = fs.statSync(file);
       const mode = st.mode & 0o777;

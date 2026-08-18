@@ -304,3 +304,101 @@ test('каналите искат sudo, праговете — не', () => {
   assert.equal(needsSudo('/api/alerts/silence', cfg, { mutating: true }), false);
   assert.equal(needsSudo('/api/alerts', cfg), false, 'четенето остава свободно');
 });
+
+// ── SSH: входната врата, проверена без жив sshd ──────────────────────────────
+test('„PasswordAuthentication no" НЕ значи, че паролите са изключени', async () => {
+  const { sshFindings } = await import('../src/posture.js');
+  const ids = (out) => new Set(sshFindings(out).map((f) => f.id));
+  const sev = (out, id) => sshFindings(out).find((f) => f.id === id)?.severity;
+
+  // Точно случаят на собственика: влиза с ключ, редът за пароли е „no" — а
+  // клавиатурно-интерактивната автентикация през PAM пуска парола въпреки това.
+  // Тежестта е КРИТИЧНА именно защото изглежда безопасно.
+  const заблуда = 'passwordauthentication no\nusepam yes\nkbdinteractiveauthentication yes\n';
+  assert.equal(sev(заблуда, 'ssh-kbdinteractive'), 'critical');
+  assert.match(sshFindings(заблуда).find((f) => f.id === 'ssh-kbdinteractive').title, /ВСЪЩНОСТ работят/);
+
+  // Затворено докрай → нито една находка по този вход.
+  const затворено = 'passwordauthentication no\nusepam yes\nkbdinteractiveauthentication no\nmaxauthtries 3\nallowusers ivan\nport 2222\npermitrootlogin no\n';
+  assert.equal(ids(затворено).has('ssh-kbdinteractive'), false);
+  assert.equal(ids(затворено).has('ssh-maxauthtries'), false, 'три опита е достатъчно строго');
+  assert.equal(ids(затворено).has('ssh-allowusers'), false);
+  assert.equal(ids(затворено).has('ssh-port'), false);
+
+  // Без PAM клавиатурно-интерактивната не пуска парола — не бива да плашим без причина.
+  assert.equal(ids('passwordauthentication no\nusepam no\nkbdinteractiveauthentication yes\n').has('ssh-kbdinteractive'), false);
+
+  // Празни пароли: акаунт без парола е вход без доказателство.
+  assert.equal(sev('permitemptypasswords yes\n', 'ssh-empty-pass'), 'critical');
+
+  // MaxAuthTries умножава скоростта на налучкване по брой връзки.
+  assert.equal(sev('maxauthtries 6\n', 'ssh-maxauthtries'), 'low');
+  assert.equal(ids('maxauthtries 3\n').has('ssh-maxauthtries'), false);
+
+  // Старите проверки не бива да са изгубени при изваждането в чиста функция.
+  assert.equal(sev('passwordauthentication yes\n', 'ssh-password'), 'critical');
+  assert.equal(sev('permitrootlogin yes\n', 'ssh-root'), 'high');
+});
+
+test('оценката за сигурност ГЪРМИ, вместо да чака да отвориш екрана', async () => {
+  const { AlertEngine } = await import('../src/alerts.js');
+  const mk = (findings, cfg = {}) => {
+    const a = Object.create(AlertEngine.prototype);
+    a.cfg = cfg;
+    a.lastPostureAt = Date.now(); // не пускаме реалните системни команди
+    a.lastPosture = { findings };
+    return a;
+  };
+  // Дотук `posture()` се викаше САМО от HTTP маршрута: разширени права, включени
+  // пароли по SSH или изгасена стена стояха невидими, докато някой не отвори
+  // раздела. А точно тези промени стават сами (лош деплой, чужд umask).
+  const f = await mk([
+    { severity: 'critical', title: 'Твърде широки права: config.json.bak' },
+    { severity: 'high', title: 'SSH пуска root директно' },
+  ]).postureChecks();
+  assert.equal(f.length, 1);
+  assert.equal(f[0].severity, 'critical');
+  assert.match(f[0].body, /config\.json\.bak/);
+  assert.match(f[0].body, /SSH пуска root/, 'всички находки се изброяват, не само първата');
+
+  // Само високи → предупреждение, не критично.
+  assert.equal((await mk([{ severity: 'high', title: 'x' }]).postureChecks())[0].severity, 'warning');
+  // Ниски и средни са СЪВЕТИ, не инциденти — иначе алармата става шум.
+  assert.deepEqual(await mk([{ severity: 'low', title: 'порт 22' }, { severity: 'medium', title: 'y' }]).postureChecks(), []);
+  // Находка с `ok: true` е потвърждение, че нещо е наред — не бива да гърми.
+  assert.deepEqual(await mk([{ severity: 'high', ok: true, title: 'root влиза само с ключ' }]).postureChecks(), []);
+  // Изключваема, като всяка друга аларма.
+  assert.deepEqual(await mk([{ severity: 'critical', title: 'x' }], { alerts: { posture: false } }).postureChecks(), []);
+});
+
+test('правата се следят и за КОПИЯТА на тайните, не само за оригинала', async () => {
+  const { PERM_TARGETS } = await import('../src/posture.js');
+  const paths = PERM_TARGETS.map(([p]) => p);
+  // Копието, което самият saveConfig прави, носи passwordHash, sessionSecret и
+  // peerToken дума по дума. Да пазиш оригинала и да оставиш копието отворено е
+  // защита само на вид.
+  assert.ok(paths.includes('/etc/vps-dashboard/config.json'), 'оригиналът');
+  assert.ok(paths.includes('/etc/vps-dashboard/config.json.bak'), 'копието със СЪЩИТЕ тайни');
+  assert.ok(paths.some((p) => p.endsWith('desktop' + '.env')), 'паролата на десктопа');
+  assert.ok(paths.includes('/var/lib/vps-dashboard'), 'папката със сесиите и ключа за бекъпа');
+  assert.ok(paths.includes('/root/.ssh'), 'самата папка, не само authorized_keys');
+  // Папките искат 0700, файловете с тайни — 0600. Разхлабване тук е тиха дупка.
+  for (const [p, mode] of PERM_TARGETS) {
+    if (p === '/etc/shadow') continue;
+    assert.ok(mode === 0o600 || mode === 0o700, `${p} има твърде щедър праг 0${mode.toString(8)}`);
+  }
+});
+
+test('сливането на конфига не приема опасни ключове', async () => {
+  const { saveConfig } = await import('../src/config.js');
+  // `JSON.parse('{"__proto__":{…}}')` прави `__proto__` СОБСТВЕНО свойство —
+  // тоест `Object.entries` го връща и присвояването задейства сетъра.
+  // Измерено преди поправката: сливане с `{"__proto__":{"peerScope":"full"}}`
+  // даваше `merged.peerScope === "full"`, при това БЕЗ да е собствено свойство.
+  const out = saveConfig({ dev: true, trustProxy: true }, JSON.parse('{"__proto__":{"peerScope":"full"},"idleMinutes":15}'));
+  assert.equal(out.peerScope, undefined, 'прототипът не бива да се пипа през patch');
+  assert.equal(out.idleMinutes, 15, 'нормалните ключове продължават да се сливат');
+  const c2 = saveConfig({ dev: true }, JSON.parse('{"constructor":{"x":1},"prototype":{"y":2},"sessionTtlHours":8}'));
+  assert.equal(c2.constructor, Object, 'constructor остава непокътнат');
+  assert.equal(c2.sessionTtlHours, 8);
+});

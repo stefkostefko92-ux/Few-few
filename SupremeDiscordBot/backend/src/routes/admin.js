@@ -1,7 +1,27 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { guildIconUrl } from "../lib/discordCdn.js";
+import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
+
+// Активен ПЛАТЕН абонамент (Stripe, Discord или покриваща агенция). Ръчните
+// админски действия не бива да го презаписват: клиентът продължава да плаща, а
+// planSource="manual" го изважда от MRR и разкачва Stripe синхрона.
+//
+// Логиката живееше САМО в /plan. Близнакът /premium я нямаше — класически
+// „поправено на единия близнак". (Кодаджията, 07.08.2026)
+function activePaidSubscription(server) {
+  const LIVE = ["active", "trialing", "past_due"];
+  const paidAgency = server.agency &&
+    ((server.agency.planSource === "stripe" && LIVE.includes(server.agency.stripeStatus)) ||
+     server.agency.planSource === "discord");
+  const own =
+    (server.planSource === "stripe" && LIVE.includes(server.stripeStatus)) ||
+    server.planSource === "discord";
+  if (!own && !paidAgency) return null;
+  return paidAgency ? server.agency.planSource : server.planSource;
+}
 
 const router = Router();
 
@@ -23,7 +43,10 @@ router.get("/analytics", async (req, res, next) => {
       recentTicketsRaw,
     ] = await Promise.all([
       prisma.server.count(),
-      prisma.server.count({ where: { isPremium: true } }),
+      // ЕФЕКТИВНО premium: собствен план ИЛИ trial ИЛИ гратис ИЛИ активна
+      // агенция. Суровият `isPremium: true` изпускаше trial и agency-покрити
+      // сървъри → админ статистиката за платени под-отчиташе. (Одит 07.08.2026)
+      prisma.server.count({ where: effectivePremiumWhere() }),
       prisma.ticket.count(),
       prisma.user.count(),
       prisma.ticket.count({ where: { status: "OPEN" } }),
@@ -48,8 +71,9 @@ router.get("/analytics", async (req, res, next) => {
       count: Number(r.count) || 0,
     }));
 
-    const mrr = await calculateMRR();
-
+    // MRR НЕ се връща тук — единственият източник на приходни числа е
+    // GET /api/admin/revenue (виж секция REVENUE по-долу). Две „MRR“ числа на
+    // две места = гарантирано разминаване.
     res.json({
       totalServers,
       premiumServers,
@@ -61,7 +85,6 @@ router.get("/analytics", async (req, res, next) => {
       totalForms,
       totalApplications,
       totalPanels,
-      mrr,
       recentTickets,
     });
   } catch (err) {
@@ -73,7 +96,10 @@ router.get("/analytics", async (req, res, next) => {
 // ─── GET /api/admin/users ─────────────────────────────────────────────────────
 
 router.get("/users", async (req, res, next) => {
-  const { query, role, page = 1, limit = 50 } = req.query;
+  // Таван на limit: без него `?limit=1000000` изтегля цялата таблица в паметта.
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+  const { query, role } = req.query;
 
   try {
     const where = {
@@ -89,12 +115,18 @@ router.get("/users", async (req, res, next) => {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        include: {
+        // Изричен select: досега `include` връщаше ЦЕЛИЯ ред, тоест имейлите на
+        // всички потребители влизаха в отговора, без някой да ги е поискал.
+        // Минимизация на данните — админският списък има нужда от профил и
+        // броячи, не от контактите.
+        select: {
+          id: true, username: true, discriminator: true, avatar: true,
+          globalRole: true, isBlacklisted: true, language: true, createdAt: true,
           _count: { select: { tickets: true, applications: true, serverMembers: true } },
         },
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip: (page - 1) * limit,
+        take: limit,
       }),
       prisma.user.count({ where }),
     ]);
@@ -229,6 +261,20 @@ router.patch("/users/:userId/blacklist", requireMainOwner, async (req, res, next
   }
 });
 
+// Админският изглед на сървър: без тайни, с адрес за иконката.
+// Едно определение — ползва се и от списъка, и от детайла.
+function adminServerView(server) {
+  if (!server) return server;
+  const {
+    customBotToken: _token,
+    stripeCustomerId: _cus,
+    stripeSubscriptionId: _sub,
+    ...safe
+  } = server;
+  safe.icon = guildIconUrl(safe.id, safe.icon);
+  return safe;
+}
+
 // ─── GET /api/admin/servers ───────────────────────────────────────────────────
 
 router.get("/servers", async (req, res, next) => {
@@ -250,7 +296,11 @@ router.get("/servers", async (req, res, next) => {
       prisma.server.count({ where }),
     ]);
 
-    res.json({ servers, total });
+    // Списъкът връщаше ЦЕЛИЯ запис — включително `customBotToken` (криптиран, но
+    // пак таен) и Stripe идентификаторите. Детайлният маршрут по-долу ги маха, а
+    // списъкът не: същият клас „едно правило, две определения". И `icon` излиза
+    // като АДРЕС, за да не строи всеки клиент URL сам. (07.08.2026)
+    res.json({ servers: servers.map(adminServerView), total });
   } catch (err) {
     next(err);
   }
@@ -264,7 +314,7 @@ router.get("/payments", async (req, res, next) => {
   try {
     const where = { ...(status && { status }) };
 
-    const [payments, total, mrr] = await Promise.all([
+    const [payments, total, collectedThisMonth] = await Promise.all([
       prisma.paymentLog.findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -272,10 +322,13 @@ router.get("/payments", async (req, res, next) => {
         take: Number(limit),
       }),
       prisma.paymentLog.count({ where }),
-      calculateMRR(),
+      cashCollectedThisMonth(),
     ]);
 
-    res.json({ payments, total, mrr });
+    // `collectedThisMonth` е КАСА (реално платени фактури този календарен месец),
+    // НЕ MRR. Преди се връщаше под името `mrr` — грешно: сумата подскача при
+    // годишни фактури, нулира се на 1-во число и не вижда agency плащания.
+    res.json({ payments, total, collectedThisMonth });
   } catch (err) {
     next(err);
   }
@@ -310,20 +363,294 @@ router.get("/audit-logs", async (req, res, next) => {
   }
 });
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// REVENUE — единственият източник на приходни числа
+// ═══════════════════════════════════════════════════════════════════════════
+// Старият `calculateMRR()` сумираше paymentLog за текущия календарен месец и
+// го наричаше „MRR“. Това е грешно на четири нива и е премахнато:
+//   1) КАСА ≠ RUN-RATE. Годишна фактура €99 влизаше в „MRR“-а на месеца си
+//      цялата (трябва €8.25/мес), а следващите 11 месеца — €0.
+//   2) Нулира се на 1-во число — на 1-ви „MRR“ винаги е ~0.
+//   3) Не вижда agency абонаментите (paymentLog е вързан за serverId, agency
+//      фактурите не се логват там) → приходът беше системно занижен.
+//   4) Смяташе се в „долари“ при тарифи в EUR (виж docs/PRICING.md).
+// Сега MRR се извежда от състоянието на абонаментите (Server/Agency), както
+// го прави и самият Stripe Billing.
 
-async function calculateMRR() {
+/**
+ * Каталожни цени в EUR с ВКЛЮЧЕН ДДС (tax_behavior=inclusive — виж
+ * scripts/stripe-setup.sh и docs/PRICING.md). Това са КАТАЛОЖНИ цени, не
+ * реално фактурирани суми: купон, proration или различна ДДС ставка по OSS
+ * правят реалната фактура различна. За точни фактурирани суми — Stripe
+ * Dashboard / paymentLog.
+ */
+export const PLAN_PRICES_EUR = {
+  premium:    { month: 4.99,  year: 49 },
+  whitelabel: { month: 9.99,  year: 99 },
+  agency5:    { month: 19.99, year: 199 },
+  agency10:   { month: 39.99, year: 399 },
+};
+// Ценова промяна 2026-08: grandfather-нати абонати остават на старите (по-
+// високи) цени в Stripe — за тях каталожният MRR по-долу е ЗАНИЖЕН. Точните
+// суми са в Stripe Dashboard; това тук е run-rate приблизител по каталог.
+
+/**
+ * ДДС ставка за нето-приблизителя. BG стандартна ставка 20%.
+ * ВНИМАНИЕ: при OSS ДДС се дължи по ставката на държавата на потребителя, тоест
+ * нетото е ПРИБЛИЗИТЕЛНО. Точното разделяне нето/ДДС е в Stripe Tax отчета.
+ */
+export const VAT_RATE = 0.2;
+
+const round2 = (n) => Math.round(n * 100) / 100;
+
+/** Месечна стойност на един абонамент: месечен = пълна цена, годишен = /12. */
+function monthlyValue(plan, interval) {
+  const price = PLAN_PRICES_EUR[plan];
+  if (!price) return 0;
+  return interval === "year" ? price.year / 12 : price.month;
+}
+
+/**
+ * Нормализира плана на един сървър. Огледало на getServerTier() (lib/premium.js):
+ * заварените редове без `plan`, но с isPremium=true, са grandfather-нати към
+ * white-label. Agency-покритите сървъри стоят на plan="free" и НЕ носят собствен
+ * приход — приходът им е в реда на самата агенция (без това броим двойно).
+ */
+function normalizeServerPlan(s) {
+  if (s.plan && s.plan !== "free") return { plan: s.plan, grandfathered: false };
+  if (s.isPremium) return { plan: "whitelabel", grandfathered: true };
+  return { plan: null, grandfathered: false };
+}
+
+/**
+ * ЧИСТА функция (без DB) — цялата приходна аритметика на едно място, за да е
+ * тестваема. Вход: вече извлечените редове; изход: числата за таблото.
+ *
+ * МЕТОДИКА
+ * - MRR = Σ месечна стойност на абонаментите, които РЕАЛНО се таксуват сега:
+ *   stripeStatus === "active". Годишните влизат като цена/12.
+ * - `trialing` НЕ е приход (пробен период може да свърши без платежен метод) —
+ *   брои се отделно като „потенциален“ MRR.
+ * - `planSource === "manual"` (подарени) НЕ е приход — отделен ред „gifted“ с
+ *   каталожна стойност, за да се вижда колко подаряваме.
+ * - `planSource === "discord"` (Discord Premium Apps) е приход, но НЕ минава
+ *   през Stripe и Discord удържа комисиона → отделен ред, извън Stripe MRR.
+ * - `past_due` НЕ се брои в MRR (плащането е пропаднало; dunning тече) —
+ *   показва се като „приход в риск“.
+ * - Churn 30d = отпаднали (stripeStatus="canceled" с updatedAt в прозореца) /
+ *   (активни сега + отпаднали в прозореца) ≈ активни в началото на прозореца.
+ *   ПРИБЛИЖЕНИЕ: `updatedAt` е „последна промяна“, не „момент на отказ“ — всяка
+ *   по-късна промяна по реда го мести в/извън прозореца; изтритите сървъри
+ *   изобщо не се броят. За точен churn — Stripe Billing отчетите.
+ */
+export function calculateMrr({ servers = [], agencies = [], now = new Date(), churnWindowDays = 30 } = {}) {
+  const cutoff = new Date(now.getTime() - churnWindowDays * 24 * 60 * 60 * 1000);
+
+  const tiers = new Map();
+  const tierRow = (plan) => {
+    if (!tiers.has(plan)) {
+      tiers.set(plan, {
+        plan,
+        label: planConfig(plan).label,
+        count: 0, mrr: 0,
+        monthlyCount: 0, monthlyMrr: 0,
+        yearlyCount: 0, yearlyMrr: 0,
+      });
+    }
+    return tiers.get(plan);
+  };
+
+  const excluded = {
+    trialing: { count: 0, potentialMrr: 0 },
+    gifted:   { count: 0, listValue: 0 },
+    discord:  { count: 0, listValue: 0 },
+    pastDue:  { count: 0, atRiskMrr: 0 },
+    other:    { count: 0 },
+  };
+  const diagnostics = { unknownInterval: 0, grandfathered: 0, unknownPlan: 0 };
+
+  let mrr = 0;
+  let paidServers = 0;
+  let paidAgencies = 0;
+  let canceled30d = 0;
+
+  /** Разпределя един абонамент (сървърен или agency) в кофа. */
+  function bucket({ plan, interval, planSource, stripeStatus, isServer }) {
+    if (!PLAN_PRICES_EUR[plan]) { diagnostics.unknownPlan++; return; }
+    const value = monthlyValue(plan, interval);
+
+    if (planSource === "manual") { excluded.gifted.count++; excluded.gifted.listValue += value; return; }
+    if (planSource === "discord") { excluded.discord.count++; excluded.discord.listValue += value; return; }
+    if (stripeStatus === "trialing") { excluded.trialing.count++; excluded.trialing.potentialMrr += value; return; }
+    if (stripeStatus === "past_due") { excluded.pastDue.count++; excluded.pastDue.atRiskMrr += value; return; }
+    if (stripeStatus !== "active") { excluded.other.count++; return; }
+
+    // Липсващ billingInterval при активен абонамент е ДУПКА В ДАННИТЕ: броим го
+    // като месечен (документираният default), но го отчитаме — ако е реално
+    // годишен, MRR е завишен с ~21% за този ред.
+    if (!interval) diagnostics.unknownInterval++;
+
+    const row = tierRow(plan);
+    row.count++;
+    row.mrr += value;
+    if (interval === "year") { row.yearlyCount++; row.yearlyMrr += value; }
+    else { row.monthlyCount++; row.monthlyMrr += value; }
+    mrr += value;
+    if (isServer) paidServers++; else paidAgencies++;
+  }
+
+  for (const s of servers) {
+    if (s.stripeStatus === "canceled" && s.updatedAt && new Date(s.updatedAt) >= cutoff) canceled30d++;
+    const { plan, grandfathered } = normalizeServerPlan(s);
+    if (!plan) continue;
+    if (grandfathered) diagnostics.grandfathered++;
+    // Ръчният grant се разпознава по planSource="manual" ИЛИ по заварения
+    // маркер stripeStatus="manual" (виж PATCH /servers/:id/premium) — иначе
+    // подаръкът би могъл да мине за платен абонамент.
+    const isGift = s.planSource === "manual" || s.stripeStatus === "manual";
+    bucket({
+      plan,
+      interval: s.billingInterval,
+      planSource: isGift ? "manual" : s.planSource,
+      stripeStatus: s.stripeStatus,
+      isServer: true,
+    });
+  }
+
+  for (const a of agencies) {
+    if (a.stripeStatus === "canceled" && a.updatedAt && new Date(a.updatedAt) >= cutoff) canceled30d++;
+    // Неактивна агенция не покрива нито един сървър → не е приход.
+    if (!a.active) continue;
+    bucket({
+      plan: a.plan,
+      interval: a.billingInterval,
+      planSource: a.planSource,
+      stripeStatus: a.stripeStatus,
+      isServer: false,
+    });
+  }
+
+  const paidSubscriptions = paidServers + paidAgencies;
+  const activeNow = paidSubscriptions;
+  const churnBase = activeNow + canceled30d;
+
+  // Trial фуния. ПРИБЛИЖЕНИЕ (исторически, не кохортен): `trialUsed` няма дата,
+  // затова конверсията е „колко от всякога пробвалите са премиум СЕГА“ — който
+  // е конвертирал и после отпаднал, се брои като неконвертирал, а ръчен grant
+  // или agency място вдигат числителя. Точна кохортна конверсия иска
+  // trialStartedAt + история на абонамента.
+  const trialActive = servers.filter((s) => s.trialEndsAt && new Date(s.trialEndsAt) > now).length;
+  const trialUsed = servers.filter((s) => s.trialUsed).length;
+  const trialConverted = servers.filter((s) => s.trialUsed && s.isPremium).length;
+
+  const byTier = [...tiers.values()]
+    .sort((a, b) => planConfig(b.plan).rank - planConfig(a.plan).rank)
+    .map((t) => ({
+      ...t,
+      mrr: round2(t.mrr),
+      monthlyMrr: round2(t.monthlyMrr),
+      yearlyMrr: round2(t.yearlyMrr),
+    }));
+
+  const monthlyCount = byTier.reduce((n, t) => n + t.monthlyCount, 0);
+  const yearlyCount = byTier.reduce((n, t) => n + t.yearlyCount, 0);
+
+  return {
+    currency: "EUR",
+    vatRate: VAT_RATE,
+    // Бруто = с ДДС (цените са inclusive). Нето ≈ бруто / 1.20 (BG 20%).
+    mrrGross: round2(mrr),
+    mrrNet: round2(mrr / (1 + VAT_RATE)),
+    arrGross: round2(mrr * 12),
+    arrNet: round2((mrr * 12) / (1 + VAT_RATE)),
+    paidSubscriptions,
+    paidServers,
+    paidAgencies,
+    // ARPU на ПЛАТЕН АБОНАМЕНТ (сървърен или agency), не на сървър — една агенция
+    // покрива до 10 сървъра, деленето на сървъри би дало друго число.
+    arpuGross: paidSubscriptions ? round2(mrr / paidSubscriptions) : 0,
+    arpuNet: paidSubscriptions ? round2(mrr / (1 + VAT_RATE) / paidSubscriptions) : 0,
+    byTier,
+    interval: {
+      monthlyCount,
+      yearlyCount,
+      monthlyMrr: round2(byTier.reduce((n, t) => n + t.monthlyMrr, 0)),
+      yearlyMrr: round2(byTier.reduce((n, t) => n + t.yearlyMrr, 0)),
+    },
+    excluded: {
+      trialing: { count: excluded.trialing.count, potentialMrr: round2(excluded.trialing.potentialMrr) },
+      gifted:   { count: excluded.gifted.count,   listValue: round2(excluded.gifted.listValue) },
+      discord:  { count: excluded.discord.count,  listValue: round2(excluded.discord.listValue) },
+      pastDue:  { count: excluded.pastDue.count,  atRiskMrr: round2(excluded.pastDue.atRiskMrr) },
+      other:    { count: excluded.other.count },
+    },
+    churn: {
+      windowDays: churnWindowDays,
+      canceled: canceled30d,
+      activeNow,
+      rate: churnBase ? round2((canceled30d / churnBase) * 100) : 0,
+    },
+    trials: {
+      active: trialActive,
+      used: trialUsed,
+      converted: trialConverted,
+      conversionRate: trialUsed ? round2((trialConverted / trialUsed) * 100) : 0,
+    },
+    diagnostics,
+  };
+}
+
+/** КАСА за текущия календарен месец (реално платени фактури), в EUR. НЕ е MRR. */
+async function cashCollectedThisMonth() {
+  const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const result = await prisma.paymentLog.aggregate({
     _sum: { amount: true },
-    where: {
-      status: "paid",
-      createdAt: {
-        gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-      },
-    },
+    where: { status: "paid", createdAt: { gte: start } },
   });
-  return (result._sum.amount || 0) / 100; // Convert cents to dollars
+  return round2((result._sum.amount || 0) / 100); // amount е в центове (EUR)
 }
+
+// ─── GET /api/admin/revenue ───────────────────────────────────────────────────
+// Приходно табло за собственика. Числата се извеждат от състоянието на
+// абонаментите, НЕ от клиентски вход и НЕ от касата на месеца.
+
+router.get("/revenue", async (req, res, next) => {
+  try {
+    const now = new Date();
+    const [servers, agencies, cash] = await Promise.all([
+      // Изтегляме само редовете, релевантни за приход/фуния/churn — не целия
+      // сървърен списък. Агрегацията е в паметта (десетки/стотици реда).
+      prisma.server.findMany({
+        where: {
+          OR: [
+            { plan: { not: "free" } },
+            { isPremium: true },
+            { trialUsed: true },
+            { trialEndsAt: { gt: now } },
+            { stripeStatus: { in: ["canceled", "past_due", "unpaid", "trialing"] } },
+          ],
+        },
+        select: {
+          plan: true, billingInterval: true, planSource: true, stripeStatus: true,
+          isPremium: true, trialUsed: true, trialEndsAt: true, updatedAt: true,
+        },
+      }),
+      prisma.agency.findMany({
+        select: {
+          plan: true, billingInterval: true, planSource: true, stripeStatus: true,
+          active: true, updatedAt: true,
+        },
+      }),
+      cashCollectedThisMonth(),
+    ]);
+
+    const metrics = calculateMrr({ servers, agencies, now });
+    res.json({ ...metrics, cashCollectedThisMonth: cash, generatedAt: now.toISOString() });
+  } catch (err) {
+    console.error("[revenue] error:", err);
+    next(err);
+  }
+});
 
 // ─── PATCH /api/admin/servers/:serverId/premium ──────────────────────────────
 // Manually grant or revoke Premium on a server. Bypasses Stripe entirely.
@@ -345,8 +672,20 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
   const plan = MANUAL_PLANS.has(req.body?.plan) ? req.body.plan : "premium";
 
   try {
-    const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
+    const server = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
+      include: { agency: true },
+    });
     if (!server) return res.status(404).json({ error: "Server not found" });
+
+    // Същият гейт като в близнака /plan — липсваше тук.
+    const paidSrc = activePaidSubscription(server);
+    if (enabled && paidSrc) {
+      return res.status(409).json({
+        error: `Server is covered by an active ${paidSrc} subscription. Cancel it in ${paidSrc === "stripe" ? "the Stripe Dashboard" : "Discord"} first.`,
+        code: "ACTIVE_PAID_SUBSCRIPTION",
+      });
+    }
 
     const updated = await prisma.server.update({
       where: { id: req.params.serverId },
@@ -358,15 +697,28 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
           premiumSince: server.premiumSince || new Date(),
           stripeStatus: server.stripeStatus || "manual",
           archiveRetentionDays: null, // forever
+          // Нов ръчен план замества стар гратис — иначе higherPlan(plan, gracePlan)
+          // би вдигнал ефективния tier над зададения. (Одит 07.08.2026)
+          accessUntil: null,
+          gracePlan: null,
         }),
         // Revoke: getServerTier е plan-first — само isPremium=false НЕ отнема
         // достъпа; plan трябва да падне на free (както при всички webhook
-        // revoker-и), иначе „revoked" сървърът запазва пълния tier.
+        // revoker-и), иначе „revoked“ сървърът запазва пълния tier.
         ...(!enabled && {
           plan: "free",
           planSource: null,
           billingInterval: null,
           archiveRetentionDays: 30,
+          // Без това getServerTier връща активен ПРОБЕН tier след ръчен revoke —
+          // достъпът си остава. /plan вече го чисти; тук липсваше.
+          trialEndsAt: null,
+          trialStartedAt: null,
+          pastDueSince: null,
+          // И гратисът пада: ръчният revoke е окончателен, не оставя достъп до
+          // край на период. Без това „revoked“ сървър пазеше gracePlan tier.
+          accessUntil: null,
+          gracePlan: null,
         }),
       },
     });
@@ -400,6 +752,159 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
   }
 });
 
+// ─── PATCH /api/admin/servers/:serverId/plan ──────────────────────────────────
+// Ръчна смяна на ЦЕЛИЯ tier (free | premium | whitelabel | agency5 | agency10).
+// Надгражда /premium (само premium/whitelabel): позволява и Agency планове —
+// създава/преизползва manual Agency, притежавана от собственика на сървъра,
+// и закача сървъра като първо seat. Останалите seats собственикът закача сам
+// от Agency UI-то. planSource="manual" → изключен от MRR (виж /revenue).
+// Активен Stripe/Discord абонамент НЕ се отменя оттук — само Stripe Dashboard.
+
+router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next) => {
+  const { plan, reason } = req.body;
+  const VALID_PLANS = ["free", "premium", "whitelabel", "agency5", "agency10"];
+  if (!VALID_PLANS.includes(plan)) {
+    return res.status(400).json({ error: `plan must be one of: ${VALID_PLANS.join(", ")}` });
+  }
+
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
+      include: { agency: true },
+    });
+    if (!server) return res.status(404).json({ error: "Server not found" });
+
+    // Предпазител: не пипаме тихо платен абонамент — админът първо да го
+    // отмени в Stripe/Discord, иначе клиентът плаща за tier, който сме сменили.
+    // ВАЖНО: гейтваме БЕЗ `plan !== server.plan` — иначе задаване на СЪЩИЯ plan
+    // пропуска гейта, но по-долу пише planSource="manual" върху платения абонат
+    // → изключва го от MRR и разкача Stripe синхрона (находка на Разбивача).
+    // Агенция-покритите сървъри също се пазят (агенцията може да е платена).
+    const src = activePaidSubscription(server);
+    if (src) {
+      return res.status(409).json({
+        error: `Server is covered by an active ${src} subscription. Cancel it in ${src === "stripe" ? "the Stripe Dashboard" : "Discord"} first, then set the manual plan.`,
+        code: "ACTIVE_PAID_SUBSCRIPTION",
+      });
+    }
+
+    let updated;
+
+    if (plan === "agency5" || plan === "agency10") {
+      const seatLimit = plan === "agency5" ? 5 : 10;
+      updated = await prisma.$transaction(async (tx) => {
+        // Преизползвай съществуваща manual агенция на същия собственик (идемпотентно).
+        let agency = await tx.agency.findFirst({
+          where: { ownerUserId: server.ownerId, planSource: "manual" },
+        });
+        if (agency) {
+          agency = await tx.agency.update({
+            where: { id: agency.id },
+            data: { plan, seatLimit, active: true },
+          });
+        } else {
+          agency = await tx.agency.create({
+            data: { ownerUserId: server.ownerId, plan, seatLimit, planSource: "manual", active: true },
+          });
+        }
+        // Закачи server → agency seat. Server.plan остава "free" по архитектура:
+        // agency-покритите сървъри резолвват tier-а си от агенцията (premium.js).
+        return tx.server.update({
+          where: { id: server.id },
+          data: {
+            agencyId: agency.id,
+            plan: "free",
+            planSource: null,
+            isPremium: true, // backward-compat флаг
+            premiumSince: server.premiumSince || new Date(),
+            archiveRetentionDays: null,
+          },
+        });
+      });
+    } else if (plan === "premium" || plan === "whitelabel") {
+      updated = await prisma.server.update({
+        where: { id: server.id },
+        data: {
+          plan,
+          planSource: "manual",
+          isPremium: true,
+          premiumSince: server.premiumSince || new Date(),
+          stripeStatus: server.stripeStatus || "manual",
+          archiveRetentionDays: null,
+          // Нов ръчен план замества стар гратис (over-grant guard).
+          accessUntil: null,
+          gracePlan: null,
+          // Смъкване от manual agency seat, ако е имало
+          ...(server.agency?.planSource === "manual" && { agencyId: null }),
+        },
+      });
+    } else {
+      // plan === "free" → пълен revoke (plan-first: само isPremium=false не стига)
+      updated = await prisma.$transaction(async (tx) => {
+        const data = {
+          plan: "free",
+          planSource: null,
+          isPremium: false,
+          billingInterval: null,
+          archiveRetentionDays: 30,
+          // Чистим trial следите — иначе getServerTier може да върне активен
+          // пробен tier след ръчен revoke (Кодаджията).
+          trialEndsAt: null,
+          trialStartedAt: null,
+          pastDueSince: null,
+          // И гратисът пада: ръчният revoke е окончателен.
+          accessUntil: null,
+          gracePlan: null,
+        };
+        // Ако seat-ът идва от агенция — откачи. (manual: може да деактивираме
+        // агенцията; платена вече е блокирана горе от hasPaidSub гейта.)
+        if (server.agencyId) {
+          data.agencyId = null;
+          const remaining = await tx.server.count({
+            where: { agencyId: server.agencyId, id: { not: server.id } },
+          });
+          if (remaining === 0) {
+            await tx.agency.update({ where: { id: server.agencyId }, data: { active: false } });
+          }
+        }
+        return tx.server.update({ where: { id: server.id }, data });
+      });
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        serverId: req.params.serverId,
+        action: "PLAN_CHANGED_MANUAL",
+        targetId: req.params.serverId,
+        metadata: {
+          from: server.plan,
+          fromAgency: server.agencyId || null,
+          to: plan,
+          reason: reason || null,
+          changedBy: req.user.username,
+        },
+      },
+    });
+
+    if (plan !== "free") {
+      await prisma.paymentLog.create({
+        data: {
+          serverId: req.params.serverId,
+          amount: 0,
+          currency: "usd",
+          status: "manual_grant",
+          description: `Plan "${plan}" manually set by ${req.user.username}${reason ? ` — ${reason}` : ""}`,
+        },
+      });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── GET /api/admin/servers/:serverId ─────────────────────────────────────────
 // Full server detail with related counts — admin view of any server
 
@@ -413,9 +918,7 @@ router.get("/servers/:serverId", async (req, res, next) => {
       },
     });
     if (!server) return res.status(404).json({ error: "Server not found" });
-    // Never leak encrypted bot token
-    const { customBotToken: _t, ...safe } = server;
-    res.json(safe);
+    res.json(adminServerView(server));
   } catch (err) { next(err); }
 });
 
@@ -524,16 +1027,6 @@ router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
       return res.status(403).json({ error: "Cannot delete the Main Owner" });
     }
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: req.user.id,
-        actorTag: req.user.username,
-        action: "USER_DELETED",
-        targetId: req.params.userId,
-        metadata: { username: user.username, deletedBy: req.user.username },
-      },
-    });
-
     // Check for created tickets/applications — if any, refuse (RESTRICT would fail anyway)
     const [ticketCount, appCount] = await Promise.all([
       prisma.ticket.count({ where: { creatorId: req.params.userId } }),
@@ -548,6 +1041,20 @@ router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
         applicationCount: appCount,
       });
     }
+
+    // Одитният запис се пише СЛЕД като всички откази са минали. Досега стоеше
+    // ПРЕДИ проверката: отказано изтриване пак оставяше „USER_DELETED" в
+    // дневника, тоест одитът твърдеше, че потребител е изтрит, а той съществува.
+    // (Кодаджията, 07.08.2026)
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        actorTag: req.user.username,
+        action: "USER_DELETED",
+        targetId: req.params.userId,
+        metadata: { username: user.username, deletedBy: req.user.username },
+      },
+    });
 
     await prisma.user.delete({ where: { id: req.params.userId } });
     res.json({ ok: true, deleted: req.params.userId });

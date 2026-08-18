@@ -4,11 +4,20 @@
 
 import { MessageFlags, SlashCommandBuilder, ChannelType } from "discord.js";
 import api from "../utils/api.js";
+import { checkCooldown } from "../utils/cooldowns.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { BRAND } from "../utils/colors.js";
+import { priorityField } from "../utils/priority.js";
+import { t, resolveLang } from "../i18n/index.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+
+const COOLDOWN_SECONDS = 10;
 
 export default {
   data: new SlashCommandBuilder()
     .setName("new")
     .setDescription("Open a new support ticket")
+    .setDescriptionLocalizations(CMD_DESC_L10N.new)
     .addStringOption((opt) =>
       opt.setName("panel").setDescription("Panel name to open ticket for").setRequired(false).setAutocomplete(true)
     )
@@ -33,6 +42,12 @@ export default {
   },
 
   async execute(interaction) {
+    const remaining = checkCooldown("new", interaction.user.id, COOLDOWN_SECONDS);
+    if (remaining > 0) {
+      const lang = await resolveLang(interaction);
+      return interaction.reply({ content: t("cooldown.newTicket", lang, { seconds: remaining }), flags: MessageFlags.Ephemeral });
+    }
+
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const panelIdOrName = interaction.options.getString("panel");
@@ -47,7 +62,7 @@ export default {
            || panels.find((p) => p.name.toLowerCase() === (panelIdOrName || "").toLowerCase())
            || panels[0]; // fallback: first panel
     } catch (err) {
-      return interaction.editReply(`❌ Could not load panels: ${err.message}`);
+      return interaction.editReply(friendlyError(err, interaction, `Could not load panels: ${err.message}`));
     }
 
     if (!panel) return interaction.editReply("❌ No panels are configured for this server. Ask an admin to create one via the dashboard.");
@@ -114,6 +129,8 @@ export default {
         await channel.setName(`${channelPrefix}-${String(number).padStart(padding, "0")}-${creator.username.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30)}`).catch(() => {});
       }
 
+      const openField = priorityField(ticketResult?.data?.priority);
+
       await channel.send({
         embeds: [{
           title: `🎫 Ticket #${String(number ?? "").padStart(padding, "0")}`,
@@ -121,14 +138,15 @@ export default {
             `Opened by <@${interaction.user.id}>${onBehalfOf ? ` on behalf of <@${creator.id}>` : ""}.`,
             reason && `**Reason**: ${reason}`,
           ].filter(Boolean).join("\n"),
-          color: 0x00e5ff,
+          color: BRAND,
+          fields: openField ? [openField] : undefined,
           timestamp: new Date().toISOString(),
         }],
       });
 
       await interaction.editReply(`✅ Ticket opened: ${channel}`);
     } catch (err) {
-      await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+      await interaction.editReply(friendlyError(err, interaction));
     }
   },
 };

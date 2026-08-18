@@ -28,6 +28,7 @@ import crypto from 'node:crypto';
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { DUMP_DIR } from './databases.js';
+import { plural } from './text.js';
 
 const STATE = 'backup-sched.json';
 const HOUR_MS = 3600000;
@@ -229,8 +230,8 @@ export function scheduleChecks(cfg, store, now = Date.now()) {
       out.push({
         key: 'backup:sched-stale',
         severity: 'warning',
-        title: `Графикът е включен, но не е пускан от ${Math.round(h)} часа`,
-        body: `Каданс ${everyHours} часа. Или задачата не тръгва (виж „Задачи"), или панелът е бил спрян в часа на бекъпа. Включен график, който не се пуска, е по-опасен от изключен — изглежда като покритие.`,
+        title: `Графикът е включен, но не е пускан от ${plural(Math.round(h), 'час', 'часа')}`,
+        body: `Каданс ${plural(everyHours, 'час', 'часа')}. Или задачата не тръгва (виж „Задачи"), или панелът е бил спрян в часа на бекъпа. Включен график, който не се пуска, е по-опасен от изключен — изглежда като покритие.`,
         sustain: false,
         repeatEvery: DAY_MS,
       });

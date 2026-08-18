@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { desktopPort, actionSpec, status } from '../src/desktop.js';
+import { desktopPort, actionSpec, status, forwardAuth, forwardCookies, PANEL_COOKIE, desktopUser, desktopImage, desktopMem, composeFile } from '../src/desktop.js';
 
 // Реален изход на `redis-cli INFO`, съкратен до нужното.
 const INFO = `# Server
@@ -239,6 +239,31 @@ test('десктоп: действията са затворен списък и
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test('десктоп: портът от конфига стига И до compose, не само до проксито', () => {
+  // Вързана НАПОЛОВИНА настройка е по-лоша от липсваща: панелът проксира към
+  // новия порт, контейнерът публикува на стария и рамката остава празна БЕЗ
+  // никаква грешка. Открито на живо, когато 3010 се оказа зает от друг процес
+  // и compose падна с „port is already allocated" — а панелът нямаше как да
+  // предложи изход, защото портът беше закован във файла.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-port-'));
+  const file = path.join(dir, 'docker-compose.yml');
+  fs.writeFileSync(file, 'services: {}\n');
+  fs.writeFileSync(path.join(dir, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+
+  for (const port of [3010, 3999]) {
+    const spec = actionSpec({ desktop: { composeFile: file, port }, paths: {} }, 'up');
+    assert.equal(spec.env?.DESKTOP_PORT, String(port), `портът ${port} трябва да стигне до compose`);
+  }
+  // И шипваният compose файл трябва наистина да ЧЕТЕ променливата — иначе
+  // подаването ѝ е театър.
+  const shipped = fs.readFileSync(
+    path.join(import.meta.dirname, '..', 'deploy', 'desktop', 'docker-compose.yml'),
+    'utf8'
+  );
+  assert.match(shipped, /127\.0\.0\.1:\$\{DESKTOP_PORT:-3010\}:3000/);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('десктоп: липсващият Docker е „спрян", не „грешка"', async () => {
   // Compose файлът се намира спрямо самия модул → работи при всяко APP_DIR и в
   // dev режим (по-рано беше зашит към /opt/vps-dashboard и мълчеше навсякъде
@@ -259,4 +284,103 @@ test('десктоп: compose файлът не сочи извън продук
   const s = await status({ paths: {}, desktop: {} });
   assert.ok(s.composeFile.endsWith('/deploy/desktop/docker-compose.yml'));
   assert.ok(!s.composeFile.includes('..'), 'пътят е нормализиран');
+});
+
+test('десктоп: паролата стига до контейнера, сесията на панела — не', () => {
+  // Хванато на живо: проксито триеше `authorization` безусловно, значи
+  // контейнерът НИКОГА не получаваше вход. Браузърът пита, човекът въвежда,
+  // проксито изхвърля, контейнерът пак пита — безкраен цикъл, при който
+  // изглежда, че „паролата е грешна". Нито едно име не можеше да проработи.
+  assert.equal(forwardAuth('Basic Y3NkOnRham5h'), 'Basic Y3NkOnRham5h', 'вторият слой трябва да минава');
+  assert.equal(forwardAuth('basic abc'), 'basic abc', 'схемата е нечувствителна към регистър');
+  // Жетонът на ПАНЕЛА няма работа в чужд контейнер.
+  for (const bad of ['Bearer таен-жетон', 'Digest x', '', null, undefined, 'Basicabc']) {
+    assert.equal(forwardAuth(bad), undefined, `„${bad}" не бива да се препраща`);
+  }
+
+  // Бисквитките: контейнерът си пази СВОЯТА сесия, нашата не напуска панела.
+  assert.equal(forwardCookies('kasm_session=abc'), 'kasm_session=abc');
+  assert.equal(forwardCookies(`${PANEL_COOKIE}=таен`), undefined, 'сесията на панела не излиза');
+  const mixed = forwardCookies(`${PANEL_COOKIE}=таен; kasm=1; other=2`);
+  assert.ok(!mixed.includes('таен'), 'нищо от сесията на панела');
+  assert.match(mixed, /kasm=1/);
+  assert.match(mixed, /other=2/);
+  assert.equal(forwardCookies(''), undefined);
+  assert.equal(forwardCookies(undefined), undefined);
+});
+
+test('десктоп: compose файлът се избира по ТАЙНАТА до него, не по подредба', () => {
+  // Дефектът, който направи десктопа неизползваем след деплой: релийзът беше
+  // ПЪРВИ кандидат, а `desktop.env` е изключен от rsync, за да оцелее — тоест
+  // оцелява само в инсталационната папка. Релийзът е НОВА папка всеки път, значи
+  // избраният compose няма и не може да има парола до себе си.
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-pick-'));
+  const release = path.join(root, 'current', 'vpsdash', 'deploy', 'desktop');
+  const installed = path.join(root, 'installed', 'deploy', 'desktop');
+  for (const d of [release, installed]) fs.mkdirSync(d, { recursive: true });
+  fs.writeFileSync(path.join(release, 'docker-compose.yml'), 'services: {}\n');
+  fs.writeFileSync(path.join(installed, 'docker-compose.yml'), 'services: {}\n');
+  const cfg = { paths: { currentLink: path.join(root, 'current') } };
+
+  // Без тайна никъде → взима първия наличен, но НЕ гърми.
+  assert.ok(composeFile(cfg), 'при липсваща тайна пак трябва да върне файл');
+  // Тайната е до релийза → избира релийза.
+  fs.writeFileSync(path.join(release, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  assert.equal(path.dirname(composeFile(cfg)), release);
+  // Тайната е и до инсталирания → изричният кандидат пак печели, ако е зададен.
+  const explicit = path.join(installed, 'docker-compose.yml');
+  fs.writeFileSync(path.join(installed, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  assert.equal(composeFile({ ...cfg, desktop: { composeFile: explicit } }), explicit);
+  // Тайната САМО до инсталирания (реалният случай след деплой) → избира него,
+  // въпреки че релийзът също има compose файл.
+  fs.rmSync(path.join(release, 'desktop.env'));
+  assert.equal(
+    path.dirname(composeFile({ ...cfg, desktop: { composeFile: explicit } })),
+    installed,
+    'релийзът няма как да носи тайната — изборът трябва да я следва'
+  );
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+test('десктоп: образът и таванът минават през ЗАТВОРЕНА проверка', () => {
+  // Стойността от конфига стига до команден ред на docker. Без проверка полето е
+  // „изпълни каквото ти кажа" през приятен интерфейс — същата заплаха като
+  // редактора на `.env` с произволен път.
+  assert.equal(desktopImage({}), 'lscr.io/linuxserver/webtop:ubuntu-mate', 'подразбиране: Ubuntu-подобен, не гол XFCE');
+  assert.equal(desktopImage({ desktop: { image: 'lscr.io/linuxserver/webtop:ubuntu-kde' } }), 'lscr.io/linuxserver/webtop:ubuntu-kde');
+  assert.equal(desktopImage({ desktop: { image: 'localhost:5000/my/webtop:v2' } }), 'localhost:5000/my/webtop:v2');
+  const INJECTION = ['ubuntu; poweroff', 'a b', '$(whoami)', '`id`', 'x && y', '--privileged', '', null, 42];
+  for (const bad of INJECTION) {
+    assert.equal(
+      desktopImage({ desktop: { image: bad } }),
+      'lscr.io/linuxserver/webtop:ubuntu-mate',
+      `„${bad}" трябваше да падне към подразбирането`
+    );
+  }
+
+  assert.equal(desktopMem({}), '1500m');
+  assert.equal(desktopMem({ desktop: { memLimit: '2g' } }), '2g');
+  for (const bad of ['2 g', '2gb', 'много', '$(x)', '-1g', '', null]) {
+    assert.equal(desktopMem({ desktop: { memLimit: bad } }), '1500m', `„${bad}" трябваше да падне към подразбирането`);
+  }
+
+  // И трите стойности трябва наистина да стигнат до compose, не само да се смятат.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-desk-img-'));
+  const file = path.join(dir, 'docker-compose.yml');
+  fs.writeFileSync(file, 'services: {}\n');
+  fs.writeFileSync(path.join(dir, 'desktop.env'), 'DESKTOP_PASSWORD=x\n');
+  const spec = actionSpec(
+    { desktop: { composeFile: file, port: 3011, image: 'lscr.io/linuxserver/webtop:ubuntu-kde', memLimit: '2g' }, paths: {} },
+    'up'
+  );
+  assert.deepEqual(spec.env, {
+    DESKTOP_PORT: '3011',
+    DESKTOP_IMAGE: 'lscr.io/linuxserver/webtop:ubuntu-kde',
+    DESKTOP_MEM: '2g',
+  });
+  // И шипваният compose трябва да ги ЧЕТЕ — иначе подаването е театър.
+  const shipped = fs.readFileSync(path.join(import.meta.dirname, '..', 'deploy', 'desktop', 'docker-compose.yml'), 'utf8');
+  assert.match(shipped, /image:\s*\$\{DESKTOP_IMAGE:-/);
+  assert.match(shipped, /mem_limit:\s*\$\{DESKTOP_MEM:-/, 'без таван OOM убиецът избира базата, не десктопа');
+  fs.rmSync(dir, { recursive: true, force: true });
 });

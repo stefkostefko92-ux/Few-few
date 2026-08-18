@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -36,6 +36,17 @@ MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
 VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:3100/}"
+
+# panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
+# предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
+# + server-side /admin (JWT + SQLite). Слуша САМО на 127.0.0.1:4102 зад nginx,
+# който прави 301 от www.panevascensori.it към каноничния non-www домейн.
+# Оцеляват деплоя: тайните (/etc/panev/panev.env, 600 — systemd EnvironmentFile)
+# и базата (/opt/panev/data/panev.db — единственият записваем път в unit-а).
+PANEV_DIR="${PANEV_DIR:-/opt/panev}"
+PANEV_SERVICE="${PANEV_SERVICE:-panev}"
+PANEV_ENV="${PANEV_ENV:-/etc/panev/panev.env}"
+PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
 
 # ospedali (Ospedali Trasparenti — systemd модел, като medqr/vizitka, НО без npm
 # ci/build: лек Node сервиз с нула зависимости обслужва предбилднатия статичен сайт
@@ -71,6 +82,9 @@ MASTILKO_HEALTH_URL="${MASTILKO_HEALTH_URL:-http://127.0.0.1:3200/}"
 # на сървъра в SupremeDiscordBot/.env (корен, postgres), SupremeDiscordBot/backend/.env, SupremeDiscordBot/bot/.env
 # и SupremeDiscordBot/frontend/.env (build-time VITE_*); пренасят се при всеки деплой.
 SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
+# Бекъпи на Supreme Bot: pre-deploy снимка (некриптирана, краткоживееща, пазим 5)
+# + дневният криптиран бекъп от supreme-backup.timer (DPA §5.1). Общ път, mode 700.
+SUPREME_BACKUP_DIR="${SUPREME_BACKUP_DIR:-/var/backups/supreme}"
 
 # eternaltouch (Eternal Touch — Docker Compose модел) — app:4300 + postgres:5437
 # слушат само на 127.0.0.1, зад Nginx. Тайните живеят в eternaltouch/.env на
@@ -190,6 +204,11 @@ deploy_zabobovdol() {
   rm -rf "$d/backups"
   ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
   ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
+  # `|| { … return; }` НЕ е украса: скриптът върви под `set -euo pipefail`, значи
+  # ненулев изход от subshell-а убива ЦЕЛИЯ autodeploy насред пробега — всички
+  # следващи проекти в $PROJECTS остават неразгърнати, symlink-ът и резюмето се
+  # прескачат, а базата вече е мигрирана и контейнерите вдигнати. Провалът на
+  # един продукт трябва да е провал на ЕДИН продукт. (VPS-аджията, одит 07.08.2026)
   ( cd "$d"
     if [ -f .env ]; then
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)
@@ -198,7 +217,7 @@ deploy_zabobovdol() {
       warn "Няма zabobovdol/.env — пускам setup-env.sh интерактивно."
       bash scripts/setup-env.sh && bash scripts/deploy.sh
     fi
-  )
+  ) || { warn "zabobovdol: deploy.sh се провали — продължавам с останалите проекти."; deploy_failed=1; return; }
   # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
   local url="$ZBD_HEALTH_URL"
   if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
@@ -222,7 +241,8 @@ deploy_medqr() {
     --exclude data/ --exclude node_modules/ --exclude .env \
     "$d"/ "$MEDQR_DIR"/
   chown -R medqr:medqr "$MEDQR_DIR"
-  ( cd "$MEDQR_DIR" && sudo -u medqr npm ci --omit=dev )
+  ( cd "$MEDQR_DIR" && sudo -u medqr npm ci --omit=dev ) \
+    || { warn "medqr: npm ci се провали след rsync — кодът вече е сменен, връщам предишния."; medqr_rollback; deploy_failed=1; return; }
   # Консистентен snapshot на базата ПРЕДИ рестарт — миграциите се пускат при старт
   # (db.js), затова пазим възстановима точка. Не разчитаме на cp заради WAL.
   local db="$MEDQR_DIR/data/medqr.sqlite"
@@ -236,22 +256,31 @@ deploy_medqr() {
   if health "$MEDQR_HEALTH_URL" "medqr"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
     # Пазим последните няколко pre-миграционни снимки; чистим по-старите.
-    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
     deploy_failed=1
     warn "medqr health провал — връщам предишния код и базата."
-    systemctl stop "$MEDQR_SERVICE" || true
-    if [ -f "$dbbak" ]; then
-      cp -a "$dbbak" "$db"
-      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
-      chown medqr:medqr "$db"
-    fi
-    if [ -d "${MEDQR_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
-      chown -R medqr:medqr "$MEDQR_DIR"
-    fi
-    systemctl restart "$MEDQR_SERVICE"
+    medqr_rollback "${db:-}" "${dbbak:-}"
   fi
+}
+
+# Откатът на medqr — изваден във функция, защото има ДВА пътя дотук:
+# провален health (по-долу) и провален `npm ci` СЛЕД rsync (кодът вече е сменен,
+# зависимостите ги няма). Второто дълго време просто убиваше целия autodeploy.
+# (VPS-аджията, одит 07.08.2026)
+medqr_rollback() {
+  local db="${1:-}" dbbak="${2:-}"
+  systemctl stop "$MEDQR_SERVICE" || true
+  if [ -n "$dbbak" ] && [ -f "$dbbak" ]; then
+    cp -a "$dbbak" "$db"
+    rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+    chown medqr:medqr "$db"
+  fi
+  if [ -d "${MEDQR_DIR}.bak-$TS" ]; then
+    rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
+    chown -R medqr:medqr "$MEDQR_DIR"
+  fi
+  systemctl restart "$MEDQR_SERVICE"
 }
 
 # ── 3b') vizitka — systemd (огледално на medqr) ───────────────────────────────
@@ -268,7 +297,8 @@ deploy_vizitka() {
     --exclude data/ --exclude node_modules/ --exclude .env \
     "$d"/ "$VIZITKA_DIR"/
   chown -R vizitka:vizitka "$VIZITKA_DIR"
-  ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev )
+  ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev ) \
+    || { warn "vizitka: npm ci се провали — пропускам рестарта, старата услуга остава жива."; deploy_failed=1; return; }
   # Снимка на базата ПРЕДИ рестарт — миграциите се пускат при старт (db.js).
   local db="$VIZITKA_DIR/data/vizitka.db"
   local dbbak="${db}.pre-$TS"
@@ -280,7 +310,7 @@ deploy_vizitka() {
   sleep 2
   if health "$VIZITKA_HEALTH_URL" "vizitka"; then
     rm -rf "${VIZITKA_DIR}.bak-$TS"
-    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
     deploy_failed=1
     warn "vizitka health провал — връщам предишния код и базата."
@@ -295,6 +325,133 @@ deploy_vizitka() {
       chown -R vizitka:vizitka "$VIZITKA_DIR"
     fi
     systemctl restart "$VIZITKA_SERVICE"
+  fi
+}
+
+# ── 3b''') panev — systemd (огледално на medqr/vizitka) ──────────────────────
+# Разликите: тайните са в /etc/panev/panev.env (EnvironmentFile, 600) — НЕ в
+# директорията на кода, значи rsync --delete не може да ги докосне; при първо
+# пускане се сийдва базата (админ + каталог за /admin), после никога.
+deploy_panev() {
+  local d="$SRC/panev"
+  [ -d "$d" ] || { warn "Няма panev/ в архива — пропускам."; return; }
+  log "Разгръщам panev (systemd, Express + SQLite)…"
+  command -v node  >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  # Системен потребител — самосъздаващ се, идемпотентно.
+  id panev >/dev/null 2>&1 || useradd --system --home-dir "$PANEV_DIR" \
+    --shell /usr/sbin/nologin panev
+
+  # 1) Тайни. Без валиден JWT_SECRET (≥32 знака) приложението УМИРА при старт в
+  # продукция (panev/lib/auth.js) — затова при първи деплой генерираме файла.
+  if [ ! -f "$PANEV_ENV" ]; then
+    warn "Няма $PANEV_ENV — генерирам с random JWT_SECRET (SMTP_PASS=CHANGE_ME)."
+    # Групата е panev, за да може услугата/сийдът да ЧЕТАТ файла (самият файл
+    # остава 600 panev:panev — без traverse права никой друг не влиза в папката).
+    install -d -m 750 -o root -g panev "$(dirname "$PANEV_ENV")"
+    install -o panev -g panev -m 600 /dev/null "$PANEV_ENV"
+    cat > "$PANEV_ENV" <<EOF
+NODE_ENV=production
+PORT=4102
+# Каноничният домейн е БЕЗ www (canonical/hreflang/sitemap/JSON-LD са non-www);
+# nginx прави 301 от www.panevascensori.it насам.
+BASE_URL=https://panevascensori.it
+JWT_SECRET=$(openssl rand -hex 64)
+JWT_EXPIRES=4h
+ADMIN_EMAIL=info@panevascensori.it
+# Без SMTP_PASS формата записва запитването в базата, но НЕ праща имейл.
+SMTP_HOST=smtps.aruba.it
+SMTP_PORT=465
+SMTP_USER=info@panevascensori.it
+SMTP_PASS=CHANGE_ME
+MAIL_FROM="Panev Ascensori <info@panevascensori.it>"
+MAIL_TO_ADMIN=info@panevascensori.it
+EOF
+    warn "Попълни SMTP_PASS в $PANEV_ENV, за да тръгнат имейлите от формата."
+  fi
+  chmod 600 "$PANEV_ENV"; chown panev:panev "$PANEV_ENV"
+
+  # 2) Код. data/ (SQLite) и node_modules/ остават извън rsync → преживяват деплоя.
+  # .env в директорията на кода се изключва нарочно: в продукция стойностите идват
+  # от EnvironmentFile-а, а случаен .env от архива само би объркал.
+  # Бекъп САМО при реален предишен деплой. bootstrap-vps.sh вече е създал
+  # $PANEV_DIR (той е HOME на системния потребител), затова „директорията
+  # съществува" НЕ значи „има какво да се върне": при първи деплой това правеше
+  # снимка на празна папка и откатът я връщаше с rsync --delete, т.е. ИЗТРИВАШЕ
+  # току-що качения код. Маркерът за истински предишен деплой е package.json.
+  local prev=0
+  if [ -f "$PANEV_DIR/package.json" ]; then
+    prev=1
+    cp -a "$PANEV_DIR" "${PANEV_DIR}.bak-$TS"
+  fi
+  mkdir -p "$PANEV_DIR"
+  # .npm/ е кешът на npm (HOME на потребителя е $PANEV_DIR) — пази го, за да не
+  # тегли всичко наново при всеки деплой.
+  rsync -a --delete \
+    --exclude data/ --exclude node_modules/ --exclude .env --exclude .npm/ \
+    "$d"/ "$PANEV_DIR"/
+  chown -R panev:panev "$PANEV_DIR"
+  # nginx сервира /img /fonts /css /js /docs директно от диска → нужен му е
+  # достъп за четене през директорията (файловете са публични; data/ остава 700).
+  chmod 755 "$PANEV_DIR"
+  install -d -o panev -g panev -m 700 "$PANEV_DIR/data"
+  ( cd "$PANEV_DIR" && sudo -u panev npm ci --omit=dev ) \
+    || { warn "panev: npm ci се провали — бекъпът е в ${PANEV_DIR}.bak-$TS."; deploy_failed=1; return; }
+
+  # 3) Първо пускане → сийд (админ + каталог за /admin). Сийдът е идемпотентен,
+  # но го пускаме само при липсваща база. Ако ADMIN_PASSWORD не е зададена,
+  # seed.js показва генерирана парола ВЕДНЪЖ в изхода тук.
+  local db="$PANEV_DIR/data/panev.db"
+  if [ ! -f "$db" ]; then
+    log "Първо пускане на panev — сийдвам базата…"
+    sudo -u panev bash -c 'set -a; . "$1"; set +a; cd "$2" && node scripts/seed.js' \
+      _ "$PANEV_ENV" "$PANEV_DIR" \
+      || warn "panev: сийдът не мина — влез после ръчно (виж panev/DEPLOY.md)."
+  fi
+
+  # 4) Снимка на базата ПРЕДИ рестарт (миграциите/схемата се прилагат при старт).
+  local dbbak="${db}.pre-$TS"
+  if [ -f "$db" ]; then
+    sudo -u panev sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
+    log "Снимка на базата преди рестарт: $dbbak"
+  fi
+
+  # 5) systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
+  install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
+  systemctl daemon-reload
+  systemctl enable "$PANEV_SERVICE" >/dev/null 2>&1 || true
+  systemctl restart "$PANEV_SERVICE"
+  sleep 2
+  if health "$PANEV_HEALTH_URL" "panev"; then
+    rm -rf "${PANEV_DIR}.bak-$TS"
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
+    ls -1dt "${PANEV_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
+    grep -q '^SMTP_PASS=CHANGE_ME$' "$PANEV_ENV" 2>/dev/null \
+      && warn "panev: SMTP_PASS все още е CHANGE_ME — формата пише в базата, но НЕ праща имейл."
+    [ -e /etc/nginx/sites-enabled/panev.conf ] \
+      || warn "panev: няма /etc/nginx/sites-enabled/panev.conf — сайтът върви само на 127.0.0.1:4102 (виж panev/DEPLOY.md)."
+  else
+    deploy_failed=1
+    warn "panev health провал — спирам услугата и връщам базата (кодът само при наличен предишен деплой)."
+    systemctl stop "$PANEV_SERVICE" || true
+    if [ -f "$dbbak" ]; then
+      cp -a "$dbbak" "$db"
+      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+      chown panev:panev "$db"
+    fi
+    if [ "$prev" = 1 ] && [ -d "${PANEV_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude data/ "${PANEV_DIR}.bak-$TS"/ "$PANEV_DIR"/
+      chown -R panev:panev "$PANEV_DIR"
+      chmod 755 "$PANEV_DIR"
+      install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
+      systemctl daemon-reload
+      systemctl restart "$PANEV_SERVICE" || true
+    else
+      # Първи деплой: няма предишна версия за връщане. Кодът ОСТАВА на диска —
+      # иначе следващият опит няма какво да рестартира, а диагнозата изчезва
+      # заедно с директорията. Услугата остава спряна; причината е в journalctl.
+      warn "panev: първи деплой — няма предишна версия. Кодът остава в $PANEV_DIR, услугата остава спряна (виж: journalctl -u $PANEV_SERVICE -b)."
+    fi
   fi
 }
 
@@ -337,7 +494,7 @@ deploy_ospedali() {
   if health "$OSPEDALI_HEALTH_URL" "ospedali"; then
     rm -rf "${OSPEDALI_DIR}.bak-$TS"
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
-    ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1dt "${OSPEDALI_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
     [ -f "$OSPEDALI_DIR/server/.env" ] || warn "Няма $OSPEDALI_DIR/server/.env — сайтът работи, но админ паролата е случайна (виж journalctl -u ospedali). За продукция задай OSPEDALI_ADMIN_PASSWORD + OSPEDALI_SESSION_SECRET (виж ospedalitrasparenti/deploy/DEPLOY.md)."
     # IndexNow — активно уведоми търсачките (Bing/Yandex) за URL-ите. ВИНАГИ след
     # успешен деплой. Best-effort: иска сайтът да е жив зад публичния домейн+TLS, за
@@ -400,7 +557,8 @@ deploy_nexus() {
     ( cd "$NEXUS_DIR/source" && bash scripts/release-gate.sh ) \
       || die "nexus release gate провал — деплоят е спрян (виж ✗ редовете)."
   fi
-  ( cd "$NEXUS_DIR/source" && docker compose build )
+  ( cd "$NEXUS_DIR/source" && docker compose build ) \
+    || { warn "nexus: docker compose build се провали — старите контейнери остават живи."; deploy_failed=1; return; }
   # Bind mount-ът е root:root на хоста, а контейнерът върви като 'app'
   # (Dockerfile USER app) → без chown ПЪРВИЯТ boot не може да създаде
   # SQLite базата и умира тихо (открито на живия деплой 02.07). Взимаме
@@ -408,7 +566,8 @@ deploy_nexus() {
   app_uid=$(docker run --rm --entrypoint sh nexus-dominion:latest -c 'id -u app' 2>/dev/null || echo 100)
   app_gid=$(docker run --rm --entrypoint sh nexus-dominion:latest -c 'id -g app' 2>/dev/null || echo 101)
   chown -R "$app_uid:$app_gid" "$NEXUS_STATE_DIR/data"
-  ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
+  ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans ) \
+    || { warn "nexus: docker compose up се провали — старите контейнери остават както са."; deploy_failed=1; return; }
   sleep 5
   if health "$NEXUS_HEALTH_URL" "nexus"; then
     # Content seed на ВСЕКИ деплой (идемпотентен INSERT OR REPLACE по slug):
@@ -435,7 +594,10 @@ deploy_nexus() {
     if [ -d "$NEXUS_DIR/source.bak-$TS" ]; then
       rm -rf "$NEXUS_DIR/source"
       mv "$NEXUS_DIR/source.bak-$TS" "$NEXUS_DIR/source"
-      ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
+      # Това е САМИЯТ откат — провалът му е последната лоша новина, но не бива
+      # да прекратява пробега преди резюмето и преди останалите продукти.
+      ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans ) \
+        || warn "nexus: и откатът не успя да вдигне предишната версия — иска ръчна намеса."
     fi
   fi
 }
@@ -475,7 +637,7 @@ deploy_mastilko() {
   if health "$MASTILKO_HEALTH_URL" "mastilko"; then
     rm -rf "${MASTILKO_DIR}.bak-$TS"
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
-    ls -1dt "${MASTILKO_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1dt "${MASTILKO_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
     [ -f "$MASTILKO_DIR/.env" ] || warn "Няма $MASTILKO_DIR/.env — сайтът работи, но AI подсказките са изключени (виж mastilko/deploy/DEPLOY.md)."
     # Известяваме Bing/Yandex през IndexNow за обновените URL-и (не чупи деплоя).
     ( cd "$MASTILKO_DIR" && sudo -u mastilko node scripts/indexnow.mjs ) \
@@ -507,15 +669,231 @@ deploy_supreme() {
       cp -a "$CURRENT_LINK/SupremeDiscordBot/$f" "$d/$f"; ok "Пренесох SupremeDiscordBot/$f"
     fi
   done
+  # v40 — Redis вече иска парола (`--requirepass` в docker-compose.yml). Старият
+  # .env на сървъра няма REDIS_PASSWORD, а compose е нарочно fail-closed → без
+  # този блок ПЪРВИЯТ деплой след промяната умира с неразбираема грешка от
+  # интерполацията. Тайната се генерира на сървъра; идемпотентно.
+  supreme_ensure_redis_password "$d"
+
+  # Дъмп ПРЕДИ миграция (по модела на medqr/zabobovdol). Миграциите се пускат
+  # автоматично в backend entrypoint-а при `up`, затова застраховката трябва да
+  # е направена ПРЕДИ deploy.sh. Fail-closed: няма дъмп → няма деплой.
+  supreme_pre_deploy_dump || { deploy_failed=1; return; }
+  # `|| { … return; }` НЕ е украса: скриптът върви под `set -euo pipefail`, значи
+  # ненулев изход от subshell-а убива ЦЕЛИЯ autodeploy насред пробега — всички
+  # следващи проекти в $PROJECTS остават неразгърнати, symlink-ът и резюмето се
+  # прескачат, а базата вече е мигрирана и контейнерите вдигнати. Провалът на
+  # един продукт трябва да е провал на ЕДИН продукт. (VPS-аджията, одит 07.08.2026)
   ( cd "$d"
     # Собственият deploy.sh: проверява .env-ите, билдва, вдига, чака backend health
     # (миграциите се пускат автоматично в backend entrypoint-а) и регистрира
     # slash командите. Ако нещо липсва, той се проваля с ясна грешка.
     bash deploy.sh
-  )
+  ) || { warn "SupremeDiscordBot: deploy.sh се провали."; deploy_failed=1; supreme_rollback_hint "$d"; return; }
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
-  health "$SUPREME_HEALTH_URL" "SupremeDiscordBot" || deploy_failed=1
+  if health "$SUPREME_HEALTH_URL" "SupremeDiscordBot"; then
+    # Health-check-ът казва само „нещо отговаря на 8080". Smoke тестът пита
+    # ПРОДУКТА: React корен, пререндирани маршрути, база, Redis, Discord
+    # gateway, гардът за вход, Stripe цените, правните страници, SEO
+    # артефактите. Точно тихите провали, които един 200 подминава.
+    # (Одит, 07.08.2026)
+    if bash "$d/deploy/smoke.sh"; then
+      ok "SupremeDiscordBot: smoke мина"
+    else
+      warn "SupremeDiscordBot: smoke ПАДНА — деплоят е горе, но нещо не работи."
+      deploy_failed=1
+      supreme_rollback_hint "$d"
+    fi
+    supreme_install_backup_timer "$d"
+    supreme_install_restore_drill_timer "$d"
+    supreme_ping_indexnow "$d"
+  else
+    deploy_failed=1
+    supreme_rollback_hint "$d"
+  fi
+}
+
+# ── Откат на Supreme: РЪЧЕН, и това е нарочно ────────────────────────────────
+# medqr/vizitka/mastilko се връщат сами (rsync на .bak + рестарт на systemd unit).
+# Supreme е Docker Compose със СПОДЕЛЕНА Postgres база, върху която entrypoint-ът
+# вече е пуснал `prisma migrate deploy` — връщане на кода назад НЕ връща схемата,
+# а нова схема със стар код е по-лошо състояние от текущото. Затова тук не
+# гадаем: печатаме точната команда и оставяме човек да реши.
+#
+# (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
+supreme_rollback_hint() {
+  local prev
+  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p)"
+  warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
+  if [ -n "$prev" ]; then
+    warn "Предишен release: ${prev%/}"
+    warn "Откат на КОДА:  RELEASE_DIR='${prev%/}' bash '${prev%/}/deploy/autodeploy.sh'"
+  else
+    warn "Няма предишен release — това е първият деплой."
+  fi
+  warn "ВНИМАНИЕ: миграциите вече са приложени. Ако новата схема е несъвместима"
+  warn "със стария код, първо провери 'npx prisma migrate status' в backend контейнера."
+}
+
+# IndexNow след деплой — правилото на репото (root CLAUDE.md) иска подаване след
+# всяка промяна, засягаща откриваемост. Ключът вече се материализира в web root;
+# липсваше само самото извикване, затова досега беше РЪЧНА стъпка, която лесно се
+# забравя. Не е фатално: при провал минава при следващия деплой.
+#
+# ЗАЩО СЕ ПОДАВА ЯВНО (реален деплой, 07.08.2026): функцията НАМИРАШЕ ключа, а
+# после викаше инструмента без него — той падаше обратно към конвенционалния
+# `<siteUrl>/indexnow-key.txt`, какъвто Supreme НЯМА: ключът стои на `<key>.txt`.
+# И понеже фронтендът е SPA (`try_files … /index.html`), онзи адрес връща 200 с
+# index.html, а не 404 — тоест провалът изглеждаше като „липсващ ключ" за ключ,
+# който е налице и се сервира коректно. Едно правило, две определения.
+supreme_ping_indexnow() {
+  local d="$1"
+  local key_file key
+  key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1)"
+  [ -n "$key_file" ] || { warn "Supreme: няма IndexNow ключ в frontend/public — пропускам."; return 0; }
+  key="$(basename "$key_file" .txt)"
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "https://supremebot.carbonstealth.eu" \
+      --key-file "$key_file" \
+      --key-location "https://supremebot.carbonstealth.eu/${key}.txt" ) \
+    || warn "Supreme: IndexNow подаването пропадна — не е фатално, минава при следващия деплой."
+}
+
+# Репетицията за възстановяване е БЕЗПОЛЕЗНА, ако никой не я пуска. Бекъпите си
+# имаха таймер, самата репетиция — не, тоест „можем ли да възстановим" беше
+# надежда, не факт. Седмично, в неделя през нощта. (Одит, 07.08.2026)
+supreme_install_restore_drill_timer() {
+  local d="$1"
+  local drill="$d/deploy/restore-drill.sh"
+  [ -f "$drill" ] || return 0
+  install -m 700 "$drill" /usr/local/sbin/supreme-restore-drill
+  cat > /etc/systemd/system/supreme-restore-drill.service <<'UNIT'
+[Unit]
+Description=Supreme — репетиция на възстановяването от последния бекъп
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/supreme-restore-drill
+UNIT
+  cat > /etc/systemd/system/supreme-restore-drill.timer <<'UNIT'
+[Unit]
+Description=Седмична репетиция на възстановяването (бекъп, който не е репетиран, е надежда)
+[Timer]
+OnCalendar=Sun 04:30
+Persistent=true
+RandomizedDelaySec=900
+[Install]
+WantedBy=timers.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable --now supreme-restore-drill.timer >/dev/null 2>&1 \
+    || warn "supreme-restore-drill.timer не се активира — провери ръчно."
+  ok "репетицията за възстановяване е седмична (supreme-restore-drill.timer)"
+}
+
+# v40 — тайната за Redis: генерирай, ако липсва, и изравни REDIS_URL.
+#
+# ЗАЩО: docker-compose.yml вече пуска Redis с `--requirepass` и е нарочно
+# fail-closed (`${REDIS_PASSWORD:?...}`). Пренесеният от сървъра .env е от преди
+# промяната и няма такава променлива → ПЪРВИЯТ деплой след нея умира с грешка от
+# интерполацията на compose, а не с нещо разбираемо. Тайната се ражда НА СЪРВЪРА
+# (никога в репото или архива), mode 600.
+#
+# Само добавя/поправя; НИКОГА не презаписва вече зададена парола — смяната ѝ би
+# обезсилила живите сесии на формите при рестарт на Redis. Идемпотентно.
+supreme_ensure_redis_password() {
+  local d="$1"
+  local root="$d/.env"
+  local pass=""
+
+  [ -f "$root" ] || { warn "Supreme: няма .env — deploy.sh ще каже какво липсва."; return 0; }
+
+  pass="$(sed -n 's/^REDIS_PASSWORD=//p' "$root" | head -1 | tr -d '\r' | tr -d "\"'")"
+
+  if [ -z "$pass" ]; then
+    if ! command -v openssl >/dev/null; then
+      warn "Supreme: липсва openssl — сложи REDIS_PASSWORD ръчно в SupremeDiscordBot/.env"
+      return 0
+    fi
+    pass="$(openssl rand -base64 24 | tr -d '/+=')"
+    # Пренасочването стои на СЪЩИЯ ред като printf — тайната отива във файла,
+    # никога в stdout. Така е видимо и за човек, и за deploy-check.mjs, който
+    # различава запис от лог точно по това.
+    printf '\n# v40 — авто-генерирана от autodeploy.sh (Redis --requirepass).\nREDIS_PASSWORD=%s\n' "$pass" >> "$root"
+    chmod 600 "$root"
+    ok "Supreme: генерирах REDIS_PASSWORD в SupremeDiscordBot/.env (mode 600)."
+  fi
+
+  # REDIS_URL в backend/.env и bot/.env — само ако още е БЕЗ парола.
+  local f
+  for f in backend/.env bot/.env; do
+    [ -f "$d/$f" ] || continue
+    if grep -qE '^REDIS_URL=.*//:[^@]+@' "$d/$f"; then
+      continue                                   # вече носи парола — не пипаме
+    fi
+    if grep -qE '^REDIS_URL=' "$d/$f"; then
+      # Вмъкваме „:<парола>@“ веднага след схемата; хостът и портът остават.
+      sed -i "s|^\(REDIS_URL=\"\?\)redis://|\1redis://:${pass}@|" "$d/$f"
+      ok "Supreme: изравних REDIS_URL в $f."
+    else
+      printf '\nREDIS_URL="redis://:%s@redis:6379"\n' "$pass" >> "$d/$f"
+      ok "Supreme: добавих REDIS_URL в $f."
+    fi
+    chmod 600 "$d/$f"
+  done
+}
+
+# Бекъп на базата на Supreme Bot ПРЕДИ миграциите.
+# Връща 0 и когато базата още не съществува (пръв деплой — няма какво да губим);
+# връща 1 само когато базата ВЪРВИ, но дъмпът се проваля → деплоят спира.
+supreme_pre_deploy_dump() {
+  local pg="supremebot_postgres"
+  if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$pg"; then
+    log "Supreme: няма работеща база (пръв деплой?) — прескачам дъмпа преди миграция."
+    return 0
+  fi
+  local user db out
+  user="$(docker exec "$pg" printenv POSTGRES_USER 2>/dev/null | tr -d '\r')"; user="${user:-bot}"
+  db="$(docker exec "$pg" printenv POSTGRES_DB 2>/dev/null | tr -d '\r')";     db="${db:-discordbot}"
+  mkdir -p "$SUPREME_BACKUP_DIR"; chmod 700 "$SUPREME_BACKUP_DIR"
+  out="$SUPREME_BACKUP_DIR/pre-deploy-$TS.dump"
+  ( umask 077
+    docker exec "$pg" pg_dump -Fc --no-owner --no-acl -U "$user" "$db" > "$out" ) || {
+    rm -f "$out"
+    warn "Supreme: pg_dump преди миграция се провали — НЕ деплойвам без застраховка."
+    return 1
+  }
+  local size; size="$(stat -c '%s' "$out" 2>/dev/null || echo 0)"
+  if [ "$size" -lt 1024 ]; then
+    rm -f "$out"
+    warn "Supreme: дъмпът преди миграция е само ${size}B — приемам го за провален, спирам деплоя."
+    return 1
+  fi
+  ok "Supreme: снимка на базата преди миграция: $out ($(du -h "$out" | awk '{print $1}'))"
+  # Пазим последните 5 pre-deploy снимки (дневните криптирани бекъпи са отделно).
+  ls -1t "$SUPREME_BACKUP_DIR"/pre-deploy-*.dump 2>/dev/null | tail -n +6 | xargs -r rm -f || true
+  return 0
+}
+
+# Самоинсталиране на дневния криптиран бекъп (DPA §5.1). Идемпотентно: пуска се
+# при всеки успешен деплой, обновява скрипта и единиците, вдига таймера веднъж.
+supreme_install_backup_timer() {
+  local d="$1"
+  command -v systemctl >/dev/null || { warn "Supreme: няма systemd — бекъп таймерът не е инсталиран."; return 0; }
+  [ -f "$d/deploy/backup-postgres.sh" ] || { warn "Supreme: липсва deploy/backup-postgres.sh в архива — бекъпът НЕ е инсталиран."; return 0; }
+  install -m 700 "$d/deploy/backup-postgres.sh"  /usr/local/sbin/supreme-backup-postgres
+  install -m 700 "$d/deploy/restore-postgres.sh" /usr/local/sbin/supreme-restore-postgres
+  install -m 644 "$d/deploy/supreme-backup.service" /etc/systemd/system/supreme-backup.service
+  install -m 644 "$d/deploy/supreme-backup.timer"   /etc/systemd/system/supreme-backup.timer
+  mkdir -p "$SUPREME_BACKUP_DIR"; chmod 700 "$SUPREME_BACKUP_DIR"
+  systemctl daemon-reload
+  systemctl enable --now supreme-backup.timer >/dev/null 2>&1 \
+    && ok "Supreme: дневен криптиран бекъп активен (supreme-backup.timer, 03:00 UTC)." \
+    || warn "Supreme: не успях да вдигна supreme-backup.timer — виж systemctl status."
+  if [ ! -s /root/.supreme-backup-pass ]; then
+    warn "Supreme: ЛИПСВА /root/.supreme-backup-pass — бекъпите ще се провалят до създаването ѝ:"
+    warn "  umask 077; openssl rand -base64 48 > /root/.supreme-backup-pass; chmod 600 /root/.supreme-backup-pass"
+    warn "  (запази паролата И извън сървъра — без нея бекъпите не се отварят). Виж SupremeDiscordBot/deploy/BACKUP.md"
+  fi
 }
 
 # ── Health check ──────────────────────────────────────────────────────────────
@@ -566,7 +944,8 @@ EOF
     warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
-  ( cd "$d" && bash deploy.sh )   # idempotent: docker up --build, seed (upsert), nginx, certbot
+  ( cd "$d" && bash deploy.sh ) \
+    || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
@@ -598,7 +977,11 @@ deploy_vpsdashboard() {
   # Бекъп на текущия код (конфигът и state са извън тази папка → непокътнати).
   [ -d "$VPSDASH_DIR" ] && cp -a "$VPSDASH_DIR" "${VPSDASH_DIR}.bak-$TS"
   mkdir -p "$VPSDASH_DIR"
-  rsync -a --delete --exclude .state/ --exclude node_modules/ "$d"/ "$VPSDASH_DIR"/
+  # `deploy/desktop/desktop.env` е ТАЙНА вътре в дървото на кода (живее до compose
+  # файла) — `--delete` я трие при всеки деплой и панелът пак иска DESKTOP_PASSWORD.
+  # Тихата регресия изглежда като пропусната стъпка от инсталацията.
+  rsync -a --delete --exclude .state/ --exclude node_modules/ \
+    --exclude deploy/desktop/desktop.env "$d"/ "$VPSDASH_DIR"/
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
   install -m 644 "$VPSDASH_DIR/deploy/vps-dashboard.service" /etc/systemd/system/${VPSDASH_SERVICE}.service
   systemctl daemon-reload
@@ -635,7 +1018,7 @@ deploy_vpsdashboard() {
   if [ "$code" = "401" ] || [ "$code" = "200" ]; then
     ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
     rm -rf "${VPSDASH_DIR}.bak-$TS"
-    ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
   else
     deploy_failed=1
     warn "vps-dashboard health провал ($code) — връщам предишния код."
@@ -810,6 +1193,7 @@ for p in $PROJECTS; do
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
     vizitka)    deploy_vizitka ;;
+    panev)      deploy_panev ;;
     ospedali)   deploy_ospedali ;;
     nexus)      deploy_nexus ;;
     mastilko)   deploy_mastilko ;;
@@ -822,18 +1206,40 @@ for p in $PROJECTS; do
 done
 
 # ── 4) Маркирай текущия release + почисти старите ─────────────────────────────
-ln -sfn "$SRC" "$CURRENT_LINK"
-ok "current → $SRC"
+# Само УСПЕШЕН пробег става `current`.
+#
+# Дотук symlink-ът се вдигаше безусловно: провалил се деплой пак ставаше
+# „текущият", тоест следващият откат сочеше към счупеното, а човек, който гледа
+# `current`, вижда версия, която никога не е тръгнала. (VPS-аджията, 07.08.2026)
+if [ "$deploy_failed" = "0" ]; then
+  ln -sfn "$SRC" "$CURRENT_LINK"
+  ok "current → $SRC"
+else
+  warn "current НЕ е преместен — $SRC се разгърна с грешки."
+  warn "Текущ: $(readlink -f "$CURRENT_LINK" 2>/dev/null || echo '(няма)')"
+fi
 # Пази последните KEEP_RELEASES, НО никога не трий този, който току-що разгърнахме
 # (при rollback към стар release той може да е извън най-новите — иначе си трием
 # кода изпод краката, точно докато current сочи натам).
-CURRENT_REL="$(cd "$SRC" && pwd -P)"
+# Пази ДВЕ неща, не едно: това, което току-що разгърнахме ($SRC), И това, което
+# `current` реално сочи. При провал те се разминават — symlink-ът остава на
+# стария release, а той може да е достатъчно назад, за да попадне под ножа. Тогава
+# щяхме да изтрием кода, който в момента обслужва продукцията.
+# (VPS-аджията, одит 07.08.2026)
+KEEP_REL="$(cd "$SRC" && pwd -P)"
+LIVE_REL="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
 while read -r old; do
   [ -n "$old" ] || continue
   old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
-  case "$CURRENT_REL" in
-    "$old_real"|"$old_real"/*) continue ;;   # текущият release (или родителят му) — пропусни
-  esac
+  [ -n "$old_real" ] || continue
+  keep=0
+  for protected in "$KEEP_REL" "$LIVE_REL"; do
+    [ -n "$protected" ] || continue
+    case "$protected" in
+      "$old_real"|"$old_real"/*) keep=1 ;;
+    esac
+  done
+  [ "$keep" = "1" ] && continue
   rm -rf "$old"
 done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
 

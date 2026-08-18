@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { run } from './exec.js';
 import { firewallStatus } from './firewall.js';
+import { plural } from './text.js';
 
 const STATE = 'ports.json';
 
@@ -416,7 +417,7 @@ export function portChecks(map, baseline) {
     out.push({
       key: 'ports:gone',
       severity: 'info',
-      title: `${d.gone.length} порта вече не слушат`,
+      title: `${plural(d.gone.length, 'порт', 'порта')} вече не слушат`,
       body: `Липсват спрямо приетата линия: ${d.gone.join(', ')}. Ако продукт не отговаря, започни оттук.`,
       sustain: false,
       repeatEvery: 24 * 3600000,
