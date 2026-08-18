@@ -166,3 +166,43 @@ test('одит огледало: приема от възел, пази отде
   assert.throws(() => a.acceptMirror('../зло', []));
   fsx.rmSync(dir, { recursive: true, force: true });
 });
+
+// ── Агентски слой: „липсва" трябва да е ДИАГНОЗА, не съобщение ────────────────
+test('инструментите връщат и КЪДЕ е гледал панелът', async () => {
+  const { listAgentTools } = await import('../src/agents.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-agents-'));
+
+  // Липсваща папка: целият слой е празен, но причината е ЕДНА — да се вижда.
+  const gone = listAgentTools({ paths: { currentLink: path.join(dir, 'няма') } });
+  assert.equal(gone.rootExists, false, 'разликата „няма папка" ↔ „непълен архив" е първото, което човек трябва да види');
+  assert.ok(gone.tools.length, 'списъкът с инструменти не зависи от наличието им');
+  assert.ok(gone.tools.every((x) => !x.present));
+  assert.ok(gone.root.includes('няма'), 'пътят се връща, иначе „липсва" не подлежи на действие');
+
+  // Папка без tools/ — разгърнат, но непълен архив. Друга причина, друг съвет.
+  const partial = listAgentTools({ paths: { currentLink: dir } });
+  assert.equal(partial.rootExists, true);
+  assert.ok(partial.tools.every((x) => !x.present));
+
+  // Наличен скрипт → present, без да пипаме нищо друго.
+  const one = partial.tools[0].script;
+  fs.mkdirSync(path.join(dir, path.dirname(one)), { recursive: true });
+  fs.writeFileSync(path.join(dir, one), '// x\n');
+  const now = listAgentTools({ paths: { currentLink: dir } });
+  assert.equal(now.tools.find((x) => x.script === one).present, true);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('изключен бутон трябва и да ИЗГЛЕЖДА изключен', () => {
+  // Кодът честно слагаше `disabled`, но в CSS нямаше НИТО едно правило за него:
+  // бутонът стоеше ярък и подканващ, натискаш и не става нищо — изглежда като
+  // счупен панел, а всъщност е правилно спрян.
+  const css = fs.readFileSync(path.join(import.meta.dirname, '..', 'public', 'style.css'), 'utf8');
+  const block = css.match(/\.btn:disabled[^}]*\{[^}]*\}/);
+  assert.ok(block, 'липсва правило за .btn:disabled');
+  // Цветът сам не стига (далтонизъм, силна светлина) — искаме и втори сигнал.
+  assert.match(block[0], /opacity/, 'нужна е намалена наситеност');
+  assert.match(block[0], /cursor:\s*not-allowed/, 'курсорът е вторият сигнал');
+  // И hover-ът трябва да е спрян — иначе бутонът пак „отговаря" на посочване.
+  assert.match(css, /\.btn:disabled:hover/, 'изключен бутон не бива да реагира на hover');
+});

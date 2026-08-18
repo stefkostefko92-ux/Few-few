@@ -10,6 +10,7 @@
 //  • Mann–Kendall като гейт: не показваме прогноза, ако трендът не е значим.
 
 // ── Медиана и MAD ─────────────────────────────────────────────────────────────
+import { plural } from './text.js';
 export function median(arr) {
   if (!arr.length) return null;
   const s = [...arr].sort((a, b) => a - b);
@@ -224,8 +225,8 @@ export function changePoint(rawPoints, { minShift = 3, minSegment = 8 } = {}) {
 
 export function fmtDuration(ms) {
   const d = ms / 86400000;
-  if (d >= 2) return `${d.toFixed(1)} дни`;
+  if (d >= 2) return `${plural(d.toFixed(1), 'ден', 'дни')}`;
   const h = ms / 3600000;
-  if (h >= 2) return `${h.toFixed(1)} часа`;
+  if (h >= 2) return `${plural(h.toFixed(1), 'час', 'часа')}`;
   return `${Math.max(1, Math.round(ms / 60000))} мин`;
 }

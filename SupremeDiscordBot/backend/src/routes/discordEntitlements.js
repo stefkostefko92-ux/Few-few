@@ -21,8 +21,10 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
+import { writeAudit } from "../lib/auditLog.js";
 import { requireBotSecret } from "../middleware/auth.js";
-import { planFromDiscordSku } from "../lib/premium.js";
+import { planFromDiscordSku, syncServerPaidFlag } from "../lib/premium.js";
+import { reconcileWhitelabel } from "../services/botNotifier.js";
 
 const router = Router();
 
@@ -104,15 +106,18 @@ async function grantEntitlement(ent, via) {
     throw err;
   }
 
-  await prisma.auditLog.create({
-    data: {
-      actorId: ent.userId || null,
-      actorTag: ent.userId ? undefined : "SYSTEM",
-      serverId: ent.guildId,
-      action: "PREMIUM_GRANTED_DISCORD",
-      targetId: ent.guildId,
-      metadata: { entitlementId: ent.id, skuId: ent.skuId, plan, via },
-    },
+  // ПАРИЧЕН ПЪТ — `ent.userId` е купувачът от Discord монетизацията, който
+  // почти сигурно НЕ е влизал в нашето табло. `auditLog.actorId` е външен ключ
+  // към `users`: суровият запис хвърляше СЛЕД като премиумът вече е даден, тоест
+  // успешно плащане се отчиташе като провал, а следата се губеше. writeAudit
+  // мести непознатия актьор в `actorTag` и никога не проваля дарението на плана.
+  await writeAudit({
+    actorId: ent.userId || null,
+    actorTag: ent.userId ? undefined : "SYSTEM",
+    serverId: ent.guildId,
+    action: "PREMIUM_GRANTED_DISCORD",
+    targetId: ent.guildId,
+    metadata: { entitlementId: ent.id, skuId: ent.skuId, plan, via },
   });
 
   return { granted: true, plan };
@@ -133,15 +138,20 @@ async function revokeServer(serverId, entitlementId, reason) {
   }
 
   try {
-    await prisma.server.update({
-      where: { id: serverId },
-      data: {
-        isPremium: false,
-        plan: "free",
-        planSource: null,
-        discordEntitlementId: null,
-        discordSkuId: null,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.server.update({
+        where: { id: serverId },
+        data: {
+          plan: "free",
+          planSource: null,
+          discordEntitlementId: null,
+          discordSkuId: null,
+        },
+      });
+      // НЕ хардкодвай isPremium:false — сървърът може да е покрит от АКТИВНА
+      // агенция (agency seat не зависи от Discord entitlement). Recompute-ни:
+      // остава premium при agency покритие, иначе → free.
+      await syncServerPaidFlag(serverId, tx);
     });
   } catch (err) {
     if (err?.code === "P2025") return { ignored: "server vanished" };
@@ -158,6 +168,11 @@ async function revokeServer(serverId, entitlementId, reason) {
       metadata: { entitlementId, reason },
     },
   });
+
+  // Discord entitlement отпадна → ако сървърът е ползвал бранд бот през него,
+  // клиентът трябва да СЛЕЗЕ (освен ако не е покрит по друг път — reconcile-ът
+  // чете ефективния tier, не приема сляпо, че пада).
+  reconcileWhitelabel(serverId);
 
   return { revoked: true };
 }

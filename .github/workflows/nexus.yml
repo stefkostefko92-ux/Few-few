@@ -23,6 +23,7 @@ jobs:
   quality:
     name: Typecheck, test, build, release gate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

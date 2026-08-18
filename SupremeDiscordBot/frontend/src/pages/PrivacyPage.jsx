@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Privacy Policy" updated="27 June 2026">
+    <LegalPage title="Privacy Policy" updated="7 August 2026">
       <Seo
         title="Privacy Policy — Supreme Bot"
         description="Privacy Policy for Supreme Bot: what data we process, EU data residency, GDPR rights, subprocessors, and retention periods."
@@ -54,8 +54,8 @@ export default function PrivacyPage() {
             <tbody className="text-cs-muted">
               <Tr>
                 <Td>Identity</Td>
-                <Td>Discord user ID, username, avatar hash, discriminator</Td>
-                <Td>Authenticate you; display your profile in dashboard</Td>
+                <Td>Discord user ID, username, avatar hash, discriminator, email address</Td>
+                <Td>Authenticate you; display your profile in dashboard; contact you about your subscription and service notices</Td>
                 <Td>Art. 6(1)(b) — contract performance</Td>
                 <Td>Until account deletion</Td>
               </Tr>

@@ -6,9 +6,11 @@ import {
   createSession,
   verifySession,
   tokenEqual,
-  loginAllowed,
-  loginFailed,
   loginSucceeded,
+  attemptStart,
+  globalDelayMs,
+  bearerAllowed,
+  bearerFailed,
 } from './auth.js';
 import * as services from './services.js';
 import * as docker from './docker.js';
@@ -57,8 +59,29 @@ import {
   sudoAllowed, sudoFailed, sudoSucceeded, ipAllowed, validateAllowlist,
 } from './sudo.js';
 
-const COOKIE = 'csd_sess';
-export const VERSION = '0.1.0';
+// Името на сесийната бисквитка носи ЗАЩИТА, не е етикет.
+//
+// Заплахата е конкретна за тази инсталация: на `*.carbonstealth.eu` живеят
+// десетина продукта. Пробив в който и да е от тях (medqr, supremebot, …) дава
+// възможност да се сложи бисквитка `csd_sess` с `Domain=carbonstealth.eu` —
+// браузърът тогава праща ДВЕ с едно име, а `parseCookies` пази последната.
+// Тоест съсед може да подхлъзне сесия на панела, без изобщо да го докосне.
+//
+// Префиксът `__Host-` затваря това на ниво браузър: бисквитка с такова име се
+// приема САМО ако е `Secure`, с `Path=/` и БЕЗ `Domain`. Значи никой поддомейн
+// не може да я сложи — по конструкция, не по наша проверка.
+//
+// Условно е, защото браузърът отхвърля `__Host-` без `Secure`: по гол http
+// (локална разработка) панелът би станал невлизаем. Зад прокси приемаме САМО
+// префиксираната — иначе старото име остава като заобиколен път и цялата
+// защита е театър.
+const COOKIE_BASE = 'csd_sess';
+const COOKIE_HOST = `__Host-${COOKIE_BASE}`;
+const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
+// Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
+// 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
+// (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
+export const VERSION = '1.6.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -214,11 +237,29 @@ export function buildRouter(ctx) {
   const auth = (req) => {
     // 1) Federation: Bearer peerToken (другият VPS / прокси).
     const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-    if (bearer && cfg.peerToken && tokenEqual(bearer, cfg.peerToken)) {
-      return { user: 'peer', peer: true };
+    if (bearer && cfg.peerToken) {
+      if (tokenEqual(bearer, cfg.peerToken)) return { user: 'peer', peer: true };
+      // Грешен Bearer беше безплатен опит: без брояч, без ред в одита, без
+      // аларма — тоест налучкването на токена, който дава пълен достъп, беше
+      // не просто възможно, а НЕВИДИМО.
+      const bip = clientIp(req, cfg.trustProxy);
+      if (bearerAllowed(bip)) {
+        bearerFailed(bip);
+        audit.log({ action: 'auth.bearerFail', ip: bip });
+      } else {
+        // Лимитерът трябва да СПИРА, не само да млъква.
+        //
+        // Първата версия на тази поправка спираше единствено писането в одита —
+        // тоест нападателят получаваше неограничени опити, просто по-тихо.
+        // Открито от активния тест (`attack.test.js`), не от четене на кода:
+        // 25 грешни токена минаха с 401, нито един с 429. Лимит, който не
+        // отказва, е брояч, не защита.
+        req._bearerThrottled = true;
+      }
+      return null;
     }
     // 2) Браузър: подписано сесийно куки.
-    const sess = verifySession(cfg.sessionSecret, parseCookies(req)[COOKIE], {
+    const sess = verifySession(cfg.sessionSecret, parseCookies(req)[cookieName(cfg)], {
       gen: cfg.sessionGen || 0,
       revoked: ctx.revokedSessions,
     });
@@ -246,7 +287,7 @@ export function buildRouter(ctx) {
 
   const setSessionCookie = (res, token, maxAgeSec) => {
     const secure = cfg.trustProxy ? '; Secure' : '';
-    res.setHeader('set-cookie', `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure}`);
+    res.setHeader('set-cookie', `${cookieName(cfg)}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure}`);
   };
 
   // Federation обхват: по подразбиране peer-ът е САМО ЗА ЧЕТЕНЕ. Компрометиран
@@ -279,7 +320,10 @@ export function buildRouter(ctx) {
   const guard = (handler, { mutating = false } = {}) => {
     return async (req, res, params, url) => {
       const who = auth(req);
-      if (!who) return sendError(res, 401, 'Не си вписан.');
+      if (!who) {
+        if (req._bearerThrottled) return sendError(res, 429, 'Твърде много опити с жетон — изчакай.');
+        return sendError(res, 401, 'Не си вписан.');
+      }
       if (mutating && !csrfOk(req, who)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
       if (who.peer && !peerAllowed(req, url)) {
         audit.log({ action: 'peer.denied', path: url.pathname, method: req.method });
@@ -357,12 +401,25 @@ export function buildRouter(ctx) {
 
   r.post('/api/login', async (req, res) => {
     const ip = clientIp(req, cfg.trustProxy);
-    if (!loginAllowed(ip)) return sendError(res, 429, 'Твърде много опити — изчакай 10 минути.');
+    // Слотът се заема ПРЕДИ четенето на тялото и преди scrypt. Иначе между
+    // проверката и отчитането има точка на изчакване, през която сто паралелни
+    // заявки минават с един и същ „свободен" резултат.
+    if (!attemptStart(ip)) {
+      audit.log({ action: 'login.throttled', ip });
+      return sendError(res, 429, 'Твърде много опити — изчакай 10 минути.');
+    }
+    // Разпределена атака (много адреси, по малко опити от всеки) не се вижда от
+    // брояча по IP. Общият шум не БЛОКИРА — това би бил безплатен начин да
+    // заключиш собственика — а бави отговора. Човек с вярната парола губи
+    // секунди; налучкването става безсмислено.
+    const delay = globalDelayMs();
+    if (delay) await new Promise((r2) => setTimeout(r2, delay));
     const body = await readJson(req);
     const okUser = String(body.user || '') === cfg.adminUser;
     const okPass = verifyPassword(String(body.password || ''), cfg.passwordHash);
     if (!okUser || !okPass) {
-      loginFailed(ip);
+      // Слотът вече е зает от `attemptStart` — второ отчитане би направило
+      // лимита наполовина по-строг, отколкото пише в съобщението.
       audit.log({ action: 'login.fail', ip });
       return sendError(res, 401, 'Грешно име или парола.');
     }
@@ -376,7 +433,6 @@ export function buildRouter(ctx) {
         // веднага и се маха от конфига, за да не може да се ползва пак.
         const idx = verifyRecoveryCode(body.code, cfg.totp.recoveryHashes || []);
         if (idx < 0) {
-          loginFailed(ip);
           audit.log({ action: 'login.fail2fa', ip });
           return sendError(res, 401, body.code ? 'Грешен код от приложението.' : 'Нужен е код (2FA).');
         }
@@ -419,7 +475,12 @@ export function buildRouter(ctx) {
       ctx.sessions.delete(who.sess.jti);
       audit.log({ action: 'logout', jti: who.sess.jti, user: who.user });
     }
-    res.setHeader('set-cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`);
+    res.setHeader('set-cookie', [
+      `${cookieName(cfg)}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${cfg.trustProxy ? '; Secure' : ''}`,
+      // И старото име — иначе бисквитка отпреди префикса виси в браузъра до
+      // изтичането си и „Изход" изглежда като че ли не е свършил работа.
+      `${COOKIE_BASE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`,
+    ]);
     sendJson(res, 200, { ok: true });
   });
 
@@ -1382,7 +1443,8 @@ export function buildRouter(ctx) {
 
   // ── Агентски флот + инструменти ────────────────────────────────────────────
   r.get('/api/agents/fleet', guard(J(() => agents.agentsFleet(cfg))));
-  r.get('/api/agents/tools', guard(J(() => ({ tools: agents.listAgentTools(cfg) }))));
+  // Отговорът вече Е `{ root, rootExists, tools }` — не го обвивай втори път.
+  r.get('/api/agents/tools', guard(J(() => agents.listAgentTools(cfg))));
   r.get('/api/agents/memories', guard(J(() => ({ memories: agents.agentMemories(cfg) }))));
   r.post(
     '/api/agents/tools/run',

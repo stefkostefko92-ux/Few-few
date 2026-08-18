@@ -2,11 +2,15 @@
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { sendPremiumRequired } from "../utils/premiumRequired.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { DANGER, INFO, WARNING } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("premium")
     .setDescription("⭐ Premium server commands")
+    .setDescriptionLocalizations(CMD_DESC_L10N.premium)
     .addSubcommand((sub) =>
       sub.setName("status")
         .setDescription("Show your server's Premium subscription status")
@@ -15,10 +19,13 @@ export default {
       sub.setName("custombot")
         .setDescription("⭐ Update your white-label bot's appearance")
         .addStringOption((opt) =>
-          opt.setName("name").setDescription("New bot name").setRequired(false)
+          // Discord ограничава името на бота до 32 знака, а URL-ите — на практика
+          // до няколкостотин. Без таван потребителят получава грешка чак от
+          // Discord API, вместо от формата.
+          opt.setName("name").setDescription("New bot name").setRequired(false).setMaxLength(32)
         )
         .addStringOption((opt) =>
-          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false)
+          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false).setMaxLength(512)
         )
     )
     .addSubcommand((sub) =>
@@ -49,7 +56,7 @@ export default {
             embeds: [{
               title: "❌ Not a Premium Server",
               description: `This server is on the **Base (Free)** plan.\n\n🔗 Upgrade at: ${process.env.FRONTEND_URL}`,
-              color: 0xed4245,
+              color: DANGER,
             }],
           });
         }
@@ -67,11 +74,11 @@ export default {
               { name: "Premium Since", value: premiumSince, inline: true },
               { name: "Manage Billing", value: `[Dashboard](${process.env.FRONTEND_URL})`, inline: true },
             ],
-            color: 0xffd700,
+            color: WARNING,
           }],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -96,7 +103,7 @@ export default {
         });
         await interaction.editReply("✅ White-label bot settings updated! Changes will apply on next bot restart.");
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -121,11 +128,11 @@ export default {
           embeds: [{
             title: "📦 Export Ready",
             description: `Head to the dashboard to download your **${type}** export as a CSV file.\n\n🔗 ${process.env.FRONTEND_URL}/dashboard/${interaction.guildId}/premium`,
-            color: 0x5865f2,
+            color: INFO,
           }],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
   },

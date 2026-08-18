@@ -10,10 +10,10 @@ Supreme Bot се продава на **тарифи (tiers)**, обезпече�
 | Tier | Цена/мес | Цена/год | Сървъри | Какво включва |
 |------|----------|----------|---------|----------------|
 | **Free** | €0 | — | 1 | 1 панел, 2 формуляра (до 5 въпроса), 1 верификация, 30-дневни transcript-и |
-| **Premium** | €9.99 | €99 | 1 | Всичко ОСВЕН white-label: до 50 панела/формуляра/въпроса, верификация, giveaways, poll-ове, sticky + scheduled/recurring, AI отговори, round-robin, webhooks, REST API, безсрочни transcript-и |
-| **White-label** | €19.99 | €199 | 1 | Premium + собствен бранд бот (качваш свой Discord bot token) |
-| **Agency 5** | €39.99 | €399 | до 5 | White-label tier за 5 сървъра, един абонамент, reseller-friendly |
-| **Agency 10** | €79.99 | €799 | до 10 | White-label tier за 10 сървъра |
+| **Premium** | €4.99 | €49 | 1 | Всичко ОСВЕН white-label: до 50 панела/формуляра/въпроса, верификация, giveaways, poll-ове, sticky + scheduled/recurring, AI отговори, round-robin, webhooks, REST API, безсрочни transcript-и |
+| **White-label** | €9.99 | €99 | 1 | Premium + собствен бранд бот (качваш свой Discord bot token) |
+| **Agency 5** | €19.99 | €199 | до 5 | White-label tier за 5 сървъра, един абонамент, reseller-friendly |
+| **Agency 10** | €39.99 | €399 | до 10 | White-label tier за 10 сървъра |
 
 - Цените са в **EUR, с включен ДДС** (`tax_behavior=inclusive`); Stripe Tax
   начислява 20% BG ДДС по местоназначение.
@@ -40,6 +40,30 @@ Supreme Bot се продава на **тарифи (tiers)**, обезпече�
   `{ plan, isPremium, hasWhiteLabel, limits, ... }`.
 - Достъп се дава **само** през верифициран Stripe webhook или Discord entitlement
   — никога от client redirect (виж `CLAUDE.md`).
+
+### Край на абонамента — ДВЕ различни поведения (v40)
+
+Решение на собственика, отразено и в Общите условия (5.4 и раздел 6):
+
+| Случай | Какво става с достъпа | Полета |
+|---|---|---|
+- `accessUntil` НЕ се занулява при отнемане (дунингът нарочно го пази за одит/спорове — dunning.js).
+| **Refund** (пълно връщане) | пада **веднага**; абонаментът в Stripe се отменя | `accessUntil=null`, `gracePlan=null`, `stripeStatus="refunded"` |
+| **Chargeback** (оспорено плащане) | пада **веднага**; абонаментът в Stripe се отменя | същото, `stripeStatus="disputed"` |
+
+Частично връщане (напр. пропорционален отказ по чл. 14(3) от Директива 2011/83/ЕС)
+**не** пипа достъпа.
+
+Агенциите имат същата семантика през `Agency.accessUntil`: при отмяна агенцията
+остава `active` до края на периода (иначе покритите сървъри падат в същата
+секунда — `getServerTier` гейтва на `agency.active`).
+
+Stripe **не** праща събитие в мига, в който платеният период изтече — затова
+метлата е в `jobs/dunning.js` (дневно, 03:30 UTC): изтекъл `accessUntil` се
+занулява и `syncServerPaidFlag` пресмята суровата колона наново.
+
+Изисква включени webhook събития `charge.refunded` и `charge.dispute.created`
+(`scripts/stripe-setup.sh` ги включва автоматично).
 
 ## Пускане — какво трябва да направи собственикът
 

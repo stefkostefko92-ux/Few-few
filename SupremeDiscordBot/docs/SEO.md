@@ -39,13 +39,13 @@ claiming otherwise is selling snake oil.
 ## Manual steps for the owner (cannot be done from code)
 
 1. **Google Search Console** — <https://search.google.com/search-console>
-   - Add property `supreme.carbonstealth.eu` (domain property via DNS TXT record).
-   - Submit `https://supreme.carbonstealth.eu/sitemap.xml`.
+   - Add property `supremebot.carbonstealth.eu` (domain property via DNS TXT record).
+   - Submit `https://supremebot.carbonstealth.eu/sitemap.xml`.
    - Use *URL Inspection → Request Indexing* on `/` and each language landing once live.
    - Watch *Indexing → Pages* and the *International Targeting / hreflang* reports for errors.
 2. **Bing Webmaster Tools** — <https://www.bing.com/webmasters> (import from GSC takes one click; Bing also feeds DuckDuckGo and ChatGPT search).
 3. **Backlinks** (the strongest ranking factor — nothing in code substitutes for this):
-   - Link from `carbonstealth.eu` to `supreme.carbonstealth.eu` with descriptive anchor text ("Discord ticket bot", not "click here").
+   - Link from `carbonstealth.eu` to `supremebot.carbonstealth.eu` with descriptive anchor text ("Discord ticket bot", not "click here").
    - List the bot on **top.gg**, **discordbotlist.com**, **discords.com** — these are high-authority directories that rank for "discord bot" queries and pass referral traffic.
    - The Discord server invite (`discord.gg/wpCRpy8B`) should mention the site URL in the server description.
 4. **Validate structured data** after each deploy: <https://search.google.com/test/rich-results> on `/`, `/de`, `/fr`.
@@ -55,8 +55,8 @@ claiming otherwise is selling snake oil.
 ## Verification checklist after deploy
 
 ```
-curl -s https://supreme.carbonstealth.eu/robots.txt | head
-curl -s https://supreme.carbonstealth.eu/sitemap.xml | xmllint --noout -   # validates XML
-curl -sI https://supreme.carbonstealth.eu/og-image.png                     # 200 + image/png
-curl -sI https://supreme.carbonstealth.eu/de                               # 200 (SPA fallback)
+curl -s https://supremebot.carbonstealth.eu/robots.txt | head
+curl -s https://supremebot.carbonstealth.eu/sitemap.xml | xmllint --noout -   # validates XML
+curl -sI https://supremebot.carbonstealth.eu/og-image.png                     # 200 + image/png
+curl -sI https://supremebot.carbonstealth.eu/de                               # 200 (SPA fallback)
 ```

@@ -23,6 +23,7 @@ jobs:
   quality:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       # Прилага се само при билд; страниците с база са force-dynamic, така че
       # билдът не докосва реална база.

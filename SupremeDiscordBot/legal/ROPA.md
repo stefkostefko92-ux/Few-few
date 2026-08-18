@@ -5,8 +5,8 @@
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
-**Last updated:** 2026-04-22  
-**Version:** 1.0
+**Last updated:** 2026-08-07  
+**Version:** 1.1
 
 ---
 
@@ -120,6 +120,62 @@
 | **3rd country transfers** | None |
 | **Retention period** | Indefinite (aggregated, non-personal) |
 | **Note** | No third-party analytics (Google Analytics, Mixpanel, etc.) are used |
+
+---
+
+## Processing Activity 9 — Error Monitoring and Performance Tracing
+
+| Field | Value |
+|---|---|
+| **Purpose** | Detecting and diagnosing faults; performance tracing |
+| **Legal basis** | Article 6(1)(f) — Legitimate interest (service availability and security) |
+| **Data categories** | Stack traces, request metadata, Discord/server identifiers appearing in error context. Secrets and message content are filtered before transmission |
+| **Data subjects** | Dashboard users; Discord members whose identifiers appear in a failing request |
+| **Recipients** | Functional Software, Inc. (Sentry) |
+| **3rd country transfers** | USA — Standard Contractual Clauses (EU region selected where available) |
+| **Retention period** | 90 days (Sentry default retention) |
+
+---
+
+## Processing Activity 10 — Server-side Session Storage
+
+| Field | Value |
+|---|---|
+| **Purpose** | Keeping dashboard administrators signed in |
+| **Legal basis** | Article 6(1)(b) — Necessary to provide the contracted service |
+| **Data categories** | Session identifier, Discord user id, expiry timestamp (`ExpressSession` table) |
+| **Data subjects** | Dashboard users (server administrators) |
+| **Recipients** | Internal only (own EU PostgreSQL) |
+| **3rd country transfers** | None |
+| **Retention period** | Until expiry; expired rows pruned hourly by a scheduled job |
+
+---
+
+## Processing Activity 11 — Ticket Activity Timestamps
+
+| Field | Value |
+|---|---|
+| **Purpose** | Inactivity auto-close and first-response SLA measurement |
+| **Legal basis** | Article 6(1)(f) — Legitimate interest (support operations); processed on behalf of the Customer as controller |
+| **Data categories** | Timestamp of the last message in a ticket (`Ticket.lastActivityAt`) — no message content |
+| **Data subjects** | Discord members participating in a ticket |
+| **Recipients** | Internal only |
+| **3rd country transfers** | None |
+| **Retention period** | Same as the parent ticket |
+
+---
+
+## Processing Activity 12 — White-label Avatar Retrieval
+
+| Field | Value |
+|---|---|
+| **Purpose** | Applying the Customer's chosen bot name and avatar to their own Discord bot |
+| **Legal basis** | Article 6(1)(b) — Necessary to provide the White-label tier |
+| **Data categories** | Image supplied by the Customer at a URL of their choosing; fetched transiently and forwarded to Discord |
+| **Data subjects** | N/A (brand asset, not personal data by design) |
+| **Recipients** | Discord Inc. |
+| **3rd country transfers** | USA (Discord) — Standard Contractual Clauses |
+| **Retention period** | Not stored — held in memory for the duration of the request only |
 
 ---
 

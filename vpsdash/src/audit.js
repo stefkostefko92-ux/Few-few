@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { plural } from './text.js';
 
 // Прагът за ротация се чете ПРИ ВСЕКИ ЗАПИС, не веднъж при зареждане: иначе
 // тестът няма как да задейства истинска ротация, без да пише 5 MB — а ротация,
@@ -163,7 +164,7 @@ export class Audit {
     }
     if (!Array.isArray(entries)) throw Object.assign(new Error('entries трябва да е списък'), { status: 400 });
     if (entries.length > MIRROR_MAX_ENTRIES) {
-      throw Object.assign(new Error(`Най-много ${MIRROR_MAX_ENTRIES} записа на заявка`), { status: 400 });
+      throw Object.assign(new Error(`Най-много ${plural(MIRROR_MAX_ENTRIES, 'запис', 'записа')} на заявка`), { status: 400 });
     }
     const file = path.join(path.dirname(this.file), `audit-mirror-${nodeId}.jsonl`);
     // Всеки запис е обект с таван по размер — низ от 400 KB не е одитен ред.
@@ -259,7 +260,7 @@ export class Audit {
           truncated: true,
           expected: head.count,
           missing: head.count - currentLines.length,
-          reason: `отрязани ${head.count - currentLines.length} записа от края (котвата помни ${head.count})`,
+          reason: `отрязани ${plural(head.count - currentLines.length, 'запис', 'записа')} от края (котвата помни ${head.count})`,
           writeFailures: this.writeFailures,
         };
       }

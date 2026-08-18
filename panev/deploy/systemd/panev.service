@@ -1,0 +1,62 @@
+[Unit]
+Description=Panev Ascensori — sito multilingue (IT/EN/BG) + admin
+Documentation=https://github.com/carbonstealth/Few-few/blob/main/panev/DEPLOY.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=panev
+Group=panev
+WorkingDirectory=/opt/panev
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+
+# Конфигурация и тайни — само на сървъра, права 600, собственост panev:panev.
+# (server.js вика dotenv, но в продукция стойностите идват ОТ ТУК; env винаги
+# печели над .env файл, така че тайните никога не влизат в директорията на кода
+# и не могат да бъдат изтрити от rsync --delete при деплой.)
+EnvironmentFile=/etc/panev/panev.env
+
+# --- Sandboxing / втвърдяване (цел: systemd-analyze security < 5) ---
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+# Единствено data/ е записваем (SQLite + WAL/SHM).
+ReadWritePaths=/opt/panev/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# MemoryDenyWriteExecute е несъвместим с V8 JIT на Node — процесът иска изпълнима
+# памет и seccomp го убива със SIGSYS (status=31). Затова остава изключен.
+MemoryDenyWriteExecute=false
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources @mount
+# V8 в Node 20 ползва memory protection keys (PKU), за да държи JIT кода си
+# write-protected — при старт вика pkey_alloc(2). Той попада в @resources, а
+# seccomp УБИВА вместо да върне грешка: процесът умираше със SIGSYS (status=31)
+# за ~200 ms, преди да отвори порта. Връщаме точно тези три обратно — те не дават
+# права, а са самата хардуерна защита на паметта; редът е след ~-линията, защото
+# по-късните записи побеждават.
+SystemCallFilter=pkey_alloc pkey_free pkey_mprotect
+# Приложението слуша на 127.0.0.1:4102 (непривилегирован порт) → нула капабилити.
+CapabilityBoundingSet=
+AmbientCapabilities=
+# AF_INET/AF_INET6 — HTTP слушател + изходящ SMTP (Aruba, 465).
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

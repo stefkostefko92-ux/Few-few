@@ -1,9 +1,11 @@
 // backend/src/routes/tickets.js
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";
+import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { requirePremium } from "../lib/premium.js";
 import { ensureArchiveToken, tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
 
@@ -16,15 +18,42 @@ const router = Router();
 
 router.get("/archives/:ticketId", async (req, res, next) => {
   try {
+    // ВТОРАТА врата към същите транскрипти. `routes/archive.js` получи защита
+    // срещу налучкване на токени, а този маршрут — не: същите лични данни,
+    // същият вид тайна, по-слаба охрана. Класически „едно правило, две
+    // определения". Обхватът е СЪЩИЯТ („archive"), за да е един бюджетът —
+    // иначе нападателят просто редува двата адреса. (Одит етап 3, 12.08.2026)
+    const blocked = await check("archive", req.ip);
+    if (blocked.blocked) {
+      res.setHeader("Retry-After", String(blocked.retryAfterSec));
+      return res.status(429).send("Too many attempts. Please try again later.");
+    }
+
     const ticket = await prisma.ticket.findUnique({
       where: { id: req.params.ticketId },
       select: { archiveHtml: true, status: true, archiveToken: true },
     });
 
-    if (!ticket || !ticket.archiveHtml) return res.status(404).send("Archive not found");
-    if (!archiveTokenMatches(ticket, req.query.t)) return res.status(404).send("Archive not found");
+    if (!ticket || !ticket.archiveHtml) {
+      await recordFailure("archive", req.ip);
+      return res.status(404).send("Archive not found");
+    }
+    if (!archiveTokenMatches(ticket, req.query.t)) {
+      await recordFailure("archive", req.ip);
+      return res.status(404).send("Archive not found");
+    }
+    await recordSuccess("archive", req.ip);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // CSP на архивния HTML (F8, defense-in-depth): транскриптът е генериран от
+    // потребителско съдържание — заключваме до self стилове/картинки, нула
+    // скриптове/обекти/форми, за да не може вграден вектор да изпълни JS в
+    // нашия origin. Съгласувано с inline print-стиловете (self позволява
+    // <style>, но 'unsafe-inline' е нужен само за style; скриптове са забранени).
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'none'; img-src 'self' https://cdn.discordapp.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"
+    );
     res.send(ticket.archiveHtml);
   } catch (err) {
     next(err);
@@ -37,24 +66,33 @@ router.use(requireAuth, loadUser);
 // ─── GET /api/tickets/:serverId ───────────────────────────────────────────────
 
 router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
-  const { status, search, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
+  const { status, priority, search, dateFrom, dateTo } = req.query;
+  // Клампваме page/limit — клиентски подаван `limit` беше неограничен `take`
+  // (напр. limit=999999 → пълно изсипване + натиск върху базата).
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const page = Math.max(1, Number(req.query.page) || 1);
 
   try {
     const where = {
       serverId: req.params.serverId,
       ...(status && { status }),
+      ...(priority && { priority }),
       ...(search && {
         OR: [
           { id: { contains: search } },
           { creator: { username: { contains: search, mode: "insensitive" } } },
         ],
       }),
-      ...(dateFrom || dateTo ? {
-        createdAt: {
-          ...(dateFrom && { gte: new Date(dateFrom) }),
-          ...(dateTo && { lte: new Date(dateTo + "T23:59:59Z") }),
-        },
-      } : {}),
+      // Невалидна дата дава Invalid Date, което Prisma отхвърля с грешка,
+      // носеща нашия изходен код. Валидираме ТУК и просто пренебрегваме боклука.
+      ...(() => {
+        const from = dateFrom ? new Date(dateFrom) : null;
+        const to = dateTo ? new Date(dateTo + "T23:59:59Z") : null;
+        const okFrom = from && !Number.isNaN(from.getTime());
+        const okTo = to && !Number.isNaN(to.getTime());
+        if (!okFrom && !okTo) return {};
+        return { createdAt: { ...(okFrom && { gte: from }), ...(okTo && { lte: to }) } };
+      })(),
     };
 
     const [tickets, total] = await Promise.all([
@@ -118,7 +156,14 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
   try {
     const ticket = await prisma.ticket.findFirst({
       where: { id: req.params.ticketId, serverId: req.params.serverId },
-      include: { messages: { orderBy: { createdAt: "asc" } }, creator: true },
+      include: {
+        messages: { orderBy: { createdAt: "asc" } },
+        creator: true,
+        assignee: true,
+        // Нужен на транскрипта: при white-label бот брандът в архива е на
+        // клиента, а нашето име не се появява (виж utils/archive.js).
+        server: { select: { name: true, customBotName: true } },
+      },
     });
 
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
@@ -142,14 +187,19 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
       },
     });
 
-    // Tell bot to close Discord channel/thread and post archive link
-    await notifyBot("TICKET_CLOSE", {
+    // Tell bot to close Discord channel/thread and post archive link.
+    // Тих провал = „затворен" тикет в базата + ОТВОРЕН канал в Discord
+    // (лъжещ успех). Записът е валиден, затова не грешка, а botWarning.
+    const closeResult = await notifyBotVerbose("TICKET_CLOSE", {
       ticketId: ticket.id,
       serverId: req.params.serverId,
       channelId: ticket.channelId,
       archiveUrl,
       reason,
     });
+    const botWarning = closeResult?.botError
+      ? `Ticket closed, but the Discord channel was not: ${String(closeResult.botError).slice(0, 300)}`
+      : null;
 
     await prisma.auditLog.create({
       data: {
@@ -172,7 +222,7 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
       closedBy: req.user.id,
     }).catch(() => {});
 
-    res.json(updated);
+    res.json(botWarning ? { ...updated, botWarning } : updated);
   } catch (err) {
     next(err);
   }
@@ -192,14 +242,17 @@ router.post("/:serverId/:ticketId/claim", requireServerAdmin, requirePremium("ti
       data: { assigneeId: req.user.id, status: "CLAIMED" },
     });
 
-    await notifyBot("TICKET_CLAIMED", {
+    const claimResult = await notifyBotVerbose("TICKET_CLAIMED", {
       ticketId: ticket.id,
       serverId: req.params.serverId,
       channelId: ticket.channelId,
       claimerId: req.user.id,
     });
+    const botWarning = claimResult?.botError
+      ? `Claimed, but Discord was not notified: ${String(claimResult.botError).slice(0, 300)}`
+      : null;
 
-    res.json(ticket);
+    res.json(botWarning ? { ...ticket, botWarning } : ticket);
   } catch (err) {
     next(err);
   }
@@ -224,7 +277,78 @@ router.post("/:serverId/:ticketId/unclaim", requireServerAdmin, async (req, res,
   }
 });
 
+// ─── POST /api/tickets/:serverId/:ticketId/reply ──────────────────────────────
+// Отговор на тикет директно от dashboard-а — ботът публикува embed в тикет
+// канала от името на staff члена, без той да влиза в Discord.
 
+const replySchema = z.object({
+  content: z
+    .string()
+    .trim()
+    .min(1, "Reply cannot be empty")
+    .max(1500, "Reply is too long (max 1500 characters)"),
+});
+
+router.post("/:serverId/:ticketId/reply", requireServerAdmin, async (req, res, next) => {
+  try {
+    const parsed = replySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues?.[0]?.message || "Invalid reply" });
+    }
+
+    // Mass-mention неутрализация: @everyone/@here стават плейн текст (без "@").
+    // Ботът праща и allowedMentions:{parse:[]} — defense in depth.
+    const content = parsed.data.content.replace(/@(everyone|here)/g, "$1");
+
+    const ticket = await prisma.ticket.findFirst({
+      // IDOR guard: тикетът трябва да принадлежи точно на ТОЗИ сървър —
+      // никога lookup само по ticketId от клиента.
+      where: { id: req.params.ticketId, serverId: req.params.serverId },
+      select: { id: true, status: true, channelId: true, number: true },
+    });
+
+    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    if (ticket.status === "CLOSED" || ticket.status === "ARCHIVED") {
+      return res.status(400).json({ error: "Ticket is closed — it can no longer receive replies" });
+    }
+    if (!ticket.channelId) {
+      return res.status(400).json({ error: "Ticket has no Discord channel to reply into" });
+    }
+
+    const result = await sendTicketReply({
+      serverId: req.params.serverId,
+      channelId: ticket.channelId,
+      content,
+      authorName: req.user.username,
+      authorId: req.user.id,
+      ticketId: ticket.id,
+      number: ticket.number,
+    });
+
+    if (!result?.ok) {
+      return res.status(502).json({
+        error: "The bot is unreachable right now — the reply was not delivered. Please try again in a moment.",
+      });
+    }
+
+    // Записваме TicketMessage директно: messageCreate listener-ът на бота
+    // ИГНОРИРА бот съобщения (bot/src/events/messageCreate.js:
+    // `if (message.author.bot) return`), затова embed-ът от бота никога няма
+    // да се логне сам в transcript-а — този запис е каноничният, няма дублаж.
+    const message = await prisma.ticketMessage.create({
+      data: {
+        ticketId: ticket.id,
+        authorId: req.user.id,
+        authorTag: `${req.user.username} (via dashboard)`,
+        content,
+      },
+    });
+
+    res.status(201).json(message);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Note: PDF export is handled by /api/export/:serverId/ticket/:ticketId/pdf (see export.js)
 // which uses pdfkit to generate a real PDF. This route previously returned HTML

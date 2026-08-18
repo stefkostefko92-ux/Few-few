@@ -184,7 +184,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-30",
+    "updated": "2026-08-11",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -228,7 +228,7 @@ const FALLBACK = {
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 224
+        "lessons": 241
       },
       "evolution": [
         {
@@ -722,9 +722,64 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v16.5 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира РЕДОВО, не абзацно: tools/agents/handoff.mjs:53-58 чете ст…"
+        },
+        {
+          "version": "16.7.0",
+          "date": "2026-08-06",
+          "event": "v16.7 — учене",
+          "detail": "Научи: Официалната заглавка на чл.15 ОРЗД на нидерландски е 'Recht van inzage van de betrokken… (+1 още)"
+        },
+        {
+          "version": "17.2.0",
+          "date": "2026-08-07",
+          "event": "v17.2 — учене",
+          "detail": "Научи: Коментар в кода, който твърди отсъствие на поле ('User model has no email'), е чест изт… (+4 още)"
+        },
+        {
+          "version": "17.7.0",
+          "date": "2026-08-07",
+          "event": "v17.7 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ иска ШЕСТ полета, не две: От · Към · Статус · Находки · Изход/артефакт… (+4 още)"
+        },
+        {
+          "version": "17.9.0",
+          "date": "2026-08-11",
+          "event": "v17.9 — учене",
+          "detail": "Научи: SupremeDiscordBot: предишните GDPR Blocker-и (email в чл.15/17, TIA/breach-register лип… (+1 още)"
+        },
+        {
+          "version": "18.2.0",
+          "date": "2026-08-11",
+          "event": "v18.2 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-11",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-11",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot: предишните GDPR Blocker-и (email в чл.15/17, TIA/breach-register лип…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ иска ШЕСТ полета, не две: От · Към · Статус · Находки · Изход/артефакт…\" (+4 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Коментар в кода, който твърди отсъствие на поле ('User model has no email'), е чест изт…\" (+4 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „Официалната заглавка на чл.15 ОРЗД на нидерландски е 'Recht van inzage van de betrokken…\" (+1 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -1232,7 +1287,7 @@ const FALLBACK = {
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 266
+        "lessons": 349
       },
       "evolution": [
         {
@@ -1834,9 +1889,267 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v17.3 — учене",
           "detail": "Научи: Поука с file:line в паметта на агент гние тихо — репо гейтовете не я проверяват. `node … (+2 още)"
+        },
+        {
+          "version": "17.6.0",
+          "date": "2026-08-05",
+          "event": "v17.6 — учене",
+          "detail": "Научи: discord.js v14 не емитва messageReactionRemove за потребител извън client.users кеша, а… (+2 още)"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-08-05",
+          "event": "v17.8 — учене",
+          "detail": "Научи: Ticket.applicationId е @unique, а всички idempotency проверки за application discussion… (+1 още)"
+        },
+        {
+          "version": "18.1.0",
+          "date": "2026-08-06",
+          "event": "v18.1 — учене",
+          "detail": "Научи: react-router v6: useParams() в РОДИТЕЛСКИ layout маршрут ВИЖДА параметрите на дъщерния … (+2 още)"
+        },
+        {
+          "version": "18.5.0",
+          "date": "2026-08-06",
+          "event": "v18.5 — учене",
+          "detail": "Научи: В SupremeDiscordBot Prisma upsert по глобално @unique поле (StickyMessage.channelId) е … (+3 още)"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-08-06",
+          "event": "v18.8 — учене",
+          "detail": "Научи: Отговорът НЕ е завършен без блок „## ПРЕДАВАНЕ“ (От/Към/Статус/Находки/Изход/Следваща с… (+2 още)"
+        },
+        {
+          "version": "19.0.0",
+          "date": "2026-08-06",
+          "event": "v19.0 — учене",
+          "detail": "Научи: Дори при задача „само доклад, не пиши файлове“ DoD гейтът иска блока „## ПРЕДАВАНЕ“ в с… (+1 още)"
+        },
+        {
+          "version": "19.2.0",
+          "date": "2026-08-06",
+          "event": "v19.2 — учене",
+          "detail": "Научи: SupremeDiscordBot/frontend: landing.test.js гейтва паритет на функции/икони/маркетинг т… (+1 още)"
+        },
+        {
+          "version": "19.4.0",
+          "date": "2026-08-06",
+          "event": "v19.4 — учене",
+          "detail": "Научи: SupremeDiscordBot: agency seat покритие се резолвира в getServerTier през agency.active… (+1 още)"
+        },
+        {
+          "version": "19.9.0",
+          "date": "2026-08-06",
+          "event": "v19.9 — учене",
+          "detail": "Научи: В SupremeDiscordBot колоната Server.isPremium има ТРИ семантики наведнъж (собствен план… (+4 още)"
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-08-06",
+          "event": "v20.0 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ е ГЕЙТ, не стил: dod-check.mjs на SubagentStop отхвърля отговор б…"
+        },
+        {
+          "version": "20.5.0",
+          "date": "2026-08-07",
+          "event": "v20.5 — учене",
+          "detail": "Научи: Prisma 5.x генерира буквално `NOT col IN (...)` за `NOT: { col: { in: [...] } }` и `col… (+4 още)"
+        },
+        {
+          "version": "20.6.0",
+          "date": "2026-08-07",
+          "event": "v20.6 — учене",
+          "detail": "Научи: Всеки мой отговор трябва да завършва с блока „## ПРЕДАВАНЕ“, иначе SubagentStop гейтът …"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-08-07",
+          "event": "v21.0 — учене",
+          "detail": "Научи: В SupremeDiscordBot вътрешните маршрути на бота трябва да резолвват канали през guild.c… (+3 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-08-07",
+          "event": "v21.3 — учене",
+          "detail": "Научи: В SupremeDiscordBot вътрешните маршрути на бота трябва да резолвват канали през guild.c… (+2 още)"
+        },
+        {
+          "version": "21.6.0",
+          "date": "2026-08-07",
+          "event": "v21.6 — учене",
+          "detail": "Научи: Express 4: router-level `router.use(requireAuth)` в рутер, монтиран на гол префикс (`ap… (+2 още)"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-08-07",
+          "event": "v22.0 — учене",
+          "detail": "Научи: SupremeDiscordBot: bot/src няма НИТО ЕДИН import на getServerTier/planHasFeature — цели… (+3 още)"
+        },
+        {
+          "version": "22.5.0",
+          "date": "2026-08-07",
+          "event": "v22.5 — учене",
+          "detail": "Научи: SupremeDiscordBot: bot/src няма НИТО ЕДИН import на getServerTier/planHasFeature — цели… (+4 още)"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-08-07",
+          "event": "v22.9 — учене",
+          "detail": "Научи: node-cron 4.5.0 извиква всички задачи със СЪЩИЯ cron израз в един timers tick, последов… (+3 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-08-07",
+          "event": "v23.1 — учене",
+          "detail": "Научи: `const` деклариран ВЪТРЕ в try е недостъпен в catch (ReferenceError) — типичен капан, к… (+1 още)"
+        },
+        {
+          "version": "23.4.0",
+          "date": "2026-08-07",
+          "event": "v23.4 — учене",
+          "detail": "Научи: SupremeDiscordBot: `inExportWindow` (backend/src/lib/premium.js:177-182) котви само на … (+2 още)"
+        },
+        {
+          "version": "23.5.0",
+          "date": "2026-08-07",
+          "event": "v23.5 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ се валидира от tools/agents/handoff.mjs и адресатът трябва да е i…"
+        },
+        {
+          "version": "23.9.0",
+          "date": "2026-08-11",
+          "event": "v23.9 — учене",
+          "detail": "Научи: Променлива, декларирана с const/let вътре в try, НЕ е достъпна в catch блока; в async E… (+3 още)"
+        },
+        {
+          "version": "24.1.0",
+          "date": "2026-08-11",
+          "event": "v24.1 — учене",
+          "detail": "Научи: Блокът „## ПРЕДАВАНЕ“ е ГЕЙТ, не проза: `dod-check.mjs` на SubagentStop спира отговор б… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-11",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ е ГЕЙТ, не проза: `dod-check.mjs` на SubagentStop спира отговор б…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-11",
+          "type": "learning",
+          "summary": "Научи: „Променлива, декларирана с const/let вътре в try, НЕ е достъпна в catch блока; в async E…\" (+3 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ се валидира от tools/agents/handoff.mjs и адресатът трябва да е i…\""
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot: `inExportWindow` (backend/src/lib/premium.js:177-182) котви само на …\" (+2 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „`const` деклариран ВЪТРЕ в try е недостъпен в catch (ReferenceError) — типичен капан, к…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „node-cron 4.5.0 извиква всички задачи със СЪЩИЯ cron израз в един timers tick, последов…\" (+3 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot: bot/src няма НИТО ЕДИН import на getServerTier/planHasFeature — цели…\" (+4 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot: bot/src няма НИТО ЕДИН import на getServerTier/planHasFeature — цели…\" (+3 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „SupremeDiscordBot премиум резолюция: само checkout.session.completed (stripe.js) чисти …\" (+1)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Express 4: router-level `router.use(requireAuth)` в рутер, монтиран на гол префикс (`ap…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot вътрешните маршрути на бота трябва да резолвват канали през guild.c…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot вътрешните маршрути на бота трябва да резолвват канали през guild.c…\" (+3 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Всеки мой отговор трябва да завършва с блока „## ПРЕДАВАНЕ“, иначе SubagentStop гейтът …\""
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Prisma 5.x генерира буквално `NOT col IN (...)` за `NOT: { col: { in: [...] } }` и `col…\" (+4 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „Блокът „## ПРЕДАВАНЕ“ е ГЕЙТ, не стил: dod-check.mjs на SubagentStop отхвърля отговор б…\""
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot колоната Server.isPremium има ТРИ семантики наведнъж (собствен план…\" (+4 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot: agency seat покритие се резолвира в getServerTier през agency.active…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot/frontend: landing.test.js гейтва паритет на функции/икони/маркетинг т…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „Дори при задача „само доклад, не пиши файлове“ DoD гейтът иска блока „## ПРЕДАВАНЕ“ в с…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „Отговорът НЕ е завършен без блок „## ПРЕДАВАНЕ“ (От/Към/Статус/Находки/Изход/Следваща с…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot Prisma upsert по глобално @unique поле (StickyMessage.channelId) е …\" (+3 още)"
+        },
+        {
+          "date": "2026-08-06",
+          "type": "learning",
+          "summary": "Научи: „react-router v6: useParams() в РОДИТЕЛСКИ layout маршрут ВИЖДА параметрите на дъщерния …\" (+2 още)"
+        },
+        {
+          "date": "2026-08-05",
+          "type": "learning",
+          "summary": "Научи: „Ticket.applicationId е @unique, а всички idempotency проверки за application discussion…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-05",
+          "type": "learning",
+          "summary": "Научи: „discord.js v14 не емитва messageReactionRemove за потребител извън client.users кеша, а…\" (+2 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -3385,7 +3698,7 @@ const FALLBACK = {
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 148
+        "lessons": 156
       },
       "evolution": [
         {
@@ -3795,9 +4108,20 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v14.6 — учене",
           "detail": "Научи: tayniyat-agent паметта за Google Play target API deadline (31.08.2026, API 36, изключен…"
+        },
+        {
+          "version": "14.8.0",
+          "date": "2026-08-07",
+          "event": "v14.8 — учене",
+          "detail": "Научи: SupremeDiscordBot/frontend: production домейн е двусмислен в repo — код (Seo.jsx/preren… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot/frontend: production домейн е двусмислен в repo — код (Seo.jsx/preren…\" (+1 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -4454,7 +4778,7 @@ const FALLBACK = {
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 124
+        "lessons": 137
       },
       "evolution": [
         {
@@ -4828,9 +5152,31 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v16.0 — учене",
           "detail": "Научи: ICU MessageFormat третира ASCII апострофа ' като escape-знак — в италиански/френски низ… (+11 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-08-07",
+          "event": "v16.6 — учене",
+          "detail": "Научи: Паритетът на ключове и плейсхолдъри може да е 100% зелен, а продуктът пак да лъже за це… (+5 още)"
+        },
+        {
+          "version": "16.7.0",
+          "date": "2026-08-07",
+          "event": "v16.7 — учене",
+          "detail": "Научи: Одиторски доклад без блок „## ПРЕДАВАНЕ“ къса веригата и DoD гейтът (dod-check.mjs на S…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Одиторски доклад без блок „## ПРЕДАВАНЕ“ къса веригата и DoD гейтът (dod-check.mjs на S…\""
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Паритетът на ключове и плейсхолдъри може да е 100% зелен, а продуктът пак да лъже за це…\" (+5 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -5966,7 +6312,7 @@ const FALLBACK = {
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 156
+        "lessons": 176
       },
       "evolution": [
         {
@@ -6352,9 +6698,31 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v15.7 — учене",
           "detail": "Научи: systemd Type=simple (нашият medqr.service:7) прави `systemctl start/restart` да ВРЪЩА У… (+12 още)"
+        },
+        {
+          "version": "16.4.0",
+          "date": "2026-08-07",
+          "event": "v16.4 — учене",
+          "detail": "Научи: Одит на работното дърво не е одит на това, което ще се деплойне: при workflow „GitHub Z… (+6 още)"
+        },
+        {
+          "version": "16.5.0",
+          "date": "2026-08-07",
+          "event": "v16.5 — учене",
+          "detail": "Научи: Одитът предполага дърво в ПОКОЙ. Ако друг агент/процес пише в същото работно дърво по в…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Одитът предполага дърво в ПОКОЙ. Ако друг агент/процес пише в същото работно дърво по в…\""
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Одит на работното дърво не е одит на това, което ще се деплойне: при workflow „GitHub Z…\" (+6 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -8317,7 +8685,7 @@ const FALLBACK = {
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 150
+        "lessons": 163
       },
       "evolution": [
         {
@@ -8655,9 +9023,30 @@ const FALLBACK = {
           "date": "2026-07-29",
           "event": "v15.9 — учене",
           "detail": "Научи: CRD 2011/83 чл. 8(2): плащащ бутон при дистанционен електронен договор трябва да е обоз… (+2 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-08-07",
+          "event": "v16.2 — учене",
+          "detail": "Научи: Уникален бизнес-ключ в ефекта на webhook handler (напр. PaymentLog.stripeInvoiceId @uni… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „Уникален бизнес-ключ в ефекта на webhook handler (напр. PaymentLog.stripeInvoiceId @uni…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „checkout.session.completed НЕ значи платено дори когато session.subscription е попълнен…\" (+3)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Express: в middleware, монтиран с app.use('/api', mw), req.path е ОТНОСИТЕЛЕН на mount …\" (+5)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
@@ -10341,7 +10730,7 @@ const FALLBACK = {
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 143
+        "lessons": 151
       },
       "evolution": [
         {
@@ -10745,9 +11134,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v14.1 — учене",
           "detail": "Научи: WebGPU е Baseline от яну 2026, но реални дупки остават: Linux Firefox без стабилна подд… (+5 още)"
+        },
+        {
+          "version": "14.3.0",
+          "date": "2026-08-07",
+          "event": "v14.3 — учене",
+          "detail": "Научи: В SupremeDiscordBot frontend react-query план на ключове: ['servers'] (мн.ч., сайдбар+с… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot frontend react-query план на ключове: ['servers'] (мн.ч., сайдбар+с…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -11873,7 +12273,7 @@ const FALLBACK = {
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 119
+        "lessons": 133
       },
       "evolution": [
         {
@@ -12181,9 +12581,31 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v14.7 — учене",
           "detail": "Научи: Components v2 (flag IS_COMPONENTS_V2, 1<<15 message flags) е нов модел съобщения — ведн… (+5 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-08-07",
+          "event": "v14.9 — учене",
+          "detail": "Научи: MessageContent intent review проверява РЕАЛНОТО поведение на бота срещу декларираната ц… (+1 още)"
+        },
+        {
+          "version": "15.1.0",
+          "date": "2026-08-07",
+          "event": "v15.1 — учене",
+          "detail": "Научи: В interactionCreate.js verига от startsWith-проверки за button/select customId, липсата… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „В interactionCreate.js verига от startsWith-проверки за button/select customId, липсата…\" (+1 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „MessageContent intent review проверява РЕАЛНОТО поведение на бота срещу декларираната ц…\" (+1 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -13405,7 +13827,7 @@ const FALLBACK = {
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 152
+        "lessons": 154
       },
       "evolution": [
         {
@@ -13591,7 +14013,7 @@ const FALLBACK = {
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 154
+        "lessons": 164
       },
       "evolution": [
         {
@@ -13641,9 +14063,58 @@ const FALLBACK = {
           "date": "2026-07-30",
           "event": "v15.4 — учене",
           "detail": "Научи: В Few-few монорепото 6 от 8 CLI-релевантни хука (.claude/hooks/*.mjs с PreToolUse/PostT… (+1 още)"
+        },
+        {
+          "version": "15.7.0",
+          "date": "2026-08-07",
+          "event": "v15.7 — учене",
+          "detail": "Научи: SupremeDiscordBot (клон discord-bot-audit-seo-p5edww, HEAD 1259509c9): dataRetention.js… (+2 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-08-07",
+          "event": "v16.0 — учене",
+          "detail": "Научи: SupremeDiscordBot (HEAD 1259509c9): dataRetention.js и gdpr.js нямат нито един тест — п… (+2 още)"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-08-07",
+          "event": "v16.2 — учене",
+          "detail": "Научи: SupremeDiscordBot bot команди: авторизацията почти навсякъде е РЪЧНА проверка вътре в e… (+1 още)"
+        },
+        {
+          "version": "16.4.0",
+          "date": "2026-08-07",
+          "event": "v16.4 — учене",
+          "detail": "Научи: SupremeDiscordBot bot команди: авторизацията е РЪЧНА проверка вътре в execute() (не set… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Структурен тест, който брои literal occurrences на функционално име в срязан текст на h…\" (+1)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot bot команди: авторизацията е РЪЧНА проверка вътре в execute() (не set…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot bot команди: авторизацията почти навсякъде е РЪЧНА проверка вътре в e…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot (HEAD 1259509c9): dataRetention.js и gdpr.js нямат нито един тест — п…\" (+2 още)"
+        },
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot (клон discord-bot-audit-seo-p5edww, HEAD 1259509c9): dataRetention.js…\" (+2 още)"
+        },
         {
           "date": "2026-07-30",
           "type": "learning",
@@ -13926,7 +14397,7 @@ const FALLBACK = {
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 154
+        "lessons": 159
       },
       "evolution": [
         {
@@ -13964,9 +14435,20 @@ const FALLBACK = {
           "date": "2026-07-28",
           "event": "v15.2 — учене",
           "detail": "Научи: DB семантичните конвенции са STABLE и преименувани спрямо старите примери: db.system→db… (+11 още)"
+        },
+        {
+          "version": "15.7.0",
+          "date": "2026-08-07",
+          "event": "v15.7 — учене",
+          "detail": "Научи: node-cron 4.x ХВАЩА грешката на задача, логва я през собствения си logger и emit-ва 'ex… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-08-07",
+          "type": "learning",
+          "summary": "Научи: „node-cron 4.x ХВАЩА грешката на задача, логва я през собствения си logger и emit-ва 'ex…\" (+4 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
