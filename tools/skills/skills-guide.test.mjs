@@ -120,3 +120,20 @@ test("проверката е в състава на гейта и е задъл
   const rec = gate.slice(gate.indexOf('id: "skill-triggers"'));
   assert.ok(!/required:\s*false/.test(rec.slice(0, rec.indexOf("}"))));
 });
+
+// Най-малки права ЗА УМЕНИЯ (2026-08-04). `tools-audit` гейтва инструментите на АГЕНТИТЕ, но нищо
+// не пазеше уменията: одитно умение можеше да пише файлове, докато агентът-собственик (Кодаджията,
+// Правният Разбирач) няма Write/Edit — несъответствие в собствената ни доктрина. Официалното поле е
+// `disallowed-tools` (сверено с документацията, не с чужд пример).
+// СЪЗНАТЕЛНО само тези две: wcag-audit и db-readonly НЕ се ограничават — първото е „одит И поправка"
+// със собственици, които пишат, а второто пази ЧЕТЕНЕ ОТ БАЗА, не запис на файлове; сляпо
+// ограничение там би счупило легитимен поток.
+test("докладващите одитни умения не могат да пишат файлове (least-privilege)", () => {
+  for (const id of ["owasp-review", "gdpr-launch"]) {
+    const fm = readFileSync(join(ROOT, ".claude", "skills", id, "SKILL.md"), "utf8").split("---")[1] || "";
+    const line = fm.split("\n").find((l) => /^disallowed-tools:/.test(l));
+    assert.ok(line, `${id}: липсва disallowed-tools — умението може да пише, а собственикът му не може`);
+    assert.match(line, /Write/, `${id}: Write трябва да е забранен`);
+    assert.match(line, /Edit/, `${id}: Edit трябва да е забранен`);
+  }
+});

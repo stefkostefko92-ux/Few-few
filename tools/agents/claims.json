@@ -7,7 +7,10 @@
       "kind": "legal",
       "statement": "AI Act (Регламент (ЕС) 2024/1689) чл. 50: прозрачност при AI-генерирано/deepfake съдържание — deployer разкрива изкуствения произход. чл. 50(4) покрива текст/deepfake за информиране на публиката по въпрос от обществен интерес (обхватът е широк: медии, реклама, агенции, always-on органичен маркетинг); изключението за очевидно артистично/творческо/сатирично е ТЯСНО и на практика не важи за информативно/комерсиално. Приложимо от 02.08.2026; Code of Practice признат от Комисията 08-09.07.2026. Глоба до €15M или 3% от световния оборот.",
       "source": "https://artificialintelligenceact.eu/transparency-rules-article-50/ ; EUR-Lex Регламент (ЕС) 2024/1689 чл. 50",
-      "agents": ["socialdjiyata", "pravniyat-razbirach"],
+      "agents": [
+        "socialdjiyata",
+        "pravniyat-razbirach"
+      ],
       "checkedAt": "2026-07-28",
       "note": "Цитирай чл. 50(4) за органичен маркетинг, НЕ 50(2). Anchor умишлено ЛИПСВА — чл. 50 е двусмислен (CRD 2011/83 също има чл. 50 = право на отказ)."
     },
@@ -16,7 +19,10 @@
       "kind": "legal",
       "statement": "CRD 2011/83/ЕС чл. 8(2): плащащ бутон при дистанционен електронен договор със задължение за плащане трябва да е обозначен само с формулировка „поръчка със задължение за плащане“ (или недвусмислен еквивалент); при неспазване потребителят не е обвързан с договора. Неясни надписи (Продължи/Завърши) не са валидни. CJEU C-249/21 Fuhrmann-2.",
       "source": "EUR-Lex 2011/83/ЕС чл. 8(2) ; CJEU C-249/21 Fuhrmann-2",
-      "agents": ["prodavacha", "pravniyat-razbirach"],
+      "agents": [
+        "prodavacha",
+        "pravniyat-razbirach"
+      ],
       "checkedAt": "2026-07-29",
       "note": "Anchor умишлено ЛИПСВА — 8(2) шуми (18 агента)."
     },
@@ -25,10 +31,50 @@
       "kind": "taxonomy",
       "statement": "OWASP Top 10 for LLM Applications (2025): LLM01 Prompt Injection · LLM02 Sensitive Information Disclosure · LLM05 Improper Output Handling · LLM06 Excessive Agency · LLM07 System Prompt Leakage · LLM08 Vector/Embedding Weaknesses.",
       "source": "https://genai.owasp.org/llm-top-10/",
-      "agents": ["razbivacha", "ai-djiyata"],
+      "agents": [
+        "razbivacha",
+        "ai-djiyata"
+      ],
       "anchor": "LLM0",
       "checkedAt": "2026-07-29",
       "note": "2025 версия. 2023 кодовете (тогава LLM06=Sensitive Info Disclosure, LLM08=Excessive Agency) са остарели — не ги смесвай. Anchor LLM0 е недвусмислен → авто-проверка за присъствие. Доктрината живее и в _memory/SECURITY.md."
+    },
+    {
+      "id": "play-target-api-2026",
+      "kind": "platform",
+      "statement": "Google Play target API: от 31.08.2026 нови апс и ъпдейти таргетират ≥ API 36 (Android 16); съществуващи ≥ API 35, за да остават видими на по-нови устройства. Разбивка по форм-фактор: Wear OS и Android Automotive ≥ 35, Android TV и Android XR ≥ 34. Екстеншън е възможен по заявка.",
+      "source": "https://developer.android.com/google/play/requirements/target-sdk",
+      "agents": [
+        "tayniyat-agent",
+        "mobildjiyata"
+      ],
+      "checkedAt": "2026-07-28",
+      "note": "ТВЪРД СРОК с цена „сваляне от листинга\". Добавен в регистъра на Кръг 6 (2026-08-04): дотогава TTL пазеше само правните твърдения, а платформените дати — еднакво волатилни и по-скъпи — стояха само в паметта. Числото се сверява ЖИВО преди всеки submit, не по спомен."
+    },
+    {
+      "id": "chrome-mv2-end-2026",
+      "kind": "platform",
+      "statement": "Manifest V2 край: MV2 листингите падат от Chrome Web Store на 31.08.2026; MV2 е изключен за всички канали без опция за реактивиране от потребителя.",
+      "source": "https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline",
+      "agents": [
+        "hromadjiyata",
+        "tayniyat-agent"
+      ],
+      "checkedAt": "2026-07-28",
+      "note": "Засяга adblock/ и SupremeBot/ (MV3). Срокът е близък — при пресверяване гледай и дали датата не е местена."
+    },
+    {
+      "id": "cc-hook-events",
+      "kind": "taxonomy",
+      "statement": "Claude Code хуковите събития са 31 на брой (не 30). Полето при провал на инструмент е `error`, не `error_type`/`tool_error`. Списъкът включва ConfigChange. Броят се мести без обявяване — точно като npm мажор.",
+      "source": "https://code.claude.com/docs/en/hooks",
+      "agents": [
+        "ai-djiyata",
+        "izpitatelya",
+        "razbivacha"
+      ],
+      "checkedAt": "2026-08-04",
+      "note": "Открито при пресверката на карантината (2026-08-04): поука твърдеше 30 и `error_type`; и двете се разминаха с живата дока. Anchor умишлено ЛИПСВА — числото е точно това, което се мени, значи котва по литерал ще пада при всяка промяна вместо да иска пресверка."
     }
   ]
 }
