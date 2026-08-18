@@ -42,9 +42,9 @@ export const en: Dictionary = {
     title: 'Bulgarian FiveM RP servers — live list with status and players',
     description:
       'Every Bulgarian FiveM RP server in one place: online status, player count, framework (ESX, QBCore, Qbox), whitelist, Discord and rules. Updated automatically.',
-    h1: 'Bulgarian FiveM RP servers — all in one place',
+    h1: 'This is where Bulgaria plays.',
     intro:
-      'A live list of every server’s status: whether it is online, how many people are playing, which framework it runs and whether it is whitelisted. The data is read straight from the servers themselves.',
+      'Every Bulgarian FiveM RP server in one place: online status, player count, framework and whitelist — read straight from the servers themselves.',
     statsOnline: 'online out of',
     statsPlayers: 'players right now',
     filters: 'Filters',
@@ -59,6 +59,10 @@ export const en: Dictionary = {
     heroKicker: 'Live data, read straight from the servers',
     ctaBrowse: 'Browse all servers',
     ctaSubmit: 'Add your server',
+    ctaOr: 'or',
+    ctaSubmitInline: 'add your server',
+    outOf: 'of',
+    rowOpen: 'open the server page',
     statServers: 'servers',
     statOnline: 'online now',
     statPlayers: 'players',

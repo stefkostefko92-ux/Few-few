@@ -5,10 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
-import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
-import { Mascot } from '@/components/Mascot';
-import { ServerCard } from '@/components/ServerCard';
+import { ServerRow } from '@/components/ServerRow';
 import { getContent } from '@/content';
 import { getDictionary, resolveLocale } from '@/i18n';
 import { type Locale } from '@/i18n/config';
@@ -44,9 +42,20 @@ function findHero(): string | null {
   return null;
 }
 
-/** Колко сървъра показва тийзърът. Landing, не каталог — пълният е на /servers. */
+/** Колко сървъра показва класацията. Landing, не каталог — пълният е на /servers. */
 const TEASER = 6;
 const NEWS_TEASER = 3;
+
+/**
+ * Излизане от контейнера до ръба на екрана.
+ *
+ * `main` е `max-w-6xl` с `px-4`, значи процентният margin се смята спрямо
+ * СЪДЪРЖИМАТА му ширина: `50% - 50vw` дава точно отместването до ръба, при
+ * всяка ширина (проверено по сметка и в браузър на 360/768/1280). Скролбарът
+ * прави `100vw` малко по-широк от видимото — затова `main` носи
+ * `overflow-x-clip`; вижте коментара там.
+ */
+const FULL_BLEED = 'mx-[calc(50%-50vw)] w-screen';
 
 /**
  * „Отговор отпред“ за AI отговарачите (AEO): въпросите се хранят от СЪЩИТЕ
@@ -125,16 +134,16 @@ export default async function HomePage({ params }: Props) {
   const heroImage = findHero();
 
   const stats = [
-    { value: servers.length, label: t.home.statServers },
-    { value: online.length, label: t.home.statOnline },
-    { value: totalPlayers, label: t.home.statPlayers },
-    { value: streamers.live, label: t.home.statStreamers },
+    { value: servers.length, label: t.home.statServers, accent: false },
+    { value: online.length, label: t.home.statOnline, accent: true },
+    { value: totalPlayers, label: t.home.statPlayers, accent: true },
+    { value: streamers.live, label: t.home.statStreamers, accent: false },
   ];
 
   const why = [
-    { icon: 'online', title: t.home.whyLiveTitle, body: t.home.whyLiveBody },
-    { icon: 'filter', title: t.home.whyFilterTitle, body: t.home.whyFilterBody },
-    { icon: 'promoted', title: t.home.whyHonestTitle, body: t.home.whyHonestBody },
+    { title: t.home.whyLiveTitle, body: t.home.whyLiveBody },
+    { title: t.home.whyFilterTitle, body: t.home.whyFilterBody },
+    { title: t.home.whyHonestTitle, body: t.home.whyHonestBody },
   ];
 
   const steps = [
@@ -145,10 +154,10 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      {/* ── Герой ────────────────────────────────────────────────────────── */}
-      {/* `-z-10` + `overflow-hidden` държат фона зад съдържанието, без да
-          порасне хоризонталният скрол — измерено на 360/768/1280. */}
-      <section className="relative -mx-4 overflow-hidden px-4 pb-14 pt-10 sm:pt-16">
+      {/* ── Герой-плакат ─────────────────────────────────────────────────── */}
+      {/* `-mt-10` изяжда горния отстъп на `main`, за да няма ивица фон между
+          хедъра и кадъра — плакатът започва от самия хедър. */}
+      <section className={`relative -mt-10 overflow-hidden ${FULL_BLEED}`}>
         {heroImage ? (
           <>
             {/* Снимката е ФОН, не съдържание → `alt=""` и `aria-hidden`.
@@ -163,131 +172,110 @@ export default async function HomePage({ params }: Props) {
               sizes="100vw"
               className="pointer-events-none absolute inset-0 -z-10 object-cover"
             />
-            {/* Затъмнението НЕ е вкус — то пази контраста на текста над
-                произволна снимка. Без него светъл кадър прави заглавието
-                нечетимо и пада 1.4.3. Плътността е избрана да държи
-                `silver-400` над 4,5:1 ТАМ, КЪДЕТО СТОИ ТЕКСТЪТ — вляво.
-                Вдясно плътността пада до 35%, защото там няма текст, а
-                затъмнение по цялата ширина изяждаше снимката до невидимост
-                (първият опит: кадърът беше на място, но не се виждаше). */}
+            {/* ДВЕ затъмнения, не едно, и това не е вкус.
+                Вертикалното слива долния ръб на кадъра с фона на страницата —
+                иначе плакатът свършва с видима хоризонтална черта. Горните 72%
+                са полупрозрачни, за да НЕ изчезне снимката (първият опит с
+                равномерно затъмнение по цялата височина я изяде до невидимост).
+                Хоризонталното пази контраста ТАМ, КЪДЕТО СТОИ ТЕКСТЪТ — вляво:
+                над произволен кадър `silver-300` иначе пада под 4,5:1 (1.4.3). */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/35"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink-950/60 via-transparent to-ink-950"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950/95 via-ink-950/10 to-transparent"
             />
           </>
         ) : (
-          /* Без снимка героят пак не е гол: конични/радиални градиенти тежат
+          /* Без снимка плакатът пак не е гол: конични/радиални градиенти тежат
              нула байта и не искат втора заявка. */
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_20%_0%,rgba(34,211,238,0.14),transparent_65%),radial-gradient(45%_45%_at_85%_10%,rgba(16,185,129,0.10),transparent_60%)]"
           />
         )}
-        <div className="flex flex-col-reverse items-start gap-8 sm:flex-row sm:items-center sm:justify-between">
-          <div className="max-w-2xl">
-            <p className="flex items-center gap-2 text-sm text-cyan-300">
-              <Icon group="status" name="online" size={16} />
-              {t.home.heroKicker}
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-              <span className="text-chrome">{t.home.h1}</span>
-            </h1>
-            <p className="mt-4 text-lg text-silver-400">{t.home.intro}</p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href={`/${locale}/servers`}
-                className="rounded-lg bg-cyan-500 px-5 py-2.5 font-medium text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
-              >
-                {t.home.ctaBrowse}
-              </Link>
-              <Link
-                href={`/${locale}/submit`}
-                className="rounded-lg border border-white/15 px-5 py-2.5 transition-colors hover:border-cyan-500 hover:text-cyan-300"
-              >
-                {t.home.ctaSubmit}
-              </Link>
+        <div className="mx-auto flex min-h-[26rem] max-w-6xl items-end px-4 pb-14 pt-24 sm:min-h-[34rem] lg:min-h-[41rem]">
+          <div className="flex gap-5 sm:gap-7">
+            {/* Трикольорът като НОСЕЩА греда, не като кант отгоре: същият
+                градиент (`.flag-rule`), само че изправен. */}
+            <div className="flag-rule w-1.5 shrink-0 rounded-full" aria-hidden="true" />
+
+            <div className="max-w-3xl">
+              <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
+                {t.home.heroKicker}
+              </p>
+              <h1 className="mt-4 text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5.5rem]">
+                <span className="text-chrome">{t.home.h1}</span>
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-silver-300 sm:text-xl">
+                {t.home.intro}
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <Link
+                  href={`/${locale}/servers`}
+                  className="rounded-lg bg-cyan-500 px-8 py-3.5 text-base font-semibold text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 sm:text-lg"
+                >
+                  {t.home.ctaBrowse}
+                </Link>
+                <p className="text-silver-400">
+                  {t.home.ctaOr}{' '}
+                  {/* Отделен ключ, а не `ctaSubmit.toLowerCase()`: смяната на
+                      регистър по време на изпълнение е правило за ЕЗИК, не за
+                      низ, и се чупи тихо (турско „I“, немско „ß“, а утре и на
+                      език, на който изречението не започва с малка буква). */}
+                  <Link
+                    href={`/${locale}/submit`}
+                    className="text-cyan-300 underline underline-offset-4 hover:text-cyan-200"
+                  >
+                    {t.home.ctaSubmitInline}
+                  </Link>
+                </p>
+              </div>
             </div>
           </div>
-
-          {/* Герой-кадър: пълното ниво (градиенти, ореол, мехурчета) си струва само
-              над 128 px. Погледът следи курсора, а анимацията мълчи при
-              prefers-reduced-motion — и двете са вградени в компонента. */}
-          <Mascot
-            detail="full"
-            size={196}
-            pose="wave"
-            expression="happy"
-            gaze="follow"
-            animated
-            title={null}
-            className="shrink-0"
-          />
         </div>
+      </section>
 
-        {/* ── Живите числа ───────────────────────────────────────────────── */}
-        {servers.length > 0 && (
-          <dl className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-xl border border-white/10 bg-ink-900/70 px-4 py-3"
+      {/* ── Живите числа: един ред с тънки черти, не плочки ───────────────── */}
+      {servers.length > 0 && (
+        <dl className="grid grid-cols-2 border-y border-white/10 sm:grid-cols-4 sm:divide-x sm:divide-white/10">
+          {/* `dt` стои ПРЕДИ `dd` в кода, защото HTML иска точно този ред вътре
+              в `div` на `dl`; визуално етикетът е подпис ПОД числото и това го
+              прави `flex-col-reverse`, не разместване на маркъпа. */}
+          {stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              className={`flex flex-col-reverse ${index === 0 ? 'py-7' : 'py-7 sm:ps-7'}`}
+            >
+              <dt className="mt-1 text-xs uppercase tracking-[0.12em] text-silver-500">
+                {stat.label}
+              </dt>
+              <dd
+                className={`text-4xl font-semibold tabular-nums tracking-tight ${
+                  stat.accent ? 'text-cyan-300' : 'text-silver-200'
+                }`}
               >
-                <dt className="text-xs uppercase tracking-wide text-silver-500">{stat.label}</dt>
-                <dd className="mt-1 text-2xl font-semibold tabular-nums text-cyan-300">
-                  {stat.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </section>
-
-      {/* ── Защо тук ─────────────────────────────────────────────────────── */}
-      <section className="mt-4" aria-labelledby="why-heading">
-        <h2 id="why-heading" className="text-2xl font-semibold tracking-tight">
-          {t.home.whyHeading}
-        </h2>
-        <ul className="mt-6 grid gap-4 sm:grid-cols-3">
-          {why.map((item) => (
-            <li key={item.title} className="rounded-xl border border-white/10 bg-ink-900/70 p-5">
-              <Badge name={item.icon} size={32} />
-              <h3 className="mt-3 font-medium">{item.title}</h3>
-              <p className="mt-1.5 text-sm text-silver-400">{item.body}</p>
-            </li>
+                {stat.value}
+              </dd>
+            </div>
           ))}
-        </ul>
-      </section>
+        </dl>
+      )}
 
-      {/* ── Как работи ───────────────────────────────────────────────────── */}
-      <section className="mt-14" aria-labelledby="how-heading">
-        <h2 id="how-heading" className="text-2xl font-semibold tracking-tight">
-          {t.home.howHeading}
-        </h2>
-        <ol className="mt-6 grid gap-4 sm:grid-cols-3">
-          {steps.map((step, index) => (
-            <li key={step.title} className="rounded-xl border border-white/10 p-5">
-              <p className="flex items-center gap-2 text-sm text-cyan-300">
-                <span className="tabular-nums">{index + 1}</span>
-                <Icon group="ui" name={step.icon} size={16} />
-              </p>
-              <h3 className="mt-2 font-medium">{step.title}</h3>
-              <p className="mt-1.5 text-sm text-silver-400">{step.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* ── Тийзър със сървъри ───────────────────────────────────────────── */}
+      {/* ── Класацията ───────────────────────────────────────────────────── */}
       {featured.length > 0 && (
         <section className="mt-14" aria-labelledby="teaser-heading">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 id="teaser-heading" className="text-2xl font-semibold tracking-tight">
+            <h2 id="teaser-heading" className="text-3xl font-semibold tracking-tight">
               {t.home.teaserHeading}
             </h2>
             <Link
               href={`/${locale}/servers`}
-              className="text-sm text-cyan-300 underline underline-offset-2"
+              className="text-sm text-cyan-300 underline underline-offset-4"
             >
               {t.home.teaserAll} ({servers.length})
             </Link>
@@ -306,11 +294,17 @@ export default async function HomePage({ params }: Props) {
             </Link>
           </p>
 
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((server) => (
-              <ServerCard key={server.slug} server={server} locale={locale} t={t} />
+          <ol className="mt-7">
+            {featured.map((server, index) => (
+              <ServerRow
+                key={server.slug}
+                server={server}
+                locale={locale}
+                t={t}
+                rank={index + 1}
+              />
             ))}
-          </ul>
+          </ol>
         </section>
       )}
 
@@ -326,10 +320,45 @@ export default async function HomePage({ params }: Props) {
         </section>
       )}
 
+      {/* ── Защо тук ─────────────────────────────────────────────────────── */}
+      <section className="mt-16" aria-labelledby="why-heading">
+        <h2 id="why-heading" className="sr-only">
+          {t.home.whyHeading}
+        </h2>
+        <ul className="grid gap-10 sm:grid-cols-3">
+          {why.map((item) => (
+            <li key={item.title}>
+              <div className="h-[3px] w-9 bg-cyan-500" aria-hidden="true" />
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">{item.title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-silver-400">{item.body}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ── Как работи ───────────────────────────────────────────────────── */}
+      <section className="mt-16" aria-labelledby="how-heading">
+        <h2 id="how-heading" className="text-3xl font-semibold tracking-tight">
+          {t.home.howHeading}
+        </h2>
+        <ol className="mt-7 grid gap-6 sm:grid-cols-3 sm:gap-8">
+          {steps.map((step, index) => (
+            <li key={step.title} className="border-t border-white/10 pt-5">
+              <p className="flex items-center gap-2 text-sm text-cyan-300">
+                <span className="tabular-nums">{index + 1}</span>
+                <Icon group="ui" name={step.icon} size={16} />
+              </p>
+              <h3 className="mt-2 text-lg font-medium">{step.title}</h3>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-silver-400">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       {/* ── Стриймъри ────────────────────────────────────────────────────── */}
       {streamers.total > 0 && (
-        <section className="mt-14 rounded-xl border border-white/10 bg-ink-900/70 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <section className="mt-16 border-y border-white/10 py-7">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold tracking-tight">{t.home.streamersHeading}</h2>
               <p className="mt-1 text-sm text-silver-400">
@@ -340,7 +369,7 @@ export default async function HomePage({ params }: Props) {
             </div>
             <Link
               href={`/${locale}/streamers`}
-              className="rounded-lg border border-white/15 px-4 py-2 text-sm hover:border-cyan-500 hover:text-cyan-300"
+              className="rounded-lg border border-white/15 px-5 py-2.5 text-sm hover:border-cyan-500 hover:text-cyan-300"
             >
               {t.home.streamersCta}
             </Link>
@@ -350,27 +379,27 @@ export default async function HomePage({ params }: Props) {
 
       {/* ── Новини ───────────────────────────────────────────────────────── */}
       {news.length > 0 && (
-        <section className="mt-14" aria-labelledby="news-heading">
+        <section className="mt-16" aria-labelledby="news-heading">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 id="news-heading" className="text-2xl font-semibold tracking-tight">
+            <h2 id="news-heading" className="text-3xl font-semibold tracking-tight">
               {t.home.newsHeading}
             </h2>
             <Link
               href={`/${locale}/news`}
-              className="text-sm text-cyan-300 underline underline-offset-2"
+              className="text-sm text-cyan-300 underline underline-offset-4"
             >
               {t.home.newsAll}
             </Link>
           </div>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-3">
+          <ul className="mt-7 grid gap-8 sm:grid-cols-3">
             {news.map((post) => (
-              <li key={post.slug} className="rounded-xl border border-white/10 p-5">
-                <h3 className="font-medium">
+              <li key={post.slug} className="border-t border-white/10 pt-5">
+                <h3 className="text-lg font-medium">
                   <Link href={`/${locale}/news/${post.slug}`} className="hover:text-cyan-300">
                     {post.title}
                   </Link>
                 </h3>
-                <p className="mt-1.5 text-sm text-silver-400">{post.excerpt}</p>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-silver-400">{post.excerpt}</p>
                 {post.publishedAt && (
                   <p className="mt-2 text-xs text-silver-500">
                     <time dateTime={post.publishedAt.toISOString()}>
@@ -385,7 +414,7 @@ export default async function HomePage({ params }: Props) {
       )}
 
       {/* ── Discord ──────────────────────────────────────────────────────── */}
-      <section className="mt-14 rounded-xl border border-cyan-700/40 bg-cyan-900/10 p-5">
+      <section className="mt-16 rounded-xl border border-cyan-700/40 bg-cyan-900/10 p-5">
         <p className="text-silver-300">
           {t.home.discordLead}{' '}
           <a
@@ -400,15 +429,15 @@ export default async function HomePage({ params }: Props) {
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section className="mt-14" aria-labelledby="faq-heading">
-        <h2 id="faq-heading" className="text-2xl font-semibold tracking-tight">
+      <section className="mt-16" aria-labelledby="faq-heading">
+        <h2 id="faq-heading" className="text-3xl font-semibold tracking-tight">
           {t.home.faqHeading}
         </h2>
-        <dl className="mt-6 space-y-6">
+        <dl className="mt-7 space-y-7">
           {faq.map((item) => (
-            <div key={item.question}>
-              <dt className="font-medium">{item.question}</dt>
-              <dd className="mt-1 text-silver-400">{item.answer}</dd>
+            <div key={item.question} className="border-t border-white/10 pt-5">
+              <dt className="text-lg font-medium">{item.question}</dt>
+              <dd className="mt-1.5 leading-relaxed text-silver-400">{item.answer}</dd>
             </div>
           ))}
         </dl>
