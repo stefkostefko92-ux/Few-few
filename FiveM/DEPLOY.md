@@ -122,7 +122,7 @@ wget -qO- http://127.0.0.1:3010/api/health
 Двете не са в `npm test` и не са в CI — искат жив сайт и база:
 
 ```bash
-node scripts/smoke.mjs                                   # 37 адреса, JSON-LD, панел, правни котви
+node scripts/smoke.mjs                                   # адреси, JSON-LD, панел, правни котви, ключови думи
 PROBE_ADMIN_PASSWORD="…" node scripts/authz-probe.mjs    # авторизация, с положителна контрола
 ```
 

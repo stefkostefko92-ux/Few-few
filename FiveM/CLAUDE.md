@@ -29,7 +29,7 @@ npm run streamers:discover -- youtube       # отделно: квотата е 
 npm run prune               # изтрива изтеклите данни (пуска се по cron, дневно)
 
 # Срещу ЖИВ инстанс (не са в гейта — искат сайт и база):
-node scripts/smoke.mjs                                # 40 адреса + JSON-LD + панел + правни котви
+node scripts/smoke.mjs                                # адреси + JSON-LD + панел + правни котви + ключови думи
                                                       # по подразбиране 127.0.0.1:3010 (compose публикува само IPv4)
 PROBE_ADMIN_PASSWORD="…" node scripts/authz-probe.mjs # авторизация с положителна контрола
 ```

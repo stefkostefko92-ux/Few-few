@@ -164,5 +164,70 @@ for (const path of ['/bg/rules', '/en/rules']) {
   check(h.includes('aria-current="page"'), `${path}: текущата страница е обявена`);
 }
 
+// ── 7. Ключовите думи по правилото на репото ────────────────────────────────
+// „Всяка страница ≥5 ключови думи, една винаги «Carbon Stealth»“ дотук се
+// пазеше само от `BASE_KEYWORDS` (има тест) — тоест доказано беше, че БАЗАТА е
+// наред, не че всяка страница я получава. Разликата не е теоретична: страница,
+// която не мине през `pageMetadata`, няма НИТО ЕДНА дума и никой не пада.
+//
+// Базовият набор НЕ се преписва тук. Преписан списък се разминава с
+// `src/lib/seo.ts` при първата промяна и после проверката пази вчерашното
+// правило. Вместо това се ЧЕТЕ от страница без свои думи (`/privacy`), а
+// `/terms` служи за контрола: разминат ли се двете, калибрирането е счупено
+// (някой е добавил свои думи на правна страница) и това се казва на глас,
+// вместо да мине за „чисто“.
+const KEYWORD_PATHS = [
+  '',
+  '/servers',
+  '/servers/whitelist',
+  '/servers/framework/esx',
+  '/rules',
+  '/tutorials',
+  '/streamers',
+  '/news',
+  '/submit',
+  '/faq',
+  '/team',
+  '/contact',
+  '/support',
+  '/impresum',
+  '/privacy',
+  '/terms',
+  '/report',
+];
+const keywordsOf = (html) => {
+  const found = html.match(/name="keywords" content="([^"]*)"/);
+  return found ? found[1].split(',').map((s) => s.trim()).filter(Boolean) : null;
+};
+
+for (const locale of ['bg', 'en']) {
+  const base = keywordsOf(await get(`/${locale}/privacy`));
+  const control = keywordsOf(await get(`/${locale}/terms`));
+  if (!base || !control || base.join('|') !== control.join('|')) {
+    check(false, `/${locale}: калибрирането на базовите ключови думи е счупено — НЕИЗМЕРЕНО`);
+    continue;
+  }
+  check(base.length >= 5, `/${locale}: базовият набор е ${base.length} думи (иска се ≥5)`);
+  check(base.includes('Carbon Stealth'), `/${locale}: базовият набор носи „Carbon Stealth“`);
+
+  let pages = 0;
+  for (const path of KEYWORD_PATHS) {
+    const all = keywordsOf(await get(`/${locale}${path}`));
+    if (all === null) {
+      check(false, `/${locale}${path}: НЯМА ключови думи изобщо`);
+      continue;
+    }
+    if (all.length < 5) check(false, `/${locale}${path}: ${all.length} ключови думи (иска се ≥5)`);
+    if (!all.includes('Carbon Stealth')) check(false, `/${locale}${path}: без „Carbon Stealth“`);
+    if (all.length !== new Set(all).size) check(false, `/${locale}${path}: повтарящи се ключови думи`);
+    // Базова дума, изядена от собствения списък на страницата, значи че
+    // страницата харчи едно от своите места за нещо, което вече има.
+    const missing = base.filter((word) => !all.includes(word));
+    if (missing.length) check(false, `/${locale}${path}: базови думи липсват — ${missing.join(' / ')}`);
+    pages += 1;
+  }
+  check(true, `/${locale}: ${pages} страници носят пълния набор ключови думи`);
+}
+
 console.log(bad === 0 ? '\nРЕЗУЛТАТ: обходът е чист.' : `\nРЕЗУЛТАТ: ${bad} провала.`);
 process.exit(bad === 0 ? 0 : 1);

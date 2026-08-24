@@ -108,10 +108,25 @@ export async function generateMetadata({ params }: Props) {
     // Началната има СВОИ ключови думи. Досега трите страници (начална,
     // правила, туториали) споделяха едно множество и се състезаваха за едни и
     // същи запитвания — сами си правехме канибализация в резултатите.
+    //
+    // Нито една дума тук НЕ бива да повтаря `BASE_KEYWORDS` — сливането в
+    // `pageMetadata` така или иначе маха дубъла, тоест повторението не добавя
+    // нищо, а само изяжда едно от местата. „български FiveM сървъри“ стоеше
+    // тук и точно това правеше: четири думи, три нови.
     keywords:
       locale === 'bg'
-        ? ['български FiveM сървъри', 'FiveM roleplay България', 'GTA V RP сървъри', 'FiveM BG общност']
-        : ['Bulgarian FiveM servers', 'FiveM roleplay Bulgaria', 'GTA V RP servers', 'FiveM BG community'],
+        ? [
+            'къде да играя FiveM в България',
+            'FiveM roleplay България',
+            'GTA V RP сървъри',
+            'FiveM BG общност',
+          ]
+        : [
+            'where to play FiveM in Bulgaria',
+            'FiveM roleplay Bulgaria',
+            'GTA V RP servers',
+            'FiveM BG community',
+          ],
   });
 }
 

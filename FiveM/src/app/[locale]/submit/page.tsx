@@ -21,7 +21,14 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>) {
     title: t.submit.title,
     description: t.submit.description,
     path: '/submit',
-    keywords: ['добави FiveM сървър', 'listing FiveM server', 'FiveM partnership'],
+    // По ЛОКАЛ, не общ списък. Дотук страницата подаваше едни и същи смесени
+    // български и английски думи и на двата езика — тоест обявяваше английски
+    // термини на българската страница и обратно. Всички останали страници се
+    // разклоняват; тази и `/news` бяха изключенията.
+    keywords:
+      locale === 'bg'
+        ? ['добави FiveM сървър', 'листване на FiveM сървър', 'промотиране на FiveM сървър']
+        : ['add FiveM server', 'list a FiveM server', 'FiveM server promotion'],
   });
 }
 

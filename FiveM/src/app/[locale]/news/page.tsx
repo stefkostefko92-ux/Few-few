@@ -17,7 +17,11 @@ export async function generateMetadata({ params }: Props) {
     title: t.news.title,
     description: t.news.description,
     path: '/news',
-    keywords: ['FiveM туториали', 'FiveM новини', 'FiveM tutorials'],
+    // По ЛОКАЛ — виж бележката в `/submit`: списъкът беше общ и смесен.
+    keywords:
+      locale === 'bg'
+        ? ['FiveM новини', 'FiveM туториали', 'новини за български FiveM сървъри', 'ръководства FiveM']
+        : ['FiveM news', 'FiveM tutorials', 'Bulgarian FiveM server news', 'FiveM guides'],
   });
 }
 
