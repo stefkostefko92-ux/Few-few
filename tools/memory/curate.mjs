@@ -5,9 +5,19 @@
 //   node tools/memory/curate.mjs                        # dry-run: какво би направил
 //   node tools/memory/curate.mjs --write                # приложи точен дедуп + капване
 //   node tools/memory/curate.mjs --merge-dups --write   # + семантично сливане на почти-дубли
+//   node tools/memory/curate.mjs --check                # ГЕЙТ: пада при ТОЧНИ дубли (евтино, без O(n²))
+//
+// Защо има --check (Кръг 12, 2026-08-04). Инструментът беше СПОСОБЕН и записан като процедура в 5+
+// дефиниции, но не се викаше от НИЩО — нито гейт, нито кука, нито CI (`grep -c curate gate.mjs` → 0).
+// Спящ инструмент = нула, колкото и добър да е; и точно в този момент в паметта имаше 2 реални
+// точни дубла (dizayner.md, секция „Карантина“ — тоест НЕ инжектирани, значи цената им беше дрейф
+// на файла, не токени; в „Проверени поуки“ същият дублат щеше да се плаща на всеки старт). Гейтва се само
+// ТОЧНИЯТ дедуп: той е механичен и еднозначен (`--write` го оправя). Парафразите, числовите
+// противоречия и застаряването остават за ЧОВЕК — те са преценка, не дефект, и струват ~11s O(n²),
+// които не бива да са в пътя на всеки PR. Затова `--check` НЕ пуска сравненията по прилика.
 //
 // За всеки .claude/agents/_memory/<id>.md:
-//  - маха ТОЧНО дублирани поуки (по нормализиран текст) в „Проверени поуки" и „Карантина";
+//  - маха ТОЧНО дублирани поуки (по нормализиран текст) в „Проверени поуки“ и „Карантина“;
 //  - при --merge-dups: слива и БЛИЗКИ парафрази (Jaccard ≥ MERGE_THRESHOLD=0.82) — пази
 //    по-информативната (по-дългата) от двойката, маха парафраза. Само много висока прилика =
 //    редундантност, НЕ противоречие; средният диапазон (SIM..MERGE) остава само флагнат;
@@ -16,7 +26,7 @@
 //  - маркира ВЪЗМОЖНИ противоречия (висока прилика между две поуки) за ЧОВЕШКО решение —
 //    не трие и не презаписва мълчаливо (закон: противоречие → стоп).
 //
-// v8.0: БЛОК-осъзнат. Всяка поука е блок = реда „- …" + всички следващи continuation редове
+// v8.0: БЛОК-осъзнат. Всяка поука е блок = реда „- …“ + всички следващи continuation редове
 //   (заглъбен текст, не нов bullet, не заглавие, не празен ред). Дедуп/сливане/сравнение
 //   работят върху ЦЕЛИЯ текст на блока (източникът `_(…)_` често е на continuation ред), а
 //   записът пази блоковете НЕДОКОСНАТИ и в оригиналния им ред (никакво разбъркване на редове).
@@ -25,7 +35,12 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const MEM_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory");
+// CURATE_MEM_DIR позволява тестът да пусне ИНСТРУМЕНТА върху фикстура вместо върху живата памет.
+// Без него CLI тестът щеше да съди СЪСТОЯНИЕТО на репото („днес няма дубли“) вместо поведението на
+// инструмента — вече правена грешка: такъв тест е зелен, докато някой не добави дублат, и червен по
+// причина, която няма нищо общо с кода.
+const MEM_DIR = process.env.CURATE_MEM_DIR ||
+  join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory");
 const MAX_PER_SECTION = Infinity; // БЕЗ лимит — знанието на агентите не се архивира никога; само дубли/противоречия се третират
 const SIM_THRESHOLD = 0.6; // Jaccard над това → вероятно дублат/противоречие (флаг за преглед)
 const MERGE_THRESHOLD = 0.82; // Jaccard над това → почти сигурен ПАРАФРАЗ (не противоречие) → авто-сливане при --merge-dups
@@ -38,8 +53,11 @@ const MERGE_DUPS = process.argv.includes("--merge-dups");
 // --merge-safe: слива близък-диапазон (SIM..MERGE) двойки САМО когато числовите им токени
 // СЪВПАДАТ (парафраз, не противоречие). Числа се разминават → НЕ пипа, флагва за човек.
 const MERGE_SAFE = process.argv.includes("--merge-safe");
+// --check: гейт-режим. Само точният дедуп (евтин, еднозначен, механично поправим с --write);
+// прескача O(n²) сравненията по прилика и застаряването — те са човешка преценка, не дефект.
+const CHECK = process.argv.includes("--check");
 
-// Време-чувствителни факти (версии, „latest", дати, API дати) гният — flawlessness #8 (TTL/provenance).
+// Време-чувствителни факти (версии, „latest“, дати, API дати) гният — flawlessness #8 (TTL/provenance).
 const TIME_SENSITIVE = /верси|latest|текущ|\bv?\d+\.\d+|\b20\d\d\b|API \d|stable|release/i;
 function lessonDate(bullet) { const m = bullet.match(/\*\*(\d{4}-\d{2}-\d{2})/); return m ? m[1] : null; }
 function daysSince(d) { return (Date.now() - new Date(d + "T00:00:00Z").getTime()) / 86400000; }
@@ -58,7 +76,7 @@ function jaccard(a, b) {
   return inter / (A.size + B.size - inter);
 }
 // БЕЛЕЖКА (Трейдъра + Разбивача, 2026-07-29): да свържеш ЕТИКЕТ с ЧИСЛО в свободна проза е
-// NLP-трудно — общ детектор върху ВСИЧКИ поуки или шуми (версии/URL: „edition 2≠4"), или
+// NLP-трудно — общ детектор върху ВСИЧКИ поуки или шуми (версии/URL: „edition 2≠4“), или
 // пропуска реалния случай. Затова НЕ правим това.
 // НО (2026-07-30): в БЛИЗКИЯ диапазон (Jaccard ≥ SIM) двата блока са ВЕЧЕ почти един и същ текст —
 // тогава сравняваме само МНОЖЕСТВАТА числа, без да свързваме етикет с число. Съвпадат → парафраз
@@ -72,7 +90,7 @@ export function numTokens(text) {
   let m;
   // числа/версии/прагове: 2026-06-24.dahlia, 8×1.25, 639-1, 0.05, 100. Lookbehind (?<!\p{L}) отрязва
   // ИДЕНТИФИКАТОРНИ цифри залепени за буква (B2C, MV3, SHA256, 3DS) — те са имена, не КОЛИЧЕСТВА, и
-  // бяха източник на фалшиви „разлики" (една парафраза изброява „B2B/B2C", другата не). Реалните
+  // бяха източник на фалшиви „разлики“ (една парафраза изброява „B2B/B2C“, другата не). Реалните
   // количествени противоречия (95.91≠96, 0.0065≠0.0019) са самостоятелни числа → пак се хващат.
   const re = /(?<!\p{L})\d+(?:[.\-–×]\d+)*(?:\.[a-z]{2,})?/giu;
   while ((m = re.exec(t))) out.add(m[0].replace(/[–]/g, "-"));
@@ -93,9 +111,9 @@ function sectionBounds(lines, heading) {
   return { start, end };
 }
 
-// Разбива тялото на секция на подредени елементи: bullet-блок (реда „- …" + continuation редове)
+// Разбива тялото на секция на подредени елементи: bullet-блок (реда „- …“ + continuation редове)
 // или суров ред (празен ред / въвеждащ текст преди първия bullet). Continuation = непразен ред,
-// който НЕ започва с „- ". Празен ред затваря текущия блок и се пази като суров ред.
+// който НЕ започва с „- “. Празен ред затваря текущия блок и се пази като суров ред.
 function parseEntries(body) {
   const entries = [];
   let cur = null;
@@ -110,7 +128,7 @@ function parseEntries(body) {
 const blockText = (e) => e.lines.map((l) => l.trim()).join(" ");
 
 // CLI guard: без него целият обход на паметта се пуска при `import` и виси — президентски
-// одит-клас „код на върха при import" (същият, за който имаме import-safety.test.mjs).
+// одит-клас „код на върха при import“ (същият, за който имаме import-safety.test.mjs).
 function main() {
 let totalDup = 0, totalCap = 0, totalParaphrase = 0, totalNumConflict = 0, totalStale = 0, totalMerged = 0;
 
@@ -132,12 +150,17 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
     const dropped = new Set(); // индекси в `entries`, махнати като дубли/парафрази
     for (const i of bulletIdx) {
       const n = norm(blockText(entries[i]));
-      if (seen.has(n)) { totalDup++; dropped.add(i); changed = true; } else seen.add(n);
+      // Докладвай КОЯ поука е дублат — иначе изходът казва „2 точни дубли“ без да казва къде,
+      // и гейтът е неизползваем (собственикът не знае какво да оправи).
+      if (seen.has(n)) {
+        report.push(`  ⧉ ТОЧЕН ДУБЛАТ (${heading}): ${blockText(entries[i]).slice(0, 130)}…`);
+        totalDup++; dropped.add(i); changed = true;
+      } else seen.add(n);
     }
 
     // семантично сливане на почти-дубли (≥MERGE_THRESHOLD): пази по-информативния (по-дълъг) блок
     const live = () => bulletIdx.filter((i) => !dropped.has(i));
-    if (MERGE_DUPS) {
+    if (MERGE_DUPS && !CHECK) {
       const idx = live();
       for (let a = 0; a < idx.length; a++) {
         if (dropped.has(idx[a])) continue;
@@ -159,7 +182,7 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
     //  • числата съвпадат → ПАРАФРАЗ (безопасно сливане при --merge-safe/--merge-dups);
     //  • числата се разминават → ИСТИНСКО числово противоречие → докладвай за ЧОВЕК, НЕ пипай (закон).
     const kept = live();
-    for (let a = 0; a < kept.length; a++) {
+    for (let a = 0; !CHECK && a < kept.length; a++) {
       if (dropped.has(kept[a])) continue;
       for (let c = a + 1; c < kept.length; c++) {
         if (dropped.has(kept[c])) continue;
@@ -183,7 +206,7 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
     }
 
     // застарели време-чувствителни проверени факти → флаг за повторна проверка (не трий)
-    if (heading === "Проверени поуки")
+    if (heading === "Проверени поуки" && !CHECK)
       for (const i of kept) {
         if (dropped.has(i)) continue;
         const t = blockText(entries[i]), d = lessonDate(t);
@@ -205,7 +228,19 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
   }
 
   if (report.length) console.log(`\n${f}:`), report.forEach((r) => console.log(r));
-  if (changed && WRITE) writeFileSync(file, lines.join("\n")), console.log(`  ✎ записан ${f}`);
+  if (changed && WRITE && !CHECK) writeFileSync(file, lines.join("\n")), console.log(`  ✎ записан ${f}`);
+}
+
+if (CHECK) {
+  // Гейтва се САМО механичното: точен дублат. Той не е преценка — една и съща поука, записана
+  // два пъти. В „Проверени поуки“ се плаща двойно при всеки старт; в „Карантина“ е чист дрейф.
+  console.log(`\ncurate --check: ${totalDup} точни дубли в паметта.`);
+  if (totalDup) {
+    console.error(`✗ ${totalDup} точни дубла — пусни \`node tools/memory/curate.mjs --write\`.`);
+    process.exit(1);
+  }
+  console.log("✓ няма точни дубли. (Парафрази/числови противоречия/застаряване — пусни без --check, човек решава.)");
+  process.exit(0);
 }
 
 const mergeHint = MERGE_SAFE || MERGE_DUPS ? "" : " (dry — добави --merge-safe за парафразите)";

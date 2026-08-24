@@ -33,10 +33,12 @@ const CHECKS = [
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
   { id: "invariant-check", desc: "критичните method/safety котви на домейн-собствениците са в материала (детерм. behavioral слой)", cmd: ["tools/agents/invariant-check.mjs", "--check"] },
   { id: "coverage", desc: "покритие на домейни (картата не сочи несъществуващи агенти)", cmd: ["tools/agents/coverage.mjs", "--json"], quiet: true },
-  { id: "skills-lint", desc: "skills frontmatter/name/тяло", cmd: ["tools/skills/lint.mjs"] },
+  { id: "skills-lint", desc: "skills frontmatter/name/тяло + правилата от наръчника на Anthropic", cmd: ["tools/skills/lint.mjs"] },
+  { id: "skill-triggers", desc: "всяко умение има тригер-случаи и описание, което ги „чува“", cmd: ["tools/skills/trigger-check.mjs", "--check"] },
   { id: "tools-audit", desc: "най-малки права (advisory агенти без Write/Edit)", cmd: ["tools/agents/tools-audit.mjs"] },
   { id: "def-freshness", desc: "свежест на дефинициите (без просрочени срокове)", cmd: ["tools/agents/def-freshness.mjs"] },
   { id: "consistency", desc: "противоречия/безизточникови verified в паметта", cmd: ["tools/agents/consistency-audit.mjs", "--check"] },
+  { id: "mascots", desc: "всеки агент носи маскота от mascot/, пребоядисан в акцента си", cmd: ["tools/agents/mascot-theme.mjs", "--check"] },
   { id: "dashboard-sync", desc: "таблото не лъже за знанието (agents.json ↔ реалния брой поуки в _memory)", cmd: ["tools/agents/sync-dashboard.mjs", "--check"] },
   { id: "loop-audit", desc: "readiness на автоматизациите (автономия-стълба)", cmd: ["tools/agents/loops/loop-audit.mjs"] },
   { id: "recovery-audit", desc: "стълбата провал→възстановяване е цяла", cmd: ["tools/agents/recovery-audit.mjs"] },
@@ -46,10 +48,28 @@ const CHECKS = [
   { id: "token-budget", desc: "таван на дефиниции И на статичния префикс (×флота)", cmd: ["tools/agents/token-budget.mjs", "--check"] },
   { id: "flow-cost", desc: "данък върху колаборацията (повторен префикс на верига)", cmd: ["tools/agents/flow-cost.mjs", "--check"] },
   { id: "deploy-check", desc: "autodeploy.sh е изряден", cmd: ["tools/vps/deploy-check.mjs", "deploy/autodeploy.sh"] },
+  { id: "workflow-lint", desc: "всеки CI job има таван на времето (висяща стъпка не се проваля — тя не свършва)", cmd: ["tools/ci/workflow-lint.mjs"] },
   { id: "version-freshness", desc: "версиите, които агентите цитират, са сверени в TTL (не 2–3 годишни спомени)", cmd: ["tools/agents/version-freshness.mjs", "--check"] },
+  { id: "memory-freshness", desc: "паметта има срок на годност (опашка за пресверяване, не еднократна сверка)", cmd: ["tools/agents/memory-freshness.mjs", "--check"] },
   { id: "claims-audit", desc: "правни/таксономични твърдения сверени в TTL + карта на зависимостта цяла", cmd: ["tools/agents/claims-audit.mjs", "--check"] },
+  // Кръг 12: `curate.mjs` беше СПОСОБЕН и записан като процедура в 5+ дефиниции, но не се викаше от
+  // нищо (нито гейт, нито кука, нито CI) — спящ инструмент, и точно тогава имаше 2 реални дубла.
+  // Гейтва се само ТОЧНИЯТ дедуп (`--check`, 0.25s): механичен и еднозначен. Пълният ход (парафрази,
+  // числови противоречия, застаряване) е ~11s O(n²) и иска ЧОВЕШКО решение — не влиза в пътя на PR.
+  { id: "memory-curate", desc: "паметта няма ТОЧНИ дубли (една поука, записана два пъти)", cmd: ["tools/memory/curate.mjs", "--check"] },
+  // Кръг 13: `quarantine-review.mjs` съществуваше и НЕ беше пускан нито веднъж — затова беше
+  // невидимо, че 343 от 514 карантинирани поуки (67%) носят източник, който ДНЕС минава проверката
+  // (290 отпреди 2026-07-27 = жертви на два вече поправени дефекта). СЪВЕТВАЩО и по принцип:
+  // намирането на кандидати е ДОБРО, гейт по броя им би наказвал откриването. Тук пазим видимостта;
+  // повторната проверка е работа на агента срещу източника и е решение на собственика (струва пари).
+  { id: "quarantine", desc: "колко карантинирани поуки чакат повторна проверка (видимост, не гейт)", cmd: ["tools/memory/quarantine-review.mjs"], required: false },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
+  // СЪВЕТВАЩО, не гейт (решение на собственика, 2026-08-04): docs.js е генериран артефакт и се съди
+  // срещу СЛЯТОТО дърво, затова всяка промяна по CLAUDE.md в main правеше отворените PR-и червени
+  // по-бързо, отколкото CI приключва. Сега main сам се лекува през `docs-sync.yml` (регенерира и
+  // комитва), а тук пазим само видимостта. Не го връщай на задължителен, без да махнеш авто-синхрона.
+  { id: "docs-fresh", desc: "docs.js (таблото) отразява реалните CLAUDE.md — main се лекува сам чрез docs-sync.yml", cmd: ["tools/docs/collect-claude-md.mjs", "--check"], required: false },
 ];
 
 if (LIST) {

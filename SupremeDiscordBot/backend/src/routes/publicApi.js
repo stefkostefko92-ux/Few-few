@@ -8,18 +8,17 @@ import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
+import { requirePremium, getServerTier, planHasFeature } from "../lib/premium.js";
+import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
-export const VALID_SCOPES = [
-  "tickets:read",   "tickets:write",
-  "forms:read",     "forms:write",
-  "applications:read", "applications:write",
-  "panels:read",
-  "polls:read",
-  "giveaways:read",
-  "analytics:read",
-];
+// Едно определение — lib/apiKeyAuth.js (одит 09.08.2026: двата дрейфнали
+// списъка направиха /api/v1/server вечно 403). Оттам идва и server:read;
+// *:write отпаднаха — маршрути за тях няма никъде.
+export { VALID_SCOPES } from "../lib/apiKeyAuth.js";
+import { VALID_SCOPES } from "../lib/apiKeyAuth.js";
+import { bruteForceGuard, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (dashboard-authed)
@@ -42,7 +41,7 @@ mgmt.get("/:serverId/api-keys", requireServerAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-mgmt.post("/:serverId/api-keys", requireServerAdmin, async (req, res, next) => {
+mgmt.post("/:serverId/api-keys", requireServerAdmin, requirePremium("integrations.restApi"), async (req, res, next) => {
   const { name, scopes, expiresInDays } = req.body;
   if (!name || typeof name !== "string") return res.status(400).json({ error: "name required" });
   if (!Array.isArray(scopes) || scopes.length === 0) {
@@ -133,13 +132,22 @@ const apiLimiter = rateLimit({
 });
 
 async function authenticateApiKey(req, res, next) {
+  // Всеки провал по този път се брои срещу подателя (виж lib/bruteForce.js).
+  // Ключовете са 192 бита ентропия, тоест налучкването е математически
+  // безнадеждно — но дроселирането е задължителният втори слой: спира и
+  // безплатния DoS (всеки опит е sha256 + заявка към базата), и разузнаването.
+  const fail = async (status, body) => {
+    await recordFailure("apikey", req.ip);
+    return res.status(status).json(body);
+  };
+
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing Bearer token" });
+    return fail(401, { error: "Missing Bearer token" });
   }
   const token = auth.slice(7);
   if (!token.startsWith("bpk_live_")) {
-    return res.status(401).json({ error: "Invalid API key format" });
+    return fail(401, { error: "Invalid API key format" });
   }
 
   const keyHash = crypto.createHash("sha256").update(token).digest("hex");
@@ -149,10 +157,24 @@ async function authenticateApiKey(req, res, next) {
   });
 
   if (!apiKey || apiKey.revokedAt) {
-    return res.status(401).json({ error: "Invalid or revoked API key" });
+    // Едно и също съобщение за „няма такъв ключ" и „ключът е отнет" — разликата
+    // би казала на налучкващия, че е познал съществуващ ключ.
+    return fail(401, { error: "Invalid or revoked API key" });
   }
   if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
-    return res.status(401).json({ error: "API key expired" });
+    return fail(401, { error: "API key expired" });
+  }
+
+  // Тарифен гейт при ПОЛЗВАНЕ, не само при издаване: ключ, издаден по време на
+  // 14-дневния trial (или преди изтичане на абонамента), иначе продължаваше да
+  // работи вечно — платена функция, раздавана безплатно. Проверката е върху
+  // ЕФЕКТИВНИЯ tier (собствен план + активен trial + agency seat).
+  const tier = await getServerTier(apiKey.serverId);
+  if (!planHasFeature(tier.plan, "integrations.restApi")) {
+    return res.status(403).json({
+      error: "The REST API requires an active Premium plan on this server.",
+      code: "PREMIUM_REQUIRED",
+    });
   }
 
   // Async update lastUsedAt + requestCount — don't block
@@ -161,6 +183,9 @@ async function authenticateApiKey(req, res, next) {
     data: { lastUsedAt: new Date(), requestCount: { increment: 1 } },
   }).catch(() => {});
 
+  // Валиден ключ → историята на провалите се чисти, за да не носи наказание
+  // човек, който веднъж е сбъркал.
+  await recordSuccess("apikey", req.ip);
   req.apiKey = apiKey;
   req.serverId = apiKey.serverId;
   next();
@@ -175,19 +200,46 @@ function requireScope(scope) {
   };
 }
 
+// ПРЕДИ автентикацията: лимит по IP, който хваща и НЕУСПЕШНИТЕ опити.
+//
+// ДЕФЕКТЪТ (одит 11.08.2026): `apiLimiter` е монтиран СЛЕД `authenticateApiKey`
+// (нарочно — за да брои per-key), а `/public/v1` е извън `/api`, значи и
+// глобалният лимитер не го покрива. Резултат: невалиден ключ получаваше 401
+// преди който и да е лимитер да се е изпълнил → налучкването на API ключове
+// беше НАПЪЛНО НЕДРОСЕЛИРАНО. Двата слоя се допълват: този пази ВХОДА по IP,
+// долният пази квотата per-key.
+const preAuthLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip,
+  message: { error: "Too many requests — please slow down" },
+});
+
 const api = Router();
-api.use(apiLimiter);
+// 1) вече блокираните не стигат до базата изобщо
+api.use(bruteForceGuard("apikey"));
+// 2) таван по IP ПРЕДИ автентикацията (покрива неуспешните опити)
+api.use(preAuthLimiter);
+// 3) автентикация — брои провалите си в bruteForce
 api.use(authenticateApiKey);
+// 4) щедрата per-key квота за РЕАЛНИТЕ клиенти (keyGenerator иска req.apiKey,
+//    затова стои след автентикацията — това беше и оригиналната причина за реда)
+api.use(apiLimiter);
 
 // GET /public/v1/me — server info about the key's owner
 api.get("/me", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.serverId },
-      select: { id: true, name: true, icon: true, isPremium: true },
+      select: { id: true, name: true, icon: true },
     });
+    // Ефективен tier (agency/trial не са в суровата колона).
+    const { isPremium, plan } = await getServerTier(req.serverId);
     res.json({
-      server,
+      // `icon` е адрес, не суров хеш — виж lib/discordCdn.js.
+      server: server ? { ...withIconUrl(server), isPremium, plan } : null,
       keyId: req.apiKey.id,
       scopes: req.apiKey.scopes,
     });

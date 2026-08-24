@@ -1,0 +1,487 @@
+// Carbon Stealth VPS Dashboard — вход. Нула зависимости: node:http + src/.
+import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { loadConfig, saveConfig } from './src/config.js';
+import { Audit } from './src/audit.js';
+import { Jobs } from './src/jobs.js';
+import { MetricsCollector } from './src/metrics.js';
+import { MetricsHistory } from './src/history.js';
+import { AlertEngine } from './src/alerts.js';
+import { PtySessions } from './src/pty.js';
+import { AuditShipper } from './src/audit-ship.js';
+import { SloStore } from './src/slo.js';
+import { LogMiner } from './src/logmine.js';
+import { AccessLogReader } from './src/accesslog.js';
+import { DrillStore, drillSpec } from './src/drill.js';
+import { buildRouter, ipGateAllows } from './src/routes.js';
+import { SudoGrants } from './src/sudo.js';
+import { RevokedSessions } from './src/revoked.js';
+import { serveStatic, sendError, clientIp } from './src/httpd.js';
+import * as desktop from './src/desktop.js';
+import { PortBaseline } from './src/ports.js';
+import { BackupSchedule, OffsiteShipper } from './src/backupsched.js';
+import { DiskScanStore } from './src/diskusage.js';
+import { TrafficStore } from './src/traffic.js';
+import { backupAllSpec } from './src/backups.js';
+import { ensurePanelKey } from './src/panelbackup.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Fail-closed: DEV резервният режим (ефимерна парола) се допуска САМО при изричен
+// CSD_DEV=1. Иначе липсващ конфиг спира услугата вместо тихо да вдигне панела с
+// генерирана парола, отпечатана в journald.
+// Провалът при старт е ЗАКОНЕН (fail-closed), но не бива да излиза като stack
+// trace. Човекът го чете в `journalctl` след неуспял рестарт — там му трябва
+// какво е счупено и къде, не пътят през модулния зареждач на Node. Причината и
+// поправката са на два реда; подробностите остават за `--stack`.
+let cfg;
+try {
+  cfg = loadConfig({ allowDev: Boolean(process.env.CSD_DEV) });
+} catch (err) {
+  const configPath = process.env.CSD_CONFIG || '/etc/vps-dashboard/config.json';
+  process.stderr.write(
+    `\n\u001b[31m✘ Панелът НЕ тръгва: ${err.message}\u001b[0m\n` +
+      `  Конфиг: ${configPath}\n` +
+      '  Провери: node -e \'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"))\' ' + configPath + '\n' +
+      '  Върни копие: ls -la ' + configPath + '.bak* 2>/dev/null || echo "(няма копие)"\n' +
+      '  Първа инсталация: sudo bash deploy/install.sh\n\n'
+  );
+  if (process.env.CSD_TRACE) process.stderr.write(String(err.stack) + '\n');
+  process.exit(1);
+}
+const audit = new Audit(cfg.paths.stateDir);
+const jobs = new Jobs(audit);
+const metrics = new MetricsCollector();
+const history = new MetricsHistory(cfg.paths.stateDir);
+metrics.listeners.add((snap) => history.maybeAppend(snap));
+metrics.startSampling();
+
+const slo = new SloStore(cfg.paths.stateDir);
+const logminer = new LogMiner(cfg.paths.stateDir);
+const accesslog = new AccessLogReader(cfg.paths.stateDir);
+const drill = new DrillStore(cfg.paths.stateDir);
+const portBaseline = new PortBaseline(cfg.paths.stateDir);
+const backupSchedule = new BackupSchedule(cfg.paths.stateDir);
+// Ключът за шифрирания бекъп на самия панел: генерира се веднъж и се записва в
+// конфига. Собственикът трябва да го ПРЕПИШЕ извън машината (секция „Бекъпи") —
+// конфигът е вътре в архива, значи при мъртъв диск ключът загива с него.
+ensurePanelKey(cfg, saveConfig);
+const diskScan = new DiskScanStore(cfg.paths.stateDir);
+const traffic = new TrafficStore(cfg.paths.stateDir);
+// Копие на другия VPS. Обявен ТУК, преди графика, който го вика — иначе
+// препратката е в мъртва зона до края на модула.
+const offsite = new OffsiteShipper({ cfg, audit, schedule: backupSchedule });
+offsite.start();
+// Обявени ТУК, преди алармите, защото `custodyChecks` ги чете: провалът и на
+// двата контрола не личи по нищо друго (отменена сесия, която не е стигнала до
+// диска; спряло копие на одита към другия VPS).
+const revokedSessions = new RevokedSessions(cfg.paths.stateDir);
+const shipper = new AuditShipper({ cfg, audit });
+const alerts = new AlertEngine({
+  cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic,
+  revoked: revokedSessions,
+  shipper,
+});
+alerts.start();
+
+// Проба за възстановяване по каданс. Проверява се на всеки час дали е ДОШЛО
+// време — таймер за 30 дни не преживява рестарт, а сървър, който се рестартира
+// веднъж месечно, никога не би пуснал пробата.
+function runDrill(reason) {
+  let spec;
+  try {
+    spec = drillSpec();
+  } catch (err) {
+    // „Няма какво да се пробва" е находка, не мълчалив пропуск — но алармата за
+    // липсващ бекъп вече го казва, затова тук само отбелязваме.
+    drill.record({ ok: false, name: null, output: err.message, code: null });
+    return;
+  }
+  // `jobs.start` хвърля 409 при зает ексклузивен ключ „backup" (напр. тече
+   // архив на томове). Това НЕ е провал на пробата — записването му като
+  // провал би вдигнало фалшива критична аларма И би отложило истинската проба
+  // с цял интервал. Часовият таймер ще опита пак.
+  let job;
+  try {
+    job = jobs.start(spec, { user: reason });
+  } catch {
+    return;
+  }
+  watchDrill(job.id, spec.dumpName);
+}
+
+// Резултатът се записва при ПРИКЛЮЧВАНЕ — „последна успешна проба" трябва да е
+// факт от изпълнението, не намерение.
+function watchDrill(jobId, dumpName) {
+  const iv = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    const entry = drill.record({ ok: j.code === 0, name: dumpName, output: j.output, code: j.code });
+    if (!entry.ok) {
+      alerts
+        .event({
+          key: 'backup:drill',
+          severity: 'critical',
+          title: 'Пробата за възстановяване се провали',
+          body: `Дъмп „${dumpName}" не мина проверката (изход ${j.code}).\n${String(j.output || '').slice(-600)}`,
+        })
+        .catch(() => {});
+    }
+  }, 3000);
+  iv.unref?.();
+}
+
+if (cfg.backups?.drillEnabled !== false) {
+  const check = () => {
+    if (drill.due(Number(cfg.backups?.drillIntervalDays ?? 30))) runDrill('планирана проба');
+  };
+  setTimeout(check, 5 * 60000).unref?.(); // не на самия старт — сървърът да се вдигне
+  const drillTimer = setInterval(check, 3600 * 1000);
+  drillTimer.unref?.();
+}
+
+// Бекъпът се ПРАВИ сам. Същият часови каданс като пробата и по същата причина:
+// таймер за 24 часа не преживява рестарт, а конкретният час се улучва само ако
+// проверката е честа. Резултатът се записва при ПРИКЛЮЧВАНЕ на задачата.
+function runScheduledBackup(reason) {
+  let job;
+  try {
+    job = jobs.start(backupAllSpec(cfg), { user: reason });
+  } catch {
+    // Зает ексклузивен ключ „backup" (тече проба или архив на томове) НЕ е провал
+    // на графика — записването му като провал вдига фалшива критична аларма и
+    // отлага истинския бекъп с цял каданс. Часовият таймер ще опита пак.
+    return;
+  }
+  const iv = setInterval(() => {
+    const j = jobs.get(job.id);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    backupSchedule.record({ ok: j.code === 0, output: j.output, code: j.code, reason });
+    // Свежият дъмп си струва да пътува веднага, а не да чака следващия каданс на
+    // изнасянето — точно между двете стои прозорецът, в който машината умира.
+    if (j.code === 0) offsite.shipAll().catch(() => {});
+  }, 5000);
+  iv.unref?.();
+}
+
+{
+  const check = () => {
+    if (backupSchedule.due(cfg)) runScheduledBackup('планиран бекъп');
+  };
+  setTimeout(check, 6 * 60000).unref?.();
+  const t = setInterval(check, 3600 * 1000);
+  t.unref?.();
+}
+
+// Разбивката на диска се записва при ПРИКЛЮЧВАНЕ и носи дали е ПЪЛНА. Прекъснато
+// сканиране (таймаут на пълен диск) с половин резултат би изглеждало като отговор
+// на въпроса „кой яде диска" — а е половин истина, което е по-лошо от никаква.
+function watchDiskScan(jobId, scan) {
+  const iv = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    diskScan.record({ ...scan, output: j.output, code: j.code });
+  }, 3000);
+  iv.unref?.();
+}
+
+// Трафикът се натрупва по РАЗЛИКИ на всяка минута. Броячите в /proc/net/dev се
+// нулират при рестарт, значи абсолютната стойност не е месечен сбор — а рядката
+// проба губи трафика между последната проба и рестарта.
+{
+  const tick = () => {
+    try {
+      traffic.sample(cfg);
+    } catch {
+      /* една пропусната проба не бива да чупи нищо */
+    }
+  };
+  setTimeout(tick, 5000).unref?.();
+  const t = setInterval(tick, 60 * 1000);
+  t.unref?.();
+}
+
+// SLO дневникът расте по един ред на продукт на минута — режем го на 35 дни
+// (30-дневният прозорец + запас) веднъж на ден, иначе за година става 500 MB.
+const sloCompact = setInterval(() => slo.compact(), 24 * 3600 * 1000);
+sloCompact.unref?.();
+
+// Провалена системна задача (деплой/ъпдейт/бекъп) вдига известие веднага —
+// иначе научаваш за счупен деплой чак когато продуктът падне.
+jobs.onEnd = (job) => {
+  if (job.code === 0 || !job.exclusive) return;
+  alerts
+    .event({
+      key: `job:${job.id}`,
+      severity: 'critical',
+      title: `Провалена задача: ${job.title}`,
+      body: `Изход ${job.code}. Последни редове:\n${job.output.slice(-800)}`,
+    })
+    .catch(() => {});
+};
+
+// Смяна на порт: `healthChecks` се обновява САМО след УСПЕШНА задача.
+//
+// Редът е важен и е нарочен. Обновим ли конфига предварително и веригата падне,
+// панелът започва да вика порт, на който нищо не слуша → критична аларма за
+// продукт, който всъщност си работи на стария порт. А точно доверието в алармите
+// е това, което не бива да се чупи.
+function watchPortChange(jobId, plan) {
+  const iv = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || !j.endedAt) return;
+    clearInterval(iv);
+    if (j.code !== 0) {
+      audit.log({ action: 'ports.change.failed', product: plan.product, to: plan.newPort, code: j.code });
+      return;
+    }
+    const checks = (cfg.healthChecks || []).map((h) =>
+      h.name === plan.product ? { ...h, url: h.url.replace(`:${plan.currentPort}`, `:${plan.newPort}`) } : h
+    );
+    saveConfig(cfg, { healthChecks: checks });
+    audit.log({ action: 'ports.change.ok', product: plan.product, from: plan.currentPort, to: plan.newPort });
+    alerts
+      .event({
+        key: `ports:changed:${plan.product}`,
+        severity: 'info',
+        title: `${plan.product} мина на порт ${plan.newPort}`,
+        body: `Проверката на панела вече сочи ${plan.newPort}. Копията на пипнатите файлове са до тях със суфикс „.преди-смяна-на-порт".`,
+      })
+      .catch(() => {});
+  }, 3000);
+  iv.unref?.();
+}
+
+const pty = new PtySessions(audit);
+
+// Копие на одита към другия VPS (ако е включено) — хеш-веригата открива
+// подправяне, но само копие извън машината го прави безполезно.
+shipper.start();
+
+// Провалът на одита е шумен: дневник, който тихо не пише, е по-лош от липсващ.
+audit.onWriteFailure = (err) => {
+  alerts
+    .event({
+      key: 'audit:write',
+      severity: 'critical',
+      title: 'Одитът не се записва',
+      body: `Записът в дневника се проваля (${err.message}). Действията остават без следа — провери диска и правата.`,
+    })
+    .catch(() => {});
+};
+
+const router = buildRouter({
+  cfg,
+  audit,
+  jobs,
+  metrics,
+  history,
+  alerts,
+  pty,
+  shipper,
+  slo,
+  logminer,
+  accesslog,
+  drill,
+  watchDrill,
+  watchPortChange,
+  portBaseline,
+  backupSchedule,
+  offsite,
+  runScheduledBackup,
+  diskScan,
+  watchDiskScan,
+  traffic,
+  sudo: new SudoGrants(), // активни „sudo" разрешения (jti → изтича в)
+  sessions: new Map(), // активни сесии (jti → метаданни)
+  // Отменените сесии ПРЕЖИВЯВАТ рестарт. Докато този списък живееше в паметта,
+  // изходът и поименната отмяна бяха илюзия точно в най-важния момент: рестарт
+  // (деплой, ъпдейт, срив) го изчистваше и вече отменен откраднат токен
+  // проработваше отново — до 12 часа.
+  revokedSessions,
+});
+const statics = serveStatic(path.join(__dirname, 'public'));
+
+const server = http.createServer(async (req, res) => {
+  // Дълги SSE потоци + фонови задачи → без таймаут на отговора.
+  res.setTimeout(0);
+  res.setHeader('referrer-policy', 'no-referrer');
+  res.setHeader('x-frame-options', 'DENY');
+  res.setHeader('x-content-type-options', 'nosniff');
+  // Панелът не зарежда НИЩО отвън (нула CDN) → политиката е максимално стегната.
+  // Защита в дълбочина: дори при пропуснато място за екраниране, скрипт отвън не тръгва.
+  // style-src иска 'unsafe-inline' заради inline цветовете на терминалния рендер
+  // (ansi.js слага style атрибути на span-овете) — скриптовете остават само 'self'.
+  res.setHeader(
+    'content-security-policy',
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+      "connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; " +
+      // Незадължителният десктоп се показва в рамка. Понеже минава ПРЕЗ панела
+      // (`/desktop/…`), произходът е същият и „self" стига — не отваряме нищо
+      // чуждо. `frame-ancestors 'none'` отгоре остава: панелът не бива да бъде
+      // рамкиран ОТ никого.
+      "frame-src 'self'"
+  );
+  // Панелът не иска НИТО ЕДНО от тези устройства. Без изричен отказ, дупка в
+  // рамкирано съдържание може да ги поиска от името на нашия произход.
+  res.setHeader(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), ' +
+      'accelerometer=(), gyroscope=(), magnetometer=(), midi=(), display-capture=(), interest-cohort=()'
+  );
+  // Изолация на процеса в браузъра: чужд документ, отворен от нас (или отворил
+  // нас), не бива да дели контекст с панела. Затваря класа атаки, при които
+  // страничен канал чете памет от друг произход в същия процес.
+  res.setHeader('cross-origin-opener-policy', 'same-origin');
+  res.setHeader('cross-origin-resource-policy', 'same-origin');
+  // HSTS. Каноничното място е Nginx, но конфигурацията му може да дрейфне —
+  // а последицата (една заявка по http към жив панел) е открадната сесия.
+  // Затова панелът го праща и сам, но САМО зад прокси: по гол http хедърът е
+  // безсмислен, а при локална разработка би заключил браузъра към https.
+  if (cfg.trustProxy) {
+    res.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains; preload');
+  }
+  let url;
+  try {
+    url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  } catch {
+    return sendError(res, 400, 'Невалиден URL');
+  }
+
+  // Списъкът с разрешени адреси е ПРЕД всичко — включително статиката и входа.
+  // Скенер, попаднал на панела, не вижда дори формата за вход. Празен списък =
+  // изключено (иначе едно погрешно записване заключва собственика отвън).
+  if (!ipGateAllows(req, cfg, url.pathname, clientIp)) {
+    return sendError(res, 403, 'Достъпът от този адрес не е разрешен.');
+  }
+
+  // Десктопът се проксира ИЗВЪН рутера: пътят му е `/desktop/…`, а не `/api/…`,
+  // защото контейнерът очаква точно този префикс (`SUBFOLDER=/desktop/`).
+  // Автентикацията обаче е СЪЩАТА — иначе рамката става втора врата към
+  // машината без вход.
+  if (url.pathname === desktop.PREFIX || url.pathname.startsWith(`${desktop.PREFIX}/`)) {
+    if (!router.authenticate(req)) return sendError(res, 401, 'Не си вписан.');
+    // Заглавките на ПАНЕЛА трябва да отпаднат от отговора на десктопа, иначе
+    // рамката остава черна без нито едно съобщение за грешка:
+    //   • `x-frame-options: DENY` забранява рамкирането ДОРИ от същия произход
+    //     (за същия произход е нужно SAMEORIGIN, не DENY);
+    //   • `frame-ancestors 'none'` в CSP-то прави същото.
+    // Панелът си запазва и двете за собствените си страници — маха ги само за
+    // този път, който сам проксира и сам е автентикирал.
+    res.removeHeader('x-frame-options');
+    res.removeHeader('content-security-policy');
+    res.setHeader('x-frame-options', 'SAMEORIGIN');
+    return desktop.proxyHttp(cfg, req, res);
+  }
+
+  try {
+    const match = router.match(req.method, url.pathname);
+    if (match) {
+      await match.handler(req, res, match.params, url);
+      return;
+    }
+    // `HEAD` е същото като `GET` без тяло и HTTP го изисква навсякъде, където
+    // има `GET` (RFC 9110). Дотук статиката го подминаваше и `curl -I https://…`
+    // връщаше 404 JSON — тоест всеки uptime монитор, който проверява с `HEAD`
+    // (обичайното, защото не тегли тялото), отчиташе панела за ПАДНАЛ, докато
+    // той работи. Тялото не изтича: Node сам го изхвърля при `HEAD`.
+    const readMethod = req.method === 'GET' || req.method === 'HEAD';
+    if (readMethod && statics(req, res, url.pathname)) return;
+    // SPA fallback: всичко останало (не-API четене) връща index.html.
+    if (readMethod && !url.pathname.startsWith('/api/')) {
+      statics(req, res, '/index.html');
+      return;
+    }
+    // Непознат `/api/*` път на НЕвписан заявител отговаря 401, не 404. Иначе
+    // разликата между двата кода е карта на API-то: чукаш наред и виждаш кое
+    // съществува, без нито веднъж да си доказал кой си. За ВПИСАН човек 404 си
+    // остава 404 — там е полезно при търсене на грешка.
+    if (url.pathname.startsWith('/api/') && !router.authenticate(req)) {
+      return sendError(res, 401, 'Не си вписан.');
+    }
+    sendError(res, 404, 'Няма такъв ресурс');
+  } catch (err) {
+    const status = Number(err?.status) || 500;
+    if (status >= 500) console.error(`[csd] ${req.method} ${url.pathname}:`, err);
+    // 5xx съобщенията се маскират (вътрешностите не са за пред потребител), с
+    // едно изключение: грешки, изрично отбелязани `safe` — например „командата
+    // „ps" липсва, инсталирай procps". Те не издават нищо и са ЕДИНСТВЕНОТО,
+    // което превръща „Вътрешна грешка" от задънена улица в следваща стъпка.
+    sendError(res, status, status >= 500 && !err?.safe ? 'Вътрешна грешка' : err.message);
+  }
+});
+
+// WebSocket за десктопа. `node:http` не проксира надграждане сам, а VNC е
+// WebSocket от първата до последната си заявка: без това рамката се зарежда и
+// остава черна.
+//
+// Автентикацията е ЗАДЪЛЖИТЕЛНА и тук. Пропускът ѝ е класическата дупка при
+// такова прокси: обикновените заявки са зад вход, а сокетът — не.
+server.on('upgrade', (req, socket, head) => {
+  let url;
+  try {
+    url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  } catch {
+    return socket.destroy();
+  }
+  if (!ipGateAllows(req, cfg, url.pathname, clientIp)) return socket.destroy();
+  if (url.pathname !== desktop.PREFIX && !url.pathname.startsWith(`${desktop.PREFIX}/`)) return socket.destroy();
+  if (!router.authenticate(req)) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    return socket.destroy();
+  }
+  desktop.proxyUpgrade(cfg, req, socket, head);
+});
+
+server.headersTimeout = 30000;
+server.requestTimeout = 0; // SSE/дълги задачи
+
+// Провал при вдигане на вратата — с ИМЕ на проблема, не суров стек. Заетата
+// врата е най-честият случай (панелът вече върви) и от `Unhandled 'error' event`
+// не личи нито коя врата, нито че вината не е в кода.
+server.on('error', (err) => {
+  const where = `${cfg.host}:${cfg.port}`;
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n✘ Врата ${where} е заета — панелът най-вероятно вече върви.`);
+    console.error('  Провери: systemctl status vps-dashboard  ·  ss -ltnp | grep ' + cfg.port);
+  } else if (err.code === 'EACCES') {
+    console.error(`\n✘ Няма право да слушам на ${where} (врати под 1024 искат root).`);
+  } else if (err.code === 'EADDRNOTAVAIL') {
+    console.error(`\n✘ Адресът ${cfg.host} не съществува на тази машина — провери "host" в конфига.`);
+  } else {
+    console.error(`\n✘ Не мога да вдигна ${where}: ${err.message}`);
+  }
+  if (process.env.CSD_TRACE) console.error(err);
+  process.exit(1);
+});
+
+server.listen(cfg.port, cfg.host, () => {
+  console.log(`▸ Carbon Stealth VPS Dashboard — http://${cfg.host}:${cfg.port} (${cfg.nodeName})`);
+});
+
+// Отказал ФОНОВ обещаващ код (проба, аларма, бекъп по график) не бива да сваля
+// панела: от Node 15 насам необработеното отхвърляне убива процеса, а панелът е
+// точно това, с което човек гледа какво става — да умре при инцидент е обратното
+// на целта. Затова: шумно в journald, но продължаваме. Ако ЦЕЛИЯТ процес е в
+// неизвестно състояние (`uncaughtException`), излизаме — systemd вдига наново от
+// чисто (Restart=on-failure, RestartSec=3).
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? reason.stack || reason.message : String(reason);
+  console.error(`⚠ Необработено отхвърляне (панелът продължава): ${msg}`);
+});
+process.on('uncaughtException', (err) => {
+  console.error(`✘ Необработено изключение — спирам, за да ме вдигне systemd: ${err.stack || err.message}`);
+  process.exit(1);
+});
+
+for (const sig of ['SIGINT', 'SIGTERM']) {
+  process.on(sig, () => {
+    console.log(`\n▸ Спирам (${sig})…`);
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 3000).unref();
+  });
+}

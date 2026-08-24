@@ -63,6 +63,37 @@ export function brokenToolRefs(text) {
   return [...new Set(String(text || "").match(re) || [])].filter((p) => !has(p));
 }
 
+// Одит 2026-08-03: verified поука, цитираща файлов път, който вече не съществува, гние тихо (ledger
+// го отбеляза като НЕгейтван). Пълната проверка „всеки цитиран път съществува" НЕ е гейтваема —
+// доминирана от 4 неразделими FP класа: (1) upstream/library docs (`docs/api.md`=WiseLibs,
+// `docs/jwt/…`=jose), (2) нарочно-липсващ файл (самата находка Е отсъствието), (3) неточност но
+// съществува (`mastilko/globals.css` → реалният `mastilko/src/app/globals.css`), (4) продуктов
+// чурн. Затова гейтваме САМО ТЕСНИЯ ЧИСТ подмножество: пътища към АГЕНТ-СЛОЯ, който ПРИТЕЖАВАМЕ
+// (нискочурн, никога upstream/нарочно-липсващ). Точно този клас беше treydara дефектът
+// (`tools/agents/memory-preload.mjs` вместо `.claude/hooks/…`). Разширенията са ДЪЛГИ-ПЪРВО +
+// граница, иначе `js` реже `versions.json`→`versions.js` (документиран FP, за малко да го повторя).
+const OWNED_INFRA = [/^\.claude\/hooks\//, /^\.claude\/agents\//, /^\.claude\/settings\.json$/,
+  /^tools\/agents\//, /^tools\/hooks\//, /^tools\/lib\//, /^tools\/security\//, /^tools\/skills\//,
+  /^tools\/seo\//, /^tools\/qa\//, /^agents-dashboard\/[\w./-]+\.(?:mjs|js|json|html)$/,
+  // Кръг 4 (2026-08-04): `deploy/` в КОРЕНА е наша, нискочурн папка — там няма upstream докове,
+  // затова е безопасна за гейтване. Реален случай: паметта на VPS-аджията сочеше
+  // `deploy/systemd/ospedali.service`, а файлът живее в `ospedalitrasparenti/deploy/systemd/`
+  // (продуктът беше преименуван). Съдържанието на поуката беше вярно — сгрешен беше пътят, и то
+  // в поука за ИНЦИДЕНТ (crash-loop status=31/SYS), когато точният път струва най-много.
+  /^deploy\//];
+const MEM_PATH_RE = /([A-Za-z0-9_.\-]+(?:\/[A-Za-z0-9_.\-]+)+\.(?:jsonl|json|mjs|cjs|jsx|tsx|js|ts|md|sh|yml|yaml|css|html|txt|service|conf)(?![A-Za-z0-9]|\.\w))(?::[\d,\-]+)?/g;
+export function brokenOwnedMemPaths(bulletText) {
+  const noUrls = String(bulletText || "").replace(/https?:\/\/\S+/g, " ");
+  const out = [];
+  for (const m of noUrls.matchAll(MEM_PATH_RE)) {
+    const p = m[1];
+    if (p.includes("/node_modules/")) continue;
+    if (!OWNED_INFRA.some((re) => re.test(p))) continue; // само притежаваната инфра (FP-чисто)
+    if (!has(p)) out.push(p);
+  }
+  return [...new Set(out)];
+}
+
 /**
  * Редове, на които дефиницията нарежда да ИЗПЪЛНИ команда (`node/bash/npx tools/…`) като
  * ЗАДЪЛЖЕНИЕ (пусни/DoD/верификатор/гейт), докато `tools` няма Bash → неизпълним договор.
@@ -80,8 +111,65 @@ export function execWithoutBash(md, toolset) {
   return out;
 }
 
+/**
+ * Котви към ПРЕИМЕНУВАНА продуктова папка (Кръг 14, 2026-08-04). Регистърът `renames.json` е явен —
+ * тук НЕ се гадае кой корен е мъртъв. Причината: наивното правило „несъществуващ пръв сегмент" беше
+ * измерено и дава 87 „мъртви корена", от които реални са 3 — останалите са URL сегменти, под-пътища
+ * и файлови имена. Затова гейтваме само това, което собственикът ЗНАЕ, че е преименувал.
+ *
+ * Гейтва се само ПЪТ-подобната форма (`old/нещо.ext`) — тя е счупена котва. Прозаичното споменаване
+ * на старото име („ospedali дизайнът…") е остаряло наименование, не мъртва препратка: докладва се.
+ */
+export function renamedPathHits(text, renames) {
+  const anchors = [], prose = [];
+  for (const { old, new: nu } of renames) {
+    const esc = old.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Класът трябва да включва „/“ — иначе се хваща само `old/файл.ext`, а НЕ дълбокото
+    // `old/bot/src/index.js`, което е най-честата форма. Първата версия го изпускаше и гейтът щеше
+    // да е зелен по слепота; тестът го хвана. („Гейт, чийто обхват е по-тесен от това, което
+    // проверява, е зелен по слепота" — вече записано веднъж за тригера на CI.)
+    // `{1,6}` режеше 7-буквени разширения: `.service` ставаше `.servic`. Това е ТРЕТИЯТ случай на
+    // същия truncation клас в този репо (първите два: `versions.json` → `versions.js`,
+    // `nginx.conf.example` → `nginx.conf`). Границата `(?![A-Za-z])` спира частичното съвпадение.
+    const REST = "[\\w./-]+\\.[a-zA-Z]{2,10}(?![A-Za-z])";
+    for (const m of String(text).matchAll(new RegExp(`(?<![\\w/@.-])${esc}/${REST}`, "g")))
+      anchors.push({ hit: m[0], old, nu });
+    for (const m of String(text).matchAll(new RegExp(`(?<![\\w/@.-])${esc}/(?!${REST})`, "g")))
+      prose.push({ hit: m[0], old, nu });
+  }
+  return { anchors, prose };
+}
+
+/**
+ * Ако ТЕКСТЪТ на поука започва с поле на самия ```learn блок, записът е повреден при захващането —
+ * връща името на полето, иначе null. Чиста функция (тества се срещу реалните низове от репото).
+ *
+ * Търси се САМО в началото на текста, СЛЕД като се махнат водещото „- **ДАТА:** “ и опашката
+ * „_( … )_“. Търсене навсякъде в реда би вдигало по легитимна проза („source: MDN“ вътре в поука).
+ */
+export function malformedLessonField(bullet) {
+  const body = String(bullet || "").trim()
+    .replace(/^-\s*/, "")
+    .replace(/^\*\*[^*]*\*\*:?\s*/, "")      // „**2026-07-29:**“
+    .replace(/_\([^)]*\)_\s*$/, "")
+    .trim();
+  const m = body.match(/^(agent|date|entries|statement|scope|confidence|source)\s*:/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
 export function audit() {
   const hard = [], soft = [];
+
+  // Регистър на преименуванията. Той сам подлежи на проверка: застоял ред (старата папка пак
+  // съществува, или новата я няма) значи регистърът лъже — по-лошо от липсващ регистър.
+  let RENAMES = [];
+  try { RENAMES = JSON.parse(R("tools/agents/renames.json")).renames || []; }
+  catch { hard.push({ kind: "renames", msg: "tools/agents/renames.json липсва или не се парсва" }); }
+  for (const r of RENAMES) {
+    if (has(r.old)) hard.push({ kind: "renames", msg: `renames.json: „${r.old}" ВСЕ ОЩЕ съществува — редът е застоял` });
+    if (!has(r.new)) hard.push({ kind: "renames", msg: `renames.json: „${r.new}" не съществува — преименуването не е такова` });
+  }
+  let proseOld = 0;
   const ids = agentIds();
 
   // 1. Регистър ↔ дефиниция: инструменти/модел/усилие (кара injection гейта да лъже, ако дрейфне).
@@ -175,13 +263,76 @@ export function audit() {
     const o = []; for (let i = s + 1; i < L.length; i++) { if (/^##\s/.test(L[i])) break; if (L[i].trim().startsWith("- ")) o.push(L[i]); }
     return o;
   };
+  // confidence-таг (verified|unverified) от последния _(...)_ трейлър. ВНИМАНИЕ: текст/източник
+  // съдържат скоби И „;" — затова НЕ split[1] (счупи се на `[^)]*` при първата скоба); confidence
+  // е enum token, ограден с „;" (научено: позиционен парсер лъже при скоби в съдържанието).
+  const confidenceOf = (line) => {
+    const m = line.match(/_\((.*)\)_\s*$/); // greedy до последния )_ в края
+    if (!m) return null;
+    if (/;\s*unverified\s*(;|$)/i.test(m[1])) return "unverified";
+    if (/;\s*verified\s*(;|$)/i.test(m[1])) return "verified";
+    return null;
+  };
   for (const id of ids) {
     if (!has(`${MEM}/${id}.md`)) { hard.push({ kind: "memory", msg: `агент „${id}" няма файл с памет` }); continue; }
     const md = R(`${MEM}/${id}.md`);
-    const v = bullets(md, "Проверени поуки") || [], q = bullets(md, "Карантина");
+    // 7a. ТВЪРДО: дублирано заглавие на секция. ensureSections пише канонична форма, но исторически
+    // дрейф на текста („непроверено — не се чете" vs „непроверени — НЕ са факт") остави ДВЕ „## Карантина"
+    // в 5 файла → readerите четат само първата, вторият блок булети е невидим. Точно 1 от всяка.
+    const provHeads = (md.match(/^##\s*Проверени поуки/gm) || []).length;
+    const quarHeads = (md.match(/^##\s*Карантина/gm) || []).length;
+    if (provHeads > 1) hard.push({ kind: "memory-dup", msg: `${id}: ${provHeads}× заглавие „## Проверени поуки" (readerите четат само първото)` });
+    if (quarHeads > 1) hard.push({ kind: "memory-dup", msg: `${id}: ${quarHeads}× заглавие „## Карантина" (readerите четат само първото)` });
+    // 7b. ТВЪРДО: поука с таг `verified` под „## Карантина" = противоречие (секцията е „НЕ са факт")
+    // и се ИЗКЛЮЧВА от инжекцията → мъртво знание. Историческо остатъчно състояние от когато старият
+    // sourceIsReal беше по-строг и сваляше verified поуки в Карантина. Routing-ът днес е коректен;
+    // това пази срещу рецидив (ръчна редакция/стар импорт).
+    const q = bullets(md, "Карантина");
+    const buriedVerified = (q || []).filter((l) => confidenceOf(l) === "verified");
+    for (const l of buriedVerified) hard.push({ kind: "buried-lesson", msg: `${id}: поука с таг „verified" под „## Карантина" (мъртво знание): ${l.slice(6, 66).trim()}…` });
+    // 7b′. ТВЪРДО: verified поука цитира АГЕНТ-СЛОЙ път (моята инфра), който не съществува — мъртва
+    // препратка, която репо гейтовете не хващаха (treydara класът). Само притежаваната инфра (FP-чисто).
+    const v = bullets(md, "Проверени поуки") || [];
+    for (const l of v) for (const p of brokenOwnedMemPaths(l))
+      hard.push({ kind: "dead-mem-path", msg: `${id}: verified поука цитира несъществуващ агент-слой път „${p}"` });
+    // 7b″. ТВЪРДО (Кръг 13, 2026-08-04): поука, чийто ТЕКСТ започва с поле на самия `learn` блок
+    // (`agent:` / `date:` / `entries:` / `statement:` …) = ПОВРЕДЕН ЗАПИС. Открито при преглед на
+    // карантината: три записа при Скоростника, от които `skorostnika.md:56` беше самият ХЕДЪР на
+    // блока („agent: skorostnika date: 2026-07-29 entries:") — тоест съдържанието на поуката е
+    // изчезнало напълно, а на негово място стои синтаксис. Останалите два носеха цял текст с паразитен
+    // префикс „statement: ", като ЕДИНИЯТ беше в „Проверени поуки", тоест се инжектираше при всеки
+    // старт на агента. Такъв запис е по-лош от липсващ: заема място, брои се за знание в таблото и
+    // изглежда правдоподобно. Правилото е СТРУКТУРНО и еднозначно (ключ на поле в началото на текста),
+    // затова няма нужда да гадае проза — измерено: 3 съвпадения из целия флот, и трите реални.
+    for (const [sec, list] of [["Проверени поуки", v], ["Карантина", q || []]])
+      for (const l of list) if (malformedLessonField(l))
+        hard.push({ kind: "malformed-lesson", msg: `${id}: поука в „${sec}" започва с поле на learn блока „${malformedLessonField(l)}:" (повреден запис): ${l.slice(2, 70).trim()}…` });
+    // 7b‴. ТВЪРДО (Кръг 14): котва към ПРЕИМЕНУВАНА папка. Измерено при пресверката на карантината:
+    // `vps-dashboard`→`vpsdash` обезсили 14 поуки на Наблюдателя и 4 на VPS-аджията НАВЕДНЪЖ, а
+    // `supreme`→`SupremeDiscordBot` развали котви при 4 агента — без никакъв сигнал дотогава.
+    const rn = renamedPathHits(md, RENAMES);
+    for (const h of rn.anchors)
+      hard.push({ kind: "renamed-path", msg: `${id}: котва към преименувана папка „${h.hit}" (→ ${h.nu}/…)` });
+    proseOld += rn.prose.length;   // прозаично старо име — козметично, само брой
+    // 7c. съветващо: висок дял карантина
     if (q === null) soft.push({ kind: "memory", msg: `${id}: няма секция „Карантина"` });
     else if (v.length >= 20 && q.length / v.length > 0.30)
       soft.push({ kind: "quarantine", msg: `${id}: карантина ${q.length}/${v.length} (${Math.round(q.length / v.length * 100)}%) — произвежда много недоказани твърдения` });
+  }
+  // Прозаично старо име („ospedali дизайнът…") е остаряло НАИМЕНОВАНИЕ, не счупена котва — затова
+  // се брои, не гейтва. Гейт по него би принудил масово пренаписване на историческа проза.
+  if (proseOld) soft.push({ kind: "renamed-prose", msg: `${proseOld} прозаични споменавания на преименувани папки (козметично — котвите са чисти)` });
+
+  // 7d. ТВЪРДО: същата проверка за ФЛОТ-ШИРОКИТЕ инжектирани файлове (memory-preload ги слага в
+  // статичния префикс на ВСЕКИ агент — мъртъв път там струва ×флота, по-скъпо от в една памет).
+  // Гейтът за агентите (7b′) ги пропускаше, защото не са в списъка `ids`.
+  for (const f of ["_shared.md", "SECURITY.md", "PROCEDURE.md"]) {
+    if (!has(`${MEM}/${f}`)) continue;
+    for (const l of R(`${MEM}/${f}`).split("\n")) {
+      if (!/^[-*]\s|`/.test(l)) continue; // булет или ред със `код`
+      for (const p of brokenOwnedMemPaths(l))
+        hard.push({ kind: "dead-mem-path", msg: `_memory/${f} (инжектиран ×флота) цитира несъществуващ агент-слой път „${p}"` });
+    }
   }
 
   return { hard, soft, counts: { agents: ids.length, products: products.length, specs: specs.length, tools: toolFiles.length } };

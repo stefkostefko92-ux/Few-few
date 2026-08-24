@@ -28,6 +28,12 @@ test("localTargets взима само локалните цели", () => {
   assert.deepEqual(t.sort(), ["/a.html", "img/b.png"]);
 });
 
+test("всяка URI схема е външна цел — viber:/whatsapp:/sms: не са локални файлове (реален пропуск: evanitasport)", () => {
+  const t = localTargets(`<a href="viber://chat?number=%2B359885045112">v</a>
+    <a href="whatsapp://send?phone=1">w</a><a href="sms:+359885045112">s</a><img src="images/x.png">`);
+  assert.deepEqual(t, ["images/x.png"]);
+});
+
 test("keywordsOf връща списъка, а липсата дава null", () => {
   assert.equal(keywordsOf(page()).length, 6);
   assert.equal(keywordsOf("<html><head></head></html>"), null);

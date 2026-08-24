@@ -1,0 +1,42 @@
+{
+  "name": "vps-dashboard",
+  "version": "1.7.0",
+  "private": true,
+  "type": "module",
+  "description": "Carbon Stealth VPS Dashboard \u2014 \u043f\u044a\u043b\u0435\u043d \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u0435\u043d \u043f\u0430\u043d\u0435\u043b \u0437\u0430 VPS \u0441\u044a\u0440\u0432\u044a\u0440\u0438\u0442\u0435: \u043c\u0435\u0442\u0440\u0438\u043a\u0438, \u0443\u0441\u043b\u0443\u0433\u0438, Docker, \u043b\u043e\u0433\u043e\u0432\u0435, \u0434\u0435\u043f\u043b\u043e\u0439, \u044a\u043f\u0434\u0435\u0439\u0442\u0438, \u0441\u0438\u0433\u0443\u0440\u043d\u043e\u0441\u0442, \u0431\u0435\u043a\u044a\u043f\u0438, \u0444\u0430\u0439\u043b\u043e\u0432\u0435, \u0442\u0435\u0440\u043c\u0438\u043d\u0430\u043b \u0438 \u0430\u0433\u0435\u043d\u0442\u0441\u043a\u0438\u044f \u0444\u043b\u043e\u0442. \u041d\u0443\u043b\u0430 runtime \u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e\u0441\u0442\u0438.",
+  "license": "UNLICENSED",
+  "author": "CarbonStealth VCC (https://carbonstealth.eu)",
+  "keywords": [
+    "Carbon Stealth",
+    "vps",
+    "dashboard",
+    "server-monitoring",
+    "control-panel",
+    "systemd",
+    "docker",
+    "deploy"
+  ],
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "CSD_DEV=1 node --watch server.js",
+    "lint": "node scripts/syntax-check.mjs",
+    "test": "node --test test/*.test.js",
+    "sweep": "node scripts/ui-sweep.mjs",
+    "numbers": "node scripts/numbers-audit.mjs",
+    "destructive": "node scripts/destructive-audit.mjs",
+    "notify": "node scripts/notify-audit.mjs",
+    "peer": "node scripts/peer-audit.mjs",
+    "docs": "node scripts/docs-audit.mjs",
+    "volume": "node scripts/volume-audit.mjs",
+    "wiring": "node scripts/wiring-audit.mjs",
+    "text": "node scripts/text-audit.mjs",
+    "degraded": "node scripts/degraded-audit.mjs",
+    "a11y": "node scripts/a11y-audit.mjs",
+    "corrupt": "node scripts/corrupt-audit.mjs",
+    "gate": "node scripts/gate.mjs"
+  }
+}

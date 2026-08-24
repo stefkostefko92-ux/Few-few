@@ -4,10 +4,107 @@
 // Import this file once from index.js — it starts all crons automatically.
 
 import cron from "node-cron";
+import { runRetentionJob } from "../jobs/dataRetention.js";
+import { runDunningJob } from "../jobs/dunning.js";
 import { prisma } from "../lib/prisma.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
-import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
+import { effectivePremiumWhere, effectiveFreeWhere, inExportWindow } from "../lib/premium.js";
+
+// ─── Обвивка на планираните задачи ───────────────────────────────────────────
+// node-cron НЕ чака предното изпълнение: три от задачите тук вървят всяка минута
+// и правят HTTP извиквания с 10-секунден timeout в последователен цикъл. Бавен
+// ран се застъпва със следващия и едно и също съобщение тръгва два пъти.
+// Освен това провалът вътре в cron callback се поглъщаше напълно — никой не
+// слуша `execution:failed` на node-cron, значи спрял дунинг или спряло GDPR
+// изтриване са напълно невидими. (Наблюдателят + Качествения, 07.08.2026)
+// ─── ЧАСОВА ЗОНА ─────────────────────────────────────────────────────────────
+// node-cron без `timezone` ползва ЛОКАЛНАТА зона на процеса. Всеки коментар тук
+// пише „UTC“, но нищо не го налагаше: сменен TZ в контейнера (или базов образ с
+// друга зона) размества всяко разписание безшумно. Най-опасен е „5 0 * * *“ —
+// дневната ролка на метриките смята „вчера“, тоест при изместена граница на
+// деня редовете се дублират или зейва дупка. Явната зона го прави декларация,
+// не предположение. CRON_TZ позволява промяна без пипане на кода.
+const TZ = { timezone: process.env.CRON_TZ || "UTC" };
+
+
+
+/**
+ * Провал на задача: лог + Sentry. ЕДИНСТВЕНИЯТ начин да се съобщи за грешка тук.
+ *
+ * ЗАЩО (Наблюдателят, одит 07.08.2026): обвивката `job()` по-долу има Sentry
+ * клон, но той е НЕДОСТИЖИМ — всяка от десетте задачи има собствен try/catch,
+ * който гълта грешката и пише само в конзолата. Тоест cron задача можеше да се
+ * проваля при ВСЯКО задействане месеци наред без нито едно събитие в таблото.
+ * Точно този клас вече ни изгоря веднъж: три задачи споделяха ключ за
+ * заключване и две от тях никога не се изпълняваха — открихме го при одит, не
+ * от аларма.
+ *
+ * Умишлено НЕ махаме вътрешните catch: те са там, за да не сваля една паднала
+ * задача останалите. Променяме само това, че провалът вече се ЧУВА.
+ */
+async function jobFail(name, err) {
+  console.error(`[Scheduler] ${name}:`, err?.message);
+  try {
+    const Sentry = await import("@sentry/node");
+    Sentry.captureException(err, { tags: { job: name } });
+  } catch { /* Sentry по избор — логът остава */ }
+}
+
+/**
+ * Пулс на успешно изпълнение — записва се САМО за дневните/седмичните задачи.
+ *
+ * ЗАЩО (Наблюдателят, одит 07.08.2026): провалът вече се чува през `jobFail`,
+ * но задача, която ПРЕСТАНЕ ДА СЕ ПУСКА, не се проваля — тя просто мълчи, и
+ * няма как да я различиш от „нямаше работа“. Точно това ни се случи: три задачи
+ * споделяха ключ за заключване и две никога не се изпълняваха.
+ *
+ * Не измисляме нова таблица: `audit_logs` вече има индекс по `createdAt`, а
+ * заявката „последен пулс по задача“ е един GROUP BY. Само дневните, защото
+ * минутните биха залели дневника.
+ */
+const lastBeat = new Map(); // job name → timestamp на последния записан пулс
+const HEARTBEAT_EVERY_MS = 60 * 60 * 1000;
+
+async function jobHeartbeat(name, meta = {}) {
+  try {
+    await prisma.auditLog.create({
+      data: { actorTag: "SCHEDULER", action: `JOB_OK_${name.toUpperCase().replace(/-/g, "_")}`, targetId: name, metadata: meta },
+    });
+    lastBeat.set(name, Date.now());
+  } catch { /* пулсът никога не бива да поваля задачата */ }
+}
+
+const running = new Set();
+function job(name, fn) {
+  return async () => {
+    if (running.has(name)) {
+      console.warn(`[Scheduler] ${name} още върви — пропускам това задействане (застъпване)`);
+      return;
+    }
+    running.add(name);
+    const started = Date.now();
+    try {
+      await fn();
+      // Универсален пулс, ДРОСЕЛИРАН до 1/час на задача. Одитът на 09.08.2026
+      // показа дупката на стария подход „само дневните пишат": минутна задача,
+      // която спре, мълчи неразличимо от „нямаше работа" — а алармата в
+      // MONITORING.md гледа точно last-seen по JOB_OK_%. Дроселът пази одита
+      // от заливане (≤24 реда/ден на задача), а изричният jobHeartbeat в
+      // дневните задачи (с богата мета) опреснява same картата, значи не дублира.
+      if ((Date.now() - (lastBeat.get(name) || 0)) >= HEARTBEAT_EVERY_MS) {
+        await jobHeartbeat(name, { throttled: true });
+      }
+    } catch (err) {
+      await jobFail(name, err);
+    } finally {
+      running.delete(name);
+      const ms = Date.now() - started;
+      if (ms > 30_000) console.warn(`[Scheduler] ${name} отне ${Math.round(ms / 1000)}s`);
+    }
+  };
+}
+
 
 // ─── Job 1: Archive cleanup ───────────────────────────────────────────────────
 // Runs daily at 03:00 UTC.
@@ -15,17 +112,28 @@ import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
 // Premium servers: null retention = keep forever.
 // Base servers: 30-day default (archiveRetentionDays = 30).
 
-cron.schedule("0 3 * * *", async () => {
+cron.schedule("0 3 * * *", job("archive-cleanup", async () => {
   console.log("[Scheduler] Running archive cleanup...");
   try {
     // Get all servers that have a defined retention period
     const servers = await prisma.server.findMany({
       where: { archiveRetentionDays: { not: null } },
-      select: { id: true, archiveRetentionDays: true },
+      select: { id: true, archiveRetentionDays: true, accessUntil: true, trialEndsAt: true },
     });
 
+    // Прозорецът за експорт е ПРЕДИ метлата.
+    //
+    // При загуба на достъп `syncServerPaidFlag` връща `archiveRetentionDays` на
+    // 30, а 30-те дни се броят от ЗАТВАРЯНЕТО на тикета — значи архив, затворен
+    // преди три месеца, изчезва до 24 часа след свалянето на плана. Клиентът
+    // има право да си вземе съдържанието при прекратяване (чл. 16(4) Дир. (ЕС)
+    // 2019/770), а `routes/export.js` вече му дава 30 дни след края на платения
+    // период. Ако метлата мине първа, това право е на хартия.
+    // (Правният Разбирач, одит 07.08.2026)
     let cleaned = 0;
+    let deferred = 0;
     for (const server of servers) {
+      if (inExportWindow(server)) { deferred += 1; continue; }
       const cutoff = new Date(
         Date.now() - server.archiveRetentionDays * 24 * 60 * 60 * 1000
       );
@@ -45,17 +153,21 @@ cron.schedule("0 3 * * *", async () => {
     if (cleaned > 0) {
       console.log(`[Scheduler] Archive cleanup: cleared HTML from ${cleaned} tickets`);
     }
+    if (deferred > 0) {
+      console.log(`[Scheduler] Archive cleanup: ${deferred} сървъра пропуснати — още в прозореца за експорт`);
+    }
+    await jobHeartbeat("archive-cleanup", { cleaned, deferred });
   } catch (err) {
-    console.error("[Scheduler] Archive cleanup error:", err.message);
+    await jobFail("archive-cleanup", err);
   }
-});
+}), TZ);
 
 // ─── Job 2: Expired session cleanup ──────────────────────────────────────────
 // Runs every hour. Removes Discord OAuth2 sessions that have expired.
 // connect-pg-simple handles express sessions separately (pruneSessionInterval).
 // This job cleans our custom sessions table used for Discord API calls.
 
-cron.schedule("0 * * * *", async () => {
+cron.schedule("0 * * * *", job("session-cleanup", async () => {
   try {
     const result = await prisma.session.deleteMany({
       where: { expiresAt: { lt: new Date() } },
@@ -64,19 +176,19 @@ cron.schedule("0 * * * *", async () => {
       console.log(`[Scheduler] Cleaned ${result.count} expired Discord sessions`);
     }
   } catch (err) {
-    console.error("[Scheduler] Session cleanup error:", err.message);
+    await jobFail("session-cleanup", err);
   }
-});
+}), TZ);
 
 // ─── Job 3: Premium archive retention enforcement ────────────────────────────
 // When a server downgrades from Premium to Base, their retention becomes 30 days.
 // This job enforces that — runs weekly on Sunday at 04:00 UTC.
 
-cron.schedule("0 4 * * 0", async () => {
+cron.schedule("0 4 * * 0", job("retention-weekly", async () => {
   try {
     // Set archiveRetentionDays = 30 for any non-premium server that has null retention
     // (null means "forever" which is a Premium perk)
-    // „Ефективно free" — agency-покрити/trial сървъри пазят unlimited retention.
+    // „Ефективно free“ — agency-покрити/trial сървъри пазят unlimited retention.
     // updateMany не поддържа relation филтри → findMany + updateMany по id.
     const downgraded = await prisma.server.findMany({
       where: { ...effectiveFreeWhere(), archiveRetentionDays: null },
@@ -92,16 +204,17 @@ cron.schedule("0 4 * * 0", async () => {
     if (result.count > 0) {
       console.log(`[Scheduler] Enforced 30-day retention on ${result.count} downgraded servers`);
     }
+    await jobHeartbeat("retention-weekly", { enforced: result.count });
   } catch (err) {
-    console.error("[Scheduler] Retention enforcement error:", err.message);
+    await jobFail("retention-weekly", err);
   }
-});
+}), TZ);
 
 // ─── Job 4: Inactivity auto-close (v1.5 — Premium) ───────────────────────────
 // Runs every 30 minutes. Closes tickets that have had no activity for X hours
 // (configured per panel via inactivityCloseHours).
 
-cron.schedule("*/30 * * * *", async () => {
+cron.schedule("*/30 * * * *", job("inactivity-autoclose", async () => {
   try {
     // Get all panels that have inactivity close configured
     const panels = await prisma.panel.findMany({
@@ -170,12 +283,12 @@ cron.schedule("*/30 * * * *", async () => {
       }
     }
   } catch (err) {
-    console.error("[Scheduler] Inactivity close error:", err.message);
+    await jobFail("inactivity-autoclose", err);
   }
-});
+}), TZ);
 
 // ─── Job 5: Giveaway auto-end (v1.8) ───────────────────
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * *", job("giveaway-autoend", async () => {
   try {
     const due = await prisma.giveaway.findMany({
       where: { endedAt: null, endsAt: { lte: new Date() } },
@@ -186,15 +299,15 @@ cron.schedule("* * * * *", async () => {
     for (const g of due) {
       const winners = pickRandom(g.entries, g.winnerCount).map(e => e.userId);
       await prisma.giveaway.update({ where: { id: g.id }, data: { endedAt: new Date(), winnerIds: winners } });
-      await notifyBot("GIVEAWAY_ENDED", { giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
+      await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
-  } catch (err) { console.error("[Scheduler] giveaway end:", err.message); }
-});
+  } catch (err) { await jobFail("giveaway-autoend", err); }
+}), TZ);
 
 // ─── Job 5b: Poll auto-close ───────────────────
 // The /poll duration_hours option sets closesAt; without this job it was dead
 // (polls never closed). Closes due polls and re-renders the Discord message.
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * *", job("poll-autoclose", async () => {
   try {
     const due = await prisma.poll.findMany({
       where: { closedAt: null, closesAt: { lte: new Date() } },
@@ -205,19 +318,58 @@ cron.schedule("* * * * *", async () => {
       await prisma.poll.update({ where: { id: p.id }, data: { closedAt: new Date() } });
       await pushPollUpdate(p.id);
     }
-  } catch (err) { console.error("[Scheduler] poll close:", err.message); }
-});
+  } catch (err) { await jobFail("poll-autoclose", err); }
+}), TZ);
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * *", job("scheduled-messages", async () => {
   try {
-    const due = await prisma.scheduledMessage.findMany({
+    const dueRaw = await prisma.scheduledMessage.findMany({
       where: { sentAt: null, sendAt: { lte: new Date() } },
     });
+    if (!dueRaw.length) return;
+
+    // Premium-gated (както Job 1/SLA): без tier проверка насрочените/повтарящите
+    // се съобщения на сървър, паднал на free (seat detach, отмяна, дунинг),
+    // продължаваха да се изпращат ВЕЧНО. `scheduled_messages` няма FK към Server
+    // (orphan таблица), затова филтрираме на две стъпки: питаме кои от засегнатите
+    // сървъри са ЕФЕКТИВНО premium и пропускаме останалите. (Одит 07.08.2026)
+    const serverIds = [...new Set(dueRaw.map((m) => m.serverId))];
+    const premiumIds = new Set(
+      (await prisma.server.findMany({
+        where: { id: { in: serverIds }, ...effectivePremiumWhere() },
+        select: { id: true },
+      })).map((s) => s.id),
+    );
+    const due = dueRaw.filter((m) => premiumIds.has(m.serverId));
     if (!due.length) return;
     const { notifyBot } = await import("./botNotifier.js");
     for (const m of due) {
-      await notifyBot("SCHEDULED_MESSAGE_SEND", m).catch(()=>{});
+      // Резултатът СЕ ЧЕТЕ. Досега `.catch(()=>{})` изяждаше провала и редът
+      // веднага се маркираше като изпратен — еднократно съобщение, чийто канал е
+      // изтрит или ботът е офлайн, изчезваше без следа, а таблото твърдеше
+      // „изпратено“. (Кодаджията, 07.08.2026)
+      const sent = await notifyBot("SCHEDULED_MESSAGE_SEND", m).catch(() => null);
+
+      if (sent?.ok !== true) {
+        // Не маркираме — ще опитаме пак на следващата минута. Но НЕ вечно:
+        // след 24 часа безуспешни опити се отказваме с одитен запис, иначе
+        // счупен канал би генерирал шум завинаги.
+        const ageMs = Date.now() - new Date(m.sendAt).getTime();
+        if (ageMs < 24 * 60 * 60 * 1000) {
+          console.warn(`[Scheduler] насрочено съобщение ${m.id} НЕ е изпратено — ще опитам пак`);
+          continue;
+        }
+        console.error(`[Scheduler] насрочено съобщение ${m.id} се отказва след 24ч опити`);
+        await prisma.auditLog.create({
+          data: {
+            actorId: null, actorTag: "SYSTEM_SCHEDULER", serverId: m.serverId,
+            action: "SCHEDULED_MESSAGE_FAILED", targetId: m.id,
+            metadata: { channelId: m.channelId, sendAt: m.sendAt },
+          },
+        }).catch(() => {});
+      }
+
       const update = { sentAt: new Date() };
       if (m.recurrence) {
         const now = new Date();
@@ -236,23 +388,87 @@ cron.schedule("* * * * *", async () => {
       }
       await prisma.scheduledMessage.update({ where: { id: m.id }, data: update });
     }
-  } catch (err) { console.error("[Scheduler] scheduled msg:", err.message); }
-});
+  } catch (err) { await jobFail("scheduled-messages", err); }
+}), TZ);
 
-// ─── Job 7: Trial expiry notifications (v2.0) ─────────────────────
+// ─── Job 7: Trial expiry notifications (v2.0; DM канал — v3.1) ────────────────
 // Runs daily at 9am UTC. Logs servers whose trial expires in 3 days,
 // and audit-logs expired trials (but doesn't block access — premium helper
 // already returns isPremium=false when trialEndsAt < now).
-cron.schedule("0 9 * * *", async () => {
+//
+// v3.1 — известията вече РЕАЛНО стигат до собственика: продуктът няма имейл
+// инфраструктура, затова каналът е Discord DM през бота (botNotifier.dmUser).
+//
+// Веднъж на сървър: маркер в auditLog (TRIAL_EXPIRING_DM / TRIAL_EXPIRED_DM).
+// Отделен от съществуващите TRIAL_EXPIRING_SOON/TRIAL_EXPIRED записи — те се
+// пишат при ВСЯКО пускане на job-а (дневник), затова НЕ стават за дедуп ключ.
+//
+// Ред на действията (умишлен): маркерът се пише ПРЕДИ DM-а → най-много един
+// опит, никакъв спам при срив между двете. Ако транспортът към бота падне
+// (ботът е рестартиран/офлайн → dmUser връща null), маркерът се ТРИЕ, за да
+// има нов опит утре. Трайна пречка (затворен DM → { ok:false }) оставя
+// маркера — повторният опит не би минал.
+const TRIAL_DM_COLOR = 0x00e5ff;
+
+async function sendTrialDm({ server, action, embed }) {
+  // Вече известен за този етап → пропускаме.
+  const already = await prisma.auditLog.findFirst({
+    where: { serverId: server.id, action },
+    select: { id: true },
+  });
+  if (already) return false;
+
+  const marker = await prisma.auditLog.create({
+    data: {
+      actorId: null,
+      actorTag: "SYSTEM",
+      serverId: server.id,
+      action,
+      targetId: server.ownerId,
+    },
+  });
+
+  const { dmUser } = await import("./botNotifier.js");
+  const result = await dmUser(server.ownerId, embed).catch(() => null);
+
+  if (result === null) {
+    // Временен провал (ботът е недостъпен) → махаме маркера, опитваме утре.
+    await prisma.auditLog.delete({ where: { id: marker.id } }).catch(() => {});
+    return false;
+  }
+  if (result.ok !== true) {
+    // Трайна пречка — записваме причината, но НЕ повтаряме.
+    await prisma.auditLog
+      .update({ where: { id: marker.id }, data: { metadata: { delivered: false, reason: result.reason } } })
+      .catch(() => {});
+    return false;
+  }
+  await prisma.auditLog
+    .update({ where: { id: marker.id }, data: { metadata: { delivered: true } } })
+    .catch(() => {});
+  return true;
+}
+
+cron.schedule("0 9 * * *", job("trial-expiry-dm", async () => {
   try {
     const now = new Date();
     const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const premiumUrl = (serverId) => `${process.env.FRONTEND_URL}/dashboard/${serverId}/premium`;
+    // Discord timestamp markdown — показва датата в ЛОКАЛНАТА зона на четящия,
+    // вместо да налагаме UTC форматиране от сървъра.
+    const discordDate = (d) => `<t:${Math.floor(d.getTime() / 1000)}:D>`;
+    const discordRelative = (d) => `<t:${Math.floor(d.getTime() / 1000)}:R>`;
 
-    // Servers whose trial expires in the next 3 days and are not on Premium
+    // Servers whose trial expires in the next 3 days and are not on Premium.
+    // Изключваме agency-покрити: те са платени през агенцията, а не собствен
+    // trial → не бива да получават „trial-ът ти изтича“ DM (суровият isPremium
+    // може да е застоял, затова и явната agency проверка).
+    const notAgencyCovered = { OR: [{ agencyId: null }, { agency: { is: { active: false } } }] };
     const expiring = await prisma.server.findMany({
       where: {
         isPremium: false,
         trialEndsAt: { gte: now, lte: in3Days },
+        ...notAgencyCovered,
       },
       select: { id: true, name: true, trialEndsAt: true, ownerId: true },
     });
@@ -270,6 +486,37 @@ cron.schedule("0 9 * * *", async () => {
           metadata: { hoursLeft, trialEndsAt: s.trialEndsAt },
         },
       }).catch(() => {});
+
+      // Известие до собственика на сървъра (веднъж). Текстът е на английски —
+      // Низовете тук са английски по дизайн на DM канала; преводът им на 8-те
+      // локала е отделна задача (Преводач). (backend/src/i18n/ беше ИЗТРИТ на
+      // 09.08.2026 — неимпортиран труп от 3 езика, който този коментар
+      // погрешно сочеше като „източник на истината".)
+      await sendTrialDm({
+        server: s,
+        action: "TRIAL_EXPIRING_DM",
+        embed: {
+          title: "⏰ Your Supreme Bot trial is ending",
+          description:
+            `The Premium trial for **${s.name}** ends on ${discordDate(s.trialEndsAt)} ` +
+            `(${discordRelative(s.trialEndsAt)}).\n\n` +
+            "Keep your Premium features — AI auto-replies, verification, unlimited ticket " +
+            "archives, giveaways, webhooks and the REST API — by subscribing before then.\n\n" +
+            // Не е бутон за поръчка: линкът само отваря страницата с тарифите.
+            // Обвързващият бутон с етикет по чл. 8(2) Дир. 2011/83/ЕС е там.
+            `**[View plans and pricing](${premiumUrl(s.id)})**`,
+          color: TRIAL_DM_COLOR,
+          footer: {
+            // Без правни твърдения в едно изречение: пълната преддоговорна
+            // информация (цена с ДДС, 14-дневен отказ, чл. 16(а)/8(8) искане)
+            // се показва на страницата за плащане, където се сключва договорът.
+            text:
+              "Supreme Bot · You receive this because you own this Discord server. " +
+              "Prices include VAT; your 14-day withdrawal rights are explained at checkout.",
+          },
+          timestamp: new Date().toISOString(),
+        },
+      }).catch((err) => console.error(`[Scheduler] trial DM ${s.id}:`, err.message));
     }
 
     // Servers whose trial just expired (within the last 24h)
@@ -278,8 +525,9 @@ cron.schedule("0 9 * * *", async () => {
       where: {
         isPremium: false,
         trialEndsAt: { gte: yesterday, lt: now },
+        ...notAgencyCovered,
       },
-      select: { id: true, name: true },
+      select: { id: true, name: true, ownerId: true },
     });
 
     for (const s of justExpired) {
@@ -293,16 +541,35 @@ cron.schedule("0 9 * * *", async () => {
           targetId: s.id,
         },
       }).catch(() => {});
+
+      await sendTrialDm({
+        server: s,
+        action: "TRIAL_EXPIRED_DM",
+        embed: {
+          title: "Your Supreme Bot trial has ended",
+          description:
+            `The Premium trial for **${s.name}** has expired and the server is back on the free tier.\n\n` +
+            "**What you no longer have:** AI auto-replies · verification panels · " +
+            "round-robin assignment · giveaways · webhooks · REST API · unlimited " +
+            "ticket archives (archives now clear after 30 days).\n\n" +
+            "Your configuration is kept — subscribing restores everything as it was.\n\n" +
+            `**[View plans and pricing](${premiumUrl(s.id)})**`,
+          color: TRIAL_DM_COLOR,
+          footer: { text: "Supreme Bot · You receive this because you own this Discord server." },
+          timestamp: new Date().toISOString(),
+        },
+      }).catch((err) => console.error(`[Scheduler] trial-expired DM ${s.id}:`, err.message));
     }
+    await jobHeartbeat("trial-expiry-dm");
   } catch (err) {
-    console.error("[Scheduler] trial expiry check:", err.message);
+    await jobFail("trial-expiry-dm", err);
   }
-});
+}), TZ);
 
 // ─── Job 8: Daily metrics snapshot (v2.1) ───────────────────────────
 // Runs at 00:05 UTC every day. Aggregates yesterday's ticket/form/app/verification
 // activity into daily_metrics for fast analytics queries.
-cron.schedule("5 0 * * *", async () => {
+cron.schedule("5 0 * * *", job("daily-metrics-rollup", async () => {
   try {
     const now = new Date();
     const yesterday = new Date(now);
@@ -356,9 +623,177 @@ cron.schedule("5 0 * * *", async () => {
       });
     }
     console.log(`[Scheduler] Daily metrics snapshotted for ${activeServers.length} servers`);
+    await jobHeartbeat("daily-metrics-rollup");
   } catch (err) {
-    console.error("[Scheduler] daily metrics:", err.message);
+    await jobFail("daily-metrics-rollup", err);
   }
-});
+}), TZ);
+
+// ─── Job 9: SLA breach detection (v31 — Premium) ─────────────────────────────
+// Runs every 10 minutes. For panels with an SLA configured, flags tickets that
+// missed the first-response or resolution target and DMs the assignee (or the
+// server owner if unclaimed). `slaBreachedAt` is the "already notified" marker
+// — once set we never re-check that ticket again (no spam on every run).
+// Batched (take 200 per dimension per panel) + try/catch per ticket so one bad
+// row can't take down the whole job.
+
+const SLA_BREACH_COLOR = 0xed4245; // Discord "danger" red
+
+function slaDashboardUrl(serverId, ticketId) {
+  // Детайлен маршрут /tickets/:id няма (App.jsx има само списъка) — линкът
+  // водеше към 404. Списъкът е живият маршрут; тикетът се намира по номера.
+  return `${process.env.FRONTEND_URL || ""}/dashboard/${serverId}/tickets`;
+}
+
+async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
+  const { dmUser } = await import("./botNotifier.js");
+  const targetUserId = ticket.assigneeId || ticket.server?.ownerId;
+  if (!targetUserId) return;
+
+  const label = type === "first_response" ? "First-response" : "Resolution";
+  const ticketLabel = ticket.number != null ? `#${ticket.number}` : ticket.id;
+
+  await dmUser(targetUserId, {
+    title: `⚠️ SLA breached — ${label}`,
+    description:
+      `Ticket **${ticketLabel}** in **${panel?.name || "unknown panel"}** missed its ` +
+      `${label.toLowerCase()} SLA by ~${minutesLate} min.\n\n` +
+      `**[Open ticket](${slaDashboardUrl(ticket.serverId, ticket.id)})**`,
+    color: SLA_BREACH_COLOR,
+    timestamp: new Date().toISOString(),
+  }).catch(() => null);
+}
+
+cron.schedule("*/10 * * * *", job("sla-watch", async () => {
+  try {
+    const now = new Date();
+    const panels = await prisma.panel.findMany({
+      where: {
+        OR: [
+          { slaFirstResponseMinutes: { not: null } },
+          { slaResolutionMinutes: { not: null } },
+        ],
+        server: effectivePremiumWhere(now), // SLA is a Premium feature — agency/trial covered too
+      },
+      select: {
+        id: true, name: true, serverId: true,
+        slaFirstResponseMinutes: true, slaResolutionMinutes: true,
+      },
+    });
+
+    if (!panels.length) return;
+
+    let breached = 0;
+
+    for (const panel of panels) {
+      // ── (a) First-response breach ──────────────────────────────────────
+      if (panel.slaFirstResponseMinutes) {
+        const cutoff = new Date(now.getTime() - panel.slaFirstResponseMinutes * 60 * 1000);
+        const overdue = await prisma.ticket.findMany({
+          where: {
+            panelId: panel.id,
+            status: { in: ["OPEN", "CLAIMED"] },
+            firstResponseAt: null,
+            slaBreachedAt: null,
+            createdAt: { lt: cutoff },
+          },
+          select: { id: true, serverId: true, number: true, assigneeId: true, createdAt: true },
+          take: 200,
+        });
+
+        for (const t of overdue) {
+          try {
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaBreachedAt: now } });
+            const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaFirstResponseMinutes;
+            await prisma.auditLog.create({
+              data: {
+                actorId: null,
+                actorTag: "SYSTEM",
+                serverId: t.serverId,
+                action: "SLA_BREACH",
+                targetId: t.id,
+                metadata: { type: "first_response", panelId: panel.id, minutesLate },
+              },
+            });
+            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
+            await notifySlaBreach({ ticket: { ...t, server }, panel, type: "first_response", minutesLate });
+            breached++;
+          } catch (err) {
+            console.error(`[sla] first-response breach failed for ticket ${t.id}:`, err.message);
+          }
+        }
+      }
+
+      // ── (b) Resolution breach ──────────────────────────────────────────
+      if (panel.slaResolutionMinutes) {
+        const cutoff = new Date(now.getTime() - panel.slaResolutionMinutes * 60 * 1000);
+        const overdue = await prisma.ticket.findMany({
+          where: {
+            panelId: panel.id,
+            status: { in: ["OPEN", "CLAIMED"] },
+            // v44: СОБСТВЕН маркер. Дотук филтрираше по slaBreachedAt — тоест
+            // тикет с first-response пробив никога не вдигаше resolution аларма.
+            slaResolutionBreachedAt: null,
+            createdAt: { lt: cutoff },
+          },
+          select: { id: true, serverId: true, number: true, assigneeId: true, createdAt: true },
+          take: 200,
+        });
+
+        for (const t of overdue) {
+          try {
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaResolutionBreachedAt: now } });
+            const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaResolutionMinutes;
+            await prisma.auditLog.create({
+              data: {
+                actorId: null,
+                actorTag: "SYSTEM",
+                serverId: t.serverId,
+                action: "SLA_BREACH",
+                targetId: t.id,
+                metadata: { type: "resolution", panelId: panel.id, minutesLate },
+              },
+            });
+            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
+            await notifySlaBreach({ ticket: { ...t, server }, panel, type: "resolution", minutesLate });
+            breached++;
+          } catch (err) {
+            console.error(`[sla] resolution breach failed for ticket ${t.id}:`, err.message);
+          }
+        }
+      }
+    }
+
+    if (breached > 0) {
+      console.log(`[Scheduler] SLA breach check: flagged ${breached} tickets`);
+    }
+  } catch (err) {
+    await jobFail("sla-watch", err);
+  }
+}), TZ);
+
+// ─── Осиновени задачи (одит 09.08.2026) ─────────────────────────────────────
+// ГДПР ретенцията и дунингът живееха на голи setTimeout в jobs/*.js: грешките
+// умираха в console.error, нула Sentry, нула пулс, нула застъпващ lock, зашита
+// зона. Тоест ЗАКОНОВОТО изтриване и ПАРИТЕ бяха точно в неохранявания
+// планировчик. Тук минават през job() като всички останали; часовете са
+// разместени спрямо archive-cleanup (03:00), защото двата пипат същите редове.
+
+cron.schedule("15 3 * * *", job("gdpr-retention", async () => {
+  const r = await runRetentionJob();
+  await jobHeartbeat("gdpr-retention", {
+    ticketsAnonymized: r?.ticketsAnonymized ?? 0,
+    auditLogsDeleted: r?.auditLogsDeleted ?? 0,
+    errors: r?.errors?.length ?? 0,
+  });
+  // Провалите на отделни записи се трупат в r.errors — това е ЧАСТИЧЕН провал
+  // и трябва да се чуе, не да пътува погребан в metadata JSON.
+  if (r?.errors?.length) await jobFail("gdpr-retention", new Error(`${r.errors.length} частични провала: ${r.errors[0].type}/${r.errors[0].error}`));
+}), TZ);
+
+cron.schedule("45 3 * * *", job("dunning", async () => {
+  const r = await runDunningJob();
+  await jobHeartbeat("dunning", { downgraded: r?.downgraded ?? 0, graceExpired: r?.graceExpired ?? 0 });
+}), TZ);
 
 console.log("[Scheduler] Background jobs started");

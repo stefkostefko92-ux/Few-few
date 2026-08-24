@@ -13,7 +13,9 @@
 //   GET /api/v1/giveaways         — list giveaways
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { requireApiKey } from "./apikeys.js";
+import { requireApiKey } from "../lib/apiKeyAuth.js";
+import { getServerTier } from "../lib/premium.js";
+import { withIconUrl } from "../lib/discordCdn.js";
 
 const router = Router();
 
@@ -23,12 +25,15 @@ router.get("/server", requireApiKey("server:read"), async (req, res, next) => {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
       select: {
-        id: true, name: true, icon: true, language: true,
-        isPremium: true, trialEndsAt: true,
+        id: true, name: true, icon: true, language: true, trialEndsAt: true,
         _count: { select: { tickets: true, panels: true, forms: true } },
       },
     });
-    res.json(server);
+    if (!server) return res.json(null);
+    // Ефективен tier (agency/trial не са в суровата колона).
+    const { isPremium, plan } = await getServerTier(req.params.serverId);
+    // `icon` е адрес, не суров хеш — виж lib/discordCdn.js.
+    res.json({ ...withIconUrl(server), isPremium, plan });
   } catch (err) { next(err); }
 });
 

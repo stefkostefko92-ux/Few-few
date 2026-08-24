@@ -20,10 +20,14 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
+import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
+import {
+  TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
+} from "../src/data/growthContent.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
-const SITE = "https://supreme.carbonstealth.eu";
+const SITE = "https://supremebot.carbonstealth.eu";
 
 // Keep in sync with src/components/Seo.jsx (LANDING_LOCALES + landingPath).
 const LANDING_LOCALES = ["en", "bg", "de", "es", "fr", "it", "nl", "pl"];
@@ -51,12 +55,19 @@ function replaceOnce(html, regex, replacement, label) {
 
 // Apply the common <head> overrides (title, description trio, canonical, og:url,
 // og:locale, html lang) to a copy of the template.
-function withHead(template, { title, description, path, lang }) {
+function withHead(template, { title, description, path, lang, keywords }) {
   const url = `${SITE}${path}`;
   let h = template;
   h = replaceOnce(h, /<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`, "title");
   h = replaceOnce(h, /(<meta name="description" content=")[\s\S]*?("\s*\/>)/,
     `$1${esc(description)}$2`, "meta description");
+  // Per-route keyword override — root CLAUDE.md rule: ≥5 keywords, always incl.
+  // "Carbon Stealth". Optional: routes that don't pass `keywords` keep the
+  // default set already in index.html (which also satisfies the rule).
+  if (keywords && keywords.length) {
+    h = replaceOnce(h, /(<meta name="keywords" content=")[\s\S]*?("\s*\/>)/,
+      `$1${esc(keywords.join(", "))}$2`, "meta keywords");
+  }
   h = replaceOnce(h, /(<meta property="og:description" content=")[\s\S]*?("\s*\/>)/,
     `$1${esc(description)}$2`, "og:description");
   h = replaceOnce(h, /(<meta name="twitter:description" content=")[\s\S]*?("\s*\/>)/,
@@ -98,6 +109,33 @@ function writeRoute(path, html) {
   writeFileSync(join(outDir, "index.html"), html, "utf8");
 }
 
+// ─── вътрешни връзки към ръководствата ───────────────────────────────────────
+// ЗАЩО (одит, 16.08.2026): футърът с тези пет връзки беше добавен в React-а
+// (#214), но снимката ТУК не е рендериран React — тя е ръчно поддържан HTML.
+// Тоест връзките ги виждаше само обхождач, който ИЗПЪЛНЯВА JavaScript, а тази
+// снимка съществува точно заради онези, които НЕ изпълняват (ClaudeBot,
+// PerplexityBot, GPTBot, OAI-SearchBot — изброени в заглавието на файла).
+// Поправката от #214 не стигаше до аудиторията, за която е писана.
+//
+// Етикетите идват от СЪЩИЯ обект, който храни футъра (`t.guides`), за да не
+// станат две определения на едно нещо — точно дефектът, гонен цяла сесия.
+const GUIDE_LINKS = [
+  ["/guides/ticket-panel-setup", "panel"],
+  ["/guides/best-discord-ticket-bot", "best"],
+  ["/guides/gdpr-discord-bot", "gdpr"],
+  ["/compare/ticket-tool-alternative", "vsTicketTool"],
+  ["/compare/appy-alternative", "vsAppy"],
+];
+
+function guideLinks(t) {
+  if (!t.guides) return "";
+  const items = GUIDE_LINKS
+    .filter(([, key]) => t.guides[key])
+    .map(([href, key]) => `<li><a href="${href}">${esc(t.guides[key])}</a></li>`)
+    .join("");
+  return items ? `<nav><h2>${esc(t.guides.heading)}</h2><ul>${items}</ul></nav>` : "";
+}
+
 // ─── content snapshot from a landing translation object ──────────────────────
 function landingSnapshot(t) {
   const features = t.features.map(
@@ -130,6 +168,7 @@ function landingSnapshot(t) {
     <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${tier(t.tiers.agency5)}${tier(t.tiers.agency10)}${
       t.priceNote ? `<p>${esc(t.priceNote)}</p>` : ""
     }</section>
+    ${guideLinks(t)}
   </div>`;
 }
 
@@ -208,9 +247,9 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   ];
   const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
   const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
-    + `<div><h3>Premium — €9.99 / server / month (or €99 / year)</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
-    + `<div><h3>White-label — €19.99 / month (or €199 / year)</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
-    + `<div><h3>Agency — €39.99 / month (Agency 5) or €79.99 / month (Agency 10)</h3><ul><li>White-label for up to 5 or 10 servers, one subscription</li><li>Annual: €399 / year (5) or €799 / year (10)</li><li>Reseller-friendly</li></ul></div>`
+    + `<div><h3>Premium — €4.99 / server / month (or €49 / year)</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
+    + `<div><h3>White-label — €9.99 / month (or €99 / year)</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
+    + `<div><h3>Agency — €19.99 / month (Agency 5) or €39.99 / month (Agency 10)</h3><ul><li>White-label for up to 5 or 10 servers, one subscription</li><li>Annual: €199 / year (5) or €399 / year (10)</li><li>Reseller-friendly</li></ul></div>`
     + `<p>All prices in EUR, VAT included where applicable · per server unless noted · subscriptions renew automatically until cancelled.</p>`;
   // Free-vs-Premium comparison — the most AI-citable, answer-first content.
   // Rendered as a real <table> so non-JS AEO crawlers (ClaudeBot/GPTBot/Perplexity)
@@ -225,20 +264,30 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["White-label bot", "—", "Separate tier (White-label)"],
     ["Webhooks", "—", "20 HMAC-signed integrations"],
     ["Transcript retention", "30 days", "Unlimited"],
-    ["Price", "€0 forever", "€9.99/mo · €99/yr · 14-day trial, no card"],
+    ["Price", "€0 forever", "€4.99/mo · €49/yr · 14-day trial, no card"],
   ];
   const compareHtml = `<table><thead><tr><th>Capability</th><th>Free</th><th>Premium</th></tr></thead><tbody>${
     compareRows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
   }</tbody></table>`;
-  const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€9.99 per server per month or €99 per year, with a 14-day free trial and no credit card) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€19.99/month or €199/year) adds a custom bot that runs under your own brand, and Agency 5 / Agency 10 (€39.99 / €79.99 per month) cover up to 5 or 10 servers under one white-label subscription. Billing is per server, so a small community can stay on Free while your main server runs Premium; cancel anytime and nothing is deleted.";
+  const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€4.99 per server per month or €49 per year, with a 14-day free trial and no credit card) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€9.99/month or €99/year) adds a custom bot that runs under your own brand, and Agency 5 / Agency 10 (€19.99 / €39.99 per month) cover up to 5 or 10 servers under one white-label subscription. Billing is per server, so a small community can stay on Free while your main server runs Premium; cancel anytime and nothing is deleted.";
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
     <p>One bot replaces six. Built in the EU.</p>
     <h1>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform</h1>
-    <p>Six bots. Six bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
+    <p>Eight bots. Eight bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
     <section><h2>Free vs Premium</h2><p>${upsellPassage}</p>${compareHtml}</section>
     <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
     <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>
     <section><h2>Frequently asked questions</h2>${faqHtml}</section>
+    ${guideLinks({
+      guides: {
+        heading: "Guides & comparisons",
+        panel: "Ticket panel & button setup",
+        best: "Choosing a Discord ticket bot",
+        gdpr: "GDPR for Discord bots",
+        vsTicketTool: "Supreme Bot vs Ticket Tool",
+        vsAppy: "Supreme Bot vs Appy",
+      },
+    })}
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
@@ -246,7 +295,132 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   count++;
 }
 
-// 3) Legal / status routes — correct per-route head + a minimal heading so
+// 3) Public commands reference — full catalog as a crawlable snapshot (the
+//    AEO content for this route; mirrors PublicCommandsPage.jsx exactly so
+//    the snapshot and the live SPA never drift).
+{
+  const totalCommands = COMMAND_CATALOG.reduce((n, cat) => n + (cat.commands || []).length, 0);
+  const totalCategories = COMMAND_CATALOG.length;
+  const title = "Supreme Bot Commands — Full Reference";
+  const description = `Every Supreme Bot slash command and dashboard feature: ${totalCommands} commands across ${totalCategories} categories — tickets, forms, verification, polls, giveaways, automation, and more.`;
+  const PREMIUM_MARK = /\s*\(Premium\)\s*$/;
+  const stripPremium = (label) => label.replace(PREMIUM_MARK, "");
+  const isPremium = (label) => PREMIUM_MARK.test(label);
+  const catHtml = COMMAND_CATALOG.map((cat) => {
+    const cmds = (cat.commands || []).map((cmd) => `<li><code>${esc(stripPremium(cmd.name))}</code>${
+      isPremium(cmd.name) ? " (Premium)" : ""
+    } — <span>${esc(cmd.signature || "")}</span><p>${esc(cmd.description)}</p></li>`).join("");
+    const dashOnly = (cat.dashboardOnly || []).map((f) => `<li><strong>${esc(stripPremium(f.feature))}</strong>${
+      isPremium(f.feature) ? " (Premium)" : ""
+    } — dashboard-only<p>${esc(f.description)}</p></li>`).join("");
+    return `<section><h2>${esc(cat.icon)} ${esc(cat.category)}</h2><p>${esc(cat.description)}</p><ul>${cmds}${dashOnly}</ul></section>`;
+  }).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>${esc(title)}</h1>
+    <p>Supreme Bot has ${totalCommands} slash commands across ${totalCategories} categories — tickets, panels, forms &amp; applications, verification, polls, giveaways, scheduled &amp; sticky messages, integrations, and server administration. Most features are also reachable from the web dashboard; this page is the full reference (the same list <code>/help</code> shows in Discord).</p>
+    ${catHtml}
+  </div>`;
+  let html = withHead(template, { title, description, path: "/commands", lang: "en" });
+  html = injectRoot(html, snapshot);
+  writeRoute("/commands", html);
+  count++;
+}
+
+// 4) Growth Level-2 content pages (docs/PRODUCT_ROADMAP.md) — /compare and
+//    /guides. Answer-first paragraph + the comparison table as a real <table>
+//    (the AEO meat: non-JS crawlers can quote cells directly), FAQ as
+//    Q/A pairs. Data comes from src/data/growthContent.js — the SAME object
+//    the live React pages render — so the snapshot can never drift from the
+//    live page's numbers.
+function compareSnapshot(d) {
+  const rows = d.rows.map(
+    ([cap, supreme, competitor]) => `<tr><td>${esc(cap)}</td><td>${esc(supreme)}</td><td>${esc(competitor)}</td></tr>`
+  ).join("");
+  const faq = d.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
+  const sources = d.sourceUrls.map((u) => `<a href="${esc(u)}">${esc(u)}</a>`).join(", ");
+  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>Supreme Bot vs ${esc(d.competitor)}</h1>
+    <p>${esc(d.answer)}</p>
+    <p><small>Checked ${esc(CHECKED_DATE)} against ${sources}. Prices as published by each vendor, not converted.</small></p>
+    <section><h2>Feature &amp; pricing comparison</h2><table><thead><tr><th>Capability</th><th>Supreme Bot</th><th>${esc(d.competitor)}</th></tr></thead><tbody>${rows}</tbody></table></section>
+    <section><h2>Frequently asked questions</h2>${faq}</section>
+  </div>`;
+}
+
+for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
+  const keywords = d === TICKET_TOOL_COMPARE
+    ? ["discord ticket bot", "ticket tool alternative", "best discord ticket bot", "supreme bot", "discord bot comparison", "carbon stealth"]
+    : ["discord application bot", "appy bot alternative", "discord ticket bot", "supreme bot", "discord bot comparison", "carbon stealth"];
+  let html = withHead(template, { title: d.title, description: d.description, path: d.path, lang: "en", keywords });
+  html = injectRoot(html, compareSnapshot(d));
+  writeRoute(d.path, html);
+  count++;
+}
+
+{
+  const d = BEST_TICKET_BOT_GUIDE;
+  const criteria = d.criteria.map(
+    (c) => `<div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p><p><strong>How Supreme Bot covers this:</strong> ${esc(c.supreme)}</p></div>`
+  ).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>How to choose the best Discord ticket bot</h1>
+    <p>${esc(d.answer)}</p>
+    ${criteria}
+    <section><h2>Other bots worth evaluating</h2><p>${esc(d.mentions)}</p></section>
+  </div>`;
+  let html = withHead(template, {
+    title: d.title, description: d.description, path: d.path, lang: "en",
+    keywords: ["best discord ticket bot", "discord ticket bot", "how to choose a discord bot", "supreme bot", "discord support tool", "carbon stealth"],
+  });
+  html = injectRoot(html, snapshot);
+  writeRoute(d.path, html);
+  count++;
+}
+
+{
+  const d = GDPR_GUIDE;
+  const sections = d.sections.map((s) => `<div><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></div>`).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>GDPR &amp; EU hosting for Discord communities</h1>
+    <p>${esc(d.answer)}</p>
+    ${sections}
+    <p><small>${esc(d.disclaimer)}</small></p>
+  </div>`;
+  let html = withHead(template, {
+    title: d.title, description: d.description, path: d.path, lang: "en",
+    keywords: ["gdpr discord bot", "eu hosted discord bot", "discord data residency", "supreme bot", "discord dpa", "carbon stealth"],
+  });
+  html = injectRoot(html, snapshot);
+  writeRoute(d.path, html);
+  count++;
+}
+
+{
+  const d = PANEL_SETUP_GUIDE;
+  const optRows = (rows) => rows.map(
+    (r) => `<tr><td>${esc(r.name)}</td><td>${esc(r.body)}</td><td>${esc(r.values)}</td></tr>`
+  ).join("");
+  const layouts = d.layoutModes.map((m) => `<div><h3>${esc(m.name)}</h3><p>${esc(m.body)}</p></div>`).join("");
+  const limits = d.limits.map(([c, v]) => `<tr><td>${esc(c)}</td><td>${esc(v)}</td></tr>`).join("");
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>Ticket panel &amp; button setup</h1>
+    <p>${esc(d.answer)}</p>
+    <section><h2>The panel message</h2><table><thead><tr><th>Option</th><th>What it does</th><th>Values</th></tr></thead><tbody>${optRows(d.panelOptions)}</tbody></table></section>
+    <section><h2>Layouts</h2>${layouts}</section>
+    <section><h2>Button options</h2><table><thead><tr><th>Option</th><th>What it does</th><th>Values</th></tr></thead><tbody>${optRows(d.buttonOptions)}</tbody></table></section>
+    <section><h2>Close, claim &amp; the other actions are automatic</h2><p>${esc(d.inTicketButtons)}</p></section>
+    <section><h2>Limits</h2><table><tbody>${limits}</tbody></table></section>
+  </div>`;
+  let html = withHead(template, {
+    title: d.title, description: d.description, path: d.path, lang: "en",
+    keywords: ["discord ticket panel", "ticket panel setup", "discord ticket bot buttons", "supreme bot", "discord support tool", "carbon stealth"],
+  });
+  html = injectRoot(html, snapshot);
+  writeRoute(d.path, html);
+  count++;
+}
+
+// 5) Legal / status routes — correct per-route head + a minimal heading so
 //    crawlers don't index them all under the homepage title.
 const STATIC_ROUTES = {
   "/status":        ["Service Status — Supreme Bot", "Real-time service status for Supreme Bot: uptime and component health for the database, Discord bot, API and web dashboard."],

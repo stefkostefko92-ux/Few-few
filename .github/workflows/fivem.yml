@@ -19,6 +19,9 @@ jobs:
   quality:
     name: Lint · typecheck · test · build
     runs-on: ubuntu-latest
+    # Висяща стъпка не се проваля — тя не свършва, и без таван държи runner до
+    # 360 мин по подразбиране. `continue-on-error` НЕ помага тук.
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: FiveM

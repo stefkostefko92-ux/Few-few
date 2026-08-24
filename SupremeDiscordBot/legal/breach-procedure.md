@@ -2,8 +2,8 @@
 
 **GDPR Articles 33 & 34 compliance document**  
 **Controller:** Carbon Stealth VCC (EIK 208725180, VAT BG208725180)  
-**Last updated:** 2026-04-22  
-**Version:** 1.0  
+**Last updated:** 2026-08-12  
+**Version:** 1.1  
 **Owner:** Managing Director (Stefan Lyubomirov Kostadinov, acting as interim DPO)
 
 ---
@@ -54,19 +54,39 @@ Three categories:
 
 ## Detection Sources
 
-1. **Automated monitoring:**
-   - Sentry error tracking (production errors)
+1. **Automated monitoring** (runs without human action):
+   - Sentry error tracking (production errors) — active only when `SENTRY_DSN` is
+     configured; unset means this source does not exist
    - VPS monitoring (Hetzner Cloud alerts)
-   - Docker container health checks
-   - Database audit log anomaly detection (monthly review)
-   - Rate limiter hits on auth endpoints (weekly review)
+   - Docker container health checks (`postgres`, `redis`, `backend`, `bot`,
+     `frontend` — see `docker-compose.yml`)
+   - Automated dependency scanning (Dependabot, `.github/dependabot.yml`)
+   - Brute-force lockouts, recorded automatically as audit entries with action
+     `SECURITY_BRUTE_FORCE_BLOCK` (`backend/src/lib/bruteForce.js`). One entry per
+     lockout episode, not per request — deliberately, so an attacker cannot make us
+     write to our own database instead of themselves. Source identifiers are
+     truncated (GDPR Recital 30: the scale is visible, the person is not).
 
-2. **User reports:**
+2. **Periodic human review** (does NOT happen on its own — someone must run it):
+   - Audit log review for anomalies — monthly
+   - Brute-force lockout review — weekly. Query: audit entries with action
+     `SECURITY_BRUTE_FORCE_BLOCK`; the `metadata` field carries `scope`, `kind`
+     (`ip` / `subnet` / `widenet`), truncated `key`, `failures` and `blockMs`.
+     Repeated episodes from one source appear as separate entries — a rising count
+     is an ongoing campaign, a single entry is a fat-finger.
+
+   > These two were previously listed as "automated monitoring". They are not
+   > automated: nothing alerts, nothing runs on a schedule. Listing a manual task as
+   > automatic is how a controller ends up believing it has detection it does not
+   > have — which is precisely the failure GDPR Article 33's 72-hour clock punishes.
+   > (Audit stage 13, 2026-08-12)
+
+3. **User reports:**
    - `security@carbonstealth.eu` (public contact)
    - Bug bounty submissions (not yet formalized)
    - Support tickets with security concern
 
-3. **Third-party notifications:**
+4. **Third-party notifications:**
    - Sub-processor breach notifications (contractual obligation per DPA)
    - Vulnerability disclosures (GitHub security advisories for dependencies)
    - CVE alerts (automated dependency scanning)
@@ -115,7 +135,7 @@ Three categories:
 2. **Affected data subjects notification (Article 34) — Required if HIGH RISK to rights and freedoms**
    - Via email (primary admin contact on file)
    - Via in-app banner in dashboard
-   - Via status page post at https://supreme.carbonstealth.eu/status
+   - Via status page post at https://supremebot.carbonstealth.eu/status
    - Via Discord DM if only Discord ID is known (with opt-out respected)
 
 3. **Customer DPA notification — Required for all breaches affecting Customer data**
@@ -189,9 +209,9 @@ On [date], we detected a security incident that may have affected your account d
 - [Specific recommendations: change Discord password, enable MFA, review recent logins, etc.]
 
 **For more information:**
-- Detailed technical post: https://supreme.carbonstealth.eu/status
+- Detailed technical post: https://supremebot.carbonstealth.eu/status
 - Contact: security@carbonstealth.eu
-- To request deletion of your data: https://supreme.carbonstealth.eu/dashboard/privacy-settings
+- To request deletion of your data: https://supremebot.carbonstealth.eu/dashboard/privacy-settings
 
 We sincerely apologize for this incident and are taking steps to prevent recurrence.
 

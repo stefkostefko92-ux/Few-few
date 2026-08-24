@@ -1,0 +1,16 @@
+[Unit]
+# Дневен тригер за supreme-backup.service — 03:00 UTC (изрично UTC, за да не
+# мърда с локалната зона/лятно часово време). Persistent=true наваксва
+# пропуснатия прозорец, ако сървърът е бил спрян.
+Description=Дневен криптиран бекъп на PostgreSQL (Supreme Bot)
+Documentation=file:///opt/few-few/current/SupremeDiscordBot/deploy/BACKUP.md
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+AccuracySec=1min
+Unit=supreme-backup.service
+
+[Install]
+WantedBy=timers.target

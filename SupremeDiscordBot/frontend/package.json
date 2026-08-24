@@ -1,6 +1,6 @@
 {
   "name": "supreme-bot-frontend",
-  "version": "2.3.0",
+  "version": "3.2.0",
   "description": "Supreme Bot — web dashboard for the Discord bot SaaS platform by Carbon Stealth VCC",
   "license": "UNLICENSED",
   "private": true,
@@ -16,7 +16,11 @@
     "dev": "vite",
     "build": "vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
-    "prerender": "node scripts/prerender.mjs"
+    "prerender": "node scripts/prerender.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "budget": "node scripts/bundle-budget.mjs",
+    "mobile-proof": "node scripts/mobile-proof.mjs"
   },
   "dependencies": {
     "@fontsource/inter-tight": "^5.2.7",
@@ -24,17 +28,21 @@
     "@sentry/react": "^10.60.0",
     "@tanstack/react-query": "^5.24.1",
     "axios": "^1.6.7",
+    "gsap": "^3.15.0",
     "lucide-react": "^0.330.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.22.2"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.61",
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.4.18",
+    "axe-core": "^4.13.0",
+    "playwright-core": "^1.62.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "vite": "^8.1.0"
+    "vite": "^8.1.0",
+    "vitest": "^3.2.7"
   }
 }

@@ -100,7 +100,10 @@ export default {
           message.author.id,
           authorTag,
           message.content || "[attachment only]",
-          attachments
+          attachments,
+          // v36 — Discord ID-то е ключът, по който по-късно намираме реда при
+          // редакция/изтриване. Без него одитната следа е невъзможна.
+          message.id
         );
         // Uncomment for debugging: console.log(`[msg-log] ✓ ticket=${ticketId} by=${authorTag}`);
       } catch (err) {

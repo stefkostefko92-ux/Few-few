@@ -48,10 +48,24 @@ export async function createTicket(serverId, panelId, creatorId, channelId, firs
   }
 }
 
-export async function logTicketMessage(ticketId, authorId, authorTag, content, attachments = []) {
+export async function logTicketMessage(ticketId, authorId, authorTag, content, attachments = [], messageId = null) {
   const { data } = await api.post(`/bot/ticket/${ticketId}/message`, {
-    authorId, authorTag, content, attachments,
+    authorId, authorTag, content, attachments, messageId,
   });
+  return data;
+}
+
+/**
+ * v36 — отбелязва в тикет транскрипта, че съобщение е редактирано или изтрито.
+ * Съобщение извън тикет канал → backend връща 204 и няма какво да правим,
+ * затова повикващият може да игнорира резултата.
+ *
+ * @param {string} messageId Discord ID на съобщението
+ * @param {"edit"|"delete"} action
+ * @param {string} [content] новият текст (само при edit)
+ */
+export async function markTicketMessage(messageId, action, content) {
+  const { data } = await api.patch(`/bot/ticket-message/${messageId}`, { action, content });
   return data;
 }
 
@@ -60,15 +74,43 @@ export async function closeTicketApi(ticketId, closedById, reason) {
   return data;
 }
 
+/**
+ * Подава кандидатура. Връща `{ ok: true, application }` или `{ ok: false, ... }`.
+ *
+ * ЗАЩО не хвърля (Кодаджията, одит кръг 2, 07.08.2026): сървърът вече отказва с
+ * 403/429 при затворена форма, изчерпан таван или активен cooldown — правила,
+ * които клиентът ПЛАЩА. Дотук тези отговори излизаха като axios изключение,
+ * `formSession` го гълташе в общ catch и кандидатът получаваше „подадено“.
+ * Тоест платената функция работеше, а човекът срещу нея беше лъган.
+ */
 export async function submitApplication(serverId, formId, userId, answers, reviewMessageId, reviewChannelId) {
-  const { data } = await api.post("/bot/application/submit", {
-    serverId, formId, userId, answers, reviewMessageId, reviewChannelId,
-  });
-  return data;
+  try {
+    const { data } = await api.post("/bot/application/submit", {
+      serverId, formId, userId, answers, reviewMessageId, reviewChannelId,
+    });
+    return { ok: true, application: data };
+  } catch (err) {
+    const res = err?.response;
+    // Само ОТКАЗ по правило се превежда; мрежов/сървърен срив се вдига нагоре,
+    // за да не се представи авария за „формата е затворена“.
+    if (res && res.status >= 400 && res.status < 500) {
+      return {
+        ok: false,
+        status: res.status,
+        code: res.data?.code || null,
+        error: res.data?.error || null,
+        remainingSeconds: res.data?.remainingSeconds ?? null,
+      };
+    }
+    throw err;
+  }
 }
 
-export async function getPanel(panelId) {
-  const { data } = await api.get(`/bot/panel/${panelId}`);
+// `withSiblings` иска и останалите панели от СЪЩОТО групово съобщение — нужно
+// САМО при редакция (пресглобяване). НЕ го ползвай на горещия път (клик на
+// бутон): там всяка допълнителна заявка яде от 3-секундния ack бюджет.
+export async function getPanel(panelId, { withSiblings = false } = {}) {
+  const { data } = await api.get(`/bot/panel/${panelId}${withSiblings ? "?siblings=1" : ""}`);
   return data;
 }
 
@@ -102,6 +144,45 @@ export async function sendEntitlement(type, entitlement) {
       endsAt: entitlement.endsTimestamp ?? null,
     },
   });
+  return data;
+}
+
+// ─── Canned responses (/tag) — v2.9 ────────────────────────────────────────
+
+export async function getTags(serverId) {
+  const { data } = await api.get(`/bot/tag/${serverId}`);
+  return data;
+}
+
+export async function createTag(serverId, name, content, createdBy, isPremium) {
+  const { data } = await api.post("/bot/tag", { serverId, name, content, createdBy, isPremium });
+  return data;
+}
+
+export async function deleteTag(serverId, name) {
+  const { data } = await api.delete(`/bot/tag/${serverId}/${encodeURIComponent(name)}`);
+  return data;
+}
+
+export async function useTag(serverId, name) {
+  const { data } = await api.post(`/bot/tag/${serverId}/${encodeURIComponent(name)}/use`);
+  return data;
+}
+
+export async function getStats(serverId) {
+  const { data } = await api.get(`/bot/stats/${serverId}`);
+  return data;
+}
+
+// ─── Knowledge Base (v32) — auto-suggest on new tickets ────────────────────
+
+export async function suggestKbArticle(serverId, query) {
+  const { data } = await api.get(`/bot/kb/${serverId}/suggest`, { params: { q: query || "" } });
+  return data.article || null;
+}
+
+export async function sendKbFeedback(articleId, helpful) {
+  const { data } = await api.post(`/bot/kb/${articleId}/feedback`, { helpful });
   return data;
 }
 
