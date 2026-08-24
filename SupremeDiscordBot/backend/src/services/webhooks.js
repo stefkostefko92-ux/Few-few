@@ -7,7 +7,7 @@ import crypto from "crypto";
 import https from "https";
 import { lookup as dnsLookup } from "dns/promises";
 import { lookup as dnsLookupCb } from "dns";
-import { isIP } from "net";
+import { isIP, BlockList } from "net";
 import { prisma } from "../lib/prisma.js";
 import { getServerTier, planHasFeature } from "../lib/premium.js";
 
@@ -24,23 +24,65 @@ export { VALID_EVENTS };
 // Webhook URLs are user-supplied and delivery originates inside the Docker
 // network, so internal/loopback/link-local/metadata targets must be rejected.
 
+// Списъците се сравняват ДВОИЧНО (`net.BlockList`), не по низ.
+//
+// ДЕФЕКТЪТ (одит сигурност, 12.08.2026): проверката беше низова —
+// `v6 === "::1"`, `v6.startsWith("::ffff:")`. Един и същ адрес обаче има много
+// правописа и `net.isIP` приема всичките. Измерено на живо:
+//     ::1                       → разпознат
+//     0:0:0:0:0:0:0:1           → *** НЕ *** (същият адрес)
+//     0:0:0:0:0:ffff:7f00:1     → *** НЕ *** (същото като ::ffff:127.0.0.1)
+//
+// И ВТОРИЯТ слой не спасяваше: `ssrfSafeLookup` виси на `dns.lookup`, а Node
+// НЕ вика lookup за литерален IP — свързва директно. Проверено на живо:
+// заявка към `https://[0:0:0:0:0:0:0:1]/` изобщо не мина през гарда. Тоест
+// webhook с разгънат IPv6 loopback стигаше до самия контейнер.
+//
+// `BlockList` смята адреса, не текста, значи новите правописа не отварят
+// дупка. Добавени са и три диапазона, които липсваха и водят навътре:
+// NAT64 (64:ff9b::/96 обвива IPv4 → `64:ff9b::7f00:1` Е 127.0.0.1),
+// 6to4/Teredo и IPv4 multicast/broadcast.
+const V4_BLOCKED = [
+  ["0.0.0.0", 8], ["10.0.0.0", 8], ["127.0.0.0", 8],
+  ["100.64.0.0", 10],                              // CGNAT
+  ["169.254.0.0", 16],                             // link-local + облачни метаданни
+  ["172.16.0.0", 12], ["192.168.0.0", 16],
+  ["192.0.0.0", 24],                               // IETF protocol assignments
+  ["198.18.0.0", 15],                              // бенчмарк
+  ["224.0.0.0", 4],                                // multicast
+  ["240.0.0.0", 4],                                // резервирани + 255.255.255.255
+];
+const V6_BLOCKED = [
+  ["::", 128], ["::1", 128],
+  ["fc00::", 7],                                   // ULA
+  ["fe80::", 10],                                  // link-local
+  // БЕЗ `::ffff:0:0/96` тук. Node сверява IPv4 адрес и срещу IPv4-mapped
+  // правила, значи този запис блокира ВСЕКИ публичен IPv4 (проверено: 1.1.1.1
+  // и 8.8.8.8 падаха). Вложеният IPv4 се проверява отделно, по-долу, срещу
+  // IPv4 списъка — там `::ffff:127.0.0.1` пада, а `::ffff:1.1.1.1` минава.
+  ["::", 96],                                      // IPv4-compatible (наследен)
+  ["64:ff9b::", 96],                               // NAT64 — обвива ЦЯЛОТО IPv4
+  ["2002::", 16],                                  // 6to4
+  ["2001::", 32],                                  // Teredo
+];
+
+const blocklist = new BlockList();
+for (const [addr, prefix] of V4_BLOCKED) blocklist.addSubnet(addr, prefix, "ipv4");
+for (const [addr, prefix] of V6_BLOCKED) blocklist.addSubnet(addr, prefix, "ipv6");
+
 function ipIsPrivate(ip) {
-  if (isIP(ip) === 4) {
-    const [a, b] = ip.split(".").map(Number);
-    return (
-      a === 0 || a === 10 || a === 127 ||
-      (a === 100 && b >= 64 && b <= 127) ||      // CGNAT
-      (a === 169 && b === 254) ||                // link-local + cloud metadata
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168)
-    );
+  const family = isIP(ip);
+  if (!family) return true;            // не е адрес → не пускаме (fail closed)
+  try {
+    if (blocklist.check(ip, family === 4 ? "ipv4" : "ipv6")) return true;
+    // IPv4-mapped/compatible вече е блокиран горе, но ако някога отпадне,
+    // вложеният IPv4 трябва да мине и през IPv4 правилата, а не да се промъкне.
+    const mapped = /^(?:::ffff:)?(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
+    if (mapped) return blocklist.check(mapped[1], "ipv4");
+    return false;
+  } catch {
+    return true;                       // непознат формат → fail closed
   }
-  const v6 = ip.toLowerCase();
-  return (
-    v6 === "::" || v6 === "::1" ||
-    v6.startsWith("fe80") || v6.startsWith("fc") || v6.startsWith("fd") ||
-    v6.startsWith("::ffff:")                     // v4-mapped — re-check would be needed; reject outright
-  );
 }
 
 /**
@@ -56,7 +98,15 @@ export async function validateWebhookUrl(rawUrl) {
   }
   if (url.protocol !== "https:") return "Webhook URLs must use https://";
   if (url.username || url.password) return "Credentials in webhook URLs are not allowed";
-  const host = url.hostname;
+  // `url.hostname` пази СКОБИТЕ при IPv6 (`"[::1]"`), а `isIP` не ги приема.
+  //
+  // ДОСЕГА (одит сигурност, 12.08.2026): затова всеки IPv6 литерал падаше в
+  // DNS клона, `dnsLookup("[::1]")` се проваляше и отговорът беше „hostname
+  // could not be resolved". Затворено — но затворено СЛУЧАЙНО и с лъжлива
+  // причина: вътрешният адрес се отказваше уж защото не се резолвира, а
+  // ПУБЛИЧЕН IPv6 webhook беше невъзможен да се запази изобщо. Махането на
+  // скобите праща и двата случая при истинската проверка.
+  const host = url.hostname.replace(/^\[|\]$/g, "");
   if (isIP(host) && ipIsPrivate(host)) return "Webhook URLs must not target private or internal addresses";
   if (!isIP(host)) {
     try {
