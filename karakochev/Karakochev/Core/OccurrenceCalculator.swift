@@ -154,14 +154,20 @@ public struct OccurrenceCalculator: Sendable {
         step: Int
     ) -> Date? {
         let step = RepeatRule.clampInterval(step)
-        var candidate = reminder.fireDate
-        // Скачаме на цели стъпки, докато подминем `date`. Таванът пази от
-        // безкраен цикъл, ако календарът върне същата дата.
-        for _ in 0..<Self.maxSteps {
+        let start = reminder.fireDate
+        guard start <= date else { return start }
+
+        // Броят цели стъпки се смята аритметично, не с цикъл: червеният екип
+        // показа, че запис от преди 11 години струва 4 000 календарни събирания
+        // на ВСЯКО смятане (5 000 такива = 34 s пресинхрон), а над тавана
+        // мълчеше завинаги. Закръглянето надолу плюс лятното време може да
+        // остави кандидата на или преди `date` — затова до три корекции нагоре.
+        let elapsed = calendar.dateComponents([unit], from: start, to: date).value(for: unit) ?? 0
+        var count = max(0, elapsed / step)
+        for _ in 0..<3 {
+            guard let candidate = calendar.date(byAdding: unit, value: count * step, to: start) else { return nil }
             if candidate > date { return candidate }
-            guard let next = calendar.date(byAdding: unit, value: step, to: candidate), next > candidate
-            else { return nil }
-            candidate = next
+            count += 1
         }
         return nil
     }
@@ -198,8 +204,7 @@ public struct OccurrenceCalculator: Sendable {
         return nil
     }
 
-    /// Тавани срещу безкраен цикъл при странен календар.
-    static let maxSteps = 4000
+    /// Таван срещу безкраен цикъл при странен календар.
     static let maxMonths = 24
 
     private func nextWeekday(after date: Date, time: DateComponents) -> Date? {

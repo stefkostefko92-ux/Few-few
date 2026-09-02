@@ -72,6 +72,44 @@ struct IntervalRepeatTests {
         #expect(next == Fixture.date(2026, 9, 30, 10, 0))  // 30 септември е сряда
     }
 
+    @Test("Начало отпреди 12 години не мълчи и не струва хиляди стъпки")
+    func ancientStartIsArithmetic() {
+        // Червеният екип: цикълът с таван 4 000 стъпки правеше запис на ≥3 999
+        // дни да изчезне от „Предстоящи“ и струваше секунди на всяко смятане.
+        var days = Fixture.reminder(at: Fixture.date(2014, 8, 1, 7, 0), repeat: .everyNDays)
+        days.interval = 3
+        let started = Date()
+        let next = calculator.nextOccurrence(of: days, after: now)
+        let elapsed = Date().timeIntervalSince(started)
+        let unwrapped = try? #require(next)
+        #expect(unwrapped != nil)
+        if let unwrapped {
+            #expect(unwrapped > now)
+            #expect(unwrapped <= Fixture.date(2026, 8, 13, 7, 0))
+            let span = Fixture.calendar.dateComponents([.day], from: days.fireDate, to: unwrapped).day ?? -1
+            #expect(span % 3 == 0)
+            #expect(Fixture.parts(unwrapped).hour == 7)
+        }
+        #expect(elapsed < 0.05, "\(elapsed) s за едно смятане")
+
+        var weeks = Fixture.reminder(at: Fixture.date(2014, 8, 5, 18, 0), repeat: .everyNWeeks)  // вторник
+        weeks.interval = 2
+        let nextWeek = calculator.nextOccurrence(of: weeks, after: now)
+        #expect(nextWeek == Fixture.date(2026, 8, 18, 18, 0))
+    }
+
+    @Test("Аритметичната стъпка съвпада с броенето едно по едно")
+    func arithmeticStepMatchesCounting() {
+        var reminder = Fixture.reminder(at: Fixture.date(2026, 3, 27, 7, 0), repeat: .everyNDays)  // през лятното време
+        reminder.interval = 4
+        var expected = reminder.fireDate
+        while expected <= now {
+            expected = Fixture.calendar.date(byAdding: .day, value: 4, to: expected)!
+        }
+        #expect(calculator.nextOccurrence(of: reminder, after: now) == expected)
+        #expect(Fixture.parts(expected).hour == 7)
+    }
+
     @Test("„Последният работен ден“ с начало в бъдещето не звъни на началната дата")
     func lastWorkdayWithFutureStartSkipsToPattern() {
         // Редакторът предлага „след час“ като начало — почти винаги произволен ден.
@@ -251,6 +289,16 @@ struct ArchiveTests {
         let json = #"{"version":99,"exportedAt":"2026-08-10T06:00:00Z","reminders":[]}"#
         #expect(throws: ReminderArchiveCoder.ImportError.tooNew(version: 99)) {
             try ReminderArchiveCoder.decode(Data(json.utf8))
+        }
+    }
+
+    @Test("Версия 0 или отрицателна не е наш архив")
+    func nonPositiveVersionIsRejected() {
+        for version in [0, -1] {
+            let json = #"{"version":\#(version),"exportedAt":"2026-08-10T06:00:00Z","reminders":[]}"#
+            #expect(throws: ReminderArchiveCoder.ImportError.unreadable) {
+                try ReminderArchiveCoder.decode(Data(json.utf8))
+            }
         }
     }
 

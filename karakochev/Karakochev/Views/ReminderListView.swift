@@ -234,6 +234,15 @@ struct ReminderListView: View {
         let opened = url.startAccessingSecurityScopedResource()
         defer { if opened { url.stopAccessingSecurityScopedResource() } }
 
+        // Таванът се пита от файловата система ПРЕДИ четенето — иначе
+        // гигабайтов файл влиза цял в паметта, за да бъде отказан след това.
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard size <= ReminderArchiveCoder.maxBytes else {
+            importMessage = String(localized: "import.tooLarge")
+            showImportResult = true
+            return
+        }
+
         do {
             let count = try scheduler.importArchive(Data(contentsOf: url))
             importMessage = String(localized: "import.added \(count)")

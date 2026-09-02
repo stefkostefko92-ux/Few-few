@@ -219,7 +219,15 @@ public struct ReminderTextParser: Sendable {
 
     // MARK: - Разбор
 
+    /// Над това записката не е „бърза“ — парсерът върви на всеки клавиш и
+    /// поставен роман (100 000 знака) струваше стотици ms на натискане.
+    public static let maxInputLength = 500
+    /// Таван на броя след „след“/„in“/„tra“.
+    public static let maxRelativeCount = 10_000
+
     public func parse(_ text: String, now: Date) -> ParsedReminderInput {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count <= Self.maxInputLength else { return ParsedReminderInput(title: trimmed) }
         let tokens = Self.tokenize(text)
         guard !tokens.isEmpty else { return ParsedReminderInput(title: "") }
 
@@ -304,7 +312,8 @@ public struct ReminderTextParser: Sendable {
             // „след 2 часа“, „след 30 минути“, „след 3 дни“
             if inWords.contains(word) {
                 let following = tokens.dropFirst(index + 1).prefix(2).map { $0.lowercased() }
-                if following.count == 2, let count = Int(following[0]) {
+                // Разумен таван: „след 9223372036854775807 часа“ даваше година 506713.
+                if following.count == 2, let count = Int(following[0]), (1...Self.maxRelativeCount).contains(count) {
                     let unit = following[1]
                     if hourUnitWords.contains(unit) {
                         relativeSeconds = TimeInterval(count) * 3600

@@ -203,6 +203,23 @@ struct ReminderTextParserAuditTests {
         #expect(english.title == "call mom")
     }
 
+    @Test("Абсурден брой след „след“ не измисля година 506713")
+    func absurdRelativeCountIsIgnored() {
+        let result = parser(.bulgarian).parse("нещо след 9223372036854775807 часа", now: now)
+        #expect(result.date == nil)
+        #expect(result.title == "нещо след 9223372036854775807 часа")
+    }
+
+    @Test("Поставен роман не се парсва на всеки клавиш")
+    func hugeInputIsNotParsed() {
+        let novel = String(repeating: "утре в 8 ", count: 20_000)
+        let started = Date()
+        let result = parser(.bulgarian).parse(novel, now: now)
+        #expect(Date().timeIntervalSince(started) < 0.05)
+        #expect(result.date == nil)
+        #expect(result.matchedSomething == false)
+    }
+
     @Test("Предлогът пред „всеки“ остава, когато нищо не е разпознато")
     func prepositionKeptWhenEveryDoesNotMatch() {
         let result = parser(.bulgarian).parse("подарък на всеки от екипа", now: now)

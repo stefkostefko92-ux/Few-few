@@ -400,13 +400,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld чака ред и ще се насрочи при следващото отваряне на приложението."
+                  "value": "%lld напомняне не се побира в лимита на iOS — ще получи известие, щом изпълниш или изтриеш по-ранни."
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld чакат ред и ще се насрочат при следващото отваряне на приложението."
+                  "value": "%lld напомняния не се побират в лимита на iOS — ще получат известие, щом изпълниш или изтриеш по-ранни."
                 }
               }
             }
@@ -418,13 +418,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld is waiting its turn and will be scheduled next time you open the app."
+                  "value": "%lld reminder does not fit within the iOS limit — it will get a notification once earlier ones are done or deleted."
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld are waiting their turn and will be scheduled next time you open the app."
+                  "value": "%lld reminders do not fit within the iOS limit — they will get a notification once earlier ones are done or deleted."
                 }
               }
             }
@@ -436,13 +436,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld è in attesa del suo turno e verrà programmato alla prossima apertura dell’app."
+                  "value": "%lld promemoria non rientra nel limite di iOS: riceverà una notifica quando avrai completato o eliminato quelli precedenti."
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld sono in attesa del loro turno e verranno programmati alla prossima apertura dell’app."
+                  "value": "%lld promemoria non rientrano nel limite di iOS: riceveranno una notifica quando avrai completato o eliminato quelli precedenti."
                 }
               }
             }
@@ -928,13 +928,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The exported file contains all your notes as plain text — anyone who opens it can read them. If you save it to iCloud Drive or a shared folder, the data leaves your phone."
+            "value": "The exported file contains all your reminders as plain text — anyone who opens it can read them. If you save it to iCloud Drive or a shared folder, the data leaves your phone."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il file esportato contiene tutte le tue note in chiaro: chiunque lo apra può leggerle. Se lo salvi in iCloud Drive o in una cartella condivisa, i dati escono dal telefono."
+            "value": "Il file esportato contiene tutti i tuoi promemoria in chiaro: chiunque lo apra può leggerli. Se lo salvi in iCloud Drive o in una cartella condivisa, i dati escono dal telefono."
           }
         }
       }
@@ -957,7 +957,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il file non è cifrato"
+            "value": "Il file non è crittografato"
           }
         }
       }
@@ -1100,13 +1100,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your notes could not be read from the database, so nothing was imported. Try again."
+            "value": "Your reminders could not be read from the database, so nothing was imported. Try again."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le tue note non sono state lette dal database, quindi non è stato importato nulla. Riprova."
+            "value": "Non è stato possibile leggere i tuoi promemoria dal database, quindi non è stato importato nulla. Riprova."
           }
         }
       }

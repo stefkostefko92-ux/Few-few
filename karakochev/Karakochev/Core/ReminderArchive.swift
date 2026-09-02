@@ -101,6 +101,7 @@ public enum ReminderArchiveCoder {
         guard let archive = try? decoder.decode(ReminderArchive.self, from: data) else {
             throw ImportError.unreadable
         }
+        guard archive.version >= 1 else { throw ImportError.unreadable }
         guard archive.version <= ReminderArchive.currentVersion else {
             throw ImportError.tooNew(version: archive.version)
         }

@@ -15,3 +15,4 @@
 {"t":"handoff","ts":"2026-08-04T13:28:49.433Z","id":"auto","from":"ai-djiyata","to":"човек","status":"наред"}
 {"t":"handoff","ts":"2026-08-05T05:00:23.682Z","id":"auto","from":"kasadjiyata","to":"ai-djiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-02T15:59:49.498Z","id":"auto","from":"kodadjiyata","to":"mobildjiyata","status":"блокер"}
+{"t":"handoff","ts":"2026-09-02T16:09:20.102Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
