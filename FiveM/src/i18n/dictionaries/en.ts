@@ -58,7 +58,6 @@ export const en: Dictionary = {
     discordLead: 'Looking for the right server, or have a question?',
     heroKicker: 'Live data, read straight from the servers',
     ctaBrowse: 'Browse all servers',
-    ctaSubmit: 'Add your server',
     ctaOr: 'or',
     ctaSubmitInline: 'add your server',
     outOf: 'of',
