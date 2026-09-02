@@ -64,6 +64,18 @@
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
   `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **fivem** (FiveM Bulgaria): Docker Compose модел като zabobovdol. Пренася `FiveM/.env`
+  (при пръв деплой го **генерира** с random `POSTGRES_PASSWORD` и random админ парола —
+  паролата се показва ВЕДНЪЖ в изхода, в `.env` стои само scrypt хешът ѝ), симлинква
+  `FiveM/backups` към `/opt/few-few/shared/fivem/backups`, после `FiveM/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията (празен бекъп = спиране), `up -d --build`, чакане на
+  базата, `prisma migrate deploy`, и първоначално напълване от публичния списък на Cfx.re
+  **само при празна таблица**. Health на `127.0.0.1:3010/api/health`; при успех — IndexNow
+  ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
+  Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
+  `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
+  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `FiveM/DEPLOY.md`.
 - **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
   (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
@@ -82,7 +94,9 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali panev` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev fivem` | кои проекти да се разгръщат тук |
+| `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
+| `FIVEM_DOMAIN` | `fivembulgaria.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |

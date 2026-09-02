@@ -21,7 +21,21 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev fivem}"
+
+# fivem (FiveM Bulgaria — Docker Compose модел) — web слуша само на
+# 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
+# откриването на сървъри и стриймъри, и прочистването по срокове. Тайните живеят
+# в FiveM/.env на сървъра (mode 600) и се пренасят при всеки деплой.
+#
+# `PUBLIC_BASE_URL` ТРЯБВА да е `https://…`: под http сесийната бисквитка на
+# админ панела пада до слабата форма (без `__Host-`, без `secure`).
+FIVEM_HEALTH_URL="${FIVEM_HEALTH_URL:-http://127.0.0.1:3010/api/health}"
+FIVEM_DOMAIN="${FIVEM_DOMAIN:-fivembulgaria.carbonstealth.eu}"
+# Тайните и бекъпите живеят ИЗВЪН releases (моделът на nexus): в release папката
+# прекъснат пробег ги губи, а следващият генерира нова парола за база върху вече
+# инициализиран том — Postgres я игнорира и деплоят пада чак на миграцията.
+FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -1030,6 +1044,134 @@ deploy_vpsdashboard() {
   fi
 }
 
+# ── 3g') fivem — Docker Compose ───────────────────────────────────────────────
+# Продуктовата логика (бекъп → up → миграции → първоначално напълване) е в
+# FiveM/scripts/deploy.sh, за да живее при продукта. Тук е само това, което е
+# работа на оркестратора: пренасяне на .env, стабилен път за бекъпите и здраве.
+deploy_fivem() {
+  local d="$SRC/FiveM"
+  [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
+  log "Разгръщам fivem (Docker Compose)…"
+
+  # Тайните живеят на СТАБИЛЕН път извън releases и се симлинкват в release-а
+  # (моделът на nexus). Държани в самата release папка, те се губеха при
+  # прекъснат пробег: следващият генерираше НОВ `POSTGRES_PASSWORD` върху вече
+  # инициализиран том, а Postgres игнорира паролата при непразен PGDATA —
+  # `pg_isready` не се удостоверява, значи чакането светеше зелено и чак
+  # миграцията падаше с auth грешка.
+  mkdir -p "$FIVEM_STATE_DIR"
+  chmod 700 "$FIVEM_STATE_DIR"
+
+  # Еднократна миграция от стария модел: .env още в текущия release.
+  if [ ! -f "$FIVEM_STATE_DIR/.env" ] && [ -f "$CURRENT_LINK/FiveM/.env" ] && [ ! -L "$CURRENT_LINK/FiveM/.env" ]; then
+    cp -a "$CURRENT_LINK/FiveM/.env" "$FIVEM_STATE_DIR/.env"
+    chmod 600 "$FIVEM_STATE_DIR/.env"
+    ok "Преместих FiveM/.env в $FIVEM_STATE_DIR"
+  fi
+
+  # Пръв деплой: генерирай, каквото може да се генерира.
+  if [ ! -f "$FIVEM_STATE_DIR/.env" ]; then
+    warn "Няма FiveM/.env — генерирам с random тайни."
+    local dbp adp hash
+    # ВНИМАНИЕ: под `set -e` присвояване от командна замяна НАСЛЕДЯВА нейния
+    # изход и убива скрипта — проверката на следващия ред е недостижима.
+    # Затова всяко от тези присвоявания носи `|| true`.
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' || true)"
+    adp="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' || true)"
+    [ -n "$dbp" ] && [ -n "$adp" ] || die "openssl не даде случайни стойности — спирам, вместо да пиша слаби тайни."
+
+    # Хешът се смята с ЧИСТ node, не с `npx tsx`: на този етап образът още не е
+    # строен, `node_modules` в release папката НЯМА, а `npx --yes` би дърпал от
+    # мрежата насред деплой. Паролата минава през ОКОЛНАТА СРЕДА, не през
+    # аргументи — argv се чете от всеки през `ps`.
+    hash=""
+    if command -v node >/dev/null 2>&1; then
+      hash="$(ADM="$adp" node -e '
+        const { randomBytes, scryptSync } = require("node:crypto");
+        const salt = randomBytes(16).toString("hex");
+        process.stdout.write(salt + ":" + scryptSync(process.env.ADM, salt, 64).toString("hex"));
+      ' 2>/dev/null || true)"
+    fi
+    if [ -z "$hash" ]; then
+      warn "Няма node на хоста — ADMIN_PASSWORD_HASH остава празен, панелът е ЗАТВОРЕН."
+      warn "Генерирай го после с: cd $d && npm run admin:hash -- \"дълга парола\""
+    fi
+
+    # Файлът се създава ПРАЗЕН и с права 600 ПРЕДИ да влезе съдържание —
+    # иначе стои 644 в прозореца между записа и `chmod`.
+    install -m 600 /dev/null "$FIVEM_STATE_DIR/.env"
+    cat > "$FIVEM_STATE_DIR/.env" <<EOF
+POSTGRES_PASSWORD=${dbp}
+DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
+PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
+ADMIN_PASSWORD_HASH=${hash}
+TRUST_PROXY_IP_HEADER=x-real-ip
+# Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
+# липсата се логва, но обещанието остава неизпълнено. Попълни го.
+RESEND_API_KEY=
+EMAIL_FROM=FiveM BG <no-reply@${FIVEM_DOMAIN}>
+# По избор — без тях съответната платформа просто се пропуска.
+TWITCH_CLIENT_ID=
+TWITCH_CLIENT_SECRET=
+KICK_CLIENT_ID=
+KICK_CLIENT_SECRET=
+KICK_CATEGORY_ID=
+YOUTUBE_API_KEY=
+FIVEM_PING_TIMEOUT_MS=4000
+FIVEM_PING_CONCURRENCY=6
+EOF
+    [ -n "$hash" ] && warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
+    warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
+  fi
+  chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
+  ln -sfn "$FIVEM_STATE_DIR/.env" "$d/.env"
+
+  # Бекъпите също са на стабилен път — иначе умират с прочистването на releases.
+  mkdir -p "$FIVEM_STATE_DIR/backups"
+  rm -rf "$d/backups"
+  ln -sfnT "$FIVEM_STATE_DIR/backups" "$d/backups"
+  ok "FiveM/.env и backups → $FIVEM_STATE_DIR"
+
+  # ── Дневниците на nginx: подпапка + ротация, ИДЕМПОТЕНТНО при всеки деплой ──
+  # Правният одит го извади: `/privacy` обявява 14 дни, а изпълнителят беше
+  # ръчна стъпка в DEPLOY.md. По-лошо — откакто дневниците са в подпапка
+  # (заради `duplicate log entry` с пакетния конфиг), глобът `/var/log/nginx/*.log`
+  # НЕ ги хваща, значи без нашия файл срокът е БЕЗКРАЕН, не „твърде дълъг“.
+  # Обявен срок по чл. 5, ал. 1, б. „д“ ОРЗД, който виси на памет, не е срок.
+  install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria 2>/dev/null \
+    || warn "не мога да създам /var/log/nginx/fivembulgaria — nginx няма да тръгне с новия конфиг."
+  if [ -f "$d/deploy/logrotate.conf" ]; then
+    install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/fivembulgaria \
+      || warn "не мога да инсталирам /etc/logrotate.d/fivembulgaria — 14-те дни НЕ са гарантирани."
+    # `grep -c`, НЕ `grep -q`: с `-q` grep затваря рано, logrotate получава
+    # SIGPIPE (141) и под `pipefail` условието е лъжливо ТОЧНО когато има дубъл.
+    # Същият клас грешка вече ни спря деплоя веднъж (бекъп гардът).
+    if command -v logrotate >/dev/null 2>&1; then
+      local dups
+      dups="$(logrotate -d /etc/logrotate.conf 2>&1 | grep -ci 'duplicate log entry' || true)"
+      [ "${dups:-0}" -gt 0 ] \
+        && warn "logrotate: два конфига се бият за един дневник (duplicate log entry) — обявените 14 дни не са гарантирани."
+    fi
+  fi
+
+  # Гардът НЕ е стилов: под `set -e` провалът на този subshell прекратява ЦЕЛИЯ
+  # autodeploy, тоест всеки продукт СЛЕД fivem остава неразгърнат — при това
+  # мълчаливо, защото последното на екрана е нормален изход от предния продукт.
+  # `scripts/deploy.sh` спира нарочно при празен бекъп, значи този път се минава
+  # редовно, а не само при рядка авария.
+  ( cd "$d" && bash scripts/deploy.sh ) || {
+    warn "FiveM/scripts/deploy.sh се провали — продължавам с останалите продукти."
+    deploy_failed=1
+    return
+  }
+  if health "$FIVEM_HEALTH_URL" "fivem"; then
+    # Директорията се мени при всяко откриване → sitemap-ът остарява бързо.
+    fivem_indexnow
+  else
+    deploy_failed=1
+  fi
+}
+
 # ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
@@ -1201,6 +1343,7 @@ for p in $PROJECTS; do
     eternaltouch)         deploy_eternaltouch ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
+    fivem|FiveM)          deploy_fivem ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
