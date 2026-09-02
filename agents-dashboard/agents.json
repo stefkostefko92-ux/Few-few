@@ -4609,7 +4609,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 142
+        "lessons": 149
       },
       "evolution": [
         {
@@ -4995,9 +4995,20 @@
           "date": "2026-08-07",
           "event": "v16.7 — учене",
           "detail": "Научи: Одиторски доклад без блок „## ПРЕДАВАНЕ“ къса веригата и DoD гейтът (dod-check.mjs на S…"
+        },
+        {
+          "version": "16.8.0",
+          "date": "2026-09-02",
+          "event": "v16.8 — учене",
+          "detail": "Научи: IT на Apple платформи: „crittografato/crittografia“, не „cifrato/cifratura“ (последното…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-02",
+          "type": "learning",
+          "summary": "Научи: „IT на Apple платформи: „crittografato/crittografia“, не „cifrato/cifratura“ (последното…\" · 2 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
