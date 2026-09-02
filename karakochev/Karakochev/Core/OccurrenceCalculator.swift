@@ -36,15 +36,22 @@ public struct OccurrenceCalculator: Sendable {
         // Повтарящо се напомняне, което още не е започнало → първото задействане
         // е самата начална дата, не най-близкото съвпадение по шаблона.
         if reminder.fireDate > date {
-            // Освен ако началото не пасва на шаблона: „всеки делник“ с начало в
-            // събота не бива да звънне в събота (единственото правило, при което
-            // избраната дата може да противоречи на повторението).
-            if reminder.repeatRule == .weekdays,
-                !Self.weekdayNumbers.contains(calendar.component(.weekday, from: reminder.fireDate))
-            {
+            // Освен ако началото не пасва на шаблона — двете правила, при които
+            // избраната дата може да противоречи на повторението:
+            //  · „всеки делник“ с начало в събота не бива да звънне в събота;
+            //  · „последният работен ден“ с начало в 5-и не бива да звънне на 5-и
+            //    (редакторът предлага „след час“ като начало, тоест почти винаги
+            //    произволен ден).
+            switch reminder.repeatRule {
+            case .weekdays
+            where !Self.weekdayNumbers.contains(calendar.component(.weekday, from: reminder.fireDate)):
                 return nextWeekday(after: reminder.fireDate, time: timeComponents(of: reminder.fireDate))
+            case .lastWorkdayOfMonth:
+                // „Строго след“ → секунда назад, за да се брои и самото начало, ако пасва.
+                return nextLastWorkday(of: reminder, after: reminder.fireDate.addingTimeInterval(-1))
+            default:
+                return reminder.fireDate
             }
-            return reminder.fireDate
         }
 
         switch reminder.repeatRule {

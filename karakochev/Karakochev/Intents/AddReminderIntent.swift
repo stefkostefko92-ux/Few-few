@@ -35,8 +35,10 @@ struct AddReminderIntent: AppIntent {
         }
 
         // Изчакваме плана да е насрочен, преди да отговорим — иначе процесът
-        // може да заспи с половин свършена работа.
-        await scheduler.resync()
+        // може да заспи с половин свършена работа. `refresh()`, не `resync()`:
+        // новият scheduler тръгва с разрешение „неопределено“ и без реалния
+        // статус планът мълчаливо се пропуска — Siri потвърждава, известие няма.
+        await scheduler.refresh()
 
         let label = ReminderDateLabel().text(for: reminder.fireDate, now: Date())
         return .result(dialog: IntentDialog("intent.add.confirmation \(reminder.title) \(label)"))

@@ -73,7 +73,19 @@ public enum ReminderArchiveCoder {
         case unreadable
         /// Архив от по-нова версия на формата.
         case tooNew(version: Int)
+        /// Файлът е над тавана — не е архив на това приложение по размер.
+        case tooLarge
+        /// Собствената база не се прочете — вносът би дублирал или презаписал.
+        case storeUnreadable
     }
+
+    /// Тавани за внос. Файлът идва отвън (Files, iCloud Drive) и е недоверен:
+    /// без таван 10 000 записа се внасят „успешно“ и после всеки пресинхрон и
+    /// всяко отваряне на списъка стават секунди. Личен архив е стотици записи;
+    /// 5 000 е ред величина над реалното.
+    public static let maxReminders = 5_000
+    /// Над 2 MB не е наш архив (5 000 записа с бележки са ~1.5 MB): не го и парсваме.
+    public static let maxBytes = 2 * 1_024 * 1_024
 
     public static func encode(_ reminders: [ReminderSnapshot], exportedAt: Date) throws -> Data {
         let encoder = JSONEncoder()
@@ -83,6 +95,7 @@ public enum ReminderArchiveCoder {
     }
 
     public static func decode(_ data: Data) throws -> [ReminderSnapshot] {
+        guard data.count <= maxBytes else { throw ImportError.tooLarge }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         guard let archive = try? decoder.decode(ReminderArchive.self, from: data) else {
@@ -91,6 +104,7 @@ public enum ReminderArchiveCoder {
         guard archive.version <= ReminderArchive.currentVersion else {
             throw ImportError.tooNew(version: archive.version)
         }
+        guard archive.reminders.count <= maxReminders else { throw ImportError.tooLarge }
         return archive.reminders.map(\.snapshot)
     }
 
@@ -111,7 +125,9 @@ public enum ReminderArchiveCoder {
         from imported: [ReminderSnapshot],
         existing: [ReminderSnapshot]
     ) -> [ReminderSnapshot] {
-        let known = Set(existing.map(\.id))
-        return imported.filter { !known.contains($0.id) }
+        // Двойник вътре в самия файл също не минава два пъти — иначе двоен запис
+        // с един уникален ключ и „внесени N“ по-голямо от реално добавените.
+        var seen = Set(existing.map(\.id))
+        return imported.filter { seen.insert($0.id).inserted }
     }
 }

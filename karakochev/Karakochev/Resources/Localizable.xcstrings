@@ -916,6 +916,52 @@
         }
       }
     },
+    "export.confirm.message": {
+      "comment": "Текст на предупреждението преди износ — казва какво излиза от телефона.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изнесеният файл съдържа всичките ти записки като обикновен текст — всеки, който го отвори, ги чете. Запишеш ли го в iCloud Drive или споделена папка, данните излизат от телефона."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The exported file contains all your notes as plain text — anyone who opens it can read them. If you save it to iCloud Drive or a shared folder, the data leaves your phone."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il file esportato contiene tutte le tue note in chiaro: chiunque lo apra può leggerle. Se lo salvi in iCloud Drive o in una cartella condivisa, i dati escono dal telefono."
+          }
+        }
+      }
+    },
+    "export.confirm.title": {
+      "comment": "Заглавие на предупреждението преди износ.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файлът не е шифрован"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file is not encrypted"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il file non è cifrato"
+          }
+        }
+      }
+    },
     "export.failed": {
       "comment": "Записът на архива се провали (не е свързано с внасяне).",
       "localizations": {
@@ -1038,6 +1084,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importazione"
+          }
+        }
+      }
+    },
+    "import.storeUnreadable": {
+      "comment": "Собствената база не се прочете — вносът е отказан, за да не дублира/презапише.",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записките не се прочетоха от базата, затова нищо не е внесено. Опитай отново."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your notes could not be read from the database, so nothing was imported. Try again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le tue note non sono state lette dal database, quindi non è stato importato nulla. Riprova."
+          }
+        }
+      }
+    },
+    "import.tooLarge": {
+      "comment": "Вносът е над тавана (ReminderArchiveCoder.maxReminders / maxBytes).",
+      "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файлът е твърде голям, за да е архив на Каракочев."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file is too large to be a Karakochev archive."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il file è troppo grande per essere un archivio di Karakochev."
           }
         }
       }

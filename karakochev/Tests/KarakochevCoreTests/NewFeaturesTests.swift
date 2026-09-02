@@ -72,6 +72,17 @@ struct IntervalRepeatTests {
         #expect(next == Fixture.date(2026, 9, 30, 10, 0))  // 30 септември е сряда
     }
 
+    @Test("„Последният работен ден“ с начало в бъдещето не звъни на началната дата")
+    func lastWorkdayWithFutureStartSkipsToPattern() {
+        // Редакторът предлага „след час“ като начало — почти винаги произволен ден.
+        let reminder = Fixture.reminder(at: Fixture.date(2026, 8, 20, 10, 0), repeat: .lastWorkdayOfMonth)
+        #expect(calculator.nextOccurrence(of: reminder, after: now) == Fixture.date(2026, 8, 31, 10, 0))
+
+        // Начало точно на последния работен ден си остава валидно първо задействане.
+        let onTheDay = Fixture.reminder(at: Fixture.date(2026, 8, 31, 10, 0), repeat: .lastWorkdayOfMonth)
+        #expect(calculator.nextOccurrence(of: onTheDay, after: now) == Fixture.date(2026, 8, 31, 10, 0))
+    }
+
     @Test("Правилата без нативен тригер се насрочват като поредица от заявки")
     func rulesWithoutNativeTriggerUseSeries() {
         var reminder = Fixture.reminder(at: Fixture.date(2026, 8, 1, 7, 0), repeat: .everyNDays)
@@ -147,6 +158,67 @@ struct NudgeTests {
         let allZoned = plan.notifications.allSatisfy { $0.dateComponents.timeZone != nil }
         #expect(allZoned)
     }
+
+    @Test("Отложеното важно напомняне пази настойчивостта си")
+    func snoozedImportantKeepsNudges() {
+        // Одит: отлагането беше една гола заявка — „След 10 минути“ превръщаше
+        // важното в обикновено точно когато човекът веднъж вече не е реагирал.
+        var reminder = Fixture.reminder(at: Fixture.date(2026, 8, 10, 20, 0), isImportant: true)
+        reminder.snoozedUntil = Fixture.date(2026, 8, 10, 10, 30)
+        let plan = planner.plan(for: [reminder], now: now)
+        let dates = Set(plan.notifications.map(\.nextFireDate))
+
+        #expect(dates.contains(Fixture.date(2026, 8, 10, 10, 30)))
+        #expect(dates.contains(Fixture.date(2026, 8, 10, 10, 40)))
+        #expect(dates.contains(Fixture.date(2026, 8, 10, 10, 55)))
+        // Основното задействане със своята настойчивост остава непокътнато.
+        #expect(dates.contains(Fixture.date(2026, 8, 10, 20, 25)))
+        #expect(plan.notifications.count == 6)
+        #expect(Set(plan.notifications.map(\.requestID)).count == 6)
+    }
+
+    @Test("Просроченото важно напомняне, отложено „за после“, пак пита повторно")
+    func overdueSnoozedImportantNudges() {
+        var reminder = Fixture.reminder(at: Fixture.date(2026, 8, 9, 20, 0), isImportant: true)
+        reminder.snoozedUntil = Fixture.date(2026, 8, 10, 9, 10)
+        let plan = planner.plan(for: [reminder], now: now)
+
+        #expect(plan.notifications.count == 3)
+        #expect(plan.notifications.map(\.nextFireDate).max() == Fixture.date(2026, 8, 10, 9, 35))
+    }
+}
+
+@Suite("Планът при хиляди записи")
+struct LargePlanTests {
+    let planner = NotificationPlanner(calendar: Fixture.calendar)
+    let now = Fixture.date(2026, 8, 10, 9, 0)
+
+    @Test("Над бюджета се брои, без да се строят заявки за всеки запис")
+    func thousandsAreCountedNotBuilt() {
+        // Червеният екип: 10 000 внесени записа без таван струваха минути на
+        // всеки пресинхрон, защото планът строеше поредици за всички, а после
+        // изхвърляше всичко след 56-ото. Тук 3 000 правила без нативен тригер —
+        // най-скъпият вид — трябва да минат за части от секундата.
+        let reminders = (0..<3000).map { index in
+            var reminder = Fixture.reminder(
+                title: "Запис \(index)",
+                at: Fixture.date(2026, 8, 1, 7, 0),
+                repeat: .everyNDays,
+                isImportant: index % 2 == 0
+            )
+            reminder.interval = 1 + index % 30
+            return reminder
+        }
+        let started = Date()
+        let plan = planner.plan(for: reminders, now: now)
+        let elapsed = Date().timeIntervalSince(started)
+
+        let planned = Set(plan.notifications.map(\.reminderID)).count
+        #expect(plan.notifications.count <= planner.limit)
+        // Всеки запис е или в плана (цял или сведен), или преброен като пропуснат.
+        #expect(plan.skippedReminders == reminders.count - planned)
+        #expect(elapsed < 5, "планът за 3 000 записа отне \(elapsed) s")
+    }
 }
 
 @Suite("Износ и внос на записките")
@@ -203,6 +275,42 @@ struct ArchiveTests {
 
         #expect(fresh.count == 1)
         #expect(fresh[0].title == "Нова")
+    }
+
+    @Test("Двойник вътре в самия файл се внася веднъж")
+    func duplicateIDsInsideArchiveCollapse() {
+        let id = UUID()
+        let imported = [
+            Fixture.reminder(title: "Първа", at: now, id: id),
+            Fixture.reminder(title: "Пак същата", at: now, id: id),
+        ]
+        let fresh = ReminderArchiveCoder.newReminders(from: imported, existing: [])
+        #expect(fresh.count == 1)
+        #expect(fresh[0].title == "Първа")
+    }
+
+    @Test("Архив над тавана се отказва, преди да натовари базата")
+    func oversizedArchiveIsRejected() throws {
+        // Червеният екип: без таван 10 000 записа се внасят „успешно“ и после
+        // всеки пресинхрон става минути. Тук границата е по брой записи…
+        let many = (0...ReminderArchiveCoder.maxReminders).map { _ in Fixture.reminder(at: now) }
+        let data = try ReminderArchiveCoder.encode(many, exportedAt: now)
+        #expect(throws: ReminderArchiveCoder.ImportError.tooLarge) {
+            try ReminderArchiveCoder.decode(data)
+        }
+        // …и по байтове — файл над тавана изобщо не се парсва.
+        let blob = Data(repeating: UInt8(ascii: " "), count: ReminderArchiveCoder.maxBytes + 1)
+        #expect(throws: ReminderArchiveCoder.ImportError.tooLarge) {
+            try ReminderArchiveCoder.decode(blob)
+        }
+    }
+
+    @Test("Пълен архив на тавана минава — границата не реже реален бекъп")
+    func archiveAtTheCapIsAccepted() throws {
+        let atCap = (0..<ReminderArchiveCoder.maxReminders).map { _ in Fixture.reminder(at: now) }
+        let data = try ReminderArchiveCoder.encode(atCap, exportedAt: now)
+        #expect(data.count <= ReminderArchiveCoder.maxBytes)
+        #expect(try ReminderArchiveCoder.decode(data).count == ReminderArchiveCoder.maxReminders)
     }
 
     @Test("Името на файла носи датата")

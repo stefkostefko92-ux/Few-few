@@ -121,7 +121,11 @@ final class ReminderScheduler {
         if changed { save() }
 
         guard isAuthorized else {
+            // Без разрешение няма план — и трите брояча се нулират, иначе банерът
+            // „N напомняния са сведени до едно известие“ остава да виси от
+            // последния разрешен план, след като потребителят е спрял известията.
             skippedReminders = 0
+            reducedReminders = 0
             scheduledCount = 0
             return
         }
@@ -208,7 +212,9 @@ final class ReminderScheduler {
     @discardableResult
     func importArchive(_ data: Data) throws -> Int {
         let imported = try ReminderArchiveCoder.decode(data)
-        let existing = fetchAll() ?? []
+        // `nil` е провалено четене, не празна база: с празен списък целият архив
+        // би минал за нов и уникалният `id` би презаписал по-новите записи.
+        guard let existing = fetchAll() else { throw ReminderArchiveCoder.ImportError.storeUnreadable }
         let fresh = ReminderArchiveCoder.newReminders(
             from: imported,
             existing: existing.map(\.snapshot)

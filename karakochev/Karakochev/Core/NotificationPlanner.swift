@@ -96,24 +96,33 @@ public struct NotificationPlanner: Sendable {
     public func plan(for reminders: [ReminderSnapshot], now: Date) -> Plan {
         let calculator = OccurrenceCalculator(calendar: calendar)
 
-        // Групи по напомняне, подредени по най-близко задействане: режем цели
-        // напомняния, а не половин напомняне (иначе „делници“ би останало с 2 от 5 дни).
-        let groups: [(next: Date, items: [PlannedNotification])] =
+        // Подредба по най-близко задействане — една евтина дата на запис. Пълните
+        // заявки (поредици, настойчивост) се строят САМО докато има бюджет:
+        // внесен архив с хиляди записи иначе би струвал секунди на всеки
+        // пресинхрон, при положение че над лимита всичко е „пропуснато“ така или
+        // иначе. Режем цели напомняния, а не половин напомняне (иначе „делници“
+        // би останало с 2 от 5 дни).
+        let ordered: [(next: Date, reminder: ReminderSnapshot)] =
             reminders
-            .compactMap { reminder -> (Date, [PlannedNotification])? in
-                let items = requests(for: reminder, now: now, calculator: calculator)
-                guard let first = items.map(\.nextFireDate).min() else { return nil }
-                return (first, items)
+            .compactMap { reminder in
+                guard let next = calculator.nextOccurrence(of: reminder, after: now) else { return nil }
+                return (next, reminder)
             }
-            .sorted { $0.0 < $1.0 }
+            .sorted { $0.next < $1.next }
 
         var notifications: [PlannedNotification] = []
         var skipped = 0
         var reduced = 0
-        for group in groups {
-            if notifications.count + group.items.count <= limit {
-                notifications.append(contentsOf: group.items)
-            } else if notifications.count < limit, let fallback = minimalRequest(from: group.items) {
+        for entry in ordered {
+            guard notifications.count < limit else {
+                skipped += 1
+                continue
+            }
+            let items = requests(for: entry.reminder, now: now, calculator: calculator)
+            guard !items.isEmpty else { continue }
+            if notifications.count + items.count <= limit {
+                notifications.append(contentsOf: items)
+            } else if let fallback = minimalRequest(from: items) {
                 // Цялата група не се побира. Пълното ѝ изхвърляне значи ВЕЧНО
                 // мълчание за това напомняне: повтарящите се тригери не изтичат,
                 // тоест мястото никога не се освобождава само. Затова му даваме
@@ -147,6 +156,10 @@ public struct NotificationPlanner: Sendable {
             items.append(
                 make(reminder, id: "snooze", fireDate: snoozed, components: exactComponents(snoozed), repeats: false)
             )
+            // Отложеното важно напомняне е пак важно: „След 10 минути“ не бива
+            // да сваля настойчивостта — иначе едно отлагане превръща важното в
+            // обикновено точно когато човекът вече веднъж не е реагирал.
+            items.append(contentsOf: nudges(for: reminder, firing: snoozed, prefix: "snoozeNudge"))
         }
 
         guard let next = calculator.patternOccurrence(of: reminder, after: now) else { return items }
@@ -230,16 +243,20 @@ public struct NotificationPlanner: Sendable {
     /// „Настойчивите“ повторни известия след основното.
     ///
     /// Само за важните: ако не потвърдиш, телефонът пита пак след 10 и 25 минути.
-    /// Планират се за **следващото** задействане; щом натиснеш „Готово“, планът
-    /// се пресинхронизира и заявките за отминалото задействане изчезват сами
-    /// (новият план вече не ги съдържа).
-    private func nudges(for reminder: ReminderSnapshot, firing next: Date) -> [PlannedNotification] {
+    /// Планират се за **следващото** задействане (и за отложеното, ако има);
+    /// щом натиснеш „Готово“, планът се пресинхронизира и заявките за отминалото
+    /// задействане изчезват сами (новият план вече не ги съдържа).
+    private func nudges(
+        for reminder: ReminderSnapshot,
+        firing next: Date,
+        prefix: String = "nudge"
+    ) -> [PlannedNotification] {
         guard reminder.isImportant else { return [] }
         return nudgeOffsets.enumerated().compactMap { index, offset in
             let date = next.addingTimeInterval(offset)
             return make(
                 reminder,
-                id: "nudge\(index)",
+                id: "\(prefix)\(index)",
                 fireDate: date,
                 components: exactComponents(date),
                 repeats: false

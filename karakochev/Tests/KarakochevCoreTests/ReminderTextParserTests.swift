@@ -164,3 +164,51 @@ struct ReminderTextParserTests {
         #expect(result.interval == RepeatRule.intervalRange.upperBound)
     }
 }
+
+@Suite("Регресии от одита на парсера")
+struct ReminderTextParserAuditTests {
+    /// Понеделник, 10 август 2026, 09:00.
+    let now = Fixture.date(2026, 8, 10, 9, 0)
+
+    func parser(_ language: ReminderTextParser.Language) -> ReminderTextParser {
+        ReminderTextParser(calendar: Fixture.calendar, language: language)
+    }
+
+    @Test("„на 15.09“ е дата, не 15:00 — предлогът не я превръща в час")
+    func dottedDateAfterPreposition() {
+        let result = parser(.bulgarian).parse("такса на 15.09", now: now)
+        #expect(result.date == Fixture.date(2026, 9, 15, ReminderDefaults.fallbackHour, 0))
+        #expect(result.title == "такса")
+
+        let english = parser(.english).parse("tax on 15.09", now: now)
+        #expect(english.date == Fixture.date(2026, 9, 15, ReminderDefaults.fallbackHour, 0))
+        #expect(english.title == "tax")
+    }
+
+    @Test("„вторник в 8“, написано във вторник вечер → другия вторник, не миналото")
+    func weekdayWithPassedHourRollsAWeek() {
+        let tuesdayEvening = Fixture.date(2026, 8, 11, 20, 0)
+        let result = parser(.bulgarian).parse("плащане на ток вторник в 8", now: tuesdayEvening)
+        #expect(result.date == Fixture.date(2026, 8, 18, 8, 0))
+        #expect(result.title == "плащане на ток")
+    }
+
+    @Test("„в 8 часа“ не оставя „часа“ в заглавието")
+    func hourUnitIsConsumed() {
+        let result = parser(.bulgarian).parse("среща в 8 часа", now: now)
+        #expect(result.title == "среща")
+        #expect(result.date == Fixture.date(2026, 8, 11, 8, 0))  // 8 вече мина → утре
+
+        let english = parser(.english).parse("call mom at 8 o'clock", now: now)
+        #expect(english.title == "call mom")
+    }
+
+    @Test("Предлогът пред „всеки“ остава, когато нищо не е разпознато")
+    func prepositionKeptWhenEveryDoesNotMatch() {
+        let result = parser(.bulgarian).parse("подарък на всеки от екипа", now: now)
+        #expect(result.title == "подарък на всеки от екипа")
+        #expect(result.date == nil)
+        #expect(result.repeatRule == nil)
+        #expect(result.matchedSomething == false)
+    }
+}

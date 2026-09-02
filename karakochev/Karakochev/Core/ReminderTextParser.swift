@@ -143,6 +143,16 @@ public struct ReminderTextParser: Sendable {
         }
     }
 
+    /// Единицата, която може да следва час: „в 8 часа“, „at 8 o'clock“. Само
+    /// тя се поглъща след числото — не произволна служебна дума („the“ е заглавие).
+    private var hourSuffixWords: Set<String> {
+        switch language {
+        case .bulgarian: return ["часа", "час", "ч"]
+        case .english: return ["o'clock"]
+        case .italian: return []
+        }
+    }
+
     private var everyWords: [String] {
         switch language {
         case .bulgarian: return ["всеки", "всяка", "всяко"]
@@ -228,8 +238,13 @@ public struct ReminderTextParser: Sendable {
 
             // „всеки ден“, „всяка седмица“, „на всеки 3 дни“, „всеки понеделник“
             if everyWords.contains(word) {
-                // Предлогът пред „всеки“ е част от израза, не от заглавието.
+                // Предлогът пред „всеки“ е част от израза, не от заглавието — но
+                // само ако изразът наистина съвпадне. Всеки съвпаднал клон излиза
+                // с `continue`; стигне ли се до края на блока, нищо не е разпознато
+                // и предлогът се връща („подарък на всеки от екипа“ остава цял).
+                var prefixIndex: Int?
                 if index > 0, fillerWords.contains(tokens[index - 1].lowercased()) {
+                    prefixIndex = index - 1
                     consumed.insert(index - 1)
                 }
                 let following = tokens.dropFirst(index + 1).prefix(2).map { $0.lowercased() }
@@ -282,6 +297,8 @@ public struct ReminderTextParser: Sendable {
                         continue
                     }
                 }
+                // Дотук = нито един клон не съвпадна (всеки съвпаднал излиза с `continue`).
+                if let prefixIndex { consumed.remove(prefixIndex) }
             }
 
             // „след 2 часа“, „след 30 минути“, „след 3 дни“
@@ -341,6 +358,21 @@ public struct ReminderTextParser: Sendable {
                 if index > 0, fillerWords.contains(tokens[index - 1].lowercased()) {
                     consumed.insert(index - 1)
                 }
+                if index + 1 < tokens.count, hourSuffixWords.contains(tokens[index + 1].lowercased()) {
+                    consumed.insert(index + 1)
+                }
+                continue
+            }
+
+            // Дата с точки: „15.08“, „15.08.2026“ — ПРЕДИ голото число, иначе
+            // „на 15.09“ минава през клона за час (15 е валиден час) и датата се
+            // губи. Специфичният разпознавач стои преди общия.
+            if let parsed = Self.dottedDate(word) {
+                explicitDay = (parsed.day, parsed.month)
+                consumed.insert(index)
+                if index > 0, fillerWords.contains(tokens[index - 1].lowercased()) {
+                    consumed.insert(index - 1)
+                }
                 continue
             }
 
@@ -358,6 +390,9 @@ public struct ReminderTextParser: Sendable {
                     hour = number
                     minute = 0
                     consumed.formUnion([index - 1, index])
+                    // „в 8 часа“ / „at 8 o'clock“ — единицата след часа е част от
+                    // израза, не от заглавието („среща часа“ влизаше в известието).
+                    if hourSuffixWords.contains(next) { consumed.insert(index + 1) }
                     continue
                 }
                 if Self.isOrdinalDay(word, language: language), (1...31).contains(number) {
@@ -365,13 +400,6 @@ public struct ReminderTextParser: Sendable {
                     consumed.insert(index)
                     continue
                 }
-            }
-
-            // Дата с точки: „15.08“, „15.08.2026“
-            if let parsed = Self.dottedDate(word) {
-                explicitDay = (parsed.day, parsed.month)
-                consumed.insert(index)
-                continue
             }
         }
 
@@ -389,7 +417,8 @@ public struct ReminderTextParser: Sendable {
             weekdayTarget: weekdayTarget,
             explicitDay: explicitDay,
             hour: hour,
-            minute: minute
+            minute: minute,
+            repeats: repeatRule != nil
         )
 
         return ParsedReminderInput(
@@ -410,7 +439,8 @@ public struct ReminderTextParser: Sendable {
         weekdayTarget: Int?,
         explicitDay: (day: Int, month: Int?)?,
         hour: Int?,
-        minute: Int
+        minute: Int,
+        repeats: Bool
     ) -> Date? {
         if let relativeSeconds {
             return now.addingTimeInterval(relativeSeconds)
@@ -435,9 +465,18 @@ public struct ReminderTextParser: Sendable {
         components.minute = minute
         guard let candidate = calendar.date(from: components) else { return nil }
 
-        // Само час, който вече е минал днес („в 8“ в 9 сутринта) → утре.
-        if candidate <= now, dayOffset == nil, weekdayTarget == nil, explicitDay == nil {
-            return calendar.date(byAdding: .day, value: 1, to: candidate)
+        // Час, който вече е минал: „в 8“ в 9 сутринта → утре; „вторник в 8“,
+        // написано във вторник вечер → другия вторник. Иначе се записва дата в
+        // миналото, а еднократно напомняне с минала дата не поражда нито едно
+        // известие (одит на Кодаджията). Повтарящото се („всеки понеделник“)
+        // пази началото — шаблонът сам намира следващото задействане.
+        if candidate <= now, dayOffset == nil, explicitDay == nil {
+            if weekdayTarget == nil {
+                return calendar.date(byAdding: .day, value: 1, to: candidate)
+            }
+            if !repeats {
+                return calendar.date(byAdding: .day, value: 7, to: candidate)
+            }
         }
         return candidate
     }

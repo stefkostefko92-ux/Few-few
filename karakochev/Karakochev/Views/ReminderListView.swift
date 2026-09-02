@@ -12,6 +12,7 @@ struct ReminderListView: View {
     @State private var editorMode: ReminderEditorView.Mode?
     @State private var exportDocument: ArchiveDocument?
     @State private var isExporting = false
+    @State private var showExportWarning = false
     @State private var isImporting = false
     @State private var showImportResult = false
     @State private var importMessage = ""
@@ -81,7 +82,7 @@ struct ReminderListView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Menu {
                         Button {
-                            startExport()
+                            showExportWarning = true
                         } label: {
                             Label("action.export", systemImage: "square.and.arrow.up")
                         }
@@ -104,6 +105,14 @@ struct ReminderListView: View {
             }
             .sheet(item: $editorMode) { mode in
                 ReminderEditorView(mode: mode)
+            }
+            // Файлът е нешифрован и може да тръгне към iCloud Drive — човекът го
+            // научава ПРЕДИ да избере къде да го запише, не от SECURITY.md.
+            .confirmationDialog("export.confirm.title", isPresented: $showExportWarning, titleVisibility: .visible) {
+                Button("action.export") { startExport() }
+                Button("action.cancel", role: .cancel) {}
+            } message: {
+                Text("export.confirm.message")
             }
             .fileExporter(
                 isPresented: $isExporting,
@@ -230,6 +239,10 @@ struct ReminderListView: View {
             importMessage = String(localized: "import.added \(count)")
         } catch ReminderArchiveCoder.ImportError.tooNew {
             importMessage = String(localized: "import.tooNew")
+        } catch ReminderArchiveCoder.ImportError.tooLarge {
+            importMessage = String(localized: "import.tooLarge")
+        } catch ReminderArchiveCoder.ImportError.storeUnreadable {
+            importMessage = String(localized: "import.storeUnreadable")
         } catch {
             importMessage = String(localized: "import.failed")
         }
