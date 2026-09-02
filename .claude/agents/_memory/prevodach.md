@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-02:** Блокът за предаване трябва да е буквално „## ПРЕДАВАНЕ“ с полета От/Към/Статус/Находки/Изход/Следваща стъпка; „HANDOFF“ като заглавие проваля dod-check на SubagentStop. _(global; verified; "/home/user/Few-few/tools/agents/handoff.mjs:12-13,28-30,78-119; /home/user/Few-few/.claude/agents/_memory/PROCEDURE.md:14-15")_
+- **2026-09-02:** IT на Apple платформи: „crittografato/crittografia“, не „cifrato/cifratura“ (второто е коректен италиански, но не е терминът на платформата). _(it; verified; "https://support.apple.com/it-it/102651 (проверено 2026-09-02)")_
 - **2026-09-02:** IT на Apple платформи: „crittografato/crittografia“, не „cifrato/cifratura“ (последното е коректно, но не е термин на платформата). _(it; verified; "https://support.apple.com/it-it/102651 (проверено 2026-09-02)")_
 
 - **2026-08-04:** SupremeDiscordBot/CLAUDE.md:1 нарича директорията „supreme/\" и пише „Three packages under supreme/\", но такава директория в репото няма — каноничното име е SupremeDiscordBot/. Пътища, писани по продуктовия CLAUDE.md, не резолвват. _(monorepo; verified; /home/user/Few-few/SupremeDiscordBot/CLAUDE.md:1)_
@@ -158,6 +160,8 @@
 - **2026-08-05:** Supreme Bot има ТРИ източника на терминология, които се разминават: frontend/src/i18n/landing.js, bot/src/utils/commandLocalizations.js и bot/src/i18n/*.js. За PL landing казва „ticket/panele ticketów“, а commandLocalizations.js:90,99,162 казва „zgłoszenie“; NL: „giveaways/polls“ срещу „Weggeefacties/peiling“ (ред 71,107). Преди превод — питай кой е каноничен. _(SupremeDiscordBot; verified; "SupremeDiscordBot/frontend/src/i18n/landing.js:397,407-408,473,480 vs SupremeDiscordBot/bot/src/utils/commandLocalizations.js:69-72,90,99,107,162")_
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-09-02:** IT: „promemoria“ е м.р. и неизменяем в мн.ч. → „tutti i tuoi promemoria“, клитик „leggerli“; смяна note→promemoria влече род/число в цялото изречение. _(it; unverified; "/home/user/Few-few/karakochev/Karakochev/Resources/Localizable.xcstrings:381-387,1033-1039")_
+- **2026-09-02:** karakochev: BG „записка“ = reminder/promemoria (единицата), BG „бележка“ = note/nota (свободното поле в редактора); превод на „записки“ като notes/note създава сблъсък на понятия. _(karakochev; unverified; "/home/user/Few-few/karakochev/Karakochev/Resources/Localizable.xcstrings:185-197,747-759,997-1039,1318-1330")_
 - **2026-09-02:** IT: „promemoria“ е м.р. и неизменяемо в мн.ч. → „tutti i tuoi promemoria“, клитик „leggerli“; смяна note→promemoria влече род/число в цялото изречение. _(it; unverified; "/home/user/Few-few/karakochev/Karakochev/Resources/Localizable.xcstrings:381-387,1033-1039")_
 - **2026-09-02:** karakochev: BG „записка“ = reminder/promemoria (единицата), BG „бележка“ = note/nota (свободното поле в редактора). Превод на „записки“ като notes/note е сблъсък с второто понятие. _(karakochev; unverified; "/home/user/Few-few/karakochev/Karakochev/Resources/Localizable.xcstrings:185-197,747-759,997-1039,1318-1330")_
 
