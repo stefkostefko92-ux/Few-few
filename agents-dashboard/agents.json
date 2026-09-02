@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-08-11",
+    "updated": "2026-09-02",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 297
+        "lessons": 300
       },
       "evolution": [
         {
@@ -602,9 +602,20 @@
           "date": "2026-08-11",
           "event": "v18.2 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе… (+2 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-09-02",
+          "event": "v21.1 — учене",
+          "detail": "Научи: Преместването на дневници в подпапка, за да се избегне `duplicate log entry` с пакетния… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-02",
+          "type": "learning",
+          "summary": "Научи: „Преместването на дневници в подпапка, за да се избегне `duplicate log entry` с пакетния…\" (+2 още)"
+        },
         {
           "date": "2026-07-29",
           "type": "learning",
