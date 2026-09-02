@@ -38,8 +38,13 @@
    блокът е дублиран от certbot — гледай да пипнеш и двете места), после
    `nginx -t && systemctl reload nginx`.
 3. **Ротация на дневниците** — политиката обявява 14 дни. Обявен срок без
-   изпълнител е нарушение на чл. 5, ал. 1, б. „д“ ОРЗД, затова файлът не е по
-   желание:
+   изпълнител е нарушение на чл. 5, ал. 1, б. „д“ ОРЗД. **Изпълнителят е
+   `deploy/autodeploy.sh`**, не тази стъпка: при всеки деплой той създава
+   подпапката, инсталира `deploy/logrotate.conf` като
+   `/etc/logrotate.d/fivembulgaria` и предупреждава при `duplicate log entry`
+   (правният одит го извади: докато беше ръчна стъпка, при пропуск срокът ставаше
+   не „твърде дълъг“, а БЕЗКРАЕН — глобът на пакетния конфиг не влиза в подпапка).
+   Ръчно е нужно само ако пускаш nginx ПРЕДИ първия `autodeploy`:
    ```bash
    sudo cp /opt/few-few/current/FiveM/deploy/logrotate.conf /etc/logrotate.d/fivembulgaria
    # Пробата НЕ е върху нашия файл сам! `logrotate -d /etc/logrotate.d/fivembulgaria`
@@ -54,6 +59,28 @@
    не само с конфига:
    ```bash
    sudo cat /etc/logrotate.d/nginx | grep -E 'daily|weekly|rotate|maxage'
+   ```
+
+   **Ако сървърът ВЕЧЕ върви с дневници право в `/var/log/nginx/`** (инсталиран
+   преди подпапката): `autodeploy` инсталира новия logrotate конфиг, но живият
+   nginx продължава да пише в старите файлове, новият конфиг ги не вижда
+   (`missingok` → върти нула файлове безшумно), а старите остават под глоба на
+   пакета и живеят по-дълго от обявените 14 дни. Проверката за `duplicate` е
+   празна именно защото конфигът вече не описва реалните файлове — зелено по
+   грешна причина. Миграцията е ръчна, еднократна, и се прави със `sed`, не с
+   `cp` от репото (certbot е дописал 443 блока в живия конфиг):
+   ```bash
+   sudo install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria
+   # преместваме и вече завъртените (.1, .2.gz …), за да не останат под пакетния глоб
+   sudo bash -c 'shopt -s nullglob; for f in /var/log/nginx/fivembulgaria.*; do
+     mv "$f" /var/log/nginx/fivembulgaria/"${f##*/fivembulgaria.}"; done'
+   sudo cp -a /etc/nginx/sites-available/fivembulgaria /root/fivembulgaria.nginx.bak
+   # и ДВАТА server блока (certbot ги е дублирал) — затова `g`
+   sudo sed -i 's#/var/log/nginx/fivembulgaria\.\(access\|error\)\.log#/var/log/nginx/fivembulgaria/\1.log#g' \
+     /etc/nginx/sites-available/fivembulgaria
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo ls -la /var/log/nginx/fivembulgaria/          # nginx пише тук след reload
+   ls /var/log/nginx/fivembulgaria.* 2>/dev/null       # трябва да е ПРАЗНО
    ```
 4. **Docker + Compose** на машината.
 

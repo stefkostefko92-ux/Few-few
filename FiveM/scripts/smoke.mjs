@@ -127,11 +127,17 @@ check(robots.includes('/admin'), 'robots.txt забранява панела');
 // ── 5. Правните обещания са ВИДИМИ, не само записани ────────────────────────
 const privacy = await get('/bg/privacy');
 check(/\d{4}-\d{2}-\d{2}/.test(privacy), 'политиката показва дата на редакцията (чл. 12(1) ОРЗД)');
-const terms = await get('/bg/terms');
-check(
-  terms.includes('id="kak-podrezhdame-sarvarite"'),
-  'разделът за класирането има котва (чл. 7(4а) Дир. 2005/29)',
-);
+// ЦЕЛТА на котвата се проверява на ВСЕКИ език, не само на български. Досега
+// се гледаше само `/bg/terms`, а на `/en/terms` id-то се вадеше от преведеното
+// заглавие (`how-we-order-servers`) — връзката от английската начална водеше
+// до върха на документа и гейтът беше зелен от слепота.
+for (const locale of ['bg', 'en']) {
+  const terms = await get(`/${locale}/terms`);
+  check(
+    terms.includes('id="kak-podrezhdame-sarvarite"'),
+    `/${locale}/terms: разделът за класирането има котва (чл. 7(4а) Дир. 2005/29)`,
+  );
+}
 // Класирани резултати има на ДВЕ места от landing-а насам: тийзърът на
 // началната и пълният каталог. Чл. 7, ал. 4а иска разкритието да е пряко
 // достъпно от СТРАНИЦАТА С РЕЗУЛТАТИТЕ — тоест и на двете, не на едната.
@@ -199,6 +205,24 @@ const keywordsOf = (html) => {
   const found = html.match(/name="keywords" content="([^"]*)"/);
   return found ? found[1].split(',').map((s) => s.trim()).filter(Boolean) : null;
 };
+// Страниците, които ТРЯБВА да имат и СВОИ думи, не само базовите. Без този
+// списък секцията беше тавтология и не можеше да падне (одитът на Кодаджията):
+// Next 15 наследява `keywords` от лейаута, значи и страница, която изобщо не
+// мине през `pageMetadata`, излиза с шестте базови и „Carbon Stealth“ — тоест
+// „≥5 + Carbon Stealth + без дубли“ е структурно вярно за ВСЯКА страница.
+// Единственото, което може да липсва, е собственият списък — него мерим.
+// Правните/контактните страници нарочно нямат свои думи и не са тук.
+const OWN_KEYWORD_PATHS = new Set([
+  '',
+  '/servers',
+  '/servers/whitelist',
+  '/servers/framework/esx',
+  '/rules',
+  '/tutorials',
+  '/streamers',
+  '/news',
+  '/submit',
+]);
 
 for (const locale of ['bg', 'en']) {
   const base = keywordsOf(await get(`/${locale}/privacy`));
@@ -224,6 +248,11 @@ for (const locale of ['bg', 'en']) {
     // страницата харчи едно от своите места за нещо, което вече има.
     const missing = base.filter((word) => !all.includes(word));
     if (missing.length) check(false, `/${locale}${path}: базови думи липсват — ${missing.join(' / ')}`);
+    // Единствената проверка, която реално може да падне: страница, от която
+    // се очакват собствени думи, а тя носи само наследените базови.
+    if (OWN_KEYWORD_PATHS.has(path) && all.length <= base.length) {
+      check(false, `/${locale}${path}: няма СВОИ ключови думи — наследява само базата`);
+    }
     pages += 1;
   }
   check(true, `/${locale}: ${pages} страници носят пълния набор ключови думи`);

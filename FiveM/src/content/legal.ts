@@ -9,7 +9,15 @@ import type { Locale } from '@/i18n/config';
  * Структурата е нарочно тъпа (заглавие · абзац · списък): така преводът се
  * сверява ред по ред и нищо не се губи между езиците.
  */
-export type LegalBlock = { h?: string; p?: string; ul?: string[] };
+/**
+ * `anchor` е СТАБИЛНА котва, еднаква на всички езици. Без нея `id`-то се вади
+ * от преведеното заглавие (`slugify(h)`), тоест на `/en/terms` е
+ * `how-we-order-servers`, а всяка връзка към разкритието за класирането сочи
+ * `#kak-podrezhdame-sarvarite` — на английски водеше до върха на документа, не
+ * до раздела. Чл. 7, ал. 4а Дир. 2005/29 иска раздела ПРЯКО достъпен от
+ * страницата с резултатите; счупена котва не е пряк достъп.
+ */
+export type LegalBlock = { h?: string; anchor?: string; p?: string; ul?: string[] };
 /**
  * `effective` НЕ е по избор. Правен текст без дата, от която е в сила, е
  * самостоятелен дефект: читателят не знае коя редакция чете (чл. 12, ал. 1
@@ -141,7 +149,7 @@ const bg: LegalSet = {
           'Сървър, който не желае да е в директорията, пише на посочения имейл и го сваляме.',
         ],
       },
-      { h: 'Как подреждаме сървърите' },
+      { h: 'Как подреждаме сървърите', anchor: 'kak-podrezhdame-sarvarite' },
       {
         p: 'Подредбата в списъка се определя от четири параметъра, в този ред: платено промотиране (валидно и обозначено); онлайн статус, прочетен от публичните endpoint-и на сървъра; брой играчи в момента; азбучен ред при равенство. Оценките от ревюта не влияят на подредбата. Не приемаме плащане за оценка или за скриване на ревю.',
       },
@@ -313,7 +321,7 @@ const en: LegalSet = {
           'A server that does not want to be in the directory writes to the email below and we remove it.',
         ],
       },
-      { h: 'How we order servers' },
+      { h: 'How we order servers', anchor: 'kak-podrezhdame-sarvarite' },
       {
         p: 'The order in the list is determined by four parameters, in this order: paid promotion (valid and marked); online status read from the server’s public endpoints; current player count; alphabetical order on a tie. Review ratings do not affect the ordering. We do not accept payment for a rating or for hiding a review.',
       },

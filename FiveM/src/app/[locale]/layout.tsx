@@ -197,17 +197,25 @@ export default async function LocaleLayout({ children, params }: Props) {
           </nav>
         </header>
 
-        {/* `overflow-x-clip` е предпазителят за героя на началната, който излиза
-            от контейнера до ръба на екрана (`mx-[calc(50%-50vw)] w-screen`).
-            `100vw` включва вертикалната лента за скролиране там, където тя заема
-            място (класическа лента на Windows/Linux) — тоест героят е с ~15 px
-            по-широк от видимото и се появява ХОРИЗОНТАЛЕН скрол на целия сайт.
-            `clip`, а не `hidden`: `hidden` прави от `main` скрол-контейнер и
-            чупи `position: sticky` вътре, а `clip` само реже. Другата ос остава
+        {/* Обвивката с `overflow-x-clip` е предпазителят за героя на началната,
+            който излиза от контейнера до ръба на екрана
+            (`mx-[calc(50%-50vw)] w-screen`). `100vw` включва вертикалната лента
+            за скролиране там, където тя заема място (класическа лента на
+            Windows/Linux) — тоест героят е с ~15 px по-широк от видимото и се
+            появява ХОРИЗОНТАЛЕН скрол на целия сайт.
+            Клипът е на ПЪЛНОШИРОК предшественик, НЕ на `main` — и това е
+            поправка на реален дефект, не стил: `overflow: clip` реже по padding
+            box-а на елемента, а `main` е `max-w-6xl` (1152 px). Сложен там, той
+            режеше героя до 1152 px на всеки по-широк екран, тоест „до ръба“ беше
+            вярно само на тесни екрани; измерено с пиксели на 1920 px.
+            `clip`, а не `hidden`: `hidden` прави скрол-контейнер и чупи
+            `position: sticky` вътре, а `clip` само реже. Другата ос остава
             `visible`, затова нищо не се отрязва вертикално. */}
-        <main id="main" className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-10">
-          {children}
-        </main>
+        <div className="flex-1 overflow-x-clip">
+          <main id="main" className="mx-auto w-full max-w-6xl px-4 py-10">
+            {children}
+          </main>
+        </div>
 
         <footer className="border-t border-white/10 px-4 py-8 text-sm text-silver-500">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">

@@ -1132,6 +1132,28 @@ EOF
   ln -sfnT "$FIVEM_STATE_DIR/backups" "$d/backups"
   ok "FiveM/.env и backups → $FIVEM_STATE_DIR"
 
+  # ── Дневниците на nginx: подпапка + ротация, ИДЕМПОТЕНТНО при всеки деплой ──
+  # Правният одит го извади: `/privacy` обявява 14 дни, а изпълнителят беше
+  # ръчна стъпка в DEPLOY.md. По-лошо — откакто дневниците са в подпапка
+  # (заради `duplicate log entry` с пакетния конфиг), глобът `/var/log/nginx/*.log`
+  # НЕ ги хваща, значи без нашия файл срокът е БЕЗКРАЕН, не „твърде дълъг“.
+  # Обявен срок по чл. 5, ал. 1, б. „д“ ОРЗД, който виси на памет, не е срок.
+  install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria 2>/dev/null \
+    || warn "не мога да създам /var/log/nginx/fivembulgaria — nginx няма да тръгне с новия конфиг."
+  if [ -f "$d/deploy/logrotate.conf" ]; then
+    install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/fivembulgaria \
+      || warn "не мога да инсталирам /etc/logrotate.d/fivembulgaria — 14-те дни НЕ са гарантирани."
+    # `grep -c`, НЕ `grep -q`: с `-q` grep затваря рано, logrotate получава
+    # SIGPIPE (141) и под `pipefail` условието е лъжливо ТОЧНО когато има дубъл.
+    # Същият клас грешка вече ни спря деплоя веднъж (бекъп гардът).
+    if command -v logrotate >/dev/null 2>&1; then
+      local dups
+      dups="$(logrotate -d /etc/logrotate.conf 2>&1 | grep -ci 'duplicate log entry' || true)"
+      [ "${dups:-0}" -gt 0 ] \
+        && warn "logrotate: два конфига се бият за един дневник (duplicate log entry) — обявените 14 дни не са гарантирани."
+    fi
+  fi
+
   # Гардът НЕ е стилов: под `set -e` провалът на този subshell прекратява ЦЕЛИЯ
   # autodeploy, тоест всеки продукт СЛЕД fivem остава неразгърнат — при това
   # мълчаливо, защото последното на екрана е нормален изход от предния продукт.

@@ -53,19 +53,33 @@ export function PlayerList({
 
   return (
     <>
+      {/* БЕЗ `aria-label` на бутона — той ЗАМЕСТВА съдържанието при
+          изчисляване на достъпното име, тоест четецът чуваше „Виж кой играе“
+          и нищо повече: нито „64 от 128“, нито текстовия статус, който
+          `ServerRow`/`ServerCard` слагат вътре точно за да се чете. Действието
+          върви като `sr-only` текст СЛЕД съдържанието, така че името е
+          „64 от 128 играчи, Виж кой играе“ — данните първи, после глаголът
+          (2.5.3 Label in Name: видимото трябва да е част от името). */}
       <button
         type="button"
         onClick={() => ref.current?.showModal()}
         disabled={!known}
-        aria-label={known ? labels.open : undefined}
         title={known ? undefined : labels.hidden}
         className="flex items-center gap-2 rounded-lg px-1 text-start transition-colors enabled:hover:text-cyan-300 enabled:focus-visible:outline enabled:focus-visible:outline-2 enabled:focus-visible:outline-cyan-400 disabled:cursor-default"
       >
         {trigger}
+        {known && <span className="sr-only">{labels.open}</span>}
       </button>
 
+      {/* `data-nosnippet`: имената са в сървърния HTML на индексируема
+          страница, а политиката обещава „без индексиране на самите имена“.
+          Обещание без механизъм не е обещание. Това е минималният: казва на
+          търсачката да не показва този блок в откъси. НЕ е пълно „без
+          индексиране“ — за това имената трябва да се дърпат при клик, не да
+          се рендират на сървъра; решение на собственика, отбелязано в одита. */}
       <dialog
         ref={ref}
+        data-nosnippet=""
         className="max-w-md rounded-xl border border-white/10 bg-ink-900 p-0 text-silver-200 backdrop:bg-black/70 open:flex open:flex-col"
       >
         <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">

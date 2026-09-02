@@ -44,7 +44,7 @@ export const en: Dictionary = {
       'Every Bulgarian FiveM RP server in one place: online status, player count, framework (ESX, QBCore, Qbox), whitelist, Discord and rules. Updated automatically.',
     h1: 'This is where Bulgaria plays.',
     intro:
-      'Every Bulgarian FiveM RP server in one place: online status, player count, framework and whitelist — read straight from the servers themselves.',
+      'Bulgarian FiveM RP servers in one place: online status, player count, framework and whitelist — read straight from the servers themselves.',
     statsOnline: 'online out of',
     statsPlayers: 'players right now',
     filters: 'Filters',
@@ -137,7 +137,6 @@ export const en: Dictionary = {
     anonymous: 'anonymous',
     replyLabel: 'Reply from the server',
     promoted: 'promoted (paid)',
-    promotedShort: 'promoted',
     discovered: 'found automatically',
     discoveredNote:
       'This server was found in the public Cfx.re list rather than submitted by its owner. If you represent the server and want to edit or remove the listing, write to us.',

@@ -45,7 +45,10 @@ export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; w
           return (
             <h2
               key={index}
-              id={slugify(block.h)}
+              // Стабилната котва печели пред слугифицираното заглавие — виж
+              // `LegalBlock.anchor`: преведено заглавие = преведено id =
+              // счупена връзка от другия език.
+              id={block.anchor ?? slugify(block.h)}
               className="scroll-mt-24 pt-4 text-xl font-semibold text-silver-100"
             >
               {block.h}

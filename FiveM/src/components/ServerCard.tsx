@@ -43,7 +43,8 @@ export function ServerCard({
         {featured && (
           <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200">
             <Icon group="status" name="promoted" size={12} />
-            {t.server.promotedShort}
+            {/* Пълният етикет с „платено“ — виж бележката в ServerRow. */}
+            {t.server.promoted}
           </span>
         )}
       </div>

@@ -61,7 +61,12 @@ export function ServerRow({
             {featured && (
               <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs font-normal text-cyan-200">
                 <Icon group="status" name="promoted" size={12} />
-                {t.server.promotedShort}
+                {/* ПЪЛНИЯТ етикет, с думата „платено“: условията обещават точно
+                    „промотиран (платено)“ и в списъка, и на страницата, а
+                    Прил. I, т. 11а Дир. 2005/29 забранява класиране, платено
+                    за по-добро място, без ясно разкриване. Съкратеният ключ
+                    крие тъкмо думата, която носи разкритието. */}
+                {t.server.promoted}
               </span>
             )}
           </h3>
