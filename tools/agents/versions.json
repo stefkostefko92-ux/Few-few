@@ -42,9 +42,9 @@
     },
     {
       "id": "claude-models", "manual": true, "ttlDays": 30,
-      "current": "Claude 5: Fable 5 (claude-fable-5) · Opus 5 (claude-opus-5) · Sonnet 5 (claude-sonnet-5); предишни: Opus 4.8/4.7/4.6, Sonnet 4.6, Haiku 4.5. Opus 4.8: $5/$25 на 1M",
-      "checkedAt": "2026-07-29",
-      "source": "среда на сесията + https://docs.claude.com (сверявай при --refresh)"
+      "current": "Claude 5: Fable 5.1 (claude-fable-5-1; същият модел като Mythos 5.1, с допълнителни предпазители) · Opus 5 (claude-opus-5) · Sonnet 5 (claude-sonnet-5) · Haiku 4.5 (claude-haiku-4-5-20251001); предишни: Fable 5, Opus 4.8/4.7/4.6, Sonnet 4.6. Fable остава ИЗВЪН флота (цена), Haiku е изключен по решение на собственика. Цени не се записват тук без жив източник",
+      "checkedAt": "2026-09-02",
+      "source": "среда на сесията 2026-09-02 (Claude Code — model IDs) + https://docs.claude.com (сверявай при --refresh)"
     },
     {
       "id": "chrome-mv", "manual": true, "ttlDays": 90,
