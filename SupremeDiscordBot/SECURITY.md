@@ -145,6 +145,49 @@ but forgotten on restart and not shared across replicas. Production sets
 `REDIS_URL`; the fallback exists so a Redis outage cannot take authentication
 down with it.
 
+## Hardening beyond authentication
+
+**Outbound requests (SSRF).** Customers supply URLs the server will fetch —
+webhook endpoints and white-label avatars. Delivery originates inside the Docker
+network, so the guard (`backend/src/services/webhooks.js`) refuses anything that
+leads inward: loopback, unspecified, private (RFC 1918), CGNAT, link-local and
+cloud-metadata (`169.254.169.254`), IETF/benchmark blocks, multicast, broadcast;
+for IPv6 also ULA, link-local, IPv4-mapped/compatible, **NAT64 (`64:ff9b::/96`,
+which wraps the entire IPv4 space)**, 6to4 and Teredo. Addresses are compared
+**as addresses** (`net.BlockList`), never as strings — `0:0:0:0:0:0:0:1` is the
+same host as `::1` and a string comparison would not know that. Hostnames are
+resolved at validation time *and* re-checked by a custom `lookup` at connect
+time, which closes the DNS-rebinding window between the two. IPv6 literals are
+unbracketed before the check, so a public IPv6 endpoint is accepted and an
+internal one is refused with the *real* reason rather than a misleading
+"could not be resolved". A caveat we state rather than hide: Node skips
+`lookup` for IP literals, so for those the validation-time check is the only
+layer — which is why it compares binary, not text.
+
+**Customer-supplied regular expressions (ReDoS).** Form answers can be validated
+against a pattern written by the Customer. Each match runs in an isolated
+worker thread with a 1 s timeout, so catastrophic backtracking can never stall
+the shared event loop. That isolation had a cost of its own — a worker is
+~6–10 MB and one was spawned per answer without limit, so 100 concurrent
+answers meant ~880 MB — therefore concurrency is capped at 8. At the cap the
+answer is accepted without validation: format validation is a convenience for
+the applicant, while a live bot is a condition for every tenant, and refusing
+would hand an attacker exactly the outcome they want.
+
+**Containers.** The three services we build run as non-root (`USER node`;
+`nginx-unprivileged`) with `no-new-privileges` and all Linux capabilities
+dropped. Postgres and Redis are deliberately excluded from the capability drop:
+their official entrypoints start as root and drop privileges themselves
+(`gosu`/`su-exec`), which requires `CHOWN`/`SETUID`/`SETGID`. Published ports
+bind to `127.0.0.1` only; TLS terminates at the host reverse proxy.
+
+**Dependencies.** `npm audit --omit=dev` is kept at zero in all three packages.
+Where the fixed version sits outside a transitive range we pin it with
+`overrides` rather than wait (e.g. `qs` 6.16.0 under Express 4, which locks
+`~6.15.1`), and the affected behaviour is exercised in a real request before the
+pin lands. Third-party GitHub Actions are pinned by commit SHA; every workflow
+declares `permissions`.
+
 ## Data protection
 
 Supreme Bot is GDPR-native and EU-hosted. Custom bot tokens are encrypted at

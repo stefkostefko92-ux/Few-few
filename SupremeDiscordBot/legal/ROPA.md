@@ -5,8 +5,8 @@
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
-**Last updated:** 2026-08-07  
-**Version:** 1.1
+**Last updated:** 2026-09-02  
+**Version:** 1.2 — added Activities 13–16 (sticky roles, server activity logging, public API keys, outbound webhooks), which had been live in the product without a record entry
 
 ---
 
@@ -176,6 +176,65 @@
 | **Recipients** | Discord Inc. |
 | **3rd country transfers** | USA (Discord) — Standard Contractual Clauses |
 | **Retention period** | Not stored — held in memory for the duration of the request only |
+
+---
+
+## Processing Activity 13 — Sticky Roles (Discord role snapshots)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Restore a member's Discord roles when they rejoin a server that enabled the feature |
+| **Legal basis** | Article 6(1)(f) — Legitimate interest of the Customer (server administration); processed on behalf of the Customer as controller. Opt-in per server (`stickyRolesEnabled`, default off) — nothing is stored while the feature is off (Article 5(1)(c)) |
+| **Data categories** | Discord user ID, server ID, list of Discord role IDs held at the moment of leaving, capture timestamp (`MemberRoleSnapshot`) |
+| **Data subjects** | Discord members who leave a server with the feature enabled |
+| **Recipients** | Internal only; roles are re-applied via Discord on rejoin |
+| **3rd country transfers** | USA (Discord) — Standard Contractual Clauses |
+| **Retention period** | 180 days after capture (`backend/src/jobs/dataRetention.js`, step 2б), or immediately on successful restore, on ban, or on erasure request (Article 17); included in the Article 15 export |
+| **Security measures** | Roles with dangerous permissions, managed roles, and roles above the bot are never restored (same guard as autorole, applied at restore time); no foreign key to the User table by design |
+
+---
+
+## Processing Activity 14 — Server Activity Logging (event log)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Post member events (voice join/leave/mute, role and nickname changes, timeouts, bans/kicks, message edits/deletes, channel changes) to a Discord channel chosen by the Customer |
+| **Legal basis** | Article 6(1)(f) — Legitimate interest of the Customer (moderation); the Customer is controller and must inform its members. Opt-in per server and per category |
+| **Data categories** | Event type, Discord user ID and display name, timestamps, and — for the *Messages* category only — message content of edits and deletions |
+| **Data subjects** | Members of the Customer's server |
+| **Recipients** | The Customer's own Discord channel(s) |
+| **3rd country transfers** | USA (Discord) — Standard Contractual Clauses |
+| **Retention period** | **Not stored by Supreme Bot.** Events are forwarded to Discord and exist only there, under Discord's and the Customer's retention. Only the configuration (enabled flag, categories, channel IDs) is stored |
+
+---
+
+## Processing Activity 15 — Public API Keys
+
+| Field | Value |
+|---|---|
+| **Purpose** | Let Customers integrate their own systems with the REST API |
+| **Legal basis** | Article 6(1)(b) — Contract performance (Premium feature) |
+| **Data categories** | Key name, SHA-256 hash of the key, first 8 characters (prefix) for identification, scopes, creator's Discord user ID, creation/last-use/expiry/revocation timestamps, request count (`ApiKey`) |
+| **Data subjects** | Dashboard users who create keys |
+| **Recipients** | Internal only |
+| **3rd country transfers** | None |
+| **Retention period** | Until revoked or expired by the Customer; revoked keys keep their metadata for the audit trail; included in the Article 15 export (metadata only — never the hash) |
+| **Security measures** | Plaintext shown once at creation, never stored; failed key attempts throttled by the anti-brute-force ladder; scoped to a single server |
+
+---
+
+## Processing Activity 16 — Outbound Webhooks
+
+| Field | Value |
+|---|---|
+| **Purpose** | Deliver ticket/application events to an HTTPS endpoint chosen by the Customer |
+| **Legal basis** | Article 6(1)(b) — Contract performance (Premium feature); the Customer is controller for what it does with the payload |
+| **Data categories** | Endpoint URL, optional HMAC-SHA256 signing secret, subscribed event types, creator's Discord user ID, last delivery status/time and failure count (`Webhook`); delivered payloads contain ticket/application data as described in Activities 2–3 |
+| **Data subjects** | Members whose ticket/application events are delivered; dashboard users who configure webhooks |
+| **Recipients** | The Customer's own endpoint — third party from Supreme Bot's perspective, chosen and controlled by the Customer |
+| **3rd country transfers** | Determined by the Customer's endpoint location; Supreme Bot does not choose it |
+| **Retention period** | Configuration until deleted by the Customer; **payloads are not stored** after delivery; included in the Article 15 export (name and timestamps only — never URL or secret) |
+| **Security measures** | HTTPS only; SSRF guard rejects private, loopback, link-local, metadata, NAT64/6to4/Teredo ranges (binary comparison, re-checked at connect time against DNS rebinding); delivery gated on an active Premium tier at *execution* time. **Residual:** the signing secret is stored in plaintext in the database (it is a Customer-supplied credential, not personal data); encrypting it at rest like OAuth tokens is a tracked improvement |
 
 ---
 
