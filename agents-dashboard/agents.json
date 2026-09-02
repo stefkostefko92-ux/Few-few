@@ -1173,7 +1173,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 376
+        "lessons": 377
       },
       "evolution": [
         {
@@ -1967,9 +1967,20 @@
           "date": "2026-09-02",
           "event": "v24.4 — учене",
           "detail": "Научи: В FiveM/ `main` е `mx-auto max-w-6xl` (src/app/[locale]/layout.tsx:208) — всеки `overfl… (+2 още)"
+        },
+        {
+          "version": "24.5.0",
+          "date": "2026-09-02",
+          "event": "v24.5 — учене",
+          "detail": "Научи: Next 15 наследява `keywords` от лейаута: сливането е `for (const key_ in source)` и `ca…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-02",
+          "type": "learning",
+          "summary": "Научи: „Next 15 наследява `keywords` от лейаута: сливането е `for (const key_ in source)` и `ca…\""
+        },
         {
           "date": "2026-09-02",
           "type": "learning",
