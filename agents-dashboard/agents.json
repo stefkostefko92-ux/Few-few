@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-08-11",
+    "updated": "2026-09-07",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -9912,7 +9912,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 107
+        "lessons": 111
       },
       "evolution": [
         {
@@ -10214,9 +10214,31 @@
           "date": "2026-07-28",
           "event": "v13.8 — учене",
           "detail": "Научи: K2 Plus камерни темпове потвърдени на живо: PLA/PETG 30-35°C (над ~40°C PLA омеква → st… (+2 още)"
+        },
+        {
+          "version": "13.9.0",
+          "date": "2026-09-07",
+          "event": "v13.9 — учене",
+          "detail": "Научи: OrcaSlicer/Creality Print Scarf joint seam settings (Scarf joint speed ≤100mm/s recomme…"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-09-07",
+          "event": "v14.2 — учене",
+          "detail": "Научи: OrcaSlicer upstream (SoftFever/OrcaSlicer) upstream профили за Creality K2 Plus (0.4 no… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-07",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer upstream (SoftFever/OrcaSlicer) upstream профили за Creality K2 Plus (0.4 no…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-09-07",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer/Creality Print Scarf joint seam settings (Scarf joint speed ≤100mm/s recomme…\" · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",

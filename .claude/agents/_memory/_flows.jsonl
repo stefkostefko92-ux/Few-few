@@ -14,3 +14,5 @@
 {"t":"handoff","ts":"2026-08-04T13:25:21.348Z","id":"auto","from":"3d-maniac","to":"оркестратор","status":"наред"}
 {"t":"handoff","ts":"2026-08-04T13:28:49.433Z","id":"auto","from":"ai-djiyata","to":"човек","status":"наред"}
 {"t":"handoff","ts":"2026-08-05T05:00:23.682Z","id":"auto","from":"kasadjiyata","to":"ai-djiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-07T07:59:18.269Z","id":"auto","from":"printadjiyata","to":"оркестратор","status":"наред"}
+{"t":"handoff","ts":"2026-09-07T09:33:53.153Z","id":"auto","from":"printadjiyata","to":"човек","status":"наред"}
