@@ -9912,7 +9912,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 108
+        "lessons": 111
       },
       "evolution": [
         {
@@ -10220,9 +10220,20 @@
           "date": "2026-09-07",
           "event": "v13.9 — учене",
           "detail": "Научи: OrcaSlicer/Creality Print Scarf joint seam settings (Scarf joint speed ≤100mm/s recomme…"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-09-07",
+          "event": "v14.2 — учене",
+          "detail": "Научи: OrcaSlicer upstream (SoftFever/OrcaSlicer) upstream профили за Creality K2 Plus (0.4 no… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-07",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer upstream (SoftFever/OrcaSlicer) upstream профили за Creality K2 Plus (0.4 no…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-07",
           "type": "learning",
