@@ -82,6 +82,15 @@
    sudo ls -la /var/log/nginx/fivembulgaria/          # nginx пише тук след reload
    ls /var/log/nginx/fivembulgaria.* 2>/dev/null       # трябва да е ПРАЗНО
    ```
+
+   **Същото важи за всяка следваща промяна в `deploy/nginx.conf`** — живият
+   файл не се презаписва. Например `server_tokens off;` (без версия в `Server:`
+   — измерено на живо `nginx/1.24.0 (Ubuntu)`) се нанася така:
+   ```bash
+   grep -q 'server_tokens off' /etc/nginx/sites-available/fivembulgaria \
+     || sudo sed -i '0,/client_max_body_size 1m;/s//client_max_body_size 1m;\n  server_tokens off;/' /etc/nginx/sites-available/fivembulgaria
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
 4. **Docker + Compose** на машината.
 
 ## Първо пускане

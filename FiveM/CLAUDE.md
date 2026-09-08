@@ -32,6 +32,8 @@ npm run prune               # изтрива изтеклите данни (пу
 node scripts/smoke.mjs                                # адреси + JSON-LD + панел + правни котви + ключови думи
                                                       # по подразбиране 127.0.0.1:3010 (compose публикува само IPv4)
 PROBE_ADMIN_PASSWORD="…" node scripts/authz-probe.mjs # авторизация с положителна контрола
+node scripts/csp-sweep.mjs                            # CSP: всяка страница в Chromium, нула нарушения
+                                                      # (иска playwright-core; без него = 2, НЕИЗМЕРЕНО)
 ```
 
 Env: виж `.env.example`. Няма тайни в кода — само през env на сървъра.
