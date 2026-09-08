@@ -1,0 +1,78 @@
+# Тайните НЕ влизат тук — идват от `.env` до този файл, с права 600.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: fivem
+      POSTGRES_DB: fivem
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fivem']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    # Портът е вързан за loopback: навън се излиза само през nginx с TLS.
+    ports:
+      - '127.0.0.1:3010:3000'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Периодичните задачи вървят в СЪЩИЯ образ, но като отделен процес: ако една
+  # забие или изяде памет, сайтът продължава да отговаря.
+  #
+  # `mem_limit` не е излишна предпазливост. Откриването буферира снапшота на
+  # Cfx.re (~19 MB днес, таван 64 MB) и на този VPS живеят още девет продукта —
+  # без ограничение OOM killer-ът избира жертва ГЛОБАЛНО по хоста и може да
+  # свали чужд сайт заради нашия cron. С ограничение умира точно този контейнер
+  # и `restart: unless-stopped` го вдига.
+  cron:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    mem_limit: 512m
+    entrypoint: ['/bin/sh', '-c']
+    # Схемата се ЧАКА, преди да тръгнат задачите. Миграциите се пускат от
+    # `scripts/deploy.sh` в контейнера `web` СЛЕД `up -d`, а `depends_on` чака
+    # само базата да е здрава — тоест при пръв деплой cron-ът тръгваше срещу
+    # база без таблици. Измерено на цял пробег: `refresh-servers` и `prune`
+    # изсипваха Prisma P2021 стекове („The table `public.Server` does not
+    # exist"), а `prune` после чака 24 ЧАСА до следващия опит. Нищо не се
+    # чупеше (`|| true`), но дневникът на първия деплой се пълнеше с червено —
+    # а дневник, в който червеното е нормално, крие следващия истински провал.
+    # `migrate status` дава 0 САМО при приложени миграции (проверено: 1 при
+    # непълна схема, 1 при недостъпна база). Таванът е, за да не мълчи вечно:
+    # изтече ли, задачите тръгват и грешките пак стават видими.
+    command: >
+      "echo '[cron] чакам миграциите…';
+       i=0;
+       until npx prisma migrate status >/dev/null 2>&1; do
+         i=$$((i+1));
+         if [ $$i -ge 120 ]; then echo '[cron] миграциите не се появиха за 10 мин — тръгвам, грешките ще се видят'; break; fi;
+         sleep 5;
+       done;
+       while true; do npx tsx scripts/refresh-servers.ts || true; sleep 180; done &
+       while true; do npx tsx scripts/discover-servers.ts || true; sleep 2700; done &
+       while true; do npx tsx scripts/discover-streamers.ts twitch kick || true; sleep 600; done &
+       while true; do npx tsx scripts/discover-streamers.ts youtube || true; sleep 7200; done &
+       while true; do npx tsx scripts/prune.ts || true; sleep 86400; done;
+       wait"
+
+volumes:
+  db:

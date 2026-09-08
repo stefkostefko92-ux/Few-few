@@ -2,52 +2,157 @@
   "_readme": "Регистър на ТЕКУЩИТЕ версии, които агентите цитират. Две истини: (1) РЕПО-истина — какво пинват продуктите (чете се живо от package.json, НЕ се съхранява тук); (2) СВЕТОВНА истина — последното стабилно, съхранено тук с дата на проверка. Гейтът version-freshness --check пада, когато checkedAt излезе от ttlDays — това НАЛАГА периодичното живо освежаване (--refresh за npm; ръчните искат човек/агент с жив източник). Исторически факти (кога фича е влязла, кой стандарт цитира кой) НЕ живеят тук — те не остаряват.",
   "ttlDays": 45,
   "entries": [
-    { "id": "next", "npm": "next", "current": "16.2.12", "checkedAt": "2026-07-29" },
-    { "id": "react", "npm": "react", "current": "19.2.8", "checkedAt": "2026-07-29" },
-    { "id": "prisma", "npm": "prisma", "current": "7.9.1", "checkedAt": "2026-07-29" },
-    { "id": "discord.js", "npm": "discord.js", "current": "14.27.0", "checkedAt": "2026-07-29" },
-    { "id": "three", "npm": "three", "current": "0.185.1", "checkedAt": "2026-07-29" },
-    { "id": "gsap", "npm": "gsap", "current": "3.15.0", "checkedAt": "2026-07-29" },
-    { "id": "pixi.js", "npm": "pixi.js", "current": "8.19.0", "checkedAt": "2026-07-29" },
-    { "id": "animejs", "npm": "animejs", "current": "4.5.0", "checkedAt": "2026-07-29" },
-    { "id": "tailwindcss", "npm": "tailwindcss", "current": "4.3.3", "checkedAt": "2026-07-29" },
-    { "id": "typescript", "npm": "typescript", "current": "7.0.2", "checkedAt": "2026-07-29" },
-    { "id": "vite", "npm": "vite", "current": "8.1.5", "checkedAt": "2026-07-29" },
-    { "id": "vitest", "npm": "vitest", "current": "4.1.10", "checkedAt": "2026-07-29" },
-    { "id": "ccxt", "npm": "ccxt", "current": "4.5.69", "checkedAt": "2026-07-29" },
-    { "id": "stripe-node", "npm": "stripe", "current": "22.3.2", "checkedAt": "2026-07-29" },
-    { "id": "express", "npm": "express", "current": "5.2.1", "checkedAt": "2026-07-29" },
-    { "id": "electron", "npm": "electron", "current": "43.2.0", "checkedAt": "2026-07-29" },
-    { "id": "lighthouse", "npm": "lighthouse", "current": "13.4.1", "checkedAt": "2026-07-29" },
-    { "id": "playwright", "npm": "playwright", "current": "1.62.0", "checkedAt": "2026-07-29" },
-    { "id": "axe-core", "npm": "axe-core", "current": "4.12.1", "checkedAt": "2026-07-29" },
     {
-      "id": "lighthouse-scoring", "manual": true, "ttlDays": 90,
+      "id": "next",
+      "npm": "next",
+      "current": "16.3.4",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "react",
+      "npm": "react",
+      "current": "19.2.8",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "prisma",
+      "npm": "prisma",
+      "current": "8.0.0-rc.12",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "discord.js",
+      "npm": "discord.js",
+      "current": "14.27.0",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "three",
+      "npm": "three",
+      "current": "0.185.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "gsap",
+      "npm": "gsap",
+      "current": "3.15.0",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "pixi.js",
+      "npm": "pixi.js",
+      "current": "8.20.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "animejs",
+      "npm": "animejs",
+      "current": "4.5.0",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "tailwindcss",
+      "npm": "tailwindcss",
+      "current": "4.3.3",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "typescript",
+      "npm": "typescript",
+      "current": "7.0.2",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "vite",
+      "npm": "vite",
+      "current": "8.2.2",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "vitest",
+      "npm": "vitest",
+      "current": "4.1.11",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "ccxt",
+      "npm": "ccxt",
+      "current": "4.5.77",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "stripe-node",
+      "npm": "stripe",
+      "current": "22.6.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "express",
+      "npm": "express",
+      "current": "5.2.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "electron",
+      "npm": "electron",
+      "current": "44.1.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "lighthouse",
+      "npm": "lighthouse",
+      "current": "13.4.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "playwright",
+      "npm": "playwright",
+      "current": "1.62.1",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "axe-core",
+      "npm": "axe-core",
+      "current": "4.13.0",
+      "checkedAt": "2026-09-02"
+    },
+    {
+      "id": "lighthouse-scoring",
+      "manual": true,
+      "ttlDays": 90,
       "current": "теглата FCP 10 · SI 10 · LCP 25 · TBT 30 · CLS 25 (v10-моделът) + log-normal кривите ВАЖАТ и в Lighthouse 13.4.1",
       "checkedAt": "2026-07-29",
       "source": "https://developer.chrome.com/docs/lighthouse/performance/performance-scoring",
       "note": "prelaunch-audit.mjs и Скоростника цитират „кривите на v10“ — това е ИМЕ на модела, не остаряла версия."
     },
     {
-      "id": "node-lts", "manual": true, "ttlDays": 90,
+      "id": "node-lts",
+      "manual": true,
+      "ttlDays": 90,
       "current": "активна LTS: 24 (до 2028-04); 26 става LTS на 2026-10-28; 22 е в maintenance",
       "checkedAt": "2026-07-29",
       "source": "https://endoflife.date/api/nodejs.json"
     },
     {
-      "id": "wcag", "manual": true, "ttlDays": 90,
+      "id": "wcag",
+      "manual": true,
+      "ttlDays": 90,
       "current": "W3C REC: WCAG 2.2 (2023-10). ПРАВНО хармонизиран за EAA остава EN 301 549 V3.2.1 → WCAG 2.1 AA — цитирането на 2.1 в EAA контекст е КОРЕКТНО, не остаряло",
       "checkedAt": "2026-07-29",
       "source": "https://www.w3.org/TR/WCAG22/ + EN 301 549 V3.2.1 (виж паметта на Правния)"
     },
     {
-      "id": "claude-models", "manual": true, "ttlDays": 30,
-      "current": "Claude 5: Fable 5 (claude-fable-5) · Opus 5 (claude-opus-5) · Sonnet 5 (claude-sonnet-5); предишни: Opus 4.8/4.7/4.6, Sonnet 4.6, Haiku 4.5. Opus 4.8: $5/$25 на 1M",
-      "checkedAt": "2026-07-29",
-      "source": "среда на сесията + https://docs.claude.com (сверявай при --refresh)"
+      "id": "claude-models",
+      "manual": true,
+      "ttlDays": 30,
+      "current": "Claude 5: Fable 5.1 (claude-fable-5-1, най-новият общодостъпен; Mythos 5.1 е същият модел само за одобрени организации) · Opus 5 (claude-opus-5) · Sonnet 5 (claude-sonnet-5) · Haiku 4.5 (claude-haiku-4-5-20251001); предишни: Fable 5, Opus 4.8/4.7/4.6, Sonnet 4.6. Цени НЕ са сверени тук (Opus 4.8: $5/$25 на 1M — по стар запис).",
+      "checkedAt": "2026-09-02",
+      "source": "среда на сесията (системен контекст на Claude Code, 2026-09-02) + https://docs.claude.com — сверявай при --refresh"
     },
     {
-      "id": "chrome-mv", "manual": true, "ttlDays": 90,
+      "id": "chrome-mv",
+      "manual": true,
+      "ttlDays": 90,
       "current": "Manifest V3 е единственият приеман от Web Store; MV2 е мъртъв (исторически факт, не версия за следене)",
       "checkedAt": "2026-07-29",
       "source": "https://developer.chrome.com/docs/extensions/develop/migrate"
