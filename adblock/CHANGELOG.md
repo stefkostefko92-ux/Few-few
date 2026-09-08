@@ -21,6 +21,10 @@
   EasyPrivacy 8990, URLhaus 380; +355 домейн-специфични козметични правила) — 2
   месеца нови рекламни/tracker домейни. Верифицирано: 0 block правила достигат
   main_frame; бюджет 13 023 / 30 000 статични правила.
+- **YouTube embed bypass** (adversarial review): `ytBypass` вече проверява URL-а на
+  самия frame (`sender.url`, задава се от браузъра), не на таба — иначе YouTube
+  embed на чужд сайт се отхвърляше, макар bypass-ът нарочно да покрива `sub_frame`.
+  Reload само след потвърден `ok` от service worker-а.
 
 ## 4.4.1
 

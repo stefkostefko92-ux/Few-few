@@ -808,9 +808,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // YouTube hard-blocked us; a content script can't touch DNR, so it asks
       // the service worker to add the YouTube allow-all rule for the bypass
       // window BEFORE it reloads. Only then is the reload a clean client.
-      // Defence in depth: only a YouTube tab may request the bypass, so a
-      // spoofed enforcement element elsewhere can't switch blocking off.
-      const ytHost = hostFromUrl(sender.tab?.url || "");
+      // Defence in depth: only a content script running in a YouTube-origin
+      // FRAME may request the bypass (sender.url is browser-set, unspoofable).
+      // Frame URL, not tab URL: youtube_skip runs all_frames and the bypass
+      // rule covers sub_frame, so a YouTube embed on another site must pass.
+      const ytHost = hostFromUrl(sender.url || "");
       const isYt = !!ytHost && /(^|\.)youtube(-nocookie)?\.com$/.test(ytHost);
       if (!isYt) { sendResponse({ ok: false, reason: "not youtube" }); return false; }
       chrome.storage.local.set({ ytBypassUntil: Date.now() + YT_BYPASS_MS }, async () => {
