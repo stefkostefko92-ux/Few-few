@@ -1,0 +1,14 @@
+<%- include('../partials/shell-start', { active: 'brands' }) %>
+<h1><%= title %></h1>
+<% if (errors.length) { %><div class="flash error"><%= errors.join(' · ') %></div><% } %>
+<form method="post" action="<%= brand && brand.id ? '/admin/brands/' + brand.id : '/admin/brands' %>" class="stack">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label>Име<input name="name" required minlength="2" value="<%= brand ? brand.name : '' %>"></label>
+  <label>Slug (малки латински букви, цифри, тире)<input name="slug" required pattern="[a-z0-9-]{2,40}" value="<%= brand ? brand.slug : '' %>"></label>
+  <label>Език (BCP-47)<input name="language" required value="<%= brand ? brand.language : 'bg' %>"></label>
+  <label>Сайт<input type="url" name="websiteUrl" value="<%= brand && brand.websiteUrl ? brand.websiteUrl : '' %>"></label>
+  <label>Какво е продуктът (влиза в промпта)<textarea name="summary" required minlength="10"><%= brand ? brand.summary : '' %></textarea></label>
+  <label>Тон на глас, забрани, задължителни формулировки<textarea name="voice" required minlength="5"><%= brand ? brand.voice : '' %></textarea></label>
+  <div class="row"><button class="btn primary" type="submit">Запази</button><a class="btn" href="/admin/brands">Отказ</a></div>
+</form>
+<%- include('../partials/shell-end') %>

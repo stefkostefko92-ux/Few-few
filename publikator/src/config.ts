@@ -5,6 +5,8 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
   PORT: z.coerce.number().int().positive().default(4310),
   PUBLIC_BASE_URL: z.string().url(),
+  /** Express `trust proxy` — зад Nginx на същата машина е `loopback`. */
+  TRUST_PROXY: z.string().default('loopback'),
 
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
@@ -22,7 +24,9 @@ const schema = z.object({
     .default('instagram_business_basic,instagram_business_content_publish'),
 
   TOKEN_ENC_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, 'TOKEN_ENC_KEY трябва да е 32 байта в hex'),
-  ADMIN_API_TOKEN: z.string().min(32),
+
+  /** Име на издателя в приложението за TOTP кодове. */
+  TOTP_ISSUER: z.string().min(1).default('Публикатор'),
 
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
 });
@@ -43,4 +47,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 export function config(): AppConfig {
   cached ??= loadConfig();
   return cached;
+}
+
+export function isProduction(): boolean {
+  return config().NODE_ENV === 'production';
 }

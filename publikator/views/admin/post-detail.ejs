@@ -1,0 +1,84 @@
+<%- include('../partials/shell-start', { active: 'posts' }) %>
+<div class="row" style="justify-content:space-between">
+  <h1><span class="badge <%= post.status %>"><%= post.status %></span> <%= post.brand.name %> · <%= post.kind %><% if (post.aiAssisted) { %> <span class="badge">AI чернова</span><% } %></h1>
+  <a class="btn" href="/admin/posts">← всички</a>
+</div>
+<div class="grid2">
+  <section>
+    <h2>Преглед</h2>
+    <div class="preview"><%= post.caption %>
+
+<%= post.hashtags.join(' ') %></div>
+    <p class="muted">Медия: <a href="<%= post.mediaUrl %>" target="_blank" rel="noopener noreferrer"><%= post.mediaUrl %></a><% if (post.coverUrl) { %> · cover: <a href="<%= post.coverUrl %>" target="_blank" rel="noopener noreferrer">линк</a><% } %></p>
+    <p class="muted">Alt: <%= post.altText || '—' %></p>
+    <% if (post.topic) { %><p class="muted">Тема: <%= post.topic %></p><% } %>
+    <p class="muted">Създал: <%= post.createdByLabel || post.createdByType %> · <%= post.createdAt.toLocaleString('bg-BG') %></p>
+    <% if (post.approvedBy) { %><p class="muted">Одобрил: <%= post.approvedBy %> · <%= post.approvedAt ? post.approvedAt.toLocaleString('bg-BG') : '' %></p><% } %>
+    <% if (post.status === 'REJECTED') { %><div class="flash error">Отказан от <%= post.rejectedBy %>: <%= post.rejectionReason || 'без причина' %></div><% } %>
+    <% if (post.status === 'SCHEDULED' && post.scheduledAt) { %><p>Насрочен за <strong><%= post.scheduledAt.toLocaleString('bg-BG') %></strong></p><% } %>
+    <% if (post.status === 'PUBLISHED') { %><p>Публикуван <%= post.publishedAt ? post.publishedAt.toLocaleString('bg-BG') : '' %><% if (post.permalink) { %> — <a href="<%= post.permalink %>" target="_blank" rel="noopener noreferrer">виж в Instagram</a><% } %></p><% } %>
+    <% if (post.status === 'FAILED') { %><div class="flash error">Провал (опит <%= post.attempts %>): <span class="mono"><%= post.lastError %></span></div><% } %>
+
+    <h2>Линт</h2>
+    <% const findings = Array.isArray(post.lintFindings) ? post.lintFindings : []; %>
+    <% if (!findings.length) { %><p class="muted">Чисто.</p><% } else { %>
+    <table><tbody><% findings.forEach((f) => { %><tr><td><span class="badge <%= f.severity %>"><%= f.severity %></span></td><td class="mono"><%= f.rule %></td><td><%= f.message %></td></tr><% }) %></tbody></table>
+    <% } %>
+
+    <h2>Действия</h2>
+    <div class="row">
+      <% if ((post.status === 'DRAFT') && can('posts:approve')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/approve" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit">Одобри</button></form>
+      <% } %>
+      <% if ((post.status === 'DRAFT' || post.status === 'APPROVED') && can('posts:approve')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/reject" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="reason" placeholder="причина за отказ" style="max-width:260px"><button class="btn danger" type="submit">Откажи</button></form>
+      <% } %>
+      <% if (post.status === 'APPROVED' && can('posts:schedule')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/schedule" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="datetime-local" name="scheduledAt" required><button class="btn" type="submit">Насрочи</button></form>
+      <% } %>
+      <% if (post.status === 'APPROVED' && can('posts:publish')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/publish-now" class="inline" data-confirm="Публикуваш в Instagram веднага. Сигурен ли си?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit">Публикувай сега</button></form>
+      <% } %>
+      <% if (post.status === 'SCHEDULED' && can('posts:schedule')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/unschedule" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit">Отмени насрочването</button></form>
+      <% } %>
+      <% if (post.status === 'FAILED' && can('posts:publish')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/retry" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit">Върни за нов опит</button></form>
+      <% } %>
+    </div>
+
+    <h2>Дневник на публикуването</h2>
+    <% if (!post.logs.length) { %><p class="muted">Още няма стъпки.</p><% } else { %>
+    <table><thead><tr><th>Кога</th><th>Стъпка</th><th>OK</th><th>Детайл</th></tr></thead><tbody>
+    <% post.logs.forEach((l) => { %><tr><td class="muted"><%= l.createdAt.toLocaleString('bg-BG') %></td><td class="mono"><%= l.step %></td><td><%= l.ok ? '✓' : '✗' %></td><td class="mono"><%= l.detail ? JSON.stringify(l.detail) : '' %></td></tr><% }) %>
+    </tbody></table><% } %>
+  </section>
+
+  <section>
+    <% if ((post.status === 'DRAFT' || post.status === 'REJECTED') && can('posts:edit')) { %>
+    <h2>Редакция</h2>
+    <form method="post" action="/admin/posts/<%= post.id %>/edit" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Instagram акаунт<select name="accountId"><option value="">— няма —</option><% accounts.filter((a) => a.brandId === post.brandId).forEach((a) => { %><option value="<%= a.id %>" <%= post.accountId === a.id ? 'selected' : '' %>>@<%= a.username %></option><% }) %></select></label>
+      <label>Вид<select name="kind"><option value="IMAGE" <%= post.kind === 'IMAGE' ? 'selected' : '' %>>Снимка</option><option value="REELS" <%= post.kind === 'REELS' ? 'selected' : '' %>>Reel</option></select></label>
+      <label>URL на медията<input type="url" name="mediaUrl" required value="<%= post.mediaUrl %>"></label>
+      <label>Cover URL<input type="url" name="coverUrl" value="<%= post.coverUrl || '' %>"></label>
+      <label>Тема<input name="topic" value="<%= post.topic || '' %>" maxlength="500"></label>
+      <label>Caption<textarea name="caption" required maxlength="2200"><%= post.caption %></textarea></label>
+      <label>Хаштагове<input name="hashtags" value="<%= post.hashtags.join(' ') %>"></label>
+      <label>Alt текст<input name="altText" value="<%= post.altText %>"></label>
+      <button class="btn" type="submit">Запази и пре-линтвай</button>
+    </form>
+    <% } else { %>
+    <h2>Детайли</h2>
+    <table><tbody>
+      <tr><td class="muted">ID</td><td class="mono"><%= post.id %></td></tr>
+      <tr><td class="muted">Акаунт</td><td><%= post.account ? '@' + post.account.username + ' (' + post.account.status + ')' : '—' %></td></tr>
+      <tr><td class="muted">Контейнер</td><td class="mono"><%= post.containerId || '—' %></td></tr>
+      <tr><td class="muted">IG media id</td><td class="mono"><%= post.igMediaId || '—' %></td></tr>
+      <tr><td class="muted">Опити</td><td><%= post.attempts %></td></tr>
+    </tbody></table>
+    <% } %>
+  </section>
+</div>
+<%- include('../partials/shell-end') %>

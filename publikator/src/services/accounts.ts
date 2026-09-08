@@ -9,6 +9,7 @@ import {
   fetchProfile,
   refreshLongLivedToken,
 } from '../instagram/oauth.js';
+import { getPublishingQuota, type PublishingQuota } from '../instagram/publish.js';
 
 function expiryFrom(expiresInSeconds: number): Date {
   return new Date(Date.now() + expiresInSeconds * 1000);
@@ -89,4 +90,28 @@ export async function refreshExpiringTokens(withinDays = 10): Promise<{
   }
 
   return { refreshed, expired };
+}
+
+/** Спира акаунта и унищожава токена — нов OAuth е единственият път обратно. */
+export async function disconnectAccount(accountId: string): Promise<void> {
+  await prisma.instagramAccount.update({
+    where: { id: accountId },
+    data: { status: 'DISABLED', accessTokenEnc: '', tokenExpiresAt: new Date(0) },
+  });
+}
+
+/** Чете живата квота от Instagram и я кешира на акаунта за таблото. */
+export async function refreshAccountQuota(accountId: string): Promise<PublishingQuota> {
+  const account = await prisma.instagramAccount.findUniqueOrThrow({ where: { id: accountId } });
+  if (account.status !== 'ACTIVE') throw new Error('Акаунтът не е активен.');
+  const quota = await getPublishingQuota({
+    cfg: config(),
+    igUserId: account.igUserId,
+    accessToken: accountToken(account),
+  });
+  await prisma.instagramAccount.update({
+    where: { id: accountId },
+    data: { quotaUsed: quota.used, quotaTotal: quota.total, quotaCheckedAt: new Date() },
+  });
+  return quota;
 }

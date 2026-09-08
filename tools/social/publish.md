@@ -12,7 +12,7 @@ docker run -d -p 5000:5000 ghcr.io/gitroomhq/postiz-app:latest   # зад revers
 
 ## Официални API (по платформа)
 - **TikTok Content Posting API** — по подразбиране **draft/inbox** режим (без одит). Direct Post иска одобрение (седмици); без одит постовете са `SELF_ONLY`.
-- **Instagram Graph API** (Reels) — ~25 публикации/акаунт/24ч.
+- **Instagram Platform API** — 100 API-публикации/акаунт за плаващи 24ч (карусел = 1); нашият път е `publikator/` (чернова → човешко одобрение → публикуване), агентът стига до него през `tools/social/publikator.mjs` (само чернови, HMAC-подписано).
 - **YouTube Data API** (Shorts), **LinkedIn** — стандартни OAuth потоци.
 Креденшълите живеят на сървъра (sops/age), никога в репото.
 

@@ -34,23 +34,31 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
-    "test:integration": "tsx --test tests/integration/*.test.ts"
+    "test:integration": "tsx --test tests/integration/*.test.ts",
+    "owner:create": "node dist/scripts/create-owner.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@prisma/client": "^6.2.1",
+    "argon2": "^0.45.1",
     "bullmq": "^5.34.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^6.0.1",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "ioredis": "^5.4.2",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
+    "qrcode": "^1.5.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
+    "@types/qrcode": "^1.5.6",
     "prettier": "^3.4.2",
     "prisma": "^6.2.1",
     "tsx": "^4.19.2",

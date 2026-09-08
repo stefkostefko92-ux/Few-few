@@ -45,3 +45,12 @@ export async function scheduleTokenRefresh(): Promise<void> {
     { repeat: { pattern: '0 3 * * *' }, jobId: 'token-refresh' },
   );
 }
+
+/** Маха чакащата задача на пост (отмяна/отказ/повторение) — идемпотентно. */
+export async function removeScheduledJob(postId: string): Promise<void> {
+  const job = await publishQueue().getJob(`post:${postId}`);
+  if (job) {
+    const state = await job.getState();
+    if (state === 'delayed' || state === 'waiting' || state === 'prioritized') await job.remove();
+  }
+}

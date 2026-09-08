@@ -1,0 +1,22 @@
+<%- include('../partials/shell-start', { active: 'posts' }) %>
+<div class="row" style="justify-content:space-between"><h1>Постове <span class="muted" style="font-size:15px"><%= total %></span></h1><% if (can('posts:create')) { %><a class="btn primary" href="/admin/posts/new">Нова чернова</a><% } %></div>
+<form method="get" action="/admin/posts" class="filters">
+  <label>Статус<select name="status"><option value="">всички</option><% statuses.forEach((s) => { %><option value="<%= s %>" <%= s === status ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
+  <label>Бранд<select name="brand"><option value="">всички</option><% brands.forEach((b) => { %><option value="<%= b.slug %>" <%= b.slug === brandSlug ? 'selected' : '' %>><%= b.name %></option><% }) %></select></label>
+  <label>&nbsp;<button class="btn" type="submit">Филтрирай</button></label>
+</form>
+<table><thead><tr><th>Статус</th><th>Бранд / акаунт</th><th>Вид</th><th>Caption</th><th>Създал</th><th>Кога</th></tr></thead><tbody>
+<% posts.forEach((p) => { %>
+  <tr>
+    <td><span class="badge <%= p.status %>"><%= p.status %></span></td>
+    <td><%= p.brand.name %><div class="muted">@<%= p.account ? p.account.username : '—' %></div></td>
+    <td><%= p.kind %><% if (p.aiAssisted) { %> <span class="badge">AI</span><% } %></td>
+    <td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 80) %><%= p.caption.length > 80 ? '…' : '' %></a><% if (p.status === 'SCHEDULED' && p.scheduledAt) { %><div class="muted">за <%= p.scheduledAt.toLocaleString('bg-BG') %></div><% } %></td>
+    <td class="muted"><%= p.createdByLabel || p.createdByType %></td>
+    <td class="muted"><%= p.createdAt.toLocaleString('bg-BG') %></td>
+  </tr>
+<% }) %>
+<% if (!posts.length) { %><tr><td colspan="6" class="muted">Няма постове по този филтър.</td></tr><% } %>
+</tbody></table>
+<% if (pages > 1) { %><div class="pager"><% for (let i = 1; i <= pages; i += 1) { %><a class="btn small <%= i === page ? 'primary' : '' %>" href="/admin/posts?status=<%= status %>&brand=<%= brandSlug %>&page=<%= i %>"><%= i %></a><% } %></div><% } %>
+<%- include('../partials/shell-end') %>

@@ -1,0 +1,26 @@
+<%- include('head') %>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Публи<span>катор</span></div>
+    <nav class="nav">
+      <a href="/admin" class="<%= active === 'dashboard' ? 'active' : '' %>">Табло</a>
+      <a href="/admin/posts" class="<%= active === 'posts' ? 'active' : '' %>">Постове</a>
+      <% if (can('posts:create')) { %><a href="/admin/posts/new" class="<%= active === 'new' ? 'active' : '' %>">Нова чернова</a><% } %>
+      <a href="/admin/brands" class="<%= active === 'brands' ? 'active' : '' %>">Брандове</a>
+      <a href="/admin/accounts" class="<%= active === 'accounts' ? 'active' : '' %>">Instagram акаунти</a>
+      <% if (can('audit:view') || can('users:manage') || can('keys:manage') || can('settings:view')) { %><small>Управление</small><% } %>
+      <% if (can('users:manage')) { %><a href="/admin/users" class="<%= active === 'users' ? 'active' : '' %>">Потребители</a><% } %>
+      <% if (can('keys:manage')) { %><a href="/admin/keys" class="<%= active === 'keys' ? 'active' : '' %>">Агентски ключове</a><% } %>
+      <% if (can('audit:view')) { %><a href="/admin/audit" class="<%= active === 'audit' ? 'active' : '' %>">Одит</a><% } %>
+      <% if (can('settings:view')) { %><a href="/admin/settings" class="<%= active === 'settings' ? 'active' : '' %>">Настройки</a><% } %>
+    </nav>
+    <div class="who">
+      <% if (currentUser) { %>
+        <div><a href="/admin/profile"><%= currentUser.name %></a></div>
+        <div class="muted"><%= currentUser.email %> · <%= currentRole %></div>
+        <form method="post" action="/admin/logout" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small" type="submit">Изход</button></form>
+      <% } %>
+    </div>
+  </aside>
+  <main>
+    <% if (flash) { %><div class="flash <%= flash.kind %>"><%= flash.text %></div><% } %>

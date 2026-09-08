@@ -1,0 +1,36 @@
+<%- include('../partials/shell-start', { active: 'users' }) %>
+<h1>Потребители</h1>
+<section class="card" style="margin-bottom:18px">
+  <h2>Нов потребител</h2>
+  <form method="post" action="/admin/users" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="row">
+      <label>Име<input name="name" required minlength="2"></label>
+      <label>Имейл<input type="email" name="email" required></label>
+      <label>Роля<select name="role" required><% roles.forEach((r) => { %><option value="<%= r %>"><%= roleLabel[r] %> (<%= r %>)</option><% }) %></select></label>
+      <label>Начална парола (≥12, букви и цифри)<input type="password" name="password" required minlength="12" autocomplete="new-password"></label>
+    </div>
+    <button class="btn primary" type="submit">Създай</button>
+  </form>
+</section>
+<table><thead><tr><th>Потребител</th><th>Роля</th><th>Състояние</th><th>2FA</th><th>Последен вход</th><th>Действия</th></tr></thead><tbody>
+<% users.forEach((u) => { %>
+  <tr>
+    <td><%= u.name %><div class="muted"><%= u.email %></div></td>
+    <td><% if (canManage(u.role) && u.id !== currentUser.id) { %>
+      <form method="post" action="/admin/users/<%= u.id %>/role" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><select name="role"><% roles.forEach((r) => { %><option value="<%= r %>" <%= r === u.role ? 'selected' : '' %>><%= roleLabel[r] %></option><% }) %></select><button class="btn small" type="submit">Смени</button></form>
+    <% } else { %><%= roleLabel[u.role] %><% } %></td>
+    <td><%= u.active ? 'активен' : 'спрян' %><% if (u.lockedUntil && u.lockedUntil > new Date()) { %> · заключен<% } %><div class="muted"><%= u._count.sessions %> сесии</div></td>
+    <td><%= u.totpEnabledAt ? '✓' : '—' %></td>
+    <td class="muted"><%= u.lastLoginAt ? u.lastLoginAt.toLocaleString('bg-BG') : 'никога' %></td>
+    <td class="row">
+      <% if (canManage(u.role) && u.id !== currentUser.id) { %>
+        <form method="post" action="/admin/users/<%= u.id %>/toggle" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small <%= u.active ? 'danger' : '' %>" type="submit"><%= u.active ? 'Спри' : 'Активирай' %></button></form>
+        <% if (u.totpEnabledAt) { %><form method="post" action="/admin/users/<%= u.id %>/reset-2fa" class="inline" data-confirm="Нулираш втория фактор на този потребител?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small" type="submit">Нулирай 2FA</button></form><% } %>
+        <form method="post" action="/admin/users/<%= u.id %>/reset-password" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="password" name="password" placeholder="нова парола" minlength="12" required style="max-width:160px" autocomplete="new-password"><button class="btn small" type="submit">Смени паролата</button></form>
+      <% } else { %><span class="muted">—</span><% } %>
+    </td>
+  </tr>
+<% }) %>
+</tbody></table>
+<%- include('../partials/shell-end') %>

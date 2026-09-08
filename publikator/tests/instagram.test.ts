@@ -20,7 +20,6 @@ const cfg: AppConfig = loadConfig({
   IG_APP_SECRET: 'app-secret',
   IG_REDIRECT_URI: 'https://publikator.example.com/auth/instagram/callback',
   TOKEN_ENC_KEY: 'a'.repeat(64),
-  ADMIN_API_TOKEN: 'x'.repeat(40),
 } as NodeJS.ProcessEnv);
 
 interface Call {

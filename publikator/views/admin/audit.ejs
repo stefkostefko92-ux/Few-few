@@ -1,0 +1,14 @@
+<%- include('../partials/shell-start', { active: 'audit' }) %>
+<div class="row" style="justify-content:space-between"><h1>Одит <span class="muted" style="font-size:15px"><%= total %></span></h1><a class="btn" href="/admin/audit?verify=1&action=<%= actionFilter %>">Провери веригата</a></div>
+<% if (chain) { %><div class="flash <%= chain.ok ? 'ok' : 'error' %>"><%= chain.ok ? 'Веригата е цяла: ' + chain.count + ' записа, нито един подправен.' : 'ВЕРИГАТА Е СЧУПЕНА при запис №' + chain.brokenAt + ' — някой е променил стар запис.' %></div><% } %>
+<form method="get" action="/admin/audit" class="filters">
+  <label>Действие започва с<input name="action" value="<%= actionFilter %>" placeholder="post. · auth. · apikey."></label>
+  <label>&nbsp;<button class="btn" type="submit">Филтрирай</button></label>
+</form>
+<table><thead><tr><th>#</th><th>Кога</th><th>Кой</th><th>Действие</th><th>Обект</th><th>Детайл</th><th>IP</th></tr></thead><tbody>
+<% rows.forEach((r) => { %>
+  <tr><td class="muted"><%= r.id %></td><td class="muted"><%= r.at.toLocaleString('bg-BG') %></td><td><span class="badge"><%= r.actorType %></span> <%= r.actorLabel %></td><td class="mono"><%= r.action %></td><td class="mono"><%= r.targetType ? r.targetType + ' ' + (r.targetId || '') : '' %></td><td class="mono"><%= r.detail ? JSON.stringify(r.detail) : '' %></td><td class="mono muted"><%= r.ip || '' %></td></tr>
+<% }) %>
+</tbody></table>
+<% if (pages > 1) { %><div class="pager"><% for (let i = 1; i <= pages; i += 1) { %><a class="btn small <%= i === page ? 'primary' : '' %>" href="/admin/audit?action=<%= actionFilter %>&page=<%= i %>"><%= i %></a><% } %></div><% } %>
+<%- include('../partials/shell-end') %>

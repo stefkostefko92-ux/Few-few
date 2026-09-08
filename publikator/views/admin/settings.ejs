@@ -1,0 +1,26 @@
+<%- include('../partials/shell-start', { active: 'settings' }) %>
+<h1>Настройки</h1>
+<p class="muted">Само факти без тайни — стойностите живеят на сървъра. Промяна = нов деплой с нова среда.</p>
+<div class="grid2">
+  <section class="card"><h2>Instagram Platform API</h2>
+    <table><tbody>
+      <tr><td class="muted">Версия на Graph API</td><td class="mono"><%= settings.graphVersion %></td></tr>
+      <tr><td class="muted">Разрешения</td><td class="mono"><%= settings.scopes.join(' ') %></td></tr>
+      <tr><td class="muted">Redirect URI</td><td class="mono"><%= settings.redirectUri %></td></tr>
+      <tr><td class="muted">Meta App ID</td><td><%= settings.appIdSet ? 'зададен' : 'ЛИПСВА' %></td></tr>
+    </tbody></table>
+  </section>
+  <section class="card"><h2>Система</h2>
+    <table><tbody>
+      <tr><td class="muted">Среда</td><td class="mono"><%= settings.environment %></td></tr>
+      <tr><td class="muted">Публичен адрес</td><td class="mono"><%= settings.publicBaseUrl %></td></tr>
+      <tr><td class="muted">Trust proxy</td><td class="mono"><%= settings.trustProxy %></td></tr>
+      <tr><td class="muted">Генериране с модел</td><td><%= settings.anthropicSet ? 'включено' : 'изключено (няма ключ)' %></td></tr>
+      <tr><td class="muted">TOTP издател</td><td><%= settings.totpIssuer %></td></tr>
+      <tr><td class="muted">Активни потребители</td><td><%= stats.users %></td></tr>
+      <tr><td class="muted">Активни агентски ключове</td><td><%= stats.keys %></td></tr>
+      <tr><td class="muted">Живи сесии</td><td><%= stats.sessions %></td></tr>
+    </tbody></table>
+  </section>
+</div>
+<%- include('../partials/shell-end') %>

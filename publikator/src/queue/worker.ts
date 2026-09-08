@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq';
 import { logger } from '../logger.js';
+import { purgeExpiredSessions } from '../auth/sessions.js';
 import { refreshExpiringTokens } from '../services/accounts.js';
 import { publishPost } from '../services/publish.js';
 import {
@@ -19,8 +20,9 @@ async function main(): Promise<void> {
     async (job) => {
       if (job.name === REFRESH_JOB) {
         const result = await refreshExpiringTokens();
-        logger.info(result, 'подновяване на токени');
-        return result;
+        const purgedSessions = await purgeExpiredSessions();
+        logger.info({ ...result, purgedSessions }, 'подновяване на токени и чистене на сесии');
+        return { ...result, purgedSessions };
       }
       if (job.name === PUBLISH_JOB) {
         const { postId } = job.data as PublishJobData;

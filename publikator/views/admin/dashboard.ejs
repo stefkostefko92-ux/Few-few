@@ -1,0 +1,53 @@
+<%- include('../partials/shell-start', { active: 'dashboard' }) %>
+<h1>Табло</h1>
+<div class="cards">
+  <a class="card" href="/admin/posts?status=DRAFT"><div class="n"><%= counts.DRAFT || 0 %></div><div class="l">чернови за преглед</div></a>
+  <a class="card" href="/admin/posts?status=APPROVED"><div class="n"><%= counts.APPROVED || 0 %></div><div class="l">одобрени, ненасрочени</div></a>
+  <a class="card" href="/admin/posts?status=SCHEDULED"><div class="n"><%= counts.SCHEDULED || 0 %></div><div class="l">насрочени</div></a>
+  <a class="card" href="/admin/posts?status=PUBLISHED"><div class="n"><%= publishedWeek %></div><div class="l">публикувани за 7 дни</div></a>
+  <a class="card" href="/admin/posts?status=FAILED"><div class="n"><%= counts.FAILED || 0 %></div><div class="l">провалени</div></a>
+  <a class="card" href="/admin/accounts"><div class="n"><%= accounts.length %></div><div class="l">активни акаунти</div></a>
+</div>
+
+<% if (expiringAccounts.length) { %>
+<div class="flash error">Токени за внимание:
+  <% expiringAccounts.forEach((a) => { %> <strong>@<%= a.username %></strong> (<%= a.brand.name %>) — <%= a.status === 'TOKEN_EXPIRED' ? 'изтекъл, нужен нов OAuth' : 'изтича ' + a.tokenExpiresAt.toLocaleDateString('bg-BG') %>;<% }) %>
+  <a href="/admin/accounts">към акаунтите</a>
+</div>
+<% } %>
+
+<div class="grid2">
+  <section>
+    <h2>Следващи публикации</h2>
+    <% if (!upcoming.length) { %><p class="muted">Нищо насрочено.</p><% } else { %>
+    <table><thead><tr><th>Кога</th><th>Бранд</th><th>Акаунт</th><th>Caption</th></tr></thead><tbody>
+    <% upcoming.forEach((p) => { %>
+      <tr><td><%= p.scheduledAt ? p.scheduledAt.toLocaleString('bg-BG') : '—' %></td><td><%= p.brand.name %></td><td>@<%= p.account ? p.account.username : '—' %></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 60) %><%= p.caption.length > 60 ? '…' : '' %></a></td></tr>
+    <% }) %></tbody></table><% } %>
+  </section>
+  <section>
+    <h2>Чернови за преглед</h2>
+    <% if (!recentDrafts.length) { %><p class="muted">Няма чернови.</p><% } else { %>
+    <table><thead><tr><th>Бранд</th><th>Кой</th><th>Caption</th></tr></thead><tbody>
+    <% recentDrafts.forEach((p) => { %>
+      <tr><td><%= p.brand.name %></td><td class="muted"><%= p.createdByLabel || p.createdByType %></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 60) %><%= p.caption.length > 60 ? '…' : '' %></a></td></tr>
+    <% }) %></tbody></table><% } %>
+  </section>
+</div>
+
+<% if (failed.length) { %>
+<h2>Провалени</h2>
+<table><thead><tr><th>Бранд</th><th>Грешка</th><th>Опити</th><th></th></tr></thead><tbody>
+<% failed.forEach((p) => { %>
+  <tr><td><%= p.brand.name %></td><td class="mono"><%= (p.lastError || '').slice(0, 120) %></td><td><%= p.attempts %></td><td><a href="/admin/posts/<%= p.id %>">отвори</a></td></tr>
+<% }) %></tbody></table>
+<% } %>
+
+<h2>Квоти по акаунт</h2>
+<table><thead><tr><th>Акаунт</th><th>Бранд</th><th>Квота (24ч)</th><th>Проверена</th><th>Токен до</th></tr></thead><tbody>
+<% accounts.forEach((a) => { %>
+  <tr><td>@<%= a.username %></td><td><%= a.brand.name %></td><td><%= a.quotaTotal ? a.quotaUsed + ' / ' + a.quotaTotal : '—' %></td><td class="muted"><%= a.quotaCheckedAt ? a.quotaCheckedAt.toLocaleString('bg-BG') : 'непроверена' %></td><td><%= a.tokenExpiresAt.toLocaleDateString('bg-BG') %></td></tr>
+<% }) %>
+<% if (!accounts.length) { %><tr><td colspan="5" class="muted">Няма активни акаунти — свържи от „Instagram акаунти“.</td></tr><% } %>
+</tbody></table>
+<%- include('../partials/shell-end') %>

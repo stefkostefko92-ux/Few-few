@@ -15,7 +15,6 @@ process.env.IG_APP_ID ??= '123456';
 process.env.IG_APP_SECRET ??= 'app-secret';
 process.env.IG_REDIRECT_URI ??= 'https://publikator.example.com/auth/instagram/callback';
 process.env.TOKEN_ENC_KEY ??= 'a'.repeat(64);
-process.env.ADMIN_API_TOKEN ??= 'x'.repeat(40);
 process.env.DATABASE_URL ??= 'postgresql://postgres@127.0.0.1:5432/publikator_test';
 
 const { config } = await import('../../src/config.js');
@@ -87,7 +86,7 @@ test('пътят чернова → одобрение → публикуван�
 
   await assert.rejects(() => publishPost(post.id), PostStateError);
 
-  const approved = await approvePost(post.id, 'stefan');
+  const approved = await approvePost(post.id, { type: 'HUMAN', id: 'user-1', label: 'stefan' });
   assert.equal(approved.status, 'APPROVED');
   assert.equal(approved.approvedBy, 'stefan');
 
@@ -141,7 +140,10 @@ test('блокиращ линт спира одобрението', { skip: !has
     altText: 'Описание.',
     mediaUrl: 'https://cdn.example.com/a.jpg',
   });
-  await assert.rejects(() => approvePost(post.id, 'stefan'), PostStateError);
+  await assert.rejects(
+    () => approvePost(post.id, { type: 'HUMAN', id: 'user-1', label: 'stefan' }),
+    PostStateError,
+  );
   const stored = await prisma.post.findUniqueOrThrow({ where: { id: post.id } });
   assert.equal(stored.status, 'DRAFT');
 });
