@@ -450,6 +450,14 @@ const SCRIPTLET_SETCONST = new Set([
   "false", "true", "null", "undefined", "noopFunc", "trueFunc", "falseFunc",
   "", "emptyStr", "emptyArr", "emptyObj", "''",
 ]);
+// Attributes whose removal downgrades page security/semantics — never removable live.
+const SCRIPTLET_ATTR_DENY = /^(sandbox|type|name|autocomplete|required|disabled|readonly|rel|integrity|crossorigin|nonce|csp|referrerpolicy|href|src|srcdoc|action|method|formaction|allow)$/i;
+const scriptletAttrsOk = (list) => {
+  const parts = String(list).split(/[\s,|]+/).filter(Boolean);
+  return parts.length > 0 && parts.every((p) => /^[a-zA-Z][\w-]*$/.test(p) && !SCRIPTLET_ATTR_DENY.test(p));
+};
+const SCRIPTLET_TAG_OK = /^[a-z][a-z0-9-]*$/i;
+const SCRIPTLET_TAG_DENY = /^(input|textarea|select|option|button|form|label|html|body|head)$/i;
 const scriptletArgSafe = (a) =>
   typeof a === "string" && a.length <= 400 &&
   !/__proto__|constructor|prototype/.test(a) &&
@@ -476,11 +484,17 @@ function validateScriptlet(rawName, args) {
     case "no-fetch-if":
     case "no-window-open-if":
       return ok(n === 1);
+    case "remove-attr":
+      return ok(n >= 1 && n <= 2 && scriptletAttrsOk(args[0]) && (n < 2 || safeSelector(args[1])));
+    case "remove-class":
+      return ok(n >= 1 && n <= 2 && (n < 2 || safeSelector(args[1])));
+    case "href-sanitizer":
+      return ok(n >= 1 && n <= 2 && safeSelector(args[0]));
     case "remove-node-text":
-      return ok(n === 2);
+      return ok(n === 2 && SCRIPTLET_TAG_OK.test(args[0]) && !SCRIPTLET_TAG_DENY.test(args[0]));
     case "nowebrtc":
       return ok(n === 0);
-    default: // aeld, json-prune, remove-attr/-class, href-sanitizer
+    default: // addEventListener-defuser, json-prune
       return ok(n >= 1 && n <= 2);
   }
 }
@@ -492,7 +506,8 @@ function sanitizeScriptlets(x) {
     if (!it || typeof it !== "object") continue;
     const h = typeof it.h === "string" ? it.h.trim().toLowerCase() : "";
     if (h !== "" && !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(h)) continue;
-    if (h && isProtected(h)) continue; // YouTube & co. are handled by dedicated code
+    if (!h) continue;             // live = explicit host only (global anti-adblock is baked in MAP)
+    if (isProtected(h)) continue; // YouTube & co. are handled by dedicated code
     const d = validateScriptlet(it.n, Array.isArray(it.a) ? it.a : []);
     if (d) out.push({ h, d });
   }

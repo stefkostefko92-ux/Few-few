@@ -9,8 +9,22 @@ Live scriptlet канал + нови scriptlet-и + toggle за privacy рулс
   билда), доставка към MAIN-world engine-а като JSON низ на DOM събитие, и
   **ре-валидация в самия engine** (allowlist = вградените имена, argument safety,
   set-constant речник). Страница може само да (пре)конфигурира блокирането срещу
-  СЕБЕ СИ с вече позволени директиви — без ескалация; не може да блокира нашата
-  доставка (без `once`, дублите се игнорират). Никога върху YouTube/core CDN хостове.
+  СЕБЕ СИ с вече позволени директиви — без ескалация, без code/network sink;
+  кооперираща страница може само да се откаже от live директиви за себе си
+  (каналът не е timing-critical). Live директивите са САМО с изричен host и никога
+  върху YouTube/core CDN (двойно: service worker + engine).
+- **Adversarial review на канала (2 Medium + 2 Low, всички затворени):** ReDoS
+  guard-ът в `toReg` беше заобиколим (`((.)|(.))+~`, `(.?){30}` — структурните
+  проверки са слепи през вложени скоби, `?` не се броеше) → вече се отхвърля ВСЯКА
+  квантифицирана група + се брои `?`; отхвърлен regex мачва НИЩО (fail-safe), не
+  „всичко". Същото в `content.js`. Глобалните live директиви можеха да минат на
+  YouTube → live = само изричен host + engine-ът никога не прилага live на core
+  video/CDN. Listener-ът е capture на `window` (преди всеки page скрипт, без
+  handle за махане). Live селектори/атрибути/тагове минават през `safeSelector`
+  + denylist (`sandbox`, `type`, `href`, `src`… не се махат; `input/textarea/form`
+  не се таргетират) — в service worker-а И в engine-а. `JSON.parse` е capture-нат
+  при старт; `it.d` се чете веднъж и се материализира (poisoned getter не може да
+  смени стойност между валидация и изпълнение); `hasOwnProperty` в `runDirective`.
   Hook-овете се слагат при пристигане (след document_start) → за не-timing-critical
   директиви; timing-critical остават печени при билда. Нула remote code.
 - **Нови scriptlet-и:** `href-sanitizer` (пренаписва tracking/redirect линкове към

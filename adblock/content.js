@@ -159,8 +159,9 @@
     // ReDoS guard: капваме дължината И броя квантори (*, +, {n}). Един квантор
     // е линеен; два+ подредени (напр. [a-z]*[a-z]*x) дават полиномиален/
     // катастрофичен backtracking, който замразява таба.
-    const q = (m[1].match(/[*+]|\{\d/g) || []).length;
+    const q = (m[1].match(/[*+?]|\{\d/g) || []).length;
     if (m[1].length > 200 || q > 1) return null;
+    if (/\)[*+?{]/.test(m[1])) return null; // any quantified group is ReDoS-prone (nested parens hide from [^)]* scans)
     try {
       return new RegExp(m[1], m[2]);
     } catch {

@@ -114,7 +114,10 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
   `scriptlets: [{h, n, a}]` (само ДАННИ). background канонизира алиасите и валидира
   като билда; content.js подава списъка като JSON низ на DOM събитие; engine-ът го
   **ре-валидира** (allowlist = IMPL ключове, argument safety, set-constant речник),
-  филтрира по host и игнорира дубли (страница не може да блокира нашата доставка).
+  филтрира по host и игнорира дубли. Честно: кооперираща страница може само да се
+  откаже от live директиви за СЕБЕ СИ (без ескалация, без code/network sink). Live =
+  само изричен host; никога на YouTube/core CDN (service worker + engine). Селектори/
+  атрибути/тагове минават през safeSelector + denylist на двата слоя.
   Level 2 = hook-овете се слагат при пристигане (след document_start) — за
   не-timing-critical директиви; timing-critical остават печени в MAP.
 - **`trusted-*` варианти** — само от нашия Ed25519-подписан канал; не в v1.
