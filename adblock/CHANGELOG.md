@@ -25,6 +25,14 @@ Live scriptlet канал + нови scriptlet-и + toggle за privacy рулс
   не се таргетират) — в service worker-а И в engine-а. `JSON.parse` е capture-нат
   при старт; `it.d` се чете веднъж и се материализира (poisoned getter не може да
   смени стойност между валидация и изпълнение); `hasOwnProperty` в `runDirective`.
+- **Red-team (Разбивача) след поправките — 3 възпроизведени, 0 HIGH, всички затворени:**
+  полиномен ReDoS `/.*.*=/` (q=2, без група) → квантори ≤1 (паритет с `content.js`);
+  `FORM_ATTR` хващаше само пълни литерали (`[type^=pass]`, `[name$=pwd]`,
+  `[autocomplete=cc-number]` минаваха) → чувствителни токени навсякъде в стойността +
+  `id/class/aria-label`, синхронно в engine и service worker (пази и live cosmetic);
+  подменен `Array.prototype.slice` разцепваше валидирано/изпълнено (само самонараняване)
+  → `slice`/`isArray`/`hasOwnProperty` capture-нати при старт. Издържали: cross-frame/
+  cross-world ескалация, атрибутна denylist, NEVER_LIVE/homograph/IDN, експоненциален ReDoS.
   Hook-овете се слагат при пристигане (след document_start) → за не-timing-critical
   директиви; timing-critical остават печени при билда. Нула remote code.
 - **Нови scriptlet-и:** `href-sanitizer` (пренаписва tracking/redirect линкове към

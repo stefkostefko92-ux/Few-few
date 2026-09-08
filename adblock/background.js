@@ -401,7 +401,10 @@ const UNSAFE_SELECTORS = new Set([
 const FORM_TARGET = /(^|[\s>+~,(])(input|button|select|textarea|form|label|fieldset|option)([\s>+~,.:\[)#]|$)/i;
 // Атрибутен пласт: селектор, таргетиращ форм-семантично поле (парола/логин/…)
 // без изричен таг (напр. [type=password]) — иначе FORM_TARGET го пропуска.
-const FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder)\s*[*^$|~]?=\s*["']?(password|email|tel|current-password|new-password|username|user|login|otp|card|cvc|cvv)/i;
+// Sensitive tokens ANYWHERE in the value (not just full literals): [type^=pass],
+// [name$=pwd], [autocomplete=cc-number], [id*=password] are refused; id/class/
+// aria-label included since they also target fields. Mirrored in engine.js.
+const FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder|id|class|aria-label)\s*[*^$|~]?=\s*["']?[^\]"']*?(pass|pwd|\bpin\b|secret|token|cc-|cvc|cvv|otp|ssn|iban|login|user|email|tel\b|card[-_ ]?num)/i;
 // Универсален субект (* след начало/комбинатор) или водещ псевдо (:not/:has…) →
 // селектор без реален субект-елемент = мач върху (почти) цялата страница.
 const UNIVERSAL = /(^|[\s>+~,(])\*(?![=\]])/;

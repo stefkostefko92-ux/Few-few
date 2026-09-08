@@ -21,6 +21,9 @@
   // Captured before any page script or IMPL (json-prune) can wrap them.
   var nativeParse = JSON.parse;
   var nativeStringify = JSON.stringify;
+  var nativeSlice = Array.prototype.slice;
+  var nativeIsArray = Array.isArray;
+  var nativeHasOwn = Object.prototype.hasOwnProperty;
 
   // ---- shared helpers -----------------------------------------------------
 
@@ -40,7 +43,9 @@
       // scans like /\([^)]*…\)/ are blind across nested ")" so we don't rely
       // on them. Rejected patterns match NOTHING (see needleMatcher).
       var q = (body.match(/[*+?]|\{\d/g) || []).length;
-      if (body.length > 200 || q > 2) return null;
+      // q ≤ 1: two quantifiers already allow polynomial blowup (/.*.*=/ ≈ 4s
+      // on a 5k string) — parity with content.js.
+      if (body.length > 200 || q > 1) return null;
       if (/\)[*+?{]/.test(body)) return null;
       try {
         return new RegExp(body, m[2].replace(/[^gimsuy]/g, ""));
@@ -461,18 +466,20 @@
     var chain = [""]; // global bucket always runs
     if (host) {
       var parts = host.split(".");
-      for (var i = 0; i < parts.length - 1; i++) chain.push(parts.slice(i).join("."));
+      // nativeSlice: a page-replaced Array.prototype.slice must not corrupt the
+      // host chain (it would silently drop every live directive for this frame).
+      for (var i = 0; i < parts.length - 1; i++) chain.push(nativeSlice.call(parts, i).join("."));
     }
     return chain;
   }
 
   function runDirective(d) {
-    if (!Array.isArray(d) || !d.length) return;
+    if (!nativeIsArray(d) || !d.length) return;
     var name = d[0];
-    if (typeof name !== "string" || !Object.prototype.hasOwnProperty.call(IMPL, name)) return;
+    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return;
     var fn = IMPL[name];
     if (typeof fn !== "function") return;
-    try { fn.apply(null, d.slice(1)); } catch (e) {}
+    try { fn.apply(null, nativeSlice.call(d, 1)); } catch (e) {}
   }
 
   // ---- bootstrap: baked directives ----------------------------------------
@@ -503,7 +510,10 @@
   // Same selector policy as the service worker's safeSelector: never target
   // form controls / password fields / the whole page from a live directive.
   var FORM_TARGET = /(^|[\s>+~,(])(input|button|select|textarea|form|label|fieldset|option)([\s>+~,.:\[)#]|$)/i;
-  var FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder)\s*[*^$|~]?=\s*["']?(password|email|tel|current-password|new-password|username|user|login|otp|card|cvc|cvv)/i;
+  // Sensitive tokens ANYWHERE in the value (not just as a full literal), so
+  // [type^=pass], [name$=pwd], [autocomplete=cc-number], [id*=password] are
+  // all refused; id/class/aria-label included since they also target fields.
+  var FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder|id|class|aria-label)\s*[*^$|~]?=\s*["']?[^\]"']*?(pass|pwd|\bpin\b|secret|token|cc-|cvc|cvv|otp|ssn|iban|login|user|email|tel\b|card[-_ ]?num)/i;
   var UNIVERSAL = /(^|[\s>+~,(])\*(?![=\]])/;
   var UNSAFE_SEL = ["*", "html", "body", ":root", "head", "div", "span", "a", "img",
     "main", "section", "article", "video", "iframe", "form", "input", "button",
@@ -540,9 +550,9 @@
       !/<\/?script|<\/?style|-->/i.test(a);
   }
   function directiveOk(d) {
-    if (!Array.isArray(d) || d.length < 1 || d.length > 3) return false;
-    var name = d[0], args = d.slice(1);
-    if (typeof name !== "string" || !Object.prototype.hasOwnProperty.call(IMPL, name)) return false;
+    if (!nativeIsArray(d) || d.length < 1 || d.length > 3) return false;
+    var name = d[0], args = nativeSlice.call(d, 1);
+    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return false;
     for (var k = 0; k < args.length; k++) if (!argOk(args[k])) return false;
     switch (name) {
       case "set-constant":
@@ -576,7 +586,7 @@
   function applyLive(raw) {
     var items;
     try { items = nativeParse(String(raw)); } catch (e) { return; }
-    if (!Array.isArray(items)) return;
+    if (!nativeIsArray(items)) return;
     var chain = hostChain();
     for (var p = 0; p < chain.length; p++) if (NEVER_LIVE.indexOf(chain[p]) >= 0) return;
     for (var i = 0; i < items.length && i < 500; i++) {
@@ -586,8 +596,8 @@
       // validation and execution.
       var h = it.h, d = it.d;
       if (typeof h !== "string" || h === "" || chain.indexOf(h) < 0) continue; // explicit host only
-      if (!Array.isArray(d)) continue;
-      d = Array.prototype.slice.call(d);
+      if (!nativeIsArray(d)) continue;
+      d = nativeSlice.call(d);   // native, so a page-replaced slice cannot split validate/execute
       if (!directiveOk(d)) continue;
       var key = nativeStringify(d);
       if (liveSeen[key]) continue;                 // dedupe: re-delivery / replay
