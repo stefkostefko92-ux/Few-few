@@ -1,0 +1,124 @@
+// Публикатор — схема на данните. PostgreSQL, миграции през `prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Бранд = един наш продукт/профил, за който произвеждаме съдържание.
+model Brand {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String
+  /// Кратко описание на продукта — влиза в промпта при генериране.
+  summary    String
+  /// Тон на глас, забрани, задължителни формулировки.
+  voice      String
+  /// BCP-47, напр. „bg“, „it“, „en“.
+  language   String   @default("bg")
+  websiteUrl String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  accounts InstagramAccount[]
+  posts    Post[]
+}
+
+/// Instagram професионален акаунт (Business/Creator), свързан през OAuth.
+/// Акаунтът се СЪЗДАВА РЪЧНО от човек — Meta забранява автоматизирано създаване.
+model InstagramAccount {
+  id             String        @id @default(cuid())
+  brandId        String
+  brand          Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  igUserId       String        @unique
+  username       String
+  /// Дълготраен токен, криптиран в покой (AES-256-GCM).
+  accessTokenEnc String
+  tokenExpiresAt DateTime
+  scopes         String
+  status         AccountStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  posts Post[]
+
+  @@index([brandId])
+  @@index([status, tokenExpiresAt])
+}
+
+enum AccountStatus {
+  ACTIVE
+  TOKEN_EXPIRED
+  DISABLED
+}
+
+enum PostKind {
+  IMAGE
+  REELS
+}
+
+enum PostStatus {
+  DRAFT
+  APPROVED
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+/// Един пост през целия му път: чернова → одобрен от човек → насрочен → публикуван.
+model Post {
+  id        String            @id @default(cuid())
+  brandId   String
+  brand     Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  accountId String?
+  account   InstagramAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  kind     PostKind
+  caption  String
+  hashtags String[]
+  /// Задължителен alt текст (EAA/WCAG + social SEO).
+  altText  String
+  mediaUrl String
+  coverUrl String?
+
+  status       PostStatus @default(DRAFT)
+  /// true = черновата е писана от модел; пази се за одит и за етикетиране.
+  aiAssisted   Boolean    @default(false)
+  lintFindings Json?
+  approvedBy   String?
+  approvedAt   DateTime?
+  scheduledAt  DateTime?
+  publishedAt  DateTime?
+  containerId  String?
+  igMediaId    String?
+  permalink    String?
+  lastError    String?
+  attempts     Int        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs PublishLog[]
+
+  @@index([brandId])
+  @@index([accountId])
+  @@index([status, scheduledAt])
+}
+
+/// Одиторска следа: всяка стъпка към Instagram, успешна или не.
+model PublishLog {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  step      String
+  ok        Boolean
+  detail    Json?
+  createdAt DateTime @default(now())
+
+  @@index([postId, createdAt])
+}

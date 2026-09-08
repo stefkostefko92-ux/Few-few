@@ -36,6 +36,7 @@ file holds only what is true across all products. Keep it that way.
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
 | `mascot/` | Маскотът на Carbon Stealth — желирано телце с очила и академична шапка | SVG (3 нива на детайл) · генериран React компонент · plain JS ESM · нула зависимости | BG · бранд асет, **не** продукт с деплой · продуктите копират каквото ползват |
 | `vpsdash/` | Carbon Stealth VPS Dashboard — пълен контролен панел за сървъра (метрики, systemd, Docker, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал, агентски флот) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · federation между двата VPS · owner: VPS-аджията |
+| `publikator/` | Публикатор — Instagram контент-двигател (чернова → човешко одобрение → публикуване) | Node 22 · TS strict (ESM) · Express 5 · Prisma · PostgreSQL · BullMQ + Redis · Anthropic SDK | BG · официален Instagram Platform API · акаунти се създават **ръчно** (ToS на Meta) |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
