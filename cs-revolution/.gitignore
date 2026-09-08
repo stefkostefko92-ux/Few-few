@@ -3,8 +3,11 @@ dist/
 .env
 *.log
 .DS_Store
-api/logs/*.dat
-api/logs/monument-ip-*
-api/logs/ai-rate-*
+# Runtime state under api/logs (throttle JSON, leads, fail2ban log, rate
+# counters) is server-only. Ignore everything there except the two files
+# that make the directory exist and deny web access to it.
+api/logs/*
+!api/logs/.gitkeep
+!api/logs/.htaccess
 vendor/
 api/smtp-local.php

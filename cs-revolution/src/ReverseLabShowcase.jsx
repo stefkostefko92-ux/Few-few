@@ -15,7 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 // Model copied 1:1 from HeroSignature.jsx: dynamic import("three"),
 // staticFrame gate (prefers-reduced-motion OR low-power — see note
 // below), dual IntersectionObserver + visibilitychange rAF pause,
-// DPR ceiling 1.5 mobile / 2 desktop, forceContextLoss()+dispose
+// DPR ceiling 1.25 mobile / 1.5 desktop (fill-rate bound), forceContextLoss()+dispose
 // cleanup, radial-gradient poster fallback, canvas fade-in,
 // aria-hidden canvas. Tokens duplicated here on purpose (own module,
 // no shared export) — keep in sync with App.jsx / HeroSignature.jsx
