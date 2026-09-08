@@ -1271,6 +1271,19 @@ export const ENTRIES = [
   ['Твърде широки права: ⟦0⟧', 'Permissions too broad: ⟦0⟧', 'Permessi troppo ampi: ⟦0⟧'],
   // Одит на САМИЯ панел (posture.js · panelFindings).
   ['Панелът е без втори фактор', 'The panel has no second factor', 'Il pannello è senza secondo fattore'],
+  // Смяна на парола (секция „Сигурност“ + маршрутът).
+  ['Смяна на парола', 'Change password', 'Cambio password'],
+  ['текуща парола', 'current password', 'password attuale'],
+  ['нова парола (≥12 знака)', 'new password (≥12 characters)', 'nuova password (≥12 caratteri)'],
+  ['новата още веднъж', 'new password again', 'ripeta la nuova password'],
+  ['Смени и излез отвсякъде', 'Change and sign out everywhere', 'Cambia ed esci ovunque'],
+  ['След смяната ВСИЧКИ сесии падат — и тази. Това е целта: сменяш паролата, защото не знаеш кой още я има.', 'After the change ALL sessions end — this one too. That is the point: you change the password because you do not know who else has it.', 'Dopo il cambio TUTTE le sessioni terminano — anche questa. È lo scopo: cambi la password perché non sai chi altro la possiede.'],
+  ['Двете нови пароли не съвпадат.', 'The two new passwords do not match.', 'Le due nuove password non coincidono.'],
+  ['Всички сесии ще паднат, включително тази. Продължавам?', 'All sessions will end, including this one. Continue?', 'Tutte le sessioni termineranno, compresa questa. Continuare?'],
+  ['Паролата е сменена — влез наново.', 'Password changed — sign in again.', 'Password cambiata — acceda di nuovo.'],
+  ['Текущата парола не съвпада.', 'The current password does not match.', 'La password attuale non corrisponde.'],
+  ['Новата парола трябва да е поне 12 знака.', 'The new password must be at least 12 characters.', 'La nuova password deve avere almeno 12 caratteri.'],
+  ['Новата парола е същата като старата.', 'The new password is the same as the old one.', 'La nuova password è uguale alla vecchia.'],
   [
     'Панелът дава root над машината. С една парола цялата защита виси на това дали тя някога е изтичала другаде — а хората преизползват пароли.',
     'The panel grants root over the machine. With only a password, the whole defence rests on whether that password ever leaked elsewhere — and people reuse passwords.',

@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import { Router, sendJson, sendError, readJson, parseCookies, openSse, clientIp } from './httpd.js';
 import {
+  hashPassword,
   verifyPassword,
   createSession,
   verifySession,
@@ -81,7 +82,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.8.0';
+export const VERSION = '1.9.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -95,6 +96,7 @@ export const PEER_DENY = [
   /^\/api\/webserver\/site$/,
   /^\/api\/agents\/tools\/run$/,
   /^\/api\/totp\//,
+  /^\/api\/auth\/password$/, // съседът никога не сменя паролата на собственика
   /^\/api\/alerts\/(settings|channels)$/,
   // Заглушаването е ослепяване — съседът няма работа да ни го прави, дори днес
   // маршрутът да е само POST (утре GET-вариант би го отворил безшумно).
@@ -620,6 +622,42 @@ export function buildRouter(ctx) {
   // ── 2FA (TOTP) ─────────────────────────────────────────────────────────────
   // Записваме тайната в конфига чак при ПОТВЪРЖДЕНИЕ с валиден код — иначе може
   // да се заключиш с непрочетен QR.
+  // ── Смяна на парола ────────────────────────────────────────────────────────
+  //
+  // Дотук паролата се сменяше само през конфига по SSH — и това НЕ обезсилваше
+  // издадените сесии (те са подписани със sessionSecret, не с паролата). Тоест
+  // смяна заради подозрение за пробив оставяше откраднатата сесия жива до 12 ч.
+  // Тук смяната ВДИГА поколението: всички сесии, включително тази, умират в
+  // същия миг. Това е целта, не страничен ефект — човек сменя паролата, защото
+  // не знае кой още я има.
+  r.post(
+    '/api/auth/password',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const current = String(b.current || '');
+        const next = String(b.next || '');
+        // Текущата парола се иска ВЪПРЕКИ sudo: sudo доказва, че преди минути
+        // някой е знаел паролата; това доказва, че я знае СЕГА, за точно това.
+        if (!verifyPassword(current, cfg.passwordHash)) {
+          audit.log({ action: 'password.changeFail', user: req.user, reason: 'current' });
+          throw Object.assign(new Error('Текущата парола не съвпада.'), { status: 401 });
+        }
+        if (next.length < 12) {
+          throw Object.assign(new Error('Новата парола трябва да е поне 12 знака.'), { status: 400 });
+        }
+        if (next === current) {
+          throw Object.assign(new Error('Новата парола е същата като старата.'), { status: 400 });
+        }
+        saveConfig(cfg, { passwordHash: hashPassword(next), sessionGen: (cfg.sessionGen || 0) + 1 });
+        ctx.sessions.clear();
+        audit.log({ action: 'password.changed', user: req.user, gen: cfg.sessionGen });
+        return { ok: true, sessionsInvalidated: true };
+      }),
+      { mutating: true }
+    )
+  );
+
   r.post(
     '/api/totp/setup',
     guard(

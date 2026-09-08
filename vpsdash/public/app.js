@@ -1549,6 +1549,36 @@ async function renderSettings() {
   ]);
   view.appendChild(box);
 
+  // Смяна на парола — с ОБЕЗСИЛВАНЕ на всички сесии, включително тази.
+  // Дотук паролата се сменяше само по SSH и това НЕ убиваше издадените сесии:
+  // смяна заради подозрение за пробив оставяше откраднатата жива до 12 часа.
+  {
+    const cur = el('input', { type: 'password', placeholder: 'текуща парола', autocomplete: 'current-password' });
+    const nxt = el('input', { type: 'password', placeholder: 'нова парола (≥12 знака)', autocomplete: 'new-password' });
+    const again = el('input', { type: 'password', placeholder: 'новата още веднъж', autocomplete: 'new-password' });
+    const pwBox = el('div', { class: 'card' }, [
+      el('div', { class: 'card-head' }, [el('h3', { text: 'Смяна на парола' })]),
+      el('div', { class: 'metric-sub', text: 'След смяната ВСИЧКИ сесии падат — и тази. Това е целта: сменяш паролата, защото не знаеш кой още я има.' }),
+      el('div', { class: 'toolbar' }, [cur, nxt, again, el('button', {
+        class: 'btn btn-danger btn-sm', text: 'Смени и излез отвсякъде',
+        onclick: async (e) => {
+          if (nxt.value !== again.value) return toast('Двете нови пароли не съвпадат.', 'bad');
+          if (!confirm('Всички сесии ще паднат, включително тази. Продължавам?')) return;
+          e.target.disabled = true;
+          try {
+            await api('/auth/password', { method: 'POST', body: { current: cur.value, next: nxt.value } });
+            toast('Паролата е сменена — влез наново.');
+            setTimeout(() => location.reload(), 800);
+          } catch (err) {
+            e.target.disabled = false;
+            toast(err.message, 'bad');
+          }
+        },
+      })]),
+    ]);
+    view.appendChild(pwBox);
+  }
+
   if (me.totpEnabled) {
     // Колко резервни кода остават — свършат ли, загубен телефон значи заключен сървър.
     box.appendChild(
