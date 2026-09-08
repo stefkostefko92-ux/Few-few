@@ -17,6 +17,10 @@
   проверка на всички съобщения; без `externally_connectable`; без eval/remote
   code. `resources/*` умишлено БЕЗ `use_dynamic_url` (DNR `extensionPath`
   redirect не работи с dynamic URL — същото прави uBO Lite).
+- **Обновени филтър-листи** от живите източници към 2026-09-08 (EasyList 3735,
+  EasyPrivacy 8990, URLhaus 380; +355 домейн-специфични козметични правила) — 2
+  месеца нови рекламни/tracker домейни. Верифицирано: 0 block правила достигат
+  main_frame; бюджет 13 023 / 30 000 статични правила.
 
 ## 4.4.1
 
