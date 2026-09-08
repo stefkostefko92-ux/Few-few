@@ -6,7 +6,7 @@ RCA, bollo regionale, gomme invernali, patente, multe (−30% entro 5 giorni,
 ricorso 30/60 giorni).
 
 Adattamento per il mercato italiano del modello KolataTi (BG). Ricerca,
-analisi legale e roadmap: [`research/targa-italia/README.md`](../research/targa-italia/README.md).
+analisi legale e roadmap: [`docs/research.md`](docs/research.md).
 
 ## Sviluppo
 
