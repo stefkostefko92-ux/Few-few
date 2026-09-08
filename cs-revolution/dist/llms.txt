@@ -1,0 +1,102 @@
+# Carbon Stealth VCC
+
+> Digital solutions agency based in Bobov Dol, Bulgaria. Specializing in web development, ERP systems, mobile applications, game development, IoT/embedded systems, and SEO/AEO optimization.
+
+## About
+
+**Company:** Carbon Stealth VCC
+**Founder & CEO:** Stefan Kostadinov
+**Founded:** 2024
+**Location:** Bobov Dol, Bulgaria (EIK: BG208725180)
+**Address:** ul. Samuil 3, Bobov Dol 2670, Bulgaria
+**Languages:** Italian, English, Bulgarian
+**Service Area:** Italy, Bulgaria, European Union, worldwide remote
+**Email:** info@carbonstealth.eu
+**Phone (Italy):** +39 379 296 9699
+**Phone (Bulgaria):** +359 877 414 874
+**Website:** https://carbonstealth.eu
+
+## Services
+
+### Web Development
+Professional websites and web applications built with React, Next.js, Vue.js, WordPress, and modern PHP frameworks. Responsive design, accessibility (WCAG), and SEO optimization included.
+- Starting price: €800
+- URL: https://carbonstealth.eu/servizi/sviluppo-siti-web/
+
+### E-Commerce
+Online stores with WooCommerce, Shopify, custom React + Stripe integrations. Multi-currency, multi-language, payment gateway integration.
+- Starting price: €1,200
+- URL: https://carbonstealth.eu/servizi/ecommerce/
+
+### Custom Software Development
+Business automation tools, REST APIs, dashboards, internal systems. Built with Node.js, Python, PostgreSQL, Docker.
+- Starting price: €2,000
+- URL: https://carbonstealth.eu/servizi/sviluppo-software/
+
+### Enterprise ERP Systems
+Complete ERP solutions: accounting, warehouse, CRM, HR, BI, manufacturing modules. Used by Italian elevator manufacturers.
+- Starting price: €5,000
+- URL: https://carbonstealth.eu/servizi/erp/
+
+### Mobile Applications
+Native iOS and Android apps with React Native and Flutter. From design to App Store/Play Store deployment.
+- Starting price: €3,000
+- URL: https://carbonstealth.eu/servizi/app-mobile/
+
+### SEO, GEO and AEO
+Optimization for Google, Bing, ChatGPT, Perplexity, Claude, Gemini. Local SEO for Italy and Bulgaria. Schema.org structured data, technical SEO.
+- Starting price: €500/month
+- URL: https://carbonstealth.eu/servizi/seo/
+
+### Reverse Engineering & 3D Printing
+Reverse engineering of mechanical parts and devices: scanning, CAD reconstruction, firmware and protocol analysis. 3D printing (FDM) of prototypes, unobtainable spare parts and small production batches.
+- Pricing: per project, free quote within 24 hours
+
+### Cloud Hosting
+Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SLA, monitoring.
+- Starting price: €29/month
+- URL: https://carbonstealth.eu/servizi/hosting/
+
+## Notable Projects
+
+- **Nexus Dominion** — Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. URL: https://nexus.carbonstealth.eu
+- **OU Nikola Vaptsarov** — Official school website in Bobov Dol. Tech: React, Vite, PHP, multilingual. URL: https://ouvaptsarov.com
+- **ERP Ascensori** — Custom ERP for an Italian elevator manufacturer: production tracking, warehouse, invoicing, 7-level roles. URL: https://erp.carbonstealth.eu
+- **Treti Mart** — Bulgarian marketplace for vehicles, real estate and services. URL: https://tretimart.carbonstealth.eu
+
+## Products
+
+- **Za Bobov Dol** — Civic portal for the town of Bobov Dol (services, transparency, citizen reports). URL: https://zabobovdol.carbonstealth.eu
+- **Ospedali Trasparenti** — Civic portal for the transparency of Italian hospitals. URL: https://ospedalitrasparenti.it
+- **Supreme AdBlock** — Chrome (MV3) extension blocking every ad, YouTube video ads, FB/IG sponsored, trackers and anti-adblock walls; zero telemetry. URL: https://adblock.carbonstealth.eu
+- **Mastilko** — Free print-ready labels, business cards and CVs, previewed live on a real A4 sheet. URL: https://mastilko-bg.com
+- **Vizitka** — Digital business card with a permanent QR code that always points to your current details. URL: https://vizitka-bg.com
+
+## Guides & Resources
+
+Answer-first content for people researching web, e-commerce and software decisions (available in Italian, English and Bulgarian):
+
+- **Blog** — practical guides (website/e-commerce/app costs, WooCommerce vs Shopify, what an ERP is, Core Web Vitals, SEO for small businesses, and more). Hub: https://carbonstealth.eu/blog/
+- **Glossary** — plain-language definitions (CMS, headless, PWA, API, SSL, DNS, hosting, CDN, framework, database, cache, UX/UI, responsive design, backend/frontend). Hub: https://carbonstealth.eu/glossario/
+- **Comparisons** — decision guides: WordPress vs Headless, Shopify vs Magento, React vs WordPress, native app vs Flutter, WordPress vs Webflow, SaaS vs custom software, shared hosting vs VPS. Hub: https://carbonstealth.eu/confronti/
+- **Solutions by industry** — web & software for restaurants, fashion, real estate, medical/dental, lawyers, gyms, hotels/tourism, workshops, manufacturing, schools, food e-commerce, professional services. Hub: https://carbonstealth.eu/settori/
+- **Local services** — e-commerce and ERP development pages for Milano, Roma, Torino, Firenze, Napoli, Bologna, Sofia, Plovdiv. Hub: https://carbonstealth.eu/servizi-locali/
+- **Free tools** — website quote calculator and a meta-tag / Open Graph / JSON-LD generator (run entirely in the browser). Hub: https://carbonstealth.eu/strumenti/
+
+## Service Areas
+
+Carbon Stealth VCC works remotely across the EU with dedicated local pages for:
+
+**Bulgaria:** Sofia, Plovdiv, Varna, Burgas, Ruse, Stara Zagora, Veliko Tarnovo, Blagoevgrad, Kyustendil, Dupnitsa
+- Hub: https://carbonstealth.eu/bg/geo/
+
+**Italy:** Milano, Roma, Torino, Firenze, Napoli, Bologna, Verona, Genova, Bari, Padova
+- Hub: https://carbonstealth.eu/geo/
+- Italian phone: +39 379 296 9699, project management in Italian, EU invoicing (reverse charge)
+
+## Contact
+
+For inquiries: info@carbonstealth.eu
+WhatsApp Italy: +39 379 296 9699
+WhatsApp Bulgaria: +359 877 414 874
+Free quote within 24 hours.

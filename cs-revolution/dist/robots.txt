@@ -1,0 +1,78 @@
+User-agent: *
+Allow: /
+Sitemap: https://carbonstealth.eu/sitemap.xml
+Sitemap: https://carbonstealth.eu/sitemap-pages.xml
+Sitemap: https://carbonstealth.eu/sitemap-blog.xml
+Sitemap: https://carbonstealth.eu/sitemap-geo.xml
+Sitemap: https://carbonstealth.eu/sitemap-comparisons.xml
+Sitemap: https://carbonstealth.eu/sitemap-glossary.xml
+Sitemap: https://carbonstealth.eu/sitemap-industries.xml
+Sitemap: https://carbonstealth.eu/sitemap-servicecity.xml
+Sitemap: https://carbonstealth.eu/sitemap-tools.xml
+Sitemap: https://carbonstealth.eu/sitemap-casestudies.xml
+Sitemap: https://carbonstealth.eu/sitemap-images.xml
+
+# AI Bots - Allow for AEO
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
