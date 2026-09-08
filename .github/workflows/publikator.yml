@@ -69,5 +69,7 @@ jobs:
           cache: npm
           cache-dependency-path: publikator/package-lock.json
       - run: npm ci
+      # Клиентът на Prisma се генерира изрично — не разчитаме на postinstall.
+      - run: npx prisma generate
       - run: npx prisma migrate deploy
       - run: npm run test:integration
