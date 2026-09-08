@@ -17,6 +17,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CREDENTIAL, COMMIT_ONLY, ALL, asTuples } from "../lib/secret-patterns.mjs";
 import { SECRET_RE } from "../../.claude/hooks/guard-secrets.mjs";
+import { SECRET_RES } from "../../.claude/hooks/guard-prompt.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -60,4 +61,21 @@ test("guard-secrets НЕ преписва шаблони наново (само 
   const src = readFileSync(join(ROOT, ".claude", "hooks", "guard-secrets.mjs"), "utf8");
   assert.match(src, /from "\.\.\/\.\.\/tools\/lib\/secret-patterns\.mjs"/);
   assert.ok(!/\{\s*re:\s*\//.test(src), "никакви inline { re: /…/ } шаблони — те дрейфват");
+});
+
+// Red-team 2026-09-08: този тест твърдеше в заглавието си, че „трите рънтайм предпазителя импортират
+// същия SECRET_RE", но проверяваше само guard-secrets. guard-prompt носеше СОБСТВЕН списък от 7 шаблона
+// и 8 типа credential минаваха през промпта (AWS, SendGrid, GitHub fine-grained, GOCSPX, Twilio,
+// Slack webhook…). Зелен тест, който описва състояние, което не съществува. Сега третият консуматор
+// се пази наравно с другите два.
+test("guard-prompt ползва ТОЧНО CREDENTIAL (третият консуматор беше без пазач)", () => {
+  assert.deepEqual(
+    SECRET_RES.map(([name]) => name).sort(),
+    CREDENTIAL.map((p) => p.name).sort(),
+    "guard-prompt трябва да покрива същите credential типове като другите две куки",
+  );
+  const src = readFileSync(join(ROOT, ".claude", "hooks", "guard-prompt.mjs"), "utf8");
+  assert.match(src, /from "\.\/guard-secrets\.mjs"/, "трябва да импортира единния източник");
+  assert.ok(!/\[\s*"[^"]+",\s*\//.test(src), "никакви inline [\"име\", /…/] шаблони — те дрейфват");
+  assert.match(src, /\bsanitize\(/, "трябва да санитизира (невидими знаци крият тайна)");
 });
