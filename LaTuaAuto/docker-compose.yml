@@ -1,0 +1,32 @@
+# Продукционен compose (nginx + Let's Encrypt са на хоста, виж deploy/nginx.conf).
+# Env файлът и secrets/ живеят само на сървъра (mode 600), не в репото.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: latuaauto
+      POSTGRES_USER: latuaauto
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets: [db_password]
+    volumes: [latuaauto-db:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U latuaauto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db: { condition: service_healthy }
+    ports: ["127.0.0.1:3300:3000"]
+
+secrets:
+  db_password:
+    file: ./secrets/db_password
+
+volumes:
+  latuaauto-db:

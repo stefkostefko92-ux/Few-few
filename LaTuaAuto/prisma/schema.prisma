@@ -1,0 +1,251 @@
+// LaTuaAuto — чат по табела + самопопълващи се срокове (Италия). PostgreSQL.
+//
+// Принципи на схемата (виж research/targa-italia/README.md, раздел 3 и 5):
+//  - Табелата е ЛИЧНА ДАННА (Касация/Garante) → пази се нормализирана И като
+//    хеш за търсене; никога публичен указател табела→човек.
+//  - НУЛА геолокация. Нула телефон. Само имейл + хеш на парола.
+//  - Непотвърдено владение (NONE) НЕ получава съобщения — обръща най-опасния
+//    сценарий (регистрираш чужда табела, прибираш адресираното до нея).
+//  - Първи контакт = шаблон (MessageKind.TEMPLATE); свободен текст само след
+//    отговор на получателя (Conversation.acceptedAt).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String? // опционално, никога публично към непознати
+  locale       String    @default("it")
+  birthDate    DateTime? // само за срока на patente — опционално
+  bannedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions      Session[]
+  vehicles      Vehicle[]
+  sentMessages  Message[]      @relation("SentMessages")
+  reportsMade   Report[]       @relation("ReportsMade")
+  reportsAbout  Report[]       @relation("ReportsAbout")
+  blocksMade    Block[]        @relation("BlocksMade")
+  blocksGot     Block[]        @relation("BlocksGot")
+  reminders     Reminder[]
+  loginEvents   LoginEvent[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique // sha256(token); суровият токен е само в httpOnly бисквитката
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// IP при вход — 90 дни, само за сигурност (декларирано в политиката).
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// Ниво на доказано владение — определя дали табелата ПОЛУЧАВА съобщения.
+enum PlateVerification {
+  NONE // само въведена → може да пише, НЕ получава
+  BASE // табела + последни 4 знака на шасито, сверени с официална справка
+  VERIFIED // OCR на carta di circolazione в устройството; тук стига само булев резултат
+}
+
+enum VehicleKind {
+  AUTO
+  MOTO
+  AUTOCARRO
+}
+
+model Vehicle {
+  id                 String            @id @default(cuid())
+  userId             String
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plate              String // нормализирана (AA000AA), без интервали
+  plateHash          String // sha256(plate + PLATE_PEPPER) — за търсене без разкриване
+  kind               VehicleKind       @default(AUTO)
+  verification       PlateVerification @default(NONE)
+  verifiedAt         DateTime?
+  make               String?
+  model              String?
+  registrationDate   DateTime? // data di immatricolazione → revisione
+  region             String? // ISO 3166-2 IT-xx → bollo по региони
+  odometerKm         Int?
+  odometerUpdatedAt  DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  conversations Conversation[]
+  reminders     Reminder[]
+  maintenance   MaintenanceEntry[]
+  fines         Fine[]
+
+  // Една табела може да е регистрирана от няколко акаунта до потвърждаване;
+  // само VERIFIED/BASE получават. Уникалност на ниво (user, plate).
+  @@unique([userId, plate])
+  @@index([plateHash])
+  @@index([verification])
+}
+
+// Нишка към табела. Ако получателят не отговори до expiresAt — изтича.
+model Conversation {
+  id           String    @id @default(cuid())
+  vehicleId    String // ЦЕЛЕВАТА табела (получател)
+  vehicle      Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  initiatorId  String // подателят (User.id) — без FK relation, за да не тегли каскади при изтриване
+  acceptedAt   DateTime? // получателят е отговорил → отключва се свободен текст
+  closedAt     DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+  messages     Message[]
+
+  @@index([vehicleId, createdAt])
+  @@index([initiatorId, createdAt])
+  @@index([expiresAt])
+}
+
+enum MessageKind {
+  TEMPLATE // първи контакт — шаблонен код от src/lib/messages.ts
+  TEXT // свободен текст — само след acceptedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  kind           MessageKind
+  templateCode   String? // напр. FARI_ACCESI
+  body           String? // свободен текст (≤ 1000 знака, валидиран със zod)
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+
+  @@index([conversationId, createdAt])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blocker   User     @relation("BlocksMade", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("BlocksGot", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+enum ReportStatus {
+  OPEN
+  ACTIONED // профил/нишка премахнати
+  DISMISSED
+}
+
+// DSA: сигнал + мотивирано решение (reason) — за всеки, независимо от размера ни.
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String
+  reporter     User         @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId   String
+  reported     User         @relation("ReportsAbout", fields: [reportedId], references: [id], onDelete: Cascade)
+  conversationId String?
+  category     String // код от src/lib/messages.ts REPORT_CATEGORIES
+  details      String?
+  status       ReportStatus @default(OPEN)
+  decision     String? // мотивирано решение (DSA чл. 17)
+  decidedAt    DateTime?
+  createdAt    DateTime     @default(now())
+
+  @@index([status, createdAt])
+  @@index([reportedId])
+}
+
+enum ReminderType {
+  REVISIONE
+  BOLLO
+  RCA
+  GOMME_INVERNALI
+  GOMME_ESTIVE
+  PATENTE
+  TAGLIANDO
+  MULTA_SCONTO // −30% до 5 дни
+  MULTA_RICORSO_GDP // Giudice di Pace, 30 дни
+  MULTA_RICORSO_PREFETTO // Prefetto, 60 дни
+  CUSTOM
+}
+
+model Reminder {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId  String?
+  vehicle    Vehicle?     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  type       ReminderType
+  title      String
+  dueAt      DateTime
+  autoFilled Boolean      @default(false) // изчислено от системата, не въведено
+  doneAt     DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([userId, dueAt])
+  @@index([vehicleId])
+}
+
+model MaintenanceEntry {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  date        DateTime
+  odometerKm  Int?
+  kind        String // tagliando / gomme / freni / … (свободен код)
+  note        String?
+  costCents   Int? // цели центове, никога float
+  createdAt   DateTime @default(now())
+
+  @@index([vehicleId, date])
+}
+
+// Verbale (multa): двата часовника — −30% до 5 дни; жалби 60 (Prefetto) / 30 (GdP).
+model Fine {
+  id             String    @id @default(cuid())
+  vehicleId      String
+  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  notifiedAt     DateTime // дата на връчване/notifica
+  amountCents    Int?
+  contested      Boolean   @default(false)
+  paidAt         DateTime?
+  note           String?
+  createdAt      DateTime  @default(now())
+
+  @@index([vehicleId, notifiedAt])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  email     String
+  body      String
+  locale    String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
