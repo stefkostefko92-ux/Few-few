@@ -20,6 +20,12 @@ Live scriptlet канал + нови scriptlet-и + toggle за privacy рулс
   указан).
 - **Toggle „Block tracking beacons & cryptominers“** за `privacy` рулсета (вкл. по
   подразбиране) — по-строг е от uBO за `sendBeacon`, затова е изключваем per user.
+- **Нови икони (Cosmic Slate).** Целият icon set (16/32/48/128 + Store icon, promo
+  tile, marquee) е прерисуван 1:1 по новото лого на сайта (`favicon.svg`): тъмна
+  заоблена плочка, cyan щит-контур + мълния. Оптична корекция per размер (по-дебел
+  щрих без пълнеж на 16/32). Старият „swoosh“ sampler е премахнат.
+- **Сървър:** `filters.json` v2 с документирано `scriptlets: []` поле; схемата в
+  `server/README.md` (данни, двойно валидирани, без trusted-*).
 
 ## 4.5.0
 

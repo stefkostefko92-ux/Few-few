@@ -73,49 +73,70 @@ def in_shield(nx, ny, mx, mtop, mbot):
     return ext is not None and ext[0] <= nx <= ext[1]
 
 
-# ---- Icon sample ---------------------------------------------------------
-RIM = (6, 6, 8)               # carbon black border (matches site #060608)
-C_TOP = (0, 229, 255)         # Carbon Stealth cyan (#00e5ff)
-C_BOT = (0, 150, 180)         # deeper cyan
-WHITE = (6, 14, 18)           # near-black prohibition mark (contrast on cyan)
-
-INNER = dict(mx=0.105, mtop=0.095, mbot=0.085)
+# ---- Icon sample: Cosmic Slate (1:1 with server/favicon.svg) -------------
+# Dark rounded tile, cyan-gradient shield OUTLINE with a faint fill, and the
+# lightning bolt. Small sizes (16/32) get a thicker stroke and no faint fill
+# so the silhouette stays crisp instead of muddy.
+TILE = (6, 6, 8)              # carbon black tile (#060608)
+CY_TOP = (0, 229, 255)        # #00e5ff
+CY_BOT = (0, 184, 212)        # #00b8d4
+TILE_R = 14 / 64              # tile corner radius (rx 14 on the 64 grid)
+SH_X0, SH_W = 0.20, 0.60      # shield box inside the tile (fractions)
+SH_Y0, SH_H = 0.12, 0.76
+# lightning bolt polygon from the favicon path "M34 20 L24 35 h7 l-2 11 12 -16 h-8 z"
+BOLT = [(34 / 64, 20 / 64), (24 / 64, 35 / 64), (31 / 64, 35 / 64),
+        (29 / 64, 46 / 64), (41 / 64, 30 / 64), (33 / 64, 30 / 64)]
+INNER = dict(mx=0.105, mtop=0.095, mbot=0.085)       # stroke inner edge (48/128)
+INNER_SMALL = dict(mx=0.17, mtop=0.16, mbot=0.15)    # thicker stroke (16/32)
 OUTER = dict(mx=0.06, mtop=0.05, mbot=0.05)
 
 
-def sample_icon(nx, ny):
-    """Return RGBA (0..255) for one normalised point."""
-    if not in_shield(nx, ny, **OUTER):
+def in_tile(nx, ny):
+    r = TILE_R
+    x, y = min(nx, 1 - nx), min(ny, 1 - ny)
+    if x >= r or y >= r:
+        return True
+    return (x - r) ** 2 + (y - r) ** 2 <= r * r
+
+
+def in_poly(nx, ny, pts):
+    inside = False
+    j = len(pts) - 1
+    for i in range(len(pts)):
+        xi, yi = pts[i]
+        xj, yj = pts[j]
+        if (yi > ny) != (yj > ny):
+            xint = xj + (ny - yj) * (xi - xj) / (yi - yj)
+            if nx < xint:
+                inside = not inside
+        j = i
+    return inside
+
+
+def cyan(ny):
+    r, g, b = mix(CY_TOP, CY_BOT, max(0.0, min(1.0, ny)))
+    return (int(r), int(g), int(b))
+
+
+def sample_v2(nx, ny, small=False):
+    """RGBA for one normalised point of the tile icon."""
+    if not in_tile(nx, ny):
         return (0, 0, 0, 0)
+    if in_poly(nx, ny, BOLT):
+        return (*cyan(ny), 255)
+    sx = (nx - SH_X0) / SH_W
+    sy = (ny - SH_Y0) / SH_H
+    if 0 <= sx <= 1 and 0 <= sy <= 1 and in_shield(sx, sy, **OUTER):
+        if not in_shield(sx, sy, **(INNER_SMALL if small else INNER)):
+            return (*cyan(ny), 255)                       # shield stroke
+        if not small:
+            r, g, b = mix(TILE, cyan(ny), 0.18)           # faint interior fill
+            return (int(r), int(g), int(b), 255)
+    return (*TILE, 255)
 
-    if not in_shield(nx, ny, **INNER):
-        return (*RIM, 255)
 
-    Ty = INNER["mtop"]
-    By = 1 - INNER["mbot"]
-    ty = (ny - Ty) / (By - Ty)
-    t = max(0.0, min(1.0, ty * 0.78 + nx * 0.22))
-    r, g, b = mix(C_TOP, C_BOT, t)
-
-    weave = math.sin((nx + ny) * 90) * 4 + math.sin((nx - ny) * 90) * 4
-    gloss = max(0.0, 0.18 - ty) * 120
-    r = max(0, min(255, r + weave + gloss))
-    g = max(0, min(255, g + weave + gloss * 0.6))
-    b = max(0, min(255, b + weave + gloss * 0.6))
-
-    # Prohibition mark.
-    pcx, pcy = 0.5, Ty + (By - Ty) * 0.46
-    R = (0.5 - INNER["mx"]) * 0.66
-    dx, dy = nx - pcx, ny - pcy
-    dist = math.hypot(dx, dy)
-    ring = abs(dist - R) <= R * 0.17
-    bx = dx * math.cos(math.radians(45)) - dy * math.sin(math.radians(45))
-    by = dx * math.sin(math.radians(45)) + dy * math.cos(math.radians(45))
-    bar = abs(by) <= R * 0.17 and abs(bx) <= R * 0.78
-    if (ring or bar) and dist <= R + R * 0.2:
-        return (*WHITE, 255)
-
-    return (int(r), int(g), int(b), 255)
+def sample_v2_small(nx, ny):
+    return sample_v2(nx, ny, True)
 
 
 # ---- Renderer ------------------------------------------------------------
@@ -192,22 +213,22 @@ def main():
     os.makedirs(store, exist_ok=True)
 
     for s in (16, 32, 48, 128):
-        write_png(os.path.join(icons, f"icon{s}.png"), s, s, render(s, sample_icon))
+        write_png(os.path.join(icons, f"icon{s}.png"), s, s, render(s, sample_v2_small if s <= 32 else sample_v2))
         print("icon", s)
 
-    write_png(os.path.join(store, "store_icon_128.png"), 128, 128, render(128, sample_icon))
+    write_png(os.path.join(store, "store_icon_128.png"), 128, 128, render(128, sample_v2))
 
     w, h = 440, 280
     bg = carbon_bg(w, h)
     bar(bg, w, h, 0, h - 6, w, h, (0, 229, 255))
-    composite(bg, w, h, render(200, sample_icon), 200, 200, 40, (h - 200) // 2)
+    composite(bg, w, h, render(200, sample_v2), 200, 200, 40, (h - 200) // 2)
     write_png(os.path.join(store, "promo_small_440x280.png"), w, h, bg)
     print("promo 440x280")
 
     w, h = 1400, 560
     bg = carbon_bg(w, h)
     bar(bg, w, h, 0, h - 10, w, h, (0, 229, 255))
-    composite(bg, w, h, render(380, sample_icon), 380, 380, 130, (h - 380) // 2)
+    composite(bg, w, h, render(380, sample_v2), 380, 380, 130, (h - 380) // 2)
     write_png(os.path.join(store, "marquee_1400x560.png"), w, h, bg)
     print("marquee 1400x560")
 
