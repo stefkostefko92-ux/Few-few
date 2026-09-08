@@ -1,5 +1,23 @@
 # Changelog
 
+## 4.5.0
+
+Сигурност + нови защити (security-пас по целия extension):
+- **Нов `privacy` рулсет** (данни, DNR): блокира **third-party hyperlink
+  auditing и beacon-и** (`<a ping>` / sendBeacon към чужди домейни — чист
+  tracking, нула легитимна употреба; first-party остава, за да не чупим сайтове)
+  и **cryptomining** домейни (Coinhive/JSEcoin/CryptoLoot и наследници —
+  browser-майнъри, които крадат CPU). Включен по подразбиране с глобалния toggle.
+- **`ytBypass` защита в дълбочина:** bypass-ът вече се приема САМО от YouTube
+  таб (проверка на `sender.tab.url`) — подправен enforcement елемент на друг
+  сайт не може да изключи блокирането.
+- **Изричен CSP** за страниците на разширението (`script-src 'self';
+  object-src 'self'`) — документира и фиксира строгата MV3 политика.
+- Одит на sink-овете: всички `innerHTML` са статични литерали; `sender.id`
+  проверка на всички съобщения; без `externally_connectable`; без eval/remote
+  code. `resources/*` умишлено БЕЗ `use_dynamic_url` (DNR `extensionPath`
+  redirect не работи с dynamic URL — същото прави uBO Lite).
+
 ## 4.4.1
 
 Поправка: YouTube спираше да зарежда клипове след ~3 гледания (анти-адблок enforcement).
