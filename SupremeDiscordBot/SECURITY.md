@@ -162,7 +162,22 @@ unbracketed before the check, so a public IPv6 endpoint is accepted and an
 internal one is refused with the *real* reason rather than a misleading
 "could not be resolved". A caveat we state rather than hide: Node skips
 `lookup` for IP literals, so for those the validation-time check is the only
-layer — which is why it compares binary, not text.
+layer — which is why it compares binary, not text. The optional HMAC signing
+secret a Customer attaches to a webhook is stored encrypted at rest (AES-256-GCM,
+the same discipline as OAuth tokens) and is never returned by the API once
+entered — the dashboard only learns whether one is set, and editing follows an
+explicit contract (field absent = keep, `null` = remove, string = replace), so
+touching a webhook's name can no longer silently drop its secret.
+
+**Pages that serve user content (archive transcripts).** Every HTML door carries
+its own strict CSP (`script-src 'none'`, no objects, no forms) *and*
+`Referrer-Policy: no-referrer`: the transcript token travels in the URL, and any
+external link inside a transcript would otherwise hand that token to the third
+party whose link someone pasted into the ticket. CSP does not stop that leak —
+`Referer` is not a script. Attachment URLs become links only when they are
+`http(s)`; `esc()` prevents markup injection but says nothing about the URL
+scheme, and a `javascript:` href is navigation, not markup. A test walks every
+HTML-serving route and fails if either header is missing.
 
 **Customer-supplied regular expressions (ReDoS).** Form answers can be validated
 against a pattern written by the Customer. Each match runs in an isolated

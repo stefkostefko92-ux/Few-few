@@ -260,12 +260,18 @@ app.get("/api/health", async (_req, res) => {
   // МЪРТВА база — Docker никога не го рестартира, а всяка заявка се проваля.
   // Liveness трябва да отразява реалната зависимост, не факта, че Express слуша.
   // (Наблюдателят, 07.08.2026)
+  // БЕЗ `uptime` в отговора (одит по сигурност, 08.09.2026): маршрутът е
+  // публичен, без автентикация и извън лимитера. Времето от последния рестарт
+  // казва на непознат кога е бил последният деплой/срив — тоест кога паметта на
+  // процеса е била празна. Никой наш консуматор не го четеше (smoke.sh гледа
+  // само `database`, Docker — само кода), а публичната status страница има свой
+  // маршрут. Информация без потребител вътре е информация само за нападател.
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: "ok", database: "up", uptime: process.uptime() });
+    res.json({ status: "ok", database: "up" });
   } catch (err) {
     console.error("[health] базата е недостъпна:", err?.message);
-    res.status(503).json({ status: "degraded", database: "down", uptime: process.uptime() });
+    res.status(503).json({ status: "degraded", database: "down" });
   }
 });
 

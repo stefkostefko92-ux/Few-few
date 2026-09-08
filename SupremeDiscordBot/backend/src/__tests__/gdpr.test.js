@@ -29,10 +29,11 @@ const USER = {
 
 vi.mock("../middleware/auth.js", () => ({
   requireAuth: (req, _res, next) => { req.session = { userId: USER.id }; next(); },
-  loadUser: (req, _res, next) => { req.user = { ...USER }; next(); },
+  // Уважава вече зададен req.user — тестът за лимитера вкарва ВТОРИ потребител.
+  loadUser: (req, _res, next) => { req.user = req.user || { ...USER }; next(); },
 }));
 
-const { default: gdprRouter } = await import("../routes/gdpr.js");
+const { default: gdprRouter, subjectRightsLimiter } = await import("../routes/gdpr.js");
 
 function app() {
   const a = express();
@@ -41,8 +42,13 @@ function app() {
   return a;
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
+  // Лимитерът по потребител (5/час) е споделен между тестовете в този файл —
+  // без нулиране шестият тест получава 429 и „не вика update" изглежда като
+  // дефект в чл. 17, а не в тестовата изолация. Нулираме ключа, не мокаме
+  // лимитера: така той остава истински и си има собствен тест по-долу.
+  await subjectRightsLimiter.resetKey(USER.id);
   prismaMock.user.findUnique.mockResolvedValue({ ...USER });
   for (const m of ["server", "serverMember", "ticket", "ticketMessage", "application", "apiKey", "auditLog", "session"]) {
     prismaMock[m].findMany.mockResolvedValue([]);
@@ -174,5 +180,37 @@ describe("чл. 15 — новите раздели присъстват", () => 
     const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "routes", "gdpr.js"), "utf-8");
     const block = src.slice(src.indexOf("verificationAttempt.findMany"), src.indexOf("serverMember.findMany") + 200);
     expect(block).toContain("Promise.resolve().then");
+  });
+});
+
+// Таван ПО ПОТРЕБИТЕЛ (одит по сигурност, 08.09.2026). Експортът прави 21
+// заявки и пише одитен ред на всяко повикване; досега го пазеше само общият
+// лимитер по адрес (200/мин), тоест един акаунт можеше да го удря 200 пъти в
+// минута. Тестът е ПОВЕДЕНЧЕСКИ — праща истински заявки през истинския
+// лимитер, не чете константата.
+describe("права на субекта — таван по потребител, не по адрес", () => {
+  it("шестият експорт за час получава 429, петият минава", async () => {
+    const a = app();
+    for (let i = 1; i <= 5; i++) {
+      const r = await request(a).get("/api/gdpr/export");
+      expect(r.status, `експорт №${i} трябва да мине`).toBe(200);
+    }
+    const sixth = await request(a).get("/api/gdpr/export");
+    expect(sixth.status).toBe(429);
+    expect(sixth.headers["ratelimit-limit"]).toBe("5");
+  });
+
+  it("ключът е потребителят: друг акаунт от СЪЩИЯ адрес има свой бюджет", async () => {
+    const a = app();
+    for (let i = 0; i < 5; i++) await request(a).get("/api/gdpr/export");
+    expect((await request(a).get("/api/gdpr/export")).status).toBe(429);
+    // Същият процес, същият (тестов) адрес — само потребителят е различен.
+    await subjectRightsLimiter.resetKey("u2");
+    const other = express();
+    other.use(express.json());
+    other.use((req, _res, next) => { req.user = { ...USER, id: "u2" }; next(); });
+    other.use("/api/gdpr", gdprRouter);
+    prismaMock.user.findUnique.mockResolvedValue({ ...USER, id: "u2" });
+    expect((await request(other).get("/api/gdpr/export")).status).toBe(200);
   });
 });

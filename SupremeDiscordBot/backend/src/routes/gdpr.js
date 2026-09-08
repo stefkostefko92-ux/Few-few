@@ -5,11 +5,33 @@
 // All endpoints require auth — user can only act on their own data.
 
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
+import { redisStore } from "../lib/rateLimitStore.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
+
+// Таван ПО ПОТРЕБИТЕЛ, не по адрес (одит по сигурност, 08.09.2026). Експортът
+// по чл. 15 прави 21 заявки към базата и пише одитен ред на всяко повикване;
+// досега го пазеше само общият лимитер — 200/мин на адрес, тоест един влязъл
+// акаунт можеше да поиска 200 експорта в минута (4200 заявки + 200 одитни
+// реда) без нищо да го спре. Правото на достъп е право на копие, не на
+// непрекъснат поток: 5 на час покрива и най-неспокойния субект. Ключът е
+// потребителят — така смяната на адрес не носи нов бюджет, а споделен адрес
+// не наказва съседа. Redis магазинът дели брояча между процесите; без Redis
+// пада на памет, както всички останали лимитери тук.
+const subjectRightsLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  store: redisStore("rl:gdpr"),
+  keyGenerator: (req) => req.user?.id || req.ip,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many data-subject requests. Try again in an hour." },
+});
+export { subjectRightsLimiter };
 
 /**
  * „Създадено от мен" — модели, които пазят КОЙ е направил записа.
@@ -44,7 +66,7 @@ export { CREATED_BY_MODELS };
 // Returns all data the platform holds about the authenticated user in
 // structured, machine-readable JSON. User can download this file.
 
-router.get("/export", async (req, res, next) => {
+router.get("/export", subjectRightsLimiter, async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -229,7 +251,7 @@ router.get("/export", async (req, res, next) => {
 // NOTE: Discord user ID is pseudonymous by nature. Discord itself allows users
 // to delete their Discord account which renders our ID useless.
 
-router.post("/delete-account", async (req, res, next) => {
+router.post("/delete-account", subjectRightsLimiter, async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { confirmDiscordId } = req.body;

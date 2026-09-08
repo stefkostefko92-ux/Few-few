@@ -234,7 +234,7 @@
 | **Recipients** | The Customer's own endpoint — third party from Supreme Bot's perspective, chosen and controlled by the Customer |
 | **3rd country transfers** | Determined by the Customer's endpoint location; Supreme Bot does not choose it |
 | **Retention period** | Configuration until deleted by the Customer; **payloads are not stored** after delivery; included in the Article 15 export (name and timestamps only — never URL or secret) |
-| **Security measures** | HTTPS only; SSRF guard rejects private, loopback, link-local, metadata, NAT64/6to4/Teredo ranges (binary comparison, re-checked at connect time against DNS rebinding); delivery gated on an active Premium tier at *execution* time. **Residual:** the signing secret is stored in plaintext in the database (it is a Customer-supplied credential, not personal data); encrypting it at rest like OAuth tokens is a tracked improvement |
+| **Security measures** | HTTPS only; SSRF guard rejects private, loopback, link-local, metadata, NAT64/6to4/Teredo ranges (binary comparison, re-checked at connect time against DNS rebinding); delivery gated on an active Premium tier at *execution* time. The signing secret is stored **encrypted at rest** (AES-256-GCM, same key discipline as OAuth tokens) and is **never returned** by the API after entry — the dashboard sees only whether one is set; rows written before 2026-09-08 remain readable and are re-encrypted on their next change |
 
 ---
 
