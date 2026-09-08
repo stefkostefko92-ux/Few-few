@@ -379,6 +379,64 @@
         });
       });
     },
+
+    // href-sanitizer(selector, source): rewrite tracking/redirect links to
+    // their real destination. source = "text" (default: the link's visible URL
+    // text), "?param" (a query parameter of the href) or "[attr]" (another
+    // attribute). Only http(s) targets are accepted, so a link can never be
+    // pointed at javascript:/data: — this cleans links, it cannot inject them.
+    "href-sanitizer": function (selector, source) {
+      if (!selector) return;
+      var src = source || "text";
+      onEachMutation(function () {
+        document.querySelectorAll(selector).forEach(function (a) {
+          try {
+            var href = a.getAttribute("href") || "";
+            var target = "";
+            if (src === "text") target = (a.textContent || "").trim();
+            else if (src.charAt(0) === "?") target = new URL(href, location.href).searchParams.get(src.slice(1)) || "";
+            else if (src.charAt(0) === "[" && src.slice(-1) === "]") target = a.getAttribute(src.slice(1, -1)) || "";
+            if (/^https?:\/\/[^\s"'<>]+$/.test(target) && target !== href) a.setAttribute("href", target);
+          } catch (e) {}
+        });
+      });
+    },
+
+    // remove-node-text(nodeName, search): blank the text of matching nodes
+    // (e.g. "script" + a needle) as they appear. Best-effort in Chromium:
+    // parser-inserted inline scripts run before mutation records are
+    // delivered, so it is most effective for dynamically inserted nodes and
+    // non-script text. `search` is required (an empty needle would blank all).
+    "remove-node-text": function (nodeName, search) {
+      if (!nodeName || !search) return;
+      var tag = String(nodeName).toLowerCase();
+      var match = needleMatcher(search);
+      onEachMutation(function () {
+        document.querySelectorAll(tag).forEach(function (n) {
+          try {
+            if (n.nodeType !== 1 || String(n.tagName).toLowerCase() !== tag) return;
+            if (n.textContent && match(n.textContent)) n.textContent = "";
+          } catch (e) {}
+        });
+      });
+    },
+
+    // nowebrtc(): block RTCPeerConnection in this frame (stops WebRTC-based
+    // local-IP leaks / fingerprinting). Directive-scoped — only where listed,
+    // since it also disables legitimate calls on that page.
+    "nowebrtc": function () {
+      ["RTCPeerConnection", "webkitRTCPeerConnection"].forEach(function (n) {
+        try {
+          if (!(n in window)) return;
+          var blocked = function () { throw new Error("RTCPeerConnection is blocked"); };
+          Object.defineProperty(window, n, {
+            get: function () { return blocked; },
+            set: function () {},
+            configurable: false,
+          });
+        } catch (e) {}
+      });
+    },
   };
 
   // ---- per-site directive map (baked at build time) -----------------------
@@ -407,11 +465,81 @@
     try { fn.apply(null, d.slice(1)); } catch (e) {}
   }
 
+  // ---- bootstrap: baked directives ----------------------------------------
   try {
     var chain = hostChain();
     for (var i = 0; i < chain.length; i++) {
       var list = MAP[chain[i]];
       if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
     }
+  } catch (e) {}
+
+  // ---- live directives (Level 2) -----------------------------------------
+  // Delivered by our ISOLATED content script from the Ed25519-signed,
+  // anti-rollback filters.json as a JSON STRING on a DOM event (objects don't
+  // cross worlds). Re-validated HERE against the same rules as the build
+  // (name allowlist = IMPL keys, argument safety, set-constant dictionary) —
+  // the engine never trusts a DOM message blindly. A page can dispatch the
+  // same event, but it can only (re)configure blocking against ITSELF, in its
+  // own frame, with directives we already allow — no privilege escalation —
+  // and it cannot block ours: the listener is not "once", duplicates are
+  // ignored. Timing: hooks install on arrival (after document_start), so this
+  // channel is for non-timing-critical directives; timing-critical ones are
+  // baked into MAP at build time.
+  var ARG_MAX = 400;
+  var NAME_OK = /^[a-zA-Z][\w.-]{0,60}$/;
+  function argOk(a) {
+    return typeof a === "string" && a.length <= ARG_MAX &&
+      !/__proto__|constructor|prototype/.test(a) &&
+      !/<\/?script|<\/?style|-->/i.test(a);
+  }
+  function directiveOk(d) {
+    if (!Array.isArray(d) || d.length < 1 || d.length > 3) return false;
+    var name = d[0], args = d.slice(1);
+    if (typeof name !== "string" || !Object.prototype.hasOwnProperty.call(IMPL, name)) return false;
+    for (var k = 0; k < args.length; k++) if (!argOk(args[k])) return false;
+    switch (name) {
+      case "set-constant":
+        return args.length === 2 && NAME_OK.test(args[0]) && tokenValue(args[1]).ok;
+      case "abort-on-property-read":
+      case "abort-on-property-write":
+        return args.length === 1 && NAME_OK.test(args[0]);
+      case "abort-current-script":
+        return args.length >= 1 && NAME_OK.test(args[0]);
+      case "no-setTimeout-if":
+      case "no-setInterval-if":
+        return args.length >= 1 && (args.length < 2 || /^\d{1,7}$/.test(args[1]));
+      case "no-fetch-if":
+      case "no-window-open-if":
+        return args.length === 1;
+      case "remove-node-text":
+        return args.length === 2;
+      case "nowebrtc":
+        return args.length === 0;
+      default:
+        return args.length >= 1; // aeld, json-prune, remove-attr/-class, href-sanitizer
+    }
+  }
+  var liveSeen = Object.create(null);
+  function applyLive(raw) {
+    var items;
+    try { items = JSON.parse(String(raw)); } catch (e) { return; }
+    if (!Array.isArray(items)) return;
+    var chain = hostChain();
+    for (var i = 0; i < items.length && i < 500; i++) {
+      var it = items[i];
+      if (!it || typeof it !== "object" || typeof it.h !== "string") continue;
+      if (chain.indexOf(it.h) < 0) continue;      // not for this frame's host
+      if (!directiveOk(it.d)) continue;
+      var key = JSON.stringify(it.d);
+      if (liveSeen[key]) continue;                 // dedupe: re-delivery / page replay
+      liveSeen[key] = true;
+      runDirective(it.d);
+    }
+  }
+  try {
+    document.addEventListener("sa-scriptlets", function (ev) {
+      try { applyLive(ev && ev.detail); } catch (e) {}
+    });
   } catch (e) {}
 })();

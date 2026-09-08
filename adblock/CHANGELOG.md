@@ -1,5 +1,26 @@
 # Changelog
 
+## 4.6.0
+
+Live scriptlet канал + нови scriptlet-и + toggle за privacy рулсета:
+- **Live scriptlet канал (Level 2)** — най-голямата останала uBO-липса. Подписаният
+  `filters.json` вече може да носи `scriptlets: [{h, n, a}]` (само **данни**: host, име,
+  аргументи). Канонизация на uBO алиаси + валидация в background (същите правила като
+  билда), доставка към MAIN-world engine-а като JSON низ на DOM събитие, и
+  **ре-валидация в самия engine** (allowlist = вградените имена, argument safety,
+  set-constant речник). Страница може само да (пре)конфигурира блокирането срещу
+  СЕБЕ СИ с вече позволени директиви — без ескалация; не може да блокира нашата
+  доставка (без `once`, дублите се игнорират). Никога върху YouTube/core CDN хостове.
+  Hook-овете се слагат при пристигане (след document_start) → за не-timing-critical
+  директиви; timing-critical остават печени при билда. Нула remote code.
+- **Нови scriptlet-и:** `href-sanitizer` (пренаписва tracking/redirect линкове към
+  реалната цел — само http(s), не може да инжектира `javascript:`), `remove-node-text`/
+  `rmnt` (изчиства текст на възли по needle — best-effort за inline скриптове в Chromium),
+  `nowebrtc` (блокира RTCPeerConnection — WebRTC IP leak/fingerprint; само където е
+  указан).
+- **Toggle „Block tracking beacons & cryptominers“** за `privacy` рулсета (вкл. по
+  подразбиране) — по-строг е от uBO за `sendBeacon`, затова е изключваем per user.
+
 ## 4.5.0
 
 Сигурност + нови защити (security-пас по целия extension):

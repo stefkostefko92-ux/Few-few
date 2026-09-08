@@ -104,7 +104,7 @@ const DEFAULTS = {
   smartBlocked: 0,
   smartLog: [],
   allowlist: [],
-  features: { cookies: true, antiAdblock: true, meta: true, youtube: true, smart: true, removeparam: true, malware: false, topics: true },
+  features: { cookies: true, antiAdblock: true, meta: true, youtube: true, smart: true, removeparam: true, malware: false, topics: true, privacy: true },
   customHidden: {},
   userFilters: "",
   theme: "carbon",
@@ -257,11 +257,12 @@ async function applyState() {
 
   const enable = [];
   const disable = [];
-  (on ? enable : disable).push("ad_rules", "easylist", "easyprivacy", "surrogates", "privacy");
+  (on ? enable : disable).push("ad_rules", "easylist", "easyprivacy", "surrogates");
   (ytOn ? enable : disable).push("youtube_rules");
   (on && f.removeparam !== false ? enable : disable).push("removeparam");
   (on && f.malware === true ? enable : disable).push("urlhaus");
   (on && f.topics !== false ? enable : disable).push("headers");
+  (on && f.privacy !== false ? enable : disable).push("privacy");
 
   try {
     await chrome.declarativeNetRequest.updateEnabledRulesets({
@@ -420,6 +421,84 @@ const PROTECTED_YT_FIELDS = new Set([
   "captions", "storyboards", "microformat", "trackingParams", "responseContext",
 ]);
 
+// ---- Live scriptlets (Level 2, DATA only) ----
+// filters.json may carry `scriptlets: [{ h: "host.tld" | "", n: "name", a: [args] }]`.
+// We canonicalise uBO aliases and validate with the SAME rules as
+// tools/build_scriptlets.mjs, then content.js hands the result to the
+// MAIN-world engine, which re-validates on arrival. Only names the engine
+// ships are accepted; NO trusted-* variants; never on core video/CDN hosts.
+const SCRIPTLET_ALIASES = {
+  "set-constant": "set-constant", "set": "set-constant",
+  "abort-on-property-read": "abort-on-property-read", "aopr": "abort-on-property-read",
+  "abort-on-property-write": "abort-on-property-write", "aopw": "abort-on-property-write",
+  "abort-current-script": "abort-current-script", "acs": "abort-current-script",
+  "abort-current-inline-script": "abort-current-script", "acis": "abort-current-script",
+  "no-setTimeout-if": "no-setTimeout-if", "nostif": "no-setTimeout-if", "setTimeout-defuser": "no-setTimeout-if",
+  "no-setInterval-if": "no-setInterval-if", "nosiif": "no-setInterval-if", "setInterval-defuser": "no-setInterval-if",
+  "addEventListener-defuser": "addEventListener-defuser", "aeld": "addEventListener-defuser",
+  "json-prune": "json-prune",
+  "no-fetch-if": "no-fetch-if",
+  "no-window-open-if": "no-window-open-if", "nowoif": "no-window-open-if", "window.open-defuser": "no-window-open-if",
+  "remove-attr": "remove-attr", "ra": "remove-attr",
+  "remove-class": "remove-class", "rc": "remove-class",
+  "href-sanitizer": "href-sanitizer",
+  "remove-node-text": "remove-node-text", "rmnt": "remove-node-text",
+  "nowebrtc": "nowebrtc",
+};
+const SCRIPTLET_NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;
+const SCRIPTLET_SETCONST = new Set([
+  "false", "true", "null", "undefined", "noopFunc", "trueFunc", "falseFunc",
+  "", "emptyStr", "emptyArr", "emptyObj", "''",
+]);
+const scriptletArgSafe = (a) =>
+  typeof a === "string" && a.length <= 400 &&
+  !/__proto__|constructor|prototype/.test(a) &&
+  !/<\/?script|<\/?style|-->/i.test(a);
+
+function validateScriptlet(rawName, args) {
+  // Own-property lookup: "__proto__"/"constructor" must not resolve via the prototype.
+  const name = Object.prototype.hasOwnProperty.call(SCRIPTLET_ALIASES, rawName) ? SCRIPTLET_ALIASES[rawName] : null;
+  if (!name || !Array.isArray(args) || !args.every(scriptletArgSafe)) return null;
+  const n = args.length;
+  const ok = (cond) => (cond ? [name, ...args] : null);
+  switch (name) {
+    case "set-constant":
+      return ok(n === 2 && SCRIPTLET_NAME_RE.test(args[0]) &&
+        (SCRIPTLET_SETCONST.has(args[1]) || /^-?\d+$/.test(args[1])));
+    case "abort-on-property-read":
+    case "abort-on-property-write":
+      return ok(n === 1 && SCRIPTLET_NAME_RE.test(args[0]));
+    case "abort-current-script":
+      return ok(n >= 1 && n <= 2 && SCRIPTLET_NAME_RE.test(args[0]));
+    case "no-setTimeout-if":
+    case "no-setInterval-if":
+      return ok(n >= 1 && n <= 2 && (n < 2 || /^\d{1,7}$/.test(args[1])));
+    case "no-fetch-if":
+    case "no-window-open-if":
+      return ok(n === 1);
+    case "remove-node-text":
+      return ok(n === 2);
+    case "nowebrtc":
+      return ok(n === 0);
+    default: // aeld, json-prune, remove-attr/-class, href-sanitizer
+      return ok(n >= 1 && n <= 2);
+  }
+}
+
+function sanitizeScriptlets(x) {
+  if (!Array.isArray(x)) return [];
+  const out = [];
+  for (const it of x.slice(0, 500)) {
+    if (!it || typeof it !== "object") continue;
+    const h = typeof it.h === "string" ? it.h.trim().toLowerCase() : "";
+    if (h !== "" && !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(h)) continue;
+    if (h && isProtected(h)) continue; // YouTube & co. are handled by dedicated code
+    const d = validateScriptlet(it.n, Array.isArray(it.a) ? it.a : []);
+    if (d) out.push({ h, d });
+  }
+  return out;
+}
+
 // Reduce the fetched JSON to a strict, known shape. Everything is treated as
 // inert data (domain strings, CSS selectors); nothing is ever executed.
 function sanitizeConfig(cfg) {
@@ -430,6 +509,7 @@ function sanitizeConfig(cfg) {
       .map((d) => d.toLowerCase().replace(/^\|\|/, "").replace(/[\^/].*$/, ""))
       .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d) && !isProtected(d)),
     cosmetic: selArr(cfg?.cosmetic, 2000),
+    scriptlets: sanitizeScriptlets(cfg?.scriptlets),      // Level 2 live directives (data)
     youtube: {
       hide: selArr(yt.hide, 300),
       skip: selArr(yt.skip, 100),

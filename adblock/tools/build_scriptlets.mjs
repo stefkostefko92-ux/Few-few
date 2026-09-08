@@ -37,6 +37,9 @@ const ALIASES = {
   "no-window-open-if": "no-window-open-if", "nowoif": "no-window-open-if", "window.open-defuser": "no-window-open-if",
   "remove-attr": "remove-attr", "ra": "remove-attr",
   "remove-class": "remove-class", "rc": "remove-class",
+  "href-sanitizer": "href-sanitizer",
+  "remove-node-text": "remove-node-text", "rmnt": "remove-node-text",
+  "nowebrtc": "nowebrtc",
 };
 
 // Per-scriptlet arg policy. A directive is rejected unless it passes.
@@ -91,8 +94,15 @@ function validate(name, args) {
       return [name, args[0]];
     case "remove-attr":
     case "remove-class":
+    case "href-sanitizer":
       if (args.length < 1 || args.length > 2) return null;
       return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
+    case "remove-node-text":
+      if (args.length !== 2) return null;
+      return [name, args[0], args[1]];
+    case "nowebrtc":
+      if (args.length !== 0) return null;
+      return [name];
     default:
       return null;
   }

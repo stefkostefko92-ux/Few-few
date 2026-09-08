@@ -110,12 +110,16 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
   `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class` (+ uBO алиаси).
 
 ### Остатъчно / следващо
-- **Scriptlet engine — live channel** — v4.4.0 пече само курирания списък при билда.
-  Live scriptlet-и от `filters.json` (Level 2 „shim-then-configure") са бъдеща стъпка;
-  изискват отделен под-канал и жив timing-тест преди пускане.
+- ✅ **Scriptlet engine — live channel — ИЗПЪЛНЕНО (v4.6.0).** `filters.json` носи
+  `scriptlets: [{h, n, a}]` (само ДАННИ). background канонизира алиасите и валидира
+  като билда; content.js подава списъка като JSON низ на DOM събитие; engine-ът го
+  **ре-валидира** (allowlist = IMPL ключове, argument safety, set-constant речник),
+  филтрира по host и игнорира дубли (страница не може да блокира нашата доставка).
+  Level 2 = hook-овете се слагат при пристигане (след document_start) — за
+  не-timing-critical директиви; timing-critical остават печени в MAP.
 - **`trusted-*` варианти** — само от нашия Ed25519-подписан канал; не в v1.
-- Липсващи scriptlet-и: `abort-on-stack-trace`, `remove-node-text`, `href-sanitizer`,
-  `set-cookie`/`remove-cookie`, `nowebrtc` — добавят се в engine.js при нужда.
+- ✅ Добавени (v4.6.0): `href-sanitizer`, `remove-node-text`/`rmnt`, `nowebrtc`.
+- Липсващи scriptlet-и: `abort-on-stack-trace`, `set-cookie`/`remove-cookie` — при нужда.
 
 > ⚠️ **Преди Web Store submission:** курираните site-specific директиви (ако се добавят
 > към глобалните анти-адблок) трябва да минат жив тест на реална страница —
