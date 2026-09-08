@@ -113,8 +113,11 @@ async function principalHash(): Promise<string> {
  */
 let processPepper: string | null = null;
 function pepper(): string {
-  const configured = process.env.ADMIN_PASSWORD_HASH;
-  if (configured) return configured;
+  // ПРОВЕРЕНАТА стойност, не суровата: суровата носи кавичките от `.env`
+  // (Compose не ги маха) и празен `""` е истинен — тоест пиперът щеше да е
+  // двузнаков низ от кавички, а не „липсва → процесен random“.
+  const configured = parseStoredHash(process.env.ADMIN_PASSWORD_HASH);
+  if (configured) return `${configured.salt}:${configured.hash.toString('hex')}`;
   if (!processPepper) {
     processPepper = randomBytes(32).toString('hex');
     console.warn(

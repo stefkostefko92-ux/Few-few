@@ -1048,6 +1048,23 @@ deploy_vpsdashboard() {
 # Продуктовата логика (бекъп → up → миграции → първоначално напълване) е в
 # FiveM/scripts/deploy.sh, за да живее при продукта. Тук е само това, което е
 # работа на оркестратора: пренасяне на .env, стабилен път за бекъпите и здраве.
+# IndexNow след зелена здравна проба. ИЗПУСНАТА при сливането с main
+# (пресглобих файла от три парчета и тази четвърта функция остана навън) —
+# `deploy_fivem` я вика на пътя на УСПЕХА, а под `set -e` недефинирана функция
+# е exit 127: деплоят умираше СЛЕД здравната проба, `current` не се местеше и
+# старите releases не се чистеха. Хванато от червения екип, не от `bash -n`
+# (той не лови липсваща функция). Затова и `command -v` спирач по-долу.
+fivem_indexnow() {
+  local keyfile="$SRC/FiveM/public/indexnow-key.txt"
+  [ -f "$keyfile" ] || { warn "fivem: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "fivem: няма node на хоста — пропускам IndexNow."; return 0; }
+  if node "$SRC/tools/seo/indexnow.mjs" "https://$FIVEM_DOMAIN" --key-file "$keyfile" >/dev/null 2>&1; then
+    ok "fivem: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "fivem: IndexNow ping не мина (сайтът трябва да е публичен с /indexnow-key.txt)."
+  fi
+}
+
 deploy_fivem() {
   local d="$SRC/FiveM"
   [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
@@ -1124,7 +1141,9 @@ EOF
     warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
   fi
   chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
-  ln -sfn "$FIVEM_STATE_DIR/.env" "$d/.env"
+  # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
+  # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
+  ln -sfnT "$FIVEM_STATE_DIR/.env" "$d/.env"
 
   # Бекъпите също са на стабилен път — иначе умират с прочистването на releases.
   mkdir -p "$FIVEM_STATE_DIR/backups"
@@ -1138,8 +1157,16 @@ EOF
   # (заради `duplicate log entry` с пакетния конфиг), глобът `/var/log/nginx/*.log`
   # НЕ ги хваща, значи без нашия файл срокът е БЕЗКРАЕН, не „твърде дълъг“.
   # Обявен срок по чл. 5, ал. 1, б. „д“ ОРЗД, който виси на памет, не е срок.
-  install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria 2>/dev/null \
-    || warn "не мога да създам /var/log/nginx/fivembulgaria — nginx няма да тръгне с новия конфиг."
+  # `install -d` като root СЛЕДВА симлинк и сменя собственика на целта
+  # (CWE-59, възпроизведено от червения екип). Предусловието иска запис в
+  # `/var/log/nginx` (root:root 755), тоест е далечно — но отказът струва един
+  # ред, а тихият chown на чужда папка струва много повече.
+  if [ -L /var/log/nginx/fivembulgaria ]; then
+    warn "/var/log/nginx/fivembulgaria е СИМЛИНК — отказвам да пипам правата му; провери ръчно."
+  else
+    install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria 2>/dev/null \
+      || warn "не мога да създам /var/log/nginx/fivembulgaria — nginx няма да тръгне с новия конфиг."
+  fi
   if [ -f "$d/deploy/logrotate.conf" ]; then
     install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/fivembulgaria \
       || warn "не мога да инсталирам /etc/logrotate.d/fivembulgaria — 14-те дни НЕ са гарантирани."

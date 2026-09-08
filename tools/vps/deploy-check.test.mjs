@@ -168,3 +168,25 @@ test("реалният autodeploy.sh минава и това правило", a
   const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
   assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("cleanup-kills-script"));
 });
+
+// ── undefined-function: извикана помощна функция без дефиниция ───────────────
+// Регресия от червения екип (08.09.2026): `fivem_indexnow` беше изпусната при
+// сливане, `bash -n` минаваше, а деплоят умираше след зелената здравна проба.
+test("извикана функция без дефиниция → HIGH undefined-function", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\ndeploy_x() {\n  health "$U" x\n  x_indexnow\n}\ndeploy_x\n`;
+  const f = lintShell(src, "s.sh").find((x) => x.code === "undefined-function");
+  assert.ok(f, "очаквах undefined-function");
+  assert.equal(f.sev, "HIGH");
+  assert.match(f.msg, /x_indexnow/);
+  assert.doesNotMatch(f.msg, /deploy_x/, "дефинираната не бива да се брои");
+});
+
+test("същата функция, дефинирана по-долу → без undefined-function", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\ndeploy_x() {\n  x_indexnow\n}\nx_indexnow() {\n  echo ping\n}\ndeploy_x\n`;
+  assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
+});
+
+test("присвояване и външни команди без долна черта не се броят", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\nmy_var=1\ndeploy_failed=1\nnpm ci --omit=dev\ndocker compose up -d\n`;
+  assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
+});

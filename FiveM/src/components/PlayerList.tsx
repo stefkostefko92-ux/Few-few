@@ -79,7 +79,6 @@ export function PlayerList({
           се рендират на сървъра; решение на собственика, отбелязано в одита. */}
       <dialog
         ref={ref}
-        data-nosnippet=""
         className="max-w-md rounded-xl border border-white/10 bg-ink-900 p-0 text-silver-200 backdrop:bg-black/70 open:flex open:flex-col"
       >
         <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
@@ -95,7 +94,10 @@ export function PlayerList({
           </button>
         </div>
 
-        <div className="max-h-[60dvh] overflow-y-auto px-4 py-3">
+        {/* `data-nosnippet` е тук, на `div`, НЕ на `<dialog>`: Google го
+            признава само върху `span`, `div` и `section` — на друг елемент е
+            декорация. Пренесен след бележка на червения екип. */}
+        <div data-nosnippet="" className="max-h-[60dvh] overflow-y-auto px-4 py-3">
           {names.length === 0 ? (
             <p className="text-sm text-silver-400">{labels.none}</p>
           ) : (

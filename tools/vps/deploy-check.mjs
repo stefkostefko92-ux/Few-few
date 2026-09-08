@@ -153,6 +153,34 @@ export function lintShell(src, rel) {
         `не се изпълнява. Добави \`|| true\`. Места: ${bad.join(" · ")}`);
   }
 
+  // ── Извикана, но недефинирана функция ────────────────────────────────────
+  //
+  // ЗАЩО (червен екип, 08.09.2026): при сливане с main autodeploy.sh беше
+  // пресглобен от три парчета и `fivem_indexnow()` — четвъртото — остана
+  // навън. `deploy_fivem` я вика на пътя на УСПЕХА; под `set -e` недефинирана
+  // функция е exit 127 и деплоят умираше СЛЕД зелената здравна проба: `current`
+  // не се мести, старите релийзи не се чистят. `bash -n` минава — той проверява
+  // синтаксис, не дали името сочи към нещо. Сензорът: всяко голо извикване на
+  // име с долна черта (нашата конвенция за помощни функции — `deploy_x`,
+  // `x_indexnow`, `x_ping_y`) трябва да има `име() {` в същия файл. Външни
+  // команди с долна черта не ползваме, а вградените са без нея.
+  {
+    const defined = new Set([...src.matchAll(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{/gm)].map((m) => m[1]));
+    const missing = new Map();
+    const CALL = /^[ \t]*([a-z][a-z0-9]*_[a-z0-9_]+)\b(?![=(])/gm;
+    let m;
+    while ((m = CALL.exec(src)) !== null) {
+      const name = m[1];
+      if (defined.has(name)) continue;
+      const n = src.slice(0, m.index).split("\n").length;
+      if (!missing.has(name)) missing.set(name, n);
+    }
+    if (missing.size)
+      add("HIGH", "undefined-function",
+        `Извикана функция без дефиниция в същия файл (${missing.size} бр.) — под \`set -e\` това е exit 127 и скриптът умира там, където я вика; \`bash -n\` НЕ го лови. ` +
+        `Места: ${[...missing].map(([k, v]) => `${v}: ${k}`).join(" · ")}`);
+  }
+
   return out;
 }
 
