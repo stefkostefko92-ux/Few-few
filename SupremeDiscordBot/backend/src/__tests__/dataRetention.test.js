@@ -42,6 +42,14 @@ vi.mock("../lib/prisma.js", () => ({
     cannedResponse: del("cannedResponse"),
     webhook: del("webhook"),
     dailyMetric: del("dailyMetric"),
+    // v45 „лепкави роли" — стъпка 2б. ЛИПСВАШЕ в мока (одит, 02.09.2026):
+    // job-ът хващаше `Cannot read properties of undefined (reading 'deleteMany')`,
+    // логваше „❌ Role snapshot retention failed" 24 пъти и продължаваше — тоест
+    // fail-safe-ът работеше, но стъпката беше НЕТЕСТВАНА и шумът криеше, че е
+    // така. Мок, който липсва, не е „не се тества", а „тества се, че пада".
+    memberRoleSnapshot: {
+      deleteMany: vi.fn(({ where }) => { db.snapshotCutoff = where?.capturedAt?.lt; return { count: 0 }; }),
+    },
     ticketMessage: { deleteMany: vi.fn(() => ({ count: 0 })) },
     auditLog: {
       deleteMany: vi.fn(() => ({ count: 0 })),
@@ -86,6 +94,7 @@ beforeEach(() => {
   db.servers = [];
   db.deleted = [];
   db.auditCreated = [];
+  db.snapshotCutoff = null;
 });
 
 describe("retention 3б — изчистване на сървъри без бот", () => {
@@ -204,5 +213,28 @@ describe("таблици БЕЗ външен ключ към Server (одит 07
     db.servers.push({ id: "s1", botRemovedAt: recent, stripeStatus: null });
     await runRetentionJob();
     expect(db.deleted).toEqual([]);
+  });
+});
+
+// Стъпка 2б — снимките на роли („лепкави роли", v45) са лични данни с обявена
+// ретенция 180 дни (ROPA, дейност 13). Досега мокът нямаше `memberRoleSnapshot`,
+// job-ът хващаше грешката и продължаваше: стъпката беше НЕТЕСТВАНА, а 24-те реда
+// „❌ Role snapshot retention failed" в изхода минаваха за шум вместо за сигнал.
+describe("retention 2б — снимки на роли", () => {
+  it("трие снимки, по-стари от точно 180 дни, и НЕ логва провал", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const before = Date.now();
+    await runRetentionJob();
+    const after = Date.now();
+    err.mockRestore();
+
+    expect(db.snapshotCutoff, "стъпката изобщо не е стигнала до deleteMany").toBeInstanceOf(Date);
+    const days = (before - db.snapshotCutoff.getTime()) / 86_400_000;
+    // Тесен прозорец, не „около 180": ретенцията е обещание към субекта.
+    expect(days).toBeGreaterThanOrEqual(179.99);
+    expect((after - db.snapshotCutoff.getTime()) / 86_400_000).toBeLessThan(180.01);
+
+    const snapshotFailures = err.mock.calls.filter((c) => String(c[0]).includes("Role snapshot"));
+    expect(snapshotFailures, "стъпка 2б пак пада тихо").toEqual([]);
   });
 });

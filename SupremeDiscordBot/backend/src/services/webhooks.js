@@ -10,6 +10,7 @@ import { lookup as dnsLookupCb } from "dns";
 import { isIP, BlockList } from "net";
 import { prisma } from "../lib/prisma.js";
 import { getServerTier, planHasFeature } from "../lib/premium.js";
+import { decryptSafe } from "../lib/crypto.js";
 
 const VALID_EVENTS = [
   "TICKET_OPEN", "TICKET_CLOSE", "TICKET_REOPEN", "TICKET_DELETE",
@@ -189,8 +190,15 @@ async function deliverWebhook(hook, bodyStr) {
     "User-Agent": "SupremeBot-Webhooks/1.0",
     "X-SupremeBot-Event": "true",
   };
-  if (hook.secret) {
-    const sig = crypto.createHmac("sha256", hook.secret).update(bodyStr).digest("hex");
+  // Тайната за подпис вече се пази ШИФРОВАНА при покой (одит по сигурност,
+  // 08.09.2026) — същото AES-256-GCM като OAuth токените. `decryptSafe` пуска
+  // непроменени заварените plaintext редове (миграция при следващ запис, не
+  // с еднократен скрипт), а при сгрешен ENCRYPTION_KEY връща null, тоест
+  // доставката тръгва БЕЗ подпис вместо с боклук като ключ — клиентът вижда
+  // липсващ подпис и отхвърля, което е правилният провал.
+  const secret = decryptSafe(hook.secret);
+  if (secret) {
+    const sig = crypto.createHmac("sha256", secret).update(bodyStr).digest("hex");
     headers["X-SupremeBot-Signature"] = `sha256=${sig}`;
   }
 

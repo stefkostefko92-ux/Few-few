@@ -45,6 +45,12 @@ router.get("/archives/:ticketId", async (req, res, next) => {
     await recordSuccess("archive", req.ip);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // Токенът е в URL-а (`?t=`). Всеки външен линк в транскрипта (прикачен файл,
+    // адрес в съобщение) би го изнесъл през Referer към чужд сървър — тоест
+    // тайната, която пази личните данни, тръгва към третата страна, чийто линк
+    // някой е пуснал в тикета. `archive.js` го имаше, тази врата — не: пак „едно
+    // правило, две определения". (Одит по сигурност, 08.09.2026)
+    res.setHeader("Referrer-Policy", "no-referrer");
     // CSP на архивния HTML (F8, defense-in-depth): транскриптът е генериран от
     // потребителско съдържание — заключваме до self стилове/картинки, нула
     // скриптове/обекти/форми, за да не може вграден вектор да изпълни JS в
