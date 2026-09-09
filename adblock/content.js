@@ -13,6 +13,7 @@
 // is data, nothing is executed.
 (function () {
   let enabled = true;
+  let cosmeticsOff = false; // per-site "no cosmetic filtering" (network blocking unaffected)
   let smartEnabled = true;
   let customSelectors = [];
   let procSelectors = [];
@@ -336,7 +337,7 @@
   }
 
   function hide(root = document) {
-    if (!enabled) return;
+    if (!enabled || cosmeticsOff) return;
     applyUnhide();
     for (const sel of AD_SELECTORS.concat(customSelectors)) {
       let nodes;
@@ -372,7 +373,7 @@
 
   // Collapse wrappers left empty after their only (ad) child is hidden.
   function collapseEmpty() {
-    if (!enabled) return;
+    if (!enabled || cosmeticsOff) return;
     document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
       const p = el.parentElement;
       if (!p || p.children.length !== 1 || p.offsetHeight >= 5) return;
@@ -518,9 +519,11 @@
   }
 
   chrome.storage?.local.get(
-    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig"],
+    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig", "noCosmetics"],
     (data) => {
       enabled = data.enabled !== false;
+      cosmeticsOff = (data.noCosmetics || []).some(hostMatches);
+      if (cosmeticsOff) gate(false);
       smartEnabled = (data.features || {}).smart !== false;
       const allowed = (data.allowlist || []).some(hostMatches);
       pickerMap = data.customHidden || {};
@@ -564,6 +567,14 @@
           start();
           hide();
         }
+      });
+    }
+    if (changes.noCosmetics) {
+      cosmeticsOff = (changes.noCosmetics.newValue || []).some(hostMatches);
+      chrome.storage.local.get("allowlist", (d) => {
+        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
+        if (enabled && !allowed && !cosmeticsOff) hide();
       });
     }
     if (changes.features) {

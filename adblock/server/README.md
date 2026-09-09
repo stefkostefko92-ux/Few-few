@@ -79,7 +79,7 @@ enforcement dialog so we stop detecting it, add the new element name to
 ## Signing (Ed25519)
 
 The extension also fetches `filters.json.sig` and, when a public key is
-configured in `background.js` (`SIG_PUBKEY_B64`), verifies the signature before
+configured in `background.js` (`SIG_PUBKEYS_B64`), verifies the signature before
 applying an update. A bad signature is rejected and the last good config stays.
 While no key is configured the update works unsigned, exactly as before.
 
@@ -88,7 +88,7 @@ One-time key setup (the private key lives ONLY on the server, never in git):
 ```bash
 openssl genpkey -algorithm ed25519 -out /etc/caddy/adblock-signing.key
 chmod 600 /etc/caddy/adblock-signing.key
-# raw 32-byte public key, base64 — paste into SIG_PUBKEY_B64 in background.js
+# raw 32-byte public key, base64 — paste into SIG_PUBKEYS_B64 in background.js
 openssl pkey -in /etc/caddy/adblock-signing.key -pubout -outform DER | tail -c 32 | base64
 ```
 
@@ -100,7 +100,7 @@ openssl pkeyutl -sign -inkey /etc/caddy/adblock-signing.key -rawin \
   -in /var/www/adblock/filters.json | base64 -w0 > /var/www/adblock/filters.json.sig
 ```
 
-The signature policy is automatic: once `SIG_PUBKEY_B64` is set (it is), any
+The signature policy is automatic: once `SIG_PUBKEYS_B64` has a key (it does), any
 browser that supports Ed25519 in WebCrypto (Chrome 137+) **requires** a valid
 `.sig` — a missing or bad signature is rejected and the last good config stays.
 Older browsers accept best-effort so live updates keep working. Because of this,

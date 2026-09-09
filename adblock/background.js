@@ -142,10 +142,12 @@ const DEFAULTS = {
   autoUpdate: true,
   liveConfig: null,
   liveUpdated: 0,
+  subscriptions: [],   // [{ url, added, fetched, count, error }] — filter lists refreshed daily (text, never code)
+  noCosmetics: [],     // hosts where cosmetic (element-hiding) filtering is off; network blocking stays
 };
 
 // Settings mirrored to chrome.storage.sync when cross-device sync is on.
-const SYNC_KEYS = ["enabled", "features", "theme", "allowlist", "userFilters"];
+const SYNC_KEYS = ["enabled", "features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics"];
 
 chrome.runtime.onInstalled.addListener(async () => {
   const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
@@ -159,6 +161,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await syncUserRules();
   createMenus();
   chrome.alarms.create("config-update", { periodInMinutes: 720 }); // every 12h
+  chrome.alarms.create("subs-refresh", { periodInMinutes: 1440 }); // subscribed filter lists, daily
   await reconcileYtBypass(); // update clears alarms; re-arm/clear an in-flight bypass
   fetchLiveConfig();
 });
@@ -182,6 +185,7 @@ chrome.runtime.onStartup.addListener(async () => {
   await syncLiveRules(liveConfig?.blockDomains || []); // re-apply + clear stale
   createMenus();
   chrome.alarms.create("config-update", { periodInMinutes: 720 });
+  chrome.alarms.create("subs-refresh", { periodInMinutes: 1440 });
   await reconcileYtBypass();
 });
 
@@ -268,6 +272,7 @@ chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
   if (a.name === "config-update") fetchLiveConfig();
   if (a.name === "scriptlets-retry") syncScriptlets();
+  if (a.name === "subs-refresh") refreshAllSubscriptions();
   if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false));
 });
 
@@ -607,6 +612,102 @@ function parseUserDomains(text) {
   return [...set];
 }
 
+// ---- Filter-list subscriptions (TEXT, never code) ----
+// A subscription is a URL the user chose. We fetch it as text, keep only the
+// lines we can apply (bare domain blocks + ##cosmetic, sanitised through the
+// shared selector policy) and write them into "My filters" as a managed block
+// between markers, so refreshes replace exactly that block and never touch the
+// user's own lines. Refreshed daily by the subs-refresh alarm.
+const SUB_MAX = 20;
+const SUB_LINES_MAX = 5000;
+const SUB_BYTES_MAX = 5 * 1024 * 1024;
+const subStart = (url) => "! === subscription: " + url + " ===";
+const SUB_END = "! === end subscription ===";
+const isSubUrl = (u) => typeof u === "string" && /^https:\/\/[^\s"'<>]{4,500}$/.test(u);
+
+function parseImportedList(text) {
+  const keep = [];
+  for (let line of String(text).split("\n")) {
+    line = line.trim();
+    if (!line || line.startsWith("!") || line.startsWith("[") || line.startsWith("#")) continue;
+    if (line.includes("##")) {
+      if (line.includes("#@#") || line.includes("+js(")) continue; // no exceptions, no scriptlets from imports
+      const sel = line.slice(line.indexOf("##") + 2);
+      if (!safeSelector(sel)) continue;
+      keep.push(line);
+    } else if (/^(\|\|)?[a-z0-9.-]+\.[a-z]{2,}\^?$/i.test(line)) {
+      const d = line.replace(/[|^]/g, "").toLowerCase();
+      if (!isProtected(d)) keep.push(d);
+    }
+    if (keep.length >= SUB_LINES_MAX) break;
+  }
+  return keep;
+}
+
+// Replace (or remove, when lines is null) the managed block for url inside text.
+function setSubscriptionBlock(text, url, lines) {
+  const src = String(text || "").split("\n");
+  const out = [];
+  let skipping = false;
+  for (const l of src) {
+    if (l.trim() === subStart(url)) { skipping = true; continue; }
+    if (skipping) { if (l.trim() === SUB_END) skipping = false; continue; }
+    out.push(l);
+  }
+  while (out.length && !out[out.length - 1].trim()) out.pop();
+  if (lines) out.push("", subStart(url), ...lines, SUB_END);
+  return out.join("\n");
+}
+
+async function fetchListText(url) {
+  const res = await fetch(url, { cache: "no-cache" });
+  if (!res.ok) throw new Error("http " + res.status);
+  const len = Number(res.headers && res.headers.get && res.headers.get("content-length"));
+  if (len && len > SUB_BYTES_MAX) throw new Error("too large");
+  const text = await res.text();
+  if (text.length > SUB_BYTES_MAX) throw new Error("too large");
+  return text;
+}
+
+let subsChain = Promise.resolve();
+function withSubs(fn) { subsChain = subsChain.then(fn).catch((e) => { console.warn("subscriptions", e); }); return subsChain; }
+
+async function refreshSubscription(url) {
+  const { subscriptions = [], userFilters = "" } = await chrome.storage.local.get(["subscriptions", "userFilters"]);
+  const sub = subscriptions.find((s) => s.url === url);
+  if (!sub) return { ok: false, reason: "unknown" };
+  try {
+    const lines = parseImportedList(await fetchListText(url));
+    sub.fetched = Date.now(); sub.count = lines.length; sub.error = "";
+    await chrome.storage.local.set({ userFilters: setSubscriptionBlock(userFilters, url, lines), subscriptions });
+    await syncUserRules();
+    return { ok: true, count: lines.length };
+  } catch (e) {
+    sub.error = String((e && e.message) || e); sub.fetched = sub.fetched || 0;
+    await chrome.storage.local.set({ subscriptions });
+    return { ok: false, reason: sub.error };
+  }
+}
+async function refreshAllSubscriptions() {
+  const { subscriptions = [] } = await chrome.storage.local.get("subscriptions");
+  for (const s of subscriptions) await withSubs(() => refreshSubscription(s.url));
+}
+async function addSubscription(url) {
+  if (!isSubUrl(url)) return { ok: false, reason: "invalid url" };
+  const { subscriptions = [] } = await chrome.storage.local.get("subscriptions");
+  if (subscriptions.some((s) => s.url === url)) return refreshSubscription(url);
+  if (subscriptions.length >= SUB_MAX) return { ok: false, reason: "limit" };
+  subscriptions.push({ url, added: Date.now(), fetched: 0, count: 0, error: "" });
+  await chrome.storage.local.set({ subscriptions });
+  return refreshSubscription(url);
+}
+async function removeSubscription(url) {
+  const { subscriptions = [], userFilters = "" } = await chrome.storage.local.get(["subscriptions", "userFilters"]);
+  await chrome.storage.local.set({ subscriptions: subscriptions.filter((s) => s.url !== url), userFilters: setSubscriptionBlock(userFilters, url, null) });
+  await syncUserRules();
+  return { ok: true };
+}
+
 async function syncUserRules() {
   const { userFilters = "" } = await chrome.storage.local.get("userFilters");
   const domains = parseUserDomains(userFilters);
@@ -797,6 +898,56 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
       return true;
 
+    case "getTabLog": {
+      // "What was blocked on this page": our matched rules for the tab (local,
+      // declarativeNetRequestFeedback). getMatchedRules is quota-limited by
+      // Chrome, so a refusal is reported, not thrown.
+      (async () => {
+        try {
+          const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
+          const agg = new Map();
+          for (const m of info.rulesMatchedInfo || []) {
+            const rid = m.rule && m.rule.ruleId;
+            if (rid === YT_BYPASS_RULE_ID || (rid >= ALLOW_RULE_BASE && rid < LIVE_RULE_BASE)) continue; // allow rules aren't blocks
+            const h = hostFromUrl(m.request && m.request.url) || "?";
+            const k = h + "|" + ((m.request && m.request.type) || "other");
+            const cur = agg.get(k) || { host: h, type: (m.request && m.request.type) || "other", n: 0, t: 0 };
+            cur.n++; cur.t = Math.max(cur.t, m.timeStamp || 0); agg.set(k, cur);
+          }
+          const items = [...agg.values()].sort((a, b) => b.t - a.t).slice(0, 40);
+          sendResponse({ ok: true, total: (info.rulesMatchedInfo || []).length, items });
+        } catch (e) {
+          sendResponse({ ok: false, reason: /quota|MAX_GETMATCHEDRULES/i.test(String(e)) ? "quota" : "unavailable" });
+        }
+      })();
+      return true;
+    }
+
+    case "setNoCosmetics":
+      chrome.storage.local.get("noCosmetics", async (data) => {
+        let list = Array.isArray(data.noCosmetics) ? data.noCosmetics : [];
+        const host = typeof msg.host === "string" ? msg.host.toLowerCase() : "";
+        if (!host || !/^[a-z0-9.-]+\.[a-z0-9-]{2,}$/.test(host)) return sendResponse({ ok: false });
+        list = list.filter((d) => d !== host);
+        if (msg.off && list.length < 5000) list.push(host);
+        await chrome.storage.local.set({ noCosmetics: list });
+        sendResponse({ ok: true, noCosmetics: list });
+      });
+      return true;
+
+    case "addSubscription":
+      withSubs(() => addSubscription(msg.url)).then((r) => sendResponse(r || { ok: false }));
+      return true;
+    case "removeSubscription":
+      withSubs(() => removeSubscription(msg.url)).then((r) => sendResponse(r || { ok: false }));
+      return true;
+    case "refreshSubscriptions":
+      refreshAllSubscriptions().then(async () => sendResponse({ ok: true, subscriptions: (await chrome.storage.local.get("subscriptions")).subscriptions || [] }));
+      return true;
+    case "getSubscriptions":
+      chrome.storage.local.get("subscriptions", (d) => sendResponse({ subscriptions: d.subscriptions || [] }));
+      return true;
+
     case "getHealth": {
       // Diagnostics for the options page: is the engine registered, which
       // rulesets are on, how many dynamic rules per range, live-config state.
@@ -828,13 +979,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics"],
         async (data) => {
           let host = null;
           let allowed = false;
+          let noCosmetics = false;
           if (msg.tabUrl) {
             host = hostFromUrl(msg.tabUrl);
             allowed = await isAllowlisted(host);
+            noCosmetics = !!host && (data.noCosmetics || []).some((d) => host === d || host.endsWith("." + d));
           }
           const blockedTotal = data.blockedTotal || 0;
           const live = data.liveConfig || null;
@@ -859,6 +1012,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             liveUpdated: data.liveUpdated || 0,
             host,
             allowed,
+            noCosmetics,
           });
         }
       );
@@ -950,8 +1104,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       for (const k of Object.keys(DEFAULTS)) {
         if (SKIP_IMPORT.has(k) || !(k in d)) continue;
         const v = d[k];
-        if (k === "allowlist") {
-          if (Array.isArray(v)) clean[k] = v.filter((x) => typeof x === "string").slice(0, 5000);
+        if (k === "allowlist" || k === "noCosmetics") {
+          if (Array.isArray(v)) clean[k] = v.filter((x) => typeof x === "string" && /^[a-z0-9.-]+\.[a-z0-9-]{2,}$/i.test(x)).slice(0, 5000);
+        } else if (k === "subscriptions") {
+          if (Array.isArray(v)) clean[k] = v.filter((s) => s && isSubUrl(s.url)).map((s) => ({ url: s.url, added: Number(s.added) || Date.now(), fetched: 0, count: 0, error: "" })).slice(0, SUB_MAX);
         } else if (k === "userFilters") {
           if (typeof v === "string") clean[k] = v.slice(0, 100000);
         } else if (k === "features") {

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="../theme.js"></script>
+  <script src="../i18n.js"></script>
   <link rel="stylesheet" href="options.css" />
   <title>Supreme AdBlock Settings</title>
 </head>
@@ -31,14 +32,14 @@
         <div class="stat-lbl">Time saved</div>
       </div>
     </section>
-    <button id="resetStats" class="btn ghost wide">Reset statistics</button>
+    <button id="resetStats" class="btn ghost wide" data-i18n="opt_reset_statistics">Reset statistics</button>
 
     <section class="card">
-      <h2>Appearance</h2>
+      <h2 data-i18n="opt_appearance">Appearance</h2>
       <label class="row">
         <div>
-          <div class="row-title">Theme</div>
-          <div class="row-sub">Carbon Stealth (dark) or light</div>
+          <div class="row-title" data-i18n="opt_theme">Theme</div>
+          <div class="row-sub" data-i18n="opt_carbon_stealth_dark_or_light">Carbon Stealth (dark) or light</div>
         </div>
         <select id="theme" class="select">
           <option value="carbon">Carbon Stealth</option>
@@ -47,15 +48,15 @@
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Sync across devices</div>
-          <div class="row-sub">Keep settings, allowlist and filters in sync on every Chrome you're signed into</div>
+          <div class="row-title" data-i18n="opt_sync_across_devices">Sync across devices</div>
+          <div class="row-sub" data-i18n="opt_keep_settings_allowlist_and_filters_in_s">Keep settings, allowlist and filters in sync on every Chrome you're signed into</div>
         </div>
         <label class="switch"><input type="checkbox" id="syncToggle" /><span class="slider"></span></label>
       </label>
     </section>
 
     <section class="card">
-      <h2>Extra protection</h2>
+      <h2 data-i18n="opt_extra_protection">Extra protection</h2>
       <label class="row">
         <div>
           <div class="row-title">Smart Detection <span class="badge-new">unique</span></div>
@@ -65,80 +66,80 @@
       </label>
       <label class="row">
         <div>
-          <div class="row-title">YouTube ad blocking</div>
-          <div class="row-sub">Remove video ads on YouTube. Turn off if videos won't play.</div>
+          <div class="row-title" data-i18n="opt_youtube_ad_blocking">YouTube ad blocking</div>
+          <div class="row-sub" data-i18n="opt_remove_video_ads_on_youtube_turn_off_if_">Remove video ads on YouTube. Turn off if videos won't play.</div>
         </div>
         <label class="switch"><input type="checkbox" id="featYoutube" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Cookie / consent banners</div>
-          <div class="row-sub">Automatically dismiss "Accept cookies" prompts</div>
+          <div class="row-title" data-i18n="opt_cookie_consent_banners">Cookie / consent banners</div>
+          <div class="row-sub" data-i18n="opt_automatically_dismiss_accept_cookies_pro">Automatically dismiss "Accept cookies" prompts</div>
         </div>
         <label class="switch"><input type="checkbox" id="featCookies" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Anti-adblock bypass</div>
-          <div class="row-sub">Hide "disable your adblocker" walls and restore the page</div>
+          <div class="row-title" data-i18n="opt_anti_adblock_bypass">Anti-adblock bypass</div>
+          <div class="row-sub" data-i18n="opt_hide_disable_your_adblocker_walls_and_re">Hide "disable your adblocker" walls and restore the page</div>
         </div>
         <label class="switch"><input type="checkbox" id="featAab" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Meta sponsored posts</div>
-          <div class="row-sub">Hide "Sponsored" posts on Facebook &amp; Instagram</div>
+          <div class="row-title" data-i18n="opt_meta_sponsored_posts">Meta sponsored posts</div>
+          <div class="row-sub" data-i18n="opt_hide_sponsored_posts_on_facebook_and_ins">Hide "Sponsored" posts on Facebook &amp; Instagram</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMeta" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Remove tracking parameters</div>
-          <div class="row-sub">Strip utm_*, fbclid, gclid and other click identifiers from the links you open</div>
+          <div class="row-title" data-i18n="opt_remove_tracking_parameters">Remove tracking parameters</div>
+          <div class="row-sub" data-i18n="opt_strip_utm_fbclid_gclid_and_other_click_i">Strip utm_*, fbclid, gclid and other click identifiers from the links you open</div>
         </div>
         <label class="switch"><input type="checkbox" id="featRemoveparam" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Malware protection</div>
-          <div class="row-sub">Block known malware domains (URLhaus list by abuse.ch)</div>
+          <div class="row-title" data-i18n="opt_malware_protection">Malware protection</div>
+          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Block known malware domains (URLhaus list by abuse.ch)</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMalware" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Block ad-targeting browser APIs</div>
-          <div class="row-sub">Disable Google Topics, FLoC and Protected Audience ad APIs on every site</div>
+          <div class="row-title" data-i18n="opt_block_ad_targeting_browser_apis">Block ad-targeting browser APIs</div>
+          <div class="row-sub" data-i18n="opt_disable_google_topics_floc_and_protected">Disable Google Topics, FLoC and Protected Audience ad APIs on every site</div>
         </div>
         <label class="switch"><input type="checkbox" id="featTopics" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Block tracking beacons &amp; cryptominers</div>
-          <div class="row-sub">Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves.</div>
+          <div class="row-title" data-i18n="opt_block_tracking_beacons_and_cryptominers">Block tracking beacons &amp; cryptominers</div>
+          <div class="row-sub" data-i18n="opt_stop_third_party_hyperlink_auditing_beac">Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves.</div>
         </div>
         <label class="switch"><input type="checkbox" id="featPrivacy" /><span class="slider"></span></label>
       </label>
     </section>
 
     <section class="card">
-      <h2>Smart Detection log</h2>
-      <p class="row-sub">Live log of ads caught heuristically (no filter list), newest first.</p>
+      <h2 data-i18n="opt_smart_detection_log">Smart Detection log</h2>
+      <p class="row-sub" data-i18n="opt_live_log_of_ads_caught_heuristically_no_">Live log of ads caught heuristically (no filter list), newest first.</p>
       <ul id="smartLog" class="list"></ul>
     </section>
 
     <section class="card">
-      <h2>Allowlisted sites</h2>
+      <h2 data-i18n="opt_allowlisted_sites">Allowlisted sites</h2>
       <p class="row-sub">Ads are <b>not</b> blocked on these domains.</p>
       <div class="add-row">
-        <input type="text" id="allowInput" placeholder="e.g. example.com" />
-        <button id="allowAdd" class="btn">Add</button>
+        <input type="text" id="allowInput" placeholder="e.g. example.com" data-i18n-placeholder="opt_e_g_example_com" />
+        <button id="allowAdd" class="btn" data-i18n="opt_add">Add</button>
       </div>
       <ul id="allowList" class="list"></ul>
     </section>
 
     <section class="card">
-      <h2>My filters</h2>
+      <h2 data-i18n="opt_my_filters">My filters</h2>
       <p class="row-sub">
         One rule per line. <code>domain.com</code> blocks a domain;
         <code>##.selector</code> hides an element everywhere;
@@ -146,47 +147,50 @@
         Lines starting with <code>!</code> are comments.
       </p>
       <textarea id="userFilters" class="editor" spellcheck="false"
-        placeholder="! example&#10;ads.example.com&#10;##.sticky-ad&#10;news.com##.promoted"></textarea>
-      <button id="saveFilters" class="btn">Save filters</button>
+        placeholder="! example&#10;ads.example.com&#10;##.sticky-ad&#10;news.com##.promoted" data-i18n-placeholder="opt_example_10_ads_example_com_10_sticky_ad_"></textarea>
+      <button id="saveFilters" class="btn" data-i18n="opt_save_filters">Save filters</button>
       <span id="filtersSaved" class="saved-hint"></span>
       <div class="add-row" style="margin-top:12px">
-        <input type="text" id="listUrl" placeholder="Import a filter list URL (e.g. https://…/list.txt)" />
-        <button id="importList" class="btn ghost">Import</button>
+        <input type="text" id="listUrl" placeholder="Subscribe to a filter list URL (e.g. https://…/list.txt)" data-i18n-placeholder="opt_subscribe_to_a_filter_list_url_e_g_https" />
+        <button id="importList" class="btn ghost" data-i18n="opt_subscribe">Subscribe</button>
       </div>
       <span id="importHint" class="saved-hint"></span>
+      <p class="row-sub" data-i18n="opt_subscribed_lists_are_fetched_as_text_nev">Subscribed lists are fetched as text (never code), kept up to date daily, and live in the managed blocks above. Remove a list to drop its rules.</p>
+      <ul id="subList" class="list"></ul>
+      <button id="subsRefresh" class="btn ghost" data-i18n="opt_refresh_subscriptions_now">Refresh subscriptions now</button>
     </section>
 
     <section class="card">
-      <h2>Hidden elements</h2>
-      <p class="row-sub">Elements you hid manually with the picker, grouped by site.</p>
+      <h2 data-i18n="opt_hidden_elements">Hidden elements</h2>
+      <p class="row-sub" data-i18n="opt_elements_you_hid_manually_with_the_picke">Elements you hid manually with the picker, grouped by site.</p>
       <ul id="customList" class="list"></ul>
     </section>
 
     <section class="card">
-      <h2>Filter updates</h2>
+      <h2 data-i18n="opt_filter_updates">Filter updates</h2>
       <label class="row">
         <div>
-          <div class="row-title">Auto-update filters</div>
-          <div class="row-sub" id="updateStatus">Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent.</div>
+          <div class="row-title" data-i18n="opt_auto_update_filters">Auto-update filters</div>
+          <div class="row-sub" id="updateStatus" data-i18n="opt_fetches_new_block_rules_and_youtube_fixe">Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent.</div>
         </div>
         <label class="switch"><input type="checkbox" id="autoUpdate" /><span class="slider"></span></label>
       </label>
-      <button id="updateNow" class="btn">Update now</button>
+      <button id="updateNow" class="btn" data-i18n="opt_update_now">Update now</button>
       <span id="updateHint" class="saved-hint"></span>
     </section>
 
     <section class="card">
-      <h2>Engine health</h2>
-      <p class="row-sub">Live diagnostics — everything is computed locally. If something is red, "Update now" or reloading the extension usually fixes it.</p>
+      <h2 data-i18n="opt_engine_health">Engine health</h2>
+      <p class="row-sub" data-i18n="opt_live_diagnostics_everything_is_computed_">Live diagnostics — everything is computed locally. If something is red, "Update now" or reloading the extension usually fixes it.</p>
       <ul id="healthList" class="list"></ul>
-      <button id="healthRefresh" class="btn ghost">Refresh</button>
+      <button id="healthRefresh" class="btn ghost" data-i18n="opt_refresh">Refresh</button>
     </section>
 
     <section class="card">
-      <h2>Backup</h2>
+      <h2 data-i18n="opt_backup">Backup</h2>
       <div class="add-row">
-        <button id="exportBtn" class="btn ghost">Export settings</button>
-        <button id="importBtn" class="btn ghost">Import settings</button>
+        <button id="exportBtn" class="btn ghost" data-i18n="opt_export_settings">Export settings</button>
+        <button id="importBtn" class="btn ghost" data-i18n="opt_import_settings">Import settings</button>
         <input type="file" id="importFile" accept="application/json" hidden />
       </div>
     </section>
@@ -200,13 +204,13 @@
     </a>
 
     <section class="card donate">
-      <h2>Support development</h2>
-      <p class="row-sub">Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
+      <h2 data-i18n="opt_support_development">Support development</h2>
+      <p class="row-sub" data-i18n="opt_supreme_adblock_is_free_for_everyone_if_">Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
       <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 Donate via Revolut</a>
     </section>
   </main>
 
-  <footer>Supreme AdBlock v4.7.0 · made by Carbon Stealth</footer>
+  <footer>Supreme AdBlock v5.0.0 · made by Carbon Stealth</footer>
 
   <script src="options.js"></script>
 </body>
