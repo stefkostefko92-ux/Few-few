@@ -22,6 +22,22 @@
   icons / package`; премахнат застоял `zip` скрипт (грешен за монорепо).
 - Скрийншотите за Store отразяват новите функции (scriptlets, beacons/cryptominers).
 - `docs/SUBMISSION.md` синхронизиран (версия, чеклист с `npm test`).
+- **Pre-flight с 4 агента (Тайният агент · Хромаджията · Кодаджията · Качествения) —
+  всичко затворено:** `tests/` вече не влиза в Store zip-а (`new Function` там беше
+  червен флаг), пакетът се самопроверява за dev файлове и `eval`/`new Function`;
+  `mv3-lint` пропуска `tests/`, тестовете ползват `vm` (CI гейтът минава докрай);
+  `no-window-open-if` мигрира на `needleMatcher` (отхвърлен regex блокираше ВСЕКИ
+  `window.open`); `abort-on-stack-trace` игнорира собствените chrome-extension кадри;
+  `set-cookie` с denylist на имена (session/auth/csrf/… — „само ако липсва" е сляпо
+  за HttpOnly); allowlist cap 5000 (ids да не прелеят в live диапазона); `setInterval`
+  в YouTube fallback 300→1000ms (MutationObserver покрива тригерите); печените
+  директиви се пускат ПОСЛЕДНИ в engine-а (край на hoisting-капаните); паритетен тест
+  на политиката между engine/service worker/build + `assertNamesInSync` вижда и
+  `background.js`; тестове за всичките 18 scriptlet-а. **Privacy/листинг (Store):**
+  декларирани import-by-URL заявката, `chrome.storage.sync` при включен sync и
+  локалният Smart Detection лог; `declarativeNetRequestFeedback` обоснован през
+  `getMatchedRules()`; без чужди марки в листинга/скрийншотите; Store иконата с 16px
+  падинг; скрийншотите с реалната версия.
 
 ## 4.6.0
 

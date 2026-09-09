@@ -3,6 +3,8 @@
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+import json
+VERSION = json.load(open(os.path.join(HERE, "..", "..", "manifest.json")))["version"]  # popup shows the real version
 
 CSS = """
 *{margin:0;padding:0;box-sizing:border-box}
@@ -160,15 +162,15 @@ SLIDES = [
     ("Your controls",
      'Powerful, <span class="c">in your hands</span>',
      "Per-site allowlist, custom filters, element picker, themes and cross-device sync.",
-     ["uBlock-style scriptlets & procedural filters", "Tracking beacons & cryptominers blocked", "Allow ads on sites you support", "Right-click to hide anything"],
+     ["Advanced scriptlets & procedural filters", "Tracking beacons & cryptominers blocked", "Allow ads on sites you support", "Right-click to hide anything"],
      features_panel()),
     ("Private by design",
      '100% free. <span class="c">Zero tracking.</span>',
      "No account, no telemetry, no data collection. Everything runs on your device.",
-     ["No analytics, ever", "Nothing about you is sent", "Open source · MIT licensed"],
+     ["No analytics, ever", "Nothing about you is sent", "MIT licensed · no account needed"],
      popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="facebook.com")),
 ]
 
 for i, s in enumerate(SLIDES, 1):
-    open(os.path.join(HERE, f"slide{i}.html"), "w").write(slide(*s))
+    open(os.path.join(HERE, f"slide{i}.html"), "w").write(slide(*s).replace("v4.0.0", "v" + VERSION))
     print("wrote slide", i)

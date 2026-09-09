@@ -4,6 +4,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Script } from "node:vm";
 import { ROOT, ok, done } from "./_harness.mjs";
 
 const BUILD = join(ROOT, "tools", "build_scriptlets.mjs");
@@ -36,7 +37,7 @@ ok("build: 11 malicious/invalid dropped, 1 kept", bad.code === 0 && JSON.stringi
 // 2) $ в regex аргумент оцелява verbatim (String.replace $-инжекция)
 const dollar = build(["example.com##+js(no-fetch-if, /ads\\.js$/)", "test.com##+js(no-window-open-if, /pop$'up/)"]);
 const m = mapOf(dollar.out);
-ok("build: $-args survive verbatim, main.js valid", m["example.com"][0][1] === "/ads\\.js$/" && m["test.com"][0][1] === "/pop$'up/" && (new Function(dollar.out), true));
+ok("build: $-args survive verbatim, main.js valid", m["example.com"][0][1] === "/ads\\.js$/" && m["test.com"][0][1] === "/pop$'up/" && (new Script(dollar.out), true));
 
 // 3) всички scriptlet-и с валидни аргументи минават (вкл. новите)
 const all = build([

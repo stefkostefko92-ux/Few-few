@@ -18,7 +18,7 @@ node tools/build_scriptlets.mjs --check
 
 zip -r "$out" . \
   -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
-     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' \
+     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' 'tests/*' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
 
@@ -46,5 +46,10 @@ const has = (f) => f.endsWith("/*")
   : zipFiles.includes(f);
 const missing = [...refs].filter(f => !has(f));
 if (missing.length) { console.error("MISSING from package:", missing); process.exit(1); }
-console.log("Package contains every manifest-referenced file.");
+// Dev-only trees must never ship, and packaged JS must be eval-free (Web Store: no remote code).
+const devLeak = zipFiles.filter(z => /^(tests|tools|docs|store|server|dist)\//.test(z));
+if (devLeak.length) { console.error("DEV files leaked into package:", devLeak); process.exit(1); }
+const evalHits = zipFiles.filter(z => z.endsWith(".js")).filter(z => /\beval\s*\(|new\s+Function\s*\(/.test(execSync(`unzip -p "${process.argv[2]}" "${z}"`).toString()));
+if (evalHits.length) { console.error("eval/new Function in package:", evalHits); process.exit(1); }
+console.log("Package contains every manifest-referenced file; no dev trees; no eval/new Function.");
 NODE

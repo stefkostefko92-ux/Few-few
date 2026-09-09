@@ -184,7 +184,7 @@
       attributes: true,
       attributeFilter: ["class"],
     });
-    setInterval(run, 300);
+    setInterval(run, 1000); // safety net only — the MutationObserver above reacts to class/DOM changes immediately
   }
 
   const host = location.hostname.replace(/^www\./, "");

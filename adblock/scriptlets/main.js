@@ -152,12 +152,14 @@
     };
   }
 
-  // set-cookie policy (shared helper: must be initialised BEFORE the baked
-  // directives run at the bottom of this file — var hoisting alone is not enough)
-  //: cookie name charset + a fixed consent-style value
+  // set-cookie policy: cookie name charset + a fixed consent-style value
   // dictionary (or a small integer) — a directive can never plant an arbitrary
   // value (no session/tracking cookies via the scriptlet).
   var COOKIE_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
+  // Names that are never a consent cookie: session/auth/CSRF/tracking IDs and
+  // the __Host-/__Secure- prefixes. The "only if absent" guard is blind to
+  // HttpOnly and domain-scoped cookies, so the denylist is the real fence.
+  var COOKIE_NAME_DENY = /(sess|auth|token|jwt|csrf|xsrf|login|passw|remember|^sid$|^ssid$|^uid$|^id$|^user|^_ga|^_gid|^_fbp|^__host-|^__secure-|^phpsessid$|^jsessionid$|^asp\.net_sessionid$|^connect\.sid$)/i;
   var COOKIE_VALUES = ["true", "false", "yes", "no", "y", "n", "ok", "accept", "accepted",
     "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential",
     "necessary", "on", "off", "close", "closed", "checked", "0", "1"];
@@ -180,8 +182,6 @@
       (function define(owner, i) {
         var prop = parts[i];
         if (i === parts.length - 1) {
-          var cur;
-          try { cur = owner[prop]; } catch (e) {}
           try {
             Object.defineProperty(owner, prop, {
               get: function () { return value; },
@@ -367,16 +367,15 @@
     // no-window-open-if(search): block window.open() for matching URLs (leading
     // "!" inverts). Neutralises pop-under / pop-up ad launchers.
     "no-window-open-if": function (rawSearch) {
-      var neg = typeof rawSearch === "string" && rawSearch.charAt(0) === "!";
-      var re = toReg(neg ? rawSearch.slice(1) : rawSearch);
+      // needleMatcher, not a hand-rolled copy: a needle REJECTED by the ReDoS
+      // guard must match nothing — a copy that mapped null→"match all" would
+      // block every window.open on the host.
+      var match = needleMatcher(rawSearch);
       var orig = window.open;
       if (typeof orig !== "function") return;
       window.open = function (url) {
         try {
-          var u = String(url || "");
-          var m = re ? re.test(u) : true;
-          if (neg) m = !m;
-          if (m) return null;
+          if (match(String(url || ""))) return null;
         } catch (e) {}
         return orig.apply(this, arguments);
       };
@@ -478,7 +477,13 @@
       var msg = noise();
       var check = function () {
         var st = "";
-        try { st = String(new Error().stack || ""); } catch (e) {}
+        try {
+          // Drop our own frames (chrome-extension://…) so a needle can never
+          // match the engine itself and fire on every access.
+          st = String(new Error().stack || "").split("\n").filter(function (l) {
+            return l.indexOf("chrome-extension://") < 0;
+          }).join("\n");
+        } catch (e) {}
         if (match(st)) throw new ReferenceError(msg);
       };
       try {
@@ -495,7 +500,7 @@
     // dismiss/…) or a small integer — used to pre-answer consent walls. Never
     // overwrites an existing cookie (no session clobbering), path=/ only.
     "set-cookie": function (name, value) {
-      if (!name || !COOKIE_NAME.test(String(name)) || !cookieValueOk(value)) return;
+      if (!name || !COOKIE_NAME.test(String(name)) || COOKIE_NAME_DENY.test(String(name)) || !cookieValueOk(value)) return;
       try {
         var present = String(document.cookie).split(/;\s*/).some(function (c) {
           return c.indexOf(name + "=") === 0;
@@ -563,15 +568,6 @@
     if (typeof fn !== "function") return;
     try { fn.apply(null, nativeSlice.call(d, 1)); } catch (e) {}
   }
-
-  // ---- bootstrap: baked directives ----------------------------------------
-  try {
-    var chain = hostChain();
-    for (var i = 0; i < chain.length; i++) {
-      var list = MAP[chain[i]];
-      if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
-    }
-  } catch (e) {}
 
   // ---- live directives (Level 2) -----------------------------------------
   // Delivered by our ISOLATED content script from the Ed25519-signed,
@@ -661,7 +657,7 @@
       case "abort-on-stack-trace":
         return args.length === 2 && NAME_OK.test(args[0]);
       case "set-cookie":
-        return args.length === 2 && COOKIE_NAME.test(args[0]) && cookieValueOk(args[1]);
+        return args.length === 2 && COOKIE_NAME.test(args[0]) && !COOKIE_NAME_DENY.test(args[0]) && cookieValueOk(args[1]);
       case "remove-cookie":
         return false; // baked list only — can log a user out; never from the live channel
       case "nowebrtc":
@@ -701,5 +697,16 @@
     window.addEventListener("sa-scriptlets", function (ev) {
       try { applyLive(ev && ev.detail); } catch (e) {}
     }, true);
+  } catch (e) {}
+
+  // ---- bootstrap: baked directives — LAST, once every helper above is
+  // initialised (var hoisting only hoists declarations; a helper used by an
+  // IMPL but assigned later would be undefined here). Same synchronous tick.
+  try {
+    var chain = hostChain();
+    for (var i = 0; i < chain.length; i++) {
+      var list = MAP[chain[i]];
+      if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
+    }
   } catch (e) {}
 })();

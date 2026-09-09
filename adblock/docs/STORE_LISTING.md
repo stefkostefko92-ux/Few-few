@@ -24,7 +24,7 @@ Supreme AdBlock keeps the web clean and fast, without watching what you do.
 - Dismisses cookie / consent banners for you
 - Bypasses "please disable your adblocker" walls
 - Element picker, hide anything on a page with one click
-- Advanced "My filters" with uBlock-style procedural selectors
+- Advanced "My filters" with procedural selectors and anti-adblock scriptlets
 - Per-site allowlist for sites you want to support
 - Daily signed, data-only filter updates, so blocking never goes stale
 - Live stats: ads blocked, data saved, time saved
@@ -36,7 +36,7 @@ required.
 
 ## Privacy
 Single purpose: block advertisements and trackers on the pages you visit.
-The extension collects no personal data. The only network request is a daily
+The extension collects no personal data. Apart from a filter list you may choose to import by URL, the only network request is a daily
 data-only filter update from adblock.carbonstealth.eu (no user data sent, no
 code executed).
 
@@ -44,12 +44,12 @@ Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 
 ## Permission justifications
 - declarativeNetRequest: block ad and tracker requests using filter rules.
-- declarativeNetRequestFeedback: count blocked requests per tab for the toolbar badge.
+- declarativeNetRequestFeedback: read which of our own rules matched in the current tab (getMatchedRules) to show the per-tab blocked count on the toolbar badge; no URLs are stored or sent.
 - storage: save your settings and counters locally.
 - tabs: show the current site and per-tab blocked count in the popup.
 - alarms: schedule the daily filter update and the temporary-pause timer.
 - contextMenus: the right-click "Block an element here" entry.
-- scripting: inject a small, locally-bundled ad-neutralising script (uBlock-style scriptlet) into the page at document start; it runs from the package, fetches and executes no remote code.
+- scripting: inject a small, locally-bundled ad-neutralising script (anti-adblock scriptlet) into the page at document start; it runs from the package, fetches and executes no remote code.
 - host permissions (<all_urls>): apply blocking and cosmetic filtering on the
   pages you browse; all processing is local.
 

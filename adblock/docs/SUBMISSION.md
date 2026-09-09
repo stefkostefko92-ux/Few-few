@@ -56,17 +56,24 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
     single purpose
   - I do not use or transfer user data to determine creditworthiness / lending
 
-> Note on the network request: the extension fetches a public `filters.json`
-> (block rules + CSS selectors) daily. It sends **no user data** and executes
-> **no remote code** — this is filter data, the same model uBlock/AdGuard use.
-> It does not count as data collection.
+> Note on network requests: the extension fetches a public `filters.json`
+> (block rules, CSS selectors and allowlisted scriptlet directives) daily. It
+> sends **no user data** and executes **no remote code** — this is filter data,
+> the same model established ad blockers use. The only other request is a
+> user-initiated one: if the user pastes a filter-list URL into *Import filter
+> list*, that URL is fetched once as text. Neither counts as data collection.
+> Settings are stored locally; if the user enables *Sync across devices*, Chrome
+> mirrors settings to the user's own Google account via `chrome.storage.sync`
+> (disclosed in the privacy policy).
 
 ## 5. Permission justifications (paste each)
 
 - **declarativeNetRequest** — block ad/tracker network requests using bundled
   filter rules.
-- **declarativeNetRequestFeedback** — count blocked requests per tab for the
-  toolbar badge.
+- **declarativeNetRequestFeedback** — call `declarativeNetRequest.getMatchedRules()`
+  for the active tab to show the per-tab blocked count on the toolbar badge
+  (works in the packed build; `onRuleMatchedDebug` is only used when unpacked).
+  No URLs are stored or sent.
 - **storage** — save the user's settings and counters locally.
 - **tabs** — show the current site and per-tab blocked count in the popup.
 - **alarms** — schedule the daily filter-list update and the temporary-pause

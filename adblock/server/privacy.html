@@ -38,39 +38,43 @@
 <body>
 <main>
   <header><span class="dot"></span><h1>Supreme AdBlock — Privacy Policy</h1></header>
-  <div class="sub">Last updated: July 2026</div>
+  <div class="sub">Last updated: September 2026</div>
 
   <p>Supreme AdBlock is built to protect your privacy, not to collect data.</p>
 
   <h2>What we collect</h2>
   <p><strong>Nothing.</strong> The extension has no analytics, no telemetry and no
-  accounts. We do not see which sites you visit, and no browsing data ever leaves
-  your device.</p>
+  accounts. We do not see which sites you visit, and nothing is ever sent to us. The
+  only times data can leave your device are the ones <i>you</i> trigger, listed below.</p>
 
   <h2>What is stored locally</h2>
-  <p>Kept only in your browser's local storage, never transmitted:</p>
+  <p>Kept in your browser's local storage and never sent to us. If you turn on <b>Sync across devices</b> (off by default), Chrome mirrors the items marked <i>(sync)</i> to your own Google account via <code>chrome.storage.sync</code> — Google's servers, under your account, not ours:</p>
   <ul>
-    <li>Whether protection is on or off</li>
-    <li>Your allowlisted sites</li>
-    <li>Feature toggles (cookie banners, anti-adblock, Meta posts, theme)</li>
+    <li>Whether protection is on or off <i>(sync)</i></li>
+    <li>Your allowlisted sites <i>(sync)</i></li>
+    <li>Feature toggles (cookie banners, anti-adblock, Meta posts, theme, …) <i>(sync)</i></li>
+    <li>Your custom filter rules, including any filter list you imported <i>(sync)</i></li>
     <li>Elements you hid manually with the picker</li>
     <li>A local counter of how many ads were blocked</li>
+    <li>A short local log (last 50 entries) of the sites where Smart Detection blocked an ad-sized frame — shown in the settings so you can see why; never sent anywhere</li>
+    <li>The latest downloaded filter data (see below)</li>
   </ul>
   <p>You can clear all of it from the extension's settings, or by removing the extension.</p>
 
   <h2>Network requests we make</h2>
-  <p>One, and only for filter updates. About once a day the extension downloads a
+  <p><b>Two kinds, and neither carries any information about you.</b> <b>1. Filter updates (automatic, about once a day):</b> the extension downloads a
   small filter file (<code>filters.json</code>) from
   <code>adblock.carbonstealth.eu</code> so blocking stays current as ad networks and
   sites change. This request contains <strong>no information about you</strong> — no
   identifiers, no browsing data. It is a plain GET of a public file, treated purely
-  as data (block rules and CSS selectors); no downloaded code is ever executed. You
+  as data (block rules, CSS selectors and scriptlet directives whose names and arguments come from a fixed allowlist); no downloaded code is ever executed. You
   can turn auto-update off in the settings.</p>
+  <p><b>2. Filter list import (only when you ask for it):</b> if you paste a URL into <i>Import filter list</i> in the settings, the extension downloads that list once, as plain text, from the address you gave. The site hosting the list sees an ordinary request from your browser (your IP address and browser user agent), exactly as if you had opened that URL yourself. We are not involved in that request and nothing else is sent.</p>
 
   <h2>Permissions</h2>
   <ul>
     <li><code>declarativeNetRequest</code> — block ad/tracker requests via rules.</li>
-    <li><code>declarativeNetRequestFeedback</code> — count blocked requests per tab for the badge.</li>
+    <li><code>declarativeNetRequestFeedback</code> — read which of our own rules matched in the current tab (<code>getMatchedRules</code>) to show the per-tab blocked count on the badge; no URLs are stored or sent.</li>
     <li><code>storage</code> — save your settings locally.</li>
     <li><code>tabs</code> — show the per-tab blocked count and current site in the popup.</li>
     <li><code>alarms</code> — schedule the daily filter update and the pause timer.</li>

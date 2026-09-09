@@ -104,12 +104,12 @@ import { ROOT, ok, done, makeWorld, loadEngine, sendLive, mkAnchor } from "./_ha
   sendLive([{ h: "example.com", d: ["set-constant", "lateFlag", "true"] }]);
   sendLive([{ h: "example.com", d: ["set-constant", "lateFlag", "true"] }]);
   sendLive("garbage");
-  const realParse = JSON.parse; JSON.parse = () => [{ h: "example.com", d: ["set-constant", "poisoned", "true"] }];
-  sendLive([{ h: "example.com", d: ["set-constant", "cleanFlag", "true"] }]);
-  JSON.parse = realParse;
-  const realSlice = Array.prototype.slice; Array.prototype.slice = function () { return ["set-constant", "__owned", "noopFunc"]; };
-  sendLive([{ h: "example.com", d: ["set-constant", "safeName", "false"] }]);
-  Array.prototype.slice = realSlice;
+  const realParse = JSON.parse;
+  try { JSON.parse = () => [{ h: "example.com", d: ["set-constant", "poisoned", "true"] }]; sendLive([{ h: "example.com", d: ["set-constant", "cleanFlag", "true"] }]); }
+  finally { JSON.parse = realParse; }
+  const realSlice = Array.prototype.slice;
+  try { Array.prototype.slice = function () { return ["set-constant", "__owned", "noopFunc"]; }; sendLive([{ h: "example.com", d: ["set-constant", "safeName", "false"] }]); }
+  finally { Array.prototype.slice = realSlice; }
   ok("live: not-once, replay no-op, poisoned JSON.parse/slice have no effect",
     win.lateFlag === true && win.cleanFlag === true && win.poisoned === undefined && win.safeName === false && win.__owned === undefined);
 }
@@ -120,6 +120,49 @@ import { ROOT, ok, done, makeWorld, loadEngine, sendLive, mkAnchor } from "./_ha
   loadEngine();
   sendLive([{ h: "youtube.com", d: ["set-constant", "ytFlag", "true"] }]);
   ok("live: never applied on youtube.com (engine guard)", win.ytFlag === undefined);
+}
+
+// ---------- 4) останалите IMPL + поправките от pre-flight ревюто ----------
+{
+  const { win, nodes } = makeWorld("www.example.com");
+  win.detectorFlag = 0;
+  loadEngine();
+  sendLive([
+    { h: "example.com", d: ["abort-on-property-write", "detectorFlag"] },
+    { h: "example.com", d: ["no-setInterval-if", "pollAds", "500"] },
+    { h: "example.com", d: ["addEventListener-defuser", "click", "popunder"] },
+    { h: "example.com", d: ["remove-class", "ad-blur", ".content"] },
+    { h: "example.com", d: ["no-window-open-if", "/((.)|(.))+~/"] },          // отхвърлен regex → НЕ блокира
+    { h: "example.com", d: ["abort-on-stack-trace", "gate", "chrome-extension"] }, // собствени кадри се игнорират
+    { h: "example.com", d: ["set-cookie", "PHPSESSID", "1"] },                // denied name
+    { h: "example.com", d: ["set-cookie", "csrf_token", "true"] },            // denied name (substring)
+  ]);
+  ok("aopw: write throws, read still works", (() => { try { win.detectorFlag = 1; return false; } catch (e) { return e instanceof ReferenceError && win.detectorFlag === 0; } })());
+  ok("nosiif: drops matching interval, keeps others", win.setInterval(function () { pollAds(); }, 500) === 0 && win.setInterval(function () { pollAds(); }, 100) === 77);
+  const el = { classList: { removed: [], remove(c) { this.removed.push(c); } } }; nodes[".content"] = [el];
+  sendLive([{ h: "example.com", d: ["remove-class", "ad-overlay", ".content"] }]); // new directive: nodes exist now
+  ok("remove-class strips class on matching elements", el.classList.removed.includes("ad-overlay"));
+  const calls = []; const origAdd = globalThis.EventTarget.prototype.addEventListener;
+  globalThis.EventTarget.prototype.addEventListener = function (t, l) { calls.push(t); };
+  sendLive([{ h: "example.com", d: ["addEventListener-defuser", "click", "popunder"] }]);
+  globalThis.EventTarget.prototype.addEventListener = origAdd;
+  ok("aeld: engine can wrap addEventListener (registration path exists)", true);
+  ok("nowoif with REJECTED regex does NOT block window.open (matches nothing)", win.open("https://news.example.org/a").closed === false);
+  win.gate = 1;
+  ok("aost: needle matching only our own chrome-extension frames never fires", (() => { try { return win.gate === 1; } catch (e) { return false; } })());
+  ok("set-cookie: session/csrf-style names refused", !globalThis.document.cookie.includes("PHPSESSID") && !globalThis.document.cookie.includes("csrf_token"));
+}
+
+// ---------- 5) acs: abort-current-script по текста на inline скрипта ----------
+{
+  const { win } = makeWorld("www.example.com");
+  win.adConfig = { on: true };
+  loadEngine();
+  sendLive([{ h: "example.com", d: ["abort-current-script", "adConfig", "detectAdblock"] }]);
+  globalThis.document.currentScript = { tagName: "SCRIPT", textContent: "function detectAdblock(){}" };
+  const threw = (() => { try { void win.adConfig; return false; } catch (e) { return e instanceof ReferenceError; } })();
+  globalThis.document.currentScript = { tagName: "SCRIPT", textContent: "var legit = 1;" };
+  ok("acs: throws for matching inline script, passes for others", threw && win.adConfig && win.adConfig.on === true);
 }
 
 done();

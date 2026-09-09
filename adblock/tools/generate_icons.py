@@ -216,7 +216,13 @@ def main():
         write_png(os.path.join(icons, f"icon{s}.png"), s, s, render(s, sample_v2_small if s <= 32 else sample_v2))
         print("icon", s)
 
-    write_png(os.path.join(store, "store_icon_128.png"), 128, 128, render(128, sample_v2))
+    # Store icon: the Web Store wants the artwork inside a 96x96 area with 16px of
+    # transparent padding on a 128x128 canvas (icons/ stay full-bleed — Chrome scales those).
+    inner = render(96, sample_v2)
+    padded = bytearray(128 * 128 * 4)
+    for y in range(96):
+        padded[((y + 16) * 128 + 16) * 4:((y + 16) * 128 + 16 + 96) * 4] = inner[y * 96 * 4:(y + 1) * 96 * 4]
+    write_png(os.path.join(store, "store_icon_128.png"), 128, 128, padded)
 
     w, h = 440, 280
     bg = carbon_bg(w, h)

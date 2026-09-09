@@ -49,6 +49,11 @@ const ALIASES = {
 const COOKIE_VALUES = new Set(["true", "false", "yes", "no", "y", "n", "ok", "accept", "accepted",
   "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential", "necessary",
   "on", "off", "close", "closed", "checked", "0", "1"]);
+const COOKIE_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
+// Names that are never a consent cookie: session/auth/CSRF/tracking IDs and
+// the __Host-/__Secure- prefixes. The "only if absent" guard is blind to
+// HttpOnly and domain-scoped cookies, so the denylist is the real fence.
+const COOKIE_NAME_DENY = /(sess|auth|token|jwt|csrf|xsrf|login|passw|remember|^sid$|^ssid$|^uid$|^id$|^user|^_ga|^_gid|^_fbp|^__host-|^__secure-|^phpsessid$|^jsessionid$|^asp\.net_sessionid$|^connect\.sid$)/i;
 
 // Per-scriptlet arg policy. A directive is rejected unless it passes.
 const NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                 // property-chain arg
@@ -112,7 +117,7 @@ function validate(name, args) {
       if (args.length !== 2 || !NAME_RE.test(args[0])) return null;
       return [name, args[0], args[1]];
     case "set-cookie":
-      if (args.length !== 2 || !/^[A-Za-z0-9_.-]{1,64}$/.test(args[0])) return null;
+      if (args.length !== 2 || !COOKIE_NAME.test(args[0]) || COOKIE_NAME_DENY.test(args[0])) return null;
       if (!(COOKIE_VALUES.has(args[1]) || /^\d{1,5}$/.test(args[1]))) return null;
       return [name, args[0], args[1]];
     case "remove-cookie":
@@ -178,6 +183,20 @@ function assertNamesInSync(engine) {
       console.error("ERROR: IMPL", JSON.stringify(k), "has no alias in build_scriptlets.mjs");
       process.exit(1);
     }
+  }
+  // The service worker keeps its own copy of the alias table (classic SW script,
+  // no import). Guard it too, so the three tables cannot drift silently.
+  try {
+    const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
+    const bgAliases = [...bgSrc.match(/const SCRIPTLET_ALIASES = \{([\s\S]*?)\n\};/)[1].matchAll(/"([^"]+)": "([^"]+)"/g)]
+      .map((m) => m[1] + "=" + m[2]).sort().join("|");
+    const buildAliases = Object.entries(ALIASES).map(([k, v]) => k + "=" + v).sort().join("|");
+    if (bgAliases !== buildAliases) {
+      console.error("ERROR: SCRIPTLET_ALIASES in background.js differs from ALIASES in build_scriptlets.mjs");
+      process.exit(1);
+    }
+  } catch (e) {
+    if (e && e.code !== "ENOENT") { console.error("ERROR: could not compare background.js aliases:", e.message); process.exit(1); }
   }
 }
 

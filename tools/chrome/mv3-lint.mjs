@@ -21,7 +21,7 @@ function walk(dir, acc = []) {
   let entries = [];
   try { entries = readdirSync(dir); } catch { return acc; }
   for (const e of entries) {
-    if (e === "node_modules" || e === ".git") continue;
+    if (e === "node_modules" || e === ".git" || e === "tests") continue; // tests/ е dev-only (никога не се пакетира)
     const p = join(dir, e);
     let st;
     try { st = statSync(p); } catch { continue; }

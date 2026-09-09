@@ -10,7 +10,7 @@ Carbon Stealth; няма общ код с другите продукти.
 ## Структура
 
 ```
-manifest.json           MV3 конфигурация (v4.0.1)
+manifest.json           MV3 конфигурация (версията живее само тук + package.json)
 background.js           service worker — рулсети, allowlist, статистики, съобщения
 theme.js                прилага Carbon Stealth / светла тема
 content.js / .css       козметика (вкл. процедурни селектори) + Smart Detection
@@ -31,7 +31,8 @@ rules/                  DNR статични правила: ad_rules + youtube_
                         tools/build_filters.mjs) + козметичен bundle + counts
 popup/ · options/       UI (popup + настройки)
 icons/ · _locales/      икони · локализация
-tools/                  build_filters.mjs (EasyList→DNR) + генератори + package.sh
+tools/                  build_filters.mjs (EasyList→DNR) + build_scriptlets.mjs + генератори + package.sh
+tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
 store/ · docs/          store графики + листинг/submission текстове
 ```
 

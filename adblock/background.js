@@ -19,6 +19,7 @@ async function getRuleCounts() {
 const YT_BYPASS_RULE_ID = 70000; // YouTube session bypass (allowAllRequests); below every sync range
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
+const ALLOW_RULE_MAX = 5000;     // cap: allowlist ids must stay below LIVE_RULE_BASE (same cap as import)
 const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 
 // Live filter updates: DATA only (domains + CSS selectors), never code.
@@ -426,9 +427,13 @@ const PROTECTED_YT_FIELDS = new Set([
 
 // ---- Live scriptlets (Level 2, DATA only) ----
 // filters.json may carry `scriptlets: [{ h: "host.tld" | "", n: "name", a: [args] }]`.
-// We canonicalise uBO aliases and validate with the SAME rules as
-// tools/build_scriptlets.mjs, then content.js hands the result to the
-// MAIN-world engine, which re-validates on arrival. Only names the engine
+// We canonicalise uBO aliases and validate with rules that are a STRICT
+// SUPERSET of tools/build_scriptlets.mjs (the baked list is trusted dev input;
+// this channel is not): selector/attribute/tag policy, the cookie-name denylist
+// and the remove-cookie refusal apply only here and in the engine. Invariant:
+// live accepts ⇒ build accepts, never the reverse (tests/policy-parity gates the
+// shared tables). content.js hands the result to the MAIN-world engine, which
+// re-validates on arrival. Only names the engine
 // ships are accepted; NO trusted-* variants; never on core video/CDN hosts.
 const SCRIPTLET_ALIASES = {
   "set-constant": "set-constant", "set": "set-constant",
@@ -465,6 +470,9 @@ const scriptletAttrsOk = (list) => {
 // set-cookie policy (mirrored in engine.js): name charset + fixed consent-style
 // value dictionary or a small integer — never an arbitrary value.
 const SCRIPTLET_COOKIE_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
+// Never a consent cookie: session/auth/CSRF/tracking IDs, __Host-/__Secure- prefixes
+// (mirrored in engine.js and tools/build_scriptlets.mjs; gated by tests/policy-parity).
+const SCRIPTLET_COOKIE_NAME_DENY = /(sess|auth|token|jwt|csrf|xsrf|login|passw|remember|^sid$|^ssid$|^uid$|^id$|^user|^_ga|^_gid|^_fbp|^__host-|^__secure-|^phpsessid$|^jsessionid$|^asp\.net_sessionid$|^connect\.sid$)/i;
 const SCRIPTLET_COOKIE_VALUES = new Set(["true", "false", "yes", "no", "y", "n", "ok", "accept",
   "accepted", "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential",
   "necessary", "on", "off", "close", "closed", "checked", "0", "1"]);
@@ -507,7 +515,7 @@ function validateScriptlet(rawName, args) {
     case "abort-on-stack-trace":
       return ok(n === 2 && SCRIPTLET_NAME_RE.test(args[0]));
     case "set-cookie":
-      return ok(n === 2 && SCRIPTLET_COOKIE_NAME.test(args[0]) &&
+      return ok(n === 2 && SCRIPTLET_COOKIE_NAME.test(args[0]) && !SCRIPTLET_COOKIE_NAME_DENY.test(args[0]) &&
         (SCRIPTLET_COOKIE_VALUES.has(String(args[1])) || /^\d{1,5}$/.test(String(args[1]))));
     case "remove-cookie":
       return null; // baked list only — can log a user out of a site; never live
@@ -641,7 +649,7 @@ async function syncAllowRules() {
     .filter((r) => r.id >= ALLOW_RULE_BASE && r.id < LIVE_RULE_BASE)
     .map((r) => r.id);
 
-  const addRules = allowlist.map((domain, i) => ({
+  const addRules = allowlist.slice(0, ALLOW_RULE_MAX).map((domain, i) => ({
     id: ALLOW_RULE_BASE + i,
     priority: 10000,
     action: { type: "allowAllRequests" },
@@ -946,7 +954,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         let list = data.allowlist || [];
         if (!msg.host) return sendResponse({ ok: false });
         if (msg.allow) {
-          if (!list.includes(msg.host)) list.push(msg.host);
+          if (!list.includes(msg.host)) {
+            if (list.length >= ALLOW_RULE_MAX) return sendResponse({ ok: false, reason: "allowlist full", allowlist: list });
+            list.push(msg.host);
+          }
         } else {
           list = list.filter((d) => d !== msg.host);
         }

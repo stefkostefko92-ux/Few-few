@@ -1,6 +1,7 @@
 // Общ harness за тестовете: симулиран MAIN world (window/document/cookie jar)
 // + зареждане на shipped engine-а и на service worker-а (с Proxy chrome stub).
 import { readFileSync } from "node:fs";
+import { runInThisContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -68,7 +69,7 @@ export function makeWorld(hostname = "www.example.com") {
 }
 
 export function loadEngine(file = join(ROOT, "scriptlets", "main.js")) {
-  new Function(readFileSync(file, "utf8"))();
+  runInThisContext(readFileSync(file, "utf8"), { filename: file });
 }
 
 // Доставя live директиви точно както content.js (JSON низ на DOM събитие).
@@ -81,7 +82,7 @@ export function loadBackground() {
   globalThis.chrome = mk();
   const src = readFileSync(join(ROOT, "background.js"), "utf8") +
     "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains };";
-  new Function(src)();
+  runInThisContext(src, { filename: "background.js" });
   return globalThis.__bg;
 }
 
