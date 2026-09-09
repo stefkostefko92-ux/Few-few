@@ -52,29 +52,31 @@
     </div>
   </section>
 
-  <section class="site">
-    <div class="site-id">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>
-      <span id="siteHost" data-i18n="thisSite">this site</span>
-    </div>
-    <label class="switch sm" data-i18n-title="blockOnSite" title="Block ads on this site">
-      <span class="lbl" id="allowLabel" data-i18n="blocking">Blocking</span>
-      <input type="checkbox" id="allowToggle" checked />
-      <span class="track"><span class="thumb"></span></span>
-    </label>
-  </section>
+  <div class="site-group">
+    <section class="site">
+      <div class="site-id">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>
+        <span id="siteHost" data-i18n="thisSite">this site</span>
+      </div>
+      <label class="switch sm" data-i18n-title="blockOnSite" title="Block ads on this site">
+        <span class="lbl" id="allowLabel" data-i18n="blocking">Blocking</span>
+        <input type="checkbox" id="allowToggle" checked />
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </section>
 
-  <section class="site sub" id="cosmRow">
-    <div class="site-id">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 9h18M8 13h8"/></svg>
-      <span data-i18n="cosmetics">Hide ad boxes here</span>
-    </div>
-    <label class="switch sm" data-i18n-title="cosmeticsTitle" title="Cosmetic filtering on this site (turn off if the layout breaks)">
-      <span class="lbl" id="cosmLabel" data-i18n="on">On</span>
-      <input type="checkbox" id="cosmToggle" checked />
-      <span class="track"><span class="thumb"></span></span>
-    </label>
-  </section>
+    <section class="site sub" id="cosmRow">
+      <div class="site-id">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 9h18M8 13h8"/></svg>
+        <span data-i18n="cosmetics">Hide ad boxes here</span>
+      </div>
+      <label class="switch sm" data-i18n-title="cosmeticsTitle" title="Cosmetic filtering on this site (turn off if the layout breaks)">
+        <span class="lbl" id="cosmLabel" data-i18n="on">On</span>
+        <input type="checkbox" id="cosmToggle" checked />
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </section>
+  </div>
 
   <details class="log" id="logBox">
     <summary>
