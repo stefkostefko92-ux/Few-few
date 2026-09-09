@@ -1,0 +1,195 @@
+{
+  "common": {
+    "appName": "LaTuaAuto",
+    "tagline": "Der zivile Weg, den Besitzer eines Autos zu erreichen.",
+    "nav": { "home": "Start", "how": "So funktioniert es", "safety": "Sicherheit & Datenschutz", "deadlines": "Auto-Fristen", "faq": "Häufige Fragen", "contact": "Kontakt" },
+    "cta": { "start": "Kostenlos starten", "tryCalculator": "Fristen berechnen", "learnMore": "Mehr erfahren" },
+    "language": "Sprache",
+    "skipToContent": "Zum Inhalt springen",
+    "notFoundTitle": "Seite nicht gefunden",
+    "notFoundText": "Diese Adresse existiert nicht oder wurde verschoben.",
+    "backHome": "Zur Startseite",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "draftNotice": "Entwurf in rechtlicher Prüfung."
+  },
+  "seo": {
+    "metaTitle": "LaTuaAuto — Chat per Kennzeichen und automatische Auto-Fristen",
+    "metaDescription": "Licht an? Zugeparkt? Benachrichtige den Besitzer über das Kennzeichen, ohne Telefonnummer. Revisione, Bollo, RCA, Reifen und Bußgelder: die Fristen deines Autos in Italien füllen sich von selbst."
+  },
+  "home": {
+    "heroTitle": "Schreib ans Kennzeichen. Nicht an die Person.",
+    "heroText": "Licht an, Fenster offen, ein Auto parkt dich zu: Benachrichtige den Besitzer mit einem Tipp, ohne Namen oder Nummer zu kennen. Und die Fristen deines Autos füllen sich von selbst.",
+    "heroBadge": "Kostenlos · Ohne GPS · Ohne Telefonnummer",
+    "demoLabel": "Probiere es: Kennzeichen eingeben",
+    "demoPlaceholder": "AB 123 CD",
+    "demoValid": "Gültiges Kennzeichen ({kind}). Ein verifizierter Besitzer würde eine Meldung erhalten.",
+    "demoInvalid": "Format nicht erkannt. Beispiel: AB 123 CD",
+    "demoKindAuto": "Pkw",
+    "demoKindMoto": "Motorrad",
+    "demoKindRimorchio": "Anhänger",
+    "demoKindLegacy": "historisches Format",
+    "pillarsTitle": "Zwei Dinge, richtig gemacht",
+    "pillar1Title": "Chat per Kennzeichen",
+    "pillar1Text": "Die erste Nachricht ist immer eine unserer vorgefertigten Meldungen. Freier Text wird erst frei, wenn der Besitzer antwortet. Wer dich belästigt, wird mit einem Tipp blockiert.",
+    "pillar2Title": "Fristen, die sich von selbst füllen",
+    "pillar2Text": "Kennzeichen eingeben: Revisione, RCA, regionaler Bollo, Winterreifen, Führerscheinverlängerung. Die Daten berechnen wir. Du bekommst die Erinnerung rechtzeitig.",
+    "featuresTitle": "Warum es anders ist",
+    "features": {
+      "verified": { "title": "Unverifizierte empfangen nicht", "text": "Du kannst an jedes Kennzeichen schreiben. Nachrichten empfängst du aber erst, wenn du nachgewiesen hast, dass das Auto dir gehört. Niemand kann dein Kennzeichen registrieren und an deiner Stelle lesen." },
+      "templates": { "title": "Erstkontakt nur mit Vorlagen", "text": "Licht an, du hast mich zugeparkt, Reifen platt. Kein freier Text an Fremde: Belästigung hat keinen Raum, um anzufangen." },
+      "fine": { "title": "Bußgeld: die zwei Uhren, die zählen", "text": "Fotografiere den Bescheid: −30 % bei Zahlung innerhalb von 5 Tagen, 30 Tage für den Friedensrichter, 60 für den Präfekten. Kein Countdown wird vergessen." },
+      "noGps": { "title": "Kein Standort, kein Telefon", "text": "Wir fragen deinen Standort weder ab noch speichern wir ihn. Keine Telefonnummer nötig. Nur E-Mail und Kennzeichen." },
+      "logbook": { "title": "Digitales Wartungsheft", "text": "Inspektionen, Reifen, Bremsen, Kilometer. Beim Verkauf exportierst du ein PDF mit der ganzen Geschichte des Autos." },
+      "qr": { "title": "QR-Aufkleber für alle ohne App", "text": "Ein kleiner Aufkleber an der Scheibe: Wer ihn scannt, schreibt dir aus dem Browser, ohne Installation, und dein Kennzeichen erscheint nie im Link." }
+    },
+    "howTitle": "So funktioniert es in drei Schritten",
+    "how": {
+      "step1": { "title": "Registriere dein Auto", "text": "E-Mail und Kennzeichen. Dann weist du mit dem Fahrzeugschein nach, dass das Auto dir gehört: Das Bild bleibt auf deinem Telefon." },
+      "step2": { "title": "Die Fristen kommen von selbst", "text": "Aus Kennzeichen und Erstzulassung berechnen wir Revisione, Reifen, Führerschein. Du bestätigst mit einem Tipp." },
+      "step3": { "title": "Warnen oder gewarnt werden", "text": "Siehst du ein Auto mit Licht an? Schreib ans Kennzeichen. Hat dich jemand zugeparkt? Du erreichst ihn mit einem Tipp." }
+    },
+    "trustTitle": "Für Italien gebaut, nach dem Gesetz",
+    "trustText": "Ein Kennzeichen ist ein personenbezogenes Datum (Kassationshof, Garante Privacy). Deshalb zeigt LaTuaAuto nie, wer hinter einem Kennzeichen steht, lässt niemanden herausfinden, ob ein Kennzeichen registriert ist, und verfolgt niemanden. Sicherheit vor Funktionen.",
+    "ctaTitle": "Bereit, wenn du es bist",
+    "ctaText": "Die App kommt Stadt für Stadt. Probiere in der Zwischenzeit den Fristenrechner: kostenlos, ohne Registrierung."
+  },
+  "how": {
+    "title": "So funktioniert LaTuaAuto",
+    "intro": "Ein Dienst mit zwei Seiten: Sender und Empfänger. Beide so gestaltet, dass sie nicht missbraucht werden können.",
+    "sender": {
+      "title": "Wenn du jemanden warnen willst",
+      "steps": [
+        "Gib das Kennzeichen des Fahrzeugs ein (Pkw, Motorrad oder Anhänger).",
+        "Wähle die Meldung: Licht an, Fenster offen, zugeparkt, gefährlich geparkt, Reifen platt, Alarm, Flüssigkeitsverlust, Auto beschädigt.",
+        "Ist der Besitzer verifiziert, erhält er die Benachrichtigung. Antwortet er, öffnet sich der freie Chat. Antwortet er nicht innerhalb von 48 Stunden, schließt sich der Thread von selbst.",
+        "Wir sagen dir nie, ob ein Kennzeichen registriert ist: Eine Antwort ist das einzige Signal."
+      ]
+    },
+    "receiver": {
+      "title": "Wenn du gewarnt werden willst",
+      "steps": [
+        "Du registrierst E-Mail und Kennzeichen. Du kannst sofort an andere schreiben, empfängst aber noch nicht.",
+        "Basis-Verifizierung: Kennzeichen + letzte 4 Zeichen der Fahrgestellnummer, abgeglichen mit offiziellen öffentlichen Daten.",
+        "Vollständige Verifizierung: Du fotografierst den Fahrzeugschein. Die OCR läuft auf deinem Telefon; bei uns kommt nur ein Ja/Nein an. Das Bild wird nie gesendet oder gespeichert.",
+        "Als Verifizierter empfängst du Meldungen, bestimmst, wer dir schreiben darf, und blockierst mit einem Tipp."
+      ]
+    },
+    "deadlinesTitle": "Die Fristen füllen sich von selbst",
+    "deadlinesText": "Aus Kennzeichen und Erstzulassung berechnen wir Revisione (4 Jahre, dann alle 2), RCA, regionalen Bollo, Winterreifen (15. Oktober – 15. November) und die Führerscheinverlängerung nach Alter. Die Inspektion schätzen wir nach Kilometern oder Zeit. Alles in einem Kalender mit Erinnerungen 30, 15 und 3 Tage vorher.",
+    "fineTitle": "Bußgeld: Du fotografierst, wir zählen die Tage",
+    "fineText": "Um 30 % reduzierte Zahlung innerhalb von 5 Tagen nach Zustellung; Einspruch beim Friedensrichter innerhalb von 30 Tagen; Einspruch beim Präfekten innerhalb von 60. Fristen, die auf Samstag, Sonntag oder Feiertag fallen, verschieben sich auf den nächsten Werktag. Es ist eine Erinnerung, keine Rechtsberatung."
+  },
+  "safety": {
+    "title": "Sicherheit und Datenschutz",
+    "intro": "Ein Dienst, der ein Kennzeichen mit einer Person verknüpft, kann zum Werkzeug für Belästigung werden. Wir haben LaTuaAuto so entworfen, dass er es nicht wird.",
+    "principles": [
+      { "title": "Ein Kennzeichen ist ein personenbezogenes Datum", "text": "Das sagt der Kassationshof, und der Garante setzt es durch. Wir behandeln es entsprechend: geschützt gespeichert, nie Dritten gezeigt, nie in einem öffentlichen Verzeichnis." },
+      { "title": "Kein Standort, kein Telefon", "text": "Wir nutzen kein GPS, fragen keine Telefonnummer ab und speichern nicht, wo du bist, wenn du schreibst." },
+      { "title": "Wir sagen nie, ob ein Kennzeichen registriert ist", "text": "Ein Dienst, der „dieses Kennzeichen existiert“ antwortet, wird zur Personensuchmaschine. Unserer nicht." },
+      { "title": "Unverifizierte empfangen nicht", "text": "Du kannst sofort schreiben, empfängst aber erst nach dem Nachweis, dass das Auto dir gehört. Niemand kann an dich gerichtete Meldungen abfangen." },
+      { "title": "Erstkontakt nur mit Vorlagen", "text": "Freier Text öffnet sich erst, wenn du antwortest. Höchstens fünf neue Kontakte pro Tag und Nutzer. Nicht angenommene Threads verfallen nach 48 Stunden." },
+      { "title": "Blockieren und melden mit einem Tipp", "text": "Jede Meldung erhält eine begründete Entscheidung. Wer ein fremdes Kennzeichen für Belästigung, Betrug oder Nachstellung nutzt, wird entfernt." },
+      { "title": "Kein „online“, kein „schreibt gerade“", "text": "Keine Anzeigen, die deine Gewohnheiten verraten. Kein öffentliches Profil." },
+      { "title": "Daten in Europa", "text": "Server in der Europäischen Union. Kein Datenverkauf. Die Kontolöschung entfernt alles, was es enthält." }
+    ],
+    "legalNote": "Die rechtlichen Informationen auf dieser Seite dienen nur der Information und stellen keine Rechtsberatung dar."
+  },
+  "deadlines": {
+    "title": "Fristenrechner fürs Auto",
+    "intro": "Gib wenige Daten ein: Wir berechnen Revisione, Reifen, Führerschein und die Bußgeldfristen. Keine Registrierung, nichts wird gespeichert.",
+    "form": {
+      "registration": "Datum der Erstzulassung",
+      "lastRevisione": "Letzte Revisione (falls bereits gemacht)",
+      "birth": "Dein Geburtsdatum (für den Führerschein)",
+      "patenteIssued": "Ausstellungs- oder letztes Verlängerungsdatum des Führerscheins",
+      "fineNotified": "Zustelldatum des Bußgeldbescheids (falls vorhanden)",
+      "calculate": "Berechnen",
+      "optional": "optional"
+    },
+    "results": {
+      "title": "Deine Fristen",
+      "revisione": "Nächste Revisione",
+      "revisioneHint": "Bis Monatsende: erstmals 4 Jahre nach Erstzulassung, dann alle 2 Jahre.",
+      "tyres": "Reifenwechsel",
+      "tyresWinter": "Winterreifen Pflicht ab 15. November; montieren darfst du ab 15. Oktober.",
+      "tyresSummer": "Sommerreifen: Frist 15. Mai; wechseln darfst du ab 15. April.",
+      "patente": "Ablauf Führerschein",
+      "patenteHint": "Gültig 10 Jahre bis 50, 5 bis 70, 3 bis 80, danach 2. Läuft am Geburtstag ab.",
+      "fineSconto": "Zahlung mit 30 % Nachlass",
+      "fineGdp": "Einspruch beim Friedensrichter",
+      "finePrefetto": "Einspruch beim Präfekten",
+      "daysLeft": "{days, plural, =0 {heute} one {in # Tag} other {in # Tagen}}",
+      "overdue": "überfällig seit {days, plural, one {# Tag} other {# Tagen}}",
+      "disclaimer": "Informative Berechnung nach der italienischen Straßenverkehrsordnung. Prüfe immer die offiziellen Dokumente. Keine Rechtsberatung."
+    }
+  },
+  "faq": {
+    "title": "Häufige Fragen",
+    "items": [
+      { "q": "Wie schreibe ich dem Besitzer eines Autos, den ich nicht kenne?", "a": "Gib das Kennzeichen ein und wähle eine Vorlage. Ist der Besitzer registriert und verifiziert, erhält er eine Benachrichtigung und kann antworten. Du siehst nie Name, E-Mail oder Telefon." },
+      { "q": "Kann jemand mein Kennzeichen registrieren und an mich gerichtete Nachrichten lesen?", "a": "Nein. Wer ein Kennzeichen ohne Verifizierung registriert, kann nur schreiben, nicht empfangen. Meldungen erreichen nur das Konto, das den Besitz nachgewiesen hat." },
+      { "q": "Verrät LaTuaAuto, wer hinter einem Kennzeichen steht?", "a": "Nie. Es gibt keine Kennzeichensuche, die eine Person liefert, und wir sagen nicht einmal, ob ein Kennzeichen registriert ist." },
+      { "q": "Welche Fristen werden automatisch berechnet?", "a": "Revisione (4 Jahre nach Erstzulassung, dann alle 2), Winter- und Sommerreifen, Führerscheinverlängerung nach Alter, Inspektion nach Kilometern oder Zeit, Bußgeldfristen. RCA und Bollo aus deinen Angaben oder der offiziellen Prüfung." },
+      { "q": "Was kostet es?", "a": "Die Basisnutzung ist kostenlos: ein Kennzeichen, Chat und wesentliche Erinnerungen. Ein Premium-Plan wird mehr Fahrzeuge, ein Wartungsheft mit PDF und erweiterte Erinnerungen bieten." },
+      { "q": "Nutzt ihr GPS oder meine Telefonnummer?", "a": "Nein. Wir nutzen keinen Standort und fragen keine Telefonnummer ab. Du registrierst dich mit E-Mail und Kennzeichen." },
+      { "q": "Was, wenn mich jemand belästigt?", "a": "Blockiere mit einem Tipp, und der Thread verschwindet. Du kannst melden: Jede Meldung erhält eine begründete Entscheidung, Missbraucher werden entfernt." },
+      { "q": "Ist ein Kennzeichen ein personenbezogenes Datum?", "a": "Ja. Der Kassationshof hat es festgestellt, der Garante setzt es durch. Deshalb speichern wir es geschützt und legen es nie offen." }
+    ]
+  },
+  "contact": {
+    "title": "Kontakt",
+    "intro": "Meldungen, Datenschutzfragen, Anfragen von Behörden: Schreib uns. Wir antworten auf Italienisch, Englisch und Deutsch.",
+    "email": "E-Mail",
+    "message": "Nachricht",
+    "send": "Senden",
+    "sent": "Nachricht gesendet. Danke.",
+    "error": "Die Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "dsaTitle": "Kontaktstelle (DSA, DSGVO)",
+    "dsaText": "Zentrale Kontaktstelle für Nutzer und Behörden gemäß Verordnung (EU) 2022/2065: {email}."
+  },
+  "legal": {
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "sections": [
+        { "h": "Verantwortlicher", "p": "Carbon Stealth VCC. Kontakt: {email}." },
+        { "h": "Welche Daten wir verarbeiten", "p": "E-Mail, Passwort (als Hash), Kennzeichen und Fahrzeugdaten, die du eingibst, ausgetauschte Nachrichten, Erinnerungen, Geburtsdatum, falls du die Führerschein-Erinnerung nutzt, IP-Adresse beim Login (90 Tage, Sicherheit). Kein Standort, keine Telefonnummer." },
+        { "h": "Warum und auf welcher Grundlage", "p": "Erbringung des Dienstes (Art. 6 Abs. 1 lit. b DSGVO); berechtigtes Interesse an Verkehrssicherheit und Missbrauchsprävention (lit. f), mit dokumentierter Interessenabwägung; Einwilligung für optionale Funktionen (lit. a)." },
+        { "h": "Ein Kennzeichen ist ein personenbezogenes Datum", "p": "Wir speichern es geschützt, zeigen es keinen Dritten und beantworten nicht die Frage „ist dieses Kennzeichen registriert?“." },
+        { "h": "Wie lange", "p": "Solange das Konto besteht. Nicht angenommene Threads: 48 Stunden. Login-IP: 90 Tage. Kontaktnachrichten: 12 Monate." },
+        { "h": "Deine Rechte", "p": "Auskunft, Berichtigung, Löschung, Einschränkung, Übertragbarkeit, Widerspruch; Beschwerde beim Garante per la protezione dei dati personali." },
+        { "h": "Wo", "p": "Server in der Europäischen Union. Keine Übermittlung außerhalb der EU." }
+      ]
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "sections": [
+        { "h": "Der Dienst", "p": "LaTuaAuto ermöglicht, dem Besitzer eines Fahrzeugs über das Kennzeichen Meldungen zu senden und die Fristen des Fahrzeugs zu verwalten. Anbieter ist Carbon Stealth VCC." },
+        { "h": "Mindestalter", "p": "16 Jahre." },
+        { "h": "Korrekte Nutzung", "p": "Verboten ist, ein fremdes Kennzeichen für Betrug, Belästigung, Drohungen oder Nachstellung zu nutzen, Werbung zu senden oder zu versuchen, eine Person über das Kennzeichen zu identifizieren. Verstöße führen zur Entfernung des Kontos." },
+        { "h": "Besitznachweis", "p": "Du empfängst Nachrichten erst nach dem Nachweis, dass das Fahrzeug dir gehört. Falsche Angaben führen zur Entfernung." },
+        { "h": "Meldungen und Entscheidungen", "p": "Jede Meldung erhält eine begründete Entscheidung. Du kannst sie anfechten, indem du an die Kontaktstelle schreibst." },
+        { "h": "Erinnerungen", "p": "Die Fristenberechnungen sind informativ. Prüfe immer die offiziellen Dokumente: Sie ersetzen weder Rechtsberatung noch einen behördlichen Bescheid." },
+        { "h": "Anwendbares Recht", "p": "Recht der Europäischen Union und italienisches Recht für in Italien ansässige Verbraucher." }
+      ]
+    },
+    "cookies": {
+      "title": "Cookies",
+      "sections": [
+        { "h": "Unbedingt erforderliche Cookies", "p": "NEXT_LOCALE (gewählte Sprache, 12 Monate) und das Sitzungs-Cookie nach dem Login (httpOnly). Keine Profiling-Cookies, kein Tracking durch Dritte." },
+        { "h": "Analyse", "p": "Kein cookiebasiertes Analysewerkzeug ist aktiv." }
+      ]
+    }
+  },
+  "footer": { "legal": "Rechtliches", "credit": "Created and Designed by Carbon Stealth VCC", "rights": "Alle Rechte vorbehalten." },
+  "templates": {
+    "FARI_ACCESI": "Dein Licht ist an",
+    "FINESTRINO_APERTO": "Ein Fenster ist offen",
+    "MI_HAI_BLOCCATO": "Du hast mein Auto zugeparkt",
+    "SOSTA_PERICOLOSA": "Das Auto steht gefährlich",
+    "GOMMA_A_TERRA": "Du hast einen platten Reifen",
+    "ALLARME_IN_FUNZIONE": "Der Alarm ist ausgelöst",
+    "PERDITA_LIQUIDO": "Das Auto verliert Flüssigkeit",
+    "AUTO_DANNEGGIATA": "Das Auto wurde beschädigt"
+  },
+  "reportCategories": { "MOLESTIE": "Belästigung", "SPAM_PUBBLICITA": "Spam oder Werbung", "MINACCE": "Drohungen", "TARGA_NON_MIA": "Jemand nutzt mein Kennzeichen", "ALTRO": "Sonstiges" }
+}

@@ -1,0 +1,13 @@
+# LaTuaAuto
+
+> Chat civile con il proprietario di un'auto tramite targa (senza telefono, senza GPS) e scadenze auto italiane che si compilano da sole: revisione, RCA, bollo regionale, gomme invernali, patente, multe (−30% entro 5 giorni; ricorso 30/60 giorni). Prodotto di Carbon Stealth VCC (https://carbonstealth.eu).
+
+## Pagine principali
+- [Home](https://latuaauto.carbonstealth.eu/it): cos'è e perché è diverso
+- [Come funziona](https://latuaauto.carbonstealth.eu/it/come-funziona): sender/receiver, verifica del possesso, scadenze automatiche
+- [Sicurezza e privacy](https://latuaauto.carbonstealth.eu/it/sicurezza): la targa è dato personale; nessuna ricerca targa→persona
+- [Calcolatore scadenze](https://latuaauto.carbonstealth.eu/it/scadenze): revisione, gomme, patente, termini multa
+- [FAQ](https://latuaauto.carbonstealth.eu/it/faq)
+
+## Lingue
+Italiano (principale), English, Deutsch — stesse pagine con prefisso /en e /de.

@@ -1,0 +1,195 @@
+{
+  "common": {
+    "appName": "LaTuaAuto",
+    "tagline": "The civil way to reach a car's owner.",
+    "nav": { "home": "Home", "how": "How it works", "safety": "Safety & privacy", "deadlines": "Car deadlines", "faq": "FAQ", "contact": "Contact" },
+    "cta": { "start": "Start for free", "tryCalculator": "Calculate deadlines", "learnMore": "Learn more" },
+    "language": "Language",
+    "skipToContent": "Skip to content",
+    "notFoundTitle": "Page not found",
+    "notFoundText": "This address does not exist or has moved.",
+    "backHome": "Back to home",
+    "lastUpdated": "Last updated",
+    "draftNotice": "Draft under legal review."
+  },
+  "seo": {
+    "metaTitle": "LaTuaAuto — Chat by license plate and automatic car deadlines",
+    "metaDescription": "Headlights left on? Boxed in? Warn the owner by writing to the plate, no phone numbers. Revisione, bollo, RCA, tyres and fines: your Italian car deadlines fill themselves in."
+  },
+  "home": {
+    "heroTitle": "Write to the plate. Not to the person.",
+    "heroText": "Headlights on, window open, a car boxing you in: warn the owner in one tap, without knowing a name or a number. And your car's deadlines fill themselves in.",
+    "heroBadge": "Free · No GPS · No phone number",
+    "demoLabel": "Try it: enter a plate",
+    "demoPlaceholder": "AB 123 CD",
+    "demoValid": "Valid plate ({kind}). A verified owner would receive an alert.",
+    "demoInvalid": "Format not recognised. Example: AB 123 CD",
+    "demoKindAuto": "car",
+    "demoKindMoto": "motorcycle",
+    "demoKindRimorchio": "trailer",
+    "demoKindLegacy": "historic format",
+    "pillarsTitle": "Two things, done properly",
+    "pillar1Title": "Chat by plate",
+    "pillar1Text": "The first message is always one of our preset alerts. Free text unlocks only once the owner replies. Anyone bothering you is blocked in one tap.",
+    "pillar2Title": "Deadlines that fill themselves in",
+    "pillar2Text": "Enter the plate: revisione, RCA, regional bollo, winter tyres, licence renewal. We compute the dates. You get the reminder in time.",
+    "featuresTitle": "Why it is different",
+    "features": {
+      "verified": { "title": "Unverified accounts don't receive", "text": "You can write to any plate. But you only receive messages after proving the car is yours. Nobody can register your plate and read in your place." },
+      "templates": { "title": "First contact is preset-only", "text": "Headlights on, you boxed me in, flat tyre. No free text towards strangers: harassment has no room to start." },
+      "fine": { "title": "Fines: the two clocks that matter", "text": "Photograph the notice: −30% if you pay within 5 days, 30 days for the Justice of the Peace, 60 for the Prefect. No countdown forgotten." },
+      "noGps": { "title": "No location, no phone", "text": "We never request or store your position. No phone number needed. Just email and plate." },
+      "logbook": { "title": "Digital maintenance log", "text": "Services, tyres, brakes, mileage. When you sell, export a PDF with the car's full history." },
+      "qr": { "title": "QR sticker for people without the app", "text": "A small sticker on the glass: whoever scans it writes to you from the browser, no install, and your plate never appears in the link." }
+    },
+    "howTitle": "How it works in three steps",
+    "how": {
+      "step1": { "title": "Register your car", "text": "Email and plate. Then prove the car is yours with the registration document: the image stays on your phone." },
+      "step2": { "title": "Deadlines arrive by themselves", "text": "From the plate and registration date we compute revisione, tyres, licence. You confirm in one tap." },
+      "step3": { "title": "Warn or be warned", "text": "See a car with its lights on? Write to the plate. Someone boxed you in? Reach them in one tap." }
+    },
+    "trustTitle": "Built for Italy, by the book",
+    "trustText": "A plate is personal data (Court of Cassation, Italian DPA). That is why LaTuaAuto never exposes who is behind a plate, never lets anyone find out whether a plate is registered, and tracks nobody. Safety before features.",
+    "ctaTitle": "Ready when you are",
+    "ctaText": "The app rolls out city by city. Meanwhile, try the deadline calculator: free, no sign-up."
+  },
+  "how": {
+    "title": "How LaTuaAuto works",
+    "intro": "A service with two sides: the sender and the receiver. Both designed so they cannot be abused.",
+    "sender": {
+      "title": "If you want to warn someone",
+      "steps": [
+        "Enter the vehicle's plate (car, motorcycle or trailer).",
+        "Pick the alert: headlights on, window open, you boxed me in, dangerous parking, flat tyre, alarm, fluid leak, damaged car.",
+        "If the owner is verified they get the notification. If they reply, free chat opens. If they don't reply within 48 hours, the thread closes by itself.",
+        "We never tell you whether a plate is registered: a reply is the only signal."
+      ]
+    },
+    "receiver": {
+      "title": "If you want to be warned",
+      "steps": [
+        "Register email and plate. You can write to others right away, but you don't receive yet.",
+        "Basic verification: plate + last 4 characters of the VIN, matched against official public data.",
+        "Full verification: photograph the registration document. OCR runs on your phone; we only get a yes/no. The image is never sent or stored.",
+        "Once verified you receive alerts, choose who may write to you, and block in one tap."
+      ]
+    },
+    "deadlinesTitle": "Deadlines fill themselves in",
+    "deadlinesText": "From the plate and registration date we compute revisione (4 years, then every 2), RCA, regional bollo, winter tyres (15 October – 15 November) and licence renewal by age. Servicing is estimated by mileage or time. All in one calendar with reminders at 30, 15 and 3 days.",
+    "fineTitle": "Fines: you photograph, we count the days",
+    "fineText": "30% reduced payment within 5 days of notification; appeal to the Justice of the Peace within 30 days; appeal to the Prefect within 60. Deadlines falling on a Saturday, Sunday or public holiday move to the next working day. It is a reminder, not legal advice."
+  },
+  "safety": {
+    "title": "Safety and privacy",
+    "intro": "A service linking a plate to a person can become a harassment tool. We designed LaTuaAuto so that it cannot.",
+    "principles": [
+      { "title": "A plate is personal data", "text": "The Court of Cassation says so and the Italian DPA enforces it. We treat it accordingly: stored in protected form, never shown to third parties, never in a public directory." },
+      { "title": "No location, no phone", "text": "We do not use GPS, do not ask for a phone number, do not store where you are when you write." },
+      { "title": "We never say whether a plate is registered", "text": "A service answering \"this plate exists\" becomes a people search engine. Ours does not." },
+      { "title": "Unverified accounts don't receive", "text": "You can write immediately, but you only receive after proving the car is yours. Nobody can intercept alerts meant for you." },
+      { "title": "First contact is preset-only", "text": "Free text opens only when you reply. At most five new contacts per day per user. Unaccepted threads expire in 48 hours." },
+      { "title": "Block and report in one tap", "text": "Every report gets a reasoned decision. Whoever uses someone else's plate for harassment, fraud or stalking is removed." },
+      { "title": "No \"online\", no \"typing\"", "text": "No indicators revealing your habits. No public profile." },
+      { "title": "Data in Europe", "text": "Servers in the European Union. No data sales. Account deletion removes everything it contains." }
+    ],
+    "legalNote": "Legal information on this page is provided for information only and does not constitute legal advice."
+  },
+  "deadlines": {
+    "title": "Car deadline calculator",
+    "intro": "Enter a few dates: we compute revisione, tyres, licence and fine deadlines. No sign-up, nothing is stored.",
+    "form": {
+      "registration": "First registration date",
+      "lastRevisione": "Last revisione (if already done)",
+      "birth": "Your date of birth (for the licence)",
+      "patenteIssued": "Licence issue or last renewal date",
+      "fineNotified": "Fine notification date (if you have one)",
+      "calculate": "Calculate",
+      "optional": "optional"
+    },
+    "results": {
+      "title": "Your deadlines",
+      "revisione": "Next revisione",
+      "revisioneHint": "By the end of the month: first at 4 years from registration, then every 2.",
+      "tyres": "Tyre change",
+      "tyresWinter": "Winter tyres mandatory from 15 November; you can fit them from 15 October.",
+      "tyresSummer": "Summer tyres: deadline 15 May; you can change from 15 April.",
+      "patente": "Licence expiry",
+      "patenteHint": "Valid 10 years until 50, 5 until 70, 3 until 80, then 2. Expires on your birthday.",
+      "fineSconto": "Payment with 30% discount",
+      "fineGdp": "Appeal to the Justice of the Peace",
+      "finePrefetto": "Appeal to the Prefect",
+      "daysLeft": "{days, plural, =0 {today} one {in # day} other {in # days}}",
+      "overdue": "overdue by {days, plural, one {# day} other {# days}}",
+      "disclaimer": "Informational calculation based on the Italian Highway Code. Always check official documents. Not legal advice."
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "items": [
+      { "q": "How do I write to a car's owner without knowing them?", "a": "Enter the plate and pick a preset alert. If the owner is registered and verified, they get a notification and can reply. You never see their name, email or phone." },
+      { "q": "Can someone register my plate and read messages meant for me?", "a": "No. Whoever registers a plate without verifying it can only write, not receive. Alerts only reach the account that proved it owns the car." },
+      { "q": "Does LaTuaAuto reveal who is behind a plate?", "a": "Never. There is no plate search returning a person, and we do not even say whether a plate is registered." },
+      { "q": "Which deadlines are computed automatically?", "a": "Revisione (4 years from first registration, then every 2), winter and summer tyres, licence renewal by age, servicing by mileage or time, fine deadlines. RCA and bollo from the data you enter or from the official check." },
+      { "q": "How much does it cost?", "a": "Basic use is free: one plate, chat and essential reminders. A Premium plan will add more vehicles, a maintenance log with PDF and advanced reminders." },
+      { "q": "Do you use GPS or my phone number?", "a": "No. We do not use location and do not ask for a phone. You sign up with email and plate." },
+      { "q": "What if someone bothers me?", "a": "Block in one tap and the thread disappears. You can report: every report gets a reasoned decision and abusers are removed." },
+      { "q": "Is a plate personal data?", "a": "Yes. The Court of Cassation established it and the Italian DPA enforces it. That is why we store it in protected form and never expose it." }
+    ]
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "Reports, privacy questions, requests from authorities: write to us. We answer in Italian, English and German.",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send",
+    "sent": "Message sent. Thank you.",
+    "error": "We could not send your message. Please try again.",
+    "dsaTitle": "Point of contact (DSA, GDPR)",
+    "dsaText": "Single point of contact for users and authorities under Regulation (EU) 2022/2065: {email}."
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy notice",
+      "sections": [
+        { "h": "Controller", "p": "Carbon Stealth VCC. Contact: {email}." },
+        { "h": "What we process", "p": "Email, password (hashed), plate and vehicle data you enter, exchanged messages, reminders, date of birth if you use the licence reminder, IP address at login (90 days, security). No location, no phone number." },
+        { "h": "Why and on what basis", "p": "Performance of the service (Art. 6(1)(b) GDPR); legitimate interest in road safety and abuse prevention (Art. 6(1)(f)), documented with a balancing test; consent for optional features (Art. 6(1)(a))." },
+        { "h": "A plate is personal data", "p": "We store it in protected form, do not show it to third parties and do not answer \"is this plate registered?\"." },
+        { "h": "How long", "p": "As long as the account exists. Unaccepted threads: 48 hours. Login IP: 90 days. Contact messages: 12 months." },
+        { "h": "Your rights", "p": "Access, rectification, erasure, restriction, portability, objection; complaint to the Italian Data Protection Authority." },
+        { "h": "Where", "p": "Servers in the European Union. No transfers outside the EU." }
+      ]
+    },
+    "terms": {
+      "title": "Terms of service",
+      "sections": [
+        { "h": "The service", "p": "LaTuaAuto lets you send alerts to a vehicle's owner via its plate and manage the vehicle's deadlines. It is provided by Carbon Stealth VCC." },
+        { "h": "Minimum age", "p": "16 years." },
+        { "h": "Proper use", "p": "Using someone else's plate for fraud, harassment, threats or stalking, sending advertising, or trying to identify a person via a plate is prohibited and leads to account removal." },
+        { "h": "Ownership verification", "p": "You receive messages only after verifying you own the vehicle. False declarations lead to removal." },
+        { "h": "Reports and decisions", "p": "Every report receives a reasoned decision. You may contest it by writing to the point of contact." },
+        { "h": "Reminders", "p": "Deadline calculations are informational. Always check official documents: they do not replace legal advice or an official notice." },
+        { "h": "Governing law", "p": "European Union law and Italian law for consumers resident in Italy." }
+      ]
+    },
+    "cookies": {
+      "title": "Cookies",
+      "sections": [
+        { "h": "Strictly necessary cookies", "p": "NEXT_LOCALE (chosen language, 12 months) and the session cookie after login (httpOnly). No profiling cookies, no third-party tracking." },
+        { "h": "Analytics", "p": "No cookie-based analytics tool is active." }
+      ]
+    }
+  },
+  "footer": { "legal": "Legal", "credit": "Created and Designed by Carbon Stealth VCC", "rights": "All rights reserved." },
+  "templates": {
+    "FARI_ACCESI": "Your headlights are on",
+    "FINESTRINO_APERTO": "A window is open",
+    "MI_HAI_BLOCCATO": "You boxed my car in",
+    "SOSTA_PERICOLOSA": "The car is parked dangerously",
+    "GOMMA_A_TERRA": "You have a flat tyre",
+    "ALLARME_IN_FUNZIONE": "The alarm is going off",
+    "PERDITA_LIQUIDO": "The car is leaking fluid",
+    "AUTO_DANNEGGIATA": "The car has been damaged"
+  },
+  "reportCategories": { "MOLESTIE": "Harassment", "SPAM_PUBBLICITA": "Spam or advertising", "MINACCE": "Threats", "TARGA_NON_MIA": "Someone is using my plate", "ALTRO": "Other" }
+}

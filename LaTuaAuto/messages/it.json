@@ -1,0 +1,216 @@
+{
+  "common": {
+    "appName": "LaTuaAuto",
+    "tagline": "Il modo civile per avvisare il proprietario di un'auto.",
+    "nav": {
+      "home": "Home",
+      "how": "Come funziona",
+      "safety": "Sicurezza e privacy",
+      "deadlines": "Scadenze auto",
+      "faq": "Domande frequenti",
+      "contact": "Contatti"
+    },
+    "cta": {
+      "start": "Inizia gratis",
+      "tryCalculator": "Calcola le scadenze",
+      "learnMore": "Scopri di più"
+    },
+    "language": "Lingua",
+    "skipToContent": "Vai al contenuto",
+    "notFoundTitle": "Pagina non trovata",
+    "notFoundText": "L'indirizzo non esiste o è stato spostato.",
+    "backHome": "Torna alla home",
+    "lastUpdated": "Ultimo aggiornamento",
+    "draftNotice": "Bozza in revisione legale."
+  },
+  "seo": {
+    "metaTitle": "LaTuaAuto — Chat via targa e scadenze auto automatiche",
+    "metaDescription": "Fari accesi? Ti hanno bloccato? Avvisa il proprietario scrivendo alla targa, senza numeri di telefono. Revisione, bollo, RCA, gomme e multe: le scadenze si compilano da sole."
+  },
+  "home": {
+    "heroTitle": "Scrivi alla targa. Non alla persona.",
+    "heroText": "Fari accesi, finestrino aperto, auto che ti blocca: avvisa il proprietario in un tocco, senza conoscere nome o telefono. E le scadenze della tua auto si compilano da sole.",
+    "heroBadge": "Gratis · Senza GPS · Senza numero di telefono",
+    "demoLabel": "Prova: inserisci una targa",
+    "demoPlaceholder": "AB 123 CD",
+    "demoValid": "Targa valida ({kind}). Il proprietario, se verificato, riceverebbe un avviso.",
+    "demoInvalid": "Formato non riconosciuto. Esempio: AB 123 CD",
+    "demoKindAuto": "auto",
+    "demoKindMoto": "moto",
+    "demoKindRimorchio": "rimorchio",
+    "demoKindLegacy": "formato storico",
+    "pillarsTitle": "Due cose, fatte bene",
+    "pillar1Title": "Chat via targa",
+    "pillar1Text": "Il primo messaggio è sempre uno dei nostri avvisi predefiniti. Il testo libero si sblocca solo quando il proprietario risponde. Chi ti disturba si blocca con un tocco.",
+    "pillar2Title": "Scadenze che si compilano da sole",
+    "pillar2Text": "Inserisci la targa: revisione, RCA, bollo per regione, gomme invernali, rinnovo patente. Le date le calcoliamo noi. Tu ricevi il promemoria in tempo.",
+    "featuresTitle": "Perché è diverso",
+    "features": {
+      "verified": { "title": "Chi non è verificato non riceve", "text": "Puoi scrivere a qualsiasi targa. Ma ricevi messaggi solo dopo aver dimostrato che l'auto è tua. Nessuno può registrare la tua targa e leggere al posto tuo." },
+      "templates": { "title": "Primo contatto solo con avvisi predefiniti", "text": "Fari accesi, mi hai bloccato, gomma a terra. Niente testo libero verso sconosciuti: le molestie non hanno spazio per cominciare." },
+      "fine": { "title": "Multa: i due orologi che contano", "text": "Fotografa il verbale: −30% se paghi entro 5 giorni, 30 giorni per il Giudice di Pace, 60 per il Prefetto. Nessun conto alla rovescia dimenticato." },
+      "noGps": { "title": "Zero posizione, zero telefono", "text": "Non chiediamo né salviamo la tua posizione. Il numero di telefono non serve. Solo email e targa." },
+      "logbook": { "title": "Libretto di manutenzione digitale", "text": "Tagliandi, gomme, freni, chilometri. Alla rivendita esporti un PDF con tutta la storia dell'auto." },
+      "qr": { "title": "Adesivo QR per chi non ha l'app", "text": "Un piccolo adesivo sul vetro: chi lo inquadra ti scrive dal browser, senza installare nulla e senza vedere la tua targa nel link." }
+    },
+    "howTitle": "Come funziona in tre passi",
+    "how": {
+      "step1": { "title": "Registra la tua auto", "text": "Email e targa. Poi verifichi che l'auto è tua con il libretto: l'immagine resta sul tuo telefono." },
+      "step2": { "title": "Le scadenze arrivano da sole", "text": "Dalla targa e dalla data di immatricolazione calcoliamo revisione, gomme, patente. Tu confermi con un tocco." },
+      "step3": { "title": "Avvisa o vieni avvisato", "text": "Vedi un'auto con i fari accesi? Scrivi alla targa. Ti ha bloccato qualcuno? Lo raggiungi in un tocco." }
+    },
+    "trustTitle": "Costruito per l'Italia, per legge",
+    "trustText": "La targa è un dato personale (Cassazione, Garante Privacy). Per questo LaTuaAuto non espone mai chi c'è dietro una targa, non permette di scoprire se una targa è registrata e non traccia nessuno. Sicurezza prima delle funzioni.",
+    "ctaTitle": "Pronto quando lo sei tu",
+    "ctaText": "L'app arriva città per città. Nel frattempo, prova il calcolatore delle scadenze: è gratis e non richiede registrazione."
+  },
+  "how": {
+    "title": "Come funziona LaTuaAuto",
+    "intro": "Un servizio con due facce: chi scrive e chi riceve. Entrambe progettate per non poter essere abusate.",
+    "sender": {
+      "title": "Se vuoi avvisare qualcuno",
+      "steps": [
+        "Inserisci la targa dell'auto (auto, moto o rimorchio).",
+        "Scegli l'avviso: fari accesi, finestrino aperto, mi hai bloccato, sosta pericolosa, gomma a terra, allarme, perdita di liquido, auto danneggiata.",
+        "Se il proprietario è verificato riceve la notifica. Se risponde, si apre la chat libera. Se non risponde entro 48 ore, la conversazione si chiude da sola.",
+        "Non ti diciamo mai se la targa è registrata o no: la risposta è l'unico segnale."
+      ]
+    },
+    "receiver": {
+      "title": "Se vuoi essere avvisato",
+      "steps": [
+        "Registri email e targa. Da subito puoi scrivere ad altri, ma non ricevi ancora.",
+        "Verifica Base: targa + ultime 4 cifre del telaio, confrontate con i dati pubblici ufficiali.",
+        "Verifica completa: fotografi la carta di circolazione. L'OCR gira sul tuo telefono; a noi arriva solo «sì/no». L'immagine non viene mai inviata né salvata.",
+        "Da verificato ricevi gli avvisi, decidi chi può scriverti e blocchi con un tocco."
+      ]
+    },
+    "deadlinesTitle": "Le scadenze si compilano da sole",
+    "deadlinesText": "Dalla targa e dalla data di immatricolazione calcoliamo revisione (4 anni, poi ogni 2), RCA, bollo regionale, gomme invernali (15 ottobre – 15 novembre) e rinnovo patente per età. Il tagliando lo stimiamo per chilometri o per tempo. Tutto in un calendario con promemoria a 30, 15 e 3 giorni.",
+    "fineTitle": "Multa: fotografi, noi contiamo i giorni",
+    "fineText": "Pagamento ridotto del 30% entro 5 giorni dalla notifica; ricorso al Giudice di Pace entro 30 giorni; ricorso al Prefetto entro 60. I termini che cadono di sabato, domenica o festivo slittano al primo giorno lavorativo. È un promemoria, non una consulenza legale."
+  },
+  "safety": {
+    "title": "Sicurezza e privacy",
+    "intro": "Un servizio che collega una targa a una persona può diventare uno strumento di molestia. Abbiamo progettato LaTuaAuto perché non lo sia.",
+    "principles": [
+      { "title": "La targa è un dato personale", "text": "Lo dice la Cassazione e lo applica il Garante. La trattiamo come tale: conservata in forma protetta, mai mostrata a terzi, mai in un elenco pubblico." },
+      { "title": "Nessuna posizione, nessun telefono", "text": "Non usiamo il GPS, non chiediamo il numero di telefono, non salviamo dove ti trovi quando scrivi." },
+      { "title": "Non diciamo se una targa è registrata", "text": "Un servizio che risponde «questa targa esiste» diventa un motore di ricerca sulle persone. Il nostro no." },
+      { "title": "Chi non è verificato non riceve", "text": "Puoi scrivere subito, ma ricevi solo dopo aver dimostrato che l'auto è tua. Nessuno può intercettare gli avvisi diretti a te." },
+      { "title": "Primo contatto solo con avvisi predefiniti", "text": "Il testo libero si apre solo quando rispondi. Massimo cinque nuovi contatti al giorno per utente. Le conversazioni non accettate scadono in 48 ore." },
+      { "title": "Blocco e segnalazione con un tocco", "text": "Ogni segnalazione riceve una decisione motivata. Chi usa una targa altrui per molestie, frodi o pedinamento viene rimosso." },
+      { "title": "Nessun «online», nessun «sta scrivendo»", "text": "Niente indicatori che rivelino le tue abitudini. Nessun profilo pubblico." },
+      { "title": "Dati in Europa", "text": "Server nell'Unione Europea. Nessuna vendita di dati. Cancellazione dell'account con tutto ciò che contiene." }
+    ],
+    "legalNote": "Le informazioni legali in questa pagina hanno carattere informativo e non costituiscono consulenza legale."
+  },
+  "deadlines": {
+    "title": "Calcolatore scadenze auto",
+    "intro": "Inserisci pochi dati: calcoliamo revisione, gomme, patente e i termini della multa. Nessuna registrazione, niente viene salvato.",
+    "form": {
+      "registration": "Data di immatricolazione",
+      "lastRevisione": "Ultima revisione (se già fatta)",
+      "birth": "La tua data di nascita (per la patente)",
+      "patenteIssued": "Data di rilascio o ultimo rinnovo della patente",
+      "fineNotified": "Data di notifica del verbale (se hai una multa)",
+      "calculate": "Calcola",
+      "optional": "facoltativo"
+    },
+    "results": {
+      "title": "Le tue scadenze",
+      "revisione": "Prossima revisione",
+      "revisioneHint": "Entro la fine del mese: prima a 4 anni dall'immatricolazione, poi ogni 2.",
+      "tyres": "Cambio gomme",
+      "tyresWinter": "Gomme invernali obbligatorie dal 15 novembre; puoi montarle dal 15 ottobre.",
+      "tyresSummer": "Gomme estive: termine 15 maggio; puoi cambiarle dal 15 aprile.",
+      "patente": "Scadenza patente",
+      "patenteHint": "Validità 10 anni fino a 50, 5 fino a 70, 3 fino a 80, poi 2. Scade al compleanno.",
+      "fineSconto": "Pagamento con sconto del 30%",
+      "fineGdp": "Ricorso al Giudice di Pace",
+      "finePrefetto": "Ricorso al Prefetto",
+      "daysLeft": "{days, plural, =0 {oggi} one {tra # giorno} other {tra # giorni}}",
+      "overdue": "scaduto da {days, plural, one {# giorno} other {# giorni}}",
+      "disclaimer": "Calcolo informativo basato sul Codice della Strada. Verifica sempre i documenti ufficiali. Non è consulenza legale."
+    }
+  },
+  "faq": {
+    "title": "Domande frequenti",
+    "items": [
+      { "q": "Come faccio a scrivere al proprietario di un'auto senza conoscerlo?", "a": "Inserisci la targa e scegli un avviso predefinito. Se il proprietario è registrato e verificato, riceve una notifica e può risponderti. Non vedi mai il suo nome, l'email o il telefono." },
+      { "q": "Qualcuno può registrare la mia targa e leggere i messaggi diretti a me?", "a": "No. Chi registra una targa senza verificarla può solo scrivere, non ricevere. Gli avvisi arrivano soltanto all'account che ha dimostrato di possedere l'auto." },
+      { "q": "LaTuaAuto rivela chi c'è dietro una targa?", "a": "Mai. Non esiste una ricerca per targa che restituisca una persona, e non diciamo nemmeno se una targa è registrata." },
+      { "q": "Quali scadenze vengono calcolate automaticamente?", "a": "Revisione (4 anni dalla prima immatricolazione, poi ogni 2), gomme invernali ed estive, rinnovo patente per età, tagliando per chilometri o tempo, termini della multa. RCA e bollo dai dati che inserisci o dalla verifica ufficiale." },
+      { "q": "Quanto costa?", "a": "L'uso base è gratuito: una targa, chat e promemoria essenziali. Un piano Premium aggiungerà più veicoli, libretto di manutenzione con PDF e promemoria avanzati." },
+      { "q": "Usate il GPS o il mio numero di telefono?", "a": "No. Non usiamo la posizione e non chiediamo il telefono. Ti registri con email e targa." },
+      { "q": "Cosa succede se qualcuno mi disturba?", "a": "Blocchi con un tocco e la conversazione sparisce. Puoi segnalare: ogni segnalazione riceve una decisione motivata e chi abusa viene rimosso." },
+      { "q": "La targa è un dato personale?", "a": "Sì. La Corte di Cassazione l'ha stabilito e il Garante Privacy lo applica. Per questo la trattiamo in forma protetta e non la esponiamo mai." }
+    ]
+  },
+  "contact": {
+    "title": "Contatti",
+    "intro": "Segnalazioni, domande sulla privacy, richieste dalle autorità: scrivici. Rispondiamo in italiano, inglese e tedesco.",
+    "email": "Email",
+    "message": "Messaggio",
+    "send": "Invia",
+    "sent": "Messaggio inviato. Grazie.",
+    "error": "Non siamo riusciti a inviare il messaggio. Riprova.",
+    "dsaTitle": "Punto di contatto (DSA, GDPR)",
+    "dsaText": "Punto di contatto unico per utenti e autorità ai sensi del Regolamento (UE) 2022/2065: {email}."
+  },
+  "legal": {
+    "privacy": {
+      "title": "Informativa sulla privacy",
+      "sections": [
+        { "h": "Titolare del trattamento", "p": "Carbon Stealth VCC. Contatto: {email}." },
+        { "h": "Quali dati trattiamo", "p": "Email, password (in forma di hash), targa e dati del veicolo che inserisci, messaggi scambiati, promemoria, data di nascita se scegli di usare il promemoria patente, indirizzo IP al momento dell'accesso (90 giorni, sicurezza). Nessuna posizione, nessun numero di telefono." },
+        { "h": "Perché e su quale base", "p": "Esecuzione del servizio (art. 6.1.b GDPR); legittimo interesse alla sicurezza stradale e alla prevenzione degli abusi (art. 6.1.f), documentato con test di bilanciamento; consenso per le funzioni facoltative (art. 6.1.a)." },
+        { "h": "La targa è un dato personale", "p": "La conserviamo in forma protetta, non la mostriamo a terzi e non rispondiamo alla domanda «questa targa è registrata?»." },
+        { "h": "Per quanto tempo", "p": "Finché l'account esiste. Conversazioni non accettate: 48 ore. IP di accesso: 90 giorni. Messaggi di contatto: 12 mesi." },
+        { "h": "I tuoi diritti", "p": "Accesso, rettifica, cancellazione, limitazione, portabilità, opposizione; reclamo al Garante per la protezione dei dati personali." },
+        { "h": "Dove", "p": "Server nell'Unione Europea. Nessun trasferimento extra-UE." }
+      ]
+    },
+    "terms": {
+      "title": "Termini di servizio",
+      "sections": [
+        { "h": "Il servizio", "p": "LaTuaAuto permette di inviare avvisi al proprietario di un veicolo tramite la targa e di gestire le scadenze del veicolo. È fornito da Carbon Stealth VCC." },
+        { "h": "Età minima", "p": "16 anni." },
+        { "h": "Uso corretto", "p": "È vietato usare una targa altrui per frodi, molestie, minacce o pedinamento; inviare pubblicità; tentare di identificare una persona tramite la targa. La violazione comporta la rimozione dell'account." },
+        { "h": "Verifica del possesso", "p": "Ricevi messaggi solo dopo aver verificato di possedere il veicolo. Dichiarazioni false comportano la rimozione." },
+        { "h": "Segnalazioni e decisioni", "p": "Ogni segnalazione riceve una decisione motivata. Puoi contestarla scrivendo al punto di contatto." },
+        { "h": "Promemoria", "p": "I calcoli delle scadenze sono informativi. Verifica sempre i documenti ufficiali: non sostituiscono una consulenza legale o un avviso dell'autorità." },
+        { "h": "Legge applicabile", "p": "Diritto dell'Unione Europea e legge italiana per i consumatori residenti in Italia." }
+      ]
+    },
+    "cookies": {
+      "title": "Cookie",
+      "sections": [
+        { "h": "Cookie strettamente necessari", "p": "NEXT_LOCALE (lingua scelta, 12 mesi) e il cookie di sessione dopo l'accesso (httpOnly). Nessun cookie di profilazione, nessun tracciamento di terze parti." },
+        { "h": "Analisi", "p": "Nessuno strumento di analisi basato su cookie è attivo." }
+      ]
+    }
+  },
+  "footer": {
+    "legal": "Note legali",
+    "credit": "Created and Designed by Carbon Stealth VCC",
+    "rights": "Tutti i diritti riservati."
+  },
+  "templates": {
+    "FARI_ACCESI": "Hai i fari accesi",
+    "FINESTRINO_APERTO": "Hai un finestrino aperto",
+    "MI_HAI_BLOCCATO": "Mi hai bloccato l'auto",
+    "SOSTA_PERICOLOSA": "L'auto è in sosta pericolosa",
+    "GOMMA_A_TERRA": "Hai una gomma a terra",
+    "ALLARME_IN_FUNZIONE": "L'allarme sta suonando",
+    "PERDITA_LIQUIDO": "L'auto perde liquido",
+    "AUTO_DANNEGGIATA": "L'auto è stata danneggiata"
+  },
+  "reportCategories": {
+    "MOLESTIE": "Molestie",
+    "SPAM_PUBBLICITA": "Spam o pubblicità",
+    "MINACCE": "Minacce",
+    "TARGA_NON_MIA": "Qualcuno usa la mia targa",
+    "ALTRO": "Altro"
+  }
+}
