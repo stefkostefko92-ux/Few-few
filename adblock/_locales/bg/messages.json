@@ -4,32 +4,32 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
+    "message": "Блокира реклами навсякъде: видеореклами в YouTube, банери, изскачащи прозорци, тракери и анти-адблок стени. Безплатно.",
     "description": "Extension description."
   },
   "byCarbon": {
-    "message": "by Carbon Stealth"
+    "message": "от Carbon Stealth"
   },
   "toggleProtection": {
-    "message": "Toggle protection"
+    "message": "Превключи защитата"
   },
   "protected": {
-    "message": "Protected"
+    "message": "Защитено"
   },
   "paused": {
-    "message": "Paused"
+    "message": "На пауза"
   },
   "blockingHere": {
-    "message": "Blocking ads on this page"
+    "message": "Блокира рекламите на тази страница"
   },
   "protectionOff": {
-    "message": "Protection is off"
+    "message": "Защитата е изключена"
   },
   "pause30": {
-    "message": "Pause for 30 minutes"
+    "message": "Пауза за 30 минути"
   },
   "pausedResume": {
-    "message": "Paused, resume now ($1m left)",
+    "message": "На пауза, възобнови сега (остават $1 мин)",
     "placeholders": {
       "mins": {
         "content": "$1"
@@ -37,67 +37,67 @@
     }
   },
   "blocked": {
-    "message": "Blocked"
+    "message": "Блокирани"
   },
   "dataSaved": {
-    "message": "Data saved"
+    "message": "Спестени данни"
   },
   "timeSaved": {
-    "message": "Time saved"
+    "message": "Спестено време"
   },
   "thisSite": {
-    "message": "this site"
+    "message": "този сайт"
   },
   "thisPage": {
-    "message": "this page"
+    "message": "тази страница"
   },
   "blockOnSite": {
-    "message": "Block ads on this site"
+    "message": "Блокирай рекламите на този сайт"
   },
   "blocking": {
-    "message": "Blocking"
+    "message": "Блокира"
   },
   "allowed": {
-    "message": "Allowed"
+    "message": "Разрешен"
   },
   "cosmetics": {
-    "message": "Hide ad boxes here"
+    "message": "Скрий рекламните полета тук"
   },
   "cosmeticsTitle": {
-    "message": "Cosmetic filtering on this site (turn off if the layout breaks)"
+    "message": "Козметично филтриране на този сайт (изключете го, ако оформлението се чупи)"
   },
   "on": {
-    "message": "On"
+    "message": "Вкл."
   },
   "off": {
-    "message": "Off"
+    "message": "Изкл."
   },
   "blockedHere": {
-    "message": "Blocked on this page"
+    "message": "Блокирани на тази страница"
   },
   "logEmpty": {
-    "message": "Nothing blocked here yet."
+    "message": "Още нищо не е блокирано тук."
   },
   "logUnavailable": {
-    "message": "Log unavailable right now (browser quota) — try again in a minute."
+    "message": "Дневникът не е достъпен в момента (квота на браузъра) — опитайте пак след минута."
   },
   "hideElement": {
-    "message": "Hide element"
+    "message": "Скрий елемент"
   },
   "settings": {
-    "message": "Settings"
+    "message": "Настройки"
   },
   "promoSub": {
-    "message": "Gear & tools, carbonstealth.eu"
+    "message": "Техника и инструменти, carbonstealth.eu"
   },
   "adLabel": {
-    "message": "Ad"
+    "message": "Реклама"
   },
   "support": {
-    "message": "Support"
+    "message": "Подкрепи"
   },
   "filtersCount": {
-    "message": "$1+ filters",
+    "message": "$1+ филтъра",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -105,150 +105,150 @@
     }
   },
   "opt_appearance": {
-    "message": "Appearance"
+    "message": "Външен вид"
   },
   "opt_extra_protection": {
-    "message": "Extra protection"
+    "message": "Допълнителна защита"
   },
   "opt_smart_detection_log": {
-    "message": "Smart Detection log"
+    "message": "Дневник на Smart Detection"
   },
   "opt_allowlisted_sites": {
-    "message": "Allowlisted sites"
+    "message": "Сайтове в списъка с разрешени"
   },
   "opt_my_filters": {
-    "message": "My filters"
+    "message": "Моите филтри"
   },
   "opt_hidden_elements": {
-    "message": "Hidden elements"
+    "message": "Скрити елементи"
   },
   "opt_filter_updates": {
-    "message": "Filter updates"
+    "message": "Обновяване на филтрите"
   },
   "opt_engine_health": {
-    "message": "Engine health"
+    "message": "Състояние на ядрото"
   },
   "opt_backup": {
-    "message": "Backup"
+    "message": "Резервно копие"
   },
   "opt_support_development": {
-    "message": "Support development"
+    "message": "Подкрепи разработката"
   },
   "opt_theme": {
-    "message": "Theme"
+    "message": "Тема"
   },
   "opt_sync_across_devices": {
-    "message": "Sync across devices"
+    "message": "Синхронизация между устройства"
   },
   "opt_youtube_ad_blocking": {
-    "message": "YouTube ad blocking"
+    "message": "Блокиране на рекламите в YouTube"
   },
   "opt_cookie_consent_banners": {
-    "message": "Cookie / consent banners"
+    "message": "Банери за бисквитки / съгласие"
   },
   "opt_anti_adblock_bypass": {
-    "message": "Anti-adblock bypass"
+    "message": "Заобикаляне на анти-адблок стени"
   },
   "opt_meta_sponsored_posts": {
-    "message": "Meta sponsored posts"
+    "message": "Спонсорирани публикации в Meta"
   },
   "opt_remove_tracking_parameters": {
-    "message": "Remove tracking parameters"
+    "message": "Премахване на проследяващи параметри"
   },
   "opt_malware_protection": {
-    "message": "Malware protection"
+    "message": "Защита от зловреден софтуер"
   },
   "opt_block_ad_targeting_browser_apis": {
-    "message": "Block ad-targeting browser APIs"
+    "message": "Блокиране на браузърните API за рекламно таргетиране"
   },
   "opt_block_tracking_beacons_and_cryptominers": {
-    "message": "Block tracking beacons & cryptominers"
+    "message": "Блокиране на проследяващи сигнали и криптомайнери"
   },
   "opt_auto_update_filters": {
-    "message": "Auto-update filters"
+    "message": "Автоматично обновяване на филтрите"
   },
   "opt_carbon_stealth_dark_or_light": {
-    "message": "Carbon Stealth (dark) or light"
+    "message": "Carbon Stealth (тъмна) или светла"
   },
   "opt_keep_settings_allowlist_and_filters_in_s": {
-    "message": "Keep settings, allowlist and filters in sync on every Chrome you're signed into"
+    "message": "Пази настройките, списъка с разрешени и филтрите синхронизирани във всеки Chrome, в който сте влезли"
   },
   "opt_remove_video_ads_on_youtube_turn_off_if_": {
-    "message": "Remove video ads on YouTube. Turn off if videos won't play."
+    "message": "Премахва видеорекламите в YouTube. Изключете го, ако видеата не тръгват."
   },
   "opt_automatically_dismiss_accept_cookies_pro": {
-    "message": "Automatically dismiss \"Accept cookies\" prompts"
+    "message": "Автоматично затваря подканите „Приемам бисквитките“"
   },
   "opt_hide_disable_your_adblocker_walls_and_re": {
-    "message": "Hide \"disable your adblocker\" walls and restore the page"
+    "message": "Скрива стените „изключете блокировача на реклами“ и възстановява страницата"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Hide \"Sponsored\" posts on Facebook & Instagram"
+    "message": "Скрива публикациите „Спонсорирано“ във Facebook и Instagram"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
-    "message": "Strip utm_*, fbclid, gclid and other click identifiers from the links you open"
+    "message": "Премахва utm_*, fbclid, gclid и други идентификатори на кликове от връзките, които отваряте"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Block known malware domains (URLhaus list by abuse.ch)"
+    "message": "Блокира известни зловредни домейни (списъкът URLhaus на abuse.ch)"
   },
   "opt_disable_google_topics_floc_and_protected": {
-    "message": "Disable Google Topics, FLoC and Protected Audience ad APIs on every site"
+    "message": "Изключва рекламните API Google Topics, FLoC и Protected Audience на всеки сайт"
   },
   "opt_stop_third_party_hyperlink_auditing_beac": {
-    "message": "Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves."
+    "message": "Спира проследяващите сигнали за отваряне на връзки от трети страни, премахва проследяващите бисквитки от известни ad-tech отговори и блокира скриптовете за криптомайнинг в браузъра. Изключете го, ако функция на сайт, зависеща от анализи, се държи странно."
   },
   "opt_fetches_new_block_rules_and_youtube_fixe": {
-    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent."
+    "message": "Изтегля нови правила за блокиране и корекции за YouTube от adblock.carbonstealth.eu. Само данни, без код; нищо за вас не се изпраща."
   },
   "opt_live_log_of_ads_caught_heuristically_no_": {
-    "message": "Live log of ads caught heuristically (no filter list), newest first."
+    "message": "Жив дневник на рекламите, хванати евристично (без списък с филтри), най-новите отгоре."
   },
   "opt_subscribed_lists_are_fetched_as_text_nev": {
-    "message": "Subscribed lists are fetched as text (never code), kept up to date daily, and live in the managed blocks above. Remove a list to drop its rules."
+    "message": "Абонираните списъци се изтеглят като текст (никога като код), обновяват се всеки ден и стоят в управляваните блокове по-горе. Премахнете списък, за да отпаднат правилата му."
   },
   "opt_elements_you_hid_manually_with_the_picke": {
-    "message": "Elements you hid manually with the picker, grouped by site."
+    "message": "Елементи, които сте скрили ръчно с инструмента за избор, групирани по сайт."
   },
   "opt_live_diagnostics_everything_is_computed_": {
-    "message": "Live diagnostics — everything is computed locally. If something is red, \"Update now\" or reloading the extension usually fixes it."
+    "message": "Жива диагностика — всичко се изчислява локално. Ако нещо е червено, „Обнови сега“ или презареждане на разширението обикновено помага."
   },
   "opt_supreme_adblock_is_free_for_everyone_if_": {
-    "message": "Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required."
+    "message": "Supreme AdBlock е безплатно за всички. Ако искате да помогнете за поддръжката му, даренията са добре дошли, но никога задължителни."
   },
   "opt_reset_statistics": {
-    "message": "Reset statistics"
+    "message": "Нулирай статистиката"
   },
   "opt_add": {
-    "message": "Add"
+    "message": "Добави"
   },
   "opt_save_filters": {
-    "message": "Save filters"
+    "message": "Запази филтрите"
   },
   "opt_subscribe": {
-    "message": "Subscribe"
+    "message": "Абонирай се"
   },
   "opt_refresh_subscriptions_now": {
-    "message": "Refresh subscriptions now"
+    "message": "Обнови абонаментите сега"
   },
   "opt_update_now": {
-    "message": "Update now"
+    "message": "Обнови сега"
   },
   "opt_refresh": {
-    "message": "Refresh"
+    "message": "Опресни"
   },
   "opt_export_settings": {
-    "message": "Export settings"
+    "message": "Експорт на настройките"
   },
   "opt_import_settings": {
-    "message": "Import settings"
+    "message": "Импорт на настройките"
   },
   "opt_e_g_example_com": {
-    "message": "e.g. example.com"
+    "message": "напр. example.com"
   },
   "opt_example_10_ads_example_com_10_sticky_ad_": {
-    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+    "message": "! пример\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
-    "message": "Subscribe to a filter list URL (e.g. https://…/list.txt)"
+    "message": "Абониране за URL на списък с филтри (напр. https://…/list.txt)"
   }
 }

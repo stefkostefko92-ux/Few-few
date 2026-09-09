@@ -4,32 +4,32 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
+    "message": "Blockiert Werbung überall: YouTube-Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren. Gratis.",
     "description": "Extension description."
   },
   "byCarbon": {
-    "message": "by Carbon Stealth"
+    "message": "von Carbon Stealth"
   },
   "toggleProtection": {
-    "message": "Toggle protection"
+    "message": "Schutz umschalten"
   },
   "protected": {
-    "message": "Protected"
+    "message": "Geschützt"
   },
   "paused": {
-    "message": "Paused"
+    "message": "Pausiert"
   },
   "blockingHere": {
-    "message": "Blocking ads on this page"
+    "message": "Blockiert Werbung auf dieser Seite"
   },
   "protectionOff": {
-    "message": "Protection is off"
+    "message": "Schutz ist aus"
   },
   "pause30": {
-    "message": "Pause for 30 minutes"
+    "message": "30 Minuten pausieren"
   },
   "pausedResume": {
-    "message": "Paused, resume now ($1m left)",
+    "message": "Pausiert, jetzt fortsetzen (noch $1 Min.)",
     "placeholders": {
       "mins": {
         "content": "$1"
@@ -37,67 +37,67 @@
     }
   },
   "blocked": {
-    "message": "Blocked"
+    "message": "Blockiert"
   },
   "dataSaved": {
-    "message": "Data saved"
+    "message": "Gespartes Datenvolumen"
   },
   "timeSaved": {
-    "message": "Time saved"
+    "message": "Gesparte Zeit"
   },
   "thisSite": {
-    "message": "this site"
+    "message": "diese Website"
   },
   "thisPage": {
-    "message": "this page"
+    "message": "diese Seite"
   },
   "blockOnSite": {
-    "message": "Block ads on this site"
+    "message": "Werbung auf dieser Website blockieren"
   },
   "blocking": {
-    "message": "Blocking"
+    "message": "Blockiert"
   },
   "allowed": {
-    "message": "Allowed"
+    "message": "Erlaubt"
   },
   "cosmetics": {
-    "message": "Hide ad boxes here"
+    "message": "Werbeflächen hier ausblenden"
   },
   "cosmeticsTitle": {
-    "message": "Cosmetic filtering on this site (turn off if the layout breaks)"
+    "message": "Kosmetische Filterung auf dieser Website (ausschalten, wenn das Layout kaputtgeht)"
   },
   "on": {
-    "message": "On"
+    "message": "Ein"
   },
   "off": {
-    "message": "Off"
+    "message": "Aus"
   },
   "blockedHere": {
-    "message": "Blocked on this page"
+    "message": "Auf dieser Seite blockiert"
   },
   "logEmpty": {
-    "message": "Nothing blocked here yet."
+    "message": "Hier wurde noch nichts blockiert."
   },
   "logUnavailable": {
-    "message": "Log unavailable right now (browser quota) — try again in a minute."
+    "message": "Protokoll derzeit nicht verfügbar (Browser-Kontingent) — versuchen Sie es in einer Minute erneut."
   },
   "hideElement": {
-    "message": "Hide element"
+    "message": "Element ausblenden"
   },
   "settings": {
-    "message": "Settings"
+    "message": "Einstellungen"
   },
   "promoSub": {
-    "message": "Gear & tools, carbonstealth.eu"
+    "message": "Technik und Werkzeuge, carbonstealth.eu"
   },
   "adLabel": {
-    "message": "Ad"
+    "message": "Anzeige"
   },
   "support": {
-    "message": "Support"
+    "message": "Unterstützen"
   },
   "filtersCount": {
-    "message": "$1+ filters",
+    "message": "$1+ Filter",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -105,150 +105,150 @@
     }
   },
   "opt_appearance": {
-    "message": "Appearance"
+    "message": "Darstellung"
   },
   "opt_extra_protection": {
-    "message": "Extra protection"
+    "message": "Zusätzlicher Schutz"
   },
   "opt_smart_detection_log": {
-    "message": "Smart Detection log"
+    "message": "Smart-Detection-Protokoll"
   },
   "opt_allowlisted_sites": {
-    "message": "Allowlisted sites"
+    "message": "Websites auf der Erlaubnisliste"
   },
   "opt_my_filters": {
-    "message": "My filters"
+    "message": "Meine Filter"
   },
   "opt_hidden_elements": {
-    "message": "Hidden elements"
+    "message": "Ausgeblendete Elemente"
   },
   "opt_filter_updates": {
-    "message": "Filter updates"
+    "message": "Filter-Updates"
   },
   "opt_engine_health": {
-    "message": "Engine health"
+    "message": "Zustand der Engine"
   },
   "opt_backup": {
-    "message": "Backup"
+    "message": "Sicherung"
   },
   "opt_support_development": {
-    "message": "Support development"
+    "message": "Entwicklung unterstützen"
   },
   "opt_theme": {
-    "message": "Theme"
+    "message": "Design"
   },
   "opt_sync_across_devices": {
-    "message": "Sync across devices"
+    "message": "Geräteübergreifende Synchronisierung"
   },
   "opt_youtube_ad_blocking": {
-    "message": "YouTube ad blocking"
+    "message": "Werbeblockierung auf YouTube"
   },
   "opt_cookie_consent_banners": {
-    "message": "Cookie / consent banners"
+    "message": "Cookie-/Einwilligungsbanner"
   },
   "opt_anti_adblock_bypass": {
-    "message": "Anti-adblock bypass"
+    "message": "Anti-Adblock-Sperren umgehen"
   },
   "opt_meta_sponsored_posts": {
-    "message": "Meta sponsored posts"
+    "message": "Gesponserte Meta-Beiträge"
   },
   "opt_remove_tracking_parameters": {
-    "message": "Remove tracking parameters"
+    "message": "Tracking-Parameter entfernen"
   },
   "opt_malware_protection": {
-    "message": "Malware protection"
+    "message": "Malware-Schutz"
   },
   "opt_block_ad_targeting_browser_apis": {
-    "message": "Block ad-targeting browser APIs"
+    "message": "Browser-APIs für Werbe-Targeting blockieren"
   },
   "opt_block_tracking_beacons_and_cryptominers": {
-    "message": "Block tracking beacons & cryptominers"
+    "message": "Tracking-Beacons und Cryptominer blockieren"
   },
   "opt_auto_update_filters": {
-    "message": "Auto-update filters"
+    "message": "Filter automatisch aktualisieren"
   },
   "opt_carbon_stealth_dark_or_light": {
-    "message": "Carbon Stealth (dark) or light"
+    "message": "Carbon Stealth (dunkel) oder hell"
   },
   "opt_keep_settings_allowlist_and_filters_in_s": {
-    "message": "Keep settings, allowlist and filters in sync on every Chrome you're signed into"
+    "message": "Hält Einstellungen, Erlaubnisliste und Filter in jedem Chrome synchron, in dem Sie angemeldet sind"
   },
   "opt_remove_video_ads_on_youtube_turn_off_if_": {
-    "message": "Remove video ads on YouTube. Turn off if videos won't play."
+    "message": "Entfernt Videowerbung auf YouTube. Schalten Sie es aus, wenn Videos nicht abspielen."
   },
   "opt_automatically_dismiss_accept_cookies_pro": {
-    "message": "Automatically dismiss \"Accept cookies\" prompts"
+    "message": "Schließt „Cookies akzeptieren“-Abfragen automatisch"
   },
   "opt_hide_disable_your_adblocker_walls_and_re": {
-    "message": "Hide \"disable your adblocker\" walls and restore the page"
+    "message": "Blendet „Deaktivieren Sie Ihren Werbeblocker“-Sperren aus und stellt die Seite wieder her"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Hide \"Sponsored\" posts on Facebook & Instagram"
+    "message": "Blendet „Gesponsert“-Beiträge auf Facebook und Instagram aus"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
-    "message": "Strip utm_*, fbclid, gclid and other click identifiers from the links you open"
+    "message": "Entfernt utm_*, fbclid, gclid und andere Klick-Kennungen aus den Links, die Sie öffnen"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Block known malware domains (URLhaus list by abuse.ch)"
+    "message": "Blockiert bekannte Malware-Domains (URLhaus-Liste von abuse.ch)"
   },
   "opt_disable_google_topics_floc_and_protected": {
-    "message": "Disable Google Topics, FLoC and Protected Audience ad APIs on every site"
+    "message": "Deaktiviert die Werbe-APIs Google Topics, FLoC und Protected Audience auf allen Websites"
   },
   "opt_stop_third_party_hyperlink_auditing_beac": {
-    "message": "Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves."
+    "message": "Stoppt Hyperlink-Auditing- und Beacon-Pings von Drittanbietern, entfernt Tracking-Cookies aus bekannten Ad-Tech-Antworten und blockiert Cryptomining-Skripte im Browser. Schalten Sie es aus, wenn eine analyseabhängige Funktion einer Website nicht richtig arbeitet."
   },
   "opt_fetches_new_block_rules_and_youtube_fixe": {
-    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent."
+    "message": "Lädt neue Blockierregeln und YouTube-Korrekturen von adblock.carbonstealth.eu. Nur Daten, kein Code; nichts über Sie wird gesendet."
   },
   "opt_live_log_of_ads_caught_heuristically_no_": {
-    "message": "Live log of ads caught heuristically (no filter list), newest first."
+    "message": "Live-Protokoll heuristisch erkannter Werbung (ohne Filterliste), neueste zuerst."
   },
   "opt_subscribed_lists_are_fetched_as_text_nev": {
-    "message": "Subscribed lists are fetched as text (never code), kept up to date daily, and live in the managed blocks above. Remove a list to drop its rules."
+    "message": "Abonnierte Listen werden als Text geladen (nie als Code), täglich aktualisiert und liegen in den verwalteten Blöcken oben. Entfernen Sie eine Liste, um ihre Regeln zu verwerfen."
   },
   "opt_elements_you_hid_manually_with_the_picke": {
-    "message": "Elements you hid manually with the picker, grouped by site."
+    "message": "Elemente, die Sie manuell mit dem Auswahlwerkzeug ausgeblendet haben, nach Website gruppiert."
   },
   "opt_live_diagnostics_everything_is_computed_": {
-    "message": "Live diagnostics — everything is computed locally. If something is red, \"Update now\" or reloading the extension usually fixes it."
+    "message": "Live-Diagnose — alles wird lokal berechnet. Ist etwas rot, hilft meist „Jetzt aktualisieren“ oder ein Neuladen der Erweiterung."
   },
   "opt_supreme_adblock_is_free_for_everyone_if_": {
-    "message": "Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required."
+    "message": "Supreme AdBlock ist für alle kostenlos. Wenn Sie zur Pflege beitragen möchten, sind Spenden willkommen, aber nie erforderlich."
   },
   "opt_reset_statistics": {
-    "message": "Reset statistics"
+    "message": "Statistik zurücksetzen"
   },
   "opt_add": {
-    "message": "Add"
+    "message": "Hinzufügen"
   },
   "opt_save_filters": {
-    "message": "Save filters"
+    "message": "Filter speichern"
   },
   "opt_subscribe": {
-    "message": "Subscribe"
+    "message": "Abonnieren"
   },
   "opt_refresh_subscriptions_now": {
-    "message": "Refresh subscriptions now"
+    "message": "Abonnements jetzt aktualisieren"
   },
   "opt_update_now": {
-    "message": "Update now"
+    "message": "Jetzt aktualisieren"
   },
   "opt_refresh": {
-    "message": "Refresh"
+    "message": "Aktualisieren"
   },
   "opt_export_settings": {
-    "message": "Export settings"
+    "message": "Einstellungen exportieren"
   },
   "opt_import_settings": {
-    "message": "Import settings"
+    "message": "Einstellungen importieren"
   },
   "opt_e_g_example_com": {
-    "message": "e.g. example.com"
+    "message": "z. B. example.com"
   },
   "opt_example_10_ads_example_com_10_sticky_ad_": {
-    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+    "message": "! Beispiel\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
-    "message": "Subscribe to a filter list URL (e.g. https://…/list.txt)"
+    "message": "URL einer Filterliste abonnieren (z. B. https://…/list.txt)"
   }
 }
