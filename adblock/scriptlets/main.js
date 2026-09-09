@@ -24,6 +24,8 @@
   var nativeSlice = Array.prototype.slice;
   var nativeIsArray = Array.isArray;
   var nativeHasOwn = Object.prototype.hasOwnProperty;
+  var nativeRAF = typeof requestAnimationFrame === "function" ? requestAnimationFrame : null;
+  var nativeTimer = typeof setTimeout === "function" ? setTimeout : null;
 
   // ---- policy: the single source of truth (scriptlets/policy.js) -----------
   // The build inlines policy.js here; the same file is loaded by the service
@@ -307,12 +309,26 @@ var SA_POLICY = (function () {
     if (cur && typeof cur === "object") { try { delete cur[parts[parts.length - 1]]; } catch (e) {} }
   }
 
-  // Run fn now and on every DOM mutation (for DOM-touching scriptlets).
+  // Run fn now and on DOM mutations (for DOM-touching scriptlets). Mutation
+  // bursts are coalesced into one pass per animation frame (setTimeout when the
+  // tab is hidden and rAF is paused) using natives captured at start, so neither
+  // the page nor our own timer defusers can swallow the callback.
   function onEachMutation(fn) {
     var run = function () { try { fn(); } catch (e) {} };
+    var pending = false;
+    var go = function () { pending = false; run(); };
+    var schedule = function () {
+      if (pending) return;
+      pending = true;
+      try {
+        if (nativeRAF && document.visibilityState !== "hidden") nativeRAF.call(window, go);
+        else if (nativeTimer) nativeTimer.call(window, go, 50);
+        else go();
+      } catch (e) { go(); }
+    };
     run();
     try {
-      var mo = new MutationObserver(run);
+      var mo = new MutationObserver(schedule);
       var start = function () {
         if (document.documentElement) {
           mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true });
@@ -336,6 +352,29 @@ var SA_POLICY = (function () {
       var m = re ? re.test(str) : true;
       return neg ? !m : m;
     };
+  }
+
+  // no-setTimeout-if / no-setInterval-if share one defuser: drop calls whose
+  // callback source matches `search` (and, if given, whose delay equals `delay`).
+  function defuseTimer(prop, search, delay) {
+    var match = needleMatcher(search);
+    var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
+    var orig = window[prop];
+    if (typeof orig !== "function") return;
+    window[prop] = function (fn, t) {
+      try {
+        var src = typeof fn === "function" ? fn.toString() : String(fn);
+        var mDelay = isNaN(wanted) || wanted === t;
+        if (match(src) && mDelay) return 0;
+      } catch (e) {}
+      return orig.apply(this, arguments);
+    };
+  }
+  // DOM-touching scriptlets: apply fn to every element matching sel, now and on mutation.
+  function forEachMatch(sel, fn) {
+    onEachMutation(function () {
+      document.querySelectorAll(sel).forEach(function (el) { try { fn(el); } catch (e) {} });
+    });
   }
 
   // ---- scriptlet implementations -----------------------------------------
@@ -437,36 +476,10 @@ var SA_POLICY = (function () {
     // no-setTimeout-if(search, delay): drop setTimeout calls whose callback
     // source matches `search` (and, if given, whose delay equals `delay`).
     // Leading "!" on search inverts the match.
-    "no-setTimeout-if": function (search, delay) {
-      var match = needleMatcher(search);
-      var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
-      var orig = window.setTimeout;
-      if (typeof orig !== "function") return;
-      window.setTimeout = function (fn, t) {
-        try {
-          var src = typeof fn === "function" ? fn.toString() : String(fn);
-          var mDelay = isNaN(wanted) || wanted === t;
-          if (match(src) && mDelay) return 0;
-        } catch (e) {}
-        return orig.apply(this, arguments);
-      };
-    },
+    "no-setTimeout-if": function (search, delay) { defuseTimer("setTimeout", search, delay); },
 
     // no-setInterval-if(search, delay): same as above for setInterval.
-    "no-setInterval-if": function (search, delay) {
-      var match = needleMatcher(search);
-      var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
-      var orig = window.setInterval;
-      if (typeof orig !== "function") return;
-      window.setInterval = function (fn, t) {
-        try {
-          var src = typeof fn === "function" ? fn.toString() : String(fn);
-          var mDelay = isNaN(wanted) || wanted === t;
-          if (match(src) && mDelay) return 0;
-        } catch (e) {}
-        return orig.apply(this, arguments);
-      };
-    },
+    "no-setInterval-if": function (search, delay) { defuseTimer("setInterval", search, delay); },
 
     // addEventListener-defuser(typeSearch, funcSearch): swallow addEventListener
     // registrations whose type and/or listener source match.
@@ -556,11 +569,8 @@ var SA_POLICY = (function () {
     "remove-attr": function (rawAttrs, selector) {
       var attrs = String(rawAttrs || "").split(/[\s,|]+/).filter(Boolean);
       if (!attrs.length) return;
-      var sel = selector || "[" + attrs.join("],[") + "]";
-      onEachMutation(function () {
-        document.querySelectorAll(sel).forEach(function (el) {
-          attrs.forEach(function (a) { try { el.removeAttribute(a); } catch (e) {} });
-        });
+      forEachMatch(selector || "[" + attrs.join("],[") + "]", function (el) {
+        attrs.forEach(function (a) { el.removeAttribute(a); });
       });
     },
 
@@ -569,11 +579,8 @@ var SA_POLICY = (function () {
     "remove-class": function (rawClasses, selector) {
       var classes = String(rawClasses || "").split(/[\s,|]+/).filter(Boolean);
       if (!classes.length) return;
-      var sel = selector || "." + classes.map(function (c) { return CSS.escape(c); }).join(",.");
-      onEachMutation(function () {
-        document.querySelectorAll(sel).forEach(function (el) {
-          classes.forEach(function (c) { try { el.classList.remove(c); } catch (e) {} });
-        });
+      forEachMatch(selector || "." + classes.map(function (c) { return CSS.escape(c); }).join(",."), function (el) {
+        classes.forEach(function (c) { el.classList.remove(c); });
       });
     },
 
@@ -585,17 +592,13 @@ var SA_POLICY = (function () {
     "href-sanitizer": function (selector, source) {
       if (!selector) return;
       var src = source || "text";
-      onEachMutation(function () {
-        document.querySelectorAll(selector).forEach(function (a) {
-          try {
-            var href = a.getAttribute("href") || "";
-            var target = "";
-            if (src === "text") target = (a.textContent || "").trim();
-            else if (src.charAt(0) === "?") target = new URL(href, location.href).searchParams.get(src.slice(1)) || "";
-            else if (src.charAt(0) === "[" && src.slice(-1) === "]") target = a.getAttribute(src.slice(1, -1)) || "";
-            if (/^https?:\/\/[^\s"'<>]+$/.test(target) && target !== href) a.setAttribute("href", target);
-          } catch (e) {}
-        });
+      forEachMatch(selector, function (a) {
+        var href = a.getAttribute("href") || "";
+        var target = "";
+        if (src === "text") target = (a.textContent || "").trim();
+        else if (src.charAt(0) === "?") target = new URL(href, location.href).searchParams.get(src.slice(1)) || "";
+        else if (src.charAt(0) === "[" && src.slice(-1) === "]") target = a.getAttribute(src.slice(1, -1)) || "";
+        if (/^https?:\/\/[^\s"'<>]+$/.test(target) && target !== href) a.setAttribute("href", target);
       });
     },
 
@@ -608,13 +611,9 @@ var SA_POLICY = (function () {
       if (!nodeName || !search) return;
       var tag = String(nodeName).toLowerCase();
       var match = needleMatcher(search);
-      onEachMutation(function () {
-        document.querySelectorAll(tag).forEach(function (n) {
-          try {
-            if (n.nodeType !== 1 || String(n.tagName).toLowerCase() !== tag) return;
-            if (n.textContent && match(n.textContent)) n.textContent = "";
-          } catch (e) {}
-        });
+      forEachMatch(tag, function (n) {
+        if (n.nodeType !== 1 || String(n.tagName).toLowerCase() !== tag) return;
+        if (n.textContent && match(n.textContent)) n.textContent = "";
       });
     },
 

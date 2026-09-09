@@ -44,6 +44,7 @@ function load() {
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString();
     $("autoUpdate").checked = res.autoUpdate !== false;
     renderUpdateStatus(res.liveVersion || 0, res.liveUpdated || 0);
+    renderHealth();
     renderAllowlist(res.allowlist || []);
   });
 
@@ -51,6 +52,35 @@ function load() {
     renderCustom(data.customHidden || {});
     $("userFilters").value = data.userFilters || "";
     renderSmartLog(data.smartLog || []);
+  });
+}
+
+function renderHealth() {
+  chrome.runtime.sendMessage({ type: "getHealth" }, (h) => {
+    const ul = $("healthList");
+    if (!ul) return;
+    ul.innerHTML = "";
+    if (!h) { ul.innerHTML = '<li class="empty">No response from the service worker.</li>'; return; }
+    const rows = [
+      ["Anti-adblock engine", h.engineRegistered ? "registered (MAIN world, document_start)" : "NOT registered" + (h.scriptletsError ? " — " + h.scriptletsError : ""), h.engineRegistered],
+      ["Static rulesets on", h.enabledRulesets.length ? h.enabledRulesets.join(", ") : "none", h.enabledRulesets.length > 0],
+      ["Live filter domains", String(h.dynamic.live) + (h.liveVersion ? " (filter set v" + h.liveVersion + ", " + ago(h.liveUpdated) + ")" : " (no update yet)"), !h.liveError],
+      ["Last update", h.liveError ? "failed: " + h.liveError : h.liveUpdated ? "ok, " + ago(h.liveUpdated) : "not yet", !h.liveError],
+      ["Update signatures", h.ed25519 ? "Ed25519 verified (" + h.keys + " key" + (h.keys === 1 ? "" : "s") + ")" : "browser cannot verify Ed25519 — best-effort", h.ed25519],
+      ["My filters / allowlist rules", h.dynamic.user + " / " + h.dynamic.allow, true],
+      ["Popup-ad hosts baked", String(h.popupHosts), h.popupHosts > 0],
+      ["YouTube bypass", h.dynamic.ytBypass ? "ACTIVE (ads allowed on YouTube until it expires)" : "inactive", !h.dynamic.ytBypass],
+    ];
+    for (const [k, v, good] of rows) {
+      const li = document.createElement("li");
+      const left = document.createElement("div");
+      const d = document.createElement("div"); d.className = "domain"; d.textContent = k;
+      const s = document.createElement("div"); s.className = "sel"; s.textContent = v;
+      left.append(d, s);
+      const dot = document.createElement("span"); dot.className = "sel"; dot.textContent = good ? "OK" : "!"; dot.style.color = good ? "#00e5ff" : "#ff5a5a";
+      li.append(left, dot);
+      ul.appendChild(li);
+    }
   });
 }
 
@@ -270,6 +300,8 @@ $("importList").addEventListener("click", async () => {
     hint.textContent = "Import failed (" + (e.message || "error") + ")";
   }
 });
+
+$("healthRefresh").addEventListener("click", renderHealth);
 
 $("resetStats").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "resetStats" }, () => {

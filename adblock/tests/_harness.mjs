@@ -77,14 +77,17 @@ export const sendLive = (list) =>
   globalThis.document.dispatchEvent(new globalThis.CustomEvent("sa-scriptlets", { detail: JSON.stringify(list) }));
 
 // Зарежда background.js с Proxy chrome stub и връща вътрешните функции.
-export function loadBackground() {
+export function loadBackground(opts = {}) {
   const mk = () => new Proxy(function () {}, { get: (_, p) => (p === "then" ? undefined : mk()), apply: () => mk() });
-  globalThis.chrome = mk();
+  globalThis.chrome = opts.chrome || mk();
   // Simulate importScripts("scriptlets/policy.js"): prepend the policy, stub the call.
   const policy = readFileSync(join(ROOT, "scriptlets", "policy.js"), "utf8");
   globalThis.importScripts = () => {};
-  const src = policy + "\n" + readFileSync(join(ROOT, "background.js"), "utf8") +
-    "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains, domainBlockRules };";
+  let body = readFileSync(join(ROOT, "background.js"), "utf8");
+  if (opts.patch) body = opts.patch(body);
+  const extra = opts.exports ? ", " + opts.exports : "";
+  const src = policy + "\n" + body +
+    "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains, domainBlockRules" + extra + " };";
   runInThisContext(src, { filename: "background.js" });
   return globalThis.__bg;
 }

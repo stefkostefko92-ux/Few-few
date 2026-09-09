@@ -17,6 +17,15 @@ Serve this file at `https://adblock.carbonstealth.eu/filters.json` with
 comes from the extension service worker, which has host access). Bump `version`
 on every change so you can tell installs are current.
 
+## Signing key rotation
+
+The extension embeds a LIST of Ed25519 public keys (`SIG_PUBKEYS_B64` in
+`background.js`) and accepts a signature from any of them. To rotate without a
+flag day: (1) ship a release with `[current, next]`; (2) once that release has
+rolled out, switch the server key (`/etc/caddy/adblock-signing.key`) to `next`
+and re-sign; (3) drop `current` in a later release. Never put a private key in
+the repo.
+
 ## Schema
 
 ```jsonc

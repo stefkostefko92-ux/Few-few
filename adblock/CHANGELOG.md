@@ -29,6 +29,24 @@
   тези домейни се пекат в MAIN-world engine-а като `window.open` guard (по домейн-
   суфикс; same-host и не-http винаги минават). Най-големият пропуснат клас стана функция.
 
+### Фаза 3 — доверие и сигурност
+- **Тестове на вратата на доверието**: Ed25519 с реални ключове (Node WebCrypto) —
+  валиден/подправен/липсващ подпис, непознат ключ, anti-rollback, равна версия,
+  ротация; регистрация на engine-а (excludeMatches само за валидни allowlist хостове,
+  off → unregister, провал → `scriptletsError` + retry alarm); `applyState` таблица;
+  `getHealth`. Recording `chrome` mock (`tests/_chrome.mjs`).
+- **Ротация на подписващия ключ**: `SIG_PUBKEYS_B64` е списък — релийз с [current,
+  next] → смяна на сървъра → отпадане на стария ключ (документирано в `server/README.md`).
+- **Engine health** карта в настройките: engine регистриран?, активни рулсети, live/
+  user/allowlist правила, последен ъпдейт (+ причина при провал), Ed25519, popup
+  хостове, YouTube bypass. Провал на `registerContentScripts` вече е видим и се
+  повтаря след 1 мин (преди беше тих `console.warn` = нула scriptlet-и).
+- **Производителност**: `onEachMutation` коалесира mutation бурстове в един пас на
+  кадър (rAF; `setTimeout` при скрит таб) с natives, capture-нати при старт.
+- Рефактори без промяна на поведението: `defuseTimer` (nostif/nosiif), `forEachMatch`
+  (remove-attr/remove-class/href-sanitizer/remove-node-text) — покрити от тестовете.
+
+
 ## 4.7.0
 
 Консолидиран релийз преди Web Store — пълен uBO scriptlet roster, тестове в репото, гейт в CI:

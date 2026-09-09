@@ -68,19 +68,22 @@ const YT_BYPASS_MS = 6 * 60 * 60 * 1000; // 6h
 // добра конфигурация. Докато собственикът не качи ключ (.sig липсва, 404),
 // ъпдейтите се приемат както досега; после SIG_REQUIRED става true в релийз.
 const SIG_URL = CONFIG_URL + ".sig";
-const SIG_PUBKEY_B64 = "dHNcuMuLraQ8w1sse7rk6Dnzzh5wzbLc4/KofD5QWMQ="; // raw Ed25519 публичен ключ
+// Rotation without a flag day: ship a release with [current, next], switch the
+// server to sign with `next`, then drop `current` in a later release. Every
+// listed key is tried; the first that verifies wins.
+const SIG_PUBKEYS_B64 = ["dHNcuMuLraQ8w1sse7rk6Dnzzh5wzbLc4/KofD5QWMQ="]; // raw Ed25519 публични ключове
 
 // Политика: щом ключ е конфигуриран И платформата може да верифицира Ed25519
 // (Chrome 137+), изискваме ВАЛИДЕН подпис — липсващ или невалиден .sig отхвърля
 // ъпдейта (спира downgrade при компрометиран сървър). На стар браузър, който не
 // поддържа Ed25519, приемаме best-effort, за да не спрем live ъпдейтите (121-136).
 let ed25519Supported = null;
+const rawKey = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 async function canVerifyEd25519() {
   if (ed25519Supported !== null) return ed25519Supported;
-  if (!SIG_PUBKEY_B64) { ed25519Supported = false; return false; }
+  if (!SIG_PUBKEYS_B64.length) { ed25519Supported = false; return false; }
   try {
-    const raw = Uint8Array.from(atob(SIG_PUBKEY_B64), (c) => c.charCodeAt(0));
-    await crypto.subtle.importKey("raw", raw, { name: "Ed25519" }, false, ["verify"]);
+    await crypto.subtle.importKey("raw", rawKey(SIG_PUBKEYS_B64[0]), { name: "Ed25519" }, false, ["verify"]);
     ed25519Supported = true;
   } catch {
     ed25519Supported = false; // Chrome < 137
@@ -89,14 +92,15 @@ async function canVerifyEd25519() {
 }
 
 async function verifySignature(bytes, sigB64) {
-  try {
-    const raw = Uint8Array.from(atob(SIG_PUBKEY_B64), (c) => c.charCodeAt(0));
-    const sig = Uint8Array.from(atob((sigB64 || "").trim()), (c) => c.charCodeAt(0));
-    const key = await crypto.subtle.importKey("raw", raw, { name: "Ed25519" }, false, ["verify"]);
-    return await crypto.subtle.verify("Ed25519", key, sig, bytes);
-  } catch {
-    return false; // не можем да потвърдим валиден подпис → третираме като невалиден
+  let sig;
+  try { sig = rawKey((sigB64 || "").trim()); } catch { return false; }
+  for (const pub of SIG_PUBKEYS_B64) {
+    try {
+      const key = await crypto.subtle.importKey("raw", rawKey(pub), { name: "Ed25519" }, false, ["verify"]);
+      if (await crypto.subtle.verify("Ed25519", key, sig, bytes)) return true;
+    } catch {}
   }
+  return false; // не можем да потвърдим валиден подпис → третираме като невалиден
 }
 
 // never block these from a user filter, even by mistake
@@ -263,6 +267,7 @@ async function resumeNow() {
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
   if (a.name === "config-update") fetchLiveConfig();
+  if (a.name === "scriptlets-retry") syncScriptlets();
   if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false));
 });
 
@@ -355,8 +360,13 @@ async function doSyncScriptlets(on) {
 
   try {
     await chrome.scripting.registerContentScripts([script]);
+    try { await chrome.storage.local.set({ scriptletsError: "" }); } catch {}
   } catch (e) {
     console.warn("scriptlet registration failed", e);
+    // Surface it (health card) and retry once shortly: a transient failure here
+    // means NO scriptlets on any page until the next applyState.
+    try { await chrome.storage.local.set({ scriptletsError: String((e && e.message) || e) }); } catch {}
+    try { chrome.alarms.create("scriptlets-retry", { delayInMinutes: 1 }); } catch {}
   }
 }
 
@@ -504,7 +514,17 @@ async function syncLiveRules(domains = []) {
   }
 }
 
+// Wrapper: remember the last failure reason for the health card (cleared on success;
+// "off" is not a failure).
 async function fetchLiveConfig(force) {
+  const r = await fetchLiveConfigInner(force);
+  try {
+    if (r.ok) await chrome.storage.local.set({ liveError: "" });
+    else if (r.reason !== "off") await chrome.storage.local.set({ liveError: r.reason, liveErrorAt: Date.now() });
+  } catch {}
+  return r;
+}
+async function fetchLiveConfigInner(force) {
   const { autoUpdate } = await chrome.storage.local.get("autoUpdate");
   if (!force && autoUpdate === false) return { ok: false, reason: "off" };
   let raw;
@@ -517,7 +537,7 @@ async function fetchLiveConfig(force) {
     // ИЗИСКВАМЕ валиден подпис — липсващ (.sig 404 / мрежа) или невалиден
     // отхвърля ъпдейта (спира downgrade при компрометиран сървър). На стар
     // браузър без Ed25519 приемаме best-effort, за да не спрем live ъпдейтите.
-    if (SIG_PUBKEY_B64 && (await canVerifyEd25519())) {
+    if (SIG_PUBKEYS_B64.length && (await canVerifyEd25519())) {
       let sigText = null;
       try {
         const sres = await fetch(SIG_URL, { cache: "no-cache" });
@@ -776,6 +796,35 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: true });
       });
       return true;
+
+    case "getHealth": {
+      // Diagnostics for the options page: is the engine registered, which
+      // rulesets are on, how many dynamic rules per range, live-config state.
+      (async () => {
+        const out = { engineRegistered: false, enabledRulesets: [], dynamic: { user: 0, allow: 0, live: 0, ytBypass: false }, liveVersion: 0, liveUpdated: 0, liveError: "", scriptletsError: "", ed25519: false, keys: SIG_PUBKEYS_B64.length, popupHosts: 0 };
+        try { out.engineRegistered = (await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPTLET_SCRIPT_ID] })).length > 0; } catch {}
+        try { out.enabledRulesets = await chrome.declarativeNetRequest.getEnabledRulesets(); } catch {}
+        try {
+          for (const r of await chrome.declarativeNetRequest.getDynamicRules()) {
+            if (r.id === YT_BYPASS_RULE_ID) out.dynamic.ytBypass = true;
+            else if (r.id >= LIVE_RULE_BASE) out.dynamic.live += (r.condition.requestDomains || []).length || 1;
+            else if (r.id >= ALLOW_RULE_BASE) out.dynamic.allow++;
+            else if (r.id >= USER_BLOCK_BASE) out.dynamic.user += (r.condition.requestDomains || []).length || 1;
+          }
+        } catch {}
+        try {
+          const d = await chrome.storage.local.get(["liveConfig", "liveUpdated", "liveError", "scriptletsError"]);
+          out.liveVersion = (d.liveConfig && d.liveConfig.version) || 0;
+          out.liveUpdated = d.liveUpdated || 0;
+          out.liveError = d.liveError || "";
+          out.scriptletsError = d.scriptletsError || "";
+        } catch {}
+        try { out.ed25519 = await canVerifyEd25519(); } catch {}
+        try { out.popupHosts = (await getRuleCounts()).popupHosts || 0; } catch {}
+        sendResponse(out);
+      })();
+      return true;
+    }
 
     case "getStats":
       chrome.storage.local.get(
