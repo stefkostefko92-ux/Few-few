@@ -10572,7 +10572,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 162
+        "lessons": 163
       },
       "evolution": [
         {
@@ -10982,9 +10982,20 @@
           "date": "2026-08-07",
           "event": "v14.3 — учене",
           "detail": "Научи: В SupremeDiscordBot frontend react-query план на ключове: ['servers'] (мн.ч., сайдбар+с… (+1 още)"
+        },
+        {
+          "version": "14.4.0",
+          "date": "2026-09-09",
+          "event": "v14.4 — учене",
+          "detail": "Научи: За визуален preview на MV3 popup извън браузъра стъбвай window.chrome (runtime.sendMess…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-09",
+          "type": "learning",
+          "summary": "Научи: „За визуален preview на MV3 popup извън браузъра стъбвай window.chrome (runtime.sendMess…\" · 1 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
