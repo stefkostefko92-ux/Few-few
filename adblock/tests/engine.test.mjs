@@ -141,6 +141,11 @@ const g = globalThis;
 {
   const { win, nodes } = makeWorld("www.example.com");
   win.detectorFlag = 0;
+  // aeld wraps window.EventTarget.prototype.addEventListener (as in a real page); the
+  // recorder goes in FIRST so the wrapper sits in front of it.
+  const calls = []; const origAdd = globalThis.EventTarget.prototype.addEventListener;
+  globalThis.EventTarget.prototype.addEventListener = function (t, l) { calls.push(t); };
+  win.EventTarget = globalThis.EventTarget;
   loadEngine();
   sendLive([
     { h: "example.com", d: ["abort-on-property-write", "detectorFlag"] },
@@ -157,11 +162,14 @@ const g = globalThis;
   const el = { classList: { removed: [], remove(c) { this.removed.push(c); } } }; nodes[".content"] = [el];
   sendLive([{ h: "example.com", d: ["remove-class", "ad-overlay", ".content"] }]); // new directive: nodes exist now
   ok("remove-class strips class on matching elements", el.classList.removed.includes("ad-overlay"));
-  const calls = []; const origAdd = globalThis.EventTarget.prototype.addEventListener;
-  globalThis.EventTarget.prototype.addEventListener = function (t, l) { calls.push(t); };
-  sendLive([{ h: "example.com", d: ["addEventListener-defuser", "click", "popunder"] }]);
+  // The wrapper must sit in front of the recorder: click+popunder is swallowed
+  // (never reaches it), a different type or a different handler passes through.
+  const et = new globalThis.EventTarget();
+  et.addEventListener("click", function () { popunder(); });
+  et.addEventListener("scroll", function () { popunder(); });
+  et.addEventListener("click", function () { harmless(); });
   globalThis.EventTarget.prototype.addEventListener = origAdd;
-  ok("aeld: engine can wrap addEventListener (registration path exists)", true);
+  ok("aeld: matching listener swallowed, non-matching type/handler pass through", calls.join() === "scroll,click");
   ok("nowoif with REJECTED regex does NOT block window.open (matches nothing)", win.open("https://news.example.org/a").closed === false);
   win.gate = 1;
   ok("aost: needle matching only our own chrome-extension frames never fires", (() => { try { return win.gate === 1; } catch (e) { return false; } })());

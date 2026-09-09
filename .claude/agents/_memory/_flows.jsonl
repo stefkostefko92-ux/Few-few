@@ -17,3 +17,9 @@
 {"t":"handoff","ts":"2026-09-09T06:04:00.884Z","id":"auto","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-09T06:05:48.301Z","id":"auto","from":"kodadjiyata","to":"hromadjiyata","status":"блокер"}
 {"t":"handoff","ts":"2026-09-09T06:05:55.607Z","id":"auto","from":"tayniyat-agent","to":"kodadjiyata","status":"блокер"}
+{"t":"handoff","ts":"2026-09-09T13:20:50.581Z","id":"auto","from":"dizayner","to":"човек","status":"наред"}
+{"t":"handoff","ts":"2026-09-09T13:25:08.611Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-09T13:33:50.843Z","id":"auto","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-09T13:36:16.111Z","id":"auto","from":"tayniyat-agent","to":"hromadjiyata","status":"блокер"}
+{"t":"handoff","ts":"2026-09-09T13:36:57.999Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-09T13:39:04.929Z","id":"auto","from":"tayniyat-agent","to":"hromadjiyata","status":"блокер"}

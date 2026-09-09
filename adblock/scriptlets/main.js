@@ -78,7 +78,8 @@ var SA_POLICY = (function () {
   var CANON = {};
   for (var k in ALIASES) if (hasOwn.call(ALIASES, k)) CANON[ALIASES[k]] = true;
 
-  var ARG_MAX = 400;
+  var ARG_MAX = 400;                 // max length of one directive argument / live string
+  var LIVE_SCRIPTLET_MAX = 500;      // max live directives per filters.json (SW and engine agree)
   var NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                  // dotted property chain
 
   // set-constant values: fixed dictionary or a plain integer — never code.
@@ -223,7 +224,7 @@ var SA_POLICY = (function () {
   }
 
   return {
-    ALIASES: ALIASES, CANON: CANON, NAME_RE: NAME_RE, ARG_MAX: ARG_MAX,
+    ALIASES: ALIASES, CANON: CANON, NAME_RE: NAME_RE, ARG_MAX: ARG_MAX, LIVE_SCRIPTLET_MAX: LIVE_SCRIPTLET_MAX,
     SETCONST_VALUES: SETCONST_VALUES, COOKIE_NAME: COOKIE_NAME,
     COOKIE_NAME_DENY: COOKIE_NAME_DENY, COOKIE_VALUES: COOKIE_VALUES,
     UNSAFE_SELECTORS: UNSAFE_SELECTORS, FORM_TARGET: FORM_TARGET, FORM_ATTR: FORM_ATTR,
@@ -770,7 +771,7 @@ var SA_POLICY = (function () {
     if (!nativeIsArray(items)) return;
     var chain = hostChain();
     for (var p = 0; p < chain.length; p++) if (SA_POLICY.NEVER_LIVE.indexOf(chain[p]) >= 0) return;
-    for (var i = 0; i < items.length && i < 500; i++) {
+    for (var i = 0; i < items.length && i < SA_POLICY.LIVE_SCRIPTLET_MAX; i++) {
       var it = items[i];
       if (!it || typeof it !== "object") continue;
       // Read once and materialise: a poisoned getter can't swap values between

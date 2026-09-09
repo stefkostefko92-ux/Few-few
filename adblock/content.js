@@ -195,7 +195,7 @@
       try {
         els = [...(root || document).querySelectorAll(p.css)];
       } catch {
-        return { els: [], remove: false };
+        return { els: [], action: null };
       }
     }
     if (els.length > 1000) els = els.slice(0, 1000);
@@ -257,7 +257,7 @@
         els = els.filter((el) => el.textContent.length >= n);
       } else if (op === "matches-css") {
         const ci = arg.indexOf(":");
-        if (ci < 1) return { els: [], remove: false };
+        if (ci < 1) return { els: [], action: null };
         const prop = arg.slice(0, ci).trim();
         const want = arg.slice(ci + 1).trim();
         const re = toRegex(want);
@@ -472,7 +472,7 @@
   }
 
   function smartScan() {
-    if (!enabled || !smartEnabled) return;
+    if (!enabled || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
     const items = [];
     scanFrames(items);
     scanSticky(items);
@@ -562,7 +562,9 @@
         const allowed = ((d && d.allowlist) || []).some(hostMatches);
         // Гейтът зачита и $generichide хоста, за да не върне генеричния CSS
         // при повторно включване без reload.
-        gate(enabled && !allowed && !genericHideHost);
+        // …и per-site „без козметика" — иначе повторното включване връща
+        // генеричния CSS точно на сайта, който потребителят е обявил за счупен.
+        gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
         if (enabled && !allowed) {
           start();
           hide();

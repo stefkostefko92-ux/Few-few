@@ -28,6 +28,7 @@ const copies = [
   ["engine.js", engine, [/var FORM_ATTR =/, /var COOKIE_VALUES =/, /var UNSAFE_SEL =/, /function tokenValue\(/, /var NEVER_LIVE =/, /var ALIASES =/]],
   ["background.js", bg, [/const SCRIPTLET_ALIASES =/, /const FORM_ATTR =/, /const UNSAFE_SELECTORS =/, /const SCRIPTLET_SETCONST =/, /const NEVER_BLOCK = \[/]],
   ["build_scriptlets.mjs", build, [/const ALIASES = \{/, /const SETCONST_VALUES =/, /const COOKIE_VALUES =/, /^function argSafe\(/m]],
+  ["build_filters.mjs", read("tools", "build_filters.mjs"), [/const NEVER_BLOCK = \[/, /const isProtected = \(d\) => NEVER_BLOCK/]],
 ];
 for (const [name, src, res] of copies) ok(`${name}: no local copy of the policy tables`, res.every((r) => !r.test(src)));
 ok("engine.js carries the /*__SCRIPTLET_POLICY__*/ marker", engine.includes("/*__SCRIPTLET_POLICY__*/"));

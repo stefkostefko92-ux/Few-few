@@ -45,7 +45,8 @@ var SA_POLICY = (function () {
   var CANON = {};
   for (var k in ALIASES) if (hasOwn.call(ALIASES, k)) CANON[ALIASES[k]] = true;
 
-  var ARG_MAX = 400;
+  var ARG_MAX = 400;                 // max length of one directive argument / live string
+  var LIVE_SCRIPTLET_MAX = 500;      // max live directives per filters.json (SW and engine agree)
   var NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                  // dotted property chain
 
   // set-constant values: fixed dictionary or a plain integer — never code.
@@ -190,7 +191,7 @@ var SA_POLICY = (function () {
   }
 
   return {
-    ALIASES: ALIASES, CANON: CANON, NAME_RE: NAME_RE, ARG_MAX: ARG_MAX,
+    ALIASES: ALIASES, CANON: CANON, NAME_RE: NAME_RE, ARG_MAX: ARG_MAX, LIVE_SCRIPTLET_MAX: LIVE_SCRIPTLET_MAX,
     SETCONST_VALUES: SETCONST_VALUES, COOKIE_NAME: COOKIE_NAME,
     COOKIE_NAME_DENY: COOKIE_NAME_DENY, COOKIE_VALUES: COOKIE_VALUES,
     UNSAFE_SELECTORS: UNSAFE_SELECTORS, FORM_TARGET: FORM_TARGET, FORM_ATTR: FORM_ATTR,

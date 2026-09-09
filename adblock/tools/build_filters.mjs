@@ -22,6 +22,7 @@
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -36,12 +37,16 @@ const SOURCES = {
 const PATTERN_CAP = { easylist: 15000, easyprivacy: 9000 };
 const DOMAINS_PER_RULE = 1000; // requestDomains chunk на едно DNR правило
 
-// Никога не блокираме core video/CDN домейни (счупват сайтове/видео).
-const NEVER_BLOCK = [
-  "googlevideo.com", "ytimg.com", "youtube.com", "ggpht.com", "gstatic.com",
-  "googleapis.com", "google.com", "fbcdn.net", "cdninstagram.com",
-];
-const isProtected = (d) => NEVER_BLOCK.some((p) => d === p || d.endsWith("." + p));
+// Никога не блокираме core video/CDN домейни (счупват сайтове/видео). Списъкът е
+// в scriptlets/policy.js (единствен източник — същият, който пази live канала и
+// потребителските филтри); зареждаме го през vm като build_scriptlets.mjs.
+const SA_POLICY = (() => {
+  const ctx = {};
+  runInNewContext(readFileSync(join(ROOT, "scriptlets", "policy.js"), "utf8"), ctx, { filename: "policy.js" });
+  return ctx.SA_POLICY;
+})();
+if (!SA_POLICY || typeof SA_POLICY.protectedHost !== "function") { console.error("ERROR: scriptlets/policy.js did not define SA_POLICY"); process.exit(1); }
+const isProtected = (d) => SA_POLICY.protectedHost(d);
 
 const TYPE_MAP = {
   script: "script", image: "image", stylesheet: "stylesheet", object: "object",
@@ -81,7 +86,12 @@ const REDIRECT_MAP = {
   "amazon_apstag.js": "apstag.js",
 };
 // $csp= values we pass through: a conservative charset + must look like a policy.
-const CSP_OK = (v) => /^[A-Za-z0-9 '":;\/*.\-_]{6,300}$/.test(v) && /(-src\b|\bsandbox\b|frame-ancestors|upgrade-insecure-requests)/.test(v);
+// Reporting directives are refused: `report-uri https://x/` would make the browser
+// POST the visited document URL to a third party on every violation (a list line
+// must never turn the extension into a beacon).
+const CSP_OK = (v) => /^[A-Za-z0-9 '":;\/*.\-_]{6,300}$/.test(v)
+  && /(-src\b|\bsandbox\b|frame-ancestors|upgrade-insecure-requests)/.test(v)
+  && !/\breport-(uri|to)\b/i.test(v);
 // Why a line was dropped (node tools/build_filters.mjs --report prints the histogram).
 const SKIP_REASONS = {};
 const skip = (r) => { SKIP_REASONS[r] = (SKIP_REASONS[r] || 0) + 1; return null; };
@@ -182,8 +192,10 @@ function pureDomain(pattern) {
   return m && validDomain(m[1]) ? m[1] : null;
 }
 
-// Redirects (surrogates) must beat block rules (priority 1) — same as rules/surrogates.json.
-const priorityOf = (o) => (o.redirect ? 5 : priorityFor(o));
+// Redirects (surrogates) must beat block rules (priority 1) — same as rules/surrogates.json;
+// document allows (allowAllRequests) and $important sit above plain allow/block.
+const rulePriority = (o) =>
+  o.redirect ? 5 : o.doc && o.allow ? 4 : o.important ? (o.allow ? 4 : 3) : o.allow ? 2 : 1;
 function actionFor(o) {
   if (o.csp) {
     return { type: "modifyHeaders", responseHeaders: [{ header: "content-security-policy", operation: "append", value: o.csp }] };
@@ -211,9 +223,6 @@ function conditionFor(o) {
   if (o.csp) { c.resourceTypes = ["main_frame", "sub_frame"]; delete c.excludedResourceTypes; }
   return c;
 }
-
-const priorityFor = (o) =>
-  o.doc && o.allow ? 4 : o.important ? (o.allow ? 4 : 3) : o.allow ? 2 : 1;
 
 // $popup domains (DNR cannot see popups) → baked into the MAIN-world engine as a
 // window.open guard (rules/popup_hosts.json → scriptlets/main.js). Pattern (non-
@@ -244,7 +253,7 @@ function convertList(text, key) {
       merge.get(sig).domains.add(d);
     } else {
       // Surrogate redirects on protected hosts are fine (the site keeps working); blocks are not.
-      if (!o.allow && !o.redirect && NEVER_BLOCK.some((p) => o.pattern.includes(p))) continue;
+      if (!o.allow && !o.redirect && SA_POLICY.NEVER_LIVE.some((p) => o.pattern.includes(p))) continue;
       pattern.push(o);
     }
   }
@@ -262,7 +271,7 @@ function convertList(text, key) {
       if (proto.doc && proto.allow) c.resourceTypes = ["main_frame", "sub_frame"];
       rules.push({
         id: id++,
-        priority: priorityOf(proto),
+        priority: rulePriority(proto),
         action: actionFor(proto),
         condition: c,
       });
@@ -273,13 +282,13 @@ function convertList(text, key) {
   const cap = PATTERN_CAP[key] ?? Infinity;
   let blocks = 0;
   for (const o of pattern) {
-    if (!o.allow && blocks >= cap) { skipped++; continue; }
+    if (!o.allow && blocks >= cap) { skip("cap:" + key); skipped++; continue; }
     let uf = o.pattern.replace(/^\*+/, "").replace(/\*+$/, "");
     if (o.pattern.endsWith("|")) uf += "|";
     // DNR сравнява case-insensitive спрямо lowercase URL и суровия pattern —
     // pattern с главна буква тихо не match-ва. Свеждаме до lowercase.
     if (!o.matchCase) uf = uf.toLowerCase();
-    if (uf.length < 3) { skipped++; continue; }
+    if (uf.length < 3) { skip("pattern:too-short"); skipped++; continue; }
     const c = conditionFor(o);
     c.urlFilter = uf;
     if (o.doc && o.allow) c.resourceTypes = ["main_frame", "sub_frame"];
@@ -461,12 +470,12 @@ for (const f of ["ad_rules", "youtube_rules", "removeparam", "surrogates", "head
   const p = join(ROOT, "rules", f + ".json");
   if (existsSync(p)) counts[f] = JSON.parse(readFileSync(p, "utf-8")).length;
 }
-counts.generated = new Date().toISOString().slice(0, 10);
-writeFileSync(join(ROOT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
 const popupHosts = [...POPUP_HOSTS].sort();
 writeFileSync(join(ROOT, "rules", "popup_hosts.json"), JSON.stringify(popupHosts) + "\n");
-counts.popupHosts = popupHosts.length;
+counts.popupHosts = popupHosts.length; // before counts.json is written (health card reads it)
 console.log(`popup hosts (baked window.open guard): ${popupHosts.length}`);
+counts.generated = new Date().toISOString().slice(0, 10);
+writeFileSync(join(ROOT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
 if (process.argv.includes("--report")) {
   console.log("skip reasons (top 30):", JSON.stringify(Object.entries(SKIP_REASONS).sort((a, b) => b[1] - a[1]).slice(0, 30)));
 }

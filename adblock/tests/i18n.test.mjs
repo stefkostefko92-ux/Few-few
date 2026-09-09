@@ -4,6 +4,7 @@
 // английския текст при липсващ ключ), но CI не пуска дупки.
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { runInNewContext } from "node:vm";
 import { ROOT, ok, done } from "./_harness.mjs";
 
 const read = (...p) => readFileSync(join(ROOT, ...p), "utf8");
@@ -29,5 +30,13 @@ for (const m of js.matchAll(/\bt\("([A-Za-z0-9_]+)"/g)) used.add(m[1]);
 const missing = [...used].filter((k) => !(k in en));
 ok(`every key used in markup/JS exists in en (${used.size} used; missing: ${missing.join(",") || "none"})`, missing.length === 0);
 ok("manifest name/description are localised via __MSG__", /__MSG_extName__|"Supreme AdBlock"/.test(read("manifest.json")));
+
+// popup.js keeps an English FALLBACK table (for a locale that misses a key) — it must
+// never drift from en, otherwise the "fallback" silently becomes a second source.
+const fbMatch = /const FALLBACK = (\{[\s\S]*?\n\});/.exec(read("popup", "popup.js"));
+const FALLBACK = fbMatch ? runInNewContext("(" + fbMatch[1] + ")") : null;
+ok("popup.js FALLBACK table found", !!FALLBACK && Object.keys(FALLBACK).length > 0);
+const drift = Object.keys(FALLBACK || {}).filter((k) => !(k in en) || en[k].message !== FALLBACK[k]);
+ok(`popup.js FALLBACK == en for every key (drift: ${drift.join(",") || "none"})`, drift.length === 0);
 
 done();

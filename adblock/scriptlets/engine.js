@@ -565,7 +565,7 @@
     if (!nativeIsArray(items)) return;
     var chain = hostChain();
     for (var p = 0; p < chain.length; p++) if (SA_POLICY.NEVER_LIVE.indexOf(chain[p]) >= 0) return;
-    for (var i = 0; i < items.length && i < 500; i++) {
+    for (var i = 0; i < items.length && i < SA_POLICY.LIVE_SCRIPTLET_MAX; i++) {
       var it = items[i];
       if (!it || typeof it !== "object") continue;
       // Read once and materialise: a poisoned getter can't swap values between

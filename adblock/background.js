@@ -103,9 +103,8 @@ async function verifySignature(bytes, sigB64) {
   return false; // не можем да потвърдим валиден подпис → третираме като невалиден
 }
 
-// never block these from a user filter, even by mistake
-const NEVER_BLOCK = SA_POLICY.NEVER_LIVE; // single source: scriptlets/policy.js
-const isProtected = (d) => NEVER_BLOCK.some((p) => d === p || d.endsWith("." + p));
+// never block these from a user filter, even by mistake (single source: scriptlets/policy.js)
+const isProtected = (d) => SA_POLICY.protectedHost(d);
 
 // avg bytes per blocked resource type. count is exact, size is approximate
 // (the request never loads, so its real size is unknown)
@@ -160,11 +159,16 @@ chrome.runtime.onInstalled.addListener(async () => {
   await syncAllowRules();
   await syncUserRules();
   createMenus();
-  chrome.alarms.create("config-update", { periodInMinutes: 720 }); // every 12h
-  chrome.alarms.create("subs-refresh", { periodInMinutes: 1440 }); // subscribed filter lists, daily
+  ensureAlarms();
   await reconcileYtBypass(); // update clears alarms; re-arm/clear an in-flight bypass
   fetchLiveConfig();
 });
+
+// Periodic work — one place for the periods (armed on install/update and on startup).
+function ensureAlarms() {
+  chrome.alarms.create("config-update", { periodInMinutes: 720 }); // filters.json, every 12h
+  chrome.alarms.create("subs-refresh", { periodInMinutes: 1440 }); // subscribed filter lists, daily
+}
 
 chrome.runtime.onStartup.addListener(async () => {
   const { sync, pausedUntil, liveConfig } = await chrome.storage.local.get([
@@ -184,8 +188,7 @@ chrome.runtime.onStartup.addListener(async () => {
   await syncUserRules();
   await syncLiveRules(liveConfig?.blockDomains || []); // re-apply + clear stale
   createMenus();
-  chrome.alarms.create("config-update", { periodInMinutes: 720 });
-  chrome.alarms.create("subs-refresh", { periodInMinutes: 1440 });
+  ensureAlarms();
   await reconcileYtBypass();
 });
 
@@ -200,13 +203,25 @@ function createMenus() {
   } catch (e) {}
 }
 
-// cross-device sync via chrome.storage.sync
-async function pushToSync() {
-  try {
-    await chrome.storage.sync.set(await chrome.storage.local.get(SYNC_KEYS));
-  } catch (e) {
-    console.warn("sync push failed", e);
+// cross-device sync via chrome.storage.sync — one key per write, so a single
+// oversized item (a subscribed list in userFilters can exceed Chrome's
+// QUOTA_BYTES_PER_ITEM = 8192) skips only itself instead of failing the whole
+// batch and silently stopping sync for allowlist/theme/features too.
+const SYNC_ITEM_MAX = 8000;
+async function syncSet(patch) {
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === undefined) continue;
+    const bytes = k.length + JSON.stringify(v).length;
+    if (bytes > SYNC_ITEM_MAX) { console.warn("sync: skipped", k, "(" + bytes + " bytes > item quota)"); continue; }
+    try {
+      await chrome.storage.sync.set({ [k]: v });
+    } catch (e) {
+      console.warn("sync set failed", k, e);
+    }
   }
+}
+async function pushToSync() {
+  syncSet(await chrome.storage.local.get(SYNC_KEYS));
 }
 
 async function pullFromSync() {
@@ -230,11 +245,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   if (area === "local") {
     const patch = {};
     for (const k of SYNC_KEYS) if (k in changes) patch[k] = changes[k].newValue;
-    if (Object.keys(patch).length) {
-      try {
-        await chrome.storage.sync.set(patch);
-      } catch (e) {}
-    }
+    if (Object.keys(patch).length) await syncSet(patch);
   } else if (area === "sync") {
     const patch = {};
     for (const k of SYNC_KEYS) if (k in changes) patch[k] = changes[k].newValue;
@@ -291,13 +302,14 @@ async function applyState() {
   const ytOn = on && f.youtube !== false;
 
   const enable = [];
-  const disable = [];
-  (on ? enable : disable).push("ad_rules", "easylist", "easyprivacy", "surrogates");
-  (ytOn ? enable : disable).push("youtube_rules");
-  (on && f.removeparam !== false ? enable : disable).push("removeparam");
-  (on && f.malware === true ? enable : disable).push("urlhaus");
-  (on && f.topics !== false ? enable : disable).push("headers");
-  (on && f.privacy !== false ? enable : disable).push("privacy");
+  if (on) enable.push("ad_rules", "easylist", "easyprivacy", "surrogates");
+  if (ytOn) enable.push("youtube_rules");
+  if (on && f.removeparam !== false) enable.push("removeparam");
+  if (on && f.malware === true) enable.push("urlhaus");
+  if (on && f.topics !== false) enable.push("headers");
+  if (on && f.privacy !== false) enable.push("privacy");
+  // every bundled ruleset is in exactly one of the two lists — by construction
+  const disable = RULESET_IDS.filter((id) => !enable.includes(id));
 
   try {
     await chrome.declarativeNetRequest.updateEnabledRulesets({
@@ -423,7 +435,7 @@ async function reconcileYtBypass() {
 // ---- Live filter update (remote DATA, never code) ----
 const strArr = (x, cap) =>
   Array.isArray(x)
-    ? x.filter((s) => typeof s === "string" && s.length < 400).slice(0, cap)
+    ? x.filter((s) => typeof s === "string" && s.length < SA_POLICY.ARG_MAX).slice(0, cap)
     : [];
 
 // Selector policy (form controls / credential fields / whole-page selectors are
@@ -459,7 +471,7 @@ function validateScriptlet(rawName, args) {
 function sanitizeScriptlets(x) {
   if (!Array.isArray(x)) return [];
   const out = [];
-  for (const it of x.slice(0, 500)) {
+  for (const it of x.slice(0, SA_POLICY.LIVE_SCRIPTLET_MAX)) {
     if (!it || typeof it !== "object") continue;
     const h = typeof it.h === "string" ? it.h.trim().toLowerCase() : "";
     if (h !== "" && !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(h)) continue;
@@ -659,14 +671,37 @@ function setSubscriptionBlock(text, url, lines) {
   return out.join("\n");
 }
 
+// Bounded download: a timeout, and the size cap enforced WHILE streaming (a
+// chunked body has no content-length — buffering it whole first would let a
+// hostile list URL grow the service worker without limit, daily).
+const SUB_FETCH_MS = 20000;
 async function fetchListText(url) {
-  const res = await fetch(url, { cache: "no-cache" });
-  if (!res.ok) throw new Error("http " + res.status);
-  const len = Number(res.headers && res.headers.get && res.headers.get("content-length"));
-  if (len && len > SUB_BYTES_MAX) throw new Error("too large");
-  const text = await res.text();
-  if (text.length > SUB_BYTES_MAX) throw new Error("too large");
-  return text;
+  const ctl = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = ctl ? setTimeout(() => ctl.abort(), SUB_FETCH_MS) : 0;
+  try {
+    const res = await fetch(url, { cache: "no-cache", signal: ctl ? ctl.signal : undefined });
+    if (!res.ok) throw new Error("http " + res.status);
+    const len = Number(res.headers && res.headers.get && res.headers.get("content-length"));
+    if (len && len > SUB_BYTES_MAX) throw new Error("too large");
+    if (res.body && typeof res.body.getReader === "function") {
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let text = "", got = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        got += value.byteLength;
+        if (got > SUB_BYTES_MAX) { try { await reader.cancel(); } catch (e) {} throw new Error("too large"); }
+        text += dec.decode(value, { stream: true });
+      }
+      return text + dec.decode();
+    }
+    const text = await res.text();
+    if (text.length > SUB_BYTES_MAX) throw new Error("too large");
+    return text;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 let subsChain = Promise.resolve();

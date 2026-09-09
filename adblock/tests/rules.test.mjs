@@ -72,6 +72,8 @@ ok("live rules: 20 000 domains → 20 chunked rules, ids 100000..100019, ≤1000
 ok("user rules: cap 2000 → 2 rules from 80000; empty → none", bg.domainBlockRules(many, 80000, 2000).length === 2 && bg.domainBlockRules([], 80000, 2000).length === 0);
 
 const popupHosts = JSON.parse(readFileSync(join(ROOT, "rules", "popup_hosts.json"), "utf8"));
+const countsJson = JSON.parse(readFileSync(join(ROOT, "rules", "counts.json"), "utf8"));
+ok("counts.json carries popupHosts == popup_hosts.json length (health card reads it)", countsJson.popupHosts === popupHosts.length && popupHosts.length > 0);
 ok("popup hosts: >1000 clean domains from EasyList $popup, none protected", popupHosts.length > 1000 && popupHosts.every((h) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h)) && !popupHosts.some((h) => /(^|\.)(youtube|google|googleapis|gstatic)\.com$/.test(h)));
 ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "scriptlets", "main.js"), "utf8").includes(JSON.stringify(popupHosts.slice(0, 3)).slice(0, -1)));
 
