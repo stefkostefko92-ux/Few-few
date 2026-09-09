@@ -31,6 +31,11 @@ export const CATASTROPHIC = [
   // Red-team 2026-09-08: третият правопис на force push — `+` пред refspec-а (`git push origin +main`,
   // `+HEAD:main`, `+refs/heads/main`) е force по git спецификация, без нито един флаг. Минаваше.
   { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*\s\+(refs\/heads\/|[\w/.-]+:)?(main|master)\b/i, why: "git push с +refspec към main (това е force push без флаг)" },
+  // Кръг 2 (2026-09-09): ИЗТРИВАНЕ на подразбиращия се клон — `git push origin :main` (празен източник
+  // в refspec-а), `git push --delete origin main`, `-d`. Feature клон (`:refs/heads/claude/x`) е нормално.
+  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*(\s(--delete|-d)\s[^\n;&|]*\b(main|master)\b|\s:(refs\/heads\/)?(main|master)\b)/i, why: "изтриване на отдалечения main/master (git push :main / --delete)" },
+  // Кръг 2: репото като цяло — `gh repo delete`, `gh api -X DELETE /repos/…`.
+  { re: /(?:^|[;&|]\s*|\n\s*)gh\s+(repo\s+delete\b|api\s+[^\n;&|]*-X\s+DELETE\b)/i, why: "изтриване на репо през gh" },
   // Red-team 2026-09-08: `find / -delete` (и `find / … -exec rm`) изтрива системата също толкова
   // сигурно, колкото `rm -rf /`, но без нито един `rm -rf`. Само от КОРЕНА — `find ./build -delete` е нормално.
   { re: /\bfind\s+\/\s[^\n]*(-delete\b|-exec\s+rm\b)/i, why: "find от корена с -delete/-exec rm (изтрива системата)" },
@@ -48,8 +53,11 @@ export function isCatastrophicRm(cmd) {
   // Домът е САМИЯТ дом (`~`, `~/`, `~/*`), не поддиректория: `~(\s|\/|…)` приемаше `~/` и после
   // каквото и да е, затова `rm -rf ~/.cache` се броеше за катастрофа (стар FP, хванат от FP-пробата
   // на 2026-09-08, когато `$HOME` вариантът го наследи).
+  // Кръг 2 (2026-09-09): РАБОТНОТО ДЪРВО също е катастрофа за агент — `rm -rf .`, `./`, `$PWD`,
+  // `$CLAUDE_PROJECT_DIR` изтриват репото, в което работи. `./build` и `.cache` остават нормални
+  // (след `.` трябва да има край/интервал/`*`, не име).
   const m = String(cmd || "").match(
-    /\brm\b((?:\s+-{1,2}[a-zA-Z-]+)*)\s+(?:--no-preserve-root\s+)?["']?(\/(?:\s|$|\*|["'])|(?:~|\$\{?HOME\}?)\/?(?:\s|$|\*|["']))/i,
+    /\brm\b((?:\s+-{1,2}[a-zA-Z-]+)*)\s+(?:--no-preserve-root\s+)?["']?(\/(?:\s|$|\*|["'])|(?:~|\$\{?HOME\}?|\$\{?PWD\}?|\$\{?CLAUDE_PROJECT_DIR\}?|\.)\/?(?:\s|$|\*|["']))/i,
   );
   if (!m) return false;
   const flags = m[1] || "";

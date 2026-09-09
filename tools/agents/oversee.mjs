@@ -27,9 +27,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
 import {
-  STALE_DAYS, MERGE_THRESHOLD, TIME_SENSITIVE,
+  MERGE_THRESHOLD,
   jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
 } from "./oversee-lib.mjs";
+import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -155,17 +156,24 @@ for (const id of allIds) {
     for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccardSets(vSets[i], vSets[j]) >= MERGE_THRESHOLD) dup++;
     r.dups = dup;
     if (dup) r.warn.push(`${dup} почти-дубли (Jaccard ≥${MERGE_THRESHOLD}) → curate --merge-dups`);
-    // застарели: време-чувствителни >STALE_DAYS, ИЛИ с явна минала „re-verify:" дата (#2)
+    // застарели: ЕДНА дефиниция — класовете на memory-freshness (гейтът), не отделна евристика.
+    // До 2026-09-09 тук стоеше „време-чувствителна поука >45 дни" (регекс за версия/година/latest),
+    // преписана и в curate.mjs — а гейтът съдеше по класове (наш код 90 · платформа 180 · рамка 365 ·
+    // стандарт 730 · без външен източник → не изтича). Двете дефиниции за едно понятие дадоха
+    // 3409/4031 (85%) „застарели" тук срещу 0 просрочени в гейта в един и същ ден. Същият клас
+    // дефект като source-parity/secret-parity: две истини за едно нещо произвеждат тих отпад.
+    // Изричен „re-verify: ДАТА" в поуката побеждава класа (както и в memory-freshness).
     let stale = 0;
     for (const b of verified) {
       const d = lessonDate(b);
       const rv = b.match(REVERIFY_RE);
       const explicitDue = rv && daysSince(rv[1], TODAY) > 0;
-      const implicitStale = d && TIME_SENSITIVE.test(b) && daysSince(d, TODAY) > STALE_DAYS;
+      const cls = classify(b);
+      const implicitStale = !rv && d && cls.days != null && daysSince(d, TODAY) > cls.days;
       if (explicitDue || implicitStale) stale++;
     }
     r.stale = stale;
-    if (stale) r.warn.push(`${stale}/${verified.length} застарели поуки (време-чувствителни >${STALE_DAYS}д или с минала re-verify дата)`);
+    if (stale) r.warn.push(`${stale}/${verified.length} просрочени поуки (по класовете на memory-freshness или с минала re-verify дата)`);
     // карантината надвишава проверените → самообучаващият цикъл затлачва (гейтът реже повече, отколкото минава)
     if (quarantine.length > verified.length) r.warn.push(`карантина (${quarantine.length}) надвишава проверените (${verified.length}) — цикълът затлачва`);
     // версия vs поуки (само сигнал; засетите на mastery агенти може да имат по-малко)

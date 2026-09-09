@@ -4,9 +4,9 @@
 // когнитивната сложност на главния скрипт (Качествения — Extract Function). Няма I/O тук:
 // всичко е чисти функции над подадени низове/стойности. Тества се в oversee.test.mjs.
 
-export const STALE_DAYS = 45;
+// STALE_DAYS/TIME_SENSITIVE (45 дни + регекс за версия/година) са МАХНАТИ на 2026-09-09: това беше
+// втора дефиниция за „просрочена поука", различна от гейта (memory-freshness класове). Една истина.
 export const MERGE_THRESHOLD = 0.82;
-export const TIME_SENSITIVE = /верси|latest|текущ|\bv?\d+\.\d+|\b20\d\d\b|API \d|stable|release/i;
 
 // Нормализира текст на поука за сравнение: маха **, кавички, trailing `_(…)_`, свива интервали.
 export const norm = (s) =>
