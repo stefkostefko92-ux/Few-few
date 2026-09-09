@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.7.0
+
+Консолидиран релийз преди Web Store — пълен uBO scriptlet roster, тестове в репото, гейт в CI:
+- **Последните scriptlet-и:** `abort-on-stack-trace`/`aost` (прекъсва достъп само от
+  скрипт, чийто stack мачва needle), `set-cookie` (пре-отговаря consent стени — само ако
+  бисквитката липсва, стойност САМО от фиксиран речник или малко число; никога сесии),
+  `remove-cookie` (**само от печения списък** — може да разлогне потребител; live
+  каналът го отказва и в service worker-а, и в engine-а). Roster: 18 scriptlet-а.
+- **`youtube.css` гейтнат при bypass** (`html[data-tbab-yt-bypass]`, задава се от
+  `youtube_skip.js`): по време на 6-часовия bypass рекламните UI елементи вече не се
+  крият с CSS — клиентът е наистина „чист“ (без пре-детекция); enforcement
+  overlay/scroll-lock правилата остават активни.
+- **Тестовете са в репото** (`tests/`, `npm test`, нула зависимости): engine (печени +
+  live канал: сигурност, всички 18 scriptlet-а, ReDoS, poisoned globals, защитени
+  хостове), билд-валидатор (зловредни директиви, `$`-аргументи, IMPL↔ALIASES drift,
+  `--check`), DNR правила (структура, **0 block правила достигат main_frame**, бюджет,
+  `RULESET_IDS`↔manifest, санитизация в service worker-а). Билдът прие `--list/--out`,
+  за да не пипат тестовете репото. CI (`adblock.yml`) пуска тестовете + `--check`.
+- `package.json`: `npm test / build:scriptlets / check:scriptlets / build:filters /
+  icons / package`; премахнат застоял `zip` скрипт (грешен за монорепо).
+- Скрийншотите за Store отразяват новите функции (scriptlets, beacons/cryptominers).
+- `docs/SUBMISSION.md` синхронизиран (версия, чеклист с `npm test`).
+
 ## 4.6.0
 
 Live scriptlet канал + нови scriptlet-и + toggle за privacy рулсета:

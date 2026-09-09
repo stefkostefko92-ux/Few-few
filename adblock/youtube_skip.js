@@ -11,6 +11,15 @@
   let prevRate = 1;
   let bypassReloaded = false; // guards the enforcement reload against loops
   let bgBypass = false; // service worker has the YouTube allow-all bypass rule active
+  // youtube.css hides ad UI only while html[data-tbab-yt-bypass] is absent, so a
+  // bypassed (clean-client) page does not keep hiding ad containers — YouTube can
+  // detect that too. Enforcement overlay/scroll-lock rules stay ungated.
+  function syncBypassAttr() {
+    try {
+      if (bgBypass) document.documentElement.setAttribute("data-tbab-yt-bypass", "1");
+      else document.documentElement.removeAttribute("data-tbab-yt-bypass");
+    } catch {}
+  }
 
   const SKIP_DEFAULT = [
     ".ytp-ad-skip-button",
@@ -186,6 +195,7 @@
     const ytOn = (data.features || {}).youtube !== false;
     const allowed = (data.allowlist || []).some(hostMatches);
     bgBypass = data.ytBypassUntil && data.ytBypassUntil > Date.now();
+    syncBypassAttr();
     applyConfig(data.liveConfig && data.liveConfig.youtube);
     // Run even when bypassing, but hands-off on the player: during a bypass
     // run() skips the detectable fast-forward (see `showing` gate) and only
@@ -196,6 +206,9 @@
   chrome.storage?.onChanged.addListener((c) => {
     if (c.enabled) enabled = c.enabled.newValue !== false;
     if (c.liveConfig) applyConfig(c.liveConfig.newValue && c.liveConfig.newValue.youtube);
-    if (c.ytBypassUntil) bgBypass = c.ytBypassUntil.newValue && c.ytBypassUntil.newValue > Date.now();
+    if (c.ytBypassUntil) {
+      bgBypass = c.ytBypassUntil.newValue && c.ytBypassUntil.newValue > Date.now();
+      syncBypassAttr();
+    }
   });
 })();

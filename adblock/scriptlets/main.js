@@ -152,6 +152,20 @@
     };
   }
 
+  // set-cookie policy (shared helper: must be initialised BEFORE the baked
+  // directives run at the bottom of this file — var hoisting alone is not enough)
+  //: cookie name charset + a fixed consent-style value
+  // dictionary (or a small integer) — a directive can never plant an arbitrary
+  // value (no session/tracking cookies via the scriptlet).
+  var COOKIE_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
+  var COOKIE_VALUES = ["true", "false", "yes", "no", "y", "n", "ok", "accept", "accepted",
+    "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential",
+    "necessary", "on", "off", "close", "closed", "checked", "0", "1"];
+  function cookieValueOk(v) {
+    v = String(v);
+    return COOKIE_VALUES.indexOf(v) >= 0 || /^\d{1,5}$/.test(v);
+  }
+
   // ---- scriptlet implementations -----------------------------------------
   // Each is keyed by its canonical name (the build maps uBO aliases to these).
 
@@ -451,6 +465,74 @@
         } catch (e) {}
       });
     },
+
+    // abort-on-stack-trace(chain, needle): throw when window.<chain> is read or
+    // written from a call stack matching `needle` (the caller's script URL /
+    // function name) — targets one detector script without touching others.
+    "abort-on-stack-trace": function (chain, needle) {
+      var r = resolve(chain);
+      if (!r || !needle) return;
+      var match = needleMatcher(needle);
+      var val;
+      try { val = r.owner[r.prop]; } catch (e) {}
+      var msg = noise();
+      var check = function () {
+        var st = "";
+        try { st = String(new Error().stack || ""); } catch (e) {}
+        if (match(st)) throw new ReferenceError(msg);
+      };
+      try {
+        Object.defineProperty(r.owner, r.prop, {
+          get: function () { check(); return val; },
+          set: function (v) { check(); val = v; },
+          configurable: true,
+        });
+      } catch (e) {}
+    },
+
+    // set-cookie(name, value): set a first-party cookie ONLY if absent, with the
+    // value restricted to a fixed consent-style dictionary (true/false/accept/
+    // dismiss/…) or a small integer — used to pre-answer consent walls. Never
+    // overwrites an existing cookie (no session clobbering), path=/ only.
+    "set-cookie": function (name, value) {
+      if (!name || !COOKIE_NAME.test(String(name)) || !cookieValueOk(value)) return;
+      try {
+        var present = String(document.cookie).split(/;\s*/).some(function (c) {
+          return c.indexOf(name + "=") === 0;
+        });
+        if (present) return;
+        document.cookie = name + "=" + encodeURIComponent(String(value)) +
+          "; path=/; max-age=31536000; SameSite=Lax";
+      } catch (e) {}
+    },
+
+    // remove-cookie(needle): expire first-party cookies whose NAME matches the
+    // needle (now + at DOMContentLoaded), on every domain level. Baked-list
+    // only — the live channel refuses it (it can log a user out of a site).
+    "remove-cookie": function (needle) {
+      if (!needle) return;
+      var match = needleMatcher(needle);
+      var run = function () {
+        try {
+          var host = location.hostname;
+          var parts = host.split(".");
+          var exp = "; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; path=/";
+          String(document.cookie).split(/;\s*/).forEach(function (c) {
+            var i = c.indexOf("=");
+            var n = i < 0 ? c : c.slice(0, i);
+            if (!n || !match(n)) return;
+            document.cookie = n + "=" + exp;
+            for (var k = 0; k < parts.length - 1; k++) {
+              var d = nativeSlice.call(parts, k).join(".");
+              document.cookie = n + "=" + exp + "; domain=" + d;
+              document.cookie = n + "=" + exp + "; domain=." + d;
+            }
+          });
+        } catch (e) {}
+      };
+      run();
+      try { document.addEventListener("DOMContentLoaded", run, { once: true }); } catch (e) {}
+    },
   };
 
   // ---- per-site directive map (baked at build time) -----------------------
@@ -576,6 +658,12 @@
         return args.length >= 1 && safeSel(args[0]);
       case "remove-node-text":
         return args.length === 2 && TAG_OK.test(args[0]) && !TAG_DENY.test(args[0]);
+      case "abort-on-stack-trace":
+        return args.length === 2 && NAME_OK.test(args[0]);
+      case "set-cookie":
+        return args.length === 2 && COOKIE_NAME.test(args[0]) && cookieValueOk(args[1]);
+      case "remove-cookie":
+        return false; // baked list only — can log a user out; never from the live channel
       case "nowebrtc":
         return args.length === 0;
       default:

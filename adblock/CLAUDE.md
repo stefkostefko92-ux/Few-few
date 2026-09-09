@@ -40,6 +40,8 @@ store/ · docs/          store графики + листинг/submission тек
 ```
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
+npm test                                      # tests/: engine + live канал + билд + DNR правила
+node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt
 bash tools/package.sh                         # билд + самопроверка на пакета
 ```
 

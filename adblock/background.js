@@ -447,6 +447,9 @@ const SCRIPTLET_ALIASES = {
   "href-sanitizer": "href-sanitizer",
   "remove-node-text": "remove-node-text", "rmnt": "remove-node-text",
   "nowebrtc": "nowebrtc",
+  "abort-on-stack-trace": "abort-on-stack-trace", "aost": "abort-on-stack-trace",
+  "set-cookie": "set-cookie",
+  "remove-cookie": "remove-cookie", // canonicalised, then refused for the live channel (see validateScriptlet)
 };
 const SCRIPTLET_NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;
 const SCRIPTLET_SETCONST = new Set([
@@ -459,6 +462,12 @@ const scriptletAttrsOk = (list) => {
   const parts = String(list).split(/[\s,|]+/).filter(Boolean);
   return parts.length > 0 && parts.every((p) => /^[a-zA-Z][\w-]*$/.test(p) && !SCRIPTLET_ATTR_DENY.test(p));
 };
+// set-cookie policy (mirrored in engine.js): name charset + fixed consent-style
+// value dictionary or a small integer — never an arbitrary value.
+const SCRIPTLET_COOKIE_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
+const SCRIPTLET_COOKIE_VALUES = new Set(["true", "false", "yes", "no", "y", "n", "ok", "accept",
+  "accepted", "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential",
+  "necessary", "on", "off", "close", "closed", "checked", "0", "1"]);
 const SCRIPTLET_TAG_OK = /^[a-z][a-z0-9-]*$/i;
 const SCRIPTLET_TAG_DENY = /^(input|textarea|select|option|button|form|label|html|body|head)$/i;
 const scriptletArgSafe = (a) =>
@@ -495,6 +504,13 @@ function validateScriptlet(rawName, args) {
       return ok(n >= 1 && n <= 2 && safeSelector(args[0]));
     case "remove-node-text":
       return ok(n === 2 && SCRIPTLET_TAG_OK.test(args[0]) && !SCRIPTLET_TAG_DENY.test(args[0]));
+    case "abort-on-stack-trace":
+      return ok(n === 2 && SCRIPTLET_NAME_RE.test(args[0]));
+    case "set-cookie":
+      return ok(n === 2 && SCRIPTLET_COOKIE_NAME.test(args[0]) &&
+        (SCRIPTLET_COOKIE_VALUES.has(String(args[1])) || /^\d{1,5}$/.test(String(args[1]))));
+    case "remove-cookie":
+      return null; // baked list only — can log a user out of a site; never live
     case "nowebrtc":
       return ok(n === 0);
     default: // addEventListener-defuser, json-prune

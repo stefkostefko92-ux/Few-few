@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-4.4.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-4.7.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -82,7 +82,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
-> **Reviewer note (MAIN-world scriptlets):** v4.4.0 adds a uBlock-Origin-style
+> **Reviewer note (MAIN-world scriptlets):** v4.7.0 adds a uBlock-Origin-style
 > scriptlet engine. The extension registers **one** locally-bundled MAIN-world
 > content script that neutralises anti-adblock detectors. The engine CODE ships
 > in the package (`scriptlets/engine.js` → generated `scriptlets/main.js`); the
@@ -93,7 +93,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 6. Dashboard steps
 
-1. **New item** → upload `dist/supreme-adblock-4.4.0.zip`.
+1. **New item** → upload `dist/supreme-adblock-4.7.0.zip`.
 2. Fill the listing (§3), upload the icon + 5 screenshots + promo tiles (§2).
 3. Complete the **Privacy practices** tab (§4) and paste permission
    justifications (§5).
@@ -101,7 +101,8 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (4.4.0)
+- [ ] `manifest.json` and `package.json` versions match (4.7.0)
+- [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
 - [ ] A normal site loads correctly; ads are blocked

@@ -160,7 +160,7 @@ SLIDES = [
     ("Your controls",
      'Powerful, <span class="c">in your hands</span>',
      "Per-site allowlist, custom filters, element picker, themes and cross-device sync.",
-     ["Allow ads on sites you support", "uBlock-style procedural filters", "Tracking-parameter removal", "Right-click to hide anything"],
+     ["uBlock-style scriptlets & procedural filters", "Tracking beacons & cryptominers blocked", "Allow ads on sites you support", "Right-click to hide anything"],
      features_panel()),
     ("Private by design",
      '100% free. <span class="c">Zero tracking.</span>',

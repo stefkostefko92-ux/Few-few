@@ -122,7 +122,8 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
   не-timing-critical директиви; timing-critical остават печени в MAP.
 - **`trusted-*` варианти** — само от нашия Ed25519-подписан канал; не в v1.
 - ✅ Добавени (v4.6.0): `href-sanitizer`, `remove-node-text`/`rmnt`, `nowebrtc`.
-- Липсващи scriptlet-и: `abort-on-stack-trace`, `set-cookie`/`remove-cookie` — при нужда.
+- ✅ Добавени (v4.7.0): `abort-on-stack-trace`/`aost`, `set-cookie`, `remove-cookie` (последният
+  само от печения списък). Roster: 18 scriptlet-а — пълен спрямо приоритетния uBO списък.
 
 > ⚠️ **Преди Web Store submission:** курираните site-specific директиви (ако се добавят
 > към глобалните анти-адблок) трябва да минат жив тест на реална страница —

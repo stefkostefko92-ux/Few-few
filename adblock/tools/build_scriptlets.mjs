@@ -16,10 +16,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ENGINE = join(ROOT, "scriptlets", "engine.js");
-const LIST = join(ROOT, "scriptlets", "list.txt");
-const OUT = join(ROOT, "scriptlets", "main.js");
-const META = join(ROOT, "scriptlets", "scriptlet_meta.json");
+const ENGINE = (process.argv.find((x) => x.startsWith("--engine=")) || "").slice(9) || join(ROOT, "scriptlets", "engine.js");
+// --list=<file> / --out=<file> let tests build into a temp dir without touching the repo.
+const argOf = (k) => { const a = process.argv.find((x) => x.startsWith(k + "=")); return a ? a.slice(k.length + 1) : null; };
+const LIST = argOf("--list") || join(ROOT, "scriptlets", "list.txt");
+const OUT = argOf("--out") || join(ROOT, "scriptlets", "main.js");
+const META = argOf("--out") ? null : join(ROOT, "scriptlets", "scriptlet_meta.json");
 
 // uBO alias → canonical IMPL name. ONLY these names are accepted; anything else
 // is dropped. Keep in sync with the IMPL keys in engine.js.
@@ -40,7 +42,13 @@ const ALIASES = {
   "href-sanitizer": "href-sanitizer",
   "remove-node-text": "remove-node-text", "rmnt": "remove-node-text",
   "nowebrtc": "nowebrtc",
+  "abort-on-stack-trace": "abort-on-stack-trace", "aost": "abort-on-stack-trace",
+  "set-cookie": "set-cookie",
+  "remove-cookie": "remove-cookie",
 };
+const COOKIE_VALUES = new Set(["true", "false", "yes", "no", "y", "n", "ok", "accept", "accepted",
+  "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential", "necessary",
+  "on", "off", "close", "closed", "checked", "0", "1"]);
 
 // Per-scriptlet arg policy. A directive is rejected unless it passes.
 const NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                 // property-chain arg
@@ -100,10 +108,21 @@ function validate(name, args) {
     case "remove-node-text":
       if (args.length !== 2) return null;
       return [name, args[0], args[1]];
+    case "abort-on-stack-trace":
+      if (args.length !== 2 || !NAME_RE.test(args[0])) return null;
+      return [name, args[0], args[1]];
+    case "set-cookie":
+      if (args.length !== 2 || !/^[A-Za-z0-9_.-]{1,64}$/.test(args[0])) return null;
+      if (!(COOKIE_VALUES.has(args[1]) || /^\d{1,5}$/.test(args[1]))) return null;
+      return [name, args[0], args[1]];
+    case "remove-cookie":
+      if (args.length !== 1) return null;
+      return [name, args[0]];
     case "nowebrtc":
       if (args.length !== 0) return null;
       return [name];
     default:
+
       return null;
   }
 }
@@ -219,7 +238,7 @@ function main() {
   }
 
   writeFileSync(OUT, out);
-  writeFileSync(META, metaOut);
+  if (META) writeFileSync(META, metaOut);
 
   console.log(
     `scriptlets: ${kept} directive(s) baked (${meta.global} global, ${hosts.length} host-scoped), ${dropped} dropped`
