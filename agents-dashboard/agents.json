@@ -1107,7 +1107,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 352
+        "lessons": 354
       },
       "evolution": [
         {
@@ -1853,9 +1853,20 @@
           "date": "2026-09-09",
           "event": "v24.5 — учене",
           "detail": "Научи: adblock: `tools/package.sh` изключва tools/docs/store/server/dist, но НЕ `tests/` — нов… (+3 още)"
+        },
+        {
+          "version": "24.7.0",
+          "date": "2026-09-09",
+          "event": "v24.7 — учене",
+          "detail": "Научи: `tools/chrome/mv3-lint.mjs` обхожда цялата папка (пропуска само node_modules/.git) и из… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-09",
+          "type": "learning",
+          "summary": "Научи: „`tools/chrome/mv3-lint.mjs` обхожда цялата папка (пропуска само node_modules/.git) и из…\" (+1 още)"
+        },
         {
           "date": "2026-09-09",
           "type": "learning",
