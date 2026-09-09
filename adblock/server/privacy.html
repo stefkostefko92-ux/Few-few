@@ -48,7 +48,7 @@
   only times data can leave your device are the ones <i>you</i> trigger, listed below.</p>
 
   <h2>What is stored locally</h2>
-  <p>Kept in your browser's local storage and never sent to us. If you turn on <b>Sync across devices</b> (off by default), Chrome mirrors the items marked <i>(sync)</i> to your own Google account via <code>chrome.storage.sync</code> — Google's servers, under your account, not ours:</p>
+  <p>Kept in your browser's local storage and never sent to us. If you turn on <b>Sync across devices</b> (off by default), your browser mirrors the items marked <i>(sync)</i> to your own browser account via <code>storage.sync</code> — the browser vendor's servers, under your account, not ours:</p>
   <ul>
     <li>Whether protection is on or off <i>(sync)</i></li>
     <li>Your allowlisted sites <i>(sync)</i></li>
@@ -62,22 +62,21 @@
   <p>You can clear all of it from the extension's settings, or by removing the extension.</p>
 
   <h2>Network requests we make</h2>
-  <p><b>Two kinds, and neither carries any information about you.</b> <b>1. Filter updates (automatic, about once a day):</b> the extension downloads a
+  <p><b>Two kinds, and neither carries any information about you.</b> <b>1. Filter updates (automatic, about twice a day):</b> the extension downloads a
   small filter file (<code>filters.json</code>) from
   <code>adblock.carbonstealth.eu</code> so blocking stays current as ad networks and
   sites change. This request contains <strong>no information about you</strong> — no
   identifiers, no browsing data. It is a plain GET of a public file, treated purely
   as data (block rules, CSS selectors and scriptlet directives whose names and arguments come from a fixed allowlist); no downloaded code is ever executed. You
   can turn auto-update off in the settings.</p>
-  <p><b>2. Filter list import (only when you ask for it):</b> if you paste a URL into <i>Import filter list</i> in the settings, the extension downloads that list once, as plain text, from the address you gave. The site hosting the list sees an ordinary request from your browser (your IP address and browser user agent), exactly as if you had opened that URL yourself. We are not involved in that request and nothing else is sent.</p>
+  <p><b>2. Filter list import (only when you ask for it):</b> if you paste a URL into <i>Import filter list</i> in the settings, the extension downloads that list as plain text from the address you gave — once when you add it, then about once a day to keep it current, until you remove it. The site hosting the list sees an ordinary request from your browser (your IP address and browser user agent), exactly as if you had opened that URL yourself. We are not involved in that request and nothing else is sent.</p>
 
   <h2>Permissions</h2>
   <ul>
     <li><code>declarativeNetRequest</code> — block ad/tracker requests via rules.</li>
     <li><code>declarativeNetRequestFeedback</code> — read which of our own rules matched in the current tab (<code>getMatchedRules</code>) to show the per-tab blocked count on the badge; no URLs are stored or sent.</li>
     <li><code>storage</code> — save your settings locally.</li>
-    <li><code>tabs</code> — show the per-tab blocked count and current site in the popup.</li>
-    <li><code>alarms</code> — schedule the daily filter update and the pause timer.</li>
+    <li><code>alarms</code> — schedule the filter updates and the pause timer.</li>
     <li><code>contextMenus</code> — the right-click "Block an element here" entry.</li>
     <li><code>scripting</code> — inject a small, locally-bundled ad-neutralising script into the page; it runs from the package, fetches and executes no remote code, reads no personal data and sends nothing anywhere.</li>
     <li>host access (<code>&lt;all_urls&gt;</code>) — apply blocking on the pages you

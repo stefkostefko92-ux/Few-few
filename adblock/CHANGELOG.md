@@ -1,6 +1,33 @@
 # Changelog
 
-## 5.0.0 (в процес)
+## 5.0.0 — 2026-09-09
+
+### Фаза 6 — pre-flight с 4 агента (Хромаджията · Кодаджията · Тайният агент · Качествения)
+- **Store скрийншотите са снимка на реалния popup** (`store/screenshots/build.py`
+  рендва `popup.html` + `popup.css` с демо числа през headless Chromium) —
+  арт-ът вече не може да дрейфне от UI-а; премиум редизайнът се вижда в стора.
+- **Минимални права:** `tabs` отпадна (при `<all_urls>` е излишен — един warning
+  „Read your browsing history“ по-малко); `resources/*` с `use_dynamic_url`
+  (сурогатните пътища не са отгатваеми за anti-adblock сонди; DNR redirect-ът
+  проверен в истински Chromium — `tools/e2e_redirect.mjs`).
+- **Кодаджията (6 Medium, 0 High — затворени):** per-site „без козметика“ важи и
+  при повторно включване на защитата и за Smart Detection; `counts.popupHosts`
+  влиза в `counts.json` (health картата показваше 0); `$csp` конверторът отказва
+  `report-uri`/`report-to`; абонаментите се теглят с timeout и байтов таван по
+  време на стрийминга; sync пише по един ключ с таван 8000 B (голям
+  `userFilters` не спира тихо синхрона на останалото).
+- **Качествения:** aeld тестът беше театър (`ok(…, true)`) — сега убива мутация;
+  последното копие на политиката (`build_filters.mjs`) → `SA_POLICY` + гейт;
+  `LIVE_SCRIPTLET_MAX`/`ARG_MAX` на едно място; `ensureAlarms()`; rulesets
+  enable/disable се извеждат от `RULESET_IDS`; `FALLBACK == en` гейт.
+- **Тайният агент (Web Store + Edge):** privacy текстът е браузър-неутрален и
+  точен (filters.json ~2×/ден; абонамент — при добавяне + дневно); reviewer note
+  пренаписан позитивно (18 фиксирани рутини в пакета, `filters.json` = конфигурация,
+  без `eval`/`Function`/`<script src>`); листингът разкрива promo/donate,
+  Permissions-Policy и cookie/beacon блокирането; „Bypasses…“ → „Keeps pages
+  usable…“; Edge: описания на 4 езика (≥250 знака), Notes for certification за
+  дистанционните DNR правила, „remote code → No“, search-terms лимити.
+  Акаунт-действие за човек: publisher name = Carbon Stealth + верифициран сайт.
 
 ### Фаза 1 — единствен източник на политиката
 - `scriptlets/policy.js`: имена/алиаси, граматика на аргументите, речници, selector/
