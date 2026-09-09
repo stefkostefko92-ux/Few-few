@@ -18,6 +18,7 @@ import { authRouter } from './admin/auth-routes.js';
 import { brandRouter } from './admin/brand-routes.js';
 import { dashboardRouter } from './admin/dashboard-routes.js';
 import { keyRouter } from './admin/key-routes.js';
+import { manageRouter } from './admin/manage-routes.js';
 import { postRouter } from './admin/post-routes.js';
 import { userRouter } from './admin/user-routes.js';
 import { healthRouter } from './routes/health.js';
@@ -96,6 +97,7 @@ export function createServer(deps: ServerDeps): Express {
   app.use(authRouter);
   app.use(dashboardRouter);
   app.use(brandRouter);
+  app.use(manageRouter);
   app.use(accountRouter);
   app.use(postRouter);
   app.use(userRouter);

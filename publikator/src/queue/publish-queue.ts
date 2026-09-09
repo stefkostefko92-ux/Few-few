@@ -5,9 +5,16 @@ import { config } from '../config.js';
 export const PUBLISH_QUEUE = 'publikator:publish';
 export const REFRESH_JOB = 'refresh-tokens';
 export const PUBLISH_JOB = 'publish-post';
+export const INSIGHTS_JOB = 'sync-insights';
+export const AUTOPILOT_JOB = 'autopilot';
 
 export interface PublishJobData {
   postId: string;
+}
+
+/** Без brandId = всички управлявани брандове (седмичният цикъл). */
+export interface AutopilotJobData {
+  brandId?: string;
 }
 
 export function createRedis(): Redis {
@@ -43,6 +50,43 @@ export async function scheduleTokenRefresh(): Promise<void> {
     REFRESH_JOB,
     {},
     { repeat: { pattern: '0 3 * * *' }, jobId: 'token-refresh' },
+  );
+}
+
+/** Повтарящи се задачи на управлението: Insights всеки ден в 04:30, автопилот понеделник 06:00. */
+export async function scheduleManagement(): Promise<void> {
+  await publishQueue().add(
+    INSIGHTS_JOB,
+    {},
+    { repeat: { pattern: '30 4 * * *' }, jobId: 'insights-daily' },
+  );
+  await publishQueue().add(
+    AUTOPILOT_JOB,
+    {},
+    { repeat: { pattern: '0 6 * * 1' }, jobId: 'autopilot-weekly' },
+  );
+}
+
+/** „Пусни сега“ от панела — идемпотентно за бранд, докато предишният цикъл не е приключил. */
+export async function enqueueAutopilot(brandId: string): Promise<void> {
+  await publishQueue().add(AUTOPILOT_JOB, { brandId } satisfies AutopilotJobData, {
+    jobId: `autopilot:${brandId}`,
+    attempts: 1,
+    removeOnComplete: true,
+    removeOnFail: true,
+  });
+}
+
+export async function enqueueInsightsSync(): Promise<void> {
+  await publishQueue().add(
+    INSIGHTS_JOB,
+    {},
+    {
+      jobId: `insights:${Math.floor(Date.now() / 60_000)}`,
+      attempts: 1,
+      removeOnComplete: true,
+      removeOnFail: true,
+    },
   );
 }
 

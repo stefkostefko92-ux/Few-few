@@ -35,6 +35,8 @@ export type Capability =
   | 'posts:generate'
   | 'brands:view'
   | 'brands:manage'
+  | 'insights:view'
+  | 'autopilot:run'
   | 'accounts:view'
   | 'accounts:manage'
   | 'audit:view'
@@ -50,6 +52,7 @@ const REQUIRED: Record<Capability, Role> = {
   'accounts:view': 'VIEWER',
   'audit:view': 'ANALYST',
   'settings:view': 'ANALYST',
+  'insights:view': 'ANALYST',
   'posts:create': 'EDITOR',
   'posts:edit': 'EDITOR',
   'posts:generate': 'EDITOR',
@@ -57,6 +60,7 @@ const REQUIRED: Record<Capability, Role> = {
   'posts:schedule': 'REVIEWER',
   'posts:publish': 'REVIEWER',
   'brands:manage': 'MANAGER',
+  'autopilot:run': 'MANAGER',
   'accounts:manage': 'MANAGER',
   'users:manage': 'ADMIN',
   'keys:manage': 'ADMIN',

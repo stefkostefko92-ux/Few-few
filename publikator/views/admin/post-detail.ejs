@@ -12,6 +12,7 @@
     <p class="muted">Медия: <a href="<%= post.mediaUrl %>" target="_blank" rel="noopener noreferrer"><%= post.mediaUrl %></a><% if (post.coverUrl) { %> · cover: <a href="<%= post.coverUrl %>" target="_blank" rel="noopener noreferrer">линк</a><% } %></p>
     <p class="muted">Alt: <%= post.altText || '—' %></p>
     <% if (post.topic) { %><p class="muted">Тема: <%= post.topic %></p><% } %>
+    <% if (post.suggestedAt && (post.status === 'DRAFT' || post.status === 'APPROVED')) { %><p class="muted">Предложен час от автопилота: <strong><%= post.suggestedAt.toLocaleString('bg-BG') %></strong></p><% } %>
     <p class="muted">Създал: <%= post.createdByLabel || post.createdByType %> · <%= post.createdAt.toLocaleString('bg-BG') %></p>
     <% if (post.approvedBy) { %><p class="muted">Одобрил: <%= post.approvedBy %> · <%= post.approvedAt ? post.approvedAt.toLocaleString('bg-BG') : '' %></p><% } %>
     <% if (post.status === 'REJECTED') { %><div class="flash error">Отказан от <%= post.rejectedBy %>: <%= post.rejectionReason || 'без причина' %></div><% } %>
@@ -34,7 +35,8 @@
         <form method="post" action="/admin/posts/<%= post.id %>/reject" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="reason" placeholder="причина за отказ" style="max-width:260px"><button class="btn danger" type="submit">Откажи</button></form>
       <% } %>
       <% if (post.status === 'APPROVED' && can('posts:schedule')) { %>
-        <form method="post" action="/admin/posts/<%= post.id %>/schedule" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="datetime-local" name="scheduledAt" required><button class="btn" type="submit">Насрочи</button></form>
+        <% const suggested = post.suggestedAt ? new Date(post.suggestedAt.getTime() - post.suggestedAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''; %>
+        <form method="post" action="/admin/posts/<%= post.id %>/schedule" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="datetime-local" name="scheduledAt" required value="<%= suggested %>"><button class="btn" type="submit">Насрочи</button></form>
       <% } %>
       <% if (post.status === 'APPROVED' && can('posts:publish')) { %>
         <form method="post" action="/admin/posts/<%= post.id %>/publish-now" class="inline" data-confirm="Публикуваш в Instagram веднага. Сигурен ли си?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit">Публикувай сега</button></form>
@@ -46,6 +48,22 @@
         <form method="post" action="/admin/posts/<%= post.id %>/retry" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit">Върни за нов опит</button></form>
       <% } %>
     </div>
+
+    <% const variants = Array.isArray(post.crossPostVariants) ? post.crossPostVariants : []; %>
+    <% if (variants.length) { %>
+    <h2>Варианти за други платформи</h2>
+    <p class="muted">Готови за копиране — Публикатор публикува само в Instagram.</p>
+    <% variants.forEach((vt) => { %><h3 class="mono" style="margin:10px 0 4px"><%= vt.platform %></h3><div class="preview"><%= vt.text %></div><% }) %>
+    <% } %>
+
+    <% if (post.status === 'PUBLISHED') { %>
+    <h2>Instagram Insights</h2>
+    <% if (!post.insights.length) { %><p class="muted">Още няма метрики — синхронизират се всяка нощ, или опресни сега.</p><% } else { %>
+    <table><thead><tr><th>Снимка</th><th>Прегледи</th><th>Обхват</th><th>Харесвания</th><th>Коментари</th><th>Запазени</th><th>Споделяния</th><th>Общо</th></tr></thead><tbody>
+    <% post.insights.forEach((i) => { %><tr><td class="muted"><%= i.fetchedAt.toLocaleString('bg-BG') %></td><td><%= i.views ?? '—' %></td><td><%= i.reach ?? '—' %></td><td><%= i.likes ?? '—' %></td><td><%= i.comments ?? '—' %></td><td><%= i.saved ?? '—' %></td><td><%= i.shares ?? '—' %></td><td><%= i.totalInteractions ?? '—' %></td></tr><% }) %>
+    </tbody></table><% } %>
+    <% if (can('insights:view')) { %><form method="post" action="/admin/posts/<%= post.id %>/insights" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small" type="submit">Опресни метриките</button></form><% } %>
+    <% } %>
 
     <h2>Дневник на публикуването</h2>
     <% if (!post.logs.length) { %><p class="muted">Още няма стъпки.</p><% } else { %>

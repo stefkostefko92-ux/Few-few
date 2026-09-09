@@ -5,6 +5,8 @@ import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireCsrf, requireLogin } from '../auth/guards.js';
 import { createAnthropicClient, generateDrafts } from '../content/generate.js';
+import { parsePlan } from '../content/plan.js';
+import { brandPostPerformance, performanceContext } from '../services/insights.js';
 import { enqueuePublish, removeScheduledJob } from '../queue/publish-queue.js';
 import {
   approvePost,
@@ -210,7 +212,10 @@ postRouter.post(
       return;
     }
     const actor = actorOf(req);
+    const plan = parsePlan(brand.plan);
     try {
+      // Планът и реалните Insights влизат в промпта и при ръчно генериране — същата школа.
+      const performance = performanceContext(await brandPostPerformance(brand.id));
       const drafts = await generateDrafts(createAnthropicClient(cfg.ANTHROPIC_API_KEY), {
         brand: {
           name: brand.name,
@@ -223,6 +228,9 @@ postRouter.post(
         topic: input.data.topic,
         count: input.data.count,
         ...(input.data.mediaDescription ? { mediaDescription: input.data.mediaDescription } : {}),
+        plan,
+        performance,
+        crossPost: plan?.crossPost ?? [],
       });
       for (const draft of drafts) {
         const { post } = await createDraft(
@@ -237,6 +245,7 @@ postRouter.post(
             ...(input.data.coverUrl ? { coverUrl: input.data.coverUrl } : {}),
             aiAssisted: true,
             topic: input.data.topic,
+            variants: draft.variants,
           },
           { type: 'SYSTEM', id: actor.id, label: `модел по заявка на ${actor.label}` },
         );
@@ -267,6 +276,7 @@ postRouter.get('/admin/posts/:id', requireCapability('posts:view'), async (req, 
       brand: true,
       account: { select: { id: true, username: true, status: true } },
       logs: { orderBy: { createdAt: 'desc' }, take: 30 },
+      insights: { orderBy: { fetchedAt: 'desc' }, take: 10 },
     },
   });
   if (!post) {

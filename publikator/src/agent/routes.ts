@@ -3,6 +3,8 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
+import { parsePlan } from '../content/plan.js';
+import { accountTrend, brandPostPerformance, performanceContext } from '../services/insights.js';
 import { createDraft, draftInputSchema } from '../services/posts.js';
 import { agentAuth, requireScope } from './auth.js';
 import type { NonceStore } from './nonce-store.js';
@@ -41,10 +43,13 @@ export function agentRouter(nonceStore: NonceStore): Router {
         voice: true,
         language: true,
         websiteUrl: true,
+        managed: true,
+        plan: true,
+        lastAutopilotAt: true,
       },
       orderBy: { name: 'asc' },
     });
-    res.json({ brands });
+    res.json({ brands: brands.map((brand) => ({ ...brand, plan: parsePlan(brand.plan) })) });
   });
 
   /** Само публични полета — токенът никога не излиза оттук. */
@@ -100,6 +105,49 @@ export function agentRouter(nonceStore: NonceStore): Router {
       },
     });
     res.json({ posts });
+  });
+
+  /**
+   * Представяне на страницата за агента: какво работи, какво не, тренд на акаунта.
+   * Само агрегати от Insights — нито токен, нито лични данни на последователи.
+   */
+  const insightsQuery = z.object({
+    brand: z.string().min(1),
+    days: z.coerce.number().int().min(7).max(90).default(30),
+  });
+  router.get('/agent/v1/insights', requireScope('insights:read'), async (req, res) => {
+    const principal = principalOf(req);
+    const query = insightsQuery.safeParse(req.query);
+    if (!query.success) {
+      res.status(400).json({ error: 'Невалидни параметри — brand е задължителен.' });
+      return;
+    }
+    const brand = await prisma.brand.findFirst({
+      where: { slug: query.data.brand, ...brandFilter(principal) },
+      include: { accounts: { where: { status: 'ACTIVE' }, select: { id: true, username: true } } },
+    });
+    if (!brand) {
+      res.status(404).json({ error: 'Няма такъв бранд или ключът няма достъп до него.' });
+      return;
+    }
+    const posts = await brandPostPerformance(brand.id);
+    const accounts = await Promise.all(
+      brand.accounts.map(async (account) => ({
+        username: account.username,
+        daily: await accountTrend(account.id, query.data.days),
+      })),
+    );
+    res.json({
+      brand: {
+        slug: brand.slug,
+        managed: brand.managed,
+        plan: parsePlan(brand.plan),
+        lastAutopilotAt: brand.lastAutopilotAt,
+      },
+      summary: performanceContext(posts),
+      posts: posts.map(({ caption, ...rest }) => ({ ...rest, caption: caption.slice(0, 200) })),
+      accounts,
+    });
   });
 
   const agentDraftSchema = draftInputSchema

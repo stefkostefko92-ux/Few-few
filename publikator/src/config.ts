@@ -21,7 +21,9 @@ const schema = z.object({
   IG_SCOPES: z
     .string()
     .min(1)
-    .default('instagram_business_basic,instagram_business_content_publish'),
+    .default(
+      'instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights',
+    ),
 
   TOKEN_ENC_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, 'TOKEN_ENC_KEY трябва да е 32 байта в hex'),
 

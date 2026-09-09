@@ -1,0 +1,67 @@
+<%- include('../partials/shell-start', { active: 'brands' }) %>
+<div class="row" style="justify-content:space-between">
+  <h1>Представяне · <%= brand.name %><% if (brand.managed) { %> <span class="badge APPROVED">автопилот</span><% } %></h1>
+  <div class="row"><a class="btn" href="/admin/brands">← брандове</a><% if (can('brands:manage')) { %><a class="btn" href="/admin/brands/<%= brand.id %>/edit">план</a><% } %></div>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="n"><%= weekAlive %><span class="muted"> / <%= plan ? plan.postsPerWeek : '—' %></span></div><div class="l">публикации тази седмица спрямо плана</div></div>
+  <a class="card" href="/admin/posts?status=DRAFT&brand=<%= brand.slug %>"><div class="n"><%= pendingDrafts %></div><div class="l">чернови за преглед</div></a>
+  <div class="card"><div class="n"><%= plan ? plan.assets.length : 0 %></div><div class="l">материала в библиотеката</div></div>
+  <div class="card"><div class="n"><%= performance.length %></div><div class="l">публикации с метрики</div></div>
+</div>
+
+<section class="card" style="margin-bottom:18px">
+  <h2>Автопилот</h2>
+  <% if (!brand.managed) { %>
+    <p class="muted">Брандът е на ръчен режим. Включи „Под управление на агента“ в плана, за да допълва черновите всяка седмица.</p>
+  <% } else if (!plan) { %>
+    <div class="flash error">Планът е непълен — редактирай бранда и попълни поне един тематичен стълб.</div>
+  <% } else { %>
+    <p><%= plan.postsPerWeek %> публикации/седмица · Reels <%= Math.round(plan.reelsShare * 100) %>% · часове <%= plan.postingTimes.join(', ') %> · стълбове: <%= plan.pillars.join(' · ') %></p>
+    <% if (plan.keywords.length) { %><p class="muted">Ключови думи: <%= plan.keywords.join(', ') %></p><% } %>
+    <% if (plan.crossPost.length) { %><p class="muted">Варианти за: <%= plan.crossPost.join(', ') %></p><% } %>
+    <p class="muted">Последен цикъл: <%= brand.lastAutopilotAt ? brand.lastAutopilotAt.toLocaleString('bg-BG') : 'още не е пускан' %> · автоматично всеки понеделник 06:00.</p>
+    <% if (!plan.assets.length) { %><div class="flash error">Библиотеката с материали е празна — автопилотът няма от какво да прави чернови.</div><% } %>
+    <% if (!generation) { %><div class="flash error">Липсва ANTHROPIC_API_KEY на сървъра — автопилотът не може да пише.</div><% } %>
+    <% if (can('autopilot:run')) { %>
+    <form method="post" action="/admin/brands/<%= brand.id %>/autopilot" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit" <%= plan.assets.length && generation ? '' : 'disabled' %>>Пусни цикъл сега</button></form>
+    <% } %>
+  <% } %>
+</section>
+
+<h2>Акаунти — последните 30 дни</h2>
+<% if (!accounts.length) { %><p class="muted">Няма свързан акаунт.</p><% } %>
+<% accounts.forEach((a) => { %>
+  <section class="card" style="margin-bottom:14px">
+    <div class="row" style="justify-content:space-between">
+      <h3>@<%= a.account.username %> <span class="badge <%= a.account.status %>"><%= a.account.status %></span></h3>
+      <% if (can('autopilot:run')) { %><form method="post" action="/admin/insights/sync" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small" type="submit">Синхронизирай Insights</button></form><% } %>
+    </div>
+    <% if (!a.insightsScope) { %>
+      <div class="flash error">Токенът е издаден без <span class="mono">instagram_business_manage_insights</span> — свържи акаунта отново от „Instagram акаунти“, за да тръгнат метриките.</div>
+    <% } else if (!a.rows.length) { %>
+      <p class="muted">Още няма дневни снимки — синхронизират се всяка нощ в 04:30.</p>
+    <% } else { %>
+      <div class="cards">
+        <div class="card"><div class="n"><%= a.last.followerCount ?? '—' %></div><div class="l">последователи<% if (a.followerDelta !== null) { %> (<%= a.followerDelta >= 0 ? '+' : '' %><%= a.followerDelta %> за периода)<% } %></div></div>
+        <div class="card"><div class="n"><%= a.reach30 %></div><div class="l">обхват, сума по дни</div></div>
+        <div class="card"><div class="n"><%= a.views30 %></div><div class="l">прегледи, сума по дни</div></div>
+        <div class="card"><div class="n"><%= a.last.engaged ?? '—' %></div><div class="l">ангажирани акаунти (последен ден)</div></div>
+      </div>
+      <details><summary class="muted">По дни (<%= a.rows.length %>)</summary>
+      <table><thead><tr><th>Ден</th><th>Обхват</th><th>Прегледи</th><th>Последователи</th><th>Ангажирани</th></tr></thead><tbody>
+      <% a.rows.forEach((r) => { %><tr><td><%= r.day.toLocaleDateString('bg-BG') %></td><td><%= r.reach ?? '—' %></td><td><%= r.views ?? '—' %></td><td><%= r.followerCount ?? '—' %></td><td><%= r.engaged ?? '—' %></td></tr><% }) %>
+      </tbody></table></details>
+    <% } %>
+  </section>
+<% }) %>
+
+<h2>Публикации по ангажираност</h2>
+<% if (!performance.length) { %><p class="muted">Няма публикувани постове с метрики. Числата идват от Instagram Insights след публикуване през Публикатор.</p><% } else { %>
+<table><thead><tr><th>Вид</th><th>Caption</th><th>Обхват</th><th>Прегледи</th><th>Взаимод.</th><th>Ангаж. %</th><th>Публикуван</th><th></th></tr></thead><tbody>
+<% performance.forEach((p) => { %>
+  <tr><td><%= p.kind %></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 70) %><%= p.caption.length > 70 ? '…' : '' %></a></td><td><%= p.reach %></td><td><%= p.views %></td><td><%= p.interactions %></td><td><strong><%= p.engagementRate %></strong></td><td class="muted"><%= p.publishedAt ? p.publishedAt.toLocaleDateString('bg-BG') : '—' %></td><td><% if (p.permalink) { %><a href="<%= p.permalink %>" target="_blank" rel="noopener noreferrer">IG</a><% } %></td></tr>
+<% }) %></tbody></table>
+<% } %>
+<%- include('../partials/shell-end') %>

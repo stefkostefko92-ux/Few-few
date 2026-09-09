@@ -35,6 +35,15 @@
   </section>
 </div>
 
+<% if (managed.length) { %>
+<h2>Страници под управление</h2>
+<table><thead><tr><th>Бранд</th><th>План</th><th>Последен цикъл</th><th>Чернови за преглед</th><th></th></tr></thead><tbody>
+<% managed.forEach((b) => { %>
+  <% const pl = b.plan && typeof b.plan === 'object' ? b.plan : null; %>
+  <tr><td><%= b.name %></td><td class="muted"><%= pl ? pl.postsPerWeek + '/седм. · ' + (Array.isArray(pl.assets) ? pl.assets.length : 0) + ' материала' : 'няма план' %></td><td class="muted"><%= b.lastAutopilotAt ? b.lastAutopilotAt.toLocaleString('bg-BG') : 'още не е пускан' %></td><td><a href="/admin/posts?status=DRAFT&brand=<%= b.slug %>"><%= b._count.posts %></a></td><td><% if (can('insights:view')) { %><a href="/admin/brands/<%= b.id %>/performance">представяне</a><% } %></td></tr>
+<% }) %></tbody></table>
+<% } %>
+
 <% if (failed.length) { %>
 <h2>Провалени</h2>
 <table><thead><tr><th>Бранд</th><th>Грешка</th><th>Опити</th><th></th></tr></thead><tbody>

@@ -20,7 +20,7 @@ npm test                 # unit (node:test през tsx) — без база
 npm run build            # prisma generate + tsc
 npm run test:integration # иска жива PostgreSQL през DATABASE_URL (панел + агент + публикуване)
 npm run dev              # локален сървър (панел на /admin)
-npm run worker           # BullMQ работник (публикуване · подновяване на токени · чистене на сесии)
+npm run worker           # BullMQ работник (публикуване · токени · сесии · Insights 04:30 · автопилот пн 06:00)
 npm run owner:create     # първият собственик — от средата на сървъра, еднократно
 ```
 
@@ -36,10 +36,10 @@ src/
   audit.ts             одит с верига от хешове (подправен стар запис чупи веригата)
   auth/                rbac (7 нива) · password (Argon2id) · totp · sessions (в базата) · guards (login/CSRF/права)
   agent/               signature (HMAC) · nonce-store (Redis, fail-closed) · auth · routes (/agent/v1)
-  admin/               маршрути на панела по домейни (auth · dashboard · brands · accounts · posts · users · keys · audit)
-  instagram/           client · oauth · publish (контейнер → публикуване)
-  content/             lint (HIGH блокира) · generate (структуриран изход)
-  services/            accounts · posts · publish — инвариантите живеят тук, не в маршрутите
+  admin/               маршрути на панела по домейни (auth · dashboard · brands · manage (представяне/автопилот) · accounts · posts · users · keys · audit)
+  instagram/           client · oauth · publish (контейнер → публикуване) · insights (метрики на медия/акаунт)
+  content/             lint (HIGH блокира) · plan (планът на страницата, zod) · prompt (контекст: план + Insights) · schedule (чиста логика на автопилота) · generate
+  services/            accounts · posts · publish · insights (синхронизация + представяне) · autopilot — инвариантите живеят тук, не в маршрутите
   queue/               BullMQ опашка и работник
 views/                 EJS шаблони (partials/shell-*, admin/*)
 public/                admin.css · admin.js (единственият скрипт, с nonce)
@@ -57,6 +57,9 @@ public/                admin.css · admin.js (единственият скри�
 6. **Тайните са криптирани в покой** (IG токени, TOTP, агентски ключове) и никога в лог.
 7. **Всяко действие е в одита** с актьор (човек/агент/система) и IP.
 8. **Сесиите са в базата** (не JWT): отменими веднага, плъзгащи 7 д., абсолютен таван 30 д., `__Host-` бисквитка.
+9. **Автопилотът прави само чернови и само от медийната библиотека на бранда.** Не измисля материали,
+   не надхвърля `postsPerWeek`, чете Insights, но никога не пише в Instagram.
+10. **Подписаният път включва query string-а** (`req.originalUrl`) — CLI-то и сървърът трябва да са в синхрон.
 
 ## Външни зависимости, които остаряват
 

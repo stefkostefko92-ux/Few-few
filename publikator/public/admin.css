@@ -342,3 +342,40 @@ textarea {
     padding: 18px;
   }
 }
+
+/* Управление на страницата: чекбоксове, набори, свиваеми таблици */
+label.row {
+  display: flex;
+  color: var(--text);
+}
+label.row input[type='checkbox'] {
+  width: auto;
+  margin: 0;
+}
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  gap: 16px;
+}
+legend {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 0 6px;
+}
+h3 {
+  font-size: 15px;
+  margin: 14px 0 8px;
+}
+details {
+  margin: 10px 0;
+}
+details summary {
+  cursor: pointer;
+}
+textarea[rows] {
+  min-height: 0;
+}
+form.stack .grid2 {
+  gap: 12px;
+}

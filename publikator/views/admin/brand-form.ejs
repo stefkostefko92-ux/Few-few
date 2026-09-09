@@ -9,6 +9,29 @@
   <label>Сайт<input type="url" name="websiteUrl" value="<%= brand && brand.websiteUrl ? brand.websiteUrl : '' %>"></label>
   <label>Какво е продуктът (влиза в промпта)<textarea name="summary" required minlength="10"><%= brand ? brand.summary : '' %></textarea></label>
   <label>Тон на глас, забрани, задължителни формулировки<textarea name="voice" required minlength="5"><%= brand ? brand.voice : '' %></textarea></label>
+
+  <% const v = (k) => (plan && typeof plan[k] === 'string' ? plan[k] : ''); %>
+  <% const cross = Array.isArray(plan && plan.crossPost) ? plan.crossPost : (plan && plan.crossPost ? [plan.crossPost] : []); %>
+  <h2>Управление на страницата</h2>
+  <p class="muted">Включиш ли го, автопилотът всяка седмица допълва черновите до плана — от реални материали, с данните от Insights. Публикува само човек, след одобрение.</p>
+  <label class="row"><input type="checkbox" name="managed" <%= managed ? 'checked' : '' %>> <span>Под управление на агента (автопилот)</span></label>
+  <div class="grid2">
+    <label>Публикации на седмица (1–14)<input type="number" name="postsPerWeek" min="1" max="14" value="<%= v('postsPerWeek') || '3' %>"></label>
+    <label>Дял Reels (0–1)<input type="number" name="reelsShare" min="0" max="1" step="0.1" value="<%= v('reelsShare') || '0.5' %>"></label>
+  </div>
+  <label>Тематични стълбове (по един на ред, 1–8)<textarea name="pillars" rows="4" placeholder="Зад кулисите&#10;Съвет на седмицата&#10;Истории на клиенти"><%= v('pillars') %></textarea></label>
+  <label>Часове за публикуване (HH:MM, със запетая)<input name="postingTimes" value="<%= v('postingTimes') || '08:30, 20:00' %>"></label>
+  <label>Цели (влизат в промпта)<textarea name="goals" rows="2" maxlength="1000"><%= v('goals') %></textarea></label>
+  <label>Ключови думи за откриваемост (със запетая, до 20)<input name="keywords" value="<%= v('keywords') %>"></label>
+  <label>Хаштаг набори (по един набор на ред)<textarea name="hashtagSets" rows="3" placeholder="#kangoojumps #дупница #фитнес&#10;#силовитренировки #женскистудио"><%= v('hashtagSets') %></textarea></label>
+  <label>Призив за действие<input name="cta" maxlength="200" value="<%= v('cta') %>"></label>
+  <label>Забранено (теми, формулировки)<textarea name="avoid" rows="2" maxlength="1000"><%= v('avoid') %></textarea></label>
+  <fieldset class="row"><legend>Варианти за други платформи</legend>
+    <% ['facebook', 'tiktok', 'linkedin', 'x'].forEach((pl) => { %><label class="row"><input type="checkbox" name="crossPost" value="<%= pl %>" <%= cross.includes(pl) ? 'checked' : '' %>> <span><%= pl %></span></label><% }) %>
+  </fieldset>
+  <label>Медийна библиотека — по един материал на ред: <span class="mono">URL | описание</span> или <span class="mono">REELS URL | описание | cover URL</span><textarea name="assets" rows="6" class="mono" placeholder="https://cdn.example.com/trening-01.jpg | Група жени на Kangoo Jumps тренировка в студиото&#10;REELS https://cdn.example.com/skok.mp4 | 15 секунди скокове в забавен кадър | https://cdn.example.com/skok.jpg"><%= v('assets') %></textarea></label>
+  <p class="muted">Автопилотът не измисля снимки: без материал в библиотеката няма чернова. Материалите се редуват — най-отдавна ползваният е пръв.</p>
+
   <div class="row"><button class="btn primary" type="submit">Запази</button><a class="btn" href="/admin/brands">Отказ</a></div>
 </form>
 <%- include('../partials/shell-end') %>

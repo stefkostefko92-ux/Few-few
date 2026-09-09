@@ -16,11 +16,13 @@
 //   node tools/social/publikator.mjs drafts [--brand slug] [--status DRAFT]
 //   node tools/social/publikator.mjs draft --brand slug --media https://… --caption-file cap.txt \
 //        --alt "…" [--hashtags "#a #b"] [--kind IMAGE|REELS] [--cover https://…] [--account id] [--topic "…"]
+//   node tools/social/publikator.mjs insights --brand slug [--days 30]
+//        → план на страницата + силни/слаби постове + дневен тренд на акаунта (само агрегати)
 
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
 
-const COMMANDS = new Set(["brands", "accounts", "drafts", "draft", "help"]);
+const COMMANDS = new Set(["brands", "accounts", "drafts", "draft", "insights", "help"]);
 
 function loadEnv() {
   const file = process.env.PUBLIKATOR_ENV_FILE;
@@ -100,7 +102,7 @@ async function main() {
   const cmd = args._[0] ?? "help";
   if (!COMMANDS.has(cmd)) die(`Непозната команда „${cmd}“. Виж: node tools/social/publikator.mjs help`, 2);
   if (cmd === "help") {
-    process.stdout.write(readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 20).map((l) => l.replace(/^\/\/ ?/, "")).join("\n") + "\n");
+    process.stdout.write(readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 22).map((l) => l.replace(/^\/\/ ?/, "")).join("\n") + "\n");
     return;
   }
   const cfg = loadEnv();
@@ -113,6 +115,12 @@ async function main() {
     if (args.status) q.set("status", String(args.status));
     const qs = q.toString();
     return print(await request(cfg, "GET", `/agent/v1/drafts${qs ? `?${qs}` : ""}`));
+  }
+  if (cmd === "insights") {
+    if (!args.brand) die("insights иска --brand slug.", 2);
+    const q = new URLSearchParams({ brand: String(args.brand) });
+    if (args.days) q.set("days", String(args.days));
+    return print(await request(cfg, "GET", `/agent/v1/insights?${q}`));
   }
   if (cmd === "draft") {
     if (!args.brand || !args.media || !args["caption-file"] || !args.alt) {

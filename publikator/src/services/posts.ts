@@ -14,6 +14,18 @@ export const draftInputSchema = z.object({
   coverUrl: z.string().url().optional(),
   aiAssisted: z.boolean().default(false),
   topic: z.string().max(500).optional(),
+  /** Адаптации за други платформи — копират се от човек, не се публикуват оттук. */
+  variants: z
+    .array(
+      z.object({
+        platform: z.enum(['facebook', 'tiktok', 'linkedin', 'x']),
+        text: z.string().min(1),
+      }),
+    )
+    .max(4)
+    .default([]),
+  /** Предложен час за публикуване (ISO) — само подсказка за ревюъра. */
+  suggestedAt: z.coerce.date().optional(),
 });
 
 export type DraftInput = z.infer<typeof draftInputSchema>;
@@ -70,6 +82,8 @@ export async function createDraft(
       coverUrl: input.coverUrl ?? null,
       aiAssisted: input.aiAssisted,
       topic: input.topic ?? null,
+      crossPostVariants: input.variants.length ? asJson(input.variants) : undefined,
+      suggestedAt: input.suggestedAt ?? null,
       createdByType: actor.type,
       createdById: actor.id,
       createdByLabel: actor.label,

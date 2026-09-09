@@ -4,6 +4,7 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
  * Подпис на заявка от машинен клиент. Тайната никога не пътува по мрежата:
  *   canonical = timestamp \n nonce \n METHOD \n path \n sha256(body)
  *   signature = hex(HMAC-SHA256(secret, canonical))
+ * `path` е пътят + query string-ът, точно както са изпратени (напр. `/agent/v1/drafts?brand=x`).
  * Timestamp + nonce спират повторно изпращане; тялото е обвързано с подписа.
  */
 export const SIGNATURE_MAX_SKEW_SECONDS = 300;

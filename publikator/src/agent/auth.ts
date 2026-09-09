@@ -19,6 +19,7 @@ export const AGENT_SCOPES = [
   'accounts:read',
   'drafts:read',
   'drafts:write',
+  'insights:read',
 ] as const;
 export type AgentScope = (typeof AGENT_SCOPES)[number];
 
@@ -69,7 +70,8 @@ export function agentAuth(nonceStore: NonceStore) {
         timestamp,
         nonce,
         method: req.method,
-        path: req.originalUrl.split('?')[0] ?? req.path,
+        // Пътят ВКЛЮЧИТЕЛНО query string-а: филтрите (?brand=…) са част от подписаното.
+        path: req.originalUrl,
         body: rawBody,
       },
       signature,

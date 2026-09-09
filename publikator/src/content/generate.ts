@@ -4,6 +4,10 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 // Останалата част от продукта ползва класическия `zod` API — не ги смесвай в един файл.
 import * as z from 'zod/v4';
 import { CAPTION_MAX, HASHTAG_RECOMMENDED } from './lint.js';
+import { CROSS_POST_PLATFORMS, type CrossPostPlatform } from './plan.js';
+import { buildUserPrompt, type PromptInput } from './prompt.js';
+
+export type { BrandBrief, PerformanceContext } from './prompt.js';
 
 /** Постоянният системен блок — държим го байт-стабилен заради prompt caching. */
 const SYSTEM_PROMPT = `Ти си Social Media Manager за Instagram със заявка за максимален обхват.
@@ -14,7 +18,14 @@ const SYSTEM_PROMPT = `Ти си Social Media Manager за Instagram със за
 - Caption под ${CAPTION_MAX} знака, без линкове (в Instagram те не са кликаеми).
 - Alt текстът описва какво реално се вижда — за екранни четци и за търсене.
 - Пишеш на езика на бранда, без емоджи-салата и без кухи суперлативи.
-- Не измисляш факти, цени, обещания или отзиви за бранда.`;
+- Не измисляш факти, цени, обещания или отзиви за бранда.
+- Когато има данни от Insights, те тежат повече от общи правила — те са гласът на реалната публика.
+- Вариантите за други платформи носят същата идея, но в езика и дължината на платформата.`;
+
+const variantSchema = z.object({
+  platform: z.enum(CROSS_POST_PLATFORMS),
+  text: z.string().describe('Пълният текст за платформата, готов за поставяне.'),
+});
 
 const draftSchema = z.object({
   hook: z.string().describe('Първият ред на caption-а — самостоятелна кукичка.'),
@@ -22,24 +33,18 @@ const draftSchema = z.object({
   hashtags: z.array(z.string()).describe('Нишови хаштагове с водещ #.'),
   alt_text: z.string().describe('Описание на визуалния материал.'),
   rationale: z.string().describe('Едно изречение защо тази чернова печели обхват.'),
+  variants: z
+    .array(variantSchema)
+    .describe('Адаптации за другите платформи; празно, ако не са поискани.'),
 });
 
 const draftsSchema = z.object({ drafts: z.array(draftSchema) });
 
-export interface BrandBrief {
-  name: string;
-  summary: string;
-  voice: string;
-  language: string;
-  websiteUrl?: string | null;
-}
+export type GenerateInput = PromptInput;
 
-export interface GenerateInput {
-  brand: BrandBrief;
-  kind: 'IMAGE' | 'REELS';
-  topic: string;
-  count: number;
-  mediaDescription?: string;
+export interface CrossPostVariant {
+  platform: CrossPostPlatform;
+  text: string;
 }
 
 export interface GeneratedDraft {
@@ -48,6 +53,7 @@ export interface GeneratedDraft {
   hashtags: string[];
   altText: string;
   rationale: string;
+  variants: CrossPostVariant[];
 }
 
 export class ContentGenerationError extends Error {}
@@ -63,27 +69,14 @@ export async function generateDrafts(
   client: Anthropic,
   input: GenerateInput,
 ): Promise<GeneratedDraft[]> {
-  const userPrompt = [
-    `Бранд: ${input.brand.name}`,
-    `Какво е: ${input.brand.summary}`,
-    `Тон на глас: ${input.brand.voice}`,
-    `Език на текста: ${input.brand.language}`,
-    input.brand.websiteUrl ? `Сайт: ${input.brand.websiteUrl}` : null,
-    `Формат: ${input.kind === 'REELS' ? 'Reel (вертикално видео)' : 'снимка в емисията'}`,
-    input.mediaDescription ? `Материалът показва: ${input.mediaDescription}` : null,
-    `Тема: ${input.topic}`,
-    `Дай точно ${input.count} различни чернови — различни ъгли, не преформулировки.`,
-  ]
-    .filter((line): line is string => line !== null)
-    .join('\n');
-
+  const requested = new Set<CrossPostPlatform>(input.crossPost ?? []);
   const response = await client.messages.parse({
     model: 'claude-opus-5',
-    max_tokens: 8000,
+    max_tokens: 12000,
     system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
     thinking: { type: 'adaptive' },
     output_config: { format: zodOutputFormat(draftsSchema), effort: 'medium' },
-    messages: [{ role: 'user', content: userPrompt }],
+    messages: [{ role: 'user', content: buildUserPrompt(input) }],
   });
 
   if (response.stop_reason === 'refusal') {
@@ -101,5 +94,7 @@ export async function generateDrafts(
     hashtags: draft.hashtags.map((tag) => (tag.startsWith('#') ? tag : `#${tag}`)),
     altText: draft.alt_text,
     rationale: draft.rationale,
+    // Само поисканите платформи — моделът не решава къде се публикува.
+    variants: draft.variants.filter((variant) => requested.has(variant.platform)),
   }));
 }

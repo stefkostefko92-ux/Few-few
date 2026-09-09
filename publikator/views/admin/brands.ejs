@@ -1,9 +1,9 @@
 <%- include('../partials/shell-start', { active: 'brands' }) %>
 <div class="row" style="justify-content:space-between"><h1>Брандове</h1><% if (can('brands:manage')) { %><a class="btn primary" href="/admin/brands/new">Нов бранд</a><% } %></div>
-<table><thead><tr><th>Име</th><th>Slug</th><th>Език</th><th>Акаунти</th><th>Постове</th><th></th></tr></thead><tbody>
+<table><thead><tr><th>Име</th><th>Slug</th><th>Език</th><th>Управление</th><th>Акаунти</th><th>Постове</th><th></th></tr></thead><tbody>
 <% brands.forEach((b) => { %>
-  <tr><td><%= b.name %></td><td class="mono"><%= b.slug %></td><td><%= b.language %></td><td><%= b._count.accounts %></td><td><a href="/admin/posts?brand=<%= b.slug %>"><%= b._count.posts %></a></td><td><% if (can('brands:manage')) { %><a href="/admin/brands/<%= b.id %>/edit">редактирай</a><% } %></td></tr>
+  <tr><td><%= b.name %></td><td class="mono"><%= b.slug %></td><td><%= b.language %></td><td><% if (b.managed) { %><span class="badge APPROVED">автопилот</span><div class="muted"><%= b.lastAutopilotAt ? 'последно ' + b.lastAutopilotAt.toLocaleString('bg-BG') : 'още не е пускан' %></div><% } else { %><span class="muted">ръчно</span><% } %></td><td><%= b._count.accounts %></td><td><a href="/admin/posts?brand=<%= b.slug %>"><%= b._count.posts %></a></td><td class="row"><% if (can('insights:view')) { %><a href="/admin/brands/<%= b.id %>/performance">представяне</a><% } %><% if (can('brands:manage')) { %><a href="/admin/brands/<%= b.id %>/edit">редактирай</a><% } %></td></tr>
 <% }) %>
-<% if (!brands.length) { %><tr><td colspan="6" class="muted">Няма брандове.</td></tr><% } %>
+<% if (!brands.length) { %><tr><td colspan="7" class="muted">Няма брандове.</td></tr><% } %>
 </tbody></table>
 <%- include('../partials/shell-end') %>

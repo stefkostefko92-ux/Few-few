@@ -65,7 +65,7 @@ test('authorize URL носи scope, redirect_uri и state', () => {
   assert.equal(url.searchParams.get('state'), 'state-value');
   assert.equal(
     url.searchParams.get('scope'),
-    'instagram_business_basic,instagram_business_content_publish',
+    'instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights',
   );
 });
 

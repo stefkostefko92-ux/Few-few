@@ -2,6 +2,7 @@
  * Панел + агент по целия път срещу жива PostgreSQL:
  * вход → CSRF → бранд → акаунт → агентски ключ → подписана чернова от агента →
  * агентът НЕ може да одобри → човек одобрява → по-ниска роля НЕ може → одит-веригата е цяла.
+ * Плюс управлението: план на страницата от формата → представяне → Insights за агента по обхват.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -162,6 +163,43 @@ test('панел + агент: пълен път', { skip: !hasDatabase }, async
   const brand = await prisma.brand.findUniqueOrThrow({ where: { slug: `t-${stamp}` } });
   created.brandId = brand.id;
 
+  // 3а) Планът на страницата: под управление, стълбове, библиотека; лош план → 400 и нищо записано.
+  const badPlan = await browser.form(`/admin/brands/${brand.id}`, {
+    _csrf: csrf,
+    slug: brand.slug,
+    name: 'Тест',
+    summary: 'Продукт за тестове.',
+    voice: 'Кратко.',
+    language: 'bg',
+    managed: 'on',
+    pillars: '',
+  });
+  assert.equal(badPlan.status, 400);
+  assert.equal((await prisma.brand.findUniqueOrThrow({ where: { id: brand.id } })).managed, false);
+  const goodPlan = await browser.form(`/admin/brands/${brand.id}`, {
+    _csrf: csrf,
+    slug: brand.slug,
+    name: 'Тест',
+    summary: 'Продукт за тестове.',
+    voice: 'Кратко.',
+    language: 'bg',
+    managed: 'on',
+    postsPerWeek: '2',
+    reelsShare: '0.5',
+    pillars: 'Зад кулисите\nСъвет',
+    postingTimes: '09:00',
+    keywords: 'тест, публикатор',
+    crossPost: ['facebook', 'x'],
+    assets: 'https://cdn.example.com/a.jpg | Снимка от студиото',
+  });
+  assert.equal(goodPlan.status, 302);
+  const managedBrand = await prisma.brand.findUniqueOrThrow({ where: { id: brand.id } });
+  assert.equal(managedBrand.managed, true);
+  assert.deepEqual((managedBrand.plan as { pillars: string[] }).pillars, ['Зад кулисите', 'Съвет']);
+  const performancePage = await browser.get(`/admin/brands/${brand.id}/performance`);
+  assert.equal(performancePage.status, 200);
+  assert.match(await performancePage.text(), /Пусни цикъл сега/);
+
   const account = await prisma.instagramAccount.create({
     data: {
       brandId: brand.id,
@@ -177,7 +215,7 @@ test('панел + агент: пълен път', { skip: !hasDatabase }, async
   const keyPage = await browser.form('/admin/keys', {
     _csrf: csrf,
     name: 'socialdjiyata',
-    scopes: ['brands:read', 'accounts:read', 'drafts:read', 'drafts:write'],
+    scopes: ['brands:read', 'accounts:read', 'drafts:read', 'drafts:write', 'insights:read'],
     brandIds: [brand.id],
     expiresInDays: '90',
   });
@@ -217,11 +255,31 @@ test('панел + агент: пълен път', { skip: !hasDatabase }, async
 
   const brandsRes = await agentCall('GET', '/agent/v1/brands');
   assert.equal(brandsRes.status, 200);
-  const brandsJson = (await brandsRes.json()) as { brands: Array<{ slug: string }> };
+  const brandsJson = (await brandsRes.json()) as {
+    brands: Array<{ slug: string; managed: boolean; plan: { keywords: string[] } | null }>;
+  };
   assert.deepEqual(
     brandsJson.brands.map((b) => b.slug),
     [brand.slug],
   );
+  assert.equal(brandsJson.brands[0]!.managed, true);
+  assert.deepEqual(brandsJson.brands[0]!.plan?.keywords, ['тест', 'публикатор']);
+
+  // Insights за агента: планът и агрегатите, нищо чувствително; без brand → 400; чужд бранд → 404.
+  const insightsRes = await agentCall('GET', `/agent/v1/insights?brand=${brand.slug}`);
+  assert.equal(insightsRes.status, 200);
+  const insightsJson = (await insightsRes.json()) as {
+    brand: { managed: boolean };
+    summary: { top: unknown[]; bestKind: null };
+    posts: unknown[];
+    accounts: Array<{ username: string; daily: unknown[] }>;
+  };
+  assert.equal(insightsJson.brand.managed, true);
+  assert.deepEqual(insightsJson.summary.top, []);
+  assert.equal(insightsJson.accounts[0]?.username, account.username);
+  assert.ok(!JSON.stringify(insightsJson).includes('accessToken'));
+  assert.equal((await agentCall('GET', '/agent/v1/insights')).status, 400);
+  assert.equal((await agentCall('GET', '/agent/v1/insights?brand=no-such-brand')).status, 404);
 
   const draftPayload = {
     brandSlug: brand.slug,
@@ -285,6 +343,11 @@ test('панел + агент: пълен път', { skip: !hasDatabase }, async
   });
   assert.equal(forbidden.status, 403);
   assert.equal((await viewerBrowser.get('/admin/keys')).status, 403);
+  assert.equal((await viewerBrowser.get(`/admin/brands/${brand.id}/performance`)).status, 403);
+  assert.equal(
+    (await viewerBrowser.form(`/admin/brands/${brand.id}/autopilot`, { _csrf: viewerCsrf })).status,
+    403,
+  );
 
   // 9) Изход унищожава сесията.
   assert.equal((await browser.form('/admin/logout', { _csrf: csrf })).status, 302);

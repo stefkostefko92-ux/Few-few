@@ -11,18 +11,23 @@ datasource db {
 
 /// Бранд = един наш продукт/профил, за който произвеждаме съдържание.
 model Brand {
-  id         String   @id @default(cuid())
-  slug       String   @unique
-  name       String
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
   /// Кратко описание на продукта — влиза в промпта при генериране.
-  summary    String
+  summary         String
   /// Тон на глас, забрани, задължителни формулировки.
-  voice      String
+  voice           String
   /// BCP-47, напр. „bg“, „it“, „en“.
-  language   String   @default("bg")
-  websiteUrl String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  language        String    @default("bg")
+  websiteUrl      String?
+  /// Управлявана страница: автопилотът произвежда чернови по плана и мери резултата.
+  managed         Boolean   @default(false)
+  /// План за поддръжка (zod `brandPlanSchema`): каданс, стълбове, часове, хаштаг набори, CTA, цели.
+  plan            Json?
+  lastAutopilotAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   accounts InstagramAccount[]
   posts    Post[]
@@ -47,7 +52,8 @@ model InstagramAccount {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  posts Post[]
+  posts    Post[]
+  insights AccountInsight[]
 
   @@index([brandId])
   @@index([status, tokenExpiresAt])
@@ -90,19 +96,23 @@ model Post {
   mediaUrl String
   coverUrl String?
 
-  status          PostStatus @default(DRAFT)
+  status            PostStatus @default(DRAFT)
   /// true = черновата е писана от модел; пази се за одит и за етикетиране.
-  aiAssisted      Boolean    @default(false)
-  lintFindings    Json?
+  aiAssisted        Boolean    @default(false)
+  lintFindings      Json?
+  /// Адаптирани текстове за други платформи (Facebook, TikTok, LinkedIn) — за ръчно публикуване.
+  crossPostVariants Json?
+  /// Предложен от автопилота час за публикуване — човекът го приема или сменя при насрочване.
+  suggestedAt       DateTime?
   /// Кой е създал черновата: HUMAN (user id) · AGENT (api key id) · SYSTEM.
-  createdByType   String     @default("HUMAN")
-  createdById     String?
-  createdByLabel  String     @default("")
+  createdByType     String     @default("HUMAN")
+  createdById       String?
+  createdByLabel    String     @default("")
   /// Темата/заявката, по която е писана черновата (за контекст на ревюъра).
-  topic           String?
-  rejectedBy      String?
-  rejectedAt      DateTime?
-  rejectionReason String?
+  topic             String?
+  rejectedBy        String?
+  rejectedAt        DateTime?
+  rejectionReason   String?
 
   approvedBy  String?
   approvedAt  DateTime?
@@ -117,7 +127,8 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  logs PublishLog[]
+  logs     PublishLog[]
+  insights MediaInsight[]
 
   @@index([brandId])
   @@index([accountId])
@@ -233,4 +244,37 @@ model AuditLog {
   @@index([at])
   @@index([actorId])
   @@index([targetType, targetId])
+}
+
+/// Метрики на публикация от Instagram Insights (снимка във времето — пазим всяка синхронизация).
+model MediaInsight {
+  id                String   @id @default(cuid())
+  postId            String
+  post              Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  fetchedAt         DateTime @default(now())
+  views             Int?
+  reach             Int?
+  likes             Int?
+  comments          Int?
+  saved             Int?
+  shares            Int?
+  totalInteractions Int?
+
+  @@index([postId, fetchedAt])
+}
+
+/// Дневни метрики на акаунт (един ред на ден).
+model AccountInsight {
+  id            String           @id @default(cuid())
+  accountId     String
+  account       InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  day           DateTime         @db.Date
+  reach         Int?
+  views         Int?
+  followerCount Int?
+  engaged       Int?
+  fetchedAt     DateTime         @default(now())
+
+  @@unique([accountId, day])
+  @@index([accountId, day])
 }

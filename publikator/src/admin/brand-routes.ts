@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireCsrf, requireLogin } from '../auth/guards.js';
+import { assetToLine, brandPlanSchema, parsePlan, planFromForm } from '../content/plan.js';
 import { actorOf, optionalField, setFlash, stringField } from './helpers.js';
 
 const brandSchema = z.object({
@@ -25,6 +27,51 @@ function brandFromBody(body: unknown) {
   });
 }
 
+/**
+ * Секцията „Управление“: план за автопилота. Без план брандът може да е „под управление“
+ * само ако формата го е валидирала — иначе автопилотът мълчаливо няма какво да прави.
+ */
+function planFromBody(body: unknown) {
+  const managed = stringField(body, 'managed') === 'on';
+  const record = (body ?? {}) as Record<string, unknown>;
+  const parsed = brandPlanSchema.safeParse(planFromForm(record));
+  return { managed, parsed };
+}
+
+/** Планът, разгънат за формата (текстови полета). */
+export function planFormValues(raw: unknown): Record<string, string | string[]> {
+  const plan = parsePlan(raw);
+  if (!plan)
+    return {
+      postsPerWeek: '3',
+      reelsShare: '0.5',
+      postingTimes: '08:30, 20:00',
+      crossPost: ['facebook'],
+    };
+  return {
+    postsPerWeek: String(plan.postsPerWeek),
+    reelsShare: String(plan.reelsShare),
+    pillars: plan.pillars.join('\n'),
+    postingTimes: plan.postingTimes.join(', '),
+    hashtagSets: plan.hashtagSets.map((set) => set.join(' ')).join('\n'),
+    cta: plan.cta,
+    goals: plan.goals,
+    keywords: plan.keywords.join(', '),
+    avoid: plan.avoid,
+    crossPost: plan.crossPost,
+    assets: plan.assets.map(assetToLine).join('\n'),
+  };
+}
+
+function planIssues(parsed: ReturnType<typeof brandPlanSchema.safeParse>): string[] {
+  if (parsed.success) return [];
+  return parsed.error.issues.map((issue) => `план.${issue.path.join('.')}: ${issue.message}`);
+}
+
+function asJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
 export const brandRouter: Router = Router();
 brandRouter.use('/admin/brands', requireLogin);
 
@@ -37,7 +84,13 @@ brandRouter.get('/admin/brands', requireCapability('brands:view'), async (_req, 
 });
 
 brandRouter.get('/admin/brands/new', requireCapability('brands:manage'), (_req, res) => {
-  res.render('admin/brand-form', { title: 'Нов бранд', brand: null, errors: [] });
+  res.render('admin/brand-form', {
+    title: 'Нов бранд',
+    brand: null,
+    plan: planFormValues(null),
+    managed: false,
+    errors: [],
+  });
 });
 
 brandRouter.post(
@@ -46,31 +99,39 @@ brandRouter.post(
   requireCsrf,
   async (req, res) => {
     const input = brandFromBody(req.body);
-    if (!input.success) {
-      res.status(400).render('admin/brand-form', {
+    const { managed, parsed } = planFromBody(req.body);
+    const errors = [...(input.success ? [] : input.error.issues.map((issue) => issue.message))];
+    if (managed) errors.push(...planIssues(parsed));
+    const back = (status: number, extra: string[]) =>
+      res.status(status).render('admin/brand-form', {
         title: 'Нов бранд',
         brand: req.body,
-        errors: input.error.issues.map((issue) => issue.message),
+        plan: req.body,
+        managed,
+        errors: [...errors, ...extra],
       });
+    if (!input.success || errors.length) {
+      back(400, []);
       return;
     }
     const exists = await prisma.brand.findUnique({ where: { slug: input.data.slug } });
     if (exists) {
-      res.status(409).render('admin/brand-form', {
-        title: 'Нов бранд',
-        brand: req.body,
-        errors: ['Този slug вече съществува.'],
-      });
+      back(409, ['Този slug вече съществува.']);
       return;
     }
     const brand = await prisma.brand.create({
-      data: { ...input.data, websiteUrl: input.data.websiteUrl ?? null },
+      data: {
+        ...input.data,
+        websiteUrl: input.data.websiteUrl ?? null,
+        managed,
+        plan: parsed.success ? asJson(parsed.data) : undefined,
+      },
     });
     await audit(actorOf(req), {
       action: 'brand.create',
       targetType: 'Brand',
       targetId: brand.id,
-      detail: { slug: brand.slug },
+      detail: { slug: brand.slug, managed },
     });
     setFlash(res, 'ok', `Брандът „${brand.name}“ е създаден.`);
     res.redirect('/admin/brands');
@@ -85,7 +146,13 @@ brandRouter.get('/admin/brands/:id/edit', requireCapability('brands:manage'), as
       .render('admin/error', { title: 'Няма такъв бранд', message: 'Брандът не е намерен.' });
     return;
   }
-  res.render('admin/brand-form', { title: `Бранд: ${brand.name}`, brand, errors: [] });
+  res.render('admin/brand-form', {
+    title: `Бранд: ${brand.name}`,
+    brand,
+    plan: planFormValues(brand.plan),
+    managed: brand.managed,
+    errors: [],
+  });
 });
 
 brandRouter.post(
@@ -95,32 +162,41 @@ brandRouter.post(
   async (req, res) => {
     const id = String(req.params.id);
     const input = brandFromBody(req.body);
-    if (!input.success) {
-      res.status(400).render('admin/brand-form', {
+    const { managed, parsed } = planFromBody(req.body);
+    const errors = [...(input.success ? [] : input.error.issues.map((issue) => issue.message))];
+    if (managed) errors.push(...planIssues(parsed));
+    const back = (status: number, extra: string[]) =>
+      res.status(status).render('admin/brand-form', {
         title: 'Бранд',
         brand: { id, ...(req.body as object) },
-        errors: input.error.issues.map((issue) => issue.message),
+        plan: req.body,
+        managed,
+        errors: [...errors, ...extra],
       });
+    if (!input.success || errors.length) {
+      back(400, []);
       return;
     }
     const clash = await prisma.brand.findFirst({ where: { slug: input.data.slug, NOT: { id } } });
     if (clash) {
-      res.status(409).render('admin/brand-form', {
-        title: 'Бранд',
-        brand: { id, ...(req.body as object) },
-        errors: ['Този slug е зает от друг бранд.'],
-      });
+      back(409, ['Този slug е зает от друг бранд.']);
       return;
     }
     const brand = await prisma.brand.update({
       where: { id },
-      data: { ...input.data, websiteUrl: input.data.websiteUrl ?? null },
+      data: {
+        ...input.data,
+        websiteUrl: input.data.websiteUrl ?? null,
+        managed,
+        // Планът се пази и при спряно управление — за да не се губи при временно спиране.
+        plan: parsed.success ? asJson(parsed.data) : undefined,
+      },
     });
     await audit(actorOf(req), {
       action: 'brand.update',
       targetType: 'Brand',
       targetId: brand.id,
-      detail: { slug: brand.slug },
+      detail: { slug: brand.slug, managed },
     });
     setFlash(res, 'ok', 'Брандът е обновен.');
     res.redirect('/admin/brands');
