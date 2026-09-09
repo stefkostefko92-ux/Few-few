@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Supreme AdBlock — Free Chrome Ad Blocker by Carbon Stealth</title>
 <meta name="description" content="Supreme AdBlock by Carbon Stealth — the most complete free ad blocker for Chrome. Blocks YouTube video ads at the source, banners, pop-ups, trackers and cookie walls. EasyList built in, signed self-updating filters. A private, no-telemetry uBlock &amp; AdGuard alternative." />
-<meta name="keywords" content="Supreme AdBlock, Carbon Stealth, Carbon Stealth ad blocker, Carbon Stealth adblock, ad blocker Chrome, free ad blocker, YouTube ad blocker, block YouTube ads, adblock extension, uBlock Origin alternative, AdGuard alternative, EasyList, EasyPrivacy, tracker blocker, cookie banner blocker, pop-up blocker, privacy ad blocker, Manifest V3 ad blocker, best ad blocker 2026, Carbon Stealth VCC" />
+<meta name="keywords" content="Supreme AdBlock, Carbon Stealth, Carbon Stealth ad blocker, Carbon Stealth adblock, ad blocker Chrome, free ad blocker, YouTube ad blocker, block YouTube ads, adblock extension, uBlock Origin alternative, AdGuard alternative, EasyList, EasyPrivacy, tracker blocker, cookie banner blocker, pop-up blocker, privacy ad blocker, Manifest V3 ad blocker, best ad blocker 2026, popunder blocker, anti-adblock bypass, scriptlets, Carbon Stealth VCC" />
 <meta name="author" content="Carbon Stealth" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 <meta name="theme-color" content="#060608" />
@@ -246,9 +246,9 @@
       "url": "https://adblock.carbonstealth.eu/",
       "image": "https://adblock.carbonstealth.eu/og.png",
       "downloadUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
-      "softwareVersion": "4.0.2",
+      "softwareVersion": "5.0.0",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-07-15",
+      "dateModified": "2026-09-09",
       "inLanguage": "en",
       "isAccessibleForFree": true,
       "offers": {
@@ -264,6 +264,11 @@
         "Tracking-parameter removal",
         "Malware-domain protection",
         "Smart Detection (list-free heuristic)",
+        "Anti-adblock scriptlet engine (18 scriptlets, signed live channel)",
+        "Pop-under blocker (2,700+ known popup-ad hosts)",
+        "Per-page blocked-request log and per-site cosmetic control",
+        "Filter-list subscriptions with daily refresh",
+        "Localised UI: English, Bulgarian, Italian, German",
         "No telemetry, all local processing"
       ],
       "publisher": {
@@ -328,7 +333,7 @@
       },
       "inLanguage": "en",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-07-15",
+      "dateModified": "2026-09-09",
       "speakable": {
         "@type": "SpeakableSpecification",
         "cssSelector": [
@@ -507,10 +512,19 @@
           <h3>Signed self-updates</h3><p>New ad networks fixed server-side within hours — every update verified with an Ed25519 signature, no store re-review, no remote code.</p></div>
         <div class="card reveal">
           <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg></div>
-          <h3>Procedural filters</h3><p>uBlock-class selectors — :has-text, :matches-css, :upward, :xpath, :remove — write your own, or ride the live list.</p></div>
+          <h3>Procedural filters</h3><p>Advanced selectors — :has-text, :matches-css, :matches-attr, :matches-media, :matches-prop, :upward, :xpath, :remove — write your own, or ride the live list.</p></div>
         <div class="card reveal">
           <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
           <h3>Private by design</h3><p>No account, no analytics, nothing about you ever leaves the device. Cookie walls dismissed, trackers and tracking params stripped.</p></div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M13 8l-4 6h3l-1 4 4-6h-3z"/></svg></div>
+          <h3>Anti-adblock scriptlets</h3><p>18 scriptlets injected before the page's own scripts — property traps, timer and event defusers, JSON pruning — plus a signed live channel for new sites. The code ships in the package; only data ever updates.</p></div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M9 13l6 4M15 13l-6 4"/></svg></div>
+          <h3>Pop-under blocker</h3><p>2,700+ pop-under and pop-up ad hosts baked into the engine — any window.open to them is refused. The one class of ad a rule-only Manifest V3 blocker cannot see.</p></div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg></div>
+          <h3>See what was blocked</h3><p>A per-page log of blocked requests, per-site controls (allow, or just switch ad-box hiding off), filter-list subscriptions that refresh daily, and an engine health card — in English, Bulgarian, Italian and German.</p></div>
       </div>
     </div>
   </section>
@@ -528,7 +542,7 @@
         </div>
         <div class="item">
           <h3>Supreme AdBlock vs uBlock Origin</h3>
-          <p>uBlock Origin is excellent, but its Manifest V3 build (uBO Lite) drops generic cosmetic filtering by default and its YouTube blocking is unreliable. Supreme AdBlock ships <b>EasyList and EasyPrivacy built in</b> (40,000+ rules), full procedural cosmetic filters (<code>:has-text</code>, <code>:matches-css</code>, <code>:upward</code>, <code>:xpath</code>, <code>:remove</code>), and kills YouTube ads at the source. It also adds list-free Smart Detection and signed self-updating filters, so protection stays current without waiting for a store update. If you want a modern, Manifest V3-ready uBlock Origin alternative that is strong on YouTube, Supreme AdBlock is built for exactly that.</p>
+          <p>uBlock Origin is excellent, but its Manifest V3 build (uBO Lite) drops generic cosmetic filtering by default and its YouTube blocking is unreliable. Supreme AdBlock ships <b>EasyList and EasyPrivacy built in</b> (40,000+ rules), full procedural cosmetic filters (<code>:has-text</code>, <code>:matches-css</code>, <code>:upward</code>, <code>:xpath</code>, <code>:remove</code>), and kills YouTube ads at the source. It also adds list-free Smart Detection and signed self-updating filters, so protection stays current without waiting for a store update. Version 5 adds an 18-scriptlet anti-adblock engine and a pop-under blocker built from EasyList's own popup list — two things a rule-only Manifest V3 blocker cannot do. If you want a modern, Manifest V3-ready uBlock Origin alternative that is strong on YouTube, Supreme AdBlock is built for exactly that.</p>
         </div>
         <div class="item">
           <h3>Supreme AdBlock vs AdGuard</h3>
@@ -563,6 +577,7 @@
         <div class="card reveal"><h3>uBlock or AdGuard alternative?</h3><p>Supreme AdBlock ships EasyList &amp; EasyPrivacy built in, kills YouTube ads at the source, adds unique list-free Smart Detection, and self-updates its filters with signed data — no re-review, no remote code.</p></div>
         <div class="card reveal"><h3>Does it collect my data?</h3><p>No. No account, no analytics, no telemetry. Every bit of blocking runs locally on your device and nothing about you ever leaves it.</p></div>
         <div class="card reveal"><h3>Who makes it?</h3><p>Supreme AdBlock is crafted by <a href="https://carbonstealth.eu" target="_blank" rel="noopener" style="color:var(--cyan)">Carbon Stealth</a>, an EU-based studio.</p></div>
+        <div class="card reveal"><h3>Does it stop pop-unders and anti-adblock walls?</h3><p>Yes. Known pop-under ad hosts are refused at window.open, and 18 anti-adblock scriptlets neutralise detector scripts before the page runs — kept current through signed filter data, never remote code.</p></div>
         <div class="card reveal"><h3>Which browsers are supported?</h3><p>Google Chrome and Chromium-based browsers (Edge, Brave), built on Manifest V3 for long-term compatibility.</p></div>
       </div>
     </div>

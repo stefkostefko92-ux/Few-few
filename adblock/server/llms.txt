@@ -18,6 +18,10 @@
 - Procedural cosmetic filters (uBlock-style: :has-text, :matches-css, :upward, :xpath, :remove).
 - Signed self-updating filters (Ed25519), so new ad networks are fixed within hours with no store re-review and no remote code.
 - Smart Detection: a list-free heuristic that blocks ads no filter list knows yet.
+- Anti-adblock scriptlet engine: 18 scriptlets (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) injected before page scripts; a signed live channel delivers per-site directives as data, never code.
+- Pop-under blocker: 2,700+ known popup-ad hosts refused at window.open.
+- Per-page log of blocked requests, per-site controls, filter-list subscriptions with daily refresh, engine health diagnostics.
+- Localised UI: English, Bulgarian, Italian, German.
 - Tracking-parameter stripping (utm_*, fbclid, gclid) and optional malware-domain protection (URLhaus).
 - 100% local processing; nothing about the user ever leaves the device.
 
@@ -34,4 +38,4 @@ Q: Who makes it? A: Carbon Stealth, an EU-based studio (carbonstealth.eu).
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
 - Maker: https://carbonstealth.eu
 
-_Last updated: July 2026._
+_Last updated: September 2026 (version 5.0.0)._

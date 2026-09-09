@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-4.7.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.0.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -89,18 +89,28 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
-> **Reviewer note (MAIN-world scriptlets):** v4.7.0 adds a uBlock-Origin-style
-> scriptlet engine. The extension registers **one** locally-bundled MAIN-world
-> content script that neutralises anti-adblock detectors. The engine CODE ships
-> in the package (`scriptlets/engine.js` → generated `scriptlets/main.js`); the
-> per-site directive list is baked at build time from `scriptlets/list.txt`.
-> Optional per-site directive DATA (not code) may also arrive via the signed
-> filters.json and is re-validated in the engine. No code is ever fetched or
+> **Reviewer note (MAIN-world scriptlets):** the extension registers **one**
+> locally-bundled MAIN-world content script, `scriptlets/main.js`, that
+> neutralises anti-adblock detectors (the technique established ad blockers
+> use). `main.js` and `scriptlets/policy.js` ship in this package; `main.js` is
+> generated from `scriptlets/engine.js` in our source repository (the template
+> itself is not packaged).
+> The engine is **not an interpreter**: it exposes a fixed allowlist of 18 named
+> routines (set-constant, abort-on-property-read, abort-on-property-write,
+> abort-current-script, abort-on-stack-trace, no-setTimeout-if, no-setInterval-if,
+> addEventListener-defuser, json-prune, no-fetch-if, no-window-open-if,
+> remove-attr, remove-class, href-sanitizer, remove-node-text, nowebrtc,
+> set-cookie, remove-cookie), each with a fixed argument grammar (property names,
+> CSS selectors, text needles, values from a fixed dictionary). Directive DATA
+> (host + routine name + arguments) is baked at build time from
+> `scriptlets/list.txt`; optionally the Ed25519-signed `filters.json` may add
+> host-scoped directives, which are re-validated independently in the service
+> worker and again inside the engine. No code is ever fetched, evaluated or
 > executed from the network — same single purpose (ad/tracker blocking).
 
 ## 6. Dashboard steps
 
-1. **New item** → upload `dist/supreme-adblock-4.7.0.zip`.
+1. **New item** → upload `dist/supreme-adblock-5.0.0.zip`.
 2. Fill the listing (§3), upload the icon + 5 screenshots + promo tiles (§2).
 3. Complete the **Privacy practices** tab (§4) and paste permission
    justifications (§5).
@@ -108,7 +118,7 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (4.7.0)
+- [ ] `manifest.json` and `package.json` versions match (5.0.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
