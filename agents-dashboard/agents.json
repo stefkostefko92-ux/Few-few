@@ -13492,7 +13492,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 148
+        "lessons": 152
       },
       "evolution": [
         {
@@ -13542,9 +13542,20 @@
           "date": "2026-07-28",
           "event": "v14.3 — учене",
           "detail": "Научи: Apple age rating скалата е 4+/9+/13+/16+/18+ (13+/16+/18+ добавени към старите 4+/9+); … (+11 още)"
+        },
+        {
+          "version": "14.7.0",
+          "date": "2026-09-09",
+          "event": "v14.7 — учене",
+          "detail": "Научи: declarativeNetRequestFeedback е официално описано като „Enables debugging features for … (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-09",
+          "type": "learning",
+          "summary": "Научи: „declarativeNetRequestFeedback е официално описано като „Enables debugging features for …\" (+3 още)"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
