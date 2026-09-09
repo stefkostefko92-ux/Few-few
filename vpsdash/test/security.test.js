@@ -442,3 +442,12 @@ test('оценката одитира и САМИЯ панел, не само м
   assert.equal(ids({ ...здрав, idleMinutes: 1440 }).has('panel-long-idle'), true);
   assert.equal(ids({ ...здрав, sessionTtlHours: 24, idleMinutes: 60 }).has('panel-long-session'), false);
 });
+
+
+test('смяната на парола е под sudo, само при запис, и е забранена за съсед', async () => {
+  const { PEER_DENY } = await import('../src/routes.js');
+  // Открадната сесия иначе сменя ключа на собственика и го заключва отвън.
+  assert.equal(needsSudo('/api/auth/password', {}, { mutating: true }), true);
+  assert.equal(needsSudo('/api/auth/password', {}), false, 'няма GET, но правилото е „при запис“');
+  assert.ok(PEER_DENY.some((rx) => rx.test('/api/auth/password')), 'съседът никога не сменя паролата на собственика');
+});

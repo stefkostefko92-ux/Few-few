@@ -137,12 +137,14 @@
         bypassReloaded = true;
         if (persisted) {
           try {
-            chrome.runtime.sendMessage({ type: "ytBypass" }, () => {
-              try { location.reload(); } catch {}
+            chrome.runtime.sendMessage({ type: "ytBypass" }, (res) => {
+              // Reload only once the service worker confirmed the allow-all
+              // rule is in place; otherwise the reload would land on a page
+              // that is still blocked (a pointless reload). The sessionStorage
+              // flag above already prevents any loop.
+              if (res && res.ok) { try { location.reload(); } catch {} }
             });
-          } catch {
-            try { location.reload(); } catch {}
-          }
+          } catch {}
           return;
         }
       }
@@ -185,8 +187,9 @@
     const allowed = (data.allowlist || []).some(hostMatches);
     bgBypass = data.ytBypassUntil && data.ytBypassUntil > Date.now();
     applyConfig(data.liveConfig && data.liveConfig.youtube);
-    // Run even when bypassing: ads now play, so auto-skip still fast-forwards
-    // them; only the enforcement reload is gated on the bypass state.
+    // Run even when bypassing, but hands-off on the player: during a bypass
+    // run() skips the detectable fast-forward (see `showing` gate) and only
+    // clicks the native Skip button + clears enforcement overlays.
     if (enabled && ytOn && !allowed) start();
   });
 

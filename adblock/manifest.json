@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Supreme AdBlock",
-  "version": "4.4.1",
+  "version": "4.6.0",
   "description": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
   "author": "Carbon Stealth",
   "homepage_url": "https://carbonstealth.eu",
@@ -19,6 +19,9 @@
   "host_permissions": [
     "<all_urls>"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -203,6 +206,11 @@
         "id": "headers",
         "enabled": true,
         "path": "rules/headers.json"
+      },
+      {
+        "id": "privacy",
+        "enabled": true,
+        "path": "rules/privacy.json"
       }
     ]
   }

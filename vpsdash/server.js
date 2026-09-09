@@ -303,6 +303,10 @@ const router = buildRouter({
   // (деплой, ъпдейт, срив) го изчистваше и вече отменен откраднат токен
   // проработваше отново — до 12 часа.
   revokedSessions,
+  // Последната приета 2FA стъпка преживява рестарт — иначе заснет и вече
+  // изгорен код оживява за остатъка от прозореца след деплой (виж totp.js).
+  lastTotpStep: revokedSessions.getTotpStep(),
+  persistTotpStep: (step) => revokedSessions.setTotpStep(step),
 });
 const statics = serveStatic(path.join(__dirname, 'public'));
 

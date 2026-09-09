@@ -29,6 +29,14 @@ on every change so you can tell installs are current.
   "cosmetic": [                 // extra CSS selectors hidden on all sites
     ".sneaky-ad-slot"
   ],
+  "scriptlets": [               // live uBO-style ##+js directives — DATA only
+    { "h": "example.com",       //   host ("" = every site); subdomains match;
+      "n": "set-constant",      //   scriptlet name or uBO alias (set, aopr, aopw,
+      "a": ["adBlockOn", "false"] }, // acs, nostif, nosiif, aeld, json-prune,
+    { "h": "",                  //   no-fetch-if, nowoif, ra, rc, href-sanitizer,
+      "n": "nowoif",            //   rmnt, nowebrtc) — nothing else is accepted,
+      "a": ["/popads/"] }       //   NO trusted-*; args validated twice (service
+  ],                            //   worker + engine); never on YouTube/core CDN
   "youtube": {
     "hide":  [ "ytd-new-ad-renderer" ],   // extra YT ad UI to hide
     "skip":  [ ".ytp-new-skip-button" ],  // extra skip buttons to click

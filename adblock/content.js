@@ -19,6 +19,19 @@
   let unhideSelectors = [];
   let genericHideHost = false; // EasyList $generichide за този хост
 
+  // Live scriptlets (Level 2): hand the signed filters.json directives to the
+  // MAIN-world engine as a JSON STRING (objects don't cross worlds). The engine
+  // re-validates, filters by this frame's host and ignores duplicates. When the
+  // extension is off / the site is allowlisted the engine isn't registered, so
+  // the event simply has no listener.
+  function deliverScriptlets(cfg) {
+    const list = cfg && Array.isArray(cfg.scriptlets) ? cfg.scriptlets : [];
+    if (!list.length) return;
+    try {
+      document.dispatchEvent(new CustomEvent("sa-scriptlets", { detail: JSON.stringify(list) }));
+    } catch {}
+  }
+
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
   // третирал всички *.co.uk като first-party.
@@ -146,8 +159,9 @@
     // ReDoS guard: капваме дължината И броя квантори (*, +, {n}). Един квантор
     // е линеен; два+ подредени (напр. [a-z]*[a-z]*x) дават полиномиален/
     // катастрофичен backtracking, който замразява таба.
-    const q = (m[1].match(/[*+]|\{\d/g) || []).length;
+    const q = (m[1].match(/[*+?]|\{\d/g) || []).length;
     if (m[1].length > 200 || q > 1) return null;
+    if (/\)[*+?{]/.test(m[1])) return null; // any quantified group is ReDoS-prone (nested parens hide from [^)]* scans)
     try {
       return new RegExp(m[1], m[2]);
     } catch {
@@ -486,6 +500,7 @@
       pickerMap = data.customHidden || {};
       userText = data.userFilters || "";
       liveCosmetic = (data.liveConfig && data.liveConfig.cosmetic) || [];
+      deliverScriptlets(data.liveConfig);
       rebuildSelectors();
       if (enabled && !allowed) {
         start();
@@ -532,8 +547,10 @@
     if (changes.customHidden || changes.userFilters || changes.liveConfig) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
       if (changes.userFilters) userText = changes.userFilters.newValue || "";
-      if (changes.liveConfig)
+      if (changes.liveConfig) {
         liveCosmetic = (changes.liveConfig.newValue && changes.liveConfig.newValue.cosmetic) || [];
+        deliverScriptlets(changes.liveConfig.newValue);
+      }
       rebuildSelectors();
       if (enabled) hide();
     }

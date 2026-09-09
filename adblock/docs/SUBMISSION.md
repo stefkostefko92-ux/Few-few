@@ -74,8 +74,11 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 - **contextMenus** — the right-click "Block an element here" entry.
 - **scripting** — register one locally-bundled MAIN-world script
   (`scriptlets/main.js`) that neutralises anti-adblock detectors (uBlock-style
-  `##+js` scriptlets). The directive map is baked at build time; nothing is
-  fetched or `eval`-ed at runtime, no personal data is read, nothing is sent.
+  `##+js` scriptlets). The directive map is baked at build time; optional
+  per-site directive DATA (host + name + arguments, never code) may also arrive
+  via our Ed25519-signed filters.json and is re-validated against the same
+  allowlist. No code is fetched or `eval`-ed at runtime, no personal data is
+  read, nothing is sent.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
@@ -84,8 +87,9 @@ Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
 > content script that neutralises anti-adblock detectors. The engine CODE ships
 > in the package (`scriptlets/engine.js` → generated `scriptlets/main.js`); the
 > per-site directive list is baked at build time from `scriptlets/list.txt`.
-> Nothing is fetched or executed from the network — same single purpose
-> (ad/tracker blocking), no remote code.
+> Optional per-site directive DATA (not code) may also arrive via the signed
+> filters.json and is re-validated in the engine. No code is ever fetched or
+> executed from the network — same single purpose (ad/tracker blocking).
 
 ## 6. Dashboard steps
 

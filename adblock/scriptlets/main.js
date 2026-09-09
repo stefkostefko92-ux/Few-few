@@ -18,6 +18,13 @@
 (function () {
   "use strict";
 
+  // Captured before any page script or IMPL (json-prune) can wrap them.
+  var nativeParse = JSON.parse;
+  var nativeStringify = JSON.stringify;
+  var nativeSlice = Array.prototype.slice;
+  var nativeIsArray = Array.isArray;
+  var nativeHasOwn = Object.prototype.hasOwnProperty;
+
   // ---- shared helpers -----------------------------------------------------
 
   // Turn a uBO-style needle into a RegExp. `/re/flags` → that regexp; a plain
@@ -30,13 +37,16 @@
     var m = /^\/(.+)\/([a-z]*)$/.exec(s);
     if (m) {
       var body = m[1];
-      var q = (body.match(/[*+]|\{\d/g) || []).length;
-      if (body.length > 200 || q > 2) return null;
-      // Reject a quantified group that also contains a quantifier — the classic
-      // catastrophic-backtracking shape like (a+)+ or (a*)* (q can be ≤2) — and a
-      // quantified group with an alternation, which overlaps like (a|a)+.
-      if (/\([^)]*[*+][^)]*\)[*+?]/.test(body)) return null;
-      if (/\([^)]*\|[^)]*\)[*+]/.test(body)) return null;
+      // ReDoS guard: cap length, cap quantifiers (INCLUDING "?") and reject ANY
+      // quantified group — (a+)+, (a|a)+, ((.)|(.))+, ((a|a)?)+, (.?){30} are
+      // all catastrophic and all end a group with a quantifier. Structural
+      // scans like /\([^)]*…\)/ are blind across nested ")" so we don't rely
+      // on them. Rejected patterns match NOTHING (see needleMatcher).
+      var q = (body.match(/[*+?]|\{\d/g) || []).length;
+      // q ≤ 1: two quantifiers already allow polynomial blowup (/.*.*=/ ≈ 4s
+      // on a 5k string) — parity with content.js.
+      if (body.length > 200 || q > 1) return null;
+      if (/\)[*+?{]/.test(body)) return null;
       try {
         return new RegExp(body, m[2].replace(/[^gimsuy]/g, ""));
       } catch (e) {
@@ -131,7 +141,11 @@
   // A missing/empty needle matches everything; "!" inverts the result.
   function needleMatcher(raw) {
     var neg = typeof raw === "string" && raw.charAt(0) === "!";
-    var re = toReg(neg ? raw.slice(1) : raw);
+    var body = neg ? raw.slice(1) : raw;
+    var re = toReg(body);
+    // A needle that was REJECTED by the ReDoS guard must match nothing —
+    // never "everything" — or a bad regex would defuse every timer/listener.
+    if (body && !re) return function () { return false; };
     return function (str) {
       var m = re ? re.test(str) : true;
       return neg ? !m : m;
@@ -217,7 +231,7 @@
     "abort-current-script": function (chain, search) {
       var r = resolve(chain);
       if (!r) return;
-      var re = toReg(search);
+      var match = needleMatcher(search);
       var val;
       try { val = r.owner[r.prop]; } catch (e) {}
       var msg = noise();
@@ -225,7 +239,7 @@
         Object.defineProperty(r.owner, r.prop, {
           get: function () {
             var s = document.currentScript;
-            if (s && s.tagName === "SCRIPT" && (!re || re.test(s.textContent || ""))) {
+            if (s && s.tagName === "SCRIPT" && match(s.textContent || "")) {
               throw new ReferenceError(msg);
             }
             return val;
@@ -273,8 +287,8 @@
     // addEventListener-defuser(typeSearch, funcSearch): swallow addEventListener
     // registrations whose type and/or listener source match.
     "addEventListener-defuser": function (typeSearch, funcSearch) {
-      var reType = toReg(typeSearch);
-      var reFunc = toReg(funcSearch);
+      var mType = needleMatcher(typeSearch);
+      var mFunc = needleMatcher(funcSearch);
       var proto = window.EventTarget && EventTarget.prototype;
       if (!proto || typeof proto.addEventListener !== "function") return;
       var orig = proto.addEventListener;
@@ -283,7 +297,7 @@
           var ls = typeof listener === "function" ? listener.toString()
             : listener && typeof listener.handleEvent === "function" ? listener.handleEvent.toString()
             : String(listener);
-          if ((!reType || reType.test(String(type))) && (!reFunc || reFunc.test(ls))) return;
+          if (mType(String(type)) && mFunc(ls)) return;
         } catch (e) {}
         return orig.apply(this, arguments);
       };
@@ -379,6 +393,64 @@
         });
       });
     },
+
+    // href-sanitizer(selector, source): rewrite tracking/redirect links to
+    // their real destination. source = "text" (default: the link's visible URL
+    // text), "?param" (a query parameter of the href) or "[attr]" (another
+    // attribute). Only http(s) targets are accepted, so a link can never be
+    // pointed at javascript:/data: — this cleans links, it cannot inject them.
+    "href-sanitizer": function (selector, source) {
+      if (!selector) return;
+      var src = source || "text";
+      onEachMutation(function () {
+        document.querySelectorAll(selector).forEach(function (a) {
+          try {
+            var href = a.getAttribute("href") || "";
+            var target = "";
+            if (src === "text") target = (a.textContent || "").trim();
+            else if (src.charAt(0) === "?") target = new URL(href, location.href).searchParams.get(src.slice(1)) || "";
+            else if (src.charAt(0) === "[" && src.slice(-1) === "]") target = a.getAttribute(src.slice(1, -1)) || "";
+            if (/^https?:\/\/[^\s"'<>]+$/.test(target) && target !== href) a.setAttribute("href", target);
+          } catch (e) {}
+        });
+      });
+    },
+
+    // remove-node-text(nodeName, search): blank the text of matching nodes
+    // (e.g. "script" + a needle) as they appear. Best-effort in Chromium:
+    // parser-inserted inline scripts run before mutation records are
+    // delivered, so it is most effective for dynamically inserted nodes and
+    // non-script text. `search` is required (an empty needle would blank all).
+    "remove-node-text": function (nodeName, search) {
+      if (!nodeName || !search) return;
+      var tag = String(nodeName).toLowerCase();
+      var match = needleMatcher(search);
+      onEachMutation(function () {
+        document.querySelectorAll(tag).forEach(function (n) {
+          try {
+            if (n.nodeType !== 1 || String(n.tagName).toLowerCase() !== tag) return;
+            if (n.textContent && match(n.textContent)) n.textContent = "";
+          } catch (e) {}
+        });
+      });
+    },
+
+    // nowebrtc(): block RTCPeerConnection in this frame (stops WebRTC-based
+    // local-IP leaks / fingerprinting). Directive-scoped — only where listed,
+    // since it also disables legitimate calls on that page.
+    "nowebrtc": function () {
+      ["RTCPeerConnection", "webkitRTCPeerConnection"].forEach(function (n) {
+        try {
+          if (!(n in window)) return;
+          var blocked = function () { throw new Error("RTCPeerConnection is blocked"); };
+          Object.defineProperty(window, n, {
+            get: function () { return blocked; },
+            set: function () {},
+            configurable: false,
+          });
+        } catch (e) {}
+      });
+    },
   };
 
   // ---- per-site directive map (baked at build time) -----------------------
@@ -394,24 +466,152 @@
     var chain = [""]; // global bucket always runs
     if (host) {
       var parts = host.split(".");
-      for (var i = 0; i < parts.length - 1; i++) chain.push(parts.slice(i).join("."));
+      // nativeSlice: a page-replaced Array.prototype.slice must not corrupt the
+      // host chain (it would silently drop every live directive for this frame).
+      for (var i = 0; i < parts.length - 1; i++) chain.push(nativeSlice.call(parts, i).join("."));
     }
     return chain;
   }
 
   function runDirective(d) {
-    if (!Array.isArray(d) || !d.length) return;
+    if (!nativeIsArray(d) || !d.length) return;
     var name = d[0];
+    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return;
     var fn = IMPL[name];
     if (typeof fn !== "function") return;
-    try { fn.apply(null, d.slice(1)); } catch (e) {}
+    try { fn.apply(null, nativeSlice.call(d, 1)); } catch (e) {}
   }
 
+  // ---- bootstrap: baked directives ----------------------------------------
   try {
     var chain = hostChain();
     for (var i = 0; i < chain.length; i++) {
       var list = MAP[chain[i]];
       if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
     }
+  } catch (e) {}
+
+  // ---- live directives (Level 2) -----------------------------------------
+  // Delivered by our ISOLATED content script from the Ed25519-signed,
+  // anti-rollback filters.json as a JSON STRING on a DOM event (objects don't
+  // cross worlds). Re-validated HERE against the same rules as the service
+  // worker (name allowlist = IMPL keys, argument safety, set-constant
+  // dictionary, selector/attribute/tag policy) — the engine never trusts a
+  // DOM message blindly. Threat model, stated honestly: a page can dispatch
+  // the same event, but only with directives we already allow, only against
+  // ITSELF in its own frame — no privilege escalation, no code/network sink.
+  // A cooperating page CAN opt itself out (pre-apply + restore its own APIs);
+  // it cannot reach other frames or other sites. The channel is therefore for
+  // non-timing-critical directives; timing-critical ones are baked into MAP.
+  // Live directives always carry an explicit host and never run on core
+  // video/CDN hosts (YouTube has dedicated handling).
+  var ARG_MAX = 400;
+  var NAME_OK = /^[a-zA-Z][\w.-]{0,60}$/;
+  // Same selector policy as the service worker's safeSelector: never target
+  // form controls / password fields / the whole page from a live directive.
+  var FORM_TARGET = /(^|[\s>+~,(])(input|button|select|textarea|form|label|fieldset|option)([\s>+~,.:\[)#]|$)/i;
+  // Sensitive tokens ANYWHERE in the value (not just as a full literal), so
+  // [type^=pass], [name$=pwd], [autocomplete=cc-number], [id*=password] are
+  // all refused; id/class/aria-label included since they also target fields.
+  var FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder|id|class|aria-label)\s*[*^$|~]?=\s*["']?[^\]"']*?(pass|pwd|\bpin\b|secret|token|cc-|cvc|cvv|otp|ssn|iban|login|user|email|tel\b|card[-_ ]?num)/i;
+  var UNIVERSAL = /(^|[\s>+~,(])\*(?![=\]])/;
+  var UNSAFE_SEL = ["*", "html", "body", ":root", "head", "div", "span", "a", "img",
+    "main", "section", "article", "video", "iframe", "form", "input", "button",
+    "label", "select", "textarea", "fieldset", "option", "nav", "header", "footer",
+    "ul", "ol", "li", "p", "table", "tr", "td", "th", "h1", "h2", "h3", "h4", "h5", "h6"];
+  function safeSel(s) {
+    if (typeof s !== "string") return false;
+    s = s.trim();
+    if (s.length < 3 || s.length > 400 || UNSAFE_SEL.indexOf(s.toLowerCase()) >= 0) return false;
+    if (FORM_TARGET.test(s) || FORM_ATTR.test(s)) return false;
+    if (UNIVERSAL.test(s) || s.charAt(0) === ":") return false;
+    return true;
+  }
+  // Attributes whose removal downgrades page security/semantics — never live.
+  var ATTR_DENY = /^(sandbox|type|name|autocomplete|required|disabled|readonly|rel|integrity|crossorigin|nonce|csp|referrerpolicy|href|src|srcdoc|action|method|formaction|allow)$/i;
+  function attrsOk(list) {
+    var parts = String(list).split(/[\s,|]+/);
+    var any = false;
+    for (var i = 0; i < parts.length; i++) {
+      if (!parts[i]) continue;
+      if (!/^[a-zA-Z][\w-]*$/.test(parts[i]) || ATTR_DENY.test(parts[i])) return false;
+      any = true;
+    }
+    return any;
+  }
+  var TAG_OK = /^[a-z][a-z0-9-]*$/i;
+  var TAG_DENY = /^(input|textarea|select|option|button|form|label|html|body|head)$/i;
+  // Core video / CDN hosts: live directives never run here.
+  var NEVER_LIVE = ["googlevideo.com", "ytimg.com", "youtube.com", "ggpht.com",
+    "gstatic.com", "googleapis.com", "google.com", "fbcdn.net", "cdninstagram.com"];
+  function argOk(a) {
+    return typeof a === "string" && a.length <= ARG_MAX &&
+      !/__proto__|constructor|prototype/.test(a) &&
+      !/<\/?script|<\/?style|-->/i.test(a);
+  }
+  function directiveOk(d) {
+    if (!nativeIsArray(d) || d.length < 1 || d.length > 3) return false;
+    var name = d[0], args = nativeSlice.call(d, 1);
+    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return false;
+    for (var k = 0; k < args.length; k++) if (!argOk(args[k])) return false;
+    switch (name) {
+      case "set-constant":
+        return args.length === 2 && NAME_OK.test(args[0]) && tokenValue(args[1]).ok;
+      case "abort-on-property-read":
+      case "abort-on-property-write":
+        return args.length === 1 && NAME_OK.test(args[0]);
+      case "abort-current-script":
+        return args.length >= 1 && NAME_OK.test(args[0]);
+      case "no-setTimeout-if":
+      case "no-setInterval-if":
+        return args.length >= 1 && (args.length < 2 || /^\d{1,7}$/.test(args[1]));
+      case "no-fetch-if":
+      case "no-window-open-if":
+        return args.length === 1;
+      case "remove-attr":
+        return args.length >= 1 && attrsOk(args[0]) && (args.length < 2 || safeSel(args[1]));
+      case "remove-class":
+        return args.length >= 1 && (args.length < 2 || safeSel(args[1]));
+      case "href-sanitizer":
+        return args.length >= 1 && safeSel(args[0]);
+      case "remove-node-text":
+        return args.length === 2 && TAG_OK.test(args[0]) && !TAG_DENY.test(args[0]);
+      case "nowebrtc":
+        return args.length === 0;
+      default:
+        return args.length >= 1; // addEventListener-defuser, json-prune
+    }
+  }
+  var liveSeen = Object.create(null);
+  function applyLive(raw) {
+    var items;
+    try { items = nativeParse(String(raw)); } catch (e) { return; }
+    if (!nativeIsArray(items)) return;
+    var chain = hostChain();
+    for (var p = 0; p < chain.length; p++) if (NEVER_LIVE.indexOf(chain[p]) >= 0) return;
+    for (var i = 0; i < items.length && i < 500; i++) {
+      var it = items[i];
+      if (!it || typeof it !== "object") continue;
+      // Read once and materialise: a poisoned getter can't swap values between
+      // validation and execution.
+      var h = it.h, d = it.d;
+      if (typeof h !== "string" || h === "" || chain.indexOf(h) < 0) continue; // explicit host only
+      if (!nativeIsArray(d)) continue;
+      d = nativeSlice.call(d);   // native, so a page-replaced slice cannot split validate/execute
+      if (!directiveOk(d)) continue;
+      var key = nativeStringify(d);
+      if (liveSeen[key]) continue;                 // dedupe: re-delivery / replay
+      liveSeen[key] = true;
+      runDirective(d);
+    }
+  }
+  try {
+    // Capture listener on window: registered at document_start (before any
+    // page script), it fires before any document-level listener, and the page
+    // holds no reference to remove it. content.js dispatches on document; the
+    // capture phase runs regardless of `bubbles`.
+    window.addEventListener("sa-scriptlets", function (ev) {
+      try { applyLive(ev && ev.detail); } catch (e) {}
+    }, true);
   } catch (e) {}
 })();

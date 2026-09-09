@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "resourceTypes": ["ping"],
+      "domainType": "thirdParty"
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "requestDomains": [
+        "coinhive.com",
+        "coin-hive.com",
+        "authedmine.com",
+        "jsecoin.com",
+        "crypto-loot.com",
+        "cryptoloot.pro",
+        "coinimp.com",
+        "webminepool.com",
+        "webminerpool.com",
+        "minero.cc",
+        "webmine.pro",
+        "hashing.win",
+        "minr.pw",
+        "cryptonoter.com",
+        "coin-have.com",
+        "ppoi.org",
+        "cnhv.co",
+        "ad-miner.com",
+        "coinblind.com",
+        "coinnebula.com",
+        "monerominer.rocks",
+        "mineralt.io",
+        "jscoinminer.com",
+        "crypto-webminer.com",
+        "minescripts.info",
+        "cryptaloot.pro",
+        "coinpot.co",
+        "afminer.com",
+        "browsermine.com"
+      ],
+      "resourceTypes": [
+        "script", "xmlhttprequest", "websocket", "sub_frame", "other",
+        "image", "media", "font", "stylesheet", "object", "ping"
+      ]
+    }
+  }
+]

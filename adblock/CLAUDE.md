@@ -52,7 +52,9 @@ bash tools/package.sh                         # билд + самопровер�
   които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
 - **Scriptlets (`##+js`):** точно uBOL моделът — КОДЪТ (`scriptlets/engine.js`) е
   фиксиран в пакета; per-site директивите се **пекат при билда** от `list.txt` в
-  `scriptlets/main.js`. Никакви scriptlet-и не идват от мрежата и не се eval-ват.
+  `scriptlets/main.js`. Scriptlet КОД никога не идва от мрежата; live директиви (само
+  ДАННИ: host + име + аргументи) идват единствено от Ed25519-подписания `filters.json`
+  и се **ре-валидират в engine-а** срещу същия allowlist. Нула eval.
   Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
   `set-constant` стойностите — само от фиксиран речник. **След промяна на
   engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.

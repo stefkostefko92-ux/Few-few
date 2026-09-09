@@ -1,14 +1,15 @@
 {
-  "easylist": 3706,
-  "easyprivacy": 8879,
-  "urlhaus": 507,
-  "cosmeticGeneric": 13647,
-  "cosmeticSpecific": 16350,
-  "genericHide": 183,
+  "easylist": 3735,
+  "easyprivacy": 8990,
+  "urlhaus": 380,
+  "cosmeticGeneric": 13634,
+  "cosmeticSpecific": 16705,
+  "genericHide": 184,
   "ad_rules": 237,
   "youtube_rules": 11,
   "removeparam": 36,
-  "generated": "2026-07-12",
   "surrogates": 11,
-  "headers": 1
+  "headers": 1,
+  "privacy": 2,
+  "generated": "2026-09-08"
 }

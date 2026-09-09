@@ -1,5 +1,80 @@
 # Changelog
 
+## 4.6.0
+
+Live scriptlet канал + нови scriptlet-и + toggle за privacy рулсета:
+- **Live scriptlet канал (Level 2)** — най-голямата останала uBO-липса. Подписаният
+  `filters.json` вече може да носи `scriptlets: [{h, n, a}]` (само **данни**: host, име,
+  аргументи). Канонизация на uBO алиаси + валидация в background (същите правила като
+  билда), доставка към MAIN-world engine-а като JSON низ на DOM събитие, и
+  **ре-валидация в самия engine** (allowlist = вградените имена, argument safety,
+  set-constant речник). Страница може само да (пре)конфигурира блокирането срещу
+  СЕБЕ СИ с вече позволени директиви — без ескалация, без code/network sink;
+  кооперираща страница може само да се откаже от live директиви за себе си
+  (каналът не е timing-critical). Live директивите са САМО с изричен host и никога
+  върху YouTube/core CDN (двойно: service worker + engine).
+- **Adversarial review на канала (2 Medium + 2 Low, всички затворени):** ReDoS
+  guard-ът в `toReg` беше заобиколим (`((.)|(.))+~`, `(.?){30}` — структурните
+  проверки са слепи през вложени скоби, `?` не се броеше) → вече се отхвърля ВСЯКА
+  квантифицирана група + се брои `?`; отхвърлен regex мачва НИЩО (fail-safe), не
+  „всичко". Същото в `content.js`. Глобалните live директиви можеха да минат на
+  YouTube → live = само изричен host + engine-ът никога не прилага live на core
+  video/CDN. Listener-ът е capture на `window` (преди всеки page скрипт, без
+  handle за махане). Live селектори/атрибути/тагове минават през `safeSelector`
+  + denylist (`sandbox`, `type`, `href`, `src`… не се махат; `input/textarea/form`
+  не се таргетират) — в service worker-а И в engine-а. `JSON.parse` е capture-нат
+  при старт; `it.d` се чете веднъж и се материализира (poisoned getter не може да
+  смени стойност между валидация и изпълнение); `hasOwnProperty` в `runDirective`.
+- **Red-team (Разбивача) след поправките — 3 възпроизведени, 0 HIGH, всички затворени:**
+  полиномен ReDoS `/.*.*=/` (q=2, без група) → квантори ≤1 (паритет с `content.js`);
+  `FORM_ATTR` хващаше само пълни литерали (`[type^=pass]`, `[name$=pwd]`,
+  `[autocomplete=cc-number]` минаваха) → чувствителни токени навсякъде в стойността +
+  `id/class/aria-label`, синхронно в engine и service worker (пази и live cosmetic);
+  подменен `Array.prototype.slice` разцепваше валидирано/изпълнено (само самонараняване)
+  → `slice`/`isArray`/`hasOwnProperty` capture-нати при старт. Издържали: cross-frame/
+  cross-world ескалация, атрибутна denylist, NEVER_LIVE/homograph/IDN, експоненциален ReDoS.
+  Hook-овете се слагат при пристигане (след document_start) → за не-timing-critical
+  директиви; timing-critical остават печени при билда. Нула remote code.
+- **Нови scriptlet-и:** `href-sanitizer` (пренаписва tracking/redirect линкове към
+  реалната цел — само http(s), не може да инжектира `javascript:`), `remove-node-text`/
+  `rmnt` (изчиства текст на възли по needle — best-effort за inline скриптове в Chromium),
+  `nowebrtc` (блокира RTCPeerConnection — WebRTC IP leak/fingerprint; само където е
+  указан).
+- **Toggle „Block tracking beacons & cryptominers“** за `privacy` рулсета (вкл. по
+  подразбиране) — по-строг е от uBO за `sendBeacon`, затова е изключваем per user.
+- **Нови икони (Cosmic Slate).** Целият icon set (16/32/48/128 + Store icon, promo
+  tile, marquee) е прерисуван 1:1 по новото лого на сайта (`favicon.svg`): тъмна
+  заоблена плочка, cyan щит-контур + мълния. Оптична корекция per размер (по-дебел
+  щрих без пълнеж на 16/32). Старият „swoosh“ sampler е премахнат.
+- **Сървър:** `filters.json` v2 с документирано `scriptlets: []` поле; схемата в
+  `server/README.md` (данни, двойно валидирани, без trusted-*).
+
+## 4.5.0
+
+Сигурност + нови защити (security-пас по целия extension):
+- **Нов `privacy` рулсет** (данни, DNR): блокира **third-party hyperlink
+  auditing и beacon-и** (`<a ping>` / sendBeacon към чужди домейни — чист
+  tracking, нула легитимна употреба; first-party остава, за да не чупим сайтове)
+  и **cryptomining** домейни (Coinhive/JSEcoin/CryptoLoot и наследници —
+  browser-майнъри, които крадат CPU). Включен по подразбиране с глобалния toggle.
+- **`ytBypass` защита в дълбочина:** bypass-ът вече се приема САМО от YouTube
+  таб (проверка на `sender.tab.url`) — подправен enforcement елемент на друг
+  сайт не може да изключи блокирането.
+- **Изричен CSP** за страниците на разширението (`script-src 'self';
+  object-src 'self'`) — документира и фиксира строгата MV3 политика.
+- Одит на sink-овете: всички `innerHTML` са статични литерали; `sender.id`
+  проверка на всички съобщения; без `externally_connectable`; без eval/remote
+  code. `resources/*` умишлено БЕЗ `use_dynamic_url` (DNR `extensionPath`
+  redirect не работи с dynamic URL — същото прави uBO Lite).
+- **Обновени филтър-листи** от живите източници към 2026-09-08 (EasyList 3735,
+  EasyPrivacy 8990, URLhaus 380; +355 домейн-специфични козметични правила) — 2
+  месеца нови рекламни/tracker домейни. Верифицирано: 0 block правила достигат
+  main_frame; бюджет 13 023 / 30 000 статични правила.
+- **YouTube embed bypass** (adversarial review): `ytBypass` вече проверява URL-а на
+  самия frame (`sender.url`, задава се от браузъра), не на таба — иначе YouTube
+  embed на чужд сайт се отхвърляше, макар bypass-ът нарочно да покрива `sub_frame`.
+  Reload само след потвърден `ok` от service worker-а.
+
 ## 4.4.1
 
 Поправка: YouTube спираше да зарежда клипове след ~3 гледания (анти-адблок enforcement).
