@@ -33,6 +33,8 @@ rules/                  DNR статични правила: ad_rules + youtube_
 popup/ · options/       UI (popup + настройки)
 icons/ · _locales/      икони · локализация
 tools/                  build_filters.mjs (EasyList→DNR) + build_scriptlets.mjs + генератори + package.sh
+                        + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
+                        smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
 tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
 store/ · docs/          store графики + листинг/submission текстове
 ```

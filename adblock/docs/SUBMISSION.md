@@ -31,7 +31,8 @@ manifest-referenced file is present.
 | Marquee | 1400×560 | `store/marquee_1400x560.png` | optional (featuring) |
 
 Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
-`python3 store/screenshots/build.py` then re-render (see that script's header).
+`python3 store/screenshots/build.py` (renders the real popup with demo numbers
+via headless Chromium; see that script's header).
 
 ## 3. Listing fields (paste as-is)
 

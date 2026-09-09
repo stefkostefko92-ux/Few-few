@@ -25,10 +25,17 @@ Supreme AdBlock keeps the web clean and fast, without watching what you do.
 - Bypasses "please disable your adblocker" walls
 - Element picker, hide anything on a page with one click
 - Advanced "My filters" with procedural selectors and anti-adblock scriptlets
-- Per-site allowlist for sites you want to support
-- Daily signed, data-only filter updates, so blocking never goes stale
+- Per-site allowlist for sites you want to support, plus a per-site switch
+  for cosmetic filtering if a layout ever breaks
+- "Blocked on this page" log in the popup: see exactly what was stopped
+- Subscribe to any filter list by URL (refreshed daily)
+- Pop-under blocker: thousands of known pop-up domains can no longer open
+  windows behind your back
+- Strips third-party tracking cookies and blocks crypto-miners
+- Daily signed (Ed25519), data-only filter updates, so blocking never goes stale
 - Live stats: ads blocked, data saved, time saved
 - Sleek Carbon Stealth theme (dark) with a light option
+- Available in English, Bulgarian, Italian and German
 
 100% free. No account, no telemetry, no data collection, everything stays on
 your device. If it makes your browsing better, donations are welcome but never

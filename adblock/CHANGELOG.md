@@ -46,6 +46,30 @@
 - Рефактори без промяна на поведението: `defuseTimer` (nostif/nosiif), `forEachMatch`
   (remove-attr/remove-class/href-sanitizer/remove-node-text) — покрити от тестовете.
 
+### Фаза 4 — UX
+- **Дневник „Блокирано на тази страница"** в popup-а (`getTabLog`): кои заявки/
+  домейни са спрени в текущия таб — само локално, нищо не напуска устройството.
+- **Абонаменти за филтър-листи по URL** (`addSubscription`/`refreshSubscriptions`):
+  листата се дърпа като текст, конвертира се със същия валидатор като „My filters"
+  и се опреснява дневно; управляван блок между маркери в userFilters, без да пипа
+  ръчните правила.
+- **Per-site „без козметика"** (`setNoCosmetics`): изключва скриването на елементи
+  само на един сайт, ако оформлението се чупи; мрежовото блокиране остава.
+- **i18n**: `i18n.js` + `_locales/{en,bg,it,de}` (80 низа × 4; `__MSG_` в manifest-а;
+  липсващ ключ оставя английския текст). Тест за паритет на ключове/плейсхолдъри.
+- **Премиум редизайн на popup-а** (Cosmic Slate, тъмна + светла тема, CSS-only, без
+  промяна по ID/скриптове): hero със статус-пулс, метрики като плочки, site-група,
+  дневник, promo, footer; reduced-motion уважен.
+
+### Фаза 5 — свежест и разпространение
+- **Седмичен CI ребилд на листите** (`adblock-lists.yml`, понеделник 04:17 UTC):
+  EasyList/EasyPrivacy/URLhaus → DNR + popup hosts + main.js, пълен гейт, PR при
+  промяна — нищо не влиза в main без преглед.
+- Landing page (`server/index.html`), `llms.txt`, `sitemap.xml`, JSON-LD за 5.0.
+- `docs/EDGE.md` — публикуване в Microsoft Edge Add-ons със същия пакет.
+- `docs/SUBMISSION.md` reviewer note: engine-ът не е интерпретатор — 18 именувани
+  рутини с фиксирана граматика; `main.js` + `policy.js` в пакета.
+
 
 ## 4.7.0
 
