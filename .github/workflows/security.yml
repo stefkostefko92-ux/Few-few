@@ -28,7 +28,7 @@ jobs:
     steps:
       # Забележка (state-level follow-up): пинвай action-ите към пълен commit SHA (не @vX),
       # за да не може tag-hijack да вкара supply-chain код в CI-то.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # пълна история — за gitleaks
           persist-credentials: false # не оставяй GITHUB_TOKEN в git config (по-малка exfil повърхност)
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       # ДОПЪЛНИТЕЛЕН СЛОЙ (best-effort, като gitleaks по-горе): официалният
