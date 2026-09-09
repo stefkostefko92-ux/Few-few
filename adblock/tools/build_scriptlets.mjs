@@ -12,6 +12,7 @@
 //        scriptlets/scriptlet_meta.json (dev-only info: counts + host list; NOT
 //        shipped in the package and not read at runtime).
 import { readFileSync, writeFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -19,117 +20,23 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENGINE = (process.argv.find((x) => x.startsWith("--engine=")) || "").slice(9) || join(ROOT, "scriptlets", "engine.js");
 // --list=<file> / --out=<file> let tests build into a temp dir without touching the repo.
 const argOf = (k) => { const a = process.argv.find((x) => x.startsWith(k + "=")); return a ? a.slice(k.length + 1) : null; };
+// The policy (names, grammar, dictionaries) is ONE classic script shared with the
+// engine (inlined) and the service worker (importScripts). Loaded here via vm.
+const POLICY_PATH = argOf("--policy") || join(ROOT, "scriptlets", "policy.js");
+const POLICY_SRC = readFileSync(POLICY_PATH, "utf8");
+const SA_POLICY = (() => { const ctx = {}; runInNewContext(POLICY_SRC, ctx, { filename: "policy.js" }); return ctx.SA_POLICY; })();
+if (!SA_POLICY || typeof SA_POLICY.validateDirective !== "function") { console.error("ERROR: scriptlets/policy.js did not define SA_POLICY"); process.exit(1); }
 const LIST = argOf("--list") || join(ROOT, "scriptlets", "list.txt");
 const OUT = argOf("--out") || join(ROOT, "scriptlets", "main.js");
 const META = argOf("--out") ? null : join(ROOT, "scriptlets", "scriptlet_meta.json");
 
-// uBO alias → canonical IMPL name. ONLY these names are accepted; anything else
-// is dropped. Keep in sync with the IMPL keys in engine.js.
-const ALIASES = {
-  "set-constant": "set-constant", "set": "set-constant",
-  "abort-on-property-read": "abort-on-property-read", "aopr": "abort-on-property-read",
-  "abort-on-property-write": "abort-on-property-write", "aopw": "abort-on-property-write",
-  "abort-current-script": "abort-current-script", "acs": "abort-current-script",
-  "abort-current-inline-script": "abort-current-script", "acis": "abort-current-script",
-  "no-setTimeout-if": "no-setTimeout-if", "nostif": "no-setTimeout-if", "setTimeout-defuser": "no-setTimeout-if",
-  "no-setInterval-if": "no-setInterval-if", "nosiif": "no-setInterval-if", "setInterval-defuser": "no-setInterval-if",
-  "addEventListener-defuser": "addEventListener-defuser", "aeld": "addEventListener-defuser",
-  "json-prune": "json-prune",
-  "no-fetch-if": "no-fetch-if",
-  "no-window-open-if": "no-window-open-if", "nowoif": "no-window-open-if", "window.open-defuser": "no-window-open-if",
-  "remove-attr": "remove-attr", "ra": "remove-attr",
-  "remove-class": "remove-class", "rc": "remove-class",
-  "href-sanitizer": "href-sanitizer",
-  "remove-node-text": "remove-node-text", "rmnt": "remove-node-text",
-  "nowebrtc": "nowebrtc",
-  "abort-on-stack-trace": "abort-on-stack-trace", "aost": "abort-on-stack-trace",
-  "set-cookie": "set-cookie",
-  "remove-cookie": "remove-cookie",
-};
-const COOKIE_VALUES = new Set(["true", "false", "yes", "no", "y", "n", "ok", "accept", "accepted",
-  "reject", "rejected", "allow", "deny", "dismiss", "hide", "hidden", "essential", "necessary",
-  "on", "off", "close", "closed", "checked", "0", "1"]);
-const COOKIE_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
-// Names that are never a consent cookie: session/auth/CSRF/tracking IDs and
-// the __Host-/__Secure- prefixes. The "only if absent" guard is blind to
-// HttpOnly and domain-scoped cookies, so the denylist is the real fence.
-const COOKIE_NAME_DENY = /(sess|auth|token|jwt|csrf|xsrf|login|passw|remember|^sid$|^ssid$|^uid$|^id$|^user|^_ga|^_gid|^_fbp|^__host-|^__secure-|^phpsessid$|^jsessionid$|^asp\.net_sessionid$|^connect\.sid$)/i;
+// uBO alias → canonical name: from the single policy.
+const ALIASES = SA_POLICY.ALIASES;
 
-// Per-scriptlet arg policy. A directive is rejected unless it passes.
-const NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                 // property-chain arg
-const SETCONST_VALUES = new Set([
-  "false", "true", "null", "undefined", "noopFunc", "trueFunc", "falseFunc",
-  "", "emptyStr", "emptyArr", "emptyObj", "''",
-]);
-
-// Reject dangerous tokens anywhere in an argument (prototype-pollution / markup
-// breakout / over-long). Applied to every argument of every directive.
-function argSafe(a) {
-  if (typeof a !== "string") return false;
-  if (a.length > 400) return false;
-  if (/__proto__|constructor|prototype/.test(a)) return false;
-  if (/<\/?script|<\/?style|-->/i.test(a)) return false;
-  return true;
-}
-
+// Build profile of the single validator (trusted, baked list). The live channel
+// uses the same function with live=true (stricter) in the service worker + engine.
 function validate(name, args) {
-  if (!args.every(argSafe)) return null;
-  switch (name) {
-    case "set-constant": {
-      if (args.length !== 2 || !NAME_RE.test(args[0])) return null;
-      const v = args[1];
-      if (!(SETCONST_VALUES.has(v) || /^-?\d+$/.test(v))) return null;
-      return [name, args[0], v];
-    }
-    case "abort-on-property-read":
-    case "abort-on-property-write":
-      if (args.length !== 1 || !NAME_RE.test(args[0])) return null;
-      return [name, args[0]];
-    case "abort-current-script":
-      if (args.length < 1 || args.length > 2 || !NAME_RE.test(args[0])) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "no-setTimeout-if":
-    case "no-setInterval-if":
-      if (args.length < 1 || args.length > 2) return null;
-      if (args.length === 2 && !/^\d{1,7}$/.test(args[1])) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "addEventListener-defuser":
-      if (args.length < 1 || args.length > 2) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "json-prune":
-      if (args.length < 1 || args.length > 2) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "no-fetch-if":
-      if (args.length !== 1) return null;
-      return [name, args[0]];
-    case "no-window-open-if":
-      if (args.length !== 1) return null;
-      return [name, args[0]];
-    case "remove-attr":
-    case "remove-class":
-    case "href-sanitizer":
-      if (args.length < 1 || args.length > 2) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "remove-node-text":
-      if (args.length !== 2) return null;
-      return [name, args[0], args[1]];
-    case "abort-on-stack-trace":
-      if (args.length !== 2 || !NAME_RE.test(args[0])) return null;
-      return [name, args[0], args[1]];
-    case "set-cookie":
-      if (args.length !== 2 || !COOKIE_NAME.test(args[0]) || COOKIE_NAME_DENY.test(args[0])) return null;
-      if (!(COOKIE_VALUES.has(args[1]) || /^\d{1,5}$/.test(args[1]))) return null;
-      return [name, args[0], args[1]];
-    case "remove-cookie":
-      if (args.length !== 1) return null;
-      return [name, args[0]];
-    case "nowebrtc":
-      if (args.length !== 0) return null;
-      return [name];
-    default:
-
-      return null;
-  }
+  return SA_POLICY.validateDirective(name, args, false) ? [name, ...args] : null;
 }
 
 // Split "a, b, c" respecting nothing fancy (uBO uses plain comma separation;
@@ -184,20 +91,6 @@ function assertNamesInSync(engine) {
       process.exit(1);
     }
   }
-  // The service worker keeps its own copy of the alias table (classic SW script,
-  // no import). Guard it too, so the three tables cannot drift silently.
-  try {
-    const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
-    const bgAliases = [...bgSrc.match(/const SCRIPTLET_ALIASES = \{([\s\S]*?)\n\};/)[1].matchAll(/"([^"]+)": "([^"]+)"/g)]
-      .map((m) => m[1] + "=" + m[2]).sort().join("|");
-    const buildAliases = Object.entries(ALIASES).map(([k, v]) => k + "=" + v).sort().join("|");
-    if (bgAliases !== buildAliases) {
-      console.error("ERROR: SCRIPTLET_ALIASES in background.js differs from ALIASES in build_scriptlets.mjs");
-      process.exit(1);
-    }
-  } catch (e) {
-    if (e && e.code !== "ENOENT") { console.error("ERROR: could not compare background.js aliases:", e.message); process.exit(1); }
-  }
 }
 
 function main() {
@@ -221,6 +114,8 @@ function main() {
 
   // Bake the map into the engine at the /*__SCRIPTLET_MAP__*/ injection marker.
   const mapJson = JSON.stringify(map);
+  const POLICY_MARKER = "/*__SCRIPTLET_POLICY__*/";
+  if (!engine.includes(POLICY_MARKER)) { console.error("ERROR: engine.js is missing the /*__SCRIPTLET_POLICY__*/ marker"); process.exit(1); }
   const MARKER = "/*__SCRIPTLET_MAP__*/{}";
   if (!engine.includes(MARKER)) {
     console.error("ERROR: engine.js is missing the /*__SCRIPTLET_MAP__*/{} injection point");
@@ -231,7 +126,8 @@ function main() {
     "// Edit scriptlets/engine.js (code) or scriptlets/list.txt (data) and rebuild.\n";
   // Function replacement: a plain-string replacement would interpret $$, $&,
   // $` and $' — and args legitimately contain "$" (regex anchors like /ads\.js$/).
-  const out = header + engine.replace(MARKER, () => mapJson);
+  // Inline the policy first (the engine references SA_POLICY), then bake the MAP.
+  const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson);
 
   const hosts = Object.keys(map).filter((h) => h !== "");
   const meta = {

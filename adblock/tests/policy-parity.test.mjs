@@ -1,58 +1,57 @@
-// Паритет на политиката между трите валидатора (engine.js · background.js ·
-// tools/build_scriptlets.mjs). Таблиците са дублирани умишлено (engine работи в
-// MAIN world без import; background е класически SW скрипт) — този тест превръща
-// случайното съвпадение в гейт. Инвариант: live (background+engine) е строго
-// надмножество по строгост спрямо build (печен, доверен списък).
+// Единствен източник на политиката: scriptlets/policy.js. Този тест гейтва, че
+// (1) няма локални копия на таблиците в engine/background/build, (2) policy.js
+// е инлайннат в shipped main.js, (3) двата профила (build ↔ live) държат
+// инварианта „live приема ⇒ build приема, никога обратното".
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { runInNewContext } from "node:vm";
 import { ROOT, ok, done } from "./_harness.mjs";
 
-const engine = readFileSync(join(ROOT, "scriptlets", "engine.js"), "utf8");
-const bg = readFileSync(join(ROOT, "background.js"), "utf8");
-const build = readFileSync(join(ROOT, "tools", "build_scriptlets.mjs"), "utf8");
+const read = (...p) => readFileSync(join(ROOT, ...p), "utf8");
+const policySrc = read("scriptlets", "policy.js");
+const engine = read("scriptlets", "engine.js");
+const main = read("scriptlets", "main.js");
+const bg = read("background.js");
+const build = read("tools", "build_scriptlets.mjs");
 
-const list = (src, re) => { const m = src.match(re); return m ? m[1].match(/"([^"]*)"/g).map((s) => s.slice(1, -1)).sort().join("|") : null; };
-const regexLit = (src, name) => { const m = src.match(new RegExp("(?:var|const) " + name + " = (/.*/[a-z]*);")); return m ? m[1] : null; };
-
-// 1) set-cookie value dictionary
-const cvEngine = list(engine, /var COOKIE_VALUES = \[([\s\S]*?)\];/);
-const cvBg = list(bg, /const SCRIPTLET_COOKIE_VALUES = new Set\(\[([\s\S]*?)\]\);/);
-const cvBuild = list(build, /const COOKIE_VALUES = new Set\(\[([\s\S]*?)\]\);/);
-ok("COOKIE_VALUES identical in engine/background/build", cvEngine && cvEngine === cvBg && cvBg === cvBuild);
-
-// 2) set-cookie name policy (charset + denylist)
-ok("COOKIE_NAME regex identical (engine ↔ background ↔ build)",
-  regexLit(engine, "COOKIE_NAME") && regexLit(engine, "COOKIE_NAME") === regexLit(bg, "SCRIPTLET_COOKIE_NAME") && build.includes(regexLit(engine, "COOKIE_NAME")));
-ok("COOKIE_NAME_DENY regex identical (engine ↔ background ↔ build)",
-  regexLit(engine, "COOKIE_NAME_DENY") && regexLit(engine, "COOKIE_NAME_DENY") === regexLit(bg, "SCRIPTLET_COOKIE_NAME_DENY") && build.includes(regexLit(engine, "COOKIE_NAME_DENY")));
-
-// 3) set-constant dictionary: engine tokenValue cases ⊇ build/background sets
-const scBuild = list(build, /const SETCONST_VALUES = new Set\(\[([\s\S]*?)\]\);/);
-const scBg = list(bg, /const SCRIPTLET_SETCONST = new Set\(\[([\s\S]*?)\]\);/);
-const tokenBody = engine.match(/function tokenValue\(raw\) \{([\s\S]*?)\n  \}/)[1];
-const engineCases = [...tokenBody.matchAll(/case "([^"]*)":/g)].map((m) => m[1]);
-ok("SETCONST dictionary identical (build ↔ background)", scBuild && scBuild === scBg);
-ok("engine tokenValue accepts exactly the shared dictionary", scBuild.split("|").every((v) => engineCases.includes(v)) && engineCases.every((v) => scBuild.split("|").includes(v)));
-
-// 4) selector policy (engine safeSel ↔ background safeSelector)
-for (const name of ["FORM_TARGET", "FORM_ATTR", "UNIVERSAL"]) {
-  ok(`${name} regex identical (engine ↔ background)`, regexLit(engine, name) && regexLit(engine, name) === regexLit(bg, name));
+// 1) policy.js loads standalone (vm) and exposes the contract
+const ctx = {};
+runInNewContext(policySrc, ctx);
+const P = ctx.SA_POLICY;
+ok("policy.js loads in a bare context and exposes SA_POLICY", P && typeof P.validateDirective === "function" && typeof P.safeSelector === "function");
+for (const key of ["ALIASES", "CANON", "SETCONST_VALUES", "COOKIE_VALUES", "COOKIE_NAME", "COOKIE_NAME_DENY", "FORM_TARGET", "FORM_ATTR", "UNIVERSAL", "UNSAFE_SELECTORS", "ATTR_DENY", "TAG_DENY", "NEVER_LIVE", "tokenValue", "canonical", "protectedHost"]) {
+  ok(`policy exposes ${key}`, key in P);
 }
-const unsafeEngine = list(engine, /var UNSAFE_SEL = \[([\s\S]*?)\];/);
-const unsafeBg = list(bg, /const UNSAFE_SELECTORS = new Set\(\[([\s\S]*?)\]\);/);
-ok("UNSAFE selector list identical (engine ↔ background)", unsafeEngine && unsafeEngine === unsafeBg);
 
-// 5) attribute denylist
-ok("ATTR_DENY regex identical (engine ↔ background)", regexLit(engine, "ATTR_DENY") && regexLit(engine, "ATTR_DENY") === regexLit(bg, "SCRIPTLET_ATTR_DENY"));
-ok("TAG_DENY regex identical (engine ↔ background)", regexLit(engine, "TAG_DENY") && regexLit(engine, "TAG_DENY") === regexLit(bg, "SCRIPTLET_TAG_DENY"));
+// 2) no local copies anywhere else
+const copies = [
+  ["engine.js", engine, [/var FORM_ATTR =/, /var COOKIE_VALUES =/, /var UNSAFE_SEL =/, /function tokenValue\(/, /var NEVER_LIVE =/, /var ALIASES =/]],
+  ["background.js", bg, [/const SCRIPTLET_ALIASES =/, /const FORM_ATTR =/, /const UNSAFE_SELECTORS =/, /const SCRIPTLET_SETCONST =/, /const NEVER_BLOCK = \[/]],
+  ["build_scriptlets.mjs", build, [/const ALIASES = \{/, /const SETCONST_VALUES =/, /const COOKIE_VALUES =/, /^function argSafe\(/m]],
+];
+for (const [name, src, res] of copies) ok(`${name}: no local copy of the policy tables`, res.every((r) => !r.test(src)));
+ok("engine.js carries the /*__SCRIPTLET_POLICY__*/ marker", engine.includes("/*__SCRIPTLET_POLICY__*/"));
+ok("shipped main.js has policy.js inlined (SA_POLICY defined, marker consumed)", main.includes("var SA_POLICY = (function () {") && !main.includes("/*__SCRIPTLET_POLICY__*/"));
+ok("background.js loads policy via importScripts (classic SW)", /importScripts\("scriptlets\/policy\.js"\)/.test(bg));
 
-// 6) alias tables identical (build ↔ background); IMPL keys == canonical set
-const aliases = (src, re) => { const m = src.match(re); return [...m[1].matchAll(/"([^"]+)": "([^"]+)"/g)].map((x) => x[1] + "=" + x[2]).sort().join("|"); };
-const alBuild = aliases(build, /const ALIASES = \{([\s\S]*?)\n\};/);
-const alBg = aliases(bg, /const SCRIPTLET_ALIASES = \{([\s\S]*?)\n\};/);
-ok("ALIASES identical (build ↔ background)", alBuild === alBg);
+// 3) IMPL keys == canonical names
 const impl = [...engine.matchAll(/^ {4}"([\w-]+)": function/gm)].map((m) => m[1]).sort().join("|");
-const canon = [...new Set(alBuild.split("|").map((p) => p.split("=")[1]))].sort().join("|");
-ok("IMPL keys == canonical alias targets", impl === canon);
+ok("engine IMPL keys == policy CANON", impl === Object.keys(P.CANON).sort().join("|"));
+
+// 4) profiles: live ⊂ build (strictness)
+const V = (name, args, live) => P.validateDirective(name, args, live);
+const cases = [
+  ["remove-cookie", ["/x/"]], ["remove-attr", ["type", "input[type=password]"]], ["remove-attr", ["sandbox", ".x"]],
+  ["href-sanitizer", ["a"]], ["remove-node-text", ["textarea", "x"]], ["remove-class", ["y", "form .x"]],
+];
+ok("live-rejected directives are all build-accepted (live ⊂ build), never the reverse",
+  cases.every(([n, a]) => V(n, a, false) === true && V(n, a, true) === false));
+const both = [["set-constant", ["x", "true"]], ["aopr", ["y"]], ["no-fetch-if", ["/ads$/"]], ["set-cookie", ["consent", "accepted"]], ["nowebrtc", []], ["href-sanitizer", ["a.out", "?u"]]];
+ok("benign directives accepted by both profiles", both.every(([n, a]) => { const c = P.canonical(n); return V(c, a, false) && V(c, a, true); }));
+ok("both profiles reject: unknown name, bad set-constant value, proto key, denied cookie name, >3 args",
+  !V("eval", ["x"], false) && !V("set-constant", ["x", "alert(1)"], false) && P.canonical("__proto__") === null &&
+  !V("set-cookie", ["PHPSESSID", "1"], false) && !V("set-cookie", ["csrf_token", "true"], true) && !V("json-prune", ["a", "b", "c", "d"], false));
+ok("protectedHost: youtube.com and subdomains, not evil-youtube.com", P.protectedHost("m.youtube.com") && P.protectedHost("youtube.com") && !P.protectedHost("evil-youtube.com") && !P.protectedHost("youtube.com.evil.com"));
+ok("tokenValue dictionary == SETCONST_VALUES", P.SETCONST_VALUES.every((v) => P.tokenValue(v).ok) && !P.tokenValue("alert(1)").ok);
 
 done();

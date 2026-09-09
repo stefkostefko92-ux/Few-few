@@ -40,6 +40,7 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 // Registered dynamically via chrome.scripting (not in the manifest), so add it
 // explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
 refs.add("scriptlets/main.js");
+refs.add("scriptlets/policy.js"); // importScripts() in the service worker
 const zipFiles = zip.split("\n").filter(Boolean);
 const has = (f) => f.endsWith("/*")
   ? zipFiles.some(z => z.startsWith(f.slice(0, -1)) && z !== f.slice(0, -1)) // glob: поне 1 файл с този префикс

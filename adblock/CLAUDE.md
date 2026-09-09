@@ -19,9 +19,10 @@ meta.js                 Facebook / Instagram sponsored постове
 cookies.js / .css       затваряне на cookie/consent банери (вкл. Shadow DOM)
 antiadblock.js / .css   махане на "disable adblocker" стени
 picker.js / .css        element picker (ръчно скриване) + zapper (еднократно)
-scriptlets/             scriptlet engine (##+js): engine.js (clean-room код) +
-                        list.txt (данни) → main.js (пече се от build_scriptlets.mjs;
-                        регистрира се в MAIN world при document_start)
+scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН източник на
+                        политиката — инлайнва се в engine-а, importScripts в SW, vm в
+                        билда) + engine.js (clean-room код) + list.txt (данни) → main.js
+                        (пече се от build_scriptlets.mjs; MAIN world при document_start)
 youtube_loader.js       инжектира youtube_main в MAIN world (с bypass fallback)
 youtube_main.js         MAIN world — маха рекламните полета от player отговора
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)

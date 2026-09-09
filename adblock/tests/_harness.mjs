@@ -80,7 +80,10 @@ export const sendLive = (list) =>
 export function loadBackground() {
   const mk = () => new Proxy(function () {}, { get: (_, p) => (p === "then" ? undefined : mk()), apply: () => mk() });
   globalThis.chrome = mk();
-  const src = readFileSync(join(ROOT, "background.js"), "utf8") +
+  // Simulate importScripts("scriptlets/policy.js"): prepend the policy, stub the call.
+  const policy = readFileSync(join(ROOT, "scriptlets", "policy.js"), "utf8");
+  globalThis.importScripts = () => {};
+  const src = policy + "\n" + readFileSync(join(ROOT, "background.js"), "utf8") +
     "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains };";
   runInThisContext(src, { filename: "background.js" });
   return globalThis.__bg;

@@ -47,13 +47,13 @@ const all = build([
 ]);
 ok("build: all new scriptlets + aliases accepted", all.code === 0 && mapOf(all.out)["a.com"].length === 8);
 
-// 4) sync guard: alias без IMPL → билдът пада шумно
+// 4) sync guard: alias без IMPL (в policy.js) → билдът пада шумно
 {
-  const src = readFileSync(BUILD, "utf8").replace('"nowebrtc": "nowebrtc",', '"nowebrtc": "nowebrtc", "bogus": "bogus-scriptlet",');
-  const broken = join(dir, "build_broken.mjs"); writeFileSync(broken, src);
+  const pol = readFileSync(join(ROOT, "scriptlets", "policy.js"), "utf8").replace('"nowebrtc": "nowebrtc",', '"nowebrtc": "nowebrtc", "bogus": "bogus-scriptlet",');
+  const polPath = join(dir, "policy_broken.js"); writeFileSync(polPath, pol);
   const list = join(dir, "l2.txt"); writeFileSync(list, "##+js(set-constant, a, true)\n");
-  const r = spawnSync("node", [broken, `--engine=${join(ROOT, "scriptlets", "engine.js")}`, `--list=${list}`, `--out=${join(dir, "o2.js")}`], { encoding: "utf8" });
-  ok("build: IMPL↔ALIASES drift fails the build", r.status === 1 && /has no IMPL/.test(r.stdout + r.stderr));
+  const r = spawnSync("node", [BUILD, `--policy=${polPath}`, `--list=${list}`, `--out=${join(dir, "o2.js")}`], { encoding: "utf8" });
+  ok("build: policy↔IMPL drift fails the build", r.status === 1 && /has no IMPL/.test(r.stdout + r.stderr));
 }
 
 // 5) --check: shipped main.js е свеж спрямо list.txt
