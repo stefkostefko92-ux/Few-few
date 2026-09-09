@@ -174,5 +174,53 @@
     "script"
    ]
   }
+ },
+ {
+  "id": 12,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/ima3.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||imasdk.googleapis.com/js/sdkloader/ima3.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 13,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/scorecardresearch.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||scorecardresearch.com/beacon.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
+ },
+ {
+  "id": 14,
+  "priority": 5,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "extensionPath": "/resources/outbrain.js"
+   }
+  },
+  "condition": {
+   "urlFilter": "||widgets.outbrain.com/outbrain.js",
+   "resourceTypes": [
+    "script"
+   ]
+  }
  }
 ]

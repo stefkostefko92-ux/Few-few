@@ -31,7 +31,29 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 // Update this JSON on the server and every install refreshes itself, no
 // Web Store re-review needed. MV3 forbids remote CODE, not remote data.
 const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
-const LIVE_RULE_MAX = 3000;
+// 20k live domains fit comfortably: block rules with requestDomains are "safe"
+// dynamic rules (30k cap) and are chunked 1000 per rule (see domainBlockRules),
+// so the store holds 20 rules, not 20 000.
+const LIVE_RULE_MAX = 20000;
+const USER_RULE_MAX = 2000;
+const DOMAINS_PER_RULE = 1000;
+const BLOCK_TYPES = ["script", "image", "sub_frame", "xmlhttprequest", "media", "ping", "font", "stylesheet", "object"];
+
+// One DNR block rule per ≤1000 domains (requestDomains matches the domain and its
+// subdomains, exactly like ||domain^). Ids: base, base+1, … — never main_frame.
+function domainBlockRules(domains, base, cap) {
+  const list = domains.slice(0, cap);
+  const rules = [];
+  for (let i = 0; i < list.length; i += DOMAINS_PER_RULE) {
+    rules.push({
+      id: base + rules.length,
+      priority: 1,
+      action: { type: "block" },
+      condition: { requestDomains: list.slice(i, i + DOMAINS_PER_RULE), resourceTypes: BLOCK_TYPES },
+    });
+  }
+  return rules;
+}
 
 // YouTube anti-adblock bypass window. When YouTube hard-blocks playback (its
 // "3 strikes" enforcement) we turn the YouTube DNR ruleset OFF for this long so
@@ -474,18 +496,7 @@ function sanitizeConfig(cfg) {
 async function syncLiveRules(domains = []) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing.filter((r) => r.id >= LIVE_RULE_BASE).map((r) => r.id);
-  const addRules = domains.slice(0, LIVE_RULE_MAX).map((d, i) => ({
-    id: LIVE_RULE_BASE + i,
-    priority: 1,
-    action: { type: "block" },
-    condition: {
-      urlFilter: "||" + d + "^",
-      resourceTypes: [
-        "script", "image", "sub_frame", "xmlhttprequest",
-        "media", "ping", "font", "stylesheet", "object",
-      ],
-    },
-  }));
+  const addRules = domainBlockRules(domains, LIVE_RULE_BASE, LIVE_RULE_MAX);
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
   } catch (e) {
@@ -578,25 +589,12 @@ function parseUserDomains(text) {
 
 async function syncUserRules() {
   const { userFilters = "" } = await chrome.storage.local.get("userFilters");
-  const domains = parseUserDomains(userFilters).slice(0, 2000);
+  const domains = parseUserDomains(userFilters);
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing
     .filter((r) => r.id >= USER_BLOCK_BASE && r.id < ALLOW_RULE_BASE)
     .map((r) => r.id);
-
-  const addRules = domains.map((d, i) => ({
-    id: USER_BLOCK_BASE + i,
-    priority: 1,
-    action: { type: "block" },
-    condition: {
-      urlFilter: "||" + d + "^",
-      resourceTypes: [
-        "script", "image", "sub_frame", "xmlhttprequest",
-        "media", "ping", "font", "stylesheet", "object",
-      ],
-    },
-  }));
-
+  const addRules = domainBlockRules(domains, USER_BLOCK_BASE, USER_RULE_MAX);
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
   } catch (e) {
@@ -694,7 +692,9 @@ const DEBUG_COUNTING = !!chrome.declarativeNetRequest.onRuleMatchedDebug;
 if (DEBUG_COUNTING) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
     const id = info?.rule?.ruleId;
-    if (id >= ALLOW_RULE_BASE) return; // allow rule, don't count
+    // Don't count allow rules: the allowlist range and the YouTube bypass rule.
+    // Live block rules (≥ LIVE_RULE_BASE) DO count.
+    if ((id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE) || id === YT_BYPASS_RULE_ID) return;
     record(1, SIZE_BY_TYPE[info?.request?.type] ?? BLENDED_SIZE);
   });
 }

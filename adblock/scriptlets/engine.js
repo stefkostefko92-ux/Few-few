@@ -509,6 +509,8 @@
   // Shape: { "": [[name, ...args]], "host.tld": [[name, ...args]] }. The ""
   // key holds global directives that run on every page.
   var MAP = /*__SCRIPTLET_MAP__*/{};
+  // EasyList $popup domains (baked by the build): popunder/popup launchers.
+  var POPUP_HOSTS = /*__POPUP_HOSTS__*/[];
 
   // ---- bootstrap ----------------------------------------------------------
 
@@ -598,6 +600,31 @@
     for (var i = 0; i < chain.length; i++) {
       var list = MAP[chain[i]];
       if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
+    }
+  } catch (e) {}
+  // ---- popup / popunder blocker ------------------------------------------
+  // window.open() to a known popup-ad host (EasyList $popup — the one class DNR
+  // cannot see) is refused. Same-host opens are always allowed (a site's own
+  // flows), only http(s) targets are judged, and any parse error falls through.
+  // Runs in the page's own frame with the page's privileges: no escalation.
+  try {
+    if (POPUP_HOSTS.length && typeof window.open === "function") {
+      var popupSet = Object.create(null);
+      for (var q = 0; q < POPUP_HOSTS.length; q++) popupSet[POPUP_HOSTS[q]] = 1;
+      var isPopupHost = function (h) {
+        var parts = h.split(".");
+        for (var s = 0; s < parts.length - 1; s++) if (popupSet[nativeSlice.call(parts, s).join(".")]) return true;
+        return false;
+      };
+      var nativeOpen = window.open;
+      window.open = function (url) {
+        try {
+          var u = new URL(String(url || ""), location.href);
+          if ((u.protocol === "http:" || u.protocol === "https:") && u.hostname !== location.hostname &&
+              isPopupHost(u.hostname.toLowerCase())) return null;
+        } catch (e) {}
+        return nativeOpen.apply(this, arguments);
+      };
     }
   } catch (e) {}
 })();

@@ -18,7 +18,7 @@ node tools/build_scriptlets.mjs --check
 
 zip -r "$out" . \
   -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
-     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' 'tests/*' \
+     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' 'rules/popup_hosts.json' 'tests/*' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
 

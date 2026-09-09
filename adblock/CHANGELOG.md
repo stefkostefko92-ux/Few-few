@@ -1,5 +1,34 @@
 # Changelog
 
+## 5.0.0 (в процес)
+
+### Фаза 1 — единствен източник на политиката
+- `scriptlets/policy.js`: имена/алиаси, граматика на аргументите, речници, selector/
+  attr/tag/cookie правила, защитени хостове и `validateDirective(name, args, live)` в
+  ЕДИН класически скрипт — инлайнван в engine-а, `importScripts` в service worker-а,
+  `node:vm` в билда/тестовете. Трите ръчни копия изчезнаха; паритетният тест гейтва
+  „няма локални копия" + инварианта live ⊂ build.
+
+### Фаза 2 — сила на блокирането
+- **Live канал ×6.7**: до 20 000 домейна между релийзи (бяха 3 000), като 20
+  chunk-нати `requestDomains` правила вместо 20 000 отделни; същото за „My filters".
+- **Конвертор EasyList→DNR**: `$csp=` (modifyHeaders на документи, консервативен
+  charset), `$redirect=` → нашите сурогати (непознат ресурс = пропуск, никога счупен
+  redirect), `--report` хистограма на пропуснатите редове. Regex шаблони остават
+  извън (RE2-несъвместим regex в статичен рулсет спира целия рулсет).
+- **Сурогати**: Google IMA SDK (`ima3.js` — играе adsManagerLoaded → LOADED →
+  CONTENT_RESUME_REQUESTED → ALL_ADS_COMPLETED без реклами, плейърите тръгват),
+  comScore beacon, Outbrain widget, noop txt/html/css/json + VAST.
+- **Set-Cookie strip** за отговори от известни ad-tech/tracker домейни (third-party;
+  в `privacy` рулсета, изключваем).
+- Броячът на блокирани заявки вече брои live правилата и НЕ брои YouTube bypass
+  allow-правилото.
+- Процедурни оператори: `:matches-media()`, `:matches-prop()`, `:watch-attr()`.
+- **Popup/popunder blocker**: хистограмата на конвертора показа, че 2 939 от 3 146
+  пропуснати EasyList реда са `$popup` — клас, който DNR по принцип не вижда. Сега
+  тези домейни се пекат в MAIN-world engine-а като `window.open` guard (по домейн-
+  суфикс; same-host и не-http винаги минават). Най-големият пропуснат клас стана функция.
+
 ## 4.7.0
 
 Консолидиран релийз преди Web Store — пълен uBO scriptlet roster, тестове в репото, гейт в CI:

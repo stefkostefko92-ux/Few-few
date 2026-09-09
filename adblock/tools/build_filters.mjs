@@ -52,14 +52,39 @@ const TYPE_MAP = {
 
 // Опции, при които правилото се пропуска (не се превеждат към DNR).
 const SKIP_OPTS = new Set([
-  "popup", "generichide", "elemhide", "ghide", "ehide", "genericblock",
-  "rewrite", "redirect", "redirect-rule", "csp", "removeparam", "replace",
+  "generichide", "elemhide", "ghide", "ehide", "genericblock",
+  "rewrite", "redirect-rule", "removeparam", "replace",
   "header", "cookie", "cname", "denyallow", "strict1p", "strict3p",
   "inline-script", "inline-font", "mp4", "empty", "webrtc", "object-subrequest",
   "badfilter", "all", "urlskip", "ipaddress", "method", "to", "from", "permissions",
 ]);
 
 const isAscii = (s) => /^[\x20-\x7e]+$/.test(s);
+
+// $redirect=<resource> → our bundled surrogate (web_accessible resources/*). Unknown
+// resource names are skipped (never a broken redirect). $redirect-rule stays
+// skipped: DNR cannot express "only if otherwise blocked", and redirecting a
+// request that would have loaded breaks sites.
+const REDIRECT_MAP = {
+  "noopjs": "noop.js", "noop.js": "noop.js",
+  "1x1.gif": "1x1.gif", "1x1-transparent.gif": "1x1.gif", "2x2.png": "1x1.gif", "2x2-transparent.png": "1x1.gif", "32x32.png": "1x1.gif", "3x2.png": "1x1.gif",
+  "noop.txt": "noop.txt", "nooptext": "noop.txt", "noop.html": "noop.html", "noopframe": "noop.html",
+  "noop.css": "noop.css", "noopcss": "noop.css", "noop.json": "noop.json", "noopjson": "noop.json",
+  "noop-vast2.xml": "noop-vast.xml", "noop-vast3.xml": "noop-vast.xml", "noop-vast4.xml": "noop-vast.xml", "noopvast2": "noop-vast.xml", "noopvast3": "noop-vast.xml",
+  "google-analytics_analytics.js": "ga.js", "google-analytics.com/analytics.js": "ga.js", "google-analytics_ga.js": "ga.js", "google-analytics.com/ga.js": "ga.js",
+  "googletagmanager_gtm.js": "ga.js", "googletagmanager.com/gtm.js": "ga.js",
+  "googletagservices_gpt.js": "gpt.js", "googletagservices.com/gpt.js": "gpt.js",
+  "googlesyndication_adsbygoogle.js": "adsbygoogle.js", "googlesyndication.com/adsbygoogle.js": "adsbygoogle.js",
+  "google-ima.js": "ima3.js",
+  "scorecardresearch_beacon.js": "scorecardresearch.js", "scorecardresearch.com/beacon.js": "scorecardresearch.js",
+  "outbrain-widget.js": "outbrain.js", "widgets.outbrain.com/outbrain.js": "outbrain.js",
+  "amazon_apstag.js": "apstag.js",
+};
+// $csp= values we pass through: a conservative charset + must look like a policy.
+const CSP_OK = (v) => /^[A-Za-z0-9 '":;\/*.\-_]{6,300}$/.test(v) && /(-src\b|\bsandbox\b|frame-ancestors|upgrade-insecure-requests)/.test(v);
+// Why a line was dropped (node tools/build_filters.mjs --report prints the histogram).
+const SKIP_REASONS = {};
+const skip = (r) => { SKIP_REASONS[r] = (SKIP_REASONS[r] || 0) + 1; return null; };
 const validDomain = (d) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d);
 
 // --- ABP мрежов ред -> междинно представяне -------------------------------
@@ -68,23 +93,41 @@ function parseNetLine(line) {
   if (line.startsWith("@@")) { allow = true; line = line.slice(2); }
   let pattern = line;
   let optStr = "";
-  const di = line.lastIndexOf("$");
-  // "$" в URL шаблон е рядкост; опциите винаги са след последния "$".
-  if (di >= 0) {
-    const tail = line.slice(di + 1);
-    if (/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(tail)) {
-      pattern = line.slice(0, di);
-      optStr = tail;
-    } else if (/[\s'"]/.test(tail)) {
-      return null; // $csp= и подобни със стойности с интервали/кавички — несъвместими
+  let cspValue = null;
+  // $csp=<policy>: the value carries spaces/quotes, so split it off first (it is
+  // always the last option in the lists we consume).
+  const ci = line.search(/\$(?:[a-z0-9-~,=.|*:]*,)?csp=/i);
+  if (ci >= 0) {
+    const tail = line.slice(ci + 1);
+    const cm = tail.match(/(?:^|,)csp=(.*)$/);
+    cspValue = cm ? cm[1].trim() : "";
+    if (!CSP_OK(cspValue)) return skip("csp:invalid");
+    if (allow) return skip("csp:exception");
+    pattern = line.slice(0, ci);
+    optStr = tail.replace(/(?:^|,)csp=.*$/, "");
+    if (optStr && !/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(optStr)) return skip("csp:bad-options");
+  } else {
+    const di = line.lastIndexOf("$");
+    // "$" в URL шаблон е рядкост; опциите винаги са след последния "$".
+    if (di >= 0) {
+      const tail = line.slice(di + 1);
+      if (/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(tail)) {
+        pattern = line.slice(0, di);
+        optStr = tail;
+      } else if (/[\s'"]/.test(tail)) {
+        return skip("opt:quoted-value");
+      }
     }
   }
-  if (!pattern || !isAscii(pattern)) return null;
-  if (pattern.startsWith("/") && pattern.endsWith("/")) return null; // regex
+  if (!pattern || !isAscii(pattern)) return skip("pattern:non-ascii");
+  // Regex patterns stay out: an RE2-incompatible regex inside a STATIC ruleset
+  // makes Chrome refuse the whole ruleset, and we cannot validate at build time.
+  if (pattern.startsWith("/") && pattern.endsWith("/")) return skip("pattern:regex");
 
   const o = {
     allow, pattern, important: false, matchCase: false, party: null,
     types: [], notTypes: [], initiator: [], notInitiator: [], doc: false,
+    redirect: null, csp: cspValue, popup: false,
   };
   if (optStr) {
     for (const raw of optStr.split(",")) {
@@ -95,7 +138,7 @@ function parseNetLine(line) {
       if (name === "first-party" || name === "1p") { o.party = neg ? "thirdParty" : "firstParty"; continue; }
       if (name === "important") { o.important = true; continue; }
       if (name === "match-case") { o.matchCase = true; continue; }
-      if (name === "document" || name === "doc") { if (neg) return null; o.doc = true; continue; }
+      if (name === "document" || name === "doc") { if (neg) return skip("opt:~document"); o.doc = true; continue; }
       if (name === "domain") {
         let had = false, kept = 0, droppedNeg = false;
         for (const d of (val || "").toLowerCase().split("|")) {
@@ -110,17 +153,25 @@ function parseNetLine(line) {
         // За BLOCK правило загубен запис може да РАЗШИРИ обхвата (over-block):
         // паднало ~изключване (напр. ~edu|~gov) или всички positive паднали →
         // пропускаме реда, за да не блокираме по-широко от източника.
-        if (!o.allow && (droppedNeg || (had && kept === 0))) return null;
+        if (!o.allow && (droppedNeg || (had && kept === 0))) return skip("domain:lossy");
         continue;
       }
       if (TYPE_MAP[name]) { (neg ? o.notTypes : o.types).push(TYPE_MAP[name]); continue; }
-      if (SKIP_OPTS.has(name)) return null;
-      return null; // непозната опция — по-безопасно е да пропуснем реда
+      if (name === "popup") { if (neg || o.allow) return skip("popup:exception"); o.popup = true; continue; }
+      if (name === "redirect") {
+        if (neg || o.allow) return skip("redirect:exception");
+        const res = REDIRECT_MAP[(val || "").split(":")[0]];
+        if (!res) return skip("redirect:" + (val || "").split(":")[0]);
+        o.redirect = res;
+        continue;
+      }
+      if (SKIP_OPTS.has(name)) return skip("opt:" + name);
+      return skip("unknown:" + name); // непозната опция — по-безопасно е да пропуснем реда
     }
   }
   // Смесени положителни+отрицателни domain= пазят от чупене на сайтове —
   // не ги апроксимираме, пропускаме реда.
-  if (o.initiator.length && o.notInitiator.length) return null;
+  if (o.initiator.length && o.notInitiator.length) return skip("domain:mixed");
   if (o.types.length && o.notTypes.length) o.notTypes = [];
   return o;
 }
@@ -131,6 +182,15 @@ function pureDomain(pattern) {
   return m && validDomain(m[1]) ? m[1] : null;
 }
 
+// Redirects (surrogates) must beat block rules (priority 1) — same as rules/surrogates.json.
+const priorityOf = (o) => (o.redirect ? 5 : priorityFor(o));
+function actionFor(o) {
+  if (o.csp) {
+    return { type: "modifyHeaders", responseHeaders: [{ header: "content-security-policy", operation: "append", value: o.csp }] };
+  }
+  if (o.redirect) return { type: "redirect", redirect: { extensionPath: "/resources/" + o.redirect } };
+  return { type: o.doc && o.allow ? "allowAllRequests" : o.allow ? "allow" : "block" };
+}
 function conditionFor(o) {
   const c = {};
   if (o.party) c.domainType = o.party;
@@ -147,11 +207,18 @@ function conditionFor(o) {
   if (o.initiator.length) c.initiatorDomains = [...new Set(o.initiator)].sort();
   if (o.notInitiator.length) c.excludedInitiatorDomains = [...new Set(o.notInitiator)].sort();
   if (o.matchCase) c.isUrlFilterCaseSensitive = true;
+  // $csp applies to documents only.
+  if (o.csp) { c.resourceTypes = ["main_frame", "sub_frame"]; delete c.excludedResourceTypes; }
   return c;
 }
 
 const priorityFor = (o) =>
   o.doc && o.allow ? 4 : o.important ? (o.allow ? 4 : 3) : o.allow ? 2 : 1;
+
+// $popup domains (DNR cannot see popups) → baked into the MAIN-world engine as a
+// window.open guard (rules/popup_hosts.json → scriptlets/main.js). Pattern (non-
+// domain) popup rules stay skipped.
+const POPUP_HOSTS = new Set();
 
 function convertList(text, key) {
   const merge = new Map(); // сигнатура -> {proto, domains:Set}
@@ -166,13 +233,18 @@ function convertList(text, key) {
     if (!o) { skipped++; continue; }
 
     const d = pureDomain(o.pattern);
+    if (o.popup) {
+      if (d && !isProtected(d)) POPUP_HOSTS.add(d); else skip("popup:pattern");
+      continue;
+    }
     if (d) {
       if (!o.allow && isProtected(d)) continue;
-      const sig = JSON.stringify([o.allow, o.doc, o.important, o.party, o.types.sort(), o.notTypes.sort(), o.initiator.sort(), o.notInitiator.sort()]);
+      const sig = JSON.stringify([o.allow, o.doc, o.important, o.party, o.types.sort(), o.notTypes.sort(), o.initiator.sort(), o.notInitiator.sort(), o.redirect, o.csp]);
       if (!merge.has(sig)) merge.set(sig, { proto: o, domains: new Set() });
       merge.get(sig).domains.add(d);
     } else {
-      if (!o.allow && NEVER_BLOCK.some((p) => o.pattern.includes(p))) continue;
+      // Surrogate redirects on protected hosts are fine (the site keeps working); blocks are not.
+      if (!o.allow && !o.redirect && NEVER_BLOCK.some((p) => o.pattern.includes(p))) continue;
       pattern.push(o);
     }
   }
@@ -190,8 +262,8 @@ function convertList(text, key) {
       if (proto.doc && proto.allow) c.resourceTypes = ["main_frame", "sub_frame"];
       rules.push({
         id: id++,
-        priority: priorityFor(proto),
-        action: { type: proto.doc && proto.allow ? "allowAllRequests" : proto.allow ? "allow" : "block" },
+        priority: priorityOf(proto),
+        action: actionFor(proto),
         condition: c,
       });
     }
@@ -213,8 +285,8 @@ function convertList(text, key) {
     if (o.doc && o.allow) c.resourceTypes = ["main_frame", "sub_frame"];
     rules.push({
       id: id++,
-      priority: priorityFor(o),
-      action: { type: o.doc && o.allow ? "allowAllRequests" : o.allow ? "allow" : "block" },
+      priority: priorityOf(o),
+      action: actionFor(o),
       condition: c,
     });
     if (!o.allow) blocks++;
@@ -230,7 +302,7 @@ const cssSafe = (s) =>
   s.length >= 3 && s.length < 400 && !/[{}@]/.test(s) && !BROAD.has(s.toLowerCase());
 
 // Процедурни оператори, които content.js engine-ът разбира.
-const PROC_OK = /:(has-text|matches-css|matches-attr|matches-path|upward|xpath|min-text-length|remove-attr|remove-class|remove|style)\(/;
+const PROC_OK = /:(has-text|matches-css|matches-attr|matches-path|matches-media|matches-prop|watch-attr|upward|xpath|min-text-length|remove-attr|remove-class|remove|style)\(/;
 
 function convertCosmetic(text) {
   const generic = new Set();
@@ -391,4 +463,11 @@ for (const f of ["ad_rules", "youtube_rules", "removeparam", "surrogates", "head
 }
 counts.generated = new Date().toISOString().slice(0, 10);
 writeFileSync(join(ROOT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
+const popupHosts = [...POPUP_HOSTS].sort();
+writeFileSync(join(ROOT, "rules", "popup_hosts.json"), JSON.stringify(popupHosts) + "\n");
+counts.popupHosts = popupHosts.length;
+console.log(`popup hosts (baked window.open guard): ${popupHosts.length}`);
+if (process.argv.includes("--report")) {
+  console.log("skip reasons (top 30):", JSON.stringify(Object.entries(SKIP_REASONS).sort((a, b) => b[1] - a[1]).slice(0, 30)));
+}
 console.log("counts.json:", JSON.stringify(counts));

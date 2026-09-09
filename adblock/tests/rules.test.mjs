@@ -56,4 +56,23 @@ ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/pr
 ok("bg: safeSelector policy", bg.safeSelector(".ad-slot") && !bg.safeSelector("[type^=pass]") && !bg.safeSelector("div") && !bg.safeSelector(":not(#x)"));
 ok("bg: parseUserDomains never blocks protected hosts", bg.parseUserDomains("||ads.x.com^\nyoutube.com\n! c\nnot a domain").join() === "ads.x.com");
 
+// Сурогати: всеки redirect сочи към съществуващ ресурс; privacy: Set-Cookie strip; chunk-нати live правила
+const surrogates = JSON.parse(readFileSync(join(ROOT, "rules", "surrogates.json"), "utf8"));
+ok("surrogates: every redirect target exists under resources/ and beats block priority",
+  surrogates.every((r) => r.action.type === "redirect" && r.priority > 1 && existsSync(join(ROOT, r.action.redirect.extensionPath.replace(/^\//, "")))));
+ok("surrogates: IMA SDK, comScore and Outbrain are covered", ["ima3.js", "scorecardresearch.js", "outbrain.js"].every((f) => surrogates.some((r) => r.action.redirect.extensionPath.endsWith("/" + f))));
+const privacy = JSON.parse(readFileSync(join(ROOT, "rules", "privacy.json"), "utf8"));
+const strip = privacy.find((r) => r.action.type === "modifyHeaders");
+ok("privacy: third-party Set-Cookie strip rule present, never main_frame",
+  !!strip && strip.action.responseHeaders.some((h) => h.header === "set-cookie" && h.operation === "remove") && strip.condition.domainType === "thirdParty" && !(strip.condition.resourceTypes || []).includes("main_frame") && strip.condition.requestDomains.length >= 20);
+const many = Array.from({ length: 20500 }, (_, i) => `d${i}.example`);
+const live = bg.domainBlockRules(many, 100000, 20000);
+ok("live rules: 20 000 domains → 20 chunked rules, ids 100000..100019, ≤1000 each, never main_frame",
+  live.length === 20 && live[0].id === 100000 && live[19].id === 100019 && live.every((r) => r.condition.requestDomains.length <= 1000 && !r.condition.resourceTypes.includes("main_frame") && r.action.type === "block") && live.reduce((n, r) => n + r.condition.requestDomains.length, 0) === 20000);
+ok("user rules: cap 2000 → 2 rules from 80000; empty → none", bg.domainBlockRules(many, 80000, 2000).length === 2 && bg.domainBlockRules([], 80000, 2000).length === 0);
+
+const popupHosts = JSON.parse(readFileSync(join(ROOT, "rules", "popup_hosts.json"), "utf8"));
+ok("popup hosts: >1000 clean domains from EasyList $popup, none protected", popupHosts.length > 1000 && popupHosts.every((h) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h)) && !popupHosts.some((h) => /(^|\.)(youtube|google|googleapis|gstatic)\.com$/.test(h)));
+ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "scriptlets", "main.js"), "utf8").includes(JSON.stringify(popupHosts.slice(0, 3)).slice(0, -1)));
+
 done();

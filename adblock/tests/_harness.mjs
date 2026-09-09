@@ -84,7 +84,7 @@ export function loadBackground() {
   const policy = readFileSync(join(ROOT, "scriptlets", "policy.js"), "utf8");
   globalThis.importScripts = () => {};
   const src = policy + "\n" + readFileSync(join(ROOT, "background.js"), "utf8") +
-    "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains };";
+    "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains, domainBlockRules };";
   runInThisContext(src, { filename: "background.js" });
   return globalThis.__bg;
 }

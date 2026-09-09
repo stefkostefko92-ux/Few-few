@@ -29,6 +29,11 @@ if (!SA_POLICY || typeof SA_POLICY.validateDirective !== "function") { console.e
 const LIST = argOf("--list") || join(ROOT, "scriptlets", "list.txt");
 const OUT = argOf("--out") || join(ROOT, "scriptlets", "main.js");
 const META = argOf("--out") ? null : join(ROOT, "scriptlets", "scriptlet_meta.json");
+// EasyList $popup domains (from build_filters.mjs) baked as the engine's window.open guard.
+const POPUP_PATH = argOf("--popup") || join(ROOT, "rules", "popup_hosts.json");
+let POPUP_HOSTS = [];
+try { POPUP_HOSTS = JSON.parse(readFileSync(POPUP_PATH, "utf8")); } catch (e) { POPUP_HOSTS = []; }
+if (!Array.isArray(POPUP_HOSTS) || !POPUP_HOSTS.every((h) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h))) { console.error("ERROR: rules/popup_hosts.json is not a clean domain list"); process.exit(1); }
 
 // uBO alias → canonical name: from the single policy.
 const ALIASES = SA_POLICY.ALIASES;
@@ -117,6 +122,8 @@ function main() {
   const POLICY_MARKER = "/*__SCRIPTLET_POLICY__*/";
   if (!engine.includes(POLICY_MARKER)) { console.error("ERROR: engine.js is missing the /*__SCRIPTLET_POLICY__*/ marker"); process.exit(1); }
   const MARKER = "/*__SCRIPTLET_MAP__*/{}";
+  const POPUP_MARKER = "/*__POPUP_HOSTS__*/[]";
+  if (!engine.includes(POPUP_MARKER)) { console.error("ERROR: engine.js is missing the /*__POPUP_HOSTS__*/[] marker"); process.exit(1); }
   if (!engine.includes(MARKER)) {
     console.error("ERROR: engine.js is missing the /*__SCRIPTLET_MAP__*/{} injection point");
     process.exit(1);
@@ -127,7 +134,10 @@ function main() {
   // Function replacement: a plain-string replacement would interpret $$, $&,
   // $` and $' — and args legitimately contain "$" (regex anchors like /ads\.js$/).
   // Inline the policy first (the engine references SA_POLICY), then bake the MAP.
-  const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson);
+  const popupJson = JSON.stringify(POPUP_HOSTS);
+  // Paranoia: a String.replace "$1" artifact would be valid JS and a silent breakage.
+  const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson).replace(POPUP_MARKER, () => popupJson);
+  if (/^\$\d+$/m.test(out) || /^\$\d+$/m.test(engine)) { console.error("ERROR: $N replacement artifact in engine/main.js"); process.exit(1); }
 
   const hosts = Object.keys(map).filter((h) => h !== "");
   const meta = {
@@ -136,6 +146,7 @@ function main() {
     dropped,
     global: (map[""] || []).length,
     hosts,
+    popupHosts: POPUP_HOSTS.length,
   };
   const metaOut = JSON.stringify(meta, null, 2) + "\n";
 

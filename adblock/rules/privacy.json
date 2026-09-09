@@ -2,16 +2,22 @@
   {
     "id": 1,
     "priority": 1,
-    "action": { "type": "block" },
+    "action": {
+      "type": "block"
+    },
     "condition": {
-      "resourceTypes": ["ping"],
+      "resourceTypes": [
+        "ping"
+      ],
       "domainType": "thirdParty"
     }
   },
   {
     "id": 2,
     "priority": 1,
-    "action": { "type": "block" },
+    "action": {
+      "type": "block"
+    },
     "condition": {
       "requestDomains": [
         "coinhive.com",
@@ -45,8 +51,87 @@
         "browsermine.com"
       ],
       "resourceTypes": [
-        "script", "xmlhttprequest", "websocket", "sub_frame", "other",
-        "image", "media", "font", "stylesheet", "object", "ping"
+        "script",
+        "xmlhttprequest",
+        "websocket",
+        "sub_frame",
+        "other",
+        "image",
+        "media",
+        "font",
+        "stylesheet",
+        "object",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        {
+          "header": "set-cookie",
+          "operation": "remove"
+        }
+      ]
+    },
+    "condition": {
+      "domainType": "thirdParty",
+      "requestDomains": [
+        "scorecardresearch.com",
+        "outbrain.com",
+        "taboola.com",
+        "criteo.com",
+        "criteo.net",
+        "adnxs.com",
+        "rubiconproject.com",
+        "pubmatic.com",
+        "openx.net",
+        "casalemedia.com",
+        "bluekai.com",
+        "demdex.net",
+        "krxd.net",
+        "exelator.com",
+        "rlcdn.com",
+        "agkn.com",
+        "eyeota.net",
+        "tapad.com",
+        "adsrvr.org",
+        "mathtag.com",
+        "bidswitch.net",
+        "smartadserver.com",
+        "teads.tv",
+        "3lift.com",
+        "sharethrough.com",
+        "yieldmo.com",
+        "gumgum.com",
+        "quantserve.com",
+        "addthis.com",
+        "sharethis.com",
+        "mgid.com",
+        "revcontent.com",
+        "zemanta.com",
+        "media.net",
+        "adform.net",
+        "yieldlab.net",
+        "improvedigital.com",
+        "33across.com",
+        "id5-sync.com",
+        "liveintent.com"
+      ],
+      "resourceTypes": [
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping",
+        "media",
+        "font",
+        "stylesheet",
+        "object",
+        "other"
       ]
     }
   }

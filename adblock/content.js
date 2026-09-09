@@ -108,7 +108,7 @@
   // ---- Procedural selectors (uBlock-style, data-driven) ----
   // Действия (модифицират елемента) — стоят само на края на веригата.
   const ACTION_OPS = new Set(["remove", "style", "remove-attr", "remove-class"]);
-  const OPS = "has-text|matches-css|matches-attr|matches-path|min-text-length|upward|xpath|remove-attr|remove-class|remove|style";
+  const OPS = "has-text|matches-css|matches-attr|matches-path|matches-media|matches-prop|watch-attr|min-text-length|upward|xpath|remove-attr|remove-class|remove|style";
   const PROC_RE = new RegExp(":(" + OPS + ")\\(");
   const OP_HEAD = new RegExp("^:(" + OPS + ")\\(");
 
@@ -225,6 +225,32 @@
         const re = toRegex(arg);
         const path = location.pathname + location.search;
         if (!(re ? re.test(path) : path.includes(arg))) els = [];
+      } else if (op === "matches-media") {
+        // :matches-media(query) — пази селекцията само ако media query-то мачва
+        // (напр. "(max-width: 600px)"); без DOM обхождане.
+        let mm = false;
+        try { mm = window.matchMedia(arg).matches; } catch {}
+        if (!mm) els = [];
+      } else if (op === "matches-prop") {
+        // :matches-prop(name=value) — JS свойство (dotted) на елемента; стойността
+        // може да е /regex/. Цели рандомизирано DOM състояние. Само четене.
+        const eq = arg.indexOf("=");
+        const propSpec = (eq === -1 ? arg : arg.slice(0, eq)).trim();
+        const valSpec = eq === -1 ? null : arg.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+        const valRe = valSpec != null ? toRegex(valSpec) : null;
+        if (!/^[a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*){0,4}$/.test(propSpec)) return { els: [], action: null };
+        const path = propSpec.split(".");
+        els = els.filter((el) => {
+          let v = el;
+          try { for (const seg of path) { if (v == null) return false; v = v[seg]; } } catch { return false; }
+          if (valSpec == null) return v !== undefined;
+          const s = String(v);
+          return valRe ? valRe.test(s) : s === valSpec;
+        });
+      } else if (op === "watch-attr") {
+        // :watch-attr(attrs) — uBO преизчислява веригата при промяна на тези
+        // атрибути; нашият MutationObserver и без това се пуска при attribute
+        // промени, затова е приет като no-op филтър.
       } else if (op === "min-text-length") {
         const n = parseInt(arg, 10) || 0;
         els = els.filter((el) => el.textContent.length >= n);

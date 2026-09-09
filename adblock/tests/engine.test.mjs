@@ -4,6 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ROOT, ok, done, makeWorld, loadEngine, sendLive, mkAnchor } from "./_harness.mjs";
+const g = globalThis;
 
 // ---------- 1) печени директиви: билд от тестов списък в temp (репото не се пипа) ----------
 {
@@ -112,6 +113,20 @@ import { ROOT, ok, done, makeWorld, loadEngine, sendLive, mkAnchor } from "./_ha
   finally { Array.prototype.slice = realSlice; }
   ok("live: not-once, replay no-op, poisoned JSON.parse/slice have no effect",
     win.lateFlag === true && win.cleanFlag === true && win.poisoned === undefined && win.safeName === false && win.__owned === undefined);
+}
+
+// ---------- 2b) popup / popunder blocker (baked $popup hosts) ----------
+{
+  const dir2 = mkdtempSync(join(tmpdir(), "sa-pop-"));
+  const list2 = join(dir2, "list.txt"), out2 = join(dir2, "main.js"), pop = join(dir2, "popup.json");
+  writeFileSync(list2, "\n"); writeFileSync(pop, JSON.stringify(["popads.net", "adcash.com"]));
+  execFileSync("node", [join(ROOT, "tools", "build_scriptlets.mjs"), `--list=${list2}`, `--out=${out2}`, `--popup=${pop}`], { stdio: "ignore" });
+  const { win } = makeWorld("www.example.com");
+  g.URL = URL;
+  loadEngine(out2);
+  ok("popup: window.open to a $popup host (and subdomains) is refused", win.open("https://serve.popads.net/x") === null && win.open("http://adcash.com/") === null);
+  ok("popup: normal targets, same-host and non-http pass through", win.open("https://good.com/a").closed === false && win.open("https://www.example.com/p").closed === false && win.open("about:blank").closed === false);
+  ok("popup: evil-lookalike host is not matched", win.open("https://popads.net.evil.com/").closed === false);
 }
 
 // ---------- 3) защитени хостове ----------
