@@ -30,7 +30,8 @@ manifest-referenced file is present.
 | Small promo tile | 440×280 | `store/promo_small_440x280.png` | optional |
 | Marquee | 1400×560 | `store/marquee_1400x560.png` | optional (featuring) |
 
-Regenerate: `python3 tools/generate_icons.py` (icon + tiles),
+Regenerate: `python3 tools/generate_icons.py` (icon + tiles; the artwork is the
+brand shield from `store/brand/` — never a drawing made in-repo),
 `python3 store/screenshots/build.py` (renders the real popup with demo numbers
 via headless Chromium; see that script's header).
 

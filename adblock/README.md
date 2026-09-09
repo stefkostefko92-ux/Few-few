@@ -101,7 +101,7 @@ re-review needed.
 bash tools/package.sh     # writes dist/supreme-adblock-<version>.zip
 node tools/build_filters.mjs      # refresh EasyList/EasyPrivacy/URLhaus rules
 python3 tools/generate_rules.py   # regenerate rules/ad_rules.json
-python3 tools/generate_icons.py   # regenerate icons/
+python3 tools/generate_icons.py   # regenerate icons/ + store art from store/brand/
 ```
 
 ## Notes
