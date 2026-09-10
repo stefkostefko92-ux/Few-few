@@ -393,8 +393,10 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
   .cards { grid-template-columns: 1fr 1fr; }
   .footer__grid { grid-template-columns: 1fr 1fr; }
   .gallery { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 760px) {
+
+  /* The drawer takes over as soon as the layout stacks. Six links + language
+     switcher + CTA stop fitting on one row well above 760px, which left tablets
+     (iPad portrait is exactly 768px) with a wrapped, clipped header. */
   .nav__menu, .nav__actions .btn { display: none; }
   .nav__toggle { display: inline-flex; }
   .nav__menu {
@@ -409,6 +411,8 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
   .nav__menu .btn { display: inline-flex; margin-top: 1rem; justify-content: center; }
   .menu-backdrop { position: fixed; inset: 0; background: rgba(20,19,15,.5); opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 80; }
   body.menu-open .menu-backdrop { opacity: 1; visibility: visible; }
+}
+@media (max-width: 760px) {
   .stats { grid-template-columns: 1fr 1fr; }
   .form-row { grid-template-columns: 1fr; }
 }
