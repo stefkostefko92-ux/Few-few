@@ -1,0 +1,29 @@
+<%- include('../partials/shell-start', { active: 'posts' }) %>
+<div class="topbar">
+  <div class="title"><h1><%= t('posts.title') %></h1><span class="chip"><%= ui.num(total) %></span></div>
+  <% if (can('posts:create')) { %><a class="btn primary" href="/admin/posts/new"><%- icon('compose') %> <%= t('posts.newDraft') %></a><% } %>
+</div>
+<form method="get" action="/admin/posts" class="filters">
+  <label><%= t('common.state') %><select name="status"><option value=""><%= t('common.all') %></option><% statuses.forEach((s) => { %><option value="<%= s %>" <%= s === status ? 'selected' : '' %>><%= t(ui.postStatus(s).key) %></option><% }) %></select></label>
+  <label><%= t('common.brand') %><select name="brand"><option value=""><%= t('common.all') %></option><% brands.forEach((b) => { %><option value="<%= b.slug %>" <%= b.slug === brandSlug ? 'selected' : '' %>><%= b.name %></option><% }) %></select></label>
+  <button class="btn" type="submit"><%- icon('filter') %> <%= t('common.filter') %></button>
+  <% if (status || brandSlug) { %><a class="btn ghost" href="/admin/posts"><%- icon('close') %> <%= t('common.clear') %></a><% } %>
+</form>
+<div class="table-wrap">
+<table><thead><tr><th><%= t('common.state') %></th><th><%= t('posts.brandAccount') %></th><th><%= t('common.kind') %></th><th><%= t('common.publication') %></th><th><%= t('common.createdBy') %></th><th><%= t('common.when') %></th></tr></thead><tbody>
+<% posts.forEach((p) => { %>
+  <% const st = ui.postStatus(p.status); const kd = ui.kind(p.kind); const who = ui.creator(p); %>
+  <tr>
+    <td><span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= t(st.key) %></span></td>
+    <td><%= p.brand.name %><span class="sub-line">@<%= p.account ? p.account.username : '—' %></span></td>
+    <td><span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= t(kd.key) %></span><% if (p.aiAssisted) { %> <span class="chip accent"><%- icon('sparkle', { class: 'ic-sm' }) %> AI</span><% } %></td>
+    <td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 70) %><%= p.caption.length > 70 ? '…' : '' %></a><% if (p.status === 'SCHEDULED' && p.scheduledAt) { %><span class="sub-line"><%= t('posts.scheduledFor', { date: ui.dateTime(p.scheduledAt) }) %></span><% } %></td>
+    <td><span class="chip <%= who.tone %>"><%- icon(who.icon, { class: 'ic-sm' }) %> <%= t(who.key) %></span></td>
+    <td class="muted when"><%= ui.relative(p.createdAt) %></td>
+  </tr>
+<% }) %>
+<% if (!posts.length) { %><tr><td colspan="6"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('posts.empty') %></strong><%= t('posts.emptyHint') %></div></td></tr><% } %>
+</tbody></table>
+</div>
+<% if (pages > 1) { %><div class="pager"><span class="muted"><%= t('common.page') %></span><% for (let i = 1; i <= pages; i += 1) { %><a class="btn small <%= i === page ? 'primary' : 'ghost' %>" href="/admin/posts?status=<%= status %>&brand=<%= brandSlug %>&page=<%= i %>"><%= i %></a><% } %></div><% } %>
+<%- include('../partials/shell-end') %>

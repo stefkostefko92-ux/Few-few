@@ -1,0 +1,53 @@
+<%- include('../partials/shell-start', { active: 'accounts' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('accounts.title') %></h1>
+    <p class="sub"><%- t('accounts.subtitle') %></p>
+  </div>
+</div>
+
+<% if (can('accounts:manage')) { %>
+<section class="panel">
+  <h2><%- icon('instagram') %> <%= t('accounts.connect') %></h2>
+  <form method="post" action="/admin/accounts/connect" class="row">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <select name="brandId" required class="field-lg"><option value=""><%= t('accounts.chooseBrand') %></option><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %> (<%= b.slug %>)</option><% }) %></select>
+    <button class="btn primary" type="submit"><%- icon('external') %> <%= t('accounts.toInstagram') %></button>
+  </form>
+  <p class="sub"><%= t('accounts.connectHint') %></p>
+</section>
+<% } %>
+
+<div class="table-wrap">
+<table><thead><tr><th><%= t('common.account') %></th><th><%= t('common.brand') %></th><th><%= t('common.state') %></th><th><%= t('dash.tokenUntil') %></th><th><%= t('dash.quotaWindow') %></th><th class="num"><%= t('brands.posts') %></th><th><%= t('common.actions') %></th></tr></thead><tbody>
+<% accounts.forEach((a) => { %>
+  <% const st = ui.accountStatus(a.status); const tone = ui.quotaTone(a.quotaUsed, a.quotaTotal); %>
+  <tr>
+    <td><strong>@<%= a.username %></strong><span class="sub-line mono"><%= a.igUserId %></span></td>
+    <td><%= a.brand.name %></td>
+    <td><span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= t(st.key) %></span></td>
+    <td class="when"><%= a.status === 'DISABLED' ? '—' : ui.date(a.tokenExpiresAt) %><% if (a.status === 'ACTIVE') { %><span class="sub-line"><%= ui.relative(a.tokenExpiresAt) %></span><% } %></td>
+    <td>
+      <% if (a.quotaTotal) { %>
+      <div class="meter">
+        <div class="meter-track"><div class="meter-fill <%= tone %> p-<%= Math.round(Math.min(100, (a.quotaUsed / a.quotaTotal) * 100) / 5) * 5 %>"></div></div>
+        <div class="meter-label"><%= a.quotaUsed %> / <%= a.quotaTotal %><%= a.quotaCheckedAt ? ' · ' + ui.relative(a.quotaCheckedAt) : '' %></div>
+      </div>
+      <% } else { %><span class="muted"><%= t('dash.quotaUnchecked') %></span><% } %>
+    </td>
+    <td class="num"><a href="/admin/posts?brand=<%= a.brand.slug %>"><%= a._count.posts %></a></td>
+    <td class="row">
+      <% if (a.status === 'ACTIVE') { %>
+        <form method="post" action="/admin/accounts/<%= a.id %>/quota" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('quota', { class: 'ic-sm' }) %> <%= t('accounts.quota') %></button></form>
+        <% if (can('accounts:manage')) { %>
+        <form method="post" action="/admin/accounts/<%= a.id %>/refresh-token" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('refresh', { class: 'ic-sm' }) %> <%= t('accounts.token') %></button></form>
+        <form method="post" action="/admin/accounts/<%= a.id %>/disconnect" class="inline" data-confirm="<%= t('accounts.disconnectConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn danger small" type="submit"><%- icon('status-disabled', { class: 'ic-sm' }) %> <%= t('accounts.disconnect') %></button></form>
+        <% } %>
+      <% } else { %><span class="muted"><%= t('accounts.needsOAuth') %></span><% } %>
+    </td>
+  </tr>
+<% }) %>
+<% if (!accounts.length) { %><tr><td colspan="7"><div class="empty"><%- icon('instagram', { class: 'ic-xl' }) %><strong><%= t('accounts.empty') %></strong><%= t('accounts.emptyHint') %></div></td></tr><% } %>
+</tbody></table>
+</div>
+<%- include('../partials/shell-end') %>

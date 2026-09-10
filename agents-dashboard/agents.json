@@ -7760,8 +7760,8 @@
         "Repurpose (tools/social/repurpose.sh)",
         "Памет + контент по заявка от всеки продукт",
         "Платформено-специфични safe-zone px (TikTok/IG Reels/YT Shorts)",
-        "Публикатор: чернови за Instagram през tools/social/publikator.mjs (HMAC-подписано; без право на публикуване)",
-        "Управлявани страници: автопилот по план (стълбове · материали · часове · варианти FB/TikTok/LinkedIn/X) + Instagram Insights като обратна връзка (tools/social/publikator.mjs insights)"
+        "Piuma: чернови за Instagram през tools/social/piuma.mjs (HMAC-подписано; без право на публикуване)",
+        "Управлявани страници: автопилот по план (стълбове · материали · часове · варианти FB/TikTok/LinkedIn/X) + Instagram Insights като обратна връзка (tools/social/piuma.mjs insights)"
       ],
       "knowledge": {
         "sources": 26,
@@ -8125,8 +8125,8 @@
         {
           "version": "15.0.0",
           "date": "2026-09-08",
-          "event": "v7.0 — Публикатор",
-          "detail": "Реален път до Instagram през publikator/: агентът създава само чернови с HMAC-подписани заявки; одобрение/насрочване/публикуване са човешки, в панела."
+          "event": "v7.0 — Piuma",
+          "detail": "Реален път до Instagram през piuma/: агентът създава само чернови с HMAC-подписани заявки; одобрение/насрочване/публикуване са човешки, в панела."
         },
         {
           "version": "16.0.0",

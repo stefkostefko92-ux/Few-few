@@ -1,0 +1,67 @@
+{
+  "name": "piuma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Piuma — Instagram контент-двигател: генерира чернови, минава през човешко одобрение и публикува през официалния Instagram Platform API.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "piuma"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "instagram-graph-api",
+    "content-publishing",
+    "social-media-manager",
+    "scheduling",
+    "bullmq"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "worker": "node dist/queue/worker.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "tsx --test tests/*.test.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "test:integration": "tsx --test tests/integration/*.test.ts",
+    "owner:create": "node dist/scripts/create-owner.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "@prisma/client": "^6.2.1",
+    "argon2": "^0.45.1",
+    "bullmq": "^5.34.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^6.0.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "qrcode": "^1.5.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "@types/qrcode": "^1.5.6",
+    "prettier": "^3.4.2",
+    "prisma": "^6.2.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

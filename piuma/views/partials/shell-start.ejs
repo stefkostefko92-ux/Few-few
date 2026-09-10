@@ -1,0 +1,30 @@
+<%- include('head') %>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><%- icon('piuma', { class: 'ic-lg' }) %><span class="wordmark">Piuma</span></div>
+    <nav class="nav">
+      <a href="/admin" class="<%= active === 'dashboard' ? 'active' : '' %>"><%- icon('dashboard') %> <%= t('nav.dashboard') %></a>
+      <a href="/admin/posts" class="<%= active === 'posts' ? 'active' : '' %>"><%- icon('posts') %> <%= t('nav.posts') %></a>
+      <% if (can('posts:create')) { %><a href="/admin/posts/new" class="<%= active === 'new' ? 'active' : '' %>"><%- icon('compose') %> <%= t('nav.compose') %></a><% } %>
+      <a href="/admin/brands" class="<%= active === 'brands' ? 'active' : '' %>"><%- icon('brands') %> <%= t('nav.brands') %></a>
+      <a href="/admin/accounts" class="<%= active === 'accounts' ? 'active' : '' %>"><%- icon('instagram') %> <%= t('nav.accounts') %></a>
+      <% if (can('audit:view') || can('users:manage') || can('keys:manage') || can('settings:view')) { %><small><%= t('nav.section') %></small><% } %>
+      <% if (can('users:manage')) { %><a href="/admin/users" class="<%= active === 'users' ? 'active' : '' %>"><%- icon('users') %> <%= t('nav.users') %></a><% } %>
+      <% if (can('keys:manage')) { %><a href="/admin/keys" class="<%= active === 'keys' ? 'active' : '' %>"><%- icon('key') %> <%= t('nav.keys') %></a><% } %>
+      <% if (can('audit:view')) { %><a href="/admin/audit" class="<%= active === 'audit' ? 'active' : '' %>"><%- icon('audit') %> <%= t('nav.audit') %></a><% } %>
+      <% if (can('settings:view')) { %><a href="/admin/settings" class="<%= active === 'settings' ? 'active' : '' %>"><%- icon('settings') %> <%= t('nav.settings') %></a><% } %>
+    </nav>
+    <div class="who">
+      <% if (currentUser) { %>
+        <%- include('lang') %>
+        <div class="name"><a href="/admin/profile"><%= currentUser.name %></a></div>
+        <div><%= currentUser.email %></div>
+        <div class="row spread">
+          <span class="chip"><%- icon('shield', { class: 'ic-sm' }) %> <%= t(ui.roleKey(currentRole)) %></span>
+          <form method="post" action="/admin/logout" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('logout', { class: 'ic-sm' }) %> <%= t('nav.logout') %></button></form>
+        </div>
+      <% } %>
+    </div>
+  </aside>
+  <main>
+    <% if (flash) { %><div class="flash <%= flash.kind %>"><%- icon(flash.kind === 'ok' ? 'status-approved' : flash.kind === 'error' ? 'status-failed' : 'severity-info') %><span><%= flash.text %></span></div><% } %>
