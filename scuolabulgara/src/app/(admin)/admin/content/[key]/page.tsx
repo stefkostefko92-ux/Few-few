@@ -40,7 +40,7 @@ export default async function ContentEditPage({ params }: { params: Promise<{ ke
         </div>
       }
     >
-      <ContentEditor contentKey={row.key} label={row.label || row.key} initial={initial} />
+      <ContentEditor contentKey={row.key} initial={initial} />
     </AdminShell>
   );
 }

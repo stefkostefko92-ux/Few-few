@@ -31,7 +31,7 @@ export default function SiteFooter({
       <div className="container">
         <div className="footer__grid">
           <div className="footer__brand">
-            <img src="/assets/img/brand/logo.webp" alt={brandName} />
+            <img src="/assets/img/brand/logo.webp" alt={brandName} width={62} height={54} />
             <p>{description}</p>
           </div>
           <div>

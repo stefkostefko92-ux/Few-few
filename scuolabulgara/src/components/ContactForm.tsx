@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
 
-export default function ContactForm({ locale, topics }: { locale: Locale; topics: string[] }) {
+export default function ContactForm({ locale, topics, email }: { locale: Locale; topics: string[]; email: string }) {
   const [status, setStatus] = useState<{ msg: string; ok: boolean }>({ msg: "", ok: false });
   const [sending, setSending] = useState(false);
 
@@ -33,7 +33,7 @@ export default function ContactForm({ locale, topics }: { locale: Locale; topics
       // Fallback to a mailto so the message is never lost.
       const subject = encodeURIComponent(`[Sito] ${topic} — ${name}`);
       const body = encodeURIComponent(`Nome: ${name}\nEmail: ${email}\nInteresse: ${topic}\n\n${message}`);
-      window.location.href = `mailto:centroquibulgaria@gmail.com?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
       setStatus({ msg: t(locale, "form.ok"), ok: true });
     } finally {
       setSending(false);

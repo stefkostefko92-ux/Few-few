@@ -4,7 +4,11 @@ services:
     image: scuolabulgaramilano:latest
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Bind to loopback ONLY: nginx is the sole entry point. A public bind
+      # (0.0.0.0) is reachable directly because Docker's DNAT rules sit in front
+      # of ufw — that would let an attacker skip nginx and forge X-Real-IP,
+      # defeating the login rate limit.
+      - "127.0.0.1:3000:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: "file:/app/data/app.db"

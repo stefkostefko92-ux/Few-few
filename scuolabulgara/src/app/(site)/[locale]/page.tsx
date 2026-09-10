@@ -22,7 +22,7 @@ async function load(locale: Locale): Promise<Loaded> {
   try {
     await ensureSeeded();
     const rows = await prisma.content.findMany();
-    byKey = new Map(rows.map((r) => [r.key, r as any]));
+    byKey = new Map(rows.map((r) => [r.key, r]));
   } catch {
     // DB not ready yet → fall back to bundled defaults.
   }
@@ -31,7 +31,7 @@ async function load(locale: Locale): Promise<Loaded> {
     let data = defaultFor(key, locale);
     if (row) {
       try {
-        const parsed = JSON.parse((row as any)[locale] || row.en || "{}");
+        const parsed = JSON.parse(row[locale] || row.en || "{}");
         if (parsed && Object.keys(parsed).length) data = parsed;
       } catch {}
     }
@@ -231,11 +231,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   {hero.trust}
                 </div>
               </div>
-              <div className="hero__visual reveal" data-delay="2">
-                <img className="hero__swoosh" src="/assets/img/brand/swoosh.svg" alt="" aria-hidden="true" />
+              <div className="hero__visual">
                 <figure className="hero__photo">
                   <img src="/assets/img/photos/community.webp" alt={about.tag} width={526} height={452} fetchPriority="high" />
                 </figure>
+                <img className="hero__swoosh" src="/assets/img/brand/swoosh.svg" alt="" aria-hidden="true" loading="lazy" width={180} height={56} />
                 <div className="hero__badge">
                   <span className="num" data-count={hero.stat}>{hero.stat}</span>
                   <small><span className="since">{(hero.statLabel || "").split(" ")[0]}</span> {(hero.statLabel || "").split(" ").slice(1).join(" ")}</small>
@@ -493,7 +493,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   <a href={`tel:${settings.phoneHref}`} aria-label="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" strokeLinejoin="round" /></svg></a>
                 </div>
               </div>
-              <ContactForm locale={locale} topics={contact.topics || []} />
+              <ContactForm locale={locale} topics={contact.topics || []} email={settings.email} />
             </div>
 
             <div className="cta-band reveal" style={{ marginTop: "4rem" }}>
