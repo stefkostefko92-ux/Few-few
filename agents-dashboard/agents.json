@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-09",
+    "updated": "2026-09-10",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -11035,6 +11035,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-10",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Задача спомена screenshots/ директория в scuolabulgara, но тя не съществува във файлова…\" (+1)"
+        },
         {
           "date": "2026-09-09",
           "type": "learning",
