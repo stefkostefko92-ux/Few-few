@@ -208,6 +208,7 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 .trustbar .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem 2.5rem; padding-block: 1.4rem; }
 .trust-item { display: flex; align-items: center; gap: .7rem; font-size: .92rem; color: var(--ink-soft); font-weight: 500; }
 .trust-item svg { width: 26px; height: 26px; color: var(--green-700); flex-shrink: 0; }
+.trust-item img { width: 26px; height: 26px; object-fit: contain; flex-shrink: 0; }
 
 /* ---------- Stats ---------- */
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
@@ -239,8 +240,13 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--lime-500), var(--red-600)); transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); }
 .card:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: transparent; }
 .card:hover::before { transform: scaleX(1); }
-.card__icon { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--ink); color: var(--lime-400); margin-bottom: 1.2rem; }
+/* Light tile: the brand icons are full-colour illustrations in dark green, red
+   and gold — on the old near-black tile the greens disappeared entirely. */
+.card__icon { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--lime-500) 20%, var(--white)); border: 1px solid var(--line);
+  margin-bottom: 1.2rem; }
 .card__icon svg { width: 28px; height: 28px; }
+.card__icon img { width: 40px; height: 40px; object-fit: contain; }
 .card h3 { margin-bottom: .6rem; }
 .card p { font-size: .96rem; }
 .card__list { margin-top: 1.1rem; display: grid; gap: .55rem; }
@@ -294,7 +300,9 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 
 .fb__frame { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
 .fb__bar { display: flex; align-items: center; gap: .7rem; padding: .9rem 1.1rem; border-bottom: 1px solid var(--line); background: var(--paper); }
-.fb__bar-logo { width: 34px; height: 34px; color: #1877F2; flex-shrink: 0; }
+.fb__bar-logo { width: 34px; height: 34px; color: #1877F2; flex-shrink: 0; display: grid; place-items: center; }
+.fb__bar-logo img { width: 26px; height: 26px; object-fit: contain; }
+.fb-consent__logo img { width: 56px; height: 56px; object-fit: contain; }
 .fb__bar-name { font-weight: 600; font-size: .92rem; color: var(--ink); }
 .fb-embed { min-height: 540px; display: grid; }
 .fb-embed iframe { width: 100%; display: block; border: 0; }
@@ -332,13 +340,17 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 .contact__row { display: flex; gap: 1rem; align-items: center; }
 .contact__row .ic { width: 48px; height: 48px; border-radius: 14px; background: var(--white); border: 1px solid var(--line); display: grid; place-items: center; color: var(--green-700); flex-shrink: 0; box-shadow: var(--shadow-sm); }
 .contact__row .ic svg { width: 22px; height: 22px; }
+.contact__row .ic img { width: 24px; height: 24px; object-fit: contain; }
 .contact__row small { color: var(--muted); font-size: .82rem; display: block; }
 .contact__row a, .contact__row b { color: var(--ink); font-weight: 600; font-size: 1.02rem; }
 .contact__row a:hover { color: var(--green-700); }
 .socials { display: flex; gap: .7rem; margin-top: 1.6rem; }
 .socials a { width: 44px; height: 44px; border-radius: 12px; background: var(--white); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink); transition: transform .25s var(--ease), background-color .25s, color .25s; }
-.socials a:hover { transform: translateY(-3px); background: var(--ink); color: #fff; }
+/* Hover stays light: the icons are fixed-colour images, so the old dark-fill
+   hover would have swallowed them. */
+.socials a:hover { transform: translateY(-3px); background: color-mix(in srgb, var(--lime-500) 24%, var(--white)); border-color: var(--green-700); }
 .socials svg { width: 20px; height: 20px; }
+.socials img { width: 22px; height: 22px; object-fit: contain; }
 
 .form-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(1.6rem, 3vw, 2.4rem); box-shadow: var(--shadow); }
 .field { margin-bottom: 1.1rem; }

@@ -12,6 +12,7 @@ import Enhancements from "@/components/Enhancements";
 import ContactForm from "@/components/ContactForm";
 import FacebookEmbed from "@/components/FacebookEmbed";
 import CookieBanner from "@/components/CookieBanner";
+import Icon from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -44,13 +45,14 @@ async function load(locale: Locale): Promise<Loaded> {
   return { get, enabled };
 }
 
+// Brand icons — illustrated Bulgarian motifs, keyed as in the CMS.
 const ICONS: Record<string, ReactNode> = {
-  presence: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 5h18M5 5v14m14-14v14M3 19h18M9 9h6M9 13h4" strokeLinecap="round" /></svg>),
-  distance: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" strokeLinecap="round" /></svg>),
-  hybrid: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v18M4 7h16M4 17h16" strokeLinecap="round" /></svg>),
-  kids: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="3.4" /><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" strokeLinecap="round" /></svg>),
-  adults: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 6h16v12H4zM4 6l8 6 8-6" strokeLinejoin="round" /></svg>),
-  culture: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3 2 8l10 5 10-5-10-5Z" strokeLinejoin="round" /><path d="M6 10v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" strokeLinecap="round" /></svg>),
+  presence: <Icon name="presence" size={40} />,
+  distance: <Icon name="distance" size={40} />,
+  hybrid: <Icon name="hybrid" size={40} />,
+  kids: <Icon name="kids" size={40} />,
+  adults: <Icon name="adults" size={40} />,
+  culture: <Icon name="culture" size={40} />,
 };
 const Check = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const Arrow = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>);
@@ -248,10 +250,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {/* Trust bar */}
         <section className="trustbar" aria-label="Highlights">
           <div className="container">
-            <div className="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2 4 6v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-4Z" strokeLinejoin="round" /><path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" /></svg>{(school.items?.[0]?.title) || ""}</div>
-            <div className="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3 2 8.5 12 14l10-5.5L12 3Z" strokeLinejoin="round" /><path d="M6 10.5V16c0 1 2.7 3 6 3s6-2 6-3v-5.5" strokeLinecap="round" strokeLinejoin="round" /></svg>{about.features?.[2]?.title || ""}</div>
-            <div className="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="9" r="3.2" /><path d="M5 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5" strokeLinecap="round" /></svg>{about.features?.[1]?.title || ""}</div>
-            <div className="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10Z" strokeLinejoin="round" /><circle cx="12" cy="11" r="2.4" /></svg>{about.tag}</div>
+            <div className="trust-item"><Icon name="shield-check" size={26} />{(school.items?.[0]?.title) || ""}</div>
+            <div className="trust-item"><Icon name="graduation-cap" size={26} />{about.features?.[2]?.title || ""}</div>
+            <div className="trust-item"><Icon name="person" size={26} />{about.features?.[1]?.title || ""}</div>
+            <div className="trust-item"><Icon name="location-pin" size={26} />{about.tag}</div>
           </div>
         </section>
 
@@ -409,7 +411,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               </div>
               <div className="fb__frame reveal" data-delay="1">
                 <div className="fb__bar" aria-hidden="true">
-                  <span className="fb__bar-logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z" /></svg></span>
+                  <span className="fb__bar-logo"><Icon name="facebook-circle" size={22} /></span>
                   <span className="fb__bar-name">{settings.brandName} · {settings.brandSub}</span>
                 </div>
                 <FacebookEmbed locale={locale} href={settings.facebookPageHref} />
@@ -475,22 +477,22 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <p className="lead">{contact.lead}</p>
                 <div className="contact__info">
                   <div className="contact__row">
-                    <span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" strokeLinejoin="round" /></svg></span>
+                    <span className="ic"><Icon name="phone" size={24} /></span>
                     <div><small>{t(locale, "phone")}</small><a href={`tel:${settings.phoneHref}`}>{settings.phone}</a></div>
                   </div>
                   <div className="contact__row">
-                    <span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" strokeLinejoin="round" /></svg></span>
+                    <span className="ic"><Icon name="envelope" size={24} /></span>
                     <div><small>{t(locale, "form.email")}</small><a href={`mailto:${settings.email}`}>{settings.email}</a></div>
                   </div>
                   <div className="contact__row">
-                    <span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10Z" strokeLinejoin="round" /><circle cx="12" cy="11" r="2.4" /></svg></span>
+                    <span className="ic"><Icon name="location-pin" size={24} /></span>
                     <div><small>{t(locale, "addr")}</small><b>{settings.address}</b></div>
                   </div>
                 </div>
                 <div className="socials">
-                  <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6h3v-6H16l.5-3H13.5V9.8c0-.5.3-.8.8-.8Z" /></svg></a>
-                  <a href={`mailto:${settings.email}`} aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" strokeLinejoin="round" /></svg></a>
-                  <a href={`tel:${settings.phoneHref}`} aria-label="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" strokeLinejoin="round" /></svg></a>
+                  <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Icon name="facebook-f" size={22} /></a>
+                  <a href={`mailto:${settings.email}`} aria-label="Email"><Icon name="envelope" size={22} /></a>
+                  <a href={`tel:${settings.phoneHref}`} aria-label="Phone"><Icon name="phone" size={22} /></a>
                 </div>
               </div>
               <ContactForm locale={locale} topics={contact.topics || []} email={settings.email} />
