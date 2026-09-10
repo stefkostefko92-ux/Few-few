@@ -1,12 +1,13 @@
 <%- include('../partials/head') %>
 <div class="login">
-  <h1>Вход в Публикатор</h1>
-  <% if (error) { %><div class="flash error"><%= error %></div><% } %>
+  <div class="brand"><%- icon('publikator', { class: 'ic-lg' }) %><span class="wordmark">Публи<span>катор</span></span></div>
+  <h1>Вход в панела</h1>
+  <% if (error) { %><div class="flash error"><%- icon('status-failed') %><span><%= error %></span></div><% } %>
   <form method="post" action="/admin/login" class="stack" autocomplete="on">
     <input type="hidden" name="next" value="<%= next %>">
     <label>Имейл<input type="email" name="email" required autocomplete="username" autofocus></label>
     <label>Парола<input type="password" name="password" required autocomplete="current-password" minlength="12"></label>
-    <button class="btn primary" type="submit">Влез</button>
+    <button class="btn primary" type="submit"><%- icon('logout') %> Влез</button>
   </form>
 </div>
 <%- include('../partials/foot') %>

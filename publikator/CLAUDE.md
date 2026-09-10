@@ -32,17 +32,20 @@ npm run owner:create     # първият собственик — от сред
 ```
 src/
   config.ts            zod над process.env — процесът не тръгва с полуготов конфиг
+  icons.ts             чете `public/icons/*.svg` веднъж → един `<symbol>` спрайт (виж ICONS.md)
   crypto.ts            AES-256-GCM за тайни в покой, HMAC подпис на OAuth state
   audit.ts             одит с верига от хешове (подправен стар запис чупи веригата)
   auth/                rbac (7 нива) · password (Argon2id) · totp · sessions (в базата) · guards (login/CSRF/права)
   agent/               signature (HMAC) · nonce-store (Redis, fail-closed) · auth · routes (/agent/v1)
   admin/               маршрути на панела по домейни (auth · dashboard · brands · manage (представяне/автопилот) · accounts · posts · users · keys · audit)
+                       + presenters (състояние → българска дума, икона, тон) · sparkline (тренд-линия без библиотека)
   instagram/           client · oauth · publish (контейнер → публикуване) · insights (метрики на медия/акаунт)
   content/             lint (HIGH блокира) · plan (планът на страницата, zod) · prompt (контекст: план + Insights) · schedule (чиста логика на автопилота) · generate
   services/            accounts · posts · publish · insights (синхронизация + представяне) · autopilot — инвариантите живеят тук, не в маршрутите
   queue/               BullMQ опашка и работник
 views/                 EJS шаблони (partials/shell-*, admin/*)
-public/                admin.css · admin.js (единственият скрипт, с nonce)
+public/                admin.css (дизайн система) · admin.js (единственият скрипт, с nonce) · icons/*.svg
+ICONS.md               наборът икони: правила за файла, пълен списък, как се сменя
 ```
 
 ## Инварианти (не ги заобикаляй)
@@ -60,6 +63,11 @@ public/                admin.css · admin.js (единственият скри�
 9. **Автопилотът прави само чернови и само от медийната библиотека на бранда.** Не измисля материали,
    не надхвърля `postsPerWeek`, чете Insights, но никога не пише в Instagram.
 10. **Подписаният път включва query string-а** (`req.originalUrl`) — CLI-то и сървърът трябва да са в синхрон.
+11. **Никакъв `style="…"` в шаблон.** CSP е `style-src 'self'` — атрибутът се блокира мълчаливо и
+    оформлението просто не се прилага. Оформлението живее в класове; динамичната ширина на мярката
+    е стъпка от 5% (`.meter-fill.p-NN`).
+12. **Цветът никога не носи смисъл сам.** Всяко състояние е чип с икона и българска дума
+    (`admin/presenters.ts`); палитрата е мерена за контраст, не подбирана на око.
 
 ## Външни зависимости, които остаряват
 

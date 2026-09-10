@@ -1,80 +1,118 @@
 <%- include('../partials/shell-start', { active: 'posts' }) %>
-<div class="row" style="justify-content:space-between">
-  <h1><span class="badge <%= post.status %>"><%= post.status %></span> <%= post.brand.name %> · <%= post.kind %><% if (post.aiAssisted) { %> <span class="badge">AI чернова</span><% } %></h1>
-  <a class="btn" href="/admin/posts">← всички</a>
+<% const st = ui.postStatus(post.status); const kd = ui.kind(post.kind); const who = ui.creator(post); %>
+<div class="topbar">
+  <div>
+    <div class="title">
+      <h1><%= post.brand.name %></h1>
+      <span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= st.label %></span>
+      <span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= kd.label %></span>
+      <% if (post.aiAssisted) { %><span class="chip accent"><%- icon('sparkle', { class: 'ic-sm' }) %> AI чернова</span><% } %>
+    </div>
+    <p class="sub">Създал: <%= post.createdByLabel || who.label %> · <%= ui.dateTime(post.createdAt) %></p>
+  </div>
+  <a class="btn ghost" href="/admin/posts"><%- icon('posts') %> Всички постове</a>
 </div>
+
 <div class="grid2">
   <section>
-    <h2>Преглед</h2>
+    <h2><%- icon('metric-views') %> Преглед</h2>
     <div class="preview"><%= post.caption %>
 
 <%= post.hashtags.join(' ') %></div>
-    <p class="muted">Медия: <a href="<%= post.mediaUrl %>" target="_blank" rel="noopener noreferrer"><%= post.mediaUrl %></a><% if (post.coverUrl) { %> · cover: <a href="<%= post.coverUrl %>" target="_blank" rel="noopener noreferrer">линк</a><% } %></p>
-    <p class="muted">Alt: <%= post.altText || '—' %></p>
-    <% if (post.topic) { %><p class="muted">Тема: <%= post.topic %></p><% } %>
-    <% if (post.suggestedAt && (post.status === 'DRAFT' || post.status === 'APPROVED')) { %><p class="muted">Предложен час от автопилота: <strong><%= post.suggestedAt.toLocaleString('bg-BG') %></strong></p><% } %>
-    <p class="muted">Създал: <%= post.createdByLabel || post.createdByType %> · <%= post.createdAt.toLocaleString('bg-BG') %></p>
-    <% if (post.approvedBy) { %><p class="muted">Одобрил: <%= post.approvedBy %> · <%= post.approvedAt ? post.approvedAt.toLocaleString('bg-BG') : '' %></p><% } %>
-    <% if (post.status === 'REJECTED') { %><div class="flash error">Отказан от <%= post.rejectedBy %>: <%= post.rejectionReason || 'без причина' %></div><% } %>
-    <% if (post.status === 'SCHEDULED' && post.scheduledAt) { %><p>Насрочен за <strong><%= post.scheduledAt.toLocaleString('bg-BG') %></strong></p><% } %>
-    <% if (post.status === 'PUBLISHED') { %><p>Публикуван <%= post.publishedAt ? post.publishedAt.toLocaleString('bg-BG') : '' %><% if (post.permalink) { %> — <a href="<%= post.permalink %>" target="_blank" rel="noopener noreferrer">виж в Instagram</a><% } %></p><% } %>
-    <% if (post.status === 'FAILED') { %><div class="flash error">Провал (опит <%= post.attempts %>): <span class="mono"><%= post.lastError %></span></div><% } %>
+    <div class="stat-row mt-1">
+      <span><%- icon(kd.icon, { class: 'ic-sm' }) %> <a href="<%= post.mediaUrl %>" target="_blank" rel="noopener noreferrer">медия</a></span>
+      <% if (post.coverUrl) { %><span><%- icon('image', { class: 'ic-sm' }) %> <a href="<%= post.coverUrl %>" target="_blank" rel="noopener noreferrer">cover</a></span><% } %>
+      <% if (post.topic) { %><span><%- icon('brands', { class: 'ic-sm' }) %> <%= post.topic %></span><% } %>
+    </div>
+    <p class="sub">Alt текст: <%= post.altText || '—' %></p>
+    <% if (post.suggestedAt && (post.status === 'DRAFT' || post.status === 'APPROVED')) { %>
+      <p class="sub"><%- icon('autopilot', { class: 'ic-sm' }) %> Предложен час от автопилота: <strong><%= ui.dateTime(post.suggestedAt) %></strong></p>
+    <% } %>
+    <% if (post.approvedBy) { %><p class="sub"><%- icon('status-approved', { class: 'ic-sm' }) %> Одобрил: <%= post.approvedBy %> · <%= ui.dateTime(post.approvedAt) %></p><% } %>
+    <% if (post.status === 'REJECTED') { %><div class="flash error"><%- icon('status-rejected') %><span>Отказан от <%= post.rejectedBy %>: <%= post.rejectionReason || 'без посочена причина' %></span></div><% } %>
+    <% if (post.status === 'SCHEDULED' && post.scheduledAt) { %><div class="flash info"><%- icon('status-scheduled') %><span>Насрочен за <strong><%= ui.dateTime(post.scheduledAt) %></strong> (<%= ui.relative(post.scheduledAt) %>)</span></div><% } %>
+    <% if (post.status === 'PUBLISHED') { %><div class="flash ok"><%- icon('status-published') %><span>Публикуван <%= ui.dateTime(post.publishedAt) %><% if (post.permalink) { %> — <a href="<%= post.permalink %>" target="_blank" rel="noopener noreferrer">виж в Instagram</a><% } %></span></div><% } %>
+    <% if (post.status === 'FAILED') { %><div class="flash error"><%- icon('status-failed') %><span>Провал на опит <%= post.attempts %>: <span class="mono"><%= post.lastError %></span></span></div><% } %>
 
-    <h2>Линт</h2>
+    <h2><%- icon('audit') %> Линт</h2>
     <% const findings = Array.isArray(post.lintFindings) ? post.lintFindings : []; %>
-    <% if (!findings.length) { %><p class="muted">Чисто.</p><% } else { %>
-    <table><tbody><% findings.forEach((f) => { %><tr><td><span class="badge <%= f.severity %>"><%= f.severity %></span></td><td class="mono"><%= f.rule %></td><td><%= f.message %></td></tr><% }) %></tbody></table>
+    <% if (!findings.length) { %>
+      <div class="panel"><div class="empty"><%- icon('status-approved', { class: 'ic-xl' }) %><strong>Чисто</strong>Никоя проверка не се обади.</div></div>
+    <% } else { %>
+    <div class="table-wrap"><table><tbody>
+      <% findings.forEach((f) => { const sv = ui.severity(f.severity); %>
+      <tr><td class="shrink"><span class="chip <%= sv.tone %>"><%- icon(sv.icon, { class: 'ic-sm' }) %> <%= sv.label %></span></td><td class="mono shrink"><%= f.rule %></td><td><%= f.message %></td></tr>
+      <% }) %>
+    </tbody></table></div>
     <% } %>
 
-    <h2>Действия</h2>
+    <h2><%- icon('play') %> Действия</h2>
     <div class="row">
       <% if ((post.status === 'DRAFT') && can('posts:approve')) { %>
-        <form method="post" action="/admin/posts/<%= post.id %>/approve" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit">Одобри</button></form>
+        <form method="post" action="/admin/posts/<%= post.id %>/approve" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit"><%- icon('approve') %> Одобри</button></form>
       <% } %>
       <% if ((post.status === 'DRAFT' || post.status === 'APPROVED') && can('posts:approve')) { %>
-        <form method="post" action="/admin/posts/<%= post.id %>/reject" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="reason" placeholder="причина за отказ" style="max-width:260px"><button class="btn danger" type="submit">Откажи</button></form>
+        <form method="post" action="/admin/posts/<%= post.id %>/reject" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="reason" placeholder="причина за отказ" class="field-md"><button class="btn danger" type="submit"><%- icon('reject') %> Откажи</button></form>
       <% } %>
       <% if (post.status === 'APPROVED' && can('posts:schedule')) { %>
         <% const suggested = post.suggestedAt ? new Date(post.suggestedAt.getTime() - post.suggestedAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''; %>
-        <form method="post" action="/admin/posts/<%= post.id %>/schedule" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="datetime-local" name="scheduledAt" required value="<%= suggested %>"><button class="btn" type="submit">Насрочи</button></form>
+        <form method="post" action="/admin/posts/<%= post.id %>/schedule" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="datetime-local" name="scheduledAt" required value="<%= suggested %>" class="field-md"><button class="btn" type="submit"><%- icon('schedule') %> Насрочи</button></form>
       <% } %>
       <% if (post.status === 'APPROVED' && can('posts:publish')) { %>
-        <form method="post" action="/admin/posts/<%= post.id %>/publish-now" class="inline" data-confirm="Публикуваш в Instagram веднага. Сигурен ли си?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit">Публикувай сега</button></form>
+        <form method="post" action="/admin/posts/<%= post.id %>/publish-now" class="inline" data-confirm="Публикуваш в Instagram веднага. Сигурен ли си?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit"><%- icon('publish') %> Публикувай сега</button></form>
       <% } %>
       <% if (post.status === 'SCHEDULED' && can('posts:schedule')) { %>
-        <form method="post" action="/admin/posts/<%= post.id %>/unschedule" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit">Отмени насрочването</button></form>
+        <form method="post" action="/admin/posts/<%= post.id %>/unschedule" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost" type="submit"><%- icon('close') %> Отмени насрочването</button></form>
       <% } %>
       <% if (post.status === 'FAILED' && can('posts:publish')) { %>
-        <form method="post" action="/admin/posts/<%= post.id %>/retry" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit">Върни за нов опит</button></form>
+        <form method="post" action="/admin/posts/<%= post.id %>/retry" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%- icon('retry') %> Върни за нов опит</button></form>
       <% } %>
     </div>
 
     <% const variants = Array.isArray(post.crossPostVariants) ? post.crossPostVariants : []; %>
     <% if (variants.length) { %>
-    <h2>Варианти за други платформи</h2>
-    <p class="muted">Готови за копиране — Публикатор публикува само в Instagram.</p>
-    <% variants.forEach((vt) => { %><h3 class="mono" style="margin:10px 0 4px"><%= vt.platform %></h3><div class="preview"><%= vt.text %></div><% }) %>
+    <h2><%- icon('metric-shares') %> Варианти за други платформи</h2>
+    <p class="sub">Готови за копиране — Публикатор публикува само в Instagram.</p>
+    <% variants.forEach((vt, i) => { %>
+      <div class="row spread mt-2">
+        <span class="chip info"><%- icon('metric-shares', { class: 'ic-sm' }) %> <%= vt.platform %></span>
+        <button type="button" class="btn ghost small" data-copy="#variant-<%= i %>"><%- icon('copy', { class: 'ic-sm' }) %> Копирай</button>
+      </div>
+      <div class="preview" id="variant-<%= i %>"><%= vt.text %></div>
+    <% }) %>
     <% } %>
 
     <% if (post.status === 'PUBLISHED') { %>
-    <h2>Instagram Insights</h2>
-    <% if (!post.insights.length) { %><p class="muted">Още няма метрики — синхронизират се всяка нощ, или опресни сега.</p><% } else { %>
-    <table><thead><tr><th>Снимка</th><th>Прегледи</th><th>Обхват</th><th>Харесвания</th><th>Коментари</th><th>Запазени</th><th>Споделяния</th><th>Общо</th></tr></thead><tbody>
-    <% post.insights.forEach((i) => { %><tr><td class="muted"><%= i.fetchedAt.toLocaleString('bg-BG') %></td><td><%= i.views ?? '—' %></td><td><%= i.reach ?? '—' %></td><td><%= i.likes ?? '—' %></td><td><%= i.comments ?? '—' %></td><td><%= i.saved ?? '—' %></td><td><%= i.shares ?? '—' %></td><td><%= i.totalInteractions ?? '—' %></td></tr><% }) %>
-    </tbody></table><% } %>
-    <% if (can('insights:view')) { %><form method="post" action="/admin/posts/<%= post.id %>/insights" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small" type="submit">Опресни метриките</button></form><% } %>
+    <h2><%- icon('metric-reach') %> Instagram Insights</h2>
+    <% if (!post.insights.length) { %>
+      <div class="panel"><div class="empty"><%- icon('clock', { class: 'ic-xl' }) %><strong>Още няма метрики</strong>Синхронизират се всяка нощ в 04:30, или опресни сега.</div></div>
+    <% } else { %>
+      <% const latest = post.insights[0]; %>
+      <div class="cards">
+        <div class="card"><div class="l"><%- icon('metric-views', { class: 'ic-sm' }) %> прегледи</div><div class="n"><%= ui.num(latest.views) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-reach', { class: 'ic-sm' }) %> обхват</div><div class="n"><%= ui.num(latest.reach) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-engaged', { class: 'ic-sm' }) %> взаимодействия</div><div class="n"><%= ui.num(latest.totalInteractions) %></div></div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Снимка от</th><th class="num"><%- icon('metric-likes', { class: 'ic-sm' }) %> Харесвания</th><th class="num"><%- icon('metric-comments', { class: 'ic-sm' }) %> Коментари</th><th class="num"><%- icon('metric-saved', { class: 'ic-sm' }) %> Запазени</th><th class="num"><%- icon('metric-shares', { class: 'ic-sm' }) %> Споделяния</th></tr></thead><tbody>
+      <% post.insights.forEach((i) => { %><tr><td class="muted when"><%= ui.dateTime(i.fetchedAt) %></td><td class="num"><%= ui.num(i.likes) %></td><td class="num"><%= ui.num(i.comments) %></td><td class="num"><%= ui.num(i.saved) %></td><td class="num"><%= ui.num(i.shares) %></td></tr><% }) %>
+      </tbody></table></div>
+    <% } %>
+    <% if (can('insights:view')) { %><form method="post" action="/admin/posts/<%= post.id %>/insights" class="inline block mt-1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('refresh', { class: 'ic-sm' }) %> Опресни метриките</button></form><% } %>
     <% } %>
 
-    <h2>Дневник на публикуването</h2>
-    <% if (!post.logs.length) { %><p class="muted">Още няма стъпки.</p><% } else { %>
-    <table><thead><tr><th>Кога</th><th>Стъпка</th><th>OK</th><th>Детайл</th></tr></thead><tbody>
-    <% post.logs.forEach((l) => { %><tr><td class="muted"><%= l.createdAt.toLocaleString('bg-BG') %></td><td class="mono"><%= l.step %></td><td><%= l.ok ? '✓' : '✗' %></td><td class="mono"><%= l.detail ? JSON.stringify(l.detail) : '' %></td></tr><% }) %>
-    </tbody></table><% } %>
+    <h2><%- icon('audit') %> Дневник на публикуването</h2>
+    <% if (!post.logs.length) { %>
+      <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong>Още няма стъпки</strong>Тук се записва всяко обаждане към Instagram.</div></div>
+    <% } else { %>
+    <div class="table-wrap"><table><thead><tr><th>Кога</th><th>Стъпка</th><th>Резултат</th><th>Детайл</th></tr></thead><tbody>
+    <% post.logs.forEach((l) => { %><tr><td class="muted when"><%= ui.dateTime(l.createdAt) %></td><td class="mono"><%= l.step %></td><td><% if (l.ok) { %><span class="chip good"><%- icon('approve', { class: 'ic-sm' }) %> ОК</span><% } else { %><span class="chip critical"><%- icon('reject', { class: 'ic-sm' }) %> Провал</span><% } %></td><td class="mono"><%= l.detail ? JSON.stringify(l.detail) : '' %></td></tr><% }) %>
+    </tbody></table></div><% } %>
   </section>
 
   <section>
     <% if ((post.status === 'DRAFT' || post.status === 'REJECTED') && can('posts:edit')) { %>
-    <h2>Редакция</h2>
+    <h2><%- icon('edit') %> Редакция</h2>
+    <div class="panel">
     <form method="post" action="/admin/posts/<%= post.id %>/edit" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label>Instagram акаунт<select name="accountId"><option value="">— няма —</option><% accounts.filter((a) => a.brandId === post.brandId).forEach((a) => { %><option value="<%= a.id %>" <%= post.accountId === a.id ? 'selected' : '' %>>@<%= a.username %></option><% }) %></select></label>
@@ -82,21 +120,22 @@
       <label>URL на медията<input type="url" name="mediaUrl" required value="<%= post.mediaUrl %>"></label>
       <label>Cover URL<input type="url" name="coverUrl" value="<%= post.coverUrl || '' %>"></label>
       <label>Тема<input name="topic" value="<%= post.topic || '' %>" maxlength="500"></label>
-      <label>Caption<textarea name="caption" required maxlength="2200"><%= post.caption %></textarea></label>
+      <label>Caption <span class="hint">кукичката е на първи ред</span><textarea name="caption" required maxlength="2200" rows="11"><%= post.caption %></textarea></label>
       <label>Хаштагове<input name="hashtags" value="<%= post.hashtags.join(' ') %>"></label>
       <label>Alt текст<input name="altText" value="<%= post.altText %>"></label>
-      <button class="btn" type="submit">Запази и пре-линтвай</button>
+      <button class="btn primary" type="submit"><%- icon('approve') %> Запази и пре-линтвай</button>
     </form>
-    <% } else { %>
-    <h2>Детайли</h2>
-    <table><tbody>
+    </div>
+    <% } %>
+
+    <h2><%- icon('severity-info') %> Детайли</h2>
+    <div class="table-wrap"><table><tbody>
       <tr><td class="muted">ID</td><td class="mono"><%= post.id %></td></tr>
-      <tr><td class="muted">Акаунт</td><td><%= post.account ? '@' + post.account.username + ' (' + post.account.status + ')' : '—' %></td></tr>
+      <tr><td class="muted">Акаунт</td><td><%= post.account ? '@' + post.account.username : '—' %></td></tr>
       <tr><td class="muted">Контейнер</td><td class="mono"><%= post.containerId || '—' %></td></tr>
       <tr><td class="muted">IG media id</td><td class="mono"><%= post.igMediaId || '—' %></td></tr>
-      <tr><td class="muted">Опити</td><td><%= post.attempts %></td></tr>
-    </tbody></table>
-    <% } %>
+      <tr><td class="muted">Опити</td><td class="num"><%= post.attempts %></td></tr>
+    </tbody></table></div>
   </section>
 </div>
 <%- include('../partials/shell-end') %>

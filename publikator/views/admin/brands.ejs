@@ -1,9 +1,32 @@
 <%- include('../partials/shell-start', { active: 'brands' }) %>
-<div class="row" style="justify-content:space-between"><h1>Брандове</h1><% if (can('brands:manage')) { %><a class="btn primary" href="/admin/brands/new">Нов бранд</a><% } %></div>
-<table><thead><tr><th>Име</th><th>Slug</th><th>Език</th><th>Управление</th><th>Акаунти</th><th>Постове</th><th></th></tr></thead><tbody>
+<div class="topbar">
+  <div>
+    <h1>Брандове</h1>
+    <p class="sub">Един бранд = една страница, която поддържаме. Планът включва автопилота.</p>
+  </div>
+  <% if (can('brands:manage')) { %><a class="btn primary" href="/admin/brands/new"><%- icon('plus') %> Нов бранд</a><% } %>
+</div>
+<div class="table-wrap">
+<table><thead><tr><th>Бранд</th><th>Език</th><th>Управление</th><th class="num">Акаунти</th><th class="num">Постове</th><th></th></tr></thead><tbody>
 <% brands.forEach((b) => { %>
-  <tr><td><%= b.name %></td><td class="mono"><%= b.slug %></td><td><%= b.language %></td><td><% if (b.managed) { %><span class="badge APPROVED">автопилот</span><div class="muted"><%= b.lastAutopilotAt ? 'последно ' + b.lastAutopilotAt.toLocaleString('bg-BG') : 'още не е пускан' %></div><% } else { %><span class="muted">ръчно</span><% } %></td><td><%= b._count.accounts %></td><td><a href="/admin/posts?brand=<%= b.slug %>"><%= b._count.posts %></a></td><td class="row"><% if (can('insights:view')) { %><a href="/admin/brands/<%= b.id %>/performance">представяне</a><% } %><% if (can('brands:manage')) { %><a href="/admin/brands/<%= b.id %>/edit">редактирай</a><% } %></td></tr>
+  <tr>
+    <td><strong><%= b.name %></strong><span class="sub-line mono"><%= b.slug %></span></td>
+    <td><%= b.language %></td>
+    <td>
+      <% if (b.managed) { %>
+        <span class="chip good"><%- icon('autopilot', { class: 'ic-sm' }) %> Автопилот</span>
+        <span class="sub-line"><%= b.lastAutopilotAt ? 'цикъл ' + ui.relative(b.lastAutopilotAt) : 'още не е пускан' %></span>
+      <% } else { %><span class="chip"><%- icon('human', { class: 'ic-sm' }) %> Ръчно</span><% } %>
+    </td>
+    <td class="num"><%= b._count.accounts %></td>
+    <td class="num"><a href="/admin/posts?brand=<%= b.slug %>"><%= b._count.posts %></a></td>
+    <td class="row">
+      <% if (can('insights:view')) { %><a class="btn ghost small" href="/admin/brands/<%= b.id %>/performance"><%- icon('metric-reach', { class: 'ic-sm' }) %> Представяне</a><% } %>
+      <% if (can('brands:manage')) { %><a class="btn ghost small" href="/admin/brands/<%= b.id %>/edit"><%- icon('edit', { class: 'ic-sm' }) %> Редактирай</a><% } %>
+    </td>
+  </tr>
 <% }) %>
-<% if (!brands.length) { %><tr><td colspan="7" class="muted">Няма брандове.</td></tr><% } %>
+<% if (!brands.length) { %><tr><td colspan="6"><div class="empty"><%- icon('brands', { class: 'ic-xl' }) %><strong>Няма брандове</strong>Първо създай бранд, после свържи Instagram акаунт към него.</div></td></tr><% } %>
 </tbody></table>
+</div>
 <%- include('../partials/shell-end') %>

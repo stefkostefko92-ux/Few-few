@@ -1,7 +1,6 @@
 <%- include('../partials/head') %>
 <div class="login">
-  <h1><%= title %></h1>
-  <p><%= message %></p>
-  <p><a class="btn" href="/admin">Към таблото</a></p>
+  <div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= title %></strong><%= message %></div>
+  <a class="btn primary" href="/admin" class="w-full"><%- icon('dashboard') %> Към таблото</a>
 </div>
 <%- include('../partials/foot') %>

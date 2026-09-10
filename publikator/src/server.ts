@@ -11,6 +11,9 @@ import { attachSession } from './auth/sessions.js';
 import { can, type Capability } from './auth/rbac.js';
 import { agentRouter } from './agent/routes.js';
 import type { NonceStore } from './agent/nonce-store.js';
+import { iconSprite, renderIcon } from './icons.js';
+import * as ui from './admin/presenters.js';
+import { sparkline } from './admin/sparkline.js';
 import { readFlash } from './admin/helpers.js';
 import { accountRouter } from './admin/account-routes.js';
 import { auditRouter } from './admin/audit-routes.js';
@@ -88,9 +91,15 @@ export function createServer(deps: ServerDeps): Express {
   // Човешкият панел: сесия → flash → права в шаблоните.
   app.use(attachSession);
   app.use(readFlash);
+  // Спрайтът се чете от диска веднъж — шаблоните получават готовия низ.
+  const sprite = iconSprite();
   app.use((_req, res, next) => {
     const role = res.locals.currentRole;
     res.locals.can = (capability: string) => (role ? can(role, capability as Capability) : false);
+    res.locals.sprite = sprite;
+    res.locals.icon = renderIcon;
+    res.locals.ui = ui;
+    res.locals.spark = sparkline;
     next();
   });
   app.get('/', (_req, res) => res.redirect('/admin'));

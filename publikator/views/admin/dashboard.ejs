@@ -1,62 +1,103 @@
 <%- include('../partials/shell-start', { active: 'dashboard' }) %>
-<h1>Табло</h1>
+<div class="topbar">
+  <div>
+    <h1>Табло</h1>
+    <p class="sub">Състоянието на всички страници на едно място.</p>
+  </div>
+  <div class="row">
+    <% if (can('autopilot:run')) { %><form method="post" action="/admin/insights/sync" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost" type="submit"><%- icon('refresh') %> Синхронизирай Insights</button></form><% } %>
+    <% if (can('posts:create')) { %><a class="btn primary" href="/admin/posts/new"><%- icon('compose') %> Нова чернова</a><% } %>
+  </div>
+</div>
+
 <div class="cards">
-  <a class="card" href="/admin/posts?status=DRAFT"><div class="n"><%= counts.DRAFT || 0 %></div><div class="l">чернови за преглед</div></a>
-  <a class="card" href="/admin/posts?status=APPROVED"><div class="n"><%= counts.APPROVED || 0 %></div><div class="l">одобрени, ненасрочени</div></a>
-  <a class="card" href="/admin/posts?status=SCHEDULED"><div class="n"><%= counts.SCHEDULED || 0 %></div><div class="l">насрочени</div></a>
-  <a class="card" href="/admin/posts?status=PUBLISHED"><div class="n"><%= publishedWeek %></div><div class="l">публикувани за 7 дни</div></a>
-  <a class="card" href="/admin/posts?status=FAILED"><div class="n"><%= counts.FAILED || 0 %></div><div class="l">провалени</div></a>
-  <a class="card" href="/admin/accounts"><div class="n"><%= accounts.length %></div><div class="l">активни акаунти</div></a>
+  <a class="card" href="/admin/posts?status=DRAFT"><div class="l"><%- icon('status-draft', { class: 'ic-sm' }) %> чернови за преглед</div><div class="n"><%= ui.num(counts.DRAFT || 0) %></div></a>
+  <a class="card" href="/admin/posts?status=APPROVED"><div class="l"><%- icon('status-approved', { class: 'ic-sm' }) %> одобрени, ненасрочени</div><div class="n"><%= ui.num(counts.APPROVED || 0) %></div></a>
+  <a class="card" href="/admin/posts?status=SCHEDULED"><div class="l"><%- icon('status-scheduled', { class: 'ic-sm' }) %> насрочени</div><div class="n"><%= ui.num(counts.SCHEDULED || 0) %></div></a>
+  <a class="card" href="/admin/posts?status=PUBLISHED"><div class="l"><%- icon('status-published', { class: 'ic-sm' }) %> публикувани за 7 дни</div><div class="n"><%= ui.num(publishedWeek) %></div></a>
+  <a class="card" href="/admin/posts?status=FAILED"><div class="l"><%- icon('status-failed', { class: 'ic-sm' }) %> провалени</div><div class="n"><%= ui.num(counts.FAILED || 0) %></div></a>
+  <a class="card" href="/admin/accounts"><div class="l"><%- icon('instagram', { class: 'ic-sm' }) %> активни акаунти</div><div class="n"><%= ui.num(accounts.length) %></div></a>
 </div>
 
 <% if (expiringAccounts.length) { %>
-<div class="flash error">Токени за внимание:
-  <% expiringAccounts.forEach((a) => { %> <strong>@<%= a.username %></strong> (<%= a.brand.name %>) — <%= a.status === 'TOKEN_EXPIRED' ? 'изтекъл, нужен нов OAuth' : 'изтича ' + a.tokenExpiresAt.toLocaleDateString('bg-BG') %>;<% }) %>
-  <a href="/admin/accounts">към акаунтите</a>
+<div class="flash error"><%- icon('status-token-expired') %><span><strong>Токени за внимание:</strong>
+  <% expiringAccounts.forEach((a) => { %> @<%= a.username %> (<%= a.brand.name %>) — <%= a.status === 'TOKEN_EXPIRED' ? 'изтекъл, нужен нов OAuth' : 'изтича ' + ui.date(a.tokenExpiresAt) %>;<% }) %>
+  <a href="/admin/accounts">към акаунтите</a></span></div>
+<% } %>
+
+<% if (managed.length) { %>
+<h2><%- icon('autopilot') %> Страници под управление</h2>
+<div class="table-wrap">
+<table><thead><tr><th>Бранд</th><th>План</th><th>Материали</th><th>Последен цикъл</th><th class="num">Чернови</th><th></th></tr></thead><tbody>
+<% managed.forEach((b) => { %>
+  <% const pl = b.plan && typeof b.plan === 'object' ? b.plan : null; %>
+  <tr>
+    <td><strong><%= b.name %></strong><span class="sub-line mono"><%= b.slug %></span></td>
+    <td><%= pl ? pl.postsPerWeek + '/седмица · Reels ' + Math.round(pl.reelsShare * 100) + '%' : '—' %></td>
+    <td class="num"><%= pl && Array.isArray(pl.assets) ? pl.assets.length : 0 %></td>
+    <td class="muted"><%= b.lastAutopilotAt ? ui.relative(b.lastAutopilotAt) : 'още не е пускан' %></td>
+    <td class="num"><a href="/admin/posts?status=DRAFT&brand=<%= b.slug %>"><%= b._count.posts %></a></td>
+    <td><% if (can('insights:view')) { %><a class="btn ghost small" href="/admin/brands/<%= b.id %>/performance"><%- icon('metric-reach', { class: 'ic-sm' }) %> Представяне</a><% } %></td>
+  </tr>
+<% }) %></tbody></table>
 </div>
 <% } %>
 
 <div class="grid2">
   <section>
-    <h2>Следващи публикации</h2>
-    <% if (!upcoming.length) { %><p class="muted">Нищо насрочено.</p><% } else { %>
-    <table><thead><tr><th>Кога</th><th>Бранд</th><th>Акаунт</th><th>Caption</th></tr></thead><tbody>
+    <h2><%- icon('status-scheduled') %> Следващи публикации</h2>
+    <% if (!upcoming.length) { %>
+      <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong>Нищо насрочено</strong>Одобрените чернови чакат час за публикуване.</div></div>
+    <% } else { %>
+    <div class="table-wrap"><table><thead><tr><th>Кога</th><th>Бранд</th><th>Публикация</th></tr></thead><tbody>
     <% upcoming.forEach((p) => { %>
-      <tr><td><%= p.scheduledAt ? p.scheduledAt.toLocaleString('bg-BG') : '—' %></td><td><%= p.brand.name %></td><td>@<%= p.account ? p.account.username : '—' %></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 60) %><%= p.caption.length > 60 ? '…' : '' %></a></td></tr>
-    <% }) %></tbody></table><% } %>
+      <tr><td class="when"><%= ui.dateTime(p.scheduledAt) %><span class="sub-line"><%= ui.relative(p.scheduledAt) %></span></td><td><%= p.brand.name %><span class="sub-line">@<%= p.account ? p.account.username : '—' %></span></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 54) %><%= p.caption.length > 54 ? '…' : '' %></a></td></tr>
+    <% }) %></tbody></table></div><% } %>
   </section>
   <section>
-    <h2>Чернови за преглед</h2>
-    <% if (!recentDrafts.length) { %><p class="muted">Няма чернови.</p><% } else { %>
-    <table><thead><tr><th>Бранд</th><th>Кой</th><th>Caption</th></tr></thead><tbody>
+    <h2><%- icon('status-draft') %> Чернови за преглед</h2>
+    <% if (!recentDrafts.length) { %>
+      <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong>Няма чернови</strong>Автопилотът и агентът пълнят този списък.</div></div>
+    <% } else { %>
+    <div class="table-wrap"><table><thead><tr><th>Бранд</th><th>Създал</th><th>Публикация</th></tr></thead><tbody>
     <% recentDrafts.forEach((p) => { %>
-      <tr><td><%= p.brand.name %></td><td class="muted"><%= p.createdByLabel || p.createdByType %></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 60) %><%= p.caption.length > 60 ? '…' : '' %></a></td></tr>
-    <% }) %></tbody></table><% } %>
+      <% const who = ui.creator(p); %>
+      <tr><td><%= p.brand.name %></td><td><span class="chip <%= who.tone %>"><%- icon(who.icon, { class: 'ic-sm' }) %> <%= who.label %></span></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 54) %><%= p.caption.length > 54 ? '…' : '' %></a></td></tr>
+    <% }) %></tbody></table></div><% } %>
   </section>
 </div>
 
-<% if (managed.length) { %>
-<h2>Страници под управление</h2>
-<table><thead><tr><th>Бранд</th><th>План</th><th>Последен цикъл</th><th>Чернови за преглед</th><th></th></tr></thead><tbody>
-<% managed.forEach((b) => { %>
-  <% const pl = b.plan && typeof b.plan === 'object' ? b.plan : null; %>
-  <tr><td><%= b.name %></td><td class="muted"><%= pl ? pl.postsPerWeek + '/седм. · ' + (Array.isArray(pl.assets) ? pl.assets.length : 0) + ' материала' : 'няма план' %></td><td class="muted"><%= b.lastAutopilotAt ? b.lastAutopilotAt.toLocaleString('bg-BG') : 'още не е пускан' %></td><td><a href="/admin/posts?status=DRAFT&brand=<%= b.slug %>"><%= b._count.posts %></a></td><td><% if (can('insights:view')) { %><a href="/admin/brands/<%= b.id %>/performance">представяне</a><% } %></td></tr>
-<% }) %></tbody></table>
-<% } %>
-
 <% if (failed.length) { %>
-<h2>Провалени</h2>
-<table><thead><tr><th>Бранд</th><th>Грешка</th><th>Опити</th><th></th></tr></thead><tbody>
+<h2><%- icon('status-failed') %> Провалени</h2>
+<div class="table-wrap">
+<table><thead><tr><th>Бранд</th><th>Грешка</th><th class="num">Опити</th><th></th></tr></thead><tbody>
 <% failed.forEach((p) => { %>
-  <tr><td><%= p.brand.name %></td><td class="mono"><%= (p.lastError || '').slice(0, 120) %></td><td><%= p.attempts %></td><td><a href="/admin/posts/<%= p.id %>">отвори</a></td></tr>
+  <tr><td><%= p.brand.name %></td><td class="mono"><%= (p.lastError || '').slice(0, 110) %></td><td class="num"><%= p.attempts %></td><td><a class="btn ghost small" href="/admin/posts/<%= p.id %>">Отвори</a></td></tr>
 <% }) %></tbody></table>
+</div>
 <% } %>
 
-<h2>Квоти по акаунт</h2>
-<table><thead><tr><th>Акаунт</th><th>Бранд</th><th>Квота (24ч)</th><th>Проверена</th><th>Токен до</th></tr></thead><tbody>
+<h2><%- icon('quota') %> Квоти по акаунт</h2>
+<div class="table-wrap">
+<table><thead><tr><th>Акаунт</th><th>Бранд</th><th>Публикации за 24 часа</th><th>Проверена</th><th>Токен до</th></tr></thead><tbody>
 <% accounts.forEach((a) => { %>
-  <tr><td>@<%= a.username %></td><td><%= a.brand.name %></td><td><%= a.quotaTotal ? a.quotaUsed + ' / ' + a.quotaTotal : '—' %></td><td class="muted"><%= a.quotaCheckedAt ? a.quotaCheckedAt.toLocaleString('bg-BG') : 'непроверена' %></td><td><%= a.tokenExpiresAt.toLocaleDateString('bg-BG') %></td></tr>
+  <% const tone = ui.quotaTone(a.quotaUsed, a.quotaTotal); %>
+  <tr>
+    <td>@<%= a.username %></td>
+    <td><%= a.brand.name %></td>
+    <td>
+      <% if (a.quotaTotal) { %>
+      <div class="meter">
+        <div class="meter-track"><div class="meter-fill <%= tone %> p-<%= Math.round(Math.min(100, (a.quotaUsed / a.quotaTotal) * 100) / 5) * 5 %>"></div></div>
+        <div class="meter-label"><%= a.quotaUsed %> / <%= a.quotaTotal %></div>
+      </div>
+      <% } else { %><span class="muted">непроверена</span><% } %>
+    </td>
+    <td class="muted"><%= a.quotaCheckedAt ? ui.relative(a.quotaCheckedAt) : 'никога' %></td>
+    <td class="when"><%= ui.date(a.tokenExpiresAt) %></td>
+  </tr>
 <% }) %>
-<% if (!accounts.length) { %><tr><td colspan="5" class="muted">Няма активни акаунти — свържи от „Instagram акаунти“.</td></tr><% } %>
+<% if (!accounts.length) { %><tr><td colspan="5"><div class="empty"><%- icon('instagram', { class: 'ic-xl' }) %><strong>Няма активни акаунти</strong>Свържи акаунт от „Instagram акаунти“.</div></td></tr><% } %>
 </tbody></table>
+</div>
 <%- include('../partials/shell-end') %>

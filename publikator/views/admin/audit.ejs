@@ -1,14 +1,24 @@
 <%- include('../partials/shell-start', { active: 'audit' }) %>
-<div class="row" style="justify-content:space-between"><h1>Одит <span class="muted" style="font-size:15px"><%= total %></span></h1><a class="btn" href="/admin/audit?verify=1&action=<%= actionFilter %>">Провери веригата</a></div>
-<% if (chain) { %><div class="flash <%= chain.ok ? 'ok' : 'error' %>"><%= chain.ok ? 'Веригата е цяла: ' + chain.count + ' записа, нито един подправен.' : 'ВЕРИГАТА Е СЧУПЕНА при запис №' + chain.brokenAt + ' — някой е променил стар запис.' %></div><% } %>
+<div class="topbar">
+  <div>
+    <div class="title"><h1>Одит</h1><span class="chip"><%= ui.num(total) %></span></div>
+    <p class="sub">Всеки запис носи хеша на предишния — подправен стар ред чупи веригата и се вижда.</p>
+  </div>
+  <a class="btn" href="/admin/audit?verify=1&action=<%= actionFilter %>"><%- icon('shield') %> Провери веригата</a>
+</div>
+<% if (chain) { %><div class="flash <%= chain.ok ? 'ok' : 'error' %>"><%- icon(chain.ok ? 'status-approved' : 'severity-high') %><span><%= chain.ok ? 'Веригата е цяла: ' + ui.num(chain.count) + ' записа, нито един подправен.' : 'ВЕРИГАТА Е СЧУПЕНА при запис №' + chain.brokenAt + ' — някой е променил стар запис.' %></span></div><% } %>
 <form method="get" action="/admin/audit" class="filters">
   <label>Действие започва с<input name="action" value="<%= actionFilter %>" placeholder="post. · auth. · apikey."></label>
-  <label>&nbsp;<button class="btn" type="submit">Филтрирай</button></label>
+  <button class="btn" type="submit"><%- icon('filter') %> Филтрирай</button>
 </form>
-<table><thead><tr><th>#</th><th>Кога</th><th>Кой</th><th>Действие</th><th>Обект</th><th>Детайл</th><th>IP</th></tr></thead><tbody>
+<div class="table-wrap">
+<table><thead><tr><th class="num">#</th><th>Кога</th><th>Кой</th><th>Действие</th><th>Обект</th><th>Детайл</th><th>IP</th></tr></thead><tbody>
 <% rows.forEach((r) => { %>
-  <tr><td class="muted"><%= r.id %></td><td class="muted"><%= r.at.toLocaleString('bg-BG') %></td><td><span class="badge"><%= r.actorType %></span> <%= r.actorLabel %></td><td class="mono"><%= r.action %></td><td class="mono"><%= r.targetType ? r.targetType + ' ' + (r.targetId || '') : '' %></td><td class="mono"><%= r.detail ? JSON.stringify(r.detail) : '' %></td><td class="mono muted"><%= r.ip || '' %></td></tr>
+  <% const who = ui.actor(r.actorType); %>
+  <tr><td class="num muted"><%= r.id %></td><td class="muted when"><%= ui.dateTime(r.at) %></td><td><span class="chip <%= who.tone %>"><%- icon(who.icon, { class: 'ic-sm' }) %> <%= who.label %></span><span class="sub-line"><%= r.actorLabel %></span></td><td class="mono"><%= r.action %></td><td class="mono"><%= r.targetType ? r.targetType + ' ' + (r.targetId || '') : '' %></td><td class="mono"><%= r.detail ? JSON.stringify(r.detail) : '' %></td><td class="mono muted"><%= r.ip || '' %></td></tr>
 <% }) %>
+<% if (!rows.length) { %><tr><td colspan="7"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong>Няма записи по този филтър</strong>Пробвай с друг префикс на действието.</div></td></tr><% } %>
 </tbody></table>
-<% if (pages > 1) { %><div class="pager"><% for (let i = 1; i <= pages; i += 1) { %><a class="btn small <%= i === page ? 'primary' : '' %>" href="/admin/audit?action=<%= actionFilter %>&page=<%= i %>"><%= i %></a><% } %></div><% } %>
+</div>
+<% if (pages > 1) { %><div class="pager"><span class="muted">Страница</span><% for (let i = 1; i <= pages; i += 1) { %><a class="btn small <%= i === page ? 'primary' : 'ghost' %>" href="/admin/audit?action=<%= actionFilter %>&page=<%= i %>"><%= i %></a><% } %></div><% } %>
 <%- include('../partials/shell-end') %>

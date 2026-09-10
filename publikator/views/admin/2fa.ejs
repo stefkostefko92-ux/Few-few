@@ -1,12 +1,12 @@
 <%- include('../partials/head') %>
 <div class="login">
-  <h1>Втори фактор</h1>
-  <p class="muted">Въведи 6-цифрения код от приложението за еднократни кодове.</p>
-  <% if (error) { %><div class="flash error"><%= error %></div><% } %>
+  <div class="brand"><%- icon('shield', { class: 'ic-lg' }) %> Втори фактор</div>
+  <p class="sub center mb-2">Въведи 6-цифрения код от приложението за еднократни кодове.</p>
+  <% if (error) { %><div class="flash error"><%- icon('status-failed') %><span><%= error %></span></div><% } %>
   <form method="post" action="/admin/2fa" class="stack">
     <label>Код<input type="text" name="code" inputmode="numeric" pattern="[0-9 ]{6,7}" required autocomplete="one-time-code" autofocus></label>
-    <button class="btn primary" type="submit">Потвърди</button>
+    <button class="btn primary" type="submit"><%- icon('approve') %> Потвърди</button>
   </form>
-  <form method="post" action="/admin/logout" class="inline" style="margin-top:12px"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small" type="submit">Изход</button></form>
+  <form method="post" action="/admin/logout" class="inline block mt-1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('logout', { class: 'ic-sm' }) %> Изход</button></form>
 </div>
 <%- include('../partials/foot') %>

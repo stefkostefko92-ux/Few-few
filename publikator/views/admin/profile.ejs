@@ -1,14 +1,14 @@
 <%- include('../partials/shell-start', { active: 'profile' }) %>
-<h1>Профил</h1>
+<div class="topbar"><div><h1>Профил</h1><p class="sub">Вторият фактор и паролата са лично твои — никой друг не ги сменя вместо теб.</p></div></div>
 <div class="grid2">
-  <section class="card">
-    <h2>Втори фактор (TOTP)</h2>
+  <section class="panel">
+    <h2><%- icon('shield') %> Втори фактор (TOTP)</h2>
     <% if (user.totpEnabledAt) { %>
       <p>Включен от <%= user.totpEnabledAt.toLocaleDateString('bg-BG') %>. Входът иска код от приложението.</p>
       <form method="post" action="/admin/profile/2fa/disable" class="stack" data-confirm="Сигурен ли си? Входът ще остане само с парола.">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label>Потвърди с паролата си<input type="password" name="password" required autocomplete="current-password"></label>
-        <button class="btn danger" type="submit">Изключи втория фактор</button>
+        <button class="btn danger" type="submit"><%- icon('status-disabled') %> Изключи втория фактор</button>
       </form>
     <% } else if (setup) { %>
       <p>Сканирай кода с приложение за еднократни кодове (Aegis, 1Password, Google Authenticator), после въведи текущия код.</p>
@@ -17,18 +17,18 @@
       <form method="post" action="/admin/profile/2fa/confirm" class="stack">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label>Код от приложението<input type="text" name="code" inputmode="numeric" required autocomplete="one-time-code"></label>
-        <button class="btn primary" type="submit">Включи</button>
+        <button class="btn primary" type="submit"><%- icon('approve') %> Включи</button>
       </form>
     <% } else { %>
       <p class="muted">Изключен. Силно препоръчително за всички роли над „Наблюдател“.</p>
       <form method="post" action="/admin/profile/2fa/start">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn primary" type="submit">Включи втори фактор</button>
+        <button class="btn primary" type="submit"><%- icon('shield') %> Включи втори фактор</button>
       </form>
     <% } %>
   </section>
-  <section class="card">
-    <h2>Смяна на парола</h2>
+  <section class="panel">
+    <h2><%- icon('key') %> Смяна на парола</h2>
     <form method="post" action="/admin/profile/password" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label>Текуща парола<input type="password" name="current" required autocomplete="current-password"></label>
