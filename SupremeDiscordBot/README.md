@@ -1,7 +1,7 @@
 # Supreme Bot — Discord SaaS Platform
 
 Multi-tenant Discord bot management SaaS. Ticket systems, forms, applications,
-AI auto-replies, round-robin assignment, white-label bots, Stripe subscriptions.
+AI auto-replies, round-robin assignment, white-label bots, per-server subscriptions sold through Discord Premium Apps.
 
 **Stack:** Node.js · React 18 · Discord.js v14 · PostgreSQL · Redis · Docker · nginx
 
@@ -54,7 +54,7 @@ openssl rand -base64 24 | tr -d '/+='
 #   (Redis runs with --requirepass; compose fails fast if REDIS_PASSWORD is unset.
 #    On an existing server autodeploy.sh generates it and rewrites both REDIS_URLs.)
 
-# 4. Fill in Discord + Stripe credentials (see tables below)
+# 4. Fill in Discord credentials + SKU ids (see tables below)
 
 # 5. Deploy
 chmod +x deploy.sh
@@ -94,10 +94,11 @@ The deploy script will:
 | `API_SECRET` | ✅ | Must match `bot/.env` exactly |
 | `FRONTEND_URL` | ✅ | `https://yourdomain.com` (no trailing slash) |
 | `BOT_API_URL` | ✅ | `http://bot:3001` |
-| `STRIPE_SECRET_KEY` | ⚠️ | Required for payments |
-| `STRIPE_WEBHOOK_SECRET` | ⚠️ | From Stripe Dashboard → Webhooks |
-| `STRIPE_PRICE_ID` | ⚠️ | Monthly Premium recurring price |
-| `STRIPE_TRIAL_DAYS` | ➖ | Default `14`, set `0` to disable |
+| `BILLING_PROVIDER` | ➖ | `discord` (default — only Discord Premium Apps sells; Stripe checkout → 410) · `stripe` · `both` |
+| `DISCORD_SKU_PREMIUM` | ✅ | Guild subscription SKU id (Developer Portal → Monetization); also in `bot/.env` |
+| `DISCORD_SKU_WHITELABEL` | ✅ | Guild subscription SKU id |
+| `STRIPE_SECRET_KEY` | ➖ | Legacy subscribers only (webhook + portal); no new purchases |
+| `STRIPE_WEBHOOK_SECRET` | ➖ | From Stripe Dashboard → Webhooks (legacy) |
 | `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash, free tier) |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
 | `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
@@ -190,7 +191,11 @@ least-privilege bitmask the bot actually needs (see `bot/src/utils/permissionChe
 https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=361045814416
 ```
 
-### 3. Stripe Webhook
+### 3. Discord Premium Apps (the only way to buy)
+Follow `docs/DISCORD_MONETIZATION.md`: verified Team-owned app, two monthly guild SKUs,
+SKU ids in both `.env` files. Entitlements arrive over the bot's gateway — no webhook to configure.
+
+### 3a. Stripe Webhook (legacy subscribers only)
 ```
 Stripe Dashboard → Developers → Webhooks → Add endpoint
 URL: https://yourdomain.com/api/stripe/webhook

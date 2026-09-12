@@ -204,12 +204,12 @@ export default function EulaPage() {
       <S title="7. Paid Subscriptions — Rights and Restrictions">
         <p>
           <strong className="text-cs-text">7.1 Paid Tiers.</strong>{" "}
-          The Service offers the following paid tiers (prices in EUR, VAT included where
-          applicable; annual billing available at approximately two months' discount):
+          The Service offers the following paid tiers (prices in EUR, VAT included; monthly
+          billing only, sold through Discord's Premium Apps store):
         </p>
         <ul>
           <li>
-            <strong className="text-cs-text">Premium</strong> (€4.99/server/month or €49/year) —
+            <strong className="text-cs-text">Premium</strong> (€4.99/server/month) —
             in addition to all Free Tier features with the applicable limits removed: up to 50
             panels, forms, and questions per form; HTML ticket transcripts retained indefinitely
             (no 30-day deletion); PDF export of individual ticket transcripts; CSV export of all
@@ -217,31 +217,31 @@ export default function EulaPage() {
             ticket assignment; webhook integrations and the public REST API.
           </li>
           <li>
-            <strong className="text-cs-text">White-label</strong> (€9.99/server/month or
-            €99/year) — everything in Premium plus the White-label Bot (custom token, name,
-            avatar — subject to Section 8).
+            <strong className="text-cs-text">White-label</strong> (€9.99/server/month) —
+            everything in Premium plus the White-label Bot (custom token, name, avatar — subject
+            to Section 8).
           </li>
           <li>
-            <strong className="text-cs-text">Agency 5 / Agency 10</strong> (€19.99/month or
-            €199/year for up to 5 servers; €39.99/month or €399/year for up to 10 servers) —
-            one subscription granting the White-label tier to the covered servers, assigned and
-            removed by the subscription owner up to the seat limit.
+            <strong className="text-cs-text">Legacy plans</strong> — multi-server
+            &quot;Agency&quot; subscriptions and annual card subscriptions purchased before
+            payments moved to Discord remain valid until cancelled under the terms in force at
+            purchase; they are no longer sold.
           </li>
         </ul>
         <p>
           <strong className="text-cs-text">7.2 Subscription Term and Renewal.</strong>{" "}
-          Premium and White-label subscriptions are billed per Discord server; Agency
-          subscriptions are billed per account and cover multiple servers. Billing is monthly or
-          annual, as selected at checkout. Subscriptions auto-renew at the end of each billing
-          period unless cancelled. The Licensor uses Stripe, Inc. as its payment processor;
-          subscriptions may alternatively be purchased through Discord's own Premium App checkout,
-          in which case Discord Inc. acts as merchant of record for that purchase.
+          Premium and White-label subscriptions are billed per Discord server, monthly, and
+          auto-renew at the end of each billing period unless cancelled. Subscriptions are
+          purchased through Discord's Premium Apps store: Discord Inc. is the seller of record,
+          collects the payment, assesses VAT, issues the receipt and handles refunds under its
+          Paid Services Terms and Refund Policy. Access is granted when Discord confirms the
+          entitlement and ends when the entitlement ends. Legacy card subscriptions are
+          processed by Stripe, Inc. and managed from the billing portal.
         </p>
         <p>
-          <strong className="text-cs-text">7.3 Free Trial.</strong>{" "}
-          New Premium subscriptions may begin with a 14-day free trial period. During the trial,
-          all Premium Features are accessible. No charge is made during the trial. If the trial
-          is not cancelled before it ends, the charge for the selected billing period (monthly or annual) commences automatically.
+          <strong className="text-cs-text">7.3 No Free Trial.</strong>{" "}
+          The Service does not offer free trial periods. The Free Tier is available without
+          time limit for evaluating the Service.
         </p>
         <p>
           <strong className="text-cs-text">7.4 Price Changes.</strong>{" "}
@@ -400,8 +400,15 @@ export default function EulaPage() {
             The Licensor is an independent operator and not affiliated with Discord.
           </li>
           <li>
-            <strong className="text-cs-text">Stripe, Inc.</strong> — Payment processing.
-            The Licensor does not store payment card data. Stripe is PCI DSS Level 1 certified.
+            <strong className="text-cs-text">Discord, Inc. (Premium Apps)</strong> — Seller of
+            record for all subscriptions: payment collection, VAT, receipts and refunds under
+            Discord's Paid Services Terms. The Licensor receives only entitlement and
+            subscription identifiers and status.
+          </li>
+          <li>
+            <strong className="text-cs-text">Stripe, Inc.</strong> — Payment processing for
+            legacy card subscriptions only. The Licensor does not store payment card data. Stripe
+            is PCI DSS Level 1 certified.
           </li>
           <li>
             <strong className="text-cs-text">Google LLC</strong> — AI auto-reply generation
@@ -657,7 +664,7 @@ export default function EulaPage() {
           sent to{" "}
           <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
           The Licensor may send notices to you via the dashboard notification system, email
-          registered with Stripe, or the Support Server.
+          registered with the Licensor, or the Support Server.
         </p>
         <p>
           <strong className="text-cs-text">19.9 Language.</strong>{" "}
@@ -677,7 +684,7 @@ export default function EulaPage() {
         <p className="mt-4 text-xs text-cs-muted">
           This EULA was last reviewed by the Licensor's legal team on 27 June 2026.
           It covers the {COMPANY} platform as deployed with Node.js, React, Discord.js v14,
-          PostgreSQL, Redis, Stripe, and Google Gemini integrations.
+          PostgreSQL, Redis, Discord Premium Apps, Stripe (legacy) and Google Gemini integrations.
         </p>
       </S>
     </LegalPage>

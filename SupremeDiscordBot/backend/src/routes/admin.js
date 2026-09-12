@@ -534,15 +534,6 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
   const activeNow = paidSubscriptions;
   const churnBase = activeNow + canceled30d;
 
-  // Trial фуния. ПРИБЛИЖЕНИЕ (исторически, не кохортен): `trialUsed` няма дата,
-  // затова конверсията е „колко от всякога пробвалите са премиум СЕГА“ — който
-  // е конвертирал и после отпаднал, се брои като неконвертирал, а ръчен grant
-  // или agency място вдигат числителя. Точна кохортна конверсия иска
-  // trialStartedAt + история на абонамента.
-  const trialActive = servers.filter((s) => s.trialEndsAt && new Date(s.trialEndsAt) > now).length;
-  const trialUsed = servers.filter((s) => s.trialUsed).length;
-  const trialConverted = servers.filter((s) => s.trialUsed && s.isPremium).length;
-
   const byTier = [...tiers.values()]
     .sort((a, b) => planConfig(b.plan).rank - planConfig(a.plan).rank)
     .map((t) => ({
@@ -590,12 +581,6 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
       activeNow,
       rate: churnBase ? round2((canceled30d / churnBase) * 100) : 0,
     },
-    trials: {
-      active: trialActive,
-      used: trialUsed,
-      converted: trialConverted,
-      conversionRate: trialUsed ? round2((trialConverted / trialUsed) * 100) : 0,
-    },
     diagnostics,
   };
 }
@@ -625,14 +610,12 @@ router.get("/revenue", async (req, res, next) => {
           OR: [
             { plan: { not: "free" } },
             { isPremium: true },
-            { trialUsed: true },
-            { trialEndsAt: { gt: now } },
             { stripeStatus: { in: ["canceled", "past_due", "unpaid", "trialing"] } },
           ],
         },
         select: {
           plan: true, billingInterval: true, planSource: true, stripeStatus: true,
-          isPremium: true, trialUsed: true, trialEndsAt: true, updatedAt: true,
+          isPremium: true, updatedAt: true,
         },
       }),
       prisma.agency.findMany({
@@ -654,7 +637,7 @@ router.get("/revenue", async (req, res, next) => {
 
 // ─── PATCH /api/admin/servers/:serverId/premium ──────────────────────────────
 // Manually grant or revoke Premium on a server. Bypasses Stripe entirely.
-// Used by Main Owner / Super User to give Premium as a gift, for trials,
+// Used by Main Owner / Super User to give Premium as a gift, for partners,
 // for partners, or for testing.
 // When revoking, if the server had an active Stripe subscription, we DON'T
 // cancel it — we just flip the flag. To cancel Stripe subscriptions, use the
@@ -710,10 +693,9 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
           planSource: null,
           billingInterval: null,
           archiveRetentionDays: 30,
-          // Без това getServerTier връща активен ПРОБЕН tier след ръчен revoke —
-          // достъпът си остава. /plan вече го чисти; тук липсваше.
+          // Заварен (sunset) пробен период също пада — ръчният revoke е
+          // окончателен; без това getServerTier би върнал Premium от trialEndsAt.
           trialEndsAt: null,
-          trialStartedAt: null,
           pastDueSince: null,
           // И гратисът пада: ръчният revoke е окончателен, не оставя достъп до
           // край на период. Без това „revoked“ сървър пазеше gracePlan tier.
@@ -847,10 +829,9 @@ router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next)
           isPremium: false,
           billingInterval: null,
           archiveRetentionDays: 30,
-          // Чистим trial следите — иначе getServerTier може да върне активен
-          // пробен tier след ръчен revoke (Кодаджията).
+          // Заварен (sunset) пробен период също пада — ръчният revoke е
+          // окончателен; без това getServerTier би върнал Premium от trialEndsAt.
           trialEndsAt: null,
-          trialStartedAt: null,
           pastDueSince: null,
           // И гратисът пада: ръчният revoke е окончателен.
           accessUntil: null,

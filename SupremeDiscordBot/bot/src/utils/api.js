@@ -142,6 +142,33 @@ export async function sendEntitlement(type, entitlement) {
       guildId: entitlement.guildId ?? null,
       userId: entitlement.userId ?? null,
       endsAt: entitlement.endsTimestamp ?? null,
+      // v3.3 — типът и `deleted` флагът стигат до backend-а: refund идва като
+      // deleted=true и трябва да сваля достъпа независимо от вида събитие.
+      type: entitlement.type ?? null,
+      deleted: entitlement.deleted ?? null,
+    },
+  });
+  return data;
+}
+
+// v3.3 — SUBSCRIPTION_CREATE/UPDATE/DELETE (Premium App Subscription). Само
+// състояние („подновява се“/„изтича на …“) — правата идват от entitlement-а.
+// Статусът се праща като СУРОВО число: discord-api-types 0.38.48 обявява
+// Ending=1/Inactive=2, а документацията — Inactive=1/Ending=2; преводът е на
+// едно място в backend/src/lib/discordSubscription.js, по документацията.
+export async function sendSubscription(type, subscription) {
+  const { data } = await api.post("/discord/subscription", {
+    type,
+    subscription: {
+      id: subscription.id,
+      userId: subscription.userId ?? null,
+      skuIds: subscription.skuIds ?? [],
+      entitlementIds: subscription.entitlementIds ?? [],
+      renewalSkuIds: subscription.renewalSkuIds ?? null,
+      status: typeof subscription.status === "number" ? subscription.status : null,
+      currentPeriodStart: subscription.currentPeriodStartTimestamp ?? null,
+      currentPeriodEnd: subscription.currentPeriodEndTimestamp ?? null,
+      canceledAt: subscription.canceledTimestamp ?? null,
     },
   });
   return data;
@@ -198,6 +225,8 @@ export async function reconcileEntitlements(entitlements) {
       guildId: e.guildId ?? null,
       userId: e.userId ?? null,
       endsAt: e.endsTimestamp ?? null,
+      type: e.type ?? null,
+      deleted: e.deleted ?? null,
     })),
   });
   return data;

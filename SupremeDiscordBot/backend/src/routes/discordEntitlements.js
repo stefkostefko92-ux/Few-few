@@ -38,12 +38,45 @@ const entitlementShape = z.object({
   guildId: z.string().min(1).nullish(),
   userId: z.string().min(1).nullish(),
   endsAt: z.union([z.number(), z.string()]).nullish(),
+  // v3.3 — Discord entitlement type (8 = APPLICATION_SUBSCRIPTION, 1 = PURCHASE,
+  // 3/4 = DEVELOPER_GIFT/TEST_MODE_PURCHASE…) и `deleted` (изтрит entitlement,
+  // напр. refund). `deleted: true` ⇒ revoke независимо от типа на събитието —
+  // Discord го праща и в UPDATE/LIST, не само в DELETE.
+  type: z.number().int().nullish(),
+  deleted: z.boolean().nullish(),
 });
 
 const eventSchema = z.object({
   type: z.enum(["create", "update", "delete"]),
   entitlement: entitlementShape,
 });
+
+// v3.3 — SUBSCRIPTION_CREATE/UPDATE/DELETE (Premium App Subscription object).
+// Няма guild_id в обекта: сървърът се намира през entitlement_ids ↔
+// Server.discordEntitlementId. Статусът е СУРОВОТО число от жицата
+// (lib/discordSubscription.js го превежда по документацията).
+const subscriptionShape = z.object({
+  id: z.string().min(1),
+  userId: z.string().min(1).nullish(),
+  skuIds: z.array(z.string().min(1)).max(50).default([]),
+  entitlementIds: z.array(z.string().min(1)).max(50).default([]),
+  renewalSkuIds: z.array(z.string().min(1)).max(50).nullish(),
+  status: z.number().int().min(0).max(255).nullish(),
+  currentPeriodStart: z.union([z.number(), z.string()]).nullish(),
+  currentPeriodEnd: z.union([z.number(), z.string()]).nullish(),
+  canceledAt: z.union([z.number(), z.string()]).nullish(),
+});
+
+const subscriptionEventSchema = z.object({
+  type: z.enum(["create", "update", "delete"]),
+  subscription: subscriptionShape,
+});
+
+function toDate(v) {
+  if (v === null || v === undefined) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 const reconcileSchema = z.object({
   // The bot's full ACTIVE entitlement list (excludeEnded). Bounded generously —
@@ -117,11 +150,67 @@ async function grantEntitlement(ent, via) {
     serverId: ent.guildId,
     action: "PREMIUM_GRANTED_DISCORD",
     targetId: ent.guildId,
-    metadata: { entitlementId: ent.id, skuId: ent.skuId, plan, via },
+    metadata: { entitlementId: ent.id, skuId: ent.skuId, plan, via, entitlementType: ent.type ?? null },
   });
 
   return { granted: true, plan };
 }
+
+// ─── POST /api/discord/subscription ──────────────────────────────────────────
+// SUBSCRIPTION_* събитие от бота. НИКОГА не дава и не отнема права — това е
+// работа на entitlement-а (Discord: „entitlements are the source of truth“).
+// Записваме само състоянието („подновява се“ / „изтича на …“) при сървъра,
+// чийто Discord entitlement е в subscription.entitlement_ids, и одитираме.
+router.post("/subscription", async (req, res, next) => {
+  const parsed = subscriptionEventSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid subscription payload", details: parsed.error.flatten() });
+  }
+  const { type, subscription: sub } = parsed.data;
+
+  try {
+    if (sub.entitlementIds.length === 0) return res.json({ ok: true, ignored: "no entitlementIds" });
+
+    const servers = await prisma.server.findMany({
+      where: { discordEntitlementId: { in: sub.entitlementIds } },
+      select: { id: true, discordEntitlementId: true },
+    });
+    if (servers.length === 0) return res.json({ ok: true, ignored: "no server for these entitlements" });
+
+    const periodEnd = toDate(sub.currentPeriodEnd);
+    const status = sub.status ?? null;
+    for (const s of servers) {
+      await prisma.server.update({
+        where: { id: s.id },
+        data: {
+          discordSubscriptionId: sub.id,
+          discordSubscriptionStatus: status,
+          discordCurrentPeriodEnd: periodEnd,
+        },
+      }).catch((err) => { if (err?.code !== "P2025") throw err; });
+
+      await writeAudit({
+        actorId: sub.userId || null,
+        actorTag: sub.userId ? undefined : "SYSTEM",
+        serverId: s.id,
+        action: `DISCORD_SUBSCRIPTION_${type.toUpperCase()}`,
+        targetId: s.id,
+        metadata: {
+          subscriptionId: sub.id,
+          status,
+          skuIds: sub.skuIds,
+          renewalSkuIds: sub.renewalSkuIds ?? null,
+          currentPeriodEnd: periodEnd,
+          canceledAt: toDate(sub.canceledAt),
+        },
+      });
+    }
+
+    return res.json({ ok: true, updated: servers.length });
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * Revoke a server's Discord-provisioned plan — only when it is provisioned by
@@ -187,10 +276,12 @@ router.post("/entitlement", async (req, res, next) => {
   const { type, entitlement: ent } = parsed.data;
 
   try {
-    // A delete event OR an entitlement that has already lapsed ⇒ revoke.
-    if (type === "delete" || isExpired(ent)) {
+    // A delete event, a `deleted` flag OR an entitlement that has already
+    // lapsed ⇒ revoke.
+    if (type === "delete" || ent.deleted === true || isExpired(ent)) {
       if (!ent.guildId) return res.json({ ok: true, ignored: "no guildId" });
-      const outcome = await revokeServer(ent.guildId, ent.id, type === "delete" ? "delete" : "expired");
+      const reason = type === "delete" ? "delete" : ent.deleted ? "deleted-flag" : "expired";
+      const outcome = await revokeServer(ent.guildId, ent.id, reason);
       return res.json({ ok: true, ...outcome });
     }
 
@@ -213,7 +304,7 @@ router.post("/entitlements/reconcile", async (req, res, next) => {
 
   try {
     const now = new Date();
-    const active = parsed.data.entitlements.filter((e) => e.guildId && !isExpired(e, now));
+    const active = parsed.data.entitlements.filter((e) => e.guildId && e.deleted !== true && !isExpired(e, now));
     const activeIds = new Set(active.map((e) => e.id));
 
     const result = { granted: 0, revoked: 0, ignored: 0 };

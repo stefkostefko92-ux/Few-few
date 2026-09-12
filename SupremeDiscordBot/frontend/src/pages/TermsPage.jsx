@@ -86,59 +86,69 @@ export default function TermsPage() {
         <p><strong>5.1 Free Tier.</strong> The Service is available without charge subject to the
         feature limitations described on the Pricing page. No credit card is required for the Free Tier.</p>
 
-        <p><strong>5.2 Paid Subscriptions.</strong> Paid features are available via recurring
-        subscriptions in the following tiers (prices in EUR, VAT included where applicable):
-        Premium (€4.99/server/month or €49/year), White-label (€9.99/server/month or €99/year),
-        Agency 5 (€19.99/month or €199/year, up to 5 servers) and Agency 10 (€39.99/month or
-        €399/year, up to 10 servers). Billing is monthly or annual, as selected at checkout.
-        By subscribing, you:</p>
+        <p><strong>5.2 Paid Subscriptions.</strong> Paid features are available as monthly,
+        per-server subscriptions in two tiers (prices in EUR, VAT included): Premium
+        (€4.99/server/month) and White-label (€9.99/server/month). Subscriptions are sold
+        exclusively through Discord's Premium Apps store (&quot;Discord checkout&quot;). Discord
+        Inc. is the seller of record for these purchases: Discord displays the final price
+        including applicable VAT, collects the payment, issues the receipt and handles
+        refunds under its own Paid Services Terms and Refund Policy. We do not receive your
+        payment details. By subscribing, you:</p>
         <ul>
-          <li>Authorise us and our payment processor (Stripe, Inc.) to charge your designated payment method on a recurring basis for the selected billing period; purchases made through Discord's Premium App checkout are processed by Discord Inc. as merchant of record;</li>
-          <li>Acknowledge that billing will continue until you cancel;</li>
+          <li>Enter into the purchase with Discord under Discord's Paid Services Terms, and
+          authorise Discord to charge your Discord payment method each month until you cancel;</li>
+          <li>Acknowledge that billing continues until you cancel in Discord;</li>
           <li>Accept that prices may change with at least 30 days' prior notice. If you are a
           consumer and do not agree with a price increase, you may cancel free of charge with
-          effect from the date the new price would apply — simply cancel via the Billing Portal
-          before that date.</li>
+          effect from the date the new price would apply — simply cancel in Discord before
+          that date.</li>
         </ul>
 
-        <p><strong>5.3 Free Trial.</strong> New Premium and White-label subscriptions may include a 14-day free
-        trial. You will not be charged during the trial period. If you cancel before the trial
-        ends, you will not be charged. If you do not cancel, your subscription will automatically
-        convert to a paid subscription at the end of the trial period and your payment method
-        will be charged.</p>
+        <p><strong>5.3 No free trial; no annual plans.</strong> We do not offer free trials,
+        annual billing or multi-server bundles. Every server subscribes separately, month by
+        month. Subscriptions purchased before payments moved to Discord (card subscriptions
+        processed by Stripe, Inc., and multi-server &quot;Agency&quot; plans) remain valid under the
+        terms in force at the time of purchase until cancelled; they are managed from the
+        billing portal on the Premium page and no new subscriptions of that kind are sold.</p>
 
-        <p><strong>5.3a Confirming an order.</strong> The button that places a paid
-        order is labelled with the action and the exact amount and billing period
-        (e.g. &quot;Subscribe to Premium — €4.99/mo&quot;), so it is unambiguous that
-        clicking it creates an obligation to pay, as required by Article 8(2) of
-        Directive 2011/83/EU.</p>
+        <p><strong>5.3a Confirming an order.</strong> The paid order is placed in Discord's
+        checkout, which labels the confirming button with the obligation to pay and the exact
+        amount (Article 8(2) of Directive 2011/83/EU). Our dashboard and the bot only open
+        Discord's store; nothing on our pages creates a payment obligation.</p>
 
-        <p><strong>5.4 Cancellation.</strong> You may cancel your subscription at any time via
-        the Billing Portal accessible from the Premium page. Cancellation takes effect at the
-        end of the current billing period. You retain Premium access until that date. We do not
+        <p><strong>5.4 Cancellation.</strong> You may cancel your subscription at any time in
+        Discord (User Settings → Subscriptions). Cancellation takes effect at the end of the
+        current billing period. You retain Premium access until that date. Legacy card
+        subscriptions are cancelled from the billing portal on the Premium page. We do not
         offer pro-rated refunds for partial billing periods unless required by applicable law.</p>
 
-        <p><strong>5.5 Payment Failures.</strong> If a payment fails, we will attempt to collect
-        payment according to Stripe's retry schedule. If payment cannot be collected, your
-        subscription will be downgraded to the Free Tier and Premium features will become
-        unavailable. Data is retained for 30 days following downgrade to allow resubscription.</p>
+        <p><strong>5.5 Payment Failures.</strong> If Discord cannot collect a renewal payment,
+        Discord ends the subscription and the related entitlement; your server is then
+        downgraded to the Free Tier and Premium features become unavailable. Data is retained
+        for 30 days following downgrade to allow resubscription. For legacy card subscriptions
+        we attempt collection according to Stripe's retry schedule before downgrading.</p>
 
-        <p><strong>5.6 Taxes.</strong> Prices may be subject to applicable taxes (including VAT
-        for EU residents). You are responsible for all applicable taxes. Where required by law,
-        we will add VAT to your invoice.</p>
+        <p><strong>5.6 Taxes.</strong> Prices include VAT where applicable. For Discord
+        purchases, Discord assesses and remits the applicable VAT and shows it on your receipt.
+        For legacy card subscriptions, VAT is shown on the Stripe invoice.</p>
       </S>
 
       <S title="6. Refund Policy">
         <p>
-          We offer a <strong>7-day money-back guarantee</strong> for your first subscription
-          payment. To request a refund, contact us via the Support Server within 7 calendar days
-          of the first successful charge. Refunds are processed to the original payment method
-          within 5–10 business days.
+          <strong>Purchases made through Discord (all new subscriptions).</strong> Discord Inc.
+          is the seller of record: refund requests are submitted to Discord and decided under
+          Discord's Refund Policy and Paid Services Terms. We do not receive or process those
+          payments and cannot refund them ourselves. If you are unhappy with the Service,
+          contact us first via the Support Server — we will help resolve the issue and, where a
+          refund is warranted, support your request to Discord.
         </p>
         <p>
-          Refunds are not available for: subsequent billing periods, trials that have converted
-          to paid subscriptions where more than 7 days have elapsed, or accounts terminated for
-          violations of these Terms.
+          <strong>Legacy card subscriptions (Stripe).</strong> We offer a <strong>7-day
+          money-back guarantee</strong> for the first subscription payment. To request a refund,
+          contact us via the Support Server within 7 calendar days of the first successful
+          charge. Refunds are processed to the original payment method within 5–10 business
+          days. Refunds are not available for subsequent billing periods or for accounts
+          terminated for violations of these Terms.
         </p>
         <p>
           <strong>Effect of a refund or chargeback on access.</strong> A full refund or a card
@@ -148,27 +158,23 @@ export default function TermsPage() {
           already paid for (see 5.4).
         </p>
         <p>
-          <strong>Purchases made through Discord.</strong> For subscriptions purchased through
-          Discord's Premium App checkout, Discord Inc. is the merchant of record: refund
-          requests and the exercise of withdrawal rights for those purchases are handled under
-          Discord's own checkout and refund policies. We do not receive or process those
-          payments and cannot refund them directly.
-        </p>
-        <p>
           <strong>Right of withdrawal (EU/EEA consumers).</strong> If you are a consumer in the
-          EU/EEA you have a 14-day right of withdrawal for any paid subscription (Premium,
-          White-label, or Agency) under Directive 2011/83/EU. Because each paid tier is a digital{" "}
-          <em>service</em> (not one-off digital content),
-          Article 16(a) applies: the right is lost only once the service has been{" "}
-          <strong>fully performed</strong>, and only if, before it begins, you (i) gave your{" "}
-          <strong>express prior consent</strong> to start immediately and (ii) acknowledged that
-          you thereby lose the right. We collect exactly this consent through a separate,
-          unticked checkbox at checkout. If you withdraw during the period after the service has
-          begun but before full performance, you owe only an amount{" "}
-          <strong>proportionate</strong> to what was provided (Article 14(3)); we refund the rest.
+          EU/EEA you have a 14-day right of withdrawal under Directive 2011/83/EU. For purchases
+          made through Discord, the contract of sale is with Discord: the information about the
+          right of withdrawal, the request for your express consent to immediate performance and
+          the handling of any withdrawal are provided by Discord in its checkout and under its
+          Paid Services Terms and Refund Policy. For legacy card subscriptions (Stripe), each paid
+          tier is a digital <em>service</em> (not one-off digital content), so Article 16(a)
+          applies: the right is lost only once the service has been{" "}
+          <strong>fully performed</strong>, and only if, before it began, you gave your{" "}
+          <strong>express prior consent</strong> to start immediately and acknowledged that you
+          thereby lose the right — which we collected through a separate, unticked checkbox at
+          checkout. If you withdraw after the service has begun but before full performance, you
+          owe only an amount <strong>proportionate</strong> to what was provided (Article 14(3));
+          we refund the rest.
         </p>
         <p>
-          To withdraw, email{" "}
+          To withdraw from a legacy card subscription, email{" "}
           <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>{" "}
           with an unequivocal statement, or use the model withdrawal form:{" "}
           <em>“I hereby give notice that I withdraw from my contract for the Supreme Bot Premium

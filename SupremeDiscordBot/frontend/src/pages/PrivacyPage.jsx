@@ -17,8 +17,8 @@ export default function PrivacyPage() {
 
       <div className="bg-cs-cyan/10 border border-cs-cyan/20 rounded-lg p-4 mb-8 text-sm text-cs-text">
         <strong className="text-cs-text">Summary:</strong> We collect only the data necessary to run the
-        Service. We do not sell your data. We do not serve ads. We use Discord, Stripe, and optionally
-        Google to provide our features. You can request deletion of your data at any time.
+        Service. We do not sell your data. We do not serve ads. We use Discord (including Discord's store for
+        subscriptions), Stripe for legacy subscriptions, and optionally Google to provide our features. You can request deletion of your data at any time.
       </div>
 
       <S title="1. Data Controller">
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
               </Tr>
               <Tr>
                 <Td>Billing data</Td>
-                <Td>Stripe customer ID, subscription ID, payment status, invoice amounts</Td>
+                <Td>Discord entitlement ID, SKU ID, subscription ID, status and period end; for legacy subscriptions: Stripe customer ID, subscription ID, payment status, invoice amounts</Td>
                 <Td>Process payments; manage subscription state; provide invoices</Td>
                 <Td>Art. 6(1)(b) — contract; Art. 6(1)(c) — legal obligation (tax records)</Td>
                 <Td>7 years (legal obligation for financial records)</Td>
@@ -159,8 +159,10 @@ export default function PrivacyPage() {
         audit trail.</p>
 
         <p><strong>4.4 Payment data.</strong> We do not store credit card numbers or payment
-        instrument details. All payment processing is performed by Stripe, Inc., which is
-        PCI DSS Level 1 certified.</p>
+        instrument details. Subscriptions are purchased through Discord's store, where Discord
+        Inc. collects the payment; we receive only entitlement and subscription identifiers and
+        status. Legacy card subscriptions are processed by Stripe, Inc., which is PCI DSS Level 1
+        certified.</p>
       </S>
 
       <S title="5. Third-Party Processors">
@@ -195,15 +197,15 @@ export default function PrivacyPage() {
                 <Td>SCC (Standard Contractual Clauses)</Td>
               </Tr>
               <Tr>
-                <Td>Discord, Inc. (merchant of record)</Td>
-                <Td>Payment processing for purchases made through Discord's Premium App checkout</Td>
-                <Td>Discord user ID, entitlement and SKU identifiers, purchase status</Td>
+                <Td>Discord, Inc. (seller of record)</Td>
+                <Td>Payment processing for all subscriptions purchased through Discord's Premium Apps store</Td>
+                <Td>Discord user ID, entitlement, SKU and subscription identifiers, status, period end</Td>
                 <Td>USA</Td>
                 <Td>SCC (Standard Contractual Clauses); Discord acts as merchant of record</Td>
               </Tr>
               <Tr>
                 <Td>Stripe Payments Europe, Ltd.</Td>
-                <Td>Payment processing</Td>
+                <Td>Payment processing for legacy card subscriptions only (no new subscriptions)</Td>
                 <Td>Email (if provided), billing amounts, subscription metadata</Td>
                 <Td>Ireland (EU)</Td>
                 <Td>Within EEA; PCI DSS Level 1</Td>

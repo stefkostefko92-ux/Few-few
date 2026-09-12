@@ -61,14 +61,14 @@
 
 | Field | Value |
 |---|---|
-| **Purpose** | Process Premium subscriptions and issue invoices |
+| **Purpose** | Grant and revoke paid tiers for purchases made in Discord's Premium Apps store; service legacy Stripe subscriptions |
 | **Legal basis** | Article 6(1)(b) — Contract; Article 6(1)(c) — Legal obligation (tax records) |
-| **Data categories** | Stripe customer ID, subscription ID, payment status, invoice metadata; Discord entitlement ID, SKU ID and purchase status (native Discord purchases) |
+| **Data categories** | Discord entitlement ID, SKU ID, subscription ID, subscription status and period end (all new purchases); legacy: Stripe customer ID, subscription ID, payment status, invoice metadata |
 | **Data subjects** | Paying customers |
-| **Recipients** | Stripe (payment processor); Discord Inc. (merchant of record for native App purchases); Bulgarian tax authorities (annual VAT declarations) |
-| **3rd country transfers** | Discord Inc. (USA) — SCC; Stripe EU subsidiary processes EU customers |
+| **Recipients** | Discord Inc. (seller of record — collects payment, assesses VAT, issues receipts, handles refunds); Stripe (legacy subscriptions only); Bulgarian tax authorities (annual declarations) |
+| **3rd country transfers** | Discord Inc. (USA) — SCC; Stripe Payments Europe Ltd (Ireland) for legacy subscriptions |
 | **Retention period** | 7 years (Bulgarian tax law retention requirement) |
-| **Security measures** | Stripe PCI-DSS compliance; no raw card data stored on Supreme Bot systems |
+| **Security measures** | No payment instrument data reaches Supreme Bot systems (Discord and Stripe hold it); entitlement events accepted only from the bot (shared secret); Stripe webhooks signature-verified |
 
 ## Processing Activity 5 — AI Auto-Replies (Premium, opt-in)
 

@@ -1,10 +1,23 @@
 // frontend/src/pages/PremiumPage.jsx
+//
+// v3.3 — плащанията са САМО през Discord (Premium Apps). Тази страница вече не
+// продава нищо сама: тя показва състоянието на сървъра и води към Discord
+// магазина, където Discord (препродавач в ЕС) показва крайната цена с ДДС,
+// събира плащането, издава разписката и обработва възстановяванията.
+//
+// Затова тук НЯМА бутон „поръчка със задължение за плащане“ (чл. 8(2) Дир.
+// 2011/83) и няма отметка за отказ от правото на отказ (чл. 16(а)) — и двете
+// живеят в checkout-а на Discord, който е страната по продажбата. Линкът към
+// магазина не е поръчка: той само отваря витрината.
+//
+// Stripe остава единствено за ЗАВАРЕНИ абонати: порталът за управление/отмяна
+// се показва само когато сървърът е обезпечен от Stripe.
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Star, Zap, Check, ExternalLink, CreditCard, Download, Crown, Building2, Server as ServerIcon, Trash2 } from "lucide-react";
-import api, {
-  getStripeStatus, openPortal, createAgencyCheckout, exportTicketsCSV, exportApplicationsCSV,
+import {
+  getBillingStatus, getBillingConfig, openPortal, exportTicketsCSV, exportApplicationsCSV,
   getServers, getMyAgency, attachAgencyServer, detachAgencyServer, openAgencyPortal,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
@@ -37,16 +50,9 @@ const WHITELABEL_FEATURE_KEYS = [
   "premium.feat.wl3",
 ];
 
-// VAT-inclusive EUR prices per plan/interval. Annual ≈ 2 months free.
-// Дисплейните цени ТРЯБВА да съвпадат със Stripe price-овете (scripts/
-// stripe-setup.sh) — иначе преддоговорната информация лъже (ЗЗП/CRD чл. 6).
-const PLAN_PRICING = {
-  premium:    { month: "€4.99",  year: "€49"  },
-  whitelabel: { month: "€9.99",  year: "€99"  },
-  agency5:    { month: "€19.99", year: "€199" },
-  agency10:   { month: "€39.99", year: "€399" },
-};
-
+// Само етикети. ЦЕНИТЕ идват от /api/billing/config (едно определение —
+// lib/billing.js) и са информативни „от …“: крайната сума с ДДС я показва
+// Discord в своя checkout. Agency етикетите остават за ЗАВАРЕНИ агенции.
 const PLAN_LABEL = {
   premium: "Premium",
   whitelabel: "White-label",
@@ -54,55 +60,32 @@ const PLAN_LABEL = {
   agency10: "Agency 10",
 };
 
+const fmtDate = (d) => (d ? new Date(d).toLocaleDateString() : "");
+
 export default function PremiumPage() {
   const { t } = useT();
   const { serverId } = useParams();
 
   const { data: status, isLoading, isError, error } = useQuery({
-    queryKey: ["stripeStatus", serverId],
-    queryFn: () => getStripeStatus(serverId),
+    queryKey: ["billing", serverId],
+    queryFn: () => getBillingStatus(serverId),
+  });
+  const { data: config } = useQuery({
+    queryKey: ["billing-config"],
+    queryFn: getBillingConfig,
+    staleTime: 1000 * 60 * 60,
   });
 
-  // Account-ниво Agency план (ако викащият притежава такъв) — независим от
-  // сървърния абонамент. Управляващата карта живее тук, защото Premium
-  // страницата е билинг домът; seats се закачат per сървър.
+  // Account-ниво Agency план (ЗАВАРЕН — вече не се продава). Управляващата
+  // карта живее тук, защото Premium страницата е билинг домът.
   const { data: mineData } = useQuery({ queryKey: ["my-agency"], queryFn: getMyAgency });
   const myAgency = mineData?.agency || null;
 
-  // v3.0 — избор на план (premium | whitelabel) и период (month | year).
+  // Избор на план само за витрината (premium | whitelabel) — месечно, друго няма.
   const [plan, setPlan] = useState("premium");
-  const [interval, setInterval] = useState("month");
 
-  // F7 — изрично съгласие по чл. 16(а) Дир. 2011/83/ЕС (дигитална УСЛУГА:
-  // правото на отказ се губи едва при пълно изпълнение; при по-ранен отказ се
-  // дължи пропорционална сума — чл. 14(3)). Неотметнато по подразбиране;
-  // задължително преди checkout. Пращаме РЕАЛНАТА state стойност, за да не се
-  // разсинхронизира UI-гейтът от логваното доказателство.
-  const [withdrawalConsent, setWithdrawalConsent] = useState(false);
-
-  const checkoutMut = useMutation({
-    // F7 — пращаме съгласието + план/период към backend-а; той ги изисква и
-    // логва преди да създаде сесията. serverId е PATH параметър (authz:
-    // requireServerAdmin); тялото носи { plan, interval, withdrawalConsent }.
-    mutationFn: () =>
-      api
-        .post(`/stripe/create-checkout/${serverId}`, { plan, interval, withdrawalConsent })
-        .then((r) => r.data),
-    onSuccess: (data) => { window.location.href = data.url; },
-  });
-
-  // v3.0 — Agency планове (до 5 / до 10 сървъра, един абонамент).
-  const [agencyPlan, setAgencyPlan] = useState("agency5");
-  const [agencyInterval, setAgencyInterval] = useState("month");
-  const [agencyConsent, setAgencyConsent] = useState(false);
-  const agencyMut = useMutation({
-    // F7 — Agency е също дигитална услуга: същото чл. 16(а) съгласие.
-    mutationFn: () => createAgencyCheckout({ plan: agencyPlan, interval: agencyInterval, withdrawalConsent: agencyConsent }),
-    onSuccess: (data) => { window.location.href = data.url; },
-  });
-
-  // Провалът потъваше безследно — „Manage subscription" изщракваше и нищо
-  // (класът „лъжеща грешка", одит 10.08.2026).
+  // Порталът е САМО за заварени Stripe абонати; провалът се показва (клас
+  // „лъжеща грешка", одит 10.08.2026).
   const toast = useToast();
   const portalMut = useMutation({
     mutationFn: () => openPortal(serverId),
@@ -150,38 +133,41 @@ export default function PremiumPage() {
   }
 
   if (isError) {
-    // Backend returns 503 when STRIPE_SECRET_KEY is missing; any other
-    // failure (network, 401, 500) is not a configuration problem.
-    const stripeMissing = error?.response?.status === 503;
     return (
       <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="text-2xl font-bold text-cs-text mb-4">{t("premium.badge")}</h1>
         <div role="alert" className="cs-card bg-warning/10 border-warning/20 text-center py-10">
-          {stripeMissing ? (
-            <>
-              <p className="text-warning font-semibold mb-2">{t("premium.paymentsUnavailable")}</p>
-              <p className="text-cs-muted text-sm">
-                {t("premium.paymentsUnavailableBody")}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-warning font-semibold mb-2">{t("premium.statusLoadFailed")}</p>
-              <p className="text-cs-muted text-sm">
-                {error?.response?.data?.error || t("premium.genericError")}
-              </p>
-            </>
-          )}
+          <p className="text-warning font-semibold mb-2">{t("premium.statusLoadFailed")}</p>
+          <p className="text-cs-muted text-sm">
+            {error?.response?.data?.error || t("premium.genericError")}
+          </p>
         </div>
       </div>
     );
   }
 
   const isPremium = status?.isPremium;
-  const sub = status?.subscriptionDetails;
+  const source = status?.source;
+  const discord = status?.discord || {};
+  const stripeLegacy = !!status?.stripe?.legacy;
+  const portalAvailable = !!status?.stripe?.portalAvailable;
+  const storeConfigured = !!config?.discord?.configured;
+  const plans = config?.discord?.plans || {};
+  const storeUrl = config?.discord?.storeUrl || null;
   const upgradeFeatureKeys = plan === "whitelabel" ? WHITELABEL_FEATURE_KEYS : PREMIUM_FEATURE_KEYS;
-  const upgradePrice = PLAN_PRICING[plan][interval];
-  const perLabel = interval === "year" ? t("premium.perServerYear") : t("premium.perServerMonth");
+  const upgradePrice = plans[plan]?.monthlyEur ? `€${plans[plan].monthlyEur}` : null;
+  const upgradeUrl = plans[plan]?.url || storeUrl;
+
+  // Едно изречение за състоянието — по ИЗТОЧНИКА на правата, не по комбинация
+  // от колони (класът „едно правило, N определения“).
+  let statusLine = t("premium.activeSubscription");
+  if (source === "agency") statusLine = t("agency.covered");
+  else if (source === "grace" && status?.accessUntil) statusLine = t("premium.cancelsOn", { date: fmtDate(status.accessUntil) });
+  else if (source === "discord") {
+    if (discord.statusLabel === "ending" && discord.currentPeriodEnd) statusLine = t("premium.discord.ending", { date: fmtDate(discord.currentPeriodEnd) });
+    else if (discord.currentPeriodEnd) statusLine = t("premium.discord.renews", { date: fmtDate(discord.currentPeriodEnd) });
+    else statusLine = t("premium.discord.billedBy");
+  } else if (source === "stripe") statusLine = t("premium.legacy.card");
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -192,31 +178,35 @@ export default function PremiumPage() {
 
       {/* Current Status Banner */}
       {isPremium && (
-        <div className="bg-cs-gold/10 border border-cs-gold/20 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
+        <div className="bg-cs-gold/10 border border-cs-gold/20 rounded-xl p-5 mb-8 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Star className="w-6 h-6 text-cs-gold fill-cs-gold" />
             <div>
               <p className="font-semibold text-cs-text">{t("premium.activeStatus")}</p>
-              <p className="text-sm text-cs-gold/70">
-                {status?.agencyCovered && !status?.stripeSubscriptionId
-                  ? t("agency.covered")
-                  : status?.stripeStatus === "trialing" && sub?.currentPeriodEnd
-                  ? t("premium.freeTrialEnds", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
-                  : sub?.cancelAtPeriodEnd
-                  ? t("premium.cancelsOn", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
-                  : sub?.currentPeriodEnd
-                  ? t("premium.renewsOn", { date: new Date(sub.currentPeriodEnd).toLocaleDateString() })
-                  : t("premium.activeSubscription")}
-              </p>
-              {status?.agencyCovered && !status?.agencyOwnedByMe && (
+              <p className="text-sm text-cs-gold/70">{statusLine}</p>
+              {source === "agency" && !status?.agencyOwnedByMe && (
                 <p className="text-xs text-cs-dim mt-0.5">{t("agency.coveredNotOwner")}</p>
+              )}
+              {source === "discord" && (
+                <p className="text-xs text-cs-dim mt-0.5">{t("premium.discord.manageHint")}</p>
+              )}
+              {source === "stripe" && (
+                <p className="text-xs text-cs-dim mt-0.5">{t("premium.legacy.hint")}</p>
               )}
             </div>
           </div>
-          {/* Agency-покрит сървър няма собствен Stripe customer — per-server
-              портал би върнал 404. Собственикът на агенцията управлява от
-              agency портала; чужд seat няма billing бутон изобщо. */}
-          {(!status?.agencyCovered || status?.stripeSubscriptionId) && (
+          {source === "discord" && discord.manageUrl && (
+            <a
+              href={discord.manageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cs-btn-ghost flex items-center gap-2 text-sm"
+            >
+              <ExternalLink className="w-4 h-4" />
+              {t("premium.discord.manage")}
+            </a>
+          )}
+          {stripeLegacy && portalAvailable && (
             <button
               onClick={() => portalMut.mutate()}
               disabled={portalMut.isPending}
@@ -253,7 +243,7 @@ export default function PremiumPage() {
           )}
         </div>
 
-        {/* Premium / White-label upgrade */}
+        {/* Premium / White-label — витрина към Discord магазина */}
         <div className={`cs-card flex flex-col border-cs-gold/30 ${isPremium ? "ring-1 ring-cs-gold/20" : ""}`}>
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
@@ -262,68 +252,37 @@ export default function PremiumPage() {
             </div>
 
             {!isPremium && (
-              <>
-                {/* Plan selector — Premium vs White-label */}
-                <div role="radiogroup" aria-label="Plan" className="grid grid-cols-2 gap-2 mb-3">
-                  {[["premium", Star], ["whitelabel", Crown]].map(([value, Icon]) => {
-                    const active = plan === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        onClick={() => setPlan(value)}
-                        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                          active ? "border-cs-gold bg-cs-gold/10 text-cs-text" : "border-cs-border text-cs-muted hover:text-cs-text"
-                        }`}
-                      >
-                        <Icon className={`w-4 h-4 ${active ? "text-cs-gold" : ""}`} />
-                        {PLAN_LABEL[value]}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Interval toggle — Monthly vs Annual (≈2 months free) */}
-                <div role="radiogroup" aria-label="Billing interval" className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60 mb-1">
-                  {[["month", t("premium.monthly")], ["year", t("premium.annual")]].map(([value, label]) => {
-                    const active = interval === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        onClick={() => setInterval(value)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                          active ? "bg-cs-gold text-black" : "text-cs-muted hover:text-cs-text"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {interval === "year" && (
-                  <p className="text-[11px] text-cs-gold font-mono">{t("premium.twoMonthsFree")}</p>
-                )}
-              </>
+              <div role="radiogroup" aria-label="Plan" className="grid grid-cols-2 gap-2 mb-3">
+                {[["premium", Star], ["whitelabel", Crown]].map(([value, Icon]) => {
+                  const active = plan === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => setPlan(value)}
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
+                        active ? "border-cs-gold bg-cs-gold/10 text-cs-text" : "border-cs-border text-cs-muted hover:text-cs-text"
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${active ? "text-cs-gold" : ""}`} />
+                      {PLAN_LABEL[value]}
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
 
           <div className="mb-6" aria-live="polite">
             <p className="text-3xl font-bold text-cs-text">
               {isPremium
-                ? (PLAN_PRICING[status?.plan]?.[status?.billingInterval || "month"] || PLAN_PRICING.premium.month)
-                : upgradePrice}
+                ? (PLAN_LABEL[status?.plan] || "Premium")
+                : (upgradePrice ? t("premium.discord.fromPrice", { price: upgradePrice }) : PLAN_LABEL[plan])}
             </p>
             <p className="text-sm text-cs-muted mt-1">
-              {isPremium
-                ? (status?.billingInterval === "year"
-                    ? t("premium.planPerYear", { plan: PLAN_LABEL[status?.plan] || "Premium" })
-                    : t("premium.planPerMonth", { plan: PLAN_LABEL[status?.plan] || "Premium" }))
-                : `${PLAN_LABEL[plan]} · ${perLabel}`}
+              {isPremium ? statusLine : `${PLAN_LABEL[plan]} · ${t("premium.discord.perServerMonth")}`}
             </p>
           </div>
 
@@ -341,185 +300,54 @@ export default function PremiumPage() {
 
           <div className="mt-6">
             {isPremium ? (
-              <button
-                onClick={() => portalMut.mutate()}
-                disabled={portalMut.isPending}
-                className="w-full cs-btn-ghost flex items-center justify-center gap-2 border border-cs-gold/20"
-              >
-                <ExternalLink className="w-4 h-4" />
-                {portalMut.isPending ? t("premium.loading") : t("premium.manageSubscription")}
-              </button>
+              source === "discord" && discord.manageUrl ? (
+                <a
+                  href={discord.manageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full cs-btn-ghost flex items-center justify-center gap-2 border border-cs-gold/20"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {t("premium.discord.manage")}
+                </a>
+              ) : stripeLegacy && portalAvailable ? (
+                <button
+                  onClick={() => portalMut.mutate()}
+                  disabled={portalMut.isPending}
+                  className="w-full cs-btn-ghost flex items-center justify-center gap-2 border border-cs-gold/20"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {portalMut.isPending ? t("premium.loading") : t("premium.manageSubscription")}
+                </button>
+              ) : null
             ) : (
               <>
-                {/* F7 — обща цена с ДДС + авто-подновяване (преддоговорна
-                    информация, чл. 6(1)(д),(о) Дир. 2011/83 / ЗЗП чл. 47) */}
-                <p className="text-xs text-cs-muted mb-3">
-                  {interval === "year"
-                    ? t("premium.priceLineYear", { price: upgradePrice })
-                    : t("premium.priceLineMonth", { price: upgradePrice })}
-                </p>
+                {/* Преддоговорна информация: Discord е продавачът и показва
+                    крайната цена с ДДС в своя checkout. Тук — само „от“. */}
+                <p className="text-xs text-cs-muted mb-4">{t("premium.discord.storeHint")}</p>
 
-                {/* F7 — задължителна, неотметната по подразбиране отметка за
-                    изрично съгласие незабавно изпълнение → загуба на 14-дневното
-                    право на отказ (чл. 16(а) Дир. 2011/83/ЕС). Достъпно: label е
-                    свързан с input, target ≥24px, видим focus ring. */}
-                <label
-                  htmlFor="withdrawal-consent"
-                  className="flex items-start gap-3 mb-4 cursor-pointer text-sm text-cs-text"
-                >
-                  <input
-                    id="withdrawal-consent"
-                    type="checkbox"
-                    checked={withdrawalConsent}
-                    onChange={(e) => setWithdrawalConsent(e.target.checked)}
-                    className="mt-0.5 w-6 h-6 flex-shrink-0 accent-cs-gold rounded focus:outline-none focus:ring-2 focus:ring-cs-gold focus:ring-offset-2 focus:ring-offset-dark-300"
-                  />
-                  <span>
-                    {t("premium.consent")}
-                  </span>
-                </label>
-
-                <button
-                  onClick={() => checkoutMut.mutate()}
-                  disabled={checkoutMut.isPending || !withdrawalConsent}
-                  className="w-full bg-cs-gold hover:bg-cs-goldDim text-black font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-cs-gold"
-                >
-                  <Star className="w-4 h-4 fill-black" />
-                  {/* Чл. 8(2) от Директива 2011/83/ЕС: бутонът, който задейства
-                      поръчката, трябва да е обозначен ЧЕТИМО и НЕДВУСМИСЛЕНО с
-                      „поръчка със задължение за плащане" или равностойно. „Upgrade
-                      to Premium" не е равностойно — то не казва, че се плаща. При
-                      неизпълнение потребителят НЕ Е ОБВЪРЗАН от договора, тоест
-                      всяко плащане е оспоримо. Затова текстът носи и глагола, и
-                      цената, и периода. */}
-                  {checkoutMut.isPending
-                    ? t("premium.redirecting")
-                    : t("premium.subscribeAndPay", {
-                        plan: PLAN_LABEL[plan],
-                        price: upgradePrice,
-                        period: interval === "year" ? t("premium.perYearShort") : t("premium.perMonthShort"),
-                      })}
-                </button>
-                {checkoutMut.isError && (
-                  <p role="alert" className="text-danger text-sm mt-3">
-                    {checkoutMut.error?.response?.data?.error || t("premium.checkoutFailed")}
-                  </p>
+                {storeConfigured && upgradeUrl ? (
+                  <a
+                    href={upgradeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-cs-gold hover:bg-cs-goldDim text-black font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Star className="w-4 h-4 fill-black" />
+                    {t("premium.discord.openStore")}
+                  </a>
+                ) : (
+                  <p role="alert" className="text-warning text-sm">{t("premium.discord.notConfigured")}</p>
                 )}
+                <p className="text-[11px] text-cs-dim mt-3">{t("premium.discord.cancelHint")}</p>
               </>
             )}
           </div>
         </div>
       </div>
 
-      {/* Agency управление — картата на СОБСТВЕНИКА на агенцията (account-
-          ниво, независимо от този сървър). Покупката по-долу се крие при
-          активна агенция: backend-ът бездруго връща 400 „already active". */}
+      {/* Agency управление — само за ЗАВАРЕНИ агенции (вече не се продават). */}
       {myAgency && <AgencyManageCard agency={myAgency} serverId={serverId} t={t} />}
-
-      {/* Agency — up to 5 / up to 10 servers, one subscription */}
-      {!isPremium && !myAgency?.active && (
-        <div className="mt-10 max-w-3xl">
-          <div className="flex items-center gap-2 mb-4">
-            <Building2 className="w-5 h-5 text-cs-cyan" />
-            <h2 className="text-lg font-semibold text-cs-text">{t("premium.agencyTitle")}</h2>
-          </div>
-          <div className="cs-card">
-            <p className="text-sm text-cs-muted mb-4">
-              {t("premium.agencyDesc")}
-            </p>
-
-            <div role="radiogroup" aria-label="Agency plan" className="grid grid-cols-2 gap-3 mb-4">
-              {[["agency5", t("premium.upTo5")], ["agency10", t("premium.upTo10")]].map(([value, seats]) => {
-                const active = agencyPlan === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setAgencyPlan(value)}
-                    className={`text-left px-4 py-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                      active ? "border-cs-cyan bg-cs-cyan/5" : "border-cs-border hover:border-cs-borderHi"
-                    }`}
-                  >
-                    <div className="font-semibold text-cs-text">{PLAN_LABEL[value]}</div>
-                    <div className="text-xs text-cs-muted">{seats}</div>
-                    <div className="text-lg font-bold text-cs-text mt-1">
-                      {PLAN_PRICING[value][agencyInterval]}
-                      <span className="text-xs text-cs-dim font-normal">
-                        /{agencyInterval === "year" ? "year" : "month"}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div role="radiogroup" aria-label="Agency billing interval" className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60">
-                {[["month", t("premium.monthly")], ["year", t("premium.annual")]].map(([value, label]) => {
-                  const active = agencyInterval === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => setAgencyInterval(value)}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                        active ? "bg-cs-cyan text-black" : "text-cs-muted hover:text-cs-text"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                onClick={() => agencyMut.mutate()}
-                disabled={agencyMut.isPending || !agencyConsent}
-                className="cs-btn-primary flex items-center gap-2 disabled:opacity-50"
-              >
-                <Building2 className="w-4 h-4" />
-                {/* Чл. 8(2) важи за ВСЕКИ плащащ бутон поотделно — цената в
-                    съседната карта не спасява надпис „Get Agency 5“. По CJEU
-                    C-249/21 значение има само текстът НА бутона, затова тук
-                    стои същият низ като при личните тарифи: глагол + цена +
-                    период. (Правният Разбирач + Продавача, 07.08.2026) */}
-                {agencyMut.isPending
-                  ? t("premium.redirecting")
-                  : t("premium.subscribeAndPay", {
-                      plan: PLAN_LABEL[agencyPlan],
-                      price: PLAN_PRICING[agencyPlan][agencyInterval],
-                      period: agencyInterval === "year" ? t("premium.perYearShort") : t("premium.perMonthShort"),
-                    })}
-              </button>
-            </div>
-            {/* F7 — чл. 16(а): за дигитална УСЛУГА правото на отказ се губи
-                едва при ПЪЛНО изпълнение, не „щом абонаментът е активен".
-                Формулировката е идентична с per-server отметката. */}
-            <label className="flex items-start gap-2 mt-4 text-xs text-cs-muted cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={agencyConsent}
-                onChange={(e) => setAgencyConsent(e.target.checked)}
-                className="mt-0.5 accent-cs-cyan"
-              />
-              <span>
-                {t("premium.consentAgency")}
-              </span>
-            </label>
-            <p className="text-[11px] text-cs-dim mt-2">
-              {agencyInterval === "year" ? t("premium.agencyRenewYear") : t("premium.agencyRenewMonth")}
-            </p>
-            {agencyMut.isError && (
-              <p role="alert" className="text-danger text-sm mt-3">
-                {agencyMut.error?.response?.data?.error || t("premium.agencyCheckoutSoon")}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Export Section (Premium only) */}
       {isPremium && (
@@ -561,10 +389,10 @@ export default function PremiumPage() {
       <div className="mt-10 max-w-2xl space-y-4">
         <h2 className="text-lg font-semibold text-cs-text">{t("premium.faqTitle")}</h2>
         {[
+          { q: t("premium.faq.payQ"), a: t("premium.faq.payA") },
           { q: t("premium.faq.cancelQ"), a: t("premium.faq.cancelA") },
           { q: t("premium.faq.multiServer"), a: t("premium.faq.multiServerA") },
           { q: t("premium.faq.whitelabelQ"), a: t("premium.faq.whitelabelA") },
-          { q: t("premium.faq.intervalQ"), a: t("premium.faq.intervalA") },
           { q: t("premium.faq.refundQ"), a: t("premium.faq.refundA") },
         ].map(({ q, a }) => (
           <div key={q} className="cs-card">
@@ -577,7 +405,7 @@ export default function PremiumPage() {
   );
 }
 
-/* ─── Agency управляваща карта ─────────────────────────────────────────────────
+/* ─── Agency управляваща карта (ЗАВАРЕНИ агенции) ─────────────────────────────
    Вижда я само собственикът на агенция (getMyAgency връща null иначе).
    Seats се закачат/махат тук; лимитът и authz живеят в backend-а
    (advisory lock срещу надвишаване при race). */
@@ -596,7 +424,7 @@ function AgencyManageCard({ agency, serverId, t }) {
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["my-agency"] });
-    qc.invalidateQueries({ queryKey: ["stripeStatus", serverId] });
+    qc.invalidateQueries({ queryKey: ["billing", serverId] });
     qc.invalidateQueries({ queryKey: ["server", serverId] });
     qc.invalidateQueries({ queryKey: ["servers"] });
   };

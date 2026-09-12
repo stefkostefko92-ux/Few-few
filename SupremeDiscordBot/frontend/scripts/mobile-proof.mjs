@@ -129,7 +129,8 @@ const FIX = {
   ],
   [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
   [`GET /api/reactionroles/${SID}`]: [],
-  [`GET /api/stripe/status/${SID}`]: { plan: "agency10", stripeStatus: "active" },
+  [`GET /api/billing/config`]: { provider: "discord", discord: { enabled: true, configured: true, applicationId: "app", storeUrl: "https://discord.com/application-directory/app/store", plans: { premium: { label: "Premium", monthlyEur: "4.99", skuId: "s1", url: "https://discord.com/application-directory/app/store/s1" }, whitelabel: { label: "White-label", monthlyEur: "9.99", skuId: "s2", url: "https://discord.com/application-directory/app/store/s2" } } }, stripe: { purchasesEnabled: false, legacyManagement: false } },
+  [`GET /api/billing/${SID}`]: { provider: "discord", isPremium: true, plan: "agency10", source: "agency", agencyCovered: true, agencyOwnedByMe: true, discord: {}, stripe: { legacy: false, portalAvailable: false } },
 };
 
 function fixtureFor(method, path) {

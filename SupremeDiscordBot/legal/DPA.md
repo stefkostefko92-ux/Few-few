@@ -57,9 +57,9 @@
 | Sub-processor | Role | Location | Safeguard |
 |---|---|---|---|
 | Hetzner Online GmbH | Infrastructure hosting | Germany (EU) | Within EEA |
-| Stripe Payments Europe Ltd | Payment processing | Ireland (EU) | Within EEA |
+| Stripe Payments Europe Ltd | Payment processing for legacy subscriptions only (no new purchases) | Ireland (EU) | Within EEA |
 | Google LLC (Gemini API) | AI inference (optional, Premium feature) | USA | Standard Contractual Clauses |
-| Discord Inc. | Authentication + bot delivery | USA | Standard Contractual Clauses |
+| Discord Inc. | Authentication + bot delivery; seller of record for subscriptions purchased in Discord's Premium Apps store (entitlement/subscription identifiers) | USA | Standard Contractual Clauses |
 | Functional Software, Inc. (Sentry) | Error monitoring and performance tracing | USA / EU region | Standard Contractual Clauses |
 
 4.3 Supreme Bot will provide 30 days' notice of any intended changes to sub-processors (via email to the Customer's admin contact) and publish an updated list at the Customer's dashboard under Privacy Settings.

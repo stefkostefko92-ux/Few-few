@@ -222,9 +222,9 @@ export const getScheduled   = (sid) => api.get(`/automation/${sid}/scheduled`).t
 export const createScheduled= (sid, data) => api.post(`/automation/${sid}/scheduled`, data).then((r) => r.data);
 export const deleteScheduled= (sid, id) => api.delete(`/automation/${sid}/scheduled/${id}`).then((r) => r.data);
 
-// ─── v2.0 Trial ─────────────────────────────────────────────────────────────
-export const getTrialStatus = (sid) => api.get(`/trial/${sid}`).then((r) => r.data);
-export const startTrial     = (sid) => api.post(`/trial/${sid}/start`).then((r) => r.data);
+// ─── v3.3 Billing (Discord-first, доставчико-неутрално) ─────────────────────
+export const getBillingConfig = () => api.get(`/billing/config`).then((r) => r.data);
+export const getBillingStatus = (sid) => api.get(`/billing/${sid}`).then((r) => r.data);
 
 // ─── v2.1 Analytics 2.0 ────────────────────────────────────────────────────
 export const getAnalyticsOverview    = (sid) => api.get(`/analytics/${sid}/overview`).then((r) => r.data);
@@ -255,5 +255,3 @@ export const deleteApplication = (sid, appId) =>
 export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
-// ─── v2.2 Trial cancellation ────────────────────────────────────────────────
-export const cancelTrial = (sid) => api.post(`/trial/${sid}/cancel`).then((r) => r.data);

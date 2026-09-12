@@ -1,85 +1,128 @@
-# Discord Premium App — native монетизация (втори път за upgrade)
+# Discord Premium Apps — единственият път за плащане (v3.3)
 
-Supreme Bot поддържа **два паралелни начина** за плащане на абонамент:
+**Решение на собственика (12.09.2026):** Supreme Bot се продава **само** през
+Discord Premium Apps. Stripe остава единствено за **заварени** абонати (webhook +
+портал); нова покупка през Stripe няма (`POST /api/stripe/create-checkout` и
+`POST /api/agency/checkout` връщат **410** при `BILLING_PROVIDER=discord`, което е
+подразбирането). **Пробен период няма** по никой път.
 
-1. **Stripe** (уеб dashboard) — всички тарифи, вкл. **Agency** (мулти-сървър).
-2. **Discord Premium App** (native монетизация, in-app checkout) — само
-   **Premium** и **White-label**.
-
-> **Защо Agency остава само Stripe?** Discord subscription SKU-тата се издават
-> **per-guild** (един entitlement = един сървър). Agency е мулти-сървърна тарифа
-> (5/10 сървъра под общ seat), която не се мапва към единичен guild entitlement.
-> Затова `planFromDiscordSku` връща само `premium` / `whitelabel`, никога agency.
+Всичко по-долу е сверено с живата документация на Discord на 12.09.2026 —
+**сверявай пак преди промяна на цени/SKU**, Discord обновява политиките (Developer
+Policy — 11.09.2026; Premium Apps FAQ — 29.08.2026; Paid Services Terms — 29.08.2025).
 
 ---
 
-## 1. Включване на монетизация в Developer Portal
+## 1. Защо Discord-only (правно и продуктово)
 
-1. Отвори приложението в **Discord Developer Portal → App → Monetization**.
-2. Провери **eligibility** изискванията (потвърди актуалните в портала — числата
-   се менят):
-   - **Verified app** (верификацията е отделен процес; при 100+ сървъра тя вече е
-     задължителна).
-   - **Team** с попълнен **payout / данъчна информация** на owner-а на екипа.
-   - Приети **Monetization Terms** и **сървър за поддръжка**.
-3. Приложението трябва да принадлежи на **Team**, не на личен акаунт.
+| Факт (източник) | Следствие за нас |
+|---|---|
+| **Developer Policy**: от 07.10.2024 приложение с платени функции трябва да ги предлага през Premium Apps **и** на цена не по-висока от която и да е друга опция | С един канал паритетът е тривиален; няма риск „Stripe по-евтино → нарушение“ |
+| **Premium Apps FAQ**: поддържат се само **месечни** абонаменти и еднократни покупки; годишни, ограничени във времето отстъпки и дарения **не** | Няма годишен план. `DISCORD_PLANS` в `lib/billing.js` е само месечен |
+| **Guild vs user SKU не съжителстват**; guild абонамент = един сървър | Няма мулти-сървърен Agency SKU → Agency **не се продава** (заварените работят) |
+| **Monetization Terms (06.06.2024)**: в ЕС/UK Discord е **препродавач** — начислява и внася ДДС, издава разписки, обработва възстановяванията по своята политика | Ние не виждаме карта, не сме продавач; Общите условия го казват (Terms §5–6) |
+| **Payout**: 85/15 до $1M, после 70/30; праг $100 → $25; 45 дни след края на месеца | Приходът е нетен от комисионата на Discord; ДДС не е наш оборот |
+| **Entitlement-ът е източникът на истината**; отмяната идва като `SUBSCRIPTION_UPDATE` (ENDING), изтичането като `ENTITLEMENT_UPDATE` с `ends_at`, refund като `ENTITLEMENT_DELETE`/`deleted:true` | Правата се дават/отнемат **само** от entitlement събития; абонаментът е само „защо/докога“ |
 
-## 2. Създай subscription SKU-та
+## 2. Допустимост (eligibility) — направи ги преди да включиш магазина
 
-В **Monetization → Subscriptions** създай **две** guild-scoped subscription-а:
+Проверено в Developer Portal → App → Monetization (списъкът е на Discord; сверявай):
 
-| SKU | Тарифа в кода | Външна цена (Stripe) |
-|-----|---------------|----------------------|
-| Premium | `premium` | €4.99/мес · €49/год |
-| White-label | `whitelabel` | €9.99/мес · €99/год |
+- приложението е **верифицирано** и принадлежи на **Team** (не личен акаунт);
+- собственикът на Team-а е 18+, с потвърден имейл и **2FA**;
+- ботът ползва **slash команди**; в App Directory има **ToS + Privacy** линкове
+  (нашите: `/terms`, `/privacy`);
+- **payout** и данъчна информация са попълнени; приети са **Monetization Terms**
+  и **Monetization Policy**;
+- достъпно за разработчици в **US/EU/UK**.
 
-**Ценови паритет (задължителен).** Discord **Monetization Requirements**
-(в сила от **7 октомври 2024 г.**) изискват цената в Discord да **НЕ е по-висока**
-от същата услуга, продавана извън Discord. Т.е. Discord SKU цената трябва да е
-**≤** съответната Stripe цена. Не вдигай цените само за Discord.
+## 3. Създай SKU-тата (Monetization → Subscriptions)
 
-> ⚠ **При намаление на Stripe цените** (както 2026-08: ÷2 на цялата стълбица)
-> паритетът се обръща срещу нас: старата Discord SKU цена става ПО-ВИСОКА от
-> външната → нарушение. Смени SKU цените в Dev Portal **едновременно** с
-> пускането на новите Stripe цени.
+Две **guild-scoped, месечни** subscription SKU-та. Цените се избират от фиксираната
+стълба на Discord — избери най-близката до информативната ни цена:
 
-> Провери актуалната формулировка на изискванията на живо преди пускане:
-> https://discord.com/developers/docs (Monetization) и
-> https://support-dev.discord.com/hc/en-us/articles/... (Monetization Requirements).
+| SKU | Тарифа в кода | Информативна цена (lib/billing.js) |
+|-----|---------------|-------------------------------------|
+| Premium | `premium` | от €4.99/мес |
+| White-label | `whitelabel` | от €9.99/мес |
 
-## 3. Конфигурирай backend `.env`
+Крайната сума (с ДДС по държавата на купувача) я показва Discord в checkout-а —
+затова таблото и сайтът пишат „от …“ и „Discord показва крайната цена“.
 
-Копирай **SKU ID-тата** от портала и ги сложи в `backend/.env`:
+Магазин (официален формат на адресите):
+```
+https://discord.com/application-directory/<DISCORD_CLIENT_ID>/store
+https://discord.com/application-directory/<DISCORD_CLIENT_ID>/store/<SKU_ID>
+```
+В чат Discord ги рендерира като карта с бутон за покупка; ботът праща и native
+`ButtonStyle.Premium` бутон (`bot/src/utils/premiumRequired.js`).
 
+## 4. Конфигурация
+
+`backend/.env` (и `bot/.env` за SKU-тата — ботът рисува бутона):
 ```dotenv
-# Discord native монетизация (guild-scoped subscription SKU-та)
-DISCORD_SKU_PREMIUM=<sku_id_на_premium>
-DISCORD_SKU_WHITELABEL=<sku_id_на_whitelabel>
+BILLING_PROVIDER=discord          # discord (по подразбиране) | stripe | both
+DISCORD_CLIENT_ID=...             # = application id; ползва се и за URL на магазина
+DISCORD_SKU_PREMIUM=<sku_id>
+DISCORD_SKU_WHITELABEL=<sku_id>
+```
+При `discord`/`both` `index.js` крещи на старт, ако липсва някоя от трите.
+`GET /api/billing/config` връща публичната конфигурация за таблото (без тайни).
+
+## 5. Веригата в кода
+
+```
+Discord checkout ──► ENTITLEMENT_CREATE ─► bot/events/entitlementCreate.js
+                 ──► SUBSCRIPTION_CREATE ─► bot/events/subscriptionCreate.js
+                                             │
+                    POST /api/discord/entitlement   (grant/revoke — ПРАВАТА)
+                    POST /api/discord/subscription  (само състояние + одит)
+                                             │
+                    Server.plan/planSource="discord"/discordEntitlementId/discordSkuId
+                    Server.discordSubscriptionId/Status/CurrentPeriodEnd   (v48)
 ```
 
-Тези се четат от `backend/src/lib/premium.js` → `planFromDiscordSku(skuId)`.
-Ако `botът` праща SKU, който не е в тези две env-променливи, backend-ът **игнорира**
-събитието (200 ignore) — така случайни/Agency SKU-та не дават достъп.
+- **Grant** само за guild SKU (premium/whitelabel), само за съществуващ сървър,
+  **никога** върху Stripe-обезпечен сървър (взаимно изключване в двете посоки).
+- **Revoke** при `type=delete`, `deleted:true` или минал `endsAt` — само ако сървърът
+  е обезпечен точно от този entitlement; после `syncServerPaidFlag` (агенция може да
+  го държи платен) и `reconcileWhitelabel` (бранд ботът слиза).
+- **Reconcile** (`POST /entitlements/reconcile`) при старт и на всеки 6 ч
+  (`ENTITLEMENT_RECONCILE_MS`): Discord не преизпраща gateway събития. Празен активен
+  списък при налични Discord-обезпечени сървъри **не** revoke-ва (вероятен fetch
+  проблем).
+- **Subscription статус** се пази като сурово число и се превежда **по документацията**
+  в `lib/discordSubscription.js`: `0 active · 1 inactive · 2 ending`. Внимание:
+  `discord-api-types` 0.38.48 обявява Ending=1/Inactive=2 — разминаване, затова
+  не ползваме enum-а на пакета. Етикетът е информативен; **достъпът никога не се
+  извежда от него**.
 
-> `DISCORD_SKU_PREMIUM` се ползва и от бота за upsell бутона
-> (`sendPremiumRequired`), затова трябва да е наличен и в **средата на бота**.
+## 6. Какво вижда клиентът
 
-## 4. Как работи по веригата
+- **Табло → Premium**: състояние (източник на правата: discord / stripe-легаси /
+  agency / grace), „от €…“, линк към магазина (нов таб). Няма наш бутон за поръчка и
+  няма отметка за чл. 16(а) — и двете са в checkout-а на Discord (продавачът).
+- **Бот**: `/premium status` показва източника, „подновява се на …“/„отменен —
+  достъп до …“ (Discord timestamp) и линк към магазина; при Free — native premium
+  бутон. Гейтнатите функции ползват `sendPremiumRequired`, чийто резервен път е
+  магазинът (не таблото).
+- **Отмяна/възстановяване**: в Discord (User Settings → Subscriptions); достъпът
+  остава до края на платения период. Refund → Discord по неговата Refund Policy;
+  ние не можем да върнем пари за Discord покупка.
 
-1. Потребител купува абонамент от Discord → Discord издава **entitlement** за
-   guild-а.
-2. Ботът (gateway) получава `ENTITLEMENT_CREATE/UPDATE/DELETE` и праща POST към
-   `POST /api/discord/entitlement` с `x-bot-secret` (само ботът може).
-3. Backend-ът резолвва SKU → plan и обновява `Server`:
-   `isPremium`, `plan`, `planSource="discord"`, `discordEntitlementId`,
-   `discordSkuId`. Пише **AuditLog** `PREMIUM_GRANTED_DISCORD`.
-4. При delete / изтекъл `endsAt` → revoke **само** ако сървърът е обезпечен точно
-   от този Discord entitlement (`planSource==="discord"`). **Stripe-обезпечени
-   сървъри не се пипат.** AuditLog `PREMIUM_REVOKED_DISCORD`.
+## 7. Тест
 
-## 5. Тест
+- Test entitlements: `POST/DELETE /applications/{app}/entitlements` (Developer
+  Portal → Test) в тестов guild — без реално плащане.
+- Провери: `Server.plan` става `premium`/`whitelabel`, `/premium status` показва
+  „Discord subscription“, `GET /api/billing/:id` дава `source: "discord"`; след DELETE
+  планът пада на `free` и бранд ботът слиза.
+- Гейтове: `billingProvider.test.js`, `discordSubscription.test.js`, `noTrial.test.js`
+  (backend); `discordSubscriptionEvents.test.js` (bot); `checkout-cta.test.js` (frontend).
 
-- Използвай **test entitlements** (Developer Portal / `entitlements.createTest`)
-  в тестов guild, за да симулираш покупка без реално плащане.
-- Провери, че `Server.plan` става `premium`/`whitelabel` и после се връща на
-  `free` при изтриване на test entitlement-а.
+## 8. Заварени Stripe абонати
+
+Discord не изисква прекратяване на съществуващи отношения. Webhook-ът продължава да
+се проверява и обработва: отмяна с гратис, refund/chargeback → незабавно сваляне,
+дунинг. Порталът е достъпен от Premium страницата **само** за сървър с
+`planSource="stripe"`. Ако собственикът реши да мигрира всички към Discord — това е
+комуникация с клиента (отмяна в Stripe + покупка в Discord), не автоматика.

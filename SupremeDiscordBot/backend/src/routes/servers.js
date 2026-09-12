@@ -154,21 +154,16 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
     // собствен план + активен trial + AGENCY seat — суровият isPremium
     // изпускаше agency-покритите сървъри (dashboard ги показваше безплатни
     // дори платената функция да работи; при стара колона — обратното).
-    const now = new Date();
-    const trialActive = !!(server.trialEndsAt && server.trialEndsAt > now);
     const tier = await getServerTier(req.params.serverId);
-    const trialDaysLeft = trialActive
-      ? Math.ceil((server.trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
-      : 0;
 
     const response = sanitizeServer(server);
-    response.isPremium = tier.isPremium;     // собствен план ИЛИ trial ИЛИ agency
+    response.isPremium = tier.isPremium;     // собствен план ИЛИ гратис ИЛИ agency
     response.plan = tier.plan;
     response.hasWhiteLabel = tier.hasWhiteLabel;
-    response.isTrial = trialActive;
-    response.trialDaysLeft = trialDaysLeft;
-    response.trialUsed = server.trialUsed;
-    response.trialEndsAt = server.trialEndsAt;
+    // v3.3 — trial полетата (isTrial/trialDaysLeft/trialUsed/trialEndsAt) вече
+    // не се излъчват: продуктът няма пробен период. Източникът на правата
+    // (Discord/Stripe-легаси/агенция) се чете от GET /api/billing/:serverId.
+    response.planSource = server.planSource;
 
     // Покритие от агенция + заетост на местата. Гербът на командния екран го
     // показва поименно („3/5 места“) — числото е РЕАЛНО, брои се тук, не се

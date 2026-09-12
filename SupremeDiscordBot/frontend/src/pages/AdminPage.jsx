@@ -206,10 +206,6 @@ function RevenueTab() {
         <RevStat label="ARPU (gross)"           value={eur(d.arpuGross)} sub={`net ≈ ${eur(d.arpuNet)} · per paid subscription`} />
         <RevStat label={`Churn ${d.churn?.windowDays ?? 30}d`} value={pct(d.churn?.rate)}
                  sub={`${d.churn?.canceled ?? 0} canceled / ${(d.churn?.activeNow ?? 0) + (d.churn?.canceled ?? 0)} base`} />
-        <RevStat label="Active trials"          value={d.trials?.active ?? 0}
-                 sub={`${d.trials?.used ?? 0} trials ever used`} />
-        <RevStat label="Trial → paid"           value={pct(d.trials?.conversionRate)}
-                 sub={`${d.trials?.converted ?? 0} of ${d.trials?.used ?? 0} (historical)`} />
         <RevStat label="Cash collected (month)" value={eur(d.cashCollectedThisMonth)}
                  sub="paid invoices this calendar month — not MRR" />
       </div>

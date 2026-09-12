@@ -101,7 +101,7 @@ describe("calculateMrr — кой НЕ е приход", () => {
   });
 });
 
-describe("calculateMrr — churn и trial фуния", () => {
+describe("calculateMrr — churn", () => {
   it("churn брои отказите в прозореца, не по-старите", () => {
     const inWindow = new Date(NOW.getTime() - 5 * 24 * 3600 * 1000);
     const old = new Date(NOW.getTime() - 60 * 24 * 3600 * 1000);
@@ -119,22 +119,6 @@ describe("calculateMrr — churn и trial фуния", () => {
     expect(r.churn.canceled).toBe(1);
     expect(r.churn.activeNow).toBe(3);
     expect(r.churn.rate).toBe(25); // 1 / (3 + 1)
-  });
-
-  it("trial фунията брои активните trial-и и историческата конверсия", () => {
-    const future = new Date(NOW.getTime() + 3 * 24 * 3600 * 1000);
-    const past = new Date(NOW.getTime() - 3 * 24 * 3600 * 1000);
-    const r = calculateMrr({
-      now: NOW,
-      servers: [
-        { plan: "free", trialUsed: true, trialEndsAt: future, isPremium: false },
-        { plan: "free", trialUsed: true, trialEndsAt: past, isPremium: false },
-        active({ plan: "premium", billingInterval: "month", trialUsed: true, trialEndsAt: past }),
-        active({ plan: "premium", billingInterval: "month", trialUsed: false }),
-      ],
-    });
-
-    expect(r.trials).toEqual({ active: 1, used: 3, converted: 1, conversionRate: 33.33 });
   });
 });
 
@@ -161,7 +145,6 @@ describe("calculateMrr — заварени/повредени редове", ()
     const r = calculateMrr({ now: NOW });
     expect(r).toMatchObject({ mrrGross: 0, mrrNet: 0, arpuGross: 0 });
     expect(r.churn.rate).toBe(0);
-    expect(r.trials.conversionRate).toBe(0);
   });
 });
 

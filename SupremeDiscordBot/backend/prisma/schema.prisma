@@ -103,9 +103,12 @@ model Server {
   // `isPremium` is kept in sync (true when plan != free) for backward-compat.
   plan                  String    @default("free")
   billingInterval       String? // "month" | "year" (own Stripe subscription)
-  planSource            String? // "stripe" | "discord" | "manual" | "trial"
-  // v2.0 Trial system
-  trialUsed             Boolean   @default(false) // Each server gets one 14-day trial
+  planSource            String? // "stripe" | "discord" | "manual"
+  // v2.0 Trial system — ИЗВЕДЕН ОТ УПОТРЕБА (v3.3, 12.09.2026): нов пробен
+  // период не се стартира по никой път. Колоните остават до изтичането на
+  // заварените (max 14 дни след деплой) и се дропват в следваща миграция;
+  // `trialEndsAt` се зачита само на четене (lib/premium.js).
+  trialUsed             Boolean   @default(false)
   trialStartedAt        DateTime?
   trialEndsAt           DateTime?
   // v2.1 Localization
@@ -140,6 +143,14 @@ model Server {
   // lives in lib/premium.js (skuToPlan). Mutually exclusive with a Stripe sub.
   discordEntitlementId  String?   @unique
   discordSkuId          String?
+  // ─── v3.3 Discord Premium App subscription state (SUBSCRIPTION_* events) ──
+  // Само „защо“ и „докога“ за таблото: ПРАВАТА идват единствено от
+  // entitlement-а (Discord го обявява за източник на истината). Статусът е
+  // суровото число от жицата (0 active · 1 inactive · 2 ending по документацията;
+  // превод в lib/discordSubscription.js).
+  discordSubscriptionId     String?
+  discordSubscriptionStatus Int?
+  discordCurrentPeriodEnd   DateTime?
   // ─── v3.0 Agency (multi-server) membership ───────────────────────────────
   // Non-null when this server's tier is provided by an Agency seat.
   agencyId              String?

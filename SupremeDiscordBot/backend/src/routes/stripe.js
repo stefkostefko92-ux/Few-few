@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { stripePriceId, planFromStripePrice, PLANS, syncAgencyServersPaidFlag, syncServerPaidFlag, getServerTier, LIVE_OWN_SUB_STATUSES } from "../lib/premium.js";
 import { dmUser, reconcileWhitelabel } from "../services/botNotifier.js";
+import { stripePurchasesEnabled, discordStoreUrl } from "../lib/billing.js";
 
 // Single-server tiers sold via the per-server checkout. Agency (multi-server)
 // plans are sold through /api/agency (routes/agency.js).
@@ -91,6 +92,19 @@ router.post(
   const { serverId } = req.params;
   const { withdrawalConsent } = req.body;
   if (!serverId) return res.status(400).json({ error: "serverId required" });
+
+  // v3.3 — НОВА покупка през Stripe само ако Stripe все още продава
+  // (BILLING_PROVIDER=stripe|both). По подразбиране продажбите са САМО през
+  // Discord Premium Apps (lib/billing.js): 410 Gone + адрес на магазина, за да
+  // не остане стар клиент/клиент-скрипт без път за плащане. Webhook-ът и
+  // порталът остават — заварените абонати се обслужват докрай.
+  if (!stripePurchasesEnabled()) {
+    return res.status(410).json({
+      error: "New subscriptions are sold only through Discord. Open the Discord store to upgrade.",
+      code: "STRIPE_PURCHASES_DISABLED",
+      store: discordStoreUrl(),
+    });
+  }
 
   // Tier + billing interval (default: Premium monthly). Agency plans are not
   // sold here — they are account-level (routes/agency.js).
@@ -195,12 +209,9 @@ router.post(
       });
     }
 
-    // M1 — Trial double-dip: подаваме Stripe trial САМО ако сървърът още не е
-    // ползвал пробен период. Иначе локалният 14-дневен trial + Stripe trial =
-    // 28 дни безплатно. trialUsed се вдига при стартиране на локалния trial.
-    const trialDays = Number(process.env.STRIPE_TRIAL_DAYS ?? 14);
-    const grantStripeTrial = trialDays > 0 && server.trialUsed !== true;
-
+    // v3.3 — БЕЗ пробен период: продуктът вече няма trial по никой път
+    // (решение на собственика, 12.09.2026; Discord Premium Apps също не
+    // поддържа пробни периоди — паритет и тук).
     const session = await stripe.checkout.sessions.create(
       {
         customer: customerId,
@@ -220,8 +231,6 @@ router.post(
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
         subscription_data: {
-          // M1 — без trial_period_days, ако trialUsed===true (вече е ползван).
-          ...(grantStripeTrial && { trial_period_days: trialDays }),
           metadata: { serverId, plan, interval },
         },
         // M3 — Stripe Tax: автоматично изчислява ДДС по местоназначение и
@@ -661,15 +670,6 @@ router.post("/webhook", requireStripe, async (req, res) => {
               premiumSince: new Date(),
               stripeSubscriptionId: session.subscription,
               stripeStatus: initialStatus,
-              // B3 — „един trial на сървър“ независимо от пътя: маркираме
-              // trialUsed=true при всяка успешна checkout сесия (вкл. Stripe
-              // trial). Иначе Stripe-trial → cancel → локален trial = двоен
-              // безплатен период. Единственият друг writer е trial route-ът.
-              trialUsed: true,
-              // И ЛОКАЛНИЯТ пробен период приключва: ако е бил стартиран между
-              // отварянето на сесията и това събитие, оставането му в бъдещето
-              // даваше втори безплатен период след отмяна в Stripe.
-              trialEndsAt: new Date(),
               // v40 — нова покупка гаси гратиса от предишна отмяна: живият план
               // вече покрива достъпа, а остатъчен accessUntil би надживял и
               // следващата отмяна (гратис върху гратис).
@@ -1489,7 +1489,7 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
       where: { id: req.params.serverId },
       select: {
         isPremium: true, plan: true, billingInterval: true, premiumSince: true,
-        stripeStatus: true, stripeSubscriptionId: true, trialEndsAt: true,
+        stripeStatus: true, stripeSubscriptionId: true,
         // v40 — отменен, но платен до края: планът е "free", достъпът не е.
         accessUntil: true, gracePlan: true,
         // Agency seat: сурово server.plan остава "free" за покрит сървър —
@@ -1504,7 +1504,6 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
     if (!server) return res.status(404).json({ error: "Server not found" });
 
     const agencyCovered = !!(server.agencyId && server.agency?.active);
-    const trialActive = !!(server.trialEndsAt && server.trialEndsAt > new Date());
 
     let subscriptionDetails = null;
     if (server.stripeSubscriptionId) {
@@ -1543,7 +1542,6 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
     res.json({
       ...raw,
       isPremium: tier.isPremium,
-      isTrial: trialActive,
       effectivePlan: tier.plan,
       // Гратис след отмяна — фронтендът показва „достъп до …“ вместо „купи“.
       graceActive,
