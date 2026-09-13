@@ -250,9 +250,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {/* Trust bar */}
         <section className="trustbar" aria-label="Highlights">
           <div className="container">
-            <div className="trust-item"><Icon name="shield-check" size={26} />{(school.items?.[0]?.title) || ""}</div>
-            <div className="trust-item"><Icon name="graduation-cap" size={26} />{about.features?.[2]?.title || ""}</div>
-            <div className="trust-item"><Icon name="person" size={26} />{about.features?.[1]?.title || ""}</div>
+            {/* Mirrors the icon each label already carries elsewhere on the page:
+                the same wording must not show two different icons. */}
+            <div className="trust-item"><Icon name="presence" size={26} />{(school.items?.[0]?.title) || ""}</div>
+            <div className="trust-item"><Icon name="shield-check" size={26} />{about.features?.[2]?.title || ""}</div>
+            <div className="trust-item"><Icon name="adults" size={26} />{about.features?.[1]?.title || ""}</div>
             <div className="trust-item"><Icon name="location-pin" size={26} />{about.tag}</div>
           </div>
         </section>
