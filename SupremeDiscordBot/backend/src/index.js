@@ -59,15 +59,33 @@ if (missing.length) {
 // и пада на резервния клон „premium“ — клиент плаща Agency 10 и получава
 // Premium. Парите влизат, правата са грешни, нищо не гърми. Крещим при старт.
 // (VPS-аджията, одит 07.08.2026)
-if (process.env.STRIPE_SECRET_KEY) {
-  const { missingStripePrices } = await import("./lib/premium.js");
-  const gaps = missingStripePrices();
-  if (gaps.length) {
-    console.error(
-      `❌ Stripe е активен, но ${gaps.length} цени липсват: ${gaps.join(", ")}. ` +
-      "Плащане по такава тарифа ще даде ГРЕШЕН план. Пусни scripts/stripe-setup.sh " +
-      "и попълни стойностите от изхода му."
-    );
+//
+// v3.3 — плащанията са Discord-first (lib/billing.js). Stripe картата на цените
+// има значение САМО ако Stripe все още ПРОДАВА (BILLING_PROVIDER=stripe|both);
+// при Discord-only липсващи SKU-та са същият клас дефект: бутонът за покупка
+// в бота и магазинът в таблото мълчат, а клиентът няма как да плати.
+{
+  const { billingProvider, stripePurchasesEnabled, discordPurchasesEnabled, missingDiscordBillingConfig } =
+    await import("./lib/billing.js");
+  if (process.env.STRIPE_SECRET_KEY && stripePurchasesEnabled()) {
+    const { missingStripePrices } = await import("./lib/premium.js");
+    const gaps = missingStripePrices();
+    if (gaps.length) {
+      console.error(
+        `❌ Stripe е активен, но ${gaps.length} цени липсват: ${gaps.join(", ")}. ` +
+        "Плащане по такава тарифа ще даде ГРЕШЕН план. Пусни scripts/stripe-setup.sh " +
+        "и попълни стойностите от изхода му."
+      );
+    }
+  }
+  if (discordPurchasesEnabled()) {
+    const gaps = missingDiscordBillingConfig();
+    if (gaps.length) {
+      console.error(
+        `❌ BILLING_PROVIDER=${billingProvider()}, но Discord монетизацията е непълна: ${gaps.join(", ")}. ` +
+        "Без тях няма бутон за покупка в бота и няма магазин в таблото — виж docs/DISCORD_MONETIZATION.md."
+      );
+    }
   }
 }
 
@@ -88,7 +106,7 @@ import verificationRouter from "./routes/verification.js";
 import botV18Router from "./routes/bot_v18.js";
 import webhooksRouter from "./routes/webhooks.js";
 import automationRouter from "./routes/automation.js";
-import trialRouter from "./routes/trial.js";
+import billingRouter from "./routes/billing.js";
 import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
@@ -294,7 +312,7 @@ app.use("/api/export", exportRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/schedule bot endpoints
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
-app.use("/api/trial", trialRouter);           // v2.0 Premium trial system
+app.use("/api/billing", billingRouter);       // v3.3 Доставчико-неутрално състояние на плащанията (Discord-first)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)
 app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashboard-authed)

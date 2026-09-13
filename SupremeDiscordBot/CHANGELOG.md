@@ -2,9 +2,78 @@
 
 Форматът следва [Keep a Changelog](https://keepachangelog.com/bg/1.1.0/); версиите — [SemVer](https://semver.org/).
 
-## [Непуснато]
+## [3.3.0] — 2026-09-12
 
-_Нищо още._
+Плащанията минават **само през Discord Premium Apps** (решение на собственика,
+12.09.2026). Stripe остава единствено за заварени абонати. **Пробният период е
+премахнат отвсякъде.** Миграция **v48** (адитивна: три nullable колони).
+Проверено срещу живата документация на Discord (Developer Policy 11.09.2026,
+Premium Apps FAQ 29.08.2026, Monetization Terms 06.06.2024, Paid Services
+Terms 29.08.2025) — фактите са в `docs/DISCORD_MONETIZATION.md`.
+
+### Добавено
+- **`lib/billing.js`** — едно определение за „как се плаща“: `BILLING_PROVIDER`
+  (`discord` по подразбиране · `stripe` · `both`), каталог само с месечни Premium/
+  White-label, адреси на магазина по официалния формат, проверка за липсваща
+  конфигурация (index.js крещи при старт)
+- **`GET /api/billing/config`** (публична конфигурация без тайни) и
+  **`GET /api/billing/:serverId`** — доставчико-неутрално състояние с един
+  източник на правата (`source`: discord · stripe · agency · grace · manual)
+- **`POST /api/discord/subscription`** + бот събития `subscriptionCreate/Update/
+  Delete` — състоянието на Discord абонамента („подновява се на …“ / „отменен —
+  достъп до …“) се пази при сървъра (v48) и се одитира; **никога не дава/отнема
+  права** (entitlement-ът е източникът на истината по Discord)
+- `lib/discordSubscription.js` — статусите по документацията (`0 active · 1
+  inactive · 2 ending`); измерено разминаване с `discord-api-types` 0.38.48
+  (Ending=1/Inactive=2) → не ползваме enum-а на пакета, а суровото число
+- Entitlement събитията носят `type` и `deleted`; `deleted:true` (refund) сваля
+  достъпа независимо от вида на събитието; reconcile не брои изтрити за активни
+- Бот: `/premium status` показва източника на правата, срок и линк към магазина;
+  при Free — native Premium бутон; `sendPremiumRequired` пада на магазина на
+  главното приложение (и от white-label клиенти), не на таблото
+- Табло: Premium страницата е витрина към Discord магазина (линк в нов таб),
+  състояние по източник, портал на Stripe само за заварен абонат; 18 нови
+  i18n ключа `premium.discord.*`/`premium.legacy.*`/`premium.faq.pay*` × 8 езика
+- Гейтове: `billingProvider.test.js`, `discordSubscription.test.js`,
+  `noTrial.test.js` (backend), `discordSubscriptionEvents.test.js` (bot),
+  пренаписан `checkout-cta.test.js` (frontend — таблото не сключва поръчка)
+- Админ → Revenue: блок `discord` (списъчен MRR с ДДС + оценка на нетото ÷1.20
+  × 0.85 дял на разработчика) и `totalMrrGross` (Stripe + Discord) — Discord е
+  главният канал и не бива да стои „извън MRR“
+- `deploy/smoke.sh`: стъпка 6 проверява `/api/billing/config` (провайдър +
+  configured) — без SKU деплоят се връща назад, защото никой не може да купи
+
+### Променено
+- Stripe `POST /create-checkout/:serverId` и `POST /agency/checkout` → **410**
+  (`STRIPE_PURCHASES_DISABLED` + адрес на магазина) при `BILLING_PROVIDER=discord`;
+  webhook, портал и дунинг продължават да обслужват заварените абонати
+- Landing (EN + 7 локала), prerender, `llms.txt`, JSON-LD: само месечни цени
+  „през Discord“, без годишен план, без Agency карти, без пробен период; FAQ
+  „Как се плаща“ вместо „Ще бъда ли таксуван след пробния период“
+- Terms §5–6, EULA §7 и сподпроцесорите, Privacy §4.4/§5, ROPA дейност 4, DPA:
+  Discord е продавач (препродавач в ЕС) — ДДС, разписки, възстановявания и
+  правото на отказ са в неговия checkout; Stripe = легаси; **няма пробен период**
+- `docs/PRICING.md`, `docs/DISCORD_MONETIZATION.md`, README, `.env.example`:
+  Discord-first; `STRIPE_TRIAL_DAYS` премахнат; SKU променливите вече са
+  задължителни
+- Terms/EULA/Privacy „Last updated: 13 September 2026“; ROPA v1.3; DPA v1.1;
+  `index.html` метаданни и JSON-LD без „Stripe billing“; sitemap lastmod за
+  променените страници
+
+### Премахнато
+- Пробният период: `routes/trial.js` + `/api/trial`, `trial_period_days` в
+  Stripe checkout, `trial-expiry-dm` cron, `TrialBanner`, trial API/hook полета,
+  21 i18n ключа × 8 езика, trial фунията в админ приходите. Заварените
+  `trialEndsAt` се зачитат само на четене до изтичане (≤14 дни); колоните се
+  дропват в следваща миграция
+- Продажбата на Agency планове и годишни абонаменти (Discord не ги поддържа;
+  паритетът забранява да се продават само извън Discord); заварените работят
+
+### Сигурност
+- Нашата система вече не е страна по плащането: никаква карта, никаква Stripe
+  тайна за нови покупки; правата — само от проверени Discord entitlement
+  събития през бот тайната; статусът на абонамента е информативен и не може да
+  даде достъп дори при грешен превод на enum-а
 
 ## [3.2.0] — 2026-09-09
 

@@ -123,14 +123,10 @@ export const getAuditLogs = (params) => api.get("/admin/audit-logs", { params })
 // и withdrawalConsent (чл. 16(а) — задължително преди checkout).
 export const openPortal = (serverId) =>
   api.post(`/stripe/portal/${serverId}`).then((r) => r.data);
-export const getStripeStatus = (serverId) =>
-  api.get(`/stripe/status/${serverId}`).then((r) => r.data);
 
 // v3.0 — Agency планове (до 5 / до 10 сървъра, един абонамент). Отделен
 // endpoint, добавян от друг workstream; тук само окабеляваме извикването.
 // plan: "agency5" | "agency10"; interval: "month" | "year".
-export const createAgencyCheckout = (body = {}) =>
-  api.post(`/agency/checkout`, body).then((r) => r.data);
 
 // Agency управление (собственикът на агенцията): моят план + seats,
 // закачане/махане на сървър seat, Stripe billing portal на агенцията.
@@ -222,9 +218,9 @@ export const getScheduled   = (sid) => api.get(`/automation/${sid}/scheduled`).t
 export const createScheduled= (sid, data) => api.post(`/automation/${sid}/scheduled`, data).then((r) => r.data);
 export const deleteScheduled= (sid, id) => api.delete(`/automation/${sid}/scheduled/${id}`).then((r) => r.data);
 
-// ─── v2.0 Trial ─────────────────────────────────────────────────────────────
-export const getTrialStatus = (sid) => api.get(`/trial/${sid}`).then((r) => r.data);
-export const startTrial     = (sid) => api.post(`/trial/${sid}/start`).then((r) => r.data);
+// ─── v3.3 Billing (Discord-first, доставчико-неутрално) ─────────────────────
+export const getBillingConfig = () => api.get(`/billing/config`).then((r) => r.data);
+export const getBillingStatus = (sid) => api.get(`/billing/${sid}`).then((r) => r.data);
 
 // ─── v2.1 Analytics 2.0 ────────────────────────────────────────────────────
 export const getAnalyticsOverview    = (sid) => api.get(`/analytics/${sid}/overview`).then((r) => r.data);
@@ -255,5 +251,3 @@ export const deleteApplication = (sid, appId) =>
 export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
-// ─── v2.2 Trial cancellation ────────────────────────────────────────────────
-export const cancelTrial = (sid) => api.post(`/trial/${sid}/cancel`).then((r) => r.data);

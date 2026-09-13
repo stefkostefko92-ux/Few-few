@@ -1,8 +1,8 @@
 # SupremeDiscordBot/ — Supreme Bot (Discord SaaS)
 
 Multi-tenant Discord bot management SaaS: ticket systems, forms, applications, AI
-auto-replies, round-robin assignment, white-label custom bots, Stripe
-subscriptions. Root rules live in the repo-root `CLAUDE.md`.
+auto-replies, round-robin assignment, white-label custom bots, per-server
+subscriptions sold **only through Discord Premium Apps** (v3.3; Stripe = legacy). Root rules live in the repo-root `CLAUDE.md`.
 
 _Stack: Node.js **plain JS (ESM)** · Express · discord.js v14 · React 18 + Vite ·
 Prisma + PostgreSQL · Redis · Docker · nginx. Three packages under `SupremeDiscordBot/`:
@@ -29,10 +29,18 @@ Full stack + Postgres + Redis come up via `docker-compose.yml`. See `README.md`
 ## Conventions (important)
 
 - **Plain JavaScript, ESM** everywhere; validate input with **Zod**.
-- **Stripe is money-critical.** Webhooks are **signature-verified on the raw body**
-  and **idempotent by `event.id``**; grants (e.g. `isPremium`) are provisioned only
-  through a verified webhook, never from a client redirect or client-supplied amount.
-  The webhook route sits **outside** the rate limiter.
+- **Payments are Discord-only (v3.3, owner decision 12.09.2026).** `lib/billing.js` is the
+  single definition: `BILLING_PROVIDER=discord` (default) → Stripe checkout routes return
+  410; only monthly Premium/White-label guild SKUs are sold; **no trial, no annual, no
+  Agency sales** (Discord supports none of them). Grants come **only** from verified
+  Discord entitlement events (`routes/discordEntitlements.js`); `SUBSCRIPTION_*` events
+  store state only, never rights. Subscription status is mapped by the **live docs**
+  (`0 active · 1 inactive · 2 ending`, `lib/discordSubscription.js`), not by
+  `discord-api-types`. Verified facts + setup → `docs/DISCORD_MONETIZATION.md`.
+- **Stripe is legacy but still money-critical.** Webhooks are **signature-verified on
+  the raw body** and **idempotent by `event.id`**; grants are provisioned only through a
+  verified webhook, never from a client redirect or client-supplied amount. The webhook
+  route sits **outside** the rate limiter.
 - **Multi-tenant isolation.** Every query/mutation is scoped by `serverId` — never
   trust a client-supplied id (guard against cross-tenant IDOR on forms, verification,
   schedules, spawn).

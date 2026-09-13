@@ -31,9 +31,6 @@ export default function Login() {
   const params = new URLSearchParams(window.location.search);
   const error = params.get("error");
 
-  // Billing interval for the pricing section (monthly | annual). Real
-  // keyboard-operable control below (radiogroup of aria-checked buttons).
-  const [billing, setBilling] = useState("month");
   const rootRef = useRef(null);
   useScrollReveal(rootRef);
   const heroCtaRef = useMagnetic();
@@ -133,7 +130,7 @@ export default function Login() {
                 </a>
               </div>
               <p className="text-xs text-cs-dim mt-6 font-mono leading-relaxed">
-                Free forever on the base tier · 14-day Premium trial, no card · Cancel anytime · EU-hosted, GDPR-native
+                Free forever on the base tier · Premium billed through Discord · Cancel anytime · EU-hosted, GDPR-native
               </p>
               <a
                 href={BOT_INVITE_URL}
@@ -266,18 +263,18 @@ export default function Login() {
                   <CompareRow label="AI replies"              free="—"                    premium="AI-powered (assistive)" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
                   <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
-                  <CompareRow label="Price"                   free="€0, forever"          premium="€4.99/mo · €49/yr · 14-day trial" />
+                  <CompareRow label="Price"                   free="€0, forever"          premium="€4.99/mo · billed through Discord" />
                 </tbody>
               </table>
             </div>
 
             <div className="text-center">
               <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
-                <span>Start your 14-day Premium trial</span>
+                <span>Start free with Discord</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
               <p className="text-xs text-cs-dim mt-4 max-w-lg mx-auto font-mono leading-relaxed">
-                Full Premium, no credit card. Reverts to Free automatically if you don't subscribe — nothing to cancel, nothing charged.
+                Start on Free today. When a server needs Premium, subscribe for it in the Discord store — monthly, billed by Discord, cancel anytime.
               </p>
             </div>
           </div>
@@ -372,8 +369,8 @@ export default function Login() {
 
             <div data-reveal className="space-y-3">
               <FaqItem
-                q="Will I be charged for the 14-day trial?"
-                a="No. Starting a trial needs no credit card, and nothing is charged during or after it unless you actively choose to subscribe. If you don't subscribe, the server reverts to the Free tier automatically when the trial ends — there is nothing to cancel and nothing is billed. Your panels, forms and settings stay exactly as you left them."
+                q="How do I pay for Premium?"
+                a="Through Discord only. Open the Discord store for Supreme Bot, pick Premium or White-label for your server and complete Discord's checkout. Discord is the seller of record: it shows the final price with VAT, charges you and sends the receipt — we never see your card. Subscriptions are monthly; cancel anytime from Discord's User Settings → Subscriptions and keep access until the end of the paid period."
               />
               <FaqItem
                 q="How is pricing calculated?"
@@ -418,8 +415,6 @@ export default function Login() {
               <p className="text-cs-muted">Pay only for what you need. Upgrade anytime.</p>
             </div>
 
-            <BillingToggle interval={billing} onChange={setBilling} />
-
             {/* Free · Premium · White-label */}
             <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <PricingCard
@@ -445,11 +440,10 @@ export default function Login() {
                 badge="Recommended"
                 name="Premium"
                 tagline="For servers where support is a job, not a side task."
-                price={billing === "year" ? "€49" : "€4.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
-                trial="14-day free trial, no card"
+                price="€4.99"
+                per="/ month · via Discord"
                 onCta={handleLogin}
-                cta="Start 14-day trial"
+                cta="Get Premium"
                 bullets={[
                   "50 panels · 50 forms · 50 questions",
                   "Math captcha + account-age gates",
@@ -466,8 +460,8 @@ export default function Login() {
                 icon={Crown}
                 name="White-label"
                 tagline="Run Supreme under your own brand."
-                price={billing === "year" ? "€99" : "€9.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
+                price="€9.99"
+                per="/ month · via Discord"
                 onCta={handleLogin}
                 cta="Get White-label"
                 bullets={[
@@ -478,45 +472,8 @@ export default function Login() {
               />
             </div>
 
-            {/* Agency — up to 5 / up to 10 servers, one subscription */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <PricingCard
-                icon={Building2}
-                compact
-                name="Agency 5"
-                seats="Up to 5 servers"
-                tagline="White-label for up to 5 servers, one subscription. Reseller-friendly."
-                price={billing === "year" ? "€199" : "€19.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
-                onCta={handleLogin}
-                cta="Get Agency 5"
-                bullets={[
-                  "Everything in White-label",
-                  "Up to 5 servers, one subscription",
-                  "Reseller-friendly",
-                ]}
-              />
-
-              <PricingCard
-                icon={Building2}
-                compact
-                name="Agency 10"
-                seats="Up to 10 servers"
-                tagline="White-label for up to 10 servers, one subscription."
-                price={billing === "year" ? "€399" : "€39.99"}
-                per={billing === "year" ? "/ year" : "/ month"}
-                onCta={handleLogin}
-                cta="Get Agency 10"
-                bullets={[
-                  "Everything in White-label",
-                  "Up to 10 servers, one subscription",
-                  "Reseller-friendly",
-                ]}
-              />
-            </div>
-
             <p className="text-center text-xs text-cs-dim font-mono mt-8">
-              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
+              All prices VAT-inclusive · per server / month · Monthly subscriptions sold and billed through the Discord store · Renews automatically until cancelled · 99.9% uptime target (not a contractual SLA) · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>
@@ -527,7 +484,7 @@ export default function Login() {
             Ready to <span className="text-cs-cyan">consolidate</span>?
           </h2>
           <p className="text-cs-muted mb-8 max-w-lg mx-auto">
-            Takes 60 seconds. Sign in with Discord, pick a server, start your 14-day trial.
+            Takes 60 seconds. Sign in with Discord, pick a server, go live on Free.
           </p>
           <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
             <DiscordIcon />
@@ -717,42 +674,12 @@ function ProductTour() {
   );
 }
 
-function BillingToggle({ interval, onChange }) {
-  return (
-    <div className="flex flex-col items-center gap-2 mb-10">
-      <div
-        role="radiogroup"
-        aria-label="Billing interval"
-        className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60"
-      >
-        {[["month", "Monthly"], ["year", "Annual"]].map(([value, label]) => {
-          const active = interval === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(value)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
-                active ? "bg-cs-gold text-black" : "text-cs-muted hover:text-cs-text"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-      <span className="cs-badge-cyan text-[10px]">Save ~17% — 2 months free</span>
-    </div>
-  );
-}
 
 /* One pricing tier card. `highlighted` renders the gold "Recommended" treatment;
-   `compact` is the tighter Agency variant. Price/per are computed by the caller
-   from the billing interval; the price block is an aria-live region so the change
-   is announced when the toggle flips. */
-function PricingCard({ icon: Icon, name, tagline, seats, price, per, trial, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
+   `compact` is the tighter variant. v3.3: prices are monthly only — paid tiers
+   are sold through the Discord store, so the CTA leads to sign-in, not to a
+   checkout of ours. */
+function PricingCard({ icon: Icon, name, tagline, seats, price, per, badge, bullets, cta, onCta, highlighted = false, compact = false }) {
   const tiltRef = useTiltCard(highlighted ? 6 : 4);
   const cardCls = highlighted
     ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
@@ -777,9 +704,6 @@ function PricingCard({ icon: Icon, name, tagline, seats, price, per, trial, badg
       <div className="mb-6" aria-live="polite">
         <div className="font-display text-4xl font-black text-cs-text">{price}</div>
         <div className="text-xs text-cs-dim font-mono">{per}</div>
-        {trial && (
-          <div className={`text-xs font-mono mt-1 ${highlighted ? "text-cs-gold" : "text-cs-dim"}`}>{trial}</div>
-        )}
       </div>
       <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
         {bullets.map((b) => (

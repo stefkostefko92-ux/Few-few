@@ -353,9 +353,14 @@ function higherPlan(a, b) {
 }
 
 /**
- * Resolve a server's effective tier, combining its own subscription, an active
- * trial (which grants the Premium tier — never white-label), and any Agency
- * seat that covers it.
+ * Resolve a server's effective tier, combining its own subscription, a still-
+ * running legacy trial (which grants the Premium tier — never white-label), and
+ * any Agency seat that covers it.
+ *
+ * SUNSET (v3.3, 12.09.2026): нов пробен период не се стартира по никой път —
+ * `trialEndsAt` се зачита само на ЧЕТЕНЕ, докато заварените изтекат сами (≤14
+ * дни след деплой). Клиент с текущ trial не се сваля насила; след това
+ * колоните се дропват с отделна миграция и този клон изчезва.
  *
  * Returns { plan, planRank, planLabel, isPremium, hasWhiteLabel, isTrial,
  *           trialDaysLeft, limits, maxServers }.

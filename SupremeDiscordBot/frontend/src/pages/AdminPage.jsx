@@ -199,17 +199,17 @@ function RevenueTab() {
     <div className="space-y-8">
       {/* Headline */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <RevStat label="MRR (gross, VAT incl.)" value={eur(d.mrrGross)} sub={`net ≈ ${eur(d.mrrNet)}`} accent />
-        <RevStat label="ARR (gross)"            value={eur(d.arrGross)} sub={`net ≈ ${eur(d.arrNet)}`} />
+        <RevStat label="Total MRR (Stripe + Discord list)" value={eur(d.totalMrrGross)}
+                 sub={`${d.totalSubscriptions ?? 0} paid subscriptions · Discord at list price`} accent />
+        <RevStat label="Discord MRR (list, VAT incl.)" value={eur(d.discord?.listMrrGross)}
+                 sub={`${d.discord?.count ?? 0} servers · net ≈ ${eur(d.discord?.netEstimate)} after VAT + Discord ${Math.round((1 - (d.discord?.developerShare ?? 0.85)) * 100)}%`} />
+        <RevStat label="Stripe MRR (gross, VAT incl.)" value={eur(d.mrrGross)} sub={`legacy · net ≈ ${eur(d.mrrNet)}`} />
+        <RevStat label="Stripe ARR (gross)"     value={eur(d.arrGross)} sub={`legacy · net ≈ ${eur(d.arrNet)}`} />
         <RevStat label="Active subscriptions"   value={d.paidSubscriptions ?? 0}
                  sub={`${d.paidServers ?? 0} server · ${d.paidAgencies ?? 0} agency`} />
         <RevStat label="ARPU (gross)"           value={eur(d.arpuGross)} sub={`net ≈ ${eur(d.arpuNet)} · per paid subscription`} />
         <RevStat label={`Churn ${d.churn?.windowDays ?? 30}d`} value={pct(d.churn?.rate)}
                  sub={`${d.churn?.canceled ?? 0} canceled / ${(d.churn?.activeNow ?? 0) + (d.churn?.canceled ?? 0)} base`} />
-        <RevStat label="Active trials"          value={d.trials?.active ?? 0}
-                 sub={`${d.trials?.used ?? 0} trials ever used`} />
-        <RevStat label="Trial → paid"           value={pct(d.trials?.conversionRate)}
-                 sub={`${d.trials?.converted ?? 0} of ${d.trials?.used ?? 0} (historical)`} />
         <RevStat label="Cash collected (month)" value={eur(d.cashCollectedThisMonth)}
                  sub="paid invoices this calendar month — not MRR" />
       </div>
@@ -221,7 +221,7 @@ function RevenueTab() {
           <RevStat label="Trialing (Stripe)" value={ex.trialing?.count ?? 0} sub={`${eur(ex.trialing?.potentialMrr)} potential`} />
           <RevStat label="Gifted (manual)"   value={ex.gifted?.count ?? 0}   sub={`${eur(ex.gifted?.listValue)} list value given away`} />
           <RevStat label="Past due"          value={ex.pastDue?.count ?? 0}  sub={`${eur(ex.pastDue?.atRiskMrr)} at risk`} />
-          <RevStat label="Discord billed"    value={ex.discord?.count ?? 0}  sub={`${eur(ex.discord?.listValue)} outside Stripe`} />
+          <RevStat label="Discord billed"    value={ex.discord?.count ?? 0}  sub={`${eur(ex.discord?.listValue)} list — counted in the Discord/Total tiles above, not in Stripe MRR`} />
         </div>
       </div>
 
