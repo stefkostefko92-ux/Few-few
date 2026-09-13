@@ -9,11 +9,16 @@
   const host = location.hostname.replace(/^www\./, "");
   const hostMatches = (d) => host === d || host.endsWith("." + d);
 
-  let bypass = false;
+  // The authoritative bypass state is ytBypassUntil (storage, set by the service
+  // worker before it confirms the reload). sessionStorage only says WHEN this tab
+  // last reloaded for a bypass; it is a short guard for the reload itself, never
+  // a standing "off" switch — a bare flag used to outlive the bypass window and
+  // left the tab without injection while the skipper resumed (dead player).
+  let justReloaded = false;
   try {
-    bypass = sessionStorage.getItem("tbab_yt_bypass") === "1";
+    const at = Number(sessionStorage.getItem("tbab_yt_bypass_at") || 0);
+    justReloaded = Number.isFinite(at) && Date.now() - at < 90 * 1000;
   } catch {}
-  if (bypass) return;
 
   // Hand the live-update extras to youtube_main as inert JSON (data, not
   // code) via a <script type="application/json"> element: extra ad fields,
@@ -60,7 +65,7 @@
     const allowed = (data.allowlist || []).some(hostMatches);
     // Session bypass active (YouTube hard-blocked us): stay hands-off so a new
     // tab can't re-inject and re-trip detection while the DNR ruleset is off.
-    const bgBypass = data.ytBypassUntil && data.ytBypassUntil > Date.now();
+    const bgBypass = (data.ytBypassUntil && data.ytBypassUntil > Date.now()) || justReloaded;
     if (on && ytOn && !allowed && !bgBypass) {
       passConfig(data.liveConfig && data.liveConfig.youtube);
       inject();

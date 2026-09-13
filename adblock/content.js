@@ -518,11 +518,22 @@
     }
   }
 
+  // YouTube session bypass (background.js ytBypassUntil): the page must be a
+  // genuinely clean client, and EasyList's youtube.com cosmetics (ad-slot
+  // containers hidden by us) are detectable too — so cosmetics are off on
+  // YouTube for the bypass window, exactly like youtube.css gates itself.
+  const isYtHost = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
+  let noCosmeticsSite = false;
+  let ytBypassOn = false;
+  const recomputeCosmeticsOff = () => { cosmeticsOff = noCosmeticsSite || ytBypassOn; };
+
   chrome.storage?.local.get(
-    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig", "noCosmetics"],
+    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig", "noCosmetics", "ytBypassUntil"],
     (data) => {
       enabled = data.enabled !== false;
-      cosmeticsOff = (data.noCosmetics || []).some(hostMatches);
+      noCosmeticsSite = (data.noCosmetics || []).some(hostMatches);
+      ytBypassOn = isYtHost && !!data.ytBypassUntil && data.ytBypassUntil > Date.now();
+      recomputeCosmeticsOff();
       if (cosmeticsOff) gate(false);
       smartEnabled = (data.features || {}).smart !== false;
       const allowed = (data.allowlist || []).some(hostMatches);
@@ -571,8 +582,13 @@
         }
       });
     }
-    if (changes.noCosmetics) {
-      cosmeticsOff = (changes.noCosmetics.newValue || []).some(hostMatches);
+    if (changes.noCosmetics || (isYtHost && changes.ytBypassUntil)) {
+      if (changes.noCosmetics) noCosmeticsSite = (changes.noCosmetics.newValue || []).some(hostMatches);
+      if (isYtHost && changes.ytBypassUntil) {
+        const until = changes.ytBypassUntil.newValue;
+        ytBypassOn = !!until && until > Date.now();
+      }
+      recomputeCosmeticsOff();
       chrome.storage.local.get("allowlist", (d) => {
         const allowed = ((d && d.allowlist) || []).some(hostMatches);
         gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);

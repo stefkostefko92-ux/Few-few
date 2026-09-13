@@ -9,14 +9,30 @@
   let adActive = false;
   let prevMuted = false;
   let prevRate = 1;
-  let bypassReloaded = false; // guards the enforcement reload against loops
+  let bypassReloaded = false; // this page already asked for a bypass reload
   let bgBypass = false; // service worker has the YouTube allow-all bypass rule active
+  let attrForced = false; // dialog made visible because a bypass could not be armed
+  // Loop guard for the enforcement reload: never two bypass reloads in one tab
+  // within this window. The AUTHORITATIVE bypass state is the service worker's
+  // ytBypassUntil (storage); sessionStorage only remembers WHEN this tab last
+  // reloaded for a bypass. (It used to be a bare "1" with no expiry, so it
+  // outlived the 6h bypass: the loader stayed off, the skipper resumed its
+  // force-skip on a page that now got ads, YouTube re-detected, and the
+  // enforcement path saw "already bypassing" → no reload, dialog hidden by CSS,
+  // dead player with no way out. That is the "clips stop loading" report.)
+  const RELOAD_GUARD_MS = 90 * 1000;
+  function lastBypassReload() {
+    try {
+      const v = Number(sessionStorage.getItem("tbab_yt_bypass_at") || 0);
+      return Number.isFinite(v) ? v : 0;
+    } catch { return 0; }
+  }
   // youtube.css hides ad UI only while html[data-tbab-yt-bypass] is absent, so a
   // bypassed (clean-client) page does not keep hiding ad containers — YouTube can
   // detect that too. Enforcement overlay/scroll-lock rules stay ungated.
   function syncBypassAttr() {
     try {
-      if (bgBypass) document.documentElement.setAttribute("data-tbab-yt-bypass", "1");
+      if (bgBypass || attrForced) document.documentElement.setAttribute("data-tbab-yt-bypass", "1");
       else document.documentElement.removeAttribute("data-tbab-yt-bypass");
     } catch {}
   }
@@ -60,6 +76,19 @@
     return null;
   }
 
+  // Player error screen carrying a Playback ID ("An error occurred. Please try
+  // again later. (Playback ID: …)") — the shape YouTube uses to refuse playback
+  // to detected ad blockers without showing the enforcement dialog. Never
+  // during an active bypass: then it is a genuine error, not us.
+  function playbackIdError() {
+    if (bgBypass) return null;
+    try {
+      const el = document.querySelector(".ytp-error");
+      if (el && /playback id/i.test(el.textContent || "")) return el;
+    } catch {}
+    return null;
+  }
+
   function run() {
     if (!enabled) return;
 
@@ -77,10 +106,12 @@
         prevMuted = video.muted;
         prevRate = video.playbackRate;
       }
+      // No seek to the end. With server-side stitched ads (SSAP) the media
+      // element's duration covers the WHOLE stream (ad + clip), so seeking to
+      // `duration` ends the clip itself: black player, autoplay to the next
+      // video — "the clip never played". Speed + mute + the native Skip click
+      // below are enough: a 30s ad is over in ~2s and nothing is skipped past.
       try {
-        if (video.duration && isFinite(video.duration) && video.duration > 0) {
-          video.currentTime = video.duration;
-        }
         video.muted = true;
         video.playbackRate = 16;
       } catch {}
@@ -130,17 +161,23 @@
     // THEN reload — only then is the reload a genuinely clean client and the
     // clip plays (with ads, which auto-skip still fast-forwards). Reload only
     // when we can persist the bypass, so a blocked sessionStorage can't loop.
-    const enf = matchAny(ENFORCE);
+    // Two shapes of "YouTube refused to play because it detected us": the
+    // enforcement dialog, and (since 2026) a bare player error with a Playback
+    // ID and no dialog at all. Deleted/private videos say "Video unavailable"
+    // without a Playback ID, so that text is the discriminator.
+    const enf = matchAny(ENFORCE) || playbackIdError();
     if (enf) {
-      let bypassing = bypassReloaded || bgBypass;
-      try {
-        bypassing = bypassing || sessionStorage.getItem("tbab_yt_bypass") === "1";
-      } catch {}
-
-      if (!bypassing) {
+      const now = Date.now();
+      const recentlyReloaded = now - lastBypassReload() < RELOAD_GUARD_MS;
+      // Ask for a (new or extended) bypass + one reload when: we are not
+      // bypassing at all (first strike, or the 6h window expired under an open
+      // tab), or we ARE bypassing but this page has not reloaded yet (the clean
+      // client still got flagged — one more try with a fresh window). The time
+      // guard is what prevents a loop; a hidden dialog is never the answer.
+      if (!bypassReloaded && !recentlyReloaded) {
         let persisted = false;
         try {
-          sessionStorage.setItem("tbab_yt_bypass", "1");
+          sessionStorage.setItem("tbab_yt_bypass_at", String(now));
           persisted = true;
         } catch {}
         bypassReloaded = true;
@@ -149,18 +186,24 @@
             chrome.runtime.sendMessage({ type: "ytBypass" }, (res) => {
               // Reload only once the service worker confirmed the allow-all
               // rule is in place; otherwise the reload would land on a page
-              // that is still blocked (a pointless reload). The sessionStorage
-              // flag above already prevents any loop.
-              if (res && res.ok) { try { location.reload(); } catch {} }
+              // that is still blocked (a pointless reload).
+              if (res && res.ok) { try { location.reload(); } catch {} return; }
+              // Could not arm the bypass: make YouTube's own dialog visible so
+              // the user is not left with a silently dead player.
+              attrForced = true;
+              syncBypassAttr();
             });
           } catch {}
           return;
         }
       }
 
-      // Already bypassing: with the ruleset off and no injection the dialog
-      // shouldn't reappear. Don't touch the dialog/player (that leaves a dead
-      // player); only clear a leftover overlay/scroll-lock so the page is usable.
+      // Already reloaded for this (or a very recent) strike: don't reload again.
+      // Don't touch the dialog/player (that leaves a dead player); only clear a
+      // leftover overlay/scroll-lock so the page is usable, and keep the dialog
+      // visible so the user can act on it.
+      attrForced = true;
+      syncBypassAttr();
       document.querySelectorAll("tp-yt-iron-overlay-backdrop").forEach((b) => {
         try {
           b.remove();
