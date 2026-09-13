@@ -73,6 +73,8 @@ docker compose logs --tail=80 backend | grep -iE "BILLING_PROVIDER|Discord мо�
 # НЕ трябва да има „❌ … Discord монетизацията е непълна" — ако има, SKU липсва в .env
 curl -s https://supremebot.carbonstealth.eu/api/billing/config
 # {"provider":"discord","discord":{"enabled":true,"configured":true,"storeUrl":"https://discord.com/application-directory/<app>/store",...}}
+# Същото го проверява и smoke.sh (стъпка 6): „Discord магазинът е конфигуриран“ — при
+# bad там autodeploy прави откат, което е ПРАВИЛНО: без SKU никой не може да купи.
 curl -s -o /dev/null -w "%{http_code}\n" -X POST https://supremebot.carbonstealth.eu/api/stripe/create-checkout/x
 # 401 (нелогнат) — а логнат админ получава 410 STRIPE_PURCHASES_DISABLED
 ```
@@ -91,6 +93,20 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST https://supremebot.carbonstealt
 В таблото (`Ctrl+Shift+R`): Premium страницата няма бутон за плащане — само
 „Отворете магазина на Discord“ (нов таб); няма trial банер; landing на 8 езика
 показва само месечни цени „през Discord“.
+
+## 3a. Админ → Revenue
+
+От 3.3.0 главните числа са **Total MRR (Stripe + Discord list)** и **Discord MRR
+(list, VAT incl.)** с оценка на нетото (÷1.20 ДДС × 0.85 дял на разработчика до
+$1M/год.). Реалната сума е в Developer Portal → Monetization → Payouts; ако
+годишният нетен приход мине $1M, смени `DISCORD_DEVELOPER_SHARE` на 0.70.
+
+## 3b. Правни документи
+
+Terms/EULA/Privacy носят „Last updated: 13 September 2026“; ROPA v1.3, DPA v1.1
+(таблицата на подпроцесорите — без нов подпроцесор, затова 30-дневното
+известие по DPA 4.3 не се задейства). Sitemap lastmod е обновен → IndexNow
+пингът от autodeploy ги подава сам (Google: sitemap-ът е свеж).
 
 ## 4. Заварени Stripe абонати
 

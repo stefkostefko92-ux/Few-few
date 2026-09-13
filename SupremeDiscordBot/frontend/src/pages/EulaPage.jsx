@@ -12,7 +12,7 @@ export default function EulaPage() {
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="End User License Agreement (EULA)" updated="7 August 2026">
+    <LegalPage title="End User License Agreement (EULA)" updated="13 September 2026">
       <Seo
         title="End User License Agreement — Supreme Bot"
         description="End User License Agreement for Supreme Bot: SaaS access, bot deployment, premium features, white-label terms, and API usage."

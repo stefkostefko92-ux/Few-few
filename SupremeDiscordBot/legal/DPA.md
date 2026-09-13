@@ -1,6 +1,6 @@
 # Data Processing Agreement (DPA) — Supreme Bot
 
-**Version:** 1.0  
+**Version:** 1.1 (2026-09-13 — sub-processor table: Discord Inc. also acts as seller of record for subscriptions purchased in its Premium Apps store; Stripe limited to legacy subscriptions. No new sub-processor was added.)  
 **Effective Date:** 2026-04-22  
 **Controller:** [Customer Name] ("Customer")  
 **Processor:** Carbon Stealth VCC, EIK 208725180, VAT BG208725180, ul. Samuil 3, Bobov Dol, Bulgaria ("Supreme Bot")

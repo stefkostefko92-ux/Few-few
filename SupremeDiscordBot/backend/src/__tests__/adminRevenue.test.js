@@ -81,6 +81,11 @@ describe("calculateMrr — кой НЕ е приход", () => {
     expect(r.excluded.gifted).toEqual({ count: 1, listValue: 9.99 });
     expect(r.excluded.pastDue).toEqual({ count: 1, atRiskMrr: 4.99 });
     expect(r.excluded.discord).toEqual({ count: 1, listValue: 4.99 });
+    // v3.3 — Discord е главният канал: отделен блок с оценка на нетото
+    // (÷1.20 ДДС × 0.85 дял на разработчика) и общ MRR Stripe + Discord.
+    expect(r.discord).toEqual({ count: 1, listMrrGross: 4.99, netEstimate: 3.53, developerShare: 0.85 });
+    expect(r.totalMrrGross).toBe(9.98);
+    expect(r.totalSubscriptions).toBe(2);
   });
 
   it("agency място не се брои втори път: покритият сървър стои на plan=free", () => {

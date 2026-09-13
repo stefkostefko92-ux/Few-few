@@ -123,14 +123,10 @@ export const getAuditLogs = (params) => api.get("/admin/audit-logs", { params })
 // и withdrawalConsent (чл. 16(а) — задължително преди checkout).
 export const openPortal = (serverId) =>
   api.post(`/stripe/portal/${serverId}`).then((r) => r.data);
-export const getStripeStatus = (serverId) =>
-  api.get(`/stripe/status/${serverId}`).then((r) => r.data);
 
 // v3.0 — Agency планове (до 5 / до 10 сървъра, един абонамент). Отделен
 // endpoint, добавян от друг workstream; тук само окабеляваме извикването.
 // plan: "agency5" | "agency10"; interval: "month" | "year".
-export const createAgencyCheckout = (body = {}) =>
-  api.post(`/agency/checkout`, body).then((r) => r.data);
 
 // Agency управление (собственикът на агенцията): моят план + seats,
 // закачане/махане на сървър seat, Stripe billing portal на агенцията.

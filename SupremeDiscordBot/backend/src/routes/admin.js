@@ -433,8 +433,14 @@ function normalizeServerPlan(s) {
  *   брои се отделно като „потенциален“ MRR.
  * - `planSource === "manual"` (подарени) НЕ е приход — отделен ред „gifted“ с
  *   каталожна стойност, за да се вижда колко подаряваме.
- * - `planSource === "discord"` (Discord Premium Apps) е приход, но НЕ минава
- *   през Stripe и Discord удържа комисиона → отделен ред, извън Stripe MRR.
+ * - `planSource === "discord"` (Discord Premium Apps — ЕДИНСТВЕНИЯТ канал за
+ *   продажба от v3.3) е приход, но парите не минават през нас: Discord е
+ *   препродавач — начислява/внася ДДС и удържа своя дял (85/15 до $1M годишно,
+ *   после 70/30; Monetization Terms, сверено 12.09.2026). Затова е ОТДЕЛЕН
+ *   блок `discord`: каталожна (списъчна) стойност с ДДС + ОЦЕНКА на нетото
+ *   (÷1.20 ДДС × 0.85). Реалната сума е в Developer Portal → Payouts; локалната
+ *   цена в Discord може да се различава от каталожната. `totalMrrGross` събира
+ *   Stripe MRR + Discord списъчен MRR, за да не изглежда бизнесът „нула“.
  * - `past_due` НЕ се брои в MRR (плащането е пропаднало; dunning тече) —
  *   показва се като „приход в риск“.
  * - Churn 30d = отпаднали (stripeStatus="canceled" с updatedAt в прозореца) /
@@ -443,6 +449,12 @@ function normalizeServerPlan(s) {
  *   по-късна промяна по реда го мести в/извън прозореца; изтритите сървъри
  *   изобщо не се броят. За точен churn — Stripe Billing отчетите.
  */
+// Делът на разработчика при Discord Premium Apps: 85% до $1M нетен приход за
+// календарна година, после 70% (Discord Monetization Terms, сверено 12.09.2026).
+// Държим по-консервативния праг като константа — при надхвърляне на $1M смени
+// на 0.70 (и празнувай).
+export const DISCORD_DEVELOPER_SHARE = 0.85;
+
 export function calculateMrr({ servers = [], agencies = [], now = new Date(), churnWindowDays = 30 } = {}) {
   const cutoff = new Date(now.getTime() - churnWindowDays * 24 * 60 * 60 * 1000);
 
@@ -546,6 +558,11 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
   const monthlyCount = byTier.reduce((n, t) => n + t.monthlyCount, 0);
   const yearlyCount = byTier.reduce((n, t) => n + t.yearlyCount, 0);
 
+  // Discord Premium Apps (v3.3): списъчна стойност с ДДС → нето след ДДС и
+  // дела на Discord. Оценка, не касова истина (тя е в Developer Portal).
+  const discordList = excluded.discord.listValue;
+  const discordNet = (discordList / (1 + VAT_RATE)) * DISCORD_DEVELOPER_SHARE;
+
   return {
     currency: "EUR",
     vatRate: VAT_RATE,
@@ -568,6 +585,14 @@ export function calculateMrr({ servers = [], agencies = [], now = new Date(), ch
       monthlyMrr: round2(byTier.reduce((n, t) => n + t.monthlyMrr, 0)),
       yearlyMrr: round2(byTier.reduce((n, t) => n + t.yearlyMrr, 0)),
     },
+    discord: {
+      count: excluded.discord.count,
+      listMrrGross: round2(discordList),
+      netEstimate: round2(discordNet),
+      developerShare: DISCORD_DEVELOPER_SHARE,
+    },
+    totalMrrGross: round2(mrr + discordList),
+    totalSubscriptions: paidSubscriptions + excluded.discord.count,
     excluded: {
       trialing: { count: excluded.trialing.count, potentialMrr: round2(excluded.trialing.potentialMrr) },
       gifted:   { count: excluded.gifted.count,   listValue: round2(excluded.gifted.listValue) },

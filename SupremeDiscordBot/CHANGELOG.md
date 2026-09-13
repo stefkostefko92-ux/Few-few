@@ -37,6 +37,11 @@ Terms 29.08.2025) — фактите са в `docs/DISCORD_MONETIZATION.md`.
 - Гейтове: `billingProvider.test.js`, `discordSubscription.test.js`,
   `noTrial.test.js` (backend), `discordSubscriptionEvents.test.js` (bot),
   пренаписан `checkout-cta.test.js` (frontend — таблото не сключва поръчка)
+- Админ → Revenue: блок `discord` (списъчен MRR с ДДС + оценка на нетото ÷1.20
+  × 0.85 дял на разработчика) и `totalMrrGross` (Stripe + Discord) — Discord е
+  главният канал и не бива да стои „извън MRR“
+- `deploy/smoke.sh`: стъпка 6 проверява `/api/billing/config` (провайдър +
+  configured) — без SKU деплоят се връща назад, защото никой не може да купи
 
 ### Променено
 - Stripe `POST /create-checkout/:serverId` и `POST /agency/checkout` → **410**
@@ -51,6 +56,9 @@ Terms 29.08.2025) — фактите са в `docs/DISCORD_MONETIZATION.md`.
 - `docs/PRICING.md`, `docs/DISCORD_MONETIZATION.md`, README, `.env.example`:
   Discord-first; `STRIPE_TRIAL_DAYS` премахнат; SKU променливите вече са
   задължителни
+- Terms/EULA/Privacy „Last updated: 13 September 2026“; ROPA v1.3; DPA v1.1;
+  `index.html` метаданни и JSON-LD без „Stripe billing“; sitemap lastmod за
+  променените страници
 
 ### Премахнато
 - Пробният период: `routes/trial.js` + `/api/trial`, `trial_period_days` в

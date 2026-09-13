@@ -5,8 +5,9 @@
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
-**Last updated:** 2026-09-02  
-**Version:** 1.2 — added Activities 13–16 (sticky roles, server activity logging, public API keys, outbound webhooks), which had been live in the product without a record entry
+**Last updated:** 2026-09-13  
+**Version:** 1.3 — Activity 4 rewritten: subscriptions are sold only through Discord's Premium Apps store (Discord Inc. = seller of record; entitlement/subscription identifiers as data categories); Stripe demoted to legacy subscriptions; free trial removed (no trial data processed)  
+**Version:** 1.2 (2026-09-02) — added Activities 13–16 (sticky roles, server activity logging, public API keys, outbound webhooks), which had been live in the product without a record entry
 
 ---
 
