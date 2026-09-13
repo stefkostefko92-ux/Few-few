@@ -1,0 +1,32 @@
+<%- include('../partials/shell-start', { active: 'brands' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('brands.title') %></h1>
+    <p class="sub"><%= t('brands.subtitle') %></p>
+  </div>
+  <% if (can('brands:manage')) { %><a class="btn primary" href="/admin/brands/new"><%- icon('plus') %> <%= t('brands.new') %></a><% } %>
+</div>
+<div class="table-wrap">
+<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('brands.language') %></th><th><%= t('brands.management') %></th><th class="num"><%= t('brands.accounts') %></th><th class="num"><%= t('brands.posts') %></th><th></th></tr></thead><tbody>
+<% brands.forEach((b) => { %>
+  <tr>
+    <td><strong><%= b.name %></strong><span class="sub-line mono"><%= b.slug %></span></td>
+    <td><%= b.language %></td>
+    <td>
+      <% if (b.managed) { %>
+        <span class="chip good"><%- icon('autopilot', { class: 'ic-sm' }) %> <%= t('brands.autopilot') %></span>
+        <span class="sub-line"><%= b.lastAutopilotAt ? t('brands.cycleRelative', { relative: ui.relative(b.lastAutopilotAt) }) : t('dash.neverRun') %></span>
+      <% } else { %><span class="chip"><%- icon('human', { class: 'ic-sm' }) %> <%= t('brands.manual') %></span><% } %>
+    </td>
+    <td class="num"><%= b._count.accounts %></td>
+    <td class="num"><a href="/admin/posts?brand=<%= b.slug %>"><%= b._count.posts %></a></td>
+    <td class="row">
+      <% if (can('insights:view')) { %><a class="btn ghost small" href="/admin/brands/<%= b.id %>/performance"><%- icon('metric-reach', { class: 'ic-sm' }) %> <%= t('dash.performance') %></a><% } %>
+      <% if (can('brands:manage')) { %><a class="btn ghost small" href="/admin/brands/<%= b.id %>/edit"><%- icon('edit', { class: 'ic-sm' }) %> <%= t('common.edit') %></a><% } %>
+    </td>
+  </tr>
+<% }) %>
+<% if (!brands.length) { %><tr><td colspan="6"><div class="empty"><%- icon('brands', { class: 'ic-xl' }) %><strong><%= t('brands.empty') %></strong><%= t('brands.emptyHint') %></div></td></tr><% } %>
+</tbody></table>
+</div>
+<%- include('../partials/shell-end') %>

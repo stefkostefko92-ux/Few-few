@@ -1,0 +1,43 @@
+<%- include('../partials/shell-start', { active: 'users' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('users.title') %></h1>
+    <p class="sub"><%= t('users.subtitle') %></p>
+  </div>
+</div>
+<section class="panel">
+  <h2><%- icon('users') %> <%= t('users.new') %></h2>
+  <form method="post" action="/admin/users" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="grid2">
+      <label><%= t('users.name') %><input name="name" required minlength="2"></label>
+      <label><%= t('auth.email') %><input type="email" name="email" required></label>
+      <label><%= t('users.role') %><select name="role" required><% roles.forEach((r) => { %><option value="<%= r %>"><%= t('role.' + r) %></option><% }) %></select></label>
+      <label><%= t('users.initialPassword') %> <span class="hint"><%= t('users.passwordHint') %></span><input type="password" name="password" required minlength="12" autocomplete="new-password"></label>
+    </div>
+    <button class="btn primary" type="submit"><%- icon('plus') %> <%= t('common.create') %></button>
+  </form>
+</section>
+<div class="table-wrap">
+<table><thead><tr><th><%= t('users.user') %></th><th><%= t('users.role') %></th><th><%= t('common.state') %></th><th><%= t('users.twoFactor') %></th><th><%= t('users.lastLogin') %></th><th><%= t('common.actions') %></th></tr></thead><tbody>
+<% users.forEach((u) => { %>
+  <tr>
+    <td><strong><%= u.name %></strong><span class="sub-line"><%= u.email %></span></td>
+    <td><% if (canManage(u.role) && u.id !== currentUser.id) { %>
+      <form method="post" action="/admin/users/<%= u.id %>/role" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><select name="role" class="field-sm"><% roles.forEach((r) => { %><option value="<%= r %>" <%= r === u.role ? 'selected' : '' %>><%= t('role.' + r) %></option><% }) %></select><button class="btn ghost small" type="submit"><%- icon('approve', { class: 'ic-sm' }) %></button></form>
+    <% } else { %><%= t('role.' + u.role) %><% } %></td>
+    <td><% if (u.active) { %><span class="chip good"><%- icon('status-active', { class: 'ic-sm' }) %> <%= t('users.active') %></span><% } else { %><span class="chip critical"><%- icon('status-disabled', { class: 'ic-sm' }) %> <%= t('users.suspended') %></span><% } %><% if (u.lockedUntil && u.lockedUntil > new Date()) { %> <span class="chip warn"><%- icon('clock', { class: 'ic-sm' }) %> <%= t('users.locked') %></span><% } %><span class="sub-line"><%= t('users.sessions', { count: u._count.sessions }) %></span></td>
+    <td><% if (u.totpEnabledAt) { %><span class="chip good"><%- icon('shield', { class: 'ic-sm' }) %> <%= t('users.on') %></span><% } else { %><span class="chip"><%- icon('close', { class: 'ic-sm' }) %> <%= t('users.off') %></span><% } %></td>
+    <td class="muted when"><%= u.lastLoginAt ? ui.relative(u.lastLoginAt) : t('common.never') %></td>
+    <td class="row">
+      <% if (canManage(u.role) && u.id !== currentUser.id) { %>
+        <form method="post" action="/admin/users/<%= u.id %>/toggle" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn small <%= u.active ? 'danger' : 'ghost' %>" type="submit"><%- icon(u.active ? 'status-disabled' : 'status-active', { class: 'ic-sm' }) %> <%= u.active ? t('users.suspend') : t('users.activate') %></button></form>
+        <% if (u.totpEnabledAt) { %><form method="post" action="/admin/users/<%= u.id %>/reset-2fa" class="inline" data-confirm="<%= t('users.reset2faConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('shield', { class: 'ic-sm' }) %> <%= t('users.reset2fa') %></button></form><% } %>
+        <form method="post" action="/admin/users/<%= u.id %>/reset-password" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="password" name="password" placeholder="<%= t('users.newPassword') %>" minlength="12" required class="field-sm" autocomplete="new-password"><button class="btn ghost small" type="submit"><%- icon('key', { class: 'ic-sm' }) %> <%= t('users.changePassword') %></button></form>
+      <% } else { %><span class="muted">—</span><% } %>
+    </td>
+  </tr>
+<% }) %>
+</tbody></table>
+</div>
+<%- include('../partials/shell-end') %>

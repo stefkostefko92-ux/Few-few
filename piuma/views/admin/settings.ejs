@@ -1,0 +1,30 @@
+<%- include('../partials/shell-start', { active: 'settings' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('settings.title') %></h1>
+    <p class="sub"><%= t('settings.subtitle') %></p>
+  </div>
+</div>
+<div class="grid2">
+  <section class="panel"><h2><%- icon('instagram') %> <%= t('settings.instagramApi') %></h2>
+    <table><tbody>
+      <tr><td class="muted"><%= t('settings.graphVersion') %></td><td class="mono"><%= settings.graphVersion %></td></tr>
+      <tr><td class="muted"><%= t('settings.scopes') %></td><td class="mono"><%= settings.scopes.join(' ') %></td></tr>
+      <tr><td class="muted"><%= t('settings.redirectUri') %></td><td class="mono"><%= settings.redirectUri %></td></tr>
+      <tr><td class="muted"><%= t('settings.appId') %></td><td><% if (settings.appIdSet) { %><span class="chip good"><%- icon('status-approved', { class: 'ic-sm' }) %> <%= t('settings.set') %></span><% } else { %><span class="chip critical"><%- icon('severity-high', { class: 'ic-sm' }) %> <%= t('settings.missing') %></span><% } %></td></tr>
+    </tbody></table>
+  </section>
+  <section class="panel"><h2><%- icon('system') %> <%= t('settings.system') %></h2>
+    <table><tbody>
+      <tr><td class="muted"><%= t('settings.environment') %></td><td class="mono"><%= settings.environment %></td></tr>
+      <tr><td class="muted"><%= t('settings.publicUrl') %></td><td class="mono"><%= settings.publicBaseUrl %></td></tr>
+      <tr><td class="muted"><%= t('settings.trustProxy') %></td><td class="mono"><%= settings.trustProxy %></td></tr>
+      <tr><td class="muted"><%= t('settings.generation') %></td><td><% if (settings.anthropicSet) { %><span class="chip good"><%- icon('sparkle', { class: 'ic-sm' }) %> <%= t('common.on') %></span><% } else { %><span class="chip"><%- icon('close', { class: 'ic-sm' }) %> <%= t('common.off') %></span><% } %></td></tr>
+      <tr><td class="muted"><%= t('settings.totpIssuer') %></td><td><%= settings.totpIssuer %></td></tr>
+      <tr><td class="muted"><%= t('settings.activeUsers') %></td><td class="num"><%= ui.num(stats.users) %></td></tr>
+      <tr><td class="muted"><%= t('settings.activeKeys') %></td><td class="num"><%= ui.num(stats.keys) %></td></tr>
+      <tr><td class="muted"><%= t('settings.liveSessions') %></td><td class="num"><%= ui.num(stats.sessions) %></td></tr>
+    </tbody></table>
+  </section>
+</div>
+<%- include('../partials/shell-end') %>
