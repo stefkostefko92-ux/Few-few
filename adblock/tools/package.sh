@@ -16,7 +16,10 @@ rm -f "$out"
 # edited without a rebuild) — a set-euo pipefail abort with a clear message.
 node tools/build_scriptlets.mjs --check
 
-zip -r "$out" . \
+# -X: no Unix extra fields (uid/gid/mode) — the Windows 11 Explorer extractor
+#     has refused such archives with "access denied to the compressed folder";
+# -D: no directory entries — nothing for an extractor to trip on, Chrome does not need them.
+zip -r -X -D "$out" . \
   -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
      'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' 'rules/popup_hosts.json' 'tests/*' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
