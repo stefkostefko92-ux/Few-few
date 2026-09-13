@@ -123,17 +123,42 @@ const enforcement = { textContent: "Ad blockers violate YouTube's Terms of Servi
   ok("same page again: no further reloads (bypassReloaded)", t.messages.length === 1 && t.sb.__reloads === 1);
 }
 
-// ---------- 5) грешка с Playback ID без диалог = enforcement; „Video unavailable" не е ----------
+// ---------- 4b) РЕГРЕСИЯ (преглед): задържан enforcement възел по време на bypass — НЕ reload на всеки 90s ----------
+// Симулира реалния цикъл: времето върви, всеки reload е НОВ документ (нов load на скрипта) със
+// същите sessionStorage/storage, а service worker-ът подновява ytBypassUntil при всяко ytBypass.
+{
+  let now = 30 * HOUR;
+  const storage = { enabled: true, ytBypassUntil: now + 5 * HOUR };
+  const session = { tbab_yt_bypass_at: String(now - 7 * HOUR) };
+  const els = { "ytd-enforcement-message-view-model": enforcement, "tp-yt-iron-overlay-backdrop": [] };
+  let reloads = 0;
+  for (let k = 0; k < 8; k++) {
+    const t = ytTab({ now, storage, session, els, reply: () => { storage.ytBypassUntil = now + 6 * HOUR; return { ok: true }; } });
+    t.load("youtube_skip.js");
+    reloads += t.sb.__reloads;
+    now += 91 * 1000; // над loop guard-а → без брояч това щеше да е още един reload
+  }
+  ok(`sticky enforcement node during bypass: bounded reloads (${reloads} ≤ 2 over 8 documents / 12 min)`, reloads <= 2 && reloads >= 1);
+  // нов bypass прозорец (печатът е по-стар от 6ч) → броячът започва отначало
+  now += 7 * HOUR; storage.ytBypassUntil = 0;
+  const t = ytTab({ now, storage, session, els });
+  t.load("youtube_skip.js");
+  ok("new window after 6h: counter resets, bypass possible again", t.sb.__reloads === 1 && session.tbab_yt_bypass_n === "1");
+}
+
+// ---------- 5) грешка с Playback ID без диалог = enforcement (след като е СТАБИЛНА); „Video unavailable" не е ----------
 {
   const now = 20 * HOUR;
   const t = ytTab({ now, storage: { enabled: true }, els: { ".ytp-error": { textContent: "An error occurred. Please try again later. (Playback ID: AbC123)" } } });
   t.load("youtube_skip.js");
-  ok("player error with Playback ID → bypass + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1);
+  ok("Playback ID error just appeared → not yet (transient errors retry themselves)", t.messages.length === 0 && t.sb.__reloads === 0);
+  t.sb.__now += 9000; t.run();
+  ok("Playback ID error stable for 8s → bypass + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1);
   const t2 = ytTab({ now, storage: { enabled: true }, els: { ".ytp-error": { textContent: "Video unavailable. This video has been removed by the uploader" } } });
   t2.load("youtube_skip.js");
   ok("deleted video error (no Playback ID) → untouched", t2.messages.length === 0 && t2.sb.__reloads === 0);
   const t3 = ytTab({ now, storage: { enabled: true, ytBypassUntil: now + HOUR }, session: { tbab_yt_bypass_at: String(now - HOUR) }, els: { ".ytp-error": { textContent: "(Playback ID: x)" } } });
-  t3.load("youtube_skip.js");
+  t3.load("youtube_skip.js"); t3.sb.__now += 9000; t3.run();
   ok("Playback ID error DURING bypass → genuine error, no reload", t3.messages.length === 0 && t3.sb.__reloads === 0);
 }
 
@@ -210,6 +235,18 @@ const BAD = { playabilityStatus: { status: "UNPLAYABLE", reason: "Video unavaila
   ok("main: unavailable either way → original response, flags kept", p.calls.length === 2 && j.playabilityStatus.status === "UNPLAYABLE");
   await p.call();
   ok("main: flags still sent afterwards", p.calls[2].flagged === true);
+}
+{
+  // флагнатото тяло е отхвърлено направо с 4xx → една plain заявка; тя е OK → флагът пада
+  const q = [];
+  const p = ytPage(q);
+  const rejected = new p.sb.Response({ error: "bad request" });
+  rejected.ok = false;
+  q.push(rejected, OK, OK);
+  const res = await p.call();
+  ok("main: flagged body rejected (4xx) → plain retry returned, flag dropped", p.calls.length === 2 && !p.calls[1].flagged && res.ok === true);
+  await p.call();
+  ok("main: afterwards plain only", p.calls.length === 3 && !p.calls[2].flagged);
 }
 
 done();

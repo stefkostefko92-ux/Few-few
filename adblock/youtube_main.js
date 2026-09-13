@@ -202,19 +202,25 @@
       return s === "ERROR" || s === "UNPLAYABLE" || s === "LOGIN_REQUIRED";
     } catch { return false; }
   };
+  // Cheap pre-filter on the raw text: the happy path (playable) must not pay a
+  // second full JSON.parse + prune of a multi-megabyte player response.
+  const BAD_STATUS_RE = /"status"\s*:\s*"(ERROR|UNPLAYABLE|LOGIN_REQUIRED)"/;
+  const retryPlain = (plainFetch, res) =>
+    plainFetch().then((res2) => {
+      if (!res2 || !res2.ok || typeof res2.clone !== "function") return res;
+      return res2.clone().text().then((t2) => {
+        if (BAD_STATUS_RE.test(t2) && badPlayability(nativeParse(t2))) return res; // not the flag's fault
+        requestFlags = []; // proven: the flag broke playback on this page
+        return res2;
+      }).catch(() => res);
+    }).catch(() => res);
   function withFallback(flaggedFetch, plainFetch) {
     return flaggedFetch().then((res) => {
-      if (!res || !res.ok || typeof res.clone !== "function") return res;
-      return res.clone().json().then((j) => {
-        if (!badPlayability(j)) return res;
-        return plainFetch().then((res2) => {
-          if (!res2 || !res2.ok || typeof res2.clone !== "function") return res;
-          return res2.clone().json().then((j2) => {
-            if (badPlayability(j2)) return res; // not the flag's fault
-            requestFlags = []; // proven: the flag broke playback on this page
-            return res2;
-          }).catch(() => res);
-        }).catch(() => res);
+      if (!res || typeof res.clone !== "function") return res;
+      if (!res.ok) return retryPlain(plainFetch, res); // flagged body rejected outright (4xx)
+      return res.clone().text().then((t) => {
+        if (!BAD_STATUS_RE.test(t) || !badPlayability(nativeParse(t))) return res;
+        return retryPlain(plainFetch, res);
       }).catch(() => res);
     });
   }

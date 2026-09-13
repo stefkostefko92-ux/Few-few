@@ -21,10 +21,23 @@
   // enforcement path saw "already bypassing" → no reload, dialog hidden by CSS,
   // dead player with no way out. That is the "clips stop loading" report.)
   const RELOAD_GUARD_MS = 90 * 1000;
+  // Attempts are BOUNDED per bypass window, not just spaced: bypassReloaded is
+  // per document and the timestamp is refreshed by every reload, so a time
+  // guard alone would reload every 90s for as long as an enforcement node sits
+  // in the DOM (review finding: 5 reloads in 400s, each extending the window).
+  const BYPASS_WINDOW_MS = 6 * 60 * 60 * 1000; // = background.js YT_BYPASS_MS
+  const MAX_BYPASS_RELOADS = 2;                // first strike + ONE second chance
   function lastBypassReload() {
     try {
       const v = Number(sessionStorage.getItem("tbab_yt_bypass_at") || 0);
       return Number.isFinite(v) ? v : 0;
+    } catch { return 0; }
+  }
+  function bypassReloadCount(now) {
+    try {
+      const at = lastBypassReload();
+      if (!at || now - at > BYPASS_WINDOW_MS) return 0; // new window → new counter
+      return Number(sessionStorage.getItem("tbab_yt_bypass_n") || 0) || 0;
     } catch { return 0; }
   }
   // youtube.css hides ad UI only while html[data-tbab-yt-bypass] is absent, so a
@@ -80,11 +93,19 @@
   // again later. (Playback ID: …)") — the shape YouTube uses to refuse playback
   // to detected ad blockers without showing the enforcement dialog. Never
   // during an active bypass: then it is a genuine error, not us.
+  // The same screen also follows a transient network/decoder error that YouTube
+  // retries by itself, so it only counts once it has been STABLE for a while —
+  // a few seconds cost nothing on a dead player, a false positive costs 6h of ads.
+  const ERROR_STABLE_MS = 8000;
+  let errSeenAt = 0;
   function playbackIdError() {
     if (bgBypass) return null;
     try {
       const el = document.querySelector(".ytp-error");
-      if (el && /playback id/i.test(el.textContent || "")) return el;
+      if (!el || !/playback id/i.test(el.textContent || "")) { errSeenAt = 0; return null; }
+      const now = Date.now();
+      if (!errSeenAt) { errSeenAt = now; return null; }
+      return now - errSeenAt >= ERROR_STABLE_MS ? el : null;
     } catch {}
     return null;
   }
@@ -174,10 +195,12 @@
       // tab), or we ARE bypassing but this page has not reloaded yet (the clean
       // client still got flagged — one more try with a fresh window). The time
       // guard is what prevents a loop; a hidden dialog is never the answer.
-      if (!bypassReloaded && !recentlyReloaded) {
+      const attempts = bypassReloadCount(now);
+      if (!bypassReloaded && !recentlyReloaded && attempts < MAX_BYPASS_RELOADS) {
         let persisted = false;
         try {
           sessionStorage.setItem("tbab_yt_bypass_at", String(now));
+          sessionStorage.setItem("tbab_yt_bypass_n", String(attempts + 1));
           persisted = true;
         } catch {}
         bypassReloaded = true;

@@ -525,7 +525,23 @@
   const isYtHost = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
   let noCosmeticsSite = false;
   let ytBypassOn = false;
-  const recomputeCosmeticsOff = () => { cosmeticsOff = noCosmeticsSite || ytBypassOn; };
+  // Switching cosmetics OFF must also reveal what was already hidden — an open
+  // YouTube tab that did not trigger the bypass would otherwise keep its
+  // manipulated DOM for the whole window while we claim a clean client.
+  // (:remove()-d nodes are gone for good; only a reload brings those back.)
+  function revealHidden() {
+    try {
+      document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
+        el.style.removeProperty("display");
+        delete el.dataset.tbabHidden;
+      });
+    } catch {}
+  }
+  const recomputeCosmeticsOff = () => {
+    const was = cosmeticsOff;
+    cosmeticsOff = noCosmeticsSite || ytBypassOn;
+    if (cosmeticsOff && !was) revealHidden();
+  };
 
   chrome.storage?.local.get(
     ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig", "noCosmetics", "ytBypassUntil"],
