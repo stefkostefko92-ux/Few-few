@@ -106,6 +106,15 @@ export const CMD_DESC_L10N = {
     nl: "Een peiling maken",
     pl: "Utwórz ankietę",
   },
+  privacy: {
+    bg: "🔐 Вашите данни: какво пазим и как да ги изтриете",
+    de: "🔐 Deine Daten: was wir speichern und wie du sie löschst",
+    "es-ES": "🔐 Tus datos: qué guardamos y cómo borrarlos",
+    fr: "🔐 Vos données : ce que nous stockons et comment les supprimer",
+    it: "🔐 I tuoi dati: cosa conserviamo e come cancellarli",
+    nl: "🔐 Je gegevens: wat we bewaren en hoe je ze verwijdert",
+    pl: "🔐 Twoje dane: co przechowujemy i jak je usunąć",
+  },
   premium: {
     bg: "⭐ Premium команди за сървъра",
     de: "⭐ Premium-Befehle für den Server",

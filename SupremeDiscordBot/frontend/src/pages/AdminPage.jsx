@@ -15,6 +15,8 @@ import api, {
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
+import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab } from "./AdminOpsTabs";
+import { Activity, ShieldCheck, CreditCard, Bot, FileCheck } from "lucide-react";
 
 // Админ конзолата е EN-only (изключена от i18n) — суров сървърен текст + резерва.
 const adminErr = (err) => err?.response?.data?.error || "Action failed. Please try again.";
@@ -26,6 +28,12 @@ const TABS = [
   { id: "servers",   label: "Servers",   icon: Server },
   { id: "payments",  label: "Payments",  icon: DollarSign },
   { id: "audit",     label: "Audit Log", icon: FileText },
+  // v3.4 — операционни табове (routes/adminOps.js)
+  { id: "system",    label: "System",    icon: Activity },
+  { id: "security",  label: "Security",  icon: ShieldCheck },
+  { id: "billing",   label: "Billing",   icon: CreditCard },
+  { id: "fleet",     label: "Fleet",     icon: Bot },
+  { id: "compliance", label: "Compliance", icon: FileCheck },
 ];
 
 const ROLE_COLORS = {
@@ -47,12 +55,12 @@ export default function AdminPage() {
           Platform <span className="text-cs-cyan">Control</span>
         </h1>
         <p className="text-cs-muted text-sm">
-          Global management — analytics, users, servers, payments, audit logs. Manage records.
+          Global management — analytics, users, servers, payments, audit logs, system health, security, billing, fleet and data-subject requests. Every write requires a fresh second factor.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0 mb-8 border-b border-cs-border">
+      <div className="flex gap-0 mb-8 border-b border-cs-border overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -76,6 +84,11 @@ export default function AdminPage() {
       {tab === "servers"   && <ServersTab />}
       {tab === "payments"  && <PaymentsTab />}
       {tab === "audit"     && <AuditTab />}
+      {tab === "system"    && <SystemTab />}
+      {tab === "security"  && <SecurityTab />}
+      {tab === "billing"   && <BillingTab />}
+      {tab === "fleet"     && <FleetTab />}
+      {tab === "compliance" && <ComplianceTab />}
     </div>
   );
 }

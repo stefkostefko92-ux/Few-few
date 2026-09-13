@@ -81,7 +81,8 @@ const roles = Array.from({ length: 28 }, (_, i) => ({
   reason: i % 7 === 3 ? "above_bot" : null,
 }));
 const FIX = {
-  "GET /api/auth/me": { id: "u1", username: "stefan", role: "MAIN_OWNER", language: "en" },
+  "GET /api/auth/me": { id: "u1", username: "stefan", role: "MAIN_OWNER", language: "en", mfa: { enabled: false, required: false, enrollmentRequired: false, verifiedInSession: false } },
+  "GET /api/auth/mfa/status": { enabled: false, enabledAt: null, required: false, enrollmentRequired: false, verifiedInSession: false, backupCodesLeft: 0, issuer: "Supreme Bot" },
   [`GET /api/servers/${SID}`]: {
     id: SID, name: "T19C", icon: null, plan: "agency10", isPremium: true, hasWhiteLabel: true,
     agencyCovered: true, agencySeatsUsed: 2, agencySeatLimit: 10,
@@ -163,6 +164,7 @@ const PAGES = [
   { path: `/dashboard/${SID}/apikeys`, name: "apikeys" },
   { path: `/dashboard/${SID}/applications`, name: "applications" },
   { path: `/dashboard/${SID}/commands`, name: "commands" },
+  { path: "/dashboard/security", name: "security" },
 ];
 
 // ─── Достъпност: axe-core върху РЕАЛНО рендерираните страници ───────────────

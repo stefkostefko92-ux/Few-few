@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
 import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
+import { requireMfa, requireFreshMfa } from "../middleware/mfa.js";
 
 // Активен ПЛАТЕН абонамент (Stripe, Discord или покриваща агенция). Ръчните
 // админски действия не бива да го презаписват: клиентът продължава да плаща, а
@@ -25,7 +26,11 @@ function activePaidSubscription(server) {
 
 const router = Router();
 
-router.use(requireAuth, loadUser, requireSuperUser);
+// v3.4 — админ конзолата иска записан + потвърден втори фактор (TOTP) за всяка
+// staff роля; разрушителните маршрути по-долу искат и СВЕЖО потвърждение
+// (step-up ≤10 min) — виж middleware/mfa.js.
+router.use(requireAuth, loadUser, requireSuperUser, requireMfa);
+const stepUp = requireFreshMfa();
 
 // ─── GET /api/admin/analytics ─────────────────────────────────────────────────
 
@@ -173,7 +178,7 @@ router.get("/users/:userId", async (req, res, next) => {
 
 // ─── PATCH /api/admin/users/:userId/role ──────────────────────────────────────
 
-router.patch("/users/:userId/role", requireMainOwner, async (req, res, next) => {
+router.patch("/users/:userId/role", requireMainOwner, stepUp, async (req, res, next) => {
   const { role } = req.body;
   const validRoles = ["SUPER_USER", "SUPPORT_STAFF", "USER"];
 
@@ -222,7 +227,7 @@ router.patch("/users/:userId/role", requireMainOwner, async (req, res, next) => 
 
 // ─── PATCH /api/admin/users/:userId/blacklist ─────────────────────────────────
 
-router.patch("/users/:userId/blacklist", requireMainOwner, async (req, res, next) => {
+router.patch("/users/:userId/blacklist", requireMainOwner, stepUp, async (req, res, next) => {
   const { blacklisted } = req.body;
 
   if (req.query.confirm !== "true") {
@@ -668,7 +673,7 @@ router.get("/revenue", async (req, res, next) => {
 // cancel it — we just flip the flag. To cancel Stripe subscriptions, use the
 // Stripe Dashboard directly.
 
-router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, next) => {
+router.patch("/servers/:serverId/premium", requireSuperUser, stepUp, async (req, res, next) => {
   const { enabled, reason } = req.body;
 
   if (typeof enabled !== "boolean") {
@@ -767,7 +772,7 @@ router.patch("/servers/:serverId/premium", requireSuperUser, async (req, res, ne
 // от Agency UI-то. planSource="manual" → изключен от MRR (виж /revenue).
 // Активен Stripe/Discord абонамент НЕ се отменя оттук — само Stripe Dashboard.
 
-router.patch("/servers/:serverId/plan", requireSuperUser, async (req, res, next) => {
+router.patch("/servers/:serverId/plan", requireSuperUser, stepUp, async (req, res, next) => {
   const { plan, reason } = req.body;
   const VALID_PLANS = ["free", "premium", "whitelabel", "agency5", "agency10"];
   if (!VALID_PLANS.includes(plan)) {
@@ -976,7 +981,7 @@ router.patch("/servers/:serverId", async (req, res, next) => {
 // due to Prisma onDelete: CASCADE). Requires ?confirm=true.
 // The bot will still be in the Discord guild — use the bot to leave manually if needed.
 
-router.delete("/servers/:serverId", requireMainOwner, async (req, res, next) => {
+router.delete("/servers/:serverId", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1016,7 +1021,7 @@ router.delete("/servers/:serverId", requireMainOwner, async (req, res, next) => 
 // Tickets/applications created by this user are NOT deleted (onDelete: RESTRICT) —
 // they remain anonymized with the old userId referenced.
 
-router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
+router.delete("/users/:userId", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1071,7 +1076,7 @@ router.delete("/users/:userId", requireMainOwner, async (req, res, next) => {
 // Remove an erroneous manual payment log entry. Stripe-logged entries should
 // NOT be deleted — they're part of the financial audit trail.
 
-router.delete("/payments/:paymentId", requireMainOwner, async (req, res, next) => {
+router.delete("/payments/:paymentId", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",
@@ -1103,7 +1108,7 @@ router.delete("/payments/:paymentId", requireMainOwner, async (req, res, next) =
 // ─── POST /api/admin/audit-logs/purge ─────────────────────────────────────────
 // Bulk-purge audit logs older than N days. MAIN_OWNER only.
 
-router.post("/audit-logs/purge", requireMainOwner, async (req, res, next) => {
+router.post("/audit-logs/purge", requireMainOwner, stepUp, async (req, res, next) => {
   const { olderThanDays } = req.body;
   if (!Number.isInteger(olderThanDays) || olderThanDays < 30) {
     return res.status(400).json({
@@ -1139,7 +1144,7 @@ router.post("/audit-logs/purge", requireMainOwner, async (req, res, next) => {
 // Wipe all panels/forms/tickets/applications for a server but keep the server record.
 // Useful for "start fresh" without deleting the server itself or Stripe subscription.
 
-router.post("/servers/:serverId/reset", requireMainOwner, async (req, res, next) => {
+router.post("/servers/:serverId/reset", requireMainOwner, stepUp, async (req, res, next) => {
   if (req.query.confirm !== "true") {
     return res.status(400).json({
       error: "Destructive action requires confirmation",

@@ -99,7 +99,9 @@ The deploy script will:
 | `DISCORD_SKU_WHITELABEL` | ✅ | Guild subscription SKU id |
 | `STRIPE_SECRET_KEY` | ➖ | Legacy subscribers only (webhook + portal); no new purchases |
 | `STRIPE_WEBHOOK_SECRET` | ➖ | From Stripe Dashboard → Webhooks (legacy) |
-| `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash, free tier) |
+| `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash) |
+| `AI_REPLY_TRAINING_ATTESTED` | ➖ | Must be `true` for AI replies to run — you attest a paid Gemini tier that does not train on submitted content (Discord Developer Policy §21) |
+| `MFA_ENFORCE_STAFF` | ➖ | Default `true`: staff roles need a TOTP second factor before the admin console |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
 | `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
 | `SENTRY_DSN` | ➖ | Error monitoring |

@@ -2,6 +2,55 @@
 
 Форматът следва [Keep a Changelog](https://keepachangelog.com/bg/1.1.0/); версиите — [SemVer](https://semver.org/).
 
+## [3.4.0] — 2026-09-13
+
+Държавно ниво на достъп до администрацията, пълна операционна конзола и карта
+на съответствието с Discord Developer Terms/Policy (сверени 13.09.2026 през
+help-center API-то). Миграция **v49** (адитивна: четири nullable колони в
+`users`).
+
+### Добавено
+- **Втори фактор (TOTP)** — своя реализация на RFC 4226/6238 (`lib/totp.js`),
+  доказана с публичните тестови вектори; тайната шифрирана при покой, replay
+  защита по стъпка, резервни кодове (SHA-256, еднократни), стълба срещу
+  налучкване по потребител, регенериране на сесията при потвърждение;
+  маршрути `/api/auth/mfa/*`; страница „Сигурност на акаунта“ (QR + ръчен
+  ключ) на 8 езика
+- **Задължителен за staff**: `/api/admin` иска записан + потвърден в сесията
+  TOTP (12 h срок, 30 min бездействие); разрушителните действия искат
+  **свежо** потвърждение ≤10 min (step-up); платформеният bypass на
+  per-server правата важи само за MFA-потвърдена сесия; таблото показва
+  предизвикателството автоматично при 403 `MFA_REQUIRED`/`MFA_STEP_UP`
+- **Админ конзола — пет нови таба** (`routes/adminOps.js`): **System**
+  (DB/Redis/бот здраве, миграция, пулс на всички cron задачи, конфигурационни
+  флагове), **Security** (staff и MFA статус, живи сесии, blocks от
+  brute-force стълбата + отблокиране, всички API ключове + отзоваване,
+  събития за 7 дни), **Billing** (Discord entitlement-и със статус по
+  документацията и период, легаси Stripe, агенции, ръчна реконсилиация),
+  **Fleet** (бранд ботове, сървъри с токен, ръчна реконсилиация),
+  **Compliance** (DSR: справка по Discord ID, изтриване identity/full с
+  бележка, дневник на заявките)
+- **`/privacy info` · `/privacy delete`** в Discord — Developer Terms §5(b):
+  всеки потребител изтрива данните си без табло (потвърждение с бутон;
+  отказ при активен абонамент/staff); `lib/dsr.js` е едното определение на
+  „какво пазим и как го трием“ (identity/full)
+- `docs/DISCORD_COMPLIANCE.md` — клауза по клауза → код, гейтвано от
+  `discordCompliance.test.js`; ROPA v1.4 (канали за правата); EULA §8.6
+  (Service Provider по Developer Terms §12(a) за white-label токените);
+  breach procedure — стъпка „уведоми Discord“ (§5(c))
+- Гейтове: `totp.test.js` (RFC вектори), `mfa.test.js`, `adminOps.test.js`,
+  `discordCompliance.test.js` (backend), `privacyCommand.test.js` (bot)
+
+### Променено
+- **AI отговорите са fail-closed** (Developer Policy §21): работят само при
+  `AI_REPLY_TRAINING_ATTESTED=true` — операторът удостоверява платен Gemini
+  tier без обучение; иначе null + един ред в лога и червен флаг в System
+- `bruteForce.js`: `snapshot()`/`unblock()` за конзолата (ключовете се показват
+  обобщени); `/api/auth/me` носи състоянието на MFA
+- Entitlement реконсилиацията връща резултат и има вътрешен endpoint за
+  ръчно пускане (`/internal/entitlement-reconcile`)
+- SECURITY.md: секции „Privileged access“ и „Discord platform obligations“
+
 ## [3.3.0] — 2026-09-12
 
 Плащанията минават **само през Discord Premium Apps** (решение на собственика,

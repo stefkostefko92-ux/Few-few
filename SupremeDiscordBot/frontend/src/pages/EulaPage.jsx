@@ -306,6 +306,18 @@ export default function EulaPage() {
           with Discord's Terms of Service, Monetization Policy, and Developer Policy. The Licensor
           accepts no responsibility for any action taken by Discord against your application.
         </p>
+        <p>
+          <strong className="text-cs-text">8.6 Service Provider relationship.</strong>{" "}
+          Under the Discord Developer Terms of Service you remain the developer of your Discord
+          Application and the Licensor acts solely as your <em>Service Provider</em> (Developer
+          Terms, Section 12(a)): the Licensor accesses Discord's APIs and API Data with your bot
+          token only for you, at your direction, to operate the White-label Bot on your behalf, and
+          for no other purpose. By supplying your bot token you instruct the Licensor accordingly
+          and agree in writing, as those Terms require, that the Licensor will comply with the
+          Developer Terms as if in your place. The Licensor keeps the token encrypted, does not
+          permit any other application to use it, stops using it when your subscription ends or
+          you remove it, and deletes it and any related API Data within 30 days (Section 8.4).
+        </p>
       </S>
 
       <S title="9. AI Auto-Reply Feature — Special Terms">

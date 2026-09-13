@@ -6,6 +6,7 @@
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
 **Last updated:** 2026-09-13  
+**Version:** 1.4 — data subject rights channels added (Discord `/privacy`, admin DSR console); TOTP second factor for staff (Activity 1 security measures)  
 **Version:** 1.3 — Activity 4 rewritten: subscriptions are sold only through Discord's Premium Apps store (Discord Inc. = seller of record; entitlement/subscription identifiers as data categories); Stripe demoted to legacy subscriptions; free trial removed (no trial data processed)  
 **Version:** 1.2 (2026-09-02) — added Activities 13–16 (sticky roles, server activity logging, public API keys, outbound webhooks), which had been live in the product without a record entry
 
@@ -18,6 +19,16 @@
 - **Representative:** Stefan Lyubomirov Kostadinov (Managing Director)
 - **Data Protection Officer:** Not yet appointed (threshold Article 37 not yet met; volunteer designation planned)
 - **DPO email:** privacy@carbonstealth.eu (interim)
+
+## Data subject rights — channels (Discord Developer Terms §5(b), GDPR Art. 15–17)
+
+| Channel | Who | Scope | Record |
+|---|---|---|---|
+| `/privacy info` · `/privacy delete` in Discord | any Discord user the bot has data about (no dashboard account needed) | identity: profile, message author signature, sessions, API keys, role snapshots, verification attempts, memberships | audit `DSR_ERASED` (via: bot) |
+| Dashboard → Privacy settings | dashboard users | Art. 15 export, Art. 17 account deletion, Art. 7(3) consent withdrawal | audit `GDPR_*` |
+| privacy@carbonstealth.eu → Admin console → Compliance | anyone; handled by Main Owner with a fresh second factor | identity or full (also ticket message text and application answers → "[erased]") | audit `DSR_ERASED` (via: admin, note = request reference) |
+
+Target: handled promptly, ≤72 h. Staff accounts and accounts with active paid subscriptions are refused until demoted/cancelled.
 
 ## Processing Activity 1 — Supreme Bot Account Management
 

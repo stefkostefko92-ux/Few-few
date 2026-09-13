@@ -41,6 +41,13 @@ Full stack + Postgres + Redis come up via `docker-compose.yml`. See `README.md`
   the raw body** and **idempotent by `event.id`**; grants are provisioned only through a
   verified webhook, never from a client redirect or client-supplied amount. The webhook
   route sits **outside** the rate limiter.
+- **Privileged access = second factor (v3.4).** Staff roles need an enrolled + session-verified
+  TOTP (`middleware/mfa.js`, own RFC 6238 impl in `lib/totp.js`) before `/api/admin`; destructive
+  admin routes add `stepUp` (fresh ≤10 min, MAIN_OWNER). New admin routes go through the same
+  chain — never mount an admin endpoint without `requireMfa`. Discord Developer Terms/Policy are
+  requirements: clause→code map in `docs/DISCORD_COMPLIANCE.md`, gated by
+  `discordCompliance.test.js` (DSR via `/privacy` + `lib/dsr.js`; AI replies fail-closed behind
+  `AI_REPLY_TRAINING_ATTESTED`).
 - **Multi-tenant isolation.** Every query/mutation is scoped by `serverId` — never
   trust a client-supplied id (guard against cross-tenant IDOR on forms, verification,
   schedules, spawn).

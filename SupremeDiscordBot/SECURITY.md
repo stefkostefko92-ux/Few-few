@@ -145,6 +145,41 @@ but forgotten on restart and not shared across replicas. Production sets
 `REDIS_URL`; the fallback exists so a Redis outage cannot take authentication
 down with it.
 
+## Privileged access — second factor and step-up
+
+Staff roles (MAIN_OWNER, SUPER_USER, SUPPORT_STAFF) cannot open the admin
+console until they enroll a **TOTP second factor** (RFC 6238, SHA-1, 6 digits,
+30 s — any authenticator app) and confirm it in the current session
+(`backend/src/middleware/mfa.js`). Discord OAuth is a single factor that is
+exactly as strong as the Discord account; a stolen session cookie or account
+must not be enough to reach the console. The verification expires after 12 h and
+after 30 min of inactivity, and every **destructive** admin action (roles,
+blacklist, plan changes, deletes, purges, DSR erasure, unblocks) demands a
+**fresh** verification (≤10 min) — step-up, as at a bank. The platform-admin
+bypass of per-server permission checks is granted only to an MFA-verified
+session.
+
+Implementation notes: the TOTP code is our own (`lib/totp.js`), verified
+against the RFC 4226/6238 test vectors rather than trusted from npm; the secret
+is AES-256-GCM encrypted at rest and never returned after enrollment; each code
+is accepted once (replay guard on the time step); backup codes are SHA-256
+hashes consumed on use; wrong codes go through the same brute-force ladder as
+every other secret (keyed by user, not IP); the session id is regenerated on
+every successful verification (fixation). All events are audited
+(`MFA_ENABLED`, `MFA_DISABLED`, `MFA_VERIFY_FAILED`, `MFA_BACKUP_CODE_USED`).
+
+## Discord platform obligations
+
+Discord's Developer Terms §5 and Developer Policy are treated as requirements,
+not guidance: a mapping of every clause to the code that satisfies it lives in
+`docs/DISCORD_COMPLIANCE.md` and is gated by
+`backend/src/__tests__/discordCompliance.test.js`. Highlights: any Discord user
+can delete their data with `/privacy delete` (no dashboard needed); an incident
+involving API Data is reported to Discord alongside the supervisory authority
+(`legal/breach-procedure.md`); AI replies are fail-closed unless the operator
+attests a paid model tier that does not train on submitted content (Developer
+Policy §21).
+
 ## Hardening beyond authentication
 
 **Outbound requests (SSRF).** Customers supply URLs the server will fetch —

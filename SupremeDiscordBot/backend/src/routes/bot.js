@@ -14,6 +14,7 @@ import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { ensureUserStub, ensureUserStubs } from "../lib/ensureUser.js";
+import { eraseDiscordUser, summarizeDiscordUser } from "../lib/dsr.js";
 import axios from "axios";
 import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
@@ -1165,6 +1166,25 @@ router.patch("/application/:id", async (req, res, next) => {
   }
 });
 
+
+// ─── DSR от Discord (/privacy) — Developer Terms §5(b): лесно достъпен път за
+// изтриване ЗА ВСЕКИ Discord потребител, не само за влязъл в таблото.
+router.get("/dsr/:userId", async (req, res, next) => {
+  if (!/^\d{5,25}$/.test(req.params.userId)) return res.status(400).json({ error: "Invalid user id" });
+  try { res.json(await summarizeDiscordUser(req.params.userId)); } catch (err) { next(err); }
+});
+
+router.post("/dsr/erase", async (req, res, next) => {
+  const { userId, guildId } = req.body || {};
+  if (!/^\d{5,25}$/.test(String(userId || ""))) return res.status(400).json({ error: "userId required" });
+  try {
+    // Самообслужване = обхват identity (съдържанието на тикетите е запис на
+    // оператора; за пълно изтриване → заявка към нас, админ конзола).
+    const result = await eraseDiscordUser(String(userId), { scope: "identity", via: "bot", requestedBy: String(userId), guildId: guildId ? String(guildId) : null });
+    if (!result.ok) return res.status(409).json(result);
+    res.json(result);
+  } catch (err) { next(err); }
+});
 
 // ─── GET /api/bot/servers/with-custom-tokens ─────────────────────────────────
 // Returns all Premium servers that have a custom bot token configured.
