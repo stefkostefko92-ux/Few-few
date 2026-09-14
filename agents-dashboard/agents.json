@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-10",
+    "updated": "2026-09-14",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -4605,9 +4605,20 @@
           "date": "2026-07-09",
           "event": "v10.7 — учене",
           "detail": "Научи: Под set -euo pipefail редът VAR=\"$(grep '^KEY=' file | cut -d= -f2)\" убива скрипта ТИХО…"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-09-14",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Health check по ГОЛ ПОРТ лъже, когато портът е зает от друг проект. vizitka слуша живо … (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-14",
+          "type": "learning",
+          "summary": "Научи: „Health check по ГОЛ ПОРТ лъже, когато портът е зает от друг проект. vizitka слуша живо …\" (+4 още)"
+        },
         {
           "date": "2026-07-09",
           "type": "learning",
