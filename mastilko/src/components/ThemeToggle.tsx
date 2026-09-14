@@ -15,10 +15,13 @@ const NEXT: Record<Theme, Theme> = {
 };
 
 // Икона + надпис за темата, към която ще превключим (за икона и aria-label).
+// Надписът на светлата тема казва и че СПИРА анимациите: „живата“ тема е по
+// подразбиране и движението ѝ тръгва само — WCAG 2.1 SC 2.2.2 (Pause, Stop,
+// Hide) иска механизъм за спиране, а той е разпознаваем само ако е обявен.
 const NEXT_META: Record<Theme, { icon: "sun" | "moon" | "sparkles"; label: string }> = {
-  light: { icon: "sun", label: "Светла тема" },
+  light: { icon: "sun", label: "Светла тема (спира анимациите)" },
   dark: { icon: "moon", label: "Тъмна тема" },
-  vivid: { icon: "sparkles", label: "Жива тема" },
+  vivid: { icon: "sparkles", label: "Жива тема (с анимации)" },
 };
 
 function applyTheme(theme: Theme) {

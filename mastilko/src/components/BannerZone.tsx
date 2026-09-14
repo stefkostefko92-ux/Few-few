@@ -80,6 +80,13 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
             </a>
           ) : (
             <div className="px-8 py-2.5">
+              {/* Етикетът „Реклама“ важи и за текстовите съобщения — търговското
+                  съобщение трябва да е разпознаваемо като такова (Дир. 2000/31
+                  чл. 6, б. „а“ / ЗЕТ). Досега стоеше само във варианта с
+                  изображение. */}
+              <span className="mr-2 rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                Реклама
+              </span>
               <span className="font-semibold">{b.title}</span>
               {b.text && <span className="ml-2 opacity-90">{b.text}</span>}
               {b.cta && b.href && (

@@ -6,7 +6,7 @@
 
 ## Стек и команди
 
-Next.js 15 App Router · React 19 · TS strict · Tailwind · Zod · jose · bcryptjs.
+Next.js 16 App Router · React 19 · TS strict · Tailwind · Zod · jose · bcryptjs.
 Path alias `@/*`. **Няма Prisma/база** — цялото ПОТРЕБИТЕЛСКО съдържание живее в
 localStorage на клиента (умишлено, GDPR-минимализъм). Единственото сървърно
 състояние е **рекламните банери**: проста JSON база в `MASTILKO_DATA_DIR`
@@ -61,7 +61,8 @@ npm run lint && npm run typecheck && npm test   # качествена порт�
 
 ## Структура
 
-- 8 инструмента: `src/app/{etiketi,vizitki,cv,pismo,gramoti,pokani,tabelki,wifi}/`
+- 14 инструмента: `src/app/{etiketi,vizitki,cv,pismo,gramoti,pokani,tabelki,wifi,
+  badzhove,obyava,vaucheri,kalendar,menu,dokumentni-snimki}/`
   — сървърни обвивки с metadata; редакторите са клиентски:
   `src/components/studios/*Studio.tsx`.
 - Общи парчета: `AiAssist` (AI бутон + предложения; режим `translate-en` за

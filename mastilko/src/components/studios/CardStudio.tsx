@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { CARD, cardGrid } from "@/lib/print";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, sheetBg, photoFilterCss, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, photoFilterCss, qrSafeColor, accentTextOn, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import { vCard } from "@/lib/vcard";
 import { vizitkaRegisterUrl } from "@/lib/vizitka-import";
@@ -263,7 +263,7 @@ function CardFaceInner({
                 fontSize: fu(2.6),
                 marginTop: u(1.6),
                 fontStyle: "italic",
-                color: theme.accent,
+                color: accentTextOn(theme.accent, theme.bg, theme.fg),
               }}
             >
               „{s.slogan}“
@@ -320,7 +320,7 @@ function CardFaceInner({
               fontSize: fu(2.6),
               marginTop: u(1.4),
               fontStyle: "italic",
-              color: theme.accent,
+              color: accentTextOn(theme.accent, theme.bg, theme.fg),
             }}
           >
             „{s.slogan}“
@@ -372,7 +372,7 @@ function CardFaceInner({
                 fontSize: fu(2.5),
                 marginTop: u(1.4),
                 fontStyle: "italic",
-                color: theme.accent,
+                color: accentTextOn(theme.accent, theme.bg, theme.fg),
               }}
             >
               „{s.slogan}“
@@ -434,7 +434,7 @@ function CardFaceInner({
                 fontSize: fu(2.5),
                 marginTop: u(1.6),
                 fontStyle: "italic",
-                color: theme.accent,
+                color: accentTextOn(theme.accent, theme.bg, theme.fg),
                 textAlign: "right",
               }}
             >

@@ -2,6 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { contrastRatio, contrastGrade } from "@/lib/style";
+
+/** Показва контраста текст/фон на банера и предупреждава под AA (4.5:1). */
+function ContrastHint({ bg, fg }: { bg: string; fg: string }) {
+  const ratio = contrastRatio(bg, fg);
+  if (ratio === null) return null;
+  const grade = contrastGrade(ratio);
+  return (
+    <p className={`text-xs ${grade.ok ? "text-ink-faint" : "font-semibold text-tera-dark"}`}>
+      Контраст текст/фон: {ratio.toFixed(2)}:1 — {grade.label}
+      {!grade.ok && " · под 4.5:1, текстът ще е трудно четим"}
+    </p>
+  );
+}
 
 interface Banner {
   id: string;
@@ -157,6 +171,9 @@ export default function AdminBanners() {
                   <span className="field-label">Текст (цвят)</span>
                   <input type="color" className="h-10 w-full rounded-xl border border-ink/15" value={b.fg} onChange={(e) => patch(b.id, { fg: e.target.value })} />
                 </label>
+                {/* Контраст-гейт: формата позволяваше всякаква двойка цветове,
+                    тоест банер под 4.5:1 (WCAG 1.4.3) можеше да тръгне на живо. */}
+                <ContrastHint bg={b.bg} fg={b.fg} />
                 <label className="block">
                   <span className="field-label">Разположение</span>
                   <select className="field-input" value={b.placement} onChange={(e) => patch(b.id, { placement: e.target.value as Banner["placement"] })}>

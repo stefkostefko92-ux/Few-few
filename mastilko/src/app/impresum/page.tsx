@@ -98,13 +98,13 @@ export default function ImpresumPage() {
             <a className="text-tera-dark underline" href="https://kzp.bg" rel="noopener noreferrer">
               kzp.bg
             </a>
-            . Онлайн решаване на спорове (ОРС) на ЕК:{" "}
+            . Помирителни комисии за извънсъдебно решаване на спорове — при КЗП:{" "}
             <a
               className="text-tera-dark underline"
-              href="https://ec.europa.eu/consumers/odr"
+              href="https://kzp.bg/pomiritelna-komisiya"
               rel="noopener noreferrer"
             >
-              ec.europa.eu/consumers/odr
+              kzp.bg/pomiritelna-komisiya
             </a>
             .
           </p>
