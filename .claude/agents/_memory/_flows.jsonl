@@ -28,3 +28,5 @@
 {"t":"handoff","ts":"2026-09-13T09:05:11.294Z","id":"auto","from":"kodadjiyata","to":"човек","status":"блокер"}
 {"t":"handoff","ts":"2026-09-14T07:42:22.357Z","id":"auto","from":"prodavacha","to":"pravniyat-razbirach","status":"блокер"}
 {"t":"handoff","ts":"2026-09-14T07:44:04.081Z","id":"auto","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-14T07:45:29.828Z","id":"auto","from":"pravniyat-razbirach","to":"vps-adjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-14T07:45:51.455Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
