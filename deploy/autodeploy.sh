@@ -35,7 +35,14 @@ MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 # vizitka (systemd модел, като medqr)
 VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
 VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
-VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:3100/}"
+# Портът се ЧЕТЕ от живия env файл, не се предполага. На споделена машина 3100 може
+# да е зает от друг проект (тук: docker-proxy на ERP) и тогава health check-ът
+# получаваше 200 от ЧУЖДО приложение → деплоят се обявяваше за успешен дори когато
+# vizitka е мъртва, значи клонът за rollback не се изпълняваше никога.
+VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>/dev/null | head -1)}"
+VIZITKA_PORT="${VIZITKA_PORT:-3105}"
+# /healthz връща и ИМЕТО на приложението — само код 200 не доказва кой отговаря.
+VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:${VIZITKA_PORT}/healthz}"
 
 # panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
 # предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
@@ -308,7 +315,7 @@ deploy_vizitka() {
   fi
   systemctl restart "$VIZITKA_SERVICE"
   sleep 2
-  if health "$VIZITKA_HEALTH_URL" "vizitka"; then
+  if health "$VIZITKA_HEALTH_URL" "vizitka" '"app":"vizitka"'; then
     rm -rf "${VIZITKA_DIR}.bak-$TS"
     ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
@@ -1166,10 +1173,20 @@ deploy_adblock() {
   indexnow_ping "${INKEY:-}"
 }
 
+# Проверка за живот. Трети аргумент (по избор) е низ, който ТРЯБВА да се среща в
+# отговора — иначе „200" доказва само, че нещо слуша на този порт, а на споделена
+# машина това може да е съвсем друго приложение (реален случай: ERP на 3100 даваше
+# зелено за vizitka и rollback-ът никога не се задействаше).
 health() {
-  local url="$1" name="$2" i
+  local url="$1" name="$2" expect="${3:-}" i body
   for i in 1 2 3 4 5 6 7 8 9 10; do
-    if curl -fsS -o /dev/null --max-time 5 "$url"; then ok "$name е жив ($url)"; return 0; fi
+    if body="$(curl -fsS --max-time 5 "$url" 2>/dev/null)"; then
+      if [ -z "$expect" ] || printf '%s' "$body" | grep -q "$expect"; then
+        ok "$name е жив ($url)"; return 0
+      fi
+      warn "$name: на $url отговаря ДРУГО приложение (липсва „$expect“) — портът е зает."
+      return 1
+    fi
     sleep 3
   done
   warn "$name НЕ отговаря на $url"; return 1

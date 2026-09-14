@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import './db.js';
+import db from './db.js';
 import { attachUser, seedAdmins } from './auth.js';
 import { baseUrl } from './config.js';
 import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
@@ -121,6 +121,28 @@ app.get('/b/:id/click', (req, res) => {
   if (!target) return res.status(404).render('404', { title: 'Няма такава реклама' });
   res.redirect(302, target);
 });
+// Здравна проверка с ИДЕНТИЧНОСТ. Деплоят дърпаше просто „/" на един порт и
+// приемаше всеки 200 за успех — а на споделена машина този порт може да е зает от
+// съвсем друго приложение, тоест зеленият сигнал не доказваше нищо. Тук отговорът
+// казва кой сме и че базата е жива.
+app.get('/healthz', (req, res) => {
+  let database = 'down';
+  try {
+    db.prepare('SELECT 1').get();
+    database = 'up';
+  } catch {
+    database = 'down';
+  }
+  res.type('application/json');
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(database === 'up' ? 200 : 503).json({
+    app: 'vizitka',
+    ok: database === 'up',
+    db: database,
+    version: assetVer,
+  });
+});
+
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(baseUrl(req))));
 app.get('/sitemap.xml', (req, res) => res.type('application/xml').send(sitemapXml(baseUrl(req))));
 app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(req))));

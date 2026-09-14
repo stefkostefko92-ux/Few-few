@@ -13,7 +13,7 @@ build step (same conventions as `medqr/`). Root rules live in the repo-root
 
 ```bash
 npm install
-npm start                       # http://localhost:3100
+npm start                       # http://localhost:3105
 npm run dev                     # node --watch auto-reload
 
 # Quality gates:
@@ -34,7 +34,7 @@ See `.env.example`.
 ```
 src/app.js           Express app (helmet CSP+nonce, HSTS, no-store за auth страници;
                      /robots.txt /sitemap.xml /privacy /terms) — export
-src/server.js        listen (PORT, default 3100)
+src/server.js        listen (PORT, default 3105)
 src/db.js            SQLite схема (users, sessions, profiles, banners, links) + ALTER миграции
 src/auth.js          сесии (httpOnly cookie, sha256 токен в БД), bcrypt пароли;
                      requireAdmin + seedAdmins (ADMIN_EMAILS)
