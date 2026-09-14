@@ -1129,7 +1129,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 378
+        "lessons": 379
       },
       "evolution": [
         {
@@ -1917,9 +1917,20 @@
           "date": "2026-09-14",
           "event": "v27.1 — учене",
           "detail": "Научи: Gaming/apps/web: `titled = (p: Promise<…>, name) => lazy(() => p.then(…))` в GameView.t… (+6 още)"
+        },
+        {
+          "version": "27.2.0",
+          "date": "2026-09-14",
+          "event": "v27.2 — учене",
+          "detail": "Научи: Отговорът не е завършен без блока „## ПРЕДАВАНЕ“ — `dod-check.mjs` на SubagentStop гейт…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-14",
+          "type": "learning",
+          "summary": "Научи: „Отговорът не е завършен без блока „## ПРЕДАВАНЕ“ — `dod-check.mjs` на SubagentStop гейт…\""
+        },
         {
           "date": "2026-09-14",
           "type": "learning",
