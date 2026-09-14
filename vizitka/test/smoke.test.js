@@ -11,6 +11,9 @@ process.env.ADMIN_EMAILS = 'admin@example.com';
 process.env.MASTILKO_URL = 'https://mastilko-bg.com';
 process.env.PRINT_API_SECRET = 'test-print-secret';
 process.env.INDEXNOW_KEY = 'testindexnowkey1234567890abcdef0';
+// Целият пакет удря от 127.0.0.1 — вдигаме тавана, за да не се самоограничи.
+// Самият лимит се проверява отделно, с нарочно IP (виж теста по-долу).
+process.env.AUTH_RATE_LIMIT = '60';
 
 const { default: app } = await import('../src/app.js');
 const { outbox } = await import('../src/mailer.js');
@@ -108,6 +111,56 @@ await test('редакцията на профила записва даннит
     }),
   });
   assert.equal(res.status, 302);
+});
+
+await test('чужд сайт не може да ни вкара в акаунт (принудителен вход)', async () => {
+  const foreign = await fetch(`${base}/login`, {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: 'https://evil.example' },
+    redirect: 'manual',
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1' }),
+  });
+  assert.equal(foreign.status, 403, 'POST от чужд Origin трябва да се отхвърли');
+  assert.ok(
+    !(foreign.headers.getSetCookie?.() || []).some((c) => /vz_sid=/.test(c)),
+    'не бива да се издава сесия'
+  );
+  // Същата форма от нашия сайт продължава да работи.
+  const own = await fetch(`${base}/login`, {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: base },
+    redirect: 'manual',
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1' }),
+  });
+  assert.equal(own.status, 302);
+});
+
+await test('твърде голямо тяло дава 413, без тялото да влиза в лога', async () => {
+  const many = {};
+  for (let i = 0; i < 200; i += 1) many[`pad${i}`] = '1';
+  const res = await fetch(`${base}/login`, {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: base },
+    redirect: 'manual',
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1', ...many }),
+  });
+  assert.equal(res.status, 413, 'очаква се 413, не 500');
+});
+
+await test('rate limit-ът спира заливане с опити', async () => {
+  // Нарочно IP (app-ът е с trust proxy 1), за да не изчерпим тавана на пакета.
+  const ip = '203.0.113.7';
+  let blocked = 0;
+  for (let i = 0; i < 70; i += 1) {
+    const res = await fetch(`${base}/forgot`, {
+      method: 'POST',
+      headers: { ...FORM_HEADERS, origin: base, 'x-forwarded-for': ip },
+      redirect: 'manual',
+      body: form({ email: `nikoi${i}@example.com` }),
+    });
+    if (res.status === 429) blocked += 1;
+  }
+  assert.ok(blocked > 0, `след тавана трябва да има 429, а нямаше нито един`);
 });
 
 await test('POST без CSRF токен се отхвърля', async () => {

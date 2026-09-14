@@ -12,7 +12,7 @@ import {
   destroySession,
   requireAuth,
 } from '../auth.js';
-import { csrfProtect } from '../csrf.js';
+import { csrfProtect, sameOriginOnly } from '../csrf.js';
 import { uniqueSlug } from '../slug.js';
 import { sendPasswordReset } from '../mailer.js';
 import { baseUrl } from '../config.js';
@@ -24,7 +24,10 @@ const router = Router();
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  // Лимитът е по IP и е споделен между /login, /register, /forgot и /reset.
+  // Конфигурируем е само за да може тестовият пакет (всичко от 127.0.0.1) да не
+  // се самоограничава; в продукция остава 20.
+  limit: Number(process.env.AUTH_RATE_LIMIT) || 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: 'Твърде много опити. Опитай отново след 15 минути.',
@@ -65,7 +68,7 @@ router.get('/register', (req, res) => {
   });
 });
 
-router.post('/register', authLimiter, async (req, res) => {
+router.post('/register', sameOriginOnly, authLimiter, async (req, res) => {
   const name = String(req.body.name || '').trim();
   const email = String(req.body.email || '')
     .trim()
@@ -119,7 +122,7 @@ router.get('/login', (req, res) => {
   res.render('login', { title: 'Вход', error: null, values: {} });
 });
 
-router.post('/login', authLimiter, async (req, res) => {
+router.post('/login', sameOriginOnly, authLimiter, async (req, res) => {
   const email = String(req.body.email || '')
     .trim()
     .toLowerCase();
@@ -145,7 +148,7 @@ router.get('/forgot', (req, res) => {
   res.render('forgot', { title: 'Забравена парола', sent: false, error: null });
 });
 
-router.post('/forgot', authLimiter, async (req, res) => {
+router.post('/forgot', sameOriginOnly, authLimiter, async (req, res) => {
   const email = String(req.body.email || '')
     .trim()
     .toLowerCase();
@@ -188,7 +191,7 @@ router.get('/reset', (req, res) => {
   res.render('reset', { title: 'Нулиране на паролата', token: req.query.token, error: null });
 });
 
-router.post('/reset', authLimiter, async (req, res) => {
+router.post('/reset', sameOriginOnly, authLimiter, async (req, res) => {
   const token = String(req.body.token || '');
   const password = String(req.body.password || '');
   const reset = findReset(token);

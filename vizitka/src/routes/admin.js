@@ -34,12 +34,15 @@ router.get('/admin', requireAdmin, (req, res) => {
   const q = String(req.query.q || '')
     .trim()
     .slice(0, 80);
-  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const like = q ? `%${q}%` : '%';
   const where = 'WHERE p.display_name LIKE @like OR p.slug LIKE @like OR u.email LIKE @like';
   const total = db
     .prepare(`SELECT COUNT(*) AS n FROM profiles p JOIN users u ON u.id = p.user_id ${where}`)
     .get({ like }).n;
+  // Ограничаваме страницата до реално съществуващите: иначе `?page=99999999999999999999`
+  // даваше offset извън безопасните цели числа и SQLite гърмеше с 500.
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(Math.max(1, parseInt(req.query.page, 10) || 1), pages);
   const profiles = db
     .prepare(
       `SELECT p.*, u.email AS owner_email FROM profiles p JOIN users u ON u.id = p.user_id
@@ -54,7 +57,7 @@ router.get('/admin', requireAdmin, (req, res) => {
     page,
     pageSize: PAGE_SIZE,
     total,
-    pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pages,
     base: baseUrl(req),
     saved: req.query.saved === '1',
   });

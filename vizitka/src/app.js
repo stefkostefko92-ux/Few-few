@@ -140,8 +140,22 @@ app.use((req, res) => res.status(404).render('404', { title: 'Страницат
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error(err);
+  // НИКОГА не логваме целия обект на грешката: при грешка от body-parser той носи
+  // полето `body` със суровото тяло на заявката — тоест пароли и лични данни
+  // отиваха в journald при най-обикновено „твърде голямо тяло".
+  const status = Number(err?.status || err?.statusCode) || 500;
+  const label = err?.type || err?.code || err?.name || 'Error';
+  console.error(`[Vizitka] ${req.method} ${req.path} → ${status} ${label}: ${err?.message || ''}`);
+  if (status >= 500 && err?.stack) console.error(err.stack);
   if (res.headersSent) return;
+
+  // Предвидими потребителски грешки: 413/400, не 500.
+  if (err?.type === 'entity.too.large' || err?.type === 'parameters.too.many')
+    return res.status(413).send('Изпратените данни са твърде големи. Върни се и опитай пак.');
+  if (err?.code === 'LIMIT_FILE_SIZE')
+    return res.status(413).send('Файлът е твърде голям. Върни се и качи по-малък.');
+  if (err?.type === 'entity.parse.failed')
+    return res.status(400).send('Неразбираема заявка. Върни се и опитай пак.');
   res.status(500).send('Възникна грешка. Опитай отново.');
 });
 
