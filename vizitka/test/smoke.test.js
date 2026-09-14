@@ -147,6 +147,78 @@ await test('твърде голямо тяло дава 413, без тялото
   assert.equal(res.status, 413, 'очаква се 413, не 500');
 });
 
+await test('невалидна връзка не изтрива останалите редакции по бутоните', async () => {
+  // Потребителят преименува съществуваща връзка И бърка втора — формата трябва да
+  // върне НАПИСАНОТО, а не старите стойности от базата.
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      link_label_0: 'НОВО-ИМЕ',
+      link_url_0: 'https://novo.example.com',
+      link_label_1: 'Лошо',
+      link_url_1: 'javascript:alert(1)',
+    }),
+  });
+  assert.equal(res.status, 400);
+  const html = await res.text();
+  assert.match(html, /http:\/\/ или https:\/\//, 'трябва да обясни какво е сбъркано');
+  assert.match(html, /НОВО-ИМЕ/, 'написаното от потребителя трябва да остане във формата');
+});
+
+await test('качване (unit): форматът се познава по байтове, не по Content-Type', async () => {
+  const { sniffImage, prepareUpload } = await import('../src/images.js');
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+  const jpg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(8)]);
+  const webp = Buffer.concat([
+    Buffer.from('RIFF'),
+    Buffer.alloc(4),
+    Buffer.from('WEBP'),
+    Buffer.alloc(4),
+  ]);
+  assert.equal(sniffImage(png), 'png');
+  assert.equal(sniffImage(jpg), 'jpg');
+  assert.equal(sniffImage(webp), 'webp');
+  // HTML, представен като снимка — точно това минаваше преди.
+  const evil = Buffer.from('<html><script>alert(1)</script></html>');
+  assert.equal(sniffImage(evil), null);
+  assert.equal(prepareUpload(evil), null);
+});
+
+await test('качване (unit): EXIF/GPS се премахва от JPEG', async () => {
+  const { stripMetadata } = await import('../src/images.js');
+  // Минимален JPEG: SOI + APP1 (EXIF с „GPS“) + SOS + данни + EOI.
+  const exifPayload = Buffer.from('Exif\0\0GPSLatitude 42.123 GPSLongitude 23.456');
+  const app1 = Buffer.concat([
+    Buffer.from([0xff, 0xe1]),
+    (() => {
+      const b = Buffer.alloc(2);
+      b.writeUInt16BE(exifPayload.length + 2);
+      return b;
+    })(),
+    exifPayload,
+  ]);
+  const jpeg = Buffer.concat([
+    Buffer.from([0xff, 0xd8]),
+    app1,
+    Buffer.from([0xff, 0xda, 0x00, 0x02]),
+    Buffer.from([0x11, 0x22, 0x33]),
+    Buffer.from([0xff, 0xd9]),
+  ]);
+  assert.ok(jpeg.includes('GPSLatitude'), 'подготвеният файл трябва да носи GPS');
+  const clean = stripMetadata(jpeg, 'jpg');
+  assert.ok(!clean.includes('GPSLatitude'), 'GPS координатите трябва да са премахнати');
+  assert.equal(clean[0], 0xff);
+  assert.equal(clean[1], 0xd8, 'файлът трябва да остане валиден JPEG');
+  assert.ok(clean.includes(Buffer.from([0x11, 0x22, 0x33])), 'самото изображение остава');
+});
+
 await test('rate limit-ът спира заливане с опити', async () => {
   // Нарочно IP (app-ът е с trust proxy 1), за да не изчерпим тавана на пакета.
   const ip = '203.0.113.7';

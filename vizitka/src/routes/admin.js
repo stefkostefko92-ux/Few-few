@@ -13,16 +13,16 @@ import { THEMES } from '../themes.js';
 import { AVATAR_SHAPES, FONTS } from '../personalize.js';
 import { MAX_LINKS, getLinks } from '../links.js';
 import { collectProfileInput, validateProfileInput, saveProfileEdit } from '../profiles.js';
+import { prepareUpload } from '../images.js';
 import { submitUrls } from '../indexnow.js';
 import { notifyWalletUpdate } from '../wallet/index.js';
 
 const router = Router();
 
-const PHOTO_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+// Форматът се определя от байтовете (виж src/images.js), не от клиентския mimetype.
 const photoUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 2 * 1024 * 1024, files: 1 },
-  fileFilter: (req, file, cb) => cb(null, Boolean(PHOTO_EXT[file.mimetype])),
 });
 
 const PAGE_SIZE = 20;
@@ -126,7 +126,9 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
         font: input.font,
         slug: input.slug,
       },
-      { error }
+      // Връщаме ПОДАДЕНИТЕ от потребителя връзки — иначе редакцията по бутоните
+      // тихо изчезваше и формата показваше старите стойности от базата.
+      { error, links: input.parsed.links }
     );
 
   saveProfileEdit(profile.id, input);
@@ -142,10 +144,15 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
 // Смяна на снимката/коричната снимка от админа.
 function adminSetImage(req, res, column) {
   const profile = getProfileById(Number(req.params.id));
-  if (!profile) return res.redirect('/admin/reklami');
-  if (!req.file) return res.redirect(`/admin/profiles/${profile.id}/edit`);
-  const filename = `${crypto.randomBytes(16).toString('hex')}.${PHOTO_EXT[req.file.mimetype]}`;
-  fs.writeFileSync(join(UPLOADS_DIR, filename), req.file.buffer);
+  if (!profile) return res.redirect('/admin');
+  if (!req.file) return renderAdminEdit(req, res.status(400), profile, { error: 'Избери файл.' });
+  const image = prepareUpload(req.file.buffer);
+  if (!image)
+    return renderAdminEdit(req, res.status(400), profile, {
+      error: 'Файлът не е разпознат като снимка. Приемаме JPG, PNG или WebP до 2 MB.',
+    });
+  const filename = `${crypto.randomBytes(16).toString('hex')}.${image.ext}`;
+  fs.writeFileSync(join(UPLOADS_DIR, filename), image.buffer);
   deleteImage(profile[column]);
   db.prepare(`UPDATE profiles SET ${column} = ?, updated_at = datetime('now') WHERE id = ?`).run(
     filename,
@@ -155,7 +162,7 @@ function adminSetImage(req, res, column) {
 }
 function adminClearImage(req, res, column) {
   const profile = getProfileById(Number(req.params.id));
-  if (!profile) return res.redirect('/admin/reklami');
+  if (!profile) return res.redirect('/admin');
   deleteImage(profile[column]);
   db.prepare(`UPDATE profiles SET ${column} = '', updated_at = datetime('now') WHERE id = ?`).run(
     profile.id
