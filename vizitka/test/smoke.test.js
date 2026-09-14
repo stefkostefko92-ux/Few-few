@@ -14,6 +14,7 @@ process.env.INDEXNOW_KEY = 'testindexnowkey1234567890abcdef0';
 
 const { default: app } = await import('../src/app.js');
 const { outbox } = await import('../src/mailer.js');
+const { default: db } = await import('../src/db.js');
 
 const server = app.listen(0);
 const port = server.address().port;
@@ -338,6 +339,85 @@ await test('vCard файлът съдържа контактите', async () =>
   assert.match(vcf, /END:VCARD/);
 });
 
+await test('vCard: гол CR не може да инжектира втори контакт', async () => {
+  // Полето се подава с директен POST (браузърът би пратил CRLF) — точно така
+  // се получаваше втори, чужд контакт в указателя на посетителя.
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      bio: 'Био\rEND:VCARD\rBEGIN:VCARD\rFN:Банка ОББ\rTEL:0888999888',
+    }),
+  });
+  assert.equal(res.status, 302);
+  const vcf = await (await request('/p/ivan-testov/vizitka.vcf')).text();
+  // Броим РЕАЛНИ редове (CRLF), не подниза: екранираното „BEGIN:VCARD" остава
+  // безобидно вътре в стойността на NOTE и парсерът вижда един контакт.
+  const lines = vcf.split('\r\n');
+  assert.equal(
+    lines.filter((l) => l === 'BEGIN:VCARD').length,
+    1,
+    'трябва да има точно един контакт'
+  );
+  assert.equal(lines.filter((l) => /^TEL:0888999888/.test(l)).length, 0, 'нула инжектирани полета');
+  assert.doesNotMatch(vcf, /\r(?!\n)/, 'не бива да остава гол CR в стойност');
+});
+
+await test('печатният токен не надживява скриването на визитката', async () => {
+  const tokenUrl = (await (await request('/p/ivan-testov/print')).text()).match(
+    /token=([A-Za-z0-9_\-.]+)/
+  )?.[1];
+  assert.ok(tokenUrl, 'трябва да получим печатен токен');
+  assert.equal(
+    (await request(`/api/print/${tokenUrl}`)).status,
+    200,
+    'токенът работи, докато е публична'
+  );
+
+  // Собственикът скрива визитката — вече издаденият токен спира да връща данни.
+  await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      theme: 'sunset',
+    }), // без is_public → скрита
+  });
+  assert.equal(
+    (await request(`/api/print/${tokenUrl}`)).status,
+    404,
+    'скрита → 404 въпреки токена'
+  );
+
+  // Връщаме я публична за следващите тестове.
+  await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      headline: 'Електротехник',
+      phone: '+359 888 123 456',
+      contact_email: 'ivan@example.com',
+      website: 'https://example.com',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      bio: 'Тестово описание.',
+    }),
+  });
+});
+
 await test('скритата визитка връща 404 за чужди', async () => {
   await request('/profile', {
     method: 'POST',
@@ -424,19 +504,41 @@ await test('нормален потребител няма достъп до /ad
   assert.equal(res.status, 403);
 });
 
+await test('регистрация с резервиран админ имейл се отказва', async () => {
+  jar.clear();
+  const res = await request('/register', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      name: 'Самозванец',
+      email: 'admin@example.com', // = ADMIN_EMAILS
+      password: 'parolata123',
+      type: 'personal',
+    }),
+  });
+  assert.equal(res.status, 400, 'админският имейл не бива да се регистрира от сайта');
+  assert.equal(
+    db.prepare('SELECT COUNT(*) AS n FROM users WHERE email = ?').get('admin@example.com').n,
+    0,
+    'не трябва да е създаден акаунт'
+  );
+});
+
 let bannerId = 0;
 await test('админ отваря панела и създава банер', async () => {
   jar.clear();
+  // Админът се провизионира от сървъра (`npm run admin:add`), не от сайта.
   await request('/register', {
     method: 'POST',
     headers: FORM_HEADERS,
     body: form({
-      name: 'Админ',
-      email: 'admin@example.com',
+      name: 'Шеф Админов',
+      email: 'shef@example.com',
       password: 'adminparola1',
       type: 'personal',
     }),
   });
+  db.prepare('UPDATE users SET is_admin = 1 WHERE email = ?').run('shef@example.com');
   const panel = await request('/admin/reklami');
   assert.equal(panel.status, 200, 'админът трябва да вижда панела');
   const adminCsrf = (await panel.text()).match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
@@ -494,7 +596,7 @@ await test('началната показва максимум 2 банера', 
   await request('/login', {
     method: 'POST',
     headers: FORM_HEADERS,
-    body: form({ email: 'admin@example.com', password: 'adminparola1' }),
+    body: form({ email: 'shef@example.com', password: 'adminparola1' }),
   });
   const adminCsrf =
     (await (await request('/admin/reklami')).text()).match(
@@ -520,7 +622,7 @@ await test('админ вижда всички визитки, скрива и �
   await request('/login', {
     method: 'POST',
     headers: FORM_HEADERS,
-    body: form({ email: 'admin@example.com', password: 'adminparola1' }),
+    body: form({ email: 'shef@example.com', password: 'adminparola1' }),
   });
   const listRes = await request('/admin');
   assert.equal(listRes.status, 200, 'админът трябва да вижда списъка с визитки');

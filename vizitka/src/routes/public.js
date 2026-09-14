@@ -103,6 +103,9 @@ router.get('/api/print/:token', (req, res) => {
   if (!claim) return res.status(401).json({ error: 'Невалиден или изтекъл токен.' });
   const profile = db.prepare('SELECT * FROM profiles WHERE slug = ?').get(claim.slug);
   if (!profile) return res.status(404).json({ error: 'Няма такава визитка.' });
+  // Токенът оторизира, но НЕ надживява скриването: скрие ли собственикът визитката,
+  // вече издаден токен спира да връща данни (иначе изтичаха до 30 мин след това).
+  if (!profile.is_public) return res.status(404).json({ error: 'Няма такава визитка.' });
   res.json(buildPrintPayload(profile, baseUrl(req)));
 });
 

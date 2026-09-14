@@ -6,6 +6,8 @@ import db from '../db.js';
 import {
   hashPassword,
   verifyPassword,
+  verifyDummyPassword,
+  isReservedAdminEmail,
   createSession,
   destroySession,
   requireAuth,
@@ -63,7 +65,7 @@ router.get('/register', (req, res) => {
   });
 });
 
-router.post('/register', authLimiter, (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const name = String(req.body.name || '').trim();
   const email = String(req.body.email || '')
     .trim()
@@ -85,10 +87,14 @@ router.post('/register', authLimiter, (req, res) => {
     return fail('Паролата трябва да е поне 8 знака.');
   if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(email))
     return fail('Вече има акаунт с този имейл. Опитай да влезеш.');
+  // Админските имейли не се регистрират от сайта — иначе всеки, който познае
+  // адреса, си взема правата. Провизионират се от сървъра (`npm run admin:add`).
+  if (isReservedAdminEmail(email))
+    return fail('Този имейл не може да се регистрира оттук. Свържи се с администратор.');
 
   const info = db
     .prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)')
-    .run(email, hashPassword(password));
+    .run(email, await hashPassword(password));
   // Privacy-by-default: профилът тръгва СКРИТ и без предварително попълнен имейл —
   // потребителят сам решава какво да публикува от таблото (чл. 25(2) ОРЗД).
   db.prepare(
@@ -113,13 +119,18 @@ router.get('/login', (req, res) => {
   res.render('login', { title: 'Вход', error: null, values: {} });
 });
 
-router.post('/login', authLimiter, (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const email = String(req.body.email || '')
     .trim()
     .toLowerCase();
   const password = String(req.body.password || '');
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-  if (!user || !verifyPassword(password, user.password_hash)) {
+  // Няма ли такъв потребител, пак плащаме цената на bcrypt срещу фиктивен хеш —
+  // иначе времето на отговора издава кои имейли са регистрирани.
+  const okPassword = user
+    ? await verifyPassword(password, user.password_hash)
+    : await verifyDummyPassword(password);
+  if (!user || !okPassword) {
     return res
       .status(401)
       .render('login', { title: 'Вход', error: 'Грешен имейл или парола.', values: { email } });
@@ -177,7 +188,7 @@ router.get('/reset', (req, res) => {
   res.render('reset', { title: 'Нулиране на паролата', token: req.query.token, error: null });
 });
 
-router.post('/reset', authLimiter, (req, res) => {
+router.post('/reset', authLimiter, async (req, res) => {
   const token = String(req.body.token || '');
   const password = String(req.body.password || '');
   const reset = findReset(token);
@@ -187,11 +198,9 @@ router.post('/reset', authLimiter, (req, res) => {
   if (password.length < 8 || password.length > 200)
     return fail('Паролата трябва да е поне 8 знака.');
 
+  const newHash = await hashPassword(password);
   const tx = db.transaction(() => {
-    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
-      hashPassword(password),
-      reset.user_id
-    );
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(newHash, reset.user_id);
     db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(reset.id);
     // Инвалидираме всички сесии на потребителя — новата парола е задължителна.
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(reset.user_id);
@@ -206,18 +215,18 @@ router.post('/reset', authLimiter, (req, res) => {
 });
 
 // Смяна на парола от таблото (изисква текущата парола).
-router.post('/settings/password', requireAuth, csrfProtect, authLimiter, (req, res) => {
+router.post('/settings/password', requireAuth, csrfProtect, authLimiter, async (req, res) => {
   const current = String(req.body.current_password || '');
   const next = String(req.body.new_password || '');
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-  if (!verifyPassword(current, user.password_hash)) {
+  if (!(await verifyPassword(current, user.password_hash))) {
     return res.status(400).send('Грешна текуща парола. Върни се и опитай пак.');
   }
   if (next.length < 8 || next.length > 200) {
     return res.status(400).send('Новата парола трябва да е поне 8 знака. Върни се и опитай пак.');
   }
   db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
-    hashPassword(next),
+    await hashPassword(next),
     req.user.id
   );
   // Инвалидираме всички други сесии — само текущата остава.
