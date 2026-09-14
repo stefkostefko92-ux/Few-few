@@ -60,23 +60,54 @@ router.get('/admin', requireAdmin, (req, res) => {
     pages,
     base: baseUrl(req),
     saved: req.query.saved === '1',
+    denied: req.query.denied === '1',
   });
 });
 
-// Скрий/покажи визитка (админ превключвател на видимостта).
+// Записва админско действие върху чужда визитка (отчетност, чл. 5(2) ОРЗД).
+const logAdmin = (req, profileId, action, detail = '') =>
+  db
+    .prepare(
+      `INSERT INTO admin_audit (admin_user_id, admin_email, profile_id, action, detail)
+       VALUES (?, ?, ?, ?, ?)`
+    )
+    .run(req.user.id, req.user.email, profileId, action, detail);
+
+// Скрий/покажи визитка.
+//
+// Модерацията е ЕДНОПОСОЧНА: админът може да скрие и да върне СОБСТВЕНОТО си
+// скриване, но не може да публикува визитка, която потребителят сам е скрил.
+// Иначе „модерация" означаваше и право да изкараш наяве лични данни, които
+// собственикът съзнателно е задържал — и то с автоматично подаване към Bing.
 router.post('/admin/profiles/:id/visibility', requireAdmin, csrfProtect, (req, res) => {
   const profile = getProfileById(Number(req.params.id));
-  if (!profile) return res.redirect('/admin/reklami');
-  db.prepare(
-    "UPDATE profiles SET is_public = 1 - is_public, updated_at = datetime('now') WHERE id = ?"
-  ).run(profile.id);
+  if (!profile) return res.redirect('/admin');
+  const backTo = `/admin${req.query.q ? `?q=${encodeURIComponent(req.query.q)}` : ''}`;
+
+  if (profile.is_public) {
+    db.prepare(
+      `UPDATE profiles SET is_public = 0, hidden_by_admin = 1, updated_at = datetime('now')
+       WHERE id = ?`
+    ).run(profile.id);
+    logAdmin(req, profile.id, 'hide');
+  } else if (profile.hidden_by_admin) {
+    db.prepare(
+      `UPDATE profiles SET is_public = 1, hidden_by_admin = 0, updated_at = datetime('now')
+       WHERE id = ?`
+    ).run(profile.id);
+    logAdmin(req, profile.id, 'unhide');
+  } else {
+    // Скрита е по избор на потребителя — не я публикуваме.
+    return res.redirect(`${backTo}${backTo.includes('?') ? '&' : '?'}denied=1`);
+  }
+
   const updated = getProfileById(profile.id);
   if (updated.is_public) {
     const base = baseUrl(req);
     submitUrls(base, [`${base}/p/${updated.slug}`]);
   }
   notifyWalletUpdate(updated, baseUrl(req));
-  res.redirect(`/admin${req.query.q ? `?q=${encodeURIComponent(req.query.q)}` : ''}`);
+  res.redirect(backTo);
 });
 
 const renderAdminEdit = (req, res, profile, extra = {}) =>
@@ -131,7 +162,16 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
       { error, links: input.parsed.links }
     );
 
+  // Същото правило като при бутона за видимост: админът не публикува визитка,
+  // която потребителят сам е скрил.
+  if (input.isPublic && !profile.is_public && !profile.hidden_by_admin)
+    return renderAdminEdit(req, res.status(400), profile, {
+      error:
+        'Тази визитка е скрита по избор на потребителя — не можеш да я публикуваш от админ панела.',
+    });
+
   saveProfileEdit(profile.id, input);
+  logAdmin(req, profile.id, 'edit', `slug=${input.slug}`);
   const updated = getProfileById(profile.id);
   if (updated.is_public) {
     const base = baseUrl(req);
@@ -158,6 +198,7 @@ function adminSetImage(req, res, column) {
     filename,
     profile.id
   );
+  logAdmin(req, profile.id, column);
   res.redirect(`/admin/profiles/${profile.id}/edit?saved=1`);
 }
 function adminClearImage(req, res, column) {
@@ -167,6 +208,7 @@ function adminClearImage(req, res, column) {
   db.prepare(`UPDATE profiles SET ${column} = '', updated_at = datetime('now') WHERE id = ?`).run(
     profile.id
   );
+  logAdmin(req, profile.id, `${column}:delete`);
   res.redirect(`/admin/profiles/${profile.id}/edit?saved=1`);
 }
 

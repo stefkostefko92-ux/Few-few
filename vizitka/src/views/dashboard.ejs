@@ -4,6 +4,12 @@
   <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
   <% if (passwordChanged) { %><p class="alert alert-ok">Паролата е сменена. Останалите ти сесии са прекратени.</p><% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <% if (profile.hidden_by_admin) { %>
+    <p class="alert alert-warn" role="status">
+      Визитката е <strong>скрита от администратор</strong>. Можеш да я редактираш, но
+      публикуването е спряно. Пиши ни, ако смяташ, че е грешка.
+    </p>
+  <% } %>
 
   <div class="dash-grid">
     <div class="dash-side">

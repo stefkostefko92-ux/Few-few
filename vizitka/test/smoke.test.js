@@ -755,32 +755,47 @@ await test('админ вижда всички визитки, скрива и �
   assert.match(list, /Визитки/);
   assert.match(list, /ivan@example\.com/, 'списъкът трябва да показва и чужди визитки');
 
-  // Намери визитката на друг потребител (Иван) чрез търсене.
   const found = await (await request('/admin?q=' + encodeURIComponent('ivan@example.com'))).text();
   const pid = Number(found.match(/\/admin\/profiles\/(\d+)\/edit/)?.[1]);
   assert.ok(pid > 0, 'трябва да намерим id на чужда визитка');
-  const csrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const adminCsrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
 
-  // Скрий и после покажи (два превключвателя на видимостта).
-  const hide = await request(`/admin/profiles/${pid}/visibility`, {
+  // Визитката е скрита ПО ИЗБОР НА ПОТРЕБИТЕЛЯ от по-ранен тест → админът НЕ може
+  // да я публикува (модерацията е еднопосочна, чл. 25(2) ОРЗД).
+  const isPublicNow = db.prepare('SELECT is_public FROM profiles WHERE id = ?').get(pid).is_public;
+  assert.equal(isPublicNow, 0, 'подготовка: визитката е скрита от собственика');
+  const denied = await request(`/admin/profiles/${pid}/visibility`, {
     method: 'POST',
     headers: FORM_HEADERS,
-    body: form({ _csrf: csrf }),
+    body: form({ _csrf: adminCsrf }),
   });
-  assert.equal(hide.status, 302, 'скриването трябва да пренасочи');
-  const show = await request(`/admin/profiles/${pid}/visibility`, {
-    method: 'POST',
-    headers: FORM_HEADERS,
-    body: form({ _csrf: csrf }),
-  });
-  assert.equal(show.status, 302);
+  assert.equal(denied.status, 302);
+  assert.equal(
+    db.prepare('SELECT is_public FROM profiles WHERE id = ?').get(pid).is_public,
+    0,
+    'скритата от потребителя визитка НЕ бива да се публикува от админа'
+  );
 
-  // Редактирай директно — смени длъжността.
+  // Същото правило и през формата за редакция.
   const editForm = await (await request(`/admin/profiles/${pid}/edit`)).text();
   const editCsrf = editForm.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
   const slug = editForm.match(/name="slug"[^>]*value="([^"]+)"/)?.[1] || '';
   const name = editForm.match(/name="display_name"[^>]*value="([^"]+)"/)?.[1] || 'Иван';
-  assert.ok(slug, 'формата за редакция трябва да съдържа слъг');
+  const tryPublish = await request(`/admin/profiles/${pid}`, {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: editCsrf,
+      display_name: name,
+      slug,
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  assert.equal(tryPublish.status, 400, 'публикуване на чужда скрита визитка се отказва');
+
+  // Редакция БЕЗ публикуване работи и се записва в одитната следа.
   const save = await request(`/admin/profiles/${pid}`, {
     method: 'POST',
     headers: FORM_HEADERS,
@@ -790,13 +805,107 @@ await test('админ вижда всички визитки, скрива и �
       slug,
       headline: 'Редактирано от админ',
       type: 'personal',
-      is_public: '1',
       theme: 'blue',
     }),
   });
   assert.equal(save.status, 302, 'записът от админа трябва да пренасочи');
   const after = await (await request(`/admin/profiles/${pid}/edit`)).text();
   assert.match(after, /Редактирано от админ/, 'промяната на админа трябва да е записана');
+
+  const audit = db
+    .prepare('SELECT * FROM admin_audit WHERE profile_id = ? ORDER BY id DESC')
+    .all(pid);
+  assert.ok(audit.length > 0, 'админското действие трябва да е в одитната следа');
+  assert.equal(audit[0].action, 'edit');
+  assert.equal(audit[0].admin_email, 'shef@example.com');
+});
+
+await test('админ скрива публична визитка и може да върне СВОЕТО скриване', async () => {
+  // Отделен потребител с ПУБЛИЧНА визитка, за да не зависим от реда на тестовете.
+  const own = new Map();
+  const asOwner = async (path, options = {}) => {
+    const headers = { ...(options.headers || {}) };
+    if (own.size) headers.cookie = [...own.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
+    const res = await fetch(base + path, { ...options, headers, redirect: 'manual' });
+    for (const raw of res.headers.getSetCookie?.() || []) {
+      const [pair] = raw.split(';');
+      const [n, v] = pair.split('=');
+      if (v) own.set(n.trim(), v.trim());
+    }
+    return res;
+  };
+  await asOwner('/register', {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: base },
+    body: form({
+      name: 'Модер Тестов',
+      email: 'moder@example.com',
+      password: 'parola12345',
+      type: 'personal',
+    }),
+  });
+  const ownCsrf = (await (await asOwner('/dashboard')).text()).match(
+    /name="_csrf" value="([a-f0-9]+)"/
+  )?.[1];
+  await asOwner('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: ownCsrf,
+      display_name: 'Модер Тестов',
+      slug: 'moder-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  const pid = db.prepare("SELECT id FROM profiles WHERE slug = 'moder-testov'").get().id;
+
+  const found = await (await request('/admin?q=' + encodeURIComponent('moder@example.com'))).text();
+  const adminCsrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const toggle = () =>
+    request(`/admin/profiles/${pid}/visibility`, {
+      method: 'POST',
+      headers: FORM_HEADERS,
+      body: form({ _csrf: adminCsrf }),
+    });
+
+  assert.equal((await toggle()).status, 302);
+  let row = db.prepare('SELECT * FROM profiles WHERE id = ?').get(pid);
+  assert.equal(row.is_public, 0, 'админът може да скрие публична визитка');
+  assert.equal(row.hidden_by_admin, 1, 'скриването е отбелязано като админско');
+
+  // Собственикът НЕ може да я върне сам.
+  const selfPublish = await asOwner('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: ownCsrf,
+      display_name: 'Модер Тестов',
+      slug: 'moder-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  assert.equal(selfPublish.status, 400);
+  assert.equal(
+    db.prepare('SELECT is_public FROM profiles WHERE id = ?').get(pid).is_public,
+    0,
+    'потребителят не бива да заобикаля админското скриване'
+  );
+
+  // Админът връща своето скриване.
+  assert.equal((await toggle()).status, 302);
+  row = db.prepare('SELECT * FROM profiles WHERE id = ?').get(pid);
+  assert.equal(row.is_public, 1);
+  assert.equal(row.hidden_by_admin, 0);
+
+  const actions = db
+    .prepare('SELECT action FROM admin_audit WHERE profile_id = ? ORDER BY id')
+    .all(pid)
+    .map((r) => r.action);
+  assert.deepEqual(actions, ['hide', 'unhide'], 'и двете действия са в одитната следа');
 });
 
 await test('забравена парола: имейл → нулиране → вход с новата', async () => {

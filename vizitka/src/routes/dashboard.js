@@ -78,6 +78,19 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
       { error, links: input.parsed.links }
     );
 
+  // Скрита от администратор (модерация) — собственикът не може да я върне сам,
+  // иначе „скрий" щеше да е само предложение. Останалите промени се записват.
+  if (profile.hidden_by_admin && input.isPublic) {
+    input.isPublic = 0;
+    saveProfileEdit(profile.id, input);
+    return renderDashboard(req, res.status(400), getProfile(req.user.id), {
+      error:
+        'Визитката е скрита от администратор и не може да се публикува оттук. ' +
+        'Останалите промени са записани. Пиши ни, ако смяташ, че е грешка.',
+      links: input.parsed.links,
+    });
+  }
+
   saveProfileEdit(profile.id, input);
 
   // Уведоми търсачките (Bing и др.) за новата/променена публична визитка.
