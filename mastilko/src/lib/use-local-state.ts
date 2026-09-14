@@ -26,13 +26,39 @@ export function useLocalState<T extends object>(
 
     const shared = takeSharedState<unknown>();
     if (shared !== null) {
+      // Споделеният линк НЕ бива да трие тихо запазената работа: досега се
+      // прилагаше безусловно и вторият effect записваше върху същия ключ →
+      // час писане в CV изчезваше, щом отвориш чужд линк (без undo и без
+      // сървърен бекъп). Затова: пазим копие и питаме, преди да заменим.
+      let existing: string | null = null;
       try {
-        setState({ ...initialRef.current, ...clean(shared) });
+        existing = localStorage.getItem(key);
       } catch {
-        // невалиден линк → остани на подразбиранията, не срива
+        /* забранено хранилище → няма какво да губим */
       }
-      loaded.current = true;
-      return;
+      let apply = true;
+      if (existing) {
+        try {
+          localStorage.setItem(`${key}-preshare`, existing);
+        } catch {
+          /* пълно хранилище → продължаваме, но без резервно копие */
+        }
+        apply = window.confirm(
+          "Този линк съдържа споделен дизайн.\n\n" +
+            "„ОК“ — зареждам споделения (твоят проект се пази като резервно копие).\n" +
+            "„Отказ“ — оставам на твоя проект.",
+        );
+      }
+      if (apply) {
+        try {
+          setState({ ...initialRef.current, ...clean(shared) });
+        } catch {
+          // невалиден линк → остани на подразбиранията, не срива
+        }
+        loaded.current = true;
+        return;
+      }
+      // отказал → зареждаме неговия запис както обикновено
     }
     try {
       const raw = localStorage.getItem(key);

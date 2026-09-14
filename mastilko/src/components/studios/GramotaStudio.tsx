@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
+import { MAX_SHEETS } from "@/lib/print";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -208,7 +209,12 @@ export default function GramotaStudio() {
   const theme = resolveTheme(s);
   const set = (patch: Partial<GramotaState>) => setS({ ...s, ...patch });
   const verifySrc = useQrDataUrl(s.verifyQr && s.verifyCode.trim() ? s.verifyCode.trim() : "");
-  const names = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
+  // Всяко име = ЦЯЛ А4 лист. Без таван 4000 знака серия даваха ~2000 листа,
+  // всеки със свой ResizeObserver и украса → браузърът замръзва. Рендираме
+  // най-много MAX_SHEETS и казваме колко са отрязани.
+  const allNames = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
+  const names = allNames.slice(0, MAX_SHEETS);
+  const trimmed = allNames.length - names.length;
 
   return (
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -312,7 +318,8 @@ export default function GramotaStudio() {
 
       <div className="space-y-4">
         <PrintBar summary={names.length > 0
-          ? `Серия: ${names.length} грамоти (по една на лист А4)`
+          ? `Серия: ${names.length} грамоти (по една на лист А4)` +
+            (trimmed > 0 ? ` — показани са първите ${MAX_SHEETS}; още ${trimmed} не се печатат, раздели списъка.` : "")
           : "Грамота на хоризонтален лист А4"} />
         {names.length > 0 ? (
           names.map((name, i) => (

@@ -71,7 +71,13 @@ export default function ImageUpload({
           }}
         />
       </div>
-      {error && <p className="mt-1 text-xs font-semibold text-tera-dark">{error}</p>}
+      {/* role="alert": грешката се появява без промяна на фокуса → екранният
+          четец трябва да я обяви (WCAG 2.1 SC 4.1.3 Status Messages). */}
+      {error && (
+        <p role="alert" className="mt-1 text-xs font-semibold text-tera-dark">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -52,15 +52,26 @@ nginx -t && systemctl reload nginx
 #    - SESSION_SECRET: за подписване на админ сесията (base64, без „$“).
 cat > /opt/mastilko/.env <<'EOF'
 GEMINI_API_KEY=постави-ключа-тук
-GEMINI_MODEL=gemini-2.5-flash
+# „…-latest" alias — фиксираните версии (gemini-2.5-flash) Google спира за нови
+# проекти с 404 и AI-ът мълчи с 502. Виж src/app/api/ai/route.ts.
+GEMINI_MODEL=gemini-flash-latest
 SESSION_SECRET=дълъг-случаен-низ-openssl-rand-base64-48
 EOF
 chmod 600 /opt/mastilko/.env && chown mastilko:mastilko /opt/mastilko/.env
 
-# 5) Създай админ за панела на банерите (bcrypt хеш → data/admins.json).
-#    Пусни от папката на приложението, като насочиш към data/ на сървъра:
+# 4б) Срокът на логовете. Политиката за поверителност обещава изтриване „до
+#     30 дни" — закрепи го, иначе обявеният срок не е гарантиран от нищо:
+mkdir -p /etc/systemd/journald.conf.d
+printf '[Journal]\nMaxRetentionSec=30day\n' > /etc/systemd/journald.conf.d/retention.conf
+systemctl restart systemd-journald
+#     (Nginx access логът се върти от /etc/logrotate.d/nginx — увери се, че
+#      `rotate` × интервалът не надхвърля 30 дни.)
+
+# 5) Създай админ за панела на банерите (bcrypt хеш → data/admins.json, mode 600).
+#    Скриптът ПИТА за паролата — умишлено не е аргумент на командния ред (там
+#    влиза в историята на шела и се вижда в `ps`):
 sudo -u mastilko env MASTILKO_DATA_DIR=/opt/mastilko/data \
-  node /opt/mastilko/scripts/hash-admin.mjs stefan МОЯТА-ПАРОЛА
+  node /opt/mastilko/scripts/hash-admin.mjs stefan
 
 systemctl restart mastilko
 ```

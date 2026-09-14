@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { type WarmTheme } from "@/lib/themes";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, titleFx, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { MAX_SHEETS } from "@/lib/print";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
@@ -108,7 +109,11 @@ export default function PokanaStudio() {
   const set = (patch: Partial<PokanaState>) => setS({ ...s, ...patch });
   const mm = (v: number) => `${v}mm`;
   const px = (v: number) => `${v * 3.1}px`;
-  const names = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
+  // Поканите са 2 на лист → таванът е в ЛИСТОВЕ (виж MAX_SHEETS в print.ts),
+  // за да не рендира дълъг поставен списък стотици листове наведнъж.
+  const allNames = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
+  const names = allNames.slice(0, MAX_SHEETS * 2);
+  const trimmed = allNames.length - names.length;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
@@ -189,7 +194,8 @@ export default function PokanaStudio() {
           </div>
         </div>
         <PrintBar summary={names.length > 0
-          ? `Серия: ${names.length} покани (2 на лист А4)`
+          ? `Серия: ${names.length} покани (2 на лист А4)` +
+            (trimmed > 0 ? ` — показани са първите ${MAX_SHEETS * 2}; още ${trimmed} не се печатат, раздели списъка.` : "")
           : `${s.copies} покани на лист А4`} />
         {names.length > 0 ? (
           chunkPairs(names).map((pair, si) => (

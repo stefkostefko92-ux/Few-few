@@ -69,8 +69,11 @@ function parseGuest(line: string, fallback: BadgeState): Guest {
   const [n, r, c] = line.split("|").map((x) => x.trim());
   return {
     name: n || fallback.name,
-    role: r ?? fallback.role,
-    company: c ?? fallback.company,
+    // Ролята и фирмата са ПО ИЗБОР след „|“ — ред само с име трябва да даде
+    // празни полета, не демо стойностите („Лектор“ / „Мечта ООД“). Полетата са
+    // `disabled`, докато има серия, тоест потребителят не можеше да ги изчисти.
+    role: r || "",
+    company: c || "",
   };
 }
 
