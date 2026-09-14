@@ -30,7 +30,7 @@
           <% if (p.photo) { %>
             <img class="admin-avatar" src="/photo/<%= p.photo %>" alt="" width="48" height="48">
           <% } else { %>
-            <span class="admin-avatar admin-avatar-empty" aria-hidden="true"><%= p.display_name.slice(0,1).toUpperCase() %></span>
+            <span class="admin-avatar admin-avatar-empty" aria-hidden="true"><%= [...p.display_name][0].toUpperCase() %></span>
           <% } %>
           <div class="admin-profile-info">
             <strong><%= p.display_name %></strong>

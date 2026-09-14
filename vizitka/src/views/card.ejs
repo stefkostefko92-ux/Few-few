@@ -12,7 +12,7 @@
         <% if (profile.photo) { %>
           <img class="avatar avatar-big shape-<%= profile.avatar_shape %>" src="/photo/<%= profile.photo %>" alt="Снимка на <%= profile.display_name %>" width="140" height="140">
         <% } else { %>
-          <div class="avatar avatar-big avatar-empty shape-<%= profile.avatar_shape %>" aria-hidden="true"><%= profile.display_name.slice(0, 1).toUpperCase() %></div>
+          <div class="avatar avatar-big avatar-empty shape-<%= profile.avatar_shape %>" aria-hidden="true"><%= [...profile.display_name][0].toUpperCase() %></div>
         <% } %>
         <h1><%= profile.display_name %></h1>
         <% if (profile.headline) { %><p class="headline"><%= profile.headline %></p><% } %>

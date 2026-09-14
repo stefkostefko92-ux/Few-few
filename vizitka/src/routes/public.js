@@ -1,5 +1,6 @@
 // Публична визитка: /p/<slug> + QR код, vCard и снимки.
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import QRCode from 'qrcode';
 import fs from 'node:fs';
 import { join } from 'node:path';
@@ -14,6 +15,17 @@ import { walletLinks } from '../wallet/index.js';
 
 const router = Router();
 
+// QR и vCard се генерират наново при всяка заявка (PNG ~25 ms, vCard чете снимката
+// от диска). Без таван един цикъл по /qr.png е едновременно CPU товар и натиск
+// върху базата. Страницата на визитката нарочно НЕ е лимитирана толкова строго.
+const heavyLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Твърде много заявки. Опитай пак след минута.',
+});
+
 // Публичен профил или собственикът гледа своя (преглед и при скрита визитка).
 function findVisibleProfile(req, slug) {
   const profile = db.prepare('SELECT * FROM profiles WHERE slug = ?').get(slug);
@@ -27,9 +39,19 @@ router.get('/p/:slug', (req, res) => {
   if (!profile) return res.status(404).render('404', { title: 'Няма такава визитка' });
   const isOwner = profile.user_id === req.user?.id;
   const publicUrl = `${baseUrl(req)}/p/${profile.slug}`;
-  // Броим само чуждите преглеждания на публична визитка.
-  if (!isOwner && profile.is_public) {
+  // Броим само чуждите преглеждания на публична визитка — и то веднъж на посетител
+  // за 12 часа. Без това всеки refresh (дори HEAD) надуваше брояча и статистиката
+  // на собственика ставаше безсмислена.
+  const seenCookie = `vzv${profile.id}`;
+  if (!isOwner && profile.is_public && !req.cookies?.[seenCookie]) {
     db.prepare('UPDATE profiles SET views = views + 1 WHERE id = ?').run(profile.id);
+    res.cookie(seenCookie, '1', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 12 * 60 * 60 * 1000,
+      path: `/p/${profile.slug}`,
+    });
   }
   const description = [profile.headline, profile.company, profile.phone]
     .filter(Boolean)
@@ -60,7 +82,7 @@ router.get('/p/:slug', (req, res) => {
   });
 });
 
-router.get('/p/:slug/qr.png', async (req, res) => {
+router.get('/p/:slug/qr.png', heavyLimiter, async (req, res) => {
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).end();
   const png = await QRCode.toBuffer(`${baseUrl(req)}/p/${profile.slug}`, {
@@ -71,6 +93,9 @@ router.get('/p/:slug/qr.png', async (req, res) => {
     color: { dark: '#111827', light: '#ffffff' },
   });
   res.type('png');
+  // QR кодът за даден слъг е константен — няма смисъл да се преизчислява при всяко
+  // сканиране. `private`, защото скритата визитка не бива да се кешира от прокси.
+  res.setHeader('Cache-Control', 'private, max-age=86400');
   res.setHeader('Content-Disposition', `inline; filename="vizitka-${profile.slug}-qr.png"`);
   res.send(png);
 });
@@ -109,7 +134,7 @@ router.get('/api/print/:token', (req, res) => {
   res.json(buildPrintPayload(profile, baseUrl(req)));
 });
 
-router.get('/p/:slug/vizitka.vcf', (req, res) => {
+router.get('/p/:slug/vizitka.vcf', heavyLimiter, (req, res) => {
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).end();
   // Вграждаме снимката base64 — контактът работи офлайн, без връзка към сървъра.
