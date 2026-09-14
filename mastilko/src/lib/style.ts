@@ -210,7 +210,14 @@ export const StyleSchemaShape = {
   qrColor: z.boolean(),
   ecoMode: z.boolean(),
   dyslexia: z.boolean(),
-  bgImage: z.string().max(1500000),
+  // Само data:image/… — точно това произвежда ImageUpload (canvas.toDataURL).
+  // Иначе през споделен линк (#p=…) стойността излизаше от `url("…")` в
+  // sheetBg() и добавяше втори, външен url() (CSP го блокира, но валидацията
+  // не бива да разчита само на втората линия).
+  bgImage: z
+    .string()
+    .max(1500000)
+    .refine((v) => v === "" || /^data:image\//.test(v), "Фонът трябва да е качено изображение"),
   bgImageOpacity: z.number().min(0.05).max(1),
   bgImageFit: z.enum(["cover", "contain", "tile"]),
 };
@@ -448,6 +455,17 @@ export function contrastGrade(ratio: number): { label: string; ok: boolean } {
  * Безопасен цвят за QR модулите: връща акцента само ако е достатъчно тъмен
  * спрямо бял фон (иначе чисто черно — скенируемостта е над естетиката).
  */
+/**
+ * Цвят за ДРЕБЕН акцентен текст (слоган и подобни) върху фона на визитката.
+ * Акцентът на топлите теми е светъл — напр. Теракота дава `#c25e3f` върху
+ * `#f7dfd3` = 3.31:1, под AA 4.5:1 при 6.6pt (реално трудно четимо и на печат).
+ * Връща акцента, само ако стига за AA; иначе основния цвят на текста.
+ */
+export function accentTextOn(accent: string, bg: string, fg: string): string {
+  const ratio = contrastRatio(accent, bg);
+  return ratio !== null && ratio >= 4.5 ? accent : fg;
+}
+
 export function qrSafeColor(accent: string): string {
   const FALLBACK = "#1B1B1B";
   const lum = relLuminance(accent);

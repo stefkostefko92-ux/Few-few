@@ -348,6 +348,10 @@ deploy_mastilko() {
   rsync -a --delete \
     --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
     "$d"/ "$MASTILKO_DIR"/
+  # Версията в service worker-а = този релийз, иначе `activate` не чисти
+  # старите кешове (филтрира по неизменен литерал) и статичният кеш расте.
+  sed -i "s|^const VERSION = \".*\";|const VERSION = \"mastilko-$TS\";|" \
+    "$MASTILKO_DIR/public/sw.js" 2>/dev/null || warn "sw.js: версията не е пренаписана"
   chown -R mastilko:mastilko "$MASTILKO_DIR"
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
   ( cd "$MASTILKO_DIR" \

@@ -6,6 +6,9 @@
 //  • /api/* и /admin/* НИКОГА не се кешират (AI заявки, админ сесия).
 // Версията в името на кеша чисти старите при активиране.
 
+// ВЕРСИЯТА се пренаписва при деплой (autodeploy.sh sed-ва реда) — иначе
+// `activate` филтрираше по неизменен литерал и НЕ триеше нищо, а статичният
+// кеш растеше с всеки релийз, докато браузърът не изхвърли целия origin.
 const VERSION = "mastilko-v1";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
@@ -37,6 +40,10 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   // Не пипай динамичните/чувствителните маршрути.
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin")) return;
+  // Нищо с query string и нищо от /import: навигациите се кешират с ЦЕЛИЯ URL
+  // като ключ, тоест еднократният токен (/import?token=…) оставаше в Cache
+  // Storage. Политиката обещава, че кешът пази само публичните файлове.
+  if (url.search || url.pathname.startsWith("/import")) return;
 
   // Навигации → network-first, офлайн резерв.
   if (request.mode === "navigate") {
