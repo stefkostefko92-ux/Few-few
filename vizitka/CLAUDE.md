@@ -56,7 +56,11 @@ src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
 src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
 src/routes/public.js /p/:slug (views), qr.png, vizitka.vcf, /p/:slug/print, /api/print/:token, /photo/:file
-src/routes/admin.js  /admin (requireAdmin) — CRUD на банери (multer), toggle, move, delete
+src/routes/admin.js  /admin (requireAdmin) — визитки: списък+търсене+странициране на всички
+                     профили, скрий/покажи, пълна редакция (/admin/profiles/:id/edit),
+                     снимка/корица; реклами на /admin/reklami — CRUD (multer), toggle, move, delete
+src/profiles.js      обща логика за редакция на профил (collect/validate/save) —
+                     ползва се и от таблото, и от админ панела
 src/routes/wallet.js /p/:slug/wallet/apple.pkpass + /wallet/google + Apple update web service (/v1/…)
 src/wallet/          портфейли (без нови зависимости): apple.js (.pkpass билд+openssl подпис),
                      google.js (save JWT + PATCH auto-update), apns.js (ES256 пуш), binary.js

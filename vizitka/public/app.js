@@ -9,7 +9,7 @@
       if (!input) return;
       const done = function () {
         const original = btn.textContent;
-        btn.textContent = 'Копирано ✓';
+        btn.textContent = 'Копирано!';
         setTimeout(function () {
           btn.textContent = original;
         }, 1500);
@@ -56,7 +56,7 @@
       row.innerHTML =
         '<input type="text" name="link_icon_' +
         i +
-        '" maxlength="8" placeholder="🔗" class="link-icon-in" aria-label="Икона">' +
+        '" maxlength="8" placeholder="Икона" class="link-icon-in" aria-label="Икона">' +
         '<input type="text" name="link_label_' +
         i +
         '" maxlength="60" placeholder="Надпис (напр. WhatsApp)" aria-label="Надпис">' +

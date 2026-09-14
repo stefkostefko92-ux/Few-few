@@ -11,7 +11,7 @@
         <img src="/p/<%= profile.slug %>/qr.png" alt="QR код към визитката" width="220" height="220">
         <p class="muted small">Този QR код не се променя — печатай го спокойно.</p>
         <p><a class="btn btn-small" href="/p/<%= profile.slug %>/qr.png" download="vizitka-qr.png">Свали QR (PNG)</a></p>
-        <p><a class="btn btn-small" href="/p/<%= profile.slug %>/print">🖨️ Разпечатай визитки (Мастилко)</a></p>
+        <p><a class="btn btn-small btn-ico" href="/p/<%= profile.slug %>/print"><%- icon('printer', { size: 16 }) %> Разпечатай визитки (Мастилко)</a></p>
       </div>
       <div class="link-box">
         <label class="small" for="public-url">Публичен адрес</label>
@@ -172,7 +172,7 @@
           %>
           <% rows.forEach(function (l, i) { %>
             <div class="link-row">
-              <input type="text" name="link_icon_<%= i %>" value="<%= l.icon %>" maxlength="8" placeholder="🔗" class="link-icon-in" aria-label="Икона">
+              <input type="text" name="link_icon_<%= i %>" value="<%= l.icon %>" maxlength="8" placeholder="Икона" class="link-icon-in" aria-label="Икона">
               <input type="text" name="link_label_<%= i %>" value="<%= l.label %>" maxlength="60" placeholder="Надпис (напр. WhatsApp)" aria-label="Надпис">
               <input type="url" name="link_url_<%= i %>" value="<%= l.url %>" maxlength="300" placeholder="https://…" aria-label="Връзка">
             </div>

@@ -1,0 +1,64 @@
+<%- include('partials/head') %>
+<section class="admin">
+  <h1>Админ · Визитки</h1>
+  <%- include('partials/admin-nav') %>
+  <p class="muted">Всички визитки в системата. Можеш да ги отвориш, скриеш/покажеш и редактираш директно.</p>
+  <% if (saved) { %><p class="alert alert-ok">Записано.</p><% } %>
+
+  <form method="get" action="/admin" class="admin-search" role="search">
+    <input type="search" name="q" value="<%= q %>" maxlength="80" placeholder="Търси по име, адрес или имейл…" aria-label="Търсене на визитка">
+    <button type="submit" class="btn btn-small">Търси</button>
+    <% if (q) { %><a href="/admin" class="link-btn">Изчисти</a><% } %>
+  </form>
+
+  <p class="muted small"><%= total %> визитк<%= total === 1 ? 'а' : 'и' %><%= q ? ' по търсенето' : '' %>.</p>
+
+  <% if (!profiles.length) { %>
+    <p class="muted">Няма визитки<%= q ? ' по това търсене' : '' %>.</p>
+  <% } %>
+
+  <ul class="admin-profiles">
+    <% profiles.forEach(function (p) { %>
+      <li class="admin-profile <%= p.is_public ? '' : 'hidden-row' %>">
+        <div class="admin-profile-main">
+          <% if (p.photo) { %>
+            <img class="admin-avatar" src="/photo/<%= p.photo %>" alt="" width="48" height="48">
+          <% } else { %>
+            <span class="admin-avatar admin-avatar-empty" aria-hidden="true"><%= p.display_name.slice(0,1).toUpperCase() %></span>
+          <% } %>
+          <div class="admin-profile-info">
+            <strong><%= p.display_name %></strong>
+            <span class="badge <%= p.is_public ? 'badge-on' : 'badge-off' %>"><%= p.is_public ? 'Публична' : 'Скрита' %></span>
+            <span class="badge badge-neutral"><%= p.type === 'company' ? 'Фирма' : 'Личен' %></span>
+            <p class="muted small">
+              <a href="<%= base %>/p/<%= p.slug %>" target="_blank" rel="noopener">/p/<%= p.slug %></a>
+              · <%= p.owner_email %> · <%= p.views %> прегл. · обновена <%= p.updated_at.slice(0,16).replace('T',' ') %>
+            </p>
+          </div>
+        </div>
+        <div class="admin-profile-actions">
+          <form method="post" action="/admin/profiles/<%= p.id %>/visibility<%= q ? '?q=' + encodeURIComponent(q) : '' %>" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-small <%= p.is_public ? '' : 'btn-ghost-admin' %>">
+              <%= p.is_public ? 'Скрий' : 'Покажи' %>
+            </button>
+          </form>
+          <a class="btn btn-small btn-ico" href="/admin/profiles/<%= p.id %>/edit"><%- icon('user', { size: 15 }) %> Редактирай</a>
+        </div>
+      </li>
+    <% }); %>
+  </ul>
+
+  <% if (pages > 1) { %>
+    <nav class="admin-pager" aria-label="Страници">
+      <% for (let n = 1; n <= pages; n++) { %>
+        <% if (n === page) { %>
+          <span class="admin-page current"><%= n %></span>
+        <% } else { %>
+          <a class="admin-page" href="/admin?page=<%= n %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"><%= n %></a>
+        <% } %>
+      <% } %>
+    </nav>
+  <% } %>
+</section>
+<%- include('partials/foot') %>

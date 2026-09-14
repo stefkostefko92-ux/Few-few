@@ -7,17 +7,11 @@ import { join } from 'node:path';
 import db, { UPLOADS_DIR } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { csrfProtect } from '../csrf.js';
-import { isValidSlug } from '../slug.js';
 import { baseUrl } from '../config.js';
-import { THEMES, normalizeTheme } from '../themes.js';
-import {
-  AVATAR_SHAPES,
-  FONTS,
-  normalizeShape,
-  normalizeFont,
-  normalizeAccent,
-} from '../personalize.js';
-import { MAX_LINKS, getLinks, replaceLinks, parseLinkFields } from '../links.js';
+import { THEMES } from '../themes.js';
+import { AVATAR_SHAPES, FONTS } from '../personalize.js';
+import { MAX_LINKS, getLinks } from '../links.js';
+import { collectProfileInput, validateProfileInput, saveProfileEdit } from '../profiles.js';
 import { submitUrls } from '../indexnow.js';
 import { notifyWalletUpdate } from '../wallet/index.js';
 
@@ -59,98 +53,38 @@ router.get('/dashboard', requireAuth, (req, res) => {
   renderDashboard(req, res, getProfile(req.user.id));
 });
 
-const TEXT_FIELDS = [
-  ['display_name', 100],
-  ['headline', 120],
-  ['company', 100],
-  ['phone', 30],
-  ['contact_email', 254],
-  ['website', 200],
-  ['address', 200],
-  ['bio', 600],
-  ['facebook', 200],
-  ['instagram', 200],
-  ['linkedin', 200],
-];
-
 router.post('/profile', requireAuth, csrfProtect, (req, res) => {
   const profile = getProfile(req.user.id);
-  const fields = {};
-  for (const [name, max] of TEXT_FIELDS)
-    fields[name] = String(req.body[name] || '')
-      .trim()
-      .slice(0, max);
-  const type = req.body.type === 'company' ? 'company' : 'personal';
-  const isPublic = req.body.is_public === '1' ? 1 : 0;
-  const theme = normalizeTheme(req.body.theme);
-  const accent = normalizeAccent(req.body.accent);
-  const avatarShape = normalizeShape(req.body.avatar_shape);
-  const font = normalizeFont(req.body.font);
-  const slug = String(req.body.slug || '')
-    .trim()
-    .toLowerCase();
-  const parsed = parseLinkFields(req.body);
-
-  const fail = (error) =>
-    renderDashboard(
+  const input = collectProfileInput(req.body);
+  const error = validateProfileInput(input, profile.id);
+  if (error)
+    return renderDashboard(
       req,
       res.status(400),
       {
         ...profile,
-        ...fields,
-        type,
-        is_public: isPublic,
-        theme,
-        accent,
-        avatar_shape: avatarShape,
-        font,
-        slug,
+        ...input.fields,
+        type: input.type,
+        is_public: input.isPublic,
+        theme: input.theme,
+        accent: input.accent,
+        avatar_shape: input.avatarShape,
+        font: input.font,
+        slug: input.slug,
       },
       { error }
     );
 
-  if (fields.display_name.length < 2) return fail('Името е задължително (поне 2 знака).');
-  if (!isValidSlug(slug))
-    return fail('Невалиден адрес: 3–40 знака, само малки латински букви, цифри и тире.');
-  const clash = db
-    .prepare('SELECT 1 FROM profiles WHERE slug = ? AND user_id != ?')
-    .get(slug, req.user.id);
-  if (clash) return fail('Този адрес вече е зает. Избери друг.');
-  for (const url of [fields.website, fields.facebook, fields.instagram, fields.linkedin]) {
-    if (url && !/^https?:\/\//i.test(url))
-      return fail('Линковете трябва да започват с http:// или https://.');
-  }
-  if (parsed.error) return fail(parsed.error);
-
-  db.prepare(
-    `UPDATE profiles SET
-       slug = @slug, type = @type, display_name = @display_name, headline = @headline,
-       company = @company, phone = @phone, contact_email = @contact_email, website = @website,
-       address = @address, bio = @bio, facebook = @facebook, instagram = @instagram,
-       linkedin = @linkedin, is_public = @is_public, theme = @theme, accent = @accent,
-       avatar_shape = @avatar_shape, font = @font, updated_at = datetime('now')
-     WHERE user_id = @user_id`
-  ).run({
-    ...fields,
-    slug,
-    type,
-    is_public: isPublic,
-    theme,
-    accent,
-    avatar_shape: avatarShape,
-    font,
-    user_id: req.user.id,
-  });
-  replaceLinks(profile.id, parsed.links);
+  saveProfileEdit(profile.id, input);
 
   // Уведоми търсачките (Bing и др.) за новата/променена публична визитка.
-  if (isPublic) {
+  if (input.isPublic) {
     const base = baseUrl(req);
-    submitUrls(base, [`${base}/p/${slug}`]);
+    submitUrls(base, [`${base}/p/${input.slug}`]);
   }
 
   // Обнови картите в портфейлите на онези, които вече са я запазили (auto-update).
-  const updated = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.user.id);
+  const updated = db.prepare('SELECT * FROM profiles WHERE id = ?').get(profile.id);
   notifyWalletUpdate(updated, baseUrl(req));
 
   res.redirect('/dashboard?saved=1');

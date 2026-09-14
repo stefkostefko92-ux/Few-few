@@ -3,6 +3,6 @@
   <p>© <%= new Date().getFullYear() %> Carbon Stealth VCC · <a href="https://carbonstealth.eu">carbonstealth.eu</a></p>
   <p><a href="/privacy">Поверителност</a> · <a href="/terms">Общи условия</a> · <a href="/terms#impresum">Импресум</a></p>
 </footer>
-<script src="/app.js" defer></script>
+<script src="/app.js?v=<%= typeof assetVer !== 'undefined' ? assetVer : '' %>" defer></script>
 </body>
 </html>

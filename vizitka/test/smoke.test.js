@@ -437,7 +437,7 @@ await test('админ отваря панела и създава банер', 
       type: 'personal',
     }),
   });
-  const panel = await request('/admin');
+  const panel = await request('/admin/reklami');
   assert.equal(panel.status, 200, 'админът трябва да вижда панела');
   const adminCsrf = (await panel.text()).match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
 
@@ -450,7 +450,7 @@ await test('админ отваря панела и създава банер', 
   const create = await request('/admin/banners', { method: 'POST', body: fd });
   assert.equal(create.status, 302);
 
-  const list = await (await request('/admin')).text();
+  const list = await (await request('/admin/reklami')).text();
   assert.match(list, /Тестова реклама/);
   bannerId = Number(list.match(/\/admin\/banners\/(\d+)\/toggle/)?.[1]);
   assert.ok(bannerId > 0, 'банерът трябва да има id');
@@ -466,7 +466,7 @@ await test('банерът се показва на началната и кли
 });
 
 await test('спрян банер не се показва', async () => {
-  const panel = await (await request('/admin')).text();
+  const panel = await (await request('/admin/reklami')).text();
   const adminCsrf = panel.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
   const toggle = await request(`/admin/banners/${bannerId}/toggle`, {
     method: 'POST',
@@ -497,7 +497,9 @@ await test('началната показва максимум 2 банера', 
     body: form({ email: 'admin@example.com', password: 'adminparola1' }),
   });
   const adminCsrf =
-    (await (await request('/admin')).text()).match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+    (await (await request('/admin/reklami')).text()).match(
+      /name="_csrf" value="([a-f0-9]+)"/
+    )?.[1] || '';
   // Създаваме общо 3 активни банера (един вече е спрян отгоре).
   for (const n of [1, 2, 3]) {
     const fd = new FormData();
@@ -511,6 +513,63 @@ await test('началната показва максимум 2 банера', 
   const home = await (await request('/')).text();
   const shown = (home.match(/class="ad"/g) || []).length;
   assert.equal(shown, 2, `трябва да се показват точно 2 банера, а не ${shown}`);
+});
+
+await test('админ вижда всички визитки, скрива и редактира чужда', async () => {
+  jar.clear();
+  await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'admin@example.com', password: 'adminparola1' }),
+  });
+  const listRes = await request('/admin');
+  assert.equal(listRes.status, 200, 'админът трябва да вижда списъка с визитки');
+  const list = await listRes.text();
+  assert.match(list, /Визитки/);
+  assert.match(list, /ivan@example\.com/, 'списъкът трябва да показва и чужди визитки');
+
+  // Намери визитката на друг потребител (Иван) чрез търсене.
+  const found = await (await request('/admin?q=' + encodeURIComponent('ivan@example.com'))).text();
+  const pid = Number(found.match(/\/admin\/profiles\/(\d+)\/edit/)?.[1]);
+  assert.ok(pid > 0, 'трябва да намерим id на чужда визитка');
+  const csrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+
+  // Скрий и после покажи (два превключвателя на видимостта).
+  const hide = await request(`/admin/profiles/${pid}/visibility`, {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ _csrf: csrf }),
+  });
+  assert.equal(hide.status, 302, 'скриването трябва да пренасочи');
+  const show = await request(`/admin/profiles/${pid}/visibility`, {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ _csrf: csrf }),
+  });
+  assert.equal(show.status, 302);
+
+  // Редактирай директно — смени длъжността.
+  const editForm = await (await request(`/admin/profiles/${pid}/edit`)).text();
+  const editCsrf = editForm.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const slug = editForm.match(/name="slug"[^>]*value="([^"]+)"/)?.[1] || '';
+  const name = editForm.match(/name="display_name"[^>]*value="([^"]+)"/)?.[1] || 'Иван';
+  assert.ok(slug, 'формата за редакция трябва да съдържа слъг');
+  const save = await request(`/admin/profiles/${pid}`, {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: editCsrf,
+      display_name: name,
+      slug,
+      headline: 'Редактирано от админ',
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  assert.equal(save.status, 302, 'записът от админа трябва да пренасочи');
+  const after = await (await request(`/admin/profiles/${pid}/edit`)).text();
+  assert.match(after, /Редактирано от админ/, 'промяната на админа трябва да е записана');
 });
 
 await test('забравена парола: имейл → нулиране → вход с новата', async () => {
