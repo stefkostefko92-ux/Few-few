@@ -1183,9 +1183,20 @@
           "date": "2026-07-10",
           "event": "v11.5 — учене",
           "detail": "Научи: MV3 declarativeNetRequest: за case-insensitive правила (isUrlFilterCaseSensitive неуста… (+1 още)"
+        },
+        {
+          "version": "11.6.0",
+          "date": "2026-09-14",
+          "event": "v11.6 — учене",
+          "detail": "Научи: vizitka/src/vcard.js:2-6 esc() екранира \\\\n но НЕ \\\\r — самотен CR (%0D) в bio/address,… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-14",
+          "type": "learning",
+          "summary": "Научи: „vizitka/src/vcard.js:2-6 esc() екранира \\\\n но НЕ \\\\r — самотен CR (%0D) в bio/address,…\" (+2 още) · 2 в карантина"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
