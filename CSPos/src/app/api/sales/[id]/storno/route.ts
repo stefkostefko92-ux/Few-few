@@ -64,7 +64,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     const fiscal = await getFiscalDriver();
     const receipt = await fiscal.printStorno({
-      unp: fiscalCfg.suptoMode ? unp : null, // сторно бонът носи собствен УНП; оригиналът се реферира отделно
+      // Н-18 чл. 31, ал. 2, изр. 3 + Прил. № 29, т. 10: УНП е номер на ПРОДАЖБАТА, не на документа —
+      // сторно бонът носи УНП на продажбата, ПО КОЯТО се сторнира, а не свой собствен.
+      // (`unp` по-долу остава за реда в базата, където полето е @unique.)
+      unp: fiscalCfg.suptoMode ? original.unp : null,
       operatorCode: s.operatorCode,
       operatorName: s.name,
       items: original.items.map((it) => ({

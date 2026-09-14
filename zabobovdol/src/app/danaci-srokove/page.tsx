@@ -57,7 +57,7 @@ export default function TaxDeadlinesPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-4 flex items-start gap-2 text-sm text-slate-500">
+          <p className="mt-4 flex items-start gap-2 text-sm text-slate-600">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-600" aria-hidden />
             <span>
               Сроковете са общите по закон. При промяна се водете по съобщението от данъчната
@@ -87,7 +87,7 @@ export default function TaxDeadlinesPage() {
               </div>
             ))}
           </div>
-          <p className="mt-5 text-sm text-slate-500">
+          <p className="mt-5 text-sm text-slate-600">
             Не знаете как? Вижте стъпка по стъпка в{" "}
             <Link href="/kak-da" className="font-medium text-brand-700 hover:underline">
               ръководствата „Как да…“

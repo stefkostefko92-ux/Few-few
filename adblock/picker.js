@@ -1,7 +1,9 @@
-// Element picker: pick an element, hide it and remember the selector per site.
+// Element picker + zapper: "pick" hides an element and remembers the selector
+// per site; "zap" removes an element once, for this page only (no rule saved).
 (function () {
   const host = location.hostname.replace(/^www\./, "");
   let picking = false;
+  let mode = "pick"; // "pick" | "zap"
   let box = null;
   let tip = null;
   let target = null;
@@ -63,6 +65,12 @@
     e.preventDefault();
     e.stopPropagation();
     if (!target) return;
+    if (mode === "zap") {
+      // Еднократно махане, само за тази страница — нищо не се записва.
+      try { target.remove(); } catch {}
+      stop();
+      return;
+    }
     const selector = selectorFor(target);
     if (selector) {
       try {
@@ -77,8 +85,9 @@
     if (e.key === "Escape") stop();
   }
 
-  function start() {
+  function start(m) {
     if (picking) return;
+    mode = m === "zap" ? "zap" : "pick";
     picking = true;
     document.documentElement.classList.add("tbab-picking");
 
@@ -86,7 +95,9 @@
     box.id = "tbab-picker-box";
     tip = document.createElement("div");
     tip.id = "tbab-picker-tip";
-    tip.innerHTML = "Click an element to hide it &nbsp;•&nbsp; <b>Esc</b> to cancel";
+    tip.innerHTML = (mode === "zap"
+      ? "Click to remove this element (once) &nbsp;•&nbsp; <b>Esc</b> to cancel"
+      : "Click an element to hide it &nbsp;•&nbsp; <b>Esc</b> to cancel");
     document.body.append(box, tip);
 
     document.addEventListener("mousemove", onMove, true);
@@ -106,6 +117,7 @@
   }
 
   chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.type === "activatePicker") start();
+    if (msg.type === "activatePicker") start("pick");
+    else if (msg.type === "activateZapper") start("zap");
   });
 })();

@@ -166,9 +166,14 @@ router.post('/use', (req, res) => {
           let buffs: Array<{ stat: string; percent: number; expires_at: number }> = [];
           try { buffs = JSON.parse((char as any).active_buffs || '[]'); } catch { buffs = []; }
           const now = Date.now();
-          buffs = buffs.filter((b) => b.expires_at > now && b.stat !== stat);
           const expires_at = now + minutes * 60_000;
-          buffs.push({ stat, percent, expires_at });
+          // 'all' (Elixir of the Apex) бъфва всичките 6 атрибута наведнъж —
+          // заменя евентуални единични бъфове по същите статове.
+          const stats = stat === 'all'
+            ? ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']
+            : [stat];
+          buffs = buffs.filter((b) => b.expires_at > now && !stats.includes(b.stat));
+          for (const s of stats) buffs.push({ stat: s, percent, expires_at });
           buffApplied = { stat, percent, expires_at, minutes };
           db.prepare('UPDATE characters SET active_buffs = ? WHERE id = ?').run(JSON.stringify(buffs), char.id);
         }

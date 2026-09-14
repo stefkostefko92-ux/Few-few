@@ -37,7 +37,10 @@ export default function Enhancements() {
       const step = (now: number) => {
         const p = Math.min((now - start) / dur, 1);
         const eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = Math.round(target * eased).toLocaleString("it-IT") + suffix;
+        // Plain digits, exactly as authored in the CMS. Locale grouping would
+        // turn the founding year 2014 into "2.014"; the counter only runs on
+        // values matching /^\d+$/, so the source never carries separators.
+        el.textContent = String(Math.round(target * eased)) + suffix;
         if (p < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);

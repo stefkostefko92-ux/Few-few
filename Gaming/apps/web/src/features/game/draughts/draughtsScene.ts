@@ -76,9 +76,14 @@ export class DraughtsScene {
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0006;
+    key.shadow.radius = 3; // soft PCF penumbra — premium contact shadows
     const sc = key.shadow.camera;
     sc.left = -span * 1.5; sc.right = span * 1.5; sc.top = span * 1.5; sc.bottom = -span * 1.5; sc.near = 1; sc.far = span * 8;
     this.scene.add(key);
+    // Cool back-rim edge light: separates the obsidian men from the dark board.
+    const rim = new DirectionalLight(0xbfe0f2, 0.38);
+    rim.position.set(-span, span * 1.2, -span * 1.4 * zside);
+    this.scene.add(rim);
 
     this.scene.add(this.pieceLayer, this.hiLayer);
     this.build();

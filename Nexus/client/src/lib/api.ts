@@ -51,6 +51,13 @@ export function setBannedHandler(fn: ((reason: string, until: number) => void) |
   bannedHandler = fn;
 }
 
+// Изтекла/невалидна сесия (401, докато ИМАМЕ токен) → авто-logout, вместо
+// UI да засяда на генерично „Request failed (401)".
+let unauthorizedHandler: (() => void) | null = null;
+export function setUnauthorizedHandler(fn: (() => void) | null): void {
+  unauthorizedHandler = fn;
+}
+
 async function request<T = any>(method: string, path: string, body?: any): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -67,6 +74,11 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
     // Бан → глобален екран (акаунт/IP/устройство спрян от сървъра).
     if (res.status === 403 && data?.error === 'banned') {
       bannedHandler?.(data.reason || 'Access has been suspended.', Number(data.until) || 0);
+    }
+    // Изтекла сесия — само ако сме имали токен (иначе това е обикновен
+    // неуспешен login/register, който НЕ трябва да прави redirect).
+    if (res.status === 401 && token) {
+      unauthorizedHandler?.();
     }
     // Zod's `.flatten()` ships back `{ formErrors, fieldErrors }` and most
     // route handlers either wrap it as `data.error` or echo a plain string.

@@ -13,10 +13,25 @@
 // is data, nothing is executed.
 (function () {
   let enabled = true;
+  let cosmeticsOff = false; // per-site "no cosmetic filtering" (network blocking unaffected)
   let smartEnabled = true;
   let customSelectors = [];
   let procSelectors = [];
   let unhideSelectors = [];
+  let genericHideHost = false; // EasyList $generichide за този хост
+
+  // Live scriptlets (Level 2): hand the signed filters.json directives to the
+  // MAIN-world engine as a JSON STRING (objects don't cross worlds). The engine
+  // re-validates, filters by this frame's host and ignores duplicates. When the
+  // extension is off / the site is allowlisted the engine isn't registered, so
+  // the event simply has no listener.
+  function deliverScriptlets(cfg) {
+    const list = cfg && Array.isArray(cfg.scriptlets) ? cfg.scriptlets : [];
+    if (!list.length) return;
+    try {
+      document.dispatchEvent(new CustomEvent("sa-scriptlets", { detail: JSON.stringify(list) }));
+    } catch {}
+  }
 
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
@@ -40,10 +55,6 @@
     "[id^='google_ads_']",
     "[id^='div-gpt-ad']",
     "[id^='gpt-']",
-    "[id*='-ad-']",
-    "[id*='_ad_']",
-    "[id^='ad-']",
-    "[id$='-ad']",
     "[id*='banner-ad']",
     "[id*='adsense']",
     "[id*='dfp-']",
@@ -58,10 +69,6 @@
     "[class*='sponsored']",
     "[class*='-sponsor']",
     "[class*='adsbygoogle']",
-    "[class^='ad-']",
-    "[class$='-ad']",
-    "[class$='-ads']",
-    "[class*=' ad ']",
     "[class*='dfp-']",
     "[class*='gpt-ad']",
     "[class*='outbrain']",
@@ -100,7 +107,11 @@
   ];
 
   // ---- Procedural selectors (uBlock-style, data-driven) ----
-  const PROC_RE = /:(has-text|matches-css|upward|xpath|min-text-length|remove)\(/;
+  // Действия (модифицират елемента) — стоят само на края на веригата.
+  const ACTION_OPS = new Set(["remove", "style", "remove-attr", "remove-class"]);
+  const OPS = "has-text|matches-css|matches-attr|matches-path|matches-media|matches-prop|watch-attr|min-text-length|upward|xpath|remove-attr|remove-class|remove|style";
+  const PROC_RE = new RegExp(":(" + OPS + ")\\(");
+  const OP_HEAD = new RegExp("^:(" + OPS + ")\\(");
 
   // "css:op(arg):op(arg)" -> { css, ops } or null when it's plain CSS.
   function parseProcedural(raw) {
@@ -110,7 +121,7 @@
     let buf = "";
     let i = 0;
     while (i < raw.length) {
-      const m = /^:(has-text|matches-css|upward|xpath|min-text-length|remove)\(/.exec(raw.slice(i));
+      const m = OP_HEAD.exec(raw.slice(i));
       if (!m) {
         buf += raw[i++];
         continue;
@@ -136,8 +147,8 @@
       i = j + 1;
     }
     if (buf.trim() || !ops.length) return null;
-    // :remove() е действие и стои само в края
-    if (ops.slice(0, -1).some((o) => o.op === "remove")) return null;
+    // Действие (remove/style/remove-attr/remove-class) стои само на края.
+    if (ops.slice(0, -1).some((o) => ACTION_OPS.has(o.op))) return null;
     // Изискваме CSS основа (перф), освен когато веригата тръгва от :xpath().
     if (!css && ops[0].op !== "xpath") return null;
     return { css, ops };
@@ -145,12 +156,21 @@
 
   const toRegex = (s) => {
     const m = /^\/(.+)\/(i?)$/.exec(s);
+    if (!m) return null;
+    // ReDoS guard: капваме дължината И броя квантори (*, +, {n}). Един квантор
+    // е линеен; два+ подредени (напр. [a-z]*[a-z]*x) дават полиномиален/
+    // катастрофичен backtracking, който замразява таба.
+    const q = (m[1].match(/[*+?]|\{\d/g) || []).length;
+    if (m[1].length > 200 || q > 1) return null;
+    if (/\)[*+?{]/.test(m[1])) return null; // any quantified group is ReDoS-prone (nested parens hide from [^)]* scans)
     try {
-      return m ? new RegExp(m[1], m[2]) : null;
+      return new RegExp(m[1], m[2]);
     } catch {
       return null;
     }
   };
+  // Капваме тествания текст, за да ограничим backtracking върху дълъг textContent.
+  const textOf = (el) => (el.textContent || "").slice(0, 20000);
 
   function xpathAll(expr, ctx) {
     const out = [];
@@ -175,22 +195,69 @@
       try {
         els = [...(root || document).querySelectorAll(p.css)];
       } catch {
-        return { els: [], remove: false };
+        return { els: [], action: null };
       }
     }
     if (els.length > 1000) els = els.slice(0, 1000);
-    let remove = false;
+    let action = null;
     for (let k = start; k < p.ops.length && els.length; k++) {
       const { op, arg } = p.ops[k];
       if (op === "has-text") {
         const re = toRegex(arg);
-        els = els.filter((el) => (re ? re.test(el.textContent) : el.textContent.includes(arg)));
+        els = els.filter((el) => (re ? re.test(textOf(el)) : textOf(el).includes(arg)));
+      } else if (op === "matches-attr") {
+        // name  |  name="value"  |  name  и стойност могат да са /regex/
+        const eq = arg.indexOf("=");
+        const nameSpec = (eq === -1 ? arg : arg.slice(0, eq)).trim();
+        const valSpec = eq === -1 ? null : arg.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+        const nameRe = toRegex(nameSpec);
+        const valRe = valSpec != null ? toRegex(valSpec) : null;
+        const nameLc = nameSpec.toLowerCase();
+        els = els.filter((el) => {
+          const names = el.getAttributeNames ? el.getAttributeNames() : [];
+          return names.some((a) => {
+            if (nameRe ? !nameRe.test(a) : a !== nameLc) return false;
+            if (valSpec == null) return true;
+            const v = el.getAttribute(a) || "";
+            return valRe ? valRe.test(v) : v === valSpec;
+          });
+        });
+      } else if (op === "matches-path") {
+        const re = toRegex(arg);
+        const path = location.pathname + location.search;
+        if (!(re ? re.test(path) : path.includes(arg))) els = [];
+      } else if (op === "matches-media") {
+        // :matches-media(query) — пази селекцията само ако media query-то мачва
+        // (напр. "(max-width: 600px)"); без DOM обхождане.
+        let mm = false;
+        try { mm = window.matchMedia(arg).matches; } catch {}
+        if (!mm) els = [];
+      } else if (op === "matches-prop") {
+        // :matches-prop(name=value) — JS свойство (dotted) на елемента; стойността
+        // може да е /regex/. Цели рандомизирано DOM състояние. Само четене.
+        const eq = arg.indexOf("=");
+        const propSpec = (eq === -1 ? arg : arg.slice(0, eq)).trim();
+        const valSpec = eq === -1 ? null : arg.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+        const valRe = valSpec != null ? toRegex(valSpec) : null;
+        if (!/^[a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*){0,4}$/.test(propSpec)) return { els: [], action: null };
+        const path = propSpec.split(".");
+        els = els.filter((el) => {
+          let v = el;
+          try { for (const seg of path) { if (v == null) return false; v = v[seg]; } } catch { return false; }
+          if (valSpec == null) return v !== undefined;
+          const s = String(v);
+          return valRe ? valRe.test(s) : s === valSpec;
+        });
+      } else if (op === "watch-attr") {
+        // :watch-attr(attrs) — uBO преизчислява веригата при промяна на тези
+        // атрибути; нашият MutationObserver и без това се пуска при attribute
+        // промени, затова е приет като no-op филтър.
       } else if (op === "min-text-length") {
         const n = parseInt(arg, 10) || 0;
         els = els.filter((el) => el.textContent.length >= n);
       } else if (op === "matches-css") {
         const ci = arg.indexOf(":");
-        if (ci < 1) return { els: [], remove: false };
+        if (ci < 1) return { els: [], action: null };
         const prop = arg.slice(0, ci).trim();
         const want = arg.slice(ci + 1).trim();
         const re = toRegex(want);
@@ -222,12 +289,27 @@
         }
         els = [...new Set(els.filter((el) => el && el !== document.documentElement && el !== document.body))];
       } else if (op === "remove") {
-        remove = true;
+        action = { op: "remove" };
+      } else if (op === "style" || op === "remove-attr" || op === "remove-class") {
+        action = { op, arg };
       } else {
-        return { els: [], remove: false }; // :xpath() извън първа позиция и т.н.
+        return { els: [], action: null }; // :xpath() извън първа позиция и т.н.
       }
     }
-    return { els, remove };
+    return { els, action };
+  }
+
+  // Прилага CSS декларации от :style(...) на елемент (напр. "display: block !important").
+  function applyStyle(el, decl) {
+    for (const part of decl.split(";")) {
+      const ci = part.indexOf(":");
+      if (ci < 1) continue;
+      let prop = part.slice(0, ci).trim();
+      let val = part.slice(ci + 1).trim();
+      let prio = "";
+      if (/!important$/i.test(val)) { val = val.replace(/!important$/i, "").trim(); prio = "important"; }
+      if (/^[a-z-]+$/i.test(prop)) { try { el.style.setProperty(prop, val, prio); } catch {} }
+    }
   }
 
   // EasyList #@# exceptions за този домейн: маркираме елементите, така hide()
@@ -255,7 +337,7 @@
   }
 
   function hide(root = document) {
-    if (!enabled) return;
+    if (!enabled || cosmeticsOff) return;
     applyUnhide();
     for (const sel of AD_SELECTORS.concat(customSelectors)) {
       let nodes;
@@ -267,13 +349,23 @@
       for (const el of nodes) hideEl(el);
     }
     for (const p of procSelectors) {
-      const { els, remove } = evalProcedural(p, root);
+      const { els, action } = evalProcedural(p, root);
       for (const el of els) {
         if (el === document.documentElement || el === document.body) continue;
-        if (remove) {
-          if (!el.dataset.tbabUnhide) el.remove();
-        } else {
+        if (!action) {
           hideEl(el);
+        } else if (action.op === "remove") {
+          if (!el.dataset.tbabUnhide) el.remove();
+        } else if (action.op === "style") {
+          applyStyle(el, action.arg);
+        } else if (action.op === "remove-attr") {
+          const re = toRegex(action.arg);
+          for (const a of (el.getAttributeNames ? el.getAttributeNames() : []))
+            if (re ? re.test(a) : a === action.arg.toLowerCase()) { try { el.removeAttribute(a); } catch {} }
+        } else if (action.op === "remove-class") {
+          const re = toRegex(action.arg);
+          for (const c of [...el.classList])
+            if (re ? re.test(c) : c === action.arg) el.classList.remove(c);
         }
       }
     }
@@ -281,12 +373,16 @@
 
   // Collapse wrappers left empty after their only (ad) child is hidden.
   function collapseEmpty() {
-    if (!enabled) return;
+    if (!enabled || cosmeticsOff) return;
     document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
       const p = el.parentElement;
-      if (p && p.children.length === 1 && p.offsetHeight < 5) {
-        p.style.setProperty("display", "none", "important");
-      }
+      if (!p || p.children.length !== 1 || p.offsetHeight >= 5) return;
+      // Не колабсирай контейнер, който тепърва ще lazy-load-не съдържание.
+      if (
+        p.hasAttribute("data-lazy") || p.hasAttribute("data-src") ||
+        /\blazy\b/i.test(p.className || "") || p.querySelector("[loading='lazy']")
+      ) return;
+      p.style.setProperty("display", "none", "important");
     });
   }
 
@@ -300,8 +396,11 @@
   const nearSize = (w, h) =>
     IAB_SIZES.some(([aw, ah]) => Math.abs(w - aw) <= 2 && Math.abs(h - ah) <= 2);
 
+  // Токени за sticky ad-сигнал. "banner"/"promo" НЕ са тук — те са прекалено
+  // чести за легитимни sticky ленти (promo-bar, top-banner, hero-banner) и
+  // даваха false positives; истинските ad-ленти носят по-специфичен маркер.
   const AD_TOKENS =
-    /(^|[^a-z])(ads?|advert|sponsor|promo|banner|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
+    /(^|[^a-z])(ads?|advert|sponsor|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
 
   function isThirdParty(src) {
     try {
@@ -373,7 +472,7 @@
   }
 
   function smartScan() {
-    if (!enabled || !smartEnabled) return;
+    if (!enabled || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
     const items = [];
     scanFrames(items);
     scanSticky(items);
@@ -419,15 +518,45 @@
     }
   }
 
+  // YouTube session bypass (background.js ytBypassUntil): the page must be a
+  // genuinely clean client, and EasyList's youtube.com cosmetics (ad-slot
+  // containers hidden by us) are detectable too — so cosmetics are off on
+  // YouTube for the bypass window, exactly like youtube.css gates itself.
+  const isYtHost = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
+  let noCosmeticsSite = false;
+  let ytBypassOn = false;
+  // Switching cosmetics OFF must also reveal what was already hidden — an open
+  // YouTube tab that did not trigger the bypass would otherwise keep its
+  // manipulated DOM for the whole window while we claim a clean client.
+  // (:remove()-d nodes are gone for good; only a reload brings those back.)
+  function revealHidden() {
+    try {
+      document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
+        el.style.removeProperty("display");
+        delete el.dataset.tbabHidden;
+      });
+    } catch {}
+  }
+  const recomputeCosmeticsOff = () => {
+    const was = cosmeticsOff;
+    cosmeticsOff = noCosmeticsSite || ytBypassOn;
+    if (cosmeticsOff && !was) revealHidden();
+  };
+
   chrome.storage?.local.get(
-    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig"],
+    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig", "noCosmetics", "ytBypassUntil"],
     (data) => {
       enabled = data.enabled !== false;
+      noCosmeticsSite = (data.noCosmetics || []).some(hostMatches);
+      ytBypassOn = isYtHost && !!data.ytBypassUntil && data.ytBypassUntil > Date.now();
+      recomputeCosmeticsOff();
+      if (cosmeticsOff) gate(false);
       smartEnabled = (data.features || {}).smart !== false;
       const allowed = (data.allowlist || []).some(hostMatches);
       pickerMap = data.customHidden || {};
       userText = data.userFilters || "";
       liveCosmetic = (data.liveConfig && data.liveConfig.cosmetic) || [];
+      deliverScriptlets(data.liveConfig);
       rebuildSelectors();
       if (enabled && !allowed) {
         start();
@@ -437,6 +566,10 @@
             if (!res) return;
             bundleCosmetic = Array.isArray(res.hide) ? res.hide : [];
             unhideSelectors = Array.isArray(res.unhide) ? res.unhide : [];
+            // EasyList $generichide за този хост → не прилагай генеричния CSS
+            // (иначе скриваме легитимен UI, напр. Google sign-in, Ads Manager).
+            genericHideHost = !!res.genericHide;
+            if (genericHideHost) gate(false);
             rebuildSelectors();
             hide();
           });
@@ -454,11 +587,28 @@
       // генеричната козметика на allowlist-нат сайт.
       chrome.storage.local.get("allowlist", (d) => {
         const allowed = ((d && d.allowlist) || []).some(hostMatches);
-        gate(enabled && !allowed);
+        // Гейтът зачита и $generichide хоста, за да не върне генеричния CSS
+        // при повторно включване без reload.
+        // …и per-site „без козметика" — иначе повторното включване връща
+        // генеричния CSS точно на сайта, който потребителят е обявил за счупен.
+        gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
         if (enabled && !allowed) {
           start();
           hide();
         }
+      });
+    }
+    if (changes.noCosmetics || (isYtHost && changes.ytBypassUntil)) {
+      if (changes.noCosmetics) noCosmeticsSite = (changes.noCosmetics.newValue || []).some(hostMatches);
+      if (isYtHost && changes.ytBypassUntil) {
+        const until = changes.ytBypassUntil.newValue;
+        ytBypassOn = !!until && until > Date.now();
+      }
+      recomputeCosmeticsOff();
+      chrome.storage.local.get("allowlist", (d) => {
+        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
+        if (enabled && !allowed && !cosmeticsOff) hide();
       });
     }
     if (changes.features) {
@@ -468,8 +618,10 @@
     if (changes.customHidden || changes.userFilters || changes.liveConfig) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
       if (changes.userFilters) userText = changes.userFilters.newValue || "";
-      if (changes.liveConfig)
+      if (changes.liveConfig) {
         liveCosmetic = (changes.liveConfig.newValue && changes.liveConfig.newValue.cosmetic) || [];
+        deliverScriptlets(changes.liveConfig.newValue);
+      }
       rebuildSelectors();
       if (enabled) hide();
     }

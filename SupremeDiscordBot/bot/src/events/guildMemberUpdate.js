@@ -7,7 +7,7 @@
 // Актьорът е best-effort от audit log — само при реална промяна, за да не
 // хабим fetchAuditLogs rate limit-а. Закача се и на white-label клиентите.
 
-import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -25,6 +25,9 @@ export default {
     try {
       const guild = newMember.guild || oldMember.guild;
       if (!guild?.id) return;
+
+      // Гейт ПРЕДИ audit-log fetch (rate limit) — виж messageDelete.
+      if (!(await isEventCategoryEnabled(guild.id, "members"))) return;
 
       const client = newMember.client;
       const targetId = newMember.id;

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title">
+  <title id="jm-title">Поза „сочи" — сменяемият модул на ръцете</title>
+  <!--
+    МОДУЛ НА ПОЗА, не самостоятелен асет. Съдържа точно групата `jm-arms`; `node build.mjs` я
+    вгражда в базовия SVG и произвежда `svg/poses/point.svg`.
+
+    За какво: обучение, onboarding, „погледни тук". Пръстът сочи НАГОРЕ-ВДЯСНО, защото там стои
+    съдържанието в почти всяка наша подредба (маскот вляво, текст вдясно — както е и в
+    социалната карта).
+  -->
+  <g class="jm-arms">
+    <g stroke="url(#jm-body)" stroke-width="34" stroke-linecap="round" fill="none">
+      <path d="M144 356C120 368 102 384 94 400"/>
+      <path d="M364 346C394 330 412 300 416 268"/>
+    </g>
+    <g stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5">
+      <path d="M370 360C394 344 408 320 412 296"/>
+    </g>
+    <!-- Ръката: свит юмрук и един изпънат пръст. Силуетът на жеста трябва да се чете и на 32 px. -->
+    <g class="jm-hand">
+      <path d="M396 254C396 234 408 220 424 220C440 220 452 234 452 254C452 272 440 284 424 284C408 284 396 272 396 254Z" fill="url(#jm-body)"/>
+      <path d="M430 224C436 206 442 186 446 170" fill="none" stroke="url(#jm-body)" stroke-width="26" stroke-linecap="round"/>
+      <path d="M436 214C440 200 444 186 447 174" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <path d="M402 244C404 234 410 228 418 228" fill="none" stroke="var(--jm-olive, #99E72A)" stroke-width="4.5" stroke-linecap="round" opacity="0.65"/>
+      <path d="M404 266C410 278 418 284 428 284" fill="none" stroke="var(--jm-deep, #0D4A02)" stroke-width="3.5" stroke-linecap="round" opacity="0.4"/>
+    </g>
+  </g>
+</svg>

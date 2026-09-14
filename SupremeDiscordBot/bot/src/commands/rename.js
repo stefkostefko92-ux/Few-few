@@ -1,11 +1,13 @@
 // bot/src/commands/rename.js
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("rename")
     .setDescription("Rename the current ticket channel")
+    .setDescriptionLocalizations(CMD_DESC_L10N.rename)
     .addStringOption((opt) =>
       opt.setName("name").setDescription("New channel name").setRequired(true).setMaxLength(100)
     ),

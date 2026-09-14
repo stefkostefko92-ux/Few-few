@@ -3,6 +3,18 @@
 Скокът от imperative скрипт към **rebuildable + observable + verified** сървър.
 Тайните/ключовете остават на хоста (mode 600), никога в репото.
 
+## `deploy-check.mjs` — zero-dep линтер за деплой скриптове (тестът в CI; CLI на `autodeploy.sh` в sweep-а)
+```bash
+node tools/vps/deploy-check.mjs deploy/autodeploy.sh   # или папка
+```
+Статичен анализ на bash деплой БЕЗ да го пуска:
+- **HIGH** — липса на `set -euo pipefail`; ехо/ексфилтрация на тайна (`echo $TOKEN`, `curl -d $KEY`);
+  `curl … | bash` (непроверен отдалечен код); `rm -rf $VAR` без guard.
+- **MEDIUM** — `npm ci` без `--omit=dev`; рестарт/деплой без health-check + rollback.
+
+Изход: `0` = чисто/само INFO; `1` = има HIGH. Тестван (`deploy-check.test.mjs`); нашият
+`autodeploy.sh` минава чист (само INFO). Допълва shellcheck — но е zero-dep и в CI sweep-а.
+
 ## IaC (Ansible)
 ```bash
 SSH_PUBKEY="$(cat ~/.ssh/id_ed25519.pub)" \

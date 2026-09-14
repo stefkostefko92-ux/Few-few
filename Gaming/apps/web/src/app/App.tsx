@@ -14,6 +14,7 @@ import { Leaderboard } from "../features/leaderboard/Leaderboard";
 import { CardGallery } from "../features/game/cards/CardGallery";
 import { CarbonBadge } from "./CarbonBadge";
 import { CookieBanner } from "./CookieBanner";
+import { PwaManager } from "./PwaManager";
 import { Layout } from "./Layout";
 import { RequireAuth } from "./RequireAuth";
 import { RequireRole } from "./RequireRole";
@@ -82,6 +83,7 @@ export function App() {
       </Routes>
       <CarbonBadge />
       <CookieBanner />
+      <PwaManager />
     </>
   );
 }

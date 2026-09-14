@@ -66,26 +66,32 @@
   height: 100%;
   min-height: clamp(484px, calc(74vh - 36px), 924px);
   border-radius: 19px;
+  /* Layered depth: a soft overhead pool of light at top-centre, the felt hue
+     body, then a deep edge falloff so the surface reads bowl-like (premium
+     baize under a single lamp) rather than a flat colour fill. */
   background:
-    radial-gradient(120% 100% at 50% 10%, rgba(255, 242, 205, 0.08), transparent 52%),
-    radial-gradient(150% 130% at 50% 48%, var(--table-felt) 0%, var(--table-felt-dark) 80%);
+    radial-gradient(120% 100% at 50% 10%, rgba(255, 242, 205, 0.09), transparent 52%),
+    radial-gradient(150% 130% at 50% 48%, var(--table-felt) 0%, var(--table-felt-dark) 80%),
+    radial-gradient(115% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.4) 100%);
   box-shadow:
-    inset 0 0 140px rgba(0, 0, 0, 0.6),
+    inset 0 0 160px rgba(0, 0, 0, 0.62),
     inset 0 2px 3px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
 
-/* Felt nap: fine fibre weave + a broad diagonal sheen, as real baize shows
-   under a single overhead light. */
+/* Felt nap: organic fractal fibre grain + a fine woven weave + a broad
+   diagonal sheen, as real baize shows under a single overhead light. */
 .aso-table__felt::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>"),
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 2px),
     repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 2px),
     linear-gradient(115deg, transparent 30%, rgba(255, 245, 215, 0.05) 48%, transparent 66%);
-  opacity: 0.7;
+  background-size: 180px 180px, auto, auto, auto;
+  opacity: 0.62;
   pointer-events: none;
   mix-blend-mode: overlay;
 }

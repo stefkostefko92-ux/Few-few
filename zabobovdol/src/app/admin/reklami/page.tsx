@@ -38,7 +38,7 @@ export default async function AdminAdRequestsPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
           Все още няма заявки.
         </div>
       ) : (
@@ -96,7 +96,7 @@ export default async function AdminAdRequestsPage() {
                   <button className="text-sm text-green-700 hover:underline">Активна</button>
                 </form>
                 <form action={setAdRequestStatus.bind(null, r.id, "REJECTED")}>
-                  <button className="text-sm text-slate-500 hover:underline">Откажи</button>
+                  <button className="text-sm text-slate-600 hover:underline">Откажи</button>
                 </form>
                 <DeleteButton action={deleteAdRequest.bind(null, r.id)} />
               </div>

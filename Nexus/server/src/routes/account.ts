@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
+import { eraseUser } from '../lib/erasure';
 
 const router = Router();
 router.use(authRequired);
@@ -157,23 +158,9 @@ router.post('/delete-account', async (req, res) => {
     res.status(401).json({ error: 'Password incorrect.' });
     return;
   }
-  const tx = db.transaction((uid: number) => {
-    db.prepare(
-      `UPDATE purchases SET character_id = NULL
-         WHERE character_id IN (SELECT id FROM characters WHERE user_id = ?)`,
-    ).run(uid);
-    db.prepare(
-      `UPDATE marketplace_listings SET status = 'cancelled'
-         WHERE seller_id IN (SELECT id FROM characters WHERE user_id = ?)
-           AND status = 'active'`,
-    ).run(uid);
-    // event_log lives outside the FK cascade and holds user_id + ip +
-    // (hashed) identifiers in meta — clear it here so the right-to-erasure
-    // (GDPR Art. 17) actually removes the user's audit trail too.
-    db.prepare('DELETE FROM event_log WHERE user_id = ?').run(uid);
-    db.prepare('DELETE FROM users WHERE id = ?').run(uid); // cascades through characters/* (schema.ts:54)
-  });
-  tx(userId);
+  // Споделен erasure (вкл. разпускане на водени гилдии — иначе FK RESTRICT
+  // на guilds.leader_id проваля триенето за гилдийни лидери).
+  db.transaction((uid: number) => eraseUser(db, uid))(userId);
   res.json({ ok: true });
 });
 

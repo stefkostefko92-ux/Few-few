@@ -30,6 +30,7 @@ export default function Privacy(): React.ReactElement {
         <ul>
           <li><strong>Account</strong>: username, email, password hash (bcrypt, never plaintext), date of birth (age-gate only — we do not display it), registration date.</li>
           <li><strong>Gameplay</strong>: character name, class, level, combat history, inventory, guild membership.</li>
+          <li><strong>Communications</strong>: messages you post in public and regional chat, and private messages (DM) you exchange with friends — their content, timestamps, and the sender/recipient character. In-app notifications are also stored.</li>
           <li><strong>Technical</strong>: IP address (truncated for analytics if you opt in), country code, browser type, request logs (retained 30 days).</li>
           <li><strong>Payment</strong>: Stripe customer id, purchase metadata, billing country, VAT amount. Card details never touch our servers.</li>
           <li><strong>Safety &amp; moderation</strong>: a random device identifier (stored in your browser and sent with requests), content reports you submit, and moderation actions taken. Where an account is suspended for fraud (for example a payment chargeback), the associated IP address and device identifier are retained to enforce the suspension and prevent evasion.</li>
@@ -37,7 +38,7 @@ export default function Privacy(): React.ReactElement {
 
         <h2>3. Why we collect it (legal basis)</h2>
         <ul>
-          <li><strong>Account &amp; gameplay</strong> — Art. 6(1)(b) GDPR (performance of contract). You cannot play without us persisting your character.</li>
+          <li><strong>Account, gameplay &amp; communications</strong> — Art. 6(1)(b) GDPR (performance of contract). You cannot play without us persisting your character; chat and private messages are part of the multiplayer service you sign up for.</li>
           <li><strong>Payments &amp; VAT records</strong> — Art. 6(1)(c) GDPR (legal obligation; EU VAT directive 2006/112/EC; 7-year retention).</li>
           <li><strong>Security / fraud prevention</strong> — Art. 6(1)(f) GDPR (legitimate interest).</li>
           <li><strong>Analytics / marketing</strong> — Art. 6(1)(a) GDPR (explicit opt-in via the cookie banner). Off by default.</li>
@@ -56,6 +57,7 @@ export default function Privacy(): React.ReactElement {
           <tbody>
             <tr><td style={{ padding: '4px 8px' }}>Stripe Payments Europe Ltd.</td><td style={{ padding: '4px 8px' }}>Payment processing, VAT, OSS</td><td style={{ padding: '4px 8px' }}>EU (Ireland); SCCs for US fallback</td></tr>
             <tr><td style={{ padding: '4px 8px' }}>Sentry GmbH</td><td style={{ padding: '4px 8px' }}>Error monitoring</td><td style={{ padding: '4px 8px' }}>EU region (de.sentry.io); SCCs</td></tr>
+            <tr><td style={{ padding: '4px 8px' }}>Register.it (team.blue / Dada S.p.A.)</td><td style={{ padding: '4px 8px' }}>Transactional email delivery (e.g. password reset)</td><td style={{ padding: '4px 8px' }}>EU (Italy)</td></tr>
             <tr><td style={{ padding: '4px 8px' }}>{OPERATOR.hosting.name}</td><td style={{ padding: '4px 8px' }}>Hosting, server logs</td><td style={{ padding: '4px 8px' }}>{OPERATOR.hosting.region}</td></tr>
           </tbody>
         </table>
@@ -78,7 +80,7 @@ export default function Privacy(): React.ReactElement {
 
         <h2>6. Retention</h2>
         <p>
-          Account data is retained while your account exists. Payment records: 7 years (VAT). Request logs: 30 days. Closed accounts purged within 90 days unless legal obligations require longer.
+          Account data is retained while your account exists. Payment records: 7 years (VAT). Request logs: 30 days. Chat messages, private messages (DM) and in-app notifications: 90 days, then automatically purged. Closed accounts purged within 90 days unless legal obligations require longer.
         </p>
 
         <h2>7. Cookies and tracking</h2>

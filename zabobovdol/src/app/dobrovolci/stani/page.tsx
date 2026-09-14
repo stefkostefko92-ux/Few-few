@@ -93,7 +93,7 @@ export default function BecomeVolunteerPage() {
 
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Данните ви за контакт не се показват публично — служат само на екипа,
             за да ви свърже с хора, които се нуждаят от помощ.
           </p>

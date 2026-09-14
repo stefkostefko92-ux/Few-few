@@ -63,9 +63,17 @@ export async function generateAutoReply({ userMessage, serverName, customPrompt,
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
+  // Таймаут: Node-ският `fetch` НЯМА подразбиращ се краен срок. Заявката към
+  // Gemini виси в потока на СЪЗДАВАНЕ на тикет — увисне ли доставчикът, увисва
+  // и отварянето на тикета. `AbortSignal.timeout` е точното средство; функцията
+  // и без това е проектирана да се проваля тихо (връща null), значи прекъснатото
+  // повикване просто значи „без AI отговор“.
+  const timeoutMs = Number(process.env.AI_REPLY_TIMEOUT_MS || 15_000);
+
   try {
     const res = await fetch(url, {
       method: "POST",
+      signal: AbortSignal.timeout(timeoutMs),
       headers: {
         "Content-Type": "application/json",
         // Ключът е в header (не в URL) — да не попада в access логове/proxy-та.
@@ -98,7 +106,11 @@ export async function generateAutoReply({ userMessage, serverName, customPrompt,
     return text || null;
   } catch (err) {
     // Log but never crash ticket creation
-    console.error("[AI Reply] Error generating auto-reply:", err.message);
+    if (err?.name === "TimeoutError" || err?.name === "AbortError") {
+      console.error(`[AI Reply] Gemini не отговори за ${timeoutMs}ms — пропускам`);
+    } else {
+      console.error("[AI Reply] Error generating auto-reply:", err.message);
+    }
     return null;
   }
 }

@@ -2,11 +2,16 @@
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { sendPremiumRequired } from "../utils/premiumRequired.js";
+import { skuUrl, upgradeUrl } from "../utils/discordStore.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { INFO, WARNING } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("premium")
     .setDescription("⭐ Premium server commands")
+    .setDescriptionLocalizations(CMD_DESC_L10N.premium)
     .addSubcommand((sub) =>
       sub.setName("status")
         .setDescription("Show your server's Premium subscription status")
@@ -15,10 +20,13 @@ export default {
       sub.setName("custombot")
         .setDescription("⭐ Update your white-label bot's appearance")
         .addStringOption((opt) =>
-          opt.setName("name").setDescription("New bot name").setRequired(false)
+          // Discord ограничава името на бота до 32 знака, а URL-ите — на практика
+          // до няколкостотин. Без таван потребителят получава грешка чак от
+          // Discord API, вместо от формата.
+          opt.setName("name").setDescription("New bot name").setRequired(false).setMaxLength(32)
         )
         .addStringOption((opt) =>
-          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false)
+          opt.setName("avatar").setDescription("Avatar image URL").setRequired(false).setMaxLength(512)
         )
     )
     .addSubcommand((sub) =>
@@ -45,33 +53,57 @@ export default {
         const { data: server } = await api.get(`/bot/server/${interaction.guildId}`);
 
         if (!server.isPremium) {
-          return interaction.editReply({
-            embeds: [{
-              title: "❌ Not a Premium Server",
-              description: `This server is on the **Base (Free)** plan.\n\n🔗 Upgrade at: ${process.env.FRONTEND_URL}`,
-              color: 0xed4245,
-            }],
-          });
+          // v3.3 — покупката е САМО през Discord: native premium бутон за
+          // Premium SKU-то + линк към магазина (за white-label клиенти, където
+          // бутонът е невъзможен, sendPremiumRequired пада на линка).
+          return sendPremiumRequired(
+            interaction,
+            process.env.DISCORD_SKU_PREMIUM,
+            `This server is on the **Free** plan. Premium and White-label are sold through the Discord store — one monthly subscription per server, billed by Discord.\n🔗 ${upgradeUrl(interaction.client)}`
+          );
         }
 
         const premiumSince = server.premiumSince
           ? new Date(server.premiumSince).toLocaleDateString()
           : "Unknown";
+        const planLabel = server.plan === "whitelabel" ? "White-label" : "Premium";
+        const discordTs = (d) => `<t:${Math.floor(new Date(d).getTime() / 1000)}:D>`;
+
+        // Откъде идват правата — един източник, една дума.
+        let via, manage;
+        if (server.planSource === "discord") {
+          via = "Discord subscription";
+          // 0 active · 1 inactive · 2 ending (документацията; преводът е в backend-а)
+          const st = server.discordSubscriptionStatus;
+          const end = server.discordCurrentPeriodEnd ? discordTs(server.discordCurrentPeriodEnd) : null;
+          if (st === 2 && end) via += ` — cancelled, access until ${end}`;
+          else if (end) via += ` — renews ${end}`;
+          manage = `[Discord store](${skuUrl(interaction.client, server.discordSkuId) || upgradeUrl(interaction.client)}) · User Settings → Subscriptions`;
+        } else if (server.agencyId) {
+          via = "Agency seat";
+          manage = `[Dashboard](${process.env.FRONTEND_URL})`;
+        } else if (server.planSource === "stripe" || server.stripeSubscriptionId) {
+          via = `Legacy card subscription (${server.stripeStatus || "active"})`;
+          manage = `[Dashboard](${process.env.FRONTEND_URL}/dashboard/${interaction.guildId}/premium)`;
+        } else {
+          via = server.planSource === "manual" ? "Granted manually" : "Active";
+          manage = `[Dashboard](${process.env.FRONTEND_URL})`;
+        }
 
         await interaction.editReply({
           embeds: [{
-            title: "⭐ Premium Active",
-            description: `This server has an active **Premium** subscription.`,
+            title: `⭐ ${planLabel} Active`,
+            description: `This server has an active **${planLabel}** plan.`,
             fields: [
-              { name: "Status", value: server.stripeStatus || "active", inline: true },
-              { name: "Premium Since", value: premiumSince, inline: true },
-              { name: "Manage Billing", value: `[Dashboard](${process.env.FRONTEND_URL})`, inline: true },
+              { name: "Source", value: via, inline: false },
+              { name: "Since", value: premiumSince, inline: true },
+              { name: "Manage", value: manage, inline: true },
             ],
-            color: 0xffd700,
+            color: WARNING,
           }],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -96,7 +128,7 @@ export default {
         });
         await interaction.editReply("✅ White-label bot settings updated! Changes will apply on next bot restart.");
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
@@ -121,11 +153,11 @@ export default {
           embeds: [{
             title: "📦 Export Ready",
             description: `Head to the dashboard to download your **${type}** export as a CSV file.\n\n🔗 ${process.env.FRONTEND_URL}/dashboard/${interaction.guildId}/premium`,
-            color: 0x5865f2,
+            color: INFO,
           }],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
   },

@@ -1,0 +1,54 @@
+// @ts-check
+// Споделени статистически помощници за анализните двигатели.
+//
+// Тук живее ЕДИНСТВЕНАТА реализация на median/percentile/robustZ, за да не се
+// дублира между `analyze.js` и `forensics.js`. Поведението е ТОЧНО както преди
+// изнасянето (byte-for-byte резултат) — това е чист DRY рефактор, без промяна на
+// нито едно число.
+
+/**
+ * Медиана на масив от числа (празен → null).
+ * @param {number[]} arr
+ * @returns {number|null}
+ */
+export function median(arr) {
+  if (arr.length === 0) return null;
+  const s = [...arr].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// Персентил по КОНСЕРВАТИВНА семантика (nearest-rank, горен вариант): индексът е
+// `floor((p/100) * n)`. За праговата употреба (P90 при флаговете) това връща по-ВИСОКА
+// граница от класическата линейна интерполация → по-МАЛКО флагнати структури. Това е
+// УМИШЛЕН методологичен избор, съвместим с принципа на проекта „индикатор, не
+// доказателство; точност > покритие" — по-добре да не флагнем, отколкото да флагнем
+// погрешно. Измерено (2026-07): преминаване към класическа интерполация би вдигнало
+// форензик флаговете 187→205 (+10 структури), т.е. по-агресивно приписване — не го
+// искаме. Затова НЕ е bug: това е документиран и тестван консервативен избор.
+// (Ако някога потрябва класически персентил за друга цел — добави отделна функция,
+// не пипай тази.)
+/**
+ * Консервативен персентил (nearest-rank, горен вариант) — виж бележката горе.
+ * @param {number[]} arr
+ * @param {number} p процент (0–100)
+ * @returns {number|null}
+ */
+export function percentile(arr, p) {
+  if (arr.length === 0) return null;
+  const s = [...arr].sort((a, b) => a - b);
+  const i = Math.min(s.length - 1, Math.floor((p / 100) * s.length));
+  return s[i];
+}
+
+/**
+ * Robust z-score чрез медиана и MAD (устойчив на екстремни стойности).
+ * @param {number|null|undefined} v
+ * @param {number|null|undefined} med
+ * @param {number|null|undefined} mad
+ * @returns {number|null}
+ */
+export function robustZ(v, med, mad) {
+  if (v == null || med == null || !mad) return null;
+  return (v - med) / (1.4826 * mad);
+}

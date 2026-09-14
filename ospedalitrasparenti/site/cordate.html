@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
+<title>Le cordate: chi concorre sempre insieme e chi non vince mai — Ospedali Trasparenti</title>
+<meta name="description" content="Coppie di imprese che concorrono spesso alle stesse gare sanitarie dove una vince e l’altra non vince mai: un indicatore di possibile cover bidding, da verificare. Dati ANAC.">
+<link rel="canonical" href="https://ospedalitrasparenti.it/cordate.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ospedali Trasparenti">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Le cordate: chi concorre sempre insieme e chi non vince mai — Ospedali Trasparenti">
+<meta property="og:description" content="Coppie di imprese che concorrono spesso alle stesse gare sanitarie dove una vince e l’altra non vince mai: un indicatore di possibile cover bidding, da verificare. Dati ANAC.">
+<meta property="og:url" content="https://ospedalitrasparenti.it/cordate.html">
+<meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Le cordate: chi concorre sempre insieme e chi non vince mai — Ospedali Trasparenti">
+<meta name="twitter:description" content="Coppie di imprese che concorrono spesso alle stesse gare sanitarie dove una vince e l’altra non vince mai: un indicatore di possibile cover bidding, da verificare. Dati ANAC.">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@context":"https://schema.org","@type":"Article","headline":"Chi si presenta insieme alle gare","description":"Coppie di società che concorrono insieme dove una vince e l’altra mai: un indicatore da verificare.","inLanguage":"it","datePublished":"2026-07-13","dateModified":"2026-07-13","mainEntityOfPage":"https://ospedalitrasparenti.it/cordate.html","author":{"@type":"Organization","name":"Carbon Stealth VCC","url":"https://carbonstealth.eu"},"publisher":{"@id":"https://ospedalitrasparenti.it/#org"},"isBasedOn":["https://dati.anticorruzione.it/opendata","https://openbdap.rgs.mef.gov.it/it/SSN/Analizza","https://www.dati.salute.gov.it/"]},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ospedalitrasparenti.it/"},{"@type":"ListItem","position":2,"name":"Approfondimenti","item":"https://ospedalitrasparenti.it/approfondimenti.html"},{"@type":"ListItem","position":3,"name":"Cordate nelle gare","item":"https://ospedalitrasparenti.it/cordate.html"}]}]}</script>
+<script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
+мигане на грешната тема. Единственият blocking script в head — само за темата. */
+try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')document.documentElement.dataset.theme=_t;}catch(e){}</script>
+<style>
+:root{
+  /* палитра — светла тема (институционална, сдържана) */
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
+  --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
+  --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
+  --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  /* скала на разстоянията (4-точкова база) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* радиуси и релеф */
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(16,32,48,.06);
+  --shadow:0 1px 3px rgba(16,32,48,.07),0 10px 28px rgba(16,32,48,.05);
+  --maxw:1120px; --measure:70ch;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+/* Тъмни променливи — блокът е един и същ за двата случая:
+   1) изричен ръчен избор :root[data-theme="dark"] (печели винаги);
+   2) авто по системата, но САМО без ръчен избор :root:not([data-theme]).
+   Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
+:root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+  --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+  --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+  /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
+     държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+    --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+    --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:3px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* ---------- Masthead / навигация ---------- */
+header.site{background:var(--surface);border-top:3px solid var(--brand);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:8px 24px;min-height:58px;flex-wrap:wrap}
+.brand{display:inline-flex;align-items:center;line-height:0}
+.brand-logo{height:36px;width:auto;display:block}
+/* тъмна тема: тъмносиният надпис не се чете на тъмния хедър → лека светла
+   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата
+   (важи и при ръчен избор, и при авто — виж бележката при променливите) */
+:root[data-theme="dark"] .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+}
+nav.main{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
+nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px;
+  line-height:1.2;white-space:nowrap;transition:background-color .15s,color .15s}
+nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decoration:none}
+nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
+/* Бутон-хамбургер — само за тесни екрани (виж @media по-долу); на desktop скрит.
+   44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-left:auto;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
+.nav-toggle .ico-close{display:none}
+.nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle[aria-expanded="true"] .ico-open{display:none}
+.nav-toggle[aria-expanded="true"] .ico-close{display:block}
+/* Превключвател светла/тъмна тема — видим на ВСИЧКИ ширини (за разлика от
+   hamburger-а). Иконата (слънце/луна) следва ЕФЕКТИВНАТА тема през CSS,
+   независимо от JS-тайминга → без грешна икона при първия paint. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
+/* по подр. (светло/авто-светло) → луна („премини на тъмно"); тъмно → слънце */
+.theme-toggle .ico-sun{display:none}
+.theme-toggle .ico-moon{display:block}
+:root[data-theme="dark"] .theme-toggle .ico-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .ico-sun{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
+  :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
+}
+/* desktop: двуетажен masthead. Ред 1: лого вляво + theme бутон в десния ръб
+   (margin-left:auto; DOM редът brand→theme→nav вече е правилният визуален ред).
+   Ред 2: навигацията на цял ред (flex-basis:100%) с тънка разделителна линия —
+   при 13 линка тя така или иначе не се побира до логото, затова редът е
+   умишлен, а не счупен fallback (преди: theme висеше сам на трети ред). */
+@media(min-width:901px){
+  header.site .wrap{padding-top:8px;row-gap:4px}
+  .theme-toggle{margin-left:auto}
+  nav.main{flex-basis:100%;margin-left:0;justify-content:center;
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
+}
+@media(max-width:900px){
+  header.site{position:static;border-top-width:3px}
+  /* Ред 1: лого вляво + тема + hamburger вдясно; менюто е на нов ред
+     (flex-basis:100%), скрито до отваряне. Без хоризонтален скрол. */
+  header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
+    padding-top:8px;padding-bottom:8px}
+  .brand{margin-right:auto;margin-bottom:0}
+  .brand-logo{height:32px}
+  /* само brand носи auto-полето → тема и hamburger са слепени вдясно с малък луфт */
+  .theme-toggle{margin-left:0}
+  .nav-toggle{display:inline-flex;margin-left:8px}
+  nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
+    flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
+    border-top:1px solid var(--line);padding-top:5px}
+  nav.main.open{display:flex}
+  nav.main a{display:flex;align-items:center;min-height:44px;
+    padding:11px 12px;border-radius:8px;white-space:normal}
+}
+main{padding:var(--s7) 0 var(--s6)}
+
+/* ---------- Типографска скала ---------- */
+h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
+  margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
+h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
+h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
+p{max-width:var(--measure)}
+.lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
+  max-width:66ch;margin:0 0 var(--s3)}
+main>.wrap>h1:first-child + .lead{font-size:clamp(17px,1rem + .4vw,20px)}
+
+/* ---------- Карти / решетка ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:var(--s5)}
+.grid{display:grid;gap:var(--s4)}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;
+  border-left:3px solid var(--line-2)}
+.kpi .n{font-size:clamp(24px,1.4rem + .7vw,30px);font-weight:700;letter-spacing:-.02em;
+  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+.kpi:has(.n.neg){border-left-color:var(--neg)} .kpi:has(.n.pos){border-left-color:var(--pos)}
+
+/* ---------- Таблици ---------- */
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow-sm)}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+th{background:var(--surface-2);font-size:11.5px;font-weight:650;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
+tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+
+/* ---------- Значки и чипове ---------- */
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;
+  line-height:1.5;color:#fff;white-space:nowrap;letter-spacing:.01em}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;
+  font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface);
+  transition:border-color .15s,background-color .15s}
+.chip:hover{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-ink);text-decoration:none}
+
+/* ---------- Сигнали ---------- */
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:var(--radius-sm);
+  background:var(--surface);padding:13px 16px;margin:var(--s3) 0;box-shadow:var(--shadow-sm)}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:5px;max-width:var(--measure)}
+
+/* ---------- Форма / контроли ---------- */
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand-tint)}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:10px 18px;border:1px solid var(--brand);border-radius:var(--radius-sm);
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:650;transition:filter .15s}
+.controls button:hover{filter:brightness(1.08)}
+
+/* ---------- Карта на Италия ---------- */
+.mapfig{margin:var(--s6) 0}
+.mapfig svg.italia{display:block;width:100%;max-width:660px;height:auto;margin:0 auto}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a path{transition:stroke-width .12s}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.mapfig svg a:hover path{stroke:var(--ink);stroke-width:1.6}
+.mapfig svg a:focus{outline:none}
+.mapfig svg a:focus path{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:var(--s3) 0;justify-content:center}
+
+/* ---------- Помощни / бележки ---------- */
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 9%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 32%);
+  border-radius:var(--radius-sm);padding:13px 16px;font-size:14.5px;color:var(--ink);
+  max-width:var(--measure)}
+.note strong{color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:9px 16px;border-radius:0 0 8px 0;z-index:20;font-weight:600}
+.skip:focus{left:0}
+
+/* ---------- Графики ---------- */
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.4;max-width:var(--measure)}
+.hbars{display:flex;flex-direction:column;gap:9px;margin:var(--s2) 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:650}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+/* САМО за графиките (.chart) — глобален selector би презаписал атрибутите
+   на етикетите върху картата на Италия (CSS бие SVG presentation атрибути) */
+.chart svg .grid-line{stroke:var(--line)} .chart svg text{fill:var(--muted);font-size:11px}
+
+/* ---------- Footer ---------- */
+footer.site{border-top:1px solid var(--line);background:var(--surface-2);
+  color:var(--muted);font-size:13.5px;padding:var(--s6) 0 var(--s7);margin-top:var(--s6)}
+footer.site .wrap>p{max-width:82ch;margin:0 0 var(--s3)}
+footer.site strong{color:var(--ink-2)}
+footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+footer.site a:hover{color:var(--brand)}
+.backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
+
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
+/* ---------- Мобилно: touch таргети ≥44px ---------- */
+@media(max-width:640px){
+  .controls input,.controls select,.controls button{min-height:44px}
+  .chip{padding:9px 14px}
+  .backlink{padding:6px 0;display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* ---------- Достъпност: намалено движение ---------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
+  <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambia tema chiaro o scuro" title="Tema chiaro / scuro">
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></svg>
+  </button>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
+    <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html" aria-current="page">Inchiesta</a><a href="conflitti.html">Conflitti</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="approfondimenti.html">Approfondimenti</a><a href="dati.html">Dati</a><a href="glossario.html">Glossario</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="inchiesta.html">← Inchiesta</a>
+<h1>Le «cordate»: chi concorre sempre insieme, e chi non vince mai</h1>
+<p class="lead">La letteratura anticorruzione (OECD) descrive uno schema chiamato <em>cover bidding</em>: due imprese si
+presentano spesso alle stesse gare, ma una risulta aggiudicataria e l’altra no. Qui isoliamo le coppie di fornitori
+della sanità che ricorrono con questo profilo statistico. È un profilo che <em>può</em> avere anche cause del tutto
+lecite (mercati di nicchia, specializzazioni, requisiti tecnici). <strong>Non è una prova di accordo</strong>: è un
+indicatore da verificare.</p>
+<p class="note" style="margin-top:0"><strong>Importante.</strong> L’accostamento di due nomi in questa pagina
+<strong>non implica alcun accordo tra le due imprese né alcuna condotta illecita</strong>: è un dato statistico sulle
+gare. Ritieni un’informazione inesatta? <a href="note-legali.html#rettifiche">Richiedi una rettifica</a>.</p>
+<div class="grid kpis">
+  <div class="card kpi"><div class="n ">152</div><div class="l">Coppie segnalate</div></div>
+  <div class="card kpi"><div class="n ">28 gare insieme</div><div class="l">Coppia più ricorrente</div></div>
+  <div class="card kpi"><div class="n neg">5</div><div class="l">…di cui vinte da una sola</div></div>
+  <div class="card kpi"><div class="n neg">0</div><div class="l">…vinte dall’altra</div></div>
+</div>
+<h2>Le coppie ricorrenti</h2>
+<p class="small muted">Ordinate per numero di gare in cui compaiono entrambe. «Vince» = risulta aggiudicataria di
+almeno un lotto della gara; se in una gara vincono entrambe (lotti diversi) la coppia <strong>non</strong> è conteggiata.</p>
+<div class="tablewrap"><table>
+  <thead><tr>
+    <th scope="col">Risulta aggiudicataria</th>
+    <th scope="col">Si presenta, non si aggiudica</th>
+    <th class="num" scope="col">Gare insieme</th>
+    <th class="num" scope="col">Vinte dalla prima</th>
+    <th class="num" scope="col">Valore</th>
+    <th class="num" scope="col" title="Numero di committenti pubblici diversi presso cui la coppia ricorre">Stazioni appaltanti</th>
+  </tr></thead>
+  <tbody><tr>
+      <td>NACATUR INTERNATIONAL IMPORT EXPORT S.R.L.</td>
+      <td>PIKDARE-SOCIETA&#39; PER AZIONI</td>
+      <td class="num">28</td>
+      <td class="num">5 <span class="small muted">(17,9%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>BENEFIS S.R.L.</td>
+      <td>KRAPE ITALIA S.R.L.</td>
+      <td class="num">22</td>
+      <td class="num">16 <span class="small muted">(72,7%)</span></td>
+      <td class="num">1 mln €</td>
+      <td class="num">6</td></tr><tr>
+      <td>BIO SUD MEDICAL SYSTEMS - S.R.L.</td>
+      <td>TECNOMEDICAL S.R.L.</td>
+      <td class="num">22</td>
+      <td class="num">7 <span class="small muted">(31,8%)</span></td>
+      <td class="num">1 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>METASYSTEMS S.R.L.</td>
+      <td>RESNOVA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="num">21</td>
+      <td class="num">18 <span class="small muted">(85,7%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td>MEDI CORP S.R.L.</td>
+      <td class="num">19</td>
+      <td class="num">5 <span class="small muted">(26,3%)</span></td>
+      <td class="num">2 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>MEDLINE INTERNATIONAL ITALY S.R.L.</td>
+      <td>LOHMANN &amp; RAUSCHER S.R.L.</td>
+      <td class="num">17</td>
+      <td class="num">3 <span class="small muted">(17,6%)</span></td>
+      <td class="num">1 mln €</td>
+      <td class="num">5</td></tr><tr>
+      <td>BIO SUD MEDICAL SYSTEMS - S.R.L.</td>
+      <td>ELEMED S.R.L.</td>
+      <td class="num">16</td>
+      <td class="num">6 <span class="small muted">(37,5%)</span></td>
+      <td class="num">1 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>SOL S.P.A.</td>
+      <td>DIAMEDICA S.R.L.</td>
+      <td class="num">16</td>
+      <td class="num">9 <span class="small muted">(56,3%)</span></td>
+      <td class="num">331 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td>A.M.G. MEDICAL S.R.L.</td>
+      <td class="num">15</td>
+      <td class="num">3 <span class="small muted">(20%)</span></td>
+      <td class="num">888 mila €</td>
+      <td class="num">3</td></tr><tr>
+      <td>GI GROUP S.P.A.</td>
+      <td>TEMPOR SPA AGENZIA PER IL LAVORO</td>
+      <td class="num">14</td>
+      <td class="num">3 <span class="small muted">(21,4%)</span></td>
+      <td class="num">142 mln €</td>
+      <td class="num">2</td></tr><tr>
+      <td>E-WORK S.P.A.</td>
+      <td>TEMPOR SPA AGENZIA PER IL LAVORO</td>
+      <td class="num">14</td>
+      <td class="num">3 <span class="small muted">(21,4%)</span></td>
+      <td class="num">142 mln €</td>
+      <td class="num">2</td></tr><tr>
+      <td>ORIENTA S.P.A. - SOCIETA&#39; BENEFIT</td>
+      <td>TEMPOR SPA AGENZIA PER IL LAVORO</td>
+      <td class="num">14</td>
+      <td class="num">3 <span class="small muted">(21,4%)</span></td>
+      <td class="num">142 mln €</td>
+      <td class="num">2</td></tr><tr>
+      <td>SCOGNAMIGLIO SRL</td>
+      <td>BAXTER S.P.A.</td>
+      <td class="num">14</td>
+      <td class="num">5 <span class="small muted">(35,7%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">4</td></tr><tr>
+      <td>MED TRADE SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA SEMPLIFICATA</td>
+      <td>LOHMANN &amp; RAUSCHER S.R.L.</td>
+      <td class="num">14</td>
+      <td class="num">3 <span class="small muted">(21,4%)</span></td>
+      <td class="num">1 mln €</td>
+      <td class="num">4</td></tr><tr>
+      <td>BENEFIS S.R.L.</td>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td class="num">14</td>
+      <td class="num">11 <span class="small muted">(78,6%)</span></td>
+      <td class="num">812 mila €</td>
+      <td class="num">5</td></tr><tr>
+      <td>BENEFIS S.R.L.</td>
+      <td>F.A.S.E. S.R.L.</td>
+      <td class="num">14</td>
+      <td class="num">9 <span class="small muted">(64,3%)</span></td>
+      <td class="num">436 mila €</td>
+      <td class="num">11</td></tr><tr>
+      <td>E-WORK S.P.A.</td>
+      <td>ADECCO ITALIA SPA</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>GI GROUP S.P.A.</td>
+      <td>ETJCA  S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>SYNERGIE ITALIA - AGENZIA PER IL LAVORO - S.P.A.</td>
+      <td>ETJCA  S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>E-WORK S.P.A.</td>
+      <td>ETJCA  S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>ORIENTA S.P.A. - SOCIETA&#39; BENEFIT</td>
+      <td>ETJCA  S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>GI GROUP S.P.A.</td>
+      <td>AGENZIA PER IL LAVORO OSMOSI S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>SYNERGIE ITALIA - AGENZIA PER IL LAVORO - S.P.A.</td>
+      <td>TEMPOR SPA AGENZIA PER IL LAVORO</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>SYNERGIE ITALIA - AGENZIA PER IL LAVORO - S.P.A.</td>
+      <td>AGENZIA PER IL LAVORO OSMOSI S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>E-WORK S.P.A.</td>
+      <td>RANDSTAD ITALIA S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>E-WORK S.P.A.</td>
+      <td>AGENZIA PER IL LAVORO OSMOSI S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>ORIENTA S.P.A. - SOCIETA&#39; BENEFIT</td>
+      <td>AGENZIA PER IL LAVORO OSMOSI S.P.A.</td>
+      <td class="num">13</td>
+      <td class="num">3 <span class="small muted">(23,1%)</span></td>
+      <td class="num">97 mln €</td>
+      <td class="num">1</td></tr><tr>
+      <td>TONERGROSS SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td>ECO LASER INFORMATICA - S.R.L.</td>
+      <td class="num">13</td>
+      <td class="num">6 <span class="small muted">(46,2%)</span></td>
+      <td class="num">8 mln €</td>
+      <td class="num">4</td></tr><tr>
+      <td>INTEGRA LIFESCIENCES ITALY S.R.L.</td>
+      <td>CHIRURMEDICA S.R.L.</td>
+      <td class="num">13</td>
+      <td class="num">4 <span class="small muted">(30,8%)</span></td>
+      <td class="num">637 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>NACATUR INTERNATIONAL IMPORT EXPORT S.R.L.</td>
+      <td>RAYS  S.P.A.</td>
+      <td class="num">12</td>
+      <td class="num">4 <span class="small muted">(33,3%)</span></td>
+      <td class="num">5 mln €</td>
+      <td class="num">4</td></tr><tr>
+      <td>POLYTECH HEALTH &amp; AESTHETICS ITALIA SRL</td>
+      <td>SILIMED S.R.L.</td>
+      <td class="num">12</td>
+      <td class="num">7 <span class="small muted">(58,3%)</span></td>
+      <td class="num">4 mln €</td>
+      <td class="num">6</td></tr><tr>
+      <td>ESAOTE S.P.A.</td>
+      <td>MEDITECH S.R.L.</td>
+      <td class="num">12</td>
+      <td class="num">3 <span class="small muted">(25%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">5</td></tr><tr>
+      <td>ASSUT EUROPE S.P.A.</td>
+      <td>TECNOMEDICAL S.R.L.</td>
+      <td class="num">12</td>
+      <td class="num">6 <span class="small muted">(50%)</span></td>
+      <td class="num">907 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td>F.A.S.E. S.R.L.</td>
+      <td class="num">12</td>
+      <td class="num">5 <span class="small muted">(41,7%)</span></td>
+      <td class="num">821 mila €</td>
+      <td class="num">5</td></tr><tr>
+      <td>MED ITALIA BIOMEDICA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td>STUDIO PACINOTTI S.R.L.</td>
+      <td class="num">12</td>
+      <td class="num">7 <span class="small muted">(58,3%)</span></td>
+      <td class="num">235 mila €</td>
+      <td class="num">2</td></tr><tr>
+      <td>BURKE &amp; BURKE S.P.A.</td>
+      <td>EUROMED SRL</td>
+      <td class="num">11</td>
+      <td class="num">8 <span class="small muted">(72,7%)</span></td>
+      <td class="num">5 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>SCOGNAMIGLIO SRL</td>
+      <td>MACROPHARM S.R.L.</td>
+      <td class="num">11</td>
+      <td class="num">4 <span class="small muted">(36,4%)</span></td>
+      <td class="num">2 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>FIMAS S.R.L.</td>
+      <td>MEDIPOINT SRL</td>
+      <td class="num">11</td>
+      <td class="num">6 <span class="small muted">(54,5%)</span></td>
+      <td class="num">782 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td>DEAS   S.R.L.</td>
+      <td class="num">11</td>
+      <td class="num">6 <span class="small muted">(54,5%)</span></td>
+      <td class="num">770 mila €</td>
+      <td class="num">6</td></tr><tr>
+      <td>SCOGNAMIGLIO SRL</td>
+      <td>A.M.G. MEDICAL S.R.L.</td>
+      <td class="num">10</td>
+      <td class="num">3 <span class="small muted">(30%)</span></td>
+      <td class="num">2 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>BIO SUD MEDICAL SYSTEMS - S.R.L.</td>
+      <td>B. BRAUN MILANO SPA</td>
+      <td class="num">10</td>
+      <td class="num">3 <span class="small muted">(30%)</span></td>
+      <td class="num">601 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>INNOVA HTS S.R.L.</td>
+      <td>COOK ITALIA S.R.L.</td>
+      <td class="num">10</td>
+      <td class="num">3 <span class="small muted">(30%)</span></td>
+      <td class="num">584 mila €</td>
+      <td class="num">2</td></tr><tr>
+      <td>BENEFIS S.R.L.</td>
+      <td>A.M.G. MEDICAL S.R.L.</td>
+      <td class="num">10</td>
+      <td class="num">9 <span class="small muted">(90%)</span></td>
+      <td class="num">510 mila €</td>
+      <td class="num">4</td></tr><tr>
+      <td>B. BRAUN MILANO SPA</td>
+      <td>BAXTER S.P.A.</td>
+      <td class="num">10</td>
+      <td class="num">4 <span class="small muted">(40%)</span></td>
+      <td class="num">481 mila €</td>
+      <td class="num">5</td></tr><tr>
+      <td>MED ITALIA BIOMEDICA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td>STARMED S.R.L.</td>
+      <td class="num">10</td>
+      <td class="num">5 <span class="small muted">(50%)</span></td>
+      <td class="num">205 mila €</td>
+      <td class="num">2</td></tr><tr>
+      <td>ECO LASER INFORMATICA - S.R.L.</td>
+      <td>MYO SPA</td>
+      <td class="num">9</td>
+      <td class="num">3 <span class="small muted">(33,3%)</span></td>
+      <td class="num">4 mln €</td>
+      <td class="num">4</td></tr><tr>
+      <td>TECNICA SCIENTIFICA SERVICE S.R.L. SIGLABILE TSS MEDICAL S.R.L. O TSS S.R.L.</td>
+      <td>BAXTER S.P.A.</td>
+      <td class="num">9</td>
+      <td class="num">3 <span class="small muted">(33,3%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>GRUPA ITALIA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td>MEDIBERG SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="num">9</td>
+      <td class="num">6 <span class="small muted">(66,7%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td>SILIMED S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">6 <span class="small muted">(66,7%)</span></td>
+      <td class="num">3 mln €</td>
+      <td class="num">4</td></tr><tr>
+      <td>SCOGNAMIGLIO SRL</td>
+      <td>MULTIMEDICAL S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">3 <span class="small muted">(33,3%)</span></td>
+      <td class="num">2 mln €</td>
+      <td class="num">3</td></tr><tr>
+      <td>BIOTRONIK ITALIA S.P.A.</td>
+      <td>MEDI CORP S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">3 <span class="small muted">(33,3%)</span></td>
+      <td class="num">1 mln €</td>
+      <td class="num">2</td></tr><tr>
+      <td>BIO SUD MEDICAL SYSTEMS - S.R.L.</td>
+      <td>MEDI CORP S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">4 <span class="small muted">(44,4%)</span></td>
+      <td class="num">609 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>EFFEBI HOSPITAL S.R.L.</td>
+      <td>E.F.M. EMANUELE FIORE MANCINI SRL</td>
+      <td class="num">9</td>
+      <td class="num">6 <span class="small muted">(66,7%)</span></td>
+      <td class="num">557 mila €</td>
+      <td class="num">4</td></tr><tr>
+      <td>BETATEX S.P.A.</td>
+      <td>N.G.C. MEDICAL S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">4 <span class="small muted">(44,4%)</span></td>
+      <td class="num">552 mila €</td>
+      <td class="num">4</td></tr><tr>
+      <td>BENEFIS S.R.L.</td>
+      <td>VINCAL - SOCIETA A RESPONSABILITA LIMITATA</td>
+      <td class="num">9</td>
+      <td class="num">5 <span class="small muted">(55,6%)</span></td>
+      <td class="num">534 mila €</td>
+      <td class="num">6</td></tr><tr>
+      <td>CO.DI.SAN. COMMERCIO DISTRIBUZIONE SANITARI S.P.A.</td>
+      <td>F.A.S.E. S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">4 <span class="small muted">(44,4%)</span></td>
+      <td class="num">470 mila €</td>
+      <td class="num">5</td></tr><tr>
+      <td>KALTEK S.R.L.</td>
+      <td>BIO-OPTICA MILANO S.P.A.</td>
+      <td class="num">9</td>
+      <td class="num">3 <span class="small muted">(33,3%)</span></td>
+      <td class="num">401 mila €</td>
+      <td class="num">8</td></tr><tr>
+      <td>FIMAS S.R.L.</td>
+      <td>WOLFYR ITALIA SRL</td>
+      <td class="num">9</td>
+      <td class="num">5 <span class="small muted">(55,6%)</span></td>
+      <td class="num">282 mila €</td>
+      <td class="num">1</td></tr><tr>
+      <td>TECSUD S.R.L.</td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="num">9</td>
+      <td class="num">5 <span class="small muted">(55,6%)</span></td>
+      <td class="num">215 mila €</td>
+      <td class="num">2</td></tr><tr>
+      <td>TECSUD S.R.L.</td>
+      <td>CANTEL MEDICAL (ITALY) S.R.L.</td>
+      <td class="num">9</td>
+      <td class="num">7 <span class="small muted">(77,8%)</span></td>
+      <td class="num">172 mila €</td>
+      <td class="num">2</td></tr></tbody>
+</table></div>
+<h2>Chi vince (quasi) sempre: i dominatori locali</h2>
+<p class="small muted">Imprese che vincono almeno l’80% delle gare competitive a cui partecipano, presso lo stesso
+committente, in almeno 6 gare. «Domìni» = quanti committenti diversi dove si ripete lo schema. Anche qui: può essere
+competitività reale o specializzazione, è un <strong>indicatore</strong>.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Impresa</th><th class="num" scope="col">Committenti dominati</th><th class="num" scope="col">Gare vinte/partecipate</th><th class="num" scope="col">Valore</th></tr></thead>
+  <tbody><tr><td>MEDTRONIC ITALIA S.P.A.</td><td class="num">32</td>
+      <td class="num">675/721 <span class="small muted">(93,6%)</span></td>
+      <td class="num">1 mld €</td></tr><tr><td>BOSTON SCIENTIFIC SPA</td><td class="num">22</td>
+      <td class="num">454/475 <span class="small muted">(95,6%)</span></td>
+      <td class="num">597 mln €</td></tr><tr><td>ABBOTT MEDICAL ITALIA S.R.L.</td><td class="num">18</td>
+      <td class="num">213/219 <span class="small muted">(97,3%)</span></td>
+      <td class="num">454 mln €</td></tr><tr><td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td><td class="num">17</td>
+      <td class="num">294/295 <span class="small muted">(99,7%)</span></td>
+      <td class="num">508 mln €</td></tr><tr><td>B. BRAUN MILANO SPA</td><td class="num">14</td>
+      <td class="num">180/189 <span class="small muted">(95,2%)</span></td>
+      <td class="num">348 mln €</td></tr><tr><td>ZIMMER BIOMET ITALIA S.R.L.</td><td class="num">11</td>
+      <td class="num">245/246 <span class="small muted">(99,6%)</span></td>
+      <td class="num">339 mln €</td></tr><tr><td>COLOPLAST - S.P.A.</td><td class="num">10</td>
+      <td class="num">172/176 <span class="small muted">(97,7%)</span></td>
+      <td class="num">249 mln €</td></tr><tr><td>COOK ITALIA S.R.L.</td><td class="num">9</td>
+      <td class="num">138/141 <span class="small muted">(97,9%)</span></td>
+      <td class="num">125 mln €</td></tr><tr><td>OLYMPUS ITALIA S.R.L.</td><td class="num">8</td>
+      <td class="num">113/120 <span class="small muted">(94,2%)</span></td>
+      <td class="num">338 mln €</td></tr><tr><td>STRYKER ITALIA SRL</td><td class="num">8</td>
+      <td class="num">109/109 <span class="small muted">(100%)</span></td>
+      <td class="num">139 mln €</td></tr><tr><td>BENEFIS S.R.L.</td><td class="num">8</td>
+      <td class="num">96/100 <span class="small muted">(96%)</span></td>
+      <td class="num">19 mln €</td></tr><tr><td>DANONE NUTRICIA SPA SOCIETA&#39; BENEFIT IN FORMA ABBREVIATA D.N. SPA O DANONE N. SPA S. BENEFIT O DANONE S.P.A SOCIETA&#39; BENEFIT O D. S.P.A.</td><td class="num">8</td>
+      <td class="num">92/96 <span class="small muted">(95,8%)</span></td>
+      <td class="num">22 mln €</td></tr><tr><td>TELEFLEX MEDICAL S.R.L.</td><td class="num">7</td>
+      <td class="num">149/160 <span class="small muted">(93,1%)</span></td>
+      <td class="num">288 mln €</td></tr><tr><td>ARTHREX ITALIA S.R.L.</td><td class="num">7</td>
+      <td class="num">128/130 <span class="small muted">(98,5%)</span></td>
+      <td class="num">129 mln €</td></tr><tr><td>BECTON, DICKINSON ITALIA S.P.A.</td><td class="num">7</td>
+      <td class="num">106/110 <span class="small muted">(96,4%)</span></td>
+      <td class="num">147 mln €</td></tr><tr><td>LIMACORPORATE S.P.A.</td><td class="num">7</td>
+      <td class="num">97/97 <span class="small muted">(100%)</span></td>
+      <td class="num">155 mln €</td></tr><tr><td>CURIUM ITALY S.R.L.</td><td class="num">7</td>
+      <td class="num">94/96 <span class="small muted">(97,9%)</span></td>
+      <td class="num">40 mln €</td></tr><tr><td>INNOVAMEDICA S.P.A.</td><td class="num">7</td>
+      <td class="num">67/68 <span class="small muted">(98,5%)</span></td>
+      <td class="num">34 mln €</td></tr><tr><td>STRYKER ITALIA S.R.L.</td><td class="num">6</td>
+      <td class="num">210/213 <span class="small muted">(98,6%)</span></td>
+      <td class="num">315 mln €</td></tr><tr><td>CONVATEC ITALIA S.R.L.</td><td class="num">6</td>
+      <td class="num">112/112 <span class="small muted">(100%)</span></td>
+      <td class="num">257 mln €</td></tr><tr><td>VIOLATECH SRL</td><td class="num">6</td>
+      <td class="num">103/103 <span class="small muted">(100%)</span></td>
+      <td class="num">21 mln €</td></tr><tr><td>LABOINDUSTRIA S.P.A.</td><td class="num">6</td>
+      <td class="num">102/106 <span class="small muted">(96,2%)</span></td>
+      <td class="num">20 mln €</td></tr><tr><td>UBER ROS S.P.A.</td><td class="num">6</td>
+      <td class="num">86/87 <span class="small muted">(98,9%)</span></td>
+      <td class="num">154 mln €</td></tr><tr><td>ORTHOFIX S.R.L.</td><td class="num">6</td>
+      <td class="num">79/79 <span class="small muted">(100%)</span></td>
+      <td class="num">146 mln €</td></tr><tr><td>SMITH &amp; NEPHEW SRL</td><td class="num">6</td>
+      <td class="num">71/71 <span class="small muted">(100%)</span></td>
+      <td class="num">151 mln €</td></tr><tr><td>W.L. GORE &amp; ASSOCIATI S.R.L.  CON SIGLA GORE S.R.L.</td><td class="num">6</td>
+      <td class="num">66/66 <span class="small muted">(100%)</span></td>
+      <td class="num">58 mln €</td></tr><tr><td>MIKAI SPA</td><td class="num">6</td>
+      <td class="num">62/62 <span class="small muted">(100%)</span></td>
+      <td class="num">146 mln €</td></tr><tr><td>GETINGE ITALIA S.R.L.</td><td class="num">6</td>
+      <td class="num">54/57 <span class="small muted">(94,7%)</span></td>
+      <td class="num">50 mln €</td></tr><tr><td>HOLLISTER S.P.A.</td><td class="num">5</td>
+      <td class="num">108/108 <span class="small muted">(100%)</span></td>
+      <td class="num">268 mln €</td></tr><tr><td>M.G. LORENZATTO - S.R.L.</td><td class="num">5</td>
+      <td class="num">93/97 <span class="small muted">(95,9%)</span></td>
+      <td class="num">40 mln €</td></tr></tbody>
+</table></div>
+<div class="note"><strong>Come leggere — e le cautele.</strong> Questo è l’indicatore più delicato del sito.
+Due imprese che concorrono spesso insieme, dove una si aggiudica la gara e l’altra no, <em>possono</em> — in astratto —
+richiamare uno schema di concorrenza solo apparente. Ma nella grande maggioranza dei casi ci sono spiegazioni del tutto
+lecite: mercati di nicchia con pochi operatori, specializzazioni di prodotto, preferenze cliniche verso una marca,
+lotti tecnicamente diversi. Per questo:
+<ul>
+<li>Consideriamo solo <strong>società di capitali</strong> (S.p.A., S.r.l., cooperative, consorzi): mai ditte individuali o nomi di persona fisica.</li>
+<li>Escludiamo i <strong>raggruppamenti</strong> (ATI, consorzi, avvalimento): lì le imprese sono <em>alleate</em> nella stessa offerta, non rivali.</li>
+<li>Contiamo <strong>tutti</strong> gli aggiudicatari di una gara (per lotto): se entrambe vincono qualcosa, la coppia non è segnalata.</li>
+</ul>
+È un <strong>punto di partenza per una verifica</strong>, non un verdetto. La sede competente per gli accordi
+di gara è l’<a href="https://www.agcm.it/" target="_blank" rel="noopener">Autorità Garante della Concorrenza (AGCM)</a>;
+per la titolarità delle imprese, il Registro Imprese.</div>
+<p class="small muted"><strong>Continua l'indagine:</strong> <a href="segnali-gare.html">i semafori delle gare</a> ·
+<a href="aggiudicazioni.html">quanti partecipano davvero alle gare</a> · <a href="fornitori.html">i profili dei fornitori</a>.</p>
+<p class="small muted">Fonte: ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), gare sanitarie competitive 2023–2025. Soglie: almeno 5 gare insieme, la vincitrice ne
+vince almeno 3, l’altra nessuna; escluse le gare con più di 15
+concorrenti. Dati grezzi: <a href="dati.html">open data</a> (cordate.json).</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.
+  <a href="verifiche.html">Dati e verifiche</a> · <a href="metodologia.html">Metodologia</a> ·
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a> ·
+  <a href="accessibilita.html">Accessibilità</a> · <a href="feed.xml">RSS</a></p>
+</div></footer>
+<script>
+/* Мобилна навигация: hamburger отваря/затваря менюто. Достъпно —
+   aria-expanded, Escape връща фокуса на бутона, клик навън затваря.
+   На desktop бутонът е display:none, менюто винаги видимо → скриптът е инертен. */
+(function(){
+  var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
+  if(!b||!n)return;
+  function aperto(){return b.getAttribute('aria-expanded')==='true';}
+  function apri(){b.setAttribute('aria-expanded','true');b.setAttribute('aria-label','Chiudi il menu');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Apri il menu di navigazione');n.classList.remove('open');}
+  b.addEventListener('click',function(){aperto()?chiudi():apri();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
+  });
+  document.addEventListener('click',function(e){
+    if(!aperto())return;
+    if(b.contains(e.target)||n.contains(e.target))return;
+    chiudi();
+  });
+})();
+/* Тема: 2-състоен превключвател светла⇄тъмна. Записът в localStorage печели над
+   системата; без запис = авто (prefers-color-scheme). aria-pressed=„тъмна активна". */
+(function(){
+  var t=document.querySelector('.theme-toggle');
+  if(!t)return;
+  var mq=window.matchMedia('(prefers-color-scheme:dark)');
+  function effettivo(){var d=document.documentElement.dataset.theme;return d?d:(mq.matches?'dark':'light');}
+  function aggiorna(){t.setAttribute('aria-pressed',effettivo()==='dark'?'true':'false');}
+  t.addEventListener('click',function(){
+    var nuovo=effettivo()==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=nuovo;
+    try{localStorage.setItem('ost-theme',nuovo);}catch(e){}
+    aggiorna();
+  });
+  aggiorna();
+  // Смяна на системната тема на живо (без ръчен избор) → обнови aria-pressed.
+  mq.addEventListener('change',function(){if(!document.documentElement.dataset.theme)aggiorna();});
+})();
+</script>
+</body>
+</html>

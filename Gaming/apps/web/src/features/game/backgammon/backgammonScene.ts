@@ -117,9 +117,15 @@ export class BackgammonScene {
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0006;
+    key.shadow.radius = 3; // soft PCF penumbra — premium contact shadows
     const sc = key.shadow.camera;
     sc.left = -W; sc.right = W; sc.top = this.depth; sc.bottom = -this.depth; sc.near = 1; sc.far = W * 6;
     this.scene.add(key);
+    // Cool back-rim edge light: traces the ebony checkers + brass fittings so
+    // the stacks read as physical objects against the nocturnal felt.
+    const rim = new DirectionalLight(0xbfe0f2, 0.34);
+    rim.position.set(-W * 0.3, W * 0.9, -this.depth);
+    this.scene.add(rim);
 
     this.scene.add(this.checkerLayer, this.hiLayer);
     this.build();

@@ -1,0 +1,57 @@
+name: ivan
+
+on:
+  push:
+    paths:
+      - 'Ivan/**'
+      - '.github/workflows/ivan.yml'
+  pull_request:
+    paths:
+      - 'Ivan/**'
+      - '.github/workflows/ivan.yml'
+
+concurrency:
+  group: ivan-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          # БЕЗ cache: npm — Ivan/backend няма package-lock.json (затова и npm install, не ci);
+          # cache с несъществуващ lockfile проваля setup-node стъпката. Кеш ще има, когато има lock.
+      # Продуктът няма тестове и няма lockfile. Не измисляме гейт, който не съществува —
+      # проверяваме това, което Е проверимо: валидна Prisma схема и синтаксис на сорса.
+      # Prisma на ПРОДУКТА (^6.8.0), не `npx --yes prisma` — той дърпа latest (7.x), който
+      # премахна `url` в datasource и обяви валидна схема за невалидна. Гейт, който ползва друга
+      # версия от продукта, мери грешното нещо.
+      - name: Валидна Prisma схема (версията на продукта)
+        working-directory: Ivan/backend
+        env:
+          # `prisma validate` НЕ се свързва, но иска променливата да съществува, защото схемата я
+          # реферира. Стойността е фиктивна и БЕЗ идентификационни данни — низ с `user:pass@` би
+          # бил находка за нашия собствен secret-scan.
+          DATABASE_URL: postgresql://localhost:5432/validate_only
+        run: |
+          if [ -f prisma/schema.prisma ]; then
+            npm install --no-audit --no-fund
+            npx prisma validate
+          else
+            echo "няма схема — пропускам"
+          fi
+      - name: Синтаксис на сорса
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            node --check "$f" || { echo "::error file=$f::синтактична грешка"; fail=1; }
+          done < <(find Ivan -name '*.js' -o -name '*.mjs' | grep -v node_modules)
+          exit $fail

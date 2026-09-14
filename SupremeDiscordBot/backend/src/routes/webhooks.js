@@ -6,9 +6,29 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { VALID_EVENTS, validateWebhookUrl } from "../services/webhooks.js";
 import { requirePremium, getServerTier } from "../lib/premium.js";
+import { encrypt } from "../lib/crypto.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
+
+// Тайната за подпис НИКОГА не се връща на клиента (одит по сигурност,
+// 08.09.2026). Досега всеки списък/запис я връщаше в открит текст на всеки с
+// ManageGuild — сесия, разширение в браузъра или снимка на екрана я отнасяха.
+// Стандартът (GitHub, Stripe) е един: показва се при въвеждане, после само
+// „има/няма". Клиентът получава `hasSecret`, за да знае дали подписването е
+// включено, без да види ключа.
+function publicHook(h) {
+  if (!h) return h;
+  const { secret, ...rest } = h;
+  return { ...rest, hasSecret: Boolean(secret) };
+}
+
+// undefined = не пипай · null/"" = махни · низ = смени (шифрован при покой).
+function secretWrite(v) {
+  if (v === undefined) return {};
+  if (v === null || v === "") return { secret: null };
+  return { secret: encrypt(v) };
+}
 
 const schema = z.object({
   name:    z.string().min(1).max(100),
@@ -24,7 +44,7 @@ router.get("/:serverId/webhooks", requireServerAdmin, async (req, res, next) => 
       where: { serverId: req.params.serverId },
       orderBy: { createdAt: "desc" },
     });
-    res.json(hooks);
+    res.json(hooks.map(publicHook));
   } catch (err) { next(err); }
 });
 
@@ -43,9 +63,14 @@ router.post("/:serverId/webhooks", requireServerAdmin, requirePremium("integrati
       });
     }
     const hook = await prisma.webhook.create({
-      data: { ...parsed.data, serverId: req.params.serverId, createdBy: req.user.id },
+      data: {
+        ...parsed.data,
+        ...secretWrite(parsed.data.secret),   // след spread-а: замества открития текст
+        serverId: req.params.serverId,
+        createdBy: req.user.id,
+      },
     });
-    res.status(201).json(hook);
+    res.status(201).json(publicHook(hook));
   } catch (err) { next(err); }
 });
 
@@ -64,9 +89,12 @@ router.put("/:serverId/webhooks/:id", requireServerAdmin, requirePremium("integr
     if (!existing) return res.status(404).json({ error: "Webhook not found" });
     const hook = await prisma.webhook.update({
       where: { id: req.params.id },
-      data: parsed.data,
+      // `secret` липсва в тялото → остава; null/"" → маха се; низ → нов, шифрован.
+      // Клиентът вече не вижда старата тайна, значи не може да я „върне" —
+      // затова „не пипай" трябва да е изричен договор, не случайност.
+      data: { ...parsed.data, ...secretWrite(parsed.data.secret) },
     });
-    res.json(hook);
+    res.json(publicHook(hook));
   } catch (err) { next(err); }
 });
 

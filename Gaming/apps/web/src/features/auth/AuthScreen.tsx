@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Field, Panel } from "../../ui";
@@ -21,13 +21,40 @@ export function AuthScreen({ mode }: { mode: Mode }) {
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Mirror OAuthButtons' provider gate so the 18+/ToS notice only shows when the
+  // Google/Facebook buttons actually render (both hide when none are configured).
+  const [oauthAvailable, setOauthAvailable] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .oauthProviders()
+      .then((p) => {
+        if (!cancelled) setOauthAvailable(Boolean(p.google || p.facebook));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Surface a redirect-back error from the OAuth flow (e.g. ?error=oauth_state).
   const oauthError = params.get("error");
 
-  function messageFor(code: string): string {
-    if (code === "unauthorized") return t("auth.errorCredentials");
-    if (code === "email_taken") return t("auth.errorEmailTaken");
+  function messageFor(err: ApiError): string {
+    if (err.code === "unauthorized") return t("auth.errorCredentials");
+    if (err.code === "email_taken") return t("auth.errorEmailTaken");
+    if (err.code === "banned") {
+      // DSA art. 17: surface the staff reason (if any) plus how to appeal.
+      const reason = err.message.trim();
+      return [
+        t("auth.errorBanned"),
+        reason ? t("auth.banReason", { reason }) : null,
+        t("auth.banAppeal"),
+      ]
+        .filter(Boolean)
+        .join(" ");
+    }
     return t("auth.errorGeneric");
   }
 
@@ -49,7 +76,7 @@ export function AuthScreen({ mode }: { mode: Mode }) {
       setUser(res.user);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? messageFor(err.code) : t("auth.errorGeneric"));
+      setError(err instanceof ApiError ? messageFor(err) : t("auth.errorGeneric"));
     } finally {
       setBusy(false);
     }
@@ -146,6 +173,22 @@ export function AuthScreen({ mode }: { mode: Mode }) {
           >
             {t("auth.forgotPassword")}
           </Link>
+        ) : null}
+
+        {/* 18+/ToS notice sits on BOTH login and register: an OAuth sign-up from
+            /login records termsAcceptedAt, so consent must be disclosed here too. */}
+        {oauthAvailable ? (
+          <p className="mt-6 text-center text-xs text-ink-muted">
+            {t("auth.oauthConsent")}{" "}
+            <a href="/terms/" target="_blank" rel="noreferrer" className="text-brass-300 hover:text-brass-100">
+              {t("auth.consentTerms")}
+            </a>{" "}
+            {t("auth.consentAnd")}{" "}
+            <a href="/privacy/" target="_blank" rel="noreferrer" className="text-brass-300 hover:text-brass-100">
+              {t("auth.consentPrivacy")}
+            </a>
+            .
+          </p>
         ) : null}
 
         <OAuthButtons />

@@ -1,0 +1,212 @@
+{
+  "generatoIl": "2026-07-13T08:16:38.289Z",
+  "ultimoAnnoCe": 2024,
+  "consistenzaCE": {
+    "identitaVerificate": 2889,
+    "superate": 2888,
+    "quotaSuperata": 0.9996538594669436,
+    "fallite": [
+      {
+        "codice": "180202",
+        "anno": 2018
+      }
+    ],
+    "nota": "Verifica interna: risultato prima imposte = A − B ± C ± D ± E; risultato = risultato prima imposte − imposte."
+  },
+  "sanita": {
+    "valoreNegativo": 0,
+    "costiNegativi": 0,
+    "deficitOltreRicavi": 5,
+    "debitiNegativi": 0
+  },
+  "copertura": {
+    "entiTotali": 342,
+    "conCE": 342,
+    "conSP": 340,
+    "conAnagrafe": 146,
+    "conAppaltiANAC": 113,
+    "conAggiudicatari": 107
+  },
+  "provenance": [
+    {
+      "file": "bdap/ce-2012.csv",
+      "bytes": 14724181,
+      "sha256": "70c572b81a7f3c2b",
+      "righe": 74868
+    },
+    {
+      "file": "bdap/ce-2013.csv",
+      "bytes": 14889198,
+      "sha256": "ccbb70801a40a88e",
+      "righe": 75489
+    },
+    {
+      "file": "bdap/ce-2014.csv",
+      "bytes": 14806512,
+      "sha256": "3a89e9e5ddcd8a38",
+      "righe": 74984
+    },
+    {
+      "file": "bdap/ce-2015.csv",
+      "bytes": 14773732,
+      "sha256": "4c8fd31a72550e0a",
+      "righe": 74709
+    },
+    {
+      "file": "bdap/ce-2016.csv",
+      "bytes": 13940135,
+      "sha256": "2929a96ad935ca22",
+      "righe": 69848
+    },
+    {
+      "file": "bdap/ce-2017.csv",
+      "bytes": 13015060,
+      "sha256": "f7b28ae71dff4f4a",
+      "righe": 64153
+    },
+    {
+      "file": "bdap/ce-2018.csv",
+      "bytes": 13015127,
+      "sha256": "54699b2586caee7f",
+      "righe": 64360
+    },
+    {
+      "file": "bdap/ce-2019.csv",
+      "bytes": 14373605,
+      "sha256": "a1d6d78a7c4e32a6",
+      "righe": 71163
+    },
+    {
+      "file": "bdap/ce-2020.csv",
+      "bytes": 14632861,
+      "sha256": "6d305e021bbc907d",
+      "righe": 71782
+    },
+    {
+      "file": "bdap/ce-2021.csv",
+      "bytes": 14650699,
+      "sha256": "71b80431fe5454bd",
+      "righe": 71712
+    },
+    {
+      "file": "bdap/ce-2022.csv",
+      "bytes": 15254007,
+      "sha256": "7be51bc349e1b1fa",
+      "righe": 74547
+    },
+    {
+      "file": "bdap/ce-2023.csv",
+      "bytes": 15519353,
+      "sha256": "6497df4a229544f1",
+      "righe": 75944
+    },
+    {
+      "file": "bdap/ce-2024.csv",
+      "bytes": 15636428,
+      "sha256": "2326030f7459234c",
+      "righe": 76125
+    },
+    {
+      "file": "bdap/sp-2012.csv",
+      "bytes": 6121998,
+      "sha256": "26bd4c586028f320",
+      "righe": 36466
+    },
+    {
+      "file": "bdap/sp-2013.csv",
+      "bytes": 6234669,
+      "sha256": "c175111ef99f0b0e",
+      "righe": 37046
+    },
+    {
+      "file": "bdap/sp-2014.csv",
+      "bytes": 6188864,
+      "sha256": "b56518c2d4109122",
+      "righe": 36744
+    },
+    {
+      "file": "bdap/sp-2015.csv",
+      "bytes": 6149313,
+      "sha256": "67af75a37093785e",
+      "righe": 36459
+    },
+    {
+      "file": "bdap/sp-2016.csv",
+      "bytes": 5820978,
+      "sha256": "d928a55827ecd39d",
+      "righe": 34117
+    },
+    {
+      "file": "bdap/sp-2017.csv",
+      "bytes": 5408544,
+      "sha256": "332c7dbbb36f7d85",
+      "righe": 31531
+    },
+    {
+      "file": "bdap/sp-2018.csv",
+      "bytes": 5410487,
+      "sha256": "30f68c5b987c4b3d",
+      "righe": 31293
+    },
+    {
+      "file": "bdap/sp-2019.csv",
+      "bytes": 5814801,
+      "sha256": "d5316f0aa15f7cf8",
+      "righe": 33424
+    },
+    {
+      "file": "bdap/sp-2020.csv",
+      "bytes": 5939059,
+      "sha256": "c342e2a219326416",
+      "righe": 33754
+    },
+    {
+      "file": "bdap/sp-2021.csv",
+      "bytes": 5985618,
+      "sha256": "ea827b47dd3e8479",
+      "righe": 33981
+    },
+    {
+      "file": "bdap/sp-2022.csv",
+      "bytes": 6208632,
+      "sha256": "e5b70a362769d7c0",
+      "righe": 35119
+    },
+    {
+      "file": "bdap/sp-2023.csv",
+      "bytes": 6364120,
+      "sha256": "8298ceda925716e1",
+      "righe": 35837
+    },
+    {
+      "file": "bdap/sp-2024.csv",
+      "bytes": 6420992,
+      "sha256": "ac47d9da7b80208c",
+      "righe": 36098
+    },
+    {
+      "file": "salute/aziende.csv",
+      "bytes": 265484,
+      "sha256": "acfdd9ef88820daa",
+      "righe": 1369
+    },
+    {
+      "file": "salute/strutture.csv",
+      "bytes": 144304,
+      "sha256": "3c030e9de9f8e444",
+      "righe": 510
+    },
+    {
+      "file": "anac/aggiudicatari.zip",
+      "bytes": 151222321,
+      "sha256": "(zip)",
+      "righe": null
+    },
+    {
+      "file": "anac/partecipanti.zip",
+      "bytes": 175247160,
+      "sha256": "(zip)",
+      "righe": null
+    }
+  ]
+}

@@ -119,7 +119,7 @@ export default async function DutyPharmacyPage() {
               аптеките по-долу или се обадете предварително.
             </p>
           )}
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-slate-600">
             Съвет: при спешен здравословен проблем се обадете на{" "}
             <a href="tel:112" className="font-semibold text-crimson-700 hover:underline">
               112
@@ -156,7 +156,7 @@ export default async function DutyPharmacyPage() {
           <PrintButton variant="secondary" label="Принтирай тази страница" />
         </div>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Виж и всички{" "}
           <Link href="/uslugi?cat=HEALTH" className="font-medium text-brand-700 hover:underline">
             здравни услуги и телефони →

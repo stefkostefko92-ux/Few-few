@@ -10,7 +10,7 @@ Carbon Stealth; няма общ код с другите продукти.
 ## Структура
 
 ```
-manifest.json           MV3 конфигурация (v4.0.1)
+manifest.json           MV3 конфигурация (версията живее само тук + package.json)
 background.js           service worker — рулсети, allowlist, статистики, съобщения
 theme.js                прилага Carbon Stealth / светла тема
 content.js / .css       козметика (вкл. процедурни селектори) + Smart Detection
@@ -18,7 +18,11 @@ cosmetic_generic.css    EasyList генерична козметика (гейт
 meta.js                 Facebook / Instagram sponsored постове
 cookies.js / .css       затваряне на cookie/consent банери (вкл. Shadow DOM)
 antiadblock.js / .css   махане на "disable adblocker" стени
-picker.js / .css        element picker (ръчно скриване)
+picker.js / .css        element picker (ръчно скриване) + zapper (еднократно)
+scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН източник на
+                        политиката — инлайнва се в engine-а, importScripts в SW, vm в
+                        билда) + engine.js (clean-room код) + list.txt (данни) → main.js
+                        (пече се от build_scriptlets.mjs; MAIN world при document_start)
 youtube_loader.js       инжектира youtube_main в MAIN world (с bypass fallback)
 youtube_main.js         MAIN world — маха рекламните полета от player отговора
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
@@ -28,7 +32,10 @@ rules/                  DNR статични правила: ad_rules + youtube_
                         tools/build_filters.mjs) + козметичен bundle + counts
 popup/ · options/       UI (popup + настройки)
 icons/ · _locales/      икони · локализация
-tools/                  build_filters.mjs (EasyList→DNR) + генератори + package.sh
+tools/                  build_filters.mjs (EasyList→DNR) + build_scriptlets.mjs + генератори + package.sh
+                        + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
+                        smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
+tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
 store/ · docs/          store графики + листинг/submission текстове
 ```
 
@@ -37,6 +44,8 @@ store/ · docs/          store графики + листинг/submission тек
 ```
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
+npm test                                      # tests/: engine + live канал + билд + DNR правила
+node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt
 bash tools/package.sh                         # билд + самопроверка на пакета
 ```
 
@@ -47,6 +56,14 @@ bash tools/package.sh                         # билд + самопровер�
   `adblock.carbonstealth.eu/filters.json` (+ `.sig` — Ed25519 подпис, проверява
   се при конфигуриран ключ) — само ДАННИ (домейни, CSS селектори, YT полета),
   които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
+- **Scriptlets (`##+js`):** точно uBOL моделът — КОДЪТ (`scriptlets/engine.js`) е
+  фиксиран в пакета; per-site директивите се **пекат при билда** от `list.txt` в
+  `scriptlets/main.js`. Scriptlet КОД никога не идва от мрежата; live директиви (само
+  ДАННИ: host + име + аргументи) идват единствено от Ed25519-подписания `filters.json`
+  и се **ре-валидират в engine-а** срещу същия allowlist. Нула eval.
+  Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
+  `set-constant` стойностите — само от фиксиран речник. **След промяна на
+  engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.
 - YouTube: **не** блокираме `googlevideo.com`. Player ЗАЯВКАТА получава само
   добавени boolean флагове (isInlinePlaybackNoAd — спира доставката на реклами
   при източника); никога не пипаме съществуващи полета (подписи/timestamps) и

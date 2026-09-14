@@ -145,6 +145,9 @@ export interface CombatActor {
   defense: number;
   speed: number;
   crit_chance: number;
+  // Множител на щетите при крит. По желание — героите го носят (CHA-driven,
+  // база 1.8); чудовищата го пропускат и combat.ts ползва 1.8 по подразбиране.
+  crit_mult?: number;
   dodge_chance: number;
   sprite: string;
   class?: CharacterClass | null;

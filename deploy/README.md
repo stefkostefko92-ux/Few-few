@@ -35,6 +35,11 @@
   `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
   Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
+  **Бекъпи:** `pg_dump` ПРЕДИ миграциите в `/var/backups/supreme/pre-deploy-<TS>.dump`
+  (провал на дъмпа спира деплоя), а след успешен health се инсталира дневният
+  криптиран бекъп (`supreme-backup.timer`, 03:00 UTC, 30 дни задържане — DPA §5.1).
+  Еднократно ръчно: паролата `/root/.supreme-backup-pass` + първи тестов restore →
+  `SupremeDiscordBot/deploy/BACKUP.md`.
 - **eternaltouch** (Eternal Touch): пренася `eternaltouch/.env` (или го генерира с random
   secrets при пръв деплой — `SMTP_PASS` остава `CHANGE_ME` за ръчно попълване веднъж),
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
@@ -50,6 +55,25 @@
   Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
   за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
+- **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
+  `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
+  статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва
+  `server/.env`, `server/.state/` — тайни + рънтайм състояние оцеляват), самоинсталиращ
+  се systemd unit (`ospedalitrasparenti/deploy/systemd/ospedali.service`, порт `127.0.0.1:8788`,
+  User=`www-data`), `systemctl restart ospedali`; при провал — автоматичен rollback.
+  Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
+  `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
+  `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
+  (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
+  сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
+  рестарт, самоинсталиращ се systemd unit (`panev/deploy/systemd/panev.service`, порт
+  `127.0.0.1:4102`, User=`panev`), `systemctl restart panev`; при провал — автоматичен
+  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`. Тайните са в
+  `/etc/panev/panev.env` (systemd `EnvironmentFile`, права 600) — при пръв деплой се
+  генерира с random `JWT_SECRET` (без него приложението спира в продукция), `SMTP_PASS`
+  остава `CHANGE_ME`. Еднократно: DNS, nginx vhost (301 `www.` → каноничния non-www) +
+  certbot, ufw, бекъп cron → `panev/DEPLOY.md`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -58,7 +82,12 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali panev` | кои проекти да се разгръщат тук |
+| `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
+| `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
+| `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
+| `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
+| `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
@@ -69,7 +98,7 @@
 ## Важно
 
 - **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env`,
-  `/opt/mastilko/.env` (GEMINI_API_KEY, по желание) и четирите
+  `/etc/panev/panev.env` (JWT_SECRET + SMTP), `/opt/mastilko/.env` (GEMINI_API_KEY, по желание) и четирите
   `SupremeDiscordBot/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
   Скриптът пренася съществуващите `.env` при всеки деплой.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.

@@ -16,17 +16,17 @@ const LOCALES: Record<string, { html: string; title: string; description: string
   en: {
     html: 'en',
     title: 'Nexus Dominion — Free Browser MMORPG',
-    description: 'Server-authoritative turn-based MMORPG. Four classes, 350 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
+    description: 'Server-authoritative turn-based MMORPG. Four classes, 500 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
   },
   it: {
     html: 'it-IT',
     title: 'Nexus Dominion — MMORPG da browser, gratuito',
-    description: "MMORPG con combattimenti a turni validati dal server. Quattro classi, 350 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
+    description: "MMORPG con combattimenti a turni validati dal server. Quattro classi, 500 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
   },
   bg: {
     html: 'bg-BG',
     title: 'Nexus Dominion — Безплатна браузърна ММОРПГ',
-    description: 'Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 350 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
+    description: 'Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 500 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
   },
 };
 
@@ -355,6 +355,7 @@ export default function Landing(): React.ReactElement {
           <RegionCard color="#a0b8d0" art="/assets/regions/crystal_caverns.jpg"  name="Mooncradle"        range="Lv 261 – 290">{t('landing.regionMooncradleBody')}</RegionCard>
           <RegionCard color="#8a6a3a" art="/assets/regions/ashen_wastes.jpg"     name="The Worldspine"    range="Lv 291 – 320">{t('landing.regionWorldspineBody')}</RegionCard>
           <RegionCard color="#1a1a1a" art="/assets/regions/shadowfell.jpg"       name="The Eternal Throne" range="Lv 321 – 350">{t('landing.regionEternalBody')}</RegionCard>
+          <RegionCard color="#fff1b8" art="/assets/regions/shadowfell.jpg"       name="Beyond the End"     range="Lv 351 – 500">{t('landing.regionBeyondBody')}</RegionCard>
         </div>
       </section>
 

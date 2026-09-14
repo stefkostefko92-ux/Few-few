@@ -4,22 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Supreme Bot palette — carried from the brand logo:
-        // royal electric blue + gold over deep cosmic navy.
+        // Supreme Bot palette — carried from the 2026 brand board:
+        // neon lime green + silver over near-black with a green tint
+        // (cyberpunk "neon green edition"). Token names are kept (cs-cyan =
+        // THE accent) so the whole UI re-skins from these values alone.
         cs: {
           black:    "#000000",
-          bg:       "#0a0b12",   // base background — cosmic navy (noscript: rgba(10,11,18,0.98))
-          surface:  "#12131f",   // cards / panels
-          panel:    "#1a1b2a",   // raised / hover surface
-          border:   "#4a4c62",   // thin dividers — raised to ≥3:1 for WCAG 1.4.11 (UI component contrast)
-          borderHi: "#5a5c74",   // hover / focus border
+          bg:       "#070a06",   // base background — near-black, green tint
+          surface:  "#0d130b",   // cards / panels
+          panel:    "#141d10",   // raised / hover surface
+          border:   "#4b5a44",   // thin dividers — ≥3:1 for WCAG 1.4.11 (UI component contrast)
+          borderHi: "#5d7052",   // hover / focus border
           text:     "#f0f0eb",   // primary text (cream white)
           muted:    "#aaaaaa",   // secondary text (≈8.5:1)
-          dim:      "#9a9a9a",   // tertiary — raised to ≈6:1 so it passes WCAG 1.4.3 for body text
-          cyan:     "#33b1ff",   // THE accent — royal electric blue (logo energy/glow)
-          cyanDim:  "#1e86d6",   // darker royal blue for hover
-          cyanGlow: "rgba(51, 177, 255, 0.15)",
-          gold:     "#f0c24c",   // brand gold — the logo's wordmark & armor
+          dim:      "#9a9a9a",   // tertiary — ≈6:1, passes WCAG 1.4.3 for body text
+          cyan:     "#8fe600",   // THE accent — neon lime green (logo energy/glow)
+          cyanDim:  "#6cb000",   // darker green for hover
+          cyanGlow: "rgba(143, 230, 0, 0.15)",
+          gold:     "#f0c24c",   // premium gold (tier badges)
           goldDim:  "#c8992f",   // darker gold for hover
           goldGlow: "rgba(240, 194, 76, 0.16)",
         },
@@ -31,27 +33,27 @@ export default {
         manual:   "#a855f7",     // purple (manual vs Stripe)
         // Backward-compat aliases so existing pages don't break
         discord: {
-          50:  "#e6f3ff", 100: "#c2e2ff", 400: "#66c2ff",
-          500: "#33b1ff", 600: "#1e86d6", 700: "#155f9c",
-          800: "#0d3e66", 900: "#071f33",
+          50:  "#f2ffd9", 100: "#e3ffb0", 400: "#a8f033",
+          500: "#8fe600", 600: "#6cb000", 700: "#4e8000",
+          800: "#335500", 900: "#1a2b00",
         },
         dark: {
-          100: "#1a1b2a",  // was #36393f
-          200: "#12131f",  // was #2f3136
-          300: "#0a0b12",  // was #202225
-          400: "#000000",  // was #18191c
+          100: "#141d10",
+          200: "#0d130b",
+          300: "#070a06",
+          400: "#000000",
         },
         stealth: {
-          300: "#66c2ff", 400: "#33b1ff", 500: "#33b1ff",
-          600: "#1e86d6", 700: "#155f9c",
+          300: "#a8f033", 400: "#8fe600", 500: "#8fe600",
+          600: "#6cb000", 700: "#4e8000",
         },
         carbon: {
-          400: "#2a2b3a", 500: "#1a1b2a", 600: "#12131f",
-          700: "#0a0b12", 800: "#000000",
+          400: "#24301e", 500: "#141d10", 600: "#0d130b",
+          700: "#070a06", 800: "#000000",
         },
         accent: {
-          cyan:   "#33b1ff",
-          blue:   "#33b1ff",
+          cyan:   "#8fe600",
+          blue:   "#8fe600",
           purple: "#a855f7",
           gold:   "#f0c24c",
           green:  "#4ade80",
@@ -69,12 +71,12 @@ export default {
         "tight-4": "-0.04em",
       },
       boxShadow: {
-        "cs-cyan":      "0 0 30px rgba(51, 177, 255, 0.25)",
-        "cs-cyan-sm":   "0 0 15px rgba(51, 177, 255, 0.15)",
+        "cs-cyan":      "0 0 30px rgba(143, 230, 0, 0.25)",
+        "cs-cyan-sm":   "0 0 15px rgba(143, 230, 0, 0.15)",
         "cs-gold":      "0 0 30px rgba(240, 194, 76, 0.25)",
         "cs-gold-sm":   "0 0 15px rgba(240, 194, 76, 0.16)",
         "cs-lift":      "0 4px 20px rgba(0, 0, 0, 0.6)",
-        "cs-glow":      "0 -20px 60px rgba(51, 177, 255, 0.1)",
+        "cs-glow":      "0 -20px 60px rgba(143, 230, 0, 0.1)",
       },
       animation: {
         "pulse-slow":   "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",

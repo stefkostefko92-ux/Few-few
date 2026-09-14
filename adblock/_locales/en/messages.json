@@ -6,5 +6,249 @@
   "extDescription": {
     "message": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
     "description": "Extension description."
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Toggle protection"
+  },
+  "protected": {
+    "message": "Protected"
+  },
+  "paused": {
+    "message": "Paused"
+  },
+  "blockingHere": {
+    "message": "Blocking ads on this page"
+  },
+  "protectionOff": {
+    "message": "Protection is off"
+  },
+  "pause30": {
+    "message": "Pause for 30 minutes"
+  },
+  "pausedResume": {
+    "message": "Paused, resume now ($1m left)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blocked"
+  },
+  "dataSaved": {
+    "message": "Data saved"
+  },
+  "timeSaved": {
+    "message": "Time saved"
+  },
+  "thisSite": {
+    "message": "this site"
+  },
+  "thisPage": {
+    "message": "this page"
+  },
+  "blockOnSite": {
+    "message": "Block ads on this site"
+  },
+  "blocking": {
+    "message": "Blocking"
+  },
+  "allowed": {
+    "message": "Allowed"
+  },
+  "cosmetics": {
+    "message": "Hide ad boxes here"
+  },
+  "cosmeticsTitle": {
+    "message": "Cosmetic filtering on this site (turn off if the layout breaks)"
+  },
+  "on": {
+    "message": "On"
+  },
+  "off": {
+    "message": "Off"
+  },
+  "blockedHere": {
+    "message": "Blocked on this page"
+  },
+  "logEmpty": {
+    "message": "Nothing blocked here yet."
+  },
+  "logUnavailable": {
+    "message": "Log unavailable right now (browser quota) — try again in a minute."
+  },
+  "hideElement": {
+    "message": "Hide element"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "promoSub": {
+    "message": "Gear & tools, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Ad"
+  },
+  "support": {
+    "message": "Support"
+  },
+  "filtersCount": {
+    "message": "$1+ filters",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Appearance"
+  },
+  "opt_extra_protection": {
+    "message": "Extra protection"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection log"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Allowlisted sites"
+  },
+  "opt_my_filters": {
+    "message": "My filters"
+  },
+  "opt_hidden_elements": {
+    "message": "Hidden elements"
+  },
+  "opt_filter_updates": {
+    "message": "Filter updates"
+  },
+  "opt_engine_health": {
+    "message": "Engine health"
+  },
+  "opt_backup": {
+    "message": "Backup"
+  },
+  "opt_support_development": {
+    "message": "Support development"
+  },
+  "opt_theme": {
+    "message": "Theme"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sync across devices"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube ad blocking"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / consent banners"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock bypass"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta sponsored posts"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Remove tracking parameters"
+  },
+  "opt_malware_protection": {
+    "message": "Malware protection"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Block ad-targeting browser APIs"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Block tracking beacons & cryptominers"
+  },
+  "opt_auto_update_filters": {
+    "message": "Auto-update filters"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (dark) or light"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Keep settings, allowlist and filters in sync on every Chrome you're signed into"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Remove video ads on YouTube. Turn off if videos won't play."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Automatically dismiss \"Accept cookies\" prompts"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Hide \"disable your adblocker\" walls and restore the page"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Hide \"Sponsored\" posts on Facebook & Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Strip utm_*, fbclid, gclid and other click identifiers from the links you open"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Block known malware domains (URLhaus list by abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Disable Google Topics, FLoC and Protected Audience ad APIs on every site"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Live log of ads caught heuristically (no filter list), newest first."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Subscribed lists are fetched as text (never code), kept up to date daily, and live in the managed blocks above. Remove a list to drop its rules."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elements you hid manually with the picker, grouped by site."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Live diagnostics — everything is computed locally. If something is red, \"Update now\" or reloading the extension usually fixes it."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required."
+  },
+  "opt_reset_statistics": {
+    "message": "Reset statistics"
+  },
+  "opt_add": {
+    "message": "Add"
+  },
+  "opt_save_filters": {
+    "message": "Save filters"
+  },
+  "opt_subscribe": {
+    "message": "Subscribe"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Refresh subscriptions now"
+  },
+  "opt_update_now": {
+    "message": "Update now"
+  },
+  "opt_refresh": {
+    "message": "Refresh"
+  },
+  "opt_export_settings": {
+    "message": "Export settings"
+  },
+  "opt_import_settings": {
+    "message": "Import settings"
+  },
+  "opt_e_g_example_com": {
+    "message": "e.g. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Subscribe to a filter list URL (e.g. https://…/list.txt)"
   }
 }

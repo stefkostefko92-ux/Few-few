@@ -4,7 +4,9 @@ import { rankOf, suitOf, type Card, type Suit } from "./cards.js";
  * Белот declarations (обяви) — терца / петдесет / сто / каре / белот (§4.1).
  * Pure, deterministic detection + resolution so it can be unit-tested and
  * replayed. Only the team with the single best sequence/carré scores all of
- * its sequence+carré declarations; belote (K+Q of trump) always scores.
+ * its sequence+carré declarations. Belote (K+Q of trump) is detected here for
+ * reference, but it is NOT scored by possession: belote-rebelote is awarded by
+ * the play engine when both trump figures are actually played (see belote.ts).
  *
  * Contract modes: a plain Suit (that suit is trump), "AT" (всичко коз — every
  * suit is trump, belote counts in all four suits), "NT" (без коз — NO
@@ -96,24 +98,18 @@ export interface ResolvedDeclarations {
 /**
  * Resolve declarations across all four hands. The team with the strongest single
  * sequence/carré scores ALL of its sequence+carré declarations; the other team
- * scores none of theirs. Belote is independent — each holder's team gets +20.
+ * scores none of theirs. Belote (K+Q of trump) is deliberately excluded — it is
+ * scored during play (belote-rebelote), not by possession at deal time.
  * Exact tie on the best sequence/carré → neither team scores those (rare).
  */
 export function resolveDeclarations(hands: Card[][], mode: DeclMode): ResolvedDeclarations {
   const teamOf = (seat: number) => seat % 2;
   const all = hands.flatMap((h, seat) => detectHand(h, mode, seat));
 
-  const belotes = all.filter((d) => d.kind === "belote");
   const combos = all.filter((d) => d.kind !== "belote");
 
   const teamPoints: [number, number] = [0, 0];
   const scored: Declaration[] = [];
-
-  // Belote always scores.
-  for (const b of belotes) {
-    teamPoints[teamOf(b.seat) as 0 | 1] += b.value;
-    scored.push(b);
-  }
 
   if (combos.length > 0) {
     const bestOf = (t: number) =>

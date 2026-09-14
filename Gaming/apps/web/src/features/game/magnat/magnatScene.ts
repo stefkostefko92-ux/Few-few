@@ -455,10 +455,16 @@ export class MagnatScene {
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0006;
+    key.shadow.radius = 3; // soft PCF penumbra — premium contact shadows
     const sc = key.shadow.camera;
     sc.left = -H * 1.5; sc.right = H * 1.5; sc.top = H * 1.5; sc.bottom = -H * 1.5;
     sc.near = 1; sc.far = H * 6;
     this.scene.add(key);
+    // Cool back-rim edge light: rakes the property skyline so towers catch a
+    // cyan highlight against the night board (mirrors the portal's palette).
+    const rim = new DirectionalLight(0xbfe0f2, 0.3);
+    rim.position.set(-H, H * 1.6, -H * 1.2);
+    this.scene.add(rim);
 
     this.build();
 

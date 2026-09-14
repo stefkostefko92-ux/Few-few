@@ -35,9 +35,12 @@ function triangle(ids: number[], rows: number, apexX = APEX_X): Ball[] {
 }
 
 export function rackEightBall(): Ball[] {
-  // 5-row triangle. 8 (black) goes in the centre (row 2, middle slot).
-  // Slots filled in row order; we place 8 at the known centre index.
-  const order = [1, 9, 2, 8, 10, 3, 11, 4, 12, 13, 5, 14, 6, 15, 7];
+  // WPA rack (5-row triangle, filled row by row): apex ball on the foot spot,
+  // the 8 in the exact CENTRE (middle slot of the 3rd row = flat index 4), and
+  // the two back corners split one solid / one stripe. Indices per row:
+  //   row0: [0]  row1: [1,2]  row2: [3,4,5]  row3: [6,7,8,9]  row4: [10,11,12,13,14]
+  //   → centre = index 4 (=8); back corners = index 10 (=6, solid) & 14 (=15, stripe).
+  const order = [1, 9, 2, 10, 8, 3, 4, 11, 5, 12, 6, 13, 14, 7, 15];
   return [cue(), ...triangle(order, 5)];
 }
 

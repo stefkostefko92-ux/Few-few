@@ -179,7 +179,7 @@ export function AccessibilityBar() {
           role="group"
           aria-label="Размер на текста"
         >
-          <span className="mr-0.5 text-slate-500">Текст</span>
+          <span className="mr-0.5 text-slate-600">Текст</span>
           {fontBtn("1", "нормален", "text-sm")}
           {fontBtn("2", "голям", "text-base")}
           {fontBtn("3", "много голям", "text-lg")}

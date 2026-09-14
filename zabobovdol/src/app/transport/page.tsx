@@ -58,7 +58,7 @@ export default async function TransportPage() {
         {/* Разписание автобус Бобов дол ⇄ Дупница */}
         <section>
           <h2 className="section-title mb-1">Автобус Бобов дол ⇄ Дупница</h2>
-          <p className="mb-5 text-sm text-slate-500">Превозвач: {BUS.carrier}</p>
+          <p className="mb-5 text-sm text-slate-600">Превозвач: {BUS.carrier}</p>
           <div className="grid gap-4 md:grid-cols-2">
             {BUS.directions.map((d) => (
               <div key={d.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -88,7 +88,7 @@ export default async function TransportPage() {
             <Link href="/pechat/avtobus" className="btn-secondary">
               Принтирай разписанието
             </Link>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               Разписанието може да се променя. При съмнение проверете на спирката
               или с превозвача.
             </p>

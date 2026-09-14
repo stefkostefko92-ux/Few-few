@@ -1,0 +1,254 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock",
+    "description": "Extension name."
+  },
+  "extDescription": {
+    "message": "Blockiert Werbung überall: YouTube-Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren. Gratis.",
+    "description": "Extension description."
+  },
+  "byCarbon": {
+    "message": "von Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Schutz umschalten"
+  },
+  "protected": {
+    "message": "Geschützt"
+  },
+  "paused": {
+    "message": "Pausiert"
+  },
+  "blockingHere": {
+    "message": "Blockiert Werbung auf dieser Seite"
+  },
+  "protectionOff": {
+    "message": "Schutz ist aus"
+  },
+  "pause30": {
+    "message": "30 Minuten pausieren"
+  },
+  "pausedResume": {
+    "message": "Pausiert, jetzt fortsetzen (noch $1 Min.)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blockiert"
+  },
+  "dataSaved": {
+    "message": "Gespartes Datenvolumen"
+  },
+  "timeSaved": {
+    "message": "Gesparte Zeit"
+  },
+  "thisSite": {
+    "message": "diese Website"
+  },
+  "thisPage": {
+    "message": "diese Seite"
+  },
+  "blockOnSite": {
+    "message": "Werbung auf dieser Website blockieren"
+  },
+  "blocking": {
+    "message": "Blockiert"
+  },
+  "allowed": {
+    "message": "Erlaubt"
+  },
+  "cosmetics": {
+    "message": "Werbeflächen hier ausblenden"
+  },
+  "cosmeticsTitle": {
+    "message": "Kosmetische Filterung auf dieser Website (ausschalten, wenn das Layout kaputtgeht)"
+  },
+  "on": {
+    "message": "Ein"
+  },
+  "off": {
+    "message": "Aus"
+  },
+  "blockedHere": {
+    "message": "Auf dieser Seite blockiert"
+  },
+  "logEmpty": {
+    "message": "Hier wurde noch nichts blockiert."
+  },
+  "logUnavailable": {
+    "message": "Protokoll derzeit nicht verfügbar (Browser-Kontingent) — versuchen Sie es in einer Minute erneut."
+  },
+  "hideElement": {
+    "message": "Element ausblenden"
+  },
+  "settings": {
+    "message": "Einstellungen"
+  },
+  "promoSub": {
+    "message": "Technik und Werkzeuge, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Anzeige"
+  },
+  "support": {
+    "message": "Unterstützen"
+  },
+  "filtersCount": {
+    "message": "$1+ Filter",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Darstellung"
+  },
+  "opt_extra_protection": {
+    "message": "Zusätzlicher Schutz"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart-Detection-Protokoll"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Websites auf der Erlaubnisliste"
+  },
+  "opt_my_filters": {
+    "message": "Meine Filter"
+  },
+  "opt_hidden_elements": {
+    "message": "Ausgeblendete Elemente"
+  },
+  "opt_filter_updates": {
+    "message": "Filter-Updates"
+  },
+  "opt_engine_health": {
+    "message": "Zustand der Engine"
+  },
+  "opt_backup": {
+    "message": "Sicherung"
+  },
+  "opt_support_development": {
+    "message": "Entwicklung unterstützen"
+  },
+  "opt_theme": {
+    "message": "Design"
+  },
+  "opt_sync_across_devices": {
+    "message": "Geräteübergreifende Synchronisierung"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Werbeblockierung auf YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie-/Einwilligungsbanner"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-Adblock-Sperren umgehen"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Gesponserte Meta-Beiträge"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Tracking-Parameter entfernen"
+  },
+  "opt_malware_protection": {
+    "message": "Malware-Schutz"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Browser-APIs für Werbe-Targeting blockieren"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Tracking-Beacons und Cryptominer blockieren"
+  },
+  "opt_auto_update_filters": {
+    "message": "Filter automatisch aktualisieren"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (dunkel) oder hell"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Hält Einstellungen, Erlaubnisliste und Filter in jedem Chrome synchron, in dem Sie angemeldet sind"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Entfernt Videowerbung auf YouTube. Schalten Sie es aus, wenn Videos nicht abspielen."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Schließt „Cookies akzeptieren“-Abfragen automatisch"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Blendet „Deaktivieren Sie Ihren Werbeblocker“-Sperren aus und stellt die Seite wieder her"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Blendet „Gesponsert“-Beiträge auf Facebook und Instagram aus"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Entfernt utm_*, fbclid, gclid und andere Klick-Kennungen aus den Links, die Sie öffnen"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blockiert bekannte Malware-Domains (URLhaus-Liste von abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Deaktiviert die Werbe-APIs Google Topics, FLoC und Protected Audience auf allen Websites"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Stoppt Hyperlink-Auditing- und Beacon-Pings von Drittanbietern, entfernt Tracking-Cookies aus bekannten Ad-Tech-Antworten und blockiert Cryptomining-Skripte im Browser. Schalten Sie es aus, wenn eine analyseabhängige Funktion einer Website nicht richtig arbeitet."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Lädt neue Blockierregeln und YouTube-Korrekturen von adblock.carbonstealth.eu. Nur Daten, kein Code; nichts über Sie wird gesendet."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Live-Protokoll heuristisch erkannter Werbung (ohne Filterliste), neueste zuerst."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Abonnierte Listen werden als Text geladen (nie als Code), täglich aktualisiert und liegen in den verwalteten Blöcken oben. Entfernen Sie eine Liste, um ihre Regeln zu verwerfen."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elemente, die Sie manuell mit dem Auswahlwerkzeug ausgeblendet haben, nach Website gruppiert."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Live-Diagnose — alles wird lokal berechnet. Ist etwas rot, hilft meist „Jetzt aktualisieren“ oder ein Neuladen der Erweiterung."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ist für alle kostenlos. Wenn Sie zur Pflege beitragen möchten, sind Spenden willkommen, aber nie erforderlich."
+  },
+  "opt_reset_statistics": {
+    "message": "Statistik zurücksetzen"
+  },
+  "opt_add": {
+    "message": "Hinzufügen"
+  },
+  "opt_save_filters": {
+    "message": "Filter speichern"
+  },
+  "opt_subscribe": {
+    "message": "Abonnieren"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Abonnements jetzt aktualisieren"
+  },
+  "opt_update_now": {
+    "message": "Jetzt aktualisieren"
+  },
+  "opt_refresh": {
+    "message": "Aktualisieren"
+  },
+  "opt_export_settings": {
+    "message": "Einstellungen exportieren"
+  },
+  "opt_import_settings": {
+    "message": "Einstellungen importieren"
+  },
+  "opt_e_g_example_com": {
+    "message": "z. B. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! Beispiel\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "URL einer Filterliste abonnieren (z. B. https://…/list.txt)"
+  }
+}

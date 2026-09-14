@@ -52,10 +52,13 @@ button.aso-card {
   cursor: pointer;
 }
 button.aso-card:hover {
-  transform: translateY(-10px);
+  /* Lift + a whisper of scale so the raised card reads as nearer the eye, with
+     a warm brass ambient halo the felt light would cast under the raised edge. */
+  transform: translateY(-12px) scale(1.035);
   box-shadow:
-    0 18px 30px -10px rgba(0, 0, 0, 0.7),
-    0 4px 8px rgba(0, 0, 0, 0.45);
+    0 22px 38px -10px rgba(0, 0, 0, 0.72),
+    0 6px 12px rgba(0, 0, 0, 0.45),
+    0 0 22px -4px var(--brass-glow);
 }
 .aso-card[data-dimmed="true"] {
   filter: brightness(0.7) saturate(0.8);
@@ -297,6 +300,10 @@ button.aso-card:hover {
 .aso-announce[data-tone="win"] {
   background: linear-gradient(to bottom, #d8f5d0, #6fbf73);
   color: #0c2410;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 26px -4px rgba(111, 191, 115, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
 .aso-announce[data-tone="win"]::before,
 .aso-announce[data-tone="win"]::after { background: #6fbf73; }

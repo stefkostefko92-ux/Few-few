@@ -1,0 +1,1364 @@
+{
+  "generatoIl": "2026-07-13T19:15:03.527Z",
+  "anno": 2023,
+  "fonte": "Conto Annuale (RGS/MEF) via BDAP open data — Occupazione complessiva per ente + Lavoro flessibile storico",
+  "nota": "Numero di dipendenti (teste) al 31/12, comparto Sanità. «Flessibili» = tempo determinato + formazione lavoro + interinale + LSU. Il lavoro somministrato tramite cooperative/agenzie esterne (i «medici a gettone» appaltati) NON è qui: passa per i contratti di servizi, non per il Conto Annuale.",
+  "nazionale": {
+    "totale": 742930,
+    "medici": 115258,
+    "flessibili": 41760,
+    "enti": 292,
+    "collegati": 212
+  },
+  "flessibileStorico": [
+    {
+      "anno": 2010,
+      "determinato": 32906.83,
+      "interinale": 6151.34
+    },
+    {
+      "anno": 2011,
+      "determinato": 29339.07,
+      "interinale": 4979.56
+    },
+    {
+      "anno": 2012,
+      "determinato": 27155.35,
+      "interinale": 4408.39
+    },
+    {
+      "anno": 2013,
+      "determinato": 27334.19,
+      "interinale": 4269.95
+    },
+    {
+      "anno": 2014,
+      "determinato": 28263.75,
+      "interinale": 5102.67
+    },
+    {
+      "anno": 2015,
+      "determinato": 30679.63,
+      "interinale": 6136.95
+    },
+    {
+      "anno": 2016,
+      "determinato": 33337.3,
+      "interinale": 6275.99
+    },
+    {
+      "anno": 2017,
+      "determinato": 37022.79,
+      "interinale": 6481.15
+    },
+    {
+      "anno": 2018,
+      "determinato": 35453.8,
+      "interinale": 6820.67
+    },
+    {
+      "anno": 2019,
+      "determinato": 32713.32,
+      "interinale": 6830.5
+    },
+    {
+      "anno": 2020,
+      "determinato": 38891.94,
+      "interinale": 8517.23
+    },
+    {
+      "anno": 2021,
+      "determinato": 54168.29,
+      "interinale": 8347.46
+    },
+    {
+      "anno": 2022,
+      "determinato": 50707.22,
+      "interinale": 7483.89
+    },
+    {
+      "anno": 2023,
+      "determinato": 33898.93,
+      "interinale": 5714.73
+    },
+    {
+      "anno": 2024,
+      "determinato": 26719.85,
+      "interinale": 4636.09
+    }
+  ],
+  "perEnte": {
+    "100201": {
+      "totale": 3841,
+      "medici": 616,
+      "flessibili": 210,
+      "quotaFlessibili": 0.0546781844405913
+    },
+    "100202": {
+      "totale": 3753,
+      "medici": 598,
+      "flessibili": 188,
+      "quotaFlessibili": 0.05007047864190721
+    },
+    "100901": {
+      "totale": 2828,
+      "medici": 478,
+      "flessibili": 202,
+      "quotaFlessibili": 0.07150408559417021
+    },
+    "100902": {
+      "totale": 1728,
+      "medici": 374,
+      "flessibili": 99,
+      "quotaFlessibili": 0.05721528364566572
+    },
+    "110301": {
+      "totale": 4275,
+      "medici": 612,
+      "flessibili": 332,
+      "quotaFlessibili": 0.07765434611237038
+    },
+    "110302": {
+      "totale": 4349,
+      "medici": 606,
+      "flessibili": 195,
+      "quotaFlessibili": 0.04494549935739593
+    },
+    "110303": {
+      "totale": 3446,
+      "medici": 501,
+      "flessibili": 258,
+      "quotaFlessibili": 0.07473784722726098
+    },
+    "110304": {
+      "totale": 1655,
+      "medici": 228,
+      "flessibili": 95,
+      "quotaFlessibili": 0.05736763870593495
+    },
+    "110305": {
+      "totale": 2544,
+      "medici": 376,
+      "flessibili": 255,
+      "quotaFlessibili": 0.10024292261853288
+    },
+    "110905": {
+      "totale": 3862,
+      "medici": 692,
+      "flessibili": 492,
+      "quotaFlessibili": 0.12734316129650394
+    },
+    "120109": {
+      "totale": 3085,
+      "medici": 490,
+      "flessibili": 236,
+      "quotaFlessibili": 0.07652912385335968
+    },
+    "120110": {
+      "totale": 2185,
+      "medici": 313,
+      "flessibili": 380,
+      "quotaFlessibili": 0.17378826092727961
+    },
+    "120111": {
+      "totale": 3662,
+      "medici": 646,
+      "flessibili": 406,
+      "quotaFlessibili": 0.11077610456573866
+    },
+    "120112": {
+      "totale": 4233,
+      "medici": 674,
+      "flessibili": 333,
+      "quotaFlessibili": 0.07857836454747566
+    },
+    "120201": {
+      "totale": 5249,
+      "medici": 1129,
+      "flessibili": 160,
+      "quotaFlessibili": 0.030448748480610882
+    },
+    "120202": {
+      "totale": 5987,
+      "medici": 1286,
+      "flessibili": 475,
+      "quotaFlessibili": 0.07928320393409324
+    },
+    "120203": {
+      "totale": 2130,
+      "medici": 330,
+      "flessibili": 76,
+      "quotaFlessibili": 0.03570338724443089
+    },
+    "120204": {
+      "totale": 1794,
+      "medici": 295,
+      "flessibili": 118,
+      "quotaFlessibili": 0.06585291084914863
+    },
+    "120205": {
+      "totale": 3486,
+      "medici": 600,
+      "flessibili": 482,
+      "quotaFlessibili": 0.1382179126742785
+    },
+    "120206": {
+      "totale": 3793,
+      "medici": 642,
+      "flessibili": 271,
+      "quotaFlessibili": 0.07144250694704428
+    },
+    "120901": {
+      "totale": 3633,
+      "medici": 755,
+      "flessibili": 115,
+      "quotaFlessibili": 0.031694259802100104
+    },
+    "120902": {
+      "totale": 3648,
+      "medici": 648,
+      "flessibili": 1615,
+      "quotaFlessibili": 0.4427572142794492
+    },
+    "120906": {
+      "totale": 3126,
+      "medici": 726,
+      "flessibili": 344,
+      "quotaFlessibili": 0.11004478566858605
+    },
+    "120908": {
+      "totale": 1317,
+      "medici": 292,
+      "flessibili": 34,
+      "quotaFlessibili": 0.026045501818099007
+    },
+    "120918": {
+      "totale": 926,
+      "medici": 132,
+      "flessibili": 96,
+      "quotaFlessibili": 0.10397167255022613
+    },
+    "120919": {
+      "totale": 1813,
+      "medici": 338,
+      "flessibili": 80,
+      "quotaFlessibili": 0.04438403299714915
+    },
+    "120920": {
+      "totale": 863,
+      "medici": 0,
+      "flessibili": 3,
+      "quotaFlessibili": 0.0034762456546929316
+    },
+    "120921": {
+      "totale": 2197,
+      "medici": 101,
+      "flessibili": 26,
+      "quotaFlessibili": 0.01198722091255791
+    },
+    "130201": {
+      "totale": 4538,
+      "medici": 704,
+      "flessibili": 817,
+      "quotaFlessibili": 0.17997562625752864
+    },
+    "130202": {
+      "totale": 5285,
+      "medici": 912,
+      "flessibili": 499,
+      "quotaFlessibili": 0.09440788353320945
+    },
+    "130203": {
+      "totale": 3883,
+      "medici": 692,
+      "flessibili": 380,
+      "quotaFlessibili": 0.09787641705253074
+    },
+    "130204": {
+      "totale": 3859,
+      "medici": 617,
+      "flessibili": 365,
+      "quotaFlessibili": 0.0945136963225957
+    },
+    "140201": {
+      "totale": 2886,
+      "medici": 449,
+      "flessibili": 180,
+      "quotaFlessibili": 0.06252923100374504
+    },
+    "150201": {
+      "totale": 1750,
+      "medici": 279,
+      "flessibili": 7,
+      "quotaFlessibili": 0.0042389826441654
+    },
+    "150202": {
+      "totale": 978,
+      "medici": 120,
+      "flessibili": 14,
+      "quotaFlessibili": 0.013901533362657146
+    },
+    "150203": {
+      "totale": 4995,
+      "medici": 951,
+      "flessibili": 395,
+      "quotaFlessibili": 0.07908645376213204
+    },
+    "150204": {
+      "totale": 6885,
+      "medici": 1235,
+      "flessibili": 37,
+      "quotaFlessibili": 0.005323436921266876
+    },
+    "150205": {
+      "totale": 4190,
+      "medici": 800,
+      "flessibili": 157,
+      "quotaFlessibili": 0.03741732839750153
+    },
+    "150206": {
+      "totale": 4911,
+      "medici": 823,
+      "flessibili": 289,
+      "quotaFlessibili": 0.05884748523722256
+    },
+    "150207": {
+      "totale": 7685,
+      "medici": 1341,
+      "flessibili": 211,
+      "quotaFlessibili": 0.027429506857051394
+    },
+    "150901": {
+      "totale": 3926,
+      "medici": 815,
+      "flessibili": 233,
+      "quotaFlessibili": 0.05932876879814158
+    },
+    "150902": {
+      "totale": 1439,
+      "medici": 387,
+      "flessibili": 70,
+      "quotaFlessibili": 0.04832083197197099
+    },
+    "150903": {
+      "totale": 2672,
+      "medici": 597,
+      "flessibili": 51,
+      "quotaFlessibili": 0.019035428502990424
+    },
+    "150904": {
+      "totale": 3619,
+      "medici": 619,
+      "flessibili": 225,
+      "quotaFlessibili": 0.062161504962751725
+    },
+    "150905": {
+      "totale": 2018,
+      "medici": 448,
+      "flessibili": 37,
+      "quotaFlessibili": 0.018417675418820022
+    },
+    "150906": {
+      "totale": 1375,
+      "medici": 256,
+      "flessibili": 26,
+      "quotaFlessibili": 0.018659295093296474
+    },
+    "150907": {
+      "totale": 1742,
+      "medici": 390,
+      "flessibili": 32,
+      "quotaFlessibili": 0.01838659494957033
+    },
+    "150908": {
+      "totale": 780,
+      "medici": 117,
+      "flessibili": 18,
+      "quotaFlessibili": 0.023076923076923078
+    },
+    "150909": {
+      "totale": 1442,
+      "medici": 205,
+      "flessibili": 48,
+      "quotaFlessibili": 0.03315970897691096
+    },
+    "150910": {
+      "totale": 1171,
+      "medici": 265,
+      "flessibili": 6,
+      "quotaFlessibili": 0.0050898408143745305
+    },
+    "160106": {
+      "totale": 4225,
+      "medici": 656,
+      "flessibili": 251,
+      "quotaFlessibili": 0.05932145215771397
+    },
+    "160112": {
+      "totale": 6043,
+      "medici": 825,
+      "flessibili": 431,
+      "quotaFlessibili": 0.07134216871058542
+    },
+    "160113": {
+      "totale": 3926,
+      "medici": 708,
+      "flessibili": 273,
+      "quotaFlessibili": 0.06950798292357384
+    },
+    "160114": {
+      "totale": 9332,
+      "medici": 1671,
+      "flessibili": 269,
+      "quotaFlessibili": 0.028860928770276264
+    },
+    "160115": {
+      "totale": 3531,
+      "medici": 356,
+      "flessibili": 105,
+      "quotaFlessibili": 0.02972562702494506
+    },
+    "160116": {
+      "totale": 7994,
+      "medici": 1358,
+      "flessibili": 916,
+      "quotaFlessibili": 0.11459147741132468
+    },
+    "160901": {
+      "totale": 746,
+      "medici": 164,
+      "flessibili": 37,
+      "quotaFlessibili": 0.049406717168331435
+    },
+    "160902": {
+      "totale": 445,
+      "medici": 68,
+      "flessibili": 5,
+      "quotaFlessibili": 0.011324824734855295
+    },
+    "160907": {
+      "totale": 4345,
+      "medici": 851,
+      "flessibili": 196,
+      "quotaFlessibili": 0.0450367922074634
+    },
+    "160910": {
+      "totale": 3381,
+      "medici": 518,
+      "flessibili": 182,
+      "quotaFlessibili": 0.05394774976193433
+    },
+    "170201": {
+      "totale": 1920,
+      "medici": 137,
+      "flessibili": 220,
+      "quotaFlessibili": 0.11467555462972606
+    },
+    "170202": {
+      "totale": 1878,
+      "medici": 300,
+      "flessibili": 56,
+      "quotaFlessibili": 0.029741459648001706
+    },
+    "170901": {
+      "totale": 2820,
+      "medici": 482,
+      "flessibili": 189,
+      "quotaFlessibili": 0.06698488238902935
+    },
+    "170910": {
+      "totale": 450,
+      "medici": 65,
+      "flessibili": 47,
+      "quotaFlessibili": 0.1054185442518147
+    },
+    "180201": {
+      "totale": 4705,
+      "medici": 728,
+      "flessibili": 364,
+      "quotaFlessibili": 0.0774311739427969
+    },
+    "180202": {
+      "totale": 1608,
+      "medici": 272,
+      "flessibili": 104,
+      "quotaFlessibili": 0.06467661691542288
+    },
+    "180203": {
+      "totale": 2923,
+      "medici": 480,
+      "flessibili": 94,
+      "quotaFlessibili": 0.03231102871255294
+    },
+    "180204": {
+      "totale": 1315,
+      "medici": 204,
+      "flessibili": 150,
+      "quotaFlessibili": 0.11411559840921014
+    },
+    "180912": {
+      "totale": 1744,
+      "medici": 396,
+      "flessibili": 86,
+      "quotaFlessibili": 0.049301024094313
+    },
+    "180914": {
+      "totale": 3003,
+      "medici": 597,
+      "flessibili": 165,
+      "quotaFlessibili": 0.0548632249212386
+    },
+    "180915": {
+      "totale": 1765,
+      "medici": 402,
+      "flessibili": 41,
+      "quotaFlessibili": 0.023406521197290014
+    },
+    "180916": {
+      "totale": 1250,
+      "medici": 191,
+      "flessibili": 64,
+      "quotaFlessibili": 0.05132901925338154
+    },
+    "190201": {
+      "totale": 2658,
+      "medici": 639,
+      "flessibili": 752,
+      "quotaFlessibili": 0.2828736224664482
+    },
+    "190202": {
+      "totale": 3008,
+      "medici": 943,
+      "flessibili": 537,
+      "quotaFlessibili": 0.17840375586854457
+    },
+    "190203": {
+      "totale": 4471,
+      "medici": 851,
+      "flessibili": 600,
+      "quotaFlessibili": 0.1342775545074149
+    },
+    "190204": {
+      "totale": 1933,
+      "medici": 337,
+      "flessibili": 205,
+      "quotaFlessibili": 0.10596026490066224
+    },
+    "190205": {
+      "totale": 4516,
+      "medici": 850,
+      "flessibili": 287,
+      "quotaFlessibili": 0.06352693162794405
+    },
+    "190206": {
+      "totale": 4784,
+      "medici": 825,
+      "flessibili": 905,
+      "quotaFlessibili": 0.18916207143066174
+    },
+    "190207": {
+      "totale": 3924,
+      "medici": 585,
+      "flessibili": 600,
+      "quotaFlessibili": 0.15281452143195753
+    },
+    "190208": {
+      "totale": 3052,
+      "medici": 621,
+      "flessibili": 142,
+      "quotaFlessibili": 0.04658622169655232
+    },
+    "190209": {
+      "totale": 4415,
+      "medici": 686,
+      "flessibili": 527,
+      "quotaFlessibili": 0.11942363921735605
+    },
+    "190921": {
+      "totale": 1494,
+      "medici": 408,
+      "flessibili": 87,
+      "quotaFlessibili": 0.05804378389234787
+    },
+    "190922": {
+      "totale": 2384,
+      "medici": 575,
+      "flessibili": 213,
+      "quotaFlessibili": 0.08921192289136406
+    },
+    "190923": {
+      "totale": 3409,
+      "medici": 741,
+      "flessibili": 374,
+      "quotaFlessibili": 0.1096730285197984
+    },
+    "190924": {
+      "totale": 1363,
+      "medici": 296,
+      "flessibili": 201,
+      "quotaFlessibili": 0.1473562172553969
+    },
+    "190925": {
+      "totale": 1782,
+      "medici": 383,
+      "flessibili": 102,
+      "quotaFlessibili": 0.057080316551608015
+    },
+    "190926": {
+      "totale": 2869,
+      "medici": 544,
+      "flessibili": 369,
+      "quotaFlessibili": 0.12848258359595058
+    },
+    "190927": {
+      "totale": 2898,
+      "medici": 710,
+      "flessibili": 607,
+      "quotaFlessibili": 0.20955026135559884
+    },
+    "190928": {
+      "totale": 1584,
+      "medici": 368,
+      "flessibili": 303,
+      "quotaFlessibili": 0.19128787878787878
+    },
+    "190960": {
+      "totale": 895,
+      "medici": 151,
+      "flessibili": 102,
+      "quotaFlessibili": 0.11372882113639411
+    },
+    "200301": {
+      "totale": 2482,
+      "medici": 400,
+      "flessibili": 286,
+      "quotaFlessibili": 0.11525460603447928
+    },
+    "200302": {
+      "totale": 1484,
+      "medici": 289,
+      "flessibili": 99,
+      "quotaFlessibili": 0.0666927228987109
+    },
+    "200303": {
+      "totale": 2186,
+      "medici": 321,
+      "flessibili": 158,
+      "quotaFlessibili": 0.07221022581707719
+    },
+    "200304": {
+      "totale": 715,
+      "medici": 85,
+      "flessibili": 97,
+      "quotaFlessibili": 0.13530152511543306
+    },
+    "200305": {
+      "totale": 1735,
+      "medici": 251,
+      "flessibili": 185,
+      "quotaFlessibili": 0.10642738137102865
+    },
+    "200306": {
+      "totale": 887,
+      "medici": 176,
+      "flessibili": 105,
+      "quotaFlessibili": 0.11788925110827853
+    },
+    "200307": {
+      "totale": 1490,
+      "medici": 245,
+      "flessibili": 163,
+      "quotaFlessibili": 0.10915084016407199
+    },
+    "200308": {
+      "totale": 3983,
+      "medici": 785,
+      "flessibili": 217,
+      "quotaFlessibili": 0.054448311012689384
+    },
+    "200904": {
+      "totale": 3330,
+      "medici": 655,
+      "flessibili": 474,
+      "quotaFlessibili": 0.1424247519757861
+    },
+    "200905": {
+      "totale": 3074,
+      "medici": 669,
+      "flessibili": 387,
+      "quotaFlessibili": 0.1260140123990867
+    },
+    "200906": {
+      "totale": 1622,
+      "medici": 348,
+      "flessibili": 115,
+      "quotaFlessibili": 0.07112919132149902
+    },
+    "200918": {
+      "totale": 510,
+      "medici": 16,
+      "flessibili": 60,
+      "quotaFlessibili": 0.11707575490022956
+    },
+    "200930": {
+      "totale": 707,
+      "medici": 14,
+      "flessibili": 167,
+      "quotaFlessibili": 0.2362525458248472
+    },
+    "060960": {
+      "totale": 249,
+      "medici": 2,
+      "flessibili": 27,
+      "quotaFlessibili": 0.1076094384371106
+    },
+    "050952": {
+      "totale": 1201,
+      "medici": 208,
+      "flessibili": 79,
+      "quotaFlessibili": 0.06594961788848004
+    },
+    "030925": {
+      "totale": 3946,
+      "medici": 840,
+      "flessibili": 204,
+      "quotaFlessibili": 0.051700325138557685
+    },
+    "070901": {
+      "totale": 5043,
+      "medici": 817,
+      "flessibili": 47,
+      "quotaFlessibili": 0.009325742658679402
+    },
+    "030926": {
+      "totale": 3008,
+      "medici": 572,
+      "flessibili": 79,
+      "quotaFlessibili": 0.026198550435534276
+    },
+    "030922": {
+      "totale": 1809,
+      "medici": 280,
+      "flessibili": 47,
+      "quotaFlessibili": 0.025781945450423803
+    },
+    "030923": {
+      "totale": 730,
+      "medici": 133,
+      "flessibili": 34,
+      "quotaFlessibili": 0.045974175507854265
+    },
+    "070940": {
+      "totale": 2115,
+      "medici": 379,
+      "flessibili": 112,
+      "quotaFlessibili": 0.05276250017734102
+    },
+    "060901": {
+      "totale": 818,
+      "medici": 135,
+      "flessibili": 62,
+      "quotaFlessibili": 0.07535377502721347
+    },
+    "080960": {
+      "totale": 1405,
+      "medici": 221,
+      "flessibili": 54,
+      "quotaFlessibili": 0.038502597679880436
+    },
+    "030924": {
+      "totale": 3589,
+      "medici": 521,
+      "flessibili": 78,
+      "quotaFlessibili": 0.02165674669520052
+    },
+    "060902": {
+      "totale": 769,
+      "medici": 124,
+      "flessibili": 48,
+      "quotaFlessibili": 0.06189416708952992
+    },
+    "080908": {
+      "totale": 5614,
+      "medici": 821,
+      "flessibili": 122,
+      "quotaFlessibili": 0.0217540384707871
+    },
+    "090904": {
+      "totale": 1307,
+      "medici": 262,
+      "flessibili": 46,
+      "quotaFlessibili": 0.03482587064676617
+    },
+    "080105": {
+      "totale": 9313,
+      "medici": 1399,
+      "flessibili": 149,
+      "quotaFlessibili": 0.016040346211207732
+    },
+    "010908": {
+      "totale": 1941,
+      "medici": 338,
+      "flessibili": 101,
+      "quotaFlessibili": 0.051795661965153485
+    },
+    "041201": {
+      "totale": 10707,
+      "medici": 1446,
+      "flessibili": 1295,
+      "quotaFlessibili": 0.12095383793497003
+    },
+    "010213": {
+      "totale": 3637,
+      "medici": 415,
+      "flessibili": 73,
+      "quotaFlessibili": 0.020133453204773964
+    },
+    "010210": {
+      "totale": 3890,
+      "medici": 475,
+      "flessibili": 44,
+      "quotaFlessibili": 0.011290720631786773
+    },
+    "010203": {
+      "totale": 3990,
+      "medici": 500,
+      "flessibili": 156,
+      "quotaFlessibili": 0.03913145904654974
+    },
+    "010204": {
+      "totale": 4433,
+      "medici": 606,
+      "flessibili": 272,
+      "quotaFlessibili": 0.06145750394160783
+    },
+    "050912": {
+      "totale": 5258,
+      "medici": 791,
+      "flessibili": 51,
+      "quotaFlessibili": 0.009740938948921878
+    },
+    "010909": {
+      "totale": 9120,
+      "medici": 1355,
+      "flessibili": 136,
+      "quotaFlessibili": 0.014858270738527331
+    },
+    "080114": {
+      "totale": 16547,
+      "medici": 2394,
+      "flessibili": 481,
+      "quotaFlessibili": 0.02903937388571601
+    },
+    "060205": {
+      "totale": 3757,
+      "medici": 496,
+      "flessibili": 174,
+      "quotaFlessibili": 0.046331316690932024
+    },
+    "090201": {
+      "totale": 15522,
+      "medici": 2485,
+      "flessibili": 411,
+      "quotaFlessibili": 0.02650927782849272
+    },
+    "090202": {
+      "totale": 14060,
+      "medici": 2197,
+      "flessibili": 418,
+      "quotaFlessibili": 0.029716617792132326
+    },
+    "090203": {
+      "totale": 9709,
+      "medici": 1490,
+      "flessibili": 146,
+      "quotaFlessibili": 0.015059912124763885
+    },
+    "030704": {
+      "totale": 1200,
+      "medici": 230,
+      "flessibili": 59,
+      "quotaFlessibili": 0.04907157382404908
+    },
+    "030710": {
+      "totale": 5185,
+      "medici": 899,
+      "flessibili": 115,
+      "quotaFlessibili": 0.02213032861821422
+    },
+    "030723": {
+      "totale": 2804,
+      "medici": 395,
+      "flessibili": 97,
+      "quotaFlessibili": 0.034638194377578785
+    },
+    "030722": {
+      "totale": 1600,
+      "medici": 265,
+      "flessibili": 36,
+      "quotaFlessibili": 0.022701567801640912
+    },
+    "030713": {
+      "totale": 2820,
+      "medici": 282,
+      "flessibili": 74,
+      "quotaFlessibili": 0.02636888067877619
+    },
+    "030720": {
+      "totale": 2687,
+      "medici": 385,
+      "flessibili": 189,
+      "quotaFlessibili": 0.07016910415371613
+    },
+    "030724": {
+      "totale": 2545,
+      "medici": 361,
+      "flessibili": 135,
+      "quotaFlessibili": 0.053097275591912435
+    },
+    "030715": {
+      "totale": 3196,
+      "medici": 503,
+      "flessibili": 71,
+      "quotaFlessibili": 0.02218467411370819
+    },
+    "030709": {
+      "totale": 2548,
+      "medici": 395,
+      "flessibili": 102,
+      "quotaFlessibili": 0.0401858413677548
+    },
+    "030725": {
+      "totale": 4048,
+      "medici": 514,
+      "flessibili": 143,
+      "quotaFlessibili": 0.03521883608602735
+    },
+    "030727": {
+      "totale": 3222,
+      "medici": 448,
+      "flessibili": 96,
+      "quotaFlessibili": 0.029795158286778402
+    },
+    "030708": {
+      "totale": 2878,
+      "medici": 359,
+      "flessibili": 152,
+      "quotaFlessibili": 0.0529263394873434
+    },
+    "030718": {
+      "totale": 4574,
+      "medici": 729,
+      "flessibili": 248,
+      "quotaFlessibili": 0.05415126145961559
+    },
+    "030706": {
+      "totale": 3697,
+      "medici": 475,
+      "flessibili": 157,
+      "quotaFlessibili": 0.042453914713480034
+    },
+    "030721": {
+      "totale": 7044,
+      "medici": 1037,
+      "flessibili": 273,
+      "quotaFlessibili": 0.03877139908377353
+    },
+    "030719": {
+      "totale": 1955,
+      "medici": 274,
+      "flessibili": 83,
+      "quotaFlessibili": 0.042386667075903134
+    },
+    "030726": {
+      "totale": 1450,
+      "medici": 228,
+      "flessibili": 64,
+      "quotaFlessibili": 0.04419725672199657
+    },
+    "030717": {
+      "totale": 4364,
+      "medici": 632,
+      "flessibili": 136,
+      "quotaFlessibili": 0.031110785194419493
+    },
+    "030701": {
+      "totale": 4889,
+      "medici": 889,
+      "flessibili": 141,
+      "quotaFlessibili": 0.028756816907977375
+    },
+    "030712": {
+      "totale": 3632,
+      "medici": 532,
+      "flessibili": 200,
+      "quotaFlessibili": 0.05496720471855536
+    },
+    "030707": {
+      "totale": 2145,
+      "medici": 310,
+      "flessibili": 95,
+      "quotaFlessibili": 0.04408404599587791
+    },
+    "030705": {
+      "totale": 4204,
+      "medici": 637,
+      "flessibili": 83,
+      "quotaFlessibili": 0.019722115839777735
+    },
+    "030325": {
+      "totale": 562,
+      "medici": 36,
+      "flessibili": 14,
+      "quotaFlessibili": 0.025431264449582065
+    },
+    "030326": {
+      "totale": 726,
+      "medici": 47,
+      "flessibili": 14,
+      "quotaFlessibili": 0.019823788546255508
+    },
+    "030328": {
+      "totale": 361,
+      "medici": 41,
+      "flessibili": 9,
+      "quotaFlessibili": 0.02439024390243903
+    },
+    "030324": {
+      "totale": 610,
+      "medici": 39,
+      "flessibili": 10,
+      "quotaFlessibili": 0.016119246347342703
+    },
+    "030321": {
+      "totale": 1719,
+      "medici": 120,
+      "flessibili": 34,
+      "quotaFlessibili": 0.01999557980202166
+    },
+    "030327": {
+      "totale": 717,
+      "medici": 21,
+      "flessibili": 29,
+      "quotaFlessibili": 0.04025890689953408
+    },
+    "030322": {
+      "totale": 719,
+      "medici": 68,
+      "flessibili": 15,
+      "quotaFlessibili": 0.020494483324753388
+    },
+    "030714": {
+      "totale": 1285,
+      "medici": 169,
+      "flessibili": 54,
+      "quotaFlessibili": 0.04198606949686758
+    },
+    "030323": {
+      "totale": 297,
+      "medici": 14,
+      "flessibili": 4,
+      "quotaFlessibili": 0.014098724721558598
+    },
+    "030711": {
+      "totale": 3876,
+      "medici": 510,
+      "flessibili": 88,
+      "quotaFlessibili": 0.022615561260691752
+    },
+    "030702": {
+      "totale": 4472,
+      "medici": 760,
+      "flessibili": 287,
+      "quotaFlessibili": 0.06418337980738052
+    },
+    "030703": {
+      "totale": 4795,
+      "medici": 922,
+      "flessibili": 236,
+      "quotaFlessibili": 0.04923379797625899
+    },
+    "030992": {
+      "totale": 14,
+      "medici": 1,
+      "flessibili": 1,
+      "quotaFlessibili": 0.07407407407407408
+    },
+    "010301": {
+      "totale": 6086,
+      "medici": 1025,
+      "flessibili": 360,
+      "quotaFlessibili": 0.05921553099446144
+    },
+    "070970": {
+      "totale": 113,
+      "medici": 11,
+      "flessibili": 11,
+      "quotaFlessibili": 0.09574468085106384
+    },
+    "060206": {
+      "totale": 8913,
+      "medici": 1234,
+      "flessibili": 260,
+      "quotaFlessibili": 0.029145821108364743
+    },
+    "060207": {
+      "totale": 6354,
+      "medici": 896,
+      "flessibili": 520,
+      "quotaFlessibili": 0.08189022970055206
+    },
+    "030993": {
+      "totale": 919,
+      "medici": 13,
+      "flessibili": 164,
+      "quotaFlessibili": 0.17832072699570112
+    },
+    "010900": {
+      "totale": 22,
+      "medici": 6,
+      "flessibili": 0,
+      "quotaFlessibili": 0
+    },
+    "070101": {
+      "totale": 2886,
+      "medici": 286,
+      "flessibili": 120,
+      "quotaFlessibili": 0.04170954029081309
+    },
+    "070102": {
+      "totale": 4420,
+      "medici": 577,
+      "flessibili": 183,
+      "quotaFlessibili": 0.041467773680519425
+    },
+    "070103": {
+      "totale": 4445,
+      "medici": 602,
+      "flessibili": 55,
+      "quotaFlessibili": 0.012444548423960478
+    },
+    "070104": {
+      "totale": 1977,
+      "medici": 271,
+      "flessibili": 93,
+      "quotaFlessibili": 0.04704579137181906
+    },
+    "070105": {
+      "totale": 2540,
+      "medici": 335,
+      "flessibili": 107,
+      "quotaFlessibili": 0.04228811657868943
+    },
+    "080101": {
+      "totale": 3923,
+      "medici": 554,
+      "flessibili": 80,
+      "quotaFlessibili": 0.020422520850751448
+    },
+    "080102": {
+      "totale": 2866,
+      "medici": 408,
+      "flessibili": 145,
+      "quotaFlessibili": 0.050738895633608234
+    },
+    "080902": {
+      "totale": 4600,
+      "medici": 625,
+      "flessibili": 221,
+      "quotaFlessibili": 0.04798139009065808
+    },
+    "080103": {
+      "totale": 7143,
+      "medici": 1032,
+      "flessibili": 356,
+      "quotaFlessibili": 0.049869596807046675
+    },
+    "080104": {
+      "totale": 5464,
+      "medici": 638,
+      "flessibili": 312,
+      "quotaFlessibili": 0.057038897145492755
+    },
+    "080904": {
+      "totale": 4185,
+      "medici": 730,
+      "flessibili": 180,
+      "quotaFlessibili": 0.042990171831652296
+    },
+    "080106": {
+      "totale": 1896,
+      "medici": 270,
+      "flessibili": 42,
+      "quotaFlessibili": 0.02214674128028101
+    },
+    "080109": {
+      "totale": 2931,
+      "medici": 342,
+      "flessibili": 108,
+      "quotaFlessibili": 0.036739039195815296
+    },
+    "080909": {
+      "totale": 2580,
+      "medici": 432,
+      "flessibili": 114,
+      "quotaFlessibili": 0.04428235914210196
+    },
+    "090903": {
+      "totale": 5564,
+      "medici": 926,
+      "flessibili": 201,
+      "quotaFlessibili": 0.03618398588152414
+    },
+    "090901": {
+      "totale": 4905,
+      "medici": 876,
+      "flessibili": 120,
+      "quotaFlessibili": 0.024448920675566574
+    },
+    "090902": {
+      "totale": 2756,
+      "medici": 470,
+      "flessibili": 25,
+      "quotaFlessibili": 0.009178971810035191
+    },
+    "050501": {
+      "totale": 3555,
+      "medici": 382,
+      "flessibili": 96,
+      "quotaFlessibili": 0.027124631550525392
+    },
+    "050507": {
+      "totale": 4150,
+      "medici": 508,
+      "flessibili": 83,
+      "quotaFlessibili": 0.020042504180541564
+    },
+    "050508": {
+      "totale": 6448,
+      "medici": 903,
+      "flessibili": 93,
+      "quotaFlessibili": 0.014384862936683342
+    },
+    "010205": {
+      "totale": 2499,
+      "medici": 375,
+      "flessibili": 228,
+      "quotaFlessibili": 0.09112738624084524
+    },
+    "050502": {
+      "totale": 9381,
+      "medici": 1184,
+      "flessibili": 247,
+      "quotaFlessibili": 0.02634123254071213
+    },
+    "020101": {
+      "totale": 2403,
+      "medici": 305,
+      "flessibili": 305,
+      "quotaFlessibili": 0.12680839728969318
+    },
+    "050504": {
+      "totale": 2528,
+      "medici": 275,
+      "flessibili": 74,
+      "quotaFlessibili": 0.02914541850795397
+    },
+    "010206": {
+      "totale": 2098,
+      "medici": 279,
+      "flessibili": 43,
+      "quotaFlessibili": 0.02030425392950958
+    },
+    "010207": {
+      "totale": 1985,
+      "medici": 270,
+      "flessibili": 24,
+      "quotaFlessibili": 0.01228474002588912
+    },
+    "010208": {
+      "totale": 1998,
+      "medici": 261,
+      "flessibili": 77,
+      "quotaFlessibili": 0.03849041493568246
+    },
+    "010209": {
+      "totale": 1960,
+      "medici": 235,
+      "flessibili": 59,
+      "quotaFlessibili": 0.030230683684817312
+    },
+    "010905": {
+      "totale": 3052,
+      "medici": 525,
+      "flessibili": 102,
+      "quotaFlessibili": 0.03347771101311194
+    },
+    "050503": {
+      "totale": 7773,
+      "medici": 1063,
+      "flessibili": 193,
+      "quotaFlessibili": 0.024868427992708383
+    },
+    "010904": {
+      "totale": 1452,
+      "medici": 238,
+      "flessibili": 32,
+      "quotaFlessibili": 0.02215305370583334
+    },
+    "050506": {
+      "totale": 6999,
+      "medici": 878,
+      "flessibili": 165,
+      "quotaFlessibili": 0.023552474410045092
+    },
+    "050901": {
+      "totale": 6022,
+      "medici": 839,
+      "flessibili": 44,
+      "quotaFlessibili": 0.007242249165920743
+    },
+    "050505": {
+      "totale": 3386,
+      "medici": 439,
+      "flessibili": 149,
+      "quotaFlessibili": 0.04410917885523437
+    },
+    "050509": {
+      "totale": 6132,
+      "medici": 757,
+      "flessibili": 93,
+      "quotaFlessibili": 0.015195248671761101
+    },
+    "010907": {
+      "totale": 2570,
+      "medici": 389,
+      "flessibili": 68,
+      "quotaFlessibili": 0.026360643489224587
+    },
+    "010211": {
+      "totale": 2279,
+      "medici": 281,
+      "flessibili": 49,
+      "quotaFlessibili": 0.021539298579696282
+    },
+    "010906": {
+      "totale": 2347,
+      "medici": 434,
+      "flessibili": 31,
+      "quotaFlessibili": 0.013292433537832313
+    },
+    "010212": {
+      "totale": 2282,
+      "medici": 315,
+      "flessibili": 47,
+      "quotaFlessibili": 0.020540171000100797
+    },
+    "042101": {
+      "totale": 8870,
+      "medici": 1176,
+      "flessibili": 443,
+      "quotaFlessibili": 0.049896499939117614
+    }
+  }
+}

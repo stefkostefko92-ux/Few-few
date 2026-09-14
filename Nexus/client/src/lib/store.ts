@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, setToken, getToken, setBannedHandler } from './api';
+import { api, setToken, getToken, setBannedHandler, setUnauthorizedHandler } from './api';
 import type { Character, Derived } from './types';
 
 interface User {
@@ -55,6 +55,14 @@ let toastId = 0;
 // което App рендира като пълноекранен ban screen. Връща началната стойност.
 function registerBanHandler(set: (partial: Partial<State>) => void): null {
   setBannedHandler((reason: string, until: number) => set({ banned: { reason, until } }));
+  // Изтекла сесия → изчисти и прати към login (веднъж, ако сме автентикирани).
+  setUnauthorizedHandler(() => {
+    setToken(null);
+    set({ token: null, user: null, character: null, derived: null, cooldowns: {}, unreadMail: 0 });
+    if (typeof window !== 'undefined' && !/\/(login|register|)$/.test(window.location.pathname)) {
+      window.location.href = '/login';
+    }
+  });
   return null;
 }
 

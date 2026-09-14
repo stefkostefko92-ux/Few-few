@@ -1,6 +1,6 @@
 import { prisma, type GameKey } from "@aso/db";
 import type { SeatScore } from "@aso/game-core";
-import { STARTING_MMR } from "@aso/shared";
+import { STARTING_MMR, isBettingGame, settleStake, type SeatReward } from "@aso/shared";
 
 export interface SeatInfo {
   seat: number;
@@ -16,12 +16,18 @@ const kFactor = (games: number): number => (games < 30 ? 40 : 20);
 const numericResult = (r: SeatScore["result"]): number =>
   r === "win" ? 1 : r === "draw" ? 0.5 : 0;
 
-const rewards = (r: SeatScore["result"]): { chips: bigint; xp: number } =>
-  r === "win"
-    ? { chips: 25n, xp: 10 }
+/** Base flat reward, then scaled by result magnitude for games that report one
+ *  (backgammon gammon=2 / backgammon=3, belote capot, etc.) so a bigger win
+ *  actually pays more. `points` is clamped to a sane 1–3× so it can never blow
+ *  up the economy. Betting games settle a wallet stake instead (see below). */
+const rewards = (r: SeatScore["result"], points?: number): { chips: bigint; xp: number } => {
+  const mult = r === "win" ? Math.min(Math.max(Math.round(points ?? 1), 1), 3) : 1;
+  return r === "win"
+    ? { chips: BigInt(25 * mult), xp: 10 * mult }
     : r === "draw"
       ? { chips: 10n, xp: 5 }
       : { chips: 0n, xp: 3 };
+};
 
 async function ratingFor(userId: string, game: GameKey): Promise<{ mmr: number; games: number }> {
   const row = await prisma.ratingPerGame.findUnique({ where: { userId_game: { userId, game } } });
@@ -39,6 +45,8 @@ export interface FinalizeResult {
   deltas: Record<number, number>;
   /** seat -> new mmr after this match (for human seats) */
   newRatings: Record<number, number>;
+  /** seat -> chips/xp credited this match (for the game-over card). */
+  rewards: Record<number, SeatReward>;
 }
 
 export async function finalizeMatch(opts: {
@@ -61,7 +69,11 @@ export async function finalizeMatch(opts: {
 
   const deltas: Record<number, number> = {};
   const newRatings: Record<number, number> = {};
+  const rewardBySeat: Record<number, SeatReward> = {};
   for (const s of seats) deltas[s.seat] = 0;
+
+  const betting = isBettingGame(game);
+  const pointsBySeat = new Map<number, number>(score.map((s) => [s.seat, s.points ?? 0]));
 
   await prisma.$transaction(async (tx) => {
     // Idempotency: atomically claim the match by stamping endedAt only if it
@@ -109,23 +121,36 @@ export async function finalizeMatch(opts: {
       // pre-read snapshot (correct under concurrent updates).
       newRatings[seat.seat] = updated.mmr;
 
-      const reward = rewards(result);
+      // Betting games (Свара) settle a real WALLET stake from the final internal
+      // chip count: doubling your stack wins a buy-in, busting loses it. Losses
+      // are clamped to the player's available wallet so it can never go negative.
+      let chipsDelta: bigint;
+      let xp: number;
+      if (betting) {
+        let walletDelta = settleStake(game, pointsBySeat.get(seat.seat) ?? 0);
+        if (walletDelta < 0) {
+          const u = await tx.user.findUnique({ where: { id: userId }, select: { chips: true } });
+          const wallet = Number(u?.chips ?? 0n);
+          walletDelta = Math.max(walletDelta, -wallet);
+        }
+        chipsDelta = BigInt(walletDelta);
+        xp = result === "win" ? 12 : 6; // wagering a table earns more base XP
+      } else {
+        const reward = rewards(result, pointsBySeat.get(seat.seat));
+        chipsDelta = reward.chips;
+        xp = reward.xp;
+      }
+      rewardBySeat[seat.seat] = { chips: Number(chipsDelta), xp };
+
       await tx.matchPlayer.create({
-        data: {
-          matchId,
-          userId,
-          seat: seat.seat,
-          result,
-          mmrDelta: delta,
-          chipsDelta: reward.chips,
-        },
+        data: { matchId, userId, seat: seat.seat, result, mmrDelta: delta, chipsDelta },
       });
       await tx.user.update({
         where: { id: userId },
-        data: { chips: { increment: reward.chips }, xp: { increment: reward.xp } },
+        data: { chips: { increment: chipsDelta }, xp: { increment: xp } },
       });
     }
   });
 
-  return { deltas, newRatings };
+  return { deltas, newRatings, rewards: rewardBySeat };
 }

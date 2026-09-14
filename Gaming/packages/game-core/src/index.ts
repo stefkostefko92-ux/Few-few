@@ -29,3 +29,4 @@ export * from "./engines/cue-sports/cue.js";
 // registry + bots
 export * from "./games/index.js";
 export * from "./bots/playout.js";
+export * from "./bots/policy.js";

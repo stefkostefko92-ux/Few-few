@@ -58,15 +58,19 @@ export default async function PostPage({
         ]}
       />
       <article className="container-content max-w-3xl py-10">
-        {p.publishedAt && (
-          <div className="text-sm text-slate-500">
-            {new Intl.DateTimeFormat("bg-BG", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            }).format(p.publishedAt)}
-          </div>
-        )}
+        <div className="text-sm text-slate-600">
+          Редакция „За Бобов дол“
+          {p.publishedAt && (
+            <>
+              {" · "}
+              {new Intl.DateTimeFormat("bg-BG", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }).format(p.publishedAt)}
+            </>
+          )}
+        </div>
         <div className="mt-4">
           <Prose html={renderMarkdown(p.content)} />
         </div>

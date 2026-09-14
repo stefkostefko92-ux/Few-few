@@ -19,7 +19,7 @@ export default function LoginPage({
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
           <div className="text-xl font-bold">{SITE.name}</div>
-          <div className="text-sm text-slate-500">Вход в администрацията</div>
+          <div className="text-sm text-slate-600">Вход в администрацията</div>
         </div>
         <form action={action} className="card space-y-4">
           {state.error && (

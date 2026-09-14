@@ -150,13 +150,28 @@ function stepsFrom(board: Piece[], i: number, seat: Seat): Move[] {
   return out;
 }
 
+/** Total pieces removed by the maximal chain that STARTS with capture `m`. */
+function captureChainLen(board: Piece[], m: Move, seat: Seat): number {
+  return 1 + chainDepth(applied(board, m, seat), m.to, seat);
+}
+
+/** Keep only the captures that begin a MAXIMUM-length chain (the majority /
+ *  maximum-capture rule required by international/Bulgarian draughts). */
+function maximalCaptures(board: Piece[], captures: Move[], seat: Seat): Move[] {
+  if (captures.length <= 1) return captures;
+  const lens = captures.map((c) => captureChainLen(board, c, seat));
+  const max = Math.max(...lens);
+  return captures.filter((_, i) => lens[i] === max);
+}
+
 /**
  * Legal moves for a seat. Mandatory capture: if any capture exists, only
- * captures are legal. Mid-chain (chainFrom set) restricts to that piece's
- * continuation captures.
+ * captures are legal — AND the player must take a chain that removes the most
+ * pieces (maximum-capture rule). Mid-chain (chainFrom set) restricts to that
+ * piece's maximal continuation captures.
  */
 function legalMovesForSeat(board: Piece[], seat: Seat, chainFrom: number | null): Move[] {
-  if (chainFrom !== null) return capturesFrom(board, chainFrom, seat);
+  if (chainFrom !== null) return maximalCaptures(board, capturesFrom(board, chainFrom, seat), seat);
   const captures: Move[] = [];
   const all: Move[] = [];
   for (let i = 0; i < 64; i++) {
@@ -164,7 +179,7 @@ function legalMovesForSeat(board: Piece[], seat: Seat, chainFrom: number | null)
     captures.push(...capturesFrom(board, i, seat));
     all.push(...stepsFrom(board, i, seat));
   }
-  return captures.length > 0 ? captures : all;
+  return captures.length > 0 ? maximalCaptures(board, captures, seat) : all;
 }
 
 /** Apply a move to a board copy, mirroring reduce's crowning rule (bot/eval helper). */

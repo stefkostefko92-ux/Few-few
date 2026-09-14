@@ -110,6 +110,8 @@
     "mythicPlus": "Mythic+ Dungeons",
     "society": "Society",
     "guild": "Guild",
+    "friends": "Friends",
+    "chat": "Chat",
     "mail": "Mail",
     "leaderboard": "Hall of Fame",
     "town": "Town",
@@ -146,7 +148,7 @@
   },
   "levelUp": {
     "title": "— Level Up —",
-    "points": "+{{statPoints}} stat · +{{skillPoints}} skill points"
+    "grew": "Your power grows."
   },
   "lootDrop": {
     "acquired": "Loot Acquired",
@@ -330,7 +332,7 @@
     "featSetsBody": "From the Wayfarer's Garb to Solar Mythwoven. Two-, four-, and six-piece bonuses reshape a build; mixing tiers is encouraged.",
     "classesEyebrow": "Pick a kit",
     "classesTitle": "Four classes, with the math written down.",
-    "classesLead": "Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact effects in combat. You re-allocate stat points every level; you re-spec the build whenever the season changes.",
+    "classesLead": "Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact effects in combat. You re-spec the build whenever the season changes.",
     "classWarriorTagline": "Eats hits, returns them with interest. Sword and shield, plate, calm under pressure.",
     "classRangerTagline": "Hits first, harder than you expected, from where you weren't looking. Bow, leather, fast hands.",
     "classMageTagline": "Slow opener, large finisher. Burns mana fast, ends fights faster. Staff, robes, library card.",
@@ -440,7 +442,9 @@
     "footerMade": "Made with care for hero-class storytelling.",
     "iconAlt": "{{title}} icon",
     "portraitAlt": "{{name}} portrait",
-    "landscapeAlt": "{{name}} landscape"
+    "landscapeAlt": "{{name}} landscape",
+    "step3Body": "Twenty-one regions await, from Whispering Woods to The First Light at Lv 500. Each region drops gear from its tier.",
+    "regionBeyondBody": "Five realms past the world's ending — ash, fallen stars, the forge of the next dawn, the unlit court, and the first light itself. Lv 351–500."
   },
   "arena": {
     "title": "Arena of Nexus Dominion",
@@ -464,7 +468,9 @@
     "huntAgain": "Hunt Again",
     "regionInfo": "Lv {{min}}–{{max}} · {{count}} foes",
     "requiresLv": "Requires Lv {{n}}",
-    "huntHere": "Hunt Here"
+    "huntHere": "Hunt Here",
+    "firstWin": "First win of the day — ×2 XP & gold!",
+    "combo": "Combo ×{{n}} (+{{pct}}% XP & gold)"
   },
   "dungeons": {
     "title": "Dungeons",
@@ -791,7 +797,10 @@
       "minutesAgo": "{{n}}m ago",
       "hoursAgo": "{{n}}h ago",
       "daysAgo": "{{n}}d ago"
-    }
+    },
+    "bestPrice": "best price",
+    "cheapest": "cheapest: {{n}}g",
+    "lastSold": "last sold: {{n}}g"
   },
   "auction": {
     "loading": "Loading auction…",
@@ -826,7 +835,9 @@
     "all": "All",
     "lv": "Lv {{n}}",
     "buy": "Buy",
-    "purchaseComplete": "Purchase complete."
+    "purchaseComplete": "Purchase complete.",
+    "dailyDeals": "Daily deals — 30% off",
+    "dealsExpire": "Rotates in {{hours}}h"
   },
   "mountShop": {
     "loading": "Loading…",
@@ -1047,7 +1058,11 @@
     "subtitle": "{{discovered}} / {{total}} creatures catalogued.",
     "all": "All",
     "lv": "Lv {{n}}",
-    "kills": "Kills:"
+    "kills": "Kills:",
+    "claim": "Claim",
+    "claimed": "Claimed ✓",
+    "slayAll": "Slay them all",
+    "claimedToast": "Collection reward: +{{gold}}g, +{{gems}} gems!"
   },
   "common": {
     "loading": "Loading…",
@@ -1104,7 +1119,7 @@
     "restToast": "Wounds tended.",
     "record": "{{wins}}W / {{losses}}L · Rating {{rating}}",
     "howTitle": "How upgrades work",
-    "howDesc": "Every level-up grants +3 stat points and +1 skill point for free. Beyond that, any stat can be pushed with gold — each next purchase costs more (5g, 14g, 25g, 40g, 57g…), and every stat has its own independent counter.",
+    "howDesc": "Attributes are raised with gold — each next purchase of a stat costs more on a simple 5-10-15-20-25… curve (5g, 10g, 15g, 20g, 25g…), and every stat has its own independent counter. Levelling up increases your HP and MP.",
     "attributes": "Attributes",
     "weaponSkills": "Weapon Skills",
     "upgradesCount": "({{count}} upgrades)",
@@ -1124,8 +1139,8 @@
       "dexterity": "Crit, dodge, ranged.",
       "constitution": "Health pool.",
       "intelligence": "Spell power, mana.",
-      "wisdom": "Mana, resistance.",
-      "charisma": "Quest reward bonuses."
+      "wisdom": "Mana, warding & dodge.",
+      "charisma": "Critical damage."
     },
     "skill": {
       "sword": "Sword",
@@ -1322,6 +1337,15 @@
       "depositTitle": "Deposit Item",
       "depositDesc": "Pick an unequipped, non-bound item. Consumables cannot be deposited.",
       "noItems": "No depositable items in your bag."
+    },
+    "missions": {
+      "title": "Weekly guild missions",
+      "resets": "Resets in {{days}}d",
+      "hunt_kills": "Slay monsters together",
+      "arena_wins": "Win arena duels",
+      "tower_floors": "Climb tower floors",
+      "perMember": "per member",
+      "done": "Complete ✓"
     }
   },
   "factions": {
@@ -1355,7 +1379,15 @@
       "losses": "Losses"
     },
     "npc": "NPC",
-    "empty": "The hall waits to be filled."
+    "empty": "The hall waits to be filled.",
+    "tabArena": "Arena",
+    "tabSeason": "Season",
+    "seasonTitle": "Season {{key}}",
+    "seasonMine": "Your points: {{points}} · rank #{{rank}}",
+    "seasonEnds": "Ends in {{days}} days",
+    "seasonRewards": "#1: 1000💎 +100k g + title · top 10: 200💎 · top 10%: 50💎",
+    "lastSeason": "Last season ({{key}}):",
+    "seasonEmpty": "No points yet this season. Go hunt!"
   },
   "achievements": {
     "title": "Achievements",

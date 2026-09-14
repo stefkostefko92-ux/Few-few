@@ -1,0 +1,39 @@
+# Ospedali Trasparenti
+
+> Conti, bilanci e appalti degli ospedali pubblici italiani da open data ufficiali
+> (ANAC, BDAP/RGS-MEF, Ministero della Salute). Indicatori di rischio, non prove.
+
+## Pagine principali
+
+- [Inchiesta: dove vanno i soldi](https://ospedalitrasparenti.it/inchiesta.html): il deficit «vero» del sistema e le anomalie di spesa
+- [Relazioni ricorrenti e possibili conflitti d'interesse](https://ospedalitrasparenti.it/conflitti.html): coppie azienda–fornitore da verificare
+- [Appalti della sanità](https://ospedalitrasparenti.it/appalti.html): quota senza gara per regione e per azienda
+- [Fornitori del SSN](https://ospedalitrasparenti.it/fornitori.html): chi incassa i soldi della sanità
+- [Regioni a confronto](https://ospedalitrasparenti.it/regioni.html): carta d'Italia della quota senza gara
+- [Metodologia e fonti](https://ospedalitrasparenti.it/metodologia.html): come calcoliamo ogni indicatore
+- [Dati aperti](https://ospedalitrasparenti.it/dati.html): dataset scaricabili (JSON/CSV) con licenze
+- [Il decennio della sanità 2012-2024](https://ospedalitrasparenti.it/tendenze.html): tendenze di ricavi, costi e personale
+- [Dove vanno i soldi: categorie di spesa](https://ospedalitrasparenti.it/categorie.html): farmaci, pulizie, energia con i primi fornitori
+- [I 100 contratti più grandi](https://ospedalitrasparenti.it/top-contratti.html)
+- [Glossario e FAQ](https://ospedalitrasparenti.it/glossario.html): affidamento diretto, CIG, GSA, accordi quadro
+- [Come verificare un appalto](https://ospedalitrasparenti.it/guida-verifica.html): guida pratica con accesso civico FOIA
+- [Il PNRR nella sanità](https://ospedalitrasparenti.it/pnrr.html)
+- [Le storie nei dati](https://ospedalitrasparenti.it/storie.html)
+
+## Indicatori sulle gare e approfondimenti
+
+- [Chi si presenta insieme alle gare](https://ospedalitrasparenti.it/cordate.html): coppie di società che concorrono insieme, una vince e l'altra mai
+- [Sei indicatori sulle gare](https://ospedalitrasparenti.it/segnali-gare.html): frazionamento, soglie UE, tempi troppo brevi
+- [Quanti partecipano davvero alle gare](https://ospedalitrasparenti.it/aggiudicazioni.html): offerenti per gara e ribassi (ANAC)
+- [Le gare europee della sanità](https://ospedalitrasparenti.it/ted.html): offerenti per lotto sopra-soglia UE (TED)
+- [Le consulenze esterne della sanità](https://ospedalitrasparenti.it/consulenze.html): spesa per incarichi esterni, aggregata per azienda
+- [La dotazione tecnologica](https://ospedalitrasparenti.it/apparecchiature.html): grandi apparecchiature per milione di abitanti
+- [La cassa della sanità mese per mese](https://ospedalitrasparenti.it/siope.html): flussi SIOPE e concentrazione a fine anno
+- [Il PNRR della sanità (Missione 6)](https://ospedalitrasparenti.it/pnrr-salute.html): fondi e progetti per regione
+- [I ricoveri negli ospedali](https://ospedalitrasparenti.it/sdo.html): volumi di dimissione per regione
+- [Il decennio delle gare 2019-2024](https://ospedalitrasparenti.it/storico.html): come la pandemia ha cambiato gli appalti
+
+## Nota
+
+Gli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:
+piste da verificare, non prove né accuse.

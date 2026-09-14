@@ -13,6 +13,7 @@ export interface ChatLine extends ChatMessageMsg {
 export interface ChatHandle {
   messages: ChatLine[];
   send: (text: string) => void;
+  report: (seat: number, reason?: string) => void;
   muted: Set<number>;
   toggleMute: (seat: number) => void;
 }
@@ -58,6 +59,18 @@ export function useChat(matchId: string | null): ChatHandle {
     [matchId],
   );
 
+  const report = useCallback(
+    (seat: number, reason?: string) => {
+      if (matchId)
+        getSocket().emit(SOCKET_EVENTS.CHAT_REPORT, {
+          matchId,
+          targetSeat: seat,
+          ...(reason ? { reason } : {}),
+        });
+    },
+    [matchId],
+  );
+
   const toggleMute = useCallback((seat: number) => {
     setMuted((prev) => {
       const next = new Set(prev);
@@ -67,5 +80,5 @@ export function useChat(matchId: string | null): ChatHandle {
     });
   }, []);
 
-  return { messages, send, muted, toggleMute };
+  return { messages, send, report, muted, toggleMute };
 }

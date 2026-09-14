@@ -1,0 +1,31 @@
+{
+  "id": "diskordjiyata-2",
+  "agent": "diskordjiyata",
+  "task": "Ревюирай Discord бот: embed с 30 полета, HTTP interaction без проверка на подпис.",
+  "expect": [
+    {
+      "any": [
+        "25",
+        "6000",
+        "лимит",
+        "embed"
+      ],
+      "label": "embed лимити"
+    },
+    {
+      "any": [
+        "Ed25519",
+        "подпис",
+        "verify"
+      ],
+      "label": "Ed25519 верификация"
+    },
+    {
+      "none": [
+        "наред е",
+        "няма проблем"
+      ],
+      "label": "капан: обявява чисто"
+    }
+  ]
+}

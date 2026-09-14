@@ -190,6 +190,7 @@ model Product {
   sku        String      @unique
   priceCents Int
   gems       Int?
+  chips      Int? // chips granted (CHIP_PACK); mirrors the static CATALOG grantChips
   cosmeticId String?
   active     Boolean     @default(true)
   purchases  Purchase[]
@@ -267,6 +268,23 @@ model AdminAudit {
   @@index([createdAt])
   @@index([targetId])
   @@index([actorId])
+}
+
+// In-app announcements to players (§14). A staff-authored, dismissible banner
+// surfaced INSIDE the portal — distinct from the Discord broadcast, which goes
+// to the staff Discord channel. Players fetch the active, unexpired ones and
+// dismiss per-id client-side (localStorage). No FK on createdBy so the row
+// survives account erasure of the authoring staff member.
+model Announcement {
+  id        String    @id @default(cuid())
+  title     String
+  body      String
+  active    Boolean   @default(true)
+  createdBy String // staff user id (actor)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime? // optional auto-expiry; null = shown until deactivated
+
+  @@index([active, createdAt])
 }
 
 // Stripe webhook idempotency (S11.3): dedupe by event.id.

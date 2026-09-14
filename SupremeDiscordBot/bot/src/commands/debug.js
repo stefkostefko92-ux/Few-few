@@ -1,45 +1,26 @@
 // bot/src/commands/debug.js
-import { MessageFlags, SlashCommandBuilder, PermissionsBitField } from "discord.js";
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { checkBotPermissions, reinviteUrl } from "../utils/permissionCheck.js";
+import { SUCCESS, WARNING } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("debug")
-    .setDescription("Check the bot's permissions and status in this server"),
+    .setDescription("Check the bot's permissions and status in this server")
+    .setDescriptionLocalizations(CMD_DESC_L10N.debug)
+    // Нямаше НИКАКВА авторизация, а commandsCatalog.js твърдеше „Manage Server“.
+    // Всеки член виждаше вътрешна диагностика: достижим ли е backend-ът, кои
+    // права липсват и линк за повторна покана. Разминаването документация↔код е
+    // и втори дефект: каталогът лъжеше (Изпитателят, 07.08.2026).
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const guild = interaction.guild;
-    const me = guild.members.me;
-
-    // Required permissions for ticket operations
-    const required = [
-      PermissionsBitField.Flags.ViewChannel,
-      PermissionsBitField.Flags.SendMessages,
-      PermissionsBitField.Flags.ManageChannels,
-      PermissionsBitField.Flags.ManageRoles,
-      PermissionsBitField.Flags.ManageMessages,
-      PermissionsBitField.Flags.EmbedLinks,
-      PermissionsBitField.Flags.AttachFiles,
-      PermissionsBitField.Flags.ReadMessageHistory,
-      PermissionsBitField.Flags.CreatePrivateThreads,
-      PermissionsBitField.Flags.ManageThreads,
-    ];
-
-    const requiredNames = [
-      "View Channels", "Send Messages", "Manage Channels", "Manage Roles",
-      "Manage Messages", "Embed Links", "Attach Files", "Read Message History",
-      "Create Private Threads", "Manage Threads",
-    ];
-
-    const perms = me.permissions;
-    const results = required.map((p, i) => ({
-      name: requiredNames[i],
-      has: perms.has(p),
-    }));
-
-    const missing = results.filter((r) => !r.has);
+    const { me, results, missing } = checkBotPermissions(guild);
     const highestRolePos = me.roles.highest.position;
 
     // Backend reachability
@@ -67,7 +48,7 @@ export default {
       lines.push(
         "",
         `⚠️ **Missing ${missing.length} permission(s)**. The bot won't function correctly without them.`,
-        "To fix: re-invite the bot from the dashboard, OR edit its role in Server Settings → Roles."
+        `To fix: [re-invite the bot with the correct permissions](${reinviteUrl(interaction.client.user.id)}), OR edit its role in Server Settings → Roles.`
       );
     }
 
@@ -75,7 +56,7 @@ export default {
       embeds: [{
         title: "🔧 Bot Debug Info",
         description: lines.join("\n"),
-        color: missing.length === 0 ? 0x4ade80 : 0xfbbf24,
+        color: missing.length === 0 ? SUCCESS : WARNING,
         timestamp: new Date().toISOString(),
       }],
     });

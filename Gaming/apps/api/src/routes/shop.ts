@@ -9,6 +9,37 @@ import { env } from "../env.js";
 
 export const shopRouter: Router = Router();
 
+/**
+ * Checkout consent copy shown on the hosted Stripe page (CRD art. 16), by the
+ * buyer's locale. One-off digital goods → immediate supply + loss of the 14-day
+ * withdrawal right (16(m)); VIP → a service that keeps the 14-day right with a
+ * proportional deduction (16(a)). Kept ≤1200 chars (Stripe custom_text limit).
+ */
+const CONSENT_BG = {
+  oneOff:
+    "Съгласявам се съдържанието да бъде предоставено незабавно и потвърждавам, че губя правото си на 14-дневен отказ.",
+  sub: "VIP е абонамент с месечно автоматично подновяване. Запазваш правото на 14-дневен отказ; при отказ след започване дължиш пропорционална част за ползвания период.",
+};
+
+const CONSENT_TEXT: Record<string, { oneOff: string; sub: string }> = {
+  bg: CONSENT_BG,
+  en: {
+    oneOff:
+      "I agree the content is supplied immediately and confirm that I lose my 14-day right of withdrawal.",
+    sub: "VIP is a subscription that renews monthly. You keep the 14-day right of withdrawal; if you withdraw after it starts, you owe a proportionate amount for the period used.",
+  },
+  it: {
+    oneOff:
+      "Acconsento che il contenuto sia fornito immediatamente e confermo di perdere il diritto di recesso di 14 giorni.",
+    sub: "Il VIP è un abbonamento con rinnovo mensile. Mantieni il diritto di recesso di 14 giorni; se recedi dopo l'inizio, devi un importo proporzionale al periodo utilizzato.",
+  },
+};
+
+function consentText(locale: string | null | undefined, isSubscription: boolean): string {
+  const l = CONSENT_TEXT[locale ?? ""] ?? CONSENT_BG;
+  return isSubscription ? l.sub : l.oneOff;
+}
+
 /** GET /api/shop/catalog — public product list + VIP perk table.
  *  `billingEnabled:false` (Stripe not configured) tells the client to render
  *  the catalog as a "coming soon" preview instead of offering checkout. */
@@ -46,6 +77,7 @@ shopRouter.post(
 
     const stripe = getStripe();
     const isSubscription = product.kind === "VIP_SUB";
+    const consent = consentText(user.locale, isSubscription);
 
     // Reuse one Stripe customer per user (no duplicate cus_… on guest checkout;
     // also lets the billing portal resolve the subscription reliably).
@@ -67,6 +99,21 @@ shopRouter.post(
         client_reference_id: userId,
         metadata: { userId, sku },
         ...(isSubscription ? { subscription_data: { metadata: { userId, sku } } } : {}),
+        // CRD art. 16: show the immediate-supply / withdrawal-right notice above
+        // the pay button on every session (`submit`, no Dashboard config needed).
+        // The stronger ToS *checkbox* (consent_collection + its acceptance text)
+        // requires a Terms URL in the Stripe Dashboard, so it is layered on only
+        // when STRIPE_TOS_CONFIGURED is set — otherwise Stripe would reject the
+        // session. The in-app checkbox remains the primary, guaranteed gate.
+        ...(env.STRIPE_TOS_CONFIGURED
+          ? {
+              consent_collection: { terms_of_service: "required" as const },
+              custom_text: {
+                terms_of_service_acceptance: { message: consent },
+                submit: { message: consent },
+              },
+            }
+          : { custom_text: { submit: { message: consent } } }),
         line_items: [
           {
             quantity: 1,
