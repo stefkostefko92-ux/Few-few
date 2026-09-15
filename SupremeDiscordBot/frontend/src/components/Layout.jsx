@@ -8,7 +8,7 @@ import {
   Zap, BookOpen, Lightbulb,
   LineChart, Key,
   Menu, X as CloseIcon, MessageSquareText,
-} from "lucide-react";
+ KeyRound } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
 import { getServers, logout } from "../api";
@@ -273,6 +273,13 @@ export default function Layout() {
               title={t("nav.privacy")}
             >
               <Shield className="w-4 h-4" />
+            </a>
+            <a
+              href="/dashboard/security"
+              className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
+              title={t("nav.security")}
+            >
+              <KeyRound className="w-4 h-4" />
             </a>
             <button
               onClick={handleLogout}

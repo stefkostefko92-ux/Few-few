@@ -18,6 +18,11 @@ api.interceptors.response.use(
     }
     // v1.9 — Premium enforcement: broadcast a global event so any component
     // can show an upgrade prompt. Toast listener (PremiumToast) is mounted in Layout.jsx.
+    // v3.4 — вторият фактор изтече/иска step-up: MfaGate слуша и отваря
+    // предизвикателството; заявката се отхвърля и повикващият я повтаря.
+    if (err.response?.status === 403 && ["MFA_REQUIRED", "MFA_STEP_UP"].includes(err.response?.data?.code)) {
+      try { window.dispatchEvent(new CustomEvent("mfa-challenge", { detail: err.response.data })); } catch { /* тест среда */ }
+    }
     if (err.response?.status === 403 && err.response?.data?.code === "PREMIUM_REQUIRED") {
       window.dispatchEvent(new CustomEvent("premium-required", {
         detail: err.response.data,
@@ -36,6 +41,28 @@ export default api;
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const getMe = () => api.get("/auth/me").then((r) => r.data);
+
+// ─── v3.4 Втори фактор (TOTP) ───────────────────────────────────────────────
+export const getMfaStatus      = () => api.get("/auth/mfa/status").then((r) => r.data);
+export const mfaSetup          = () => api.post("/auth/mfa/setup").then((r) => r.data);
+export const mfaEnable         = (code) => api.post("/auth/mfa/enable", { code }).then((r) => r.data);
+export const mfaVerify         = (code) => api.post("/auth/mfa/verify", { code }).then((r) => r.data);
+export const mfaDisable        = (code) => api.post("/auth/mfa/disable", { code }).then((r) => r.data);
+export const mfaRegenerateCodes = (code) => api.post("/auth/mfa/backup-codes", { code }).then((r) => r.data);
+
+// ─── v3.4 Админ операции ────────────────────────────────────────────────────
+export const getAdminSystem    = () => api.get("/admin/system").then((r) => r.data);
+export const getAdminSecurity  = () => api.get("/admin/security").then((r) => r.data);
+export const adminUnblock      = (scope, key) => api.post("/admin/security/unblock", { scope, key }).then((r) => r.data);
+export const adminRevokeApiKey = (id) => api.delete(`/admin/security/apikeys/${id}`).then((r) => r.data);
+export const adminResetUserMfa = (userId, reason) => api.post(`/admin/users/${userId}/mfa/reset`, { reason }).then((r) => r.data);
+export const getAdminBilling   = () => api.get("/admin/billing").then((r) => r.data);
+export const adminReconcileBilling = () => api.post("/admin/billing/reconcile").then((r) => r.data);
+export const getAdminFleet     = () => api.get("/admin/fleet").then((r) => r.data);
+export const adminReconcileFleet = () => api.post("/admin/fleet/reconcile").then((r) => r.data);
+export const getDsrRequests    = () => api.get("/admin/dsr/requests").then((r) => r.data);
+export const getDsrSummary     = (discordId) => api.get(`/admin/dsr/${discordId}`).then((r) => r.data);
+export const dsrErase          = (discordId, body) => api.post(`/admin/dsr/${discordId}/erase`, body).then((r) => r.data);
 // Обновява предпочитания на акаунта (език) — изборът пътува с потребителя.
 export const updateMe = (data) => api.patch("/auth/me", data).then((r) => r.data);
 export const logout = () => api.post("/auth/logout");

@@ -51,6 +51,7 @@ vi.mock("../lib/prisma.js", () => ({
       deleteMany: vi.fn(({ where }) => { db.snapshotCutoff = where?.capturedAt?.lt; return { count: 0 }; }),
     },
     ticketMessage: { deleteMany: vi.fn(() => ({ count: 0 })) },
+    verificationAttempt: { deleteMany: vi.fn(({ where }) => { db.verificationCutoff = where?.createdAt?.lt; return { count: 3 }; }) },
     auditLog: {
       deleteMany: vi.fn(() => ({ count: 0 })),
       create: vi.fn(({ data }) => {
@@ -236,5 +237,17 @@ describe("retention 2б — снимки на роли", () => {
 
     const snapshotFailures = err.mock.calls.filter((c) => String(c[0]).includes("Role snapshot"));
     expect(snapshotFailures, "стъпка 2б пак пада тихо").toEqual([]);
+  });
+});
+
+// ─── v3.4 — опитите за верификация не живеят вечно (Developer Terms §5(b)) ───
+describe("verificationAttempt ретенция", () => {
+  it("трие опитите по-стари от 90 дни по подразбиране и брои резултата", async () => {
+    delete process.env.VERIFICATION_ATTEMPT_RETENTION_DAYS;
+    const before = Date.now();
+    const r = await runRetentionJob();
+    const cutoff = db.verificationCutoff instanceof Date ? db.verificationCutoff.getTime() : NaN;
+    expect(Math.round((before - cutoff) / 86400000)).toBe(90);
+    if (r && typeof r === "object") expect(r.verificationAttemptsDeleted).toBe(3);
   });
 });

@@ -48,6 +48,10 @@ if (process.env.NODE_ENV === "production" && /:\d+\/?$/.test(process.env.FRONTEN
 }
 // Optional — AI replies work without this but require it for the platform-level key
 if (!process.env.GEMINI_API_KEY) console.warn("⚠️  GEMINI_API_KEY not set — AI auto-replies will be disabled unless servers provide their own key");
+// Discord Developer Policy §21: AI отговорите тръгват само с удостоверен платен tier без обучение.
+if (process.env.GEMINI_API_KEY && String(process.env.AI_REPLY_TRAINING_ATTESTED || "").toLowerCase() !== "true") {
+  console.error("❌ GEMINI_API_KEY е зададен, но AI_REPLY_TRAINING_ATTESTED не е true — AI отговорите са ИЗКЛЮЧЕНИ (Discord Developer Policy §21, виж docs/DISCORD_COMPLIANCE.md).");
+}
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(`❌ Missing required environment variables: ${missing.join(", ")}`);
@@ -107,6 +111,8 @@ import botV18Router from "./routes/bot_v18.js";
 import webhooksRouter from "./routes/webhooks.js";
 import automationRouter from "./routes/automation.js";
 import billingRouter from "./routes/billing.js";
+import mfaRouter from "./routes/mfa.js";
+import adminOpsRouter from "./routes/adminOps.js";
 import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
@@ -312,6 +318,8 @@ app.use("/api/export", exportRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/schedule bot endpoints
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
+app.use("/api/auth/mfa", mfaRouter);
+app.use("/api/admin", adminOpsRouter);        // v3.4 System · Security · Billing · Fleet · DSR (същите гардове + MFA)         // v3.4 Втори фактор (TOTP) — задължителен за staff
 app.use("/api/billing", billingRouter);       // v3.3 Доставчико-неутрално състояние на плащанията (Discord-first)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)

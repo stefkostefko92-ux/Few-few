@@ -27,6 +27,14 @@ model User {
   email         String?
   globalRole    GlobalRole @default(USER)
   isBlacklisted Boolean    @default(false)
+  // ─── v3.4 Втори фактор (TOTP, RFC 6238) — задължителен за staff ролите ────
+  // Тайната е шифрирана при покой (lib/crypto.js) и никога не напуска сървъра;
+  // резервните кодове са SHA-256 хешове (JSON масив), еднократни;
+  // mfaLastUsedStep пази последната приета 30-секундна стъпка (replay защита).
+  mfaSecret       String?
+  mfaEnabledAt    DateTime?
+  mfaBackupCodes  String?
+  mfaLastUsedStep Int?
   language      String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

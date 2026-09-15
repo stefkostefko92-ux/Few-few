@@ -10,6 +10,10 @@ import { createPrismaMock } from "./testUtils/prismaMock.js";
 
 const prismaMock = createPrismaMock();
 vi.mock("../lib/prisma.js", () => ({ prisma: prismaMock }));
+vi.mock("../middleware/mfa.js", () => ({
+  requireMfa: (_req, _res, next) => next(),
+  requireFreshMfa: () => (_req, _res, next) => next(),
+}));
 vi.mock("../middleware/auth.js", () => ({
   requireAuth: (req, res, next) => next(),
   loadUser: (req, res, next) => { req.user = { id: "admin1", username: "admin", globalRole: "SUPER_USER" }; next(); },
