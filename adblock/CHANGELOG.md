@@ -1,5 +1,40 @@
 # Changelog
 
+## 5.0.3 — 2026-09-15
+
+Поправка: прозорецът за бисквитки изчезва, но затъмненият/блърнат фон, scroll lock-ът
+или `inert` остават и страницата не може да се ползва.
+
+- **Първопричина:** `cookies.css` скриваше банера с `display:none` **преди** `cookies.js`
+  да кликне „Reject". Проверката за видимост (`offsetParent`/`getClientRects`) след това
+  връщаше „невидим" и кликът никога не ставаше — CMP-то оставаше „отворено" откъм своя
+  JS и никога не сваляше своя backdrop, blur и scroll lock. Същото важеше за CMP в iframe
+  (Sourcepoint): в `display:none` iframe няма layout → нула клик.
+- **Три фази вместо една:** `html.tbab-cookies` само **маскира** (`visibility:hidden` +
+  `pointer-events:none` — не се рисува, но пази layout, тоест бутонът е кликаем);
+  `cookies.js` кликва Reject/Accept (разширени селектори: CookieYes, Complianz, iubenda,
+  Osano, Termly + BG/DE текстове); след прозореца за клик (4 s) `html.tbab-cookies-hard`
+  сваля остатъка с `display:none`.
+- **Почистване на страницата** (`unlock()`), само на страница с видян банер или клик:
+  известни backdrop-ове (30 селектора: OneTrust dark filter, Didomi, Funding Choices,
+  CookieYes, Complianz, iubenda, Osano, Termly, Usercentrics, Sourcepoint veil…);
+  **генерично** — fixed слой, покриващ ≥90 % от viewport-а, без собствено съдържание, с
+  име overlay/backdrop/veil/scrim/blur/cookie/consent или с `backdrop-filter`; блърнати
+  или `pointer-events:none` wrapper-и на страницата (`filter: blur()` → `none`); `inert` и
+  `aria-hidden` върху съдържанието; scroll lock през клас (`no-scroll`, `modal-open`,
+  `sp-message-open`, `didomi-popup-open`, `ot-overflow-hidden`… — регекс), inline
+  `overflow:hidden` / `position:fixed` на body, и stylesheet lock → `overflow:auto`.
+- **По-малък blast radius, не по-голям:** генеричните правила (`.modal-backdrop`,
+  `overflow:auto` на html/body) досега важаха на **всяка** страница с включена функция
+  и чупеха Bootstrap модали и full-screen приложения; сега са гейтнати зад
+  `html.tbab-cookies-seen` (банер наистина видян) — контролните фикстури го доказват.
+- Тестове: `tests/cookies.test.mjs` (паритет CSS↔JS на списъка с банери, фазите,
+  гейтването, регексът за lock класове); `npm run test:browser` — реален Chromium
+  (Playwright) върху четири фикстури: CMP с бутон (кликнат Reject, backdrop/blur/lock
+  чисти), CMP без бутон (veil с backdrop-filter, `inert`, `position:fixed` на body —
+  всичко чисто, банерът маскиран веднага и махнат след 4 s), контрол с легитимен
+  Bootstrap модал и контрол с full-screen приложение — **нищо не се пипа**.
+
 ## 5.0.2 — 2026-09-15
 
 Поправка: YouTube клипове забиват на зареждането (безкраен спинър) и тръгват чак когато
