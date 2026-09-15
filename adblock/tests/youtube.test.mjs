@@ -184,6 +184,59 @@ const enforcement = { textContent: "Ad blockers violate YouTube's Terms of Servi
   ok("loader: bg bypass active → no injection", !c.created.some((n) => n.tag === "script"));
 }
 
+// ---------- 8) stall watchdog: спинър без напредък → стъпаловидно възстановяване ----------
+const stalledVideo = () => ({ muted: false, playbackRate: 1, currentTime: 0, duration: 600, paused: false, ended: false, readyState: 1 });
+function tick(t, video, seconds) {
+  for (let i = 0; i < seconds; i++) { t.sb.__now += 1000; t.run(); }
+}
+{
+  // стъпка 1: 25s без напредък → reload БЕЗ флагове (без bypass, без съобщение)
+  const now = 40 * HOUR;
+  const v = stalledVideo();
+  const t = ytTab({ now, storage: { enabled: true }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  tick(t, v, 20);
+  ok("stall: under 25s → nothing yet", t.sb.__reloads === 0);
+  tick(t, v, 7);
+  ok("stall stage 1: reload without flags, no bypass", t.sb.__reloads === 1 && t.session.tbab_yt_noflags === "1" && t.messages.length === 0);
+}
+{
+  // стъпка 2: вече без флагове и пак спинър → bypass (чист клиент) през ограничения път
+  const now = 40 * HOUR;
+  const v = stalledVideo();
+  const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1" }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  tick(t, v, 27);
+  ok("stall stage 2: bypass requested + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1 && t.session.tbab_yt_bypass_n === "1");
+}
+{
+  // не е stall: напредва / на пауза / има бъдещи данни / bypass активен
+  const now = 40 * HOUR;
+  const mk = (patch, extra = {}) => {
+    const v = Object.assign(stalledVideo(), patch);
+    const t = ytTab({ now, storage: Object.assign({ enabled: true }, extra), els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+    t.load("youtube_skip.js");
+    return { t, v };
+  };
+  const a = mk({}); tick(a.t, a.v, 10); a.v.currentTime = 3; tick(a.t, a.v, 20);
+  ok("no stall: progress resets the clock", a.t.sb.__reloads === 0);
+  const b = mk({ paused: true }); tick(b.t, b.v, 40);
+  ok("no stall: paused (nothing asked to play)", b.t.sb.__reloads === 0);
+  const c = mk({ readyState: 4 }); tick(c.t, c.v, 40);
+  ok("no stall: HAVE_ENOUGH_DATA even if currentTime is frozen", c.t.sb.__reloads === 0);
+  const d = mk({}, { ytBypassUntil: now + HOUR }); tick(d.t, d.v, 40);
+  ok("no stall action during bypass (network's problem, not ours)", d.t.sb.__reloads === 0 && d.t.messages.length === 0);
+}
+{
+  // loader: след stall стъпка 1 youtube_main получава disableRequestFlags
+  const now = 40 * HOUR;
+  const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1" } });
+  t.load("youtube_loader.js");
+  const cfgTag = t.created.find((n) => n.type === "application/json");
+  ok("loader: noflags session → config tag with disableRequestFlags:true", !!cfgTag && JSON.parse(cfgTag.textContent).disableRequestFlags === true);
+  ok("loader: youtube_main still injected (pruning stays on)", t.created.some((n) => n.tag === "script" && !n.type));
+}
+
 // ---------- youtube_main (MAIN world): флаг + резервен път -------------------------
 function ytPage(responses) {
   const sb = {};

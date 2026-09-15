@@ -110,6 +110,77 @@
     return null;
   }
 
+  // Ask for a (new or extended) bypass + one reload when: we are not bypassing
+  // at all (first strike, or the 6h window expired under an open tab), or we
+  // ARE bypassing but this page has not reloaded yet (the clean client still
+  // got flagged — one more try with a fresh window). Bounded per window
+  // (MAX_BYPASS_RELOADS) and spaced (RELOAD_GUARD_MS); a hidden dialog is
+  // never the answer. Returns true when a reload has been initiated.
+  function tryBypass(now) {
+    const recentlyReloaded = now - lastBypassReload() < RELOAD_GUARD_MS;
+    const attempts = bypassReloadCount(now);
+    if (bypassReloaded || recentlyReloaded || attempts >= MAX_BYPASS_RELOADS) return false;
+    try {
+      sessionStorage.setItem("tbab_yt_bypass_at", String(now));
+      sessionStorage.setItem("tbab_yt_bypass_n", String(attempts + 1));
+    } catch { return false; } // cannot persist the guard → never reload (loop risk)
+    bypassReloaded = true;
+    try {
+      chrome.runtime.sendMessage({ type: "ytBypass" }, (res) => {
+        // Reload only once the service worker confirmed the allow-all rule is
+        // in place; otherwise the reload would land on a page that is still
+        // blocked (a pointless reload).
+        if (res && res.ok) { try { location.reload(); } catch {} return; }
+        // Could not arm the bypass: make YouTube's own dialog visible so the
+        // user is not left with a silently dead player.
+        attrForced = true;
+        syncBypassAttr();
+      });
+    } catch { return false; }
+    return true;
+  }
+
+  // ---- Stall watchdog -------------------------------------------------------
+  // A clip that never starts is the one failure a user cannot live with
+  // ("does not play until I disable the extension"). Neither the dialog nor
+  // the Playback ID error covers it: the player just buffers forever. When a
+  // play has been requested and the media element makes NO progress for
+  // STALL_MS, recover in stages, cheapest first, one reload per stage per tab:
+  //   1. reload WITHOUT the request flags — the only server-visible difference
+  //      between us and a plain client; if that was the cause, ad blocking
+  //      (client-side pruning) survives;
+  //   2. reload as a clean client (bypass, same bounded path as enforcement).
+  // Not while bypassing (then a stall is the network's, not ours), not when
+  // paused/ended (nothing was asked to play), not offline.
+  const STALL_MS = 25 * 1000;
+  let stallSince = 0;
+  let lastSeenTime = -1;
+  function stallWatch(video) {
+    if (!video || bgBypass || bypassReloaded) { stallSince = 0; return; }
+    const now = Date.now();
+    const t = Number(video.currentTime) || 0;
+    const progressing = t !== lastSeenTime;
+    lastSeenTime = t;
+    const wantsPlay = video.paused === false && video.ended !== true;
+    const starved = (video.readyState | 0) < 3; // below HAVE_FUTURE_DATA
+    let online = true;
+    try { online = typeof navigator === "undefined" || navigator.onLine !== false; } catch {}
+    if (!wantsPlay || !starved || progressing || !online) { stallSince = 0; return; }
+    if (!stallSince) { stallSince = now; return; }
+    if (now - stallSince < STALL_MS) return;
+    stallSince = 0;
+    let noFlags = false;
+    try { noFlags = sessionStorage.getItem("tbab_yt_noflags") === "1"; } catch {}
+    if (!noFlags) {
+      try { sessionStorage.setItem("tbab_yt_noflags", "1"); } catch { return; }
+      try { console.warn("Supreme AdBlock: YouTube playback stalled for 25s — reloading without request flags"); } catch {}
+      try { location.reload(); } catch {}
+      return;
+    }
+    try { console.warn("Supreme AdBlock: YouTube playback stalled again — reloading as a clean client (bypass)"); } catch {}
+    tryBypass(now);
+  }
+
   function run() {
     if (!enabled) return;
 
@@ -143,6 +214,8 @@
         video.muted = prevMuted;
       } catch {}
     }
+
+    if (!showing) stallWatch(video); // an ad being force-skipped is not a stall
 
     for (const sel of SKIP) {
       let nodes;
@@ -188,38 +261,7 @@
     // without a Playback ID, so that text is the discriminator.
     const enf = matchAny(ENFORCE) || playbackIdError();
     if (enf) {
-      const now = Date.now();
-      const recentlyReloaded = now - lastBypassReload() < RELOAD_GUARD_MS;
-      // Ask for a (new or extended) bypass + one reload when: we are not
-      // bypassing at all (first strike, or the 6h window expired under an open
-      // tab), or we ARE bypassing but this page has not reloaded yet (the clean
-      // client still got flagged — one more try with a fresh window). The time
-      // guard is what prevents a loop; a hidden dialog is never the answer.
-      const attempts = bypassReloadCount(now);
-      if (!bypassReloaded && !recentlyReloaded && attempts < MAX_BYPASS_RELOADS) {
-        let persisted = false;
-        try {
-          sessionStorage.setItem("tbab_yt_bypass_at", String(now));
-          sessionStorage.setItem("tbab_yt_bypass_n", String(attempts + 1));
-          persisted = true;
-        } catch {}
-        bypassReloaded = true;
-        if (persisted) {
-          try {
-            chrome.runtime.sendMessage({ type: "ytBypass" }, (res) => {
-              // Reload only once the service worker confirmed the allow-all
-              // rule is in place; otherwise the reload would land on a page
-              // that is still blocked (a pointless reload).
-              if (res && res.ok) { try { location.reload(); } catch {} return; }
-              // Could not arm the bypass: make YouTube's own dialog visible so
-              // the user is not left with a silently dead player.
-              attrForced = true;
-              syncBypassAttr();
-            });
-          } catch {}
-          return;
-        }
-      }
+      if (tryBypass(Date.now())) return;
 
       // Already reloaded for this (or a very recent) strike: don't reload again.
       // Don't touch the dialog/player (that leaves a dead player); only clear a

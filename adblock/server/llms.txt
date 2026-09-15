@@ -38,4 +38,4 @@ Q: Who makes it? A: Carbon Stealth, an EU-based studio (carbonstealth.eu).
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
 - Maker: https://carbonstealth.eu
 
-_Last updated: September 2026 (version 5.0.1)._
+_Last updated: September 2026 (version 5.0.2)._
