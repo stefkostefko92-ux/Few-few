@@ -19,6 +19,7 @@ const { creaApp } = await import('../server/server.js');
 let server;
 let base; // { host, port }
 let tmpRoot;
+let contatore; // броячът на живо — за регресията срещу кодирани ключове
 
 before(async () => {
   // Изолиран временен сайт + състояние (никакво докосване на реалните).
@@ -39,6 +40,7 @@ before(async () => {
     visibilityFile: join(stateDir, 'visibility.json'),
   });
   server = app.server;
+  contatore = app.contatore;
   await new Promise((res) => server.listen(0, '127.0.0.1', res));
   base = { host: '127.0.0.1', port: server.address().port };
 });
@@ -135,4 +137,35 @@ test('скрита (но съществуваща) страница → 404; в�
   const visibile = await req('GET', '/index.html');
   assert.equal(visibile.status, 200);
   assert.match(visibile.body, /ok/);
+});
+
+// Регресия: скриването се проверяваше срещу СУРОВИЯ url.pathname, а файлът се
+// резолвира по ДЕКОДИРАНИЯ → всяко процентно кодиране заобикаляше скриването.
+// Възпроизведено на живо преди поправката: /%6Eascosta.html сервираше „segreto“.
+test('скрита страница не се вади с процентно кодиране (регресия)', async () => {
+  for (const path of ['/%6Eascosta.html', '/n%61scosta.html', '/nascost%61.html']) {
+    const res = await req('GET', path);
+    assert.equal(res.status, 404, `${path} трябва да е 404, а не сервирана`);
+    assert.ok(!res.body.includes('segreto'), `${path} изтече съдържанието на скритата страница`);
+  }
+});
+
+// Регресия: ключът на брояча също идваше от суровия път → всяко кодиране правеше
+// НОВ ключ (неограничен растеж на паметта/диска от една заявка в цикъл).
+test('броячът ключова по канонизиран път — кодирането не създава нови ключове (регресия)', async () => {
+  // Броячът има bot-филтър: без User-Agent заявката отива в botViews, не в
+  // byPath (eBot(undefined) === true). Затова тук се представяме за браузър.
+  const UA = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0 Safari/537.36' };
+  const preche = { ...contatore.stato.byPath };
+  await req('GET', '/index.html', { headers: UA });
+  await req('GET', '/%69ndex.html', { headers: UA });   // същата страница, друго кодиране
+  await req('GET', '/i%6Edex.html', { headers: UA });   // и трето
+  const byPath = contatore.stato.byPath;
+
+  // Независимо от реда на тестовете: началната страница има ТОЧНО един ключ.
+  const chiavi = Object.keys(byPath).filter((k) => k.toLowerCase().includes('index'));
+  assert.deepEqual(chiavi, ['index.html'],
+    `началната страница трябва да има един ключ, а има ${JSON.stringify(chiavi)}`);
+  assert.equal(byPath['index.html'] - (preche['index.html'] || 0), 3,
+    'и трите кодирания се броят към същия ключ');
 });
