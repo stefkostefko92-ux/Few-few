@@ -69,15 +69,15 @@ describe("Developer Terms §5(c) — сигурност и уведомяван�
 
   it("staff достъпът до /api/admin минава през requireMfa; разрушителните — през step-up", () => {
     const admin = read("backend/src/routes/admin.js");
-    expect(admin).toMatch(/router\.use\(requireAuth, loadUser, requireSuperUser, requireMfa\)/);
-    for (const route of ['router.delete("/users/:userId"', 'router.delete("/servers/:serverId"', 'router.post("/audit-logs/purge"', 'router.patch("/users/:userId/role"']) {
+    expect(admin).toMatch(/router\.use\(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa\)/);
+    for (const route of ['router.delete("/users/:userId"', 'router.delete("/servers/:serverId"', 'router.post("/audit-logs/purge"', 'router.patch("/users/:userId/role"', 'router.patch("/servers/:serverId"', 'router.post("/servers/:serverId/broadcast"']) {
       const i = admin.indexOf(route);
       expect(i, route).toBeGreaterThan(-1);
       expect(admin.slice(i, i + 160), `${route} без step-up`).toContain("stepUp");
     }
     const ops = read("backend/src/routes/adminOps.js");
-    expect(ops).toMatch(/router\.use\(requireAuth, loadUser, requireSuperUser, requireMfa\)/);
-    for (const route of ['"/security/unblock"', '"/security/apikeys/:id"', '"/billing/reconcile"', '"/fleet/reconcile"', '"/dsr/:discordId/erase"']) {
+    expect(ops).toMatch(/router\.use\(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa\)/);
+    for (const route of ['"/security/unblock"', '"/security/apikeys/:id"', '"/billing/reconcile"', '"/fleet/reconcile"', '"/dsr/:discordId/erase"', '"/users/:userId/mfa/reset"']) {
       const i = ops.indexOf(route);
       expect(i, route).toBeGreaterThan(-1);
       expect(ops.slice(i, i + 80), `${route} без MAIN_OWNER+step-up`).toMatch(/requireMainOwner, stepUp/);

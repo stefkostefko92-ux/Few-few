@@ -15,6 +15,7 @@ import { submitApplication } from "../services/applicationSubmit.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { ensureUserStub, ensureUserStubs } from "../lib/ensureUser.js";
 import { eraseDiscordUser, summarizeDiscordUser } from "../lib/dsr.js";
+import { sealTranscript } from "../lib/transcriptAtRest.js";
 import axios from "axios";
 import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
 
@@ -329,7 +330,7 @@ router.post("/ticket/by-channel/:channelId/close-if-open", async (req, res, next
         status: "CLOSED",
         closeReason: reason || "Channel deleted",
         closedAt: new Date(),
-        archiveHtml: html,
+        archiveHtml: sealTranscript(html),
         archiveUrl: tokenizedArchiveUrl(ticket.id, token),
       },
     });
@@ -1174,14 +1175,22 @@ router.get("/dsr/:userId", async (req, res, next) => {
   try { res.json(await summarizeDiscordUser(req.params.userId)); } catch (err) { next(err); }
 });
 
+const DSR_COOLDOWN_MS = 5 * 60 * 1000;
+const dsrRecent = new Map(); // userId → последно изтриване (дросел срещу спам в одита)
 router.post("/dsr/erase", async (req, res, next) => {
   const { userId, guildId } = req.body || {};
   if (!/^\d{5,25}$/.test(String(userId || ""))) return res.status(400).json({ error: "userId required" });
+  const last = dsrRecent.get(String(userId)) || 0;
+  if (Date.now() - last < DSR_COOLDOWN_MS) {
+    return res.status(429).json({ error: "An erasure for this user was just processed. Try again in a few minutes.", code: "DSR_COOLDOWN", retryAfterSeconds: Math.ceil((DSR_COOLDOWN_MS - (Date.now() - last)) / 1000) });
+  }
   try {
     // Самообслужване = обхват identity (съдържанието на тикетите е запис на
     // оператора; за пълно изтриване → заявка към нас, админ конзола).
     const result = await eraseDiscordUser(String(userId), { scope: "identity", via: "bot", requestedBy: String(userId), guildId: guildId ? String(guildId) : null });
     if (!result.ok) return res.status(409).json(result);
+    dsrRecent.set(String(userId), Date.now());
+    if (dsrRecent.size > 10000) dsrRecent.clear();
     res.json(result);
   } catch (err) { next(err); }
 });

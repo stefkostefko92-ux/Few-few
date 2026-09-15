@@ -192,6 +192,10 @@ function auditBlock(scope, key, failures, blockMs, kind) {
           metadata: { scope, kind, key: keyLabel(key), failures, blockMs },
         },
       });
+      // v3.4 — собственикът научава за блокировката (дроселирано на 15 min).
+      const { alertOwner, ALERT_KINDS } = await import("./securityAlerts.js");
+      await alertOwner(ALERT_KINDS.BRUTE_FORCE_BLOCK, "Brute-force block engaged",
+        `Scope ${scope} (${kind}): ${keyLabel(key)} blocked for ${Math.round(blockMs / 60000)} min after ${failures} failures. See Admin → Security.`);
     })
     .catch(() => { /* одитът никога не бива да чупи защитата */ });
 }

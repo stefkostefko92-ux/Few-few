@@ -1,5 +1,6 @@
 // frontend/src/pages/AdminPage.jsx
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart2, Users, Server, DollarSign, FileText,
@@ -44,7 +45,11 @@ const ROLE_COLORS = {
 };
 
 export default function AdminPage() {
-  const [tab, setTab] = useState("analytics");
+  // ?tab=security — дълбоки връзки (известията на собственика водят право в таба).
+  const [params, setParams] = useSearchParams();
+  const initial = TABS.some((t) => t.id === params.get("tab")) ? params.get("tab") : "analytics";
+  const [tab, setTabState] = useState(initial);
+  const setTab = (id) => { setTabState(id); const next = new URLSearchParams(params); next.set("tab", id); setParams(next, { replace: true }); };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px]">

@@ -25,6 +25,8 @@
 
 import { prisma } from "./prisma.js";
 import { writeAudit } from "./auditLog.js";
+import { generateHtmlTranscript } from "../utils/archive.js";
+import { sealTranscript } from "./transcriptAtRest.js";
 
 export const STAFF_ROLES = ["MAIN_OWNER", "SUPER_USER", "SUPPORT_STAFF"];
 const ERASED = "[erased]";
@@ -55,6 +57,28 @@ export async function summarizeDiscordUser(userId) {
     user: user ? { username: user.username, globalRole: user.globalRole, isBlacklisted: user.isBlacklisted, createdAt: user.createdAt, hasEmail: !!user.email, mfaEnabled: !!user.mfaEnabledAt } : null,
     counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers },
   };
+}
+
+/** Тикетите, чиито транскрипти носят следи от този човек. */
+async function regenerateTranscriptsFor(uid) {
+  let done = 0;
+  try {
+    const authored = await prisma.ticketMessage.findMany({ where: { authorId: uid }, select: { ticketId: true }, distinct: ["ticketId"] });
+    const created = await prisma.ticket.findMany({ where: { creatorId: uid, archiveHtml: { not: null } }, select: { id: true } });
+    const ids = [...new Set([...authored.map((m) => m.ticketId), ...created.map((t) => t.id)])];
+    for (const id of ids) {
+      const full = await prisma.ticket.findUnique({
+        where: { id },
+        include: { messages: { orderBy: { createdAt: "asc" } }, creator: true, assignee: true, server: { select: { name: true, customBotName: true } } },
+      });
+      if (!full || !full.archiveHtml) continue;
+      if (String(full.archiveHtml).startsWith("<!-- anonymized")) continue; // вече изчистен от ретенцията
+      const html = generateHtmlTranscript(full);
+      await prisma.ticket.update({ where: { id }, data: { archiveHtml: sealTranscript(html) } });
+      done++;
+    }
+  } catch { /* броим каквото е минало; одитът носи числото */ }
+  return done;
 }
 
 /** Активни платени абонаменти на този човек — блокират изтриването (както в routes/gdpr.js). */
@@ -117,10 +141,17 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
       }));
       await c("applicationAnswers", () => tx.application.updateMany({
         where: { userId: uid },
-        data: { answers: { [ERASED]: true } },
+        data: { answers: { [ERASED]: true }, reviewNote: null },
       }));
     }
   });
+
+  // Транскриптите (archiveHtml) са ГОТОВ HTML със снимка на подписите и
+  // текста от момента на затваряне — анонимизацията на редовете не ги
+  // променя. Регенерираме ги от вече анонимизираните съобщения за всеки
+  // тикет, в който човекът е писал или който е отворил. Извън транзакцията:
+  // много редове, а провал тук не бива да връща анонимизацията назад.
+  counts.transcriptsRegenerated = await regenerateTranscriptsFor(uid);
 
   await writeAudit({
     actorId: requestedBy || null,

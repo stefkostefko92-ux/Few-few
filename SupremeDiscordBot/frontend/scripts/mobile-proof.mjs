@@ -81,7 +81,12 @@ const roles = Array.from({ length: 28 }, (_, i) => ({
   reason: i % 7 === 3 ? "above_bot" : null,
 }));
 const FIX = {
-  "GET /api/auth/me": { id: "u1", username: "stefan", role: "MAIN_OWNER", language: "en", mfa: { enabled: false, required: false, enrollmentRequired: false, verifiedInSession: false } },
+  "GET /api/auth/me": { id: "u1", username: "stefan", globalRole: "MAIN_OWNER", role: "MAIN_OWNER", language: "en", mfa: { enabled: true, required: true, enrollmentRequired: false, verifiedInSession: true } },
+  "GET /api/admin/system": { now: new Date().toISOString(), backend: { version: "3.4.0", node: "v22", uptimeSec: 100, env: "test" }, db: { ok: true, latencyMs: 1 }, redis: { ok: true, configured: true, latencyMs: 1 }, bot: { ok: true, gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 } }, migration: { latest: "20260823000000_v49_user_mfa", finishedAt: new Date().toISOString(), pending: 0 }, jobs: { dunning: { lastOk: new Date().toISOString(), lastFail: null } }, billing: { provider: "discord", discordConfigured: true, stripeLegacy: false }, webhooks: { failing: 1, items: [{ id: "w1", serverId: SID, name: "Zapier", failCount: 3, lastStatus: 500, lastDeliveryAt: new Date().toISOString(), enabled: true }] }, config: { mfaEnforced: true, adminIpAllowlist: { enabled: false, entries: 0 }, securityAlertsDm: true, transcriptEncryption: true, sentry: true, gemini: true, aiTrainingAttested: false, redisUrl: true, frontendUrl: "https://x", trustProxy: ["loopback"] } },
+  "GET /api/admin/security": { mfaEnforced: true, staff: [{ id: "u1", username: "stefan", globalRole: "MAIN_OWNER", mfaEnabled: true, mfaEnabledAt: new Date().toISOString(), backupCodesLeft: 9, sessions: 1, createdAt: new Date().toISOString() }, { id: "u2", username: "ana", globalRole: "SUPPORT_STAFF", mfaEnabled: false, mfaEnabledAt: null, backupCodesLeft: 0, sessions: 0, createdAt: new Date().toISOString() }], sessions: { total: 3 }, bruteForce: { blocked: [{ scope: "auth", key: "203.0.113.7", label: "203.0.113.x", failures: 9, blockedUntil: new Date(Date.now() + 60000).toISOString(), retryAfterSec: 60 }], trackedEntries: 4, redis: true, windowSec: 900, steps: [{ failures: 5, blockMs: 60000 }] }, apiKeys: { active: 1, revoked: 0, items: [{ id: "k1", serverId: SID, userId: "u1", name: "ci", keyPrefix: "sb_ab", scopes: ["tickets:read"], lastUsedAt: null, expiresAt: null, revokedAt: null, requestCount: 3, createdAt: new Date().toISOString() }] }, blacklisted: 0, events: [{ id: "e1", createdAt: new Date().toISOString(), action: "MFA_ENABLED", actor: { id: "u1", username: "stefan" }, targetId: "u1" }] },
+  "GET /api/admin/billing": { config: { provider: "discord", discord: { enabled: true, configured: true, storeUrl: "https://discord.com/application-directory/1/store" }, stripe: { purchasesEnabled: false, legacyManagement: false } }, discord: [{ id: SID, name: "T19C", plan: "premium", discordEntitlementId: "e1", discordSkuId: "s1", discordSubscriptionId: "x", discordSubscriptionStatus: 0, statusLabel: "active", discordCurrentPeriodEnd: new Date().toISOString(), premiumSince: new Date().toISOString() }], stripe: [], agencies: [], graceServers: 0, lastReconcileGrantAt: null },
+  "GET /api/admin/fleet": { withToken: [{ id: SID, name: "T19C", plan: "agency10", planSource: "stripe", customBotName: "T19 Bot", agencyId: "ag1", accessUntil: null }], bot: { gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 }, uptime: 100 } },
+  "GET /api/admin/dsr/requests": { requests: [{ id: "r1", createdAt: new Date().toISOString(), action: "DSR_ERASED", targetId: "123", actor: { id: "u1", username: "stefan" }, metadata: { scope: "identity", via: "bot" } }] },
   "GET /api/auth/mfa/status": { enabled: false, enabledAt: null, required: false, enrollmentRequired: false, verifiedInSession: false, backupCodesLeft: 0, issuer: "Supreme Bot" },
   [`GET /api/servers/${SID}`]: {
     id: SID, name: "T19C", icon: null, plan: "agency10", isPremium: true, hasWhiteLabel: true,
@@ -165,6 +170,11 @@ const PAGES = [
   { path: `/dashboard/${SID}/applications`, name: "applications" },
   { path: `/dashboard/${SID}/commands`, name: "commands" },
   { path: "/dashboard/security", name: "security" },
+  { path: "/dashboard/admin?tab=system", name: "admin-system" },
+  { path: "/dashboard/admin?tab=security", name: "admin-security" },
+  { path: "/dashboard/admin?tab=billing", name: "admin-billing" },
+  { path: "/dashboard/admin?tab=fleet", name: "admin-fleet" },
+  { path: "/dashboard/admin?tab=compliance", name: "admin-compliance" },
 ];
 
 // ─── Достъпност: axe-core върху РЕАЛНО рендерираните страници ───────────────

@@ -38,6 +38,12 @@ describe("дефиниция", () => {
     expect(readFileSync(join(HERE, "../../../frontend/src/data/commandsCatalog.js"), "utf8")).toBe(bot);
   });
 
+  it("slash командите се синхронизират САМИ при старт (ready.js) — иначе /privacy не съществува след деплой", () => {
+    const ready = readFileSync(join(HERE, "../events/ready.js"), "utf8");
+    expect(ready).toContain("Routes.applicationCommands(");
+    expect(ready).toMatch(/createHash\("sha256"\)/); // само при промяна на дефинициите
+  });
+
   it("ботът има вътрешен endpoint за ръчна entitlement реконсилиация", () => {
     const src = readFileSync(join(HERE, "../index.js"), "utf8");
     expect(src).toContain('app.post("/internal/entitlement-reconcile"');
@@ -94,9 +100,31 @@ describe("изпълнение", () => {
     expect(JSON.stringify(i.editReply.mock.calls.at(-1)[0])).toContain("✅ Done");
   });
 
+  it("второ изтриване в рамките на 10 min → охлаждане, без повикване към backend-а", async () => {
+    apiPost.mockResolvedValue({ data: { ok: true, registered: false, counts: {} } });
+    const first = fakeInteraction("delete", { click: (x) => `privacy:erase:${x.user.id}:${x.id}` });
+    first.user.id = "555555555555555555";
+    await privacy.execute(first);
+    expect(apiPost).toHaveBeenCalledTimes(1);
+    const second = fakeInteraction("delete", { click: (x) => `privacy:erase:${x.user.id}:${x.id}` });
+    second.user.id = "555555555555555555";
+    await privacy.execute(second);
+    expect(apiPost).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(second.editReply.mock.calls.at(-1)[0])).toContain("already erased");
+  });
+
+  it("backend 429 DSR_COOLDOWN → обяснение", async () => {
+    apiPost.mockRejectedValue({ response: { status: 429, data: { code: "DSR_COOLDOWN" } } });
+    const i = fakeInteraction("delete", { click: (x) => `privacy:erase:${x.user.id}:${x.id}` });
+    i.user.id = "666666666666666666";
+    await privacy.execute(i);
+    expect(JSON.stringify(i.editReply.mock.calls.at(-1)[0])).toContain("just processed");
+  });
+
   it("активен абонамент → обяснение, не грешка", async () => {
     apiPost.mockRejectedValue({ response: { status: 409, data: { code: "ACTIVE_SUBSCRIPTIONS" } } });
     const i = fakeInteraction("delete", { click: (x) => `privacy:erase:${x.user.id}:${x.id}` });
+    i.user.id = "777777777777777777"; // друг човек — охлаждането е по потребител
     await privacy.execute(i);
     expect(JSON.stringify(i.editReply.mock.calls.at(-1)[0])).toContain("active paid subscription");
   });

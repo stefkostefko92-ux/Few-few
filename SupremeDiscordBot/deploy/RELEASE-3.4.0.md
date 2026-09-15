@@ -32,6 +32,9 @@ UPDATE users SET "mfaSecret"=NULL, "mfaEnabledAt"=NULL, "mfaBackupCodes"=NULL, "
 # (AI отговорите спират), докато не минеш на платен tier без обучение.
 AI_REPLY_TRAINING_ATTESTED=false
 # MFA_ENFORCE_STAFF=true   # подразбиране; не го пипай в продукция
+# По избор: ADMIN_IP_ALLOWLIST="<твоят статичен IP>"  (само ако имаш статичен IP — иначе се заключваш)
+# SECURITY_ALERTS_DM=true  # подразбиране: DM до теб при блокировки/MFA промени/отказан IP/пълно изтриване
+# VERIFICATION_ATTEMPT_RETENTION_DAYS=90
 ```
 
 Ръчен бекъп както винаги:
@@ -58,8 +61,12 @@ sudo ARCHIVE=/root/Few-few.zip PROJECTS="SupremeDiscordBot" bash "$SRC/deploy/au
 - **v49 `user_mfa`** — адитивна: `users.mfaSecret`, `mfaEnabledAt`,
   `mfaBackupCodes`, `mfaLastUsedStep` (всички nullable). Rollback на кода без
   връщане на базата е безопасен.
-- Ботът регистрира новата slash команда `/privacy` при старт (както всяка нова
-  команда) — Discord я показва до ~1 час глобално.
+- Ботът регистрира новата slash команда `/privacy` при старт (`events/ready.js`
+  сравнява SHA-256 на дефинициите с `/tmp/supreme-bot-commands.hash` и прави PUT
+  само при промяна; в контейнер файлът пада при пресъздаване → един PUT на старт,
+  безвредно) — Discord я показва до ~1 час глобално. Ръчно: `npm run deploy-commands`.
+- Транскриптите на тикетите вече се пишат шифрирани; старите се четат както са и
+  се шифрират при следващ запис (затваряне/регенерация). Нищо за миграция.
 
 ## 3. След деплоя (проверки, 10 мин)
 

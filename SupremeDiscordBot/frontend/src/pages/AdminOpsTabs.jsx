@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import {
   getAdminSystem, getAdminSecurity, adminUnblock, adminRevokeApiKey, getAdminBilling, adminReconcileBilling,
-  getAdminFleet, adminReconcileFleet, getDsrRequests, getDsrSummary, dsrErase,
+  getAdminFleet, adminReconcileFleet, getDsrRequests, getDsrSummary, dsrErase, adminResetUserMfa,
 } from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
@@ -34,7 +34,7 @@ function Tile({ label, value, sub, ok }) {
     <div className="cs-stat">
       <div className="cs-stat-label">{label}</div>
       <div className={`cs-stat-value ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
-      {sub && <div className="font-mono text-[10px] text-cs-dim mt-1">{sub}</div>}
+      {sub && <div className="font-mono text-[10px] text-cs-dim mt-1 break-all">{sub}</div>}
     </div>
   );
 }
@@ -84,8 +84,19 @@ export function SystemTab() {
           })}
         </tbody></table></div>
       </Section>
+      <Section title="Outbound webhooks — failing deliveries" icon={AlertTriangle}>
+        {!d.webhooks?.failing ? <p className="text-sm text-cs-dim">No webhook has failed deliveries.</p> : (
+          <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Server</th><th>Webhook</th><th>Failures</th><th>Last status</th><th>Last delivery</th><th>Enabled</th></tr></thead><tbody>
+            {(d.webhooks.items || []).map((w) => <tr key={w.id}><td className="font-mono text-[10px]">{w.serverId}</td><td>{w.name}</td><td className="text-danger">{w.failCount}</td><td className="font-mono text-xs">{w.lastStatus ?? "—"}</td><td className="text-xs">{ago(w.lastDeliveryAt)}</td><td><Bool v={w.enabled} /></td></tr>)}
+          </tbody></table></div>
+        )}
+        <p className="font-mono text-[10px] text-cs-dim mt-2">{d.webhooks?.failing ?? 0} webhook(s) with failures across all servers · the operator sees the same on their Webhooks page.</p>
+      </Section>
       <Section title="Configuration flags" icon={FileText}>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+          <div>Admin IP allowlist: {d.config?.adminIpAllowlist?.enabled ? <span className="text-success">on ({d.config.adminIpAllowlist.entries} entries)</span> : <span className="text-cs-dim">off</span>}</div>
+          <div>Security alerts (owner DM): <Bool v={d.config?.securityAlertsDm} /></div>
+          <div>Transcripts encrypted at rest: <Bool v={d.config?.transcriptEncryption} /></div>
           <div>Sentry: <Bool v={d.config?.sentry} /></div>
           <div>Redis URL: <Bool v={d.config?.redisUrl} /></div>
           <div>Gemini key: <Bool v={d.config?.gemini} /></div>
@@ -105,6 +116,9 @@ export function SecurityTab() {
   const [confirm, setConfirm] = useState(null);
   const unblockMut = useMutation({ mutationFn: ({ scope, key }) => adminUnblock(scope, key), onSuccess: () => { toast.success("Unblocked."); qc.invalidateQueries({ queryKey: ["admin-security"] }); }, onError: (e) => toast.error(adminErr(e)) });
   const revokeMut = useMutation({ mutationFn: adminRevokeApiKey, onSuccess: () => { toast.success("API key revoked."); qc.invalidateQueries({ queryKey: ["admin-security"] }); }, onError: (e) => toast.error(adminErr(e)) });
+  const [resetTarget, setResetTarget] = useState(null); // { id, username }
+  const [resetReason, setResetReason] = useState("");
+  const resetMut = useMutation({ mutationFn: ({ id, reason }) => adminResetUserMfa(id, reason), onSuccess: (r) => { toast.success(`Second factor reset · ${r.sessionsRevoked} session(s) revoked.`); setResetTarget(null); setResetReason(""); qc.invalidateQueries({ queryKey: ["admin-security"] }); }, onError: (e) => toast.error(adminErr(e)) });
   if (isLoading) return <Loading />;
   const d = data || {};
   const noMfa = (d.staff || []).filter((s) => !s.mfaEnabled);
@@ -117,13 +131,23 @@ export function SecurityTab() {
         <Tile label="Active blocks" value={d.bruteForce?.blocked?.length ?? 0} sub={`${d.bruteForce?.trackedEntries ?? 0} tracked · redis ${d.bruteForce?.redis ? "on" : "off"}`} />
       </div>
       <Section title="Staff accounts" icon={ShieldCheck}>
-        <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>User</th><th>Role</th><th>MFA</th><th>Backup codes</th><th>Sessions</th></tr></thead><tbody>
+        <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>User</th><th>Role</th><th>MFA</th><th>Backup codes</th><th>Sessions</th><th></th></tr></thead><tbody>
           {(d.staff || []).map((s) => (
             <tr key={s.id}><td>{s.username} <span className="font-mono text-[10px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.globalRole}</td>
               <td>{s.mfaEnabled ? <span className="text-success">enabled {ago(s.mfaEnabledAt)}</span> : <span className="text-danger flex items-center gap-1"><ShieldAlert className="w-3 h-3" /> missing</span>}</td>
-              <td>{s.mfaEnabled ? s.backupCodesLeft : "—"}</td><td>{s.sessions}</td></tr>
+              <td>{s.mfaEnabled ? s.backupCodesLeft : "—"}</td><td>{s.sessions}</td>
+              <td>{s.mfaEnabled && <button onClick={() => { setResetTarget({ id: s.id, username: s.username }); setResetReason(""); }} className="text-warning text-xs flex items-center gap-1"><KeyRound className="w-3 h-3" /> Reset MFA</button>}</td></tr>
           ))}
         </tbody></table></div>
+        <p className="font-mono text-[10px] text-cs-dim mt-2">Reset MFA = lost phone + lost backup codes. Clears the second factor, revokes the user's sessions, audits the reason and DMs the owner. Your own factor is managed only from Account security.</p>
+        {resetTarget && (
+          <form onSubmit={(e) => { e.preventDefault(); resetMut.mutate({ id: resetTarget.id, reason: resetReason }); }} className="mt-3 flex flex-wrap items-end gap-2 bg-cs-bg rounded-lg p-3">
+            <span className="text-sm text-cs-text">Reset second factor for <strong>{resetTarget.username}</strong>:</span>
+            <input className="cs-input !w-80" value={resetReason} onChange={(e) => setResetReason(e.target.value)} placeholder="reason (verified identity by voice call, ticket #…)" minLength={3} maxLength={300} required />
+            <button type="submit" className="cs-btn-primary bg-warning border-warning text-black" disabled={resetMut.isPending || resetReason.trim().length < 3}>Confirm reset</button>
+            <button type="button" onClick={() => setResetTarget(null)} className="cs-btn-secondary">Cancel</button>
+          </form>
+        )}
       </Section>
       <Section title="Brute-force blocks (this process)" icon={Ban}>
         {!d.bruteForce?.blocked?.length ? <p className="text-sm text-cs-dim">Nothing blocked right now.</p> : (

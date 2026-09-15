@@ -41,6 +41,20 @@ help-center API-то). Миграция **v49** (адитивна: четири 
 - Гейтове: `totp.test.js` (RFC вектори), `mfa.test.js`, `adminOps.test.js`,
   `discordCompliance.test.js` (backend), `privacyCommand.test.js` (bot)
 
+- **Одит на одита (15.09):** step-up и на `PATCH /admin/servers/:id` и
+  `broadcast`; незадължителен `ADMIN_IP_ALLOWLIST` (двоично, IPv4/IPv6/CIDR,
+  одит + DM при отказ); известия до собственика през Discord DM
+  (`lib/securityAlerts.js`: brute-force блок, изключен/нулиран фактор, staff
+  без MFA, отказан IP, пълно изтриване; дросел 15 min); **нулиране на MFA от
+  админ** (MAIN_OWNER + step-up + причина; сваля сесиите; не за себе си);
+  **транскриптите шифрирани при покой** (`lib/transcriptAtRest.js`, заварените
+  се шифрират при следващ запис); DSR регенерира транскриптите и маха
+  `reviewNote`; чакащата TOTP тайна в сесията е шифрирана; `/privacy delete`
+  с охлаждане (бот 10 min, backend 5 min → 429); ретенция 90 дни за опитите за
+  верификация; провалени webhook доставки в System; `?tab=` дълбоки връзки в
+  админ конзолата; mobile-proof покрива петте админ таба; поведенчески тест за
+  MFA bypass-а; гейт, че slash командите се синхронизират при старт
+
 ### Променено
 - **AI отговорите са fail-closed** (Developer Policy §21): работят само при
   `AI_REPLY_TRAINING_ATTESTED=true` — операторът удостоверява платен Gemini

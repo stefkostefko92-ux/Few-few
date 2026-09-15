@@ -18,6 +18,8 @@ import { getRedis } from "../lib/redisClient.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
 import { requireMfa, requireFreshMfa, mfaEnforced, STAFF_ROLES } from "../middleware/mfa.js";
+import { adminIpAllowlist, allowlistState } from "../middleware/adminIpAllowlist.js";
+import { alertOwner, alertsEnabled, ALERT_KINDS } from "../lib/securityAlerts.js";
 import { snapshot as bruteForceSnapshot, unblock as bruteForceUnblock } from "../lib/bruteForce.js";
 import { billingConfig } from "../lib/billing.js";
 import { discordSubscriptionLabel } from "../lib/discordSubscription.js";
@@ -25,7 +27,7 @@ import { summarizeDiscordUser, eraseDiscordUser } from "../lib/dsr.js";
 import { aiTrainingAttested } from "../services/aiReply.js";
 
 const router = Router();
-router.use(requireAuth, loadUser, requireSuperUser, requireMfa);
+router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
 const stepUp = requireFreshMfa();
 
 const PKG = (() => {
@@ -81,7 +83,16 @@ router.get("/system", async (req, res, next) => {
     }
 
     const billing = billingConfig();
+    // Провалени доставки на изходящи webhook-и (всички сървъри) — досега се
+    // виждаха само от оператора на съответния сървър.
+    const failingWebhooks = await Promise.resolve().then(() => prisma.webhook.findMany({
+      where: { failCount: { gt: 0 } },
+      select: { id: true, serverId: true, name: true, failCount: true, lastStatus: true, lastDeliveryAt: true, enabled: true },
+      orderBy: { failCount: "desc" }, take: 20,
+    })).then((r) => r || []).catch(() => []);
+    const failingWebhookCount = await Promise.resolve().then(() => prisma.webhook.count({ where: { failCount: { gt: 0 } } })).then((n) => n || 0).catch(() => 0);
     res.json({
+      webhooks: { failing: failingWebhookCount, items: failingWebhooks },
       now: new Date().toISOString(),
       backend: { version: PKG.version, node: process.version, uptimeSec: Math.floor(process.uptime()), env: process.env.NODE_ENV || "development" },
       db, redis, bot,
@@ -90,6 +101,9 @@ router.get("/system", async (req, res, next) => {
       billing: { provider: billing.provider, discordConfigured: billing.discord.configured, stripeLegacy: billing.stripe.legacyManagement },
       config: {
         mfaEnforced: mfaEnforced(),
+        adminIpAllowlist: allowlistState(),
+        securityAlertsDm: alertsEnabled(),
+        transcriptEncryption: true,
         sentry: !!process.env.SENTRY_DSN,
         gemini: !!process.env.GEMINI_API_KEY,
         aiTrainingAttested: aiTrainingAttested(),
@@ -166,6 +180,29 @@ router.delete("/security/apikeys/:id", requireMainOwner, stepUp, async (req, res
     if (!key.revokedAt) await prisma.apiKey.update({ where: { id: key.id }, data: { revokedAt: new Date() } });
     await writeAudit({ actorId: req.user.id, serverId: key.serverId, action: "API_KEY_REVOKED_ADMIN", targetId: key.id, metadata: { keyPrefix: key.keyPrefix, ownerUserId: key.userId } });
     res.json({ ok: true, alreadyRevoked: !!key.revokedAt });
+  } catch (err) { next(err); }
+});
+
+// ─── POST /api/admin/users/:userId/mfa/reset ─────────────────────────────────
+// Нулира втория фактор на потребител (загубен телефон + резервни кодове).
+// Само MAIN_OWNER със свеж фактор; сваля и живите сесии на човека (влиза
+// наново и записва пак); одит + DM до собственика. Собственикът не може да
+// нулира САМ СЕБЕ СИ оттук — това би било заобикаляне на собствения му фактор.
+router.post("/users/:userId/mfa/reset", requireMainOwner, stepUp, async (req, res, next) => {
+  const id = z.string().regex(/^\d{5,25}$/).safeParse(req.params.userId);
+  if (!id.success) return res.status(400).json({ error: "Invalid user id" });
+  if (id.data === req.user.id) return res.status(400).json({ error: "Use the Account security page to manage your own second factor.", code: "SELF_RESET" });
+  const body = z.object({ reason: z.string().min(3).max(300) }).safeParse(req.body);
+  if (!body.success) return res.status(400).json({ error: "reason (3–300 chars) is required" });
+  try {
+    const user = await prisma.user.findUnique({ where: { id: id.data }, select: { id: true, username: true, globalRole: true, mfaEnabledAt: true } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    await prisma.user.update({ where: { id: user.id }, data: { mfaSecret: null, mfaEnabledAt: null, mfaBackupCodes: null, mfaLastUsedStep: null } });
+    const sessions = await prisma.$executeRaw`DELETE FROM express_sessions WHERE sess->>'userId' = ${user.id}`.catch(() => 0);
+    await writeAudit({ actorId: req.user.id, action: "MFA_RESET_BY_ADMIN", targetId: user.id, metadata: { reason: body.data.reason, hadMfa: !!user.mfaEnabledAt, sessionsRevoked: Number(sessions) || 0, ip: req.ip } });
+    alertOwner(ALERT_KINDS.MFA_RESET_BY_ADMIN, "Second factor reset by an admin",
+      `${req.user.username} reset TOTP for ${user.username} (${user.id}, ${user.globalRole}). Reason: ${body.data.reason}. Their sessions were revoked.`).catch(() => {});
+    res.json({ ok: true, hadMfa: !!user.mfaEnabledAt, sessionsRevoked: Number(sessions) || 0 });
   } catch (err) { next(err); }
 });
 
@@ -265,6 +302,10 @@ router.post("/dsr/:discordId/erase", requireMainOwner, stepUp, async (req, res, 
   try {
     const result = await eraseDiscordUser(id.data, { scope: body.data.scope, via: "admin", requestedBy: req.user.id, note: body.data.note || null });
     if (!result.ok) return res.status(409).json(result);
+    if (body.data.scope === "full") {
+      alertOwner(ALERT_KINDS.DSR_FULL_ERASE, "Full data erasure executed",
+        `${req.user.username} erased ALL data (incl. ticket text) for Discord user ${id.data}. Note: ${body.data.note || "—"}.`).catch(() => {});
+    }
     res.json(result);
   } catch (err) { next(err); }
 });

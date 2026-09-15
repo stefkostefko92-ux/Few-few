@@ -5,7 +5,8 @@
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
-**Last updated:** 2026-09-13  
+**Last updated:** 2026-09-15  
+**Version:** 1.5 — Activity 17 (verification attempts, 90-day retention) added; ticket transcripts encrypted at rest at application level (Activity 2 security measures); DSR erasure regenerates transcripts  
 **Version:** 1.4 — data subject rights channels added (Discord `/privacy`, admin DSR console); TOTP second factor for staff (Activity 1 security measures)  
 **Version:** 1.3 — Activity 4 rewritten: subscriptions are sold only through Discord's Premium Apps store (Discord Inc. = seller of record; entitlement/subscription identifiers as data categories); Stripe demoted to legacy subscriptions; free trial removed (no trial data processed)  
 **Version:** 1.2 (2026-09-02) — added Activities 13–16 (sticky roles, server activity logging, public API keys, outbound webhooks), which had been live in the product without a record entry
@@ -285,3 +286,16 @@ This ROPA is reviewed:
 
 **Prepared by:** Stefan Lyubomirov Kostadinov, Managing Director  
 **Next review:** 2027-04-22
+
+## Processing Activity 17 — Member Verification (captcha / age gate)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Prove a joining member is human / meets the operator's account-age rule before roles are granted |
+| **Legal basis** | Processed on behalf of the server operator (controller) under Article 28; the operator's basis is typically Article 6(1)(f) (protecting the community from bots) |
+| **Data categories** | Discord user ID, verification panel ID, outcome (success/failure), captcha answer text, timestamp. IP is not collected (bot interactions carry none) |
+| **Data subjects** | Members joining a customer's Discord server |
+| **Recipients** | None outside Supreme Bot systems; the operator sees aggregated daily counts |
+| **3rd country transfers** | None (Hetzner, Germany) |
+| **Retention period** | **90 days** (`VERIFICATION_ATTEMPT_RETENTION_DAYS`, nightly retention job); deleted immediately on a data subject request (`/privacy delete`, admin DSR) |
+| **Security measures** | Bot-secret-gated ingestion; multi-tenant scoping by server; encrypted database volume |

@@ -23,6 +23,10 @@ import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
 const PRIVACY_URL = `${DASHBOARD_URL}/privacy`;
 const PRIVACY_EMAIL = "privacy@carbonstealth.eu";
+// Охлаждане по потребител (10 min) — изтриването е идемпотентно, но всяко
+// повикване пише одитен ред; без дросел командата е усилвател на шум.
+const COOLDOWN_MS = 10 * 60 * 1000;
+const recent = new Map();
 
 export default {
   data: new SlashCommandBuilder()
@@ -65,6 +69,10 @@ export default {
     }
 
     if (sub === "delete") {
+      const last = recent.get(interaction.user.id) || 0;
+      if (Date.now() - last < COOLDOWN_MS) {
+        return interaction.editReply({ content: `⏳ Your data was already erased ${Math.ceil((Date.now() - last) / 60000)} min ago. Wait a few minutes before running this again.` });
+      }
       const confirmId = `privacy:erase:${interaction.user.id}:${interaction.id}`;
       const cancelId = `privacy:cancel:${interaction.user.id}:${interaction.id}`;
       const row = new ActionRowBuilder().addComponents(
@@ -103,6 +111,8 @@ export default {
       await click.deferUpdate();
       try {
         const { data } = await api.post("/bot/dsr/erase", { userId: interaction.user.id, guildId: interaction.guildId ?? null });
+        recent.set(interaction.user.id, Date.now());
+        if (recent.size > 5000) recent.clear();
         const c = data.counts || {};
         return interaction.editReply({
           content:
@@ -115,6 +125,9 @@ export default {
         const code = err?.response?.data?.code;
         if (code === "ACTIVE_SUBSCRIPTIONS") {
           return interaction.editReply({ content: "❌ You still have an active paid subscription. Cancel it first (Discord → User Settings → Subscriptions), then run `/privacy delete` again.", embeds: [], components: [] });
+        }
+        if (code === "DSR_COOLDOWN") {
+          return interaction.editReply({ content: "⏳ An erasure for your account was just processed. Try again in a few minutes.", embeds: [], components: [] });
         }
         if (code === "STAFF_ACCOUNT") {
           return interaction.editReply({ content: "❌ Staff accounts cannot self-erase. Contact the platform owner.", embeds: [], components: [] });

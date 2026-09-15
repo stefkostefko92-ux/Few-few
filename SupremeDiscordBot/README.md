@@ -102,6 +102,9 @@ The deploy script will:
 | `GEMINI_API_KEY` | ➖ | Required only for the AI auto-reply feature (Google Gemini Flash) |
 | `AI_REPLY_TRAINING_ATTESTED` | ➖ | Must be `true` for AI replies to run — you attest a paid Gemini tier that does not train on submitted content (Discord Developer Policy §21) |
 | `MFA_ENFORCE_STAFF` | ➖ | Default `true`: staff roles need a TOTP second factor before the admin console |
+| `ADMIN_IP_ALLOWLIST` | ➖ | Optional: comma-separated IPs/CIDRs allowed to reach `/api/admin` (binary match, IPv4/IPv6) |
+| `SECURITY_ALERTS_DM` | ➖ | Default `true`: DM the owner on brute-force blocks, MFA changes, denied admin IPs, full erasures |
+| `VERIFICATION_ATTEMPT_RETENTION_DAYS` | ➖ | Default `90`: verification attempts older than this are deleted nightly |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
 | `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
 | `SENTRY_DSN` | ➖ | Error monitoring |

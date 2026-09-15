@@ -1,5 +1,6 @@
 // backend/src/routes/tickets.js
 import { Router } from "express";
+import { sealTranscript, openTranscript } from "../lib/transcriptAtRest.js";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
@@ -60,7 +61,7 @@ router.get("/archives/:ticketId", async (req, res, next) => {
       "Content-Security-Policy",
       "default-src 'none'; img-src 'self' https://cdn.discordapp.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"
     );
-    res.send(ticket.archiveHtml);
+    res.send(openTranscript(ticket.archiveHtml));
   } catch (err) {
     next(err);
   }
@@ -188,7 +189,7 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
         status: "CLOSED",
         closeReason: reason,
         closedAt: new Date(),
-        archiveHtml: html,
+        archiveHtml: sealTranscript(html),
         archiveUrl,
       },
     });

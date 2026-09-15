@@ -119,7 +119,9 @@ router.post("/setup", (req, res) => {
     return res.status(409).json({ error: "Two-factor authentication is already enabled. Disable it first to re-enroll.", code: "MFA_ALREADY_ENABLED" });
   }
   const secret = generateSecret();
-  req.session.mfaPending = { secret, createdAt: Date.now() };
+  // Сесията живее в Postgres (express_sessions) — тайната там е ШИФРИРАНА,
+  // както и записаната; открит текст нямаше да е „при покой“ дори за 15 min.
+  req.session.mfaPending = { secret: encrypt(secret), createdAt: Date.now() };
   res.json({
     secret,
     otpauth: otpauthUri({ issuer: ISSUER, account: accountLabel(req.user), secret }),
@@ -146,7 +148,8 @@ router.post("/enable", async (req, res, next) => {
       res.setHeader("Retry-After", String(blocked.retryAfterSec));
       return res.status(429).json({ error: "Too many failed codes. Try again later.", code: "TOO_MANY_FAILED_ATTEMPTS", retryAfterSeconds: blocked.retryAfterSec });
     }
-    const step = verifyTotp(pending.secret, parsed.data.code);
+    const pendingSecret = decryptSafe(pending.secret);
+    const step = pendingSecret ? verifyTotp(pendingSecret, parsed.data.code) : null;
     if (step === null) {
       await recordFailure("mfa", bruteKey(req.user)).catch(() => {});
       return res.status(400).json({ error: "The code does not match. Check the time on your phone and try again.", code: "MFA_INVALID_CODE" });
@@ -158,7 +161,7 @@ router.post("/enable", async (req, res, next) => {
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
-        mfaSecret: encrypt(pending.secret),
+        mfaSecret: encrypt(pendingSecret),
         mfaEnabledAt: now,
         mfaLastUsedStep: step,
         mfaBackupCodes: JSON.stringify(backupCodes.map(hashBackupCode)),
@@ -200,6 +203,10 @@ router.post("/disable", async (req, res, next) => {
     delete req.session.mfaVerifiedAt;
     delete req.session.mfaLastActivity;
     await writeAudit({ actorId: req.user.id, action: "MFA_DISABLED", targetId: req.user.id, metadata: { ip: req.ip, via: result.via } });
+    if (["MAIN_OWNER", "SUPER_USER", "SUPPORT_STAFF"].includes(req.user.globalRole)) {
+      const { alertOwner, ALERT_KINDS } = await import("../lib/securityAlerts.js");
+      alertOwner(ALERT_KINDS.MFA_DISABLED, "A staff account disabled its second factor", `${req.user.username} (${req.user.id}, ${req.user.globalRole}) disabled TOTP from ${req.ip}. Admin access is closed for them until re-enrolled.`).catch(() => {});
+    }
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

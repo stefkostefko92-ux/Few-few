@@ -168,6 +168,26 @@ every other secret (keyed by user, not IP); the session id is regenerated on
 every successful verification (fixation). All events are audited
 (`MFA_ENABLED`, `MFA_DISABLED`, `MFA_VERIFY_FAILED`, `MFA_BACKUP_CODE_USED`).
 
+**Optional network layer.** `ADMIN_IP_ALLOWLIST` restricts `/api/admin` to
+listed addresses/CIDRs (binary comparison via `net.BlockList`, IPv4-mapped
+IPv6 normalised); denials are audited and reported to the owner. **Recovery.**
+A staff member who loses both phone and backup codes is reset only by the Main
+Owner from Admin → Security (fresh second factor, written reason, the user's
+sessions revoked, owner DM) — never by self-service. **Alerting.** Brute-force
+blocks, disabled/reset second factors, staff roles granted without MFA, denied
+admin IPs and full data erasures reach the owner as a Discord DM
+(`lib/securityAlerts.js`, throttled 15 min per kind) — the audit log is the
+record, the DM is the signal.
+
+## Data at rest
+
+Ticket transcripts (`archiveHtml`) — the largest body of Discord content we
+hold — are AES-256-GCM encrypted on every write since 3.4.0
+(`lib/transcriptAtRest.js`); reads pass legacy plaintext rows through and they
+are re-encrypted on the next write, so no migration and no downtime. Bot
+tokens, OAuth tokens, webhook secrets and TOTP secrets were already encrypted.
+Verification attempts are deleted after 90 days; role snapshots after 180.
+
 ## Discord platform obligations
 
 Discord's Developer Terms §5 and Developer Policy are treated as requirements,

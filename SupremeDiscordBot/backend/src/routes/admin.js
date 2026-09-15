@@ -5,6 +5,7 @@ import { guildIconUrl } from "../lib/discordCdn.js";
 import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
 import { requireMfa, requireFreshMfa } from "../middleware/mfa.js";
+import { adminIpAllowlist } from "../middleware/adminIpAllowlist.js";
 
 // Активен ПЛАТЕН абонамент (Stripe, Discord или покриваща агенция). Ръчните
 // админски действия не бива да го презаписват: клиентът продължава да плаща, а
@@ -29,7 +30,7 @@ const router = Router();
 // v3.4 — админ конзолата иска записан + потвърден втори фактор (TOTP) за всяка
 // staff роля; разрушителните маршрути по-долу искат и СВЕЖО потвърждение
 // (step-up ≤10 min) — виж middleware/mfa.js.
-router.use(requireAuth, loadUser, requireSuperUser, requireMfa);
+router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
 const stepUp = requireFreshMfa();
 
 // ─── GET /api/admin/analytics ─────────────────────────────────────────────────
@@ -219,6 +220,19 @@ router.patch("/users/:userId/role", requireMainOwner, stepUp, async (req, res, n
       },
     });
 
+        // v3.4 — staff роля без записан втори фактор: собственикът научава веднага
+    // (човекът няма достъп до конзолата, докато не запише TOTP, но това е
+    // сигнал за онбординг и за одит).
+    if (["MAIN_OWNER", "SUPER_USER", "SUPPORT_STAFF"].includes(role)) {
+      Promise.resolve().then(async () => {
+        const u = await prisma.user.findUnique({ where: { id: req.params.userId }, select: { username: true, mfaEnabledAt: true } });
+        if (u && !u.mfaEnabledAt) {
+          const { alertOwner, ALERT_KINDS } = await import("../lib/securityAlerts.js");
+          await alertOwner(ALERT_KINDS.STAFF_WITHOUT_MFA, "Staff role granted to an account without a second factor",
+            `${u.username} (${req.params.userId}) is now ${role} and has NOT enrolled TOTP. The admin console stays closed to them until they do (Account security page).`);
+        }
+      }).catch(() => {});
+    }
     res.json(updated);
   } catch (err) {
     next(err);
@@ -936,7 +950,7 @@ router.get("/servers/:serverId", async (req, res, next) => {
 // ─── PATCH /api/admin/servers/:serverId ───────────────────────────────────────
 // Admin edit of server settings (log channels, retention, custom bot name/avatar)
 
-router.patch("/servers/:serverId", async (req, res, next) => {
+router.patch("/servers/:serverId", stepUp, async (req, res, next) => {
   const {
     name, logChannelId, archiveChannelId, archiveRetentionDays,
     customBotName, customBotAvatar,
@@ -1195,7 +1209,7 @@ router.post("/servers/:serverId/reset", requireMainOwner, stepUp, async (req, re
 // Post a system message to a specific server channel (admin broadcast).
 // Sends via the bot internal API.
 
-router.post("/servers/:serverId/broadcast", async (req, res, next) => {
+router.post("/servers/:serverId/broadcast", stepUp, async (req, res, next) => {
   const { channelId, title, message } = req.body;
   if (!channelId || !message) return res.status(400).json({ error: "channelId and message required" });
 

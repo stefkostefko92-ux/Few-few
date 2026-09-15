@@ -55,6 +55,7 @@ export const getAdminSystem    = () => api.get("/admin/system").then((r) => r.da
 export const getAdminSecurity  = () => api.get("/admin/security").then((r) => r.data);
 export const adminUnblock      = (scope, key) => api.post("/admin/security/unblock", { scope, key }).then((r) => r.data);
 export const adminRevokeApiKey = (id) => api.delete(`/admin/security/apikeys/${id}`).then((r) => r.data);
+export const adminResetUserMfa = (userId, reason) => api.post(`/admin/users/${userId}/mfa/reset`, { reason }).then((r) => r.data);
 export const getAdminBilling   = () => api.get("/admin/billing").then((r) => r.data);
 export const adminReconcileBilling = () => api.post("/admin/billing/reconcile").then((r) => r.data);
 export const getAdminFleet     = () => api.get("/admin/fleet").then((r) => r.data);
