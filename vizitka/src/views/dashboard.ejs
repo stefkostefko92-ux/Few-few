@@ -4,6 +4,12 @@
   <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
   <% if (passwordChanged) { %><p class="alert alert-ok">Паролата е сменена. Останалите ти сесии са прекратени.</p><% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <% if (profile.hidden_by_admin) { %>
+    <p class="alert alert-warn" role="status">
+      Визитката е <strong>скрита от администратор</strong>. Можеш да я редактираш, но
+      публикуването е спряно. Пиши ни, ако смяташ, че е грешка.
+    </p>
+  <% } %>
 
   <div class="dash-grid">
     <div class="dash-side">
@@ -49,7 +55,7 @@
         <% if (profile.photo) { %>
           <img class="avatar" src="/photo/<%= profile.photo %>" alt="Снимка на профила" width="120" height="120">
         <% } else { %>
-          <div class="avatar avatar-empty" aria-hidden="true"><%= profile.display_name.slice(0, 1).toUpperCase() %></div>
+          <div class="avatar avatar-empty" aria-hidden="true"><%= [...profile.display_name][0].toUpperCase() %></div>
         <% } %>
         <form method="post" action="/profile/photo" enctype="multipart/form-data">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">

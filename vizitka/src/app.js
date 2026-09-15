@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import './db.js';
+import db from './db.js';
 import { attachUser, seedAdmins } from './auth.js';
 import { baseUrl } from './config.js';
 import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
@@ -121,6 +121,28 @@ app.get('/b/:id/click', (req, res) => {
   if (!target) return res.status(404).render('404', { title: 'Няма такава реклама' });
   res.redirect(302, target);
 });
+// Здравна проверка с ИДЕНТИЧНОСТ. Деплоят дърпаше просто „/" на един порт и
+// приемаше всеки 200 за успех — а на споделена машина този порт може да е зает от
+// съвсем друго приложение, тоест зеленият сигнал не доказваше нищо. Тук отговорът
+// казва кой сме и че базата е жива.
+app.get('/healthz', (req, res) => {
+  let database = 'down';
+  try {
+    db.prepare('SELECT 1').get();
+    database = 'up';
+  } catch {
+    database = 'down';
+  }
+  res.type('application/json');
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(database === 'up' ? 200 : 503).json({
+    app: 'vizitka',
+    ok: database === 'up',
+    db: database,
+    version: assetVer,
+  });
+});
+
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(baseUrl(req))));
 app.get('/sitemap.xml', (req, res) => res.type('application/xml').send(sitemapXml(baseUrl(req))));
 app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(req))));
@@ -140,8 +162,22 @@ app.use((req, res) => res.status(404).render('404', { title: 'Страницат
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error(err);
+  // НИКОГА не логваме целия обект на грешката: при грешка от body-parser той носи
+  // полето `body` със суровото тяло на заявката — тоест пароли и лични данни
+  // отиваха в journald при най-обикновено „твърде голямо тяло".
+  const status = Number(err?.status || err?.statusCode) || 500;
+  const label = err?.type || err?.code || err?.name || 'Error';
+  console.error(`[Vizitka] ${req.method} ${req.path} → ${status} ${label}: ${err?.message || ''}`);
+  if (status >= 500 && err?.stack) console.error(err.stack);
   if (res.headersSent) return;
+
+  // Предвидими потребителски грешки: 413/400, не 500.
+  if (err?.type === 'entity.too.large' || err?.type === 'parameters.too.many')
+    return res.status(413).send('Изпратените данни са твърде големи. Върни се и опитай пак.');
+  if (err?.code === 'LIMIT_FILE_SIZE')
+    return res.status(413).send('Файлът е твърде голям. Върни се и качи по-малък.');
+  if (err?.type === 'entity.parse.failed')
+    return res.status(400).send('Неразбираема заявка. Върни се и опитай пак.');
   res.status(500).send('Възникна грешка. Опитай отново.');
 });
 

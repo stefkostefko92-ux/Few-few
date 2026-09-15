@@ -11,9 +11,13 @@ process.env.ADMIN_EMAILS = 'admin@example.com';
 process.env.MASTILKO_URL = 'https://mastilko-bg.com';
 process.env.PRINT_API_SECRET = 'test-print-secret';
 process.env.INDEXNOW_KEY = 'testindexnowkey1234567890abcdef0';
+// Целият пакет удря от 127.0.0.1 — вдигаме тавана, за да не се самоограничи.
+// Самият лимит се проверява отделно, с нарочно IP (виж теста по-долу).
+process.env.AUTH_RATE_LIMIT = '60';
 
 const { default: app } = await import('../src/app.js');
 const { outbox } = await import('../src/mailer.js');
+const { default: db } = await import('../src/db.js');
 
 const server = app.listen(0);
 const port = server.address().port;
@@ -107,6 +111,128 @@ await test('редакцията на профила записва даннит
     }),
   });
   assert.equal(res.status, 302);
+});
+
+await test('чужд сайт не може да ни вкара в акаунт (принудителен вход)', async () => {
+  const foreign = await fetch(`${base}/login`, {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: 'https://evil.example' },
+    redirect: 'manual',
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1' }),
+  });
+  assert.equal(foreign.status, 403, 'POST от чужд Origin трябва да се отхвърли');
+  assert.ok(
+    !(foreign.headers.getSetCookie?.() || []).some((c) => /vz_sid=/.test(c)),
+    'не бива да се издава сесия'
+  );
+  // Същата форма от нашия сайт продължава да работи.
+  const own = await fetch(`${base}/login`, {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: base },
+    redirect: 'manual',
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1' }),
+  });
+  assert.equal(own.status, 302);
+});
+
+await test('твърде голямо тяло дава 413, без тялото да влиза в лога', async () => {
+  const many = {};
+  for (let i = 0; i < 200; i += 1) many[`pad${i}`] = '1';
+  const res = await fetch(`${base}/login`, {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: base },
+    redirect: 'manual',
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1', ...many }),
+  });
+  assert.equal(res.status, 413, 'очаква се 413, не 500');
+});
+
+await test('невалидна връзка не изтрива останалите редакции по бутоните', async () => {
+  // Потребителят преименува съществуваща връзка И бърка втора — формата трябва да
+  // върне НАПИСАНОТО, а не старите стойности от базата.
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      link_label_0: 'НОВО-ИМЕ',
+      link_url_0: 'https://novo.example.com',
+      link_label_1: 'Лошо',
+      link_url_1: 'javascript:alert(1)',
+    }),
+  });
+  assert.equal(res.status, 400);
+  const html = await res.text();
+  assert.match(html, /http:\/\/ или https:\/\//, 'трябва да обясни какво е сбъркано');
+  assert.match(html, /НОВО-ИМЕ/, 'написаното от потребителя трябва да остане във формата');
+});
+
+await test('качване (unit): форматът се познава по байтове, не по Content-Type', async () => {
+  const { sniffImage, prepareUpload } = await import('../src/images.js');
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+  const jpg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(8)]);
+  const webp = Buffer.concat([
+    Buffer.from('RIFF'),
+    Buffer.alloc(4),
+    Buffer.from('WEBP'),
+    Buffer.alloc(4),
+  ]);
+  assert.equal(sniffImage(png), 'png');
+  assert.equal(sniffImage(jpg), 'jpg');
+  assert.equal(sniffImage(webp), 'webp');
+  // HTML, представен като снимка — точно това минаваше преди.
+  const evil = Buffer.from('<html><script>alert(1)</script></html>');
+  assert.equal(sniffImage(evil), null);
+  assert.equal(prepareUpload(evil), null);
+});
+
+await test('качване (unit): EXIF/GPS се премахва от JPEG', async () => {
+  const { stripMetadata } = await import('../src/images.js');
+  // Минимален JPEG: SOI + APP1 (EXIF с „GPS“) + SOS + данни + EOI.
+  const exifPayload = Buffer.from('Exif\0\0GPSLatitude 42.123 GPSLongitude 23.456');
+  const app1 = Buffer.concat([
+    Buffer.from([0xff, 0xe1]),
+    (() => {
+      const b = Buffer.alloc(2);
+      b.writeUInt16BE(exifPayload.length + 2);
+      return b;
+    })(),
+    exifPayload,
+  ]);
+  const jpeg = Buffer.concat([
+    Buffer.from([0xff, 0xd8]),
+    app1,
+    Buffer.from([0xff, 0xda, 0x00, 0x02]),
+    Buffer.from([0x11, 0x22, 0x33]),
+    Buffer.from([0xff, 0xd9]),
+  ]);
+  assert.ok(jpeg.includes('GPSLatitude'), 'подготвеният файл трябва да носи GPS');
+  const clean = stripMetadata(jpeg, 'jpg');
+  assert.ok(!clean.includes('GPSLatitude'), 'GPS координатите трябва да са премахнати');
+  assert.equal(clean[0], 0xff);
+  assert.equal(clean[1], 0xd8, 'файлът трябва да остане валиден JPEG');
+  assert.ok(clean.includes(Buffer.from([0x11, 0x22, 0x33])), 'самото изображение остава');
+});
+
+await test('rate limit-ът спира заливане с опити', async () => {
+  // Нарочно IP (app-ът е с trust proxy 1), за да не изчерпим тавана на пакета.
+  const ip = '203.0.113.7';
+  let blocked = 0;
+  for (let i = 0; i < 70; i += 1) {
+    const res = await fetch(`${base}/forgot`, {
+      method: 'POST',
+      headers: { ...FORM_HEADERS, origin: base, 'x-forwarded-for': ip },
+      redirect: 'manual',
+      body: form({ email: `nikoi${i}@example.com` }),
+    });
+    if (res.status === 429) blocked += 1;
+  }
+  assert.ok(blocked > 0, `след тавана трябва да има 429, а нямаше нито един`);
 });
 
 await test('POST без CSRF токен се отхвърля', async () => {
@@ -338,6 +464,85 @@ await test('vCard файлът съдържа контактите', async () =>
   assert.match(vcf, /END:VCARD/);
 });
 
+await test('vCard: гол CR не може да инжектира втори контакт', async () => {
+  // Полето се подава с директен POST (браузърът би пратил CRLF) — точно така
+  // се получаваше втори, чужд контакт в указателя на посетителя.
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      bio: 'Био\rEND:VCARD\rBEGIN:VCARD\rFN:Банка ОББ\rTEL:0888999888',
+    }),
+  });
+  assert.equal(res.status, 302);
+  const vcf = await (await request('/p/ivan-testov/vizitka.vcf')).text();
+  // Броим РЕАЛНИ редове (CRLF), не подниза: екранираното „BEGIN:VCARD" остава
+  // безобидно вътре в стойността на NOTE и парсерът вижда един контакт.
+  const lines = vcf.split('\r\n');
+  assert.equal(
+    lines.filter((l) => l === 'BEGIN:VCARD').length,
+    1,
+    'трябва да има точно един контакт'
+  );
+  assert.equal(lines.filter((l) => /^TEL:0888999888/.test(l)).length, 0, 'нула инжектирани полета');
+  assert.doesNotMatch(vcf, /\r(?!\n)/, 'не бива да остава гол CR в стойност');
+});
+
+await test('печатният токен не надживява скриването на визитката', async () => {
+  const tokenUrl = (await (await request('/p/ivan-testov/print')).text()).match(
+    /token=([A-Za-z0-9_\-.]+)/
+  )?.[1];
+  assert.ok(tokenUrl, 'трябва да получим печатен токен');
+  assert.equal(
+    (await request(`/api/print/${tokenUrl}`)).status,
+    200,
+    'токенът работи, докато е публична'
+  );
+
+  // Собственикът скрива визитката — вече издаденият токен спира да връща данни.
+  await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      theme: 'sunset',
+    }), // без is_public → скрита
+  });
+  assert.equal(
+    (await request(`/api/print/${tokenUrl}`)).status,
+    404,
+    'скрита → 404 въпреки токена'
+  );
+
+  // Връщаме я публична за следващите тестове.
+  await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      headline: 'Електротехник',
+      phone: '+359 888 123 456',
+      contact_email: 'ivan@example.com',
+      website: 'https://example.com',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      bio: 'Тестово описание.',
+    }),
+  });
+});
+
 await test('скритата визитка връща 404 за чужди', async () => {
   await request('/profile', {
     method: 'POST',
@@ -424,19 +629,41 @@ await test('нормален потребител няма достъп до /ad
   assert.equal(res.status, 403);
 });
 
+await test('регистрация с резервиран админ имейл се отказва', async () => {
+  jar.clear();
+  const res = await request('/register', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      name: 'Самозванец',
+      email: 'admin@example.com', // = ADMIN_EMAILS
+      password: 'parolata123',
+      type: 'personal',
+    }),
+  });
+  assert.equal(res.status, 400, 'админският имейл не бива да се регистрира от сайта');
+  assert.equal(
+    db.prepare('SELECT COUNT(*) AS n FROM users WHERE email = ?').get('admin@example.com').n,
+    0,
+    'не трябва да е създаден акаунт'
+  );
+});
+
 let bannerId = 0;
 await test('админ отваря панела и създава банер', async () => {
   jar.clear();
+  // Админът се провизионира от сървъра (`npm run admin:add`), не от сайта.
   await request('/register', {
     method: 'POST',
     headers: FORM_HEADERS,
     body: form({
-      name: 'Админ',
-      email: 'admin@example.com',
+      name: 'Шеф Админов',
+      email: 'shef@example.com',
       password: 'adminparola1',
       type: 'personal',
     }),
   });
+  db.prepare('UPDATE users SET is_admin = 1 WHERE email = ?').run('shef@example.com');
   const panel = await request('/admin/reklami');
   assert.equal(panel.status, 200, 'админът трябва да вижда панела');
   const adminCsrf = (await panel.text()).match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
@@ -494,7 +721,7 @@ await test('началната показва максимум 2 банера', 
   await request('/login', {
     method: 'POST',
     headers: FORM_HEADERS,
-    body: form({ email: 'admin@example.com', password: 'adminparola1' }),
+    body: form({ email: 'shef@example.com', password: 'adminparola1' }),
   });
   const adminCsrf =
     (await (await request('/admin/reklami')).text()).match(
@@ -520,7 +747,7 @@ await test('админ вижда всички визитки, скрива и �
   await request('/login', {
     method: 'POST',
     headers: FORM_HEADERS,
-    body: form({ email: 'admin@example.com', password: 'adminparola1' }),
+    body: form({ email: 'shef@example.com', password: 'adminparola1' }),
   });
   const listRes = await request('/admin');
   assert.equal(listRes.status, 200, 'админът трябва да вижда списъка с визитки');
@@ -528,32 +755,47 @@ await test('админ вижда всички визитки, скрива и �
   assert.match(list, /Визитки/);
   assert.match(list, /ivan@example\.com/, 'списъкът трябва да показва и чужди визитки');
 
-  // Намери визитката на друг потребител (Иван) чрез търсене.
   const found = await (await request('/admin?q=' + encodeURIComponent('ivan@example.com'))).text();
   const pid = Number(found.match(/\/admin\/profiles\/(\d+)\/edit/)?.[1]);
   assert.ok(pid > 0, 'трябва да намерим id на чужда визитка');
-  const csrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const adminCsrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
 
-  // Скрий и после покажи (два превключвателя на видимостта).
-  const hide = await request(`/admin/profiles/${pid}/visibility`, {
+  // Визитката е скрита ПО ИЗБОР НА ПОТРЕБИТЕЛЯ от по-ранен тест → админът НЕ може
+  // да я публикува (модерацията е еднопосочна, чл. 25(2) ОРЗД).
+  const isPublicNow = db.prepare('SELECT is_public FROM profiles WHERE id = ?').get(pid).is_public;
+  assert.equal(isPublicNow, 0, 'подготовка: визитката е скрита от собственика');
+  const denied = await request(`/admin/profiles/${pid}/visibility`, {
     method: 'POST',
     headers: FORM_HEADERS,
-    body: form({ _csrf: csrf }),
+    body: form({ _csrf: adminCsrf }),
   });
-  assert.equal(hide.status, 302, 'скриването трябва да пренасочи');
-  const show = await request(`/admin/profiles/${pid}/visibility`, {
-    method: 'POST',
-    headers: FORM_HEADERS,
-    body: form({ _csrf: csrf }),
-  });
-  assert.equal(show.status, 302);
+  assert.equal(denied.status, 302);
+  assert.equal(
+    db.prepare('SELECT is_public FROM profiles WHERE id = ?').get(pid).is_public,
+    0,
+    'скритата от потребителя визитка НЕ бива да се публикува от админа'
+  );
 
-  // Редактирай директно — смени длъжността.
+  // Същото правило и през формата за редакция.
   const editForm = await (await request(`/admin/profiles/${pid}/edit`)).text();
   const editCsrf = editForm.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
   const slug = editForm.match(/name="slug"[^>]*value="([^"]+)"/)?.[1] || '';
   const name = editForm.match(/name="display_name"[^>]*value="([^"]+)"/)?.[1] || 'Иван';
-  assert.ok(slug, 'формата за редакция трябва да съдържа слъг');
+  const tryPublish = await request(`/admin/profiles/${pid}`, {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: editCsrf,
+      display_name: name,
+      slug,
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  assert.equal(tryPublish.status, 400, 'публикуване на чужда скрита визитка се отказва');
+
+  // Редакция БЕЗ публикуване работи и се записва в одитната следа.
   const save = await request(`/admin/profiles/${pid}`, {
     method: 'POST',
     headers: FORM_HEADERS,
@@ -563,13 +805,107 @@ await test('админ вижда всички визитки, скрива и �
       slug,
       headline: 'Редактирано от админ',
       type: 'personal',
-      is_public: '1',
       theme: 'blue',
     }),
   });
   assert.equal(save.status, 302, 'записът от админа трябва да пренасочи');
   const after = await (await request(`/admin/profiles/${pid}/edit`)).text();
   assert.match(after, /Редактирано от админ/, 'промяната на админа трябва да е записана');
+
+  const audit = db
+    .prepare('SELECT * FROM admin_audit WHERE profile_id = ? ORDER BY id DESC')
+    .all(pid);
+  assert.ok(audit.length > 0, 'админското действие трябва да е в одитната следа');
+  assert.equal(audit[0].action, 'edit');
+  assert.equal(audit[0].admin_email, 'shef@example.com');
+});
+
+await test('админ скрива публична визитка и може да върне СВОЕТО скриване', async () => {
+  // Отделен потребител с ПУБЛИЧНА визитка, за да не зависим от реда на тестовете.
+  const own = new Map();
+  const asOwner = async (path, options = {}) => {
+    const headers = { ...(options.headers || {}) };
+    if (own.size) headers.cookie = [...own.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
+    const res = await fetch(base + path, { ...options, headers, redirect: 'manual' });
+    for (const raw of res.headers.getSetCookie?.() || []) {
+      const [pair] = raw.split(';');
+      const [n, v] = pair.split('=');
+      if (v) own.set(n.trim(), v.trim());
+    }
+    return res;
+  };
+  await asOwner('/register', {
+    method: 'POST',
+    headers: { ...FORM_HEADERS, origin: base },
+    body: form({
+      name: 'Модер Тестов',
+      email: 'moder@example.com',
+      password: 'parola12345',
+      type: 'personal',
+    }),
+  });
+  const ownCsrf = (await (await asOwner('/dashboard')).text()).match(
+    /name="_csrf" value="([a-f0-9]+)"/
+  )?.[1];
+  await asOwner('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: ownCsrf,
+      display_name: 'Модер Тестов',
+      slug: 'moder-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  const pid = db.prepare("SELECT id FROM profiles WHERE slug = 'moder-testov'").get().id;
+
+  const found = await (await request('/admin?q=' + encodeURIComponent('moder@example.com'))).text();
+  const adminCsrf = found.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const toggle = () =>
+    request(`/admin/profiles/${pid}/visibility`, {
+      method: 'POST',
+      headers: FORM_HEADERS,
+      body: form({ _csrf: adminCsrf }),
+    });
+
+  assert.equal((await toggle()).status, 302);
+  let row = db.prepare('SELECT * FROM profiles WHERE id = ?').get(pid);
+  assert.equal(row.is_public, 0, 'админът може да скрие публична визитка');
+  assert.equal(row.hidden_by_admin, 1, 'скриването е отбелязано като админско');
+
+  // Собственикът НЕ може да я върне сам.
+  const selfPublish = await asOwner('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: ownCsrf,
+      display_name: 'Модер Тестов',
+      slug: 'moder-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'blue',
+    }),
+  });
+  assert.equal(selfPublish.status, 400);
+  assert.equal(
+    db.prepare('SELECT is_public FROM profiles WHERE id = ?').get(pid).is_public,
+    0,
+    'потребителят не бива да заобикаля админското скриване'
+  );
+
+  // Админът връща своето скриване.
+  assert.equal((await toggle()).status, 302);
+  row = db.prepare('SELECT * FROM profiles WHERE id = ?').get(pid);
+  assert.equal(row.is_public, 1);
+  assert.equal(row.hidden_by_admin, 0);
+
+  const actions = db
+    .prepare('SELECT action FROM admin_audit WHERE profile_id = ? ORDER BY id')
+    .all(pid)
+    .map((r) => r.action);
+  assert.deepEqual(actions, ['hide', 'unhide'], 'и двете действия са в одитната следа');
 });
 
 await test('забравена парола: имейл → нулиране → вход с новата', async () => {

@@ -12,17 +12,18 @@ import { THEMES } from '../themes.js';
 import { AVATAR_SHAPES, FONTS } from '../personalize.js';
 import { MAX_LINKS, getLinks } from '../links.js';
 import { collectProfileInput, validateProfileInput, saveProfileEdit } from '../profiles.js';
+import { prepareUpload } from '../images.js';
 import { submitUrls } from '../indexnow.js';
 import { notifyWalletUpdate } from '../wallet/index.js';
 
 const router = Router();
 
-const PHOTO_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
-
+// Не филтрираме по клиентския mimetype — той е контролируем и не доказва нищо.
+// Форматът се определя от САМИТЕ БАЙТОВЕ в `prepareUpload` след качването, така
+// грешният файл получава ясно съобщение вместо тихо да изчезне.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 2 * 1024 * 1024, files: 1 },
-  fileFilter: (req, file, cb) => cb(null, Boolean(PHOTO_EXT[file.mimetype])),
 });
 
 const getProfile = (userId) => db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(userId);
@@ -72,8 +73,23 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
         font: input.font,
         slug: input.slug,
       },
-      { error }
+      // Връщаме ПОДАДЕНИТЕ от потребителя връзки — иначе редакцията по бутоните
+      // тихо изчезваше и формата показваше старите стойности от базата.
+      { error, links: input.parsed.links }
     );
+
+  // Скрита от администратор (модерация) — собственикът не може да я върне сам,
+  // иначе „скрий" щеше да е само предложение. Останалите промени се записват.
+  if (profile.hidden_by_admin && input.isPublic) {
+    input.isPublic = 0;
+    saveProfileEdit(profile.id, input);
+    return renderDashboard(req, res.status(400), getProfile(req.user.id), {
+      error:
+        'Визитката е скрита от администратор и не може да се публикува оттук. ' +
+        'Останалите промени са записани. Пиши ни, ако смяташ, че е грешка.',
+      links: input.parsed.links,
+    });
+  }
 
   saveProfileEdit(profile.id, input);
 
@@ -90,18 +106,28 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
   res.redirect('/dashboard?saved=1');
 });
 
-router.post('/profile/photo', requireAuth, upload.single('photo'), csrfProtect, (req, res) => {
-  if (!req.file) return res.redirect('/dashboard');
+// Обща логика за профилната и коричната снимка: проверка по съдържание, махане на
+// метаданните, запис, изтриване на старата.
+function saveOwnImage(req, res, column) {
   const profile = getProfile(req.user.id);
-  const filename = `${crypto.randomBytes(16).toString('hex')}.${PHOTO_EXT[req.file.mimetype]}`;
-  fs.writeFileSync(join(UPLOADS_DIR, filename), req.file.buffer);
-  deletePhotoFile(profile.photo);
-  db.prepare("UPDATE profiles SET photo = ?, updated_at = datetime('now') WHERE user_id = ?").run(
-    filename,
-    req.user.id
-  );
+  if (!req.file) return renderDashboard(req, res.status(400), profile, { error: 'Избери файл.' });
+  const image = prepareUpload(req.file.buffer);
+  if (!image)
+    return renderDashboard(req, res.status(400), profile, {
+      error: 'Файлът не е разпознат като снимка. Приемаме JPG, PNG или WebP до 2 MB.',
+    });
+  const filename = `${crypto.randomBytes(16).toString('hex')}.${image.ext}`;
+  fs.writeFileSync(join(UPLOADS_DIR, filename), image.buffer);
+  deletePhotoFile(profile[column]);
+  db.prepare(
+    `UPDATE profiles SET ${column} = ?, updated_at = datetime('now') WHERE user_id = ?`
+  ).run(filename, req.user.id);
   res.redirect('/dashboard?saved=1');
-});
+}
+
+router.post('/profile/photo', requireAuth, upload.single('photo'), csrfProtect, (req, res) =>
+  saveOwnImage(req, res, 'photo')
+);
 
 router.post('/profile/photo/delete', requireAuth, csrfProtect, (req, res) => {
   const profile = getProfile(req.user.id);
@@ -113,18 +139,9 @@ router.post('/profile/photo/delete', requireAuth, csrfProtect, (req, res) => {
 });
 
 // Корична (заглавна) снимка — фон зад името на визитката.
-router.post('/profile/cover', requireAuth, upload.single('cover'), csrfProtect, (req, res) => {
-  if (!req.file) return res.redirect('/dashboard');
-  const profile = getProfile(req.user.id);
-  const filename = `${crypto.randomBytes(16).toString('hex')}.${PHOTO_EXT[req.file.mimetype]}`;
-  fs.writeFileSync(join(UPLOADS_DIR, filename), req.file.buffer);
-  deletePhotoFile(profile.cover);
-  db.prepare("UPDATE profiles SET cover = ?, updated_at = datetime('now') WHERE user_id = ?").run(
-    filename,
-    req.user.id
-  );
-  res.redirect('/dashboard?saved=1');
-});
+router.post('/profile/cover', requireAuth, upload.single('cover'), csrfProtect, (req, res) =>
+  saveOwnImage(req, res, 'cover')
+);
 
 router.post('/profile/cover/delete', requireAuth, csrfProtect, (req, res) => {
   const profile = getProfile(req.user.id);

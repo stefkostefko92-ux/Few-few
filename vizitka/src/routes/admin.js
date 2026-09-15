@@ -13,16 +13,16 @@ import { THEMES } from '../themes.js';
 import { AVATAR_SHAPES, FONTS } from '../personalize.js';
 import { MAX_LINKS, getLinks } from '../links.js';
 import { collectProfileInput, validateProfileInput, saveProfileEdit } from '../profiles.js';
+import { prepareUpload } from '../images.js';
 import { submitUrls } from '../indexnow.js';
 import { notifyWalletUpdate } from '../wallet/index.js';
 
 const router = Router();
 
-const PHOTO_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+// Форматът се определя от байтовете (виж src/images.js), не от клиентския mimetype.
 const photoUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 2 * 1024 * 1024, files: 1 },
-  fileFilter: (req, file, cb) => cb(null, Boolean(PHOTO_EXT[file.mimetype])),
 });
 
 const PAGE_SIZE = 20;
@@ -34,12 +34,15 @@ router.get('/admin', requireAdmin, (req, res) => {
   const q = String(req.query.q || '')
     .trim()
     .slice(0, 80);
-  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const like = q ? `%${q}%` : '%';
   const where = 'WHERE p.display_name LIKE @like OR p.slug LIKE @like OR u.email LIKE @like';
   const total = db
     .prepare(`SELECT COUNT(*) AS n FROM profiles p JOIN users u ON u.id = p.user_id ${where}`)
     .get({ like }).n;
+  // Ограничаваме страницата до реално съществуващите: иначе `?page=99999999999999999999`
+  // даваше offset извън безопасните цели числа и SQLite гърмеше с 500.
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(Math.max(1, parseInt(req.query.page, 10) || 1), pages);
   const profiles = db
     .prepare(
       `SELECT p.*, u.email AS owner_email FROM profiles p JOIN users u ON u.id = p.user_id
@@ -54,26 +57,57 @@ router.get('/admin', requireAdmin, (req, res) => {
     page,
     pageSize: PAGE_SIZE,
     total,
-    pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pages,
     base: baseUrl(req),
     saved: req.query.saved === '1',
+    denied: req.query.denied === '1',
   });
 });
 
-// Скрий/покажи визитка (админ превключвател на видимостта).
+// Записва админско действие върху чужда визитка (отчетност, чл. 5(2) ОРЗД).
+const logAdmin = (req, profileId, action, detail = '') =>
+  db
+    .prepare(
+      `INSERT INTO admin_audit (admin_user_id, admin_email, profile_id, action, detail)
+       VALUES (?, ?, ?, ?, ?)`
+    )
+    .run(req.user.id, req.user.email, profileId, action, detail);
+
+// Скрий/покажи визитка.
+//
+// Модерацията е ЕДНОПОСОЧНА: админът може да скрие и да върне СОБСТВЕНОТО си
+// скриване, но не може да публикува визитка, която потребителят сам е скрил.
+// Иначе „модерация" означаваше и право да изкараш наяве лични данни, които
+// собственикът съзнателно е задържал — и то с автоматично подаване към Bing.
 router.post('/admin/profiles/:id/visibility', requireAdmin, csrfProtect, (req, res) => {
   const profile = getProfileById(Number(req.params.id));
-  if (!profile) return res.redirect('/admin/reklami');
-  db.prepare(
-    "UPDATE profiles SET is_public = 1 - is_public, updated_at = datetime('now') WHERE id = ?"
-  ).run(profile.id);
+  if (!profile) return res.redirect('/admin');
+  const backTo = `/admin${req.query.q ? `?q=${encodeURIComponent(req.query.q)}` : ''}`;
+
+  if (profile.is_public) {
+    db.prepare(
+      `UPDATE profiles SET is_public = 0, hidden_by_admin = 1, updated_at = datetime('now')
+       WHERE id = ?`
+    ).run(profile.id);
+    logAdmin(req, profile.id, 'hide');
+  } else if (profile.hidden_by_admin) {
+    db.prepare(
+      `UPDATE profiles SET is_public = 1, hidden_by_admin = 0, updated_at = datetime('now')
+       WHERE id = ?`
+    ).run(profile.id);
+    logAdmin(req, profile.id, 'unhide');
+  } else {
+    // Скрита е по избор на потребителя — не я публикуваме.
+    return res.redirect(`${backTo}${backTo.includes('?') ? '&' : '?'}denied=1`);
+  }
+
   const updated = getProfileById(profile.id);
   if (updated.is_public) {
     const base = baseUrl(req);
     submitUrls(base, [`${base}/p/${updated.slug}`]);
   }
   notifyWalletUpdate(updated, baseUrl(req));
-  res.redirect(`/admin${req.query.q ? `?q=${encodeURIComponent(req.query.q)}` : ''}`);
+  res.redirect(backTo);
 });
 
 const renderAdminEdit = (req, res, profile, extra = {}) =>
@@ -123,10 +157,21 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
         font: input.font,
         slug: input.slug,
       },
-      { error }
+      // Връщаме ПОДАДЕНИТЕ от потребителя връзки — иначе редакцията по бутоните
+      // тихо изчезваше и формата показваше старите стойности от базата.
+      { error, links: input.parsed.links }
     );
 
+  // Същото правило като при бутона за видимост: админът не публикува визитка,
+  // която потребителят сам е скрил.
+  if (input.isPublic && !profile.is_public && !profile.hidden_by_admin)
+    return renderAdminEdit(req, res.status(400), profile, {
+      error:
+        'Тази визитка е скрита по избор на потребителя — не можеш да я публикуваш от админ панела.',
+    });
+
   saveProfileEdit(profile.id, input);
+  logAdmin(req, profile.id, 'edit', `slug=${input.slug}`);
   const updated = getProfileById(profile.id);
   if (updated.is_public) {
     const base = baseUrl(req);
@@ -139,24 +184,31 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
 // Смяна на снимката/коричната снимка от админа.
 function adminSetImage(req, res, column) {
   const profile = getProfileById(Number(req.params.id));
-  if (!profile) return res.redirect('/admin/reklami');
-  if (!req.file) return res.redirect(`/admin/profiles/${profile.id}/edit`);
-  const filename = `${crypto.randomBytes(16).toString('hex')}.${PHOTO_EXT[req.file.mimetype]}`;
-  fs.writeFileSync(join(UPLOADS_DIR, filename), req.file.buffer);
+  if (!profile) return res.redirect('/admin');
+  if (!req.file) return renderAdminEdit(req, res.status(400), profile, { error: 'Избери файл.' });
+  const image = prepareUpload(req.file.buffer);
+  if (!image)
+    return renderAdminEdit(req, res.status(400), profile, {
+      error: 'Файлът не е разпознат като снимка. Приемаме JPG, PNG или WebP до 2 MB.',
+    });
+  const filename = `${crypto.randomBytes(16).toString('hex')}.${image.ext}`;
+  fs.writeFileSync(join(UPLOADS_DIR, filename), image.buffer);
   deleteImage(profile[column]);
   db.prepare(`UPDATE profiles SET ${column} = ?, updated_at = datetime('now') WHERE id = ?`).run(
     filename,
     profile.id
   );
+  logAdmin(req, profile.id, column);
   res.redirect(`/admin/profiles/${profile.id}/edit?saved=1`);
 }
 function adminClearImage(req, res, column) {
   const profile = getProfileById(Number(req.params.id));
-  if (!profile) return res.redirect('/admin/reklami');
+  if (!profile) return res.redirect('/admin');
   deleteImage(profile[column]);
   db.prepare(`UPDATE profiles SET ${column} = '', updated_at = datetime('now') WHERE id = ?`).run(
     profile.id
   );
+  logAdmin(req, profile.id, `${column}:delete`);
   res.redirect(`/admin/profiles/${profile.id}/edit?saved=1`);
 }
 

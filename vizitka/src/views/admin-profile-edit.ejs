@@ -15,7 +15,7 @@
       <% if (profile.photo) { %>
         <img class="avatar" src="/photo/<%= profile.photo %>" alt="Снимка на <%= profile.display_name %>">
       <% } else { %>
-        <div class="avatar avatar-empty" aria-hidden="true"><%= profile.display_name.slice(0,1).toUpperCase() %></div>
+        <div class="avatar avatar-empty" aria-hidden="true"><%= [...profile.display_name][0].toUpperCase() %></div>
       <% } %>
       <form method="post" action="/admin/profiles/<%= profile.id %>/photo" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
