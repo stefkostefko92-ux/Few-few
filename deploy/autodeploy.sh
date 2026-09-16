@@ -32,6 +32,14 @@ MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
 MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 
+# ВНИМАНИЕ за всяко присвояване по-долу, което чете ПО ИЗБОР налична стойност:
+# `X="$(cmd 2>/dev/null | head -1)"` при `set -euo pipefail` УБИВА скрипта, ако
+# cmd се провали (липсващ файл → sed/grep код 2, pipefail го вдига, set -e
+# прекратява) — и то БЕЗ нито един ред изход, защото stderr е заглушен. Затова
+# всяко такова присвояване завършва с `|| true`; стойността по подразбиране е на
+# следващия ред. Реален инцидент: липсващ /etc/vizitka/vizitka.env спираше ЦЕЛИЯ
+# autodeploy още в конфигурацията, преди първия проект (гейтнато от deploy-check).
+#
 # vizitka (systemd модел, като medqr)
 VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
 VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
@@ -39,7 +47,7 @@ VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
 # да е зает от друг проект (тук: docker-proxy на ERP) и тогава health check-ът
 # получаваше 200 от ЧУЖДО приложение → деплоят се обявяваше за успешен дори когато
 # vizitka е мъртва, значи клонът за rollback не се изпълняваше никога.
-VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>/dev/null | head -1)}"
+VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>/dev/null | head -1 || true)}"
 VIZITKA_PORT="${VIZITKA_PORT:-3105}"
 # /healthz връща и ИМЕТО на приложението — само код 200 не доказва кой отговаря.
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:${VIZITKA_PORT}/healthz}"
@@ -228,7 +236,7 @@ deploy_zabobovdol() {
   # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
   local url="$ZBD_HEALTH_URL"
   if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
     [ -n "$p" ] && url="http://127.0.0.1:${p}/"
   fi
   health "$url" "zabobovdol" || deploy_failed=1
@@ -731,7 +739,7 @@ deploy_supreme() {
 # (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
 supreme_rollback_hint() {
   local prev
-  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p)"
+  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p || true)"
   warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
   if [ -n "$prev" ]; then
     warn "Предишен release: ${prev%/}"
@@ -757,7 +765,7 @@ supreme_rollback_hint() {
 supreme_ping_indexnow() {
   local d="$1"
   local key_file key
-  key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1)"
+  key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1 || true)"
   [ -n "$key_file" ] || { warn "Supreme: няма IndexNow ключ в frontend/public — пропускам."; return 0; }
   key="$(basename "$key_file" .txt)"
   ( cd "$SRC" && node tools/seo/indexnow.mjs "https://supremebot.carbonstealth.eu" \
@@ -859,8 +867,8 @@ supreme_pre_deploy_dump() {
     return 0
   fi
   local user db out
-  user="$(docker exec "$pg" printenv POSTGRES_USER 2>/dev/null | tr -d '\r')"; user="${user:-bot}"
-  db="$(docker exec "$pg" printenv POSTGRES_DB 2>/dev/null | tr -d '\r')";     db="${db:-discordbot}"
+  user="$(docker exec "$pg" printenv POSTGRES_USER 2>/dev/null | tr -d '\r' || true)"; user="${user:-bot}"
+  db="$(docker exec "$pg" printenv POSTGRES_DB 2>/dev/null | tr -d '\r' || true)";     db="${db:-discordbot}"
   mkdir -p "$SUPREME_BACKUP_DIR"; chmod 700 "$SUPREME_BACKUP_DIR"
   out="$SUPREME_BACKUP_DIR/pre-deploy-$TS.dump"
   ( umask 077
