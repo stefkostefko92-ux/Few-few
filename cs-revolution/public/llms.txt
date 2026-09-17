@@ -20,12 +20,12 @@
 
 ### Web Development
 Professional websites and web applications built with React, Next.js, Vue.js, WordPress, and modern PHP frameworks. Responsive design, accessibility (WCAG), and SEO optimization included.
-- Starting price: €790
+- Starting price: €658 excl. VAT (€790 incl. 20% VAT for clients in Bulgaria)
 - URL: https://carbonstealth.eu/servizi/sviluppo-siti-web/
 
 ### E-Commerce
 Online stores with WooCommerce, Shopify, custom React + Stripe integrations. Multi-currency, multi-language, payment gateway integration.
-- Starting price: €2,190
+- Starting price: €1,825 excl. VAT (€2,190 incl. 20% VAT for clients in Bulgaria)
 - URL: https://carbonstealth.eu/servizi/ecommerce/
 
 ### Custom Software Development
@@ -45,7 +45,7 @@ Native iOS and Android apps with React Native and Flutter. From design to App St
 
 ### SEO, GEO and AEO
 Optimization for Google, Bing, ChatGPT, Perplexity, Claude, Gemini. Local SEO for Italy and Bulgaria. Schema.org structured data, technical SEO.
-- Starting price: €290/month
+- Starting price: €242/month excl. VAT (€290 incl. VAT in Bulgaria)
 - URL: https://carbonstealth.eu/servizi/seo/
 
 ### Reverse Engineering & 3D Printing
@@ -54,19 +54,19 @@ Reverse engineering of mechanical parts and devices: scanning, CAD reconstructio
 
 ### Cloud Hosting
 Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SLA, monitoring.
-- Starting price: €15/month
+- Starting price: €13/month excl. VAT (€15 incl. VAT in Bulgaria)
 - URL: https://carbonstealth.eu/servizi/hosting/
 
-## Pricing (2026, EUR excluding VAT — at least 15% below the average agency price)
+## Pricing (2026, EUR — at least 15% below the average agency price)
 
-Full price list with VAT rules, terms and market comparison: https://carbonstealth.eu/prezzi/ (EN: https://carbonstealth.eu/en/pricing/ · BG: https://carbonstealth.eu/bg/ceni/)
+Prices below are excluding VAT (Italian and English pages). The Bulgarian page shows the same packages including 20% VAT: Start €790, Business €1,890, Premium €4,290, Shop €2,190. Full price list with VAT rules, terms and market comparison: https://carbonstealth.eu/prezzi/ (EN: https://carbonstealth.eu/en/pricing/ · BG: https://carbonstealth.eu/bg/ceni/)
 
-- **Start — landing page:** €790 (1 page, 1 language, EU hosting 12 months, SSL). Delivery 5–7 working days.
-- **Business — company website:** €1,890 (up to 8 pages, 2 languages with hreflang, blog, full SEO/GEO/AEO). Delivery 10–15 working days. Most popular.
-- **Premium — three languages + admin panel:** €4,290 (unlimited pages within scope, BG·EN·IT, admin panel, booking/catalogue module). Delivery 20–30 working days.
-- **Shop — e-commerce:** €2,190 (catalogue, cart, Stripe + cash on delivery, invoices/VAT-OSS, 2 languages). Delivery 15–25 working days.
-- **Add-ons:** additional language €350 · additional page €120 · logo + mini brand book €390 · copywriting per page €90 · maintenance €69/month · SEO €290/month · EU hosting + SSL + CDN €15/month (after the first year).
-- **VAT:** clients in Bulgaria +20%; EU companies outside Bulgaria invoiced without VAT (reverse charge, Art. 196 Directive 2006/112/EC); companies outside the EU no Bulgarian VAT.
+- **Start — landing page:** €658 (1 page, 1 language, EU hosting 12 months, SSL). Delivery 5–7 working days.
+- **Business — company website:** €1,575 (up to 8 pages, 2 languages with hreflang, blog, full SEO/GEO/AEO). Delivery 10–15 working days. Most popular.
+- **Premium — three languages + admin panel:** €3,575 (unlimited pages within scope, BG·EN·IT, admin panel, booking/catalogue module). Delivery 20–30 working days.
+- **Shop — e-commerce:** €1,825 (catalogue, cart, Stripe + cash on delivery, invoices/VAT-OSS, 2 languages). Delivery 15–25 working days.
+- **Add-ons (excl. VAT):** additional language €292 · additional page €100 · logo + mini brand book €325 · copywriting per page €75 · maintenance €58/month · SEO €242/month · EU hosting + SSL + CDN €13/month (after the first year).
+- **VAT:** clients in Bulgaria pay the prices including 20% VAT (as shown on the Bulgarian page); EU companies outside Bulgaria are invoiced without VAT (reverse charge, Art. 196 Directive 2006/112/EC); companies outside the EU pay no Bulgarian VAT.
 - **Not list packages:** ERP from €5,000, custom software from €2,000, mobile apps from €3,000 — fixed quote after analysis.
 
 ## Notable Projects

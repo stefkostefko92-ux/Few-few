@@ -56,12 +56,12 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
  it=dict(
   title="Quanto Costa un Sito Web nel 2026? Prezzi Reali | Carbon Stealth",
   desc="Quanto costa davvero un sito web nel 2026? Prezzi reali per sito vetrina, e-commerce e portali su misura, cosa incide sul preventivo e come evitare sorprese.",
-  body="""<p>Nel 2026 un sito web professionale costa da <strong>€1.890</strong> per un sito vetrina, da <strong>€2.190</strong> per un e-commerce e da <strong>€2.000</strong> per un portale su misura. Il prezzo dipende dal numero di pagine, dalle funzionalit&agrave; richieste e da quanto lavoro grafico e di contenuti serve. Un template preconfezionato costa meno ma rende meno; un progetto costruito su misura costa di pi&ugrave; all'inizio e ripaga nel tempo con prestazioni e posizionamento migliori.</p>
+  body="""<p>Nel 2026 un sito web professionale costa da <strong>€1.575 + IVA</strong> per un sito vetrina, da <strong>€1.825 + IVA</strong> per un e-commerce e da <strong>€2.000</strong> per un portale su misura. Il prezzo dipende dal numero di pagine, dalle funzionalit&agrave; richieste e da quanto lavoro grafico e di contenuti serve. Un template preconfezionato costa meno ma rende meno; un progetto costruito su misura costa di pi&ugrave; all'inizio e ripaga nel tempo con prestazioni e posizionamento migliori.</p>
 <h2>Prezzi per tipologia di sito</h2>
 <div class="ctbl"><table><thead><tr><th>Tipo di sito</th><th>Prezzo indicativo</th><th>Tempi</th><th>Per chi</th></tr></thead><tbody>
-<tr><td>Landing page singola</td><td>da €790</td><td>3-7 giorni</td><td>Campagne, lancio prodotto</td></tr>
-<tr><td>Sito vetrina (5-8 pagine)</td><td>da €1.890</td><td>1-2 settimane</td><td>Aziende, professionisti, studi</td></tr>
-<tr><td>E-commerce</td><td>da €2.190</td><td>3-6 settimane</td><td>Chi vende online</td></tr>
+<tr><td>Landing page singola</td><td>da €658 + IVA</td><td>3-7 giorni</td><td>Campagne, lancio prodotto</td></tr>
+<tr><td>Sito vetrina (5-8 pagine)</td><td>da €1.575 + IVA</td><td>1-2 settimane</td><td>Aziende, professionisti, studi</td></tr>
+<tr><td>E-commerce</td><td>da €1.825 + IVA</td><td>3-6 settimane</td><td>Chi vende online</td></tr>
 <tr><td>Portale / software web</td><td>da €2.000</td><td>2-4 mesi</td><td>Gestionali, aree riservate, B2B</td></tr>
 </tbody></table></div>
 <h2>Cosa incide davvero sul prezzo</h2>
@@ -74,22 +74,22 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 </ul>
 <p>Diffida dei prezzi troppo bassi: spesso nascondono template riciclati, canoni mensili obbligatori o l'assenza totale di ottimizzazione. Noi lavoriamo con codice pulito e ti consegniamo un sito che &egrave; tuo, senza vincoli. Scopri come funziona il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>.</p>
 <h2>Costi ricorrenti da mettere in conto</h2>
-<p>Oltre alla realizzazione, un sito ha piccole spese fisse: il dominio (circa €10-15 l'anno), l'<a href="/servizi/hosting/">hosting cloud</a> (da €15/mese) e, se vuoi crescere sui motori di ricerca, un'attivit&agrave; di <a href="/servizi/seo/">SEO continuativa</a> (da €290/mese). Se invece devi vendere online, valuta prima se ti serve davvero un negozio: ne parliamo nella guida <a href="/blog/sito-vetrina-o-ecommerce/">sito vetrina o e-commerce</a>.</p>""",
+<p>Oltre alla realizzazione, un sito ha piccole spese fisse: il dominio (circa €10-15 l'anno), l'<a href="/servizi/hosting/">hosting cloud</a> (da €13/mese + IVA) e, se vuoi crescere sui motori di ricerca, un'attivit&agrave; di <a href="/servizi/seo/">SEO continuativa</a> (da €242/mese + IVA). Se invece devi vendere online, valuta prima se ti serve davvero un negozio: ne parliamo nella guida <a href="/blog/sito-vetrina-o-ecommerce/">sito vetrina o e-commerce</a>.</p>""",
   faqs=[
-   ("Quanto costa un sito web semplice?", "Un sito vetrina professionale parte da €1.890 e include 5-8 pagine, design responsive, ottimizzazione SEO di base e modulo contatti. Una singola landing page parte da €1.890."),
+   ("Quanto costa un sito web semplice?", "Un sito vetrina professionale parte da €1.575 + IVA e include 5-8 pagine, design responsive, ottimizzazione SEO di base e modulo contatti. Una singola landing page parte da €1.575 + IVA."),
    ("Perche i prezzi dei siti web variano cosi tanto?", "Perche cambiano il design (template o su misura), i contenuti (forniti o prodotti da noi), le funzionalita e il livello di ottimizzazione. Due siti con lo stesso numero di pagine possono costare il doppio l'uno dell'altro a seconda di questi fattori."),
-   ("Ci sono costi mensili dopo la consegna?", "Il sito e tuo, senza canoni obbligatori. Restano solo dominio (circa €10-15/anno) e hosting (da €15/mese). SEO e manutenzione evolutiva sono opzionali."),
+   ("Ci sono costi mensili dopo la consegna?", "Il sito e tuo, senza canoni obbligatori. Restano solo dominio (circa €10-15/anno) e hosting (da €13/mese + IVA). SEO e manutenzione evolutiva sono opzionali."),
    ("Quanto tempo serve per avere il sito online?", "Un sito vetrina richiede 1-2 settimane, un e-commerce 3-6 settimane. Concordiamo una data precisa nel preventivo, gratuito e senza impegno entro 24 ore."),
   ]),
  en=dict(
   title="How Much Does a Website Cost in 2026? Real Prices | Carbon Stealth",
   desc="How much does a website really cost in 2026? Real prices for brochure sites, e-commerce and custom portals, what drives the quote and how to avoid surprises.",
-  body="""<p>In 2026 a professional website costs from <strong>€1,890</strong> for a brochure site, from <strong>€2,190</strong> for an e-commerce store and from <strong>€2,000</strong> for a custom portal. The price depends on the number of pages, the features you need and how much design and content work is involved. An off-the-shelf template is cheaper but performs worse; a custom-built project costs more upfront and pays off over time through better performance and rankings.</p>
+  body="""<p>In 2026 a professional website costs from <strong>€1,575 + VAT</strong> for a brochure site, from <strong>€1,825 + VAT</strong> for an e-commerce store and from <strong>€2,000</strong> for a custom portal. The price depends on the number of pages, the features you need and how much design and content work is involved. An off-the-shelf template is cheaper but performs worse; a custom-built project costs more upfront and pays off over time through better performance and rankings.</p>
 <h2>Prices by type of website</h2>
 <div class="ctbl"><table><thead><tr><th>Type of site</th><th>Typical price</th><th>Timeline</th><th>Best for</th></tr></thead><tbody>
-<tr><td>Single landing page</td><td>from €790</td><td>3-7 days</td><td>Campaigns, product launches</td></tr>
-<tr><td>Brochure site (5-8 pages)</td><td>from €1,890</td><td>1-2 weeks</td><td>Companies, professionals, firms</td></tr>
-<tr><td>E-commerce</td><td>from €2,190</td><td>3-6 weeks</td><td>Selling online</td></tr>
+<tr><td>Single landing page</td><td>from €658 + VAT</td><td>3-7 days</td><td>Campaigns, product launches</td></tr>
+<tr><td>Brochure site (5-8 pages)</td><td>from €1,575 + VAT</td><td>1-2 weeks</td><td>Companies, professionals, firms</td></tr>
+<tr><td>E-commerce</td><td>from €1,825 + VAT</td><td>3-6 weeks</td><td>Selling online</td></tr>
 <tr><td>Portal / web software</td><td>from €2,000</td><td>2-4 months</td><td>Dashboards, member areas, B2B</td></tr>
 </tbody></table></div>
 <h2>What really drives the price</h2>
@@ -102,22 +102,22 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 </ul>
 <p>Be wary of prices that look too low: they often hide recycled templates, mandatory monthly fees or a complete lack of optimization. We work with clean code and hand you a site that is truly yours, with no lock-in. See how our <a href="/en/services/web-development/">web development service</a> works.</p>
 <h2>Recurring costs to plan for</h2>
-<p>Beyond the build, a website has small fixed costs: the domain (around €10-15/year), <a href="/en/services/hosting/">cloud hosting</a> (from €15/month) and, if you want to grow in search, ongoing <a href="/en/services/seo/">SEO work</a> (from €290/month). If you plan to sell online, first decide whether you actually need a store: we cover that in our guide on <a href="/en/blog/sito-vetrina-o-ecommerce/">brochure site vs e-commerce</a>.</p>""",
+<p>Beyond the build, a website has small fixed costs: the domain (around €10-15/year), <a href="/en/services/hosting/">cloud hosting</a> (from €13/month + VAT) and, if you want to grow in search, ongoing <a href="/en/services/seo/">SEO work</a> (from €242/month + VAT). If you plan to sell online, first decide whether you actually need a store: we cover that in our guide on <a href="/en/blog/sito-vetrina-o-ecommerce/">brochure site vs e-commerce</a>.</p>""",
   faqs=[
-   ("How much does a simple website cost?", "A professional brochure site starts at €1,890 and includes 5-8 pages, responsive design, basic SEO and a contact form. A single landing page starts at €1,890."),
+   ("How much does a simple website cost?", "A professional brochure site starts at €1,575 + VAT and includes 5-8 pages, responsive design, basic SEO and a contact form. A single landing page starts at €1,575 + VAT."),
    ("Why do website prices vary so much?", "Because design (template vs custom), content (supplied or produced by us), features and the level of optimization all differ. Two sites with the same page count can cost twice as much as each other depending on these factors."),
-   ("Are there monthly costs after delivery?", "The site is yours, with no mandatory fees. Only the domain (around €10-15/year) and hosting (from €15/month) remain. SEO and ongoing maintenance are optional."),
+   ("Are there monthly costs after delivery?", "The site is yours, with no mandatory fees. Only the domain (around €10-15/year) and hosting (from €13/month + VAT) remain. SEO and ongoing maintenance are optional."),
    ("How long does it take to get the site online?", "A brochure site takes 1-2 weeks, an e-commerce 3-6 weeks. We agree on a precise date in the quote, which is free and no-obligation within 24 hours."),
   ]),
  bg=dict(
   title="Колко Струва Изработката на Сайт през 2026? | Carbon Stealth",
   desc="Колко струва изработката на сайт през 2026? Реални цени за визитен сайт, онлайн магазин и портал по поръчка, какво влияе на офертата и как да избегнете изненади.",
-  body="""<p>През 2026 професионален сайт струва от <strong>€1890</strong> за визитен сайт, от <strong>€2190</strong> за онлайн магазин и от <strong>€2000</strong> за портал по поръчка. Цената зависи от броя страници, нужните функционалности и колко работа по дизайна и съдържанието е необходима. Готовият шаблон е по-евтин, но носи по-малко резултати; проектът по поръчка струва повече в началото и се изплаща с времето чрез по-добра производителност и позиции в Google.</p>
+  body="""<p>През 2026 професионален сайт струва от <strong>€1890 с ДДС</strong> за визитен сайт, от <strong>€2190 с ДДС</strong> за онлайн магазин и от <strong>€2000</strong> за портал по поръчка. Цената зависи от броя страници, нужните функционалности и колко работа по дизайна и съдържанието е необходима. Готовият шаблон е по-евтин, но носи по-малко резултати; проектът по поръчка струва повече в началото и се изплаща с времето чрез по-добра производителност и позиции в Google.</p>
 <h2>Цени по тип сайт</h2>
 <div class="ctbl"><table><thead><tr><th>Тип сайт</th><th>Ориентировъчна цена</th><th>Срок</th><th>За кого</th></tr></thead><tbody>
-<tr><td>Единична landing страница</td><td>от €790</td><td>3-7 дни</td><td>Кампании, старт на продукт</td></tr>
-<tr><td>Визитен сайт (5-8 страници)</td><td>от €1890</td><td>1-2 седмици</td><td>Фирми, специалисти, кантори</td></tr>
-<tr><td>Онлайн магазин</td><td>от €2190</td><td>3-6 седмици</td><td>Продажби онлайн</td></tr>
+<tr><td>Единична landing страница</td><td>от €790 с ДДС</td><td>3-7 дни</td><td>Кампании, старт на продукт</td></tr>
+<tr><td>Визитен сайт (5-8 страници)</td><td>от €1890 с ДДС</td><td>1-2 седмици</td><td>Фирми, специалисти, кантори</td></tr>
+<tr><td>Онлайн магазин</td><td>от €2190 с ДДС</td><td>3-6 седмици</td><td>Продажби онлайн</td></tr>
 <tr><td>Портал / уеб софтуер</td><td>от €2000</td><td>2-4 месеца</td><td>Табла, клиентски зони, B2B</td></tr>
 </tbody></table></div>
 <h2>Какво реално определя цената</h2>
@@ -130,11 +130,11 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 </ul>
 <p>Внимавайте с прекалено ниските цени: често крият рециклирани шаблони, задължителни месечни такси или пълна липса на оптимизация. Ние работим с чист код и предаваме сайт, който е изцяло ваш, без обвързване. Вижте как работи нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>.</p>
 <h2>Повтарящи се разходи, които да предвидите</h2>
-<p>Освен изработката, всеки сайт има малки фиксирани разходи: домейн (около €10-15 годишно), <a href="/bg/uslugi/hosting/">облачен хостинг</a> (от €15/месец) и, ако искате растеж в търсачките, постоянно <a href="/bg/uslugi/seo/">SEO</a> (от €290/месец). Ако ще продавате онлайн, първо преценете дали наистина ви трябва магазин: разглеждаме това в статията <a href="/bg/blog/sito-vetrina-o-ecommerce/">визитен сайт или онлайн магазин</a>.</p>""",
+<p>Освен изработката, всеки сайт има малки фиксирани разходи: домейн (около €10-15 годишно), <a href="/bg/uslugi/hosting/">облачен хостинг</a> (от €15/месец с ДДС) и, ако искате растеж в търсачките, постоянно <a href="/bg/uslugi/seo/">SEO</a> (от €290/месец с ДДС). Ако ще продавате онлайн, първо преценете дали наистина ви трябва магазин: разглеждаме това в статията <a href="/bg/blog/sito-vetrina-o-ecommerce/">визитен сайт или онлайн магазин</a>.</p>""",
   faqs=[
-   ("Колко струва прост сайт?", "Професионален визитен сайт започва от €1890 и включва 5-8 страници, responsive дизайн, базово SEO и форма за контакт. Единична landing страница започва от €1890."),
+   ("Колко струва прост сайт?", "Професионален визитен сайт започва от €1890 с ДДС и включва 5-8 страници, responsive дизайн, базово SEO и форма за контакт. Единична landing страница започва от €1890 с ДДС."),
    ("Защо цените на сайтовете се различават толкова?", "Защото се различават дизайнът (шаблон или по поръчка), съдържанието (ваше или изработено от нас), функционалностите и нивото на оптимизация. Два сайта с еднакъв брой страници могат да струват двойно един спрямо друг заради тези фактори."),
-   ("Има ли месечни разходи след предаването?", "Сайтът е ваш, без задължителни такси. Остават само домейн (около €10-15/година) и хостинг (от €15/месец). SEO и поддръжката са по избор."),
+   ("Има ли месечни разходи след предаването?", "Сайтът е ваш, без задължителни такси. Остават само домейн (около €10-15/година) и хостинг (от €15/месец с ДДС). SEO и поддръжката са по избор."),
    ("За колко време сайтът е онлайн?", "Визитен сайт отнема 1-2 седмици, онлайн магазин 3-6 седмици. Договаряме точна дата в офертата — безплатна и без ангажимент до 24 часа."),
   ]),
 )),
@@ -144,10 +144,10 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
  it=dict(
   title="Quanto Costa un E-commerce? Guida ai Prezzi 2026 | Carbon Stealth",
   desc="Quanto costa aprire un e-commerce nel 2026? Prezzi reali, costi nascosti, differenza tra piattaforme e cosa serve davvero per vendere online.",
-  body="""<p>Un e-commerce professionale parte da <strong>€2.190</strong> per un negozio con catalogo, carrello e pagamenti online. Il costo cresce con il numero di prodotti, le integrazioni (corrieri, gestionale, fatturazione) e il livello di personalizzazione del design. A questo si aggiungono costi ricorrenti spesso sottovalutati: hosting, commissioni di pagamento e marketing.</p>
+  body="""<p>Un e-commerce professionale parte da <strong>€1.825 + IVA</strong> per un negozio con catalogo, carrello e pagamenti online. Il costo cresce con il numero di prodotti, le integrazioni (corrieri, gestionale, fatturazione) e il livello di personalizzazione del design. A questo si aggiungono costi ricorrenti spesso sottovalutati: hosting, commissioni di pagamento e marketing.</p>
 <h2>Quanto costa aprire un negozio online</h2>
 <div class="ctbl"><table><thead><tr><th>Soluzione</th><th>Costo iniziale</th><th>Adatta a</th></tr></thead><tbody>
-<tr><td>E-commerce base (WooCommerce)</td><td>da €2.190</td><td>Fino a ~100 prodotti, chi parte</td></tr>
+<tr><td>E-commerce base (WooCommerce)</td><td>da €1.825 + IVA</td><td>Fino a ~100 prodotti, chi parte</td></tr>
 <tr><td>E-commerce su misura</td><td>da €3.000</td><td>Cataloghi ampi, integrazioni, B2B</td></tr>
 <tr><td>Piattaforma in abbonamento (Shopify)</td><td>da €30/mese + setup</td><td>Chi vuole zero manutenzione tecnica</td></tr>
 </tbody></table></div>
@@ -155,25 +155,25 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
 <h2>I costi ricorrenti che tutti dimenticano</h2>
 <ul>
 <li><strong>Commissioni di pagamento:</strong> Stripe e PayPal trattengono circa l'1,5-3% per transazione.</li>
-<li><strong>Hosting e dominio:</strong> da €15/mese per un negozio veloce e sicuro.</li>
+<li><strong>Hosting e dominio:</strong> da €13/mese + IVA per un negozio veloce e sicuro.</li>
 <li><strong>Marketing:</strong> un negozio senza traffico non vende. Metti in conto SEO o campagne pubblicitarie.</li>
 <li><strong>Manutenzione:</strong> aggiornamenti, backup e sicurezza, soprattutto su WooCommerce.</li>
 </ul>
 <h2>Dove conviene investire</h2>
 <p>Il budget rende di pi&ugrave; se investito su tre fronti: schede prodotto curate (foto e descrizioni che vendono), una procedura di checkout semplice e veloce, e la <a href="/servizi/seo/">visibilit&agrave; sui motori di ricerca</a>. Un e-commerce lento perde vendite: per questo cura le prestazioni fin dall'inizio, come spieghiamo nella guida ai <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>. Se vuoi capire l'investimento sul tuo caso, guarda il nostro <a href="/servizi/ecommerce/">servizio e-commerce</a> e chiedi un preventivo.</p>""",
   faqs=[
-   ("Quanto costa aprire un e-commerce da zero?", "Un e-commerce professionale parte da €2.190 con WooCommerce. Per cataloghi ampi, integrazioni con il gestionale o funzioni B2B, un progetto su misura parte da €3.000."),
-   ("Quali sono i costi mensili di un e-commerce?", "Hosting da €15/mese, commissioni di pagamento dell'1,5-3% per transazione, eventuale abbonamento alla piattaforma e budget di marketing. Il dominio costa circa €10-15 l'anno."),
+   ("Quanto costa aprire un e-commerce da zero?", "Un e-commerce professionale parte da €1.825 + IVA con WooCommerce. Per cataloghi ampi, integrazioni con il gestionale o funzioni B2B, un progetto su misura parte da €3.000."),
+   ("Quali sono i costi mensili di un e-commerce?", "Hosting da €13/mese + IVA, commissioni di pagamento dell'1,5-3% per transazione, eventuale abbonamento alla piattaforma e budget di marketing. Il dominio costa circa €10-15 l'anno."),
    ("Meglio WooCommerce o Shopify per iniziare?", "Dipende. WooCommerce da piu controllo e nessun canone di piattaforma ma richiede manutenzione; Shopify e piu semplice ma ha un abbonamento e commissioni. Ne parliamo nella nostra guida dedicata."),
    ("In quanto tempo si realizza un e-commerce?", "Un negozio standard richiede 3-6 settimane, un progetto su misura anche 2-3 mesi. Dipende dal numero di prodotti e dalle integrazioni necessarie."),
   ]),
  en=dict(
   title="How Much Does an E-commerce Cost? 2026 Price Guide | Carbon Stealth",
   desc="How much does it cost to build an e-commerce in 2026? Real prices, hidden costs, platform differences and what you actually need to start selling online.",
-  body="""<p>A professional e-commerce store starts at <strong>€2,190</strong> for a shop with a catalog, cart and online payments. The cost grows with the number of products, integrations (couriers, ERP, invoicing) and how custom the design is. On top of that come recurring costs that are often underestimated: hosting, payment fees and marketing.</p>
+  body="""<p>A professional e-commerce store starts at <strong>€1,825 + VAT</strong> for a shop with a catalog, cart and online payments. The cost grows with the number of products, integrations (couriers, ERP, invoicing) and how custom the design is. On top of that come recurring costs that are often underestimated: hosting, payment fees and marketing.</p>
 <h2>What it costs to open an online store</h2>
 <div class="ctbl"><table><thead><tr><th>Solution</th><th>Upfront cost</th><th>Best for</th></tr></thead><tbody>
-<tr><td>Basic e-commerce (WooCommerce)</td><td>from €2,190</td><td>Up to ~100 products, getting started</td></tr>
+<tr><td>Basic e-commerce (WooCommerce)</td><td>from €1,825 + VAT</td><td>Up to ~100 products, getting started</td></tr>
 <tr><td>Custom e-commerce</td><td>from €3,000</td><td>Large catalogs, integrations, B2B</td></tr>
 <tr><td>Subscription platform (Shopify)</td><td>from €30/mo + setup</td><td>Zero technical maintenance</td></tr>
 </tbody></table></div>
@@ -181,25 +181,25 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
 <h2>The recurring costs everyone forgets</h2>
 <ul>
 <li><strong>Payment fees:</strong> Stripe and PayPal keep roughly 1.5-3% per transaction.</li>
-<li><strong>Hosting and domain:</strong> from €15/month for a fast, secure store.</li>
+<li><strong>Hosting and domain:</strong> from €13/month + VAT for a fast, secure store.</li>
 <li><strong>Marketing:</strong> a store with no traffic makes no sales. Budget for SEO or paid ads.</li>
 <li><strong>Maintenance:</strong> updates, backups and security, especially on WooCommerce.</li>
 </ul>
 <h2>Where the budget pays off</h2>
 <p>Your budget goes furthest on three fronts: well-crafted product pages (photos and copy that sell), a simple, fast checkout, and <a href="/en/services/seo/">search visibility</a>. A slow store loses sales, so get performance right from the start &mdash; see our <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a> guide. To understand the investment for your case, look at our <a href="/en/services/ecommerce/">e-commerce service</a> and request a quote.</p>""",
   faqs=[
-   ("How much does it cost to build an e-commerce from scratch?", "A professional e-commerce starts at €2,190 with WooCommerce. For large catalogs, ERP integrations or B2B features, a custom project starts at €3,000."),
-   ("What are the monthly costs of an e-commerce?", "Hosting from €15/month, payment fees of 1.5-3% per transaction, any platform subscription and a marketing budget. The domain costs around €10-15 per year."),
+   ("How much does it cost to build an e-commerce from scratch?", "A professional e-commerce starts at €1,825 + VAT with WooCommerce. For large catalogs, ERP integrations or B2B features, a custom project starts at €3,000."),
+   ("What are the monthly costs of an e-commerce?", "Hosting from €13/month + VAT, payment fees of 1.5-3% per transaction, any platform subscription and a marketing budget. The domain costs around €10-15 per year."),
    ("WooCommerce or Shopify to start?", "It depends. WooCommerce gives more control and no platform fee but needs maintenance; Shopify is simpler but has a subscription and fees. We compare them in our dedicated guide."),
    ("How long does it take to build an e-commerce?", "A standard store takes 3-6 weeks, a custom project up to 2-3 months, depending on the number of products and the integrations required."),
   ]),
  bg=dict(
   title="Колко Струва Онлайн Магазин? Ценово Ръководство 2026 | Carbon Stealth",
   desc="Колко струва изработката на онлайн магазин през 2026? Реални цени, скрити разходи, разлика между платформите и какво наистина е нужно за продажби онлайн.",
-  body="""<p>Професионален онлайн магазин започва от <strong>€2190</strong> за магазин с каталог, количка и онлайн плащания. Цената нараства с броя продукти, интеграциите (куриери, ERP, фактуриране) и степента на персонализация на дизайна. Към това се добавят повтарящи се разходи, които често се подценяват: хостинг, такси за плащания и маркетинг.</p>
+  body="""<p>Професионален онлайн магазин започва от <strong>€2190 с ДДС</strong> за магазин с каталог, количка и онлайн плащания. Цената нараства с броя продукти, интеграциите (куриери, ERP, фактуриране) и степента на персонализация на дизайна. Към това се добавят повтарящи се разходи, които често се подценяват: хостинг, такси за плащания и маркетинг.</p>
 <h2>Колко струва да отворите онлайн магазин</h2>
 <div class="ctbl"><table><thead><tr><th>Решение</th><th>Начален разход</th><th>Подходящо за</th></tr></thead><tbody>
-<tr><td>Базов магазин (WooCommerce)</td><td>от €2190</td><td>До ~100 продукта, за начало</td></tr>
+<tr><td>Базов магазин (WooCommerce)</td><td>от €2190 с ДДС</td><td>До ~100 продукта, за начало</td></tr>
 <tr><td>Магазин по поръчка</td><td>от €3000</td><td>Голям каталог, интеграции, B2B</td></tr>
 <tr><td>Абонаментна платформа (Shopify)</td><td>от €30/мес + setup</td><td>Нула техническа поддръжка</td></tr>
 </tbody></table></div>
@@ -207,15 +207,15 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
 <h2>Повтарящите се разходи, които всички забравят</h2>
 <ul>
 <li><strong>Такси за плащания:</strong> Stripe и PayPal удържат около 1.5-3% на транзакция.</li>
-<li><strong>Хостинг и домейн:</strong> от €15/месец за бърз и сигурен магазин.</li>
+<li><strong>Хостинг и домейн:</strong> от €15/месец с ДДС за бърз и сигурен магазин.</li>
 <li><strong>Маркетинг:</strong> магазин без трафик не продава. Предвидете SEO или реклами.</li>
 <li><strong>Поддръжка:</strong> обновления, резервни копия и сигурност, особено при WooCommerce.</li>
 </ul>
 <h2>Къде си струва да инвестирате</h2>
 <p>Бюджетът дава най-много на три фронта: добре направени продуктови страници (снимки и текст, които продават), проста и бърза поръчка (checkout) и <a href="/bg/uslugi/seo/">видимост в търсачките</a>. Бавният магазин губи продажби, затова погрижете се за производителността от самото начало &mdash; вижте ръководството за <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a>. За да разберете инвестицията за вашия случай, вижте нашата <a href="/bg/uslugi/ecommerce/">услуга за онлайн магазини</a> и заявете оферта.</p>""",
   faqs=[
-   ("Колко струва онлайн магазин от нулата?", "Професионален онлайн магазин започва от €2190 с WooCommerce. За голям каталог, интеграция с ERP или B2B функции, проект по поръчка започва от €3000."),
-   ("Какви са месечните разходи на онлайн магазин?", "Хостинг от €15/месец, такси за плащания 1.5-3% на транзакция, евентуален абонамент за платформа и бюджет за маркетинг. Домейнът струва около €10-15 годишно."),
+   ("Колко струва онлайн магазин от нулата?", "Професионален онлайн магазин започва от €2190 с ДДС с WooCommerce. За голям каталог, интеграция с ERP или B2B функции, проект по поръчка започва от €3000."),
+   ("Какви са месечните разходи на онлайн магазин?", "Хостинг от €15/месец с ДДС, такси за плащания 1.5-3% на транзакция, евентуален абонамент за платформа и бюджет за маркетинг. Домейнът струва около €10-15 годишно."),
    ("WooCommerce или Shopify за старт?", "Зависи. WooCommerce дава повече контрол и без такса за платформа, но изисква поддръжка; Shopify е по-лесен, но има абонамент и такси. Сравняваме ги в отделно ръководство."),
    ("За колко време се прави онлайн магазин?", "Стандартен магазин отнема 3-6 седмици, проект по поръчка до 2-3 месеца, в зависимост от броя продукти и нужните интеграции."),
   ]),
@@ -229,7 +229,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
   body="""<p>In breve: <strong>Shopify</strong> conviene se vuoi partire in fretta senza pensare alla parte tecnica e sei disposto a pagare un canone mensile pi&ugrave; le commissioni. <strong>WooCommerce</strong> conviene se vuoi il pieno controllo, nessun vincolo di piattaforma e costi ricorrenti pi&ugrave; bassi, accettando in cambio un po' di manutenzione. Non esiste una scelta &laquo;migliore&raquo; in assoluto: dipende dal tuo modello di business.</p>
 <h2>Confronto diretto</h2>
 <div class="ctbl"><table><thead><tr><th>Criterio</th><th>WooCommerce</th><th>Shopify</th></tr></thead><tbody>
-<tr><td>Costo mensile</td><td>Solo hosting (da €15)</td><td>Da ~€30 + app a pagamento</td></tr>
+<tr><td>Costo mensile</td><td>Solo hosting (da €13 + IVA)</td><td>Da ~€30 + app a pagamento</td></tr>
 <tr><td>Commissioni</td><td>Solo quelle del gateway</td><td>Gateway + fee Shopify se non usi Shopify Payments</td></tr>
 <tr><td>Controllo e propriet&agrave;</td><td>Totale, codice tuo</td><td>Limitato dalla piattaforma</td></tr>
 <tr><td>Manutenzione</td><td>A tuo carico (o del partner)</td><td>Gestita da Shopify</td></tr>
@@ -253,7 +253,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
   body="""<p>In short: <strong>Shopify</strong> makes sense if you want to launch fast without touching the technical side and you accept a monthly fee plus transaction fees. <strong>WooCommerce</strong> makes sense if you want full control, no platform lock-in and lower recurring costs, in exchange for some maintenance. There is no absolute &laquo;best&raquo; choice &mdash; it depends on your business model.</p>
 <h2>Head-to-head comparison</h2>
 <div class="ctbl"><table><thead><tr><th>Criterion</th><th>WooCommerce</th><th>Shopify</th></tr></thead><tbody>
-<tr><td>Monthly cost</td><td>Hosting only (from €15)</td><td>From ~€30 + paid apps</td></tr>
+<tr><td>Monthly cost</td><td>Hosting only (from €13 + VAT)</td><td>From ~€30 + paid apps</td></tr>
 <tr><td>Fees</td><td>Only your gateway's</td><td>Gateway + Shopify fee unless using Shopify Payments</td></tr>
 <tr><td>Control and ownership</td><td>Total, your code</td><td>Limited by the platform</td></tr>
 <tr><td>Maintenance</td><td>On you (or your partner)</td><td>Handled by Shopify</td></tr>
@@ -277,7 +277,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
   body="""<p>Накратко: <strong>Shopify</strong> е подходящ, ако искате да стартирате бързо без техническа грижа и приемате месечен абонамент плюс такси. <strong>WooCommerce</strong> е подходящ, ако искате пълен контрол, без обвързване с платформа и по-ниски повтарящи се разходи, срещу малко поддръжка. Няма абсолютно &laquo;най-добро&raquo; решение &mdash; зависи от вашия бизнес модел.</p>
 <h2>Директно сравнение</h2>
 <div class="ctbl"><table><thead><tr><th>Критерий</th><th>WooCommerce</th><th>Shopify</th></tr></thead><tbody>
-<tr><td>Месечен разход</td><td>Само хостинг (от €15)</td><td>От ~€30 + платени приложения</td></tr>
+<tr><td>Месечен разход</td><td>Само хостинг (от €15 с ДДС)</td><td>От ~€30 + платени приложения</td></tr>
 <tr><td>Такси</td><td>Само на платежния оператор</td><td>Оператор + такса Shopify, ако не ползвате Shopify Payments</td></tr>
 <tr><td>Контрол и собственост</td><td>Пълен, кодът е ваш</td><td>Ограничен от платформата</td></tr>
 <tr><td>Поддръжка</td><td>За ваша сметка (или на партньора)</td><td>Поема се от Shopify</td></tr>
@@ -306,7 +306,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <h2>Le differenze in sintesi</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Sito vetrina</th><th>E-commerce</th></tr></thead><tbody>
 <tr><td>Obiettivo</td><td>Farti conoscere, generare contatti</td><td>Vendere prodotti online</td></tr>
-<tr><td>Prezzo</td><td>da €1.890</td><td>da €2.190</td></tr>
+<tr><td>Prezzo</td><td>da €1.575 + IVA</td><td>da €1.825 + IVA</td></tr>
 <tr><td>Gestione</td><td>Minima</td><td>Continua (ordini, magazzino, spedizioni)</td></tr>
 <tr><td>Pagamenti</td><td>No</td><td>Si (Stripe, PayPal, carte)</td></tr>
 <tr><td>Ideale per</td><td>Studi, ristoranti, artigiani, B2B</td><td>Negozi, brand, produttori</td></tr>
@@ -318,7 +318,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>Una via di mezzo esiste: partire con un sito vetrina e aggiungere l'e-commerce in un secondo momento, quando il progetto &egrave; maturo. Se hai dubbi, <a href="/contatti/">raccontaci la tua attivit&agrave;</a> e ti diciamo onestamente cosa ti conviene.</p>""",
   faqs=[
    ("Qual e la differenza tra sito vetrina ed e-commerce?", "Il sito vetrina presenta la tua attivita e genera contatti, senza vendere online. L'e-commerce permette di vendere prodotti direttamente con carrello e pagamenti. Cambiano obiettivo, costo e gestione."),
-   ("Costa di piu un e-commerce o un sito vetrina?", "L'e-commerce costa di piu: parte da €2.190 contro gli €1.890 di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina e piu economico e quasi automatico."),
+   ("Costa di piu un e-commerce o un sito vetrina?", "L'e-commerce costa di piu: parte da €1.825 + IVA contro gli €1.575 + IVA di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina e piu economico e quasi automatico."),
    ("Posso trasformare un sito vetrina in e-commerce?", "Si. Molte attivita partono con un sito vetrina e aggiungono la parte e-commerce quando sono pronte. Se il sito e costruito bene, l'estensione e semplice e non richiede di ripartire da zero."),
    ("Ho un negozio fisico: mi serve un e-commerce?", "Non per forza. Se il tuo obiettivo e farti trovare e portare clienti in negozio, un sito vetrina con SEO locale spesso basta. L'e-commerce serve se vuoi vendere anche a distanza."),
   ]),
@@ -329,7 +329,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <h2>The differences at a glance</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Brochure site</th><th>E-commerce</th></tr></thead><tbody>
 <tr><td>Goal</td><td>Get known, generate leads</td><td>Sell products online</td></tr>
-<tr><td>Price</td><td>from €1,890</td><td>from €2,190</td></tr>
+<tr><td>Price</td><td>from €1,575 + VAT</td><td>from €1,825 + VAT</td></tr>
 <tr><td>Management</td><td>Minimal</td><td>Ongoing (orders, stock, shipping)</td></tr>
 <tr><td>Payments</td><td>No</td><td>Yes (Stripe, PayPal, cards)</td></tr>
 <tr><td>Ideal for</td><td>Firms, restaurants, artisans, B2B</td><td>Shops, brands, manufacturers</td></tr>
@@ -341,7 +341,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>There is a middle path: start with a brochure site and add e-commerce later, when the project is mature. If you're unsure, <a href="/en/contact/">tell us about your business</a> and we'll honestly say what suits you.</p>""",
   faqs=[
    ("What's the difference between a brochure site and an e-commerce?", "A brochure site presents your business and generates leads without selling online. An e-commerce lets you sell products directly with a cart and payments. Goal, cost and management all differ."),
-   ("Does an e-commerce cost more than a brochure site?", "Yes. An e-commerce starts at €2,190 versus €1,890 for a brochure site, and involves ongoing order and shipping management. A brochure site is cheaper and almost hands-off."),
+   ("Does an e-commerce cost more than a brochure site?", "Yes. An e-commerce starts at €1,825 + VAT versus €1,575 + VAT for a brochure site, and involves ongoing order and shipping management. A brochure site is cheaper and almost hands-off."),
    ("Can I turn a brochure site into an e-commerce?", "Yes. Many businesses start with a brochure site and add e-commerce when ready. If the site is built well, extending it is straightforward and doesn't mean starting over."),
    ("I have a physical shop: do I need an e-commerce?", "Not necessarily. If your goal is to be found and bring customers into the shop, a brochure site with local SEO is often enough. You need e-commerce if you also want to sell remotely."),
   ]),
@@ -352,7 +352,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <h2>Разликите накратко</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Визитен сайт</th><th>Онлайн магазин</th></tr></thead><tbody>
 <tr><td>Цел</td><td>Да ви опознаят, да генерира запитвания</td><td>Продажба на продукти онлайн</td></tr>
-<tr><td>Цена</td><td>от €1890</td><td>от €2190</td></tr>
+<tr><td>Цена</td><td>от €1890 с ДДС</td><td>от €2190 с ДДС</td></tr>
 <tr><td>Управление</td><td>Минимално</td><td>Постоянно (поръчки, склад, доставки)</td></tr>
 <tr><td>Плащания</td><td>Не</td><td>Да (Stripe, PayPal, карти)</td></tr>
 <tr><td>Подходящ за</td><td>Кантори, ресторанти, занаятчии, B2B</td><td>Магазини, брандове, производители</td></tr>
@@ -364,7 +364,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>Има и междинен път: започнете с визитен сайт и добавете магазина по-късно, когато проектът узрее. Ако се колебаете, <a href="/bg/kontakti/">разкажете ни за бизнеса си</a> и ще ви кажем честно кое ви подхожда.</p>""",
   faqs=[
    ("Каква е разликата между визитен сайт и онлайн магазин?", "Визитният сайт представя бизнеса ви и генерира запитвания, без да продава онлайн. Онлайн магазинът позволява директна продажба на продукти с количка и плащания. Различават се по цел, цена и управление."),
-   ("Онлайн магазинът по-скъп ли е от визитния сайт?", "Да. Онлайн магазинът започва от €2190 срещу €1890 за визитен сайт и изисква постоянно управление на поръчки и доставки. Визитният сайт е по-евтин и почти автоматичен."),
+   ("Онлайн магазинът по-скъп ли е от визитния сайт?", "Да. Онлайн магазинът започва от €2190 с ДДС срещу €1890 с ДДС за визитен сайт и изисква постоянно управление на поръчки и доставки. Визитният сайт е по-евтин и почти автоматичен."),
    ("Мога ли да превърна визитен сайт в онлайн магазин?", "Да. Много фирми започват с визитен сайт и добавят магазин, когато са готови. Ако сайтът е изграден добре, разширяването е лесно и не изисква започване от нулата."),
    ("Имам физически магазин: трябва ли ми онлайн магазин?", "Не задължително. Ако целта е да ви намират и да водите клиенти в магазина, визитен сайт с локално SEO често стига. Онлайн магазин ви трябва, ако искате да продавате и от разстояние."),
   ]),
@@ -545,9 +545,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>Se lavori in una zona precisa, la SEO locale &egrave; il tuo terreno pi&ugrave; fertile. Apri e ottimizza il profilo <strong>Google Business</strong>, raccogli recensioni autentiche, mantieni coerenti nome, indirizzo e telefono ovunque online e crea pagine dedicate alle citt&agrave; che servi &mdash; come facciamo con le nostre pagine <a href="/geo/milano/">per Milano</a> e altre citt&agrave;. Cos&igrave; compari nelle ricerche &laquo;servizio + citt&agrave;&raquo; e nella mappa.</p>
 <h2>Cosa fare nei primi 90 giorni</h2>
 <p>Non serve fare tutto subito. Un percorso realistico: settimana 1-2, analisi parole chiave e sistemazione tecnica del sito; settimana 3-6, ottimizzazione delle pagine di servizio e del profilo Google Business; da settimana 7 in poi, pubblicazione regolare di contenuti utili. La SEO d&agrave; frutti in 3-6 mesi, non in una settimana: la costanza vince.</p>
-<p>Puoi partire da solo con i fondamentali, oppure affidarti a chi lo fa di mestiere. Il nostro <a href="/servizi/seo/">servizio SEO</a> parte da €290/mese e include analisi, ottimizzazione e contenuti. Se stai anche costruendo il sito, leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per pianificare l'investimento complessivo.</p>""",
+<p>Puoi partire da solo con i fondamentali, oppure affidarti a chi lo fa di mestiere. Il nostro <a href="/servizi/seo/">servizio SEO</a> parte da €242/mese + IVA e include analisi, ottimizzazione e contenuti. Se stai anche costruendo il sito, leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per pianificare l'investimento complessivo.</p>""",
   faqs=[
-   ("Quanto costa la SEO per una piccola impresa?", "Un'attivita SEO professionale parte da €290/mese e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
+   ("Quanto costa la SEO per una piccola impresa?", "Un'attivita SEO professionale parte da €242/mese + IVA e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
    ("In quanto tempo si vedono i risultati SEO?", "Di solito in 3-6 mesi per keyword competitive, prima per ricerche locali o di nicchia. La SEO e un investimento a medio termine: i risultati crescono e restano nel tempo, a differenza della pubblicita."),
    ("Cos'e la SEO locale e a chi serve?", "E l'ottimizzazione per le ricerche legate a un luogo (es. 'parrucchiere Torino'). Serve a chi ha clienti sul territorio: negozi, ristoranti, studi e artigiani. Si basa su Google Business, recensioni e pagine locali."),
    ("Posso fare SEO da solo?", "Si, i fondamentali (parole chiave, titoli, Google Business, contenuti utili) sono alla portata di tutti. Per la parte tecnica avanzata e la strategia continuativa conviene farsi affiancare da un professionista."),
@@ -567,9 +567,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>If you work in a specific area, local SEO is your most fertile ground. Create and optimize your <strong>Google Business</strong> profile, collect genuine reviews, keep your name, address and phone consistent everywhere online, and build pages for the cities you serve &mdash; as we do with our pages <a href="/en/geo/milano/">for Milan</a> and other cities. That way you show up for &laquo;service + city&raquo; searches and on the map.</p>
 <h2>What to do in the first 90 days</h2>
 <p>You don't need to do everything at once. A realistic path: weeks 1-2, keyword research and technical clean-up of the site; weeks 3-6, optimizing service pages and the Google Business profile; from week 7, regular publishing of useful content. SEO delivers in 3-6 months, not in a week: consistency wins.</p>
-<p>You can start on your own with the fundamentals, or rely on people who do it for a living. Our <a href="/en/services/seo/">SEO service</a> starts at €290/month and includes analysis, optimization and content. If you're also building the site, read <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a> to plan the overall investment.</p>""",
+<p>You can start on your own with the fundamentals, or rely on people who do it for a living. Our <a href="/en/services/seo/">SEO service</a> starts at €242/month + VAT and includes analysis, optimization and content. If you're also building the site, read <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a> to plan the overall investment.</p>""",
   faqs=[
-   ("How much does SEO cost for a small business?", "Professional SEO starts at €290/month and includes keyword research, on-page optimization and content. Many fundamentals can also be handled in-house, with consistency and method."),
+   ("How much does SEO cost for a small business?", "Professional SEO starts at €242/month + VAT and includes keyword research, on-page optimization and content. Many fundamentals can also be handled in-house, with consistency and method."),
    ("How long does SEO take to show results?", "Usually 3-6 months for competitive keywords, sooner for local or niche searches. SEO is a medium-term investment: results grow and last over time, unlike advertising."),
    ("What is local SEO and who is it for?", "It's optimization for location-based searches (e.g. 'hairdresser Turin'). It's for businesses with local customers: shops, restaurants, firms and artisans. It relies on Google Business, reviews and local pages."),
    ("Can I do SEO myself?", "Yes, the fundamentals (keywords, titles, Google Business, useful content) are within everyone's reach. For advanced technical work and ongoing strategy, it's worth having a professional alongside you."),
@@ -589,9 +589,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>Ако работите в конкретен район, локалното SEO е най-плодородната ви почва. Създайте и оптимизирайте <strong>Google Business</strong> профила си, събирайте истински отзиви, поддържайте еднакви име, адрес и телефон навсякъде онлайн и създайте страници за градовете, които обслужвате &mdash; както правим с нашите страници <a href="/bg/geo/sofia/">за София</a> и други градове. Така се появявате при търсения &laquo;услуга + град&raquo; и на картата.</p>
 <h2>Какво да направите през първите 90 дни</h2>
 <p>Не е нужно всичко наведнъж. Реалистичен път: седмица 1-2 &mdash; проучване на ключови думи и техническо изчистване на сайта; седмица 3-6 &mdash; оптимизация на страниците за услуги и Google Business профила; от седмица 7 &mdash; редовно публикуване на полезно съдържание. SEO дава резултати за 3-6 месеца, не за седмица: постоянството печели.</p>
-<p>Можете да започнете сами с основите или да се доверите на хора, които го правят професионално. Нашата <a href="/bg/uslugi/seo/">SEO услуга</a> започва от €290/месец и включва анализ, оптимизация и съдържание. Ако тепърва изграждате сайта, прочетете <a href="/bg/blog/quanto-costa-sito-web/">колко струва сайт</a>, за да планирате цялостната инвестиция.</p>""",
+<p>Можете да започнете сами с основите или да се доверите на хора, които го правят професионално. Нашата <a href="/bg/uslugi/seo/">SEO услуга</a> започва от €290/месец с ДДС и включва анализ, оптимизация и съдържание. Ако тепърва изграждате сайта, прочетете <a href="/bg/blog/quanto-costa-sito-web/">колко струва сайт</a>, за да планирате цялостната инвестиция.</p>""",
   faqs=[
-   ("Колко струва SEO за малък бизнес?", "Професионалното SEO започва от €290/месец и включва проучване на ключови думи, on-page оптимизация и съдържание. Много от основите могат да се вършат и вътрешно, с постоянство и метод."),
+   ("Колко струва SEO за малък бизнес?", "Професионалното SEO започва от €290/месец с ДДС и включва проучване на ключови думи, on-page оптимизация и съдържание. Много от основите могат да се вършат и вътрешно, с постоянство и метод."),
    ("За колко време SEO дава резултати?", "Обикновено за 3-6 месеца при конкурентни ключови думи, по-рано при локални или нишови търсения. SEO е средносрочна инвестиция: резултатите растат и остават с времето, за разлика от рекламата."),
    ("Какво е локално SEO и за кого е?", "Това е оптимизация за търсения, свързани с място (напр. 'фризьор Пловдив'). За бизнеси с местни клиенти: магазини, ресторанти, кантори и занаятчии. Стъпва на Google Business, отзиви и локални страници."),
    ("Мога ли да правя SEO сам?", "Да, основите (ключови думи, заглавия, Google Business, полезно съдържание) са по силите на всеки. За напредналата техническа част и постоянната стратегия си струва да имате специалист до себе си."),
@@ -1033,10 +1033,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 </tbody></table></div>
 <h2>Velocit&agrave; e test</h2>
 <p>La velocit&agrave; &egrave; parte della conversione: ogni secondo di attesa in pi&ugrave; fa perdere visitatori, per questo curiamo i <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a> anche sulle landing. Dopo il lancio, misura e migliora: cambia un titolo, sposta la call to action, prova un'immagine diversa e osserva i risultati. Una landing non &egrave; mai finita, si affina nel tempo.</p>
-<p>Una landing page ben fatta &egrave; il complemento naturale di una campagna e della <a href="/servizi/seo/">SEO</a>. La costruiamo come parte del nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>, a partire da €1.890. Se hai una campagna da lanciare, <a href="/contatti/">raccontacela</a> e la trasformiamo in una pagina che converte.</p>""",
+<p>Una landing page ben fatta &egrave; il complemento naturale di una campagna e della <a href="/servizi/seo/">SEO</a>. La costruiamo come parte del nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>, a partire da €1.575 + IVA. Se hai una campagna da lanciare, <a href="/contatti/">raccontacela</a> e la trasformiamo in una pagina che converte.</p>""",
   faqs=[
    ("Cosa rende una landing page efficace?", "Un solo obiettivo, un titolo chiaro nei primi secondi e una call to action evidente e ripetuta. Contano piu la chiarezza del messaggio e la rimozione delle distrazioni che una grafica appariscente."),
-   ("Quanto costa una landing page?", "Una landing page professionale parte da €1.890. Il prezzo dipende dalla lunghezza, dai contenuti da produrre e dalle integrazioni, come moduli, pagamenti o strumenti di tracciamento delle conversioni."),
+   ("Quanto costa una landing page?", "Una landing page professionale parte da €1.575 + IVA. Il prezzo dipende dalla lunghezza, dai contenuti da produrre e dalle integrazioni, come moduli, pagamenti o strumenti di tracciamento delle conversioni."),
    ("Quante call to action mettere in una landing page?", "Una sola azione, ripetuta piu volte lungo la pagina. Offrire troppe scelte diverse disperde l'attenzione e riduce le conversioni: meglio guidare il visitatore verso un unico passo chiaro."),
    ("La velocita influenza le conversioni?", "Si, molto. Ogni secondo di caricamento in piu fa perdere visitatori prima ancora che leggano. Ottimizzare i Core Web Vitals di una landing e uno dei modi piu diretti per aumentare le conversioni."),
   ]),
@@ -1063,10 +1063,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 </tbody></table></div>
 <h2>Speed and testing</h2>
 <p>Speed is part of conversion: every extra second of waiting loses visitors, which is why we look after <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a> on landing pages too. After launch, measure and improve: change a headline, move the call to action, try a different image and watch the results. A landing page is never finished, it is refined over time.</p>
-<p>A well-built landing page is the natural companion to a campaign and to <a href="/en/services/seo/">SEO</a>. We build it as part of our <a href="/en/services/web-development/">web development service</a>, from €1,890. If you have a campaign to launch, <a href="/en/contact/">tell us about it</a> and we'll turn it into a page that converts.</p>""",
+<p>A well-built landing page is the natural companion to a campaign and to <a href="/en/services/seo/">SEO</a>. We build it as part of our <a href="/en/services/web-development/">web development service</a>, from €1,575 + VAT. If you have a campaign to launch, <a href="/en/contact/">tell us about it</a> and we'll turn it into a page that converts.</p>""",
   faqs=[
    ("What makes a landing page effective?", "A single goal, a clear headline in the first seconds and an obvious, repeated call to action. Clarity of message and removal of distractions matter more than flashy design."),
-   ("How much does a landing page cost?", "A professional landing page starts at €1,890. The price depends on length, the content to produce and integrations such as forms, payments or conversion-tracking tools."),
+   ("How much does a landing page cost?", "A professional landing page starts at €1,575 + VAT. The price depends on length, the content to produce and integrations such as forms, payments or conversion-tracking tools."),
    ("How many calls to action should a landing page have?", "One action, repeated several times down the page. Offering too many different choices scatters attention and lowers conversions: it's better to guide the visitor toward one clear step."),
    ("Does speed affect conversions?", "Yes, a lot. Every extra second of loading loses visitors before they even read. Optimizing a landing page's Core Web Vitals is one of the most direct ways to increase conversions."),
   ]),
@@ -1093,10 +1093,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 </tbody></table></div>
 <h2>Скорост и тестване</h2>
 <p>Скоростта е част от конверсията: всяка допълнителна секунда изчакване губи посетители, затова се грижим за <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a> и на landing страниците. След пускането измервайте и подобрявайте: сменете заглавие, преместете призива за действие, пробвайте друго изображение и наблюдавайте резултатите. Landing страницата никога не е завършена, тя се усъвършенства с времето.</p>
-<p>Добре направената landing page е естественото допълнение към една кампания и към <a href="/bg/uslugi/seo/">SEO</a>. Изграждаме я като част от нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>, от €1890. Ако имате кампания за стартиране, <a href="/bg/kontakti/">разкажете ни</a> и ще я превърнем в страница, която конвертира.</p>""",
+<p>Добре направената landing page е естественото допълнение към една кампания и към <a href="/bg/uslugi/seo/">SEO</a>. Изграждаме я като част от нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>, от €1890 с ДДС. Ако имате кампания за стартиране, <a href="/bg/kontakti/">разкажете ни</a> и ще я превърнем в страница, която конвертира.</p>""",
   faqs=[
    ("Какво прави една landing page ефективна?", "Една цел, ясно заглавие в първите секунди и очевиден, повтарящ се призив за действие. Яснотата на посланието и премахването на разсейващите елементи имат по-голямо значение от пищния дизайн."),
-   ("Колко струва landing page?", "Професионална landing page започва от €1890. Цената зависи от дължината, съдържанието за изработка и интеграциите, като форми, плащания или инструменти за проследяване на конверсии."),
+   ("Колко струва landing page?", "Професионална landing page започва от €1890 с ДДС. Цената зависи от дължината, съдържанието за изработка и интеграциите, като форми, плащания или инструменти за проследяване на конверсии."),
    ("Колко призива за действие да сложа в landing page?", "Едно действие, повторено няколко пъти по страницата. Предлагането на твърде много различни избори разсейва вниманието и намалява конверсиите: по-добре е да насочите посетителя към една ясна стъпка."),
    ("Влияе ли скоростта на конверсиите?", "Да, много. Всяка допълнителна секунда зареждане губи посетители още преди да прочетат. Оптимизирането на Core Web Vitals на landing страницата е един от най-преките начини да увеличите конверсиите."),
   ]),

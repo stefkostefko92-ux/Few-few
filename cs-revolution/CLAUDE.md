@@ -47,8 +47,12 @@ Deploy, live-patch, and troubleshooting are documented in
 ## Prices — one source of truth
 Public prices on this site mirror `portfolio/src/pricing.mjs` in the monorepo (branch
 `claude/carbon-stealth-portfolio-tufnlp` until merged; research in
-`portfolio/docs/PRICING-RESEARCH.md`). As of 2026-09-17: website/landing from €790,
-e-commerce from €2 190, SEO €290/month, hosting €15/month, maintenance €69/month.
+`portfolio/docs/PRICING-RESEARCH.md`). **VAT convention (owner decision, 2026-09-17):** the
+portfolio numbers are the Bulgarian GROSS prices (shown on `/bg/…` "с ДДС"); Italian and
+English pages show NET prices = gross ÷ 1.20 rounded ("+ IVA" / "+ VAT", "IVA esclusa" /
+"excl. VAT"). As of 2026-09-17 (gross → net): landing €790 → €658, business site
+€1 890 → €1 575, e-commerce €2 190 → €1 825, SEO €290 → €242/month, hosting €15 → €13/month,
+maintenance €69 → €58/month.
 ERP (€5 000), custom software (€2 000), mobile apps (€3 000) and the ERP support
 contract (€500/month with SLA) have no portfolio equivalent and stay as they are.
 The full price list (4 packages, add-ons, VAT rules, terms, FAQ, market table) is

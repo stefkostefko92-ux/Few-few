@@ -412,10 +412,10 @@ dict(slug="hosting", name="Hosting", related=["dns", "cdn", "database"], lang=di
 <li><strong>Dedicato:</strong> un intero server per te, per progetti ad alto traffico.</li>
 </ul>
 <h2>Come scegliere l'hosting</h2>
-<p>Conta la velocità (SSD, server vicini ai tuoi utenti), il tempo di attività garantito, i backup automatici, l'SSL incluso e un supporto reattivo. Un hosting lento penalizza SEO e conversioni. Il nostro <a href="/servizi/hosting/">hosting cloud</a> parte da €15/mese con SSL, backup e <a href="/glossario/cdn/">CDN</a> inclusi.</p>""",
+<p>Conta la velocità (SSD, server vicini ai tuoi utenti), il tempo di attività garantito, i backup automatici, l'SSL incluso e un supporto reattivo. Un hosting lento penalizza SEO e conversioni. Il nostro <a href="/servizi/hosting/">hosting cloud</a> parte da €13/mese + IVA con SSL, backup e <a href="/glossario/cdn/">CDN</a> inclusi.</p>""",
   faqs=[
    ("Qual è la differenza tra hosting e dominio?", "Il dominio è l'indirizzo del sito (il nome), l'hosting è lo spazio server dove il sito vive (la casa). Servono entrambi: uno per essere trovati, l'altro per esistere online."),
-   ("Quanto costa un hosting?", "Un hosting condiviso parte da pochi euro al mese, un hosting cloud professionale da circa €15/mese. Il prezzo dipende da risorse, prestazioni, backup e supporto inclusi."),
+   ("Quanto costa un hosting?", "Un hosting condiviso parte da pochi euro al mese, un hosting cloud professionale da circa €13/mese + IVA. Il prezzo dipende da risorse, prestazioni, backup e supporto inclusi."),
    ("Posso cambiare hosting in seguito?", "Sì. Un sito si può migrare da un hosting all'altro trasferendo file e database, con attenzione a DNS e tempi di propagazione per evitare interruzioni."),
   ]),
  en=dict(q="web hosting", q_link="Hosting", card="The server space where your site's files live, always online.",
@@ -430,10 +430,10 @@ dict(slug="hosting", name="Hosting", related=["dns", "cdn", "database"], lang=di
 <li><strong>Dedicated:</strong> a whole server for you, for high-traffic projects.</li>
 </ul>
 <h2>How to choose hosting</h2>
-<p>What counts is speed (SSD, servers near your users), guaranteed uptime, automatic backups, included SSL and responsive support. Slow hosting hurts SEO and conversions. Our <a href="/en/services/hosting/">cloud hosting</a> starts at €15/month with SSL, backups and a <a href="/en/glossary/cdn/">CDN</a> included.</p>""",
+<p>What counts is speed (SSD, servers near your users), guaranteed uptime, automatic backups, included SSL and responsive support. Slow hosting hurts SEO and conversions. Our <a href="/en/services/hosting/">cloud hosting</a> starts at €13/month + VAT with SSL, backups and a <a href="/en/glossary/cdn/">CDN</a> included.</p>""",
   faqs=[
    ("What is the difference between hosting and a domain?", "The domain is the site's address (the name), hosting is the server space where the site lives (the house). You need both: one to be found, the other to exist online."),
-   ("How much does hosting cost?", "Shared hosting starts at a few euros a month, professional cloud hosting from around €15/month. The price depends on the resources, performance, backups and support included."),
+   ("How much does hosting cost?", "Shared hosting starts at a few euros a month, professional cloud hosting from around €13/month + VAT. The price depends on the resources, performance, backups and support included."),
    ("Can I change hosting later?", "Yes. A site can be migrated from one host to another by transferring files and the database, with care for DNS and propagation times to avoid downtime."),
   ]),
  bg=dict(q="хостинг", q_link="Хостинг", card="Сървърното пространство, където живеят файловете на сайта, винаги онлайн.",
@@ -448,10 +448,10 @@ dict(slug="hosting", name="Hosting", related=["dns", "cdn", "database"], lang=di
 <li><strong>Отделен:</strong> цял сървър за вас, за проекти с висок трафик.</li>
 </ul>
 <h2>Как да изберете хостинг</h2>
-<p>Важни са скоростта (SSD, сървъри близо до потребителите ви), гарантираното време на работа, автоматичните резервни копия, включеният SSL и отзивчивата поддръжка. Бавният хостинг вреди на SEO и конверсиите. Нашият <a href="/bg/uslugi/hosting/">облачен хостинг</a> започва от €15/месец с включени SSL, резервни копия и <a href="/bg/rechnik/cdn/">CDN</a>.</p>""",
+<p>Важни са скоростта (SSD, сървъри близо до потребителите ви), гарантираното време на работа, автоматичните резервни копия, включеният SSL и отзивчивата поддръжка. Бавният хостинг вреди на SEO и конверсиите. Нашият <a href="/bg/uslugi/hosting/">облачен хостинг</a> започва от €15/месец с ДДС с включени SSL, резервни копия и <a href="/bg/rechnik/cdn/">CDN</a>.</p>""",
   faqs=[
    ("Каква е разликата между хостинг и домейн?", "Домейнът е адресът на сайта (името), хостингът е сървърното пространство, където живее сайтът (къщата). Нужни са и двете: едното за да ви намерят, другото за да съществувате онлайн."),
-   ("Колко струва хостингът?", "Споделеният хостинг започва от няколко евро на месец, професионалният облачен хостинг от около €15/месец. Цената зависи от включените ресурси, производителност, резервни копия и поддръжка."),
+   ("Колко струва хостингът?", "Споделеният хостинг започва от няколко евро на месец, професионалният облачен хостинг от около €15/месец с ДДС. Цената зависи от включените ресурси, производителност, резервни копия и поддръжка."),
    ("Мога ли да сменя хостинга по-късно?", "Да. Сайтът може да се мигрира от един хостинг към друг чрез прехвърляне на файлове и база данни, с внимание към DNS и времето за разпространение, за да се избегне прекъсване."),
   ]),
 )),

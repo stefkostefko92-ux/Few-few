@@ -13,12 +13,28 @@
 страница ги чете — една таблица, две места, нула разминаване.
 """
 import html, json, os
+from decimal import Decimal, ROUND_HALF_UP
 
 BASE = "https://carbonstealth.eu"
 LASTMOD = "2026-09-17"
 RESEARCH_DATE = "2026-09-17"
 MIN_DISCOUNT = 0.15
 VAT_RATE_BG = 20
+# Конвенция за ДДС (решение на собственика, 2026-09-17): числата по-долу са БРУТНИ — така
+# се показват на българската версия („с включен 20% ДДС"). Италианската и английската
+# показват НЕТНИ цени (без ДДС): брутната, разделена на 1,20 и закръглена до цял евро.
+# (÷1,20 е точното сваляне на 20% ДДС; ×0,80 би дало по-ниска от нетната цена.)
+VAT_MULT = Decimal("1.20")
+def net(n):
+    return int((Decimal(n) / VAT_MULT).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+def gross(n):
+    return int((Decimal(n) * VAT_MULT).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+def shown(n, lang):
+    """Нашата цена, както я вижда читателят на дадения език (BG бруто, IT/EN нето)."""
+    return n if lang == "bg" else net(n)
+def shown_market(n, lang):
+    """Пазарната референция е нетна (проучването); за BG я вдигаме с ДДС, за да е сравнима."""
+    return gross(n) if lang == "bg" else n
 
 # ── Числата (от portfolio/src/pricing.mjs) ──────────────────────
 TIERS = [
@@ -71,12 +87,12 @@ T = {
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p></div>',
    home="/", contact="/contatti/",
-   title="Prezzi Siti Web 2026: Landing da 790 €, Sito Aziendale da 1.890 € | Carbon Stealth",
-   desc="Prezzi trasparenti, almeno il 15% sotto il mercato: landing page 790 €, sito aziendale 1.890 €, premium 4.290 €, e-commerce 2.190 €. Senza IVA per aziende UE (reverse charge). Preventivo in 24 ore.",
+   title="Prezzi Siti Web 2026: Landing da {start} €, Sito Aziendale da {business} € (IVA esclusa) | Carbon Stealth",
+   desc="Prezzi trasparenti, almeno il 15% sotto il mercato: landing page {start} €, sito aziendale {business} €, premium {premium} €, e-commerce {ecommerce} €. Prezzi IVA esclusa; reverse charge per aziende UE. Preventivo in 24 ore.",
    keywords=["prezzi siti web 2026", "quanto costa un sito web", "prezzo landing page", "prezzo sito aziendale", "prezzo e-commerce", "costo manutenzione sito", "reverse charge IVA", "Carbon Stealth"],
    eyebrow="// PREZZI 2026", h1="Prezzi trasparenti. Almeno il 15% sotto il mercato.",
    lede="Abbiamo esaminato i listini pubblici di agenzie e studi in Bulgaria, Italia e UE per il 2026 e fissato i nostri prezzi più in basso — con perimetro fisso e senza costi nascosti. Tutti i prezzi sono in euro, IVA esclusa.",
-   hud="Clienti in Bulgaria: +20% IVA · Aziende UE: reverse charge",
+   hud="Tutti i prezzi sono IVA esclusa · Aziende UE: reverse charge · Clienti in Bulgaria: +20% IVA",
    market_title="Quanto chiede il mercato", market_lede="Fasce medie di agenzia in EUR IVA esclusa, da rassegne prezzi pubbliche 2026 (fonti in fondo).",
    market_cols=dict(item="Servizio", bg="Bulgaria", it="Italia", eu="UE (media)"),
    market_rows=dict(landing="Landing / sito one-page", business="Sito aziendale (5–8 pagine)", corporate="Corporate, multilingua", ecommerce="E-commerce", maint="Manutenzione (al mese)", seo="SEO (al mese)"),
@@ -97,7 +113,7 @@ T = {
         ("Aziende fuori dall'UE", "Il luogo della prestazione è fuori dalla Bulgaria — non si applica IVA bulgara.")],
    vat_note="Privati UE fuori dalla Bulgaria: si applica l'IVA secondo le regole B2C. Non è consulenza fiscale — in caso di dubbio verifica con il tuo commercialista.",
    terms_title="Condizioni, in breve",
-   terms=["Acconto 40% all'avvio, 60% alla messa online. I servizi mensili si fatturano a inizio mese.", "Il perimetro fisso è descritto nel preventivo; il lavoro extra è a 45 € / ora.", "I tempi decorrono dalla ricezione di testi e foto. Aiutiamo con il copywriting se non li hai.", "Codice, dominio e dati sono tuoi. Nessun vincolo.", "L'hosting dopo il primo anno costa 15 € / mese, oppure lo sposti dove vuoi."],
+   terms=["Acconto 40% all'avvio, 60% alla messa online. I servizi mensili si fatturano a inizio mese.", "Il perimetro fisso è descritto nel preventivo; il lavoro extra è a {hourly} € / ora IVA esclusa.", "I tempi decorrono dalla ricezione di testi e foto. Aiutiamo con il copywriting se non li hai.", "Codice, dominio e dati sono tuoi. Nessun vincolo.", "L'hosting dopo il primo anno costa {hosting} € / mese IVA esclusa, oppure lo sposti dove vuoi."],
    faq_title="Domande sui prezzi",
    faq=[("Perché costate meno delle agenzie?", "Niente affitto di uffici, niente venditori o project manager tra te e lo sviluppatore. Lavoriamo con componenti collaudati e test automatici — per questo un sito richiede giorni, non mesi."),
         ("Cosa non è incluso nel prezzo?", "Il dominio (circa 15 € / anno), fotografie professionali e testi se non li fornisci, e la pubblicità a pagamento. Tutto il resto che serve al sito per funzionare è incluso."),
@@ -106,19 +122,19 @@ T = {
         ("Come si paga e che documenti ricevo?", "Bonifico o carta. Proforma all'avvio, fattura per ogni pagamento — con reverse charge per le aziende UE."),
         ("E per ERP, software su misura e app mobile?", "Non sono pacchetti a listino: ERP da 5.000 €, software su misura da 2.000 €, app mobile da 3.000 €, con preventivo fisso dopo l'analisi dei processi.")],
    sources_title="Fonti del confronto di mercato", sources_lede="Le fasce di mercato provengono da rassegne prezzi pubbliche, verificate il",
-   cta_title="Pronto? Preventivo entro 24 ore.", cta_lede="Dicci cosa ti serve: rispondiamo con prezzo fisso e tempi di consegna. Senza impegno.", cta="RICHIEDI UN PREVENTIVO",
+   cta_title="Pronto? Preventivo entro 24 ore.", cta_lede="Dicci cosa ti serve: rispondiamo con prezzo fisso (IVA esclusa) e tempi di consegna. Senza impegno.", cta="RICHIEDI UN PREVENTIVO",
    crumb_home="Home"),
  "en": dict(
    path="/en/pricing/", locale="en_US", nav_label="PRICING",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/pricing/">PRICING</a><a href="/en/contact/">CONTACT</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p></div>',
    home="/en/", contact="/en/contact/",
-   title="Website Pricing 2026: Landing Page from €790, Business Website from €1,890 | Carbon Stealth",
-   desc="Transparent prices at least 15% below market: landing page €790, business website €1,890, premium €4,290, online shop €2,190. No VAT for EU companies (reverse charge). Quote within 24 hours.",
+   title="Website Pricing 2026: Landing Page from €{start}, Business Website from €{business} (excl. VAT) | Carbon Stealth",
+   desc="Transparent prices at least 15% below market: landing page €{start}, business website €{business}, premium €{premium}, online shop €{ecommerce}. Prices excl. VAT; reverse charge for EU companies. Quote within 24 hours.",
    keywords=["website pricing 2026", "website design cost", "landing page price", "business website price", "online shop price", "website maintenance cost", "reverse charge VAT", "Carbon Stealth"],
    eyebrow="// PRICING 2026", h1="Transparent prices. At least 15% below market.",
    lede="We reviewed the public price lists of agencies and studios in Bulgaria, Italy and the EU for 2026 and set our prices below them — with a fixed scope and no hidden costs. All prices are in euro, excluding VAT.",
-   hud="Clients in Bulgaria: +20% VAT · EU companies: reverse charge",
+   hud="All prices exclude VAT · EU companies: reverse charge · Clients in Bulgaria: +20% VAT",
    market_title="What the market charges", market_lede="Average agency ranges in EUR excl. VAT, from public 2026 price reviews (sources at the bottom).",
    market_cols=dict(item="Service", bg="Bulgaria", it="Italy", eu="EU (average)"),
    market_rows=dict(landing="Landing / one-page site", business="Business website (5–8 pages)", corporate="Corporate, multilingual", ecommerce="Online shop", maint="Maintenance (per month)", seo="SEO (per month)"),
@@ -139,7 +155,7 @@ T = {
         ("Companies outside the EU", "The place of supply is outside Bulgaria — no Bulgarian VAT is charged.")],
    vat_note="Private individuals in the EU outside Bulgaria: VAT applies under B2C rules. This is not tax advice — when in doubt, check with your accountant.",
    terms_title="Terms, in short",
-   terms=["40% deposit at start, 60% at launch. Monthly services are billed at the start of the month.", "The fixed scope is described in the quote; work outside it is €45 / hour.", "The deadline runs from receipt of copy and photos. We help with copywriting if you have none.", "Code, domain and data are yours. No lock-in.", "Hosting after the first year is €15 / month, or move it wherever you like."],
+   terms=["40% deposit at start, 60% at launch. Monthly services are billed at the start of the month.", "The fixed scope is described in the quote; work outside it is €{hourly} / hour excl. VAT.", "The deadline runs from receipt of copy and photos. We help with copywriting if you have none.", "Code, domain and data are yours. No lock-in.", "Hosting after the first year is €{hosting} / month excl. VAT, or move it wherever you like."],
    faq_title="Pricing questions",
    faq=[("Why are you cheaper than agencies?", "No office rent, no salespeople or project managers between you and the developer. We work with proven, ready components and automated testing — that is why a website takes days, not months."),
         ("What is not included in the price?", "The domain (about €15 / year), professional photography and copy if you do not provide them, and paid advertising. Everything else the website needs to work is included."),
@@ -148,20 +164,20 @@ T = {
         ("How do I pay and what documents do I get?", "Bank transfer or card. Pro-forma at start, an invoice for every payment — with reverse charge for EU companies."),
         ("What about ERP, custom software and mobile apps?", "They are not list packages: ERP from €5,000, custom software from €2,000, mobile apps from €3,000, with a fixed quote after we analyse your processes.")],
    sources_title="Sources of the market comparison", sources_lede="Market ranges come from public price reviews, checked on",
-   cta_title="Ready? Quote within 24 hours.", cta_lede="Tell us what you need: we reply with a fixed price and delivery time. No commitment.", cta="REQUEST A QUOTE",
+   cta_title="Ready? Quote within 24 hours.", cta_lede="Tell us what you need: we reply with a fixed price (excl. VAT) and delivery time. No commitment.", cta="REQUEST A QUOTE",
    crumb_home="Home"),
  "bg": dict(
    path="/bg/ceni/", locale="bg_BG", nav_label="ЦЕНИ",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
    ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p></div>',
    home="/bg/", contact="/bg/kontakti/",
-   title="Цени за изработка на сайт 2026: лендинг от 790 €, фирмен сайт от 1 890 € | Carbon Stealth",
-   desc="Прозрачни цени, поне 15% под пазарните: лендинг 790 €, фирмен сайт 1 890 €, премиум 4 290 €, онлайн магазин 2 190 €. Без ДДС за фирми от ЕС (reverse charge). Оферта до 24 часа.",
+   title="Цени за изработка на сайт 2026: лендинг {start} €, фирмен сайт {business} € с ДДС | Carbon Stealth",
+   desc="Прозрачни цени, поне 15% под пазарните: лендинг {start} €, фирмен сайт {business} €, премиум {premium} €, онлайн магазин {ecommerce} € — всички с включен 20% ДДС. Оферта до 24 часа.",
    keywords=["цена за изработка на сайт", "изработка на сайт цени 2026", "лендинг страница цена", "фирмен сайт цена", "онлайн магазин цена", "поддръжка на сайт цена", "обратно начисляване ДДС", "Carbon Stealth"],
    eyebrow="// ЦЕНИ 2026", h1="Прозрачни цени. Поне 15% под пазара.",
-   lede="Проучихме публичните ценоразписи на агенции и студиа в България, Италия и ЕС за 2026 г. и сложихме нашите цени под тях — с фиксиран обхват и без скрити разходи. Всички цени са в евро, без ДДС.",
-   hud="Клиенти от България: +20% ДДС · Фирми от ЕС: reverse charge",
-   market_title="Какво струва на пазара", market_lede="Средни агенцийни диапазони в EUR без ДДС, по публични прегледи за 2026 г. (източниците са най-долу).",
+   lede="Проучихме публичните ценоразписи на агенции и студиа в България, Италия и ЕС за 2026 г. и сложихме нашите цени под тях — с фиксиран обхват и без скрити разходи. Всички цени са в евро, с включен 20% ДДС.",
+   hud="Всички цени са с включен 20% ДДС · Фирми от ЕС извън България: без ДДС (reverse charge)",
+   market_title="Какво струва на пазара", market_lede="Средни агенцийни диапазони в EUR с включен 20% ДДС (за сравнимост с нашите цени), по публични прегледи за 2026 г. (източниците са най-долу).",
    market_cols=dict(item="Услуга", bg="България", it="Италия", eu="ЕС (средно)"),
    market_rows=dict(landing="Лендинг / сайт-визитка", business="Фирмен сайт (5–8 стр.)", corporate="Корпоративен, многоезичен", ecommerce="Онлайн магазин", maint="Поддръжка (на месец)", seo="SEO (на месец)"),
    per_month="/ мес.", packages_title="Пакети",
@@ -176,12 +192,12 @@ T = {
    addons=dict(language="Допълнителен език (превод + hreflang)", page="Допълнителна страница", logo="Лого и мини бранд книга", copy="Копирайтинг на страница", maintenance="Поддръжка: ъпдейти, бекъпи, дребни промени, мониторинг", seo="SEO: съдържание, линкове, технически одит, месечен отчет", hosting="Хостинг в ЕС + SSL + CDN (след първата година)"),
    once="еднократно", monthly="на месец",
    vat_title="ДДС и фактуриране",
-   vat=[("Клиенти от България", "Към цените се начислява 20% ДДС. Фактура се издава в евро."),
-        ("Фирми от ЕС извън България", "Фактурираме БЕЗ ДДС по механизма на обратно начисляване (reverse charge) — чл. 21, ал. 2 ЗДДС и чл. 196 от Директива 2006/112/ЕО. Нужен е валиден ДДС номер (VIES); ДДС се самоначислява от вас в своята държава. Не плащате български ДДС."),
-        ("Фирми извън ЕС", "Мястото на изпълнение е извън България — не се начислява български ДДС.")],
+   vat=[("Клиенти от България", "Показаните цени са крайни — с включен 20% ДДС. Фактура се издава в евро."),
+        ("Фирми от ЕС извън България", "Фактурираме БЕЗ ДДС по механизма на обратно начисляване (reverse charge) — чл. 21, ал. 2 ЗДДС и чл. 196 от Директива 2006/112/ЕО: нетната цена е показаната, разделена на 1,20. Нужен е валиден ДДС номер (VIES); ДДС се самоначислява от вас в своята държава."),
+        ("Фирми извън ЕС", "Мястото на изпълнение е извън България — не се начислява български ДДС: плащате нетната цена (показаната ÷ 1,20).")],
    vat_note="Частни лица от ЕС извън България: начислява се ДДС по правилата за B2C. Не е данъчен съвет — при съмнение сверете със счетоводителя си.",
    terms_title="Условия, накратко",
-   terms=["Аванс 40% при старт, 60% при пускане. За месечни услуги — в началото на месеца.", "Фиксираният обхват е описан в офертата; извън него работим по 45 € / час.", "Срокът тече от получаването на текстове и снимки. Помагаме с копирайтинг, ако нямате.", "Кодът, домейнът и данните са ваши. Няма заключване към нас.", "Хостингът след първата година е 15 € / мес. или го местите където поискате."],
+   terms=["Аванс 40% при старт, 60% при пускане. За месечни услуги — в началото на месеца.", "Фиксираният обхват е описан в офертата; извън него работим по {hourly} € / час с ДДС.", "Срокът тече от получаването на текстове и снимки. Помагаме с копирайтинг, ако нямате.", "Кодът, домейнът и данните са ваши. Няма заключване към нас.", "Хостингът след първата година е {hosting} € / мес. с ДДС или го местите където поискате."],
    faq_title="Въпроси за цените",
    faq=[("Защо сте по-евтини от агенциите?", "Нямаме офис наем, продавачи и проектни мениджъри между вас и разработчика. Работим с готови, доказани компоненти и автоматизирано тестване — затова правим сайт за дни, а не за месеци."),
         ("Какво не е включено в цената?", "Домейнът (около 15 € / год.), професионална фотография и текстове, ако не ги предоставите, и платена реклама. Всичко останало, което е нужно сайтът да работи, е вътре."),
@@ -190,7 +206,7 @@ T = {
         ("Как се плаща и какви документи получавам?", "Банков превод или карта. Проформа при старт, фактура при всяко плащане — с обратно начисляване за фирми от ЕС."),
         ("А за ERP, софтуер по поръчка и мобилни приложения?", "Те не са пакети от ценоразписа: ERP от 5 000 €, софтуер по поръчка от 2 000 €, мобилно приложение от 3 000 €, с фиксирана оферта след анализ на процесите.")],
    sources_title="Източници на пазарното сравнение", sources_lede="Пазарните диапазони са от публични ценови прегледи, проверени на",
-   cta_title="Готови ли сте? Оферта до 24 часа.", cta_lede="Кажете ни какво ви трябва: отговаряме с фиксирана цена и срок. Без ангажимент.", cta="ЗАЯВИ ОФЕРТА",
+   cta_title="Готови ли сте? Оферта до 24 часа.", cta_lede="Кажете ни какво ви трябва: отговаряме с фиксирана крайна цена (с ДДС) и срок. Без ангажимент.", cta="ЗАЯВИ ОФЕРТА",
    crumb_home="Начало"),
 }
 
@@ -201,6 +217,19 @@ def fmt(n, lang):
     return s.replace(",", SEP[lang])
 def money(n, lang):
     return f"{fmt(n, lang)} €"
+HOURLY_GROSS = 54   # 45 € / час нето
+def numbers(lang):
+    """Плейсхолдърите в заглавия/описания/условия за дадения език."""
+    d = {t["id"]: fmt(shown(t["price"], lang), lang) for t in TIERS}
+    d["hosting"] = fmt(shown(15, lang), lang)
+    d["hourly"] = fmt(shown(HOURLY_GROSS, lang), lang)
+    return d
+def tx(lang, key):
+    """Текст с попълнени числа ({start}, {business}, {premium}, {ecommerce}, {hosting}, {hourly})."""
+    v = T[lang][key]
+    if isinstance(v, list):
+        return [x.format(**numbers(lang)) for x in v]
+    return v.format(**numbers(lang))
 
 STYLE = "*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#ccc;font-family:'Space Mono',monospace;font-size:13px;line-height:2;padding:0}a{color:#00e5ff;text-decoration:none}.w{max-width:1100px;margin:0 auto;padding:40px 20px}h1{font-family:'Inter Tight',sans-serif;font-weight:900;font-size:2.5rem;color:#f5f5f0;margin-bottom:16px;letter-spacing:-.03em;line-height:1.1;max-width:900px}h2{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1.2rem;color:#00e5ff;margin:48px 0 12px;text-transform:uppercase;letter-spacing:.05em}h3{color:#f5f5f0;font-size:1rem;margin:20px 0 8px}p,li{margin-bottom:10px;line-height:1.9}ul{padding-left:20px}.nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 1px 18px rgba(0,229,255,.1);padding:12px 20px;z-index:1000;display:flex;justify-content:space-between;align-items:center}.nav a{color:#ccc;font-size:10px;letter-spacing:.2em;margin:0 10px}.nav img{height:30px;filter:drop-shadow(0 0 6px rgba(0,229,255,.28))}.nav div{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 0}@media(max-width:600px){.nav a{margin:0 6px;font-size:9px}}.hero-s{padding:120px 20px 60px;border-bottom:1px solid rgba(0,229,255,.1)}.tag{font-size:9px;color:#00e5ff;letter-spacing:.4em;margin-bottom:12px}.lede{max-width:820px;color:#bbb}.hud{font-size:10px;letter-spacing:.15em;color:#00e5ff;margin-top:12px}.cta{display:inline-block;padding:14px 32px;border:1px solid #00e5ff;color:#00e5ff;font-size:11px;letter-spacing:.25em;margin-top:24px;background:rgba(0,229,255,.05);box-shadow:0 0 22px rgba(0,229,255,.22)}.ft{border-top:1px solid rgba(245,245,240,.06);padding:30px 20px;text-align:center;font-size:9px;color:#8a949b;margin-top:60px}.ft a{text-decoration:underline}.faq-item{border-bottom:1px solid rgba(245,245,240,.06);padding:16px 0}.faq-q{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1rem;color:#f5f5f0;margin-bottom:6px}.faq-a{font-size:12px;color:#ccc}.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:24px 0}.tier{border:1px solid rgba(0,229,255,.18);padding:22px;position:relative;background:rgba(0,229,255,.02);display:flex;flex-direction:column}.tier.pop{border-color:rgba(0,229,255,.6);box-shadow:0 0 28px rgba(0,229,255,.12)}.pop-badge{position:absolute;top:-10px;left:18px;background:#00e5ff;color:#000;font-size:9px;letter-spacing:.2em;padding:3px 10px;font-weight:700}.tier-tag{font-size:9px;letter-spacing:.3em;color:#00e5ff;margin-bottom:6px;text-transform:uppercase}.tier h3{font-family:'Inter Tight',sans-serif;font-weight:900;font-size:1.5rem;color:#f5f5f0;margin:0 0 8px;letter-spacing:-.02em}.tier-desc{font-size:11px;color:#999;line-height:1.7;min-height:3.4em}.tier-price{font-family:'Inter Tight',sans-serif;font-weight:900;font-size:2.1rem;color:#f5f5f0;margin:14px 0 2px;line-height:1;letter-spacing:-.03em}.tier-market{display:block;font-size:10px;color:#999;margin-bottom:14px;line-height:1.6}.tier-market s{color:#8a949b}.tier-market b{color:#00e5ff}.tier ul{list-style:none;padding:0;margin:0 0 14px;flex:1}.tier li{font-size:11px;padding-left:16px;position:relative;margin-bottom:6px;line-height:1.6}.tier li::before{content:'\\2713';position:absolute;left:0;color:#00e5ff}.tier-delivery{font-size:10px;color:#999;margin-bottom:6px}.tier .cta{margin-top:10px;text-align:center}.addons{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin:20px 0}.addon{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid rgba(245,245,240,.08);padding:12px 14px;font-size:11px;line-height:1.6}.addon-price{white-space:nowrap;text-align:right}.addon strong{color:#f5f5f0;font-size:13px}.addon small{color:#999;font-size:9px;display:block}.addon em{color:#00e5ff;font-style:normal;font-size:9px}.table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;font-size:11px;margin:16px 0;min-width:560px}.table th,.table td{border:1px solid rgba(245,245,240,.08);padding:8px 10px;text-align:left;line-height:1.6}.table th{color:#00e5ff;font-weight:400;letter-spacing:.1em}.vat{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:16px 0}.vat article{border:1px solid rgba(0,229,255,.15);padding:16px}.vat h3{margin:0 0 6px}.vat p{font-size:11px;color:#bbb;margin:0;line-height:1.7}.tiny{font-size:10px;color:#888;line-height:1.7}.sources{font-size:10px;color:#888;padding-left:18px}.sources a{color:#8ab}.terms{list-style:none;padding:0}.terms li{padding-left:16px;position:relative;font-size:12px}.terms li::before{content:'\\2713';position:absolute;left:0;color:#00e5ff}.cta-box{border:1px solid rgba(0,229,255,.25);padding:32px;margin-top:48px;text-align:center;box-shadow:0 0 40px rgba(0,229,255,.08)}.cta-box h2{margin-top:0}"
 
@@ -217,7 +246,7 @@ def alternates():
 def jsonld(lang, canon):
     p = T[lang]
     graph = [
-        {"@type": "WebPage", "@id": canon + "#page", "url": canon, "name": p["h1"], "description": p["desc"], "inLanguage": lang,
+        {"@type": "WebPage", "@id": canon + "#page", "url": canon, "name": p["h1"], "description": tx(lang, "desc"), "inLanguage": lang,
          "isPartOf": {"@id": f"{BASE}/#website"}, "publisher": {"@id": f"{BASE}/#organization"}, "dateModified": LASTMOD},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": p["crumb_home"], "item": BASE + p["home"]},
@@ -227,7 +256,8 @@ def jsonld(lang, canon):
         x = p["tiers"][t["id"]]
         graph.append({"@type": "Product", "name": f'{x["name"]} — {x["tag"]}', "description": x["desc"],
                       "brand": {"@type": "Brand", "name": "Carbon Stealth"},
-                      "offers": {"@type": "Offer", "price": t["price"], "priceCurrency": "EUR", "url": f'{canon}#{t["id"]}',
+                      "offers": {"@type": "Offer", "price": shown(t["price"], lang), "priceCurrency": "EUR", "url": f'{canon}#{t["id"]}',
+                                 "priceSpecification": {"@type": "UnitPriceSpecification", "price": shown(t["price"], lang), "priceCurrency": "EUR", "valueAddedTaxIncluded": lang == "bg"},
                                  "availability": "https://schema.org/InStock", "priceValidUntil": "2026-12-31",
                                  "seller": {"@id": f"{BASE}/#organization"}}})
     graph.append({"@type": "FAQPage", "mainEntity": [
@@ -238,23 +268,23 @@ def head(lang, canon):
     p = T[lang]
     og = f"{BASE}/og-image.png"
     return f"""<!DOCTYPE html><html lang="{lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{esc(p["title"])}</title>
-<meta name="description" content="{esc(p["desc"])}">
+<title>{esc(tx(lang, "title"))}</title>
+<meta name="description" content="{esc(tx(lang, "desc"))}">
 <meta name="keywords" content="{esc(", ".join(p["keywords"]))}">
 <link rel="canonical" href="{canon}">
 {alternates()}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Carbon Stealth VCC">
-<meta property="og:title" content="{esc(p["title"])}">
-<meta property="og:description" content="{esc(p["desc"])}">
+<meta property="og:title" content="{esc(tx(lang, "title"))}">
+<meta property="og:description" content="{esc(tx(lang, "desc"))}">
 <meta property="og:url" content="{canon}">
 <meta property="og:image" content="{og}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="{p["locale"]}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(p["title"])}">
-<meta name="twitter:description" content="{esc(p["desc"])}">
+<meta name="twitter:title" content="{esc(tx(lang, "title"))}">
+<meta name="twitter:description" content="{esc(tx(lang, "desc"))}">
 <meta name="twitter:image" content="{og}">
 <meta name="geo.region" content="BG-KY">
 <meta name="geo.placename" content="Bobov Dol">
@@ -270,7 +300,7 @@ def head(lang, canon):
 def render(lang):
     p = T[lang]
     canon = BASE + p["path"]
-    rng = lambda r, sfx="": f"{fmt(r[0], lang)} – {fmt(r[1], lang)} €{sfx}"
+    rng = lambda r, sfx="": f"{fmt(shown_market(r[0], lang), lang)} – {fmt(shown_market(r[1], lang), lang)} €{sfx}"
     monthly_rows = {"maint", "seo"}
     market = "".join(
         f'<tr><th scope="row">{esc(p["market_rows"][r["id"]])}</th>'
@@ -282,16 +312,16 @@ def render(lang):
         tiers += (f'<article class="tier{" pop" if t["popular"] else ""}" id="{t["id"]}">'
                   + (f'<span class="pop-badge">{esc(p["popular"])}</span>' if t["popular"] else "")
                   + f'<p class="tier-tag">{esc(x["tag"])}</p><h3>{esc(x["name"])}</h3><p class="tier-desc">{esc(x["desc"])}</p>'
-                  + f'<p class="tier-price">{money(t["price"], lang)}</p>'
-                  + f'<span class="tier-market"><s>{money(t["market"], lang)}</s> {esc(p["market"])} · <b>−{discount(t)}% {esc(p["saving"])}</b></span>'
+                  + f'<p class="tier-price">{money(shown(t["price"], lang), lang)}</p>'
+                  + f'<span class="tier-market"><s>{money(shown_market(t["market"], lang), lang)}</s> {esc(p["market"])} · <b>−{discount(t)}% {esc(p["saving"])}</b></span>'
                   + "<ul>" + "".join(f"<li>{esc(f)}</li>" for f in x["features"]) + "</ul>"
                   + f'<p class="tier-delivery">{esc(p["delivery"])}: {t["days"][0]}–{t["days"][1]} {esc(p["days"])}</p>'
                   + f'<a class="cta" href="{p["contact"]}">{esc(p["choose"])} &rarr;</a></article>')
     addons = "".join(
-        f'<div class="addon"><span>{esc(p["addons"][a["id"]])}</span><span class="addon-price"><strong>{money(a["price"], lang)}</strong>'
+        f'<div class="addon"><span>{esc(p["addons"][a["id"]])}</span><span class="addon-price"><strong>{money(shown(a["price"], lang), lang)}</strong>'
         f'<small>{esc(p["monthly"] if a["kind"] == "monthly" else p["once"])} · <em>−{discount(a)}%</em></small></span></div>' for a in ADDONS)
     vat = "".join(f"<article><h3>{esc(t)}</h3><p>{esc(d)}</p></article>" for t, d in p["vat"])
-    terms = "".join(f"<li>{esc(t)}</li>" for t in p["terms"])
+    terms = "".join(f"<li>{esc(t)}</li>" for t in tx(lang, "terms"))
     faq = "".join(f'<div class="faq-item"><div class="faq-q">{esc(q)}</div><div class="faq-a">{esc(a)}</div></div>' for q, a in p["faq"])
     sources = "".join(f'<li><a href="{u}" target="_blank" rel="noopener nofollow">{esc(n)}</a></li>' for n, u in SOURCES)
     return (head(lang, canon) + p["nav"]
@@ -330,10 +360,11 @@ def write_json():
     """Същите данни за секцията „Prezzi" на началната страница (src/App.jsx)."""
     data = dict(
         researchDate=RESEARCH_DATE, minDiscount=MIN_DISCOUNT, vatRateBg=VAT_RATE_BG,
-        tiers=[dict(id=t["id"], price=t["price"], market=t["market"], days=list(t["days"]), popular=t["popular"], discount=discount(t),
+        vat=dict(bg="gross", it="net", en="net"),
+        tiers=[dict(id=t["id"], price={l: shown(t["price"], l) for l in T}, market={l: shown_market(t["market"], l) for l in T}, days=list(t["days"]), popular=t["popular"], discount=discount(t),
                     name={l: T[l]["tiers"][t["id"]]["name"] for l in T}, tag={l: T[l]["tiers"][t["id"]]["tag"] for l in T},
                     desc={l: T[l]["tiers"][t["id"]]["desc"] for l in T}, features={l: T[l]["tiers"][t["id"]]["features"] for l in T}) for t in TIERS],
-        addons=[dict(id=a["id"], price=a["price"], market=a["market"], kind=a["kind"], discount=discount(a),
+        addons=[dict(id=a["id"], price={l: shown(a["price"], l) for l in T}, market={l: shown_market(a["market"], l) for l in T}, kind=a["kind"], discount=discount(a),
                      name={l: T[l]["addons"][a["id"]] for l in T}) for a in ADDONS],
         ui={l: dict(path=T[l]["path"], eyebrow=T[l]["eyebrow"], h1=T[l]["h1"], lede=T[l]["packages_lede"], hud=T[l]["hud"], popular=T[l]["popular"],
                     market=T[l]["market"], saving=T[l]["saving"], delivery=T[l]["delivery"], days=T[l]["days"], choose=T[l]["choose"],

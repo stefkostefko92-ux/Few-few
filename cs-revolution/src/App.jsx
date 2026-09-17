@@ -19,7 +19,7 @@ var LANGS = {
   nav_work: { it: "PORTFOLIO", en: "WORK", bg: "\u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
   nav_pricing: { it: "PREZZI", en: "PRICING", bg: "\u0426\u0415\u041D\u0418" },
   pricing_all: { it: "LISTINO COMPLETO, IVA E CONDIZIONI", en: "FULL PRICE LIST, VAT AND TERMS", bg: "\u041F\u042A\u041B\u0415\u041D \u0426\u0415\u041D\u041E\u0420\u0410\u0417\u041F\u0418\u0421, \u0414\u0414\u0421 \u0418 \u0423\u0421\u041B\u041E\u0412\u0418\u042F" },
-  pricing_note: { it: "Prezzi in euro, IVA esclusa. ERP, software su misura e app mobile: preventivo fisso dopo l'analisi.", en: "Prices in euro, excl. VAT. ERP, custom software and mobile apps: fixed quote after analysis.", bg: "\u0426\u0435\u043D\u0438 \u0432 \u0435\u0432\u0440\u043E, \u0431\u0435\u0437 \u0414\u0414\u0421. ERP, \u0441\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u043F\u043E\u0440\u044A\u0447\u043A\u0430 \u0438 \u043C\u043E\u0431\u0438\u043B\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F: \u0444\u0438\u043A\u0441\u0438\u0440\u0430\u043D\u0430 \u043E\u0444\u0435\u0440\u0442\u0430 \u0441\u043B\u0435\u0434 \u0430\u043D\u0430\u043B\u0438\u0437." },
+  pricing_note: { it: "Tutti i prezzi sono in euro, IVA esclusa. ERP, software su misura e app mobile: preventivo fisso dopo l'analisi.", en: "All prices are in euro, excluding VAT. ERP, custom software and mobile apps: fixed quote after analysis.", bg: "\u0412\u0441\u0438\u0447\u043A\u0438 \u0446\u0435\u043D\u0438 \u0441\u0430 \u0432 \u0435\u0432\u0440\u043E, \u0441 \u0432\u043A\u043B\u044E\u0447\u0435\u043D 20% \u0414\u0414\u0421. ERP, \u0441\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u043F\u043E\u0440\u044A\u0447\u043A\u0430 \u0438 \u043C\u043E\u0431\u0438\u043B\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F: \u0444\u0438\u043A\u0441\u0438\u0440\u0430\u043D\u0430 \u043E\u0444\u0435\u0440\u0442\u0430 \u0441\u043B\u0435\u0434 \u0430\u043D\u0430\u043B\u0438\u0437." },
   nav_lab: { it: "REVERSE LAB", en: "REVERSE LAB", bg: "REVERSE LAB" },
   nav_test: { it: "ANALISI SITO", en: "SITE ANALYSIS", bg: "\u0410\u041D\u0410\u041B\u0418\u0417 \u041D\u0410 \u0421\u0410\u0419\u0422" },
   nav_contact: { it: "CONTATTI", en: "CONTACT", bg: "\u041A\u041E\u041D\u0422\u0410\u041A\u0422\u0418" },
@@ -1273,7 +1273,7 @@ function SEOInjector() {
         "name": "Come lavoriamo — Il processo Carbon Stealth",
         "description": "Il nostro processo di sviluppo in 6 fasi per garantire risultati eccellenti.",
         "totalTime": "P30D",
-        "estimatedCost": { "@type": "MonetaryAmount", "currency": "EUR", "value": "790" },
+        "estimatedCost": { "@type": "MonetaryAmount", "currency": "EUR", "value": "658" },
         "step": [
           { "@type": "HowToStep", "position": 1, "name": "Analisi e Brief", "text": "Studiamo il tuo progetto, gli obiettivi e il target. Definiamo scope, timeline e budget.", "url": "https://carbonstealth.eu/contatti/" },
           { "@type": "HowToStep", "position": 2, "name": "Architettura e Design", "text": "Progettiamo la struttura, wireframe e design UI/UX. Prototipo interattivo per approvazione." },
@@ -3028,8 +3028,8 @@ export default function App(){
               <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:6,textTransform:"uppercase"}}>{tier.tag[lang]}</div>
               <div style={{fontFamily:HEAD,fontWeight:800,fontSize:"1.5rem",letterSpacing:"-.02em",color:INK,marginBottom:8}}>{tier.name[lang]}</div>
               <p style={{fontSize:11,lineHeight:1.7,color:INK2,minHeight:"3.4em"}}>{tier.desc[lang]}</p>
-              <div style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price,lang)}</div>
-              <div style={{fontSize:10,color:INK2,lineHeight:1.6,marginBottom:14}}><s style={{color:"#8A949B"}}>{fmtEur(tier.market,lang)}</s> {ui.market} {"·"} <b style={{color:C}}>{"−"}{tier.discount}% {ui.saving}</b></div>
+              <div style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price[lang],lang)}</div>
+              <div style={{fontSize:10,color:INK2,lineHeight:1.6,marginBottom:14}}><s style={{color:"#8A949B"}}>{fmtEur(tier.market[lang],lang)}</s> {ui.market} {"·"} <b style={{color:C}}>{"−"}{tier.discount}% {ui.saving}</b></div>
               <ul style={{listStyle:"none",padding:0,margin:"0 0 14px",flex:1}}>{tier.features[lang].map(function(f){return <li key={f} style={{fontSize:11,lineHeight:1.6,paddingLeft:16,position:"relative",marginBottom:6,color:"#ccc"}}><span aria-hidden="true" style={{position:"absolute",left:0,color:C}}>{"✓"}</span>{f}</li>})}</ul>
               <div style={{fontSize:10,color:INK2,marginBottom:12}}>{ui.delivery}: {tier.days[0]}{"–"}{tier.days[1]} {ui.days}</div>
               <div className="cs-cta" {...kb(function(){scrollToId("contact")},ui.choose)} style={Object.assign({textAlign:"center",fontFamily:MONO,fontSize:10,letterSpacing:".25em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"12px 16px",textTransform:"uppercase",cursor:"none"},CTA_GLOW)}>{ui.choose} {"→"}</div>
@@ -3038,7 +3038,7 @@ export default function App(){
 
         <div style={{fontSize:9,letterSpacing:".5em",color:C,margin:"48px 0 16px"}}>{"// "+PRICING.ui[lang].addonsTitle.toUpperCase()}</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:10}}>
-          {PRICING.addons.map(function(a){var ui=PRICING.ui[lang];return <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,border:"1px solid rgba(245,245,240,.08)",padding:"12px 14px",fontSize:11,lineHeight:1.6,color:"#ccc"}}><span>{a.name[lang]}</span><span style={{whiteSpace:"nowrap",textAlign:"right"}}><b style={{color:INK,fontSize:13}}>{fmtEur(a.price,lang)}</b><br/><span style={{fontSize:9,color:INK2}}>{a.kind==="monthly"?ui.monthly:ui.once} {"·"} <span style={{color:C}}>{"−"}{a.discount}%</span></span></span></div>})}
+          {PRICING.addons.map(function(a){var ui=PRICING.ui[lang];return <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,border:"1px solid rgba(245,245,240,.08)",padding:"12px 14px",fontSize:11,lineHeight:1.6,color:"#ccc"}}><span>{a.name[lang]}</span><span style={{whiteSpace:"nowrap",textAlign:"right"}}><b style={{color:INK,fontSize:13}}>{fmtEur(a.price[lang],lang)}</b><br/><span style={{fontSize:9,color:INK2}}>{a.kind==="monthly"?ui.monthly:ui.once} {"·"} <span style={{color:C}}>{"−"}{a.discount}%</span></span></span></div>})}
         </div>
 
         <div style={{display:"flex",flexWrap:"wrap",gap:20,alignItems:"center",marginTop:40}}>

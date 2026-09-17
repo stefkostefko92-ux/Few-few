@@ -2,11 +2,24 @@
  "researchDate": "2026-09-17",
  "minDiscount": 0.15,
  "vatRateBg": 20,
+ "vat": {
+  "bg": "gross",
+  "it": "net",
+  "en": "net"
+ },
  "tiers": [
   {
    "id": "start",
-   "price": 790,
-   "market": 950,
+   "price": {
+    "it": 658,
+    "en": 658,
+    "bg": 790
+   },
+   "market": {
+    "it": 950,
+    "en": 950,
+    "bg": 1140
+   },
    "days": [
     5,
     7
@@ -63,8 +76,16 @@
   },
   {
    "id": "business",
-   "price": 1890,
-   "market": 2300,
+   "price": {
+    "it": 1575,
+    "en": 1575,
+    "bg": 1890
+   },
+   "market": {
+    "it": 2300,
+    "en": 2300,
+    "bg": 2760
+   },
    "days": [
     10,
     15
@@ -124,8 +145,16 @@
   },
   {
    "id": "premium",
-   "price": 4290,
-   "market": 5200,
+   "price": {
+    "it": 3575,
+    "en": 3575,
+    "bg": 4290
+   },
+   "market": {
+    "it": 5200,
+    "en": 5200,
+    "bg": 6240
+   },
    "days": [
     20,
     30
@@ -185,8 +214,16 @@
   },
   {
    "id": "ecommerce",
-   "price": 2190,
-   "market": 2600,
+   "price": {
+    "it": 1825,
+    "en": 1825,
+    "bg": 2190
+   },
+   "market": {
+    "it": 2600,
+    "en": 2600,
+    "bg": 3120
+   },
    "days": [
     15,
     25
@@ -248,8 +285,16 @@
  "addons": [
   {
    "id": "language",
-   "price": 350,
-   "market": 500,
+   "price": {
+    "it": 292,
+    "en": 292,
+    "bg": 350
+   },
+   "market": {
+    "it": 500,
+    "en": 500,
+    "bg": 600
+   },
    "kind": "once",
    "discount": 30,
    "name": {
@@ -260,8 +305,16 @@
   },
   {
    "id": "page",
-   "price": 120,
-   "market": 150,
+   "price": {
+    "it": 100,
+    "en": 100,
+    "bg": 120
+   },
+   "market": {
+    "it": 150,
+    "en": 150,
+    "bg": 180
+   },
    "kind": "once",
    "discount": 19,
    "name": {
@@ -272,8 +325,16 @@
   },
   {
    "id": "logo",
-   "price": 390,
-   "market": 480,
+   "price": {
+    "it": 325,
+    "en": 325,
+    "bg": 390
+   },
+   "market": {
+    "it": 480,
+    "en": 480,
+    "bg": 576
+   },
    "kind": "once",
    "discount": 18,
    "name": {
@@ -284,8 +345,16 @@
   },
   {
    "id": "copy",
-   "price": 90,
-   "market": 110,
+   "price": {
+    "it": 75,
+    "en": 75,
+    "bg": 90
+   },
+   "market": {
+    "it": 110,
+    "en": 110,
+    "bg": 132
+   },
    "kind": "once",
    "discount": 18,
    "name": {
@@ -296,8 +365,16 @@
   },
   {
    "id": "maintenance",
-   "price": 69,
-   "market": 85,
+   "price": {
+    "it": 58,
+    "en": 58,
+    "bg": 69
+   },
+   "market": {
+    "it": 85,
+    "en": 85,
+    "bg": 102
+   },
    "kind": "monthly",
    "discount": 18,
    "name": {
@@ -308,8 +385,16 @@
   },
   {
    "id": "seo",
-   "price": 290,
-   "market": 350,
+   "price": {
+    "it": 242,
+    "en": 242,
+    "bg": 290
+   },
+   "market": {
+    "it": 350,
+    "en": 350,
+    "bg": 420
+   },
    "kind": "monthly",
    "discount": 17,
    "name": {
@@ -320,8 +405,16 @@
   },
   {
    "id": "hosting",
-   "price": 15,
-   "market": 19,
+   "price": {
+    "it": 13,
+    "en": 13,
+    "bg": 15
+   },
+   "market": {
+    "it": 19,
+    "en": 19,
+    "bg": 23
+   },
    "kind": "monthly",
    "discount": 21,
    "name": {
@@ -337,7 +430,7 @@
    "eyebrow": "// PREZZI 2026",
    "h1": "Prezzi trasparenti. Almeno il 15% sotto il mercato.",
    "lede": "Ogni pacchetto è un prodotto finito: design, sviluppo, base SEO, 12 mesi di hosting in UE, SSL e formazione sull'uso.",
-   "hud": "Clienti in Bulgaria: +20% IVA · Aziende UE: reverse charge",
+   "hud": "Tutti i prezzi sono IVA esclusa · Aziende UE: reverse charge · Clienti in Bulgaria: +20% IVA",
    "popular": "Il più scelto",
    "market": "mercato",
    "saving": "in meno",
@@ -347,7 +440,7 @@
    "addonsTitle": "Extra",
    "once": "una tantum",
    "monthly": "al mese",
-   "vatNote": "Clienti in Bulgaria: +20% IVA · Aziende UE: reverse charge",
+   "vatNote": "Tutti i prezzi sono IVA esclusa · Aziende UE: reverse charge · Clienti in Bulgaria: +20% IVA",
    "navLabel": "PREZZI"
   },
   "en": {
@@ -355,7 +448,7 @@
    "eyebrow": "// PRICING 2026",
    "h1": "Transparent prices. At least 15% below market.",
    "lede": "Every package is a finished product: design, development, SEO foundation, 12 months of EU hosting, SSL, and training on how to use it.",
-   "hud": "Clients in Bulgaria: +20% VAT · EU companies: reverse charge",
+   "hud": "All prices exclude VAT · EU companies: reverse charge · Clients in Bulgaria: +20% VAT",
    "popular": "Most popular",
    "market": "market",
    "saving": "cheaper",
@@ -365,7 +458,7 @@
    "addonsTitle": "Add-ons",
    "once": "one-off",
    "monthly": "per month",
-   "vatNote": "Clients in Bulgaria: +20% VAT · EU companies: reverse charge",
+   "vatNote": "All prices exclude VAT · EU companies: reverse charge · Clients in Bulgaria: +20% VAT",
    "navLabel": "PRICING"
   },
   "bg": {
@@ -373,7 +466,7 @@
    "eyebrow": "// ЦЕНИ 2026",
    "h1": "Прозрачни цени. Поне 15% под пазара.",
    "lede": "Всеки пакет е завършен продукт: дизайн, разработка, SEO основа, хостинг в ЕС за 12 месеца, SSL, обучение как да го ползвате.",
-   "hud": "Клиенти от България: +20% ДДС · Фирми от ЕС: reverse charge",
+   "hud": "Всички цени са с включен 20% ДДС · Фирми от ЕС извън България: без ДДС (reverse charge)",
    "popular": "Най-избиран",
    "market": "пазар",
    "saving": "по-евтино",
@@ -383,7 +476,7 @@
    "addonsTitle": "Добавки",
    "once": "еднократно",
    "monthly": "на месец",
-   "vatNote": "Клиенти от България: +20% ДДС · Фирми от ЕС: reverse charge",
+   "vatNote": "Всички цени са с включен 20% ДДС · Фирми от ЕС извън България: без ДДС (reverse charge)",
    "navLabel": "ЦЕНИ"
   }
  }

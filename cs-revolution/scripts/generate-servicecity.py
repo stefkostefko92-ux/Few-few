@@ -35,7 +35,7 @@ CITIES = [
 # ── Services (2) ─────────────────────────────────────────────────
 SERVICES = {
     "ecommerce": dict(
-        price=dict(it="€2.190", en="€2,190", bg="€2190"),
+        price=dict(it="€1.825 + IVA", en="€1,825 + VAT", bg="€2190 с ДДС"),
         svc_link=dict(it="/servizi/ecommerce/", en="/en/services/ecommerce/", bg="/bg/uslugi/ecommerce/"),
         offer="1200",
         disp=dict(it="E-commerce", en="E-commerce", bg="Онлайн Магазини"),
@@ -46,9 +46,9 @@ SERVICES = {
         h1=dict(it="E-commerce a {name}", en="E-commerce Development in {name}", bg="Онлайн Магазин в {name}"),
         svc_type="E-commerce development, online store, payments and shipping integration",
         desc=dict(
-            it="Sviluppo e-commerce e negozi online per aziende di {name}. Da €2.190, spedizioni e pagamenti integrati, preventivo gratuito in 24 ore.",
-            en="E-commerce and online store development for {name} businesses. From €2,190, integrated payments and shipping, free quote in 24 hours.",
-            bg="Разработка на онлайн магазини за фирми в {name}. От €2190, интегрирани плащания и доставки, безплатна оферта до 24 часа."),
+            it="Sviluppo e-commerce e negozi online per aziende di {name}. Da €1.825 + IVA, spedizioni e pagamenti integrati, preventivo gratuito in 24 ore.",
+            en="E-commerce and online store development for {name} businesses. From €1,825 + VAT, integrated payments and shipping, free quote in 24 hours.",
+            bg="Разработка на онлайн магазини за фирми в {name}. От €2190 с ДДС, интегрирани плащания и доставки, безплатна оферта до 24 часа."),
         h2_why=dict(
             it="E-commerce su misura per le aziende di {name}",
             en="Tailored e-commerce for {name} businesses",
@@ -66,9 +66,9 @@ SERVICES = {
             en=["Analysis of catalog, audience and target markets, with a free quote within 24 hours.", "Store design and a checkout-journey prototype, approved before any code is written.", "Development plus payment, shipping and back-office integration, tested on real orders.", "Launch, training, SEO and Google Shopping, plus 3 months of free support."],
             bg=["Анализ на каталога, аудиторията и целевите пазари, с безплатна оферта до 24 часа.", "Дизайн на магазина и прототип на пътя за покупка, одобрен преди да напишем код.", "Разработка с интеграция на плащания, доставки и система, тествана с реални поръчки.", "Пускане, обучение, SEO и Google Shopping, плюс 3 месеца безплатна поддръжка."]),
         cost_faq=dict(
-            it=("Quanto costa un e-commerce a {name}?", "Un negozio online professionale parte da €2.190 e cresce in base a catalogo, integrazioni e lingue. Preventivo dettagliato e gratuito entro 24 ore."),
-            en=("How much does an e-commerce site cost in {name}?", "A professional online store starts at €2,190 and scales with catalog, integrations and languages. Detailed free quote within 24 hours."),
-            bg=("Колко струва онлайн магазин в {name}?", "Професионален онлайн магазин започва от €2190 и расте според каталога, интеграциите и езиците. Подробна безплатна оферта до 24 часа.")),
+            it=("Quanto costa un e-commerce a {name}?", "Un negozio online professionale parte da €1.825 + IVA e cresce in base a catalogo, integrazioni e lingue. Preventivo dettagliato e gratuito entro 24 ore."),
+            en=("How much does an e-commerce site cost in {name}?", "A professional online store starts at €1,825 + VAT and scales with catalog, integrations and languages. Detailed free quote within 24 hours."),
+            bg=("Колко струва онлайн магазин в {name}?", "Професионален онлайн магазин започва от €2190 с ДДС и расте според каталога, интеграциите и езиците. Подробна безплатна оферта до 24 часа.")),
     ),
     "erp": dict(
         price=dict(it="€5.000", en="€5,000", bg="€5000"),
