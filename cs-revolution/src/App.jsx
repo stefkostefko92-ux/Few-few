@@ -60,6 +60,8 @@ var LANGS = {
   // ── WORK ──
   work_tag: { it: "// PORTFOLIO", en: "// PORTFOLIO", bg: "// \u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
   work_title: { it: "LAVORI RECENTI", en: "RECENT WORK", bg: "\u041F\u041E\u0421\u041B\u0415\u0414\u041D\u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418" },
+  work_all_sub: { it: "Tutti i nostri progetti sono raccolti su portfolio.carbonstealth.eu: guarda cosa abbiamo realizzato e cosa possiamo fare per te.", en: "All our projects are collected at portfolio.carbonstealth.eu: see what we have built and what we can do for you.", bg: "\u0412\u0441\u0438\u0447\u043A\u0438 \u043D\u0430\u0448\u0438 \u043F\u0440\u043E\u0435\u043A\u0442\u0438 \u0441\u0430 \u0441\u044A\u0431\u0440\u0430\u043D\u0438 \u043D\u0430 portfolio.carbonstealth.eu: \u0432\u0438\u0436\u0442\u0435 \u043A\u0430\u043A\u0432\u043E \u0441\u043C\u0435 \u043D\u0430\u043F\u0440\u0430\u0432\u0438\u043B\u0438 \u0438 \u043A\u0430\u043A\u0432\u043E \u043C\u043E\u0436\u0435\u043C \u0434\u0430 \u043D\u0430\u043F\u0440\u0430\u0432\u0438\u043C \u0437\u0430 \u0432\u0430\u0441." },
+  work_all: { it: "VEDI IL PORTFOLIO COMPLETO", en: "SEE THE FULL PORTFOLIO", bg: "\u0412\u0418\u0416 \u0426\u042F\u041B\u041E\u0422\u041E \u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
   // ── PRODUCTS ──
   prod_tag: { it: "// PRODOTTI LIVE", en: "// LIVE PRODUCTS", bg: "// \u041D\u0410\u0428\u0418 \u041F\u0420\u041E\u0414\u0423\u041A\u0422\u0418" },
   prod_title: { it: "LE NOSTRE PIATTAFORME", en: "OUR PLATFORMS", bg: "\u041D\u0410\u0428\u0418\u0422\u0415 \u041F\u041B\u0410\u0422\u0424\u041E\u0420\u041C\u0418" },
@@ -3017,6 +3019,12 @@ export default function App(){
             <span style={{fontSize:9,color:"#ccc",letterSpacing:".2em"}}>{w[0]}</span>
             <Scr text={w[1]} style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em"}}/>
             <span style={{fontSize:9,color:"#ccc",letterSpacing:".15em",textTransform:"uppercase"}}>{w[2]}</span></a>})}
+
+        {/* The full portfolio lives on its own subdomain — send people there */}
+        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:24,marginTop:40}}>
+          <p style={{maxWidth:520,fontSize:12,lineHeight:1.95,color:INK2}}>{t("work_all_sub")}</p>
+          <a href="https://portfolio.carbonstealth.eu/" target="_blank" rel="noopener" className="cs-cta" style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase",textDecoration:"none",cursor:"none"},CTA_GLOW)}>{t("work_all")+"  →"}</a>
+        </div>
       </section>
 
       {/* ═══════════════════════════════════════════
