@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "47a0e7daf58ea8c1",
+      "photographer": "viann",
+      "photographer_url": "https://www.flickr.com/people/viann/",
+      "url": "https://www.flickr.com/photos/viann/7142914205",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "02f2eb66e7befc62",
+      "photographer": "Alan Light",
+      "photographer_url": "https://www.flickr.com/people/alan-light/",
+      "url": "https://www.flickr.com/photos/alan-light/6062396495",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "a5d01fb7fc6a38a2",
+      "photographer": "J.H. Fearless",
+      "photographer_url": "https://www.flickr.com/people/jessicareeder/",
+      "url": "https://www.flickr.com/photos/jessicareeder/3352283336",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "0caafe50e3258dd3",
+      "photographer": "Nicolas OISEL",
+      "photographer_url": "https://www.flickr.com/people/onico/",
+      "url": "https://www.flickr.com/photos/onico/9640583264",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "ef3c0a57d2f676e1",
+      "photographer": "zinger",
+      "photographer_url": "https://www.flickr.com/people/uuzinger/",
+      "url": "https://www.flickr.com/photos/uuzinger/6119157212",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "8e134d62cff001f1",
+      "photographer": "O.Horbacz",
+      "photographer_url": "https://www.flickr.com/people/63299135@N02/",
+      "url": "https://www.flickr.com/photos/63299135@N02/7881180352",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "0b919b1363620003",
+      "photographer": "William Warby",
+      "photographer_url": "https://www.flickr.com/people/wwarby/",
+      "url": "https://www.flickr.com/photos/wwarby/4782315063",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "9e401fd454ca4f61",
+      "photographer": "K.G.23",
+      "photographer_url": "https://www.flickr.com/people/kg-23/",
+      "url": "https://www.flickr.com/photos/kg-23/14040299968",
+      "source": "openimages"
+    }
+  ]
+}

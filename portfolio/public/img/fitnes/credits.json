@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "2dfb5b727d253192",
+      "photographer": "rcvictorino",
+      "photographer_url": "https://www.flickr.com/people/rcvictorino/",
+      "url": "https://www.flickr.com/photos/rcvictorino/14499814835",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "82d315674d7f44fb",
+      "photographer": "Rene Cunningham",
+      "photographer_url": "https://www.flickr.com/people/renecunningham/",
+      "url": "https://www.flickr.com/photos/renecunningham/6150842569",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "0b99474ba5c0abbb",
+      "photographer": "Suketu Gajjar",
+      "photographer_url": "https://www.flickr.com/people/ketugajjar/",
+      "url": "https://www.flickr.com/photos/ketugajjar/5364875597",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "532be062cf89dd6d",
+      "photographer": "Louie Baur",
+      "photographer_url": "https://www.flickr.com/people/busaboys/",
+      "url": "https://www.flickr.com/photos/busaboys/5732358123",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "047d1570de28bb73",
+      "photographer": "Ian @ ThePaperboy.com",
+      "photographer_url": "https://www.flickr.com/people/thepaperboy/",
+      "url": "https://www.flickr.com/photos/thepaperboy/1488166534",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "1453ce1f1af699dd",
+      "photographer": "bettyx1138",
+      "photographer_url": "https://www.flickr.com/people/bettyx1138/",
+      "url": "https://www.flickr.com/photos/bettyx1138/2851543600",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "a9b9ed8a7e7c0b28",
+      "photographer": "Juan Pablo Olmo",
+      "photographer_url": "https://www.flickr.com/people/juanpol/",
+      "url": "https://www.flickr.com/photos/juanpol/698433011",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "898af8619cef3b01",
+      "photographer": "Juan Pablo Olmo",
+      "photographer_url": "https://www.flickr.com/people/juanpol/",
+      "url": "https://www.flickr.com/photos/juanpol/15156451062",
+      "source": "openimages"
+    }
+  ]
+}

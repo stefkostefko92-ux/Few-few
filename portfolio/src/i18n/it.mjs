@@ -87,6 +87,7 @@ export default {
     demoNote: "Sito dimostrativo — realizzato da Carbon Stealth VCC",
     gallery: "Galleria",
     credits: "Foto",
+    creditsEdited: "ritagliate e modificate",
     widget: { service: "Servizio", date: "Data", time: "Ora", name: "Nome", pick: "Scegli", selected: "Selezionato", total: "Totale", items: "articoli", done: "Demo: richiesta ricevuta. Sul sito reale ricevi conferma via SMS/email.", clear: "Svuota" },
     sticky: { call: "Chiama", book: "Prenota" },
     top: "Su",
@@ -155,7 +156,7 @@ export default {
       { t: "Impressum", p: ["Carbon Stealth VCC · Codice fiscale BG208725180", "ul. Samuil 3, 2670 Bobov Dol, Bulgaria", "Email: info@carbonstealth.eu · Sito: carbonstealth.eu"] },
       { t: "Privacy", p: ["Questo sito è statico. Non usa cookie, non contiene tracciamento e non raccoglie dati personali. I moduli nelle pagine demo sono dimostrativi e non inviano nulla.", "Se ci scrivi via email, trattiamo i tuoi dati solo per rispondere alla richiesta (art. 6, par. 1, lett. b GDPR). Conserviamo la corrispondenza fino a 24 mesi. Diritti: accesso, rettifica, cancellazione, portabilità, opposizione — a info@carbonstealth.eu. Autorità di controllo: Commissione per la protezione dei dati personali (CPDP), Sofia.", "Hosting: server in UE (Hetzner, Germania). I log del server (indirizzo IP, richiesta, ora) sono conservati 14 giorni per sicurezza."] },
       { t: "Condizioni d'uso", p: ["I siti demo mostrano aziende, indirizzi, prezzi e recensioni di fantasia — non sono offerte reali. I prezzi nella pagina «Prezzi» sono indicativi e vengono confermati con preventivo scritto.", "Contenuti e codice sono di proprietà di Carbon Stealth VCC. Legge applicabile: bulgara; foro competente: Sofia."] },
-      { t: "Font e foto", p: ["Tutti i font sono serviti dal nostro server (licenza SIL OFL) — al caricamento non viene inviato nulla a terzi. Le foto nelle pagine demo sono immagini stock gratuite (licenza Pexels) — i fotografi sono indicati sotto ogni galleria."] },
+      { t: "Font e foto", p: ["Tutti i font sono serviti dal nostro server (licenza SIL OFL) — al caricamento non viene inviato nulla a terzi. Le foto nelle pagine demo sono immagini con licenza libera — Creative Commons BY 2.0 (Flickr, tramite il dataset Open Images) o licenza Pexels; le abbiamo ritagliate e corrette nel colore. Autore, link all’originale e licenza sono indicati sotto ogni galleria."] },
     ],
   },
   brand: {

@@ -20,6 +20,7 @@ export default {
   t: {
     bg: {
       name: "Drive Line", category: "Автокъща", city: "София",
+      calc: { price: "Цена на автомобила", deposit: "Самоучастие", months: "Месеци", monthly: "Месечна вноска", mo: "мес.", note: "Ориентировъчно при 7% ГПР — точната оферта е от лизинговата компания." },
       metaTitle: "Drive Line · Автокъща София · Демо сайт",
       metaDesc: "Демо сайт за автокъща: налични автомобили с цени, проверена история, лизинг, изкупуване, гаранция, отзиви. От Carbon Stealth.",
       address: "бул. Ботевградско шосе 220, 1517 София", phone: "+359 88 000 0008", email: "sales@driveline.example",
@@ -64,6 +65,7 @@ export default {
     },
     en: {
       name: "Drive Line", category: "Car dealership", city: "Sofia",
+      calc: { price: "Car price", deposit: "Deposit", months: "Months", monthly: "Monthly instalment", mo: "mo", note: "Indicative at 7% APR — the exact offer comes from the leasing company." },
       metaTitle: "Drive Line · Car Dealership Sofia · Demo website",
       metaDesc: "Demo website for a car dealership: cars in stock with prices, verified history, leasing, trade-in, warranty, reviews. By Carbon Stealth.",
       address: "220 Botevgradsko Shose Blvd, 1517 Sofia", phone: "+359 88 000 0008", email: "sales@driveline.example",
@@ -108,6 +110,7 @@ export default {
     },
     it: {
       name: "Drive Line", category: "Concessionaria", city: "Verona",
+      calc: { price: "Prezzo dell'auto", deposit: "Anticipo", months: "Mesi", monthly: "Rata mensile", mo: "mese", note: "Indicativo al 7% TAEG — l'offerta esatta arriva dalla società di leasing." },
       metaTitle: "Drive Line · Concessionaria auto Verona · Sito demo",
       metaDesc: "Sito demo per concessionaria: auto disponibili con prezzi, storia verificata, leasing, permuta, garanzia, recensioni. Di Carbon Stealth.",
       address: "Via Torricelli 220, 37136 Verona", phone: "+39 045 000 0008", email: "vendite@driveline.example",

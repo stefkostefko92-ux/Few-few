@@ -20,6 +20,7 @@ export default {
   t: {
     bg: {
       name: "Balance Pro", category: "Счетоводна къща", city: "Пловдив",
+      calc: { docs: "Документи на месец", staff: "Служители", monthly: "Ориентировъчна месечна такса" },
       metaTitle: "Balance Pro · Счетоводна къща Пловдив · Демо сайт",
       metaDesc: "Демо сайт за счетоводна къща: месечни пакети с цени, ДДС, ТРЗ, годишно приключване, онлайн портал, отзиви. От Carbon Stealth.",
       address: "ул. Иван Вазов 25, 4000 Пловдив", phone: "+359 32 000 0007", email: "office@balancepro.example",
@@ -64,6 +65,7 @@ export default {
     },
     en: {
       name: "Balance Pro", category: "Accounting firm", city: "Plovdiv",
+      calc: { docs: "Documents per month", staff: "Employees", monthly: "Indicative monthly fee" },
       metaTitle: "Balance Pro · Accounting Firm Plovdiv · Demo website",
       metaDesc: "Demo website for an accounting firm: monthly packages with prices, VAT, payroll, year-end closing, online portal, reviews. By Carbon Stealth.",
       address: "25 Ivan Vazov St, 4000 Plovdiv", phone: "+359 32 000 0007", email: "office@balancepro.example",
@@ -108,6 +110,7 @@ export default {
     },
     it: {
       name: "Balance Pro", category: "Studio commercialista", city: "Bologna",
+      calc: { docs: "Documenti al mese", staff: "Dipendenti", monthly: "Canone mensile indicativo" },
       metaTitle: "Balance Pro · Studio commercialista Bologna · Sito demo",
       metaDesc: "Sito demo per studio commercialista: pacchetti mensili con prezzi, IVA, paghe, bilancio, portale online, recensioni. Di Carbon Stealth.",
       address: "Via Indipendenza 25, 40121 Bologna", phone: "+39 051 000 0007", email: "studio@balancepro.example",

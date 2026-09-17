@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "0acfc8c913a3a943",
+      "photographer": "yellowblade67",
+      "photographer_url": "https://www.flickr.com/people/33427671@N06/",
+      "url": "https://www.flickr.com/photos/33427671@N06/3151779643",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "fca47adcf773dacb",
+      "photographer": "fervent-adepte-de-la-mode",
+      "photographer_url": "https://www.flickr.com/people/51528537@N08/",
+      "url": "https://www.flickr.com/photos/51528537@N08/8317865312",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "24356cd114b9f808",
+      "photographer": "foeoc kannilc",
+      "photographer_url": "https://www.flickr.com/people/foeock/",
+      "url": "https://www.flickr.com/photos/foeock/7892089208",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "09429af7b69ed4f8",
+      "photographer": "fervent-adepte-de-la-mode",
+      "photographer_url": "https://www.flickr.com/people/51528537@N08/",
+      "url": "https://www.flickr.com/photos/51528537@N08/8520326115",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "2f2ff78adbd93c85",
+      "photographer": "Manuel Rebic",
+      "photographer_url": "https://www.flickr.com/people/mem0rex/",
+      "url": "https://www.flickr.com/photos/mem0rex/10043755656",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "0e0b02072e588f3c",
+      "photographer": "Alessandro M.",
+      "photographer_url": "https://www.flickr.com/people/7829129@N08/",
+      "url": "https://www.flickr.com/photos/7829129@N08/4115008067",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "0b11f0995aaa2779",
+      "photographer": "fervent-adepte-de-la-mode",
+      "photographer_url": "https://www.flickr.com/people/51528537@N08/",
+      "url": "https://www.flickr.com/photos/51528537@N08/8316818343",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "76dde5e15a5f9437",
+      "photographer": "ChefMattRock",
+      "photographer_url": "https://www.flickr.com/people/chefmattrock/",
+      "url": "https://www.flickr.com/photos/chefmattrock/315140061",
+      "source": "openimages"
+    }
+  ]
+}

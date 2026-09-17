@@ -87,6 +87,7 @@ export default {
     demoNote: "Demo website — built by Carbon Stealth VCC",
     gallery: "Gallery",
     credits: "Photos",
+    creditsEdited: "cropped and edited",
     widget: { service: "Service", date: "Date", time: "Time", name: "Name", pick: "Choose", selected: "Selected", total: "Total", items: "items", done: "Demo: request received. On the real website you get an SMS/email confirmation.", clear: "Clear" },
     sticky: { call: "Call", book: "Book" },
     top: "Top",
@@ -155,7 +156,7 @@ export default {
       { t: "Imprint", p: ["Carbon Stealth VCC · Company ID BG208725180", "ul. Samuil 3, 2670 Bobov Dol, Bulgaria", "Email: info@carbonstealth.eu · Website: carbonstealth.eu"] },
       { t: "Privacy", p: ["This website is static. It uses no cookies, contains no tracking and collects no personal data. The forms on the demo pages are demonstrations and send nothing.", "If you email us, we process your data only to answer your enquiry (Art. 6(1)(b) GDPR). We keep correspondence for up to 24 months. Rights: access, rectification, erasure, portability, objection — at info@carbonstealth.eu. Supervisory authority: Commission for Personal Data Protection (CPDP), Sofia.", "Hosting: server in the EU (Hetzner, Germany). Server logs (IP address, request, time) are kept for 14 days for security."] },
       { t: "Terms of use", p: ["The demo websites show fictional companies, addresses, prices and reviews — they are not real offers. Prices on the “Pricing” page are indicative and are confirmed in a written quote.", "Content and code are the property of Carbon Stealth VCC. Governing law: Bulgarian; competent court: Sofia."] },
-      { t: "Fonts and photos", p: ["All fonts are served from our own server (SIL OFL licence) — nothing is sent to third parties when a page loads. Photos in the demo pages are free stock images (Pexels licence) — the photographers are credited under each gallery."] },
+      { t: "Fonts and photos", p: ["All fonts are served from our own server (SIL OFL licence) — nothing is sent to third parties when a page loads. Photos in the demo pages are freely licensed — Creative Commons BY 2.0 (Flickr, via the Open Images dataset) or the Pexels licence; we cropped and colour-graded them. Author, link to the original and licence are credited under each gallery."] },
     ],
   },
   brand: {

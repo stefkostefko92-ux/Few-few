@@ -2,7 +2,7 @@
 
 10 демо лендинг страници за 10 вида бизнес + цени и пакети, на български, английски и италиански.
 Живо на https://portfolio.carbonstealth.eu. Статичен сайт в дизайн езика на carbonstealth.eu, генериран без
-runtime зависимости; шрифтовете са самостоятелно хостнати, снимките идват от `tools/photos.mjs` (Pexels).
+runtime зависимости; шрифтовете са самостоятелно хостнати, снимките идват от `tools/photos.mjs` (Open Images/Flickr CC BY 2.0 по `photos.picks.json`, или Pexels).
 
 ```bash
 cd portfolio

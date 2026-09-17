@@ -21,7 +21,8 @@ node ../tools/qa/static-site-check.mjs dist     # препратки · ключ
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/render-images.mjs                    # og.png + apple-touch-icon.png (само при смяна на бранда)
 node tools/fonts.mjs                            # самостоятелно хостване на шрифтовете (при смяна на семейство)
-PEXELS_API_KEY=… node tools/photos.mjs [demo]   # реални снимки → public/img/<demo>/ (виж „Снимки")
+node tools/photos.mjs --openimages [demo]       # снимките от photos.picks.json (CC BY 2.0) → public/img/<demo>/ (виж „Снимки")
+PEXELS_API_KEY=… node tools/photos.mjs [demo]   # алтернатива: Pexels по photos.manifest.json
 ```
 
 CI: `.github/workflows/portfolio.yml` (path-филтриран). Деплой: `sudo bash portfolio/deploy.sh` на VPS-а
@@ -40,10 +41,11 @@ src/templates/demo.mjs      шаблонът на демо страница (е�
 src/templates/widgets.mjs   „живите" карти в hero-то: booking · schedule · tiles · stats · consult
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
-src/assets/                 site.css+js+hero.js (хъб), demo.css+js (демота), fonts/*.css (@font-face) — без билд
+src/assets/                 site.css+js+hero.js (хъб), demo.css+js (демота), fx/core.js + fx/<demo>.js (ефекти), fonts/*.css — без билд
 public/                     favicon.svg, logo.png/webp, og.png, apple-touch-icon.png, fonts/*.woff2, img/<demo>/, indexnow-key.txt
-photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6)
-tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Pexels → webp) · render-images.mjs
+photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
+photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6) — алтернативен източник
+tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · render-images.mjs
 test/build.test.mjs         гейтът · docs/PRICING-RESEARCH.md — проучването зад цените (с източници и дата)
 nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404) и деплоят
 ```
@@ -57,12 +59,20 @@ nginx.conf · deploy.sh      продукционният конфиг (CSP, HST
   референция иска обновено проучване — `docs/PRICING-RESEARCH.md` + `RESEARCH_DATE`.
 - **Съдържанието на демотата е примерно** (фиктивни фирми, `.example` имейли, фиктивни телефони) — лентата
   отгоре го казва изрично. Никакви реални имена на хора.
-- **Снимки** (реални, безплатни, лиценз Pexels): `PEXELS_API_KEY=… node tools/photos.mjs` чете
-  `photos.manifest.json`, сваля по 8 снимки на демо (hero · about · g1–g6), прави webp + `-sm` варианти и
-  `credits.json`; **билдът ги засича автоматично** — с тях hero-то е върху снимка, „за нас" има снимка, появява
-  се галерия с lightbox и ред с авторите; без тях демото е чисто типографско (генеративна графика). Ключът
-  НИКОГА в репото; снимките — да (те са асети). За офлайн тест: `--from <папка с hero.jpg, about.jpg, g1..g6.jpg>`.
-  От изолирана среда без изход към pexels.com конвейерът не може да се пусне — пуска се от машина с интернет.
+- **Снимки** (реални, свободно лицензирани): каноничният източник е `photos.picks.json` — ръчно подбрани
+  Flickr снимки от набора Open Images (CC BY 2.0; изолираната среда стига до S3 на Open Images, но не и до
+  Pexels/Unsplash). `node tools/photos.mjs --openimages` ги сваля, изрязва на 3:2 по „вниманието" в кадъра,
+  прави лек грейд (контраст + острота), webp + `-sm` и `credits.json` (автор · Flickr линк · лиценз).
+  **Билдът ги засича автоматично** — с тях hero-то е върху снимка, „за нас" има снимка, галерия с lightbox и
+  ред с авторите („изрязани и обработени" — CC BY иска бележка за промяна); без тях демото е чисто типографско.
+  Смяна на снимка = нов запис в `photos.picks.json` (еднакво добра или по-добра, без водни знаци, без
+  разпознаваеми известни личности, без кредит, който би изглеждал зле под демо), после конвейерът. Алтернативи:
+  `PEXELS_API_KEY=… node tools/photos.mjs` (по `photos.manifest.json`, ключът НИКОГА в репото) и
+  `--from <папка>` с локални hero.jpg, about.jpg, g1..g6.jpg. Снимките се проследяват в git (те са асети).
+- **Ефекти** (`src/assets/fx/`): `core.js` дава общия слой (`window.FX` — canvas hero, spotlight карти, tilt,
+  parallax, typewriter, marquee, SVG draw-on; спира при `prefers-reduced-motion`), `fx/<demo>.js` е подписният
+  ефект на всяко демо (дизайнът е „за този бизнес", не общ шаблон). Ново демо → нов `fx/<id>.js`, шаблонът го
+  включва по id. Никога строб.
 - **Шрифтове**: всички се хостват от нас (`tools/fonts.mjs` → `public/fonts/`, `src/assets/fonts/<семейство>.css`);
   `head()` включва само семействата на страницата. Нова Google Fonts препратка в HTML е грешка (гейтната в теста).
 - **„Живите" hero карти са реални UI**: резервация (услуга → цена, дата, час, име → потвърждение), график (избор

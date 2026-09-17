@@ -28,7 +28,8 @@ function hero(t, th, c, demo, photos) {
   const h = t.hero;
   const photo = photos?.slots.hero ? picture(demo.id, "hero", photos.slots.hero, { w: 1600, h: 1067, alt: `${t.name} — ${t.category}`, cls: "hero-photo", eager: true }) : "";
   return `<section class="hero hero-${th.heroStyle} pattern-${th.pattern}${photo ? " has-photo" : ""}">${photo ? `<div class="hero-bg" aria-hidden="true">${photo}</div>` : ""}<span class="word" aria-hidden="true">${esc(th.word)}</span><div class="hero-text"><p class="eyebrow">${esc(h.eyebrow)}</p><h1>${h.title}</h1><p class="lede">${esc(h.lede)}</p><div class="cta-row"><a class="btn btn-primary" href="#contact">${esc(h.cta)} ${ICON.arrow}</a><a class="btn btn-ghost" href="#services">${esc(h.cta2)}</a></div></div><div class="hero-visual">${widget(h.widget, c, t)}</div></section>
-<div class="badges" aria-label="highlights">${t.badges.map((b) => `<span>${ICON.check}${esc(b)}</span>`).join("")}</div>`;
+<div class="badges" aria-label="highlights">${t.badges.map((b) => `<span>${ICON.check}${esc(b)}</span>`).join("")}</div>
+<div class="marquee" aria-hidden="true" data-marquee="${esc(t.services.map((s) => s.t).join(" · "))}"></div>`;
 }
 
 function services(t) {
@@ -45,7 +46,7 @@ function gallery(t, c, demo, photos) {
   if (!photos) return "";
   const slots = ["g1", "g2", "g3", "g4", "g5", "g6"].filter((s) => photos.slots[s]);
   if (!slots.length) return "";
-  return `<section class="section" id="gallery"><div class="wrap"><h2 class="h2">${esc(c.gallery)}</h2><div class="gallery">${slots.map((s, i) => `<a class="g-item reveal" href="/img/${demo.id}/${s}.webp" data-lightbox="${i}">${picture(demo.id, s, photos.slots[s], { w: 900, h: 600, alt: photos.slots[s].alt || `${t.name} ${i + 1}` })}</a>`).join("")}</div>${creditsLine(photos, c.credits)}</div></section><div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="${esc(c.gallery)}"><button class="lb-close" type="button" aria-label="×">×</button><button class="lb-prev" type="button" aria-label="‹">‹</button><img alt=""><button class="lb-next" type="button" aria-label="›">›</button></div>`;
+  return `<section class="section" id="gallery"><div class="wrap"><h2 class="h2">${esc(c.gallery)}</h2><div class="gallery">${slots.map((s, i) => `<a class="g-item reveal" href="/img/${demo.id}/${s}.webp" data-lightbox="${i}">${picture(demo.id, s, photos.slots[s], { w: 900, h: 600, alt: photos.slots[s].alt || `${t.name} — ${t.services[i]?.name || i + 1}` })}</a>`).join("")}</div>${creditsLine(photos, c.credits, c.creditsEdited)}</div></section><div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="${esc(c.gallery)}"><button class="lb-close" type="button" aria-label="×">×</button><button class="lb-prev" type="button" aria-label="‹">‹</button><img alt=""><button class="lb-next" type="button" aria-label="›">›</button></div>`;
 }
 
 function steps(t) {
@@ -103,7 +104,7 @@ export function renderDemo(lang, demo) {
     nav(t, c, t.phone, !!photos),
     `<main>`, hero(t, th, c, demo, photos), services(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
     footer(t, c, lang), sticky(t, c),
-    `<script src="/assets/demo.js" defer></script>`,
+    `<script src="/assets/demo.js" defer></script><script src="/assets/fx/core.js" defer></script><script src="/assets/fx/${demo.id}.js" defer></script>`,
     `</body></html>`,
   ]);
 }
