@@ -1,6 +1,14 @@
 // pricing.mjs — ЕДИНСТВЕНИЯТ източник на числата за цени. Текстовете живеят в i18n/*.mjs,
 // числата тук; страницата и тестовете четат оттук, за да не може таблицата да лъже.
 //
+// ДДС КОНВЕНЦИЯ (решение на собственика, 2026-09-17; същата като на carbonstealth.eu —
+// cs-revolution/src/pricing.json @ c841100e4, генератор scripts/generate-pricing.py): числата в
+// TIERS/ADDONS са БРУТНИ — така се показват на българската версия („с включен 20% ДДС“).
+// Италианската и английската показват НЕТНИ цени: брутната ÷ 1,20, закръглена до цял евро
+// („IVA esclusa“ / „excl. VAT“; ДДС не се плаща само от фирми с валиден ДДС номер, частните
+// лица го плащат винаги). Пазарната референция е нетна (проучването) — за BG се вдига ×1,20,
+// за да е сравнима. Числата на сайта и тук са едни и същи; тестът ги пази равни.
+//
 // Пазарната референция (`market`) е средна агенцийна цена в EUR без ДДС, изведена от публични
 // ценови прегледи за 2026 (BG · IT · ЕС) — виж docs/PRICING-RESEARCH.md за диапазоните и
 // източниците. Правилото на собственика: нашата цена е ПОНЕ 15% под референцията (гейтвано).
@@ -32,6 +40,18 @@ export const ADDONS = [
 export const discountPct = (item) => Math.floor((1 - item.price / item.market) * 100);
 
 export const VAT_RATE_BG = 20;
+export const VAT_MULT = 1.2;
+/** Коя версия показва бруто (с ДДС) и коя нето (без ДДС). */
+export const VAT_CONVENTION = { bg: "gross", en: "net", it: "net" };
+/** Нето от бруто: ÷1,20 и закръгляне до цял евро (ROUND_HALF_UP като на сайта). */
+export const net = (n) => Math.round(n / VAT_MULT);
+export const gross = (n) => Math.round(n * VAT_MULT);
+/** Нашата цена, както я вижда читателят на дадения език (BG бруто, IT/EN нето). */
+export const shown = (n, lang) => (VAT_CONVENTION[lang] === "gross" ? n : net(n));
+/** Пазарната референция е нетна; за BG я вдигаме с ДДС, за да е сравнима с нашата брутна цена. */
+export const shownMarket = (n, lang) => (VAT_CONVENTION[lang] === "gross" ? gross(n) : n);
+/** Часова ставка извън обхвата: 54 € бруто = 45 € нето. */
+export const HOURLY_GROSS = 54;
 
 /** Пазарни диапазони, показани на страницата като доказателство (EUR без ДДС). */
 export const MARKET_RANGES = [
@@ -58,4 +78,16 @@ export const SOURCES = [
   { name: "sunbytes.io — Website development cost Europe 2026", url: "https://sunbytes.io/blog/software-development/website-development-cost-europe/" },
 ];
 
-export const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
+/** Хилядите по езика (BG тясно неделимо пространство · EN запетая · IT точка); „1 890 €“ както на сайта. */
+const SEP = { bg: "\u202F", en: ",", it: "." };
+export const fmt = (n, lang = "bg") => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, SEP[lang] || SEP.bg);
+export const money = (n, lang = "bg") => `${fmt(n, lang)} €`;
+/** Плейсхолдърите в текстовете за дадения език: {start} {business} {premium} {ecommerce} {hosting} {hourly}. */
+export function numbers(lang) {
+  const d = Object.fromEntries(TIERS.map((t) => [t.id, fmt(shown(t.price, lang), lang)]));
+  d.hosting = fmt(shown(ADDONS.find((a) => a.id === "hosting").price, lang), lang);
+  d.hourly = fmt(shown(HOURLY_GROSS, lang), lang);
+  return d;
+}
+/** Текст с попълнени числа по езика. */
+export const tx = (s, lang) => String(s).replace(/\{(start|business|premium|ecommerce|hosting|hourly)\}/g, (_, k) => numbers(lang)[k]);

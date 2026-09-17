@@ -5,7 +5,7 @@ import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANG
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { DEMO_ICONS } from "./icons.mjs";
-import { TIERS, fmt } from "../pricing.mjs";
+import { TIERS, money, shown, tx, VAT_CONVENTION } from "../pricing.mjs";
 
 export const HUB_FONTS = ["brand"];
 export const BRAND_BG = "#000000";
@@ -75,7 +75,7 @@ function why(ui) {
 }
 
 function pricingTeaser(lang, ui) {
-  return `<section class="section alt" id="pricing"><div class="wrap"><div class="tag reveal">// ${esc(ui.pricingTeaser.eyebrow)}</div>${ghost(ui.pricingTeaser.title)}<p class="lede reveal">${esc(ui.pricingTeaser.lede)}</p><div class="mini reveal">${TIERS.map((t) => `<a class="${t.popular ? "pop" : ""}" href="${PATHS.pricing[lang]}#${t.id}" data-cursor><span>${esc(ui.pricing.tiers[t.id].name)} — ${esc(ui.pricing.tiers[t.id].tag)}</span><b>${fmt(t.price)} €</b></a>`).join("")}</div><p style="margin-top:32px"><a class="btn" href="${PATHS.pricing[lang]}" data-magnetic>${esc(ui.pricingTeaser.cta)} ${ICON.arrow}</a></p></div></section>`;
+  return `<section class="section alt" id="pricing"><div class="wrap"><div class="tag reveal">// ${esc(ui.pricingTeaser.eyebrow)}</div>${ghost(tx(ui.pricingTeaser.title, lang))}<p class="lede reveal">${esc(ui.pricingTeaser.lede)}</p><div class="mini reveal">${TIERS.map((t) => `<a class="${t.popular ? "pop" : ""}" href="${PATHS.pricing[lang]}#${t.id}" data-cursor><span>${esc(ui.pricing.tiers[t.id].name)} — ${esc(ui.pricing.tiers[t.id].tag)}</span><b>${money(shown(t.price, lang), lang)}</b></a>`).join("")}</div><p style="margin-top:32px"><a class="btn" href="${PATHS.pricing[lang]}" data-magnetic>${esc(ui.pricingTeaser.cta)} ${ICON.arrow}</a></p></div></section>`;
 }
 
 export function contact(lang, ui, title = ui.contact.title, lede = ui.contact.lede) {
@@ -87,7 +87,7 @@ function schema(lang, ui, path) {
     ORG,
     { "@type": "WebSite", "@id": `${SITE}/#website`, url: SITE, name: "Carbon Stealth Portfolio", inLanguage: LANGS, publisher: { "@id": ORG["@id"] } },
     { "@type": "CollectionPage", "@id": SITE + path, url: SITE + path, name: ui.meta.hubTitle, description: ui.meta.hubDesc, inLanguage: lang, isPartOf: { "@id": `${SITE}/#website` }, hasPart: DEMOS.map((d) => ({ "@type": "WebPage", name: d.t[lang].name, url: SITE + demoPath(lang, d), about: d.t[lang].category })) },
-    { "@type": "Service", name: ui.meta.hubTitle.split("|")[0].trim(), provider: { "@id": ORG["@id"] }, areaServed: ["BG", "IT", "EU"], serviceType: "Web design and development", offers: TIERS.map((t) => ({ "@type": "Offer", name: ui.pricing.tiers[t.id].name, price: t.price, priceCurrency: "EUR", url: SITE + PATHS.pricing[lang] + "#" + t.id })) },
+    { "@type": "Service", name: ui.meta.hubTitle.split("|")[0].trim(), provider: { "@id": ORG["@id"] }, areaServed: ["BG", "IT", "EU"], serviceType: "Web design and development", offers: TIERS.map((t) => ({ "@type": "Offer", name: ui.pricing.tiers[t.id].name, price: shown(t.price, lang), priceCurrency: "EUR", priceSpecification: { "@type": "UnitPriceSpecification", price: shown(t.price, lang), priceCurrency: "EUR", valueAddedTaxIncluded: VAT_CONVENTION[lang] === "gross" }, url: SITE + PATHS.pricing[lang] + "#" + t.id })) },
   ] });
 }
 

@@ -10,7 +10,7 @@ import { I18N } from "../src/i18n/index.mjs";
 import { DEMOS } from "../src/demos/index.mjs";
 import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
 import { DEMO_ICONS } from "../src/templates/icons.mjs";
-import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES } from "../src/pricing.mjs";
+import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
 import { LANGS } from "../src/lib/html.mjs";
 
 const OUT = join(fileURLToPath(new URL("..", import.meta.url)), ".tmp-test-dist");
@@ -71,13 +71,35 @@ test("цени: всеки пакет и добавка е поне 15% под �
   assert.ok(TIERS.filter((t) => t.popular).length === 1, "точно един „най-избиран“ пакет");
 });
 
-test("страницата с цени носи reverse charge за ЕС фирми на трите езика и числата от pricing.mjs", () => {
+test("ДДС конвенцията е тази на carbonstealth.eu (cs-revolution/src/pricing.json @ c841100e4): BG бруто, EN/IT нето ÷1,20, пазар за BG ×1,20", () => {
+  // Числата са преписани от pricing.json на сайта — ако някой смени конвенцията само на едното място, тестът пада.
+  const site = {
+    tiers: { start: { it: 658, en: 658, bg: 790 }, business: { it: 1575, en: 1575, bg: 1890 }, premium: { it: 3575, en: 3575, bg: 4290 }, ecommerce: { it: 1825, en: 1825, bg: 2190 } },
+    market: { start: 1140, business: 2760, premium: 6240, ecommerce: 3120 },
+    addons: { language: { net: 292, bg: 350, mbg: 600 }, page: { net: 100, bg: 120, mbg: 180 }, logo: { net: 325, bg: 390, mbg: 576 }, copy: { net: 75, bg: 90, mbg: 132 }, maintenance: { net: 58, bg: 69, mbg: 102 }, seo: { net: 242, bg: 290, mbg: 420 }, hosting: { net: 13, bg: 15, mbg: 23 } },
+    discount: { start: 16, business: 17, premium: 17, ecommerce: 15, language: 30, page: 19, logo: 18, copy: 18, maintenance: 18, seo: 17, hosting: 21 },
+  };
+  assert.deepEqual(VAT_CONVENTION, { bg: "gross", en: "net", it: "net" });
+  for (const t of TIERS) { for (const l of LANGS) assert.equal(shown(t.price, l), site.tiers[t.id][l], `${t.id}/${l}`); assert.equal(shownMarket(t.market, "bg"), site.market[t.id], `${t.id}: пазар BG`); assert.equal(shownMarket(t.market, "en"), t.market); assert.equal(discountPct(t), site.discount[t.id]); }
+  for (const a of ADDONS) { assert.equal(shown(a.price, "en"), site.addons[a.id].net, a.id); assert.equal(shown(a.price, "it"), site.addons[a.id].net); assert.equal(shown(a.price, "bg"), site.addons[a.id].bg); assert.equal(shownMarket(a.market, "bg"), site.addons[a.id].mbg); assert.equal(discountPct(a), site.discount[a.id]); }
+  assert.equal(money(1890, "bg"), "1\u202F890 €"); assert.equal(money(1575, "en"), "1,575 €"); assert.equal(money(1575, "it"), "1.575 €");
+  assert.equal(tx("{start}/{hourly}", "en"), "658/45"); assert.equal(tx("{start}/{hourly}", "bg"), "790/54");
+});
+
+test("страницата с цени: reverse charge + Директива 2006/112 на трите езика, цените по ДДС конвенцията (BG „с включен 20% ДДС“, EN/IT „excl. VAT / IVA esclusa“), хъбът и llms.txt със същите числа", () => {
+  const vatText = { bg: "с включен 20% ДДС", en: "Prices exclude VAT", it: "Prezzi IVA esclusa" };
   for (const l of LANGS) {
     const html = readFileSync(join(OUT, I18N[l].code, { bg: "ceni", en: "pricing", it: "prezzi" }[l], "index.html"), "utf8");
     assert.ok(/reverse charge/i.test(html), `${l}: reverse charge`);
     assert.ok(html.includes("2006/112"), `${l}: Директива 2006/112`);
-    for (const t of TIERS) assert.ok(html.includes(`id="${t.id}"`), `${l}: пакет ${t.id}`);
-    assert.ok(html.includes("4 290"), `${l}: форматирана цена`);
+    assert.ok(html.includes(vatText[l]), `${l}: ДДС текст „${vatText[l]}“`);
+    for (const t of TIERS) { assert.ok(html.includes(`id="${t.id}"`), `${l}: пакет ${t.id}`); assert.ok(html.includes(`<strong>${money(shown(t.price, l), l)}</strong>`), `${l}: ${t.id} = ${money(shown(t.price, l), l)}`); assert.ok(html.includes(`<s>${money(shownMarket(t.market, l), l)}</s>`), `${l}: пазар ${t.id}`); }
+    for (const a of ADDONS) assert.ok(html.includes(`<strong>${money(shown(a.price, l), l)}</strong>`), `${l}: добавка ${a.id}`);
+    assert.ok(!/\{(start|business|premium|ecommerce|hosting|hourly)\}/.test(html), `${l}: непопълнен плейсхолдър`);
+    assert.ok(html.includes(`"valueAddedTaxIncluded":${VAT_CONVENTION[l] === "gross"}`), `${l}: JSON-LD valueAddedTaxIncluded`);
+    const hub = readFileSync(join(OUT, I18N[l].code, "index.html"), "utf8");
+    assert.ok(hub.includes(`${money(shown(790, l), l)}`), `${l}: хъбът показва ${money(shown(790, l), l)}`);
+    assert.ok(!/\{(start|business)\}/.test(hub), `${l}: хъб плейсхолдър`);
   }
 });
 
@@ -114,7 +136,7 @@ test("служебни файлове: sitemap с 39 URL и hreflang, robots с�
   assert.ok(sm.includes('hreflang="x-default"'));
   assert.ok(readFileSync(join(OUT, "robots.txt"), "utf8").includes("Sitemap: https://portfolio.carbonstealth.eu/sitemap.xml"));
   const llms = readFileSync(join(OUT, "llms.txt"), "utf8");
-  assert.ok(llms.includes("reverse charge") && llms.includes("790 EUR"));
+  assert.ok(llms.includes("reverse charge") && llms.includes("658 EUR excl. VAT") && llms.includes("790 EUR incl. 20% VAT"));
   assert.ok(readFileSync(join(OUT, ".well-known/security.txt"), "utf8").includes("Expires:"));
   assert.ok(readFileSync(join(OUT, "index.html"), "utf8").includes('hreflang="x-default" href="https://portfolio.carbonstealth.eu/bg/"'));
 });

@@ -3,7 +3,7 @@ import { esc, join, head, credit, jsonLd, PATHS, demoPath, SITE, LANGS, ORG, BRA
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
-import { TIERS, ADDONS, fmt } from "../pricing.mjs";
+import { TIERS, ADDONS, fmt, shown, net } from "../pricing.mjs";
 
 export function renderLegal(lang) {
   const ui = I18N[lang], path = PATHS.legal[lang];
@@ -75,8 +75,8 @@ Sitemap: ${SITE}/sitemap.xml
 
 export function llms() {
   const demoLines = (l) => DEMOS.map((d) => `- ${d.t[l].name} (${d.t[l].category}): ${SITE}${demoPath(l, d)}`).join("\n");
-  const tiers = TIERS.map((t) => `- ${I18N.bg.pricing.tiers[t.id].name} / ${I18N.en.pricing.tiers[t.id].name}: ${fmt(t.price)} EUR (${I18N.en.pricing.tiers[t.id].tag})`).join("\n");
-  const addons = ADDONS.map((a) => `- ${I18N.en.pricing.addons[a.id]}: ${fmt(a.price)} EUR ${a.kind === "monthly" ? "per month" : "one-off"}`).join("\n");
+  const tiers = TIERS.map((t) => `- ${I18N.bg.pricing.tiers[t.id].name} / ${I18N.en.pricing.tiers[t.id].name}: ${fmt(shown(t.price, "en"), "en")} EUR excl. VAT (${fmt(t.price, "en")} EUR incl. 20% VAT for clients in Bulgaria) — ${I18N.en.pricing.tiers[t.id].tag}`).join("\n");
+  const addons = ADDONS.map((a) => `- ${I18N.en.pricing.addons[a.id]}: ${fmt(net(a.price), "en")} EUR excl. VAT (${fmt(a.price, "en")} EUR incl. VAT in Bulgaria) ${a.kind === "monthly" ? "per month" : "one-off"}`).join("\n");
   return `# Carbon Stealth Portfolio
 
 > Портфолио на Carbon Stealth VCC (${BRAND_URL}) — уеб студио от България, работещо с клиенти в България и Италия. Сайтът показва 10 напълно работещи демо лендинг страници за 10 вида бизнес (автосервиз, фитнес, мебелен магазин, адвокатска кантора, салон за красота, хотел/къща за гости, счетоводна къща, автокъща, магазин за дрехи, бързо хранене) на български, английски и италиански, плюс прозрачни цени, поне 15% под пазарните за 2026 г.
@@ -88,7 +88,8 @@ export function llms() {
 - Услуги: уеб сайтове, лендинг страници, онлайн магазини, софтуер по поръчка, SEO/GEO/AEO, хостинг в ЕС.
 - Езици: български, английски, италиански.
 
-## Цени (EUR, без ДДС) / Pricing (EUR, excl. VAT)
+## Цени / Pricing (EUR)
+Същите цени като на carbonstealth.eu. Българската версия показва крайни цени с включен 20% ДДС; английската и италианската — нето (÷1,20), без ДДС само за фирми с валиден ДДС номер. / Same prices as on carbonstealth.eu: the Bulgarian page shows prices including 20% VAT, the English and Italian pages show net prices (÷1.20); VAT is waived only for companies with a valid VAT number, private individuals always pay 20%.
 ${tiers}
 ${addons}
 - ДДС: клиенти от България +20%; фирми от ЕС извън България — обратно начисляване (reverse charge, чл. 196 Директива 2006/112/ЕО), без български ДДС; фирми извън ЕС — без български ДДС.
