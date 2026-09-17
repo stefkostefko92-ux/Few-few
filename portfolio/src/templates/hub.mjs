@@ -53,11 +53,17 @@ const ticker = (ui) => `<div class="ticker" tabindex="0" aria-label="ticker"><di
 
 function demoCard(lang, demo, ui, i) {
   const t = demo.t[lang], th = demo.theme, href = demoPath(lang, demo);
-  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span><span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span><h3 data-scramble>${esc(t.name)}</h3><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></article>`;
+  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span><span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span><h3 data-scramble>${esc(t.name)}</h3><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><div class="demo-actions"><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></div></article>`;
+}
+
+/** Модал „преглед на устройства": iframe на демото в десктоп · таблет · телефон рамка (site.js). */
+function devModal(ui) {
+  const b = ui.brand;
+  return `<div class="devmodal" id="devmodal" hidden role="dialog" aria-modal="true" aria-label="${esc(b.preview)}"><div class="dev-bar"><span class="dev-name hud"></span><div class="dev-switch" role="group" aria-label="${esc(b.preview)}"><button type="button" class="on" data-w="1440">${esc(b.devices.desktop)}</button><button type="button" data-w="834">${esc(b.devices.tablet)}</button><button type="button" data-w="390">${esc(b.devices.phone)}</button></div><a class="dev-open" href="#" target="_blank" rel="noopener">${esc(b.openNew)}</a><button type="button" class="dev-close" aria-label="${esc(b.close)}">✕</button></div><div class="dev-stage"><div class="dev-frame" style="--w:1440px"><iframe title="" loading="lazy"></iframe></div></div></div>`;
 }
 
 function demos(lang, ui) {
-  return `<section class="section" id="demos"><div class="wrap"><div class="tag reveal">// ${esc(ui.demos.eyebrow)}</div>${ghost(ui.demos.title)}<p class="lede reveal">${esc(ui.demos.lede)}</p><div class="grid1">${DEMOS.map((d, i) => demoCard(lang, d, ui, i)).join("")}</div></div></section>`;
+  return `<section class="section" id="demos"><div class="wrap"><div class="tag reveal">// ${esc(ui.demos.eyebrow)}</div>${ghost(ui.demos.title)}<p class="lede reveal">${esc(ui.demos.lede)}</p><div class="grid1">${DEMOS.map((d, i) => demoCard(lang, d, ui, i)).join("")}</div></div></section>${devModal(ui)}`;
 }
 
 function process(ui) {

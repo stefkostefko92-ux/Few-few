@@ -211,8 +211,8 @@ p{margin:0 0 14px}
   .grid-3,.pricelist,.steps,.facts{grid-template-columns:1fr}
   .cs-hint{display:none}
   .cs-bar{gap:8px;font-size:12px}
-  .cs-want{padding:7px 10px;font-size:12px}
-  .cs-back{flex:1}
+  .cs-want{padding:7px 8px;font-size:9px;letter-spacing:.08em}
+  .cs-back{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .burger{display:block}
   .menu{display:none;position:absolute;left:0;right:0;top:100%;flex-direction:column;gap:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px 16px}
   .menu.open{display:flex}

@@ -118,3 +118,14 @@ test("служебни файлове: sitemap с 39 URL и hreflang, robots с�
   assert.ok(readFileSync(join(OUT, ".well-known/security.txt"), "utf8").includes("Expires:"));
   assert.ok(readFileSync(join(OUT, "index.html"), "utf8").includes('hreflang="x-default" href="https://portfolio.carbonstealth.eu/bg/"'));
 });
+
+test("премиум слой: демотата носят premium.css/js, завеса, номера на секции, надписи в галерията, аватари; хъбът — преглед на устройства", () => {
+  const html = readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8");
+  for (const needle of ['href="/assets/premium.css"', 'src="/assets/premium.js"', 'class="curtain"', 'class="sec-num"', 'class="scroll-cue"', 'class="avatar"', 'class="fa"', 'class="foot-word"', 'class="lb-cap"']) assert.ok(html.includes(needle), needle);
+  if (existsSync(join(OUT, "img/avtoservis/credits.json"))) assert.ok(/data-cap="[^"]+"/.test(html) && html.includes('class="tint"'), "галерия с надписи и тониран hero");
+  for (const f of ["assets/premium.css", "assets/premium.js"]) assert.ok(existsSync(join(OUT, f)), f);
+  assert.ok(!/class="[^"]*\bsplit\b[^"]*"[^>]*>\s*<span class="wd"/.test(html), ".split е решетката — думите ползват .sp");
+  const hub = readFileSync(join(OUT, "bg/index.html"), "utf8");
+  assert.ok(hub.includes('id="devmodal"') && (hub.match(/class="dev-btn"/g) || []).length === 10, "device preview за всяко демо");
+  for (const l of LANGS) assert.ok(I18N[l].brand.devices.phone && I18N[l].brand.preview, `${l}: brand.devices`);
+});

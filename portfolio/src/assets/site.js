@@ -122,3 +122,18 @@ document.querySelectorAll("[data-scramble]").forEach(function (el) { el.addEvent
   covers.forEach(function (c) { io.observe(c); });
   addEventListener("resize", function () { covers.forEach(function (c) { var f = c.querySelector("iframe"); if (f) f.style.setProperty("--s", (c.clientWidth / 1440).toFixed(4)); }); }, { passive: true });
 })();
+
+// --- преглед на устройства: iframe на демото в десктоп · таблет · телефон рамка ---
+(function () {
+  var m = document.getElementById("devmodal"); if (!m) return;
+  var fr = m.querySelector(".dev-frame"), f = fr.querySelector("iframe"), name = m.querySelector(".dev-name"), open = m.querySelector(".dev-open"), sw = m.querySelectorAll(".dev-switch button"), last = null;
+  function set(w) { fr.style.setProperty("--w", w + "px"); fr.classList.toggle("phone", w < 500); fr.classList.toggle("tablet", w >= 500 && w < 1000); sw.forEach(function (b) { b.classList.toggle("on", b.dataset.w === String(w)); }); }
+  function show(href, n, btn) { last = btn; f.src = href; name.textContent = "// " + n; open.href = href; m.hidden = false; document.body.style.overflow = "hidden"; m.querySelector(".dev-close").focus(); }
+  function hide() { m.hidden = true; f.src = "about:blank"; document.body.style.overflow = ""; if (last) last.focus(); }
+  document.querySelectorAll(".dev-btn").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.device, b.dataset.name, b); }); });
+  sw.forEach(function (b) { b.addEventListener("click", function () { set(+b.dataset.w); }); });
+  m.querySelector(".dev-close").addEventListener("click", hide);
+  addEventListener("keydown", function (e) { if (!m.hidden && e.key === "Escape") hide(); });
+})();
+// --- холографски блик по демо картите (следва курсора) ---
+document.querySelectorAll(".demo-card").forEach(function (c) { c.addEventListener("pointermove", function (e) { var r = c.getBoundingClientRect(); c.style.setProperty("--mx", (e.clientX - r.left) + "px"); c.style.setProperty("--my", (e.clientY - r.top) + "px"); }, { passive: true }); });
