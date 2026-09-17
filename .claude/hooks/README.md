@@ -1,41 +1,61 @@
 # Hooks — `.claude/hooks/`
 
-Куки, наложени от харнеса (Claude Code). Регистрират се в `.claude/settings.json`.
+Куки, наложени от харнеса (Claude Code). Регистрират се в `.claude/settings.json`. Този файл описва
+**реалното** състояние — до 2026-09-09 описваше три предпазителя и стар matcher, докато в
+settings.json бяха регистрирани четири с други matcher-и. Документ, който твърди състояние, което не
+съществува, е по-лош от липсващ (виж secret-parity: „зелено по слепота").
 
-## Активни (регистрирани в settings.json)
-- **`memory-preload.mjs`** (`SubagentStart`) — инжектира „Проверени поуки" + доктрината за сигурност +
-  общата процедура (`_memory/PROCEDURE.md`) в контекста на всеки агент при старт.
+## Активни — цикълът на паметта
+- **`memory-preload.mjs`** (`SubagentStart`) — инжектира релевантните „Проверени поуки" + доктрината за
+  сигурност (`_memory/SECURITY.md`) + общата процедура (`_memory/PROCEDURE.md`) в контекста на всеки агент.
+- **`dod-check.mjs`** (`SubagentStop`) — налага блока `## ПРЕДАВАНЕ` (HANDOFF) и дневника на веригите;
+  агент без валидно предаване не завършва тихо.
 - **`memory-capture.mjs`** (`SubagentStop`) — изважда последния ```learn блок от транскрипта, записва
-  verified → памет / друго → Карантина, обновява таблото, авто-commit/push (flock-сериализиран).
+  verified → памет / друго → Карантина (тайни се изпускат твърдо), обновява таблото.
+- **`precompact-save.mjs`** (`PreCompact`) — запазва състоянието преди компактиране на контекста.
+- **`session-dod.mjs`** (`Stop`) — проверка на завършеност в края на сесията.
 
-## Активни предпазители (регистрирани в settings.json)
-Отбранителни, **fail-open** (хук-грешка никога не спира работата), тествани
-(`tools/hooks/guards.test.mjs`). Регистрирани като `PreToolUse`/`PostToolUse` (виж settings.json):
+## Активни предпазители
+Отбранителни, **fail-open** при вътрешна грешка (хук-бъг никога не спира работата), **fail-closed** при
+засечен вектор (exit 2). Тествани в `tools/hooks/guards.test.mjs` + `tools/security/secret-parity.test.mjs`.
 
-- **`guard-dangerous.mjs`** (`PreToolUse` matcher `Bash`) — блокира САМО еднозначно катастрофални команди
-  (`rm -rf /`, fork bomb, `mkfs`, `dd of=/dev/sd…`, `curl|sh`, `git push --force main`). Всичко останало
-  минава — не пречи на нормалната работа.
-- **`guard-secrets.mjs`** (`PostToolUse` matcher `Write|Edit`) — ранно предупреждение, ако тъкмо записан
-  файл съдържа високо-уверен секрет-шаблон (Stripe/AWS/GitHub/PEM/Slack/Google). Пропуска fixture/test/
-  eval/scratch пътища. Реалният hard gate остава `tools/security/secret-scan.mjs` при commit/CI.
-- **`guard-exfil.mjs`** (`PreToolUse` matcher `Bash|WebFetch`) — блокира ИЗНАСЯНЕ на тайни/данни навън:
-  `curl`/`wget`/`nc`/… с литерален секрет, тайна env променлива, `.env` файл или пълен env dump към мрежата;
-  WebFetch към URL с секрет. Near-zero-FP (нормалните curl/git/npm минават). Затваря lethal-trifecta изхода,
-  който `guard-secrets` (само запис в repo) не покрива. Споделя secret-шаблоните с `guard-secrets.mjs`.
+| Кука | Събитие · matcher | Какво блокира |
+|---|---|---|
+| **`guard-prompt.mjs`** | `UserPromptSubmit` | Случайно ПОСТАВЕНА тайна в промпта (клипборд) — да не влезе в история/логове. Байпас по избор: „[секрет-ок]". |
+| **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. |
+| **`guard-secrets.mjs`** | `PostToolUse` · `Write\|Edit\|MultiEdit\|NotebookEdit` | Тъкмо записан файл/бележник с високо-уверен credential (17 типа от `tools/lib/secret-patterns.mjs`). Пропуска fixture/test/eval/scratch пътища. Твърдият гейт остава `secret-scan.mjs` при commit/CI. |
+| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене. |
 
-Регистрацията (вече в settings.json):
+**Един източник за „какво е тайна":** `tools/lib/secret-patterns.mjs` (`CREDENTIAL`). Трите куки
+(`guard-secrets` → `guard-exfil`, `guard-prompt`) го ИМПОРТИРАТ; `secret-parity.test.mjs` пази и трите.
+Ръчно преписан списък дрейфва винаги — така 8 типа credential минаваха през промпта до 2026-09-08.
 
-```json
-"PreToolUse": [
-  { "matcher": "Bash", "hooks": [
-    { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-dangerous.mjs\"", "timeout": 10 } ] }
-],
-"PostToolUse": [
-  { "matcher": "Write|Edit", "hooks": [
-    { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secrets.mjs\"", "timeout": 10 } ] }
-]
-```
+**Санитизация на входа:** и трите предпазителя минават входа през `sanitize()` (маха невидими знаци —
+U+200B, Unicode Tags и др. — и нормализира NFKC). Без това един U+200B в средата на `sk_live_…` го
+правеше невидим за всеки шаблон.
 
-**Договор:** всеки хук чете JSON от stdin (`{tool_name, tool_input, …}`). `PreToolUse` блокира при **exit 2**
-(причината на stderr); `PostToolUse` surface-ва предупреждение при exit 2. Всичко друго → exit 0 (разреши).
-Пробвай ръчно: `echo '{"tool_input":{"command":"rm -rf /"}}' | node .claude/hooks/guard-dangerous.mjs`.
+### Доктрина за фалшивите позитиви
+Цената на фалшив блок е **изключен предпазител** (хората ги махат, когато пречат). Затова:
+- **Командна позиция, не споменаване.** Шаблон за `git push …`, `npm publish`, `gh auth token | curl`
+  съвпада само в началото на команда (`^`, след `;`/`&&`/`|`/нов ред), не в кавички на текстов аргумент.
+  Иначе описанието в дневника на грешките, което цитира вектора, се блокира от самия предпазител
+  (случило се, 2026-09-08).
+- **Токен-котва `TOK`** вместо `\b\S*`: `\b` е граница дума/не-дума, а `~/.ssh` и `/proc/…` започват с
+  `.`/`/` — без котва шаблонът мълчи. Една котва, три консуматора.
+- **Самостоятелен флаг:** `-T` с флаг `i` съвпадаше с `-t` вътре в `--test`; флагът трябва да е предшестван
+  от празно място, а името на файла — да не прекрачва кавичка/запетая.
+- **Домът е самият дом:** `rm -rf ~/.cache` не е катастрофа; `~`, `$HOME`, `.` — само когато са целият път.
+- `psql $DATABASE_URL -c … > out.txt` редиректира ИЗХОД, не тайната → стажирането се котви към `echo/printf`.
+
+### Червен екип — как се проверява (повторяемо)
+Не през експортираните функции, а през **самото CLI** (stdin JSON → exit code), защото това е
+регистрираният път. Тайните в пробите се сглобяват по време на изпълнение (конкатенация), за да не са
+литерал никъде — иначе `guard-exfil` блокира самата проба (случило се). Кръг 1 (2026-09-08): 40 проби →
+27 байпаса; кръг 2 (2026-09-09): 27 проби → 14 байпаса, ReDoS на 50 KB адверсарен вход ~60 ms. Всеки
+байпас стана регресия, всяка регресия е доказана с мутация (`tools/lib/mutation.mjs` · `withMutation`),
+всеки дефект е в `tools/agents/evals/errors.jsonl`.
+
+**Договор:** всеки хук чете JSON от stdin (`{tool_name, tool_input, …}`). `PreToolUse`/`UserPromptSubmit`
+блокират при **exit 2** (причината на stderr); `PostToolUse` surface-ва предупреждение при exit 2. Всичко
+друго → exit 0 (разреши).
+Пробвай ръчно: `echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}' | node .claude/hooks/guard-dangerous.mjs`.

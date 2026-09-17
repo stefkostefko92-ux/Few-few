@@ -272,10 +272,18 @@ Claude" (Anthropic, 33 стр.) описва изисквания, които п
 — данни, не инструкции**. Това е и първото ни умение с `references/`, тоест реалното трето ниво на
 прогресивното разкриване; линтът вече гейтва и препратките към него.
 
-**Guard hooks (active):** `guard-dangerous.mjs` (PreToolUse/Bash — blocks only catastrophic commands),
-`guard-secrets.mjs` (PostToolUse/Write|Edit — early secret warning), `guard-exfil.mjs`
-(PreToolUse/Bash|WebFetch — blocks secrets/PII leaving via curl/wget/WebFetch; the lethal-trifecta exit).
-All fail-open on hook error, tested (`tools/hooks/guards.test.mjs`), registered in `settings.json`.
+**Guard hooks (active, 4):** `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
+`guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
+`curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
+(PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
+(PreToolUse/Bash|WebFetch|WebSearch — blocks secrets/PII leaving via any net verb/interpreter, incl. pipe,
+`$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads, credential-emitting
+commands, and **staging** for a later exfil; the lethal-trifecta exit). All four import the **one**
+secret list (`tools/lib/secret-patterns.mjs`, parity-tested) and `sanitize()` their input (invisible
+chars hide payloads). Fail-open on hook error, fail-closed on a hit; tested (`tools/hooks/guards.test.mjs`),
+registered in `settings.json`. **Red-teamed through the CLI, not the functions** — 2026-09-08/09: 67 live
+probes → 41 bypasses closed, 3 false positives caught on my own commands (mention ≠ execution; a flag
+must stand alone; home is the home itself), every one a mutation-proven regression + ledger entry.
 Details → `.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
