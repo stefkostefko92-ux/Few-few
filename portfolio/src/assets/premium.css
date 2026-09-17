@@ -24,10 +24,11 @@
 .proof b{color:var(--accent);font-weight:600}
 .hero-center .proof{text-align:center}
 
-/* Trust strip: фактите с иконата на собственика */
+/* Trust strip: без икони, само факти */
 .badges{gap:10px 0;padding:16px clamp(16px,4vw,40px);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:500}
-.badges span{padding:0 22px;border-left:1px solid var(--line);display:inline-flex;align-items:center}
+.badges span{padding:0 22px;border-left:1px solid var(--line)}
 .badges span:first-child{border-left:0}
+.badges svg{display:none}
 
 /* Оферта-банер */
 .offer{background:var(--accent);color:var(--on-accent)}

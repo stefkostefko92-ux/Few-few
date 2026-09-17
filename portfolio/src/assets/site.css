@@ -87,9 +87,6 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .btn-ghost{border-color:rgba(var(--off-rgb),.2);color:var(--off)}
 .btn-ghost:hover{background:var(--off);color:#000}
 .btn svg{width:14px;height:14px}
-.ic-img{display:inline-block;width:18px;height:auto;border-radius:3px;vertical-align:middle;flex:none}
-.btn .ic-img{width:18px}
-.btn-solid .ic-img,.btn:hover .ic-img{box-shadow:0 0 0 1px rgba(0,0,0,.35)}
 .cta-row{display:flex;gap:12px;flex-wrap:wrap}
 
 /* --- hero --- */
@@ -124,8 +121,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .cell h3{font-size:1.15rem;margin:10px 0;color:var(--off)}
 .cell p{font-size:12px;color:var(--text);line-height:1.8}
 .cell .ic{width:38px;height:38px;border:1px solid rgba(var(--cyan-rgb),.2);display:grid;place-items:center;color:var(--cyan);margin-bottom:14px}
-.cell .ic{width:auto;height:auto;border:0;margin-bottom:14px}
-.cell .ic .ic-img{width:38px;border-radius:6px}
+.cell .ic svg{width:18px;height:18px}
 
 /* --- демо карти --- */
 .demo-card{padding:0;display:flex;flex-direction:column}
@@ -133,7 +129,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .cover-art{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:12px;color:var(--c-accent,var(--cyan));transition:opacity .5s}
 .cover-art::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 20%,color-mix(in srgb,var(--c-accent,var(--cyan)) 30%,transparent),transparent 55%),linear-gradient(var(--c-surface,#111),var(--c-bg,#000))}
 .cover-art>*{position:relative}
-.cover-art .ind-icon{width:min(26%,110px);height:auto;border-radius:10px;box-shadow:0 20px 50px -20px rgba(0,0,0,.8)}
+.cover-art svg{width:min(26%,100px);height:auto}
 .cover-name{font-size:clamp(20px,2.2vw,28px);font-weight:700;color:var(--c-text,#fff)}
 .demo-cover iframe{position:absolute;top:0;left:0;z-index:2;width:1440px;height:900px;border:0;transform:scale(var(--s,.25));transform-origin:0 0;pointer-events:none;opacity:0;transition:opacity .5s;background:var(--c-bg,#000)}
 .demo-cover iframe.ready{opacity:1}
@@ -179,7 +175,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .tier-market b{color:var(--green);font-weight:400}
 .tier ul{list-style:none;display:grid;gap:8px;font-size:11px;flex:1;color:var(--text-2)}
 .tier li{display:flex;gap:8px;align-items:flex-start}
-.tier li .ic-img,.terms .ic-img{width:16px;margin-top:2px}
+.tier li svg,.terms svg{color:var(--cyan);flex:none;margin-top:3px;width:14px;height:14px}
 .tier-delivery{display:flex;gap:8px;align-items:center;font-size:10px;letter-spacing:.1em;color:var(--ph);text-transform:uppercase}
 .tier .btn{justify-content:center;margin-top:6px}
 .addons{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(var(--off-rgb),.06);border:1px solid rgba(var(--off-rgb),.06)}

@@ -19,6 +19,7 @@ node build.mjs                                  # → dist/ (45 файла, 39 U
 node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
+node tools/render-images.mjs                    # og.png + apple-touch-icon.png (само при смяна на бранда)
 node tools/fonts.mjs                            # самостоятелно хостване на шрифтовете (при смяна на семейство)
 node tools/photos.mjs --openimages [demo]       # снимките от photos.picks.json (CC BY 2.0) → public/img/<demo>/ (виж „Снимки")
 PEXELS_API_KEY=… node tools/photos.mjs [demo]   # алтернатива: Pexels по photos.manifest.json
@@ -41,10 +42,10 @@ src/templates/widgets.mjs   „живите" карти в hero-то: booking ·
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
 src/assets/                 site.css+js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
-public/                     favicon.png, logo.png/webp, og.png, apple-touch-icon.png, icons/ (индустриални) + icons/ui/ (UI), fonts/*.woff2, img/<demo>/, indexnow-key.txt
+public/                     favicon.svg, logo.png/webp, og.png, apple-touch-icon.png, fonts/*.woff2, img/<demo>/, indexnow-key.txt
 photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
 photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6) — алтернативен източник
-tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp)
+tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · render-images.mjs
 test/build.test.mjs         гейтът · docs/PRICING-RESEARCH.md — проучването зад цените (с източници и дата)
 nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404) и деплоят
 ```
@@ -85,11 +86,6 @@ nginx.conf · deploy.sh      продукционният конфиг (CSP, HST
   (токени + `swatches()`), `salon.js`/`mebeli.js` (проба на цвят/материал — сменя акцента на живо),
   `schetovodstvo.js`/`avtokashta.js` (калкулатори). Шаблонът зарежда fx/ само за демотата в `FX_MODULES`.
   Ново демо с добавка → нов `fx/<id>.js` + id в `FX_MODULES`. Никога строб.
-- **Икони и бранд файлове са на собственика** (доставени като един лист; изрязани с sharp): `public/icons/<key>.webp`
-  (10 индустриални, 148×176 — картите в хъба, `src/templates/icons.mjs`) и `public/icons/ui/<key>.webp` (14 UI,
-  92×94 — `ICON` в `html.mjs`, размерът е от CSS `.ic-img`), `favicon.png` 64×64, `apple-touch-icon.png` 180×180,
-  `og.png` 1200×630. **Никакви други икони** (inline SVG, емоджи, библиотеки) — нова икона се иска от собственика
-  в същия стил и се добавя със същото име в двата регистъра. `logo.png/webp` е от carbonstealth.eu.
 - **Шрифтове**: всички се хостват от нас (`tools/fonts.mjs` → `public/fonts/`, `src/assets/fonts/<семейство>.css`);
   `head()` включва само семействата на страницата. Нова Google Fonts препратка в HTML е грешка (гейтната в теста).
 - **„Живите" hero карти са реални UI**: резервация (услуга → цена, дата, час, име → потвърждение), график (избор
