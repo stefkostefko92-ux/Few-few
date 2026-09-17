@@ -20,12 +20,12 @@
 
 ### Web Development
 Professional websites and web applications built with React, Next.js, Vue.js, WordPress, and modern PHP frameworks. Responsive design, accessibility (WCAG), and SEO optimization included.
-- Starting price: €800
+- Starting price: €790
 - URL: https://carbonstealth.eu/servizi/sviluppo-siti-web/
 
 ### E-Commerce
 Online stores with WooCommerce, Shopify, custom React + Stripe integrations. Multi-currency, multi-language, payment gateway integration.
-- Starting price: €1,200
+- Starting price: €2,190
 - URL: https://carbonstealth.eu/servizi/ecommerce/
 
 ### Custom Software Development
@@ -45,7 +45,7 @@ Native iOS and Android apps with React Native and Flutter. From design to App St
 
 ### SEO, GEO and AEO
 Optimization for Google, Bing, ChatGPT, Perplexity, Claude, Gemini. Local SEO for Italy and Bulgaria. Schema.org structured data, technical SEO.
-- Starting price: €500/month
+- Starting price: €290/month
 - URL: https://carbonstealth.eu/servizi/seo/
 
 ### Reverse Engineering & 3D Printing
@@ -54,7 +54,7 @@ Reverse engineering of mechanical parts and devices: scanning, CAD reconstructio
 
 ### Cloud Hosting
 Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SLA, monitoring.
-- Starting price: €29/month
+- Starting price: €15/month
 - URL: https://carbonstealth.eu/servizi/hosting/
 
 ## Notable Projects

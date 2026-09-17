@@ -1267,7 +1267,7 @@ function SEOInjector() {
         "name": "Come lavoriamo — Il processo Carbon Stealth",
         "description": "Il nostro processo di sviluppo in 6 fasi per garantire risultati eccellenti.",
         "totalTime": "P30D",
-        "estimatedCost": { "@type": "MonetaryAmount", "currency": "EUR", "value": "800" },
+        "estimatedCost": { "@type": "MonetaryAmount", "currency": "EUR", "value": "790" },
         "step": [
           { "@type": "HowToStep", "position": 1, "name": "Analisi e Brief", "text": "Studiamo il tuo progetto, gli obiettivi e il target. Definiamo scope, timeline e budget.", "url": "https://carbonstealth.eu/contatti/" },
           { "@type": "HowToStep", "position": 2, "name": "Architettura e Design", "text": "Progettiamo la struttura, wireframe e design UI/UX. Prototipo interattivo per approvazione." },

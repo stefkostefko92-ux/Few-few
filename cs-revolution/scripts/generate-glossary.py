@@ -412,10 +412,10 @@ dict(slug="hosting", name="Hosting", related=["dns", "cdn", "database"], lang=di
 <li><strong>Dedicato:</strong> un intero server per te, per progetti ad alto traffico.</li>
 </ul>
 <h2>Come scegliere l'hosting</h2>
-<p>Conta la velocità (SSD, server vicini ai tuoi utenti), il tempo di attività garantito, i backup automatici, l'SSL incluso e un supporto reattivo. Un hosting lento penalizza SEO e conversioni. Il nostro <a href="/servizi/hosting/">hosting cloud</a> parte da &euro;29/mese con SSL, backup e <a href="/glossario/cdn/">CDN</a> inclusi.</p>""",
+<p>Conta la velocità (SSD, server vicini ai tuoi utenti), il tempo di attività garantito, i backup automatici, l'SSL incluso e un supporto reattivo. Un hosting lento penalizza SEO e conversioni. Il nostro <a href="/servizi/hosting/">hosting cloud</a> parte da €15/mese con SSL, backup e <a href="/glossario/cdn/">CDN</a> inclusi.</p>""",
   faqs=[
    ("Qual è la differenza tra hosting e dominio?", "Il dominio è l'indirizzo del sito (il nome), l'hosting è lo spazio server dove il sito vive (la casa). Servono entrambi: uno per essere trovati, l'altro per esistere online."),
-   ("Quanto costa un hosting?", "Un hosting condiviso parte da pochi euro al mese, un hosting cloud professionale da circa &euro;29/mese. Il prezzo dipende da risorse, prestazioni, backup e supporto inclusi."),
+   ("Quanto costa un hosting?", "Un hosting condiviso parte da pochi euro al mese, un hosting cloud professionale da circa €15/mese. Il prezzo dipende da risorse, prestazioni, backup e supporto inclusi."),
    ("Posso cambiare hosting in seguito?", "Sì. Un sito si può migrare da un hosting all'altro trasferendo file e database, con attenzione a DNS e tempi di propagazione per evitare interruzioni."),
   ]),
  en=dict(q="web hosting", q_link="Hosting", card="The server space where your site's files live, always online.",
@@ -430,10 +430,10 @@ dict(slug="hosting", name="Hosting", related=["dns", "cdn", "database"], lang=di
 <li><strong>Dedicated:</strong> a whole server for you, for high-traffic projects.</li>
 </ul>
 <h2>How to choose hosting</h2>
-<p>What counts is speed (SSD, servers near your users), guaranteed uptime, automatic backups, included SSL and responsive support. Slow hosting hurts SEO and conversions. Our <a href="/en/services/hosting/">cloud hosting</a> starts at &euro;29/month with SSL, backups and a <a href="/en/glossary/cdn/">CDN</a> included.</p>""",
+<p>What counts is speed (SSD, servers near your users), guaranteed uptime, automatic backups, included SSL and responsive support. Slow hosting hurts SEO and conversions. Our <a href="/en/services/hosting/">cloud hosting</a> starts at €15/month with SSL, backups and a <a href="/en/glossary/cdn/">CDN</a> included.</p>""",
   faqs=[
    ("What is the difference between hosting and a domain?", "The domain is the site's address (the name), hosting is the server space where the site lives (the house). You need both: one to be found, the other to exist online."),
-   ("How much does hosting cost?", "Shared hosting starts at a few euros a month, professional cloud hosting from around &euro;29/month. The price depends on the resources, performance, backups and support included."),
+   ("How much does hosting cost?", "Shared hosting starts at a few euros a month, professional cloud hosting from around €15/month. The price depends on the resources, performance, backups and support included."),
    ("Can I change hosting later?", "Yes. A site can be migrated from one host to another by transferring files and the database, with care for DNS and propagation times to avoid downtime."),
   ]),
  bg=dict(q="хостинг", q_link="Хостинг", card="Сървърното пространство, където живеят файловете на сайта, винаги онлайн.",
@@ -448,10 +448,10 @@ dict(slug="hosting", name="Hosting", related=["dns", "cdn", "database"], lang=di
 <li><strong>Отделен:</strong> цял сървър за вас, за проекти с висок трафик.</li>
 </ul>
 <h2>Как да изберете хостинг</h2>
-<p>Важни са скоростта (SSD, сървъри близо до потребителите ви), гарантираното време на работа, автоматичните резервни копия, включеният SSL и отзивчивата поддръжка. Бавният хостинг вреди на SEO и конверсиите. Нашият <a href="/bg/uslugi/hosting/">облачен хостинг</a> започва от &euro;29/месец с включени SSL, резервни копия и <a href="/bg/rechnik/cdn/">CDN</a>.</p>""",
+<p>Важни са скоростта (SSD, сървъри близо до потребителите ви), гарантираното време на работа, автоматичните резервни копия, включеният SSL и отзивчивата поддръжка. Бавният хостинг вреди на SEO и конверсиите. Нашият <a href="/bg/uslugi/hosting/">облачен хостинг</a> започва от €15/месец с включени SSL, резервни копия и <a href="/bg/rechnik/cdn/">CDN</a>.</p>""",
   faqs=[
    ("Каква е разликата между хостинг и домейн?", "Домейнът е адресът на сайта (името), хостингът е сървърното пространство, където живее сайтът (къщата). Нужни са и двете: едното за да ви намерят, другото за да съществувате онлайн."),
-   ("Колко струва хостингът?", "Споделеният хостинг започва от няколко евро на месец, професионалният облачен хостинг от около &euro;29/месец. Цената зависи от включените ресурси, производителност, резервни копия и поддръжка."),
+   ("Колко струва хостингът?", "Споделеният хостинг започва от няколко евро на месец, професионалният облачен хостинг от около €15/месец. Цената зависи от включените ресурси, производителност, резервни копия и поддръжка."),
    ("Мога ли да сменя хостинга по-късно?", "Да. Сайтът може да се мигрира от един хостинг към друг чрез прехвърляне на файлове и база данни, с внимание към DNS и времето за разпространение, за да се избегне прекъсване."),
   ]),
 )),
@@ -472,7 +472,7 @@ dict(slug="dominio", name="Domain", related=["dns", "ssl", "hosting"], lang=dict
 <h2>Dominio, hosting e sicurezza</h2>
 <p>Il dominio è separato dall'<a href="/glossario/hosting/">hosting</a>: puoi tenerli dallo stesso fornitore o da due diversi. Su ogni dominio va attivato un certificato <a href="/glossario/ssl/">SSL</a> per l'HTTPS. Nel nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> ci occupiamo di registrazione, DNS e SSL, così parti senza pensieri tecnici.</p>""",
   faqs=[
-   ("Quanto costa un dominio?", "Un dominio costa in media &euro;10-15 all'anno, a seconda dell'estensione. Alcuni TLD particolari o nomi molto richiesti possono costare di più."),
+   ("Quanto costa un dominio?", "Un dominio costa in media €10-15 all'anno, a seconda dell'estensione. Alcuni TLD particolari o nomi molto richiesti possono costare di più."),
    ("Il dominio è mio per sempre?", "No: il dominio si \"affitta\" con un rinnovo annuale. Finché lo rinnovi resta tuo; se scade, dopo un periodo di grazia torna disponibile per altri."),
    ("Posso spostare un dominio su un altro hosting?", "Sì. Il dominio è indipendente dall'hosting: basta aggiornare i record DNS per farlo puntare a un nuovo server, senza cambiare nome."),
   ]),
@@ -490,7 +490,7 @@ dict(slug="dominio", name="Domain", related=["dns", "ssl", "hosting"], lang=dict
 <h2>Domain, hosting and security</h2>
 <p>The domain is separate from <a href="/en/glossary/hosting/">hosting</a>: you can keep them with the same provider or two different ones. Every domain needs an <a href="/en/glossary/ssl/">SSL</a> certificate for HTTPS. In our <a href="/en/services/web-development/">web development service</a> we handle registration, DNS and SSL, so you start with no technical worries.</p>""",
   faqs=[
-   ("How much does a domain cost?", "A domain costs on average &euro;10-15 per year, depending on the extension. Some special TLDs or highly sought-after names can cost more."),
+   ("How much does a domain cost?", "A domain costs on average €10-15 per year, depending on the extension. Some special TLDs or highly sought-after names can cost more."),
    ("Is the domain mine forever?", "No: a domain is \"rented\" with an annual renewal. As long as you renew it, it stays yours; if it expires, after a grace period it becomes available to others."),
    ("Can I move a domain to another host?", "Yes. The domain is independent of hosting: you just update the DNS records to point it to a new server, without changing the name."),
   ]),
@@ -508,7 +508,7 @@ dict(slug="dominio", name="Domain", related=["dns", "ssl", "hosting"], lang=dict
 <h2>Домейн, хостинг и сигурност</h2>
 <p>Домейнът е отделен от <a href="/bg/rechnik/hosting/">хостинга</a>: можете да ги държите при един доставчик или при двама различни. За всеки домейн трябва да се активира <a href="/bg/rechnik/ssl/">SSL</a> сертификат за HTTPS. В нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a> се грижим за регистрацията, DNS и SSL, така че да стартирате без технически грижи.</p>""",
   faqs=[
-   ("Колко струва домейн?", "Домейнът струва средно &euro;10-15 на година, в зависимост от разширението. Някои специални TLD или много търсени имена могат да струват повече."),
+   ("Колко струва домейн?", "Домейнът струва средно €10-15 на година, в зависимост от разширението. Някои специални TLD или много търсени имена могат да струват повече."),
    ("Домейнът мой ли е завинаги?", "Не: домейнът се \"наема\" с годишно подновяване. Докато го подновявате, остава ваш; ако изтече, след гратисен период става достъпен за други."),
    ("Мога ли да преместя домейн на друг хостинг?", "Да. Домейнът е независим от хостинга: просто обновявате DNS записите, за да сочи към нов сървър, без да сменяте името."),
   ]),

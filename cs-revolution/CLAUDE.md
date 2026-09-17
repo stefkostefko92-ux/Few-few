@@ -44,6 +44,18 @@ Deploy, live-patch, and troubleshooting are documented in
   (`base64 | tar` extract, `sed` on nginx, idempotent `python3` on static HTML), then
   ALWAYS commit the same change to the repo so the next deploy keeps it.
 
+## Prices — one source of truth
+Public prices on this site mirror `portfolio/src/pricing.mjs` in the monorepo (branch
+`claude/carbon-stealth-portfolio-tufnlp` until merged; research in
+`portfolio/docs/PRICING-RESEARCH.md`). As of 2026-09-17: website/landing from €790,
+e-commerce from €2 190, SEO €290/month, hosting €15/month, maintenance €69/month.
+ERP (€5 000), custom software (€2 000), mobile apps (€3 000) and the ERP support
+contract (€500/month with SLA) have no portfolio equivalent and stay as they are.
+Prices live in ~140 static pages + the generators + `index.html` JSON-LD + the HowTo
+schema in `App.jsx` — change them everywhere at once (regex over `public/**/index.html`,
+`scripts/generate-*.py`, `index.html`, `src/App.jsx`) and bump the sitemap `lastmod`
+of every touched page.
+
 ## Hard rules
 - Secrets (SMTP password, admin token) **never** in the repo — env / `smtp-local.php` only.
 - No fake reviews, stats, clients, or testimonials — only real, verifiable facts.

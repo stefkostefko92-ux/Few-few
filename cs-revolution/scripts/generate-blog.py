@@ -56,13 +56,13 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
  it=dict(
   title="Quanto Costa un Sito Web nel 2026? Prezzi Reali | Carbon Stealth",
   desc="Quanto costa davvero un sito web nel 2026? Prezzi reali per sito vetrina, e-commerce e portali su misura, cosa incide sul preventivo e come evitare sorprese.",
-  body="""<p>Nel 2026 un sito web professionale costa da <strong>&euro;800</strong> per un sito vetrina, da <strong>&euro;1.200</strong> per un e-commerce e da <strong>&euro;2.000</strong> per un portale su misura. Il prezzo dipende dal numero di pagine, dalle funzionalit&agrave; richieste e da quanto lavoro grafico e di contenuti serve. Un template preconfezionato costa meno ma rende meno; un progetto costruito su misura costa di pi&ugrave; all'inizio e ripaga nel tempo con prestazioni e posizionamento migliori.</p>
+  body="""<p>Nel 2026 un sito web professionale costa da <strong>€1.890</strong> per un sito vetrina, da <strong>€2.190</strong> per un e-commerce e da <strong>€2.000</strong> per un portale su misura. Il prezzo dipende dal numero di pagine, dalle funzionalit&agrave; richieste e da quanto lavoro grafico e di contenuti serve. Un template preconfezionato costa meno ma rende meno; un progetto costruito su misura costa di pi&ugrave; all'inizio e ripaga nel tempo con prestazioni e posizionamento migliori.</p>
 <h2>Prezzi per tipologia di sito</h2>
 <div class="ctbl"><table><thead><tr><th>Tipo di sito</th><th>Prezzo indicativo</th><th>Tempi</th><th>Per chi</th></tr></thead><tbody>
-<tr><td>Landing page singola</td><td>da &euro;500</td><td>3-7 giorni</td><td>Campagne, lancio prodotto</td></tr>
-<tr><td>Sito vetrina (5-8 pagine)</td><td>da &euro;800</td><td>1-2 settimane</td><td>Aziende, professionisti, studi</td></tr>
-<tr><td>E-commerce</td><td>da &euro;1.200</td><td>3-6 settimane</td><td>Chi vende online</td></tr>
-<tr><td>Portale / software web</td><td>da &euro;2.000</td><td>2-4 mesi</td><td>Gestionali, aree riservate, B2B</td></tr>
+<tr><td>Landing page singola</td><td>da €790</td><td>3-7 giorni</td><td>Campagne, lancio prodotto</td></tr>
+<tr><td>Sito vetrina (5-8 pagine)</td><td>da €1.890</td><td>1-2 settimane</td><td>Aziende, professionisti, studi</td></tr>
+<tr><td>E-commerce</td><td>da €2.190</td><td>3-6 settimane</td><td>Chi vende online</td></tr>
+<tr><td>Portale / software web</td><td>da €2.000</td><td>2-4 mesi</td><td>Gestionali, aree riservate, B2B</td></tr>
 </tbody></table></div>
 <h2>Cosa incide davvero sul prezzo</h2>
 <p>Il numero di pagine &egrave; solo il punto di partenza. A far salire o scendere un preventivo contribuiscono soprattutto:</p>
@@ -74,23 +74,23 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 </ul>
 <p>Diffida dei prezzi troppo bassi: spesso nascondono template riciclati, canoni mensili obbligatori o l'assenza totale di ottimizzazione. Noi lavoriamo con codice pulito e ti consegniamo un sito che &egrave; tuo, senza vincoli. Scopri come funziona il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>.</p>
 <h2>Costi ricorrenti da mettere in conto</h2>
-<p>Oltre alla realizzazione, un sito ha piccole spese fisse: il dominio (circa &euro;10-15 l'anno), l'<a href="/servizi/hosting/">hosting cloud</a> (da &euro;29/mese) e, se vuoi crescere sui motori di ricerca, un'attivit&agrave; di <a href="/servizi/seo/">SEO continuativa</a> (da &euro;500/mese). Se invece devi vendere online, valuta prima se ti serve davvero un negozio: ne parliamo nella guida <a href="/blog/sito-vetrina-o-ecommerce/">sito vetrina o e-commerce</a>.</p>""",
+<p>Oltre alla realizzazione, un sito ha piccole spese fisse: il dominio (circa €10-15 l'anno), l'<a href="/servizi/hosting/">hosting cloud</a> (da €15/mese) e, se vuoi crescere sui motori di ricerca, un'attivit&agrave; di <a href="/servizi/seo/">SEO continuativa</a> (da €290/mese). Se invece devi vendere online, valuta prima se ti serve davvero un negozio: ne parliamo nella guida <a href="/blog/sito-vetrina-o-ecommerce/">sito vetrina o e-commerce</a>.</p>""",
   faqs=[
-   ("Quanto costa un sito web semplice?", "Un sito vetrina professionale parte da &euro;800 e include 5-8 pagine, design responsive, ottimizzazione SEO di base e modulo contatti. Una singola landing page parte da &euro;500."),
+   ("Quanto costa un sito web semplice?", "Un sito vetrina professionale parte da €1.890 e include 5-8 pagine, design responsive, ottimizzazione SEO di base e modulo contatti. Una singola landing page parte da €1.890."),
    ("Perche i prezzi dei siti web variano cosi tanto?", "Perche cambiano il design (template o su misura), i contenuti (forniti o prodotti da noi), le funzionalita e il livello di ottimizzazione. Due siti con lo stesso numero di pagine possono costare il doppio l'uno dell'altro a seconda di questi fattori."),
-   ("Ci sono costi mensili dopo la consegna?", "Il sito e tuo, senza canoni obbligatori. Restano solo dominio (circa &euro;10-15/anno) e hosting (da &euro;29/mese). SEO e manutenzione evolutiva sono opzionali."),
+   ("Ci sono costi mensili dopo la consegna?", "Il sito e tuo, senza canoni obbligatori. Restano solo dominio (circa €10-15/anno) e hosting (da €15/mese). SEO e manutenzione evolutiva sono opzionali."),
    ("Quanto tempo serve per avere il sito online?", "Un sito vetrina richiede 1-2 settimane, un e-commerce 3-6 settimane. Concordiamo una data precisa nel preventivo, gratuito e senza impegno entro 24 ore."),
   ]),
  en=dict(
   title="How Much Does a Website Cost in 2026? Real Prices | Carbon Stealth",
   desc="How much does a website really cost in 2026? Real prices for brochure sites, e-commerce and custom portals, what drives the quote and how to avoid surprises.",
-  body="""<p>In 2026 a professional website costs from <strong>&euro;800</strong> for a brochure site, from <strong>&euro;1,200</strong> for an e-commerce store and from <strong>&euro;2,000</strong> for a custom portal. The price depends on the number of pages, the features you need and how much design and content work is involved. An off-the-shelf template is cheaper but performs worse; a custom-built project costs more upfront and pays off over time through better performance and rankings.</p>
+  body="""<p>In 2026 a professional website costs from <strong>€1,890</strong> for a brochure site, from <strong>€2,190</strong> for an e-commerce store and from <strong>€2,000</strong> for a custom portal. The price depends on the number of pages, the features you need and how much design and content work is involved. An off-the-shelf template is cheaper but performs worse; a custom-built project costs more upfront and pays off over time through better performance and rankings.</p>
 <h2>Prices by type of website</h2>
 <div class="ctbl"><table><thead><tr><th>Type of site</th><th>Typical price</th><th>Timeline</th><th>Best for</th></tr></thead><tbody>
-<tr><td>Single landing page</td><td>from &euro;500</td><td>3-7 days</td><td>Campaigns, product launches</td></tr>
-<tr><td>Brochure site (5-8 pages)</td><td>from &euro;800</td><td>1-2 weeks</td><td>Companies, professionals, firms</td></tr>
-<tr><td>E-commerce</td><td>from &euro;1,200</td><td>3-6 weeks</td><td>Selling online</td></tr>
-<tr><td>Portal / web software</td><td>from &euro;2,000</td><td>2-4 months</td><td>Dashboards, member areas, B2B</td></tr>
+<tr><td>Single landing page</td><td>from €790</td><td>3-7 days</td><td>Campaigns, product launches</td></tr>
+<tr><td>Brochure site (5-8 pages)</td><td>from €1,890</td><td>1-2 weeks</td><td>Companies, professionals, firms</td></tr>
+<tr><td>E-commerce</td><td>from €2,190</td><td>3-6 weeks</td><td>Selling online</td></tr>
+<tr><td>Portal / web software</td><td>from €2,000</td><td>2-4 months</td><td>Dashboards, member areas, B2B</td></tr>
 </tbody></table></div>
 <h2>What really drives the price</h2>
 <p>Page count is only the starting point. What moves a quote up or down is mainly:</p>
@@ -102,23 +102,23 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 </ul>
 <p>Be wary of prices that look too low: they often hide recycled templates, mandatory monthly fees or a complete lack of optimization. We work with clean code and hand you a site that is truly yours, with no lock-in. See how our <a href="/en/services/web-development/">web development service</a> works.</p>
 <h2>Recurring costs to plan for</h2>
-<p>Beyond the build, a website has small fixed costs: the domain (around &euro;10-15/year), <a href="/en/services/hosting/">cloud hosting</a> (from &euro;29/month) and, if you want to grow in search, ongoing <a href="/en/services/seo/">SEO work</a> (from &euro;500/month). If you plan to sell online, first decide whether you actually need a store: we cover that in our guide on <a href="/en/blog/sito-vetrina-o-ecommerce/">brochure site vs e-commerce</a>.</p>""",
+<p>Beyond the build, a website has small fixed costs: the domain (around €10-15/year), <a href="/en/services/hosting/">cloud hosting</a> (from €15/month) and, if you want to grow in search, ongoing <a href="/en/services/seo/">SEO work</a> (from €290/month). If you plan to sell online, first decide whether you actually need a store: we cover that in our guide on <a href="/en/blog/sito-vetrina-o-ecommerce/">brochure site vs e-commerce</a>.</p>""",
   faqs=[
-   ("How much does a simple website cost?", "A professional brochure site starts at &euro;800 and includes 5-8 pages, responsive design, basic SEO and a contact form. A single landing page starts at &euro;500."),
+   ("How much does a simple website cost?", "A professional brochure site starts at €1,890 and includes 5-8 pages, responsive design, basic SEO and a contact form. A single landing page starts at €1,890."),
    ("Why do website prices vary so much?", "Because design (template vs custom), content (supplied or produced by us), features and the level of optimization all differ. Two sites with the same page count can cost twice as much as each other depending on these factors."),
-   ("Are there monthly costs after delivery?", "The site is yours, with no mandatory fees. Only the domain (around &euro;10-15/year) and hosting (from &euro;29/month) remain. SEO and ongoing maintenance are optional."),
+   ("Are there monthly costs after delivery?", "The site is yours, with no mandatory fees. Only the domain (around €10-15/year) and hosting (from €15/month) remain. SEO and ongoing maintenance are optional."),
    ("How long does it take to get the site online?", "A brochure site takes 1-2 weeks, an e-commerce 3-6 weeks. We agree on a precise date in the quote, which is free and no-obligation within 24 hours."),
   ]),
  bg=dict(
   title="Колко Струва Изработката на Сайт през 2026? | Carbon Stealth",
   desc="Колко струва изработката на сайт през 2026? Реални цени за визитен сайт, онлайн магазин и портал по поръчка, какво влияе на офертата и как да избегнете изненади.",
-  body="""<p>През 2026 професионален сайт струва от <strong>&euro;800</strong> за визитен сайт, от <strong>&euro;1200</strong> за онлайн магазин и от <strong>&euro;2000</strong> за портал по поръчка. Цената зависи от броя страници, нужните функционалности и колко работа по дизайна и съдържанието е необходима. Готовият шаблон е по-евтин, но носи по-малко резултати; проектът по поръчка струва повече в началото и се изплаща с времето чрез по-добра производителност и позиции в Google.</p>
+  body="""<p>През 2026 професионален сайт струва от <strong>€1890</strong> за визитен сайт, от <strong>€2190</strong> за онлайн магазин и от <strong>€2000</strong> за портал по поръчка. Цената зависи от броя страници, нужните функционалности и колко работа по дизайна и съдържанието е необходима. Готовият шаблон е по-евтин, но носи по-малко резултати; проектът по поръчка струва повече в началото и се изплаща с времето чрез по-добра производителност и позиции в Google.</p>
 <h2>Цени по тип сайт</h2>
 <div class="ctbl"><table><thead><tr><th>Тип сайт</th><th>Ориентировъчна цена</th><th>Срок</th><th>За кого</th></tr></thead><tbody>
-<tr><td>Единична landing страница</td><td>от &euro;500</td><td>3-7 дни</td><td>Кампании, старт на продукт</td></tr>
-<tr><td>Визитен сайт (5-8 страници)</td><td>от &euro;800</td><td>1-2 седмици</td><td>Фирми, специалисти, кантори</td></tr>
-<tr><td>Онлайн магазин</td><td>от &euro;1200</td><td>3-6 седмици</td><td>Продажби онлайн</td></tr>
-<tr><td>Портал / уеб софтуер</td><td>от &euro;2000</td><td>2-4 месеца</td><td>Табла, клиентски зони, B2B</td></tr>
+<tr><td>Единична landing страница</td><td>от €790</td><td>3-7 дни</td><td>Кампании, старт на продукт</td></tr>
+<tr><td>Визитен сайт (5-8 страници)</td><td>от €1890</td><td>1-2 седмици</td><td>Фирми, специалисти, кантори</td></tr>
+<tr><td>Онлайн магазин</td><td>от €2190</td><td>3-6 седмици</td><td>Продажби онлайн</td></tr>
+<tr><td>Портал / уеб софтуер</td><td>от €2000</td><td>2-4 месеца</td><td>Табла, клиентски зони, B2B</td></tr>
 </tbody></table></div>
 <h2>Какво реално определя цената</h2>
 <p>Броят страници е само началото. Офертата се движи нагоре или надолу главно от:</p>
@@ -130,11 +130,11 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 </ul>
 <p>Внимавайте с прекалено ниските цени: често крият рециклирани шаблони, задължителни месечни такси или пълна липса на оптимизация. Ние работим с чист код и предаваме сайт, който е изцяло ваш, без обвързване. Вижте как работи нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>.</p>
 <h2>Повтарящи се разходи, които да предвидите</h2>
-<p>Освен изработката, всеки сайт има малки фиксирани разходи: домейн (около &euro;10-15 годишно), <a href="/bg/uslugi/hosting/">облачен хостинг</a> (от &euro;29/месец) и, ако искате растеж в търсачките, постоянно <a href="/bg/uslugi/seo/">SEO</a> (от &euro;500/месец). Ако ще продавате онлайн, първо преценете дали наистина ви трябва магазин: разглеждаме това в статията <a href="/bg/blog/sito-vetrina-o-ecommerce/">визитен сайт или онлайн магазин</a>.</p>""",
+<p>Освен изработката, всеки сайт има малки фиксирани разходи: домейн (около €10-15 годишно), <a href="/bg/uslugi/hosting/">облачен хостинг</a> (от €15/месец) и, ако искате растеж в търсачките, постоянно <a href="/bg/uslugi/seo/">SEO</a> (от €290/месец). Ако ще продавате онлайн, първо преценете дали наистина ви трябва магазин: разглеждаме това в статията <a href="/bg/blog/sito-vetrina-o-ecommerce/">визитен сайт или онлайн магазин</a>.</p>""",
   faqs=[
-   ("Колко струва прост сайт?", "Професионален визитен сайт започва от &euro;800 и включва 5-8 страници, responsive дизайн, базово SEO и форма за контакт. Единична landing страница започва от &euro;500."),
+   ("Колко струва прост сайт?", "Професионален визитен сайт започва от €1890 и включва 5-8 страници, responsive дизайн, базово SEO и форма за контакт. Единична landing страница започва от €1890."),
    ("Защо цените на сайтовете се различават толкова?", "Защото се различават дизайнът (шаблон или по поръчка), съдържанието (ваше или изработено от нас), функционалностите и нивото на оптимизация. Два сайта с еднакъв брой страници могат да струват двойно един спрямо друг заради тези фактори."),
-   ("Има ли месечни разходи след предаването?", "Сайтът е ваш, без задължителни такси. Остават само домейн (около &euro;10-15/година) и хостинг (от &euro;29/месец). SEO и поддръжката са по избор."),
+   ("Има ли месечни разходи след предаването?", "Сайтът е ваш, без задължителни такси. Остават само домейн (около €10-15/година) и хостинг (от €15/месец). SEO и поддръжката са по избор."),
    ("За колко време сайтът е онлайн?", "Визитен сайт отнема 1-2 седмици, онлайн магазин 3-6 седмици. Договаряме точна дата в офертата — безплатна и без ангажимент до 24 часа."),
   ]),
 )),
@@ -144,78 +144,78 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
  it=dict(
   title="Quanto Costa un E-commerce? Guida ai Prezzi 2026 | Carbon Stealth",
   desc="Quanto costa aprire un e-commerce nel 2026? Prezzi reali, costi nascosti, differenza tra piattaforme e cosa serve davvero per vendere online.",
-  body="""<p>Un e-commerce professionale parte da <strong>&euro;1.200</strong> per un negozio con catalogo, carrello e pagamenti online. Il costo cresce con il numero di prodotti, le integrazioni (corrieri, gestionale, fatturazione) e il livello di personalizzazione del design. A questo si aggiungono costi ricorrenti spesso sottovalutati: hosting, commissioni di pagamento e marketing.</p>
+  body="""<p>Un e-commerce professionale parte da <strong>€2.190</strong> per un negozio con catalogo, carrello e pagamenti online. Il costo cresce con il numero di prodotti, le integrazioni (corrieri, gestionale, fatturazione) e il livello di personalizzazione del design. A questo si aggiungono costi ricorrenti spesso sottovalutati: hosting, commissioni di pagamento e marketing.</p>
 <h2>Quanto costa aprire un negozio online</h2>
 <div class="ctbl"><table><thead><tr><th>Soluzione</th><th>Costo iniziale</th><th>Adatta a</th></tr></thead><tbody>
-<tr><td>E-commerce base (WooCommerce)</td><td>da &euro;1.200</td><td>Fino a ~100 prodotti, chi parte</td></tr>
-<tr><td>E-commerce su misura</td><td>da &euro;3.000</td><td>Cataloghi ampi, integrazioni, B2B</td></tr>
-<tr><td>Piattaforma in abbonamento (Shopify)</td><td>da &euro;30/mese + setup</td><td>Chi vuole zero manutenzione tecnica</td></tr>
+<tr><td>E-commerce base (WooCommerce)</td><td>da €2.190</td><td>Fino a ~100 prodotti, chi parte</td></tr>
+<tr><td>E-commerce su misura</td><td>da €3.000</td><td>Cataloghi ampi, integrazioni, B2B</td></tr>
+<tr><td>Piattaforma in abbonamento (Shopify)</td><td>da €30/mese + setup</td><td>Chi vuole zero manutenzione tecnica</td></tr>
 </tbody></table></div>
 <p>La scelta della piattaforma cambia molto la struttura dei costi: ne parliamo in dettaglio nella guida <a href="/blog/woocommerce-vs-shopify/">WooCommerce vs Shopify</a>.</p>
 <h2>I costi ricorrenti che tutti dimenticano</h2>
 <ul>
 <li><strong>Commissioni di pagamento:</strong> Stripe e PayPal trattengono circa l'1,5-3% per transazione.</li>
-<li><strong>Hosting e dominio:</strong> da &euro;29/mese per un negozio veloce e sicuro.</li>
+<li><strong>Hosting e dominio:</strong> da €15/mese per un negozio veloce e sicuro.</li>
 <li><strong>Marketing:</strong> un negozio senza traffico non vende. Metti in conto SEO o campagne pubblicitarie.</li>
 <li><strong>Manutenzione:</strong> aggiornamenti, backup e sicurezza, soprattutto su WooCommerce.</li>
 </ul>
 <h2>Dove conviene investire</h2>
 <p>Il budget rende di pi&ugrave; se investito su tre fronti: schede prodotto curate (foto e descrizioni che vendono), una procedura di checkout semplice e veloce, e la <a href="/servizi/seo/">visibilit&agrave; sui motori di ricerca</a>. Un e-commerce lento perde vendite: per questo cura le prestazioni fin dall'inizio, come spieghiamo nella guida ai <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>. Se vuoi capire l'investimento sul tuo caso, guarda il nostro <a href="/servizi/ecommerce/">servizio e-commerce</a> e chiedi un preventivo.</p>""",
   faqs=[
-   ("Quanto costa aprire un e-commerce da zero?", "Un e-commerce professionale parte da &euro;1.200 con WooCommerce. Per cataloghi ampi, integrazioni con il gestionale o funzioni B2B, un progetto su misura parte da &euro;3.000."),
-   ("Quali sono i costi mensili di un e-commerce?", "Hosting da &euro;29/mese, commissioni di pagamento dell'1,5-3% per transazione, eventuale abbonamento alla piattaforma e budget di marketing. Il dominio costa circa &euro;10-15 l'anno."),
+   ("Quanto costa aprire un e-commerce da zero?", "Un e-commerce professionale parte da €2.190 con WooCommerce. Per cataloghi ampi, integrazioni con il gestionale o funzioni B2B, un progetto su misura parte da €3.000."),
+   ("Quali sono i costi mensili di un e-commerce?", "Hosting da €15/mese, commissioni di pagamento dell'1,5-3% per transazione, eventuale abbonamento alla piattaforma e budget di marketing. Il dominio costa circa €10-15 l'anno."),
    ("Meglio WooCommerce o Shopify per iniziare?", "Dipende. WooCommerce da piu controllo e nessun canone di piattaforma ma richiede manutenzione; Shopify e piu semplice ma ha un abbonamento e commissioni. Ne parliamo nella nostra guida dedicata."),
    ("In quanto tempo si realizza un e-commerce?", "Un negozio standard richiede 3-6 settimane, un progetto su misura anche 2-3 mesi. Dipende dal numero di prodotti e dalle integrazioni necessarie."),
   ]),
  en=dict(
   title="How Much Does an E-commerce Cost? 2026 Price Guide | Carbon Stealth",
   desc="How much does it cost to build an e-commerce in 2026? Real prices, hidden costs, platform differences and what you actually need to start selling online.",
-  body="""<p>A professional e-commerce store starts at <strong>&euro;1,200</strong> for a shop with a catalog, cart and online payments. The cost grows with the number of products, integrations (couriers, ERP, invoicing) and how custom the design is. On top of that come recurring costs that are often underestimated: hosting, payment fees and marketing.</p>
+  body="""<p>A professional e-commerce store starts at <strong>€2,190</strong> for a shop with a catalog, cart and online payments. The cost grows with the number of products, integrations (couriers, ERP, invoicing) and how custom the design is. On top of that come recurring costs that are often underestimated: hosting, payment fees and marketing.</p>
 <h2>What it costs to open an online store</h2>
 <div class="ctbl"><table><thead><tr><th>Solution</th><th>Upfront cost</th><th>Best for</th></tr></thead><tbody>
-<tr><td>Basic e-commerce (WooCommerce)</td><td>from &euro;1,200</td><td>Up to ~100 products, getting started</td></tr>
-<tr><td>Custom e-commerce</td><td>from &euro;3,000</td><td>Large catalogs, integrations, B2B</td></tr>
-<tr><td>Subscription platform (Shopify)</td><td>from &euro;30/mo + setup</td><td>Zero technical maintenance</td></tr>
+<tr><td>Basic e-commerce (WooCommerce)</td><td>from €2,190</td><td>Up to ~100 products, getting started</td></tr>
+<tr><td>Custom e-commerce</td><td>from €3,000</td><td>Large catalogs, integrations, B2B</td></tr>
+<tr><td>Subscription platform (Shopify)</td><td>from €30/mo + setup</td><td>Zero technical maintenance</td></tr>
 </tbody></table></div>
 <p>The platform you pick heavily shapes your cost structure &mdash; we break it down in our <a href="/en/blog/woocommerce-vs-shopify/">WooCommerce vs Shopify</a> guide.</p>
 <h2>The recurring costs everyone forgets</h2>
 <ul>
 <li><strong>Payment fees:</strong> Stripe and PayPal keep roughly 1.5-3% per transaction.</li>
-<li><strong>Hosting and domain:</strong> from &euro;29/month for a fast, secure store.</li>
+<li><strong>Hosting and domain:</strong> from €15/month for a fast, secure store.</li>
 <li><strong>Marketing:</strong> a store with no traffic makes no sales. Budget for SEO or paid ads.</li>
 <li><strong>Maintenance:</strong> updates, backups and security, especially on WooCommerce.</li>
 </ul>
 <h2>Where the budget pays off</h2>
 <p>Your budget goes furthest on three fronts: well-crafted product pages (photos and copy that sell), a simple, fast checkout, and <a href="/en/services/seo/">search visibility</a>. A slow store loses sales, so get performance right from the start &mdash; see our <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a> guide. To understand the investment for your case, look at our <a href="/en/services/ecommerce/">e-commerce service</a> and request a quote.</p>""",
   faqs=[
-   ("How much does it cost to build an e-commerce from scratch?", "A professional e-commerce starts at &euro;1,200 with WooCommerce. For large catalogs, ERP integrations or B2B features, a custom project starts at &euro;3,000."),
-   ("What are the monthly costs of an e-commerce?", "Hosting from &euro;29/month, payment fees of 1.5-3% per transaction, any platform subscription and a marketing budget. The domain costs around &euro;10-15 per year."),
+   ("How much does it cost to build an e-commerce from scratch?", "A professional e-commerce starts at €2,190 with WooCommerce. For large catalogs, ERP integrations or B2B features, a custom project starts at €3,000."),
+   ("What are the monthly costs of an e-commerce?", "Hosting from €15/month, payment fees of 1.5-3% per transaction, any platform subscription and a marketing budget. The domain costs around €10-15 per year."),
    ("WooCommerce or Shopify to start?", "It depends. WooCommerce gives more control and no platform fee but needs maintenance; Shopify is simpler but has a subscription and fees. We compare them in our dedicated guide."),
    ("How long does it take to build an e-commerce?", "A standard store takes 3-6 weeks, a custom project up to 2-3 months, depending on the number of products and the integrations required."),
   ]),
  bg=dict(
   title="Колко Струва Онлайн Магазин? Ценово Ръководство 2026 | Carbon Stealth",
   desc="Колко струва изработката на онлайн магазин през 2026? Реални цени, скрити разходи, разлика между платформите и какво наистина е нужно за продажби онлайн.",
-  body="""<p>Професионален онлайн магазин започва от <strong>&euro;1200</strong> за магазин с каталог, количка и онлайн плащания. Цената нараства с броя продукти, интеграциите (куриери, ERP, фактуриране) и степента на персонализация на дизайна. Към това се добавят повтарящи се разходи, които често се подценяват: хостинг, такси за плащания и маркетинг.</p>
+  body="""<p>Професионален онлайн магазин започва от <strong>€2190</strong> за магазин с каталог, количка и онлайн плащания. Цената нараства с броя продукти, интеграциите (куриери, ERP, фактуриране) и степента на персонализация на дизайна. Към това се добавят повтарящи се разходи, които често се подценяват: хостинг, такси за плащания и маркетинг.</p>
 <h2>Колко струва да отворите онлайн магазин</h2>
 <div class="ctbl"><table><thead><tr><th>Решение</th><th>Начален разход</th><th>Подходящо за</th></tr></thead><tbody>
-<tr><td>Базов магазин (WooCommerce)</td><td>от &euro;1200</td><td>До ~100 продукта, за начало</td></tr>
-<tr><td>Магазин по поръчка</td><td>от &euro;3000</td><td>Голям каталог, интеграции, B2B</td></tr>
-<tr><td>Абонаментна платформа (Shopify)</td><td>от &euro;30/мес + setup</td><td>Нула техническа поддръжка</td></tr>
+<tr><td>Базов магазин (WooCommerce)</td><td>от €2190</td><td>До ~100 продукта, за начало</td></tr>
+<tr><td>Магазин по поръчка</td><td>от €3000</td><td>Голям каталог, интеграции, B2B</td></tr>
+<tr><td>Абонаментна платформа (Shopify)</td><td>от €30/мес + setup</td><td>Нула техническа поддръжка</td></tr>
 </tbody></table></div>
 <p>Изборът на платформа силно влияе на структурата на разходите &mdash; разглеждаме го подробно в статията <a href="/bg/blog/woocommerce-vs-shopify/">WooCommerce срещу Shopify</a>.</p>
 <h2>Повтарящите се разходи, които всички забравят</h2>
 <ul>
 <li><strong>Такси за плащания:</strong> Stripe и PayPal удържат около 1.5-3% на транзакция.</li>
-<li><strong>Хостинг и домейн:</strong> от &euro;29/месец за бърз и сигурен магазин.</li>
+<li><strong>Хостинг и домейн:</strong> от €15/месец за бърз и сигурен магазин.</li>
 <li><strong>Маркетинг:</strong> магазин без трафик не продава. Предвидете SEO или реклами.</li>
 <li><strong>Поддръжка:</strong> обновления, резервни копия и сигурност, особено при WooCommerce.</li>
 </ul>
 <h2>Къде си струва да инвестирате</h2>
 <p>Бюджетът дава най-много на три фронта: добре направени продуктови страници (снимки и текст, които продават), проста и бърза поръчка (checkout) и <a href="/bg/uslugi/seo/">видимост в търсачките</a>. Бавният магазин губи продажби, затова погрижете се за производителността от самото начало &mdash; вижте ръководството за <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a>. За да разберете инвестицията за вашия случай, вижте нашата <a href="/bg/uslugi/ecommerce/">услуга за онлайн магазини</a> и заявете оферта.</p>""",
   faqs=[
-   ("Колко струва онлайн магазин от нулата?", "Професионален онлайн магазин започва от &euro;1200 с WooCommerce. За голям каталог, интеграция с ERP или B2B функции, проект по поръчка започва от &euro;3000."),
-   ("Какви са месечните разходи на онлайн магазин?", "Хостинг от &euro;29/месец, такси за плащания 1.5-3% на транзакция, евентуален абонамент за платформа и бюджет за маркетинг. Домейнът струва около &euro;10-15 годишно."),
+   ("Колко струва онлайн магазин от нулата?", "Професионален онлайн магазин започва от €2190 с WooCommerce. За голям каталог, интеграция с ERP или B2B функции, проект по поръчка започва от €3000."),
+   ("Какви са месечните разходи на онлайн магазин?", "Хостинг от €15/месец, такси за плащания 1.5-3% на транзакция, евентуален абонамент за платформа и бюджет за маркетинг. Домейнът струва около €10-15 годишно."),
    ("WooCommerce или Shopify за старт?", "Зависи. WooCommerce дава повече контрол и без такса за платформа, но изисква поддръжка; Shopify е по-лесен, но има абонамент и такси. Сравняваме ги в отделно ръководство."),
    ("За колко време се прави онлайн магазин?", "Стандартен магазин отнема 3-6 седмици, проект по поръчка до 2-3 месеца, в зависимост от броя продукти и нужните интеграции."),
   ]),
@@ -229,7 +229,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
   body="""<p>In breve: <strong>Shopify</strong> conviene se vuoi partire in fretta senza pensare alla parte tecnica e sei disposto a pagare un canone mensile pi&ugrave; le commissioni. <strong>WooCommerce</strong> conviene se vuoi il pieno controllo, nessun vincolo di piattaforma e costi ricorrenti pi&ugrave; bassi, accettando in cambio un po' di manutenzione. Non esiste una scelta &laquo;migliore&raquo; in assoluto: dipende dal tuo modello di business.</p>
 <h2>Confronto diretto</h2>
 <div class="ctbl"><table><thead><tr><th>Criterio</th><th>WooCommerce</th><th>Shopify</th></tr></thead><tbody>
-<tr><td>Costo mensile</td><td>Solo hosting (da &euro;29)</td><td>Da ~&euro;30 + app a pagamento</td></tr>
+<tr><td>Costo mensile</td><td>Solo hosting (da €15)</td><td>Da ~€30 + app a pagamento</td></tr>
 <tr><td>Commissioni</td><td>Solo quelle del gateway</td><td>Gateway + fee Shopify se non usi Shopify Payments</td></tr>
 <tr><td>Controllo e propriet&agrave;</td><td>Totale, codice tuo</td><td>Limitato dalla piattaforma</td></tr>
 <tr><td>Manutenzione</td><td>A tuo carico (o del partner)</td><td>Gestita da Shopify</td></tr>
@@ -253,7 +253,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
   body="""<p>In short: <strong>Shopify</strong> makes sense if you want to launch fast without touching the technical side and you accept a monthly fee plus transaction fees. <strong>WooCommerce</strong> makes sense if you want full control, no platform lock-in and lower recurring costs, in exchange for some maintenance. There is no absolute &laquo;best&raquo; choice &mdash; it depends on your business model.</p>
 <h2>Head-to-head comparison</h2>
 <div class="ctbl"><table><thead><tr><th>Criterion</th><th>WooCommerce</th><th>Shopify</th></tr></thead><tbody>
-<tr><td>Monthly cost</td><td>Hosting only (from &euro;29)</td><td>From ~&euro;30 + paid apps</td></tr>
+<tr><td>Monthly cost</td><td>Hosting only (from €15)</td><td>From ~€30 + paid apps</td></tr>
 <tr><td>Fees</td><td>Only your gateway's</td><td>Gateway + Shopify fee unless using Shopify Payments</td></tr>
 <tr><td>Control and ownership</td><td>Total, your code</td><td>Limited by the platform</td></tr>
 <tr><td>Maintenance</td><td>On you (or your partner)</td><td>Handled by Shopify</td></tr>
@@ -277,7 +277,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
   body="""<p>Накратко: <strong>Shopify</strong> е подходящ, ако искате да стартирате бързо без техническа грижа и приемате месечен абонамент плюс такси. <strong>WooCommerce</strong> е подходящ, ако искате пълен контрол, без обвързване с платформа и по-ниски повтарящи се разходи, срещу малко поддръжка. Няма абсолютно &laquo;най-добро&raquo; решение &mdash; зависи от вашия бизнес модел.</p>
 <h2>Директно сравнение</h2>
 <div class="ctbl"><table><thead><tr><th>Критерий</th><th>WooCommerce</th><th>Shopify</th></tr></thead><tbody>
-<tr><td>Месечен разход</td><td>Само хостинг (от &euro;29)</td><td>От ~&euro;30 + платени приложения</td></tr>
+<tr><td>Месечен разход</td><td>Само хостинг (от €15)</td><td>От ~€30 + платени приложения</td></tr>
 <tr><td>Такси</td><td>Само на платежния оператор</td><td>Оператор + такса Shopify, ако не ползвате Shopify Payments</td></tr>
 <tr><td>Контрол и собственост</td><td>Пълен, кодът е ваш</td><td>Ограничен от платформата</td></tr>
 <tr><td>Поддръжка</td><td>За ваша сметка (или на партньора)</td><td>Поема се от Shopify</td></tr>
@@ -306,7 +306,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <h2>Le differenze in sintesi</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Sito vetrina</th><th>E-commerce</th></tr></thead><tbody>
 <tr><td>Obiettivo</td><td>Farti conoscere, generare contatti</td><td>Vendere prodotti online</td></tr>
-<tr><td>Prezzo</td><td>da &euro;800</td><td>da &euro;1.200</td></tr>
+<tr><td>Prezzo</td><td>da €1.890</td><td>da €2.190</td></tr>
 <tr><td>Gestione</td><td>Minima</td><td>Continua (ordini, magazzino, spedizioni)</td></tr>
 <tr><td>Pagamenti</td><td>No</td><td>Si (Stripe, PayPal, carte)</td></tr>
 <tr><td>Ideale per</td><td>Studi, ristoranti, artigiani, B2B</td><td>Negozi, brand, produttori</td></tr>
@@ -318,7 +318,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>Una via di mezzo esiste: partire con un sito vetrina e aggiungere l'e-commerce in un secondo momento, quando il progetto &egrave; maturo. Se hai dubbi, <a href="/contatti/">raccontaci la tua attivit&agrave;</a> e ti diciamo onestamente cosa ti conviene.</p>""",
   faqs=[
    ("Qual e la differenza tra sito vetrina ed e-commerce?", "Il sito vetrina presenta la tua attivita e genera contatti, senza vendere online. L'e-commerce permette di vendere prodotti direttamente con carrello e pagamenti. Cambiano obiettivo, costo e gestione."),
-   ("Costa di piu un e-commerce o un sito vetrina?", "L'e-commerce costa di piu: parte da &euro;1.200 contro gli &euro;800 di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina e piu economico e quasi automatico."),
+   ("Costa di piu un e-commerce o un sito vetrina?", "L'e-commerce costa di piu: parte da €2.190 contro gli €1.890 di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina e piu economico e quasi automatico."),
    ("Posso trasformare un sito vetrina in e-commerce?", "Si. Molte attivita partono con un sito vetrina e aggiungono la parte e-commerce quando sono pronte. Se il sito e costruito bene, l'estensione e semplice e non richiede di ripartire da zero."),
    ("Ho un negozio fisico: mi serve un e-commerce?", "Non per forza. Se il tuo obiettivo e farti trovare e portare clienti in negozio, un sito vetrina con SEO locale spesso basta. L'e-commerce serve se vuoi vendere anche a distanza."),
   ]),
@@ -329,7 +329,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <h2>The differences at a glance</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Brochure site</th><th>E-commerce</th></tr></thead><tbody>
 <tr><td>Goal</td><td>Get known, generate leads</td><td>Sell products online</td></tr>
-<tr><td>Price</td><td>from &euro;800</td><td>from &euro;1,200</td></tr>
+<tr><td>Price</td><td>from €1,890</td><td>from €2,190</td></tr>
 <tr><td>Management</td><td>Minimal</td><td>Ongoing (orders, stock, shipping)</td></tr>
 <tr><td>Payments</td><td>No</td><td>Yes (Stripe, PayPal, cards)</td></tr>
 <tr><td>Ideal for</td><td>Firms, restaurants, artisans, B2B</td><td>Shops, brands, manufacturers</td></tr>
@@ -341,7 +341,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>There is a middle path: start with a brochure site and add e-commerce later, when the project is mature. If you're unsure, <a href="/en/contact/">tell us about your business</a> and we'll honestly say what suits you.</p>""",
   faqs=[
    ("What's the difference between a brochure site and an e-commerce?", "A brochure site presents your business and generates leads without selling online. An e-commerce lets you sell products directly with a cart and payments. Goal, cost and management all differ."),
-   ("Does an e-commerce cost more than a brochure site?", "Yes. An e-commerce starts at &euro;1,200 versus &euro;800 for a brochure site, and involves ongoing order and shipping management. A brochure site is cheaper and almost hands-off."),
+   ("Does an e-commerce cost more than a brochure site?", "Yes. An e-commerce starts at €2,190 versus €1,890 for a brochure site, and involves ongoing order and shipping management. A brochure site is cheaper and almost hands-off."),
    ("Can I turn a brochure site into an e-commerce?", "Yes. Many businesses start with a brochure site and add e-commerce when ready. If the site is built well, extending it is straightforward and doesn't mean starting over."),
    ("I have a physical shop: do I need an e-commerce?", "Not necessarily. If your goal is to be found and bring customers into the shop, a brochure site with local SEO is often enough. You need e-commerce if you also want to sell remotely."),
   ]),
@@ -352,7 +352,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <h2>Разликите накратко</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Визитен сайт</th><th>Онлайн магазин</th></tr></thead><tbody>
 <tr><td>Цел</td><td>Да ви опознаят, да генерира запитвания</td><td>Продажба на продукти онлайн</td></tr>
-<tr><td>Цена</td><td>от &euro;800</td><td>от &euro;1200</td></tr>
+<tr><td>Цена</td><td>от €1890</td><td>от €2190</td></tr>
 <tr><td>Управление</td><td>Минимално</td><td>Постоянно (поръчки, склад, доставки)</td></tr>
 <tr><td>Плащания</td><td>Не</td><td>Да (Stripe, PayPal, карти)</td></tr>
 <tr><td>Подходящ за</td><td>Кантори, ресторанти, занаятчии, B2B</td><td>Магазини, брандове, производители</td></tr>
@@ -364,7 +364,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>Има и междинен път: започнете с визитен сайт и добавете магазина по-късно, когато проектът узрее. Ако се колебаете, <a href="/bg/kontakti/">разкажете ни за бизнеса си</a> и ще ви кажем честно кое ви подхожда.</p>""",
   faqs=[
    ("Каква е разликата между визитен сайт и онлайн магазин?", "Визитният сайт представя бизнеса ви и генерира запитвания, без да продава онлайн. Онлайн магазинът позволява директна продажба на продукти с количка и плащания. Различават се по цел, цена и управление."),
-   ("Онлайн магазинът по-скъп ли е от визитния сайт?", "Да. Онлайн магазинът започва от &euro;1200 срещу &euro;800 за визитен сайт и изисква постоянно управление на поръчки и доставки. Визитният сайт е по-евтин и почти автоматичен."),
+   ("Онлайн магазинът по-скъп ли е от визитния сайт?", "Да. Онлайн магазинът започва от €2190 срещу €1890 за визитен сайт и изисква постоянно управление на поръчки и доставки. Визитният сайт е по-евтин и почти автоматичен."),
    ("Мога ли да превърна визитен сайт в онлайн магазин?", "Да. Много фирми започват с визитен сайт и добавят магазин, когато са готови. Ако сайтът е изграден добре, разширяването е лесно и не изисква започване от нулата."),
    ("Имам физически магазин: трябва ли ми онлайн магазин?", "Не задължително. Ако целта е да ви намират и да водите клиенти в магазина, визитен сайт с локално SEO често стига. Онлайн магазин ви трябва, ако искате да продавате и от разстояние."),
   ]),
@@ -375,12 +375,12 @@ dict(slug="quanto-costa-app-mobile", section="Mobile Apps", read=7, lang=dict(
  it=dict(
   title="Quanto Costa Sviluppare un'App nel 2026? Prezzi | Carbon Stealth",
   desc="Quanto costa sviluppare un'app mobile nel 2026? Prezzi reali per app native e cross-platform, cosa incide sul preventivo e come contenere i costi.",
-  body="""<p>Sviluppare un'app mobile parte da <strong>&euro;3.000</strong> per un'app semplice e cross-platform, mentre progetti pi&ugrave; complessi con backend, account utente e integrazioni possono superare i &euro;15.000. Il costo dipende dalle funzionalit&agrave;, dal numero di piattaforme (iOS, Android o entrambe) e dal fatto che serva o meno un server e un pannello di gestione dietro l'app.</p>
+  body="""<p>Sviluppare un'app mobile parte da <strong>€3.000</strong> per un'app semplice e cross-platform, mentre progetti pi&ugrave; complessi con backend, account utente e integrazioni possono superare i €15.000. Il costo dipende dalle funzionalit&agrave;, dal numero di piattaforme (iOS, Android o entrambe) e dal fatto che serva o meno un server e un pannello di gestione dietro l'app.</p>
 <h2>Quanto costa un'app per tipologia</h2>
 <div class="ctbl"><table><thead><tr><th>Tipo di app</th><th>Prezzo indicativo</th><th>Esempi</th></tr></thead><tbody>
-<tr><td>App semplice (MVP)</td><td>da &euro;3.000</td><td>Catalogo, vetrina, contenuti</td></tr>
-<tr><td>App con backend e account</td><td>da &euro;6.000</td><td>Login, profili, notifiche push</td></tr>
-<tr><td>App complessa</td><td>da &euro;12.000</td><td>Pagamenti, geolocalizzazione, chat</td></tr>
+<tr><td>App semplice (MVP)</td><td>da €3.000</td><td>Catalogo, vetrina, contenuti</td></tr>
+<tr><td>App con backend e account</td><td>da €6.000</td><td>Login, profili, notifiche push</td></tr>
+<tr><td>App complessa</td><td>da €12.000</td><td>Pagamenti, geolocalizzazione, chat</td></tr>
 </tbody></table></div>
 <h2>Nativa o cross-platform?</h2>
 <p>Un'app <strong>cross-platform</strong> (React Native, Flutter) usa un unico codice per iOS e Android: costa meno e si sviluppa pi&ugrave; in fretta, ideale per la maggior parte dei progetti. Un'app <strong>nativa</strong> (Swift, Kotlin) offre prestazioni massime e accesso completo alle funzioni del dispositivo, ma raddoppia lo sforzo perch&eacute; richiede due basi di codice. Per il 90% dei casi consigliamo il cross-platform.</p>
@@ -389,24 +389,24 @@ dict(slug="quanto-costa-app-mobile", section="Mobile Apps", read=7, lang=dict(
 <li><strong>Backend:</strong> se l'app deve salvare dati o gestire utenti serve un server, che va progettato e mantenuto.</li>
 <li><strong>Design UX/UI:</strong> un'esperienza curata richiede pi&ugrave; lavoro ma aumenta l'uso reale dell'app.</li>
 <li><strong>Integrazioni:</strong> pagamenti, mappe, notifiche push, login social, servizi esterni.</li>
-<li><strong>Pubblicazione e manutenzione:</strong> account sviluppatore Apple (99&euro;/anno) e Google (25&euro; una tantum), pi&ugrave; aggiornamenti nel tempo.</li>
+<li><strong>Pubblicazione e manutenzione:</strong> account sviluppatore Apple (99€/anno) e Google (25€ una tantum), pi&ugrave; aggiornamenti nel tempo.</li>
 </ul>
 <p>Spesso, prima di un'app, conviene valutare una web app o un sito ottimizzato per mobile: costa meno e raggiunge tutti senza download. Ne parliamo insieme quando definiamo il progetto. Scopri il nostro <a href="/servizi/app-mobile/">servizio di sviluppo app</a>, valuta anche lo <a href="/servizi/sviluppo-software/">sviluppo software su misura</a> e leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per confrontare gli investimenti.</p>""",
   faqs=[
-   ("Quanto costa sviluppare un'app da zero?", "Un'app semplice cross-platform parte da &euro;3.000. Con backend, account utente e notifiche si sale a &euro;6.000+, mentre app complesse con pagamenti e geolocalizzazione superano i &euro;12.000."),
+   ("Quanto costa sviluppare un'app da zero?", "Un'app semplice cross-platform parte da €3.000. Con backend, account utente e notifiche si sale a €6.000+, mentre app complesse con pagamenti e geolocalizzazione superano i €12.000."),
    ("Meglio un'app nativa o cross-platform?", "Per la maggior parte dei progetti conviene il cross-platform (React Native, Flutter): un solo codice per iOS e Android, costi e tempi ridotti. La nativa serve solo quando servono prestazioni estreme o funzioni hardware avanzate."),
-   ("Ci sono costi dopo la pubblicazione dell'app?", "Si: l'account sviluppatore Apple costa 99&euro;/anno e quello Google 25&euro; una tantum. Poi ci sono hosting del backend e aggiornamenti periodici per compatibilita e sicurezza."),
+   ("Ci sono costi dopo la pubblicazione dell'app?", "Si: l'account sviluppatore Apple costa 99€/anno e quello Google 25€ una tantum. Poi ci sono hosting del backend e aggiornamenti periodici per compatibilita e sicurezza."),
    ("Mi serve davvero un'app o basta un sito?", "Spesso un sito ottimizzato per mobile o una web app basta e costa meno, perche non richiede download. L'app conviene quando servono notifiche push, uso offline o funzioni del dispositivo."),
   ]),
  en=dict(
   title="How Much Does It Cost to Build an App in 2026? | Carbon Stealth",
   desc="How much does it cost to build a mobile app in 2026? Real prices for native and cross-platform apps, what drives the quote and how to keep costs down.",
-  body="""<p>Building a mobile app starts at <strong>&euro;3,000</strong> for a simple cross-platform app, while more complex projects with a backend, user accounts and integrations can exceed &euro;15,000. The cost depends on the features, the number of platforms (iOS, Android or both) and whether the app needs a server and an admin panel behind it.</p>
+  body="""<p>Building a mobile app starts at <strong>€3,000</strong> for a simple cross-platform app, while more complex projects with a backend, user accounts and integrations can exceed €15,000. The cost depends on the features, the number of platforms (iOS, Android or both) and whether the app needs a server and an admin panel behind it.</p>
 <h2>App cost by type</h2>
 <div class="ctbl"><table><thead><tr><th>Type of app</th><th>Typical price</th><th>Examples</th></tr></thead><tbody>
-<tr><td>Simple app (MVP)</td><td>from &euro;3,000</td><td>Catalog, showcase, content</td></tr>
-<tr><td>App with backend and accounts</td><td>from &euro;6,000</td><td>Login, profiles, push notifications</td></tr>
-<tr><td>Complex app</td><td>from &euro;12,000</td><td>Payments, geolocation, chat</td></tr>
+<tr><td>Simple app (MVP)</td><td>from €3,000</td><td>Catalog, showcase, content</td></tr>
+<tr><td>App with backend and accounts</td><td>from €6,000</td><td>Login, profiles, push notifications</td></tr>
+<tr><td>Complex app</td><td>from €12,000</td><td>Payments, geolocation, chat</td></tr>
 </tbody></table></div>
 <h2>Native or cross-platform?</h2>
 <p>A <strong>cross-platform</strong> app (React Native, Flutter) uses a single codebase for iOS and Android: it costs less and ships faster, ideal for most projects. A <strong>native</strong> app (Swift, Kotlin) offers maximum performance and full access to device features, but doubles the effort because it needs two codebases. For 90% of cases we recommend cross-platform.</p>
@@ -415,24 +415,24 @@ dict(slug="quanto-costa-app-mobile", section="Mobile Apps", read=7, lang=dict(
 <li><strong>Backend:</strong> if the app must store data or manage users, it needs a server, which must be designed and maintained.</li>
 <li><strong>UX/UI design:</strong> a polished experience takes more work but increases real usage.</li>
 <li><strong>Integrations:</strong> payments, maps, push notifications, social login, external services.</li>
-<li><strong>Publishing and maintenance:</strong> Apple developer account (&euro;99/year) and Google (&euro;25 one-time), plus updates over time.</li>
+<li><strong>Publishing and maintenance:</strong> Apple developer account (€99/year) and Google (€25 one-time), plus updates over time.</li>
 </ul>
 <p>Often, before an app, it's worth considering a web app or a mobile-optimized site: it costs less and reaches everyone without a download. We discuss this together when scoping the project. See our <a href="/en/services/mobile-apps/">app development service</a>, consider <a href="/en/services/software-development/">custom software development</a>, and read <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a> to compare the investments.</p>""",
   faqs=[
-   ("How much does it cost to build an app from scratch?", "A simple cross-platform app starts at &euro;3,000. With a backend, user accounts and notifications it rises to &euro;6,000+, while complex apps with payments and geolocation exceed &euro;12,000."),
+   ("How much does it cost to build an app from scratch?", "A simple cross-platform app starts at €3,000. With a backend, user accounts and notifications it rises to €6,000+, while complex apps with payments and geolocation exceed €12,000."),
    ("Native or cross-platform app?", "For most projects cross-platform (React Native, Flutter) is best: one codebase for iOS and Android, lower cost and time. Native is only needed when you require extreme performance or advanced hardware features."),
-   ("Are there costs after publishing the app?", "Yes: the Apple developer account costs &euro;99/year and Google &euro;25 one-time. Then there's backend hosting and periodic updates for compatibility and security."),
+   ("Are there costs after publishing the app?", "Yes: the Apple developer account costs €99/year and Google €25 one-time. Then there's backend hosting and periodic updates for compatibility and security."),
    ("Do I really need an app or is a website enough?", "Often a mobile-optimized site or web app is enough and costs less, because it needs no download. An app is worth it when you need push notifications, offline use or device features."),
   ]),
  bg=dict(
   title="Колко Струва Разработка на Мобилно Приложение 2026? | Carbon Stealth",
   desc="Колко струва разработка на мобилно приложение през 2026? Реални цени за native и cross-platform приложения, какво влияе на офертата и как да намалите разходите.",
-  body="""<p>Разработката на мобилно приложение започва от <strong>&euro;3000</strong> за просто cross-platform приложение, докато по-сложни проекти с бекенд, потребителски профили и интеграции могат да надхвърлят &euro;15000. Цената зависи от функционалностите, броя платформи (iOS, Android или и двете) и от това дали е нужен сървър и административен панел зад приложението.</p>
+  body="""<p>Разработката на мобилно приложение започва от <strong>€3000</strong> за просто cross-platform приложение, докато по-сложни проекти с бекенд, потребителски профили и интеграции могат да надхвърлят €15000. Цената зависи от функционалностите, броя платформи (iOS, Android или и двете) и от това дали е нужен сървър и административен панел зад приложението.</p>
 <h2>Цена на приложение по тип</h2>
 <div class="ctbl"><table><thead><tr><th>Тип приложение</th><th>Ориентировъчна цена</th><th>Примери</th></tr></thead><tbody>
-<tr><td>Просто приложение (MVP)</td><td>от &euro;3000</td><td>Каталог, витрина, съдържание</td></tr>
-<tr><td>Приложение с бекенд и профили</td><td>от &euro;6000</td><td>Вход, профили, push известия</td></tr>
-<tr><td>Сложно приложение</td><td>от &euro;12000</td><td>Плащания, геолокация, чат</td></tr>
+<tr><td>Просто приложение (MVP)</td><td>от €3000</td><td>Каталог, витрина, съдържание</td></tr>
+<tr><td>Приложение с бекенд и профили</td><td>от €6000</td><td>Вход, профили, push известия</td></tr>
+<tr><td>Сложно приложение</td><td>от €12000</td><td>Плащания, геолокация, чат</td></tr>
 </tbody></table></div>
 <h2>Native или cross-platform?</h2>
 <p><strong>Cross-platform</strong> приложение (React Native, Flutter) използва един код за iOS и Android: струва по-малко и се разработва по-бързо, идеално за повечето проекти. <strong>Native</strong> приложение (Swift, Kotlin) дава максимална производителност и пълен достъп до функциите на устройството, но удвоява усилието, защото изисква два кода. За 90% от случаите препоръчваме cross-platform.</p>
@@ -441,13 +441,13 @@ dict(slug="quanto-costa-app-mobile", section="Mobile Apps", read=7, lang=dict(
 <li><strong>Бекенд:</strong> ако приложението трябва да пази данни или да управлява потребители, е нужен сървър, който се проектира и поддържа.</li>
 <li><strong>UX/UI дизайн:</strong> изпипаното преживяване изисква повече работа, но увеличава реалната употреба.</li>
 <li><strong>Интеграции:</strong> плащания, карти, push известия, социален вход, външни услуги.</li>
-<li><strong>Публикуване и поддръжка:</strong> Apple developer акаунт (&euro;99/година) и Google (&euro;25 еднократно), плюс обновления с времето.</li>
+<li><strong>Публикуване и поддръжка:</strong> Apple developer акаунт (€99/година) и Google (€25 еднократно), плюс обновления с времето.</li>
 </ul>
 <p>Често, преди приложение, си струва да обмислите уеб приложение или сайт, оптимизиран за мобилни: струва по-малко и достига всички без изтегляне. Обсъждаме това заедно при дефинирането на проекта. Вижте нашата <a href="/bg/uslugi/mobilni-prilozheniya/">услуга за разработка на приложения</a>, обмислете и <a href="/bg/uslugi/softuer/">софтуер по поръчка</a> и прочетете <a href="/bg/blog/quanto-costa-sito-web/">колко струва сайт</a>, за да сравните инвестициите.</p>""",
   faqs=[
-   ("Колко струва разработка на приложение от нулата?", "Просто cross-platform приложение започва от &euro;3000. С бекенд, потребителски профили и известия се качва на &euro;6000+, а сложни приложения с плащания и геолокация надхвърлят &euro;12000."),
+   ("Колко струва разработка на приложение от нулата?", "Просто cross-platform приложение започва от €3000. С бекенд, потребителски профили и известия се качва на €6000+, а сложни приложения с плащания и геолокация надхвърлят €12000."),
    ("Native или cross-platform приложение?", "За повечето проекти cross-platform (React Native, Flutter) е най-добро: един код за iOS и Android, по-ниска цена и срок. Native е нужен само при екстремна производителност или сложни хардуерни функции."),
-   ("Има ли разходи след публикуване на приложението?", "Да: Apple developer акаунтът струва &euro;99/година, а Google &euro;25 еднократно. После има хостинг на бекенда и периодични обновления за съвместимост и сигурност."),
+   ("Има ли разходи след публикуване на приложението?", "Да: Apple developer акаунтът струва €99/година, а Google €25 еднократно. После има хостинг на бекенда и периодични обновления за съвместимост и сигурност."),
    ("Наистина ли ми трябва приложение или стига сайт?", "Често сайт, оптимизиран за мобилни, или уеб приложение е достатъчен и струва по-малко, защото не изисква изтегляне. Приложение си струва при push известия, офлайн употреба или функции на устройството."),
   ]),
 )),
@@ -471,10 +471,10 @@ dict(slug="cos-e-un-erp", section="ERP", read=8, lang=dict(
 <h2>Perche conviene a una PMI</h2>
 <p>Il vantaggio principale &egrave; avere una sola fonte di verit&agrave;: meno errori, meno lavoro manuale e visibilit&agrave; immediata sui margini e sulle scorte. Un ERP riduce gli errori di inventario, elimina la doppia digitazione e permette di decidere sui dati reali, non su stime. Per capire se sei pronto, leggi la nostra guida <a href="/blog/erp-per-pmi/">ERP per PMI: quando serve davvero</a>.</p>
 <h2>ERP pronto o su misura?</h2>
-<p>Gli ERP standard (come Odoo o SAP Business One) offrono molto subito ma vanno adattati; un <a href="/servizi/erp/">ERP su misura</a> costa da &euro;5.000 e modella esattamente i tuoi processi, senza pagare moduli che non usi. La scelta dipende da quanto i tuoi flussi sono particolari. Spesso conviene integrare l'ERP con l'<a href="/servizi/ecommerce/">e-commerce</a> e i gestionali esistenti: <a href="/contatti/">parliamone</a> e valutiamo insieme la soluzione giusta.</p>""",
+<p>Gli ERP standard (come Odoo o SAP Business One) offrono molto subito ma vanno adattati; un <a href="/servizi/erp/">ERP su misura</a> costa da €5.000 e modella esattamente i tuoi processi, senza pagare moduli che non usi. La scelta dipende da quanto i tuoi flussi sono particolari. Spesso conviene integrare l'ERP con l'<a href="/servizi/ecommerce/">e-commerce</a> e i gestionali esistenti: <a href="/contatti/">parliamone</a> e valutiamo insieme la soluzione giusta.</p>""",
   faqs=[
    ("Cosa significa ERP e a cosa serve?", "ERP sta per Enterprise Resource Planning. E un software che integra contabilita, magazzino, vendite, acquisti e produzione in un'unica piattaforma, cosi ogni reparto lavora sugli stessi dati aggiornati in tempo reale."),
-   ("Quanto costa un sistema ERP?", "Un ERP su misura per una PMI parte da &euro;5.000. Le soluzioni standard hanno canoni per utente, mentre un ERP custom ha un costo iniziale piu alto ma nessun canone di licenza e processi disegnati sui tuoi."),
+   ("Quanto costa un sistema ERP?", "Un ERP su misura per una PMI parte da €5.000. Le soluzioni standard hanno canoni per utente, mentre un ERP custom ha un costo iniziale piu alto ma nessun canone di licenza e processi disegnati sui tuoi."),
    ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre di solito una singola area (per esempio la contabilita o il magazzino). Un ERP integra piu aree collegate tra loro nello stesso sistema, evitando dati duplicati e disallineati."),
    ("La mia PMI e troppo piccola per un ERP?", "No: esistono ERP dimensionati anche per piccole imprese con 5-20 utenti. Il segnale che serve e quando gestisci troppi dati su fogli Excel separati e fai molto lavoro manuale ripetitivo."),
   ]),
@@ -495,10 +495,10 @@ dict(slug="cos-e-un-erp", section="ERP", read=8, lang=dict(
 <h2>Why it pays off for an SME</h2>
 <p>The main benefit is a single source of truth: fewer errors, less manual work and instant visibility into margins and stock. An ERP reduces inventory errors, eliminates double data entry and lets you decide on real data, not estimates. To see if you're ready, read our guide <a href="/en/blog/erp-per-pmi/">ERP for SMEs: when you really need it</a>.</p>
 <h2>Off-the-shelf or custom ERP?</h2>
-<p>Standard ERPs (like Odoo or SAP Business One) offer a lot out of the box but need tailoring; a <a href="/en/services/erp/">custom ERP</a> starts at &euro;5,000 and models your processes exactly, without paying for modules you don't use. The choice depends on how unusual your workflows are. It's often worth integrating the ERP with your <a href="/en/services/ecommerce/">e-commerce</a> and existing systems: <a href="/en/contact/">let's talk</a> and find the right solution together.</p>""",
+<p>Standard ERPs (like Odoo or SAP Business One) offer a lot out of the box but need tailoring; a <a href="/en/services/erp/">custom ERP</a> starts at €5,000 and models your processes exactly, without paying for modules you don't use. The choice depends on how unusual your workflows are. It's often worth integrating the ERP with your <a href="/en/services/ecommerce/">e-commerce</a> and existing systems: <a href="/en/contact/">let's talk</a> and find the right solution together.</p>""",
   faqs=[
    ("What does ERP mean and what is it for?", "ERP stands for Enterprise Resource Planning. It's software that integrates accounting, inventory, sales, purchasing and production on a single platform, so every department works on the same data updated in real time."),
-   ("How much does an ERP system cost?", "A custom ERP for an SME starts at &euro;5,000. Standard solutions charge per-user fees, while a custom ERP has a higher upfront cost but no license fees and processes designed around yours."),
+   ("How much does an ERP system cost?", "A custom ERP for an SME starts at €5,000. Standard solutions charge per-user fees, while a custom ERP has a higher upfront cost but no license fees and processes designed around yours."),
    ("What's the difference between an ERP and a management system?", "A management system usually covers a single area (for example accounting or inventory). An ERP integrates several connected areas in the same system, avoiding duplicated and misaligned data."),
    ("Is my SME too small for an ERP?", "No: there are ERPs sized for small businesses with 5-20 users. The sign you need one is when you manage too much data across separate spreadsheets and do a lot of repetitive manual work."),
   ]),
@@ -519,10 +519,10 @@ dict(slug="cos-e-un-erp", section="ERP", read=8, lang=dict(
 <h2>Защо си струва за малкия и среден бизнес</h2>
 <p>Основната полза е единен източник на истина: по-малко грешки, по-малко ръчна работа и моментална видимост върху маржовете и наличностите. ERP намалява складовите грешки, премахва двойното въвеждане и позволява решения на база реални данни, а не предположения. За да проверите дали сте готови, прочетете ръководството <a href="/bg/blog/erp-per-pmi/">ERP за МСП: кога наистина е нужен</a>.</p>
 <h2>Готов или ERP по поръчка?</h2>
-<p>Стандартните ERP системи (като Odoo или SAP Business One) предлагат много наготово, но изискват настройка; <a href="/bg/uslugi/erp/">ERP по поръчка</a> започва от &euro;5000 и моделира точно вашите процеси, без да плащате за модули, които не ползвате. Изборът зависи колко специфични са процесите ви. Често си струва ERP да се интегрира с <a href="/bg/uslugi/ecommerce/">онлайн магазина</a> и съществуващите системи: <a href="/bg/kontakti/">пишете ни</a> и ще намерим правилното решение заедно.</p>""",
+<p>Стандартните ERP системи (като Odoo или SAP Business One) предлагат много наготово, но изискват настройка; <a href="/bg/uslugi/erp/">ERP по поръчка</a> започва от €5000 и моделира точно вашите процеси, без да плащате за модули, които не ползвате. Изборът зависи колко специфични са процесите ви. Често си струва ERP да се интегрира с <a href="/bg/uslugi/ecommerce/">онлайн магазина</a> и съществуващите системи: <a href="/bg/kontakti/">пишете ни</a> и ще намерим правилното решение заедно.</p>""",
   faqs=[
    ("Какво означава ERP и за какво служи?", "ERP означава Enterprise Resource Planning. Това е софтуер, който интегрира счетоводство, склад, продажби, доставки и производство в единна платформа, така че всеки отдел работи с едни и същи данни в реално време."),
-   ("Колко струва ERP система?", "ERP по поръчка за МСП започва от &euro;5000. Стандартните решения таксуват на потребител, докато ERP по поръчка има по-висок начален разход, но без лицензни такси и с процеси, проектирани спрямо вашите."),
+   ("Колко струва ERP система?", "ERP по поръчка за МСП започва от €5000. Стандартните решения таксуват на потребител, докато ERP по поръчка има по-висок начален разход, но без лицензни такси и с процеси, проектирани спрямо вашите."),
    ("Каква е разликата между ERP и складова програма?", "Складовата програма обикновено покрива една област (например счетоводство или склад). ERP интегрира няколко свързани области в една система, като избягва дублирани и разминаващи се данни."),
    ("Моята малка фирма твърде малка ли е за ERP?", "Не: има ERP системи, оразмерени и за малки фирми с 5-20 потребители. Признакът, че ви трябва, е когато управлявате твърде много данни в отделни Excel таблици и вършите много повтаряща се ръчна работа."),
   ]),
@@ -545,9 +545,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>Se lavori in una zona precisa, la SEO locale &egrave; il tuo terreno pi&ugrave; fertile. Apri e ottimizza il profilo <strong>Google Business</strong>, raccogli recensioni autentiche, mantieni coerenti nome, indirizzo e telefono ovunque online e crea pagine dedicate alle citt&agrave; che servi &mdash; come facciamo con le nostre pagine <a href="/geo/milano/">per Milano</a> e altre citt&agrave;. Cos&igrave; compari nelle ricerche &laquo;servizio + citt&agrave;&raquo; e nella mappa.</p>
 <h2>Cosa fare nei primi 90 giorni</h2>
 <p>Non serve fare tutto subito. Un percorso realistico: settimana 1-2, analisi parole chiave e sistemazione tecnica del sito; settimana 3-6, ottimizzazione delle pagine di servizio e del profilo Google Business; da settimana 7 in poi, pubblicazione regolare di contenuti utili. La SEO d&agrave; frutti in 3-6 mesi, non in una settimana: la costanza vince.</p>
-<p>Puoi partire da solo con i fondamentali, oppure affidarti a chi lo fa di mestiere. Il nostro <a href="/servizi/seo/">servizio SEO</a> parte da &euro;500/mese e include analisi, ottimizzazione e contenuti. Se stai anche costruendo il sito, leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per pianificare l'investimento complessivo.</p>""",
+<p>Puoi partire da solo con i fondamentali, oppure affidarti a chi lo fa di mestiere. Il nostro <a href="/servizi/seo/">servizio SEO</a> parte da €290/mese e include analisi, ottimizzazione e contenuti. Se stai anche costruendo il sito, leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per pianificare l'investimento complessivo.</p>""",
   faqs=[
-   ("Quanto costa la SEO per una piccola impresa?", "Un'attivita SEO professionale parte da &euro;500/mese e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
+   ("Quanto costa la SEO per una piccola impresa?", "Un'attivita SEO professionale parte da €290/mese e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
    ("In quanto tempo si vedono i risultati SEO?", "Di solito in 3-6 mesi per keyword competitive, prima per ricerche locali o di nicchia. La SEO e un investimento a medio termine: i risultati crescono e restano nel tempo, a differenza della pubblicita."),
    ("Cos'e la SEO locale e a chi serve?", "E l'ottimizzazione per le ricerche legate a un luogo (es. 'parrucchiere Torino'). Serve a chi ha clienti sul territorio: negozi, ristoranti, studi e artigiani. Si basa su Google Business, recensioni e pagine locali."),
    ("Posso fare SEO da solo?", "Si, i fondamentali (parole chiave, titoli, Google Business, contenuti utili) sono alla portata di tutti. Per la parte tecnica avanzata e la strategia continuativa conviene farsi affiancare da un professionista."),
@@ -567,9 +567,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>If you work in a specific area, local SEO is your most fertile ground. Create and optimize your <strong>Google Business</strong> profile, collect genuine reviews, keep your name, address and phone consistent everywhere online, and build pages for the cities you serve &mdash; as we do with our pages <a href="/en/geo/milano/">for Milan</a> and other cities. That way you show up for &laquo;service + city&raquo; searches and on the map.</p>
 <h2>What to do in the first 90 days</h2>
 <p>You don't need to do everything at once. A realistic path: weeks 1-2, keyword research and technical clean-up of the site; weeks 3-6, optimizing service pages and the Google Business profile; from week 7, regular publishing of useful content. SEO delivers in 3-6 months, not in a week: consistency wins.</p>
-<p>You can start on your own with the fundamentals, or rely on people who do it for a living. Our <a href="/en/services/seo/">SEO service</a> starts at &euro;500/month and includes analysis, optimization and content. If you're also building the site, read <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a> to plan the overall investment.</p>""",
+<p>You can start on your own with the fundamentals, or rely on people who do it for a living. Our <a href="/en/services/seo/">SEO service</a> starts at €290/month and includes analysis, optimization and content. If you're also building the site, read <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a> to plan the overall investment.</p>""",
   faqs=[
-   ("How much does SEO cost for a small business?", "Professional SEO starts at &euro;500/month and includes keyword research, on-page optimization and content. Many fundamentals can also be handled in-house, with consistency and method."),
+   ("How much does SEO cost for a small business?", "Professional SEO starts at €290/month and includes keyword research, on-page optimization and content. Many fundamentals can also be handled in-house, with consistency and method."),
    ("How long does SEO take to show results?", "Usually 3-6 months for competitive keywords, sooner for local or niche searches. SEO is a medium-term investment: results grow and last over time, unlike advertising."),
    ("What is local SEO and who is it for?", "It's optimization for location-based searches (e.g. 'hairdresser Turin'). It's for businesses with local customers: shops, restaurants, firms and artisans. It relies on Google Business, reviews and local pages."),
    ("Can I do SEO myself?", "Yes, the fundamentals (keywords, titles, Google Business, useful content) are within everyone's reach. For advanced technical work and ongoing strategy, it's worth having a professional alongside you."),
@@ -589,9 +589,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>Ако работите в конкретен район, локалното SEO е най-плодородната ви почва. Създайте и оптимизирайте <strong>Google Business</strong> профила си, събирайте истински отзиви, поддържайте еднакви име, адрес и телефон навсякъде онлайн и създайте страници за градовете, които обслужвате &mdash; както правим с нашите страници <a href="/bg/geo/sofia/">за София</a> и други градове. Така се появявате при търсения &laquo;услуга + град&raquo; и на картата.</p>
 <h2>Какво да направите през първите 90 дни</h2>
 <p>Не е нужно всичко наведнъж. Реалистичен път: седмица 1-2 &mdash; проучване на ключови думи и техническо изчистване на сайта; седмица 3-6 &mdash; оптимизация на страниците за услуги и Google Business профила; от седмица 7 &mdash; редовно публикуване на полезно съдържание. SEO дава резултати за 3-6 месеца, не за седмица: постоянството печели.</p>
-<p>Можете да започнете сами с основите или да се доверите на хора, които го правят професионално. Нашата <a href="/bg/uslugi/seo/">SEO услуга</a> започва от &euro;500/месец и включва анализ, оптимизация и съдържание. Ако тепърва изграждате сайта, прочетете <a href="/bg/blog/quanto-costa-sito-web/">колко струва сайт</a>, за да планирате цялостната инвестиция.</p>""",
+<p>Можете да започнете сами с основите или да се доверите на хора, които го правят професионално. Нашата <a href="/bg/uslugi/seo/">SEO услуга</a> започва от €290/месец и включва анализ, оптимизация и съдържание. Ако тепърва изграждате сайта, прочетете <a href="/bg/blog/quanto-costa-sito-web/">колко струва сайт</a>, за да планирате цялостната инвестиция.</p>""",
   faqs=[
-   ("Колко струва SEO за малък бизнес?", "Професионалното SEO започва от &euro;500/месец и включва проучване на ключови думи, on-page оптимизация и съдържание. Много от основите могат да се вършат и вътрешно, с постоянство и метод."),
+   ("Колко струва SEO за малък бизнес?", "Професионалното SEO започва от €290/месец и включва проучване на ключови думи, on-page оптимизация и съдържание. Много от основите могат да се вършат и вътрешно, с постоянство и метод."),
    ("За колко време SEO дава резултати?", "Обикновено за 3-6 месеца при конкурентни ключови думи, по-рано при локални или нишови търсения. SEO е средносрочна инвестиция: резултатите растат и остават с времето, за разлика от рекламата."),
    ("Какво е локално SEO и за кого е?", "Това е оптимизация за търсения, свързани с място (напр. 'фризьор Пловдив'). За бизнеси с местни клиенти: магазини, ресторанти, кантори и занаятчии. Стъпва на Google Business, отзиви и локални страници."),
    ("Мога ли да правя SEO сам?", "Да, основите (ключови думи, заглавия, Google Business, полезно съдържание) са по силите на всеки. За напредналата техническа част и постоянната стратегия си струва да имате специалист до себе си."),
@@ -689,7 +689,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <h2>Le differenze principali</h2>
 <div class="ctbl"><table><thead><tr><th>Criterio</th><th>App nativa</th><th>PWA</th></tr></thead><tbody>
 <tr><td>Distribuzione</td><td>Store Apple e Google</td><td>Link diretto, nessuno store</td></tr>
-<tr><td>Costo indicativo</td><td>da &euro;3.000</td><td>da &euro;1.500</td></tr>
+<tr><td>Costo indicativo</td><td>da €3.000</td><td>da €1.500</td></tr>
 <tr><td>Accesso all'hardware</td><td>Completo (NFC, Bluetooth, sensori)</td><td>Limitato</td></tr>
 <tr><td>Funziona offline</td><td>S&igrave;</td><td>S&igrave; (con cache)</td></tr>
 <tr><td>Notifiche push</td><td>Complete</td><td>S&igrave;, con limiti su iOS</td></tr>
@@ -702,7 +702,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <p>Nel dubbio, il nostro consiglio &egrave; partire dalla PWA e passare al nativo solo se emerge un limite reale. Approfondisci i costi nella guida <a href="/blog/quanto-costa-app-mobile/">quanto costa sviluppare un'app</a>, scopri il nostro <a href="/servizi/app-mobile/">servizio di sviluppo app</a> e lo <a href="/servizi/sviluppo-software/">sviluppo software su misura</a>, oppure <a href="/contatti/">raccontaci il tuo progetto</a> per un consiglio onesto.</p>""",
   faqs=[
    ("Qual e la differenza tra app nativa e PWA?", "L'app nativa si installa dallo store ed e sviluppata per iOS e Android con accesso completo al dispositivo. La PWA e un sito web installabile dal browser che funziona come un'app, anche offline, ma con accesso hardware piu limitato."),
-   ("Una PWA costa meno di un'app nativa?", "Di solito si. Una PWA parte da circa &euro;1.500 perche usa un solo progetto per tutte le piattaforme, mentre un'app nativa parte da &euro;3.000 e cresce se servono versioni separate per iOS e Android."),
+   ("Una PWA costa meno di un'app nativa?", "Di solito si. Una PWA parte da circa €1.500 perche usa un solo progetto per tutte le piattaforme, mentre un'app nativa parte da €3.000 e cresce se servono versioni separate per iOS e Android."),
    ("Le PWA funzionano su iPhone?", "Si, le PWA funzionano su iOS e si possono aggiungere alla schermata home. Alcune funzioni avanzate, come certe notifiche push, restano piu limitate rispetto ad Android o a un'app nativa."),
    ("Meglio partire con una PWA o con un'app nativa?", "Per la maggior parte dei progetti conviene partire con una PWA: costa meno, raggiunge tutti subito e si aggiorna da sola. Si passa al nativo solo quando emerge un limite concreto di prestazioni o di hardware."),
   ]),
@@ -713,7 +713,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <h2>The main differences</h2>
 <div class="ctbl"><table><thead><tr><th>Criterion</th><th>Native app</th><th>PWA</th></tr></thead><tbody>
 <tr><td>Distribution</td><td>Apple and Google stores</td><td>Direct link, no store</td></tr>
-<tr><td>Typical cost</td><td>from &euro;3,000</td><td>from &euro;1,500</td></tr>
+<tr><td>Typical cost</td><td>from €3,000</td><td>from €1,500</td></tr>
 <tr><td>Hardware access</td><td>Full (NFC, Bluetooth, sensors)</td><td>Limited</td></tr>
 <tr><td>Works offline</td><td>Yes</td><td>Yes (with caching)</td></tr>
 <tr><td>Push notifications</td><td>Full</td><td>Yes, limited on iOS</td></tr>
@@ -726,7 +726,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <p>When in doubt, our advice is to start with a PWA and move to native only if a real limit appears. Dig into the numbers in our guide on <a href="/en/blog/quanto-costa-app-mobile/">how much it costs to build an app</a>, see our <a href="/en/services/mobile-apps/">app development service</a> and <a href="/en/services/software-development/">custom software development</a>, or <a href="/en/contact/">tell us about your project</a> for honest advice.</p>""",
   faqs=[
    ("What is the difference between a native app and a PWA?", "A native app installs from the store and is built for iOS and Android with full device access. A PWA is a website installable from the browser that works like an app, even offline, but with more limited hardware access."),
-   ("Does a PWA cost less than a native app?", "Usually yes. A PWA starts at around &euro;1,500 because it uses one project for all platforms, while a native app starts at &euro;3,000 and grows if you need separate iOS and Android versions."),
+   ("Does a PWA cost less than a native app?", "Usually yes. A PWA starts at around €1,500 because it uses one project for all platforms, while a native app starts at €3,000 and grows if you need separate iOS and Android versions."),
    ("Do PWAs work on iPhone?", "Yes, PWAs work on iOS and can be added to the home screen. Some advanced features, such as certain push notifications, remain more limited than on Android or a native app."),
    ("Should I start with a PWA or a native app?", "For most projects it is best to start with a PWA: it costs less, reaches everyone immediately and updates itself. You move to native only when a concrete performance or hardware limit appears."),
   ]),
@@ -737,7 +737,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <h2>Основните разлики</h2>
 <div class="ctbl"><table><thead><tr><th>Критерий</th><th>Нативно приложение</th><th>PWA</th></tr></thead><tbody>
 <tr><td>Разпространение</td><td>Магазините на Apple и Google</td><td>Директен линк, без магазин</td></tr>
-<tr><td>Ориентировъчна цена</td><td>от &euro;3000</td><td>от &euro;1500</td></tr>
+<tr><td>Ориентировъчна цена</td><td>от €3000</td><td>от €1500</td></tr>
 <tr><td>Достъп до хардуера</td><td>Пълен (NFC, Bluetooth, сензори)</td><td>Ограничен</td></tr>
 <tr><td>Работа офлайн</td><td>Да</td><td>Да (с кеширане)</td></tr>
 <tr><td>Push известия</td><td>Пълни</td><td>Да, с ограничения на iOS</td></tr>
@@ -750,7 +750,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <p>При колебание съветът ни е да започнете с PWA и да преминете към нативно само ако се появи реално ограничение. Разгледайте цените в статията <a href="/bg/blog/quanto-costa-app-mobile/">колко струва разработката на приложение</a>, вижте нашата <a href="/bg/uslugi/mobilni-prilozheniya/">услуга за мобилни приложения</a> и <a href="/bg/uslugi/softuer/">софтуер по поръчка</a>, или <a href="/bg/kontakti/">разкажете ни за проекта си</a> за честен съвет.</p>""",
   faqs=[
    ("Каква е разликата между нативно приложение и PWA?", "Нативното приложение се инсталира от магазина и е разработено за iOS и Android с пълен достъп до устройството. PWA е уебсайт, инсталируем от браузъра, който работи като приложение, дори офлайн, но с по-ограничен достъп до хардуера."),
-   ("PWA по-евтина ли е от нативно приложение?", "Обикновено да. PWA започва от около &euro;1500, защото използва един проект за всички платформи, докато нативно приложение започва от &euro;3000 и поскъпва, ако са нужни отделни версии за iOS и Android."),
+   ("PWA по-евтина ли е от нативно приложение?", "Обикновено да. PWA започва от около €1500, защото използва един проект за всички платформи, докато нативно приложение започва от €3000 и поскъпва, ако са нужни отделни версии за iOS и Android."),
    ("Работят ли PWA на iPhone?", "Да, PWA работят на iOS и могат да се добавят на началния екран. Някои по-сложни функции, като определени push известия, остават по-ограничени спрямо Android или нативно приложение."),
    ("Да започна ли с PWA или с нативно приложение?", "За повечето проекти е най-добре да започнете с PWA: струва по-малко, достига до всички веднага и се обновява сама. Преминава се към нативно само когато се появи конкретно ограничение в производителността или хардуера."),
   ]),
@@ -1033,10 +1033,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 </tbody></table></div>
 <h2>Velocit&agrave; e test</h2>
 <p>La velocit&agrave; &egrave; parte della conversione: ogni secondo di attesa in pi&ugrave; fa perdere visitatori, per questo curiamo i <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a> anche sulle landing. Dopo il lancio, misura e migliora: cambia un titolo, sposta la call to action, prova un'immagine diversa e osserva i risultati. Una landing non &egrave; mai finita, si affina nel tempo.</p>
-<p>Una landing page ben fatta &egrave; il complemento naturale di una campagna e della <a href="/servizi/seo/">SEO</a>. La costruiamo come parte del nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>, a partire da &euro;500. Se hai una campagna da lanciare, <a href="/contatti/">raccontacela</a> e la trasformiamo in una pagina che converte.</p>""",
+<p>Una landing page ben fatta &egrave; il complemento naturale di una campagna e della <a href="/servizi/seo/">SEO</a>. La costruiamo come parte del nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>, a partire da €1.890. Se hai una campagna da lanciare, <a href="/contatti/">raccontacela</a> e la trasformiamo in una pagina che converte.</p>""",
   faqs=[
    ("Cosa rende una landing page efficace?", "Un solo obiettivo, un titolo chiaro nei primi secondi e una call to action evidente e ripetuta. Contano piu la chiarezza del messaggio e la rimozione delle distrazioni che una grafica appariscente."),
-   ("Quanto costa una landing page?", "Una landing page professionale parte da &euro;500. Il prezzo dipende dalla lunghezza, dai contenuti da produrre e dalle integrazioni, come moduli, pagamenti o strumenti di tracciamento delle conversioni."),
+   ("Quanto costa una landing page?", "Una landing page professionale parte da €1.890. Il prezzo dipende dalla lunghezza, dai contenuti da produrre e dalle integrazioni, come moduli, pagamenti o strumenti di tracciamento delle conversioni."),
    ("Quante call to action mettere in una landing page?", "Una sola azione, ripetuta piu volte lungo la pagina. Offrire troppe scelte diverse disperde l'attenzione e riduce le conversioni: meglio guidare il visitatore verso un unico passo chiaro."),
    ("La velocita influenza le conversioni?", "Si, molto. Ogni secondo di caricamento in piu fa perdere visitatori prima ancora che leggano. Ottimizzare i Core Web Vitals di una landing e uno dei modi piu diretti per aumentare le conversioni."),
   ]),
@@ -1063,10 +1063,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 </tbody></table></div>
 <h2>Speed and testing</h2>
 <p>Speed is part of conversion: every extra second of waiting loses visitors, which is why we look after <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a> on landing pages too. After launch, measure and improve: change a headline, move the call to action, try a different image and watch the results. A landing page is never finished, it is refined over time.</p>
-<p>A well-built landing page is the natural companion to a campaign and to <a href="/en/services/seo/">SEO</a>. We build it as part of our <a href="/en/services/web-development/">web development service</a>, from &euro;500. If you have a campaign to launch, <a href="/en/contact/">tell us about it</a> and we'll turn it into a page that converts.</p>""",
+<p>A well-built landing page is the natural companion to a campaign and to <a href="/en/services/seo/">SEO</a>. We build it as part of our <a href="/en/services/web-development/">web development service</a>, from €1,890. If you have a campaign to launch, <a href="/en/contact/">tell us about it</a> and we'll turn it into a page that converts.</p>""",
   faqs=[
    ("What makes a landing page effective?", "A single goal, a clear headline in the first seconds and an obvious, repeated call to action. Clarity of message and removal of distractions matter more than flashy design."),
-   ("How much does a landing page cost?", "A professional landing page starts at &euro;500. The price depends on length, the content to produce and integrations such as forms, payments or conversion-tracking tools."),
+   ("How much does a landing page cost?", "A professional landing page starts at €1,890. The price depends on length, the content to produce and integrations such as forms, payments or conversion-tracking tools."),
    ("How many calls to action should a landing page have?", "One action, repeated several times down the page. Offering too many different choices scatters attention and lowers conversions: it's better to guide the visitor toward one clear step."),
    ("Does speed affect conversions?", "Yes, a lot. Every extra second of loading loses visitors before they even read. Optimizing a landing page's Core Web Vitals is one of the most direct ways to increase conversions."),
   ]),
@@ -1093,10 +1093,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 </tbody></table></div>
 <h2>Скорост и тестване</h2>
 <p>Скоростта е част от конверсията: всяка допълнителна секунда изчакване губи посетители, затова се грижим за <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a> и на landing страниците. След пускането измервайте и подобрявайте: сменете заглавие, преместете призива за действие, пробвайте друго изображение и наблюдавайте резултатите. Landing страницата никога не е завършена, тя се усъвършенства с времето.</p>
-<p>Добре направената landing page е естественото допълнение към една кампания и към <a href="/bg/uslugi/seo/">SEO</a>. Изграждаме я като част от нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>, от &euro;500. Ако имате кампания за стартиране, <a href="/bg/kontakti/">разкажете ни</a> и ще я превърнем в страница, която конвертира.</p>""",
+<p>Добре направената landing page е естественото допълнение към една кампания и към <a href="/bg/uslugi/seo/">SEO</a>. Изграждаме я като част от нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>, от €1890. Ако имате кампания за стартиране, <a href="/bg/kontakti/">разкажете ни</a> и ще я превърнем в страница, която конвертира.</p>""",
   faqs=[
    ("Какво прави една landing page ефективна?", "Една цел, ясно заглавие в първите секунди и очевиден, повтарящ се призив за действие. Яснотата на посланието и премахването на разсейващите елементи имат по-голямо значение от пищния дизайн."),
-   ("Колко струва landing page?", "Професионална landing page започва от &euro;500. Цената зависи от дължината, съдържанието за изработка и интеграциите, като форми, плащания или инструменти за проследяване на конверсии."),
+   ("Колко струва landing page?", "Професионална landing page започва от €1890. Цената зависи от дължината, съдържанието за изработка и интеграциите, като форми, плащания или инструменти за проследяване на конверсии."),
    ("Колко призива за действие да сложа в landing page?", "Едно действие, повторено няколко пъти по страницата. Предлагането на твърде много различни избори разсейва вниманието и намалява конверсиите: по-добре е да насочите посетителя към една ясна стъпка."),
    ("Влияе ли скоростта на конверсиите?", "Да, много. Всяка допълнителна секунда зареждане губи посетители още преди да прочетат. Оптимизирането на Core Web Vitals на landing страницата е един от най-преките начини да увеличите конверсиите."),
   ]),
@@ -1112,7 +1112,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <div class="ctbl"><table><thead><tr><th>Criterio</th><th>Gestionale</th><th>ERP</th></tr></thead><tbody>
 <tr><td>Ambito</td><td>Un'area (es. magazzino o fatture)</td><td>Pi&ugrave; aree integrate</td></tr>
 <tr><td>Dati</td><td>Separati per programma</td><td>Unici e condivisi</td></tr>
-<tr><td>Costo indicativo</td><td>da &euro;2.000</td><td>da &euro;5.000</td></tr>
+<tr><td>Costo indicativo</td><td>da €2.000</td><td>da €5.000</td></tr>
 <tr><td>Adatto a</td><td>Piccole attivit&agrave;, esigenze semplici</td><td>PMI con pi&ugrave; reparti</td></tr>
 <tr><td>Crescita</td><td>Limitata, per moduli isolati</td><td>Scalabile, si aggiungono moduli</td></tr>
 </tbody></table></div>
@@ -1123,7 +1123,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <p>La scelta giusta dipende dalla tua organizzazione, non da quale sia pi&ugrave; &laquo;avanzato&raquo;. Spesso conviene partire da un gestionale ben fatto ed evolverlo verso un ERP quando serve davvero. <a href="/contatti/">Raccontaci come lavori oggi</a> e ti diciamo cosa ha senso per te.</p>""",
   faqs=[
    ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre un'area specifica come fatturazione o magazzino, con dati separati. Un ERP integra piu aree in un unico sistema con dati condivisi, evitando doppie digitazioni e dando una visione d'insieme dell'azienda."),
-   ("Costa di piu un ERP o un gestionale?", "Un ERP costa di piu: parte da &euro;5.000 contro i &euro;2.000 di un software gestionale su misura. In cambio integra piu reparti e cresce con l'azienda, mentre il gestionale resta limitato a un singolo processo."),
+   ("Costa di piu un ERP o un gestionale?", "Un ERP costa di piu: parte da €5.000 contro i €2.000 di un software gestionale su misura. In cambio integra piu reparti e cresce con l'azienda, mentre il gestionale resta limitato a un singolo processo."),
    ("Quando conviene passare da un gestionale a un ERP?", "Quando gli stessi dati vengono inseriti in piu programmi diversi e si perde tempo a farli quadrare tra loro. E il segnale che i processi sono cresciuti e serve un sistema unico e integrato."),
    ("Posso partire da un gestionale ed evolvere verso un ERP?", "Si, ed e spesso la scelta piu sensata. Si parte da un gestionale ben progettato che copre l'area piu critica e si aggiungono moduli integrati man mano che l'azienda cresce, senza rifare tutto da zero."),
   ]),
@@ -1135,7 +1135,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <div class="ctbl"><table><thead><tr><th>Criterion</th><th>Management software</th><th>ERP</th></tr></thead><tbody>
 <tr><td>Scope</td><td>One area (e.g. inventory or invoices)</td><td>Several integrated areas</td></tr>
 <tr><td>Data</td><td>Separate per program</td><td>Single and shared</td></tr>
-<tr><td>Typical cost</td><td>from &euro;2,000</td><td>from &euro;5,000</td></tr>
+<tr><td>Typical cost</td><td>from €2,000</td><td>from €5,000</td></tr>
 <tr><td>Best for</td><td>Small businesses, simple needs</td><td>SMEs with several departments</td></tr>
 <tr><td>Growth</td><td>Limited, isolated modules</td><td>Scalable, add modules</td></tr>
 </tbody></table></div>
@@ -1146,7 +1146,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <p>The right choice depends on your organization, not on which is more "advanced". It often makes sense to start with well-built management software and grow it into an ERP when you truly need it. <a href="/en/contact/">Tell us how you work today</a> and we'll say what makes sense for you.</p>""",
   faqs=[
    ("What is the difference between an ERP and management software?", "Management software covers a specific area such as invoicing or inventory, with separate data. An ERP integrates several areas into a single system with shared data, avoiding double entry and giving an overall view of the company."),
-   ("Does an ERP cost more than management software?", "An ERP costs more: from &euro;5,000 versus &euro;2,000 for custom management software. In return it integrates several departments and grows with the company, whereas management software stays limited to a single process."),
+   ("Does an ERP cost more than management software?", "An ERP costs more: from €5,000 versus €2,000 for custom management software. In return it integrates several departments and grows with the company, whereas management software stays limited to a single process."),
    ("When should I move from management software to an ERP?", "When the same data is entered into several different programs and you waste time reconciling it. That's the sign that processes have grown and you need a single, integrated system."),
    ("Can I start with management software and grow into an ERP?", "Yes, and it's often the most sensible choice. You start with well-designed software covering the most critical area and add integrated modules as the company grows, without rebuilding everything from scratch."),
   ]),
@@ -1158,7 +1158,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <div class="ctbl"><table><thead><tr><th>Критерий</th><th>Обикновен софтуер</th><th>ERP</th></tr></thead><tbody>
 <tr><td>Обхват</td><td>Една област (напр. склад или фактури)</td><td>Няколко интегрирани области</td></tr>
 <tr><td>Данни</td><td>Разделени по програми</td><td>Единни и споделени</td></tr>
-<tr><td>Ориентировъчна цена</td><td>от &euro;2000</td><td>от &euro;5000</td></tr>
+<tr><td>Ориентировъчна цена</td><td>от €2000</td><td>от €5000</td></tr>
 <tr><td>Подходящ за</td><td>Малки фирми, прости нужди</td><td>МСП с няколко отдела</td></tr>
 <tr><td>Растеж</td><td>Ограничен, изолирани модули</td><td>Мащабируем, добавят се модули</td></tr>
 </tbody></table></div>
@@ -1169,7 +1169,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <p>Правилният избор зависи от вашата организация, а не от това кое е по-&laquo;модерно&raquo;. Често е разумно да започнете с добре направен софтуер и да го развиете в ERP, когато наистина потрябва. <a href="/bg/kontakti/">Разкажете ни как работите днес</a> и ще ви кажем какво има смисъл за вас.</p>""",
   faqs=[
    ("Каква е разликата между ERP и обикновен софтуер?", "Обикновеният софтуер покрива конкретна област като фактуриране или склад, с разделени данни. ERP интегрира няколко области в една система със споделени данни, избягвайки двойно въвеждане и давайки цялостна картина на фирмата."),
-   ("ERP по-скъп ли е от обикновен софтуер?", "ERP струва повече: от &euro;5000 срещу &euro;2000 за складов софтуер по поръчка. В замяна интегрира няколко отдела и расте с фирмата, докато обикновеният софтуер остава ограничен до един процес."),
+   ("ERP по-скъп ли е от обикновен софтуер?", "ERP струва повече: от €5000 срещу €2000 за складов софтуер по поръчка. В замяна интегрира няколко отдела и расте с фирмата, докато обикновеният софтуер остава ограничен до един процес."),
    ("Кога да премина от обикновен софтуер към ERP?", "Когато едни и същи данни се въвеждат в няколко различни програми и губите време да ги уравнявате. Това е сигналът, че процесите са нараснали и е нужна единна, интегрирана система."),
    ("Мога ли да започна с обикновен софтуер и да премина към ERP?", "Да, и това често е най-разумният избор. Започвате с добре проектиран софтуер за най-критичната област и добавяте интегрирани модули с растежа на фирмата, без да правите всичко наново."),
   ]),
@@ -1484,7 +1484,7 @@ dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
  it=dict(
   title="Manutenzione Sito Web: Perch&eacute; Serve e Quanto Costa | Carbon Stealth",
   desc="Cos'&egrave; la manutenzione di un sito web, perch&eacute; &egrave; necessaria e quanto costa: aggiornamenti, backup, sicurezza e prestazioni spiegati senza tecnicismi.",
-  body="""<p>La manutenzione di un sito web &egrave; l'insieme di attivit&agrave; che lo tengono <strong>sicuro, veloce e funzionante</strong> nel tempo: aggiornamenti, backup, controlli di sicurezza e piccole modifiche. Un sito non &egrave; un lavoro &laquo;una tantum&raquo;: come un'auto, ha bisogno di tagliandi regolari. Un piano di manutenzione parte in genere da <strong>&euro;39/mese</strong> e costa molto meno del rischio di un sito bucato, offline o penalizzato da Google.</p>
+  body="""<p>La manutenzione di un sito web &egrave; l'insieme di attivit&agrave; che lo tengono <strong>sicuro, veloce e funzionante</strong> nel tempo: aggiornamenti, backup, controlli di sicurezza e piccole modifiche. Un sito non &egrave; un lavoro &laquo;una tantum&raquo;: come un'auto, ha bisogno di tagliandi regolari. Un piano di manutenzione parte in genere da <strong>€39/mese</strong> e costa molto meno del rischio di un sito bucato, offline o penalizzato da Google.</p>
 <h2>Cosa include la manutenzione</h2>
 <div class="ctbl"><table><thead><tr><th>Attivit&agrave;</th><th>Perch&eacute; serve</th><th>Frequenza</th></tr></thead><tbody>
 <tr><td>Aggiornamenti software</td><td>Chiudono falle di sicurezza note</td><td>Mensile o pi&ugrave; spesso</td></tr>
@@ -1496,18 +1496,18 @@ dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
 <h2>Perch&eacute; non puoi ignorarla</h2>
 <p>Un sito trascurato accumula rischi silenziosi: plugin non aggiornati diventano porte d'ingresso per gli attacchi, un backup mancante trasforma un piccolo guasto in una catastrofe, e prestazioni che peggiorano fanno perdere posizioni e clienti. Le basi le trovi nella nostra <a href="/blog/sicurezza-sito-web-checklist/">checklist di sicurezza</a>, mentre per la velocit&agrave; &egrave; utile la guida su <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>. Se hai un sito WordPress, molti interventi coincidono con quelli per <a href="/blog/velocizzare-wordpress/">velocizzarlo</a>.</p>
 <h2>Quanto costa e quali formule esistono</h2>
-<p>Le formule variano: piani in abbonamento a canone mensile (da circa &euro;39/mese) che includono aggiornamenti, backup e un monte ore per modifiche, oppure interventi a consumo pagati quando servono. L'abbonamento conviene se il sito &egrave; importante per il business e non vuoi sorprese; il &laquo;a consumo&raquo; va bene per siti semplici e statici. A questo si aggiunge sempre l'<a href="/servizi/hosting/">hosting</a>, che &egrave; la base su cui il sito vive.</p>
+<p>Le formule variano: piani in abbonamento a canone mensile (da circa €39/mese) che includono aggiornamenti, backup e un monte ore per modifiche, oppure interventi a consumo pagati quando servono. L'abbonamento conviene se il sito &egrave; importante per il business e non vuoi sorprese; il &laquo;a consumo&raquo; va bene per siti semplici e statici. A questo si aggiunge sempre l'<a href="/servizi/hosting/">hosting</a>, che &egrave; la base su cui il sito vive.</p>
 <p>Offriamo manutenzione su tutti i siti che realizziamo e anche su siti esistenti. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> oppure <a href="/contatti/">scrivici</a> per un piano su misura per il tuo caso.</p>""",
   faqs=[
    ("Perche un sito web ha bisogno di manutenzione?", "Perche software non aggiornato, backup mancanti e prestazioni in calo espongono il sito a rischi di sicurezza, downtime e perdita di posizioni su Google. La manutenzione tiene il sito sicuro, veloce e funzionante nel tempo, come i tagliandi di un'auto."),
-   ("Quanto costa la manutenzione di un sito web?", "Un piano in abbonamento parte in genere da circa &euro;39/mese e include aggiornamenti, backup, controlli di sicurezza e un monte ore per piccole modifiche. In alternativa esistono interventi a consumo, pagati solo quando servono."),
+   ("Quanto costa la manutenzione di un sito web?", "Un piano in abbonamento parte in genere da circa €39/mese e include aggiornamenti, backup, controlli di sicurezza e un monte ore per piccole modifiche. In alternativa esistono interventi a consumo, pagati solo quando servono."),
    ("Cosa succede se non faccio manutenzione?", "Aumentano i rischi: plugin vulnerabili diventano porte per gli attacchi, un guasto senza backup puo far perdere tutto e le prestazioni peggiorano danneggiando la SEO. Spesso il costo di rimettere a posto un sito trascurato supera quello della manutenzione."),
    ("La manutenzione include anche le modifiche ai contenuti?", "Nei piani in abbonamento di solito e incluso un monte ore per piccole modifiche a testi, immagini e pagine. Interventi piu grandi, come nuove sezioni o funzionalita, si valutano a parte con un preventivo dedicato."),
   ]),
  en=dict(
   title="Website Maintenance: Why It Matters and What It Costs | Carbon Stealth",
   desc="What website maintenance is, why it's necessary and what it costs: updates, backups, security and performance explained without jargon.",
-  body="""<p>Website maintenance is the set of activities that keep a site <strong>secure, fast and working</strong> over time: updates, backups, security checks and small changes. A website isn't a one-off job: like a car, it needs regular servicing. A maintenance plan typically starts from <strong>&euro;39/month</strong> and costs far less than the risk of a hacked, offline or Google-penalized site.</p>
+  body="""<p>Website maintenance is the set of activities that keep a site <strong>secure, fast and working</strong> over time: updates, backups, security checks and small changes. A website isn't a one-off job: like a car, it needs regular servicing. A maintenance plan typically starts from <strong>€39/month</strong> and costs far less than the risk of a hacked, offline or Google-penalized site.</p>
 <h2>What maintenance includes</h2>
 <div class="ctbl"><table><thead><tr><th>Activity</th><th>Why it matters</th><th>Frequency</th></tr></thead><tbody>
 <tr><td>Software updates</td><td>Close known security holes</td><td>Monthly or more often</td></tr>
@@ -1519,18 +1519,18 @@ dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
 <h2>Why you can't ignore it</h2>
 <p>A neglected site accumulates silent risks: outdated plugins become entry points for attacks, a missing backup turns a small failure into a disaster, and degrading performance loses rankings and customers. The basics are in our <a href="/en/blog/sicurezza-sito-web-checklist/">security checklist</a>, and for speed our <a href="/en/blog/core-web-vitals-guida/">Core Web Vitals</a> guide helps. If you run WordPress, many tasks overlap with those to <a href="/en/blog/velocizzare-wordpress/">speed it up</a>.</p>
 <h2>What it costs and which formats exist</h2>
-<p>Formats vary: monthly subscription plans (from around &euro;39/month) covering updates, backups and a block of hours for changes, or pay-as-you-go work billed when needed. A subscription makes sense if the site matters to the business and you want no surprises; pay-as-you-go suits simple, static sites. On top of this there's always <a href="/en/services/hosting/">hosting</a>, the foundation the site runs on.</p>
+<p>Formats vary: monthly subscription plans (from around €39/month) covering updates, backups and a block of hours for changes, or pay-as-you-go work billed when needed. A subscription makes sense if the site matters to the business and you want no surprises; pay-as-you-go suits simple, static sites. On top of this there's always <a href="/en/services/hosting/">hosting</a>, the foundation the site runs on.</p>
 <p>We offer maintenance on every site we build and on existing sites too. See our <a href="/en/services/web-development/">web development service</a> or <a href="/en/contact/">get in touch</a> for a plan tailored to your case.</p>""",
   faqs=[
    ("Why does a website need maintenance?", "Because outdated software, missing backups and declining performance expose the site to security risks, downtime and lost Google rankings. Maintenance keeps the site secure, fast and working over time, like servicing a car."),
-   ("How much does website maintenance cost?", "A subscription plan typically starts from around &euro;39/month and includes updates, backups, security checks and a block of hours for small changes. Alternatively, pay-as-you-go work is billed only when needed."),
+   ("How much does website maintenance cost?", "A subscription plan typically starts from around €39/month and includes updates, backups, security checks and a block of hours for small changes. Alternatively, pay-as-you-go work is billed only when needed."),
    ("What happens if I don't do maintenance?", "Risks grow: vulnerable plugins become entry points for attacks, a failure without a backup can lose everything, and performance worsens, hurting SEO. Fixing a neglected site often costs more than maintaining it would have."),
    ("Does maintenance include content changes?", "Subscription plans usually include a block of hours for small edits to text, images and pages. Larger work, like new sections or features, is assessed separately with a dedicated quote."),
   ]),
  bg=dict(
   title="Поддръжка на Сайт: Защо е Нужна и Колко Струва | Carbon Stealth",
   desc="Какво е поддръжката на сайт, защо е необходима и колко струва: обновления, резервни копия, сигурност и производителност, обяснени без технически жаргон.",
-  body="""<p>Поддръжката на сайт е съвкупността от дейности, които го държат <strong>сигурен, бърз и работещ</strong> във времето: обновления, резервни копия, проверки за сигурност и малки промени. Сайтът не е еднократна работа: като автомобил се нуждае от редовно обслужване. Планът за поддръжка обикновено започва от <strong>&euro;39/месец</strong> и струва далеч по-малко от риска от хакнат, недостъпен или санкциониран от Google сайт.</p>
+  body="""<p>Поддръжката на сайт е съвкупността от дейности, които го държат <strong>сигурен, бърз и работещ</strong> във времето: обновления, резервни копия, проверки за сигурност и малки промени. Сайтът не е еднократна работа: като автомобил се нуждае от редовно обслужване. Планът за поддръжка обикновено започва от <strong>€39/месец</strong> и струва далеч по-малко от риска от хакнат, недостъпен или санкциониран от Google сайт.</p>
 <h2>Какво включва поддръжката</h2>
 <div class="ctbl"><table><thead><tr><th>Дейност</th><th>Защо е нужна</th><th>Честота</th></tr></thead><tbody>
 <tr><td>Обновления на софтуера</td><td>Затварят известни пробойни в сигурността</td><td>Месечно или по-често</td></tr>
@@ -1542,11 +1542,11 @@ dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
 <h2>Защо не можете да я пренебрегнете</h2>
 <p>Занемареният сайт трупа тихи рискове: необновените плъгини стават входни точки за атаки, липсващото резервно копие превръща малка повреда в катастрофа, а влошаващата се производителност губи позиции и клиенти. Основите ще намерите в нашия <a href="/bg/blog/sicurezza-sito-web-checklist/">чеклист за сигурност</a>, а за скоростта помага ръководството за <a href="/bg/blog/core-web-vitals-guida/">Core Web Vitals</a>. Ако имате WordPress, много от задачите съвпадат с тези за <a href="/bg/blog/velocizzare-wordpress/">ускоряването му</a>.</p>
 <h2>Колко струва и какви форми съществуват</h2>
-<p>Формите варират: абонаментни планове с месечна такса (от около &euro;39/месец), включващи обновления, резервни копия и часове за промени, или работа при нужда, платена, когато потрябва. Абонаментът е удачен, ако сайтът е важен за бизнеса и не искате изненади; при нужда е добре за прости, статични сайтове. Към това винаги се добавя <a href="/bg/uslugi/hosting/">хостингът</a> — основата, върху която сайтът живее.</p>
+<p>Формите варират: абонаментни планове с месечна такса (от около €39/месец), включващи обновления, резервни копия и часове за промени, или работа при нужда, платена, когато потрябва. Абонаментът е удачен, ако сайтът е важен за бизнеса и не искате изненади; при нужда е добре за прости, статични сайтове. Към това винаги се добавя <a href="/bg/uslugi/hosting/">хостингът</a> — основата, върху която сайтът живее.</p>
 <p>Предлагаме поддръжка на всички сайтове, които изработваме, както и на съществуващи. Вижте нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a> или <a href="/bg/kontakti/">пишете ни</a> за план по мярка за вашия случай.</p>""",
   faqs=[
    ("Защо сайтът има нужда от поддръжка?", "Защото необновеният софтуер, липсващите резервни копия и спадащата производителност излагат сайта на рискове за сигурността, недостъпност и загуба на позиции в Google. Поддръжката държи сайта сигурен, бърз и работещ във времето, като обслужването на автомобил."),
-   ("Колко струва поддръжката на сайт?", "Абонаментният план обикновено започва от около &euro;39/месец и включва обновления, резервни копия, проверки за сигурност и часове за малки промени. Като алтернатива има работа при нужда, платена само когато потрябва."),
+   ("Колко струва поддръжката на сайт?", "Абонаментният план обикновено започва от около €39/месец и включва обновления, резервни копия, проверки за сигурност и часове за малки промени. Като алтернатива има работа при нужда, платена само когато потрябва."),
    ("Какво става, ако не правя поддръжка?", "Рисковете растат: уязвимите плъгини стават входни точки за атаки, повреда без резервно копие може да загуби всичко, а производителността се влошава и вреди на SEO. Оправянето на занемарен сайт често струва повече от самата поддръжка."),
    ("Поддръжката включва ли промени по съдържанието?", "Абонаментните планове обикновено включват часове за малки промени по текстове, изображения и страници. По-голяма работа, като нови секции или функции, се оценява отделно с нарочна оферта."),
   ]),
