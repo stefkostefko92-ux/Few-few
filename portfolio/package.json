@@ -1,0 +1,24 @@
+{
+  "name": "carbon-stealth-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Портфолио на Carbon Stealth VCC — 10 демо лендинг страници (BG/EN/IT), цени и пакети. Статичен сайт, генериран без зависимости.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/build.test.mjs",
+    "check": "node build.mjs && node --test test/build.test.mjs && node ../tools/qa/static-site-check.mjs dist",
+    "serve": "node serve.mjs"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "изработка на сайт",
+    "уеб дизайн",
+    "лендинг страница",
+    "web agency",
+    "sito web",
+    "portfolio"
+  ]
+}

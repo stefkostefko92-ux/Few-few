@@ -1,0 +1,78 @@
+# Проучване на пазарните цени за уеб услуги (2026) — основата на `src/pricing.mjs`
+
+**Дата на проверката:** 2026-09-17 · **Метод:** публични ценови прегледи и ценоразписи на агенции/студиа
+в България, Италия и ЕС, намерени през уеб търсене (резюмета на резултатите; страниците са изброени
+по-долу). Числата са **диапазони в EUR без ДДС** (българските източници, публикувани в лева, са
+преизчислени по фиксирания курс 1,95583 — България е в еврозоната от 1 януари 2026 г.).
+**Правилото на собственика:** всяка наша цена е **поне 15% под пазарната референция** (гейтвано в
+`test/build.test.mjs` през `MIN_DISCOUNT`).
+
+## Намерени диапазони
+
+| Услуга | България | Италия | ЕС (средно) | Бележки |
+|---|---|---|---|---|
+| Лендинг / сайт-визитка | 700–1 500 лв (≈ 360–770 €) | 400–1 500 € | 300–800 € (проста) | BG фрийлансър долу, агенция горе |
+| Фирмен сайт 5–8 стр. | фрийланс 800–2 000 лв · агенция 1 500–5 000 лв (≈ 770–2 560 €) | фрийланс 800–2 500 € · агенция 2 000–5 000 € | 2 500–6 000 € | „фирмен сайт 800–1 800 EUR“ (BG) |
+| Корпоративен / многоезичен | агенция 4 000–15 000 лв (≈ 2 050–7 670 €) | 3 500–8 500 € (2 000–8 000 € „ben fatto“) | 4 500–15 000 € | DACH агенции: 27–50 k€ за среден проект |
+| Онлайн магазин | 1 000–2 500 €+ (базов→професионален); 2 500–8 000 лв | 1 399–6 500 € | 2 000–8 000 € | Shopify/WooCommerce от 1 350 лв с ДДС |
+| Поддръжка | 500–1 700 €/год.; „надеждна“ 800–1 200 €/год. (≈ 67–100 €/мес.); 50–200 лв/мес. | 50–200 €/мес.; сложни сайтове 100–300 €/мес. | 50–200 $/мес. | |
+| SEO месечно | 150–500+ €/мес.; 50–100 €/мес. = отчети без работа | 400–3 000 €/мес.; малък бизнес 500–2 000 € | 400–2 000 € | международно SEO ~800 €/държава/мес. |
+| Допълнителен език | — | 500–2 000 € еднократно (настройка) + превод | — | |
+| Хостинг + домейн | ~100 €/год.; малки сайтове 5–15 лв/мес. | 300–600 €/год. вкл. поддръжка | 20–100 €/мес. | |
+
+## Референция и нашите цени (EUR без ДДС)
+
+Референцията е **средна агенцийна цена** за сравнимо качество (не най-ниският фрийлансър), закръглена:
+
+| Пакет / добавка | Пазарна референция | Carbon Stealth | Разлика |
+|---|---|---|---|
+| Старт — лендинг | 950 € | **790 €** | −16% |
+| Бизнес — фирмен сайт, 2 езика | 2 300 € | **1 890 €** | −17% |
+| Премиум — 3 езика + админ панел | 5 200 € | **4 290 €** | −17% |
+| Магазин — e-commerce | 2 600 € | **2 190 €** | −15% |
+| Допълнителен език | 500 € | **350 €** | −30% |
+| Допълнителна страница | 150 € | **120 €** | −20% |
+| Лого + мини бранд книга | 480 € | **390 €** | −18% |
+| Копирайтинг на страница | 110 € | **90 €** | −18% |
+| Поддръжка / мес. | 85 € | **69 €** | −18% |
+| SEO / мес. | 350 € | **290 €** | −17% |
+| Хостинг ЕС + SSL + CDN / мес. | 19 € | **15 €** | −21% |
+
+Съвместимост с carbonstealth.eu (към датата: „сайтове от 800 €, e-commerce от 1 200 €, софтуер от
+2 000 €“): пакетните цени тук са над тези „от“ прагове, така че няма противоречие.
+
+## ДДС / фактуриране (обобщено на страницата с цени; „не е данъчен съвет“)
+
+- **Клиенти от България**: +20% ДДС.
+- **Данъчно задължени лица (фирми) от ЕС извън България**: фактура **без ДДС** с текст „обратно начисляване /
+  reverse charge“ и основание — **чл. 21, ал. 2 ЗДДС** (място на изпълнение при получателя) и **чл. 196 от
+  Директива 2006/112/ЕО**; текстът „Reverse charge“ е задължителен реквизит по **чл. 226, т. 11а** от
+  Директивата. Нужен е валиден ДДС номер (VIES). ДДС се самоначислява от получателя в неговата държава.
+- **Фирми извън ЕС**: мястото на изпълнение е извън България → без български ДДС.
+- **Частни лица от ЕС извън България**: ДДС по правилата за B2C.
+
+## Източници (както са намерени при търсенето; страниците не бяха достъпни за пълно четене от
+изолираната среда — числата са от резюметата на резултатите и трябва да се сверят при следващо обновяване)
+
+- https://saitami.bg/kolko-struva-sait-2026
+- https://denvelkoff.studio/blog/cena-za-izrabotka-na-sait/ · https://denvelkoff.studio/blog/seo-optimizacia-cena/
+- https://codingturtles.com/kolko-struva-izrabotka-na-sait
+- https://swiftsite.bg/blog/izrabotka-na-firmen-sait/
+- https://tedbg.com/ceni-za-izrabotka-na-onlayn-magazin · https://wp-site.bg/kolko-struva-izrabotka-na-sait-prez-2026/
+- https://spinfludigital.com/blog-bg/seo-optimizacia-ceni-bulgaria · https://buildifyer.com/bg/blog/seo-optimizaciya-ceni-v-bulgaria-2026
+- https://www.artworkstudios.it/sito-web/quanto-costa-un-sito-web-nel-2026/
+- https://www.lorenzoalbano.it/quanto-costa-sito-web-2026/ · https://lampositi.it/blog/quanto-costa-sito-web
+- https://dueelleweb.it/blog/sito-web/costo-manutenzione-sito-web-annuale-guida-completa-ai-prezzi-2026.html
+- https://www.valentinomea.it/costi-seo/ · https://www.okseo.it/prezzi-seo-quanto-costa-posizionare-un-sito-su-google-nel-2026/
+- https://blog.marketrock.it/costi-sito-internet-in-pi%C3%B9-lingue-quanto-costa-tradurre-e-internazionalizzare-il-tuo-business
+- https://webars.at/en/blog/website-cost-europe · https://sunbytes.io/blog/software-development/website-development-cost-europe/
+- https://agency.alveraluxe.com/en/ressourcen/webdesign-kosten-guide
+- Reverse charge: https://invoxo.eu/learn/reverse-charge-explained · https://www.fonoa.com/resources/blog/eu-reverse-charge-what-is-it-and-who-is-it-for
+- ЗДДС чл. 21 ал. 2: https://www.portalschetovodstvo.bg/prilojimost-na-chl-21-al-2-zdds-pri-dostavka-na-uslugi-kam-neregistrirano-po-dds-litse-ot-es-28380.htm
+- Carbon Stealth „от“ цени: https://carbonstealth.eu/en/geo/bologna/ · https://carbonstealth.eu/en/local-services/ecommerce-bologna/
+
+## Как се обновява
+
+1. Повтори търсенето (BG · IT · ЕС) и обнови таблицата и `RESEARCH_DATE` в `src/pricing.mjs`.
+2. Смени `market` стойностите; `price` трябва да остане ≥15% под тях — тестът пада иначе.
+3. `node build.mjs && node --test test/build.test.mjs` → деплой → IndexNow.

@@ -68,7 +68,7 @@ const DEFAULT_CLASS = { id: "външно", days: 365 };
 // той само насочва опашката към правилните неща.
 const OUR_CODE = {
   id: "наш код", days: 90,
-  re: /(?<![\w/@.-])(zabobovdol|medqr|SupremeDiscordBot|treydar|Gaming|Minyor|Nexus|scuolabulgara|panev|kebab|Ivan|CSPos|vizitka|mastilko|linketto|eternaltouch|adblock|SupremeBot|ospedalitrasparenti|mascot|vpsdash|tools|deploy)\/[\w./-]+\.[a-zA-Z]{2,10}(?![A-Za-z])/,
+  re: /(?<![\w/@.-])(zabobovdol|medqr|SupremeDiscordBot|treydar|Gaming|Minyor|Nexus|scuolabulgara|panev|kebab|Ivan|CSPos|vizitka|mastilko|linketto|eternaltouch|adblock|SupremeBot|ospedalitrasparenti|mascot|vpsdash|portfolio|tools|deploy)\/[\w./-]+\.[a-zA-Z]{2,10}(?![A-Za-z])/,
 };
 
 // Поука БЕЗ външен източник И без репо-котва (чиста методология/доктрина) НЕ гние по календар:
