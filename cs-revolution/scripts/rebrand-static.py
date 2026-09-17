@@ -27,6 +27,17 @@ RULES = [
     ('<img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24"',
      '<img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30"'),
 ]
+# Ценоразписът (scripts/generate-pricing.py) получава място в навигацията, точно преди
+# контактите. (пазач, какво, с какво): прилага се САМО ако пазачът липсва във файла —
+# новият низ съдържа стария като опашка, иначе всяко пускане би добавяло линк.
+GUARDED = [
+    ('href="/prezzi/"', '<a href="/contatti/">CONTATTI</a></div></nav>',
+     '<a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>'),
+    ('href="/en/pricing/"', '<a href="/en/contact/">CONTACT</a></div></nav>',
+     '<a href="/en/pricing/">PRICING</a><a href="/en/contact/">CONTACT</a></div></nav>'),
+    ('href="/bg/ceni/"', '<a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
+     '<a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>'),
+]
 
 
 def rebrand(path):
@@ -35,6 +46,9 @@ def rebrand(path):
     out = src
     for a, b in RULES:
         out = out.replace(a, b)
+    for guard, a, b in GUARDED:
+        if guard not in out:
+            out = out.replace(a, b)
     if out != src:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(out)
@@ -49,6 +63,9 @@ def main():
     print(f'проверени {len(targets)} файла, променени {changed}')
     # Проверка: нито една страница не е останала със стария размер на логото
     stale = [p for p in targets if p.endswith('.html') and 'width="56" height="24"' in open(p, encoding='utf-8').read()]
+    # Проверка: всяка страница с навигация има линк към цените
+    stale += [p for p in targets if p.endswith('.html') and 'class="nav"' in open(p, encoding='utf-8').read()
+              and not any(u in open(p, encoding='utf-8').read() for u in ('/prezzi/', '/en/pricing/', '/bg/ceni/'))]
     if stale:
         print('ОСТАНАЛИ със стар размер:', *stale[:5], sep='\n  ')
         sys.exit(1)

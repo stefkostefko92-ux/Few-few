@@ -57,6 +57,18 @@ Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SL
 - Starting price: €15/month
 - URL: https://carbonstealth.eu/servizi/hosting/
 
+## Pricing (2026, EUR excluding VAT — at least 15% below the average agency price)
+
+Full price list with VAT rules, terms and market comparison: https://carbonstealth.eu/prezzi/ (EN: https://carbonstealth.eu/en/pricing/ · BG: https://carbonstealth.eu/bg/ceni/)
+
+- **Start — landing page:** €790 (1 page, 1 language, EU hosting 12 months, SSL). Delivery 5–7 working days.
+- **Business — company website:** €1,890 (up to 8 pages, 2 languages with hreflang, blog, full SEO/GEO/AEO). Delivery 10–15 working days. Most popular.
+- **Premium — three languages + admin panel:** €4,290 (unlimited pages within scope, BG·EN·IT, admin panel, booking/catalogue module). Delivery 20–30 working days.
+- **Shop — e-commerce:** €2,190 (catalogue, cart, Stripe + cash on delivery, invoices/VAT-OSS, 2 languages). Delivery 15–25 working days.
+- **Add-ons:** additional language €350 · additional page €120 · logo + mini brand book €390 · copywriting per page €90 · maintenance €69/month · SEO €290/month · EU hosting + SSL + CDN €15/month (after the first year).
+- **VAT:** clients in Bulgaria +20%; EU companies outside Bulgaria invoiced without VAT (reverse charge, Art. 196 Directive 2006/112/EC); companies outside the EU no Bulgarian VAT.
+- **Not list packages:** ERP from €5,000, custom software from €2,000, mobile apps from €3,000 — fixed quote after analysis.
+
 ## Notable Projects
 
 - **Nexus Dominion** — Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. URL: https://nexus.carbonstealth.eu

@@ -1,0 +1,390 @@
+{
+ "researchDate": "2026-09-17",
+ "minDiscount": 0.15,
+ "vatRateBg": 20,
+ "tiers": [
+  {
+   "id": "start",
+   "price": 790,
+   "market": 950,
+   "days": [
+    5,
+    7
+   ],
+   "popular": false,
+   "discount": 16,
+   "name": {
+    "it": "Start",
+    "en": "Start",
+    "bg": "Старт"
+   },
+   "tag": {
+    "it": "Landing page",
+    "en": "Landing page",
+    "bg": "Лендинг страница"
+   },
+   "desc": {
+    "it": "Una pagina lunga: tutto ciò che conta in un solo posto.",
+    "en": "One long page — everything that matters in one place.",
+    "bg": "Една дълга страница — всичко важно на едно място."
+   },
+   "features": {
+    "it": [
+     "1 pagina, fino a 8 sezioni",
+     "1 lingua",
+     "Design mobile + desktop",
+     "Modulo contatti sulla tua email",
+     "Base SEO: title, description, Open Graph, JSON-LD",
+     "Profilo Google Business + mappa",
+     "Hosting in UE 12 mesi + SSL",
+     "1 giro di modifiche · 30 giorni di assistenza"
+    ],
+    "en": [
+     "1 page, up to 8 sections",
+     "1 language",
+     "Mobile + desktop design",
+     "Contact form to your inbox",
+     "SEO foundation: title, description, Open Graph, JSON-LD",
+     "Google Business profile + map",
+     "EU hosting 12 months + SSL",
+     "1 round of changes · 30 days support"
+    ],
+    "bg": [
+     "1 страница, до 8 секции",
+     "1 език",
+     "Мобилен + десктоп дизайн",
+     "Форма за контакт на вашия имейл",
+     "SEO основа: title, description, Open Graph, JSON-LD",
+     "Google Business профил + карта",
+     "Хостинг в ЕС 12 мес. + SSL",
+     "1 кръг корекции · 30 дни поддръжка"
+    ]
+   }
+  },
+  {
+   "id": "business",
+   "price": 1890,
+   "market": 2300,
+   "days": [
+    10,
+    15
+   ],
+   "popular": true,
+   "discount": 17,
+   "name": {
+    "it": "Business",
+    "en": "Business",
+    "bg": "Бизнес"
+   },
+   "tag": {
+    "it": "Sito aziendale",
+    "en": "Business website",
+    "bg": "Фирмен сайт"
+   },
+   "desc": {
+    "it": "Fino a 8 pagine in due lingue, con blog e SEO completa — il sito che cresce con la tua azienda.",
+    "en": "Up to 8 pages in two languages, with a blog and full SEO — the website that grows with your company.",
+    "bg": "До 8 страници на два езика, с блог и пълно SEO — сайтът, който расте с фирмата ви."
+   },
+   "features": {
+    "it": [
+     "Fino a 8 pagine",
+     "2 lingue (IT + EN o BG) con hreflang",
+     "Design unico sul tuo brand",
+     "Blog / news",
+     "SEO · GEO · AEO completa: sitemap, llms.txt, schema FAQ, dati locali",
+     "Lighthouse 95+ garantito",
+     "Analytics senza cookie (GDPR)",
+     "Hosting in UE 12 mesi + SSL",
+     "2 giri di modifiche · 60 giorni di assistenza"
+    ],
+    "en": [
+     "Up to 8 pages",
+     "2 languages (BG + EN or IT) with hreflang",
+     "Unique design in your brand",
+     "Blog / news",
+     "Full SEO · GEO · AEO: sitemap, llms.txt, FAQ schema, local data",
+     "Lighthouse 95+ guaranteed",
+     "Cookie-free analytics (GDPR)",
+     "EU hosting 12 months + SSL",
+     "2 rounds of changes · 60 days support"
+    ],
+    "bg": [
+     "До 8 страници",
+     "2 езика (BG + EN или IT) с hreflang",
+     "Уникален дизайн по вашия бранд",
+     "Блог / новини",
+     "Пълно SEO · GEO · AEO: sitemap, llms.txt, FAQ схема, локални данни",
+     "Lighthouse 95+ гарантирано",
+     "Аналитика без бисквитки (GDPR)",
+     "Хостинг в ЕС 12 мес. + SSL",
+     "2 кръга корекции · 60 дни поддръжка"
+    ]
+   }
+  },
+  {
+   "id": "premium",
+   "price": 4290,
+   "market": 5200,
+   "days": [
+    20,
+    30
+   ],
+   "popular": false,
+   "discount": 17,
+   "name": {
+    "it": "Premium",
+    "en": "Premium",
+    "bg": "Премиум"
+   },
+   "tag": {
+    "it": "Tre lingue + pannello admin",
+    "en": "Three languages + admin panel",
+    "bg": "Три езика + админ панел"
+   },
+   "desc": {
+    "it": "Tutto di Business, più tre lingue, un pannello di amministrazione tuo e un modulo prenotazioni o catalogo.",
+    "en": "Everything in Business, plus three languages, your own admin panel and a booking or catalogue module.",
+    "bg": "Всичко от Бизнес, плюс три езика, собствен админ панел и модул за резервации или каталог."
+   },
+   "features": {
+    "it": [
+     "Pagine illimitate nel perimetro",
+     "3 lingue: BG · EN · IT",
+     "Design system proprio + animazioni",
+     "Pannello admin (Next.js + Prisma + PostgreSQL)",
+     "Modulo: prenotazioni, catalogo o richieste",
+     "Automazioni email (conferme, promemoria)",
+     "Aiuto con i testi (copywriting)",
+     "Report mensile su traffico e posizioni",
+     "Assistenza prioritaria per 12 mesi"
+    ],
+    "en": [
+     "Unlimited pages within scope",
+     "3 languages: BG · EN · IT",
+     "Custom design system + animations",
+     "Admin panel (Next.js + Prisma + PostgreSQL)",
+     "Module: bookings, catalogue or enquiries",
+     "Email automations (confirmations, reminders)",
+     "Copywriting help",
+     "Monthly traffic and ranking report",
+     "Priority support for 12 months"
+    ],
+    "bg": [
+     "Неограничен брой страници в обхвата",
+     "3 езика: BG · EN · IT",
+     "Собствена дизайн система + анимации",
+     "Админ панел (Next.js + Prisma + PostgreSQL)",
+     "Модул: резервации, каталог или запитвания",
+     "Имейл автоматизации (потвърждения, напомняния)",
+     "Помощ с текстовете (копирайтинг)",
+     "Месечен отчет за трафика и позициите",
+     "Приоритетна поддръжка 12 месеца"
+    ]
+   }
+  },
+  {
+   "id": "ecommerce",
+   "price": 2190,
+   "market": 2600,
+   "days": [
+    15,
+    25
+   ],
+   "popular": false,
+   "discount": 15,
+   "name": {
+    "it": "Shop",
+    "en": "Shop",
+    "bg": "Магазин"
+   },
+   "tag": {
+    "it": "E-commerce",
+    "en": "Online shop",
+    "bg": "Онлайн магазин"
+   },
+   "desc": {
+    "it": "Catalogo, carrello, pagamenti con carta/Stripe e fatture pronte per l'IVA UE.",
+    "en": "Catalogue, cart, card/Stripe payments and invoices ready for EU VAT.",
+    "bg": "Каталог, количка, карта/Stripe плащания и фактури, готови за ДДС в ЕС."
+   },
+   "features": {
+    "it": [
+     "Catalogo con categorie e varianti",
+     "Carrello, ordini, stati",
+     "Pagamento con carta (Stripe) + contrassegno",
+     "Fatture e configurazione IVA/OSS",
+     "Spedizioni: corriere a scelta",
+     "2 lingue",
+     "SEO completa dei prodotti (schema Product)",
+     "Hosting in UE 12 mesi + SSL",
+     "Formazione del team · 60 giorni di assistenza"
+    ],
+    "en": [
+     "Catalogue with categories and variants",
+     "Cart, orders, statuses",
+     "Card payments (Stripe) + cash on delivery",
+     "Invoices and VAT/OSS setup",
+     "Shipping: courier of your choice",
+     "2 languages",
+     "Full product SEO (Product schema)",
+     "EU hosting 12 months + SSL",
+     "Team training · 60 days support"
+    ],
+    "bg": [
+     "Каталог с категории и варианти",
+     "Количка, поръчки, статуси",
+     "Плащане с карта (Stripe) + наложен платеж",
+     "Фактури и ДДС/OSS настройка",
+     "Доставка: Еконт / Speedy / куриер по избор",
+     "2 езика",
+     "Пълно SEO за продукти (Product схема)",
+     "Хостинг в ЕС 12 мес. + SSL",
+     "Обучение на екипа · 60 дни поддръжка"
+    ]
+   }
+  }
+ ],
+ "addons": [
+  {
+   "id": "language",
+   "price": 350,
+   "market": 500,
+   "kind": "once",
+   "discount": 30,
+   "name": {
+    "it": "Lingua aggiuntiva (traduzione + hreflang)",
+    "en": "Additional language (translation + hreflang)",
+    "bg": "Допълнителен език (превод + hreflang)"
+   }
+  },
+  {
+   "id": "page",
+   "price": 120,
+   "market": 150,
+   "kind": "once",
+   "discount": 19,
+   "name": {
+    "it": "Pagina aggiuntiva",
+    "en": "Additional page",
+    "bg": "Допълнителна страница"
+   }
+  },
+  {
+   "id": "logo",
+   "price": 390,
+   "market": 480,
+   "kind": "once",
+   "discount": 18,
+   "name": {
+    "it": "Logo e mini brand book",
+    "en": "Logo and mini brand book",
+    "bg": "Лого и мини бранд книга"
+   }
+  },
+  {
+   "id": "copy",
+   "price": 90,
+   "market": 110,
+   "kind": "once",
+   "discount": 18,
+   "name": {
+    "it": "Copywriting per pagina",
+    "en": "Copywriting per page",
+    "bg": "Копирайтинг на страница"
+   }
+  },
+  {
+   "id": "maintenance",
+   "price": 69,
+   "market": 85,
+   "kind": "monthly",
+   "discount": 18,
+   "name": {
+    "it": "Manutenzione: aggiornamenti, backup, piccole modifiche, monitoraggio",
+    "en": "Maintenance: updates, backups, small changes, monitoring",
+    "bg": "Поддръжка: ъпдейти, бекъпи, дребни промени, мониторинг"
+   }
+  },
+  {
+   "id": "seo",
+   "price": 290,
+   "market": 350,
+   "kind": "monthly",
+   "discount": 17,
+   "name": {
+    "it": "SEO: contenuti, link, audit tecnico, report mensile",
+    "en": "SEO: content, links, technical audit, monthly report",
+    "bg": "SEO: съдържание, линкове, технически одит, месечен отчет"
+   }
+  },
+  {
+   "id": "hosting",
+   "price": 15,
+   "market": 19,
+   "kind": "monthly",
+   "discount": 21,
+   "name": {
+    "it": "Hosting in UE + SSL + CDN (dopo il primo anno)",
+    "en": "EU hosting + SSL + CDN (after the first year)",
+    "bg": "Хостинг в ЕС + SSL + CDN (след първата година)"
+   }
+  }
+ ],
+ "ui": {
+  "it": {
+   "path": "/prezzi/",
+   "eyebrow": "// PREZZI 2026",
+   "h1": "Prezzi trasparenti. Almeno il 15% sotto il mercato.",
+   "lede": "Ogni pacchetto è un prodotto finito: design, sviluppo, base SEO, 12 mesi di hosting in UE, SSL e formazione sull'uso.",
+   "hud": "Clienti in Bulgaria: +20% IVA · Aziende UE: reverse charge",
+   "popular": "Il più scelto",
+   "market": "mercato",
+   "saving": "in meno",
+   "delivery": "Consegna",
+   "days": "giorni lavorativi",
+   "choose": "Richiedi questo pacchetto",
+   "addonsTitle": "Extra",
+   "once": "una tantum",
+   "monthly": "al mese",
+   "vatNote": "Clienti in Bulgaria: +20% IVA · Aziende UE: reverse charge",
+   "navLabel": "PREZZI"
+  },
+  "en": {
+   "path": "/en/pricing/",
+   "eyebrow": "// PRICING 2026",
+   "h1": "Transparent prices. At least 15% below market.",
+   "lede": "Every package is a finished product: design, development, SEO foundation, 12 months of EU hosting, SSL, and training on how to use it.",
+   "hud": "Clients in Bulgaria: +20% VAT · EU companies: reverse charge",
+   "popular": "Most popular",
+   "market": "market",
+   "saving": "cheaper",
+   "delivery": "Delivery",
+   "days": "working days",
+   "choose": "Request this package",
+   "addonsTitle": "Add-ons",
+   "once": "one-off",
+   "monthly": "per month",
+   "vatNote": "Clients in Bulgaria: +20% VAT · EU companies: reverse charge",
+   "navLabel": "PRICING"
+  },
+  "bg": {
+   "path": "/bg/ceni/",
+   "eyebrow": "// ЦЕНИ 2026",
+   "h1": "Прозрачни цени. Поне 15% под пазара.",
+   "lede": "Всеки пакет е завършен продукт: дизайн, разработка, SEO основа, хостинг в ЕС за 12 месеца, SSL, обучение как да го ползвате.",
+   "hud": "Клиенти от България: +20% ДДС · Фирми от ЕС: reverse charge",
+   "popular": "Най-избиран",
+   "market": "пазар",
+   "saving": "по-евтино",
+   "delivery": "Срок",
+   "days": "работни дни",
+   "choose": "Заяви този пакет",
+   "addonsTitle": "Добавки",
+   "once": "еднократно",
+   "monthly": "на месец",
+   "vatNote": "Клиенти от България: +20% ДДС · Фирми от ЕС: reverse charge",
+   "navLabel": "ЦЕНИ"
+  }
+ }
+}
