@@ -15,7 +15,6 @@
     "serve": "node serve.mjs",
     "fonts": "node tools/fonts.mjs",
     "photos": "node tools/photos.mjs",
-    "images": "node tools/render-images.mjs"
   },
   "keywords": [
     "Carbon Stealth",

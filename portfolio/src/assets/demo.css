@@ -4,6 +4,7 @@
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:120px}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img,svg{display:block;max-width:100%}
+.ic-img{display:inline-block;width:20px;height:auto;border-radius:4px;vertical-align:middle;flex:none}
 a{color:inherit;text-decoration:none}
 h1,h2,h3{font-family:var(--display);line-height:1.05;margin:0;letter-spacing:-.01em}
 h1{font-size:clamp(40px,6.4vw,84px);font-weight:700}
@@ -30,7 +31,8 @@ p{margin:0 0 14px}
 .btn-primary:hover{background:var(--accent2)}
 .btn-ghost{border-color:var(--line);color:var(--text);background:transparent}
 .btn-ghost:hover{border-color:var(--accent)}
-.btn-nav{padding:11px 16px;background:var(--text);color:var(--bg)}
+.btn-nav{padding:8px 12px 8px 8px;background:var(--text);color:var(--bg)}
+.btn-nav .ic-img{width:26px;border-radius:6px}
 
 /* Carbon Stealth demo bar — бранд езикът на carbonstealth.eu (черно · cyan · Space Mono) */
 .cs-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px clamp(12px,3vw,32px);background:#000;color:#ccc;font:400 11px/1 'Space Mono',ui-monospace,monospace;letter-spacing:.08em;border-bottom:1px solid rgba(0,229,255,.2)}
@@ -50,7 +52,8 @@ p{margin:0 0 14px}
 .menu{display:flex;gap:26px;margin-left:auto;font-size:15px;font-weight:500}
 .menu a{position:relative;padding:4px 0;color:var(--muted)}
 .menu a:hover{color:var(--text)}
-.burger{display:none;background:none;border:0;color:var(--text);margin-left:auto;padding:6px;cursor:pointer}
+.burger{display:none;background:none;border:0;color:var(--text);margin-left:auto;padding:0;cursor:pointer}
+.burger .ic-img{width:38px;border-radius:8px}
 
 /* Hero */
 .hero{position:relative;min-height:min(calc(100vh - 34px),860px);display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,72px);align-items:center;padding:clamp(56px,8vw,110px) clamp(16px,4vw,40px);max-width:1280px;margin:0 auto;overflow:hidden}
@@ -114,7 +117,7 @@ p{margin:0 0 14px}
 /* Badges strip */
 .badges{display:flex;flex-wrap:wrap;gap:8px 32px;justify-content:center;padding:18px clamp(16px,4vw,40px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px;font-weight:500;color:var(--muted)}
 .badges span{display:inline-flex;align-items:center;gap:8px}
-.badges svg{color:var(--accent)}
+.badges .ic-img{width:18px;margin-right:8px}
 
 /* Widgets */
 .widget{background:var(--surface);border:1px solid var(--line);border-radius:calc(var(--radius) * 2);padding:clamp(20px,2.4vw,32px);box-shadow:0 30px 80px -30px rgba(0,0,0,.45);width:min(100%,460px);margin-inline:auto}
@@ -141,7 +144,7 @@ p{margin:0 0 14px}
 .kpi-wide{grid-column:1/-1}
 .w-consult ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .w-consult li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
-.w-consult svg{color:var(--accent);flex:none;margin-top:3px}
+.w-consult .ic-img{margin-top:2px}
 
 /* Cards */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:calc(var(--radius) * 2);padding:28px;display:flex;flex-direction:column;gap:10px;transition:transform .25s,border-color .25s}
@@ -165,7 +168,8 @@ p{margin:0 0 14px}
 .review{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:calc(var(--radius) * 2);padding:28px}
 .review p{font-size:16px;margin:12px 0 16px}
 .review footer{color:var(--muted);font-size:14px}
-.stars{display:inline-flex;gap:2px;color:var(--accent)}
+.stars{display:inline-flex;gap:3px}
+.stars .ic-img{width:16px;border-radius:3px}
 .faq{border-bottom:1px solid var(--line);padding:6px 0}
 .faq summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0}
 .faq summary::-webkit-details-marker{display:none}
@@ -175,7 +179,7 @@ p{margin:0 0 14px}
 .faq p{color:var(--muted);padding-bottom:12px;max-width:65ch}
 .info{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:14px}
 .info li{display:flex;gap:12px;align-items:flex-start}
-.info svg{color:var(--accent);flex:none;margin-top:4px}
+.info .ic-img{margin-top:2px}
 .form{background:var(--surface);border:1px solid var(--line);border-radius:calc(var(--radius) * 2);padding:clamp(20px,3vw,36px);display:grid;gap:14px}
 .form label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
 .form input,.form textarea{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
