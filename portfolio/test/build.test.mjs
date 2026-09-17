@@ -119,13 +119,17 @@ test("служебни файлове: sitemap с 39 URL и hreflang, robots с�
   assert.ok(readFileSync(join(OUT, "index.html"), "utf8").includes('hreflang="x-default" href="https://portfolio.carbonstealth.eu/bg/"'));
 });
 
-test("премиум слой: демотата носят premium.css/js, завеса, номера на секции, надписи в галерията, аватари; хъбът — преглед на устройства", () => {
+test("маркетинг слой: proof ред, оферта, линк във всяка услуга, плочки със снимки, без декорациите на „генериран“ сайт; хъбът — преглед на устройства и „включва“", () => {
   const html = readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8");
-  for (const needle of ['href="/assets/premium.css"', 'src="/assets/premium.js"', 'class="curtain"', 'class="sec-num"', 'class="scroll-cue"', 'class="avatar"', 'class="fa"', 'class="foot-word"', 'class="lb-cap"']) assert.ok(html.includes(needle), needle);
+  for (const needle of ['href="/assets/premium.css"', 'src="/assets/premium.js"', 'class="proof"', 'class="offer"', 'class="offer-tag"', 'class="card-link"', 'class="avatar"', 'class="fa"', 'class="lb-cap"']) assert.ok(html.includes(needle), needle);
+  for (const banned of ['class="curtain"', 'class="grain"', 'class="scroll-cue"', 'class="sec-num"', 'class="word"', 'class="marquee"', 'class="foot-word"', 'class="num"', "fx/avtoservis.js"]) assert.ok(!html.includes(banned), `забранено: ${banned}`);
   if (existsSync(join(OUT, "img/avtoservis/credits.json"))) assert.ok(/data-cap="[^"]+"/.test(html) && html.includes('class="tint"'), "галерия с надписи и тониран hero");
-  for (const f of ["assets/premium.css", "assets/premium.js"]) assert.ok(existsSync(join(OUT, f)), f);
-  assert.ok(!/class="[^"]*\bsplit\b[^"]*"[^>]*>\s*<span class="wd"/.test(html), ".split е решетката — думите ползват .sp");
+  const tiles = readFileSync(join(OUT, "bg/demo/barzo-hranene/index.html"), "utf8");
+  if (existsSync(join(OUT, "img/burger/g1-sm.webp"))) assert.ok(tiles.includes('style="background-image:url(/img/burger/g1-sm.webp)"'), "плочките носят реални снимки");
+  assert.ok(readFileSync(join(OUT, "bg/demo/salon-za-krasota/index.html"), "utf8").includes("/assets/fx/salon.js"), "салонът има проба на цвят");
+  for (const f of ["assets/premium.css", "assets/premium.js", "assets/fx/core.js", "assets/fx/salon.js", "assets/fx/mebeli.js", "assets/fx/schetovodstvo.js", "assets/fx/avtokashta.js"]) assert.ok(existsSync(join(OUT, f)), f);
+  for (const d of DEMOS) for (const l of LANGS) assert.ok(d.t[l].offer?.title && d.t[l].hero.proof, `${d.id}/${l}: offer + proof`);
   const hub = readFileSync(join(OUT, "bg/index.html"), "utf8");
   assert.ok(hub.includes('id="devmodal"') && (hub.match(/class="dev-btn"/g) || []).length === 10, "device preview за всяко демо");
-  for (const l of LANGS) assert.ok(I18N[l].brand.devices.phone && I18N[l].brand.preview, `${l}: brand.devices`);
+  assert.ok(hub.includes('class="hero-proof"') && (hub.match(/class="inc"/g) || []).length === 10, "proof ред + „включва“ на всяка карта");
 });

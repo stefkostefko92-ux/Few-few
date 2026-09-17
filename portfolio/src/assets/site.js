@@ -135,5 +135,3 @@ document.querySelectorAll("[data-scramble]").forEach(function (el) { el.addEvent
   m.querySelector(".dev-close").addEventListener("click", hide);
   addEventListener("keydown", function (e) { if (!m.hidden && e.key === "Escape") hide(); });
 })();
-// --- холографски блик по демо картите (следва курсора) ---
-document.querySelectorAll(".demo-card").forEach(function (c) { c.addEventListener("pointermove", function (e) { var r = c.getBoundingClientRect(); c.style.setProperty("--mx", (e.clientX - r.left) + "px"); c.style.setProperty("--my", (e.clientY - r.top) + "px"); }, { passive: true }); });

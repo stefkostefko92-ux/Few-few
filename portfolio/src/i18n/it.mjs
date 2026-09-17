@@ -19,6 +19,7 @@ export default {
     lede: "Dieci siti demo perfettamente funzionanti per dieci tipi di attività. Aprili da telefono e computer, scegli quello che ti somiglia e noi lo trasformiamo nel tuo — con i tuoi colori, testi e foto — in giorni, non mesi.",
     ctaDemos: "Sfoglia le demo",
     ctaPricing: "Vedi i prezzi",
+    proof: "Risposta entro 24 ore · Sito pronto in 5–30 giorni lavorativi a seconda del pacchetto · Prezzo fisso, almeno il 15% sotto il mercato · Hosting in UE per 12 mesi incluso",
     stats: [
       { n: "10", l: "siti demo finiti" },
       { n: "3", l: "lingue: BG · EN · IT" },
@@ -32,6 +33,7 @@ export default {
     lede: "Ogni demo è una landing page completa: sezioni, moduli, recensioni, FAQ, mappa, dati strutturati per Google. Non è un bozzetto — è il sito che riceverai, solo con i tuoi dati.",
     open: "Apri la demo",
     preview: "Anteprima dal vivo",
+    includes: {"booking":"Prenotazione online","schedule":"Orario selezionabile","tiles":"Catalogo con carrello","stats":"Calcolatore del prezzo","consult":"Richiesta di consulenza","always":"Galleria · Recensioni · FAQ · Contatti · IT · EN · BG"},
   },
   process: {
     eyebrow: "Come lavoriamo",
@@ -64,7 +66,7 @@ export default {
   contact: {
     eyebrow: "Contatti",
     title: "Dicci quale demo ti è piaciuta. <em>Rispondiamo entro 24 ore.</em>",
-    lede: "Scrivici via email o usa il modulo sul nostro sito principale. Lavoriamo da remoto con clienti in Bulgaria e Italia; per progetti più grandi ci incontriamo di persona.",
+    lede: "Inviaci il nome della tua azienda e il link alla demo che ti piace. Entro 24 ore ricevi un preventivo con prezzo fisso e tempi di consegna — senza riunioni, senza impegno. Lavoriamo a distanza con clienti in Italia e Bulgaria; per i progetti più grandi ci incontriamo di persona.",
     email: "Scrivici",
     site: "Modulo di richiesta",
     where: "Bobov Dol, Bulgaria · Milano/Bologna, Italia",
@@ -88,7 +90,7 @@ export default {
     gallery: "Galleria",
     credits: "Foto",
     creditsEdited: "ritagliate e modificate",
-    widget: { service: "Servizio", date: "Data", time: "Ora", name: "Nome", pick: "Scegli", selected: "Selezionato", total: "Totale", items: "articoli", done: "Demo: richiesta ricevuta. Sul sito reale ricevi conferma via SMS/email.", clear: "Svuota" },
+    widget: { tryColor: "Prova un colore", service: "Servizio", date: "Data", time: "Ora", name: "Nome", pick: "Scegli", selected: "Selezionato", total: "Totale", items: "articoli", done: "Demo: richiesta ricevuta. Sul sito reale ricevi conferma via SMS/email.", clear: "Svuota" },
     sticky: { call: "Chiama", book: "Prenota" },
     top: "Su",
   },

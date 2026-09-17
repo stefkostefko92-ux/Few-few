@@ -1,6 +1,6 @@
 // demo.mjs — шаблонът на ВСЯКО демо: една структура, десет визуални идентичности (theme токени +
 // hero вариант + декоративна дума). Съдържанието идва от src/demos/<id>.mjs за текущия език.
-// Премиум слой: premium.css/js (завеса, заглавия дума по дума, маски, курсор, галерия с надписи).
+// Премиум слой: premium.css/js (киношен hero, ред с доказателства, оферта, галерия с надписи, навигация).
 // Снимки: ако tools/photos.mjs е свалил public/img/<id>/, hero/about/галерия ги ползват; иначе —
 // генеративна графика. Всичко интерактивно (форми, график, кошница, lightbox) живее в demo.js.
 import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANGS } from "../lib/html.mjs";
@@ -8,6 +8,8 @@ import { I18N } from "../i18n/index.mjs";
 import { widget } from "./widgets.mjs";
 import { photosOf, picture, creditsLine } from "./photos.mjs";
 
+/** Демота с интерактивна добавка (проба на цвят/материал, калкулатор) — само те зареждат fx/. */
+const FX_MODULES = new Set(["salon", "mebeli", "schetovodstvo", "avtokashta"]);
 const initials = (name) => name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase().replace(/\./g, "");
 const stars = (n) => `<span class="stars" aria-label="${n}/5">${ICON.star.repeat(n)}</span>`;
 
@@ -29,53 +31,63 @@ function nav(t, c, phone, hasGallery) {
 function hero(t, th, c, demo, photos) {
   const h = t.hero;
   const photo = photos?.slots.hero ? picture(demo.id, "hero", photos.slots.hero, { w: 1600, h: 1067, alt: `${t.name} — ${t.category}`, cls: "hero-photo", eager: true }) : "";
-  return `<section class="hero hero-${th.heroStyle} pattern-${th.pattern}${photo ? " has-photo" : ""}">${photo ? `<div class="hero-bg" aria-hidden="true">${photo}<i class="tint"></i><i class="grain"></i></div>` : ""}<span class="word" aria-hidden="true">${esc(th.word)}</span><div class="hero-text"><p class="eyebrow">${esc(h.eyebrow)}</p><h1>${h.title}</h1><p class="lede">${esc(h.lede)}</p><div class="cta-row"><a class="btn btn-primary" href="#contact">${esc(h.cta)} ${ICON.arrow}</a><a class="btn btn-ghost" href="#services">${esc(h.cta2)}</a></div></div><div class="hero-visual">${widget(h.widget, c, t)}</div><span class="scroll-cue" aria-hidden="true"></span></section>
-<div class="badges" aria-label="highlights">${t.badges.map((b) => `<span>${ICON.check}${esc(b)}</span>`).join("")}</div>
-<div class="marquee" aria-hidden="true" data-marquee="${esc(t.services.map((s) => s.t).join(" · "))}"></div>`;
+  return `<section class="hero hero-${th.heroStyle} pattern-${th.pattern}${photo ? " has-photo" : ""}">${photo ? `<div class="hero-bg" aria-hidden="true">${photo}<i class="tint"></i></div>` : ""}<div class="hero-text"><p class="eyebrow">${esc(h.eyebrow)}</p><h1>${h.title}</h1><p class="lede">${esc(h.lede)}</p><div class="cta-row"><a class="btn btn-primary" href="#contact">${esc(h.cta)} ${ICON.arrow}</a><a class="btn btn-ghost" href="#services">${esc(h.cta2)}</a></div>${h.proof ? `<p class="proof">${esc(h.proof)}</p>` : ""}</div><div class="hero-visual">${widget(h.widget, c, t, tileImgs(demo, photos))}</div></section>
+<div class="badges" aria-label="highlights">${t.badges.map((b) => `<span>${ICON.check}${esc(b)}</span>`).join("")}</div>`;
+}
+
+/** Снимките от галерията стават „обложки" на плочките в hero картата (вместо цветни квадрати). */
+function tileImgs(demo, photos) {
+  return photos ? ["g1", "g2", "g3", "g4", "g5", "g6"].filter((s) => photos.slots[s]).map((s) => `/img/${demo.id}/${s}-sm.webp`) : [];
+}
+
+/** Оферта-банер: конкретно предложение с условие и срок — това продава, не декорацията. */
+function offer(t) {
+  const o = t.offer; if (!o) return "";
+  return `<section class="offer" id="offer" aria-labelledby="offer-title"><div class="wrap"><div><span class="offer-tag">${esc(o.tag)}</span><h2 id="offer-title">${esc(o.title)}</h2><p>${esc(o.text)}</p></div><div class="offer-cta"><a class="btn btn-primary" href="#contact">${esc(o.cta)} ${ICON.arrow}</a><p class="offer-note">${esc(o.note)}</p></div></div></section>`;
 }
 
 function services(t) {
-  return `<section class="section" id="services"><div class="wrap"><span class="sec-num" aria-hidden="true">01</span><h2 class="h2">${t.servicesTitle}</h2><p class="lede">${esc(t.servicesLede)}</p><div class="grid grid-3">${t.services.map((s, i) => `<article class="card reveal"><span class="num">0${i + 1}</span><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p>${s.p ? `<strong class="price">${esc(s.p)}</strong>` : ""}</article>`).join("")}</div></div></section>`;
+  return `<section class="section" id="services"><div class="wrap"><h2 class="h2">${t.servicesTitle}</h2><p class="lede">${esc(t.servicesLede)}</p><div class="grid grid-3">${t.services.map((s, i) => `<article class="card reveal"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p>${s.p ? `<strong class="price">${esc(s.p)}</strong>` : ""}<a class="card-link" href="#contact">${esc(t.hero.cta)}</a></article>`).join("")}</div></div></section>`;
 }
 
 function about(t, demo, photos) {
   const a = t.about;
   const photo = photos?.slots.about ? picture(demo.id, "about", photos.slots.about, { w: 1200, h: 800, alt: a.eyebrow, cls: "about-photo reveal" }) : "";
-  return `<section class="section alt" id="about"><div class="wrap split"><div><span class="sec-num" aria-hidden="true">02</span><p class="eyebrow">${esc(a.eyebrow)}</p><h2 class="h2">${a.title}</h2>${a.p.map((p) => `<p class="body">${esc(p)}</p>`).join("")}</div><div>${photo}<div class="facts">${a.facts.map((f) => `<div class="fact reveal"><strong data-countup>${esc(f.n)}</strong><span>${esc(f.l)}</span></div>`).join("")}</div></div></div></section>`;
+  return `<section class="section alt" id="about"><div class="wrap split"><div><p class="eyebrow">${esc(a.eyebrow)}</p><h2 class="h2">${a.title}</h2>${a.p.map((p) => `<p class="body">${esc(p)}</p>`).join("")}</div><div>${photo}<div class="facts">${a.facts.map((f) => `<div class="fact reveal"><strong data-countup>${esc(f.n)}</strong><span>${esc(f.l)}</span></div>`).join("")}</div></div></div></section>`;
 }
 
 function gallery(t, c, demo, photos) {
   if (!photos) return "";
   const slots = ["g1", "g2", "g3", "g4", "g5", "g6"].filter((s) => photos.slots[s]);
   if (!slots.length) return "";
-  return `<section class="section" id="gallery"><div class="wrap"><span class="sec-num" aria-hidden="true">03</span><h2 class="h2">${esc(c.gallery)}</h2><div class="gallery">${slots.map((s, i) => `<a class="g-item reveal" href="/img/${demo.id}/${s}.webp" data-lightbox="${i}" data-cap="${esc(t.services[i]?.t || t.name)}">${picture(demo.id, s, photos.slots[s], { w: 900, h: 600, alt: photos.slots[s].alt || `${t.name} — ${t.services[i]?.t || i + 1}` })}</a>`).join("")}</div>${creditsLine(photos, c.credits, c.creditsEdited)}</div></section><div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="${esc(c.gallery)}"><button class="lb-close" type="button" aria-label="×">×</button><button class="lb-prev" type="button" aria-label="‹">‹</button><img alt=""><p class="lb-cap" aria-live="polite"></p><span class="lb-count" aria-hidden="true"></span><button class="lb-next" type="button" aria-label="›">›</button></div>`;
+  return `<section class="section" id="gallery"><div class="wrap"><h2 class="h2">${esc(c.gallery)}</h2><div class="gallery">${slots.map((s, i) => `<a class="g-item reveal" href="/img/${demo.id}/${s}.webp" data-lightbox="${i}" data-cap="${esc(t.services[i]?.t || t.name)}">${picture(demo.id, s, photos.slots[s], { w: 900, h: 600, alt: photos.slots[s].alt || `${t.name} — ${t.services[i]?.t || i + 1}` })}</a>`).join("")}</div>${creditsLine(photos, c.credits, c.creditsEdited)}</div></section><div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="${esc(c.gallery)}"><button class="lb-close" type="button" aria-label="×">×</button><button class="lb-prev" type="button" aria-label="‹">‹</button><img alt=""><p class="lb-cap" aria-live="polite"></p><span class="lb-count" aria-hidden="true"></span><button class="lb-next" type="button" aria-label="›">›</button></div>`;
 }
 
 function steps(t) {
   if (!t.steps) return "";
-  return `<section class="section" id="steps"><div class="wrap"><span class="sec-num" aria-hidden="true">04</span><h2 class="h2">${t.steps.title}</h2><ol class="steps">${t.steps.items.map((s) => `<li class="reveal"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p></li>`).join("")}</ol></div></section>`;
+  return `<section class="section" id="steps"><div class="wrap"><h2 class="h2">${t.steps.title}</h2><ol class="steps">${t.steps.items.map((s) => `<li class="reveal"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p></li>`).join("")}</ol></div></section>`;
 }
 
 function list(t) {
   if (!t.list) return "";
-  return `<section class="section alt" id="list"><div class="wrap"><span class="sec-num" aria-hidden="true">05</span><h2 class="h2">${t.list.title}</h2>${t.list.lede ? `<p class="lede">${esc(t.list.lede)}</p>` : ""}<div class="pricelist">${t.list.groups.map((g) => `<div class="pl-group reveal"><h3>${esc(g.t)}</h3>${g.items.map((i) => `<div class="pl-row"><span>${esc(i[0])}</span><span class="pl-dots"></span><strong>${esc(i[1])}</strong></div>`).join("")}</div>`).join("")}</div></div></section>`;
+  return `<section class="section alt" id="list"><div class="wrap"><h2 class="h2">${t.list.title}</h2>${t.list.lede ? `<p class="lede">${esc(t.list.lede)}</p>` : ""}<div class="pricelist">${t.list.groups.map((g) => `<div class="pl-group reveal"><h3>${esc(g.t)}</h3>${g.items.map((i) => `<div class="pl-row"><span>${esc(i[0])}</span><span class="pl-dots"></span><strong>${esc(i[1])}</strong></div>`).join("")}</div>`).join("")}</div></div></section>`;
 }
 
 function reviews(t, c) {
-  return `<section class="section" id="reviews"><div class="wrap"><span class="sec-num" aria-hidden="true">06</span><h2 class="h2">${esc(c.reviewsTitle)}</h2><div class="grid grid-3">${t.reviews.map((r) => `<blockquote class="review reveal">${stars(r.stars)}<p>${esc(r.text)}</p><footer><span class="avatar" aria-hidden="true">${esc(initials(r.name))}</span><span>${esc(r.name)}</span></footer></blockquote>`).join("")}</div></div></section>`;
+  return `<section class="section" id="reviews"><div class="wrap"><h2 class="h2">${esc(c.reviewsTitle)}</h2><div class="grid grid-3">${t.reviews.map((r) => `<blockquote class="review reveal">${stars(r.stars)}<p>${esc(r.text)}</p><footer><span class="avatar" aria-hidden="true">${esc(initials(r.name))}</span><span>${esc(r.name)}</span></footer></blockquote>`).join("")}</div></div></section>`;
 }
 
 function faq(t, c) {
-  return `<section class="section alt" id="faq"><div class="wrap narrow"><span class="sec-num" aria-hidden="true">07</span><h2 class="h2">${esc(c.faqTitle)}</h2>${t.faq.map((f, i) => `<details class="faq"${i === 0 ? " open" : ""}><summary><h3>${esc(f.q)}</h3></summary><div class="fa"><div><p>${esc(f.a)}</p></div></div></details>`).join("")}</div></section>`;
+  return `<section class="section alt" id="faq"><div class="wrap narrow"><h2 class="h2">${esc(c.faqTitle)}</h2>${t.faq.map((f, i) => `<details class="faq"${i === 0 ? " open" : ""}><summary><h3>${esc(f.q)}</h3></summary><div class="fa"><div><p>${esc(f.a)}</p></div></div></details>`).join("")}</div></section>`;
 }
 
 function contact(t, c) {
   const f = c.form, tel = t.phone.replace(/\s/g, "");
-  return `<section class="section" id="contact"><div class="wrap split"><div><span class="sec-num" aria-hidden="true">08</span><p class="eyebrow">${esc(t.contact.eyebrow)}</p><h2 class="h2">${t.contact.title}</h2><p class="body">${esc(t.contact.lede)}</p><ul class="info"><li>${ICON.pin}<span>${esc(t.address)}</span></li><li>${ICON.phone}<a href="tel:${tel}">${esc(t.phone)}</a></li><li>${ICON.mail}<a href="mailto:${esc(t.email)}">${esc(t.email)}</a></li><li>${ICON.clock}<span>${t.hours.map(esc).join("<br>")}</span></li></ul></div><form class="form demo-form" action="#contact" method="get" novalidate><label><span>${esc(f.name)}</span><input name="name" autocomplete="name" required></label><label><span>${esc(f.phone)}</span><input name="phone" type="tel" autocomplete="tel"></label><label><span>${esc(f.email)}</span><input name="email" type="email" autocomplete="email" required></label><label><span>${esc(f.msg)}</span><textarea name="msg" rows="4" required></textarea></label><button class="btn btn-primary" type="submit">${esc(f.send)} ${ICON.arrow}</button><p class="tiny">${esc(f.privacy)}</p><output class="sent" data-msg="${esc(f.sent)}" aria-live="polite"></output></form></div></section>`;
+  return `<section class="section" id="contact"><div class="wrap split"><div><p class="eyebrow">${esc(t.contact.eyebrow)}</p><h2 class="h2">${t.contact.title}</h2><p class="body">${esc(t.contact.lede)}</p><ul class="info"><li>${ICON.pin}<span>${esc(t.address)}</span></li><li>${ICON.phone}<a href="tel:${tel}">${esc(t.phone)}</a></li><li>${ICON.mail}<a href="mailto:${esc(t.email)}">${esc(t.email)}</a></li><li>${ICON.clock}<span>${t.hours.map(esc).join("<br>")}</span></li></ul></div><form class="form demo-form" action="#contact" method="get" novalidate><label><span>${esc(f.name)}</span><input name="name" autocomplete="name" required></label><label><span>${esc(f.phone)}</span><input name="phone" type="tel" autocomplete="tel"></label><label><span>${esc(f.email)}</span><input name="email" type="email" autocomplete="email" required></label><label><span>${esc(f.msg)}</span><textarea name="msg" rows="4" required></textarea></label><button class="btn btn-primary" type="submit">${esc(f.send)} ${ICON.arrow}</button><p class="tiny">${esc(f.privacy)}</p><output class="sent" data-msg="${esc(f.sent)}" aria-live="polite"></output></form></div></section>`;
 }
 
 function footer(t, c, lang) {
-  return `<footer class="foot"><div class="foot-word" aria-hidden="true"><div class="mq-track"><span>${esc(t.name)}</span><span>${esc(t.name)}</span></div></div><div class="wrap"><span class="brand">${esc(t.name)}</span><span class="tiny">${esc(c.demoNote)}</span>${credit(lang)}</div></footer>`;
+  return `<footer class="foot"><div class="wrap"><span class="brand">${esc(t.name)}</span><span class="tiny">${esc(c.demoNote)}</span>${credit(lang)}</div></footer>`;
 }
 
 const sticky = (t, c) => `<div class="sticky" aria-hidden="true"><a class="btn btn-ghost" href="tel:${t.phone.replace(/\s/g, "")}">${ICON.phone} ${esc(c.sticky.call)}</a><a class="btn btn-primary" href="#contact">${esc(c.sticky.book)} ${ICON.arrow}</a></div><a class="totop" href="#top" aria-label="${esc(c.top)}">↑</a>`;
@@ -101,12 +113,12 @@ export function renderDemo(lang, demo) {
   const og = photos?.slots.hero ? `/img/${demo.id}/hero.webp` : undefined;
   return join([
     head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: demo.keywords[lang], path, paths, fonts: [...th.fonts, "brand"], css: ["/assets/demo.css", "/assets/premium.css"], themeColor: th.bg, ogImage: og, extra: themeCss(th) + schema(lang, demo, t, path, photos) }),
-    `<body class="demo mode-${th.mode}">`, `<div class="curtain" aria-hidden="true"><span>${esc(t.name)}</span><i></i></div>`,
+    `<body class="demo mode-${th.mode}" data-i18n="${esc(JSON.stringify({ tryColor: c.widget.tryColor }))}">`,
     demoBar(lang, demo, ui),
     nav(t, c, t.phone, !!photos),
-    `<main>`, hero(t, th, c, demo, photos), services(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
+    `<main>`, hero(t, th, c, demo, photos), services(t), offer(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
     footer(t, c, lang), sticky(t, c),
-    `<script src="/assets/demo.js" defer></script><script src="/assets/fx/core.js" defer></script><script src="/assets/fx/${demo.id}.js" defer></script><script src="/assets/premium.js" defer></script>`,
+    `<script src="/assets/demo.js" defer></script>${FX_MODULES.has(demo.id) ? `<script src="/assets/fx/core.js" defer></script><script src="/assets/fx/${demo.id}.js" defer></script>` : ""}<script src="/assets/premium.js" defer></script>`,
     `</body></html>`,
   ]);
 }

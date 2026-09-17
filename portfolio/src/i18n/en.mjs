@@ -19,6 +19,7 @@ export default {
     lede: "Ten fully working demo websites for ten kinds of business. Open them on your phone and desktop, pick the one that feels like you, and we turn it into yours — your colours, copy and photos — in days, not months.",
     ctaDemos: "Browse the demos",
     ctaPricing: "See pricing",
+    proof: "Reply within 24 hours · Site ready in 5–30 working days depending on the package · Fixed price, at least 15% below market · EU hosting for 12 months included",
     stats: [
       { n: "10", l: "finished demo websites" },
       { n: "3", l: "languages: BG · EN · IT" },
@@ -32,6 +33,7 @@ export default {
     lede: "Every demo is a complete landing page: sections, forms, reviews, FAQ, map, structured data for Google. Not a sketch — this is the website you will get, only with your data.",
     open: "Open the demo",
     preview: "Live preview",
+    includes: {"booking":"Online booking","schedule":"Selectable timetable","tiles":"Catalogue with cart","stats":"Price calculator","consult":"Consultation request","always":"Gallery · Reviews · FAQ · Contact · BG · EN · IT"},
   },
   process: {
     eyebrow: "How we work",
@@ -64,7 +66,7 @@ export default {
   contact: {
     eyebrow: "Contact",
     title: "Tell us which demo you liked. <em>We reply within 24 hours.</em>",
-    lede: "Email us or use the form on our main website. We work remotely with clients in Bulgaria and Italy; for larger projects we meet on site.",
+    lede: "Send us your company name and a link to the demo you like. Within 24 hours you get a quote with a fixed price and delivery time — no meeting, no commitment. We work remotely with clients in Bulgaria and Italy; for larger projects we meet in person.",
     email: "Email us",
     site: "Enquiry form",
     where: "Bobov Dol, Bulgaria · Milan/Bologna, Italy",
@@ -88,7 +90,7 @@ export default {
     gallery: "Gallery",
     credits: "Photos",
     creditsEdited: "cropped and edited",
-    widget: { service: "Service", date: "Date", time: "Time", name: "Name", pick: "Choose", selected: "Selected", total: "Total", items: "items", done: "Demo: request received. On the real website you get an SMS/email confirmation.", clear: "Clear" },
+    widget: { tryColor: "Try a colour", service: "Service", date: "Date", time: "Time", name: "Name", pick: "Choose", selected: "Selected", total: "Total", items: "items", done: "Demo: request received. On the real website you get an SMS/email confirmation.", clear: "Clear" },
     sticky: { call: "Call", book: "Book" },
     top: "Top",
   },

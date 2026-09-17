@@ -41,7 +41,7 @@ src/templates/demo.mjs      шаблонът на демо страница (е�
 src/templates/widgets.mjs   „живите" карти в hero-то: booking · schedule · tiles · stats · consult
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
-src/assets/                 site.css+js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/core.js + fx/<demo>.js, fonts/*.css — без билд
+src/assets/                 site.css+js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
 public/                     favicon.svg, logo.png/webp, og.png, apple-touch-icon.png, fonts/*.woff2, img/<demo>/, indexnow-key.txt
 photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
 photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6) — алтернативен източник
@@ -69,22 +69,23 @@ nginx.conf · deploy.sh      продукционният конфиг (CSP, HST
   разпознаваеми известни личности, без кредит, който би изглеждал зле под демо), после конвейерът. Алтернативи:
   `PEXELS_API_KEY=… node tools/photos.mjs` (по `photos.manifest.json`, ключът НИКОГА в репото) и
   `--from <папка>` с локални hero.jpg, about.jpg, g1..g6.jpg. Снимките се проследяват в git (те са асети).
-- **Премиум слой** (`premium.css` + `premium.js`, зареждат се след demo.css/fx): завеса при вход (веднъж на
-  страница за сесия, чист CSS изход), киношен hero (Ken Burns на `<picture>`, тон `.tint` в акцента, зърно
-  `.grain`), заглавия дума по дума (`.sp`/`.wd` — **не** `.split`, това е решетката), маски при поява на
-  снимки + scroll-driven parallax (`animation-timeline: view()` където има), галерия с надпис и „+", lightbox с
-  размазан фон/надпис/брояч/swipe, карти с въртяща се рамка (`@property --ang`), блясък по бутоните, навигация,
-  която се скрива надолу и показва активната секция, курсор в цвета на бранда (само fine pointer), аватари в
-  отзивите, номера на секциите, воден знак с името във футъра, View Transitions между страниците. Всичко е
-  fail-open: без premium.js/css страницата е напълно четима; `prefers-reduced-motion` спира всичко движещо се.
-  Хъбът има **преглед на устройства** (`#devmodal`: десктоп · таблет · телефон рамка около живото демо) и
-  холографски блик по демо картите. **Скрийншоти за проверка**: headless `--screenshot` замразява CSS
-  анимациите ~0.3s след зареждане и има минимална ширина ~485px — за телефон ползвай CDP с
+- **Маркетинг слой** (`premium.css` + `premium.js`, след demo.css): това, което истински сайт на агенция
+  има — и нищо „за ефект". Hero върху снимка с бавен Ken Burns и лек тон в акцента (`.tint`); **ред с
+  доказателства** под CTA-тата (`hero.proof`: рейтинг · брой клиенти · срок на отговор); **оферта-банер**
+  (`offer: {tag,title,text,cta,note}` — конкретно предложение с условие и срок); trust strip без икони; линк
+  за действие във всяка карта-услуга; плочките в hero картата носят реални снимки от галерията; галерия с
+  надпис; lightbox с размазан фон/надпис/брояч/swipe; навигация, която се скрива надолу и маркира активната
+  секция; аватари в отзивите; плавен FAQ; View Transitions. **Съзнателно махнато** (бие на „генериран" сайт):
+  завеса при вход, custom cursor, магнитни бутони, зърно, spinning рамки/блясък, split-text заглавия, гигантска
+  outline дума, marquee ленти, номера на секции, воден знак във футъра, canvas частици/снежинки/конфети.
+  Хъбът има **преглед на устройства** (`#devmodal`: десктоп · таблет · телефон рамка около живото демо),
+  proof ред под CTA-тата и „включва" ред на всяка карта. **Скрийншоти за проверка**: headless `--screenshot`
+  замразява CSS анимациите ~0.3s след зареждане и има минимална ширина ~485px — за телефон ползвай CDP с
   `Emulation.setDeviceMetricsOverride` и review копие с нулеви `animation-delay/duration`.
-- **Ефекти** (`src/assets/fx/`): `core.js` дава общия слой (`window.FX` — canvas hero, spotlight карти, tilt,
-  parallax, typewriter, marquee, SVG draw-on; спира при `prefers-reduced-motion`), `fx/<demo>.js` е подписният
-  ефект на всяко демо (дизайнът е „за този бизнес", не общ шаблон). Ново демо → нов `fx/<id>.js`, шаблонът го
-  включва по id. Никога строб.
+- **Интерактивни добавки** (`src/assets/fx/`): само продуктови функции, никакви декорации — `core.js`
+  (токени + `swatches()`), `salon.js`/`mebeli.js` (проба на цвят/материал — сменя акцента на живо),
+  `schetovodstvo.js`/`avtokashta.js` (калкулатори). Шаблонът зарежда fx/ само за демотата в `FX_MODULES`.
+  Ново демо с добавка → нов `fx/<id>.js` + id в `FX_MODULES`. Никога строб.
 - **Шрифтове**: всички се хостват от нас (`tools/fonts.mjs` → `public/fonts/`, `src/assets/fonts/<семейство>.css`);
   `head()` включва само семействата на страницата. Нова Google Fonts препратка в HTML е грешка (гейтната в теста).
 - **„Живите" hero карти са реални UI**: резервация (услуга → цена, дата, час, име → потвърждение), график (избор
