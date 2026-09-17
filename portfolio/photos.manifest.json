@@ -1,0 +1,16 @@
+{
+  "$note": "Заявки към Pexels за всяко демо и слот. tools/photos.mjs ги сваля (нужен е PEXELS_API_KEY), преоразмерява в webp и пише credits.json — авторите се показват под галерията (лиценз Pexels). Слотове: hero (пейзаж, 1600px) · about (пейзаж, 1200px) · g1–g6 (галерия, 900px).",
+  "sizes": { "hero": 1600, "about": 1200, "g": 900 },
+  "demos": {
+    "avtoservis":   { "hero": "car mechanic workshop lift", "about": "mechanic hands engine repair", "gallery": ["car service garage", "tire change workshop", "car diagnostics laptop", "brake disc mechanic", "engine bay clean", "auto repair tools"] },
+    "fitnes":       { "hero": "gym training dark barbell", "about": "personal trainer coaching", "gallery": ["weightlifting gym", "group fitness class", "boxing training gym", "gym equipment rack", "stretching mobility", "running treadmill gym"] },
+    "mebeli":       { "hero": "solid wood dining table interior", "about": "carpenter workshop wood", "gallery": ["oak furniture living room", "wooden bed bedroom linen", "modern kitchen wood", "bookshelf wood interior", "woodworking hands", "walnut chair design"] },
+    "advokati":     { "hero": "law office modern interior", "about": "lawyer consultation desk", "gallery": ["law books library", "business contract signing", "courthouse columns", "office meeting professional", "handshake agreement", "legal documents desk"] },
+    "salon":        { "hero": "hair salon interior bright", "about": "hairdresser styling client", "gallery": ["manicure nails salon", "hair coloring salon", "facial skincare spa", "makeup artist brushes", "salon chairs mirrors", "eyebrow lamination beauty"] },
+    "hotel":        { "hero": "mountain chalet snow evening", "about": "cozy hotel room wood", "gallery": ["mountain view balcony", "breakfast table wooden", "hot tub outdoor snow", "ski resort lift", "fireplace cabin interior", "pine forest mountains"] },
+    "schetovodstvo":{ "hero": "accountant office desk laptop", "about": "financial documents calculator", "gallery": ["business meeting office", "invoice spreadsheet laptop", "modern office workspace", "handshake business team", "calculator finance papers", "city office building"] },
+    "avtokashta":   { "hero": "car dealership showroom", "about": "car keys handover", "gallery": ["black bmw sedan", "suv car parked", "car interior steering wheel", "car headlight detail", "test drive road", "car showroom lights"] },
+    "drehi":        { "hero": "clothing store minimal interior", "about": "seamstress sewing linen", "gallery": ["wool coat fashion", "linen shirt clothing rack", "fashion boutique hangers", "knitwear sweater texture", "leather bag accessories", "fashion model street minimal"] },
+    "burger":       { "hero": "smash burger cheese", "about": "burger grill kitchen chef", "gallery": ["french fries truffle", "crispy chicken burger", "milkshake dessert", "burger restaurant interior", "onion rings food", "lemonade drink fresh"] }
+  }
+}

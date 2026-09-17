@@ -2,7 +2,7 @@
 // паритет на езиците, SEO инварианти на всяка страница, законът за ключовите думи, цените ≥15% под пазара.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "../build.mjs";
@@ -79,6 +79,33 @@ test("страницата с цени носи reverse charge за ЕС фир�
     for (const t of TIERS) assert.ok(html.includes(`id="${t.id}"`), `${l}: пакет ${t.id}`);
     assert.ok(html.includes("4 290"), `${l}: форматирана цена`);
   }
+});
+
+test("шрифтовете са самостоятелно хостнати: нула заявки към Google Fonts, всеки font CSS и woff2 съществува", () => {
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
+    assert.ok(!/fonts\.googleapis|fonts\.gstatic/.test(html), `${rel}: Google Fonts`);
+    const cssLinks = [...html.matchAll(/href="(\/assets\/fonts\/[a-z0-9-]+\.css)"/g)].map((m) => m[1]);
+    assert.ok(cssLinks.length >= 1, `${rel}: няма локален font CSS`);
+    for (const c of cssLinks) {
+      const css = readFileSync(join(OUT, c), "utf8");
+      for (const m of css.matchAll(/url\((\/fonts\/[^)]+\.woff2)\)/g)) assert.ok(existsSync(join(OUT, m[1])), `${c}: липсва ${m[1]}`);
+    }
+  }
+});
+
+test("снимки: без public/img демото пада на генеративната графика (нула hero-bg/gallery), а картата в credits.json е незадължителна", () => {
+  const html = readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8");
+  const hasPhotos = existsSync(join(fileURLToPath(new URL("..", import.meta.url)), "public/img/avtoservis/credits.json"));
+  assert.equal(/class="hero-bg"/.test(html), hasPhotos);
+  assert.equal(/id="gallery"/.test(html), hasPhotos);
+  assert.ok(/data-widget="booking"/.test(html) && /<select name="service"/.test(html), "hero формата за резервация е реална форма");
+});
+
+test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
+  const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
+  for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
+  assert.equal((html.match(/data-preview=/g) || []).length, 10);
 });
 
 test("служебни файлове: sitemap с 39 URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {

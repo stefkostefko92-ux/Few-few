@@ -2,15 +2,15 @@
 import { esc, join, head, credit, jsonLd, PATHS, demoPath, SITE, LANGS, ORG, BRAND_URL } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
-import { siteNav, siteFooter, HUB_FONTS, BRAND_BG } from "./hub.mjs";
+import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 import { TIERS, ADDONS, fmt } from "../pricing.mjs";
 
 export function renderLegal(lang) {
   const ui = I18N[lang], path = PATHS.legal[lang];
   return join([
     head({ lang, title: ui.meta.legalTitle, description: ui.meta.legalDesc, keywords: ui.meta.legalKeywords, path, paths: PATHS.legal, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, noindex: false, extra: jsonLd({ "@context": "https://schema.org", "@type": "WebPage", url: SITE + path, name: ui.legal.title, inLanguage: lang, publisher: ORG }) }),
-    `<body class="hub">`, siteNav(lang, ui, PATHS.legal),
-    `<main class="section"><div class="wrap narrow"><h1 class="h2">${esc(ui.legal.title)}</h1>${ui.legal.sections.map((s) => `<h2>${esc(s.t)}</h2>${s.p.map((p) => `<p class="body">${esc(p)}</p>`).join("")}`).join("")}</div></main>`,
+    `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.legal),
+    `<main id="main" class="section legal" style="padding-top:140px"><div class="wrap" style="max-width:820px"><div class="tag">// ${esc(ui.nav.legal)}</div><h1 class="h2">${esc(ui.legal.title)}</h1>${ui.legal.sections.map((s) => `<h2>${esc(s.t)}</h2>${s.p.map((p) => `<p>${esc(p)}</p>`).join("")}`).join("")}</div></main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script>`, `</body></html>`,
   ]);
 }
@@ -32,10 +32,10 @@ ${LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${PATHS.h
 <link rel="alternate" hreflang="x-default" href="${SITE}/bg/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="theme-color" content="${BRAND_BG}">
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:${BRAND_BG};color:#f4faea;font:500 18px/1.5 system-ui,sans-serif}nav{display:grid;gap:12px;text-align:center}a{color:#99e72a;border:1px solid #1d2a14;border-radius:999px;padding:12px 28px;text-decoration:none}a:hover{background:#0d4a02}</style>
+<link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#ccc;font:400 12px/1.8 'Space Mono',monospace;letter-spacing:.02em}nav{display:grid;gap:8px;text-align:center}h1{font:900 clamp(2.4rem,9vw,6rem)/1 'Inter Tight',sans-serif;color:#00e5ff;letter-spacing:-.05em;text-shadow:0 0 40px rgba(0,229,255,.3);margin-bottom:24px}a{color:#00e5ff;border:1px solid rgba(0,229,255,.4);padding:12px 28px;text-decoration:none;text-transform:uppercase;letter-spacing:.15em;font-size:11px}a:hover{background:#00e5ff;color:#000}</style>
 <script>(function(){var s={bg:1,en:1,it:1},l;try{l=localStorage.getItem("cs-lang")}catch(e){}l=l||(navigator.language||"bg").slice(0,2).toLowerCase();location.replace("/"+(s[l]?l:"bg")+"/")})();</script>
 </head>
-<body><nav aria-label="Language">${links}</nav></body>
+<body><div><h1>CS</h1><nav aria-label="Language">${links}</nav></div></body>
 </html>`;
 }
 
@@ -50,7 +50,7 @@ export function renderNotFound() {
 <title>404 · Carbon Stealth Portfolio</title>
 <meta name="keywords" content="Carbon Stealth, 404, страница не е намерена, page not found, pagina non trovata">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:${BRAND_BG};color:#c8dda6;font:400 17px/1.6 system-ui,sans-serif;padding:24px;text-align:center}h1{font-size:clamp(80px,20vw,160px);margin:0;color:#5ab60d;line-height:1}a{color:#99e72a}p{max-width:52ch;margin:10px auto}</style>
+<link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#ccc;font:400 12px/1.9 'Space Mono',monospace;padding:24px;text-align:center;letter-spacing:.02em}h1{font:900 clamp(80px,20vw,160px)/1 'Inter Tight',sans-serif;margin:0;color:#00e5ff;letter-spacing:-.05em;text-shadow:0 0 40px rgba(0,229,255,.3)}a{color:#00e5ff}p{max-width:52ch;margin:10px auto}strong{color:#f5f5f0}</style>
 </head>
 <body><div><h1>404</h1>${rows}</div></body>
 </html>`;

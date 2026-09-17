@@ -36,6 +36,9 @@ export const PATHS = {
 
 export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;
 
+/** Слъг на семейство от Google-стил спецификация („Barlow+Condensed:wght@600;700“ → barlow-condensed). */
+export const fontSlug = (family) => family.split(":")[0].replace(/\+/g, "-").toLowerCase();
+
 /** hreflang алтернативи за страница с локализирани пътища. */
 export function alternates(pathsByLang) {
   const links = LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${pathsByLang[l]}">`);
@@ -52,9 +55,9 @@ const OG_LOCALE = { bg: "bg_BG", en: "en_GB", it: "it_IT" };
 export function head({ lang, title, description, keywords, path, paths, fonts, css, themeColor, ogImage, noindex, extra = "" }) {
   const url = SITE + path;
   const kws = [...new Set([...keywords, "Carbon Stealth"])];
-  const fontHref = fonts?.length
-    ? `https://fonts.googleapis.com/css2?${fonts.map((f) => `family=${f}`).join("&")}&display=swap`
-    : null;
+  // Шрифтовете са самостоятелно хостнати (tools/fonts.mjs → /fonts/*.woff2, по един CSS на семейство):
+  // нула заявки към Google в продукция, по-бърз LCP, нищо за разкриване в политиката.
+  const fontCss = (fonts || []).map((f) => `/assets/fonts/${fontSlug(f)}.css`);
   return join([
     `<!doctype html>`,
     `<html lang="${lang}">`,
@@ -84,9 +87,7 @@ export function head({ lang, title, description, keywords, path, paths, fonts, c
     `<meta name="twitter:image" content="${SITE}${ogImage || "/og.png"}">`,
     `<link rel="icon" type="image/svg+xml" href="/favicon.svg">`,
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
-    fontHref ? `<link rel="preconnect" href="https://fonts.googleapis.com">` : null,
-    fontHref ? `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` : null,
-    fontHref ? `<link rel="stylesheet" href="${fontHref}">` : null,
+    ...fontCss.map((c) => `<link rel="stylesheet" href="${c}">`),
     ...css.map((c) => `<link rel="stylesheet" href="${c}">`),
     extra,
     `</head>`,

@@ -8,13 +8,16 @@
 ## Принципи
 
 - **Само статични файлове зад Nginx**, генерирани от код с нула зависимости (нула supply-chain риск от npm).
-- **Security headers** в `nginx.conf`: строг CSP (`script-src 'self'`; стилове само наши + Google Fonts;
-  `frame-src`/`frame-ancestors 'self'` — заради живите прегледи на демотата в хъба), `X-Frame-Options:
-  SAMEORIGIN`, `nosniff`, `Referrer-Policy`, HSTS, `Permissions-Policy`.
+- **Security headers** в `nginx.conf`: строг CSP без нито една трета страна (`script-src 'self'`;
+  `style-src 'self' 'unsafe-inline'`; `font-src 'self'`; `img-src 'self' data:`; `frame-src`/`frame-ancestors
+  'self'` — заради живите прегледи на демотата в хъба), `X-Frame-Options: SAMEORIGIN`, `nosniff`,
+  `Referrer-Policy`, HSTS, `Permissions-Policy`.
 - **Екраниране**: всичко потребителско минава през `esc()`; JSON-LD се сериализира с `<` → `<`.
 - **Демо формите не изпращат нищо** — няма endpoint, който да бъде злоупотребен.
-- **Без проследяване** → няма банер за съгласие. Google Fonts е разкрит в правната страница (IP към
-  Google); самостоятелно хостване на шрифтове е включено в пакетите за клиентите.
+- **Без проследяване** → няма банер за съгласие. Шрифтовете се хостват от нас (нула заявки към Google);
+  снимките са наши асети (Pexels лиценз, авторите под галерията). Единственият backend-ов код е нула.
+- **Конвейерите** (`tools/fonts.mjs`, `tools/photos.mjs`) тръгват РЪЧНО от машина на собственика; API ключът
+  за Pexels е env променлива и никога не влиза в репото (secret-scan + guard-secrets).
 - **TLS** — Let's Encrypt, TLS 1.2/1.3, редирект 80 → 443. Непознат път е истинско 404.
 - **Тайни**: няма. IndexNow ключът (`public/indexnow-key.txt`) е публичен по протокол.
 - Импресум + поверителност + условия на трите езика (`/bg/pravna-informacia/`, `/en/legal/`, `/it/note-legali/`).

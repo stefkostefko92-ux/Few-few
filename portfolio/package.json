@@ -2,15 +2,20 @@
   "name": "carbon-stealth-portfolio",
   "version": "1.0.0",
   "private": true,
-  "description": "Портфолио на Carbon Stealth VCC — 10 демо лендинг страници (BG/EN/IT), цени и пакети. Статичен сайт, генериран без зависимости.",
+  "description": "Портфолио на Carbon Stealth VCC — 10 демо лендинг страници (BG/EN/IT), цени и пакети. Статичен сайт, генериран без зависимости; sharp е само за конвейера на снимките.",
   "type": "module",
   "license": "UNLICENSED",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "node build.mjs",
     "test": "node --test test/build.test.mjs",
     "check": "node build.mjs && node --test test/build.test.mjs && node ../tools/qa/static-site-check.mjs dist",
-    "serve": "node serve.mjs"
+    "serve": "node serve.mjs",
+    "fonts": "node tools/fonts.mjs",
+    "photos": "node tools/photos.mjs",
+    "images": "node tools/render-images.mjs"
   },
   "keywords": [
     "Carbon Stealth",
@@ -20,5 +25,8 @@
     "web agency",
     "sito web",
     "portfolio"
-  ]
+  ],
+  "devDependencies": {
+    "sharp": "^0.35.4"
+  }
 }

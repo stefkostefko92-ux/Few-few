@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#99E72A"/><stop offset=".6" stop-color="#5AB60D"/><stop offset="1" stop-color="#0D4A02"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="#050706"/><path d="M32 8l21 12v24L32 56 11 44V20z" fill="url(#g)"/><path d="M32 20l10 6v12l-10 6-10-6V26z" fill="#050706" opacity=".85"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#000"/>
+  <rect x="2" y="2" width="28" height="28" fill="none" stroke="#00e5ff" stroke-width="1" opacity="0.3"/>
+  <text x="16" y="22" text-anchor="middle" font-family="monospace" font-weight="900" font-size="16" fill="#00e5ff">CS</text>
+</svg>

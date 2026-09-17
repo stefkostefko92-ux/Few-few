@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // build.mjs — генерира статичния сайт в dist/ (нула зависимости). Всяка страница минава през
 // един и същ head() → SEO/hreflang/keywords не могат да се забравят на отделна страница.
-import { mkdirSync, writeFileSync, rmSync, cpSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANGS, PATHS, demoPath, SITE } from "./src/lib/html.mjs";
@@ -45,10 +45,8 @@ export function build({ out = OUT, quiet = false } = {}) {
   put("/sitemap.xml", sitemap(urls, today));
   put("/.well-known/security.txt", securityTxt());
   cpSync(join(ROOT, "src/assets"), join(out, "assets"), { recursive: true });
-  for (const f of ["favicon.svg", "og.png", "apple-touch-icon.png", "indexnow-key.txt"]) {
-    const src = join(ROOT, "public", f);
-    if (existsSync(src)) cpSync(src, join(out, f));
-  }
+  // public/ отива 1:1 в корена на сайта (favicon, og, apple-touch-icon, logo, шрифтове, снимки, IndexNow ключ).
+  cpSync(join(ROOT, "public"), out, { recursive: true });
   if (!quiet) console.log(`✓ ${pages.length} файла → ${out} (${LANGS.length} езика · ${DEMOS.length} демота · ${urls.length} URL в sitemap за ${SITE})`);
   return { pages, urls };
 }
