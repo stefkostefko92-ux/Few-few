@@ -19,10 +19,10 @@ export function ghost(html) {
 
 /** BIOS POST boot екран — редовете се пълнят от site.js с реални данни от Navigator API. */
 export function boot(ui) {
-  return `<div class="boot" id="boot" aria-hidden="true"><i class="boot-corner tl"></i><i class="boot-corner tr"></i><i class="boot-corner bl"></i><i class="boot-corner br"></i><div class="boot-scan"></div><div class="boot-cs">CS</div><div class="boot-list hud"></div><div class="hud"><span style="animation:cs-blink 1s infinite">●</span> ${esc(ui.brand.boot)}</div></div>`;
+  return `<div class="boot" id="boot" aria-hidden="true"><i class="boot-corner tl"></i><i class="boot-corner tr"></i><i class="boot-corner bl"></i><i class="boot-corner br"></i><div class="boot-scan"></div><picture class="boot-cs"><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async" fetchpriority="high"></picture><div class="boot-list hud"></div><div class="hud"><span style="animation:cs-blink 1s infinite">●</span> ${esc(ui.brand.boot)}</div></div>`;
 }
 
-const logo = (extra = "") => `<picture><source srcset="/logo.webp" type="image/webp"><img class="logo" src="/logo.png" alt="Carbon Stealth VCC" width="560" height="239"${extra}></picture>`;
+const logo = (extra = "") => `<picture><source srcset="/logo.webp" type="image/webp"><img class="logo" src="/logo.png" alt="Carbon Stealth VCC" width="673" height="160"${extra}></picture>`;
 
 export function siteNav(lang, ui, current) {
   const links = [[`${PATHS.hub[lang]}#demos`, ui.nav.demos], [`${PATHS.hub[lang]}#process`, ui.nav.process], [`${PATHS.hub[lang]}#why`, ui.nav.why], [PATHS.pricing[lang], ui.nav.pricing], [`${PATHS.hub[lang]}#contact`, ui.nav.contact]];

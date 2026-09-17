@@ -19,7 +19,7 @@ node build.mjs                                  # → dist/ (45 файла, 39 U
 node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
-node tools/render-images.mjs                    # og.png + apple-touch-icon.png (само при смяна на бранда)
+node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
 node tools/fonts.mjs                            # самостоятелно хостване на шрифтовете (при смяна на семейство)
 node tools/photos.mjs --openimages [demo]       # снимките от photos.picks.json (CC BY 2.0) → public/img/<demo>/ (виж „Снимки")
 PEXELS_API_KEY=… node tools/photos.mjs [demo]   # алтернатива: Pexels по photos.manifest.json
@@ -42,10 +42,11 @@ src/templates/widgets.mjs   „живите" карти в hero-то: booking ·
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
 src/assets/                 site.css+js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
-public/                     favicon.svg, logo.png/webp, og.png, apple-touch-icon.png, fonts/*.woff2, img/<demo>/, indexnow-key.txt
+brand/logo-source.png       ЕДИНСТВЕНИЯТ източник на логото (1254², „CS" монограм + надпис) — не се редактира на ръка
+public/                     logo.png/webp (lockup) · logo-square · mark · icon-192/512 · apple-touch-icon · favicon.ico · og.png — всички от tools/brand.mjs; fonts/*.woff2, img/<demo>/, indexnow-key.txt
 photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
 photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6) — алтернативен източник
-tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · render-images.mjs
+tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · brand.mjs (логото → всички асети)
 test/build.test.mjs         гейтът · docs/PRICING-RESEARCH.md — проучването зад цените (с източници и дата)
 nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404) и деплоят
 ```

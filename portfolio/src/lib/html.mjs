@@ -85,7 +85,8 @@ export function head({ lang, title, description, keywords, path, paths, fonts, c
     `<meta name="twitter:title" content="${esc(title)}">`,
     `<meta name="twitter:description" content="${esc(description)}">`,
     `<meta name="twitter:image" content="${SITE}${ogImage || "/og.png"}">`,
-    `<link rel="icon" type="image/svg+xml" href="/favicon.svg">`,
+    `<link rel="icon" href="/favicon.ico" sizes="32x32">`,
+    `<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">`,
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
     ...fontCss.map((c) => `<link rel="stylesheet" href="${c}">`),
     ...css.map((c) => `<link rel="stylesheet" href="${c}">`),
@@ -108,7 +109,7 @@ export const ORG = {
   url: BRAND_URL,
   email: BRAND_EMAIL,
   vatID: BRAND_EIK,
-  logo: `${SITE}/apple-touch-icon.png`,
+  logo: { "@type": "ImageObject", url: `${SITE}/logo-square.png`, width: 1024, height: 1024 },
   address: { "@type": "PostalAddress", streetAddress: BRAND_ADDRESS.street, addressLocality: BRAND_ADDRESS.city, postalCode: BRAND_ADDRESS.zip, addressCountry: BRAND_ADDRESS.country },
 };
 

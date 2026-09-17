@@ -20,7 +20,7 @@ function themeCss(th) {
 
 function demoBar(lang, demo, ui) {
   const alt = LANGS.map((l) => `<a href="${demoPath(l, demo)}" hreflang="${l}"${l === lang ? ' aria-current="page"' : ""}>${I18N[l].short}</a>`).join("");
-  return `<div class="cs-bar" role="region" aria-label="Carbon Stealth"><a class="cs-back" href="${PATHS.hub[lang]}#demos">${esc(ui.demoBar.back)}</a><span class="cs-hint" title="${esc(ui.demoBar.hint)}">// ${esc(ui.demoBar.label)} · ${esc(demo.t[lang].category)}</span><nav class="cs-langs" aria-label="Language">${alt}</nav><a class="cs-want" href="${PATHS.pricing[lang]}">${esc(ui.demoBar.want)}</a></div><div class="progress" aria-hidden="true"><i></i></div>`;
+  return `<div class="cs-bar" role="region" aria-label="Carbon Stealth"><a class="cs-mark" href="${PATHS.hub[lang]}" aria-label="Carbon Stealth VCC"><picture><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async"></picture></a><a class="cs-back" href="${PATHS.hub[lang]}#demos">${esc(ui.demoBar.back)}</a><span class="cs-hint" title="${esc(ui.demoBar.hint)}">// ${esc(ui.demoBar.label)} · ${esc(demo.t[lang].category)}</span><nav class="cs-langs" aria-label="Language">${alt}</nav><a class="cs-want" href="${PATHS.pricing[lang]}">${esc(ui.demoBar.want)}</a></div><div class="progress" aria-hidden="true"><i></i></div>`;
 }
 
 function nav(t, c, phone, hasGallery) {

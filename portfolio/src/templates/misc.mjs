@@ -30,12 +30,13 @@ export function renderRoot() {
 <link rel="canonical" href="${SITE}/bg/">
 ${LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${PATHS.hub[l]}">`).join("\n")}
 <link rel="alternate" hreflang="x-default" href="${SITE}/bg/">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <meta name="theme-color" content="${BRAND_BG}">
 <link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#ccc;font:400 12px/1.8 'Space Mono',monospace;letter-spacing:.02em}nav{display:grid;gap:8px;text-align:center}h1{font:900 clamp(2.4rem,9vw,6rem)/1 'Inter Tight',sans-serif;color:#00e5ff;letter-spacing:-.05em;text-shadow:0 0 40px rgba(0,229,255,.3);margin-bottom:24px}a{color:#00e5ff;border:1px solid rgba(0,229,255,.4);padding:12px 28px;text-decoration:none;text-transform:uppercase;letter-spacing:.15em;font-size:11px}a:hover{background:#00e5ff;color:#000}</style>
 <script>(function(){var s={bg:1,en:1,it:1},l;try{l=localStorage.getItem("cs-lang")}catch(e){}l=l||(navigator.language||"bg").slice(0,2).toLowerCase();location.replace("/"+(s[l]?l:"bg")+"/")})();</script>
 </head>
-<body><div><h1>CS</h1><nav aria-label="Language">${links}</nav></div></body>
+<body><div><h1><picture><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="Carbon Stealth VCC" width="320" height="320" style="width:clamp(120px,30vw,200px);height:auto"></picture></h1><nav aria-label="Language">${links}</nav></div></body>
 </html>`;
 }
 
@@ -49,7 +50,8 @@ export function renderNotFound() {
 <meta name="robots" content="noindex, follow">
 <title>404 · Carbon Stealth Portfolio</title>
 <meta name="keywords" content="Carbon Stealth, 404, страница не е намерена, page not found, pagina non trovata">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#ccc;font:400 12px/1.9 'Space Mono',monospace;padding:24px;text-align:center;letter-spacing:.02em}h1{font:900 clamp(80px,20vw,160px)/1 'Inter Tight',sans-serif;margin:0;color:#00e5ff;letter-spacing:-.05em;text-shadow:0 0 40px rgba(0,229,255,.3)}a{color:#00e5ff}p{max-width:52ch;margin:10px auto}strong{color:#f5f5f0}</style>
 </head>
 <body><div><h1>404</h1>${rows}</div></body>

@@ -34,6 +34,7 @@ p{margin:0 0 14px}
 
 /* Carbon Stealth demo bar — бранд езикът на carbonstealth.eu (черно · cyan · Space Mono) */
 .cs-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px clamp(12px,3vw,32px);background:#000;color:#ccc;font:400 11px/1 'Space Mono',ui-monospace,monospace;letter-spacing:.08em;border-bottom:1px solid rgba(0,229,255,.2)}
+.cs-mark{flex:none;display:block;line-height:0}.cs-mark img{width:24px;height:24px;filter:drop-shadow(0 0 6px rgba(0,229,255,.35))}
 .cs-back{color:#00e5ff;white-space:nowrap;text-transform:uppercase;font-size:10px;letter-spacing:.15em}
 .cs-hint{flex:1;color:#00e5ff;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;letter-spacing:.3em;text-transform:uppercase}
 .cs-langs{display:flex;gap:2px}

@@ -124,6 +124,25 @@ test("снимки: без public/img демото пада на генерат�
   assert.ok(/data-widget="booking"/.test(html) && /<select name="service"/.test(html), "hero формата за резервация е реална форма");
 });
 
+test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/footer, знак в boot/демо лентата/root, favicon.ico + icon-192 + apple-touch, og.png, Organization.logo — всички файлове съществуват", () => {
+  const dist = OUT;
+  for (const f of ["logo.png", "logo.webp", "logo-square.png", "logo-square.webp", "mark.png", "mark.webp", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "favicon.ico", "og.png"]) assert.ok(existsSync(join(dist, f)), f);
+  assert.ok(!existsSync(join(dist, "favicon.svg")), "favicon.svg е заменен от favicon.ico");
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  const hub = rd("bg/index.html"), demo = rd("bg/demo/avtoservis/index.html"), root = rd("index.html"), nf = rd("404.html");
+  for (const html of [hub, demo, root, nf]) {
+    assert.ok(html.includes('<link rel="icon" href="/favicon.ico" sizes="32x32">'), "favicon.ico");
+    assert.ok(html.includes('href="/icon-192.png"'), "icon-192");
+    assert.ok(!html.includes("favicon.svg"));
+  }
+  assert.strictEqual((hub.match(/src="\/logo\.png" alt="Carbon Stealth VCC" width="673" height="160"/g) || []).length, 2, "nav + footer lockup");
+  assert.ok(hub.includes('<picture class="boot-cs"><source srcset="/mark.webp"'), "boot знак");
+  assert.ok(demo.includes('<a class="cs-mark" href="/bg/" aria-label="Carbon Stealth VCC"><picture><source srcset="/mark.webp"'), "cs-bar знак");
+  assert.ok(root.includes('src="/mark.png" alt="Carbon Stealth VCC"'), "root знак");
+  assert.ok(hub.includes('"logo":{"@type":"ImageObject","url":"https://portfolio.carbonstealth.eu/logo-square.png","width":1024,"height":1024}'), "Organization.logo");
+  assert.ok(hub.includes('content="https://portfolio.carbonstealth.eu/og.png"'), "og:image");
+});
+
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
   for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);

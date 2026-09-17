@@ -48,7 +48,7 @@ p{margin:0}
 /* --- boot (BIOS POST) --- */
 .boot{position:fixed;inset:0;z-index:5000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
 .boot.out{opacity:0;transform:scale(1.04);pointer-events:none}
-.boot-cs{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,9vw,6rem);color:var(--cyan);letter-spacing:-.05em;text-shadow:0 0 40px rgba(var(--cyan-rgb),.3);line-height:1}
+.boot-cs{display:block;line-height:0}.boot-cs img{width:clamp(110px,26vw,200px);height:auto;filter:drop-shadow(0 0 40px rgba(var(--cyan-rgb),.3))}
 .boot-list{width:min(420px,90vw);display:grid;gap:4px;text-align:left}
 .boot-list div{display:flex;justify-content:space-between;gap:12px;opacity:0;transition:opacity .18s}
 .boot-list div.on{opacity:1}
@@ -66,7 +66,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 
 /* --- nav --- */
 .nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid rgba(var(--off-rgb),.08)}
-.nav .logo{height:26px;width:auto;filter:drop-shadow(0 0 8px rgba(var(--cyan-rgb),.3))}
+.nav .logo{height:32px;width:auto;filter:drop-shadow(0 0 8px rgba(var(--cyan-rgb),.3))}
 .nav-links{display:flex;align-items:center;gap:22px}
 .nav-links a{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text)}
 .nav-right{display:flex;align-items:center;gap:14px}
@@ -211,7 +211,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .foot ul{list-style:none;display:grid;gap:10px}
 .foot li a{font-size:11px}
 .foot .desc{font-size:11px;color:var(--text-2);max-width:320px;line-height:1.9}
-.foot .logo{height:40px;width:auto;margin-bottom:16px;filter:drop-shadow(0 0 8px rgba(var(--cyan-rgb),.3))}
+.foot .logo{height:48px;width:auto;margin-bottom:16px;filter:drop-shadow(0 0 8px rgba(var(--cyan-rgb),.3))}
 .badges{display:flex;gap:12px;flex-wrap:wrap;margin-top:40px;padding-top:24px;border-top:1px solid rgba(var(--off-rgb),.06)}
 .badges span{border:1px solid rgba(var(--cyan-rgb),.15);padding:6px 12px}
 .impressum{margin-top:24px;font-size:11px;color:var(--text);line-height:2}
