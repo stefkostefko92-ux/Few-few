@@ -104,3 +104,90 @@ curl -s -o /dev/null -w "%{http_code}\n" https://supremebot.carbonstealth.eu/api
 върни симлинка към предишния релийз + `docker compose up -d`. v49 е адитивна.
 Внимание: 3.3.0 няма MFA — при откат админ конзолата отново е само с Discord
 OAuth; върни се на 3.4.0 възможно най-бързо.
+
+## 6. Деплоят падна с „[1/4] Missing: backend/.env, bot/.env, frontend/.env, .env"
+
+**Какво се е случило (реален инцидент, 17.09.2026).** `autodeploy.sh` пренасяше
+четирите `.env` файла само от `/opt/few-few/current/SupremeDiscordBot/`. Но
+`current` е общ за всички продукти и се мести при всеки успешен деплой на който
+и да е от тях (напр. `PROJECTS="adblock"`) → сочи release, в който Supreme
+никога не е разгръщан → carry-over не намира нищо → `deploy.sh` пада на стъпка
+[1/4]. **Нищо не е повредено:** `current` не е преместен, старата версия работи,
+миграции НЕ са пускани (провалът е преди `docker compose up`), pre-deploy дъмпът
+е направен. Подканата „`cp .env.example .env`" е за нов сървър — на продукция
+**не я следвай**: тайните съществуват, само не са в новия release.
+
+От тази поправка нататък скриптът търси файловете `current` →
+`/opt/few-few/shared/SupremeDiscordBot/` → най-новият release, който ги има, и
+огледава каноничното копие в `shared/` при всеки пробег (700/600).
+
+### 6.1 Диагностика (само чете; не печата тайни)
+
+```bash
+readlink -f /opt/few-few/current
+ls -1dt /opt/few-few/releases/*/
+find /opt/few-few/releases /opt/few-few/shared -maxdepth 5 -name .env -path '*SupremeDiscordBot*' 2>/dev/null | sort
+# откъде е пуснат работещият стек за последно (там са били файловете при последния успешен деплой):
+docker inspect supremebot_backend --format '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}'
+```
+
+### 6.2 Файловете СА в някой release → сложи ги на стабилния път
+
+```bash
+S=/opt/few-few/shared/SupremeDiscordBot
+SRC_ENV=/opt/few-few/releases/<TS>/Few-few-main/SupremeDiscordBot   # папката от 6.1, която има и четирите
+install -d -m 700 "$S" "$S/backend" "$S/bot" "$S/frontend"
+for f in .env backend/.env bot/.env frontend/.env; do cp -a "$SRC_ENV/$f" "$S/$f" && chmod 600 "$S/$f"; done
+ls -la "$S" "$S/backend" "$S/bot" "$S/frontend"
+```
+
+### 6.3 Файловете ги НЯМА никъде → възстанови ги от работещите контейнери
+
+Контейнерите носят целия си env (`env_file` + `environment:`), значи тайните
+не са изгубени, докато стекът върви. **Не спирай контейнерите преди това.**
+
+```bash
+S=/opt/few-few/shared/SupremeDiscordBot
+umask 077; install -d -m 700 "$S" "$S/backend" "$S/bot" "$S/frontend"
+cenv() { docker inspect "$1" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -vE '^(PATH|NODE_VERSION|YARN_VERSION)='; }
+cenv supremebot_backend > "$S/backend/.env"
+cenv supremebot_bot     > "$S/bot/.env"
+{ cenv supremebot_postgres | grep -E '^POSTGRES_(DB|USER|PASSWORD)='; cenv supremebot_redis | grep -E '^REDIS_PASSWORD='; } > "$S/.env"
+wc -l "$S/.env" "$S/backend/.env" "$S/bot/.env"     # и трите ненулеви
+```
+
+`frontend/.env` няма тайни (build-time `VITE_*`) и не е в контейнер — вземи
+шаблона и попълни реалните стойности (публични: ID на приложението =
+`DISCORD_CLIENT_ID` от `backend/.env`, име на фирмата, имейл и покана за
+поддръжка — същите, които се виждат на `/terms` на живия сайт):
+
+```bash
+cp /opt/few-few/releases/<TS>/Few-few-main/SupremeDiscordBot/frontend/.env.example "$S/frontend/.env"
+chmod 600 "$S/frontend/.env"; nano "$S/frontend/.env"
+```
+
+Стойност с интервал или `#` вътре трябва да е в кавички в `.env` — провери
+с `grep -nE '=[^"].*[ #]' "$S/backend/.env" "$S/bot/.env"` (очаквано: нищо).
+
+### 6.4 Новите променливи на 3.4.0 (само ако липсват)
+
+```bash
+grep -q '^AI_REPLY_TRAINING_ATTESTED=' "$S/backend/.env" || printf '\nAI_REPLY_TRAINING_ATTESTED=false\n' >> "$S/backend/.env"
+```
+
+### 6.5 Деплой
+
+С **поправения** `autodeploy.sh` (свеж ZIP на `main` след сливането) —
+каноничният поток от §2 без промяна: скриптът сам намира `shared/`.
+
+Със **стария** скрипт, който вече е на сървъра (без да чакаш сливане): сложи
+файловете в разопакования release и разгърни него, без нов архив:
+
+```bash
+NEW=/opt/few-few/releases/20260917-194142/Few-few-main/SupremeDiscordBot
+for f in .env backend/.env bot/.env frontend/.env; do cp -a "$S/$f" "$NEW/$f" && chmod 600 "$NEW/$f"; done
+sudo RELEASE_DIR=/opt/few-few/releases/20260917-194142 PROJECTS="SupremeDiscordBot" \
+  bash /opt/few-few/releases/20260917-194142/Few-few-main/deploy/autodeploy.sh
+```
+
+После — §3 (проверки) без промяна.

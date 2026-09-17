@@ -100,6 +100,18 @@ SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
 # Бекъпи на Supreme Bot: pre-deploy снимка (некриптирана, краткоживееща, пазим 5)
 # + дневният криптиран бекъп от supreme-backup.timer (DPA §5.1). Общ път, mode 700.
 SUPREME_BACKUP_DIR="${SUPREME_BACKUP_DIR:-/var/backups/supreme}"
+# СТАБИЛЕН дом на четирите .env файла на Supreme, ИЗВЪН releases/ (mode 700/600).
+# ЗАЩО (реален инцидент, 17.09.2026): тайните живееха само в release папката на
+# последния Supreme деплой и се пренасяха САМО от `current`. Но `current` се мести
+# при всеки успешен деплой на КОЙТО И ДА Е продукт от същия архив (напр.
+# PROJECTS="adblock") → сочи release, в който Supreme никога не е разгръщан и няма
+# .env → следващият Supreme деплой пада на „[1/4] Missing: backend/.env …" СЛЕД
+# като е направил pg_dump. А release-ът с тайните е под ножа на KEEP_RELEASES (и на
+# чистенето от панела) след още няколко деплоя — тоест тайните могат да изчезнат
+# от диска без никой да ги е трил нарочно. Оттук: source = shared → current →
+# най-новият release, който ги има; след всеки пробег shared се обновява.
+SUPREME_ENV_DIR="${SUPREME_ENV_DIR:-/opt/few-few/shared/SupremeDiscordBot}"
+SUPREME_ENV_FILES=".env backend/.env bot/.env frontend/.env"
 
 # eternaltouch (Eternal Touch — Docker Compose модел) — app:4300 + postgres:5437
 # слушат само на 127.0.0.1, зад Nginx. Тайните живеят в eternaltouch/.env на
@@ -678,17 +690,36 @@ deploy_supreme() {
   # Пренеси съществуващите .env файлове (тайните живеят на сървъра, не в архива).
   # Четирите файла: корен (postgres интерполация), backend, bot и frontend
   # (frontend ползва build-time VITE_* — затова трябва да е на място ПРЕДИ билда).
-  local f
-  for f in .env backend/.env bot/.env frontend/.env; do
-    if [ -f "$CURRENT_LINK/SupremeDiscordBot/$f" ] && [ ! -f "$d/$f" ]; then
-      cp -a "$CURRENT_LINK/SupremeDiscordBot/$f" "$d/$f"; ok "Пренесох SupremeDiscordBot/$f"
-    fi
-  done
+  # Източникът се ТЪРСИ (shared → current → най-нов release с файловете), не се
+  # предполага, че е `current` — виж SUPREME_ENV_DIR в конфигурацията.
+  local f src_env=""
+  src_env="$(supreme_env_source || true)"
+  if [ -n "$src_env" ]; then
+    for f in $SUPREME_ENV_FILES; do
+      if [ -f "$src_env/$f" ] && [ ! -f "$d/$f" ]; then
+        cp -a "$src_env/$f" "$d/$f"; chmod 600 "$d/$f"; ok "Пренесох SupremeDiscordBot/$f (от $src_env)"
+      fi
+    done
+  fi
+  # Fail-closed И РАНО. Досега липсващ .env се откриваше чак от deploy.sh на
+  # стъпка [1/4] — СЛЕД pg_dump и с подкана „cp .env.example .env", която на
+  # продукционен сървър е грешният съвет (тайните съществуват, само не са тук).
+  local missing=""
+  for f in $SUPREME_ENV_FILES; do [ -f "$d/$f" ] || missing="$missing $f"; done
+  if [ -n "$missing" ]; then
+    warn "Supreme: липсват .env файлове:$missing"
+    warn "Supreme: търсих в $SUPREME_ENV_DIR, $CURRENT_LINK/SupremeDiscordBot и $RELEASES_DIR/*/*/SupremeDiscordBot — няма ги никъде."
+    warn "Supreme: възстанови ги в $SUPREME_ENV_DIR (от работещите контейнери — SupremeDiscordBot/deploy/RELEASE-3.4.0.md §6) и пусни деплоя пак. НЕ ги създавай от .env.example."
+    deploy_failed=1; return
+  fi
   # v40 — Redis вече иска парола (`--requirepass` в docker-compose.yml). Старият
   # .env на сървъра няма REDIS_PASSWORD, а compose е нарочно fail-closed → без
   # този блок ПЪРВИЯТ деплой след промяната умира с неразбираема грешка от
   # интерполацията. Тайната се генерира на сървъра; идемпотентно.
   supreme_ensure_redis_password "$d"
+  # Каквото ще се разгърне, е и каноничното — запиши го на стабилния път СЕГА,
+  # преди deploy.sh: провал на билда не прави тайните по-малко верни.
+  supreme_persist_env "$d"
 
   # Дъмп ПРЕДИ миграция (по модела на medqr/zabobovdol). Миграциите се пускат
   # автоматично в backend entrypoint-а при `up`, затова застраховката трябва да
@@ -803,6 +834,44 @@ UNIT
   systemctl enable --now supreme-restore-drill.timer >/dev/null 2>&1 \
     || warn "supreme-restore-drill.timer не се активира — провери ръчно."
   ok "репетицията за възстановяване е седмична (supreme-restore-drill.timer)"
+}
+
+# Откъде да пренесем .env файловете на Supreme — ТРИ източника, по ред на доверие:
+#   1) $CURRENT_LINK/SupremeDiscordBot — там ги редактира човекът (документите
+#      сочат „backend/.env на сървъра" = текущия release), значи е най-пресният;
+#   2) $SUPREME_ENV_DIR — огледалото от последния пробег на този скрипт (оцелява
+#      местене на `current` от друг продукт и чистене на releases);
+#   3) най-новият release под $RELEASES_DIR, който ги има — резерва за сървър,
+#      деплойван само със стария скрипт (преди shared да съществува).
+# Критерий за „има ги" е backend/.env — той е задължителен и никога не се
+# генерира. Печата ПЪТ, не съдържание; при нищо намерено връща 1.
+supreme_env_source() {
+  local cand
+  for cand in "$CURRENT_LINK/SupremeDiscordBot" "$SUPREME_ENV_DIR"; do
+    if [ -f "$cand/backend/.env" ]; then printf '%s\n' "$cand"; return 0; fi
+  done
+  # releases/<TS>/<корен-от-ZIP>/SupremeDiscordBot/backend/.env → 5 нива; сортът по
+  # път е сорт по TS (лексикографски = хронологичен), най-новият отгоре.
+  cand="$(find "$RELEASES_DIR" -maxdepth 5 -path '*/SupremeDiscordBot/backend/.env' 2>/dev/null | sort -r | head -1 || true)"
+  [ -n "$cand" ] || return 1
+  printf '%s\n' "${cand%/backend/.env}"
+}
+
+# Огледай четирите .env файла от $1 в $SUPREME_ENV_DIR (700/600). Идемпотентно:
+# пише само при разлика; липсващ в $1 файл НЕ трие огледалото (по-старо копие е
+# по-добро от никакво). Никога не печата съдържание.
+supreme_persist_env() {
+  local from="$1" f
+  [ -f "$from/backend/.env" ] || return 0
+  install -d -m 700 "$SUPREME_ENV_DIR" "$SUPREME_ENV_DIR/backend" "$SUPREME_ENV_DIR/bot" "$SUPREME_ENV_DIR/frontend"
+  for f in $SUPREME_ENV_FILES; do
+    [ -f "$from/$f" ] || continue
+    if ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f"; then
+      cp -a "$from/$f" "$SUPREME_ENV_DIR/$f"
+    fi
+    chmod 600 "$SUPREME_ENV_DIR/$f"
+  done
+  chmod 700 "$SUPREME_ENV_DIR"
 }
 
 # v40 — тайната за Redis: генерирай, ако липсва, и изравни REDIS_URL.
@@ -1212,6 +1281,12 @@ indexnow_ping() {
     warn "adblock: IndexNow ping не мина (сайтът трябва да е публично достъпен с $key.txt)."
   fi
 }
+
+# Преди КОЙТО И ДА Е проект: огледай тайните на Supreme от `current` в shared.
+# Този пробег може да е за друг продукт и след малко да премести `current` —
+# редакция, направена в текущия release, не бива да остане назад в стар release.
+# `|| true`: съхраняването на тайни никога не проваля деплой на друг продукт.
+supreme_persist_env "$CURRENT_LINK/SupremeDiscordBot" || true
 
 for p in $PROJECTS; do
   case "$p" in
