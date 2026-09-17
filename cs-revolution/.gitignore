@@ -11,3 +11,4 @@ api/logs/*
 !api/logs/.htaccess
 vendor/
 api/smtp-local.php
+__pycache__/
