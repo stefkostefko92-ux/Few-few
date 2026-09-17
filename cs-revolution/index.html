@@ -19,6 +19,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- nav logo is in the first viewport: fetch it with the document, not after JS -->
   <link rel="preload" as="image" href="/logo-nav.webp" fetchpriority="high" />
+  <!-- hero mark (likely LCP on desktop): start it with the document too -->
+  <link rel="preload" as="image" href="/brand/cs-scene-800.webp" imagesrcset="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" imagesizes="(max-width:860px) 72vw, 34vw" fetchpriority="high" />
     <!-- Fonts load non-render-blocking: swap to stylesheet once fetched, so the
        first paint never waits on Google Fonts (worth ~1-2s on slow mobile). -->
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100;200;300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
@@ -48,7 +50,7 @@
       background: #0A0C0E; color: #C9D1D6;
       font-family: 'Space Mono', 'SM-fallback', ui-monospace, monospace; }
     #cs-boot > * { max-width: 1180px; width: 100%; margin-left: auto; margin-right: auto; }
-    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 53px;
+    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 59px;
       max-width: none; background: rgba(0,0,0,.85);
       border-bottom: 1px solid rgba(245,245,240,.08); }
     #cs-boot .eb { display: flex; align-items: center; gap: 14px; font-size: 10px;
@@ -115,7 +117,7 @@
        user's language. This is the LCP element on a cold visit. -->
   <div id="cs-boot" aria-hidden="true">
     <!-- Reserves the exact height of the fixed nav React mounts (12px padding
-         + 28px logo + 12px + 1px border) so its arrival shifts nothing. -->
+         + 34px logo + 12px + 1px border) so its arrival shifts nothing. -->
     <div class="navpad"></div>
     <div class="eb"><i></i>WEB &amp; SOFTWARE AGENCY — ITALY · BULGARIA</div>
     <h1>Siti Web, E-commerce &amp; Software ERP</h1>

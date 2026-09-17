@@ -1,5 +1,5 @@
 /* Carbon Stealth VCC — service worker (offline + fast repeat visits, PWA installable) */
-const VERSION = 'cs-v1';
+const VERSION = 'cs-v2'; // v2: new brand assets (logo, icons) — drop the old cached ones
 const CORE = ['/', '/manifest.webmanifest', '/logo.png', '/favicon.svg', '/offline.html'];
 
 self.addEventListener('install', (e) => {

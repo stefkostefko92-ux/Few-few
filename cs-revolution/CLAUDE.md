@@ -6,7 +6,18 @@ Guidance for any agent working on this repo. Read this first.
 Vite + React SPA (`src/App.jsx`, mostly `React.createElement`, no JSX build step for
 most of it) plus Python-generated multilingual static pages (it/en/bg) under `public/`,
 built to `dist/`. PHP-FPM backend in `api/`. Design system = "Tolerance" (carbon base
-`#0A0C0E`, INK `#C9D1D6`, cyan `#00e5ff` as a rare accent, Space Mono / Space Grotesk).
+`#0A0C0E`, INK `#C9D1D6`, cyan `#00e5ff` as the accent, Space Mono / Space Grotesk),
+re-tuned to the 2026 logo: brushed-chrome display type (`CHROME` in `App.jsx`), cyan
+ring glow on primary CTAs (`CTA_GLOW`), faint carbon-weave page ground.
+
+## Brand assets — `public/brand/` + root icons
+All generated from the three logo renders (never hand-edit the PNGs):
+`logo.png`/`logo.webp`/`logo-nav.webp` = horizontal lockup at the historical 2.35:1
+ratio (387 static pages reference it with fixed width/height — keep that ratio);
+`brand/cs-logo-*.webp` = square logo (footer, mobile menu); `brand/cs-scene*.webp` =
+hero mark; `brand/cs-poster.webp` = about plate; `og-image*.png`, `icon-*.png`,
+`apple-touch-icon.png`, `favicon.ico`/`.svg` = derived. Static-page nav/brand tweaks
+live in `scripts/rebrand-static.py` (idempotent, also patches the generators).
 
 ## Build & regenerate
 ```bash

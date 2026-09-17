@@ -1105,7 +1105,7 @@ function SEOInjector() {
       { property: "og:locale", content: "en_US" },
       { property: "og:locale:alternate", content: "it_IT" },
       { property: "og:locale:alternate", content: "bg_BG" },
-      { property: "og:image", content: "https://carbonstealth.eu/logo.png" },
+      { property: "og:image", content: "https://carbonstealth.eu/og-image.png" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: "Carbon Stealth VCC Logo" },
@@ -1420,6 +1420,13 @@ const LINE = "rgba(201,209,214,.08)"; // hairline furniture
 const EASE = "cubic-bezier(.22,1,.36,1)"; // one decisive ease-out, sitewide
 const DISP = "'Space Grotesk','SG-fallback','Inter Tight',-apple-system,sans-serif"; // neo-grotesque display voice
 const MONO = "'Space Mono','SM-fallback',ui-monospace,monospace"; // the instruments — dimensions, tolerances
+// Brushed-chrome fill for display type — the "CARBON" of the logo. Spread it
+// into a heading's inline style (inline colour would otherwise beat a class).
+const CHROME = {backgroundImage:"linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%)",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent",WebkitTextFillColor:"transparent"};
+// Cyan halo behind a cyan-set line — the "STEALTH" of the logo.
+const CYAN_GLOW = {textShadow:"0 0 22px rgba(0,229,255,.38)"};
+// Primary action: the logo's ring glow, on a hairline button.
+const CTA_GLOW = {background:"rgba(0,229,255,.05)",boxShadow:"0 0 22px rgba(0,229,255,.22), inset 0 0 14px rgba(0,229,255,.06)"};
 
 // ══════════ SYNTH ══════════
 // Audio removed
@@ -1597,7 +1604,7 @@ function ASCIISculpture() {
 // Display heading. Was a 5-layer cyan "echo/glow" (gratuitous decoration).
 // Reduced to a single confident neo-grotesque heading — restraint as the flex.
 function EchoText(props) {
-  return <div style={{
+  return <div style={Object.assign({
     position: "relative",
     color: props.color || INK,
     fontFamily: DISP,
@@ -1605,7 +1612,7 @@ function EchoText(props) {
     fontSize: props.fontSize || "clamp(2rem,5vw,4rem)",
     lineHeight: props.lineHeight || 0.95,
     letterSpacing: props.letterSpacing || "-.035em",
-  }}>{props.children}</div>;
+  }, props.style)}>{props.children}</div>;
 }
 
 // ═══════════════════════════════════════════════════
@@ -2864,14 +2871,15 @@ export default function App(){
       <SEOInjector />
       <CaliperCursor />
       <ScrollInstrument />
-      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}"}</style>
+      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(76px,10vh,104px);width:min(32vw,440px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}"}</style>
 
-      {/* Engineering-drawing grid — a faint technical baseline, not decoration */}
-      <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient("+LINE+" 1px,transparent 1px),linear-gradient(90deg,"+LINE+" 1px,transparent 1px)",backgroundSize:"96px 96px",maskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)",WebkitMaskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)"}}/>
+      {/* Engineering-drawing grid over a faint carbon weave — the logo's
+          twill texture as the page ground, kept far below legibility noise */}
+      <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient("+LINE+" 1px,transparent 1px),linear-gradient(90deg,"+LINE+" 1px,transparent 1px),repeating-linear-gradient(45deg,rgba(255,255,255,.016) 0 3px,transparent 3px 8px),repeating-linear-gradient(-45deg,rgba(255,255,255,.016) 0 3px,transparent 3px 8px)",backgroundSize:"96px 96px,96px 96px,16px 16px,16px 16px",maskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)",WebkitMaskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)"}}/>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba(245,245,240,.08)",background:"rgba(0,0,0,.92)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={66} height={28} fetchPriority="high" decoding="async" style={{height:28,width:66,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
+      <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba("+CR+",.16)",boxShadow:"0 1px 18px rgba("+CR+",.10)",background:"rgba(0,0,0,.92)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={80} height={34} fetchPriority="high" decoding="async" style={{height:34,width:80,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
         <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"none",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{fps}FPS</span>
@@ -2887,7 +2895,7 @@ export default function App(){
       {/* MOBILE MENU OVERLAY */}
       <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
         <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},"Close menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>\u2715</div>
-        <img src="/logo.png" alt="CS" width={85} height={36} style={{height:36,width:85,marginBottom:12}}/>
+        <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={140} height={140} decoding="async" style={{height:140,width:140,marginBottom:4}}/>
         {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
         <a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} className="cs-mobile-menu-item" style={{fontSize:13,letterSpacing:".3em",color:C,padding:"14px 32px",border:"1px solid rgba("+CR+",.3)",minWidth:220,textAlign:"center",textDecoration:"none"}}>{t("nav_test")}</a>
         <div style={{display:"flex",gap:6,marginTop:12}}>{["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:10,padding:"6px 12px",border:"1px solid "+(lang===l?"rgba("+CR+",.4)":"rgba(245,245,240,.08)"),background:lang===l?"rgba("+CR+",.12)":"transparent",color:lang===l?C:"#ccc"}}>{l.toUpperCase()}</span>})}</div>
@@ -2903,8 +2911,13 @@ export default function App(){
             MeasuredSurface points/wireframe mount as the hero's single WebGL moment. */}
         <HeroSignature />
 
+        {/* The mark itself, rendered in its own scene — sits over the shader
+            with screen blending so its black ground disappears and only the
+            carbon, chrome and cyan ring remain. Static image: zero runtime cost. */}
+        <img className="cs-hero-art" src="/brand/cs-scene-800.webp" srcSet="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" aria-hidden="true" width={800} height={800} fetchPriority="high" decoding="async"/>
+
         {/* Blueprint furniture - measured coordinates + tolerance callout */}
-        <div aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
+        <div className="cs-hero-coords" aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
           42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}>{"◦"} MEASURING</span>
         </div>
 
@@ -2914,7 +2927,7 @@ export default function App(){
           </div>
 
           {/* Type is the hero - the single H1, keyword-forward, few words */}
-          <h1 style={{fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,7vw,6.4rem)",lineHeight:.98,letterSpacing:"-.03em",color:INK,margin:0,maxWidth:"18ch"}}>
+          <h1 style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,7vw,6.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
             {t("hero_title")}
           </h1>
 
@@ -2923,7 +2936,7 @@ export default function App(){
 
           <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:28,borderTop:"1px solid "+LINE,paddingTop:22,marginTop:"clamp(28px,5vh,44px)"}}>
             <p style={{maxWidth:380,fontSize:12,lineHeight:1.95,color:INK2}}>{t("hero_desc")}</p>
-            <div onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))}>
+            <div className="cs-cta" onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))} style={Object.assign({display:"inline-block"},CTA_GLOW)}>
               <MagneticRepel text={t("cta_btn")+"  →"} style={{display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase"}}/>
             </div>
           </div>
@@ -2939,11 +2952,15 @@ export default function App(){
           <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("about_tag")}</div>
           <ScrollDecode
             text={t("about_scroll")}
-            style={{fontFamily:HEAD,fontWeight:800,fontSize:"clamp(1.6rem,3.5vw,2.8rem)",lineHeight:1.2,letterSpacing:"-.02em",textTransform:"uppercase",color:"#C9D1D6",textShadow:"0 2px 20px rgba(0,0,0,0.8)"}}
+            style={Object.assign({fontFamily:HEAD,fontWeight:800,fontSize:"clamp(1.6rem,3.5vw,2.8rem)",lineHeight:1.2,letterSpacing:"-.02em",textTransform:"uppercase"},CHROME)}
           />
           <p style={{fontSize:12,lineHeight:2,color:"#ccc",maxWidth:420,marginTop:28}}>{t("about_body")}</p>
         </div>
         <div style={{paddingTop:40}}>
+          {/* Brand plate — the third render (mark + the three promises) */}
+          <div style={{maxWidth:420,marginBottom:32,border:"1px solid rgba("+CR+",.14)",boxShadow:"0 0 32px rgba("+CR+",.08)",background:"#000",overflow:"hidden"}}>
+            <img src="/brand/cs-poster.webp" alt="Carbon Stealth VCC — design, development, performance" width={1024} height={1024} loading="lazy" decoding="async" style={{display:"block",width:"100%",height:"auto"}}/>
+          </div>
           {[[t("stat_1"),"120+"],[t("stat_2"),"98%"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
             return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
               <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
@@ -2961,7 +2978,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="services" style={{position:"relative",zIndex:5,padding:"120px 20px"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("srv_tag")}</div>
-        <ProximityText text={t("srv_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:48,color:"#C9D1D6",fontWeight:700}}/>
+        <ProximityText text={t("srv_title")} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:48,fontWeight:700},CHROME)}/>
 
         {(SRV_DATA[lang]||SRV_DATA.en).map(function(s,i){
           return <div key={i} style={{display:"grid",gridTemplateColumns:"100px 1fr",gap:20,padding:"28px 0",borderBottom:"1px solid rgba(245,245,240,.08)",position:"relative"}}>
@@ -2992,7 +3009,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="portfolio" style={{position:"relative",zIndex:5,padding:"80px 20px 120px"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("work_tag")}</div>
-        <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em">{t("work_title")}</EchoText>
+        <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em" style={CHROME}>{t("work_title")}</EchoText>
         <div style={{height:48}}/>
 
         {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu"],["004","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu"],["005","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com"],["006","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it"],["007","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it"],["008","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com"],["009","MASTILKO","PRINT TOOLS","https://mastilko-bg.com"],["010","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it"]].map(function(w){
@@ -3007,7 +3024,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="products" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("prod_tag")}</div>
-        <ProximityText text={t("prod_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#C9D1D6",fontWeight:700}}/>
+        <ProximityText text={t("prod_title")} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,fontWeight:700},CHROME)}/>
 
         {/* ── LATEST — most recent shipped products ── */}
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}>
@@ -3123,7 +3140,7 @@ export default function App(){
       {/* ═══ CTA ═══ */}
       <section id="contact" style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{maxWidth:700,margin:"0 auto"}}>
-          <EchoText fontFamily={HEAD} fontSize="clamp(2rem,6vw,5rem)" lineHeight=".9" letterSpacing="-.04em" color={C}>{t("cta_title")}</EchoText>
+          <EchoText fontFamily={HEAD} fontSize="clamp(2rem,6vw,5rem)" lineHeight=".9" letterSpacing="-.04em" color={C} style={CYAN_GLOW}>{t("cta_title")}</EchoText>
           <div style={{height:24}}/>
           <MagneticRepel text={t("cta_sub")} style={{fontSize:10,letterSpacing:".15em",color:"#ccc",marginBottom:32}}/>
 
@@ -3143,7 +3160,7 @@ export default function App(){
               <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
               <p style={{fontSize:9,color:"#999",lineHeight:1.6}}>{t("form_gdpr")} <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} style={{color:C,textDecoration:"none"}}>{lang==="it"?"Informativa Privacy":lang==="bg"?"\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy Policy"}</a>.</p>
               {formSent==="error" && <div role="alert" style={{padding:"12px 16px",border:"1px solid rgba(255,51,102,.4)",background:"rgba(255,51,102,.06)",color:"#ff6688",fontSize:11,lineHeight:1.6}}>{lang==="it"?"Invio non riuscito. Riprova o scrivici direttamente a info@carbonstealth.eu":lang==="bg"?"\u0418\u0437\u043F\u0440\u0430\u0449\u0430\u043D\u0435\u0442\u043E \u0435 \u043D\u0435\u0443\u0441\u043F\u0435\u0448\u043D\u043E. \u041E\u043F\u0438\u0442\u0430\u0439\u0442\u0435 \u043E\u0442\u043D\u043E\u0432\u043E \u0438\u043B\u0438 \u043D\u0438 \u043F\u0438\u0448\u0435\u0442\u0435 \u043D\u0430 info@carbonstealth.eu":"Send failed. Please try again or email us at info@carbonstealth.eu"}</div>}
-              <button type="submit" style={{display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"pointer",color:C,background:"transparent",textAlign:"center",marginTop:8,fontFamily:"'Space Mono',monospace"}}>{t("form_send")}</button>
+              <button type="submit" className="cs-cta" style={Object.assign({display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"pointer",color:C,textAlign:"center",marginTop:8,fontFamily:"'Space Mono',monospace"},CTA_GLOW)}>{t("form_send")}</button>
             </form>
           )}
 
@@ -3202,7 +3219,7 @@ export default function App(){
       {/* ═══════════════════════════════════════════════════
           FULL FOOTER — from carbonstealth.eu
           ═══════════════════════════════════════════════════ */}
-      <footer id="footer" style={{borderTop:"1px solid rgba("+CR+",.08)",position:"relative",zIndex:5,background:"rgba(0,0,0,.5)"}}>
+      <footer id="footer" style={{borderTop:"1px solid rgba("+CR+",.22)",boxShadow:"0 -1px 28px rgba("+CR+",.10)",position:"relative",zIndex:5,background:"radial-gradient(ellipse at 50% 100%,rgba("+CR+",.10),transparent 55%),rgba(0,0,0,.5)"}}>
 
         {/* TOP FOOTER — 4 columns */}
         <div style={{padding:"60px 20px 40px",display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr",gap:40,borderBottom:"1px solid rgba(245,245,240,.08)"}}>
@@ -3210,7 +3227,7 @@ export default function App(){
           {/* Brand column */}
           <div>
             <div style={{marginBottom:16}}>
-              <img src="/logo.png" alt="Carbon Stealth VCC" width={94} height={40} loading="lazy" style={{height:40,width:94,objectFit:"contain",filter:"drop-shadow(0 0 8px rgba(0,229,255,0.25))"}}/>
+              <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={168} height={168} loading="lazy" decoding="async" style={{height:168,width:168,display:"block"}}/>
             </div>
             <p style={{fontSize:10,lineHeight:1.9,color:"#ddd",maxWidth:280,marginBottom:16}}>{t("ft_desc")}</p>
             <div style={{display:"flex",gap:10}}>
