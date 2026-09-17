@@ -66,7 +66,7 @@ Prices below are excluding VAT (Italian and English pages). The Bulgarian page s
 - **Premium — three languages + admin panel:** €3,575 (unlimited pages within scope, BG·EN·IT, admin panel, booking/catalogue module). Delivery 20–30 working days.
 - **Shop — e-commerce:** €1,825 (catalogue, cart, Stripe + cash on delivery, invoices/VAT-OSS, 2 languages). Delivery 15–25 working days.
 - **Add-ons (excl. VAT):** additional language €292 · additional page €100 · logo + mini brand book €325 · copywriting per page €75 · maintenance €58/month · SEO €242/month · EU hosting + SSL + CDN €13/month (after the first year).
-- **VAT:** clients in Bulgaria pay the prices including 20% VAT (as shown on the Bulgarian page); EU companies outside Bulgaria are invoiced without VAT (reverse charge, Art. 196 Directive 2006/112/EC); companies outside the EU pay no Bulgarian VAT.
+- **VAT:** VAT is waived only and exclusively for companies with a valid VAT number — EU companies outside Bulgaria are invoiced without VAT (reverse charge, Art. 196 Directive 2006/112/EC) and non-EU companies pay no Bulgarian VAT. Private individuals always pay 20% VAT. Clients in Bulgaria pay the prices including 20% VAT (as shown on the Bulgarian page).
 - **Not list packages:** ERP from €5,000, custom software from €2,000, mobile apps from €3,000 — fixed quote after analysis.
 
 ## Notable Projects

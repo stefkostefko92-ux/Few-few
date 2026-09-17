@@ -430,7 +430,7 @@
    "eyebrow": "// PREZZI 2026",
    "h1": "Prezzi trasparenti. Almeno il 15% sotto il mercato.",
    "lede": "Ogni pacchetto è un prodotto finito: design, sviluppo, base SEO, 12 mesi di hosting in UE, SSL e formazione sull'uso.",
-   "hud": "Tutti i prezzi sono IVA esclusa · Aziende UE: reverse charge · Clienti in Bulgaria: +20% IVA",
+   "hud": "Prezzi IVA esclusa · L'IVA non si paga solo ed esclusivamente se sei un'azienda con partita IVA · I privati pagano sempre l'IVA (20%)",
    "popular": "Il più scelto",
    "market": "mercato",
    "saving": "in meno",
@@ -440,7 +440,7 @@
    "addonsTitle": "Extra",
    "once": "una tantum",
    "monthly": "al mese",
-   "vatNote": "Tutti i prezzi sono IVA esclusa · Aziende UE: reverse charge · Clienti in Bulgaria: +20% IVA",
+   "vatNote": "Prezzi IVA esclusa · L'IVA non si paga solo ed esclusivamente se sei un'azienda con partita IVA · I privati pagano sempre l'IVA (20%)",
    "navLabel": "PREZZI"
   },
   "en": {
@@ -448,7 +448,7 @@
    "eyebrow": "// PRICING 2026",
    "h1": "Transparent prices. At least 15% below market.",
    "lede": "Every package is a finished product: design, development, SEO foundation, 12 months of EU hosting, SSL, and training on how to use it.",
-   "hud": "All prices exclude VAT · EU companies: reverse charge · Clients in Bulgaria: +20% VAT",
+   "hud": "Prices exclude VAT · VAT is waived only and exclusively for companies with a valid VAT number · Private individuals always pay VAT (20%)",
    "popular": "Most popular",
    "market": "market",
    "saving": "cheaper",
@@ -458,7 +458,7 @@
    "addonsTitle": "Add-ons",
    "once": "one-off",
    "monthly": "per month",
-   "vatNote": "All prices exclude VAT · EU companies: reverse charge · Clients in Bulgaria: +20% VAT",
+   "vatNote": "Prices exclude VAT · VAT is waived only and exclusively for companies with a valid VAT number · Private individuals always pay VAT (20%)",
    "navLabel": "PRICING"
   },
   "bg": {
