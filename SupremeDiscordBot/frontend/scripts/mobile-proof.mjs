@@ -321,6 +321,39 @@ for (const view of [
     }
   } else note(false, `${view.tag}: бутонът „Add role…" липсва на Settings`);
 
+  // ─── Долният блок на страничната лента: името и менюто за език ──────────
+  // Собственикът, снимка 17.09.2026: името се режеше до една буква („Z"), а
+  // списъкът с езици — отляво („ски", „ch", „ol"). Причина: с четвъртата икона
+  // (Сигурност, 3.4.0) редът надхвърли 256px и flex сви името до 7px; менюто
+  // беше закачено right-0 към икона в левия край → left −49px. Статичният гейт
+  // не мери ширини, затова се мери тук — на двата размера.
+  // Банерът за бисквитки (fixed, z-100) иначе покрива долния блок на 390px и
+  // Playwright не може да кликне през него — записваме съгласие като реален
+  // втори визит (същият ключ и версия като CookieConsent.jsx).
+  await page.evaluate(() => { try { localStorage.setItem("supreme-bot-cookie-consent", JSON.stringify({ version: 1, timestamp: new Date().toISOString(), essential: true, analytics: false, marketing: false })); } catch {} });
+  await page.goto(`${base}/dashboard`, { waitUntil: "load" }).catch(() => {});
+  await page.waitForTimeout(900);
+  if (view.tag === "mobile") { await page.click('button[aria-controls="dashboard-sidebar"]').catch(() => {}); await page.waitForTimeout(300); }
+  const nameBox = await page.evaluate(() => {
+    const p = [...document.querySelectorAll("#dashboard-sidebar p")].find((x) => x.textContent.trim() === "stefan");
+    return p ? { clientWidth: p.clientWidth, scrollWidth: p.scrollWidth } : null;
+  });
+  if (!nameBox) note(false, `${view.tag}: името на потребителя липсва в лентата`);
+  else note(nameBox.scrollWidth <= nameBox.clientWidth, `${view.tag}: името не се реже (${nameBox.scrollWidth}/${nameBox.clientWidth}px)`);
+  const langBtn = page.locator("#dashboard-sidebar button[aria-haspopup=listbox]").first();
+  if (await langBtn.count()) {
+    await langBtn.click();
+    const menu = await page.locator("ul[role=listbox]").first().boundingBox().catch(() => null);
+    if (!menu) note(false, `${view.tag}: менюто за език не се отвори`);
+    else {
+      const vp = view.viewport;
+      const inside = menu.x >= -1 && menu.y >= -1 && menu.x + menu.width <= vp.width + 1 && menu.y + menu.height <= vp.height + 1;
+      note(inside, `${view.tag}: менюто за език е изцяло във viewport (x=${Math.round(menu.x)}, ${Math.round(menu.width)}px широко)`);
+      await page.screenshot({ path: join(SHOTS, `${view.tag}-language-menu-open.png`) });
+    }
+    await page.keyboard.press("Escape");
+  } else note(false, `${view.tag}: бутонът за език липсва в лентата`);
+
   if (consoleErrors.length) note(false, `${view.tag}: JS грешки: ${[...new Set(consoleErrors)].slice(0, 3).join(" · ")}`);
   await ctx.close();
 }
