@@ -37,7 +37,7 @@ const safeCount = (fn) => Promise.resolve().then(fn).catch(() => 0);
 /** Какво пазим за този Discord ID — само бройки, без съдържание. */
 export async function summarizeDiscordUser(userId) {
   const uid = String(userId);
-  const [user, tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers] =
+  const [user, tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases] =
     await Promise.all([
       prisma.user.findUnique({ where: { id: uid }, select: { id: true, username: true, globalRole: true, isBlacklisted: true, createdAt: true, email: true, mfaEnabledAt: true } }).catch(() => null),
       safeCount(() => prisma.ticket.count({ where: { creatorId: uid } })),
@@ -50,12 +50,16 @@ export async function summarizeDiscordUser(userId) {
       safeCount(() => prisma.apiKey.count({ where: { userId: uid, revokedAt: null } })),
       safeCount(() => prisma.auditLog.count({ where: { OR: [{ actorId: uid }, { targetId: uid }] } })),
       safeCount(() => prisma.server.count({ where: { ownerId: uid } })),
+      // v50 — Server Season
+      safeCount(() => prisma.memberProgress.count({ where: { userId: uid } })),
+      safeCount(() => prisma.memberCompanion.count({ where: { userId: uid } })),
+      safeCount(() => prisma.shopPurchase.count({ where: { userId: uid } })),
     ]);
   return {
     userId: uid,
     registered: !!user,
     user: user ? { username: user.username, globalRole: user.globalRole, isBlacklisted: user.isBlacklisted, createdAt: user.createdAt, hasEmail: !!user.email, mfaEnabled: !!user.mfaEnabledAt } : null,
-    counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers },
+    counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases },
   };
 }
 
@@ -133,6 +137,16 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("roleSnapshots", () => tx.memberRoleSnapshot.deleteMany({ where: { userId: uid } }));
     await c("verificationAttempts", () => tx.verificationAttempt.deleteMany({ where: { userId: uid } }));
     await c("memberships", () => tx.serverMember.deleteMany({ where: { userId: uid } }));
+    // v50 — Server Season: напредък, награди, спътници, покупки, приноси, отговори;
+    // уловените появи остават като събитие на сървъра, но без идентификатора.
+    await c("gameProfiles", () => tx.memberProgress.deleteMany({ where: { userId: uid } }));
+    await c("gameXpGrants", () => tx.gameXpGrant.deleteMany({ where: { userId: uid } }));
+    await c("companions", () => tx.memberCompanion.deleteMany({ where: { userId: uid } }));
+    await c("purchases", () => tx.shopPurchase.deleteMany({ where: { userId: uid } }));
+    await c("questContributions", () => tx.questContribution.deleteMany({ where: { userId: uid } }));
+    await c("triviaAnswers", () => tx.triviaAnswer.deleteMany({ where: { userId: uid } }));
+    await c("trades", () => tx.companionTrade.deleteMany({ where: { OR: [{ fromUserId: uid }, { toUserId: uid }] } }));
+    await c("spawnsAnonymized", () => tx.companionSpawn.updateMany({ where: { caughtById: uid }, data: { caughtById: null } }));
 
     if (scope === "full") {
       await c("messageContent", () => tx.ticketMessage.updateMany({

@@ -46,6 +46,7 @@ const SecurityPage = lazy(() => import("./pages/SecurityPage"));
 const MfaGate = lazy(() => import("./components/MfaGate"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const CommandsPage = lazy(() => import("./pages/CommandsPage"));
+const GamePage = lazy(() => import("./pages/GamePage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
@@ -129,6 +130,7 @@ export default function App() {
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
                 <Route path=":serverId/premium" element={<PremiumPage />} />
                 <Route path=":serverId/settings" element={<SettingsPage />} />
+                <Route path=":serverId/game" element={<GamePage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />
                 <Route path="security" element={<SecurityPage />} />
                 <Route

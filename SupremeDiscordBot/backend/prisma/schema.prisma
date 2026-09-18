@@ -14,19 +14,19 @@ datasource db {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id            String     @id // Discord user ID
-  username      String
-  discriminator String     @default("0")
-  avatar        String?
+  id              String     @id // Discord user ID
+  username        String
+  discriminator   String     @default("0")
+  avatar          String?
   // v3.1 — имейл от Discord OAuth (scope `email`). Пази се ЕДИНСТВЕНО за
   // транзакционни известия по абонамента (изтичащ пробен период, провалено
   // плащане, фактура). Основание по GDPR: чл. 6(1)(б) — необходимост за
   // изпълнение на договора за услугата, НЕ съгласие и НЕ маркетинг (маркетинг
   // би искал отделно основание/opt-in). Nullable: Discord може да не върне
   // имейл (потребител без потвърден имейл / отказан scope).
-  email         String?
-  globalRole    GlobalRole @default(USER)
-  isBlacklisted Boolean    @default(false)
+  email           String?
+  globalRole      GlobalRole @default(USER)
+  isBlacklisted   Boolean    @default(false)
   // ─── v3.4 Втори фактор (TOTP, RFC 6238) — задължителен за staff ролите ────
   // Тайната е шифрирана при покой (lib/crypto.js) и никога не напуска сървъра;
   // резервните кодове са SHA-256 хешове (JSON масив), еднократни;
@@ -35,9 +35,9 @@ model User {
   mfaEnabledAt    DateTime?
   mfaBackupCodes  String?
   mfaLastUsedStep Int?
-  language      String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  language        String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   // Relations
   serverMembers   ServerMember[]
@@ -97,37 +97,37 @@ model Session {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Server {
-  id                    String    @id // Discord guild ID
-  name                  String
-  icon                  String?
-  ownerId               String
-  isPremium             Boolean   @default(false)
-  premiumSince          DateTime?
+  id                        String    @id // Discord guild ID
+  name                      String
+  icon                      String?
+  ownerId                   String
+  isPremium                 Boolean   @default(false)
+  premiumSince              DateTime?
   // ─── v3.0 Tiers ──────────────────────────────────────────────────────────
   // Effective billing tier for THIS server's own subscription:
   //   free | premium | whitelabel | agency5 | agency10
   // For servers covered by an Agency plan, `plan` stays "free" and the effective
   // tier is resolved from the linked Agency at runtime (see lib/premium.js).
   // `isPremium` is kept in sync (true when plan != free) for backward-compat.
-  plan                  String    @default("free")
-  billingInterval       String? // "month" | "year" (own Stripe subscription)
-  planSource            String? // "stripe" | "discord" | "manual"
+  plan                      String    @default("free")
+  billingInterval           String? // "month" | "year" (own Stripe subscription)
+  planSource                String? // "stripe" | "discord" | "manual"
   // v2.0 Trial system — ИЗВЕДЕН ОТ УПОТРЕБА (v3.3, 12.09.2026): нов пробен
   // период не се стартира по никой път. Колоните остават до изтичането на
   // заварените (max 14 дни след деплой) и се дропват в следваща миграция;
   // `trialEndsAt` се зачита само на четене (lib/premium.js).
-  trialUsed             Boolean   @default(false)
-  trialStartedAt        DateTime?
-  trialEndsAt           DateTime?
+  trialUsed                 Boolean   @default(false)
+  trialStartedAt            DateTime?
+  trialEndsAt               DateTime?
   // v2.1 Localization
-  language              String    @default("en") // Server-wide bot UI language
-  stripeCustomerId      String?   @unique
-  stripeSubscriptionId  String?   @unique
-  stripeStatus          String? // active, canceled, past_due, trialing
+  language                  String    @default("en") // Server-wide bot UI language
+  stripeCustomerId          String?   @unique
+  stripeSubscriptionId      String?   @unique
+  stripeStatus              String? // active, canceled, past_due, trialing
   // C3 — Dunning guard: маркер кога абонаментът е влязъл в past_due. Scheduler
   // сваля isPremium=false ако past_due е по-старо от 14 дни (виж jobs/dunning.js).
   // Изчиства се при връщане към active/trialing.
-  pastDueSince          DateTime?
+  pastDueSince              DateTime?
   // v40 — ДОСТЪП ДО КРАЙНИЯ СРОК (решение на собственика, 07.08.2026).
   // Клиент, който ОТМЕНИ абонамента си, ползва услугата до края на платения
   // период — той вече е платил за него. Stripe праща customer.subscription.deleted
@@ -136,21 +136,21 @@ model Server {
   //
   // НЕ важи при refund/chargeback: там парите се връщат, значи достъпът пада
   // веднага и това поле се занулява.
-  accessUntil           DateTime?
+  accessUntil               DateTime?
   // Тарифата, за която е платено — пази се отделно, защото `plan` пада на
   // "free" в момента на отмяната. Без нея гратисният период би върнал „premium“
   // на клиент, платил whitelabel, т.е. тихо отнета функция, за която има пари.
-  gracePlan             String?
+  gracePlan                 String?
   // White-label custom bot token (White-label / Agency tiers)
-  customBotToken        String?
-  customBotName         String?
-  customBotAvatar       String?
+  customBotToken            String?
+  customBotName             String?
+  customBotAvatar           String?
   // ─── v3.0 Discord native monetization (Premium Apps entitlements) ─────────
   // When a server is upgraded via Discord's own subscription SKUs, we record
   // the entitlement so ENTITLEMENT_DELETE can revoke access. SKU → plan mapping
   // lives in lib/premium.js (skuToPlan). Mutually exclusive with a Stripe sub.
-  discordEntitlementId  String?   @unique
-  discordSkuId          String?
+  discordEntitlementId      String?   @unique
+  discordSkuId              String?
   // ─── v3.3 Discord Premium App subscription state (SUBSCRIPTION_* events) ──
   // Само „защо“ и „докога“ за таблото: ПРАВАТА идват единствено от
   // entitlement-а (Discord го обявява за източник на истината). Статусът е
@@ -161,38 +161,38 @@ model Server {
   discordCurrentPeriodEnd   DateTime?
   // ─── v3.0 Agency (multi-server) membership ───────────────────────────────
   // Non-null when this server's tier is provided by an Agency seat.
-  agencyId              String?
+  agencyId                  String?
   // Settings
-  logChannelId          String?
-  archiveChannelId      String?
+  logChannelId              String?
+  archiveChannelId          String?
   // Round-Robin ticket assignment (Premium)
-  roundRobinEnabled     Boolean   @default(false)
-  roundRobinRoleId      String? // Discord role to cycle through
-  roundRobinIndex       Int       @default(0)
+  roundRobinEnabled         Boolean   @default(false)
+  roundRobinRoleId          String? // Discord role to cycle through
+  roundRobinIndex           Int       @default(0)
   // AI auto-replies (Premium)
-  aiRepliesEnabled      Boolean   @default(false)
-  aiRepliesPrompt       String? // Custom system prompt (max 1000 chars)
+  aiRepliesEnabled          Boolean   @default(false)
+  aiRepliesPrompt           String? // Custom system prompt (max 1000 chars)
   // Archive retention (null = forever/Premium, 30 = Base default)
-  archiveRetentionDays  Int?      @default(30)
+  archiveRetentionDays      Int?      @default(30)
   // Soft-delete marker when bot is kicked from Discord guild.
   // Keeps Stripe/payment/audit history intact. Cleared on re-join.
-  botRemovedAt          DateTime?
+  botRemovedAt              DateTime?
   // ─── v1.6 appy.bot-style server-level features ───────────────────────────
-  welcomerEnabled       Boolean   @default(false)
-  welcomerChannelId     String?
-  welcomerMessage       String?   @db.Text // Supports {user}, {server}, {server.members}, {date}
-  welcomerEmbedColor    String?   @default("#00e5ff")
-  welcomerDmEnabled     Boolean   @default(false)
-  welcomerDmMessage     String?   @db.Text
-  autoroleIds           String[]  @default([]) // Roles given to new members
-  autoroleBotIds        String[]  @default([]) // Roles given to bots on join
-  stickyMessagesEnabled Boolean   @default(false)
+  welcomerEnabled           Boolean   @default(false)
+  welcomerChannelId         String?
+  welcomerMessage           String?   @db.Text // Supports {user}, {server}, {server.members}, {date}
+  welcomerEmbedColor        String?   @default("#00e5ff")
+  welcomerDmEnabled         Boolean   @default(false)
+  welcomerDmMessage         String?   @db.Text
+  autoroleIds               String[]  @default([]) // Roles given to new members
+  autoroleBotIds            String[]  @default([]) // Roles given to bots on join
+  stickyMessagesEnabled     Boolean   @default(false)
   // v45 — „лепкави роли": ролите на напусналия се пазят и се връщат при
   // повторно присъединяване. ИЗРИЧНО opt-in (default false): автоматичното
   // връщане на роли е решение със сигурностна тежест — напуснал модератор,
   // който се върне, иначе би си върнал достъпа сам. Опасните роли не се
   // връщат никога (виж roleAssignabilityReason в бота).
-  stickyRolesEnabled    Boolean   @default(false)
+  stickyRolesEnabled        Boolean   @default(false)
 
   // Server event logging (member/voice/moderation activity) — per-server opt-in
   eventLogEnabled    Boolean  @default(false)
@@ -224,13 +224,24 @@ model Server {
   kbArticles           KbArticle[]
   reactionRoleMessages ReactionRoleMessage[]
   agency               Agency?               @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  memberRoleSnapshots  MemberRoleSnapshot[]
+  // v50 — Server Season (играта)
+  gameSettings         GameSettings?
+  memberProgress       MemberProgress[]
+  shopItems            ShopItem[]
+  shopPurchases        ShopPurchase[]
+  gameXpGrants         GameXpGrant[]
+  memberCompanions     MemberCompanion[]
+  companionSpawns      CompanionSpawn[]
+  companionTrades      CompanionTrade[]
+  serverQuests         ServerQuest[]
+  triviaRounds         TriviaRound[]
 
   @@index([agencyId])
   @@index([trialEndsAt])
   // v40 — метлата за изтекъл гратис сканира точно по тази колона.
   @@index([accessUntil])
   @@map("servers")
-  memberRoleSnapshots MemberRoleSnapshot[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -280,7 +291,7 @@ model Agency {
 model MemberRoleSnapshot {
   id         String   @id @default(cuid())
   serverId   String
-  userId     String   // Discord ID — нарочно БЕЗ релация към User
+  userId     String // Discord ID — нарочно БЕЗ релация към User
   roleIds    String[] @default([])
   capturedAt DateTime @default(now())
 
@@ -1062,4 +1073,260 @@ model ReactionRolePair {
 
   @@unique([rrmId, emoji])
   @@map("reaction_role_pairs")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v50 — Server Season: сезонна игра на ниво сървър (docs/GAME_CONCEPT.md).
+// Активността е горивото (XP без четене на съдържание), наградите са в самия
+// сървър (роли, привилегии), без хазарт и без купуване на валута.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model GameSettings {
+  serverId           String   @id
+  enabled            Boolean  @default(false)
+  xpPerMessage       Int      @default(15)
+  messageCooldownSec Int      @default(60)
+  xpPerVoiceMinute   Int      @default(5)
+  // Канал за „ниво нагоре" и обяви на играта; null = отговор в същия канал/без обява
+  announceChannelId  String?
+  levelUpMessage     Boolean  @default(true)
+  // [{ level: 5, roleId: "…" }] — натрупващи се роли за награда (Free: 5, Premium: без лимит)
+  levelRoles         Json     @default("[]")
+  dailySparks        Int      @default(50)
+  // Спътници (етап 2): в кои канали се появяват; празно = във всички текстови канали
+  spawnEnabled       Boolean  @default(true)
+  spawnChannelIds    String[] @default([])
+  // Мини-игри (етап 3)
+  countingChannelId  String?
+  countingCurrent    Int      @default(0)
+  countingHigh       Int      @default(0)
+  countingLastUserId String?
+  triviaChannelId    String?
+  triviaSchedule     String? // "daily" | "weekly" | null
+  questChannelId     String?
+  questEnabled       Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@map("game_settings")
+}
+
+model MemberProgress {
+  id                String    @id @default(cuid())
+  serverId          String
+  userId            String
+  xp                Int       @default(0)
+  level             Int       @default(0)
+  seasonXp          Int       @default(0)
+  sparks            Int       @default(0)
+  streak            Int       @default(0)
+  lastDailyAt       DateTime?
+  lastMessageXpAt   DateTime?
+  messages          Int       @default(0)
+  voiceMinutes      Int       @default(0)
+  activeCompanionId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, userId])
+  @@index([serverId, xp])
+  @@index([serverId, sparks])
+  @@index([userId])
+  @@map("member_progress")
+}
+
+// Еднократни XP награди от събития (анкета, подарък, кандидатура, тикет в SLA,
+// верификация): ключът пази от фермене през toggle (гласувай/оттегли/гласувай).
+model GameXpGrant {
+  id        String   @id @default(cuid())
+  serverId  String
+  userId    String
+  key       String
+  amount    Int
+  createdAt DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, userId, key])
+  @@index([userId])
+  @@map("game_xp_grants")
+}
+
+model ShopItem {
+  id           String   @id @default(cuid())
+  serverId     String
+  name         String
+  description  String?
+  priceSparks  Int
+  // ROLE = ботът дава роля (за durationDays или завинаги); CUSTOM = операторът изпълнява ръчно
+  type         String   @default("ROLE")
+  roleId       String?
+  durationDays Int?
+  stock        Int? // null = без лимит
+  enabled      Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  server    Server         @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  purchases ShopPurchase[]
+
+  @@index([serverId])
+  @@map("shop_items")
+}
+
+model ShopPurchase {
+  id          String    @id @default(cuid())
+  serverId    String
+  userId      String
+  itemId      String
+  priceSparks Int
+  expiresAt   DateTime? // временна роля — ботът я маха след изтичане (scheduler)
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  server Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  item   ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, userId])
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("shop_purchases")
+}
+
+// ─── Етап 2: спътници ────────────────────────────────────────────────────────
+model MemberCompanion {
+  id          String   @id @default(cuid())
+  serverId    String
+  userId      String
+  companionId String // ключ в каталога (backend/src/lib/game/companions.js)
+  stage       Int      @default(1) // 1..3
+  fed         Int      @default(0) // искри, вложени в текущата форма
+  nickname    String?
+  seasonId    String?
+  caughtAt    DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, userId])
+  @@index([serverId, companionId])
+  @@index([userId])
+  @@map("member_companions")
+}
+
+model CompanionSpawn {
+  id          String    @id @default(cuid())
+  serverId    String
+  channelId   String
+  messageId   String?   @unique
+  companionId String
+  expiresAt   DateTime
+  caughtById  String?
+  caughtAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, createdAt])
+  @@index([caughtById])
+  @@map("companion_spawns")
+}
+
+model CompanionTrade {
+  id              String    @id @default(cuid())
+  serverId        String
+  fromUserId      String
+  toUserId        String
+  fromCompanionId String // MemberCompanion.id
+  toCompanionId   String // MemberCompanion.id
+  status          String    @default("PENDING") // PENDING | ACCEPTED | DECLINED | EXPIRED
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  resolvedAt      DateTime?
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, status])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("companion_trades")
+}
+
+// ─── Етап 3: сървърни куестове и trivia ─────────────────────────────────────
+model ServerQuest {
+  id           String    @id @default(cuid())
+  serverId     String
+  type         String // MESSAGES | VOICE_MINUTES | POLL_VOTES | TICKETS_SLA | VERIFICATIONS
+  target       Int
+  progress     Int       @default(0)
+  rewardSparks Int       @default(100)
+  status       String    @default("ACTIVE") // ACTIVE | COMPLETED | FAILED
+  startsAt     DateTime
+  endsAt       DateTime
+  channelId    String?
+  messageId    String?
+  rewardedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  server        Server              @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  contributions QuestContribution[]
+
+  @@index([serverId, status])
+  @@index([endsAt])
+  @@map("server_quests")
+}
+
+model QuestContribution {
+  id      String @id @default(cuid())
+  questId String
+  userId  String
+  amount  Int    @default(0)
+
+  quest ServerQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, userId])
+  @@index([userId])
+  @@map("quest_contributions")
+}
+
+model TriviaRound {
+  id         String    @id @default(cuid())
+  serverId   String
+  channelId  String
+  messageId  String?   @unique
+  questionId String
+  source     String    @default("BANK") // BANK | KB
+  question   String
+  options    String[]
+  answer     Int
+  expiresAt  DateTime
+  winnerId   String?
+  closedAt   DateTime?
+  createdAt  DateTime  @default(now())
+
+  server  Server         @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  answers TriviaAnswer[]
+
+  @@index([serverId, closedAt])
+  @@index([expiresAt])
+  @@map("trivia_rounds")
+}
+
+model TriviaAnswer {
+  id        String   @id @default(cuid())
+  roundId   String
+  userId    String
+  option    Int
+  correct   Boolean
+  createdAt DateTime @default(now())
+
+  round TriviaRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@unique([roundId, userId])
+  @@index([userId])
+  @@map("trivia_answers")
 }

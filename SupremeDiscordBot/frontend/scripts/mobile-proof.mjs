@@ -87,6 +87,10 @@ const FIX = {
   "GET /api/admin/billing": { config: { provider: "discord", discord: { enabled: true, configured: true, storeUrl: "https://discord.com/application-directory/1/store" }, stripe: { purchasesEnabled: false, legacyManagement: false } }, discord: [{ id: SID, name: "T19C", plan: "premium", discordEntitlementId: "e1", discordSkuId: "s1", discordSubscriptionId: "x", discordSubscriptionStatus: 0, statusLabel: "active", discordCurrentPeriodEnd: new Date().toISOString(), premiumSince: new Date().toISOString() }], stripe: [], agencies: [], graceServers: 0, lastReconcileGrantAt: null },
   "GET /api/admin/fleet": { withToken: [{ id: SID, name: "T19C", plan: "agency10", planSource: "stripe", customBotName: "T19 Bot", agencyId: "ag1", accessUntil: null }], bot: { gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 }, uptime: 100 } },
   "GET /api/admin/dsr/requests": { requests: [{ id: "r1", createdAt: new Date().toISOString(), action: "DSR_ERASED", targetId: "123", actor: { id: "u1", username: "stefan" }, metadata: { scope: "identity", via: "bot" } }] },
+  [`GET /api/game/${SID}`]: { settings: { serverId: SID, enabled: true, xpPerMessage: 15, messageCooldownSec: 60, xpPerVoiceMinute: 5, announceChannelId: null, levelUpMessage: true, levelRoles: [{ level: 5, roleId: "700000000000000001" }], dailySparks: 50, spawnEnabled: true, spawnChannelIds: [], countingChannelId: null, triviaChannelId: null, triviaSchedule: null, questChannelId: null, questEnabled: true }, limits: { shopItems: 5, levelRoles: 5, activeQuests: 1, companionSlots: 1 }, isPremium: false, stats: { players: 12, totalXp: 48210, totalMessages: 3200, totalVoiceMinutes: 640, sparksInCirculation: 2100, shopItems: 1, top: [{ userId: "333333333333333333", xp: 9000, level: 12, sparks: 300, streak: 9 }] }, levelTable: [{ level: 1, xp: 100 }, { level: 5, xp: 1000 }, { level: 10, xp: 4675 }] },
+  [`GET /api/game/${SID}/shop`]: [{ id: "it1", serverId: SID, name: "VIP colour", description: "30 days of the VIP colour role", priceSparks: 300, type: "ROLE", roleId: "700000000000000002", durationDays: 30, stock: null, enabled: true, sortOrder: 0, sold: 4 }],
+  [`GET /api/game/${SID}/purchases`]: [{ id: "p1", userId: "333333333333333333", priceSparks: 300, expiresAt: new Date(Date.now() + 86400000 * 20).toISOString(), revokedAt: null, item: { name: "VIP colour", type: "ROLE" } }],
+  [`GET /api/game/${SID}/leaderboard`]: { by: "xp", rows: [{ userId: "333333333333333333", xp: 9000, level: 12, sparks: 300, seasonXp: 9000, streak: 9, messages: 500, voiceMinutes: 60 }] },
   "GET /api/auth/mfa/status": { enabled: false, enabledAt: null, required: false, enrollmentRequired: false, verifiedInSession: false, backupCodesLeft: 0, issuer: "Supreme Bot" },
   [`GET /api/servers/${SID}`]: {
     id: SID, name: "T19C", icon: null, plan: "agency10", isPremium: true, hasWhiteLabel: true,
@@ -162,6 +166,7 @@ const PAGES = [
   { path: `/dashboard/${SID}/forms`, name: "forms" },
   { path: `/dashboard/${SID}/panels`, name: "panels" },
   { path: `/dashboard/${SID}/automation`, name: "automation" },
+  { path: `/dashboard/${SID}/game`, name: "game" },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
   { path: `/dashboard/${SID}/verification`, name: "verification" },

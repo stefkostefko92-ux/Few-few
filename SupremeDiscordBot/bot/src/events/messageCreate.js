@@ -6,6 +6,7 @@
 
 import * as Sentry from "@sentry/node";
 import api, { logTicketMessage } from "../utils/api.js";
+import { onMessageForXp } from "../utils/game.js";
 import {
   ticketChannelCache,
   CACHE_TTL,
@@ -19,6 +20,8 @@ export default {
   async execute(message) {
     if (message.author.bot) return;
     if (!message.guildId) return;
+    // v50 — Server Season: брои събитието за XP (не чете съдържание). Fire-and-forget.
+    onMessageForXp(message).catch(() => {});
 
     // ═══ v1.8 Sticky Messages ═══
     // Check if this channel has a sticky message. If so, delete previous

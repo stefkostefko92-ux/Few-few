@@ -626,4 +626,26 @@ cron.schedule("45 3 * * *", job("dunning", async () => {
   await jobHeartbeat("dunning", { downgraded: r?.downgraded ?? 0, graceExpired: r?.graceExpired ?? 0 });
 }), TZ);
 
+// ─── v50 Server Season: изтекли роли от магазина ────────────────────────────
+// Покупка с durationDays носи expiresAt; на всеки 15 min (не */10 — той е на sla-watch,
+// а тестовете индексират задачите по cron израз) казваме на бота да махне
+// ролята и маркираме revokedAt (идемпотентно — при провал на бота ще опитаме пак).
+cron.schedule("*/15 * * * *", job("game-shop-expiry", async () => {
+  const due = await prisma.shopPurchase.findMany({
+    where: { expiresAt: { lte: new Date() }, revokedAt: null },
+    include: { item: { select: { type: true, roleId: true } } },
+    take: 200,
+  });
+  let revoked = 0;
+  for (const p of due) {
+    if (p.item?.type === "ROLE" && p.item.roleId) {
+      const r = await notifyBot("GAME_ROLE_REVOKE", { serverId: p.serverId, userId: p.userId, roleId: p.item.roleId, purchaseId: p.id });
+      if (!r?.ok) continue; // ботът е недостъпен → следващия път
+    }
+    await prisma.shopPurchase.update({ where: { id: p.id }, data: { revokedAt: new Date() } });
+    revoked++;
+  }
+  if (revoked) await jobHeartbeat("game-shop-expiry", { revoked });
+}), TZ);
+
 console.log("[Scheduler] Background jobs started");

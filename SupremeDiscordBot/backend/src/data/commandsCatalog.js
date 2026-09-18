@@ -282,6 +282,26 @@ export const COMMAND_CATALOG = [
         dashboard: "Settings page · Round-Robin" },
     ],
   },
+  // ═══ SERVER SEASON (v50) ═══
+  {
+    category: "Game",
+    icon: "🎮",
+    description: "Server Season — levels, sparks and the server shop. Activity earns XP; rewards live inside the server.",
+    commands: [
+      { name: "/daily", signature: "/daily",
+        description: "Claim your daily sparks. Consecutive days build a streak; from day 7 the reward doubles. XP is also granted.",
+        dashboard: "Game page · Overview shows streak leaders", permission: "Everyone" },
+      { name: "/profile", signature: "/profile [user]",
+        description: "Level, XP progress bar, rank, sparks, streak, activity and the active companion of a member.",
+        dashboard: "Game page · Leaderboard", permission: "Everyone" },
+      { name: "/leaderboard", signature: "/leaderboard [by]",
+        description: "Top 10 members by XP, season XP or sparks.",
+        dashboard: "Game page · Leaderboard", permission: "Everyone" },
+      { name: "/shop", signature: "/shop",
+        description: "Browse the server shop and buy rewards (roles for a period, custom perks) with sparks. Items are set by admins in the dashboard.",
+        dashboard: "Game page · Shop (create items, prices, stock)", permission: "Everyone" },
+    ],
+  },
   // ═══ PRIVACY ═══
   {
     category: "Privacy",

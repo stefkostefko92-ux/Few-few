@@ -1,0 +1,387 @@
+// frontend/src/pages/GamePage.jsx
+// v50 — Server Season: таблото на играта за сървър. Четири раздела: обзор +
+// настройки, роли за ниво, магазин, класация. Лимитите (роли, артикули) идват
+// от backend-а по tier; при достигнат лимит формата казва защо, не мълчи.
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil } from "lucide-react";
+import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
+import { PremiumBadge } from "../components/PremiumBadge";
+import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
+import {
+  getGame, updateGameSettings, getGameShop, createGameShopItem, updateGameShopItem, deleteGameShopItem,
+  getGameLeaderboard, getGamePurchases,
+} from "../api";
+
+const SNOWFLAKE = /^\d{17,20}$/;
+const errMsg = (err, fallback) => {
+  const e = err?.response?.data?.error;
+  if (typeof e === "string") return e;
+  if (e?.formErrors?.length) return e.formErrors.join(", ");
+  if (e?.fieldErrors) return Object.entries(e.fieldErrors).map(([k, v]) => `${k}: ${v.join(", ")}`).join(" · ");
+  return fallback;
+};
+
+const TABS = [
+  { id: "overview", tKey: "game.tab.overview", icon: Gamepad2 },
+  { id: "levels", tKey: "game.tab.levels", icon: Layers },
+  { id: "shop", tKey: "game.tab.shop", icon: ShoppingBag },
+  { id: "leaderboard", tKey: "game.tab.leaderboard", icon: Trophy },
+];
+
+export default function GamePage() {
+  const { t } = useT();
+  const { serverId } = useParams();
+  const [tab, setTab] = useState("overview");
+  const { data, isLoading, isError } = useQuery({ queryKey: ["game", serverId], queryFn: () => getGame(serverId) });
+
+  return (
+    <div className="p-4 sm:p-6 space-y-6">
+      <div>
+        <h1 className="cs-heading flex items-center gap-2"><Gamepad2 className="w-6 h-6 text-cs-cyan" aria-hidden="true" /> {t("game.title")}</h1>
+        <p className="text-sm text-cs-muted mt-1">{t("game.subtitle")}</p>
+      </div>
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label={t("game.title")}>
+        {TABS.map((x) => (
+          <button key={x.id} role="tab" aria-selected={tab === x.id} onClick={() => setTab(x.id)}
+            className={`px-3 py-2 text-sm rounded border transition-colors flex items-center gap-2 ${tab === x.id ? "border-cs-cyan text-cs-cyan" : "border-cs-border text-cs-muted hover:text-cs-text"}`}>
+            <x.icon className="w-4 h-4" aria-hidden="true" /> {t(x.tKey)}
+          </button>
+        ))}
+      </div>
+      {isLoading && <p className="text-cs-muted">{t("game.loading")}</p>}
+      {isError && <p className="text-danger">{t("game.loadFailed")}</p>}
+      {data && tab === "overview" && <OverviewTab data={data} />}
+      {data && tab === "levels" && <LevelsTab data={data} />}
+      {data && tab === "shop" && <ShopTab data={data} />}
+      {data && tab === "leaderboard" && <LeaderboardTab />}
+    </div>
+  );
+}
+
+// ─── Обзор + настройки ────────────────────────────────────────────────────────
+function useSettingsForm(data) {
+  const s = data.settings;
+  const [form, setForm] = useState(() => ({
+    enabled: s.enabled, xpPerMessage: s.xpPerMessage, messageCooldownSec: s.messageCooldownSec, xpPerVoiceMinute: s.xpPerVoiceMinute,
+    announceChannelId: s.announceChannelId || "", levelUpMessage: s.levelUpMessage, dailySparks: s.dailySparks,
+    spawnEnabled: s.spawnEnabled, spawnChannelIds: [...(s.spawnChannelIds || [])],
+    countingChannelId: s.countingChannelId || "", triviaChannelId: s.triviaChannelId || "", triviaSchedule: s.triviaSchedule || "",
+    questChannelId: s.questChannelId || "", questEnabled: s.questEnabled,
+  }));
+  // Формата се попълва веднъж от заредените данни; refetch не бие незапазени промени.
+  return [form, setForm];
+}
+
+function OverviewTab({ data }) {
+  const { t } = useT();
+  const toast = useToast();
+  const qc = useQueryClient();
+  const { serverId } = useParams();
+  const [form, setForm] = useSettingsForm(data);
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
+  const save = useMutation({
+    mutationFn: () => updateGameSettings(serverId, {
+      enabled: !!form.enabled,
+      xpPerMessage: Number(form.xpPerMessage), messageCooldownSec: Number(form.messageCooldownSec), xpPerVoiceMinute: Number(form.xpPerVoiceMinute),
+      announceChannelId: form.announceChannelId.trim() || null, levelUpMessage: !!form.levelUpMessage, dailySparks: Number(form.dailySparks),
+      spawnEnabled: !!form.spawnEnabled,
+      spawnChannelIds: form.spawnChannelIds.filter((x) => SNOWFLAKE.test(x)),
+      countingChannelId: form.countingChannelId.trim() || null, triviaChannelId: form.triviaChannelId.trim() || null,
+      triviaSchedule: form.triviaSchedule || null, questChannelId: form.questChannelId.trim() || null, questEnabled: !!form.questEnabled,
+    }),
+    onSuccess: () => { toast.success(t("game.saved")); qc.invalidateQueries({ queryKey: ["game", serverId] }); },
+    onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))),
+  });
+  const st = data.stats;
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <Stat label={t("game.stats.players")} value={st.players} />
+        <Stat label={t("game.stats.totalXp")} value={st.totalXp} />
+        <Stat label={t("game.stats.messages")} value={st.totalMessages} />
+        <Stat label={t("game.stats.voice")} value={st.totalVoiceMinutes} />
+        <Stat label={t("game.stats.sparks")} value={st.sparksInCirculation} />
+      </div>
+
+      <form className="cs-card space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+        <label className="flex items-center gap-3">
+          <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.enabled} onChange={set("enabled")} />
+          <span className="font-semibold text-cs-text">{t("game.enabled")}</span>
+        </label>
+        <p className="text-xs text-cs-dim">{t("game.enabledHint")}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Field label={t("game.xpPerMessage")}><input className="cs-input" type="number" min={1} max={100} value={form.xpPerMessage} onChange={set("xpPerMessage")} /></Field>
+          <Field label={t("game.messageCooldownSec")}><input className="cs-input" type="number" min={10} max={3600} value={form.messageCooldownSec} onChange={set("messageCooldownSec")} /></Field>
+          <Field label={t("game.xpPerVoiceMinute")}><input className="cs-input" type="number" min={0} max={50} value={form.xpPerVoiceMinute} onChange={set("xpPerVoiceMinute")} /></Field>
+          <Field label={t("game.dailySparks")}><input className="cs-input" type="number" min={1} max={1000} value={form.dailySparks} onChange={set("dailySparks")} /></Field>
+          <Field label={t("game.announceChannelId")} hint={t("game.announceHint")}><DiscordChannelSelect kind="text" value={form.announceChannelId} onChange={(v) => setForm((f) => ({ ...f, announceChannelId: v || "" }))} /></Field>
+          <label className="flex items-center gap-3 mt-6">
+            <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.levelUpMessage} onChange={set("levelUpMessage")} />
+            <span className="text-sm text-cs-text">{t("game.levelUpMessage")}</span>
+          </label>
+        </div>
+
+        <h2 className="text-lg font-semibold text-cs-text pt-2">{t("game.minigames.title")}</h2>
+        <p className="text-xs text-cs-dim">{t("game.minigames.hint")}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label className="flex items-center gap-3">
+            <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.spawnEnabled} onChange={set("spawnEnabled")} />
+            <span className="text-sm text-cs-text">{t("game.spawn.enabled")}</span>
+          </label>
+          <Field label={t("game.spawn.channels")} hint={t("game.spawn.channelsHint")}>
+            <DiscordChannelSelect kind="text" value="" onChange={(v) => { if (v && !form.spawnChannelIds.includes(v)) setForm((f) => ({ ...f, spawnChannelIds: [...f.spawnChannelIds, v] })); }} />
+            {form.spawnChannelIds.length > 0 && (
+              <ul className="flex flex-wrap gap-2 mt-2">
+                {form.spawnChannelIds.map((id) => (
+                  <li key={id} className="cs-badge flex items-center gap-1 font-mono">{id}
+                    <button type="button" aria-label={t("game.levels.remove")} onClick={() => setForm((f) => ({ ...f, spawnChannelIds: f.spawnChannelIds.filter((x) => x !== id) }))}>×</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Field>
+          <Field label={t("game.counting.channel")}><DiscordChannelSelect kind="text" value={form.countingChannelId} onChange={(v) => setForm((f) => ({ ...f, countingChannelId: v || "" }))} /></Field>
+          <Field label={t("game.trivia.channel")}><DiscordChannelSelect kind="text" value={form.triviaChannelId} onChange={(v) => setForm((f) => ({ ...f, triviaChannelId: v || "" }))} /></Field>
+          <Field label={t("game.trivia.schedule")}>
+            <select className="cs-select" value={form.triviaSchedule} onChange={set("triviaSchedule")}>
+              <option value="">{t("game.trivia.off")}</option>
+              <option value="daily">{t("game.trivia.daily")}</option>
+              <option value="weekly">{t("game.trivia.weekly")}</option>
+            </select>
+          </Field>
+          <Field label={t("game.quest.channel")}><DiscordChannelSelect kind="text" value={form.questChannelId} onChange={(v) => setForm((f) => ({ ...f, questChannelId: v || "" }))} /></Field>
+          <label className="flex items-center gap-3">
+            <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.questEnabled} onChange={set("questEnabled")} />
+            <span className="text-sm text-cs-text">{t("game.quest.enabled")}</span>
+          </label>
+        </div>
+        <div className="flex justify-end">
+          <button type="submit" className="cs-btn-primary" disabled={save.isPending}><Save className="w-4 h-4" aria-hidden="true" /> {t("game.save")}</button>
+        </div>
+      </form>
+
+      {st.top?.length > 0 && (
+        <div className="cs-card">
+          <h2 className="text-lg font-semibold text-cs-text mb-3">{t("game.stats.top")}</h2>
+          <ol className="space-y-1 text-sm">
+            {st.top.map((r, i) => (
+              <li key={r.userId} className="flex items-center gap-3">
+                <span className="font-mono text-cs-dim w-6">{i + 1}.</span>
+                <span className="font-mono text-cs-text">{r.userId}</span>
+                <span className="text-cs-muted">{t("game.lb.level")} {r.level} · {r.xp} XP · ✨ {r.sparks} · 🔥 {r.streak}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="cs-card !p-3">
+      <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{label}</div>
+      <div className="text-xl font-bold text-cs-text">{Number(value || 0).toLocaleString()}</div>
+    </div>
+  );
+}
+
+function Field({ label, hint, children }) {
+  return (
+    <label className="block">
+      <span className="cs-label">{label}</span>
+      {children}
+      {hint && <span className="block text-xs text-cs-dim mt-1">{hint}</span>}
+    </label>
+  );
+}
+
+// ─── Роли за ниво ─────────────────────────────────────────────────────────────
+function LevelsTab({ data }) {
+  const { t } = useT();
+  const toast = useToast();
+  const qc = useQueryClient();
+  const { serverId } = useParams();
+  const [rows, setRows] = useState(() => (data.settings.levelRoles || []).map((r) => ({ level: r.level, roleId: r.roleId })));
+  const limit = data.limits.levelRoles;
+  const save = useMutation({
+    mutationFn: () => updateGameSettings(serverId, {
+      levelRoles: rows.filter((r) => Number(r.level) >= 1 && SNOWFLAKE.test(String(r.roleId).trim())).map((r) => ({ level: Number(r.level), roleId: String(r.roleId).trim() })),
+    }),
+    onSuccess: () => { toast.success(t("game.saved")); qc.invalidateQueries({ queryKey: ["game", serverId] }); },
+    onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))),
+  });
+  return (
+    <div className="space-y-4">
+      <div className="cs-card">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-cs-text">{t("game.levels.title")}</h2>
+          <span className="cs-badge">{rows.length} / {limit}{!data.isPremium && <PremiumBadge small />}</span>
+        </div>
+        <p className="text-xs text-cs-dim mt-1">{t("game.levels.hint")}</p>
+        <div className="mt-4 space-y-2">
+          {rows.map((r, i) => (
+            <div key={i} className="grid grid-cols-[6rem_1fr_auto] gap-2 items-center">
+              <input className="cs-input" type="number" min={1} max={200} aria-label={t("game.levels.level")} value={r.level} onChange={(e) => setRows((rs) => rs.map((x, j) => j === i ? { ...x, level: e.target.value } : x))} />
+              <DiscordRoleSelect value={r.roleId} onChange={(v) => setRows((rs) => rs.map((x, j) => j === i ? { ...x, roleId: v || "" } : x))} />
+              <button type="button" className="cs-btn-ghost" aria-label={t("game.levels.remove")} onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}><Trash2 className="w-4 h-4" aria-hidden="true" /></button>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          <button type="button" className="cs-btn-secondary" disabled={rows.length >= limit} onClick={() => setRows((rs) => [...rs, { level: (rs.at(-1)?.level ? Number(rs.at(-1).level) + 5 : 5), roleId: "" }])}><Plus className="w-4 h-4" aria-hidden="true" /> {t("game.levels.add")}</button>
+          <button type="button" className="cs-btn-primary" disabled={save.isPending} onClick={() => save.mutate()}><Save className="w-4 h-4" aria-hidden="true" /> {t("game.save")}</button>
+        </div>
+        {rows.length >= limit && <p className="text-xs text-warning mt-2">{t("game.levels.limit", { n: limit })}</p>}
+      </div>
+      <div className="cs-card">
+        <h3 className="font-semibold text-cs-text mb-2">{t("game.levels.table")}</h3>
+        <table className="cs-table w-full text-sm">
+          <thead><tr><th>{t("game.levels.level")}</th><th>{t("game.levels.xpNeeded")}</th></tr></thead>
+          <tbody>{data.levelTable.map((l) => <tr key={l.level}><td>{l.level}</td><td className="font-mono">{l.xp.toLocaleString()}</td></tr>)}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Магазин ─────────────────────────────────────────────────────────────────
+const emptyItem = () => ({ name: "", description: "", priceSparks: 100, type: "ROLE", roleId: "", durationDays: "", stock: "", enabled: true, sortOrder: 0 });
+
+function ShopTab({ data }) {
+  const { t } = useT();
+  const toast = useToast();
+  const qc = useQueryClient();
+  const { serverId } = useParams();
+  const [editing, setEditing] = useState(null); // null | "new" | id
+  const [form, setForm] = useState(emptyItem());
+  const { data: items = [] } = useQuery({ queryKey: ["game-shop", serverId], queryFn: () => getGameShop(serverId) });
+  const { data: purchases = [] } = useQuery({ queryKey: ["game-purchases", serverId], queryFn: () => getGamePurchases(serverId) });
+  const limit = data.limits.shopItems;
+  const invalidate = () => { qc.invalidateQueries({ queryKey: ["game-shop", serverId] }); qc.invalidateQueries({ queryKey: ["game", serverId] }); };
+  const payload = () => ({
+    name: form.name.trim(), description: form.description.trim() || null, priceSparks: Number(form.priceSparks), type: form.type,
+    roleId: form.type === "ROLE" ? form.roleId.trim() : null,
+    durationDays: form.durationDays === "" ? null : Number(form.durationDays),
+    stock: form.stock === "" ? null : Number(form.stock),
+    enabled: !!form.enabled, sortOrder: Number(form.sortOrder) || 0,
+  });
+  const createM = useMutation({ mutationFn: () => createGameShopItem(serverId, payload()), onSuccess: () => { invalidate(); setEditing(null); toast.success(t("game.saved")); }, onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))) });
+  const updateM = useMutation({ mutationFn: () => updateGameShopItem(serverId, editing, payload()), onSuccess: () => { invalidate(); setEditing(null); toast.success(t("game.saved")); }, onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))) });
+  const deleteM = useMutation({ mutationFn: (id) => deleteGameShopItem(serverId, id), onSuccess: invalidate, onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))) });
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
+  const openEdit = (i) => { setForm({ name: i.name, description: i.description || "", priceSparks: i.priceSparks, type: i.type, roleId: i.roleId || "", durationDays: i.durationDays ?? "", stock: i.stock ?? "", enabled: i.enabled, sortOrder: i.sortOrder }); setEditing(i.id); };
+
+  return (
+    <div className="space-y-4">
+      <div className="cs-card">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-cs-text">{t("game.shop.title")}</h2>
+          <div className="flex items-center gap-2">
+            <span className="cs-badge">{items.length} / {limit}{!data.isPremium && <PremiumBadge small />}</span>
+            <button type="button" className="cs-btn-primary" disabled={items.length >= limit} onClick={() => { setForm(emptyItem()); setEditing("new"); }}><Plus className="w-4 h-4" aria-hidden="true" /> {t("game.shop.new")}</button>
+          </div>
+        </div>
+        <p className="text-xs text-cs-dim mt-1">{t("game.shop.hint")}</p>
+        {items.length >= limit && <p className="text-xs text-warning mt-2">{t("game.shop.limit", { n: limit })}</p>}
+        {items.length === 0 && <p className="text-sm text-cs-muted mt-4">{t("game.shop.empty")}</p>}
+        <ul className="mt-4 divide-y divide-cs-border/50">
+          {items.map((i) => (
+            <li key={i.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
+              <div className="min-w-0">
+                <div className="font-semibold text-cs-text flex items-center gap-2 flex-wrap">
+                  {i.name} <span className="cs-badge">✨ {i.priceSparks}</span>
+                  <span className="cs-badge">{i.type === "ROLE" ? t("game.shop.typeRole") : t("game.shop.typeCustom")}</span>
+                  {!i.enabled && <span className="cs-badge">{t("game.shop.disabled")}</span>}
+                </div>
+                <div className="text-xs text-cs-dim mt-1 break-all">
+                  {i.description}{i.roleId ? ` · role ${i.roleId}` : ""}{i.durationDays ? ` · ${i.durationDays}d` : ""}{i.stock != null ? ` · ${t("game.shop.sold")} ${i.sold}/${i.stock}` : ` · ${t("game.shop.sold")} ${i.sold}`}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button type="button" className="cs-btn-ghost" aria-label={t("game.shop.update")} onClick={() => openEdit(i)}><Pencil className="w-4 h-4" aria-hidden="true" /></button>
+                <button type="button" className="cs-btn-ghost text-danger" aria-label={t("game.shop.delete")} onClick={() => { if (window.confirm(t("game.shop.confirmDelete"))) deleteM.mutate(i.id); }}><Trash2 className="w-4 h-4" aria-hidden="true" /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {editing && (
+        <form className="cs-card space-y-4" onSubmit={(e) => { e.preventDefault(); (editing === "new" ? createM : updateM).mutate(); }}>
+          <h3 className="font-semibold text-cs-text">{editing === "new" ? t("game.shop.new") : t("game.shop.update")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label={t("game.shop.name")}><input className="cs-input" required maxLength={80} value={form.name} onChange={set("name")} /></Field>
+            <Field label={t("game.shop.price")}><input className="cs-input" type="number" min={1} required value={form.priceSparks} onChange={set("priceSparks")} /></Field>
+            <Field label={t("game.shop.description")}><input className="cs-input" maxLength={300} value={form.description} onChange={set("description")} /></Field>
+            <Field label={t("game.shop.type")}>
+              <select className="cs-select" value={form.type} onChange={set("type")}>
+                <option value="ROLE">{t("game.shop.typeRole")}</option>
+                <option value="CUSTOM">{t("game.shop.typeCustom")}</option>
+              </select>
+            </Field>
+            {form.type === "ROLE" && <Field label={t("game.shop.roleId")}><DiscordRoleSelect value={form.roleId} onChange={(v) => setForm((f) => ({ ...f, roleId: v || "" }))} /></Field>}
+            <Field label={t("game.shop.durationDays")}><input className="cs-input" type="number" min={1} max={365} value={form.durationDays} onChange={set("durationDays")} /></Field>
+            <Field label={t("game.shop.stock")}><input className="cs-input" type="number" min={1} value={form.stock} onChange={set("stock")} /></Field>
+            <label className="flex items-center gap-3 mt-6">
+              <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.enabled} onChange={set("enabled")} />
+              <span className="text-sm text-cs-text">{t("game.shop.enabled")}</span>
+            </label>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button type="button" className="cs-btn-secondary" onClick={() => setEditing(null)}>{t("common.cancel")}</button>
+            <button type="submit" className="cs-btn-primary" disabled={createM.isPending || updateM.isPending}>{editing === "new" ? t("game.shop.create") : t("game.shop.update")}</button>
+          </div>
+        </form>
+      )}
+
+      <div className="cs-card">
+        <h3 className="font-semibold text-cs-text mb-2">{t("game.purchases.title")}</h3>
+        {purchases.length === 0 ? <p className="text-sm text-cs-muted">{t("game.purchases.empty")}</p> : (
+          <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[36rem]">
+            <thead><tr><th>{t("game.lb.user")}</th><th>{t("game.shop.name")}</th><th>✨</th><th>{t("game.purchases.expires")}</th></tr></thead>
+            <tbody>{purchases.map((p) => (
+              <tr key={p.id}><td className="font-mono">{p.userId}</td><td>{p.item?.name}</td><td>{p.priceSparks}</td><td className="font-mono text-xs">{p.revokedAt ? t("game.purchases.revoked") : (p.expiresAt ? String(p.expiresAt).slice(0, 10) : "—")}</td></tr>
+            ))}</tbody>
+          </table></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Класация ────────────────────────────────────────────────────────────────
+function LeaderboardTab() {
+  const { t } = useT();
+  const { serverId } = useParams();
+  const [by, setBy] = useState("xp");
+  const { data } = useQuery({ queryKey: ["game-lb", serverId, by], queryFn: () => getGameLeaderboard(serverId, by) });
+  const rows = data?.rows || [];
+  return (
+    <div className="cs-card">
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+        <h2 className="text-lg font-semibold text-cs-text">{t("game.lb.title")}</h2>
+        <label className="flex items-center gap-2 text-sm text-cs-muted">{t("game.lb.by")}
+          <select className="cs-select" value={by} onChange={(e) => setBy(e.target.value)} aria-label={t("game.lb.by")}>
+            <option value="xp">{t("game.lb.xp")}</option>
+            <option value="seasonXp">{t("game.lb.seasonXp")}</option>
+            <option value="sparks">{t("game.lb.sparks")}</option>
+            <option value="streak">{t("game.lb.streak")}</option>
+          </select>
+        </label>
+      </div>
+      {rows.length === 0 ? <p className="text-sm text-cs-muted">{t("game.lb.empty")}</p> : (
+        <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[40rem]">
+          <thead><tr><th>#</th><th>{t("game.lb.user")}</th><th>{t("game.lb.level")}</th><th>XP</th><th>{t("game.lb.seasonXp")}</th><th>✨</th><th>🔥</th><th>{t("game.lb.messages")}</th><th>{t("game.lb.voice")}</th></tr></thead>
+          <tbody>{rows.map((r, i) => (
+            <tr key={r.userId}><td>{i + 1}</td><td className="font-mono">{r.userId}</td><td>{r.level}</td><td>{r.xp}</td><td>{r.seasonXp}</td><td>{r.sparks}</td><td>{r.streak}</td><td>{r.messages}</td><td>{r.voiceMinutes}</td></tr>
+          ))}</tbody>
+        </table></div>
+      )}
+    </div>
+  );
+}

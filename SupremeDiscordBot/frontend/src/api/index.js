@@ -278,3 +278,12 @@ export const deleteApplication = (sid, appId) =>
 export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
+// ─── v50 Server Season (dashboard) ───────────────────────────────────────────
+export const getGame           = (sid) => api.get(`/game/${sid}`).then((r) => r.data);
+export const updateGameSettings= (sid, data) => api.put(`/game/${sid}/settings`, data).then((r) => r.data);
+export const getGameShop       = (sid) => api.get(`/game/${sid}/shop`).then((r) => r.data);
+export const createGameShopItem= (sid, data) => api.post(`/game/${sid}/shop`, data).then((r) => r.data);
+export const updateGameShopItem= (sid, id, data) => api.patch(`/game/${sid}/shop/${id}`, data).then((r) => r.data);
+export const deleteGameShopItem= (sid, id) => api.delete(`/game/${sid}/shop/${id}`).then((r) => r.data);
+export const getGameLeaderboard= (sid, by = "xp") => api.get(`/game/${sid}/leaderboard`, { params: { by, limit: 50 } }).then((r) => r.data);
+export const getGamePurchases  = (sid) => api.get(`/game/${sid}/purchases`).then((r) => r.data);

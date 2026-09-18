@@ -1,0 +1,175 @@
+// backend/src/lib/game/xp.js
+// Server Season — ЕДНО определение за нивата, XP и искрите (docs/GAME_CONCEPT.md).
+//
+// Кривата е тази на MEE6/Arcane (хората я познават): за да минеш от ниво n на
+// n+1 трябват 5n² + 50n + 100 XP. Ниво 1 = 100 XP, ниво 5 = 1 150, ниво 10 =
+// 4 675, ниво 20 = 23 850 — измерено в ~15 XP на съобщение с 60 s охлаждане,
+// тоест активен член стига ниво 10 за около месец. Всички числа са тук, за да
+// може балансът да се сменя на едно място и гейтът (game.test.js) да го хване.
+import { prisma } from "../prisma.js";
+
+/** XP, нужни, за да минеш от ниво `level` на `level + 1`. */
+export function xpForNextLevel(level) {
+  const n = Math.max(0, Math.floor(level));
+  return 5 * n * n + 50 * n + 100;
+}
+
+/** Общо XP, нужни за да СИ на ниво `level` (кумулативно). */
+export function xpToReachLevel(level) {
+  let total = 0;
+  for (let i = 0; i < level; i++) total += xpForNextLevel(i);
+  return total;
+}
+
+/** Нивото за дадено общо XP (0 при по-малко от 100). Таван 200 — защита от overflow при ръчни грешки. */
+export function levelFromXp(xp) {
+  let level = 0;
+  let remaining = Math.max(0, Math.floor(xp));
+  while (level < 200) {
+    const need = xpForNextLevel(level);
+    if (remaining < need) break;
+    remaining -= need;
+    level++;
+  }
+  return level;
+}
+
+/** Напредък вътре в текущото ниво — за лентата в /profile. */
+export function levelProgress(xp) {
+  const level = levelFromXp(xp);
+  const base = xpToReachLevel(level);
+  const need = xpForNextLevel(level);
+  const into = Math.max(0, Math.floor(xp) - base);
+  return { level, into, need, pct: Math.min(100, Math.floor((into / need) * 100)) };
+}
+
+// ─── Награди по събитие (XP) — еднократни по ключ (GameXpGrant) ─────────────
+export const XP_REWARDS = Object.freeze({
+  POLL_VOTE: 5,
+  GIVEAWAY_ENTER: 10,
+  APPLICATION_APPROVED: 50,
+  TICKET_CLOSED_IN_SLA: 30, // за staff, който затваря без пробив на SLA
+  VERIFIED: 20,
+  TRIVIA_WIN: 25,
+  COUNTING_MILESTONE: 15,
+});
+
+/** Искри при ниво нагоре: 10 на ниво, стига до 250 на ниво 25+ (не расте безкрайно). */
+export function sparksForLevelUp(newLevel) {
+  return Math.min(250, 10 * Math.max(1, newLevel));
+}
+
+// ─── /daily — чисти правила, тестваеми без база ─────────────────────────────
+export const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;   // след толкова може пак
+export const DAILY_STREAK_GRACE_MS = 48 * 60 * 60 * 1000; // до толкова streak-ът оцелява
+export const DAILY_XP = 25;
+
+/**
+ * @param {{ lastDailyAt: Date|null, streak: number }} prev
+ * @param {number} baseSparks  GameSettings.dailySparks
+ * @param {Date} [now]
+ * @returns {{ ok:false, retryInMs:number } | { ok:true, streak:number, sparks:number, xp:number, doubled:boolean }}
+ */
+export function computeDaily(prev, baseSparks, now = new Date()) {
+  const last = prev.lastDailyAt ? new Date(prev.lastDailyAt).getTime() : 0;
+  const since = now.getTime() - last;
+  if (last && since < DAILY_WINDOW_MS) return { ok: false, retryInMs: DAILY_WINDOW_MS - since };
+  const streak = last && since <= DAILY_STREAK_GRACE_MS ? (prev.streak || 0) + 1 : 1;
+  const doubled = streak >= 7;
+  const sparks = Math.max(1, Math.floor(baseSparks)) * (doubled ? 2 : 1);
+  return { ok: true, streak, sparks, xp: DAILY_XP, doubled };
+}
+
+// ─── Записи в базата ─────────────────────────────────────────────────────────
+/** Настройките на играта за сървър — създава реда с подразбиранията, ако липсва. */
+export async function getGameSettings(serverId) {
+  const existing = await prisma.gameSettings.findUnique({ where: { serverId } });
+  if (existing) return existing;
+  return prisma.gameSettings.upsert({ where: { serverId }, update: {}, create: { serverId } });
+}
+
+/**
+ * Добавя XP (и сметнати искри при ниво нагоре). Атомарно през транзакция:
+ * читаме реда, смятаме новото ниво, пишем. Връща какво се е случило, за да може
+ * викащият (bot batch / събитие) да раздаде ролите и да обяви.
+ * @returns {Promise<{ userId:string, xp:number, level:number, oldLevel:number, leveledUp:boolean, sparksAwarded:number }>}
+ */
+export async function awardXp(serverId, userId, amount, { messages = 0, voiceMinutes = 0, touchMessageXp = false } = {}) {
+  const inc = Math.max(0, Math.floor(amount));
+  return prisma.$transaction(async (tx) => {
+    const row = await tx.memberProgress.upsert({
+      where: { serverId_userId: { serverId, userId } },
+      update: {},
+      create: { serverId, userId },
+    });
+    const newXp = row.xp + inc;
+    const oldLevel = row.level;
+    const newLevel = levelFromXp(newXp);
+    let sparksAwarded = 0;
+    for (let l = oldLevel + 1; l <= newLevel; l++) sparksAwarded += sparksForLevelUp(l);
+    const updated = await tx.memberProgress.update({
+      where: { id: row.id },
+      data: {
+        xp: newXp,
+        seasonXp: { increment: inc },
+        level: newLevel,
+        sparks: { increment: sparksAwarded },
+        messages: { increment: messages },
+        voiceMinutes: { increment: voiceMinutes },
+        ...(touchMessageXp ? { lastMessageXpAt: new Date() } : {}),
+      },
+    });
+    return { userId, xp: updated.xp, level: newLevel, oldLevel, leveledUp: newLevel > oldLevel, sparksAwarded };
+  });
+}
+
+/**
+ * Еднократна XP награда по ключ (напр. "poll:<id>"). Повторно извикване със
+ * същия ключ не дава нищо — така toggle (гласувай/оттегли/гласувай) не фермва.
+ * @returns {Promise<null | Awaited<ReturnType<typeof awardXp>>>}
+ */
+export async function grantXpOnce(serverId, userId, key, amount) {
+  const settings = await prisma.gameSettings.findUnique({ where: { serverId }, select: { enabled: true } });
+  if (!settings?.enabled) return null;
+  try {
+    await prisma.gameXpGrant.create({ data: { serverId, userId, key, amount } });
+  } catch (err) {
+    if (err?.code === "P2002") return null; // вече дадено
+    throw err;
+  }
+  const r = await awardXp(serverId, userId, amount);
+  // Ниво нагоре от събитие в backend-а (анкета, подарък, кандидатура, тикет,
+  // верификация): ботът трябва да даде ролите и да обяви — той не вижда тази
+  // партида. Динамичен import — botNotifier не бива да се тегли в чистите тестове.
+  if (r.leveledUp) {
+    try {
+      const full = await prisma.gameSettings.findUnique({ where: { serverId } });
+      const { notifyBot } = await import("../../services/botNotifier.js");
+      await notifyBot("GAME_LEVEL_UP", {
+        serverId, ...r, roleIds: rolesForLevel(full?.levelRoles, r.level),
+        announceChannelId: full?.announceChannelId || null, levelUpMessage: full?.levelUpMessage !== false,
+      });
+    } catch { /* ботът може да е недостъпен — ролята ще дойде при следващото ниво/партида */ }
+  }
+  return r;
+}
+
+/** Ролите, които се полагат за ниво ≤ level (натрупващи се). */
+export function rolesForLevel(levelRoles, level) {
+  if (!Array.isArray(levelRoles)) return [];
+  return levelRoles.filter((r) => Number(r?.level) <= level && /^\d{17,20}$/.test(String(r?.roleId || ""))).map((r) => String(r.roleId));
+}
+
+/**
+ * Staff, затворил тикет без пробив на SLA, получава XP — само ако панелът
+ * изобщо има SLA (иначе „в SLA" е празно твърдение), затварящият не е
+ * създателят на тикета (сам си затваряш ≠ работа) и не е бот/липсва.
+ */
+export async function awardTicketSlaXp(ticket, closedById) {
+  if (!ticket || !closedById || !ticket.serverId) return null;
+  if (String(closedById) === String(ticket.creatorId)) return null;
+  const panel = ticket.panel || {};
+  if (!panel.slaFirstResponseMinutes && !panel.slaResolutionMinutes) return null;
+  if (ticket.slaBreachedAt || ticket.slaResolutionBreachedAt) return null;
+  return grantXpOnce(ticket.serverId, String(closedById), `ticket:${ticket.id}`, XP_REWARDS.TICKET_CLOSED_IN_SLA);
+}
