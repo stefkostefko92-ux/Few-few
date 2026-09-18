@@ -1223,9 +1223,50 @@ legend {
   margin: 0.3rem 0;
 }
 
+/* Наръчник (съдържателните страници) — ляга върху .legal контейнера. */
+.guide .lead {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.guide .crumbs {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.guide p {
+  line-height: 1.65;
+}
+.guide .steps li {
+  margin: 0.6rem 0;
+  line-height: 1.6;
+}
+.guide .related ul,
+.guide-index ul {
+  list-style: none;
+  padding: 0;
+}
+.guide .related li,
+.guide-index li {
+  margin: 0.6rem 0;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.guide .related a,
+.guide-index a {
+  font-weight: 600;
+}
+.guide .hero-actions {
+  margin: 1.8rem 0 0.5rem;
+}
+
 .footer {
   text-align: center;
   color: var(--muted);
   font-size: 0.85rem;
   padding: 2rem 1rem;
+}
+.footer-guides {
+  margin: 0 auto 0.4rem;
+  max-width: 44rem;
+  line-height: 1.8;
 }

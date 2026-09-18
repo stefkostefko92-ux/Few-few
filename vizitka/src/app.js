@@ -10,7 +10,8 @@ import { dirname, join } from 'node:path';
 import db from './db.js';
 import { attachUser, seedAdmins } from './auth.js';
 import { baseUrl } from './config.js';
-import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
+import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd, guideJsonLd } from './seo.js';
+import { GUIDES, guideBySlug } from './guides.js';
 import { activeBanners, clickBanner } from './banners.js';
 import { indexNowKey } from './indexnow.js';
 import { icon } from './icons.js';
@@ -121,6 +122,7 @@ app.get('/', (req, res) =>
   res.render('home', {
     title: null,
     faq: FAQ,
+    guides: GUIDES,
     jsonLd: siteJsonLd(baseUrl(req)),
     banners: activeBanners('home'),
   })
@@ -160,6 +162,27 @@ app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(r
 if (indexNowKey()) {
   app.get(`/${indexNowKey()}.txt`, (req, res) => res.type('text/plain').send(indexNowKey()));
 }
+// Наръчникът: по една страница на намерение („дигитална визитка“, „визитка с QR код“,
+// „vCard“, „фирмена визитка“, „как да си направя“). Маршрутите се раждат от същия
+// масив, който храни sitemap-а, llms.txt и IndexNow — няма как да добавиш страница и
+// да забравиш да я подадеш. Регистрирани са ПРЕДИ рутерите с параметри, за да не ги
+// глътне някой `/:нещо`.
+for (const guide of GUIDES) {
+  app.get(`/${guide.slug}`, (req, res) =>
+    res.render('guide', {
+      title: guide.title,
+      guide,
+      related: (guide.related || []).map(guideBySlug).filter(Boolean),
+      jsonLd: guideJsonLd(guide, baseUrl(req)),
+      pageMeta: {
+        description: guide.description,
+        keywords: guide.keywords.join(', '),
+        url: `${baseUrl(req)}/${guide.slug}`,
+      },
+    })
+  );
+}
+
 app.get('/privacy', (req, res) => res.render('privacy', { title: 'Политика за поверителност' }));
 app.get('/terms', (req, res) => res.render('terms', { title: 'Общи условия' }));
 app.use(authRoutes);

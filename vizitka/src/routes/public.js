@@ -66,13 +66,23 @@ router.get('/p/:slug', (req, res) => {
     wallet: walletLinks(profile),
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
     pageMeta: {
-      description: description || `Дигитална визитка на ${profile.display_name}`,
+      description:
+        description ||
+        `Дигитална визитка на ${profile.display_name} — контакти с QR код, винаги актуални.`,
+      // Профилните думи са първи (те носят намерението „търся този човек/фирма“),
+      // после общите за продукта. Правилото на репото иска ≥5 и задължително
+      // „Carbon Stealth“ — при празен headline/company профилните са само един, затова
+      // общите НЕ са по избор.
       keywords: [
         profile.display_name,
         profile.headline,
         profile.company,
         'дигитална визитка',
+        'визитка с QR код',
+        'vCard контакт',
         'контакти',
+        'Vizitka',
+        'Carbon Stealth',
       ]
         .filter(Boolean)
         .join(', '),
