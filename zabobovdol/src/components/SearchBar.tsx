@@ -82,7 +82,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Търсете услуга, телефон, обява…"
-          className="input w-full"
+          // Отдясно стои бутонът за глас — оставяме му място, за да не минава
+          // текстът под него на тесен екран.
+          className={"input w-full" + (voiceSupported ? " pr-11" : "")}
           autoComplete="off"
           enterKeyHint="search"
         />

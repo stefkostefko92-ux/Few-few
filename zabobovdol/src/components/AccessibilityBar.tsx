@@ -38,12 +38,18 @@ export function AccessibilityBar() {
       const c = localStorage.getItem("a11y-contrast") === "1";
       const t = localStorage.getItem("a11y-bigtouch") === "1";
       const d = localStorage.getItem("a11y-dark") === "1";
-      const hidden = localStorage.getItem("a11y-collapsed") === "1";
+      // На телефон разгърнатата лента изяждаше половин екран, преди човек да
+      // види сайта. Затова по подразбиране е СВИТА на тесен екран и отворена на
+      // широк. Изричният избор на човека има предимство и се помни.
+      const stored = localStorage.getItem("a11y-collapsed");
+      const narrow =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(max-width: 767px)").matches;
       setFont(f);
       setContrast(c);
       setBigTouch(t);
       setDark(d);
-      setCollapsed(hidden);
+      setCollapsed(stored === null ? Boolean(narrow) : stored === "1");
       applyFont(f);
       applyContrast(c);
       applyBigTouch(t);
