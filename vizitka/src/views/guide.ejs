@@ -1,0 +1,65 @@
+<%- include('partials/head') %>
+<% if (jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script><% } %>
+<article class="legal guide">
+  <nav class="crumbs" aria-label="Навигация">
+    <a href="/">Начало</a> · <span aria-current="page"><%= guide.h1 %></span>
+  </nav>
+  <h1><%= guide.h1 %></h1>
+  <%# Текстовете в guides.js са НАШИ и носят малко разметка (strong, em, code,
+      вътрешни връзки) — затова се вграждат сурово. Нула потребителски вход минава
+      оттук; влезе ли такъв някога, суровото вграждане е XSS. %>
+  <p class="lead"><%- guide.answer %></p>
+  <p class="muted">
+    Последна актуализация:
+    <time datetime="<%= guide.updated %>"><%= new Date(guide.updated).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long', year: 'numeric' }) %></time>
+  </p>
+
+  <% for (const s of guide.sections || []) { %>
+    <h2><%= s.h2 %></h2>
+    <% for (const par of s.p || []) { %><p><%- par %></p><% } %>
+    <% if (s.ul) { %>
+      <ul>
+        <% for (const li of s.ul) { %><li><%- li %></li><% } %>
+      </ul>
+    <% } %>
+  <% } %>
+
+  <% if (guide.steps && guide.steps.length) { %>
+    <h2>Стъпките</h2>
+    <ol class="steps">
+      <% guide.steps.forEach((step, i) => { %>
+        <li id="stapka-<%= i + 1 %>">
+          <strong><%= step.name %></strong> — <%- step.text %>
+        </li>
+      <% }) %>
+    </ol>
+  <% } %>
+
+  <% if (guide.faq && guide.faq.length) { %>
+    <section class="faq">
+      <h2>Често задавани въпроси</h2>
+      <% for (const item of guide.faq) { %>
+        <details class="faq-item">
+          <summary><h3><%= item.q %></h3></summary>
+          <p><%= item.a %></p>
+        </details>
+      <% } %>
+    </section>
+  <% } %>
+
+  <p class="hero-actions">
+    <a class="btn btn-big" href="/register">Създай безплатната си визитка</a>
+  </p>
+
+  <% if (related && related.length) { %>
+    <nav class="related" aria-label="Още по темата">
+      <h2>Още по темата</h2>
+      <ul>
+        <% for (const r of related) { %>
+          <li><a href="/<%= r.slug %>"><%= r.h1 %></a> — <%= r.description %></li>
+        <% } %>
+      </ul>
+    </nav>
+  <% } %>
+</article>
+<%- include('partials/foot') %>

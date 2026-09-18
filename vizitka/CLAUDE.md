@@ -46,6 +46,9 @@ src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
 src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
 src/themes.js        цветови теми на визитката (CSS клас theme-<id>)
+src/guides.js        наръчник (SEO/GEO/AEO): по една страница на намерение — дигитална
+                     визитка · визитка с QR код · фирмена визитка · vCard (.vcf) · как да
+                     си направя. ЕДИН масив храни маршрутите, sitemap, llms.txt и IndexNow
 src/seo.js           COMPANY (импресум + structured address/geo Бобов дол), robots
                      (AI-ботове без /p/; /api /b /print disallow), sitemap (lastmod),
                      llms.txt, FAQ, JSON-LD (сайт: WebSite + Organization/LocalBusiness
@@ -65,7 +68,8 @@ src/routes/wallet.js /p/:slug/wallet/apple.pkpass + /wallet/google + Apple updat
 src/wallet/          портфейли (без нови зависимости): apple.js (.pkpass билд+openssl подпис),
                      google.js (save JWT + PATCH auto-update), apns.js (ES256 пуш), binary.js
                      (ZIP/PNG/CRC32/SHA-1), shared.js (флагове/цветове/токен), index.js (фасада)
-src/views/           EJS (home, register, login, dashboard, card, admin, privacy, terms, 404)
+src/views/           EJS (home, register, login, dashboard, card, admin, guide, privacy,
+                     terms, 404)
 public/              styles.css (вкл. теми), app.js (CSP-safe клиентска логика)
 test/smoke.test.js   пълен поток: регистрация→редакция→тема→views→визитка→QR→vCard→
                      CSRF→правни/SEO→смяна на парола
@@ -93,6 +97,15 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
 - **Слъгът е обещание.** QR кодът сочи `/p/<slug>` — предупреждаваме потребителя,
   че смяна на слъга чупи отпечатани кодове. Не добавяй redirect магия без план.
 - `data/` не влиза в git; секрети — само на сървъра (systemd `EnvironmentFile`, 600).
+- **Наръчник (`src/guides.js`)** — съдържателните страници са отделен пазар за всяко
+  намерение („дигитална визитка“, „визитка с QR код“, „vCard“…). Нова страница се добавя
+  САМО там: маршрутът, sitemap-ът, `llms.txt` и IndexNow се раждат от масива, за да не
+  може страница да съществува, без да е подадена. Всяка носи **отговор отпред** (40–60
+  думи — това цитират AI асистентите), ≥5 ключови думи с „Carbon Stealth“, уникални
+  `title`/`description`, canonical и JSON-LD (`WebPage`+`Article` · `BreadcrumbList` ·
+  `FAQPage` · `HowTo` при стъпкова · пълен възел на организацията, не препратка).
+  **Пиши само каквото приложението прави** — няма NFC → не се обещава NFC; няма отзиви →
+  няма `aggregateRating`. Гейтнато от `npm test`.
 - **Правни страници** (`/privacy`, `/terms`) са обвързани с реалното поведение на
   приложението — промениш ли какви данни се пазят/бисквитки, обнови и тях.
 - **Privacy-by-default (чл. 25(2) ОРЗД):** новият профил е СКРИТ (`is_public=0`) и
