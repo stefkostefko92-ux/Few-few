@@ -73,7 +73,7 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 
 ### 3.1 Message Content (`GatewayIntentBits.MessageContent`, `bot/src/index.js`)
 
-**Which features require it (three, nothing else):**
+**Which features require it (four, nothing else):**
 
 > 1. **Ticket transcripts.** When a member opens a support ticket, the bot creates
 >    a private channel or thread. Messages written *inside that ticket channel*
@@ -93,6 +93,15 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 >    messages are forwarded as a summary to a log channel *in the same server*.
 >    Content is not stored in our database and never shown in the dashboard
 >    (`bot/src/events/messageUpdate.js`, `messageDelete.js`, `messageDeleteBulk.js`).
+> 4. **Counting mini-game channel (opt-in, Server Season).** If an administrator
+>    designates one channel as the counting channel in the dashboard, the bot
+>    reads messages *in that channel only* to check whether they are the next
+>    number in the chain (`bot/src/utils/minigames.js`, `onCounting` — the channel
+>    id is compared before `message.content` is touched). Nothing is stored: the
+>    backend keeps only the current number, the server record and the id of the
+>    last member who counted (`backend/src/lib/game/counting.js`). Everything else
+>    in the game (levels, XP) counts message *events* with a cooldown, never text
+>    (`bot/src/utils/game.js`).
 
 **Why interactions cannot replace it:**
 

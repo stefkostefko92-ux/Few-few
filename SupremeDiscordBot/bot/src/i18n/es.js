@@ -242,4 +242,5 @@ export default {
   "game.wyr.votes": "🅰️ {{a}} · 🅱️ {{b}}",
   "game.tod.truth": "🗣️ Verdad para {{user}}",
   "game.tod.dare": "🔥 Reto para {{user}}",
+  "game.season.ended": "¡**{{season}}** ha terminado! Lo más alto de la temporada:{{top}}\n\nLa XP de temporada vuelve a empezar desde cero: los niveles, las chispas y los compañeros se mantienen. Los compañeros de temporada ya no se pueden atrapar.",
 };

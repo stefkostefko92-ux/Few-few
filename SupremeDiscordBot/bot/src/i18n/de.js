@@ -242,4 +242,5 @@ export default {
   "game.wyr.votes": "🅰️ {{a}} · 🅱️ {{b}}",
   "game.tod.truth": "🗣️ Wahrheit für {{user}}",
   "game.tod.dare": "🔥 Pflicht für {{user}}",
+  "game.season.ended": "**{{season}}** ist vorbei! Die Spitze der Season:{{top}}\n\nDie Season-XP beginnen wieder bei null — Level, Funken und Begleiter bleiben. Saisonale Begleiter können nicht mehr gefangen werden.",
 };

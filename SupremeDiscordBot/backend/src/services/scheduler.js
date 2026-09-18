@@ -673,4 +673,12 @@ cron.schedule("11 * * * *", job("game-trivia", async () => {
   if (closed || posted) await jobHeartbeat("game-trivia", { closed, posted });
 }), TZ);
 
+// Етап 4: краят на сезона (веднъж на сървър, идемпотентно по lastSeasonId) —
+// топ 3 по сезонно XP към бота за обява, seasonXp → 0; нива/искри/спътници остават.
+cron.schedule("23 4 * * *", job("game-season", async () => {
+  const { closeSeasonIfEnded } = await import("../lib/game/season.js");
+  const r = await closeSeasonIfEnded();
+  if (r.closed) await jobHeartbeat("game-season", r);
+}), TZ);
+
 console.log("[Scheduler] Background jobs started");

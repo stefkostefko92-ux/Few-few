@@ -148,6 +148,13 @@ describe("docs/DISCORD_VERIFICATION.md е сверен с кода", () => {
   it("употребите на Message Content сочат файлове, които съществуват и правят това", () => {
     expect(read("bot/src/events/messageCreate.js")).toContain("ticketChannelCache");
     expect(read("backend/src/services/aiReply.js")).toContain("AI_REPLY_TRAINING_ATTESTED");
+    // v50 Server Season: Counting чете съдържание САМО в обявения канал — проверката
+    // на канала стои ПРЕДИ message.content; XP брои събития, не текст.
+    const minigames = read("bot/src/utils/minigames.js");
+    expect(minigames).toContain("parseCount(message.content)");
+    expect(minigames.indexOf("countingChannelId !== message.channelId")).toBeLessThan(minigames.indexOf("parseCount(message.content)"));
+    expect(read("docs/DISCORD_VERIFICATION.md")).toContain("bot/src/utils/minigames.js");
+    expect(read("bot/src/utils/game.js")).not.toMatch(/message\.content/);
     for (const f of ["bot/src/events/messageUpdate.js", "bot/src/events/messageDelete.js", "bot/src/events/messageDeleteBulk.js"]) {
       expect(existsSync(join(ROOT, f)), f).toBe(true);
     }

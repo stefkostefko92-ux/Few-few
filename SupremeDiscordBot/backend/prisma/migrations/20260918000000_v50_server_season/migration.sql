@@ -25,6 +25,7 @@ CREATE TABLE "game_settings" (
     "triviaSchedule" TEXT,
     "questChannelId" TEXT,
     "questEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "lastSeasonId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

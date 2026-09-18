@@ -140,6 +140,14 @@ describe("trivia + wyr", () => {
   });
 });
 
+describe("краят на сезона (етап 4)", () => {
+  it("обявата носи името на сезона и топ 3 с медали; без канал за обяви → false, нищо не се праща", async () => {
+    const e = mg.seasonEndEmbed({ season: { id: "S1", name: "Season 1 — First Light" }, top: [{ userId: "3", seasonXp: 900 }, { userId: "4", seasonXp: 500 }] }, "en").toJSON();
+    expect(e.title).toContain("Season 1"); expect(e.description).toContain("🥇 <@3> — 900 XP"); expect(e.description).toContain("🥈 <@4>");
+    expect(await mg.announceSeasonEnd({ guilds: { cache: new Map(), fetch: vi.fn().mockResolvedValue(null) } }, { serverId: SID, season: { id: "S1", name: "S" }, top: [], announceChannelId: null })).toBe(false);
+  });
+});
+
 describe("банките са SFW", () => {
   const banned = /\b(alcohol|beer|drunk|sex|naked|nude|kiss|drug|weed|suicide|kill yourself|gamble|bet money|address|phone number)\b/i;
   it("WYR: двойки от два различни низа; TRUTH/DARE: ≥30 непразни; нищо от списъка със забранени думи", () => {

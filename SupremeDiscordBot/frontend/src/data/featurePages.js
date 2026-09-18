@@ -26,11 +26,11 @@ export const FEATURES_HUB = {
   nav: "All features",
   title: "Supreme Bot Features — Discord Ticket Bot, Forms, Verification & More",
   description:
-    "Every Supreme Bot feature on one page: ticket system, application forms, verification, reaction roles, giveaways, welcome messages, server logs, sticky and scheduled messages, polls, AI replies and white-label bots.",
-  keywords: ["discord bot features", "discord ticket bot", "discord bot dashboard", "all in one discord bot", "supreme bot", "carbon stealth"],
-  h1: "One Discord bot, twelve jobs",
+    "Every Supreme Bot feature on one page: ticket system, application forms, verification, reaction roles, giveaways, welcome messages, server logs, sticky and scheduled messages, polls, AI replies, white-label bots and the Server Season game.",
+  keywords: ["discord bot features", "discord ticket bot", "discord bot dashboard", "all in one discord bot", "discord leveling bot", "supreme bot", "carbon stealth"],
+  h1: "One Discord bot, thirteen jobs",
   answer:
-    "Supreme Bot replaces a folder of single-purpose Discord bots with one bot and one web dashboard: a ticket system with transcripts, application forms with a review workflow, member verification, reaction roles, giveaways, welcome messages and autoroles, server activity logs, sticky and scheduled messages, polls, an AI-assisted support layer and an optional white-label bot. The base tier is free forever; Premium is €4.99 per server per month, sold through the Discord store.",
+    "Supreme Bot replaces a folder of single-purpose Discord bots with one bot and one web dashboard: a ticket system with transcripts, application forms with a review workflow, member verification, reaction roles, giveaways, welcome messages and autoroles, server activity logs, sticky and scheduled messages, polls, an AI-assisted support layer, an optional white-label bot and Server Season — a leveling and collecting game with level roles, a server shop, companions, weekly server quests, counting and trivia. The base tier is free forever; Premium is €4.99 per server per month, sold through the Discord store.",
 };
 
 export const FEATURE_PAGES = [
@@ -312,6 +312,44 @@ export const FEATURE_PAGES = [
       { q: "Are votes anonymous?", a: "The poll message shows only the number of votes per option, not who voted." },
     ],
     related: ["/features/discord-giveaway-bot", "/features/discord-sticky-scheduled-messages", "/commands"],
+  },
+  {
+    slug: "discord-leveling-game",
+    path: "/features/discord-leveling-game",
+    nav: "Leveling & game",
+    title: "Discord Leveling Bot — XP, Level Roles, Shop, Companions & Server Quests",
+    description:
+      "Server Season is Supreme Bot's leveling game: XP from activity (never message text), level roles, daily sparks with streaks, a server shop, 60 collectible companions, weekly server quests, counting and trivia. Free tier included.",
+    keywords: ["discord leveling bot", "discord xp bot", "discord level roles bot", "discord economy bot", "discord counting bot", "discord trivia bot", "mee6 alternative", "discord leveling bot free", "supreme bot", "carbon stealth"],
+    h1: "Leveling, sparks, companions and server quests",
+    answer:
+      "Server Season is a leveling bot and a collecting game in one. Members earn XP for messages, voice minutes, poll votes, giveaway entries, approved applications and verification — the bot counts the event, never the text of a message — and climb the same level curve MEE6 users know, unlocking role rewards you set in the dashboard. /daily pays sparks with a streak that doubles from day seven; sparks buy rewards in a server shop you define (roles for a period, custom perks) and feed companions: sixty original creatures that appear in active channels, get caught by the first member to click, evolve through three forms and can be traded. Weekly server quests give the whole server one goal and reward every contributor; a counting channel and trivia rounds keep the chat moving. Free servers get the full loop with five level roles, five shop items, one companion slot and one active quest; Premium raises the limits and adds rare companions, daily and knowledge-base trivia and party commands.",
+    steps: [
+      { title: "Turn the game on", body: "Dashboard → your server → Game → Overview. Enable Server Season, set XP per message, the cooldown, XP per voice minute and the daily sparks. Pick an announcement channel for level-ups and game events." },
+      { title: "Add level roles and shop items", body: "Level roles tab: choose a level and a role; roles stack, and the bot never assigns managed roles, roles with dangerous permissions or roles above itself. Shop tab: create items with a price in sparks — a role for N days, or a custom perk you fulfil yourself from the purchases list." },
+      { title: "Let companions spawn", body: "Companions appear in active channels (or only in the channels you list) after a burst of activity. The first member to press Catch keeps it; /companion list, feed, activate, trade and release manage the collection. Free servers see common and uncommon companions; Premium unlocks rare, epic, legendary and seasonal ones." },
+      { title: "Run server quests and mini-games", body: "Set a quest channel and a weekly quest starts on its own (messages, /daily claims, voice minutes, poll votes, verifications); the bot keeps a progress bar in the channel and rewards every contributor when the goal is reached, with a chest for the top contributor. Add a counting channel and a trivia channel with a schedule; admins can also start a round any time with /trivia." },
+      { title: "Watch the season", body: "Season XP ranks members for the current season; when it ends, the bot announces the top three and season XP resets while levels, sparks and companions stay. /profile and /leaderboard show progress in Discord; the dashboard shows players, XP, sparks in circulation, top collectors and quest history." },
+    ],
+    tiers: [
+      ["Levels, XP, /daily, /profile, /leaderboard", "Included", "Included"],
+      ["Level roles", "5", "100"],
+      ["Shop items", "5", "50"],
+      ["Companion collection slots", "1", "Unlimited"],
+      ["Companion rarities", "Common, uncommon", "All, incl. seasonal"],
+      ["Active server quests", "1", "3"],
+      ["Counting channel", "Included", "Included"],
+      ["Trivia rounds", "Weekly, question bank", "Daily + knowledge-base questions"],
+      ["/wyr and /tod party commands", "—", "Included"],
+    ],
+    faq: [
+      { q: "Is the leveling bot free?", a: "Yes. The Free tier includes levels and XP, five level roles, /daily with streaks, a shop with five items, one companion slot, weekly server quests, a counting channel and weekly trivia. Premium (€4.99 per server per month, billed through the Discord store) raises the limits to 100 level roles, 50 shop items, unlimited companion slots and three active quests, and adds all companion rarities, daily and knowledge-base trivia and the party commands." },
+      { q: "Does the bot read my messages to give XP?", a: "No. XP is awarded per message event with a cooldown; the text of the message is never read or stored for the game. The only place the game reads message content is the counting channel you designate, and there it only checks whether the message is the next number." },
+      { q: "Is there gambling or can members buy sparks?", a: "No. There are no slots, roulette or loot boxes bought with money, and sparks cannot be purchased. Everything in the game is earned through activity in your server, which keeps Supreme Bot inside Discord's App Discovery content rules." },
+      { q: "What happens to the data if a member leaves or asks for deletion?", a: "Game progress, companions, purchases, quest contributions and trivia answers are personal data tied to the Discord user id. /privacy delete removes them; a server's game data is purged 30 days after the bot is removed, like every other server data." },
+      { q: "How does it compare to MEE6 or Arcane leveling?", a: "The level curve is the same one members already know (5·n² + 50·n + 100 XP per level), role rewards stack the same way, and the dashboard shows the same leaderboard. On top of that Supreme Bot adds sparks and a shop, companions, cooperative server quests and the ticket-system tie-ins (staff earn XP for closing tickets within SLA) — in one bot, EU-hosted." },
+    ],
+    related: ["/features/discord-poll-bot", "/features/discord-giveaway-bot", "/features/discord-verification-bot", "/commands"],
   },
   {
     slug: "discord-support-bot-ai",

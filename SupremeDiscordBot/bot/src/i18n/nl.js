@@ -242,4 +242,5 @@ export default {
   "game.wyr.votes": "🅰️ {{a}} · 🅱️ {{b}}",
   "game.tod.truth": "🗣️ Waarheid voor {{user}}",
   "game.tod.dare": "🔥 Opdracht voor {{user}}",
+  "game.season.ended": "**{{season}}** is voorbij! De top van het seizoen:{{top}}\n\nSeizoens-XP begint weer bij nul — levels, vonken en metgezellen blijven. Seizoensmetgezellen kunnen niet meer worden gevangen.",
 };

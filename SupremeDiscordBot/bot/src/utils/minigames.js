@@ -162,6 +162,21 @@ export async function closeTriviaMessage(client, serverId, round, { winnerId = n
   return true;
 }
 
+// ─── Краят на сезона (етап 4) ────────────────────────────────────────────────
+export function seasonEndEmbed({ season, top }, lang) {
+  const medals = ["🥇", "🥈", "🥉"];
+  const list = (top || []).map((r, i) => `${medals[i] || "•"} <@${r.userId}> — ${r.seasonXp} XP`).join("\n") || "—";
+  return new EmbedBuilder().setColor(BRAND).setTitle(`🏁 ${season.name}`).setDescription(t("game.season.ended", lang, { season: season.name, top: `\n${list}` }));
+}
+
+export async function announceSeasonEnd(client, { serverId, season, top, announceChannelId }) {
+  const ch = await questChannel(client, serverId, announceChannelId);
+  if (!ch) return false;
+  const lang = await resolveLangForGuild(serverId).catch(() => "en");
+  const msg = await ch.send({ embeds: [seasonEndEmbed({ season, top }, lang)], allowedMentions: { users: (top || []).map((r) => r.userId) } }).catch(() => null);
+  return !!msg;
+}
+
 // ─── Would you rather — гласове в паметта ────────────────────────────────────
 export function wyrVote(messageId, userId, choice) {
   let v = wyrVotes.get(messageId);

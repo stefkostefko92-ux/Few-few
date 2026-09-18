@@ -65,7 +65,7 @@ describe("числата в таблиците идват от backend/src/lib/p
   const limits = (name) => {
     const block = premium.slice(premium.indexOf(`export const ${name} = {`), premium.indexOf("};", premium.indexOf(`export const ${name} = {`)));
     const num = (k) => { const m = block.match(new RegExp(`${k}:\\s*(\\d+|null)`)); return m ? (m[1] === "null" ? null : Number(m[1])) : undefined; };
-    return { panels: num("panels"), forms: num("forms"), questionsPerForm: num("questionsPerForm"), verificationPanels: num("verificationPanels"), stickies: num("stickiesPerServer"), scheduled: num("scheduledPerServer"), kb: num("kbArticles"), rr: num("reactionRoleMessages"), webhooks: num("webhooks") };
+    return { panels: num("panels"), forms: num("forms"), questionsPerForm: num("questionsPerForm"), verificationPanels: num("verificationPanels"), stickies: num("stickiesPerServer"), scheduled: num("scheduledPerServer"), kb: num("kbArticles"), rr: num("reactionRoleMessages"), webhooks: num("webhooks"), levelRoles: num("levelRoles"), shopItems: num("shopItems"), activeQuests: num("activeQuests") };
   };
   const base = limits("BASE_LIMITS");
   const prem = limits("PREMIUM_LIMITS");
@@ -89,6 +89,11 @@ describe("числата в таблиците идват от backend/src/lib/p
     const c = row("discord-sticky-scheduled-messages", "Scheduled messages per server"); expect(c[1]).toBe(show(base.scheduled)); expect(c[2]).toBe(show(prem.scheduled));
   });
   it("база знания: статии", () => { const r = row("discord-support-bot-ai", "Knowledge base articles"); expect(r[1]).toBe(show(base.kb)); expect(r[2]).toBe(show(prem.kb)); });
+  it("игра: роли за ниво, артикули в магазина, активни куестове (v50 Server Season)", () => {
+    const l = row("discord-leveling-game", "Level roles"); expect(l[1]).toBe(show(base.levelRoles)); expect(l[2]).toBe(show(prem.levelRoles));
+    const s = row("discord-leveling-game", "Shop items"); expect(s[1]).toBe(show(base.shopItems)); expect(s[2]).toBe(show(prem.shopItems));
+    const q = row("discord-leveling-game", "Active server quests"); expect(q[1]).toBe(show(base.activeQuests)); expect(q[2]).toBe(show(prem.activeQuests));
+  });
   it("ретенция на транскрипти: 30 дни / без лимит", () => {
     const r = row("discord-ticket-system", "Transcript retention");
     expect(premium).toMatch(/transcriptRetentionDays:\s*30/);

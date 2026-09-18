@@ -242,4 +242,5 @@ export default {
   "game.wyr.votes": "🅰️ {{a}} · 🅱️ {{b}}",
   "game.tod.truth": "🗣️ Prawda dla {{user}}",
   "game.tod.dare": "🔥 Wyzwanie dla {{user}}",
+  "game.season.ended": "**{{season}}** dobiegł końca! Czołówka sezonu:{{top}}\n\nSezonowe XP zaczyna się od zera — poziomy, iskry i towarzysze zostają. Sezonowych towarzyszy nie można już złapać.",
 };

@@ -1202,6 +1202,15 @@ app.post("/internal/game-trivia", async (req, res) => {
     res.status(400).json({ error: "непознато събитие" });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
+// Етап 4: краят на сезона — обява с топ 3 в канала за обяви (scheduler game-season).
+app.post("/internal/game-season-end", async (req, res) => {
+  const { serverId, season } = req.body || {};
+  if (!serverId || !season?.name) return res.status(400).json({ error: "serverId и season са задължителни" });
+  try {
+    const { announceSeasonEnd } = await import("./utils/minigames.js");
+    res.json({ ok: await announceSeasonEnd(client, req.body) });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
 // Таблото смени настройките → изхвърли кеша за сървъра.
 app.post("/internal/game-settings-changed", async (req, res) => {
   const { serverId } = req.body || {};
