@@ -329,6 +329,182 @@
         }
       ]
     },
+    "/bg/sait-za/advokatska-kantora/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/agencia-za-imoti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/avtokashta/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/avtoservis/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/barzo-hranene/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/fitnes/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/hotel-kashta-za-gosti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/magazin-za-drehi/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/mebelen-magazin/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/medicinski-centar/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/onlain-magazin/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/restorant/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/salon-za-krasota/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/schetovodna-kashta/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/stroitelstvo-i-remonti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
     "/en/": {
       "errors": 0,
       "warnings": 1,
@@ -353,8 +529,8 @@
     }
   },
   "summary": {
-    "pages": 41,
+    "pages": 57,
     "errors": 0,
-    "warnings": 21
+    "warnings": 37
   }
 }

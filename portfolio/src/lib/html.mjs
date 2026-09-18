@@ -42,11 +42,17 @@ export const PATHS = {
   hosting: { bg: "/bg/hosting-i-poddrazhka/", en: "/en/hosting-and-maintenance/", it: "/it/hosting-e-manutenzione/" },
   a11y: { bg: "/bg/dostapnost/", en: "/en/accessibility/", it: "/it/accessibilita/" },
   brochure: { bg: "/bg/broshura/", en: "/en/brochure/", it: "/it/brochure/" },
+  vertical: { bg: "/bg/sait-za/", en: "/en/website-for/", it: "/it/sito-per/" },
 };
 /** PDF брошурата (tools/brochure.mjs → public/broshura/); линкът е винаги същият. */
 export const BROCHURE_PDF = { bg: "/broshura/carbon-stealth-portfolio-bg.pdf", en: "/broshura/carbon-stealth-portfolio-en.pdf", it: "/broshura/carbon-stealth-portfolio-it.pdf" };
 
 export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;
+
+const PUBLIC_DIR = fileURLToPath(new URL("../../public/", import.meta.url));
+/** Статичното превю на демото (tools/previews.mjs) и OG изображението му (tools/og.mjs) — само ако файлът съществува. */
+export const previewPath = (lang, demo) => (existsSync(`${PUBLIC_DIR}img/previews/${lang}/${demo.id}.webp`) ? `/img/previews/${lang}/${demo.id}.webp` : null);
+export const ogPath = (lang, demo) => (existsSync(`${PUBLIC_DIR}og/${lang}/${demo.id}.jpg`) ? `/og/${lang}/${demo.id}.jpg` : null);
 
 /** Слъг на семейство от Google-стил спецификация („Barlow+Condensed:wght@600;700“ → barlow-condensed). */
 export const fontSlug = (family) => family.split(":")[0].replace(/\+/g, "-").toLowerCase();
@@ -122,6 +128,7 @@ export function head({ lang, title, description, keywords, path, paths, fonts, c
     `<link rel="icon" href="/favicon.ico" sizes="32x32">`,
     `<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">`,
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
+    `<link rel="alternate" type="application/rss+xml" title="Carbon Stealth Portfolio" href="${PATHS.blog[lang]}feed.xml">`,
     ...preload,
     ...fontCss.map((c) => `<link rel="stylesheet" href="${c}">`),
     ...css.map((c) => `<link rel="stylesheet" href="${c}">`),

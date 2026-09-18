@@ -21,6 +21,8 @@ import { CITIES } from "./src/local/cities.mjs";
 import { renderLegal, renderRoot, renderNotFound, robots, llms, sitemap, securityTxt } from "./src/templates/misc.mjs";
 import { renderA11y } from "./src/templates/a11y.mjs";
 import { renderBrochure } from "./src/templates/brochure.mjs";
+import { renderVertical, renderVerticalIndex, previewPath } from "./src/templates/vertical.mjs";
+import { verticalPath } from "./src/verticals/index.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const OUT = join(ROOT, "dist");
@@ -52,6 +54,13 @@ export function build({ out = OUT, quiet = false } = {}) {
     put(PATHS.pricing[lang], renderPricing(lang));
     put(PATHS.legal[lang], renderLegal(lang));
     put(PATHS.a11y[lang], renderA11y(lang));
+    put(PATHS.vertical[lang], renderVerticalIndex(lang));
+    urls.push({ loc: PATHS.vertical[lang], alt: PATHS.vertical, priority: "0.9", changefreq: "monthly" });
+    for (const demo of DEMOS) {
+      const shot = previewPath(lang, demo);
+      put(verticalPath(lang, demo), renderVertical(lang, demo));
+      urls.push({ loc: verticalPath(lang, demo), alt: Object.fromEntries(LANGS.map((l) => [l, verticalPath(l, demo)])), priority: "0.8", changefreq: "monthly", images: shot ? [{ loc: shot, title: `${demo.t[lang].name} — ${demo.t[lang].category}` }] : [] });
+    }
     put(PATHS.brochure[lang], renderBrochure(lang)); // noindex — печатен асет (PDF: tools/brochure.mjs)
     put(PATHS.projects[lang], renderProjects(lang));
     put(PATHS.admin[lang], renderAdmin(lang));
@@ -74,7 +83,7 @@ export function build({ out = OUT, quiet = false } = {}) {
     urls.push({ loc: PATHS.hosting[lang], alt: PATHS.hosting, priority: "0.7", changefreq: "yearly" });
     for (const demo of DEMOS) {
       put(demoPath(lang, demo), renderDemo(lang, demo));
-      urls.push({ loc: demoPath(lang, demo), alt: Object.fromEntries(LANGS.map((l) => [l, demoPath(l, demo)])), priority: "0.8", changefreq: "monthly" });
+      urls.push({ loc: demoPath(lang, demo), alt: Object.fromEntries(LANGS.map((l) => [l, demoPath(l, demo)])), priority: "0.8", changefreq: "monthly", images: (() => { const sh = previewPath(lang, demo); return sh ? [{ loc: sh, title: `${demo.t[lang].name} — ${demo.t[lang].category}` }] : []; })() });
     }
   }
   put("/index.html", renderRoot());

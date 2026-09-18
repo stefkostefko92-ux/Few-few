@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 import { build } from "../build.mjs";
 import { I18N } from "../src/i18n/index.mjs";
 import { DEMOS } from "../src/demos/index.mjs";
-import { PATHS, BROCHURE_PDF } from "../src/lib/html.mjs";
+import { PATHS, BROCHURE_PDF, demoPath, SITE } from "../src/lib/html.mjs";
+import { VERTICALS, verticalPath } from "../src/verticals/index.mjs";
 import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
 import { DEMO_ICONS } from "../src/templates/icons.mjs";
 import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
@@ -49,7 +50,7 @@ test("демота: ≥10, уникални id/слъгове, всеки ези
 });
 
 test("всяка страница: един h1, title ≤60, description ≤160, canonical, hreflang ×3 + x-default, ключови думи, футър-кредит", () => {
-  assert.equal(pages.length, LANGS.length * (DEMOS.length + 11 + ARTICLES.length + CITIES.length), "фиксирани страници + демота + статии + градове");
+  assert.equal(pages.length, LANGS.length * (DEMOS.length * 2 + 12 + ARTICLES.length + CITIES.length), "фиксирани страници + демота + статии + градове");
   for (const p of pages) {
     const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
     assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, `${rel}: h1`);
@@ -273,6 +274,29 @@ test("всеки /assets/*.css|js в HTML-а носи версия по съдъ
     assert.deepStrictEqual(bare, [], `${p.replace(OUT, "")}: без версия — ${bare.slice(0, 3).join(" ")}`);
     const versioned = html.match(/\/assets\/[^"?#]+\.(?:css|js)\?v=[0-9a-f]{8}"/g) || [];
     assert.ok(versioned.length >= 1, `${p.replace(OUT, "")}: поне един версиониран asset`);
+  }
+});
+
+test("SEO вертикали: страница „сайт за <бизнес>“ за всяко демо ×3 езика с H1 = фразата, Service + FAQPage + Breadcrumb + Speakable, превю, линкове към демото/офертата; индекс с всички; хъбът с FAQPage + ProfessionalService; sitemap с image; RSS link навсякъде; демо лентата води към вертикалата", () => {
+  const sm = readFileSync(join(OUT, "sitemap.xml"), "utf8");
+  assert.ok(sm.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"') && (sm.match(/<image:image>/g) || []).length >= DEMOS.length * LANGS.length * 2, "sitemap с image:image за демота и вертикали");
+  for (const lang of LANGS) {
+    const idx = readFileSync(join(OUT, PATHS.vertical[lang].slice(1), "index.html"), "utf8");
+    assert.equal((idx.match(/class="cell reveal" href="/g) || []).length, DEMOS.length, `${lang}: индексът листва всички вертикали`);
+    for (const d of DEMOS) {
+      const v = VERTICALS[lang][d.id], path = verticalPath(lang, d);
+      const html = readFileSync(join(OUT, path.slice(1), "index.html"), "utf8");
+      assert.ok(html.includes(`<h1 class="h2 reveal">${v.h1}</h1>`), `${path}: H1`);
+      for (const needle of ['"@type":"Service"', '"@type":"FAQPage"', '"@type":"BreadcrumbList"', '"@type":"SpeakableSpecification"', `href="${demoPath(lang, d)}"`, `href="${PATHS.quote[lang]}?demo=${d.id}"`, `href="${PATHS.pricing[lang]}"`, 'class="v-includes"', `/img/previews/${lang}/${d.id}.webp`]) assert.ok(html.includes(needle), `${path}: ${needle}`);
+      assert.ok((html.match(/<details class="faq"/g) || []).length === 5, `${path}: 5 въпроса (3 уникални + 2 общи)`);
+      assert.ok(!/\{(business|start|ecommerce|business_price|n)\}/.test(html), `${path}: незаменен плейсхолдър`);
+      const demo = readFileSync(join(OUT, demoPath(lang, d).slice(1), "index.html"), "utf8");
+      assert.ok(demo.includes(`class="cs-want" href="${path}"`), `${path}: демо лентата води към вертикалата`);
+      for (const h of [html, demo]) assert.ok(h.includes(`<meta property="og:image" content="${SITE}/og/${lang}/${d.id}.jpg">`) && existsSync(join(ROOT_DIR, "public", "og", lang, `${d.id}.jpg`)), `${path}: og:image = собствено OG изображение (tools/og.mjs)`);
+    }
+    const hub = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
+    for (const needle of ['"@type":"FAQPage"', '"@type":"ProfessionalService"', '"@type":"GeoCoordinates"', '"@type":"OfferCatalog"', 'id="faq"', `href="${PATHS.vertical[lang]}"`, 'class="v-link"', 'type="application/rss+xml"']) assert.ok(hub.includes(needle), `${lang} хъб: ${needle}`);
+    assert.equal((hub.match(/class="v-link"/g) || []).length, DEMOS.length, `${lang}: линк към вертикала във всяка карта`);
   }
 });
 

@@ -4,7 +4,8 @@
 // Снимки: ако tools/photos.mjs е свалил public/img/<id>/, hero/about/галерия ги ползват; иначе —
 // генеративна графика. Всичко интерактивно (форми, график, кошница, lightbox) живее в demo.js.
 import { readable, onColor } from "../lib/color.mjs";
-import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANGS } from "../lib/html.mjs";
+import { verticalPath } from "../verticals/index.mjs";
+import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANGS, ogPath } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { widget } from "./widgets.mjs";
 import { photosOf, picture, creditsLine } from "./photos.mjs";
@@ -25,7 +26,7 @@ function themeCss(th) {
 
 function demoBar(lang, demo, ui) {
   const alt = LANGS.map((l) => `<a href="${demoPath(l, demo)}" hreflang="${l}"${l === lang ? ' aria-current="page"' : ""}>${I18N[l].short}</a>`).join("");
-  return `<div class="cs-bar" role="region" aria-label="Carbon Stealth"><a class="cs-mark" href="${PATHS.hub[lang]}" aria-label="Carbon Stealth VCC"><picture><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async"></picture></a><a class="cs-back" href="${PATHS.hub[lang]}#demos">${esc(ui.demoBar.back)}</a><span class="cs-hint" title="${esc(ui.demoBar.hint)}">// ${esc(ui.demoBar.label)} · ${esc(demo.t[lang].category)}</span><nav class="cs-langs" aria-label="Language">${alt}</nav><a class="cs-want" href="${PATHS.pricing[lang]}">${esc(ui.demoBar.want)}</a></div><div class="progress" aria-hidden="true"><i></i></div>`;
+  return `<div class="cs-bar" role="region" aria-label="Carbon Stealth"><a class="cs-mark" href="${PATHS.hub[lang]}" aria-label="Carbon Stealth VCC"><picture><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async"></picture></a><a class="cs-back" href="${PATHS.hub[lang]}#demos">${esc(ui.demoBar.back)}</a><span class="cs-hint" title="${esc(ui.demoBar.hint)}">// ${esc(ui.demoBar.label)} · ${esc(demo.t[lang].category)}</span><nav class="cs-langs" aria-label="Language">${alt}</nav><a class="cs-want" href="${verticalPath(lang, demo)}">${esc(ui.demoBar.want)}</a></div><div class="progress" aria-hidden="true"><i></i></div>`;
 }
 
 function nav(t, c, phone, hasGallery) {
@@ -128,7 +129,7 @@ export function renderDemo(lang, demo) {
   const path = demoPath(lang, demo);
   const paths = Object.fromEntries(LANGS.map((l) => [l, demoPath(l, demo)]));
   const photos = photosOf(demo.id);
-  const og = photos?.slots.hero ? `/img/${demo.id}/hero.webp` : undefined;
+  const og = ogPath(lang, demo) || (photos?.slots.hero ? `/img/${demo.id}/hero.webp` : undefined); // OG = самото демо (tools/og.mjs), иначе hero снимката
   return join([
     head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: demo.keywords[lang], path, paths, fonts: [...th.fonts, "brand"], css: ["/assets/demo.css", "/assets/premium.css"], themeColor: th.bg, ogImage: og, extra: themeCss(th) + schema(lang, demo, t, path, photos) }),
     `<body class="demo mode-${th.mode}" data-i18n="${esc(JSON.stringify({ tryColor: c.widget.tryColor }))}"${t.catalog ? ` data-shop="${esc(JSON.stringify({ currency: "€", format: lang === "en" ? "pre" : "post", freeFrom: t.catalog.freeFrom, shipping: t.catalog.shipping, added: c.shop.added, remove: c.shop.remove, free: c.shop.free }))}"` : ""}>`,

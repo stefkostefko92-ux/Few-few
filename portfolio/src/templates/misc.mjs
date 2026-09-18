@@ -3,6 +3,7 @@ import { esc, join, head, credit, jsonLd, PATHS, demoPath, SITE, LANGS, ORG, BRA
 import { PROJECTS } from "../projects.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
+import { VERTICALS, verticalPath } from "../verticals/index.mjs";
 import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 import { TIERS, ADDONS, fmt, shown, net } from "../pricing.mjs";
 
@@ -82,9 +83,9 @@ export function llms() {
   const addons = ADDONS.map((a) => `- ${I18N.en.pricing.addons[a.id]}: ${fmt(net(a.price), "en")} EUR excl. VAT (${fmt(a.price, "en")} EUR incl. VAT in Bulgaria) ${a.kind === "monthly" ? "per month" : "one-off"}`).join("\n");
   return `# Carbon Stealth Portfolio
 
-> Портфолио на Carbon Stealth VCC (${BRAND_URL}) — уеб студио от България, работещо с клиенти в България и Италия. Сайтът показва 10 напълно работещи демо лендинг страници за 10 вида бизнес (автосервиз, фитнес, мебелен магазин, адвокатска кантора, салон за красота, хотел/къща за гости, счетоводна къща, автокъща, магазин за дрехи, бързо хранене) на български, английски и италиански, плюс прозрачни цени, поне 15% под пазарните за 2026 г.
+> Портфолио на Carbon Stealth VCC (${BRAND_URL}) — уеб студио от България, работещо с клиенти в България и Италия. Сайтът показва ${DEMOS.length} напълно работещи демо сайта за ${DEMOS.length} вида бизнес (${DEMOS.map((d) => d.t.bg.category.toLowerCase()).join(", ")}) на български, английски и италиански, плюс прозрачни цени, поне 15% под пазарните за 2026 г.
 
-> Portfolio of Carbon Stealth VCC — a web studio from Bulgaria serving clients in Bulgaria and Italy. ${DEMOS.length} fully working demo landing pages for ten kinds of business, in Bulgarian, English and Italian, plus transparent pricing at least 15% below the 2026 market.
+> Portfolio of Carbon Stealth VCC — a web studio from Bulgaria serving clients in Bulgaria and Italy. ${DEMOS.length} fully working demo landing pages for ${DEMOS.length} kinds of business, in Bulgarian, English and Italian, plus transparent pricing at least 15% below the 2026 market.
 
 ## Компания / Company
 - Carbon Stealth VCC · ЕИК/VAT BG208725180 · ул. Самуил 3, 2670 Бобов дол, България · info@carbonstealth.eu
@@ -97,6 +98,9 @@ ${tiers}
 ${addons}
 - ДДС: клиенти от България +20%; фирми от ЕС извън България — обратно начисляване (reverse charge, чл. 196 Директива 2006/112/ЕО), без български ДДС; фирми извън ЕС — без български ДДС.
 - Цени: ${SITE}${PATHS.pricing.bg} · ${SITE}${PATHS.pricing.en} · ${SITE}${PATHS.pricing.it}
+
+## Изработка на сайт по вид бизнес / Website by type of business
+${DEMOS.map((d) => `- ${VERTICALS.bg[d.id].h1}: ${SITE}${verticalPath("bg", d)} · EN: ${SITE}${verticalPath("en", d)} · IT: ${SITE}${verticalPath("it", d)}`).join("\n")}
 
 ## Демота / Demos (BG)
 ${demoLines("bg")}
@@ -119,8 +123,8 @@ ${PROJECTS.map((p) => `- ${p.t.en.name} (${p.t.en.category}): ${p.url} — ${p.t
 export function sitemap(urls, lastmod) {
   const alt = (a) => LANGS.map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${SITE}${a[l]}"/>`).concat([`    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE}${a.bg}"/>`]).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${urls.map((u) => `  <url>\n    <loc>${SITE}${u.loc}</loc>\n    <lastmod>${u.lastmod || lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n${alt(u.alt)}\n  </url>`).join("\n")}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${urls.map((u) => `  <url>\n    <loc>${SITE}${u.loc}</loc>\n    <lastmod>${u.lastmod || lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n${alt(u.alt)}${(u.images || []).map((im) => `\n    <image:image>\n      <image:loc>${SITE}${im.loc}</image:loc>\n      <image:title>${im.title.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</image:title>\n    </image:image>`).join("")}\n  </url>`).join("\n")}
 </urlset>
 `;
 }

@@ -22,6 +22,7 @@ node --test api/server.test.mjs                 # контактният API (в
 node tools/a11y.mjs                             # WCAG проверка в Chromium → a11y/report.json (гейтната в теста: 0 грешки; след промяна по шаблон/CSS)
 node tools/brochure.mjs                         # брошурата А5 → public/broshura/*.pdf (след промяна по цени/демота/проекти; иска dist/ + Chromium)
 node tools/project-shots.mjs [id] [--live] [--url id=http://…]   # скрийншотите на реалните проекти → public/img/projects/ (1920×1200 + -sm 960×600)
+node tools/og.mjs [lang] [demo]                 # OG изображения 1200×630 от превютата → public/og/<lang>/<id>.jpg (след previews.mjs)
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
@@ -58,12 +59,24 @@ nginx.conf · deploy.sh      продукционният конфиг (CSP, HST
 api/server.mjs              контактният API (node:http, Brevo) + server.test.mjs + README.md (env на сървъра) · deploy/portfolio-api.service — systemd юнитът
 src/templates/a11y.mjs      декларацията за достъпност (числата от a11y/report.json) · brochure.mjs + assets/brochure.css — брошурата А5 (HTML noindex → PDF)
 tools/a11y.mjs · brochure.mjs · lib/serve-dist.mjs   WCAG проверка (CDP, контраст/имена/заглавия/цели) · PDF печат · общият статичен сървър; a11y/report.json е проследен
+src/verticals/{bg,en,it}.mjs + index.mjs   уникалният текст на SEO страниците „сайт за <бизнес>“ (h1 · title · desc · 2 увода · 3 FAQ) · src/templates/vertical.mjs — шаблонът и индексът
 src/lib/color.mjs           контраст по WCAG + readable()/onColor(): темите дават вкуса, генераторът гарантира ≥4.5:1
 tools/project-shots.mjs     скрийншотите на реалните проекти (1200 CSS px @2× → webp 1920 + 960, srcset); `shot` в projects.mjs се засича от диска
 ```
 
 ## Конвенции (важно)
 
+- **SEO/GEO/AEO архитектура.** Главните фрази („изработка на сайт“ · „website design“ · „realizzazione siti
+  web“) са в title/H1/keywords на хъба; **вертикалите** `/bg/sait-za/<slug>/` (EN `/website-for/`, IT `/sito-per/`)
+  — една на демо ×3 езика — целят „сайт за <бизнес>“: H1 = фразата, уникален увод ×2 и 3 FAQ в
+  `src/verticals/<lang>.mjs` (**никакъв шаблонен текст там — само браншово**), какво включва (от данните на демото),
+  цени/срок от `pricing.mjs`, реалният Lighthouse от `perf/lab.json`, Service + FAQPage + BreadcrumbList + Speakable.
+  Хъбът носи FAQ секция (`i18n.faq`, същият текст във FAQPage) + `ProfessionalService` (geo, areaServed BG/IT,
+  OfferCatalog на вертикалите). Вътрешна мрежа: демо лентата „Искам такъв сайт“ → вертикалата; карта в хъба →
+  вертикала; вертикала → демо · оферта `?demo=<id>` · цени · 4 други вертикали · блог · градове. Sitemap с
+  `image:image` за превютата; `llms.txt` листва вертикалите. `{business}` в `i18n.vertical` е браншът (заменя се
+  ПРЕДИ `tx()`, чийто `{business}` е цената на пакета). Ново демо → нов запис в трите `verticals/*.mjs` (гейтнато).
+  Семруш обеми не са сверявани (без API единици) — фразите са по утвърдените търсения, не по измерени числа.
 - **Asset версии**: `build.mjs` добавя `?v=<sha1 на файла>` към всеки `/assets/*.css|js` в HTML-а (гейтнато в теста) —
   nginx кешира css/js 7 дни и без това след деплой браузърът сглобява нов HTML със стар css/js. Не пиши URL към
   asset на ръка извън `head()`/шаблоните (root/404 страниците минават през същия `put()`).
