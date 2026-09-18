@@ -24,7 +24,7 @@
   app.querySelectorAll("[data-pane]").forEach(function (b) { b.addEventListener("click", function () { app.querySelectorAll("[data-pane]").forEach(function (x) { x.classList.toggle("on", x === b); }); app.querySelectorAll("[data-pane-body]").forEach(function (p) { p.hidden = p.dataset.paneBody !== b.dataset.pane; }); }); });
   app.querySelector("[data-save]").addEventListener("click", function () {
     var keys = Object.keys(dirty); if (!keys.length) { show(L.saved); return; }
-    var none = hist.querySelector(".ad-none"); if (none) none.remove();
+    var none = hist.querySelector(".cms-none"); if (none) none.remove();
     var li = document.createElement("li"); li.innerHTML = "<b>" + new Date().toLocaleTimeString().slice(0, 5) + "</b> " + keys.length + " " + L.changed; hist.prepend(li);
     binds.forEach(function (el) { initial[el.dataset.bind] = val(el); }); dirty = {}; dirtyEl.hidden = true; show(L.saved);
   });

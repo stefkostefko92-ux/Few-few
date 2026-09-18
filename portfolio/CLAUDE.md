@@ -64,6 +64,9 @@ tools/project-shots.mjs     скрийншотите на реалните пр�
 
 ## Конвенции (важно)
 
+- **Никакви класове/id с префикс `ad-`, `ads`, `adv`, `banner`, `sponsor`, `promo`.** Adblock филтрите (EasyList) ги
+  скриват козметично — демото на админ панела беше `ad-app`/`ad-wrap` и изчезваше при собственика с adblock (сега
+  `cms-*`). Тестът гейтва `class="ad-` в dist/.
 - **Ново демо** = нов `src/demos/<id>.mjs` (копирай структурата на съществуващо: `slug` ×3, `icon` от
   `icons.mjs`, `schemaType`, `theme`, `keywords` ×3 ≥4, `t` ×3 с еднакви ключове) + ред в `demos/index.mjs`.
   Тестът гейтва паритета, 6 услуги / 5 FAQ / 3 отзива, валиден widget kind.

@@ -258,6 +258,14 @@ test("достъпност: a11y/report.json покрива всички BG ст
   }
 });
 
+test("нищо с adblock-примамващ клас (ad-/ads/adv/banner/sponsor/promo) — EasyList го скрива при клиента", () => {
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8");
+    const bad = html.match(/class="[^"]*\b(ad|ads|adv|advert|banner|sponsor|promo)(-[a-z]+)?\b[^"]*"/g) || [];
+    assert.deepStrictEqual(bad, [], `${p.replace(OUT, "")}: ${bad.slice(0, 3).join(" ")}`);
+  }
+});
+
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
   for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
