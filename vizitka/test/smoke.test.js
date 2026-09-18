@@ -1,9 +1,11 @@
 // Smoke тест — пълният поток: регистрация → редакция → публична визитка → QR → vCard.
 // Стартира приложението на случаен порт с временна база (DATA_DIR).
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 process.env.NODE_ENV = 'test';
 process.env.DATA_DIR = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-test-'));
@@ -1131,6 +1133,58 @@ await test('портфейл: с включен Google бутонът се по�
   const res = await request('/p/ivan-testov/wallet/google');
   assert.equal(res.status, 302);
   assert.match(res.headers.get('location'), /^https:\/\/pay\.google\.com\/gp\/v\/save\//);
+});
+
+// Регресия за реален провален деплой: в продукция принудителният редирект към
+// https стоеше ПРЕДИ /healthz, затова сондата на деплоя (http по loopback, без
+// X-Forwarded-Proto) получаваше 308 с тяло „Moved Permanently…“. Маркерът за
+// идентичност го няма, а curl без -L брои 3xx за успех → health гейтът обявяваше
+// живото приложение за чуждо и откатваше успешен деплой. Тестът дърпа сондата
+// точно като деплоя: чист HTTP, без следване на редирект.
+await test('здравната сонда работи и в продукция (200 с маркер, не 308 към https)', async () => {
+  const dataDir = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-prod-'));
+  // `new URL` вместо import.meta.dirname — то е от Node 20.11, а CI върви и на 20.x.
+  const fixture = fileURLToPath(new URL('fixtures/prod-server.mjs', import.meta.url));
+  const child = spawn(process.execPath, [fixture], {
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      DATA_DIR: dataDir,
+      PUBLIC_BASE_URL: 'https://vizitka-bg.com',
+      PRINT_API_SECRET: 'test-print-secret',
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  try {
+    const prodPort = await new Promise((resolve, reject) => {
+      let out = '';
+      const timer = setTimeout(() => reject(new Error(`prod сървърът не вдигна: ${out}`)), 15000);
+      child.stdout.on('data', (chunk) => {
+        out += chunk;
+        const m = out.match(/PORT=(\d+)/);
+        if (m) {
+          clearTimeout(timer);
+          resolve(Number(m[1]));
+        }
+      });
+      child.stderr.on('data', (chunk) => (out += chunk));
+      child.on('exit', (code) => {
+        clearTimeout(timer);
+        reject(new Error(`prod сървърът излезе с код ${code}: ${out}`));
+      });
+    });
+    const res = await fetch(`http://127.0.0.1:${prodPort}/healthz`, { redirect: 'manual' });
+    assert.equal(res.status, 200); // 308 значи, че редиректът пак е пред сондата
+    const body = await res.text();
+    assert.match(body, /"app":"vizitka"/); // точният маркер, който autodeploy търси
+    assert.match(body, /"db":"up"/);
+    // Останалите маршрути ПАК се качват на https — изключението е само за сондата.
+    const home = await fetch(`http://127.0.0.1:${prodPort}/`, { redirect: 'manual' });
+    assert.equal(home.status, 308);
+  } finally {
+    child.kill('SIGKILL');
+    fs.rmSync(dataDir, { recursive: true, force: true });
+  }
 });
 
 server.close();
