@@ -1255,18 +1255,29 @@ deploy_adblock() {
 # машина това може да е съвсем друго приложение (реален случай: ERP на 3100 даваше
 # зелено за vizitka и rollback-ът никога не се задействаше).
 health() {
-  local url="$1" name="$2" expect="${3:-}" i body
+  local url="$1" name="$2" expect="${3:-}" i body mismatch=0
   for i in 1 2 3 4 5 6 7 8 9 10; do
     if body="$(curl -fsS --max-time 5 "$url" 2>/dev/null)"; then
       if [ -z "$expect" ] || printf '%s' "$body" | grep -q "$expect"; then
         ok "$name е жив ($url)"; return 0
       fi
-      warn "$name: на $url отговаря ДРУГО приложение (липсва „$expect“) — портът е зает."
-      return 1
+      # 200 без маркера НЕ доказва чуждо приложение на първия отговор: докато
+      # новият процес още стартира, порта го държи СТАРИЯТ (или откатнатият) код,
+      # който маркера няма. Пада се на първия такъв отговор — това беше дефект:
+      # деплой се обявяваше за провален заради състезание при рестарта. Затова
+      # чакаме целия цикъл и съдим по КРАЯ, не по първия отговор.
+      mismatch=1
+    else
+      mismatch=0
     fi
     sleep 3
   done
-  warn "$name НЕ отговаря на $url"; return 1
+  if [ "$mismatch" = 1 ]; then
+    warn "$name: на $url отговаря ДРУГО приложение (липсва „$expect“) — портът е зает."
+  else
+    warn "$name НЕ отговаря на $url"
+  fi
+  return 1
 }
 
 # IndexNow: уведомява Bing/Yandex/Seznam/Naver с един POST (api.indexnow.org
