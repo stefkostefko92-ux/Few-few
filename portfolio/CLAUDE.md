@@ -21,6 +21,7 @@ node --test test/build.test.mjs                 # паритет на езици
 node --test api/server.test.mjs                 # контактният API (валидация · honeypot · лимит · HTTP договор, мокнат send)
 node tools/a11y.mjs                             # WCAG проверка в Chromium → a11y/report.json (гейтната в теста: 0 грешки; след промяна по шаблон/CSS)
 node tools/brochure.mjs                         # брошурата А5 → public/broshura/*.pdf (след промяна по цени/демота/проекти; иска dist/ + Chromium)
+node tools/project-shots.mjs [id] [--live] [--url id=http://…]   # скрийншотите на реалните проекти → public/img/projects/ (1920×1200 + -sm 960×600)
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
@@ -58,6 +59,7 @@ api/server.mjs              контактният API (node:http, Brevo) + serv
 src/templates/a11y.mjs      декларацията за достъпност (числата от a11y/report.json) · brochure.mjs + assets/brochure.css — брошурата А5 (HTML noindex → PDF)
 tools/a11y.mjs · brochure.mjs · lib/serve-dist.mjs   WCAG проверка (CDP, контраст/имена/заглавия/цели) · PDF печат · общият статичен сървър; a11y/report.json е проследен
 src/lib/color.mjs           контраст по WCAG + readable()/onColor(): темите дават вкуса, генераторът гарантира ≥4.5:1
+tools/project-shots.mjs     скрийншотите на реалните проекти (1200 CSS px @2× → webp 1920 + 960, srcset); `shot` в projects.mjs се засича от диска
 ```
 
 ## Конвенции (важно)
@@ -137,6 +139,14 @@ src/lib/color.mjs           контраст по WCAG + readable()/onColor(): �
   под h1 са h2 (без h1→h3). Бутонът „Анимации: стоп“ (`data-fx-toggle`, и в мобилното меню) е потребителският
   контрол по WCAG 2.2.2 — включва LITE и се помни в `localStorage` (`cs-lite`); не го махай. Декларацията
   (`/bg/dostapnost/` ×3) описва честно известните ограничения — при нова, добави я в `a11y.limits`.
+- **Снимките на реалните проекти** (`public/img/projects/<id>.webp` 1920×1200 + `<id>-sm.webp` 960×600, проследени в git):
+  `tools/project-shots.mjs` снима при **1200 CSS px и DPR 2** (не 1440 — в карта от ~400 px пълният десктоп става
+  нечетима каша) и картата ползва `srcset` 960w/1920w. Източник: живият URL от `projects.mjs`; където той не се
+  достига (изолирана среда), локален източник — статична папка в монорепото (evanitasport · ospedalitrasparenti/site ·
+  panev), готов PNG (Nexus/screenshots-final) или пуснат локален сървър през `--url id=http://127.0.0.1:…/` (vizitka ·
+  mastilko `next start` · eternaltouch с локален Postgres). **ouvaptsarov · erp · tretimart нямат източник в репото** —
+  снимат се само от машина с интернет: `node tools/project-shots.mjs ouvaptsarov erp tretimart --live`, после commit.
+  Няма файл → `shot=false` → типографска обложка (никога placeholder снимка).
 - **Брошура А5** (`/bg/broshura/` ×3, noindex; `tools/brochure.mjs` → `public/broshura/carbon-stealth-portfolio-<lang>.pdf`,
   6 страници, проследени в git, линк „Брошура · PDF A5“ в подножието): същите данни като сайта (демота · проекти
   със снимка · цени от `pricing.mjs` · процес · защо · контакт). Смяна на цена/демо/проект → регенерирай PDF-ите

@@ -1,14 +1,16 @@
 // projects.mjs — РЕАЛНИТЕ проекти на Carbon Stealth VCC (същите 10, които carbonstealth.eu показва в
 // „Портфолио"; текстовете са пренесени оттам дума по дума, фактите — от кейс студиите на сайта).
-// Никакви измислени клиенти, числа или отзиви. Снимка = реален скрийншот на живия продукт (public/img/projects/<id>.webp,
-// 960×600); без снимка → типографска обложка (shot: false). caseStudy = слъгът на кейс студията на carbonstealth.eu.
+// Никакви измислени клиенти, числа или отзиви. Снимка = реален скрийншот на продукта (tools/project-shots.mjs →
+// public/img/projects/<id>.webp 1920×1200 + <id>-sm.webp 960×600); `shot` се засича от диска, не се пише на ръка —
+// без файл → типографска обложка. caseStudy = слъгът на кейс студията на carbonstealth.eu.
+import { existsSync } from "node:fs";
 import { BRAND_URL } from "./lib/html.mjs";
 
 export const CASE_STUDY_PATH = { bg: (s) => `${BRAND_URL}/bg/keys-studii/${s}/`, en: (s) => `${BRAND_URL}/en/case-studies/${s}/`, it: (s) => `${BRAND_URL}/case-study/${s}/` };
 
 export const PROJECTS = [
   {
-    id: "nexus", url: "https://nexus.carbonstealth.eu", shot: true, caseStudy: "nexus-dominion", accent: "#8b5cf6",
+    id: "nexus", url: "https://nexus.carbonstealth.eu", caseStudy: "nexus-dominion", accent: "#8b5cf6",
     stack: ["React", "Node.js", "TypeScript", "PostgreSQL", "Redis", "Socket.IO", "Docker"],
     t: {
       bg: { name: "Nexus Dominion", category: "Браузър MMO игра", desc: "Средновековно dark fantasy браузър MMO. React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. 52+ модела в базата, 27 игрови страници.", facts: ["52+ модела в базата", "27 игрови страници", "Real-time през Socket.IO", "Гилдии · подземия · PvP арена · пазар"] },
@@ -17,7 +19,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "ouvaptsarov", url: "https://ouvaptsarov.com", shot: false, caseStudy: "ou-vaptsarov", accent: "#2563eb",
+    id: "ouvaptsarov", url: "https://ouvaptsarov.com", caseStudy: "ou-vaptsarov", accent: "#2563eb",
     stack: ["React", "Vite", "PHP", "Responsive"],
     t: {
       bg: { name: "ОУ „Никола Вапцаров“", category: "Училищен сайт", desc: "Официален уебсайт на ОУ „Никола Вапцаров“, Бобов дол. React SPA със система за новини и респонсив дизайн.", facts: ["Многоезичен институционален сайт", "Новини, графици, документи", "Бърз и от телефон при слаба връзка"] },
@@ -26,7 +28,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "erp", url: "https://erp.carbonstealth.eu", shot: false, caseStudy: "erp-ascensori", accent: "#0ea5e9",
+    id: "erp", url: "https://erp.carbonstealth.eu", caseStudy: "erp-ascensori", accent: "#0ea5e9",
     stack: ["React", "Prisma", "PostgreSQL"],
     t: {
       bg: { name: "ERP Ascensori", category: "ERP система", desc: "ERP система за Panev Ascensori SAS (Милано). Счетоводство, склад, CRM, HR, производство.", facts: ["Производство · склад · фактуриране в едно", "7 нива на достъп по роля", "BI табла за ръководството"] },
@@ -35,7 +37,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "tretimart", url: "https://tretimart.carbonstealth.eu", shot: false, caseStudy: "treti-mart", accent: "#f59e0b",
+    id: "tretimart", url: "https://tretimart.carbonstealth.eu", caseStudy: "treti-mart", accent: "#f59e0b",
     stack: ["React", "Node.js", "Stripe", "PostgreSQL"],
     t: {
       bg: { name: "Трети Март", category: "Маркетплейс", desc: "Български маркетплейс с React, Node.js, PostgreSQL, Stripe, OTP верификация и админ панел със 7 таба.", facts: ["Превозни средства · имоти · услуги", "Безплатни обяви", "Сигурни плащания през Stripe", "Админ панел със 7 таба"] },
@@ -44,7 +46,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "evanita", url: "https://evanita-bg.com", shot: true, accent: "#9f1239",
+    id: "evanita", url: "https://evanita-bg.com", accent: "#9f1239",
     stack: ["HTML", "CSS", "JS", "Nginx"],
     t: {
       bg: { name: "Evanita Sport", category: "Фитнес студио", desc: "Дамско студио за Kangoo Jumps и силови тренировки в Дупница, с лицензиран инструктор. Бърз статичен сайт, mobile-first.", facts: ["Статичен сайт, нула зависимости", "Mobile-first", "Хостинг зад Nginx"] },
@@ -53,7 +55,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "eternaltouch", url: "https://eternaltouch.it", shot: false, accent: "#a16207",
+    id: "eternaltouch", url: "https://eternaltouch.it", accent: "#a16207",
     stack: ["Express", "EJS", "Prisma", "PostgreSQL"],
     t: {
       bg: { name: "Eternal Touch", category: "Витрина и каталог", desc: "Ателие в Бобов дол: ръчно изработени гипсови декорации, бонбониери и творения по поръчка. Витрина и каталог на три езика.", facts: ["Каталог на три езика (IT · BG · EN)", "Витрина, не e-commerce", "Docker + PostgreSQL"] },
@@ -62,7 +64,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "ospedali", url: "https://ospedalitrasparenti.it", shot: true, accent: "#0369a1",
+    id: "ospedali", url: "https://ospedalitrasparenti.it", accent: "#0369a1",
     stack: ["Node.js", "ETL", "Open data"],
     t: {
       bg: { name: "Ospedali Trasparenti", category: "Граждански портал", desc: "Граждански портал за прозрачност на италианските болници: публични и сравними данни, достъпни за гражданите.", facts: ["Официални open data (BDAP/MEF, dati.salute)", "Отчет за всяка структура от SSN", "Нула зависимости, статичен сайт"] },
@@ -71,7 +73,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "vizitka", url: "https://vizitka-bg.com", shot: true, accent: "#1d4ed8",
+    id: "vizitka", url: "https://vizitka-bg.com", accent: "#1d4ed8",
     stack: ["Express", "EJS", "SQLite", "QR"],
     t: {
       bg: { name: "Vizitka", category: "Дигитална визитка", desc: "Дигитална визитка с постоянен QR код. Смениш ли телефон или длъжност — всички вече раздадени визитки се обновяват сами.", facts: ["Постоянен QR код", "Безплатен профил — личен или фирмен", "Печат върху хартиена визитка, стикер, табела"] },
@@ -80,7 +82,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "mastilko", url: "https://mastilko-bg.com", shot: true, accent: "#c2410c",
+    id: "mastilko", url: "https://mastilko-bg.com", accent: "#c2410c",
     stack: ["Next.js", "React", "Tailwind", "Gemini"],
     t: {
       bg: { name: "Мастилко", category: "Инструмент за печат", desc: "Безплатни етикети, визитки и CV, готови за печат. Преглед на живо върху истински А4 лист, без регистрация.", facts: ["Преглед на живо върху А4", "Без регистрация, без проследяване", "AI помощ с Gemini"] },
@@ -89,7 +91,7 @@ export const PROJECTS = [
     },
   },
   {
-    id: "panev", url: "https://panevascensori.it", shot: true, accent: "#1e3a8a",
+    id: "panev", url: "https://panevascensori.it", accent: "#1e3a8a",
     stack: ["Express", "SQLite", "Stripe"],
     t: {
       bg: { name: "Panev Ascensori", category: "Сайт + e-commerce", desc: "Патентовани скоби за асансьори: регулируем монтаж на етажни врати и водачи на противотежестта върху неравна зидария. Патент UIBM, made in Italy.", facts: ["Патент за полезен модел UIBM", "Каталог с ценоразпис + PDF", "Поръчки и плащания през Stripe", "IT · EN · BG"] },
@@ -98,3 +100,4 @@ export const PROJECTS = [
     },
   },
 ];
+for (const p of PROJECTS) p.shot = existsSync(new URL(`../public/img/projects/${p.id}.webp`, import.meta.url)) && existsSync(new URL(`../public/img/projects/${p.id}-sm.webp`, import.meta.url));
