@@ -13596,7 +13596,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 168
+        "lessons": 171
       },
       "evolution": [
         {
@@ -13676,9 +13676,20 @@
           "date": "2026-09-18",
           "event": "v16.3 — учене",
           "detail": "Научи: CWS иска разкриване на данни ДОРИ когато всичко е само локално на устройството — 'local… (+7 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-09-18",
+          "event": "v16.6 — учене",
+          "detail": "Научи: От 01.08.2026 CWS налага: (1) Limited Use — събраните данни трябва да са strictly neces… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-18",
+          "type": "learning",
+          "summary": "Научи: „От 01.08.2026 CWS налага: (1) Limited Use — събраните данни трябва да са strictly neces…\" (+2 още)"
+        },
         {
           "date": "2026-09-18",
           "type": "learning",
