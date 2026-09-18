@@ -112,7 +112,7 @@ test("шрифтовете са самостоятелно хостнати: н�
   for (const p of pages) {
     const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
     assert.ok(!/fonts\.googleapis|fonts\.gstatic/.test(html), `${rel}: Google Fonts`);
-    const cssLinks = [...html.matchAll(/href="(\/assets\/fonts\/[a-z0-9-]+\.css)"/g)].map((m) => m[1]);
+    const cssLinks = [...html.matchAll(/href="(\/assets\/fonts\/[a-z0-9-]+\.css)(?:\?v=[0-9a-f]{8})?"/g)].map((m) => m[1]);
     assert.ok(cssLinks.length >= 1, `${rel}: няма локален font CSS`);
     for (const c of cssLinks) {
       const css = readFileSync(join(OUT, c), "utf8");
@@ -266,6 +266,16 @@ test("нищо с adblock-примамващ клас (ad-/ads/adv/banner/sponso
   }
 });
 
+test("всеки /assets/*.css|js в HTML-а носи версия по съдържание (?v=sha1) — nginx кешира css/js 7 дни", () => {
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8");
+    const bare = html.match(/(?:href|src)="\/assets\/[^"?#]+\.(?:css|js)"/g) || [];
+    assert.deepStrictEqual(bare, [], `${p.replace(OUT, "")}: без версия — ${bare.slice(0, 3).join(" ")}`);
+    const versioned = html.match(/\/assets\/[^"?#]+\.(?:css|js)\?v=[0-9a-f]{8}"/g) || [];
+    assert.ok(versioned.length >= 1, `${p.replace(OUT, "")}: поне един версиониран asset`);
+  }
+});
+
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
   for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
@@ -286,7 +296,7 @@ test("служебни файлове: sitemap с всички URL и hreflang, 
 
 test("маркетинг слой: proof ред, оферта, линк във всяка услуга, плочки със снимки, без декорациите на „генериран“ сайт; хъбът — преглед на устройства и „включва“", () => {
   const html = readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8");
-  for (const needle of ['href="/assets/premium.css"', 'src="/assets/premium.js"', 'class="proof"', 'class="offer"', 'class="offer-tag"', 'class="card-link"', 'class="avatar"', 'class="fa"', 'class="lb-cap"']) assert.ok(html.includes(needle), needle);
+  for (const needle of ['href="/assets/premium.css?v=', 'src="/assets/premium.js?v=', 'class="proof"', 'class="offer"', 'class="offer-tag"', 'class="card-link"', 'class="avatar"', 'class="fa"', 'class="lb-cap"']) assert.ok(html.includes(needle), needle);
   for (const banned of ['class="curtain"', 'class="grain"', 'class="scroll-cue"', 'class="sec-num"', 'class="word"', 'class="marquee"', 'class="foot-word"', 'class="num"', "fx/avtoservis.js"]) assert.ok(!html.includes(banned), `забранено: ${banned}`);
   if (existsSync(join(OUT, "img/avtoservis/credits.json"))) assert.ok(/data-cap="[^"]+"/.test(html) && html.includes('class="tint"'), "галерия с надписи и тониран hero");
   const tiles = readFileSync(join(OUT, "bg/demo/barzo-hranene/index.html"), "utf8");

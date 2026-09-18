@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // build.mjs — генерира статичния сайт в dist/ (нула зависимости). Всяка страница минава през
 // един и същ head() → SEO/hreflang/keywords не могат да се забравят на отделна страница.
-import { mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, cpSync, readFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANGS, PATHS, demoPath, SITE } from "./src/lib/html.mjs";
@@ -24,6 +25,16 @@ import { renderBrochure } from "./src/templates/brochure.mjs";
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const OUT = join(ROOT, "dist");
 
+// Версия по съдържание на всеки /assets/*.css|js в HTML-а (?v=<8 знака sha1>): nginx кешира css/js 7 дни и
+// без това след деплой браузърът сглобява НОВ HTML със СТАР css/js (админ демото се разпадна точно така).
+const ASSETS_SRC = join(ROOT, "src", "assets");
+const hashes = new Map();
+const assetVersion = (p) => {
+  if (!hashes.has(p)) { const f = join(ASSETS_SRC, p.replace(/^\/assets\//, "")); hashes.set(p, existsSync(f) ? createHash("sha1").update(readFileSync(f)).digest("hex").slice(0, 8) : null); }
+  return hashes.get(p);
+};
+export const versionAssets = (html) => html.replace(/((?:href|src)=")(\/assets\/[^"?#]+\.(?:css|js))(")/g, (m, a, p, b) => { const v = assetVersion(p); return v ? `${a}${p}?v=${v}${b}` : m; });
+
 export function build({ out = OUT, quiet = false } = {}) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
@@ -31,7 +42,7 @@ export function build({ out = OUT, quiet = false } = {}) {
   const put = (path, html) => {
     const file = path.endsWith("/") ? join(out, path, "index.html") : join(out, path);
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, html);
+    writeFileSync(file, file.endsWith(".html") ? versionAssets(html) : html);
     pages.push(path);
   };
   const today = new Date().toISOString().slice(0, 10);
