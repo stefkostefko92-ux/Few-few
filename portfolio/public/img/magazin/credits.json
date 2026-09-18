@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-18",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "363041d4dd91c152",
+      "photographer": "kev-shine",
+      "photographer_url": "https://www.flickr.com/people/kevinshine/",
+      "url": "https://www.flickr.com/photos/kevinshine/8334489559",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "b9ac4d3b654d47d9",
+      "photographer": "Roger H. Goun",
+      "photographer_url": "https://www.flickr.com/people/sskennel/",
+      "url": "https://www.flickr.com/photos/sskennel/15462921833",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "b6035017c76ba8d9",
+      "photographer": "JVCAmerica",
+      "photographer_url": "https://www.flickr.com/people/jvcamerica/",
+      "url": "https://www.flickr.com/photos/jvcamerica/8003937763",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "0b62e5acebb52a74",
+      "photographer": "Arjan Richter",
+      "photographer_url": "https://www.flickr.com/people/arjanrichter/",
+      "url": "https://www.flickr.com/photos/arjanrichter/5423992325",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "41ce945562a86e60",
+      "photographer": "Jamie",
+      "photographer_url": "https://www.flickr.com/people/jamiesrabbits/",
+      "url": "https://www.flickr.com/photos/jamiesrabbits/3681406949",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "27276eeae6a5b81e",
+      "photographer": "Wicker Paradise",
+      "photographer_url": "https://www.flickr.com/people/wicker-furniture/",
+      "url": "https://www.flickr.com/photos/wicker-furniture/9511320437",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "711d6858805a7848",
+      "photographer": "Joe Bar",
+      "photographer_url": "https://www.flickr.com/people/jbar_photos/",
+      "url": "https://www.flickr.com/photos/jbar_photos/11680776906",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "d28a33ef9e8378af",
+      "photographer": "Roger H. Goun",
+      "photographer_url": "https://www.flickr.com/people/sskennel/",
+      "url": "https://www.flickr.com/photos/sskennel/16056784596",
+      "source": "openimages"
+    }
+  ]
+}

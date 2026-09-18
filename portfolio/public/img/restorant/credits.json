@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-18",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "01204468d010974b",
+      "photographer": "Jonathan Day",
+      "photographer_url": "https://www.flickr.com/people/wedding-photography-by-jonathan-day/",
+      "url": "https://www.flickr.com/photos/wedding-photography-by-jonathan-day/3532885155",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "a5a183d385862f72",
+      "photographer": "silvmedia.de",
+      "photographer_url": "https://www.flickr.com/people/52731864@N04/",
+      "url": "https://www.flickr.com/photos/52731864@N04/7073646009",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "9dcca08233ab2755",
+      "photographer": "思弦 張",
+      "photographer_url": "https://www.flickr.com/people/small_0323/",
+      "url": "https://www.flickr.com/photos/small_0323/4614935716",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "6bc9c0ce4cbb39bb",
+      "photographer": "sushi♥ina",
+      "photographer_url": "https://www.flickr.com/people/30360780@N02/",
+      "url": "https://www.flickr.com/photos/30360780@N02/3897053783",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "c3072bd89a7efd87",
+      "photographer": "Stacy Herbert",
+      "photographer_url": "https://www.flickr.com/people/stacyherbert/",
+      "url": "https://www.flickr.com/photos/stacyherbert/4230980382",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "30eb70aede18d431",
+      "photographer": "Jennifer",
+      "photographer_url": "https://www.flickr.com/people/sweetonveg/",
+      "url": "https://www.flickr.com/photos/sweetonveg/4505029621",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "037abb12c91f5662",
+      "photographer": "Boemski",
+      "photographer_url": "https://www.flickr.com/people/ggvic/",
+      "url": "https://www.flickr.com/photos/ggvic/2890923634",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "041b3597d605f38a",
+      "photographer": "hoskeebo",
+      "photographer_url": "https://www.flickr.com/people/hoskeebo/",
+      "url": "https://www.flickr.com/photos/hoskeebo/3792990794",
+      "source": "openimages"
+    }
+  ]
+}

@@ -84,7 +84,7 @@ export function llms() {
 
 > Портфолио на Carbon Stealth VCC (${BRAND_URL}) — уеб студио от България, работещо с клиенти в България и Италия. Сайтът показва 10 напълно работещи демо лендинг страници за 10 вида бизнес (автосервиз, фитнес, мебелен магазин, адвокатска кантора, салон за красота, хотел/къща за гости, счетоводна къща, автокъща, магазин за дрехи, бързо хранене) на български, английски и италиански, плюс прозрачни цени, поне 15% под пазарните за 2026 г.
 
-> Portfolio of Carbon Stealth VCC — a web studio from Bulgaria serving clients in Bulgaria and Italy. Ten fully working demo landing pages for ten kinds of business, in Bulgarian, English and Italian, plus transparent pricing at least 15% below the 2026 market.
+> Portfolio of Carbon Stealth VCC — a web studio from Bulgaria serving clients in Bulgaria and Italy. ${DEMOS.length} fully working demo landing pages for ten kinds of business, in Bulgarian, English and Italian, plus transparent pricing at least 15% below the 2026 market.
 
 ## Компания / Company
 - Carbon Stealth VCC · ЕИК/VAT BG208725180 · ул. Самуил 3, 2670 Бобов дол, България · info@carbonstealth.eu

@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-18",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "86426acf5270f5d4",
+      "photographer": "Tom Byrne",
+      "photographer_url": "https://www.flickr.com/people/byrnessite/",
+      "url": "https://www.flickr.com/photos/byrnessite/12334438263",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "a157da600e266536",
+      "photographer": "TipsyCake Chicago",
+      "photographer_url": "https://www.flickr.com/people/23925460@N04/",
+      "url": "https://www.flickr.com/photos/23925460@N04/4979490309/",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "d21f47b4f9e7144f",
+      "photographer": "Medisave UK",
+      "photographer_url": "https://www.flickr.com/people/107621760@N03/",
+      "url": "https://www.flickr.com/photos/107621760@N03/10668832073",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "be1b497196e4d0d6",
+      "photographer": "Gunjan Karun",
+      "photographer_url": "https://www.flickr.com/people/gunjankarun/",
+      "url": "https://www.flickr.com/photos/gunjankarun/2471798930",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "04967790ac1874c5",
+      "photographer": "Cameron Mitchell",
+      "photographer_url": "https://www.flickr.com/people/camerondmitchell/",
+      "url": "https://www.flickr.com/photos/camerondmitchell/6929179808",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "1a4c60119cc977f6",
+      "photographer": "shira gal",
+      "photographer_url": "https://www.flickr.com/people/miss_pupik/",
+      "url": "https://www.flickr.com/photos/miss_pupik/26586234",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "ee9ddd19301025cc",
+      "photographer": "Medisave UK",
+      "photographer_url": "https://www.flickr.com/people/107621760@N03/",
+      "url": "https://www.flickr.com/photos/107621760@N03/10668611286",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "cca36afb13fc10d1",
+      "photographer": "Yusmar Yahaya",
+      "photographer_url": "https://www.flickr.com/people/leafbug/",
+      "url": "https://www.flickr.com/photos/leafbug/4709279704/",
+      "source": "openimages"
+    }
+  ]
+}

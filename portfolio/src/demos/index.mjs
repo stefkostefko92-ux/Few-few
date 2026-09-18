@@ -9,4 +9,5 @@ import schetovodstvo from "./schetovodstvo.mjs";
 import avtokashta from "./avtokashta.mjs";
 import drehi from "./drehi.mjs";
 import burger from "./burger.mjs";
-export const DEMOS = [avtoservis, fitnes, mebeli, advokati, salon, hotel, schetovodstvo, avtokashta, drehi, burger];
+import magazin from "./magazin.mjs";
+export const DEMOS = [avtoservis, fitnes, mebeli, advokati, salon, hotel, schetovodstvo, avtokashta, drehi, burger, magazin];

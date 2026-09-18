@@ -24,8 +24,8 @@ function demoBar(lang, demo, ui) {
 }
 
 function nav(t, c, phone, hasGallery) {
-  const links = [["#services", c.nav.services], ["#about", c.nav.about], hasGallery ? ["#gallery", c.nav.gallery] : null, ["#reviews", c.nav.reviews], ["#faq", c.nav.faq], ["#contact", c.nav.contact]].filter(Boolean);
-  return `<header class="nav" id="top"><a class="brand" href="#top">${esc(t.name)}</a><button class="burger" aria-expanded="false" aria-controls="menu" aria-label="${esc(c.nav.menu)}">${ICON.menu}</button><nav id="menu" class="menu">${links.map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join("")}</nav><a class="btn btn-nav" href="tel:${phone.replace(/\s/g, "")}">${ICON.phone}<span>${esc(c.call)}</span></a></header>`;
+  const links = [t.catalog ? ["#catalog", c.nav.catalog] : null, ["#services", c.nav.services], ["#about", c.nav.about], hasGallery ? ["#gallery", c.nav.gallery] : null, ["#reviews", c.nav.reviews], ["#faq", c.nav.faq], ["#contact", c.nav.contact]].filter(Boolean);
+  return `<header class="nav" id="top"><a class="brand" href="#top">${esc(t.name)}</a><button class="burger" aria-expanded="false" aria-controls="menu" aria-label="${esc(c.nav.menu)}">${ICON.menu}</button><nav id="menu" class="menu">${links.map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join("")}</nav><a class="btn btn-nav" href="tel:${phone.replace(/\s/g, "")}">${ICON.phone}<span>${esc(c.call)}</span></a>${t.catalog ? `<button type="button" class="cart-btn" data-cart-open aria-label="${esc(c.shop.cart)}">${ICON.cart}<b data-cart-count hidden>0</b></button>` : ""}</header>`;
 }
 
 function hero(t, th, c, demo, photos) {
@@ -44,6 +44,19 @@ function tileImgs(demo, photos) {
 function offer(t) {
   const o = t.offer; if (!o) return "";
   return `<section class="offer" id="offer" aria-labelledby="offer-title"><div class="wrap"><div><span class="offer-tag">${esc(o.tag)}</span><h2 id="offer-title">${esc(o.title)}</h2><p>${esc(o.text)}</p></div><div class="offer-cta"><a class="btn btn-primary" href="#contact">${esc(o.cta)} ${ICON.arrow}</a><p class="offer-note">${esc(o.note)}</p></div></div></section>`;
+}
+
+/** Онлайн магазин: каталог с истинска кошница (fx/shop.js) — продуктите носят снимки от галерията. */
+function catalog(t, c, demo, photos) {
+  const k = t.catalog; if (!k) return "";
+  const s = c.shop;
+  const img = (slot) => photos?.slots[slot] ? `<img src="/img/${demo.id}/${slot}.webp" srcset="/img/${demo.id}/${slot}-sm.webp 450w, /img/${demo.id}/${slot}.webp 900w" sizes="(max-width:700px) 100vw, 33vw" alt="" width="900" height="600" loading="lazy" decoding="async">` : `<span class="prod-ph" aria-hidden="true"></span>`;
+  const prods = k.items.map((p, i) => `<article class="prod reveal"><a class="prod-img" href="#p${i}" aria-hidden="true" tabindex="-1">${img(p.img)}</a><div class="prod-body"><span class="prod-cat">${esc(p.cat)}</span><h3 id="p${i}">${esc(p.n)}</h3><p>${esc(p.d)}</p><div class="prod-row"><strong>${esc(p.price)}</strong><button type="button" class="btn btn-primary btn-sm" data-add="${i}" data-name="${esc(p.n)}" data-price="${p.num}" data-img="/img/${demo.id}/${p.img}-sm.webp">${esc(s.add)}</button></div></div></article>`).join("");
+  const drawer = `<div class="cart" id="cart" hidden role="dialog" aria-modal="true" aria-label="${esc(s.cart)}"><div class="cart-panel"><div class="cart-head"><h2>${esc(s.cart)}</h2><button type="button" class="cart-close" aria-label="${esc(s.close)}">×</button></div><p class="cart-empty">${esc(s.empty)}</p><ul class="cart-list"></ul><div class="cart-foot" hidden><dl><div><dt>${esc(s.subtotal)}</dt><dd data-sub></dd></div><div><dt>${esc(s.delivery)}</dt><dd data-del></dd></div><div class="tot"><dt>${esc(s.total)}</dt><dd data-tot></dd></div></dl><p class="tiny">${esc(k.shipNote)}</p><button type="button" class="btn btn-primary w-cta" data-checkout>${esc(s.checkout)} ${ICON.arrow}</button><button type="button" class="btn btn-ghost w-cta cart-continue">${esc(s.continue)}</button></div></div></div>`;
+  const pay = k.pay.map((p, i) => `<label class="co-opt"><input type="radio" name="pay" value="${i}"${i === 0 ? " checked" : ""}> ${esc(p)}</label>`).join("");
+  const ship = k.ship.map((p, i) => `<label class="co-opt"><input type="radio" name="ship" value="${i}"${i === 0 ? " checked" : ""}> ${esc(p)}</label>`).join("");
+  const checkout = `<dialog class="checkout" id="checkout" aria-label="${esc(s.checkout)}"><button type="button" class="co-x co-close" aria-label="${esc(s.close)}">×</button><form novalidate><h2>${esc(s.checkout)}</h2><label class="w-field"><span>${esc(c.form.name)}</span><input name="name" required autocomplete="name"></label><label class="w-field"><span>${esc(c.form.email)}</span><input name="email" type="email" required autocomplete="email"></label><label class="w-field"><span>${esc(s.address)}</span><input name="address" required autocomplete="street-address"></label><fieldset><legend>${esc(s.deliveryMethod)}</legend>${ship}</fieldset><fieldset><legend>${esc(s.payment)}</legend>${pay}</fieldset><p class="tiny">${esc(s.demoNote)}</p><button type="submit" class="btn btn-primary w-cta">${esc(s.place)} ${ICON.arrow}</button></form><div class="co-done" hidden><h2>${esc(s.orderDone)}</h2><p>${esc(s.orderNo)} <strong data-no></strong> · <span data-sum></span> · <span data-pay></span></p><p class="tiny">${esc(s.demoNote)}</p><button type="button" class="btn btn-primary w-cta co-close">${esc(s.close)}</button></div></dialog>`;
+  return `<section class="section" id="catalog"><div class="wrap"><h2 class="h2">${k.title}</h2><p class="lede">${esc(k.lede)}</p><div class="grid grid-3 catalog">${prods}</div></div></section>${drawer}${checkout}`;
 }
 
 function services(t) {
@@ -113,12 +126,12 @@ export function renderDemo(lang, demo) {
   const og = photos?.slots.hero ? `/img/${demo.id}/hero.webp` : undefined;
   return join([
     head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: demo.keywords[lang], path, paths, fonts: [...th.fonts, "brand"], css: ["/assets/demo.css", "/assets/premium.css"], themeColor: th.bg, ogImage: og, extra: themeCss(th) + schema(lang, demo, t, path, photos) }),
-    `<body class="demo mode-${th.mode}" data-i18n="${esc(JSON.stringify({ tryColor: c.widget.tryColor }))}">`,
+    `<body class="demo mode-${th.mode}" data-i18n="${esc(JSON.stringify({ tryColor: c.widget.tryColor }))}"${t.catalog ? ` data-shop="${esc(JSON.stringify({ currency: "€", format: lang === "en" ? "pre" : "post", freeFrom: t.catalog.freeFrom, shipping: t.catalog.shipping, added: c.shop.added, remove: c.shop.remove, free: c.shop.free }))}"` : ""}>`,
     demoBar(lang, demo, ui),
     nav(t, c, t.phone, !!photos),
-    `<main>`, hero(t, th, c, demo, photos), services(t), offer(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
+    `<main>`, hero(t, th, c, demo, photos), catalog(t, c, demo, photos), services(t), offer(t), about(t, demo, photos), gallery(t, c, demo, photos), steps(t), list(t), reviews(t, c), faq(t, c), contact(t, c), `</main>`,
     footer(t, c, lang), sticky(t, c),
-    `<script src="/assets/demo.js" defer></script>${FX_MODULES.has(demo.id) ? `<script src="/assets/fx/core.js" defer></script><script src="/assets/fx/${demo.id}.js" defer></script>` : ""}<script src="/assets/premium.js" defer></script>`,
+    `<script src="/assets/demo.js" defer></script>${FX_MODULES.has(demo.id) ? `<script src="/assets/fx/core.js" defer></script><script src="/assets/fx/${demo.id}.js" defer></script>` : ""}${t.catalog ? `<script src="/assets/fx/shop.js" defer></script>` : ""}<script src="/assets/premium.js" defer></script>`,
     `</body></html>`,
   ]);
 }

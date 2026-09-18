@@ -740,6 +740,376 @@
         "title": "Backlit Sidecar",
         "license": "https://creativecommons.org/licenses/by/2.0/"
       }
+    },
+    "magazin": {
+      "hero": {
+        "id": "363041d4dd91c152",
+        "subset": "train",
+        "author": "kev-shine",
+        "authorUrl": "https://www.flickr.com/people/kevinshine/",
+        "landing": "https://www.flickr.com/photos/kevinshine/8334489559",
+        "title": "headphones",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "b9ac4d3b654d47d9",
+        "subset": "train",
+        "author": "Roger H. Goun",
+        "authorUrl": "https://www.flickr.com/people/sskennel/",
+        "landing": "https://www.flickr.com/photos/sskennel/15462921833",
+        "title": "Voitgtländer 50mm f/1.5 Nokton VM Aspherical",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "b6035017c76ba8d9",
+        "subset": "train",
+        "author": "JVCAmerica",
+        "authorUrl": "https://www.flickr.com/people/jvcamerica/",
+        "landing": "https://www.flickr.com/photos/jvcamerica/8003937763",
+        "title": "JVC HA-S400",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "0b62e5acebb52a74",
+        "subset": "train",
+        "author": "Arjan Richter",
+        "authorUrl": "https://www.flickr.com/people/arjanrichter/",
+        "landing": "https://www.flickr.com/photos/arjanrichter/5423992325",
+        "title": "The unknown side of the Shinjuku i-land Astronomical Clock Tower in Shinjuku Tokyo Japan",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "41ce945562a86e60",
+        "subset": "test",
+        "author": "Jamie",
+        "authorUrl": "https://www.flickr.com/people/jamiesrabbits/",
+        "landing": "https://www.flickr.com/photos/jamiesrabbits/3681406949",
+        "title": "Yellow Handbag",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "27276eeae6a5b81e",
+        "subset": "validation",
+        "author": "Wicker Paradise",
+        "authorUrl": "https://www.flickr.com/people/wicker-furniture/",
+        "landing": "https://www.flickr.com/photos/wicker-furniture/9511320437",
+        "title": "Karenza metallic purple sandals - KG BY KURT GEIGER - Shoes & boots - Accessories - Selfridges | Shop Online",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "711d6858805a7848",
+        "subset": "train",
+        "author": "Joe Bar",
+        "authorUrl": "https://www.flickr.com/people/jbar_photos/",
+        "landing": "https://www.flickr.com/photos/jbar_photos/11680776906",
+        "title": "Jessy -",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "d28a33ef9e8378af",
+        "subset": "train",
+        "author": "Roger H. Goun",
+        "authorUrl": "https://www.flickr.com/people/sskennel/",
+        "landing": "https://www.flickr.com/photos/sskennel/16056784596",
+        "title": "Voitgtländer 15mm f/4.5 Super Wide-Heliar Aspherical",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "restorant": {
+      "hero": {
+        "id": "01204468d010974b",
+        "subset": "train",
+        "author": "Jonathan Day",
+        "authorUrl": "https://www.flickr.com/people/wedding-photography-by-jonathan-day/",
+        "landing": "https://www.flickr.com/photos/wedding-photography-by-jonathan-day/3532885155",
+        "title": "Swallows Oast Wedding Venue - 21",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "a5a183d385862f72",
+        "subset": "validation",
+        "author": "silvmedia.de",
+        "authorUrl": "https://www.flickr.com/people/52731864@N04/",
+        "landing": "https://www.flickr.com/photos/52731864@N04/7073646009",
+        "title": "Bandnudeln selbstgemacht",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "9dcca08233ab2755",
+        "subset": "validation",
+        "author": "思弦 張",
+        "authorUrl": "https://www.flickr.com/people/small_0323/",
+        "landing": "https://www.flickr.com/photos/small_0323/4614935716",
+        "title": "20100517-瑪琪哈朵-012",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "6bc9c0ce4cbb39bb",
+        "subset": "validation",
+        "author": "sushi♥ina",
+        "authorUrl": "https://www.flickr.com/people/30360780@N02/",
+        "landing": "https://www.flickr.com/photos/30360780@N02/3897053783",
+        "title": "Pasta Salad",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "c3072bd89a7efd87",
+        "subset": "validation",
+        "author": "Stacy Herbert",
+        "authorUrl": "https://www.flickr.com/people/stacyherbert/",
+        "landing": "https://www.flickr.com/photos/stacyherbert/4230980382",
+        "title": "Max and Stacy New Year",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "30eb70aede18d431",
+        "subset": "validation",
+        "author": "Jennifer",
+        "authorUrl": "https://www.flickr.com/people/sweetonveg/",
+        "landing": "https://www.flickr.com/photos/sweetonveg/4505029621",
+        "title": "Raw Vegan Ganache in Vancouver",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "037abb12c91f5662",
+        "subset": "train",
+        "author": "Boemski",
+        "authorUrl": "https://www.flickr.com/people/ggvic/",
+        "landing": "https://www.flickr.com/photos/ggvic/2890923634",
+        "title": "My coffee's design for the day at Fluid (by Don)",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "041b3597d605f38a",
+        "subset": "test",
+        "author": "hoskeebo",
+        "authorUrl": "https://www.flickr.com/people/hoskeebo/",
+        "landing": "https://www.flickr.com/photos/hoskeebo/3792990794",
+        "title": "harmony-house-cafe-2",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "klinika": {
+      "hero": {
+        "id": "86426acf5270f5d4",
+        "subset": "validation",
+        "author": "Tom Byrne",
+        "authorUrl": "https://www.flickr.com/people/byrnessite/",
+        "landing": "https://www.flickr.com/photos/byrnessite/12334438263",
+        "title": "Lobby",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "a157da600e266536",
+        "subset": "train",
+        "author": "TipsyCake Chicago",
+        "authorUrl": "https://www.flickr.com/people/23925460@N04/",
+        "landing": "https://www.flickr.com/photos/23925460@N04/4979490309/",
+        "title": "4547805445_d020fea399",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "d21f47b4f9e7144f",
+        "subset": "train",
+        "author": "Medisave UK",
+        "authorUrl": "https://www.flickr.com/people/107621760@N03/",
+        "landing": "https://www.flickr.com/photos/107621760@N03/10668832073",
+        "title": "Littmann Stethoscope",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "be1b497196e4d0d6",
+        "subset": "train",
+        "author": "Gunjan Karun",
+        "authorUrl": "https://www.flickr.com/people/gunjankarun/",
+        "landing": "https://www.flickr.com/photos/gunjankarun/2471798930",
+        "title": "Colors",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "04967790ac1874c5",
+        "subset": "train",
+        "author": "Cameron Mitchell",
+        "authorUrl": "https://www.flickr.com/people/camerondmitchell/",
+        "landing": "https://www.flickr.com/photos/camerondmitchell/6929179808",
+        "title": "R1-08195-001A",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "1a4c60119cc977f6",
+        "subset": "train",
+        "author": "shira gal",
+        "authorUrl": "https://www.flickr.com/people/miss_pupik/",
+        "landing": "https://www.flickr.com/photos/miss_pupik/26586234",
+        "title": "three some",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "ee9ddd19301025cc",
+        "subset": "train",
+        "author": "Medisave UK",
+        "authorUrl": "https://www.flickr.com/people/107621760@N03/",
+        "landing": "https://www.flickr.com/photos/107621760@N03/10668611286",
+        "title": "Littmann Stethoscope",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "cca36afb13fc10d1",
+        "subset": "validation",
+        "author": "Yusmar Yahaya",
+        "authorUrl": "https://www.flickr.com/people/leafbug/",
+        "landing": "https://www.flickr.com/photos/leafbug/4709279704/",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "imoti": {
+      "hero": {
+        "id": "0d05e8a2bbfea2c9",
+        "subset": "train",
+        "author": "bogenschlag",
+        "authorUrl": "https://www.flickr.com/people/bogen/",
+        "landing": "https://www.flickr.com/photos/bogen/7127828337",
+        "title": "Schlagläden",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "052ae30d039b43c0",
+        "subset": "train",
+        "author": "Wicker Paradise",
+        "authorUrl": "https://www.flickr.com/people/wicker-furniture/",
+        "landing": "https://www.flickr.com/photos/wicker-furniture/10038155765",
+        "title": "Senufo Bench",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "2babd815debecaf2",
+        "subset": "train",
+        "author": "discoveryorkshirecoast.com",
+        "authorUrl": "https://www.flickr.com/people/discoveryorkshirecoast/",
+        "landing": "https://www.flickr.com/photos/discoveryorkshirecoast/5998124954",
+        "title": "Egton Bridge 19",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "dbf426e1543cc41e",
+        "subset": "train",
+        "author": "The Neighborhoods of EYA",
+        "authorUrl": "https://www.flickr.com/people/eyahomes/",
+        "landing": "https://www.flickr.com/photos/eyahomes/18741730868",
+        "title": "Bergman Model Kitchen",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "b2e7dbc8a29e8bfd",
+        "subset": "test",
+        "author": "Mg Blackstock",
+        "authorUrl": "https://www.flickr.com/people/sallyleecandles/",
+        "landing": "https://www.flickr.com/photos/sallyleecandles/4234809976",
+        "title": "cottage chic",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "6e19d04a11f00cbf",
+        "subset": "train",
+        "author": "Stenbolaget",
+        "authorUrl": "https://www.flickr.com/people/stenbolaget/",
+        "landing": "https://www.flickr.com/photos/stenbolaget/17123025288",
+        "title": "Slate Grey",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "d6aeabaa3367dcaa",
+        "subset": "validation",
+        "author": "jdeeringdavis",
+        "authorUrl": "https://www.flickr.com/people/hayesandjenn/",
+        "landing": "https://www.flickr.com/photos/hayesandjenn/4728474200",
+        "title": "Living Area",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "204c43de80a5e8d2",
+        "subset": "test",
+        "author": "Danny  Votra",
+        "authorUrl": "https://www.flickr.com/people/positionmktg/",
+        "landing": "https://www.flickr.com/photos/positionmktg/6813652288",
+        "title": "New Homes",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "stroitelstvo": {
+      "hero": {
+        "id": "c839db654949b778",
+        "subset": "train",
+        "author": "Marcin Wichary",
+        "authorUrl": "https://www.flickr.com/people/mwichary/",
+        "landing": "https://www.flickr.com/photos/mwichary/14951642789",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "2ca2a8f7f43c1c33",
+        "subset": "train",
+        "author": "Alan Light",
+        "authorUrl": "https://www.flickr.com/people/alan-light/",
+        "landing": "https://www.flickr.com/photos/alan-light/262379569",
+        "title": "38",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "e37aeb7494b11318",
+        "subset": "train",
+        "author": "Mike K",
+        "authorUrl": "https://www.flickr.com/people/baltimike/",
+        "landing": "https://www.flickr.com/photos/91186811@N00/207305774",
+        "title": "Flickr Show Display - 08",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "2a8274be7eda0a95",
+        "subset": "train",
+        "author": "silvmedia.de",
+        "authorUrl": "https://www.flickr.com/people/52731864@N04/",
+        "landing": "https://www.flickr.com/photos/52731864@N04/7178645510",
+        "title": "Dämmung in den Wänden",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "32bf71d4a4fbac1c",
+        "subset": "test",
+        "author": "Phil Parker",
+        "authorUrl": "https://www.flickr.com/people/45131642@N00/",
+        "landing": "https://www.flickr.com/photos/45131642@N00/4803881285",
+        "title": "Valance making",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "a34a5c16aeda144a",
+        "subset": "train",
+        "author": "Laboratorio Enmovimiento",
+        "authorUrl": "https://www.flickr.com/people/26630539@N04/",
+        "landing": "https://www.flickr.com/photos/26630539@N04/2650061873",
+        "title": "pintando paredes",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "23c3936ba766ff23",
+        "subset": "train",
+        "author": "Post Memes",
+        "authorUrl": "https://www.flickr.com/people/postmemes/",
+        "landing": "https://www.flickr.com/photos/postmemes/16309432956",
+        "title": "What A Tool",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "ba0bddea917ea586",
+        "subset": "train",
+        "author": "Penny Blankenship",
+        "authorUrl": "https://www.flickr.com/people/clydepossum/",
+        "landing": "https://www.flickr.com/photos/clydepossum/19394558",
+        "title": "20050614 Deck sunburst view",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
     }
   }
 }

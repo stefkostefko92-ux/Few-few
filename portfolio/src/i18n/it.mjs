@@ -2,8 +2,8 @@
 export default {
   code: "it", name: "Italiano", short: "IT",
   meta: {
-    hubTitle: "10 siti demo per la tua attività | Carbon Stealth",
-    hubDesc: "10 siti demo finiti: officina, palestra, arredamento, studio legale, salone, hotel, commercialista, concessionaria, abbigliamento, fast food. Scegli e ordina.",
+    hubTitle: "{n} siti demo per la tua attività | Carbon Stealth",
+    hubDesc: "{n} siti demo finiti: officina, palestra, arredamento, studio legale, salone, hotel, commercialista, concessionaria, shop e altro. Scegli e ordina.",
     hubKeywords: ["realizzazione siti web", "sito vetrina", "landing page", "sito web aziendale prezzo", "sito per piccole imprese", "web agency Italia", "sito multilingua"],
     pricingTitle: "Prezzi: landing {start} €, sito {business} € + IVA | Carbon Stealth",
     pricingDesc: "Prezzi almeno il 15% sotto il mercato: landing {start} €, sito aziendale {business} €, e-commerce {ecommerce} €, IVA esclusa (esente solo con partita IVA). Preventivo in 24 h.",
@@ -19,12 +19,12 @@ export default {
   hero: {
     eyebrow: "Carbon Stealth VCC · web studio · Bulgaria · Italia",
     title: "Il tuo nuovo sito. <em>Pronto da sfogliare adesso.</em>",
-    lede: "Dieci siti demo perfettamente funzionanti per dieci tipi di attività. Aprili da telefono e computer, scegli quello che ti somiglia e noi lo trasformiamo nel tuo — con i tuoi colori, testi e foto — in giorni, non mesi.",
+    lede: "{n} siti demo perfettamente funzionanti per {n} tipi di attività. Aprili da telefono e computer, scegli quello che ti somiglia e noi lo trasformiamo nel tuo — con i tuoi colori, testi e foto — in giorni, non mesi.",
     ctaDemos: "Sfoglia le demo",
     ctaPricing: "Vedi i prezzi",
     proof: "Risposta entro 24 ore · Sito pronto in 5–30 giorni lavorativi a seconda del pacchetto · Prezzi fissi IVA esclusa, almeno il 15% sotto il mercato · Hosting in UE per 12 mesi incluso",
     stats: [
-      { n: "10", l: "siti demo finiti" },
+      { n: "{n}", l: "siti demo finiti" },
       { n: "3", l: "lingue: BG · EN · IT" },
       { n: "95+", l: "punteggio Lighthouse" },
       { n: "0", l: "template — tutto fatto a mano" },
@@ -96,7 +96,7 @@ export default {
     hint: "Questa è una dimostrazione di Carbon Stealth VCC. Azienda, indirizzi e prezzi sono di fantasia.",
   },
   common: {
-    nav: { services: "Servizi", about: "Chi siamo", gallery: "Galleria", reviews: "Recensioni", faq: "Domande", contact: "Contatti", prices: "Prezzi", menu: "Menu" },
+    nav: { services: "Servizi", catalog: "Catalogo", about: "Chi siamo", gallery: "Galleria", reviews: "Recensioni", faq: "Domande", contact: "Contatti", prices: "Prezzi", menu: "Menu" },
     form: { name: "Nome", phone: "Telefono", email: "Email", msg: "Messaggio", send: "Invia", sent: "Demo: sul sito reale questo messaggio arriva nella tua casella in pochi secondi.", privacy: "Inviando il modulo accetti l'informativa sulla privacy." },
     hours: "Orari di apertura",
     address: "Indirizzo",
@@ -108,6 +108,7 @@ export default {
     credits: "Foto",
     creditsEdited: "ritagliate e modificate",
     widget: { tryColor: "Prova un colore", service: "Servizio", date: "Data", time: "Ora", name: "Nome", pick: "Scegli", selected: "Selezionato", total: "Totale", items: "articoli", done: "Demo: richiesta ricevuta. Sul sito reale ricevi conferma via SMS/email.", clear: "Svuota" },
+    shop: { add: "Aggiungi al carrello", added: "Aggiunto ✓", cart: "Carrello", empty: "Il carrello è vuoto.", subtotal: "Subtotale", delivery: "Consegna", total: "Totale", free: "gratuita", checkout: "Vai all'ordine", continue: "Continua gli acquisti", remove: "Rimuovi", address: "Indirizzo di consegna", deliveryMethod: "Consegna", payment: "Pagamento", place: "Ordina", orderDone: "Ordine ricevuto", orderNo: "Numero ordine:", close: "Chiudi", demoNote: "Demo: nel negozio reale qui si paga con carta via Stripe e il cliente riceve un'email con l'ordine." },
     sticky: { call: "Chiama", book: "Prenota" },
     top: "Su",
   },
@@ -176,10 +177,10 @@ export default {
     ],
   },
   brand: {
-    ticker: "CARBON STEALTH VCC · 10 SITI DEMO · BG · EN · IT · LIGHTHOUSE 95+ · SEO · GEO · AEO · HOSTING IN UE · PREZZI ≥15% SOTTO IL MERCATO · REVERSE CHARGE PER AZIENDE UE · ",
+    ticker: "CARBON STEALTH VCC · {n} SITI DEMO · BG · EN · IT · LIGHTHOUSE 95+ · SEO · GEO · AEO · HOSTING IN UE · PREZZI ≥15% SOTTO IL MERCATO · REVERSE CHARGE PER AZIENDE UE · ",
     boot: "AVVIO DEL PORTFOLIO...",
     hudLeft: "42.3600N 23.0000E · BOBOV DOL → MILANO",
-    hudRight: "CS CORE · ONLINE · 10/10 DEMO",
+    hudRight: "CS CORE · ONLINE · {n}/{n} DEMO",
     open: "APRI →",
     live: "DAL VIVO",
     preview: "ANTEPRIMA DISPOSITIVI",

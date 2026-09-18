@@ -26,11 +26,11 @@ test("i18n: en и it имат точно ключовете на bg (източ�
   for (const l of ["en", "it"]) assert.deepEqual(keys(I18N[l]).sort(), ref, `разминаване в ${l}`);
 });
 
-test("демота: 10, уникални id/слъгове, всеки език с еднаква структура, валиден widget/икона", () => {
-  assert.equal(DEMOS.length, 10);
+test("демота: ≥10, уникални id/слъгове, всеки език с еднаква структура, валиден widget/икона", () => {
+  assert.ok(DEMOS.length >= 10);
   const ids = new Set(DEMOS.map((d) => d.id));
-  assert.equal(ids.size, 10);
-  for (const l of LANGS) assert.equal(new Set(DEMOS.map((d) => d.slug[l])).size, 10, `дублиран слъг в ${l}`);
+  assert.equal(ids.size, DEMOS.length);
+  for (const l of LANGS) assert.equal(new Set(DEMOS.map((d) => d.slug[l])).size, DEMOS.length, `дублиран слъг в ${l}`);
   for (const d of DEMOS) {
     const ref = keys(d.t.bg).sort();
     for (const l of ["en", "it"]) assert.deepEqual(keys(d.t[l]).sort(), ref, `${d.id}: структура на ${l} ≠ bg`);
@@ -144,7 +144,7 @@ test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/
   assert.ok(hub.includes('content="https://portfolio.carbonstealth.eu/og.png"'), "og:image");
 });
 
-test("производителност: статични превюта за 10-те демота ×3 езика, без trail canvas, без backdrop-filter на фиксираните навигации, iframe само при hover", () => {
+test("производителност: статични превюта за всяко демо ×3 езика, без trail canvas, без backdrop-filter на фиксираните навигации, iframe само при hover", () => {
   const rd = (p) => readFileSync(join(OUT, p), "utf8");
   for (const l of LANGS) {
     const html = rd(`${l}/index.html`);
@@ -183,7 +183,7 @@ test("реални проекти: 10-те от carbonstealth.eu ×3 езика,
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
   for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
-  assert.equal((html.match(/data-preview=/g) || []).length, 10);
+  assert.equal((html.match(/data-preview=/g) || []).length, DEMOS.length);
 });
 
 test("служебни файлове: sitemap с всички URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {
@@ -209,6 +209,6 @@ test("маркетинг слой: proof ред, оферта, линк във �
   for (const f of ["assets/premium.css", "assets/premium.js", "assets/fx/core.js", "assets/fx/salon.js", "assets/fx/mebeli.js", "assets/fx/schetovodstvo.js", "assets/fx/avtokashta.js"]) assert.ok(existsSync(join(OUT, f)), f);
   for (const d of DEMOS) for (const l of LANGS) assert.ok(d.t[l].offer?.title && d.t[l].hero.proof, `${d.id}/${l}: offer + proof`);
   const hub = readFileSync(join(OUT, "bg/index.html"), "utf8");
-  assert.ok(hub.includes('id="devmodal"') && (hub.match(/class="dev-btn"/g) || []).length === 10, "device preview за всяко демо");
-  assert.ok(hub.includes('class="hero-proof"') && (hub.match(/class="inc"/g) || []).length === 10, "proof ред + „включва“ на всяка карта");
+  assert.ok(hub.includes('id="devmodal"') && (hub.match(/class="dev-btn"/g) || []).length === DEMOS.length, "device preview за всяко демо");
+  assert.ok(hub.includes('class="hero-proof"') && (hub.match(/class="inc"/g) || []).length === DEMOS.length, "proof ред + „включва“ на всяка карта");
 });
