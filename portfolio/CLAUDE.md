@@ -20,6 +20,7 @@ node --test test/build.test.mjs                 # паритет на езици
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
+node tools/previews.mjs [demo]                  # статичните превюта на демотата за хъба (след промяна по демо; иска dist/ + Chromium)
 node tools/fonts.mjs                            # самостоятелно хостване на шрифтовете (при смяна на семейство)
 node tools/photos.mjs --openimages [demo]       # снимките от photos.picks.json (CC BY 2.0) → public/img/<demo>/ (виж „Снимки")
 PEXELS_API_KEY=… node tools/photos.mjs [demo]   # алтернатива: Pexels по photos.manifest.json
@@ -43,10 +44,10 @@ src/templates/hub.mjs       началната (бранд тема), pricing.mj
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
 src/assets/                 site.css+js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
 brand/logo-source.png       ЕДИНСТВЕНИЯТ източник на логото (1254², „CS" монограм + надпис) — не се редактира на ръка
-public/                     logo.png/webp (lockup) · logo-square · mark · icon-192/512 · apple-touch-icon · favicon.ico · og.png — всички от tools/brand.mjs; fonts/*.woff2, img/<demo>/, indexnow-key.txt
+public/                     logo.png/webp (lockup) · logo-square · mark · icon-192/512 · apple-touch-icon · favicon.ico · og.png — всички от tools/brand.mjs; fonts/*.woff2, img/<demo>/, img/previews/<lang>/<demo>.webp (tools/previews.mjs), indexnow-key.txt
 photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
 photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6) — алтернативен източник
-tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · brand.mjs (логото → всички асети)
+tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · brand.mjs (логото → всички асети) · previews.mjs (демо → снимка за картата)
 test/build.test.mjs         гейтът · docs/PRICING-RESEARCH.md — проучването зад цените (с източници и дата)
 nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404) и деплоят
 ```
@@ -98,8 +99,21 @@ nginx.conf · deploy.sh      продукционният конфиг (CSP, HST
 - **title ≤60 · description 70–160 · един h1 · canonical · hreflang bg/en/it + x-default (→ /bg/)** — гейтнати.
 - **Без бисквитки, без проследяване, без backend.** Демо формите не изпращат нищо (`demo.js` показва
   съобщение). Контактът е mailto + формата на carbonstealth.eu.
-- **Live прегледи в хъба**: мащабирани iframe-и на реалните демота — само ≥901px, при влизане във viewport,
-  никога при Save-Data. CSP `frame-src 'self'` / `frame-ancestors 'self'` ги позволява.
+- **Прегледи в хъба**: картата носи **статична снимка** (`img/previews/<lang>/<id>.webp`, 960×600, от
+  `tools/previews.mjs` — headless Chromium + `--virtual-time-budget`, после sharp; **проследени в git**, след
+  промяна по демо ги прегенерирай). Живият iframe идва **само при hover** (fine pointer, ≥901px, не LITE, не
+  Save-Data) и живи са най-много 2 — 10 пълни документа с анимации в 10 iframe-а бяха основният лаг на хъба
+  на слаба машина. CSP `frame-src 'self'` / `frame-ancestors 'self'` ги позволява.
+- **Производителност (гейтната в теста)**: един общ `requestAnimationFrame` цикъл в `site.js` (`FRAME[]`),
+  работа само при движение на курсора; без фосфорна следа (full-screen canvas с `mix-blend-mode`, презаписван
+  всеки кадър); магнитните букви с кеширани правоъгълници и само `transform` (без `font-weight` — variable
+  шрифт се пренарежда всеки кадър); **без `backdrop-filter` на фиксирани/sticky навигации** (преизчислява се на
+  всеки scroll кадър; фонът е 92–97% плътен и изглежда същото); без `will-change` на reveal елементите.
+  `hero.js`: непрозрачен canvas, 1100 частици @DPR≤1.5 (беше 1800 @DPR2), trig предизчислен, самоизмерване →
+  DPR 1 → по-малко частици → 30 FPS. **LITE режим** (`html.lite`): по Navigator API (≤4 ядра / ≤4 GB /
+  Save-Data / `update: slow`) или измерени <40 FPS две секунди подред (след 4-тата s) — спира безкрайните
+  декоративни анимации, филтрите, живите iframe-и; в демотата спира Ken Burns + color blend. Съдържанието и
+  функциите са същите. Reading progress в демото е `transform:scaleX`, не `width`.
 - **Reveal анимациите** са само с JS (`html.js`), елементите във viewport-а се показват веднага, има и
   предпазен таймер — без JS всичко е видимо. В демотата `prefers-reduced-motion` ги изключва; в хъба не
   (нареждане на собственика за бранд сайта).

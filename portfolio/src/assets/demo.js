@@ -3,6 +3,8 @@
 // Уважава prefers-reduced-motion (клиентските сайтове са „сериозни"). Нула зависимости.
 document.documentElement.classList.add("js");
 var REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// LITE: слаба машина по Navigator API → premium.css спира Ken Burns/blend/blur (съдържанието е същото)
+if ((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4) || (navigator.connection && navigator.connection.saveData) || matchMedia("(update: slow)").matches) document.documentElement.classList.add("lite");
 (function () {
   var b = document.querySelector(".burger"), m = document.getElementById("menu");
   if (b && m) b.addEventListener("click", function () { var o = m.classList.toggle("open"); b.setAttribute("aria-expanded", String(o)); });
@@ -18,7 +20,7 @@ var REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // прогрес на четенето + „нагоре"
 (function () {
   var bar = document.querySelector(".progress i"), top = document.querySelector(".totop");
-  function on() { var h = document.documentElement, p = h.scrollTop / (h.scrollHeight - h.clientHeight || 1); if (bar) bar.style.width = (p * 100).toFixed(1) + "%"; if (top) top.classList.toggle("show", h.scrollTop > 600); }
+  function on() { var h = document.documentElement, p = h.scrollTop / (h.scrollHeight - h.clientHeight || 1); if (bar) bar.style.transform = "scaleX(" + p.toFixed(4) + ")"; if (top) top.classList.toggle("show", h.scrollTop > 600); }
   addEventListener("scroll", on, { passive: true }); on();
 })();
 // count-up на числата (само цифровата част; „4 800+" → 0…4 800+)

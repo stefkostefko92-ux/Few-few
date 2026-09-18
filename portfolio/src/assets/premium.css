@@ -81,3 +81,6 @@
   .nav.hide{transform:none}
   .faq[open] .fa{grid-template-rows:1fr}
 }
+
+/* LITE (слаба машина по Navigator API, demo.js): Ken Burns + color blend върху цялото hero всеки кадър е най-скъпото в демото */
+.lite .hero-bg picture{animation:none;will-change:auto}.lite .hero-bg .tint{mix-blend-mode:normal;opacity:.14}.lite .lightbox{backdrop-filter:none;-webkit-backdrop-filter:none}.lite .g-item img,.lite .about-photo img{transition:none}

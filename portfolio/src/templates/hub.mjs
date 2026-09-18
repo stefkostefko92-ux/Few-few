@@ -5,6 +5,12 @@ import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANG
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { DEMO_ICONS } from "./icons.mjs";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const PUBLIC = fileURLToPath(new URL("../../public/", import.meta.url));
+/** Статичното превю от tools/previews.mjs (960×600 webp) — картата го показва вместо 10 живи iframe-а. */
+const previewShot = (lang, demo, alt) => existsSync(`${PUBLIC}img/previews/${lang}/${demo.id}.webp`) ? `<img class="cover-shot" src="/img/previews/${lang}/${demo.id}.webp" alt="${esc(alt)}" width="960" height="600" loading="lazy" decoding="async">` : "";
 import { TIERS, money, shown, tx, VAT_CONVENTION } from "../pricing.mjs";
 
 export const HUB_FONTS = ["brand"];
@@ -53,7 +59,7 @@ const ticker = (ui) => `<div class="ticker" tabindex="0" aria-label="ticker"><di
 
 function demoCard(lang, demo, ui, i) {
   const t = demo.t[lang], th = demo.theme, href = demoPath(lang, demo);
-  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span><span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span><h3 data-scramble>${esc(t.name)}</h3><span class="inc">${esc(ui.demos.includes[t.hero.widget.kind] || "")} · ${esc(ui.demos.includes.always)}</span><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><div class="demo-actions"><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></div></article>`;
+  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span>${previewShot(lang, demo, t.name)}<span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span><h3 data-scramble>${esc(t.name)}</h3><span class="inc">${esc(ui.demos.includes[t.hero.widget.kind] || "")} · ${esc(ui.demos.includes.always)}</span><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><div class="demo-actions"><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></div></article>`;
 }
 
 /** Модал „преглед на устройства": iframe на демото в десктоп · таблет · телефон рамка (site.js). */

@@ -143,6 +143,24 @@ test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/
   assert.ok(hub.includes('content="https://portfolio.carbonstealth.eu/og.png"'), "og:image");
 });
 
+test("производителност: статични превюта за 10-те демота ×3 езика, без trail canvas, без backdrop-filter на фиксираните навигации, iframe само при hover", () => {
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  for (const l of LANGS) {
+    const html = rd(`${l}/index.html`);
+    assert.strictEqual((html.match(/class="cover-shot"/g) || []).length, DEMOS.length, `${l}: превю на всяка карта`);
+    for (const d of DEMOS) assert.ok(existsSync(join(OUT, "img", "previews", l, `${d.id}.webp`)), `previews/${l}/${d.id}.webp`);
+  }
+  const siteJs = rd("assets/site.js"), siteCss = rd("assets/site.css"), demoCss = rd("assets/demo.css"), heroJs = rd("assets/hero.js");
+  assert.ok(!siteJs.includes("cur-trail") && !siteCss.includes("cur-trail"), "фосфорната следа (full-screen mix-blend canvas) е махната");
+  assert.ok(!siteJs.includes("fontWeight"), "магнитните букви не пипат font-weight (variable шрифт = пренареждане всеки кадър)");
+  assert.ok(siteJs.includes('addEventListener("pointerenter", function () { mount(c); }'), "живият iframe идва само при hover");
+  assert.ok(siteJs.includes("var FRAME = []") && (siteJs.match(/requestAnimationFrame\(loop\)/g) || []).length === 1, "един общ rAF цикъл");
+  assert.ok(!/\.nav\{[^}]*backdrop-filter/.test(siteCss) && !demoCss.includes("backdrop-filter"), "фиксираните навигации са без backdrop-filter");
+  assert.ok(!siteCss.includes("will-change:transform,opacity"), "reveal без will-change (стотици композитни слоеве)");
+  assert.ok(heroJs.includes('{ alpha: false }') && heroJs.includes("function degrade()"), "hero canvas: непрозрачен + адаптивна деградация");
+  assert.ok(siteCss.includes(".lite .hero-scan i") && rd("assets/premium.css").includes(".lite .hero-bg picture{animation:none"), "LITE режим в CSS");
+});
+
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
   for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
