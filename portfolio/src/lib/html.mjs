@@ -1,3 +1,5 @@
+import { readFileSync, existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 // html.mjs — минимални помощници за генериране на HTML без зависимости.
 // Всичко потребителско минава през esc(); суровият HTML е позволен само за наш код.
 
@@ -35,6 +37,8 @@ export const PATHS = {
   projects: { bg: "/bg/proekti/", en: "/en/projects/", it: "/it/progetti/" },
   admin: { bg: "/bg/demo/admin-panel/", en: "/en/demo/admin-panel/", it: "/it/demo/pannello-admin/" },
   quote: { bg: "/bg/oferta/", en: "/en/quote/", it: "/it/preventivo/" },
+  blog: { bg: "/bg/blog/", en: "/en/blog/", it: "/it/blog/" },
+  local: { bg: "/bg/izrabotka-na-sait/", en: "/en/web-design/", it: "/it/realizzazione-siti/" },
   hosting: { bg: "/bg/hosting-i-poddrazhka/", en: "/en/hosting-and-maintenance/", it: "/it/hosting-e-manutenzione/" },
 };
 
@@ -42,6 +46,27 @@ export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;
 
 /** Слъг на семейство от Google-стил спецификация („Barlow+Condensed:wght@600;700“ → barlow-condensed). */
 export const fontSlug = (family) => family.split(":")[0].replace(/\+/g, "-").toLowerCase();
+
+/** Критичните woff2 на семейството (latin + cyrillic за bg), четени от генерирания CSS при билд —
+ *  preload, защото с font-display:optional шрифтът се ползва само ако е пристигнал преди първия рендер. */
+const FONT_CSS_DIR = fileURLToPath(new URL("../assets/fonts/", import.meta.url));
+const preloadCache = new Map();
+export function fontPreloads(fonts, lang) {
+  const key = `${fonts.join("|")}:${lang}`;
+  if (preloadCache.has(key)) return preloadCache.get(key);
+  const out = [];
+  for (const f of fonts) {
+    const file = `${FONT_CSS_DIR}${fontSlug(f)}.css`;
+    if (!existsSync(file)) continue;
+    const css = readFileSync(file, "utf8");
+    for (const block of css.split("@font-face").slice(1)) {
+      const url = block.match(/url\((\/fonts\/[^)]+\.woff2)\)/)?.[1], range = block.match(/unicode-range:\s*([^;]+)/)?.[1] || "";
+      const latin = /U\+0000-00FF/.test(range), cyr = /U\+0400-045F/.test(range);
+      if (url && (latin || (lang === "bg" && cyr)) && !out.includes(url)) out.push(url);
+    }
+  }
+  const r = out.slice(0, 6); preloadCache.set(key, r); return r;
+}
 
 /** hreflang алтернативи за страница с локализирани пътища. */
 export function alternates(pathsByLang) {
@@ -62,6 +87,7 @@ export function head({ lang, title, description, keywords, path, paths, fonts, c
   // Шрифтовете са самостоятелно хостнати (tools/fonts.mjs → /fonts/*.woff2, по един CSS на семейство):
   // нула заявки към Google в продукция, по-бърз LCP, нищо за разкриване в политиката.
   const fontCss = (fonts || []).map((f) => `/assets/fonts/${fontSlug(f)}.css`);
+  const preload = fontPreloads(fonts || [], lang).map((u) => `<link rel="preload" as="font" type="font/woff2" href="${u}" crossorigin>`);
   return join([
     `<!doctype html>`,
     `<html lang="${lang}">`,
@@ -92,6 +118,7 @@ export function head({ lang, title, description, keywords, path, paths, fonts, c
     `<link rel="icon" href="/favicon.ico" sizes="32x32">`,
     `<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">`,
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
+    ...preload,
     ...fontCss.map((c) => `<link rel="stylesheet" href="${c}">`),
     ...css.map((c) => `<link rel="stylesheet" href="${c}">`),
     extra,

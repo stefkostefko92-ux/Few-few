@@ -21,7 +21,7 @@ import { fontSlug as slug } from "../src/lib/html.mjs";
 const families = [...new Set(DEMOS.flatMap((d) => d.theme.fonts))];
 
 for (const fam of families) {
-  const url = `https://fonts.googleapis.com/css2?family=${fam}&display=swap`;
+  const url = `https://fonts.googleapis.com/css2?family=${fam}&display=optional`; // optional: без смяна на шрифта след първия рендер → нула CLS от текст (Lighthouse съвет)
   const css = await (await fetch(url, { headers: { "user-agent": UA } })).text();
   const blocks = [...css.matchAll(/\/\* ([a-z-]+) \*\/\s*@font-face \{([\s\S]*?)\}/g)];
   let out = `/* ${fam.split(":")[0].replace(/\+/g, " ")} — генерирано от tools/fonts.mjs (Google Fonts, OFL) */\n`;

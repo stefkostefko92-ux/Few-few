@@ -120,7 +120,7 @@ export function sitemap(urls, lastmod) {
   const alt = (a) => LANGS.map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${SITE}${a[l]}"/>`).concat([`    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE}${a.bg}"/>`]).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${urls.map((u) => `  <url>\n    <loc>${SITE}${u.loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n${alt(u.alt)}\n  </url>`).join("\n")}
+${urls.map((u) => `  <url>\n    <loc>${SITE}${u.loc}</loc>\n    <lastmod>${u.lastmod || lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n${alt(u.alt)}\n  </url>`).join("\n")}
 </urlset>
 `;
 }

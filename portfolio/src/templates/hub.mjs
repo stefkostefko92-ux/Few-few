@@ -5,10 +5,19 @@ import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANG
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { DEMO_ICONS } from "./icons.mjs";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const PUBLIC = fileURLToPath(new URL("../../public/", import.meta.url));
+const LAB_FILE = fileURLToPath(new URL("../../perf/lab.json", import.meta.url));
+/** Лабораторното измерване (tools/perf.mjs → perf/lab.json); липсва ли — няма бадж, не измисляме числа. */
+export const LAB = existsSync(LAB_FILE) ? JSON.parse(readFileSync(LAB_FILE, "utf8")) : null;
+export function labBadge(id, ui) {
+  const p = LAB?.pages?.[id]; if (!p) return "";
+  const m = p.mobile?.score, d = p.desktop?.score; if (m == null || d == null) return "";
+  const cls = (s) => (s >= 90 ? "ok" : s >= 50 ? "mid" : "bad");
+  return `<span class="lab" title="${esc(ui.demos.labTitle)} · ${LAB.date}"><i class="${cls(m)}">${m}</i><i class="${cls(d)}">${d}</i><span>${esc(ui.demos.lab)}</span></span>`;
+}
 /** Статичното превю от tools/previews.mjs (960×600 webp) — картата го показва вместо 10 живи iframe-а. */
 const previewShot = (lang, demo, alt) => existsSync(`${PUBLIC}img/previews/${lang}/${demo.id}.webp`) ? `<img class="cover-shot" src="/img/previews/${lang}/${demo.id}.webp" alt="${esc(alt)}" width="960" height="600" loading="lazy" decoding="async">` : "";
 import { TIERS, money, shown, tx, VAT_CONVENTION } from "../pricing.mjs";
@@ -33,14 +42,14 @@ export function boot(ui) {
 const logo = (extra = "") => `<picture><source srcset="/logo.webp" type="image/webp"><img class="logo" src="/logo.png" alt="Carbon Stealth VCC" width="673" height="160"${extra}></picture>`;
 
 export function siteNav(lang, ui, current) {
-  const links = [[`${PATHS.hub[lang]}#demos`, ui.nav.demos], [PATHS.projects[lang], ui.nav.projects], [`${PATHS.hub[lang]}#process`, ui.nav.process], [`${PATHS.hub[lang]}#why`, ui.nav.why], [PATHS.pricing[lang], ui.nav.pricing], [PATHS.quote[lang], ui.nav.quoteNav], [`${PATHS.hub[lang]}#contact`, ui.nav.contact]];
+  const links = [[`${PATHS.hub[lang]}#demos`, ui.nav.demos], [PATHS.projects[lang], ui.nav.projects], [`${PATHS.hub[lang]}#process`, ui.nav.process], [`${PATHS.hub[lang]}#why`, ui.nav.why], [PATHS.pricing[lang], ui.nav.pricing], [PATHS.quote[lang], ui.nav.quoteNav], [PATHS.blog[lang], ui.nav.blogNav], [`${PATHS.hub[lang]}#contact`, ui.nav.contact]];
   const langs = LANGS.map((l) => `<a href="${current[l]}" hreflang="${l}" lang="${l}"${l === lang ? ' aria-current="page"' : ""}>${I18N[l].short}</a>`).join("");
   return `<a class="cs-skip" href="#main">${esc(ui.nav.demos)} ↓</a><header class="nav"><a href="${PATHS.hub[lang]}" aria-label="Carbon Stealth VCC">${logo()}</a><nav class="nav-links" aria-label="Menu">${links.map(([h, l]) => `<a href="${h}" data-scramble>${esc(l)}</a>`).join("")}</nav><div class="nav-right"><span class="hud fps"><i>●</i><span id="fps">60 FPS</span></span><nav class="langs" aria-label="Language">${langs}</nav><button class="burger" aria-expanded="false" aria-controls="menu" aria-label="${esc(ui.nav.menu)}">≡</button></div></header><nav id="menu" class="mobile-menu" aria-label="Menu">${links.map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join("")}</nav>`;
 }
 
 export function siteFooter(lang, ui) {
   const b = ui.brand;
-  return `<footer class="foot"><div class="wrap"><div class="foot-grid"><div>${logo(' loading="lazy"')}<p class="desc">${esc(b.desc)}</p></div><div><h4>${esc(b.cols.demos)}</h4><ul>${DEMOS.map((d) => `<li><a href="${demoPath(lang, d)}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</a></li>`).join("")}</ul></div><div><h4>${esc(b.cols.company)}</h4><ul>${b.company.map(([h, l]) => `<li><a href="${h}"${h.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${esc(l)}</a></li>`).join("")}<li><a href="${PATHS.projects[lang]}">${esc(ui.nav.projects)}</a></li><li><a href="${PATHS.admin[lang]}">${esc(ui.admin.eyebrow)}</a></li><li><a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)}</a></li><li><a href="${PATHS.quote[lang]}">${esc(ui.nav.quoteNav)}</a></li><li><a href="${PATHS.hosting[lang]}">${esc(ui.nav.hostingNav)}</a></li></ul></div><div><h4>${esc(b.cols.legal)}</h4><ul><li><a href="${PATHS.legal[lang]}">${esc(ui.footer.legal)}</a></li><li><a href="/llms.txt">llms.txt</a></li><li><a href="/sitemap.xml">sitemap.xml</a></li></ul></div></div><div class="badges hud">${b.badges.map((x) => `<span>${esc(x)}</span>`).join("")}</div><div class="impressum"><div>${esc(b.impressum)}</div><div>© ${new Date().getFullYear()} Carbon Stealth VCC · ${esc(ui.footer.rights)} ${esc(ui.footer.built)}</div>${credit(lang)}</div></div></footer>`;
+  return `<footer class="foot"><div class="wrap"><div class="foot-grid"><div>${logo(' loading="lazy"')}<p class="desc">${esc(b.desc)}</p></div><div><h4>${esc(b.cols.demos)}</h4><ul>${DEMOS.map((d) => `<li><a href="${demoPath(lang, d)}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</a></li>`).join("")}</ul></div><div><h4>${esc(b.cols.company)}</h4><ul>${b.company.map(([h, l]) => `<li><a href="${h}"${h.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${esc(l)}</a></li>`).join("")}<li><a href="${PATHS.projects[lang]}">${esc(ui.nav.projects)}</a></li><li><a href="${PATHS.admin[lang]}">${esc(ui.admin.eyebrow)}</a></li><li><a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)}</a></li><li><a href="${PATHS.quote[lang]}">${esc(ui.nav.quoteNav)}</a></li><li><a href="${PATHS.hosting[lang]}">${esc(ui.nav.hostingNav)}</a></li><li><a href="${PATHS.blog[lang]}">${esc(ui.nav.blogNav)}</a></li><li><a href="${PATHS.local[lang]}">${esc(ui.local.eyebrow)}</a></li></ul></div><div><h4>${esc(b.cols.legal)}</h4><ul><li><a href="${PATHS.legal[lang]}">${esc(ui.footer.legal)}</a></li><li><a href="/llms.txt">llms.txt</a></li><li><a href="/sitemap.xml">sitemap.xml</a></li></ul></div></div><div class="badges hud">${b.badges.map((x) => `<span>${esc(x)}</span>`).join("")}</div><div class="impressum"><div>${esc(b.impressum)}</div><div>© ${new Date().getFullYear()} Carbon Stealth VCC · ${esc(ui.footer.rights)} ${esc(ui.footer.built)}</div>${credit(lang)}</div></div></footer>`;
 }
 
 /** Заглавието буква по буква (магнитно отблъскване в site.js); <em> частта е cyan. */
@@ -61,7 +70,7 @@ const ticker = (ui) => `<div class="ticker" tabindex="0" aria-label="ticker"><di
 
 function demoCard(lang, demo, ui, i) {
   const t = demo.t[lang], th = demo.theme, href = demoPath(lang, demo);
-  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span>${previewShot(lang, demo, t.name)}<span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span><h3 data-scramble>${esc(t.name)}</h3><span class="inc">${esc(ui.demos.includes[t.hero.widget.kind] || "")} · ${esc(ui.demos.includes.always)}</span><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><div class="demo-actions"><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></div></article>`;
+  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span>${previewShot(lang, demo, t.name)}<span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span>${labBadge(demo.id, ui)}<h3 data-scramble>${esc(t.name)}</h3><span class="inc">${esc(ui.demos.includes[t.hero.widget.kind] || "")} · ${esc(ui.demos.includes.always)}</span><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><div class="demo-actions"><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></div></article>`;
 }
 
 /** Модал „преглед на устройства": iframe на демото в десктоп · таблет · телефон рамка (site.js). */

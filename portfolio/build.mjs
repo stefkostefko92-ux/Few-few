@@ -13,6 +13,10 @@ import { renderProjects } from "./src/templates/projects.mjs";
 import { renderAdmin } from "./src/templates/admin.mjs";
 import { renderQuote } from "./src/templates/quote.mjs";
 import { renderHosting } from "./src/templates/hosting.mjs";
+import { renderBlogIndex, renderArticle, rss, articlePath, feedPath } from "./src/templates/blog.mjs";
+import { renderLocalIndex, renderLocal, localPath } from "./src/templates/local.mjs";
+import { ARTICLES } from "./src/blog/index.mjs";
+import { CITIES } from "./src/local/cities.mjs";
 import { renderLegal, renderRoot, renderNotFound, robots, llms, sitemap, securityTxt } from "./src/templates/misc.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -38,6 +42,13 @@ export function build({ out = OUT, quiet = false } = {}) {
     put(PATHS.admin[lang], renderAdmin(lang));
     put(PATHS.quote[lang], renderQuote(lang));
     put(PATHS.hosting[lang], renderHosting(lang));
+    put(PATHS.blog[lang], renderBlogIndex(lang));
+    put(feedPath(lang), rss(lang));
+    urls.push({ loc: PATHS.blog[lang], alt: PATHS.blog, priority: "0.7", changefreq: "weekly" });
+    for (const a of ARTICLES) { put(articlePath(lang, a), renderArticle(lang, a)); urls.push({ loc: articlePath(lang, a), alt: Object.fromEntries(LANGS.map((l) => [l, articlePath(l, a)])), priority: "0.6", changefreq: "monthly", lastmod: a.updated }); }
+    put(PATHS.local[lang], renderLocalIndex(lang));
+    urls.push({ loc: PATHS.local[lang], alt: PATHS.local, priority: "0.6", changefreq: "yearly" });
+    for (const c of CITIES) { put(localPath(lang, c), renderLocal(lang, c)); urls.push({ loc: localPath(lang, c), alt: Object.fromEntries(LANGS.map((l) => [l, localPath(l, c)])), priority: "0.6", changefreq: "yearly" }); }
     urls.push({ loc: PATHS.hub[lang], alt: PATHS.hub, priority: "1.0", changefreq: "weekly" });
     urls.push({ loc: PATHS.pricing[lang], alt: PATHS.pricing, priority: "0.9", changefreq: "monthly" });
     urls.push({ loc: PATHS.legal[lang], alt: PATHS.legal, priority: "0.2", changefreq: "yearly" });
