@@ -75,9 +75,19 @@ app.use(
 );
 
 // Принудителен HTTPS в продукция (зад прокси, по X-Forwarded-Proto).
+//
+// `/healthz` е ИЗКЛЮЧЕН и това не е удобство, а поправка на реален инцидент:
+// деплоят дърпа сондата на http://127.0.0.1:<PORT>/healthz (по loopback, преди
+// nginx, значи БЕЗ X-Forwarded-Proto → `req.secure` е false), затова тук получаваше
+// 308 към https. `curl` без `-L` брои 3xx за успех, тялото е „Moved Permanently…“,
+// маркерът за идентичност („"app":"vizitka"“) го няма → гейтът обявяваше ЖИВОТО
+// приложение за чуждо и откатваше успешен деплой. Сондата няма как да мине по
+// https: на 127.0.0.1 приложението говори само чист HTTP (TLS свършва в nginx).
+// Изключението е безопасно — отговорът е име на приложението и жива ли е базата,
+// нула лични данни, нула бисквитки, нула вход.
 if (prod) {
   app.use((req, res, next) => {
-    if (req.secure) return next();
+    if (req.secure || req.path === '/healthz') return next();
     res.redirect(308, `https://${req.headers.host}${req.originalUrl}`);
   });
 }
