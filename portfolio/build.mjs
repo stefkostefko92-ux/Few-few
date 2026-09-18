@@ -9,6 +9,7 @@ import { DEMOS } from "./src/demos/index.mjs";
 import { renderDemo } from "./src/templates/demo.mjs";
 import { renderHub } from "./src/templates/hub.mjs";
 import { renderPricing } from "./src/templates/pricing.mjs";
+import { renderProjects } from "./src/templates/projects.mjs";
 import { renderLegal, renderRoot, renderNotFound, robots, llms, sitemap, securityTxt } from "./src/templates/misc.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -30,9 +31,11 @@ export function build({ out = OUT, quiet = false } = {}) {
     put(PATHS.hub[lang], renderHub(lang));
     put(PATHS.pricing[lang], renderPricing(lang));
     put(PATHS.legal[lang], renderLegal(lang));
+    put(PATHS.projects[lang], renderProjects(lang));
     urls.push({ loc: PATHS.hub[lang], alt: PATHS.hub, priority: "1.0", changefreq: "weekly" });
     urls.push({ loc: PATHS.pricing[lang], alt: PATHS.pricing, priority: "0.9", changefreq: "monthly" });
     urls.push({ loc: PATHS.legal[lang], alt: PATHS.legal, priority: "0.2", changefreq: "yearly" });
+    urls.push({ loc: PATHS.projects[lang], alt: PATHS.projects, priority: "0.9", changefreq: "monthly" });
     for (const demo of DEMOS) {
       put(demoPath(lang, demo), renderDemo(lang, demo));
       urls.push({ loc: demoPath(lang, demo), alt: Object.fromEntries(LANGS.map((l) => [l, demoPath(l, demo)])), priority: "0.8", changefreq: "monthly" });

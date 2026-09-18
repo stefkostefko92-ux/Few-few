@@ -12,9 +12,10 @@ import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
 import { DEMO_ICONS } from "../src/templates/icons.mjs";
 import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
 import { LANGS } from "../src/lib/html.mjs";
+import { PROJECTS } from "../src/projects.mjs";
 
 const OUT = join(fileURLToPath(new URL("..", import.meta.url)), ".tmp-test-dist");
-build({ out: OUT, quiet: true });
+const BUILT = build({ out: OUT, quiet: true });
 
 const walk = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const pages = walk(OUT).filter((p) => p.endsWith(".html") && !p.endsWith("404.html") && p !== join(OUT, "index.html"));
@@ -44,7 +45,7 @@ test("демота: 10, уникални id/слъгове, всеки език 
 });
 
 test("всяка страница: един h1, title ≤60, description ≤160, canonical, hreflang ×3 + x-default, ключови думи, футър-кредит", () => {
-  assert.equal(pages.length, 3 * (10 + 3));
+  assert.equal(pages.length, LANGS.length * (DEMOS.length + 4), "хъб · цени · правна · проекти + демота");
   for (const p of pages) {
     const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
     assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, `${rel}: h1`);
@@ -161,15 +162,34 @@ test("производителност: статични превюта за 10-
   assert.ok(siteCss.includes(".lite .hero-scan i") && rd("assets/premium.css").includes(".lite .hero-bg picture{animation:none"), "LITE режим в CSS");
 });
 
+test("реални проекти: 10-те от carbonstealth.eu ×3 езика, 6 в хъба, снимка или типографска обложка, външни линкове с noopener, в llms.txt и sitemap", () => {
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  assert.strictEqual(PROJECTS.length, 10);
+  for (const pr of PROJECTS) { for (const l of LANGS) { const t = pr.t[l]; assert.ok(t.name && t.category && t.desc && t.facts.length >= 3, `${pr.id}/${l}`); } assert.ok(/^https:\/\//.test(pr.url)); if (pr.shot) assert.ok(existsSync(join(OUT, "img", "projects", `${pr.id}.webp`)), `${pr.id}.webp`); }
+  for (const l of LANGS) {
+    const page = rd(`${l}/${{ bg: "proekti", en: "projects", it: "progetti" }[l]}/index.html`), hub = rd(`${l}/index.html`);
+    assert.strictEqual((page.match(/class="cell pj reveal"/g) || []).length, 10, `${l}: 10 карти`);
+    assert.strictEqual((hub.match(/class="cell pj reveal"/g) || []).length, 6, `${l}: 6 в хъба`);
+    assert.strictEqual((page.match(/class="pj-shot"/g) || []).length, PROJECTS.filter((p) => p.shot).length);
+    assert.strictEqual((page.match(/class="pj-type"/g) || []).length, PROJECTS.filter((p) => !p.shot).length);
+    for (const pr of PROJECTS) assert.ok(page.includes(`href="${pr.url}" target="_blank" rel="noopener"`), `${l}: ${pr.url}`);
+    assert.ok(page.includes('"@type":"CollectionPage"') && page.includes('"@type":"CreativeWork"'));
+  }
+  const llms = rd("llms.txt");
+  for (const pr of PROJECTS) assert.ok(llms.includes(pr.url));
+  assert.ok(rd("sitemap.xml").includes("<loc>https://portfolio.carbonstealth.eu/bg/proekti/</loc>"));
+});
+
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
   for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
   assert.equal((html.match(/data-preview=/g) || []).length, 10);
 });
 
-test("служебни файлове: sitemap с 39 URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {
+test("служебни файлове: sitemap с всички URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {
   const sm = readFileSync(join(OUT, "sitemap.xml"), "utf8");
-  assert.equal((sm.match(/<loc>/g) || []).length, 39);
+  assert.equal((sm.match(/<loc>/g) || []).length, BUILT.urls.length);
+  assert.ok(BUILT.urls.length >= LANGS.length * (4 + DEMOS.length), "хъб · цени · правна · проекти · демота на всеки език");
   assert.ok(sm.includes('hreflang="x-default"'));
   assert.ok(readFileSync(join(OUT, "robots.txt"), "utf8").includes("Sitemap: https://portfolio.carbonstealth.eu/sitemap.xml"));
   const llms = readFileSync(join(OUT, "llms.txt"), "utf8");

@@ -32,6 +32,7 @@ export const PATHS = {
   hub: { bg: "/bg/", en: "/en/", it: "/it/" },
   pricing: { bg: "/bg/ceni/", en: "/en/pricing/", it: "/it/prezzi/" },
   legal: { bg: "/bg/pravna-informacia/", en: "/en/legal/", it: "/it/note-legali/" },
+  projects: { bg: "/bg/proekti/", en: "/en/projects/", it: "/it/progetti/" },
 };
 
 export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;

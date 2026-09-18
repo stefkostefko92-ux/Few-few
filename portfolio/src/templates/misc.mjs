@@ -1,5 +1,6 @@
 // misc.mjs — правна страница, коренов избор на език, 404, robots, llms, sitemap, security.txt.
 import { esc, join, head, credit, jsonLd, PATHS, demoPath, SITE, LANGS, ORG, BRAND_URL } from "../lib/html.mjs";
+import { PROJECTS } from "../projects.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
@@ -105,6 +106,10 @@ ${demoLines("en")}
 
 ## Demo (IT)
 ${demoLines("it")}
+
+## Реални проекти / Real projects (live)
+${PROJECTS.map((p) => `- ${p.t.en.name} (${p.t.en.category}): ${p.url} — ${p.t.en.desc}`).join("\n")}
+- ${SITE}${PATHS.projects.bg} · ${SITE}${PATHS.projects.en} · ${SITE}${PATHS.projects.it}
 
 ## Правна информация / Legal
 - ${SITE}${PATHS.legal.bg} · ${SITE}${PATHS.legal.en} · ${SITE}${PATHS.legal.it}
