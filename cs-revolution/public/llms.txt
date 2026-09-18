@@ -69,6 +69,13 @@ Prices below are excluding VAT (Italian and English pages). The Bulgarian page s
 - **VAT:** VAT is waived only and exclusively for companies with a valid VAT number — EU companies outside Bulgaria are invoiced without VAT (reverse charge, Art. 196 Directive 2006/112/EC) and non-EU companies pay no Bulgarian VAT. Private individuals always pay 20% VAT. Clients in Bulgaria pay the prices including 20% VAT (as shown on the Bulgarian page).
 - **Not list packages:** ERP from €5,000, custom software from €2,000, mobile apps from €3,000 — fixed quote after analysis.
 
+## Also searched as
+
+People look for what we do under many names — all of these are us:
+- Italian: web agency, agenzia web, realizzazione siti web, creazione siti internet, sviluppo siti web, siti web professionali, sito aziendale, landing page, negozio online, e-commerce, software gestionale, ERP su misura, app mobile, posizionamento SEO, hosting gestito.
+- English: web design agency, website development company, custom web development, web developer, online shop development, e-commerce website, custom software, ERP system, mobile app development, SEO services, managed hosting.
+- Bulgarian: уеб агенция, уеб студио, изработка на сайт, направа на уеб сайт, уеб дизайн, фирмен сайт, лендинг страница, изработка на онлайн магазин, електронен магазин, софтуер по поръчка, ERP система, мобилно приложение, SEO оптимизация, хостинг и поддръжка на сайт.
+
 ## Notable Projects
 
 - **Nexus Dominion** — Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. URL: https://nexus.carbonstealth.eu

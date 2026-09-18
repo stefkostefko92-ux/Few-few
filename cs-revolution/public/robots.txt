@@ -31,6 +31,10 @@ Allow: /
 User-agent: Applebot
 Allow: /
 
+# Applebot-Extended = Apple Intelligence training (separate from Siri/Spotlight's Applebot); allowed by policy
+User-agent: Applebot-Extended
+Allow: /
+
 User-agent: YouBot
 Allow: /
 
@@ -58,6 +62,7 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
+# Bytespider: ByteDance training-only crawler; allowed by policy (owner decision), no answer-engine benefit
 User-agent: Bytespider
 Allow: /
 

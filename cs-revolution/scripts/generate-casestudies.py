@@ -21,7 +21,7 @@ DATE = "2026-07-17"
 DATE_ISO = "2026-07-17T09:00:00+02:00"
 
 # ── Shared chrome (identical CSS across every case-study page + hub) ──
-STYLE = ("*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#ccc;font-family:'Space Mono',monospace;font-size:13px;line-height:2;padding:0}a{color:#00e5ff;text-decoration:none}.w{max-width:900px;margin:0 auto;padding:40px 20px}h1{font-family:'Inter Tight',sans-serif;font-weight:900;font-size:2.5rem;color:#f5f5f0;margin-bottom:16px;letter-spacing:-.03em;line-height:1.1}h2{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1.2rem;color:#00e5ff;margin:32px 0 12px;text-transform:uppercase;letter-spacing:.05em}h3{color:#f5f5f0;font-size:1rem;margin:20px 0 8px}p,li{margin-bottom:10px;line-height:1.9}ul{padding-left:20px}.nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 1px 18px rgba(0,229,255,.1);padding:12px 20px;z-index:1000;display:flex;justify-content:space-between;align-items:center}.nav a{color:#ccc;font-size:10px;letter-spacing:.2em;margin:0 10px}.nav img{height:30px;filter:drop-shadow(0 0 6px rgba(0,229,255,.28))}.hero-s{padding:120px 20px 60px;border-bottom:1px solid rgba(0,229,255,.1)}.tag{font-size:9px;color:#00e5ff;letter-spacing:.4em;margin-bottom:12px}.cta{display:inline-block;padding:14px 32px;border:1px solid #00e5ff;color:#00e5ff;font-size:11px;letter-spacing:.25em;margin-top:24px}.ft{border-top:1px solid rgba(245,245,240,.06);padding:30px 20px;text-align:center;font-size:9px;color:#999;margin-top:60px}.price{display:inline-block;padding:4px 12px;border:1px solid rgba(0,229,255,.2);color:#00e5ff;font-size:11px;margin:8px 0}.tags{font-size:9px;color:#999;letter-spacing:.15em;margin-top:8px}.faq-item{border-bottom:1px solid rgba(245,245,240,.06);padding:16px 0}.faq-q{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1rem;color:#f5f5f0;margin-bottom:6px}.faq-a{font-size:12px;color:#ccc}.blog-date{font-size:10px;color:#999;letter-spacing:.15em}"
+STYLE = ("*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#ccc;font-family:'Space Mono',monospace;font-size:13px;line-height:2;padding:0}a{color:#00e5ff;text-decoration:none}.w{max-width:900px;margin:0 auto;padding:40px 20px}h1{font-family:'Inter Tight',sans-serif;font-weight:900;font-size:2.5rem;color:#f5f5f0;margin-bottom:16px;letter-spacing:-.03em;line-height:1.1}h2{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1.2rem;color:#00e5ff;margin:32px 0 12px;text-transform:uppercase;letter-spacing:.05em}h3{color:#f5f5f0;font-size:1rem;margin:20px 0 8px}p,li{margin-bottom:10px;line-height:1.9}ul{padding-left:20px}.nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 1px 18px rgba(0,229,255,.1);padding:12px 20px;z-index:1000;display:flex;justify-content:space-between;align-items:center}.nav a{color:#ccc;font-size:10px;letter-spacing:.2em;margin:0 10px}.nav img{height:30px;filter:drop-shadow(0 0 6px rgba(0,229,255,.28))}.hero-s{padding:120px 20px 60px;border-bottom:1px solid rgba(0,229,255,.1)}.tag{font-size:9px;color:#00e5ff;letter-spacing:.4em;margin-bottom:12px}.cta{display:inline-block;padding:14px 32px;border:1px solid #00e5ff;color:#00e5ff;font-size:11px;letter-spacing:.25em;margin-top:24px}.ft a{text-decoration:underline}.ft{border-top:1px solid rgba(245,245,240,.06);padding:30px 20px;text-align:center;font-size:9px;color:#999;margin-top:60px}.price{display:inline-block;padding:4px 12px;border:1px solid rgba(0,229,255,.2);color:#00e5ff;font-size:11px;margin:8px 0}.tags{font-size:9px;color:#999;letter-spacing:.15em;margin-top:8px}.faq-item{border-bottom:1px solid rgba(245,245,240,.06);padding:16px 0}.faq-q{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1rem;color:#f5f5f0;margin-bottom:6px}.faq-a{font-size:12px;color:#ccc}.blog-date{font-size:10px;color:#999;letter-spacing:.15em}"
          ".ctbl{overflow-x:auto;margin:16px 0}table{border-collapse:collapse;width:100%;font-size:12px;min-width:520px}th,td{border:1px solid rgba(0,229,255,.15);padding:8px 10px;text-align:left;vertical-align:top}th{color:#00e5ff;font-family:'Inter Tight',sans-serif;font-weight:700}"
          ".stack{list-style:none;padding:0;margin:16px 0;display:flex;flex-wrap:wrap;gap:8px}.stack li{margin:0;padding:4px 12px;border:1px solid rgba(0,229,255,.2);color:#00e5ff;font-size:11px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:28px 0}.card{border:1px solid rgba(0,229,255,.15);padding:22px;display:block;transition:border-color .2s}.card:hover{border-color:rgba(0,229,255,.4)}.card h3{margin:0 0 8px;color:#f5f5f0}.card p{color:#ccc;font-size:12px;margin-bottom:0}.card .tags{color:#00e5ff;margin-top:14px}.live{display:inline-block;margin:8px 0;font-size:11px;letter-spacing:.15em}")
 
@@ -34,7 +34,7 @@ L = {
    prefix="", og="og/og-casestudy.png", locale="it_IT",
    base="/case-study/", section_name="Case Study",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>',
-   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p></div>',
+   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/prezzi/">Prezzi</a> &middot; <a href="/portfolio/">Portfolio</a> &middot; <a href="/settori/">Settori</a> &middot; <a href="/geo/">Città</a> &middot; <a href="/servizi-locali/">Servizi locali</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="/glossario/">Glossario</a> &middot; <a href="/confronti/">Confronti</a> &middot; <a href="/case-study/">Case study</a> &middot; <a href="/strumenti/">Strumenti</a></p></div>',
    home="/", contact="/contatti/", cta="RICHIEDI UN PREVENTIVO GRATUITO",
    faq_h2="Domande frequenti", tag="// CASE STUDY", hub_tag="// CASE STUDIES",
    live_label="Visita il progetto live"),
@@ -42,7 +42,7 @@ L = {
    prefix="/en", og="og/og-casestudy-en.png", locale="en_US",
    base="/en/case-studies/", section_name="Case Studies",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/pricing/">PRICING</a><a href="/en/contact/">CONTACT</a></div></nav>',
-   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p></div>',
+   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/en/pricing/">Pricing</a> &middot; <a href="/en/portfolio/">Portfolio</a> &middot; <a href="/en/industries/">Industries</a> &middot; <a href="/en/geo/">Cities</a> &middot; <a href="/en/local-services/">Local services</a> &middot; <a href="/en/blog/">Blog</a> &middot; <a href="/en/glossary/">Glossary</a> &middot; <a href="/en/comparisons/">Comparisons</a> &middot; <a href="/en/case-studies/">Case studies</a> &middot; <a href="/en/tools/">Tools</a></p></div>',
    home="/en/", contact="/en/contact/", cta="REQUEST A FREE QUOTE",
    faq_h2="Frequently asked questions", tag="// CASE STUDY", hub_tag="// CASE STUDIES",
    live_label="Visit the live project"),
@@ -50,7 +50,7 @@ L = {
    prefix="/bg", og="og/og-casestudy-bg.png", locale="bg_BG",
    base="/bg/keys-studii/", section_name="Кейс студии",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
-   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p></div>',
+   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/bg/ceni/">Цени</a> &middot; <a href="/bg/portfolio/">Портфолио</a> &middot; <a href="/bg/branshove/">Браншове</a> &middot; <a href="/bg/geo/">Градове</a> &middot; <a href="/bg/uslugi-lokalni/">Услуги по градове</a> &middot; <a href="/bg/blog/">Блог</a> &middot; <a href="/bg/rechnik/">Речник</a> &middot; <a href="/bg/sravneniya/">Сравнения</a> &middot; <a href="/bg/keys-studii/">Кейс стъдита</a> &middot; <a href="/bg/instrumenti/">Инструменти</a></p></div>',
    home="/bg/", contact="/bg/kontakti/", cta="ЗАЯВИ БЕЗПЛАТНА ОФЕРТА",
    faq_h2="Често задавани въпроси", tag="// КЕЙС СТУДИЯ", hub_tag="// КЕЙС СТУДИИ",
    live_label="Разгледай проекта на живо"),
@@ -65,7 +65,7 @@ dict(slug="nexus-dominion", name="Nexus Dominion", section="Game Development",
      tech=["React", "Vite", "Node.js", "TypeScript", "Prisma", "PostgreSQL", "Redis", "Socket.IO", "Docker"],
  lang=dict(
   it=dict(
-   title="Nexus Dominion — Case Study | Carbon Stealth",
+   title="Nexus Dominion — Caso Studio | Carbon Stealth",
    desc="Case study di Nexus Dominion: un MMO per browser dark-fantasy con multiplayer in tempo reale, gilde, dungeon, arena PvP ed economia guidata dai giocatori. Stack React, Node.js, PostgreSQL, Redis, Socket.IO.",
    card="MMO per browser dark-fantasy con multiplayer in tempo reale, gilde, dungeon e arena PvP.",
    body="""<h2>Panoramica</h2>
@@ -141,7 +141,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
      tech=["React", "Prisma", "PostgreSQL"],
  lang=dict(
   it=dict(
-   title="ERP Ascensori — Case Study | Carbon Stealth",
+   title="ERP Ascensori — Caso Studio | Carbon Stealth",
    desc="Case study di un ERP su misura per un produttore italiano di ascensori: tracciamento produzione, magazzino, fatturazione, accessi a 7 livelli e dashboard di business intelligence. Stack React, Prisma, PostgreSQL.",
    card="ERP su misura per un produttore di ascensori: produzione, magazzino, fatturazione e dashboard BI.",
    body="""<h2>Panoramica</h2>
@@ -217,7 +217,7 @@ dict(slug="ou-vaptsarov", name="OU Nikola Vaptsarov", section="Web Development",
      tech=["React", "Vite", "PHP"],
  lang=dict(
   it=dict(
-   title="OU Nikola Vaptsarov — Case Study | Carbon Stealth",
+   title="OU Nikola Vaptsarov — Caso Studio | Carbon Stealth",
    desc="Case study del sito ufficiale multilingua della scuola OU Nikola Vaptsarov di Bobov Dol: sito istituzionale veloce e accessibile costruito con React, Vite e PHP.",
    card="Sito ufficiale multilingua per una scuola pubblica: veloce, accessibile e facile da aggiornare.",
    body="""<h2>Panoramica</h2>
@@ -296,7 +296,7 @@ dict(slug="treti-mart", name="Treti Mart", section="Marketplace & E-commerce",
      tech=["React", "Node.js", "Stripe"],
  lang=dict(
   it=dict(
-   title="Treti Mart — Case Study | Carbon Stealth",
+   title="Treti Mart — Caso Studio | Carbon Stealth",
    desc="Case study di Treti Mart: un marketplace bulgaro per veicoli, immobili e servizi, con annunci, inserzioni gratuite e pagamenti sicuri. Stack React, Node.js e Stripe.",
    card="Marketplace bulgaro per veicoli, immobili e servizi con annunci e pagamenti sicuri.",
    body="""<h2>Panoramica</h2>

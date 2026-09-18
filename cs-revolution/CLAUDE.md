@@ -25,7 +25,12 @@ npm install
 npx vite build                     # public/ + src/ → dist/
 python3 scripts/generate-*.py      # regenerate a static content cluster
 python3 scripts/inject-widgets.py  # re-inject WA float + a11y + SW after regenerating
+python3 scripts/rebrand-static.py  # nav/footer tweaks (logo size, pricing link, footer link style)
+python3 scripts/seo-footer-links.py # "Risorse" row in every static footer (hubs are otherwise orphans)
+python3 scripts/seo-keywords.py    # <meta keywords> on every page that lacks one (≥5, "Carbon Stealth")
 ```
+All post-processors are idempotent — run the whole chain after any regeneration. Never put
+content in `<noscript>`: it is invisible to people and mostly to Google (30 pages used to).
 Static generators use Python `.format()` — never inject brace-heavy JS into their
 templates; post-process the OUTPUT (that's what `inject-widgets.py` is for).
 

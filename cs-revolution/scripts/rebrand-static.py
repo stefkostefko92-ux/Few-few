@@ -31,6 +31,10 @@ RULES = [
 # контактите. (пазач, какво, с какво): прилага се САМО ако пазачът липсва във файла —
 # новият низ съдържа стария като опашка, иначе всяко пускане би добавяло линк.
 GUARDED = [
+    # футър: подчертани линкове (axe link-in-text-block) и контраст на текста (#666 → #8a949b)
+    ('.ft a{text-decoration:underline}', 'font-size:9px;color:#666;margin-top:60px}',
+     'font-size:9px;color:#8a949b;margin-top:60px}.ft a{text-decoration:underline}'),
+    ('.ft a{text-decoration:underline}', '.ft{', '.ft a{text-decoration:underline}.ft{'),
     ('href="/prezzi/"', '<a href="/contatti/">CONTATTI</a></div></nav>',
      '<a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>'),
     ('href="/en/pricing/"', '<a href="/en/contact/">CONTACT</a></div></nav>',
