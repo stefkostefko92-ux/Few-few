@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, photoFilterCss, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
 import { MAX_SHEETS } from "@/lib/print";
 import { useLocalState } from "@/lib/use-local-state";
@@ -122,6 +122,11 @@ function GramotaSheet({
   verifySrc: string | null;
 }) {
   const reason = s.reason.replace(/\{име\}/g, recipient || "Име Фамилия");
+  // Акцентът НОСИ грамотата (златното „ГРАМОТА“), но на топлите теми е
+  // 2.03:1 върху кремавото — нечетимо и на екран, и на печат. `readableAccent`
+  // го затъмнява точно колкото трябва и ПАЗИ тона: по-тъмно злато, не кафяво.
+  // Рамките и печатът остават в чистия акцент — те са украса, не текст.
+  const accentInk = readableAccent(theme.accent, theme.bg);
   return (
     <div style={{
       position: "absolute", inset: 0, padding: "10mm",
@@ -156,13 +161,13 @@ function GramotaSheet({
               <img src={s.logo} alt="" style={{ height: `${s.logoSize}mm`, maxWidth: "70mm", objectFit: "contain", display: "block", filter: photoFilterCss(s) }} />
             </div>
           )}
-          <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
+          <div style={{ fontSize: fs(5), letterSpacing: "0.3em", color: accentInk, fontWeight: 700, position: "relative", zIndex: 1 }}>
             {s.org || " "}
           </div>
           <div style={{
             fontFamily: elementFont(s, "kind", "var(--font-display)"), fontWeight: 800,
             fontSize: fs(16), letterSpacing: "0.05em", marginTop: "4mm",
-            color: theme.accent, position: "relative", zIndex: 1, ...titleFx(s, theme),
+            color: accentInk, position: "relative", zIndex: 1, ...titleFx(s, theme),
           }}>
             {s.kind}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { bgHolidays } from "@/lib/bg-holidays";
 import { useLocalState } from "@/lib/use-local-state";
 import PrintBar from "@/components/PrintBar";
@@ -43,6 +43,13 @@ const ProjectSchema = z
 export default function CalendarStudio() {
   const [s, setS] = useLocalState<CalState>("mastilko-calendar", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = resolveTheme(s);
+  // Календарът има ДВА различни случая наведнъж:
+  //  • акцентен текст върху листа (заглавието на месеца, съботата и неделята)
+  //    → затъмняваме акцента, пазим тона;
+  //  • надпис върху акцентната плоскост (името на отбелязания празник)
+  //    → избираме светло или тъмно според достижимия таван.
+  const accentInk = readableAccent(theme.accent, theme.bg);
+  const onAccent = textOnSolid(theme.accent, theme.bg, theme.fg);
   const set = (patch: Partial<CalState>) => setS({ ...s, ...patch });
 
   const holidays = s.showHolidays ? bgHolidays(s.year) : {};
@@ -91,7 +98,7 @@ export default function CalendarStudio() {
             display: "flex", flexDirection: "column", padding: "14mm 12mm",
           }}>
             <div style={{ textAlign: "center", marginBottom: "8mm" }}>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fs(16), color: theme.accent }}>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fs(16), color: accentInk }}>
                 {MONTHS[s.month]}
               </div>
               <div style={{ fontSize: fs(6), letterSpacing: "0.2em", opacity: 0.8 }}>{s.year}</div>
@@ -99,7 +106,7 @@ export default function CalendarStudio() {
             {/* Дни от седмицата */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1mm", marginBottom: "1.5mm" }}>
               {WD.map((w, i) => (
-                <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: fs(3.6), color: i >= 5 ? theme.accent : theme.fg, opacity: i >= 5 ? 1 : 0.8 }}>
+                <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: fs(3.6), color: i >= 5 ? accentInk : theme.fg, opacity: i >= 5 ? 1 : 0.8 }}>
                   {w}
                 </div>
               ))}
@@ -114,7 +121,7 @@ export default function CalendarStudio() {
                     border: "0.2mm solid rgba(120,110,100,0.25)", borderRadius: "1mm",
                     padding: "1.5mm", position: "relative", overflow: "hidden",
                     background: hol ? theme.accent : weekend ? "rgba(0,0,0,0.04)" : "transparent",
-                    color: hol ? theme.bg : theme.fg,
+                    color: hol ? onAccent : theme.fg,
                   }}>
                     {d !== null && (
                       <>

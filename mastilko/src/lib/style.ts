@@ -466,6 +466,107 @@ export function accentTextOn(accent: string, bg: string, fg: string): string {
   return ratio !== null && ratio >= 4.5 ? accent : fg;
 }
 
+/** Разлага `#rrggbb` на три канала 0–255, или null при невалиден цвят. */
+function toRgb(hexColor: string): [number, number, number] | null {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hexColor);
+  if (!m) return null;
+  const n = parseInt(m[1]!, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function toHex([r, g, b]: [number, number, number]): string {
+  const h = (c: number) => Math.round(Math.min(255, Math.max(0, c))).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+/**
+ * Бута цвят към бяло (`towardsWhite`) или към черно, докато мине `target`
+ * спрямо `bg`. Мащабирането е в sRGB и запазва тона; двоично търсене по
+ * коефициента намира НАЙ-МАЛКАТА намеса, която стига.
+ *
+ * Ако дори крайната стъпка не стига, връща нея — това пак е най-четимото,
+ * което тази посока може да даде.
+ */
+function pushUntilReadable(
+  hexColor: string,
+  bg: string,
+  target: number,
+  towardsWhite: boolean,
+): string {
+  const rgb = toRgb(hexColor);
+  if (!rgb) return hexColor;
+  const at = (t: number): [number, number, number] =>
+    towardsWhite
+      ? [rgb[0] + (255 - rgb[0]) * t, rgb[1] + (255 - rgb[1]) * t, rgb[2] + (255 - rgb[2]) * t]
+      : [rgb[0] * (1 - t), rgb[1] * (1 - t), rgb[2] * (1 - t)];
+
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    const ratio = contrastRatio(toHex(at(mid)), bg);
+    if (ratio !== null && ratio >= target) hi = mid;
+    else lo = mid;
+  }
+  return toHex(at(hi));
+}
+
+/**
+ * Прави акцента ЧЕТИМ върху даден фон, без да губи тона му.
+ *
+ * Защо не `accentTextOn`: той пада на основния цвят на текста, което е добре
+ * за дребен слоган на визитка, но убива печатните листове, където акцентът
+ * НОСИ дизайна — златното „ГРАМОТА“ върху кремаво, заглавието на поканата,
+ * съботата и неделята в календара. Кафяво вместо злато не е грамота.
+ *
+ * Затова тук акцентът само се затъмнява (или изсветлява, ако фонът е тъмен) —
+ * точно толкова, колкото е нужно. Тонът и насищането остават; по-тъмното
+ * злато пак е злато и на печат излиза по-добре.
+ */
+export function readableAccent(accent: string, bg: string, target = 4.5): string {
+  const bgLum = relLuminance(bg);
+  if (toRgb(accent) === null || bgLum === null) return accent;
+
+  const current = contrastRatio(accent, bg);
+  if (current !== null && current >= target) return accent;
+
+  // Тъмен фон → изсветляваме към бяло; светъл → затъмняваме към черно.
+  return pushUntilReadable(accent, bg, target, bgLum < 0.18);
+}
+
+/**
+ * Надпис върху плътна цветна плоскост (лентата на баджа, панелът на ваучера,
+ * отбелязаният празник в календара). Обратната задача на `readableAccent`:
+ * фонът е акцентът, а трябва да решим светъл или тъмен да е текстът.
+ *
+ * ВАЖНО (платено с два провалени теста): не е достатъчно да върнем
+ * „по-добрия от двата“, нито да изберем посоката по него.
+ *
+ * Средно тъмните плоскости не носят AA в нито една от двете посоки — върху
+ * теракотата `#C25E3F` бледото розово дава 3.15:1, а кафявото на текста
+ * 3.10:1, тоест и двете падат. Бледото изглежда „по-добрият кандидат“, но
+ * ТАВАНЪТ му е чисто бяло = 4.23:1, което пак не стига, докато таванът на
+ * тъмната посока е чисто черно = 4.96:1 и минава.
+ *
+ * Затова посоката се избира по ДОСТИЖИМИЯ таван (бяло срещу черно спрямо
+ * фона), а не по подадените цветове. При равни тавани печели тъмната посока
+ * — на печат тъмно мастило върху цвят е по-сигурно от светло.
+ */
+export function textOnSolid(bg: string, light: string, dark: string, target = 4.5): string {
+  if (relLuminance(bg) === null) return dark;
+  const ceilLight = contrastRatio("#ffffff", bg) ?? 0;
+  const ceilDark = contrastRatio("#000000", bg) ?? 0;
+  const useLight = ceilLight > ceilDark;
+
+  // Ако подадената крайност липсва/е невалидна, тръгваме от самата крайност.
+  const chosen = (useLight ? light : dark) || "";
+  const start = toRgb(chosen) !== null ? chosen : useLight ? "#ffffff" : "#000000";
+
+  const ratio = contrastRatio(start, bg);
+  if (ratio !== null && ratio >= target) return start;
+  return pushUntilReadable(start, bg, target, useLight);
+}
+
 export function qrSafeColor(accent: string): string {
   const FALLBACK = "#1B1B1B";
   const lum = relLuminance(accent);

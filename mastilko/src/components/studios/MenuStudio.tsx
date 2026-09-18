@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, sheetBg, accentTextOn, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import ImageUpload from "@/components/ImageUpload";
@@ -122,12 +122,13 @@ export default function MenuStudio() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={s.logo} alt="" style={{ height: "18mm", maxWidth: "60mm", objectFit: "contain", margin: "0 auto 3mm" }} />
               )}
-              {/* Заглавието и разделите минават през `accentTextOn`: при светли
-                  акценти (медено жълто върху кремаво = 2.03:1) названията на
-                  разделите на отпечатаното меню ставаха практически нечетими.
-                  Слабият акцент пада на основния цвят на текста; рамките под
-                  разделите остават в акцента — те са украса, не текст. */}
-              <div style={{ fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800, fontSize: fs(12), color: accentTextOn(theme.accent, theme.bg, theme.fg) }}>
+              {/* Заглавието и разделите минават през `readableAccent`: при
+                  светли акценти (медено жълто върху кремаво = 2.03:1)
+                  названията на разделите на отпечатаното меню ставаха
+                  практически нечетими. Акцентът се затъмнява колкото трябва,
+                  но ПАЗИ тона — иначе менюто губи цвета на заведението.
+                  Рамките под разделите остават в акцента: украса, не текст. */}
+              <div style={{ fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800, fontSize: fs(12), color: readableAccent(theme.accent, theme.bg) }}>
                 {s.title}
               </div>
               {/* 0.8 разреждаше подзаглавието до 4.29:1 — под AA за дребен текст. */}
@@ -139,7 +140,7 @@ export default function MenuStudio() {
                   {sec.heading && (
                     <div style={{
                       fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800,
-                      fontSize: fs(6), color: accentTextOn(theme.accent, theme.bg, theme.fg),
+                      fontSize: fs(6), color: readableAccent(theme.accent, theme.bg),
                       borderBottom: `0.4mm solid ${theme.accent}`,
                       paddingBottom: "1.5mm", marginBottom: "3mm",
                     }}>

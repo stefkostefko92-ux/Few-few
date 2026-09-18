@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import ImageUpload from "@/components/ImageUpload";
@@ -92,6 +92,10 @@ function Badge({
   w: number;
   h: number;
 }) {
+  // Баджът има ДВА случая: името на събитието стои върху акцентната лента
+  // (текст върху плоскост), а ролята е акцентен текст върху листа.
+  const onAccent = textOnSolid(theme.accent, theme.bg, theme.fg);
+  const accentInk = readableAccent(theme.accent, theme.bg);
   return (
     <div style={{
       position: "relative",
@@ -108,7 +112,7 @@ function Badge({
       {/* Горна акцентна лента със събитието + лого */}
       <div style={{
         background: theme.accent,
-        color: theme.bg,
+        color: onAccent,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -139,7 +143,7 @@ function Badge({
           {guest.name}
         </div>
         {guest.role && (
-          <div style={{ fontSize: fs(4), fontWeight: 700, color: theme.accent }}>{guest.role}</div>
+          <div style={{ fontSize: fs(4), fontWeight: 700, color: accentInk }}>{guest.role}</div>
         )}
         {guest.company && (
           <div style={{ fontSize: fs(3.4), opacity: 0.85 }}>{guest.company}</div>

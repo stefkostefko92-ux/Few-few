@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { type WarmTheme } from "@/lib/themes";
-import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, titleFx, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, titleFx, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { MAX_SHEETS } from "@/lib/print";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -72,6 +72,10 @@ const PRESETS: Array<{ label: string; v: Partial<PokanaState> }> = [
 function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number) => string }) {
   // Размер на текста с глобален мащаб — само шрифтът, не оформлението.
   const fu = (v: number) => `calc(var(--sheet-scale, 1) * ${u(v)})`;
+  // Заглавието на поканата беше в чистия акцент — 2.03:1 върху кремавото.
+  // Затъмнява се точно колкото трябва, тонът се пази; рамката и украсата
+  // остават в чистия акцент.
+  const accentInk = readableAccent(theme.accent, theme.bg);
   return (
     <div style={{
       position: "relative",
@@ -89,7 +93,7 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
       )}
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {s.emoji && <div style={{ fontSize: fu(16), lineHeight: 1 }}>{s.emoji}</div>}
-        <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: fu(8), marginTop: u(2), color: theme.accent, ...titleFx(s, theme) }}>
+        <div style={{ fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800, fontSize: fu(8), marginTop: u(2), color: accentInk, ...titleFx(s, theme) }}>
           {s.heading}
         </div>
         {s.who && <div style={{ fontFamily: elementFont(s, "who", "var(--font-sans)"), fontSize: fu(5.5), fontWeight: 700, marginTop: u(2) }}>{s.who}</div>}

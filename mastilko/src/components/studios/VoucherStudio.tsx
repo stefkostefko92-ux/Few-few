@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import ImageUpload from "@/components/ImageUpload";
@@ -63,6 +63,10 @@ function serialOf(s: VoucherState, i: number): string {
 }
 
 function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmTheme; serial: string; qrSrc: string | null }) {
+  // Талонът отляво е плътна акцентна плоскост (текст ВЪРХУ цвят), а името на
+  // бизнеса отдясно е акцентен текст върху листа — два различни случая.
+  const onAccent = textOnSolid(theme.accent, theme.bg, theme.fg);
+  const accentInk = readableAccent(theme.accent, theme.bg);
   return (
     <div style={{
       position: "relative", width: `${V.w}mm`, height: `${V.h}mm`,
@@ -72,14 +76,14 @@ function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmThem
     }}>
       {/* Ляв акцентен талон със стойността */}
       <div style={{
-        width: "34mm", background: theme.accent, color: theme.bg,
+        width: "34mm", background: theme.accent, color: onAccent,
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         textAlign: "center", padding: "2mm", flexShrink: 0,
       }}>
         <div style={{ fontFamily: elementFont(s, "value", "var(--font-display)"), fontWeight: 800, fontSize: fs(11), lineHeight: 1 }}>
           {s.value}
         </div>
-        <div style={{ fontSize: fs(2.6), marginTop: "1.5mm", opacity: 0.95 }}>ВАУЧЕР</div>
+        <div style={{ fontSize: fs(2.6), marginTop: "1.5mm" }}>ВАУЧЕР</div>
       </div>
       {/* Дясна част */}
       <div style={{ flex: 1, padding: "3mm 4mm", display: "flex", flexDirection: "column", position: "relative" }}>
@@ -87,9 +91,9 @@ function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmThem
           // eslint-disable-next-line @next/next/no-img-element
           <img src={s.logo} alt="" style={{ position: "absolute", right: "3mm", top: "3mm", height: "9mm", maxWidth: "22mm", objectFit: "contain" }} />
         )}
-        <div style={{ fontWeight: 800, fontSize: fs(4.4), color: theme.accent, maxWidth: "36mm" }}>{s.business}</div>
+        <div style={{ fontWeight: 800, fontSize: fs(4.4), color: accentInk, maxWidth: "36mm" }}>{s.business}</div>
         <div style={{ fontSize: fs(3.4), marginTop: "1mm" }}>{s.desc}</div>
-        <div style={{ fontSize: fs(2.8), opacity: 0.8, marginTop: "auto" }}>{s.validUntil}</div>
+        <div style={{ fontSize: fs(2.8), opacity: 0.9, marginTop: "auto" }}>{s.validUntil}</div>
         <div style={{ fontSize: fs(2.8), fontWeight: 700, marginTop: "0.5mm" }}>Код: {serial}</div>
         {qrSrc && (
           <QrImage src={qrSrc} style={{ position: "absolute", right: "3mm", bottom: "3mm", width: "13mm", height: "13mm", background: "#fff", padding: "0.8mm", borderRadius: "1mm" }} />
