@@ -145,6 +145,7 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("purchases", () => tx.shopPurchase.deleteMany({ where: { userId: uid } }));
     await c("questContributions", () => tx.questContribution.deleteMany({ where: { userId: uid } }));
     await c("triviaAnswers", () => tx.triviaAnswer.deleteMany({ where: { userId: uid } }));
+    await c("triviaWinsAnonymized", () => tx.triviaRound.updateMany({ where: { winnerId: uid }, data: { winnerId: null } }));
     await c("trades", () => tx.companionTrade.deleteMany({ where: { OR: [{ fromUserId: uid }, { toUserId: uid }] } }));
     await c("spawnsAnonymized", () => tx.companionSpawn.updateMany({ where: { caughtById: uid }, data: { caughtById: null } }));
 

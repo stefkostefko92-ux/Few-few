@@ -7,9 +7,12 @@ import { t, resolveLang } from "../i18n/index.js";
 import { friendlyError } from "./friendlyError.js";
 import { SUCCESS, WARNING } from "./colors.js";
 import { grantShopRole } from "./game.js";
+import { closeTriviaMessage, wyrVote, wyrMessage } from "./minigames.js";
 
 export async function handleGameInteraction(interaction) {
   const id = interaction.customId;
+  if (interaction.isButton() && id.startsWith("game:trivia:")) { const [, , roundId, opt] = id.split(":"); return answerTrivia(interaction, roundId, Number(opt)); }
+  if (interaction.isButton() && id.startsWith("game:wyr:")) return voteWyr(interaction, id.split(":")[2]);
   if (interaction.isStringSelectMenu() && id === "game:shop") return confirmPurchase(interaction, interaction.values[0]);
   if (interaction.isButton() && id.startsWith("game:buy:")) return buyItem(interaction, id.split(":")[2]);
   if (interaction.isButton() && id.startsWith("game:catch:")) return catchSpawn(interaction, id.split(":")[2]);
@@ -95,6 +98,38 @@ async function releaseCompanion(interaction, ownedId) {
   } catch (err) {
     return interaction.update({ content: friendlyError(err, interaction).content, embeds: [], components: [] });
   }
+}
+
+// ─── Етап 3: trivia + would-you-rather ───────────────────────────────────────
+async function answerTrivia(interaction, roundId, option) {
+  const lang = await resolveLang(interaction);
+  let out;
+  try {
+    ({ data: out } = await api.post(`/bot/game/trivia/${roundId}/answer`, { userId: interaction.user.id, option }));
+  } catch (err) {
+    const d = err?.response?.data || {};
+    const map = { ALREADY_ANSWERED: "game.trivia.already", ROUND_CLOSED: "game.trivia.closed", ROUND_NOT_FOUND: "game.trivia.closed" };
+    const key = map[d.error];
+    return interaction.reply({ content: key ? t(key, lang) : friendlyError(err, interaction).content, flags: MessageFlags.Ephemeral });
+  }
+  const key = !out.correct ? "game.trivia.wrong" : out.winner ? "game.trivia.correctWinner" : "game.trivia.correctLate";
+  await interaction.reply({ content: t(key, lang, { sparks: out.sparks ?? 0 }), flags: MessageFlags.Ephemeral });
+  if (out.winner) {
+    // Общото съобщение: отговорът + победителят, бутоните изчезват.
+    const embed = interaction.message?.embeds?.[0];
+    const options = (embed?.fields || []).map((f) => f.name.replace(/^\S+\s/, ""));
+    await closeTriviaMessage(interaction.client, interaction.guildId, { channelId: interaction.channelId, messageId: interaction.message.id, options, answer: out.answer }, { winnerId: interaction.user.id, lang }).catch(() => {});
+  }
+}
+
+async function voteWyr(interaction, choice) {
+  const lang = await resolveLang(interaction);
+  const votes = wyrVote(interaction.message.id, interaction.user.id, choice === "a" ? "a" : "b");
+  const desc = interaction.message.embeds?.[0]?.description || "";
+  // Двете опции стоят в описанието: „🅰️ …\n\n🅱️ …“ — вадим ги, за да не пазим двойка в паметта.
+  const m = /🅰️\s*([\s\S]*?)\n\n🅱️\s*([\s\S]*)$/.exec(desc);
+  const pair = m ? [m[1].trim(), m[2].trim()] : ["A", "B"];
+  await interaction.update(wyrMessage(pair, lang, votes)).catch(() => {});
 }
 
 async function resolveTrade(interaction, tradeId, accept) {

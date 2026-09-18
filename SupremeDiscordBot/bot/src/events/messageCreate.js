@@ -6,7 +6,8 @@
 
 import * as Sentry from "@sentry/node";
 import api, { logTicketMessage } from "../utils/api.js";
-import { onMessageForXp } from "../utils/game.js";
+import { onMessageForXp, getGameSettings } from "../utils/game.js";
+import { onCounting } from "../utils/minigames.js";
 import {
   ticketChannelCache,
   CACHE_TTL,
@@ -22,6 +23,9 @@ export default {
     if (!message.guildId) return;
     // v50 — Server Season: брои събитието за XP (не чете съдържание). Fire-and-forget.
     onMessageForXp(message).catch(() => {});
+    // Етап 3 — Counting: съдържанието се чете САМО в обявения counting канал
+    // (настройките са кеширани 60 s в utils/game.js; извън канала е един if).
+    getGameSettings(message.guildId).then((s) => onCounting(message, s)).catch(() => {});
 
     // ═══ v1.8 Sticky Messages ═══
     // Check if this channel has a sticky message. If so, delete previous

@@ -54,6 +54,9 @@ export const XP_REWARDS = Object.freeze({
   COUNTING_MILESTONE: 15,
 });
 
+/** Кой еднократен ключ (префикс) е принос към кой сървърен куест (етап 3). */
+export const QUEST_TYPE_BY_KEY_PREFIX = Object.freeze({ poll: "POLL_VOTES", verify: "VERIFICATIONS", ticket: "TICKETS_SLA" });
+
 /** Искри при ниво нагоре: 10 на ниво, стига до 250 на ниво 25+ (не расте безкрайно). */
 export function sparksForLevelUp(newLevel) {
   return Math.min(250, 10 * Math.max(1, newLevel));
@@ -138,6 +141,15 @@ export async function grantXpOnce(serverId, userId, key, amount) {
     throw err;
   }
   const r = await awardXp(serverId, userId, amount);
+  // Етап 3: същото събитие е и принос към сървърния куест от този тип (веднъж —
+  // ключът вече е спрял повторението). Динамичен import: questOps тегли този модул.
+  const questType = QUEST_TYPE_BY_KEY_PREFIX[key.split(":")[0]];
+  if (questType) {
+    try {
+      const { contribute } = await import("./questOps.js");
+      await contribute(serverId, questType, [{ userId, amount: 1 }]);
+    } catch { /* куестът е страничен ефект — XP-то вече е дадено */ }
+  }
   // Ниво нагоре от събитие в backend-а (анкета, подарък, кандидатура, тикет,
   // верификация): ботът трябва да даде ролите и да обяви — той не вижда тази
   // партида. Динамичен import — botNotifier не бива да се тегли в чистите тестове.

@@ -11,6 +11,8 @@ import { getServerTier } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 import { getGameSettings, xpToReachLevel } from "../lib/game/xp.js";
 import { COMPANIONS, publicCompanion, CURRENT_SEASON } from "../lib/game/companions.js";
+import { QUEST_TYPES, QUEST_TYPE_KEYS, publicQuest } from "../lib/game/quests.js";
+import { createQuest, cancelQuest } from "../lib/game/questOps.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { notifyBot } from "../services/botNotifier.js";
 
@@ -80,6 +82,10 @@ router.put("/:serverId/settings", requireServerAdmin, async (req, res, next) => 
         return res.status(403).json({ error: `Level roles limit reached (${tier.limits.levelRoles})`, code: "LIMIT_REACHED", limit: tier.limits.levelRoles });
       }
       data.levelRoles = [...data.levelRoles].sort((a, b) => a.level - b.level);
+    }
+    // Дневна trivia е Premium (concept §5); Free пада на седмична, не мълчи.
+    if (data.triviaSchedule === "daily" && !tier.isPremium) {
+      return res.status(403).json({ error: "Daily trivia requires Premium", code: "PREMIUM_REQUIRED", feature: "game.kbTrivia" });
     }
     await getGameSettings(serverId); // гарантира реда
     const settings = await prisma.gameSettings.update({ where: { serverId }, data });
@@ -201,6 +207,74 @@ router.get("/:serverId/companions", requireServerAdmin, async (req, res, next) =
       caught: counts.reduce((s, c) => s + c._count._all, 0),
       catalog: COMPANIONS.map((c) => ({ ...publicCompanion(c, 1), caught: byId[c.id] || 0 })),
       collectors: collectors.map((c) => ({ userId: c.userId, count: c._count._all })),
+    });
+  } catch (err) { next(err); }
+});
+
+// ─── Етап 3: куестове + мини-игри (таблото) ──────────────────────────────────
+router.get("/:serverId/quests", requireServerAdmin, async (req, res, next) => {
+  const { serverId } = req.params;
+  try {
+    const now = new Date();
+    const [active, history] = await Promise.all([
+      prisma.serverQuest.findMany({ where: { serverId, status: "ACTIVE", endsAt: { gt: now } }, orderBy: { endsAt: "asc" }, include: { contributions: { orderBy: { amount: "desc" }, take: 5 } } }),
+      prisma.serverQuest.findMany({ where: { serverId, OR: [{ status: { not: "ACTIVE" } }, { endsAt: { lte: now } }] }, orderBy: { endsAt: "desc" }, take: 20, include: { _count: { select: { contributions: true } } } }),
+    ]);
+    res.json({
+      types: QUEST_TYPE_KEYS.map((k) => ({ key: k, emoji: QUEST_TYPES[k].emoji, reward: QUEST_TYPES[k].reward, min: QUEST_TYPES[k].min, max: QUEST_TYPES[k].max })),
+      active: active.map((q) => publicQuest(q, { contributors: q.contributions.map((c) => ({ userId: c.userId, amount: c.amount })) })),
+      history: history.map((q) => publicQuest(q, { contributors: q._count.contributions })),
+    });
+  } catch (err) { next(err); }
+});
+
+const questSchema = z.object({
+  type: z.enum(QUEST_TYPE_KEYS),
+  target: z.number().int().min(1).max(1_000_000),
+  rewardSparks: z.number().int().min(1).max(10_000).optional(),
+  days: z.number().int().min(1).max(30).default(7),
+});
+router.post("/:serverId/quests", requireServerAdmin, async (req, res, next) => {
+  const { serverId } = req.params;
+  const parsed = questSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  try {
+    const out = await createQuest(serverId, parsed.data);
+    if (!out.ok) {
+      if (out.code === "LIMIT_REACHED") return res.status(403).json({ error: `Active quests limit reached (${out.limit})`, code: "LIMIT_REACHED", limit: out.limit, count: out.count });
+      return res.status(400).json({ error: out.code });
+    }
+    await writeAudit({ actorId: req.user.id, action: "GAME_QUEST_CREATED", targetId: serverId, metadata: { questId: out.quest.id, type: out.quest.type, target: out.quest.target } });
+    res.status(201).json(publicQuest(out.quest));
+  } catch (err) { next(err); }
+});
+
+router.delete("/:serverId/quests/:questId", requireServerAdmin, async (req, res, next) => {
+  const { serverId, questId } = req.params;
+  try {
+    const out = await cancelQuest(serverId, questId);
+    if (!out.ok) return res.status(out.code === "NOT_FOUND" ? 404 : 409).json({ error: out.code });
+    await writeAudit({ actorId: req.user.id, action: "GAME_QUEST_CANCELLED", targetId: serverId, metadata: { questId } });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.get("/:serverId/minigames", requireServerAdmin, async (req, res, next) => {
+  const { serverId } = req.params;
+  try {
+    const [settings, rounds, recent, winners] = await Promise.all([
+      getGameSettings(serverId),
+      prisma.triviaRound.count({ where: { serverId } }),
+      prisma.triviaRound.findMany({ where: { serverId }, orderBy: { createdAt: "desc" }, take: 10, select: { id: true, source: true, question: true, winnerId: true, createdAt: true, closedAt: true, _count: { select: { answers: true } } } }),
+      prisma.triviaRound.groupBy({ by: ["winnerId"], where: { serverId, winnerId: { not: null } }, _count: { _all: true }, orderBy: { _count: { winnerId: "desc" } }, take: 10 }),
+    ]);
+    res.json({
+      counting: { channelId: settings.countingChannelId, current: settings.countingCurrent, high: settings.countingHigh },
+      trivia: {
+        channelId: settings.triviaChannelId, schedule: settings.triviaSchedule, rounds,
+        recent: recent.map((r) => ({ id: r.id, source: r.source, question: r.question, winnerId: r.winnerId, createdAt: r.createdAt, closedAt: r.closedAt, answers: r._count.answers })),
+        winners: winners.map((w) => ({ userId: w.winnerId, wins: w._count._all })),
+      },
     });
   } catch (err) { next(err); }
 });

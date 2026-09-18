@@ -11,6 +11,7 @@ import { getServerTier } from "../lib/premium.js";
 import {
   getGameSettings, awardXp, computeDaily, levelProgress, rolesForLevel, DAILY_XP,
 } from "../lib/game/xp.js";
+import { contribute } from "../lib/game/questOps.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -56,6 +57,12 @@ router.post("/game/xp-batch", async (req, res, next) => {
         levelUps.push({ ...r, roleIds: rolesForLevel(settings.levelRoles, r.level) });
       }
     }
+    // Етап 3: партидата е и принос към сървърните куестове (съобщения / гласови минути).
+    // Страничен ефект — провал тук не бива да връща 500 на бота (XP-то вече е записано).
+    try {
+      await contribute(serverId, "MESSAGES", entries.map((e) => ({ userId: e.userId, amount: e.messageXpEvents })));
+      await contribute(serverId, "VOICE_MINUTES", entries.map((e) => ({ userId: e.userId, amount: e.voiceMinutes })));
+    } catch (err) { console.warn(`[game] quest contribute за ${serverId}: ${err.message}`); }
     res.json({
       enabled: true,
       levelUps,
@@ -89,6 +96,7 @@ router.post("/game/daily", async (req, res, next) => {
     if (!result.ok) return res.status(429).json({ error: "Already claimed", code: "DAILY_COOLDOWN", retryInMs: result.retryInMs, streak: result.streak, sparksTotal: result.sparksTotal });
     // XP за дневния ритуал — отделно от искрите; може да вдигне ниво.
     const xp = await awardXp(serverId, userId, DAILY_XP);
+    contribute(serverId, "DAILY_CLAIMS", [{ userId, amount: 1 }]).catch(() => {}); // етап 3
     const levelUp = xp.leveledUp ? { ...xp, roleIds: rolesForLevel(settings.levelRoles, xp.level) } : null;
     res.json({ ...result, xp: DAILY_XP, level: xp.level, levelUp, announceChannelId: settings.announceChannelId, levelUpMessage: settings.levelUpMessage });
   } catch (err) { next(err); }

@@ -1182,6 +1182,26 @@ app.post("/internal/game-role-revoke", async (req, res) => {
     res.json({ ok });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
+// Етап 3: куест (STARTED публикува, PROGRESS редактира, COMPLETED/FAILED затваря + обявява).
+app.post("/internal/game-quest", async (req, res) => {
+  const { event, serverId } = req.body || {};
+  if (!event || !serverId) return res.status(400).json({ error: "event и serverId са задължителни" });
+  try {
+    const { handleQuestEvent } = await import("./utils/minigames.js");
+    res.json(await handleQuestEvent(client, req.body));
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+// Етап 3: trivia (POST публикува кръг от scheduler-а, CLOSE показва отговора при изтичане).
+app.post("/internal/game-trivia", async (req, res) => {
+  const { event, serverId, round } = req.body || {};
+  if (!event || !serverId || !round) return res.status(400).json({ error: "event, serverId и round са задължителни" });
+  try {
+    const { postTrivia, closeTriviaMessage } = await import("./utils/minigames.js");
+    if (event === "POST") return res.json(await postTrivia(client, serverId, round));
+    if (event === "CLOSE") return res.json({ ok: await closeTriviaMessage(client, serverId, round, { winnerId: round.winnerId || null }) });
+    res.status(400).json({ error: "непознато събитие" });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
 // Таблото смени настройките → изхвърли кеша за сървъра.
 app.post("/internal/game-settings-changed", async (req, res) => {
   const { serverId } = req.body || {};

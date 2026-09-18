@@ -288,3 +288,7 @@ export const deleteGameShopItem= (sid, id) => api.delete(`/game/${sid}/shop/${id
 export const getGameLeaderboard= (sid, by = "xp") => api.get(`/game/${sid}/leaderboard`, { params: { by, limit: 50 } }).then((r) => r.data);
 export const getGamePurchases  = (sid) => api.get(`/game/${sid}/purchases`).then((r) => r.data);
 export const getGameCompanions = (sid) => api.get(`/game/${sid}/companions`).then((r) => r.data);
+export const getGameQuests     = (sid) => api.get(`/game/${sid}/quests`).then((r) => r.data);
+export const createGameQuest   = (sid, data) => api.post(`/game/${sid}/quests`, data).then((r) => r.data);
+export const cancelGameQuest   = (sid, id) => api.delete(`/game/${sid}/quests/${id}`).then((r) => r.data);
+export const getGameMinigames  = (sid) => api.get(`/game/${sid}/minigames`).then((r) => r.data);

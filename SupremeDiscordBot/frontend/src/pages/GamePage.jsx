@@ -5,14 +5,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles } from "lucide-react";
+import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles, Target } from "lucide-react";
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
 import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import {
   getGame, updateGameSettings, getGameShop, createGameShopItem, updateGameShopItem, deleteGameShopItem,
-  getGameLeaderboard, getGamePurchases, getGameCompanions,
+  getGameLeaderboard, getGamePurchases, getGameCompanions, getGameQuests, createGameQuest, cancelGameQuest, getGameMinigames,
 } from "../api";
 
 const SNOWFLAKE = /^\d{17,20}$/;
@@ -30,6 +30,7 @@ const TABS = [
   { id: "shop", tKey: "game.tab.shop", icon: ShoppingBag },
   { id: "leaderboard", tKey: "game.tab.leaderboard", icon: Trophy },
   { id: "companions", tKey: "game.tab.companions", icon: Sparkles },
+  { id: "quests", tKey: "game.tab.quests", icon: Target },
 ];
 
 export default function GamePage() {
@@ -59,6 +60,7 @@ export default function GamePage() {
       {data && tab === "shop" && <ShopTab data={data} />}
       {data && tab === "leaderboard" && <LeaderboardTab />}
       {data && tab === "companions" && <CompanionsTab data={data} />}
+      {data && tab === "quests" && <QuestsTab data={data} />}
     </div>
   );
 }
@@ -429,6 +431,132 @@ function CompanionsTab({ data }) {
           <ol className="text-sm space-y-1">{c.collectors.map((x, i) => <li key={x.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <span className="font-mono">{x.userId}</span> <span className="text-cs-muted">· {x.count}</span></li>)}</ol>
         </section>
       )}
+    </div>
+  );
+}
+
+// ─── Етап 3: куестове + мини-игри (Counting, trivia, парти команди) ──────────
+function QuestsTab({ data }) {
+  const { t } = useT();
+  const toast = useToast();
+  const qc = useQueryClient();
+  const { serverId } = useParams();
+  const { data: q, isLoading } = useQuery({ queryKey: ["game-quests", serverId], queryFn: () => getGameQuests(serverId) });
+  const { data: mg } = useQuery({ queryKey: ["game-minigames", serverId], queryFn: () => getGameMinigames(serverId) });
+  const [form, setForm] = useState({ type: "MESSAGES", target: 1000, rewardSparks: 100, days: 7 });
+  const [open, setOpen] = useState(false);
+  const refresh = () => qc.invalidateQueries({ queryKey: ["game-quests", serverId] });
+  const create = useMutation({
+    mutationFn: () => createGameQuest(serverId, { type: form.type, target: Number(form.target), rewardSparks: Number(form.rewardSparks), days: Number(form.days) }),
+    onSuccess: () => { toast.success(t("game.saved")); setOpen(false); refresh(); },
+    onError: (err) => toast.error(err?.response?.data?.code === "LIMIT_REACHED" ? t("game.quests.limit", { n: err.response.data.limit }) : errMsg(err, t("game.saveFailed"))),
+  });
+  const cancel = useMutation({
+    mutationFn: (id) => cancelGameQuest(serverId, id),
+    onSuccess: () => { toast.success(t("game.saved")); refresh(); },
+    onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))),
+  });
+  if (isLoading || !q) return <p className="text-cs-muted">{t("game.loading")}</p>;
+  const typeMeta = (k) => q.types.find((x) => x.key === k) || {};
+  const atLimit = q.active.length >= data.limits.activeQuests;
+  const date = (d) => new Date(d).toLocaleDateString();
+  return (
+    <div className="space-y-6">
+      <section className="cs-card space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-cs-text">{t("game.quests.title")}</h2>
+          <button type="button" className="cs-btn-primary" onClick={() => setOpen((v) => !v)} disabled={atLimit}><Plus className="w-4 h-4" aria-hidden="true" /> {t("game.quests.new")}</button>
+        </div>
+        <p className="text-xs text-cs-dim">{t("game.quests.hint", { n: data.limits.activeQuests })}{!data.isPremium && <> <PremiumBadge small /></>}</p>
+        {atLimit && <p className="text-xs text-warning">{t("game.quests.limit", { n: data.limits.activeQuests })}</p>}
+        {!data.settings.questChannelId && <p className="text-xs text-warning">{t("game.quests.needChannel")}</p>}
+        {open && !atLimit && (
+          <form className="grid grid-cols-1 md:grid-cols-4 gap-3 border-t border-cs-border pt-3" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
+            <Field label={t("game.quests.type")}>
+              <select className="cs-select" value={form.type} onChange={(e) => { const k = e.target.value; setForm((f) => ({ ...f, type: k, rewardSparks: typeMeta(k).reward || f.rewardSparks })); }}>
+                {q.types.map((x) => <option key={x.key} value={x.key}>{x.emoji} {t(`game.quests.type.${x.key}`)}</option>)}
+              </select>
+            </Field>
+            <Field label={t("game.quests.target")}><input className="cs-input" type="number" min={1} max={1000000} value={form.target} onChange={(e) => setForm((f) => ({ ...f, target: e.target.value }))} required /></Field>
+            <Field label={t("game.quests.reward")}><input className="cs-input" type="number" min={1} max={10000} value={form.rewardSparks} onChange={(e) => setForm((f) => ({ ...f, rewardSparks: e.target.value }))} required /></Field>
+            <Field label={t("game.quests.days")}><input className="cs-input" type="number" min={1} max={30} value={form.days} onChange={(e) => setForm((f) => ({ ...f, days: e.target.value }))} required /></Field>
+            <div className="md:col-span-4 flex justify-end"><button type="submit" className="cs-btn-primary" disabled={create.isPending}>{t("game.quests.create")}</button></div>
+          </form>
+        )}
+        <h3 className="text-sm font-semibold text-cs-text pt-2">{t("game.quests.active")}</h3>
+        {q.active.length === 0 ? <p className="text-sm text-cs-muted">{t("game.quests.empty")}</p> : (
+          <ul className="space-y-3">
+            {q.active.map((x) => (
+              <li key={x.id} className="border border-cs-border rounded p-3 space-y-2">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="font-semibold text-cs-text">{x.emoji} {t(`game.quests.type.${x.type}`)} · {x.target.toLocaleString()}</div>
+                  <button type="button" className="cs-btn-danger text-xs" onClick={() => { if (window.confirm(t("game.quests.confirmCancel"))) cancel.mutate(x.id); }} disabled={cancel.isPending}><Trash2 className="w-3 h-3" aria-hidden="true" /> {t("game.quests.cancel")}</button>
+                </div>
+                <div className="font-mono text-xs text-cs-muted break-all">{x.bar} · {x.progress.toLocaleString()} / {x.target.toLocaleString()}</div>
+                <div className="text-xs text-cs-dim">{t("game.quests.ends")}: {date(x.endsAt)} · ✨ {x.rewardSparks} · {t("game.quests.contributors")}: {x.contributors.map((c) => `${c.userId} (${c.amount})`).join(", ") || "—"}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {q.history.length > 0 && (
+          <>
+            <h3 className="text-sm font-semibold text-cs-text pt-2">{t("game.quests.history")}</h3>
+            <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[36rem]">
+              <thead><tr><th>{t("game.quests.type")}</th><th>{t("game.quests.target")}</th><th>{t("game.quests.ends")}</th><th>{t("game.quests.contributors")}</th><th></th></tr></thead>
+              <tbody>{q.history.map((x) => (
+                <tr key={x.id}><td>{x.emoji} {t(`game.quests.type.${x.type}`)}</td><td>{x.progress.toLocaleString()} / {x.target.toLocaleString()}</td><td>{date(x.endsAt)}</td><td>{x.contributors}</td><td><span className="cs-badge">{t(`game.quests.status.${x.status}`)}</span></td></tr>
+              ))}</tbody>
+            </table></div>
+          </>
+        )}
+      </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="cs-card space-y-2">
+          <h2 className="text-lg font-semibold text-cs-text">{t("game.counting.title")}</h2>
+          <p className="text-xs text-cs-dim">{t("game.counting.hint")}</p>
+          {mg?.counting?.channelId ? (
+            <div className="grid grid-cols-2 gap-3">
+              <Stat label={t("game.counting.current")} value={mg.counting.current} />
+              <Stat label={t("game.counting.high")} value={mg.counting.high} />
+            </div>
+          ) : <p className="text-sm text-cs-muted">{t("game.counting.off")}</p>}
+        </section>
+        <section className="cs-card space-y-2">
+          <h2 className="text-lg font-semibold text-cs-text">{t("game.party.title")}</h2>
+          <p className="text-xs text-cs-dim">{t("game.party.hint")}{!data.isPremium && <> <PremiumBadge small /></>}</p>
+        </section>
+      </div>
+
+      <section className="cs-card space-y-3">
+        <h2 className="text-lg font-semibold text-cs-text">{t("game.triviaStats.title")}</h2>
+        <p className="text-xs text-cs-dim">{t("game.triviaStats.hint")}{!data.isPremium && <> <PremiumBadge small /> {t("game.trivia.dailyPremium")}</>}</p>
+        {mg?.trivia && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Stat label={t("game.triviaStats.rounds")} value={mg.trivia.rounds} />
+              <div className="cs-card !p-3">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{t("game.trivia.schedule")}</div>
+                <div className="text-sm font-bold text-cs-text">{mg.trivia.schedule ? t(`game.trivia.${mg.trivia.schedule}`) : t("game.trivia.off")}</div>
+              </div>
+            </div>
+            {mg.trivia.winners.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-cs-text mb-1">{t("game.triviaStats.winners")}</h3>
+                <ol className="text-sm space-y-1">{mg.trivia.winners.map((w, i) => <li key={w.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <span className="font-mono">{w.userId}</span> <span className="text-cs-muted">· 🏆 {w.wins}</span></li>)}</ol>
+              </div>
+            )}
+            {mg.trivia.recent.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-cs-text mb-1">{t("game.triviaStats.recent")}</h3>
+                <ul className="text-sm space-y-1">{mg.trivia.recent.map((r) => (
+                  <li key={r.id} className="flex flex-wrap gap-2 items-baseline"><span className="cs-badge">{t(`game.triviaStats.source.${r.source}`)}</span> <span className="text-cs-text">{r.question}</span> <span className="text-xs text-cs-dim">· {r.winnerId ? <span className="font-mono">{r.winnerId}</span> : t("game.triviaStats.noWinner")} · {r.answers} {t("game.triviaStats.answers")}</span></li>
+                ))}</ul>
+              </div>
+            )}
+          </>
+        )}
+      </section>
     </div>
   );
 }

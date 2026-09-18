@@ -648,4 +648,29 @@ cron.schedule("*/15 * * * *", job("game-shop-expiry", async () => {
   if (revoked) await jobHeartbeat("game-shop-expiry", { revoked });
 }), TZ);
 
+// ─── v50 Server Season, етап 3: куестове и trivia ────────────────────────────
+// Куестове: изтеклите → FAILED/COMPLETED с награди; сървър с включени куестове
+// и без жив куест получава седмичния (ротация по седмица). Уникален cron израз
+// (":07") — тестовете индексират задачите по израз.
+cron.schedule("7 * * * *", job("game-quests", async () => {
+  const { expireQuests, ensureWeeklyQuest } = await import("../lib/game/questOps.js");
+  const ended = await expireQuests();
+  const servers = await prisma.gameSettings.findMany({ where: { enabled: true, questEnabled: true }, select: { serverId: true }, take: 500 });
+  let started = 0;
+  for (const s of servers) {
+    const r = await ensureWeeklyQuest(s.serverId).catch(() => null);
+    if (r?.created) started++;
+  }
+  if (started || ended.failed || ended.completed) await jobHeartbeat("game-quests", { started, ...ended });
+}), TZ);
+
+// Trivia: затваря изтеклите кръгове (ботът показва отговора) и публикува
+// насрочените (дневно = Premium, седмично = всички).
+cron.schedule("11 * * * *", job("game-trivia", async () => {
+  const { closeExpiredRounds, scheduleDue } = await import("../lib/game/trivia.js");
+  const closed = await closeExpiredRounds();
+  const posted = await scheduleDue();
+  if (closed || posted) await jobHeartbeat("game-trivia", { closed, posted });
+}), TZ);
+
 console.log("[Scheduler] Background jobs started");
