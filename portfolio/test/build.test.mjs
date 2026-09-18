@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { build } from "../build.mjs";
 import { I18N } from "../src/i18n/index.mjs";
 import { DEMOS } from "../src/demos/index.mjs";
+import { PATHS } from "../src/lib/html.mjs";
 import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
 import { DEMO_ICONS } from "../src/templates/icons.mjs";
 import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
@@ -219,6 +220,19 @@ test("блог и локални страници: 5 статии ×3 езика
   }
   const sm = rd("sitemap.xml");
   assert.ok(sm.includes("<loc>https://portfolio.carbonstealth.eu/bg/blog/") && sm.includes("/bg/izrabotka-na-sait/sofia/</loc>"));
+});
+
+test("формата за запитване: POST /api/contact на трите езика, задължителни полета, консент с линк към правната, honeypot, всички демота в избора; правната описва обработката", () => {
+  for (const lang of LANGS) {
+    const html = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
+    assert.ok(html.includes('<form class="c-form" id="cform" action="/api/contact" method="post"'), `${lang}: форма`);
+    for (const needle of ['name="name" required', 'type="email" name="email" required', 'name="message" required minlength="10"', 'type="checkbox" name="consent" value="on" required', 'name="website" tabindex="-1"', `<input type="hidden" name="lang" value="${lang}">`, `href="${PATHS.legal[lang]}"`, 'role="status" aria-live="polite"']) assert.ok(html.includes(needle), `${lang}: ${needle}`);
+    assert.equal((html.match(/<option value="[a-z-]+">/g) || []).length, DEMOS.length, `${lang}: демотата в избора`);
+    const legal = readFileSync(join(OUT, PATHS.legal[lang].slice(1), "index.html"), "utf8");
+    assert.ok(legal.includes("Brevo") && legal.includes("28"), `${lang}: правната описва обработващия`);
+  }
+  assert.ok(readFileSync(join(ROOT_DIR, "nginx.conf"), "utf8").includes("location /api/"), "nginx проксира /api/");
+  assert.ok(readFileSync(join(ROOT_DIR, "src/assets/site.js"), "utf8").includes('getElementById("cform")'), "site.js обработва формата");
 });
 
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {

@@ -23,7 +23,7 @@ addEventListener("pointerup", function () { P.down = false; });
   if (seen) { b.remove(); return; }
   var n = navigator, gpu = "GPU";
   try { var c = document.createElement("canvas"), gl = c.getContext("webgl2") || c.getContext("webgl"); if (gl) { var ext = gl.getExtension("WEBGL_debug_renderer_info"); gpu = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)).replace(/\s*\(.*?\)\s*/g, " ").trim().slice(0, 42).toUpperCase() || "GPU"; } else gpu = "NO WEBGL"; } catch (e) { gpu = "GPU UNKNOWN"; }
-  var lines = [["CPU", n.hardwareConcurrency ? n.hardwareConcurrency + " LOGICAL CORES" : "DETECTED"], ["GPU", gpu], ["MEMORY", typeof n.deviceMemory === "number" ? n.deviceMemory + " GB" : "N/A"], ["DISPLAY", screen.width + "x" + screen.height + " @" + (devicePixelRatio || 1) + "X"], ["NETWORK", (n.connection && n.connection.effectiveType || "online").toUpperCase()], ["LOCALE", (n.language || "bg").toUpperCase()], ["DEMOS", "10/10 LOADED"], ["CORE", "CARBON STEALTH VCC"]];
+  var lines = [["CPU", n.hardwareConcurrency ? n.hardwareConcurrency + " LOGICAL CORES" : "DETECTED"], ["GPU", gpu], ["MEMORY", typeof n.deviceMemory === "number" ? n.deviceMemory + " GB" : "N/A"], ["DISPLAY", screen.width + "x" + screen.height + " @" + (devicePixelRatio || 1) + "X"], ["NETWORK", (n.connection && n.connection.effectiveType || "online").toUpperCase()], ["LOCALE", (n.language || "bg").toUpperCase()], ["DEMOS", (b.dataset.n || "15") + "/" + (b.dataset.n || "15") + " LOADED"], ["CORE", "CARBON STEALTH VCC"]];
   var list = b.querySelector(".boot-list");
   lines.forEach(function (l) { var d = document.createElement("div"); d.innerHTML = "<span><b>[ OK ]</b> " + l[0] + "</span><span></span>"; d.lastChild.textContent = l[1]; list.appendChild(d); });
   var rows = list.children, i = 0;
@@ -148,6 +148,29 @@ document.querySelectorAll("[data-scramble]").forEach(function (el) { el.addEvent
   covers.forEach(function (c) { c.addEventListener("pointerenter", function () { mount(c); }, { passive: true }); });
   addEventListener("resize", function () { alive.forEach(function (c) { var f = c.querySelector("iframe"); if (f) scale(c, f); }); }, { passive: true });
   addEventListener("cs-lite", function () { alive.forEach(function (c) { var f = c.querySelector("iframe"); if (f) f.remove(); }); alive = []; });
+})();
+
+// --- формата за запитване: POST /api/contact като JSON, съобщение на място; ?demo=<id> избира демото.
+// Без JS формата работи като обикновен POST (API-то връща HTML). При мрежова/сървърна грешка — mailto. ---
+(function () {
+  var f = document.getElementById("cform"); if (!f) return;
+  var st = f.querySelector(".c-status"), btn = f.querySelector("button[type=submit]"), T = {};
+  try { T = JSON.parse(f.dataset.t || "{}"); } catch (e) {}
+  try { var d = new URLSearchParams(location.search).get("demo"); if (d && f.elements.demo) f.elements.demo.value = d; } catch (e) {}
+  function status(text, cls) { st.textContent = text; st.className = "c-status" + (cls ? " " + cls : ""); }
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!f.checkValidity()) { f.reportValidity(); status(T.invalid, "err"); return; }
+    var body = {};
+    Array.prototype.forEach.call(f.elements, function (el) { if (el.name && el.type !== "checkbox" && el.type !== "submit") body[el.name] = el.value; });
+    body.consent = !!(f.elements.consent && f.elements.consent.checked);
+    btn.disabled = true; status(T.sending, "");
+    fetch(f.action, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; }); })
+      .then(function (x) { if (x.ok) { f.reset(); status(T.sent, "ok"); } else status(x.j && x.j.errors ? T.invalid : T.error, "err"); })
+      .catch(function () { status(T.error, "err"); })
+      .then(function () { btn.disabled = false; });
+  });
 })();
 
 // --- преглед на устройства: iframe на демото в десктоп · таблет · телефон рамка ---

@@ -199,6 +199,22 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .contact-box{position:relative;border:1px solid rgba(var(--cyan-rgb),.15);padding:clamp(28px,5vw,64px);background:radial-gradient(circle at 80% 20%,rgba(var(--cyan-rgb),.06),transparent 50%)}
 .contact-box .corner{position:absolute;width:20px;height:20px;border:0 solid var(--cyan)}
 .contact-box .c1{top:-1px;left:-1px;border-top-width:1px;border-left-width:1px}.contact-box .c2{top:-1px;right:-1px;border-top-width:1px;border-right-width:1px}.contact-box .c3{bottom:-1px;left:-1px;border-bottom-width:1px;border-left-width:1px}.contact-box .c4{bottom:-1px;right:-1px;border-bottom-width:1px;border-right-width:1px}
+/* формата за запитване (хъб) */
+.c-form{margin-top:32px;display:grid;gap:16px;max-width:860px}
+.c-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.c-form label{display:grid;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ph)}
+.c-form input:not([type=checkbox]),.c-form select,.c-form textarea{font:inherit;font-family:var(--sans);font-size:14px;letter-spacing:0;text-transform:none;color:var(--off);background:#0a0a0c;border:1px solid rgba(var(--off-rgb),.15);padding:11px 12px;border-radius:0;width:100%;min-height:44px}
+.c-form textarea{resize:vertical;min-height:120px;line-height:1.6}
+.c-form select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--cyan) 50%),linear-gradient(135deg,var(--cyan) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+.c-form :is(input,select,textarea):focus-visible{outline:1px solid var(--cyan);outline-offset:0;border-color:var(--cyan)}
+.c-form :is(input,select,textarea)::placeholder{color:rgba(var(--off-rgb),.35)}
+.c-consent{display:grid;grid-template-columns:20px 1fr;gap:10px!important;align-items:start;text-transform:none!important;letter-spacing:0!important;font-family:var(--sans)!important;font-size:12px!important;color:var(--text)!important;line-height:1.6}
+.c-consent input{width:20px;height:20px;margin-top:1px;accent-color:var(--cyan)}
+.c-consent a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
+.c-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.c-form .btn[disabled]{opacity:.6;cursor:wait}
+.c-status:empty{display:none}.c-status{margin:0;font-size:13px;line-height:1.6;color:var(--text)}.c-status.ok{color:var(--cyan)}.c-status.err{color:#ff5a5a}
+@media(max-width:640px){.c-grid{grid-template-columns:1fr}}
 
 /* --- правна --- */
 .legal h2{font-size:1.2rem;letter-spacing:.05em;color:var(--cyan);margin:36px 0 12px}
@@ -312,7 +328,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .tiers-2{grid-template-columns:repeat(2,1fr);margin-top:40px}
 .table-compare th.us,.table-compare td.us{color:var(--cyan);background:rgba(var(--cyan-rgb),.03)}.table-compare td{white-space:normal;min-width:160px;vertical-align:top;line-height:1.7}
 @media(max-width:900px){.q-form{grid-template-columns:1fr}.q-summary{position:static}.q-tiers{grid-template-columns:1fr}.tiers-2{grid-template-columns:1fr}}
-@media print{.nav,.foot,.boot,.q-actions,.cur-ring,.cur-dot,.q-steps{display:none!important}.q-form{grid-template-columns:1fr;border:0;background:#fff}.q-summary{background:#fff;color:#000;position:static}body{background:#fff;color:#000}.q-total dd,.q-lines b,.q-totals dd,.tag{color:#000}}
+@media print{.nav,.foot,.boot,.q-actions,.c-form,.cur-ring,.cur-dot,.q-steps{display:none!important}.q-form{grid-template-columns:1fr;border:0;background:#fff}.q-summary{background:#fff;color:#000;position:static}body{background:#fff;color:#000}.q-total dd,.q-lines b,.q-totals dd,.tag{color:#000}}
 
 /* --- лабораторен бадж (perf/lab.json) --- */
 .lab{display:inline-flex;align-items:center;gap:4px;margin-left:10px;vertical-align:middle;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--ph)}

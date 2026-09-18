@@ -17,7 +17,8 @@ _Stack: **генератор с нула runtime зависимости** (Node 
 
 ```bash
 node build.mjs                                  # → dist/ (броят файлове/URL се печата; 15 демота ×3 езика + хъб · проекти · цени · правна)
-node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара
+node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара · формата
+node --test api/server.test.mjs                 # контактният API (валидация · honeypot · лимит · HTTP договор, мокнат send)
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
@@ -50,7 +51,8 @@ photos.picks.json           ръчният подбор от Open Images (id · 
 photos.manifest.json        заявки към Pexels за всеки слот на всяко демо (hero · about · g1–g6) — алтернативен източник
 tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs (Open Images/Pexels → webp) · brand.mjs (логото → всички асети) · previews.mjs (демо → снимка за картата)
 test/build.test.mjs         гейтът · docs/PRICING-RESEARCH.md — проучването зад цените (с източници и дата)
-nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404) и деплоят
+nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404, proxy /api/) и деплоят (7 стъпки, API последна)
+api/server.mjs              контактният API (node:http, Brevo) + server.test.mjs + README.md (env на сървъра) · deploy/portfolio-api.service — systemd юнитът
 ```
 
 ## Конвенции (важно)
@@ -98,8 +100,14 @@ nginx.conf · deploy.sh      продукционният конфиг (CSP, HST
   на занятие), плочки (избор + брояч + сума), показатели (count-up). Логиката е в `demo.js`, без backend.
 - **Ключови думи** ≥5 с „Carbon Stealth“ на всяка страница — `head()` я добавя автоматично, но тестът я иска.
 - **title ≤60 · description 70–160 · един h1 · canonical · hreflang bg/en/it + x-default (→ /bg/)** — гейтнати.
-- **Без бисквитки, без проследяване, без backend.** Демо формите не изпращат нищо (`demo.js` показва
-  съобщение). Контактът е mailto + формата на carbonstealth.eu.
+- **Без бисквитки, без проследяване.** Демо формите не изпращат нищо (`demo.js` показва съобщение).
+  **Единственият backend е контактният API** (`api/server.mjs` — `node:http`, нула зависимости, `POST
+  /api/contact` + `GET /api/health`, 127.0.0.1:4187 зад Nginx `location /api/`, systemd
+  `deploy/portfolio-api.service` под www-data, имейл през Brevo HTTPS API; тайните САМО в
+  `/etc/portfolio-api.env` mode 600 — `api/README.md`). Формата в хъба (`contactForm()` в `hub.mjs`,
+  `site.js` → fetch JSON; без JS — обикновен POST и HTML отговор) има honeypot `website`, консент с линк към
+  правната, `?demo=<id>` избира демото. Валидация · лимит 5/15 мин · JSON логове без PII · `node --test
+  api/server.test.mjs` (мокнат send). Правната страница описва обработката (чл. 6(1)(б), Brevo чл. 28).
 - **Прегледи в хъба**: картата носи **статична снимка** (`img/previews/<lang>/<id>.webp`, 960×600, от
   `tools/previews.mjs` — headless Chromium + `--virtual-time-budget`, после sharp; **проследени в git**, след
   промяна по демо ги прегенерирай). Живият iframe идва **само при hover** (fine pointer, ≥901px, не LITE, не

@@ -36,7 +36,7 @@ export function ghost(html) {
 
 /** BIOS POST boot екран — редовете се пълнят от site.js с реални данни от Navigator API. */
 export function boot(ui) {
-  return `<div class="boot" id="boot" aria-hidden="true"><i class="boot-corner tl"></i><i class="boot-corner tr"></i><i class="boot-corner bl"></i><i class="boot-corner br"></i><div class="boot-scan"></div><picture class="boot-cs"><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async" fetchpriority="high"></picture><div class="boot-list hud"></div><div class="hud"><span style="animation:cs-blink 1s infinite">●</span> ${esc(ui.brand.boot)}</div></div>`;
+  return `<div class="boot" id="boot" aria-hidden="true" data-n="${DEMOS.length}"><i class="boot-corner tl"></i><i class="boot-corner tr"></i><i class="boot-corner bl"></i><i class="boot-corner br"></i><div class="boot-scan"></div><picture class="boot-cs"><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async" fetchpriority="high"></picture><div class="boot-list hud"></div><div class="hud"><span style="animation:cs-blink 1s infinite">●</span> ${esc(ui.brand.boot)}</div></div>`;
 }
 
 const logo = (extra = "") => `<picture><source srcset="/logo.webp" type="image/webp"><img class="logo" src="/logo.png" alt="Carbon Stealth VCC" width="673" height="160"${extra}></picture>`;
@@ -101,8 +101,23 @@ function pricingTeaser(lang, ui) {
   return `<section class="section alt" id="pricing"><div class="wrap"><div class="tag reveal">// ${esc(ui.pricingTeaser.eyebrow)}</div>${ghost(tx(ui.pricingTeaser.title, lang))}<p class="lede reveal">${esc(ui.pricingTeaser.lede)}</p><div class="mini reveal">${TIERS.map((t) => `<a class="${t.popular ? "pop" : ""}" href="${PATHS.pricing[lang]}#${t.id}" data-cursor><span>${esc(ui.pricing.tiers[t.id].name)} — ${esc(ui.pricing.tiers[t.id].tag)}</span><b>${money(shown(t.price, lang), lang)}</b></a>`).join("")}</div><p style="margin-top:32px"><a class="btn" href="${PATHS.pricing[lang]}" data-magnetic>${esc(ui.pricingTeaser.cta)} ${ICON.arrow}</a> <a class="btn" href="${PATHS.quote[lang]}">${esc(ui.quote.eyebrow)} ${ICON.arrow}</a></p></div></section>`;
 }
 
+// Формата праща POST /api/contact (api/server.mjs зад Nginx). С JS — fetch + съобщение на място; без JS —
+// обикновен POST и HTML отговор от API-то. Honeypot полето „website" е скрито за хора, ботовете го пълнят.
+function contactForm(lang, ui) {
+  const f = ui.contact.form;
+  const consent = esc(f.consent).replace("{legal}", `<a href="${PATHS.legal[lang]}">${esc(f.consentLink)}</a>`);
+  const msgs = { sending: f.sending, sent: f.sent, invalid: f.invalid, error: f.error };
+  return `<form class="c-form" id="cform" action="/api/contact" method="post" novalidate data-lang="${lang}" data-t="${esc(JSON.stringify(msgs))}"><input type="hidden" name="lang" value="${lang}">
+<div class="c-grid"><label><span>${esc(f.name)}</span><input name="name" required minlength="2" maxlength="80" autocomplete="name"></label><label><span>${esc(f.email)}</span><input type="email" name="email" required maxlength="120" autocomplete="email" inputmode="email"></label><label><span>${esc(f.company)}</span><input name="company" maxlength="120" autocomplete="organization"></label><label><span>${esc(f.demo)}</span><select name="demo"><option value="">${esc(f.demoNone)}</option>${DEMOS.map((d) => `<option value="${d.id}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</option>`).join("")}</select></label></div>
+<label class="c-msg"><span>${esc(f.message)}</span><textarea name="message" required minlength="10" maxlength="2000" rows="5" placeholder="${esc(f.messagePh)}"></textarea></label>
+<label class="c-consent"><input type="checkbox" name="consent" value="on" required><span>${consent}</span></label>
+<div class="c-hp" aria-hidden="true"><label>${esc(f.hp)}<input name="website" tabindex="-1" autocomplete="off"></label></div>
+<div class="cta-row"><button class="btn btn-solid" type="submit" data-magnetic>${ICON.mail} ${esc(f.send)}</button><a class="btn" href="mailto:${BRAND_EMAIL}" data-magnetic>${esc(ui.contact.email)} ${ICON.arrow}</a></div>
+<p class="c-status" role="status" aria-live="polite"></p></form>`;
+}
+
 export function contact(lang, ui, title = ui.contact.title, lede = ui.contact.lede) {
-  return `<section class="section" id="contact"><div class="wrap"><div class="contact-box reveal"><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i><div class="tag">// ${esc(ui.contact.eyebrow)}</div><h2 class="contact-title">${title}</h2><p class="lede">${esc(lede)}</p><div class="cta-row"><a class="btn btn-solid" href="mailto:${BRAND_EMAIL}" data-magnetic>${ICON.mail} ${esc(ui.contact.email)}</a><a class="btn" href="${CONTACT_URL[lang]}" target="_blank" rel="noopener" data-magnetic>${esc(ui.contact.site)} ${ICON.arrow}</a></div><p class="hud" style="margin-top:28px">${esc(ui.contact.where)}</p></div></div></section>`;
+  return `<section class="section" id="contact"><div class="wrap"><div class="contact-box reveal"><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i><div class="tag">// ${esc(ui.contact.eyebrow)}</div><h2 class="contact-title">${title}</h2><p class="lede">${esc(lede)}</p>${contactForm(lang, ui)}<p class="hud" style="margin-top:28px">${esc(ui.contact.where)} · <a href="${CONTACT_URL[lang]}" target="_blank" rel="noopener">${esc(ui.contact.site)}</a></p></div></div></section>`;
 }
 
 function schema(lang, ui, path) {

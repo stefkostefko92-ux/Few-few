@@ -34,6 +34,6 @@ jobs:
         run: node build.mjs
       - name: Тестове
         working-directory: portfolio
-        run: node --test test/build.test.mjs
+        run: node --test test/build.test.mjs api/server.test.mjs
       - name: Проверка на статичния сайт (препратки · ключови думи · title/lang)
         run: node tools/qa/static-site-check.mjs portfolio/dist

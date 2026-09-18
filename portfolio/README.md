@@ -8,6 +8,7 @@ runtime зависимости; шрифтовете са самостоятел
 cd portfolio
 node build.mjs                       # генерира dist/
 node --test test/build.test.mjs      # гейтът
+node --test api/server.test.mjs      # контактният API (POST /api/contact → Brevo; тайните само на сървъра — api/README.md)
 node serve.mjs                       # http://127.0.0.1:4180/
 ```
 
