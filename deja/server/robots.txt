@@ -1,0 +1,25 @@
+# deja.carbonstealth.eu
+User-agent: *
+Allow: /
+
+# --- AI извличащи/търсещи (видимост в отговорите) ---
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Bingbot
+Allow: /
+
+# --- AI обучаващи (съзнателен избор: смени Allow → Disallow за отказ) ---
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://deja.carbonstealth.eu/sitemap.xml

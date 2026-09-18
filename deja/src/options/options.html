@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="optionsTitle">Déjà — настройки</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1 class="logo">Déjà<span class="dot">.</span></h1>
+
+      <section class="card">
+        <label class="label" for="retention" data-i18n="optRetentionLabel">Помни страниците</label>
+        <select id="retention"></select>
+        <p class="help" data-i18n="optRetentionHelp">
+          По-старите страници се изтриват автоматично веднъж дневно.
+        </p>
+      </section>
+
+      <section class="card">
+        <label class="label" for="denylist" data-i18n="optDenylistLabel">
+          Никога не запомняй адреси, съдържащи
+        </label>
+        <textarea id="denylist" rows="6" spellcheck="false"></textarea>
+        <p class="help" data-i18n="optDenylistHelp">
+          По един шаблон на ред. Съвпадение по част от адреса.
+        </p>
+        <details class="builtin">
+          <summary data-i18n="optBuiltinLabel">Вградена защита (винаги активна)</summary>
+          <code id="builtin"></code>
+        </details>
+      </section>
+
+      <section class="card">
+        <label class="label" for="modelHost" data-i18n="optModelHostLabel">
+          Собствено огледало на модела (за напреднали)
+        </label>
+        <input id="modelHost" type="url" placeholder="https://huggingface.co/" />
+        <p class="help" data-i18n="optModelHostHelp">
+          Празно = huggingface.co. Задай собствен сървър за офлайн/фирмени среди.
+        </p>
+      </section>
+
+      <div class="actions">
+        <button id="save" data-i18n="optSave">Запази</button>
+        <span id="saved" class="saved"></span>
+      </div>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
