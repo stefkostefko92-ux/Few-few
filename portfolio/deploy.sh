@@ -15,7 +15,15 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "══ Carbon Stealth Portfolio → https://$DOMAIN"
 
-# 1. Билд (нула зависимости; Node ≥20 е на машината заради другите продукти)
+# 1. Билд (нула зависимости; Node ≥20 е на машината заради другите продукти).
+#    Снимки на проекти, заснети НА сървъра (tools/project-shots.mjs --live --out $SHOTS_PERSIST), живеят в
+#    постоянна папка и се наливат преди билда — иначе новият архив ги губи. Репото има предимство (-n).
+SHOTS_PERSIST="/opt/portfolio/img-projects"
+if [ -d "$SHOTS_PERSIST" ] && ls "$SHOTS_PERSIST"/*.webp >/dev/null 2>&1; then
+  mkdir -p "$HERE/public/img/projects"
+  cp -n "$SHOTS_PERSIST"/*.webp "$HERE/public/img/projects/"
+  echo "[1/7] Снимки на проекти от $SHOTS_PERSIST: $(ls "$SHOTS_PERSIST"/*.webp | wc -l) файла"
+fi
 echo "[1/7] Билд…"
 ( cd "$HERE" && node build.mjs )
 

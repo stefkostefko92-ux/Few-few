@@ -144,9 +144,13 @@ tools/project-shots.mjs     скрийншотите на реалните пр�
   нечетима каша) и картата ползва `srcset` 960w/1920w. Източник: живият URL от `projects.mjs`; където той не се
   достига (изолирана среда), локален източник — статична папка в монорепото (evanitasport · ospedalitrasparenti/site ·
   panev), готов PNG (Nexus/screenshots-final) или пуснат локален сървър през `--url id=http://127.0.0.1:…/` (vizitka ·
-  mastilko `next start` · eternaltouch с локален Postgres). **ouvaptsarov · erp · tretimart нямат източник в репото** —
-  снимат се само от машина с интернет: `node tools/project-shots.mjs ouvaptsarov erp tretimart --live`, после commit.
-  Няма файл → `shot=false` → типографска обложка (никога placeholder снимка).
+  mastilko `next start` · eternaltouch с локален Postgres). Двата размера идват направо от Chromium (DPR 1.6/0.8, webp)
+  — `sharp` трябва само за PNG източник. **ouvaptsarov · erp · tretimart нямат източник в репото** — снимат се от
+  машина с интернет: на VPS-а `npx --yes playwright@latest install --with-deps chromium` (веднъж), после
+  `node tools/project-shots.mjs ouvaptsarov erp tretimart --live --out /opt/portfolio/img-projects` — постоянната
+  папка, която `deploy.sh` налива в `public/img/projects/` преди билда (репото има предимство, `cp -n`); за да са и в
+  git, копирай webp-ите в `public/img/projects/` и commit. Няма файл → `shot=false` → типографска обложка (никога
+  placeholder снимка).
 - **Брошура А5** (`/bg/broshura/` ×3, noindex; `tools/brochure.mjs` → `public/broshura/carbon-stealth-portfolio-<lang>.pdf`,
   6 страници, проследени в git, линк „Брошура · PDF A5“ в подножието): същите данни като сайта (демота · проекти
   със снимка · цени от `pricing.mjs` · процес · защо · контакт). Смяна на цена/демо/проект → регенерирай PDF-ите
