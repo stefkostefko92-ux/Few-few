@@ -34,6 +34,8 @@ export const PATHS = {
   legal: { bg: "/bg/pravna-informacia/", en: "/en/legal/", it: "/it/note-legali/" },
   projects: { bg: "/bg/proekti/", en: "/en/projects/", it: "/it/progetti/" },
   admin: { bg: "/bg/demo/admin-panel/", en: "/en/demo/admin-panel/", it: "/it/demo/pannello-admin/" },
+  quote: { bg: "/bg/oferta/", en: "/en/quote/", it: "/it/preventivo/" },
+  hosting: { bg: "/bg/hosting-i-poddrazhka/", en: "/en/hosting-and-maintenance/", it: "/it/hosting-e-manutenzione/" },
 };
 
 export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;

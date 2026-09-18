@@ -26,6 +26,10 @@ function vat(p) {
   return `<section class="section" id="vat"><div class="wrap">${ghost(esc(p.vatTitle))}<div class="grid1" style="margin-top:40px">${v.items.map(([h, d], i) => `<article class="cell${i === 1 ? " vat-eu" : ""} reveal"><span class="ic">${i === 0 ? ICON.euro : i === 1 ? ICON.globe : ICON.layers}</span><h3>${esc(h)}</h3><p>${esc(d)}</p></article>`).join("")}</div><p class="tiny vat-note">${esc(v.note)}</p></div></section>`;
 }
 
+function compare(p, lang) {
+  return `<section class="section" id="compare"><div class="wrap">${ghost(esc(p.compareTitle))}<p class="lede">${esc(p.compareLede)}</p><div class="table-wrap reveal"><table class="table table-compare"><thead><tr><th></th>${p.compareCols.map((c, i) => `<th${i === 0 ? ' class="us"' : ""}>${esc(c)}</th>`).join("")}</tr></thead><tbody>${p.compareRows.map((r) => `<tr><th>${esc(r[0])}</th>${r.slice(1).map((c, i) => `<td${i === 0 ? ' class="us"' : ""}>${esc(tx(c, lang))}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p class="more"><a class="btn btn-solid" href="${PATHS.quote[lang]}" data-magnetic>${esc(I18N[lang].quote.eyebrow)} ${ICON.arrow}</a> <a class="btn" href="${PATHS.hosting[lang]}">${esc(I18N[lang].hosting.eyebrow)} ${ICON.arrow}</a></p></div></section>`;
+}
+
 function terms(p, lang) {
   return `<section class="section alt" id="terms"><div class="wrap" style="max-width:820px">${ghost(esc(p.termsTitle))}<div style="height:24px"></div><ul class="terms">${p.terms.map((t) => tx(t, lang)).map((t) => `<li>${ICON.check}<span>${esc(t)}</span></li>`).join("")}</ul></div></section>`;
 }
@@ -57,7 +61,7 @@ export function renderPricing(lang) {
     head({ lang, title: tx(ui.meta.pricingTitle, lang), description: tx(ui.meta.pricingDesc, lang), keywords: ui.meta.pricingKeywords, path, paths: PATHS.pricing, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, extra: schema(lang, ui, path) }),
     `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.pricing),
     `<main id="main"><section class="hero hero-sm"><div class="hero-scan" aria-hidden="true"><i></i></div><div class="wrap"><div class="tag">// ${esc(p.eyebrow)}</div><h1 style="font-size:clamp(2.2rem,6vw,4.6rem);letter-spacing:-.04em;max-width:900px">${p.title}</h1><p class="lede">${esc(p.lede)}</p><p class="hud">${esc(p.hud)}</p></div></section>`,
-    market(p, lang), tiers(p, lang), addons(p, lang), vat(p), terms(p, lang), faq(p), sources(p),
+    market(p, lang), tiers(p, lang), addons(p, lang), compare(p, lang), vat(p), terms(p, lang), faq(p), sources(p),
     `<section class="section"><div class="wrap"><div class="contact-box reveal"><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i><h2 class="contact-title">${p.ctaTitle}</h2><p class="lede">${esc(p.ctaLede)}</p><div class="cta-row"><a class="btn btn-solid" href="mailto:${BRAND_EMAIL}" data-magnetic>${ICON.mail} ${esc(ui.contact.email)}</a><a class="btn" href="${PATHS.hub[lang]}#demos" data-magnetic>${esc(ui.nav.demos)} ${ICON.arrow}</a></div></div></div></section></main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script>`, `</body></html>`,
   ]);

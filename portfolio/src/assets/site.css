@@ -286,3 +286,30 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .pj-note{font-size:9px;letter-spacing:.1em;text-transform:none;color:var(--muted);flex-basis:100%}
 .more{margin-top:32px;text-align:center}
 .lite .pj-cover .live::before{animation:none}.lite .pj-shot{transition:none}
+
+/* --- конфигуратор на оферта --- */
+.q-wrap{padding-bottom:80px}
+.q-form{display:grid;grid-template-columns:1.4fr 1fr;gap:1px;background:rgba(var(--off-rgb),.06);border:1px solid rgba(var(--off-rgb),.06)}
+.q-steps{background:#000;padding:28px;display:grid;gap:36px}
+.q-step{border:0;padding:0;margin:0;min-width:0}.q-step legend{margin-bottom:16px}
+.q-tiers{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.q-tier{display:grid;gap:4px;padding:16px 18px;border:1px solid rgba(var(--off-rgb),.12);cursor:pointer;position:relative}
+.q-tier input{position:absolute;opacity:0}.q-tier:has(input:checked){border-color:var(--cyan);background:rgba(var(--cyan-rgb),.04)}
+.q-tier-tag{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ph)}.q-tier strong{font-family:var(--display);font-size:1.3rem;color:var(--off)}.q-tier b{font-family:var(--display);font-size:1.4rem;color:var(--cyan)}.q-tier small{font-size:10px;color:var(--text-2);letter-spacing:.05em}
+.q-addons{display:grid;gap:1px;background:rgba(var(--off-rgb),.06);border:1px solid rgba(var(--off-rgb),.06)}
+.q-addon{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#000;padding:14px 16px;font-size:12px}
+.q-addon small{display:block;color:var(--cyan);font-size:11px;margin-top:2px}
+.q-qty{display:inline-flex;align-items:center;gap:6px}.q-qty button{width:30px;height:30px;border:1px solid rgba(var(--off-rgb),.2);background:transparent;color:var(--off);cursor:pointer;font-size:16px}.q-qty button:hover{border-color:var(--cyan);color:var(--cyan)}
+.q-qty input[type=number]{width:54px;text-align:center;font:inherit;font-size:13px;color:var(--off);background:#0a0a0c;border:1px solid rgba(var(--off-rgb),.15);padding:6px 4px;-moz-appearance:textfield}.q-qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+.q-qty input[type=checkbox]{width:20px;height:20px;accent-color:var(--cyan)}.q-qty i{font-style:normal;font-size:10px;color:var(--ph);letter-spacing:.1em}
+.q-clients{display:grid;gap:8px}.q-client{display:flex;align-items:center;gap:10px;font-size:12px;cursor:pointer}.q-client input{accent-color:var(--cyan)}
+.q-vatnote{margin-top:12px}
+.q-summary{background:#000;padding:28px;position:sticky;top:80px;align-self:start}
+.q-lines{list-style:none;display:grid;gap:8px;margin:12px 0 18px;font-size:12px}.q-lines li{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding-bottom:8px;border-bottom:1px solid rgba(var(--off-rgb),.08)}.q-lines b{color:var(--off)}.q-lines i{grid-column:2;font-style:normal;font-size:10px;color:var(--ph);text-align:right}.q-empty{color:var(--muted)}
+.q-totals{display:grid;gap:8px;font-size:12px}.q-totals div{display:flex;justify-content:space-between}.q-totals dd{margin:0;color:var(--off)}
+.q-total{font-family:var(--display);font-size:1.3rem;color:var(--off);padding-top:10px;border-top:1px solid rgba(var(--off-rgb),.15)}.q-total dd{color:var(--cyan)}.q-monthly{font-size:1rem}
+.q-actions{display:grid;gap:8px;margin:20px 0 14px}.q-actions .btn{justify-content:center}.q-reset{border-color:rgba(var(--off-rgb),.2);color:var(--text)}
+.tiers-2{grid-template-columns:repeat(2,1fr);margin-top:40px}
+.table-compare th.us,.table-compare td.us{color:var(--cyan);background:rgba(var(--cyan-rgb),.03)}.table-compare td{white-space:normal;min-width:160px;vertical-align:top;line-height:1.7}
+@media(max-width:900px){.q-form{grid-template-columns:1fr}.q-summary{position:static}.q-tiers{grid-template-columns:1fr}.tiers-2{grid-template-columns:1fr}}
+@media print{.nav,.foot,.boot,.q-actions,.cur-ring,.cur-dot,.q-steps{display:none!important}.q-form{grid-template-columns:1fr;border:0;background:#fff}.q-summary{background:#fff;color:#000;position:static}body{background:#fff;color:#000}.q-total dd,.q-lines b,.q-totals dd,.tag{color:#000}}

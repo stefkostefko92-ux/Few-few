@@ -11,6 +11,8 @@ import { renderHub } from "./src/templates/hub.mjs";
 import { renderPricing } from "./src/templates/pricing.mjs";
 import { renderProjects } from "./src/templates/projects.mjs";
 import { renderAdmin } from "./src/templates/admin.mjs";
+import { renderQuote } from "./src/templates/quote.mjs";
+import { renderHosting } from "./src/templates/hosting.mjs";
 import { renderLegal, renderRoot, renderNotFound, robots, llms, sitemap, securityTxt } from "./src/templates/misc.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -34,11 +36,15 @@ export function build({ out = OUT, quiet = false } = {}) {
     put(PATHS.legal[lang], renderLegal(lang));
     put(PATHS.projects[lang], renderProjects(lang));
     put(PATHS.admin[lang], renderAdmin(lang));
+    put(PATHS.quote[lang], renderQuote(lang));
+    put(PATHS.hosting[lang], renderHosting(lang));
     urls.push({ loc: PATHS.hub[lang], alt: PATHS.hub, priority: "1.0", changefreq: "weekly" });
     urls.push({ loc: PATHS.pricing[lang], alt: PATHS.pricing, priority: "0.9", changefreq: "monthly" });
     urls.push({ loc: PATHS.legal[lang], alt: PATHS.legal, priority: "0.2", changefreq: "yearly" });
     urls.push({ loc: PATHS.projects[lang], alt: PATHS.projects, priority: "0.9", changefreq: "monthly" });
     urls.push({ loc: PATHS.admin[lang], alt: PATHS.admin, priority: "0.7", changefreq: "yearly" });
+    urls.push({ loc: PATHS.quote[lang], alt: PATHS.quote, priority: "0.8", changefreq: "monthly" });
+    urls.push({ loc: PATHS.hosting[lang], alt: PATHS.hosting, priority: "0.7", changefreq: "yearly" });
     for (const demo of DEMOS) {
       put(demoPath(lang, demo), renderDemo(lang, demo));
       urls.push({ loc: demoPath(lang, demo), alt: Object.fromEntries(LANGS.map((l) => [l, demoPath(l, demo)])), priority: "0.8", changefreq: "monthly" });
