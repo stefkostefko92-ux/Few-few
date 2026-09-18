@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Niveau",
   "game.lb.messages": "Messages",
   "game.lb.voice": "Min. vocal",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Compagnons",
+  "game.companions.catalogSize": "Compagnons au catalogue",
+  "game.companions.spawns": "Apparitions à ce jour",
+  "game.companions.caught": "Attrapés",
+  "game.companions.season": "Saison",
+  "game.companions.hint": "Les compagnons apparaissent dans les salons actifs ; le premier membre à appuyer sur Attraper le garde. Les membres les nourrissent d'étincelles pour les faire évoluer (100 et 300), les échangent un pour un et en affichent un sur leur profil. Places par membre dans cette offre : {slots}. ✦ = saisonnier, disparaît à la fin de la saison.",
+  "game.companions.caughtN": "attrapé ×{n}",
+  "game.companions.collectors": "Meilleurs collectionneurs",
+  "game.companions.rarity.common": "Communs",
+  "game.companions.rarity.uncommon": "Peu communs",
+  "game.companions.rarity.rare": "Rares",
+  "game.companions.rarity.epic": "Épiques",
+  "game.companions.rarity.legendary": "Légendaires",
 };

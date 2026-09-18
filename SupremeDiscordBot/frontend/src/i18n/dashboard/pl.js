@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Poziom",
   "game.lb.messages": "Wiadomości",
   "game.lb.voice": "Min. głos",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Towarzysze",
+  "game.companions.catalogSize": "Towarzysze w katalogu",
+  "game.companions.spawns": "Pojawień dotąd",
+  "game.companions.caught": "Złapanych",
+  "game.companions.season": "Sezon",
+  "game.companions.hint": "Towarzysze pojawiają się na aktywnych kanałach, a pierwszy członek, który naciśnie Złap, zatrzymuje ich. Członkowie karmią ich iskrami, by ewoluowali (100 i 300), wymieniają jeden za jeden i pokazują jednego na profilu. Miejsca na członka w tym planie: {slots}. ✦ = sezonowy, znika po zakończeniu sezonu.",
+  "game.companions.caughtN": "złapano ×{n}",
+  "game.companions.collectors": "Najlepsi kolekcjonerzy",
+  "game.companions.rarity.common": "Pospolite",
+  "game.companions.rarity.uncommon": "Niepospolite",
+  "game.companions.rarity.rare": "Rzadkie",
+  "game.companions.rarity.epic": "Epickie",
+  "game.companions.rarity.legendary": "Legendarne",
 };

@@ -5,8 +5,8 @@
 // на ролите за ниво. Съдържанието на съобщенията НЕ се чете тук: броим
 // събитието (message.author + channel), нищо друго (Privileged Intents:
 // употребата на Message Content остава само за тикети/лог/counting).
-import { EmbedBuilder } from "discord.js";
-import { BRAND } from "./colors.js";
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { BRAND, MUTED } from "./colors.js";
 import api from "./api.js";
 import { roleAssignabilityReason } from "./reactionRoles.js";
 
@@ -17,6 +17,14 @@ const settingsCache = new Map();  // serverId → { settings, expiresAt }
 const cooldown = new Map();       // `${serverId}:${userId}` → last XP timestamp
 const pending = new Map();        // serverId → Map(userId → { messageXpEvents, voiceMinutes })
 const voiceJoined = new Map();    // `${serverId}:${userId}` → joinedAt ms
+const spawnState = new Map();     // serverId → { events, lastAttemptAt }
+
+// ─── Спътници (етап 2): поява при активност ─────────────────────────────────
+// Правилата (праг събития, шанс, интервал) са в backend/src/lib/game/companions.js;
+// тук е само евтиният гейт в паметта, за да не бием backend-а на всяко съобщение.
+export const SPAWN_MIN_EVENTS = 6;
+export const SPAWN_CHANCE = 1 / 25;
+export const SPAWN_LOCAL_INTERVAL_MS = 12 * 60 * 1000;
 
 export async function getGameSettings(serverId) {
   const hit = settingsCache.get(serverId);
@@ -54,7 +62,68 @@ export async function onMessageForXp(message) {
   if (Date.now() - last < cd) return;
   cooldown.set(key, Date.now());
   bucket(message.guildId, message.author.id).messageXpEvents += 1;
+  // Спътниците се появяват при активност — само от XP събития (с охлаждане),
+  // тоест спам от един човек не ускорява появата.
+  maybeSpawn(message, settings, rand).catch(() => {});
 }
+
+let rand = Math.random;
+/** Само за тестове: детерминистичен жребий. */
+export function __setRandom(fn) { rand = fn || Math.random; }
+
+export async function maybeSpawn(message, settings, r = rand) {
+  if (!settings?.spawnEnabled) return false;
+  if (settings.spawnChannelIds?.length && !settings.spawnChannelIds.includes(message.channelId)) return false;
+  const st = spawnState.get(message.guildId) || { events: 0, lastAttemptAt: 0 };
+  st.events += 1;
+  spawnState.set(message.guildId, st);
+  if (st.events < SPAWN_MIN_EVENTS) return false;
+  if (Date.now() - st.lastAttemptAt < SPAWN_LOCAL_INTERVAL_MS) return false;
+  if (r() > SPAWN_CHANCE) return false;
+  st.lastAttemptAt = Date.now(); st.events = 0;
+  let data;
+  try {
+    ({ data } = await api.post("/bot/game/spawn", { serverId: message.guildId, channelId: message.channelId }));
+  } catch (err) {
+    return false; // SPAWN_ACTIVE / TOO_SOON / CHANNEL_NOT_ALLOWED — backend-ът е съдията
+  }
+  await postSpawn(message.channel, data, message.client).catch(() => {});
+  return true;
+}
+
+export function spawnMessage(data, lang = "en", tFn = (k) => k) {
+  const c = data.companion;
+  const embed = new EmbedBuilder()
+    .setColor(BRAND)
+    .setTitle(tFn("game.spawn.title", lang, { name: c.name }))
+    .setDescription(tFn("game.spawn.body", lang, { rarity: `${c.rarityEmoji} ${c.rarityLabel}` }))
+    .setThumbnail(c.imageUrl);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`game:catch:${data.spawn.id}`).setStyle(ButtonStyle.Success).setLabel(tFn("game.spawn.catch", lang)),
+  );
+  return { embeds: [embed], components: [row] };
+}
+
+export async function postSpawn(channel, data, client) {
+  const { t, resolveLangForGuild } = await import("../i18n/index.js");
+  const lang = await resolveLangForGuild(channel.guildId).catch(() => "en");
+  const msg = await channel.send(spawnMessage(data, lang, t));
+  await api.patch(`/bot/game/spawn/${data.spawn.id}/message`, { messageId: msg.id }).catch(() => {});
+  // След изтичане — „избяга" (ако не е уловен). Backend-ът пази истината; тук е само визуалното.
+  const ttl = Math.max(1000, new Date(data.spawn.expiresAt).getTime() - Date.now());
+  const timer = setTimeout(async () => {
+    try {
+      const { data: fresh } = await api.get(`/bot/game/companion/${data.companion.id}`).catch(() => ({ data: null }));
+      const current = await channel.messages.fetch(msg.id).catch(() => null);
+      if (!current || !current.components?.length) return; // вече редактирано (уловен)
+      const embed = EmbedBuilder.from(current.embeds[0]).setColor(MUTED).setDescription(t("game.spawn.escaped", lang, { name: (fresh || data.companion).name }));
+      await current.edit({ embeds: [embed], components: [] });
+    } catch { /* нищо */ }
+  }, ttl);
+  timer.unref?.();
+  return msg;
+}
+
 
 /** Гласови минути: старт при влизане, отчитане при излизане/преместване. AFK каналът не се брои. */
 export async function onVoiceForXp(oldState, newState) {
@@ -148,4 +217,4 @@ export async function grantShopRole(guild, member, roleId) {
 }
 
 /** Само за тестове. */
-export const __test = { cooldown, pending, voiceJoined, settingsCache };
+export const __test = { cooldown, pending, voiceJoined, settingsCache, spawnState };

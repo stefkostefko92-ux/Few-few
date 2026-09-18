@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Nivel",
   "game.lb.messages": "Mensajes",
   "game.lb.voice": "Min. de voz",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Compañeros",
+  "game.companions.catalogSize": "Compañeros en el catálogo",
+  "game.companions.spawns": "Apariciones hasta ahora",
+  "game.companions.caught": "Capturados",
+  "game.companions.season": "Temporada",
+  "game.companions.hint": "Los compañeros aparecen en canales activos y el primer miembro en pulsar Atrapar se lo queda. Los miembros los alimentan con chispas para evolucionar (100 y 300), los intercambian uno a uno y muestran uno en su perfil. Espacios por miembro en este plan: {slots}. ✦ = de temporada, se va al terminar la temporada.",
+  "game.companions.caughtN": "capturado ×{n}",
+  "game.companions.collectors": "Mejores coleccionistas",
+  "game.companions.rarity.common": "Comunes",
+  "game.companions.rarity.uncommon": "Poco comunes",
+  "game.companions.rarity.rare": "Raros",
+  "game.companions.rarity.epic": "Épicos",
+  "game.companions.rarity.legendary": "Legendarios",
 };

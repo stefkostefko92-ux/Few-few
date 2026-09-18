@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Level",
   "game.lb.messages": "Berichten",
   "game.lb.voice": "Spraakmin.",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Metgezellen",
+  "game.companions.catalogSize": "Metgezellen in catalogus",
+  "game.companions.spawns": "Spawns tot nu toe",
+  "game.companions.caught": "Gevangen",
+  "game.companions.season": "Seizoen",
+  "game.companions.hint": "Metgezellen verschijnen in actieve kanalen en het eerste lid dat op Vangen drukt houdt ze. Leden voeren ze vonken om te evolueren (100 en 300), ruilen één-op-één en tonen er een op hun profiel. Plaatsen per lid in dit plan: {slots}. ✦ = seizoensgebonden, verdwijnt aan het einde van het seizoen.",
+  "game.companions.caughtN": "gevangen ×{n}",
+  "game.companions.collectors": "Topverzamelaars",
+  "game.companions.rarity.common": "Gewoon",
+  "game.companions.rarity.uncommon": "Ongewoon",
+  "game.companions.rarity.rare": "Zeldzaam",
+  "game.companions.rarity.epic": "Episch",
+  "game.companions.rarity.legendary": "Legendarisch",
 };

@@ -151,6 +151,15 @@ export const CMD_DESC_L10N = {
     nl: "Besteed je vonken in de serverwinkel",
     pl: "Wydaj iskry w sklepie serwera",
   },
+  companion: {
+    bg: "Твоите спътници от Server Season: списък, хранене, активиране, размяна",
+    de: "Deine Server-Season-Begleiter: Liste, füttern, aktivieren, tauschen",
+    "es-ES": "Tus compañeros de Server Season: lista, alimentar, activar, intercambiar",
+    fr: "Tes compagnons Server Season : liste, nourrir, activer, échanger",
+    it: "I tuoi compagni di Server Season: elenco, nutri, attiva, scambia",
+    nl: "Je Server Season-metgezellen: lijst, voeren, activeren, ruilen",
+    pl: "Twoi towarzysze z Server Season: lista, karmienie, aktywacja, wymiana",
+  },
   premium: {
     bg: "⭐ Premium команди за сървъра",
     de: "⭐ Premium-Befehle für den Server",

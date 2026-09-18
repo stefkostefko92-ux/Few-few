@@ -5,14 +5,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil } from "lucide-react";
+import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles } from "lucide-react";
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
 import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import {
   getGame, updateGameSettings, getGameShop, createGameShopItem, updateGameShopItem, deleteGameShopItem,
-  getGameLeaderboard, getGamePurchases,
+  getGameLeaderboard, getGamePurchases, getGameCompanions,
 } from "../api";
 
 const SNOWFLAKE = /^\d{17,20}$/;
@@ -29,6 +29,7 @@ const TABS = [
   { id: "levels", tKey: "game.tab.levels", icon: Layers },
   { id: "shop", tKey: "game.tab.shop", icon: ShoppingBag },
   { id: "leaderboard", tKey: "game.tab.leaderboard", icon: Trophy },
+  { id: "companions", tKey: "game.tab.companions", icon: Sparkles },
 ];
 
 export default function GamePage() {
@@ -57,6 +58,7 @@ export default function GamePage() {
       {data && tab === "levels" && <LevelsTab data={data} />}
       {data && tab === "shop" && <ShopTab data={data} />}
       {data && tab === "leaderboard" && <LeaderboardTab />}
+      {data && tab === "companions" && <CompanionsTab data={data} />}
     </div>
   );
 }
@@ -381,6 +383,51 @@ function LeaderboardTab() {
             <tr key={r.userId}><td>{i + 1}</td><td className="font-mono">{r.userId}</td><td>{r.level}</td><td>{r.xp}</td><td>{r.seasonXp}</td><td>{r.sparks}</td><td>{r.streak}</td><td>{r.messages}</td><td>{r.voiceMinutes}</td></tr>
           ))}</tbody>
         </table></div>
+      )}
+    </div>
+  );
+}
+
+// ─── Спътници: каталог + кой какво е уловил ─────────────────────────────────
+const RARITY_ORDER = ["legendary", "epic", "rare", "uncommon", "common"];
+function CompanionsTab({ data }) {
+  const { t } = useT();
+  const { serverId } = useParams();
+  const { data: c, isLoading } = useQuery({ queryKey: ["game-companions", serverId], queryFn: () => getGameCompanions(serverId) });
+  if (isLoading || !c) return <p className="text-cs-muted">{t("game.loading")}</p>;
+  const groups = RARITY_ORDER.map((r) => ({ r, items: c.catalog.filter((x) => x.rarity === r) })).filter((g) => g.items.length);
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Stat label={t("game.companions.catalogSize")} value={c.catalog.length} />
+        <Stat label={t("game.companions.spawns")} value={c.spawns} />
+        <Stat label={t("game.companions.caught")} value={c.caught} />
+        <div className="cs-card !p-3">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-cs-dim">{t("game.companions.season")}</div>
+          <div className="text-sm font-bold text-cs-text">{c.season.name}</div>
+          <div className="text-xs text-cs-dim">{String(c.season.startsAt).slice(0, 10)} → {String(c.season.endsAt).slice(0, 10)}</div>
+        </div>
+      </div>
+      <p className="text-xs text-cs-dim">{t("game.companions.hint", { slots: data.limits.companionSlots })}{!data.isPremium && <> <PremiumBadge small /></>}</p>
+      {groups.map((g) => (
+        <section key={g.r} className="cs-card">
+          <h2 className="text-lg font-semibold text-cs-text mb-3 flex items-center gap-2">{g.items[0].rarityEmoji} {t(`game.companions.rarity.${g.r}`)} <span className="cs-badge">{g.items.length}</span></h2>
+          <ul className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            {g.items.map((x) => (
+              <li key={x.id} className="text-center">
+                <img src={x.imageUrl.replace(/^https?:\/\/[^/]+/, "")} alt={x.name} width={96} height={96} loading="lazy" className="w-24 h-24 mx-auto rounded" />
+                <div className="text-sm text-cs-text mt-1">{x.name}{x.seasonId ? " ✦" : ""}</div>
+                <div className="text-[10px] font-mono text-cs-dim">{t("game.companions.caughtN", { n: x.caught })}</div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      {c.collectors.length > 0 && (
+        <section className="cs-card">
+          <h2 className="text-lg font-semibold text-cs-text mb-2">{t("game.companions.collectors")}</h2>
+          <ol className="text-sm space-y-1">{c.collectors.map((x, i) => <li key={x.userId}><span className="font-mono text-cs-dim w-6 inline-block">{i + 1}.</span> <span className="font-mono">{x.userId}</span> <span className="text-cs-muted">· {x.count}</span></li>)}</ol>
+        </section>
       )}
     </div>
   );

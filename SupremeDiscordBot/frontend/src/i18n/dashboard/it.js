@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Livello",
   "game.lb.messages": "Messaggi",
   "game.lb.voice": "Min. vocale",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Compagni",
+  "game.companions.catalogSize": "Compagni nel catalogo",
+  "game.companions.spawns": "Comparse finora",
+  "game.companions.caught": "Catturati",
+  "game.companions.season": "Stagione",
+  "game.companions.hint": "I compagni compaiono nei canali attivi e il primo membro che preme Cattura li tiene. I membri li nutrono con scintille per farli evolvere (100 e 300), li scambiano uno a uno e ne mostrano uno nel profilo. Slot per membro in questo piano: {slots}. ✦ = stagionale, sparisce a fine stagione.",
+  "game.companions.caughtN": "catturato ×{n}",
+  "game.companions.collectors": "Migliori collezionisti",
+  "game.companions.rarity.common": "Comuni",
+  "game.companions.rarity.uncommon": "Non comuni",
+  "game.companions.rarity.rare": "Rari",
+  "game.companions.rarity.epic": "Epici",
+  "game.companions.rarity.legendary": "Leggendari",
 };

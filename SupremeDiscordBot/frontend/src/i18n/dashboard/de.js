@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Level",
   "game.lb.messages": "Nachrichten",
   "game.lb.voice": "Sprachmin.",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Begleiter",
+  "game.companions.catalogSize": "Begleiter im Katalog",
+  "game.companions.spawns": "Bisherige Spawns",
+  "game.companions.caught": "Gefangen",
+  "game.companions.season": "Season",
+  "game.companions.hint": "Begleiter erscheinen in aktiven Kanälen; wer zuerst auf Fangen drückt, behält sie. Mitglieder füttern sie mit Funken zum Entwickeln (100 und 300), tauschen eins zu eins und zeigen einen im Profil. Sammelplätze pro Mitglied in diesem Plan: {slots}. ✦ = saisonal, verschwindet am Saisonende.",
+  "game.companions.caughtN": "gefangen ×{n}",
+  "game.companions.collectors": "Top-Sammler",
+  "game.companions.rarity.common": "Gewöhnlich",
+  "game.companions.rarity.uncommon": "Ungewöhnlich",
+  "game.companions.rarity.rare": "Selten",
+  "game.companions.rarity.epic": "Episch",
+  "game.companions.rarity.legendary": "Legendär",
 };

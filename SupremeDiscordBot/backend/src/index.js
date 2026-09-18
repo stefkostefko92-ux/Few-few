@@ -124,6 +124,7 @@ import cannedRouter from "./routes/canned.js";
 import reactionRolesRouter from "./routes/reactionroles.js";
 import gameRouter from "./routes/game.js";           // v50 Server Season (табло)
 import botGameRouter from "./routes/bot_game.js";    // v50 Server Season (бот)
+import botCompanionsRouter from "./routes/bot_companions.js"; // v50 Server Season — спътници (бот)
 import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
 
@@ -329,6 +330,7 @@ app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashb
 app.use("/api/reactionroles", reactionRolesRouter); // v3.2 Reaction roles CRUD + spawn (dashboard-authed)
 app.use("/api/game", gameRouter);                   // v50 Server Season — настройки/магазин/класация (dashboard-authed)
 app.use("/api/bot", botGameRouter);                 // v50 Server Season — XP партиди, /daily, профил, магазин (bot secret)
+app.use("/api/bot", botCompanionsRouter);           // v50 Server Season — спътници: поява/улавяне/хранене/размяна (bot secret)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
 // apikeys.js (файлът-примамка) е ИЗТРИТ на 09.08.2026: немонтиран, но с втори

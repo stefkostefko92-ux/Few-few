@@ -38,7 +38,7 @@ describe("дефиниции", () => {
   it("каталогът (трите копия) обявява /daily /profile /leaderboard /shop под категория Game", () => {
     const cat = COMMAND_CATALOG.find((c) => c.category === "Game");
     expect(cat).toBeTruthy();
-    expect(cat.commands.map((c) => c.name)).toEqual(["/daily", "/profile", "/leaderboard", "/shop"]);
+    expect(cat.commands.map((c) => c.name).slice(0, 4)).toEqual(["/daily", "/profile", "/leaderboard", "/shop"]);
     const bot = readFileSync(join(HERE, "../utils/commandsCatalog.js"), "utf8");
     expect(readFileSync(join(HERE, "../../../backend/src/data/commandsCatalog.js"), "utf8")).toBe(bot);
     expect(readFileSync(join(HERE, "../../../frontend/src/data/commandsCatalog.js"), "utf8")).toBe(bot);

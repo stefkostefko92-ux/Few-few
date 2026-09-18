@@ -893,4 +893,18 @@ export default {
   "game.lb.level": "Level",
   "game.lb.messages": "Messages",
   "game.lb.voice": "Voice min",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Companions",
+  "game.companions.catalogSize": "Companions in catalog",
+  "game.companions.spawns": "Spawns so far",
+  "game.companions.caught": "Caught",
+  "game.companions.season": "Season",
+  "game.companions.hint": "Companions appear in active channels and the first member to press Catch keeps them. Members feed them sparks to evolve (100 and 300), trade one-for-one and show one on their profile. Collection slots per member on this plan: {slots}. ✦ = seasonal, leaves when the season ends.",
+  "game.companions.caughtN": "caught ×{n}",
+  "game.companions.collectors": "Top collectors",
+  "game.companions.rarity.common": "Common",
+  "game.companions.rarity.uncommon": "Uncommon",
+  "game.companions.rarity.rare": "Rare",
+  "game.companions.rarity.epic": "Epic",
+  "game.companions.rarity.legendary": "Legendary",
 };

@@ -10,6 +10,7 @@ import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js
 import { getServerTier } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 import { getGameSettings, xpToReachLevel } from "../lib/game/xp.js";
+import { COMPANIONS, publicCompanion, CURRENT_SEASON } from "../lib/game/companions.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { notifyBot } from "../services/botNotifier.js";
 
@@ -181,6 +182,26 @@ router.get("/:serverId/purchases", requireServerAdmin, async (req, res, next) =>
       include: { item: { select: { name: true, type: true, roleId: true } } },
     });
     res.json(rows);
+  } catch (err) { next(err); }
+});
+
+// ─── Спътници: каталог + статистика на сървъра ───────────────────────────────
+router.get("/:serverId/companions", requireServerAdmin, async (req, res, next) => {
+  const { serverId } = req.params;
+  try {
+    const [counts, collectors, spawns] = await Promise.all([
+      prisma.memberCompanion.groupBy({ by: ["companionId"], where: { serverId }, _count: { _all: true } }),
+      prisma.memberCompanion.groupBy({ by: ["userId"], where: { serverId }, _count: { _all: true }, orderBy: { _count: { userId: "desc" } }, take: 10 }),
+      prisma.companionSpawn.count({ where: { serverId } }),
+    ]);
+    const byId = Object.fromEntries(counts.map((c) => [c.companionId, c._count._all]));
+    res.json({
+      season: CURRENT_SEASON,
+      spawns,
+      caught: counts.reduce((s, c) => s + c._count._all, 0),
+      catalog: COMPANIONS.map((c) => ({ ...publicCompanion(c, 1), caught: byId[c.id] || 0 })),
+      collectors: collectors.map((c) => ({ userId: c.userId, count: c._count._all })),
+    });
   } catch (err) { next(err); }
 });
 

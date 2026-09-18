@@ -287,3 +287,4 @@ export const updateGameShopItem= (sid, id, data) => api.patch(`/game/${sid}/shop
 export const deleteGameShopItem= (sid, id) => api.delete(`/game/${sid}/shop/${id}`).then((r) => r.data);
 export const getGameLeaderboard= (sid, by = "xp") => api.get(`/game/${sid}/leaderboard`, { params: { by, limit: 50 } }).then((r) => r.data);
 export const getGamePurchases  = (sid) => api.get(`/game/${sid}/purchases`).then((r) => r.data);
+export const getGameCompanions = (sid) => api.get(`/game/${sid}/companions`).then((r) => r.data);

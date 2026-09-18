@@ -882,4 +882,18 @@ export default {
   "game.lb.level": "Ниво",
   "game.lb.messages": "Съобщения",
   "game.lb.voice": "Мин. глас",
+  // ─── v50 Server Season — спътници ───
+  "game.tab.companions": "Спътници",
+  "game.companions.catalogSize": "Спътници в каталога",
+  "game.companions.spawns": "Появи досега",
+  "game.companions.caught": "Уловени",
+  "game.companions.season": "Сезон",
+  "game.companions.hint": "Спътниците се появяват в активните канали и първият член, който натисне „Улови“, ги взима. Членовете ги хранят с искри, за да еволюират (100 и 300), разменят ги едно към едно и показват един на профила си. Слотове на член в този план: {slots}. ✦ = сезонен, изчезва в края на сезона.",
+  "game.companions.caughtN": "уловен ×{n}",
+  "game.companions.collectors": "Най-добри колекционери",
+  "game.companions.rarity.common": "Обикновени",
+  "game.companions.rarity.uncommon": "Необикновени",
+  "game.companions.rarity.rare": "Редки",
+  "game.companions.rarity.epic": "Епични",
+  "game.companions.rarity.legendary": "Легендарни",
 };
