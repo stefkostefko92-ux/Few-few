@@ -103,7 +103,9 @@ body.menu-open { overflow: hidden; }
 
 /* keep desktop CTA + switcher inline; in the mobile drawer they stack */
 .nav__actions { gap: .5rem; }
-@media (max-width: 760px) {
+/* Matches the drawer breakpoint in _design.css — the switcher must move into
+   the drawer at the same width, or it is left clipped in a cramped header. */
+@media (max-width: 980px) {
   .nav__actions .langsw { display: none; }
   .nav__menu .langsw { display: block; margin-top: 1rem; }
   .nav__menu .langsw__btn { width: 100%; justify-content: space-between; }

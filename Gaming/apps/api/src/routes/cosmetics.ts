@@ -5,7 +5,9 @@ import {
   equipCosmeticSchema,
   cosmeticById,
   cosmeticsForGame,
+  isCustomCosmeticId,
   isGameKey,
+  parseCosmetic,
   VIP_PERKS,
   type VipTier,
 } from "@aso/shared";
@@ -145,5 +147,43 @@ cosmeticsRouter.post(
       select: { cosmeticId: true },
     });
     res.json({ equipped: equipped.map((i) => i.cosmeticId) });
+  }),
+);
+
+/** POST /api/cosmetics/equip-custom — VIP creative perk: equip a self-made
+ *  colour palette (no upload, colours only). No purchase; VIP tier required. */
+cosmeticsRouter.post(
+  "/equip-custom",
+  asyncHandler(async (req, res) => {
+    const { id } = equipCosmeticSchema.parse(req.body);
+    if (!isCustomCosmeticId(id) || !parseCosmetic(id)) {
+      throw badRequest("bad_custom", "Невалидна собствена палитра");
+    }
+    const userId = req.user!.sub;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw unauthorized();
+    if (!canUseExclusive(user.vipTier as VipTier)) {
+      throw forbidden("Собствените палитри са VIP функция (Silver и нагоре)");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Keep the slot tidy: drop the player's previous CUSTOM palette in this
+      // slot (unequipped catalog items are kept), then unequip slot mates and
+      // equip the new palette.
+      await tx.inventoryItem.deleteMany({
+        where: { userId, cosmeticId: { startsWith: `${slotPrefix(id)}custom-` } },
+      });
+      await tx.inventoryItem.updateMany({
+        where: { userId, cosmeticId: { startsWith: slotPrefix(id) }, equipped: true },
+        data: { equipped: false },
+      });
+      await tx.inventoryItem.create({ data: { userId, cosmeticId: id, equipped: true } });
+    });
+
+    const equipped = await prisma.inventoryItem.findMany({
+      where: { userId, equipped: true },
+      select: { cosmeticId: true },
+    });
+    res.status(201).json({ equipped: equipped.map((i) => i.cosmeticId) });
   }),
 );

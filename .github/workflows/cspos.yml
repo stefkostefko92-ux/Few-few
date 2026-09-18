@@ -9,11 +9,16 @@ on:
     paths: ["CSPos/**", ".github/workflows/cspos.yml"]
   workflow_dispatch: # ръчно пускане на инсталатора от раздел Actions
 
+concurrency:
+  group: cspos-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Качествена порта (Linux) ──────────────────────────────────────────────
   quality:
     name: Lint · typecheck · test · build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: CSPos
@@ -39,6 +44,7 @@ jobs:
     needs: quality
     if: github.event_name != 'pull_request'
     runs-on: windows-latest
+    timeout-minutes: 30
     permissions:
       contents: write # за публикуване на Release при таг
     steps:
@@ -74,7 +80,7 @@ jobs:
 
       - name: Публикуване на Release (само при таг cspos-v*)
         if: startsWith(github.ref, 'refs/tags/cspos-v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: CSPos/desktop/dist/*.exe
           name: Carbon Stealth POS ${{ github.ref_name }}

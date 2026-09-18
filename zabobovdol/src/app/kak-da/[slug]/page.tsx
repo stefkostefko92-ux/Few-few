@@ -114,7 +114,7 @@ export default async function FaqPage({
                   />
                 ))}
               </div>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-600">
                 Примерна снимка за онагледяване. Реалният екран може да изглежда
                 малко по-различно според телефона и версията на приложението.
               </p>

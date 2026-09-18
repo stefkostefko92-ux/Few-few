@@ -1,0 +1,33 @@
+{
+  "id": "kodadjiyata-2",
+  "agent": "kodadjiyata",
+  "task": "Ревюирай Next.js 15 route handler: `prisma.user.update({ data: req.body })` и `redirect('/x')` в `try/catch`. Намери бъговете.",
+  "expect": [
+    {
+      "any": [
+        "mass assignment",
+        "allowlist",
+        "role",
+        "isAdmin",
+        "pick"
+      ],
+      "label": "хваща mass assignment"
+    },
+    {
+      "any": [
+        "redirect",
+        "NEXT_REDIRECT",
+        "извън try",
+        "re-throw"
+      ],
+      "label": "хваща redirect в try/catch"
+    },
+    {
+      "none": [
+        "няма проблеми",
+        "кодът е чист"
+      ],
+      "label": "капан: обявява чист код"
+    }
+  ]
+}

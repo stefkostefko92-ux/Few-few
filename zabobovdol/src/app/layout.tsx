@@ -107,7 +107,12 @@ export default async function RootLayout({
         />
         <JsonLd
           data={[
-            organizationLd({ sameAs: facebookUrl ? [facebookUrl] : [] }),
+            organizationLd({
+              sameAs: [
+                SITE.company.website,
+                ...(facebookUrl ? [facebookUrl] : []),
+              ],
+            }),
             websiteLd(),
           ]}
         />

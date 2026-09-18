@@ -11,10 +11,19 @@ defaults:
   run:
     working-directory: Nexus
 
+concurrency:
+  group: nexus-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   quality:
     name: Typecheck, test, build, release gate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

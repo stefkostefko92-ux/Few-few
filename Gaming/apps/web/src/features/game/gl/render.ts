@@ -46,8 +46,44 @@ import { SSRPass } from "three/examples/jsm/postprocessing/SSRPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 export type { AAMode, GfxParams };
+
+/**
+ * Gentle post vignette — the final couture touch on every 3D board. It runs in
+ * display (sRGB) space after tone-mapping/AA, so it only darkens the extreme
+ * corners toward the focal centre; the plateau (`offset`) keeps the board and
+ * pieces at full brightness. Static (no animation → no strobe), and floored so
+ * it can never crush the image to black. Alpha is preserved untouched.
+ */
+const VignetteShader = {
+  uniforms: {
+    tDiffuse: { value: null as unknown },
+    offset: { value: 1.06 }, // radial reach — larger = tighter corner falloff
+    darkness: { value: 0.78 }, // corner multiplier floor (1 = no vignette)
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse;
+    uniform float offset;
+    uniform float darkness;
+    varying vec2 vUv;
+    void main() {
+      vec4 texel = texture2D(tDiffuse, vUv);
+      vec2 uv = (vUv - 0.5) * vec2(offset);
+      // smooth radial falloff: full brightness across the centre plateau,
+      // easing to the darkness floor only in the far corners.
+      float d = dot(uv, uv);
+      float vig = mix(darkness, 1.0, smoothstep(0.62, 0.16, d));
+      gl_FragColor = vec4(texel.rgb * vig, texel.a);
+    }`,
+};
 
 export interface RenderCoreOpts {
   canvas: HTMLCanvasElement;
@@ -226,6 +262,7 @@ export class RenderCore implements GfxControllable {
     let passes: Array<{ dispose?: () => void }> = [];
     let bloomPass: UnrealBloomPass | null = null;
     let gtaoPass: GTAOPass | null = null;
+    let vignettePass: ShaderPass | null = null;
 
     const build = () => {
       composer = new EffectComposer(renderer);
@@ -258,6 +295,17 @@ export class RenderCore implements GfxControllable {
       }
       add(new OutputPass());
       if (params.aa === "SMAA") add(new SMAAPass());
+      // Vignette runs dead-last, in display space, so it frames the finished
+      // image without touching the AO/bloom/tone math upstream.
+      if (params.vignette.enabled) {
+        vignettePass = new ShaderPass(VignetteShader);
+        const vu = vignettePass.uniforms as { offset: { value: number }; darkness: { value: number } };
+        vu.offset.value = params.vignette.offset;
+        vu.darkness.value = params.vignette.darkness;
+        add(vignettePass);
+      } else {
+        vignettePass = null;
+      }
       composer.setSize(w, h);
     };
     build();
@@ -277,6 +325,11 @@ export class RenderCore implements GfxControllable {
         }
         const g = gtaoPass as unknown as { updateGtaoMaterial?: (p: object) => void } | null;
         g?.updateGtaoMaterial?.({ radius: params.ao.radius });
+        if (vignettePass) {
+          const vu = vignettePass.uniforms as { offset: { value: number }; darkness: { value: number } };
+          vu.offset.value = params.vignette.offset;
+          vu.darkness.value = params.vignette.darkness;
+        }
       },
       rebuild: () => {
         for (const p of passes) p.dispose?.();

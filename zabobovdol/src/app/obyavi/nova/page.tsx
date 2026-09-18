@@ -127,7 +127,7 @@ export default function NewListingPage() {
             aria-hidden
           />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Посочете поне телефон или имейл за контакт. С подаването приемате
             обявата да бъде видима публично.
           </p>

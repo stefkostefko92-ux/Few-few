@@ -1,0 +1,45 @@
+{
+  "id": "nabludatelya",
+  "agent": "nabludatelya",
+  "task": "Дефинирай SLO и аларми за zabobovdol в продукция.",
+  "expect": [
+    {
+      "any": [
+        "SLI",
+        "SLO",
+        "error budget",
+        "бюджет за грешки"
+      ],
+      "label": "SLI/SLO/error budget"
+    },
+    {
+      "any": [
+        "симптом",
+        "не по причина",
+        "burn-rate",
+        "multi-window"
+      ],
+      "label": "аларми по симптом, не причина"
+    },
+    {
+      "any": [
+        "latency",
+        "traffic",
+        "errors",
+        "saturation",
+        "RED",
+        "USE",
+        "златни сигнала"
+      ],
+      "label": "златни сигнали / RED/USE"
+    },
+    {
+      "none": [
+        "аларма по причина",
+        "PII в traces",
+        "лични данни в логове"
+      ],
+      "label": "капан: аларма по причина / PII в traces"
+    }
+  ]
+}

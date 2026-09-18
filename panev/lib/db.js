@@ -243,6 +243,7 @@ const stmts = {
   `),
   clearLoginAttempt:  db.prepare(`DELETE FROM login_attempts WHERE ip = ?`),
   cleanupLoginAttempts: db.prepare(`DELETE FROM login_attempts WHERE last_at < datetime('now', '-1 day')`),
+  pruneOldMessages: db.prepare(`DELETE FROM messages WHERE created_at < datetime('now', '-24 months')`),
 };
 
 // ── High-level API ────────────────────────────────────────────
@@ -342,6 +343,7 @@ const api = {
   },
   clearLoginAttempt(ip) { return stmts.clearLoginAttempt.run(ip).changes; },
   cleanupLoginAttempts() { return stmts.cleanupLoginAttempts.run().changes; },
+  pruneOldMessages()      { return stmts.pruneOldMessages.run().changes; },
 
   // Raw db handle if needed
   raw: db,

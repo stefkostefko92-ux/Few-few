@@ -92,6 +92,11 @@ export const GROUP_COLORS = [
 
 export const HOUSE_COST_BY_GROUP = [50, 50, 100, 100, 150, 150, 200, 200];
 
+/** Bank's finite building supply (classic Monopoly): 32 houses, 12 hotels.
+ *  A hotel replaces four houses on a tile (houses[i] === 5 ⇒ a hotel). */
+export const HOUSE_LIMIT = 32;
+export const HOTEL_LIMIT = 12;
+
 export const GROUP_TILES: number[][] = (() => {
   const m: number[][] = Array.from({ length: 8 }, () => []);
   BOARD.forEach((tile, i) => {

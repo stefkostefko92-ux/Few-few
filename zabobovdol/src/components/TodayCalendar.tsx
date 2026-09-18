@@ -18,7 +18,7 @@ export function TodayCalendar() {
         <CalendarDays className="h-6 w-6" aria-hidden />
       </span>
       <span className="min-w-0">
-        <span className="block text-sm text-slate-500">
+        <span className="block text-sm text-slate-600">
           Днес е {formatDateBg(today.month, today.day, today.weekday)}
         </span>
         {info.feasts.length > 0 && (

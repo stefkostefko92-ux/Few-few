@@ -22,7 +22,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,mjs,json,css,md}\"",
-    "format:check": "prettier --check \"**/*.{js,mjs,json,css,md}\""
+    "format:check": "prettier --check \"**/*.{js,mjs,json,css,md}\"",
+    "admin:add": "node scripts/make-admin.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -35,8 +36,8 @@
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.14",
+    "multer": "^2.4.0",
+    "nodemailer": "^9.0.3",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {

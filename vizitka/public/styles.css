@@ -71,6 +71,21 @@ main {
   width: auto;
   display: block;
 }
+/* По-малки телефони: логото и връзките се свиват, за да не се препълва лентата. */
+@media (max-width: 480px) {
+  .nav {
+    padding: 0.55rem 0.8rem;
+    gap: 0.5rem;
+  }
+  .nav nav {
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .brand-logo {
+    height: 36px;
+  }
+}
 
 /* Бутони */
 .btn {
@@ -95,6 +110,12 @@ main {
 .btn-small {
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
+}
+/* Бутон с иконка + текст (подравнени). */
+.btn-ico {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 .link-btn {
   background: none;
@@ -145,8 +166,14 @@ main {
   padding: 1.2rem;
 }
 .feature h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0 0 0.4rem;
   font-size: 1.05rem;
+}
+.feature h3 .ico {
+  color: var(--brand);
 }
 .feature p {
   margin: 0;
@@ -401,19 +428,79 @@ legend {
   max-width: 480px;
   margin: 1.5rem auto;
 }
+/* Единна SVG иконка — наследява цвета на текста (затова се темизира). */
+.ico {
+  display: inline-block;
+  vertical-align: -0.18em;
+  flex-shrink: 0;
+}
+/* Тема на ЦЯЛАТА визитка чрез CSS променливи (по подразбиране — марковата). */
 .vcard {
+  --t-a: #2563eb;
+  --t-b: #7c3aed;
+  --t-accent: #4f46e5;
+  --t-soft: #eef2ff;
+  --t-ring: #c7d2fe;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 22px;
   overflow: hidden;
   text-align: center;
-  padding-bottom: 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 18px 44px -20px rgba(15, 23, 42, 0.28);
+}
+.vcard-body {
+  padding: 0 1.4rem 1.6rem;
 }
 .vcard-top {
-  background: linear-gradient(135deg, var(--brand), #7c3aed);
+  background: linear-gradient(150deg, var(--t-a), var(--t-b));
   color: #fff;
-  padding: 2rem 1.5rem 1.5rem;
+  padding: 2.2rem 1.5rem 1.7rem;
   position: relative;
+}
+/* Цветови теми — задават палитрата на цялата карта (src/themes.js) */
+.vcard.theme-blue {
+  --t-a: #2563eb;
+  --t-b: #7c3aed;
+  --t-accent: #4f46e5;
+  --t-soft: #eef2ff;
+  --t-ring: #c7d2fe;
+}
+.vcard.theme-emerald {
+  --t-a: #059669;
+  --t-b: #0d9488;
+  --t-accent: #0f766e;
+  --t-soft: #ecfdf5;
+  --t-ring: #a7f3d0;
+}
+.vcard.theme-sunset {
+  --t-a: #ea580c;
+  --t-b: #db2777;
+  --t-accent: #db2777;
+  --t-soft: #fff1f2;
+  --t-ring: #fecdd3;
+}
+.vcard.theme-ocean {
+  --t-a: #0284c7;
+  --t-b: #0891b2;
+  --t-accent: #0e7490;
+  --t-soft: #ecfeff;
+  --t-ring: #a5f3fc;
+}
+.vcard.theme-graphite {
+  --t-a: #1f2937;
+  --t-b: #4b5563;
+  --t-accent: #334155;
+  --t-soft: #f1f5f9;
+  --t-ring: #cbd5e1;
+}
+.vcard.theme-rose {
+  --t-a: #e11d48;
+  --t-b: #9d174d;
+  --t-accent: #be123c;
+  --t-soft: #fff1f2;
+  --t-ring: #fecdd3;
 }
 /* Корична (заглавна) снимка зад името + тъмен слой за четимост */
 .vcard-cover {
@@ -440,25 +527,6 @@ legend {
 .vcard-top .headline {
   text-shadow: 0 1px 3px rgba(15, 23, 42, 0.28);
 }
-/* Цветови теми на визитката (theme-<id> от src/themes.js) */
-.vcard-top.theme-blue {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-}
-.vcard-top.theme-emerald {
-  background: linear-gradient(135deg, #059669, #0d9488);
-}
-.vcard-top.theme-sunset {
-  background: linear-gradient(135deg, #ea580c, #db2777);
-}
-.vcard-top.theme-ocean {
-  background: linear-gradient(135deg, #0284c7, #0891b2);
-}
-.vcard-top.theme-graphite {
-  background: linear-gradient(135deg, #1f2937, #4b5563);
-}
-.vcard-top.theme-rose {
-  background: linear-gradient(135deg, #e11d48, #9d174d);
-}
 .vcard-top h1 {
   margin: 0.8rem 0 0.2rem;
   font-size: 1.6rem;
@@ -475,6 +543,12 @@ legend {
   height: 140px;
   font-size: 3.6rem;
 }
+/* Празният аватар в шапката стои върху темизирания градиент — полупрозрачно бяло. */
+.vcard-top .avatar-empty {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
 /* Форма на аватара */
 .avatar.shape-rounded {
   border-radius: 22px;
@@ -488,7 +562,7 @@ legend {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 0.8rem 1.5rem 0.2rem;
+  padding: 0.8rem 0 0.2rem;
 }
 .link-btn-card {
   display: flex;
@@ -507,8 +581,12 @@ legend {
     border-color 0.15s ease;
 }
 .link-btn-card:hover {
-  border-color: var(--brand);
+  border-color: var(--t-accent);
+  background: var(--t-soft);
   transform: translateY(-1px);
+}
+.link-btn-card > .ico {
+  color: var(--t-accent);
 }
 .link-ico {
   font-size: 1.15rem;
@@ -530,47 +608,122 @@ legend {
   gap: 0.7rem;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 1.2rem 1rem 0.4rem;
+  padding: 1.4rem 0 0.2rem;
+}
+/* Бутоните на визитката ползват цвета на темата (--t-accent). */
+.vcard .btn,
+.vcard .btn-big {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  background: var(--t-accent);
+  box-shadow: 0 8px 18px -10px var(--t-accent);
+}
+.vcard .btn:hover {
+  filter: brightness(0.94);
+  background: var(--t-accent);
+}
+.vcard .btn-ghost {
+  background: #fff;
+  color: var(--t-accent) !important;
+  border: 1.5px solid var(--t-ring);
+  box-shadow: none;
+}
+.vcard .btn-ghost:hover {
+  background: var(--t-soft);
+  border-color: var(--t-accent);
 }
 .vcard-list {
   list-style: none;
   margin: 1rem 0 0;
-  padding: 0 1.5rem;
+  padding: 0;
   text-align: left;
 }
 .vcard-list li {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.55rem 0;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0;
   border-bottom: 1px solid var(--line);
 }
-.vcard-list li > span:first-child {
+.vcard-list li:last-child {
+  border-bottom: 0;
+}
+/* Иконата на реда носи цвета на темата. */
+.vcard-list li > .ico {
+  color: var(--t-accent);
+}
+.vcard-list li > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.vcard-list li > div > span:first-child {
   color: var(--muted);
-  flex-shrink: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
 }
 .vcard-list a,
-.vcard-list li > span + span {
+.vcard-list li > div > span + span {
   word-break: break-word;
-  text-align: right;
+  font-weight: 600;
+}
+/* Стойностите-връзки носят цвета на темата (не марковото синьо). */
+.vcard-list a {
+  color: var(--t-accent);
 }
 .bio {
-  padding: 0 1.5rem;
   text-align: left;
   white-space: pre-line;
 }
+/* Соц. мрежи — темизирани кръгове с иконка. */
 .socials {
   display: flex;
-  gap: 1rem;
+  gap: 0.7rem;
   justify-content: center;
-  margin-top: 1rem;
+  margin-top: 1.2rem;
+}
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--t-soft);
+  color: var(--t-accent);
+  border: 1px solid var(--t-ring);
+  transition:
+    transform 0.1s ease,
+    background 0.15s ease;
+}
+.socials a:hover {
+  transform: translateY(-2px);
+  background: var(--t-ring);
 }
 .vcard-qr {
   margin-top: 1.5rem;
+  text-align: center;
 }
-.vcard-qr img {
-  border: 1px solid var(--line);
-  border-radius: 10px;
+/* Темизирана рамка около QR кода. */
+.qr-frame {
+  display: inline-flex;
+  padding: 0.9rem;
+  background: var(--t-soft);
+  border: 1px solid var(--t-ring);
+  border-radius: 18px;
+}
+.qr-frame img {
+  display: block;
+  border-radius: 8px;
+}
+/* Връзката „Разпечатай“ подравнява иконка + текст и ползва цвета на темата. */
+.vcard .link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--t-accent);
 }
 .vcard-wallet {
   margin-top: 1.25rem;
@@ -670,6 +823,11 @@ legend {
   text-align: center;
   margin-top: 0.3rem;
 }
+.report a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
 
 /* Рекламни банери (начална страница) — фиксиран формат 960×120 */
 .ads {
@@ -712,12 +870,182 @@ legend {
 
 /* Админ панел */
 .admin {
-  max-width: 780px;
+  max-width: 820px;
   margin: 0 auto;
 }
 .admin h2 {
   margin-top: 1.8rem;
   font-size: 1.15rem;
+}
+/* Под-навигация на админ панела (Визитки | Реклами) */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.6rem 0 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.admin-tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.admin-tabs a.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+/* Търсене в списъка с визитки */
+.admin-search {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.8rem 0;
+}
+.admin-search input[type='search'] {
+  flex: 1;
+  margin: 0;
+}
+/* Списък с визитки */
+.admin-profiles {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.admin-profile {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+}
+.admin-profile.hidden-row {
+  background: #fafafa;
+}
+.admin-profile-main {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+.admin-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.admin-avatar-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+.admin-profile-info {
+  min-width: 0;
+}
+.admin-profile-info strong {
+  margin-right: 0.4rem;
+}
+.admin-profile-info p {
+  margin: 0.25rem 0 0;
+  word-break: break-word;
+}
+.admin-profile-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+.badge-neutral {
+  background: var(--line);
+  color: var(--ink);
+}
+.btn-ghost-admin {
+  background: #fff;
+  color: var(--brand) !important;
+  border: 1.5px solid var(--brand);
+}
+.btn-ghost-admin:hover {
+  background: var(--bg);
+}
+/* Странициране */
+.admin-pager {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+  justify-content: center;
+}
+.admin-page {
+  display: inline-block;
+  min-width: 2rem;
+  text-align: center;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.admin-page.current {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+/* Снимка + корица в редакцията */
+.admin-media {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.admin-media .photo-box {
+  flex: 1;
+  min-width: 220px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+}
+/* Телефони: картата за визитка се подрежда вертикално (иначе текстът се чупи буква
+   по буква, защото бутоните стесняват колоната с данните). */
+@media (max-width: 560px) {
+  .admin-profile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-profile-actions {
+    justify-content: stretch;
+  }
+  .admin-profile-actions .inline-form,
+  .admin-profile-actions .btn {
+    flex: 1;
+  }
+  .admin-profile-actions .inline-form .btn {
+    width: 100%;
+  }
+  .admin-search {
+    flex-wrap: wrap;
+  }
+  .admin-search input[type='search'] {
+    flex-basis: 100%;
+  }
 }
 .admin-form {
   background: var(--card);

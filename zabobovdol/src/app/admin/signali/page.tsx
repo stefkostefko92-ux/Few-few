@@ -71,7 +71,7 @@ export default async function AdminSignaliPage({
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
           Няма сигнали за показване.
         </div>
       ) : (
@@ -86,7 +86,7 @@ export default async function AdminSignaliPage({
               <div key={c.id} className="rounded-xl border border-slate-200 bg-white p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm text-slate-500">{c.refCode}</span>
+                    <span className="font-mono text-sm text-slate-600">{c.refCode}</span>
                     <span className={"rounded-full px-2 py-0.5 text-xs font-medium " + STATUS_CLASS[c.status]}>
                       {STATUS_LABEL[c.status]}
                     </span>
@@ -105,11 +105,11 @@ export default async function AdminSignaliPage({
 
                 <h2 className="mt-2 text-lg font-semibold text-slate-900">{c.subject}</h2>
                 {c.location && (
-                  <div className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>
                 )}
                 <p className="mt-2 whitespace-pre-line text-slate-700">{c.message}</p>
 
-                <div className="mt-3 text-sm text-slate-500">
+                <div className="mt-3 text-sm text-slate-600">
                   Подател: {c.name || "—"}
                   {c.phone && <> · тел: <a href={`tel:${c.phone}`} className="text-brand-700">{c.phone}</a></>}
                   {c.email && <> · <a href={`mailto:${c.email}`} className="text-brand-700">{c.email}</a></>}
@@ -126,7 +126,7 @@ export default async function AdminSignaliPage({
                     <button className="text-sm text-green-700 hover:underline">Решен</button>
                   </form>
                   <form action={setComplaintStatus.bind(null, c.id, "REJECTED")}>
-                    <button className="text-sm text-slate-500 hover:underline">Отхвърли</button>
+                    <button className="text-sm text-slate-600 hover:underline">Отхвърли</button>
                   </form>
                   <DeleteButton action={deleteComplaint.bind(null, c.id)} />
                 </div>

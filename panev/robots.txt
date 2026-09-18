@@ -1,6 +1,6 @@
 # ============================================================
 #  PANEV ASCENSORI — robots.txt
-#  https://www.panevascensori.it/
+#  https://panevascensori.it/
 #  Format: https://www.rfc-editor.org/rfc/rfc9309
 # ============================================================
 
@@ -9,20 +9,12 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /carrello
-Disallow: /carrello.html
-Disallow: /success
-Disallow: /success.html
 
 # ── Search engines ───────────────────────────────────────────
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /carrello
-Disallow: /carrello.html
-Disallow: /success
-Disallow: /success.html
 
 User-agent: Googlebot-Image
 Allow: /img/
@@ -31,14 +23,23 @@ Disallow: /admin/
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 2
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Applebot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Slurp
 Allow: /
 Crawl-delay: 3
+Disallow: /admin/
+Disallow: /api/
 
+User-agent: SeznamBot
+Allow: /
+Crawl-delay: 2
+Disallow: /admin/
+Disallow: /api/
 # ── AI crawlers / Answer engines ─────────────────────────────
 User-agent: GPTBot
 Allow: /
@@ -47,10 +48,12 @@ Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: OAI-SearchBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: anthropic-ai
 Allow: /
 Disallow: /admin/
@@ -59,37 +62,58 @@ Disallow: /api/
 User-agent: ClaudeBot
 Allow: /
 Crawl-delay: 2
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Claude-Web
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
 User-agent: Google-Extended
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Applebot-Extended
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: YouBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: CCBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: cohere-ai
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: Diffbot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: FacebookBot
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 User-agent: meta-externalagent
 Allow: /
-
+Disallow: /admin/
+Disallow: /api/
 # ── SEO scrapers / crawlers with no search value ─────────────
 User-agent: SemrushBot
 Disallow: /
@@ -106,9 +130,6 @@ Disallow: /
 User-agent: BLEXBot
 Disallow: /
 
-User-agent: SeznamBot
-Disallow: /
-
 User-agent: PetalBot
 Disallow: /
 
@@ -122,4 +143,4 @@ User-agent: serpstatbot
 Disallow: /
 
 # ── Sitemap ──────────────────────────────────────────────────
-Sitemap: https://www.panevascensori.it/sitemap.xml
+Sitemap: https://panevascensori.it/sitemap.xml

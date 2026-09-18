@@ -1,7 +1,9 @@
 // bot/src/utils/serverEventLog.js
 // Споделен util за "Server Event Logging" — логва действия на членове (глас,
-// членове, модерация; БЕЗ съдържание на съобщения) САМО в конфигуриран Discord
-// канал. НЕ се пази в базата и НЕ се показва в dashboard-а (по желание на owner-а).
+// членове, модерация) и съобщения (редакция/изтриване — категория "messages",
+// добавена по желание на owner-а; съдържанието отива САМО в лог канала на
+// СЪЩИЯ guild) в конфигуриран Discord канал. НЕ се пази в базата и НЕ се
+// показва в dashboard-а (по желание на owner-а).
 //
 // Ползва се от event модулите под /events/ (voiceStateUpdate, guildMemberUpdate,
 // guildBanAdd/Remove, guildMemberAdd/Remove), затова се закача И на главния
@@ -13,6 +15,7 @@
 
 import api from "./api.js";
 import { AuditLogEvent } from "discord.js";
+import { SUCCESS, DANGER, WARNING, INFO, MUTED } from "./colors.js";
 
 // ─── Per-guild конфиг кеш (като ticketCaches) ────────────────────────────────
 // serverId → { config, expiresAt }. config = { enabled, channelId, categories }
@@ -30,9 +33,11 @@ setInterval(() => {
 
 // Цвят по категория (за визуално разграничаване в лог канала).
 const CATEGORY_COLORS = {
-  voice: 0x5865f2,       // blurple
-  members: 0x57f287,     // green
-  moderation: 0xed4245,  // red
+  voice: INFO,       // blurple
+  members: SUCCESS,     // green
+  moderation: DANGER,  // red
+  messages: WARNING,    // amber
+  server: MUTED,        // структурни промени (канали/роли) — неутрално
 };
 
 // Човеко-четими заглавия по action string (exact strings — сверява се с backend).
@@ -65,6 +70,46 @@ const ACTION_LABELS = {
   member_ban: "🔨 Member Banned",
   member_unban: "♻️ Member Unbanned",
   member_kick: "👢 Member Kicked",
+  // messages
+  message_edit: "✏️ Message Edited",
+  message_delete: "🗑️ Message Deleted",
+  message_bulk_delete: "🗑️ Messages Bulk Deleted",
+  // server (структура: канали и роли)
+  channel_create: "📁 Channel Created",
+  channel_update: "✏️ Channel Updated",
+  channel_delete: "🗑️ Channel Deleted",
+  role_create: "🏷️ Role Created",
+  role_update: "✏️ Role Updated",
+  role_permissions_update: "🔐 Role Permissions Changed",
+  role_delete: "🗑️ Role Deleted",
+};
+
+// Ключове от metadata, които buildEventEmbed рисува ПОИМЕННО (с точен ред и
+// формат). Всичко извън този списък минава през общия проход накрая.
+const RENDERED_META_KEYS = new Set([
+  "roleIds", "fromChannelId", "toChannelId", "before", "after", "reason",
+  "content", "attachments", "count", "messageUrl",
+]);
+
+// Човеко-четими заглавия за общия проход (липсва ли ключ — заглавието е самият
+// ключ с главна буква, така новите ключове се показват, вместо да изчезват).
+const META_LABELS = {
+  name: "Name",
+  type: "Type",
+  role: "Role",
+  roleId: "Role ID",
+  channelId: "Channel ID",
+  granted: "Granted",
+  revoked: "Revoked",
+  color: "Color",
+  hoisted: "Hoisted",
+  mentionable: "Mentionable",
+  permissions: "Permission Overwrites",
+  topicBefore: "Topic (before)",
+  topicAfter: "Topic (after)",
+  nsfw: "NSFW",
+  slowmode: "Slowmode",
+  category: "Category",
 };
 
 /**
@@ -93,6 +138,16 @@ async function getEventLogConfig(serverId) {
   return config;
 }
 
+// Съдържанието в лога идва от ЧУЖД сървър (име на канал, тема, съдържание на
+// съобщение, причина). Discord рендира markdown в embed, значи
+// `[безобиден текст](https://зло)` става кликаем линк В НАШИЯ лог — модератор,
+// който преглежда събитията, вижда само текста и кликва. Обезвреждаме
+// отварящата скоба с пълноширинен вариант: изглежда почти същото, но не
+// образува линк. Останалият markdown е козметичен. (Разбивача, 07.08.2026)
+function safeText(value, max = 1024) {
+  return String(value).replace(/\[/g, "［").slice(0, max);
+}
+
 /**
  * Построй чист embed за едно събитие.
  */
@@ -112,20 +167,58 @@ function buildEventEmbed({ category, action, actorId, targetId, channelId, metad
   if (meta.fromChannelId) fields.push({ name: "From", value: `<#${meta.fromChannelId}>`, inline: true });
   if (meta.toChannelId) fields.push({ name: "To", value: `<#${meta.toChannelId}>`, inline: true });
   if (meta.before !== undefined && meta.before !== null && meta.before !== "") {
-    fields.push({ name: "Before", value: String(meta.before).slice(0, 1024), inline: true });
+    fields.push({ name: "Before", value: safeText(meta.before), inline: true });
   }
   if (meta.after !== undefined && meta.after !== null && meta.after !== "") {
-    fields.push({ name: "After", value: String(meta.after).slice(0, 1024), inline: true });
+    fields.push({ name: "After", value: safeText(meta.after), inline: true });
   }
-  if (meta.reason) fields.push({ name: "Reason", value: String(meta.reason).slice(0, 1024), inline: false });
+  if (meta.reason) fields.push({ name: "Reason", value: safeText(meta.reason), inline: false });
+  // messages категория
+  if (meta.content) fields.push({ name: "Content", value: safeText(meta.content), inline: false });
+  if (meta.attachments) fields.push({ name: "Attachments", value: String(meta.attachments), inline: true });
+  if (meta.count) fields.push({ name: "Count", value: String(meta.count), inline: true });
+  if (meta.messageUrl) fields.push({ name: "Message", value: `[Jump to message](${meta.messageUrl})`, inline: true });
+
+  // Всичко ОСТАНАЛО от metadata (категория "server" го ползва обилно: name/type/
+  // role/granted/revoked/slowmode/permissions…). Без този проход embed-ът
+  // мълчаливо изхвърляше всеки непознат ключ — тоест лог за промяна на права
+  // излизаше с ЕДИНСТВЕНО заглавие и Actor, без да казва коя роля и кои права.
+  for (const [key, value] of Object.entries(meta)) {
+    if (RENDERED_META_KEYS.has(key)) continue;
+    if (value === undefined || value === null || value === "") continue;
+    if (typeof value === "object") continue; // масиви/обекти нямат смислен вид тук
+    // Съдържанието идва от ЧУЖД сървър (име на канал, тема, съдържание на
+    // съобщение). В embed Discord рендира markdown, значи `[текст](https://зло)`
+    // става кликаем линк В НАШИЯ лог — модератор, който чете лога, вижда
+    // безобиден текст и кликва. Обезвреждаме отварящата скоба; останалият
+    // markdown е козметичен. (Разбивача, 07.08.2026)
+    const text = safeText(value);
+    fields.push({
+      name: META_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1),
+      value: text,
+      inline: text.length <= 40,
+    });
+  }
 
   return {
     title: ACTION_LABELS[action] || action,
-    color: CATEGORY_COLORS[category] ?? 0x99aab5,
+    color: CATEGORY_COLORS[category] ?? MUTED,
     fields: fields.slice(0, 25), // Discord лимит: ≤25 полета
     footer: { text: `${category} · ${action}` },
     timestamp: new Date().toISOString(),
   };
+}
+
+/**
+ * Евтина проверка (кеширана) дали категория е включена за guild-а — за event
+ * handler-и, които вършат СКЪПА работа ПРЕДИ logServerEvent (напр.
+ * fetchAuditLogs в messageDelete). Без нея audit fetch-ът се случва на всяко
+ * изтрито съобщение във ВСЕКИ guild, дори с изключено логване (rate-limit
+ * риск — находка на Дискорджията, 05.08.2026).
+ */
+export async function isEventCategoryEnabled(serverId, category) {
+  const config = await getEventLogConfig(serverId);
+  return !!(config?.enabled && Array.isArray(config.categories) && config.categories.includes(category));
 }
 
 /**
@@ -155,10 +248,13 @@ export async function logServerEvent(client, guild, evt) {
     const { category, action, actorId, actorTag, targetId, targetTag, channelId, metadata } = evt;
 
     // (а) Прати embed в лог канала (fail-safe — липсващ канал/права само warn-ва).
-    if (config.channelId) {
+    // v37 — всяка категория може да сочи към СВОЙ канал; липсва ли запис за
+    // нея, пада обратно към общия. Така заварените конфигурации не се променят.
+    const targetChannelId = config.channels?.[category] || config.channelId;
+    if (targetChannelId) {
       try {
-        const logChannel = client.channels.cache.get(config.channelId)
-          || await client.channels.fetch(config.channelId).catch(() => null);
+        const logChannel = client.channels.cache.get(targetChannelId)
+          || await client.channels.fetch(targetChannelId).catch(() => null);
         // Guard: only log to a channel that belongs to THIS guild — otherwise an
         // admin could point eventLogChannelId at a channel in another server where
         // the bot is present and relay this guild's activity there.
@@ -170,10 +266,10 @@ export async function logServerEvent(client, guild, evt) {
             allowedMentions: { parse: [] },
           });
         } else {
-          console.warn(`[event-log] log channel ${config.channelId} not found or not text-based for guild ${guild.id}`);
+          console.warn(`[event-log] log channel ${targetChannelId} (category ${category}) not found or not text-based for guild ${guild.id}`);
         }
       } catch (err) {
-        console.warn(`[event-log] failed to post embed to ${config.channelId}: ${err?.message}`);
+        console.warn(`[event-log] failed to post embed to ${targetChannelId} (category ${category}): ${err?.message}`);
       }
     }
     // Events are relayed to the server's own log channel only — NOT stored in
@@ -199,6 +295,41 @@ export async function logServerEvent(client, guild, evt) {
  * @param {number} [maxAgeMs=5000]  игнорирай стари записи (audit log е eventually consistent)
  * @returns {Promise<{ executorId: string|null, executorTag: string|null, reason: string|null }|null>}
  */
+/**
+ * Причината за напускане (kick / ban / доброволно) с ЕДНА заявка към audit log.
+ *
+ * ЗАЩО НЕ ДВЕ (одит етап 4, 12.08.2026): разграничаването искаше два отделни
+ * `fetchAuditActor` — по един на тип, тоест две обръщения към audit log при
+ * ВСЯКО напускане. Този маршрут е строго лимитиран от Discord, а четири други
+ * handler-а изрично гейтват точно преди такава заявка. Тук взимаме последните
+ * записи БЕЗ филтър по тип и разпознаваме и двете от един отговор.
+ *
+ * @returns {Promise<{kind:"kick"|"ban", executorId, executorTag, reason}|null>}
+ */
+export async function fetchRemovalCause(guild, targetId, maxAgeMs = 5000) {
+  try {
+    const logs = await guild.fetchAuditLogs({ limit: 15 });
+    const now = Date.now();
+    const entry = logs.entries.find(
+      (e) =>
+        (e.action === AuditLogEvent.MemberKick || e.action === AuditLogEvent.MemberBanAdd) &&
+        e.target?.id === targetId &&
+        now - e.createdTimestamp <= maxAgeMs,
+    );
+    if (!entry) return null;
+    const ex = entry.executor;
+    return {
+      kind: entry.action === AuditLogEvent.MemberKick ? "kick" : "ban",
+      executorId: ex?.id || null,
+      executorTag: ex ? (ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username) : null,
+      reason: entry.reason || null,
+    };
+  } catch {
+    // Липсва право ViewAuditLog или Discord отказа — не разпознаваме причината.
+    return null;
+  }
+}
+
 export async function fetchAuditActor(guild, type, targetId, maxAgeMs = 5000) {
   try {
     const logs = await guild.fetchAuditLogs({ type, limit: 5 });
@@ -212,6 +343,51 @@ export async function fetchAuditActor(guild, type, targetId, maxAgeMs = 5000) {
     return { executorId: ex.id, executorTag: tag, reason: entry.reason || null };
   } catch {
     // Няма ViewAuditLog право или друга грешка — пропускаме actor-а тихо.
+    return null;
+  }
+}
+
+/**
+ * Кой е преместил члена между гласови канали.
+ *
+ * MemberMove записите в audit log-а НЕ носят потребителя като `target` (за
+ * разлика от MemberUpdate) — те са агрегирани: `extra.channel` е ЦЕЛЕВИЯТ
+ * канал, `extra.count` колко души са преместени наведнъж. Затова общият
+ * fetchAuditActor (който сравнява target.id) никога не намираше нищо и
+ * преместването се приписваше на самия човек.
+ *
+ * Сверяваме по целеви канал + свежест. Ако човекът се е преместил САМ,
+ * Discord изобщо не пише запис — липсата на съвпадение значи „сам се премести“,
+ * което е точно разграничението, което искаме.
+ */
+export async function fetchVoiceMoveActor(guild, toChannelId, maxAgeMs = 5000) {
+  if (!toChannelId) return null;
+  try {
+    const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberMove, limit: 5 });
+    const now = Date.now();
+    const entry = logs.entries.find(
+      (e) => e.extra?.channel?.id === toChannelId && now - e.createdTimestamp <= maxAgeMs,
+    );
+    if (!entry?.executor) return null;
+    const ex = entry.executor;
+    const tag = ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username;
+    return { executorId: ex.id, executorTag: tag };
+  } catch {
+    return null; // няма ViewAuditLog право — тихо
+  }
+}
+
+/** Кой е изключил члена от гласов канал (Discord: MemberDisconnect). */
+export async function fetchVoiceDisconnectActor(guild, maxAgeMs = 5000) {
+  try {
+    const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberDisconnect, limit: 5 });
+    const now = Date.now();
+    const entry = logs.entries.find((e) => now - e.createdTimestamp <= maxAgeMs);
+    if (!entry?.executor) return null;
+    const ex = entry.executor;
+    const tag = ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username;
+    return { executorId: ex.id, executorTag: tag };
+  } catch {
     return null;
   }
 }

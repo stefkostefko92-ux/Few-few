@@ -8,7 +8,7 @@
 // Rate-limit внимание: audit log се пипа САМО при server_mute/server_deaf
 // (best-effort актьор), НЕ при self_* или join/leave — гласовете шумят силно.
 
-import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+import { logServerEvent, fetchAuditActor, fetchVoiceMoveActor, fetchVoiceDisconnectActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -24,6 +24,12 @@ export default {
     try {
       const guild = newState.guild || oldState.guild;
       if (!guild?.id) return;
+
+      // Евтин гейт ПРЕДИ audit-log fetch-овете — иначе всяко voice събитие във
+      // всеки guild бие fetchAuditLogs дори с изключена категория (rate limit,
+      // същата находка като messageDelete). logServerEvent пак гейтва, но
+      // едва СЛЕД скъпия fetch.
+      if (!(await isEventCategoryEnabled(guild.id, "voice"))) return;
 
       const client = newState.client;
       const member = newState.member || oldState.member;
@@ -42,9 +48,26 @@ export default {
         if (!oldCh && newCh) {
           await emit({ action: "voice_join", actorId: targetId, channelId: newCh });
         } else if (oldCh && !newCh) {
-          await emit({ action: "voice_leave", actorId: targetId, channelId: oldCh });
+          // Изключен ли е от модератор, или си е излязъл сам?
+          const kicker = await fetchVoiceDisconnectActor(guild);
+          await emit({
+            action: "voice_leave",
+            actorId: kicker?.executorId || targetId,
+            actorTag: kicker?.executorTag || targetTag,
+            channelId: oldCh,
+          });
         } else {
-          await emit({ action: "voice_move", actorId: targetId, metadata: { fromChannelId: oldCh, toChannelId: newCh } });
+          // Преместен ОТ някого, или се е преместил сам? MemberMove записът се
+          // сверява по целевия канал (той няма потребител като target).
+          // Липсва запис → сам се е преместил, тогава актьорът е самият човек и
+          // embed-ът не показва излишно поле „Actor“.
+          const mover = await fetchVoiceMoveActor(guild, newCh);
+          await emit({
+            action: "voice_move",
+            actorId: mover?.executorId || targetId,
+            actorTag: mover?.executorTag || targetTag,
+            metadata: { fromChannelId: oldCh, toChannelId: newCh },
+          });
         }
       }
 

@@ -10,6 +10,8 @@ export interface SessionData {
   name: string;
   role: RoleKey;
   operatorCode: number;
+  /** Одиторски профил: вижда като ролята си, но не може да пише (Прил. № 29, т. 19). */
+  readOnly?: boolean;
 }
 
 function secretKey(): Uint8Array {
@@ -49,6 +51,7 @@ export async function getSession(): Promise<SessionData | null> {
       name: String(payload.name),
       role: payload.role as RoleKey,
       operatorCode: Number(payload.operatorCode),
+      readOnly: payload.readOnly === true,
     };
   } catch {
     return null;
@@ -69,8 +72,26 @@ export async function requireSession(): Promise<SessionData> {
 
 const ROLE_ORDER: Record<RoleKey, number> = { CASHIER: 0, MANAGER: 1, ADMIN: 2 };
 
-/** Изисква минимална роля (CASHIER < MANAGER < ADMIN). */
+/**
+ * Изисква минимална роля (CASHIER < MANAGER < ADMIN) И право на ЗАПИС.
+ *
+ * Одиторският профил (`readOnly`) се отказва ТУК, по подразбиране. Посоката е нарочна: ако някой
+ * добави нов пишещ маршрут и забрави да мисли за одитора, маршрутът пада ЗАТВОРЕН (одиторът не
+ * може да пише) вместо отворен. Обратната наредба — да пускаме и после да добавяме забрани —
+ * значи всеки пропуснат маршрут е тиха дупка в СУПТО профила.
+ *
+ * За четящи маршрути ползвай `requireRead`.
+ */
 export async function requireRole(min: RoleKey): Promise<SessionData> {
+  const s = await requireRead(min);
+  if (s.readOnly) {
+    throw jsonError(403, "Одиторският профил е само за четене — операцията е отказана.");
+  }
+  return s;
+}
+
+/** Изисква минимална роля, но ДОПУСКА одиторския профил (само за четящи маршрути). */
+export async function requireRead(min: RoleKey): Promise<SessionData> {
   const s = await requireSession();
   if (ROLE_ORDER[s.role] < ROLE_ORDER[min]) {
     throw jsonError(403, "Нямате права за тази операция.");

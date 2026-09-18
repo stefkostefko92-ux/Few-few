@@ -108,12 +108,12 @@ export default async function ListingPage({
               </a>
             )}
             {!l.contactPhone && !l.contactEmail && (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-600">
                 Няма посочени данни за контакт.
               </p>
             )}
           </div>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-600">
             Внимавайте при сделки. Не превеждайте пари предварително на
             непознати. „За Бобов дол“ не носи отговорност за съдържанието на
             обявите.

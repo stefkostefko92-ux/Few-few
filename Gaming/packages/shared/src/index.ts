@@ -1,5 +1,6 @@
 export * from "./constants.js";
 export * from "./games.js";
+export * from "./betting.js";
 export * from "./auth.js";
 export * from "./socket.js";
 export * from "./economy.js";
@@ -7,3 +8,5 @@ export * from "./cosmetics.js";
 export * from "./cue.js";
 export * from "./magnat.js";
 export * from "./progression.js";
+export * from "./gameRules.js";
+export * from "./bots.js";

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { CosmeticType } from "@aso/shared";
+import { makeCustomCosmeticId, type CosmeticType, type GameKey } from "@aso/shared";
 import { Badge, Button, Modal } from "../../ui";
 import { ApiError, api, type CosmeticView } from "../../lib/api";
 import { useAuthStore, useCosmeticsModal, useCosmeticsStore, useStoreModal } from "../../lib/store";
 import { GAME_CATALOG } from "../lobby/games";
 
 const TYPE_ORDER: CosmeticType[] = ["FELT", "CARDBACK", "BOARD", "CUE", "ESTATE"];
+const VIP_TIERS = ["SILVER", "GOLD", "PLATINUM"];
 
 /** Per-game cosmetics shop. Buys with gems; equips instantly. Opened from the
  *  lobby tile or in-match via `useCosmeticsModal`. */
@@ -79,6 +80,26 @@ export function CosmeticsModal() {
     }
   }
 
+  const isVip = !!user && VIP_TIERS.includes(user.vipTier);
+
+  async function equipCustom(type: CosmeticType, a: string, b: string) {
+    if (!game) return;
+    const id = makeCustomCosmeticId(game as GameKey, type, a, b);
+    setBusy(id);
+    setError(null);
+    try {
+      const eq = await api.equipCustomCosmetic(id);
+      setEquipped(eq.equipped);
+      // A custom palette wins the slot — clear the catalog "equipped" flags.
+      setItems((prev) => prev.map((c) => (c.type === type ? { ...c, equipped: false } : c)));
+    } catch (err) {
+      const code = err instanceof ApiError ? err.code : "";
+      setError(code === "forbidden" ? t("cosmetics.customVip") : t("shop.error"));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <Modal open onClose={close} title={`${t("cosmetics.title")} · ${title}`}>
       <div className="-mt-2 mb-4 flex items-center justify-between">
@@ -106,6 +127,14 @@ export function CosmeticsModal() {
           return (
             <div key={type} className="mb-5">
               <h3 className="mb-2 text-sm font-semibold text-ink-300">{t(`cosmetics.type.${type}`)}</h3>
+              <CustomPalette
+                type={type}
+                isVip={isVip}
+                busy={busy}
+                onEquip={(a, b) => equipCustom(type, a, b)}
+                onNeedVip={() => openStore("vip")}
+                t={t}
+              />
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {group.map((item) => (
                   <li key={item.id}>
@@ -124,6 +153,72 @@ export function CosmeticsModal() {
         })}
       </div>
     </Modal>
+  );
+}
+
+/** VIP creative perk: pick two colours and equip a custom palette for a slot. */
+function CustomPalette({
+  type,
+  isVip,
+  busy,
+  onEquip,
+  onNeedVip,
+  t,
+}: {
+  type: CosmeticType;
+  isVip: boolean;
+  busy: string | null;
+  onEquip: (a: string, b: string) => void;
+  onNeedVip: () => void;
+  t: (k: string) => string;
+}) {
+  const [a, setA] = useState("#173a63");
+  const [b, setB] = useState("#0b0f24");
+  const preview =
+    type === "BOARD"
+      ? undefined
+      : type === "CARDBACK"
+        ? `linear-gradient(135deg, ${a}, ${b})`
+        : `radial-gradient(120% 120% at 40% 20%, ${a}, ${b})`;
+  const pending = busy?.includes(".custom-") ?? false;
+
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-3 rounded-card border border-violet-400/25 bg-felt-800/50 p-2.5">
+      <span
+        className="h-11 w-16 shrink-0 rounded-md border border-brass-400/25"
+        style={
+          type === "BOARD"
+            ? { display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", overflow: "hidden" }
+            : { background: preview }
+        }
+      >
+        {type === "BOARD" ? (
+          <>
+            <span style={{ background: a }} />
+            <span style={{ background: b }} />
+            <span style={{ background: b }} />
+            <span style={{ background: a }} />
+          </>
+        ) : null}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-ink-100">
+          {t("cosmetics.custom")} <Badge tone="vip">VIP</Badge>
+        </div>
+        <div className="mt-1 flex items-center gap-2">
+          <input type="color" value={a} onChange={(e) => setA(e.target.value)} aria-label={t("cosmetics.colorA")} className="h-6 w-9 cursor-pointer rounded border-0 bg-transparent p-0" />
+          <input type="color" value={b} onChange={(e) => setB(e.target.value)} aria-label={t("cosmetics.colorB")} className="h-6 w-9 cursor-pointer rounded border-0 bg-transparent p-0" />
+        </div>
+      </div>
+      <Button
+        variant="felt"
+        loading={pending}
+        onClick={() => (isVip ? onEquip(a, b) : onNeedVip())}
+        className="shrink-0"
+      >
+        {isVip ? t("cosmetics.equip") : `🔒 ${t("cosmetics.vipOnly")}`}
+      </Button>
+    </div>
   );
 }
 

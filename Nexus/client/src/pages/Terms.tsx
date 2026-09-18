@@ -44,7 +44,8 @@ export default function Terms(): React.ReactElement {
           Cheating, exploiting bugs, harassment, hate speech, sexual content involving minors,
           impersonation of staff or other players, spam or scams, and using third-party tools to
           automate gameplay are prohibited. Public free-text you create — character names, guild
-          names, tags and mottos, profile bios, and guild chat — is checked automatically before it
+          names, tags and mottos, profile bios, guild chat, global and regional chat, and private messages
+          (DM) — is checked automatically before it
           is published, and content that breaks these rules or applicable law is blocked or removed.
         </p>
         <p>
@@ -61,6 +62,12 @@ export default function Terms(): React.ReactElement {
           a report, the affected user receives a statement of reasons (DSA Art. 17) through the
           in-game mail system. If you believe a moderation decision about your own content or account
           was mistaken, contact us at the address above and we will review it.
+        </p>
+        <p>
+          <strong>Point of contact (DSA Art. 11 &amp; 12).</strong> For communications from users and
+          from Member-State authorities regarding these services, our single point of contact is{' '}
+          <a href={`mailto:${OPERATOR.email.abuse}`}>{OPERATOR.email.abuse}</a>. Communication is
+          accepted in <strong>Bulgarian, English, or Italian</strong>.
         </p>
         {/*
           Забележка за правен преглед: операторът е микро-предприятие →
@@ -126,11 +133,17 @@ export default function Terms(): React.ReactElement {
         <h2>8. Governing law and dispute resolution</h2>
         <p>
           These terms are governed by the law of {OPERATOR.address.country}. EU consumers may also
-          rely on the consumer-protection rules of their place of residence. Disputes may be brought
-          before the EU Online Dispute Resolution platform:
-          <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">
-            {' '}ec.europa.eu/consumers/odr
-          </a>.
+          rely on the mandatory consumer-protection rules of their place of residence. Please contact
+          us first at <a href={`mailto:${OPERATOR.email.support}`}>{OPERATOR.email.support}</a> — we
+          aim to resolve issues directly.
+        </p>
+        <p>
+          For out-of-court dispute resolution, Bulgarian consumers may turn to the{' '}
+          <strong>conciliation commissions of the Commission for Consumer Protection (КЗП)</strong>{' '}
+          (<a href="https://kzp.bg" target="_blank" rel="noopener noreferrer">kzp.bg</a>), and consumers
+          in other EU/EEA countries may use the{' '}
+          <a href="https://www.eccnet.eu" target="_blank" rel="noopener noreferrer">European Consumer Centres Network (ECC-Net)</a>{' '}
+          or their national ADR body. (The EU Online Dispute Resolution platform was shut down on 20 July 2025.)
         </p>
 
         <h2>9. Changes</h2>

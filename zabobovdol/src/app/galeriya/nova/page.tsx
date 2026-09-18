@@ -99,7 +99,7 @@ export default function NewPhotoPage() {
               accept="image/*"
               className="block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-base file:mr-3 file:rounded-md file:border-0 file:bg-brand-700 file:px-4 file:py-2 file:text-white"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Натиснете бутона и изберете снимка (JPG, PNG, до 8 MB). На телефон може да
               изберете и направена в момента снимка.
             </p>
@@ -116,7 +116,7 @@ export default function NewPhotoPage() {
               className="input"
               placeholder="https://… (ако снимката вече е качена някъде)"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Ако не можете да качите файл, изпратете ни снимката по Viber или имейл на{" "}
               {SITE.contact.phone} / {SITE.contact.email} — ние ще я качим.
             </p>

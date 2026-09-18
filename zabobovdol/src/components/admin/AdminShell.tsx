@@ -67,7 +67,7 @@ export function AdminShell({
             </Link>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">
+            <span className="hidden text-slate-600 sm:inline">
               {user.name} · {ROLE_LABELS[user.role]}
             </span>
             <Link href="/" target="_blank" className="text-brand-700 hover:underline">

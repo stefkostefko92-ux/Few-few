@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { GameKey } from "./games.js";
+import { isGameKey, type GameKey } from "./games.js";
 
 /**
  * Per-game cosmetics (§11.1). Bought with gems (premium currency acquired with
@@ -60,8 +60,11 @@ const FELT_THEMES: Template[] = [
   { variant: "midnight", name: "Среднощно сукно", a: "#1b1d2e", b: "#0a0b14", gemPrice: 150, vipExclusive: false },
   { variant: "emerald", name: "Изумрудено сукно", a: "#0f5132", b: "#06281a", gemPrice: 150, vipExclusive: false },
   { variant: "graphite", name: "Графитено сукно", a: "#2b2f36", b: "#14171c", gemPrice: 150, vipExclusive: false },
+  { variant: "amethyst", name: "Аметистово сукно", a: "#3d2a63", b: "#1a1030", gemPrice: 150, vipExclusive: false },
+  { variant: "teal-abyss", name: "Тюркоазена бездна", a: "#0e4a4a", b: "#062424", gemPrice: 150, vipExclusive: false },
   { variant: "royal", name: "Кралско лилаво", a: "#3a1f5a", b: "#1a0c2a", gemPrice: 300, vipExclusive: true },
   { variant: "crimson-gold", name: "Алено със злато", a: "#6e1023", b: "#2a0a10", gemPrice: 350, vipExclusive: true },
+  { variant: "cosmos", name: "Космическо сукно", a: "#141a38", b: "#070a18", gemPrice: 400, vipExclusive: true },
 ];
 
 const CARDBACK_THEMES: Template[] = [
@@ -72,6 +75,9 @@ const CARDBACK_THEMES: Template[] = [
   { variant: "ivory", name: "Слонова кост", a: "#e9e0c8", b: "#b8a878", gemPrice: 250, vipExclusive: false },
   { variant: "brocade", name: "Брокатен гръб", a: "#d9b25f", b: "#8a6a35", gemPrice: 350, vipExclusive: true },
   { variant: "peacock", name: "Паунов гръб", a: "#0e6b6b", b: "#3a1f5a", gemPrice: 400, vipExclusive: true },
+  { variant: "nebula", name: "Мъглявинен гръб", a: "#57cbe6", b: "#9a86e0", gemPrice: 250, vipExclusive: false },
+  { variant: "carbon", name: "Карбонов гръб", a: "#2b2f3a", b: "#0c0e14", gemPrice: 200, vipExclusive: false },
+  { variant: "aurum", name: "Ауреумен гръб", a: "#f4e3b6", b: "#a8791f", gemPrice: 450, vipExclusive: true },
 ];
 
 const BOARD_THEMES: Template[] = [
@@ -80,6 +86,8 @@ const BOARD_THEMES: Template[] = [
   { variant: "ocean", name: "Океанска дъска", a: "#dce9f0", b: "#2f6f8f", gemPrice: 200, vipExclusive: false },
   { variant: "onyx", name: "Ониксова дъска", a: "#c8ccd0", b: "#2a2e34", gemPrice: 300, vipExclusive: true },
   { variant: "rose-gold", name: "Розово злато", a: "#f3dcd0", b: "#9c5a4a", gemPrice: 350, vipExclusive: true },
+  { variant: "cobalt", name: "Кобалтова дъска", a: "#dbe6f0", b: "#1f3f6e", gemPrice: 200, vipExclusive: false },
+  { variant: "verdant", name: "Смарагдова дъска", a: "#e6efe0", b: "#20502f", gemPrice: 200, vipExclusive: false },
 ];
 
 const CUE_THEMES: Template[] = [
@@ -88,6 +96,8 @@ const CUE_THEMES: Template[] = [
   { variant: "burgundy", name: "Бордо сукно", a: "#6e1d2e", b: "#350c16", gemPrice: 200, vipExclusive: false },
   { variant: "charcoal", name: "Антрацит", a: "#33383f", b: "#181b20", gemPrice: 200, vipExclusive: false },
   { variant: "royal-purple", name: "Кралско лилаво", a: "#4a2670", b: "#23123a", gemPrice: 350, vipExclusive: true },
+  { variant: "midnight-slate", name: "Среднощно синьо", a: "#16324f", b: "#0a1826", gemPrice: 200, vipExclusive: false },
+  { variant: "carbon-cloth", name: "Карбоново сукно", a: "#2a2f38", b: "#0f1218", gemPrice: 250, vipExclusive: false },
 ];
 
 const ESTATE_THEMES: Template[] = [
@@ -96,6 +106,8 @@ const ESTATE_THEMES: Template[] = [
   { variant: "burgundy", name: "Бордо", a: "#6e1d2e", b: "#350c16", gemPrice: 200, vipExclusive: false },
   { variant: "slate", name: "Шистено сиво", a: "#36404a", b: "#181d22", gemPrice: 200, vipExclusive: false },
   { variant: "imperial-gold", name: "Имперско злато", a: "#7a5a1f", b: "#2e2008", gemPrice: 350, vipExclusive: true },
+  { variant: "cosmos-estate", name: "Космическо поле", a: "#1e2750", b: "#0b0f24", gemPrice: 300, vipExclusive: true },
+  { variant: "teal-estate", name: "Тюркоазено поле", a: "#0e4a4a", b: "#062424", gemPrice: 200, vipExclusive: false },
 ];
 
 function build(games: GameKey[], type: CosmeticType, themes: Template[]): Cosmetic[] {
@@ -123,6 +135,48 @@ export const COSMETICS: Cosmetic[] = [
 const BY_ID = new Map(COSMETICS.map((c) => [c.id, c]));
 
 export const cosmeticById = (id: string): Cosmetic | undefined => BY_ID.get(id);
+
+/**
+ * Custom player palette (a VIP creative perk — colours only, never uploads, so
+ * no moderation surface). Encoded self-describingly in the id so no catalog row
+ * or DB column is needed: `GAME.TYPE.custom-aabbcc-ddeeff` (two 6-hex colours).
+ */
+const CUSTOM_RE = /^([A-Z]+)\.(FELT|CARDBACK|BOARD|CUE|ESTATE)\.custom-([0-9a-f]{6})-([0-9a-f]{6})$/;
+
+export const isCustomCosmeticId = (id: string): boolean => CUSTOM_RE.test(id);
+
+const stripHash = (h: string): string => h.replace(/^#/, "").toLowerCase();
+
+/** Build a custom cosmetic id from a game/type and two hex colours (#optional). */
+export function makeCustomCosmeticId(game: GameKey, type: CosmeticType, a: string, b: string): string {
+  return `${game}.${type}.custom-${stripHash(a)}-${stripHash(b)}`;
+}
+
+/**
+ * Resolve any cosmetic id — catalog OR custom palette — to a Cosmetic with
+ * colours. Views should use this instead of `cosmeticById` so custom palettes
+ * render everywhere the catalog ones do.
+ */
+export function parseCosmetic(id: string): Cosmetic | undefined {
+  const cat = BY_ID.get(id);
+  if (cat) return cat;
+  const m = CUSTOM_RE.exec(id);
+  if (!m) return undefined;
+  const game = m[1]!;
+  const type = m[2]! as CosmeticType;
+  const a = m[3]!;
+  const b = m[4]!;
+  if (!isGameKey(game)) return undefined;
+  return {
+    id,
+    game,
+    type,
+    name: "Собствена палитра",
+    gemPrice: 0,
+    vipExclusive: true, // custom palettes are a VIP creative perk
+    colors: { a: `#${a}`, b: `#${b}` },
+  };
+}
 
 export const cosmeticsForGame = (game: GameKey): Cosmetic[] =>
   COSMETICS.filter((c) => c.game === game);

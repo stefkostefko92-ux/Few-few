@@ -68,7 +68,7 @@ export function BannerCard({ banner }: { banner: BannerData }) {
 
   return (
     <div className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-sm transition hover:shadow-md">
-      <span className="absolute right-2 top-2 z-10 rounded bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+      <span className="absolute right-2 top-2 z-10 rounded bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
         Реклама
       </span>
       {external ? (
@@ -92,7 +92,7 @@ export function BannerEmptySlot() {
       className="flex h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white p-4 text-center transition hover:border-brand-400"
     >
       <span className="text-sm font-semibold text-slate-700">Вашата реклама тук</span>
-      <span className="mt-1 text-xs text-slate-500">само 20€ на месец →</span>
+      <span className="mt-1 text-xs text-slate-600">само 20€ на месец →</span>
     </Link>
   );
 }

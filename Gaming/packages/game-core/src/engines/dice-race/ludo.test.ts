@@ -44,9 +44,9 @@ describe("ludo basics", () => {
   });
 
   it("captures an opponent token by landing on its absolute cell", () => {
-    // Seat 0 at step 8 moving 2 → abs cell 10; seat 1's entry offset is 10, so
-    // its token at step 0 sits on abs 10 and gets sent home.
-    const s = at([[8, -1, -1, -1], [0, -1, -1, -1]], { die: 2, attempts: 1 });
+    // Seat 0 at step 2 moving 1 → abs cell 3 (not a safe square); seat 1's token
+    // at progress 33 sits on abs (10+33)%40 = 3 and gets sent home.
+    const s = at([[2, -1, -1, -1], [33, -1, -1, -1]], { die: 1, attempts: 1 });
     const { state, events } = ludoEngine.reduce(s, { type: "MOVE", token: 0 }, rig(1));
     expect(state.progress[1]![0]).toBe(-1);
     expect(events).toContainEqual({ type: "CAPTURE", seat: 0, victim: 1, token: 0 });
@@ -63,6 +63,42 @@ describe("ludo basics", () => {
       { seat: 0, result: "win", points: 1 },
       { seat: 1, result: "loss", points: 0 },
     ]);
+  });
+});
+
+describe("ludo safe squares & blockades", () => {
+  it("does not capture a token sitting on a safe square", () => {
+    // Seat 0 moves onto abs 10 (seat 1's start = a safe square): no capture.
+    const s = at([[8, -1, -1, -1], [0, -1, -1, -1]], { die: 2, attempts: 1 });
+    const { state, events } = ludoEngine.reduce(s, { type: "MOVE", token: 0 }, rig(1));
+    expect(state.progress[0]![0]).toBe(10);
+    expect(state.progress[1]![0]).toBe(0); // immune on its start square
+    expect(events.some((e) => e.type === "CAPTURE")).toBe(false);
+  });
+
+  it("blocks landing on and passing through an enemy blockade", () => {
+    // Seat 1 parks two tokens on abs 10 (a blockade). Seat 0 sits at step 6.
+    const s = at([[6, -1, -1, -1], [0, 0, -1, -1]], { attempts: 1 });
+    // die 4 → dest step 10 (abs 10): lands on the blockade → illegal.
+    expect(ludoEngine.legalActions({ ...s, die: 4 }, 0)).toEqual([{ type: "PASS" }]);
+    // die 5 → dest step 11 passes through abs 10 → illegal.
+    expect(ludoEngine.legalActions({ ...s, die: 5 }, 0)).toEqual([{ type: "PASS" }]);
+    // die 3 → dest step 9 (abs 9): clear of the blockade → legal.
+    expect(ludoEngine.legalActions({ ...s, die: 3 }, 0)).toEqual([{ type: "MOVE", token: 0 }]);
+  });
+
+  it("a blockade on an entry cell keeps that colour stuck in the base on a 6", () => {
+    // Seat 1 blockades abs 0 (seat 0's entry). Seat 0 rolls a 6 but cannot leave.
+    const s = at([[-1, -1, -1, -1], [30, 30, -1, -1]], { attempts: 1 });
+    // absCell(1, 30) = (10+30)%40 = 0 → two tokens there block seat 0's entry.
+    expect(ludoEngine.legalActions({ ...s, die: 6, rolledSix: true }, 0)).toEqual([{ type: "ROLL" }]);
+  });
+
+  it("a player's own stacked tokens never block their own movement", () => {
+    const s = at([[0, 0, -1, -1], [-1, -1, -1, -1]], { die: 3, attempts: 1 });
+    const acts = ludoEngine.legalActions(s, 0);
+    expect(acts).toContainEqual({ type: "MOVE", token: 0 });
+    expect(acts).toContainEqual({ type: "MOVE", token: 1 });
   });
 });
 
@@ -150,8 +186,8 @@ describe("ludo bot", () => {
     // Finishing beats a capture: token 0 can finish (40+4), token 1 could advance.
     const fin = at([[40, 10, -1, -1], [-1, -1, -1, -1]], { die: 4, attempts: 1 });
     expect(ludoEngine.bot!(fin, 0, rng)).toEqual({ type: "MOVE", token: 0 });
-    // Capture beats a plain advance: seat 1 token sits on abs 10 (= its step 0).
-    const cap = at([[8, 20, -1, -1], [0, -1, -1, -1]], { die: 2, attempts: 1 });
+    // Capture beats a plain advance: seat 1 token sits on abs 3 (a non-safe cell).
+    const cap = at([[2, 20, -1, -1], [33, -1, -1, -1]], { die: 1, attempts: 1 });
     expect(ludoEngine.bot!(cap, 0, rng)).toEqual({ type: "MOVE", token: 0 });
     // On a 6 with nothing to finish/capture, bring a token out of the base.
     const out = at([[5, -1, -1, -1], [-1, -1, -1, -1]], { die: 6, rolledSix: true, attempts: 1 });

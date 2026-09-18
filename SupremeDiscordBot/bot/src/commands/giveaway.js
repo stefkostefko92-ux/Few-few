@@ -1,13 +1,26 @@
 // bot/src/commands/giveaway.js
-import { MessageFlags,
+import { MessageFlags, PermissionFlagsBits,
   SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from "discord.js";
 import api from "../utils/api.js";
+import { checkCooldown } from "../utils/cooldowns.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { WARNING, MUTED } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+
+const COOLDOWN_SECONDS = 10;
 
 export default {
   data: new SlashCommandBuilder()
     .setName("giveaway")
     .setDescription("Manage giveaways")
+    .setDescriptionLocalizations(CMD_DESC_L10N.giveaway)
+    // Проверката за ManageGuild беше САМО в execute(). autocomplete() обаче е
+    // отделен тип взаимодействие, което Discord доставя независимо — затова
+    // падащото меню показваше данни на всеки, преди командата да откаже достъп.
+    // setDefaultMemberPermissions гейтва и двете на ниво платформа; runtime
+    // проверката остава (защита в дълбочина).
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand((s) =>
       s.setName("start")
         .setDescription("Start a new giveaway")
@@ -20,13 +33,34 @@ export default {
     .addSubcommand((s) =>
       s.setName("end")
         .setDescription("End a giveaway early")
-        .addStringOption((o) => o.setName("giveaway_id").setDescription("Giveaway ID").setRequired(true))
+        .addStringOption((o) => o.setName("giveaway_id").setDescription("Giveaway ID").setRequired(true).setAutocomplete(true))
     )
     .addSubcommand((s) =>
       s.setName("reroll")
         .setDescription("Pick new winner(s) for an ended giveaway")
-        .addStringOption((o) => o.setName("giveaway_id").setDescription("Giveaway ID").setRequired(true))
+        .addStringOption((o) => o.setName("giveaway_id").setDescription("Giveaway ID").setRequired(true).setAutocomplete(true))
     ),
+
+  async autocomplete(interaction) {
+    const sub = interaction.options.getSubcommand();
+    const focused = interaction.options.getFocused().toLowerCase();
+    try {
+      const { data } = await api.get(`/bot/guild/${interaction.guildId}/giveaways`);
+      let giveaways = data || [];
+      // /giveaway end пита за активни, /giveaway reroll — за приключили.
+      giveaways = giveaways.filter((g) => (sub === "end" ? !g.endedAt : !!g.endedAt));
+      const filtered = giveaways
+        .filter((g) => g.prize.toLowerCase().includes(focused) || g.id.includes(focused))
+        .slice(0, 25);
+      await interaction.respond(filtered.map((g) => ({
+        // label = четимо резюме, value = ПЪЛНИЯТ cuid (никога не съкращаваме value-то).
+        name: `${g.prize.slice(0, 60)} — ${new Date(g.endsAt).toLocaleString()}`.slice(0, 100),
+        value: g.id,
+      })));
+    } catch {
+      await interaction.respond([]);
+    }
+  },
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
@@ -36,6 +70,10 @@ export default {
     }
 
     if (sub === "start") {
+      const remaining = checkCooldown("giveaway-start", interaction.user.id, COOLDOWN_SECONDS);
+      if (remaining > 0) {
+        return interaction.reply({ content: `⏳ Please wait ${remaining}s before starting another giveaway.`, flags: MessageFlags.Ephemeral });
+      }
       const prize = interaction.options.getString("prize");
       const durationMinutes = interaction.options.getInteger("duration_minutes");
       const winnerCount = interaction.options.getInteger("winners") || 1;
@@ -56,7 +94,7 @@ export default {
         });
         giveaway = data;
       } catch (err) {
-        return interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        return interaction.editReply(friendlyError(err, interaction));
       }
 
       const { embeds, components } = buildGiveawayMessage(giveaway, 0);
@@ -77,7 +115,7 @@ export default {
           await interaction.editReply("✅ Done (no eligible entrants).");
         }
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
   },
@@ -89,7 +127,7 @@ export function buildGiveawayMessage(giveaway, entryCount) {
 
   const embed = new EmbedBuilder()
     .setTitle(`🎉 ${giveaway.prize}`)
-    .setColor(ended ? 0x9ca3af : 0xfbbf24);
+    .setColor(ended ? MUTED : WARNING);
 
   const lines = [];
   if (giveaway.description) lines.push(giveaway.description, "");

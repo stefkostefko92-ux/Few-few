@@ -21,6 +21,8 @@ export async function generateMetadata({
   // x-default points to the Italian version (direct 200), consistent with the
   // legal pages — a concrete URL is a stronger hreflang signal than the redirecting root.
   alt["x-default"] = `${base}/it`;
+  // Open Graph wants language_TERRITORY, not a bare language code.
+  const OG_LOCALE: Record<Locale, string> = { it: "it_IT", bg: "bg_BG", en: "en_GB" };
   return {
     metadataBase: new URL(base),
     title: { default: "Qui Bulgaria — Scuola bulgara di Milano", template: "%s · Qui Bulgaria" },
@@ -44,7 +46,8 @@ export async function generateMetadata({
       type: "website",
       url: `${base}/${locale}`,
       siteName: "Qui Bulgaria — Scuola bulgara di Milano",
-      locale: LOCALE_META[locale].htmlLang,
+      locale: OG_LOCALE[locale],
+      alternateLocale: LOCALES.filter((l) => l !== locale).map((l) => OG_LOCALE[l]),
       title: "Qui Bulgaria — Scuola bulgara di Milano",
       description:
         "Lingua e cultura bulgara a Milano (Lombardia): scuola “P. Yavorov”, corsi per bambini e adulti, danza tradizionale.",

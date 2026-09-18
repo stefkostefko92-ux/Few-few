@@ -29,7 +29,7 @@ import {
 import { sendEmail } from "../email/mailer.js";
 import { verificationEmail, passwordResetEmail } from "../email/templates.js";
 import { notifyRegistration } from "../integrations/discord.js";
-import { asyncHandler, badRequest, conflict, forbidden, unauthorized } from "../http.js";
+import { asyncHandler, badRequest, conflict, forbidden, unauthorized, HttpError } from "../http.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
 import { authLimiter, loginAccountLimiter } from "../middleware/rateLimit.js";
@@ -115,7 +115,10 @@ authRouter.post(
       throw unauthorized("Грешен имейл или парола");
     }
     if (user.banned) {
-      throw forbidden("Този акаунт е блокиран");
+      // DSA art. 17: give the player the reason for the restriction (statement
+      // of reasons) so they can contest it. The message carries the raw reason;
+      // the client frames it and shows the appeal contact.
+      throw new HttpError(403, "banned", user.banReason ?? "");
     }
 
     await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });

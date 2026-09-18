@@ -18,7 +18,7 @@ When reporting, please include:
 - Any relevant logs or screenshots
 
 A machine-readable disclosure policy is published at
-[`/.well-known/security.txt`](https://supreme.carbonstealth.eu/.well-known/security.txt)
+[`/.well-known/security.txt`](https://supremebot.carbonstealth.eu/.well-known/security.txt)
 (RFC 9116).
 
 ## Our commitment
@@ -35,7 +35,7 @@ A machine-readable disclosure policy is published at
 
 In scope:
 
-- `supreme.carbonstealth.eu` (web dashboard and public REST API)
+- `supremebot.carbonstealth.eu` (web dashboard and public REST API)
 - The Supreme Bot Discord application
 - This repository's source code
 
@@ -44,6 +44,219 @@ Out of scope:
 - Third-party services we rely on (Discord, Stripe, Hetzner, Google) —
   report those to the respective vendor.
 - Denial-of-service / volumetric attacks, social engineering, and physical attacks.
+
+## Anti-brute-force posture
+
+Every secret-bearing surface is defended in **three independent layers**, so a
+failure in one does not expose the secret. The design follows NIST SP 800-63B
+§5.2.2 (throttle failed authentication attempts) and OWASP ASVS 4.0 V2.2.1
+(anti-automation), rather than relying on request-rate limits alone.
+
+**Layer 1 — cryptographic strength.** API keys carry 192 bits of entropy
+(`crypto.randomBytes(24)`); public archive links carry 128 bits. Guessing either
+is computationally infeasible regardless of throttling. Secrets are stored as
+SHA-256 hashes, never in plaintext.
+
+**Layer 2 — constant-time comparison.** Bot secret, top.gg webhook secret and
+archive tokens are compared with `timingSafeEqual`, with a length check first.
+A naive `===` leaks the position of the first mismatch through timing.
+
+**Layer 3 — throttling of *failed* attempts** (`backend/src/lib/bruteForce.js`).
+Request-rate limits protect the resource; they do not protect the secret — a
+legitimate client practically never mistypes its own credential, so failure
+thresholds can be aggressive without affecting anyone. This layer itself has
+four parts:
+
+1. **Per source.** Failures counted in a sliding window with an escalating
+   lockout: 1 min → 5 min → 30 min → 24 h. Success clears the counter, so a
+   human who mistypes once carries nothing forward.
+2. **Per subnet** (`/24` IPv4, `/64` IPv6). This closes the real bypass of
+   per-IP throttling: a botnet or proxy pool rotates addresses, but rarely
+   rotates whole networks. Thresholds here are higher, because legitimate users
+   share a network with the attacker. IPv4-mapped IPv6 addresses are normalised,
+   so one client cannot obtain two independent budgets.
+2b. **Per wide network** (`/16` IPv4, `/48` IPv6), with the most patient
+   thresholds of all. IPv6 makes layer 2 weak on its own: providers hand a single
+   customer an entire `/48`, i.e. 65,536 distinct `/64` networks, so an attacker
+   changes "network" at will without leaving their own allocation. The coarse
+   layer catches exactly that rotation while staying far above what legitimate
+   traffic from a whole `/16` ever accumulates in *failures*.
+3. **Adaptive tightening.** When total failures for a scope spike, per-source
+   thresholds contract (5 → 2). We deliberately do **not** block everyone under
+   attack — that would be a self-inflicted denial of service, letting an attacker
+   lock out legitimate clients. Since legitimate clients almost never fail,
+   tightening does not touch them.
+4. **Durability via Redis.** Counters and blocks survive restarts and are shared
+   across processes and replicas. Memory remains an always-available fallback and
+   the decision is *the worse of the two*, so an unavailable Redis narrows reach
+   but never disables the defence and never unblocks someone already blocked.
+   The Redis client fails fast (no offline queue), so an outage never stalls
+   authentication.
+
+Blocked callers are rejected **before** any database work, so guessing costs the
+attacker and not us. Each engaged block is written once to the audit log
+(`SECURITY_BRUTE_FORCE_BLOCK`) with the source address truncated — enough to see
+the shape of an attack, not enough to track a person (GDPR recital 30).
+
+Covered surfaces: public API keys (`/public/v1` and `/api/v1`), the internal bot
+secret, public archive transcript tokens, the top.gg webhook secret (that one is
+operator-typed, so its entropy is not guaranteed — exactly the case where guessing
+is realistic), and **member verification**.
+
+Verification deserves its own note, because it is the anti-raid feature and its
+answer space is small by design. A per-panel cap (5 attempts) with a flat cooldown
+(10 minutes) does not stop a patient bot: an EASY math challenge has roughly 17
+possible answers, so five guesses succeed about 29% of the time *per window* — and
+the window resets forever. Failed verifications therefore also feed the escalating
+ladder above, keyed per panel and member, so sustained guessing gets exponentially
+more expensive instead of resetting. A human who solves the challenge clears their
+counter and never notices. The expected answer is generated and held server-side
+and never reaches the client.
+
+**What verification still cannot do.** The escalating ladder is keyed per member,
+because Discord never tells a bot a member's IP address. A raid using many
+throwaway accounts therefore gets a fresh ladder per account; what it does *not*
+get is unlimited attempts per account, and account-age gating (Premium) is the
+intended answer to disposable accounts. We state this rather than implying the
+captcha is raid-proof on its own.
+
+Throttle keys are classified with `net.isIP`, not by "does it contain a colon" —
+the network-aggregation layers apply only to real addresses, so a non-address key
+(such as `panelId:userId`) is never mistaken for an IPv6 address and never forms a
+bogus shared bucket.
+
+Uniform failure messages are deliberate: "no such key" and "revoked key" return
+identical responses, so a guesser cannot learn that it hit a real key.
+
+Rate limiting itself rests on correct client identification: `trust proxy` is
+scoped to loopback and unique-local addresses, so `X-Forwarded-For` cannot be
+spoofed from outside to forge a fresh budget.
+
+The ordinary request-rate limiters (global, auth, bot, archive) are backed by the
+same Redis instance through a small custom store. Before that they used
+per-process memory, which left two holes: **every restart reset the quotas**, so
+an attacker only had to wait for (or provoke) a deploy, and a second replica
+would have meant each process enforcing its own counter — an effective ceiling of
+N times the advertised one.
+
+**Residual limitation (documented honestly):** without `REDIS_URL` both the
+failure counters and the rate limits degrade to process memory — still enforced,
+but forgotten on restart and not shared across replicas. Production sets
+`REDIS_URL`; the fallback exists so a Redis outage cannot take authentication
+down with it.
+
+## Privileged access — second factor and step-up
+
+Staff roles (MAIN_OWNER, SUPER_USER, SUPPORT_STAFF) cannot open the admin
+console until they enroll a **TOTP second factor** (RFC 6238, SHA-1, 6 digits,
+30 s — any authenticator app) and confirm it in the current session
+(`backend/src/middleware/mfa.js`). Discord OAuth is a single factor that is
+exactly as strong as the Discord account; a stolen session cookie or account
+must not be enough to reach the console. The verification expires after 12 h and
+after 30 min of inactivity, and every **destructive** admin action (roles,
+blacklist, plan changes, deletes, purges, DSR erasure, unblocks) demands a
+**fresh** verification (≤10 min) — step-up, as at a bank. The platform-admin
+bypass of per-server permission checks is granted only to an MFA-verified
+session.
+
+Implementation notes: the TOTP code is our own (`lib/totp.js`), verified
+against the RFC 4226/6238 test vectors rather than trusted from npm; the secret
+is AES-256-GCM encrypted at rest and never returned after enrollment; each code
+is accepted once (replay guard on the time step); backup codes are SHA-256
+hashes consumed on use; wrong codes go through the same brute-force ladder as
+every other secret (keyed by user, not IP); the session id is regenerated on
+every successful verification (fixation). All events are audited
+(`MFA_ENABLED`, `MFA_DISABLED`, `MFA_VERIFY_FAILED`, `MFA_BACKUP_CODE_USED`).
+
+**Optional network layer.** `ADMIN_IP_ALLOWLIST` restricts `/api/admin` to
+listed addresses/CIDRs (binary comparison via `net.BlockList`, IPv4-mapped
+IPv6 normalised); denials are audited and reported to the owner. **Recovery.**
+A staff member who loses both phone and backup codes is reset only by the Main
+Owner from Admin → Security (fresh second factor, written reason, the user's
+sessions revoked, owner DM) — never by self-service. **Alerting.** Brute-force
+blocks, disabled/reset second factors, staff roles granted without MFA, denied
+admin IPs and full data erasures reach the owner as a Discord DM
+(`lib/securityAlerts.js`, throttled 15 min per kind) — the audit log is the
+record, the DM is the signal.
+
+## Data at rest
+
+Ticket transcripts (`archiveHtml`) — the largest body of Discord content we
+hold — are AES-256-GCM encrypted on every write since 3.4.0
+(`lib/transcriptAtRest.js`); reads pass legacy plaintext rows through and they
+are re-encrypted on the next write, so no migration and no downtime. Bot
+tokens, OAuth tokens, webhook secrets and TOTP secrets were already encrypted.
+Verification attempts are deleted after 90 days; role snapshots after 180.
+
+## Discord platform obligations
+
+Discord's Developer Terms §5 and Developer Policy are treated as requirements,
+not guidance: a mapping of every clause to the code that satisfies it lives in
+`docs/DISCORD_COMPLIANCE.md` and is gated by
+`backend/src/__tests__/discordCompliance.test.js`. Highlights: any Discord user
+can delete their data with `/privacy delete` (no dashboard needed); an incident
+involving API Data is reported to Discord alongside the supervisory authority
+(`legal/breach-procedure.md`); AI replies are fail-closed unless the operator
+attests a paid model tier that does not train on submitted content (Developer
+Policy §21).
+
+## Hardening beyond authentication
+
+**Outbound requests (SSRF).** Customers supply URLs the server will fetch —
+webhook endpoints and white-label avatars. Delivery originates inside the Docker
+network, so the guard (`backend/src/services/webhooks.js`) refuses anything that
+leads inward: loopback, unspecified, private (RFC 1918), CGNAT, link-local and
+cloud-metadata (`169.254.169.254`), IETF/benchmark blocks, multicast, broadcast;
+for IPv6 also ULA, link-local, IPv4-mapped/compatible, **NAT64 (`64:ff9b::/96`,
+which wraps the entire IPv4 space)**, 6to4 and Teredo. Addresses are compared
+**as addresses** (`net.BlockList`), never as strings — `0:0:0:0:0:0:0:1` is the
+same host as `::1` and a string comparison would not know that. Hostnames are
+resolved at validation time *and* re-checked by a custom `lookup` at connect
+time, which closes the DNS-rebinding window between the two. IPv6 literals are
+unbracketed before the check, so a public IPv6 endpoint is accepted and an
+internal one is refused with the *real* reason rather than a misleading
+"could not be resolved". A caveat we state rather than hide: Node skips
+`lookup` for IP literals, so for those the validation-time check is the only
+layer — which is why it compares binary, not text. The optional HMAC signing
+secret a Customer attaches to a webhook is stored encrypted at rest (AES-256-GCM,
+the same discipline as OAuth tokens) and is never returned by the API once
+entered — the dashboard only learns whether one is set, and editing follows an
+explicit contract (field absent = keep, `null` = remove, string = replace), so
+touching a webhook's name can no longer silently drop its secret.
+
+**Pages that serve user content (archive transcripts).** Every HTML door carries
+its own strict CSP (`script-src 'none'`, no objects, no forms) *and*
+`Referrer-Policy: no-referrer`: the transcript token travels in the URL, and any
+external link inside a transcript would otherwise hand that token to the third
+party whose link someone pasted into the ticket. CSP does not stop that leak —
+`Referer` is not a script. Attachment URLs become links only when they are
+`http(s)`; `esc()` prevents markup injection but says nothing about the URL
+scheme, and a `javascript:` href is navigation, not markup. A test walks every
+HTML-serving route and fails if either header is missing.
+
+**Customer-supplied regular expressions (ReDoS).** Form answers can be validated
+against a pattern written by the Customer. Each match runs in an isolated
+worker thread with a 1 s timeout, so catastrophic backtracking can never stall
+the shared event loop. That isolation had a cost of its own — a worker is
+~6–10 MB and one was spawned per answer without limit, so 100 concurrent
+answers meant ~880 MB — therefore concurrency is capped at 8. At the cap the
+answer is accepted without validation: format validation is a convenience for
+the applicant, while a live bot is a condition for every tenant, and refusing
+would hand an attacker exactly the outcome they want.
+
+**Containers.** The three services we build run as non-root (`USER node`;
+`nginx-unprivileged`) with `no-new-privileges` and all Linux capabilities
+dropped. Postgres and Redis are deliberately excluded from the capability drop:
+their official entrypoints start as root and drop privileges themselves
+(`gosu`/`su-exec`), which requires `CHOWN`/`SETUID`/`SETGID`. Published ports
+bind to `127.0.0.1` only; TLS terminates at the host reverse proxy.
+
+**Dependencies.** `npm audit --omit=dev` is kept at zero in all three packages.
+Where the fixed version sits outside a transitive range we pin it with
+`overrides` rather than wait (e.g. `qs` 6.16.0 under Express 4, which locks
+`~6.15.1`), and the affected behaviour is exercised in a real request before the
+pin lands. Third-party GitHub Actions are pinned by commit SHA; every workflow
+declares `permissions`.
 
 ## Data protection
 

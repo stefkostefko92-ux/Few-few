@@ -1,0 +1,42 @@
+{
+  "id": "konveyera",
+  "agent": "konveyera",
+  "task": "Направи GitHub Actions workflow за lint+test на medqr при промяна в неговата папка.",
+  "expect": [
+    {
+      "any": [
+        "paths:",
+        "path-филтр",
+        "path filter"
+      ],
+      "label": "path филтри (монорепо)"
+    },
+    {
+      "any": [
+        "permissions",
+        "GITHUB_TOKEN",
+        "least-privilege",
+        "contents: read"
+      ],
+      "label": "least-privilege permissions"
+    },
+    {
+      "any": [
+        "sha",
+        "пин",
+        "pinned",
+        "commit hash"
+      ],
+      "label": "SHA-пин на actions"
+    },
+    {
+      "none": [
+        "pull_request_target с checkout",
+        "permissions: write-all",
+        "@main",
+        "@v4 без sha"
+      ],
+      "label": "капан: опасни права / непинат action"
+    }
+  ]
+}

@@ -176,7 +176,7 @@ export default async function CityPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-slate-600">
             Разстоянията са приблизителни. Знаете ли любимо място или хубава снимка
             от Бобов дол? Споделете я в{" "}
             <Link href="/spomeni" className="text-brand-700 underline">
@@ -202,7 +202,7 @@ export default async function CityPage() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               За точните часове на службите и предстоящите празници питайте в храма. Ако
               имате информация, ще се радваме да я добавим — пишете ни на{" "}
               <Link href="/kontakti" className="text-brand-700 underline">

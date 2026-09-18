@@ -86,7 +86,7 @@ export default async function AdminMobileAppPage({
             defaultValue={packageName}
             placeholder="eu.carbonstealth.zabobovdol"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Уникалното име на приложението в Google Play. Сменя се само ако
             разработчикът е избрал друго.
           </p>
@@ -103,7 +103,7 @@ export default async function AdminMobileAppPage({
             defaultValue={fingerprints.join("\n")}
             placeholder={"AB:CD:EF:12:…  (по един на ред, ако са повече)"}
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Поставете го от Google Play Console. Може да добавите няколко (напр.
             ключа за качване и ключа на Play) — всеки на нов ред.
           </p>
@@ -120,7 +120,7 @@ export default async function AdminMobileAppPage({
             defaultValue={playStoreUrl}
             placeholder="https://play.google.com/store/apps/details?id=eu.carbonstealth.zabobovdol"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             След като приложението е публикувано, поставете адреса му. Тогава в
             долната част на сайта се показва бутон „Изтегли от Google Play“.
           </p>

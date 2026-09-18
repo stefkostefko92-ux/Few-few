@@ -5,9 +5,11 @@ import { useState } from "react";
 import { Download, Trash2, AlertTriangle, Shield, FileText } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { useT } from "../contexts/I18nContext";
 import api from "../api";
 
 export default function PrivacySettingsPage() {
+  const { t } = useT();
   const { user } = useAuth();
   const [confirmId, setConfirmId] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -29,9 +31,9 @@ export default function PrivacySettingsPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      setMessage({ type: "success", text: "Data exported successfully. File downloaded." });
+      setMessage({ type: "success", text: t("privacy.exportSuccess") });
     } catch (err) {
-      setMessage({ type: "error", text: err?.response?.data?.error || "Export failed" });
+      setMessage({ type: "error", text: err?.response?.data?.error || t("privacy.exportFailed") });
     } finally {
       setExporting(false);
     }
@@ -39,7 +41,7 @@ export default function PrivacySettingsPage() {
 
   const requestDelete = () => {
     if (confirmId !== user.id) {
-      setMessage({ type: "error", text: "Confirmation ID does not match your Discord user ID." });
+      setMessage({ type: "error", text: t("privacy.idMismatch") });
       return;
     }
     setConfirmOpen(true);
@@ -51,22 +53,21 @@ export default function PrivacySettingsPage() {
     try {
       await api.post("/gdpr/delete-account", { confirmDiscordId: user.id });
       setConfirmOpen(false);
-      setMessage({ type: "success", text: "Account deleted. Redirecting..." });
+      setMessage({ type: "success", text: t("privacy.deleteSuccess") });
       setTimeout(() => { window.location.href = "/"; }, 2000);
     } catch (err) {
       setConfirmOpen(false);
-      setMessage({ type: "error", text: err?.response?.data?.error || "Deletion failed" });
+      setMessage({ type: "error", text: err?.response?.data?.error || t("privacy.deleteFailed") });
       setDeleting(false);
     }
   };
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cs-text mb-2">Privacy & Your Data</h1>
+        <h1 className="text-3xl font-bold text-cs-text mb-2">{t("privacy.title")}</h1>
         <p className="text-cs-muted">
-          Your rights under the EU General Data Protection Regulation (GDPR). Exercise
-          any of these rights at any time — no support ticket required.
+          {t("privacy.subtitle")}
         </p>
       </div>
 
@@ -86,18 +87,16 @@ export default function PrivacySettingsPage() {
         <div className="flex items-start gap-4 mb-4">
           <Download className="w-6 h-6 text-cs-cyan flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-cs-text mb-1">Export your data</h2>
+            <h2 className="text-xl font-bold text-cs-text mb-1">{t("privacy.exportTitle")}</h2>
             <p className="text-sm text-cs-muted mb-3">
-              Article 15 (right of access) + Article 20 (data portability). Download
-              a JSON file containing all personal data we hold about you.
+              {t("privacy.exportDesc")}
             </p>
             <p className="text-xs text-cs-dim mb-4">
-              Includes: profile, servers you manage, tickets, applications, API keys,
-              affiliate codes, audit log entries.
+              {t("privacy.exportIncludes")}
             </p>
             <button onClick={exportData} disabled={exporting} className="cs-btn-primary">
               <Download className="w-4 h-4" />
-              {exporting ? "Preparing export..." : "Download my data (JSON)"}
+              {exporting ? t("privacy.preparing") : t("privacy.downloadBtn")}
             </button>
           </div>
         </div>
@@ -108,26 +107,26 @@ export default function PrivacySettingsPage() {
         <div className="flex items-start gap-4 mb-4">
           <Shield className="w-6 h-6 text-cs-cyan flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-cs-text mb-1">Subprocessors</h2>
+            <h2 className="text-xl font-bold text-cs-text mb-1">{t("privacy.subprocessorsTitle")}</h2>
             <p className="text-sm text-cs-muted mb-3">
-              Third parties that may process your data on behalf of Supreme Bot:
+              {t("privacy.subprocessorsDesc")}
             </p>
             <ul className="text-xs text-cs-muted space-y-2">
               <li className="flex justify-between border-b border-cs-border pb-2">
-                <span><strong className="text-cs-text">Hetzner Online GmbH</strong> — Hosting (EU, Germany)</span>
-                <a href="https://www.hetzner.com/legal/privacy-policy/" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
+                <span><strong className="text-cs-text">Hetzner Online GmbH</strong> — {t("privacy.sub.hetzner")}</span>
+                <a href="https://www.hetzner.com/legal/privacy-policy/" target="_blank" rel="noopener" className="text-cs-cyan">{t("privacy.policy")}</a>
               </li>
               <li className="flex justify-between border-b border-cs-border pb-2">
-                <span><strong className="text-cs-text">Stripe Payments Europe Ltd</strong> — Payment processing (EU, Ireland)</span>
-                <a href="https://stripe.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
+                <span><strong className="text-cs-text">Stripe Payments Europe Ltd</strong> — {t("privacy.sub.stripe")}</span>
+                <a href="https://stripe.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">{t("privacy.policy")}</a>
               </li>
               <li className="flex justify-between border-b border-cs-border pb-2">
-                <span><strong className="text-cs-text">Google LLC (Gemini API)</strong> — AI auto-replies (USA, SCC safeguards)</span>
-                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
+                <span><strong className="text-cs-text">Google LLC (Gemini API)</strong> — {t("privacy.sub.google")}</span>
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">{t("privacy.policy")}</a>
               </li>
               <li className="flex justify-between">
-                <span><strong className="text-cs-text">Discord Inc.</strong> — Authentication + bot API (USA, SCC safeguards)</span>
-                <a href="https://discord.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">Policy →</a>
+                <span><strong className="text-cs-text">Discord Inc.</strong> — {t("privacy.sub.discord")}</span>
+                <a href="https://discord.com/privacy" target="_blank" rel="noopener" className="text-cs-cyan">{t("privacy.policy")}</a>
               </li>
             </ul>
           </div>
@@ -139,12 +138,12 @@ export default function PrivacySettingsPage() {
         <div className="flex items-start gap-4">
           <FileText className="w-6 h-6 text-cs-cyan flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-cs-text mb-1">Legal documents</h2>
+            <h2 className="text-xl font-bold text-cs-text mb-1">{t("privacy.legalTitle")}</h2>
             <div className="grid grid-cols-2 gap-2 mt-3">
-              <a href="/terms"   className="cs-btn-secondary text-xs">Terms of Service</a>
-              <a href="/privacy" className="cs-btn-secondary text-xs">Privacy Policy</a>
-              <a href="/cookies" className="cs-btn-secondary text-xs">Cookie Policy</a>
-              <a href="/eula"    className="cs-btn-secondary text-xs">EULA</a>
+              <a href="/terms"   className="cs-btn-secondary text-xs">{t("privacy.terms")}</a>
+              <a href="/privacy" className="cs-btn-secondary text-xs">{t("privacy.privacyPolicy")}</a>
+              <a href="/cookies" className="cs-btn-secondary text-xs">{t("privacy.cookies")}</a>
+              <a href="/eula"    className="cs-btn-secondary text-xs">{t("privacy.eula")}</a>
             </div>
           </div>
         </div>
@@ -155,31 +154,25 @@ export default function PrivacySettingsPage() {
         <div className="flex items-start gap-4 mb-4">
           <AlertTriangle className="w-6 h-6 text-danger flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-cs-text mb-1">Delete account</h2>
+            <h2 className="text-xl font-bold text-cs-text mb-1">{t("privacy.deleteTitle")}</h2>
             <p className="text-sm text-cs-muted mb-3">
-              Article 17 (right to erasure). Permanently delete your personal data.
-              Your profile (username, avatar, tokens, email) is removed.
+              {t("privacy.deleteDesc")}
             </p>
             <p className="text-xs text-danger mb-4">
-              <strong>Retained for legal obligations:</strong> Transaction records (invoices,
-              audit logs) are retained for 7 years per EU tax law. A non-identifying internal
-              reference to your Discord user ID is kept only for record integrity (this is
-              pseudonymized data, no longer linkable to an active account) — a permitted
-              limitation under Article 17(3).
+              <strong>{t("privacy.retainedLabel")}</strong> {t("privacy.retainedBody")}
             </p>
             <p className="text-xs text-cs-dim mb-3">
-              Before proceeding, cancel any active Premium subscriptions via your server's
-              Premium page.
+              {t("privacy.cancelFirst")}
             </p>
             <label htmlFor="confirm-discord-id" className="block text-xs text-cs-muted mb-1">
-              Type your Discord ID <code className="text-cs-cyan">{user?.id}</code> to confirm:
+              {t("privacy.typeIdBefore")}<code className="text-cs-cyan">{user?.id}</code>{t("privacy.typeIdAfter")}
             </label>
             <input
               id="confirm-discord-id"
               type="text"
               value={confirmId}
               onChange={(e) => setConfirmId(e.target.value)}
-              placeholder="Your Discord user ID"
+              placeholder={t("privacy.idPh")}
               className="cs-input mb-3 font-mono text-sm"
             />
             <button
@@ -188,7 +181,7 @@ export default function PrivacySettingsPage() {
               className="cs-btn-danger"
             >
               <Trash2 className="w-4 h-4" aria-hidden="true" />
-              {deleting ? "Anonymizing..." : "Permanently delete my account"}
+              {deleting ? t("privacy.anonymizing") : t("privacy.deleteBtn")}
             </button>
           </div>
         </div>
@@ -196,10 +189,10 @@ export default function PrivacySettingsPage() {
 
       <ConfirmDialog
         open={confirmOpen}
-        title="Delete your account?"
-        message="This action cannot be undone. Your personal data will be permanently deleted (a non-identifying reference is kept only for record integrity). Continue with account deletion?"
-        confirmLabel="Permanently delete"
-        cancelLabel="Cancel"
+        title={t("privacy.confirmTitle")}
+        message={t("privacy.confirmMsg")}
+        confirmLabel={t("privacy.confirmDelete")}
+        cancelLabel={t("common.cancel")}
         destructive
         loading={deleting}
         onConfirm={confirmDelete}

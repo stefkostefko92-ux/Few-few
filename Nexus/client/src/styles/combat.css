@@ -99,6 +99,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  -webkit-backdrop-filter: blur(8px); /* iOS Safari иска префикса, иначе blur-ът мълчи */
   backdrop-filter: blur(8px);
 }
 .combatant-card.foe { flex-direction: row-reverse; text-align: right; }

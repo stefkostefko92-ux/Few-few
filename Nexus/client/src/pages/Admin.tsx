@@ -509,7 +509,7 @@ function Users() {
               <td className="muted">{new Date(u.created_at).toLocaleDateString()}</td>
               <td><button className="btn btn-sm" onClick={() => toggleAdmin(u)}>{u.is_admin ? 'Yes' : 'No'}</button></td>
               <td>
-                {u.char_id && <button className="btn btn-sm" onClick={() => setEditing({ id: u.char_id, level: u.char_level, gold: u.gold, arena_rating: u.arena_rating })}>Edit</button>}
+                {u.char_id && <button className="btn btn-sm" onClick={() => setEditing({ id: u.char_id, level: u.char_level, gold: u.gold, arena_rating: u.arena_rating, hp: u.hp, hp_max: u.hp_max, mp: u.mp, mp_max: u.mp_max, stat_points: u.stat_points, skill_points: u.skill_points, energy: u.energy, energy_max: u.energy_max, current_title: u.current_title })}>Edit</button>}
                 {u.char_id && <button className="btn btn-sm" style={{ marginLeft: 4 }} title="Give gems" onClick={() => giveGems(u)}>💎</button>}
                 <button className="btn btn-sm btn-danger" style={{ marginLeft: 4 }} onClick={() => destroy(u)}>×</button>
               </td>

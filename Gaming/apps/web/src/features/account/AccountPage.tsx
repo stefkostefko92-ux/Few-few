@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Modal, Panel } from "../../ui";
 import { ACCOUNT_EXPORT_URL, api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
+import { getFourColor, setFourColor } from "../../lib/a11y";
 import { Achievements } from "../progression/Achievements";
 
 /** Player account & privacy controls (GDPR: data export + erasure). */
@@ -14,6 +15,7 @@ export function AccountPage() {
   const setUser = useAuthStore((s) => s.setUser);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [fourColor, setFourColorState] = useState(getFourColor());
 
   if (!user) return null;
 
@@ -53,6 +55,39 @@ export function AccountPage() {
       </Panel>
 
       <Achievements />
+
+      <Panel className="mb-6">
+        <h2 className="text-xl text-ink-100">{t("a11y.title", { defaultValue: "Достъпност" })}</h2>
+        <label className="mt-3 flex items-center justify-between gap-4">
+          <span>
+            <span className="text-ink-100">{t("a11y.fourColor", { defaultValue: "Четирицветно тесте" })}</span>
+            <span className="mt-0.5 block text-sm text-ink-muted">
+              {t("a11y.fourColorHint", {
+                defaultValue: "Различен цвят за всяка боя — помага при далтонизъм.",
+              })}
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={fourColor}
+            onClick={() => {
+              const next = !fourColor;
+              setFourColorState(next);
+              setFourColor(next);
+            }}
+            className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
+              fourColor ? "border-brass-300 bg-brass-300" : "border-brass-300/40 bg-felt-800"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-felt-900 transition-all ${
+                fourColor ? "left-6" : "left-0.5"
+              }`}
+            />
+          </button>
+        </label>
+      </Panel>
 
       <Panel>
         <h2 className="text-xl text-ink-100">{t("account.privacy")}</h2>

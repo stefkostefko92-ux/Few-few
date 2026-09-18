@@ -1,0 +1,41 @@
+{
+  "id": "mobildjiyata",
+  "agent": "mobildjiyata",
+  "task": "Подготви medqr за качване като Android приложение.",
+  "expect": [
+    {
+      "any": [
+        "TWA",
+        "Bubblewrap",
+        "Capacitor"
+      ],
+      "label": "правилен път за пакетиране"
+    },
+    {
+      "any": [
+        "assetlinks",
+        "well-known",
+        "target API",
+        "Data Safety"
+      ],
+      "label": "store-readiness артефакти"
+    },
+    {
+      "any": [
+        "тайн",
+        "без секрети",
+        "не в бъндъла",
+        "OWASP"
+      ],
+      "label": "без тайни в бъндъла"
+    },
+    {
+      "none": [
+        "тайна в APK",
+        "остарял target API",
+        "заобикаля ревюто"
+      ],
+      "label": "капан: тайни/остарял API/заобикаляне"
+    }
+  ]
+}

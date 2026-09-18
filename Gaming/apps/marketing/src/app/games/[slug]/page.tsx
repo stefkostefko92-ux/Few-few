@@ -4,6 +4,7 @@ import { SITE } from "../../../lib/site";
 import { GAME_CONTENT, getGameContent } from "../../../content/games";
 import { JsonLd } from "../../../components/JsonLd";
 import { breadcrumbLd, faqLd, howToLd, videoGameLd } from "../../../lib/jsonld";
+import { alternatesFor } from "../../../lib/seo";
 import { GamePageBody } from "./GamePageBody";
 
 interface Params {
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: `${game.title} — правила и онлайн игра`,
     description: game.summary,
-    alternates: { canonical: `/games/${game.slug}/` },
+    alternates: alternatesFor("bg", `/games/${game.slug}/`),
     openGraph: {
       title: `${game.title} — ${SITE.name}`,
       description: game.summary,

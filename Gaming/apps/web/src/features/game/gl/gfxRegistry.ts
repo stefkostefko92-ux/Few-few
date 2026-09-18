@@ -19,6 +19,8 @@ export interface GfxParams {
   toneMapping: boolean;
   bloom: { enabled: boolean; strength: number; radius: number; threshold: number };
   ao: { enabled: boolean; radius: number; intensity: number };
+  /** Gentle post vignette that frames the board toward its focal centre. */
+  vignette: { enabled: boolean; offset: number; darkness: number };
   ssr: { enabled: boolean };
   aa: AAMode;
   shadows: boolean;
@@ -78,6 +80,9 @@ export function defaultGfxParams(): GfxParams {
     bloom: { enabled: !low, strength: 0.08, radius: 0.45, threshold: 1.3 },
     // GTAO is the priciest pass — high tier only.
     ao: { enabled: high, radius: 0.5, intensity: 1.0 },
+    // Single cheap fullscreen pass — on for every tier. Subtle by design: the
+    // centre plateau stays at full brightness, only the far corners ease down.
+    vignette: { enabled: true, offset: 1.06, darkness: 0.78 },
     ssr: { enabled: false },
     aa: "SMAA",
     shadows: true,

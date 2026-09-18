@@ -273,12 +273,12 @@ export default async function AdminDashboard({
             <tbody className="divide-y divide-slate-100">
               {recentAudit.length === 0 ? (
                 <tr>
-                  <td className="p-4 text-slate-500">Все още няма активност.</td>
+                  <td className="p-4 text-slate-600">Все още няма активност.</td>
                 </tr>
               ) : (
                 recentAudit.map((a) => (
                   <tr key={a.id}>
-                    <td className="whitespace-nowrap p-3 text-slate-500">
+                    <td className="whitespace-nowrap p-3 text-slate-600">
                       {new Intl.DateTimeFormat("bg-BG", {
                         day: "2-digit",
                         month: "2-digit",

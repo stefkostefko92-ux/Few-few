@@ -1,0 +1,554 @@
+{
+  "generatoIl": "2026-07-13T19:08:34.535Z",
+  "nota": "Passiva = somma delle voci di costo CE foglia con «Extraregione» (canali: da pubblico / da privato), su aziende + GSA (999 escluso) — ben definita. L’attiva (AA0450, ricavi da soggetti pubblici Extraregione) è PARZIALE: parte dei flussi compensativi transita dalla GSA sotto altre voci; per questo non pubblichiamo un «saldo».",
+  "codiciPassiva": [
+    "BA0062",
+    "BA0090",
+    "BA0480",
+    "BA0520",
+    "BA0560",
+    "BA0561",
+    "BA0670",
+    "BA0690",
+    "BA0730",
+    "BA0780",
+    "BA0830",
+    "BA0930",
+    "BA0950",
+    "BA0990",
+    "BA1010",
+    "BA1060",
+    "BA1120",
+    "BA1161",
+    "BA1170",
+    "BA1190",
+    "BA1480",
+    "BA1520",
+    "BA1870"
+  ],
+  "ultimoAnno": 2024,
+  "perAnno": {
+    "2022": {
+      "regioni": [
+        {
+          "codReg": "120",
+          "regione": "Lazio",
+          "passivaPubblico": 460025395.3199999,
+          "passivaPrivato": 31997789.97,
+          "attivaParziale": 126427078.59000003,
+          "passivaTot": 492023185.28999984
+        },
+        {
+          "codReg": "150",
+          "regione": "Campania",
+          "passivaPubblico": 397228488.43,
+          "passivaPrivato": 20213432.25,
+          "attivaParziale": 124671497.71,
+          "passivaTot": 417441920.68
+        },
+        {
+          "codReg": "030",
+          "regione": "Lombardia",
+          "passivaPubblico": 363341319,
+          "passivaPrivato": 18342518,
+          "attivaParziale": 334890212,
+          "passivaTot": 381683837
+        },
+        {
+          "codReg": "050",
+          "regione": "Veneto",
+          "passivaPubblico": 260451810.20000002,
+          "passivaPrivato": 7466761.6899999995,
+          "attivaParziale": 217602670.83,
+          "passivaTot": 267918571.89000002
+        },
+        {
+          "codReg": "010",
+          "regione": "Piemonte",
+          "passivaPubblico": 254756367.58999982,
+          "passivaPrivato": 1364043.9700000002,
+          "attivaParziale": 133057250.94999999,
+          "passivaTot": 256120411.55999982
+        },
+        {
+          "codReg": "160",
+          "regione": "Puglia",
+          "passivaPubblico": 226558743.97000003,
+          "passivaPrivato": 22211984.18,
+          "attivaParziale": 72610385.16,
+          "passivaTot": 248770728.15000004
+        },
+        {
+          "codReg": "190",
+          "regione": "Sicilia",
+          "passivaPubblico": 229451996.51000008,
+          "passivaPrivato": 13819248.200000001,
+          "attivaParziale": 55521283.16,
+          "passivaTot": 243271244.71000007
+        },
+        {
+          "codReg": "080",
+          "regione": "Emilia Romagna",
+          "passivaPubblico": 231242622.98999995,
+          "passivaPrivato": 6110859.22,
+          "attivaParziale": 354882227.51,
+          "passivaTot": 237353482.20999995
+        },
+        {
+          "codReg": "130",
+          "regione": "Abruzzo",
+          "passivaPubblico": 163609836.26999998,
+          "passivaPrivato": 21925021.86,
+          "attivaParziale": 44239252.5,
+          "passivaTot": 185534858.13
+        },
+        {
+          "codReg": "070",
+          "regione": "Liguria",
+          "passivaPubblico": 160602502,
+          "passivaPrivato": 14150347,
+          "attivaParziale": 111804102,
+          "passivaTot": 174752849
+        },
+        {
+          "codReg": "090",
+          "regione": "Toscana",
+          "passivaPubblico": 152311414,
+          "passivaPrivato": 7075355,
+          "attivaParziale": 154469190,
+          "passivaTot": 159386769
+        },
+        {
+          "codReg": "110",
+          "regione": "Marche",
+          "passivaPubblico": 127312517.71999998,
+          "passivaPrivato": 22133858.270000003,
+          "attivaParziale": 63155041.9,
+          "passivaTot": 149446375.98999998
+        },
+        {
+          "codReg": "170",
+          "regione": "Basilicata",
+          "passivaPubblico": 95750964.02999999,
+          "passivaPrivato": 3534012.63,
+          "attivaParziale": 30974821,
+          "passivaTot": 99284976.65999998
+        },
+        {
+          "codReg": "200",
+          "regione": "Sardegna",
+          "passivaPubblico": 74574471.23,
+          "passivaPrivato": 21870172.22,
+          "attivaParziale": 18522986.269999996,
+          "passivaTot": 96444643.45
+        },
+        {
+          "codReg": "060",
+          "regione": "F. V. Giulia",
+          "passivaPubblico": 81045397.30999999,
+          "passivaPrivato": 4319193.24,
+          "attivaParziale": 74050648.82000001,
+          "passivaTot": 85364590.54999998
+        },
+        {
+          "codReg": "100",
+          "regione": "Umbria",
+          "passivaPubblico": 64977185.84,
+          "passivaPrivato": 11833967.629999999,
+          "attivaParziale": 68438450.16,
+          "passivaTot": 76811153.47
+        },
+        {
+          "codReg": "140",
+          "regione": "Molise",
+          "passivaPubblico": 59508026.470000006,
+          "passivaPrivato": 9384057.9,
+          "attivaParziale": 383284.99,
+          "passivaTot": 68892084.37
+        },
+        {
+          "codReg": "042",
+          "regione": "P. A. Trento",
+          "passivaPubblico": 57542959.8,
+          "passivaPrivato": 889734.3300000001,
+          "attivaParziale": 60704892.08,
+          "passivaTot": 58432694.129999995
+        },
+        {
+          "codReg": "041",
+          "regione": "P. A. Bolzano",
+          "passivaPubblico": 28813200.540000003,
+          "passivaPrivato": 6970796.92,
+          "attivaParziale": 38300381.93,
+          "passivaTot": 35783997.46
+        },
+        {
+          "codReg": "180",
+          "regione": "Calabria",
+          "passivaPubblico": 16600471.640000002,
+          "passivaPrivato": 9762588.100000001,
+          "attivaParziale": 2048000.47,
+          "passivaTot": 26363059.740000002
+        },
+        {
+          "codReg": "020",
+          "regione": "Valle d'Aosta",
+          "passivaPubblico": 23014582,
+          "passivaPrivato": 1503888,
+          "attivaParziale": 12186981,
+          "passivaTot": 24518470
+        }
+      ],
+      "totPassiva": 3785599903.439999,
+      "totAttivaParziale": 2098940639.03
+    },
+    "2023": {
+      "regioni": [
+        {
+          "codReg": "120",
+          "regione": "Lazio",
+          "passivaPubblico": 510721591.3600001,
+          "passivaPrivato": 34462897.67000001,
+          "attivaParziale": 182243514.94999996,
+          "passivaTot": 545184489.0300001
+        },
+        {
+          "codReg": "030",
+          "regione": "Lombardia",
+          "passivaPubblico": 461920930,
+          "passivaPrivato": 19719217,
+          "attivaParziale": 352232989,
+          "passivaTot": 481640147
+        },
+        {
+          "codReg": "150",
+          "regione": "Campania",
+          "passivaPubblico": 429564887.4800001,
+          "passivaPrivato": 21689295.2,
+          "attivaParziale": 144915532.89,
+          "passivaTot": 451254182.68000007
+        },
+        {
+          "codReg": "180",
+          "regione": "Calabria",
+          "passivaPubblico": 294905089.01,
+          "passivaPrivato": 10183909.239999998,
+          "attivaParziale": 39293073.99,
+          "passivaTot": 305088998.25
+        },
+        {
+          "codReg": "160",
+          "regione": "Puglia",
+          "passivaPubblico": 275144307.71,
+          "passivaPrivato": 19791905.77,
+          "attivaParziale": 116778005.58,
+          "passivaTot": 294936213.47999996
+        },
+        {
+          "codReg": "050",
+          "regione": "Veneto",
+          "passivaPubblico": 276106623.97,
+          "passivaPrivato": 9504788.249999998,
+          "attivaParziale": 256900058.84,
+          "passivaTot": 285611412.22
+        },
+        {
+          "codReg": "010",
+          "regione": "Piemonte",
+          "passivaPubblico": 269127964.19000006,
+          "passivaPrivato": 2346010.2399999998,
+          "attivaParziale": 169223009.82999998,
+          "passivaTot": 271473974.43000007
+        },
+        {
+          "codReg": "190",
+          "regione": "Sicilia",
+          "passivaPubblico": 241377073.1,
+          "passivaPrivato": 15704030.09,
+          "attivaParziale": 62491309.730000004,
+          "passivaTot": 257081103.19
+        },
+        {
+          "codReg": "080",
+          "regione": "Emilia Romagna",
+          "passivaPubblico": 249564461.29,
+          "passivaPrivato": 6365261.449999998,
+          "attivaParziale": 421667545.64,
+          "passivaTot": 255929722.73999998
+        },
+        {
+          "codReg": "130",
+          "regione": "Abruzzo",
+          "passivaPubblico": 190134781.63000003,
+          "passivaPrivato": 23780721.459999997,
+          "attivaParziale": 46118526.9,
+          "passivaTot": 213915503.09000003
+        },
+        {
+          "codReg": "070",
+          "regione": "Liguria",
+          "passivaPubblico": 192536325,
+          "passivaPrivato": 15535855,
+          "attivaParziale": 125756034,
+          "passivaTot": 208072180
+        },
+        {
+          "codReg": "090",
+          "regione": "Toscana",
+          "passivaPubblico": 179144741,
+          "passivaPrivato": 7935423,
+          "attivaParziale": 178607166,
+          "passivaTot": 187080164
+        },
+        {
+          "codReg": "110",
+          "regione": "Marche",
+          "passivaPubblico": 153805397.06999996,
+          "passivaPrivato": 23011437.389999997,
+          "attivaParziale": 71993133.83,
+          "passivaTot": 176816834.45999995
+        },
+        {
+          "codReg": "170",
+          "regione": "Basilicata",
+          "passivaPubblico": 128368511.9,
+          "passivaPrivato": 2619659.6799999997,
+          "attivaParziale": 43243035.1,
+          "passivaTot": 130988171.58000001
+        },
+        {
+          "codReg": "200",
+          "regione": "Sardegna",
+          "passivaPubblico": 87635450.68,
+          "passivaPrivato": 24679343.68,
+          "attivaParziale": 24405916.689999998,
+          "passivaTot": 112314794.36000001
+        },
+        {
+          "codReg": "060",
+          "regione": "F. V. Giulia",
+          "passivaPubblico": 96512273.56000002,
+          "passivaPrivato": 4433225.51,
+          "attivaParziale": 78371713.97,
+          "passivaTot": 100945499.07000002
+        },
+        {
+          "codReg": "100",
+          "regione": "Umbria",
+          "passivaPubblico": 88704851.99999999,
+          "passivaPrivato": 11913924.469999999,
+          "attivaParziale": 74040177.72,
+          "passivaTot": 100618776.46999998
+        },
+        {
+          "codReg": "140",
+          "regione": "Molise",
+          "passivaPubblico": 68910566.03000002,
+          "passivaPrivato": 9839536.6,
+          "attivaParziale": 391979.53,
+          "passivaTot": 78750102.63000001
+        },
+        {
+          "codReg": "042",
+          "regione": "P. A. Trento",
+          "passivaPubblico": 69117679.30999999,
+          "passivaPrivato": 836876.7899999999,
+          "attivaParziale": 77983497.76,
+          "passivaTot": 69954556.1
+        },
+        {
+          "codReg": "041",
+          "regione": "P. A. Bolzano",
+          "passivaPubblico": 31882426.849999994,
+          "passivaPrivato": 8285808.51,
+          "attivaParziale": 44783324.42,
+          "passivaTot": 40168235.35999999
+        },
+        {
+          "codReg": "020",
+          "regione": "Valle d'Aosta",
+          "passivaPubblico": 29406043,
+          "passivaPrivato": 1325533,
+          "attivaParziale": 15424519,
+          "passivaTot": 30731576
+        }
+      ],
+      "totPassiva": 4598556636.14,
+      "totAttivaParziale": 2526864065.37
+    },
+    "2024": {
+      "regioni": [
+        {
+          "codReg": "120",
+          "regione": "Lazio",
+          "passivaPubblico": 597823399.8800001,
+          "passivaPrivato": 39925155.3,
+          "attivaParziale": 197929882.65000004,
+          "passivaTot": 637748555.1800001
+        },
+        {
+          "codReg": "030",
+          "regione": "Lombardia",
+          "passivaPubblico": 451266426,
+          "passivaPrivato": 22191437,
+          "attivaParziale": 435308536,
+          "passivaTot": 473457863
+        },
+        {
+          "codReg": "150",
+          "regione": "Campania",
+          "passivaPubblico": 443428833.98999995,
+          "passivaPrivato": 22383377.249999996,
+          "attivaParziale": 116379187.33,
+          "passivaTot": 465812211.23999995
+        },
+        {
+          "codReg": "160",
+          "regione": "Puglia",
+          "passivaPubblico": 381604800.68999994,
+          "passivaPrivato": 16640271.000000002,
+          "attivaParziale": 124092710.64999999,
+          "passivaTot": 398245071.68999994
+        },
+        {
+          "codReg": "180",
+          "regione": "Calabria",
+          "passivaPubblico": 339961770.68,
+          "passivaPrivato": 10765759.79,
+          "attivaParziale": 32082185.01,
+          "passivaTot": 350727530.47
+        },
+        {
+          "codReg": "190",
+          "regione": "Sicilia",
+          "passivaPubblico": 309389184.27999985,
+          "passivaPrivato": 16242564.39,
+          "attivaParziale": 65239572.230000004,
+          "passivaTot": 325631748.66999984
+        },
+        {
+          "codReg": "050",
+          "regione": "Veneto",
+          "passivaPubblico": 291153945.84999996,
+          "passivaPrivato": 9288992.92,
+          "attivaParziale": 243190490.1,
+          "passivaTot": 300442938.77
+        },
+        {
+          "codReg": "010",
+          "regione": "Piemonte",
+          "passivaPubblico": 283122966.51999986,
+          "passivaPrivato": 2158052.04,
+          "attivaParziale": 167661865.26,
+          "passivaTot": 285281018.5599999
+        },
+        {
+          "codReg": "080",
+          "regione": "Emilia Romagna",
+          "passivaPubblico": 257273911.28000006,
+          "passivaPrivato": 6335771.880000001,
+          "attivaParziale": 466431061.48999995,
+          "passivaTot": 263609683.16000006
+        },
+        {
+          "codReg": "070",
+          "regione": "Liguria",
+          "passivaPubblico": 233956647,
+          "passivaPrivato": 16766035,
+          "attivaParziale": 164439647,
+          "passivaTot": 250722682
+        },
+        {
+          "codReg": "130",
+          "regione": "Abruzzo",
+          "passivaPubblico": 213428724.46999997,
+          "passivaPrivato": 26329293,
+          "attivaParziale": 71827572.53999999,
+          "passivaTot": 239758017.46999997
+        },
+        {
+          "codReg": "090",
+          "regione": "Toscana",
+          "passivaPubblico": 226991035,
+          "passivaPrivato": 7864697,
+          "attivaParziale": 232928271,
+          "passivaTot": 234855732
+        },
+        {
+          "codReg": "110",
+          "regione": "Marche",
+          "passivaPubblico": 165000508.66000003,
+          "passivaPrivato": 23769456.230000004,
+          "attivaParziale": 89806616.04,
+          "passivaTot": 188769964.89000005
+        },
+        {
+          "codReg": "170",
+          "regione": "Basilicata",
+          "passivaPubblico": 144153752.54000002,
+          "passivaPrivato": 3075676.08,
+          "attivaParziale": 61567772.19,
+          "passivaTot": 147229428.62000003
+        },
+        {
+          "codReg": "200",
+          "regione": "Sardegna",
+          "passivaPubblico": 130768647.72,
+          "passivaPrivato": 8393754.25,
+          "attivaParziale": 38311161.44,
+          "passivaTot": 139162401.97
+        },
+        {
+          "codReg": "100",
+          "regione": "Umbria",
+          "passivaPubblico": 113479023.28000002,
+          "passivaPrivato": 12027861.709999999,
+          "attivaParziale": 92346768.84,
+          "passivaTot": 125506884.99000001
+        },
+        {
+          "codReg": "060",
+          "regione": "F. V. Giulia",
+          "passivaPubblico": 106497248.42,
+          "passivaPrivato": 5529950.5,
+          "attivaParziale": 86118082.5,
+          "passivaTot": 112027198.92
+        },
+        {
+          "codReg": "140",
+          "regione": "Molise",
+          "passivaPubblico": 83043862.87999998,
+          "passivaPrivato": 9324791.540000001,
+          "attivaParziale": 11330405.24,
+          "passivaTot": 92368654.41999999
+        },
+        {
+          "codReg": "042",
+          "regione": "P. A. Trento",
+          "passivaPubblico": 76716859.8,
+          "passivaPrivato": 800938.76,
+          "attivaParziale": 92956978.29,
+          "passivaTot": 77517798.56
+        },
+        {
+          "codReg": "041",
+          "regione": "P. A. Bolzano",
+          "passivaPubblico": 35208171.559999995,
+          "passivaPrivato": 9286112.23,
+          "attivaParziale": 52049137.3,
+          "passivaTot": 44494283.78999999
+        },
+        {
+          "codReg": "020",
+          "regione": "Valle d'Aosta",
+          "passivaPubblico": 29797415,
+          "passivaPrivato": 1426349,
+          "attivaParziale": 17010877,
+          "passivaTot": 31223764
+        }
+      ],
+      "totPassiva": 5184593432.37,
+      "totAttivaParziale": 2859008780.1000004
+    }
+  }
+}

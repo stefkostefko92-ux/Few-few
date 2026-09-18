@@ -38,6 +38,14 @@ export interface CueStateExtras {
   /** Snooker: a foul left the incoming striker snookered — free ball (any
    *  first contact counts as the ball "on"). */
   freeBall?: boolean;
+  /** 9-ball: consecutive fouls per seat. Three in a row by the same player
+   *  (with no legal shot in between) loses the rack (WPA three-foul rule).
+   *  A legal shot resets that seat's counter; a value of 2 is the warning. */
+  fouls?: [number, number];
+  /** Snooker: the last stroke was a "foul and a miss" — the striker fouled
+   *  without first contacting a ball "on". Surfaced so the referee/host can
+   *  offer the standard replay option (see note in rulesSnooker). */
+  miss?: boolean;
 }
 export type CueStateX = CueState & CueStateExtras;
 
@@ -83,6 +91,8 @@ function initial(variant: CueVariant): CueStateX {
     message: "",
     shotNo: 0,
     lastShot: null,
+    fouls: [0, 0],
+    miss: false,
   };
 }
 
@@ -288,6 +298,8 @@ type SnookerOutcome = Outcome & {
   freeBallNext?: boolean;
   /** Force ball-in-hand for the incoming striker (re-spotted black). */
   cueInHand?: boolean;
+  /** "Foul and a miss": the striker fouled without first hitting a ball "on". */
+  miss?: boolean;
 };
 
 /** Balls "on" for the incoming striker after a foul: reds while any remain,
@@ -373,6 +385,22 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
   }
 
   if (foul) {
+    // "Foul and a miss": did the striker first contact a ball that was "on"?
+    // (Mirrors the ball-on branches above.) If not, a referee calls a miss and
+    // the opponent may ask for a replay. NOTE: a *full* replay-from-position is
+    // out of scope here — it needs a new incoming-player choice action plus a
+    // stored pre-shot layout, which reaches into the shared action/wire type,
+    // the realtime host and the view (all outside this engine's ownership). We
+    // therefore only DETECT the miss and surface it via `state.miss` (+ the
+    // FOUL event); the standard "play again from the same position" option is
+    // left for the host/UI to offer on top of this flag.
+    let hitBallOn: boolean;
+    if (freeBall) hitBallOn = fc !== null;
+    else if (freeColour || (redsLeft && expect === "colour")) hitBallOn = fc !== null && isColour(fc);
+    else if (!redsLeft && expect === "colour") hitBallOn = fc === lowestColour;
+    else hitBallOn = fc !== null && isRed(fc);
+    const miss = !hitBallOn;
+
     // Every colour potted on a foul stroke returns to its spot (reds stay
     // down, unscored) — the frame must keep its full ball set.
     for (const c of pottedColours) respot(balls, c, SNOOKER_SPOTS[c]!);
@@ -393,6 +421,7 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
       points: foulValue,
       pointsToOpponent: true,
       freeBallNext,
+      miss,
     };
   }
 
@@ -702,6 +731,23 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         next.pushDecision = (out as { pushed?: boolean }).pushed === true && out.winner === null;
       }
 
+      // 9-ball three-consecutive-foul rule (WPA 5.2): a player who fouls on
+      // three successive strokes — with no legal shot in between — loses the
+      // rack. Any legal (non-foul) stroke resets that seat's counter; a count
+      // of 2 is the warning the opponent is owed before the deciding foul.
+      let threeFoulWin: Seat | null = null;
+      if (variant === "NINEBALL") {
+        const fouls: [number, number] = [state.fouls?.[0] ?? 0, state.fouls?.[1] ?? 0];
+        const s = shooter as 0 | 1;
+        if (out.foul) {
+          fouls[s] += 1;
+          if (fouls[s] >= 3) threeFoulWin = other(shooter);
+        } else {
+          fouls[s] = 0;
+        }
+        next.fouls = fouls;
+      }
+
       // Snooker scoring + expectation.
       if (variant === "SNOOKER") {
         const so = out as SnookerOutcome;
@@ -719,15 +765,19 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         next.expect = redsLeftNow ? (so.nextExpect ?? "red") : "colour";
         next.freeColour = so.freeColourNext === true;
         next.freeBall = so.freeBallNext === true;
+        next.miss = so.miss === true; // "foul and a miss" flag for the referee/host
       } else if (out.foul) {
         events.push({ type: "FOUL", seat: shooter, reason: out.reason });
       }
 
-      // Turn / ball-in-hand / winner.
-      if (out.winner !== null) {
-        next.winner = out.winner;
+      // Turn / ball-in-hand / winner. A 9-ball three-foul loss overrides the
+      // normal turn handoff (the opponent wins the rack outright).
+      const winner = out.winner ?? threeFoulWin;
+      if (winner !== null) {
+        next.winner = winner;
         next.phase = "DONE";
-        events.push({ type: "WIN", seat: out.winner });
+        if (out.winner === null && threeFoulWin !== null) next.message = "threeFoul";
+        events.push({ type: "WIN", seat: winner });
       } else if (out.continueTurn) {
         next.turn = shooter;
         next.ballInHand = false;

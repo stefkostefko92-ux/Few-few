@@ -58,6 +58,12 @@
   --radius-lg: 16px;
   --nav-h: 68px;
   --sidebar-w: 264px;
+  /* iOS Safari safe-area (index.html има viewport-fit=cover). Fallback 0px за
+     всичко без notch → на десктоп/портретен браузър оформлението е непроменено. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 
   /* Motion */
   --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
@@ -85,6 +91,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  /* iOS Safari: махни сивия flash при tap; спри верижния bounce-скрол. */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
 
 h1, h2, h3, h4 {
@@ -137,7 +146,8 @@ input:focus, textarea:focus, select:focus {
    ===================================================================== */
 
 .app {
-  min-height: 100vh;
+  min-height: 100vh;        /* fallback за стари браузъри */
+  min-height: 100dvh;       /* iOS Safari: динамична височина (адрес-барът се свива) */
   display: flex;
   flex-direction: column;
 }
@@ -145,8 +155,12 @@ input:focus, textarea:focus, select:focus {
 .app-shell {
   flex: 1;
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+  /* minmax(0,1fr): без него grid track-ът има min-width:auto и се разширява до
+     min-content на съдържанието (широка таблица/ред) → изтича хоризонтално и реже
+     дясно. minmax(0,…) позволява на колоната да се свие под съдържанието. */
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h) - var(--safe-top));
 }
 
 .app-main {
@@ -189,50 +203,10 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   z-index: 90;
 }
 
-@media (max-width: 900px) {
-  .app-shell { grid-template-columns: 1fr; }
-  .app-main { padding: 20px 16px; }
-  .nav-hamburger { display: flex; }
 
-  /* Sidebar becomes a slide-in drawer instead of disappearing. */
-  .sidebar {
-    display: block;
-    position: fixed;
-    top: var(--nav-h);
-    left: 0;
-    width: min(82vw, 320px);
-    height: calc(100vh - var(--nav-h));
-    z-index: 100;
-    background: var(--bg-2, #0e1118);
-    border-right: 1px solid var(--border-2);
-    overflow-y: auto;
-    transform: translateX(-105%);
-    transition: transform .28s cubic-bezier(.4,0,.2,1);
-    box-shadow: 6px 0 24px rgba(0,0,0,.45);
-  }
-  body.mobile-open .sidebar { transform: translateX(0); }
-  body.mobile-open .sidebar-backdrop { display: block; }
-
-  /* CooldownTicker — let chips wrap, shrink the skip button label. */
-  .cooldown-ticker { padding: 8px 10px; gap: 6px; }
-  .cooldown-ticker-label { font-size: 10px; letter-spacing: .08em; }
-  .cooldown-chip { font-size: 11px; padding: 4px 8px; }
-  .cooldown-skip { font-size: 11px; padding: 6px 10px; }
-
-  /* Hero tabs stay scrollable; tighten spacing. */
-  .hero-tabs { padding: 4px; }
-  .hero-tab { padding: 8px 12px; font-size: 13px; }
-
-  /* Card grids: avoid micro columns on tiny screens. */
-  .grid-cards { grid-template-columns: 1fr 1fr !important; }
-}
-@media (max-width: 500px) {
-  .grid-cards { grid-template-columns: 1fr !important; }
-}
-
-@media (max-width: 1100px) {
-  .nav-links { display: none; }
-}
+/* .nav-links се крие в МОБИЛНИЯ LAYOUT блок НАКРАЯ (≤900px, при hamburger-а):
+   тук е безсилно — по-късното `.nav-links{display:flex}` (секция NAVBAR) го
+   отменя при еднаква специфичност. Виж коментара „МОБИЛЕН LAYOUT". */
 @media (max-width: 700px) {
   .nav-meta .nav-stat { display: none; }
   .nav-brand span { display: none; }
@@ -254,14 +228,19 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: sticky;
   top: 0;
   z-index: 100;
-  height: var(--nav-h);
+  /* Порасни с горния safe-area (notch/Dynamic Island в PWA/landscape); в
+     портретен браузър insetът е 0 → без визуална промяна. */
+  height: calc(var(--nav-h) + var(--safe-top));
+  padding-top: var(--safe-top);
   background: linear-gradient(180deg, rgba(11,13,18,.96) 0%, rgba(7,8,12,.93) 100%);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   border-bottom: 1px solid var(--border-1);
   display: flex;
   align-items: center;
-  padding: 0 28px;
+  /* Хоризонтален notch (landscape) — не пускай съдържание под заобления ъгъл. */
+  padding-left: max(28px, var(--safe-left));
+  padding-right: max(28px, var(--safe-right));
   box-shadow: var(--shadow-2);
 }
 
@@ -1447,6 +1426,10 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   vertical-align: middle;
 }
 .bp-table tbody tr:hover { background: rgba(255,255,255,.02); }
+
+/* Широки таблици на мобилен: хоризонтален скрол в контейнер вместо изтичане/рязане. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.table-scroll > table { min-width: max-content; }
 .bp-progress {
   height: 6px;
   background: var(--surface-2);
@@ -2054,3 +2037,79 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 }
 .cooldown-skip-one:hover:not(:disabled) { background: rgba(232,193,90,.15); }
 .cooldown-skip-one:disabled { opacity: .4; cursor: default; }
+
+
+/* =====================================================================
+   МОБИЛЕН LAYOUT — този блок стои НАКРАЯ нарочно: при еднаква
+   специфичност по-късното правило печели, а базовите .sidebar стилове
+   по-горе иначе отменят drawer-а (position: fixed) и sidebar-ът остава
+   в grid потока → избутва цялото съдържание един viewport надолу.
+   ===================================================================== */
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+  .app-main { padding: 20px 16px; min-width: 0; }
+  .nav-hamburger { display: flex; }
+  /* Топ nav-links се заместват от hamburger + drawer → крий ги. Тук (НАКРАЯ,
+     след секция NAVBAR) правилото печели при еднаква специфичност. */
+  .nav-links { display: none; }
+
+  /* iOS Safari зуумва при фокус на input с font-size < 16px → форсирай 16px. */
+  input, textarea, select { font-size: 16px; }
+
+  /* Touch цели ≥44px (WCAG 2.1 AA / EN 301 549, Apple HIG). */
+  .nav-hamburger { width: 44px; height: 44px; }
+
+  /* Chat: двуколонният layout (inline grid) се стакира вертикално. !important
+     е нужен, защото inline стил бие клас-селектор. */
+  .chat-grid { grid-template-columns: 1fr !important; }
+
+  /* Guild header: crest + инфо + treasury карта в един ред изтича → стак. */
+  .guild-header { grid-template-columns: 1fr !important; text-align: center; justify-items: center; }
+  .guild-header .guild-crest { margin: 0 auto; }
+
+  /* Character-card: базовото `140px 1fr` (по-долу в source) отменя ранния
+     мобилен `1fr` при еднаква специфичност → картата не се стакира и инфо
+     колоната се смачква/изтича. Тук (НАКРАЯ) стакът печели. */
+  .character-card { grid-template-columns: 1fr; }
+  .character-card .portrait { width: 100%; }
+
+  /* Sidebar becomes a slide-in drawer instead of disappearing. */
+  .sidebar {
+    display: block;
+    position: fixed;
+    /* Изравнено с новата височина на navbar-а (nav-h + safe-top). */
+    top: calc(var(--nav-h) + var(--safe-top));
+    left: 0;
+    width: min(82vw, 320px);
+    height: calc(100vh - var(--nav-h));                       /* vh fallback */
+    height: calc(100dvh - var(--nav-h) - var(--safe-top));    /* iOS dvh */
+    z-index: 100;
+    background: var(--bg-2, #0e1118);
+    border-right: 1px solid var(--border-2);
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* скролът в drawer-а не влачи страницата */
+    padding-bottom: var(--safe-bottom);
+    transform: translateX(-105%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow: 6px 0 24px rgba(0,0,0,.45);
+  }
+  body.mobile-open .sidebar { transform: translateX(0); }
+  body.mobile-open .sidebar-backdrop { display: block; }
+
+  /* CooldownTicker — let chips wrap, shrink the skip button label. */
+  .cooldown-ticker { padding: 8px 10px; gap: 6px; }
+  .cooldown-ticker-label { font-size: 10px; letter-spacing: .08em; }
+  .cooldown-chip { font-size: 11px; padding: 4px 8px; }
+  .cooldown-skip { font-size: 11px; padding: 6px 10px; }
+
+  /* Hero tabs stay scrollable; tighten spacing. */
+  .hero-tabs { padding: 4px; }
+  .hero-tab { padding: 8px 12px; font-size: 13px; }
+
+  /* Card grids: avoid micro columns on tiny screens. minmax(0,…) позволява на
+     колоните да се свият под min-content на картата (иначе картата изтича ~14px). */
+  .grid-cards { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+}
+@media (max-width: 500px) {
+  .grid-cards { grid-template-columns: minmax(0, 1fr) !important; }
+}

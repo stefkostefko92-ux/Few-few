@@ -16,7 +16,7 @@ export default function StatusPage() {
   const overall = data?.status || "unknown";
   const overallConfig = {
     operational: { color: "text-green-400", bg: "bg-green-500/10 border-green-500/30", icon: CheckCircle2, label: "All systems operational" },
-    degraded:    { color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30", icon: AlertTriangle, label: "Partial outage" },
+    degraded:    { color: "text-warning", bg: "bg-warning/10 border-warning/30", icon: AlertTriangle, label: "Partial outage" },
     down:        { color: "text-red-400",   bg: "bg-red-500/10 border-red-500/30",     icon: XCircle,      label: "Major outage" },
     unknown:     { color: "text-cs-dim",    bg: "bg-cs-surface border-cs-border",      icon: AlertTriangle, label: "Status unknown" },
   }[overall] || { color: "text-cs-dim", bg: "", icon: AlertTriangle, label: "Unknown" };
@@ -104,7 +104,15 @@ export default function StatusPage() {
 
         {/* ═══ SLA info ═══ */}
         <div className="border-t border-cs-border pt-6 text-xs text-cs-dim font-mono space-y-1">
-          <p>Uptime commitment: 99.9% · Premium | 99.95% · Enterprise — measured monthly, backed by service credits</p>
+          {/* Обявявахме „99.9% Premium | 99.95% Enterprise — backed by service
+              credits“. Три неверни неща наведнъж: „Enterprise“ план НЕ съществува
+              в ценоразписа, service credits ги НЯМА в Общите условия/EULA, а
+              EULA §12.1 изрично казва, че специфична гаранция за uptime не се
+              предлага (Premium може да ДОГОВОРИ SLA). Реклама на договорна
+              гаранция, която никой документ не подкрепя, е заблуждаваща търговска
+              практика (Дир. 2005/29/ЕО) — и първият клиент, поискал кредит, го
+              открива. Текстът вече казва каквото е вярно: цел, не гаранция. */}
+          <p>Uptime target: 99.9% — monitored continuously. No contractual SLA is included by default; Premium subscribers may negotiate one (EULA §12.1).</p>
           <p>Infrastructure: Hetzner (Germany) · EU-only data residency</p>
           <p>Status checks refresh every 30 seconds · Cache: 30s</p>
           <p className="pt-2">
@@ -135,6 +143,7 @@ export default function StatusPage() {
           </div>
           <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
             <a href="/"        className="hover:text-cs-cyan transition-colors">Home</a>
+            <a href="/commands" className="hover:text-cs-cyan transition-colors">Commands</a>
             <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
             <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
             <a href="/accessibility" className="hover:text-cs-cyan transition-colors">Accessibility</a>
@@ -149,7 +158,7 @@ function ServiceRow({ icon: Icon, name, description, status, latency }) {
   const config = {
     operational: { color: "text-green-400", label: "Operational", StatusIcon: CheckCircle2 },
     down:        { color: "text-red-400",   label: "Down",        StatusIcon: XCircle },
-    degraded:    { color: "text-amber-400", label: "Degraded",    StatusIcon: AlertTriangle },
+    degraded:    { color: "text-warning", label: "Degraded",    StatusIcon: AlertTriangle },
   }[status] || { color: "text-cs-dim", label: "Unknown", StatusIcon: AlertTriangle };
   const { StatusIcon } = config;
 

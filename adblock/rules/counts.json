@@ -1,12 +1,16 @@
 {
-  "easylist": 3706,
-  "easyprivacy": 8879,
-  "urlhaus": 507,
-  "cosmeticGeneric": 13647,
-  "cosmeticSpecific": 16350,
-  "genericHide": 183,
+  "easylist": 3736,
+  "easyprivacy": 8999,
+  "urlhaus": 340,
+  "cosmeticGeneric": 13635,
+  "cosmeticSpecific": 16712,
+  "genericHide": 184,
   "ad_rules": 237,
   "youtube_rules": 11,
   "removeparam": 36,
-  "generated": "2026-07-12"
+  "surrogates": 14,
+  "headers": 1,
+  "privacy": 3,
+  "popupHosts": 2715,
+  "generated": "2026-09-09"
 }

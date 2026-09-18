@@ -19,6 +19,9 @@ export async function pushPollUpdate(pollId) {
   }));
 
   await notifyBot("POLL_UPDATE", {
+    // serverId придружава channelId — ботът резолвира канала В РАМКИТЕ на
+    // сървъра, вместо през всички свои guild-ове (виж guildChannel).
+    serverId: poll.serverId,
     pollId: poll.id,
     channelId: poll.channelId,
     messageId: poll.messageId,

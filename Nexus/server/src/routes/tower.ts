@@ -8,6 +8,8 @@ import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown, loadCooldowns } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
+import { trackGuildMission } from '../game/guildMissions';
+import { addSeasonPoints } from '../game/seasons';
 import { grantDrop, DROP_RATES } from '../game/drops';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -153,6 +155,9 @@ router.post('/climb', (req, res) => {
 
   let itemDropSlug: string | null = null;
   if (result.winner === 'hero') {
+    // Гилдийна мисия + сезонни точки за изкачен етаж.
+    trackGuildMission(db, char.id, 'tower_floors');
+    addSeasonPoints(db, char.id, 5);
     const vault = targetFloor % 5 === 0;
     const baseGold = towerGold(targetFloor) * (vault ? 2 : 1);
     const baseXp   = towerXp(targetFloor)   * (vault ? 2 : 1);

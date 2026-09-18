@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Supreme AdBlock",
-  "version": "4.0.4",
-  "description": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
+  "name": "__MSG_extName__",
+  "version": "5.0.3",
+  "description": "__MSG_extDescription__",
   "author": "Carbon Stealth",
   "homepage_url": "https://carbonstealth.eu",
   "minimum_chrome_version": "121",
@@ -11,13 +11,16 @@
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
     "storage",
-    "tabs",
     "contextMenus",
-    "alarms"
+    "alarms",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -151,6 +154,15 @@
         "*://*.youtube-nocookie.com/*"
       ],
       "use_dynamic_url": true
+    },
+    {
+      "resources": [
+        "resources/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "use_dynamic_url": true
     }
   ],
   "declarative_net_request": {
@@ -184,6 +196,21 @@
         "id": "urlhaus",
         "enabled": false,
         "path": "rules/urlhaus.json"
+      },
+      {
+        "id": "surrogates",
+        "enabled": true,
+        "path": "rules/surrogates.json"
+      },
+      {
+        "id": "headers",
+        "enabled": true,
+        "path": "rules/headers.json"
+      },
+      {
+        "id": "privacy",
+        "enabled": true,
+        "path": "rules/privacy.json"
       }
     ]
   }

@@ -1,35 +1,36 @@
+/* Ad-hiding rules are gated off while html[data-tbab-yt-bypass] is set (YouTube session bypass) — see youtube_skip.js. */
 /* Hide YouTube's in-page ad surfaces (home, feed, search, overlays, premium nags). */
 
-#masthead-ad,
-ytd-display-ad-renderer,
-ytd-rich-item-renderer:has(ytd-display-ad-renderer),
-ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
-ytd-ad-slot-renderer,
-ytd-in-feed-ad-layout-renderer,
-ytd-banner-promo-renderer,
-ytd-statement-banner-renderer,
-ytd-promoted-sparkles-web-renderer,
-ytd-promoted-video-renderer,
-ytd-compact-promoted-video-renderer,
-ytd-action-companion-ad-renderer,
-ytd-player-legacy-desktop-watch-ads-renderer,
-ytd-search-pyv-renderer,
-ytd-promoted-sparkles-text-search-renderer,
-.ytp-ad-overlay-container,
-.ytp-ad-overlay-slot,
-.ytp-ad-image-overlay,
-.ytp-ad-text-overlay,
-.video-ads.ytp-ad-module,
-ytd-mealbar-promo-renderer,
-ytmusic-mealbar-promo-renderer,
-tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
-ytd-popup-container:has(ytd-enforcement-message-view-model),
-.ytd-enforcement-message-view-model,
-ytd-enforcement-message-view-model {
+html:not([data-tbab-yt-bypass]) #masthead-ad,
+html:not([data-tbab-yt-bypass]) ytd-display-ad-renderer,
+html:not([data-tbab-yt-bypass]) ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+html:not([data-tbab-yt-bypass]) ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
+html:not([data-tbab-yt-bypass]) ytd-ad-slot-renderer,
+html:not([data-tbab-yt-bypass]) ytd-in-feed-ad-layout-renderer,
+html:not([data-tbab-yt-bypass]) ytd-banner-promo-renderer,
+html:not([data-tbab-yt-bypass]) ytd-statement-banner-renderer,
+html:not([data-tbab-yt-bypass]) ytd-promoted-sparkles-web-renderer,
+html:not([data-tbab-yt-bypass]) ytd-promoted-video-renderer,
+html:not([data-tbab-yt-bypass]) ytd-compact-promoted-video-renderer,
+html:not([data-tbab-yt-bypass]) ytd-action-companion-ad-renderer,
+html:not([data-tbab-yt-bypass]) ytd-player-legacy-desktop-watch-ads-renderer,
+html:not([data-tbab-yt-bypass]) ytd-search-pyv-renderer,
+html:not([data-tbab-yt-bypass]) ytd-promoted-sparkles-text-search-renderer,
+html:not([data-tbab-yt-bypass]) .ytp-ad-overlay-container,
+html:not([data-tbab-yt-bypass]) .ytp-ad-overlay-slot,
+html:not([data-tbab-yt-bypass]) .ytp-ad-image-overlay,
+html:not([data-tbab-yt-bypass]) .ytp-ad-text-overlay,
+html:not([data-tbab-yt-bypass]) .video-ads.ytp-ad-module,
+html:not([data-tbab-yt-bypass]) ytd-mealbar-promo-renderer,
+html:not([data-tbab-yt-bypass]) ytmusic-mealbar-promo-renderer,
+html:not([data-tbab-yt-bypass]) tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
+html:not([data-tbab-yt-bypass]) ytd-popup-container:has(ytd-enforcement-message-view-model),
+html:not([data-tbab-yt-bypass]) .ytd-enforcement-message-view-model,
+html:not([data-tbab-yt-bypass]) ytd-enforcement-message-view-model {
   display: none !important;
 }
 
-.ad-showing video {
+html:not([data-tbab-yt-bypass]) .ad-showing video {
   display: block !important;
 }
 

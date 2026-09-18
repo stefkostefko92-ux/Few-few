@@ -1,0 +1,32 @@
+{
+  "id": "tayniyat-agent-2",
+  "agent": "tayniyat-agent",
+  "task": "Нов продукт за US iOS + Android. Външно плащане? Колко тест преди Play production?",
+  "expect": [
+    {
+      "any": [
+        "US",
+        "storefront",
+        "entitlement",
+        "external"
+      ],
+      "label": "Apple US carve-out"
+    },
+    {
+      "any": [
+        "12",
+        "14",
+        "org",
+        "организационн",
+        "освободен"
+      ],
+      "label": "Play testing разрез"
+    },
+    {
+      "none": [
+        "cloaking"
+      ],
+      "label": "капан: cloaking"
+    }
+  ]
+}

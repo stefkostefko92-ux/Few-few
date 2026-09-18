@@ -121,7 +121,9 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
     let action: CombatRound['action'] = 'attack';
 
     if (rng() < attacker.crit_chance) {
-      damage = Math.round(damage * 1.8);
+      // Сила на крита (crit damage) е CHA-driven за героите (база 1.8, до
+      // 2.4×); чудовищата нямат crit_mult → 1.8 по подразбиране.
+      damage = Math.round(damage * (attacker.crit_mult ?? 1.8));
       action = 'crit';
     }
 

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { isGameKey } from "@aso/shared";
 import { cn } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
-import { SuitGlyph, isRed, type SuitChar } from "./suits";
+import { SuitGlyph, SUIT_COLOR, type SuitChar } from "./suits";
 import { PIP_LAYOUTS, RANK_LABEL } from "./pips";
 
 export interface PlayingCardProps {
@@ -68,7 +68,7 @@ export const PlayingCard = memo(function PlayingCard({
   const faceDown = card === "?";
   const suit = (card[card.length - 1] ?? "S") as SuitChar;
   const rank = card.slice(0, card.length - 1);
-  const color = faceDown ? "transparent" : isRed(suit) ? "var(--suit-red)" : "var(--suit-black)";
+  const color = faceDown ? "transparent" : SUIT_COLOR[suit];
   const Tag = onClick ? "button" : "div";
 
   const isCourt = rank === "J" || rank === "Q" || rank === "K";

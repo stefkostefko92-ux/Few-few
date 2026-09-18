@@ -1,0 +1,25 @@
+{
+  "id": "geymara-2",
+  "agent": "geymara",
+  "task": "Напиши Qbox ресурс за магазин: сървърно събитие за покупка.",
+  "expect": [
+    {
+      "any": [
+        "source",
+        "server-authoritative",
+        "валидир",
+        "не вярва на клиент"
+      ],
+      "label": "server-authoritative + source"
+    },
+    {
+      "any": [
+        "oxmysql",
+        "?",
+        "параметр",
+        "manifest-lint"
+      ],
+      "label": "параметризация/линт"
+    }
+  ]
+}

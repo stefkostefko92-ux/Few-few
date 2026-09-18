@@ -1,0 +1,5527 @@
+{
+  "generatoIl": "2026-07-13T20:37:06.493Z",
+  "fonte": "Ministero della Salute — Schede di Dimissione Ospedaliera (SDO), dati aperti (aggregata e oscurata)",
+  "url": "https://www.dati.salute.gov.it/sites/default/files/2025-02/Open_data_-_SDO_per_tipologia_dimissione_aggregata_e_oscurata_DEF.csv",
+  "licenza": "IODL 2.0",
+  "anno": 2022,
+  "nazionale": {
+    "dimissioni": 7645914,
+    "strutture": 1357
+  },
+  "perRegione": {
+    "100": {
+      "dimissioni": 118561,
+      "strutture": 24,
+      "decessi": 4588
+    },
+    "110": {
+      "dimissioni": 195266,
+      "strutture": 38,
+      "decessi": 6988
+    },
+    "120": {
+      "dimissioni": 829071,
+      "strutture": 153,
+      "decessi": 23493
+    },
+    "130": {
+      "dimissioni": 164424,
+      "strutture": 27,
+      "decessi": 6722
+    },
+    "140": {
+      "dimissioni": 38124,
+      "strutture": 9,
+      "decessi": 1327
+    },
+    "150": {
+      "dimissioni": 686547,
+      "strutture": 128,
+      "decessi": 16620
+    },
+    "160": {
+      "dimissioni": 407177,
+      "strutture": 78,
+      "decessi": 13399
+    },
+    "170": {
+      "dimissioni": 59438,
+      "strutture": 14,
+      "decessi": 2501
+    },
+    "180": {
+      "dimissioni": 184382,
+      "strutture": 59,
+      "decessi": 6315
+    },
+    "190": {
+      "dimissioni": 526963,
+      "strutture": 138,
+      "decessi": 14939
+    },
+    "200": {
+      "dimissioni": 203846,
+      "strutture": 40,
+      "decessi": 7885
+    },
+    "010": {
+      "dimissioni": 569679,
+      "strutture": 106,
+      "decessi": 19883
+    },
+    "020": {
+      "dimissioni": 18370,
+      "strutture": 2,
+      "decessi": 571
+    },
+    "030": {
+      "dimissioni": 1299987,
+      "strutture": 195,
+      "decessi": 31806
+    },
+    "taa": {
+      "dimissioni": 156654,
+      "strutture": 33,
+      "decessi": 3441
+    },
+    "050": {
+      "dimissioni": 618733,
+      "strutture": 79,
+      "decessi": 23122
+    },
+    "060": {
+      "dimissioni": 156192,
+      "strutture": 20,
+      "decessi": 6871
+    },
+    "070": {
+      "dimissioni": 229905,
+      "strutture": 37,
+      "decessi": 9216
+    },
+    "080": {
+      "dimissioni": 696506,
+      "strutture": 100,
+      "decessi": 25126
+    },
+    "090": {
+      "dimissioni": 486089,
+      "strutture": 77,
+      "decessi": 15732
+    }
+  },
+  "perStruttura": {
+    "10060200": {
+      "denominazione": "SERVIZIO PSICHIATRICO DIAGNOSI E CURA",
+      "dimissioni": 188
+    },
+    "10070100": {
+      "denominazione": "CASA DI CURA VILLA FIORITA",
+      "dimissioni": 1099
+    },
+    "10070200": {
+      "denominazione": "ISTITUTO CLINICO PORTA SOLE CASA DI CURA",
+      "dimissioni": 2167
+    },
+    "10070300": {
+      "denominazione": "CLINICA LAMI",
+      "dimissioni": 1803
+    },
+    "10070400": {
+      "denominazione": "CASA DI CURA LIOTTI",
+      "dimissioni": 2731
+    },
+    "10070500": {
+      "denominazione": "CASA DI CURA VILLA AURORA SRL",
+      "dimissioni": 1293
+    },
+    "10080101": {
+      "denominazione": "OSPEDALE DI CITTA` DI CASTELLO",
+      "dimissioni": 8750
+    },
+    "10080102": {
+      "denominazione": "OSPEDALE DI UMBERTIDE",
+      "dimissioni": 2613
+    },
+    "10080301": {
+      "denominazione": "STAB.OSPEDALIERO CASTIGLIONE DEL LAGO",
+      "dimissioni": 1298
+    },
+    "10080303": {
+      "denominazione": "C.O.R.I. - PASSIGNANO",
+      "dimissioni": 407
+    },
+    "10080304": {
+      "denominazione": "STAB. OSPEDALIERO ASSISI",
+      "dimissioni": 1646
+    },
+    "10080307": {
+      "denominazione": "STAB. OSPEDALIERO MEDIA VALLE DEL TEVERE",
+      "dimissioni": 2666
+    },
+    "10080501": {
+      "denominazione": "OSPEDALE CIVILE SAN MATTEO DEGLI INFERMI",
+      "dimissioni": 3727
+    },
+    "10080502": {
+      "denominazione": "OSPEDALE CIVILE DI NORCIA",
+      "dimissioni": 69
+    },
+    "10080503": {
+      "denominazione": "OSPEDALE S.RITA CASCIA",
+      "dimissioni": 121
+    },
+    "10080600": {
+      "denominazione": "SANTA MARIA DELLA STELLA",
+      "dimissioni": 4984
+    },
+    "10080701": {
+      "denominazione": "STABILIMENTO OSPEDALIERO DI NARNI",
+      "dimissioni": 1473
+    },
+    "10080702": {
+      "denominazione": "STABILIMENTO OSPEDALIERO DI AMELIA",
+      "dimissioni": 307
+    },
+    "10080703": {
+      "denominazione": "DOMUS GRATIAE",
+      "dimissioni": 124
+    },
+    "10080901": {
+      "denominazione": "OSPEDALE SAN GIOVANNI BATTISTA FOLIGNO",
+      "dimissioni": 14781
+    },
+    "10080902": {
+      "denominazione": "STABILIMENTO DI TREVI",
+      "dimissioni": 289
+    },
+    "10081000": {
+      "denominazione": "PRESIDIO OSPEDALIERO GUBBIO E G.TADINO",
+      "dimissioni": 6860
+    },
+    "10090100": {
+      "denominazione": "AZIENDA OSPEDALIERA DI PERUGIA",
+      "dimissioni": 35539
+    },
+    "10090200": {
+      "denominazione": "AZIENDA OSPEDALIERA 'S. MARIA' - TERNI",
+      "dimissioni": 23626
+    },
+    "11000101": {
+      "denominazione": "STABILIMENTO DI URBINO",
+      "dimissioni": 6992
+    },
+    "11000102": {
+      "denominazione": "STABILIMENTO DI PERGOLA",
+      "dimissioni": 1172
+    },
+    "11000201": {
+      "denominazione": "STABILIMENTO DI SENIGALLIA",
+      "dimissioni": 8389
+    },
+    "11000202": {
+      "denominazione": "STABILIMENTO DI JESI",
+      "dimissioni": 11845
+    },
+    "11000204": {
+      "denominazione": "STABILIMENTO DI FABRIANO",
+      "dimissioni": 7099
+    },
+    "11000206": {
+      "denominazione": "STABILIMENTO DI CINGOLI",
+      "dimissioni": 274
+    },
+    "11000301": {
+      "denominazione": "STABILIMENTO DI CIVITANOVA M.",
+      "dimissioni": 8621
+    },
+    "11000302": {
+      "denominazione": "STABILIMENTO DI MACERATA",
+      "dimissioni": 15310
+    },
+    "11000303": {
+      "denominazione": "STABILIMENTO DI CAMERINO",
+      "dimissioni": 1992
+    },
+    "11000304": {
+      "denominazione": "STABILIMENTO DI S. SEVERINO M.",
+      "dimissioni": 2534
+    },
+    "11000401": {
+      "denominazione": "STABILIMENTO DI FERMO",
+      "dimissioni": 10416
+    },
+    "11000402": {
+      "denominazione": "STABILIMENTO DI AMANDOLA",
+      "dimissioni": 438
+    },
+    "11000501": {
+      "denominazione": "STABILIMENTO DI S.BENEDETTO",
+      "dimissioni": 9716
+    },
+    "11000502": {
+      "denominazione": "STABILIMENTO DI ASCOLI PICENO",
+      "dimissioni": 10868
+    },
+    "11003700": {
+      "denominazione": "CASA DI CURA VILLA SILVIA",
+      "dimissioni": 527
+    },
+    "11003900": {
+      "denominazione": "KOS CARE SRL - CLINICA VILLA JOLANDA",
+      "dimissioni": 127
+    },
+    "11007100": {
+      "denominazione": "CASA DI CURA 'SAN GIUSEPPE'",
+      "dimissioni": 309
+    },
+    "11007601": {
+      "denominazione": "CASA DI CURA VILLA IGEA",
+      "dimissioni": 4979
+    },
+    "11007602": {
+      "denominazione": "LABOR SPA CASA DI CURA VILLA SERENA",
+      "dimissioni": 854
+    },
+    "11007701": {
+      "denominazione": "CASA DI CURA VILLA PINI SANATRIX GESTION",
+      "dimissioni": 5846
+    },
+    "11007702": {
+      "denominazione": "CASA DI CURA DOTT. MARCHETTI SRL",
+      "dimissioni": 199
+    },
+    "11007801": {
+      "denominazione": "RITA SRL CASA DI CURA PRIVATA VILLAVERDE",
+      "dimissioni": 2043
+    },
+    "11007802": {
+      "denominazione": "CASA DI CURA VILLA SAN MARCO",
+      "dimissioni": 2030
+    },
+    "11007803": {
+      "denominazione": "CASA DI CURA VILLA ANNA SRL",
+      "dimissioni": 2952
+    },
+    "11007804": {
+      "denominazione": "CASA DI CURA SAN BENEDETTO SPA",
+      "dimissioni": 2787
+    },
+    "11007805": {
+      "denominazione": "CASA DI CURA PRIVATA VILLA MONTEFELTRO",
+      "dimissioni": 1150
+    },
+    "11007901": {
+      "denominazione": "CENTRO SANTO STEFANO - PORTO POTENZA",
+      "dimissioni": 549
+    },
+    "11007902": {
+      "denominazione": "IST. DI RIAB. S. STEFANO - VILLA ADRIA",
+      "dimissioni": 370
+    },
+    "11007903": {
+      "denominazione": "CENTRO SANTO STEFANO - ASCOLI PICENO",
+      "dimissioni": 352
+    },
+    "11007904": {
+      "denominazione": "CENTRO SANTO STEFANO - CAGLI",
+      "dimissioni": 301
+    },
+    "11090101": {
+      "denominazione": "STABILIMENTO DI PESARO",
+      "dimissioni": 12654
+    },
+    "11090102": {
+      "denominazione": "STABILIMENTO DI FANO",
+      "dimissioni": 13501
+    },
+    "11090501": {
+      "denominazione": "STABILIMENTO 'UMBERTO I - G. M. LANCISI'",
+      "dimissioni": 31432
+    },
+    "11090503": {
+      "denominazione": "STABILIMENTO 'G. SALESI'",
+      "dimissioni": 9653
+    },
+    "11092101": {
+      "denominazione": "STABILIMENTO INRCA DI ANCONA",
+      "dimissioni": 4529
+    },
+    "11092102": {
+      "denominazione": "STABILIMENTO INRCA DI FERMO",
+      "dimissioni": 646
+    },
+    "11092103": {
+      "denominazione": "STABILIMENTO INRCA DI OSIMO",
+      "dimissioni": 1726
+    },
+    "11099500": {
+      "denominazione": "CENTRO CLINICO NEMO ANCONA",
+      "dimissioni": 84
+    },
+    "12000200": {
+      "denominazione": "OSPEDALE DI ACQUAPENDENTE",
+      "dimissioni": 1154
+    },
+    "12000300": {
+      "denominazione": "OSPEDALE DI CIVITACASTELLANA",
+      "dimissioni": 2747
+    },
+    "12000700": {
+      "denominazione": "OSPEDALE DI TARQUINIA",
+      "dimissioni": 2884
+    },
+    "12001400": {
+      "denominazione": "NUOVA  S.TERESA DEL BAMBIN GESU`",
+      "dimissioni": 1524
+    },
+    "12001500": {
+      "denominazione": "VILLA IMMACOLATA",
+      "dimissioni": 962
+    },
+    "12001900": {
+      "denominazione": "POLO OSPEDALIERO UNICO INTEGRATO",
+      "dimissioni": 10006
+    },
+    "12002600": {
+      "denominazione": "POLO OSPEDALIERO SANTO SPIRITO",
+      "dimissioni": 9399
+    },
+    "12003000": {
+      "denominazione": "OSPEDALE REGIONALE OFTALMICO",
+      "dimissioni": 1415
+    },
+    "12003600": {
+      "denominazione": "OSP. VILLA ALBANI ANZIO",
+      "dimissioni": 76
+    },
+    "12004300": {
+      "denominazione": "OSP. ANZIO-NETTUNO",
+      "dimissioni": 3451
+    },
+    "12004500": {
+      "denominazione": "OSPEDALE SAN PAOLO",
+      "dimissioni": 5389
+    },
+    "12004600": {
+      "denominazione": "OSPEDALE L.PARODI DELFINO",
+      "dimissioni": 4033
+    },
+    "12004700": {
+      "denominazione": "OSP. S.SEBASTIANO FRASCATI",
+      "dimissioni": 2864
+    },
+    "12004800": {
+      "denominazione": "OSP. S.GIUSEPPE MARINO",
+      "dimissioni": 1528
+    },
+    "12004900": {
+      "denominazione": "OSPEDALE SS. GONFALONE",
+      "dimissioni": 2056
+    },
+    "12005100": {
+      "denominazione": "OSPEDALE CIVILE CONIUGI BERNARDINI",
+      "dimissioni": 1573
+    },
+    "12005200": {
+      "denominazione": "OSPEDALE A. ANGELUCCI",
+      "dimissioni": 1094
+    },
+    "12005300": {
+      "denominazione": "OSPEDALE S. GIOVANNI EVANGELISTA(TIVOLI)",
+      "dimissioni": 6054
+    },
+    "12005400": {
+      "denominazione": "OSP.'PAOLO COLOMBO' VELLETRI",
+      "dimissioni": 3074
+    },
+    "12005900": {
+      "denominazione": "OSPEDALE  PADRE PIO DI BRACCIANO",
+      "dimissioni": 1530
+    },
+    "12006100": {
+      "denominazione": "OSPEDALE G. B. GRASSI",
+      "dimissioni": 8177
+    },
+    "12006500": {
+      "denominazione": "CENTRO PARAPLEGICI OSTIA ' GENNARO DI RO",
+      "dimissioni": 207
+    },
+    "12006601": {
+      "denominazione": "OSPEDALE S.EUGENIO",
+      "dimissioni": 15424
+    },
+    "12006602": {
+      "denominazione": "OSPEDALE CTO.A.ALESINI",
+      "dimissioni": 3911
+    },
+    "12007100": {
+      "denominazione": "OSPEDALE SAN PIETRO - FBF",
+      "dimissioni": 21390
+    },
+    "12007200": {
+      "denominazione": "OSPEDALE SAN GIOVANNI CALIBITA - FBF",
+      "dimissioni": 9522
+    },
+    "12007300": {
+      "denominazione": "OSPEDALE SAN CARLO DI NANCY",
+      "dimissioni": 11072
+    },
+    "12007400": {
+      "denominazione": "OSP. GEN. DI ZONA 'CRISTO RE'",
+      "dimissioni": 8312
+    },
+    "12007500": {
+      "denominazione": "OSPEDALE ISRAELITICO",
+      "dimissioni": 6210
+    },
+    "12007600": {
+      "denominazione": "MADRE GIUSEPPINA VANNINI",
+      "dimissioni": 8103
+    },
+    "12007900": {
+      "denominazione": "CASA DI CURA VILLA DOMELIA S.R.L.",
+      "dimissioni": 2077
+    },
+    "12008200": {
+      "denominazione": "VILLA DELLE QUERCE-POLIGEST",
+      "dimissioni": 2695
+    },
+    "12008500": {
+      "denominazione": "MADONNA DELLA FIDUCIA",
+      "dimissioni": 957
+    },
+    "12008700": {
+      "denominazione": "CASA DI CURA POLICLINICO ITALIA",
+      "dimissioni": 929
+    },
+    "12008800": {
+      "denominazione": "I.N.I. SRL DIVISIONE MEDICUS HOTEL",
+      "dimissioni": 720
+    },
+    "12008900": {
+      "denominazione": "N.C.L. ISTITUTO DI NEUROSCIENZE S.R.L.",
+      "dimissioni": 607
+    },
+    "12009000": {
+      "denominazione": "CASA DI CURA VILLA BENEDETTA",
+      "dimissioni": 1057
+    },
+    "12009200": {
+      "denominazione": "CASA DI CURA SANATRIX",
+      "dimissioni": 1367
+    },
+    "12009600": {
+      "denominazione": "C.D.C. MADONNA DELLE GRAZIE",
+      "dimissioni": 3271
+    },
+    "12009800": {
+      "denominazione": "CASA DI CURA N.SIGNORA DELLA MERCEDE",
+      "dimissioni": 1302
+    },
+    "12010400": {
+      "denominazione": "CASA DI CURA VILLA FULVIA SRL",
+      "dimissioni": 1565
+    },
+    "12010500": {
+      "denominazione": "CASA DI CURA MARCO POLO",
+      "dimissioni": 579
+    },
+    "12010800": {
+      "denominazione": "CASA DI CURA ASSUNZIONE DI MARIA SS",
+      "dimissioni": 1179
+    },
+    "12011300": {
+      "denominazione": "CASA DI CURA VILLA PIA",
+      "dimissioni": 3657
+    },
+    "12011400": {
+      "denominazione": "CASA DI CURA QUISISANA",
+      "dimissioni": 1538
+    },
+    "12011500": {
+      "denominazione": "CASA DI CURA SANTA FAMIGLIA",
+      "dimissioni": 4914
+    },
+    "12011800": {
+      "denominazione": "CASA DI CURA VILLA DEL ROSARIO",
+      "dimissioni": 1427
+    },
+    "12011900": {
+      "denominazione": "CASA DI CURA VILLA MAFALDA",
+      "dimissioni": 1919
+    },
+    "12012000": {
+      "denominazione": "CASA DI CURA SAN DOMENICO",
+      "dimissioni": 291
+    },
+    "12012300": {
+      "denominazione": "CASA DI CURA VILLA STUART",
+      "dimissioni": 1319
+    },
+    "12012900": {
+      "denominazione": "CASA DI CURA VILLA MARGHERITA",
+      "dimissioni": 2699
+    },
+    "12013000": {
+      "denominazione": "CASA DI CURA VILLA SANDRA",
+      "dimissioni": 1954
+    },
+    "12013200": {
+      "denominazione": "CASA DI CURA GUARNIERI SPA",
+      "dimissioni": 3298
+    },
+    "12013300": {
+      "denominazione": "CASA DI CURA SALVATOR MUNDI",
+      "dimissioni": 2143
+    },
+    "12013400": {
+      "denominazione": "CASA DI CURA S.ANNA POMEZIA",
+      "dimissioni": 2660
+    },
+    "12013500": {
+      "denominazione": "C.D.C. MATER MISERICORDIAE",
+      "dimissioni": 342
+    },
+    "12013800": {
+      "denominazione": "OSPEDALE SAN GIOVANNI BATTISTA-ACISMOM",
+      "dimissioni": 1757
+    },
+    "12013900": {
+      "denominazione": "CLINICA LATINA",
+      "dimissioni": 293
+    },
+    "12014100": {
+      "denominazione": "CASA DI CURA SANTO VOLTO",
+      "dimissioni": 388
+    },
+    "12014300": {
+      "denominazione": "CONCORDIA HOSPITAL",
+      "dimissioni": 1477
+    },
+    "12014400": {
+      "denominazione": "CLINICA VALLE GIULIA SPA",
+      "dimissioni": 274
+    },
+    "12014600": {
+      "denominazione": "CASA DI CURA S.RITA DA CASCIA",
+      "dimissioni": 330
+    },
+    "12015000": {
+      "denominazione": "CASA DI CURA PIO XI",
+      "dimissioni": 3623
+    },
+    "12015700": {
+      "denominazione": "C.D.C. FABIA MATER",
+      "dimissioni": 3587
+    },
+    "12015800": {
+      "denominazione": "PAIDEIA INTERNATIONAL HOSPITAL",
+      "dimissioni": 1197
+    },
+    "12015900": {
+      "denominazione": "CASA DI CURA NUOVA VILLA CLAUDIA",
+      "dimissioni": 2652
+    },
+    "12016300": {
+      "denominazione": "CASA DI CURA SAN FELICIANO",
+      "dimissioni": 3291
+    },
+    "12016600": {
+      "denominazione": "CASA DI CURA NUOVA ITOR",
+      "dimissioni": 3792
+    },
+    "12016900": {
+      "denominazione": "NUOVA CLINICA ANNUNZIATELLA",
+      "dimissioni": 952
+    },
+    "12017100": {
+      "denominazione": "CASA DI CURA CITTA` DI ROMA",
+      "dimissioni": 1325
+    },
+    "12017200": {
+      "denominazione": "CASA DI CURA MATER DEI",
+      "dimissioni": 2818
+    },
+    "12017300": {
+      "denominazione": "EUROPEAN HOSPITAL",
+      "dimissioni": 3831
+    },
+    "12017600": {
+      "denominazione": "C.D.C. I.N.I. SRL",
+      "dimissioni": 5282
+    },
+    "12018000": {
+      "denominazione": "AURELIA HOSPITAL",
+      "dimissioni": 6083
+    },
+    "12019100": {
+      "denominazione": "CASA DI CURA MERRY HOUSE/C.GERIATRICO RO",
+      "dimissioni": 1002
+    },
+    "12019900": {
+      "denominazione": "I.N.I. SRL  DIVISIONE VILLA DANTE",
+      "dimissioni": 963
+    },
+    "12020000": {
+      "denominazione": "PRESIDIO OSPEDALIERO NORD",
+      "dimissioni": 13839
+    },
+    "12020401": {
+      "denominazione": "ALFREDO FIORINI TERRACINA",
+      "dimissioni": 2755
+    },
+    "12020402": {
+      "denominazione": "SAN GIOVANNI DI DIO FONDI",
+      "dimissioni": 2810
+    },
+    "12020600": {
+      "denominazione": "PRESIDIO OSPEDALIERO SUD",
+      "dimissioni": 6882
+    },
+    "12020900": {
+      "denominazione": "CASA DEL SOLE CLINICA TOMMASO COSTA",
+      "dimissioni": 3683
+    },
+    "12021200": {
+      "denominazione": "ISTIT CHIR ORTOP TRAUMATOLOGICO",
+      "dimissioni": 9061
+    },
+    "12021300": {
+      "denominazione": "CLINICHE MODERNE SPA",
+      "dimissioni": 1834
+    },
+    "12021400": {
+      "denominazione": "ISTITUTO FISIOTERAPICO C.FRANCESCHINI",
+      "dimissioni": 624
+    },
+    "12021500": {
+      "denominazione": "OSPEDALE CIITTA' DI APRILIA",
+      "dimissioni": 3953
+    },
+    "12021601": {
+      "denominazione": "OSPEDALE  F. SPAZIANI  FROSINONE",
+      "dimissioni": 10053
+    },
+    "12021602": {
+      "denominazione": "OSPEDALE SAN BENEDETTO ALATRI",
+      "dimissioni": 3944
+    },
+    "12022600": {
+      "denominazione": "OSPEDALE CIVILE S.S.TRINITA` N.SEDE SORA",
+      "dimissioni": 6888
+    },
+    "12022800": {
+      "denominazione": "OSPEDALE S. SCOLASTICA CASSINO",
+      "dimissioni": 8084
+    },
+    "12023000": {
+      "denominazione": "CASA DI CURA PRIV. S. ANNA S.R.L CASSINO",
+      "dimissioni": 1446
+    },
+    "12023500": {
+      "denominazione": "CASA DI CURA PRIV. VILLA SERENA CASSINO",
+      "dimissioni": 980
+    },
+    "12023600": {
+      "denominazione": "CASA DI CURA PRIV. SANTA TERESA ISOLA L.",
+      "dimissioni": 1088
+    },
+    "12024300": {
+      "denominazione": "CASA DI CURA VILLA SALARIA S.R.L.",
+      "dimissioni": 123
+    },
+    "12024500": {
+      "denominazione": "CENTRO RESIDENZIALE MEDICA GROUP",
+      "dimissioni": 310
+    },
+    "12024900": {
+      "denominazione": "C.D.C. VILLA ANNA MARIA",
+      "dimissioni": 195
+    },
+    "12025400": {
+      "denominazione": "ARS MEDICA SPA",
+      "dimissioni": 1920
+    },
+    "12025600": {
+      "denominazione": "ARSBIOMEDICA DELLA SAF GESTIONI SANITARI",
+      "dimissioni": 682
+    },
+    "12025700": {
+      "denominazione": "CASA DI CURA S. MARIA DI LEUCA",
+      "dimissioni": 1838
+    },
+    "12026200": {
+      "denominazione": "CASA DI CURA VILLA MARIA IMMACOLATA",
+      "dimissioni": 282
+    },
+    "12026400": {
+      "denominazione": "CASA DI CURA VILLA VERDE",
+      "dimissioni": 370
+    },
+    "12026500": {
+      "denominazione": "ROME AMERICAN HOSPITAL",
+      "dimissioni": 1200
+    },
+    "12026700": {
+      "denominazione": "OSPEDALE SANDRO PERTINI",
+      "dimissioni": 13266
+    },
+    "12027100": {
+      "denominazione": "POLO OSPEDALIERO",
+      "dimissioni": 15122
+    },
+    "12027700": {
+      "denominazione": "CASA CURA PRIVATA'SAN RAFFAELE' CASSINO",
+      "dimissioni": 2433
+    },
+    "12027800": {
+      "denominazione": "CASA DI CURA 'VILLA SILVANA'",
+      "dimissioni": 385
+    },
+    "12027900": {
+      "denominazione": "I.N.I. DIV.DISTACCAT CITTA` BIANCA",
+      "dimissioni": 1122
+    },
+    "12028000": {
+      "denominazione": "C.D.C SAN RAFFAELE MONTECOMPATRI",
+      "dimissioni": 1703
+    },
+    "12028300": {
+      "denominazione": "C. DI C. 'ISTITUTO CLINICO CASALPALOCCO",
+      "dimissioni": 1416
+    },
+    "12028400": {
+      "denominazione": "NOMENTANA HOSPITAL SRL",
+      "dimissioni": 1374
+    },
+    "12028501": {
+      "denominazione": "PRESIDIO SAN FILIPPO NERI",
+      "dimissioni": 13459
+    },
+    "12028503": {
+      "denominazione": "PRESIDIO CASSIA SANT'ANDREA",
+      "dimissioni": 225
+    },
+    "12028600": {
+      "denominazione": "CASA DI CURA VILLA LUANA",
+      "dimissioni": 223
+    },
+    "12028800": {
+      "denominazione": "VILLA TIBERIA HOSPITAL",
+      "dimissioni": 4615
+    },
+    "12028900": {
+      "denominazione": "VILLA DEI PINI ASA SRL",
+      "dimissioni": 708
+    },
+    "12029000": {
+      "denominazione": "CASA DI CURA KAROL WOJTYLA HOSPITAL",
+      "dimissioni": 1160
+    },
+    "12029100": {
+      "denominazione": "CASA DI CURA SRL 'SORA'",
+      "dimissioni": 1059
+    },
+    "12029200": {
+      "denominazione": "OSPEDALE DEI CASTELLI",
+      "dimissioni": 9242
+    },
+    "12029300": {
+      "denominazione": "CASA DI CURA VILLA AURORA",
+      "dimissioni": 945
+    },
+    "12029400": {
+      "denominazione": "POLICLINICO CASILINO",
+      "dimissioni": 24725
+    },
+    "12029500": {
+      "denominazione": "POLICLINICO LUIGI DI LIEGRO",
+      "dimissioni": 5349
+    },
+    "12029600": {
+      "denominazione": "CASA DI CURA VILLA BETANIA",
+      "dimissioni": 4476
+    },
+    "12029700": {
+      "denominazione": "CLINICA FENICE PARIOLI SRL",
+      "dimissioni": 1503
+    },
+    "12029800": {
+      "denominazione": "CASA DI CURA SALUS INFIRMORUM",
+      "dimissioni": 577
+    },
+    "12030000": {
+      "denominazione": "CASA DI CURA VILLA VALERIA",
+      "dimissioni": 1552
+    },
+    "12030100": {
+      "denominazione": "C.DI C. AUXOLOGICO ROMA - BUON PASTORE",
+      "dimissioni": 899
+    },
+    "12030200": {
+      "denominazione": "OSPEDALE REGINA APOSTOLORUM",
+      "dimissioni": 4986
+    },
+    "12030300": {
+      "denominazione": "VILLA SALARIA HOSPITAL S.R.L.",
+      "dimissioni": 1168
+    },
+    "12030400": {
+      "denominazione": "CASA DI CURA NEPI",
+      "dimissioni": 22
+    },
+    "12030500": {
+      "denominazione": "OSPEDALE FATEBENEFATELLI-ISOLA TIBERINA",
+      "dimissioni": 6000
+    },
+    "12032800": {
+      "denominazione": "CASA DI CURA PRIVATA `DON CARLO GNOCCHI`",
+      "dimissioni": 175
+    },
+    "12060600": {
+      "denominazione": "CASA DI CURA S. RAFFAELE PORTUENSE",
+      "dimissioni": 1017
+    },
+    "12090100": {
+      "denominazione": "AZ.OSP.SAN CAMILLO-FORLANINI",
+      "dimissioni": 37562
+    },
+    "12090201": {
+      "denominazione": "AZIENDA OSP. S.GIOVANNI/ADDOLORATA ROMA",
+      "dimissioni": 26751
+    },
+    "12090202": {
+      "denominazione": "A.O. S.GIOVANNI-ADDOLORATA-CELIO",
+      "dimissioni": 109
+    },
+    "12090401": {
+      "denominazione": "OSPEDALE PEDIATRICO BAMBINO GESU`",
+      "dimissioni": 55543
+    },
+    "12090402": {
+      "denominazione": "OSPEDALE PEDIATRICO BAMBINO GESU`",
+      "dimissioni": 20774
+    },
+    "12090403": {
+      "denominazione": "OSPEDALE PEDIATRICO BAMBINO GESU`",
+      "dimissioni": 951
+    },
+    "12090501": {
+      "denominazione": "POLICLINICO UNIVERSITARIO A. GEMELLI",
+      "dimissioni": 90841
+    },
+    "12090502": {
+      "denominazione": "COMPLESSO INTEGRATO COLUMBUS (C.I.C.)",
+      "dimissioni": 4433
+    },
+    "12090600": {
+      "denominazione": "POLICLINICO U. I",
+      "dimissioni": 41281
+    },
+    "12090801": {
+      "denominazione": "IFO - ISTITUTO REGINA ELENA",
+      "dimissioni": 8465
+    },
+    "12090802": {
+      "denominazione": "IFO - ISTITUTO SAN GALLICANO",
+      "dimissioni": 1235
+    },
+    "12090900": {
+      "denominazione": "I.R.C.C.S. S. LUCIA",
+      "dimissioni": 1606
+    },
+    "12091000": {
+      "denominazione": "IRCCS SAN RAFFAELE PISANA",
+      "dimissioni": 4201
+    },
+    "12091100": {
+      "denominazione": "I.D.I. - FONDAZIONE LUIGI MARIA MONTI",
+      "dimissioni": 11032
+    },
+    "12091300": {
+      "denominazione": "IRCCS - FONDAZIONE G.B. BIETTI",
+      "dimissioni": 69
+    },
+    "12091500": {
+      "denominazione": "POLICL. UNIV. CAMPUS BIO MEDICO",
+      "dimissioni": 27436
+    },
+    "12091800": {
+      "denominazione": "INMI 'L.SPALLANZANI' - IRCCS",
+      "dimissioni": 3272
+    },
+    "12091900": {
+      "denominazione": "AZIENDA OSPEDALIERA SANT`ANDREA",
+      "dimissioni": 19418
+    },
+    "12092000": {
+      "denominazione": "AZ. OSP. UNIV. POLICLINICO TOR VERGATA",
+      "dimissioni": 21735
+    },
+    "13000100": {
+      "denominazione": "P.O.SAN SALVATORE L'AQUILA",
+      "dimissioni": 16983
+    },
+    "13000200": {
+      "denominazione": "PO SULMONA ' DELL' ANNUNZIATA'",
+      "dimissioni": 3582
+    },
+    "13000300": {
+      "denominazione": "PO AVEZZANO 'S. FILIPPO E NICOLA'",
+      "dimissioni": 11174
+    },
+    "13000500": {
+      "denominazione": "PRESIDIO OSPEDALIERO CASTEL DI SANGRO",
+      "dimissioni": 843
+    },
+    "13000600": {
+      "denominazione": "PO TAGLIACOZZO ' UMBERTO I'",
+      "dimissioni": 359
+    },
+    "13001000": {
+      "denominazione": "CASA DI CURA 'DI LORENZO'",
+      "dimissioni": 2504
+    },
+    "13001200": {
+      "denominazione": "CASA DI CURA L'IMMACOLATA",
+      "dimissioni": 2905
+    },
+    "13001300": {
+      "denominazione": "CASA DI CURA 'S RAFFAELE SPA'",
+      "dimissioni": 363
+    },
+    "13001400": {
+      "denominazione": "OSPEDALE MAZZINI",
+      "dimissioni": 14890
+    },
+    "13001500": {
+      "denominazione": "OSPEDALE MARIA S.S. DELLO SPLENDORE",
+      "dimissioni": 3851
+    },
+    "13001600": {
+      "denominazione": "OSPEDALE SAN LIBERATORE DI ATRI",
+      "dimissioni": 5301
+    },
+    "13001700": {
+      "denominazione": "OSPEDALE-VAL VIBRATA SANT'OMERO",
+      "dimissioni": 6116
+    },
+    "13001800": {
+      "denominazione": "P.O. 'SPIRITO SANTO' PESCARA",
+      "dimissioni": 29180
+    },
+    "13001900": {
+      "denominazione": "P.O. S. MASSIMO DI PENNE",
+      "dimissioni": 3602
+    },
+    "13002000": {
+      "denominazione": "P.O.'S.S. TRINITA'' POPOLI",
+      "dimissioni": 2559
+    },
+    "13002200": {
+      "denominazione": "CASA DI CURA PIERANGELI",
+      "dimissioni": 8334
+    },
+    "13002400": {
+      "denominazione": "CASA DI CURA VILLA SERENA",
+      "dimissioni": 9854
+    },
+    "13002600": {
+      "denominazione": "P.O. CLINICIZZ. 'SS. ANNUNZIATA' CHIETI",
+      "dimissioni": 18177
+    },
+    "13002800": {
+      "denominazione": "P.O. LANCIANO 'RENZETTI'",
+      "dimissioni": 6290
+    },
+    "13002900": {
+      "denominazione": "P.O. VASTO 'S. PIO DA PIETRALCINA'",
+      "dimissioni": 7427
+    },
+    "13003000": {
+      "denominazione": "P.O. ATESSA 'SAN CAMILLO DE LELLIS'",
+      "dimissioni": 468
+    },
+    "13003200": {
+      "denominazione": "P.O. ORTONA 'G. BERNABEO'",
+      "dimissioni": 2828
+    },
+    "13003500": {
+      "denominazione": "CASA DI CURA PRIVATA 'DOTT. SPATOCCO'",
+      "dimissioni": 2036
+    },
+    "13003900": {
+      "denominazione": "CASA DI CURA I.N.I. CANISTRO",
+      "dimissioni": 1567
+    },
+    "13004000": {
+      "denominazione": "CASA DI CURA PRIVATA VILLA LETIZIA",
+      "dimissioni": 2653
+    },
+    "13004100": {
+      "denominazione": "NOVA SALUS SRL",
+      "dimissioni": 313
+    },
+    "13004200": {
+      "denominazione": "CASA DI CURA S. FRANCESCO",
+      "dimissioni": 265
+    },
+    "14000100": {
+      "denominazione": "PRESIDIO OSPEDALIERO 'A.CARDARELLI'",
+      "dimissioni": 10316
+    },
+    "14000200": {
+      "denominazione": "PLESSO OSPEDALIERO 'S TIMOTEO- TERMOLI",
+      "dimissioni": 5147
+    },
+    "14000301": {
+      "denominazione": "OSPEDALE VENEZIALE- ISERNIA",
+      "dimissioni": 4960
+    },
+    "14000302": {
+      "denominazione": "OSPEDALE CARACCIOLO AGNONE",
+      "dimissioni": 467
+    },
+    "14000400": {
+      "denominazione": "CASA DI CURA VILLA MARIA SRL",
+      "dimissioni": 1149
+    },
+    "14000500": {
+      "denominazione": "CASA DI CURA PRIVATA VILLA ESTHER S.R.L.",
+      "dimissioni": 1901
+    },
+    "14000700": {
+      "denominazione": "GEMELLI MOLISE S.PA. - CAMPOBASSO",
+      "dimissioni": 6316
+    },
+    "14000800": {
+      "denominazione": "GEA MEDICA IST. EUROPEO DI RIABILITAZION",
+      "dimissioni": 244
+    },
+    "14091100": {
+      "denominazione": "NEUROMED I.R.C.C.S.",
+      "dimissioni": 7624
+    },
+    "15000400": {
+      "denominazione": "OSPEDALE SAN GIUSEPPE E MELORIO",
+      "dimissioni": 680
+    },
+    "15001000": {
+      "denominazione": "PRESIDIO OSPEDALIERO 'SAN ROCCO'",
+      "dimissioni": 3255
+    },
+    "15001300": {
+      "denominazione": "PRESIDIO OSPEDALIERO S.G.MOSCATI AVERSA",
+      "dimissioni": 9700
+    },
+    "15001400": {
+      "denominazione": "CLINICA SANT`ANNA",
+      "dimissioni": 1891
+    },
+    "15001600": {
+      "denominazione": "VILLA DEL SOLE",
+      "dimissioni": 4113
+    },
+    "15001700": {
+      "denominazione": "CASA DI CURA VILLA FIORITA",
+      "dimissioni": 961
+    },
+    "15001800": {
+      "denominazione": "CASA DI CURA SAN PAOLO",
+      "dimissioni": 2081
+    },
+    "15001900": {
+      "denominazione": "CASA DI CURA 'VILLA FIORITA' SPA",
+      "dimissioni": 5074
+    },
+    "15002000": {
+      "denominazione": "CLINICA SAN MICHELE",
+      "dimissioni": 6352
+    },
+    "15002100": {
+      "denominazione": "CASA DI CURA PINETA GRANDE",
+      "dimissioni": 11699
+    },
+    "15002200": {
+      "denominazione": "MINERVA  S.P.A. SANTA MARIA DELLA SALUTE",
+      "dimissioni": 1795
+    },
+    "15002300": {
+      "denominazione": "VILLA DEI PINI",
+      "dimissioni": 2127
+    },
+    "15002400": {
+      "denominazione": "CASA DI CURA VILLA ORTENSIA",
+      "dimissioni": 422
+    },
+    "15002500": {
+      "denominazione": "VILLA DEGLI ULIVI",
+      "dimissioni": 129
+    },
+    "15002800": {
+      "denominazione": "VILLA DELLE MAGNOLIE",
+      "dimissioni": 1168
+    },
+    "15003200": {
+      "denominazione": "OSP.SACRO CUORE DI GESU`FATEBENEFRATELLI",
+      "dimissioni": 11088
+    },
+    "15003300": {
+      "denominazione": "CASA DI CURA GE.P.O.S. SRL",
+      "dimissioni": 1757
+    },
+    "15003400": {
+      "denominazione": "CASA DI CURA NUOVA CLINICA S.RITA",
+      "dimissioni": 2720
+    },
+    "15003500": {
+      "denominazione": "CASA DI CURA SAN FRANCESCO",
+      "dimissioni": 2948
+    },
+    "15005700": {
+      "denominazione": "OSPEDALE CIVILE S. GIOVANNI DI DIO",
+      "dimissioni": 6940
+    },
+    "15005800": {
+      "denominazione": "OSPEDALE SAN GIULIANO",
+      "dimissioni": 10030
+    },
+    "15007000": {
+      "denominazione": "OSPEDALE RIZZOLI",
+      "dimissioni": 3779
+    },
+    "15007300": {
+      "denominazione": "CASA DI CURA OSPEDALE FATEBENEFRATELLI",
+      "dimissioni": 9541
+    },
+    "15007500": {
+      "denominazione": "CASA DI CURA OSP. INTERNAZIONALE SRL",
+      "dimissioni": 5120
+    },
+    "15007800": {
+      "denominazione": "ALMA MATER S.P.A. 'VILLA CAMALDOLI' SPA",
+      "dimissioni": 1176
+    },
+    "15007900": {
+      "denominazione": "CASA DI CURA VILLA ANGELA SRL",
+      "dimissioni": 438
+    },
+    "15008100": {
+      "denominazione": "CASA DI CURA CLINIC CENTER SPA",
+      "dimissioni": 2356
+    },
+    "15008200": {
+      "denominazione": "CASA DI CURA ' LA MADONNINA ' SRL",
+      "dimissioni": 3028
+    },
+    "15008400": {
+      "denominazione": "CASA DI CURA VILLA DEI FIORI  SRL",
+      "dimissioni": 10556
+    },
+    "15008800": {
+      "denominazione": "HERMITAGE CAPODIMONTE SPA",
+      "dimissioni": 1256
+    },
+    "15009200": {
+      "denominazione": "CASA DI CURA VILLA DELLE QUERCE SPA",
+      "dimissioni": 2035
+    },
+    "15009400": {
+      "denominazione": "CLINICA VESUVIO SRL",
+      "dimissioni": 543
+    },
+    "15009500": {
+      "denominazione": "CLINICA MEDITERRANEA SPA",
+      "dimissioni": 9347
+    },
+    "15009700": {
+      "denominazione": "CASA DI CURA VILLA MAIONE",
+      "dimissioni": 2549
+    },
+    "15009900": {
+      "denominazione": "CLINICA SANTA PATRIZIA",
+      "dimissioni": 4552
+    },
+    "15010000": {
+      "denominazione": "CASA DI CURA  ' N.S. DI LOURDES ' SPA",
+      "dimissioni": 4694
+    },
+    "15010100": {
+      "denominazione": "CASA DI CURA 'CLINICA S.ANTIMO'",
+      "dimissioni": 878
+    },
+    "15010200": {
+      "denominazione": "CASA DI CURA S. MARIA LA BRUNA SRL",
+      "dimissioni": 1149
+    },
+    "15010400": {
+      "denominazione": "CASA DI CURA VILLA CINZIA SRL",
+      "dimissioni": 4135
+    },
+    "15010500": {
+      "denominazione": "CASA DI CURA VILLA STABIA",
+      "dimissioni": 5528
+    },
+    "15010800": {
+      "denominazione": "CASA DI CURA CARDIOMED S.P.A.",
+      "dimissioni": 2931
+    },
+    "15010900": {
+      "denominazione": "CLINICA SANATRIX SPA",
+      "dimissioni": 6125
+    },
+    "15011000": {
+      "denominazione": "CASA DI CURA MARIA ROSARIA SPA",
+      "dimissioni": 5340
+    },
+    "15011100": {
+      "denominazione": "STAZIONE CLIMATICA BIANCHI SRL",
+      "dimissioni": 1298
+    },
+    "15011300": {
+      "denominazione": "CASA DI SALUTE  S.LUCIA  SRL",
+      "dimissioni": 4283
+    },
+    "15011400": {
+      "denominazione": "CASA DI CURA A.GRIMALDI",
+      "dimissioni": 4274
+    },
+    "15011600": {
+      "denominazione": "CASA DI CURA VILLA DEI FIORI",
+      "dimissioni": 3770
+    },
+    "15011700": {
+      "denominazione": "IOS -  EX CASA DI CURA ' MELUCCIO'  SRL",
+      "dimissioni": 1322
+    },
+    "15011800": {
+      "denominazione": "ISTITUTO DI CURA MARIA SS.DELLA PIETA`",
+      "dimissioni": 4310
+    },
+    "15012100": {
+      "denominazione": "IOS - EX CLINICA ' S. FELICE'  SRL",
+      "dimissioni": 1471
+    },
+    "15014000": {
+      "denominazione": "OSPEDALE ARIANO IRPINO",
+      "dimissioni": 4133
+    },
+    "15014300": {
+      "denominazione": "PINETA GRANDE SPA - CDIC VILLA ESTHER",
+      "dimissioni": 1726
+    },
+    "15014400": {
+      "denominazione": "CASA DI CURA VILLA MARIA",
+      "dimissioni": 165
+    },
+    "15014500": {
+      "denominazione": "CASA DI CURA S.RITA",
+      "dimissioni": 3484
+    },
+    "15014600": {
+      "denominazione": "CASA DI CURA VILLA MARIA",
+      "dimissioni": 1808
+    },
+    "15014800": {
+      "denominazione": "CASA DI CURA MONTEVERGINE",
+      "dimissioni": 6497
+    },
+    "15014900": {
+      "denominazione": "CASA DI CURA VILLA DEI PLATANI",
+      "dimissioni": 9123
+    },
+    "15015001": {
+      "denominazione": "OSPEDALE S.ANGELO DEI LOMBARDI",
+      "dimissioni": 1219
+    },
+    "15015002": {
+      "denominazione": "P.SP.RIABILITATIVO DON GNOCCHI",
+      "dimissioni": 776
+    },
+    "15015401": {
+      "denominazione": "P.O. UMBERTO I NOCERA INFERIORE",
+      "dimissioni": 14135
+    },
+    "15015402": {
+      "denominazione": "P.O. TORTORA PAGANI",
+      "dimissioni": 3865
+    },
+    "15015403": {
+      "denominazione": "P.O. MAURO SCARLATO SCAFATI",
+      "dimissioni": 899
+    },
+    "15015800": {
+      "denominazione": "P.O. S. FRANCESCO D ASSISI OLIVETO CITRA",
+      "dimissioni": 4851
+    },
+    "15016000": {
+      "denominazione": "PRESIDIO OSPEDALIERO LUIGI CURTO- POLLA",
+      "dimissioni": 8153
+    },
+    "15016100": {
+      "denominazione": "PRESIDIO OSPEDALIERO 'IMMACOLATA' SAPRI",
+      "dimissioni": 3657
+    },
+    "15016201": {
+      "denominazione": "P.O.S.MARIA ADDOLORATA EBOLI",
+      "dimissioni": 7135
+    },
+    "15016202": {
+      "denominazione": "P.O.S.MARIA DELLA SPERANZA BATTIPAGLIA",
+      "dimissioni": 6193
+    },
+    "15016203": {
+      "denominazione": "P.O.ROCCADASPIDE",
+      "dimissioni": 1580
+    },
+    "15016300": {
+      "denominazione": "P.O. MARTIRI DI VILLA MALTA SARNO",
+      "dimissioni": 4345
+    },
+    "15016501": {
+      "denominazione": "P.O. VALLO DELLA LUCANIA",
+      "dimissioni": 11456
+    },
+    "15016502": {
+      "denominazione": "P.O.AGROPOLI",
+      "dimissioni": 1178
+    },
+    "15016700": {
+      "denominazione": "HYPPOCRATICA SPA CDC VILLA DEL SOLE",
+      "dimissioni": 4534
+    },
+    "15017000": {
+      "denominazione": "ICM-ISTITUTO CLINICO MEDITERRANEO S.P.A.",
+      "dimissioni": 4772
+    },
+    "15017100": {
+      "denominazione": "LA QUIETE - S.R.L.",
+      "dimissioni": 234
+    },
+    "15017300": {
+      "denominazione": "CASA DI CURA PRIVATA SALUS S.P.A.",
+      "dimissioni": 4034
+    },
+    "15017500": {
+      "denominazione": "CAMPOLONGO HOSPITAL S.P.A.",
+      "dimissioni": 4332
+    },
+    "15017600": {
+      "denominazione": "'CASA DI CURA PROF.DOTT. LUIGI COBELLIS'",
+      "dimissioni": 6114
+    },
+    "15017700": {
+      "denominazione": "CASA DI CURA TORTORELLA SPA",
+      "dimissioni": 4406
+    },
+    "15017800": {
+      "denominazione": "VILLA CHIARUGI SRL",
+      "dimissioni": 236
+    },
+    "15018900": {
+      "denominazione": "OSP.CIV. GAETANINA SCOTTO",
+      "dimissioni": 119
+    },
+    "15019100": {
+      "denominazione": "OSPEDALE S.M.DELLE GRAZIE",
+      "dimissioni": 12657
+    },
+    "15019200": {
+      "denominazione": "CASA DI CURA S.MARIA DEL POZZO",
+      "dimissioni": 1867
+    },
+    "15019600": {
+      "denominazione": "FONDAZIONE EVANGELICA BETANIA",
+      "dimissioni": 11713
+    },
+    "15035000": {
+      "denominazione": "C.M.R. S.P.A.- CENTRO MED.DIAGN.E RIAB.",
+      "dimissioni": 260
+    },
+    "15037100": {
+      "denominazione": "KOS CARE S.R.L.",
+      "dimissioni": 996
+    },
+    "15041601": {
+      "denominazione": "P.O. S.  LEONARDO",
+      "dimissioni": 7232
+    },
+    "15041602": {
+      "denominazione": "P.O. NUOVO GRAGNANO",
+      "dimissioni": 482
+    },
+    "15041701": {
+      "denominazione": "P.O. S. MARIA DELLA MISERICORDIA",
+      "dimissioni": 2375
+    },
+    "15041702": {
+      "denominazione": "P.O. DE LUCA E ROSSANO",
+      "dimissioni": 2683
+    },
+    "15042000": {
+      "denominazione": "VILLA SILVIA 'G.F.MONTESANO'",
+      "dimissioni": 562
+    },
+    "15042300": {
+      "denominazione": "CLINICA PADRE PIO S.R.L.",
+      "dimissioni": 3178
+    },
+    "15043601": {
+      "denominazione": "P.O. NOLA",
+      "dimissioni": 6597
+    },
+    "15043602": {
+      "denominazione": "P.O. POLLENA",
+      "dimissioni": 743
+    },
+    "15043700": {
+      "denominazione": "PRESIDIO OSPEDALIERO MADDALONI",
+      "dimissioni": 1119
+    },
+    "15043800": {
+      "denominazione": "PRESIDIO OSPEDALIERO MARCIANISE",
+      "dimissioni": 5392
+    },
+    "15043900": {
+      "denominazione": "PRESIDIO OSPEDALIERO S.FELICE A CANCELLO",
+      "dimissioni": 527
+    },
+    "15044000": {
+      "denominazione": "PRESIDIO OSPEDALIERO PIEDIMONTE MATESE",
+      "dimissioni": 3691
+    },
+    "15044200": {
+      "denominazione": "PRESIDIO OSPEDALIERO OSPEDALE DEL MARE",
+      "dimissioni": 13318
+    },
+    "15044300": {
+      "denominazione": "P.O. SAN PAOLO",
+      "dimissioni": 6333
+    },
+    "15044401": {
+      "denominazione": "P.O. SAN GIOVANNI BOSCO",
+      "dimissioni": 3176
+    },
+    "15044402": {
+      "denominazione": "PSI NAPOLI EST BARRA",
+      "dimissioni": 527
+    },
+    "15044501": {
+      "denominazione": "P.O. DEI PELLEGRINI",
+      "dimissioni": 5169
+    },
+    "15044502": {
+      "denominazione": "PO SANTA MARIA  POPOLO DEGLI INCURABILI",
+      "dimissioni": 360
+    },
+    "15044601": {
+      "denominazione": "PO SANTA MARIA DI LORETO",
+      "dimissioni": 1201
+    },
+    "15044602": {
+      "denominazione": "PO CAPILUPI",
+      "dimissioni": 300
+    },
+    "15044700": {
+      "denominazione": "P.O. TORRE DEL GRECO",
+      "dimissioni": 1808
+    },
+    "15044800": {
+      "denominazione": "P.O. BOSCOTRECASE",
+      "dimissioni": 1341
+    },
+    "15044900": {
+      "denominazione": "CASA DI CURA PRIVATA VILLA DEI PINI SPA",
+      "dimissioni": 394
+    },
+    "15090100": {
+      "denominazione": "AZIENDA OSPEDALIERA 'A. CARDARELLI'",
+      "dimissioni": 36725
+    },
+    "15090201": {
+      "denominazione": "OSPEDALE SANTOBONO",
+      "dimissioni": 18892
+    },
+    "15090202": {
+      "denominazione": "OSPEDALE PAUSILIPON",
+      "dimissioni": 4101
+    },
+    "15090203": {
+      "denominazione": "P.O. S.S. ANNUNZIATA",
+      "dimissioni": 322
+    },
+    "15090301": {
+      "denominazione": "MONALDI",
+      "dimissioni": 19070
+    },
+    "15090302": {
+      "denominazione": "COTUGNO",
+      "dimissioni": 5738
+    },
+    "15090303": {
+      "denominazione": "CTO",
+      "dimissioni": 4612
+    },
+    "15090401": {
+      "denominazione": "A.O. OO.RR. SANGIOVANNI DI DIO E RUGGI",
+      "dimissioni": 29388
+    },
+    "15090402": {
+      "denominazione": "OSPEDALE AMICO G. FUCITO",
+      "dimissioni": 3901
+    },
+    "15090403": {
+      "denominazione": "P.O. G. DA PROCIDA",
+      "dimissioni": 382
+    },
+    "15090404": {
+      "denominazione": "P.O. S. M. DELL'OLMO",
+      "dimissioni": 2963
+    },
+    "15090501": {
+      "denominazione": "AZIENDA OSPEDALIERA S. G. MOSCATI",
+      "dimissioni": 21833
+    },
+    "15090502": {
+      "denominazione": "PLESSO A.LANDOLFI SOLOFRA",
+      "dimissioni": 981
+    },
+    "15090601": {
+      "denominazione": "PRESIDIO OSPEDALIERO RUMMO",
+      "dimissioni": 11655
+    },
+    "15090602": {
+      "denominazione": "P.O. SANT'ALFONSO MARIA DE' LIGUORI",
+      "dimissioni": 982
+    },
+    "15090700": {
+      "denominazione": "A.O. SANT'ANNA E SAN SEBASTIANO  CASERTA",
+      "dimissioni": 18130
+    },
+    "15090800": {
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA UNICAM",
+      "dimissioni": 21019
+    },
+    "15090900": {
+      "denominazione": "A.O.U. 'FEDERICO II' DI NAPOLI",
+      "dimissioni": 54607
+    },
+    "15091000": {
+      "denominazione": "ISTITUTO NAZIONALE TUMORI DI NAPOLI",
+      "dimissioni": 13408
+    },
+    "15091100": {
+      "denominazione": "ISTITUTI CLINICI SCIENT. MAUGERI  S.P.A",
+      "dimissioni": 1964
+    },
+    "16004700": {
+      "denominazione": "OSPEDALE CERIGNOLA  'G.TATARELLA'",
+      "dimissioni": 4999
+    },
+    "16006200": {
+      "denominazione": "OSPEDALE GALATINA 'S. CATERINA NOVELLA'",
+      "dimissioni": 4136
+    },
+    "16006300": {
+      "denominazione": "OSPEDALE GALLIPOLI 'SACRO CUORE DI GESU'",
+      "dimissioni": 5395
+    },
+    "16007400": {
+      "denominazione": "OSPEDALE MANDURIA 'GIANNUZZI'",
+      "dimissioni": 1657
+    },
+    "16007500": {
+      "denominazione": "OSPEDALE CIVILE MARTINA FRANCA",
+      "dimissioni": 5148
+    },
+    "16007800": {
+      "denominazione": "EE OSPEDALE REGIONALE  'F. MIULLI'",
+      "dimissioni": 25939
+    },
+    "16008000": {
+      "denominazione": "OSPEDALE REGIONALE EE 'G. PANICO'",
+      "dimissioni": 19743
+    },
+    "16008700": {
+      "denominazione": "CASA DI CURA SANTA MARIA",
+      "dimissioni": 5267
+    },
+    "16009800": {
+      "denominazione": "ANTHEA HOSPITAL PRESIDIO VILLA LUCIA H.",
+      "dimissioni": 2167
+    },
+    "16010000": {
+      "denominazione": "CASA DI CURA PRIVATA MONTE IMPERATORE",
+      "dimissioni": 962
+    },
+    "16010100": {
+      "denominazione": "CASA DI CURA 'SALUS' - BRINDISI",
+      "dimissioni": 1913
+    },
+    "16010200": {
+      "denominazione": "CASA DI CURA PROF. BRODETTI",
+      "dimissioni": 2826
+    },
+    "16010500": {
+      "denominazione": "CASA DI CURA LEONARDO DE LUCA",
+      "dimissioni": 344
+    },
+    "16010600": {
+      "denominazione": "CASA DI CURA 'S.MICHELE' GEST. BRODETTI",
+      "dimissioni": 1137
+    },
+    "16010700": {
+      "denominazione": "CASA DI CURA 'PROF. PETRUCCIANI' S.R.L.",
+      "dimissioni": 2073
+    },
+    "16010800": {
+      "denominazione": "CASA DI CURA VILLA BIANCA",
+      "dimissioni": 1215
+    },
+    "16010900": {
+      "denominazione": "CASA DI CURA VILLA VERDE",
+      "dimissioni": 904
+    },
+    "16011000": {
+      "denominazione": "CASA DI CURA SAN FRANCESCO",
+      "dimissioni": 1888
+    },
+    "16011100": {
+      "denominazione": "CASA DI CURA BERNARDINI",
+      "dimissioni": 2989
+    },
+    "16011200": {
+      "denominazione": "CASA DI CURA D'AMORE S.R.L.",
+      "dimissioni": 1327
+    },
+    "16011400": {
+      "denominazione": "CASA DI CURA SAN CAMILLO",
+      "dimissioni": 2258
+    },
+    "16011500": {
+      "denominazione": "CASA DI CURA SANTA RITA S.R.L.",
+      "dimissioni": 662
+    },
+    "16011600": {
+      "denominazione": "CASA DI CURA VILLA VERDE S.R.L.",
+      "dimissioni": 4192
+    },
+    "16012500": {
+      "denominazione": "CASA DI CURA UNIVERSO SALUTE - DON UVA",
+      "dimissioni": 1413
+    },
+    "16014000": {
+      "denominazione": "ANTHEA HOSPITAL S.R.L.",
+      "dimissioni": 4094
+    },
+    "16014100": {
+      "denominazione": "CASA DI CURA VILLA BIANCA S.R.L.",
+      "dimissioni": 575
+    },
+    "16014600": {
+      "denominazione": "CENTRO MEDICO RIABILITAZIONE ICS MAUGERI",
+      "dimissioni": 873
+    },
+    "16014700": {
+      "denominazione": "CASA DI CURA C.B.H. MATER DEI HOSPITAL",
+      "dimissioni": 14417
+    },
+    "16014900": {
+      "denominazione": "FONDAZIONE CITTADELLA DELLA CARITA`",
+      "dimissioni": 746
+    },
+    "16015000": {
+      "denominazione": "CASA DI CURA CITTA' DI LECCE",
+      "dimissioni": 3566
+    },
+    "16015100": {
+      "denominazione": "IRCCS 'E.MEDEA'",
+      "dimissioni": 291
+    },
+    "16015200": {
+      "denominazione": "CASA DI CURA RIABILITATIVA EUROITALIA",
+      "dimissioni": 590
+    },
+    "16015700": {
+      "denominazione": "OSPEDALE DELLA MURGIA 'F. PERINEI'",
+      "dimissioni": 6724
+    },
+    "16015801": {
+      "denominazione": "OSPEDALE SAN PAOLO-BARI",
+      "dimissioni": 8776
+    },
+    "16015803": {
+      "denominazione": "OSPEDALE SAN PAOLO (PLESSO MOLFETTA)",
+      "dimissioni": 2229
+    },
+    "16015804": {
+      "denominazione": "OSPEDALE SAN PAOLO (PLESSO CORATO)",
+      "dimissioni": 3374
+    },
+    "16015805": {
+      "denominazione": "OSPEDALE SAN PAOLO (PLESSO TERLIZZI)",
+      "dimissioni": 513
+    },
+    "16015900": {
+      "denominazione": "OSPEDALE MONOPOLI",
+      "dimissioni": 6098
+    },
+    "16016000": {
+      "denominazione": "OSPEDALE PUTIGNANO",
+      "dimissioni": 1843
+    },
+    "16016100": {
+      "denominazione": "OSPEDALE OSTUNI",
+      "dimissioni": 1186
+    },
+    "16016200": {
+      "denominazione": "OSPEDALE  FRANCAVILLA FONTANA",
+      "dimissioni": 5673
+    },
+    "16016300": {
+      "denominazione": "OSPEDALE SAN SEVERO - TERESA MASSELLI",
+      "dimissioni": 4750
+    },
+    "16016308": {
+      "denominazione": "OSPEDALE SAN SEVERO - TERESA MASSELLI",
+      "dimissioni": 20
+    },
+    "16016400": {
+      "denominazione": "OSPEDALE MANFREDONIA",
+      "dimissioni": 2157
+    },
+    "16016500": {
+      "denominazione": "OSPEDALE COPERTINO",
+      "dimissioni": 3755
+    },
+    "16016600": {
+      "denominazione": "OSPEDALE SCORRANO",
+      "dimissioni": 7236
+    },
+    "16016700": {
+      "denominazione": "OSPEDALE  CASARANO",
+      "dimissioni": 4932
+    },
+    "16016800": {
+      "denominazione": "OSPEDALE CASTELLANETA",
+      "dimissioni": 4567
+    },
+    "16016901": {
+      "denominazione": "P.O. DI VENERE",
+      "dimissioni": 13986
+    },
+    "16016903": {
+      "denominazione": "P.O. FALLACARA",
+      "dimissioni": 136
+    },
+    "16017001": {
+      "denominazione": "OSPEDALE PERRINO BRINDISI",
+      "dimissioni": 18017
+    },
+    "16017003": {
+      "denominazione": "OSP.BRINDISI(PLESSO S.PIETRO VERNOTICO)",
+      "dimissioni": 189
+    },
+    "16017004": {
+      "denominazione": "OSP.BRINDISI (PLESSO CEGLIE MESSAPICA)",
+      "dimissioni": 749
+    },
+    "16017005": {
+      "denominazione": "NUOVASTRUT.EMERG.COVID19 CISTERNINO",
+      "dimissioni": 54
+    },
+    "16017006": {
+      "denominazione": "NUOVASTRUT.EMERG.COVID19 CEGLIEMESSAPICA",
+      "dimissioni": 65
+    },
+    "16017008": {
+      "denominazione": "NUOVASTRUT.EMERG.COVID19 MESAGNE",
+      "dimissioni": 249
+    },
+    "16017101": {
+      "denominazione": "OSPEDALE LECCE 'V FAZZI'",
+      "dimissioni": 22640
+    },
+    "16017102": {
+      "denominazione": "PLESSO DI SAN CESARIO - OSPEDALE LECCE",
+      "dimissioni": 329
+    },
+    "16017201": {
+      "denominazione": "OSPEDALE SS ANNUNZIATA - TARANTO",
+      "dimissioni": 16059
+    },
+    "16017203": {
+      "denominazione": "OSPEDALE MOSCATI - TARANTO/STATTE",
+      "dimissioni": 2236
+    },
+    "16017204": {
+      "denominazione": "STABILIMENTO OSPEDALIERO GROTTAGLIE",
+      "dimissioni": 681
+    },
+    "16017205": {
+      "denominazione": "NUOVA STRUTTURA EMERGENZACOVID19 MOTTOLA",
+      "dimissioni": 74
+    },
+    "16017206": {
+      "denominazione": "OSPEDALE MILITARE DI TARANTO",
+      "dimissioni": 47
+    },
+    "16017401": {
+      "denominazione": "OSPEDALE ANDRIA",
+      "dimissioni": 8145
+    },
+    "16017402": {
+      "denominazione": "OSPEDALE ANDRIA (PLESSO CANOSA)",
+      "dimissioni": 389
+    },
+    "16017701": {
+      "denominazione": "OSPEDALE DIMICCOLI BARLETTA",
+      "dimissioni": 9793
+    },
+    "16017800": {
+      "denominazione": "OSPEDALE  BISCEGLIE",
+      "dimissioni": 2051
+    },
+    "16018000": {
+      "denominazione": "UNIVERSO SALUTE OSP. DON UVA - BISCEGLIE",
+      "dimissioni": 1344
+    },
+    "16018100": {
+      "denominazione": "CASE CURA RIUNITE VILLA SERENA-S. FRANCE",
+      "dimissioni": 4693
+    },
+    "16090100": {
+      "denominazione": "ISTITUTO TUMORI GIOVANNI PAOLO II",
+      "dimissioni": 3864
+    },
+    "16090200": {
+      "denominazione": "IRCCS 'SAVERIO DE BELLIS'",
+      "dimissioni": 3184
+    },
+    "16090500": {
+      "denominazione": "OSPEDALE CASA SOLLIEVO DELLA SOFFERENZA",
+      "dimissioni": 32552
+    },
+    "16090600": {
+      "denominazione": "ICS MAUGERI SPA SOCIETA' BENEFIT",
+      "dimissioni": 2583
+    },
+    "16090701": {
+      "denominazione": "CONSORZIALE POLICLINICO BARI",
+      "dimissioni": 34475
+    },
+    "16090702": {
+      "denominazione": "OSPEDALE GIOVANNI XXIII",
+      "dimissioni": 7533
+    },
+    "16090703": {
+      "denominazione": "PRESIDIO DELLE MAXIEMERGENZE",
+      "dimissioni": 602
+    },
+    "16091001": {
+      "denominazione": "OSPEDALI RIUNITI DI FOGGIA",
+      "dimissioni": 29254
+    },
+    "16091002": {
+      "denominazione": "AOU OO RR FOGGIA - OSPEDALE DI LUCERA",
+      "dimissioni": 1665
+    },
+    "17001101": {
+      "denominazione": "PRESIDIO OSPEDALIERO -MATERA-",
+      "dimissioni": 9278
+    },
+    "17001102": {
+      "denominazione": "PSA POLICORO",
+      "dimissioni": 4707
+    },
+    "17001200": {
+      "denominazione": "PRESIDIO DISTRETTUALE TRICARICO",
+      "dimissioni": 623
+    },
+    "17003200": {
+      "denominazione": "FONDAZIONE DON CARLO GNOCCHI - ONLUS",
+      "dimissioni": 542
+    },
+    "17003400": {
+      "denominazione": "LUNGODEGENZA RIABILITATIVA CHIAROMONTE",
+      "dimissioni": 269
+    },
+    "17003500": {
+      "denominazione": "LUNGODEGENZA E RIABILITAZIONE VENOSA",
+      "dimissioni": 260
+    },
+    "17003600": {
+      "denominazione": "LUNGODEGENZA RIABILITATIVA LAURIA",
+      "dimissioni": 184
+    },
+    "17003700": {
+      "denominazione": "UNIVERSO SALUTE BASILICATA SRL",
+      "dimissioni": 326
+    },
+    "17090101": {
+      "denominazione": "OSPEDALE SAN CARLO DI POTENZA",
+      "dimissioni": 25679
+    },
+    "17090102": {
+      "denominazione": "OSP S.FRANCESCO DI PAOLA DI PESCOPAGANO",
+      "dimissioni": 1454
+    },
+    "17090103": {
+      "denominazione": "OSPEDALE S.GIOVANNI DI DIO - MELFI",
+      "dimissioni": 3403
+    },
+    "17090104": {
+      "denominazione": "OSP S.PIO DA PIETRELCINA DI VILLA D'AGRI",
+      "dimissioni": 3040
+    },
+    "17090105": {
+      "denominazione": "OSPEDALE S.GIOVANNI DI LAGONEGRO",
+      "dimissioni": 4587
+    },
+    "17091000": {
+      "denominazione": "C.R.O.B. - I.R.C.C.S.",
+      "dimissioni": 5086
+    },
+    "18000100": {
+      "denominazione": "IGRECO OSPEDALI RIUNITI EX LA MADONNINA",
+      "dimissioni": 1461
+    },
+    "18000200": {
+      "denominazione": "IGRECO OSP. RIUNITI MADONNA DELLA CATENA",
+      "dimissioni": 720
+    },
+    "18000300": {
+      "denominazione": "IGRECO OSPEDALI RIUNITI EX SACRO CUORE",
+      "dimissioni": 3368
+    },
+    "18000400": {
+      "denominazione": "ISTITUTO S.ANNA VIA SIRIS  11",
+      "dimissioni": 544
+    },
+    "18000500": {
+      "denominazione": "ISTITUTO S.ANNA SS - 106   KM 243",
+      "dimissioni": 334
+    },
+    "18000600": {
+      "denominazione": "OSPEDALE CIVILE FERRARI - CASTROVILLARI",
+      "dimissioni": 4289
+    },
+    "18000800": {
+      "denominazione": "P.O. PRAIA A MARE",
+      "dimissioni": 271
+    },
+    "18001001": {
+      "denominazione": "OSPEDALE CORIGLIANO",
+      "dimissioni": 3784
+    },
+    "18001002": {
+      "denominazione": "OSPEDALE ROSSANO",
+      "dimissioni": 2533
+    },
+    "18001100": {
+      "denominazione": "P.O.BEATO ANGELICO",
+      "dimissioni": 822
+    },
+    "18001201": {
+      "denominazione": "OSPEDALE  CETRARO",
+      "dimissioni": 1359
+    },
+    "18001202": {
+      "denominazione": "OSPEDALE PAOLA",
+      "dimissioni": 3187
+    },
+    "18001500": {
+      "denominazione": "OSPEDALE CIVILE SGF",
+      "dimissioni": 302
+    },
+    "18001600": {
+      "denominazione": "OSPEDALE GUDO CHIDICHIMO TREBISACCE",
+      "dimissioni": 138
+    },
+    "18001900": {
+      "denominazione": "CASA DI CURA VILLA DEL SOLE",
+      "dimissioni": 1398
+    },
+    "18002500": {
+      "denominazione": "CASA DI CURA TRICARICO ROSANO SRL",
+      "dimissioni": 4310
+    },
+    "18002700": {
+      "denominazione": "CASA DI CURA CASCINI SRL",
+      "dimissioni": 2340
+    },
+    "18002900": {
+      "denominazione": "CASA DI CURA SCARNATI",
+      "dimissioni": 1052
+    },
+    "18003200": {
+      "denominazione": "OSPEDALE CIVILE SAN GIOVANNI DI DIO",
+      "dimissioni": 12576
+    },
+    "18003300": {
+      "denominazione": "PO LAMEZIA TERME",
+      "dimissioni": 9331
+    },
+    "18003400": {
+      "denominazione": "P.O. JAZZOLINO",
+      "dimissioni": 6135
+    },
+    "18003500": {
+      "denominazione": "P.O. TROPEA",
+      "dimissioni": 1068
+    },
+    "18004000": {
+      "denominazione": "OSPEDALE DI SOVERIA MANNELLI",
+      "dimissioni": 341
+    },
+    "18004300": {
+      "denominazione": "CASA DI CURA VILLA DEL SOLE",
+      "dimissioni": 2520
+    },
+    "18004500": {
+      "denominazione": "CASA DI CURA S.RITA DOTT. CAPARRA",
+      "dimissioni": 377
+    },
+    "18004700": {
+      "denominazione": "VILLA DEI GERANI",
+      "dimissioni": 860
+    },
+    "18005000": {
+      "denominazione": "CASA DI CURA VILLA SERENA",
+      "dimissioni": 1679
+    },
+    "18005100": {
+      "denominazione": "CASA DI CURA VILLA MICHELINO SRL",
+      "dimissioni": 958
+    },
+    "18005300": {
+      "denominazione": "CASA DI CURA SANT`ANNA HOSPITAL",
+      "dimissioni": 658
+    },
+    "18005500": {
+      "denominazione": "OSPEDALE BASSO IONIO",
+      "dimissioni": 2239
+    },
+    "18005700": {
+      "denominazione": "P.O. SERRA SAN BRUNO",
+      "dimissioni": 642
+    },
+    "18005900": {
+      "denominazione": "OSPEDALE CIVILE LOCRI",
+      "dimissioni": 6928
+    },
+    "18006100": {
+      "denominazione": "P.O. 'S. MARIA DEGLI UNGHERESI'",
+      "dimissioni": 5844
+    },
+    "18006200": {
+      "denominazione": "OSPEDALE 'TIBERIO EVOLI' - MELITO P.S.",
+      "dimissioni": 1161
+    },
+    "18006800": {
+      "denominazione": "P.O. 'GIOVANNI XXIII'",
+      "dimissioni": 374
+    },
+    "18007100": {
+      "denominazione": "ISTITUTO ORTOPEDICO MEZZOGIORNO D`ITALIA",
+      "dimissioni": 2492
+    },
+    "18007300": {
+      "denominazione": "CASA DI CURA 'VILLA AURORA'",
+      "dimissioni": 1196
+    },
+    "18007400": {
+      "denominazione": "POLICLINICO 'MADONNA DELLA CONSOLAZIONE'",
+      "dimissioni": 3580
+    },
+    "18007500": {
+      "denominazione": "CASA DI CURA 'VILLA CAMINITI'",
+      "dimissioni": 1686
+    },
+    "18007600": {
+      "denominazione": "CASA DI CURA 'VILLA S.ANNA'",
+      "dimissioni": 557
+    },
+    "18007700": {
+      "denominazione": "CASA DI CURA 'VILLA ELISA' S.P.A.",
+      "dimissioni": 552
+    },
+    "18008100": {
+      "denominazione": "CASA DI CURA M.MISASI GR.S.BARTOLO",
+      "dimissioni": 489
+    },
+    "18008400": {
+      "denominazione": "MEDICAL HOTEL CLIMAT. SPES PIETR.'ARENA'",
+      "dimissioni": 289
+    },
+    "18008500": {
+      "denominazione": "ROMOLO HOSPITAL ( EX VILLA EVA )",
+      "dimissioni": 2614
+    },
+    "18008600": {
+      "denominazione": "CASA DI CURA SAN FRANCESCO",
+      "dimissioni": 563
+    },
+    "18010100": {
+      "denominazione": "CALABRODENTAL   SRL",
+      "dimissioni": 1173
+    },
+    "18010200": {
+      "denominazione": "SADEL DI SALVATORE BAFFA SPA ( EX OLIVET",
+      "dimissioni": 220
+    },
+    "18010300": {
+      "denominazione": "CASA DI CURA MADONNA DELLO SCOGLIO SRL",
+      "dimissioni": 1542
+    },
+    "18010700": {
+      "denominazione": "MARRELLI HOSPITAL",
+      "dimissioni": 1118
+    },
+    "18015000": {
+      "denominazione": "VILLA RACHELE S.R.L.",
+      "dimissioni": 126
+    },
+    "18091201": {
+      "denominazione": "PRESIDIO OSPEDALIERO ANNUNZIATA",
+      "dimissioni": 18549
+    },
+    "18091202": {
+      "denominazione": "MARIANO SANTO",
+      "dimissioni": 991
+    },
+    "18091203": {
+      "denominazione": "SANTA BARBARA",
+      "dimissioni": 111
+    },
+    "18091301": {
+      "denominazione": "OSPEDALE PUGLIESE",
+      "dimissioni": 23730
+    },
+    "18091302": {
+      "denominazione": "OSPEDALE DE LELLIS",
+      "dimissioni": 1910
+    },
+    "18091400": {
+      "denominazione": "A.O.U. MATER DOMINI CATANZARO",
+      "dimissioni": 12439
+    },
+    "18091501": {
+      "denominazione": "PRESIDIO OSPEDALIERO RIUNITI",
+      "dimissioni": 17301
+    },
+    "18091502": {
+      "denominazione": "PRESIDIO OSPEDALIERO",
+      "dimissioni": 4897
+    },
+    "18091600": {
+      "denominazione": "I.N.R.C.A. COSENZA",
+      "dimissioni": 354
+    },
+    "19017900": {
+      "denominazione": "FOND. IST. S. RAFFAELE - GIGLIO",
+      "dimissioni": 8846
+    },
+    "19019900": {
+      "denominazione": "OSP. BUCCHERI LA FERLA FATEBENEFRATELLI",
+      "dimissioni": 11521
+    },
+    "19030100": {
+      "denominazione": "P.O. S. GIOVANNI DI DIO",
+      "dimissioni": 12944
+    },
+    "19030200": {
+      "denominazione": "P.O. BARONE LOMBARDO - CANICATTI'",
+      "dimissioni": 3685
+    },
+    "19030300": {
+      "denominazione": "P.O. S. GIACOMO D'ALTOPASSO LICATA",
+      "dimissioni": 3494
+    },
+    "19030400": {
+      "denominazione": "P.O.  F.LLI PARLAPIANO - RIBERA",
+      "dimissioni": 602
+    },
+    "19030500": {
+      "denominazione": "P.O. GIOVANNI PAOLO II",
+      "dimissioni": 6957
+    },
+    "19030600": {
+      "denominazione": "P.O. SANT'ELIA (EX AO)",
+      "dimissioni": 8183
+    },
+    "19030700": {
+      "denominazione": "P.O. M. IMMACOLATA  LONGO",
+      "dimissioni": 762
+    },
+    "19030800": {
+      "denominazione": "P.O.MADDALENA RAIMONDI",
+      "dimissioni": 284
+    },
+    "19030900": {
+      "denominazione": "P.O. VITTORIO EMANUELE (EX AO)",
+      "dimissioni": 4701
+    },
+    "19031000": {
+      "denominazione": "P.O. SANTO STEFANO",
+      "dimissioni": 333
+    },
+    "19031100": {
+      "denominazione": "P.O. SUOR CECILIA BASAROCCO",
+      "dimissioni": 1165
+    },
+    "19031200": {
+      "denominazione": "P.O. S. MARTA E S. VENERA ACIREALE",
+      "dimissioni": 5608
+    },
+    "19031300": {
+      "denominazione": "S.GIOVANNI DI DIO E S.ISIDORO GIARRE",
+      "dimissioni": 1393
+    },
+    "19031400": {
+      "denominazione": "P.O. MARIA SS.ADDOLORATA BIANCAVILLA",
+      "dimissioni": 2305
+    },
+    "19031500": {
+      "denominazione": "P.O. CASTIGLIONE PRESTIANNI BRONTE",
+      "dimissioni": 2047
+    },
+    "19031600": {
+      "denominazione": "P.O. SS. SALVATORE PATERNÒ",
+      "dimissioni": 1967
+    },
+    "19031700": {
+      "denominazione": "P.O. GRAVINA E S. PIETRO CALTAGIRONE",
+      "dimissioni": 5963
+    },
+    "19031800": {
+      "denominazione": "P.O. BASSO RAGUSA MILITELLO",
+      "dimissioni": 554
+    },
+    "19031900": {
+      "denominazione": "P. O. 'UMBERTO I'",
+      "dimissioni": 6709
+    },
+    "19032000": {
+      "denominazione": "P. O. 'M. CHIELLO'",
+      "dimissioni": 1300
+    },
+    "19032100": {
+      "denominazione": "P. O. 'FERRO-CAPRA-BRANCIFORTE'",
+      "dimissioni": 319
+    },
+    "19032200": {
+      "denominazione": "P. O. 'CARLO BASILOTTA'",
+      "dimissioni": 1972
+    },
+    "19032300": {
+      "denominazione": "P.O. 'NUOVO CUTRONI ZODDA' BARCELLONA",
+      "dimissioni": 948
+    },
+    "19032400": {
+      "denominazione": "P.O.  LIPARI",
+      "dimissioni": 357
+    },
+    "19032500": {
+      "denominazione": "P.O. 'G. FOGLIANI' MILAZZO",
+      "dimissioni": 4627
+    },
+    "19032600": {
+      "denominazione": "P.O.' S. VINCENZO' TAORMINA",
+      "dimissioni": 6238
+    },
+    "19032700": {
+      "denominazione": "P.O. 'SS. SALVATORE' MISTRETTA",
+      "dimissioni": 822
+    },
+    "19032800": {
+      "denominazione": "P.O. 'BARONE-ROMEO' PATTI",
+      "dimissioni": 5454
+    },
+    "19032900": {
+      "denominazione": "STABILIMENTO OSPED. S. AGATA MILITELLO",
+      "dimissioni": 1781
+    },
+    "19033000": {
+      "denominazione": "P.O. DEI BIANCHI CORLEONE",
+      "dimissioni": 1094
+    },
+    "19033200": {
+      "denominazione": "P.O. CIVICO PARTINICO",
+      "dimissioni": 2512
+    },
+    "19033300": {
+      "denominazione": "P.O. MADONNA DELL'ALTO - PETR. SOTTANA",
+      "dimissioni": 516
+    },
+    "19033400": {
+      "denominazione": "P.O. S. CIMINO TERMINI IMERESE",
+      "dimissioni": 3189
+    },
+    "19033500": {
+      "denominazione": "P.O. G. F. INGRASSIA",
+      "dimissioni": 5136
+    },
+    "19033700": {
+      "denominazione": "P.O. VILLA DELLE GINESTRE",
+      "dimissioni": 91
+    },
+    "19033800": {
+      "denominazione": "OSPEDALE 'GIOVANNI PAOLO II° M.P. A.'",
+      "dimissioni": 11083
+    },
+    "19033900": {
+      "denominazione": "OSPEDALE REGINA MARGHERITA  COMISO",
+      "dimissioni": 403
+    },
+    "19034000": {
+      "denominazione": "OSPEDALE MAGGIORE MODICA",
+      "dimissioni": 8648
+    },
+    "19034100": {
+      "denominazione": "OSPEDALE BUSACCA SCICLI",
+      "dimissioni": 431
+    },
+    "19034200": {
+      "denominazione": "OSPEDALE GUZZARDI VITTORIA",
+      "dimissioni": 7147
+    },
+    "19034300": {
+      "denominazione": "P.O. DI MARIA AVOLA",
+      "dimissioni": 3794
+    },
+    "19034400": {
+      "denominazione": "P.O. TRIGONA NOTO",
+      "dimissioni": 1275
+    },
+    "19034500": {
+      "denominazione": "P.O. UMBERTO I (EX A.O.)",
+      "dimissioni": 11560
+    },
+    "19034600": {
+      "denominazione": "P.O. MUSCATELLO AUGUSTA",
+      "dimissioni": 3042
+    },
+    "19034700": {
+      "denominazione": "OSPEDALE GENERALE DI ZONA",
+      "dimissioni": 4245
+    },
+    "19034800": {
+      "denominazione": "P.O. A. RIZZA",
+      "dimissioni": 178
+    },
+    "19034900": {
+      "denominazione": "P.O. SAN VITO E SANTO SPIRITO -ALCAMO",
+      "dimissioni": 2039
+    },
+    "19035000": {
+      "denominazione": "P.O. 'B. NAGAR' - PANTELLERIA",
+      "dimissioni": 282
+    },
+    "19035100": {
+      "denominazione": "P.O. S. ANTONIO ABATE  - TRAPANI",
+      "dimissioni": 12551
+    },
+    "19035200": {
+      "denominazione": "P.O. V.EMANUELE II CASTELVETRANO",
+      "dimissioni": 3125
+    },
+    "19035300": {
+      "denominazione": "P.O.PAOLO BORSELLINO - MARSALA",
+      "dimissioni": 3767
+    },
+    "19035400": {
+      "denominazione": "P.O.ABELE AJELLO-MAZARA D.VALLO",
+      "dimissioni": 4313
+    },
+    "19035500": {
+      "denominazione": "P.O. VITTORIO EMANUELE III - SALEMI",
+      "dimissioni": 261
+    },
+    "19050100": {
+      "denominazione": "CASA DI CURA VILLA DEI GERANI",
+      "dimissioni": 1413
+    },
+    "19050200": {
+      "denominazione": "CASA DI CURA SANT`ANNA SRL.",
+      "dimissioni": 1501
+    },
+    "19050300": {
+      "denominazione": "CASA DI SALUTE IGNAZIO ATTARDI S.P.A.",
+      "dimissioni": 1380
+    },
+    "19050400": {
+      "denominazione": "SIA CASA DI CURA S. ANNA S.P.A.",
+      "dimissioni": 1578
+    },
+    "19050500": {
+      "denominazione": "CASA DI CURA 'REGINA PACIS'",
+      "dimissioni": 2187
+    },
+    "19050600": {
+      "denominazione": "SO.GE.SA.SPA.C.DI.C.S.BARBARA",
+      "dimissioni": 2747
+    },
+    "19050700": {
+      "denominazione": "CASA DI CURA SANTA LUCIA GLEF",
+      "dimissioni": 1303
+    },
+    "19050800": {
+      "denominazione": "CASA DI CURA VILLA MAURITIUS ARC",
+      "dimissioni": 1241
+    },
+    "19050900": {
+      "denominazione": "IST.ORT. VILLA SALUS I. GALATIOTO SRL",
+      "dimissioni": 3331
+    },
+    "19051100": {
+      "denominazione": "CENTRO CLIN.MORGAGNI SRL C/O DI STEF VEL",
+      "dimissioni": 296
+    },
+    "19051200": {
+      "denominazione": "CASA DI CURA MADONNA DEL ROSARIO",
+      "dimissioni": 340
+    },
+    "19051300": {
+      "denominazione": "CASA DI CURA G.B. MORGAGNI S.R.L.",
+      "dimissioni": 6957
+    },
+    "19051600": {
+      "denominazione": "MATER DEI DI G.NESI & C. S.P.A",
+      "dimissioni": 1438
+    },
+    "19051700": {
+      "denominazione": "CASA DI CURA VILLA DEI GERANI SRL",
+      "dimissioni": 1199
+    },
+    "19051900": {
+      "denominazione": "HUMANITAS ISTITUTO CLINICO CATANESE",
+      "dimissioni": 5972
+    },
+    "19052000": {
+      "denominazione": "CASA CURA CENTRO CATANESE MED. E CH.",
+      "dimissioni": 4238
+    },
+    "19052100": {
+      "denominazione": "CASA DI CURA CARMIDE",
+      "dimissioni": 1388
+    },
+    "19052300": {
+      "denominazione": "CASA DI CURA GIBIINO SRL",
+      "dimissioni": 2282
+    },
+    "19052400": {
+      "denominazione": "I.O.M.I. F.SCALABRINO GANZIRRI",
+      "dimissioni": 4034
+    },
+    "19052500": {
+      "denominazione": "CASA DI CURA S.CAMILLO",
+      "dimissioni": 2018
+    },
+    "19052600": {
+      "denominazione": "CASA DI CURA CRISTO RE",
+      "dimissioni": 1963
+    },
+    "19052700": {
+      "denominazione": "CASA DI CURA CARMONA  SRL",
+      "dimissioni": 1888
+    },
+    "19052800": {
+      "denominazione": "CASA DI CURA VILLA SALUS S.A.S.",
+      "dimissioni": 2700
+    },
+    "19053000": {
+      "denominazione": "C.O.T. S.P.A. (CURE ORTOPED. TRAUM.)",
+      "dimissioni": 2775
+    },
+    "19053100": {
+      "denominazione": "CASA DI CURA VILLA IGEA SRL",
+      "dimissioni": 691
+    },
+    "19053200": {
+      "denominazione": "CASA DI CURA IGEA S.R.L.",
+      "dimissioni": 690
+    },
+    "19053300": {
+      "denominazione": "CASA DI CURA CANDELA SPA",
+      "dimissioni": 5963
+    },
+    "19053400": {
+      "denominazione": "CASA DI CURE ORESTANO S.R.L.",
+      "dimissioni": 3001
+    },
+    "19053600": {
+      "denominazione": "CASA DI CURA 'TRIOLO ZANCLA' S.P.A.",
+      "dimissioni": 3968
+    },
+    "19053700": {
+      "denominazione": "CASA DI CURA SERENA S.P.A.",
+      "dimissioni": 5136
+    },
+    "19053800": {
+      "denominazione": "CASA DI CURA NOTO PASQUALINO S.R.L.",
+      "dimissioni": 3873
+    },
+    "19053900": {
+      "denominazione": "NUOVA CASA DI CURA D`ANNA PIA ASS. SRL",
+      "dimissioni": 812
+    },
+    "19054000": {
+      "denominazione": "NUOVA CASA DI CURA DEMMA SRL",
+      "dimissioni": 919
+    },
+    "19054100": {
+      "denominazione": "CASA DI CURA MACCHIARELLA S.P.A.",
+      "dimissioni": 2836
+    },
+    "19054200": {
+      "denominazione": "CASA DI CURA TORINA",
+      "dimissioni": 2899
+    },
+    "19054300": {
+      "denominazione": "CASA DI CURA VILLA MARGHERITA",
+      "dimissioni": 1053
+    },
+    "19054500": {
+      "denominazione": "CASA DI CURE COSENTINO DI KAROL  S.R.L.",
+      "dimissioni": 1018
+    },
+    "19054900": {
+      "denominazione": "CASA DI CURA MORANA SRL",
+      "dimissioni": 1325
+    },
+    "19055000": {
+      "denominazione": "C. DI CURA 'VILLA AZZURRA' - GESIN SRL",
+      "dimissioni": 1522
+    },
+    "19055100": {
+      "denominazione": "CASA DI CURA LA MADDALENA S.P.A.",
+      "dimissioni": 5550
+    },
+    "19055200": {
+      "denominazione": "CASA DI CURA CLINICA DEL MEDITERRANEO",
+      "dimissioni": 2401
+    },
+    "19055300": {
+      "denominazione": "CASA DI CURA RIABILITATIVA VILLA SOFIA",
+      "dimissioni": 711
+    },
+    "19055400": {
+      "denominazione": "ISTITUTO ONCOLOGICO DEL MEDITERRANEO SPA",
+      "dimissioni": 3801
+    },
+    "19055500": {
+      "denominazione": "CASA DI CURA MONS. G. CALACIURA CENACOLO",
+      "dimissioni": 514
+    },
+    "19055600": {
+      "denominazione": "CASA DI CURA RIABIL. VITTORIA S.R.L",
+      "dimissioni": 402
+    },
+    "19060100": {
+      "denominazione": "CENTRO CHIRURGICO VILLA MARIA S.R.L.",
+      "dimissioni": 169
+    },
+    "19060200": {
+      "denominazione": "CENTRO ANDROS S.R.L.",
+      "dimissioni": 401
+    },
+    "19070100": {
+      "denominazione": "CLINICA VILLA RIZZO",
+      "dimissioni": 841
+    },
+    "19070200": {
+      "denominazione": "CASA DI CURA 'VILLA AURELIA'  SRL",
+      "dimissioni": 655
+    },
+    "19071000": {
+      "denominazione": "CASA DI CURA PROF.E.FALCIDIA SRL",
+      "dimissioni": 2324
+    },
+    "19071200": {
+      "denominazione": "CASA DI CURA  MUSUMECI GESCAS",
+      "dimissioni": 2565
+    },
+    "19071500": {
+      "denominazione": "CASA DI CURA VILLA S.FRANCESCO",
+      "dimissioni": 558
+    },
+    "19071600": {
+      "denominazione": "CASA DI CURA CAPPELLANI GIOMI S.P.A.",
+      "dimissioni": 2210
+    },
+    "19071800": {
+      "denominazione": "CASA DI CURA LATTERI VALSAVA S.R.L.",
+      "dimissioni": 1185
+    },
+    "19072000": {
+      "denominazione": "CASA DI CURA MARIA ELEONORA HOSPITAL SRL",
+      "dimissioni": 3180
+    },
+    "19072300": {
+      "denominazione": "CASA DI CURA VALSALVA  SRL",
+      "dimissioni": 1178
+    },
+    "19072400": {
+      "denominazione": "ISCAS MORGAGNI NORD SRL",
+      "dimissioni": 3001
+    },
+    "19072500": {
+      "denominazione": "PRIVATE HOSPITAL ARGENTO SRL",
+      "dimissioni": 976
+    },
+    "19072600": {
+      "denominazione": "ISTITUTO CLINICO VIDIMURA SRL",
+      "dimissioni": 2773
+    },
+    "19072800": {
+      "denominazione": "CLINICA SANT'AGATA TIGANO SRL",
+      "dimissioni": 629
+    },
+    "19072900": {
+      "denominazione": "CENTRO CLIN.MORGAGNI SRL.C/O CHECK POINT",
+      "dimissioni": 132
+    },
+    "19092100": {
+      "denominazione": "A.O. PER L'EMERGENZA CANNIZZARO",
+      "dimissioni": 20302
+    },
+    "19092201": {
+      "denominazione": "OSPEDALE GARIBALDI - CENTRO",
+      "dimissioni": 4442
+    },
+    "19092204": {
+      "denominazione": "NUOVO OSPEDALE GARIBALDI - NESIMA",
+      "dimissioni": 19916
+    },
+    "19092301": {
+      "denominazione": "PRESIDIO OSPEDALIERO GASPARE RODOLICO",
+      "dimissioni": 23800
+    },
+    "19092304": {
+      "denominazione": "PRESIDIO OSPEDALIERO S.MARCO",
+      "dimissioni": 16065
+    },
+    "19092400": {
+      "denominazione": "AZIENDA OSPEDALIERA PAPARDO",
+      "dimissioni": 11236
+    },
+    "19092500": {
+      "denominazione": "AZIENDA OSP. UNIV. G. MARTINO",
+      "dimissioni": 18975
+    },
+    "19092601": {
+      "denominazione": "P.O. VILLA SOFIA",
+      "dimissioni": 10635
+    },
+    "19092602": {
+      "denominazione": "C.T.O. CENTRO TRAUMATOLOGICO ORTOPEDICO",
+      "dimissioni": 1044
+    },
+    "19092603": {
+      "denominazione": "P.O. V. CERVELLO",
+      "dimissioni": 9221
+    },
+    "19092701": {
+      "denominazione": "OSPEDALE CIVICO",
+      "dimissioni": 20632
+    },
+    "19092702": {
+      "denominazione": "OSPEDALE DEI BAMBINI G. DI CRISTINA",
+      "dimissioni": 5879
+    },
+    "19092800": {
+      "denominazione": "AZ.OSP.UNIV.P.GIACCONE",
+      "dimissioni": 17389
+    },
+    "19092900": {
+      "denominazione": "IRCCS ISMETT",
+      "dimissioni": 5777
+    },
+    "19095000": {
+      "denominazione": "ASSOCIAZIONE OASI MARIA SS",
+      "dimissioni": 4246
+    },
+    "19096001": {
+      "denominazione": "IRCCS CENTRO NEUROLESI",
+      "dimissioni": 305
+    },
+    "19096002": {
+      "denominazione": "PRESIDIO OSPEDALIERO PIEMONTE",
+      "dimissioni": 2349
+    },
+    "19096003": {
+      "denominazione": "IRCCS CENTRO NEUROLESI P.O. SALEMI (TP)",
+      "dimissioni": 24
+    },
+    "19096004": {
+      "denominazione": "IRCCS CENTRO NEUROLESI P.O. PISANI",
+      "dimissioni": 18
+    },
+    "19096007": {
+      "denominazione": "IRCCS NEUROLESI P.O. CANNIZZARO (CT)",
+      "dimissioni": 9
+    },
+    "19097000": {
+      "denominazione": "DIPARTIMENTO RIZZOLI-SICILIA",
+      "dimissioni": 2139
+    },
+    "20000200": {
+      "denominazione": "OSPEDALE CIVILE ALGHERO",
+      "dimissioni": 5239
+    },
+    "20000300": {
+      "denominazione": "OSPEDALE CIVILE OZIERI",
+      "dimissioni": 2778
+    },
+    "20000600": {
+      "denominazione": "P.O. PAOLO DETTORI - TEMPIO P.",
+      "dimissioni": 1225
+    },
+    "20000800": {
+      "denominazione": "OSPEDALE MARINO ALGHERO",
+      "dimissioni": 457
+    },
+    "20001200": {
+      "denominazione": "P.O.  GIOVANNI PAOLO II  OLBIA",
+      "dimissioni": 8401
+    },
+    "20001300": {
+      "denominazione": "POLICLINICO SASSARESE - LABOR S.P.A.",
+      "dimissioni": 2130
+    },
+    "20001700": {
+      "denominazione": "P.O.  SAN FRANCESCO",
+      "dimissioni": 13251
+    },
+    "20001800": {
+      "denominazione": "P.O. C. ZONCHELLO",
+      "dimissioni": 399
+    },
+    "20001900": {
+      "denominazione": "P.O. 'NOSTRA SIGNORA DELLA MERCEDE'",
+      "dimissioni": 3826
+    },
+    "20002000": {
+      "denominazione": "P.O. SAN CAMILLO",
+      "dimissioni": 397
+    },
+    "20002100": {
+      "denominazione": "P.O. 'A.G. MASTINO' - BOSA",
+      "dimissioni": 567
+    },
+    "20002200": {
+      "denominazione": "P.O. S.GIUSEPPE",
+      "dimissioni": 772
+    },
+    "20002300": {
+      "denominazione": "CLINICA TOMMASINI SRL",
+      "dimissioni": 2060
+    },
+    "20002500": {
+      "denominazione": "P.O. R. BINAGHI",
+      "dimissioni": 2980
+    },
+    "20002600": {
+      "denominazione": "P.O. MARINO",
+      "dimissioni": 181
+    },
+    "20002800": {
+      "denominazione": "P.O.SIRAI",
+      "dimissioni": 4330
+    },
+    "20002900": {
+      "denominazione": "P.O.SANTA BARBARA",
+      "dimissioni": 32
+    },
+    "20003000": {
+      "denominazione": "P.O.CTO",
+      "dimissioni": 3223
+    },
+    "20003100": {
+      "denominazione": "P.O. SS. TRINITA'",
+      "dimissioni": 13613
+    },
+    "20003400": {
+      "denominazione": "PRESIDIO OSPEDALIERO N.S. DI BONARIA",
+      "dimissioni": 5944
+    },
+    "20003500": {
+      "denominazione": "P.O. SAN MARCELLINO",
+      "dimissioni": 833
+    },
+    "20004000": {
+      "denominazione": "CASA DI CURA S.ANNA S.R.L.",
+      "dimissioni": 2820
+    },
+    "20004200": {
+      "denominazione": "CASA DI CURA S. ANTONIO S.P.A.",
+      "dimissioni": 3673
+    },
+    "20004400": {
+      "denominazione": "CASA DI CURA VILLA ELENA",
+      "dimissioni": 2654
+    },
+    "20004500": {
+      "denominazione": "NUOVA CASA DI CURA S.R.L.",
+      "dimissioni": 6104
+    },
+    "20005200": {
+      "denominazione": "P. OSPEDALIERO 'SAN MARTINO' - ORISTANO",
+      "dimissioni": 8550
+    },
+    "20005300": {
+      "denominazione": "P. OSPEDALIERO 'G.P. DELOGU' - GHILARZA",
+      "dimissioni": 123
+    },
+    "20005400": {
+      "denominazione": "C.C.  'MADONNA DEL RIMEDIO' - ORISTANO",
+      "dimissioni": 2850
+    },
+    "20005601": {
+      "denominazione": "KINETIKA CASA DI CURA POLISPEC. S.ELENA",
+      "dimissioni": 5148
+    },
+    "20005602": {
+      "denominazione": "KINETIKA POLICLINICO QUARTU",
+      "dimissioni": 3306
+    },
+    "20005603": {
+      "denominazione": "KINETIKA CASA POL. VIA SCANO",
+      "dimissioni": 880
+    },
+    "20005700": {
+      "denominazione": "MATER OLBIA HOSPITAL",
+      "dimissioni": 6269
+    },
+    "20006000": {
+      "denominazione": "P.O MICROCITEMICO A.CAO",
+      "dimissioni": 3859
+    },
+    "20090401": {
+      "denominazione": "STABILIMENTO SAN MICHELE",
+      "dimissioni": 23882
+    },
+    "20090402": {
+      "denominazione": "STABILIMENTO A. BUSINCO",
+      "dimissioni": 7795
+    },
+    "20090501": {
+      "denominazione": "STABILIMENTO CLINICHE DI SAN PIETRO",
+      "dimissioni": 23112
+    },
+    "20090502": {
+      "denominazione": "STABILIMENTO SS. ANNUNZIATA",
+      "dimissioni": 9716
+    },
+    "20090503": {
+      "denominazione": "STABILIMENTO OSPEDALE MARINO ALGHERO",
+      "dimissioni": 821
+    },
+    "20090601": {
+      "denominazione": "SAN GIOVANNI DI DIO",
+      "dimissioni": 2494
+    },
+    "20090602": {
+      "denominazione": "POLICLINICO MONSERRATO",
+      "dimissioni": 17152
+    },
+    "01000300": {
+      "denominazione": "OSPEDALE MARIA VITTORIA",
+      "dimissioni": 12884
+    },
+    "01000401": {
+      "denominazione": "OSPEDALE MAGGIORE",
+      "dimissioni": 5299
+    },
+    "01000402": {
+      "denominazione": "OSPEDALE SANTA CROCE",
+      "dimissioni": 8675
+    },
+    "01000403": {
+      "denominazione": "OSPEDALE SAN LORENZO",
+      "dimissioni": 3248
+    },
+    "01000404": {
+      "denominazione": "DAY SURGERY DEL DISTRETTO DI NICHELINO",
+      "dimissioni": 39
+    },
+    "01000501": {
+      "denominazione": "OSPEDALE SAN BIAGIO",
+      "dimissioni": 5594
+    },
+    "01000502": {
+      "denominazione": "STABILIMENTO OSPEDALIERO CASTELLI",
+      "dimissioni": 5520
+    },
+    "01000503": {
+      "denominazione": "C.O.Q. OSPEDALE MADONNA DEL POPOLO",
+      "dimissioni": 5497
+    },
+    "01000600": {
+      "denominazione": "ISTITUTO SS. TRINITÀ - BORGOMANERO",
+      "dimissioni": 10736
+    },
+    "01000700": {
+      "denominazione": "OSPEDALE MARTINI",
+      "dimissioni": 10004
+    },
+    "01000801": {
+      "denominazione": "PRESIDIO OSP. CARDINAL G. MASSAIA",
+      "dimissioni": 18807
+    },
+    "01000901": {
+      "denominazione": "OSPEDALE SANT'ANDREA",
+      "dimissioni": 12294
+    },
+    "01000902": {
+      "denominazione": "OSPEDALE SS.PIETRO E PAOLO",
+      "dimissioni": 2188
+    },
+    "01001000": {
+      "denominazione": "OSPEDALE OFTALMICO",
+      "dimissioni": 3423
+    },
+    "01001100": {
+      "denominazione": "TORINO NORD EMERGENZA SAN GIOVANNI BOSCO",
+      "dimissioni": 12751
+    },
+    "01001300": {
+      "denominazione": "OSPEDALE AMEDEO DI SAVOIA",
+      "dimissioni": 1530
+    },
+    "01001700": {
+      "denominazione": "OSPEDALE CIVICO CHIVASSO",
+      "dimissioni": 9975
+    },
+    "01001701": {
+      "denominazione": "OSPEDALE CIVICO CHIVASSO",
+      "dimissioni": 18
+    },
+    "01001901": {
+      "denominazione": "PRESIDIO OSPED. RIUNITO SEDE DI CIRIE'",
+      "dimissioni": 9551
+    },
+    "01001903": {
+      "denominazione": "PRESIDIO OSPED. RIUNITO SEDE DI LANZO",
+      "dimissioni": 792
+    },
+    "01002301": {
+      "denominazione": "OSPEDALE CIVILE DI IVREA",
+      "dimissioni": 9135
+    },
+    "01002302": {
+      "denominazione": "OSPEDALE CIVILE DI CUORGNE'",
+      "dimissioni": 2141
+    },
+    "01002304": {
+      "denominazione": "SAAPA S.P.A.",
+      "dimissioni": 1210
+    },
+    "01002601": {
+      "denominazione": "OSPEDALE SANTO SPIRITO CASALE",
+      "dimissioni": 8655
+    },
+    "01002603": {
+      "denominazione": "OSPEDALE SS. ANTONIO E MARGHERITA TORTON",
+      "dimissioni": 3336
+    },
+    "01002604": {
+      "denominazione": "OSPEDALE SAN GIACOMO NOVI",
+      "dimissioni": 7461
+    },
+    "01002605": {
+      "denominazione": "OSPEDALE CIVILE ACQUI",
+      "dimissioni": 2809
+    },
+    "01002606": {
+      "denominazione": "OSPEDALE CIVILE OVADA",
+      "dimissioni": 762
+    },
+    "01003001": {
+      "denominazione": "OSPEDALE CIVILE \"E.AGNELLI\"",
+      "dimissioni": 10172
+    },
+    "01003003": {
+      "denominazione": "OSPEDALE DI POMARETTO",
+      "dimissioni": 139
+    },
+    "01003200": {
+      "denominazione": "OSPEDALE DEGLI INFERMI",
+      "dimissioni": 16527
+    },
+    "01003800": {
+      "denominazione": "OSPEDALE MICHELE FERRERO E PIETRO FERRER",
+      "dimissioni": 13402
+    },
+    "01007901": {
+      "denominazione": "OSPEDALE DEGLI INFERMI",
+      "dimissioni": 13134
+    },
+    "01007904": {
+      "denominazione": "OSPEDALE CIVILE DI SUSA",
+      "dimissioni": 2062
+    },
+    "01007905": {
+      "denominazione": "OSPEDALE DI VENARIA",
+      "dimissioni": 350
+    },
+    "01012401": {
+      "denominazione": "OSPEDALE DI MONDOVI'",
+      "dimissioni": 8077
+    },
+    "01012402": {
+      "denominazione": "OSPEDALE DI CEVA",
+      "dimissioni": 1324
+    },
+    "01012601": {
+      "denominazione": "OSPEDALE DI SAVIGLIANO",
+      "dimissioni": 9641
+    },
+    "01012602": {
+      "denominazione": "OSPEDALE DI SALUZZO",
+      "dimissioni": 1397
+    },
+    "01012604": {
+      "denominazione": "OSPEDALE DI FOSSANO",
+      "dimissioni": 662
+    },
+    "01060100": {
+      "denominazione": "CLINICA PINNA PINTOR SRL",
+      "dimissioni": 1227
+    },
+    "01060300": {
+      "denominazione": "CLINICA SANTA CATERINA DA SIENA S.R.L.",
+      "dimissioni": 951
+    },
+    "01060400": {
+      "denominazione": "SEDES SAPIENTIAE SRL",
+      "dimissioni": 814
+    },
+    "01061000": {
+      "denominazione": "CASA DI CURA FORNACA DISESSANT",
+      "dimissioni": 4037
+    },
+    "01061100": {
+      "denominazione": "VILLA MARIA PIA HOSPITAL",
+      "dimissioni": 6691
+    },
+    "01061200": {
+      "denominazione": "CASA DI CURA KOELLIKER OSPEDALINO",
+      "dimissioni": 4002
+    },
+    "01061400": {
+      "denominazione": "CASA DI CURA VILLE AUGUSTA - S.R.L.",
+      "dimissioni": 930
+    },
+    "01061500": {
+      "denominazione": "CASA DI CURA VILLA PATRIZIA - S.R.L.",
+      "dimissioni": 300
+    },
+    "01061600": {
+      "denominazione": "CASA DI CURA CLINICA EPOREDIESE",
+      "dimissioni": 2242
+    },
+    "01061700": {
+      "denominazione": "CASA DI CURA VILLE TURINA AMIONE",
+      "dimissioni": 1285
+    },
+    "01061800": {
+      "denominazione": "CASA DI CURA E RIPOSO S. LUCA S.P.A.",
+      "dimissioni": 3411
+    },
+    "01062000": {
+      "denominazione": "CASA DI CURA VILLA DI SALUTE SPA",
+      "dimissioni": 685
+    },
+    "01062100": {
+      "denominazione": "CASA DI CURA VILLA SERENA - S.P.A.",
+      "dimissioni": 1533
+    },
+    "01062200": {
+      "denominazione": "CASA DI CURA VILLA IDA",
+      "dimissioni": 1119
+    },
+    "01062300": {
+      "denominazione": "VILLA PAPA GIOVANNI XXIII",
+      "dimissioni": 1265
+    },
+    "01062600": {
+      "denominazione": "POLICLINICO DI MONZA SPA - CASA DI CURA",
+      "dimissioni": 2780
+    },
+    "01062700": {
+      "denominazione": "CASA DI CURA SAN GIORGIO SRL",
+      "dimissioni": 464
+    },
+    "01062800": {
+      "denominazione": "POLICLINICO DI MONZA SPA - PRESIDIO CLIN",
+      "dimissioni": 2327
+    },
+    "01062900": {
+      "denominazione": "CASA DI CURA L'EREMO DI MIAZZINA",
+      "dimissioni": 977
+    },
+    "01063000": {
+      "denominazione": "CASA DI CURA S.CARLO DI ARONA",
+      "dimissioni": 471
+    },
+    "01063100": {
+      "denominazione": "CASA DI CURA SAN MICHELE",
+      "dimissioni": 519
+    },
+    "01063200": {
+      "denominazione": "CASA DI CURA CITTA' DI BRA",
+      "dimissioni": 6596
+    },
+    "01063300": {
+      "denominazione": "ISTITUTO CLIMATICO DI ROBILANTE S.R.L.",
+      "dimissioni": 771
+    },
+    "01063400": {
+      "denominazione": "CASA DI CURA MONTESERRAT S.R.L",
+      "dimissioni": 439
+    },
+    "01063500": {
+      "denominazione": "CASA DI CURA \"LA RESIDENZA\"",
+      "dimissioni": 1092
+    },
+    "01063900": {
+      "denominazione": "CASA DI CURA S. ANNA SPA",
+      "dimissioni": 1008
+    },
+    "01064100": {
+      "denominazione": "CASA DI CURA VILLA IGEA",
+      "dimissioni": 4349
+    },
+    "01064200": {
+      "denominazione": "CASA DI CURA SANT'ANNA",
+      "dimissioni": 528
+    },
+    "01064400": {
+      "denominazione": "CASA DI CURA VILLA GRAZIA",
+      "dimissioni": 1133
+    },
+    "01064600": {
+      "denominazione": "CASA DI CURA VILLA IRIS SRL",
+      "dimissioni": 1010
+    },
+    "01064700": {
+      "denominazione": "FONDAZIONE ORIZZONTE SPERANZA - ONLUS CA",
+      "dimissioni": 1153
+    },
+    "01064800": {
+      "denominazione": "ADRIANA S.R.L.",
+      "dimissioni": 762
+    },
+    "01064900": {
+      "denominazione": "HABILITA S.P.A. - PRESIDIO I CEDRI",
+      "dimissioni": 2389
+    },
+    "01065100": {
+      "denominazione": "CASA DI CURA MADONNA DEI BOSCHI",
+      "dimissioni": 579
+    },
+    "01065300": {
+      "denominazione": "PROMEA S.P.A.",
+      "dimissioni": 136
+    },
+    "01065500": {
+      "denominazione": "CASA DI CURA CELLINI",
+      "dimissioni": 5805
+    },
+    "01065600": {
+      "denominazione": "POLICLINICO DI MONZA S.P.A. PRESIDIO CLI",
+      "dimissioni": 590
+    },
+    "01065700": {
+      "denominazione": "CASA DI CURA CENTRO R.R.F. MONS. LUIGI N",
+      "dimissioni": 972
+    },
+    "01065900": {
+      "denominazione": "S.R.L. TERAPEUTICENTER - ISTITUTO MEDICO",
+      "dimissioni": 0
+    },
+    "01066200": {
+      "denominazione": "MOD CENTRO MEDICO CHIRURGICO",
+      "dimissioni": 16
+    },
+    "01066400": {
+      "denominazione": "LARC 2 S.R.L.",
+      "dimissioni": 53
+    },
+    "01066500": {
+      "denominazione": "CASA DI CURA VILLA CRISTINA",
+      "dimissioni": 1024
+    },
+    "01066600": {
+      "denominazione": "POLICLINICO DI MONZA",
+      "dimissioni": 5661
+    },
+    "01066800": {
+      "denominazione": "LARC SPA DAY SURGERY TIPO C",
+      "dimissioni": 0
+    },
+    "01067000": {
+      "denominazione": "BIOMED SRL",
+      "dimissioni": 13
+    },
+    "01089100": {
+      "denominazione": "BEATA VERGINE CONSOLATA",
+      "dimissioni": 1680
+    },
+    "01089200": {
+      "denominazione": "PRESIDIO SANITARIO GRADENIGO",
+      "dimissioni": 8761
+    },
+    "01089300": {
+      "denominazione": "PRESIDIO SANITARIO SAN CAMILLO",
+      "dimissioni": 1478
+    },
+    "01089700": {
+      "denominazione": "PRESIDIO SANITARIO OSPEDALE COTTOLENGO",
+      "dimissioni": 5886
+    },
+    "01089800": {
+      "denominazione": "PRESIDIO MAJOR",
+      "dimissioni": 765
+    },
+    "01090400": {
+      "denominazione": "AZIENDA OSPEDALIERO UNIVERSITARIA S.LUIG",
+      "dimissioni": 15599
+    },
+    "01090501": {
+      "denominazione": "OSP. MAGGIORE DELLA CARITA'",
+      "dimissioni": 30732
+    },
+    "01090502": {
+      "denominazione": "OSPEDALE SAN ROCCO GALLIATE",
+      "dimissioni": 702
+    },
+    "01090600": {
+      "denominazione": "AZ. OSPEDAL. S. CROCE E CARLE",
+      "dimissioni": 28603
+    },
+    "01090701": {
+      "denominazione": "OSP.CIVILE SS.ANTONIO E BIAGIO",
+      "dimissioni": 21547
+    },
+    "01090702": {
+      "denominazione": "OSP. INFANTILE C.ARRIGO",
+      "dimissioni": 4876
+    },
+    "01090703": {
+      "denominazione": "CENTRO RIABILITATIVO POLIFUNZIONALE T.BO",
+      "dimissioni": 917
+    },
+    "01090800": {
+      "denominazione": "OSPEDALE MAURIZIANO UMBERTO I - TORINO",
+      "dimissioni": 24064
+    },
+    "01090901": {
+      "denominazione": "OSPEDALE SAN GIOVANNI BATTISTA MOLINETTE",
+      "dimissioni": 39870
+    },
+    "01090904": {
+      "denominazione": "OSPEDALE CENTRO TRAUMATOLOGICO ORTOPEDIC",
+      "dimissioni": 9832
+    },
+    "01090906": {
+      "denominazione": "OSPEDALE OSTETRICO GINECOLOGICO SANT'ANN",
+      "dimissioni": 21984
+    },
+    "01090907": {
+      "denominazione": "OSPEDALE INFANTILE REGINA MARGHERITA",
+      "dimissioni": 12861
+    },
+    "01092000": {
+      "denominazione": "ISTITUTO AUXOLOGICO ITALIANO",
+      "dimissioni": 4887
+    },
+    "01092100": {
+      "denominazione": "FONDAZIONE SALVATORE MAUGERI",
+      "dimissioni": 2727
+    },
+    "01092200": {
+      "denominazione": "FONDAZIONE DEL PIEMONTE PER L'ONCOLOGIA",
+      "dimissioni": 6152
+    },
+    "01099900": {
+      "denominazione": "AUSILIATRICE DON GNOCCHI",
+      "dimissioni": 426
+    },
+    "02000100": {
+      "denominazione": "OSPEDALE REGIONALE UMBERTO PARINI",
+      "dimissioni": 16507
+    },
+    "02000200": {
+      "denominazione": "ISAV SPA",
+      "dimissioni": 1863
+    },
+    "03000400": {
+      "denominazione": "OSPEDALE DI CIRCOLO - BUSTO ARSIZIO",
+      "dimissioni": 13270
+    },
+    "03000600": {
+      "denominazione": "OSP. S. ANTONIO ABATE - GALLARATE",
+      "dimissioni": 8696
+    },
+    "03000800": {
+      "denominazione": "OSP. GENERALE PROVINCIALE - SARONNO",
+      "dimissioni": 5014
+    },
+    "03000900": {
+      "denominazione": "OSPEDALE A.BELLINI - SOMMA LOMBARDO",
+      "dimissioni": 1584
+    },
+    "03001000": {
+      "denominazione": "OSPEDALE GALMARINI - TRADATE",
+      "dimissioni": 6108
+    },
+    "03001200": {
+      "denominazione": "OSPEDALE CARLO ONDOLI - ANGERA",
+      "dimissioni": 1928
+    },
+    "03001500": {
+      "denominazione": "CASA DI CURA SANTA MARIA - CASTELLANZA",
+      "dimissioni": 4577
+    },
+    "03001700": {
+      "denominazione": "CASA DI CURA MATER DOMINI - CASTELLANZA",
+      "dimissioni": 8397
+    },
+    "03002201": {
+      "denominazione": "STABILIMENTO CANTU'",
+      "dimissioni": 4657
+    },
+    "03002202": {
+      "denominazione": "STABILIMENTO MARIANO",
+      "dimissioni": 314
+    },
+    "03002300": {
+      "denominazione": "OSPEDALE  UMBERTO I -  BELLANO",
+      "dimissioni": 392
+    },
+    "03002400": {
+      "denominazione": "OSPEDALE DI CIRCOLO S.L.MANDIC-MERATE",
+      "dimissioni": 6771
+    },
+    "03002600": {
+      "denominazione": "OSPEDALE ERBA-  RENALDI - MENAGGIO",
+      "dimissioni": 1119
+    },
+    "03002900": {
+      "denominazione": "OSP.SACRA FAMIGLIA - F.B.F. - ERBA",
+      "dimissioni": 6672
+    },
+    "03003000": {
+      "denominazione": "OSPEDALE  VALDUCE",
+      "dimissioni": 9879
+    },
+    "03003100": {
+      "denominazione": "OSP. MORIGGIA PELASCINI - GRAVEDONA",
+      "dimissioni": 7851
+    },
+    "03003200": {
+      "denominazione": "IST.CLINICO VILLA APRICA SPA-COMO",
+      "dimissioni": 5294
+    },
+    "03003300": {
+      "denominazione": "CASA DI CURA BEATO L.TALAMONI-LECCO",
+      "dimissioni": 1374
+    },
+    "03003400": {
+      "denominazione": "CASA DI CURA G.B. MANGIONI - LECCO",
+      "dimissioni": 2223
+    },
+    "03003500": {
+      "denominazione": "C.O.F. LANZO HOSPITAL - ALTA VALLE INTEL",
+      "dimissioni": 3043
+    },
+    "03003700": {
+      "denominazione": "CASA DI CURA VILLA S. BENEDETTO-ALBESE",
+      "dimissioni": 813
+    },
+    "03003800": {
+      "denominazione": "CASA DI CURA LE BETULLE-APPIANO GENTILE",
+      "dimissioni": 1384
+    },
+    "03004200": {
+      "denominazione": "OSPEDALE SONDRIO",
+      "dimissioni": 9514
+    },
+    "03004400": {
+      "denominazione": "OSPEDALE DI CHIAVENNA",
+      "dimissioni": 553
+    },
+    "03004500": {
+      "denominazione": "OSPEDALE  MORBEGNO",
+      "dimissioni": 69
+    },
+    "03005100": {
+      "denominazione": "P.O.  CITTA' DI SESTO S. GIOVANNI",
+      "dimissioni": 6400
+    },
+    "03005600": {
+      "denominazione": "PRESIDIO OSPED. V. BUZZI - MILANO",
+      "dimissioni": 12319
+    },
+    "03005700": {
+      "denominazione": "OSPEDALE M. MELLONI - MILANO",
+      "dimissioni": 5663
+    },
+    "03005800": {
+      "denominazione": "OSPEDALE BASSINI - CINISELLO BALSAMO",
+      "dimissioni": 7412
+    },
+    "03006600": {
+      "denominazione": "OSPEDALE G.SALVINI-GARBAGNATE MIL.SE",
+      "dimissioni": 11202
+    },
+    "03006700": {
+      "denominazione": "OSPEDALE MAGGIORE DI LODI",
+      "dimissioni": 13024
+    },
+    "03006800": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI DESIO",
+      "dimissioni": 11733
+    },
+    "03007000": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI CARATE",
+      "dimissioni": 5609
+    },
+    "03007101": {
+      "denominazione": "OSPEDALE S. MARIA DELLE STELLE MELZO",
+      "dimissioni": 4654
+    },
+    "03007201": {
+      "denominazione": "OSPEDALE DI  VIZZOLO PREDABISSI",
+      "dimissioni": 9699
+    },
+    "03007202": {
+      "denominazione": "OSPEDALE A. ZAPPATONI-CASSANO D'ADDA",
+      "dimissioni": 391
+    },
+    "03007300": {
+      "denominazione": "OSPEDALE DI CIRCOLO - RHO",
+      "dimissioni": 8087
+    },
+    "03007401": {
+      "denominazione": "OSPEDALE G. FORNAROLI MAGENTA",
+      "dimissioni": 11578
+    },
+    "03007402": {
+      "denominazione": "OSPEDALE C. CANTU' ABBIATEGRASSO",
+      "dimissioni": 1885
+    },
+    "03007800": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI VIMERCATE",
+      "dimissioni": 14429
+    },
+    "03007900": {
+      "denominazione": "OSPEDALE CIVICO - CODOGNO",
+      "dimissioni": 3403
+    },
+    "03008000": {
+      "denominazione": "OSPEDALE ROSSI - CASALPUSTERLENGO",
+      "dimissioni": 316
+    },
+    "03008200": {
+      "denominazione": "P.O. TRABATTONI RONZONI DI SEREGNO",
+      "dimissioni": 776
+    },
+    "03008300": {
+      "denominazione": "OSPEDALE DELMATI - SANT'ANGELO LODIGIANO",
+      "dimissioni": 1144
+    },
+    "03008501": {
+      "denominazione": "OSPEDALE UBOLDO - CERNUSCO S/NAVIGLIO",
+      "dimissioni": 4219
+    },
+    "03008502": {
+      "denominazione": "OSPEDALE CROTTA OLTROCCHI-VAPRIO D'ADDA",
+      "dimissioni": 192
+    },
+    "03009600": {
+      "denominazione": "CASA DI CURA DEL POLICLINICO - MILANO",
+      "dimissioni": 656
+    },
+    "03009700": {
+      "denominazione": "ISTITUTO CLINICO CITTA' STUDI - MILANO",
+      "dimissioni": 11240
+    },
+    "03010000": {
+      "denominazione": "CASA DI CURA IGEA - MILANO",
+      "dimissioni": 2891
+    },
+    "03010300": {
+      "denominazione": "CASA DI CURA PALAZZOLO-FOND.DON GNOCCHI",
+      "dimissioni": 1183
+    },
+    "03010500": {
+      "denominazione": "CASA DI CURA S. CAMILLO - MILANO",
+      "dimissioni": 1246
+    },
+    "03010600": {
+      "denominazione": "CASA DI CURA POLICLINICO - MONZA",
+      "dimissioni": 8329
+    },
+    "03010700": {
+      "denominazione": "ISTITUTI CLINICI ZUCCHI SPA-MONZA",
+      "dimissioni": 9337
+    },
+    "03010800": {
+      "denominazione": "CASA DI CURA ZUCCHI - CARATE BRIANZA",
+      "dimissioni": 824
+    },
+    "03010900": {
+      "denominazione": "CASA DI CURA VILLA BIANCA - LIMBIATE",
+      "dimissioni": 628
+    },
+    "03011000": {
+      "denominazione": "CASA DI CURA S. GIOVANNI - MILANO",
+      "dimissioni": 1796
+    },
+    "03011200": {
+      "denominazione": "IST.CLINICO S.AMBROGIO SPA-MILANO",
+      "dimissioni": 3990
+    },
+    "03011300": {
+      "denominazione": "CASA DI CURA LA MADONNINA - MILANO",
+      "dimissioni": 3984
+    },
+    "03011600": {
+      "denominazione": "CLINICA POLISPECIALISTICA SAN CARLO - S.",
+      "dimissioni": 5682
+    },
+    "03012100": {
+      "denominazione": "CASA DI CURA S. PIO X - MILANO",
+      "dimissioni": 9569
+    },
+    "03012400": {
+      "denominazione": "ISTITUTO STOMATOLOGICO ITALIANO - MILANO",
+      "dimissioni": 553
+    },
+    "03012500": {
+      "denominazione": "CASA DI CURA AMBROSIANA SPA-CESANO B.",
+      "dimissioni": 1960
+    },
+    "03013100": {
+      "denominazione": "OSPEDALE DI TREVIGLIO E CARAVAGGIO",
+      "dimissioni": 11854
+    },
+    "03013200": {
+      "denominazione": "OSPEDALE CIVILE - S.GIOVANNI BIANCO",
+      "dimissioni": 2238
+    },
+    "03013300": {
+      "denominazione": "OSPEDALE PESENTI FENAROLI - ALZANO L.",
+      "dimissioni": 4950
+    },
+    "03013600": {
+      "denominazione": "OSPEDALE BRIOLINI - GAZZANIGA",
+      "dimissioni": 338
+    },
+    "03013700": {
+      "denominazione": "OSP.LE SS.CAPITANIO E GEROSA - LOVERE",
+      "dimissioni": 2372
+    },
+    "03013800": {
+      "denominazione": "OSP.LE SS.TRINITA'-ROMANO DI LOMBARDIA",
+      "dimissioni": 3395
+    },
+    "03014000": {
+      "denominazione": "OSPEDALE BOLOGNINI - SERIATE",
+      "dimissioni": 12629
+    },
+    "03014300": {
+      "denominazione": "HUMANITAS GAVAZZENI",
+      "dimissioni": 13367
+    },
+    "03014400": {
+      "denominazione": "CASA DI CURA BEATO PALAZZOLO - BERGAMO",
+      "dimissioni": 2969
+    },
+    "03014500": {
+      "denominazione": "HUMANITAS CASTELLI",
+      "dimissioni": 4704
+    },
+    "03014600": {
+      "denominazione": "CASA DI CURA S. FRANCESCO - BERGAMO",
+      "dimissioni": 3940
+    },
+    "03014700": {
+      "denominazione": "POLICLINICO SAN MARCO - OSIO SOTTO",
+      "dimissioni": 11631
+    },
+    "03014800": {
+      "denominazione": "POLICLINICO SAN PIETRO  - PONTE S. PIETR",
+      "dimissioni": 13340
+    },
+    "03014900": {
+      "denominazione": "ISTITUTO CLINICO QUARENGHI SRL",
+      "dimissioni": 1366
+    },
+    "03015401": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI CHIARI",
+      "dimissioni": 9630
+    },
+    "03015600": {
+      "denominazione": "OSPEDALE DI DESENZANO",
+      "dimissioni": 9654
+    },
+    "03015700": {
+      "denominazione": "OSPEDALE CIVILE LA MEMORIA DI GAVARDO",
+      "dimissioni": 4591
+    },
+    "03015800": {
+      "denominazione": "OSPEDALE DI LENO",
+      "dimissioni": 649
+    },
+    "03015900": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI MONTICHIARI",
+      "dimissioni": 5781
+    },
+    "03016100": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI SALO'",
+      "dimissioni": 413
+    },
+    "03016200": {
+      "denominazione": "PRESIDIO OSPEDALIERO GARDONE V.T.",
+      "dimissioni": 3805
+    },
+    "03016300": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI ISEO",
+      "dimissioni": 2924
+    },
+    "03016700": {
+      "denominazione": "OSPEDALE DEI BAMBINI - BRESCIA",
+      "dimissioni": 8077
+    },
+    "03017500": {
+      "denominazione": "CASA DI CURA S. CAMILLO - BRESCIA",
+      "dimissioni": 2550
+    },
+    "03017600": {
+      "denominazione": "ISTITUTO CLINICO  S. ANNA - BRESCIA",
+      "dimissioni": 13114
+    },
+    "03017700": {
+      "denominazione": "CASA DI CURA VILLA GEMMA-GARDONE RIV",
+      "dimissioni": 1145
+    },
+    "03017800": {
+      "denominazione": "IST.CLIN. CITTA' DI BRESCIA - BRESCIA",
+      "dimissioni": 10908
+    },
+    "03018400": {
+      "denominazione": "OSPEDALE DI MANERBIO",
+      "dimissioni": 9584
+    },
+    "03019000": {
+      "denominazione": "OSPEDALE CARLO MIRA-CASORATE PRIMO",
+      "dimissioni": 561
+    },
+    "03019100": {
+      "denominazione": "OSPEDALE S.MARTINO - MEDE",
+      "dimissioni": 919
+    },
+    "03019200": {
+      "denominazione": "OSPEDALE SS.ANNUNZIATA - VARZI",
+      "dimissioni": 529
+    },
+    "03019300": {
+      "denominazione": "OSPEDALE CIVILE - VIGEVANO",
+      "dimissioni": 7319
+    },
+    "03019400": {
+      "denominazione": "OSPEDALE CIVILE - VOGHERA",
+      "dimissioni": 7069
+    },
+    "03019700": {
+      "denominazione": "CASA DI CURA VILLA ESPERIA",
+      "dimissioni": 1358
+    },
+    "03019800": {
+      "denominazione": "ISTITUTO CLINICO BEATO MATTEO",
+      "dimissioni": 6164
+    },
+    "03020100": {
+      "denominazione": "CASA DI CURA CITTADELLA SOCIALE",
+      "dimissioni": 1562
+    },
+    "03020200": {
+      "denominazione": "IST.DI CURA CITTA'DI PAVIA",
+      "dimissioni": 4386
+    },
+    "03020300": {
+      "denominazione": "OSPEDALE ASILO VITTORIA - MORTARA",
+      "dimissioni": 1905
+    },
+    "03020900": {
+      "denominazione": "OSPEDALE MAGGIORE - CREMA",
+      "dimissioni": 11271
+    },
+    "03021500": {
+      "denominazione": "OSPEDALE S. MARTA - RIVOLTA D'ADDA",
+      "dimissioni": 526
+    },
+    "03021700": {
+      "denominazione": "CASA DI CURA ANCELLE DELLA CARITA'-CR",
+      "dimissioni": 507
+    },
+    "03021800": {
+      "denominazione": "CASA DI CURA S. CAMILLO - CREMONA",
+      "dimissioni": 2102
+    },
+    "03021900": {
+      "denominazione": "CASA DI CURA FIGLIE DI S.CAMILLO-CR",
+      "dimissioni": 4944
+    },
+    "03022701": {
+      "denominazione": "PRESIDIO OSPEDALIERO - ASOLA",
+      "dimissioni": 2058
+    },
+    "03022702": {
+      "denominazione": "PRES. RIABIL. MULTIFUNZ. BOZZOLO",
+      "dimissioni": 336
+    },
+    "03023900": {
+      "denominazione": "OSP.CIVILE DESTRA SECCHIA-PIEVE CORIANO",
+      "dimissioni": 4930
+    },
+    "03025900": {
+      "denominazione": "CASA DI CURA S. CLEMENTE - MANTOVA",
+      "dimissioni": 3324
+    },
+    "03026600": {
+      "denominazione": "CASA DI CURA COLUMBUS - MILANO",
+      "dimissioni": 2983
+    },
+    "03027300": {
+      "denominazione": "OSPEDALE OGLIO PO",
+      "dimissioni": 3802
+    },
+    "03027401": {
+      "denominazione": "OSPEDALE VALCAMONICA - ESINE",
+      "dimissioni": 8730
+    },
+    "03027402": {
+      "denominazione": "OSPEDALE VALCAMONICA - EDOLO",
+      "dimissioni": 809
+    },
+    "03027500": {
+      "denominazione": "ISTITUTO CLINICO S. ROCCO S.P.A. - OME",
+      "dimissioni": 8016
+    },
+    "03028101": {
+      "denominazione": "OSPEDALE CIVILE DI LEGNANO",
+      "dimissioni": 19695
+    },
+    "03028102": {
+      "denominazione": "OSPEDALE DI CUGGIONO",
+      "dimissioni": 2393
+    },
+    "03028201": {
+      "denominazione": "OSPED.CIRCOLO CAUSA PIA LUVINI-CITTIGLIO",
+      "dimissioni": 5307
+    },
+    "03028202": {
+      "denominazione": "OSPEDALE LUINI CONFALONIERI - LUINO",
+      "dimissioni": 2246
+    },
+    "03028300": {
+      "denominazione": "OSPEDALE G.CASATI-PASSIRANA RHO",
+      "dimissioni": 237
+    },
+    "03028400": {
+      "denominazione": "CENTRO DI RIABIL.VILLA BERETTA-COSTA M",
+      "dimissioni": 918
+    },
+    "03029400": {
+      "denominazione": "CASA DI CURA  DOMUS SALUTIS - BRESCIA",
+      "dimissioni": 2122
+    },
+    "03029500": {
+      "denominazione": "FONDAZIONE POLIAMBULANZA - BRESCIA",
+      "dimissioni": 29573
+    },
+    "03033700": {
+      "denominazione": "VILLA SANT'APOLLONIA S.R.L. - BERGAMO",
+      "dimissioni": 305
+    },
+    "03034700": {
+      "denominazione": "CASA DI CURA VILLA S. GIUSEPPE-ANZANO DE",
+      "dimissioni": 586
+    },
+    "03034800": {
+      "denominazione": "CASA DI CURA VILLA BARBARANO - SALO'",
+      "dimissioni": 881
+    },
+    "03035000": {
+      "denominazione": "OSPEDALE S.ISIDORO - TRESCORE B.",
+      "dimissioni": 1061
+    },
+    "03035200": {
+      "denominazione": "POLO GERIATRICO RIABILITATIVO-CINISELLO",
+      "dimissioni": 705
+    },
+    "03035300": {
+      "denominazione": "OSPEDALE CIVILE DI VOLTA MANTOVANA",
+      "dimissioni": 2771
+    },
+    "03035400": {
+      "denominazione": "NEPHROCARE S.P.A. - SERIATE",
+      "dimissioni": 317
+    },
+    "03035500": {
+      "denominazione": "OSPEDALE DI SUZZARA S.P.A.",
+      "dimissioni": 6550
+    },
+    "03035600": {
+      "denominazione": "ISTITUTO CLINICO HABILITA - CISERANO",
+      "dimissioni": 494
+    },
+    "03035700": {
+      "denominazione": "OSP. SAN PELLEGRINO - CASTIGLIONE D/S",
+      "dimissioni": 5058
+    },
+    "03035900": {
+      "denominazione": "FONDAZIONE EUROPEA DI RICERCA BIOMEDICA",
+      "dimissioni": 585
+    },
+    "03036000": {
+      "denominazione": "FERB-ONLUS C.TRO ALZHEIMER-GAZZANIGA",
+      "dimissioni": 347
+    },
+    "03036200": {
+      "denominazione": "RESIDENZA ANNI AZZURRI - REZZATO",
+      "dimissioni": 312
+    },
+    "03036300": {
+      "denominazione": "RESIDENZA ANNI AZZURRI MIRASOLE - OPERA",
+      "dimissioni": 358
+    },
+    "03036400": {
+      "denominazione": "FOND. GAETANO E PIERA BORGHI - BREBBIA",
+      "dimissioni": 657
+    },
+    "03036700": {
+      "denominazione": "OSPEDALE S. GIUSEPPE - MILANO",
+      "dimissioni": 11007
+    },
+    "03036800": {
+      "denominazione": "C.TRO RIAB.E.SPALENZA-FOND.DON GNOCCHI",
+      "dimissioni": 1104
+    },
+    "03036900": {
+      "denominazione": "CENTRO MEDICO RICHIEDEI-PALAZZOLO S/O",
+      "dimissioni": 438
+    },
+    "03037200": {
+      "denominazione": "SINLAB ITALIA S.R.L. - COMO",
+      "dimissioni": 84
+    },
+    "03037800": {
+      "denominazione": "CENTRO CLINICO NEMO - FOND. SERENA - MIL",
+      "dimissioni": 494
+    },
+    "03037900": {
+      "denominazione": "HABILITA IST.CLINICO-OSP.LE DI SARNICO",
+      "dimissioni": 1240
+    },
+    "03038100": {
+      "denominazione": "FOND. MB PER IL BAMBINO E LA SUA MAMMA -",
+      "dimissioni": 8367
+    },
+    "03038200": {
+      "denominazione": "OSPEDALE M. O. ANTONIO LOCATELLI-PIARIO",
+      "dimissioni": 2975
+    },
+    "03038300": {
+      "denominazione": "NUOVO OSPEDALE DI BRONI E STRADELLA",
+      "dimissioni": 3056
+    },
+    "03038400": {
+      "denominazione": "C.R.C. MALATTIE RARE ALDO E CELE DACCO'-",
+      "dimissioni": 371
+    },
+    "03038800": {
+      "denominazione": "IST. RIV. E CURA-GRUPPO ISENI SANITA'",
+      "dimissioni": 606
+    },
+    "03039700": {
+      "denominazione": "CASA DI CURA LE TERRAZZE - CUNARDO",
+      "dimissioni": 1499
+    },
+    "03040800": {
+      "denominazione": "CENTRO CLINICO NEMO",
+      "dimissioni": 214
+    },
+    "03041700": {
+      "denominazione": "ISTITUTI CLINICI SCIENTIFICI MAUGERI - L",
+      "dimissioni": 360
+    },
+    "03090101": {
+      "denominazione": "OSPEDALE DI CIRCOLO E FONDAZIONE MACCHI",
+      "dimissioni": 22019
+    },
+    "03090102": {
+      "denominazione": "OSPEDALE F. DEL PONTE - VARESE",
+      "dimissioni": 12447
+    },
+    "03090200": {
+      "denominazione": "OSPEDALE S. ANNA - COMO",
+      "dimissioni": 19600
+    },
+    "03090300": {
+      "denominazione": "OSPEDALE DI CIRCOLO A. MANZONI - LECCO",
+      "dimissioni": 19879
+    },
+    "03090400": {
+      "denominazione": "OSPEDALE MORELLI - SONDALO",
+      "dimissioni": 5010
+    },
+    "03090500": {
+      "denominazione": "OSPEDALE PAPA GIOVANNI XXIII - BG",
+      "dimissioni": 40086
+    },
+    "03090600": {
+      "denominazione": "PRES.OSPEDAL.SPEDALI CIVILI BRESCIA",
+      "dimissioni": 40527
+    },
+    "03090700": {
+      "denominazione": "OSPEDALE C. POMA - MANTOVA",
+      "dimissioni": 20760
+    },
+    "03090800": {
+      "denominazione": "OSPEDALE DI CREMONA",
+      "dimissioni": 17327
+    },
+    "03090900": {
+      "denominazione": "OSPEDALE S.GERARDO - MONZA",
+      "dimissioni": 22334
+    },
+    "03091000": {
+      "denominazione": "OSPEDALE FATEBENEFRATELLI E OFTALMICO -",
+      "dimissioni": 7937
+    },
+    "03091100": {
+      "denominazione": "ISTITUTO ORTOPEDICO GAETANO PINI - MILAN",
+      "dimissioni": 9190
+    },
+    "03091200": {
+      "denominazione": "P.O. CENTRO TRAUMATOLOGICO ORTOPEDICO -",
+      "dimissioni": 3494
+    },
+    "03091300": {
+      "denominazione": "OSPEDALE CA' GRANDA-NIGUARDA - MILANO",
+      "dimissioni": 39951
+    },
+    "03091400": {
+      "denominazione": "OSPEDALE S. PAOLO - MILANO",
+      "dimissioni": 19444
+    },
+    "03091500": {
+      "denominazione": "OSPEDALE S. CARLO BORROMEO - MILANO",
+      "dimissioni": 14050
+    },
+    "03091600": {
+      "denominazione": "OSPEDALE L. SACCO - MILANO",
+      "dimissioni": 14702
+    },
+    "03092000": {
+      "denominazione": "I.N.R.C.A.- PRESIDIO DI CASATENOVO",
+      "dimissioni": 1185
+    },
+    "03092200": {
+      "denominazione": "FOND.IRCCS \"ISTIT.NAZ.LE TUMORI\"MILANO",
+      "dimissioni": 16702
+    },
+    "03092300": {
+      "denominazione": "FOND.IRCCS IST.NAZ.NEUROLOGICO C.BESTA-M",
+      "dimissioni": 5076
+    },
+    "03092400": {
+      "denominazione": "POLICLINICO S. MATTEO - PAVIA",
+      "dimissioni": 30896
+    },
+    "03092500": {
+      "denominazione": "FONDAZ.IRCCS CA' GRANDA - OSPEDALE MAGGI",
+      "dimissioni": 41439
+    },
+    "03093000": {
+      "denominazione": "IRCCS CENTRO MEDICO TRADATE",
+      "dimissioni": 1537
+    },
+    "03093100": {
+      "denominazione": "ISTITUTO SCIENTIFICO MEDEA-BOSISIO P.",
+      "dimissioni": 1861
+    },
+    "03093200": {
+      "denominazione": "IRCCS CENTRO MEDICO DI LUMEZZANE",
+      "dimissioni": 988
+    },
+    "03093300": {
+      "denominazione": "IRCCS CENTRO MEDICO DI CASTEL GOFFREDO",
+      "dimissioni": 590
+    },
+    "03093400": {
+      "denominazione": "CENTRO CARDIOLOGICO \"FOND. MONZINO\" - MI",
+      "dimissioni": 8711
+    },
+    "03093500": {
+      "denominazione": "IRCCS    S. RAFFAELE - MILANO",
+      "dimissioni": 46785
+    },
+    "03093601": {
+      "denominazione": "IST.AUXOLOGICO ITALIANO-I.S. S.LUCA-MILA",
+      "dimissioni": 4406
+    },
+    "03093602": {
+      "denominazione": "IST.AUXOLOGICO ITAL.-I.S. S.MICHELE-MILA",
+      "dimissioni": 128
+    },
+    "03093603": {
+      "denominazione": "IRCCS OSPEDALE CAPITANIO",
+      "dimissioni": 5896
+    },
+    "03093700": {
+      "denominazione": "IRCCS S.M.NASCENTE-FOND.DON C.GNOCCHI-MI",
+      "dimissioni": 1262
+    },
+    "03093800": {
+      "denominazione": "IRCCS CENTRO MEDICO DI PAVIA",
+      "dimissioni": 6821
+    },
+    "03093900": {
+      "denominazione": "FOND.IST.NEUROL.C.MONDINO-PAVIA",
+      "dimissioni": 3587
+    },
+    "03094000": {
+      "denominazione": "IRCCS CENTRO MEDICO MONTESCANO",
+      "dimissioni": 1555
+    },
+    "03094100": {
+      "denominazione": "ISTITUTO EUROPEO DI ONCOLOGIA-MILANO",
+      "dimissioni": 16547
+    },
+    "03094200": {
+      "denominazione": "IRCCS S.GIOVANNI DI DIO-FBF- BRESCIA",
+      "dimissioni": 524
+    },
+    "03094300": {
+      "denominazione": "IST. CLIN. HUMANITAS - ROZZANO",
+      "dimissioni": 45423
+    },
+    "03094601": {
+      "denominazione": "IRCCS OSPEDALE GALEAZZI SANT'AMBROGIO",
+      "dimissioni": 15747
+    },
+    "03094602": {
+      "denominazione": "IST.CLINICO S.SIRO SPA-MILANO",
+      "dimissioni": 4975
+    },
+    "03094700": {
+      "denominazione": "I.R.C.C.S. POLICLINICO SAN DONATO",
+      "dimissioni": 14616
+    },
+    "03094800": {
+      "denominazione": "IRCCS MULTIMEDICA - MILANO",
+      "dimissioni": 7567
+    },
+    "03094900": {
+      "denominazione": "IRCCS IST. SCIENTIFICO DI RIABILITAZIONE",
+      "dimissioni": 942
+    },
+    "03095000": {
+      "denominazione": "SAN RAFFAELE TURRO",
+      "dimissioni": 2644
+    },
+    "04100100": {
+      "denominazione": "OSPEDALE CENTRALE DI BOLZANO",
+      "dimissioni": 27418
+    },
+    "04100200": {
+      "denominazione": "OSPEDALE AZIENDALE DI MERANO",
+      "dimissioni": 13588
+    },
+    "04100400": {
+      "denominazione": "OSPEDALE AZIENDALE DI BRESSANONE",
+      "dimissioni": 11309
+    },
+    "04100500": {
+      "denominazione": "OSPEDALE AZIENDALE DI BRUNICO",
+      "dimissioni": 9663
+    },
+    "04100600": {
+      "denominazione": "OSPEDALE DI BASE DI VIPITENO",
+      "dimissioni": 3281
+    },
+    "04100700": {
+      "denominazione": "OSPEDALE DI BASE DI SAN CANDIDO",
+      "dimissioni": 2174
+    },
+    "04101100": {
+      "denominazione": "OSPEDALE DI BASE DI SILANDRO",
+      "dimissioni": 3696
+    },
+    "04101300": {
+      "denominazione": "MARIA SRL IMPRESA SOCIALE",
+      "dimissioni": 876
+    },
+    "04101400": {
+      "denominazione": "CASA DI CURA VILLA SANT'ANNA",
+      "dimissioni": 1004
+    },
+    "04101500": {
+      "denominazione": "CASA DI CURA BONVICINI S.R.L.",
+      "dimissioni": 1155
+    },
+    "04101700": {
+      "denominazione": "MELITTAKLINIK 1",
+      "dimissioni": 203
+    },
+    "04102600": {
+      "denominazione": "CASA DI CURA SALUS CENTER SRL",
+      "dimissioni": 1035
+    },
+    "04102800": {
+      "denominazione": "CENTRO DI CHIRURGIA S.ANNA",
+      "dimissioni": 584
+    },
+    "04103000": {
+      "denominazione": "DOLOMITI SPORTCLINIC SRL",
+      "dimissioni": 545
+    },
+    "04103100": {
+      "denominazione": "BRIXSANA PRIVATE CLINIC GMBH/SRL",
+      "dimissioni": 877
+    },
+    "04103200": {
+      "denominazione": "CITY CLINIC SRL",
+      "dimissioni": 1418
+    },
+    "04103300": {
+      "denominazione": "MELITTAKLINIK 2",
+      "dimissioni": 1120
+    },
+    "04103400": {
+      "denominazione": "SANITAS BRUNICO",
+      "dimissioni": 24
+    },
+    "04200101": {
+      "denominazione": "PRESIDIO OSPEDALIERO S. CHIARA",
+      "dimissioni": 29656
+    },
+    "04200103": {
+      "denominazione": "PRESIDIO OSPEDALIERO VILLA ROSA",
+      "dimissioni": 804
+    },
+    "04200104": {
+      "denominazione": "PRESIDIO OSPEDALIERO VILLA IGEA",
+      "dimissioni": 1391
+    },
+    "04200400": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI BORGO VALSUGANA",
+      "dimissioni": 2836
+    },
+    "04200500": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI CLES",
+      "dimissioni": 4182
+    },
+    "04200600": {
+      "denominazione": "OSPEDALE DI ROVERETO",
+      "dimissioni": 13894
+    },
+    "04200700": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI TIONE",
+      "dimissioni": 2582
+    },
+    "04201000": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI ARCO",
+      "dimissioni": 3409
+    },
+    "04201400": {
+      "denominazione": "PRESIDIO OSPEDALIERO DI CAVALESE",
+      "dimissioni": 3496
+    },
+    "04201500": {
+      "denominazione": "OSPEDALE SAN CAMILLO",
+      "dimissioni": 2890
+    },
+    "04201600": {
+      "denominazione": "KOS CARE SRL - U.O. OSP. S.PANCRAZIO",
+      "dimissioni": 1620
+    },
+    "04201800": {
+      "denominazione": "CASA DI CURA EREMO DI ARCO SRL",
+      "dimissioni": 2237
+    },
+    "04201900": {
+      "denominazione": "CASA DI CURA REGINA",
+      "dimissioni": 1730
+    },
+    "04202000": {
+      "denominazione": "CASA DI CURA SOLATRIX",
+      "dimissioni": 3793
+    },
+    "04202200": {
+      "denominazione": "CASA DI CURA VILLA BIANCA",
+      "dimissioni": 2164
+    },
+    "05001700": {
+      "denominazione": "OSPEDALE SACRO CUORE DON CALABRIA",
+      "dimissioni": 31653
+    },
+    "05001800": {
+      "denominazione": "OSPEDALE CLASSIFICATO VILLA S. GIULIANA",
+      "dimissioni": 776
+    },
+    "05001900": {
+      "denominazione": "CASA DI CURA CENTRO RIABILIT VERONESE",
+      "dimissioni": 1108
+    },
+    "05002100": {
+      "denominazione": "CASA DI CURA VILLA GARDA",
+      "dimissioni": 1758
+    },
+    "05002200": {
+      "denominazione": "OSPEDALE PEDERZOLI CASA DI CURA SPA",
+      "dimissioni": 20352
+    },
+    "05002300": {
+      "denominazione": "CLINICA SAN FRANCESCO SPA - CASA DI CURA",
+      "dimissioni": 4870
+    },
+    "05002500": {
+      "denominazione": "CASA DI CURA VILLA SANTA CHIARA",
+      "dimissioni": 1055
+    },
+    "05004500": {
+      "denominazione": "CASA DI CURA ERETENIA",
+      "dimissioni": 3421
+    },
+    "05004600": {
+      "denominazione": "CASA DI CURA VILLA BERICA",
+      "dimissioni": 3821
+    },
+    "05004700": {
+      "denominazione": "CASA DI CURA VILLA MARGHERITA KOS CARE",
+      "dimissioni": 880
+    },
+    "05007200": {
+      "denominazione": "OSPEDALE DI MOTTA DI LIVENZA",
+      "dimissioni": 2497
+    },
+    "05007900": {
+      "denominazione": "OSPEDALE CLASSIFICATO SAN CAMILLO",
+      "dimissioni": 4117
+    },
+    "05008000": {
+      "denominazione": "CASA DI CURA PARK VILLA NAPOLEON",
+      "dimissioni": 909
+    },
+    "05008100": {
+      "denominazione": "CASA DI CURA GIOVANNI XXIII",
+      "dimissioni": 7490
+    },
+    "05009700": {
+      "denominazione": "OSP. S.RAFFAELE ARCANG. FATEBENEFRATELLI",
+      "dimissioni": 676
+    },
+    "05009800": {
+      "denominazione": "FONDAZIONE VILLA SALUS",
+      "dimissioni": 4662
+    },
+    "05009900": {
+      "denominazione": "CASA DI CURA POLICLINICO SAN MARCO SPA",
+      "dimissioni": 3704
+    },
+    "05010000": {
+      "denominazione": "CASA DI CURA SILENO E ANNA RIZZOLA",
+      "dimissioni": 3884
+    },
+    "05012000": {
+      "denominazione": "CASA DI CURA DIAZ",
+      "dimissioni": 28
+    },
+    "05012100": {
+      "denominazione": "CASA DI CURA VILLA MARIA SPA",
+      "dimissioni": 2277
+    },
+    "05012200": {
+      "denominazione": "CASA DI CURA 'TRIESTE'",
+      "dimissioni": 1190
+    },
+    "05012300": {
+      "denominazione": "CASA DI CURA ABANO TERME POLISPEC. E TER",
+      "dimissioni": 12574
+    },
+    "05012400": {
+      "denominazione": "CASA DI CURA PARCO DEI TIGLI",
+      "dimissioni": 1393
+    },
+    "05014001": {
+      "denominazione": "IRCSS MEDEA CONEGLIANO",
+      "dimissioni": 1161
+    },
+    "05014002": {
+      "denominazione": "IRCSS MEDEA PIEVE DI SOLIGO",
+      "dimissioni": 717
+    },
+    "05014100": {
+      "denominazione": "CASA DI CURA CITTÀ DI ROVIGO",
+      "dimissioni": 1276
+    },
+    "05014800": {
+      "denominazione": "CLINICA RIABILITATIVA SRL",
+      "dimissioni": 52
+    },
+    "05014900": {
+      "denominazione": "GVM CORTINA S.R.L.",
+      "dimissioni": 962
+    },
+    "05015000": {
+      "denominazione": "CASA DI CURA SANTA MARIA MADDALENA",
+      "dimissioni": 3737
+    },
+    "05015100": {
+      "denominazione": "CASA DI CURA MADONNA DELLA SALUTE",
+      "dimissioni": 4202
+    },
+    "05050101": {
+      "denominazione": "OSPEDALE DI  BELLUNO",
+      "dimissioni": 9842
+    },
+    "05050102": {
+      "denominazione": "OSPEDALE DI AGORDO",
+      "dimissioni": 1189
+    },
+    "05050103": {
+      "denominazione": "OSPEDALE DI PIEVE DI CADORE",
+      "dimissioni": 573
+    },
+    "05050104": {
+      "denominazione": "OSPEDALE DI  FELTRE",
+      "dimissioni": 9452
+    },
+    "05050105": {
+      "denominazione": "OSPEDALE DI  LAMON",
+      "dimissioni": 484
+    },
+    "05050201": {
+      "denominazione": "OSPEDALE DI  TREVISO",
+      "dimissioni": 38629
+    },
+    "05050202": {
+      "denominazione": "OSPEDALE DI  ODERZO",
+      "dimissioni": 5670
+    },
+    "05050204": {
+      "denominazione": "OSPEDALE DI  CONEGLIANO",
+      "dimissioni": 13973
+    },
+    "05050205": {
+      "denominazione": "OSPEDALE DI VITTORIO VENETO",
+      "dimissioni": 6264
+    },
+    "05050206": {
+      "denominazione": "OSPEDALE DI CASTELFRANCO",
+      "dimissioni": 8012
+    },
+    "05050207": {
+      "denominazione": "OSPEDALE DI MONTEBELLUNA",
+      "dimissioni": 11722
+    },
+    "05050301": {
+      "denominazione": "OSPEDALE DI MESTRE",
+      "dimissioni": 25110
+    },
+    "05050302": {
+      "denominazione": "OSPEDALE DI VENEZIA",
+      "dimissioni": 9663
+    },
+    "05050303": {
+      "denominazione": "OSPEDALE DI DOLO",
+      "dimissioni": 7602
+    },
+    "05050304": {
+      "denominazione": "OSPEDALE DI MIRANO",
+      "dimissioni": 10845
+    },
+    "05050306": {
+      "denominazione": "OSPEDALE DI CHIOGGIA",
+      "dimissioni": 6470
+    },
+    "05050401": {
+      "denominazione": "OSPEDALE DI PORTOGRUARO",
+      "dimissioni": 7466
+    },
+    "05050402": {
+      "denominazione": "OSPEDALE DI SAN DONA' DI PIAVE",
+      "dimissioni": 8272
+    },
+    "05050403": {
+      "denominazione": "OSPEDALE DI JESOLO",
+      "dimissioni": 766
+    },
+    "05050501": {
+      "denominazione": "OSPEDALE DI ROVIGO",
+      "dimissioni": 14350
+    },
+    "05050502": {
+      "denominazione": "OSPEDALE DI TRECENTA",
+      "dimissioni": 1553
+    },
+    "05050503": {
+      "denominazione": "OSPEDALE DI ADRIA",
+      "dimissioni": 4156
+    },
+    "05050601": {
+      "denominazione": "OSPEDALE DI CITTADELLA",
+      "dimissioni": 11862
+    },
+    "05050602": {
+      "denominazione": "OSPEDALE DI CAMPOSAMPIERO",
+      "dimissioni": 12092
+    },
+    "05050604": {
+      "denominazione": "OSPEDALE DI PIOVE DI SACCO",
+      "dimissioni": 5658
+    },
+    "05050605": {
+      "denominazione": "OSPEDALE DI SCHIAVONIA",
+      "dimissioni": 12928
+    },
+    "05050607": {
+      "denominazione": "OSPEDALE DI CONSELVE",
+      "dimissioni": 169
+    },
+    "05050701": {
+      "denominazione": "OSPEDALE DI BASSANO",
+      "dimissioni": 15634
+    },
+    "05050702": {
+      "denominazione": "OSPEDALE DI ASIAGO",
+      "dimissioni": 1982
+    },
+    "05050703": {
+      "denominazione": "OSPEDALE DI SANTORSO",
+      "dimissioni": 17439
+    },
+    "05050801": {
+      "denominazione": "OSPEDALE DI VICENZA",
+      "dimissioni": 29339
+    },
+    "05050802": {
+      "denominazione": "OSPEDALE DI NOVENTA",
+      "dimissioni": 2149
+    },
+    "05050803": {
+      "denominazione": "OSPEDALE DI ARZIGNANO",
+      "dimissioni": 8797
+    },
+    "05050804": {
+      "denominazione": "OSPEDALE DI LONIGO",
+      "dimissioni": 734
+    },
+    "05050805": {
+      "denominazione": "OSPEDALE DI MONTECCHIO",
+      "dimissioni": 65
+    },
+    "05050806": {
+      "denominazione": "OSPEDALE DI VALDAGNO",
+      "dimissioni": 5611
+    },
+    "05050901": {
+      "denominazione": "OSPEDALE DI LEGNAGO",
+      "dimissioni": 13004
+    },
+    "05050902": {
+      "denominazione": "OSPEDALE DI BOVOLONE",
+      "dimissioni": 551
+    },
+    "05050903": {
+      "denominazione": "OSPEDALE DI SAN BONIFACIO",
+      "dimissioni": 11618
+    },
+    "05050904": {
+      "denominazione": "OSPEDALE DI MARZANA",
+      "dimissioni": 413
+    },
+    "05050905": {
+      "denominazione": "OSPEDALE DI VILLAFRANCA",
+      "dimissioni": 7370
+    },
+    "05050906": {
+      "denominazione": "OSPEDALE DI BUSSOLENGO",
+      "dimissioni": 1210
+    },
+    "05050907": {
+      "denominazione": "OSPEDALE DI MALCESINE",
+      "dimissioni": 448
+    },
+    "05090100": {
+      "denominazione": "AZIENDA OSPEDALE - UNIVERSITA' PADOVA",
+      "dimissioni": 64330
+    },
+    "05091201": {
+      "denominazione": "AOUI VERONA BORGO TRENTO",
+      "dimissioni": 40655
+    },
+    "05091202": {
+      "denominazione": "AOUI DI VERONA BORGO ROMA",
+      "dimissioni": 16718
+    },
+    "05095100": {
+      "denominazione": "SAN CAMILLO IRCCS  SRL",
+      "dimissioni": 420
+    },
+    "05095201": {
+      "denominazione": "IOV PADOVA",
+      "dimissioni": 4092
+    },
+    "05095202": {
+      "denominazione": "IOV SEDE CASTELFRANCO",
+      "dimissioni": 4180
+    },
+    "06000200": {
+      "denominazione": "IST.DI MEDICINA FISICA E RIABILITAZIONE",
+      "dimissioni": 361
+    },
+    "06001100": {
+      "denominazione": "POLICLINICO CITTA` DI UDINE - CC PRIVATA",
+      "dimissioni": 4517
+    },
+    "06002900": {
+      "denominazione": "SANATORIO TRIESTINO  S.P.A.",
+      "dimissioni": 2345
+    },
+    "06003301": {
+      "denominazione": "SALUS",
+      "dimissioni": 3162
+    },
+    "06003302": {
+      "denominazione": "PINETA DEL CARSO",
+      "dimissioni": 1089
+    },
+    "06004000": {
+      "denominazione": "CASA DI CURA PRIVATA 'S.GIORGIO' SPA",
+      "dimissioni": 7765
+    },
+    "06004100": {
+      "denominazione": "PRESIDIO OSPEDALIERO SANTA MARIA DEGLI A",
+      "dimissioni": 19632
+    },
+    "06004201": {
+      "denominazione": "P.O. SAN VITO AL T. SEDE DI S. VITO AL T",
+      "dimissioni": 5809
+    },
+    "06004202": {
+      "denominazione": "P.O. SAN VITO AL T. SEDE DI SPILIMBERGO",
+      "dimissioni": 2233
+    },
+    "06004301": {
+      "denominazione": "PO GORIZIA E MONFALCONE SEDE GORIZIA",
+      "dimissioni": 5412
+    },
+    "06004302": {
+      "denominazione": "PO GORIZIA E MONFALCONE SEDE MONFALCONE",
+      "dimissioni": 7892
+    },
+    "06004401": {
+      "denominazione": "PO LATISANA E PALMANOVA SEDE LATISANA",
+      "dimissioni": 5446
+    },
+    "06004402": {
+      "denominazione": "PO LATISANA E PALMANOVA SEDE PALMANOVA",
+      "dimissioni": 4305
+    },
+    "06004501": {
+      "denominazione": "SEDE DI SAN DANIELE",
+      "dimissioni": 6659
+    },
+    "06004502": {
+      "denominazione": "SEDE DI TOLMEZZO",
+      "dimissioni": 6160
+    },
+    "06004600": {
+      "denominazione": "PRESIDIO OSP. CATTINARA E MAGGIORE DI TS",
+      "dimissioni": 20467
+    },
+    "06004700": {
+      "denominazione": "PRESIDIO OSPEDALIERO 'S.M.M' DI UDINE",
+      "dimissioni": 37590
+    },
+    "06004702": {
+      "denominazione": "PRESIDIO OSPEDALIERO 'S.M.M' DI UDINE",
+      "dimissioni": 0
+    },
+    "06090100": {
+      "denominazione": "I.R.C.C.S.  BURLO GAROFOLO",
+      "dimissioni": 10679
+    },
+    "06090200": {
+      "denominazione": "CENTRO  RIFERIMENTO ONCOLOGICO",
+      "dimissioni": 4669
+    },
+    "07000101": {
+      "denominazione": "STABILIMENTO OSPEDALIERO DI IMPERIA",
+      "dimissioni": 10109
+    },
+    "07000102": {
+      "denominazione": "STABILIMENTO OSPEDALIERO DI SANREMO",
+      "dimissioni": 7220
+    },
+    "07000103": {
+      "denominazione": "STABILIMENTO OSPEDALIERO DI BORDIGHERA",
+      "dimissioni": 451
+    },
+    "07001600": {
+      "denominazione": "CASA DI CURA SAN MICHELE - ENNE S.R.L.",
+      "dimissioni": 1901
+    },
+    "07002500": {
+      "denominazione": "E.O. OSPEDALI GALLIERA",
+      "dimissioni": 21902
+    },
+    "07003901": {
+      "denominazione": "OSP. RIUNITI LEONARDI E RIBOLI LAVAGNA",
+      "dimissioni": 9758
+    },
+    "07003902": {
+      "denominazione": "OSPEDALE CIVILE DI SESTRI LEVANTE",
+      "dimissioni": 2310
+    },
+    "07003905": {
+      "denominazione": "OSPEDALE N.S. DI MONTALLEGRO",
+      "dimissioni": 3936
+    },
+    "07005101": {
+      "denominazione": "EVANGELICO INTERNAZIONALE CASTELLETTO",
+      "dimissioni": 3169
+    },
+    "07005102": {
+      "denominazione": "EVANGELICO-SAN CARLO VOLTRI",
+      "dimissioni": 4992
+    },
+    "07005801": {
+      "denominazione": "OSPEDALE SANT`ANDREA LA SPEZIA",
+      "dimissioni": 12503
+    },
+    "07005803": {
+      "denominazione": "OSPEDALE SAN NICOLO` LEVANTO",
+      "dimissioni": 108
+    },
+    "07005804": {
+      "denominazione": "STABILIMENTO SAN BARTOLOMEO DI SARZANA",
+      "dimissioni": 8596
+    },
+    "07006500": {
+      "denominazione": "CASA DI CURA VILLA MONTALLEGRO",
+      "dimissioni": 3060
+    },
+    "07006600": {
+      "denominazione": "VILLA SERENA S.P.A.",
+      "dimissioni": 1337
+    },
+    "07006900": {
+      "denominazione": "ICLAS  S.R.L.",
+      "dimissioni": 2482
+    },
+    "07007000": {
+      "denominazione": "CASA DI CURA 'ALMA MATER'",
+      "dimissioni": 1287
+    },
+    "07007400": {
+      "denominazione": "ISTITUTO CARDIOVASCOLARE CAMOGLI",
+      "dimissioni": 1008
+    },
+    "07011300": {
+      "denominazione": "SANT'ANNA SRL",
+      "dimissioni": 225
+    },
+    "07011400": {
+      "denominazione": "CENTRO RIABILITAZIONE DON CARLO GNOCCHI",
+      "dimissioni": 782
+    },
+    "07021101": {
+      "denominazione": "OSPEDALE SANTA MARIA MISERICORDIA",
+      "dimissioni": 2885
+    },
+    "07021102": {
+      "denominazione": "OSPEDALE SANTA CORONA",
+      "dimissioni": 12628
+    },
+    "07021203": {
+      "denominazione": "OSPEDALE SAN GIUSEPPE",
+      "dimissioni": 181
+    },
+    "07021204": {
+      "denominazione": "OSPEDALE SAN PAOLO",
+      "dimissioni": 18648
+    },
+    "07030101": {
+      "denominazione": "OSPEDALE LA COLLETTA ARENZANO",
+      "dimissioni": 1154
+    },
+    "07030103": {
+      "denominazione": "OSPEDALE PADRE ANTERO MICONE SESTRI P.",
+      "dimissioni": 3605
+    },
+    "07030104": {
+      "denominazione": "OSPEDALE VILLA SCASSI",
+      "dimissioni": 14423
+    },
+    "07030105": {
+      "denominazione": "OSPEDALE GALLINO",
+      "dimissioni": 1567
+    },
+    "07032100": {
+      "denominazione": "IST. BIOMEDICAL S.P.A.",
+      "dimissioni": 118
+    },
+    "07090100": {
+      "denominazione": "IRCCS OSPEDALE POLICLINICO SAN MARTINO",
+      "dimissioni": 46350
+    },
+    "07094000": {
+      "denominazione": "IST.G.GASLINI",
+      "dimissioni": 10781
+    },
+    "07094001": {
+      "denominazione": "ISTITUTO GIANNINA GASLINI",
+      "dimissioni": 16776
+    },
+    "07094011": {
+      "denominazione": "ISTITUTO GIANNINA GASLINI - SEDE IMPERIA",
+      "dimissioni": 769
+    },
+    "07094024": {
+      "denominazione": "ISTITUTO GIANNINA GASLINI - SEDE SAVONA",
+      "dimissioni": 983
+    },
+    "07094041": {
+      "denominazione": "ISTITUTO GIANNINA GASLINI - SEDE LAVAGNA",
+      "dimissioni": 415
+    },
+    "07094051": {
+      "denominazione": "ISTITUTO GIANNINA GASLINI - SEDE SPEZIA",
+      "dimissioni": 695
+    },
+    "07096000": {
+      "denominazione": "FONDAZIONE SALVATORE MAUGERI",
+      "dimissioni": 791
+    },
+    "08000401": {
+      "denominazione": "OSPEDALE \"GUGLIELMO DA SALICETO\" PIACENZ",
+      "dimissioni": 23635
+    },
+    "08000403": {
+      "denominazione": "OSPEDALE CASTEL SAN GIOVANNI",
+      "dimissioni": 3516
+    },
+    "08000405": {
+      "denominazione": "OSPEDALE FIORENZUOLA D'ARDA",
+      "dimissioni": 1578
+    },
+    "08000407": {
+      "denominazione": "OSPEDALE DI MONTAGNA DI BOBBIO",
+      "dimissioni": 210
+    },
+    "08001301": {
+      "denominazione": "OSPEDALE FIDENZA",
+      "dimissioni": 10713
+    },
+    "08001303": {
+      "denominazione": "OSPEDALE 'S.MARIA' BORGO VAL DI TARO",
+      "dimissioni": 2989
+    },
+    "08002101": {
+      "denominazione": "OSPEDALE CIVILE GUASTALLA",
+      "dimissioni": 5936
+    },
+    "08002102": {
+      "denominazione": "OSPEDALE \"S.SEBASTIANO\" CORREGGIO",
+      "dimissioni": 2329
+    },
+    "08002103": {
+      "denominazione": "OSPEDALE \"E.FRANCHINI\" MONTECCHIO",
+      "dimissioni": 5364
+    },
+    "08002104": {
+      "denominazione": "OSPEDALE \"G.MAGATI\" SCANDIANO",
+      "dimissioni": 2758
+    },
+    "08002105": {
+      "denominazione": "OSPEDALE \"S.ANNA\" CASTELNOVO NE MONTI",
+      "dimissioni": 2931
+    },
+    "08002106": {
+      "denominazione": "ARCISPEDALE SANTA MARIA NUOVA DI REGGIO",
+      "dimissioni": 27948
+    },
+    "08002107": {
+      "denominazione": "ISTITUTO IN TECNOLOGIE AVANZATE E MODELL",
+      "dimissioni": 6483
+    },
+    "08003104": {
+      "denominazione": "OSPEDALE  \"B. RAMAZZINI\"  CARPI",
+      "dimissioni": 11876
+    },
+    "08003105": {
+      "denominazione": "OSPEDALE \"SANTA MARIA BIANCA\"  MIRANDOLA",
+      "dimissioni": 4417
+    },
+    "08003108": {
+      "denominazione": "OSPEDALE VIGNOLA",
+      "dimissioni": 3714
+    },
+    "08003109": {
+      "denominazione": "OSPEDALE PAVULLO NEL FRIGNANO",
+      "dimissioni": 3688
+    },
+    "08004401": {
+      "denominazione": "OSPEDALE CIVILE NUOVO \"S.MARIA DELLA SCA",
+      "dimissioni": 13806
+    },
+    "08004402": {
+      "denominazione": "OSPEDALE CASTEL SAN PIETRO TERME",
+      "dimissioni": 232
+    },
+    "08004500": {
+      "denominazione": "OSPEDALE MONTECATONE REHABILITATION INST",
+      "dimissioni": 1378
+    },
+    "08005301": {
+      "denominazione": "OSPEDALE MAGGIORE \"C.A. PIZZARDI\"",
+      "dimissioni": 27314
+    },
+    "08005302": {
+      "denominazione": "OSPEDALE BELLARIA",
+      "dimissioni": 5407
+    },
+    "08005303": {
+      "denominazione": "OSPEDALE \"DOSSETTI\"  BAZZANO",
+      "dimissioni": 2600
+    },
+    "08005304": {
+      "denominazione": "OSPEDALE \"A. COSTA\" PORRETTA TERME (ALTO",
+      "dimissioni": 2815
+    },
+    "08005305": {
+      "denominazione": "OSPEDALE VERGATO",
+      "dimissioni": 707
+    },
+    "08005306": {
+      "denominazione": "OSPEDALE \"SIMIANI\" LOIANO",
+      "dimissioni": 699
+    },
+    "08005307": {
+      "denominazione": "OSPEDALE BENTIVOGLIO",
+      "dimissioni": 5978
+    },
+    "08005308": {
+      "denominazione": "OSPEDALE BUDRIO",
+      "dimissioni": 1697
+    },
+    "08005309": {
+      "denominazione": "OSPEDALE \"S.SALVATORE\"  S. GIOVANNI IN P",
+      "dimissioni": 4856
+    },
+    "08006803": {
+      "denominazione": "OSPEDALE DEL DELTA",
+      "dimissioni": 5144
+    },
+    "08006804": {
+      "denominazione": "OSPEDALE \"MAZZOLANI VANDINI\" ARGENTA",
+      "dimissioni": 1329
+    },
+    "08006806": {
+      "denominazione": "STABILIMENTO OSPEDALIERO \" SS. ANNUNZIAT",
+      "dimissioni": 4276
+    },
+    "08007200": {
+      "denominazione": "OSPEDALE \"SANTA MARIA DELLE CROCI\" RAVEN",
+      "dimissioni": 26756
+    },
+    "08007900": {
+      "denominazione": "OSPEDALE \"UMBERTO 1°\" LUGO",
+      "dimissioni": 7890
+    },
+    "08008200": {
+      "denominazione": "OSPEDALE \"DEGLI INFERMI \" FAENZA",
+      "dimissioni": 9977
+    },
+    "08008501": {
+      "denominazione": "OSPEDALE \"MORGAGNI-PIERANTONI\" FORLI'",
+      "dimissioni": 22794
+    },
+    "08008503": {
+      "denominazione": "OSPEDALE \"NEFETTI\" SANTA SOFIA",
+      "dimissioni": 403
+    },
+    "08009101": {
+      "denominazione": "OSPEDALE \"MAURIZIO BUFALINI\" CESENA",
+      "dimissioni": 23519
+    },
+    "08009102": {
+      "denominazione": "OSPEDALE \"GINESIO MARCONI\" CESENATICO",
+      "dimissioni": 627
+    },
+    "08009103": {
+      "denominazione": "OSPEDALE \"PIETRO ANGIOLONI\" BAGNO DI ROM",
+      "dimissioni": 572
+    },
+    "08009501": {
+      "denominazione": "OSPEDALE \"INFERMI\" RIMINI",
+      "dimissioni": 29369
+    },
+    "08009502": {
+      "denominazione": "OSPEDALE \"FRANCHINI\" SANTARCANGELO DI RO",
+      "dimissioni": 2818
+    },
+    "08009503": {
+      "denominazione": "OSPEDALE SACRA FAMIGLIA NOVAFELTRIA",
+      "dimissioni": 1786
+    },
+    "08009600": {
+      "denominazione": "NUOVO OSPEDALE CIVILE DI SASSUOLO S.P.A.",
+      "dimissioni": 16526
+    },
+    "08010001": {
+      "denominazione": "OSPEDALE \"CECCARINI\" RICCIONE",
+      "dimissioni": 7066
+    },
+    "08010002": {
+      "denominazione": "OSPEDALE \"CERVESI\" CATTOLICA",
+      "dimissioni": 4051
+    },
+    "08015300": {
+      "denominazione": "ISTITUTO DELLE SCIENZE NEUROLOGICHE DI B",
+      "dimissioni": 5587
+    },
+    "08020300": {
+      "denominazione": "CASA DI CURA PRIVATA PIACENZA S.P.A.",
+      "dimissioni": 5581
+    },
+    "08020400": {
+      "denominazione": "CASA DI CURA PRIVATA S. ANTONINO S.R.L.",
+      "dimissioni": 1192
+    },
+    "08020500": {
+      "denominazione": "CASA DI CURA  S.GIACOMO S.R.L.",
+      "dimissioni": 1464
+    },
+    "08020600": {
+      "denominazione": "CASA DI CURA CITTA' DI PARMA",
+      "dimissioni": 8980
+    },
+    "08020700": {
+      "denominazione": "HOSPITAL PICCOLE FIGLIE",
+      "dimissioni": 4251
+    },
+    "08020800": {
+      "denominazione": "VILLA MARIA LUIGIA",
+      "dimissioni": 2184
+    },
+    "08020900": {
+      "denominazione": "CASA DI CURA VILLA IGEA",
+      "dimissioni": 641
+    },
+    "08021000": {
+      "denominazione": "HOSPITAL VAL PARMA",
+      "dimissioni": 2583
+    },
+    "08021100": {
+      "denominazione": "SALUS HOSPITAL (CASA DI CURA PRIVATA)",
+      "dimissioni": 3372
+    },
+    "08021200": {
+      "denominazione": "CASA DI CURA PRIVATA POLISPECIALISTICA V",
+      "dimissioni": 3193
+    },
+    "08021300": {
+      "denominazione": "HESPERIA HOSPITAL MODENA S.R.L.",
+      "dimissioni": 5562
+    },
+    "08021400": {
+      "denominazione": "PROF. FOGLIANI CASA DI CURA S.R.L.",
+      "dimissioni": 1514
+    },
+    "08021500": {
+      "denominazione": "OSPEDALE PRIVATO \"VILLA IGEA S.P.A.\"",
+      "dimissioni": 2616
+    },
+    "08021600": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA ROSA",
+      "dimissioni": 839
+    },
+    "08021800": {
+      "denominazione": "VILLA PINETA S.R.L.",
+      "dimissioni": 1292
+    },
+    "08021900": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA CHIAR",
+      "dimissioni": 3091
+    },
+    "08022000": {
+      "denominazione": "CASA DI CURA PROF. NOBILI S.P.A.",
+      "dimissioni": 2299
+    },
+    "08022100": {
+      "denominazione": "CASA DI CURA VILLA ERBOSA OSPEDALE PRIVA",
+      "dimissioni": 7798
+    },
+    "08022200": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO NIGRISOLI",
+      "dimissioni": 3738
+    },
+    "08022300": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA TORRI",
+      "dimissioni": 2008
+    },
+    "08022400": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO CASA DI CUR",
+      "dimissioni": 192
+    },
+    "08022500": {
+      "denominazione": "CASA DI CURA MADRE FORTUNATA TONIOLO",
+      "dimissioni": 3374
+    },
+    "08022600": {
+      "denominazione": "OSPEDALE PRIVATO VILLALBA HOSPITAL",
+      "dimissioni": 435
+    },
+    "08022700": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA BARUZ",
+      "dimissioni": 435
+    },
+    "08022800": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA BELLO",
+      "dimissioni": 831
+    },
+    "08022900": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA LAURA",
+      "dimissioni": 8171
+    },
+    "08023100": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA REGIN",
+      "dimissioni": 2590
+    },
+    "08023500": {
+      "denominazione": "CASA DI CURA QUISISANA S.R.L.",
+      "dimissioni": 1934
+    },
+    "08023600": {
+      "denominazione": "CASA DI CURA SALUS S.R.L.",
+      "dimissioni": 4540
+    },
+    "08023700": {
+      "denominazione": "OSPEDALE PRIVATO DOMUS NOVA S.P.A.",
+      "dimissioni": 5039
+    },
+    "08023900": {
+      "denominazione": "VILLA MARIA CECILIA HOSPITAL",
+      "dimissioni": 10072
+    },
+    "08024000": {
+      "denominazione": "OSPEDALE PRIVATO \"SAN PIER DAMIANO HOSPI",
+      "dimissioni": 5135
+    },
+    "08024200": {
+      "denominazione": "CASA DI CURA PRIVATA VILLA AZZURRA",
+      "dimissioni": 387
+    },
+    "08024300": {
+      "denominazione": "OSPEDALE PRIVATO ACCREDITATO VILLA IGEA",
+      "dimissioni": 2549
+    },
+    "08024400": {
+      "denominazione": "VILLA SERENA",
+      "dimissioni": 4863
+    },
+    "08024500": {
+      "denominazione": "MALATESTA NOVELLO",
+      "dimissioni": 5483
+    },
+    "08024600": {
+      "denominazione": "CASA DI CURA PRIVATA SAN LORENZINO S.P.A",
+      "dimissioni": 2970
+    },
+    "08024700": {
+      "denominazione": "SOL ET SALUS",
+      "dimissioni": 3156
+    },
+    "08024900": {
+      "denominazione": "CASA DI CURA VILLA MARIA",
+      "dimissioni": 4355
+    },
+    "08025000": {
+      "denominazione": "LUCE SUL MARE",
+      "dimissioni": 203
+    },
+    "08025100": {
+      "denominazione": "VILLA SALUS S.R.L.",
+      "dimissioni": 364
+    },
+    "08025200": {
+      "denominazione": "CASA DI CURA PROF. E. MONTANARI",
+      "dimissioni": 4738
+    },
+    "08025300": {
+      "denominazione": "FONDAZIONE DON CARLO GNOCCHI ONLUS",
+      "dimissioni": 1190
+    },
+    "08025400": {
+      "denominazione": "CENTRO CARDINAL FERRARI S.R.L.",
+      "dimissioni": 485
+    },
+    "08025500": {
+      "denominazione": "OSPEDALE PRIVATO SANTA VIOLA",
+      "dimissioni": 1002
+    },
+    "08025600": {
+      "denominazione": "CASA DI CURA EUGENIO GRUPPIONI OSPEDALE",
+      "dimissioni": 596
+    },
+    "08090200": {
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA DI PAR",
+      "dimissioni": 41723
+    },
+    "08090401": {
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA DI MOD",
+      "dimissioni": 35177
+    },
+    "08090402": {
+      "denominazione": "NUOVO OSPEDALE CIVILE  S.AGOSTINO - ESTE",
+      "dimissioni": 18761
+    },
+    "08090800": {
+      "denominazione": "IRCCS AZIENDA OSPEDALIERO-UNIVERSITARIA",
+      "dimissioni": 54814
+    },
+    "08090900": {
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA DI FER",
+      "dimissioni": 30032
+    },
+    "08092100": {
+      "denominazione": "I.R.S.T. SRL IRCCS",
+      "dimissioni": 1488
+    },
+    "08096000": {
+      "denominazione": "ISTITUTO ORTOPEDICO RIZZOLI",
+      "dimissioni": 17160
+    },
+    "09020200": {
+      "denominazione": "CASA CURA S.CAMILLO FORTE DEI MARMI SRL",
+      "dimissioni": 1978
+    },
+    "09020300": {
+      "denominazione": "CASA DI CURA MD BARBANTINI",
+      "dimissioni": 52
+    },
+    "09020400": {
+      "denominazione": "C. DI CURA M.D. BARBANTINI SANTA CHIARA",
+      "dimissioni": 2020
+    },
+    "09020500": {
+      "denominazione": "CASA DI CURA S.ZITA",
+      "dimissioni": 905
+    },
+    "09020600": {
+      "denominazione": "CASA DI CURA VILLE DI NOZZANO",
+      "dimissioni": 538
+    },
+    "09020700": {
+      "denominazione": "CASA DI CURA S. RITA",
+      "dimissioni": 1398
+    },
+    "09021000": {
+      "denominazione": "CASA DI CURA VILLA FIORITA",
+      "dimissioni": 4239
+    },
+    "09021300": {
+      "denominazione": "CASA DI CURA VILLA DONATELLO SPA",
+      "dimissioni": 3022
+    },
+    "09021400": {
+      "denominazione": "CASA DI CURA VILLA CHERUBINI PROSPERIUS",
+      "dimissioni": 471
+    },
+    "09021600": {
+      "denominazione": "KOS CARE S.R.L. VILLA DEI PINI",
+      "dimissioni": 532
+    },
+    "09021800": {
+      "denominazione": "IFCA SPA CASA DI CURA ULIVELLA E GLICINI",
+      "dimissioni": 5164
+    },
+    "09021900": {
+      "denominazione": "VILLA MARIA TERESA HOSPITAL SRL",
+      "dimissioni": 816
+    },
+    "09022900": {
+      "denominazione": "VILLA DELLE TERME SPA",
+      "dimissioni": 773
+    },
+    "09023000": {
+      "denominazione": "CASA DI CURA VAL DI SIEVE SRL",
+      "dimissioni": 1917
+    },
+    "09023100": {
+      "denominazione": "CASA DI CURA SUORE DELL'ADDOLORATA",
+      "dimissioni": 0
+    },
+    "09023300": {
+      "denominazione": "CASA DI CURA PRIVATA SAN ROSSORE S.R.L.",
+      "dimissioni": 1938
+    },
+    "09023400": {
+      "denominazione": "CASA DI CURA VILLA TIRRENA",
+      "dimissioni": 252
+    },
+    "09023500": {
+      "denominazione": "CASA DI CURA \"LEONARDO\"",
+      "dimissioni": 1929
+    },
+    "09023600": {
+      "denominazione": "CENTRO CHIRURGICO TOSCANO",
+      "dimissioni": 5134
+    },
+    "09023700": {
+      "denominazione": "SAN GIUSEPPE HOSPITAL",
+      "dimissioni": 3169
+    },
+    "09023900": {
+      "denominazione": "RUGANI HOSPITAL SRL",
+      "dimissioni": 2167
+    },
+    "09024000": {
+      "denominazione": "CASA DI CURA FRATE SOLE  SRL",
+      "dimissioni": 2065
+    },
+    "09024100": {
+      "denominazione": "CEN.S. MARIA ALLA PINETA  F. DON GNOCCHI",
+      "dimissioni": 600
+    },
+    "09024300": {
+      "denominazione": "CENTRO DAY SURGERY MAURIZIO BUFALINI SRL",
+      "dimissioni": 218
+    },
+    "09024500": {
+      "denominazione": "CASA DI CURA SAN PAOLO SPA",
+      "dimissioni": 469
+    },
+    "09060101": {
+      "denominazione": "OSP. S. ANTONIO ABATE FIVIZZANO   (MS)",
+      "dimissioni": 1431
+    },
+    "09060102": {
+      "denominazione": "OSP. CIV. S.ANTONIO  PONTREMOLI (MS)",
+      "dimissioni": 2100
+    },
+    "09060201": {
+      "denominazione": "STABILIMENTO OSPEDALIERO DI CARRARA",
+      "dimissioni": 960
+    },
+    "09060203": {
+      "denominazione": "OSPEDALE  DELLE APUANE",
+      "dimissioni": 16198
+    },
+    "09060301": {
+      "denominazione": "STABILIMENTO OSPEDALIERO SANTA CROCE",
+      "dimissioni": 2151
+    },
+    "09060302": {
+      "denominazione": "STABILIMENTO OSPEDALIERO SAN FRANCESCO",
+      "dimissioni": 1975
+    },
+    "09060400": {
+      "denominazione": "PRESIDIO OSPEDALIERO SAN LUCA",
+      "dimissioni": 15438
+    },
+    "09060601": {
+      "denominazione": "OSPEDALE SAN JACOPO",
+      "dimissioni": 16200
+    },
+    "09060602": {
+      "denominazione": "OSPEDALE LORENZO PACINI",
+      "dimissioni": 650
+    },
+    "09060700": {
+      "denominazione": "OSPEDALE DELLA VALDINIEVOLE",
+      "dimissioni": 8036
+    },
+    "09060800": {
+      "denominazione": "NUOVO OSPEDALE DI PRATO S.STEFANO",
+      "dimissioni": 26285
+    },
+    "09060900": {
+      "denominazione": "PRESIDIO OSPEDALIERO \"S.MARIA MADDALENA\"",
+      "dimissioni": 2137
+    },
+    "09061001": {
+      "denominazione": "P.O. F. LOTTI STABILIMENTO DI PONTEDERA",
+      "dimissioni": 8943
+    },
+    "09061002": {
+      "denominazione": "SPDC AZIENDALE ASL5",
+      "dimissioni": 473
+    },
+    "09061300": {
+      "denominazione": "OSPEDALE LIVORNO",
+      "dimissioni": 17630
+    },
+    "09061401": {
+      "denominazione": "OSPEDALE DI VILLAMARINA",
+      "dimissioni": 4000
+    },
+    "09061402": {
+      "denominazione": "OSPEDALE CIVILE DI CECINA",
+      "dimissioni": 5826
+    },
+    "09061500": {
+      "denominazione": "OSPEDALE DI PORTOFERRAIO",
+      "dimissioni": 2270
+    },
+    "09061800": {
+      "denominazione": "OSPEDALE DEL CASENTINO",
+      "dimissioni": 2165
+    },
+    "09061900": {
+      "denominazione": "OSPEDALE DELLA VALTIBERINA",
+      "dimissioni": 2042
+    },
+    "09062100": {
+      "denominazione": "OSPEDALE AREA ARETINA NORD",
+      "dimissioni": 19955
+    },
+    "09062300": {
+      "denominazione": "OSPEDALE  S.ANDREA   MASSA MARITTIMA",
+      "dimissioni": 2639
+    },
+    "09062402": {
+      "denominazione": "OSPEDALE DI ORBETELLO",
+      "dimissioni": 2368
+    },
+    "09062403": {
+      "denominazione": "OSPEDALE DI PITIGLIANO",
+      "dimissioni": 128
+    },
+    "09062500": {
+      "denominazione": "OSPEDALE CIVILE DI CASTEL DEL PIANO",
+      "dimissioni": 526
+    },
+    "09062600": {
+      "denominazione": "OSPEDALE DELLA MISERICORDIA GROSSETO",
+      "dimissioni": 16431
+    },
+    "09062700": {
+      "denominazione": "OSPEDALE DI BORGO SAN LORENZO",
+      "dimissioni": 4644
+    },
+    "09062901": {
+      "denominazione": "OSPEDALE S.M.ANNUNZIATA",
+      "dimissioni": 12666
+    },
+    "09062902": {
+      "denominazione": "OSPEDALE SERRISTORI",
+      "dimissioni": 1775
+    },
+    "09063201": {
+      "denominazione": "SANTA MARIA NUOVA",
+      "dimissioni": 5709
+    },
+    "09063202": {
+      "denominazione": "OSPEDALE PIERO PALAGI",
+      "dimissioni": 2924
+    },
+    "09063203": {
+      "denominazione": "OSP. S. GIOVANNI DI DIO TORREGALLI",
+      "dimissioni": 13368
+    },
+    "09063206": {
+      "denominazione": "OBLATE AZIENDA SANITARIA FIRENZE",
+      "dimissioni": 430
+    },
+    "09063400": {
+      "denominazione": "SERVIZIO PSICHIATRICO DIAGNOSI E CURA",
+      "dimissioni": 237
+    },
+    "09063700": {
+      "denominazione": "PRESIDIO OSPEDALIERO AMIATA SENESE",
+      "dimissioni": 451
+    },
+    "09063800": {
+      "denominazione": "OSPEDALE DELL'ALTA VAL D'ELSA",
+      "dimissioni": 6391
+    },
+    "09063900": {
+      "denominazione": "OSPEDALI RIUNITI DELLA VAL DI CHIANA",
+      "dimissioni": 5516
+    },
+    "09064000": {
+      "denominazione": "OSPEDALE VERSILIA",
+      "dimissioni": 16729
+    },
+    "09064100": {
+      "denominazione": "OSPEDALE NUOVO VALDARNO",
+      "dimissioni": 7167
+    },
+    "09064202": {
+      "denominazione": "OSPEDALE S. GIUSEPPE",
+      "dimissioni": 16028
+    },
+    "09064203": {
+      "denominazione": "OSPEDALE SAN PIETRO IGNEO",
+      "dimissioni": 779
+    },
+    "09064300": {
+      "denominazione": "NUOVO OSPEDALE VALDICHIANA S. MARGHERITA",
+      "dimissioni": 1335
+    },
+    "09090100": {
+      "denominazione": "AZIENDA OSPEDALIERO-UNIVERSITARIA PISANA",
+      "dimissioni": 51394
+    },
+    "09090200": {
+      "denominazione": "AZIENDA OSPEDALIERA UNIVERSITARIA SENESE",
+      "dimissioni": 29753
+    },
+    "09090300": {
+      "denominazione": "AZ. OSPEDALIERO - UNIVERSITARIA CAREGGI",
+      "dimissioni": 53680
+    },
+    "09090400": {
+      "denominazione": "AZIENDA OSPEDALIERA MEYER",
+      "dimissioni": 22585
+    },
+    "09090600": {
+      "denominazione": "FONDAZIONE STELLA MARIS - CALAMBRONE",
+      "dimissioni": 4248
+    },
+    "09090701": {
+      "denominazione": "FONDAZIONE CNR-RT G. MONASTERIO",
+      "dimissioni": 2589
+    },
+    "09090702": {
+      "denominazione": "OSPEDALE DEL CUORE G. PASQUINUCCI",
+      "dimissioni": 2658
+    },
+    "09090900": {
+      "denominazione": "AUXILIUM VITAE VOLTERRA SPA",
+      "dimissioni": 843
+    },
+    "09091000": {
+      "denominazione": "FONDAZIONE DON CARLO GNOCCHI - ONLUS",
+      "dimissioni": 1143
+    },
+    "09091100": {
+      "denominazione": "CENTRO RIABILITAZIONE TERRANUOVA B. SPA",
+      "dimissioni": 324
+    }
+  }
+}

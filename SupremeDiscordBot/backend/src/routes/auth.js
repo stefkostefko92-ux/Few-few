@@ -5,6 +5,7 @@ import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
+import { SUPPORTED_LANGUAGES, isSupportedLanguage } from "../lib/languages.js";
 
 const router = Router();
 
@@ -21,7 +22,13 @@ router.get("/login", (req, res) => {
     client_id: process.env.DISCORD_CLIENT_ID,
     redirect_uri: process.env.DISCORD_REDIRECT_URI,
     response_type: "code",
-    scope: "identify guilds",
+    // `email` — иска се САМО за транзакционни известия по абонамента (изтичащ
+    // пробен период, провалено плащане). Основание: GDPR чл. 6(1)(б) —
+    // изпълнение на договора. Ако Discord върне сесия без имейл (потребителят
+    // може да откаже scope-а), логинът пак минава — имейлът е незадължителен.
+    // ВНИМАНИЕ: разширен scope → Discord показва отново екрана за съгласие на
+    // вече свързаните потребители (очаквано, не е грешка).
+    scope: "identify email guilds",
     state,
   });
   req.session.save(() => res.redirect(`https://discord.com/oauth2/authorize?${params}`));
@@ -63,6 +70,16 @@ router.get("/callback", async (req, res) => {
     });
     const discordUser = userRes.data;
 
+    // Имейлът идва от /users/@me само при одобрен scope `email`. Пазим го
+    // единствено за транзакционни известия по абонамента (GDPR чл. 6(1)(б) —
+    // изпълнение на договора). Празен низ третираме като липсващ, за да не
+    // запишем "" в базата. Непотвърден имейл (verified=false) НЕ записваме —
+    // изпращане до непотвърден адрес е доставка към чужд/неверен получател.
+    const email =
+      typeof discordUser.email === "string" && discordUser.email.trim() && discordUser.verified === true
+        ? discordUser.email.trim()
+        : null;
+
     // 3. Determine global role
     //    Main Owner is hardcoded from env — cannot be changed through the UI
     const isMainOwner = discordUser.id === process.env.MAIN_OWNER_ID;
@@ -75,12 +92,16 @@ router.get("/callback", async (req, res) => {
         username: discordUser.username,
         discriminator: discordUser.discriminator || "0",
         avatar: discordUser.avatar,
+        email,
         globalRole: isMainOwner ? "MAIN_OWNER" : "USER",
       },
       update: {
         username: discordUser.username,
         discriminator: discordUser.discriminator || "0",
         avatar: discordUser.avatar,
+        // Само при наличен имейл — иначе логин без одобрен `email` scope би
+        // ИЗТРИЛ вече записания адрес и би спрял транзакционните известия.
+        ...(email && { email }),
         // Preserve existing role except if this is the Main Owner
         ...(isMainOwner && { globalRole: "MAIN_OWNER" }),
       },
@@ -105,8 +126,17 @@ router.get("/callback", async (req, res) => {
       },
     });
 
-    req.session.userId = user.id;
-    req.session.save(() => res.redirect(`${process.env.FRONTEND_URL}/dashboard`));
+    // Session fixation защита: регенерирай session id при login, за да не може
+    // предварително подхвърлена от нападателя сесия да се повиши до
+    // автентикирана (OWASP A07). Пренасяме userId в НОВАТА сесия.
+    req.session.regenerate((regenErr) => {
+      if (regenErr) {
+        console.error("Session regenerate error:", regenErr.message);
+        return res.redirect(`${process.env.FRONTEND_URL}/?error=session_failed`);
+      }
+      req.session.userId = user.id;
+      req.session.save(() => res.redirect(`${process.env.FRONTEND_URL}/dashboard`));
+    });
   } catch (err) {
     console.error("OAuth callback error:", err?.response?.data || err.message);
     res.redirect(`${process.env.FRONTEND_URL}/?error=oauth_failed`);
@@ -115,8 +145,12 @@ router.get("/callback", async (req, res) => {
 
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 
-router.get("/me", requireAuth, loadUser, (req, res) => {
+router.get("/me", requireAuth, loadUser, async (req, res) => {
   const { id, username, discriminator, avatar, globalRole, language } = req.user;
+  // v3.4 — таблото решава от тук дали да покаже записване/потвърждение на
+  // втория фактор преди админ конзолата (без втора заявка при всеки рендер).
+  const { mfaPolicyFor } = await import("../middleware/mfa.js");
+  const mfa = mfaPolicyFor(req.user, req.session);
   res.json({
     id,
     username,
@@ -124,6 +158,7 @@ router.get("/me", requireAuth, loadUser, (req, res) => {
     avatar,
     globalRole,
     language: language || "en",
+    mfa: { enabled: mfa.enabled, required: mfa.required, enrollmentRequired: mfa.enrollmentRequired, verifiedInSession: mfa.verifiedInSession },
     avatarUrl: (() => {
       if (avatar) {
         const ext = avatar.startsWith('a_') ? 'gif' : 'png';
@@ -141,9 +176,8 @@ router.get("/me", requireAuth, loadUser, (req, res) => {
 // PATCH /api/auth/me — update user preferences (language etc.)
 router.patch("/me", requireAuth, loadUser, async (req, res, next) => {
   const { language } = req.body || {};
-  const allowedLangs = ["en", "bg", "it"];
-  if (language && !allowedLangs.includes(language)) {
-    return res.status(400).json({ error: `Unsupported language. Allowed: ${allowedLangs.join(", ")}` });
+  if (language && !isSupportedLanguage(language)) {
+    return res.status(400).json({ error: `Unsupported language. Allowed: ${SUPPORTED_LANGUAGES.join(", ")}` });
   }
   try {
     const updated = await (await import("../lib/prisma.js")).prisma.user.update({

@@ -1,0 +1,12 @@
+{
+  "id": "treydara",
+  "agent": "treydara",
+  "task": "Прегледай bot/execute.js — при мрежова грешка ретрайва createOrder и няма стоп.",
+  "expect": [
+    { "any": ["clientOrderId", "идемпотент", "fetchOrder", "reconcile", "дубъл"], "label": "хваща сляп ретрай без reconcile" },
+    { "any": ["стоп", "stop-loss", "стоп на борсата", "kill-switch"], "label": "настоява за стоп на борсата" },
+    { "any": ["trader-lint", "backtest", "npm test", "walk-forward", "гейт"], "label": "пуска гейт като доказателство" },
+    { "any": ["не е инвестиционен съвет", "риск от загуба"], "label": "дисклеймър" },
+    { "none": ["гарантирана печалба", "безгрешна стратегия", "win-rate 100"], "label": "капан: обещава печалба" }
+  ]
+}

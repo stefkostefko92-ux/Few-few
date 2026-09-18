@@ -1,0 +1,2105 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
+<title>AZIENDA SANITARIA LOCALE AVELLINO — Ospedali Trasparenti</title>
+<meta name="description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA SANITARIA LOCALE AVELLINO (Campania).">
+<link rel="canonical" href="https://ospedalitrasparenti.it/struttura/150201-azienda-sanitaria-locale-avellino.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ospedali Trasparenti">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="AZIENDA SANITARIA LOCALE AVELLINO — Ospedali Trasparenti">
+<meta property="og:description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA SANITARIA LOCALE AVELLINO (Campania).">
+<meta property="og:url" content="https://ospedalitrasparenti.it/struttura/150201-azienda-sanitaria-locale-avellino.html">
+<meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AZIENDA SANITARIA LOCALE AVELLINO — Ospedali Trasparenti">
+<meta name="twitter:description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA SANITARIA LOCALE AVELLINO (Campania).">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ospedalitrasparenti.it/"},{"@type":"ListItem","position":2,"name":"Strutture","item":"https://ospedalitrasparenti.it/strutture.html"},{"@type":"ListItem","position":3,"name":"AZIENDA SANITARIA LOCALE AVELLINO","item":"https://ospedalitrasparenti.it/struttura/150201-azienda-sanitaria-locale-avellino.html"}]},{"@type":"GovernmentOrganization","name":"AZIENDA SANITARIA LOCALE AVELLINO","address":{"@type":"PostalAddress","addressRegion":"Campania","addressCountry":"IT"},"subjectOf":{"@type":"Dataset","name":"Bilancio e appalti — AZIENDA SANITARIA LOCALE AVELLINO","description":"Bilanci ufficiali (modelli CE/SP inviati al MEF), indicatori contabili, segnalazioni automatiche e contratti pubblici ANAC di AZIENDA SANITARIA LOCALE AVELLINO (Campania), anno per anno. Elaborazione da open data ufficiali.","creator":{"@type":"Organization","name":"Carbon Stealth VCC","url":"https://carbonstealth.eu"},"temporalCoverage":"2012/2024","license":"https://creativecommons.org/licenses/by/4.0/","url":"https://ospedalitrasparenti.it/struttura/150201-azienda-sanitaria-locale-avellino.html"}}]}</script>
+<script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
+мигане на грешната тема. Единственият blocking script в head — само за темата. */
+try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')document.documentElement.dataset.theme=_t;}catch(e){}</script>
+<style>
+:root{
+  /* палитра — светла тема (институционална, сдържана) */
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
+  --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
+  --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
+  --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  /* скала на разстоянията (4-точкова база) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* радиуси и релеф */
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(16,32,48,.06);
+  --shadow:0 1px 3px rgba(16,32,48,.07),0 10px 28px rgba(16,32,48,.05);
+  --maxw:1120px; --measure:70ch;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+/* Тъмни променливи — блокът е един и същ за двата случая:
+   1) изричен ръчен избор :root[data-theme="dark"] (печели винаги);
+   2) авто по системата, но САМО без ръчен избор :root:not([data-theme]).
+   Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
+:root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+  --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+  --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+  /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
+     държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+    --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+    --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:3px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* ---------- Masthead / навигация ---------- */
+header.site{background:var(--surface);border-top:3px solid var(--brand);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:8px 24px;min-height:58px;flex-wrap:wrap}
+.brand{display:inline-flex;align-items:center;line-height:0}
+.brand-logo{height:36px;width:auto;display:block}
+/* тъмна тема: тъмносиният надпис не се чете на тъмния хедър → лека светла
+   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата
+   (важи и при ръчен избор, и при авто — виж бележката при променливите) */
+:root[data-theme="dark"] .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+}
+nav.main{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
+nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px;
+  line-height:1.2;white-space:nowrap;transition:background-color .15s,color .15s}
+nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decoration:none}
+nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
+/* Бутон-хамбургер — само за тесни екрани (виж @media по-долу); на desktop скрит.
+   44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-left:auto;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
+.nav-toggle .ico-close{display:none}
+.nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle[aria-expanded="true"] .ico-open{display:none}
+.nav-toggle[aria-expanded="true"] .ico-close{display:block}
+/* Превключвател светла/тъмна тема — видим на ВСИЧКИ ширини (за разлика от
+   hamburger-а). Иконата (слънце/луна) следва ЕФЕКТИВНАТА тема през CSS,
+   независимо от JS-тайминга → без грешна икона при първия paint. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
+/* по подр. (светло/авто-светло) → луна („премини на тъмно"); тъмно → слънце */
+.theme-toggle .ico-sun{display:none}
+.theme-toggle .ico-moon{display:block}
+:root[data-theme="dark"] .theme-toggle .ico-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .ico-sun{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
+  :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
+}
+/* desktop: двуетажен masthead. Ред 1: лого вляво + theme бутон в десния ръб
+   (margin-left:auto; DOM редът brand→theme→nav вече е правилният визуален ред).
+   Ред 2: навигацията на цял ред (flex-basis:100%) с тънка разделителна линия —
+   при 13 линка тя така или иначе не се побира до логото, затова редът е
+   умишлен, а не счупен fallback (преди: theme висеше сам на трети ред). */
+@media(min-width:901px){
+  header.site .wrap{padding-top:8px;row-gap:4px}
+  .theme-toggle{margin-left:auto}
+  nav.main{flex-basis:100%;margin-left:0;justify-content:center;
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
+}
+@media(max-width:900px){
+  header.site{position:static;border-top-width:3px}
+  /* Ред 1: лого вляво + тема + hamburger вдясно; менюто е на нов ред
+     (flex-basis:100%), скрито до отваряне. Без хоризонтален скрол. */
+  header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
+    padding-top:8px;padding-bottom:8px}
+  .brand{margin-right:auto;margin-bottom:0}
+  .brand-logo{height:32px}
+  /* само brand носи auto-полето → тема и hamburger са слепени вдясно с малък луфт */
+  .theme-toggle{margin-left:0}
+  .nav-toggle{display:inline-flex;margin-left:8px}
+  nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
+    flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
+    border-top:1px solid var(--line);padding-top:5px}
+  nav.main.open{display:flex}
+  nav.main a{display:flex;align-items:center;min-height:44px;
+    padding:11px 12px;border-radius:8px;white-space:normal}
+}
+main{padding:var(--s7) 0 var(--s6)}
+
+/* ---------- Типографска скала ---------- */
+h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
+  margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
+h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
+h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
+p{max-width:var(--measure)}
+.lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
+  max-width:66ch;margin:0 0 var(--s3)}
+main>.wrap>h1:first-child + .lead{font-size:clamp(17px,1rem + .4vw,20px)}
+
+/* ---------- Карти / решетка ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:var(--s5)}
+.grid{display:grid;gap:var(--s4)}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;
+  border-left:3px solid var(--line-2)}
+.kpi .n{font-size:clamp(24px,1.4rem + .7vw,30px);font-weight:700;letter-spacing:-.02em;
+  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+.kpi:has(.n.neg){border-left-color:var(--neg)} .kpi:has(.n.pos){border-left-color:var(--pos)}
+
+/* ---------- Таблици ---------- */
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow-sm)}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+th{background:var(--surface-2);font-size:11.5px;font-weight:650;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
+tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+
+/* ---------- Значки и чипове ---------- */
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;
+  line-height:1.5;color:#fff;white-space:nowrap;letter-spacing:.01em}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;
+  font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface);
+  transition:border-color .15s,background-color .15s}
+.chip:hover{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-ink);text-decoration:none}
+
+/* ---------- Сигнали ---------- */
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:var(--radius-sm);
+  background:var(--surface);padding:13px 16px;margin:var(--s3) 0;box-shadow:var(--shadow-sm)}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:5px;max-width:var(--measure)}
+
+/* ---------- Форма / контроли ---------- */
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand-tint)}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:10px 18px;border:1px solid var(--brand);border-radius:var(--radius-sm);
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:650;transition:filter .15s}
+.controls button:hover{filter:brightness(1.08)}
+
+/* ---------- Карта на Италия ---------- */
+.mapfig{margin:var(--s6) 0}
+.mapfig svg.italia{display:block;width:100%;max-width:660px;height:auto;margin:0 auto}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a path{transition:stroke-width .12s}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.mapfig svg a:hover path{stroke:var(--ink);stroke-width:1.6}
+.mapfig svg a:focus{outline:none}
+.mapfig svg a:focus path{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:var(--s3) 0;justify-content:center}
+
+/* ---------- Помощни / бележки ---------- */
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 9%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 32%);
+  border-radius:var(--radius-sm);padding:13px 16px;font-size:14.5px;color:var(--ink);
+  max-width:var(--measure)}
+.note strong{color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:9px 16px;border-radius:0 0 8px 0;z-index:20;font-weight:600}
+.skip:focus{left:0}
+
+/* ---------- Графики ---------- */
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.4;max-width:var(--measure)}
+.hbars{display:flex;flex-direction:column;gap:9px;margin:var(--s2) 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:650}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+/* САМО за графиките (.chart) — глобален selector би презаписал атрибутите
+   на етикетите върху картата на Италия (CSS бие SVG presentation атрибути) */
+.chart svg .grid-line{stroke:var(--line)} .chart svg text{fill:var(--muted);font-size:11px}
+
+/* ---------- Footer ---------- */
+footer.site{border-top:1px solid var(--line);background:var(--surface-2);
+  color:var(--muted);font-size:13.5px;padding:var(--s6) 0 var(--s7);margin-top:var(--s6)}
+footer.site .wrap>p{max-width:82ch;margin:0 0 var(--s3)}
+footer.site strong{color:var(--ink-2)}
+footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+footer.site a:hover{color:var(--brand)}
+.backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
+
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
+/* ---------- Мобилно: touch таргети ≥44px ---------- */
+@media(max-width:640px){
+  .controls input,.controls select,.controls button{min-height:44px}
+  .chip{padding:9px 14px}
+  .backlink{padding:6px 0;display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* ---------- Достъпност: намалено движение ---------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="../logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
+  <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambia tema chiaro o scuro" title="Tema chiaro / scuro">
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></svg>
+  </button>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
+    <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../glossario.html">Glossario</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../strutture.html">← Tutte le strutture</a>
+<h1>AZIENDA SANITARIA LOCALE AVELLINO</h1>
+<p><span class="chip">Campania</span> <span class="chip">Azienda Sanitaria Locale (ASL) con presìdi ospedalieri</span> <span class="chip">codice 150201</span></p>
+
+<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
+  <span class="semitem" role="listitem" title="nessuna segnalazione contabile automatica"><span class="dot verde"></span>Bilanci</span>
+  <span class="semitem" role="listitem" title="nessuna voce di spesa fuori scala rispetto alle aziende simili"><span class="dot verde"></span>Spesa anomala</span>
+  <span class="semitem" role="listitem" title="68% dei contratti senza gara (mediana nazionale 68%)"><span class="dot verde"></span>Senza gara</span>
+  <span class="semitem" role="listitem" title="40% delle gare con un solo offerente (su dati parziali)"><span class="dot giallo"></span>Concorrenza</span>
+  <span class="semitem" role="listitem" title="55 affidamenti appena sotto le soglie di legge (1.5% dei contratti)"><span class="dot verde"></span>Sotto soglia</span>
+  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
+  
+</div>
+<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
+  AZIENDA SANITARIA LOCALE AVELLINO è una struttura pubblica del SSN della regione Campania — Azienda Sanitaria Locale (ASL) con presìdi ospedalieri. Nell’ultimo esercizio disponibile (2024) ha registrato un valore della produzione di 875 mln € e ha chiuso in utile per 59 mila €. I controlli automatici sui bilanci non hanno rilevato anomalie sui dati disponibili. Sul fronte degli appalti, il 68% dei suoi 3699 contratti tracciati da ANAC è stato affidato senza gara (affidamento diretto o negoziata senza bando).
+  Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>
+<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">Questa pagina riunisce tre fonti ufficiali: i bilanci CE/SP trasmessi al MEF (BDAP),
+  l’anagrafe ospedaliera del Ministero della Salute e i contratti pubblici dell’ANAC. I costi «per posto letto» e
+  «per ricovero» sono confrontati con la <strong>mediana nazionale</strong>, mentre la sezione «Dove vanno i soldi»
+  confronta ogni voce di spesa con la mediana delle <strong>aziende simili (peer)</strong>: uno scostamento marcato
+  genera un segnale, che è un indicatore da verificare, non una prova. Negli appalti, «senza gara» significa
+  affidamento diretto o procedura negoziata senza pubblicazione; le adesioni ad accordi quadro e convenzioni
+  (es. Consip) <strong>non</strong> contano come «senza gara», perché la concorrenza c’è già stata a monte.
+  Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
+  pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
+  Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
+<details class="note" style="margin-top:10px">
+  <summary style="cursor:pointer;font-weight:650">Verifica tu stesso: contratti, atti, accesso civico</summary>
+  <p style="margin:10px 0 6px">Tre passi, tutti gratuiti e legali (il percorso completo è nella
+  <a href="../guida-verifica.html">guida in 5 minuti</a>):</p>
+  <ol style="margin:0 0 10px;padding-left:22px">
+    <li><strong>I contratti alla fonte.</strong> Scarica <a href="../contratti/150201.csv" download>l’elenco completo dei contratti di questa struttura (CSV)</a> e verifica ogni CIG sulla <a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">Banca Dati ANAC</a>.</li>
+    <li><strong>Gli atti.</strong> Cerca la sezione <a href="https://www.google.com/search?q=%22AZIENDA%20SANITARIA%20LOCALE%20AVELLINO%22%20amministrazione%20trasparente" target="_blank" rel="noopener">«Amministrazione Trasparente» di questa azienda</a>: determine, bandi, incarichi dirigenziali. L’indirizzo PEC ufficiale è su <a href="https://indicepa.gov.it/" target="_blank" rel="noopener">IndicePA</a>.</li>
+    <li><strong>Se un documento manca</strong>, chiedilo con l’accesso civico — copia il modello qui sotto, completalo e invialo via PEC (risposta dovuta entro 30 giorni):</li>
+  </ol>
+  <pre class="small" style="white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;user-select:all">Al Responsabile della prevenzione della corruzione e della trasparenza
+AZIENDA SANITARIA LOCALE AVELLINO
+
+Oggetto: richiesta di accesso civico ai sensi dell&#39;art. 5 del d.lgs. 33/2013
+
+Il/La sottoscritto/a ________________________, ai sensi dell&#39;art. 5 del d.lgs.
+14 marzo 2013, n. 33, chiede l&#39;accesso al seguente documento/dato:
+
+  [descrivere il documento: es. determina di affidamento del contratto CIG ________]
+
+Chiede che il documento sia trasmesso all&#39;indirizzo indicato in calce.
+Ai sensi di legge, la richiesta non necessita di motivazione e la risposta è
+dovuta entro 30 giorni.
+
+Luogo e data: ________________
+Nome, cognome e recapito: ________________
+
+(In caso di accesso generalizzato, la richiesta può essere inviata anche
+all&#39;ufficio che detiene il documento o all&#39;URP.)</pre>
+  <p class="small muted" style="margin:8px 0 0">Hai trovato qualcosa che non torna? <a href="../segnalare.html">A chi segnalarlo →</a></p>
+</details>
+
+<div class="grid kpis">
+    <div class="card kpi"><div class="n ">875.079.216 €</div><div class="l">Valore produzione (2024)</div></div>
+    <div class="card kpi"><div class="n ">884.816.476 €</div><div class="l">Costi produzione</div></div>
+    <div class="card kpi"><div class="n pos">59.419 €</div><div class="l">Risultato d’esercizio</div></div>
+    <div class="card kpi"><div class="n ">104.392.193 €</div><div class="l">Costo del personale</div></div>
+  </div>
+<h2>Quanto costa, in proporzione</h2>
+  <div class="grid kpis"><div class="card kpi"><div class="n neg">1 mln € <span class="small muted">(mediana 710 mila €)</span></div><div class="l">Costi per posto letto</div></div><div class="card kpi"><div class="n neg">44 mila € <span class="small muted">(mediana 25 mila €)</span></div><div class="l">Costi per ricovero</div></div></div>
+  <p class="small muted">Costi della produzione (2024) rapportati a posti letto e ricoveri dell'anagrafe ospedaliera,
+  confrontati con la mediana nazionale. Le ASL territoriali spendono anche fuori dagli ospedali (territorio, farmaceutica
+  convenzionata): il confronto è indicativo, più solido tra aziende dello stesso tipo.</p>
+<h2>Segnalazioni</h2><p class="note">Nessuna anomalia rilevata dai controlli automatici sui dati disponibili.</p>
+
+<h2>Come sono cambiati ricavi, costi e risultato</h2>
+<div class="grid" style="grid-template-columns:1fr">
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Ricavi e costi della produzione per anno (€)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="168.8" x2="666" y2="168.8"/><text x="50" y="171.8" text-anchor="end">200 mln</text><line class="grid-line" x1="56" y1="123.6" x2="666" y2="123.6"/><text x="50" y="126.6" text-anchor="end">400 mln</text><line class="grid-line" x1="56" y1="78.4" x2="666" y2="78.4"/><text x="50" y="81.4" text-anchor="end">600 mln</text><line class="grid-line" x1="56" y1="33.2" x2="666" y2="33.2"/><text x="50" y="36.2" text-anchor="end">800 mln</text><text x="56.0" y="232" text-anchor="middle">2012</text><text x="157.7" y="232" text-anchor="middle">2014</text><text x="259.3" y="232" text-anchor="middle">2016</text><text x="361.0" y="232" text-anchor="middle">2018</text><text x="462.7" y="232" text-anchor="middle">2020</text><text x="564.3" y="232" text-anchor="middle">2022</text><text x="666.0" y="232" text-anchor="middle">2024</text><path d="M56.0,85.1 L106.8,84.2 L157.7,74.0 L208.5,76.0 L259.3,52.6 L310.2,50.0 L361.0,46.7 L411.8,47.0 L462.7,41.4 L513.5,38.5 L564.3,35.1 L615.2,26.3 L666.0,16.2" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="85.1" r="2.5" fill="var(--brand)"/><circle cx="106.8" cy="84.2" r="2.5" fill="var(--brand)"/><circle cx="157.7" cy="74.0" r="2.5" fill="var(--brand)"/><circle cx="208.5" cy="76.0" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="52.6" r="2.5" fill="var(--brand)"/><circle cx="310.2" cy="50.0" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="46.7" r="2.5" fill="var(--brand)"/><circle cx="411.8" cy="47.0" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="41.4" r="2.5" fill="var(--brand)"/><circle cx="513.5" cy="38.5" r="2.5" fill="var(--brand)"/><circle cx="564.3" cy="35.1" r="2.5" fill="var(--brand)"/><circle cx="615.2" cy="26.3" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="16.2" r="2.5" fill="var(--brand)"/><path d="M56.0,86.3 L106.8,89.1 L157.7,76.8 L208.5,76.7 L259.3,55.4 L310.2,52.5 L361.0,49.5 L411.8,49.2 L462.7,43.7 L513.5,40.1 L564.3,35.9 L615.2,26.1 L666.0,14.0" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="86.3" r="2.5" fill="var(--neg)"/><circle cx="106.8" cy="89.1" r="2.5" fill="var(--neg)"/><circle cx="157.7" cy="76.8" r="2.5" fill="var(--neg)"/><circle cx="208.5" cy="76.7" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="55.4" r="2.5" fill="var(--neg)"/><circle cx="310.2" cy="52.5" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="49.5" r="2.5" fill="var(--neg)"/><circle cx="411.8" cy="49.2" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="43.7" r="2.5" fill="var(--neg)"/><circle cx="513.5" cy="40.1" r="2.5" fill="var(--neg)"/><circle cx="564.3" cy="35.9" r="2.5" fill="var(--neg)"/><circle cx="615.2" cy="26.1" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="14.0" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Valore della produzione</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Costi della produzione</text></g></g></svg><figcaption>Ricavi e costi della produzione per anno (€)</figcaption></figure></div>
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="152.9" x2="666" y2="152.9"/><text x="50" y="155.9" text-anchor="end">0</text><line class="grid-line" x1="56" y1="110.2" x2="666" y2="110.2"/><text x="50" y="113.2" text-anchor="end">5 mln</text><line class="grid-line" x1="56" y1="67.5" x2="666" y2="67.5"/><text x="50" y="70.5" text-anchor="end">10 mln</text><line class="grid-line" x1="56" y1="24.7" x2="666" y2="24.7"/><text x="50" y="27.7" text-anchor="end">15 mln</text><rect x="63.0" y="152.9" width="32.8" height="21.1" fill="var(--neg)" rx="2"/><text x="79.5" y="192" text-anchor="middle">2012</text><rect x="110.0" y="14.0" width="32.8" height="138.9" fill="var(--pos)" rx="2"/><text x="126.4" y="192" text-anchor="middle">2013</text><rect x="156.9" y="150.9" width="32.8" height="2.0" fill="var(--pos)" rx="2"/><text x="173.3" y="192" text-anchor="middle">2014</text><rect x="203.8" y="126.4" width="32.8" height="26.5" fill="var(--pos)" rx="2"/><text x="220.2" y="192" text-anchor="middle">2015</text><rect x="250.7" y="151.2" width="32.8" height="1.7" fill="var(--pos)" rx="2"/><text x="267.2" y="192" text-anchor="middle">2016</text><rect x="297.7" y="152.4" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="314.1" y="192" text-anchor="middle">2017</text><rect x="344.6" y="150.3" width="32.8" height="2.6" fill="var(--pos)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2018</text><rect x="391.5" y="152.4" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="407.9" y="192" text-anchor="middle">2019</text><rect x="438.4" y="152.6" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="454.8" y="192" text-anchor="middle">2020</text><rect x="485.3" y="151.8" width="32.8" height="1.1" fill="var(--pos)" rx="2"/><text x="501.8" y="192" text-anchor="middle">2021</text><rect x="532.3" y="152.2" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="548.7" y="192" text-anchor="middle">2022</text><rect x="579.2" y="152.9" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="595.6" y="192" text-anchor="middle">2023</text><rect x="626.1" y="152.4" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="642.5" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
+</div>
+
+<h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione · confronto con aziende simili (territoriale, 500M-1G))</span></h2>
+      <p class="small muted">Le categorie di spesa dove i numeri si discostano molto dalle aziende simili: dove vale
+      la pena guardare i contratti. Indicatori, non prove.</p>
+      <div class="card"><div class="hbars" role="group" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">609 mln €<span class="muted small"> · 68,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di beni</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:19.4%;background:var(--brand)"></div></div>
+        <div class="hbar-v">118 mln €<span class="muted small"> · 13,3%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisto di prestazioni sanitarie da privati</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:19.1%;background:var(--brand)"></div></div>
+        <div class="hbar-v">116 mln €<span class="muted small"> · 13,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:5.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">30 mln €<span class="muted small"> · 3,4%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.6%;background:var(--brand)"></div></div>
+        <div class="hbar-v">10 mln €<span class="muted small"> · 1,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.2%;background:var(--brand)"></div></div>
+        <div class="hbar-v">7 mln €<span class="muted small"> · 0,8%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.1%;background:var(--brand)"></div></div>
+        <div class="hbar-v">7 mln €<span class="muted small"> · 0,8%</span></div>
+      </div></div></div>
+      
+<h2>Appalti pubblici <span class="small muted">(ANAC, CAMPANIA)</span></h2>
+    <div class="grid kpis">
+      <div class="card kpi"><div class="n ">68%</div><div class="l">Contratti senza gara</div></div>
+      <div class="card kpi"><div class="n neg">61,4%</div><div class="l">Senza gara sul valore</div></div>
+      <div class="card kpi"><div class="n ">843 mln €</div><div class="l">Valore appalti</div></div>
+      <div class="card kpi"><div class="n ">3699</div><div class="l">Contratti (lotti)</div></div>
+    </div>
+    
+    <div class="card" style="margin-top:12px"><div class="hbars" role="group" aria-label="Appalti per tipo di procedura"><div class="hbar-row flag">
+        <div class="hbar-l">Affidamento diretto (senza gara) <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--neg)"></div></div>
+        <div class="hbar-v">511 mln €<span class="muted small"> · 60,6%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Negoziata senza pubblicazione <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.4%;background:var(--neg)"></div></div>
+        <div class="hbar-v">7 mln €<span class="muted small"> · 0,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Accordo quadro / convenzione (pre-competuto)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:17.4%;background:var(--brand)"></div></div>
+        <div class="hbar-v">89 mln €<span class="muted small"> · 10,5%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Procedura competitiva (gara aperta/ristretta)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:45.2%;background:var(--brand)"></div></div>
+        <div class="hbar-v">231 mln €<span class="muted small"> · 27,4%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Negoziata con bando</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">5 mln €<span class="muted small"> · 0,6%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Altro / non determinato</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:1.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">602 mila €<span class="muted small"> · 0,1%</span></div>
+      </div></div></div>
+    <div class="grid kpis" style="margin-top:12px">
+        <div class="card kpi"><div class="n ">40,1%</div><div class="l">Gare a offerente unico</div></div>
+        <div class="card kpi"><div class="n neg">51,8%</div><div class="l">Concentrazione (1° fornitore)</div></div>
+        <div class="card kpi"><div class="n ">468</div><div class="l">Fornitori distinti</div></div>
+      </div>
+      
+      <div class="seg alta" style="margin-top:12px"><div class="t"><span class="badge alta">!</span> <span>Elevata concentrazione su un fornitore</span></div><div class="d">Il 51,8% del valore aggiudicato va a un solo operatore. Può essere legittimo (mercato ristretto, esclusiva); è un indicatore, non una prova.</div></div>
+      <h3>Principali fornitori</h3><div class="tablewrap"><table><thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead><tbody><tr><td>FASTWEB SPA</td><td class="num">232 mln €</td><td class="num">2</td></tr><tr><td>MEDTRONIC ITALIA S.P.A.</td><td class="num">11 mln €</td><td class="num">220</td></tr><tr><td>COOPERATIVA SOCIALE IL SORRISO ONLUS - SOCIETA&#39; COOPERATIVA</td><td class="num">10 mln €</td><td class="num">1</td></tr><tr><td>SVAS BIOSANA S.P.A.</td><td class="num">7 mln €</td><td class="num">18</td></tr><tr><td>IBM ITALIA</td><td class="num">7 mln €</td><td class="num">1</td></tr></tbody></table></div><p class="small muted">Essere fornitore rilevante è legittimo; le persone fisiche non sono nominate.</p>
+    <p class="small muted" style="margin-top:10px"><strong>Altri segnali:</strong>
+         55 affidamenti diretti appena sotto le soglie di legge (35–40 mila € e 130–140 mila €, possibile
+         frazionamento); 10 contratti con oggetto di proroga/rinnovo.</p>
+    <h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th scope="col">Oggetto</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>SM3 - PNRR- MISSIONE 6<div class="small muted">Cpv prevalente non disponibile</div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">230 mln €</td></tr><tr><td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150148<div class="small muted">SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">39 mln €</td></tr><tr><td>RCT/O<div class="small muted">SERVIZI ASSICURATIVI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">28 mln €</td></tr><tr><td>GARA EUROPEA - PROCEDURA APERTA PER L&#39;AFFIDAMENTO IN GESTIONE DEI CENTRI SEMIRESIDENZIALI DI S. ANGELO DEI LOMBARDI E DI AVELLINO PER IL TRATTAMENTO DEI DISTURBI DELLO SPETTRO AUTI<div class="small muted">VARI SERVIZI SANITARI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">27 mln €</td></tr><tr><td>AFFIDAMENTO PRESTAZIONI TRATTAMENTO DISTURBI SPETTRO AUTISTICO<div class="small muted">VARI SERVIZI SANITARI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">25 mln €</td></tr><tr><td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150149<div class="small muted">SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">24 mln €</td></tr><tr><td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO IN GESTIONE DEL CENTRO SEMIRESIDENZIALE DI S. ANGELO DEI LOMBARDI PER IL TRATTAMENTO DEI DISTURBI DELLO SPETTRO AUTISTICO NELL&#39;ADOLESCENZA E GIOV<div class="small muted">VARI SERVIZI SANITARI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">22 mln €</td></tr><tr><td>PROCEDURA APERTA PER LA CONCLUSIONE DI UN ACCORDO QUADRO CON PIÙ OPERATORI ECONOMICI PER L&#39;AFFIDAMENTO DEL SERVIZIO DI VENTILOTERAPIA MECCANICA DOMICILIARE (VMD) CON FORNITURA DI M<div class="small muted">APPARECCHI PER OSSIGENOTERAPIA E APPARECCHI RESPIRATORI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">15 mln €</td></tr></tbody></table></div>
+    <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(3699 contratti ANAC, 843 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il <abbr title="Codice Identificativo di Gara: codice di 10 caratteri rilasciato dall’ANAC che identifica in modo univoco ogni procedura di affidamento pubblico">CIG</abbr>
+è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/150201.csv" download>⬇ Scarica l’elenco completo (CSV, 3699 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="sm3 - pnrr- missione 6 fastweb spa">
+      <td class="small">2024-04-18</td>
+      <td>SM3 - PNRR- MISSIONE 6<div class="small muted">CIG B151950F7A · Cpv prevalente non disponibile</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">230 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150148 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150148<div class="small muted">CIG A04DB4072E · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">39 mln €</td></tr><tr data-t="rct/o ">
+      <td class="small">2025-11-11</td>
+      <td>RCT/O<div class="small muted">CIG B903C78ABE · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">28 mln €</td></tr><tr data-t="gara europea - procedura aperta per l&#39;affidamento in gestione dei centri semiresidenziali di s. angelo dei lombardi e di avellino per il trattamento dei disturbi dello spettro autistico nell&#39;adolescenza e giovani adulti e per la realizzazione dei trattamenti in ambulatorio e nei contesti di vita. ">
+      <td class="small">2025-04-03</td>
+      <td>GARA EUROPEA - PROCEDURA APERTA PER L&#39;AFFIDAMENTO IN GESTIONE DEI CENTRI SEMIRESIDENZIALI DI S. ANGELO DEI LOMBARDI E DI AVELLINO PER IL TRATTAMENTO DEI DISTURBI DELLO SPETTRO AUTISTICO NELL&#39;ADOLESCENZA E GIOVANI ADULTI E PER LA REALIZZAZIONE DEI TRATTAMENTI IN AMBULATORIO E NEI CONTESTI DI VITA.<div class="small muted">CIG B6454FEEB6 · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">27 mln €</td></tr><tr data-t="affidamento prestazioni trattamento disturbi spettro autistico ">
+      <td class="small">2025-10-06</td>
+      <td>AFFIDAMENTO PRESTAZIONI TRATTAMENTO DISTURBI SPETTRO AUTISTICO<div class="small muted">CIG B87EAEE0D7 · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">25 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150149 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150149<div class="small muted">CIG A04DB4AF6C · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">24 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento in gestione del centro semiresidenziale di s. angelo dei lombardi per il trattamento dei disturbi dello spettro autistico nell&#39;adolescenza e giovani adulti e per la realizzazione dei trattamenti nei contesti di vita ">
+      <td class="small">2023-06-28</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO IN GESTIONE DEL CENTRO SEMIRESIDENZIALE DI S. ANGELO DEI LOMBARDI PER IL TRATTAMENTO DEI DISTURBI DELLO SPETTRO AUTISTICO NELL&#39;ADOLESCENZA E GIOVANI ADULTI E PER LA REALIZZAZIONE DEI TRATTAMENTI NEI CONTESTI DI VITA<div class="small muted">CIG 981098374A · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">22 mln €</td></tr><tr data-t="procedura aperta per la conclusione di un accordo quadro con più operatori economici per l&#39;affidamento del servizio di ventiloterapia meccanica domiciliare (vmd) con fornitura di materiale di consumo ed assistenza full risk ">
+      <td class="small">2023-06-30</td>
+      <td>PROCEDURA APERTA PER LA CONCLUSIONE DI UN ACCORDO QUADRO CON PIÙ OPERATORI ECONOMICI PER L&#39;AFFIDAMENTO DEL SERVIZIO DI VENTILOTERAPIA MECCANICA DOMICILIARE (VMD) CON FORNITURA DI MATERIALE DI CONSUMO ED ASSISTENZA FULL RISK<div class="small muted">CIG 9921037AB8 · APPARECCHI PER OSSIGENOTERAPIA E APPARECCHI RESPIRATORI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">15 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150145 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150145<div class="small muted">CIG A04DB52609 · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">12 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento del servizio di gestione della residenza sanitaria assistita e del centro diurno demenze di nusco (av) cooperativa sociale il sorriso onlus - societa&#39; cooperativa">
+      <td class="small">2024-10-10</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEL SERVIZIO DI GESTIONE DELLA RESIDENZA SANITARIA ASSISTITA E DEL CENTRO DIURNO DEMENZE DI NUSCO (AV)<div class="small muted">CIG B35F508164 · VARI SERVIZI SANITARI</div></td>
+      <td>COOPERATIVA SOCIALE IL SORRISO ONLUS - SOCIETA&#39; COOPERATIVA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">10 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150143 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150143<div class="small muted">CIG A04DB8829A · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">9 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150146 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150146<div class="small muted">CIG A04DB77492 · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">8 mln €</td></tr><tr data-t="gestione e conduzione dei sistemi informativi aziendali operatore individuale (persona fisica)">
+      <td class="small">2025-01-14</td>
+      <td>GESTIONE E CONDUZIONE DEI SISTEMI INFORMATIVI AZIENDALI<div class="small muted">CIG B52FC06112 · SERVIZI CONNESSI AL SOFTWARE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">7 mln €</td></tr><tr data-t="servizio di pulizia e sanificazione presso i presidi ospedalieri ge.s.a.p.  s.r.l.">
+      <td class="small">2023-02-15</td>
+      <td>SERVIZIO DI PULIZIA E SANIFICAZIONE PRESSO I PRESIDI OSPEDALIERI<div class="small muted">CIG 9644865A60 · SERVIZI DI PULIZIA</div></td>
+      <td>GE.S.A.P.  S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">7 mln €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis 150147 - srp1/2/3 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS 150147 - SRP1/2/3<div class="small muted">CIG A04B4143D1 · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mln €</td></tr><tr data-t="accordo quadro sgm -ed. 2 vodafone italia s.p.a.">
+      <td class="small">2025-09-29</td>
+      <td>ACCORDO QUADRO SGM -ED. 2<div class="small muted">CIG B86C00882E · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>VODAFONE ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento del servizio di bonifica ambientale con attuazione di interventi di disinfestazione e derattizzazione sul territorio dei comuni dell&#39; a.s.l. avellino cidap s.r.l.">
+      <td class="small">2024-06-14</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEL SERVIZIO DI BONIFICA AMBIENTALE CON ATTUAZIONE DI INTERVENTI DI DISINFESTAZIONE E DERATTIZZAZIONE SUL TERRITORIO DEI COMUNI DELL&#39; A.S.L. AVELLINO<div class="small muted">CIG B211D53736 · SERVIZI DI DISINFEZIONE E DISINFESTAZIONE</div></td>
+      <td>CIDAP S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">6 mln €</td></tr><tr data-t="convenzione so.re.sa. fornitura sistemi fgm - alpha pharma service s.r.l. alpha pharma service s.r.l.">
+      <td class="small">2023-03-10</td>
+      <td>CONVENZIONE SO.RE.SA. FORNITURA SISTEMI FGM - ALPHA PHARMA SERVICE S.R.L.<div class="small muted">CIG 965513771A · PRESIDI DIAGNOSTICI</div></td>
+      <td>ALPHA PHARMA SERVICE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">5 mln €</td></tr><tr data-t="servizio di pulizia e sanificazione presso le strutture territoriali gestione servizi integrati s.r.l.">
+      <td class="small">2023-02-15</td>
+      <td>SERVIZIO DI PULIZIA E SANIFICAZIONE PRESSO LE STRUTTURE TERRITORIALI<div class="small muted">CIG 9644910F81 · SERVIZI DI PULIZIA</div></td>
+      <td>GESTIONE SERVIZI INTEGRATI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">5 mln €</td></tr><tr data-t="convenzione so.re.sa. servizi vigilanza armata e servizi vigilanza aggiuntivi-lotto 6 istituto di vigilanza la torre - s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>CONVENZIONE SO.RE.SA. SERVIZI VIGILANZA ARMATA E SERVIZI VIGILANZA AGGIUNTIVI-LOTTO 6<div class="small muted">CIG A0200506DF · SERVIZI DI VIGILANZA DI EDIFICI</div></td>
+      <td>ISTITUTO DI VIGILANZA LA TORRE - S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">4 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento della gestione del centro residenziale per cure palliative denominato &#39;pain control center - &#39;hospice&#39; di solofra (av) arca sanita&#39; by new care s.r.l.">
+      <td class="small">2023-11-30</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA GESTIONE DEL CENTRO RESIDENZIALE PER CURE PALLIATIVE DENOMINATO &#39;PAIN CONTROL CENTER - &#39;HOSPICE&#39; DI SOLOFRA (AV)<div class="small muted">CIG A03E7B8F46 · VARI SERVIZI SANITARI</div></td>
+      <td>ARCA SANITA&#39; BY NEW CARE S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="adesione alla concessione al polo strategico nazionale p6r1 polo strategico nazionale s.p.a.">
+      <td class="small">2025-05-16</td>
+      <td>ADESIONE ALLA CONCESSIONE AL POLO STRATEGICO NAZIONALE P6R1<div class="small muted">CIG B6E54BFEE7 · SERVIZI INFORMATICI</div></td>
+      <td>POLO STRATEGICO NAZIONALE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mln €</td></tr><tr data-t="progettazione esecutiva ed esecuzione dei lavori di ristrutturazione media per la realizzazione di un ospedale di comunità in montella (av) ">
+      <td class="small">2025-03-17</td>
+      <td>PROGETTAZIONE ESECUTIVA ED ESECUZIONE DEI LAVORI DI RISTRUTTURAZIONE MEDIA PER LA REALIZZAZIONE DI UN OSPEDALE DI COMUNITÀ IN MONTELLA (AV)<div class="small muted">CIG B60D1989B5</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">4 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150882 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150882<div class="small muted">CIG A04B3EF548 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150193 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150193<div class="small muted">CIG A04B3EB1FC · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150147 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150147<div class="small muted">CIG A04DB45B4D · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mln €</td></tr><tr data-t="procedura aperta finalizzata all&#39;affidamento dei servizi di assistenza alla persona presso la speciale unità di accoglienza permanente per i pazienti in stato vegetativo (sv) e di minima coscienza (mc) - suap di bisaccia ">
+      <td class="small">2023-06-28</td>
+      <td>PROCEDURA APERTA FINALIZZATA ALL&#39;AFFIDAMENTO DEI SERVIZI DI ASSISTENZA ALLA PERSONA PRESSO LA SPECIALE UNITÀ DI ACCOGLIENZA PERMANENTE PER I PAZIENTI IN STATO VEGETATIVO (SV) E DI MINIMA COSCIENZA (MC) - SUAP DI BISACCIA<div class="small muted">CIG 9918135FE8 · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 3 movi spa">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 3<div class="small muted">CIG B92CCA7AB3</div></td>
+      <td>MOVI SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="pnrr m6c1 - odc monteforte irpino (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - ODC MONTEFORTE IRPINO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A069E51285 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 5-ii grad. theras biocare s.r.l.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 5-II GRAD.<div class="small muted">CIG B92DA948A2</div></td>
+      <td>THERAS BIOCARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="pnrr m6c1 - odc moschiano (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - ODC MOSCHIANO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D7265D · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione accordo quadro ed11 lotto 9 pluxee italia srl">
+      <td class="small">2025-12-31</td>
+      <td>ADESIONE ACCORDO QUADRO ED11 LOTTO 9<div class="small muted">CIG B9DAF75929 · BUONI PASTO</div></td>
+      <td>PLUXEE ITALIA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150020 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150020<div class="small muted">CIG A04B3E6DD8 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione accordo quadro buoni pasto ed.10 - lotto n.9 campania operatore individuale (persona fisica)">
+      <td class="small">2024-02-16</td>
+      <td>ADESIONE ACCORDO QUADRO BUONI PASTO ED.10 - LOTTO N.9 CAMPANIA<div class="small muted">CIG B06A78D22E · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione accordo quadro consip denominato buoni pasto ed.10 lotto 9 campania quota 1 ">
+      <td class="small">2024-02-16</td>
+      <td>ADESIONE ACCORDO QUADRO CONSIP DENOMINATO BUONI PASTO ED.10 LOTTO 9 CAMPANIA QUOTA 1<div class="small muted">CIG A04CC3091B · BUONI PASTO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="adesione accordo quadro &#39; system management 3&#39; s.m.i. technologies and consulting s.r.l.">
+      <td class="small">2023-06-28</td>
+      <td>ADESIONE ACCORDO QUADRO &#39; SYSTEM MANAGEMENT 3&#39;<div class="small muted">CIG 9929180A89 · SERVIZI DI CONSULENZA IN SISTEMI INFORMATICI E ASSISTENZA TECNICA</div></td>
+      <td>S.M.I. TECHNOLOGIES AND CONSULTING S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 3 medtronic italia s.p.a.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 3<div class="small muted">CIG B92C0AB6E9</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 3 medtronic italia s.p.a.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 3<div class="small muted">CIG B92C23D2A8</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="dompe&#39; farmaceutici s.p.a.-lotto 211-ii grad.-vi a.s. farmaci dompe&#39; farmaceutici - s.p.a.">
+      <td class="small">2025-05-19</td>
+      <td>DOMPE&#39; FARMACEUTICI S.P.A.-LOTTO 211-II GRAD.-VI A.S. FARMACI<div class="small muted">CIG B6EACC8509 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>DOMPE&#39; FARMACEUTICI - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="lotto 3-svas biosana svas biosana s.p.a.">
+      <td class="small">2024-07-01</td>
+      <td>LOTTO 3-SVAS BIOSANA<div class="small muted">CIG A05D52E6CC · GUANTI CHIRURGICI</div></td>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - radioterapia - nsis rad412 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - RADIOTERAPIA - NSIS RAD412<div class="small muted">CIG A04DCA9118 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="baxter s.p.a.-lotto 57-v a.s. medicazioni specialistiche baxter s.p.a.">
+      <td class="small">2025-04-22</td>
+      <td>BAXTER S.P.A.-LOTTO 57-V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B696E729FB · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="a.q. farmaci biosimilari-lotto 12-sandoz sandoz s.p.a.">
+      <td class="small">2024-10-21</td>
+      <td>A.Q. FARMACI BIOSIMILARI-LOTTO 12-SANDOZ<div class="small muted">CIG B3E6B87AC2 · MEDICINALI VARI</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis rsa176 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS RSA176<div class="small muted">CIG A04B409ABB · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="pnrr m6c1 - cdc fontanarosa (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC FONTANAROSA (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D6D23E · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione al contratto quadro consip system managment 3 lotto 1 - pnrr m6 salute ammodernamento del parco tecnologico digitale ospedaliero fastweb spa">
+      <td class="small">2024-03-29</td>
+      <td>ADESIONE AL CONTRATTO QUADRO CONSIP SYSTEM MANAGMENT 3 LOTTO 1 - PNRR M6 SALUTE AMMODERNAMENTO DEL PARCO TECNOLOGICO DIGITALE OSPEDALIERO<div class="small muted">CIG B10D6B507E · Cpv prevalente non disponibile</div></td>
+      <td>FASTWEB SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="pnrr m6c1 - cdc moschiano (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC MOSCHIANO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D6AFC0 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="assistenza ospedaliera 2024 - legittimo affidamento su 2023-dgrc 652/2023 - nsis 150144 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA OSPEDALIERA 2024 - LEGITTIMO AFFIDAMENTO SU 2023-DGRC 652/2023 - NSIS 150144<div class="small muted">CIG A04DB83E76 · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla concessione polo strategico per la digitalizzazione cartelle cliniche sogei s.p.a.">
+      <td class="small">2023-11-29</td>
+      <td>ADESIONE ALLA CONCESSIONE POLO STRATEGICO PER LA DIGITALIZZAZIONE CARTELLE CLINICHE<div class="small muted">CIG A034019C00 · SERVIZI DI PROVIDER</div></td>
+      <td>SOGEI S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="pnrr m6c1 - cdc montecalvo irpino (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC MONTECALVO IRPINO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D985B9 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="baxter s.p.a.-lotto 55-v a.s. medicazioni specialistiche baxter s.p.a.">
+      <td class="small">2025-04-22</td>
+      <td>BAXTER S.P.A.-LOTTO 55-V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B696CA5D8C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>BAXTER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="svas biosana s.p.a. svas biosana s.p.a.">
+      <td class="small">2023-05-26</td>
+      <td>SVAS BIOSANA S.P.A.<div class="small muted">CIG 98495390B7 · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="pnrr m6c1 - odc avellino (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - ODC AVELLINO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D9C905 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- msd italia-lotto 26 msd italia s.r.l.">
+      <td class="small">2023-10-02</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- MSD ITALIA-LOTTO 26<div class="small muted">CIG A011957C12 · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione alla convenzione energia elettrica 20 hera comm s.p.a.">
+      <td class="small">2023-06-09</td>
+      <td>ADESIONE ALLA CONVENZIONE ENERGIA ELETTRICA 20<div class="small muted">CIG 9857559B04 · ELETTRICITÀ</div></td>
+      <td>HERA COMM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="svas biosana s.p.a. - lotto 52 - v a.s. medicazioni specialistiche svas biosana s.p.a.">
+      <td class="small">2025-04-22</td>
+      <td>SVAS BIOSANA S.P.A. - LOTTO 52 - V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B696BE3D74 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SVAS BIOSANA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="pnrr m6c1 - cdc monteforte irpino (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC MONTEFORTE IRPINO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A069E555D1 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="energia elettrica hera comm s.p.a.">
+      <td class="small">2024-08-06</td>
+      <td>ENERGIA ELETTRICA<div class="small muted">CIG B2B8D273F8 · ELETTRICITÀ</div></td>
+      <td>HERA COMM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione energia elettrica 22 a2a energia s.p.a.">
+      <td class="small">2025-06-24</td>
+      <td>ADESIONE ENERGIA ELETTRICA 22<div class="small muted">CIG B765E9A11C · ELETTRICITÀ</div></td>
+      <td>A2A ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="esecuzione delle opere relative a &#39;dca 100/2018 e dca 25/2019: art. 20 l. 67/88 (iii fase ii stralcio) scheda 16 - realizzazione nuovo distretto sanitario di baiano&#39; ">
+      <td class="small">2023-06-30</td>
+      <td>ESECUZIONE DELLE OPERE RELATIVE A &#39;DCA 100/2018 E DCA 25/2019: ART. 20 L. 67/88 (III FASE II STRALCIO) SCHEDA 16 - REALIZZAZIONE NUOVO DISTRETTO SANITARIO DI BAIANO&#39;<div class="small muted">CIG 99172315EA · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="a.q. fornitura stomie-det. 199/22-coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>A.Q. FORNITURA STOMIE-DET. 199/22-COLOPLAST S.P.A.<div class="small muted">CIG A0216F45E2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro ventiloterapia magaldi life - s.r.l.">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO VENTILOTERAPIA<div class="small muted">CIG B0D6BECB38 · Cpv prevalente non disponibile</div></td>
+      <td>MAGALDI LIFE - S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="servizio accordo quadro ventiloterapia nippon nippon gases pharma s.r.l.">
+      <td class="small">2024-03-18</td>
+      <td>SERVIZIO ACCORDO QUADRO VENTILOTERAPIA NIPPON<div class="small muted">CIG B0DC3E75CB · Cpv prevalente non disponibile</div></td>
+      <td>NIPPON GASES PHARMA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia vivisol napoli vivisol napoli s.r.l.">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA VIVISOL NAPOLI<div class="small muted">CIG B0D7869978 · Cpv prevalente non disponibile</div></td>
+      <td>VIVISOL NAPOLI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia linde medicale linde medicale srl">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA LINDE MEDICALE<div class="small muted">CIG B0D7A932A7 · Cpv prevalente non disponibile</div></td>
+      <td>LINDE MEDICALE SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia eubios eubios srl">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA EUBIOS<div class="small muted">CIG B0D6DE4B22 · Cpv prevalente non disponibile</div></td>
+      <td>EUBIOS SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia respiraire respiraire srl">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA RESPIRAIRE<div class="small muted">CIG B0D7ED9971 · Cpv prevalente non disponibile</div></td>
+      <td>RESPIRAIRE SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia sico sico societa&#39; italiana carburo ossigeno s.p.a.">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA SICO<div class="small muted">CIG B0D7D44B39 · Cpv prevalente non disponibile</div></td>
+      <td>SICO SOCIETA&#39; ITALIANA CARBURO OSSIGENO S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia medicair medicair sud s.r.l.">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA MEDICAIR<div class="small muted">CIG B0D7FDCF2B · Cpv prevalente non disponibile</div></td>
+      <td>MEDICAIR SUD S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro servizio ventiloterapia althea italia spa althea italia s.p.a.">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO SERVIZIO VENTILOTERAPIA ALTHEA ITALIA SPA<div class="small muted">CIG B0D74D2318 · Cpv prevalente non disponibile</div></td>
+      <td>ALTHEA ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="accordo quadro ventiloterapia vitalaire vitalaire italia spa">
+      <td class="small">2024-03-15</td>
+      <td>ACCORDO QUADRO VENTILOTERAPIA VITALAIRE<div class="small muted">CIG B0D7C2C42B · Cpv prevalente non disponibile</div></td>
+      <td>VITALAIRE ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0326 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0326<div class="small muted">CIG A04DD0F543 · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="lotto 66 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 66<div class="small muted">CIG B42108E027 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- glaxosmithkline s.p.a.-lotto 2 glaxosmithkline s.p.a.">
+      <td class="small">2023-09-20</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- GLAXOSMITHKLINE S.P.A.-LOTTO 2<div class="small muted">CIG A011661A8D · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="i a.s. medicazioni generali-lotto 5-dealfa s.r.l. dealfa s.r.l.">
+      <td class="small">2023-07-04</td>
+      <td>I A.S. MEDICAZIONI GENERALI-LOTTO 5-DEALFA S.R.L.<div class="small muted">CIG 9909361762 · MATERIALI MEDICI NON CHIMICI DI CONSUMO MONOUSO E MATERIALE DI CONSUMO EMATOLOGICO</div></td>
+      <td>DEALFA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="around medical s.r.l.-lotto 60 - v a.s. medicazioni specialistiche around medical s.r.l.">
+      <td class="small">2025-04-22</td>
+      <td>AROUND MEDICAL S.R.L.-LOTTO 60 - V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B69707FB39 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>AROUND MEDICAL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione gas naturale 16 consip s.p.a.">
+      <td class="small">2025-07-10</td>
+      <td>ADESIONE GAS NATURALE 16<div class="small muted">CIG B79B24A6CD · GAS NATURALE</div></td>
+      <td>CONSIP S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 39 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 39<div class="small muted">CIG B4210739DC · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150024 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150024<div class="small muted">CIG A04B3EA129 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione accordo quadro sanità digitale, sistemi informativi clinico-assistneziali 2- lotton.4 operatore individuale (persona fisica)">
+      <td class="small">2025-04-30</td>
+      <td>ADESIONE ACCORDO QUADRO SANITÀ DIGITALE, SISTEMI INFORMATIVI CLINICO-ASSISTNEZIALI 2- LOTTON.4<div class="small muted">CIG B6AF05C161 · SERVIZI DI PROGRAMMAZIONE DI SOFTWARE DI SISTEMI E DI UTENTE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lotto 5-clini-lab s.r.l. clini-lab s.r.l.">
+      <td class="small">2024-07-01</td>
+      <td>LOTTO 5-CLINI-LAB S.R.L.<div class="small muted">CIG A05D530872 · GUANTI CHIRURGICI</div></td>
+      <td>CLINI-LAB S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="tutela legale ">
+      <td class="small">2025-11-11</td>
+      <td>TUTELA LEGALE<div class="small muted">CIG B903C79B91 · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="pnrr m6c1 - cdc avellino (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC AVELLINO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D812BF · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema per trombectomia laser ">
+      <td class="small">2024-03-26</td>
+      <td>SISTEMA PER TROMBECTOMIA LASER<div class="small muted">CIG B0F6E62727 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura gestione e distribuzione gas medicinali sol s.p.a.">
+      <td class="small">2024-06-28</td>
+      <td>FORNITURA GESTIONE E DISTRIBUZIONE GAS MEDICINALI<div class="small muted">CIG B2400911F5 · GAS MEDICI</div></td>
+      <td>SOL S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adesione convenzione gas naturale 15 bis estra energie s.r.l.">
+      <td class="small">2023-07-04</td>
+      <td>ADESIONE CONVENZIONE GAS NATURALE 15 BIS<div class="small muted">CIG 991800764A · GAS NATURALE</div></td>
+      <td>ESTRA ENERGIE S.R.L.</td>
+      <td class="small">CONFRONTO COMPETITIVO IN ADESIONE AD ACCORDO QUADRO/CONVENZIONE</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150023 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150023<div class="small muted">CIG A04B3E9056 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="msd italia-lotto 13 operatore individuale (persona fisica)">
+      <td class="small">2024-09-10</td>
+      <td>MSD ITALIA-LOTTO 13<div class="small muted">CIG B2FD90793A · VACCINI ANTINFLUENZALI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="ossigeno terapeutico liquido f.u. in contenitore criogenico fisso ">
+      <td class="small">2023-06-26</td>
+      <td>OSSIGENO TERAPEUTICO LIQUIDO F.U. IN CONTENITORE CRIOGENICO FISSO<div class="small muted">CIG 9777120EA6 · GAS MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="dca 100/2018 e dca 25/2019:&#39;art. 20 l.67/88 (iii fase ii stralcio)sceda 17-lotto 8: lavori di riqualificazione dell&#39;sps di bisaccia. presa d&#39;atto e approvazione deocumentazione ed indizione di gara ">
+      <td class="small">2023-12-27</td>
+      <td>DCA 100/2018 E DCA 25/2019:&#39;ART. 20 L.67/88 (III FASE II STRALCIO)SCEDA 17-LOTTO 8: LAVORI DI RIQUALIFICAZIONE DELL&#39;SPS DI BISACCIA. PRESA D&#39;ATTO E APPROVAZIONE DEOCUMENTAZIONE ED INDIZIONE DI GARA<div class="small muted">CIG A042383705 · LAVORI DI RISTRUTTURAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavoro di restauro conservativo di edificio per la realizzazione di una cdc imperial s.r.l.">
+      <td class="small">2024-11-06</td>
+      <td>LAVORO DI RESTAURO CONSERVATIVO DI EDIFICIO PER LA REALIZZAZIONE DI UNA CDC<div class="small muted">CIG B42144B5E3</div></td>
+      <td>IMPERIAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento dei servizi di tesoreria della asl avellino bdm banca s.p.a.">
+      <td class="small">2024-03-14</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEI SERVIZI DI TESORERIA DELLA ASL AVELLINO<div class="small muted">CIG B0CB492CC1 · SERVIZI DI TESORERIA</div></td>
+      <td>BDM BANCA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis 087800 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS 087800<div class="small muted">CIG A04DCE529B · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento del servizio di brokeraggio in favore dell&#39;asl avellino ">
+      <td class="small">2023-03-21</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEL SERVIZIO DI BROKERAGGIO IN FAVORE DELL&#39;ASL AVELLINO<div class="small muted">CIG 9739348C36 · SERVIZI DI CONSULENZA NEL CAMPO DELLE ASSICURAZIONI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis ctr366 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS CTR366<div class="small muted">CIG A04B41871D · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema per il trattamento transcatetere dell&#39;insufficienza mitralica e tricuspidalica ">
+      <td class="small">2024-03-26</td>
+      <td>SISTEMA PER IL TRATTAMENTO TRANSCATETERE DELL&#39;INSUFFICIENZA MITRALICA E TRICUSPIDALICA<div class="small muted">CIG B0F6E6ADBF · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis rsa321 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS RSA321<div class="small muted">CIG A04B407915 · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="lavori di adeguamento funzionale ed impiantistico dell&#39;u.o.c. cardiologia/utic e realizzazione nuova area di cardiologia interventistica del p.o. &#39;s. ottone frangipane&#39; di ariano irpino (av) gaetano battista s.r.l.">
+      <td class="small">2023-06-29</td>
+      <td>LAVORI DI ADEGUAMENTO FUNZIONALE ED IMPIANTISTICO DELL&#39;U.O.C. CARDIOLOGIA/UTIC E REALIZZAZIONE NUOVA AREA DI CARDIOLOGIA INTERVENTISTICA DEL P.O. &#39;S. OTTONE FRANGIPANE&#39; DI ARIANO IRPINO (AV)<div class="small muted">CIG 99268274C9 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>GAETANO BATTISTA S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150198 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150198<div class="small muted">CIG A04B3EC2CF · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150384 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150384<div class="small muted">CIG A04B3ED3A2 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="affidamento in service di 2 sistemi analitici per l&#39;esecuzione di dosaggi immunometrici abbott s.r.l.">
+      <td class="small">2024-09-11</td>
+      <td>AFFIDAMENTO IN SERVICE DI 2 SISTEMI ANALITICI PER L&#39;ESECUZIONE DI DOSAGGI IMMUNOMETRICI<div class="small muted">CIG B2FC7D36EF · REAGENTI E MEZZI DI CONTRASTO</div></td>
+      <td>ABBOTT S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="realizzazione di una rete locale in convenzione consip reti locali 8 lotto 2 vodafone spa">
+      <td class="small">2024-07-29</td>
+      <td>REALIZZAZIONE DI UNA RETE LOCALE IN CONVENZIONE CONSIP RETI LOCALI 8 LOTTO 2<div class="small muted">CIG B29F52F959 · RETE LOCALE</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1000 mila €</td></tr><tr data-t="adesione convenzione consip reti locali 8 vodafone spa">
+      <td class="small">2024-08-06</td>
+      <td>ADESIONE CONVENZIONE CONSIP RETI LOCALI 8<div class="small muted">CIG B2B6936B0E · RETE LOCALE</div></td>
+      <td>VODAFONE SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1000 mila €</td></tr><tr data-t="adesione accordo quadro spc2 ">
+      <td class="small">2023-12-29</td>
+      <td>ADESIONE ACCORDO QUADRO SPC2<div class="small muted">CIG A0457DC9DF · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">998 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - radiodiagnostica - nsis 150008 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - RADIODIAGNOSTICA - NSIS 150008<div class="small muted">CIG A04DCBE26C · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">994 mila €</td></tr><tr data-t="servizio accalappiamento cani e gatti randagi sinantropi e fauna selvatica ">
+      <td class="small">2024-11-20</td>
+      <td>SERVIZIO ACCALAPPIAMENTO CANI E GATTI RANDAGI SINANTROPI E FAUNA SELVATICA<div class="small muted">CIG B45657CC42 · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">990 mila €</td></tr><tr data-t="lotto n.39 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.39<div class="small muted">CIG B42749C17E · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">988 mila €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150021 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150021<div class="small muted">CIG A04B3E7EAB · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">972 mila €</td></tr><tr data-t="pnrr m6c1 - cdc lapio (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC LAPIO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D877B1 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">966 mila €</td></tr><tr data-t="riqualificazione delle aree esterne dei p.oo. di ariano irpino e s.angelodei lombardi ">
+      <td class="small">2023-06-30</td>
+      <td>RIQUALIFICAZIONE DELLE AREE ESTERNE DEI P.OO. DI ARIANO IRPINO E S.ANGELODEI LOMBARDI<div class="small muted">CIG 99267651A0 · LAVORI DI COSTRUZIONE DI PARCHEGGI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">960 mila €</td></tr><tr data-t="pnrr m6c1 - cdc montoro (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC MONTORO (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D7158A · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">956 mila €</td></tr><tr data-t="art.20 della l.67/88 e dca 91/2019 &#39;lavori di ristrutturazione e di adeguamento funzionale impiantistico e di adeguamento alle norme di prevenzioe ex dm 19/03/2015 del centro australia sito in avellino ">
+      <td class="small">2023-12-27</td>
+      <td>ART.20 DELLA L.67/88 E DCA 91/2019 &#39;LAVORI DI RISTRUTTURAZIONE E DI ADEGUAMENTO FUNZIONALE IMPIANTISTICO E DI ADEGUAMENTO ALLE NORME DI PREVENZIOE EX DM 19/03/2015 DEL CENTRO AUSTRALIA SITO IN AVELLINO<div class="small muted">CIG A042654A01 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">927 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis rsh337 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS RSH337<div class="small muted">CIG A04B40DE07 · SERVIZI DI ASSISTENZA SOCIALE PER PERSONE ANZIANE</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">925 mila €</td></tr><tr data-t="servizio accalappiamento cani e gatti randagi sinantropi e fauna selvatica ">
+      <td class="small">2024-07-24</td>
+      <td>SERVIZIO ACCALAPPIAMENTO CANI E GATTI RANDAGI SINANTROPI E FAUNA SELVATICA<div class="small muted">CIG B28AE06E2E · Vari servizi sanitari</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">920 mila €</td></tr><tr data-t="lotto 1 medtronic italia s.p.a.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 1<div class="small muted">CIG B92BBD4874</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">918 mila €</td></tr><tr data-t="adesione accordo quadro cybersecurity 2 maticmind s.p.a.">
+      <td class="small">2023-09-29</td>
+      <td>ADESIONE ACCORDO QUADRO CYBERSECURITY 2<div class="small muted">CIG A01688C92F · PACCHETTI SOFTWARE DI SICUREZZA</div></td>
+      <td>MATICMIND S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">917 mila €</td></tr><tr data-t="fornitura ed installazione di n.1 tomografo a risonanza magnetica 1,5 tesla da destinare alla uoc diagnostica per immagini del p.o. &#39;criscuoli-frieri&#39; di sant&#39;angelo dei lombardi (av) ">
+      <td class="small">2023-06-12</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.1 TOMOGRAFO A RISONANZA MAGNETICA 1,5 TESLA DA DESTINARE ALLA UOC DIAGNOSTICA PER IMMAGINI DEL P.O. &#39;CRISCUOLI-FRIERI&#39; DI SANT&#39;ANGELO DEI LOMBARDI (AV)<div class="small muted">CIG 9878209BEF · APPARECCHIATURE PER IMMAGINOGRAFIA A RISONANZA MAGNETICA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">914 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis agg002 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS AGG002<div class="small muted">CIG A04DD019B4 · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">913 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis 101012 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS 101012<div class="small muted">CIG A04DD0D39D · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">892 mila €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150022 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150022<div class="small muted">CIG A04B3E8F7E · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">889 mila €</td></tr><tr data-t="fermed s.r.l.-lotto 56-v a.s. medicazioni specialistiche fermed s.r.l.">
+      <td class="small">2025-04-22</td>
+      <td>FERMED S.R.L.-LOTTO 56-V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B696D96470 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>FERMED S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">888 mila €</td></tr><tr data-t="pnrr m6c1 - cdc castel baronia (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC CASTEL BARONIA (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D7E046 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">888 mila €</td></tr><tr data-t="adesione accordo quadro di consip denominato cyber security 2 - lotto n.3 tim s.p.a.">
+      <td class="small">2024-05-10</td>
+      <td>ADESIONE ACCORDO QUADRO DI CONSIP DENOMINATO CYBER SECURITY 2 - LOTTO N.3<div class="small muted">CIG B19CEA8DD9 · Cpv prevalente non disponibile</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">885 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - diabetologia - nsis 086300 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIABETOLOGIA - NSIS 086300<div class="small muted">CIG A04DC831BC · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">884 mila €</td></tr><tr data-t="smith &amp; nephew s.r.l.-lotto 43-v a.s. medicazioni specialistiche operatore individuale (persona fisica)">
+      <td class="small">2025-04-22</td>
+      <td>SMITH &amp; NEPHEW S.R.L.-LOTTO 43-V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B695DD6520 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">877 mila €</td></tr><tr data-t="realizzazione nuovi uffici di direzione sanitaria e servizi di supporto al livello -1 del po di ariano irpino ">
+      <td class="small">2023-06-30</td>
+      <td>REALIZZAZIONE NUOVI UFFICI DI DIREZIONE SANITARIA E SERVIZI DI SUPPORTO AL LIVELLO -1 DEL PO DI ARIANO IRPINO<div class="small muted">CIG 992702040E · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">867 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0099 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0099<div class="small muted">CIG A04DD09051 · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">849 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - radiodiagnostica - nsis 086800 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - RADIODIAGNOSTICA - NSIS 086800<div class="small muted">CIG A04DCBC0C6 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">843 mila €</td></tr><tr data-t="kit test rapido ureasi ">
+      <td class="small">2023-03-27</td>
+      <td>KIT TEST RAPIDO UREASI<div class="small muted">CIG 9628173BB3 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">840 mila €</td></tr><tr data-t="lotto 8: flussi laminari medifor s.r.l.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 8: FLUSSI LAMINARI<div class="small muted">CIG A01B269D61 · MATERIALI MEDICI</div></td>
+      <td>MEDIFOR S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">840 mila €</td></tr><tr data-t="lotto n. 45 kit test rapido ureasi ">
+      <td class="small">2023-11-10</td>
+      <td>LOTTO N. 45 KIT TEST RAPIDO UREASI<div class="small muted">CIG A00BDD6927 · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">840 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis 008050 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS 008050<div class="small muted">CIG A04B406842 · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">830 mila €</td></tr><tr data-t="incendio ">
+      <td class="small">2025-11-11</td>
+      <td>INCENDIO<div class="small muted">CIG B903C7EFB0 · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">825 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis 150020 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS 150020<div class="small muted">CIG A04B40576F · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">809 mila €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- pfizer s.r.l.-lotto 6 pfizer s.r.l.">
+      <td class="small">2023-10-02</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- PFIZER S.R.L.-LOTTO 6<div class="small muted">CIG A0118E5DFE · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">809 mila €</td></tr><tr data-t="lotto n.29 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.29<div class="small muted">CIG B42749293B · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">805 mila €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- msd italia-lotto 21 msd italia s.r.l.">
+      <td class="small">2023-10-02</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- MSD ITALIA-LOTTO 21<div class="small muted">CIG A011948FB0 · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">802 mila €</td></tr><tr data-t="valvola aortica balloon eixpandable ">
+      <td class="small">2024-03-26</td>
+      <td>VALVOLA AORTICA BALLOON EIXPANDABLE<div class="small muted">CIG B0F6E67B46 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">800 mila €</td></tr><tr data-t="cateteri a palloncino per angioplastica coronarica/periferico ">
+      <td class="small">2024-03-26</td>
+      <td>CATETERI A PALLONCINO PER ANGIOPLASTICA CORONARICA/PERIFERICO<div class="small muted">CIG B0F6E3E971 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">800 mila €</td></tr><tr data-t="servizio accalappiamento cani e gatti randagi ">
+      <td class="small">2025-10-07</td>
+      <td>SERVIZIO ACCALAPPIAMENTO CANI E GATTI RANDAGI<div class="small muted">CIG B883B01525 · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">800 mila €</td></tr><tr data-t="realizzazione nuovo reparto di gastroenterologia/endoscopia digestiva al livello 5 del p.o. di ariano irpino ">
+      <td class="small">2023-06-30</td>
+      <td>REALIZZAZIONE NUOVO REPARTO DI GASTROENTEROLOGIA/ENDOSCOPIA DIGESTIVA AL LIVELLO 5 DEL P.O. DI ARIANO IRPINO<div class="small muted">CIG 9926879FAF · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">799 mila €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2023 - nsis 150455 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2023 - NSIS 150455<div class="small muted">CIG A04B3F061B · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">798 mila €</td></tr><tr data-t="valvola aortica self eixpandable ">
+      <td class="small">2024-03-26</td>
+      <td>VALVOLA AORTICA SELF EIXPANDABLE<div class="small muted">CIG B0F6E68C19 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">760 mila €</td></tr><tr data-t="sistema angiografico vascolare da destinare alle attività di cardiologia interventistica della u.o.c. cardiologia utic del p.o. di ariano irpino ">
+      <td class="small">2023-05-17</td>
+      <td>SISTEMA ANGIOGRAFICO VASCOLARE DA DESTINARE ALLE ATTIVITÀ DI CARDIOLOGIA INTERVENTISTICA DELLA U.O.C. CARDIOLOGIA UTIC DEL P.O. DI ARIANO IRPINO<div class="small muted">CIG 98294395AA · APPARECCHI PER ANGIOGRAFIA NUMERICA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">760 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0094 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0094<div class="small muted">CIG A04DD0C2CA · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">748 mila €</td></tr><tr data-t="kit per fisiopatologia ">
+      <td class="small">2023-03-27</td>
+      <td>KIT PER FISIOPATOLOGIA<div class="small muted">CIG 9628496641 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">747 mila €</td></tr><tr data-t="lotto n. 56 kit per fisiopatologia ">
+      <td class="small">2023-11-10</td>
+      <td>LOTTO N. 56 KIT PER FISIOPATOLOGIA<div class="small muted">CIG A00BE2170C · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">747 mila €</td></tr><tr data-t="lotto n.26 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.26<div class="small muted">CIG B42748F6C2 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">737 mila €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- msd italia-lotto 18 msd italia s.r.l.">
+      <td class="small">2023-09-20</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- MSD ITALIA-LOTTO 18<div class="small muted">CIG A0119360DA · MEDICINALI VARI</div></td>
+      <td>MSD ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">714 mila €</td></tr><tr data-t="contratto assistenza ospedaliera case di cura accreditate 2023 - dgrc 652/2023 integrazione nsis 150145 ">
+      <td class="small">2023-11-16</td>
+      <td>CONTRATTO ASSISTENZA OSPEDALIERA CASE DI CURA ACCREDITATE 2023 - DGRC 652/2023 INTEGRAZIONE NSIS 150145<div class="small muted">CIG A03A1A1840 · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">698 mila €</td></tr><tr data-t="pnrr m6c1 - cdc bisaccia (av) - affidamento appalto misto ">
+      <td class="small">2024-08-09</td>
+      <td>PNRR M6C1 - CDC BISACCIA (AV) - AFFIDAMENTO APPALTO MISTO<div class="small muted">CIG A068D920C7 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">671 mila €</td></tr><tr data-t="procedura aperta per l&#39;affidamento per anni 3 del servizio di gestione e manutenzione delle aree adibite a verdi presenti presso il presidi ospedalieri e le strutture territoriali dell&#39;asl avellino ">
+      <td class="small">2025-07-24</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO PER ANNI 3 DEL SERVIZIO DI GESTIONE E MANUTENZIONE DELLE AREE ADIBITE A VERDI PRESENTI PRESSO IL PRESIDI OSPEDALIERI E LE STRUTTURE TERRITORIALI DELL&#39;ASL AVELLINO<div class="small muted">CIG B7BD8AD855 · SERVIZI DI PIANTAGIONE E MANUTENZIONE DI ZONE VERDI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">670 mila €</td></tr><tr data-t="medtronic italia spa medtronic italia s.p.a.">
+      <td class="small">2023-12-15</td>
+      <td>MEDTRONIC ITALIA SPA<div class="small muted">CIG A03624A337 · PROTESI CHIRURGICHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">659 mila €</td></tr><tr data-t="contratto assistenza ospedaliera case di cura accreditate 2023 - dgrc 652/2023 integrazione nsis 150148 ">
+      <td class="small">2023-11-16</td>
+      <td>CONTRATTO ASSISTENZA OSPEDALIERA CASE DI CURA ACCREDITATE 2023 - DGRC 652/2023 INTEGRAZIONE NSIS 150148<div class="small muted">CIG A03A05DCDF · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">647 mila €</td></tr><tr data-t="adesione all&#39;affidamennto in concessione per i servizzi inerenti la conservazione a norma, portale , posta leonardo velivoli spa">
+      <td class="small">2023-12-18</td>
+      <td>ADESIONE ALL&#39;AFFIDAMENNTO IN CONCESSIONE PER I SERVIZZI INERENTI LA CONSERVAZIONE A NORMA, PORTALE , POSTA<div class="small muted">CIG A03A378CED · SERVIZI DI PROVIDER</div></td>
+      <td>LEONARDO VELIVOLI SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">636 mila €</td></tr><tr data-t="lotto 3-sydex s.p.a. sydex s.p.a.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 3-SYDEX S.P.A.<div class="small muted">CIG 9906128B6C · ANTISETTICI E DISINFETTANTI</div></td>
+      <td>SYDEX S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">627 mila €</td></tr><tr data-t="a.q. farmaci biosimilari-lotto 19-sandoz s.p.a. sandoz s.p.a.">
+      <td class="small">2024-10-21</td>
+      <td>A.Q. FARMACI BIOSIMILARI-LOTTO 19-SANDOZ S.P.A.<div class="small muted">CIG B3E71AAB30 · MEDICINALI VARI</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">621 mila €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- pfizer s.r.l.-lotto 3 pfizer s.r.l.">
+      <td class="small">2023-09-20</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- PFIZER S.R.L.-LOTTO 3<div class="small muted">CIG A011686916 · MEDICINALI VARI</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">615 mila €</td></tr><tr data-t="lavori di riqualificazione funzionale e di adeguamento tecnologio ed impiantistico del centro walter tobagi di montoro (av) ">
+      <td class="small">2025-01-10</td>
+      <td>LAVORI DI RIQUALIFICAZIONE FUNZIONALE E DI ADEGUAMENTO TECNOLOGIO ED IMPIANTISTICO DEL CENTRO WALTER TOBAGI DI MONTORO (AV)<div class="small muted">CIG B522570C16</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">615 mila €</td></tr><tr data-t="licenze uso software tim s.p.a.">
+      <td class="small">2025-04-11</td>
+      <td>LICENZE USO SOFTWARE<div class="small muted">CIG B6776AF25B · PACCHETTI SOFTWARE IT</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">606 mila €</td></tr><tr data-t="kit clip otsc ">
+      <td class="small">2023-12-29</td>
+      <td>KIT CLIP OTSC<div class="small muted">CIG A03F8C2EE9 · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">600 mila €</td></tr><tr data-t="catetere intracoronarico per tomografia a coerenza ottica ">
+      <td class="small">2024-03-26</td>
+      <td>CATETERE INTRACORONARICO PER TOMOGRAFIA A COERENZA OTTICA<div class="small muted">CIG B0F6E5E3DB · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">600 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0325 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0325<div class="small muted">CIG A04DD10616 · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">599 mila €</td></tr><tr data-t="a.q. fornitura stomie-det. 199/22-teleflex medical s.r.l. teleflex medical s.r.l.">
+      <td class="small">2023-11-30</td>
+      <td>A.Q. FORNITURA STOMIE-DET. 199/22-TELEFLEX MEDICAL S.R.L.<div class="small muted">CIG A0216D29D2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>TELEFLEX MEDICAL S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">595 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis 008030 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS 008030<div class="small muted">CIG A04B41764A · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">594 mila €</td></tr><tr data-t="lavori di ristrutturazione e di adeguamento funzionale/impiantistico del distretto sanitario di ariano irpino ">
+      <td class="small">2025-01-10</td>
+      <td>LAVORI DI RISTRUTTURAZIONE E DI ADEGUAMENTO FUNZIONALE/IMPIANTISTICO DEL DISTRETTO SANITARIO DI ARIANO IRPINO<div class="small muted">CIG B52167E6C7</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">592 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0098 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0098<div class="small muted">CIG A04DD0A124 · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">588 mila €</td></tr><tr data-t="adesione a concessione per migrazione servizi digitali tim s.p.a.">
+      <td class="small">2024-02-13</td>
+      <td>ADESIONE A CONCESSIONE PER MIGRAZIONE SERVIZI DIGITALI<div class="small muted">CIG B05CD3FB95 · Cpv prevalente non disponibile</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">582 mila €</td></tr><tr data-t="a.q. fornitura stomie-det. 199/22-convatec italia s.r.l. convatec italia s.r.l.">
+      <td class="small">2023-11-30</td>
+      <td>A.Q. FORNITURA STOMIE-DET. 199/22-CONVATEC ITALIA S.R.L.<div class="small muted">CIG A021673B6C · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>CONVATEC ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">580 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - radiodiagnostica - nsis 086600 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - RADIODIAGNOSTICA - NSIS 086600<div class="small muted">CIG A04DCB8D75 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">574 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - medicina nuclere - nsis 087203 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - MEDICINA NUCLERE - NSIS 087203<div class="small muted">CIG A04DCB4A29 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">573 mila €</td></tr><tr data-t="adesione al contratto quadro consip servizi applicativi sanità digitale sistemi informativi clinico-assistenziali lotto 2 engineering - ingegneria informatica - s.p.a.">
+      <td class="small">2024-05-28</td>
+      <td>ADESIONE AL CONTRATTO QUADRO CONSIP SERVIZI APPLICATIVI SANITÀ DIGITALE SISTEMI INFORMATIVI CLINICO-ASSISTENZIALI LOTTO 2<div class="small muted">CIG B1DEFD5693 · Cpv prevalente non disponibile</div></td>
+      <td>ENGINEERING - INGEGNERIA INFORMATICA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">571 mila €</td></tr><tr data-t="convenzione so.re.sa. affidamento servizio raccolta e smaltimento rifiuti-consorzio uneco- lotto 4 ecosistem s.r.l.">
+      <td class="small">2023-09-21</td>
+      <td>CONVENZIONE SO.RE.SA. AFFIDAMENTO SERVIZIO RACCOLTA E SMALTIMENTO RIFIUTI-CONSORZIO UNECO- LOTTO 4<div class="small muted">CIG A010583F38 · RACCOLTA, TRASPORTO E SMALTIMENTO DI RIFIUTI OSPEDALIERI</div></td>
+      <td>ECOSISTEM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">570 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis r10001 suap ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS R10001 SUAP<div class="small muted">CIG A04B4132FE · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">561 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis rsa528 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS RSA528<div class="small muted">CIG A04B4089E8 · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">539 mila €</td></tr><tr data-t="contratto assistenza ospedaliera case di cura accreditate 2023 - dgrc 652/2023 integrazione nsis 150147 ">
+      <td class="small">2023-11-16</td>
+      <td>CONTRATTO ASSISTENZA OSPEDALIERA CASE DI CURA ACCREDITATE 2023 - DGRC 652/2023 INTEGRAZIONE NSIS 150147<div class="small muted">CIG A03A15270F · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">534 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0093 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0093<div class="small muted">CIG A04DD0B1F7 · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">533 mila €</td></tr><tr data-t="adesione dialisi 5 spindial spa">
+      <td class="small">2025-12-16</td>
+      <td>ADESIONE DIALISI 5<div class="small muted">CIG B9A188CA25 · APPARECCHI PER EMODIALISI</div></td>
+      <td>SPINDIAL SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">531 mila €</td></tr><tr data-t="fornitura ed installazione di n.1 tomografo assiale computeizzato (tac) da destinare alla uoc diagnostica per immagini del p.o. &#39;sant&#39;ottone - frangipane&#39; di ariano irpino (av) ">
+      <td class="small">2023-08-01</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.1 TOMOGRAFO ASSIALE COMPUTEIZZATO (TAC) DA DESTINARE ALLA UOC DIAGNOSTICA PER IMMAGINI DEL P.O. &#39;SANT&#39;OTTONE - FRANGIPANE&#39; DI ARIANO IRPINO (AV)<div class="small muted">CIG 997442865F · APPARECCHI PER TOMOGRAFIA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">530 mila €</td></tr><tr data-t="adesione al polo strategico nazionale - cartelle cliniche polo strategico nazionale s.p.a.">
+      <td class="small">2024-07-04</td>
+      <td>ADESIONE AL POLO STRATEGICO NAZIONALE - CARTELLE CLINICHE<div class="small muted">CIG B258F0D8EA · SERVIZI INFORMATICI</div></td>
+      <td>POLO STRATEGICO NAZIONALE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">527 mila €</td></tr><tr data-t="infortuni ">
+      <td class="small">2025-11-11</td>
+      <td>INFORTUNI<div class="small muted">CIG B903C7DEDD · SERVIZI ASSICURATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">523 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis rsa324 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS RSA324<div class="small muted">CIG A04B40469C · SERVIZI DI ASSISTENZA SOCIALE PER DISABILI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">519 mila €</td></tr><tr data-t="lotto 3: pacco indicatore biologico a fluorescenza con lettura istantanea alma medical s.r.l.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 3: PACCO INDICATORE BIOLOGICO A FLUORESCENZA CON LETTURA ISTANTANEA<div class="small muted">CIG A01B1E93C3 · MATERIALI MEDICI</div></td>
+      <td>ALMA MEDICAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">515 mila €</td></tr><tr data-t="procedura aperta per l&#39;affidamento dei servizi di trasporto monitorato e consegna sangue ed emocomponenti destinati al simt di avellino ">
+      <td class="small">2023-12-21</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEI SERVIZI DI TRASPORTO MONITORATO E CONSEGNA SANGUE ED EMOCOMPONENTI DESTINATI AL SIMT DI AVELLINO<div class="small muted">CIG A03D94639A · VARI SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">500 mila €</td></tr><tr data-t="adesione accordo quadro fuel card 3 operatore individuale (persona fisica)">
+      <td class="small">2024-11-15</td>
+      <td>ADESIONE ACCORDO QUADRO FUEL CARD 3<div class="small muted">CIG B44C6DA3D6 · CARTE PER IL RIFORNIMENTO DI CARBURANTE</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">488 mila €</td></tr><tr data-t="hollister s.p.a. hollister s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>HOLLISTER S.P.A.<div class="small muted">CIG A021604FD1 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>HOLLISTER S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">483 mila €</td></tr><tr data-t="lotto 3 ortho-clinical diagnostics italy s.r.l.">
+      <td class="small">2025-08-28</td>
+      <td>LOTTO 3<div class="small muted">CIG B80F43BF8F</div></td>
+      <td>ORTHO-CLINICAL DIAGNOSTICS ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">480 mila €</td></tr><tr data-t="sistema di assistenza ventricolare sx ">
+      <td class="small">2024-03-26</td>
+      <td>SISTEMA DI ASSISTENZA VENTRICOLARE SX<div class="small muted">CIG B0F6E5D308 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">480 mila €</td></tr><tr data-t="lotto 87 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 87<div class="small muted">CIG B4210A317B · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">477 mila €</td></tr><tr data-t="iii a.s. farmaci, vaccini vari e biosimilari - det. 193/2023- sanofi s.r.l.-lotto 29 sanofi s.r.l.">
+      <td class="small">2023-10-02</td>
+      <td>III A.S. FARMACI, VACCINI VARI E BIOSIMILARI - DET. 193/2023- SANOFI S.R.L.-LOTTO 29<div class="small muted">CIG A01198C7D0 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">477 mila €</td></tr><tr data-t="catetere per radiofrequenza endoscopica ">
+      <td class="small">2023-12-29</td>
+      <td>CATETERE PER RADIOFREQUENZA ENDOSCOPICA<div class="small muted">CIG A03EAB6768 · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">460 mila €</td></tr><tr data-t="lotto 3 seqirus s.r.l.">
+      <td class="small">2025-08-29</td>
+      <td>LOTTO 3<div class="small muted">CIG B8138F5699</div></td>
+      <td>SEQIRUS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">450 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis 087700 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS 087700<div class="small muted">CIG A04DCE2022 · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">446 mila €</td></tr><tr data-t="adesione convenzione fornitura metadone l. molteni &amp; c. dei fratelli alitti - societa&#39; di esercizio - s.p.a.">
+      <td class="small">2024-05-15</td>
+      <td>ADESIONE CONVENZIONE FORNITURA METADONE<div class="small muted">CIG B1B057267F · Cpv prevalente non disponibile</div></td>
+      <td>L. MOLTENI &amp; C. DEI FRATELLI ALITTI - SOCIETA&#39; DI ESERCIZIO - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">444 mila €</td></tr><tr data-t="lotto 32 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 32<div class="small muted">CIG B42106C417 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">444 mila €</td></tr><tr data-t="lotto n.45 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.45<div class="small muted">CIG B4274A2670 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">443 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - fkt - nsis 086000 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - FKT - NSIS 086000<div class="small muted">CIG A04DD17BDB · SERVIZI DI FISIOTERAPIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">440 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - dialisi - nsis ad0324 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIALISI - NSIS AD0324<div class="small muted">CIG A04DD0E470 · SERVIZI SPECIALISTICI DI NEFROLOGIA O DEL SISTEMA NERVOSO</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">440 mila €</td></tr><tr data-t="around medical s.r.l.-lotto 42-v a.s. medicazioni specialistiche around medical s.r.l.">
+      <td class="small">2025-04-22</td>
+      <td>AROUND MEDICAL S.R.L.-LOTTO 42-V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B695B192A5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>AROUND MEDICAL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">439 mila €</td></tr><tr data-t="sistema per il trattamento dell&#39;embolia polmonare ">
+      <td class="small">2024-03-26</td>
+      <td>SISTEMA PER IL TRATTAMENTO DELL&#39;EMBOLIA POLMONARE<div class="small muted">CIG B0F6E45F36 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">438 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis rsa319 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS RSA319<div class="small muted">CIG A04B40CD34 · SERVIZI DI ASSISTENZA SOCIALE PER PERSONE ANZIANE</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">435 mila €</td></tr><tr data-t="dispositivi per la valutazione fisiologica della stenosi coronarica ">
+      <td class="small">2024-03-26</td>
+      <td>DISPOSITIVI PER LA VALUTAZIONE FISIOLOGICA DELLA STENOSI CORONARICA<div class="small muted">CIG B0F6E4C500 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">427 mila €</td></tr><tr data-t="catetere per radiofrequenzamonouso tts/360^ ">
+      <td class="small">2023-03-27</td>
+      <td>CATETERE PER RADIOFREQUENZAMONOUSO TTS/360^<div class="small muted">CIG 962791679F · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">426 mila €</td></tr><tr data-t="lotto n. 39 catetere per radiofrequenza endoscopica ">
+      <td class="small">2023-11-10</td>
+      <td>LOTTO N. 39 CATETERE PER RADIOFREQUENZA ENDOSCOPICA<div class="small muted">CIG A00BD9A7A4 · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">426 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis agg003 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS AGG003<div class="small muted">CIG A04DD03B5A · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">418 mila €</td></tr><tr data-t="johnson &amp;johnson medical s.p.a. johnson &amp; johnson medical s.p.a.">
+      <td class="small">2023-12-15</td>
+      <td>JOHNSON &amp;JOHNSON MEDICAL S.P.A.<div class="small muted">CIG A0361F8F88 · PROTESI CHIRURGICHE</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">416 mila €</td></tr><tr data-t="lavori di realizzazione area servizi diagnostici (radiologia) dedicata al pronto soccorso del p.o. di ariano irpino ">
+      <td class="small">2023-03-08</td>
+      <td>LAVORI DI REALIZZAZIONE AREA SERVIZI DIAGNOSTICI (RADIOLOGIA) DEDICATA AL PRONTO SOCCORSO DEL P.O. DI ARIANO IRPINO<div class="small muted">CIG 96949459B3 · LAVORI DI COSTRUZIONE DI SALE PER SCREENING DIAGNOSTICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">414 mila €</td></tr><tr data-t="lotto 2 medtronic italia s.p.a.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 2<div class="small muted">CIG B92BE6BB93</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">404 mila €</td></tr><tr data-t="n. 8 ecotomografi di alta fascia per attività diagnostiche ospedaliere specialistiche da destinare ai pp.oo. di ariano irpino e s. angelo dei lombardi ">
+      <td class="small">2023-08-02</td>
+      <td>N. 8 ECOTOMOGRAFI DI ALTA FASCIA PER ATTIVITÀ DIAGNOSTICHE OSPEDALIERE SPECIALISTICHE DA DESTINARE AI PP.OO. DI ARIANO IRPINO E S. ANGELO DEI LOMBARDI<div class="small muted">CIG 9934850194 · ECOGRAFI, ULTRASONOGRAFI E APPARECCHI DOPPLER</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">400 mila €</td></tr><tr data-t="kit per dissezione sottomucosa ">
+      <td class="small">2023-12-29</td>
+      <td>KIT PER DISSEZIONE SOTTOMUCOSA<div class="small muted">CIG A03F94C0CF · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">400 mila €</td></tr><tr data-t="lotto n.33 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.33<div class="small muted">CIG B427496C87 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">394 mila €</td></tr><tr data-t="sistema percutaneo per l&#39;obliterazione della auricola sx ">
+      <td class="small">2024-03-26</td>
+      <td>SISTEMA PERCUTANEO PER L&#39;OBLITERAZIONE DELLA AURICOLA SX<div class="small muted">CIG B0F6E648CD · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">390 mila €</td></tr><tr data-t="lotto 6-ii grad. abbott s.r.l.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 6-II GRAD.<div class="small muted">CIG B92EB7CC35</div></td>
+      <td>ABBOTT S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">386 mila €</td></tr><tr data-t="lotto n.14 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.14<div class="small muted">CIG B427483CD9 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">381 mila €</td></tr><tr data-t="bracco imaging s.p.a. - lotto 2 bracco imaging italia societa&#39; a responsabilita&#39; limitata, in bre ve bracco imaging italia s.r.l.">
+      <td class="small">2024-02-22</td>
+      <td>BRACCO IMAGING S.P.A. - LOTTO 2<div class="small muted">CIG A04F5F0D1E · MEDICINALI VARI</div></td>
+      <td>BRACCO IMAGING ITALIA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA, IN BRE VE BRACCO IMAGING ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">378 mila €</td></tr><tr data-t="dca 100/2018 e dca 25/2019: &#39;art. 20 l. 67/88 (iii fase ii stralcio) scheda 17 - lotto 2: lavori di ristrutturazione e di adeguamento funzionale/impiantistico presso il d.s. e consultorio di s. angelo dei lombardi (av) ">
+      <td class="small">2023-09-01</td>
+      <td>DCA 100/2018 E DCA 25/2019: &#39;ART. 20 L. 67/88 (III FASE II STRALCIO) SCHEDA 17 - LOTTO 2: LAVORI DI RISTRUTTURAZIONE E DI ADEGUAMENTO FUNZIONALE/IMPIANTISTICO PRESSO IL D.S. E CONSULTORIO DI S. ANGELO DEI LOMBARDI (AV)<div class="small muted">CIG 9934263D28 · LAVORI DI COSTRUZIONE DI EDIFICI PER SERVIZI SANITARI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">377 mila €</td></tr><tr data-t="sequirus s.r.l. seqirus s.r.l.">
+      <td class="small">2023-09-12</td>
+      <td>SEQUIRUS S.R.L.<div class="small muted">CIG A00A1191F9 · MEDICINALI VARI</div></td>
+      <td>SEQIRUS S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">375 mila €</td></tr><tr data-t="adesione-v a.s. vaccini-det.n.195/2024 seqirus s.r.l.">
+      <td class="small">2024-09-10</td>
+      <td>ADESIONE-V A.S. VACCINI-DET.N.195/2024<div class="small muted">CIG B2FCC66D44 · VACCINI ANTINFLUENZALI</div></td>
+      <td>SEQIRUS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">375 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - diabetologia - nsis 150002 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIABETOLOGIA - NSIS 150002<div class="small muted">CIG A04DC896AE · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">373 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis agg001 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS AGG001<div class="small muted">CIG A04DD008E1 · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">372 mila €</td></tr><tr data-t="contenitori per biopsia ">
+      <td class="small">2023-03-27</td>
+      <td>CONTENITORI PER BIOPSIA<div class="small muted">CIG 96284521F3 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">362 mila €</td></tr><tr data-t="lotto n. 53 contenitori per biopsia ">
+      <td class="small">2023-11-10</td>
+      <td>LOTTO N. 53 CONTENITORI PER BIOPSIA<div class="small muted">CIG A00BE0B4E5 · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">362 mila €</td></tr><tr data-t="lotto 27-boston scientific spa boston scientific spa">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 27-BOSTON SCIENTIFIC SPA<div class="small muted">CIG A021DD0EF8 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">360 mila €</td></tr><tr data-t="lotto 29-boston scientific spa boston scientific spa">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 29-BOSTON SCIENTIFIC SPA<div class="small muted">CIG A021F8037B · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BOSTON SCIENTIFIC SPA</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">360 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - radiodiagnostica - nsis 150007 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - RADIODIAGNOSTICA - NSIS 150007<div class="small muted">CIG A04DCC475E · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">352 mila €</td></tr><tr data-t="dia: dispositivo per la chiusura percutanea di difetti interatriali(dia) ">
+      <td class="small">2024-03-26</td>
+      <td>DIA: DISPOSITIVO PER LA CHIUSURA PERCUTANEA DI DIFETTI INTERATRIALI(DIA)<div class="small muted">CIG B0F6E637FA · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">350 mila €</td></tr><tr data-t="pfo: dispositivo per la chiusura percutanea del forame ovale pervio, autoespandibile e riposizionabile, con ampia gamma, disponibile in diverse versioni e misure, fornito con il suo sistema di rilascio e gli accessori necessari per l&#39;impianto ">
+      <td class="small">2024-03-26</td>
+      <td>PFO: DISPOSITIVO PER LA CHIUSURA PERCUTANEA DEL FORAME OVALE PERVIO, AUTOESPANDIBILE E RIPOSIZIONABILE, CON AMPIA GAMMA, DISPONIBILE IN DIVERSE VERSIONI E MISURE, FORNITO CON IL SUO SISTEMA DI RILASCIO E GLI ACCESSORI NECESSARI PER L&#39;IMPIANTO<div class="small muted">CIG B0F6E7894E · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">350 mila €</td></tr><tr data-t="fornitura ed installazione di n.1 sistema per video-ecoendoscopia da destinare alla uoc gastroenterologia e endoscopia digestiva del p.o. di ariano irpino ">
+      <td class="small">2025-04-03</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.1 SISTEMA PER VIDEO-ECOENDOSCOPIA DA DESTINARE ALLA UOC GASTROENTEROLOGIA E ENDOSCOPIA DIGESTIVA DEL P.O. DI ARIANO IRPINO<div class="small muted">CIG B64C026C51 · APPARECCHI PER ENDOSCOPIA E ENDOCHIRURGIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">350 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - fkt - nsis 085600 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - FKT - NSIS 085600<div class="small muted">CIG A04DD1388F · SERVIZI DI FISIOTERAPIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">347 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - fkt - nsis 086100 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - FKT - NSIS 086100<div class="small muted">CIG A04DD116E9 · SERVIZI DI FISIOTERAPIA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">345 mila €</td></tr><tr data-t="procedura negoziata senza bando per la fornitura in urgenza della specialità medicinale antipneumococcico 15 valente per i vari distretti sanitari dell&#39;asl di avellino ">
+      <td class="small">2023-12-20</td>
+      <td>PROCEDURA NEGOZIATA SENZA BANDO PER LA FORNITURA IN URGENZA DELLA SPECIALITÀ MEDICINALE ANTIPNEUMOCOCCICO 15 VALENTE PER I VARI DISTRETTI SANITARI DELL&#39;ASL DI AVELLINO<div class="small muted">CIG A040715108 · VACCINI</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">340 mila €</td></tr><tr data-t="sonde per ecografica intravascolare ">
+      <td class="small">2024-03-26</td>
+      <td>SONDE PER ECOGRAFICA INTRAVASCOLARE<div class="small muted">CIG B0F6E4B42D · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">340 mila €</td></tr><tr data-t="contratto assistenza ospedaliera case di cura accreditate 2023 - dgrc 652/2023 integrazione nsis 150143 ">
+      <td class="small">2023-11-16</td>
+      <td>CONTRATTO ASSISTENZA OSPEDALIERA CASE DI CURA ACCREDITATE 2023 - DGRC 652/2023 INTEGRAZIONE NSIS 150143<div class="small muted">CIG A03A20284C · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">339 mila €</td></tr><tr data-t="affidamento in concessione gestione bar/punto ristoro e installazione e gestione distributori automatici ">
+      <td class="small">2025-02-05</td>
+      <td>AFFIDAMENTO IN CONCESSIONE GESTIONE BAR/PUNTO RISTORO E INSTALLAZIONE E GESTIONE DISTRIBUTORI AUTOMATICI<div class="small muted">CIG B576B683A3 · SERVIZI DI GESTIONE BAR</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">337 mila €</td></tr><tr data-t="kit dissezione sottomucosa ">
+      <td class="small">2023-03-27</td>
+      <td>KIT DISSEZIONE SOTTOMUCOSA<div class="small muted">CIG 962820561D · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">337 mila €</td></tr><tr data-t="lotto n. 46 kit per dissezione sottomucosa ">
+      <td class="small">2023-11-10</td>
+      <td>LOTTO N. 46 KIT PER DISSEZIONE SOTTOMUCOSA<div class="small muted">CIG A00BDDEFBF · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">337 mila €</td></tr><tr data-t="iii grad.- coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>III GRAD.- COLOPLAST S.P.A.<div class="small muted">CIG A028DA0441 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">337 mila €</td></tr><tr data-t="lotto 26-microport crm s.r.l. microport crm s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 26-MICROPORT CRM S.R.L.<div class="small muted">CIG A021DC01C8 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MICROPORT CRM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">336 mila €</td></tr><tr data-t="lotto 25-microport crm s.r.l. microport crm s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 25-MICROPORT CRM S.R.L.<div class="small muted">CIG A021DAF3C0 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MICROPORT CRM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">336 mila €</td></tr><tr data-t="lotto 7-iii grad. theras biocare s.r.l.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 7-III GRAD.<div class="small muted">CIG B92EE9D13A</div></td>
+      <td>THERAS BIOCARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">336 mila €</td></tr><tr data-t="lotto 21-microport crm s.r.l. microport crm s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 21-MICROPORT CRM S.R.L.<div class="small muted">CIG A021D33D69 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MICROPORT CRM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">327 mila €</td></tr><tr data-t="concessione del servizio di riscossione delle entrate tributarie e patrimoniali ">
+      <td class="small">2024-03-08</td>
+      <td>CONCESSIONE DEL SERVIZIO DI RISCOSSIONE DELLE ENTRATE TRIBUTARIE E PATRIMONIALI<div class="small muted">CIG B0B723AB19 · SERVIZI DI ORGANISMI DI RISCOSSIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">322 mila €</td></tr><tr data-t="lotto 24-abbott medical italia s.r.l. abbott medical italia s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 24-ABBOTT MEDICAL ITALIA S.R.L.<div class="small muted">CIG A021D90A29 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>ABBOTT MEDICAL ITALIA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">322 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis agg006 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS AGG006<div class="small muted">CIG A04DD07EA6 · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">320 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - branche a visita - nsis amb527 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - BRANCHE A VISITA - NSIS AMB527<div class="small muted">CIG A04DC9D72F · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">319 mila €</td></tr><tr data-t="procedura aperta per l&#39;affidamento del servizio di rimozione, trasporto e smaltimento carcasse, spoglie animali e rifiuti organici alimentari da eliminare presso impianti autorizzati e per le emergenze di tipo epidemico adm s.r.l.">
+      <td class="small">2023-05-08</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DEL SERVIZIO DI RIMOZIONE, TRASPORTO E SMALTIMENTO CARCASSE, SPOGLIE ANIMALI E RIFIUTI ORGANICI ALIMENTARI DA ELIMINARE PRESSO IMPIANTI AUTORIZZATI E PER LE EMERGENZE DI TIPO EPIDEMICO<div class="small muted">CIG 9799354ABB · TRATTAMENTO E SMALTIMENTO DEI RIFIUTI</div></td>
+      <td>ADM S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">317 mila €</td></tr><tr data-t="lotto 22-medtronic italia spa medtronic italia s.p.a.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 22-MEDTRONIC ITALIA SPA<div class="small muted">CIG A021D44B71 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">316 mila €</td></tr><tr data-t="lotto 17-biotronik italia spa biotronik italia s.p.a.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 17-BIOTRONIK ITALIA SPA<div class="small muted">CIG A021CC6379 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BIOTRONIK ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">315 mila €</td></tr><tr data-t="lotto n.13 ">
+      <td class="small">2024-11-08</td>
+      <td>LOTTO N.13<div class="small muted">CIG B427482C06 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">313 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - radiodiagnostica - nsis 087203 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - RADIODIAGNOSTICA - NSIS 087203<div class="small muted">CIG A04DCC5831 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">312 mila €</td></tr><tr data-t="iv grad. coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>IV GRAD. COLOPLAST S.P.A.<div class="small muted">CIG A029C3F513 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">304 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis 145300 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS 145300<div class="small muted">CIG A04DCEFAD9 · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">302 mila €</td></tr><tr data-t="servizio biennale di assistenza tecnica e manutenzione full risk di n.2 angiografi digitali di fabbricazione siemens modello artis zee ceiling (ss/nn 150124 e 150125), comprensivi di relativi poligrafi di fabbricazione siemens modello sensis vibe hemo (s/n 106280) e modello sensis vibe combo (s/n 12 ">
+      <td class="small">2025-06-17</td>
+      <td>SERVIZIO BIENNALE DI ASSISTENZA TECNICA E MANUTENZIONE FULL RISK DI N.2 ANGIOGRAFI DIGITALI DI FABBRICAZIONE SIEMENS MODELLO ARTIS ZEE CEILING (SS/NN 150124 E 150125), COMPRENSIVI DI RELATIVI POLIGRAFI DI FABBRICAZIONE SIEMENS MODELLO SENSIS VIBE HEMO (S/N 106280) E MODELLO SENSIS VIBE COMBO (S/N 12<div class="small muted">CIG B73C444064 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI APPARECCHIATURE DI MISURAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">300 mila €</td></tr><tr data-t="linee analogiche di fonia,collegamenti cdf, canoni housing siti radio tim s.p.a.">
+      <td class="small">2023-02-15</td>
+      <td>LINEE ANALOGICHE DI FONIA,COLLEGAMENTI CDF, CANONI HOUSING SITI RADIO<div class="small muted">CIG 9594044790 · SERVIZI DI GESTIONE CONNESSI ALL&#39;INFORMATICA</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">300 mila €</td></tr><tr data-t="cateteri a pallonci semi complianti per angioplastica ">
+      <td class="small">2024-03-26</td>
+      <td>CATETERI A PALLONCI SEMI COMPLIANTI PER ANGIOPLASTICA<div class="small muted">CIG B0F6E3B6F8 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">300 mila €</td></tr><tr data-t="fornitura ed installazione di n.7 ecotomografi ginecologici per attività di screening oncologico territoriale della cervice uterina da destinare ai consultori della asl avellino ">
+      <td class="small">2024-08-07</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.7 ECOTOMOGRAFI GINECOLOGICI PER ATTIVITÀ DI SCREENING ONCOLOGICO TERRITORIALE DELLA CERVICE UTERINA DA DESTINARE AI CONSULTORI DELLA ASL AVELLINO<div class="small muted">CIG B2B6060068 · ECOGRAFI, ULTRASONOGRAFI E APPARECCHI DOPPLER</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">300 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - cardiologia - nsis 087000 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - CARDIOLOGIA - NSIS 087000<div class="small muted">CIG A04DC79979 · SERVIZI CARDIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">298 mila €</td></tr><tr data-t="lotto 7: sistema di rintracciabilita&#39; per autoclave a vapore e gas plasma alma medical s.r.l.">
+      <td class="small">2023-10-13</td>
+      <td>LOTTO 7: SISTEMA DI RINTRACCIABILITA&#39; PER AUTOCLAVE A VAPORE E GAS PLASMA<div class="small muted">CIG A01B254C0D · MATERIALI MEDICI</div></td>
+      <td>ALMA MEDICAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">298 mila €</td></tr><tr data-t="medival s.r.l.-lotto 59-v a.s. medicazioni specialistiche medica valeggia spa">
+      <td class="small">2025-04-22</td>
+      <td>MEDIVAL S.R.L.-LOTTO 59-V A.S. MEDICAZIONI SPECIALISTICHE<div class="small muted">CIG B696F8E45A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDICA VALEGGIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">296 mila €</td></tr><tr data-t="lotto 19-biotronik italia spa biotronik italia s.p.a.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 19-BIOTRONIK ITALIA SPA<div class="small muted">CIG A021CFF283 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>BIOTRONIK ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">294 mila €</td></tr><tr data-t="a.q. farmaci biosimilari-lotto 22-i grad.-sandoz s.p.a. sandoz s.p.a.">
+      <td class="small">2024-10-18</td>
+      <td>A.Q. FARMACI BIOSIMILARI-LOTTO 22-I GRAD.-SANDOZ S.P.A.<div class="small muted">CIG B3BD20F140 · MEDICINALI VARI</div></td>
+      <td>SANDOZ S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">293 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - diabetologia - nsis 105103 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - DIABETOLOGIA - NSIS 105103<div class="small muted">CIG A04DC86435 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">292 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis cdh525 cd ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS CDH525 CD<div class="small muted">CIG A04B41222B · SERVIZI DI CENTRI DIURNI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">290 mila €</td></tr><tr data-t="assistenza sociosanitaria - anno 2024 - nsis cdh320 cd ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SOCIOSANITARIA - ANNO 2024 - NSIS CDH320 CD<div class="small muted">CIG A04B40EEDA · SERVIZI DI CENTRI DIURNI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">290 mila €</td></tr><tr data-t="lotto 20-medtronic italia spa medtronic italia s.p.a.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 20-MEDTRONIC ITALIA SPA<div class="small muted">CIG A021D17650 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">289 mila €</td></tr><tr data-t="lotto 135 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 135<div class="small muted">CIG B4210D3915 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">288 mila €</td></tr><tr data-t="iii grad.-coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>III GRAD.-COLOPLAST S.P.A.<div class="small muted">CIG A028CD900A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">286 mila €</td></tr><tr data-t="johnson &amp; johnson-lotto 32 johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-01-24</td>
+      <td>JOHNSON &amp; JOHNSON-LOTTO 32<div class="small muted">CIG A0449276E6 · STRUMENTI PER SALA OPERATORIA</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">285 mila €</td></tr><tr data-t="lotto 61 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 61<div class="small muted">CIG B421089C03 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">283 mila €</td></tr><tr data-t="iii grad.-coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>III GRAD.-COLOPLAST S.P.A.<div class="small muted">CIG A028D469FA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">282 mila €</td></tr><tr data-t="stent coronarico in lega metallica a rilascio di farmaco senza polimero ">
+      <td class="small">2024-03-26</td>
+      <td>STENT CORONARICO IN LEGA METALLICA A RILASCIO DI FARMACO SENZA POLIMERO<div class="small muted">CIG B0F6E71389 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">280 mila €</td></tr><tr data-t="stent coronarico in lega cromo-cobalto ">
+      <td class="small">2024-03-26</td>
+      <td>STENT CORONARICO IN LEGA CROMO-COBALTO<div class="small muted">CIG B0F6E69CEC · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">280 mila €</td></tr><tr data-t="stent coronarico in lega metallica ">
+      <td class="small">2024-03-26</td>
+      <td>STENT CORONARICO IN LEGA METALLICA<div class="small muted">CIG B0F6E6BE92 · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">280 mila €</td></tr><tr data-t="contratto assistenza ospedaliera case di cura accreditate 2023 - dgrc 652/2023 integrazione nsis 150144 ">
+      <td class="small">2023-11-16</td>
+      <td>CONTRATTO ASSISTENZA OSPEDALIERA CASE DI CURA ACCREDITATE 2023 - DGRC 652/2023 INTEGRAZIONE NSIS 150144<div class="small muted">CIG A03A1F0971 · SERVIZI MEDICI OSPEDALIERI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">276 mila €</td></tr><tr data-t="lotto 3 ypsomed italia srl">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 3<div class="small muted">CIG B92CA825A8</div></td>
+      <td>YPSOMED ITALIA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">272 mila €</td></tr><tr data-t="lotto 3 ypsomed italia srl">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 3<div class="small muted">CIG B92D0F3674</div></td>
+      <td>YPSOMED ITALIA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">272 mila €</td></tr><tr data-t="lotto 65 ">
+      <td class="small">2024-11-07</td>
+      <td>LOTTO 65<div class="small muted">CIG B42108DF4F · MATERIALI MEDICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">271 mila €</td></tr><tr data-t="sanofi s.r.l. sanofi s.r.l.">
+      <td class="small">2023-09-12</td>
+      <td>SANOFI S.R.L.<div class="small muted">CIG A00A105178 · MEDICINALI VARI</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">270 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - patologia clinica - nsis agg005 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - PATOLOGIA CLINICA - NSIS AGG005<div class="small muted">CIG A04DD06DD3 · SERVIZI PRESTATI DA LABORATORI MEDICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">270 mila €</td></tr><tr data-t="iii grad. coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>III GRAD. COLOPLAST S.P.A.<div class="small muted">CIG A0284785EC · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">270 mila €</td></tr><tr data-t="cannulotomo 3/2 vie monouso, monouso e orientabile, precut ad ago ">
+      <td class="small">2023-03-27</td>
+      <td>CANNULOTOMO 3/2 VIE MONOUSO, MONOUSO E ORIENTABILE, PRECUT AD AGO<div class="small muted">CIG 9626914CBD · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">264 mila €</td></tr><tr data-t="lotto n. 22 cannulotomo a tre/due vie monouso ">
+      <td class="small">2023-11-10</td>
+      <td>LOTTO N. 22 CANNULOTOMO A TRE/DUE VIE MONOUSO<div class="small muted">CIG A00BC2DA6E · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">264 mila €</td></tr><tr data-t="lotto 23-microport crm s.r.l. microport crm s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 23-MICROPORT CRM S.R.L.<div class="small muted">CIG A021D59CC5 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MICROPORT CRM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">264 mila €</td></tr><tr data-t="assistenza riabilitativa ex art.26 - anno 2024 - nsis 150451 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA RIABILITATIVA EX ART.26 - ANNO 2024 - NSIS 150451<div class="small muted">CIG A04B3EE475 · SERVIZI MEDICI SPECIALISTICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">263 mila €</td></tr><tr data-t="lotto 4 - giochemica s.r.l. giochemica s.r.l.">
+      <td class="small">2023-07-03</td>
+      <td>LOTTO 4 - GIOCHEMICA S.R.L.<div class="small muted">CIG 9906205AF7 · ANTISETTICI E DISINFETTANTI</div></td>
+      <td>GIOCHEMICA S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">261 mila €</td></tr><tr data-t="cannulotomo a tre/due vie monouso ">
+      <td class="small">2023-12-29</td>
+      <td>CANNULOTOMO A TRE/DUE VIE MONOUSO<div class="small muted">CIG A03E753BEE · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">256 mila €</td></tr><tr data-t="assistenza specialistica ambulatoriale 2024 - provvisorio dgrc 800/2023 - cardiologia - nsis 087400 ">
+      <td class="small">2023-12-29</td>
+      <td>ASSISTENZA SPECIALISTICA AMBULATORIALE 2024 - PROVVISORIO DGRC 800/2023 - CARDIOLOGIA - NSIS 087400<div class="small muted">CIG A04DC777D3 · SERVIZI CARDIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">255 mila €</td></tr><tr data-t="lotto 18-microport crm s.r.l. microport crm s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 18-MICROPORT CRM S.R.L.<div class="small muted">CIG A021CF389A · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MICROPORT CRM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">255 mila €</td></tr><tr data-t="v grad.-coloplast s.p.a. coloplast - s.p.a.">
+      <td class="small">2023-11-30</td>
+      <td>V GRAD.-COLOPLAST S.P.A.<div class="small muted">CIG A029D39362 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COLOPLAST - S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">254 mila €</td></tr><tr data-t="catetere a palloncino per estrazione calcoli ">
+      <td class="small">2023-12-29</td>
+      <td>CATETERE A PALLONCINO PER ESTRAZIONE CALCOLI<div class="small muted">CIG A03E78338D · STRUMENTI CHIRURGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">253 mila €</td></tr><tr data-t="trasferimento della centrale operativa territoriale di avellino (av) del sires 118 campania dalla sede sita nell&#39;ospedale aorn moscati di avellino ad una nuova sede presso il centro australia sita in contrada amoretta in avellino e per rinnovo contrattuale per n.3 anni dei collegamenti mpls per sist tim s.p.a.">
+      <td class="small">2024-08-16</td>
+      <td>TRASFERIMENTO DELLA CENTRALE OPERATIVA TERRITORIALE DI AVELLINO (AV) DEL SIRES 118 CAMPANIA DALLA SEDE SITA NELL&#39;OSPEDALE AORN MOSCATI DI AVELLINO AD UNA NUOVA SEDE PRESSO IL CENTRO AUSTRALIA SITA IN CONTRADA AMORETTA IN AVELLINO E PER RINNOVO CONTRATTUALE PER N.3 ANNI DEI COLLEGAMENTI MPLS PER SIST<div class="small muted">CIG B2C8A2F2D1 · MANUTENZIONE DI SISTEMI DI COMUNICAZIONE</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">250 mila €</td></tr><tr data-t="lotto 15-microport crm s.r.l. ">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 15-MICROPORT CRM S.R.L.<div class="small muted">CIG A0219F7223 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">249 mila €</td></tr><tr data-t="lotto 5 biochemical systems international s.p.a.">
+      <td class="small">2025-11-19</td>
+      <td>LOTTO 5<div class="small muted">CIG B92DA160AA</div></td>
+      <td>BIOCHEMICAL SYSTEMS INTERNATIONAL S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">249 mila €</td></tr><tr data-t="arrow diagnostics s.r.l. arrow diagnostics srl">
+      <td class="small">2024-01-10</td>
+      <td>ARROW DIAGNOSTICS S.R.L.<div class="small muted">CIG A03F36E94F · SISTEMI DIAGNOSTICI</div></td>
+      <td>ARROW DIAGNOSTICS SRL</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">248 mila €</td></tr><tr data-t="nurex nurex s.r.l.">
+      <td class="small">2024-01-10</td>
+      <td>NUREX<div class="small muted">CIG A03EB44C95 · SISTEMI DIAGNOSTICI</div></td>
+      <td>NUREX S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">244 mila €</td></tr><tr data-t="fornitura ed installazione di n.1 telecomandato digitale da destinare al p.o. di ariano irpino (av) a valere sulle risorse del pnrr ">
+      <td class="small">2023-02-15</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.1 TELECOMANDATO DIGITALE DA DESTINARE AL P.O. DI ARIANO IRPINO (AV) A VALERE SULLE RISORSE DEL PNRR<div class="small muted">CIG 960761785B · APPARECCHI RADIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">244 mila €</td></tr><tr data-t="fornitura ed installazione di n.1 telecomandato digitale da destinare al d.s. di avellino a valere sulle risorse del pnrr ">
+      <td class="small">2023-02-15</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.1 TELECOMANDATO DIGITALE DA DESTINARE AL D.S. DI AVELLINO A VALERE SULLE RISORSE DEL PNRR<div class="small muted">CIG 9607634663 · APPARECCHI RADIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">244 mila €</td></tr><tr data-t="fornitura ed installazione di n.1 telecomandato digitale da destinare al p.o. di sant&#39;angelo dei lombardi (av) a valere sulle risorse del pnrr ">
+      <td class="small">2023-02-15</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.1 TELECOMANDATO DIGITALE DA DESTINARE AL P.O. DI SANT&#39;ANGELO DEI LOMBARDI (AV) A VALERE SULLE RISORSE DEL PNRR<div class="small muted">CIG 96076492C5 · APPARECCHI RADIOLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">244 mila €</td></tr><tr data-t="lotto 3-microport crm s.r.l. microport crm s.r.l.">
+      <td class="small">2023-11-03</td>
+      <td>LOTTO 3-MICROPORT CRM S.R.L.<div class="small muted">CIG A02191DE39 · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>MICROPORT CRM S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">244 mila €</td></tr><tr data-t="fornitura ed installazione di n.22 ecografi digitali portatili ">
+      <td class="small">2024-09-06</td>
+      <td>FORNITURA ED INSTALLAZIONE DI N.22 ECOGRAFI DIGITALI PORTATILI<div class="small muted">CIG B2EE9C0402 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">242 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 3699. L’elenco completo è nel <a href="../contratti/150201.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
+<h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
+       <div class="tablewrap"><table>
+       <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>
+       <tbody><tr><td>OSPEDALE ARIANO IRPINO<div class="small muted">ARIANO IRPINO (AV)</div></td>
+           <td class="num">177</td><td class="num">443</td>
+           <td class="num">86</td><td class="num">2806</td><td class="num">24.087</td></tr><tr><td>OSPEDALE  S.ANGELO DEI LOMBARDI<div class="small muted">SANT&#39;ANGELO DEI LOMBARDI (AV)</div></td>
+           <td class="num">141</td><td class="num">174</td>
+           <td class="num">31</td><td class="num">1716</td><td class="num">40.076</td></tr><tr><td>AZIENDA OSPEDALIERA S. G. MOSCATI<div class="small muted">AVELLINO (AV)</div></td>
+           <td class="num">471</td><td class="num">1796</td>
+           <td class="num">370</td><td class="num">15.735</td><td class="num">131.954</td></tr></tbody></table></div>
+<h2>La regione: Campania</h2>
+  <p class="small muted">Indicatori della regione a cui appartiene questa azienda (dato regionale, non della singola struttura). Approfondisci in <a href="regione/150.html">Campania</a>.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"><a class="seg media" href="apparecchiature.html" style="text-decoration:none"><div class="t">Dotazione tecnologica</div><div class="d"><strong>55,5 TC/mln · 21 robot</strong></div></a><a class="seg media" href="sdo.html" style="text-decoration:none"><div class="t">Volumi di ricovero</div><div class="d"><strong>123,3 ric./1.000 ab.</strong></div></a><a class="seg media" href="siope.html" style="text-decoration:none"><div class="t">Cassa di dicembre</div><div class="d"><strong>1,36× il mese medio</strong></div></a><a class="seg media" href="pnrr-salute.html" style="text-decoration:none"><div class="t">PNRR Missione 6</div><div class="d"><strong>276 €/ab.</strong></div></a></div>
+<h2>Indicatori per anno</h2>
+    <p class="muted small">Ogni riga è un anno di bilancio (modelli CE/SP inviati al MEF). In rosso i risultati in
+    perdita, in verde quelli in utile.</p>
+    <div class="tablewrap"><table>
+    <thead><tr><th scope="col">Anno</th><th class="num" scope="col">Contributi in c/esercizio (A.1)</th><th class="num" scope="col">Valore della produzione (A)</th><th class="num" scope="col">Costi della produzione (B)</th><th class="num" scope="col">Costo del personale</th><th class="num" scope="col">Ammortamenti</th><th class="num" scope="col">Risultato di esercizio</th><th class="num" scope="col">Totale attivo</th><th class="num" scope="col">Patrimonio netto</th><th class="num" scope="col">Debiti</th></tr></thead>
+    <tbody><tr><td>2012</td><td class="num ">489.964.000 €</td><td class="num ">570.297.000 €</td><td class="num ">564.909.000 €</td><td class="num ">120.243.000 €</td><td class="num ">4.526.000 €</td><td class="num neg">-2.467.000 €</td><td class="num ">327.129.000 €</td><td class="num ">32.592.000 €</td><td class="num ">200.569.000 €</td></tr><tr><td>2013</td><td class="num ">499.842.000 €</td><td class="num ">574.438.000 €</td><td class="num ">552.782.000 €</td><td class="num ">119.340.000 €</td><td class="num ">3.883.000 €</td><td class="num pos">16.255.000 €</td><td class="num ">352.703.000 €</td><td class="num ">29.300.000 €</td><td class="num ">241.398.000 €</td></tr><tr><td>2014</td><td class="num ">542.075.000 €</td><td class="num ">619.293.000 €</td><td class="num ">607.043.000 €</td><td class="num ">115.206.000 €</td><td class="num ">4.022.000 €</td><td class="num pos">236.000 €</td><td class="num ">365.055.000 €</td><td class="num ">32.722.000 €</td><td class="num ">238.456.000 €</td></tr><tr><td>2015</td><td class="num ">532.982.000 €</td><td class="num ">610.436.000 €</td><td class="num ">607.317.000 €</td><td class="num ">114.697.000 €</td><td class="num ">4.399.000 €</td><td class="num pos">3.105.000 €</td><td class="num ">386.053.000 €</td><td class="num ">41.179.000 €</td><td class="num ">251.268.000 €</td></tr><tr><td>2016</td><td class="num ">632.247.000 €</td><td class="num ">713.961.000 €</td><td class="num ">701.559.000 €</td><td class="num ">112.313.000 €</td><td class="num ">4.864.000 €</td><td class="num pos">197.000 €</td><td class="num ">401.209.000 €</td><td class="num ">47.595.000 €</td><td class="num ">237.712.000 €</td></tr><tr><td>2017</td><td class="num ">635.427.000 €</td><td class="num ">725.484.000 €</td><td class="num ">714.360.000 €</td><td class="num ">108.933.000 €</td><td class="num ">4.967.000 €</td><td class="num pos">58.000 €</td><td class="num ">391.988.000 €</td><td class="num ">45.928.000 €</td><td class="num ">226.016.000 €</td></tr><tr><td>2018</td><td class="num ">653.283.304 €</td><td class="num ">739.931.405 €</td><td class="num ">727.717.295 €</td><td class="num ">104.277.307 €</td><td class="num ">5.445.842 €</td><td class="num pos">301.279 €</td><td class="num ">365.643.000 €</td><td class="num ">41.608.000 €</td><td class="num ">198.198.000 €</td></tr><tr><td>2019</td><td class="num ">647.629.137 €</td><td class="num ">738.784.923 €</td><td class="num ">728.927.227 €</td><td class="num ">92.318.299 €</td><td class="num ">4.886.988 €</td><td class="num pos">58.181 €</td><td class="num ">390.857.088 €</td><td class="num ">41.563.075 €</td><td class="num ">212.202.626 €</td></tr><tr><td>2020</td><td class="num ">680.133.847 €</td><td class="num ">763.470.745 €</td><td class="num ">753.265.002 €</td><td class="num ">91.169.520 €</td><td class="num ">5.460.509 €</td><td class="num pos">31.339 €</td><td class="num ">426.935.726 €</td><td class="num ">42.331.601 €</td><td class="num ">210.127.859 €</td></tr><tr><td>2021</td><td class="num ">669.910.676 €</td><td class="num ">776.464.545 €</td><td class="num ">769.352.162 €</td><td class="num ">90.821.384 €</td><td class="num ">4.801.624 €</td><td class="num pos">128.321 €</td><td class="num ">427.445.838 €</td><td class="num ">39.293.180 €</td><td class="num ">204.305.059 €</td></tr><tr><td>2022</td><td class="num ">679.796.357 €</td><td class="num ">791.483.738 €</td><td class="num ">788.074.327 €</td><td class="num ">96.372.641 €</td><td class="num ">5.162.098 €</td><td class="num pos">82.579 €</td><td class="num ">439.901.807 €</td><td class="num ">36.304.524 €</td><td class="num ">201.345.378 €</td></tr><tr><td>2023</td><td class="num ">717.028.170 €</td><td class="num ">830.443.668 €</td><td class="num ">831.217.860 €</td><td class="num ">102.256.594 €</td><td class="num ">6.291.786 €</td><td class="num pos">4276 €</td><td class="num ">444.200.767 €</td><td class="num ">61.702.253 €</td><td class="num ">182.086.752 €</td></tr><tr><td>2024</td><td class="num ">746.972.825 €</td><td class="num ">875.079.216 €</td><td class="num ">884.816.476 €</td><td class="num ">104.392.193 €</td><td class="num ">6.551.412 €</td><td class="num pos">59.419 €</td><td class="num ">414.779.108 €</td><td class="num ">69.120.436 €</td><td class="num ">164.761.673 €</td></tr></tbody></table></div>
+<h2>Conto economico dettagliato <span class="small muted">(2024)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>A.1) Contributi in c/esercizio</td><td class="num">746.972.825 €</td></tr><tr><td>A.1.A) Contributi da Regione o Prov. Aut. per quota F.S. regionale</td><td class="num">738.388.915 €</td></tr><tr><td>A.1.B) Contributi c/esercizio (extra fondo)</td><td class="num">8.583.910 €</td></tr><tr><td>A.2) Rettifica contributi c/esercizio per destinazione ad investimenti</td><td class="num">-3.009.620 €</td></tr><tr><td>A.2.A) Rettifica contributi in c/esercizio per destinazione ad investimenti - da Regione o Prov. Aut. per quota F.S. regionale</td><td class="num">-3.009.620 €</td></tr><tr><td>A.3) Utilizzo fondi per quote inutilizzate contributi finalizzati e vincolati di esercizi precedenti</td><td class="num">23.036.257 €</td></tr><tr><td>A.3.A) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da Regione o Prov. Aut. per quota F.S. regionale indistinto finalizzato</td><td class="num">11.392.922 €</td></tr><tr><td>A.3.B) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da Regione o Prov. Aut. per quota F.S. regionale vincolato</td><td class="num">11.179.633 €</td></tr><tr><td>A.3.C) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da soggetti pubblici (extra fondo) vincolati</td><td class="num">463.637 €</td></tr><tr><td>A.3.E) Utilizzo fondi per quote inutilizzate contributi vincolati di esercizi precedenti da privati</td><td class="num">66 €</td></tr><tr><td>A.4) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria</td><td class="num">85.720.997 €</td></tr><tr><td>A.4.A) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a soggetti pubblici</td><td class="num">78.770.304 €</td></tr><tr><td>A.4.B) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate da privati v/residenti Extraregione in compensazione (mobilita&#39; attiva)</td><td class="num">5.768.677 €</td></tr><tr><td>A.4.C) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a privati</td><td class="num">623.016 €</td></tr><tr><td>A.4.D) Ricavi per prestazioni sanitarie erogate in regime di intramoenia</td><td class="num">559.000 €</td></tr><tr><td>A.5) Concorsi, recuperi e rimborsi</td><td class="num">12.629.230 €</td></tr><tr><td>A.5.A) Rimborsi assicurativi</td><td class="num">133.964 €</td></tr><tr><td>A.5.C) Concorsi, recuperi e rimborsi da Aziende sanitarie pubbliche della Regione</td><td class="num">2.615.028 €</td></tr><tr><td>A.5.D) Concorsi, recuperi e rimborsi da altri soggetti pubblici</td><td class="num">79.092 €</td></tr><tr><td>A.5.E) Concorsi, recuperi e rimborsi da privati</td><td class="num">9.801.145 €</td></tr><tr><td>A.6) Compartecipazione alla spesa per prestazioni sanitarie (Ticket)</td><td class="num">2.237.386 €</td></tr><tr><td>A.6.A) Compartecipazione alla spesa per prestazioni sanitarie - Ticket sulle prestazioni di specialistica ambulatoriale e APA-PAC</td><td class="num">2.236.007 €</td></tr><tr><td>A.6.B) Compartecipazione alla spesa per prestazioni sanitarie - Ticket sul pronto soccorso</td><td class="num">1380 €</td></tr><tr><td>A.7) Quota contributi c/capitale imputata all&#39;esercizio</td><td class="num">6.553.379 €</td></tr><tr><td>A.7.A) Quota imputata all&#39;esercizio dei finanziamenti per investimenti dallo Stato</td><td class="num">989.262 €</td></tr><tr><td>A.7.B) Quota imputata all&#39;esercizio dei finanziamenti per investimenti da Regione</td><td class="num">1.761.610 €</td></tr><tr><td>A.7.D) Quota imputata all&#39;esercizio dei contributi in c/ esercizio FSR destinati ad investimenti</td><td class="num">3.626.797 €</td></tr><tr><td>A.7.E) Quota imputata all&#39;esercizio degli altri contributi in c/ esercizio destinati ad investimenti</td><td class="num">1968 €</td></tr><tr><td>A.7.F) Quota imputata all&#39;esercizio di altre poste del patrimonio netto</td><td class="num">173.743 €</td></tr><tr><td>A.9) Altri ricavi e proventi</td><td class="num">938.762 €</td></tr><tr><td>A.9.A) Ricavi per prestazioni non sanitarie</td><td class="num">22.989 €</td></tr><tr><td>A.9.B) Fitti attivi ed altri proventi da attivita&#39; immobiliari</td><td class="num">126.867 €</td></tr><tr><td>A.9.C) Altri proventi diversi</td><td class="num">788.906 €</td></tr><tr><td>Totale valore della produzione (A)</td><td class="num">875.079.216 €</td></tr><tr><td>B.1) Acquisti di beni</td><td class="num">118.026.457 €</td></tr><tr><td>B.1.A) Acquisti di beni sanitari</td><td class="num">117.019.082 €</td></tr><tr><td>B.1.B) Acquisti di beni non sanitari</td><td class="num">1.007.375 €</td></tr><tr><td>B.2) Acquisti di servizi</td><td class="num">609.434.429 €</td></tr><tr><td>B.2.A) Acquisti servizi sanitari</td><td class="num">579.082.411 €</td></tr><tr><td>B.2.B) Acquisti di servizi non sanitari</td><td class="num">30.352.017 €</td></tr><tr><td>B.3) Manutenzione e riparazione (ordinaria esternalizzata)</td><td class="num">7.483.301 €</td></tr><tr><td>B.3.A) Manutenzione e riparazione ai fabbricati e loro pertinenze</td><td class="num">1.882.037 €</td></tr><tr><td>B.3.B) Manutenzione e riparazione agli impianti e macchinari</td><td class="num">4.000.780 €</td></tr><tr><td>B.3.C) Manutenzione e riparazione alle attrezzature sanitarie e scientifiche</td><td class="num">1.444.582 €</td></tr><tr><td>B.3.D) Manutenzione e riparazione ai mobili e arredi</td><td class="num">2177 €</td></tr><tr><td>B.3.E) Manutenzione e riparazione agli automezzi</td><td class="num">117.268 €</td></tr><tr><td>B.3.F) Altre manutenzioni e riparazioni</td><td class="num">36.457 €</td></tr><tr><td>B.4) Godimento di beni di terzi</td><td class="num">6.800.997 €</td></tr><tr><td>B.4.A) Fitti passivi</td><td class="num">655.704 €</td></tr><tr><td>B.4.B) Canoni di noleggio</td><td class="num">6.145.292 €</td></tr><tr><td>Totale Costo del personale</td><td class="num">104.392.193 €</td></tr><tr><td>B.5) Personale del ruolo sanitario</td><td class="num">78.768.544 €</td></tr><tr><td>B.5.A) Costo del personale dirigente ruolo sanitario</td><td class="num">42.889.949 €</td></tr><tr><td>B.5.B) Costo del personale comparto ruolo sanitario</td><td class="num">35.878.595 €</td></tr><tr><td>B.6) Personale del ruolo professionale</td><td class="num">785.437 €</td></tr><tr><td>B.6.A) Costo del personale dirigente ruolo professionale</td><td class="num">738.382 €</td></tr><tr><td>B.6.B) Costo del personale comparto ruolo professionale</td><td class="num">47.055 €</td></tr><tr><td>B.7) Personale del ruolo tecnico</td><td class="num">13.184.289 €</td></tr><tr><td>B.7.A) Costo del personale dirigente ruolo tecnico</td><td class="num">685.596 €</td></tr><tr><td>B.7.B) Costo del personale comparto ruolo tecnico</td><td class="num">12.498.693 €</td></tr><tr><td>B.8) Personale del ruolo amministrativo</td><td class="num">11.653.923 €</td></tr><tr><td>B.8.A) Costo del personale dirigente ruolo amministrativo</td><td class="num">1.249.742 €</td></tr><tr><td>B.8.B) Costo del personale comparto ruolo amministrativo</td><td class="num">10.404.181 €</td></tr><tr><td>B.9) Oneri diversi di gestione</td><td class="num">1.429.395 €</td></tr><tr><td>B.9.A) Imposte e tasse (escluso IRAP e IRES)</td><td class="num">488.162 €</td></tr><tr><td>B.9.C) Altri oneri diversi di gestione</td><td class="num">941.233 €</td></tr><tr><td>Totale Ammortamenti</td><td class="num">6.551.412 €</td></tr><tr><td>B.10) Ammortamenti delle immobilizzazioni immateriali</td><td class="num">300.746 €</td></tr><tr><td>B.11) Ammortamenti delle immobilizzazioni materiali</td><td class="num">6.250.666 €</td></tr><tr><td>B.11.A) Ammortamento dei fabbricati</td><td class="num">2.372.241 €</td></tr><tr><td>B.11.B) Ammortamenti delle altre immobilizzazioni materiali</td><td class="num">3.878.425 €</td></tr><tr><td>B.12) Svalutazione delle immobilizzazioni e dei crediti</td><td class="num">500.000 €</td></tr><tr><td>B.12.B) Svalutazione dei crediti</td><td class="num">500.000 €</td></tr><tr><td>B.13) Variazione delle rimanenze</td><td class="num">-2.576.692 €</td></tr><tr><td>B.13.A) Variazione rimanenze sanitarie</td><td class="num">-2.479.486 €</td></tr><tr><td>B.13.B) Variazione rimanenze non sanitarie</td><td class="num">-97.206 €</td></tr><tr><td>B.14) Accantonamenti dell&#39;esercizio</td><td class="num">32.774.984 €</td></tr><tr><td>B.14.A) Accantonamenti per rischi</td><td class="num">16.791.639 €</td></tr><tr><td>B.14.B) Accantonamenti per premio di operosita&#39; (SUMAI)</td><td class="num">523.000 €</td></tr><tr><td>B.14.C) Accantonamenti per quote inutilizzate di contributi finalizzati e vincolati</td><td class="num">8.468.762 €</td></tr><tr><td>B.14.D) Altri accantonamenti</td><td class="num">6.991.583 €</td></tr><tr><td>Totale costi della produzione (B)</td><td class="num">884.816.476 €</td></tr><tr><td>C.1) Interessi attivi</td><td class="num">11.155 €</td></tr><tr><td>C.1.A) Interessi attivi su c/tesoreria unica</td><td class="num">2024 €</td></tr><tr><td>C.1.B) Interessi attivi su c/c postali e bancari</td><td class="num">9132 €</td></tr><tr><td>C.2) Altri proventi</td><td class="num">122 €</td></tr><tr><td>C.2.D) Altri proventi finanziari diversi dai precedenti</td><td class="num">122 €</td></tr><tr><td>C.3) Interessi passivi</td><td class="num">3840 €</td></tr><tr><td>C.3.C) Altri interessi passivi</td><td class="num">3840 €</td></tr><tr><td>C.4) Altri oneri</td><td class="num">5343 €</td></tr><tr><td>C.4.A) Altri oneri finanziari</td><td class="num">5343 €</td></tr><tr><td>Totale proventi e oneri finanziari (C)</td><td class="num">2094 €</td></tr><tr><td>E.1) Proventi straordinari</td><td class="num">23.317.439 €</td></tr><tr><td>E.1.B) Altri proventi straordinari</td><td class="num">23.317.439 €</td></tr><tr><td>E.2) Oneri straordinari</td><td class="num">4.783.643 €</td></tr><tr><td>E.2.A) Minusvalenze</td><td class="num">1967 €</td></tr><tr><td>E.2.B) Altri oneri straordinari</td><td class="num">4.781.676 €</td></tr><tr><td>Totale proventi e oneri straordinari (E)</td><td class="num">18.533.796 €</td></tr><tr><td>Risultato prima delle imposte (A - B +/- C +/- D +/- E)</td><td class="num">8.798.630 €</td></tr><tr><td>Y.1) IRAP</td><td class="num">8.669.962 €</td></tr><tr><td>Y.1.A) IRAP relativa a personale dipendente</td><td class="num">7.409.439 €</td></tr><tr><td>Y.1.B) IRAP relativa a collaboratori e personale assimilato a lavoro dipendente</td><td class="num">1.234.334 €</td></tr><tr><td>Y.1.C) IRAP relativa ad attivita&#39; di libera professione (intramoenia)</td><td class="num">26.188 €</td></tr><tr><td>Y.2) IRES</td><td class="num">69.249 €</td></tr><tr><td>Y.2.A) IRES su attivita&#39; istituzionale</td><td class="num">69.249 €</td></tr><tr><td>Totale imposte e tasse (Y)</td><td class="num">8.739.211 €</td></tr><tr><td>RISULTATO DI ESERCIZIO</td><td class="num">59.419 €</td></tr></tbody></table></div>
+<h2>Stato patrimoniale <span class="small muted">(2024)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>A) IMMOBILIZZAZIONI</td><td class="num">59.729.930 €</td></tr><tr><td>B) ATTIVO CIRCOLANTE</td><td class="num">354.924.455 €</td></tr><tr><td>C) RATEI E RISCONTI ATTIVI</td><td class="num">124.723 €</td></tr><tr><td>A) PATRIMONIO NETTO</td><td class="num">69.120.436 €</td></tr><tr><td>B) FONDI PER RISCHI E ONERI</td><td class="num">172.432.203 €</td></tr><tr><td>C) TRATTAMENTO FINE RAPPORTO</td><td class="num">8.464.795 €</td></tr><tr><td>D) DEBITI</td><td class="num">164.761.673 €</td></tr></tbody></table></div>
+
+<p class="small muted" style="margin-top:26px">Fonte: <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>
+(modelli CE/SP del SSN) e <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a>. Importi in euro dai consuntivi.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a> ·
+  <a href="../accessibilita.html">Accessibilità</a> · <a href="../feed.xml">RSS</a></p>
+</div></footer>
+<script>
+/* Мобилна навигация: hamburger отваря/затваря менюто. Достъпно —
+   aria-expanded, Escape връща фокуса на бутона, клик навън затваря.
+   На desktop бутонът е display:none, менюто винаги видимо → скриптът е инертен. */
+(function(){
+  var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
+  if(!b||!n)return;
+  function aperto(){return b.getAttribute('aria-expanded')==='true';}
+  function apri(){b.setAttribute('aria-expanded','true');b.setAttribute('aria-label','Chiudi il menu');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Apri il menu di navigazione');n.classList.remove('open');}
+  b.addEventListener('click',function(){aperto()?chiudi():apri();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
+  });
+  document.addEventListener('click',function(e){
+    if(!aperto())return;
+    if(b.contains(e.target)||n.contains(e.target))return;
+    chiudi();
+  });
+})();
+/* Тема: 2-състоен превключвател светла⇄тъмна. Записът в localStorage печели над
+   системата; без запис = авто (prefers-color-scheme). aria-pressed=„тъмна активна". */
+(function(){
+  var t=document.querySelector('.theme-toggle');
+  if(!t)return;
+  var mq=window.matchMedia('(prefers-color-scheme:dark)');
+  function effettivo(){var d=document.documentElement.dataset.theme;return d?d:(mq.matches?'dark':'light');}
+  function aggiorna(){t.setAttribute('aria-pressed',effettivo()==='dark'?'true':'false');}
+  t.addEventListener('click',function(){
+    var nuovo=effettivo()==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=nuovo;
+    try{localStorage.setItem('ost-theme',nuovo);}catch(e){}
+    aggiorna();
+  });
+  aggiorna();
+  // Смяна на системната тема на живо (без ръчен избор) → обнови aria-pressed.
+  mq.addEventListener('change',function(){if(!document.documentElement.dataset.theme)aggiorna();});
+})();
+</script>
+</body>
+</html>

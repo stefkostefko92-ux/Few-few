@@ -203,6 +203,7 @@ export class GLTable {
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0005;
+    key.shadow.radius = 3; // soft PCF penumbra under the phenolic spheres
     const sc = key.shadow.camera;
     sc.left = -1.4; sc.right = 1.4; sc.top = 1.0; sc.bottom = -1.0; sc.near = 0.5; sc.far = 8;
     this.scene.add(key);

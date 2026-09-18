@@ -1,0 +1,25 @@
+{
+  "anni": {
+    "da": 2012,
+    "a": 2024
+  },
+  "includiTrimestrali": false,
+  "anacAnni": [
+    2023,
+    2024,
+    2025
+  ],
+  "siteUrl": "https://ospedalitrasparenti.it",
+  "indexNowKey": "5b4aa30a56f781cd13180f778257e0e2",
+  "titolare": {
+    "nome": "Carbon Stealth VCC",
+    "indirizzo": "ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
+    "eik": "BG208725180",
+    "email": "info@carbonstealth.eu",
+    "telefono": "+39 379 296 9699"
+  },
+  "hosting": {
+    "provider": "Hetzner Online GmbH (Norimberga, Germania — UE)",
+    "trasferimento": ""
+  }
+}

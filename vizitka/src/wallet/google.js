@@ -52,7 +52,10 @@ function genericObject(profile, base) {
   return {
     id: objectId(profile.id),
     classId: googleClassId(),
-    state: 'ACTIVE',
+    // Скрие ли собственикът визитката, картата се маркира изтекла — иначе
+    // обновяването продължаваше да разнася контактите по вече запазилите я
+    // устройства (Apple пътят го спазва през 404 на update услугата).
+    state: profile.is_public ? 'ACTIVE' : 'EXPIRED',
     hexBackgroundColor: cardBgHex(profile),
     logo: { sourceUri: { uri: `${base}/logo.png` } },
     cardTitle: { defaultValue: { language: 'bg', value: 'Vizitka' } },

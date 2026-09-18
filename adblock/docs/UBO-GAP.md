@@ -87,11 +87,47 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
 ---
 
 ## Предложена подредба за спринтове
-1. Scriptlet engine + топ 15 scriptlet-а (№1) — най-голям скок; генерализира YT хаковете
-2. Surrogate redirects (№2) — веднага маха счупени сайтове
-3. DNR modifyHeaders слой: `$csp` + `$permissions` + `removeheader` (№3-5, един пайплайн)
-4. Процедурни оператори: matches-attr/matches-path/style/remove-attr/remove-class (№7)
-5. Subscribe-by-URL + zapper + per-site no-cosmetics (№8)
+1. ✅ **Scriptlet engine (№1) — ИЗПЪЛНЕНО (v4.4.0)** — 12 scriptlet-а в MAIN world
+2. ✅ **Surrogate redirects (№2) — ИЗПЪЛНЕНО (v4.1.0)** — GPT/adsbygoogle/GA/apstag стъбове
+3. ✅ **DNR modifyHeaders (№3-5) — ИЗПЪЛНЕНО (v4.2.0)** — Topics/FLoC/Protected-Audience Permissions-Policy
+4. ✅ **Процедурни оператори (№7) — ИЗПЪЛНЕНО (v4.1.1)** — matches-attr/matches-path/style/remove-attr/remove-class
+5. ✅ **Subscribe-by-URL + zapper (№8) — ИЗПЪЛНЕНО (v4.3.0)**
+
+### Scriptlet engine — как е реализиран (v4.4.0)
+Точно uBOL моделът: КОДЪТ е в пакета, per-site ДАННИТЕ се пекат при билда.
+- `scriptlets/engine.js` — clean-room (MIT) имплементации на 12 scriptlet-а +
+  bootstrap. Шаблон с `/*__SCRIPTLET_MAP__*/` инжекционна точка.
+- `scriptlets/list.txt` — курирани `##+js(...)` директиви (данни). Консервативен:
+  само неутрализация на анти-адблок детектори (не чупи легитимно съдържание).
+- `tools/build_scriptlets.mjs` — компилатор: валидира всяко име (ALIASES allowlist),
+  всеки аргумент (без `__proto__/constructor/prototype`, без markup, дължина),
+  set-constant стойност само от фиксиран речник → пече `scriptlets/main.js`.
+- `background.js::syncScriptlets()` — регистрира `main.js` през
+  `chrome.scripting.registerContentScripts({ world:"MAIN", runAt:"document_start" })`
+  динамично (спазва глобалния toggle + allowlist чрез `excludeMatches`).
+- Реализирани: `set-constant`, `abort-on-property-read/-write`, `abort-current-script`,
+  `no-setTimeout-if`, `no-setInterval-if`, `addEventListener-defuser`, `json-prune`,
+  `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class` (+ uBO алиаси).
+
+### Остатъчно / следващо
+- ✅ **Scriptlet engine — live channel — ИЗПЪЛНЕНО (v4.6.0).** `filters.json` носи
+  `scriptlets: [{h, n, a}]` (само ДАННИ). background канонизира алиасите и валидира
+  като билда; content.js подава списъка като JSON низ на DOM събитие; engine-ът го
+  **ре-валидира** (allowlist = IMPL ключове, argument safety, set-constant речник),
+  филтрира по host и игнорира дубли. Честно: кооперираща страница може само да се
+  откаже от live директиви за СЕБЕ СИ (без ескалация, без code/network sink). Live =
+  само изричен host; никога на YouTube/core CDN (service worker + engine). Селектори/
+  атрибути/тагове минават през safeSelector + denylist на двата слоя.
+  Level 2 = hook-овете се слагат при пристигане (след document_start) — за
+  не-timing-critical директиви; timing-critical остават печени в MAP.
+- **`trusted-*` варианти** — само от нашия Ed25519-подписан канал; не в v1.
+- ✅ Добавени (v4.6.0): `href-sanitizer`, `remove-node-text`/`rmnt`, `nowebrtc`.
+- ✅ Добавени (v4.7.0): `abort-on-stack-trace`/`aost`, `set-cookie`, `remove-cookie` (последният
+  само от печения списък). Roster: 18 scriptlet-а — пълен спрямо приоритетния uBO списък.
+
+> ⚠️ **Преди Web Store submission:** курираните site-specific директиви (ако се добавят
+> към глобалните анти-адблок) трябва да минат жив тест на реална страница —
+> особено `set-constant` timing при document_start срещу реален анти-адблок сайт.
 
 Източници: github.com/gorhill/uBlock/wiki (Resources-Library, Procedural-cosmetic-filters,
 Static-filter-syntax) · uBOL FAQ.

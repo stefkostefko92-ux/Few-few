@@ -2,7 +2,7 @@
 // Public archive pages are reachable without auth, so every link must carry
 // an unguessable token (cuids are not secrets; transcripts contain PII).
 
-import { randomBytes } from "crypto";
+import { randomBytes, timingSafeEqual } from "crypto";
 import { prisma } from "./prisma.js";
 
 export function newArchiveToken() {
@@ -34,5 +34,13 @@ export async function ensureArchiveToken(ticketId, existingToken = undefined) {
  * Constant-shape check used by the public viewer routes.
  */
 export function archiveTokenMatches(ticket, providedToken) {
-  return Boolean(ticket?.archiveToken && providedToken && ticket.archiveToken === String(providedToken));
+  const stored = ticket?.archiveToken;
+  if (!stored || providedToken == null) return false;
+  const a = Buffer.from(String(stored));
+  const b = Buffer.from(String(providedToken));
+  // timingSafeEqual хвърля при различна дължина — дължината на токена е
+  // публична (32 hex знака), затова сравнението ѝ първо не изтича тайна.
+  // Константно-времево като останалия таен-сравнителен код (topgg/bot secret).
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }

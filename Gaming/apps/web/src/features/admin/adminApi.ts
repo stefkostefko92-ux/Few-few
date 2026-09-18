@@ -158,6 +158,72 @@ export interface Page<T> {
   nextCursor: string | null;
 }
 
+export interface LiveRoomSeat {
+  seat: number;
+  displayName: string;
+  isBot: boolean;
+  connected: boolean;
+  substituted: boolean;
+}
+export interface LiveRoom {
+  matchId: string;
+  game: string;
+  ply: number;
+  ageMs: number;
+  turn: number | null;
+  seats: LiveRoomSeat[];
+}
+
+export interface AdminProduct {
+  id: string;
+  kind: string;
+  sku: string;
+  priceCents: number;
+  gems: number | null;
+  chips: number | null;
+  cosmeticId: string | null;
+  active: boolean;
+}
+export interface ProductCreate {
+  sku: string;
+  kind: string;
+  priceCents: number;
+  gems?: number | null;
+  chips?: number | null;
+  cosmeticId?: string | null;
+  active?: boolean;
+}
+export interface ProductPatch {
+  priceCents?: number;
+  gems?: number | null;
+  chips?: number | null;
+  cosmeticId?: string | null;
+  active?: boolean;
+}
+
+export interface OrderItem {
+  id: string;
+  stripeId: string;
+  status: string;
+  createdAt: string;
+  userId: string;
+  userName: string | null;
+  userEmail: string | null;
+  sku: string | null;
+  kind: string | null;
+  priceCents: number;
+}
+
+export interface AdminAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string | null;
+}
+
 // ── Calls ────────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -181,4 +247,36 @@ export const adminApi = {
       body: JSON.stringify({ status }),
     }),
   timeseries: (days = 14) => request<EconomyResponse>(`/admin/stats/timeseries${qs({ days })}`),
+
+  // Live tables (§14)
+  rooms: () => request<{ rooms: LiveRoom[]; reachable: boolean }>("/admin/rooms"),
+
+  // Store products
+  products: () => request<{ products: AdminProduct[] }>("/admin/products"),
+  createProduct: (input: ProductCreate) =>
+    request<{ product: AdminProduct }>("/admin/products", { method: "POST", body: JSON.stringify(input) }),
+  updateProduct: (id: string, patch: ProductPatch) =>
+    request<{ product: AdminProduct }>(`/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+
+  // Orders / refunds
+  orders: (status: string, cursor?: string) =>
+    request<Page<OrderItem>>(`/admin/orders${qs({ status, cursor })}`),
+  refundOrder: (id: string, clawback: boolean) =>
+    request<{ ok: true; clawedGems: number; clawedChips: number }>(`/admin/orders/${id}/refund`, {
+      method: "POST",
+      body: JSON.stringify({ clawback }),
+    }),
+
+  // In-app announcements
+  announcements: () => request<{ items: AdminAnnouncement[] }>("/admin/announcements"),
+  createAnnouncement: (input: { title: string; body: string; expiresAt?: string | null }) =>
+    request<{ announcement: AdminAnnouncement }>("/admin/announcements", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  setAnnouncementActive: (id: string, active: boolean) =>
+    request<{ announcement: AdminAnnouncement }>(`/admin/announcements/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ active }),
+    }),
 };

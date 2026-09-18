@@ -11,6 +11,19 @@ selene --config tools/fivem/selene.toml .            # argument/type прове�
 `.luacheckrc` декларира CitizenFX/ox/framework глобалите — иначе luacheck вдига
 фалшиви тревоги (CfxLua ≠ vanilla Lua 5.4: vector3/quat/source и т.н.).
 
+## `manifest-lint.mjs` — zero-dep pre-ship линтер (тестът в CI; CLI върху ресурс ръчно)
+```bash
+node tools/fivem/manifest-lint.mjs path/to/resource
+```
+Хваща без сървър, без зависимости (за разлика от luacheck/selene, които искат инсталация):
+- **HIGH** — непълен `fxmanifest.lua` (липсва `fx_version`); client-authoritative пари/предмети
+  без сървърна заявка; сървърен net event handler без проверка на `source`; SQL чрез конкатенация;
+  твърдо вписана тайна.
+- **MEDIUM** — `__resource.lua` (остарял); липсва `game`; native в плътен цикъл без `Wait`.
+
+Изход: `0` = чисто/само INFO; `1` = има HIGH. Тестван (`manifest-lint.test.mjs`), пуска се и в
+агентския sweep. Допълва (не заменя) luacheck/selene/busted по-долу.
+
 ## Unit тестове (логика, не natives)
 Мокни natives и тествай чистата сървърна логика с **busted**:
 ```lua

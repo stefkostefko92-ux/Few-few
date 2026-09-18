@@ -8,16 +8,24 @@ import {
 } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import EmptyState from "../components/EmptyState";
+import { useT } from "../contexts/I18nContext";
+import { useToast } from "../contexts/ToastContext";
 
 const defaultForm = () => ({
   name: "",
   url: "",
   secret: "",
+  // Тайната НИКОГА не идва обратно от API-то (само `hasSecret`). „Промени" е
+  // празно поле: празно при запис = запази старата; отметката = махни я.
+  hasSecret: false,
+  clearSecret: false,
   enabled: true,
   events: [],
 });
 
 export default function WebhooksPage() {
+  const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | id
@@ -36,23 +44,33 @@ export default function WebhooksPage() {
   });
   const ALL_EVENTS = eventsData?.events || [];
 
+  // Провалите потъваха безследно (нямаше onError) — модалът се затваряше или
+  // висеше без обяснение (класът „лъжеща грешка", одит 10.08.2026). Формените
+  // мутации показват грешката В модала (formError), delete — като toast.
+  const toast = useToast();
+  const mutErr = (err) => err?.response?.data?.error || t("auto.actionFailed");
   const createMut = useMutation({
     mutationFn: (data) => createWebhook(serverId, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); },
+    onError: (err) => setFormError(mutErr(err)),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => updateWebhook(serverId, id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks", serverId] }); setEditing(null); },
+    onError: (err) => setFormError(mutErr(err)),
   });
   const deleteMut = useMutation({
     mutationFn: (id) => deleteWebhook(serverId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks", serverId] }),
+    onError: (err) => toast.error(mutErr(err)),
   });
 
   const openNew = () => { setForm(defaultForm()); setFormError(null); setEditing("new"); };
   const openEdit = (h) => {
     setForm({
-      name: h.name, url: h.url, secret: h.secret || "",
+      name: h.name, url: h.url,
+      // API-то вече не връща тайната — само дали има такава.
+      secret: "", hasSecret: Boolean(h.hasSecret), clearSecret: false,
       enabled: h.enabled, events: h.events || [],
     });
     setFormError(null);
@@ -70,7 +88,7 @@ export default function WebhooksPage() {
     e.preventDefault();
     setFormError(null);
     if (form.events.length === 0) {
-      setFormError("Select at least one event.");
+      setFormError(t("webhooks.selectEvent"));
       return;
     }
     const payload = {
@@ -78,27 +96,30 @@ export default function WebhooksPage() {
       url: form.url,
       enabled: form.enabled,
       events: form.events,
-      secret: form.secret || null,
     };
+    // Договор с API-то: липсващ ключ = не пипай · null = махни · низ = смени.
+    // Досега празното поле пращаше `null` и при всяко редактиране на име или
+    // събития тихо ТРИЕШЕ тайната — клиентът виждаше „запазено", а подписването
+    // спираше. Сега празно значи „запази", а махането е изрично действие.
+    if (form.clearSecret) payload.secret = null;
+    else if (form.secret) payload.secret = form.secret;
     if (editing === "new") createMut.mutate(payload);
     else updateMut.mutate({ id: editing, data: payload });
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <WebhookIcon className="w-7 h-7 text-cs-cyan" /> Webhooks
+            <WebhookIcon className="w-7 h-7 text-cs-cyan" /> {t("webhooks.title")}
           </h1>
           <p className="text-cs-muted mt-2 max-w-2xl">
-            Subscribe external services to Supreme Bot events. Each webhook gets an HTTP POST with a JSON payload.
-            If you set a secret, payloads are signed with <code className="text-cs-cyan">X-Supreme Bot-Signature: sha256=…</code> (HMAC-SHA256 of the body).
-            Webhooks with 10 consecutive failures are automatically disabled.
+            {t("webhooks.subtitle")}
           </p>
         </div>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Webhook
+          <Plus className="w-4 h-4" /> {t("webhooks.new")}
         </button>
       </div>
 
@@ -106,15 +127,18 @@ export default function WebhooksPage() {
 
       {!isLoading && isError && (
         <div role="alert" className="cs-card text-center py-12 text-danger">
-          Couldn't load webhooks — please retry.
+          {t("webhooks.loadError")}
         </div>
       )}
 
       {!isLoading && !isError && hooks.length === 0 && (
-        <div className="cs-card text-center py-12">
-          <WebhookIcon className="w-12 h-12 text-cs-dim mx-auto mb-4" />
-          <p className="text-cs-muted">No webhooks configured yet.</p>
-        </div>
+        <EmptyState
+          icon={WebhookIcon}
+          title={t("webhooks.emptyTitle")}
+          description={t("webhooks.emptyBody")}
+          ctaLabel={t("webhooks.emptyCta")}
+          onCtaClick={openNew}
+        />
       )}
 
       <div className="space-y-3">
@@ -124,30 +148,30 @@ export default function WebhooksPage() {
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-cs-text font-bold truncate">{h.name}</span>
                 {h.enabled
-                  ? <span className="cs-badge text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Active</span>
-                  : <span className="cs-badge text-danger flex items-center gap-1"><XCircle className="w-3 h-3" /> Disabled</span>}
+                  ? <span className="cs-badge text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {t("webhooks.active")}</span>
+                  : <span className="cs-badge text-danger flex items-center gap-1"><XCircle className="w-3 h-3" /> {t("webhooks.disabled")}</span>}
                 {h.lastStatus && (
                   <span className="cs-badge text-cs-dim font-mono text-xs">{h.lastStatus}</span>
                 )}
               </div>
               <div className="text-xs text-cs-dim font-mono truncate">{h.url}</div>
               <div className="text-xs text-cs-dim mt-1">
-                Events: {h.events.length} · Failures: {h.failCount}
-                {h.lastDeliveryAt && ` · Last: ${new Date(h.lastDeliveryAt).toLocaleString()}`}
+                {t("webhooks.stats", { events: h.events.length, failures: h.failCount })}
+                {h.lastDeliveryAt && ` · ${t("webhooks.last", { date: new Date(h.lastDeliveryAt).toLocaleString() })}`}
               </div>
             </div>
             <div className="flex items-center gap-2 ml-4">
-              <button onClick={() => openEdit(h)} aria-label={`Edit webhook ${h.name}`} title="Edit webhook" className="text-cs-cyan hover:opacity-80 p-2">
+              <button onClick={() => openEdit(h)} aria-label={t("webhooks.editAria", { name: h.name })} title={t("webhooks.editTip")} className="text-cs-cyan hover:opacity-80 p-2">
                 <Pencil className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setConfirmState({
-                  title: "Delete Webhook",
-                  message: `Delete "${h.name}"? This cannot be undone.`,
+                  title: t("webhooks.deleteTitle"),
+                  message: t("webhooks.deleteConfirm", { name: h.name }),
                   onConfirm: () => deleteMut.mutate(h.id),
                 })}
-                aria-label={`Delete webhook ${h.name}`}
-                title="Delete webhook"
+                aria-label={t("webhooks.deleteAria", { name: h.name })}
+                title={t("webhooks.deleteTip")}
                 className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
@@ -160,38 +184,47 @@ export default function WebhooksPage() {
       <Modal
         open={!!editing}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New Webhook" : "Edit Webhook"}
+        title={editing === "new" ? t("webhooks.newTitle") : t("webhooks.editTitle")}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className="cs-label">Name</span>
+            <span className="cs-label">{t("common.name")}</span>
             <input className="cs-input" required value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="CRM sync, Discord audit mirror…" />
+              placeholder={t("webhooks.namePh")} />
           </label>
 
           <label className="block">
-            <span className="cs-label">URL</span>
+            <span className="cs-label">{t("webhooks.urlLabel")}</span>
             <input className="cs-input font-mono text-xs" required type="url" value={form.url}
               onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-              placeholder="https://your-service.example.com/webhook" />
+              placeholder={t("webhooks.urlPh")} />
           </label>
 
           <label className="block">
-            <span className="cs-label">Secret (optional — enables HMAC signing)</span>
-            <input className="cs-input font-mono text-xs" value={form.secret}
+            <span className="cs-label">{t("webhooks.secretLabel")}</span>
+            <input className="cs-input font-mono text-xs disabled:opacity-40" value={form.secret}
               onChange={(e) => setForm((f) => ({ ...f, secret: e.target.value }))}
-              placeholder="Random long string" />
+              disabled={form.clearSecret}
+              autoComplete="off"
+              placeholder={t(form.hasSecret ? "webhooks.secretKeepPh" : "webhooks.secretPh")} />
             <p className="text-xs text-cs-dim mt-1">
-              When set, each request carries <code>X-Supreme Bot-Signature: sha256=…</code>.
-              Verify it on your end with HMAC-SHA256 of the raw body.
+              {t("webhooks.secretHint")}
             </p>
           </label>
+          {form.hasSecret && (
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
+              <input type="checkbox" className="w-4 h-4 rounded accent-cs-cyan"
+                checked={form.clearSecret}
+                onChange={(e) => setForm((f) => ({ ...f, clearSecret: e.target.checked, secret: "" }))} />
+              {t("webhooks.secretClear")}
+            </label>
+          )}
 
           <fieldset>
-            <legend className="cs-label">Events</legend>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <legend className="cs-label">{t("webhooks.eventsLabel")}</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               {ALL_EVENTS.map((ev) => (
                 <label key={ev} className="flex items-center gap-2 text-sm text-cs-text cursor-pointer">
                   <input
@@ -210,7 +243,7 @@ export default function WebhooksPage() {
             <input type="checkbox" checked={form.enabled}
               onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Enabled</span>
+            <span className="text-sm text-cs-text">{t("common.enabled")}</span>
           </label>
 
           {formError && (
@@ -218,9 +251,9 @@ export default function WebhooksPage() {
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">Cancel</button>
+            <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">{t("common.cancel")}</button>
             <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
-              {editing === "new" ? "Create Webhook" : "Save Changes"}
+              {editing === "new" ? t("webhooks.create") : t("common.saveChanges")}
             </button>
           </div>
         </form>
@@ -230,7 +263,7 @@ export default function WebhooksPage() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteMut.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}

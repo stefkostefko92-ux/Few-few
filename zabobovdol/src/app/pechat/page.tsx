@@ -44,7 +44,7 @@ export default async function PrintPage() {
             <div className="font-display text-2xl font-bold text-slate-900">
               Важни телефони — Бобов дол
             </div>
-            <div className="text-sm text-slate-500">{SITE.domain}</div>
+            <div className="text-sm text-slate-600">{SITE.domain}</div>
           </div>
         </div>
 

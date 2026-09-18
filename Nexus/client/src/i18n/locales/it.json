@@ -110,6 +110,8 @@
     "mythicPlus": "Dungeon Mitico+",
     "society": "Società",
     "guild": "Gilda",
+    "friends": "Amici",
+    "chat": "Chat",
     "mail": "Posta",
     "leaderboard": "Sala della Fama",
     "town": "Città",
@@ -146,7 +148,7 @@
   },
   "levelUp": {
     "title": "— Livello superiore —",
-    "points": "+{{statPoints}} statistica · +{{skillPoints}} punti abilità"
+    "grew": "Il tuo potere cresce."
   },
   "lootDrop": {
     "acquired": "Bottino ottenuto",
@@ -330,7 +332,7 @@
     "featSetsBody": "Dal Wayfarer's Garb al Solar Mythwoven. I bonus da due, quattro e sei pezzi ridisegnano una build; mescolare i tier è incoraggiato.",
     "classesEyebrow": "Scegli il tuo kit",
     "classesTitle": "Quattro classi, con la matematica messa nero su bianco.",
-    "classesLead": "Ogni classe ha una curva di statistiche, un albero di abilità dell'arma, un tipo di danno e i propri effetti d'impatto in combattimento. Riassegni i punti statistica a ogni livello; rifai la build ogni volta che cambia la stagione.",
+    "classesLead": "Ogni classe ha una curva di statistiche, un albero di abilità dell'arma, un tipo di danno e i propri effetti d'impatto in combattimento. Rifai la build ogni volta che cambia la stagione.",
     "classWarriorTagline": "Incassa colpi e li restituisce con gli interessi. Spada e scudo, corazza, calma sotto pressione.",
     "classRangerTagline": "Colpisce per primo, più forte del previsto, da dove non stavi guardando. Arco, cuoio, mani veloci.",
     "classMageTagline": "Partenza lenta, finale enorme. Brucia mana in fretta, chiude gli scontri ancora più in fretta. Bastone, vesti, tessera della biblioteca.",
@@ -440,7 +442,9 @@
     "footerMade": "Fatto con cura per storie degne di un eroe.",
     "iconAlt": "icona {{title}}",
     "portraitAlt": "ritratto di {{name}}",
-    "landscapeAlt": "paesaggio di {{name}}"
+    "landscapeAlt": "paesaggio di {{name}}",
+    "step3Body": "Ti aspettano ventuno regioni, dai Whispering Woods a The First Light al Lv 500. Ogni regione fa cadere equipaggiamento del proprio tier.",
+    "regionBeyondBody": "Cinque regni oltre la fine del mondo — cenere, stelle cadute, la forgia della nuova alba, la corte non illuminata e la prima luce stessa. Lv 351–500."
   },
   "arena": {
     "title": "Arena di Nexus Dominion",
@@ -464,7 +468,9 @@
     "huntAgain": "Caccia ancora",
     "regionInfo": "Lv {{min}}–{{max}} · {{count}} nemici",
     "requiresLv": "Richiede Lv {{n}}",
-    "huntHere": "Caccia qui"
+    "huntHere": "Caccia qui",
+    "firstWin": "Prima vittoria del giorno — ×2 XP e oro!",
+    "combo": "Combo ×{{n}} (+{{pct}}% XP e oro)"
   },
   "dungeons": {
     "title": "Dungeon",
@@ -791,7 +797,10 @@
       "minutesAgo": "{{n}}m fa",
       "hoursAgo": "{{n}}h fa",
       "daysAgo": "{{n}}g fa"
-    }
+    },
+    "bestPrice": "miglior prezzo",
+    "cheapest": "più economico: {{n}}g",
+    "lastSold": "ultima vendita: {{n}}g"
   },
   "auction": {
     "loading": "Caricamento asta…",
@@ -826,7 +835,9 @@
     "all": "Tutti",
     "lv": "Liv. {{n}}",
     "buy": "Compra",
-    "purchaseComplete": "Acquisto completato."
+    "purchaseComplete": "Acquisto completato.",
+    "dailyDeals": "Offerte del giorno — 30% di sconto",
+    "dealsExpire": "Cambiano tra {{hours}}h"
   },
   "mountShop": {
     "loading": "Caricamento…",
@@ -1047,7 +1058,11 @@
     "subtitle": "{{discovered}} / {{total}} creature catalogate.",
     "all": "Tutte",
     "lv": "Liv. {{n}}",
-    "kills": "Uccisioni:"
+    "kills": "Uccisioni:",
+    "claim": "Riscuoti",
+    "claimed": "Riscossa ✓",
+    "slayAll": "Sconfiggili tutti",
+    "claimedToast": "Ricompensa collezione: +{{gold}}g, +{{gems}} gemme!"
   },
   "common": {
     "loading": "Caricamento…",
@@ -1104,7 +1119,7 @@
     "restToast": "Ferite curate.",
     "record": "{{wins}}V / {{losses}}S · Rating {{rating}}",
     "howTitle": "Come funzionano i potenziamenti",
-    "howDesc": "Ogni livello concede gratis +3 punti statistica e +1 punto abilità. In più ogni statistica può essere potenziata con l’oro — ogni acquisto successivo costa di più (5g, 14g, 25g, 40g, 57g…), con contatore indipendente per statistica.",
+    "howDesc": "Le statistiche si potenziano con l’oro — ogni acquisto successivo di una statistica costa di più su una semplice curva 5-10-15-20-25… (5g, 10g, 15g, 20g, 25g…), con contatore indipendente per statistica. Salire di livello aumenta HP e MP.",
     "attributes": "Attributi",
     "weaponSkills": "Abilità con le armi",
     "upgradesCount": "({{count}} potenziamenti)",
@@ -1124,8 +1139,8 @@
       "dexterity": "Critico, schivata, attacchi a distanza.",
       "constitution": "Riserva di salute.",
       "intelligence": "Potere magico, mana.",
-      "wisdom": "Mana, resistenza.",
-      "charisma": "Bonus alle ricompense delle missioni."
+      "wisdom": "Mana, difesa e schivata.",
+      "charisma": "Danno critico."
     },
     "skill": {
       "sword": "Spada",
@@ -1322,6 +1337,15 @@
       "depositTitle": "Deposita oggetto",
       "depositDesc": "Scegli un oggetto non equipaggiato e non vincolato. I consumabili non possono essere depositati.",
       "noItems": "Nessun oggetto depositabile nella tua borsa."
+    },
+    "missions": {
+      "title": "Missioni settimanali di gilda",
+      "resets": "Si azzerano tra {{days}}g",
+      "hunt_kills": "Uccidete mostri insieme",
+      "arena_wins": "Vincete duelli in arena",
+      "tower_floors": "Scalate i piani della torre",
+      "perMember": "a membro",
+      "done": "Completata ✓"
     }
   },
   "factions": {
@@ -1355,7 +1379,15 @@
       "losses": "Sconfitte"
     },
     "npc": "PNG",
-    "empty": "La sala attende di essere riempita."
+    "empty": "La sala attende di essere riempita.",
+    "tabArena": "Arena",
+    "tabSeason": "Stagione",
+    "seasonTitle": "Stagione {{key}}",
+    "seasonMine": "I tuoi punti: {{points}} · rango #{{rank}}",
+    "seasonEnds": "Termina tra {{days}} giorni",
+    "seasonRewards": "#1: 1000💎 +100k oro + titolo · top 10: 200💎 · top 10%: 50💎",
+    "lastSeason": "Stagione scorsa ({{key}}):",
+    "seasonEmpty": "Ancora nessun punto in questa stagione. A caccia!"
   },
   "achievements": {
     "title": "Imprese",

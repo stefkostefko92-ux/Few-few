@@ -7,7 +7,7 @@ export default function CookiesPage() {
   const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
 
   return (
-    <LegalPage title="Cookie Policy" updated="27 June 2026">
+    <LegalPage title="Cookie Policy" updated="7 August 2026">
       <Seo
         title="Cookie Policy — Supreme Bot"
         description="Cookie Policy for Supreme Bot: a single strictly-necessary session cookie, no advertising or tracking cookies."

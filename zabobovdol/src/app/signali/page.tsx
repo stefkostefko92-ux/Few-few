@@ -150,7 +150,7 @@ export default function SignaliPage() {
             aria-hidden
           />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             С подаването приемате сигналът и посочените данни за връзка да бъдат
             предадени към съответната институция. Вижте{" "}
             <Link href="/poveritelnost" className="underline">

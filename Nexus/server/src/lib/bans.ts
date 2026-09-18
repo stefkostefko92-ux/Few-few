@@ -9,6 +9,7 @@
  */
 import type { Request } from 'express';
 import { getDb } from '../db';
+import { closeForChar } from './stream';
 
 /** Извлича клиентското IP (зад reverse proxy) от заявката. */
 export function clientIp(req: Request): string {
@@ -113,6 +114,12 @@ export function banUser(opts: { userId: number; ip?: string; hwid?: string; reas
     }
   });
   tx();
+  // Затвори активните SSE потоци на този герой — иначе отворената връзка
+  // надживява ban-а/token-bump-а (авторизира се само веднъж, при отваряне).
+  try {
+    const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(userId) as { id: number } | undefined;
+    if (ch) closeForChar(ch.id);
+  } catch { /* stream слоят не е критичен за ban-а */ }
 }
 
 /**

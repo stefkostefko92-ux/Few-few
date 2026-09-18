@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 
 interface Props {
   level: number;
-  statPoints: number;
-  skillPoints: number;
   onDone: () => void;
 }
 
@@ -12,7 +10,7 @@ interface Props {
  * Full-screen grand reveal — gold burst, confetti, big level number.
  * Auto-dismisses after 3.6s, can be skipped by clicking.
  */
-export default function LevelUpOverlay({ level, statPoints, skillPoints, onDone }: Props): React.ReactElement {
+export default function LevelUpOverlay({ level, onDone }: Props): React.ReactElement {
   const { t } = useTranslation();
   const [closing, setClosing] = useState(false);
 
@@ -65,7 +63,7 @@ export default function LevelUpOverlay({ level, statPoints, skillPoints, onDone 
         <div className="label">{t('levelUp.title')}</div>
         <div className="number">{level}</div>
         <div className="sub">
-          {t('levelUp.points', { statPoints, skillPoints })}
+          {t('levelUp.grew', { defaultValue: 'Your power grows.' })}
         </div>
       </div>
     </div>

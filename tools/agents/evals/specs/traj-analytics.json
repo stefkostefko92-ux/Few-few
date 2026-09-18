@@ -1,0 +1,17 @@
+{
+  "id": "traj-analytics",
+  "agent": "analizatora",
+  "task": "Води въвеждането на продуктова аналитика (tracking plan + фуния) по каноничния поток (_orchestration.md „Продуктова аналитика\"). Отчети веригата и крайното състояние.",
+  "expect": [
+    { "any": ["съгласие", "consent"], "label": "съгласие преди проследяване" },
+    { "any": ["минимизац", "нула PII", "псевдоними"], "label": "минимизация на данните" },
+    { "any": ["корелация", "A/B", "експеримент"], "label": "причинност иска експеримент" },
+    { "none": ["записваме имейла на потребителя като event property"], "label": "капан: PII в събитие" }
+  ],
+  "trajectory": {
+    "flow": "Продуктова аналитика",
+    "path": ["analizatora", "pravniyat-razbirach", "seo", "prodavacha"],
+    "mustVisit": ["pravniyat-razbirach"],
+    "maxSteps": 6
+  }
+}

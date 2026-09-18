@@ -1262,14 +1262,39 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- scene + camera ----- */
     const scene = new THREE.Scene();
+    if (import.meta.env.DEV) (window as any).__scene = scene;
     scene.background = new THREE.Color(pal.sky);
     // По-стегната мъгла = по-силна въздушна перспектива: задните скали се
     // разтварят към хоризонта и сцената получава дълбочина на план-слоеве.
     scene.fog = new THREE.Fog(pal.fog, 6, 18);
 
-    const camera = new THREE.PerspectiveCamera(42, mount.clientWidth / mount.clientHeight, 0.1, 100);
-    camera.position.set(0, 2.4, 8.0);
-    camera.lookAt(0, 1.4, 0);
+    const camera = new THREE.PerspectiveCamera(48, mount.clientWidth / mount.clientHeight, 0.1, 100);
+
+    /* ----- рамкиране, независимо от съотношението -----
+     * Двамата бойци стоят на x=±FIGHTER_HALF_SPAN, крака на y=0, глави
+     * ~y=1.8. Изчисляваме минималната отстояща z, при която ЦЕЛИЯТ им
+     * силует се събира и хоризонтално, и вертикално за дадено съотношение,
+     * и никога не пускаме камерата по-близо от базовата z (по-широкото
+     * съотношение → вертикалът лимитира → базовата z стига; тесен/портретен
+     * панел → хоризонталът лимитира → дърпаме камерата назад). Така бойците
+     * са в кадър при 2.5:1 (прод панел), 2.16:1 (демо) И 1.28:1 (тесен). */
+    const FRAME_FOV = 48;                 // резинг FOV (същият като anchor)
+    const FRAME_HALF_W = 3.2;             // half-span бойци + поле за HUD/оръжие
+    const FRAME_HALF_H = 1.7;             // half-height силует спрямо look-точката
+    const FRAME_BASE_Z = 6.0;             // базова (минимална) резинг дистанция
+    const framingZ = (aspect: number): number => {
+      const t = Math.tan((FRAME_FOV * Math.PI) / 180 / 2);
+      const zW = FRAME_HALF_W / (t * Math.max(0.3, aspect));
+      const zH = FRAME_HALF_H / t;
+      return Math.max(FRAME_BASE_Z, zW, zH);
+    };
+    const restZ0 = framingZ(camera.aspect);
+    camAnchorRef.current = { x: 0, y: 1.9, z: restZ0, lx: 0, ly: 1.3, lz: 0, fov: FRAME_FOV };
+    // Стартовата позиция вече е фронтално рамкираща (по-широк push-in
+    // отстъп), НЕ странично/ниско както преди — така при idle камерата
+    // никога не е вътре в скала/дърво.
+    camera.position.set(0, 3.2, restZ0 + 2.5);
+    camera.lookAt(0, 1.3, 0);
     cameraRef.current = camera;
 
     /* ----- photoreal backend (WebGPU → WebGL2 → lite) -----
@@ -2341,11 +2366,21 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- resize ----- */
     function resize() {
-      const w = mount.clientWidth, h = mount.clientHeight;
+      // ||1 пази от 0×0 колабирал панел: aspect=NaN се самозадържа в
+      // lerp-натата камера (lerp(NaN,x)=NaN) дори след връщане на размера.
+      const w = mount.clientWidth || 1, h = mount.clientHeight || 1;
       if (renderer) renderer.setSize(w, h, false);
       if (composer) composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      // Пре-рамкиране при смяна на съотношението: обновяваме резинг
+      // дистанцията, за да останат бойците в кадър и на много широк
+      // (прод панел ~2.5:1) и на тесен/портретен viewport. Пипаме само
+      // когато не тече атака (иначе бихме се борили с камерния трак на
+      // хореографа); при idle това е доминиращият случай.
+      if (!choreoRef.current?.isPlaying()) {
+        camAnchorRef.current.z = framingZ(camera.aspect);
+      }
       // Invalidate the cached mount rect so the HUD projector re-reads it.
       mountRectDirty.flag = true;
     }
@@ -2527,7 +2562,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     let last = performance.now();
     function tick(now: number) {
       const frameMs = now - last;          // real (uncapped) frame time
-      const rawDt = Math.min(0.05, frameMs / 1000);
+      // Флор при 0: rAF `now` може да е с различен произход спрямо
+      // performance.now() (записан в `last` при setup) → първи/рестартов
+      // кадър дава ОТРИЦАТЕЛЕН frameMs. Без този флор отрицателното dt
+      // прави lerp-а на камерата разходящ (пропада в геометрия / отлита) и
+      // кара intro.t да върви назад, тъй че intro никога не завършва.
+      const rawDt = Math.max(0, Math.min(0.05, frameMs / 1000));
       last = now;
       adaptiveResolution(frameMs > 0 && frameMs < 1000 ? frameMs : 16);
 
@@ -2705,7 +2745,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       idleHandheldRef.current.x = Math.sin(now * 0.00041) * 0.018 + Math.sin(now * 0.00073) * 0.010;
       idleHandheldRef.current.y = Math.sin(now * 0.00033) * 0.013 + Math.sin(now * 0.00067) * 0.008;
 
-      // Intro orbital sweep — overrides camera anchor for the first 1.4s.
+      // Intro push-in — за първите 1.4s дърпаме камерата фронтално навътре
+      // и надолу към резинг anchor-а. СТАРО поведение: широк страничен
+      // орбитален замах, който стартираше камерата на z≈2.9 отстрани и
+      // ниско → пропадаше вътре в скали/дървета при idle. НОВОТО е чисто
+      // фронтално (x=0), винаги рамкиращо и двамата бойци при всеки кадър от
+      // интрото и при всяко съотношение, така че никога не е в геометрия.
       const intro = introRef.current;
       let camTargetX = camAnchorRef.current.x;
       let camTargetY = camAnchorRef.current.y;
@@ -2715,13 +2760,33 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         intro.t += rawDt;
         const k = Math.min(1, intro.t / intro.dur);
         const eased = 1 - Math.pow(1 - k, 3);
-        const ang = (1 - eased) * Math.PI * 0.6 + Math.PI / 2; // 162° → 90° (front)
-        const radius = 9.5 - eased * 3.0;
-        camTargetX = Math.cos(ang) * radius * 0.4;
-        camTargetY = 4.5 - eased * 2.3;
-        camTargetZ = Math.sin(ang) * radius;
-        camTargetFov = 52 - eased * 6;
+        camTargetX = 0;
+        camTargetY = 3.2 - eased * (3.2 - camAnchorRef.current.y);   // 3.2 → anchor.y
+        camTargetZ = (camAnchorRef.current.z + 2.5) - eased * 2.5;   // anchor.z+2.5 → anchor.z
+        camTargetFov = 54 - eased * (54 - camAnchorRef.current.fov); // 54 → anchor.fov
         if (k >= 1) intro.active = false;
+      }
+      // Предпазен clamp на камерната ЦЕЛ (point B): бойците са на z=0, крака
+      // на y=0; пропсовете/god-ray-ите са зад тях (z<0). Никога не пускаме
+      // целта под земята, зад бойците или прекалено настрани — така нито
+      // атака, нито intro може да вкара камерата в терен/пропс или да
+      // изхвърли бойците извън кадър.
+      camTargetX = Math.max(-4.5, Math.min(4.5, camTargetX));
+      camTargetY = Math.max(0.8, Math.min(6.0, camTargetY));
+      camTargetZ = Math.max(4.0, Math.min(12.0, camTargetZ));
+      // Aspect-осъзнат под на push-in разстоянието: по време на атака
+      // хореографът дърпа камерата навътре, а бойците лунжат до ~±2.6. На
+      // ТЕСЕН/портретен viewport (по-малко хоризонтално поле) същият push-in
+      // изхвърля лунжиращия боец извън кадър. Затова не пускаме камерата
+      // по-близо от дистанцията, при която полу-широчината (боец+lunge+поле)
+      // се събира хоризонтално за текущите fov/aspect. На широк панел това е
+      // малко число → push-in-ът остава свободен; на тесен → спира по-навън.
+      {
+        const camNow = cameraRef.current;
+        const tanH = Math.tan(((camNow ? camNow.fov : FRAME_FOV) * Math.PI) / 180 / 2);
+        const aspect = camNow ? camNow.aspect : 1.78;
+        const minZ = 3.5 / (tanH * Math.max(0.3, aspect));
+        camTargetZ = Math.max(camTargetZ, Math.min(minZ, 9.5));
       }
 
       const cam = cameraRef.current!;
@@ -2743,8 +2808,17 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.position.z += (camTargetZ - cam.position.z) * Math.min(1, rawDt * 4);
       // Dolly-zoom FOV lerp
       cam.fov += (camTargetFov - cam.fov) * Math.min(1, rawDt * 5);
+      // Финален твърд clamp на позицията: дори натрупан shake/handheld не
+      // може да вкара камерата под земята или зад бойците (в god-ray-ите
+      // и пропсовете зад тях).
+      cam.position.y = Math.max(0.6, cam.position.y);
+      cam.position.z = Math.max(3.5, cam.position.z);
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
+      if (import.meta.env.DEV) {
+        (window as any).__cam = cam;
+        (window as any).__camDbg = { p: [cam.position.x, cam.position.y, cam.position.z], fov: cam.fov, anchor: { ...camAnchorRef.current }, introActive: introRef.current.active, playing: choreoRef.current?.isPlaying(), aspect: cam.aspect, hero: heroRigRef.current ? [heroRigRef.current.position.x, heroRigRef.current.position.y, heroRigRef.current.position.z] : null, foe: foeRigRef.current ? [foeRigRef.current.position.x, foeRigRef.current.position.y, foeRigRef.current.position.z] : null };
+      }
 
       // Floating HUD projection — anchor each health bar above its rig's
       // head by projecting a world point to screen space. Runs every
@@ -2955,6 +3029,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           ref.current = null;
         }
       }
+      // КРИТИЧНО (fix _cacheIndex crash): нулираме и rig ref-овете + чистим
+      // кешираните combatActions. uncacheRoot по-горе разваля bindings-ите на
+      // тези action-и; ако при смяна на регион новият риг още се зарежда
+      // (async GLB), heroRigRef/foeRigRef иначе продължават да сочат СТАРИЯ,
+      // uncache-нат риг. Атака в този прозорец кара хореографа да извика
+      // action.play() върху счупените bindings → three хвърля
+      // „Cannot set properties of undefined (setting '_cacheIndex')". С
+      // нулиране rigCrossfade вижда rig=null и коректно нищо не прави, докато
+      // новият риг се появи.
+      for (const rigRef of [heroRigRef, foeRigRef]) {
+        const rig = rigRef.current as any;
+        if (rig?.userData) { rig.userData.combatActions = undefined; rig.userData.combatCurrent = undefined; }
+        rigRef.current = null;
+      }
       try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry?.dispose();
@@ -3056,7 +3144,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       });
     },
     resetCamera() {
-      camAnchorRef.current = { x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 };
+      // Резинг дистанцията пак се смята спрямо съотношението, за да остане
+      // рамкирането коректно и на широк, и на тесен панел.
+      const asp = cameraRef.current?.aspect ?? 1.78;
+      const t = Math.tan((48 * Math.PI) / 180 / 2);
+      const z = Math.max(6.0, 3.2 / (t * Math.max(0.3, asp)), 1.7 / t);
+      camAnchorRef.current = { x: 0, y: 1.9, z, lx: 0, ly: 1.3, lz: 0, fov: 48 };
       introRef.current = { t: 0, dur: 1.4, active: true };
       choreoRef.current?.stop();
     },

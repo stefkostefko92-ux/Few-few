@@ -18,3 +18,11 @@ filter options are skipped, never approximated in ways that could block more
 than the original rule.
 
 URLhaus data is published by abuse.ch under CC0 (public domain).
+
+## Surrogate ресурси (resources/)
+
+Неутрализираните стъбове в `resources/` (gpt.js, adsbygoogle.js, ga.js,
+apstag.js, noop.js, 1x1.gif) са **наши собствени clean-room минимални реализации**
+на публично документираните API-та (Google Publisher Tag, AdSense, Analytics,
+Amazon apstag). НЕ са копие на uBlock Origin's GPL redirect ресурси — написани са
+от нулата, за да са съвместими с MIT лиценза на разширението.

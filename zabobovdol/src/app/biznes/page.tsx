@@ -101,7 +101,7 @@ export default async function BiznesPage({
                   </p>
                 )}
                 {b.address && (
-                  <div className="mt-2 text-sm text-slate-500">{b.address}</div>
+                  <div className="mt-2 text-sm text-slate-600">{b.address}</div>
                 )}
               </Link>
             ))}

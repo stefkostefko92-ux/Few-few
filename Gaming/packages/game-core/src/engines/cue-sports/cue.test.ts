@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { ball, runShot, TABLE, type Ball } from "@aso/shared";
-import { rackNineBall, SNOOKER_SPOTS } from "./racks.js";
+import { rackEightBall, rackNineBall, SNOOKER_SPOTS } from "./racks.js";
 import {
   eightBallEngine,
   nineBallEngine,
@@ -101,6 +101,24 @@ describe.each([
 });
 
 // ── 8-ball rules ─────────────────────────────────────────────────────────────
+
+describe("EIGHTBALL rack (WPA)", () => {
+  it("places the 8 in the exact centre of the rack", () => {
+    const balls = rackEightBall();
+    const eight = balls.find((b) => b.id === 8)!;
+    const rows = balls.filter((b) => b.id !== 0);
+    const apex = rows.reduce((m, b) => (b.x < m.x ? b : m), rows[0]!);
+    // Centre ball sits on the table's mid-line, two rows back from the apex.
+    expect(eight.y).toBeCloseTo(TABLE.h / 2, 6);
+    expect(eight.x).toBeGreaterThan(apex.x);
+    // Back-row corners must split one solid (1–7) / one stripe (9–15).
+    const backX = Math.max(...rows.map((b) => b.x));
+    const back = rows.filter((b) => Math.abs(b.x - backX) < 1e-6).sort((a, b) => a.y - b.y);
+    const corners = [back[0]!.id, back[back.length - 1]!.id];
+    const solids = corners.filter((id) => id <= 7).length;
+    expect(solids).toBe(1); // exactly one solid corner, one stripe corner
+  });
+});
 
 describe("EIGHTBALL rules", () => {
   it("re-spots the 8 on the break instead of ending the game", () => {
@@ -237,6 +255,54 @@ describe("NINEBALL push-out", () => {
   });
 });
 
+describe("NINEBALL three-foul rule (WPA)", () => {
+  // A gentle sideways nudge that contacts nothing → a "no contact" foul.
+  const miss: CueActionX = { type: "SHOOT", angle: Math.PI / 2, power: 0.05 };
+  const foulState = (fouls: [number, number]): CueStateX => ({
+    ...(nineBallEngine.init({ seats: 2 }, rng()) as CueStateX),
+    shotNo: 3,
+    ballInHand: false,
+    turn: 0,
+    fouls,
+    balls: [ball(0, 0.5, 0.5), ball(1, 1.8, 0.9), ball(9, 1.9, 0.9)],
+  });
+
+  it("loses the rack on the third consecutive foul", () => {
+    const o1 = nineBallEngine.reduce(foulState([0, 0]), miss, rng());
+    expect(o1.state.message).toBe("noContact");
+    expect(o1.state.fouls).toEqual([1, 0]);
+    expect(o1.state.winner).toBeNull();
+
+    const o2 = nineBallEngine.reduce(foulState([1, 0]), miss, rng());
+    expect(o2.state.fouls).toEqual([2, 0]); // the second foul is the warning
+    expect(o2.state.winner).toBeNull();
+
+    const o3 = nineBallEngine.reduce(foulState([2, 0]), miss, rng());
+    expect(o3.state.fouls).toEqual([3, 0]);
+    expect(o3.state.winner).toBe(1); // opponent wins the rack outright
+    expect(o3.state.message).toBe("threeFoul");
+    expect(o3.state.phase).toBe("DONE");
+    expect(o3.events.some((e) => e.type === "WIN" && e.seat === 1)).toBe(true);
+  });
+
+  it("resets a seat's foul count after a legal shot", () => {
+    // Seat 0 sits on two fouls, then legally pots the 1 → counter back to zero.
+    const s: CueStateX = {
+      ...(nineBallEngine.init({ seats: 2 }, rng()) as CueStateX),
+      shotNo: 3,
+      ballInHand: false,
+      turn: 0,
+      fouls: [2, 0],
+      balls: [ball(0, 1.0, 0.5), ball(1, 1.5, 0.75), ball(9, 0.2, 0.2)],
+    };
+    const out = nineBallEngine.reduce(s, aimAt(find(s, 0), find(s, 1), 0.9), rng());
+    expect(find(out.state, 1).potted).toBe(true);
+    expect(out.state.fouls).toEqual([0, 0]);
+    expect(out.state.winner).toBeNull();
+    expect(out.state.turn).toBe(0); // continues after a legal pot
+  });
+});
+
 // ── Snooker rules ────────────────────────────────────────────────────────────
 
 const snookerState = (balls: Ball[], patch: Partial<CueStateX> = {}): CueStateX => ({
@@ -329,6 +395,28 @@ describe("SNOOKER rules", () => {
     expect(n2.message).toBe(""); // legal shot, nothing potted
     expect(n2.freeBall).toBe(false); // one stroke only
     expect(n2.turn).toBe(0);
+  });
+
+  it("calls a foul and a miss when the striker hits no ball on", () => {
+    // On a red, the cue is nudged into empty space — no contact at all.
+    const s = snookerState([ball(0, 0.5, 0.5), ball(11, 1.8, 0.2)], { turn: 0 });
+    const out = snookerEngine.reduce(s, { type: "SHOOT", angle: -Math.PI / 2, power: 0.05 }, rng());
+    const n = out.state;
+    expect(n.message).toBe("noContact");
+    expect(n.miss).toBe(true); // referee/host can offer the standard replay
+    expect(out.events.some((e) => e.type === "FOUL")).toBe(true);
+    expect(n.scores).toEqual([0, 4]);
+  });
+
+  it("does not flag a miss on a legal shot", () => {
+    // Cleanly pot a red on a 0.8-slope diagonal into the (2,1) corner.
+    const cueAt: [number, number] = [1.45, 0.56];
+    const targetAt: [number, number] = [1.7, 0.76];
+    const colours = [2, 3, 4, 5, 6, 7].map((id) => ball(id, SNOOKER_SPOTS[id]![0], SNOOKER_SPOTS[id]![1]));
+    const s = snookerState([ball(0, ...cueAt), ball(11, ...targetAt), ...colours], { turn: 0 });
+    const out = snookerEngine.reduce(s, aimAt(find(s, 0), find(s, 11), 0.9), rng());
+    expect(find(out.state, 11).potted).toBe(true);
+    expect(out.state.miss).toBe(false);
   });
 
   it("re-spots the black instead of ending level (no draws)", () => {
