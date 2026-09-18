@@ -16,6 +16,7 @@ import {
   Phone,
   Store,
   CalendarDays,
+  CalendarClock,
   Megaphone,
   Bus,
   Newspaper,
@@ -46,7 +47,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/biznes": Store,
   "/sabitiya": CalendarDays,
   "/imen-den": CalendarDays,
-  "/danaci-srokove": Coins,
+  "/danaci-srokove": CalendarClock,
   "/grafik-smetosabirane": Trash2,
   "/obyavi": Megaphone,
   "/transport": Bus,
@@ -70,7 +71,7 @@ const NAV_COLOR: Record<string, string> = {
   "/kak-da": "blue", "/uslugi": "sky", "/novini": "blue",
   "/izmami": "rose", "/signali": "rose", "/zov-za-pomosht": "rose", "/sabitiya": "rose",
   "/dezhurna-apteka": "green", "/smetishta": "green", "/grafik-smetosabirane": "green",
-  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber", "/danaci-srokove": "amber",
+  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber", "/danaci-srokove": "orange",
   "/biznes": "purple", "/spomeni": "purple", "/galeriya": "purple", "/imen-den": "purple",
   "/obyavi": "orange",
   "/transport": "sky",
@@ -249,22 +250,54 @@ export default async function HomePage() {
         <TodayCalendar />
       </div>
 
-      {/* Бързи раздели */}
+      {/* Бързи раздели. PRIMARY_NAV е подреден по важност, затова първите шест
+          са едри („това търсят хората най-често“), а останалите — компактни.
+          21 еднакви карти са твърде много за сканиране от възрастен човек. */}
       <Section title="Какво търсите днес?">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PRIMARY_NAV.map((item) => {
+          {PRIMARY_NAV.slice(0, 6).map((item) => {
             const Icon = NAV_ICONS[item.href] ?? HelpCircle;
             const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
             return (
               <Link key={item.href} href={item.href} className="card group flex items-start gap-4">
-                <span className={"grid h-14 w-14 shrink-0 place-items-center rounded-2xl transition duration-200 group-hover:scale-110 " + c.chip}>
-                  <Icon className="h-8 w-8" aria-hidden />
+                <span className={"grid h-16 w-16 shrink-0 place-items-center rounded-2xl transition duration-200 group-hover:scale-110 " + c.chip}>
+                  <Icon className="h-9 w-9" aria-hidden />
                 </span>
                 <span>
-                  <span className={"block font-display text-lg font-bold text-slate-900 " + c.title}>
+                  <span className={"block font-display text-xl font-bold text-slate-900 " + c.title}>
                     {item.label}
                   </span>
-                  <span className="mt-0.5 block text-sm text-slate-600">{item.description}</span>
+                  <span className="mt-1 block text-base text-slate-600">{item.description}</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <h3 className="mb-4 mt-10 font-display text-lg font-bold text-slate-700">
+          Всички раздели
+        </h3>
+        {/* Под 360px две колони оставят ~123px за текста и дълги думи като
+            „сметосъбиране“ не се побират — там минаваме на една колона. */}
+        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+          {PRIMARY_NAV.slice(6).map((item) => {
+            const Icon = NAV_ICONS[item.href] ?? HelpCircle;
+            const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                /* На телефон иконата е отгоре, а надписът заема цялата ширина на
+                   картата — при две колони на 390px за хоризонтален ред остават
+                   ~95px и дълги имена („Транспорт“) се чупеха по средата на
+                   думата. От sm нагоре има място и редът е хоризонтален. */
+                className="group flex min-w-0 flex-col items-start gap-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md sm:flex-row sm:items-center sm:gap-3"
+              >
+                <span className={"grid h-10 w-10 shrink-0 place-items-center rounded-lg transition " + c.chip}>
+                  <Icon className="h-6 w-6" aria-hidden />
+                </span>
+                <span className={"min-w-0 font-semibold leading-snug text-slate-900 " + c.title}>
+                  {item.label}
                 </span>
               </Link>
             );
@@ -273,7 +306,7 @@ export default async function HomePage() {
       </Section>
 
       {/* Рекламни банери (4 слота) */}
-      <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас">
+      <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас" tone="muted">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {bannerSlots.map((b, i) =>
             b ? (
@@ -389,7 +422,7 @@ export default async function HomePage() {
 
       {/* Местен бизнес */}
       {businesses.length > 0 && (
-        <Section title="Местен бизнес" href="/biznes">
+        <Section title="Местен бизнес" href="/biznes" tone="muted">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {businesses.map((b) => (
               <Link key={b.id} href={`/biznes/${b.slug}`} className="card">

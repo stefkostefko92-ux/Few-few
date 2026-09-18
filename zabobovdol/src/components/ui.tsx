@@ -80,11 +80,11 @@ export function Breadcrumbs({
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-b from-brand-50/60 to-white p-12 text-center sm:p-16">
-      <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-brand-100 text-brand-600 shadow-inner">
-        <Inbox className="h-10 w-10" aria-hidden />
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-gradient-to-b from-brand-50/60 to-white p-8 text-center sm:p-10">
+      <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-brand-600 shadow-inner">
+        <Inbox className="h-8 w-8" aria-hidden />
       </div>
-      <p className="font-display text-xl font-bold text-slate-800">{title}</p>
+      <p className="font-display text-lg font-bold text-slate-800">{title}</p>
       {hint && <p className="mx-auto mt-2 max-w-md text-base text-slate-600">{hint}</p>}
     </div>
   );
@@ -103,14 +103,18 @@ export function Section({
   title,
   href,
   hrefLabel = "Виж всички",
+  tone = "plain",
   children,
 }: {
   title: string;
   href?: string;
   hrefLabel?: string;
+  /** „muted“ слага лента с лек фон през цялата ширина — дава ритъм на дългата
+   *  начална страница, за да не е една непрекъсната бяла отсечка. */
+  tone?: "plain" | "muted";
   children: React.ReactNode;
 }) {
-  return (
+  const inner = (
     <section className="container-content py-10">
       <div className="mb-6 flex items-end justify-between gap-4">
         <h2 className="section-title">{title}</h2>
@@ -126,4 +130,9 @@ export function Section({
       {children}
     </section>
   );
+
+  if (tone === "muted") {
+    return <div className="border-y border-slate-200/70 bg-slate-50">{inner}</div>;
+  }
+  return inner;
 }
