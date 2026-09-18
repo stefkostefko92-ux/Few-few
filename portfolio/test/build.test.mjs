@@ -45,7 +45,7 @@ test("демота: ≥10, уникални id/слъгове, всеки ези
 });
 
 test("всяка страница: един h1, title ≤60, description ≤160, canonical, hreflang ×3 + x-default, ключови думи, футър-кредит", () => {
-  assert.equal(pages.length, LANGS.length * (DEMOS.length + 4), "хъб · цени · правна · проекти + демота");
+  assert.equal(pages.length, LANGS.length * (DEMOS.length + 5), "хъб · цени · правна · проекти · админ демо + демота");
   for (const p of pages) {
     const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
     assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, `${rel}: h1`);
@@ -189,7 +189,7 @@ test("хъбът носи бранд компонентите: boot, canvas hero
 test("служебни файлове: sitemap с всички URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {
   const sm = readFileSync(join(OUT, "sitemap.xml"), "utf8");
   assert.equal((sm.match(/<loc>/g) || []).length, BUILT.urls.length);
-  assert.ok(BUILT.urls.length >= LANGS.length * (4 + DEMOS.length), "хъб · цени · правна · проекти · демота на всеки език");
+  assert.ok(BUILT.urls.length >= LANGS.length * (5 + DEMOS.length), "хъб · цени · правна · проекти · админ · демота на всеки език");
   assert.ok(sm.includes('hreflang="x-default"'));
   assert.ok(readFileSync(join(OUT, "robots.txt"), "utf8").includes("Sitemap: https://portfolio.carbonstealth.eu/sitemap.xml"));
   const llms = readFileSync(join(OUT, "llms.txt"), "utf8");

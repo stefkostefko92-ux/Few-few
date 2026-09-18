@@ -40,7 +40,7 @@ export function siteNav(lang, ui, current) {
 
 export function siteFooter(lang, ui) {
   const b = ui.brand;
-  return `<footer class="foot"><div class="wrap"><div class="foot-grid"><div>${logo(' loading="lazy"')}<p class="desc">${esc(b.desc)}</p></div><div><h4>${esc(b.cols.demos)}</h4><ul>${DEMOS.map((d) => `<li><a href="${demoPath(lang, d)}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</a></li>`).join("")}</ul></div><div><h4>${esc(b.cols.company)}</h4><ul>${b.company.map(([h, l]) => `<li><a href="${h}"${h.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${esc(l)}</a></li>`).join("")}<li><a href="${PATHS.projects[lang]}">${esc(ui.nav.projects)}</a></li><li><a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)}</a></li></ul></div><div><h4>${esc(b.cols.legal)}</h4><ul><li><a href="${PATHS.legal[lang]}">${esc(ui.footer.legal)}</a></li><li><a href="/llms.txt">llms.txt</a></li><li><a href="/sitemap.xml">sitemap.xml</a></li></ul></div></div><div class="badges hud">${b.badges.map((x) => `<span>${esc(x)}</span>`).join("")}</div><div class="impressum"><div>${esc(b.impressum)}</div><div>© ${new Date().getFullYear()} Carbon Stealth VCC · ${esc(ui.footer.rights)} ${esc(ui.footer.built)}</div>${credit(lang)}</div></div></footer>`;
+  return `<footer class="foot"><div class="wrap"><div class="foot-grid"><div>${logo(' loading="lazy"')}<p class="desc">${esc(b.desc)}</p></div><div><h4>${esc(b.cols.demos)}</h4><ul>${DEMOS.map((d) => `<li><a href="${demoPath(lang, d)}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</a></li>`).join("")}</ul></div><div><h4>${esc(b.cols.company)}</h4><ul>${b.company.map(([h, l]) => `<li><a href="${h}"${h.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${esc(l)}</a></li>`).join("")}<li><a href="${PATHS.projects[lang]}">${esc(ui.nav.projects)}</a></li><li><a href="${PATHS.admin[lang]}">${esc(ui.admin.eyebrow)}</a></li><li><a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)}</a></li></ul></div><div><h4>${esc(b.cols.legal)}</h4><ul><li><a href="${PATHS.legal[lang]}">${esc(ui.footer.legal)}</a></li><li><a href="/llms.txt">llms.txt</a></li><li><a href="/sitemap.xml">sitemap.xml</a></li></ul></div></div><div class="badges hud">${b.badges.map((x) => `<span>${esc(x)}</span>`).join("")}</div><div class="impressum"><div>${esc(b.impressum)}</div><div>© ${new Date().getFullYear()} Carbon Stealth VCC · ${esc(ui.footer.rights)} ${esc(ui.footer.built)}</div>${credit(lang)}</div></div></footer>`;
 }
 
 /** Заглавието буква по буква (магнитно отблъскване в site.js); <em> частта е cyan. */
@@ -71,7 +71,7 @@ function devModal(ui) {
 }
 
 function demos(lang, ui) {
-  return `<section class="section" id="demos"><div class="wrap"><div class="tag reveal">// ${esc(ui.demos.eyebrow)}</div>${ghost(ui.demos.title)}<p class="lede reveal">${esc(ui.demos.lede)}</p><div class="grid1">${DEMOS.map((d, i) => demoCard(lang, d, ui, i)).join("")}</div></div></section>${devModal(ui)}`;
+  return `<section class="section" id="demos"><div class="wrap"><div class="tag reveal">// ${esc(ui.demos.eyebrow)}</div>${ghost(ui.demos.title)}<p class="lede reveal">${esc(ui.demos.lede)}</p><div class="grid1">${DEMOS.map((d, i) => demoCard(lang, d, ui, i)).join("")}</div><p class="more reveal"><a class="btn" href="${PATHS.admin[lang]}" data-magnetic>${esc(ui.admin.eyebrow)} ${ICON.arrow}</a></p></div></section>${devModal(ui)}`;
 }
 
 /** Реалните проекти (6 от 10 в хъба, всичките на /proekti/) — доказателството, че демотата не са само демота. */

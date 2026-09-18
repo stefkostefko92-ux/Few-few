@@ -33,6 +33,7 @@ export const PATHS = {
   pricing: { bg: "/bg/ceni/", en: "/en/pricing/", it: "/it/prezzi/" },
   legal: { bg: "/bg/pravna-informacia/", en: "/en/legal/", it: "/it/note-legali/" },
   projects: { bg: "/bg/proekti/", en: "/en/projects/", it: "/it/progetti/" },
+  admin: { bg: "/bg/demo/admin-panel/", en: "/en/demo/admin-panel/", it: "/it/demo/pannello-admin/" },
 };
 
 export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;
