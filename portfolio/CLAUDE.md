@@ -1,8 +1,9 @@
 # portfolio/ — Carbon Stealth Portfolio (portfolio.carbonstealth.eu)
 
-Портфолио-сайт на **Carbon Stealth VCC**: 10 напълно работещи демо лендинг страници за 10 вида
+Портфолио-сайт на **Carbon Stealth VCC**: 15 напълно работещи демо лендинг страници за 15 вида
 бизнес (автосервиз · фитнес · мебелен магазин · адвокатска кантора · салон за красота · хотел/къща
-за гости · счетоводна къща · автокъща · магазин за дрехи · бързо хранене) + страница с цени и пакети,
+за гости · счетоводна къща · автокъща · магазин за дрехи · бързо хранене · онлайн магазин · медицински
+център · ресторант · агенция за имоти · строителство) + реалните проекти от carbonstealth.eu + цени и пакети,
 на **BG · EN · IT**. Пращаме го на бъдещи клиенти, за да си изберат. Root правилата — в кореновия `CLAUDE.md`.
 
 _Stack: **генератор с нула runtime зависимости** (Node ≥20, plain ESM) → статичен `dist/` зад Nginx.
@@ -15,7 +16,7 @@ _Stack: **генератор с нула runtime зависимости** (Node 
 ## Команди (гейтът)
 
 ```bash
-node build.mjs                                  # → dist/ (45 файла, 39 URL в sitemap)
+node build.mjs                                  # → dist/ (броят файлове/URL се печата; 15 демота ×3 езика + хъб · проекти · цени · правна)
 node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
@@ -38,7 +39,7 @@ src/lib/html.mjs            esc(), head(), PATHS (локализирани сл�
 src/i18n/{bg,en,it}.mjs     UI текстове на хъба/цените/правната/демо лентата — bg е източникът на истината
 src/pricing.mjs             ЕДИНСТВЕНИЯТ източник на числата: пакети, добавки, пазарни диапазони, източници
 src/demos/<id>.mjs          едно демо = тема (цветове, шрифтове, hero вариант) + съдържание ×3 езика
-src/templates/demo.mjs      шаблонът на демо страница (една структура, 10 идентичности)
+src/templates/demo.mjs      шаблонът на демо страница (една структура, 15 идентичности; catalog/кошница само при t.catalog)
 src/templates/widgets.mjs   „живите" карти в hero-то: booking · schedule · tiles · stats · consult
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
