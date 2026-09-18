@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Store } from "@/components/icons";
 
 export type BannerData = {
   id: string;
@@ -89,10 +90,13 @@ export function BannerEmptySlot() {
   return (
     <Link
       href="/reklama"
-      className="flex h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white p-4 text-center transition hover:border-brand-400"
+      className="group flex h-44 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-brand-200 bg-brand-50/50 p-4 text-center transition hover:border-brand-400 hover:bg-brand-50"
     >
-      <span className="text-sm font-semibold text-slate-700">Вашата реклама тук</span>
-      <span className="mt-1 text-xs text-slate-600">само 20€ на месец →</span>
+      <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand-600 shadow-sm transition group-hover:bg-brand-600 group-hover:text-white">
+        <Store className="h-6 w-6" aria-hidden />
+      </span>
+      <span className="text-base font-semibold text-slate-800">Вашата реклама тук</span>
+      <span className="text-sm text-slate-600">само 20€ на месец →</span>
     </Link>
   );
 }

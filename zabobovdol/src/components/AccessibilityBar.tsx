@@ -134,7 +134,7 @@ export function AccessibilityBar() {
       onClick={() => chooseFont(level)}
       aria-pressed={font === level}
       className={
-        "a11y-btn inline-flex min-w-[44px] items-center justify-center rounded px-3 py-1.5 font-bold leading-none transition " +
+        "a11y-btn inline-flex min-w-[44px] items-center justify-center rounded-lg px-3 py-1.5 font-bold leading-none transition " +
         cls +
         " " +
         (font === level
@@ -149,10 +149,10 @@ export function AccessibilityBar() {
   );
 
   return (
-    <div className="border-b-2 border-red-300 bg-red-100 no-print">
+    <div className="border-b border-brand-200 bg-brand-50 no-print">
       <div className="container-content flex flex-wrap items-center gap-x-3 gap-y-2 py-2 text-sm">
-        <span className="flex items-center gap-1.5 font-bold text-red-700">
-          <Type className="h-4 w-4" aria-hidden />
+        <span className="flex items-center gap-1.5 font-bold text-brand-800">
+          <Type className="h-5 w-5" aria-hidden />
           Достъпност:
         </span>
 
@@ -161,7 +161,7 @@ export function AccessibilityBar() {
           onClick={toggleCollapsed}
           aria-expanded={!collapsed}
           aria-controls="a11y-controls"
-          className="a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium text-red-700 ring-1 ring-red-300 transition hover:bg-red-200"
+          className="a11y-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold text-brand-800 ring-1 ring-brand-200 transition hover:bg-brand-100"
           title={collapsed ? "Покажи настройките за достъпност" : "Скрий настройките за достъпност"}
         >
           <ChevronDown
@@ -190,7 +190,7 @@ export function AccessibilityBar() {
           onClick={toggleContrast}
           aria-pressed={contrast}
           className={
-            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
+            "a11y-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition " +
             (contrast
               ? "bg-brand-700 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
@@ -206,7 +206,7 @@ export function AccessibilityBar() {
           onClick={toggleDark}
           aria-pressed={dark}
           className={
-            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
+            "a11y-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition " +
             (dark
               ? "bg-brand-700 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
@@ -222,7 +222,7 @@ export function AccessibilityBar() {
           onClick={toggleBigTouch}
           aria-pressed={bigTouch}
           className={
-            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
+            "a11y-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition " +
             (bigTouch
               ? "bg-brand-700 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
@@ -235,7 +235,7 @@ export function AccessibilityBar() {
 
         <Link
           href="/dostapnost"
-          className="a11y-btn ml-auto inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium text-brand-700 underline-offset-2 hover:underline"
+          className="a11y-btn ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-brand-700 underline-offset-2 hover:underline"
           title="Помощ за достъпността и връзка без обаждане"
         >
           <Info className="h-4 w-4" aria-hidden />

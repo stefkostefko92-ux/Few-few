@@ -214,10 +214,19 @@ export default async function HomePage() {
       </section>
 
       {/* Спешни телефони */}
-      <section className="border-b border-slate-200 bg-amber-50">
-        <div className="container-content flex flex-wrap items-center gap-x-6 gap-y-2 py-3 text-sm">
-          <span className="font-semibold text-amber-900">Спешни телефони:</span>
-          <a href="tel:112" className="font-bold text-amber-900 hover:underline">
+      <section className="border-b border-amber-200 bg-amber-50">
+        <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-3 py-3.5">
+          <span className="flex items-center gap-2 font-bold text-amber-900">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-amber-200 text-amber-900">
+              <Phone className="h-5 w-5" aria-hidden />
+            </span>
+            Спешни телефони
+          </span>
+          {/* 112 е най-важният номер — затова е бутон, а не ред в списък. */}
+          <a
+            href="tel:112"
+            className="a11y-btn inline-flex items-center gap-2 rounded-lg bg-crimson-600 px-4 py-2 text-base font-bold text-white shadow-sm transition hover:bg-crimson-700"
+          >
             Спешност 112
           </a>
           {emergency
@@ -226,7 +235,7 @@ export default async function HomePage() {
               <a
                 key={s.id}
                 href={`tel:${s.phone}`}
-                className="text-amber-900 hover:underline"
+                className="a11y-btn inline-flex items-center rounded-lg px-2 text-base font-medium text-amber-900 underline decoration-amber-400 underline-offset-4 transition hover:decoration-amber-700"
               >
                 {s.name.includes(s.phone) ? s.name : `${s.name} ${s.phone}`}
               </a>
@@ -248,8 +257,8 @@ export default async function HomePage() {
             const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
             return (
               <Link key={item.href} href={item.href} className="card group flex items-start gap-4">
-                <span className={"grid h-12 w-12 shrink-0 place-items-center rounded-xl transition duration-200 group-hover:scale-110 " + c.chip}>
-                  <Icon className="h-7 w-7" aria-hidden />
+                <span className={"grid h-14 w-14 shrink-0 place-items-center rounded-2xl transition duration-200 group-hover:scale-110 " + c.chip}>
+                  <Icon className="h-8 w-8" aria-hidden />
                 </span>
                 <span>
                   <span className={"block font-display text-lg font-bold text-slate-900 " + c.title}>
