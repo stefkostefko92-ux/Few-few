@@ -535,6 +535,11 @@ export default function Login() {
               <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">VS TICKET TOOL</a>
               <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">VS APPY</a>
             </nav>
+            {/* Страници по функция (/features/*) — това, което хората търсят като
+                отделни ботове („verification bot", „giveaway bot", „logging
+                bot"…). Едно определение за всички начални страници и за
+                pre-render снимката: components/FeatureLinks.jsx. */}
+            <FeatureLinks heading="Features" uppercase />
 
             {/* Language versions — visible crawlable links matching the
                 hreflang alternates (Seo.jsx + sitemap.xml). */}

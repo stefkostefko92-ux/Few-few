@@ -155,6 +155,8 @@ const PAGES = [
   { path: "/bg", name: "landing-bg" },
   { path: "/status", name: "status" },
   { path: "/commands", name: "commands-public" },
+  { path: "/features", name: "features-hub" },
+  { path: "/features/discord-ticket-system", name: "features-tickets" },
   { path: `/dashboard/${SID}`, name: "overview" },
   { path: `/dashboard/${SID}/settings`, name: "settings" },
   { path: `/dashboard/${SID}/forms`, name: "forms" },

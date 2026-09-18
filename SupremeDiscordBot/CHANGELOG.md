@@ -5,6 +5,19 @@
 ## [Unreleased]
 
 ### Добавено
+- **SEO/GEO/AEO: 12 страници по функция (`/features`, `/features/*`)** — за
+  заявките, с които хората търсят отделни ботове („discord ticket system",
+  „discord verification bot", „reaction roles bot", „giveaway bot with role
+  requirements", „welcome bot", „logging bot / log deleted messages", „sticky
+  message bot", „scheduled messages bot", „poll bot", „discord support bot ai",
+  „white label discord bot"), сверени с живите подсказки на Google/Bing/
+  DuckDuckGo (18.09.2026). Всяка страница: отговор отпред (≥60 думи), стъпки,
+  таблица Free/Premium с числата от `backend/src/lib/premium.js`, FAQ, свързани
+  страници; JSON-LD WebPage + BreadcrumbList + FAQPage; pre-render снимка за
+  обхождачи без JavaScript; връзки от двете начални страници (8 локала) и от
+  публичния футър; sitemap + llms.txt. Един източник (`src/data/featurePages.js`)
+  за React, снимката и гейта `featurePages.test.js` (лимитите се четат от
+  premium.js — променено число там без промяна тук пада теста).
 - **`docs/DISCORD_VERIFICATION.md`** — готовите отговори (EN) за App Verification,
   Privileged Intent review (праг **10 000 уникални потребители** + годишно
   подновяване, правила от 10.06.2026) и Premium Apps onboarding: употреба на

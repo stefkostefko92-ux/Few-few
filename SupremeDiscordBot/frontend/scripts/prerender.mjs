@@ -24,6 +24,7 @@ import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
 } from "../src/data/growthContent.js";
+import { FEATURES_HUB, FEATURE_PAGES, featureJsonLd, hubJsonLd } from "../src/data/featurePages.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
@@ -127,6 +128,14 @@ const GUIDE_LINKS = [
   ["/compare/appy-alternative", "vsAppy"],
 ];
 
+// Връзки към /features/* — същият масив, който храни components/FeatureLinks.jsx.
+// Заглавието е на езика на посетителя (t.guides.features), етикетите са
+// английските имена на страниците (съдържанието им е на английски).
+function featureLinks(heading) {
+  const items = FEATURE_PAGES.map((p) => `<li><a href="${p.path}">${esc(p.nav)}</a></li>`).join("");
+  return `<nav><h2>${esc(heading)}</h2><ul>${items}<li><a href="${FEATURES_HUB.path}">${esc(FEATURES_HUB.nav)}</a></li></ul></nav>`;
+}
+
 function guideLinks(t) {
   if (!t.guides) return "";
   const items = GUIDE_LINKS
@@ -167,6 +176,7 @@ function landingSnapshot(t) {
       t.priceNote ? `<p>${esc(t.priceNote)}</p>` : ""
     }</section>
     ${guideLinks(t)}
+    ${featureLinks(t.guides?.features || "Features")}
   </div>`;
 }
 
@@ -285,6 +295,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
         vsAppy: "Supreme Bot vs Appy",
       },
     })}
+    ${featureLinks("Features")}
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
@@ -415,6 +426,51 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
   html = injectRoot(html, snapshot);
   writeRoute(d.path, html);
   count++;
+}
+
+// 4б) /features + /features/* — по една страница за функция, която хората
+//     търсят като отделен бот. Данни: src/data/featurePages.js (СЪЩИЯТ обект,
+//     който рендерира FeaturePage.jsx). Снимката е пълна: отговор отпред, стъпки
+//     като <ol>, Free/Premium като <table>, FAQ като H3/P, свързани връзки —
+//     обхождач без JavaScript получава всичко цитируемо; JSON-LD (WebPage +
+//     BreadcrumbList + FAQPage) влиза в <head>.
+function featureSnapshot(p) {
+  const steps = p.steps.map((s) => `<li><strong>${esc(s.title)}.</strong> ${esc(s.body)}</li>`).join("");
+  const tiers = p.tiers.map(([c, f, pr]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(pr)}</td></tr>`).join("");
+  const faq = p.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
+  const related = p.related.map((r) => `<li><a href="${r}">${esc(r)}</a></li>`).join("");
+  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <nav><a href="/">Supreme Bot</a> / <a href="${FEATURES_HUB.path}">Features</a> / ${esc(p.nav)}</nav>
+    <h1>${esc(p.h1)}</h1>
+    <p>${esc(p.answer)}</p>
+    <section><h2>How it works</h2><ol>${steps}</ol></section>
+    <section><h2>Free vs Premium</h2><table><thead><tr><th>Capability</th><th>Free</th><th>Premium</th></tr></thead><tbody>${tiers}</tbody></table></section>
+    <section><h2>Frequently asked questions</h2>${faq}</section>
+    <section><h2>Related</h2><ul>${related}</ul></section>
+  </div>`;
+}
+
+{
+  const hubItems = FEATURE_PAGES.map(
+    (p) => `<li><h2><a href="${p.path}">${esc(p.h1)}</a></h2><p>${esc(p.description)}</p></li>`
+  ).join("");
+  const hubSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>${esc(FEATURES_HUB.h1)}</h1>
+    <p>${esc(FEATURES_HUB.answer)}</p>
+    <ul>${hubItems}</ul>
+  </div>`;
+  let html = withHead(template, { title: FEATURES_HUB.title, description: FEATURES_HUB.description, path: FEATURES_HUB.path, lang: "en", keywords: FEATURES_HUB.keywords });
+  html = injectHead(html, `  ${jsonLd(hubJsonLd())}`);
+  html = injectRoot(html, hubSnapshot);
+  writeRoute(FEATURES_HUB.path, html);
+  count++;
+  for (const p of FEATURE_PAGES) {
+    let page = withHead(template, { title: p.title, description: p.description, path: p.path, lang: "en", keywords: p.keywords });
+    page = injectHead(page, `  ${jsonLd(featureJsonLd(p))}`);
+    page = injectRoot(page, featureSnapshot(p));
+    writeRoute(p.path, page);
+    count++;
+  }
 }
 
 // 5) Legal / status routes — correct per-route head + a minimal heading so

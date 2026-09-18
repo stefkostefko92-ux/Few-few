@@ -226,4 +226,92 @@
     <priority>0.3</priority>
   </url>
 
+
+  <!-- ─── Feature pages (/features/*) — по една за всяка функция, която се търси
+       като отделен бот; данни: src/data/featurePages.js ───────────────── -->
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-ticket-system</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-application-forms</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-verification-bot</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-reaction-roles</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-giveaway-bot</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-welcome-bot-autorole</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-logging-bot</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-sticky-scheduled-messages</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-poll-bot</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-support-bot-ai</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/white-label-discord-bot</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>
