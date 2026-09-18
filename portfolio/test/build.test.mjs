@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { build } from "../build.mjs";
 import { I18N } from "../src/i18n/index.mjs";
 import { DEMOS } from "../src/demos/index.mjs";
-import { PATHS } from "../src/lib/html.mjs";
+import { PATHS, BROCHURE_PDF } from "../src/lib/html.mjs";
 import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
 import { DEMO_ICONS } from "../src/templates/icons.mjs";
 import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
@@ -49,7 +49,7 @@ test("демота: ≥10, уникални id/слъгове, всеки ези
 });
 
 test("всяка страница: един h1, title ≤60, description ≤160, canonical, hreflang ×3 + x-default, ключови думи, футър-кредит", () => {
-  assert.equal(pages.length, LANGS.length * (DEMOS.length + 9 + ARTICLES.length + CITIES.length), "фиксирани страници + демота + статии + градове");
+  assert.equal(pages.length, LANGS.length * (DEMOS.length + 11 + ARTICLES.length + CITIES.length), "фиксирани страници + демота + статии + градове");
   for (const p of pages) {
     const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
     assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, `${rel}: h1`);
@@ -233,6 +233,29 @@ test("формата за запитване: POST /api/contact на трите 
   }
   assert.ok(readFileSync(join(ROOT_DIR, "nginx.conf"), "utf8").includes("location /api/"), "nginx проксира /api/");
   assert.ok(readFileSync(join(ROOT_DIR, "src/assets/site.js"), "utf8").includes('getElementById("cform")'), "site.js обработва формата");
+});
+
+test("достъпност: a11y/report.json покрива всички BG страници + EN/IT хъб с нула грешки; декларацията ×3 носи реалните числа; бутон „Анимации: стоп“ в хъба; брошурата А5 ×3 (HTML noindex + PDF с 6 страници, линк в подножието)", () => {
+  const report = JSON.parse(readFileSync(join(ROOT_DIR, "a11y/report.json"), "utf8"));
+  assert.equal(report.summary.errors, 0, "нула грешки за достъпност (виж tools/a11y.mjs)");
+  const bgPages = pages.filter((p) => p.startsWith("/bg/"));
+  for (const p of bgPages) assert.ok(report.pages[p], `${p} е одитирана`);
+  assert.ok(report.pages["/en/"] && report.pages["/it/"], "EN/IT хъб одитирани");
+  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(report.date) && Date.now() - Date.parse(report.date) < 180 * 864e5, "докладът е по-нов от 6 месеца");
+  for (const lang of LANGS) {
+    const a = readFileSync(join(OUT, PATHS.a11y[lang].slice(1), "index.html"), "utf8");
+    assert.ok(a.includes(report.date) && a.includes(`${report.summary.pages} `), `${lang}: декларацията носи датата и броя страници от доклада`);
+    assert.ok(a.includes("WCAG 2.1"), `${lang}: стандартът е посочен`);
+    const hub = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
+    assert.ok(hub.includes('data-fx-toggle') && hub.includes('aria-pressed="false"'), `${lang}: бутон за спиране на анимациите`);
+    assert.ok(hub.includes(`href="${PATHS.a11y[lang]}"`) && hub.includes(`href="${BROCHURE_PDF[lang]}" download`), `${lang}: линкове към декларацията и PDF брошурата`);
+    const b = readFileSync(join(OUT, PATHS.brochure[lang].slice(1), "index.html"), "utf8");
+    assert.ok(b.includes('content="noindex, follow"') && (b.match(/<section class="bp/g) || []).length === 6, `${lang}: брошурата е noindex с 6 страници`);
+    assert.equal((b.match(/<li>(?:<svg)/g) || []).length, DEMOS.length, `${lang}: всички демота в брошурата`);
+    const pdf = readFileSync(join(ROOT_DIR, "public", BROCHURE_PDF[lang]), "latin1");
+    assert.ok(pdf.startsWith("%PDF-") && (pdf.match(/\/Type\s*\/Page(?!s)/g) || []).length === 6, `${lang}: PDF брошура с 6 страници (node tools/brochure.mjs)`);
+    assert.ok(!readFileSync(join(OUT, "sitemap.xml"), "utf8").includes(PATHS.brochure[lang]), `${lang}: брошурата не е в sitemap`);
+  }
 });
 
 test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {

@@ -18,6 +18,8 @@ import { renderLocalIndex, renderLocal, localPath } from "./src/templates/local.
 import { ARTICLES } from "./src/blog/index.mjs";
 import { CITIES } from "./src/local/cities.mjs";
 import { renderLegal, renderRoot, renderNotFound, robots, llms, sitemap, securityTxt } from "./src/templates/misc.mjs";
+import { renderA11y } from "./src/templates/a11y.mjs";
+import { renderBrochure } from "./src/templates/brochure.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const OUT = join(ROOT, "dist");
@@ -38,6 +40,8 @@ export function build({ out = OUT, quiet = false } = {}) {
     put(PATHS.hub[lang], renderHub(lang));
     put(PATHS.pricing[lang], renderPricing(lang));
     put(PATHS.legal[lang], renderLegal(lang));
+    put(PATHS.a11y[lang], renderA11y(lang));
+    put(PATHS.brochure[lang], renderBrochure(lang)); // noindex — печатен асет (PDF: tools/brochure.mjs)
     put(PATHS.projects[lang], renderProjects(lang));
     put(PATHS.admin[lang], renderAdmin(lang));
     put(PATHS.quote[lang], renderQuote(lang));
@@ -52,6 +56,7 @@ export function build({ out = OUT, quiet = false } = {}) {
     urls.push({ loc: PATHS.hub[lang], alt: PATHS.hub, priority: "1.0", changefreq: "weekly" });
     urls.push({ loc: PATHS.pricing[lang], alt: PATHS.pricing, priority: "0.9", changefreq: "monthly" });
     urls.push({ loc: PATHS.legal[lang], alt: PATHS.legal, priority: "0.2", changefreq: "yearly" });
+    urls.push({ loc: PATHS.a11y[lang], alt: PATHS.a11y, priority: "0.2", changefreq: "yearly" });
     urls.push({ loc: PATHS.projects[lang], alt: PATHS.projects, priority: "0.9", changefreq: "monthly" });
     urls.push({ loc: PATHS.admin[lang], alt: PATHS.admin, priority: "0.7", changefreq: "yearly" });
     urls.push({ loc: PATHS.quote[lang], alt: PATHS.quote, priority: "0.8", changefreq: "monthly" });

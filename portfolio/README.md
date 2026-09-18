@@ -9,6 +9,8 @@ cd portfolio
 node build.mjs                       # генерира dist/
 node --test test/build.test.mjs      # гейтът
 node --test api/server.test.mjs      # контактният API (POST /api/contact → Brevo; тайните само на сървъра — api/README.md)
+node tools/a11y.mjs                  # WCAG проверка в Chromium (контраст, имена, заглавия) → a11y/report.json
+node tools/brochure.mjs              # брошурата А5 → public/broshura/*.pdf
 node serve.mjs                       # http://127.0.0.1:4180/
 ```
 

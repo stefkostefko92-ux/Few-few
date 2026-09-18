@@ -19,6 +19,8 @@ _Stack: **генератор с нула runtime зависимости** (Node 
 node build.mjs                                  # → dist/ (броят файлове/URL се печата; 15 демота ×3 езика + хъб · проекти · цени · правна)
 node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара · формата
 node --test api/server.test.mjs                 # контактният API (валидация · honeypot · лимит · HTTP договор, мокнат send)
+node tools/a11y.mjs                             # WCAG проверка в Chromium → a11y/report.json (гейтната в теста: 0 грешки; след промяна по шаблон/CSS)
+node tools/brochure.mjs                         # брошурата А5 → public/broshura/*.pdf (след промяна по цени/демота/проекти; иска dist/ + Chromium)
 node ../tools/qa/static-site-check.mjs dist     # препратки · ключови думи · title/lang (repo гейтът)
 node serve.mjs                                  # локален преглед на http://127.0.0.1:4180/
 node tools/brand.mjs                            # всички бранд асети от brand/logo-source.png (само при смяна на логото)
@@ -53,6 +55,9 @@ tools/                      fonts.mjs (Google Fonts → self-host) · photos.mjs
 test/build.test.mjs         гейтът · docs/PRICING-RESEARCH.md — проучването зад цените (с източници и дата)
 nginx.conf · deploy.sh      продукционният конфиг (CSP, HSTS, истинско 404, proxy /api/) и деплоят (7 стъпки, API последна)
 api/server.mjs              контактният API (node:http, Brevo) + server.test.mjs + README.md (env на сървъра) · deploy/portfolio-api.service — systemd юнитът
+src/templates/a11y.mjs      декларацията за достъпност (числата от a11y/report.json) · brochure.mjs + assets/brochure.css — брошурата А5 (HTML noindex → PDF)
+tools/a11y.mjs · brochure.mjs · lib/serve-dist.mjs   WCAG проверка (CDP, контраст/имена/заглавия/цели) · PDF печат · общият статичен сървър; a11y/report.json е проследен
+src/lib/color.mjs           контраст по WCAG + readable()/onColor(): темите дават вкуса, генераторът гарантира ≥4.5:1
 ```
 
 ## Конвенции (важно)
@@ -123,6 +128,19 @@ api/server.mjs              контактният API (node:http, Brevo) + serv
   Save-Data / `update: slow`) или измерени <40 FPS две секунди подред (след 4-тата s) — спира безкрайните
   декоративни анимации, филтрите, живите iframe-и; в демотата спира Ken Burns + color blend. Съдържанието и
   функциите са същите. Reading progress в демото е `transform:scaleX`, не `width`.
+- **Достъпност (гейтната)**: `tools/a11y.mjs` зарежда всяка BG страница + EN/IT хъб в Chromium и проверява
+  alt · достъпно име на контроли/бутони/линкове · title на iframe · един h1 без прескачане · lang · уникални id ·
+  без tabindex>0 · `<main>` · **контраст ≥4.5:1** (3:1 едър) · цели ≥24×24 (само предупреждение). Тестът иска
+  `a11y/report.json` с 0 грешки, покритие на всички BG страници и дата <6 месеца — **след промяна по шаблон или
+  CSS пусни го пак** (иначе докладът лъже). Акцентът/приглушеният цвят на демотата минават през `readable()`
+  (`src/lib/color.mjs`) — не „поправяй“ контраста на ръка в темата. Заглавията в подножието са `h2.foot-h`, картите
+  под h1 са h2 (без h1→h3). Бутонът „Анимации: стоп“ (`data-fx-toggle`, и в мобилното меню) е потребителският
+  контрол по WCAG 2.2.2 — включва LITE и се помни в `localStorage` (`cs-lite`); не го махай. Декларацията
+  (`/bg/dostapnost/` ×3) описва честно известните ограничения — при нова, добави я в `a11y.limits`.
+- **Брошура А5** (`/bg/broshura/` ×3, noindex; `tools/brochure.mjs` → `public/broshura/carbon-stealth-portfolio-<lang>.pdf`,
+  6 страници, проследени в git, линк „Брошура · PDF A5“ в подножието): същите данни като сайта (демота · проекти
+  със снимка · цени от `pricing.mjs` · процес · защо · контакт). Смяна на цена/демо/проект → регенерирай PDF-ите
+  (тестът проверява само, че съществуват с 6 страници — свежестта е твоя).
 - **Reveal анимациите** са само с JS (`html.js`), елементите във viewport-а се показват веднага, има и
   предпазен таймер — без JS всичко е видимо. В демотата `prefers-reduced-motion` ги изключва; в хъба не
   (нареждане на собственика за бранд сайта).

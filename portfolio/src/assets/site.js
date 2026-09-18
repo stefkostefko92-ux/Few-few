@@ -5,7 +5,8 @@
 // (слаба машина по Navigator API или измерени <40 FPS две секунди подред) сваля ефектите още.
 document.documentElement.classList.add("js");
 var FINE = matchMedia("(pointer: fine)").matches;
-var LITE = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4) || (navigator.connection && navigator.connection.saveData) || matchMedia("(update: slow)").matches;
+var PAUSED = false; try { PAUSED = localStorage.getItem("cs-lite") === "1"; } catch (e) {} // изборът „Анимации: стоп" (WCAG 2.2.2) се помни
+var LITE = PAUSED || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4) || (navigator.connection && navigator.connection.saveData) || matchMedia("(update: slow)").matches;
 function goLite() { if (LITE) return; LITE = true; document.documentElement.classList.add("lite"); dispatchEvent(new Event("cs-lite")); }
 if (LITE) document.documentElement.classList.add("lite");
 var P = { x: innerWidth / 2, y: innerHeight / 2, down: false, moved: false };
@@ -73,6 +74,14 @@ addEventListener("pointerdown", function (e) {
 
 // --- общият цикъл: един requestAnimationFrame за курсор · магнити · FPS ---
 (function loop(now) { for (var i = 0; i < FRAME.length; i++) FRAME[i](now); requestAnimationFrame(loop); })(performance.now());
+
+// --- „Анимации: стоп" — потребителски контрол за движещото се съдържание (WCAG 2.2.2); включва LITE режима и се помни ---
+(function () {
+  var ts = document.querySelectorAll("[data-fx-toggle]"); if (!ts.length) return;
+  function mark() { ts.forEach(function (t) { t.setAttribute("aria-pressed", "true"); t.textContent = t.dataset.on; t.disabled = true; }); }
+  if (PAUSED) mark();
+  ts.forEach(function (t) { t.addEventListener("click", function () { try { localStorage.setItem("cs-lite", "1"); } catch (e) {} goLite(); mark(); }); });
+})();
 
 // --- меню + език ---
 (function () {

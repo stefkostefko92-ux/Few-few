@@ -13,7 +13,7 @@ export function renderQuote(lang) {
   const qtyOf = { language: [0, 5, 0], page: [0, 20, 0], copy: [0, 20, 0], logo: null, maintenance: [0, 24, 12], seo: [0, 24, 0], hosting: [0, 36, 0] };
   const addons = ADDONS.map((a) => {
     const r = qtyOf[a.id];
-    const ctl = r ? `<span class="q-qty"><button type="button" data-dec aria-label="−">−</button><input type="number" name="${a.id}" min="${r[0]}" max="${r[1]}" value="${r[2]}" inputmode="numeric"><button type="button" data-inc aria-label="+">+</button><i>${esc(a.kind === "monthly" ? q.months : q.qty)}</i></span>` : `<span class="q-qty"><input type="checkbox" name="${a.id}" value="1"></span>`;
+    const ctl = r ? `<span class="q-qty"><button type="button" data-dec aria-label="−">−</button><input type="number" name="${a.id}" min="${r[0]}" max="${r[1]}" value="${r[2]}" inputmode="numeric" aria-label="${esc(p.addons[a.id])}"><button type="button" data-inc aria-label="+">+</button><i>${esc(a.kind === "monthly" ? q.months : q.qty)}</i></span>` : `<span class="q-qty"><input type="checkbox" name="${a.id}" value="1" aria-label="${esc(p.addons[a.id])}"></span>`;
     return `<div class="q-addon"><div><span>${esc(p.addons[a.id])}</span><small>${money(shown(a.price, lang), lang)} ${esc(a.kind === "monthly" ? p.monthly : p.once)}</small></div>${ctl}</div>`;
   }).join("");
   const clients = ["bgCompany", "bgPrivate", "euCompany", "euPrivate", "nonEu"].map((c, i) => `<label class="q-client"><input type="radio" name="client" value="${c}"${(lang === "bg" ? c === "bgCompany" : c === "euCompany") ? " checked" : ""}> ${esc(q.client[c])}</label>`).join("");

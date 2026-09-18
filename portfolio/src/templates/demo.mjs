@@ -3,6 +3,7 @@
 // Премиум слой: premium.css/js (киношен hero, ред с доказателства, оферта, галерия с надписи, навигация).
 // Снимки: ако tools/photos.mjs е свалил public/img/<id>/, hero/about/галерия ги ползват; иначе —
 // генеративна графика. Всичко интерактивно (форми, график, кошница, lightbox) живее в demo.js.
+import { readable, onColor } from "../lib/color.mjs";
 import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANGS } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { widget } from "./widgets.mjs";
@@ -15,7 +16,11 @@ const stars = (n) => `<span class="stars" aria-label="${n}/5">${ICON.star.repeat
 
 function themeCss(th) {
   // Резервните семейства (Inter Tight) покриват кирилица за шрифтове без нея (Barlow, Syne, Fraunces…).
-  return `<style>:root{--bg:${th.bg};--surface:${th.surface};--surface2:${th.surface2};--text:${th.text};--muted:${th.muted};--accent:${th.accent};--accent2:${th.accent2};--on-accent:${th.onAccent};--line:${th.line};--radius:${th.radius};--display:${th.display.replace(/,\s*[^,]+$/, "")}, 'Inter Tight', sans-serif;--body:${th.body.replace(/,\s*[^,]+$/, "")}, 'Inter Tight', sans-serif}</style>`;
+  // Акцентът и приглушеният текст са „четими“ (≥4.5:1 спрямо фон/повърхности, WCAG 1.4.3): темата дава
+  // вкуса, генераторът гарантира контраста (tools/a11y.mjs го мери в Chromium).
+  const bgs = [th.bg, th.surface, th.surface2];
+  const accent = readable(th.accent, bgs, 4.5, th.mode), muted = readable(th.muted, bgs, 4.5, th.mode), onAccent = onColor(th.onAccent, accent);
+  return `<style>:root{--bg:${th.bg};--surface:${th.surface};--surface2:${th.surface2};--text:${th.text};--muted:${muted};--accent:${accent};--accent2:${th.accent2};--on-accent:${onAccent};--line:${th.line};--radius:${th.radius};--display:${th.display.replace(/,\s*[^,]+$/, "")}, 'Inter Tight', sans-serif;--body:${th.body.replace(/,\s*[^,]+$/, "")}, 'Inter Tight', sans-serif}</style>`;
 }
 
 function demoBar(lang, demo, ui) {

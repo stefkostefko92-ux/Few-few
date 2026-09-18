@@ -40,7 +40,11 @@ export const PATHS = {
   blog: { bg: "/bg/blog/", en: "/en/blog/", it: "/it/blog/" },
   local: { bg: "/bg/izrabotka-na-sait/", en: "/en/web-design/", it: "/it/realizzazione-siti/" },
   hosting: { bg: "/bg/hosting-i-poddrazhka/", en: "/en/hosting-and-maintenance/", it: "/it/hosting-e-manutenzione/" },
+  a11y: { bg: "/bg/dostapnost/", en: "/en/accessibility/", it: "/it/accessibilita/" },
+  brochure: { bg: "/bg/broshura/", en: "/en/brochure/", it: "/it/brochure/" },
 };
+/** PDF брошурата (tools/brochure.mjs → public/broshura/); линкът е винаги същият. */
+export const BROCHURE_PDF = { bg: "/broshura/carbon-stealth-portfolio-bg.pdf", en: "/broshura/carbon-stealth-portfolio-en.pdf", it: "/broshura/carbon-stealth-portfolio-it.pdf" };
 
 export const demoPath = (lang, demo) => `/${lang}/demo/${demo.slug[lang]}/`;
 
