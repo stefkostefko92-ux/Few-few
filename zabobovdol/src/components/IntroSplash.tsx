@@ -18,37 +18,27 @@ export function IntroSplash() {
   const [visitorNo, setVisitorNo] = useState<number | null>(null);
   const [reduce, setReduce] = useState(false);
   const skipRef = useRef<HTMLButtonElement>(null);
+  const countedRef = useRef(false);
 
   // При „по-малко движение“ показваме екрана съвсем кратко и без анимирана
   // лента — за хора с вестибуларна чувствителност и за да не бави достъпа.
   const seconds = reduce ? 1.5 : SITE.intro.seconds;
 
-  // Истински брояч на посетителите: всеки браузър получава пореден номер
-  // веднъж и го запомня, за да не надува брояча при всяко зареждане.
+  // Брояч на посетителите: увеличава се при ВСЯКО зареждане на сайта.
+  // Компонентът стои в общия layout, затова ефектът се изпълнява веднъж на
+  // пълно зареждане — вътрешните навигации (App Router) не го пускат пак.
   useEffect(() => {
     if (isAdmin) return;
-    const KEY = "zbd_visitor_no";
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem(KEY);
-    } catch {
-      /* localStorage недостъпен */
-    }
-    if (stored && Number(stored) > 0) {
-      setVisitorNo(Number(stored));
-      return;
-    }
+    // В разработка StrictMode вика ефекта два пъти; пазачът спира двойното
+    // броене. В продукция така или иначе се изпълнява веднъж.
+    if (countedRef.current) return;
+    countedRef.current = true;
     let cancelled = false;
     fetch("/api/visit", { method: "POST" })
       .then((r) => r.json())
       .then((d) => {
         if (cancelled || !d?.ok || typeof d.n !== "number") return;
         setVisitorNo(d.n);
-        try {
-          localStorage.setItem(KEY, String(d.n));
-        } catch {
-          /* пренебрегваме */
-        }
       })
       .catch(() => {});
     return () => {
