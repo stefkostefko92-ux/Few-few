@@ -152,6 +152,12 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 - Firefox: `sidebar_action` вместо `side_panel`; `chrome.sidePanel` е guard-нат.
 - Store пакет: `store/PUBLISH.md` (стъпки), `store/promo/` (tile + marquee),
   `sidepanel-{bg,en}.png` композиция (реална статия 880px + панел 400px).
+- **CWS уроци (Тайния агент, 09.2026):** Data Disclosure се попълва и при
+  чисто локална обработка (User Data FAQ Q3) → отмятаме Web history + Website
+  content, НЕ „does not collect“; от 01.08.2026 промяна в практиките се разкрива
+  проактивно → `onInstalled` с `reason === 'update'` отваря welcome с бележка.
+  Правило: **всеки нов приемник на URL/съдържание** (напр. `deja:active`) минава
+  същия гейт paused/isDenied като индексирането и чисти стария ключ.
 
 ## Пътна карта (по ред)
 

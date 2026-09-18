@@ -261,5 +261,11 @@
   },
   "cmdOpenPanel": {
     "message": "Open the Déjà side panel"
+  },
+  "welcomePoint4": {
+    "message": "The side panel sees the address and title of the page you're viewing so it can show what you've read on its topic — session memory only. Passages you deliberately save also stay with you only."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà has updated. Here's what it does with your data — nothing has left your device."
   }
 }

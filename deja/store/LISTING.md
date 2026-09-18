@@ -101,9 +101,9 @@ a self-hosted mirror instead (Settings → model mirror).
 
 ## Privacy практики (Data Disclosure формуляр)
 
-- **Does this item collect or use user data?** → No. (CWS дефинира „collection“
-  като предаване извън устройството; нищо не се предава — виж PUBLISH.md за
-  подробностите ред по ред.)
+- **Data usage** → отметни **Web history** и **Website content** (обработват се
+  изцяло локално, но CWS User Data FAQ Q3 изисква разкриване и при локална
+  обработка). Нищо друго. Подробностите ред по ред — в PUBLISH.md.
 - Трите сертификации → отметни и трите (не продаваме, не ползваме извън single
   purpose, не ползваме за кредитоспособност).
 

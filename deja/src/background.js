@@ -328,7 +328,17 @@ const handlers = {
   // content script-ът докладва активната страница (при фокус/показване) — без
   // "tabs" право; страничният панел чете това от storage.session
   'deja:active': async (msg) => {
-    if (!/^https?:\/\//.test(msg.url || '')) return;
+    // Същият гейт като индексирането: пауза/denylist важат и за страничния
+    // панел — банкова страница не бива да се появява там дори като заглавие.
+    const settings = await getSettings();
+    if (
+      !/^https?:\/\//.test(msg.url || '') ||
+      settings.paused ||
+      isDenied(msg.url, settings.userDenylist)
+    ) {
+      await chrome.storage.session.remove('activeTab');
+      return;
+    }
     await chrome.storage.session.set({
       activeTab: { url: msg.url, title: msg.title || '', at: Date.now() },
     });
@@ -512,6 +522,16 @@ chrome.runtime.onInstalled.addListener((details) => {
   chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: false }).catch(() => {});
   if (details.reason === 'install') {
     chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  } else if (details.reason === 'update') {
+    // CWS (от 01.08.2026): промяна в практиките с данни се разкрива ПРОАКТИВНО
+    // и след инсталация — при ъпдейт отваряме welcome с „какво е ново“
+    const from = details.previousVersion || '';
+    const to = chrome.runtime.getManifest().version;
+    if (from !== to) {
+      chrome.tabs.create({
+        url: chrome.runtime.getURL(`welcome.html?update=${encodeURIComponent(to)}`),
+      });
+    }
   }
 });
 chrome.runtime.onStartup.addListener(() => {

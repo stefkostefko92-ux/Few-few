@@ -13,3 +13,8 @@ document.getElementById('options').addEventListener('click', (event) => {
   event.preventDefault();
   chrome.runtime.openOptionsPage();
 });
+
+// при ъпдейт (welcome.html?update=<версия>) показваме бележката „какво е ново“
+if (new URLSearchParams(location.search).has('update')) {
+  document.getElementById('updated').hidden = false;
+}

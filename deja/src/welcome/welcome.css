@@ -61,3 +61,15 @@
 .welcome .cta a:hover {
   color: var(--accent);
 }
+
+.welcome .updated {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  margin: 0 auto 18px;
+  max-width: 560px;
+  padding: 10px 14px;
+  text-align: center;
+}

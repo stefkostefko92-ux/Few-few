@@ -261,5 +261,11 @@
   },
   "cmdOpenPanel": {
     "message": "Apri il pannello laterale di Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Il pannello laterale vede l'indirizzo e il titolo della pagina che stai guardando per mostrarti cosa hai letto sul suo argomento — solo nella memoria di sessione. Anche i brani che salvi di proposito restano solo da te."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà si è aggiornato. Ecco cosa fa con i tuoi dati — nulla ha lasciato il tuo dispositivo."
   }
 }
