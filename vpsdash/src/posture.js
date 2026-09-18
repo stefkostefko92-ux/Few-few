@@ -50,7 +50,15 @@ export function sshFindings(out) {
         severity: 'critical',
         title: 'SSH приема пароли',
         why: 'Ботовете налучкват пароли денонощно. С ключове това просто не е възможно.',
-        fix: 'Сложи си ключ (ssh-copy-id), после в /etc/ssh/sshd_config: PasswordAuthentication no; systemctl restart ssh',
+        // На Ubuntu cloud образи `PasswordAuthentication yes` идва от
+        // /etc/ssh/sshd_config.d/50-cloud-init.conf, а `Include` е НАЙ-ОТГОРЕ в
+        // sshd_config и при sshd печели ПЪРВАТА стойност. Тоест редакция на
+        // главния файл не променя нищо — поправката е drop-in с име, което се
+        // сортира ПРЕДИ 50-. Открито на живо: собственикът вярваше, че е с ключ.
+        fix:
+          'Сложи си ключ (ssh-copy-id). После: printf "PasswordAuthentication no\\nKbdInteractiveAuthentication no\\nMaxAuthTries 3\\n" ' +
+          '> /etc/ssh/sshd_config.d/00-hardening.conf && sshd -t && systemctl reload ssh. ' +
+          'Името 00- е задължително: cloud-init слага „yes" в 50-cloud-init.conf, а печели първата стойност.',
         // Изричното предупреждение е важно: изключено преди работещ ключ = заключен навън.
         note: 'Първо провери, че влизаш с ключ в ВТОРА сесия — иначе се заключваш отвън.',
       });
@@ -63,7 +71,10 @@ export function sshFindings(out) {
         why: 'Всеки бот знае името „root" — остава му само паролата/ключа. Отделен потребител + sudo оставя и следа кой какво е направил.',
         fix: '/etc/ssh/sshd_config: PermitRootLogin prohibit-password (или no)',
       });
-    } else if (rootLogin === 'prohibit-password') {
+    } else if (rootLogin === 'prohibit-password' || rootLogin === 'without-password') {
+      // `without-password` е старият правопис на същото — `sshd -T` на Ubuntu
+      // 24.04 го печата така. Открито от реален изход: панелът мълчеше за root,
+      // защото не разпознаваше думата, а мълчание тук се чете като „наред".
       add({ id: 'ssh-root-key', severity: 'low', ok: true, title: 'root влиза само с ключ', why: 'Разумна настройка.', fix: '' });
     }
     // „PasswordAuthentication no" НЕ изключва паролите само по себе си.
