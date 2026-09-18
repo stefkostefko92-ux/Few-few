@@ -120,6 +120,61 @@ describe("Developer Policy §5–6 — без нежелани DM и марке�
   });
 });
 
+// ─── docs/DISCORD_VERIFICATION.md — отговорите за портала срещу КОДА ──────────
+// Ревюто на Discord сравнява декларираното с реалното поведение; документът е
+// това, което собственикът копира във формуляра. Разминаване между него и
+// intents/правата в кода е точно грешката, която води до отказ.
+describe("docs/DISCORD_VERIFICATION.md е сверен с кода", () => {
+  const PRIVILEGED = ["MessageContent", "GuildMembers", "GuildPresences"];
+  const intentsInCode = () => {
+    const src = read("bot/src/index.js");
+    const block = src.slice(src.indexOf("intents: ["), src.indexOf("],", src.indexOf("intents: [")));
+    return [...block.matchAll(/^\s*GatewayIntentBits\.(\w+)/gm)].map((m) => m[1]);
+  };
+
+  it("всеки привилегирован intent в кода има свой раздел с употреби; неползван — не се иска", () => {
+    const doc = read("docs/DISCORD_VERIFICATION.md");
+    const used = intentsInCode().filter((i) => PRIVILEGED.includes(i));
+    expect(used.length, "поне един привилегирован intent (тикетите четат съдържание)").toBeGreaterThan(0);
+    for (const i of used) {
+      expect(doc, `${i} липсва като раздел в документа`).toContain(`(\`GatewayIntentBits.${i}\`, \`bot/src/index.js\`)`);
+    }
+    for (const i of PRIVILEGED.filter((p) => !used.includes(p))) {
+      expect(doc, `${i} не е в кода, но документът не казва изрично, че не се иска`).toMatch(new RegExp(`${i === "GuildPresences" ? "Presence" : i}[^\\n]*not requested`, "i"));
+      expect(doc).not.toContain(`(\`GatewayIntentBits.${i}\``);
+    }
+  });
+
+  it("употребите на Message Content сочат файлове, които съществуват и правят това", () => {
+    expect(read("bot/src/events/messageCreate.js")).toContain("ticketChannelCache");
+    expect(read("backend/src/services/aiReply.js")).toContain("AI_REPLY_TRAINING_ATTESTED");
+    for (const f of ["bot/src/events/messageUpdate.js", "bot/src/events/messageDelete.js", "bot/src/events/messageDeleteBulk.js"]) {
+      expect(existsSync(join(ROOT, f)), f).toBe(true);
+    }
+    // „пълният списък с членове никога не се иска“ — members.fetch само с един id
+    const bot = ["bot/src/index.js", "bot/src/utils/formSession.js", "bot/src/events/messageReactionAdd.js", "bot/src/events/messageReactionRemove.js"].map(read).join("\n");
+    expect(bot).not.toMatch(/members\.fetch\(\s*\)/);
+    expect(bot).not.toMatch(/members\.fetch\(\s*\{/);
+  });
+
+  it("числото на правата в поканата е ЕДНО — код, фронтенд и документ", () => {
+    const m = read("bot/src/utils/permissionCheck.js").match(/INVITE_PERMISSIONS_INT = (\d+)/);
+    expect(m, "INVITE_PERMISSIONS_INT липсва").toBeTruthy();
+    const n = m[1];
+    expect(read("frontend/src/pages/Login.jsx")).toContain(`permissions=${n}&`);
+    expect(read("docs/DISCORD_VERIFICATION.md")).toContain(`permissions=${n}`);
+  });
+
+  it("документът носи адресите, които портала иска, и пътя за изтриване", () => {
+    const doc = read("docs/DISCORD_VERIFICATION.md");
+    expect(doc).toContain("https://supremebot.carbonstealth.eu/privacy");
+    expect(doc).toContain("https://supremebot.carbonstealth.eu/terms");
+    expect(doc).toContain("/privacy delete");
+    expect(doc).toContain("discordCompliance.test.js");
+    expect(doc).toMatch(/10 000/);
+  });
+});
+
 describe("документът е синхронизиран", () => {
   it("картата цитира датите на сверяване и двете статии на Discord", () => {
     const doc = read("docs/DISCORD_COMPLIANCE.md");

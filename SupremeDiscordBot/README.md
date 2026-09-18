@@ -199,6 +199,8 @@ https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.
 ### 3. Discord Premium Apps (the only way to buy)
 Follow `docs/DISCORD_MONETIZATION.md`: verified Team-owned app, two monthly guild SKUs,
 SKU ids in both `.env` files. Entitlements arrive over the bot's gateway — no webhook to configure.
+Ready-to-paste answers for App Verification, the Privileged Intent review (10,000+ users,
+renewed yearly) and Premium onboarding: `docs/DISCORD_VERIFICATION.md`.
 
 ### 3a. Stripe Webhook (legacy subscribers only)
 ```

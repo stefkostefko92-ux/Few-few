@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### Добавено
+- **`docs/DISCORD_VERIFICATION.md`** — готовите отговори (EN) за App Verification,
+  Privileged Intent review (праг **10 000 уникални потребители** + годишно
+  подновяване, правила от 10.06.2026) и Premium Apps onboarding: употреба на
+  Message Content и Server Members по файл, защо интеракциите не ги заместват,
+  ретенция, шифриране, достъп, подпроцесори, инциденти, правата в поканата.
+  Гейт в `discordCompliance.test.js`: intents и числото на правата в кода ↔
+  документа; Presence не се иска.
+
 ### Поправено
 - **Деплой: тайните оцеляват местене на `current`** (реален инцидент, 17.09.2026 —
   `[1/4] Missing: backend/.env …` при деплой на 3.4.0). `deploy/autodeploy.sh`
