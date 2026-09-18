@@ -1,0 +1,536 @@
+{
+  "date": "2026-09-18",
+  "viewport": "1366×900",
+  "rules": {
+    "errors": [
+      "html-lang",
+      "landmark-main",
+      "h1-count",
+      "img-alt",
+      "control-name",
+      "button-name",
+      "iframe-title",
+      "heading-skip",
+      "dup-id",
+      "tabindex-positive",
+      "blank-noopener",
+      "contrast"
+    ],
+    "warnings": [
+      "target-size"
+    ]
+  },
+  "pages": {
+    "/bg/blog/hosting-v-es-i-gdpr/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "137×17 https://carbonstealth.eu"
+        }
+      ]
+    },
+    "/bg/blog/": {
+      "errors": 0,
+      "warnings": 2,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "30×13 /bg/blog/feed.xml"
+        },
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/blog/kolko-struva-sait-2026/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "137×17 https://carbonstealth.eu"
+        }
+      ]
+    },
+    "/bg/blog/lighthouse-95-kakvo-oznachava/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "137×17 https://carbonstealth.eu"
+        }
+      ]
+    },
+    "/bg/blog/reverse-charge-dds-firmi-ot-es/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "137×17 https://carbonstealth.eu"
+        }
+      ]
+    },
+    "/bg/blog/statichen-sait-bez-wordpress/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "137×17 https://carbonstealth.eu"
+        }
+      ]
+    },
+    "/bg/broshura/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/ceni/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/admin-panel/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/advokatska-kantora/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/agencia-za-imoti/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/avtokashta/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/avtoservis/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/barzo-hranene/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/fitnes/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/hotel-kashta-za-gosti/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/magazin-za-drehi/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/mebelen-magazin/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/medicinski-centar/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/onlain-magazin/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/restorant/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/salon-za-krasota/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/schetovodna-kashta/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/demo/stroitelstvo-i-remonti/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/dostapnost/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/hosting-i-poddrazhka/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/blagoevgrad/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/bobov-dol/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/bologna/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/dupnica/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/kyustendil/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/milano/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/pernik/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/izrabotka-na-sait/sofia/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/oferta/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/pravna-informacia/": {
+      "errors": 0,
+      "warnings": 0,
+      "issues": []
+    },
+    "/bg/proekti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/advokatska-kantora/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/agencia-za-imoti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/avtokashta/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/avtoservis/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/barzo-hranene/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/fitnes/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/hotel-kashta-za-gosti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/magazin-za-drehi/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/mebelen-magazin/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/medicinski-centar/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/onlain-magazin/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/restorant/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/salon-za-krasota/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/schetovodna-kashta/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/bg/sait-za/stroitelstvo-i-remonti/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "210×17 /bg/pravna-informacia/"
+        }
+      ]
+    },
+    "/en/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "103×17 /en/legal/"
+        }
+      ]
+    },
+    "/it/": {
+      "errors": 0,
+      "warnings": 1,
+      "issues": [
+        {
+          "rule": "target-size",
+          "el": "a",
+          "detail": "184×17 /it/note-legali/"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "pages": 57,
+    "errors": 0,
+    "warnings": 37
+  }
+}

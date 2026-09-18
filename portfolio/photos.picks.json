@@ -1,0 +1,1115 @@
+{
+  "$note": "Ръчно подбрани снимки от Open Images (Flickr, CC BY 2.0). tools/photos.mjs --openimages ги сваля от S3 (open-images-dataset), преоразмерява и пише credits.json с автор + лиценз. Подборът е визуален (контактни листове) — сменяй само с еднакво добра снимка.",
+  "demos": {
+    "avtoservis": {
+      "hero": {
+        "id": "47a0e7daf58ea8c1",
+        "subset": "validation",
+        "author": "viann",
+        "authorUrl": "https://www.flickr.com/people/viann/",
+        "landing": "https://www.flickr.com/photos/viann/7142914205",
+        "title": "Jordan Peugeot (1996) - Formule 1",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "02f2eb66e7befc62",
+        "subset": "test",
+        "author": "Alan Light",
+        "authorUrl": "https://www.flickr.com/people/alan-light/",
+        "landing": "https://www.flickr.com/photos/alan-light/6062396495",
+        "title": "Will's New Car",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "0b919b1363620003",
+        "subset": "train",
+        "author": "William Warby",
+        "authorUrl": "https://www.flickr.com/people/wwarby/",
+        "landing": "https://www.flickr.com/photos/wwarby/4782315063",
+        "title": "Engine",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "0caafe50e3258dd3",
+        "subset": "test",
+        "author": "Nicolas OISEL",
+        "authorUrl": "https://www.flickr.com/people/onico/",
+        "landing": "https://www.flickr.com/photos/onico/9640583264",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "ef3c0a57d2f676e1",
+        "subset": "validation",
+        "author": "zinger",
+        "authorUrl": "https://www.flickr.com/people/uuzinger/",
+        "landing": "https://www.flickr.com/photos/uuzinger/6119157212",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "8e134d62cff001f1",
+        "subset": "validation",
+        "author": "O.Horbacz",
+        "authorUrl": "https://www.flickr.com/people/63299135@N02/",
+        "landing": "https://www.flickr.com/photos/63299135@N02/7881180352",
+        "title": "S5 Audi",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "a5d01fb7fc6a38a2",
+        "subset": "validation",
+        "author": "J.H. Fearless",
+        "authorUrl": "https://www.flickr.com/people/jessicareeder/",
+        "landing": "https://www.flickr.com/photos/jessicareeder/3352283336",
+        "title": "P1020373",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "9e401fd454ca4f61",
+        "subset": "train",
+        "author": "K.G.23",
+        "authorUrl": "https://www.flickr.com/people/kg-23/",
+        "landing": "https://www.flickr.com/photos/kg-23/14040299968",
+        "title": "2014 Ford Fusion SE Silver",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "avtokashta": {
+      "hero": {
+        "id": "41ee46ec2a715f9d",
+        "subset": "test",
+        "author": "CANNIK",
+        "authorUrl": "https://www.flickr.com/people/cannik/",
+        "landing": "https://www.flickr.com/photos/cannik/10505752864",
+        "title": "_0014165.jpg",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "8fe6de18a5c76628",
+        "subset": "test",
+        "author": "KeithJustKeith",
+        "authorUrl": "https://www.flickr.com/people/sreybhtiek/",
+        "landing": "https://www.flickr.com/photos/sreybhtiek/21764544284",
+        "title": "James Bond DB10",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "3f5d3cff1869dd3c",
+        "subset": "test",
+        "author": "ErinIBarker",
+        "authorUrl": "https://www.flickr.com/people/erinibarker/",
+        "landing": "https://www.flickr.com/photos/erinibarker/11615885806/",
+        "title": "DSC_2223-Edit",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "0c92e6bfd7df2d20",
+        "subset": "test",
+        "author": "David",
+        "authorUrl": "https://www.flickr.com/people/4lkna/",
+        "landing": "https://www.flickr.com/photos/4lkna/9819006606",
+        "title": "IMG_0994",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "7a645c3c50c361d4",
+        "subset": "test",
+        "author": "Sicnag",
+        "authorUrl": "https://www.flickr.com/people/42220226@N07/",
+        "landing": "https://www.flickr.com/photos/42220226@N07/6642732519",
+        "title": "1971 DeTomaso Pantera",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "91d6ab86e7f7da2b",
+        "subset": "validation",
+        "author": "Aidan",
+        "authorUrl": "https://www.flickr.com/people/aidanwojtas/",
+        "landing": "https://www.flickr.com/photos/aidanwojtas/2357860232",
+        "title": "Lamborghini &quot;Countess&quot;",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "d8f6c135ec5486ff",
+        "subset": "validation",
+        "author": "BokehShots",
+        "authorUrl": "https://www.flickr.com/people/30384279@N07/",
+        "landing": "https://www.flickr.com/photos/30384279@N07/4739556113",
+        "title": "sean's pictures 006",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "543ea58f7d61d101",
+        "subset": "test",
+        "author": "Patrice CALATAYU",
+        "authorUrl": "https://www.flickr.com/people/131689338@N05/",
+        "landing": "https://www.flickr.com/photos/131689338@N05/19890821675",
+        "title": "MG",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "fitnes": {
+      "hero": {
+        "id": "2dfb5b727d253192",
+        "subset": "train",
+        "author": "rcvictorino",
+        "authorUrl": "https://www.flickr.com/people/rcvictorino/",
+        "landing": "https://www.flickr.com/photos/rcvictorino/14499814835",
+        "title": "IMG_0216",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "82d315674d7f44fb",
+        "subset": "train",
+        "author": "Rene Cunningham",
+        "authorUrl": "https://www.flickr.com/people/renecunningham/",
+        "landing": "https://www.flickr.com/photos/renecunningham/6150842569",
+        "title": "Home gym",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "0b99474ba5c0abbb",
+        "subset": "train",
+        "author": "Suketu Gajjar",
+        "authorUrl": "https://www.flickr.com/people/ketugajjar/",
+        "landing": "https://www.flickr.com/photos/ketugajjar/5364875597",
+        "title": "training day",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "532be062cf89dd6d",
+        "subset": "train",
+        "author": "Louie Baur",
+        "authorUrl": "https://www.flickr.com/people/busaboys/",
+        "landing": "https://www.flickr.com/photos/busaboys/5732358123",
+        "title": "DSC05160",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "047d1570de28bb73",
+        "subset": "validation",
+        "author": "Ian @ ThePaperboy.com",
+        "authorUrl": "https://www.flickr.com/people/thepaperboy/",
+        "landing": "https://www.flickr.com/photos/thepaperboy/1488166534",
+        "title": "usa_weightlifting",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "1453ce1f1af699dd",
+        "subset": "train",
+        "author": "bettyx1138",
+        "authorUrl": "https://www.flickr.com/people/bettyx1138/",
+        "landing": "https://www.flickr.com/photos/bettyx1138/2851543600",
+        "title": "the posh gym",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "a9b9ed8a7e7c0b28",
+        "subset": "train",
+        "author": "Juan Pablo Olmo",
+        "authorUrl": "https://www.flickr.com/people/juanpol/",
+        "landing": "https://www.flickr.com/photos/juanpol/698433011",
+        "title": "Posición nº3",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "898af8619cef3b01",
+        "subset": "train",
+        "author": "Juan Pablo Olmo",
+        "authorUrl": "https://www.flickr.com/people/juanpol/",
+        "landing": "https://www.flickr.com/photos/juanpol/15156451062",
+        "title": "Mi #spinner de #spinning esta fin de semana descansa #ciclismo #duopower",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "mebeli": {
+      "hero": {
+        "id": "0225dbf6ff76a785",
+        "subset": "train",
+        "author": "Wicker Paradise",
+        "authorUrl": "https://www.flickr.com/people/wicker-furniture/",
+        "landing": "https://www.flickr.com/photos/wicker-furniture/8528934551",
+        "title": "Carved Wood Coffee Table outdoor wicker is a favorite of ours! So is this find by ponjoh.",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "56c50cfa5a18e5d6",
+        "subset": "test",
+        "author": "Serg C",
+        "authorUrl": "https://www.flickr.com/people/k3k0/",
+        "landing": "https://www.flickr.com/photos/k3k0/484536529",
+        "title": "another sofa",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "c4ba0f8728db202f",
+        "subset": "test",
+        "author": "Sasha Asensio",
+        "authorUrl": "https://www.flickr.com/people/sashaes/",
+        "landing": "https://www.flickr.com/photos/sashaes/15040458582",
+        "title": "DSC03184.jpg",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "1a5ba6c1fe7a4f2f",
+        "subset": "test",
+        "author": "Rosenfeld Media",
+        "authorUrl": "https://www.flickr.com/people/rosenfeldmedia/",
+        "landing": "https://www.flickr.com/photos/rosenfeldmedia/3260817875",
+        "title": "DITP040: Figure 6.1",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "8bb6998c8359c300",
+        "subset": "test",
+        "author": "Dèsirèe Tonus",
+        "authorUrl": "https://www.flickr.com/people/interno2/",
+        "landing": "https://www.flickr.com/photos/interno2/4527354695",
+        "title": "fuori salone'10",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "9d8277e68c7a742c",
+        "subset": "test",
+        "author": "Tim Crowe",
+        "authorUrl": "https://www.flickr.com/people/this_could_be_my_house/",
+        "landing": "https://www.flickr.com/photos/this_could_be_my_house/2421741998",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "036ddfac0f425c3b",
+        "subset": "train",
+        "author": "Katie Lips",
+        "authorUrl": "https://www.flickr.com/people/katielips/",
+        "landing": "https://www.flickr.com/photos/katielips/3446632941",
+        "title": "Lounge",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "1dc824dc8ec3c508",
+        "subset": "test",
+        "author": "Fabio Ingrosso",
+        "authorUrl": "https://www.flickr.com/people/vinofamily/",
+        "landing": "https://www.flickr.com/photos/vinofamily/4094653647",
+        "title": "Immagini della linea di sedie &quot;Le sedie del Torchio&quot;",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "advokati": {
+      "hero": {
+        "id": "a8a98ab0887289ac",
+        "subset": "validation",
+        "author": "Pat Hawks",
+        "authorUrl": "https://www.flickr.com/people/pathawks/",
+        "landing": "https://www.flickr.com/photos/pathawks/3520383481",
+        "title": "IMG_8198",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "04967790ac1874c5",
+        "subset": "train",
+        "author": "Cameron Mitchell",
+        "authorUrl": "https://www.flickr.com/people/camerondmitchell/",
+        "landing": "https://www.flickr.com/photos/camerondmitchell/6929179808",
+        "title": "R1-08195-001A",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "114d4ffd4e74ad50",
+        "subset": "train",
+        "author": "Leigh Bedford",
+        "authorUrl": "https://www.flickr.com/people/31447080@N04/",
+        "landing": "https://www.flickr.com/photos/31447080@N04/3346153763",
+        "title": "booksforblog 006",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "1919de308144ca9b",
+        "subset": "train",
+        "author": "Fiona Bradley",
+        "authorUrl": "https://www.flickr.com/people/blisspix/",
+        "landing": "https://www.flickr.com/photos/blisspix/97088577",
+        "title": "Pete's old books",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "001b9524bd8a1159",
+        "subset": "train",
+        "author": "Congreso de la República del Perú",
+        "authorUrl": "https://www.flickr.com/people/congresoperu/",
+        "landing": "https://www.flickr.com/photos/congresoperu/5665149153",
+        "title": "Congreso debate eliminar tinta indeleble",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "a95c69cb3268421d",
+        "subset": "test",
+        "author": "UTC Library",
+        "authorUrl": "https://www.flickr.com/people/luptonlibrary/",
+        "landing": "https://www.flickr.com/photos/luptonlibrary/5063380596",
+        "title": "Library2010_087",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "02ae142be8360e81",
+        "subset": "train",
+        "author": "Jon Hurd",
+        "authorUrl": "https://www.flickr.com/people/jonhurd/",
+        "landing": "https://www.flickr.com/photos/jonhurd/4433197",
+        "title": "The Temple in SOHO",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "0ec5b612710b5fb4",
+        "subset": "test",
+        "author": "andrewarchy",
+        "authorUrl": "https://www.flickr.com/people/andrewarchy/",
+        "landing": "https://www.flickr.com/photos/andrewarchy/5720480989",
+        "title": "Bain&Company Boston",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "salon": {
+      "hero": {
+        "id": "d6bdf390a52ae2a7",
+        "subset": "validation",
+        "author": "Anne-Marii",
+        "authorUrl": "https://www.flickr.com/people/nemariella/",
+        "landing": "https://www.flickr.com/photos/nemariella/6912711013",
+        "title": "tumblr_lt2f6m6ZFm1qhgis6o1_500_large",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "01c79b8cc239037d",
+        "subset": "validation",
+        "author": "Pete Bellis",
+        "authorUrl": "https://www.flickr.com/people/video4net/",
+        "landing": "https://www.flickr.com/photos/video4net/4101183577",
+        "title": "Bride has her hair done",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "2cef13c890006439",
+        "subset": "validation",
+        "author": "Aveda Corporation",
+        "authorUrl": "https://www.flickr.com/people/avedaphotos/",
+        "landing": "https://www.flickr.com/photos/avedaphotos/21909472171",
+        "title": "Aveda for Supima Cotton 2016 Spring Summer Paris Fashion Week",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "02ecd01295b4e555",
+        "subset": "train",
+        "author": "ookikioo",
+        "authorUrl": "https://www.flickr.com/people/ookikioo/",
+        "landing": "https://www.flickr.com/photos/ookikioo/237315116",
+        "title": "NARS Cool Palette",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "c3345815c8d598f6",
+        "subset": "validation",
+        "author": "ookikioo",
+        "authorUrl": "https://www.flickr.com/people/ookikioo/",
+        "landing": "https://www.flickr.com/photos/ookikioo/2397299927",
+        "title": "NAIL POLISH",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "e05586a8a32d4ab9",
+        "subset": "test",
+        "author": "Lora Rajah",
+        "authorUrl": "https://www.flickr.com/people/lorakutty/",
+        "landing": "https://www.flickr.com/photos/lorakutty/6430505437",
+        "title": "Purple nails",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "e533616190f56f43",
+        "subset": "test",
+        "author": "Gonna Fly Now",
+        "authorUrl": "https://www.flickr.com/people/23062599@N05/",
+        "landing": "https://www.flickr.com/photos/23062599@N05/2508639493",
+        "title": "Lancome Tresor",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "00ec8cd414486cdb",
+        "subset": "train",
+        "author": "Sasha Asensio",
+        "authorUrl": "https://www.flickr.com/people/sashaes/",
+        "landing": "https://www.flickr.com/photos/sashaes/14892308551",
+        "title": "1.jpg",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "hotel": {
+      "hero": {
+        "id": "0446924b2df2b6a8",
+        "subset": "train",
+        "author": "Chris_Parfitt",
+        "authorUrl": "https://www.flickr.com/people/chr1sp/",
+        "landing": "https://www.flickr.com/photos/chr1sp/6225918282",
+        "title": "Olive Garden Restaurant - Kabak",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "2babd815debecaf2",
+        "subset": "train",
+        "author": "discoveryorkshirecoast.com",
+        "authorUrl": "https://www.flickr.com/people/discoveryorkshirecoast/",
+        "landing": "https://www.flickr.com/photos/discoveryorkshirecoast/5998124954",
+        "title": "Egton Bridge 19",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "220cb2fcce8b6fd4",
+        "subset": "train",
+        "author": "Sarah_Ackerman",
+        "authorUrl": "https://www.flickr.com/people/sackerman519/",
+        "landing": "https://www.flickr.com/photos/sackerman519/5520011225",
+        "title": "DSC_0224",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "8f9a06e00d6be375",
+        "subset": "train",
+        "author": "xlibber",
+        "authorUrl": "https://www.flickr.com/people/xlibber/",
+        "landing": "https://www.flickr.com/photos/xlibber/7631700116",
+        "title": "Okanagan",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "01f8fb2d0eed689b",
+        "subset": "train",
+        "author": "McKay Savage",
+        "authorUrl": "https://www.flickr.com/people/mckaysavage/",
+        "landing": "https://www.flickr.com/photos/mckaysavage/90972453",
+        "title": "Trips '05 - Mt Zoa - 04",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "b2e7dbc8a29e8bfd",
+        "subset": "test",
+        "author": "Mg Blackstock",
+        "authorUrl": "https://www.flickr.com/people/sallyleecandles/",
+        "landing": "https://www.flickr.com/photos/sallyleecandles/4234809976",
+        "title": "cottage chic",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "14f795c2c660cd77",
+        "subset": "validation",
+        "author": "balabanovic",
+        "authorUrl": "https://www.flickr.com/people/balabanovic/",
+        "landing": "https://www.flickr.com/photos/balabanovic/15156932662",
+        "title": "2013-08-14 at 11-38-00",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "68e3efb0673d9225",
+        "subset": "train",
+        "author": "Magnus D",
+        "authorUrl": "https://www.flickr.com/people/magnus_d/",
+        "landing": "https://www.flickr.com/photos/magnus_d/5286529782/",
+        "title": "Fire",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "schetovodstvo": {
+      "hero": {
+        "id": "69ea275962c314b5",
+        "subset": "test",
+        "author": "Aaron Stidwell",
+        "authorUrl": "https://www.flickr.com/people/rankingfuuta/",
+        "landing": "https://www.flickr.com/photos/rankingfuuta/4439862854",
+        "title": "My Work Station",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "2bf42814edf0e2fc",
+        "subset": "train",
+        "author": "jnyemb",
+        "authorUrl": "https://www.flickr.com/people/jnyemb/",
+        "landing": "https://www.flickr.com/photos/jnyemb/4051398710",
+        "title": "jofalltrades.com Home Office [explored]",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "ed654cc68042b34e",
+        "subset": "train",
+        "author": "Taymaz Valley",
+        "authorUrl": "https://www.flickr.com/people/taymazvalley/",
+        "landing": "https://www.flickr.com/photos/taymazvalley/5590395128",
+        "title": "8008",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "03c167c389bcdb91",
+        "subset": "train",
+        "author": "Maria Reyes-McDavis",
+        "authorUrl": "https://www.flickr.com/people/mariareyesmcdavis/",
+        "landing": "https://www.flickr.com/photos/mariareyesmcdavis/2890706354",
+        "title": "Blog Marketing Up Close Pen Graphic",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "976559148cca09ee",
+        "subset": "train",
+        "author": "Tscherno",
+        "authorUrl": "https://www.flickr.com/people/tscherno/",
+        "landing": "https://www.flickr.com/photos/tscherno/963385651",
+        "title": "Makro-Test",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "3c5677c0913e645b",
+        "subset": "test",
+        "author": "lewisr1",
+        "authorUrl": "https://www.flickr.com/people/51597203@N03/",
+        "landing": "https://www.flickr.com/photos/51597203@N03/4797495276",
+        "title": "calculator",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "695b4fc14d56e32c",
+        "subset": "validation",
+        "author": "Richie Rich",
+        "authorUrl": "https://www.flickr.com/people/bacteriano/",
+        "landing": "https://www.flickr.com/photos/bacteriano/2465240011",
+        "title": "Teclado Iluminado",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "c8d0d82f9b341f8a",
+        "subset": "train",
+        "author": "calvin w",
+        "authorUrl": "https://www.flickr.com/people/recrudescence/",
+        "landing": "https://www.flickr.com/photos/recrudescence/6808472508",
+        "title": "057; casually working",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "drehi": {
+      "hero": {
+        "id": "0acfc8c913a3a943",
+        "subset": "train",
+        "author": "yellowblade67",
+        "authorUrl": "https://www.flickr.com/people/33427671@N06/",
+        "landing": "https://www.flickr.com/photos/33427671@N06/3151779643",
+        "title": "Lilly Rush",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "fca47adcf773dacb",
+        "subset": "validation",
+        "author": "fervent-adepte-de-la-mode",
+        "authorUrl": "https://www.flickr.com/people/51528537@N08/",
+        "landing": "https://www.flickr.com/photos/51528537@N08/8317865312",
+        "title": "Teresa Moore",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "24356cd114b9f808",
+        "subset": "validation",
+        "author": "foeoc kannilc",
+        "authorUrl": "https://www.flickr.com/people/foeock/",
+        "landing": "https://www.flickr.com/photos/foeock/7892089208",
+        "title": "Christian louboutin outlet 2012 Collection",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "09429af7b69ed4f8",
+        "subset": "train",
+        "author": "fervent-adepte-de-la-mode",
+        "authorUrl": "https://www.flickr.com/people/51528537@N08/",
+        "landing": "https://www.flickr.com/photos/51528537@N08/8520326115",
+        "title": "Hermes: Paris Fashion Show 2009",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "2f2ff78adbd93c85",
+        "subset": "train",
+        "author": "Manuel Rebic",
+        "authorUrl": "https://www.flickr.com/people/mem0rex/",
+        "landing": "https://www.flickr.com/photos/mem0rex/10043755656",
+        "title": "Tudor Fastrider Ref.42000",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "0e0b02072e588f3c",
+        "subset": "validation",
+        "author": "Alessandro M.",
+        "authorUrl": "https://www.flickr.com/people/7829129@N08/",
+        "landing": "https://www.flickr.com/photos/7829129@N08/4115008067",
+        "title": "Nike Air Zoom Vomero 4",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "0b11f0995aaa2779",
+        "subset": "train",
+        "author": "fervent-adepte-de-la-mode",
+        "authorUrl": "https://www.flickr.com/people/51528537@N08/",
+        "landing": "https://www.flickr.com/photos/51528537@N08/8316818343",
+        "title": "Teresa Moore",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "76dde5e15a5f9437",
+        "subset": "test",
+        "author": "ChefMattRock",
+        "authorUrl": "https://www.flickr.com/people/chefmattrock/",
+        "landing": "https://www.flickr.com/photos/chefmattrock/315140061",
+        "title": "Matthew1forweb",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "burger": {
+      "hero": {
+        "id": "03de0c24e966e7f4",
+        "subset": "train",
+        "author": "VENOX360 留学",
+        "authorUrl": "https://www.flickr.com/people/131554527@N04/",
+        "landing": "https://www.flickr.com/photos/131554527@N04/18401427061",
+        "title": "American Food 1",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "7f8bb44cb08f172a",
+        "subset": "train",
+        "author": "AJ Bombers",
+        "authorUrl": "https://www.flickr.com/people/ajbombers/",
+        "landing": "https://www.flickr.com/photos/ajbombers/4530286962",
+        "title": "Bomber Burger",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "5eae631d4ff71e89",
+        "subset": "test",
+        "author": "iamkaspar",
+        "authorUrl": "https://www.flickr.com/people/pacroon/",
+        "landing": "https://www.flickr.com/photos/pacroon/2776256262",
+        "title": "Truck-Stop French Fries",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "972845af24d47604",
+        "subset": "validation",
+        "author": "Adhi Prasetia",
+        "authorUrl": "https://www.flickr.com/people/adhipras/",
+        "landing": "https://www.flickr.com/photos/adhipras/12005421176",
+        "title": "Chocolove",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "30eb70aede18d431",
+        "subset": "validation",
+        "author": "Jennifer",
+        "authorUrl": "https://www.flickr.com/people/sweetonveg/",
+        "landing": "https://www.flickr.com/photos/sweetonveg/4505029621",
+        "title": "Raw Vegan Ganache in Vancouver",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "a1ec31ac61cac8c1",
+        "subset": "train",
+        "author": "Samson Loo",
+        "authorUrl": "https://www.flickr.com/people/sql_samson/",
+        "landing": "https://www.flickr.com/photos/sql_samson/4262446935",
+        "title": "Stuffed Kasbah Burger with Pub Fried",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "16ee57c4c42c7885",
+        "subset": "train",
+        "author": "Fiona Bradley",
+        "authorUrl": "https://www.flickr.com/people/blisspix/",
+        "landing": "https://www.flickr.com/photos/blisspix/2310334485",
+        "title": "Fries mit mayo",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "64221d2612cb9770",
+        "subset": "validation",
+        "author": "Ingrid Taylar",
+        "authorUrl": "https://www.flickr.com/people/taylar/",
+        "landing": "https://www.flickr.com/photos/taylar/4118784372",
+        "title": "Backlit Sidecar",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "magazin": {
+      "hero": {
+        "id": "363041d4dd91c152",
+        "subset": "train",
+        "author": "kev-shine",
+        "authorUrl": "https://www.flickr.com/people/kevinshine/",
+        "landing": "https://www.flickr.com/photos/kevinshine/8334489559",
+        "title": "headphones",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "b9ac4d3b654d47d9",
+        "subset": "train",
+        "author": "Roger H. Goun",
+        "authorUrl": "https://www.flickr.com/people/sskennel/",
+        "landing": "https://www.flickr.com/photos/sskennel/15462921833",
+        "title": "Voitgtländer 50mm f/1.5 Nokton VM Aspherical",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "b6035017c76ba8d9",
+        "subset": "train",
+        "author": "JVCAmerica",
+        "authorUrl": "https://www.flickr.com/people/jvcamerica/",
+        "landing": "https://www.flickr.com/photos/jvcamerica/8003937763",
+        "title": "JVC HA-S400",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "0b62e5acebb52a74",
+        "subset": "train",
+        "author": "Arjan Richter",
+        "authorUrl": "https://www.flickr.com/people/arjanrichter/",
+        "landing": "https://www.flickr.com/photos/arjanrichter/5423992325",
+        "title": "The unknown side of the Shinjuku i-land Astronomical Clock Tower in Shinjuku Tokyo Japan",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "41ce945562a86e60",
+        "subset": "test",
+        "author": "Jamie",
+        "authorUrl": "https://www.flickr.com/people/jamiesrabbits/",
+        "landing": "https://www.flickr.com/photos/jamiesrabbits/3681406949",
+        "title": "Yellow Handbag",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "27276eeae6a5b81e",
+        "subset": "validation",
+        "author": "Wicker Paradise",
+        "authorUrl": "https://www.flickr.com/people/wicker-furniture/",
+        "landing": "https://www.flickr.com/photos/wicker-furniture/9511320437",
+        "title": "Karenza metallic purple sandals - KG BY KURT GEIGER - Shoes & boots - Accessories - Selfridges | Shop Online",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "711d6858805a7848",
+        "subset": "train",
+        "author": "Joe Bar",
+        "authorUrl": "https://www.flickr.com/people/jbar_photos/",
+        "landing": "https://www.flickr.com/photos/jbar_photos/11680776906",
+        "title": "Jessy -",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "d28a33ef9e8378af",
+        "subset": "train",
+        "author": "Roger H. Goun",
+        "authorUrl": "https://www.flickr.com/people/sskennel/",
+        "landing": "https://www.flickr.com/photos/sskennel/16056784596",
+        "title": "Voitgtländer 15mm f/4.5 Super Wide-Heliar Aspherical",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "restorant": {
+      "hero": {
+        "id": "01204468d010974b",
+        "subset": "train",
+        "author": "Jonathan Day",
+        "authorUrl": "https://www.flickr.com/people/wedding-photography-by-jonathan-day/",
+        "landing": "https://www.flickr.com/photos/wedding-photography-by-jonathan-day/3532885155",
+        "title": "Swallows Oast Wedding Venue - 21",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "a5a183d385862f72",
+        "subset": "validation",
+        "author": "silvmedia.de",
+        "authorUrl": "https://www.flickr.com/people/52731864@N04/",
+        "landing": "https://www.flickr.com/photos/52731864@N04/7073646009",
+        "title": "Bandnudeln selbstgemacht",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "9dcca08233ab2755",
+        "subset": "validation",
+        "author": "思弦 張",
+        "authorUrl": "https://www.flickr.com/people/small_0323/",
+        "landing": "https://www.flickr.com/photos/small_0323/4614935716",
+        "title": "20100517-瑪琪哈朵-012",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "6bc9c0ce4cbb39bb",
+        "subset": "validation",
+        "author": "sushi♥ina",
+        "authorUrl": "https://www.flickr.com/people/30360780@N02/",
+        "landing": "https://www.flickr.com/photos/30360780@N02/3897053783",
+        "title": "Pasta Salad",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "c3072bd89a7efd87",
+        "subset": "validation",
+        "author": "Stacy Herbert",
+        "authorUrl": "https://www.flickr.com/people/stacyherbert/",
+        "landing": "https://www.flickr.com/photos/stacyherbert/4230980382",
+        "title": "Max and Stacy New Year",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "30eb70aede18d431",
+        "subset": "validation",
+        "author": "Jennifer",
+        "authorUrl": "https://www.flickr.com/people/sweetonveg/",
+        "landing": "https://www.flickr.com/photos/sweetonveg/4505029621",
+        "title": "Raw Vegan Ganache in Vancouver",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "037abb12c91f5662",
+        "subset": "train",
+        "author": "Boemski",
+        "authorUrl": "https://www.flickr.com/people/ggvic/",
+        "landing": "https://www.flickr.com/photos/ggvic/2890923634",
+        "title": "My coffee's design for the day at Fluid (by Don)",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "041b3597d605f38a",
+        "subset": "test",
+        "author": "hoskeebo",
+        "authorUrl": "https://www.flickr.com/people/hoskeebo/",
+        "landing": "https://www.flickr.com/photos/hoskeebo/3792990794",
+        "title": "harmony-house-cafe-2",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "klinika": {
+      "hero": {
+        "id": "86426acf5270f5d4",
+        "subset": "validation",
+        "author": "Tom Byrne",
+        "authorUrl": "https://www.flickr.com/people/byrnessite/",
+        "landing": "https://www.flickr.com/photos/byrnessite/12334438263",
+        "title": "Lobby",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "a157da600e266536",
+        "subset": "train",
+        "author": "TipsyCake Chicago",
+        "authorUrl": "https://www.flickr.com/people/23925460@N04/",
+        "landing": "https://www.flickr.com/photos/23925460@N04/4979490309/",
+        "title": "4547805445_d020fea399",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "d21f47b4f9e7144f",
+        "subset": "train",
+        "author": "Medisave UK",
+        "authorUrl": "https://www.flickr.com/people/107621760@N03/",
+        "landing": "https://www.flickr.com/photos/107621760@N03/10668832073",
+        "title": "Littmann Stethoscope",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "be1b497196e4d0d6",
+        "subset": "train",
+        "author": "Gunjan Karun",
+        "authorUrl": "https://www.flickr.com/people/gunjankarun/",
+        "landing": "https://www.flickr.com/photos/gunjankarun/2471798930",
+        "title": "Colors",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "04967790ac1874c5",
+        "subset": "train",
+        "author": "Cameron Mitchell",
+        "authorUrl": "https://www.flickr.com/people/camerondmitchell/",
+        "landing": "https://www.flickr.com/photos/camerondmitchell/6929179808",
+        "title": "R1-08195-001A",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "1a4c60119cc977f6",
+        "subset": "train",
+        "author": "shira gal",
+        "authorUrl": "https://www.flickr.com/people/miss_pupik/",
+        "landing": "https://www.flickr.com/photos/miss_pupik/26586234",
+        "title": "three some",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "ee9ddd19301025cc",
+        "subset": "train",
+        "author": "Medisave UK",
+        "authorUrl": "https://www.flickr.com/people/107621760@N03/",
+        "landing": "https://www.flickr.com/photos/107621760@N03/10668611286",
+        "title": "Littmann Stethoscope",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "cca36afb13fc10d1",
+        "subset": "validation",
+        "author": "Yusmar Yahaya",
+        "authorUrl": "https://www.flickr.com/people/leafbug/",
+        "landing": "https://www.flickr.com/photos/leafbug/4709279704/",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "imoti": {
+      "hero": {
+        "id": "0d05e8a2bbfea2c9",
+        "subset": "train",
+        "author": "bogenschlag",
+        "authorUrl": "https://www.flickr.com/people/bogen/",
+        "landing": "https://www.flickr.com/photos/bogen/7127828337",
+        "title": "Schlagläden",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "052ae30d039b43c0",
+        "subset": "train",
+        "author": "Wicker Paradise",
+        "authorUrl": "https://www.flickr.com/people/wicker-furniture/",
+        "landing": "https://www.flickr.com/photos/wicker-furniture/10038155765",
+        "title": "Senufo Bench",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "2babd815debecaf2",
+        "subset": "train",
+        "author": "discoveryorkshirecoast.com",
+        "authorUrl": "https://www.flickr.com/people/discoveryorkshirecoast/",
+        "landing": "https://www.flickr.com/photos/discoveryorkshirecoast/5998124954",
+        "title": "Egton Bridge 19",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "dbf426e1543cc41e",
+        "subset": "train",
+        "author": "The Neighborhoods of EYA",
+        "authorUrl": "https://www.flickr.com/people/eyahomes/",
+        "landing": "https://www.flickr.com/photos/eyahomes/18741730868",
+        "title": "Bergman Model Kitchen",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "b2e7dbc8a29e8bfd",
+        "subset": "test",
+        "author": "Mg Blackstock",
+        "authorUrl": "https://www.flickr.com/people/sallyleecandles/",
+        "landing": "https://www.flickr.com/photos/sallyleecandles/4234809976",
+        "title": "cottage chic",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "6e19d04a11f00cbf",
+        "subset": "train",
+        "author": "Stenbolaget",
+        "authorUrl": "https://www.flickr.com/people/stenbolaget/",
+        "landing": "https://www.flickr.com/photos/stenbolaget/17123025288",
+        "title": "Slate Grey",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "d6aeabaa3367dcaa",
+        "subset": "validation",
+        "author": "jdeeringdavis",
+        "authorUrl": "https://www.flickr.com/people/hayesandjenn/",
+        "landing": "https://www.flickr.com/photos/hayesandjenn/4728474200",
+        "title": "Living Area",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "204c43de80a5e8d2",
+        "subset": "test",
+        "author": "Danny  Votra",
+        "authorUrl": "https://www.flickr.com/people/positionmktg/",
+        "landing": "https://www.flickr.com/photos/positionmktg/6813652288",
+        "title": "New Homes",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    },
+    "stroitelstvo": {
+      "hero": {
+        "id": "c839db654949b778",
+        "subset": "train",
+        "author": "Marcin Wichary",
+        "authorUrl": "https://www.flickr.com/people/mwichary/",
+        "landing": "https://www.flickr.com/photos/mwichary/14951642789",
+        "title": "Untitled",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "about": {
+        "id": "2ca2a8f7f43c1c33",
+        "subset": "train",
+        "author": "Alan Light",
+        "authorUrl": "https://www.flickr.com/people/alan-light/",
+        "landing": "https://www.flickr.com/photos/alan-light/262379569",
+        "title": "38",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g1": {
+        "id": "e37aeb7494b11318",
+        "subset": "train",
+        "author": "Mike K",
+        "authorUrl": "https://www.flickr.com/people/baltimike/",
+        "landing": "https://www.flickr.com/photos/91186811@N00/207305774",
+        "title": "Flickr Show Display - 08",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g2": {
+        "id": "2a8274be7eda0a95",
+        "subset": "train",
+        "author": "silvmedia.de",
+        "authorUrl": "https://www.flickr.com/people/52731864@N04/",
+        "landing": "https://www.flickr.com/photos/52731864@N04/7178645510",
+        "title": "Dämmung in den Wänden",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g3": {
+        "id": "32bf71d4a4fbac1c",
+        "subset": "test",
+        "author": "Phil Parker",
+        "authorUrl": "https://www.flickr.com/people/45131642@N00/",
+        "landing": "https://www.flickr.com/photos/45131642@N00/4803881285",
+        "title": "Valance making",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g4": {
+        "id": "a34a5c16aeda144a",
+        "subset": "train",
+        "author": "Laboratorio Enmovimiento",
+        "authorUrl": "https://www.flickr.com/people/26630539@N04/",
+        "landing": "https://www.flickr.com/photos/26630539@N04/2650061873",
+        "title": "pintando paredes",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g5": {
+        "id": "23c3936ba766ff23",
+        "subset": "train",
+        "author": "Post Memes",
+        "authorUrl": "https://www.flickr.com/people/postmemes/",
+        "landing": "https://www.flickr.com/photos/postmemes/16309432956",
+        "title": "What A Tool",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      },
+      "g6": {
+        "id": "ba0bddea917ea586",
+        "subset": "train",
+        "author": "Penny Blankenship",
+        "authorUrl": "https://www.flickr.com/people/clydepossum/",
+        "landing": "https://www.flickr.com/photos/clydepossum/19394558",
+        "title": "20050614 Deck sunburst view",
+        "license": "https://creativecommons.org/licenses/by/2.0/"
+      }
+    }
+  }
+}

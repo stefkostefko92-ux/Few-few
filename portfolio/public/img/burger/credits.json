@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "03de0c24e966e7f4",
+      "photographer": "VENOX360 留学",
+      "photographer_url": "https://www.flickr.com/people/131554527@N04/",
+      "url": "https://www.flickr.com/photos/131554527@N04/18401427061",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "7f8bb44cb08f172a",
+      "photographer": "AJ Bombers",
+      "photographer_url": "https://www.flickr.com/people/ajbombers/",
+      "url": "https://www.flickr.com/photos/ajbombers/4530286962",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "5eae631d4ff71e89",
+      "photographer": "iamkaspar",
+      "photographer_url": "https://www.flickr.com/people/pacroon/",
+      "url": "https://www.flickr.com/photos/pacroon/2776256262",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "972845af24d47604",
+      "photographer": "Adhi Prasetia",
+      "photographer_url": "https://www.flickr.com/people/adhipras/",
+      "url": "https://www.flickr.com/photos/adhipras/12005421176",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "30eb70aede18d431",
+      "photographer": "Jennifer",
+      "photographer_url": "https://www.flickr.com/people/sweetonveg/",
+      "url": "https://www.flickr.com/photos/sweetonveg/4505029621",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "a1ec31ac61cac8c1",
+      "photographer": "Samson Loo",
+      "photographer_url": "https://www.flickr.com/people/sql_samson/",
+      "url": "https://www.flickr.com/photos/sql_samson/4262446935",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "16ee57c4c42c7885",
+      "photographer": "Fiona Bradley",
+      "photographer_url": "https://www.flickr.com/people/blisspix/",
+      "url": "https://www.flickr.com/photos/blisspix/2310334485",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "64221d2612cb9770",
+      "photographer": "Ingrid Taylar",
+      "photographer_url": "https://www.flickr.com/people/taylar/",
+      "url": "https://www.flickr.com/photos/taylar/4118784372",
+      "source": "openimages"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-18",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "c839db654949b778",
+      "photographer": "Marcin Wichary",
+      "photographer_url": "https://www.flickr.com/people/mwichary/",
+      "url": "https://www.flickr.com/photos/mwichary/14951642789",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "2ca2a8f7f43c1c33",
+      "photographer": "Alan Light",
+      "photographer_url": "https://www.flickr.com/people/alan-light/",
+      "url": "https://www.flickr.com/photos/alan-light/262379569",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "e37aeb7494b11318",
+      "photographer": "Mike K",
+      "photographer_url": "https://www.flickr.com/people/baltimike/",
+      "url": "https://www.flickr.com/photos/91186811@N00/207305774",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "2a8274be7eda0a95",
+      "photographer": "silvmedia.de",
+      "photographer_url": "https://www.flickr.com/people/52731864@N04/",
+      "url": "https://www.flickr.com/photos/52731864@N04/7178645510",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "32bf71d4a4fbac1c",
+      "photographer": "Phil Parker",
+      "photographer_url": "https://www.flickr.com/people/45131642@N00/",
+      "url": "https://www.flickr.com/photos/45131642@N00/4803881285",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "a34a5c16aeda144a",
+      "photographer": "Laboratorio Enmovimiento",
+      "photographer_url": "https://www.flickr.com/people/26630539@N04/",
+      "url": "https://www.flickr.com/photos/26630539@N04/2650061873",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "23c3936ba766ff23",
+      "photographer": "Post Memes",
+      "photographer_url": "https://www.flickr.com/people/postmemes/",
+      "url": "https://www.flickr.com/photos/postmemes/16309432956",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "ba0bddea917ea586",
+      "photographer": "Penny Blankenship",
+      "photographer_url": "https://www.flickr.com/people/clydepossum/",
+      "url": "https://www.flickr.com/photos/clydepossum/19394558",
+      "source": "openimages"
+    }
+  ]
+}

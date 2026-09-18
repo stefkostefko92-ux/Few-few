@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "0225dbf6ff76a785",
+      "photographer": "Wicker Paradise",
+      "photographer_url": "https://www.flickr.com/people/wicker-furniture/",
+      "url": "https://www.flickr.com/photos/wicker-furniture/8528934551",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "56c50cfa5a18e5d6",
+      "photographer": "Serg C",
+      "photographer_url": "https://www.flickr.com/people/k3k0/",
+      "url": "https://www.flickr.com/photos/k3k0/484536529",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "c4ba0f8728db202f",
+      "photographer": "Sasha Asensio",
+      "photographer_url": "https://www.flickr.com/people/sashaes/",
+      "url": "https://www.flickr.com/photos/sashaes/15040458582",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "1a5ba6c1fe7a4f2f",
+      "photographer": "Rosenfeld Media",
+      "photographer_url": "https://www.flickr.com/people/rosenfeldmedia/",
+      "url": "https://www.flickr.com/photos/rosenfeldmedia/3260817875",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "8bb6998c8359c300",
+      "photographer": "Dèsirèe Tonus",
+      "photographer_url": "https://www.flickr.com/people/interno2/",
+      "url": "https://www.flickr.com/photos/interno2/4527354695",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "9d8277e68c7a742c",
+      "photographer": "Tim Crowe",
+      "photographer_url": "https://www.flickr.com/people/this_could_be_my_house/",
+      "url": "https://www.flickr.com/photos/this_could_be_my_house/2421741998",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "036ddfac0f425c3b",
+      "photographer": "Katie Lips",
+      "photographer_url": "https://www.flickr.com/people/katielips/",
+      "url": "https://www.flickr.com/photos/katielips/3446632941",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "1dc824dc8ec3c508",
+      "photographer": "Fabio Ingrosso",
+      "photographer_url": "https://www.flickr.com/people/vinofamily/",
+      "url": "https://www.flickr.com/photos/vinofamily/4094653647",
+      "source": "openimages"
+    }
+  ]
+}

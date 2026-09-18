@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "a8a98ab0887289ac",
+      "photographer": "Pat Hawks",
+      "photographer_url": "https://www.flickr.com/people/pathawks/",
+      "url": "https://www.flickr.com/photos/pathawks/3520383481",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "04967790ac1874c5",
+      "photographer": "Cameron Mitchell",
+      "photographer_url": "https://www.flickr.com/people/camerondmitchell/",
+      "url": "https://www.flickr.com/photos/camerondmitchell/6929179808",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "114d4ffd4e74ad50",
+      "photographer": "Leigh Bedford",
+      "photographer_url": "https://www.flickr.com/people/31447080@N04/",
+      "url": "https://www.flickr.com/photos/31447080@N04/3346153763",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "1919de308144ca9b",
+      "photographer": "Fiona Bradley",
+      "photographer_url": "https://www.flickr.com/people/blisspix/",
+      "url": "https://www.flickr.com/photos/blisspix/97088577",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "001b9524bd8a1159",
+      "photographer": "Congreso de la República del Perú",
+      "photographer_url": "https://www.flickr.com/people/congresoperu/",
+      "url": "https://www.flickr.com/photos/congresoperu/5665149153",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "a95c69cb3268421d",
+      "photographer": "UTC Library",
+      "photographer_url": "https://www.flickr.com/people/luptonlibrary/",
+      "url": "https://www.flickr.com/photos/luptonlibrary/5063380596",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "02ae142be8360e81",
+      "photographer": "Jon Hurd",
+      "photographer_url": "https://www.flickr.com/people/jonhurd/",
+      "url": "https://www.flickr.com/photos/jonhurd/4433197",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "0ec5b612710b5fb4",
+      "photographer": "andrewarchy",
+      "photographer_url": "https://www.flickr.com/people/andrewarchy/",
+      "url": "https://www.flickr.com/photos/andrewarchy/5720480989",
+      "source": "openimages"
+    }
+  ]
+}

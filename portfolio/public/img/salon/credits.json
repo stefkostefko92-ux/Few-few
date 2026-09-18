@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "d6bdf390a52ae2a7",
+      "photographer": "Anne-Marii",
+      "photographer_url": "https://www.flickr.com/people/nemariella/",
+      "url": "https://www.flickr.com/photos/nemariella/6912711013",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "01c79b8cc239037d",
+      "photographer": "Pete Bellis",
+      "photographer_url": "https://www.flickr.com/people/video4net/",
+      "url": "https://www.flickr.com/photos/video4net/4101183577",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "2cef13c890006439",
+      "photographer": "Aveda Corporation",
+      "photographer_url": "https://www.flickr.com/people/avedaphotos/",
+      "url": "https://www.flickr.com/photos/avedaphotos/21909472171",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "02ecd01295b4e555",
+      "photographer": "ookikioo",
+      "photographer_url": "https://www.flickr.com/people/ookikioo/",
+      "url": "https://www.flickr.com/photos/ookikioo/237315116",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "c3345815c8d598f6",
+      "photographer": "ookikioo",
+      "photographer_url": "https://www.flickr.com/people/ookikioo/",
+      "url": "https://www.flickr.com/photos/ookikioo/2397299927",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "e05586a8a32d4ab9",
+      "photographer": "Lora Rajah",
+      "photographer_url": "https://www.flickr.com/people/lorakutty/",
+      "url": "https://www.flickr.com/photos/lorakutty/6430505437",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "e533616190f56f43",
+      "photographer": "Gonna Fly Now",
+      "photographer_url": "https://www.flickr.com/people/23062599@N05/",
+      "url": "https://www.flickr.com/photos/23062599@N05/2508639493",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "00ec8cd414486cdb",
+      "photographer": "Sasha Asensio",
+      "photographer_url": "https://www.flickr.com/people/sashaes/",
+      "url": "https://www.flickr.com/photos/sashaes/14892308551",
+      "source": "openimages"
+    }
+  ]
+}

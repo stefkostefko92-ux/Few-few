@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-18",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "0d05e8a2bbfea2c9",
+      "photographer": "bogenschlag",
+      "photographer_url": "https://www.flickr.com/people/bogen/",
+      "url": "https://www.flickr.com/photos/bogen/7127828337",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "052ae30d039b43c0",
+      "photographer": "Wicker Paradise",
+      "photographer_url": "https://www.flickr.com/people/wicker-furniture/",
+      "url": "https://www.flickr.com/photos/wicker-furniture/10038155765",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "2babd815debecaf2",
+      "photographer": "discoveryorkshirecoast.com",
+      "photographer_url": "https://www.flickr.com/people/discoveryorkshirecoast/",
+      "url": "https://www.flickr.com/photos/discoveryorkshirecoast/5998124954",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "dbf426e1543cc41e",
+      "photographer": "The Neighborhoods of EYA",
+      "photographer_url": "https://www.flickr.com/people/eyahomes/",
+      "url": "https://www.flickr.com/photos/eyahomes/18741730868",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "b2e7dbc8a29e8bfd",
+      "photographer": "Mg Blackstock",
+      "photographer_url": "https://www.flickr.com/people/sallyleecandles/",
+      "url": "https://www.flickr.com/photos/sallyleecandles/4234809976",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "6e19d04a11f00cbf",
+      "photographer": "Stenbolaget",
+      "photographer_url": "https://www.flickr.com/people/stenbolaget/",
+      "url": "https://www.flickr.com/photos/stenbolaget/17123025288",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "d6aeabaa3367dcaa",
+      "photographer": "jdeeringdavis",
+      "photographer_url": "https://www.flickr.com/people/hayesandjenn/",
+      "url": "https://www.flickr.com/photos/hayesandjenn/4728474200",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "204c43de80a5e8d2",
+      "photographer": "Danny  Votra",
+      "photographer_url": "https://www.flickr.com/people/positionmktg/",
+      "url": "https://www.flickr.com/photos/positionmktg/6813652288",
+      "source": "openimages"
+    }
+  ]
+}

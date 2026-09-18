@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "69ea275962c314b5",
+      "photographer": "Aaron Stidwell",
+      "photographer_url": "https://www.flickr.com/people/rankingfuuta/",
+      "url": "https://www.flickr.com/photos/rankingfuuta/4439862854",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "2bf42814edf0e2fc",
+      "photographer": "jnyemb",
+      "photographer_url": "https://www.flickr.com/people/jnyemb/",
+      "url": "https://www.flickr.com/photos/jnyemb/4051398710",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "ed654cc68042b34e",
+      "photographer": "Taymaz Valley",
+      "photographer_url": "https://www.flickr.com/people/taymazvalley/",
+      "url": "https://www.flickr.com/photos/taymazvalley/5590395128",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "03c167c389bcdb91",
+      "photographer": "Maria Reyes-McDavis",
+      "photographer_url": "https://www.flickr.com/people/mariareyesmcdavis/",
+      "url": "https://www.flickr.com/photos/mariareyesmcdavis/2890706354",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "976559148cca09ee",
+      "photographer": "Tscherno",
+      "photographer_url": "https://www.flickr.com/people/tscherno/",
+      "url": "https://www.flickr.com/photos/tscherno/963385651",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "3c5677c0913e645b",
+      "photographer": "lewisr1",
+      "photographer_url": "https://www.flickr.com/people/51597203@N03/",
+      "url": "https://www.flickr.com/photos/51597203@N03/4797495276",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "695b4fc14d56e32c",
+      "photographer": "Richie Rich",
+      "photographer_url": "https://www.flickr.com/people/bacteriano/",
+      "url": "https://www.flickr.com/photos/bacteriano/2465240011",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "c8d0d82f9b341f8a",
+      "photographer": "calvin w",
+      "photographer_url": "https://www.flickr.com/people/recrudescence/",
+      "url": "https://www.flickr.com/photos/recrudescence/6808472508",
+      "source": "openimages"
+    }
+  ]
+}

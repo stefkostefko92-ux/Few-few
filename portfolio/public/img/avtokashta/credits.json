@@ -1,0 +1,71 @@
+{
+  "license": "https://creativecommons.org/licenses/by/2.0/",
+  "licenseName": "CC BY 2.0",
+  "generated": "2026-09-17",
+  "photos": [
+    {
+      "slot": "hero",
+      "id": "41ee46ec2a715f9d",
+      "photographer": "CANNIK",
+      "photographer_url": "https://www.flickr.com/people/cannik/",
+      "url": "https://www.flickr.com/photos/cannik/10505752864",
+      "source": "openimages"
+    },
+    {
+      "slot": "about",
+      "id": "8fe6de18a5c76628",
+      "photographer": "KeithJustKeith",
+      "photographer_url": "https://www.flickr.com/people/sreybhtiek/",
+      "url": "https://www.flickr.com/photos/sreybhtiek/21764544284",
+      "source": "openimages"
+    },
+    {
+      "slot": "g1",
+      "id": "3f5d3cff1869dd3c",
+      "photographer": "ErinIBarker",
+      "photographer_url": "https://www.flickr.com/people/erinibarker/",
+      "url": "https://www.flickr.com/photos/erinibarker/11615885806/",
+      "source": "openimages"
+    },
+    {
+      "slot": "g2",
+      "id": "0c92e6bfd7df2d20",
+      "photographer": "David",
+      "photographer_url": "https://www.flickr.com/people/4lkna/",
+      "url": "https://www.flickr.com/photos/4lkna/9819006606",
+      "source": "openimages"
+    },
+    {
+      "slot": "g3",
+      "id": "7a645c3c50c361d4",
+      "photographer": "Sicnag",
+      "photographer_url": "https://www.flickr.com/people/42220226@N07/",
+      "url": "https://www.flickr.com/photos/42220226@N07/6642732519",
+      "source": "openimages"
+    },
+    {
+      "slot": "g4",
+      "id": "91d6ab86e7f7da2b",
+      "photographer": "Aidan",
+      "photographer_url": "https://www.flickr.com/people/aidanwojtas/",
+      "url": "https://www.flickr.com/photos/aidanwojtas/2357860232",
+      "source": "openimages"
+    },
+    {
+      "slot": "g5",
+      "id": "d8f6c135ec5486ff",
+      "photographer": "BokehShots",
+      "photographer_url": "https://www.flickr.com/people/30384279@N07/",
+      "url": "https://www.flickr.com/photos/30384279@N07/4739556113",
+      "source": "openimages"
+    },
+    {
+      "slot": "g6",
+      "id": "543ea58f7d61d101",
+      "photographer": "Patrice CALATAYU",
+      "photographer_url": "https://www.flickr.com/people/131689338@N05/",
+      "url": "https://www.flickr.com/photos/131689338@N05/19890821675",
+      "source": "openimages"
+    }
+  ]
+}

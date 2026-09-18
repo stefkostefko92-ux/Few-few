@@ -1,0 +1,334 @@
+// build.test.mjs — гейтът на портфолиото. Проверява НЕ „изглежда ли добре", а това, което е проверимо:
+// паритет на езиците, SEO инварианти на всяка страница, законът за ключовите думи, цените ≥15% под пазара.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { build } from "../build.mjs";
+import { I18N } from "../src/i18n/index.mjs";
+import { DEMOS } from "../src/demos/index.mjs";
+import { PATHS, BROCHURE_PDF, demoPath, SITE } from "../src/lib/html.mjs";
+import { VERTICALS, verticalPath } from "../src/verticals/index.mjs";
+import { WIDGET_KINDS } from "../src/templates/widgets.mjs";
+import { DEMO_ICONS } from "../src/templates/icons.mjs";
+import { TIERS, ADDONS, MIN_DISCOUNT, discountPct, SOURCES, shown, shownMarket, money, tx, VAT_CONVENTION } from "../src/pricing.mjs";
+import { LANGS } from "../src/lib/html.mjs";
+import { PROJECTS } from "../src/projects.mjs";
+import { ARTICLES } from "../src/blog/index.mjs";
+import { CITIES } from "../src/local/cities.mjs";
+
+const ROOT_DIR = fileURLToPath(new URL("..", import.meta.url));
+const OUT = join(ROOT_DIR, ".tmp-test-dist");
+const BUILT = build({ out: OUT, quiet: true });
+
+const walk = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
+const pages = walk(OUT).filter((p) => p.endsWith(".html") && !p.endsWith("404.html") && p !== join(OUT, "index.html"));
+const keys = (o, pre = "") => Object.keys(o).flatMap((k) => (o[k] && typeof o[k] === "object" && !Array.isArray(o[k]) ? keys(o[k], `${pre}${k}.`) : [`${pre}${k}`]));
+
+test("i18n: en и it имат точно ключовете на bg (източникът на истината)", () => {
+  const ref = keys(I18N.bg).sort();
+  for (const l of ["en", "it"]) assert.deepEqual(keys(I18N[l]).sort(), ref, `разминаване в ${l}`);
+});
+
+test("демота: ≥10, уникални id/слъгове, всеки език с еднаква структура, валиден widget/икона", () => {
+  assert.ok(DEMOS.length >= 10);
+  const ids = new Set(DEMOS.map((d) => d.id));
+  assert.equal(ids.size, DEMOS.length);
+  for (const l of LANGS) assert.equal(new Set(DEMOS.map((d) => d.slug[l])).size, DEMOS.length, `дублиран слъг в ${l}`);
+  for (const d of DEMOS) {
+    const ref = keys(d.t.bg).sort();
+    for (const l of ["en", "it"]) assert.deepEqual(keys(d.t[l]).sort(), ref, `${d.id}: структура на ${l} ≠ bg`);
+    for (const l of LANGS) {
+      assert.ok(WIDGET_KINDS.includes(d.t[l].hero.widget.kind), `${d.id}/${l}: widget kind`);
+      assert.ok(d.keywords[l].length >= 4, `${d.id}/${l}: ключови думи`);
+      assert.equal(d.t[l].services.length, 6); assert.equal(d.t[l].faq.length, 5); assert.equal(d.t[l].reviews.length, 3);
+    }
+    assert.ok(DEMO_ICONS[d.icon], `${d.id}: икона`);
+    assert.ok(d.theme.word && d.theme.fonts.length === 2 && d.theme.heroStyle, `${d.id}: тема`);
+  }
+});
+
+test("всяка страница: един h1, title ≤60, description ≤160, canonical, hreflang ×3 + x-default, ключови думи, футър-кредит", () => {
+  assert.equal(pages.length, LANGS.length * (DEMOS.length * 2 + 12 + ARTICLES.length + CITIES.length), "фиксирани страници + демота + статии + градове");
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
+    assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, `${rel}: h1`);
+    const un = (x) => x.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"");
+    const title = un(html.match(/<title>([^<]+)<\/title>/)[1]);
+    assert.ok(title.length <= 60, `${rel}: title ${title.length} знака: ${title}`);
+    const desc = un(html.match(/name="description" content="([^"]+)"/)[1]);
+    assert.ok(desc.length <= 160 && desc.length >= 70, `${rel}: description ${desc.length} знака`);
+    assert.ok(/<link rel="canonical" href="https:\/\/portfolio\.carbonstealth\.eu\/(bg|en|it)\//.test(html), `${rel}: canonical`);
+    for (const l of [...LANGS, "x-default"]) assert.ok(html.includes(`hreflang="${l}"`), `${rel}: hreflang ${l}`);
+    const kw = html.match(/name="keywords" content="([^"]+)"/)[1].split(",").map((s) => s.trim());
+    assert.ok(kw.length >= 5 && kw.includes("Carbon Stealth"), `${rel}: keywords`);
+    assert.ok(html.includes('href="https://carbonstealth.eu" target="_blank" rel="noopener"'), `${rel}: кредит на Carbon Stealth`);
+    assert.ok(!/lorem ipsum/i.test(html), `${rel}: lorem ipsum`);
+    for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) assert.doesNotThrow(() => JSON.parse(m[1]), `${rel}: невалиден JSON-LD`);
+    assert.ok(/<html lang="(bg|en|it)">/.test(html), `${rel}: lang`);
+  }
+});
+
+test("цени: всеки пакет и добавка е поне 15% под пазарната референция; източниците са реални URL", () => {
+  for (const t of [...TIERS, ...ADDONS]) assert.ok(1 - t.price / t.market >= MIN_DISCOUNT, `${t.id}: ${discountPct(t)}% < ${MIN_DISCOUNT * 100}%`);
+  assert.ok(SOURCES.length >= 8);
+  for (const s of SOURCES) assert.ok(/^https:\/\/[a-z0-9.-]+\.[a-z]{2,}\//.test(s.url), s.url);
+  assert.ok(TIERS.filter((t) => t.popular).length === 1, "точно един „най-избиран“ пакет");
+});
+
+test("ДДС конвенцията е тази на carbonstealth.eu (cs-revolution/src/pricing.json @ c841100e4): BG бруто, EN/IT нето ÷1,20, пазар за BG ×1,20", () => {
+  // Числата са преписани от pricing.json на сайта — ако някой смени конвенцията само на едното място, тестът пада.
+  const site = {
+    tiers: { start: { it: 658, en: 658, bg: 790 }, business: { it: 1575, en: 1575, bg: 1890 }, premium: { it: 3575, en: 3575, bg: 4290 }, ecommerce: { it: 1825, en: 1825, bg: 2190 } },
+    market: { start: 1140, business: 2760, premium: 6240, ecommerce: 3120 },
+    addons: { language: { net: 292, bg: 350, mbg: 600 }, page: { net: 100, bg: 120, mbg: 180 }, logo: { net: 325, bg: 390, mbg: 576 }, copy: { net: 75, bg: 90, mbg: 132 }, maintenance: { net: 58, bg: 69, mbg: 102 }, seo: { net: 242, bg: 290, mbg: 420 }, hosting: { net: 13, bg: 15, mbg: 23 } },
+    discount: { start: 16, business: 17, premium: 17, ecommerce: 15, language: 30, page: 19, logo: 18, copy: 18, maintenance: 18, seo: 17, hosting: 21 },
+  };
+  assert.deepEqual(VAT_CONVENTION, { bg: "gross", en: "net", it: "net" });
+  for (const t of TIERS) { for (const l of LANGS) assert.equal(shown(t.price, l), site.tiers[t.id][l], `${t.id}/${l}`); assert.equal(shownMarket(t.market, "bg"), site.market[t.id], `${t.id}: пазар BG`); assert.equal(shownMarket(t.market, "en"), t.market); assert.equal(discountPct(t), site.discount[t.id]); }
+  for (const a of ADDONS) { assert.equal(shown(a.price, "en"), site.addons[a.id].net, a.id); assert.equal(shown(a.price, "it"), site.addons[a.id].net); assert.equal(shown(a.price, "bg"), site.addons[a.id].bg); assert.equal(shownMarket(a.market, "bg"), site.addons[a.id].mbg); assert.equal(discountPct(a), site.discount[a.id]); }
+  assert.equal(money(1890, "bg"), "1\u202F890 €"); assert.equal(money(1575, "en"), "1,575 €"); assert.equal(money(1575, "it"), "1.575 €");
+  assert.equal(tx("{start}/{hourly}", "en"), "658/45"); assert.equal(tx("{start}/{hourly}", "bg"), "790/54");
+});
+
+test("страницата с цени: reverse charge + Директива 2006/112 на трите езика, цените по ДДС конвенцията (BG „с включен 20% ДДС“, EN/IT „excl. VAT / IVA esclusa“), хъбът и llms.txt със същите числа", () => {
+  const vatText = { bg: "с включен 20% ДДС", en: "Prices exclude VAT", it: "Prezzi IVA esclusa" };
+  for (const l of LANGS) {
+    const html = readFileSync(join(OUT, I18N[l].code, { bg: "ceni", en: "pricing", it: "prezzi" }[l], "index.html"), "utf8");
+    assert.ok(/reverse charge/i.test(html), `${l}: reverse charge`);
+    assert.ok(html.includes("2006/112"), `${l}: Директива 2006/112`);
+    assert.ok(html.includes(vatText[l]), `${l}: ДДС текст „${vatText[l]}“`);
+    for (const t of TIERS) { assert.ok(html.includes(`id="${t.id}"`), `${l}: пакет ${t.id}`); assert.ok(html.includes(`<strong>${money(shown(t.price, l), l)}</strong>`), `${l}: ${t.id} = ${money(shown(t.price, l), l)}`); assert.ok(html.includes(`<s>${money(shownMarket(t.market, l), l)}</s>`), `${l}: пазар ${t.id}`); }
+    for (const a of ADDONS) assert.ok(html.includes(`<strong>${money(shown(a.price, l), l)}</strong>`), `${l}: добавка ${a.id}`);
+    assert.ok(!/\{(start|business|premium|ecommerce|hosting|hourly)\}/.test(html), `${l}: непопълнен плейсхолдър`);
+    assert.ok(html.includes(`"valueAddedTaxIncluded":${VAT_CONVENTION[l] === "gross"}`), `${l}: JSON-LD valueAddedTaxIncluded`);
+    const hub = readFileSync(join(OUT, I18N[l].code, "index.html"), "utf8");
+    assert.ok(hub.includes(`${money(shown(790, l), l)}`), `${l}: хъбът показва ${money(shown(790, l), l)}`);
+    assert.ok(!/\{(start|business)\}/.test(hub), `${l}: хъб плейсхолдър`);
+  }
+});
+
+test("шрифтовете са самостоятелно хостнати: нула заявки към Google Fonts, всеки font CSS и woff2 съществува", () => {
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8"), rel = p.slice(OUT.length);
+    assert.ok(!/fonts\.googleapis|fonts\.gstatic/.test(html), `${rel}: Google Fonts`);
+    const cssLinks = [...html.matchAll(/href="(\/assets\/fonts\/[a-z0-9-]+\.css)(?:\?v=[0-9a-f]{8})?"/g)].map((m) => m[1]);
+    assert.ok(cssLinks.length >= 1, `${rel}: няма локален font CSS`);
+    for (const c of cssLinks) {
+      const css = readFileSync(join(OUT, c), "utf8");
+      for (const m of css.matchAll(/url\((\/fonts\/[^)]+\.woff2)\)/g)) assert.ok(existsSync(join(OUT, m[1])), `${c}: липсва ${m[1]}`);
+    }
+  }
+});
+
+test("снимки: без public/img демото пада на генеративната графика (нула hero-bg/gallery), а картата в credits.json е незадължителна", () => {
+  const html = readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8");
+  const hasPhotos = existsSync(join(fileURLToPath(new URL("..", import.meta.url)), "public/img/avtoservis/credits.json"));
+  assert.equal(/class="hero-bg"/.test(html), hasPhotos);
+  assert.equal(/id="gallery"/.test(html), hasPhotos);
+  assert.ok(/data-widget="booking"/.test(html) && /<select name="service"/.test(html), "hero формата за резервация е реална форма");
+});
+
+test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/footer, знак в boot/демо лентата/root, favicon.ico + icon-192 + apple-touch, og.png, Organization.logo — всички файлове съществуват", () => {
+  const dist = OUT;
+  for (const f of ["logo.png", "logo.webp", "logo-square.png", "logo-square.webp", "mark.png", "mark.webp", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "favicon.ico", "og.png"]) assert.ok(existsSync(join(dist, f)), f);
+  assert.ok(!existsSync(join(dist, "favicon.svg")), "favicon.svg е заменен от favicon.ico");
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  const hub = rd("bg/index.html"), demo = rd("bg/demo/avtoservis/index.html"), root = rd("index.html"), nf = rd("404.html");
+  for (const html of [hub, demo, root, nf]) {
+    assert.ok(html.includes('<link rel="icon" href="/favicon.ico" sizes="32x32">'), "favicon.ico");
+    assert.ok(html.includes('href="/icon-192.png"'), "icon-192");
+    assert.ok(!html.includes("favicon.svg"));
+  }
+  assert.strictEqual((hub.match(/src="\/logo\.png" alt="Carbon Stealth VCC" width="673" height="160"/g) || []).length, 2, "nav + footer lockup");
+  assert.ok(hub.includes('<picture class="boot-cs"><source srcset="/mark.webp"'), "boot знак");
+  assert.ok(demo.includes('<a class="cs-mark" href="/bg/" aria-label="Carbon Stealth VCC"><picture><source srcset="/mark.webp"'), "cs-bar знак");
+  assert.ok(root.includes('src="/mark.png" alt="Carbon Stealth VCC"'), "root знак");
+  assert.ok(hub.includes('"logo":{"@type":"ImageObject","url":"https://portfolio.carbonstealth.eu/logo-square.png","width":1024,"height":1024}'), "Organization.logo");
+  assert.ok(hub.includes('content="https://portfolio.carbonstealth.eu/og.png"'), "og:image");
+});
+
+test("производителност: статични превюта за всяко демо ×3 езика, без trail canvas, без backdrop-filter на фиксираните навигации, iframe само при hover", () => {
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  for (const l of LANGS) {
+    const html = rd(`${l}/index.html`);
+    assert.strictEqual((html.match(/class="cover-shot"/g) || []).length, DEMOS.length, `${l}: превю на всяка карта`);
+    for (const d of DEMOS) assert.ok(existsSync(join(OUT, "img", "previews", l, `${d.id}.webp`)), `previews/${l}/${d.id}.webp`);
+  }
+  const siteJs = rd("assets/site.js"), siteCss = rd("assets/site.css"), demoCss = rd("assets/demo.css"), heroJs = rd("assets/hero.js");
+  assert.ok(!siteJs.includes("cur-trail") && !siteCss.includes("cur-trail"), "фосфорната следа (full-screen mix-blend canvas) е махната");
+  assert.ok(!siteJs.includes("fontWeight"), "магнитните букви не пипат font-weight (variable шрифт = пренареждане всеки кадър)");
+  assert.ok(siteJs.includes('addEventListener("pointerenter", function () { mount(c); }'), "живият iframe идва само при hover");
+  assert.ok(siteJs.includes("var FRAME = []") && (siteJs.match(/requestAnimationFrame\(loop\)/g) || []).length === 1, "един общ rAF цикъл");
+  assert.ok(!/\.nav\{[^}]*backdrop-filter/.test(siteCss) && !demoCss.includes("backdrop-filter"), "фиксираните навигации са без backdrop-filter");
+  assert.ok(!siteCss.includes("will-change:transform,opacity"), "reveal без will-change (стотици композитни слоеве)");
+  assert.ok(heroJs.includes('{ alpha: false }') && heroJs.includes("function degrade()"), "hero canvas: непрозрачен + адаптивна деградация");
+  assert.ok(siteCss.includes(".lite .hero-scan i") && rd("assets/premium.css").includes(".lite .hero-bg picture{animation:none"), "LITE режим в CSS");
+});
+
+test("реални проекти: 10-те от carbonstealth.eu ×3 езика, 6 в хъба, снимка или типографска обложка, външни линкове с noopener, в llms.txt и sitemap", () => {
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  assert.strictEqual(PROJECTS.length, 10);
+  for (const pr of PROJECTS) { for (const l of LANGS) { const t = pr.t[l]; assert.ok(t.name && t.category && t.desc && t.facts.length >= 3, `${pr.id}/${l}`); } assert.ok(/^https:\/\//.test(pr.url)); if (pr.shot) assert.ok(existsSync(join(OUT, "img", "projects", `${pr.id}.webp`)), `${pr.id}.webp`); }
+  for (const l of LANGS) {
+    const page = rd(`${l}/${{ bg: "proekti", en: "projects", it: "progetti" }[l]}/index.html`), hub = rd(`${l}/index.html`);
+    assert.strictEqual((page.match(/class="cell pj reveal"/g) || []).length, 10, `${l}: 10 карти`);
+    assert.strictEqual((hub.match(/class="cell pj reveal"/g) || []).length, 6, `${l}: 6 в хъба`);
+    assert.strictEqual((page.match(/class="pj-shot"/g) || []).length, PROJECTS.filter((p) => p.shot).length);
+    assert.strictEqual((page.match(/class="pj-type"/g) || []).length, PROJECTS.filter((p) => !p.shot).length);
+    for (const pr of PROJECTS) assert.ok(page.includes(`href="${pr.url}" target="_blank" rel="noopener"`), `${l}: ${pr.url}`);
+    assert.ok(page.includes('"@type":"CollectionPage"') && page.includes('"@type":"CreativeWork"'));
+  }
+  const llms = rd("llms.txt");
+  for (const pr of PROJECTS) assert.ok(llms.includes(pr.url));
+  assert.ok(rd("sitemap.xml").includes("<loc>https://portfolio.carbonstealth.eu/bg/proekti/</loc>"));
+});
+
+test("лабораторни резултати: perf/lab.json покрива хъба и всяко демо (mobile ≥ 95, desktop ≥ 95, CLS ≤ 0,1), баджът е в картите, никакви измислени числа", () => {
+  const lab = JSON.parse(readFileSync(join(ROOT_DIR, "perf", "lab.json"), "utf8"));
+  assert.ok(lab.date && lab.runs >= 3 && lab.tool.includes("prelaunch-audit"));
+  for (const id of ["hub", ...DEMOS.map((d) => d.id)]) {
+    const p = lab.pages[id]; assert.ok(p, `perf/lab.json: ${id}`);
+    for (const prof of ["mobile", "desktop"]) { assert.ok(p[prof].score >= 95, `${id} ${prof} ${p[prof].score} < 95 — пусни node tools/perf.mjs ${id} и поправи`); assert.ok(p[prof].CLS <= 0.1, `${id} ${prof} CLS`); }
+  }
+  const hub = readFileSync(join(OUT, "bg/index.html"), "utf8");
+  assert.strictEqual((hub.match(/class="lab"/g) || []).length, DEMOS.length, "бадж на всяка карта");
+  assert.ok(hub.includes(`title="${I18N.bg.demos.labTitle} · ${lab.date}"`));
+  for (const d of DEMOS) assert.ok(hub.includes(`>${lab.pages[d.id].mobile.score}</i><i class="ok">${lab.pages[d.id].desktop.score}</i>`), `${d.id}: числата в баджа са от lab.json`);
+});
+
+test("блог и локални страници: 5 статии ×3 езика с Article JSON-LD, автор, дати, източници; RSS на всеки език; 8 града с geo meta + ProfessionalService/areaServed; всичко в sitemap", () => {
+  const rd = (p) => readFileSync(join(OUT, p), "utf8");
+  assert.strictEqual(ARTICLES.length, 5);
+  for (const l of LANGS) {
+    const idx = rd(`${l}/blog/index.html`); assert.ok(idx.includes('"@type":"Blog"') && idx.includes('type="application/rss+xml"'));
+    const feed = rd(`${l}/blog/feed.xml`); assert.ok(feed.startsWith("<?xml") && (feed.match(/<item>/g) || []).length === ARTICLES.length, `${l}: RSS`);
+    for (const a of ARTICLES) {
+      const t = a.t[l], html = rd(`${l}/blog/${a.slug[l]}/index.html`);
+      assert.ok(t.sections.length >= 4 && a.sources.length >= 2, `${a.id}/${l}: секции + източници`);
+      assert.ok(html.includes('"@type":"Article"') && html.includes(`"datePublished":"${a.date}"`) && html.includes(`"dateModified":"${a.updated}"`) && html.includes('"author":{"@type":"Organization"'), `${a.id}/${l}: Article JSON-LD`);
+      assert.ok(html.includes(`datetime="${a.updated}"`) && html.includes("post-author") && html.includes("post-sources"), `${a.id}/${l}: видими дати/автор/източници`);
+      for (const s of a.sources) assert.ok(html.includes(`href="${s.url}"`), `${a.id}/${l}: ${s.url}`);
+    }
+    assert.strictEqual(CITIES.length, 8);
+    for (const c of CITIES) {
+      const html = rd(`${l}${{ bg: "/izrabotka-na-sait/", en: "/web-design/", it: "/realizzazione-siti/" }[l]}${c.slug[l]}/index.html`);
+      assert.ok(html.includes(`<meta name="geo.position" content="${c.lat};${c.lng}">`) && html.includes('"@type":"ProfessionalService"') && html.includes(`"areaServed":{"@type":"City","name":"${c.name[l]}"`), `${c.id}/${l}: geo`);
+      const escd = (x) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      assert.ok(html.includes(escd(c.text[l].slice(0, 40))), `${c.id}/${l}: уникален абзац`);
+    }
+  }
+  const sm = rd("sitemap.xml");
+  assert.ok(sm.includes("<loc>https://portfolio.carbonstealth.eu/bg/blog/") && sm.includes("/bg/izrabotka-na-sait/sofia/</loc>"));
+});
+
+test("формата за запитване: POST /api/contact на трите езика, задължителни полета, консент с линк към правната, honeypot, всички демота в избора; правната описва обработката", () => {
+  for (const lang of LANGS) {
+    const html = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
+    assert.ok(html.includes('<form class="c-form" id="cform" action="/api/contact" method="post"'), `${lang}: форма`);
+    for (const needle of ['name="name" required', 'type="email" name="email" required', 'name="message" required minlength="10"', 'type="checkbox" name="consent" value="on" required', 'name="website" tabindex="-1"', `<input type="hidden" name="lang" value="${lang}">`, `href="${PATHS.legal[lang]}"`, 'role="status" aria-live="polite"']) assert.ok(html.includes(needle), `${lang}: ${needle}`);
+    assert.equal((html.match(/<option value="[a-z-]+">/g) || []).length, DEMOS.length, `${lang}: демотата в избора`);
+    const legal = readFileSync(join(OUT, PATHS.legal[lang].slice(1), "index.html"), "utf8");
+    assert.ok(legal.includes("Brevo") && legal.includes("28"), `${lang}: правната описва обработващия`);
+  }
+  assert.ok(readFileSync(join(ROOT_DIR, "nginx.conf"), "utf8").includes("location /api/"), "nginx проксира /api/");
+  assert.ok(readFileSync(join(ROOT_DIR, "src/assets/site.js"), "utf8").includes('getElementById("cform")'), "site.js обработва формата");
+});
+
+test("достъпност: a11y/report.json покрива всички BG страници + EN/IT хъб с нула грешки; декларацията ×3 носи реалните числа; бутон „Анимации: стоп“ в хъба; брошурата А5 ×3 (HTML noindex + PDF с 6 страници, линк в подножието)", () => {
+  const report = JSON.parse(readFileSync(join(ROOT_DIR, "a11y/report.json"), "utf8"));
+  assert.equal(report.summary.errors, 0, "нула грешки за достъпност (виж tools/a11y.mjs)");
+  const bgPages = pages.filter((p) => p.startsWith("/bg/"));
+  for (const p of bgPages) assert.ok(report.pages[p], `${p} е одитирана`);
+  assert.ok(report.pages["/en/"] && report.pages["/it/"], "EN/IT хъб одитирани");
+  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(report.date) && Date.now() - Date.parse(report.date) < 180 * 864e5, "докладът е по-нов от 6 месеца");
+  for (const lang of LANGS) {
+    const a = readFileSync(join(OUT, PATHS.a11y[lang].slice(1), "index.html"), "utf8");
+    assert.ok(a.includes(report.date) && a.includes(`${report.summary.pages} `), `${lang}: декларацията носи датата и броя страници от доклада`);
+    assert.ok(a.includes("WCAG 2.1"), `${lang}: стандартът е посочен`);
+    const hub = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
+    assert.ok(hub.includes('data-fx-toggle') && hub.includes('aria-pressed="false"'), `${lang}: бутон за спиране на анимациите`);
+    assert.ok(hub.includes(`href="${PATHS.a11y[lang]}"`) && hub.includes(`href="${BROCHURE_PDF[lang]}" download`), `${lang}: линкове към декларацията и PDF брошурата`);
+    const b = readFileSync(join(OUT, PATHS.brochure[lang].slice(1), "index.html"), "utf8");
+    assert.ok(b.includes('content="noindex, follow"') && (b.match(/<section class="bp/g) || []).length === 6, `${lang}: брошурата е noindex с 6 страници`);
+    assert.equal((b.match(/<li>(?:<svg)/g) || []).length, DEMOS.length, `${lang}: всички демота в брошурата`);
+    const pdf = readFileSync(join(ROOT_DIR, "public", BROCHURE_PDF[lang]), "latin1");
+    assert.ok(pdf.startsWith("%PDF-") && (pdf.match(/\/Type\s*\/Page(?!s)/g) || []).length === 6, `${lang}: PDF брошура с 6 страници (node tools/brochure.mjs)`);
+    assert.ok(!readFileSync(join(OUT, "sitemap.xml"), "utf8").includes(PATHS.brochure[lang]), `${lang}: брошурата не е в sitemap`);
+  }
+});
+
+test("нищо с adblock-примамващ клас (ad-/ads/adv/banner/sponsor/promo) — EasyList го скрива при клиента", () => {
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8");
+    const bad = html.match(/class="[^"]*\b(ad|ads|adv|advert|banner|sponsor|promo)(-[a-z]+)?\b[^"]*"/g) || [];
+    assert.deepStrictEqual(bad, [], `${p.replace(OUT, "")}: ${bad.slice(0, 3).join(" ")}`);
+  }
+});
+
+test("всеки /assets/*.css|js в HTML-а носи версия по съдържание (?v=sha1) — nginx кешира css/js 7 дни", () => {
+  for (const p of pages) {
+    const html = readFileSync(p, "utf8");
+    const bare = html.match(/(?:href|src)="\/assets\/[^"?#]+\.(?:css|js)"/g) || [];
+    assert.deepStrictEqual(bare, [], `${p.replace(OUT, "")}: без версия — ${bare.slice(0, 3).join(" ")}`);
+    const versioned = html.match(/\/assets\/[^"?#]+\.(?:css|js)\?v=[0-9a-f]{8}"/g) || [];
+    assert.ok(versioned.length >= 1, `${p.replace(OUT, "")}: поне един версиониран asset`);
+  }
+});
+
+test("SEO вертикали: страница „сайт за <бизнес>“ за всяко демо ×3 езика с H1 = фразата, Service + FAQPage + Breadcrumb + Speakable, превю, линкове към демото/офертата; индекс с всички; хъбът с FAQPage + ProfessionalService; sitemap с image; RSS link навсякъде; демо лентата води към вертикалата", () => {
+  const sm = readFileSync(join(OUT, "sitemap.xml"), "utf8");
+  assert.ok(sm.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"') && (sm.match(/<image:image>/g) || []).length >= DEMOS.length * LANGS.length * 2, "sitemap с image:image за демота и вертикали");
+  for (const lang of LANGS) {
+    const idx = readFileSync(join(OUT, PATHS.vertical[lang].slice(1), "index.html"), "utf8");
+    assert.equal((idx.match(/class="cell reveal" href="/g) || []).length, DEMOS.length, `${lang}: индексът листва всички вертикали`);
+    for (const d of DEMOS) {
+      const v = VERTICALS[lang][d.id], path = verticalPath(lang, d);
+      const html = readFileSync(join(OUT, path.slice(1), "index.html"), "utf8");
+      assert.ok(html.includes(`<h1 class="h2 reveal">${v.h1}</h1>`), `${path}: H1`);
+      for (const needle of ['"@type":"Service"', '"@type":"FAQPage"', '"@type":"BreadcrumbList"', '"@type":"SpeakableSpecification"', `href="${demoPath(lang, d)}"`, `href="${PATHS.quote[lang]}?demo=${d.id}"`, `href="${PATHS.pricing[lang]}"`, 'class="v-includes"', `/img/previews/${lang}/${d.id}.webp`]) assert.ok(html.includes(needle), `${path}: ${needle}`);
+      assert.ok((html.match(/<details class="faq"/g) || []).length === 5, `${path}: 5 въпроса (3 уникални + 2 общи)`);
+      assert.ok(!/\{(business|start|ecommerce|business_price|n)\}/.test(html), `${path}: незаменен плейсхолдър`);
+      const demo = readFileSync(join(OUT, demoPath(lang, d).slice(1), "index.html"), "utf8");
+      assert.ok(demo.includes(`class="cs-want" href="${path}"`), `${path}: демо лентата води към вертикалата`);
+      for (const h of [html, demo]) assert.ok(h.includes(`<meta property="og:image" content="${SITE}/og/${lang}/${d.id}.jpg">`) && existsSync(join(ROOT_DIR, "public", "og", lang, `${d.id}.jpg`)), `${path}: og:image = собствено OG изображение (tools/og.mjs)`);
+    }
+    const hub = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
+    for (const needle of ['"@type":"FAQPage"', '"@type":"ProfessionalService"', '"@type":"GeoCoordinates"', '"@type":"OfferCatalog"', 'id="faq"', `href="${PATHS.vertical[lang]}"`, 'class="v-link"', 'type="application/rss+xml"']) assert.ok(hub.includes(needle), `${lang} хъб: ${needle}`);
+    assert.equal((hub.match(/class="v-link"/g) || []).length, DEMOS.length, `${lang}: линк към вертикала във всяка карта`);
+  }
+});
+
+test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
+  const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
+  for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
+  assert.equal((html.match(/data-preview=/g) || []).length, DEMOS.length);
+});
+
+test("служебни файлове: sitemap с всички URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {
+  const sm = readFileSync(join(OUT, "sitemap.xml"), "utf8");
+  assert.equal((sm.match(/<loc>/g) || []).length, BUILT.urls.length);
+  assert.ok(BUILT.urls.length >= LANGS.length * (7 + DEMOS.length), "всички фиксирани страници + демота на всеки език");
+  assert.ok(sm.includes('hreflang="x-default"'));
+  assert.ok(readFileSync(join(OUT, "robots.txt"), "utf8").includes("Sitemap: https://portfolio.carbonstealth.eu/sitemap.xml"));
+  const llms = readFileSync(join(OUT, "llms.txt"), "utf8");
+  assert.ok(llms.includes("reverse charge") && llms.includes("658 EUR excl. VAT") && llms.includes("790 EUR incl. 20% VAT"));
+  assert.ok(readFileSync(join(OUT, ".well-known/security.txt"), "utf8").includes("Expires:"));
+  assert.ok(readFileSync(join(OUT, "index.html"), "utf8").includes('hreflang="x-default" href="https://portfolio.carbonstealth.eu/bg/"'));
+});
+
+test("маркетинг слой: proof ред, оферта, линк във всяка услуга, плочки със снимки, без декорациите на „генериран“ сайт; хъбът — преглед на устройства и „включва“", () => {
+  const html = readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8");
+  for (const needle of ['href="/assets/premium.css?v=', 'src="/assets/premium.js?v=', 'class="proof"', 'class="offer"', 'class="offer-tag"', 'class="card-link"', 'class="avatar"', 'class="fa"', 'class="lb-cap"']) assert.ok(html.includes(needle), needle);
+  for (const banned of ['class="curtain"', 'class="grain"', 'class="scroll-cue"', 'class="sec-num"', 'class="word"', 'class="marquee"', 'class="foot-word"', 'class="num"', "fx/avtoservis.js"]) assert.ok(!html.includes(banned), `забранено: ${banned}`);
+  if (existsSync(join(OUT, "img/avtoservis/credits.json"))) assert.ok(/data-cap="[^"]+"/.test(html) && html.includes('class="tint"'), "галерия с надписи и тониран hero");
+  const tiles = readFileSync(join(OUT, "bg/demo/barzo-hranene/index.html"), "utf8");
+  if (existsSync(join(OUT, "img/burger/g1-sm.webp"))) assert.ok(tiles.includes('style="background-image:url(/img/burger/g1-sm.webp)"'), "плочките носят реални снимки");
+  assert.ok(readFileSync(join(OUT, "bg/demo/salon-za-krasota/index.html"), "utf8").includes("/assets/fx/salon.js"), "салонът има проба на цвят");
+  for (const f of ["assets/premium.css", "assets/premium.js", "assets/fx/core.js", "assets/fx/salon.js", "assets/fx/mebeli.js", "assets/fx/schetovodstvo.js", "assets/fx/avtokashta.js"]) assert.ok(existsSync(join(OUT, f)), f);
+  for (const d of DEMOS) for (const l of LANGS) assert.ok(d.t[l].offer?.title && d.t[l].hero.proof, `${d.id}/${l}: offer + proof`);
+  const hub = readFileSync(join(OUT, "bg/index.html"), "utf8");
+  assert.ok(hub.includes('id="devmodal"') && (hub.match(/class="dev-btn"/g) || []).length === DEMOS.length, "device preview за всяко демо");
+  assert.ok(hub.includes('class="hero-proof"') && (hub.match(/class="inc"/g) || []).length === DEMOS.length, "proof ред + „включва“ на всяка карта");
+});

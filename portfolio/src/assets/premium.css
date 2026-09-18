@@ -1,0 +1,86 @@
+/* premium.css — слоят над demo.css, който прави демото да изглежда като истински сайт на агенция,
+   не като „генериран": киношна снимка в hero-то (бавен Ken Burns + тон в акцента), ред с доказателства
+   под CTA-тата, оферта-банер, чист trust strip, галерия с надпис, lightbox с размазан фон, навигация,
+   която се скрива при скрол надолу и маркира активната секция, аватари в отзивите, плавен FAQ, View
+   Transitions. Без декорации „за ефект" — само това, което реален премиум сайт би имал. Fail-open. */
+
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:vt-out .28s ease-in both}
+::view-transition-new(root){animation:vt-in .4s ease-out both}
+@keyframes vt-out{to{opacity:0}}
+@keyframes vt-in{from{opacity:0}}
+
+/* Hero: киношна снимка */
+.hero-bg picture{display:block;height:100%;animation:kb 30s ease-in-out infinite alternate;transform-origin:60% 40%;will-change:transform}
+@keyframes kb{from{transform:scale(1.03)}to{transform:scale(1.11) translate(-1%,.6%)}}
+.hero-bg .tint{position:absolute;inset:0;background:var(--accent);mix-blend-mode:color;opacity:.22;pointer-events:none}
+.mode-light .hero-bg .tint{opacity:.12}
+.hero h1{text-wrap:balance}
+.js .hero-text{animation:fade-up .8s cubic-bezier(.16,1,.3,1) both}
+.js .hero-visual{animation:fade-up .8s cubic-bezier(.16,1,.3,1) .15s both}
+@keyframes fade-up{from{opacity:0;transform:translateY(18px)}}
+/* Ред с доказателства под CTA-тата: „★ 4,9 в Google · 380+ отзива · Отговор до 15 мин" */
+.proof{margin:18px 0 0;font-size:14px;color:var(--muted);letter-spacing:.01em}
+.proof b{color:var(--accent);font-weight:600}
+.hero-center .proof{text-align:center}
+
+/* Trust strip: без икони, само факти */
+.badges{gap:10px 0;padding:16px clamp(16px,4vw,40px);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.badges span{padding:0 22px;border-left:1px solid var(--line)}
+.badges span:first-child{border-left:0}
+.badges svg{display:none}
+
+/* Оферта-банер */
+.offer{background:var(--accent);color:var(--on-accent)}
+.offer .wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(24px,5vw,72px);align-items:center;padding-top:clamp(40px,6vw,72px);padding-bottom:clamp(40px,6vw,72px)}
+.offer-tag{display:inline-block;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;padding:6px 12px;border:1px solid color-mix(in srgb,var(--on-accent) 45%,transparent);border-radius:999px;margin-bottom:18px}
+.offer h2{font-size:clamp(28px,3.8vw,50px);font-weight:700;line-height:1.05;margin:0 0 14px;color:inherit}
+.offer p{color:color-mix(in srgb,var(--on-accent) 88%,transparent);font-size:clamp(16px,1.3vw,19px);max-width:56ch;margin:0}
+.offer-cta{display:grid;gap:12px;justify-items:start}
+.offer .btn-primary{background:var(--on-accent);color:var(--accent);padding:16px 26px;font-size:16px}
+.offer .btn-primary:hover{background:var(--bg);color:var(--text)}
+.offer-note{font-size:13px;color:color-mix(in srgb,var(--on-accent) 75%,transparent);margin:0}
+
+/* Услуги: линк за действие във всяка карта */
+.card-link{margin-top:auto;padding-top:12px;font-size:14px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:6px}
+.card-link::after{content:"→";transition:transform .25s}
+.card:hover .card-link::after{transform:translateX(4px)}
+.card:hover{transform:translateY(-3px)}
+
+/* Плочки с реални снимки от галерията */
+.tile-art{background-size:cover;background-position:center}
+
+/* Галерия: надпис при hover; lightbox: размазан фон, надпис, брояч */
+.g-item{position:relative}
+.g-item::after{content:attr(data-cap);position:absolute;left:0;right:0;bottom:0;padding:36px 16px 14px;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));opacity:0;transition:opacity .35s;pointer-events:none}
+.g-item:hover::after,.g-item:focus-visible::after{opacity:1}
+.lightbox{background:rgba(0,0,0,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.lb-cap{position:absolute;left:80px;right:80px;bottom:22px;text-align:center;color:#fff;font-size:14px;margin:0}
+.lb-count{position:absolute;top:26px;left:24px;color:rgba(255,255,255,.7);font-size:13px;letter-spacing:.1em}
+
+/* Навигация: скрива се надолу, показва се нагоре; активна секция */
+.nav{transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.nav.hide{transform:translateY(calc(-100% - 40px))}
+.menu a.active{color:var(--text);box-shadow:inset 0 -1px 0 var(--accent)}
+
+/* Отзиви: аватар с инициали; проба на цвят/материал; плавен FAQ */
+.review footer{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:14px;color:var(--on-accent);background:var(--accent)}
+.mat-switch{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap}
+.mat-label{font-size:13px;color:var(--muted);margin-right:4px}
+.hero-center .mat-switch{justify-content:center}
+.fa{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.16,1,.3,1)}
+.fa>div{overflow:hidden}
+.faq.show .fa,html:not(.js) .faq[open] .fa{grid-template-rows:1fr}
+
+@media (max-width:900px){.offer .wrap{grid-template-columns:1fr}}
+@media (max-width:720px){.badges span{padding:0 10px;border-left:0}.lb-cap{left:16px;right:16px;bottom:14px;font-size:12px}.proof{font-size:13px}}
+@media (prefers-reduced-motion:reduce){
+  .hero-bg picture,.js .hero-text,.js .hero-visual{animation:none}
+  .card:hover,.card-link::after{transform:none;transition:none}
+  .nav.hide{transform:none}
+  .faq[open] .fa{grid-template-rows:1fr}
+}
+
+/* LITE (слаба машина по Navigator API, demo.js): Ken Burns + color blend върху цялото hero всеки кадър е най-скъпото в демото */
+.lite .hero-bg picture{animation:none;will-change:auto}.lite .hero-bg .tint{mix-blend-mode:normal;opacity:.14}.lite .lightbox{backdrop-filter:none;-webkit-backdrop-filter:none}.lite .g-item img,.lite .about-photo img{transition:none}

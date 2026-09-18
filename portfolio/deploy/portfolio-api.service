@@ -1,0 +1,45 @@
+# deploy/portfolio-api.service — systemd услуга за контактния API на портфолиото.
+# Инсталира се от deploy.sh в /etc/systemd/system/. Тайните са в /etc/portfolio-api.env (root, mode 600):
+#   BREVO_API_KEY  — ключ от Brevo (SMTP & API → API Keys)
+#   CONTACT_TO     — получател (по подразбиране info@carbonstealth.eu)
+#   CONTACT_FROM   — подател, верифициран в Brevo (по подразбиране portfolio@carbonstealth.eu)
+[Unit]
+Description=Carbon Stealth Portfolio — contact API (127.0.0.1:4187)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/portfolio-api
+EnvironmentFile=/etc/portfolio-api.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=4187
+ExecStart=/usr/bin/env node /opt/portfolio-api/server.mjs
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Втвърдяване: само мрежа навън (Brevo HTTPS) и четене на собствената папка.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+SystemCallArchitectures=native
+MemoryMax=256M
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
