@@ -182,12 +182,18 @@ export async function creaApp(overrides = {}) {
     // Защита срещу path traversal
     let rel;
     try { rel = decodeURIComponent(url.pathname); } catch { return serveNotFound(res); }
+    // ЕДИН канонизиран (декодиран) път за политиката и за ключа на брояча. Суровият
+    // `url.pathname` НЕ става: файлът се резолвира по декодирания, значи
+    // `/%63ordate.html` отваря cordate.html, но не съвпада с името „cordate.html“ →
+    // скритата страница се сервира, а броячът си прави нов ключ за всяко кодиране
+    // (неограничен растеж). Двете дупки имат една първопричина — тази.
+    const pathCanonico = rel;
     if (rel.endsWith('/')) rel += 'index.html';
     let abs = normalize(join(cfg.siteDir, rel));
     if (abs !== cfg.siteDir && !abs.startsWith(cfg.siteDir + sep)) return send(res, 403, 'Forbidden');
 
     // Скрита страница → 404 (все едно не съществува)
-    if (isHidden(url.pathname, visibility.hidden)) {
+    if (isHidden(pathCanonico, visibility.hidden)) {
       return serveNotFound(res);
     }
 
@@ -203,7 +209,7 @@ export async function creaApp(overrides = {}) {
 
     if (ext === '.html') {
       // брои посещението (анонимно) + инжектира CSS за скритите връзки
-      if (req.method === 'GET') contatore.registra(nomePagina(url.pathname) || url.pathname, clientIp(req), req.headers['user-agent']);
+      if (req.method === 'GET') contatore.registra(nomePagina(pathCanonico) || pathCanonico, clientIp(req), req.headers['user-agent']);
       let html = await readFile(abs, 'utf8');
       html = iniettaHideCss(html, visibility.hidden);
       return send(res, 200, html, { 'content-type': type, 'cache-control': 'no-cache' });

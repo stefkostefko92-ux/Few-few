@@ -42,7 +42,14 @@ jobs:
   desktop:
     name: Windows инсталатор (.exe)
     needs: quality
-    if: github.event_name != 'pull_request'
+    # САМО при таг cspos-v* или ръчно пускане. Преди това се строеше на всеки
+    # push към всеки клон: windows-latest се таксува ×2, а Electron билдът
+    # (npm ci + Next билд + electron-builder NSIS) отнема 15-25 мин → 30-50
+    # изядени минути на коммит. Безплатната квота е 2000/месец за частно репо,
+    # тоест десетина коммита по CSPos я изчерпваха и целият CI на монорепото
+    # оставаше без runner. Инсталаторът не е нужен на всеки коммит — нужен е
+    # на релийз, а качествената порта (quality, Linux ×1) си тича както преди.
+    if: startsWith(github.ref, 'refs/tags/cspos-v') || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     timeout-minutes: 30
     permissions:
