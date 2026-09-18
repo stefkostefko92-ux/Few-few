@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, sheetBg, accentTextOn, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import ImageUpload from "@/components/ImageUpload";
@@ -122,10 +122,16 @@ export default function MenuStudio() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={s.logo} alt="" style={{ height: "18mm", maxWidth: "60mm", objectFit: "contain", margin: "0 auto 3mm" }} />
               )}
-              <div style={{ fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800, fontSize: fs(12), color: theme.accent }}>
+              {/* Заглавието и разделите минават през `accentTextOn`: при светли
+                  акценти (медено жълто върху кремаво = 2.03:1) названията на
+                  разделите на отпечатаното меню ставаха практически нечетими.
+                  Слабият акцент пада на основния цвят на текста; рамките под
+                  разделите остават в акцента — те са украса, не текст. */}
+              <div style={{ fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800, fontSize: fs(12), color: accentTextOn(theme.accent, theme.bg, theme.fg) }}>
                 {s.title}
               </div>
-              {s.subtitle && <div style={{ fontSize: fs(5), letterSpacing: "0.25em", opacity: 0.8, marginTop: "1mm" }}>{s.subtitle}</div>}
+              {/* 0.8 разреждаше подзаглавието до 4.29:1 — под AA за дребен текст. */}
+              {s.subtitle && <div style={{ fontSize: fs(5), letterSpacing: "0.25em", opacity: 0.9, marginTop: "1mm" }}>{s.subtitle}</div>}
             </div>
             <div style={{ position: "relative", zIndex: 1 }}>
               {sections.map((sec, si) => (
@@ -133,7 +139,8 @@ export default function MenuStudio() {
                   {sec.heading && (
                     <div style={{
                       fontFamily: elementFont(s, "heading", "var(--font-display)"), fontWeight: 800,
-                      fontSize: fs(6), color: theme.accent, borderBottom: `0.4mm solid ${theme.accent}`,
+                      fontSize: fs(6), color: accentTextOn(theme.accent, theme.bg, theme.fg),
+                      borderBottom: `0.4mm solid ${theme.accent}`,
                       paddingBottom: "1.5mm", marginBottom: "3mm",
                     }}>
                       {sec.heading}

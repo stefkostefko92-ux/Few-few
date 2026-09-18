@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import PokanaStudio from "@/components/studios/PokanaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
-const TITLE = "Безплатни покани за печат";
+const TITLE = "Безплатни покани и картички за печат";
 const DESC =
   "Направи покана за рожден ден, кръщене, сватба или юбилей — топъл шаблон, 2 на лист А4, готови за рязане. Безплатно, на български, без регистрация.";
 
@@ -64,6 +65,10 @@ export default function PokaniPage() {
       </header>
       <PokanaStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/pokani"
+        aliases={["картички за рожден ден", "покана за сватба", "покана за кръщене", "покана за парти", "картичка за юбилей"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

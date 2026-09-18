@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+
+const TITLE = "Условия за ползване";
+const DESC =
+  "Условия за ползване на Мастилко — безплатен инструмент за етикети, визитки и CV. Просто, честно и на разбираем български.";
 
 export const metadata: Metadata = {
-  title: "Условия за ползване",
-  description:
-    "Условия за ползване на Мастилко — безплатен инструмент за етикети, визитки и CV. Просто, честно и на разбираем български.",
+  title: TITLE,
+  description: DESC,
   alternates: { canonical: "/usloviya" },
+  ...pageMeta(`${TITLE} · Мастилко`, DESC, "/usloviya"),
 };
 
 export default function UsloviyaPage() {

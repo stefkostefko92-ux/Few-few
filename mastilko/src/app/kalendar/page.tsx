@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import CalendarStudio from "@/components/studios/CalendarStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатен календар за печат с българските празници";
@@ -63,6 +64,10 @@ export default function KalendarPage() {
       </header>
       <CalendarStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/kalendar"
+        aliases={["стенен календар", "календар с празници", "календар 2026", "настолен календар", "календар PDF"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

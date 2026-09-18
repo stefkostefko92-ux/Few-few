@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import VoucherStudio from "@/components/studios/VoucherStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни подаръчни ваучери и талони за отстъпка";
@@ -63,6 +64,10 @@ export default function VaucheriPage() {
       </header>
       <VoucherStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/vaucheri"
+        aliases={["талон за отстъпка", "купон за отстъпка", "gift voucher", "подаръчна карта", "ваучер за салон"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

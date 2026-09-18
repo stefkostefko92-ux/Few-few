@@ -51,7 +51,10 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
   if (visible.length === 0) return null;
 
   return (
-    <div className="no-print">
+    // `aside` + етикет, а не гол `div`: лентата стои МЕЖДУ хедъра и `main`,
+    // тоест извън всеки landmark — при екранен четец съдържанието ѝ увисва
+    // без ориентир (axe правило „region“).
+    <aside className="no-print" aria-label="Съобщения от Мастилко">
       {visible.map((b) => (
         <div
           key={b.id}
@@ -111,6 +114,6 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
           </button>
         </div>
       ))}
-    </div>
+    </aside>
   );
 }

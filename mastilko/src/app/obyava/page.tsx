@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import ObyavaStudio from "@/components/studios/ObyavaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатна обява с откъсващи се телефончета";
 const DESC =
-  "Направи класическа обява с ресни за откъсване (телефонни номера) — за уроци, квартира, услуги, продажба. Печаташ на А4, залепваш, хората късат телефона. Безплатно, на български.";
+  "Направи класическа обява с ресни за откъсване (телефонни номера) — за уроци, квартира, услуги, продажба. Печаташ на А4 и хората късат телефона. Безплатно.";
 
 const HOWTO = {
   name: "Как да направиш обява с откъсващи се телефони",
@@ -63,6 +64,10 @@ export default function ObyavaPage() {
       </header>
       <ObyavaStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/obyava"
+        aliases={["обява с ресни", "обява с откъсващи се номера", "обява за уроци", "обява за квартира", "обява за услуги"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

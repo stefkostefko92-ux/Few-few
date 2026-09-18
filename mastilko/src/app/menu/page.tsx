@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import MenuStudio from "@/components/studios/MenuStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатно меню и ценоразпис за печат";
@@ -63,6 +64,10 @@ export default function MenuPage() {
       </header>
       <MenuStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/menu"
+        aliases={["ценоразпис", "меню за кафене", "меню за ресторант", "прайс лист", "меню за бар"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

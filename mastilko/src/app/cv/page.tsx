@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import CvStudio from "@/components/studios/CvStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
-const TITLE = "Безплатна автобиография (CV) на български — вкл. Europass";
+const TITLE = "Безплатна автобиография (CV) и Europass шаблон";
 const DESC =
-  "Създай чиста, професионална автобиография на български — модерен, класически или Europass шаблон (стандарт на ЕС). AI помага с описанията, запазваш като PDF. Безплатно.";
+  "Създай професионална автобиография на български — модерен, класически или Europass шаблон (стандарт на ЕС). AI помага с описанията, запазваш PDF.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -81,6 +82,10 @@ export default function CvPage() {
       </header>
       <CvStudio />
       <ToolFaq items={FAQ} heading="Въпроси за автобиографията" />
+      <RelatedTools
+        current="/cv"
+        aliases={["резюме", "CV шаблон", "автобиография образец", "Europass автобиография", "резюме за работа", "curriculum vitae"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cvJsonLd) }}

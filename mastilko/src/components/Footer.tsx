@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="no-print mt-16 border-t border-ink/10 bg-paper-warm">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <p className="wordmark text-2xl">Мастилко</p>
           <p className="mt-2 max-w-xs text-sm text-ink-soft">
@@ -11,9 +11,9 @@ export default function Footer() {
             регистрация, направо от браузъра към принтера.
           </p>
         </div>
-        <nav aria-label="Инструменти" className="text-sm">
+        <nav aria-label="Инструменти" className="text-sm sm:col-span-2">
           <p className="mb-2 font-semibold text-ink">Инструменти</p>
-          <ul className="space-y-1.5 text-ink-soft">
+          <ul className="space-y-1.5 text-ink-soft sm:columns-2 sm:gap-8 [&>li]:break-inside-avoid">
             <li><Link className="hover:text-tera-dark" href="/etiketi">Етикети за печат</Link></li>
             <li><Link className="hover:text-tera-dark" href="/vizitki">Визитки</Link></li>
             <li><Link className="hover:text-tera-dark" href="/cv">Автобиография (CV)</Link></li>
@@ -22,6 +22,12 @@ export default function Footer() {
             <li><Link className="hover:text-tera-dark" href="/pokani">Покани и картички</Link></li>
             <li><Link className="hover:text-tera-dark" href="/tabelki">Табелки и надписи</Link></li>
             <li><Link className="hover:text-tera-dark" href="/wifi">WiFi стикер с QR</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/badzhove">Баджове за събития</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/obyava">Обява с откъсващи се ресни</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/vaucheri">Ваучери и талони</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/kalendar">Календар за печат</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/menu">Меню и ценоразпис</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/dokumentni-snimki">Снимки за документи</Link></li>
           </ul>
         </nav>
         <nav aria-label="Правна информация" className="text-sm">

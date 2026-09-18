@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import WifiStudio from "@/components/studios/WifiStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатен WiFi стикер с QR код";
 const DESC =
-  "Направи стикер за WiFi с QR код — гостите сканират и телефонът се свързва сам, без да въвеждат парола. За кафенета, къщи за гости, офиси. Безплатно, на български.";
+  "Направи стикер за WiFi с QR код — гостите сканират и телефонът се свързва сам, без да въвеждат парола. За кафенета и къщи за гости. Безплатно, на български.";
 
 const HOWTO = {
   name: "Как да направиш WiFi QR стикер",
@@ -63,6 +64,10 @@ export default function WifiPage() {
       </header>
       <WifiStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/wifi"
+        aliases={["QR код за WiFi", "стикер с парола за WiFi", "WiFi парола за гости", "табелка с WiFi"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

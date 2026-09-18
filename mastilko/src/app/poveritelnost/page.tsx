@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
+
+const TITLE = "Политика за поверителност";
+const DESC =
+  "Как Мастилко работи с данните ти: всичко остава в твоя браузър, нямаме база данни, бисквитки и проследяване. AI подсказките отиват към Google само по твое действие.";
 
 export const metadata: Metadata = {
-  title: "Политика за поверителност",
-  description:
-    "Как Мастилко работи с данните ти: всичко остава в твоя браузър, нямаме база данни, бисквитки и проследяване. AI подсказките отиват към Google само по твое действие.",
+  title: TITLE,
+  description: DESC,
   alternates: { canonical: "/poveritelnost" },
+  ...pageMeta(`${TITLE} · Мастилко`, DESC, "/poveritelnost"),
 };
 
 export default function PoveritelnostPage() {

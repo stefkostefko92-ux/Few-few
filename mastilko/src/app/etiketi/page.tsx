@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import LabelStudio from "@/components/studios/LabelStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
-const TITLE = "Безплатни етикети за печат";
+const TITLE = "Безплатни етикети за печат и стикери за буркани";
 const DESC =
   "Създай етикети за буркани, кутии и продукти — избираш размер, цвят и текст, принтираш цял лист А4. Безплатно, на български, без регистрация.";
 
@@ -72,6 +73,10 @@ export default function EtiketiPage() {
       </header>
       <LabelStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/etiketi"
+        aliases={["стикери за буркани", "лепенки за продукти", "етикети за тетрадки", "самозалепващи етикети", "етикети за подправки", "надписи за буркани"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

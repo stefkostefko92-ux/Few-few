@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import TabelkaStudio from "@/components/studios/TabelkaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни табелки и надписи за печат";
@@ -64,6 +65,10 @@ export default function TabelkiPage() {
       </header>
       <TabelkaStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/tabelki"
+        aliases={["надписи за врата", "табела отворено затворено", "табела работно време", "указателна табелка", "надпис за офис"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

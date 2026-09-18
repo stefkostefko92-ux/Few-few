@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import PhotoStudio from "@/components/studios/PhotoStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни снимки за документи (35×45 mm)";
 const DESC =
-  "Направи снимки за лична карта, паспорт или виза у дома — качваш снимка, изрязваш по стандартния размер и печаташ цял лист еднакви снимки. Безплатно, изцяло в браузъра.";
+  "Направи снимки за лична карта, паспорт или виза у дома — качваш снимка, изрязваш по стандартния размер и печаташ цял лист еднакви. Безплатно, само в браузъра.";
 
 const HOWTO = {
   name: "Как да си направиш снимки за документи",
@@ -63,6 +64,10 @@ export default function DokumentniSnimkiPage() {
       </header>
       <PhotoStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/dokumentni-snimki"
+        aliases={["снимка за лична карта", "снимка за паспорт", "биометрична снимка", "снимка 35x45", "снимка за виза", "снимка за шофьорска книжка"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

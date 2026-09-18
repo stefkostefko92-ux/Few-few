@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import GramotaStudio from "@/components/studios/GramotaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни грамоти и сертификати за печат";
 const DESC =
-  "Направи грамота, сертификат или диплома на български — красив хоризонтален А4 шаблон с рамка. За училища, детски градини, клубове и фирми. Безплатно, без регистрация.";
+  "Направи грамота, сертификат или диплома на български — красив хоризонтален А4 шаблон с рамка. За училища, клубове и фирми. Безплатно, без регистрация.";
 
 const HOWTO = {
   name: "Как да направиш грамота",
@@ -65,6 +66,10 @@ export default function GramotiPage() {
       </header>
       <GramotaStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/gramoti"
+        aliases={["диплома за участие", "сертификат за участие", "благодарствена грамота", "почетна грамота", "certificate шаблон"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

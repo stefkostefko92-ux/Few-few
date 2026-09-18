@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import BadgeStudio from "@/components/studios/BadgeStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни баджове за събития (name tags)";
 const DESC =
-  "Направи баджове за конференция, семинар или сватба — цял списък гости наведнъж от таблица. Име, роля, фирма, лого и QR код. Готово за печат, безплатно, на български.";
+  "Направи баджове за конференция, семинар или сватба — цял списък гости наведнъж от таблица. Име, роля, фирма, лого и QR код. Безплатно, на български.";
 
 const HOWTO = {
   name: "Как да направиш баджове за събитие",
@@ -64,6 +65,10 @@ export default function BadzhovePage() {
       </header>
       <BadgeStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools
+        current="/badzhove"
+        aliases={["name tags", "табелки с имена", "баджове за конференция", "баджове за сватба", "бадж за ланярд"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

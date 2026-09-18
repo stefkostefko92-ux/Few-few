@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import PismoStudio from "@/components/studios/PismoStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатно мотивационно писмо на български";
@@ -73,6 +74,10 @@ export default function PismoPage() {
       </header>
       <PismoStudio />
       <ToolFaq items={FAQ} heading="Въпроси за мотивационното писмо" />
+      <RelatedTools
+        current="/pismo"
+        aliases={["придружително писмо", "писмо за кандидатстване", "cover letter", "мотивационно писмо образец"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pismoJsonLd) }}

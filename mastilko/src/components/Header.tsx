@@ -46,32 +46,35 @@ export default function Header() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-haspopup="true"
+              aria-controls="menyu-instrumenti"
               className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark sm:px-4 sm:text-base dark:hover:bg-white/10 vivid:hover:bg-white/10"
             >
               Инструменти
               <span aria-hidden className={`transition ${open ? "rotate-180" : ""}`}>▾</span>
             </button>
             {open && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
-                <nav
-                  aria-label="Инструменти"
-                  className="tools-menu card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2"
-                >
-                  {TOOLS.map((t) => (
-                    <Link
-                      key={t.href}
-                      href={t.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10"
-                    >
-                      <Image src={t.icon} alt="" width={36} height={36} unoptimized className="h-8 w-8 shrink-0 object-contain" aria-hidden />
-                      {t.label}
-                    </Link>
-                  ))}
-                </nav>
-              </>
+              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
             )}
+            {/* Менюто се рендира ВИНАГИ (само се скрива с CSS), за да стоят
+                всичките 14 връзки в сървърния HTML — иначе търсачките и AI
+                обхождачите не виждат вътрешните линкове към инструментите. */}
+            <nav
+              id="menyu-instrumenti"
+              aria-label="Инструменти"
+              className={`tools-menu card-warm absolute right-0 z-20 mt-2 w-64 overflow-hidden p-2 ${open ? "" : "hidden"}`}
+            >
+              {TOOLS.map((t) => (
+                <Link
+                  key={t.href}
+                  href={t.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tera-pale hover:text-tera-dark dark:hover:bg-white/10"
+                >
+                  <Image src={t.icon} alt="" width={36} height={36} unoptimized className="h-8 w-8 shrink-0 object-contain" aria-hidden />
+                  {t.label}
+                </Link>
+              ))}
+            </nav>
           </div>
           <ThemeToggle />
         </div>
