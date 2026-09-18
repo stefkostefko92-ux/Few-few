@@ -30,6 +30,7 @@ const pageEntries = {
   options: 'src/options/options.js',
   welcome: 'src/welcome/welcome.js',
   memory: 'src/memory/memory.js',
+  sidepanel: 'src/sidepanel/sidepanel.js',
 };
 if (!FIREFOX) {
   pageEntries.background = 'src/background.js';

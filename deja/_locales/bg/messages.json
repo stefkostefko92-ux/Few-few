@@ -228,5 +228,38 @@
   },
   "supportLink": {
     "message": "Подкрепи Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — компаньон"
+  },
+  "panelOnThisPage": {
+    "message": "По темата на тази страница"
+  },
+  "panelRecent": {
+    "message": "Последни спомени"
+  },
+  "panelNoPage": {
+    "message": "Отвори уеб страница и Déjà ще покаже какво си чел по темата ѝ."
+  },
+  "popupOpenPanel": {
+    "message": "Страничен панел"
+  },
+  "popupForgetPage": {
+    "message": "Забрави тази страница"
+  },
+  "popupForgotten": {
+    "message": "Забравена ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: запомни избрания текст"
+  },
+  "menuForget": {
+    "message": "Déjà: забрави тази страница"
+  },
+  "recentTitle": {
+    "message": "Последни спомени"
+  },
+  "cmdOpenPanel": {
+    "message": "Отвори страничния панел на Déjà"
   }
 }

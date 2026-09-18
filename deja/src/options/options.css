@@ -129,3 +129,14 @@ input:focus {
   color: #6fdc8c;
   font-size: 14px;
 }
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f5fb;
+    --panel: #ffffff;
+    --border: #e1dff0;
+    --text: #1b1a2b;
+    --muted: #6b6a82;
+    --accent: #6a5ae0;
+  }
+}

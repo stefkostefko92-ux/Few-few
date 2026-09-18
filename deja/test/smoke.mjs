@@ -61,6 +61,56 @@ check(
   dump?.ok && dump.result?.format === 'deja-memory' && dump.result.pages.length === 1,
 );
 
+// 7) v1.3: „запомни избрания текст“ → отделен спомен; последни; контекст; панел
+const bg = await context.newPage();
+await bg.goto(`chrome-extension://${extId}/search.html`);
+const clip = await bg.evaluate(() =>
+  chrome.runtime.sendMessage({
+    type: 'deja:clip',
+    url: 'http://localhost:18080/baterii',
+    title: 'Бъдещето на натриевите батерии',
+    text: 'Натрият е хиляда пъти по-разпространен от лития и не изисква кобалт или никел, което сваля цената на клетката.',
+  }),
+);
+check('clip: избраният текст е приет', clip?.ok && clip.result?.clipped === true);
+let recent = [];
+for (let i = 0; i < 20; i++) {
+  await bg.waitForTimeout(3000);
+  const res = await bg.evaluate(() => chrome.runtime.sendMessage({ type: 'deja:recent', limit: 8 }));
+  recent = res?.result || [];
+  if (recent.some((r) => r.url.includes('#clip-'))) break;
+}
+check(
+  'clip: индексиран като отделен спомен (✂ заглавие)',
+  recent.some((r) => r.url.includes('#clip-') && r.title.startsWith('✂')),
+);
+const ctx = await bg.evaluate(() =>
+  chrome.runtime.sendMessage({
+    type: 'deja:context',
+    url: 'http://localhost:18080/baterii',
+    title: 'Бъдещето на натриевите батерии',
+  }),
+);
+check('context: индексирана страница дава свързани', ctx?.ok && ctx.result?.indexed === true);
+const forgot = await bg.evaluate(() =>
+  chrome.runtime.sendMessage({ type: 'deja:forget-url', url: 'http://localhost:18080/baterii' }),
+);
+const afterForget = await bg.evaluate(() =>
+  chrome.runtime.sendMessage({ type: 'deja:memory:list' }),
+);
+check(
+  'forget-url: страницата е забравена, clip-ът остава',
+  forgot?.ok &&
+    !afterForget.result.some((p) => p.urlKey === 'http://localhost:18080/baterii') &&
+    afterForget.result.some((p) => p.urlKey.includes('#clip-')),
+);
+
+const panel = await context.newPage();
+await panel.goto(`chrome-extension://${extId}/sidepanel.html`);
+await panel.waitForSelector('#recent .mini, #recent .empty', { timeout: 15000 });
+const panelRows = await panel.$$eval('#recent .mini', (r) => r.length);
+check('страничен панел: последните спомени се зареждат', panelRows >= 1);
+
 await context.close();
 server.close();
 finish();

@@ -137,6 +137,22 @@ npm run zip           # release/deja-<версия>.zip за Chrome Web Store
 - **1.2**: топ-домейни статистика в „Моята памет“, „Подкрепи Déjà“ линк
   в popup-а, двойни release пакети (Chrome + Firefox).
 
+## v1.3 „компаньон“ (растеж на потребителите)
+
+- **Страничен панел** (`sidepanel/`, permission `sidePanel`, Alt+Shift+S или бутон
+  в popup-а): търсене + „по темата на тази страница“ + последни спомени.
+  Активният таб идва от content script-а (`deja:active` → `storage.session`),
+  **без „tabs“ право** (то носи предупреждение „чете историята“).
+- **Контекстно меню** (`contextMenus`): „запомни избрания текст“ → отделен
+  спомен с ключ `<url>#clip-<fnv>` (`deja:clip`; `indexPage` приема явен
+  `urlKey`); „забрави тази страница“ (`deja:forget-url`).
+- **`activeTab`** само за „Забрави тази страница“ от popup-а (URL на текущия таб).
+- **Последни спомени** на празната търсачка (`deja:recent`); **светла тема** по
+  `prefers-color-scheme` в search/popup/options (панелът и memory наследяват).
+- Firefox: `sidebar_action` вместо `side_panel`; `chrome.sidePanel` е guard-нат.
+- Store пакет: `store/PUBLISH.md` (стъпки), `store/promo/` (tile + marquee),
+  `sidepanel-{bg,en}.png` композиция (реална статия 880px + панел 400px).
+
 ## Пътна карта (по ред)
 
 1. Качване в Chrome Web Store: деплойни `server/` на deja.carbonstealth.eu

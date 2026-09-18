@@ -96,12 +96,12 @@ function fnv1a(str) {
   return (h >>> 0).toString(16);
 }
 
-async function indexPage({ url, title, text, lang }) {
+async function indexPage({ url, title, text, lang, urlKey: explicitKey }) {
   const settings = await getSettings();
   if (settings.paused) return;
   if (isDenied(url, settings.userDenylist)) return;
 
-  const urlKey = urlKeyOf(url);
+  const urlKey = explicitKey || urlKeyOf(url);
   const hash = fnv1a(text);
   const existing = await db.getPage(urlKey);
   if (existing && existing.hash === hash) return; // нищо ново за учене
@@ -152,7 +152,8 @@ function addPending(page) {
   return mutatePending((pending) => {
     // tok = самоличност на записа: drain-ът пипа записа само ако е СЪЩАТА
     // версия — иначе междувременно пристигнала v2 на страницата се затрива
-    pending[urlKeyOf(page.url)] = { ...page, tries: 0, tok: crypto.randomUUID() };
+    const key = page.urlKey || urlKeyOf(page.url);
+    pending[key] = { ...page, tries: 0, tok: crypto.randomUUID() };
   });
 }
 
@@ -324,7 +325,51 @@ const handlers = {
     refreshBadge();
     return count;
   },
+  // content script-ът докладва активната страница (при фокус/показване) — без
+  // "tabs" право; страничният панел чете това от storage.session
+  'deja:active': async (msg) => {
+    if (!/^https?:\/\//.test(msg.url || '')) return;
+    await chrome.storage.session.set({
+      activeTab: { url: msg.url, title: msg.title || '', at: Date.now() },
+    });
+  },
+  // последните N спомена — празното състояние на търсачката и панелът
+  'deja:recent': async (msg) => {
+    const pages = await db.getAllPages();
+    pages.sort((a, b) => (b.time || 0) - (a.time || 0));
+    return pages
+      .slice(0, msg.limit || 8)
+      .map(({ urlKey, title, time }) => ({ url: urlKey, title, time }));
+  },
+  // „какво съм чел по темата на ТАЗИ страница“: ако е индексирана — свързани по
+  // центроид; иначе семантично търсене по заглавието ѝ
+  'deja:context': async (msg) => {
+    const urlKey = urlKeyOf(msg.url);
+    const page = await db.getPage(urlKey);
+    if (page) return { indexed: true, items: await related(urlKey) };
+    const title = (msg.title || '').trim();
+    if (title.length < 6) return { indexed: false, items: [] };
+    const items = await search(title);
+    return { indexed: false, items: items.filter((r) => r.url !== urlKey).slice(0, RELATED_COUNT) };
+  },
+  'deja:clip': (msg) => clipSelection(msg.url, msg.title, msg.text),
+  'deja:forget-url': async (msg) => {
+    await db.deletePage(urlKeyOf(msg.url));
+    refreshBadge();
+  },
 };
+
+// „Запомни избрания текст“: откъсът става самостоятелен спомен със свой ключ
+// (hash-ът в urlKey го отличава от самата страница; urlKeyOf го маха, затова
+// ключът се подава готов на индексирането).
+async function clipSelection(url, title, text) {
+  const clean = (text || '').replace(/\s+/g, ' ').trim();
+  if (!/^https?:\/\//.test(url || '') || clean.length < 20) return { clipped: false };
+  const clipKey = `${urlKeyOf(url)}#clip-${fnv1a(clean)}`;
+  await addPending({ url, title: `✂ ${title || url}`, text: clean, lang: '', urlKey: clipKey });
+  drainPending();
+  return { clipped: true };
+}
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg) return;
@@ -343,9 +388,44 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-chrome.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener((command, tab) => {
   if (command === 'open-search') {
     chrome.tabs.create({ url: chrome.runtime.getURL('search.html') });
+  }
+  if (command === 'open-panel' && chrome.sidePanel && tab?.windowId != null) {
+    chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => {});
+  }
+});
+
+// --- контекстно меню: „Запомни избрания текст“ / „Забрави тази страница“ ---
+// (Firefox: същото API под browser.menus/contextMenus — адаптерът го покрива)
+
+const MENU_CLIP = 'deja-clip';
+const MENU_FORGET = 'deja-forget';
+
+function installMenus() {
+  if (!chrome.contextMenus) return;
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: MENU_CLIP,
+      title: chrome.i18n.getMessage('menuClip') || 'Déjà: remember selection',
+      contexts: ['selection'],
+      documentUrlPatterns: ['http://*/*', 'https://*/*'],
+    });
+    chrome.contextMenus.create({
+      id: MENU_FORGET,
+      title: chrome.i18n.getMessage('menuForget') || 'Déjà: forget this page',
+      contexts: ['page'],
+      documentUrlPatterns: ['http://*/*', 'https://*/*'],
+    });
+  });
+}
+
+chrome.contextMenus?.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === MENU_CLIP) {
+    clipSelection(info.pageUrl, tab?.title, info.selectionText);
+  } else if (info.menuItemId === MENU_FORGET && info.pageUrl) {
+    handlers['deja:forget-url']({ url: info.pageUrl });
   }
 });
 
@@ -427,12 +507,16 @@ async function closeIdleOffscreen() {
 
 chrome.runtime.onInstalled.addListener((details) => {
   armAlarms();
+  installMenus();
+  // панелът се отваря от popup-а/командата, не при всеки клик на иконата
+  chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: false }).catch(() => {});
   if (details.reason === 'install') {
     chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
   }
 });
 chrome.runtime.onStartup.addListener(() => {
   armAlarms();
+  installMenus();
   pruneByRetention();
 });
 chrome.alarms.onAlarm.addListener((alarm) => {

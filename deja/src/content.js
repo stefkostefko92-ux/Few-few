@@ -145,6 +145,18 @@ async function run() {
 
 setTimeout(run, SETTLE_MS);
 
+// Страничният панел иска да знае коя страница гледаш — докладваме при
+// фокус/показване (без "tabs" право; само http(s), само top frame).
+function reportActive() {
+  if (window !== window.top || document.visibilityState !== 'visible') return;
+  chrome.runtime
+    .sendMessage({ type: 'deja:active', url: location.href, title: document.title })
+    .catch(() => {});
+}
+reportActive();
+document.addEventListener('visibilitychange', reportActive);
+window.addEventListener('focus', reportActive);
+
 // SPA навигации: history API-то живее в света на страницата и не можем да го
 // прихванем от изолирания свят, затова следим location.href на интервал.
 // Дубликатите не тежат — background-ът ги реже по хеш на съдържанието.
@@ -154,6 +166,7 @@ if (window === window.top) {
   setInterval(() => {
     if (location.href === lastHref) return;
     lastHref = location.href;
+    reportActive();
     clearTimeout(pending);
     pending = setTimeout(run, SETTLE_MS); // даваме на SPA-то време да рендерира
   }, 2000);

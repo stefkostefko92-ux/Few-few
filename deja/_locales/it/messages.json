@@ -228,5 +228,38 @@
   },
   "supportLink": {
     "message": "Sostieni Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — compagno"
+  },
+  "panelOnThisPage": {
+    "message": "Sull'argomento di questa pagina"
+  },
+  "panelRecent": {
+    "message": "Ricordi recenti"
+  },
+  "panelNoPage": {
+    "message": "Apri una pagina web e Déjà ti mostrerà cosa hai letto sul suo argomento."
+  },
+  "popupOpenPanel": {
+    "message": "Pannello laterale"
+  },
+  "popupForgetPage": {
+    "message": "Dimentica questa pagina"
+  },
+  "popupForgotten": {
+    "message": "Dimenticata ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: ricorda il testo selezionato"
+  },
+  "menuForget": {
+    "message": "Déjà: dimentica questa pagina"
+  },
+  "recentTitle": {
+    "message": "Ricordi recenti"
+  },
+  "cmdOpenPanel": {
+    "message": "Apri il pannello laterale di Déjà"
   }
 }

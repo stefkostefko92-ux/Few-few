@@ -14,7 +14,9 @@
   "permissions": [
     "storage",
     "unlimitedStorage",
-    "alarms"
+    "alarms",
+    "contextMenus",
+    "activeTab"
   ],
   "background": {
     "scripts": [
@@ -59,6 +61,12 @@
         "default": "Alt+Shift+D"
       },
       "description": "__MSG_cmdOpenSearch__"
+    },
+    "open-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "__MSG_cmdOpenPanel__"
     }
   },
   "content_security_policy": {
@@ -66,5 +74,10 @@
   },
   "omnibox": {
     "keyword": "dj"
+  },
+  "sidebar_action": {
+    "default_panel": "sidepanel.html",
+    "default_title": "Déjà",
+    "default_icon": "icons/icon32.png"
   }
 }

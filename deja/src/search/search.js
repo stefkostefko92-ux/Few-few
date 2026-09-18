@@ -166,8 +166,31 @@ form.addEventListener('submit', (event) => {
   if (query) doSearch(query);
 });
 
+// Празната търсачка не е празна: последните спомени са на един клик
+async function showRecent() {
+  try {
+    const items = await send('deja:recent', { limit: 6 });
+    if (!items.length || input.value.trim()) return;
+    resultsEl.replaceChildren();
+    resultsEl.append(el('h2', 'recent-title', t('recentTitle')));
+    for (const r of items) {
+      const row = el('div', 'recent-row');
+      const link = el('a', null, r.title || r.url);
+      link.href = r.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      row.append(link);
+      if (r.time) row.append(el('span', 'recent-when', new Date(r.time).toLocaleDateString()));
+      resultsEl.append(row);
+    }
+  } catch {
+    /* паметта спи — не е фатално */
+  }
+}
+
 renderFilters();
 refreshStats();
+showRecent();
 
 // omnibox: „dj <заявка>“ пристига като ?q= — пускаме търсенето веднага
 const initialQuery = new URLSearchParams(location.search).get('q');

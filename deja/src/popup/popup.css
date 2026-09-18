@@ -82,3 +82,44 @@ button {
 .links a:hover {
   color: #8b7cf6;
 }
+
+@media (prefers-color-scheme: light) {
+  body {
+    background: #f6f5fb;
+    color: #1b1a2b;
+  }
+
+  .stats,
+  .links a {
+    color: #6b6a82;
+  }
+
+  .danger {
+    border-color: #e6cfe0;
+  }
+
+  .secondary {
+    background: #ffffff;
+    border: 1px solid #e1dff0;
+    color: #1b1a2b;
+  }
+}
+
+.secondary {
+  background: #17171f;
+  border: 1px solid #2a2a38;
+  color: #eaeaf2;
+  margin-top: 8px;
+}
+
+.secondary:hover {
+  border-color: #8b7cf6;
+}
+
+@media (prefers-color-scheme: light) {
+  .secondary {
+    background: #ffffff;
+    border-color: #e1dff0;
+    color: #1b1a2b;
+  }
+}

@@ -228,5 +228,38 @@
   },
   "supportLink": {
     "message": "Support Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — companion"
+  },
+  "panelOnThisPage": {
+    "message": "On the topic of this page"
+  },
+  "panelRecent": {
+    "message": "Recent memories"
+  },
+  "panelNoPage": {
+    "message": "Open a web page and Déjà will show what you have read on its topic."
+  },
+  "popupOpenPanel": {
+    "message": "Side panel"
+  },
+  "popupForgetPage": {
+    "message": "Forget this page"
+  },
+  "popupForgotten": {
+    "message": "Forgotten ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: remember selected text"
+  },
+  "menuForget": {
+    "message": "Déjà: forget this page"
+  },
+  "recentTitle": {
+    "message": "Recent memories"
+  },
+  "cmdOpenPanel": {
+    "message": "Open the Déjà side panel"
   }
 }

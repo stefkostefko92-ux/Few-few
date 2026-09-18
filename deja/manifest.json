@@ -5,9 +5,19 @@
   "description": "__MSG_extDesc__",
   "version": "0.5.0",
   "default_locale": "en",
-  "omnibox": { "keyword": "dj" },
+  "omnibox": {
+    "keyword": "dj"
+  },
   "minimum_chrome_version": "116",
-  "permissions": ["storage", "offscreen", "unlimitedStorage", "alarms"],
+  "permissions": [
+    "storage",
+    "offscreen",
+    "unlimitedStorage",
+    "alarms",
+    "contextMenus",
+    "sidePanel",
+    "activeTab"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -41,11 +51,22 @@
   },
   "commands": {
     "open-search": {
-      "suggested_key": { "default": "Alt+Shift+D" },
+      "suggested_key": {
+        "default": "Alt+Shift+D"
+      },
       "description": "__MSG_cmdOpenSearch__"
+    },
+    "open-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "__MSG_cmdOpenPanel__"
     }
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
   }
 }
