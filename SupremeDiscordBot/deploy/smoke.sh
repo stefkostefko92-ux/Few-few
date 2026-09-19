@@ -127,7 +127,11 @@ else bad "GET /api/servers върна $c за нелогнат — гардът 
 b=$(body "$API/api/billing/config")
 if echo "$b" | grep -q '"provider":"discord"\|"provider":"both"'; then
   if echo "$b" | grep -q '"configured":true'; then ok "Discord магазинът е конфигуриран (SKU + client id)"
-  else bad "BILLING_PROVIDER е discord, но SKU/client id липсват — клиент НЕ може да купи (виж backend/.env)"; fi
+  # СЪЗНАТЕЛЕН деплой без магазин (напр. играта/SEO преди SKU-тата да са готови):
+  # SMOKE_ALLOW_BILLING_UNCONFIGURED=1 сваля това до бележка, за да мръдне `current`.
+  # Не е подразбиране и не остава за постоянно — клиент не може да купи.
+  elif [ "${SMOKE_ALLOW_BILLING_UNCONFIGURED:-0}" = "1" ]; then note "Discord магазинът НЕ е конфигуриран (SKU/client id) — допуснато изрично със SMOKE_ALLOW_BILLING_UNCONFIGURED=1; продажби няма"
+  else bad "BILLING_PROVIDER е discord, но SKU/client id липсват — клиент НЕ може да купи (виж backend/.env; съзнателно без магазин: SMOKE_ALLOW_BILLING_UNCONFIGURED=1)"; fi
 elif echo "$b" | grep -q '"provider":"stripe"'; then note "BILLING_PROVIDER=stripe — продажбата е през Stripe (нарочно ли?)"
 else bad "GET /api/billing/config не отговори с провайдър: $b"; fi
 # Легаси Stripe: маршрутите трябва да живеят (заварени абонати), 503 = няма ключ.
@@ -149,6 +153,17 @@ for f in /robots.txt /sitemap.xml /llms.txt; do
   [ "$(code "$BASE$f")" = "200" ] || bad "$f липсва"
 done
 [ "$(code "$BASE/robots.txt")" = "200" ] && ok "robots/sitemap/llms са на място"
+
+# ─── 9. Играта (v50): картинките на спътниците и страницата ѝ се отдават ─────
+# Discord embed-ите сочат $FRONTEND_URL/game/companions/<id>-<stage>.jpg — ако
+# nginx не ги отдава (липсваща public/ папка в билда), всяка поява е без
+# картинка, а никой тест в CI не гледа живия сървър. Проверяваме един файл от
+# каталога (lime-blip е първият common) и SEO страницата на функцията.
+c=$(code "$BASE/game/companions/lime-blip-1.jpg")
+if [ "$c" = "200" ]; then ok "картинките на спътниците се отдават"
+else bad "/game/companions/lime-blip-1.jpg върна $c — embed-ите на играта са без картинки (public/game липсва в билда?)"; fi
+if [ "$(code "$BASE/features/discord-leveling-game")" = "200" ]; then ok "страницата на играта е пререндирана"
+else bad "/features/discord-leveling-game не се отдава"; fi
 
 echo
 if [ "$fail" -eq 0 ]; then

@@ -316,6 +316,7 @@ export default function LandingLocalized({ locale }) {
                 <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsAppy}</a>
               </nav>
             )}
+            <FeatureLinks heading={t.guides?.features || "Features"} />
 
             <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
               Created and Designed by{" "}

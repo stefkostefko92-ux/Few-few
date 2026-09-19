@@ -61,6 +61,9 @@ export const adminReconcileBilling = () => api.post("/admin/billing/reconcile").
 export const getAdminFleet     = () => api.get("/admin/fleet").then((r) => r.data);
 export const adminReconcileFleet = () => api.post("/admin/fleet/reconcile").then((r) => r.data);
 export const getDsrRequests    = () => api.get("/admin/dsr/requests").then((r) => r.data);
+export const getAdminGameSeason    = () => api.get("/admin/game/season").then((r) => r.data);
+export const createAdminGameSeason = (data) => api.post("/admin/game/season", data).then((r) => r.data);
+export const updateAdminGameSeason = (code, data) => api.put(`/admin/game/season/${encodeURIComponent(code)}`, data).then((r) => r.data);
 export const getDsrSummary     = (discordId) => api.get(`/admin/dsr/${discordId}`).then((r) => r.data);
 export const dsrErase          = (discordId, body) => api.post(`/admin/dsr/${discordId}/erase`, body).then((r) => r.data);
 // Обновява предпочитания на акаунта (език) — изборът пътува с потребителя.
@@ -278,3 +281,17 @@ export const deleteApplication = (sid, appId) =>
 export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
+// ─── v50 Server Season (dashboard) ───────────────────────────────────────────
+export const getGame           = (sid) => api.get(`/game/${sid}`).then((r) => r.data);
+export const updateGameSettings= (sid, data) => api.put(`/game/${sid}/settings`, data).then((r) => r.data);
+export const getGameShop       = (sid) => api.get(`/game/${sid}/shop`).then((r) => r.data);
+export const createGameShopItem= (sid, data) => api.post(`/game/${sid}/shop`, data).then((r) => r.data);
+export const updateGameShopItem= (sid, id, data) => api.patch(`/game/${sid}/shop/${id}`, data).then((r) => r.data);
+export const deleteGameShopItem= (sid, id) => api.delete(`/game/${sid}/shop/${id}`).then((r) => r.data);
+export const getGameLeaderboard= (sid, by = "xp") => api.get(`/game/${sid}/leaderboard`, { params: { by, limit: 50 } }).then((r) => r.data);
+export const getGamePurchases  = (sid) => api.get(`/game/${sid}/purchases`).then((r) => r.data);
+export const getGameCompanions = (sid) => api.get(`/game/${sid}/companions`).then((r) => r.data);
+export const getGameQuests     = (sid) => api.get(`/game/${sid}/quests`).then((r) => r.data);
+export const createGameQuest   = (sid, data) => api.post(`/game/${sid}/quests`, data).then((r) => r.data);
+export const cancelGameQuest   = (sid, id) => api.delete(`/game/${sid}/quests/${id}`).then((r) => r.data);
+export const getGameMinigames  = (sid) => api.get(`/game/${sid}/minigames`).then((r) => r.data);

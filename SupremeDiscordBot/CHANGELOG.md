@@ -4,6 +4,63 @@
 
 ## [Unreleased]
 
+## [3.5.0] — 2026-09-19
+
+### Добавено
+- **Server Season — играта на Supreme Bot (v50, миграция `20260918000000_v50_server_season`).**
+  Проучване + концепция в `docs/GAME_CONCEPT.md` (§7 = статус и отклонения).
+  **Етап 1:** нива/XP по кривата на MEE6 (5n²+50n+100; XP брои *събития* —
+  съобщение с охлаждане, гласови минути, глас в анкета, участие в подарък,
+  одобрена кандидатура, верификация, тикет затворен в SLA — никога текст), искри
+  при ниво нагоре, `/daily` със streak (×2 от ден 7), магазин на сървъра (роли за
+  период с автоматично сваляне, custom награди; покупката е ЕДНА транзакция с
+  условен decrement), `/profile`, `/leaderboard`, роли за ниво (натрупващи се,
+  само безопасни). **Етап 2:** 60 оригинални спътника (маскотът на Carbon Stealth
+  в 12 палитри × 3 форми, `frontend/scripts/companions-art.mjs` → 180 JPEG), поява
+  при активност, улавяне като надпревара (условен update), хранене/еволюция
+  (100/300 искри), размяна за 10 min, сезонни (S1 „First Light“, 21.09–14.12.2026);
+  Free вижда само common/uncommon и има 1 слот. **Етап 3:** седмични сървърни
+  куестове (ротация, цел по брой играчи, лента за напредък в канала, награда за
+  всеки принесъл + сандък за топа), Counting (съдържание се чете САМО в обявения
+  канал; грешка = рестарт; XP на всеки 100), trivia (60 проверени SFW въпроса;
+  Premium: дневни кръгове + въпроси, сглобени локално от базата знания — без AI),
+  `/wyr` и `/tod` (SFW банки, Premium). **Етап 4:** сезоните се управляват от
+  админ конзолата (таб „Season“: код, име, старт/край, кои спътници са сезонни —
+  таблица `game_seasons`, MAIN_OWNER + step-up; S1 се записва автоматично при
+  празна таблица), краят на сезона (топ 3 → обява,
+  `seasonXp` → 0, останалото остава; `game-season`), `docs/DISCORD_VERIFICATION.md`
+  §3.1 (Counting като 4-та употреба на Message Content, гейтвано в
+  `discordCompliance.test.js`), страница `/features/discord-leveling-game`
+  (sitemap + llms.txt). Табло: страница „Game“ (обзор/настройки, роли за ниво,
+  магазин, класация, спътници, куестове и мини-игри) с `DiscordChannelSelect`/
+  `DiscordRoleSelect`, 8 езика; бот: 9 команди в категория „Game“, 8 езика.
+  Лимити по tier в `premium.js` (роли за ниво 5/100, артикули 5/50, слотове 1/∞,
+  куестове 1/3). GDPR: `/privacy info|delete` покрива всички игрови редове;
+  чистката на напуснал сървър — също. Без хазарт, искрите не се продават
+  (App Discovery). Гейтове: `game.test.js`, `companions.test.js`,
+  `minigames.test.js`, `season.test.js` (backend); `gameCommands`, `companions`,
+  `minigames` (bot); `featurePages.test.js` чете лимитите на играта от `premium.js`.
+- **SEO/GEO/AEO: 12 страници по функция (`/features`, `/features/*`)** — за
+  заявките, с които хората търсят отделни ботове („discord ticket system",
+  „discord verification bot", „reaction roles bot", „giveaway bot with role
+  requirements", „welcome bot", „logging bot / log deleted messages", „sticky
+  message bot", „scheduled messages bot", „poll bot", „discord support bot ai",
+  „white label discord bot"), сверени с живите подсказки на Google/Bing/
+  DuckDuckGo (18.09.2026). Всяка страница: отговор отпред (≥60 думи), стъпки,
+  таблица Free/Premium с числата от `backend/src/lib/premium.js`, FAQ, свързани
+  страници; JSON-LD WebPage + BreadcrumbList + FAQPage; pre-render снимка за
+  обхождачи без JavaScript; връзки от двете начални страници (8 локала) и от
+  публичния футър; sitemap + llms.txt. Един източник (`src/data/featurePages.js`)
+  за React, снимката и гейта `featurePages.test.js` (лимитите се четат от
+  premium.js — променено число там без промяна тук пада теста).
+- **`docs/DISCORD_VERIFICATION.md`** — готовите отговори (EN) за App Verification,
+  Privileged Intent review (праг **10 000 уникални потребители** + годишно
+  подновяване, правила от 10.06.2026) и Premium Apps onboarding: употреба на
+  Message Content и Server Members по файл, защо интеракциите не ги заместват,
+  ретенция, шифриране, достъп, подпроцесори, инциденти, правата в поканата.
+  Гейт в `discordCompliance.test.js`: intents и числото на правата в кода ↔
+  документа; Presence не се иска.
+
 ### Поправено
 - **Деплой: тайните оцеляват местене на `current`** (реален инцидент, 17.09.2026 —
   `[1/4] Missing: backend/.env …` при деплой на 3.4.0). `deploy/autodeploy.sh`
