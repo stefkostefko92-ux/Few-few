@@ -150,6 +150,17 @@ for f in /robots.txt /sitemap.xml /llms.txt; do
 done
 [ "$(code "$BASE/robots.txt")" = "200" ] && ok "robots/sitemap/llms са на място"
 
+# ─── 9. Играта (v50): картинките на спътниците и страницата ѝ се отдават ─────
+# Discord embed-ите сочат $FRONTEND_URL/game/companions/<id>-<stage>.jpg — ако
+# nginx не ги отдава (липсваща public/ папка в билда), всяка поява е без
+# картинка, а никой тест в CI не гледа живия сървър. Проверяваме един файл от
+# каталога (lime-blip е първият common) и SEO страницата на функцията.
+c=$(code "$BASE/game/companions/lime-blip-1.jpg")
+if [ "$c" = "200" ]; then ok "картинките на спътниците се отдават"
+else bad "/game/companions/lime-blip-1.jpg върна $c — embed-ите на играта са без картинки (public/game липсва в билда?)"; fi
+if [ "$(code "$BASE/features/discord-leveling-game")" = "200" ]; then ok "страницата на играта е пререндирана"
+else bad "/features/discord-leveling-game не се отдава"; fi
+
 echo
 if [ "$fail" -eq 0 ]; then
   printf '\033[32m✓ Smoke мина: %d проверки\033[0m\n' "$pass"

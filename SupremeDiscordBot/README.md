@@ -283,13 +283,13 @@ docker compose exec bot     npm test
 ## Features
 
 ### Free Tier
-- Up to 3 ticket panels, 2 forms, 10 questions/form
+- 1 ticket panel, 2 forms with 5 questions each, 1 verification panel (numbers = `backend/src/lib/premium.js` BASE_LIMITS)
 - HTML transcripts (30-day retention)
 - Core slash commands
 - **Server Season game (v50):** levels/XP from activity events (never message text), `/daily` sparks with streaks, server shop, 5 level roles, 5 shop items, common/uncommon companions (1 slot), 1 weekly server quest, counting channel, weekly trivia
 
-### Premium (€4.99/server/month · 14-day free trial)
-- Unlimited panels, forms, questions
+### Premium (€4.99/server/month, sold through the Discord store — no trial)
+- 50 panels, 50 forms, 50 questions per form, 10 verification panels (PREMIUM_LIMITS)
 - HTML transcripts (forever) + real PDF export (pdfkit) + CSV export
 - AI auto-replies (Google Gemini Flash)
 - Round-robin ticket assignment
