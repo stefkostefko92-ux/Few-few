@@ -61,6 +61,9 @@ export const adminReconcileBilling = () => api.post("/admin/billing/reconcile").
 export const getAdminFleet     = () => api.get("/admin/fleet").then((r) => r.data);
 export const adminReconcileFleet = () => api.post("/admin/fleet/reconcile").then((r) => r.data);
 export const getDsrRequests    = () => api.get("/admin/dsr/requests").then((r) => r.data);
+export const getAdminGameSeason    = () => api.get("/admin/game/season").then((r) => r.data);
+export const createAdminGameSeason = (data) => api.post("/admin/game/season", data).then((r) => r.data);
+export const updateAdminGameSeason = (code, data) => api.put(`/admin/game/season/${encodeURIComponent(code)}`, data).then((r) => r.data);
 export const getDsrSummary     = (discordId) => api.get(`/admin/dsr/${discordId}`).then((r) => r.data);
 export const dsrErase          = (discordId, body) => api.post(`/admin/dsr/${discordId}/erase`, body).then((r) => r.data);
 // Обновява предпочитания на акаунта (език) — изборът пътува с потребителя.

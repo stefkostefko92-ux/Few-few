@@ -9,6 +9,7 @@ import { getServerTier } from "../premium.js";
 import { createWithinLimit } from "../withinLimit.js";
 import { getGameSettings } from "./xp.js";
 import { pickSpawn, publicCompanion } from "./companions.js";
+import { getCurrentSeason } from "./seasons.js";
 import { QUEST_TYPES, QUEST_DURATION_MS, questTypeForWeek, targetFor, splitRewards, publicQuest } from "./quests.js";
 
 async function notify(event, payload) {
@@ -123,9 +124,11 @@ export async function rewardQuest(quest) {
     const owned = await prisma.memberCompanion.count({ where: { serverId: quest.serverId, userId: topUserId } });
     let companion = null;
     if (owned < tier.limits.companionSlots) {
-      const c = pickSpawn({ isPremium: !!tier.isPremium });
-      await prisma.memberCompanion.create({ data: { serverId: quest.serverId, userId: topUserId, companionId: c.id } });
-      companion = publicCompanion(c, 1);
+      const season = await getCurrentSeason();
+      const c = pickSpawn({ isPremium: !!tier.isPremium, season });
+      const pc = publicCompanion(c, 1, season);
+      await prisma.memberCompanion.create({ data: { serverId: quest.serverId, userId: topUserId, companionId: c.id, seasonId: pc.seasonId } });
+      companion = pc;
     }
     chest = { userId: topUserId, sparks: rewards.find((r) => r.userId === topUserId)?.sparks || 0, companion };
   }

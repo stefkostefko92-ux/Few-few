@@ -31,7 +31,14 @@ describe("каталогът", () => {
     expect(by).toEqual({ common: 24, uncommon: 16, rare: 12, epic: 6, legendary: 2 });
     expect(new Set(cat.COMPANIONS.map((c) => c.id)).size).toBe(60);
     expect(new Set(cat.COMPANIONS.map((c) => c.name)).size).toBe(60);
-    expect(cat.COMPANIONS.filter((c) => c.seasonId).map((c) => c.id).sort()).toEqual(["cobalt-stellaris", "ember-ignatius", "gold-midas", "shadow-eclipsa"]);
+    // Сезонните са СВОЙСТВО НА СЕЗОНА (базата), не на каталога: seed-ът S1 сочи 4 реални id-та.
+    expect([...cat.DEFAULT_SEASON.companionIds].sort()).toEqual(["cobalt-stellaris", "ember-ignatius", "gold-midas", "shadow-eclipsa"]);
+    for (const id of cat.DEFAULT_SEASON.companionIds) expect(cat.companionById(id), id).toBeTruthy();
+    expect(cat.COMPANIONS.some((c) => "seasonId" in c)).toBe(false);
+    expect(cat.isSeasonal("gold-midas", cat.DEFAULT_SEASON)).toBe(true);
+    expect(cat.isSeasonal("gold-midas", null)).toBe(false);
+    expect(cat.publicCompanion(cat.companionById("gold-midas"), 1, cat.DEFAULT_SEASON).seasonId).toBe("S1");
+    expect(cat.publicCompanion(cat.companionById("gold-midas"), 1).seasonId).toBeNull();
   });
   it("всеки спътник има растеризирани трите форми (frontend/public/game/companions)", () => {
     const missing = [];
@@ -46,14 +53,19 @@ describe("каталогът", () => {
   it("Free сървър вижда само common/uncommon; Premium — всички по тегло; сезонните само в сезона", () => {
     const seq = [0.999, 0.5];
     let i = 0; const rand = () => seq[i++ % seq.length];
-    expect(["common", "uncommon"]).toContain(cat.pickSpawn({ isPremium: false, rand }).rarity);
+    const S = cat.DEFAULT_SEASON;
+    expect(["common", "uncommon"]).toContain(cat.pickSpawn({ isPremium: false, rand, season: S }).rarity);
     const outOfSeason = new Date("2027-06-01T00:00:00Z");
+    const inSeason = new Date("2026-10-01T00:00:00Z");
     for (let k = 0; k < 200; k++) {
-      const c = cat.pickSpawn({ isPremium: true, now: outOfSeason });
-      expect(c.seasonId).toBeNull();
+      expect(cat.isSeasonal(cat.pickSpawn({ isPremium: true, now: outOfSeason, season: S }).id, S)).toBe(false);
     }
+    // Без сезон няма понятие „сезонен“ — publicCompanion не маркира нищо (getCurrentSeason винаги дава ред: seed).
+    expect(cat.publicCompanion(cat.pickSpawn({ isPremium: true, now: inSeason, season: null, rand: () => 0.999 }), 1, null).seasonId).toBeNull();
+    // В сезона легендарните (и двете сезонни) се появяват при жребий „legendary“.
+    expect(cat.pickSpawn({ isPremium: true, now: inSeason, season: S, rand: () => 0.999 }).rarity).toBe("legendary");
     const dist = {};
-    for (let k = 0; k < 4000; k++) { const c = cat.pickSpawn({ isPremium: true }); dist[c.rarity] = (dist[c.rarity] || 0) + 1; }
+    for (let k = 0; k < 4000; k++) { const c = cat.pickSpawn({ isPremium: true, now: inSeason, season: S }); dist[c.rarity] = (dist[c.rarity] || 0) + 1; }
     expect(dist.common).toBeGreaterThan(dist.uncommon); expect(dist.uncommon).toBeGreaterThan(dist.rare); expect(dist.rare).toBeGreaterThan(dist.epic || 0);
   });
 });

@@ -54,6 +54,26 @@ CREATE TABLE "member_progress" (
 );
 
 -- CreateTable
+CREATE TABLE "game_seasons" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "startsAt" TIMESTAMP(3) NOT NULL,
+    "endsAt" TIMESTAMP(3) NOT NULL,
+    "companionIds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "game_seasons_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "game_seasons_code_key" ON "game_seasons"("code");
+
+-- CreateIndex
+CREATE INDEX "game_seasons_startsAt_idx" ON "game_seasons"("startsAt");
+
+-- CreateTable
 CREATE TABLE "game_xp_grants" (
     "id" TEXT NOT NULL,
     "serverId" TEXT NOT NULL,

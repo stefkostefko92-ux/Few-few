@@ -6,10 +6,16 @@
 import { prisma } from "../prisma.js";
 import { getServerTier } from "../premium.js";
 import {
-  companionById, pickSpawn, publicCompanion, stageForFed, STAGE_THRESHOLDS, MAX_STAGE, SPAWN_TTL_MS, SPAWN_MIN_INTERVAL_MS,
+  companionById, pickSpawn, publicCompanion, isSeasonal, stageForFed, STAGE_THRESHOLDS, MAX_STAGE, SPAWN_TTL_MS, SPAWN_MIN_INTERVAL_MS,
 } from "./companions.js";
+import { getCurrentSeason } from "./seasons.js";
 
 export const TRADE_TTL_MS = 10 * 60 * 1000;
+
+/** Публичните полета спрямо ТЕКУЩИЯ сезон (от базата, кеширан 60 s). */
+async function pub(c, stage) {
+  return publicCompanion(c, stage, await getCurrentSeason());
+}
 
 /** Създава поява за канал, ако няма жива и е минал минималният интервал. */
 export async function createSpawn(serverId, channelId, { now = new Date(), rand } = {}) {
@@ -20,11 +26,12 @@ export async function createSpawn(serverId, channelId, { now = new Date(), rand 
     if (alive) return { ok: false, code: "SPAWN_ACTIVE" };
     if (now.getTime() - new Date(last.createdAt).getTime() < SPAWN_MIN_INTERVAL_MS) return { ok: false, code: "SPAWN_TOO_SOON" };
   }
-  const c = pickSpawn({ isPremium: !!tier.isPremium, now, rand });
+  const season = await getCurrentSeason({ now });
+  const c = pickSpawn({ isPremium: !!tier.isPremium, now, rand, season });
   const spawn = await prisma.companionSpawn.create({
     data: { serverId, channelId, companionId: c.id, expiresAt: new Date(now.getTime() + SPAWN_TTL_MS) },
   });
-  return { ok: true, spawn, companion: publicCompanion(c, 1) };
+  return { ok: true, spawn, companion: publicCompanion(c, 1, season) };
 }
 
 /**
@@ -40,6 +47,7 @@ export async function catchSpawn(spawnId, userId, { now = new Date() } = {}) {
   const tier = await getServerTier(spawn.serverId);
   const owned = await prisma.memberCompanion.count({ where: { serverId: spawn.serverId, userId } });
   if (owned >= tier.limits.companionSlots) return { ok: false, code: "COLLECTION_FULL", limit: tier.limits.companionSlots };
+  const season = await getCurrentSeason({ now });
   return prisma.$transaction(async (tx) => {
     const r = await tx.companionSpawn.updateMany({
       where: { id: spawnId, caughtById: null, expiresAt: { gt: now } },
@@ -48,7 +56,7 @@ export async function catchSpawn(spawnId, userId, { now = new Date() } = {}) {
     if (r.count !== 1) return { ok: false, code: "ALREADY_CAUGHT" };
     const c = companionById(spawn.companionId);
     const owned = await tx.memberCompanion.create({
-      data: { serverId: spawn.serverId, userId, companionId: spawn.companionId, seasonId: c?.seasonId || null },
+      data: { serverId: spawn.serverId, userId, companionId: spawn.companionId, seasonId: isSeasonal(spawn.companionId, season) ? season.code : null },
     });
     // Първият уловен става активен автоматично.
     await tx.memberProgress.upsert({
@@ -57,20 +65,21 @@ export async function catchSpawn(spawnId, userId, { now = new Date() } = {}) {
       create: { serverId: spawn.serverId, userId, activeCompanionId: owned.id },
     });
     await tx.memberProgress.updateMany({ where: { serverId: spawn.serverId, userId, activeCompanionId: null }, data: { activeCompanionId: owned.id } });
-    return { ok: true, owned, companion: publicCompanion(c, 1) };
+    return { ok: true, owned, companion: publicCompanion(c, 1, season) };
   });
 }
 
 /** Списъкът на член с публичните метаданни. */
 export async function listOwned(serverId, userId) {
-  const [rows, progress] = await Promise.all([
+  const [rows, progress, season] = await Promise.all([
     prisma.memberCompanion.findMany({ where: { serverId, userId }, orderBy: { caughtAt: "asc" } }),
     prisma.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { activeCompanionId: true, sparks: true } }),
+    getCurrentSeason(),
   ]);
   return {
     sparks: progress?.sparks || 0,
     activeId: progress?.activeCompanionId || null,
-    companions: rows.map((r, i) => ({ index: i + 1, ...r, ...publicCompanion(companionById(r.companionId), r.stage), nextStageAt: r.stage < MAX_STAGE ? STAGE_THRESHOLDS[r.stage] : null })),
+    companions: rows.map((r, i) => ({ index: i + 1, ...r, ...publicCompanion(companionById(r.companionId), r.stage, season), nextStageAt: r.stage < MAX_STAGE ? STAGE_THRESHOLDS[r.stage] : null })),
   };
 }
 
@@ -91,7 +100,7 @@ export async function feedCompanion(serverId, userId, ownedId, sparks) {
     const stage = stageForFed(fed);
     const updated = await tx.memberCompanion.update({ where: { id: owned.id }, data: { fed, stage } });
     const p = await tx.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { sparks: true } });
-    return { ok: true, owned: updated, evolved: stage > owned.stage, stage, sparksLeft: p?.sparks || 0, companion: publicCompanion(companionById(owned.companionId), stage) };
+    return { ok: true, owned: updated, evolved: stage > owned.stage, stage, sparksLeft: p?.sparks || 0, companion: await pub(companionById(owned.companionId), stage) };
   });
 }
 
@@ -103,7 +112,7 @@ export async function activateCompanion(serverId, userId, ownedId) {
     update: { activeCompanionId: owned.id },
     create: { serverId, userId, activeCompanionId: owned.id },
   });
-  return { ok: true, owned, companion: publicCompanion(companionById(owned.companionId), owned.stage) };
+  return { ok: true, owned, companion: await pub(companionById(owned.companionId), owned.stage) };
 }
 
 export async function releaseCompanion(serverId, userId, ownedId) {
@@ -113,7 +122,7 @@ export async function releaseCompanion(serverId, userId, ownedId) {
     prisma.memberCompanion.delete({ where: { id: owned.id } }),
     prisma.memberProgress.updateMany({ where: { serverId, userId, activeCompanionId: owned.id }, data: { activeCompanionId: null } }),
   ]);
-  return { ok: true, companion: publicCompanion(companionById(owned.companionId), owned.stage) };
+  return { ok: true, companion: await pub(companionById(owned.companionId), owned.stage) };
 }
 
 /** Предложение за размяна (10 min). Двете страни трябва да притежават посочените. */
@@ -129,7 +138,7 @@ export async function proposeTrade(serverId, fromUserId, toUserId, fromOwnedId, 
   const trade = await prisma.companionTrade.create({
     data: { serverId, fromUserId, toUserId, fromCompanionId: mine.id, toCompanionId: theirs.id, expiresAt: new Date(now.getTime() + TRADE_TTL_MS) },
   });
-  return { ok: true, trade, mine: publicCompanion(companionById(mine.companionId), mine.stage), theirs: publicCompanion(companionById(theirs.companionId), theirs.stage) };
+  return { ok: true, trade, mine: await pub(companionById(mine.companionId), mine.stage), theirs: await pub(companionById(theirs.companionId), theirs.stage) };
 }
 
 /** Приемане: само получателят; размяната на собствеността е в една транзакция с условни update-и. */

@@ -78,14 +78,18 @@ const LEGENDARY_FAMILIES = new Set(["gold", "cobalt"]);       // 2 legendary
 const EPIC_TO_RARE = new Set(["lime", "teal", "amber", "rose"]); // 4 epic → rare  (epic: 12-2-4 = 6)
 const RARE_TO_UNCOMMON = new Set(["lime", "violet", "ice", "shadow"]); // 4 rare → uncommon
 
-export const CURRENT_SEASON = Object.freeze({
-  id: "S1",
+/**
+ * Сезонът по подразбиране — САМО seed за първото четене (lib/game/seasons.js
+ * го записва в game_seasons, ако таблицата е празна). Живият сезон се управлява
+ * от админ конзолата (Season), не оттук. Сезонни: двата legendary + два epic.
+ */
+export const DEFAULT_SEASON = Object.freeze({
+  code: "S1",
   name: "Season 1 — First Light",
   startsAt: "2026-09-21T00:00:00Z",
   endsAt: "2026-12-14T00:00:00Z",
+  companionIds: Object.freeze(["gold-midas", "cobalt-stellaris", "ember-ignatius", "shadow-eclipsa"]),
 });
-// Сезонни (изчезват след края на сезона): двата legendary + два epic.
-const SEASONAL_IDS = new Set(["gold-midas", "cobalt-stellaris", "ember-ignatius", "shadow-eclipsa"]);
 
 function build() {
   const list = [];
@@ -99,7 +103,6 @@ function build() {
       list.push({
         id, name, family: fam.key, familyName: fam.name, rarity,
         palette: { pale: fam.pale, olive: fam.olive, neon: fam.neon, bottle: fam.bottle, deep: fam.deep },
-        seasonId: SEASONAL_IDS.has(id) ? CURRENT_SEASON.id : null,
         blurb: blurbFor(name, fam.name, rarity),
       });
     });
@@ -135,17 +138,24 @@ export function imageUrl(id, stage = 1, base = process.env.FRONTEND_URL || "http
   return `${String(base).replace(/\/$/, "")}/game/companions/${id}-${Math.max(1, Math.min(MAX_STAGE, stage))}.jpg`;
 }
 
-/** Активни ли са сезонните спътници сега. */
-export function seasonActive(now = new Date()) {
-  return now >= new Date(CURRENT_SEASON.startsAt) && now < new Date(CURRENT_SEASON.endsAt);
+/** Активен ли е сезонът сега (между старта и края). Без сезон → не. */
+export function seasonActive(now = new Date(), season = null) {
+  if (!season) return false;
+  return now >= new Date(season.startsAt) && now < new Date(season.endsAt);
+}
+
+/** Сезонен ли е спътникът в дадения сезон. */
+export function isSeasonal(companionId, season = null) {
+  return !!season && Array.isArray(season.companionIds) && season.companionIds.includes(companionId);
 }
 
 /**
  * Избира спътник за поява: първо редкост по тегло (Free: само common/uncommon),
- * после равномерно между спътниците с тази редкост (сезонните — само в сезона).
+ * после равномерно между спътниците с тази редкост. Сезонните (по `season`) се
+ * появяват само докато сезонът е активен; без подаден сезон — никога (fail-closed).
  * `rand` е инжектируем за тестове.
  */
-export function pickSpawn({ isPremium = false, now = new Date(), rand = Math.random } = {}) {
+export function pickSpawn({ isPremium = false, now = new Date(), rand = Math.random, season = null } = {}) {
   const allowed = Object.values(RARITIES).filter((r) => isPremium || FREE_RARITIES.includes(r.key));
   const total = allowed.reduce((s, r) => s + r.weight, 0);
   let roll = rand() * total;
@@ -153,17 +163,18 @@ export function pickSpawn({ isPremium = false, now = new Date(), rand = Math.ran
   for (const r of allowed) { if (roll < r.weight) { rarity = r.key; break; } roll -= r.weight; }
   // Извън сезона сезонните НЕ се появяват. Ако цялата редкост е сезонна (двата
   // legendary в S1), слизаме една редкост надолу — common никога не е сезонен.
+  const active = seasonActive(now, season);
   const order = ["legendary", "epic", "rare", "uncommon", "common"];
   let pool = [];
   for (let i = order.indexOf(rarity); i < order.length && !pool.length; i++) {
-    pool = COMPANIONS.filter((c) => c.rarity === order[i] && (!c.seasonId || seasonActive(now)));
+    pool = COMPANIONS.filter((c) => c.rarity === order[i] && (active || !isSeasonal(c.id, season)));
   }
   return pool[Math.floor(rand() * pool.length)];
 }
 
-/** Публичните полета за API/embed. */
-export function publicCompanion(c, stage = 1) {
+/** Публичните полета за API/embed. `seasonId` = кодът на сезона, ако спътникът е сезонен в него. */
+export function publicCompanion(c, stage = 1, season = null) {
   if (!c) return null;
   const r = rarityMeta(c.rarity);
-  return { id: c.id, name: c.name, family: c.familyName, rarity: c.rarity, rarityLabel: r.label, rarityEmoji: r.emoji, ring: r.ring, seasonId: c.seasonId, blurb: c.blurb, imageUrl: imageUrl(c.id, stage) };
+  return { id: c.id, name: c.name, family: c.familyName, rarity: c.rarity, rarityLabel: r.label, rarityEmoji: r.emoji, ring: r.ring, seasonId: isSeasonal(c.id, season) ? season.code : null, blurb: c.blurb, imageUrl: imageUrl(c.id, stage) };
 }

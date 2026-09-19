@@ -9,6 +9,7 @@ import { COMPANIONS, publicCompanion, companionById } from "../lib/game/companio
 import {
   createSpawn, catchSpawn, listOwned, feedCompanion, activateCompanion, releaseCompanion, proposeTrade, resolveTrade,
 } from "../lib/game/companionOps.js";
+import { getCurrentSeason, publicSeason } from "../lib/game/seasons.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -22,8 +23,11 @@ const fail = (res, out) => {
 };
 
 // Каталогът (за таблото на бота/help) — публични полета.
-router.get("/game/companions/catalog", (_req, res) => {
-  res.json(COMPANIONS.map((c) => publicCompanion(c, 1)));
+router.get("/game/companions/catalog", async (_req, res, next) => {
+  try {
+    const season = await getCurrentSeason();
+    res.json({ season: publicSeason(season), companions: COMPANIONS.map((c) => publicCompanion(c, 1, season)) });
+  } catch (err) { next(err); }
 });
 
 // Поява: ботът пита след праг на активност; backend решава по интервал/жива поява.
@@ -113,10 +117,10 @@ router.post("/game/trade/:id/resolve", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.get("/game/companion/:id", (req, res) => {
+router.get("/game/companion/:id", async (req, res, next) => {
   const c = companionById(req.params.id);
   if (!c) return res.status(404).json({ error: "NOT_FOUND" });
-  res.json(publicCompanion(c, Number(req.query.stage) || 1));
+  try { res.json(publicCompanion(c, Number(req.query.stage) || 1, await getCurrentSeason())); } catch (err) { next(err); }
 });
 
 export default router;

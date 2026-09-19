@@ -1115,6 +1115,24 @@ model GameSettings {
   @@map("game_settings")
 }
 
+// Сезоните на играта — ГЛОБАЛНИ (не по сървър), управлявани от админ конзолата
+// (routes/adminOps.js → Season). „Текущ“ = най-новият със startsAt ≤ сега (иначе
+// най-ранният предстоящ); companionIds = кои спътници от каталога са сезонни.
+// Без ред → lib/game/seasons.js записва S1 по подразбиране при първо четене.
+model GameSeason {
+  id           String   @id @default(cuid())
+  code         String   @unique // "S1", "S2"…
+  name         String
+  startsAt     DateTime
+  endsAt       DateTime
+  companionIds String[] @default([])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([startsAt])
+  @@map("game_seasons")
+}
+
 model MemberProgress {
   id                String    @id @default(cuid())
   serverId          String
