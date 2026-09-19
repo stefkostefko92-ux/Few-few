@@ -4,6 +4,119 @@
     "tagline": "Scritto leggero, portato lontano",
     "titleSuffix": "Piuma"
   },
+  "landing": {
+    "meta": {
+      "title": "Piuma — contenuti Instagram con approvazione umana",
+      "description": "Bozza da una persona o da un agente, approvazione umana, pubblicazione tramite l'API ufficiale Instagram Platform. Tre lingue, audit a catena di hash.",
+      "keywords": "Piuma, automazione Instagram, pianificazione post, Instagram Platform API, motore di contenuti, Instagram Insights, Carbon Stealth",
+      "ogAlt": "Piuma — motore di contenuti per Instagram di Carbon Stealth VCC"
+    },
+    "nav": {
+      "how": "Come funziona",
+      "panel": "Il pannello",
+      "autopilot": "Pilota automatico",
+      "security": "Sicurezza",
+      "faq": "Domande",
+      "signIn": "Accedi",
+      "toPanel": "Vai alla dashboard",
+      "skip": "Vai al contenuto"
+    },
+    "hero": {
+      "eyebrow": "API ufficiale Instagram Platform",
+      "title": "Ogni bozza passa da una persona.",
+      "titleAccent": "Instagram passa da Piuma.",
+      "lead": "Un agente o una persona scrive la bozza. Una persona la approva nel pannello. Solo allora Piuma pubblica. Non esiste una via nascosta per cui una bozza arrivi su Instagram da sola.",
+      "ctaPrimary": "Accedi al pannello",
+      "ctaSecondary": "Guarda come funziona",
+      "note": "Gli account si collegano tramite l'OAuth ufficiale di Meta. Piuma non crea account — le condizioni di Meta lo vietano e lo fa una persona a mano.",
+      "shotAlt": "La dashboard di Piuma: bozze da rivedere, prossime pubblicazioni, quote per account"
+    },
+    "proof": {
+      "reviewTitle": "approvazione solo da una persona",
+      "reviewBody": "Il ruolo è almeno revisore, la sessione è attiva e la tua bozza non la approvi tu.",
+      "langTitle": "tre lingue nel pannello",
+      "langBody": "Bulgaro, inglese e italiano — specchi completi, non una traduzione parziale.",
+      "auditTitle": "audit a catena di hash",
+      "auditBody": "Ogni azione porta un attore e un IP. Manomettere una voce vecchia spezza la catena e si vede."
+    },
+    "how": {
+      "title": "Tre passi, mai un quarto",
+      "lead": "Un post percorre sempre la stessa strada. Non esiste una modalità in cui si salti un passo.",
+      "step1Title": "Si scrive una bozza",
+      "step1Body": "Da una persona nel pannello o da un agente con una chiave firmata. Entrambe le vie producono una bozza — nulla di più.",
+      "step2Title": "Una persona approva",
+      "step2Body": "Il linter controlla il testo; un rilievo grave blocca l'approvazione e nessuna rotta lo scavalca.",
+      "step3Title": "Piuma pubblica",
+      "step3Body": "Una coda con nuovi tentativi, la quota dell'account, e l'esito torna nel pannello con il motivo di un eventuale rifiuto.",
+      "guardTitle": "E se l'agente sbaglia?",
+      "guardBody": "Non può. Per una chiave d'agente non esiste una rotta di approvazione — il permesso non è limitato, semplicemente non c'è."
+    },
+    "panel": {
+      "title": "Il pannello è dove decide una persona",
+      "lead": "Tutto in un caricamento: cosa attende revisione, cosa è programmato, cosa è fallito e perché.",
+      "point1": "Lo stato è un chip con icona e parola — il colore non porta mai da solo il significato.",
+      "point2": "Sette ruoli con diritti chiari; le sessioni stanno nel database e si revocano subito.",
+      "point3": "Accesso a due fattori con codice da app (TOTP), senza SMS.",
+      "point4": "Funziona anche senza JavaScript — il pannello è reso dal server e non dipende da alcuno script.",
+      "shotAlt": "L'elenco dei post in Piuma con i chip di stato: bozza, approvato, programmato, pubblicato, respinto",
+      "composeAlt": "Scrivere una bozza in Piuma: a mano a sinistra, proposte del modello a destra"
+    },
+    "autopilot": {
+      "title": "Un pilota automatico che scrive — ma non pubblica",
+      "lead": "Per le pagine gestite Piuma prepara le bozze secondo il piano una volta a settimana e legge Instagram Insights per sapere cosa ha funzionato. L'approvazione resta umana.",
+      "point1": "Il piano è tuo: quanti post, la quota di Reels, gli orari, i pilastri del contenuto, cosa evitare.",
+      "point2": "Attinge solo dalla libreria media del brand — non inventa materiale.",
+      "point3": "Le metriche si scaricano di notte e si mostrano come andamento a 30 giorni.",
+      "shotAlt": "Andamento a 30 giorni in Piuma: follower, copertura, visualizzazioni e account coinvolti"
+    },
+    "security": {
+      "title": "La sicurezza è la base, non uno strato sopra",
+      "lead": "Il prodotto custodisce account Instagram altrui. Per questo ognuna di queste cose è obbligatoria, non opzionale.",
+      "item1Title": "Richieste dell'agente firmate",
+      "item1Body": "Firma HMAC su metodo, percorso e corpo, marca temporale entro ±300 s e nonce contro la ripetizione. Il segreto non viaggia.",
+      "item2Title": "Segreti cifrati a riposo",
+      "item2Body": "Token Instagram, TOTP e chiavi d'agente usano AES-256-GCM e non finiscono mai in un log.",
+      "item3Title": "Un audit che non si riscrive",
+      "item3Body": "La catena di hash rende impossibile la correzione silenziosa di una voce vecchia.",
+      "item4Title": "CSP rigoroso e sessioni nel database",
+      "item4Body": "Script solo con nonce, nessuno stile inline. Le sessioni scorrono 7 giorni con tetto di 30 e si revocano subito.",
+      "item5Title": "Argon2id per le password",
+      "item5Body": "Nessun secondo fattore via SMS, nessun token in localStorage, cookie con prefisso __Host-.",
+      "item6Title": "I dati restano nell'UE",
+      "item6Body": "PostgreSQL nostro su server europeo. Nessun CMS ospitato fra te e i tuoi account."
+    },
+    "langs": {
+      "title": "Il pannello parla la lingua della squadra",
+      "body": "Si cambia dalla barra e resta memorizzato nel profilo. Il bulgaro è la fonte; inglese e italiano sono specchi completi, e il test fallisce se manca una chiave."
+    },
+    "faq": {
+      "title": "Domande frequenti",
+      "q1": "Piuma può creare un account Instagram?",
+      "a1": "No. Le condizioni di Meta vietano la creazione automatizzata di account. L'account si crea a mano, si passa a professionale e si collega tramite l'OAuth ufficiale.",
+      "q2": "Un agente può pubblicare da solo?",
+      "a2": "No. Una chiave d'agente arriva alla bozza e non oltre. Per tale chiave non esiste una rotta di approvazione, quindi non c'è nulla da aggirare.",
+      "q3": "Cosa succede se Instagram rifiuta un post?",
+      "a3": "La coda riprova, e il motivo viene registrato sul post e mostrato nel pannello insieme al numero di tentativi.",
+      "q4": "Da dove vengono i numeri del rendimento?",
+      "a4": "Da Instagram Insights, sincronizzati di notte per l'account e per ogni media pubblicato. Piuma non inventa metriche.",
+      "q5": "Funziona senza JavaScript?",
+      "a5": "Sì. Il pannello è reso dal server; l'unico script porta un nonce e aggiunge comodità, non funzione.",
+      "q6": "Chi vede cosa?",
+      "a6": "Sette ruoli con diritti diversi. Per approvare serve almeno il ruolo di revisore, e una bozza non è mai approvata dal suo autore."
+    },
+    "cta": {
+      "title": "Pronto per entrare",
+      "body": "Il pannello si trova su /admin. Il primo proprietario si crea dall'ambiente del server, una volta sola.",
+      "button": "Apri il pannello"
+    },
+    "footer": {
+      "product": "Motore di contenuti per Instagram con approvazione umana.",
+      "madeBy": "Created and Designed by Carbon Stealth VCC",
+      "rights": "Un prodotto Carbon Stealth VCC.",
+      "panel": "Pannello",
+      "language": "Lingua"
+    }
+  },
   "nav": {
     "section": "Amministrazione",
     "dashboard": "Cruscotto",

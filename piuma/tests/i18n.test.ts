@@ -100,8 +100,14 @@ test('нито един шаблон не съдържа зашит текст',
  */
 test('нито едно съобщение към потребителя не е зашито в маршрут', () => {
   const offenders: string[] = [];
-  for (const file of readdirSync('src/admin').filter((f) => f.endsWith('.ts'))) {
-    const source = readFileSync(join('src/admin', file), 'utf8');
+  // Витрината минава през същия гейт като панела — и там текстът идва от речниците.
+  const routeFiles = ['src/admin', 'src/landing'].flatMap((dir) =>
+    readdirSync(dir)
+      .filter((f) => f.endsWith('.ts'))
+      .map((f) => join(dir, f)),
+  );
+  for (const file of routeFiles) {
+    const source = readFileSync(file, 'utf8');
     for (const [index, line] of source.split('\n').entries()) {
       const isComment = /^\s*(\/\/|\*|\/\*)/.test(line);
       const isLogOrAudit = /logger\.|action:|detail:|reason:|err:|label:/.test(line);

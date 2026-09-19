@@ -20,6 +20,7 @@ import { accountRouter } from './admin/account-routes.js';
 import { auditRouter } from './admin/audit-routes.js';
 import { authRouter } from './admin/auth-routes.js';
 import { brandRouter } from './admin/brand-routes.js';
+import { landingRouter } from './landing/routes.js';
 import { dashboardRouter } from './admin/dashboard-routes.js';
 import { keyRouter } from './admin/key-routes.js';
 import { manageRouter } from './admin/manage-routes.js';
@@ -107,7 +108,8 @@ export function createServer(deps: ServerDeps): Express {
       localeSwitchUrl(_req, locale as (typeof LOCALES)[number]);
     next();
   });
-  app.get('/', (_req, res) => res.redirect('/admin'));
+  // Витрината е на корена; панелът зад нея е `noindex` и си остава на /admin.
+  app.use(landingRouter);
   app.use(authRouter);
   app.use(dashboardRouter);
   app.use(brandRouter);
