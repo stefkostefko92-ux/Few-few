@@ -1,16 +1,28 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Иконите живеят като отделни файлове в `public/icons/<име>.svg` — дизайнер ги сменя,
- * без да пипа код. При старт ги слепваме веднъж в един `<symbol>` спрайт, който шаблоните
- * инжектират в тялото; после всяко ползване е `<use href="#i-<име>">` (нула допълнителни заявки,
- * оцветяване през `currentColor`).
+ * Иконите идват от два слоя и дизайнер ги сменя, без да пипа код.
  *
- * Правилото за файл: `viewBox="0 0 24 24"`, щрих `currentColor`, без твърди цветове.
+ * 1. `public/icons/<име>.svg` — едноцветната геометрия. Слепва се веднъж в `<symbol>`
+ *    спрайт, ползва се с `<use href="#i-<име>">`: нула допълнителни заявки, оцветяване
+ *    през `currentColor`. Правилото за файл: `viewBox="0 0 24 24"`, щрих `currentColor`,
+ *    без твърди цветове. Този слой определя КОИ имена съществуват.
+ * 2. `public/icons-neon/<име>.webp` — рисуваният неонов набор. Има ли файл тук, той бие
+ *    SVG-то. Носи собствен градиент, значи НЕ се оцветява от контекста; в Piuma това
+ *    минава, защото всяка повърхност е тъмна (чиповете са тинтове върху стъкло, не
+ *    плътен цвят) — мерено, 35–53% от мастилото държи ≥3:1. Върху светла повърхност
+ *    същата икона пада под 15% и не бива да се ползва.
+ *
+ * Слоят е ЦЯЛОСТЕН или никакъв: смесица от рисувани и контурни икони в един изглед
+ * изглежда като счупени изображения, затова `assertNeonComplete` пази пълнотата.
  */
-const ICON_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'icons');
+const PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
+/** Едноцветната геометрия — източникът на имената и резервата. */
+const ICON_DIR = join(PUBLIC_DIR, 'icons');
+/** Рисуваният неонов набор. Има ли файл тук, той бие едноцветната от спрайта. */
+const NEON_DIR = join(PUBLIC_DIR, 'icons-neon');
 const NAME_RE = /^[a-z][a-z0-9-]{1,40}$/;
 const SVG_BODY_RE = /<svg\b[^>]*>([\s\S]*?)<\/svg>/i;
 
@@ -40,6 +52,40 @@ function icons(): Map<string, string> {
   return cache;
 }
 
+let neonCache: Set<string> | null = null;
+
+function neonIcons(): Set<string> {
+  if (!neonCache) {
+    neonCache = new Set(
+      existsSync(NEON_DIR)
+        ? readdirSync(NEON_DIR)
+            .filter((file) => file.endsWith('.webp'))
+            .map((file) => file.slice(0, -5))
+        : [],
+    );
+  }
+  return neonCache;
+}
+
+export function neonIconNames(): string[] {
+  return [...neonIcons()].sort();
+}
+
+/**
+ * Или всички имена имат рисувана икона, или нито едно. Половин набор дава изглед, в
+ * който част от иконите светят, а част са бледи контури — това не е стил, а дефект.
+ */
+export function assertNeonComplete(): void {
+  const neon = neonIcons();
+  if (neon.size === 0) return;
+  const missing = [...icons().keys()].filter((name) => !neon.has(name));
+  if (missing.length > 0) {
+    throw new IconError(
+      `Неоновият набор е непълен — липсват ${missing.length}: ${missing.join(', ')}.`,
+    );
+  }
+}
+
 export function iconNames(): string[] {
   return [...icons().keys()];
 }
@@ -48,8 +94,15 @@ export function hasIcon(name: string): boolean {
   return icons().has(name);
 }
 
-/** Спрайтът — веднъж в тялото на страницата, скрит и невидим за екранни четци. */
+/**
+ * Спрайтът — веднъж в тялото на страницата, скрит и невидим за екранни четци.
+ * При пълен неонов набор нито един `<use>` не се рендира, затова спрайтът отпада:
+ * иначе всяка страница носи няколко килобайта мъртва разметка.
+ */
 export function iconSprite(): string {
+  if (neonIcons().size > 0 && [...icons().keys()].every((name) => neonIcons().has(name))) {
+    return '';
+  }
   const symbols = [...icons().entries()]
     .map(
       ([name, body]) =>
@@ -74,6 +127,11 @@ export function renderIcon(name: string, options: IconOptions = {}): string {
   if (!NAME_RE.test(name) || !icons().has(name))
     return `<!-- липсва икона: ${name.slice(0, 40)} -->`;
   const className = ['ic', options.class].filter(Boolean).join(' ');
+  if (neonIcons().has(name)) {
+    // Растер, значи `alt` вместо `aria-label`: празно за декоративната икона.
+    const alt = options.label ? options.label.replace(/[<>&"]/g, '') : '';
+    return `<img class="${className}" src="/static/icons-neon/${name}.webp" alt="${alt}" decoding="async">`;
+  }
   const a11y = options.label
     ? ` role="img" aria-label="${options.label.replace(/[<>&"]/g, '')}"`
     : ' aria-hidden="true" focusable="false"';

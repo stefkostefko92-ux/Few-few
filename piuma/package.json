@@ -37,6 +37,7 @@
     "test:integration": "tsx --test tests/integration/*.test.ts",
     "owner:create": "node dist/scripts/create-owner.js",
     "landing:art": "node src/scripts/landing-art.mjs",
+    "icons:build": "node src/scripts/build-icons.mjs",
     "landing:og": "node src/scripts/og.mjs",
     "landing:shots": "node src/scripts/landing-shots.mjs"
   },

@@ -11,7 +11,7 @@ import { attachSession } from './auth/sessions.js';
 import { can, type Capability } from './auth/rbac.js';
 import { agentRouter } from './agent/routes.js';
 import type { NonceStore } from './agent/nonce-store.js';
-import { iconSprite, renderIcon } from './icons.js';
+import { assertNeonComplete, iconSprite, renderIcon } from './icons.js';
 import { LOCALES, LOCALE_LABEL } from './i18n.js';
 import { attachLocale, localeSwitchUrl } from './admin/locale.js';
 import { sparkline } from './admin/sparkline.js';
@@ -94,6 +94,10 @@ export function createServer(deps: ServerDeps): Express {
   app.use(attachSession);
   app.use(attachLocale);
   app.use(readFlash);
+  // Пълнотата на неоновия набор се проверява ПРИ СТАРТ, не при рендиране: половин
+  // набор дава изглед с част светещи и част бледи икони, а това не бива да стига до
+  // екран. Процесът отказва да тръгне, вместо да го покаже.
+  assertNeonComplete();
   // Спрайтът се чете от диска веднъж — шаблоните получават готовия низ.
   const sprite = iconSprite();
   app.use((_req: Request, res: Response, next: NextFunction) => {
