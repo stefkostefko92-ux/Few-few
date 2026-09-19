@@ -37,6 +37,8 @@ test('планът, данните от Insights и платформите вл�
       top: [{ caption: 'Силен пост', kind: 'REELS', reach: 1200, interactions: 90 }],
       weak: [{ caption: 'Слаб пост', kind: 'IMAGE', reach: 100, interactions: 2 }],
       bestKind: 'REELS',
+      bestTopic: 'Зад кулисите',
+      sample: 14,
     },
     crossPost: plan.crossPost,
   });
@@ -44,7 +46,12 @@ test('планът, данните от Insights и платформите вл�
   assert.match(text, /Забранено: Без обещания за килограми\./);
   assert.match(text, /Силен \(REELS, обхват 1200, взаимодействия 90\)/);
   assert.match(text, /Слаб \(IMAGE, обхват 100/);
-  assert.match(text, /Форматът с повече обхват досега: Reels/);
+  // Формулировката следва мярката: ангажираност, не обхват. Обхватът расте с
+  // последователите и старият текст описваше точно дефекта, който беше поправен.
+  assert.match(text, /Форматът с по-добра ангажираност досега: Reels/);
+  assert.match(text, /Темата с по-добра ангажираност досега: „Зад кулисите“/);
+  // Бройката зад извода влиза в промпта — моделът вижда на колко данни стъпва.
+  assert.match(text, /Зад изводите стоят 14 публикувани поста/);
   assert.match(text, /Facebook:/);
   assert.match(text, /X: до 280 знака/);
   assert.doesNotMatch(text, /TikTok:/);

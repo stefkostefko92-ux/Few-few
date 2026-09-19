@@ -1,6 +1,7 @@
 import type { InstagramAccount, PostKind } from '@prisma/client';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
+import { learnFrom } from './learn.js';
 import { logger } from '../logger.js';
 import { fetchAccountInsights, fetchMediaInsights } from '../instagram/insights.js';
 import type { PublishDeps } from '../instagram/publish.js';
@@ -114,6 +115,8 @@ export interface PostPerformance {
   id: string;
   kind: PostKind;
   caption: string;
+  /** Стълбът на плана, под който е писан постът — по него се учи кои теми вървят. */
+  topic: string | null;
   permalink: string | null;
   publishedAt: Date | null;
   reach: number;
@@ -148,6 +151,7 @@ export async function brandPostPerformance(brandId: string, take = 50): Promise<
           id: post.id,
           kind: post.kind,
           caption: post.caption,
+          topic: post.topic,
           permalink: post.permalink,
           publishedAt: post.publishedAt,
           reach,
@@ -169,19 +173,18 @@ export function performanceContext(rows: PostPerformance[], top = 3, weak = 2): 
     reach: row.reach,
     interactions: row.interactions,
   });
-  const avg = (kind: PostKind): number | null => {
-    const subset = rows.filter((row) => row.kind === kind && row.reach > 0);
-    if (!subset.length) return null;
-    return subset.reduce((sum, row) => sum + row.reach, 0) / subset.length;
-  };
-  const image = avg('IMAGE');
-  const reels = avg('REELS');
-  let bestKind: PerformanceContext['bestKind'] = null;
-  if (image !== null && reels !== null) bestKind = reels > image ? 'REELS' : 'IMAGE';
+  // Форматът минава през същата стълба като всичко останало: под прага за извадка или
+  // без ясна преднина — `null`, а не уверен победител. Преди тук се сравняваше среден
+  // ОБХВАТ при каквато и да е бройка, тоест една снимка срещу един Reel обявяваше
+  // победител, а растежът на акаунта се четеше като качество на формата.
+  const learned = learnFrom(rows);
+  const bestKind = learned.format.best;
   return {
     top: rows.slice(0, top).map(pick),
     weak: rows.length > top ? rows.slice(-weak).map(pick) : [],
     bestKind,
+    bestTopic: learned.topic.best,
+    sample: learned.sample,
   };
 }
 

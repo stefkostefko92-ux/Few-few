@@ -14,8 +14,16 @@ export interface PerformanceContext {
   top: Array<{ caption: string; kind: 'IMAGE' | 'REELS'; reach: number; interactions: number }>;
   /** Най-слабите — за да не се повтарят същите ъгли. */
   weak: Array<{ caption: string; kind: 'IMAGE' | 'REELS'; reach: number; interactions: number }>;
-  /** Кой формат носи повече обхват средно, ако има данни. */
+  /**
+   * Форматът с по-добра ангажираност — `null`, докато извадката не стигне за извод.
+   * Нарочно мълчи вместо да подава догадка: модел, на когото кажеш „Reels работят“ въз
+   * основа на два поста, ще пише само Reels и данните никога няма да се поправят.
+   */
   bestKind: 'IMAGE' | 'REELS' | null;
+  /** Темата (стълб на плана) с по-добра ангажираност, по същото правило. */
+  bestTopic?: string | null;
+  /** Колко публикувани поста с метрики стоят зад горните изводи. */
+  sample?: number;
 }
 
 export interface PromptInput {
@@ -82,10 +90,16 @@ export function buildUserPrompt(input: PromptInput): string {
   const perf = input.performance;
   if (perf && (perf.top.length || perf.weak.length)) {
     lines.push('', 'Данни от Instagram Insights за тази страница (истински числа):');
+    if (perf.sample) {
+      lines.push(`- Зад изводите стоят ${perf.sample} публикувани поста с метрики.`);
+    }
     if (perf.bestKind) {
       lines.push(
-        `- Форматът с повече обхват досега: ${perf.bestKind === 'REELS' ? 'Reels' : 'снимки'}.`,
+        `- Форматът с по-добра ангажираност досега: ${perf.bestKind === 'REELS' ? 'Reels' : 'снимки'}.`,
       );
+    }
+    if (perf.bestTopic) {
+      lines.push(`- Темата с по-добра ангажираност досега: „${trim(perf.bestTopic, 60)}“.`);
     }
     for (const post of perf.top) {
       lines.push(

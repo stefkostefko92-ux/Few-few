@@ -104,6 +104,7 @@ test('контекстът за модела: топ, слаби и формат
     id,
     kind,
     caption: `caption ${id}`,
+    topic: null,
     permalink: null,
     publishedAt: null,
     reach,
@@ -128,7 +129,41 @@ test('контекстът за модела: топ, слаби и формат
     ctx.weak.map((t) => t.caption),
     ['caption 4', 'caption 5'],
   );
-  assert.equal(ctx.bestKind, 'REELS');
+  // Два Reel-а срещу три снимки НЕ стигат за извод — преди тук се обявяваше „REELS“,
+  // което беше жребий, представен за находка.
+  assert.equal(ctx.bestKind, null);
   assert.deepEqual(performanceContext([]).top, []);
   assert.equal(performanceContext([row('1', 'IMAGE', 10, 1)]).bestKind, null);
+});
+
+test('форматът се обявява едва при достатъчно данни и ясна преднина', () => {
+  const row = (id: string, kind: 'IMAGE' | 'REELS', rate: number): PostPerformance => ({
+    id,
+    kind,
+    caption: `caption ${id}`,
+    topic: null,
+    permalink: null,
+    publishedAt: new Date('2026-09-01T19:00:00'),
+    reach: 1000,
+    views: 0,
+    interactions: Math.round((1000 * rate) / 100),
+    engagementRate: rate,
+    fetchedAt: new Date(),
+  });
+  const many = (kind: 'IMAGE' | 'REELS', rates: number[]) =>
+    rates.map((rate, index) => row(`${kind}-${index}`, kind, rate));
+
+  // Шест на шест, с ясна преднина за Reels → извод.
+  const clear = [
+    ...many('REELS', [9, 8.5, 9.5, 8, 10, 9]),
+    ...many('IMAGE', [3, 2.5, 3.5, 3, 2, 4]),
+  ];
+  assert.equal(performanceContext(clear).bestKind, 'REELS');
+
+  // Същата бройка, но разликата е в рамките на шума → мълчим.
+  const noisy = [
+    ...many('REELS', [5, 5.2, 4.8, 5.1, 4.9, 5]),
+    ...many('IMAGE', [4.9, 5, 5.1, 4.8, 5.2, 5]),
+  ];
+  assert.equal(performanceContext(noisy).bestKind, null);
 });

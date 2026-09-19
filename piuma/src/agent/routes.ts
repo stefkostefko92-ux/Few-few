@@ -5,6 +5,7 @@ import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { parsePlan } from '../content/plan.js';
 import { accountTrend, brandPostPerformance, performanceContext } from '../services/insights.js';
+import { learnFrom } from '../services/learn.js';
 import { createDraft, draftInputSchema } from '../services/posts.js';
 import { agentAuth, requireScope } from './auth.js';
 import type { NonceStore } from './nonce-store.js';
@@ -145,6 +146,10 @@ export function agentRouter(nonceStore: NonceStore): Router {
         lastAutopilotAt: brand.lastAutopilotAt,
       },
       summary: performanceContext(posts),
+      // Какво показват СОБСТВЕНИТЕ числа: кой пояс, формат и тема носят по-добра
+      // ангажираност — с бройките зад всяка кофа и с честна степен на увереност.
+      // При малко данни `best` е `null`: агентът трябва да види „рано е“, а не догадка.
+      learned: learnFrom(posts),
       posts: posts.map(({ caption, ...rest }) => ({ ...rest, caption: caption.slice(0, 200) })),
       accounts,
     });

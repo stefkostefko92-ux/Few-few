@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createHash, createHmac } from "node:crypto";
-import { request, sign } from "./piuma.mjs";
+import { request, sign, summarizeLearned } from "./piuma.mjs";
 
 test("подписът е HMAC-SHA256 над канонична форма с хеш на тялото", () => {
   const input = { timestamp: "1700000000", nonce: "abcabcabcabcabcabc", method: "post", path: "/agent/v1/drafts", body: '{"a":1}' };
@@ -37,4 +37,37 @@ test("грешка от сървъра става Error със статус", as
     () => request({ url: "https://x.example", keyId: "k", secret: "s" }, "GET", "/agent/v1/brands", undefined, fetchImpl),
     (e) => e.status === 401 && /Невалиден подпис/.test(e.message),
   );
+});
+
+const finding = (confidence, reason, best, buckets) => ({ confidence, reason, best, buckets });
+
+test("резюмето обявява извод само при `ready` и винаги показва бройките", () => {
+  const out = summarizeLearned(
+    {
+      sample: 14,
+      timezone: "Europe/Sofia",
+      timing: finding("ready", "ok", "evening", [
+        { value: "evening", posts: 8, medianRate: 9.1 },
+        { value: "morning", posts: 6, medianRate: 4.2 },
+      ]),
+      format: finding("early", "too-few", null, [
+        { value: "REELS", posts: 5, medianRate: 7.9 },
+        { value: "IMAGE", posts: 9, medianRate: 6.1 },
+      ]),
+      topic: finding("none", "no-posts", null, []),
+    },
+    { slug: "piuma", managed: true },
+  );
+  assert.match(out, /Кога: вечер \(19–23\)\s+← извод/);
+  // Кофата с най-висока медиана, но 5 поста, НЕ бива да се чете като находка: точно
+  // това е разликата между „още е рано" и „няма разлика".
+  assert.doesNotMatch(out, /Формат:.*← извод/);
+  assert.match(out, /Формат: още няма извод/);
+  assert.match(out, /REELS — 7\.9% медиана, 5 поста/);
+  assert.match(out, /Тема: още няма извод \(няма публикувани постове с метрики\)/);
+  assert.match(out, /часовник: Europe\/Sofia/);
+});
+
+test("липсващ блок `learned` се казва, не се мълчи", () => {
+  assert.match(summarizeLearned(undefined, { slug: "x" }), /по-стар от това CLI/);
 });

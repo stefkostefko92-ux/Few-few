@@ -16,8 +16,10 @@
 //   node tools/social/piuma.mjs drafts [--brand slug] [--status DRAFT]
 //   node tools/social/piuma.mjs draft --brand slug --media https://… --caption-file cap.txt \
 //        --alt "…" [--hashtags "#a #b"] [--kind IMAGE|REELS] [--cover https://…] [--account id] [--topic "…"]
-//   node tools/social/piuma.mjs insights --brand slug [--days 30]
-//        → план на страницата + силни/слаби постове + дневен тренд на акаунта (само агрегати)
+//   node tools/social/piuma.mjs insights --brand slug [--days 30] [--json]
+//        → какво показват СОБСТВЕНИТЕ числа: кога · формат · тема, с бройките зад всяка кофа
+//          и честна степен на увереност. Без „← извод“ значи „още е рано“, не „няма разлика“.
+//          --json дава суровия отговор (всеки пост + дневен тренд). Само агрегати.
 
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
@@ -102,7 +104,11 @@ async function main() {
   const cmd = args._[0] ?? "help";
   if (!COMMANDS.has(cmd)) die(`Непозната команда „${cmd}“. Виж: node tools/social/piuma.mjs help`, 2);
   if (cmd === "help") {
-    process.stdout.write(readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 22).map((l) => l.replace(/^\/\/ ?/, "")).join("\n") + "\n");
+    // Заглавният коментар Е помощта. Границата се намира, не се брои: фиксираният
+    // диапазон мълчаливо реже или показва код при всяка промяна на заглавието.
+    const head = readFileSync(new URL(import.meta.url), "utf8").split("\n");
+    const end = head.findIndex((line, i) => i > 0 && !line.startsWith("//"));
+    process.stdout.write(head.slice(1, end === -1 ? head.length : end).map((l) => l.replace(/^\/\/ ?/, "")).join("\n") + "\n");
     return;
   }
   const cfg = loadEnv();
@@ -120,7 +126,12 @@ async function main() {
     if (!args.brand) die("insights иска --brand slug.", 2);
     const q = new URLSearchParams({ brand: String(args.brand) });
     if (args.days) q.set("days", String(args.days));
-    return print(await request(cfg, "GET", `/agent/v1/insights?${q}`));
+    const data = await request(cfg, "GET", `/agent/v1/insights?${q}`);
+    if (args.json) return print(data);
+    // По подразбиране — четимо резюме. Суровият отговор носи всеки пост с числата му;
+    // изводът, от който зависи решението, се дави в него и се чете грешно.
+    process.stdout.write(summarizeLearned(data.learned, data.brand));
+    return;
   }
   if (cmd === "draft") {
     if (!args.brand || !args.media || !args["caption-file"] || !args.alt) {
@@ -148,6 +159,57 @@ async function main() {
 
 function print(obj) {
   process.stdout.write(`${JSON.stringify(obj, null, 2)}\n`);
+}
+
+const DAY_PART_BG = {
+  morning: "сутрин (06–11)",
+  midday: "обед (11–15)",
+  afternoon: "следобед (15–19)",
+  evening: "вечер (19–23)",
+  night: "нощ (23–06)",
+};
+
+const REASON_BG = {
+  "no-posts": "няма публикувани постове с метрики",
+  "too-few": "има данни, но под прага — иска ≥6 поста в поне 2 кофи",
+  "no-clear-winner": "кофите са пълни, но разликата е в рамките на шума",
+  ok: "достатъчно данни и ясна преднина",
+};
+
+/**
+ * Превежда стълбата на увереността в текст, който не може да се прочете като догадка.
+ * `best: null` НЕ значи „няма разлика" — значи „още не знаем"; двете водят до различни
+ * решения, затова причината се изписва винаги, а не само при извод.
+ */
+function renderFinding(label, finding, nameOf = (v) => String(v)) {
+  const lines = [`${label}: `];
+  if (finding.confidence === "ready" && finding.best !== null) {
+    lines[0] += `${nameOf(finding.best)}  ← извод`;
+  } else {
+    lines[0] += `още няма извод (${REASON_BG[finding.reason] ?? finding.reason})`;
+  }
+  for (const bucket of finding.buckets) {
+    lines.push(`    ${nameOf(bucket.value)} — ${bucket.medianRate}% медиана, ${bucket.posts} поста`);
+  }
+  if (finding.buckets.length === 0) lines.push("    (нула кофи с данни)");
+  return lines.join("\n");
+}
+
+export function summarizeLearned(learned, brand) {
+  if (!learned) return "Отговорът няма блок `learned` — сървърът е по-стар от това CLI.\n";
+  const out = [];
+  out.push(`Бранд: ${brand?.slug ?? "?"}${brand?.managed ? " (управляван)" : ""}`);
+  out.push(`Извадка: ${learned.sample} публикувани поста с метрики · часовник: ${learned.timezone}`);
+  out.push("");
+  out.push(renderFinding("Кога", learned.timing, (v) => DAY_PART_BG[v] ?? v));
+  out.push(renderFinding("Формат", learned.format));
+  out.push(renderFinding("Тема", learned.topic));
+  out.push("");
+  // Правилото, което пази агента от това да облече „рано е" в увереност.
+  out.push("Мярката е ангажираност/обхват, не суров обхват (обхватът расте с акаунта).");
+  out.push("Без „← извод“ не предлагай промяна в плана — кажи, че още е рано, и защо.");
+  out.push("Пълният отговор (всеки пост + дневен тренд): добави --json.");
+  return `${out.join("\n")}\n`;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
