@@ -293,8 +293,20 @@ non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal 
 
 ## Deployment — `deploy/`
 
-Canonical flow (owner preference): GitHub ZIP uploaded **manually** to `/root`,
-then fully automated — no `git pull` on the box, no CI/CD push.
+Canonical flow: the server fetches an **immutable archive for an exact ref** from the
+public repo and hands it to `autodeploy.sh`. Still **no `git pull` on the box** (no working
+tree, no `.git` to maintain) and **no CI/CD push** to production — the owner decides when.
+
+```bash
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo bash /root/deploy/fetch-deploy.sh                    # main, all configured products
+sudo REF=<клон|таг|SHA> PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+```
+
+`fetch-deploy.sh` downloads, verifies the archive really is this repo, keeps the last two
+downloads and passes `ARCHIVE=` explicitly to `autodeploy.sh`. Uploading a ZIP by hand
+still works and is the fallback when the box has no outbound network:
 
 ```bash
 cd /root && unzip -o Few-few.zip >/dev/null
