@@ -1,0 +1,53 @@
+<%- include('../partials/shell-start', { active: 'keys' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('keys.title') %></h1>
+    <p class="sub"><%- t('keys.subtitle') %></p>
+  </div>
+</div>
+
+<% if (created) { %>
+<div class="panel warn-edge">
+  <h2><%- icon('key') %> <%= t('keys.created', { name: created.name }) %></h2>
+  <div class="secret mono" id="agent-env">PIUMA_URL=<%= created.baseUrl %>
+PIUMA_KEY_ID=<%= created.id %>
+PIUMA_KEY_SECRET=<%= created.secret %></div>
+  <div class="row mt-1"><button type="button" class="btn small" data-copy="#agent-env" data-copied="<%= t('common.copied') %>" data-copy-failed="<%= t('common.copyFailed') %>"><%- icon('copy', { class: 'ic-sm' }) %> <%= t('keys.copyEnv') %></button></div>
+  <p class="sub"><%- t('keys.createdHint') %></p>
+</div>
+<% } %>
+
+<section class="panel">
+  <h2><%- icon('plus') %> <%= t('keys.new') %></h2>
+  <form method="post" action="/admin/keys" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('keys.name') %> <span class="hint"><%= t('keys.nameHint') %></span><input name="name" required minlength="2" placeholder="socialdjiyata"></label>
+    <fieldset><legend><%= t('keys.scope') %></legend>
+      <% scopes.forEach((s) => { %><label class="check"><input type="checkbox" name="scopes" value="<%= s %>" <%= s.endsWith(':read') || s === 'drafts:write' ? 'checked' : '' %>> <span class="mono"><%= s %></span></label><% }) %>
+    </fieldset>
+    <label><%= t('keys.brands') %> <span class="hint"><%= t('keys.brandsHint') %></span><select name="brandIds" multiple size="4"><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %> (<%= b.slug %>)</option><% }) %></select></label>
+    <label><%= t('keys.allowedIps') %> <span class="hint"><%= t('keys.allowedIpsHint') %></span><input name="allowedIps" placeholder="178.104.77.242"></label>
+    <label><%= t('keys.expiresIn') %> <span class="hint"><%= t('keys.expiresInHint') %></span><input type="number" name="expiresInDays" min="1" max="365" value="90"></label>
+    <button class="btn primary" type="submit"><%- icon('key') %> <%= t('keys.createKey') %></button>
+  </form>
+</section>
+
+<div class="table-wrap">
+<table><thead><tr><th><%= t('keys.name') %></th><th>ID</th><th><%= t('keys.scope') %></th><th><%= t('keys.brands') %></th><th>IP</th><th><%= t('keys.expires') %></th><th><%= t('keys.lastUsed') %></th><th><%= t('common.state') %></th><th></th></tr></thead><tbody>
+<% keys.forEach((k) => { %>
+  <tr>
+    <td><strong><%= k.name %></strong><span class="sub-line"><%= t('keys.createdBy', { email: k.createdBy.email }) %></span></td>
+    <td class="mono"><%= k.id %></td>
+    <td class="mono"><%= k.scopes.join(' ') %></td>
+    <td><%= k.brandIds.length ? k.brandIds.length : t('common.all') %></td>
+    <td class="mono"><%= k.allowedIps.length ? k.allowedIps.join(', ') : t('common.all') %></td>
+    <td class="when"><%= k.expiresAt ? ui.date(k.expiresAt) : t('keys.noExpiry') %></td>
+    <td class="muted when"><%= k.lastUsedAt ? ui.relative(k.lastUsedAt) : t('common.never') %><% if (k.lastUsedIp) { %><span class="sub-line mono"><%= k.lastUsedIp %></span><% } %></td>
+    <td><% if (k.revokedAt) { %><span class="chip critical"><%- icon('status-disabled', { class: 'ic-sm' }) %> <%= t('keys.revoked') %></span><% } else if (k.expiresAt && k.expiresAt < new Date()) { %><span class="chip critical"><%- icon('status-token-expired', { class: 'ic-sm' }) %> <%= t('keys.expired') %></span><% } else { %><span class="chip good"><%- icon('status-active', { class: 'ic-sm' }) %> <%= t('status.ACTIVE') %></span><% } %></td>
+    <td><% if (!k.revokedAt) { %><form method="post" action="/admin/keys/<%= k.id %>/revoke" class="inline" data-confirm="<%= t('keys.revokeConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn danger small" type="submit"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('keys.revoke') %></button></form><% } %></td>
+  </tr>
+<% }) %>
+<% if (!keys.length) { %><tr><td colspan="9"><div class="empty"><%- icon('key', { class: 'ic-xl' }) %><strong><%= t('keys.empty') %></strong><%= t('keys.emptyHint') %></div></td></tr><% } %>
+</tbody></table>
+</div>
+<%- include('../partials/shell-end') %>

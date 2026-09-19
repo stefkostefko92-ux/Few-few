@@ -1,0 +1,75 @@
+name: piuma
+
+on:
+  push:
+    paths:
+      - 'piuma/**'
+      - '.github/workflows/piuma.yml'
+  pull_request:
+    paths:
+      - 'piuma/**'
+      - '.github/workflows/piuma.yml'
+
+concurrency:
+  group: piuma-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: piuma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: piuma/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: piuma
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: piuma
+          POSTGRES_PASSWORD: piuma
+          POSTGRES_DB: piuma_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U piuma"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://piuma:piuma@127.0.0.1:5432/piuma_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: piuma/package-lock.json
+      - run: npm ci
+      # Клиентът на Prisma се генерира изрично — не разчитаме на postinstall.
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+      - run: npm run test:integration

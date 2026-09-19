@@ -1,0 +1,141 @@
+<%- include('../partials/shell-start', { active: 'posts' }) %>
+<% const st = ui.postStatus(post.status); const kd = ui.kind(post.kind); const who = ui.creator(post); %>
+<div class="topbar">
+  <div>
+    <div class="title">
+      <h1><%= post.brand.name %></h1>
+      <span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= t(st.key) %></span>
+      <span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= t(kd.key) %></span>
+      <% if (post.aiAssisted) { %><span class="chip accent"><%- icon('sparkle', { class: 'ic-sm' }) %> <%= t('post.aiDraft') %></span><% } %>
+    </div>
+    <p class="sub"><%= t('post.createdLine', { who: post.createdByLabel || t(who.key), date: ui.dateTime(post.createdAt) }) %></p>
+  </div>
+  <a class="btn ghost" href="/admin/posts"><%- icon('posts') %> <%= t('posts.allPosts') %></a>
+</div>
+
+<div class="grid2">
+  <section>
+    <h2><%- icon('metric-views') %> <%= t('post.preview') %></h2>
+    <div class="preview"><%= post.caption %>
+
+<%= post.hashtags.join(' ') %></div>
+    <div class="stat-row mt-1">
+      <span><%- icon(kd.icon, { class: 'ic-sm' }) %> <a href="<%= post.mediaUrl %>" target="_blank" rel="noopener noreferrer"><%= t('post.media') %></a></span>
+      <% if (post.coverUrl) { %><span><%- icon('image', { class: 'ic-sm' }) %> <a href="<%= post.coverUrl %>" target="_blank" rel="noopener noreferrer"><%= t('post.cover') %></a></span><% } %>
+      <% if (post.topic) { %><span><%- icon('brands', { class: 'ic-sm' }) %> <%= post.topic %></span><% } %>
+    </div>
+    <p class="sub"><%= t('post.altText', { text: post.altText || '—' }) %></p>
+    <% if (post.suggestedAt && (post.status === 'DRAFT' || post.status === 'APPROVED')) { %>
+      <p class="sub"><%- icon('autopilot', { class: 'ic-sm' }) %> <%= t('post.suggestedAt', { date: ui.dateTime(post.suggestedAt) }) %></p>
+    <% } %>
+    <% if (post.approvedBy) { %><p class="sub"><%- icon('status-approved', { class: 'ic-sm' }) %> <%= t('post.approvedBy', { who: post.approvedBy, date: ui.dateTime(post.approvedAt) }) %></p><% } %>
+    <% if (post.status === 'REJECTED') { %><div class="flash error"><%- icon('status-rejected') %><span><%= t('post.rejectedBy', { who: post.rejectedBy, reason: post.rejectionReason || t('post.noReason') }) %></span></div><% } %>
+    <% if (post.status === 'SCHEDULED' && post.scheduledAt) { %><div class="flash info"><%- icon('status-scheduled') %><span><%= t('post.scheduledFor', { date: ui.dateTime(post.scheduledAt), relative: ui.relative(post.scheduledAt) }) %></span></div><% } %>
+    <% if (post.status === 'PUBLISHED') { %><div class="flash ok"><%- icon('status-published') %><span><%= t('post.publishedAt', { date: ui.dateTime(post.publishedAt) }) %><% if (post.permalink) { %> — <a href="<%= post.permalink %>" target="_blank" rel="noopener noreferrer"><%= t('post.seeOnInstagram') %></a><% } %></span></div><% } %>
+    <% if (post.status === 'FAILED') { %><div class="flash error"><%- icon('status-failed') %><span class="mono"><%= t('post.failedAttempt', { attempts: post.attempts, error: post.lastError }) %></span></div><% } %>
+
+    <h2><%- icon('audit') %> <%= t('post.lint') %></h2>
+    <% const findings = Array.isArray(post.lintFindings) ? post.lintFindings : []; %>
+    <% if (!findings.length) { %>
+      <div class="panel"><div class="empty"><%- icon('status-approved', { class: 'ic-xl' }) %><strong><%= t('post.lintClean') %></strong><%= t('post.lintCleanHint') %></div></div>
+    <% } else { %>
+    <div class="table-wrap"><table><tbody>
+      <% findings.forEach((f) => { const sv = ui.severity(f.severity); %>
+      <tr><td class="shrink"><span class="chip <%= sv.tone %>"><%- icon(sv.icon, { class: 'ic-sm' }) %> <%= t(sv.key) %></span></td><td class="mono shrink"><%= f.rule %></td><td><%= f.message %></td></tr>
+      <% }) %>
+    </tbody></table></div>
+    <% } %>
+
+    <h2><%- icon('play') %> <%= t('common.actions') %></h2>
+    <div class="row">
+      <% if ((post.status === 'DRAFT') && can('posts:approve')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/approve" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit"><%- icon('approve') %> <%= t('post.approve') %></button></form>
+      <% } %>
+      <% if ((post.status === 'DRAFT' || post.status === 'APPROVED') && can('posts:approve')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/reject" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="reason" placeholder="<%= t('post.rejectReason') %>" class="field-md"><button class="btn danger" type="submit"><%- icon('reject') %> <%= t('post.reject') %></button></form>
+      <% } %>
+      <% if (post.status === 'APPROVED' && can('posts:schedule')) { %>
+        <% const suggested = post.suggestedAt ? new Date(post.suggestedAt.getTime() - post.suggestedAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''; %>
+        <form method="post" action="/admin/posts/<%= post.id %>/schedule" class="row"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="datetime-local" name="scheduledAt" required value="<%= suggested %>" class="field-md"><button class="btn" type="submit"><%- icon('schedule') %> <%= t('post.schedule') %></button></form>
+      <% } %>
+      <% if (post.status === 'APPROVED' && can('posts:publish')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/publish-now" class="inline" data-confirm="<%= t('post.publishConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit"><%- icon('publish') %> <%= t('post.publishNow') %></button></form>
+      <% } %>
+      <% if (post.status === 'SCHEDULED' && can('posts:schedule')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/unschedule" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost" type="submit"><%- icon('close') %> <%= t('post.unschedule') %></button></form>
+      <% } %>
+      <% if (post.status === 'FAILED' && can('posts:publish')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/retry" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%- icon('retry') %> <%= t('post.retry') %></button></form>
+      <% } %>
+    </div>
+
+    <% const variants = Array.isArray(post.crossPostVariants) ? post.crossPostVariants : []; %>
+    <% if (variants.length) { %>
+    <h2><%- icon('metric-shares') %> <%= t('post.variants') %></h2>
+    <p class="sub"><%= t('post.variantsHint') %></p>
+    <% variants.forEach((vt, i) => { %>
+      <div class="row spread mt-2">
+        <span class="chip info"><%- icon('metric-shares', { class: 'ic-sm' }) %> <%= vt.platform %></span>
+        <button type="button" class="btn ghost small" data-copy="#variant-<%= i %>" data-copied="<%= t('common.copied') %>" data-copy-failed="<%= t('common.copyFailed') %>"><%- icon('copy', { class: 'ic-sm' }) %> <%= t('common.copy') %></button>
+      </div>
+      <div class="preview" id="variant-<%= i %>"><%= vt.text %></div>
+    <% }) %>
+    <% } %>
+
+    <% if (post.status === 'PUBLISHED') { %>
+    <h2><%- icon('metric-reach') %> <%= t('post.insights') %></h2>
+    <% if (!post.insights.length) { %>
+      <div class="panel"><div class="empty"><%- icon('clock', { class: 'ic-xl' }) %><strong><%= t('post.insightsEmpty') %></strong><%= t('post.insightsEmptyHint') %></div></div>
+    <% } else { %>
+      <% const latest = post.insights[0]; %>
+      <div class="cards">
+        <div class="card"><div class="l"><%- icon('metric-views', { class: 'ic-sm' }) %> <%= t('perf.views') %></div><div class="n"><%= ui.num(latest.views) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-reach', { class: 'ic-sm' }) %> <%= t('perf.reach') %></div><div class="n"><%= ui.num(latest.reach) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-engaged', { class: 'ic-sm' }) %> <%= t('perf.interactions') %></div><div class="n"><%= ui.num(latest.totalInteractions) %></div></div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th><%= t('post.snapshotFrom') %></th><th class="num"><%- icon('metric-likes', { class: 'ic-sm' }) %> <%= t('perf.likes') %></th><th class="num"><%- icon('metric-comments', { class: 'ic-sm' }) %> <%= t('perf.comments') %></th><th class="num"><%- icon('metric-saved', { class: 'ic-sm' }) %> <%= t('perf.saved') %></th><th class="num"><%- icon('metric-shares', { class: 'ic-sm' }) %> <%= t('perf.shares') %></th></tr></thead><tbody>
+      <% post.insights.forEach((i) => { %><tr><td class="muted when"><%= ui.dateTime(i.fetchedAt) %></td><td class="num"><%= ui.num(i.likes) %></td><td class="num"><%= ui.num(i.comments) %></td><td class="num"><%= ui.num(i.saved) %></td><td class="num"><%= ui.num(i.shares) %></td></tr><% }) %>
+      </tbody></table></div>
+    <% } %>
+    <% if (can('insights:view')) { %><form method="post" action="/admin/posts/<%= post.id %>/insights" class="inline block mt-1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('refresh', { class: 'ic-sm' }) %> <%= t('post.refreshInsights') %></button></form><% } %>
+    <% } %>
+
+    <h2><%- icon('audit') %> <%= t('post.log') %></h2>
+    <% if (!post.logs.length) { %>
+      <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('post.logEmpty') %></strong><%= t('post.logEmptyHint') %></div></div>
+    <% } else { %>
+    <div class="table-wrap"><table><thead><tr><th><%= t('common.when') %></th><th><%= t('common.step') %></th><th><%= t('common.result') %></th><th><%= t('common.detail') %></th></tr></thead><tbody>
+    <% post.logs.forEach((l) => { %><tr><td class="muted when"><%= ui.dateTime(l.createdAt) %></td><td class="mono"><%= l.step %></td><td><% if (l.ok) { %><span class="chip good"><%- icon('approve', { class: 'ic-sm' }) %> <%= t('post.logOk') %></span><% } else { %><span class="chip critical"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('post.logFail') %></span><% } %></td><td class="mono"><%= l.detail ? JSON.stringify(l.detail) : '' %></td></tr><% }) %>
+    </tbody></table></div><% } %>
+  </section>
+
+  <section>
+    <% if ((post.status === 'DRAFT' || post.status === 'REJECTED') && can('posts:edit')) { %>
+    <h2><%- icon('edit') %> <%= t('post.editing') %></h2>
+    <div class="panel">
+    <form method="post" action="/admin/posts/<%= post.id %>/edit" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label><%= t('form.account') %><select name="accountId"><option value=""><%= t('form.noAccount') %></option><% accounts.filter((a) => a.brandId === post.brandId).forEach((a) => { %><option value="<%= a.id %>" <%= post.accountId === a.id ? 'selected' : '' %>>@<%= a.username %></option><% }) %></select></label>
+      <label><%= t('form.kind') %><select name="kind"><option value="IMAGE" <%= post.kind === 'IMAGE' ? 'selected' : '' %>><%= t('form.kindImage') %></option><option value="REELS" <%= post.kind === 'REELS' ? 'selected' : '' %>><%= t('form.kindReels') %></option></select></label>
+      <label><%= t('form.mediaUrl') %><input type="url" name="mediaUrl" required value="<%= post.mediaUrl %>"></label>
+      <label><%= t('form.coverUrl') %><input type="url" name="coverUrl" value="<%= post.coverUrl || '' %>"></label>
+      <label><%= t('form.topic') %><input name="topic" value="<%= post.topic || '' %>" maxlength="500"></label>
+      <label><%= t('form.caption') %> <span class="hint"><%= t('form.captionHint') %></span><textarea name="caption" required maxlength="2200" rows="11"><%= post.caption %></textarea></label>
+      <label><%= t('form.hashtags') %><input name="hashtags" value="<%= post.hashtags.join(' ') %>"></label>
+      <label><%= t('form.alt') %><input name="altText" value="<%= post.altText %>"></label>
+      <button class="btn primary" type="submit"><%- icon('approve') %> <%= t('post.saveAndLint') %></button>
+    </form>
+    </div>
+    <% } %>
+
+    <h2><%- icon('severity-info') %> <%= t('common.details') %></h2>
+    <div class="table-wrap"><table><tbody>
+      <tr><td class="muted">ID</td><td class="mono"><%= post.id %></td></tr>
+      <tr><td class="muted"><%= t('common.account') %></td><td><%= post.account ? '@' + post.account.username : '—' %></td></tr>
+      <tr><td class="muted"><%= t('post.container') %></td><td class="mono"><%= post.containerId || '—' %></td></tr>
+      <tr><td class="muted"><%= t('post.mediaId') %></td><td class="mono"><%= post.igMediaId || '—' %></td></tr>
+      <tr><td class="muted"><%= t('common.attempts') %></td><td class="num"><%= post.attempts %></td></tr>
+    </tbody></table></div>
+  </section>
+</div>
+<%- include('../partials/shell-end') %>

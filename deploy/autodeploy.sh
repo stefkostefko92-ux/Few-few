@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -118,6 +118,16 @@ SUPREME_ENV_FILES=".env backend/.env bot/.env frontend/.env"
 # сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# piuma (Piuma — Instagram контент-двигател; Docker Compose модел). Пет услуги:
+# postgres · redis · app · worker · вътрешен nginx. Навън стърчи САМО вътрешният
+# nginx, и то на 127.0.0.1:${HTTP_PORT:-4310} — TLS-ът се пази от nginx-а на хоста.
+# Тайните живеят в piuma/.env на сървъра (mode 600) и се пренасят при всеки деплой;
+# БЕЗ .env compose отказва да тръгне (`${VAR:?}`) — това е нарочно, а не пропуск:
+# Piuma държи Instagram токени и агентски ключове, тоест да се вдигне с изфабрикувани
+# тайни е по-лошо от това да не се вдигне. Портът се чете от .env (HTTP_PORT).
+PIUMA_HEALTH_URL_SET="${PIUMA_HEALTH_URL:+1}"
+PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1033,6 +1043,70 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3з) piuma — Docker Compose (app + worker + db + redis + вътрешен nginx) ───
+deploy_piuma() {
+  local d="$SRC/piuma"
+  [ -d "$d" ] || { warn "Няма piuma/ в архива — пропускам."; return; }
+  log "Разгръщам piuma (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай Docker Engine + compose plugin."
+
+  # Тайните живеят на СЪРВЪРА, не в архива. Пренасяме ги от текущия release.
+  if [ -f "$CURRENT_LINK/piuma/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env"
+  fi
+  # За разлика от eternaltouch тук НЕ генерираме .env с случайни тайни. Piuma не може
+  # да работи с измислени IG_APP_ID/IG_APP_SECRET/IG_REDIRECT_URI — те идват от
+  # конзолата на Meta и няма как да се отгатнат. Полу-вдигнат панел, който държи
+  # токени, е по-лош изход от ясен отказ. Виж piuma/DEPLOY.md.
+  # Липсващ .env значи „този продукт още не е настроен на ТАЗИ машина" — пропускаме го
+  # като неразгърнат, не го обявяваме за провал: иначе добавянето на piuma в списъка по
+  # подразбиране би счупило `current` на всеки сървър, където още няма тайни.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма piuma/.env — пропускам piuma (не измислям тайни; виж piuma/DEPLOY.md)."
+    return
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # `( … ) || { … return; }` НЕ е украса — скриптът върви под `set -euo pipefail` и
+  # ненулев изход тук би убил ЦЕЛИЯ autodeploy, оставяйки следващите проекти неразгърнати.
+  ( cd "$d"
+    docker compose build
+    # Миграциите се прилагат от entrypoint-а (`prisma migrate deploy`, никога `db push`),
+    # затова тук няма отделна стъпка — app и worker тръгват само върху мигрирана схема.
+    docker compose up -d --remove-orphans
+  ) || { warn "piuma: docker compose се провали — старите контейнери остават както са."; deploy_failed=1; return; }
+
+  # Портът се чете от .env, освен ако PIUMA_HEALTH_URL не е зададен изрично.
+  local url="$PIUMA_HEALTH_URL"
+  if [ -z "${PIUMA_HEALTH_URL_SET:-}" ]; then
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/health"
+  fi
+  health "$url" "piuma" || deploy_failed=1
+
+  # Работникът е ОТДЕЛЕН процес: панелът може да е напълно жив, докато публикуването,
+  # подновяването на токени, Insights и автопилотът са мъртви. Без тази проверка
+  # провалът е невидим до мига, в който одобрен пост просто не излиза.
+  local worker_state
+  worker_state="$( cd "$d" && docker compose ps --format '{{.State}}' worker 2>/dev/null | head -1 )" || worker_state=""
+  if [ "$worker_state" = "running" ]; then
+    ok "piuma: работникът тича (публикуване · токени · Insights · автопилот)."
+  else
+    warn "piuma: работникът НЕ тича (състояние: ${worker_state:-няма}) — одобрените постове няма да излязат."
+    warn "  Виж: cd $d && docker compose logs worker"
+    deploy_failed=1
+  fi
+
+  # Пръв деплой: няма нито един потребител, тоест панелът не може да се отвори.
+  # Собственикът НЕ се създава автоматично — паролата е работа на човек, не на скрипт.
+  local users
+  users="$( cd "$d" && docker compose exec -T db psql -U piuma -d piuma -tAc 'SELECT count(*) FROM "User"' 2>/dev/null | tr -dc '0-9' )" || users=""
+  if [ "$users" = "0" ]; then
+    warn "piuma: няма нито един потребител — създай собственика веднъж:"
+    warn "  cd $d && docker compose exec app npm run owner:create"
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -1316,6 +1390,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    piuma)      deploy_piuma ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
