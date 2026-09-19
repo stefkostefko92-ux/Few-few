@@ -1,40 +1,66 @@
-/* Piuma · дизайн система на панела
-   Тъмна повърхност, един бранд акцент, статус-цветовете НИКОГА не носят смисъл сами —
-   винаги вървят с икона и дума. Контрастите са мерени спрямо повърхността (WCAG AA, ≥4.5:1
-   за текст, ≥3:1 за марки), не подбирани на око. */
+/* Piuma · дизайн система на панела — „неонова аврора“
+   Мастилено черна основа, брандът е ГРАДИЕНТ (магента → виолет → циан), а не един цвят.
+   Повърхностите са стъклени: полупрозрачни над жива аврора-мъгла.
+
+   Две правила, които не се нарушават:
+   1. Статус-цветовете НИКОГА не носят смисъл сами — винаги с икона и дума.
+   2. Контрастите са МЕРЕНИ спрямо композитната повърхност (стъкло върху фон, при това
+      върху фон, осветен от най-ярката точка на аврората), не подбирани на око.
+      WCAG AA: ≥4.5:1 за текст, ≥3:1 за марки.
+
+   Затова всеки тинтван цвят има два варианта: графичният (фон, ръб, линия) и повдигнатият
+   `-lift` за ТЕКСТ върху собствения си тинт — магентата при 4.30:1 падаше, при #ff6fa3 е 5.87:1. */
 
 :root {
-  /* повърхности */
-  --bg: #0b0d11;
-  --surface: #14171e;
-  --surface-2: #1a1e27;
-  --surface-3: #232834;
-  --line: #242936;
-  --line-strong: #333a4a;
+  /* повърхности — стъкло; композитът е това, спрямо което е мерен контрастът */
+  --bg: #07070d;
+  --well: #0a0a12;
+  --surface: rgba(22, 23, 38, 0.72);
+  --surface-2: rgba(32, 34, 58, 0.82);
+  --surface-3: rgba(44, 47, 71, 0.86);
+  --line: rgba(139, 92, 246, 0.18);
+  --line-strong: rgba(139, 92, 246, 0.38);
 
   /* мастило */
-  --text: #e8eaf0;
-  --text-2: #a8b0c0;
-  --muted: #8b94a6;
+  --text: #eef0f8;
+  --text-2: #b6bdd4;
+  /* Посветлен спрямо първия избор (#8d95b2): под цианеното петно на аврората (най-
+     СВЕТЛАТА ѝ точка, не магентата) стъклото се вдига и старият тон падаше на 4.47:1.
+     Числата идват от `tests/contrast.test.ts`, не от окото. */
+  --muted: #939bb8;
 
-  /* бранд */
-  --accent: #ff3d71;
-  --accent-ink: #0b0d11;
-  --accent-soft: rgba(255, 61, 113, 0.14);
+  /* бранд — три спирки; градиентът е марката */
+  --accent: #ff2d78;
+  --accent-2: #8b5cf6;
+  --accent-3: #22d3ee;
+  --accent-lift: #ff6fa3;
+  --accent-2-lift: #a78bfa;
+  --accent-ink: #07070d;
+  --accent-soft: rgba(255, 45, 120, 0.14);
+  --brand-sweep: linear-gradient(
+    115deg,
+    var(--accent) 0%,
+    var(--accent-2) 48%,
+    var(--accent-3) 100%
+  );
 
   /* данни (една серия — затова един цвят) */
-  --data: #56b6ff;
+  --data: #22d3ee;
 
   /* статус: добро · внимание · сериозно · критично */
-  --good: #3ddc84;
-  --warn: #fbbf24;
-  --serious: #fb923c;
-  --critical: #f87171;
+  --good: #34e0a1;
+  --warn: #ffc53d;
+  --serious: #ff8a3d;
+  --critical: #ff5470;
 
-  --r-sm: 8px;
-  --r: 12px;
-  --r-lg: 16px;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --r-sm: 10px;
+  --r: 14px;
+  --r-lg: 20px;
+  --glass: blur(20px) saturate(150%);
+  --shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5), 0 18px 48px -24px rgba(139, 92, 246, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --glow-accent: 0 8px 30px -10px rgba(255, 45, 120, 0.55);
   --sidebar-w: 244px;
 }
 
@@ -55,6 +81,66 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  /* Аврората е фиксирана зад съдържанието; тялото не бива да я реже. */
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ---------- аврора ----------
+   Четири меки петна, които се разминават бавно. Един цикъл е 34 s — три порядъка под
+   прага за проблясък (WCAG 2.3.1); няма как да стробоскопи.
+
+   За WCAG 2.2.2 (пауза/спиране): слоят е чисто декоративен — фиксиран зад всичко, без
+   текст и без информация, най-силната му стъпка е 2.5 vmax за 17 s. Спирачката е
+   `prefers-reduced-motion` (виж края на файла), а не бутон в изгледа: предпочитанието е
+   на ниво система и важи за целия панел наведнъж.
+
+   Не хваща мишка и не мести нищо (нула CLS — извън потока е). Върху него стъклото има
+   какво да замъгли; без него `backdrop-filter` няма смисъл.
+
+   Алфите НЕ се вдигат на око. Най-силната точка (по осветеност това е ЦИАНЕНОТО петно,
+   не магентата — окото бърка тук) е входът за най-лошия случай при мерене на контраста:
+   стъклото се композитира И върху спокоен фон, И върху осветен от нея. Вдигнеш ли алфа,
+   `tests/contrast.test.ts` пресмята пика наново и пада, ако тон е станал нечетим. */
+body::before {
+  content: '';
+  position: fixed;
+  /* Преливът е точно толкова, колкото анимацията мести (макс 2.5 vmax) плюс запас —
+     не повече. При -20vmax кутията ставаше 40 vmax по-широка от екрана и процентните
+     центрове на петната падаха ИЗВЪН видимото: аврората съществуваше, но не се
+     виждаше. Процентът е спрямо кутията, не спрямо екрана. */
+  inset: -8vmax;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(42vmax 34vmax at 14% 12%, rgba(255, 45, 120, 0.26), transparent 64%),
+    radial-gradient(38vmax 32vmax at 76% 8%, rgba(139, 92, 246, 0.26), transparent 66%),
+    radial-gradient(44vmax 36vmax at 86% 70%, rgba(34, 211, 238, 0.2), transparent 68%),
+    radial-gradient(34vmax 28vmax at 28% 92%, rgba(139, 92, 246, 0.16), transparent 66%);
+  filter: blur(18px);
+  animation: aurora-drift 34s ease-in-out infinite alternate;
+}
+/* Фина зърнеста пелена — маха лентите (banding) в градиентите и дава плътност. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2.5vmax, -2vmax, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-2vmax, 1.5vmax, 0) scale(1.03);
+  }
 }
 .sprite {
   position: absolute;
@@ -73,6 +159,7 @@ a:hover {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
+  box-shadow: 0 0 0 5px rgba(34, 211, 238, 0.28);
 }
 ::selection {
   background: var(--accent-soft);
@@ -109,6 +196,8 @@ a:hover {
 }
 .sidebar {
   background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   border-right: 1px solid var(--line);
   padding: 20px 14px 16px;
   display: flex;
@@ -131,14 +220,24 @@ a:hover {
 }
 .brand .ic {
   color: var(--accent);
-  filter: drop-shadow(0 0 10px rgba(255, 61, 113, 0.45));
+  filter: drop-shadow(0 0 14px rgba(255, 45, 120, 0.7));
 }
 /* Марката е ЕДИН flex елемент — иначе разстоянието между думите разкъсва името.
-   Цветът е в перцето; името остава мастилено, за да не крещи. */
+   Името носи брандовия градиент, но СТАТИЧЕН: вечно движещ се градиент върху текст
+   вреди на четимостта и няма как да се спре отвътре. Преливането се пуска само при
+   посочване — един ход, после спира. */
 .brand .wordmark {
-  color: var(--text);
   font-size: 18px;
   letter-spacing: 0.01em;
+  background: var(--brand-sweep);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: background-position 0.9s ease;
+}
+.brand:hover .wordmark {
+  background-position: 100% center;
 }
 .nav a {
   display: flex;
@@ -165,7 +264,12 @@ a:hover {
   color: var(--text-2);
 }
 .nav a.active {
-  background: var(--accent-soft);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 45, 120, 0.2),
+    rgba(139, 92, 246, 0.1) 60%,
+    transparent
+  );
   color: var(--text);
   font-weight: 550;
   position: relative;
@@ -174,14 +278,15 @@ a:hover {
   content: '';
   position: absolute;
   left: -14px;
-  top: 8px;
-  bottom: 8px;
+  top: 6px;
+  bottom: 6px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--accent);
+  background: var(--brand-sweep);
+  box-shadow: 0 0 12px rgba(255, 45, 120, 0.8);
 }
 .nav a.active .ic {
-  color: var(--accent);
+  color: var(--accent-lift);
 }
 .nav small {
   display: block;
@@ -215,7 +320,8 @@ a:hover {
 }
 .langbar a.active {
   background: var(--accent-soft);
-  color: var(--accent);
+  border: 1px solid rgba(255, 45, 120, 0.32);
+  color: var(--accent-lift);
 }
 .login .langbar {
   margin: 18px 0 0;
@@ -233,27 +339,8 @@ a:hover {
   color: var(--text);
   font-weight: 550;
 }
-/* Мека светлина в акцента горе вляво — дава дълбочина, без да пипа четимостта.
-   Стои под съдържанието и не хваща мишката. */
-main::before {
-  content: '';
-  position: fixed;
-  inset: 0 auto auto var(--sidebar-w);
-  width: 720px;
-  height: 480px;
-  background: radial-gradient(
-    circle at 20% 0%,
-    rgba(255, 61, 113, 0.09),
-    rgba(86, 182, 255, 0.05) 42%,
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-main > * {
-  position: relative;
-  z-index: 1;
-}
+/* Старата мека светлина тук отпадна — аврората на `body` я пое и я разпростря
+   върху целия изглед, включително под страничната лента. */
 main {
   padding: 24px 32px 56px;
   max-width: 1320px;
@@ -321,6 +408,8 @@ h3 {
 }
 .card {
   background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   border: 1px solid var(--line);
   border-radius: var(--r);
   padding: 15px 16px 14px;
@@ -328,16 +417,38 @@ h3 {
   color: inherit;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow);
+}
+/* Брандовият градиент минава по ГОРНИЯ ръб на всяка карта — тънка светлинна нишка,
+   която свързва картите в един ред. Угасва към краищата, за да не изглежда като линия. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--brand-sweep);
+  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
 }
 a.card {
   transition:
-    border-color 0.12s ease,
-    background 0.12s ease;
+    border-color 0.18s ease,
+    transform 0.18s cubic-bezier(0.22, 0.75, 0.3, 1),
+    box-shadow 0.18s ease;
 }
+/* Картата се повдига и лумва в акцента — жестът е кратък и еднократен, без пулс. */
 a.card:hover {
   border-color: var(--line-strong);
-  background: var(--surface-2);
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 24px 56px -22px rgba(255, 45, 120, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
   text-decoration: none;
+}
+a.card:hover::before {
+  opacity: 1;
 }
 .card .l {
   color: var(--muted);
@@ -355,16 +466,36 @@ a.card:hover {
 .card .l .ic-sm {
   color: var(--muted);
 }
+/* Едрото число е холографско: светло мастило отгоре, брандов тон отдолу. Градиентът е
+   само украса — стойността се чете и без него (етикетът и `small` носят смисъла). */
 .card .n {
-  font-size: 30px;
-  font-weight: 640;
-  letter-spacing: -0.025em;
+  font-size: 32px;
+  font-weight: 660;
+  letter-spacing: -0.03em;
   line-height: 1.15;
   margin: 6px 0 3px;
-  background: linear-gradient(180deg, var(--text), #b9c0d0);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
+}
+/* Холограмата е НАДГРАЖДАНЕ, не основа: `color: transparent` без работещ
+   `background-clip: text` прави числото невидимо, а числото е самата информация в
+   картата. Затова градиентът влиза само където изрязването по текст наистина работи.
+   Всеки стоп е мерен — най-тъмният (`--accent-2-lift`) дава 5.64:1 върху стъклото. */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .card .n {
+    /* Отвесно, не косо: кутията е на цялата ширина на картата, а глифата стои вляво —
+       косият градиент ѝ подаваше само първите проценти и числото излизаше просто бяло.
+       По височина преходът минава през цялата цифра, каквато и да е ширината ѝ. */
+    background: linear-gradient(
+      180deg,
+      #ffffff 0%,
+      var(--text) 30%,
+      var(--accent-2-lift) 82%,
+      var(--accent-3) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 .card .n small {
   font-size: 17px;
@@ -402,24 +533,28 @@ a.card:hover {
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+  /* Линията свети като неонова тръба — това е единственото ярко нещо в картата. */
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.85));
 }
 .spark-area {
   stroke: none;
 }
-/* Площта угасва надолу — линията остава единственото ярко нещо в картата. */
+/* Площта угасва надолу и минава от циан към виолет — брандовият преход,
+   само че легнал под линията. */
 .spark-stop-top {
-  stop-color: var(--data);
-  stop-opacity: 0.28;
+  stop-color: var(--accent-2);
+  stop-opacity: 0.38;
 }
 .spark-stop-bottom {
   stop-color: var(--data);
   stop-opacity: 0;
 }
 .spark-end {
-  fill: var(--data);
-  stroke: var(--surface);
-  stroke-width: 2;
+  fill: #ffffff;
+  stroke: var(--data);
+  stroke-width: 2.5;
   vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.95));
 }
 .spark-hit {
   fill: transparent;
@@ -432,14 +567,17 @@ a.card:hover {
 /* ---------- таблици ---------- */
 .table-wrap {
   background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   border: 1px solid var(--line);
   border-radius: var(--r);
   overflow-x: auto;
+  box-shadow: var(--shadow);
 }
 table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--surface);
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: var(--r);
   overflow: hidden;
@@ -462,7 +600,7 @@ th {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  background: var(--surface-2);
+  background: rgba(139, 92, 246, 0.1);
   white-space: nowrap;
 }
 tbody tr:last-child td {
@@ -472,7 +610,7 @@ tbody tr {
   transition: background 0.1s ease;
 }
 tbody tr:hover {
-  background: var(--surface-2);
+  background: rgba(139, 92, 246, 0.09);
 }
 td.num,
 th.num {
@@ -503,42 +641,46 @@ td .sub-line {
   line-height: 1.5;
   white-space: nowrap;
   background: var(--surface-3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   color: var(--text-2);
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
 }
 .chip .ic-sm {
   width: 14px;
   height: 14px;
 }
 .chip.good {
-  background: rgba(61, 220, 132, 0.12);
-  border-color: rgba(61, 220, 132, 0.28);
+  background: rgba(52, 224, 161, 0.13);
+  border-color: rgba(52, 224, 161, 0.3);
   color: var(--good);
 }
 .chip.warn {
-  background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(255, 197, 61, 0.13);
+  border-color: rgba(255, 197, 61, 0.3);
   color: var(--warn);
 }
 .chip.serious {
-  background: rgba(251, 146, 60, 0.12);
-  border-color: rgba(251, 146, 60, 0.28);
+  background: rgba(255, 138, 61, 0.13);
+  border-color: rgba(255, 138, 61, 0.3);
   color: var(--serious);
 }
 .chip.critical {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(255, 84, 112, 0.13);
+  border-color: rgba(255, 84, 112, 0.3);
   color: var(--critical);
 }
 .chip.info {
-  background: rgba(86, 182, 255, 0.12);
-  border-color: rgba(86, 182, 255, 0.28);
+  background: rgba(34, 211, 238, 0.14);
+  border-color: rgba(34, 211, 238, 0.32);
   color: var(--data);
 }
+/* Акцентният чип носи ПОВДИГНАТИЯ тон: магентата върху собствения си тинт е 4.30:1,
+   повдигнатата е 5.87:1. Ръбът и фонът остават в графичния цвят. */
 .chip.accent {
   background: var(--accent-soft);
-  border-color: rgba(255, 61, 113, 0.3);
-  color: var(--accent);
+  border-color: rgba(255, 45, 120, 0.34);
+  color: var(--accent-lift);
 }
 
 /* ---------- мярка (квота) ---------- */
@@ -548,21 +690,24 @@ td .sub-line {
   min-width: 120px;
 }
 .meter-track {
-  height: 6px;
+  height: 7px;
   border-radius: 999px;
-  background: var(--surface-3);
+  background: rgba(139, 92, 246, 0.16);
   overflow: hidden;
 }
 .meter-fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--data);
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+  box-shadow: 0 0 12px -2px rgba(34, 211, 238, 0.8);
 }
 .meter-fill.warn {
-  background: var(--warn);
+  background: linear-gradient(90deg, var(--serious), var(--warn));
+  box-shadow: 0 0 12px -2px rgba(255, 197, 61, 0.75);
 }
 .meter-fill.critical {
-  background: var(--critical);
+  background: linear-gradient(90deg, #ff2d78, var(--critical));
+  box-shadow: 0 0 12px -2px rgba(255, 84, 112, 0.85);
 }
 .meter-label {
   font-size: 12px;
@@ -579,6 +724,8 @@ td .sub-line {
   border-radius: var(--r-sm);
   border: 1px solid var(--line-strong);
   background: var(--surface-2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   color: var(--text);
   font: inherit;
   font-size: 14px;
@@ -590,6 +737,7 @@ td .sub-line {
 }
 .btn:hover {
   background: var(--surface-3);
+  border-color: rgba(139, 92, 246, 0.6);
   text-decoration: none;
 }
 .btn:disabled,
@@ -597,24 +745,50 @@ td .sub-line {
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* Първичният бутон НОСИ брандовия градиент. Мастилото е тъмно, защото бялото върху
+   магента е само 3.41:1 — тъмното дава 5.64:1 и на най-тъмната спирка (виолета) 4.74:1. */
 .btn.primary {
-  background: linear-gradient(180deg, #ff5c88, var(--accent));
-  border-color: var(--accent);
+  background: var(--brand-sweep);
+  background-size: 180% auto;
+  border-color: transparent;
   color: var(--accent-ink);
-  box-shadow: 0 4px 14px -6px rgba(255, 61, 113, 0.7);
+  font-weight: 650;
+  box-shadow: var(--glow-accent);
+  position: relative;
+  overflow: hidden;
+  transition:
+    background-position 0.5s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+/* Блясъкът минава ВЕДНЪЖ при посочване — не се върти в цикъл, значи няма пулс. */
+.btn.primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.45), transparent 80%);
 }
 .btn.primary:hover {
-  background: linear-gradient(180deg, #ff7099, #ff4a7b);
-  border-color: #ff5583;
-  box-shadow: 0 6px 18px -6px rgba(255, 61, 113, 0.85);
+  background-position: 100% center;
+  box-shadow: 0 12px 34px -8px rgba(255, 45, 120, 0.75);
+  transform: translateY(-1px);
+}
+.btn.primary:hover::after {
+  animation: sheen 0.62s ease-out;
+}
+@keyframes sheen {
+  to {
+    transform: translateX(120%);
+  }
 }
 .btn.danger {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(255, 84, 112, 0.13);
+  border-color: rgba(255, 84, 112, 0.38);
   color: var(--critical);
 }
 .btn.danger:hover {
-  background: rgba(248, 113, 113, 0.2);
+  background: rgba(255, 84, 112, 0.22);
 }
 .btn.ghost {
   background: transparent;
@@ -670,19 +844,25 @@ form.stack .grid2,
 }
 .panel {
   background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   border: 1px solid var(--line);
   border-radius: var(--r);
   padding: 18px 20px;
   margin-bottom: 18px;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 .panel::before {
   content: '';
   position: absolute;
   inset: 0 0 auto;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07) 25%, transparent 75%);
+  background: var(--brand-sweep);
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 70%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 70%, transparent);
 }
 .panel > h2:first-child {
   margin-top: 0;
@@ -698,28 +878,30 @@ form.stack .grid2,
   margin-bottom: 18px;
   border: 1px solid var(--line-strong);
   background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   font-size: 14px;
 }
 .flash .ic {
   margin-top: 1px;
 }
 .flash.ok {
-  border-color: rgba(61, 220, 132, 0.4);
-  background: rgba(61, 220, 132, 0.08);
+  border-color: rgba(52, 224, 161, 0.42);
+  background: rgba(52, 224, 161, 0.09);
 }
 .flash.ok .ic {
   color: var(--good);
 }
 .flash.error {
-  border-color: rgba(248, 113, 113, 0.4);
-  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(255, 84, 112, 0.42);
+  background: rgba(255, 84, 112, 0.09);
 }
 .flash.error .ic {
   color: var(--critical);
 }
 .flash.info {
-  border-color: rgba(86, 182, 255, 0.4);
-  background: rgba(86, 182, 255, 0.08);
+  border-color: rgba(34, 211, 238, 0.42);
+  background: rgba(34, 211, 238, 0.09);
 }
 .flash.info .ic {
   color: var(--data);
@@ -773,7 +955,7 @@ textarea {
   padding: 9px 11px;
   border: 1px solid var(--line-strong);
   border-radius: var(--r-sm);
-  background: var(--bg);
+  background: var(--well);
   color: var(--text);
   font: inherit;
   font-size: 14px;
@@ -784,14 +966,16 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: #3d4557;
+  border-color: rgba(139, 92, 246, 0.6);
 }
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow:
+    0 0 0 3px var(--accent-soft),
+    0 0 18px -4px rgba(255, 45, 120, 0.55);
 }
 textarea {
   min-height: 110px;
@@ -839,6 +1023,8 @@ legend {
   margin-bottom: 16px;
   padding: 14px 16px;
   background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   border: 1px solid var(--line);
   border-radius: var(--r);
 }
@@ -860,14 +1046,14 @@ legend {
   font-size: 12.5px;
 }
 .secret {
-  background: var(--bg);
+  background: var(--well);
   border: 1px dashed var(--warn);
   padding: 12px 14px;
   border-radius: var(--r-sm);
   word-break: break-all;
 }
 .preview {
-  background: var(--bg);
+  background: var(--well);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   padding: 14px 16px;
@@ -904,14 +1090,51 @@ details[open] summary .ic-sm {
   margin-top: 14px;
   align-items: center;
 }
+/* Входът е витрината: единственият екран, който човек вижда преди да е влязъл.
+   Затова тук стъклото е най-плътно, а около картата има собствен брандов ореол. */
 .login {
   max-width: 400px;
   margin: 11vh auto;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--surface-2);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
-  padding: 30px;
-  box-shadow: var(--shadow);
+  padding: 32px;
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 40px 90px -40px rgba(139, 92, 246, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.login::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--brand-sweep);
+  background-size: 200% auto;
+  opacity: 0.7;
+  /* Рамка-градиент: пълним правоъгълника и изрязваме сърцевината, остава само ръбът. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: sweep 11s linear infinite;
+}
+/* Единственото безкрайно движение върху елемент в потока — и то по РЪБА на картата,
+   не върху текст: цикълът е 11 s, тоест два порядъка под прага за проблясък (WCAG
+   2.3.1), а `prefers-reduced-motion` го спира напълно. */
+@keyframes sweep {
+  to {
+    background-position: 200% center;
+  }
 }
 .login .brand {
   justify-content: center;
@@ -1042,13 +1265,25 @@ main > .grid2 {
   background-clip: content-box;
 }
 
+/* Уважено предпочитание за по-малко движение: НИЩО не се движи.
+   Аврората остава — но замръзнала на началния си кадър, тоест статичен градиент;
+   блясъкът на бутона, пробягващият бранд-градиент и повдигането на картите отпадат.
+   Изгледът не губи нито цвят, нито информация — губи само движението. */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  /* Псевдоелементите носят целия декор (аврора, зърно, ореоли) — `*` НЕ ги хваща,
+     затова се изброяват изрично. Без това аврората продължава да диша при reduce. */
+  *,
+  *::before,
+  *::after {
     transition: none !important;
     animation: none !important;
   }
-  a.card:hover {
+  a.card:hover,
+  .btn.primary:hover {
     transform: none;
+  }
+  .btn.primary::after {
+    display: none;
   }
 }
 
