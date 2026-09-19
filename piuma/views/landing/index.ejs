@@ -23,6 +23,7 @@
 <meta name="twitter:description" content="<%= t('landing.meta.description') %>">
 <meta name="twitter:image" content="<%= ogImage %>">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/landing/logo.webp">
 <link rel="stylesheet" href="/static/tokens.css">
 <link rel="stylesheet" href="/static/landing.css">
 <script type="application/ld+json" nonce="<%= cspNonce %>"><%- structuredData %></script>
@@ -33,7 +34,7 @@
 
 <header class="lp-top">
   <div class="lp-wrap lp-top-in">
-    <a class="lp-brand" href="/"><%- icon('piuma', { class: 'ic-lg' }) %><span class="wordmark">Piuma</span></a>
+    <a class="lp-brand" href="/"><img class="lp-logo" src="/static/landing/logo.webp" alt="" width="420" height="420" decoding="async"><span class="wordmark">Piuma</span></a>
     <nav class="lp-nav" aria-label="<%= t('landing.meta.title') %>">
       <a href="#how"><%= t('landing.nav.how') %></a>
       <a href="#panel"><%= t('landing.nav.panel') %></a>
@@ -63,7 +64,7 @@
         <p class="lp-note"><%- icon('shield', { class: 'ic-sm' }) %> <span><%= t('landing.hero.note') %></span></p>
       </div>
       <div class="lp-hero-art" aria-hidden="true">
-        <img src="/static/landing/plume.svg" alt="" width="520" height="720" class="lp-plume" decoding="async">
+        <img src="/static/landing/plume.webp" alt="" width="700" height="761" class="lp-plume" decoding="async">
       </div>
     </div>
 
@@ -229,7 +230,7 @@
 <footer class="lp-foot">
   <div class="lp-wrap lp-foot-in">
     <div class="lp-foot-brand">
-      <span class="lp-brand"><%- icon('piuma', { class: 'ic-lg' }) %><span class="wordmark">Piuma</span></span>
+      <img class="lp-logo lp-logo-lg" src="/static/landing/logo.webp" alt="Piuma" width="420" height="420" loading="lazy" decoding="async">
       <p><%= t('landing.footer.product') %></p>
     </div>
     <nav class="lp-foot-links" aria-label="<%= t('landing.footer.panel') %>">

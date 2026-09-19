@@ -1,13 +1,20 @@
 // Изображението за споделяне (1200×630). Без преводим текст — само името на продукта,
 // което е име, не низ за превод; така едно изображение служи и на трите езика.
+//
+//   npm run landing:og
+//
+// Иска Chromium за Playwright (`PLAYWRIGHT_CHROMIUM` сочи към друг, ако трябва) и
+// `plume.webp` до себе си — перото е същият файл, който стои и в героя на витрината.
 import { chromium } from 'playwright';
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const plume = readFileSync(join(ROOT, 'public', 'landing', 'plume.svg'), 'utf8').replace(
-  'aria-hidden="true"',
-  'aria-hidden="true" class="plume"',
-);
+/** Коренът на продукта — скриптът работи отвсякъде, без зашит път. */
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const DIR = join(ROOT, 'public', 'landing');
 
+// Страницата се пише В папката с асетите, затова перото се вика по относителен път.
 const html = `<!doctype html><meta charset="utf-8"><style>
   *{margin:0;box-sizing:border-box}
   body{width:1200px;height:630px;background:#07070d;position:relative;overflow:hidden;
@@ -22,7 +29,7 @@ const html = `<!doctype html><meta charset="utf-8"><style>
     background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);
     background-size:3px 3px}
   .wrap{position:relative;height:100%;display:flex;align-items:center;
-    padding:0 84px;gap:40px}
+    padding:0 84px;gap:48px}
   .copy{flex:1}
   .name{font-size:112px;font-weight:700;letter-spacing:-.045em;line-height:.95;
     background:linear-gradient(112deg,#fff 0%,#ffd6e6 26%,#a78bfa 66%,#22d3ee 100%);
@@ -31,8 +38,8 @@ const html = `<!doctype html><meta charset="utf-8"><style>
     background:linear-gradient(90deg,#ff2d78,#8b5cf6 52%,#22d3ee)}
   .by{font-size:23px;color:#b6bdd4;letter-spacing:.005em}
   .by b{color:#eef0f8;font-weight:600}
-  .art{width:330px;height:470px;display:grid;place-items:center;flex:none}
-  .plume{width:330px;height:470px;filter:drop-shadow(0 0 40px rgba(139,92,246,.5))}
+  .art{flex:none;display:grid;place-items:center}
+  .art img{width:400px;height:435px;filter:drop-shadow(0 0 48px rgba(139,92,246,.55))}
 </style>
 <div class="aurora"></div><div class="grain"></div>
 <div class="wrap">
@@ -41,10 +48,10 @@ const html = `<!doctype html><meta charset="utf-8"><style>
     <div class="rule"></div>
     <div class="by">Instagram · <b>Carbon&nbsp;Stealth&nbsp;VCC</b></div>
   </div>
-  <div class="art">${plume}</div>
+  <div class="art"><img src="plume.webp" alt=""></div>
 </div>`;
 
-const scratch = join(ROOT, 'public', 'landing', '.og.html');
+const scratch = join(DIR, '.og.html');
 writeFileSync(scratch, html);
 
 const browser = await chromium.launch(
@@ -54,9 +61,9 @@ const page = await browser.newPage({
   viewport: { width: 1200, height: 630 },
   deviceScaleFactor: 1,
 });
-await page.goto('file://' + scratch);
-await page.waitForTimeout(900);
-await page.screenshot({ path: join(ROOT, 'public', 'landing', 'og.png') });
+await page.goto(`file://${scratch}`);
+await page.waitForLoadState('networkidle');
+await page.screenshot({ path: join(DIR, 'og.png') });
 await browser.close();
 rmSync(scratch, { force: true });
 console.log('og готово');

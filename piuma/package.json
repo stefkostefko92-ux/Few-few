@@ -36,7 +36,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "test:integration": "tsx --test tests/integration/*.test.ts",
     "owner:create": "node dist/scripts/create-owner.js",
-    "landing:plume": "node src/scripts/plume.mjs",
+    "landing:art": "node src/scripts/landing-art.mjs",
     "landing:og": "node src/scripts/og.mjs",
     "landing:shots": "node src/scripts/landing-shots.mjs"
   },

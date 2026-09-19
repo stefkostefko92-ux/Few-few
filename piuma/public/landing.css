@@ -92,9 +92,21 @@ body.lp {
 .lp-brand:hover {
   text-decoration: none;
 }
-.lp-brand .ic-lg {
-  color: var(--accent);
-  filter: drop-shadow(0 0 14px rgba(255, 45, 120, 0.7));
+/* Логото е растер с алфа: черният фон е свален, затова седи право върху аврората.
+   Своят ореол си го носи в самата рисунка — добавяме само лека сянка за отлепване.
+
+   В лентата е 46 px и надписът вътре в кръга е петно, затова там до него стои и
+   текстовият wordmark. В колонтитула е 72 px, името се чете от самата емблема и
+   текстът до нея отпада — иначе „Piuma“ пише два пъти един до друг. */
+.lp-logo {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.45));
+}
+.lp-logo-lg {
+  width: 72px;
+  height: 72px;
 }
 /* Марката носи брандовия градиент — статичен, за да не мърда текст под окото. */
 .lp .wordmark {
@@ -134,7 +146,7 @@ body.lp {
 }
 .lp-hero-in {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 40px;
   align-items: center;
 }
@@ -215,9 +227,10 @@ body.lp {
   place-items: center;
 }
 .lp-plume {
-  width: 330px;
-  height: 456px;
-  filter: drop-shadow(0 0 46px rgba(139, 92, 246, 0.45));
+  width: 340px;
+  /* Височината следва съотношението на файла (700×761) — иначе перото се сплесква. */
+  height: 370px;
+  filter: drop-shadow(0 0 54px rgba(139, 92, 246, 0.4));
 }
 
 /* ---------- екранните снимки ---------- */

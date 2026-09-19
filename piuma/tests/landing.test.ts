@@ -114,6 +114,27 @@ test('всеки въпрос има отговор на трите езика',
 });
 
 /**
+ * Марката и перото са подадена рисунка, обработена от `src/scripts/landing-art.mjs`.
+ * Черният фон ТРЯБВА да е свален — сложени върху аврората неотрязани, те стоят като
+ * правоъгълник. Затова файлът трябва да носи алфа, а не просто да съществува.
+ */
+test('логото и перото са с прозрачен фон', () => {
+  for (const name of ['logo', 'plume']) {
+    const file = `public/landing/${name}.webp`;
+    assert.ok(existsSync(file), `липсва ${file}`);
+    const header = readFileSync(file).subarray(0, 32);
+    assert.equal(header.subarray(0, 4).toString('latin1'), 'RIFF', `${file}: не е WebP`);
+    assert.equal(header.subarray(8, 12).toString('latin1'), 'WEBP', `${file}: не е WebP`);
+    // VP8L носи алфа във флага си; VP8X я обявява в битовете на разширения хедър.
+    const chunk = header.subarray(12, 16).toString('latin1');
+    const hasAlpha =
+      (chunk === 'VP8X' && (header[20]! & 0b0001_0000) !== 0) ||
+      (chunk === 'VP8L' && (header[24]! & 0b0001_0000) !== 0);
+    assert.ok(hasAlpha, `${file}: WebP без алфа-канал (${chunk})`);
+  }
+});
+
+/**
  * Ключът за IndexNow е публичен знак за собственост, не тайна — но трябва да е валиден
  * и да се отдава от корена, иначе подаването към Bing/Yandex/Seznam се отказва тихо.
  */
