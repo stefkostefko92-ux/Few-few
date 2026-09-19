@@ -243,4 +243,6 @@ export default {
   "game.tod.truth": "🗣️ Vérité pour {{user}}",
   "game.tod.dare": "🔥 Action pour {{user}}",
   "game.season.ended": "**{{season}}** est terminée ! Le haut du classement de la saison :{{top}}\n\nL'XP de saison repart de zéro — les niveaux, les étincelles et les compagnons restent. Les compagnons saisonniers ne peuvent plus être attrapés.",
+  "game.levelUp.announce": "🎉 {{user}} a atteint le **niveau {{level}}**{{roles}}{{sparks}}",
+  "game.levelUp.roles": " et obtient : {{roles}}",
 };

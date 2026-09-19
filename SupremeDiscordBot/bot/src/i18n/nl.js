@@ -243,4 +243,6 @@ export default {
   "game.tod.truth": "🗣️ Waarheid voor {{user}}",
   "game.tod.dare": "🔥 Opdracht voor {{user}}",
   "game.season.ended": "**{{season}}** is voorbij! De top van het seizoen:{{top}}\n\nSeizoens-XP begint weer bij nul — levels, vonken en metgezellen blijven. Seizoensmetgezellen kunnen niet meer worden gevangen.",
+  "game.levelUp.announce": "🎉 {{user}} heeft **level {{level}}** bereikt{{roles}}{{sparks}}",
+  "game.levelUp.roles": " en krijgt: {{roles}}",
 };

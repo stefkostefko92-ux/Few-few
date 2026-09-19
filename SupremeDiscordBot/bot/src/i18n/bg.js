@@ -241,4 +241,6 @@ export default {
   "game.tod.truth": "🗣️ Истина за {{user}}",
   "game.tod.dare": "🔥 Предизвикателство за {{user}}",
   "game.season.ended": "**{{season}}** приключи! Върхът на сезона:{{top}}\n\nСезонното XP започва отново от нула — нивата, искрите и спътниците остават. Сезонните спътници вече не могат да бъдат уловени.",
+  "game.levelUp.announce": "🎉 {{user}} стигна **ниво {{level}}**{{roles}}{{sparks}}",
+  "game.levelUp.roles": " и получи: {{roles}}",
 };

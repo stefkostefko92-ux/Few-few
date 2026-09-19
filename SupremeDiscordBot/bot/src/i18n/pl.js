@@ -243,4 +243,6 @@ export default {
   "game.tod.truth": "🗣️ Prawda dla {{user}}",
   "game.tod.dare": "🔥 Wyzwanie dla {{user}}",
   "game.season.ended": "**{{season}}** dobiegł końca! Czołówka sezonu:{{top}}\n\nSezonowe XP zaczyna się od zera — poziomy, iskry i towarzysze zostają. Sezonowych towarzyszy nie można już złapać.",
+  "game.levelUp.announce": "🎉 {{user}} osiągnął(-ęła) **poziom {{level}}**{{roles}}{{sparks}}",
+  "game.levelUp.roles": " i otrzymuje: {{roles}}",
 };

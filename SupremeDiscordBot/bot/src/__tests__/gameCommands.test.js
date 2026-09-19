@@ -118,3 +118,21 @@ describe("/daily", () => {
     expect(JSON.stringify(i.editReply.mock.calls[0][0])).toContain("50");
   });
 });
+
+describe("обявата „ниво нагоре“ минава през i18n (одит 19.09.2026 — беше единственият EN-only текст)", () => {
+  it("праща локализирания embed в канала за обяви; без канал/изключена обява → нищо", async () => {
+    const send = vi.fn().mockResolvedValue({});
+    const channel = { isTextBased: () => true, send };
+    const member = { roles: { cache: new Map(), add: vi.fn() } };
+    const guild = { roles: { cache: new Map(), fetch: vi.fn().mockResolvedValue(null) }, members: { fetch: vi.fn().mockResolvedValue(member), me: {} }, channels: { cache: new Map([["500000000000000001", channel]]), fetch: vi.fn() } };
+    const client = { guilds: { cache: new Map([["222222222222222222", guild]]), fetch: vi.fn() } };
+    apiGet.mockRejectedValue(new Error("no lang")); // resolveLangForGuild → "en"
+    await game.applyLevelUp(client, "222222222222222222", { userId: "333333333333333333", level: 3, roleIds: [], sparksAwarded: 30 }, "500000000000000001", true);
+    const desc = send.mock.calls[0][0].embeds[0].toJSON().description;
+    expect(desc).toContain("<@333333333333333333>"); expect(desc).toContain("level 3"); expect(desc).toContain("+30 ✨");
+    expect(send.mock.calls[0][0].allowedMentions).toEqual({ users: ["333333333333333333"] });
+    await game.applyLevelUp(client, "222222222222222222", { userId: "333333333333333333", level: 4, roleIds: [], sparksAwarded: 0 }, null, true);
+    await game.applyLevelUp(client, "222222222222222222", { userId: "333333333333333333", level: 5, roleIds: [], sparksAwarded: 0 }, "500000000000000001", false);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+});

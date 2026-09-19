@@ -37,7 +37,7 @@ const safeCount = (fn) => Promise.resolve().then(fn).catch(() => 0);
 /** Какво пазим за този Discord ID — само бройки, без съдържание. */
 export async function summarizeDiscordUser(userId) {
   const uid = String(userId);
-  const [user, tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases] =
+  const [user, tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases, questContributions, triviaAnswers] =
     await Promise.all([
       prisma.user.findUnique({ where: { id: uid }, select: { id: true, username: true, globalRole: true, isBlacklisted: true, createdAt: true, email: true, mfaEnabledAt: true } }).catch(() => null),
       safeCount(() => prisma.ticket.count({ where: { creatorId: uid } })),
@@ -54,12 +54,14 @@ export async function summarizeDiscordUser(userId) {
       safeCount(() => prisma.memberProgress.count({ where: { userId: uid } })),
       safeCount(() => prisma.memberCompanion.count({ where: { userId: uid } })),
       safeCount(() => prisma.shopPurchase.count({ where: { userId: uid } })),
+      safeCount(() => prisma.questContribution.count({ where: { userId: uid } })),
+      safeCount(() => prisma.triviaAnswer.count({ where: { userId: uid } })),
     ]);
   return {
     userId: uid,
     registered: !!user,
     user: user ? { username: user.username, globalRole: user.globalRole, isBlacklisted: user.isBlacklisted, createdAt: user.createdAt, hasEmail: !!user.email, mfaEnabled: !!user.mfaEnabledAt } : null,
-    counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases },
+    counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases, questContributions, triviaAnswers },
   };
 }
 
@@ -146,6 +148,7 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("questContributions", () => tx.questContribution.deleteMany({ where: { userId: uid } }));
     await c("triviaAnswers", () => tx.triviaAnswer.deleteMany({ where: { userId: uid } }));
     await c("triviaWinsAnonymized", () => tx.triviaRound.updateMany({ where: { winnerId: uid }, data: { winnerId: null } }));
+    await c("countingLastAnonymized", () => tx.gameSettings.updateMany({ where: { countingLastUserId: uid }, data: { countingLastUserId: null } }));
     await c("trades", () => tx.companionTrade.deleteMany({ where: { OR: [{ fromUserId: uid }, { toUserId: uid }] } }));
     await c("spawnsAnonymized", () => tx.companionSpawn.updateMany({ where: { caughtById: uid }, data: { caughtById: null } }));
 

@@ -12,6 +12,8 @@ import {
   getGameSettings, awardXp, computeDaily, levelProgress, rolesForLevel, DAILY_XP,
 } from "../lib/game/xp.js";
 import { contribute } from "../lib/game/questOps.js";
+import { companionById, publicCompanion } from "../lib/game/companions.js";
+import { getCurrentSeason } from "../lib/game/seasons.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -112,8 +114,12 @@ router.get("/game/profile/:serverId/:userId", async (req, res, next) => {
     const rank = row ? (await prisma.memberProgress.count({ where: { serverId, xp: { gt: xp } } })) + 1 : null;
     const players = await prisma.memberProgress.count({ where: { serverId } });
     const companions = await prisma.memberCompanion.count({ where: { serverId, userId } }).catch(() => 0);
-    const active = row?.activeCompanionId
+    const activeRow = row?.activeCompanionId
       ? await prisma.memberCompanion.findUnique({ where: { id: row.activeCompanionId } }).catch(() => null)
+      : null;
+    // Ботът показва име + картинка, не вътрешния id (одит 19.09.2026).
+    const active = activeRow
+      ? { ...activeRow, ...publicCompanion(companionById(activeRow.companionId), activeRow.stage, await getCurrentSeason()) }
       : null;
     const nextDailyAt = row?.lastDailyAt ? new Date(new Date(row.lastDailyAt).getTime() + 24 * 3600 * 1000) : null;
     res.json({

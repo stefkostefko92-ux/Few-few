@@ -191,9 +191,14 @@ export async function applyLevelUp(client, serverId, up, announceChannelId, leve
   if (levelUpMessage === false || !announceChannelId) return;
   const channel = guild.channels.cache.get(announceChannelId) || await guild.channels.fetch(announceChannelId).catch(() => null);
   if (!channel?.isTextBased?.()) return;
+  // Локализирано като всяка друга обява (одит 19.09.2026 — беше единственият EN-only текст).
+  const { t, resolveLangForGuild } = await import("../i18n/index.js");
+  const lang = await resolveLangForGuild(serverId).catch(() => "en");
+  const roles = granted.length ? t("game.levelUp.roles", lang, { roles: granted.map((n) => `**${n}**`).join(", ") }) : "";
+  const sparks = up.sparksAwarded ? ` · +${up.sparksAwarded} ✨` : "";
   const embed = new EmbedBuilder()
     .setColor(BRAND)
-    .setDescription(`🎉 <@${up.userId}> reached **level ${up.level}**${granted.length ? ` and earned: ${granted.map((n) => `**${n}**`).join(", ")}` : ""}${up.sparksAwarded ? ` · +${up.sparksAwarded} ✨` : ""}`);
+    .setDescription(t("game.levelUp.announce", lang, { user: `<@${up.userId}>`, level: up.level, roles, sparks }));
   await channel.send({ embeds: [embed], allowedMentions: { users: [up.userId] } }).catch(() => {});
 }
 

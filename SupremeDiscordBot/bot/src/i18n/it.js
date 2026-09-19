@@ -241,4 +241,6 @@ export default {
   "game.tod.truth": "🗣️ Verità per {{user}}",
   "game.tod.dare": "🔥 Obbligo per {{user}}",
   "game.season.ended": "**{{season}}** è finita! In cima alla stagione:{{top}}\n\nGli XP di stagione ripartono da zero: livelli, scintille e compagni restano. I compagni stagionali non possono più essere catturati.",
+  "game.levelUp.announce": "🎉 {{user}} ha raggiunto il **livello {{level}}**{{roles}}{{sparks}}",
+  "game.levelUp.roles": " e ottiene: {{roles}}",
 };

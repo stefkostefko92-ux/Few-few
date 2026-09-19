@@ -46,7 +46,9 @@ export default {
         { name: t("game.profile.activity", lang), value: t("game.profile.activityValue", lang, { messages: p.messages, minutes: p.voiceMinutes }), inline: false },
       );
     if (p.activeCompanion) {
-      embed.addFields({ name: t("game.profile.companion", lang), value: `${p.activeCompanion.nickname || p.activeCompanion.companionId} · ${t("game.profile.stage", lang, { stage: p.activeCompanion.stage })}`, inline: false });
+      const c = p.activeCompanion;
+      embed.addFields({ name: t("game.profile.companion", lang), value: `${c.rarityEmoji ? `${c.rarityEmoji} ` : ""}${c.nickname || c.name || c.companionId} · ${t("game.profile.stage", lang, { stage: c.stage })}`, inline: false });
+      if (c.imageUrl) embed.setThumbnail(c.imageUrl);
     } else if (p.companions > 0) {
       embed.addFields({ name: t("game.profile.companion", lang), value: t("game.profile.companionsCount", lang, { n: p.companions }), inline: false });
     }

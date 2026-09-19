@@ -243,4 +243,6 @@ export default {
   "game.tod.truth": "🗣️ Wahrheit für {{user}}",
   "game.tod.dare": "🔥 Pflicht für {{user}}",
   "game.season.ended": "**{{season}}** ist vorbei! Die Spitze der Season:{{top}}\n\nDie Season-XP beginnen wieder bei null — Level, Funken und Begleiter bleiben. Saisonale Begleiter können nicht mehr gefangen werden.",
+  "game.levelUp.announce": "🎉 {{user}} hat **Level {{level}}** erreicht{{roles}}{{sparks}}",
+  "game.levelUp.roles": " und erhält: {{roles}}",
 };

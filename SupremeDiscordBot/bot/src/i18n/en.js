@@ -254,4 +254,6 @@ export default {
   "game.tod.truth": "🗣️ Truth for {{user}}",
   "game.tod.dare": "🔥 Dare for {{user}}",
   "game.season.ended": "**{{season}}** is over! Top of the season:{{top}}\n\nSeason XP starts again from zero — levels, sparks and companions stay. Seasonal companions can no longer be caught.",
+  "game.levelUp.announce": "🎉 {{user}} reached **level {{level}}**{{roles}}{{sparks}}",
+  "game.levelUp.roles": " and earned: {{roles}}",
 };

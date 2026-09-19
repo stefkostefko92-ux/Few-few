@@ -228,3 +228,18 @@ describe("premium.js носи лимитите и функциите на игр
     for (const k of ["game.shop50", "game.levelRolesUnlimited", "game.companionsFull", "game.quests3", "game.kbTrivia"]) expect(premium.PREMIUM_FEATURES[k]).toBeTruthy();
   });
 });
+
+describe("профилът показва активния спътник с име и картинка (одит 19.09.2026)", () => {
+  it("GET /api/bot/game/profile обогатява activeCompanion с name/imageUrl/rarityEmoji, не само вътрешния id", async () => {
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ xp: 150, level: 1, activeCompanionId: "mc1" }));
+    prismaMock.memberProgress.count.mockResolvedValue(0);
+    prismaMock.memberCompanion.count.mockResolvedValueOnce(1);
+    prismaMock.memberCompanion.findUnique.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 2, nickname: null, fed: 120 });
+    prismaMock.gameSeason.findMany.mockResolvedValue([]);
+    const res = await request(app).get(`/api/bot/game/profile/${SID}/${UID}`);
+    expect(res.status).toBe(200);
+    expect(res.body.activeCompanion).toMatchObject({ companionId: "lime-blip", name: "Blip", stage: 2, rarityEmoji: "⚪" });
+    expect(res.body.activeCompanion.imageUrl).toMatch(/lime-blip-2\.jpg$/);
+  });
+});

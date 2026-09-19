@@ -16,6 +16,7 @@ import {
 } from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
+import { toUtcInput, fromUtcInput } from "../utils/utcDateInput";
 
 const adminErr = (err) => {
   const d = err?.response?.data;
@@ -334,8 +335,9 @@ export function ComplianceTab() {
 // ═══ SERVER SEASON (v50) ══════════════════════════════════════════════════════
 // Сезоните са глобални: кодът, името, датите и кои спътници са сезонни се
 // управляват оттук (базата), не от кода. Смяната засяга ВСИЧКИ сървъри.
-const toLocalInput = (d) => (d ? new Date(d).toISOString().slice(0, 16) : "");
-const fromLocalInput = (s) => (s ? new Date(s).toISOString() : undefined);
+// Полетата са обявени като UTC — utils/utcDateInput.js (тестван) ги чете и пише като UTC.
+const toLocalInput = toUtcInput;
+const fromLocalInput = fromUtcInput;
 const RARITY_ORDER = ["legendary", "epic", "rare", "uncommon", "common"];
 
 function SeasonForm({ initial, catalog, onSubmit, pending, submitLabel, withCode }) {
