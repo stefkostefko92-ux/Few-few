@@ -74,6 +74,33 @@ async function dekey(src, out, { width, quality, floor = 0.06 }) {
 // Ширините са двойно спрямо мястото, където стоят (лого ~46 px, перо ~340 px) —
 // достатъчно за плътен екран, без да мъкнем мегабайт заради декорация.
 console.log(await dekey(logoSrc, join(OUT, 'logo.webp'), { width: 420, quality: 0.86 }));
+
+// apple-touch-icon трябва да е PNG — Safari на iOS не чете WebP за икона на началния
+// екран — и без прозрачност: iOS я слага върху черно, значи фонът се запича в брандовия
+// тъмен тон, за да не излезе бял квадрат. 180×180 е размерът, който iOS иска.
+{
+  const png = readFileSync(logoSrc).toString('base64');
+  const url = await page.evaluate(
+    async ({ png }) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${png}`;
+      await img.decode();
+      const c = document.createElement('canvas');
+      c.width = 180;
+      c.height = 180;
+      const g = c.getContext('2d');
+      g.fillStyle = '#07070d';
+      g.fillRect(0, 0, 180, 180);
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(img, 0, 0, 180, 180);
+      return c.toDataURL('image/png');
+    },
+    { png },
+  );
+  const bytes = Buffer.from(url.split(',')[1], 'base64');
+  writeFileSync(join(OUT, 'apple-touch-icon.png'), bytes);
+  console.log(`apple-touch-icon.png 180×180 ${Math.round(bytes.length / 1024)} KB`);
+}
 // Качеството почти не мести теглото тук: алфа-каналът на WebP е без загуби и е
 // основният разход. 0.72 спестяваше 10 KB срещу видима загуба — не си струва.
 console.log(await dekey(plumeSrc, join(OUT, 'plume.webp'), { width: 700, quality: 0.85 }));

@@ -24,6 +24,8 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 const MAP = JSON.parse(readFileSync(mapFile, 'utf8'));
+/** 2× от най-едрата употреба (`.ic-xl` = 32 px). Смени го само ако се появи по-едра. */
+const SIZE = Number(process.env.ICON_SIZE ?? 64);
 const browser = await chromium.launch(
   process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {},
 );
@@ -35,21 +37,25 @@ const rows = [];
 for (const [name, spec] of Object.entries(MAP)) {
   const png = readFileSync(join(srcDir, `${spec.src}.png`)).toString('base64');
   const out = await page.evaluate(
-    async ({ png, rotate, floor }) => {
+    async ({ png, rotate, floor, size }) => {
       const img = new Image();
       img.src = `data:image/png;base64,${png}`;
       await img.decode();
 
+      // Изнася се в размера, в който наистина се показва, не в размера на източника:
+      // най-едрата употреба е 32 px (празно състояние), тоест 64 px стигат за плътен
+      // екран. При 145 px витрината теглеше 206 KB икони вместо 12 KB спрайт.
       const c = document.createElement('canvas');
-      c.width = img.width;
-      c.height = img.height;
+      c.width = size;
+      c.height = size;
       const g = c.getContext('2d', { willReadFrequently: true });
+      g.imageSmoothingQuality = 'high';
       if (rotate) {
-        g.translate(c.width / 2, c.height / 2);
+        g.translate(size / 2, size / 2);
         g.rotate((rotate * Math.PI) / 180);
-        g.translate(-c.width / 2, -c.height / 2);
+        g.translate(-size / 2, -size / 2);
       }
-      g.drawImage(img, 0, 0);
+      g.drawImage(img, 0, 0, size, size);
 
       const frame = g.getImageData(0, 0, c.width, c.height);
       const px = frame.data;
@@ -70,7 +76,7 @@ for (const [name, spec] of Object.entries(MAP)) {
       g.putImageData(frame, 0, 0);
       return c.toDataURL('image/webp', 0.9);
     },
-    { png, rotate: spec.rotate ?? 0, floor: 0.06 },
+    { png, rotate: spec.rotate ?? 0, floor: 0.06, size: SIZE },
   );
   const bytes = Buffer.from(out.split(',')[1], 'base64');
   writeFileSync(join(OUT, `${name}.webp`), bytes);

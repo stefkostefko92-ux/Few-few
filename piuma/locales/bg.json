@@ -565,6 +565,9 @@
   },
   "error": {
     "notFoundTitle": "Няма такава страница",
+    "notFoundText": "Адресът не съществува.",
+    "internalTitle": "Вътрешна грешка",
+    "internalText": "Нещо се обърка. Опитай отново или виж логовете.",
     "toDashboard": "Към таблото"
   },
   "flash": {

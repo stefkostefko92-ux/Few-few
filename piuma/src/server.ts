@@ -129,9 +129,12 @@ export function createServer(deps: ServerDeps): Express {
       res.status(404).json({ error: 'Няма такъв маршрут.' });
       return;
     }
+    // Витрината е публична и на три езика — и страницата за грешка говори на езика
+    // на заявката, не на български по подразбиране.
+    const t = res.locals.t as (key: string) => string;
     res
       .status(404)
-      .render('admin/error', { title: 'Няма такава страница', message: 'Адресът не съществува.' });
+      .render('admin/error', { title: t('error.notFoundTitle'), message: t('error.notFoundText') });
   });
 
   app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
@@ -140,9 +143,10 @@ export function createServer(deps: ServerDeps): Express {
       res.status(500).json({ error: 'Вътрешна грешка.' });
       return;
     }
+    const t = res.locals.t as (key: string) => string;
     res.status(500).render('admin/error', {
-      title: 'Вътрешна грешка',
-      message: 'Нещо се обърка. Опитай отново или виж логовете.',
+      title: t('error.internalTitle'),
+      message: t('error.internalText'),
     });
   });
 

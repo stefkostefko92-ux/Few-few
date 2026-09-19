@@ -101,17 +101,25 @@ test('нито един шаблон не съдържа зашит текст',
 test('нито едно съобщение към потребителя не е зашито в маршрут', () => {
   const offenders: string[] = [];
   // Витрината минава през същия гейт като панела — и там текстът идва от речниците.
-  const routeFiles = ['src/admin', 'src/landing'].flatMap((dir) =>
-    readdirSync(dir)
-      .filter((f) => f.endsWith('.ts'))
-      .map((f) => join(dir, f)),
-  );
+  const routeFiles = [
+    ...['src/admin', 'src/landing'].flatMap((dir) =>
+      readdirSync(dir)
+        .filter((f) => f.endsWith('.ts'))
+        .map((f) => join(dir, f)),
+    ),
+    // Обработчиците на 404/500 живеят тук — дълго време бяха единственият път към
+    // екрана, който гейтът не гледаше, и говореха български на всеки език.
+    'src/server.ts',
+  ];
   for (const file of routeFiles) {
     const source = readFileSync(file, 'utf8');
     for (const [index, line] of source.split('\n').entries()) {
       const isComment = /^\s*(\/\/|\*|\/\*)/.test(line);
       const isLogOrAudit = /logger\.|action:|detail:|reason:|err:|label:/.test(line);
-      if (isComment || isLogOrAudit) continue;
+      // JSON отговорът е за машина (нашият агент през `/agent/`), не за екран — същото
+      // правило като за логовете: за нас е, остава на български.
+      const isMachineResponse = /\.json\(\{/.test(line);
+      if (isComment || isLogOrAudit || isMachineResponse) continue;
       if (/(setFlash|title:|message:|error:)[^\n]*['`][^'`]*[а-яА-Я]/.test(line)) {
         offenders.push(`${file}:${index + 1}`);
       }

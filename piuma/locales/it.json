@@ -565,6 +565,9 @@
   },
   "error": {
     "notFoundTitle": "Pagina inesistente",
+    "notFoundText": "Questo indirizzo non esiste.",
+    "internalTitle": "Errore interno",
+    "internalText": "Qualcosa è andato storto. Riprova o controlla i log.",
     "toDashboard": "Vai al cruscotto"
   },
   "flash": {

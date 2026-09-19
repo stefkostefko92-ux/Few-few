@@ -565,6 +565,9 @@
   },
   "error": {
     "notFoundTitle": "No such page",
+    "notFoundText": "This address does not exist.",
+    "internalTitle": "Internal error",
+    "internalText": "Something went wrong. Try again or check the logs.",
     "toDashboard": "Go to the dashboard"
   },
   "flash": {
