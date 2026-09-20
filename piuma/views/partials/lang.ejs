@@ -1,0 +1,3 @@
+<div class="langbar" role="group" aria-label="<%= t('nav.language') %>">
+  <% locales.forEach((code) => { %><a class="<%= code === locale ? 'active' : '' %>" href="<%= langUrl(code) %>" hreflang="<%= code %>" lang="<%= code %>"><%= code.toUpperCase() %></a><% }) %>
+</div>
