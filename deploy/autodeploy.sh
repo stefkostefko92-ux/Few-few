@@ -128,6 +128,10 @@ ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
 # тайни е по-лошо от това да не се вдигне. Портът се чете от .env (HTTP_PORT).
 PIUMA_HEALTH_URL_SET="${PIUMA_HEALTH_URL:+1}"
 PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
+# Каноничният дом на тайните — СТАБИЛЕН път извън releases/. При пръв деплой `current`
+# сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
+# инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
+PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1050,9 +1054,14 @@ deploy_piuma() {
   log "Разгръщам piuma (Docker Compose)…"
   command -v docker >/dev/null || die "Липсва docker — инсталирай Docker Engine + compose plugin."
 
-  # Тайните живеят на СЪРВЪРА, не в архива. Пренасяме ги от текущия release.
-  if [ -f "$CURRENT_LINK/piuma/.env" ] && [ ! -f "$d/.env" ]; then
-    cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env"
+  # Тайните живеят на СЪРВЪРА, не в архива. Ред: споделеният път (каноничен, оцелява
+  # всичко), после текущият release (за инсталация отпреди споделения път).
+  if [ ! -f "$d/.env" ]; then
+    if [ -f "$PIUMA_ENV" ]; then
+      cp -a "$PIUMA_ENV" "$d/.env"; ok "Пренесох piuma/.env от $PIUMA_ENV"
+    elif [ -f "$CURRENT_LINK/piuma/.env" ]; then
+      cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env от текущия release"
+    fi
   fi
   # За разлика от eternaltouch тук НЕ генерираме .env с случайни тайни. Piuma не може
   # да работи с измислени IG_APP_ID/IG_APP_SECRET/IG_REDIRECT_URI — те идват от
@@ -1062,7 +1071,8 @@ deploy_piuma() {
   # като неразгърнат, не го обявяваме за провал: иначе добавянето на piuma в списъка по
   # подразбиране би счупило `current` на всеки сървър, където още няма тайни.
   if [ ! -f "$d/.env" ]; then
-    warn "Няма piuma/.env — пропускам piuma (не измислям тайни; виж piuma/DEPLOY.md)."
+    warn "Няма piuma/.env — пропускам piuma (не измислям тайни)."
+    warn "  Направи го веднъж по piuma/DEPLOY.md: install -m 600 … $PIUMA_ENV, после пусни скрипта пак."
     return
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
