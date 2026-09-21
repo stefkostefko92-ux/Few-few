@@ -1107,7 +1107,10 @@ deploy_piuma() {
   # Портът се чете от .env, освен ако PIUMA_HEALTH_URL не е зададен изрично.
   local url="$PIUMA_HEALTH_URL"
   if [ -z "${PIUMA_HEALTH_URL_SET:-}" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    # `|| true` НЕ е украса: без реда HTTP_PORT grep връща 1, `pipefail` го изнася от
+    # тръбата и `set -e` убива целия autodeploy точно СЛЕД `compose up` — без health, без
+    # проверка на работника, без преместване на `current`, без следващите проекти.
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
     [ -n "$p" ] && url="http://127.0.0.1:${p}/health"
   fi
   health "$url" "piuma" || deploy_failed=1

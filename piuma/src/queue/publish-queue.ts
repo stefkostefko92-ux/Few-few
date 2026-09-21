@@ -49,10 +49,20 @@ export function publishQueue(): Queue {
   return queue;
 }
 
-/** Идемпотентност: jobId = postId, за да не се публикува два пъти един пост. */
+/**
+ * Идемпотентност: jobId = postId, за да не се публикува два пъти един пост.
+ *
+ * BullMQ при СЪЩЕСТВУВАЩ custom id не добавя нищо и не хвърля. Провалена задача стои
+ * 30 дни (`removeOnFail`), тоест „Повтори“ → „Публикувай сега“ рапортуваше успех, а в
+ * опашката нямаше нищо и постът чакаше `APPROVED` месец. Затова заварената задача се маха
+ * преди добавяне — освен ако не е активна: тя вече публикува и не бива да се дублира.
+ */
 export async function enqueuePublish(postId: string, runAt?: Date): Promise<void> {
+  const queue = publishQueue();
+  const existing = await queue.getJob(publishJobId(postId));
+  if (existing && (await existing.getState()) !== 'active') await existing.remove();
   const delay = runAt ? Math.max(runAt.getTime() - Date.now(), 0) : 0;
-  await publishQueue().add(PUBLISH_JOB, { postId } satisfies PublishJobData, {
+  await queue.add(PUBLISH_JOB, { postId } satisfies PublishJobData, {
     jobId: publishJobId(postId),
     delay,
   });

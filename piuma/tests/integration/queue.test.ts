@@ -16,7 +16,9 @@ const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 process.env.NODE_ENV ??= 'test';
 process.env.PUBLIC_BASE_URL ??= 'https://piuma.example.com';
-process.env.REDIS_URL ??= 'redis://127.0.0.1:6379/15';
+// Изрично тестова, не наследена: тестът трие ЦЯЛАТА опашка (obliterate) и не бива
+// мълчаливо да уцели работната опашка на разработчик, зададена в средата му.
+process.env.REDIS_URL = process.env.REDIS_TEST_URL ?? 'redis://127.0.0.1:6379/15';
 process.env.IG_APP_ID ??= '123456';
 process.env.IG_APP_SECRET ??= 'app-secret';
 process.env.IG_REDIRECT_URI ??= 'https://piuma.example.com/auth/instagram/callback';
@@ -25,7 +27,9 @@ process.env.DATABASE_URL ??= 'postgresql://postgres@127.0.0.1:5432/piuma_test';
 process.env.LOG_LEVEL ??= 'silent';
 
 const { Queue, Worker } = await import('bullmq');
+const { Redis } = await import('ioredis');
 const {
+  PUBLISH_JOB,
   PUBLISH_QUEUE,
   createRedis,
   enqueueAutopilot,
@@ -46,6 +50,26 @@ test(
     // за затваряне. Затова: (1) всяка връзка, която тестът може да държи, я държи той;
     // (2) името се проверява първо върху такава връзка; (3) почистването е във `finally`.
     // Иначе падаща проверка не докладва провал, а държи процеса жив и пакетът „виси“.
+    // Недостижим Redis трябва да е ПРОВАЛ за секунди, не висене: ioredis с
+    // `maxRetriesPerRequest: null` (нужно за BullMQ) преповтаря вечно.
+    const ping = new Redis(process.env.REDIS_URL!, {
+      lazyConnect: true,
+      connectTimeout: 2000,
+      maxRetriesPerRequest: 1,
+      retryStrategy: () => null,
+    });
+    try {
+      await ping.connect();
+      await ping.ping();
+    } catch (error) {
+      assert.fail(
+        `Redis не отговаря на ${process.env.REDIS_URL} (${error instanceof Error ? error.message : String(error)}) — ` +
+          'интеграционната среда иска PostgreSQL И Redis; задай REDIS_TEST_URL.',
+      );
+    } finally {
+      ping.disconnect();
+    }
+
     const probeConnection = createRedis();
     const workerConnection = createRedis();
     let probe: InstanceType<typeof Queue> | undefined;
@@ -90,6 +114,32 @@ test(
 
       // Работникът се вдига върху същото име — точно това падаше с „Queue name cannot contain :“.
       await started.waitUntilReady();
+
+      // Провалена задача със същия id НЕ бива да блокира повторното публикуване: BullMQ при
+      // съществуващ custom id мълчаливо не добавя нищо. Провалът се фабрикува с един-единствен
+      // опит (иначе backoff-ът я държи `delayed` минути наред).
+      const failedId = 'cmuarfail0000000000000000';
+      await queue.add(
+        PUBLISH_JOB,
+        { postId: failedId },
+        { jobId: publishJobId(failedId), attempts: 1 },
+      );
+      const failed = await queue.getJob(publishJobId(failedId));
+      assert.ok(failed);
+      const failing = new Worker(
+        PUBLISH_QUEUE,
+        async (): Promise<unknown> => {
+          throw new Error('нарочен провал');
+        },
+        { connection: workerConnection, autorun: false },
+      );
+      const done = new Promise<void>((resolve) => failing.once('failed', () => resolve()));
+      failing.run();
+      await done;
+      await failing.close();
+      assert.equal(await failed.getState(), 'failed');
+      await enqueuePublish(failedId, new Date(Date.now() + 60_000));
+      assert.equal(await (await queue.getJob(publishJobId(failedId)))?.getState(), 'delayed');
     } finally {
       await worker?.close();
       if (queue) {

@@ -21,7 +21,7 @@ npm run typecheck        # tsc над src + tests
 npm run format:check     # prettier
 npm test                 # unit (node:test през tsx) — без база
 npm run build            # prisma generate + tsc
-npm run test:integration # иска жива PostgreSQL през DATABASE_URL (панел + агент + публикуване)
+npm run test:integration # иска жива PostgreSQL (DATABASE_URL) И Redis (REDIS_TEST_URL) — панел + агент + публикуване + опашка
 npm run dev              # локален сървър (панел на /admin)
 npm run worker           # BullMQ работник (публикуване · токени · сесии · Insights 04:30 · автопилот пн 06:00)
 npm run owner:create     # първият собственик — от средата на сървъра, еднократно
