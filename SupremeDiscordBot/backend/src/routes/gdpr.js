@@ -5,18 +5,68 @@
 // All endpoints require auth — user can only act on their own data.
 
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
+import { redisStore } from "../lib/rateLimitStore.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
+
+// Таван ПО ПОТРЕБИТЕЛ, не по адрес (одит по сигурност, 08.09.2026). Експортът
+// по чл. 15 прави 21 заявки към базата и пише одитен ред на всяко повикване;
+// досега го пазеше само общият лимитер — 200/мин на адрес, тоест един влязъл
+// акаунт можеше да поиска 200 експорта в минута (4200 заявки + 200 одитни
+// реда) без нищо да го спре. Правото на достъп е право на копие, не на
+// непрекъснат поток: 5 на час покрива и най-неспокойния субект. Ключът е
+// потребителят — така смяната на адрес не носи нов бюджет, а споделен адрес
+// не наказва съседа. Redis магазинът дели брояча между процесите; без Redis
+// пада на памет, както всички останали лимитери тук.
+const subjectRightsLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  store: redisStore("rl:gdpr"),
+  keyGenerator: (req) => req.user?.id || req.ip,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many data-subject requests. Try again in an hour." },
+});
+export { subjectRightsLimiter };
+
+/**
+ * „Създадено от мен" — модели, които пазят КОЙ е направил записа.
+ *
+ * ДЕФЕКТЪТ (одит, 16.08.2026): експортът покриваше какво човекът е ПОЛУЧИЛ или
+ * ПРЕТЪРПЯЛ (тикети, кандидатури, гласове, снимки на роли), но не и какво е
+ * СЪЗДАЛ. Седем модела пазят `creatorId`/`createdBy` — това е лична данна за
+ * същия субект („този човек е направил това, тогава, на този сървър") и
+ * чл. 15(1) иска копие и от нея.
+ *
+ * Изричен `select` за всеки — НИКОГА цял ред. Особено при Webhook: той носи
+ * `secret` и `url`, тоест работеща тайна и адрес на чужда система; те не са
+ * лична данна за субекта и нямат работа във файл, който се сваля.
+ *
+ * РЕДЪТ Е ДОГОВОР: същият масив пълни и деструктурирането на `Promise.all`
+ * по-долу. Разместване тук без разместване там разменя данните между полета —
+ * тихо и правдоподобно. Гейтът `gdprCreatedBy` пази съответствието.
+ */
+const CREATED_BY_MODELS = [
+  ["poll", "creatorId", { id: true, serverId: true, question: true, createdAt: true }],
+  ["giveaway", "creatorId", { id: true, serverId: true, prize: true, createdAt: true }],
+  ["scheduledMessage", "createdBy", { id: true, serverId: true, createdAt: true }],
+  ["stickyMessage", "createdBy", { id: true, serverId: true, createdAt: true }],
+  ["cannedResponse", "createdBy", { id: true, serverId: true, name: true, createdAt: true }],
+  ["webhook", "createdBy", { id: true, serverId: true, name: true, createdAt: true }],
+  ["kbArticle", "createdBy", { id: true, serverId: true, title: true, createdAt: true }],
+];
+export { CREATED_BY_MODELS };
 
 // ─── GET /api/gdpr/export ─────────────────────────────────────────────────────
 // Article 15 (Right of access) + Article 20 (Right to data portability)
 // Returns all data the platform holds about the authenticated user in
 // structured, machine-readable JSON. User can download this file.
 
-router.get("/export", async (req, res, next) => {
+router.get("/export", subjectRightsLimiter, async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -25,7 +75,9 @@ router.get("/export", async (req, res, next) => {
     // които РЕТЕНЦИЯТА познава и трие (dataRetention.js) — асиметрия, доказваща
     // пропуска. Чл. 15 отговор без тях е доказуемо непълен пред КЗЛД.
     const [user, servers, tickets, ticketMessages, applications, auditLogs, apiKeys, sessions,
-           verificationAttempts, formCooldowns, pollVotes, giveawayEntries, memberships, roleSnapshots] = await Promise.all([
+           verificationAttempts, formCooldowns, pollVotes, giveawayEntries, memberships, roleSnapshots,
+           // „Създадено от мен" — редът СЪВПАДА с масива CREATED_BY_MODELS по-долу.
+           polls, giveaways, scheduledMessages, stickyMessages, cannedResponses, webhooks, kbArticles] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
       // Server membership — relation is `members` (ServerMember[]), not `users`
       prisma.server.findMany({
@@ -90,6 +142,22 @@ router.get("/export", async (req, res, next) => {
         where: { userId },
         select: { serverId: true, roleIds: true, capturedAt: true },
       })).catch(() => []),
+      // ─── „Създадено от мен" ───────────────────────────────────────────────
+      // ДЕФЕКТЪТ (одит, 16.08.2026): експортът покриваше какво човекът е
+      // ПОЛУЧИЛ или ПРЕТЪРПЯЛ (тикети, кандидатури, гласове, снимки на роли),
+      // но не и какво е СЪЗДАЛ. Седем модела пазят `creatorId`/`createdBy` —
+      // това е лична данна за същия субект („този човек е направил това, тогава,
+      // на този сървър") и чл. 15(1) иска копие и от нея.
+      //
+      // Изричен `select` както навсякъде тук: НИКОГА цял ред. Особено при
+      // Webhook — той носи `secret` и `url`, тоест идентификатор на чужда
+      // система и работеща тайна; те не са лична данна за субекта и нямат
+      // работа в експорт, който се сваля като файл.
+      ...CREATED_BY_MODELS.map(([model, field, select]) =>
+        Promise.resolve()
+          .then(() => prisma[model].findMany({ where: { [field]: userId }, select }))
+          .catch(() => []),
+      ),
     ]);
 
     const payload = {
@@ -132,6 +200,16 @@ router.get("/export", async (req, res, next) => {
         giveaway_entries: giveawayEntries,
         server_memberships: memberships,
         discord_role_snapshots: roleSnapshots,
+        // Чл. 15(1) — какво субектът е СЪЗДАЛ, не само какво е получил.
+        created_by_me: {
+          polls,
+          giveaways,
+          scheduled_messages: scheduledMessages,
+          sticky_messages: stickyMessages,
+          canned_responses: cannedResponses,
+          webhooks,
+          kb_articles: kbArticles,
+        },
       },
       metadata: {
         gdpr_articles_addressed: ["Article 15 (right of access)", "Article 20 (right to data portability)"],
@@ -173,7 +251,7 @@ router.get("/export", async (req, res, next) => {
 // NOTE: Discord user ID is pseudonymous by nature. Discord itself allows users
 // to delete their Discord account which renders our ID useless.
 
-router.post("/delete-account", async (req, res, next) => {
+router.post("/delete-account", subjectRightsLimiter, async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { confirmDiscordId } = req.body;

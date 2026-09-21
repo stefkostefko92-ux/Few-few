@@ -40,9 +40,12 @@ function load() {
     $("featRemoveparam").checked = res.features.removeparam !== false;
     $("featMalware").checked = res.features.malware === true;
     $("featTopics").checked = res.features.topics !== false;
+    $("featPrivacy").checked = res.features.privacy !== false;
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString();
     $("autoUpdate").checked = res.autoUpdate !== false;
     renderUpdateStatus(res.liveVersion || 0, res.liveUpdated || 0);
+    renderHealth();
+    renderSubs();
     renderAllowlist(res.allowlist || []);
   });
 
@@ -50,6 +53,35 @@ function load() {
     renderCustom(data.customHidden || {});
     $("userFilters").value = data.userFilters || "";
     renderSmartLog(data.smartLog || []);
+  });
+}
+
+function renderHealth() {
+  chrome.runtime.sendMessage({ type: "getHealth" }, (h) => {
+    const ul = $("healthList");
+    if (!ul) return;
+    ul.innerHTML = "";
+    if (!h) { ul.innerHTML = '<li class="empty">No response from the service worker.</li>'; return; }
+    const rows = [
+      ["Anti-adblock engine", h.engineRegistered ? "registered (MAIN world, document_start)" : "NOT registered" + (h.scriptletsError ? " — " + h.scriptletsError : ""), h.engineRegistered],
+      ["Static rulesets on", h.enabledRulesets.length ? h.enabledRulesets.join(", ") : "none", h.enabledRulesets.length > 0],
+      ["Live filter domains", String(h.dynamic.live) + (h.liveVersion ? " (filter set v" + h.liveVersion + ", " + ago(h.liveUpdated) + ")" : " (no update yet)"), !h.liveError],
+      ["Last update", h.liveError ? "failed: " + h.liveError : h.liveUpdated ? "ok, " + ago(h.liveUpdated) : "not yet", !h.liveError],
+      ["Update signatures", h.ed25519 ? "Ed25519 verified (" + h.keys + " key" + (h.keys === 1 ? "" : "s") + ")" : "browser cannot verify Ed25519 — best-effort", h.ed25519],
+      ["My filters / allowlist rules", h.dynamic.user + " / " + h.dynamic.allow, true],
+      ["Popup-ad hosts baked", String(h.popupHosts), h.popupHosts > 0],
+      ["YouTube bypass", h.dynamic.ytBypass ? "ACTIVE (ads allowed on YouTube until it expires)" : "inactive", !h.dynamic.ytBypass],
+    ];
+    for (const [k, v, good] of rows) {
+      const li = document.createElement("li");
+      const left = document.createElement("div");
+      const d = document.createElement("div"); d.className = "domain"; d.textContent = k;
+      const s = document.createElement("div"); s.className = "sel"; s.textContent = v;
+      left.append(d, s);
+      const dot = document.createElement("span"); dot.className = "sel"; dot.textContent = good ? "OK" : "!"; dot.style.color = good ? "#00e5ff" : "#ff5a5a";
+      li.append(left, dot);
+      ul.appendChild(li);
+    }
   });
 }
 
@@ -167,6 +199,7 @@ function saveFeatures() {
       removeparam: $("featRemoveparam").checked,
       malware: $("featMalware").checked,
       topics: $("featTopics").checked,
+      privacy: $("featPrivacy").checked,
     },
   });
 }
@@ -185,6 +218,7 @@ $("featSmart").addEventListener("change", saveFeatures);
 $("featRemoveparam").addEventListener("change", saveFeatures);
 $("featMalware").addEventListener("change", saveFeatures);
 $("featTopics").addEventListener("change", saveFeatures);
+$("featPrivacy").addEventListener("change", saveFeatures);
 
 $("autoUpdate").addEventListener("change", () =>
   chrome.runtime.sendMessage({ type: "setAutoUpdate", on: $("autoUpdate").checked })
@@ -224,49 +258,49 @@ $("saveFilters").addEventListener("click", () => {
   });
 });
 
-// Import a filter list URL: fetch the TEXT (data, not code) and append the lines
-// we can apply (bare domains + ##cosmetic) to "My filters". Capped; comments and
-// unsupported network options are skipped.
-$("importList").addEventListener("click", async () => {
+// Subscriptions: the service worker fetches the list as TEXT, keeps only the
+// lines it can apply (sanitised), writes them as a managed block into "My
+// filters" and refreshes daily.
+function renderSubs() {
+  chrome.runtime.sendMessage({ type: "getSubscriptions" }, (res) => {
+    const ul = $("subList");
+    if (!ul) return;
+    ul.innerHTML = "";
+    const subs = (res && res.subscriptions) || [];
+    if (!subs.length) { ul.innerHTML = '<li class="empty">No subscribed lists yet.</li>'; return; }
+    for (const s of subs) {
+      const li = document.createElement("li");
+      const wrap = document.createElement("div");
+      const d = document.createElement("div"); d.className = "domain"; d.textContent = s.url;
+      const meta = document.createElement("div"); meta.className = "sel";
+      meta.textContent = s.error ? "failed: " + s.error : (s.count + " rules · " + (s.fetched ? "updated " + ago(s.fetched) : "not fetched yet"));
+      wrap.append(d, meta);
+      const btn = document.createElement("button"); btn.className = "remove"; btn.textContent = "×"; btn.title = "Remove";
+      btn.onclick = () => chrome.runtime.sendMessage({ type: "removeSubscription", url: s.url }, () => { renderSubs(); load(); });
+      li.append(wrap, btn);
+      ul.appendChild(li);
+    }
+  });
+}
+
+$("importList").addEventListener("click", () => {
   const hint = $("importHint");
   const url = ($("listUrl").value || "").trim();
   if (!/^https:\/\/[^ ]+$/.test(url)) { hint.textContent = "Enter a valid https:// URL"; return; }
   hint.textContent = "Fetching…";
-  try {
-    const res = await fetch(url, { cache: "no-cache" });
-    if (!res.ok) throw new Error("http " + res.status);
-    const text = await res.text();
-    const keep = [];
-    for (let line of text.split("\n")) {
-      line = line.trim();
-      if (!line || line.startsWith("!") || line.startsWith("[") || line.startsWith("#")) continue;
-      if (line.includes("##")) {
-        // domain##selector или ##selector — козметика (без scriptlet/procedural-only)
-        if (line.includes("#@#") || line.includes("+js(")) continue;
-        const sel = line.slice(line.indexOf("##") + 2);
-        // Санитизация на недоверен импорт: без форм-контроли/универсални селектори.
-        if (/(^|[\s>+~,(])(input|button|select|textarea|form|label)([\s>+~,.:[)#]|$)/i.test(sel)) continue;
-        if (/\[\s*(type|name|autocomplete)\s*[*^$|~]?=\s*["']?(password|email|current-password|login)/i.test(sel)) continue;
-        if (/(^|[\s>+~,(])\*(?![=\]])/.test(sel) || sel.trim().startsWith(":")) continue;
-        keep.push(line);
-      } else if (/^(\|\|)?[a-z0-9.-]+\.[a-z]{2,}\^?$/i.test(line)) {
-        keep.push(line.replace(/[|^]/g, "")); // bare domain block
-      }
-      if (keep.length >= 5000) break;
-    }
-    if (!keep.length) { hint.textContent = "No applicable rules found"; return; }
-    const ta = $("userFilters");
-    const existing = ta.value.trim();
-    ta.value = (existing ? existing + "\n" : "") + "! imported from " + url + "\n" + keep.join("\n");
-    chrome.runtime.sendMessage({ type: "setUserFilters", text: ta.value }, () => {
-      hint.textContent = "Imported " + keep.length + " rules ✓";
-      $("listUrl").value = "";
-      setTimeout(() => (hint.textContent = ""), 4000);
-    });
-  } catch (e) {
-    hint.textContent = "Import failed (" + (e.message || "error") + ")";
-  }
+  chrome.runtime.sendMessage({ type: "addSubscription", url }, (r) => {
+    if (r && r.ok) { hint.textContent = "Subscribed: " + r.count + " rules ✓"; $("listUrl").value = ""; renderSubs(); load(); }
+    else hint.textContent = "Failed (" + ((r && r.reason) || "no response") + ")";
+    setTimeout(() => (hint.textContent = ""), 4000);
+  });
 });
+$("subsRefresh").addEventListener("click", () => {
+  const hint = $("importHint");
+  hint.textContent = "Refreshing…";
+  chrome.runtime.sendMessage({ type: "refreshSubscriptions" }, () => { hint.textContent = "Refreshed ✓"; renderSubs(); load(); setTimeout(() => (hint.textContent = ""), 3000); });
+});
+
+$("healthRefresh").addEventListener("click", renderHealth);
 
 $("resetStats").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "resetStats" }, () => {
@@ -277,7 +311,7 @@ $("resetStats").addEventListener("click", () => {
 });
 
 // ---- Backup ----
-const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme"];
+const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics"];
 
 $("exportBtn").addEventListener("click", () => {
   chrome.storage.local.get(EXPORT_KEYS, (data) => {

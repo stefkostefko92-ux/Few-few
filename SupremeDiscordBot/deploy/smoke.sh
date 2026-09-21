@@ -120,11 +120,20 @@ c=$(code "$API/api/servers")
 if [ "$c" = "401" ] || [ "$c" = "403" ]; then ok "защитените маршрути искат вход"
 else bad "GET /api/servers върна $c за нелогнат — гардът е паднал"; fi
 
-# ─── 6. Stripe е конфигуриран за ПРОДАЖБА ───────────────────────────────────
-# Липсваща цена значи, че клиент може да плати и да получи грешен план.
+# ─── 6. Плащанията през Discord са КОНФИГУРИРАНИ (v3.3) ─────────────────────
+# Без SKU/магазин никой не може да купи — ботът и таблото водят в нищото.
+# /api/billing/config е публичен и без тайни; провайдърът трябва да е discord
+# (или both), а configured=true значи DISCORD_CLIENT_ID + двете SKU са налице.
+b=$(body "$API/api/billing/config")
+if echo "$b" | grep -q '"provider":"discord"\|"provider":"both"'; then
+  if echo "$b" | grep -q '"configured":true'; then ok "Discord магазинът е конфигуриран (SKU + client id)"
+  else bad "BILLING_PROVIDER е discord, но SKU/client id липсват — клиент НЕ може да купи (виж backend/.env)"; fi
+elif echo "$b" | grep -q '"provider":"stripe"'; then note "BILLING_PROVIDER=stripe — продажбата е през Stripe (нарочно ли?)"
+else bad "GET /api/billing/config не отговори с провайдър: $b"; fi
+# Легаси Stripe: маршрутите трябва да живеят (заварени абонати), 503 = няма ключ.
 c=$(code "$API/api/stripe/status/000000000000000000")
-if [ "$c" = "503" ]; then bad "Stripe не е конфигуриран (STRIPE_SECRET_KEY липсва)"
-elif [ "$c" = "401" ] || [ "$c" = "403" ] || [ "$c" = "404" ]; then ok "Stripe маршрутите живеят"
+if [ "$c" = "401" ] || [ "$c" = "403" ] || [ "$c" = "404" ]; then ok "Stripe (легаси) маршрутите живеят"
+elif [ "$c" = "503" ]; then note "Stripe не е конфигуриран — добре, ако няма заварени абонати"
 else note "Stripe статус върна $c"; fi
 
 # ─── 7. Правните страници се отдават ────────────────────────────────────────

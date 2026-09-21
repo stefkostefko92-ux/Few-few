@@ -39,6 +39,8 @@ const ApplicationsPage = lazy(() => import("./pages/ApplicationsPage"));
 const PremiumPage = lazy(() => import("./pages/PremiumPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const SecurityPage = lazy(() => import("./pages/SecurityPage"));
+const MfaGate = lazy(() => import("./components/MfaGate"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const CommandsPage = lazy(() => import("./pages/CommandsPage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
@@ -79,7 +81,10 @@ function RequireSuperUser({ children }) {
   if (!["MAIN_OWNER", "SUPER_USER"].includes(user?.globalRole)) {
     return <Navigate to="/dashboard" replace />;
   }
-  return children;
+  // v3.4 — staff без записан втори фактор отива да го запише; с незаписана
+  // в сесията проверка — минава през предизвикателството (MfaGate).
+  if (user?.mfa?.enrollmentRequired) return <Navigate to="/dashboard/security?enroll=1" replace />;
+  return <MfaGate>{children}</MfaGate>;
 }
 
 export default function App() {
@@ -122,6 +127,7 @@ export default function App() {
                 <Route path=":serverId/premium" element={<PremiumPage />} />
                 <Route path=":serverId/settings" element={<SettingsPage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />
+                <Route path="security" element={<SecurityPage />} />
                 <Route
                   path="admin"
                   element={<RequireSuperUser><AdminPage /></RequireSuperUser>}

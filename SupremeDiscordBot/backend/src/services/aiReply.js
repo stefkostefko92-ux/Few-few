@@ -51,10 +51,33 @@ setInterval(() => {
  * @param {string|null} options.customApiKey - Server's own Gemini API key
  * @returns {Promise<string|null>} - The AI reply, or null on failure
  */
+// ─── Discord Developer Policy §21 (сверено 13.09.2026) ──────────────────────
+// „Do not use message content obtained through the APIs to train machine
+// learning or AI models … unless express permission is granted by Discord."
+// Ние не обучаваме нищо — но БЕЗПЛАТНИЯТ tier на Gemini API позволява на Google
+// да ползва подадените заявки за подобряване на продуктите си (= обучение).
+// Пращането на съдържание на тикети натам без платен tier би било нарушение
+// на §21 през трета страна. Затова функцията е fail-closed: работи САМО когато
+// операторът е УДОСТОВЕРИЛ, че ключът е на платен tier без обучение
+// (AI_REPLY_TRAINING_ATTESTED=true). Сървърен ключ на клиент (customApiKey)
+// минава през същия гард — отговорността за неговия tier е на клиента, но
+// съдържанието тръгва от НАШЕТО приложение.
+export function aiTrainingAttested() {
+  return String(process.env.AI_REPLY_TRAINING_ATTESTED || "").toLowerCase() === "true";
+}
+let attestationWarned = false;
+
 export async function generateAutoReply({ userMessage, serverName, customPrompt, customApiKey }) {
   // Determine which API key to use
   const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) return null; // Feature not configured — silent skip
+  if (!aiTrainingAttested()) {
+    if (!attestationWarned) {
+      attestationWarned = true;
+      console.error("[AI Reply] ⛔ Изключено: AI_REPLY_TRAINING_ATTESTED не е true. Discord Developer Policy §21 забранява съдържание от Discord да храни обучение на модели; удостовери платен Gemini tier без обучение и задай променливата.");
+    }
+    return null;
+  }
 
   // Defense in depth: the route also caps this, but never let an oversized
   // stored prompt inflate token spend.

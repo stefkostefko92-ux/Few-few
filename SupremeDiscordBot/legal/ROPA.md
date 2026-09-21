@@ -5,8 +5,11 @@
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
-**Last updated:** 2026-08-07  
-**Version:** 1.1
+**Last updated:** 2026-09-15  
+**Version:** 1.5 — Activity 17 (verification attempts, 90-day retention) added; ticket transcripts encrypted at rest at application level (Activity 2 security measures); DSR erasure regenerates transcripts  
+**Version:** 1.4 — data subject rights channels added (Discord `/privacy`, admin DSR console); TOTP second factor for staff (Activity 1 security measures)  
+**Version:** 1.3 — Activity 4 rewritten: subscriptions are sold only through Discord's Premium Apps store (Discord Inc. = seller of record; entitlement/subscription identifiers as data categories); Stripe demoted to legacy subscriptions; free trial removed (no trial data processed)  
+**Version:** 1.2 (2026-09-02) — added Activities 13–16 (sticky roles, server activity logging, public API keys, outbound webhooks), which had been live in the product without a record entry
 
 ---
 
@@ -17,6 +20,16 @@
 - **Representative:** Stefan Lyubomirov Kostadinov (Managing Director)
 - **Data Protection Officer:** Not yet appointed (threshold Article 37 not yet met; volunteer designation planned)
 - **DPO email:** privacy@carbonstealth.eu (interim)
+
+## Data subject rights — channels (Discord Developer Terms §5(b), GDPR Art. 15–17)
+
+| Channel | Who | Scope | Record |
+|---|---|---|---|
+| `/privacy info` · `/privacy delete` in Discord | any Discord user the bot has data about (no dashboard account needed) | identity: profile, message author signature, sessions, API keys, role snapshots, verification attempts, memberships | audit `DSR_ERASED` (via: bot) |
+| Dashboard → Privacy settings | dashboard users | Art. 15 export, Art. 17 account deletion, Art. 7(3) consent withdrawal | audit `GDPR_*` |
+| privacy@carbonstealth.eu → Admin console → Compliance | anyone; handled by Main Owner with a fresh second factor | identity or full (also ticket message text and application answers → "[erased]") | audit `DSR_ERASED` (via: admin, note = request reference) |
+
+Target: handled promptly, ≤72 h. Staff accounts and accounts with active paid subscriptions are refused until demoted/cancelled.
 
 ## Processing Activity 1 — Supreme Bot Account Management
 
@@ -61,14 +74,14 @@
 
 | Field | Value |
 |---|---|
-| **Purpose** | Process Premium subscriptions and issue invoices |
+| **Purpose** | Grant and revoke paid tiers for purchases made in Discord's Premium Apps store; service legacy Stripe subscriptions |
 | **Legal basis** | Article 6(1)(b) — Contract; Article 6(1)(c) — Legal obligation (tax records) |
-| **Data categories** | Stripe customer ID, subscription ID, payment status, invoice metadata; Discord entitlement ID, SKU ID and purchase status (native Discord purchases) |
+| **Data categories** | Discord entitlement ID, SKU ID, subscription ID, subscription status and period end (all new purchases); legacy: Stripe customer ID, subscription ID, payment status, invoice metadata |
 | **Data subjects** | Paying customers |
-| **Recipients** | Stripe (payment processor); Discord Inc. (merchant of record for native App purchases); Bulgarian tax authorities (annual VAT declarations) |
-| **3rd country transfers** | Discord Inc. (USA) — SCC; Stripe EU subsidiary processes EU customers |
+| **Recipients** | Discord Inc. (seller of record — collects payment, assesses VAT, issues receipts, handles refunds); Stripe (legacy subscriptions only); Bulgarian tax authorities (annual declarations) |
+| **3rd country transfers** | Discord Inc. (USA) — SCC; Stripe Payments Europe Ltd (Ireland) for legacy subscriptions |
 | **Retention period** | 7 years (Bulgarian tax law retention requirement) |
-| **Security measures** | Stripe PCI-DSS compliance; no raw card data stored on Supreme Bot systems |
+| **Security measures** | No payment instrument data reaches Supreme Bot systems (Discord and Stripe hold it); entitlement events accepted only from the bot (shared secret); Stripe webhooks signature-verified |
 
 ## Processing Activity 5 — AI Auto-Replies (Premium, opt-in)
 
@@ -179,6 +192,65 @@
 
 ---
 
+## Processing Activity 13 — Sticky Roles (Discord role snapshots)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Restore a member's Discord roles when they rejoin a server that enabled the feature |
+| **Legal basis** | Article 6(1)(f) — Legitimate interest of the Customer (server administration); processed on behalf of the Customer as controller. Opt-in per server (`stickyRolesEnabled`, default off) — nothing is stored while the feature is off (Article 5(1)(c)) |
+| **Data categories** | Discord user ID, server ID, list of Discord role IDs held at the moment of leaving, capture timestamp (`MemberRoleSnapshot`) |
+| **Data subjects** | Discord members who leave a server with the feature enabled |
+| **Recipients** | Internal only; roles are re-applied via Discord on rejoin |
+| **3rd country transfers** | USA (Discord) — Standard Contractual Clauses |
+| **Retention period** | 180 days after capture (`backend/src/jobs/dataRetention.js`, step 2б), or immediately on successful restore, on ban, or on erasure request (Article 17); included in the Article 15 export |
+| **Security measures** | Roles with dangerous permissions, managed roles, and roles above the bot are never restored (same guard as autorole, applied at restore time); no foreign key to the User table by design |
+
+---
+
+## Processing Activity 14 — Server Activity Logging (event log)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Post member events (voice join/leave/mute, role and nickname changes, timeouts, bans/kicks, message edits/deletes, channel changes) to a Discord channel chosen by the Customer |
+| **Legal basis** | Article 6(1)(f) — Legitimate interest of the Customer (moderation); the Customer is controller and must inform its members. Opt-in per server and per category |
+| **Data categories** | Event type, Discord user ID and display name, timestamps, and — for the *Messages* category only — message content of edits and deletions |
+| **Data subjects** | Members of the Customer's server |
+| **Recipients** | The Customer's own Discord channel(s) |
+| **3rd country transfers** | USA (Discord) — Standard Contractual Clauses |
+| **Retention period** | **Not stored by Supreme Bot.** Events are forwarded to Discord and exist only there, under Discord's and the Customer's retention. Only the configuration (enabled flag, categories, channel IDs) is stored |
+
+---
+
+## Processing Activity 15 — Public API Keys
+
+| Field | Value |
+|---|---|
+| **Purpose** | Let Customers integrate their own systems with the REST API |
+| **Legal basis** | Article 6(1)(b) — Contract performance (Premium feature) |
+| **Data categories** | Key name, SHA-256 hash of the key, first 8 characters (prefix) for identification, scopes, creator's Discord user ID, creation/last-use/expiry/revocation timestamps, request count (`ApiKey`) |
+| **Data subjects** | Dashboard users who create keys |
+| **Recipients** | Internal only |
+| **3rd country transfers** | None |
+| **Retention period** | Until revoked or expired by the Customer; revoked keys keep their metadata for the audit trail; included in the Article 15 export (metadata only — never the hash) |
+| **Security measures** | Plaintext shown once at creation, never stored; failed key attempts throttled by the anti-brute-force ladder; scoped to a single server |
+
+---
+
+## Processing Activity 16 — Outbound Webhooks
+
+| Field | Value |
+|---|---|
+| **Purpose** | Deliver ticket/application events to an HTTPS endpoint chosen by the Customer |
+| **Legal basis** | Article 6(1)(b) — Contract performance (Premium feature); the Customer is controller for what it does with the payload |
+| **Data categories** | Endpoint URL, optional HMAC-SHA256 signing secret, subscribed event types, creator's Discord user ID, last delivery status/time and failure count (`Webhook`); delivered payloads contain ticket/application data as described in Activities 2–3 |
+| **Data subjects** | Members whose ticket/application events are delivered; dashboard users who configure webhooks |
+| **Recipients** | The Customer's own endpoint — third party from Supreme Bot's perspective, chosen and controlled by the Customer |
+| **3rd country transfers** | Determined by the Customer's endpoint location; Supreme Bot does not choose it |
+| **Retention period** | Configuration until deleted by the Customer; **payloads are not stored** after delivery; included in the Article 15 export (name and timestamps only — never URL or secret) |
+| **Security measures** | HTTPS only; SSRF guard rejects private, loopback, link-local, metadata, NAT64/6to4/Teredo ranges (binary comparison, re-checked at connect time against DNS rebinding); delivery gated on an active Premium tier at *execution* time. The signing secret is stored **encrypted at rest** (AES-256-GCM, same key discipline as OAuth tokens) and is **never returned** by the API after entry — the dashboard sees only whether one is set; rows written before 2026-09-08 remain readable and are re-encrypted on their next change |
+
+---
+
 ## Data Protection Impact Assessment (DPIA) Status
 
 Per Article 35, DPIA is required for high-risk processing. Current assessment:
@@ -214,3 +286,16 @@ This ROPA is reviewed:
 
 **Prepared by:** Stefan Lyubomirov Kostadinov, Managing Director  
 **Next review:** 2027-04-22
+
+## Processing Activity 17 — Member Verification (captcha / age gate)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Prove a joining member is human / meets the operator's account-age rule before roles are granted |
+| **Legal basis** | Processed on behalf of the server operator (controller) under Article 28; the operator's basis is typically Article 6(1)(f) (protecting the community from bots) |
+| **Data categories** | Discord user ID, verification panel ID, outcome (success/failure), captcha answer text, timestamp. IP is not collected (bot interactions carry none) |
+| **Data subjects** | Members joining a customer's Discord server |
+| **Recipients** | None outside Supreme Bot systems; the operator sees aggregated daily counts |
+| **3rd country transfers** | None (Hetzner, Germany) |
+| **Retention period** | **90 days** (`VERIFICATION_ATTEMPT_RETENTION_DAYS`, nightly retention job); deleted immediately on a data subject request (`/privacy delete`, admin DSR) |
+| **Security measures** | Bot-secret-gated ingestion; multi-tenant scoping by server; encrypted database volume |

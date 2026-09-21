@@ -3,7 +3,56 @@
 Еднократна подготовка на сървъра; след нея всеки деплой минава автоматично през
 `deploy/autodeploy.sh` от корена на репото (ръчно качен архив в `/root`).
 
-Приложението слуша само на `127.0.0.1:3100`; TLS и публичният вход са през nginx.
+Приложението слуша само на `127.0.0.1:3105`; TLS и публичният вход са през nginx.
+
+## Живо състояние и отклонения (чети преди деплой)
+
+Машината е споделена с други проекти. Затова:
+
+| Какво           | Стойност                                         | Защо                                                                                                                                             |
+| --------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PORT`          | **3105**                                         | 3100 е зает от `docker-proxy` на ERP. Ако vizitka тръгне на 3100, не вдига (`EADDRINUSE`) и nginx праща `vizitka-bg.com` към ЧУЖДОТО приложение. |
+| health check    | `http://127.0.0.1:$PORT/healthz`                 | Проверява и **името** на приложението. Само код 200 не доказва кой отговаря — точно затова счупен деплой минаваше за успешен.                    |
+| systemd drop-in | `deploy/systemd/vizitka.service.d/override.conf` | Вече е в репото (seccomp наказание EPERM вместо SIGSYS, `AF_NETLINK` за DNS, лимити). Не го пипай само на машината.                              |
+
+`server-setup.sh` вече **запазва** `PORT` между пусканията (както тайните) и слага
+реалния порт в nginx конфига. Преди го нулираше на 3100 при всяко пускане.
+
+**`/healthz` НЕ минава през принудителния https редирект** (`src/app.js`) и това не
+е удобство. Сондата удря по loopback, преди nginx, значи без `X-Forwarded-Proto` →
+`req.secure` е false → в продукция маршрутът връщаше **308** към https. `curl` без
+`-L` брои 3xx за успех, тялото е „Moved Permanently…“, маркера го няма, тоест гейтът
+обявяваше ЖИВОТО приложение за чуждо и откатваше успешен деплой:
+
+```
+⚠ vizitka: на http://127.0.0.1:3105/healthz отговаря ДРУГО приложение
+```
+
+По същата причина `health()` в `deploy/autodeploy.sh` вече изисква **2xx** (3xx не е
+доказателство за живот, а диагнозата казва кода) и съди по края на цикъла, не по
+първия отговор — докато новият процес вдига, порта го държи старият код, който
+маркера няма. Добавиш ли нов prod-only middleware, дръж го **след** `/healthz`.
+
+**Деплой на ЕДИН продукт** (иначе `autodeploy.sh` разгръща всички по подразбиране):
+
+```bash
+sudo PROJECTS="vizitka" bash /root/few-few-*/deploy/autodeploy.sh
+```
+
+**Ако включиш `www`:** nginx конфигът вече пренасочва `www` към голия домейн, но
+сертификатът трябва да покрива и двете имена:
+
+```bash
+certbot --nginx -d vizitka-bg.com -d www.vizitka-bg.com
+```
+
+**Админ акаунт.** Саморегистрацията с имейл от `ADMIN_EMAILS` е забранена (иначе
+първият, който познае адреса, става админ). Провизионира се от сървъра:
+
+```bash
+sudo -u vizitka DATA_DIR=/opt/vizitka/data npm --prefix /opt/vizitka run admin:add -- <имейл>
+# няма ли още такъв акаунт: ... run admin:add -- <имейл> --create
+```
 
 ## 0. Бърз път — еднократен bootstrap (препоръчано)
 
@@ -44,7 +93,7 @@ chown -R vizitka:vizitka /opt/vizitka
 ```bash
 cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
-PORT=3100
+PORT=3105
 PUBLIC_BASE_URL=https://vizitka-bg.com
 ADMIN_EMAILS=stefan.kostadinov16@gmail.com
 MASTILKO_URL=https://mastilko-bg.com
@@ -90,7 +139,7 @@ nginx -t && systemctl reload nginx
 HSTS/CSP ги задава самото приложение — не ги дублирай в nginx. Certbot подновява
 сертификата автоматично (systemd timer `certbot.timer`).
 
-Първо пускане: `systemctl start vizitka && curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3100/`
+Първо пускане: `systemctl start vizitka && curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3105/`
 трябва да върне `200`.
 
 ## 4. Бекъп (SQLite базата + качените снимки)
@@ -124,7 +173,7 @@ sudo PROJECTS="vizitka" bash deploy/autodeploy.sh   # само vizitka
 
 Скриптът прави: rsync на кода (без `data/`, `node_modules/`, `.env`) →
 `npm ci --omit=dev` → снимка на SQLite базата → `systemctl restart vizitka` →
-health check на `http://127.0.0.1:3100/` с автоматичен rollback при провал.
+health check на `http://127.0.0.1:3105/` с автоматичен rollback при провал.
 
 ## 6. Следпускови стъпки (SEO индексиране)
 

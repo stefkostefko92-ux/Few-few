@@ -46,9 +46,12 @@ export async function runEntitlementReconcile(client) {
     console.log(
       `🔄 Entitlement reconcile: ${all.length} active → granted=${result.granted} revoked=${result.revoked}`
     );
+    return { ok: true, fetched: all.length, ...result };
   } catch (err) {
     // Non-fatal: 404/permission errors just mean monetization isn't enabled for
     // this application yet; network errors will be retried on the next boot.
-    console.warn("Entitlement reconcile skipped:", err?.response?.data?.error || err.message);
+    const reason = err?.response?.data?.error || err.message;
+    console.warn("Entitlement reconcile skipped:", reason);
+    return { ok: false, skipped: true, reason };
   }
 }

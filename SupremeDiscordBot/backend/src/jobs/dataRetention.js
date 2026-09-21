@@ -27,10 +27,22 @@ export async function runRetentionJob() {
     auditLogsDeleted: 0,
     abuseReportsDeleted: 0,
     removedServersPurged: 0,
+    verificationAttemptsDeleted: 0,
     errors: [],
   };
 
   console.log(`[retention] 🕐 Starting retention job at ${startedAt.toISOString()}`);
+
+  // ── 0. Опити за верификация — 90 дни (Discord Developer Terms §5(b): „no
+  // longer necessary“). Аналитиката ги обобщава дневно (daily_metrics), одитът
+  // за злоупотреби не иска повече от тримесечие. VERIFICATION_ATTEMPT_RETENTION_DAYS.
+  try {
+    const days = Math.max(7, Number(process.env.VERIFICATION_ATTEMPT_RETENTION_DAYS || 90));
+    const r = await prisma.verificationAttempt.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - days * MS_PER_DAY) } } });
+    results.verificationAttemptsDeleted = r?.count ?? 0;
+  } catch (err) {
+    results.errors.push(`verificationAttempts: ${err.message}`);
+  }
 
   // ── 1. Anonymize Free-tier closed tickets older than 30 days ────────────────
   try {

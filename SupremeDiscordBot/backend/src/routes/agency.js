@@ -10,6 +10,7 @@ import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js
 import { PLANS, AGENCY_PLANS, stripePriceId, syncServerPaidFlag } from "../lib/premium.js";
 import { reconcileWhitelabel } from "../services/botNotifier.js";
 import { withIconUrl } from "../lib/discordCdn.js";
+import { stripePurchasesEnabled, discordStoreUrl } from "../lib/billing.js";
 
 const router = Router();
 
@@ -55,6 +56,17 @@ router.get("/mine", requireAuth, loadUser, async (req, res, next) => {
 // Start a Stripe Checkout for an Agency plan. Creates a PENDING agency row
 // (active=false); the webhook flips it active on payment.
 router.post("/checkout", requireAuth, loadUser, requireStripe, async (req, res, next) => {
+  // v3.3 — Agency не се продава при Discord-only плащания: Discord guild SKU
+  // = един сървър, мулти-сървърен пакет няма как да се предложи там, а
+  // паритетът (Developer Policy) забранява да го продаваме САМО извън Discord.
+  // Заварените агенции продължават да работят (webhook + портал).
+  if (!stripePurchasesEnabled()) {
+    return res.status(410).json({
+      error: "Agency plans are no longer sold. Each server subscribes through the Discord store.",
+      code: "STRIPE_PURCHASES_DISABLED",
+      store: discordStoreUrl(),
+    });
+  }
   const parsed = checkoutSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "plan (agency5|agency10), interval and withdrawalConsent:true are required." });

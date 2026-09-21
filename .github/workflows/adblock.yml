@@ -38,3 +38,7 @@ jobs:
             node --check "$f" || { echo "::error file=$f::синтактична грешка"; fail=1; }
           done < <(find adblock -name '*.js' -o -name '*.mjs' | grep -v node_modules)
           exit $fail
+      - name: Scriptlet bundle свеж (build --check)
+        run: node adblock/tools/build_scriptlets.mjs --check
+      - name: Тестове — engine/live канал/валидатори/DNR правила
+        run: node adblock/tests/run.mjs

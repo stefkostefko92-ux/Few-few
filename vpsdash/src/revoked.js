@@ -27,6 +27,8 @@ export class RevokedSessions {
       const raw = JSON.parse(fs.readFileSync(this.file, 'utf8'));
       const now = Date.now();
       for (const [jti, exp] of Object.entries(raw || {})) {
+        // Стъпката на 2FA не е „изтича в" — филтърът по време би я изхвърлил.
+        if (jti === '__totpStep') { if (Number.isFinite(Number(exp))) this.map.set(jti, Number(exp)); continue; }
         if (Number(exp) > now) this.map.set(jti, Number(exp));
       }
     } catch {
@@ -56,10 +58,26 @@ export class RevokedSessions {
     }
   }
 
+  // Последната ПРИЕТА 2FA стъпка живее в същия файл: това е „попечителско"
+  // състояние като отменените сесии — и двете отговарят на въпроса „валиден ли
+  // е още този жетон/код" и двете трябва да преживеят рестарт. Пази се под
+  // отделен ключ, за да не се бърка с jti.
+  getTotpStep() {
+    const v = this.map.get('__totpStep');
+    return Number.isFinite(v) ? v : undefined;
+  }
+
+  setTotpStep(step) {
+    if (!Number.isFinite(step)) return;
+    // Не минава през `add()`: там стойността е „изтича в" и се подрязва по време.
+    this.map.set('__totpStep', step);
+    this.save();
+  }
+
   // Състояние за алармата: „наистина ли са отменени тези сесии".
   health() {
     return {
-      revoked: this.map.size,
+      revoked: this.map.size - (this.map.has('__totpStep') ? 1 : 0),
       saveFailures: this.saveFailures || 0,
       lastSaveError: this.lastSaveError || null,
     };
@@ -75,7 +93,7 @@ export class RevokedSessions {
   }
 
   has(jti) {
-    if (!jti) return false;
+    if (!jti || jti === '__totpStep') return false;
     const exp = this.map.get(jti);
     if (!exp) return false;
     if (exp <= Date.now()) {
@@ -86,15 +104,20 @@ export class RevokedSessions {
   }
 
   clear() {
+    // „Изход от всички устройства" НЕ бива да нулира защитата от повторен 2FA
+    // код — тя е за друг въпрос и живее тук само заради общия файл.
+    const step = this.map.get('__totpStep');
     this.map.clear();
+    if (Number.isFinite(step)) this.map.set('__totpStep', step);
     this.save();
   }
 
   prune() {
     const now = Date.now();
-    for (const [jti, exp] of this.map) if (exp <= now) this.map.delete(jti);
+    for (const [jti, exp] of this.map) if (jti !== '__totpStep' && exp <= now) this.map.delete(jti);
     if (this.map.size > MAX_ENTRIES) {
-      const oldest = [...this.map.entries()].sort((a, b) => a[1] - b[1]).slice(0, this.map.size - MAX_ENTRIES);
+      // Стъпката е малко число и би излязла „най-стара" — изключва се от изхвърлянето.
+      const oldest = [...this.map.entries()].filter(([k]) => k !== '__totpStep').sort((a, b) => a[1] - b[1]).slice(0, this.map.size - MAX_ENTRIES);
       for (const [jti] of oldest) this.map.delete(jti);
     }
   }

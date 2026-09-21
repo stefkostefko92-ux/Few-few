@@ -1,22 +1,50 @@
 # Автоматизиран деплой (`deploy/autodeploy.sh`)
 
-Деплой на монорепото от **ръчно качен GitHub архив** до жив сървър — едно действие.
+Деплой на монорепото до жив сървър — едно действие.
 
-## Работен поток
+## Работен поток (репото е публично — сървърът си взема архива сам)
 
-1. **Ръчно:** в GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
-2. **Ръчно:** качи архива в **root папката (`/root`)** на VPS-а (напр. през `scp`):
-   ```bash
-   scp Few-few.zip root@СЪРВЪР:/root/
-   ```
-3. **Автоматично:** влез в сървъра и пусни скрипта (той е и вътре в архива):
-   ```bash
-   ssh root@СЪРВЪР
+`deploy/fetch-deploy.sh` сваля **неизменяем архив за точен ref** и го подава на
+`autodeploy.sh`. Това НЕ е `git pull` на кутията (няма работно дърво, няма `.git` за
+поддържане) и НЕ е CI/CD push — пускаш го ти, когато решиш.
+
+Първият път скриптът го няма на сървъра, затова се взима от самото репо:
+
+```bash
+ssh root@СЪРВЪР
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo bash /root/deploy/fetch-deploy.sh
+```
+
+След първия успешен деплой той живее в текущия release:
+
+```bash
+sudo bash /opt/few-few/current/deploy/fetch-deploy.sh                 # main, всички продукти
+sudo PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=claude/<клон> bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=v1.4.0 bash /opt/few-few/current/deploy/fetch-deploy.sh      # таг
+sudo REF=09597af… bash /opt/few-few/current/deploy/fetch-deploy.sh    # точен комит
+```
+
+Оттук нататък всичко е автоматично: разопаковане в нов release → билд → миграции →
+сийд (само първия път) → health check → презареждане на прокси/TLS.
+
+`fetch-deploy.sh` проверява, че сваленото наистина е това репо, преди да пусне скрипт
+от него като root; пази последните два свалени архива (всеки е ~250 MB — без чистене
+дискът свършва мълчаливо); и подава `ARCHIVE=` изрично, за да не изпревари ръчно качен
+ZIP отпреди месец.
+
+## Работен поток (резервен — ръчно качен архив)
+
+Когато сървърът няма изходяща мрежа към GitHub:
+
+1. В GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
+2. Качи архива в **`/root`** (напр. `scp Few-few.zip root@СЪРВЪР:/root/`).
+3. ```bash
    cd /root && unzip -o Few-few.zip >/dev/null   # само за да стигнеш до скрипта
    sudo bash /root/few-few-*/deploy/autodeploy.sh
    ```
-   Оттук нататък всичко е автоматично: разопаковане в нов release → билд → миграции →
-   сийд (само първия път) → health check → презареждане на прокси/TLS.
 
 ## Какво прави
 
@@ -32,7 +60,11 @@
   `systemctl restart mastilko`; при провал — автоматичен rollback. Еднократно:
   Nginx vhost + TLS → `mastilko/deploy/DEPLOY.md`.
 - **SupremeDiscordBot** (Supreme Bot): пренася четирите `.env` файла (`SupremeDiscordBot/.env`,
-  `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
+  `backend/.env`, `bot/.env`, `frontend/.env`) — източникът се **търси**: `current` →
+  `/opt/few-few/shared/SupremeDiscordBot/` (стабилно огледало, 700/600, обновява се при всеки
+  пробег) → най-новият release, който ги има; липсват ли навсякъде, спира **преди** `pg_dump` с
+  инструкция за възстановяване (`SupremeDiscordBot/deploy/RELEASE-3.4.0.md` §6), никога
+  „`cp .env.example`". После `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
   Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
   **Бекъпи:** `pg_dump` ПРЕДИ миграциите в `/var/backups/supreme/pre-deploy-<TS>.dump`
@@ -101,6 +133,12 @@
   `/etc/panev/panev.env` (JWT_SECRET + SMTP), `/opt/mastilko/.env` (GEMINI_API_KEY, по желание) и четирите
   `SupremeDiscordBot/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
   Скриптът пренася съществуващите `.env` при всеки деплой.
+- **`current` е общ за всички продукти** — мести се при успешен деплой на който и да е от тях.
+  Тайни, които се пренасят „от `current`", остават назад в стар release при деплой на друг
+  продукт и падат под ножа на `KEEP_RELEASES`. Затова Supreme ги огледава в
+  `/opt/few-few/shared/SupremeDiscordBot/` (реален инцидент, 17.09.2026 — гейт
+  `tools/vps/autodeploy-env.test.mjs`). Нов продукт с `.env` в release папката трябва да
+  следва същия модел, не да пренася само от `current`.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
 - Първоначалната настройка на сървъра (юзъри, `ufw`, systemd unit, Nginx/Caddy, TLS) се
   прави веднъж — виж `zabobovdol/DEPLOY.md` и `medqr/deploy/DEPLOY.md`.

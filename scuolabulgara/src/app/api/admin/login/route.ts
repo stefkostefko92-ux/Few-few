@@ -1,49 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession, sessionCookieOptions, verifyCredentials, SESSION_COOKIE } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { clientIp, createRateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
-// Simple in-memory rate limit (per IP): blocks after too many failed attempts.
-// Sufficient for a single-instance self-hosted deployment.
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_FAILS = 8;
-const attempts = new Map<string, { count: number; first: number }>();
-
-function clientIp(req: NextRequest): string {
-  // Prefer X-Real-IP: nginx sets it to $remote_addr (the real peer), so it can't
-  // be spoofed by the client. X-Forwarded-For is $proxy_add_x_forwarded_for, whose
-  // FIRST element is attacker-controlled — taking it would let a rotating header
-  // defeat the rate limit. Fall back to the LAST XFF hop, then "unknown".
-  return (
-    req.headers.get("x-real-ip")?.trim() ||
-    req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ||
-    "unknown"
-  );
-}
-
-function isBlocked(ip: string): boolean {
-  const a = attempts.get(ip);
-  if (!a) return false;
-  if (Date.now() - a.first > WINDOW_MS) { attempts.delete(ip); return false; }
-  return a.count >= MAX_FAILS;
-}
-
-function recordFail(ip: string) {
-  // Opportunistically drop expired entries so rotating-IP floods can't grow the
-  // map without bound (single-instance, so a periodic sweep here is enough).
-  if (attempts.size > 1000) {
-    const now = Date.now();
-    for (const [k, v] of attempts) if (now - v.first > WINDOW_MS) attempts.delete(k);
-  }
-  const a = attempts.get(ip);
-  if (!a || Date.now() - a.first > WINDOW_MS) attempts.set(ip, { count: 1, first: Date.now() });
-  else a.count += 1;
-}
+// Blocks an IP after too many FAILED attempts; a success clears the counter.
+const limit = createRateLimit({ windowMs: 10 * 60 * 1000, max: 8 });
 
 export async function POST(req: NextRequest) {
   const ip = clientIp(req);
-  if (isBlocked(ip)) {
+  if (limit.isLimited(ip)) {
     return NextResponse.json({ ok: false, error: "too_many_attempts" }, { status: 429 });
   }
 
@@ -60,11 +27,11 @@ export async function POST(req: NextRequest) {
     } catch {}
 
     if (!ok) {
-      recordFail(ip);
+      limit.record(ip);
       return NextResponse.json({ ok: false }, { status: 401 });
     }
 
-    attempts.delete(ip);
+    limit.reset(ip);
     const token = await createSession(email.toLowerCase());
     const res = NextResponse.json({ ok: true });
     res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());

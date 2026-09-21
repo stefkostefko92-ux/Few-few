@@ -633,3 +633,34 @@ test('провалът на записа се ЗАПОМНЯ, а не само �
   assert.equal(r.has('jti-2'), true);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('2FA стъпката ПРЕЖИВЯВА рестарт, „изход отвсякъде" и подрязване', async () => {
+  const { RevokedSessions } = await import('../src/revoked.js');
+  const { acceptStep } = await import('../src/totp.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-totp-'));
+  const r1 = new RevokedSessions(dir);
+  const ctx = { lastTotpStep: r1.getTotpStep(), persistTotpStep: (s) => r1.setTotpStep(s) };
+  assert.equal(ctx.lastTotpStep, undefined, 'първо пускане — нищо записано');
+  assert.equal(acceptStep(ctx, 1000), true);
+
+  // Рестарт = нов екземпляр от същия файл. Без персистенция заснет и вече
+  // изгорен код оживява за остатъка от прозореца.
+  const r2 = new RevokedSessions(dir);
+  assert.equal(r2.getTotpStep(), 1000, 'стъпката се чете обратно от диска');
+  const ctx2 = { lastTotpStep: r2.getTotpStep(), persistTotpStep: (s) => r2.setTotpStep(s) };
+  assert.equal(acceptStep(ctx2, 1000), false, 'същият код след рестарт е мъртъв');
+  assert.equal(acceptStep(ctx2, 999), false, 'по-старият — също');
+  assert.equal(acceptStep(ctx2, 1001), true);
+
+  // „Изход от всички устройства" чисти jti, но НЕ бива да нулира тази защита.
+  r2.add('jti-x', Date.now() + 60000);
+  r2.clear();
+  assert.equal(r2.has('jti-x'), false);
+  assert.equal(r2.getTotpStep(), 1001, 'clear() пази стъпката');
+  // Стъпката е малко число — филтърът „изтича в" и подрязването не бива да я ядат.
+  r2.prune();
+  assert.equal(r2.getTotpStep(), 1001);
+  assert.equal(r2.has('__totpStep'), false, 'служебният ключ никога не е „отменена сесия"');
+  assert.equal(r2.health().revoked, 0, 'и не се брои като отменена');
+  fs.rmSync(dir, { recursive: true, force: true });
+});

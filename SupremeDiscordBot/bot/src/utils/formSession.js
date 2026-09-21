@@ -55,15 +55,59 @@ const WORKER_SRC = `
   }
 `;
 
+// Таван на ЕДНОВРЕМЕННИТЕ worker-и.
+//
+// ДЕФЕКТЪТ (одит сигурност, 16.08.2026): изолацията в worker реши правилния
+// проблем (катастрофичният backtracking не блокира event loop-а), но създаде
+// втори: worker се раждаше при ВСЕКИ отговор, без таван. Измерено на живо:
+//      20 едновременни → RSS  44 →  250 MB   (~10 MB/worker)
+//     100 едновременни → RSS  44 →  882 MB
+//     300 едновременни → RSS  44 → 1800 MB, а самото пускане отне 9.5s
+//
+// Катастрофичен шаблон държи своя worker цяла секунда, значи припокриването е
+// максимално точно когато най-боли. Рейд или просто голям сървър с форма стига
+// до изчерпване на паметта — тоест защитата срещу ReDoS ставаше нов DoS вектор,
+// само че по памет вместо по процесор. Забавянето на пускането удря и
+// легитимните кандидатури.
+//
+// 8 е избрано по мярка, не на око: легитимен шаблон свършва за <5ms, значи 8
+// нишки поемат ~1600 проверки/сек. Таванът хапе САМО катастрофичните (1s всяка),
+// които и без това искаме да ограничим. Най-лошият случай по памет е ~80 MB.
+const MAX_CONCURRENT_REGEX_WORKERS = 8;
+let activeRegexWorkers = 0;
+let capWarned = false;
+
+/** @internal за тестове */
+export function _activeRegexWorkers() { return activeRegexWorkers; }
+
 export function validateAnswerAgainstRegex(question, content) {
   if (!question?.validationRegex) return Promise.resolve({ ok: true });
   if ((content || "").length > REGEX_INPUT_MAX) return Promise.resolve({ ok: false });
 
+  // На тавана ПРИЕМАМЕ, без да пускаме шаблона. Същият избор като при таймаут и
+  // при грешка: валидацията на формат е удобство за подаващия, а живият бот е
+  // условие за ВСИЧКИ наематели. Отказът тук би дал на нападателя точно това,
+  // което търси — чужди кандидатури да падат.
+  if (activeRegexWorkers >= MAX_CONCURRENT_REGEX_WORKERS) {
+    if (!capWarned) {
+      capWarned = true;
+      console.warn(
+        `[formSession] таванът от ${MAX_CONCURRENT_REGEX_WORKERS} едновременни regex worker-а е достигнат — ` +
+        "проверката на формат се прескача, докато натискът спадне. Този ред се показва веднъж на процес.",
+      );
+    }
+    return Promise.resolve({ ok: true });
+  }
+
   return new Promise((resolve) => {
     let done = false;
-    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    let counted = false;
+    const release = () => { if (counted) { counted = false; activeRegexWorkers--; } };
+    const finish = (v) => { if (!done) { done = true; release(); resolve(v); } };
     let worker;
     try {
+      activeRegexWorkers++;
+      counted = true;
       worker = new Worker(WORKER_SRC, { eval: true, workerData: { pattern: question.validationRegex, content: content || "" } });
     } catch {
       return finish({ ok: true }); // не можем да стартираме worker → не наказвай потребителя
@@ -74,7 +118,7 @@ export function validateAnswerAgainstRegex(question, content) {
       finish({ ok: true }); // не изпълнявай опасния шаблон срещу event loop-а — приеми
     }, REGEX_TIMEOUT_MS);
     worker.once("message", (m) => { clearTimeout(timer); worker.terminate().catch(() => {}); finish({ ok: !!m.ok }); });
-    worker.once("error", () => { clearTimeout(timer); finish({ ok: true }); });
+    worker.once("error", () => { clearTimeout(timer); worker.terminate().catch(() => {}); finish({ ok: true }); });
   });
 }
 

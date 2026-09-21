@@ -8,14 +8,13 @@ import {
   Zap, BookOpen, Lightbulb,
   LineChart, Key,
   Menu, X as CloseIcon, MessageSquareText,
-} from "lucide-react";
+ KeyRound } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
 import { getServers, logout } from "../api";
 import LanguageSwitcher from "./LanguageSwitcher";
 import PremiumToast from "./PremiumToast";
 import ToastHost from "./ToastHost";
-import TrialBanner from "./TrialBanner";
 import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
@@ -246,6 +245,12 @@ export default function Layout() {
 
         {/* User footer */}
         <div className="p-3 border-t border-cs-border bg-cs-surface">
+          {/* ДВА реда, не един. Лентата е 256px; аватар (36) + четири икони по
+              32 + пет междини по 12 = 224 → за името оставаха 7px и то се
+              режеше до една буква („Z“), а ролята — до „0“. Дефектът се появи с
+              четвъртата икона (Сигурност, 3.4.0) и се вижда само на екран —
+              статичният гейт не мери ширини. Мерено с Chromium на 1280 и 390:
+              clientWidth 7 / scrollWidth 54. (17.09.2026) */}
           <div className="flex items-center gap-3">
             {/* `src` НИКОГА не бива да е undefined: тогава браузърът рисува
                 счупено изображение с alt текста, което разпъва реда и реже
@@ -267,13 +272,25 @@ export default function Layout() {
                 {t(`role.${user?.globalRole || "USER"}`)}
               </p>
             </div>
-            <LanguageSwitcher compact />
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            {/* Менюто за език се отваря НАЛЯВО спрямо иконата (align="left"):
+                с right-0 при икона в левия край 160px списък излизаше на
+                −49px извън екрана и се режеше („ски“, „ch“, „ol“). */}
+            <LanguageSwitcher compact align="left" />
             <a
               href="/dashboard/privacy-settings"
               className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
               title={t("nav.privacy")}
             >
               <Shield className="w-4 h-4" />
+            </a>
+            <a
+              href="/dashboard/security"
+              className="text-cs-dim hover:text-cs-cyan p-2 transition-colors"
+              title={t("nav.security")}
+            >
+              <KeyRound className="w-4 h-4" />
             </a>
             <button
               onClick={handleLogout}
@@ -288,12 +305,10 @@ export default function Layout() {
 
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-y-auto bg-cs-black flex flex-col">
-        {/* Провалено плащане стои НАД пробния период — то е по-спешното. */}
+        {/* Провалено плащане стои най-отгоре — то е по-спешното. */}
         <PastDueBanner />
         {/* v40 — отменен, но платен до края: показваме докога работи. */}
         <GraceBanner />
-        {/* v2.0 — Trial banner appears on per-server pages */}
-        <TrialBanner />
         <div className="flex-1">
           <Outlet />
         </div>

@@ -1,5 +1,6 @@
 // frontend/src/pages/AdminPage.jsx
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart2, Users, Server, DollarSign, FileText,
@@ -15,6 +16,8 @@ import api, {
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
+import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab } from "./AdminOpsTabs";
+import { Activity, ShieldCheck, CreditCard, Bot, FileCheck } from "lucide-react";
 
 // Админ конзолата е EN-only (изключена от i18n) — суров сървърен текст + резерва.
 const adminErr = (err) => err?.response?.data?.error || "Action failed. Please try again.";
@@ -26,6 +29,12 @@ const TABS = [
   { id: "servers",   label: "Servers",   icon: Server },
   { id: "payments",  label: "Payments",  icon: DollarSign },
   { id: "audit",     label: "Audit Log", icon: FileText },
+  // v3.4 — операционни табове (routes/adminOps.js)
+  { id: "system",    label: "System",    icon: Activity },
+  { id: "security",  label: "Security",  icon: ShieldCheck },
+  { id: "billing",   label: "Billing",   icon: CreditCard },
+  { id: "fleet",     label: "Fleet",     icon: Bot },
+  { id: "compliance", label: "Compliance", icon: FileCheck },
 ];
 
 const ROLE_COLORS = {
@@ -36,7 +45,11 @@ const ROLE_COLORS = {
 };
 
 export default function AdminPage() {
-  const [tab, setTab] = useState("analytics");
+  // ?tab=security — дълбоки връзки (известията на собственика водят право в таба).
+  const [params, setParams] = useSearchParams();
+  const initial = TABS.some((t) => t.id === params.get("tab")) ? params.get("tab") : "analytics";
+  const [tab, setTabState] = useState(initial);
+  const setTab = (id) => { setTabState(id); const next = new URLSearchParams(params); next.set("tab", id); setParams(next, { replace: true }); };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px]">
@@ -47,12 +60,12 @@ export default function AdminPage() {
           Platform <span className="text-cs-cyan">Control</span>
         </h1>
         <p className="text-cs-muted text-sm">
-          Global management — analytics, users, servers, payments, audit logs. Manage records.
+          Global management — analytics, users, servers, payments, audit logs, system health, security, billing, fleet and data-subject requests. Every write requires a fresh second factor.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0 mb-8 border-b border-cs-border">
+      <div className="flex gap-0 mb-8 border-b border-cs-border overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -76,6 +89,11 @@ export default function AdminPage() {
       {tab === "servers"   && <ServersTab />}
       {tab === "payments"  && <PaymentsTab />}
       {tab === "audit"     && <AuditTab />}
+      {tab === "system"    && <SystemTab />}
+      {tab === "security"  && <SecurityTab />}
+      {tab === "billing"   && <BillingTab />}
+      {tab === "fleet"     && <FleetTab />}
+      {tab === "compliance" && <ComplianceTab />}
     </div>
   );
 }
@@ -199,17 +217,17 @@ function RevenueTab() {
     <div className="space-y-8">
       {/* Headline */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <RevStat label="MRR (gross, VAT incl.)" value={eur(d.mrrGross)} sub={`net ≈ ${eur(d.mrrNet)}`} accent />
-        <RevStat label="ARR (gross)"            value={eur(d.arrGross)} sub={`net ≈ ${eur(d.arrNet)}`} />
+        <RevStat label="Total MRR (Stripe + Discord list)" value={eur(d.totalMrrGross)}
+                 sub={`${d.totalSubscriptions ?? 0} paid subscriptions · Discord at list price`} accent />
+        <RevStat label="Discord MRR (list, VAT incl.)" value={eur(d.discord?.listMrrGross)}
+                 sub={`${d.discord?.count ?? 0} servers · net ≈ ${eur(d.discord?.netEstimate)} after VAT + Discord ${Math.round((1 - (d.discord?.developerShare ?? 0.85)) * 100)}%`} />
+        <RevStat label="Stripe MRR (gross, VAT incl.)" value={eur(d.mrrGross)} sub={`legacy · net ≈ ${eur(d.mrrNet)}`} />
+        <RevStat label="Stripe ARR (gross)"     value={eur(d.arrGross)} sub={`legacy · net ≈ ${eur(d.arrNet)}`} />
         <RevStat label="Active subscriptions"   value={d.paidSubscriptions ?? 0}
                  sub={`${d.paidServers ?? 0} server · ${d.paidAgencies ?? 0} agency`} />
         <RevStat label="ARPU (gross)"           value={eur(d.arpuGross)} sub={`net ≈ ${eur(d.arpuNet)} · per paid subscription`} />
         <RevStat label={`Churn ${d.churn?.windowDays ?? 30}d`} value={pct(d.churn?.rate)}
                  sub={`${d.churn?.canceled ?? 0} canceled / ${(d.churn?.activeNow ?? 0) + (d.churn?.canceled ?? 0)} base`} />
-        <RevStat label="Active trials"          value={d.trials?.active ?? 0}
-                 sub={`${d.trials?.used ?? 0} trials ever used`} />
-        <RevStat label="Trial → paid"           value={pct(d.trials?.conversionRate)}
-                 sub={`${d.trials?.converted ?? 0} of ${d.trials?.used ?? 0} (historical)`} />
         <RevStat label="Cash collected (month)" value={eur(d.cashCollectedThisMonth)}
                  sub="paid invoices this calendar month — not MRR" />
       </div>
@@ -221,7 +239,7 @@ function RevenueTab() {
           <RevStat label="Trialing (Stripe)" value={ex.trialing?.count ?? 0} sub={`${eur(ex.trialing?.potentialMrr)} potential`} />
           <RevStat label="Gifted (manual)"   value={ex.gifted?.count ?? 0}   sub={`${eur(ex.gifted?.listValue)} list value given away`} />
           <RevStat label="Past due"          value={ex.pastDue?.count ?? 0}  sub={`${eur(ex.pastDue?.atRiskMrr)} at risk`} />
-          <RevStat label="Discord billed"    value={ex.discord?.count ?? 0}  sub={`${eur(ex.discord?.listValue)} outside Stripe`} />
+          <RevStat label="Discord billed"    value={ex.discord?.count ?? 0}  sub={`${eur(ex.discord?.listValue)} list — counted in the Discord/Total tiles above, not in Stripe MRR`} />
         </div>
       </div>
 

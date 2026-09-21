@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка' %></title>
+  <%# Заглавието на началната носи ГЛАВНАТА дума („дигитална визитка с QR код“), не
+      само бранда: никой не търси „Vizitka“, преди да ни знае. %>
+  <title><%= title ? `${title} · Vizitka` : 'Дигитална визитка с QR код — безплатно · Vizitka' %></title>
   <%
     const meta = typeof pageMeta !== 'undefined' && pageMeta ? pageMeta : null;
-    const pageTitle = title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка';
-    const pageDesc = meta?.description || 'Създай професионален профил (личен или фирмен), получи QR код и споделяй визитка, която винаги е актуална.';
+    const pageTitle = title ? `${title} · Vizitka` : 'Дигитална визитка с QR код — безплатно · Vizitka';
+    const pageDesc = meta?.description || 'Безплатна дигитална визитка с постоянен QR код: профил с контактите ти, който винаги е актуален. Готова за 5 минути, без приложение.';
     const canonical = meta?.url || siteBase + (currentPath === '/' ? '/' : currentPath);
   %>
   <meta name="description" content="<%= pageDesc %>">
@@ -27,7 +29,7 @@
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <% } %>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=<%= typeof assetVer !== 'undefined' ? assetVer : '' %>">
 </head>
 <body>
 <a class="skip-link" href="#main">Към съдържанието</a>

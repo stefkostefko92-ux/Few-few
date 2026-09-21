@@ -12,90 +12,36 @@
 //        scriptlets/scriptlet_meta.json (dev-only info: counts + host list; NOT
 //        shipped in the package and not read at runtime).
 import { readFileSync, writeFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ENGINE = join(ROOT, "scriptlets", "engine.js");
-const LIST = join(ROOT, "scriptlets", "list.txt");
-const OUT = join(ROOT, "scriptlets", "main.js");
-const META = join(ROOT, "scriptlets", "scriptlet_meta.json");
+const ENGINE = (process.argv.find((x) => x.startsWith("--engine=")) || "").slice(9) || join(ROOT, "scriptlets", "engine.js");
+// --list=<file> / --out=<file> let tests build into a temp dir without touching the repo.
+const argOf = (k) => { const a = process.argv.find((x) => x.startsWith(k + "=")); return a ? a.slice(k.length + 1) : null; };
+// The policy (names, grammar, dictionaries) is ONE classic script shared with the
+// engine (inlined) and the service worker (importScripts). Loaded here via vm.
+const POLICY_PATH = argOf("--policy") || join(ROOT, "scriptlets", "policy.js");
+const POLICY_SRC = readFileSync(POLICY_PATH, "utf8");
+const SA_POLICY = (() => { const ctx = {}; runInNewContext(POLICY_SRC, ctx, { filename: "policy.js" }); return ctx.SA_POLICY; })();
+if (!SA_POLICY || typeof SA_POLICY.validateDirective !== "function") { console.error("ERROR: scriptlets/policy.js did not define SA_POLICY"); process.exit(1); }
+const LIST = argOf("--list") || join(ROOT, "scriptlets", "list.txt");
+const OUT = argOf("--out") || join(ROOT, "scriptlets", "main.js");
+const META = argOf("--out") ? null : join(ROOT, "scriptlets", "scriptlet_meta.json");
+// EasyList $popup domains (from build_filters.mjs) baked as the engine's window.open guard.
+const POPUP_PATH = argOf("--popup") || join(ROOT, "rules", "popup_hosts.json");
+let POPUP_HOSTS = [];
+try { POPUP_HOSTS = JSON.parse(readFileSync(POPUP_PATH, "utf8")); } catch (e) { POPUP_HOSTS = []; }
+if (!Array.isArray(POPUP_HOSTS) || !POPUP_HOSTS.every((h) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h))) { console.error("ERROR: rules/popup_hosts.json is not a clean domain list"); process.exit(1); }
 
-// uBO alias → canonical IMPL name. ONLY these names are accepted; anything else
-// is dropped. Keep in sync with the IMPL keys in engine.js.
-const ALIASES = {
-  "set-constant": "set-constant", "set": "set-constant",
-  "abort-on-property-read": "abort-on-property-read", "aopr": "abort-on-property-read",
-  "abort-on-property-write": "abort-on-property-write", "aopw": "abort-on-property-write",
-  "abort-current-script": "abort-current-script", "acs": "abort-current-script",
-  "abort-current-inline-script": "abort-current-script", "acis": "abort-current-script",
-  "no-setTimeout-if": "no-setTimeout-if", "nostif": "no-setTimeout-if", "setTimeout-defuser": "no-setTimeout-if",
-  "no-setInterval-if": "no-setInterval-if", "nosiif": "no-setInterval-if", "setInterval-defuser": "no-setInterval-if",
-  "addEventListener-defuser": "addEventListener-defuser", "aeld": "addEventListener-defuser",
-  "json-prune": "json-prune",
-  "no-fetch-if": "no-fetch-if",
-  "no-window-open-if": "no-window-open-if", "nowoif": "no-window-open-if", "window.open-defuser": "no-window-open-if",
-  "remove-attr": "remove-attr", "ra": "remove-attr",
-  "remove-class": "remove-class", "rc": "remove-class",
-};
+// uBO alias → canonical name: from the single policy.
+const ALIASES = SA_POLICY.ALIASES;
 
-// Per-scriptlet arg policy. A directive is rejected unless it passes.
-const NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                 // property-chain arg
-const SETCONST_VALUES = new Set([
-  "false", "true", "null", "undefined", "noopFunc", "trueFunc", "falseFunc",
-  "", "emptyStr", "emptyArr", "emptyObj", "''",
-]);
-
-// Reject dangerous tokens anywhere in an argument (prototype-pollution / markup
-// breakout / over-long). Applied to every argument of every directive.
-function argSafe(a) {
-  if (typeof a !== "string") return false;
-  if (a.length > 400) return false;
-  if (/__proto__|constructor|prototype/.test(a)) return false;
-  if (/<\/?script|<\/?style|-->/i.test(a)) return false;
-  return true;
-}
-
+// Build profile of the single validator (trusted, baked list). The live channel
+// uses the same function with live=true (stricter) in the service worker + engine.
 function validate(name, args) {
-  if (!args.every(argSafe)) return null;
-  switch (name) {
-    case "set-constant": {
-      if (args.length !== 2 || !NAME_RE.test(args[0])) return null;
-      const v = args[1];
-      if (!(SETCONST_VALUES.has(v) || /^-?\d+$/.test(v))) return null;
-      return [name, args[0], v];
-    }
-    case "abort-on-property-read":
-    case "abort-on-property-write":
-      if (args.length !== 1 || !NAME_RE.test(args[0])) return null;
-      return [name, args[0]];
-    case "abort-current-script":
-      if (args.length < 1 || args.length > 2 || !NAME_RE.test(args[0])) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "no-setTimeout-if":
-    case "no-setInterval-if":
-      if (args.length < 1 || args.length > 2) return null;
-      if (args.length === 2 && !/^\d{1,7}$/.test(args[1])) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "addEventListener-defuser":
-      if (args.length < 1 || args.length > 2) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "json-prune":
-      if (args.length < 1 || args.length > 2) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    case "no-fetch-if":
-      if (args.length !== 1) return null;
-      return [name, args[0]];
-    case "no-window-open-if":
-      if (args.length !== 1) return null;
-      return [name, args[0]];
-    case "remove-attr":
-    case "remove-class":
-      if (args.length < 1 || args.length > 2) return null;
-      return args.length === 2 ? [name, args[0], args[1]] : [name, args[0]];
-    default:
-      return null;
-  }
+  return SA_POLICY.validateDirective(name, args, false) ? [name, ...args] : null;
 }
 
 // Split "a, b, c" respecting nothing fancy (uBO uses plain comma separation;
@@ -173,7 +119,11 @@ function main() {
 
   // Bake the map into the engine at the /*__SCRIPTLET_MAP__*/ injection marker.
   const mapJson = JSON.stringify(map);
+  const POLICY_MARKER = "/*__SCRIPTLET_POLICY__*/";
+  if (!engine.includes(POLICY_MARKER)) { console.error("ERROR: engine.js is missing the /*__SCRIPTLET_POLICY__*/ marker"); process.exit(1); }
   const MARKER = "/*__SCRIPTLET_MAP__*/{}";
+  const POPUP_MARKER = "/*__POPUP_HOSTS__*/[]";
+  if (!engine.includes(POPUP_MARKER)) { console.error("ERROR: engine.js is missing the /*__POPUP_HOSTS__*/[] marker"); process.exit(1); }
   if (!engine.includes(MARKER)) {
     console.error("ERROR: engine.js is missing the /*__SCRIPTLET_MAP__*/{} injection point");
     process.exit(1);
@@ -183,7 +133,11 @@ function main() {
     "// Edit scriptlets/engine.js (code) or scriptlets/list.txt (data) and rebuild.\n";
   // Function replacement: a plain-string replacement would interpret $$, $&,
   // $` and $' — and args legitimately contain "$" (regex anchors like /ads\.js$/).
-  const out = header + engine.replace(MARKER, () => mapJson);
+  // Inline the policy first (the engine references SA_POLICY), then bake the MAP.
+  const popupJson = JSON.stringify(POPUP_HOSTS);
+  // Paranoia: a String.replace "$1" artifact would be valid JS and a silent breakage.
+  const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson).replace(POPUP_MARKER, () => popupJson);
+  if (/^\$\d+$/m.test(out) || /^\$\d+$/m.test(engine)) { console.error("ERROR: $N replacement artifact in engine/main.js"); process.exit(1); }
 
   const hosts = Object.keys(map).filter((h) => h !== "");
   const meta = {
@@ -192,6 +146,7 @@ function main() {
     dropped,
     global: (map[""] || []).length,
     hosts,
+    popupHosts: POPUP_HOSTS.length,
   };
   const metaOut = JSON.stringify(meta, null, 2) + "\n";
 
@@ -209,7 +164,7 @@ function main() {
   }
 
   writeFileSync(OUT, out);
-  writeFileSync(META, metaOut);
+  if (META) writeFileSync(META, metaOut);
 
   console.log(
     `scriptlets: ${kept} directive(s) baked (${meta.global} global, ${hosts.length} host-scoped), ${dropped} dropped`

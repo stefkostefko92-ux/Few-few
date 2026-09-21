@@ -1,0 +1,64 @@
+name: adblock-lists
+
+# Седмичен ребилд на EasyList/EasyPrivacy/URLhaus → DNR правила + popup hosts +
+# scriptlets/main.js, гейт (npm test, --check, mv3-lint), и PR ако има промяна.
+# Листите гниеха на ръка (бяха 2 месеца стари); сега свежестта е автоматична, а
+# човек само одобрява PR-а (нищо не се пуска в main без преглед).
+on:
+  schedule:
+    - cron: "17 4 * * 1"   # понеделник 04:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: adblock-lists
+  cancel-in-progress: false
+
+# Least-privilege: пише само клон + PR през вградения GITHUB_TOKEN (без трети-страни actions).
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ребилд на листите от живите източници
+        working-directory: adblock
+        run: |
+          node tools/build_filters.mjs --report
+          node tools/build_scriptlets.mjs
+      - name: Гейт — 0 block правила към main_frame, бюджет, тестове, MV3 линт
+        run: |
+          (cd adblock && npm test)
+          node adblock/tools/build_scriptlets.mjs --check
+          node tools/chrome/mv3-lint.mjs adblock
+      - name: PR при промяна (клонът е детерминистичен → идемпотентно)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- adblock/rules adblock/cosmetic_generic.css adblock/scriptlets/main.js; then
+            echo "Няма промяна в листите — нищо за PR."; exit 0
+          fi
+          git config user.name "adblock-lists[bot]"
+          git config user.email "noreply@carbonstealth.eu"
+          branch="chore/adblock-lists-$(date -u +%Y%m%d)"
+          git checkout -B "$branch"
+          git add adblock/rules adblock/cosmetic_generic.css adblock/scriptlets/main.js adblock/scriptlets/scriptlet_meta.json
+          git commit -m "chore(adblock): седмичен ребилд на EasyList/EasyPrivacy/URLhaus ($(date -u +%Y-%m-%d))" \
+            -m "Автоматичен ребилд (adblock-lists workflow). Гейт зелен: 0 block правила към main_frame, бюджет <30k, npm test, mv3-lint."
+          git push -f -u origin "$branch"
+          if gh pr list --head "$branch" --state open --json number --jq 'length' | grep -q '^0$'; then
+            gh pr create --title "chore(adblock): седмичен ребилд на филтър-листите $(date -u +%Y-%m-%d)" \
+              --body "Автоматичен седмичен ребилд на EasyList/EasyPrivacy/URLhaus → DNR правила, popup hosts и scriptlets/main.js.
+
+Гейтът в CI е зелен (0 block правила към main_frame, бюджет <30k статични правила, npm test, mv3-lint). Прегледай counts.json диф-а и слей.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)" \
+              --base main --head "$branch"
+          fi

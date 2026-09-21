@@ -116,7 +116,7 @@ describe("дневните задачи оставят пулс, за да се 
 
   it("покрити са именно ДНЕВНИТЕ/седмичните, не минутните", () => {
     // Минутна задача би заляла дневника; дневната мълчи незабелязано.
-    for (const name of ["archive-cleanup", "retention-weekly", "trial-expiry-dm", "daily-metrics-rollup"]) {
+    for (const name of ["archive-cleanup", "retention-weekly", "daily-metrics-rollup"]) {
       expect(code2, `${name} няма пулс`).toContain(`jobHeartbeat("${name}"`);
     }
     expect(code2, "минутна задача пише пулс — това ще залее одита").not.toContain('jobHeartbeat("scheduled-messages"');

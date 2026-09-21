@@ -66,7 +66,7 @@ beforeEach(() => {
 });
 
 describe("checkout.session.completed", () => {
-  it("per-server checkout grants isPremium/plan/planSource/trialUsed", async () => {
+  it("per-server checkout grants isPremium/plan/planSource", async () => {
     const event = {
       id: "evt_1",
       type: "checkout.session.completed",
@@ -90,7 +90,6 @@ describe("checkout.session.completed", () => {
         isPremium: true,
         plan: "premium",
         planSource: "stripe",
-        trialUsed: true,
         billingInterval: "month",
         stripeSubscriptionId: "sub_1",
       }),

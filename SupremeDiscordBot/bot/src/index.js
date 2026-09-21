@@ -738,6 +738,17 @@ app.post("/internal/whitelabel-update", async (req, res) => {
 // без право, вдига новите. Нарочно НЕ ползваме per-server `restartCustomClient`:
 // той е за смяна на ТОКЕН (пази стария клиент при неуспех) и би изтекъл gateway
 // сесия за все още валиден сървър. Метлата е идемпотентна и евтина (един GET).
+// v3.4 — ръчна entitlement реконсилиация от админ конзолата (иначе на 6 ч).
+app.post("/internal/entitlement-reconcile", async (_req, res) => {
+  try {
+    const { runEntitlementReconcile } = await import("./utils/entitlementReconcile.js");
+    const result = await runEntitlementReconcile(client);
+    res.status(result?.ok === false ? 502 : 200).json(result || { ok: false });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/internal/whitelabel-reconcile", async (req, res) => {
   try {
     const { reconcileCustomClients } = await import("./services/clientManager.js");

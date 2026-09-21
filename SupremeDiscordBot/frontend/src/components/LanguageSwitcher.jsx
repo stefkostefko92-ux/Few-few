@@ -11,7 +11,10 @@ import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 import { LANGUAGE_OPTIONS } from "../i18n/dashboard";
 
-export default function LanguageSwitcher({ compact = false }) {
+// `align`: към кой ръб на иконата се закача списъкът. „right“ (по подразбиране)
+// е за бутон в десния край; за икона в ЛЕВИЯ край на страничната лента трябва
+// „left“ — иначе 160px списък излиза извън екрана (мерено: left −49px, 17.09.2026).
+export default function LanguageSwitcher({ compact = false, align = "right" }) {
   const { user, setUser } = useAuth();
   const { t } = useT();
   const toast = useToast();
@@ -62,7 +65,7 @@ export default function LanguageSwitcher({ compact = false }) {
         <ul
           role="listbox"
           aria-label={t("language.label")}
-          className="absolute z-50 bottom-full mb-1 right-0 min-w-[160px] cs-card !p-1 border border-cs-border bg-cs-panel shadow-cs-lift max-h-72 overflow-y-auto"
+          className={`absolute z-50 bottom-full mb-1 ${align === "left" ? "left-0" : "right-0"} min-w-[160px] cs-card !p-1 border border-cs-border bg-cs-panel shadow-cs-lift max-h-72 overflow-y-auto`}
         >
           {LANGUAGE_OPTIONS.map((opt) => {
             const active = opt.code === current.code;

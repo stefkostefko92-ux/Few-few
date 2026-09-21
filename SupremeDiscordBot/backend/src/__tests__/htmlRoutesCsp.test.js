@@ -48,6 +48,19 @@ describe("HTML маршрутите носят собствен CSP", () => {
     }
   });
 
+  it("всяка HTML врата слага Referrer-Policy: no-referrer — токенът е в URL-а", () => {
+    // ДЕФЕКТЪТ (одит по сигурност, 08.09.2026): `archive.js` го имаше,
+    // `tickets.js` — не. Транскриптът съдържа външни линкове (прикачени файлове,
+    // адреси в съобщения); клик по тях праща `Referer` с `?t=<токен>` към чужд
+    // сървър, тоест тайната, която пази личните данни, изтича към третата
+    // страна, чийто линк някой е пуснал в тикета. CSP не спира това — Referer
+    // не е скрипт. Правилото е едно за всички HTML врати, не per-route.
+    const bad = htmlServingFiles()
+      .filter(({ src }) => !/Referrer-Policy["']\s*,\s*["']no-referrer["']/.test(src))
+      .map((f) => f.name);
+    expect(bad, `HTML без no-referrer: ${bad.join(", ")}`).toEqual([]);
+  });
+
   it("глобалният helmet CSP остава изключен СЪЗНАТЕЛНО и обяснено", () => {
     const idx = readFileSync(join(SRC, "index.js"), "utf8");
     expect(idx).toMatch(/contentSecurityPolicy:\s*false/);

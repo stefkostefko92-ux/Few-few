@@ -4,6 +4,7 @@
 // auto-transcript feature was deployed), regenerate it on-the-fly.
 
 import { Router } from "express";
+import { sealTranscript, openTranscript } from "../lib/transcriptAtRest.js";
 import { prisma } from "../lib/prisma.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { archiveTokenMatches, tokenizedArchiveUrl } from "../lib/archiveToken.js";
@@ -88,7 +89,7 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
       // Cache it for next time (fire-and-forget)
       prisma.ticket.update({
         where: { id: full.id },
-        data: { archiveHtml: html, archiveUrl: tokenizedArchiveUrl(full.id, ticket.archiveToken) },
+        data: { archiveHtml: sealTranscript(html), archiveUrl: tokenizedArchiveUrl(full.id, ticket.archiveToken) },
       }).catch((e) => console.warn("[archive] cache update failed:", e.message));
 
       ticket = { archiveHtml: html };
@@ -96,7 +97,7 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
 
     secureHtml(res);
     res.setHeader("Cache-Control", "private, max-age=300");
-    res.send(ticket.archiveHtml);
+    res.send(openTranscript(ticket.archiveHtml));
   } catch (err) {
     console.error("[archive]", err.message);
     next(err);

@@ -1,0 +1,132 @@
+<%- include('../partials/shell-start', { active: 'brands' }) %>
+<div class="topbar">
+  <div>
+    <div class="title">
+      <h1><%= t('perf.title', { brand: brand.name }) %></h1>
+      <% if (brand.managed) { %><span class="chip good"><%- icon('autopilot', { class: 'ic-sm' }) %> <%= t('brands.autopilot') %></span><% } else { %><span class="chip"><%- icon('human', { class: 'ic-sm' }) %> <%= t('brands.manual') %></span><% } %>
+    </div>
+    <p class="sub"><%= t('perf.subtitle') %></p>
+  </div>
+  <div class="row">
+    <a class="btn ghost" href="/admin/brands"><%- icon('brands') %> <%= t('nav.brands') %></a>
+    <% if (can('brands:manage')) { %><a class="btn ghost" href="/admin/brands/<%= brand.id %>/edit"><%- icon('edit') %> <%= t('perf.thePlan') %></a><% } %>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="l"><%- icon('status-published', { class: 'ic-sm' }) %> <%= t('perf.weekVsPlan') %></div>
+    <div class="n"><%= ui.num(weekAlive) %><small> / <%= plan ? plan.postsPerWeek : '—' %></small></div>
+  </div>
+  <a class="card" href="/admin/posts?status=DRAFT&brand=<%= brand.slug %>">
+    <div class="l"><%- icon('status-draft', { class: 'ic-sm' }) %> <%= t('perf.draftsPending') %></div>
+    <div class="n"><%= ui.num(pendingDrafts) %></div>
+  </a>
+  <div class="card">
+    <div class="l"><%- icon('image', { class: 'ic-sm' }) %> <%= t('perf.assetsInLibrary') %></div>
+    <div class="n"><%= ui.num(plan ? plan.assets.length : 0) %></div>
+  </div>
+  <div class="card">
+    <div class="l"><%- icon('metric-engaged', { class: 'ic-sm' }) %> <%= t('perf.postsWithMetrics') %></div>
+    <div class="n"><%= ui.num(performance.length) %></div>
+  </div>
+</div>
+
+<section class="panel">
+  <h2><%- icon('autopilot') %> <%= t('perf.autopilot') %></h2>
+  <% if (!brand.managed) { %>
+    <p class="sub"><%= t('perf.manualMode') %></p>
+  <% } else if (!plan) { %>
+    <div class="flash error"><%- icon('status-failed') %><span><%= t('perf.planIncomplete') %></span></div>
+  <% } else { %>
+    <div class="stat-row mb-2">
+      <span><b><%= plan.postsPerWeek %></b> <%= t('perf.perWeek') %></span>
+      <span><%= t('dash.reelsShare', { percent: Math.round(plan.reelsShare * 100) }) %></span>
+      <span><%= t('perf.hours') %> <b><%= plan.postingTimes.join(', ') %></b></span>
+      <span><%= t('perf.cycle') %> <b><%= brand.lastAutopilotAt ? ui.relative(brand.lastAutopilotAt) : t('dash.neverRun') %></b></span>
+    </div>
+    <p class="sub mb-1"><%= t('perf.pillars') %>: <%= plan.pillars.join(' · ') %></p>
+    <% if (plan.keywords.length) { %><p class="sub"><%= t('perf.keywords') %>: <%= plan.keywords.join(', ') %></p><% } %>
+    <% if (plan.crossPost.length) { %><p class="sub"><%= t('perf.variantsFor') %>: <%= plan.crossPost.join(', ') %></p><% } %>
+    <p class="sub"><%= t('perf.weekly') %></p>
+    <% if (!plan.assets.length) { %><div class="flash error mt-2"><%- icon('image') %><span><%= t('perf.libraryEmpty') %></span></div><% } %>
+    <% if (!generation) { %><div class="flash error mt-2"><%- icon('severity-high') %><span><%= t('perf.noApiKey') %></span></div><% } %>
+    <% if (can('autopilot:run')) { %>
+    <form method="post" action="/admin/brands/<%= brand.id %>/autopilot" class="inline block mt-2"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit" <%= plan.assets.length && generation ? '' : 'disabled' %>><%- icon('play') %> <%= t('perf.runNow') %></button></form>
+    <% } %>
+  <% } %>
+</section>
+
+<h2><%- icon('metric-reach') %> <%= t('perf.accounts30') %></h2>
+<% if (!accounts.length) { %>
+  <div class="panel"><div class="empty"><%- icon('instagram', { class: 'ic-xl' }) %><strong><%= t('perf.noAccount') %></strong><%= t('perf.noAccountHint') %></div></div>
+<% } %>
+<% accounts.forEach((a) => { %>
+  <section class="panel">
+    <div class="row spread mb-1">
+      <div class="title">
+        <h3 class="m-0">@<%= a.account.username %></h3>
+        <% const ast = ui.accountStatus(a.account.status); %>
+        <span class="chip <%= ast.tone %>"><%- icon(ast.icon, { class: 'ic-sm' }) %> <%= t(ast.key) %></span>
+      </div>
+      <% if (can('autopilot:run')) { %><form method="post" action="/admin/insights/sync" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('refresh', { class: 'ic-sm' }) %> <%= t('perf.sync') %></button></form><% } %>
+    </div>
+
+    <% if (!a.insightsScope) { %>
+      <div class="flash error"><%- icon('key') %><span><%- t('perf.noScope') %></span></div>
+    <% } else if (!a.rows.length) { %>
+      <div class="empty"><%- icon('clock', { class: 'ic-xl' }) %><strong><%= t('perf.noDaily') %></strong><%= t('perf.noDailyHint') %></div>
+    <% } else { %>
+      <%
+        const series = (key) => a.rows.map((r) => ({ value: r[key], label: ui.date(r.day) + ' · ' + ui.num(r[key]) }));
+        const tiles = [
+          { key: 'followerCount', label: 'perf.followers', icon: 'metric-followers' },
+          { key: 'reach', label: 'perf.reachPerDay', icon: 'metric-reach' },
+          { key: 'views', label: 'perf.viewsPerDay', icon: 'metric-views' },
+          { key: 'engaged', label: 'perf.engagedAccounts', icon: 'metric-engaged' },
+        ];
+      %>
+      <div class="cards trend m-0">
+        <% tiles.forEach((tile) => { %>
+          <% const s = spark(series(tile.key)); const d = ui.delta(s.delta); %>
+          <div class="card">
+            <div class="l"><%- icon(tile.icon, { class: 'ic-sm' }) %> <%= t(tile.label) %></div>
+            <div class="n"><%= ui.num(s.last) %></div>
+            <% if (d) { %><span class="delta <%= d.tone %>"><%- icon(d.icon, { class: 'ic-sm' }) %> <%= d.text %> <%= t('perf.over30Days') %></span><% } %>
+            <%- s.svg %>
+          </div>
+        <% }) %>
+      </div>
+      <details>
+        <summary><%- icon('chevron-down', { class: 'ic-sm' }) %> <%= t('perf.allDays', { count: a.rows.length }) %></summary>
+        <div class="table-wrap mt-1">
+        <table><thead><tr><th><%= t('perf.day') %></th><th class="num"><%= t('perf.reach') %></th><th class="num"><%= t('perf.views') %></th><th class="num"><%= t('perf.followersCol') %></th><th class="num"><%= t('perf.engaged') %></th></tr></thead><tbody>
+        <% a.rows.forEach((r) => { %><tr><td class="when"><%= ui.date(r.day) %></td><td class="num"><%= ui.num(r.reach) %></td><td class="num"><%= ui.num(r.views) %></td><td class="num"><%= ui.num(r.followerCount) %></td><td class="num"><%= ui.num(r.engaged) %></td></tr><% }) %>
+        </tbody></table></div>
+      </details>
+    <% } %>
+  </section>
+<% }) %>
+
+<h2><%- icon('metric-engaged') %> <%= t('perf.byEngagement') %></h2>
+<% if (!performance.length) { %>
+  <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('perf.noMetrics') %></strong><%= t('perf.noMetricsHint') %></div></div>
+<% } else { %>
+<div class="table-wrap">
+<table><thead><tr><th><%= t('common.kind') %></th><th><%= t('common.publication') %></th><th class="num"><%= t('perf.reach') %></th><th class="num"><%= t('perf.views') %></th><th class="num"><%= t('perf.interactions') %></th><th class="num"><%= t('perf.engagement') %></th><th><%= t('perf.publishedCol') %></th><th></th></tr></thead><tbody>
+<% performance.forEach((p, index) => { %>
+  <% const kd = ui.kind(p.kind); %>
+  <tr>
+    <td><span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= t(kd.key) %></span></td>
+    <td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 64) %><%= p.caption.length > 64 ? '…' : '' %></a><% if (index === 0) { %><span class="sub-line"><%= t('perf.strongest') %></span><% } %></td>
+    <td class="num"><%= ui.num(p.reach) %></td>
+    <td class="num"><%= ui.num(p.views) %></td>
+    <td class="num"><%= ui.num(p.interactions) %></td>
+    <td class="num"><strong><%= p.engagementRate.toLocaleString(locale) %>%</strong></td>
+    <td class="muted when"><%= ui.date(p.publishedAt) %></td>
+    <td><% if (p.permalink) { %><a class="btn ghost small" href="<%= p.permalink %>" target="_blank" rel="noopener noreferrer"><%- icon('external', { class: 'ic-sm' }) %> <%= t('common.instagram') %></a><% } %></td>
+  </tr>
+<% }) %></tbody></table>
+</div>
+<% } %>
+<%- include('../partials/shell-end') %>

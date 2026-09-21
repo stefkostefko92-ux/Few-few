@@ -1,5 +1,6 @@
 // backend/src/routes/tickets.js
 import { Router } from "express";
+import { sealTranscript, openTranscript } from "../lib/transcriptAtRest.js";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
@@ -45,6 +46,12 @@ router.get("/archives/:ticketId", async (req, res, next) => {
     await recordSuccess("archive", req.ip);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // Токенът е в URL-а (`?t=`). Всеки външен линк в транскрипта (прикачен файл,
+    // адрес в съобщение) би го изнесъл през Referer към чужд сървър — тоест
+    // тайната, която пази личните данни, тръгва към третата страна, чийто линк
+    // някой е пуснал в тикета. `archive.js` го имаше, тази врата — не: пак „едно
+    // правило, две определения". (Одит по сигурност, 08.09.2026)
+    res.setHeader("Referrer-Policy", "no-referrer");
     // CSP на архивния HTML (F8, defense-in-depth): транскриптът е генериран от
     // потребителско съдържание — заключваме до self стилове/картинки, нула
     // скриптове/обекти/форми, за да не може вграден вектор да изпълни JS в
@@ -54,7 +61,7 @@ router.get("/archives/:ticketId", async (req, res, next) => {
       "Content-Security-Policy",
       "default-src 'none'; img-src 'self' https://cdn.discordapp.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"
     );
-    res.send(ticket.archiveHtml);
+    res.send(openTranscript(ticket.archiveHtml));
   } catch (err) {
     next(err);
   }
@@ -182,7 +189,7 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
         status: "CLOSED",
         closeReason: reason,
         closedAt: new Date(),
-        archiveHtml: html,
+        archiveHtml: sealTranscript(html),
         archiveUrl,
       },
     });

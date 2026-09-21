@@ -145,8 +145,12 @@ router.get("/callback", async (req, res) => {
 
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 
-router.get("/me", requireAuth, loadUser, (req, res) => {
+router.get("/me", requireAuth, loadUser, async (req, res) => {
   const { id, username, discriminator, avatar, globalRole, language } = req.user;
+  // v3.4 — таблото решава от тук дали да покаже записване/потвърждение на
+  // втория фактор преди админ конзолата (без втора заявка при всеки рендер).
+  const { mfaPolicyFor } = await import("../middleware/mfa.js");
+  const mfa = mfaPolicyFor(req.user, req.session);
   res.json({
     id,
     username,
@@ -154,6 +158,7 @@ router.get("/me", requireAuth, loadUser, (req, res) => {
     avatar,
     globalRole,
     language: language || "en",
+    mfa: { enabled: mfa.enabled, required: mfa.required, enrollmentRequired: mfa.enrollmentRequired, verifiedInSession: mfa.verifiedInSession },
     avatarUrl: (() => {
       if (avatar) {
         const ext = avatar.startsWith('a_') ? 'gif' : 'png';

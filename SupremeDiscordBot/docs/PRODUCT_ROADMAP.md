@@ -39,8 +39,9 @@
 - **Getting-started checklist** на ServerHome (сигналите вече са в API-то)
 
 **Комерсиална комуникация (фунията днес е няма):**
-- OAuth scope + `email` → транзакционни имейли: trial ден 11, payment failed
-  (dunning), welcome, cancel потвърждение (или Discord DM канал през бота)
+- OAuth scope + `email` → транзакционни имейли: welcome, cancel потвърждение
+  (или Discord DM канал през бота). _(v3.3: пробен период вече няма; плащанията и
+  dunning-ът са при Discord.)_
 - Upsell CTA при удряне на лимит (PremiumToast има мястото, няма бутона)
 - Portal: включи `cancellation_reason` (exit survey) — сега събираме 0 данни
 - Stripe: махни твърдото `payment_method_types:["card"]` → EU локални методи
@@ -104,6 +105,6 @@ Reddit → Product Hunt (последен, пик не канал) · Affiliate 
 Седмица 1: Ниво 0 изцяло (бекъпи → schema sync → health → 3-те дефекта →
 RQ бъговете → invite permissions + CTA).
 Седмица 2: onboarding пакетът (welcome + wizard + checklist) + скрийншоти/
-демо + email scope + trial имейл. Това променя първото впечатление и
+демо + email scope + welcome имейл. Това променя първото впечатление и
 фунията — най-голямото разстояние до „завършен продукт" не е в кода, а в
 това какво вижда нов потребител в първите 10 минути.

@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -32,10 +32,25 @@ MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
 MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 
+# ВНИМАНИЕ за всяко присвояване по-долу, което чете ПО ИЗБОР налична стойност:
+# `X="$(cmd 2>/dev/null | head -1)"` при `set -euo pipefail` УБИВА скрипта, ако
+# cmd се провали (липсващ файл → sed/grep код 2, pipefail го вдига, set -e
+# прекратява) — и то БЕЗ нито един ред изход, защото stderr е заглушен. Затова
+# всяко такова присвояване завършва с `|| true`; стойността по подразбиране е на
+# следващия ред. Реален инцидент: липсващ /etc/vizitka/vizitka.env спираше ЦЕЛИЯ
+# autodeploy още в конфигурацията, преди първия проект (гейтнато от deploy-check).
+#
 # vizitka (systemd модел, като medqr)
 VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
 VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
-VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:3100/}"
+# Портът се ЧЕТЕ от живия env файл, не се предполага. На споделена машина 3100 може
+# да е зает от друг проект (тук: docker-proxy на ERP) и тогава health check-ът
+# получаваше 200 от ЧУЖДО приложение → деплоят се обявяваше за успешен дори когато
+# vizitka е мъртва, значи клонът за rollback не се изпълняваше никога.
+VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>/dev/null | head -1 || true)}"
+VIZITKA_PORT="${VIZITKA_PORT:-3105}"
+# /healthz връща и ИМЕТО на приложението — само код 200 не доказва кой отговаря.
+VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:${VIZITKA_PORT}/healthz}"
 
 # panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
 # предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
@@ -85,12 +100,38 @@ SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
 # Бекъпи на Supreme Bot: pre-deploy снимка (некриптирана, краткоживееща, пазим 5)
 # + дневният криптиран бекъп от supreme-backup.timer (DPA §5.1). Общ път, mode 700.
 SUPREME_BACKUP_DIR="${SUPREME_BACKUP_DIR:-/var/backups/supreme}"
+# СТАБИЛЕН дом на четирите .env файла на Supreme, ИЗВЪН releases/ (mode 700/600).
+# ЗАЩО (реален инцидент, 17.09.2026): тайните живееха само в release папката на
+# последния Supreme деплой и се пренасяха САМО от `current`. Но `current` се мести
+# при всеки успешен деплой на КОЙТО И ДА Е продукт от същия архив (напр.
+# PROJECTS="adblock") → сочи release, в който Supreme никога не е разгръщан и няма
+# .env → следващият Supreme деплой пада на „[1/4] Missing: backend/.env …" СЛЕД
+# като е направил pg_dump. А release-ът с тайните е под ножа на KEEP_RELEASES (и на
+# чистенето от панела) след още няколко деплоя — тоест тайните могат да изчезнат
+# от диска без никой да ги е трил нарочно. Оттук: source = shared → current →
+# най-новият release, който ги има; след всеки пробег shared се обновява.
+SUPREME_ENV_DIR="${SUPREME_ENV_DIR:-/opt/few-few/shared/SupremeDiscordBot}"
+SUPREME_ENV_FILES=".env backend/.env bot/.env frontend/.env"
 
 # eternaltouch (Eternal Touch — Docker Compose модел) — app:4300 + postgres:5437
 # слушат само на 127.0.0.1, зад Nginx. Тайните живеят в eternaltouch/.env на
 # сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# piuma (Piuma — Instagram контент-двигател; Docker Compose модел). Пет услуги:
+# postgres · redis · app · worker · вътрешен nginx. Навън стърчи САМО вътрешният
+# nginx, и то на 127.0.0.1:${HTTP_PORT:-4310} — TLS-ът се пази от nginx-а на хоста.
+# Тайните живеят в piuma/.env на сървъра (mode 600) и се пренасят при всеки деплой;
+# БЕЗ .env compose отказва да тръгне (`${VAR:?}`) — това е нарочно, а не пропуск:
+# Piuma държи Instagram токени и агентски ключове, тоест да се вдигне с изфабрикувани
+# тайни е по-лошо от това да не се вдигне. Портът се чете от .env (HTTP_PORT).
+PIUMA_HEALTH_URL_SET="${PIUMA_HEALTH_URL:+1}"
+PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
+# Каноничният дом на тайните — СТАБИЛЕН път извън releases/. При пръв деплой `current`
+# сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
+# инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
+PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -221,7 +262,7 @@ deploy_zabobovdol() {
   # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
   local url="$ZBD_HEALTH_URL"
   if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
     [ -n "$p" ] && url="http://127.0.0.1:${p}/"
   fi
   health "$url" "zabobovdol" || deploy_failed=1
@@ -308,7 +349,7 @@ deploy_vizitka() {
   fi
   systemctl restart "$VIZITKA_SERVICE"
   sleep 2
-  if health "$VIZITKA_HEALTH_URL" "vizitka"; then
+  if health "$VIZITKA_HEALTH_URL" "vizitka" '"app":"vizitka"'; then
     rm -rf "${VIZITKA_DIR}.bak-$TS"
     ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
@@ -663,17 +704,36 @@ deploy_supreme() {
   # Пренеси съществуващите .env файлове (тайните живеят на сървъра, не в архива).
   # Четирите файла: корен (postgres интерполация), backend, bot и frontend
   # (frontend ползва build-time VITE_* — затова трябва да е на място ПРЕДИ билда).
-  local f
-  for f in .env backend/.env bot/.env frontend/.env; do
-    if [ -f "$CURRENT_LINK/SupremeDiscordBot/$f" ] && [ ! -f "$d/$f" ]; then
-      cp -a "$CURRENT_LINK/SupremeDiscordBot/$f" "$d/$f"; ok "Пренесох SupremeDiscordBot/$f"
-    fi
-  done
+  # Източникът се ТЪРСИ (shared → current → най-нов release с файловете), не се
+  # предполага, че е `current` — виж SUPREME_ENV_DIR в конфигурацията.
+  local f src_env=""
+  src_env="$(supreme_env_source || true)"
+  if [ -n "$src_env" ]; then
+    for f in $SUPREME_ENV_FILES; do
+      if [ -f "$src_env/$f" ] && [ ! -f "$d/$f" ]; then
+        cp -a "$src_env/$f" "$d/$f"; chmod 600 "$d/$f"; ok "Пренесох SupremeDiscordBot/$f (от $src_env)"
+      fi
+    done
+  fi
+  # Fail-closed И РАНО. Досега липсващ .env се откриваше чак от deploy.sh на
+  # стъпка [1/4] — СЛЕД pg_dump и с подкана „cp .env.example .env", която на
+  # продукционен сървър е грешният съвет (тайните съществуват, само не са тук).
+  local missing=""
+  for f in $SUPREME_ENV_FILES; do [ -f "$d/$f" ] || missing="$missing $f"; done
+  if [ -n "$missing" ]; then
+    warn "Supreme: липсват .env файлове:$missing"
+    warn "Supreme: търсих в $SUPREME_ENV_DIR, $CURRENT_LINK/SupremeDiscordBot и $RELEASES_DIR/*/*/SupremeDiscordBot — няма ги никъде."
+    warn "Supreme: възстанови ги в $SUPREME_ENV_DIR (от работещите контейнери — SupremeDiscordBot/deploy/RELEASE-3.4.0.md §6) и пусни деплоя пак. НЕ ги създавай от .env.example."
+    deploy_failed=1; return
+  fi
   # v40 — Redis вече иска парола (`--requirepass` в docker-compose.yml). Старият
   # .env на сървъра няма REDIS_PASSWORD, а compose е нарочно fail-closed → без
   # този блок ПЪРВИЯТ деплой след промяната умира с неразбираема грешка от
   # интерполацията. Тайната се генерира на сървъра; идемпотентно.
   supreme_ensure_redis_password "$d"
+  # Каквото ще се разгърне, е и каноничното — запиши го на стабилния път СЕГА,
+  # преди deploy.sh: провал на билда не прави тайните по-малко верни.
+  supreme_persist_env "$d"
 
   # Дъмп ПРЕДИ миграция (по модела на medqr/zabobovdol). Миграциите се пускат
   # автоматично в backend entrypoint-а при `up`, затова застраховката трябва да
@@ -724,7 +784,7 @@ deploy_supreme() {
 # (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
 supreme_rollback_hint() {
   local prev
-  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p)"
+  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p || true)"
   warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
   if [ -n "$prev" ]; then
     warn "Предишен release: ${prev%/}"
@@ -750,7 +810,7 @@ supreme_rollback_hint() {
 supreme_ping_indexnow() {
   local d="$1"
   local key_file key
-  key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1)"
+  key_file="$(ls "$d"/frontend/public/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1 || true)"
   [ -n "$key_file" ] || { warn "Supreme: няма IndexNow ключ в frontend/public — пропускам."; return 0; }
   key="$(basename "$key_file" .txt)"
   ( cd "$SRC" && node tools/seo/indexnow.mjs "https://supremebot.carbonstealth.eu" \
@@ -788,6 +848,44 @@ UNIT
   systemctl enable --now supreme-restore-drill.timer >/dev/null 2>&1 \
     || warn "supreme-restore-drill.timer не се активира — провери ръчно."
   ok "репетицията за възстановяване е седмична (supreme-restore-drill.timer)"
+}
+
+# Откъде да пренесем .env файловете на Supreme — ТРИ източника, по ред на доверие:
+#   1) $CURRENT_LINK/SupremeDiscordBot — там ги редактира човекът (документите
+#      сочат „backend/.env на сървъра" = текущия release), значи е най-пресният;
+#   2) $SUPREME_ENV_DIR — огледалото от последния пробег на този скрипт (оцелява
+#      местене на `current` от друг продукт и чистене на releases);
+#   3) най-новият release под $RELEASES_DIR, който ги има — резерва за сървър,
+#      деплойван само със стария скрипт (преди shared да съществува).
+# Критерий за „има ги" е backend/.env — той е задължителен и никога не се
+# генерира. Печата ПЪТ, не съдържание; при нищо намерено връща 1.
+supreme_env_source() {
+  local cand
+  for cand in "$CURRENT_LINK/SupremeDiscordBot" "$SUPREME_ENV_DIR"; do
+    if [ -f "$cand/backend/.env" ]; then printf '%s\n' "$cand"; return 0; fi
+  done
+  # releases/<TS>/<корен-от-ZIP>/SupremeDiscordBot/backend/.env → 5 нива; сортът по
+  # път е сорт по TS (лексикографски = хронологичен), най-новият отгоре.
+  cand="$(find "$RELEASES_DIR" -maxdepth 5 -path '*/SupremeDiscordBot/backend/.env' 2>/dev/null | sort -r | head -1 || true)"
+  [ -n "$cand" ] || return 1
+  printf '%s\n' "${cand%/backend/.env}"
+}
+
+# Огледай четирите .env файла от $1 в $SUPREME_ENV_DIR (700/600). Идемпотентно:
+# пише само при разлика; липсващ в $1 файл НЕ трие огледалото (по-старо копие е
+# по-добро от никакво). Никога не печата съдържание.
+supreme_persist_env() {
+  local from="$1" f
+  [ -f "$from/backend/.env" ] || return 0
+  install -d -m 700 "$SUPREME_ENV_DIR" "$SUPREME_ENV_DIR/backend" "$SUPREME_ENV_DIR/bot" "$SUPREME_ENV_DIR/frontend"
+  for f in $SUPREME_ENV_FILES; do
+    [ -f "$from/$f" ] || continue
+    if ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f"; then
+      cp -a "$from/$f" "$SUPREME_ENV_DIR/$f"
+    fi
+    chmod 600 "$SUPREME_ENV_DIR/$f"
+  done
+  chmod 700 "$SUPREME_ENV_DIR"
 }
 
 # v40 — тайната за Redis: генерирай, ако липсва, и изравни REDIS_URL.
@@ -852,8 +950,8 @@ supreme_pre_deploy_dump() {
     return 0
   fi
   local user db out
-  user="$(docker exec "$pg" printenv POSTGRES_USER 2>/dev/null | tr -d '\r')"; user="${user:-bot}"
-  db="$(docker exec "$pg" printenv POSTGRES_DB 2>/dev/null | tr -d '\r')";     db="${db:-discordbot}"
+  user="$(docker exec "$pg" printenv POSTGRES_USER 2>/dev/null | tr -d '\r' || true)"; user="${user:-bot}"
+  db="$(docker exec "$pg" printenv POSTGRES_DB 2>/dev/null | tr -d '\r' || true)";     db="${db:-discordbot}"
   mkdir -p "$SUPREME_BACKUP_DIR"; chmod 700 "$SUPREME_BACKUP_DIR"
   out="$SUPREME_BACKUP_DIR/pre-deploy-$TS.dump"
   ( umask 077
@@ -947,6 +1045,101 @@ EOF
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
+}
+
+# ── 3з) piuma — Docker Compose (app + worker + db + redis + вътрешен nginx) ───
+deploy_piuma() {
+  local d="$SRC/piuma"
+  [ -d "$d" ] || { warn "Няма piuma/ в архива — пропускам."; return; }
+  log "Разгръщам piuma (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай Docker Engine + compose plugin."
+
+  # Тайните живеят на СЪРВЪРА, не в архива. Ред: споделеният път (каноничен, оцелява
+  # всичко), после текущият release (за инсталация отпреди споделения път).
+  if [ ! -f "$d/.env" ]; then
+    if [ -f "$PIUMA_ENV" ]; then
+      cp -a "$PIUMA_ENV" "$d/.env"; ok "Пренесох piuma/.env от $PIUMA_ENV"
+    elif [ -f "$CURRENT_LINK/piuma/.env" ]; then
+      cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env от текущия release"
+    fi
+  fi
+  # За разлика от eternaltouch тук НЕ генерираме .env с случайни тайни. Piuma не може
+  # да работи с измислени IG_APP_ID/IG_APP_SECRET/IG_REDIRECT_URI — те идват от
+  # конзолата на Meta и няма как да се отгатнат. Полу-вдигнат панел, който държи
+  # токени, е по-лош изход от ясен отказ. Виж piuma/DEPLOY.md.
+  # Липсващ .env значи „този продукт още не е настроен на ТАЗИ машина" — пропускаме го
+  # като неразгърнат, не го обявяваме за провал: иначе добавянето на piuma в списъка по
+  # подразбиране би счупило `current` на всеки сървър, където още няма тайни.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма piuma/.env — пропускам piuma (не измислям тайни)."
+    warn "  Направи го веднъж по piuma/DEPLOY.md: install -m 600 … $PIUMA_ENV, после пусни скрипта пак."
+    return
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # Бекъп ПРЕДИ миграцията, щом базата вече върви (при пръв деплой няма какво). Стабилен
+  # път извън releases/ — до .env-а; пази последните 5. Провал на дъмпа спира piuma:
+  # миграция без бекъп е връщане назад без път назад.
+  local bk; bk="$(dirname "$PIUMA_ENV")/backups"
+  if [ -n "$( cd "$d" && docker compose ps -q db 2>/dev/null )" ]; then
+    mkdir -p "$bk"; chmod 700 "$bk"
+    if ( cd "$d" && docker compose exec -T db pg_dump -U piuma piuma | gzip > "$bk/pre-deploy-$TS.sql.gz" ); then
+      ok "piuma: бекъп преди миграция → $bk/pre-deploy-$TS.sql.gz ($(du -h "$bk/pre-deploy-$TS.sql.gz" | cut -f1))"
+      ls -t "$bk"/pre-deploy-*.sql.gz | tail -n +6 | xargs -r rm -f
+    else
+      rm -f "$bk/pre-deploy-$TS.sql.gz"
+      warn "piuma: бекъпът преди миграция се провали — не мигрирам без бекъп, пропускам piuma."
+      deploy_failed=1; return
+    fi
+  else
+    log "piuma: базата още не върви (пръв деплой) — няма какво да се бекъпва."
+  fi
+
+  # `( … ) || { … return; }` НЕ е украса — скриптът върви под `set -euo pipefail` и
+  # ненулев изход тук би убил ЦЕЛИЯ autodeploy, оставяйки следващите проекти неразгърнати.
+  ( cd "$d"
+    docker compose build
+    # Миграциите се прилагат от entrypoint-а (`prisma migrate deploy`, никога `db push`),
+    # затова тук няма отделна стъпка — app и worker тръгват само върху мигрирана схема.
+    docker compose up -d --remove-orphans
+  ) || { warn "piuma: docker compose се провали — старите контейнери остават както са."; deploy_failed=1; return; }
+
+  # Портът се чете от .env, освен ако PIUMA_HEALTH_URL не е зададен изрично.
+  local url="$PIUMA_HEALTH_URL"
+  if [ -z "${PIUMA_HEALTH_URL_SET:-}" ]; then
+    # `|| true` НЕ е украса: без реда HTTP_PORT grep връща 1, `pipefail` го изнася от
+    # тръбата и `set -e` убива целия autodeploy точно СЛЕД `compose up` — без health, без
+    # проверка на работника, без преместване на `current`, без следващите проекти.
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/health"
+  fi
+  health "$url" "piuma" || deploy_failed=1
+
+  # Работникът е ОТДЕЛЕН процес: панелът може да е напълно жив, докато публикуването,
+  # подновяването на токени, Insights и автопилотът са мъртви. Без тази проверка
+  # провалът е невидим до мига, в който одобрен пост просто не излиза.
+  # `ps -q` + `docker inspect`, не `ps --format '{{.State}}'`: Go шаблон във `--format` на
+  # `compose ps` има едва от Compose v2.21 — по-стар плъгин на сървъра би дал грешка, която
+  # тук се чете като „работникът не тича“.
+  local worker_id worker_state
+  worker_id="$( cd "$d" && docker compose ps -q worker 2>/dev/null | head -1 )" || worker_id=""
+  worker_state="$( [ -n "$worker_id" ] && docker inspect -f '{{.State.Status}}' "$worker_id" 2>/dev/null )" || worker_state=""
+  if [ "$worker_state" = "running" ]; then
+    ok "piuma: работникът тича (публикуване · токени · Insights · автопилот)."
+  else
+    warn "piuma: работникът НЕ тича (състояние: ${worker_state:-няма}) — одобрените постове няма да излязат."
+    warn "  Виж: cd $d && docker compose logs worker"
+    deploy_failed=1
+  fi
+
+  # Пръв деплой: няма нито един потребител, тоест панелът не може да се отвори.
+  # Собственикът НЕ се създава автоматично — паролата е работа на човек, не на скрипт.
+  local users
+  users="$( cd "$d" && docker compose exec -T db psql -U piuma -d piuma -tAc 'SELECT count(*) FROM "User"' 2>/dev/null | tr -dc '0-9' )" || users=""
+  if [ "$users" = "0" ]; then
+    warn "piuma: няма нито един потребител — създай собственика веднъж:"
+    warn "  cd $d && docker compose exec app npm run owner:create"
+  fi
 }
 
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
@@ -1166,13 +1359,40 @@ deploy_adblock() {
   indexnow_ping "${INKEY:-}"
 }
 
+# Проверка за живот. Трети аргумент (по избор) е низ, който ТРЯБВА да се среща в
+# отговора — иначе „200" доказва само, че нещо слуша на този порт, а на споделена
+# машина това може да е съвсем друго приложение (реален случай: ERP на 3100 даваше
+# зелено за vizitka и rollback-ът никога не се задействаше).
 health() {
-  local url="$1" name="$2" i
+  local url="$1" name="$2" expect="${3:-}" i out code body diag=""
   for i in 1 2 3 4 5 6 7 8 9 10; do
-    if curl -fsS -o /dev/null --max-time 5 "$url"; then ok "$name е жив ($url)"; return 0; fi
+    if out="$(curl -fsS --max-time 5 -w '\n%{http_code}' "$url" 2>/dev/null)"; then
+      code="${out##*$'\n'}"
+      body="${out%$'\n'*}"
+      if [ -z "$expect" ]; then ok "$name е жив ($url)"; return 0; fi
+      case "$code" in
+        2*)
+          if printf '%s' "$body" | grep -q "$expect"; then ok "$name е жив ($url)"; return 0; fi
+          diag="код $code без маркера „$expect“ — на порта отговаря ДРУГО приложение"
+          ;;
+        *)
+          # Реален инцидент: приложението пренасочваше /healthz с 308 към https
+          # (prod middleware пред маршрута), а `curl` без `-L` брои 3xx за успех.
+          # Тялото е „Moved Permanently…“, маркера го няма → гейтът обявяваше
+          # живото приложение за чуждо. 3xx НЕ е доказателство за живот.
+          diag="код $code (пренасочване) — сондата не стига до самото приложение"
+          ;;
+      esac
+    else
+      diag=""
+    fi
     sleep 3
   done
-  warn "$name НЕ отговаря на $url"; return 1
+  # Присъдата е по КРАЯ на цикъла, не по първия отговор: докато новият процес
+  # вдига, порта го държи старият код (той маркера няма) — падането на първия
+  # мисматч обявяваше успешен деплой за провален.
+  if [ -n "$diag" ]; then warn "$name: $diag ($url)"; else warn "$name НЕ отговаря на $url"; fi
+  return 1
 }
 
 # IndexNow: уведомява Bing/Yandex/Seznam/Naver с един POST (api.indexnow.org
@@ -1188,6 +1408,12 @@ indexnow_ping() {
   fi
 }
 
+# Преди КОЙТО И ДА Е проект: огледай тайните на Supreme от `current` в shared.
+# Този пробег може да е за друг продукт и след малко да премести `current` —
+# редакция, направена в текущия release, не бива да остане назад в стар release.
+# `|| true`: съхраняването на тайни никога не проваля деплой на друг продукт.
+supreme_persist_env "$CURRENT_LINK/SupremeDiscordBot" || true
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -1199,6 +1425,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    piuma)      deploy_piuma ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
