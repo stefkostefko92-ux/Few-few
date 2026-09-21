@@ -70,8 +70,10 @@ tar -xzf "$ARCHIVE_PATH" -C "$WORK" --strip-components=1 --wildcards '*/deploy/*
 [ -f "$WORK/deploy/autodeploy.sh" ] || die "Неочаквана форма на архива — няма deploy/autodeploy.sh."
 
 # Пази последните KEEP_ARCHIVES свалени архива (ръчно качените не се пипат — друго име).
-ls -t "$ARCHIVE_DIR"/few-few-*-*.tar.gz 2>/dev/null | tail -n "+$((KEEP_ARCHIVES + 1))" \
-  | xargs -r rm -f
+# `find … -printf` вместо `ls -t | tail`: под `pipefail` празен `ls` (код 2) би убил
+# скрипта; find с нула съвпадения връща 0.
+find "$ARCHIVE_DIR" -maxdepth 1 -name 'few-few-*-*.tar.gz' -printf '%T@ %p\n' \
+  | sort -rn | tail -n "+$((KEEP_ARCHIVES + 1))" | cut -d' ' -f2- | xargs -r rm -f
 
 log "Предавам на autodeploy.sh…"
 # ARCHIVE е изрично: иначе autodeploy избира „най-новия архив в /root", тоест ръчно

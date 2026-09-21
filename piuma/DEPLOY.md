@@ -5,8 +5,9 @@ Docker Compose на VPS-а, зад nginx на хоста с Let's Encrypt. Че�
 (публикуване · подновяване на токени · чистене на сесии · Insights · автопилот).
 Втори nginx вътре в Compose няма — само отдалечава адреса на клиента с още един скок.
 
-Каноничният поток на монорепото важи и тук: качваш архива в `/root` **ръчно**, пускаш
-`deploy/autodeploy.sh`, той разгръща и Piuma. Този документ е за **еднократните** стъпки,
+Каноничният поток на монорепото важи и тук: сървърът сам сваля архива от публичното репо
+(`deploy/fetch-deploy.sh`) и го подава на `deploy/autodeploy.sh`, който разгръща и Piuma.
+Този документ е за **еднократните** стъпки,
 които скрипт не може да направи вместо теб — защото искат тайни от конзолата на Meta,
 парола на човек и одобрение в панела.
 
@@ -32,9 +33,9 @@ Docker Compose на VPS-а, зад nginx на хоста с Let's Encrypt. Че�
 Живеят **само** на машината, mode 600, никога в репото и никога в архива.
 
 ```bash
-sudo install -d -m 700 /opt/few-few/shared
-sudo install -m 600 /dev/null /opt/few-few/shared/piuma.env
-sudo nano /opt/few-few/shared/piuma.env      # шаблонът е piuma/.env.example
+sudo install -d -m 700 /opt/few-few/shared/piuma
+sudo install -m 600 /dev/null /opt/few-few/shared/piuma/.env
+sudo nano /opt/few-few/shared/piuma/.env      # шаблонът е piuma/.env.example
 ```
 
 Минималният пълен набор (празно поле = приложението отказва да тръгне, нарочно):
@@ -68,15 +69,9 @@ TZ=Europe/Sofia
 > тайните и агентските ключове. Смениш ли я, всичко съхранено става нечетимо и
 > акаунтите се свързват наново. Запиши я в password manager **преди** първия деплой.
 
-`autodeploy.sh` търси `.env` до `docker-compose.yml`, затова го сложи там веднъж:
-
-```bash
-sudo cp /opt/few-few/shared/piuma.env /opt/few-few/current/piuma/.env
-sudo chmod 600 /opt/few-few/current/piuma/.env
-```
-
-Оттук нататък всеки следващ деплой го **пренася сам** от текущия release.
-Няма `.env` → скриптът пропуска Piuma с предупреждение и **не измисля тайни**:
+Това е всичко: `autodeploy.sh` го **пренася сам** от този път при всеки деплой (той е
+извън `releases/`, тоест преживява и прочистването на старите release-и, и връщане
+назад). Няма файл там → скриптът пропуска Piuma с предупреждение и **не измисля тайни**:
 полу-вдигнат панел, който държи чужди токени, е по-лош изход от ясен отказ.
 
 ---
@@ -100,12 +95,23 @@ nginx нарочно не ги дублира — два източника на
 
 ## 3. Деплой
 
+Първият път скриптът го няма на сървъра — взима се от самото репо:
+
 ```bash
-cd /root && unzip -o Few-few.zip >/dev/null
-sudo bash /root/few-few-*/deploy/autodeploy.sh
-# само Piuma:
-sudo PROJECTS="piuma" bash /root/few-few-*/deploy/autodeploy.sh
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo PROJECTS="piuma" bash /root/deploy/fetch-deploy.sh
 ```
+
+После той живее в текущия release:
+
+```bash
+sudo PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh          # main
+sudo REF=<клон|таг|SHA> PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+```
+
+Резервен път без изходяща мрежа: качваш ZIP в `/root`, `unzip -o`, после
+`sudo PROJECTS="piuma" bash /root/few-few-*/deploy/autodeploy.sh`.
 
 Скриптът строи образа, вдига услугите и проверява две неща поотделно:
 
@@ -203,10 +209,14 @@ sudo docker compose logs --tail 50 worker
 Данните живеят в именувани Docker томове (`piuma_db-data`, `piuma_redis-data`) — те
 **преживяват** деплоя, защото кодът се сменя, а томовете не.
 
+`autodeploy.sh` прави дъмп **сам преди всяка миграция**, щом базата вече върви:
+`/opt/few-few/shared/piuma/backups/pre-deploy-<час>.sql.gz` (пази последните 5;
+провал на дъмпа спира Piuma — миграция без бекъп е връщане назад без път назад).
+Ръчен бекъп по всяко време:
+
 ```bash
-# бекъп на базата (преди всяка миграция)
 cd /opt/few-few/current/piuma
-sudo docker compose exec -T db pg_dump -U piuma piuma | gzip > /var/backups/piuma-$(date +%F).sql.gz
+sudo docker compose exec -T db pg_dump -U piuma piuma | gzip > /opt/few-few/shared/piuma/backups/manual-$(date +%F-%H%M).sql.gz
 
 # връщане към предишен release
 sudo RELEASE_DIR=/opt/few-few/releases/<по-стар> PROJECTS="piuma" \

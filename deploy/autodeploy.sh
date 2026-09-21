@@ -128,6 +128,10 @@ ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
 # тайни е по-лошо от това да не се вдигне. Портът се чете от .env (HTTP_PORT).
 PIUMA_HEALTH_URL_SET="${PIUMA_HEALTH_URL:+1}"
 PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
+# Каноничният дом на тайните — СТАБИЛЕН път извън releases/. При пръв деплой `current`
+# сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
+# инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
+PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1050,9 +1054,14 @@ deploy_piuma() {
   log "Разгръщам piuma (Docker Compose)…"
   command -v docker >/dev/null || die "Липсва docker — инсталирай Docker Engine + compose plugin."
 
-  # Тайните живеят на СЪРВЪРА, не в архива. Пренасяме ги от текущия release.
-  if [ -f "$CURRENT_LINK/piuma/.env" ] && [ ! -f "$d/.env" ]; then
-    cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env"
+  # Тайните живеят на СЪРВЪРА, не в архива. Ред: споделеният път (каноничен, оцелява
+  # всичко), после текущият release (за инсталация отпреди споделения път).
+  if [ ! -f "$d/.env" ]; then
+    if [ -f "$PIUMA_ENV" ]; then
+      cp -a "$PIUMA_ENV" "$d/.env"; ok "Пренесох piuma/.env от $PIUMA_ENV"
+    elif [ -f "$CURRENT_LINK/piuma/.env" ]; then
+      cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env от текущия release"
+    fi
   fi
   # За разлика от eternaltouch тук НЕ генерираме .env с случайни тайни. Piuma не може
   # да работи с измислени IG_APP_ID/IG_APP_SECRET/IG_REDIRECT_URI — те идват от
@@ -1062,10 +1071,29 @@ deploy_piuma() {
   # като неразгърнат, не го обявяваме за провал: иначе добавянето на piuma в списъка по
   # подразбиране би счупило `current` на всеки сървър, където още няма тайни.
   if [ ! -f "$d/.env" ]; then
-    warn "Няма piuma/.env — пропускам piuma (не измислям тайни; виж piuma/DEPLOY.md)."
+    warn "Няма piuma/.env — пропускам piuma (не измислям тайни)."
+    warn "  Направи го веднъж по piuma/DEPLOY.md: install -m 600 … $PIUMA_ENV, после пусни скрипта пак."
     return
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
+
+  # Бекъп ПРЕДИ миграцията, щом базата вече върви (при пръв деплой няма какво). Стабилен
+  # път извън releases/ — до .env-а; пази последните 5. Провал на дъмпа спира piuma:
+  # миграция без бекъп е връщане назад без път назад.
+  local bk; bk="$(dirname "$PIUMA_ENV")/backups"
+  if [ -n "$( cd "$d" && docker compose ps -q db 2>/dev/null )" ]; then
+    mkdir -p "$bk"; chmod 700 "$bk"
+    if ( cd "$d" && docker compose exec -T db pg_dump -U piuma piuma | gzip > "$bk/pre-deploy-$TS.sql.gz" ); then
+      ok "piuma: бекъп преди миграция → $bk/pre-deploy-$TS.sql.gz ($(du -h "$bk/pre-deploy-$TS.sql.gz" | cut -f1))"
+      ls -t "$bk"/pre-deploy-*.sql.gz | tail -n +6 | xargs -r rm -f
+    else
+      rm -f "$bk/pre-deploy-$TS.sql.gz"
+      warn "piuma: бекъпът преди миграция се провали — не мигрирам без бекъп, пропускам piuma."
+      deploy_failed=1; return
+    fi
+  else
+    log "piuma: базата още не върви (пръв деплой) — няма какво да се бекъпва."
+  fi
 
   # `( … ) || { … return; }` НЕ е украса — скриптът върви под `set -euo pipefail` и
   # ненулев изход тук би убил ЦЕЛИЯ autodeploy, оставяйки следващите проекти неразгърнати.
@@ -1079,7 +1107,10 @@ deploy_piuma() {
   # Портът се чете от .env, освен ако PIUMA_HEALTH_URL не е зададен изрично.
   local url="$PIUMA_HEALTH_URL"
   if [ -z "${PIUMA_HEALTH_URL_SET:-}" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    # `|| true` НЕ е украса: без реда HTTP_PORT grep връща 1, `pipefail` го изнася от
+    # тръбата и `set -e` убива целия autodeploy точно СЛЕД `compose up` — без health, без
+    # проверка на работника, без преместване на `current`, без следващите проекти.
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
     [ -n "$p" ] && url="http://127.0.0.1:${p}/health"
   fi
   health "$url" "piuma" || deploy_failed=1
@@ -1087,8 +1118,12 @@ deploy_piuma() {
   # Работникът е ОТДЕЛЕН процес: панелът може да е напълно жив, докато публикуването,
   # подновяването на токени, Insights и автопилотът са мъртви. Без тази проверка
   # провалът е невидим до мига, в който одобрен пост просто не излиза.
-  local worker_state
-  worker_state="$( cd "$d" && docker compose ps --format '{{.State}}' worker 2>/dev/null | head -1 )" || worker_state=""
+  # `ps -q` + `docker inspect`, не `ps --format '{{.State}}'`: Go шаблон във `--format` на
+  # `compose ps` има едва от Compose v2.21 — по-стар плъгин на сървъра би дал грешка, която
+  # тук се чете като „работникът не тича“.
+  local worker_id worker_state
+  worker_id="$( cd "$d" && docker compose ps -q worker 2>/dev/null | head -1 )" || worker_id=""
+  worker_state="$( [ -n "$worker_id" ] && docker inspect -f '{{.State.Status}}' "$worker_id" 2>/dev/null )" || worker_state=""
   if [ "$worker_state" = "running" ]; then
     ok "piuma: работникът тича (публикуване · токени · Insights · автопилот)."
   else

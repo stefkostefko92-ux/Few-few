@@ -2,11 +2,24 @@ import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 import { config } from '../config.js';
 
-export const PUBLISH_QUEUE = 'piuma:publish';
+// Без двоеточие: BullMQ (5.x) отказва `new Queue('a:b')` — „Queue name cannot contain :“ —
+// и работникът умира при старт, а панелът гърми при първото насрочване. Нула тестове
+// инстанцираха опашката, затова живя до първия реален старт. `tests/queue.test.ts` го пази.
+export const PUBLISH_QUEUE = 'piuma-publish';
 export const REFRESH_JOB = 'refresh-tokens';
 export const PUBLISH_JOB = 'publish-post';
 export const INSIGHTS_JOB = 'sync-insights';
 export const AUTOPILOT_JOB = 'autopilot';
+
+/**
+ * Идентификаторите на задачите са с тире, не с двоеточие: BullMQ отказва custom id с „:“
+ * („Custom Id cannot contain :“, освен точно три части — стар формат за повторяеми задачи)
+ * и цял път на панела гърми при насрочване. Строят се на едно място, за да не се разминат
+ * между добавяне и търсене.
+ */
+export const publishJobId = (postId: string): string => `post-${postId}`;
+export const autopilotJobId = (brandId: string): string => `autopilot-${brandId}`;
+export const insightsJobId = (minute: number): string => `insights-${minute}`;
 
 export interface PublishJobData {
   postId: string;
@@ -36,11 +49,21 @@ export function publishQueue(): Queue {
   return queue;
 }
 
-/** Идемпотентност: jobId = postId, за да не се публикува два пъти един пост. */
+/**
+ * Идемпотентност: jobId = postId, за да не се публикува два пъти един пост.
+ *
+ * BullMQ при СЪЩЕСТВУВАЩ custom id не добавя нищо и не хвърля. Провалена задача стои
+ * 30 дни (`removeOnFail`), тоест „Повтори“ → „Публикувай сега“ рапортуваше успех, а в
+ * опашката нямаше нищо и постът чакаше `APPROVED` месец. Затова заварената задача се маха
+ * преди добавяне — освен ако не е активна: тя вече публикува и не бива да се дублира.
+ */
 export async function enqueuePublish(postId: string, runAt?: Date): Promise<void> {
+  const queue = publishQueue();
+  const existing = await queue.getJob(publishJobId(postId));
+  if (existing && (await existing.getState()) !== 'active') await existing.remove();
   const delay = runAt ? Math.max(runAt.getTime() - Date.now(), 0) : 0;
-  await publishQueue().add(PUBLISH_JOB, { postId } satisfies PublishJobData, {
-    jobId: `post:${postId}`,
+  await queue.add(PUBLISH_JOB, { postId } satisfies PublishJobData, {
+    jobId: publishJobId(postId),
     delay,
   });
 }
@@ -70,7 +93,7 @@ export async function scheduleManagement(): Promise<void> {
 /** „Пусни сега“ от панела — идемпотентно за бранд, докато предишният цикъл не е приключил. */
 export async function enqueueAutopilot(brandId: string): Promise<void> {
   await publishQueue().add(AUTOPILOT_JOB, { brandId } satisfies AutopilotJobData, {
-    jobId: `autopilot:${brandId}`,
+    jobId: autopilotJobId(brandId),
     attempts: 1,
     removeOnComplete: true,
     removeOnFail: true,
@@ -82,7 +105,7 @@ export async function enqueueInsightsSync(): Promise<void> {
     INSIGHTS_JOB,
     {},
     {
-      jobId: `insights:${Math.floor(Date.now() / 60_000)}`,
+      jobId: insightsJobId(Math.floor(Date.now() / 60_000)),
       attempts: 1,
       removeOnComplete: true,
       removeOnFail: true,
@@ -92,7 +115,7 @@ export async function enqueueInsightsSync(): Promise<void> {
 
 /** Маха чакащата задача на пост (отмяна/отказ/повторение) — идемпотентно. */
 export async function removeScheduledJob(postId: string): Promise<void> {
-  const job = await publishQueue().getJob(`post:${postId}`);
+  const job = await publishQueue().getJob(publishJobId(postId));
   if (job) {
     const state = await job.getState();
     if (state === 'delayed' || state === 'waiting' || state === 'prioritized') await job.remove();

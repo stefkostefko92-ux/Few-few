@@ -59,8 +59,22 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      # Опашката (BullMQ) се тества срещу жив Redis — без него тестът на опашката не пада,
+      # а виси до timeout-minutes: ioredis преповтаря вечно (maxRetriesPerRequest: null).
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: postgresql://piuma:piuma@127.0.0.1:5432/piuma_test
+      # Отделна променлива, не REDIS_URL: тестът трие цялата опашка (obliterate) и не бива
+      # да наследи мълчаливо работната опашка на разработчик от средата му.
+      REDIS_TEST_URL: redis://127.0.0.1:6379/15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
