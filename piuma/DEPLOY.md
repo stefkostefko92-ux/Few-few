@@ -209,10 +209,14 @@ sudo docker compose logs --tail 50 worker
 Данните живеят в именувани Docker томове (`piuma_db-data`, `piuma_redis-data`) — те
 **преживяват** деплоя, защото кодът се сменя, а томовете не.
 
+`autodeploy.sh` прави дъмп **сам преди всяка миграция**, щом базата вече върви:
+`/opt/few-few/shared/piuma/backups/pre-deploy-<час>.sql.gz` (пази последните 5;
+провал на дъмпа спира Piuma — миграция без бекъп е връщане назад без път назад).
+Ръчен бекъп по всяко време:
+
 ```bash
-# бекъп на базата (преди всяка миграция)
 cd /opt/few-few/current/piuma
-sudo docker compose exec -T db pg_dump -U piuma piuma | gzip > /var/backups/piuma-$(date +%F).sql.gz
+sudo docker compose exec -T db pg_dump -U piuma piuma | gzip > /opt/few-few/shared/piuma/backups/manual-$(date +%F-%H%M).sql.gz
 
 # връщане към предишен release
 sudo RELEASE_DIR=/opt/few-few/releases/<по-стар> PROJECTS="piuma" \

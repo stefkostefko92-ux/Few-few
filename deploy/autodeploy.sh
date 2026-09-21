@@ -1077,6 +1077,24 @@ deploy_piuma() {
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
 
+  # Бекъп ПРЕДИ миграцията, щом базата вече върви (при пръв деплой няма какво). Стабилен
+  # път извън releases/ — до .env-а; пази последните 5. Провал на дъмпа спира piuma:
+  # миграция без бекъп е връщане назад без път назад.
+  local bk; bk="$(dirname "$PIUMA_ENV")/backups"
+  if [ -n "$( cd "$d" && docker compose ps -q db 2>/dev/null )" ]; then
+    mkdir -p "$bk"; chmod 700 "$bk"
+    if ( cd "$d" && docker compose exec -T db pg_dump -U piuma piuma | gzip > "$bk/pre-deploy-$TS.sql.gz" ); then
+      ok "piuma: бекъп преди миграция → $bk/pre-deploy-$TS.sql.gz ($(du -h "$bk/pre-deploy-$TS.sql.gz" | cut -f1))"
+      ls -t "$bk"/pre-deploy-*.sql.gz | tail -n +6 | xargs -r rm -f
+    else
+      rm -f "$bk/pre-deploy-$TS.sql.gz"
+      warn "piuma: бекъпът преди миграция се провали — не мигрирам без бекъп, пропускам piuma."
+      deploy_failed=1; return
+    fi
+  else
+    log "piuma: базата още не върви (пръв деплой) — няма какво да се бекъпва."
+  fi
+
   # `( … ) || { … return; }` НЕ е украса — скриптът върви под `set -euo pipefail` и
   # ненулев изход тук би убил ЦЕЛИЯ autodeploy, оставяйки следващите проекти неразгърнати.
   ( cd "$d"
@@ -1097,8 +1115,12 @@ deploy_piuma() {
   # Работникът е ОТДЕЛЕН процес: панелът може да е напълно жив, докато публикуването,
   # подновяването на токени, Insights и автопилотът са мъртви. Без тази проверка
   # провалът е невидим до мига, в който одобрен пост просто не излиза.
-  local worker_state
-  worker_state="$( cd "$d" && docker compose ps --format '{{.State}}' worker 2>/dev/null | head -1 )" || worker_state=""
+  # `ps -q` + `docker inspect`, не `ps --format '{{.State}}'`: Go шаблон във `--format` на
+  # `compose ps` има едва от Compose v2.21 — по-стар плъгин на сървъра би дал грешка, която
+  # тук се чете като „работникът не тича“.
+  local worker_id worker_state
+  worker_id="$( cd "$d" && docker compose ps -q worker 2>/dev/null | head -1 )" || worker_id=""
+  worker_state="$( [ -n "$worker_id" ] && docker inspect -f '{{.State.Status}}' "$worker_id" 2>/dev/null )" || worker_state=""
   if [ "$worker_state" = "running" ]; then
     ok "piuma: работникът тича (публикуване · токени · Insights · автопилот)."
   else
