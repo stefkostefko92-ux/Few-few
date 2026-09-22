@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#131416">
+<meta name="theme-color" content="#000000">
 <title>V.F.R. · Rottami e metalli, sgomberi, imbiancature · Fino Mornasco (CO)</title>
 <meta name="description" content="V.F.R. a Fino Mornasco (Como): commercio rottami e metalli con ritiro a domicilio, sgomberi di case, cantine e uffici, imbiancature interne. Preventivo gratuito: +39 377 442 3899.">
 <meta name="keywords" content="rottami Fino Mornasco, commercio rottami e metalli Como, ritiro rottami ferrosi Como, sgomberi Fino Mornasco, sgombero appartamenti Como, sgombero cantine Como, imbiancature Fino Mornasco, imbianchino Como, tinteggiatura interni Como, rame ottone alluminio ritiro, V.F.R. Fino Mornasco, Carbon Stealth">
@@ -31,6 +31,7 @@
 <meta name="twitter:description" content="Commercio rottami e metalli, sgomberi e imbiancature a Fino Mornasco e in provincia di Como. Preventivo gratuito.">
 <meta name="twitter:image" content="https://vfr.carbonstealth.eu/images/og.jpg">
 <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon-64.png">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <link rel="preload" href="fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -52,7 +53,7 @@
       "telephone": "+393774423899",
       "email": "vicino.franco74@gmail.com",
       "image": "https://vfr.carbonstealth.eu/images/og.jpg",
-      "logo": "https://vfr.carbonstealth.eu/images/logo.svg",
+      "logo": "https://vfr.carbonstealth.eu/images/logo.png",
       "priceRange": "€",
       "currenciesAccepted": "EUR",
       "address": {
@@ -178,7 +179,7 @@
 
 <header class="nav" id="nav">
   <a class="brand" href="#top" aria-label="V.F.R. — home">
-    <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><use href="images/logo.svg#mark"/></svg>
+    <picture><source srcset="images/logo-nav.webp" type="image/webp"><img class="brand-mark" src="images/logo-nav.png" alt="" width="160" height="158" decoding="async"></picture>
     <span class="brand-text">V.F.R.</span>
   </a>
   <nav class="nav-links" id="nav-links" aria-label="Sezioni del sito">
@@ -205,8 +206,8 @@
           <path d="M60 0H0V60" fill="none" stroke="rgba(255,255,255,.055)" stroke-width="1"/>
         </pattern>
         <radialGradient id="glow" cx="72%" cy="40%" r="55%">
-          <stop offset="0" stop-color="#e39a4c" stop-opacity=".28"/>
-          <stop offset="1" stop-color="#e39a4c" stop-opacity="0"/>
+          <stop offset="0" stop-color="#d8100f" stop-opacity=".30"/>
+          <stop offset="1" stop-color="#d8100f" stop-opacity="0"/>
         </radialGradient>
       </defs>
       <rect width="1200" height="800" fill="url(#grid)"/>
@@ -232,85 +233,15 @@
         <li>Metalli avviati al recupero</li>
       </ul>
     </div>
-
-    <!-- photo:hero -->
-    <div class="hero-art reveal d2" aria-hidden="true">
-      <svg viewBox="0 0 640 720" class="art art-hero">
-        <defs>
-          <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#5b616b"/><stop offset=".45" stop-color="#2c3036"/><stop offset="1" stop-color="#15171a"/>
-          </linearGradient>
-          <linearGradient id="steel2" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" stop-color="#3a3f47"/><stop offset=".5" stop-color="#7a828c"/><stop offset="1" stop-color="#2a2e34"/>
-          </linearGradient>
-          <linearGradient id="copper" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#f0b06a"/><stop offset=".5" stop-color="#c9772b"/><stop offset="1" stop-color="#7a4416"/>
-          </linearGradient>
-          <linearGradient id="paint" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#fbf8f2"/><stop offset="1" stop-color="#e6dfd3"/>
-          </linearGradient>
-          <filter id="grain" x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/>
-            <feColorMatrix type="saturate" values="0"/>
-            <feComponentTransfer><feFuncA type="table" tableValues="0 .14"/></feComponentTransfer>
-            <feComposite in2="SourceGraphic" operator="in"/>
-          </filter>
-          <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="turbulence" baseFrequency=".02 .06" numOctaves="2" seed="3" result="t"/>
-            <feDisplacementMap in="SourceGraphic" in2="t" scale="9" xChannelSelector="R" yChannelSelector="G"/>
-          </filter>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#000" flood-opacity=".55"/>
-          </filter>
-          <clipPath id="frame"><rect x="0" y="0" width="640" height="720" rx="28"/></clipPath>
-        </defs>
-        <g clip-path="url(#frame)">
-          <rect width="640" height="720" fill="#1b1d21"/>
-          <!-- lastre d'acciaio -->
-          <g filter="url(#shadow)">
-            <path d="M-40 560 L420 140 L560 260 L100 680 Z" fill="url(#steel)"/>
-            <path d="M-40 560 L420 140 L560 260 L100 680 Z" fill="url(#grain)" filter="url(#grain)"/>
-          </g>
-          <g filter="url(#shadow)">
-            <path d="M60 760 L520 340 L700 500 L240 920 Z" fill="url(#steel2)"/>
-            <path d="M60 760 L520 340 L700 500 L240 920 Z" filter="url(#grain)"/>
-          </g>
-          <!-- bulloni -->
-          <g fill="#0f1114" opacity=".85">
-            <circle cx="150" cy="520" r="7"/><circle cx="330" cy="356" r="7"/><circle cx="452" cy="250" r="7"/>
-            <circle cx="300" cy="690" r="7"/><circle cx="470" cy="536" r="7"/>
-          </g>
-          <!-- bobina di rame -->
-          <g transform="translate(430 190)" filter="url(#shadow)">
-            <circle r="128" fill="url(#copper)"/>
-            <circle r="128" filter="url(#grain)"/>
-            <g fill="none" stroke="#7a4416" stroke-opacity=".55" stroke-width="3">
-              <circle r="108"/><circle r="88"/><circle r="68"/><circle r="48"/><circle r="28"/>
-            </g>
-            <g fill="none" stroke="#f7c58a" stroke-opacity=".5" stroke-width="2">
-              <circle r="98"/><circle r="78"/><circle r="58"/><circle r="38"/>
-            </g>
-            <circle r="14" fill="#2a1a0c"/>
-          </g>
-          <!-- pennellata -->
-          <g filter="url(#rough)">
-            <path d="M40 120 C 140 90, 230 92, 320 96 S 470 110, 560 84 L 566 128 C 470 150, 380 146, 300 142 S 150 132, 48 160 Z" fill="url(#paint)"/>
-          </g>
-          <path d="M556 90 l-12 44" stroke="#cfc7ba" stroke-width="3" stroke-linecap="round"/>
-          <!-- rullo -->
-          <g transform="translate(560 96) rotate(-12)">
-            <rect x="-10" y="-8" width="20" height="150" rx="8" fill="#e8e2d8"/>
-            <rect x="-6" y="140" width="12" height="70" rx="6" fill="#c9772b"/>
-          </g>
-        </g>
-        <rect x=".5" y=".5" width="639" height="719" rx="28" fill="none" stroke="rgba(255,255,255,.12)"/>
-      </svg>
+    <div class="hero-art reveal d2">
+      <picture>
+        <img class="hero-logo" src="images/logo.png" alt="Logo V.F.R. — commercio rottami e metalli, sgomberi e imbiancature" width="1024" height="1014" fetchpriority="high" decoding="async">
+      </picture>
       <div class="hero-card">
         <span class="hero-card-k">Sede</span>
         <span class="hero-card-v">Via Monte Grappa 6<br>22073 Fino Mornasco (CO)</span>
       </div>
     </div>
-    <!-- /photo:hero -->
   </div>
 
   <div class="materials" aria-label="Metalli trattati">
@@ -334,15 +265,15 @@
         <svg viewBox="0 0 400 260" class="art">
           <defs>
             <linearGradient id="ing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a919b"/><stop offset="1" stop-color="#3a3f47"/></linearGradient>
-            <linearGradient id="ingc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b06a"/><stop offset="1" stop-color="#8a4c18"/></linearGradient>
+            <linearGradient id="ingc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4a4f"/><stop offset="1" stop-color="#7a0000"/></linearGradient>
           </defs>
-          <rect width="400" height="260" fill="#1b1d21"/>
+          <rect width="400" height="260" fill="#0e0e10"/>
           <g transform="translate(60 40)">
             <path d="M0 160 l40 -18 h120 l40 18 z" fill="url(#ing)"/><rect x="40" y="112" width="120" height="30" fill="#6b727c"/><path d="M0 160 v24 l40 -18 v-24 z" fill="#2a2e34"/><path d="M200 160 v24 l-40 -18 v-24 z" fill="#4a5058"/>
             <path d="M20 118 l40 -18 h120 l40 18 z" fill="url(#ing)"/><path d="M20 118 v24 l40 -18 v-24 z" fill="#2a2e34"/><path d="M220 118 v24 l-40 -18 v-24 z" fill="#4a5058"/>
-            <path d="M40 76 l40 -18 h120 l40 18 z" fill="url(#ingc)"/><path d="M40 76 v24 l40 -18 v-24 z" fill="#5e3410"/><path d="M240 76 v24 l-40 -18 v-24 z" fill="#a8621f"/>
+            <path d="M40 76 l40 -18 h120 l40 18 z" fill="url(#ingc)"/><path d="M40 76 v24 l40 -18 v-24 z" fill="#5e0000"/><path d="M240 76 v24 l-40 -18 v-24 z" fill="#b80c0c"/>
           </g>
-          <g transform="translate(300 150)" fill="none" stroke="#c9772b" stroke-width="6" stroke-linecap="round"><path d="M0 -40 a40 40 0 1 1 -28 12"/><path d="M-30 -40 l2 16 l16 -2" /></g>
+          <g transform="translate(300 150)" fill="none" stroke="#d8100f" stroke-width="6" stroke-linecap="round"><path d="M0 -40 a40 40 0 1 1 -28 12"/><path d="M-30 -40 l2 16 l16 -2" /></g>
         </svg>
       </div>
       <!-- /photo:rottami -->
@@ -374,7 +305,7 @@
             <path d="M170 10 l60 30 l-60 30 l-60 -30 z" fill="#d9b58a"/>
             <rect x="96" y="76" width="38" height="48" fill="#f3efe8" opacity=".7"/>
           </g>
-          <g transform="translate(300 60)" fill="none" stroke="#c9772b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M0 0 h60 M60 0 l-22 -22 M60 0 l-22 22"/></g>
+          <g transform="translate(300 60)" fill="none" stroke="#d8100f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M0 0 h60 M60 0 l-22 -22 M60 0 l-22 22"/></g>
           <g stroke="#2c3036" stroke-width="3" stroke-linecap="round" opacity=".35"><path d="M300 120 h70 M300 140 h50 M300 160 h60"/></g>
         </svg>
       </div>
@@ -403,9 +334,9 @@
           <g transform="translate(262 40) rotate(8)">
             <rect x="-14" y="0" width="28" height="120" rx="12" fill="#fbf8f2" stroke="#d8d0c4" stroke-width="2"/>
             <rect x="-4" y="120" width="8" height="60" fill="#8a919b"/>
-            <rect x="-10" y="176" width="20" height="60" rx="8" fill="#c9772b"/>
+            <rect x="-10" y="176" width="20" height="60" rx="8" fill="#d8100f"/>
           </g>
-          <circle cx="110" cy="200" r="30" fill="#c9772b" opacity=".9"/>
+          <circle cx="110" cy="200" r="30" fill="#d8100f" opacity=".9"/>
           <path d="M96 200 l10 10 l20 -22" fill="none" stroke="#fbf8f2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
@@ -472,11 +403,11 @@
     </div>
     <div class="zone-art reveal d2" aria-hidden="true">
       <svg viewBox="0 0 520 420" class="art">
-        <defs><radialGradient id="ring" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e39a4c" stop-opacity=".35"/><stop offset="1" stop-color="#e39a4c" stop-opacity="0"/></radialGradient></defs>
-        <rect width="520" height="420" rx="24" fill="#1b1d21"/>
+        <defs><radialGradient id="ring" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f0262b" stop-opacity=".35"/><stop offset="1" stop-color="#d8100f" stop-opacity="0"/></radialGradient></defs>
+        <rect width="520" height="420" rx="24" fill="#0e0e10"/>
         <g fill="none" stroke="rgba(255,255,255,.08)"><path d="M0 105h520M0 210h520M0 315h520M130 0v420M260 0v420M390 0v420"/></g>
         <circle cx="260" cy="210" r="170" fill="url(#ring)"/>
-        <g fill="none" stroke="#c9772b" stroke-opacity=".55" stroke-dasharray="4 8"><circle cx="260" cy="210" r="70"/><circle cx="260" cy="210" r="120"/><circle cx="260" cy="210" r="170"/></g>
+        <g fill="none" stroke="#d8100f" stroke-opacity=".55" stroke-dasharray="4 8"><circle cx="260" cy="210" r="70"/><circle cx="260" cy="210" r="120"/><circle cx="260" cy="210" r="170"/></g>
         <g fill="#8b9099" font-family="Inter, system-ui, sans-serif" font-size="13">
           <circle cx="330" cy="150" r="4" fill="#e8e2d8"/><text x="340" y="146">Como</text>
           <circle cx="360" cy="270" r="4" fill="#e8e2d8"/><text x="370" y="274">Cantù</text>
@@ -485,7 +416,7 @@
           <circle cx="230" cy="130" r="4" fill="#e8e2d8"/><text x="150" y="126">Villa Guardia</text>
           <circle cx="300" cy="330" r="4" fill="#e8e2d8"/><text x="310" y="346">Cermenate</text>
         </g>
-        <g transform="translate(260 210)"><circle r="12" fill="#c9772b"/><circle r="22" fill="none" stroke="#c9772b" stroke-width="2" opacity=".6"/><text x="0" y="-32" text-anchor="middle" fill="#fbf8f2" font-family="Sora, system-ui, sans-serif" font-weight="700" font-size="14">Fino Mornasco</text></g>
+        <g transform="translate(260 210)"><circle r="12" fill="#d8100f"/><circle r="22" fill="none" stroke="#d8100f" stroke-width="2" opacity=".6"/><text x="0" y="-32" text-anchor="middle" fill="#fbf8f2" font-family="Sora, system-ui, sans-serif" font-weight="700" font-size="14">Fino Mornasco</text></g>
       </svg>
     </div>
   </div>
@@ -550,7 +481,7 @@
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-brand">
-      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><use href="images/logo.svg#mark"/></svg>
+      <picture><source srcset="images/logo-nav.webp" type="image/webp"><img class="brand-mark" src="images/logo-nav.png" alt="" width="160" height="158" decoding="async"></picture>
       <div>
         <strong>V.F.R.</strong><br>
         Commercio rottami e metalli · Sgomberi · Imbiancature<br>

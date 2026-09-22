@@ -18,10 +18,10 @@ index.html          сайтът (hero, servizi ×3, come lavoriamo, perché, zo
 privacy.html        informativa privacy (GDPR, IT); 404.html — брандирана 404 (noindex)
 css/style.css       дизайн-токени в :root; css/fonts.css — self-hosted Sora + Inter (fonts/*.woff2, OFL)
 js/main.js          меню · reveal (IntersectionObserver, reduced-motion) · scroll-spy · карта по клик
-images/             logo.svg (symbol #mark) · favicon.svg · og.jpg · apple-touch-icon.png
+images/             logo.png (1024, прозрачен фон) · logo-nav.png/.webp (160) · favicon.svg + favicon-64.png · og.jpg · apple-touch-icon.png
 images/photos.json  курирани безплатни снимки (Unsplash/Pexels) със страница-източник + автор
 images/photos/      свалените снимки (jpg+webp) — пълни се от tools/fetch-photos.mjs
-tools/              fetch-photos.mjs (сваля+оптимизира+вгражда) · render-og.mjs (og.jpg/иконка през Chromium)
+tools/              fetch-photos.mjs (сваля+оптимизира+вгражда) · render-og.mjs (og.jpg през Chromium)
 llms.txt · robots.txt · sitemap.xml · indexnow-key.txt · .well-known/security.txt
 nginx.conf · deploy.sh   сървърна конфигурация (в репото, не на ръка)
 ```
@@ -29,7 +29,7 @@ nginx.conf · deploy.sh   сървърна конфигурация (в репо
 ## Снимки (важно)
 
 Средата на изграждане може да **няма достъп** до Unsplash/Pexels (egress policy) — затова
-сайтът се доставя с **векторни илюстрации** в 4 слота (`<!-- photo:hero|rottami|sgomberi|imbiancature -->`),
+сайтът се доставя с **векторни илюстрации** в 3 слота (`<!-- photo:rottami|sgomberi|imbiancature -->`; hero-то е логото),
 а реалните снимки се вкарват с една команда там, където мрежата позволява:
 
 ```bash
@@ -47,6 +47,14 @@ npm run check                             # гейтът трябва да ос�
 - **Неизвестни — да се потвърдят със собственика преди пускане:** работно време (затова няма
   `openingHours` в JSON-LD), P.IVA/ragione sociale (маркирано в `privacy.html`), дали номерът
   има WhatsApp (линкът `wa.me` е сложен, защото номерът е мобилен).
+
+## Бранд
+
+Логото е дадено от собственика (кръгъл емблем: багер с грайфер, „V.F.R.", трите услуги). Палитрата на
+сайта е извадена от него: **черно `#050505` · червено `#d8100f`/`#f0262b` · бяло `#f7f7f7`**, стомана само за
+илюстрациите. Токените са в `css/style.css` (`--red`, `--red-2`, `--red-soft`, `--ink`, `--paper`). Варианти:
+`logo.png` (hero, JSON-LD), `logo-nav` (навигация/футър), `apple-touch-icon` и `favicon-64` (върху черно) —
+генерират се от оригинала с sharp (прозрачен фон = почти-черното → alpha), не се редактират на ръка.
 
 ## Конвенции
 

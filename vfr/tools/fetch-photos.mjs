@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // fetch-photos.mjs — сваля курираните безплатни снимки от images/photos.json, оптимизира ги
 // (jpg + webp, точен размер на слота) и по избор (--apply) ги вгражда в index.html на мястото на
-// векторните илюстрации между маркерите <!-- photo:<slot> --> … <!-- /photo:<slot> -->.
+// векторните илюстрации на трите услуги между маркерите <!-- photo:<slot> --> … <!-- /photo:<slot> -->.
 //
 // Защо отделен скрипт: средата, в която се гради сайтът, може да няма достъп до Unsplash/Pexels
 // (egress policy). Скриптът се пуска там, където мрежата позволява (лаптоп/VPS):
@@ -77,13 +77,12 @@ async function main() {
     if (!m) { console.warn(`! няма маркер за слот ${slot}`); continue; }
     // Запазваме обвиващия елемент (класовете му носят оформлението), сменяме само вътрешността.
     const wrapperOpen = m[2].match(/^\s*<div[^>]*>/)?.[0] ?? "<div>";
-    const extra = slot === "hero" ? (m[2].match(/<div class="hero-card">[\s\S]*?<\/div>\s*<\/div>/)?.[0] ?? "") : "";
     const picture = `<picture>
         <source srcset="images/photos/${slot}.webp" type="image/webp">
-        <img src="images/photos/${slot}.jpg" alt="${p.alt}" width="${p.width * 2}" height="${p.height * 2}" ${slot === "hero" ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">
+        <img src="images/photos/${slot}.jpg" alt="${p.alt}" width="${p.width * 2}" height="${p.height * 2}" loading="lazy" decoding="async">
       </picture>`;
     const open = wrapperOpen.replace(' aria-hidden="true"', "");
-    html = html.replace(re, `$1\n    ${open}\n      ${picture}\n      ${extra}\n    </div>\n    $3`);
+    html = html.replace(re, `$1\n    ${open}\n      ${picture}\n    </div>\n    $3`);
     replaced++;
   }
   await writeFile(htmlPath, html);

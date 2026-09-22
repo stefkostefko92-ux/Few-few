@@ -1,17 +1,6 @@
 {
-  "_note": "Курирани БЕЗПЛАТНИ снимки (Unsplash License / Pexels License — свободни за търговска употреба, без атрибуция). Сваля ги tools/fetch-photos.mjs; --apply ги вгражда в index.html на мястото на маркерите <!-- photo:<slot> -->…<!-- /photo:<slot> -->. Нищо не се измисля: всеки запис има страница-източник и автор, проверени при курирането (2026-09-22).",
+  "_note": "Курирани БЕЗПЛАТНИ снимки (Unsplash License / Pexels License — свободни за търговска употреба, без атрибуция). Сваля ги tools/fetch-photos.mjs; --apply ги вгражда в index.html на мястото на маркерите <!-- photo:<slot> -->…<!-- /photo:<slot> --> (слотове: rottami, sgomberi, imbiancature; hero е логото на фирмата). Нищо не се измисля: всеки запис има страница-източник и автор, проверени при курирането (2026-09-22).",
   "slots": {
-    "hero": {
-      "source": "unsplash",
-      "id": "JcIhFttQJHw",
-      "page": "https://unsplash.com/photos/a-pile-of-scrap-metal-sitting-on-top-of-a-pile-of-wood-JcIhFttQJHw",
-      "author": "Josiah Farrow",
-      "license": "Unsplash License",
-      "alt": "Cumulo di rottami metallici pronti per il recupero",
-      "width": 640,
-      "height": 720,
-      "fit": "cover"
-    },
     "rottami": {
       "source": "unsplash",
       "id": "yMBZ6SSYTmY",
@@ -48,20 +37,76 @@
   },
   "alternatives": {
     "rottami": [
-      { "source": "unsplash", "id": "EoVGWVReSlU", "page": "https://unsplash.com/photos/a-pile-of-metal-scrap-next-to-a-blue-wall-EoVGWVReSlU", "author": "Diana .u" },
-      { "source": "unsplash", "id": "Xo0GJNqE6JI", "page": "https://unsplash.com/photos/a-pile-of-metal-scrap-next-to-a-building-Xo0GJNqE6JI", "author": "Bob Brewer" },
-      { "source": "unsplash", "id": "-hOxdRgckdI", "page": "https://unsplash.com/photos/a-pile-of-rusty-metal--hOxdRgckdI", "author": "Ries Bosch" },
-      { "source": "pexels", "id": "2625896", "page": "https://www.pexels.com/photo/scrap-metal-part-of-vehicles-2625896/", "author": "Pexels" }
+      {
+        "source": "unsplash",
+        "id": "JcIhFttQJHw",
+        "page": "https://unsplash.com/photos/a-pile-of-scrap-metal-sitting-on-top-of-a-pile-of-wood-JcIhFttQJHw",
+        "author": "Josiah Farrow"
+      },
+      {
+        "source": "unsplash",
+        "id": "EoVGWVReSlU",
+        "page": "https://unsplash.com/photos/a-pile-of-metal-scrap-next-to-a-blue-wall-EoVGWVReSlU",
+        "author": "Diana .u"
+      },
+      {
+        "source": "unsplash",
+        "id": "Xo0GJNqE6JI",
+        "page": "https://unsplash.com/photos/a-pile-of-metal-scrap-next-to-a-building-Xo0GJNqE6JI",
+        "author": "Bob Brewer"
+      },
+      {
+        "source": "unsplash",
+        "id": "-hOxdRgckdI",
+        "page": "https://unsplash.com/photos/a-pile-of-rusty-metal--hOxdRgckdI",
+        "author": "Ries Bosch"
+      },
+      {
+        "source": "pexels",
+        "id": "2625896",
+        "page": "https://www.pexels.com/photo/scrap-metal-part-of-vehicles-2625896/",
+        "author": "Pexels"
+      }
     ],
     "sgomberi": [
-      { "source": "pexels", "id": "3434533", "page": "https://www.pexels.com/photo/cardboard-boxes-on-living-room-3434533/", "author": "Mister Mister" }
+      {
+        "source": "pexels",
+        "id": "3434533",
+        "page": "https://www.pexels.com/photo/cardboard-boxes-on-living-room-3434533/",
+        "author": "Mister Mister"
+      }
     ],
     "imbiancature": [
-      { "source": "pexels", "id": "6474471", "page": "https://www.pexels.com/photo/man-painting-the-wall-6474471/", "author": "Tima Miroshnichenko" },
-      { "source": "pexels", "id": "1669754", "page": "https://www.pexels.com/photo/person-holding-paint-roller-on-wall-1669754/", "author": "Malte Luk" },
-      { "source": "pexels", "id": "7218006", "page": "https://www.pexels.com/photo/person-painting-the-wall-7218006/", "author": "Blue Bird" },
-      { "source": "unsplash", "id": "LiDVw7tZPfY", "page": "https://unsplash.com/photos/white-paint-roller-LiDVw7tZPfY", "author": "Yoann Siloine" },
-      { "source": "unsplash", "id": "57ldq9age5U", "page": "https://unsplash.com/photos/a-man-painting-a-wall-with-a-paint-roller-57ldq9age5U", "author": "Ernys" }
+      {
+        "source": "pexels",
+        "id": "6474471",
+        "page": "https://www.pexels.com/photo/man-painting-the-wall-6474471/",
+        "author": "Tima Miroshnichenko"
+      },
+      {
+        "source": "pexels",
+        "id": "1669754",
+        "page": "https://www.pexels.com/photo/person-holding-paint-roller-on-wall-1669754/",
+        "author": "Malte Luk"
+      },
+      {
+        "source": "pexels",
+        "id": "7218006",
+        "page": "https://www.pexels.com/photo/person-painting-the-wall-7218006/",
+        "author": "Blue Bird"
+      },
+      {
+        "source": "unsplash",
+        "id": "LiDVw7tZPfY",
+        "page": "https://unsplash.com/photos/white-paint-roller-LiDVw7tZPfY",
+        "author": "Yoann Siloine"
+      },
+      {
+        "source": "unsplash",
+        "id": "57ldq9age5U",
+        "page": "https://unsplash.com/photos/a-man-painting-a-wall-with-a-paint-roller-57ldq9age5U",
+        "author": "Ernys"
+      }
     ]
   }
 }
