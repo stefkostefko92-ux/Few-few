@@ -28,12 +28,16 @@ nginx.conf · deploy.sh   сървърна конфигурация (в репо
 
 ## Снимки (важно)
 
-Средата на изграждане може да **няма достъп** до Unsplash/Pexels (egress policy) — затова
-сайтът се доставя с **векторни илюстрации** в 3 слота (`<!-- photo:rottami|sgomberi|imbiancature -->`; hero-то е логото),
-а реалните снимки се вкарват с една команда там, където мрежата позволява:
+Трите услуги носят **реални снимки** (`images/photos/`, 1024×666 + 640 вариант, jpg+webp) от
+**Open Images V7** (Google) — оригинали от Flickr под **CC BY 2.0**: атрибуцията във футъра
+(„Foto dei servizi (ritagliate): …“) е **задължителна по лиценз**, не я махай. Източник на
+свалянето: `open-images-dataset.s3.amazonaws.com` (единственият фото-хост, който egress policy-то
+на средата пуска; Unsplash/Pexels/Wikimedia са 403). Кои са: `images/photos.json` → `used`.
+Hero-то е логото. Слотовете `<!-- photo:rottami|sgomberi|imbiancature -->` остават — ако
+собственикът предпочете Unsplash/Pexels избора от `slots`, там, където мрежата позволява:
 
 ```bash
-cd vfr && npm i && npm run photos:apply   # сваля → images/photos/ → <picture> на мястото на SVG-то
+cd vfr && npm i && npm run photos:apply   # сваля → images/photos/ → <picture> (замества текущите; махни кредитите)
 npm run check                             # гейтът трябва да остане зелен
 ```
 

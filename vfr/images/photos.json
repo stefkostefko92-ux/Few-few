@@ -1,5 +1,5 @@
 {
-  "_note": "Курирани БЕЗПЛАТНИ снимки (Unsplash License / Pexels License — свободни за търговска употреба, без атрибуция). Сваля ги tools/fetch-photos.mjs; --apply ги вгражда в index.html на мястото на маркерите <!-- photo:<slot> -->…<!-- /photo:<slot> --> (слотове: rottami, sgomberi, imbiancature; hero е логото на фирмата). Нищо не се измисля: всеки запис има страница-източник и автор, проверени при курирането (2026-09-22).",
+  "_note": "Курирани БЕЗПЛАТНИ снимки (Unsplash License / Pexels License — свободни за търговска употреба, без атрибуция). Сваля ги tools/fetch-photos.mjs; --apply ги вгражда в index.html на мястото на маркерите <!-- photo:<slot> -->…<!-- /photo:<slot> --> (слотове: rottami, sgomberi, imbiancature; hero е логото на фирмата). Нищо не се измисля: всеки запис има страница-източник и автор, проверени при курирането (2026-09-22). ВНИМАНИЕ: сайтът вече носи реални снимки (виж `used`); `--apply` ги ЗАМЕНЯ с Unsplash/Pexels избора от `slots` — при това махни и реда с кредитите във футъра (Unsplash/Pexels не искат атрибуция).",
   "slots": {
     "rottami": {
       "source": "unsplash",
@@ -108,5 +108,27 @@
         "author": "Ernys"
       }
     ]
+  },
+  "used": {
+    "_note": "Вградените в момента снимки (images/photos/*). Източник: Open Images V7 (Google) → оригинали от Flickr, лиценз CC BY 2.0 — атрибуцията е във футъра и е задължителна; ритагляни до 1024×666. Свалени от open-images-dataset.s3.amazonaws.com, защото Unsplash/Pexels са блокирани в средата на изграждане.",
+    "rottami": {
+      "openimages_id": "c5c61116df89d52f",
+      "page": "https://www.flickr.com/photos/ginapina/431468846",
+      "author": "gina pina",
+      "license": "CC BY 2.0"
+    },
+    "sgomberi": {
+      "openimages_id": "25513b062bd77087",
+      "page": "https://www.flickr.com/photos/editor/47531021",
+      "author": "Bart Everson",
+      "title": "Soggy Junk",
+      "license": "CC BY 2.0"
+    },
+    "imbiancature": {
+      "openimages_id": "ba767847cc7e4bbc",
+      "page": "https://www.flickr.com/photos/tobi_and_fiona/62934325/",
+      "author": "Tobias Luetke",
+      "license": "CC BY 2.0"
+    }
   }
 }

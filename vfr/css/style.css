@@ -215,6 +215,8 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .footer-links { display: flex; gap: 22px; font-weight: 500; }
 .footer-legal { grid-column: 1 / -1; padding-top: 24px; border-top: 1px solid var(--line); line-height: 1.8; }
 .footer-legal a { color: var(--text); font-weight: 500; }
+.credits { font-size: 12px; color: var(--muted); }
+.credits a { color: var(--muted); font-weight: 400; text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── правни страници ── */
 .legal { max-width: 820px; margin: 0 auto; padding: calc(var(--nav-h) + 48px) var(--gutter) 96px; }
