@@ -176,7 +176,7 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .zone-inner { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
 .towns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
 .towns li { font-size: 13px; font-weight: 500; padding: 7px 13px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); color: var(--muted); }
-.towns li:first-child { background: var(--red-soft); border-color: rgba(216, 16, 15, 0.5); color: var(--red-2); }
+.towns li:nth-child(-n+2) { background: var(--red-soft); border-color: rgba(216, 16, 15, 0.5); color: var(--red-2); }
 .zone-art .art { width: 100%; height: auto; border-radius: 24px; border: 1px solid var(--line); }
 
 /* ── FAQ ── */
