@@ -1,0 +1,4 @@
+Contact: https://carbonstealth.eu
+Preferred-Languages: it, bg, en
+Canonical: https://vfr.carbonstealth.eu/.well-known/security.txt
+Expires: 2027-09-22T00:00:00.000Z

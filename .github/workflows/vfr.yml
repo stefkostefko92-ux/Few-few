@@ -1,0 +1,38 @@
+name: vfr
+
+on:
+  push:
+    paths:
+      - 'vfr/**'
+      - '.github/workflows/vfr.yml'
+  pull_request:
+    paths:
+      - 'vfr/**'
+      - '.github/workflows/vfr.yml'
+
+concurrency:
+  group: vfr-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Статичен сайт без билд. Проверяваме проверимото: локалните препратки съществуват, всяка
+      # страница носи ≥5 ключови думи с „Carbon Stealth", има непразен <title> + lang, и JSON-LD-то
+      # парсва (счупена схема = загубени богати резултати).
+      - name: Проверка на статичния сайт
+        run: node tools/qa/static-site-check.mjs vfr
+      - name: JSON-LD
+        run: |
+          node tools/seo/check-jsonld.mjs vfr/index.html
+          node tools/seo/check-jsonld.mjs vfr/privacy.html

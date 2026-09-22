@@ -1,0 +1,26 @@
+{
+  "name": "vfr-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "V.F.R. — sito vetrina: commercio rottami e metalli, sgomberi, imbiancature (Fino Mornasco, CO). Статичен, без билд.",
+  "type": "module",
+  "keywords": [
+    "rottami Fino Mornasco",
+    "commercio rottami e metalli Como",
+    "sgomberi Como",
+    "imbiancature Como",
+    "sito vetrina",
+    "Carbon Stealth"
+  ],
+  "scripts": {
+    "check": "node ../tools/qa/static-site-check.mjs .",
+    "jsonld": "node ../tools/seo/check-jsonld.mjs index.html && node ../tools/seo/check-jsonld.mjs privacy.html",
+    "photos": "node tools/fetch-photos.mjs",
+    "photos:apply": "node tools/fetch-photos.mjs --apply",
+    "og": "node tools/render-og.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.55.0",
+    "sharp": "^0.35.4"
+  }
+}
