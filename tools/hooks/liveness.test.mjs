@@ -79,6 +79,7 @@ const PAYLOADS = {
   "guard-secrets.mjs": { tool_name: "Write", tool_input: { file_path: "src/app.ts", content: "export const x = 1;" } },
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
   "session-dod.mjs": {},
+  "artifact-sync.mjs": {},
 };
 
 const hooks = registeredHooks();
@@ -94,6 +95,7 @@ const REGISTRATION = {
   "guard-prompt.mjs": { event: "UserPromptSubmit" },
   "precompact-save.mjs": { event: "PreCompact" },
   "session-dod.mjs": { event: "Stop" },
+  "artifact-sync.mjs": { event: "Stop" },
   // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без

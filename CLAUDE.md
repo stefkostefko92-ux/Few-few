@@ -293,6 +293,9 @@ are never touched — a bare `git commit` once swallowed an open 746-commit merg
 `main` in and pushes, one standing PR brings it home, and `memory-preload` reads pending lessons meanwhile.
 Before (measured 2026-09-23) 562 verified lessons sat in 32 task branches new sessions never saw;
 `tools/agents/harvest-memory.mjs` recovers them and the gate's `harvest` check keeps it visible.
+**Learning ⇒ the fleet Artifact is republished, always** (owner's rule, 2026-09-23): `tools/docs/build-artifact.mjs`
+builds from the `agents/memory` tip, and the `artifact-sync.mjs` Stop hook sends a session back once when
+this clone learned something not yet published (same URL, then `--mark-published <sha>`).
 Details → `.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
