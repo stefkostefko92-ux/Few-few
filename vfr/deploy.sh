@@ -5,6 +5,9 @@
 set -euo pipefail
 
 DOMAIN="${DOMAIN:-vfr.carbonstealth.eu}"
+# DOMAIN става път (/var/www/$DOMAIN) и отива в sed: `../../etc` би насочил `rsync --delete` към /etc,
+# а `&` чупи sed. Приемаме само валидно DNS име.
+[[ "$DOMAIN" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$ ]] || { echo "✗ невалиден DOMAIN: $DOMAIN" >&2; exit 1; }
 WEB_ROOT="/var/www/$DOMAIN"
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
@@ -39,7 +42,9 @@ echo "== V.F.R. → $DOMAIN"
 echo "[1/5] Файлове → $WEB_ROOT"
 sudo mkdir -p "$WEB_ROOT"
 # Allowlist: само публичното. photos.json е служебен (източници на снимките) — не се публикува.
-sudo rsync -a --delete \
+# --no-links: симлинк от репото не влиза в уеб корена (nginx иначе би го последвал извън него).
+# --delete-excluded: трие и стари файлове, които вече са изключени (иначе --delete ги оставя публикувани).
+sudo rsync -a --no-links --delete --delete-excluded \
   --exclude='images/photos.json' \
   --include='index.html' --include='privacy.html' --include='404.html' \
   --include='robots.txt' --include='sitemap.xml' --include='llms.txt' --include='indexnow-key.txt' \

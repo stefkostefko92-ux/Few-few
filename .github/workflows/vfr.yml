@@ -35,6 +35,10 @@ jobs:
       # парсва (счупена схема = загубени богати резултати).
       - name: Проверка на статичния сайт
         run: node tools/qa/static-site-check.mjs vfr
+      # Симлинк в продукта би сочил извън уеб корена на сървъра (deploy.sh ползва --no-links, nginx
+      # има disable_symlinks — това е третият слой: никакви симлинкове изобщо в репото).
+      - name: Без симлинкове
+        run: test -z "$(find vfr -type l)" || { find vfr -type l; echo "::error::симлинк в vfr/"; exit 1; }
       - name: JSON-LD
         run: |
           node tools/seo/check-jsonld.mjs vfr/index.html
