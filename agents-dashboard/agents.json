@@ -4517,7 +4517,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 43
+        "lessons": 44
       },
       "evolution": [
         {
@@ -4621,9 +4621,20 @@
           "date": "2026-07-29",
           "event": "v10.2 — учене",
           "detail": "Научи: Chrome Soft Navigations API излиза unflagged от Chrome 151 (юли 2026), но интеграцията … (+1 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-09-23",
+          "event": "v10.3 — учене",
+          "detail": "Научи: CLS 0.000 в лаб одита може да е късмет с времето: при font-display swap и шрифтове, дош…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „CLS 0.000 в лаб одита може да е късмет с времето: при font-display swap и шрифтове, дош…\" · 3 в карантина"
+        },
         {
           "date": "2026-07-29",
           "type": "quarantine",
@@ -10778,7 +10789,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 178
+        "lessons": 179
       },
       "evolution": [
         {
@@ -11200,9 +11211,20 @@
           "date": "2026-09-23",
           "event": "v15.9 — учене",
           "detail": "Научи: На vfr/ (тъмен сайт с бял paper-секции), глобален .eyebrow с фиксиран --red-2 цвят чупи… (+14 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-09-23",
+          "event": "v16.0 — учене",
+          "detail": "Научи: В @media print reveal анимациите (opacity 0 → 1 с transition 0.9s) излизат бледи, дори …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „В @media print reveal анимациите (opacity 0 → 1 с transition 0.9s) излизат бледи, дори …\""
+        },
         {
           "date": "2026-09-23",
           "type": "learning",
@@ -13440,6 +13462,11 @@
       "activity": [
         {
           "date": "2026-09-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Авто-комитът на паметта правеше git add само на своите 3 пътя, но после гол git commit …\""
+        },
+        {
+          "date": "2026-09-23",
           "type": "learning",
           "summary": "Научи: „Куката записва САМО последния LEARN блок в транскрипта (lastLearnBlock), а блокът свърш…\" (+3 още) · 1 в карантина"
         },
@@ -14997,6 +15024,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Предаденият пач (candidate.diff) се разминаваше с финалните стойности в доклада: съдърж…\""
+        },
         {
           "date": "2026-09-23",
           "type": "learning",
