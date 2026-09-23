@@ -13291,7 +13291,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 182
+        "lessons": 183
       },
       "evolution": [
         {
@@ -13353,9 +13353,20 @@
           "date": "2026-09-23",
           "event": "v17.4 — учене",
           "detail": "Научи: Фонов субагент предава финалния доклад през tool_use SubagentHandback — докладът и LEAR… (+2 още)"
+        },
+        {
+          "version": "17.5.0",
+          "date": "2026-09-23",
+          "event": "v17.5 — учене",
+          "detail": "Научи: Авто-комитът на паметта правеше git add само на своите 3 пътя, но после гол git commit …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „Авто-комитът на паметта правеше git add само на своите 3 пътя, но после гол git commit …\""
+        },
         {
           "date": "2026-09-23",
           "type": "learning",
