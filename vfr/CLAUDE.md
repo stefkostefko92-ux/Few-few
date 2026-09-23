@@ -16,12 +16,12 @@ security.txt, nginx.conf, deploy.sh)._
 ```
 index.html          сайтът (hero, servizi ×3, come lavoriamo, perché, zona, FAQ, contatti)
 privacy.html        informativa privacy (GDPR, IT); 404.html — брандирана 404 (noindex)
-css/style.css       дизайн-токени в :root; css/fonts.css — self-hosted Sora + Inter (fonts/*.woff2, OFL)
+css/style.css       дизайн-токени в :root + @font-face за self-hosted Sora и Inter (fonts/*.woff2, OFL) — един CSS файл
 css/404.css         стилът на 404 (файл, не inline — CSP е без 'unsafe-inline')
 js/main.js          меню · reveal (IntersectionObserver, reduced-motion) · scroll-spy · карта по клик
-images/             logo.png (1024, прозрачен фон) · logo-nav.png/.webp (160) · favicon.svg + favicon-64.png · og.jpg · apple-touch-icon.png
+images/             logo.png + logo.avif (1024, прозрачен фон; AVIF q60 = −28%) · logo-nav.png/.webp (160) · favicon.svg + favicon-64.png · og.jpg · apple-touch-icon.png
 images/photos.json  курирани безплатни снимки (Unsplash/Pexels) със страница-източник + автор
-images/photos/      свалените снимки (jpg+webp) — пълни се от tools/fetch-photos.mjs
+images/photos/      снимките (avif+jpg, 1024 и 640) — пълни се от tools/fetch-photos.mjs
 tools/              fetch-photos.mjs (сваля+оптимизира+вгражда) · render-og.mjs (og.jpg през Chromium)
 llms.txt · robots.txt · sitemap.xml · indexnow-key.txt · .well-known/security.txt
 nginx.conf · deploy.sh   сървърна конфигурация (в репото, не на ръка)
@@ -29,7 +29,7 @@ nginx.conf · deploy.sh   сървърна конфигурация (в репо
 
 ## Снимки (важно)
 
-Трите услуги носят **реални снимки** (`images/photos/`, 1024×666 + 640 вариант, jpg+webp) от
+Трите услуги носят **реални снимки** (`images/photos/`, 1024×666 + 640 вариант, avif+jpg — без WebP: на тези снимки беше по-голям от JPG) от
 **Open Images V7** (Google) — оригинали от Flickr под **CC BY 2.0**: атрибуцията във футъра
 („Foto dei servizi (ritagliate): …“) е **задължителна по лиценз**, не я махай. Източник на
 свалянето: `open-images-dataset.s3.amazonaws.com` (единственият фото-хост, който egress policy-то
@@ -74,7 +74,12 @@ npm run check                             # гейтът трябва да ос�
 - Reveal анимациите са само с `.js` клас и падат при `prefers-reduced-motion`.
 - **Нула inline стилове/скриптове** (`style=`, `<style>`, `<script>` с код) — CSP е `style-src 'self'`
   без `'unsafe-inline'`; inline стил тихо не се прилага в продукция. JSON-LD е данни и е позволен.
+- **Промяна в `css/style.css` или `js/main.js` → вдигни `?v=` в HTML-ите** (index + privacy). Nginx ги кешира 7 дни,
+  без нова версия посетителите виждат старото.
+- **Изображения: AVIF + JPG, без WebP.** Мери байтовете: на шумни снимки WebP q76 излизаше по-голям от mozjpeg q80.
 - **Никакъв `add_header` в `location`** в `nginx.conf` — отменя всички security хедъри от `server`.
+- **Deny location-ите в `nginx.conf` стоят ПРЕДИ кеш regex-ите** — regex-ите се проверяват по ред, печели първият.
+- **Никакви симлинкове в `vfr/`** (CI пада) — nginx е с `disable_symlinks`, rsync с `--no-links`.
 - SEO промяна → `node tools/seo/indexnow.mjs https://vfr.carbonstealth.eu` (ключът е на `/indexnow-key.txt`).
 
 ## Гейт

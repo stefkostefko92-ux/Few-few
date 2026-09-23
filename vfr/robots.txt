@@ -12,4 +12,13 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+# Ботове за търсене/цитиране в реално време (отделни от обучаващите горе) — изрично разрешени,
+# за да остане решението видимо, ако някой ден се блокират само обучаващите.
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+
 Sitemap: https://vfr.carbonstealth.eu/sitemap.xml

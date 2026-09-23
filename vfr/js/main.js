@@ -16,10 +16,23 @@
       toggle.setAttribute("aria-expanded", String(open));
       toggle.setAttribute("aria-label", open ? "Chiudi il menu" : "Apri il menu");
     });
-    links.addEventListener("click", (e) => {
-      if (e.target.closest("a")) { links.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); }
+    const closeMenu = (focusToggle) => {
+      links.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Apri il menu");
+      if (focusToggle) toggle.focus();
+    };
+    links.addEventListener("click", (e) => { if (e.target.closest("a")) closeMenu(false); });
+    // Escape затваря менюто и връща фокуса на бутона (WAI-ARIA disclosure).
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && links.classList.contains("open")) closeMenu(true);
     });
   }
+
+  // Печат: отвори всички FAQ, за да излязат и отговорите на хартия.
+  window.addEventListener("beforeprint", () => {
+    document.querySelectorAll("details.faq-item").forEach((d) => { d.open = true; });
+  });
 
   // Сянка на навигацията след скрол
   const onScroll = () => nav && nav.classList.toggle("scrolled", window.scrollY > 12);

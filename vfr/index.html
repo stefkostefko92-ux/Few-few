@@ -35,15 +35,14 @@
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <link rel="preload" href="fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/style.css?v=20260923">
+<link rel="stylesheet" href="css/style.css?v=20260923b">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": ["LocalBusiness", "Organization"],
+      "@type": ["LocalBusiness", "RecyclingCenter", "Organization"],
       "@id": "https://vfr.carbonstealth.eu/#business",
       "name": "V.F.R.",
       "alternateName": ["VFR Fino Mornasco", "V.F.R. rottami e metalli"],
@@ -120,7 +119,7 @@
       "isPartOf": { "@id": "https://vfr.carbonstealth.eu/#website" },
       "about": { "@id": "https://vfr.carbonstealth.eu/#business" },
       "inLanguage": "it-IT",
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-09-23",
       "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["#hero-title", "#hero-lede", ".faq-a"] }
     },
     {
@@ -206,7 +205,7 @@
     <a href="#faq">Domande</a>
     <a href="#contatti">Contatti</a>
   </nav>
-  <a class="btn btn-nav" href="tel:+393774423899">Chiama ora</a>
+  <a class="btn btn-nav" href="tel:+393774423899" aria-label="Chiama ora: +39 377 442 3899"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.9 19.9 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.9 19.9 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10.1a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg><span class="txt">Chiama ora</span></a>
   <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
     <span></span><span></span><span></span>
   </button>
@@ -253,6 +252,7 @@
     </div>
     <div class="hero-art reveal d2">
       <picture>
+        <source type="image/avif" srcset="images/logo.avif">
         <img class="hero-logo" src="images/logo.png" alt="Logo V.F.R. — commercio rottami e metalli, sgomberi e imbiancature" width="1024" height="1014" fetchpriority="high" decoding="async">
       </picture>
       <div class="hero-card">
@@ -281,7 +281,7 @@
       <!-- photo:rottami -->
       <div class="service-art">
         <picture>
-          <source type="image/webp" srcset="images/photos/rottami-640.webp 640w, images/photos/rottami.webp 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px">
+          <source type="image/avif" srcset="images/photos/rottami-640.avif 640w, images/photos/rottami.avif 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px">
           <img src="images/photos/rottami.jpg" srcset="images/photos/rottami-640.jpg 640w, images/photos/rottami.jpg 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px" alt="Escavatore con pinza a polipo che carica rottami metallici in un deposito" width="1024" height="666" loading="lazy" decoding="async">
         </picture>
       </div>
@@ -289,7 +289,7 @@
       <div class="service-body">
         <span class="num">01</span>
         <h3>Commercio rottami e metalli</h3>
-        <p>Acquistiamo e ritiriamo rottami ferrosi e metalli non ferrosi da privati, officine, artigiani, cantieri e aziende, <strong>in tutta Italia</strong>. Pesatura trasparente, valutazione secondo le quotazioni di mercato del giorno, ritiro con mezzi propri e <strong>magazzino di proprietà</strong> a Fino Mornasco.</p>
+        <p>Acquistiamo e ritiriamo rottami ferrosi e metalli non ferrosi da privati, officine, artigiani, cantieri e aziende, <strong>in tutta Italia</strong>. Pesatura trasparente, valutazione secondo le quotazioni di mercato del giorno, ritiro con mezzi propri e <strong>magazzino di proprietà</strong> a Fino Mornasco. Il ritiro dei rottami è a domicilio: presso abitazioni, officine, cantieri e aziende, nel giorno e all'orario concordati.</p>
         <ul class="checks">
           <li>Ferro, acciaio, inox e ghisa</li>
           <li>Rame, ottone, bronzo, alluminio, piombo, zinco</li>
@@ -305,7 +305,7 @@
       <!-- photo:sgomberi -->
       <div class="service-art">
         <picture>
-          <source type="image/webp" srcset="images/photos/sgomberi-640.webp 640w, images/photos/sgomberi.webp 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px">
+          <source type="image/avif" srcset="images/photos/sgomberi-640.avif 640w, images/photos/sgomberi.avif 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px">
           <img src="images/photos/sgomberi.jpg" srcset="images/photos/sgomberi-640.jpg 640w, images/photos/sgomberi.jpg 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px" alt="Mobili, elettrodomestici e oggetti accatastati pronti per lo sgombero" width="1024" height="666" loading="lazy" decoding="async">
         </picture>
       </div>
@@ -313,7 +313,7 @@
       <div class="service-body">
         <span class="num">02</span>
         <h3>Sgomberi</h3>
-        <p>Svuotiamo appartamenti, cantine, solai, garage, uffici, negozi e capannoni. Smontiamo, carichiamo, portiamo via e lasciamo i locali puliti, pronti per la vendita, l'affitto o la ristrutturazione.</p>
+        <p>Svuotiamo appartamenti, cantine, solai, garage, uffici, negozi e capannoni. Smontiamo, carichiamo, portiamo via e lasciamo i locali puliti, pronti per la vendita, l'affitto o la ristrutturazione. Sgomberi a Como, Milano e nelle principali città del Nord Italia, con sopralluogo e preventivo gratuiti.</p>
         <ul class="checks">
           <li>Appartamenti, ville e case in successione</li>
           <li>Cantine, solai, box e garage</li>
@@ -328,7 +328,7 @@
       <!-- photo:imbiancature -->
       <div class="service-art">
         <picture>
-          <source type="image/webp" srcset="images/photos/imbiancature-640.webp 640w, images/photos/imbiancature.webp 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px">
+          <source type="image/avif" srcset="images/photos/imbiancature-640.avif 640w, images/photos/imbiancature.avif 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px">
           <img src="images/photos/imbiancature.jpg" srcset="images/photos/imbiancature-640.jpg 640w, images/photos/imbiancature.jpg 1024w" sizes="(max-width: 1080px) min(100vw, 640px), 400px" alt="Imbianchino che tinteggia una parete interna con il rullo" width="1024" height="666" loading="lazy" decoding="async">
         </picture>
       </div>
@@ -336,7 +336,7 @@
       <div class="service-body">
         <span class="num">03</span>
         <h3>Imbiancature</h3>
-        <p>Tinteggiamo interni di appartamenti, uffici e negozi. Prepariamo le superfici, stucchiamo le piccole crepe, proteggiamo mobili e pavimenti e consegniamo pareti uniformi e ambienti puliti.</p>
+        <p>Cerchi un imbianchino a Como o a Milano? Tinteggiamo interni di appartamenti, uffici e negozi. Prepariamo le superfici, stucchiamo le piccole crepe, proteggiamo mobili e pavimenti e consegniamo pareti uniformi e ambienti puliti.</p>
         <ul class="checks">
           <li>Pareti e soffitti, tinte unite e colori a scelta</li>
           <li>Pitture lavabili, traspiranti e antimuffa</li>
@@ -400,7 +400,7 @@
         <g fill="none" stroke="rgba(255,255,255,.08)"><path d="M0 105h520M0 210h520M0 315h520M130 0v420M260 0v420M390 0v420"/></g>
         <circle cx="260" cy="210" r="170" fill="url(#ring)"/>
         <g fill="none" stroke="#d8100f" stroke-opacity=".55" stroke-dasharray="4 8"><circle cx="260" cy="210" r="75"/><circle cx="260" cy="210" r="150"/><circle cx="260" cy="210" r="205"/></g>
-        <g fill="#5b5b63" font-family="Inter, system-ui, sans-serif" font-size="10"><text x="338" y="150">100 km</text><text x="413" y="98">200 km</text></g>
+        <g fill="#83838a" font-family="Inter, system-ui, sans-serif" font-size="10"><text x="338" y="150">100 km</text><text x="413" y="98">200 km</text></g>
         <g fill="#a7a7ae" font-family="Inter, system-ui, sans-serif" font-size="12">
           <circle cx="268" cy="234" r="3.5" fill="#e8e2d8"/><text x="280" y="250" text-anchor="start">Milano</text>
           <circle cx="180" cy="266" r="3.5" fill="#e8e2d8"/><text x="172" y="270" text-anchor="end">Torino</text>
@@ -501,6 +501,6 @@
   </div>
 </footer>
 
-<script src="js/main.js" defer></script>
+<script src="js/main.js?v=20260923b" defer></script>
 </body>
 </html>

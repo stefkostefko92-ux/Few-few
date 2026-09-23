@@ -1,5 +1,58 @@
 /* V.F.R. — палитрата е от логото: черно · червено (#d8100f) · бяло; стомана за плочите.
    Без билд, без зависимости. Токени в :root, всичко останало ги ползва. */
+/* ── шрифтове (self-hosted, OFL) — слети тук от fonts.css: една render-blocking заявка по-малко ── */
+/* Самостоятелно хоствани шрифтове (GDPR: нула заявки към Google Fonts).
+   Sora — заглавия (variable 100–800), Inter — текст (variable 100–900). Само latin подмножество:
+   италианският (àèéìòù) е изцяло в U+0000-00FF. Източник: Google Fonts, лиценз OFL. */
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("../fonts/sora-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Резервни шрифтове с коригирани метрики: докато Sora/Inter се зареждат (font-display: swap), текстът
+   е с резервен системен шрифт, мащабиран до СЪЩАТА ширина и височина на реда → смяната не мести
+   съдържанието (CLS). Измерено в Chromium 2026-09-23: Sora 700/800 = 107.4–108.1% от Arial/Liberation
+   Bold, Inter 400 = 106.4% от Arial/Liberation Regular; ascent/descent от hhea на самите woff2. */
+@font-face {
+  font-family: "Sora Fallback";
+  font-weight: 100 800;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("LiberationSans-Bold"), local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"), local("Roboto Bold"), local("Roboto-Bold");
+  size-adjust: 107.8%;
+  ascent-override: 90%;
+  descent-override: 27%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 100 500;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"), local("Helvetica Neue"), local("HelveticaNeue"), local("Roboto"), local("Roboto-Regular");
+  size-adjust: 106.4%;
+  ascent-override: 91%;
+  descent-override: 22.7%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 600 900;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("LiberationSans-Bold"), local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"), local("Roboto Bold"), local("Roboto-Bold");
+  size-adjust: 106.4%;
+  ascent-override: 91%;
+  descent-override: 22.7%;
+  line-gap-override: 0%;
+}
+
 :root {
   --ink: #050505;
   --ink-2: #0e0e10;
@@ -16,8 +69,8 @@
   --muted: #a7a7ae;
   --text-dark: #111113;
   --muted-dark: #5b5b63;
-  --font-head: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Sora", "Sora Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
   --radius: 22px;
   --radius-s: 14px;
   --gutter: clamp(16px, 5vw, 72px);
@@ -61,6 +114,9 @@ p { margin: 0; }
 .eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--red-2); border-radius: 2px; }
 .sub { font-size: clamp(17px, 1.4vw, 20px); color: var(--muted); max-width: 640px; margin-top: 18px; }
 .section-head { max-width: 760px; margin-bottom: clamp(36px, 5vw, 64px); }
+/* Котвите (#servizi, #sgomberi…) не се скриват под фиксираното меню — и без JS smooth scroll. */
+section[id], article[id] { scroll-margin-top: var(--nav-h); }
+::selection { background: var(--red); color: #fff; }
 
 /* ── бутони ── */
 .btn {
@@ -75,6 +131,7 @@ p { margin: 0; }
 .btn-ghost:hover { border-color: rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
 .btn-nav { padding: 11px 20px; font-size: 14px; background: var(--red); color: #fff; }
 .btn-nav:hover { background: var(--red-2); }
+.btn-nav svg { width: 16px; height: 16px; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
 .link { display: inline-flex; gap: 8px; align-items: center; font-family: var(--font-head); font-weight: 600; font-size: 15px; color: var(--red-2); margin-top: 22px; }
 .link span { transition: transform 0.3s var(--ease); }
@@ -135,6 +192,9 @@ p { margin: 0; }
 section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .services, .faq { background: var(--paper); color: var(--text-dark); }
 .services .sub, .faq .sub { color: var(--muted-dark); }
+/* На светлите секции --red-2 е 3.81:1 (под AA); --red е 4.78:1. */
+.services .eyebrow, .faq .eyebrow { color: var(--red); }
+.services .eyebrow::before, .faq .eyebrow::before { background: var(--red); }
 .services .section-head, .faq .section-head, .service-grid, .faq-list, .steps, .why-inner, .zone-inner, .contact-inner { max-width: var(--max); margin-left: auto; margin-right: auto; }
 
 .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -182,7 +242,7 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .towns li { font-size: 13px; font-weight: 500; padding: 7px 13px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); color: var(--muted); }
 /* Фон 0.08, не --red-soft (0.16): при 0.16 червеният текст е 4.49:1 (под AA 4.5), при 0.08 — 4.72:1. */
 .towns li:nth-child(-n+2) { background: rgba(216, 16, 15, 0.08); border-color: rgba(216, 16, 15, 0.5); color: var(--red-2); }
-.zone-art .art { width: 100%; height: auto; border-radius: 24px; border: 1px solid var(--line); }
+.zone-art .art { width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
 
 /* ── FAQ ── */
 .faq-list { display: grid; gap: 12px; max-width: 860px; }
@@ -190,7 +250,9 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .faq-item[open] { border-color: var(--red); }
 .faq-item summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 0; }
 .faq-item summary::-webkit-details-marker { display: none; }
-.faq-item summary h3 { font-size: 18px; font-weight: 600; }
+.faq-item summary h3 { font-size: 18px; font-weight: 600; transition: color 0.2s; }
+.faq-item summary:hover h3 { color: var(--red); }
+.faq-item summary:hover::after { background: var(--paper-2); }
 .faq-item summary::after { content: "+"; flex: 0 0 34px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--paper); color: var(--red); font-family: var(--font-head); font-size: 22px; font-weight: 500; transition: transform 0.3s var(--ease), background 0.2s; }
 .faq-item[open] summary::after { transform: rotate(45deg); background: var(--red); color: #fff; }
 .faq-a { color: var(--muted-dark); padding: 0 0 22px; font-size: 16px; max-width: 720px; }
@@ -219,7 +281,7 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .footer a:hover { color: var(--red-2); }
 .footer-links { display: flex; gap: 22px; font-weight: 500; }
 .footer-legal { grid-column: 1 / -1; padding-top: 24px; border-top: 1px solid var(--line); line-height: 1.8; }
-.footer-legal a { color: var(--text); font-weight: 500; }
+.footer-legal a { color: var(--text); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
 .credits { font-size: 12px; color: var(--muted); }
 .credits a { color: var(--muted); font-weight: 400; text-decoration: underline; text-underline-offset: 2px; }
 
@@ -231,7 +293,7 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .legal ul { list-style: disc; padding-left: 22px; display: grid; gap: 8px; }
 .legal p + p { margin-top: 12px; }
 .legal .updated { font-size: 14px; margin-bottom: 28px; }
-.legal a { color: var(--red-2); }
+.legal a { color: var(--red-2); text-decoration: underline; text-underline-offset: 2px; }
 .legal table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .legal th, .legal td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .legal th { color: var(--text); font-family: var(--font-head); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -247,7 +309,7 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
-  .btn, .service, .why-card, .contact-row, .link span, .nav-toggle span { transition: none; }
+  .btn, .service, .why-card, .contact-row, .link span, .nav-toggle span, .faq-item summary h3, .faq-item summary::after { transition: none; }
 }
 
 /* ── отзивчивост ── */
@@ -256,11 +318,13 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
   .steps { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 900px) {
-  .nav-links { display: none; position: absolute; top: var(--nav-h); left: 0; right: 0; flex-direction: column; gap: 0; padding: 12px var(--gutter) 20px; background: rgba(5, 5, 5, 0.98); border-bottom: 1px solid var(--line); }
+  .nav-links { display: none; position: absolute; top: var(--nav-h); left: 0; right: 0; flex-direction: column; gap: 0; padding: 12px var(--gutter) 20px; background: var(--ink); border-bottom: 1px solid var(--line); box-shadow: 0 24px 40px -20px rgba(0, 0, 0, 0.9); }
   .nav-links.open { display: flex; }
   .nav-links a { padding: 14px 0; font-size: 17px; border-bottom: 1px solid var(--line); }
   .nav-toggle { display: flex; }
-  .btn-nav { display: none; }
+  /* Таблет/мобилно: основното CTA остава видимо като кръгъл бутон със слушалка (≥44px тъч цел). */
+  .btn-nav { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .btn-nav .txt { display: none; }
   .hero-inner, .why-inner, .zone-inner, .contact-inner { grid-template-columns: 1fr; }
   .why-copy { position: static; }
   .hero-art { max-width: 520px; margin: 0 auto; }
@@ -274,4 +338,22 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
   .contact-row { grid-template-columns: 1fr; gap: 4px; }
   .btn-row .btn { width: 100%; justify-content: center; }
   .map { min-height: 380px; }
+}
+
+/* ── печат: светло, само съдържанието (контакти, услуги, FAQ) — без черен фон и декор ── */
+@media print {
+  :root { color-scheme: light; }
+  body { background: #fff; color: #111; font-size: 11pt; }
+  .nav, .skip, .hero-bg, .hero-art, .materials, .btn-row, .link, .service-art, .zone-art, .map, .brand-mark { display: none !important; }
+  .hero, section, .footer { background: #fff !important; color: #111 !important; padding: 14pt 0 !important; border: 0 !important; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .js .reveal { opacity: 1 !important; transform: none !important; }
+  h1, h2, h3 { color: #111 !important; break-after: avoid; }
+  .accent, .eyebrow, .num, .contact-k, .towns li:nth-child(-n+2) { color: #b00d0c !important; }
+  .eyebrow::before { background: #b00d0c !important; }
+  .lede, .sub, .service p, .step p, .why-card p, .faq-a, .hero-points, .towns li, .footer, .credits, .credits a { color: #333 !important; }
+  .service, .step, .why-card, .contact-row, .faq-item, .towns li { background: #fff !important; border: 1px solid #ccc !important; box-shadow: none !important; break-inside: avoid; }
+  .service-grid, .steps, .why-grid, .why-inner, .zone-inner, .contact-inner, .footer-inner { display: block !important; }
+  .service, .step, .why-card { margin-bottom: 10pt; }
+  .footer-legal a, .footer a { color: #111 !important; }
 }
