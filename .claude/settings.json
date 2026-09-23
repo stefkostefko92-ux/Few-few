@@ -75,7 +75,7 @@
         ]
       },
       {
-        "matcher": "Bash|WebFetch|WebSearch",
+        "matcher": "Bash|WebFetch|WebSearch|mcp__.*",
         "hooks": [
           {
             "type": "command",

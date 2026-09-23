@@ -277,15 +277,20 @@ Claude" (Anthropic, 33 стр.) описва изисквания, които п
 `guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
 `curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
 (PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
-(PreToolUse/Bash|WebFetch|WebSearch — blocks secrets/PII leaving via any net verb/interpreter, incl. pipe,
-`$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads, credential-emitting
-commands, and **staging** for a later exfil; the lethal-trifecta exit). All four import the **one**
+(PreToolUse/Bash|WebFetch|WebSearch|**mcp__.\*** — blocks secrets/PII leaving via any net verb/interpreter,
+incl. pipe, `$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads,
+credential-emitting commands, **staging** for a later exfil, and **any MCP tool argument** (GitHub comment
+body, Gmail draft, SEO query — the whole `tool_input` is serialized and scanned; 3/3 live probes passed
+before 2026-09-21); the lethal-trifecta exit). All four import the **one**
 secret list (`tools/lib/secret-patterns.mjs`, parity-tested) and `sanitize()` their input (invisible
 chars hide payloads). Fail-open on hook error, fail-closed on a hit; tested (`tools/hooks/guards.test.mjs`),
 registered in `settings.json`. **Red-teamed through the CLI, not the functions** — 2026-09-08/09: 67 live
-probes → 41 bypasses closed, 3 false positives caught on my own commands (mention ≠ execution; a flag
-must stand alone; home is the home itself), every one a mutation-proven regression + ledger entry.
-Details → `.claude/hooks/README.md`.
+probes → 41 bypasses closed, 4 false positives caught on my own commands (mention ≠ execution; a flag
+must stand alone; home is the home itself; `env` is a dump only as a *command*, not the `.env` extension),
+every one a mutation-proven regression + ledger entry. **Memory auto-commit is scoped** (`gitSyncScript`):
+it never touches an open merge/rebase/cherry-pick and commits `--only` its three files — a bare `git commit`
+once swallowed the owner's open 746-commit merge (2026-09-21); proven against a real temp repo in
+`tools/hooks/git-sync.test.mjs`. Details → `.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
 automations (route data through an external SaaS + auth) — wrong model for our EU-hosted, GDPR-first,

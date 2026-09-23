@@ -301,23 +301,42 @@ function updateDashboard(agentId, entry, evoDetail, verifiedCount = 1) {
 // агенти губеха поуки. flock -w 120 ЧАКА реда си (не „пропуска" като mkdir-lock при контенция).
 // Detached: не блокира hook-а (SubagentStop има timeout). Push политика: на канона (main/master)
 // не пушва сам (влиза през човек/CI/PR — verified-гейтът е синтактичен), освен AGENT_MEMORY_PUSH_MAIN=1.
-function bgGitSync(agentId) {
-  if (!/^[\w-]+$/.test(agentId)) return; // sanity срещу инжекция в командата
-  const lock = join(PROJECT_DIR, "agents-dashboard", ".git-sync.lock");
-  const pushMain = process.env.AGENT_MEMORY_PUSH_MAIN === "1" ? "1" : "0";
-  const script = [
+//
+// Дефект, хванат на живо (2026-09-21): `git add <3 файла>` + голо `git commit` комитва ЦЕЛИЯ индекс —
+// авто-комитът „auto: izpitatelya научи" погълна отворен merge на 746 комита (629 файла) на човека и
+// го пушна. Две отделни поправки: (1) при ОТВОРЕНА git операция (merge/rebase/cherry-pick/revert) не
+// пипаме нищо — човекът е по средата на нещо; (2) `git commit --only -- <пътища>` комитва САМО нашите
+// три файла, каквото и друго да е стажирано (то остава в индекса, непокътнато).
+// Изнесен като чиста функция (без спавн), за да е тестваем срещу истинско временно репо.
+export function gitSyncScript(agentId, { projectDir = PROJECT_DIR, lock = join(projectDir, "agents-dashboard", ".git-sync.lock"), pushMain = "0", push = true } = {}) {
+  if (!/^[\w-]+$/.test(agentId)) return null; // sanity срещу инжекция в командата
+  const paths = [`.claude/agents/_memory/${agentId}.md`, "agents-dashboard/agents.json", "agents-dashboard/index.html"]
+    .map((p) => `"${p}"`).join(" ");
+  return [
     `exec 9>"${lock}" 2>/dev/null || exit 0`,
     `flock -w 120 9 || exit 0`,                        // изчакай реда си (до 120с), после се откажи тихо
-    `cd "${PROJECT_DIR}" || exit 0`,
-    `git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html" 2>/dev/null`,
-    `git diff --cached --quiet 2>/dev/null && exit 0`, // нищо staged → нищо за commit
+    `cd "${projectDir}" || exit 0`,
+    // Отворена операция на човека → не сме ние на ход. (rebase-merge/rebase-apply са папките на
+    // интерактивния/apply rebase — REBASE_HEAD не съществува във всяка версия на git.)
+    `for h in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD REVERT_HEAD; do git rev-parse -q --verify "$h" >/dev/null 2>&1 && exit 0; done`,
+    `g=$(git rev-parse --git-dir 2>/dev/null) || exit 0`,
+    `[ -d "$g/rebase-merge" ] || [ -d "$g/rebase-apply" ] && exit 0`,
+    `git add ${paths} 2>/dev/null`,
+    `git diff --cached --quiet -- ${paths} 2>/dev/null && exit 0`, // нищо НАШЕ staged → нищо за commit
     // Имейлът е noreply@anthropic.com — иначе GitHub показва авто-комитите като Unverified
     // (carbonstealth имейлът не е свързан с подписващ акаунт; stop-hook-git-check го лови).
-    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
-    `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
-    `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
-    `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,
+    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit --only -m "auto: ${agentId} научи — памет + версия + табло" -- ${paths} >/dev/null 2>&1 || exit 0`,
+    ...(push ? [
+      `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
+      `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
+      `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,
+    ] : []),
   ].join("\n");
+}
+
+function bgGitSync(agentId) {
+  const script = gitSyncScript(agentId, { pushMain: process.env.AGENT_MEMORY_PUSH_MAIN === "1" ? "1" : "0" });
+  if (!script) return;
   try {
     const child = spawn("sh", ["-c", script], { cwd: PROJECT_DIR, detached: true, stdio: "ignore", env: process.env });
     child.unref();

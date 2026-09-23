@@ -96,7 +96,9 @@ const REGISTRATION = {
   "session-dod.mjs": { event: "Stop" },
   // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
-  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/] },
+  // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
+  // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
+  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/, /mcp__/] },
   "guard-secrets.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
 };
 

@@ -24,7 +24,7 @@ settings.json бяха регистрирани четири с други match
 | **`guard-prompt.mjs`** | `UserPromptSubmit` | Случайно ПОСТАВЕНА тайна в промпта (клипборд) — да не влезе в история/логове. Байпас по избор: „[секрет-ок]". |
 | **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. |
 | **`guard-secrets.mjs`** | `PostToolUse` · `Write\|Edit\|MultiEdit\|NotebookEdit` | Тъкмо записан файл/бележник с високо-уверен credential (17 типа от `tools/lib/secret-patterns.mjs`). Пропуска fixture/test/eval/scratch пътища. Твърдият гейт остава `secret-scan.mjs` при commit/CI. |
-| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене. |
+| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). |
 
 **Един източник за „какво е тайна":** `tools/lib/secret-patterns.mjs` (`CREDENTIAL`). Трите куки
 (`guard-secrets` → `guard-exfil`, `guard-prompt`) го ИМПОРТИРАТ; `secret-parity.test.mjs` пази и трите.
@@ -46,6 +46,29 @@ U+200B, Unicode Tags и др. — и нормализира NFKC). Без тов
   от празно място, а името на файла — да не прекрачва кавичка/запетая.
 - **Домът е самият дом:** `rm -rf ~/.cache` не е катастрофа; `~`, `$HOME`, `.` — само когато са целият път.
 - `psql $DATABASE_URL -c … > out.txt` редиректира ИЗХОД, не тайната → стажирането се котви към `echo/printf`.
+- **`env` е dump само като КОМАНДА** (2026-09-21, хванато върху собствена команда): `\benv\b` ловеше и
+  РАЗШИРЕНИЕТО `.env` — `x="a.env"` в скрипт с `fetch(` даваше „пълен env dump към мрежата". Котвата
+  `ENV_CMD` изисква `env`/`printenv`/`set` да не са след `.`, `/`, `-`, `_` или буква; изпращането на `.env`
+  ФАЙЛ си остава хванато от отделния `ENV_FILE`.
+
+### MCP каналът (2026-09-21)
+MCP инструментите са изходен канал наравно с Bash/WebFetch: тяло на коментар в GitHub, чернова в Gmail, заявка
+към SEO API напускат машината. Проба на живо: 3/3 извиквания с тайна в аргумент минаха, защото matcher-ът
+беше `Bash|WebFetch|WebSearch`. Сега `mcp__.*` е в matcher-а, а `detectMcpExfil()` сериализира ЦЕЛИЯ
+`tool_input` (формата е различна за всеки сървър — не гадаем полета) и търси същите литерални тайни + секрет в
+URL query. MCP се проверява ПЪРВИ в диспечера — име като `mcp__x__fetch_page` иначе би паднало в
+`detectUrlExfil(ti.url)` с `undefined`. `deep-audit` брои `mcp__` в `tools:` на агент за недоверена външна
+повърхност (иска injection spec) — днес нула агенти го имат; регексът е покритие за бъдещето, не мутационно
+доказано.
+
+### Авто-комитът на паметта (`memory-capture.mjs` → `gitSyncScript`)
+Дефект на живо (2026-09-21): `git add <3 файла>` + голо `git commit` комитва ЦЕЛИЯ индекс — по средата на
+отворен merge на човека (746 комита, 629 файла в индекса) авто-комитът „auto: izpitatelya научи" го погълна и
+пушна. Сега: (1) при отворена операция (`MERGE_HEAD`/`REBASE_HEAD`/`CHERRY_PICK_HEAD`/`REVERT_HEAD`,
+папки `rebase-merge`/`rebase-apply`) скриптът излиза без да пипа; (2) `git commit --only -- <3 пътя>` — чуждото
+стажирано остава в индекса, непокътнато. Git сам отказва частичен commit при merge/cherry-pick, но при REBASE го
+разрешава — затова гардът е нужен, не само `--only`. `tools/hooks/git-sync.test.mjs` го доказва срещу истинско
+временно репо (merge · cherry-pick · rebase · чуждо стажирано) + две мутации.
 
 ### Червен екип — как се проверява (повторяемо)
 Не през експортираните функции, а през **самото CLI** (stdin JSON → exit code), защото това е

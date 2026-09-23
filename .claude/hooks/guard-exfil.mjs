@@ -48,8 +48,12 @@ const ENV_FILE = /(cat|source|\.|<|--data(-binary)?\s+@|--data-urlencode\s+@|-d\
 // изнасяше всички тайни. Голото `set` изисква веднага пайп/редирект, защото `set -e`/`set -u` са
 // нормални и не бива да вдигат тревога.
 const ENV_DUMP_VERB = String.raw`printenv|env|export\s+-p|declare\s+-x`;
+// Фалшив позитив, хванат върху собствена команда (2026-09-21): `\benv\b` лови и РАЗШИРЕНИЕТО `.env`
+// — `x = "a.env"` вътре в скрипт с `fetch(` даде „пълен env dump към мрежата". `env` е dump само като
+// КОМАНДА: не след `.`, `/`, `-`, `_` или буква. Изпращането на .env ФАЙЛ си остава хванато от ENV_FILE.
+const ENV_CMD = String.raw`(?<![.\w/-])`;
 const ENV_DUMP = new RegExp(
-  String.raw`\b(${ENV_DUMP_VERB})\b\s*(\||>|\)|["']|$)|\$\(\s*(${ENV_DUMP_VERB})\b|\bset\s*(\||>)`,
+  ENV_CMD + String.raw`(${ENV_DUMP_VERB})\b\s*(\||>|\)|["']|$)|\$\(\s*(${ENV_DUMP_VERB})\b|\bset\s*(\||>)`,
 );
 // F2: `curl --data @file` / `-T file` към мрежа, КОГАТО файлът изглежда чувствителен (пази near-zero-FP —
 // не флагва легитимен `curl -d @body.json`). Лови стейджната тайна в не-.env файл.
@@ -137,7 +141,7 @@ const FOREIGN_REMOTE = new RegExp(
 // `printenv > /tmp/s.txt` (ход 1) и `curl --data-binary @/tmp/s.txt` (ход 2) минаваха поотделно.
 // Не можем да свържем ходовете, но можем да срежем ВЕРИГАТА при ход 1: пълен env dump във ФАЙЛ
 // няма легитимна употреба в агентски контекст.
-const ENV_DUMP_TO_FILE = new RegExp(String.raw`\b(${ENV_DUMP_VERB}|set)\s*(\||>|>>)\s*\S`);
+const ENV_DUMP_TO_FILE = new RegExp(ENV_CMD + String.raw`(${ENV_DUMP_VERB}|set)\s*(\||>|>>)\s*\S`);
 // Red-team F4: `cat secrets.json | curl --data-binary @-` — чувствителният файл е ВЛЯВО от пайпа,
 // затова DATA_FILE_SEND (който гледа само аргумента на curl) не го виждаше.
 // Red-team 2026-09-08: архивиращите verb-ове липсваха — `tar czf - ~/.ssh | curl -T -` опакова
@@ -198,10 +202,12 @@ export function detectBashExfil(command) {
   return null;
 }
 
+const URL_QUERY_SECRET = /[?&](api[_-]?key|access[_-]?token|secret|password|passwd|auth[_-]?token|session)=[^&\s"]{8,}/i;
+
 export function detectUrlExfil(url) {
   const s = sanitize(url);
   for (const p of SECRET_RE) if (p.re.test(s)) return `${p.name} в URL`;
-  if (/[?&](api[_-]?key|access[_-]?token|secret|password|passwd|auth[_-]?token|session)=[^&\s]{8,}/i.test(s)) return "секрет в URL query";
+  if (URL_QUERY_SECRET.test(s)) return "секрет в URL query";
   return null;
 }
 
@@ -215,6 +221,21 @@ export function detectSearchExfil(query) {
   return null;
 }
 
+// Red-team 2026-09-21 (проба на живо, 3/3 минаха): MCP инструментите (`mcp__github__*`,
+// `mcp__Gmail__*`, `mcp__Semrush__*` …) са СЪЩО изходен канал — тялото на коментар, черновата на
+// имейл, заявката към SEO API напускат машината, а matcher-ът беше Bash|WebFetch|WebSearch. Формата
+// на входа е произволен JSON (различен за всеки сървър), затова не гадаем полета: сериализираме
+// ЦЕЛИЯ tool_input и търсим същите литерални тайни + секрет в URL query. Литерална тайна в аргумент
+// на агент няма легитимна употреба (тайните не минават през агента) — независимо кой сървър е.
+export function detectMcpExfil(toolInput) {
+  let raw;
+  try { raw = typeof toolInput === "string" ? toolInput : JSON.stringify(toolInput ?? {}); } catch { return null; }
+  const s = sanitize(raw);
+  for (const p of SECRET_RE) if (p.re.test(s)) return `${p.name} в аргумент на MCP инструмент`;
+  if (URL_QUERY_SECRET.test(s)) return "секрет в URL query към MCP инструмент";
+  return null;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
@@ -224,7 +245,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const tool = payload?.tool_name || "";
       const ti = payload?.tool_input || {};
       let why = null;
-      if (/bash/i.test(tool)) why = detectBashExfil(ti.command);
+      // MCP първи: името на MCP инструмент може да съдържа „bash"/„fetch" (`mcp__x__fetch_page`),
+      // а входът му е произволен JSON — не `command`/`url`.
+      if (/^mcp__/i.test(tool)) why = detectMcpExfil(ti);
+      else if (/bash/i.test(tool)) why = detectBashExfil(ti.command);
       else if (/webfetch/i.test(tool)) why = detectUrlExfil(ti.url);
       else if (/websearch/i.test(tool)) why = detectSearchExfil(ti.query);
       if (why) {
