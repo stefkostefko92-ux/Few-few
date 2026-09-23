@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
 import {
   MERGE_THRESHOLD, AGENT_DESC_MAX,
-  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard,
+  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
 } from "./oversee-lib.mjs";
 import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
 
@@ -190,6 +190,7 @@ for (const id of allIds) {
     const defLines = def.split("\n").length;
     r.defLines = defLines;
     if (defLines > DEF_LINE_WARN) r.warn.push(`дефиниция ${defLines} реда (>${DEF_LINE_WARN}) — раздутото разрежда адхеренцията; премести исторически „vX.Y" секции в паметта/докове`);
+    if (repeatsLearnProtocol(def)) r.hard.push("дефиницията преповтаря цикъла за учене (```learn схема) — той живее само в _memory/PROCEDURE.md; остави един ред с доменния гейт за „verified“");
     // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
     const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];
     if (desc == null) r.hard.push("липсва description във frontmatter (по него главната сесия избира агента)");
