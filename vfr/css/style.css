@@ -45,17 +45,20 @@ h1, h2, h3 { font-family: var(--font-head); line-height: 1.08; letter-spacing: -
 h2 { font-size: clamp(30px, 4.2vw, 50px); font-weight: 700; }
 h3 { font-size: 22px; font-weight: 600; }
 p { margin: 0; }
-:focus-visible { outline: 3px solid var(--red-2); outline-offset: 3px; border-radius: 6px; }
+/* Само outline: border-radius тук би сменил формата на самия елемент (хапчетата стават квадратни). */
+:focus-visible { outline: 3px solid var(--red-2); outline-offset: 3px; }
 
 .skip { position: absolute; left: 16px; top: -60px; z-index: 100; padding: 10px 16px; background: var(--red); color: #fff; border-radius: 8px; font-weight: 600; }
 .skip:focus { top: 16px; }
 
 .accent { color: var(--red-2); }
+/* Sora Bold: I и l са почти еднакви; при -0.02em „Il“ се чете като „II“. */
+.contact h2 .accent { letter-spacing: -0.005em; }
 .eyebrow {
   font-family: var(--font-head); font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red-2);
   display: inline-flex; align-items: center; gap: 12px; margin-bottom: 18px;
 }
-.eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--red); border-radius: 2px; }
+.eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--red-2); border-radius: 2px; }
 .sub { font-size: clamp(17px, 1.4vw, 20px); color: var(--muted); max-width: 640px; margin-top: 18px; }
 .section-head { max-width: 760px; margin-bottom: clamp(36px, 5vw, 64px); }
 
@@ -157,7 +160,8 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step; }
 .step { position: relative; padding: 30px 26px 30px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent); }
 .step-n { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: var(--red); color: #fff; font-family: var(--font-head); font-weight: 800; font-size: 18px; margin-bottom: 22px; box-shadow: 0 10px 24px -10px rgba(216, 16, 15, 0.9); }
-.step h3 { font-size: 19px; margin-bottom: 10px; }
+/* min-height = 2 реда: текстът под заглавията тръгва от една линия, дори едно заглавие да е на 2 реда. */
+.step h3 { font-size: 19px; margin-bottom: 10px; min-height: 2.16em; }
 .step p { color: var(--muted); font-size: 15px; }
 
 /* ── защо ── */
@@ -176,7 +180,8 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 .zone-inner { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
 .towns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
 .towns li { font-size: 13px; font-weight: 500; padding: 7px 13px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); color: var(--muted); }
-.towns li:nth-child(-n+2) { background: var(--red-soft); border-color: rgba(216, 16, 15, 0.5); color: var(--red-2); }
+/* Фон 0.08, не --red-soft (0.16): при 0.16 червеният текст е 4.49:1 (под AA 4.5), при 0.08 — 4.72:1. */
+.towns li:nth-child(-n+2) { background: rgba(216, 16, 15, 0.08); border-color: rgba(216, 16, 15, 0.5); color: var(--red-2); }
 .zone-art .art { width: 100%; height: auto; border-radius: 24px; border: 1px solid var(--line); }
 
 /* ── FAQ ── */
@@ -265,6 +270,7 @@ section { padding: clamp(72px, 10vw, 140px) var(--gutter); }
 @media (max-width: 600px) {
   body { font-size: 16px; }
   .steps, .why-grid { grid-template-columns: 1fr; }
+  .step h3 { min-height: 0; }
   .contact-row { grid-template-columns: 1fr; gap: 4px; }
   .btn-row .btn { width: 100%; justify-content: center; }
   .map { min-height: 380px; }
