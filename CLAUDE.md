@@ -287,10 +287,13 @@ chars hide payloads). Fail-open on hook error, fail-closed on a hit; tested (`to
 registered in `settings.json`. **Red-teamed through the CLI, not the functions** — 2026-09-08/09: 67 live
 probes → 41 bypasses closed, 4 false positives caught on my own commands (mention ≠ execution; a flag
 must stand alone; home is the home itself; `env` is a dump only as a *command*, not the `.env` extension),
-every one a mutation-proven regression + ledger entry. **Memory auto-commit is scoped** (`gitSyncScript`):
-it never touches an open merge/rebase/cherry-pick and commits `--only` its three files — a bare `git commit`
-once swallowed the owner's open 746-commit merge (2026-09-21); proven against a real temp repo in
-`tools/hooks/git-sync.test.mjs`. Details → `.claude/hooks/README.md`.
+every one a mutation-proven regression + ledger entry. **Learning lives in its own branch
+`agents/memory`**, not the task branch: the hook commits via git plumbing (the human's HEAD/index/worktree
+are never touched — a bare `git commit` once swallowed an open 746-commit merge), a detached sync folds
+`main` in and pushes, one standing PR brings it home, and `memory-preload` reads pending lessons meanwhile.
+Before (measured 2026-09-23) 562 verified lessons sat in 32 task branches new sessions never saw;
+`tools/agents/harvest-memory.mjs` recovers them and the gate's `harvest` check keeps it visible.
+Details → `.claude/hooks/README.md`.
 
 *Reserve for someday (not adopted):* the `awesome-claude-skills` catalog lists 78+ Composio SaaS
 automations (route data through an external SaaS + auth) — wrong model for our EU-hosted, GDPR-first,

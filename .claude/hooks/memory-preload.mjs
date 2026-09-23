@@ -7,6 +7,7 @@
 // Ако агентът не е от нашия списък или няма памет — мълчи (exit 0, без изход).
 
 import { readFileSync, existsSync } from "node:fs";
+import { pendingLessons } from "../../tools/lib/memory-branch.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -138,7 +139,11 @@ function main() {
   const parts = staticPrefixParts();
   // Динамичното (лична проверена памет) идва СЛЕД статичното. Извличаме релевантните (по задачата,
   // ако средата я подава) в рамките на токен-бюджет — не сляпо първите N. MAX_LESSONS е твърд таван отгоре.
-  const all = verifiedSection(file).slice(0, MAX_LESSONS);
+  // + поуките, които чакат в клона agents/memory и ги няма в този checkout (научени в друга сесия или
+  // клон, още неслети в main). Без това нова сесия „забравяше" всичко, научено извън main (2026-09-23:
+  // 562 проверени поуки в 32 клона). Най-новите първи; при липса на git → само локалната памет.
+  const pending = pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
+  const all = [...pending, ...verifiedSection(file)].slice(0, MAX_LESSONS);
   const lessons = selectLessons(all, taskTextOf(payload));
   if (lessons.length) {
     parts.push(

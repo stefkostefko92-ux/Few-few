@@ -68,7 +68,12 @@ deduping as it goes (works even for the read-only auditors that can't write file
 also **appending a learning entry to that agent's activity feed in the dashboard** (`agents.json` +
 the embedded FALLBACK in `index.html`, atomic write + lock) and **bumping the agent's version**
 (a `vX.Y — учене` timeline entry — verified learning level-ups the agent; quarantine and repeat lessons
-don't). **Version scheme (`bumpVersion` in `memory-capture.mjs`):** each verified lesson is +0.1 and
+don't). **Where it lands (2026-09-23):** not in the task branch — the hook commits to the dedicated
+`agents/memory` branch via git plumbing (the human's HEAD/index/worktree are never touched), a detached
+sync folds `main` in and pushes, and one standing PR `agents/memory` → `main` brings it home;
+`memory-preload` already reads pending lessons from that branch. Before this, 562 verified lessons sat
+in 32 task branches that new sessions never saw (`tools/agents/harvest-memory.mjs` recovered them).
+**Version scheme (`bumpVersion` in `tools/lib/memory-core.mjs`):** each verified lesson is +0.1 and
 **every 10 verified lessons roll into a +1 major** (6.9 → 7.0 → …); the version tracks verified-lesson
 count (≈ lessons ÷ 10), so **v10.0 = mastery** (≈100 verified lessons) is a *threshold, not a cap* — agents
 keep climbing past it as they learn (e.g. `ai-djiyata` is at **v15.0**, ~150 lessons). So the agents-lab page updates
