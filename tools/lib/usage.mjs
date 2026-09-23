@@ -88,12 +88,14 @@ export function summarizeTranscript(path, hint = {}) {
   };
 }
 
-/** Чете записи от JSONL текст; дедуп по id. */
+/** Чете записи от JSONL текст; дедуп по id — по-късният запис побеждава. */
 export function parseLedger(...texts) {
   const byId = new Map();
   for (const t of texts) for (const l of String(t || "").split("\n")) {
     if (!l.trim()) continue;
-    try { const r = JSON.parse(l); if (r && r.id && !byId.has(r.id)) byId.set(r.id, r); } catch { /* ignore */ }
+    // Последният запис побеждава: агент, върнат от DoD куката, спира пак със СЪЩИЯ транскрипт и
+    // по-късният запис е пълният (първият е частичен — занижава ходове и цена).
+    try { const r = JSON.parse(l); if (r && r.id) byId.set(r.id, r); } catch { /* ignore */ }
   }
   return [...byId.values()];
 }

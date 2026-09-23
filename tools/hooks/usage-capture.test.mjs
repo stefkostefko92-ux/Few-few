@@ -60,6 +60,7 @@ test("цени: най-дългото съвпадение (opus-5-5 ≠ opus-5)
   const a = aggregate([{ ...rec, agent: "x", turns: 70 }, { ...rec, model: "sonnet-5", agent: "y", turns: 10 }], p);
   assert.equal(a.long.runs, 1);
   assert.deepEqual(parseLedger('{"id":"a","n":1}\n{"id":"a","n":2}\n{"id":"b"}').map((r) => r.id), ["a", "b"], "дедуп по id");
+  assert.equal(parseLedger('{"id":"a","turns":3}\n{"id":"a","turns":17}')[0].turns, 17, "върнат от DoD агент: по-късният (пълният) запис побеждава");
 });
 
 function repo() {
