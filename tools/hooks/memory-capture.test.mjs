@@ -111,3 +111,23 @@ for (const [lang, text] of INJECTIONS) {
       `инжекцията не бива да се запише като поука: ${text.slice(0, 40)}`);
   });
 }
+
+// Фонов субагент завършва с инструмента SubagentHandback: докладът и ```learn блокът са в
+// tool_use `input.message`, не в `text`. Без това поуките се губеха тихо (dizayner, 2026-09-23).
+test("learn блок, предаден през SubagentHandback (tool_use input.message), СЕ ЗАПИСВА", () => {
+  const root = fixtureProject();
+  try {
+    const transcript = join(root, "t.jsonl");
+    const handback = { type: "assistant", message: { content: [{ type: "tool_use", name: "SubagentHandback",
+      input: { message: "Доклад…\n\n" + BLOCK("verified", "https://web.dev/articles/lcp") } }] } };
+    writeFileSync(transcript, JSON.stringify(handback) + "\n");
+    const r = spawnSync(process.execPath, [HOOK], {
+      input: JSON.stringify({ transcript_path: transcript }), encoding: "utf8", timeout: 20000,
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    const mem = readFileSync(join(root, ".claude", "agents", "_memory", "testagent.md"), "utf8");
+    assert.match(mem.split("## Карантина")[0], /тестова поука за регресията/,
+      "поуката от handback доклада ЛИПСВА — collectText пак чете само `text` полета");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

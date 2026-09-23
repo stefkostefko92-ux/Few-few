@@ -27,9 +27,17 @@ const LOCK_DIR = join(PROJECT_DIR, "agents-dashboard", ".sync.lock");
 
 function readStdin() { try { return readFileSync(0, "utf8"); } catch { return ""; } }
 
+// Фоновият субагент предава финалния си доклад през инструмента SubagentHandback: докладът
+// (и ```learn блокът в края му) е в `input.message` на tool_use, НЕ в поле `text`. Преди се
+// събираха само `text` полета → поуките на всеки агент, който завършва с handback, се губеха тихо
+// (измерено: dizayner 2026-09-23, 3 проверени поуки, нула записани).
 function collectText(node, out) {
   if (!node || typeof node !== "object") return;
   if (Array.isArray(node)) { for (const n of node) collectText(n, out); return; }
+  if (node.type === "tool_use" && node.name === "SubagentHandback" && typeof node.input?.message === "string") {
+    out.push(node.input.message);
+    return;
+  }
   for (const [k, v] of Object.entries(node)) {
     if (k === "text" && typeof v === "string") out.push(v);
     else if (v && typeof v === "object") collectText(v, out);
