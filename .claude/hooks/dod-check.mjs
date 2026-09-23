@@ -8,7 +8,8 @@
 // инструкцията да го пусне). Щит срещу цикъл: при stop_hook_active → exit 0 (само предупреждение).
 // Fail-open: всяка грешка на hook-а → exit 0 (никога не заклещваме агент заради счупен hook).
 
-import { readFileSync , appendFileSync } from "node:fs";
+import { readFileSync , appendFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
@@ -186,10 +187,21 @@ function loadRoster() {
   return (_roster = { byId, byName });
 }
 
-// Записва ЕДИН „handoff" ред в _flows.jsonl от вече валидирания блок ПРЕДАВАНЕ. Съзнателно НЕ пише
-// „start"/„close" — те са решение на Президента; тук се лови само реалната стъпка на предаване.
+// Верига = всички агенти, пуснати за ЕДНА заявка на потребителя. Харнесът подава `prompt_id` при
+// SubagentStop (проба на живо 2026-09-23) — естествената граница на веригата. Дотогава всеки запис
+// носеше `id: "auto"` без „start", а trajectory-audit сглобява вериги САМО от поток със „start" —
+// затова 35 реални предавания се четяха като 0 минати вериги.
+export function chainIdOf(payload = {}) {
+  const p = String(payload.prompt_id || "");
+  return p ? "r" + createHash("sha1").update(p).digest("hex").slice(0, 8) : "auto";
+}
+const runIdOf = (payload = {}) => payload.agent_id ? createHash("sha1").update(String(payload.agent_id)).digest("hex").slice(0, 8) : "";
+
+// Записва ЕДИН „handoff" ред в _flows.jsonl от вече валидирания блок ПРЕДАВАНЕ, плюс „start" за нова
+// верига (lead = първият агент по заявката; flow = „авто" — името на каноничен поток е решение на
+// оркестратора, не на куката: грешно отгатнато име би съдило веригата по чужд spec).
 // Форматът е ИДЕНТИЧЕН с flow-ledger.mjs (t/ts/id/from/to/status), за да няма два несъвместими писача.
-export function appendHandoffToLedger(finalText, payload = {}) {
+export function appendHandoffToLedger(finalText, payload = {}, ledger = join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl")) {
   const parsed = validateHandoff(String(finalText || ""), { agentIds: null, requireBlock: true });
   if (!parsed || !parsed.ok || !parsed.fields) return false;
   // Полетата идват от handoff.mjs с ЛАТИНСКИ ключове (from/to/status), не с българските етикети —
@@ -199,11 +211,21 @@ export function appendHandoffToLedger(finalText, payload = {}) {
   const to = normalizeActor(String(f.to || ""));
   const status = String(f.status || "").trim();
   if (!from || !to) return false;
-  const rec = { t: "handoff", ts: new Date().toISOString(), id: "auto", from, to, status };
+  const id = chainIdOf(payload), run = runIdOf(payload);
+  let rows = [];
+  try { if (existsSync(ledger)) rows = readFileSync(ledger, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); } catch { /* ignore */ }
+  // Агент, върнат от DoD гейта, спира втори път — същото пускане не е нова стъпка.
+  if (run && rows.some((r) => r.t === "handoff" && r.id === id && r.run === run)) return false;
+  const out = [];
+  if (id !== "auto" && !rows.some((r) => r.t === "start" && r.id === id))
+    out.push({ t: "start", ts: new Date().toISOString(), id, flow: "авто", lead: from, auto: true });
+  const rec = { t: "handoff", ts: new Date().toISOString(), id, from, to, status };
+  if (run) rec.run = run;
   // Видимост кое НЕ е резолвнало — иначе „друг" изглежда като нормален участник.
   if (from === "друг") rec.fromRaw = String(f.from || "").slice(0, 80);
   if (to === "друг") rec.toRaw = String(f.to || "").slice(0, 80);
-  appendFileSync(join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl"), JSON.stringify(rec) + "\n");
+  out.push(rec);
+  appendFileSync(ledger, out.map((r) => JSON.stringify(r)).join("\n") + "\n");
   return true;
 }
 

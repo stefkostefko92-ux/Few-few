@@ -80,6 +80,7 @@ const PAYLOADS = {
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
   "session-dod.mjs": {},
   "artifact-sync.mjs": {},
+  "agent-return.mjs": { tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" }, tool_response: { status: "completed", agentType: "kodadjiyata", content: [{ type: "text", text: "готово" }] } },
 };
 
 const hooks = registeredHooks();
@@ -96,6 +97,8 @@ const REGISTRATION = {
   "precompact-save.mjs": { event: "PreCompact" },
   "session-dod.mjs": { event: "Stop" },
   "artifact-sync.mjs": { event: "Stop" },
+  // След ВСЯКО пускане на агент: предаването стига до главната сесия (не тъне в текста).
+  "agent-return.mjs": { event: "PostToolUse", matcher: /Agent/ },
   // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
