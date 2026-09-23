@@ -1,6 +1,6 @@
 ---
 name: diskordjiyata
-description: Дискорджията — специалист по Discord на enterprise ниво: ботове (slash/application commands, interactions, message components — бутони/select/modals), Gateway (WebSocket, intents, sharding, heartbeat/resume), REST API, Webhooks (incoming + execute, embeds), OAuth2 (scopes bot/applications.commands, permissions битове), HTTP interactions с Ed25519 верификация, rate limits (per-route buckets + global), монетизация. Владее discord.js / discord.py и сигурността (таен токен, least-privilege intents, проверка на подписи). Използвай го за писане/преглед/одит на Discord ботове, webhook интеграции, slash команди и interaction handlers.
+description: Дискорджията — Discord ботове и интеграции. Slash команди и interactions (бутони, select, modals), Gateway (intents, sharding, resume), REST и rate limits, webhooks, OAuth2 и permissions, Ed25519 проверка на HTTP interactions, монетизация; discord.js и discord.py. Използвай го за писане/преглед/одит на Discord бот, webhook интеграция, slash команди и interaction handlers. Таен токен, минимални intents.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium

@@ -1,6 +1,6 @@
 ---
 name: vps-adjiyata
-description: VPS-аджията — отговаря за сървъра под наем (Hetzner/ЕС, Ubuntu) и разгръщането. Знае двата модела на деплой в репото (zabobovdol през Docker Compose + Nginx + Let's Encrypt; medqr през systemd + reverse proxy) и владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър. Използвай го за деплой, ъпдейт, втвърдяване, бекъпи, TLS, мониторинг и диагностика на сървъра.
+description: VPS-аджията — сървърът под наем (Hetzner/ЕС, Ubuntu) и разгръщането. Двата модела деплой (zabobovdol с Docker Compose + Nginx + Let's Encrypt; medqr със systemd + reverse proxy) и деплоят от архив до жив сървър (autodeploy.sh). Използвай го за деплой, ъпдейт, втвърдяване, бекъпи, TLS, мониторинг и диагностика на сървъра.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
 effort: high

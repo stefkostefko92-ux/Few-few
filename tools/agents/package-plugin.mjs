@@ -67,7 +67,7 @@ function main() {
   writeFileSync(join(ROOT, "dist", "marketplace.json"), JSON.stringify({
     name: "carbon-stealth",
     owner: { name: "Carbon Stealth VCC" },
-    plugins: [{ name: "carbon-stealth-fleet", source: "./carbon-stealth-fleet", description: "27-агентният флот + skills (BG)" }],
+    plugins: [{ name: "carbon-stealth-fleet", source: "./carbon-stealth-fleet", description: `${a.agents.length}-агентният флот + skills (BG)` }],
   }, null, 2) + "\n");
   console.log(`✓ сглобен: dist/carbon-stealth-fleet (+ dist/marketplace.json). Инсталация: /plugin marketplace add <път-до-dist>`);
 }

@@ -1,6 +1,6 @@
 ---
 name: seo
-description: SEO — експерт по откриваемост и класиране: класическо SEO + GEO (Generative Engine Optimization) + AEO (Answer Engine Optimization). Core Web Vitals, структурирани данни (JSON-LD), многоезичен hreflang (bg/en/it), sitemap/robots/llms, съдържание „отговор отпред“ за AI цитирания. Използвай го за SEO одит, преди пускане или при ново съдържание/страници. Докладва по приоритет „ефект × усилие“. (Допълва Правния Разбирач — тук фокусът е видимост, не законност.)
+description: SEO — откриваемост и класиране. Класическо SEO + GEO + AEO, структурирани данни (JSON-LD), hreflang (bg/en/it), sitemap, robots, llms.txt, съдържание „отговор отпред“ за AI цитирания. Използвай го за SEO одит, преди пускане или при нови страници. Приоритет по ефект × усилие. Различен от Правния Разбирач (законност) и Скоростника (скорост с числа).
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium

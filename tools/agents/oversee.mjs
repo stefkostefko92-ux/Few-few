@@ -27,8 +27,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
 import {
-  MERGE_THRESHOLD,
-  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
+  MERGE_THRESHOLD, AGENT_DESC_MAX,
+  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard,
 } from "./oversee-lib.mjs";
 import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
 
@@ -186,9 +186,18 @@ for (const id of allIds) {
   }
   // #4 постнота на дефиницията — историческите „## vX.Y" секции трябва да слизат в паметта/докове
   if (hasDef) {
-    const defLines = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8").split("\n").length;
+    const def = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8");
+    const defLines = def.split("\n").length;
     r.defLines = defLines;
     if (defLines > DEF_LINE_WARN) r.warn.push(`дефиниция ${defLines} реда (>${DEF_LINE_WARN}) — раздутото разрежда адхеренцията; премести исторически „vX.Y" секции в паметта/докове`);
+    // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
+    const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];
+    if (desc == null) r.hard.push("липсва description във frontmatter (по него главната сесия избира агента)");
+    else {
+      const hz = plainScalarHazard(desc);
+      if (hz) r.hard.push(`описание — ${hz} (харнесът го чете като YAML)`);
+      if (desc.length > AGENT_DESC_MAX) r.hard.push(`описание ${desc.length} знака > ${AGENT_DESC_MAX} — стои в главната сесия на всеки ход; знанието е в тялото`);
+    }
   }
   if (r.hard.length) hardFails += r.hard.length;
   if (r.warn.length) warns += r.warn.length;

@@ -129,8 +129,12 @@ registered in `.claude/settings.json`.
 Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
 scope `tools` to least privilege (read-only auditors: Правният Разбирач, SEO, Кодаджията; the
 rest may write files/run scripts); give the `description` crisp triggers so the agent
-auto-selects; add a worked example + competence boundary; bump the version + append an
-`evolution` entry in `agents-dashboard/agents.json` whenever you change a definition.
+auto-selects — **кратко „кога да ме викнеш“** (роля · отличителни думи за избор · „Различен от…“),
+≤600 знака, без „ #“ и „: “ (едноредов YAML: „ #“ е коментар и реже описанието); то стои в
+главната сесия на всеки ход, а знанието е в тялото — `oversee.mjs` гейтва и двете. Add a worked
+example + competence boundary; bump the version + append an `evolution` entry in
+`agents-dashboard/agents.json` whenever you change what the agent knows (метаданни като
+описание/`maxTurns` не са ново знание — версията брои научено).
 **Разхлабвай, не усилвай (модели 4.6+):** новите модели са проактивни и директни по
 подразбиране — при авторство/ъпгрейд НЕ добавяй „бъди старателен/агресивен/провери преди
 да приключиш" (причиняват свръх-многословност и ненужно tool-calling); замени „Default to

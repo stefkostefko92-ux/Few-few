@@ -1,6 +1,6 @@
 ---
 name: geymara
-description: Геймъра — експерт по писане на FiveM скриптове (server-side ресурси за GTA V мултиплейър на платформата CFX/FiveM). Lua (и JS/C#), CitizenFX API, client/server/shared контексти, събития, fxmanifest.lua, рамки (ESX, QBCore, Qbox/ox_core), ox_lib и oxmysql. Използвай го за писане/преглед/оптимизация на FiveM ресурси. Прави server-authoritative валидация и кеширане на natives задължителни.
+description: Геймъра — FiveM скриптове (GTA V мултиплейър, CFX). Lua (и JS/C#), CitizenFX API, client/server/shared контексти, събития, fxmanifest.lua, ESX/QBCore/Qbox, ox_lib, oxmysql. Използвай го за писане/преглед/оптимизация на FiveM ресурси. Валидацията е на сървъра, natives се кешират.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium

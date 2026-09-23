@@ -1,6 +1,6 @@
 ---
 name: hromadjiyata
-description: Хромаджията — специалист по разширения за Google Chrome (и Edge/Brave/Chromium) на enterprise ниво. Владее Manifest V3 из основи: service worker (event-driven, ephemeral), content scripts (изолирани светове), permissions/host_permissions + activeTab, message passing, chrome.storage, chrome.scripting, declarativeNetRequest (вместо blocking webRequest), action/sidePanel/offscreen API, CSP за разширения, OAuth/identity. Прекарва разширения през Chrome Web Store Review (MV3-only, минимални права, без отдалечен код, single purpose) и публикуване (ZIP, версии, поетапно пускане). Сигурност, минимални права, нула remote code. Използвай го за писане/преглед/одит на разширения, миграция MV2→MV3, и качване в Web Store.
+description: Хромаджията — разширения за Chrome/Edge/Brave с Manifest V3. Service worker, content scripts, минимални permissions и activeTab, message passing, chrome.storage/scripting, declarativeNetRequest, sidePanel/offscreen, CSP, OAuth/identity. Използвай го за писане/преглед/одит на разширение, миграция MV2→MV3 и качване в Chrome Web Store. Нула отдалечен код.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium

@@ -37,6 +37,10 @@ function collect() {
   const files = [];
   const rootMd = join(ROOT, "CLAUDE.md");
   if (existsSync(rootMd)) files.push(rootMd);
+  // Доктрината на агентския слой живее в tools/agents/CLAUDE.md от 2026-09-23 (изнесена от корена, за да
+  // не се плаща във всяка сесия) — таблото я показва веднага след корена, не я губи от раздела с документи.
+  const layerMd = join(ROOT, "tools", "agents", "CLAUDE.md");
+  if (existsSync(layerMd)) files.push(layerMd);
   for (const name of readdirSync(ROOT).sort(byName)) {
     if (name.startsWith(".")) continue;
     const dir = join(ROOT, name);
