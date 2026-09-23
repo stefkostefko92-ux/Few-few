@@ -59,7 +59,7 @@
       f.src = "https://www.google.com/maps?q=Via+Monte+Grappa+6,+22073+Fino+Mornasco+CO&output=embed&hl=it";
       f.title = "Mappa: Via Monte Grappa 6, Fino Mornasco";
       f.loading = "lazy";
-      f.referrerPolicy = "no-referrer-when-downgrade";
+      f.referrerPolicy = "strict-origin-when-cross-origin"; // минимум данни към Google: само origin
       f.allowFullscreen = true;
       map.replaceChildren(f);
     });

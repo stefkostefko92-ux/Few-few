@@ -17,6 +17,7 @@ security.txt, nginx.conf, deploy.sh)._
 index.html          сайтът (hero, servizi ×3, come lavoriamo, perché, zona, FAQ, contatti)
 privacy.html        informativa privacy (GDPR, IT); 404.html — брандирана 404 (noindex)
 css/style.css       дизайн-токени в :root; css/fonts.css — self-hosted Sora + Inter (fonts/*.woff2, OFL)
+css/404.css         стилът на 404 (файл, не inline — CSP е без 'unsafe-inline')
 js/main.js          меню · reveal (IntersectionObserver, reduced-motion) · scroll-spy · карта по клик
 images/             logo.png (1024, прозрачен фон) · logo-nav.png/.webp (160) · favicon.svg + favicon-64.png · og.jpg · apple-touch-icon.png
 images/photos.json  курирани безплатни снимки (Unsplash/Pexels) със страница-източник + автор
@@ -71,6 +72,9 @@ npm run check                             # гейтът трябва да ос�
   `Service`×3, `HowTo`, `FAQPage`) е **в синхрон с видимия текст** — FAQ/стъпки се променят на две места.
 - Картата на Google се зарежда **само след клик** (нула заявки преди съгласие) → няма банер за бисквитки.
 - Reveal анимациите са само с `.js` клас и падат при `prefers-reduced-motion`.
+- **Нула inline стилове/скриптове** (`style=`, `<style>`, `<script>` с код) — CSP е `style-src 'self'`
+  без `'unsafe-inline'`; inline стил тихо не се прилага в продукция. JSON-LD е данни и е позволен.
+- **Никакъв `add_header` в `location`** в `nginx.conf` — отменя всички security хедъри от `server`.
 - SEO промяна → `node tools/seo/indexnow.mjs https://vfr.carbonstealth.eu` (ключът е на `/indexnow-key.txt`).
 
 ## Гейт
