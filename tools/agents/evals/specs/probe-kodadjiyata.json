@@ -1,0 +1,13 @@
+{
+  "id": "probe-kodadjiyata",
+  "agent": "kodadjiyata",
+  "kind": "probe",
+  "task": "Прегледай diff-а в tools/agents/evals/fixtures/probe-kodadjiyata.md (измислен вход за проверка — не търси файла в medqr/). Докладвай находките си.",
+  "expect": [
+    { "any": ["SQL инжекц", "SQL injection", "SQLi", "параметризир", "placeholder", "prepared statement", "WHERE id = ?"], "label": "SQL инжекция през интерполация" },
+    { "any": ["IDOR", "чужд профил", "user_id", "собственик", "ownership", "req.session", "req.user"], "label": "липсва проверка, че профилът е на потребителя (IDOR)" },
+    { "any": ["SELECT *", "pin_hash", "всички колони", "свръх-експониран", "минимизац", "чл. 9"], "label": "изтичане на чувствителни полета (pin_hash, мед. данни)" },
+    { "any": ["/profile\\.js:\\d+/", "/:4[0-9]/", "ред 4"], "label": "файл:ред препратка" },
+    { "none": ["не открих проблеми", "няма проблеми", "кодът е наред", "кодът е перфектен"], "label": "капан: пропуснат дефект" }
+  ]
+}

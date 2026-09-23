@@ -18,6 +18,7 @@ import { spawn } from "node:child_process";
 import { parseFallback, replaceFallback } from "../../tools/lib/dashboard-fallback.mjs";
 import { norm, addLessons, lessonIndex, lessonText, summarize, applyUpdate, countVerifiedText } from "../../tools/lib/memory-core.mjs";
 import { publishLessons, pendingLessons, isGitRepo } from "../../tools/lib/memory-branch.mjs";
+import { evalMode } from "../../tools/lib/eval-mode.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -222,6 +223,8 @@ function main() {
 
   const tPath = payload.agent_transcript_path || payload.transcript_path || "";
   const text = transcriptText(tPath) || payload.last_assistant_message || "";
+  // Жива проверка: входът е измислен → „поука" за него би отровила паметта. Нищо не се записва.
+  if (evalMode(PROJECT_DIR)) process.exit(0);
   const block = lastLearnBlock(text);
   if (!block) process.exit(0);
 

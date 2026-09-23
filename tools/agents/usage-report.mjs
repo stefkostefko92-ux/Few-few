@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH } from "../lib/usage.mjs";
+import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf } from "../lib/usage.mjs";
 import { LOCAL_REF, REMOTE_REF, pendingUsagePath, appendPendingUsage } from "../lib/memory-branch.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -46,7 +46,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     console.log(`✓ внесени ${n} пускания в буфера — изпрати с: node tools/lib/memory-branch.mjs --sync --flush-usage`);
     process.exit(0);
   }
-  const recs = loadRecords();
+  const all = loadRecords();
+  // Живите проверки (eval-mode) се водят отделно — иначе изкривяват продукционната цена.
+  const recs = all.filter((r) => !r.eval);
+  const evals = all.filter((r) => r.eval);
   const prices = loadPrices();
   const a = aggregate(recs, prices);
   const startShare = recs.length ? recs.reduce((s, r) => s + (r.startCtx || 0), 0) / recs.reduce((s, r) => s + r.input + r.cacheRead + r.cacheWrite, 0) : 0;
@@ -67,6 +70,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   console.log("   най-скъпи агенти:");
   for (const [ag, v] of Object.entries(a.byAgent).sort((x, y) => y[1].usd - x[1].usd).slice(0, 8))
     console.log(`     ${ag.padEnd(22)} ${String(v.runs).padStart(3)} пуск. · ~$${v.usd.toFixed(0).padStart(4)} · ср. ${Math.round(v.turns / v.runs)} хода`);
+  if (evals.length) {
+    console.log("   живи проверки (извън цифрите горе):");
+    const by = {};
+    for (const r of evals) { const k = `${r.eval} · ${r.agent}`; const c = costOf(r, prices) || 0; const x = (by[k] ??= { runs: 0, usd: 0, turns: 0 }); x.runs++; x.usd += c; x.turns += r.turns; }
+    for (const [k, v] of Object.entries(by).sort()) console.log(`     ${k.padEnd(40)} ${v.runs} пуск. · ~${v.usd.toFixed(2)} · ср. ${Math.round(v.turns / v.runs)} хода`);
+  }
   if (age > (prices?.ttlDays || 45)) console.log(`▲ цените са сверени преди ${age} дни (срок ${prices?.ttlDays}) — свери tools/agents/prices.json срещу справочника`);
   process.exit(0);
 }

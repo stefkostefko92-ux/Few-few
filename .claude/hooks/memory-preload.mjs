@@ -9,6 +9,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { pendingLessons } from "../../tools/lib/memory-branch.mjs";
 import { select, estTok as estTokR, taskFromTranscript, crossAgentPicks } from "../../tools/lib/memory-retrieval.mjs";
+import { evalMode } from "../../tools/lib/eval-mode.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -126,8 +127,10 @@ function main() {
   // Динамичното (лична проверена памет) идва СЛЕД статичното. ВСИЧКИ поуки — собствените и чакащите в
   // agents/memory — минават през едно подреждане: релевантност към задачата, после дата от реда.
   const task = taskTextOf(payload) || taskFromTranscript(payload.transcript_path, agent);
-  const own = verifiedSection(file);
-  const pending = pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
+  // Жива проверка, вариант „без лична памет" (tools/lib/eval-mode.mjs): остава само статичният префикс.
+  const memOff = evalMode(PROJECT_DIR)?.memory === "off";
+  const own = memOff ? [] : verifiedSection(file);
+  const pending = memOff ? [] : pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
   const lessons = select([...pending, ...own], task, { budget: MEM_TOKEN_BUDGET, maxCount: MAX_LESSONS, today: TODAY() });
   if (lessons.length) {
     parts.push(
@@ -137,7 +140,7 @@ function main() {
   }
   // Знанието циркулира по смисъл: до 3 поуки на ДРУГИ агенти, само ако са сред най-релевантните в
   // целия флот за тази задача. Етикетът казва чия е поуката — тя е бележка на колега, не твоя опит.
-  const cross = crossAgentPicks(MEM_DIR, agent, task, { today: TODAY() });
+  const cross = memOff ? [] : crossAgentPicks(MEM_DIR, agent, task, { today: TODAY() });
   if (cross.length) {
     parts.push(
       `От паметта на колеги (релевантно за задачата — провери, преди да приложиш в своя домейн):\n` +

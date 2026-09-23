@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { summarizeTranscript } from "../../tools/lib/usage.mjs";
 import { appendPendingUsage, pendingUsagePath, isGitRepo } from "../../tools/lib/memory-branch.mjs";
+import { evalMode } from "../../tools/lib/eval-mode.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -24,6 +25,8 @@ export function captureRun(payload, cwd = ROOT) {
   if (!tp || !isGitRepo(cwd)) return null;
   const rec = summarizeTranscript(tp, { agentType: payload.agent_type || "", effort: payload.effort?.level || "" });
   if (!rec) return null;
+  const ev = evalMode(cwd);
+  if (ev) rec.eval = `${ev.label}${ev.memory === "off" ? "·без-памет" : ""}`; // проверка ≠ продукция в отчета
   return appendPendingUsage(cwd, rec) ? rec : null;
 }
 

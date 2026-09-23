@@ -14,6 +14,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
 import { validateHandoff, knownAgentIds } from "../../tools/agents/handoff.mjs";
+import { evalMode } from "../../tools/lib/eval-mode.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -264,7 +265,8 @@ function main() {
   // trajectory гейтът нямаше какво да съди („празно значи НЕИЗМЕРЕНО, не чисто" — CLAUDE.md).
   // Куката вече ВАЛИДИРА блока ПРЕДАВАНЕ тук, значи има и данните: записваме ги, докато работата
   // тече. Fail-open и без тайни — само идентификатори и статус.
-  try { appendHandoffToLedger(finalText, payload); } catch { /* дневникът е измерване, не гейт */ }
+  // Жива проверка: веригата е изкуствена → не влиза в проследения дневник (_flows.jsonl).
+  try { if (!evalMode(ROOT)) appendHandoffToLedger(finalText, payload); } catch { /* дневникът е измерване, не гейт */ }
   // Гейт, ПУСНАТ но ЧЕРВЕН, дотук минаваше за изпълнен ангажимент. Отделен вид нарушение,
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
   const fg = checkFailedGates(collectToolResults(jsonl));
