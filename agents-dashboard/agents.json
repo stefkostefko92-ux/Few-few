@@ -10663,7 +10663,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 163
+        "lessons": 166
       },
       "evolution": [
         {
@@ -11079,9 +11079,20 @@
           "date": "2026-09-09",
           "event": "v14.4 — учене",
           "detail": "Научи: За визуален preview на MV3 popup извън браузъра стъбвай window.chrome (runtime.sendMess…"
+        },
+        {
+          "version": "14.7.0",
+          "date": "2026-09-23",
+          "event": "v14.7 — учене",
+          "detail": "Научи: CSS капан: `border-radius` вътре в `:focus-visible {}` не оформя outline-а — пренаписва… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „CSS капан: `border-radius` вътре в `:focus-visible {}` не оформя outline-а — пренаписва…\" (+2 още)"
+        },
         {
           "date": "2026-09-10",
           "type": "quarantine",
