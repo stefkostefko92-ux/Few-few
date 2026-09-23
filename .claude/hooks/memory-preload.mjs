@@ -8,13 +8,14 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { pendingLessons } from "../../tools/lib/memory-branch.mjs";
+import { select, estTok as estTokR, taskFromTranscript, crossAgentPicks } from "../../tools/lib/memory-retrieval.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
 const MEM_DIR = join(PROJECT_DIR, ".claude", "agents", "_memory");
-const MAX_LESSONS = 40; // капва инжекцията — паметта не бива да залива контекста
+const MAX_LESSONS = 40; // таван на БРОЯ ИЗБРАНИ поуки (не на кандидатите — всички се подреждат)
 
 function readStdin() {
   try { return readFileSync(0, "utf8"); } catch { return ""; }
@@ -95,36 +96,21 @@ export function staticPrefixParts() {
   return parts;
 }
 
-// РЕЛЕВАНТНО ИЗВЛИЧАНЕ на личната памет (вместо сляпо изсипване на първите N). Личната памет е
-// най-големият променлив къс/старт (за някои агенти по-голяма от дефиницията) и расте без таван —
-// затова я подаваме ТАКА: ако средата подава текст на задачата → най-релевантните поуки първо;
-// иначе → най-новите. Таван по ТОКЕН-БЮДЖЕТ (не по брой) → предвидим разход. Забележка за кеша:
-// когато има задача, този къс е task-scoped (по-малък, но не се кешира); статичният префикс си остава
-// кеширан. За вариращи задачи по-малкото-некеширано бие по-голямото-кеширано. Тествано в preload.test.mjs.
-const MEM_TOKEN_BUDGET = 3200; // таван на инжектираната лична памет (≈ токени); вторичен на MAX_LESSONS
-function estTok(t) { let c = 0, o = 0; for (const ch of String(t)) { if (/[Ѐ-ӿ]/.test(ch)) c++; else o++; } return Math.round(c / 2.2 + o / 4); }
-const normTxt = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
-// length>2 (не >3): пази техническите акроними SQL/XSS/API/DDS и версии, които са силен сигнал; лекият
-// шум от 3-буквени думи е адитивен и не доминира реално релевантна поука.
-const wordSet = (s) => new Set(normTxt(s).split(" ").filter((w) => w.length > 2));
-// Извлечи текст на задачата от payload-а (ключът варира според средата) — само за подреждане.
+// РЕЛЕВАНТНО ИЗВЛИЧАНЕ на личната памет — логиката живее в tools/lib/memory-retrieval.mjs (там е и
+// защо е пренаписана: задачата не стигаше до куката, изборът беше само сред първите 40 реда, датата се
+// гадаеше по позиция). Тук остава само сглобяването. Таван по ТОКЕН-БЮДЖЕТ → предвидим разход.
+const MEM_TOKEN_BUDGET = 3200; // таван на инжектираната лична памет (≈ токени)
+function estTok(t) { return estTokR(t); }
+const TODAY = () => process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
+// Текст на задачата от payload-а (тестове/други среди). В Claude Code SubagentStart НЕ носи задачата —
+// тогава тя се чете от транскрипта на главната сесия (taskFromTranscript).
 function taskTextOf(p) {
   return ["prompt", "task", "description", "message", "user_prompt", "input", "instructions"]
     .map((k) => (typeof p[k] === "string" ? p[k] : "")).join(" ").trim();
 }
-// Избери поуки: релевантните (при задача) или най-новите (без), в рамките на токен-бюджета.
+// Съвместим интерфейс (тестове, инструменти): избор в бюджет по новите правила.
 export function selectLessons(all, task, budget = MEM_TOKEN_BUDGET) {
-  const q = wordSet(task || "");
-  let ordered;
-  if (q.size) {
-    ordered = all.map((l, i) => { const lt = wordSet(l); let ov = 0; for (const w of q) if (lt.has(w)) ov++; return { l, ov, i }; })
-      .sort((a, b) => b.ov - a.ov || b.i - a.i).map((x) => x.l); // релевантност, после по-новите (по-долу във файла)
-  } else {
-    ordered = all.slice().reverse(); // без задача → най-новите първо (новите се добавят отдолу)
-  }
-  const out = []; let used = 0;
-  for (const l of ordered) { const t = estTok(l); if (out.length && used + t > budget) break; out.push(l); used += t; }
-  return out;
+  return select(all, task, { budget, maxCount: MAX_LESSONS, today: TODAY() });
 }
 
 function main() {
@@ -137,18 +123,25 @@ function main() {
 
   // Статичен, кешируем префикс (агент-независим) — ВИНАГИ първо и в фиксиран ред.
   const parts = staticPrefixParts();
-  // Динамичното (лична проверена памет) идва СЛЕД статичното. Извличаме релевантните (по задачата,
-  // ако средата я подава) в рамките на токен-бюджет — не сляпо първите N. MAX_LESSONS е твърд таван отгоре.
-  // + поуките, които чакат в клона agents/memory и ги няма в този checkout (научени в друга сесия или
-  // клон, още неслети в main). Без това нова сесия „забравяше" всичко, научено извън main (2026-09-23:
-  // 562 проверени поуки в 32 клона). Най-новите първи; при липса на git → само локалната памет.
+  // Динамичното (лична проверена памет) идва СЛЕД статичното. ВСИЧКИ поуки — собствените и чакащите в
+  // agents/memory — минават през едно подреждане: релевантност към задачата, после дата от реда.
+  const task = taskTextOf(payload) || taskFromTranscript(payload.transcript_path, agent);
+  const own = verifiedSection(file);
   const pending = pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
-  const all = [...pending, ...verifiedSection(file)].slice(0, MAX_LESSONS);
-  const lessons = selectLessons(all, taskTextOf(payload));
+  const lessons = select([...pending, ...own], task, { budget: MEM_TOKEN_BUDGET, maxCount: MAX_LESSONS, today: TODAY() });
   if (lessons.length) {
     parts.push(
       `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n` +
       lessons.join("\n"),
+    );
+  }
+  // Знанието циркулира по смисъл: до 3 поуки на ДРУГИ агенти, само ако са сред най-релевантните в
+  // целия флот за тази задача. Етикетът казва чия е поуката — тя е бележка на колега, не твоя опит.
+  const cross = crossAgentPicks(MEM_DIR, agent, task, { today: TODAY() });
+  if (cross.length) {
+    parts.push(
+      `От паметта на колеги (релевантно за задачата — провери, преди да приложиш в своя домейн):\n` +
+      cross.map((c) => `${c.line} — [${c.agent}]`).join("\n"),
     );
   }
   if (!parts.length) process.exit(0);

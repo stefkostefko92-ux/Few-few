@@ -216,7 +216,7 @@ test("4м. МУТАЦИЯ: preload без чакащите поуки — сле
     const { publishLessons } = await lib();
     publishLessons(f.work, { testagent: { verified: [L("2026-09-23", "чакаща поука в клона")] } });
     const env = { ...process.env, ...ENV, CLAUDE_PROJECT_DIR: f.work };
-    const out = withMutation(PRELOAD, (s) => s.replace("const all = [...pending, ...verifiedSection(file)]", "const all = [...verifiedSection(file)]"),
+    const out = withMutation(PRELOAD, (s) => s.replace("select([...pending, ...own]", "select([...own]"),
       () => spawnSync(process.execPath, [PRELOAD], { input: JSON.stringify({ agent_type: "testagent" }), encoding: "utf8", env }).stdout);
     assert.doesNotMatch(out, /чакаща поука в клона/, "мутантът не вижда поуката — точно дефектът");
   } finally { rmSync(f.root, { recursive: true, force: true }); }
