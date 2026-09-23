@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 380
+        "lessons": 382
       },
       "evolution": [
         {
@@ -578,9 +578,20 @@
           "date": "2026-09-23",
           "event": "v30.8 — учене",
           "detail": "Научи: AI Act чл. 50 е в сила от 02.08.2026 и Digital Omnibus (в сила 27.07.2026) НЕ го отложи… (+125 още)"
+        },
+        {
+          "version": "31.0.0",
+          "date": "2026-09-23",
+          "event": "v31.0 — учене",
+          "detail": "Научи: Бисквитките в BG (ePrivacy чл. 5(3)) са транспонирани в ЗЕТ (Закон за електронната търг… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „Бисквитките в BG (ePrivacy чл. 5(3)) са транспонирани в ЗЕТ (Закон за електронната търг…\" (+1 още)"
+        },
         {
           "date": "2026-09-23",
           "type": "learning",
@@ -8711,7 +8722,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 202
+        "lessons": 203
       },
       "evolution": [
         {
@@ -9061,9 +9072,20 @@
           "date": "2026-09-23",
           "event": "v18.7 — учене",
           "detail": "Научи: Idempotency ключ, съставен само от съдържание (IP+хеш на количката+имейл) без времеви к… (+24 още)"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-09-23",
+          "event": "v18.8 — учене",
+          "detail": "Научи: stripe-lint.mjs сканира само кодови файлове (.md → „0 файла“, фалшиво чисто) и хваща са…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „stripe-lint.mjs сканира само кодови файлове (.md → „0 файла“, фалшиво чисто) и хваща са…\""
+        },
         {
           "date": "2026-09-23",
           "type": "learning",
