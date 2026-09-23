@@ -25,6 +25,15 @@ export function learnedTip(cwd = ROOT) {
   return r.status === 0 ? r.stdout.trim() : null;
 }
 
+// Артефактът се строи САМО от agents-dashboard/ — затова сравняваме дървото на тази папка, не commit-а.
+// Иначе всеки commit в клона на паметта, който не пипа таблото (напр. запис за употреба на токени),
+// би искал ненужно републикуване.
+export function dashboardTree(cwd, ref) {
+  if (!ref) return null;
+  const r = spawnSync("git", ["rev-parse", "-q", "--verify", `${ref}:agents-dashboard`], { cwd, encoding: "utf8" });
+  return r.status === 0 ? r.stdout.trim() : null;
+}
+
 /** Чиста логика: нужно ли е обновяване и какво да се каже. */
 export function artifactDue(tip, published) {
   if (!tip || tip === published) return null;
@@ -40,7 +49,9 @@ export function artifactDue(tip, published) {
 function main() {
   let payload = {};
   try { payload = JSON.parse(readFileSync(0, "utf8")); } catch { /* fail-open */ }
-  const msg = artifactDue(learnedTip(ROOT), publishedTip(ROOT));
+  const tip = learnedTip(ROOT), published = publishedTip(ROOT);
+  const same = tip && published && dashboardTree(ROOT, tip) && dashboardTree(ROOT, tip) === dashboardTree(ROOT, published);
+  const msg = same ? null : artifactDue(tip, published);
   if (!msg) process.exit(0);
   if (payload.stop_hook_active) { console.log(`⚠ ${msg}`); process.exit(0); }
   console.error(msg);

@@ -4,6 +4,8 @@
 # гейтът memory-curate (`node tools/memory/curate.mjs --write` ги оправя). Виж tools/lib/memory-branch.mjs.
 .claude/agents/_memory/*.md merge=union
 .claude/agents/_memory/_flows.jsonl merge=union
+# Реалната употреба на токени (usage-report.mjs) — append-only, пътува с клона agents/memory.
+tools/agents/evals/usage.jsonl merge=union
 # Доктрината НЕ е append-only — там противоречащи редакции трябва да спрат човек (обикновен 3-way).
 .claude/agents/_memory/_shared.md merge=text
 .claude/agents/_memory/SECURITY.md merge=text

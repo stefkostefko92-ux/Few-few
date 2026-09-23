@@ -72,6 +72,9 @@ const CHECKS = [
   // клон не е вина на текущия PR, а поправката е механична (`harvest-memory.mjs --apply`). При плитък
   // checkout (PR CI) казва „НЕИЗМЕРЕНО", не „чисто"; седмичният sweep тегли пълната история и мери.
   { id: "harvest", desc: "заседнали поуки в клонове извън main (учене, което нова сесия не вижда)", cmd: ["tools/agents/harvest-memory.mjs", "--check", "--no-fetch"], required: false },
+  // 2026-09-23: токен-отчетността беше ОЦЕНКА на статичния текст (<8% от цената). Реалната употреба
+  // идва от транскриптите (usage-capture.mjs → agents/memory). СЪВЕТВАЩО: докладва, не гейтва разход.
+  { id: "usage", desc: "реална употреба на токени по пускане (къде отиват парите, ходове p50/p90)", cmd: ["tools/agents/usage-report.mjs", "--check"], required: false },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
   // СЪВЕТВАЩО, не гейт (решение на собственика, 2026-08-04): docs.js е генериран артефакт и се съди

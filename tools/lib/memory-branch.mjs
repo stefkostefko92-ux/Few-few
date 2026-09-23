@@ -21,7 +21,7 @@
 // CLI:  node tools/lib/memory-branch.mjs --sync [--no-push] [--no-fetch]
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, rmdirSync, statSync, rmSync } from "node:fs";
+import { mkdirSync, rmdirSync, statSync, rmSync, existsSync, readFileSync, appendFileSync } from "node:fs";
 import { join, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { addLessons, sectionLessons, countVerifiedText, lessonIndex, lessonText, summarize, applyUpdate, norm, bodyKey } from "./memory-core.mjs";
@@ -33,6 +33,10 @@ export const REMOTE_REF = `refs/remotes/origin/${MEMORY_BRANCH}`;
 export const MAIN_REF = "refs/remotes/origin/main";
 export const MEM_PATH = ".claude/agents/_memory";
 const DASH_JSON = "agents-dashboard/agents.json";
+// Append-only дневници, които пътуват с клона на паметта (реалната употреба на токени). При обединяване
+// и сгъване на main се пазят РЕДОВЕТЕ от двете страни — иначе сгъването би изтрило телеметрията.
+export const APPEND_ONLY = ["tools/agents/evals/usage.jsonl"];
+const PENDING_USAGE = "agents-usage.pending.jsonl"; // в .git — локално, не се комитва
 const DASH_HTML = "agents-dashboard/index.html";
 const AGENT_FILE = /^[\w-]+\.md$/;
 const NOT_AGENT = /^(_shared|SECURITY|PROCEDURE|PROTOCOL|README)\.md$/;
@@ -178,12 +182,63 @@ function addedSince(cwd, tip, since) {
   return out;
 }
 
+/** Редовете на append-only файловете от `other`, които ги няма в `base` → файлове за commit върху base. */
+function appendOnlyUnion(cwd, base, other) {
+  const files = {};
+  for (const path of APPEND_ONLY) {
+    const b = show(cwd, base, path) || "", o = show(cwd, other, path) || "";
+    const have = new Set(b.split("\n").filter(Boolean));
+    const add = o.split("\n").filter((l) => l && !have.has(l));
+    if (add.length) files[path] = (b && !b.endsWith("\n") ? b + "\n" : b) + add.join("\n") + "\n";
+  }
+  return files;
+}
+
 /** Обединява `other` в `base` по съдържание: дървото на base + поуките, които other е добавил след общия им предшественик. */
 function unionCommit(cwd, base, other, message, date) {
   const since = mergeBase(cwd, base, other);
   const lessons = addedSince(cwd, other, since);
   const { files } = applyLessons(cwd, base, lessons, date);
+  Object.assign(files, appendOnlyUnion(cwd, base, other));
   return commitFiles(cwd, base, files, [other, base], message);
+}
+
+/** Локален буфер за записи за употреба (в .git — не цапа клона на задачата). */
+export function pendingUsagePath(cwd) { return gitPath(cwd, PENDING_USAGE); }
+export function appendPendingUsage(cwd, rec) {
+  const p = pendingUsagePath(cwd); if (!p || !rec) return false;
+  try { appendFileSync(p, JSON.stringify(rec) + "\n"); return true; } catch { return false; }
+}
+
+/**
+ * Изпраща натрупаните записи за употреба в `agents/memory` като ЕДИН commit (append-only дневник).
+ * Не пипа HEAD/индекс/работно дърво. Буферът се чисти само след успешен commit.
+ */
+export function flushUsage(cwd, { message } = {}) {
+  if (!isGitRepo(cwd)) return { ok: false, reason: "не е git репо" };
+  const p = pendingUsagePath(cwd);
+  if (!p || !existsSync(p)) return { ok: true, flushed: 0 };
+  return withRepoLock(cwd, () => {
+    let pending = "";
+    try { pending = readFileSync(p, "utf8"); } catch { return { ok: true, flushed: 0 }; }
+    const lines = pending.split("\n").filter(Boolean);
+    if (!lines.length) { try { rmSync(p, { force: true }); } catch { /* ignore */ } return { ok: true, flushed: 0 }; }
+    const base = publishBase(cwd);
+    if (!base) return { ok: false, reason: "няма основа" };
+    const cur = show(cwd, base, APPEND_ONLY[0]) || "";
+    const ids = new Set(cur.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l).id; } catch { return null; } }));
+    // Агент, върнат от DoD гейта, спира втори път — ПОСЛЕДНИЯТ запис за същото пускане е пълният.
+    const last = new Map();
+    for (const l of lines) { try { const id = JSON.parse(l).id; if (id) last.set(id, l); } catch { /* ignore */ } }
+    const add = [...last].filter(([id]) => !ids.has(id)).map(([, l]) => l);
+    if (!add.length) { rmSync(p, { force: true }); return { ok: true, flushed: 0 }; }
+    const content = (cur && !cur.endsWith("\n") ? cur + "\n" : cur) + add.join("\n") + "\n";
+    const commit = commitFiles(cwd, base, { [APPEND_ONLY[0]]: content }, [base], message || `памет: употреба на ${add.length} пускания на агенти`);
+    const old = rev(cwd, LOCAL_REF);
+    if (!git(cwd, ["update-ref", LOCAL_REF, commit, ...(old ? [old] : [])]).ok) return { ok: false, reason: "update-ref" };
+    rmSync(p, { force: true });
+    return { ok: true, flushed: add.length, commit };
+  });
 }
 
 /**
@@ -257,6 +312,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const cwd = process.env.CLAUDE_PROJECT_DIR || join(fileURLToPath(import.meta.url), "..", "..", "..");
   if (process.argv.includes("--sync")) {
     let r;
+    if (process.argv.includes("--flush-usage")) { try { flushUsage(cwd); } catch { /* употребата е измерване — никога не спира синхронизацията */ } }
     try { r = syncMemoryBranch(cwd, { push: !process.argv.includes("--no-push"), fetch: !process.argv.includes("--no-fetch") }); }
     catch (e) { r = { ok: false, steps: [String(e.message || e)] }; }
     process.stdout.write(`${r.ok ? "✓" : "✗"} agents/memory: ${r.steps.join(" · ") || "без промяна"}${r.tip ? ` (${r.tip.slice(0, 8)})` : ""}\n`);
