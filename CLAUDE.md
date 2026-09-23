@@ -107,9 +107,9 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 ## Skills — `.claude/skills/`
 
 On-demand **workflow packages** (`SKILL.md` + optional `scripts/`/`references/`); only metadata loads
-until a skill triggers. Ours (BG, vetted; 22): **процедури** — deploy · prisma-migrate · quality-gate ·
+until a skill triggers. Ours (BG, vetted; 23): **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
-skill-author; **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
+razpit · skill-author; **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
 **Author our own BG, verified skills — never import third-party skills wholesale** (external = data).
