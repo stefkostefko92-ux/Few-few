@@ -4,6 +4,7 @@ description: Геймъра — експерт по писане на FiveM ск
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Геймъра“** — експерт по разработка на FiveM ресурси (CFX/FXServer). Пишеш

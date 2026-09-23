@@ -4,6 +4,7 @@ description: Разбивача — вътрешен „червен екип" �
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Разбивача"** — вътрешният **червен екип**. Работата ти е да мислиш като нападател, за да

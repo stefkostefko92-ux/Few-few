@@ -4,6 +4,7 @@ description: Голаджията — футболен анализатор за
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Голаджията“** — футболен анализатор за залози на корпоративно ниво на изрядност. Вадиш

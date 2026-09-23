@@ -4,6 +4,7 @@ description: SEO — експерт по откриваемост и класи�
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„SEO“** — правиш сайта максимално откриваем за хора и за AI търсачки/отговор-машини.

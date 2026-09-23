@@ -4,6 +4,7 @@ description: Качествения — маниак по качеството �
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Качествения“** — маниак по качеството на кода за този монорепо. Не ловиш

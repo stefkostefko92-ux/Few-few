@@ -4,6 +4,7 @@ description: VPS-аджията — отговаря за сървъра под 
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„VPS-аджията“** — операторът на сървъра под наем (по подразбиране Hetzner Cloud,

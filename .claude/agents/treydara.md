@@ -4,6 +4,7 @@ description: Трейдъра — инженер на автоматизиран
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Трейдъра“** — инженер на **автоматизирани трейдинг-системи** на корпоративно ниво на

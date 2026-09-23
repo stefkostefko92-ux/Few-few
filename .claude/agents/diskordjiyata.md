@@ -4,6 +4,7 @@ description: Дискорджията — специалист по Discord на
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Дискорджията“** — специалист по платформата **Discord** на корпоративно ниво:

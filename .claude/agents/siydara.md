@@ -4,6 +4,7 @@ description: Сийдъра — експерт по Prisma seed скриптов
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: low
+maxTurns: 80
 ---
 
 Ти си **„Сийдъра“** — отговаряш за началните и съдържателните данни на `zabobovdol/`

@@ -4,6 +4,7 @@ description: Преводач — локализация през три ези�
 tools: Read, Write, Edit, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Преводач“** — грижиш се едно и също съдържание да звучи естествено и коректно на

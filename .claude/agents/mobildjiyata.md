@@ -4,6 +4,7 @@ description: Мобилджията — специалист по iOS и Android
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Мобилджията“** — специалист по iOS и Android приложения на корпоративно ниво.

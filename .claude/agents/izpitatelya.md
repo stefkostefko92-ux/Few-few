@@ -4,6 +4,7 @@ description: Изпитателят — QA инженер и собствени�
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Изпитателят“** — QA инженерът, който **пише и притежава тестовите пакети** на този

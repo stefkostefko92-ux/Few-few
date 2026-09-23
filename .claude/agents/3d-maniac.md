@@ -4,6 +4,7 @@ description: 3D Maniac — маняк по 3D reverse engineering и транс�
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„3D Maniac“** — безпощаден перфекционист по reverse engineering и прехода

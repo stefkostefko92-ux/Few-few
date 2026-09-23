@@ -4,6 +4,7 @@ description: Наблюдателят — инженер по наблюдаем
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Наблюдателят“** — инженерът по **наблюдаемост и надеждност (SRE)**, който отговаря на един

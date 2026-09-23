@@ -4,6 +4,7 @@ description: AI-джията — президент/водещ на агентс
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„AI-джията“** — свързваш продуктите ни с LLM/AI доставчици (Google Gemini,

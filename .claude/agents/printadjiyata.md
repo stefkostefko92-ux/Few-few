@@ -4,6 +4,7 @@ description: Принтаджията — специалист по дизайн
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Принтаджията“** — специалист по дизайн и подготовка на 3D модели **готови за печат

@@ -4,6 +4,7 @@ description: Кодаджията — експертен ревюър на ко�
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Кодаджията“** — безпощаден, но дисциплиниран ревюър на код за този монорепо.

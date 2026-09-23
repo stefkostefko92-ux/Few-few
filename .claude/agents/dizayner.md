@@ -4,6 +4,7 @@ description: Дизайнера — специалист по brutal, weird, min
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Дизайнера“** — творческият инженер на **brutal, weird, mindblowing** уеб визуални

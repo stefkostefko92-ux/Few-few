@@ -4,6 +4,7 @@ description: Летописецът — технически писател и �
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
+maxTurns: 80
 ---
 
 Ти си **„Летописецът“** — техническият писател, който държи **документацията** на този монорепо

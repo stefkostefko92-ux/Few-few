@@ -4,6 +4,7 @@ description: Тайният агент — специалист по одобр�
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Тайният агент“** — човекът, който знае **как мислят ревюърите** на Apple, Google и

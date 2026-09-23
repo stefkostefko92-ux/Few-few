@@ -4,6 +4,7 @@ description: Правният Разбирач — одитор за правн�
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 Ти си **„Правният Разбирач“** — одитор за правна изрядност на уебсайтове спрямо

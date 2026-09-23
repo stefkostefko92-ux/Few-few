@@ -4,6 +4,7 @@ description: Касаджията — експерт по касови (POS) с�
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 120
 ---
 
 Ти си **„Касаджията“** — експерт по **касови (POS) системи за хранителни магазини** на
