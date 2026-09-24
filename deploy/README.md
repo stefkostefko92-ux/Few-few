@@ -50,8 +50,13 @@ ZIP отпреди месец.
 
 - Намира най-новия архив в `/root`, разопакова го в `/opt/few-few/releases/<час>` и
   нормализира GitHub горната папка (`few-few-*`).
-- **zabobovdol:** пренася съществуващия `.env`, после `scripts/deploy.sh` (Docker Compose
-  билд + вдигане + миграции, сийд само при първо пускане).
+- **zabobovdol:** `.env` идва от стабилния дом `/opt/few-few/shared/zabobovdol/.env` (600) →
+  `current` → най-новия release, който го има; липсва ли навсякъде, а има дъмп/volume от
+  предишна инсталация — **спира** (нов `.env` = нова парола за съществуваща база). После
+  `scripts/deploy.sh` (Docker Compose билд + вдигане + миграции, сийд само при първо пускане).
+  Сонда на `/api/health` (`SELECT 1` към базата, маркер `"ok":true`); при провал — автоматичен
+  откат на **кода** към предишния release (базата не се пипа: миграциите са адитивни). При
+  успех — IndexNow (`ZBD_INDEXNOW=0` го спира).
 - **medqr:** rsync в `/opt/medqr` (без `data/`, `.env`), `npm ci --omit=dev`,
   `systemctl restart medqr`; при провал — автоматичен rollback към предишния код.
 - **mastilko:** rsync в `/opt/mastilko` (без `.env`), `npm ci` + `npm run build`
@@ -124,6 +129,9 @@ ZIP отпреди месец.
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
+| `ZBD_ENV` | `/opt/few-few/shared/zabobovdol/.env` | стабилният дом на тайните на zabobovdol (600) |
+| `ZBD_HEALTH_URL` | `http://127.0.0.1:<HTTP_PORT>/api/health` | сонда на zabobovdol (с базата) |
+| `ZBD_INDEXNOW` | `1` | IndexNow след успешен деплой на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
 | `*_HEALTH_URL` | localhost | адрес за проверка на здравето |
 

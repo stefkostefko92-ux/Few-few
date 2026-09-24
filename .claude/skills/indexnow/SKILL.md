@@ -35,10 +35,11 @@ node tools/seo/indexnow.mjs https://<live-domain> \
 > „ключът е там" — проверявай съдържанието: `curl -s <url>/indexnow-key.txt` трябва да върне
 > само ключа. (Реален провал на Supreme, 07.08.2026.)
 
-`deploy/autodeploy.sh` **не** пинга (проверено 2026-09-23: няма `INDEXNOW_` в `deploy/`) — след
-релийз, засягащ откриваемостта, пусни командата ръчно. Собствен пинг имат само vizitka
-(`vizitka/deploy/server-setup.sh`) и SupremeDiscordBot (свой `indexnow-ping.sh`). Пусни ръчно и при промяна
-на живо между релийзи (напр. публикуване през админ панела).
+`deploy/autodeploy.sh` пинга след здрав релийз за zabobovdol, SupremeDiscordBot, mastilko, ospedali и
+adblock — всеки по свой начин (общ ключ `INDEXNOW_<PROJ>` няма; проверено 2026-09-24). За останалите
+продукти пусни командата ръчно след релийз, засягащ откриваемостта; vizitka има и свой пинг в
+`vizitka/deploy/server-setup.sh`. Пусни ръчно и при промяна на живо между релийзи (напр. публикуване
+през админ панела).
 
 ## Google (отделно — НЕ поддържа IndexNow)
 Sitemap ping е спрян (2023). За Google:
