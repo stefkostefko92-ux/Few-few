@@ -45,3 +45,5 @@
 {"t":"handoff","ts":"2026-09-24T10:58:30.134Z","id":"r34cb7908","from":"skorostnika","to":"vps-adjiyata","status":"има бележки","run":"f3963a3d"}
 {"t":"handoff","ts":"2026-09-24T10:58:49.298Z","id":"r34cb7908","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"4c0ce986"}
 {"t":"handoff","ts":"2026-09-24T11:01:22.090Z","id":"r34cb7908","from":"treydara","to":"kodadjiyata","status":"има бележки","run":"0ec6c2e5"}
+{"t":"start","ts":"2026-09-24T11:55:35.701Z","id":"rc7168a39","flow":"авто","lead":"mobildjiyata","auto":true}
+{"t":"handoff","ts":"2026-09-24T11:55:35.701Z","id":"rc7168a39","from":"mobildjiyata","to":"ai-djiyata","status":"има бележки","run":"2ebfe81c"}
