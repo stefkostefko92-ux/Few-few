@@ -71,3 +71,6 @@
 {"t":"handoff","ts":"2026-09-24T12:15:42.279Z","id":"r26faa276","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"a08b09f7"}
 {"t":"handoff","ts":"2026-09-24T12:18:19.810Z","id":"r26faa276","from":"goladjiyata","to":"kodadjiyata","status":"има бележки","run":"6f500c89"}
 {"t":"handoff","ts":"2026-09-24T12:18:51.223Z","id":"r26faa276","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"36438232"}
+{"t":"start","ts":"2026-09-24T12:29:19.609Z","id":"rddb6aed3","flow":"авто","lead":"analizatora","auto":true}
+{"t":"handoff","ts":"2026-09-24T12:29:19.609Z","id":"rddb6aed3","from":"analizatora","to":"ai-djiyata","status":"има бележки","run":"64e118e2"}
+{"t":"handoff","ts":"2026-09-24T12:29:37.666Z","id":"rddb6aed3","from":"mobildjiyata","to":"ai-djiyata","status":"наред","run":"301e44dd"}
