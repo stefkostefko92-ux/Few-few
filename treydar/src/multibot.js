@@ -176,11 +176,18 @@ export async function startMultiBot(cfg) {
     if (!markets[s]) throw new Error(`Няма такъв пазар: ${s}`);
   }
   const state = loadState();
+  if (state.stateError) {
+    log.error(`⛔ ${state.stateError} — KILL-SWITCH включен (fail closed). Запазено за разбор: ${state.stateKept || 'не успях да го преместя'}. Провери позициите на борсата ръчно.`);
+    audit('state.corrupt', { error: state.stateError, kept: state.stateKept });
+    delete state.stateError; delete state.stateKept; // kill-switch-ът остава в state; бележката — само в лога
+  }
   if (state.killed) log.warn('⛔ KILL-SWITCH е активен от предишна сесия. Няма нови входове. Изчисти data/state.json след разбор.');
 
   log.info(`Мулти-символен режим: ${cfg.symbols.join(', ')} · цикъл ${cfg.loopSeconds}s · лимити: ≤${cfg.maxConcurrent} позиции, общ риск ≤${cfg.maxPortfolioRiskPct}%, група ≤${cfg.maxGroupRiskPct}% (|corr|≥${cfg.corrThreshold})`);
   let stop = false;
-  process.on('SIGINT', () => { log.info('Спиране…'); stop = true; });
+  // SIGTERM идва от systemctl stop / docker stop / kill — без него ботът умираше по средата на цикъла,
+  // между поръчка към борсата и saveState. Сега и двата сигнала довършват текущия цикъл.
+  for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { log.info(`Спиране (${sig})…`); stop = true; });
 
   while (!stop) {
     try {

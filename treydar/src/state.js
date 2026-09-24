@@ -1,6 +1,6 @@
 // state.js — трайно състояние на бота между рестартите (equity връх, дневен старт, позиция).
 // Персистира намерения, за да може ботът да рестартира и да продължи от реалността.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,16 +20,38 @@ const DEFAULT = {
   lastLossMs: null,    // timestamp на последната губеща сделка (за cooldown)
 };
 
-export function loadState() {
+// Липсващ файл = първо пускане → чисто състояние. ПОВРЕДЕН файл (прекъснат запис, пълен диск) НЕ е
+// „чисто състояние“: преди тихо връщахме DEFAULT с killed: false — kill-switch-ът се отваряше сам и
+// отворените позиции се „забравяха“ (Наблюдателя, 2026-09-24). Сега: fail closed — kill-switch ВКЛ.,
+// повреденият файл се запазва за разбор, а не се презаписва при следващия saveState.
+export function loadState(file = stateFile) {
+  let raw;
   try {
-    return { ...DEFAULT, ...JSON.parse(readFileSync(stateFile, 'utf8')) };
-  } catch {
-    return { ...DEFAULT };
+    raw = readFileSync(file, 'utf8');
+  } catch (e) {
+    if (e.code === 'ENOENT') return { ...DEFAULT };
+    return corrupt(file, `не мога да прочета ${file}: ${e.code || e.message}`);
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('не е обект');
+    return { ...DEFAULT, ...parsed };
+  } catch (e) {
+    return corrupt(file, `повреден ${file}: ${e.message}`);
   }
 }
 
-export function saveState(state) {
-  writeFileSync(stateFile, JSON.stringify(state, null, 2));
+function corrupt(file, reason) {
+  let kept = null;
+  try { kept = `${file}.corrupt-${Date.now()}`; renameSync(file, kept); } catch { kept = null; }
+  return { ...DEFAULT, killed: true, stateError: reason, stateKept: kept };
+}
+
+// Атомарен запис: временен файл + rename. Прекъснат writeFileSync оставяше полупразен state.json.
+export function saveState(state, file = stateFile) {
+  const tmp = `${file}.tmp-${process.pid}`;
+  writeFileSync(tmp, JSON.stringify(state, null, 2));
+  renameSync(tmp, file);
 }
 
 // Нулира дневния старт-капитал при нов календарен ден (UTC).
