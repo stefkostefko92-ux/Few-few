@@ -11921,7 +11921,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 192
+        "lessons": 218
       },
       "evolution": [
         {
@@ -12271,9 +12271,20 @@
           "date": "2026-09-24",
           "event": "v17.4 — учене",
           "detail": "Научи: adblock manifest.json:10-20 няма \"tabs\" permission — премахнато в 5.0.0 (CHANGELOG.md:1… (+24 още)"
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-24",
+          "event": "v20.0 — учене",
+          "detail": "Научи: declarativeNetRequest.getMatchedRules има твърда квота MAX_GETMATCHEDRULES_CALLS_PER_IN… (+25 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „declarativeNetRequest.getMatchedRules има твърда квота MAX_GETMATCHEDRULES_CALLS_PER_IN…\" (+25 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
