@@ -1118,7 +1118,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 368
+        "lessons": 370
       },
       "evolution": [
         {
@@ -1894,9 +1894,20 @@
           "date": "2026-09-21",
           "event": "v25.8 — учене",
           "detail": "Научи: В `deploy/autodeploy.sh` (под `set -euo pipefail`) всяко `p=\\\"$(grep … | … )\\\"` без `||… (+2 още)"
+        },
+        {
+          "version": "26.0.0",
+          "date": "2026-09-24",
+          "event": "v26.0 — учене",
+          "detail": "Научи: adblock: tests/policy-parity само грепва tools/build_filters.mjs и не пуска конвертора,… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „adblock: tests/policy-parity само грепва tools/build_filters.mjs и не пуска конвертора,…\" (+1 още)"
+        },
         {
           "date": "2026-09-21",
           "type": "learning",
