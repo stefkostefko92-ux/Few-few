@@ -3639,7 +3639,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 180
+        "lessons": 191
       },
       "evolution": [
         {
@@ -4061,9 +4061,20 @@
           "date": "2026-09-23",
           "event": "v16.3 — учене",
           "detail": "Научи: Semrush MCP инструмент не е наличен въпреки инструкции в системния промпт, споменаващи … (+14 още)"
+        },
+        {
+          "version": "17.4.0",
+          "date": "2026-09-24",
+          "event": "v17.4 — учене",
+          "detail": "Научи: Minyor (ФК Миньор) root layout metadata.keywords е масив от 7 елемента, но НЕ съдържа „… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Minyor (ФК Миньор) root layout metadata.keywords е масив от 7 елемента, но НЕ съдържа „…\" (+10 още)"
+        },
         {
           "date": "2026-09-23",
           "type": "learning",
