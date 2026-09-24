@@ -33,13 +33,26 @@ export interface CallToolResult {
   isError?: boolean;
 }
 
+export interface Icon {
+  src: string;
+  mimeType?: string;
+  sizes?: string[];
+}
+
 export interface ToolDef {
   name: string;
   title: string;
   description: string;
   inputSchema: Record<string, unknown>;
   outputSchema?: Record<string, unknown>;
+  /** Иконата на инструмента (ревизия 2026-07-28). Същите файлове като в сайта. */
+  icons?: Icon[];
   run(args: unknown): CallToolResult;
+}
+
+/** Иконите са от нашия домейн и са WebP — спецификацията иска HTTPS или data:. */
+function icon(file: string): Icon[] {
+  return [{ src: `${SITE}/icons/${file}.webp`, mimeType: "image/webp", sizes: ["512x512"] }];
 }
 
 // ── Дребни помощници за JSON Schema ─────────────────────────────────────────
@@ -81,6 +94,8 @@ function design<S extends z.ZodRawShape>(opts: {
   title: string;
   description: string;
   path: string;
+  /** Файлът в /public/icons без разширение. */
+  iconFile: string;
   properties: Record<string, unknown>;
   required?: string[];
   schema: z.ZodObject<S>;
@@ -91,6 +106,7 @@ function design<S extends z.ZodRawShape>(opts: {
     name: opts.name,
     title: opts.title,
     description: opts.description,
+    icons: icon(opts.iconFile),
     inputSchema: {
       type: "object",
       properties: { ...opts.properties, themeId: themeJson },
@@ -145,6 +161,7 @@ const etiketi = design({
     "mode='list' прави РАЗЛИЧЕН етикет на всеки ред от listText — това е начинът за цяла серия наведнъж. " +
     "Размерът се избира с presetId; най-често търсеният е '70x36' (24 на лист).",
   path: "etiketi",
+  iconFile: "etiketi",
   properties: {
     presetId: oneOf(
       "Размер: 38x21 (65/лист), 48x25 (44), 52x30 (40), 63x38 (21), 70x36 (24 — най-търсен), 70x42 (21), 99x57 (10), 105x74 (8), oval (63×38), circle60 (Ø60), circle40 (Ø40).",
@@ -186,6 +203,7 @@ const vizitki = design({
     "Прави визитки в българския стандарт 90 × 54 mm — 10 на лист А4 — и връща линк. " +
     "По желание слага QR код с контактите (vCard), за да се запише контактът директно в телефона.",
   path: "vizitki",
+  iconFile: "vizitki",
   properties: {
     name: str("Име и фамилия.", 60),
     role: str("Длъжност. Например „Управител“.", 60),
@@ -223,6 +241,7 @@ const cv = design({
     "(тогава има смисъл да попълниш и birthDate, nationality, motherTongue, digitalSkills, driving). " +
     "Трудовият стаж и образованието се подават като списъци; умения и езици са по един на ред.",
   path: "cv",
+  iconFile: "cv",
   properties: {
     name: str("Име и фамилия.", 100),
     title: str("Професия или търсена позиция. Например „Счетоводител“.", 100),
@@ -329,6 +348,7 @@ const pismo = design({
     "Прави мотивационно писмо на А4 и връща линк. Текстът на писмото се подава в body — " +
     "напиши го сам, на български, в няколко абзаца, разделени с празен ред.",
   path: "pismo",
+  iconFile: "pismo",
   properties: {
     name: str("Име на кандидата.", 100),
     phone: str("Телефон.", 100),
@@ -366,6 +386,7 @@ const gramoti = design({
     "За цяла серия наведнъж подай series (по едно име на ред) — всяко име получава собствена страница, " +
     "а „{име}“ в reason се заменя автоматично с името на получателя.",
   path: "gramoti",
+  iconFile: "gramoti",
   properties: {
     kind: str("Вид, с главни букви. Например ГРАМОТА, СЕРТИФИКАТ, ДИПЛОМА.", 40),
     recipient: str("Получател (за единична грамота).", 80),
@@ -402,6 +423,7 @@ const pokani = design({
   title: "Покана или картичка",
   description: "Прави покана за рожден ден, кръщене, сватба или юбилей — 2 на лист А4 — и връща линк.",
   path: "pokani",
+  iconFile: "pokani",
   properties: {
     emoji: str("Емоджи отгоре. Например 🎉 или 🎂.", 8),
     heading: str("Заглавие. Например „Каним те на рожден ден!“", 80),
@@ -436,6 +458,7 @@ const tabelki = design({
   description:
     "Прави табелка за печат — „Отворено/Затворено“, работно време, надпис за врата — и връща линк.",
   path: "tabelki",
+  iconFile: "tabelki",
   properties: {
     emoji: str("Емоджи или знак. Например 🕐.", 8),
     title: str("Главен надпис. Например „ОТВОРЕНО“.", 60),
@@ -463,6 +486,7 @@ const wifi = design({
     "ВАЖНО: паролата се кодира в самия линк и НЕ се запазва никъде при нас, но линкът я съдържа — " +
     "предай го само на човека, на когото е мрежата, и му кажи това.",
   path: "wifi",
+  iconFile: "wifi",
   properties: {
     title: str("Надпис отгоре. Например „WiFi за гости“.", 40),
     ssid: str("Име на мрежата (SSID) — точно както се изписва.", 64),
@@ -494,6 +518,7 @@ const badzhove = design({
     "Силата му е серийната изработка: подай целия списък гости в guests — по един ред на човек, " +
     "във формат „Име | роля | фирма“ (ролята и фирмата са по желание).",
   path: "badzhove",
+  iconFile: "vizitki",
   properties: {
     eventName: str("Име на събитието — стои на лентата отгоре на всеки бадж.", 60),
     guests: str("Списък гости, по един на ред: „Име | роля | фирма“.", 6000),
@@ -522,6 +547,7 @@ const obyava = design({
     "Прави класическа обява с ресни за откъсване — долу има ленти с телефона, които минувачите късат. " +
     "За уроци, квартира, услуги, продажба.",
   path: "obyava",
+  iconFile: "tabelki",
   properties: {
     title: str("Заглавие на обявата. Например „Уроци по математика“.", 120),
     body: str("Текст — какво предлагаш, условия, цена.", 600),
@@ -547,6 +573,7 @@ const vaucheri = design({
     "Всеки ваучер получава УНИКАЛЕН пореден код от serialPrefix + номер (например MECHTA-001), " +
     "за да се следят при осребряване.",
   path: "vaucheri",
+  iconFile: "pokani",
   properties: {
     business: str("Име на бизнеса.", 60),
     value: str("Стойност — кратко и едро. Например „−20%“ или „Подарък“.", 20),
@@ -579,6 +606,7 @@ const kalendar = design({
     "Прави месечен календар за печат с официалните български празници (включително подвижните около " +
     "Великден) и връща линк. Един лист А4 на месец. ВНИМАНИЕ: месецът се подава като 1–12 (1 = януари).",
   path: "kalendar",
+  iconFile: "gramoti",
   properties: {
     year: num("Година.", 2020, 2099),
     month: num("Месец: 1 = януари … 12 = декември.", 1, 12),
@@ -605,6 +633,7 @@ const menu = design({
     "после всеки продукт на нов ред като „Име | цена“. Пример:\n" +
     "## Кафе\\nЕспресо | 2.00\\nКапучино | 2.80\\n\\n## Сладко\\nПалачинка | 5.00",
   path: "menu",
+  iconFile: "etiketi",
   properties: {
     title: str("Име на заведението.", 60),
     subtitle: str("Подзаглавие. Например „Меню“ или „Ценоразпис“.", 60),
@@ -639,6 +668,7 @@ function withJsonText(data: Record<string, unknown>): CallToolResult {
 const search: ToolDef = {
   name: "search",
   title: "Търсене в инструментите на Мастилко",
+  icons: icon("pechat"),
   description:
     "Търси сред 14-те инструмента за печат на Мастилко (етикети, визитки, CV, писма, грамоти, покани, " +
     "табелки, WiFi стикери, баджове, обяви, ваучери, календари, менюта, снимки за документи). " +
@@ -674,6 +704,7 @@ const search: ToolDef = {
 const fetchTool: ToolDef = {
   name: "fetch",
   title: "Пълно описание на инструмент",
+  icons: icon("pechat"),
   description:
     "Връща пълното описание на един инструмент на Мастилко по идентификатора му от search " +
     "(например „etiketi“, „cv“, „wifi“).",

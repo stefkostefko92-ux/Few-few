@@ -2,16 +2,41 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "fs";
 import path from "path";
-import { handleRpc, SUPPORTED_PROTOCOL, type JsonRpcResponse } from "@/lib/mcp/server";
+import {
+  handleRpc,
+  eraOf,
+  LEGACY_PROTOCOL,
+  META,
+  MODERN_PROTOCOL,
+  SUPPORTED_PROTOCOL,
+  type JsonRpcResponse,
+} from "@/lib/mcp/server";
 import { TOOLS, toolByName } from "@/lib/mcp/registry";
 import { CATALOG } from "@/lib/mcp/catalog";
 import { decodeState } from "@/lib/share";
 
-/** Вика метод и настоява да има отговор (не нотификация). */
+/** `_meta`-то, което всяка МОДЕРНА заявка е длъжна да носи. */
+const MODERN_META = {
+  [META.version]: MODERN_PROTOCOL,
+  [META.clientInfo]: { name: "тест", version: "1.0.0" },
+  [META.clientCapabilities]: {},
+};
+
+/** Вика метод по НАСЛЕДЕНАТА епоха и настоява да има отговор. */
 function call(method: string, params?: unknown, id: number | string = 1): JsonRpcResponse {
-  const res = handleRpc({ jsonrpc: "2.0", id, method, params });
-  assert.ok(res, `${method} трябваше да върне отговор`);
-  return res;
+  const { body } = handleRpc({ jsonrpc: "2.0", id, method, params });
+  assert.ok(body, `${method} трябваше да върне отговор`);
+  return body;
+}
+
+/** Вика метод по МОДЕРНАТА епоха (с `_meta`) и връща тялото и статуса. */
+function modern(method: string, params: Record<string, unknown> = {}, id: number | string = 1) {
+  const out = handleRpc(
+    { jsonrpc: "2.0", id, method, params: { ...params, _meta: MODERN_META } },
+    MODERN_PROTOCOL,
+  );
+  assert.ok(out.body, `${method} трябваше да върне отговор`);
+  return { body: out.body, status: out.status };
 }
 
 /** Вика инструмент и връща resultа му. */
@@ -42,21 +67,24 @@ test("initialize: връща СЪЩАТА версия, ако я поддърж
 test("initialize: при непозната версия връща наша, не грешка", () => {
   const res = call("initialize", { protocolVersion: "1999-01-01" });
   assert.equal(res.error, undefined, "по спецификация НЕ е грешка");
-  assert.equal((res.result as { protocolVersion: string }).protocolVersion, SUPPORTED_PROTOCOL[0]);
+  // НАЙ-новата НАСЛЕДЕНА, не 2026-07-28: клиент, който изобщо вика
+  // `initialize`, по определение не говори модерната епоха.
+  assert.equal((res.result as { protocolVersion: string }).protocolVersion, LEGACY_PROTOCOL[0]);
 });
 
 test("нотификация: не получава отговор (транспортът праща 202)", () => {
-  assert.equal(handleRpc({ jsonrpc: "2.0", method: "notifications/initialized" }), null);
+  const a = handleRpc({ jsonrpc: "2.0", method: "notifications/initialized" });
+  assert.equal(a.body, null);
+  assert.equal(a.status, 202);
   // Непозната нотификация също се приема мълчаливо.
-  assert.equal(handleRpc({ jsonrpc: "2.0", method: "notifications/нещо" }), null);
+  assert.equal(handleRpc({ jsonrpc: "2.0", method: "notifications/нещо" }).body, null);
 });
 
 test("непознат метод → -32601, а счупено съобщение → -32600", () => {
   assert.equal(call("няма/такъв").error?.code, -32601);
-  const bad = handleRpc({ id: 1, method: "ping" });
-  assert.equal(bad?.error?.code, -32600, "липсващ jsonrpc:2.0 е невалидна заявка");
-  assert.equal(handleRpc("низ")?.error?.code, -32600);
-  assert.equal(handleRpc(null)?.error?.code, -32600);
+  assert.equal(handleRpc({ id: 1, method: "ping" }).body?.error?.code, -32600, "липсващ jsonrpc:2.0");
+  assert.equal(handleRpc("низ").body?.error?.code, -32600);
+  assert.equal(handleRpc(null).body?.error?.code, -32600);
 });
 
 test("ping връща празен резултат", () => {
@@ -292,3 +320,100 @@ function minimalArgsFor(name: string): Record<string, unknown> {
     default: return {};
   }
 }
+
+// ── Модерната епоха (ревизия 2026-07-28) ────────────────────────────────────
+
+test("server/discover: задължителният модерен вход връща версии и способности", () => {
+  const { body, status } = modern("server/discover");
+  assert.equal(status, 200);
+  const r = body.result as Record<string, unknown>;
+  assert.equal(r.resultType, "complete", "модерните резултати носят resultType");
+  assert.ok((r.supportedVersions as string[]).includes(MODERN_PROTOCOL));
+  assert.ok((r.supportedVersions as string[]).includes(LEGACY_PROTOCOL[0]), "и наследените се обявяват");
+  assert.ok((r.capabilities as { tools?: unknown }).tools, "обявяваме инструменти");
+  const meta = r._meta as Record<string, { name: string }>;
+  assert.equal(meta[META.serverInfo]!.name, "mastilko");
+});
+
+test("модерна заявка БЕЗ _meta се отхвърля с -32602 и HTTP 400", () => {
+  // Без ръкостискане това е единственото място, където версията и
+  // способностите изобщо се обявяват — липсва ли, заявката е негодна.
+  const out = handleRpc({ jsonrpc: "2.0", id: 1, method: "tools/list" }, MODERN_PROTOCOL);
+  assert.equal(out.status, 400);
+  assert.equal(out.body?.error?.code, -32602);
+});
+
+test("модерна заявка без clientCapabilities също е негодна", () => {
+  const out = handleRpc(
+    { jsonrpc: "2.0", id: 1, method: "tools/list", params: { _meta: { [META.version]: MODERN_PROTOCOL } } },
+    MODERN_PROTOCOL,
+  );
+  assert.equal(out.status, 400);
+  assert.equal(out.body?.error?.code, -32602);
+});
+
+test("resultType и serverInfo има САМО в модерната епоха", () => {
+  const m = modern("tools/list").body.result as Record<string, unknown>;
+  assert.equal(m.resultType, "complete");
+  assert.ok(m._meta);
+  // Наследеният клиент получава стария вид, непроменен.
+  const l = call("tools/list").result as Record<string, unknown>;
+  assert.equal(l.resultType, undefined);
+  assert.equal(l._meta, undefined);
+});
+
+test("непознат метод: 404 в модерната епоха, 200 в наследената", () => {
+  // Модерната иска 404, за да се различава от стар сървър без такъв адрес.
+  assert.equal(modern("няма/такъв").status, 404);
+  assert.equal(modern("няма/такъв").body.error?.code, -32601);
+  const legacy = handleRpc({ jsonrpc: "2.0", id: 1, method: "няма/такъв" }, "2025-06-18");
+  assert.equal(legacy.status, 200);
+  assert.equal(legacy.body?.error?.code, -32601);
+});
+
+test("неподдържана версия → -32022 със списък на поддържаните", () => {
+  const out = handleRpc({ jsonrpc: "2.0", id: 1, method: "ping" }, "1999-01-01");
+  assert.equal(out.status, 400);
+  assert.equal(out.body?.error?.code, -32022);
+  assert.deepEqual((out.body?.error?.data as { supported: string[] }).supported, [...SUPPORTED_PROTOCOL]);
+});
+
+test("епохата се разпознава: хедър > _meta > метод > подразбиране", () => {
+  assert.equal(eraOf({ method: "ping" }, MODERN_PROTOCOL).modern, true, "хедърът решава");
+  assert.equal(
+    eraOf({ method: "ping", params: { _meta: { [META.version]: MODERN_PROTOCOL } } }).modern,
+    true,
+    "без хедър решава _meta",
+  );
+  // `server/discover` съществува само в модерната — разпознава се и без версия.
+  assert.equal(eraOf({ method: "server/discover" }).modern, true);
+  // Нищо не сочи епоха → наследена, както позволява спецификацията.
+  assert.equal(eraOf({ method: "ping" }).version, "2025-03-26");
+  assert.equal(eraOf({ method: "ping" }).modern, false);
+});
+
+test("инструментите работят и по модерната епоха", () => {
+  const { body } = modern("tools/call", {
+    name: "napravi_tabelka",
+    arguments: { title: "ОТВОРЕНО" },
+  });
+  const r = body.result as { resultType: string; structuredContent: { url: string } };
+  assert.equal(r.resultType, "complete");
+  assert.match(r.structuredContent.url, /^https:\/\/mastilko-bg\.com\/tabelki#p=/);
+});
+
+test("initialize остава наследен и договаря наследена версия", () => {
+  // Клиент с ръкостискане не говори модерната — не бива да му я връщаме.
+  const r = call("initialize", { protocolVersion: "1999-01-01" }).result as { protocolVersion: string };
+  assert.equal(r.protocolVersion, LEGACY_PROTOCOL[0]);
+  assert.notEqual(r.protocolVersion, MODERN_PROTOCOL);
+});
+
+test("всеки инструмент носи икона от нашия домейн", () => {
+  for (const t of TOOLS) {
+    assert.ok(t.icons && t.icons.length > 0, `${t.name} е без икона`);
+    for (const ic of t.icons) {
+      assert.match(ic.src, /^https:\/\/mastilko-bg\.com\/icons\/[a-z]+\.webp$/, `${t.name}: ${ic.src}`);
+    }
+  }
+});
