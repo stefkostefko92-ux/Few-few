@@ -49,6 +49,7 @@ export function robotsTxt(base) {
     'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
     'Disallow: /p/*/wallet', // портфейл файлове (лични, не за индексиране)
     'Disallow: /v1/', // Apple Wallet update web service
+    'Disallow: /mcp', // конекторът за AI асистенти — крайна точка, не страница
   ];
   return [
     'User-agent: *',
