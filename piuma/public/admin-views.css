@@ -1,0 +1,208 @@
+/* Изгледите на панела, които `admin.css` не носи: прегледът на поста като в Instagram и
+   списъците като карти на телефон. Отделен файл, защото `admin.css` вече е над прага за
+   размер. Нула нови цветове — само токените, които `tests/contrast.test.ts` вече мери. */
+
+/* ---------- прегледът на поста ---------- */
+.ig {
+  margin: 0;
+  max-width: 420px;
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.ig.tall {
+  max-width: 320px;
+}
+.ig-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  min-width: 0;
+}
+.ig-head strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ig-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--accent-lift);
+  background: var(--accent-soft);
+  border: 1px solid var(--line-strong);
+}
+/* Рамката държи мястото преди изображението да дойде — нула изместване. Иконата стои
+   отдолу и се вижда само когато медията липсва или не се зареди. */
+.ig-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  background: var(--well);
+  border-block: 1px solid var(--line);
+  color: var(--muted);
+}
+.ig.tall .ig-media {
+  aspect-ratio: 9 / 16;
+}
+.ig-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Прозрачна или по-тясна медия не бива да показва иконата отдолу през себе си. */
+  background: var(--well);
+}
+.ig-media img[hidden] {
+  display: none;
+}
+.ig-note {
+  position: absolute;
+  inset: auto 16px 16px;
+  text-align: center;
+  font-size: 13px;
+}
+.ig-caption {
+  padding: 12px 14px 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.ig-tags {
+  display: block;
+  margin-top: 8px;
+  color: var(--accent-lift);
+}
+
+/* Полето и бутонът на вложена форма (причина за отказ, час, нова парола) стоят на един
+   ред: полето се свива, бутонът — не. Без това полето застава над бутона. */
+.row > form.row,
+td > form.row {
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+.row > form.row > input,
+.row > form.row > select,
+td > form.row > input,
+td > form.row > select {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 240px;
+}
+.row > form.row > .btn,
+td > form.row > .btn {
+  flex: none;
+}
+
+/* Вторите четири метрики на поста стоят в един ред под трите главни, не като сираче. */
+.cards + .cards.quad {
+  margin-top: -12px;
+}
+.cards.quad {
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+}
+.cards.quad .n {
+  font-size: 22px;
+}
+
+/* Историята на метриките стои в половин колона: главни букви с разредка не се побират. */
+.table-wrap.compact th {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+}
+
+/* ---------- списъците като карти на телефон ----------
+   Таблица с шест колони на 390 px или изнася действието извън екрана, или пренася всяка
+   дума на нов ред. Под 660 px редът става карта: водещата клетка (`.lead`) е заглавие,
+   `.full` заема целия ред, а клетка без чип или дума, която да се обяснява сама, носи
+   `data-label` — надписът идва от речниците, не от CSS. */
+@media (max-width: 660px) {
+  /* `form.stack .grid2` в admin.css е по-специфичен от правилото за 900 px и държеше
+     две колони на телефон — падащото меню за роля се режеше. */
+  form.stack .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .to-cards thead {
+    display: none;
+  }
+  .to-cards table,
+  .to-cards tbody {
+    display: block;
+  }
+  .to-cards tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .to-cards tbody tr:last-child {
+    border-bottom: none;
+  }
+  .to-cards td {
+    display: block;
+    padding: 0;
+    border: none;
+    min-width: 0;
+  }
+  .to-cards td:empty {
+    display: none;
+  }
+  .to-cards td.lead {
+    order: -1;
+    flex: 1 0 100%;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+  .to-cards td.full,
+  .to-cards td[colspan] {
+    flex: 1 0 100%;
+  }
+  .to-cards td.num {
+    text-align: left;
+  }
+  /* `.shrink` свива колоната до 1% от таблицата; в карта това е 1% от реда и чипът застъпва съседа. */
+  .to-cards td.shrink {
+    width: auto;
+  }
+  .to-cards td.mono {
+    overflow-wrap: anywhere;
+  }
+  .to-cards td.row {
+    display: flex;
+  }
+  .to-cards td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .to-cards td .sub-line {
+    display: inline;
+    margin: 0 0 0 6px;
+  }
+  .to-cards td.lead .sub-line {
+    display: block;
+    margin: 2px 0 0;
+    font-weight: 400;
+  }
+}

@@ -56,6 +56,9 @@ IG_GRAPH_VERSION=v24.0
 TOTP_ISSUER=Piuma
 ANTHROPIC_API_KEY=<по избор>
 
+# Къде води „Поискай достъп“ на витрината (страница или mailto:). По подразбиране carbonstealth.eu.
+CONTACT_URL=mailto:<адрес за запитвания>
+
 # Часовникът на ПУБЛИКАТА, не на машината (по подразбиране Europe/Sofia).
 TZ=Europe/Sofia
 ```

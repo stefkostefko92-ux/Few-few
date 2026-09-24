@@ -7,6 +7,11 @@ const schema = z.object({
   PUBLIC_BASE_URL: z.string().url(),
   /** Express `trust proxy` — зад Nginx на същата машина е `loopback`. */
   TRUST_PROXY: z.string().default('loopback'),
+  /**
+   * Къде води „Поискай достъп“ на витрината: страница за контакт или `mailto:`. По
+   * подразбиране сайтът на Carbon Stealth VCC — единственият адрес, за който знаем, че е жив.
+   */
+  CONTACT_URL: z.string().url().default('https://carbonstealth.eu'),
 
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
