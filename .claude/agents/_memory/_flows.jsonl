@@ -58,3 +58,5 @@
 {"t":"handoff","ts":"2026-09-24T12:02:42.791Z","id":"r7d1444c7","from":"tayniyat-agent","to":"ai-djiyata","status":"блокер","run":"85fc273e"}
 {"t":"handoff","ts":"2026-09-24T12:03:47.860Z","id":"r7d1444c7","from":"dizayner","to":"ai-djiyata","status":"има бележки","run":"9ec2469b"}
 {"t":"handoff","ts":"2026-09-24T12:04:14.266Z","id":"r7d1444c7","from":"geymara","to":"ai-djiyata","status":"има бележки","run":"de7881f5"}
+{"t":"start","ts":"2026-09-24T12:09:02.839Z","id":"rf0622bf9","flow":"авто","lead":"diskordjiyata","auto":true}
+{"t":"handoff","ts":"2026-09-24T12:09:02.839Z","id":"rf0622bf9","from":"diskordjiyata","to":"ai-djiyata","status":"наред","run":"621ccfb9"}
