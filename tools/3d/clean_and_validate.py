@@ -50,6 +50,13 @@ def report(tag, m):
     if bb is not None:
         d = bb[1] - bb[0]
         print(f"  габарити (mm): {d[0]:.1f} × {d[1]:.1f} × {d[2]:.1f}")
+    # Отделни тела: плаваща частица от скана раздува габаритите и обема (3D Maniac, 2026-09-24).
+    try:
+        bodies = m.body_count
+    except Exception:
+        bodies = None
+    if bodies and bodies > 1:
+        print(f"  ⚠ отделни тела: {bodies} — габаритите/обемът включват всички; махни floater-ите преди Mesh→Solid")
 
 
 def repair(trimesh, m):
@@ -57,9 +64,14 @@ def repair(trimesh, m):
     m.update_faces(m.unique_faces())
     m.update_faces(m.nondegenerate_faces())  # nonzero_faces() не съществува в trimesh 5.x → срив на всеки вход
     m.remove_unreferenced_vertices()
-    trimesh.repair.fix_normals(m)
+    # multibody=True: иначе обърнато отделно тяло остава обърнато и обемът лъже зад „watertight“.
+    trimesh.repair.fix_normals(m, multibody=True)
     trimesh.repair.fix_winding(m)
-    trimesh.repair.fill_holes(m)
+    try:
+        trimesh.repair.fill_holes(m)
+    except ModuleNotFoundError as e:
+        # Голият `pip install trimesh` няма networkx → срив на основния случай.
+        print(f"  ⚠ запълването на дупки пропуснато — липсва {e.name or 'networkx'}; инсталирай: pip install -r tools/3d/requirements.txt")
     return m
 
 
