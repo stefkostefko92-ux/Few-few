@@ -7208,7 +7208,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 137
+        "lessons": 141
       },
       "evolution": [
         {
@@ -7618,9 +7618,20 @@
           "date": "2026-09-23",
           "event": "v15.3 — учене",
           "detail": "Научи: Listino KVS 2026 (IVA escl., EUR): QuickSurface Lite €480/anno solo subscription; Pro €… (+6 още)"
+        },
+        {
+          "version": "15.7.0",
+          "date": "2026-09-24",
+          "event": "v15.7 — учене",
+          "detail": "Научи: clean_and_validate.py:58 вика m.nonzero_faces() — метод, който не съществува в trimesh … (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „clean_and_validate.py:58 вика m.nonzero_faces() — метод, който не съществува в trimesh …\" (+3 още) · 19 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "quarantine",
