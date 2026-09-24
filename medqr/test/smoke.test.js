@@ -251,6 +251,11 @@ try {
     headers: { 'user-agent': 'WhatsApp/2.23 A' },
   });
   assert.equal(botRes.status, 200);
+  // Express рутира без значение от регистъра — /E/<token> трябва да носи същото no-store.
+  const upper = await fetch(`${base}/E/${rawProfile.emergency_token}`, {
+    headers: { 'user-agent': 'curl/8.5' },
+  });
+  assert.equal(upper.headers.get('cache-control'), 'no-store', '/E/ без no-store');
   await settle();
   assert.equal(notif(), 1, 'бот за link-preview не задейства известие');
   assert.equal(logged(), 1, 'показът при бот-UA също е в журнала');
