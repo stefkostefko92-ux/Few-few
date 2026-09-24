@@ -108,3 +108,16 @@ test("заобикаляния (Разбивача, 2026-09-24): приемни�
   assert.ok(!ids(STRIPE + `app.post('/stripe/checkout', async (req, res) => {\n  const s = await stripe.checkout.sessions.create({ mode: 'payment', line_items: [{ price: PRICE_ID, quantity: 1 }] });\n  res.json({ url: s.url });\n});`).includes("webhook-no-verify"), "checkout POST не е webhook");
   assert.ok(!ids(STRIPE + `const x = { amount: order.totalCents, note: req.body.note };`).includes("client-amount"), "сума от сървъра, друго поле от req");
 });
+
+test("мисия 4 на Разбивача: без фалшиви HIGH (expand, PRICES[...], „settings“) и хваща Next.js/константа/карта/деструктуриране", () => {
+  const S = `import Stripe from "stripe";\nconst stripe = new Stripe(process.env.K);\n`;
+  assert.deepEqual(ids(S + `router.post("/api/checkout/confirm", async (req, res) => {\n  const s = await stripe.checkout.sessions.retrieve(id, { expand: ["payment_intent.latest_charge"] });\n  res.json({ status: s.status });\n});`), [], "expand не е събитие");
+  assert.ok(!ids(S + `router.post("/api/checkout", async (req, res) => {\n  const s = await stripe.checkout.sessions.create({ line_items: [{ price: PRICES[req.body.plan], quantity: 1 }] });\n});`).includes("client-amount"), "индекс в сървърна карта");
+  assert.ok(!ids(S + `router.get("/admin/billing/settings", async (req, res) => {\n  const n = await prisma.user.count({ where: { subscriptionStatus: "active" } });\n  res.json({ n });\n});`).includes("grant-in-get-route"), "settings не е set(");
+  assert.ok(ids(S + `export async function POST(request) {\n  const event = await request.json();\n  if (event.type === "checkout.session.completed") await grantPremium(event.data.object.metadata.userId);\n  return Response.json({ ok: true });\n}`).includes("webhook-no-verify"), "Next.js без constructEvent");
+  assert.ok(ids(S + `const HOOK = "/stripe/events";\nrouter.post(HOOK, async (req, res) => {\n  const event = req.body;\n  if (event.type === "checkout.session.completed") await grantPremium(1);\n  res.sendStatus(200);\n});`).includes("webhook-no-verify"), "път от константа");
+  assert.ok(ids(S + `const handlers = { "checkout.session.completed": grantPremium };\nrouter.post("/stripe/events", async (req, res) => {\n  await handlers[req.body.type]?.(req.body.data.object);\n  const event = req.body; void event.type;\n  res.sendStatus(200);\n});`).includes("webhook-no-verify"), "карта на обработчици");
+  assert.ok(ids(S + `router.post("/api/pay", async (req, res) => {\n  const { amount } = req.body;\n  await stripe.paymentIntents.create({ amount, currency: "eur" });\n});`).includes("client-amount"), "деструктуриране");
+  assert.ok(ids(S + `router.post("/api/pay", async (req, res) => {\n  await stripe.paymentIntents.create({ amount: Math.max(50, Number(req.body.amount)), currency: "eur" });\n});`).includes("client-amount"), "обвивка със запетая");
+  assert.ok(ids(S + `export async function POST(request) {\n  const body = await request.json();\n  await stripe.checkout.sessions.create({ line_items: [{ price_data: { unit_amount: Math.round(body.amount * 100) } }] });\n}`).includes("client-amount"), "тяло от request.json()");
+});

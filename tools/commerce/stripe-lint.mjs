@@ -29,17 +29,27 @@ const WEBHOOK_ROUTE = /\.(post|all|use)\(\s*["'`][^"'`]*webhook[^"'`]*["'`]/i;
 // Приемник без думата „webhook“ в пътя (/stripe/events, /ipn, /callback) се познава по съдържанието:
 // POST маршрут, който разклонява по типове Stripe събития. Иначе цялото семейство webhook правила
 // мълчеше (Разбивача, 2026-09-24).
-const ANY_POST = /\.(post|all)\(\s*["'`][^"'`]*["'`]/g;
-const STRIPE_EVENT = /["'`](checkout\.session|invoice|customer\.subscription|payment_intent|charge)\.[a-z_.]+["'`]/;
+// Пътят може да е литерал или константа (router.post(HOOK, …)).
+const ANY_POST = /\.(post|all)\(\s*(?:["'`][^"'`]*["'`]|[A-Za-z_$][\w$]*)\s*,/g;
+// Имената на събития завършват с действие — „payment_intent.latest_charge“ в expand не е събитие
+// (фалшив HIGH, Разбивача, мисия 4).
+const STRIPE_EVENT = /["'`](checkout\.session|invoice|customer\.subscription|payment_intent|charge)\.(?:[a-z_]+\.)*(completed|succeeded|failed|payment_failed|paid|created|updated|deleted|expired|refunded|canceled|captured|finalized|upcoming|trial_will_end|async_payment_\w+|dispute\.\w+)["'`]/;
+const READS_TYPE = /\bevent\.type\b|\.type\s*===?\s*["'`]|switch\s*\(\s*\w+\.type\s*\)/;
 const NEXT_ROUTE = /\n\s*(app|router)\.(get|post|put|patch|delete|all|use)\(/;
+const NEXT_POST = /export\s+(?:async\s+)?function\s+POST\b/;
 function webhookStart(src) {
   const named = src.search(WEBHOOK_ROUTE);
   if (named >= 0) return named;
+  // Разклонение по тип: събитието стои в региона или (карта на обработчици) другаде във файла.
+  const isReceiver = (region) => READS_TYPE.test(region) && (STRIPE_EVENT.test(region) || STRIPE_EVENT.test(src));
   for (const m of src.matchAll(ANY_POST)) {
     const rest = src.slice(m.index);
     const end = rest.slice(1).search(NEXT_ROUTE);
-    if (STRIPE_EVENT.test(end < 0 ? rest : rest.slice(0, end + 1))) return m.index;
+    if (isReceiver(end < 0 ? rest : rest.slice(0, end + 1))) return m.index;
   }
+  // Next.js route handler: целият файл е маршрутът.
+  const np = src.search(NEXT_POST);
+  if (np >= 0 && isReceiver(src.slice(np))) return np;
   return -1;
 }
 const hasWebhook = (src) => webhookStart(src) >= 0;
@@ -72,7 +82,11 @@ const RULES = [
     id: "client-amount",
     severity: "HIGH",
     // Покрива и обвивки: Number(req.body.x), parseInt(...), Math.round(req.body.x * 100) (Разбивача, 2026-09-24).
-    perLine: /\b(amount|unit_amount|price)\s*:\s*[^,\n]{0,40}?\b(req|request|ctx)\.(body|query|params)\./,
+    // Индекс в сървърна карта (PRICES[req.body.plan]) не е сума от клиента — `[` прекъсва съвпадението.
+    // Обвивка с аргументи (Math.max(50, Number(req.body.x))) — втората алтернатива. Деструктуриране
+    // ({ amount } = req.body) — третата. Тяло от await request.json() (Next.js) — четвъртата, с when.
+    perLine: /\b(?:amount|unit_amount|price)\s*:\s*(?:[^,\n[]{0,40}?|[\w.$]+\([^\n[;]{0,60}?)\b(?:req|request|ctx)\.(?:body|query|params)\.|\{[^}\n]*\b(?:amount|unit_amount)\b[^}\n]*\}\s*=\s*(?:await\s+)?(?:req|request|ctx)\.(?:body|query|params|json\(\))|\b(?:amount|unit_amount)\s*:\s*[^,\n[]{0,40}?\bbody\.\w/,
+    when: (m, src) => !/\bbody\.\w/.test(m[0]) || /(?:req|request|ctx)\./.test(m[0]) || /\b(?:const|let)\s+body\s*=\s*(?:await\s+\w+\.json\(\)|(?:req|request|ctx)\.body)/.test(src),
     msg: "Сума/цена идва от клиента (req.body/query). Чети я от Stripe Price или сървърна конфигурация.",
   },
   {
@@ -80,7 +94,8 @@ const RULES = [
     severity: "HIGH",
     // GET маршрут (обикновено целта на success_url), който записва достъп — отваря се без плащане.
     perLine: /\.get\(\s*["'`][^"'`]*["'`][^\n]*\n(?:(?!\n\s*(?:app|router)\.)[\s\S]){0,600}?(?:\b(premium|isPremium|entitle\w*|paid|plan|tier|active)\b\s*:\s*(true|["'`](premium|pro|paid|active)["'`])|\b(subscription_?status|subscriptionStatus|vip\w*|membership\w*)\b\s*:\s*["'`](premium|pro|paid|active|vip|member|trialing)["'`])/i,
-    when: (m) => /update|upsert|create|save|set|grant/i.test(m[0]),
+    // Запис = извикване на метод, не подниз („settings“ съдържа „set“ — фалшив HIGH, Разбивача, мисия 4).
+    when: (m) => /\.(?:update|upsert|create|save|set)\w*\s*\(|\bgrant\w*\s*\(/i.test(m[0]),
     msg: "GET маршрут записва платен достъп (обикновено целта на success_url) — отваря се без плащане. Давай достъп само в проверения webhook.",
   },
   {
