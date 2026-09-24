@@ -7,11 +7,12 @@
 // Чете binary STL (или открива ASCII и казва) и докладва:
 //   bounding box vs обема 350×350×350 mm, единици (флагва вероятно cm/inch/m),
 //   брой триъгълници, watertight (гранични/non-manifold ръбове), изродени триъгълници,
+//   последователен winding (обърнати фейсове) и знак на обема (цяла мрежа „наопаки“),
 //   предложена ориентация. Exit 1 при критично (non-manifold/над обема). Без външни зависимости.
 
 import { readFileSync } from "node:fs";
 
-const BED = { x: 350, y: 350, z: 350 }; // K2 Plus (Z маркетинг 350; Orca профил понякога 360)
+const BED = { x: 350, y: 350, z: 350 }; // K2 Plus (OrcaSlicer „Creality K2 Plus 0.4 nozzle.json“: printable_height 350)
 const file = process.argv[2];
 if (!file) { console.error("Употреба: node tools/print/printability.mjs <model.stl>"); process.exit(2); }
 
@@ -36,6 +37,10 @@ if (buf.length < expected) {
 let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
 let degenerate = 0;
 const edges = new Map(); // ключ -> брой
+// Насочени ръбове: в затворена мрежа с последователен winding всеки a→b се среща точно веднъж (съседът
+// го обхожда като b→a). Два пъти a→b = обърнат фейс — ръбовата проверка сама го пропуска (Принтаджията).
+const directed = new Set();
+let flipped = 0, volume6 = 0;
 const Q = 1e4; // квантоване (0.1 µm) за съвпадане на върхове
 const vkey = (x, y, z) => `${Math.round(x * Q)},${Math.round(y * Q)},${Math.round(z * Q)}`;
 const ekey = (a, b) => (a < b ? a + "|" + b : b + "|" + a);
@@ -58,7 +63,10 @@ for (let t = 0; t < triCount; t++) {
   const k = [vkey(...v[0]), vkey(...v[1]), vkey(...v[2])];
   for (const [a, b] of [[k[0],k[1]],[k[1],k[2]],[k[2],k[0]]]) {
     const e = ekey(a, b); edges.set(e, (edges.get(e) || 0) + 1);
+    const d = a + ">" + b; if (directed.has(d)) flipped++; else directed.add(d);
   }
+  // Знаков обем (теорема на дивергенцията): < 0 → нормалите сочат навътре.
+  volume6 += v[0][0]*(v[1][1]*v[2][2]-v[1][2]*v[2][1]) - v[0][1]*(v[1][0]*v[2][2]-v[1][2]*v[2][0]) + v[0][2]*(v[1][0]*v[2][1]-v[1][1]*v[2][0]);
   off += 50;
 }
 
@@ -77,16 +85,22 @@ console.log(`Размери (mm): ${f2(dim[0])} × ${f2(dim[1])} × ${f2(dim[2])
 console.log(`Побира се в леглото: ${fits ? "ДА" : "НЕ ❌"}`);
 console.log(`Watertight (затворена обвивка): ${boundary === 0 && nonManifold === 0 ? "ДА" : "НЕ ❌"}  (гранични ръбове: ${boundary}, non-manifold: ${nonManifold})`);
 console.log(`Изродени триъгълници: ${degenerate}`);
+console.log(`Последователен winding: ${flipped === 0 ? "ДА" : `НЕ ❌ (${flipped} ръба в една и съща посока)`}`);
+const closed = boundary === 0 && nonManifold === 0;
+const insideOut = closed && flipped === 0 && volume6 < 0;
+if (closed) console.log(`Обем: ${f2(Math.abs(volume6) / 6 / 1000)} cm³${insideOut ? " — нормалите сочат НАВЪТРЕ ❌" : ""}`);
 console.log(`Най-висока ос: ${tallestAxis} — ориентирай товара в равнината (XY е по-силно от Z).`);
 
 const problems = [];
 if (!fits) problems.push("моделът НЕ се побира в обема — мащабирай или раздели");
 if (boundary > 0 || nonManifold > 0) problems.push("мрежата НЕ е watertight/manifold — поправи (Blender/MeshLab/slicer repair) преди слайс");
 if (tiny) problems.push("всички размери < 1 mm — вероятно грешни единици (модел в m/inch?); потвърди mm");
+if (flipped > 0) problems.push("обърнати фейсове (winding не е последователен) — пренасочи нормалите (MeshLab: Re-Orient all faces coherently)");
+if (insideOut) problems.push("цялата мрежа е наопаки (отрицателен обем) — обърни нормалите");
 if (degenerate > 0) problems.push(`${degenerate} изродени триъгълника — почисти мрежата`);
 
 if (!problems.length) { console.log("\n✅ Базовата печатаемост е наред (геометрия). Толерансите се доказват с тест-печат."); process.exit(0); }
 console.log("\nПроблеми:");
 for (const p of problems) console.log(" • " + p);
-const critical = !fits || boundary > 0 || nonManifold > 0;
+const critical = !fits || boundary > 0 || nonManifold > 0 || flipped > 0 || insideOut;
 process.exit(critical ? 1 : 0);
