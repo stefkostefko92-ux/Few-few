@@ -15197,7 +15197,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 72
+        "lessons": 104
       },
       "evolution": [
         {
@@ -15235,9 +15235,20 @@
           "date": "2026-09-24",
           "event": "v16.8 — учене",
           "detail": "Научи: memory-capture чете learn блок от ЦЕЛИЯ транскрипт вкл. tool_result текст (collectText … (+15 още)"
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-24",
+          "event": "v20.0 — учене",
+          "detail": "Научи: memory-capture носи СОБСТВЕН SECRET_RE, различен от каноничния tools/lib/secret-pattern… (+31 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „memory-capture носи СОБСТВЕН SECRET_RE, различен от каноничния tools/lib/secret-pattern…\" (+31 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
