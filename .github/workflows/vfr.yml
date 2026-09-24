@@ -1,0 +1,45 @@
+name: vfr
+
+on:
+  push:
+    paths:
+      - 'vfr/**'
+      - '.github/workflows/vfr.yml'
+  pull_request:
+    paths:
+      - 'vfr/**'
+      - '.github/workflows/vfr.yml'
+
+concurrency:
+  group: vfr-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Actions са пинати по SHA (tag-ът е подвижен → supply-chain риск); коментарът пази версията.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      # Статичен сайт без билд. Проверяваме проверимото: локалните препратки съществуват, всяка
+      # страница носи ≥5 ключови думи с „Carbon Stealth", има непразен <title> + lang, и JSON-LD-то
+      # парсва (счупена схема = загубени богати резултати).
+      - name: Проверка на статичния сайт
+        run: node tools/qa/static-site-check.mjs vfr
+      # Симлинк в продукта би сочил извън уеб корена на сървъра (deploy.sh ползва --no-links, nginx
+      # има disable_symlinks — това е третият слой: никакви симлинкове изобщо в репото).
+      - name: Без симлинкове
+        run: test -z "$(find vfr -type l)" || { find vfr -type l; echo "::error::симлинк в vfr/"; exit 1; }
+      - name: JSON-LD
+        run: |
+          node tools/seo/check-jsonld.mjs vfr/index.html
+          node tools/seo/check-jsonld.mjs vfr/privacy.html

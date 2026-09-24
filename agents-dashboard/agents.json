@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-21",
+    "updated": "2026-09-23",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1107,7 +1107,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 368
+        "lessons": 370
       },
       "evolution": [
         {
@@ -1883,9 +1883,31 @@
           "date": "2026-09-21",
           "event": "v25.8 — учене",
           "detail": "Научи: В `deploy/autodeploy.sh` (под `set -euo pipefail`) всяко `p=\\\"$(grep … | … )\\\"` без `||… (+2 още)"
+        },
+        {
+          "version": "25.9.0",
+          "date": "2026-09-23",
+          "event": "v25.9 — учене",
+          "detail": "Научи: deploy.sh на vfr пише nginx конфига в sites-available/sites-enabled ПРЕДИ nginx -t и ня…"
+        },
+        {
+          "version": "26.0.0",
+          "date": "2026-09-23",
+          "event": "v26.0 — учене",
+          "detail": "Научи: nginx: add_header в location блок отменя ВСИЧКИ add_header от server нивото (наследяват…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „nginx: add_header в location блок отменя ВСИЧКИ add_header от server нивото (наследяват…\""
+        },
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „deploy.sh на vfr пише nginx конфига в sites-available/sites-enabled ПРЕДИ nginx -t и ня…\""
+        },
         {
           "date": "2026-09-21",
           "type": "learning",
@@ -3584,7 +3606,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 165
+        "lessons": 166
       },
       "evolution": [
         {
@@ -4000,9 +4022,20 @@
           "date": "2026-08-07",
           "event": "v14.8 — учене",
           "detail": "Научи: SupremeDiscordBot/frontend: production домейн е двусмислен в repo — код (Seo.jsx/preren… (+1 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-09-23",
+          "event": "v14.9 — учене",
+          "detail": "Научи: Semrush MCP инструмент не е наличен въпреки инструкции в системния промпт, споменаващи …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „Semrush MCP инструмент не е наличен въпреки инструкции в системния промпт, споменаващи …\" · 1 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
@@ -4462,7 +4495,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 43
+        "lessons": 44
       },
       "evolution": [
         {
@@ -4566,9 +4599,20 @@
           "date": "2026-07-29",
           "event": "v10.2 — учене",
           "detail": "Научи: Chrome Soft Navigations API излиза unflagged от Chrome 151 (юли 2026), но интеграцията … (+1 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-09-23",
+          "event": "v10.3 — учене",
+          "detail": "Научи: CLS 0.000 в лаб одита може да е късмет с времето: при font-display swap и шрифтове, дош…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „CLS 0.000 в лаб одита може да е късмет с времето: при font-display swap и шрифтове, дош…\" · 3 в карантина"
+        },
         {
           "date": "2026-07-29",
           "type": "quarantine",
@@ -6220,7 +6264,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 188
+        "lessons": 192
       },
       "evolution": [
         {
@@ -10652,7 +10696,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 163
+        "lessons": 168
       },
       "evolution": [
         {
@@ -11068,9 +11112,42 @@
           "date": "2026-09-09",
           "event": "v14.4 — учене",
           "detail": "Научи: За визуален preview на MV3 popup извън браузъра стъбвай window.chrome (runtime.sendMess…"
+        },
+        {
+          "version": "14.7.0",
+          "date": "2026-09-23",
+          "event": "v14.7 — учене",
+          "detail": "Научи: CSS капан: `border-radius` вътре в `:focus-visible {}` не оформя outline-а — пренаписва… (+2 още)"
+        },
+        {
+          "version": "14.8.0",
+          "date": "2026-09-23",
+          "event": "v14.8 — учене",
+          "detail": "Научи: На vfr/ (тъмен сайт с бял paper-секции), глобален .eyebrow с фиксиран --red-2 цвят чупи…"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-09-23",
+          "event": "v14.9 — учене",
+          "detail": "Научи: В @media print reveal анимациите (opacity 0 → 1 с transition 0.9s) излизат бледи, дори …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „В @media print reveal анимациите (opacity 0 → 1 с transition 0.9s) излизат бледи, дори …\""
+        },
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „На vfr/ (тъмен сайт с бял paper-секции), глобален .eyebrow с фиксиран --red-2 цвят чупи…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „CSS капан: `border-radius` вътре в `:focus-visible {}` не оформя outline-а — пренаписва…\" (+2 още)"
+        },
         {
           "date": "2026-09-10",
           "type": "quarantine",
@@ -13225,7 +13302,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 179
+        "lessons": 183
       },
       "evolution": [
         {
@@ -13281,9 +13358,31 @@
           "date": "2026-07-29",
           "event": "v17.1 — учене",
           "detail": "Научи: Агент може да е 100% зелен по oversee/gate и пак да носи неизпълним договор: pravniyat-… (+7 още)"
+        },
+        {
+          "version": "17.4.0",
+          "date": "2026-09-23",
+          "event": "v17.4 — учене",
+          "detail": "Научи: Фонов субагент предава финалния доклад през tool_use SubagentHandback — докладът и LEAR… (+2 още)"
+        },
+        {
+          "version": "17.5.0",
+          "date": "2026-09-23",
+          "event": "v17.5 — учене",
+          "detail": "Научи: Авто-комитът на паметта правеше git add само на своите 3 пътя, но после гол git commit …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „Авто-комитът на паметта правеше git add само на своите 3 пътя, но после гол git commit …\""
+        },
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „Фонов субагент предава финалния доклад през tool_use SubagentHandback — докладът и LEAR…\" (+2 още)"
+        },
         {
           "date": "2026-07-30",
           "type": "quarantine",
@@ -14726,7 +14825,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 54
+        "lessons": 56
       },
       "evolution": [
         {
@@ -14752,9 +14851,25 @@
           "date": "2026-07-28",
           "event": "v15.0 — учене",
           "detail": "Научи: guard-dangerous правилото „curl|sh\\\" (ред 18) ползва [^\\\\n|]* и се заобикаля с МЕЖДИНЕН… (+11 още)"
+        },
+        {
+          "version": "15.2.0",
+          "date": "2026-09-23",
+          "event": "v15.2 — учене",
+          "detail": "Научи: nginx regex location-ите се проверяват по ред на появата и печели ПЪРВИЯТ. Кеш блок кат… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Предаденият пач (candidate.diff) се разминаваше с финалните стойности в доклада: съдърж…\""
+        },
+        {
+          "date": "2026-09-23",
+          "type": "learning",
+          "summary": "Научи: „nginx regex location-ите се проверяват по ред на появата и печели ПЪРВИЯТ. Кеш блок кат…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-28",
           "type": "learning",

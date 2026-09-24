@@ -27,9 +27,17 @@ const LOCK_DIR = join(PROJECT_DIR, "agents-dashboard", ".sync.lock");
 
 function readStdin() { try { return readFileSync(0, "utf8"); } catch { return ""; } }
 
+// Фоновият субагент предава финалния си доклад през инструмента SubagentHandback: докладът
+// (и ```learn блокът в края му) е в `input.message` на tool_use, НЕ в поле `text`. Преди се
+// събираха само `text` полета → поуките на всеки агент, който завършва с handback, се губеха тихо
+// (измерено: dizayner 2026-09-23, 3 проверени поуки, нула записани).
 function collectText(node, out) {
   if (!node || typeof node !== "object") return;
   if (Array.isArray(node)) { for (const n of node) collectText(n, out); return; }
+  if (node.type === "tool_use" && node.name === "SubagentHandback" && typeof node.input?.message === "string") {
+    out.push(node.input.message);
+    return;
+  }
   for (const [k, v] of Object.entries(node)) {
     if (k === "text" && typeof v === "string") out.push(v);
     else if (v && typeof v === "object") collectText(v, out);
@@ -301,23 +309,32 @@ function updateDashboard(agentId, entry, evoDetail, verifiedCount = 1) {
 // агенти губеха поуки. flock -w 120 ЧАКА реда си (не „пропуска" като mkdir-lock при контенция).
 // Detached: не блокира hook-а (SubagentStop има timeout). Push политика: на канона (main/master)
 // не пушва сам (влиза през човек/CI/PR — verified-гейтът е синтактичен), освен AGENT_MEMORY_PUSH_MAIN=1.
-function bgGitSync(agentId) {
-  if (!/^[\w-]+$/.test(agentId)) return; // sanity срещу инжекция в командата
-  const lock = join(PROJECT_DIR, "agents-dashboard", ".git-sync.lock");
-  const pushMain = process.env.AGENT_MEMORY_PUSH_MAIN === "1" ? "1" : "0";
-  const script = [
+// Скриптът е отделен и изнесен, за да се тества в истинско git репо (tools/hooks/memory-git.test.mjs).
+// КРИТИЧНО: commit-ът е с `--only -- <пътищата>`. Преди беше гол `git commit` и вземаше ВСИЧКО
+// staged в индекса — на 2026-09-23 авто-комитът на razbivacha отнесе и качи чужди staged
+// изтривания (vfr/css/fonts.css + WebP снимките) без HTML-а, който още ги сочеше → счупен клон.
+export function gitSyncScript(agentId, projectDir, lock, pushMain) {
+  const paths = `".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html"`;
+  return [
     `exec 9>"${lock}" 2>/dev/null || exit 0`,
     `flock -w 120 9 || exit 0`,                        // изчакай реда си (до 120с), после се откажи тихо
-    `cd "${PROJECT_DIR}" || exit 0`,
-    `git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html" 2>/dev/null`,
-    `git diff --cached --quiet 2>/dev/null && exit 0`, // нищо staged → нищо за commit
+    `cd "${projectDir}" || exit 0`,
+    `git add ${paths} 2>/dev/null`,
+    `git diff --cached --quiet -- ${paths} 2>/dev/null && exit 0`, // нищо НАШЕ staged → нищо за commit
     // Имейлът е noreply@anthropic.com — иначе GitHub показва авто-комитите като Unverified
     // (carbonstealth имейлът не е свързан с подписващ акаунт; stop-hook-git-check го лови).
-    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
+    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit --only -m "auto: ${agentId} научи — памет + версия + табло" -- ${paths} 2>/dev/null || exit 0`,
     `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
     `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
     `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,
   ].join("\n");
+}
+
+function bgGitSync(agentId) {
+  if (!/^[\w-]+$/.test(agentId)) return; // sanity срещу инжекция в командата
+  const lock = join(PROJECT_DIR, "agents-dashboard", ".git-sync.lock");
+  const pushMain = process.env.AGENT_MEMORY_PUSH_MAIN === "1" ? "1" : "0";
+  const script = gitSyncScript(agentId, PROJECT_DIR, lock, pushMain);
   try {
     const child = spawn("sh", ["-c", script], { cwd: PROJECT_DIR, detached: true, stdio: "ignore", env: process.env });
     child.unref();

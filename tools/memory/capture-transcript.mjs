@@ -24,9 +24,12 @@ import { finish } from "../lib/emit.mjs";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HOOK = join(ROOT, ".claude", "hooks", "memory-capture.mjs");
 
-/** Има ли изобщо learn блок вътре? (евтин пред-филтър, за да не спамим hook-а) */
+/** Има ли изобщо learn блок вътре? (евтин пред-филтър, за да не спамим hook-а)
+ *  Транскриптът е JSONL: в него новият ред след ```learn е ЕКРАНИРАН (`\n` — два знака), не
+ *  истински. Старият филтър искаше истински нов ред и затова пропускаше ВСЕКИ реален транскрипт
+ *  („няма learn блок") — инструментът беше тих no-op. Приемаме и двете форми. */
 export function hasLearnBlock(text) {
-  return /```learn\s*\n[\s\S]*?```/.test(String(text || ""));
+  return /```learn(?:[ \t]|\\r)*(?:\n|\\n)[\s\S]*?```/.test(String(text || ""));
 }
 
 async function main() {
