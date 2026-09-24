@@ -1,7 +1,7 @@
 // state.test.js — повреден state.json не отваря kill-switch-а (Наблюдателя, 2026-09-24).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { loadState, saveState } from '../src/state.js';
@@ -53,4 +53,13 @@ test('валиден JSON без killed ({}) или с грешни типове
     writeFileSync(f, body);
     assert.equal(loadState(f).killed, true, body);
   }
+});
+
+test('записът на затвореното състояние пада (пълен диск) → оригиналът остава, рестартът пак е fail closed', () => {
+  const d = dir(); const f = join(d, 'state.json');
+  writeFileSync(f, '{"killed": false, "posi');
+  mkdirSync(`${f}.tmp-${process.pid}`); // writeFileSync върху директория пада — като ENOSPC
+  assert.equal(loadState(f).killed, true);
+  assert.equal(readFileSync(f, 'utf8'), '{"killed": false, "posi', 'повреденият файл не е преместен');
+  assert.equal(loadState(f).killed, true, 'рестарт не вижда ENOENT');
 });

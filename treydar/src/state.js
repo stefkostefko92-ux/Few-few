@@ -1,6 +1,6 @@
 // state.js — трайно състояние на бота между рестартите (equity връх, дневен старт, позиция).
 // Персистира намерения, за да може ботът да рестартира и да продължи от реалността.
-import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, renameSync, linkSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -47,11 +47,21 @@ export function loadState(file = stateFile) {
 }
 
 function corrupt(file, reason) {
-  let kept = null;
-  try { kept = `${file}.corrupt-${Date.now()}`; renameSync(file, kept); } catch { kept = null; }
   // Затвореният kill-switch се записва ВЕДНАГА: иначе живее само в паметта и рестарт преди първия
-  // успешен tick вижда ENOENT → killed:false (Разбивача, 2026-09-24). Записът е атомарен.
-  try { saveState({ ...DEFAULT, killed: true }, file); } catch { /* ако и това не стане — поне паметта е затворена */ }
+  // успешен tick вижда ENOENT → killed:false (Разбивача, 2026-09-24).
+  // Редът е важен: първо временен файл, после доказателство (hard link), накрая атомарен rename върху
+  // оригинала. Ако записът падне (ENOSPC), повреденият файл остава на място → следващото пускане
+  // пак го вижда като повреден → пак fail closed. Никога не местим оригинала преди новото да е на диска.
+  const tmp = `${file}.tmp-${process.pid}`;
+  try {
+    writeFileSync(tmp, JSON.stringify({ ...DEFAULT, killed: true }, null, 2));
+  } catch {
+    try { rmSync(tmp, { force: true }); } catch { /* ignore */ }
+    return { ...DEFAULT, killed: true, stateError: reason, stateKept: null };
+  }
+  let kept = `${file}.corrupt-${Date.now()}`;
+  try { linkSync(file, kept); } catch { kept = null; }
+  try { renameSync(tmp, file); } catch { try { rmSync(tmp, { force: true }); } catch { /* ignore */ } }
   return { ...DEFAULT, killed: true, stateError: reason, stateKept: kept };
 }
 
