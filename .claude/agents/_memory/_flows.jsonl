@@ -87,3 +87,5 @@
 {"t":"start","ts":"2026-09-24T12:44:21.290Z","id":"r64c83491","flow":"авто","lead":"3d-maniac","auto":true}
 {"t":"handoff","ts":"2026-09-24T12:44:21.290Z","id":"r64c83491","from":"3d-maniac","to":"ai-djiyata","status":"има бележки","run":"25bb7da2"}
 {"t":"handoff","ts":"2026-09-24T12:44:37.203Z","id":"r64c83491","from":"seo","to":"ai-djiyata","status":"наред","run":"f1d72753"}
+{"t":"start","ts":"2026-09-24T13:04:35.692Z","id":"rb6bd1733","flow":"авто","lead":"3d-maniac","auto":true}
+{"t":"handoff","ts":"2026-09-24T13:04:35.692Z","id":"rb6bd1733","from":"3d-maniac","to":"ai-djiyata","status":"наред","run":"c11d14da"}
