@@ -72,3 +72,30 @@ test("markdown: сканират се само js/ts блоковете, ном�
   assert.equal(f.length, 1, "bash блокът не се брои");
   assert.equal(f[0].line, 6);
 });
+
+// Продавача (2026-09-24): linketto webhook гълташе 14 грешки, а lint-ът казваше „чисто“.
+test("webhook-swallowed-error: погълната грешка в Next.js webhook route; не в shutdown кода", () => {
+  const next = [
+    "import Stripe from 'stripe';",
+    "export async function POST(req) {",
+    "  const event = stripe.webhooks.constructEvent(body, sig, secret);",
+    "  await grantEntitlement(userId).catch(() => undefined);",
+    "  return new Response('ok');",
+    "}",
+  ].join("\n");
+  const f = lintSource(next, "route.ts").filter((x) => x.id === "webhook-swallowed-error");
+  assert.equal(f.length, 1);
+  assert.equal(f[0].line, 4);
+  assert.ok(!ids(next.replace(".catch(() => undefined)", "")).includes("webhook-swallowed-error"));
+
+  const express = [
+    "const stripe = require('stripe')(key);",
+    "app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {",
+    "  const event = stripe.webhooks.constructEvent(req.body, sig, secret);",
+    "  res.sendStatus(200);",
+    "});",
+    "app.get('/x', (req, res) => res.send('x'));",
+    "process.on('SIGTERM', () => { try { db.close(); } catch {} });",
+  ].join("\n");
+  assert.ok(!ids(express).includes("webhook-swallowed-error"), "празен catch извън webhook маршрута не е webhook");
+});

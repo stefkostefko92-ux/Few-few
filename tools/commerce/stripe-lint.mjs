@@ -108,6 +108,24 @@ const RULES = [
     msg: "Webhook-ът връща 200, без да изчака ефекта (няма `await`) — при провал Stripe не опитва пак и клиентът е платил без достъп.",
   },
   {
+    id: "webhook-swallowed-error",
+    severity: "HIGH",
+    // Файлът е Stripe webhook handler (проверява подпис) и гълта грешка: `.catch(() => undefined)`,
+    // `.catch(() => {})`, празен `catch {}`. Отговорът става 200, Stripe НЕ повтаря и провален ефект
+    // (достъп, запис на покупка, reversal) се губи завинаги. linketto: 14 такива, lint-ът казваше
+    // „чисто“ (Продавача, 2026-09-24). Работи и за Next.js route handlers (`export async function POST`).
+    perLine: /\.catch\(\s*(?:\(\s*\w*\s*\)|\w+)\s*=>\s*(?:undefined|null|void\s+0|\{\s*\})\s*\)|\bcatch\s*(?:\(\s*\w*\s*\))?\s*\{\s*\}/,
+    when: (m, src) => {
+      if (!/\.webhooks\.constructEvent(Async)?\s*\(/.test(src)) return false;
+      // Next.js route handler: целият файл е webhook-ът. Express: само регионът на webhook маршрута
+      // (празен catch в shutdown кода на същия файл не е webhook — panev/server.js).
+      if (/export\s+(async\s+)?function\s+POST\b/.test(src)) return true;
+      const h = handlerRegion(src);
+      return !!h && m.index >= h.start && m.index < h.start + h.text.length;
+    },
+    msg: "Webhook handler гълта грешка (`.catch(() => undefined)` / празен `catch {}`) — отговорът е 200, Stripe не повтаря и провалът се губи. Логни и върни 5xx за транзиентни грешки или маркирай записа за ръчна намеса.",
+  },
+  {
     id: "subscription-no-revoke",
     severity: "MED",
     test: (src) => /mode\s*:\s*["'`]subscription["'`]/.test(src) && WEBHOOK_ROUTE.test(src) && !/customer\.subscription\.(deleted|updated)/.test(src),
