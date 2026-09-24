@@ -33,6 +33,8 @@ if (buf.length < expected) {
   console.error(`Повреден binary STL: декларира ${triCount} триъгълника (${expected} байта), а файлът е ${buf.length}.`);
   process.exit(2);
 }
+// Празен export: иначе размерите излизат -Infinity и „побира се: ДА“ с exit 0 (Принтаджията).
+if (triCount === 0) { console.error("Файлът не съдържа триъгълници — празен или счупен STL."); process.exit(2); }
 
 let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
 let degenerate = 0;
@@ -61,6 +63,8 @@ for (let t = 0; t < triCount; t++) {
   if (Math.sqrt(cx*cx+cy*cy+cz*cz) < 1e-9) degenerate++;
   // ръбове
   const k = [vkey(...v[0]), vkey(...v[1]), vkey(...v[2])];
+  // Съвпадащи върхове дават ръб с нулева дължина — фантомен non-manifold/flipped покрай истинския degenerate.
+  if (k[0] === k[1] || k[1] === k[2] || k[0] === k[2]) { off += 50; continue; }
   for (const [a, b] of [[k[0],k[1]],[k[1],k[2]],[k[2],k[0]]]) {
     const e = ekey(a, b); edges.set(e, (edges.get(e) || 0) + 1);
     const d = a + ">" + b; if (directed.has(d)) flipped++; else directed.add(d);

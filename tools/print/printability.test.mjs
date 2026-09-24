@@ -39,3 +39,15 @@ test("цялата мрежа наопаки (отрицателен обем) �
   assert.match(r.stdout, /НАВЪТРЕ/);
   assert.equal(r.status, 1);
 });
+
+test("празен STL (0 триъгълника) → грешка, не „побира се: ДА“", () => {
+  const r = stl([]);
+  assert.equal(r.status, 2, r.stdout + r.stderr);
+  assert.doesNotMatch(r.stdout, /Infinity/);
+});
+
+test("триъгълник с 3 съвпадащи върха: само degenerate, без фантомни non-manifold/обърнати ръбове", () => {
+  const r = stl([...OUT, [0, 0, 0]]);
+  assert.doesNotMatch(r.stdout, /Последователен winding: НЕ/, r.stdout);
+  assert.match(r.stdout, /Watertight \(затворена обвивка\): ДА/, r.stdout);
+});
