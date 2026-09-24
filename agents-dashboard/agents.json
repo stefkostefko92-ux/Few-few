@@ -13450,7 +13450,7 @@
           "MAR (Регл. 596/2014) — пазарна злоупотреба: spoofing, wash trading, layering",
           "Практики за честен бектест: look-ahead/survivorship bias, walk-forward, такси+slippage"
         ],
-        "lessons": 156
+        "lessons": 163
       },
       "evolution": [
         {
@@ -13554,9 +13554,20 @@
           "date": "2026-09-24",
           "event": "v19.5 — учене",
           "detail": "Научи: КОРЕКЦИЯ на памет L190: в CCXT 4.5.63 amountToPrecision НЕ ползва борсов rounding. Той … (+33 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: Ред на записа след вход е риск-инвариант: treydar/src/bot.js:127-133 пише state.positio… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Ред на записа след вход е риск-инвариант: treydar/src/bot.js:127-133 пише state.positio…\" (+6 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
