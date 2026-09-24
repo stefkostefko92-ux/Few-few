@@ -5586,7 +5586,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 120
+        "lessons": 129
       },
       "evolution": [
         {
@@ -5942,9 +5942,20 @@
           "date": "2026-09-24",
           "event": "v15.6 — учене",
           "detail": "Научи: `tools/seed/check-dups.mjs` е чист text-grep по literal `slug:` без модел-контекст — `e… (+12 още)"
+        },
+        {
+          "version": "16.5.0",
+          "date": "2026-09-24",
+          "event": "v16.5 — учене",
+          "detail": "Научи: seed-business.ts:112-121 и seed-education.ts:23-31 дефинират СЪЩИЯ Service slug `su-hri… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „seed-business.ts:112-121 и seed-education.ts:23-31 дефинират СЪЩИЯ Service slug `su-hri…\" (+8 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
