@@ -58,7 +58,9 @@ ZIP отпреди месец.
   откат на **кода** към предишния release (базата не се пипа: миграциите са адитивни). При
   успех — IndexNow (`ZBD_INDEXNOW=0` го спира).
 - **medqr:** rsync в `/opt/medqr` (без `data/`, `.env`), `npm ci --omit=dev`,
-  `systemctl restart medqr`; при провал — автоматичен rollback към предишния код.
+  `systemctl restart medqr`; при провал — автоматичен rollback към предишния код. Health гейтът
+  пита `/healthz` (минава преди HTTPS редиректа) и иска маркера `"app":"medqr"`
+  (`MEDQR_HEALTH_URL` / `MEDQR_HEALTH_EXPECT`).
 - **mastilko:** rsync в `/opt/mastilko` (без `.env`), `npm ci` + `npm run build`
   (Next.js се билдва на сървъра) + `npm prune --omit=dev`, самоинсталиращ се
   systemd unit (`mastilko/deploy/mastilko.service`, порт `127.0.0.1:3200`),

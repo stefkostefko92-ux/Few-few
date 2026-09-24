@@ -30,7 +30,9 @@ KEEP_RELEASES="${KEEP_RELEASES:-5}"
 # medqr (systemd модел)
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
-MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
+MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/healthz}"
+# Маркер за идентичност: „/“ зад HTTPS редиректа даваше 308 и гейтът минаваше за всеки процес на порта.
+MEDQR_HEALTH_EXPECT="${MEDQR_HEALTH_EXPECT:-\"app\":\"medqr\"}"
 
 # ВНИМАНИЕ за всяко присвояване по-долу, което чете ПО ИЗБОР налична стойност:
 # `X="$(cmd 2>/dev/null | head -1)"` при `set -euo pipefail` УБИВА скрипта, ако
@@ -373,7 +375,7 @@ deploy_medqr() {
   fi
   systemctl restart "$MEDQR_SERVICE"
   sleep 2
-  if health "$MEDQR_HEALTH_URL" "medqr"; then
+  if health "$MEDQR_HEALTH_URL" "medqr" "$MEDQR_HEALTH_EXPECT"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
     # Пазим последните няколко pre-миграционни снимки; чистим по-старите.
     ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
