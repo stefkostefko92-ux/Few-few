@@ -62,3 +62,5 @@
 {"t":"handoff","ts":"2026-09-24T12:09:02.839Z","id":"rf0622bf9","from":"diskordjiyata","to":"ai-djiyata","status":"наред","run":"621ccfb9"}
 {"t":"start","ts":"2026-09-24T12:09:47.654Z","id":"r643102d1","flow":"авто","lead":"hromadjiyata","auto":true}
 {"t":"handoff","ts":"2026-09-24T12:09:47.654Z","id":"r643102d1","from":"hromadjiyata","to":"tayniyat-agent","status":"има бележки","run":"ed83f539"}
+{"t":"start","ts":"2026-09-24T12:11:54.081Z","id":"rf9a21179","flow":"авто","lead":"skorostnika","auto":true}
+{"t":"handoff","ts":"2026-09-24T12:11:54.081Z","id":"rf9a21179","from":"skorostnika","to":"vps-adjiyata","status":"има бележки","run":"a638a670"}
