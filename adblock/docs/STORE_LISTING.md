@@ -234,7 +234,7 @@ Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 
 ## Permission justifications
 - declarativeNetRequest: block ad and tracker requests using filter rules.
-- declarativeNetRequestFeedback: getMatchedRules() for the active tab only, to render the per-tab blocked count in the popup and on the toolbar badge; no URL is stored, logged or transmitted, and the aggregate is discarded when the popup closes.
+- declarativeNetRequestFeedback: getMatchedRules() for the active tab only, to render the per-tab blocked count on the toolbar badge and, in the popup, how many requests each of our filter lists blocked on the page; no URL is read, stored, logged or transmitted, and the breakdown is built on demand and discarded when the popup closes.
 - storage: save your settings and counters locally.
 - alarms: schedule the filter updates and the temporary-pause timer.
 - contextMenus: the right-click "Block an element here" entry.
