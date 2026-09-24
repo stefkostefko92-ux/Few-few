@@ -159,4 +159,13 @@ export class Post {
     f.uFade.value = p.fade ?? 0;
     this.run(this.final, null);
   }
+
+  // Only the embed path (mascot/cinematic/src/embed.js) ever tears a Post instance down mid-session
+  // — the standalone showcase page (main.js) lives for the tab's whole lifetime and never calls this.
+  dispose() {
+    for (const t of [this.sceneRT, this.aoRT, this.aoBlurRT, this.dofHalf, this.dofBlur, this.compRT, this.streakA, this.streakB]) t?.dispose();
+    for (const m of [this.ao, this.aoBlur, this.dofPre, this.dofGather, this.comp, this.streak, this.final]) m?.dispose();
+    this.bloom.dispose();
+    this.fsq.dispose();
+  }
 }

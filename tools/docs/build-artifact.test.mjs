@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions } from "./build-artifact.mjs";
+import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader } from "./build-artifact.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -101,4 +101,24 @@ test("versionRegressions: липсващ агент в билда също е р
   const r = versionRegressions(`{"agents":[{"id":"a","evolution":[{"version":"1.0.0"}]}]}`, mem);
   assert.equal(r.length, 1);
   assert.match(r[0], /b: липсва/);
+});
+
+// 3D навсякъде (2026-09-24): бъндълът влиза като вграден модул, не като `data:`/`blob:` импорт.
+test("mascot3dAsGlobal: крайният export става глобал; без export — хвърля", () => {
+  assert.equal(mascot3dAsGlobal("const a=1;\nexport {\n  a,\n  b\n};\n").trim(), "const a=1;\nwindow.__MASCOT3D__ = {\n  a,\n  b\n};");
+  assert.throws(() => mascot3dAsGlobal("const a = 1;"), /export/);
+});
+
+test("ЗЪБИ: `</script>` в бъндъла не затваря вградения блок", () => {
+  const out = mascot3dLoader('const s = "</script>";\nexport { s };');
+  assert.equal((out.match(/<\/script>/g) || []).length, 1, "само затварящият таг на самия блок");
+  assert.doesNotThrow(() => assertPublishable(out));
+});
+
+test("реалният билд: 3D маскотът е вграден, относителният import() го няма", () => {
+  const { html } = build();
+  if (!readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8").includes('import("./mascot3d.js")')) return;
+  assert.ok(!html.includes('import("./mascot3d.js")'), "относителен път = блокиран от CSP");
+  assert.ok(html.includes("loadMascot3D()") && html.includes("window.__MASCOT3D__"));
+  assert.ok(html.indexOf('type="importmap"') < html.indexOf("const MASCOT3D_SRC"), "importmap преди модула");
 });

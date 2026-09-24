@@ -72,6 +72,42 @@ export function dashReader(ref = null, cwd = ROOT) {
 const DOCS_TAG = '<script src="./docs.js"></script>';
 const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon.svg"';
 const IMG_SRC_INLINE = "src=\"${MASCOT_ICONS[id] || ''}\"";
+// 3D навсякъде (собственика, 2026-09-24): `mascot3d.js` е external-three ESM зареждан лениво с
+// `import("./mascot3d.js")` (agents-dashboard/index.html#startMascot) — в артифакта относителен
+// път е блокиран от CSP, точно като docs.js/mascots/. Внасяме го като `data:` URI и пренасочваме
+// самия specifier — `three`/`three/addons/` вече идват от jsdelivr през importmap-а в <head>
+// (пренесен непокътнат от stripDocumentWrapper, CSP на артифакта го разрешава изрично).
+// Не `data:`/`blob:` импорт — CSP на артифакта може да ги реже. Бъндълът се вгражда като JSON низ и
+// при нужда се пуска като ВГРАДЕН `<script type="module">` (импортите на three минават през
+// importmap-а); крайният `export { … }` става `window.__MASCOT3D__ = { … }`. Не тръгне ли (CSP,
+// мрежа) — таймаут → `catch` в startMascot → SVG резервът остава.
+const MASCOT3D_IMPORT = 'import("./mascot3d.js")';
+const MASCOT3D_IMPORT_INLINE = "loadMascot3D()";
+
+/** Бъндълът като класически глобал: крайният `export { a, b }` → `window.__MASCOT3D__ = { a, b };`. */
+export function mascot3dAsGlobal(src) {
+  const m = /export\s*\{([^}]*)\}\s*;?\s*$/.exec(src);
+  if (!m) throw new Error("mascot3d.js не завършва с `export { … }` — бъндълът е сменен");
+  return `${src.slice(0, m.index)}window.__MASCOT3D__ = {${m[1]}};\n`;
+}
+
+/** Вграденият зареждач: кешира обещанието, пуска модула веднъж, таймаут 30 s. */
+export function mascot3dLoader(src) {
+  const body = JSON.stringify(mascot3dAsGlobal(src) + "\nwindow.dispatchEvent(new Event('mascot3d-ready'));\n").replace(/<\//g, "<\\/");
+  return `<script>
+const MASCOT3D_SRC = ${body};
+let mascot3dP = null;
+function loadMascot3D() {
+  if (window.__MASCOT3D__) return Promise.resolve(window.__MASCOT3D__);
+  return mascot3dP || (mascot3dP = new Promise((res, rej) => {
+    addEventListener("mascot3d-ready", () => res(window.__MASCOT3D__), { once: true });
+    setTimeout(() => { if (!window.__MASCOT3D__) { mascot3dP = null; rej(new Error("mascot3d timeout")); } }, 30000);
+    const s = document.createElement("script"); s.type = "module"; s.textContent = MASCOT3D_SRC;
+    document.head.appendChild(s);
+  }));
+}
+</script>`;
+}
 const WRAPPER_TAGS = ["<!doctype", "<html", "<head>", "</head>", "<body", "</body>", "</html>"];
 
 /** Само съдържанието на `<head>` + `<body>`, слепено — публикуването слага обвивката. */
@@ -162,6 +198,14 @@ export function build(dash = DASH, reader = null) {
   const first = html.indexOf("<script>");
   if (first === -1) throw new Error("няма скрипт блок");
   html = `${html.slice(0, first)}<script>const MASCOT_ICONS = ${JSON.stringify(icons)};</script>\n${html.slice(first)}`;
+
+  // 3D маскотът: само ако таблото го зарежда (по-стари върхове на паметта нямат import-а).
+  let m3d = "";
+  if (html.includes(MASCOT3D_IMPORT)) {
+    m3d = rd.read("mascot3d.js");
+    const at = html.indexOf("<script>");
+    html = `${html.slice(0, at)}${mascot3dLoader(m3d)}\n${html.slice(at)}`.split(MASCOT3D_IMPORT).join(MASCOT3D_IMPORT_INLINE);
+  }
 
   assertPublishable(html, { "docs.js": docs, "маскоти": JSON.stringify(icons) });
 

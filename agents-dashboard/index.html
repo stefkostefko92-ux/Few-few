@@ -138,7 +138,7 @@
   .hero { position: relative; margin: 0 -22px 6px; padding: 12px 22px 18px; overflow: hidden; background: linear-gradient(180deg,#0b1016,#05070c); }
   .hero { background: radial-gradient(140% 105% at 50% -18%, color-mix(in srgb, var(--ac) 26%, transparent), transparent 66%), linear-gradient(180deg,#0a0e14,#05070c); }
   .hero .d-close { position: absolute; top: 16px; right: 18px; z-index: 4; }
-  .mascot { width: 100%; height: 232px; display: block; }
+  .mascot { width: 100%; height: 232px; display: block; position: relative; }
   /* SVG-то на маскота носи собствени width/height=512 — без това то препълва кутията и от героя
      се вижда само шапката. Височината води (кутията е фиксирана), ширината следва. */
   .mascot svg { height: 100%; width: auto; max-width: 100%; display: block; margin: 0 auto; overflow: visible;
@@ -146,6 +146,14 @@
        drop-shadow следва алфата на SVG-то, затова свети формата, а не кутията. */
     filter: drop-shadow(0 0 18px color-mix(in srgb, var(--ac) 50%, transparent))
             drop-shadow(0 0 52px color-mix(in srgb, var(--ac) 26%, transparent)); }
+  /* 3D навсякъде (собственика, 2026-09-24): mascot3d.js слага <canvas> над SVG-то, щом WebGL2 +
+     движение го позволяват (виж startMascot). SVG-то НЕ се маха от DOM-а — само се скрива — точно
+     за да може watchdog-ът (onLowFps) да разглоби WebGL и веднага да покаже пак готовия резерв, без
+     нов import()/fetch. Платното си носи собствен бленд (Post: bloom/halation), .hero отдолу вече
+     слага мека радиална подсветка в var(--ac) — платното няма нужда от CSS drop-shadow (скъп филтър
+     върху цял WebGL кадър, за разлика от статичния SVG отгоре). */
+  .mascot.mascot-3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .mascot.mascot-3d svg { display: none; }
   .bubble { position: absolute; top: 18px; left: 20px; max-width: 184px; z-index: 3; background: rgba(9,13,20,.94); border: 1px solid var(--line); border-radius: 14px; border-bottom-left-radius: 4px; padding: 9px 12px; font-size: 12.5px; line-height: 1.42; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
   .bubble::after { content: ""; position: absolute; left: 16px; bottom: -7px; width: 12px; height: 12px; background: rgba(9,13,20,.94); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
   .pinfo { position: relative; z-index: 2; }
@@ -162,6 +170,17 @@
   @media (max-width: 640px) { .brand p { display: none; } .hint { display: none; } .search input { width: 104px; } .hud { padding: 12px; } .live { left: 12px; bottom: 14px; } .credit { font-size: 9.5px; } }
   @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
 </style>
+<!-- 3D навсякъде (собственика, 2026-09-24): mascot3d.js (ГЕНЕРИРАНО, вижте MASCOT-INLINE по-долу и
+     tools/agents/mascot-theme.mjs) е external-three ESM — dynamic import() го зарежда лениво, само
+     когато профил се отвори (startMascot). three самò НЕ се вгражда: version-pinned CDN, същата
+     версия като mascot/cinematic/package.json (devDependencies.three) и mascot/cinematic/template.html.
+     Пинована версия на jsdelivr е в разрешения CSP списък за артефакта (tools/docs/build-artifact.mjs). -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+} }
+</script>
 </head>
 <body>
 <canvas id="sky" aria-label="Интерактивна галактика от агентите — всеки агент е звезда. Използвай изгледа „Списък“ за достъпна текстова версия."></canvas>
@@ -16164,10 +16183,22 @@ const MASCOT_SVG = "<svg class=\"jm-animated\" xmlns=\"http://www.w3.org/2000/sv
 const MASCOT_THEMES = {"3d-maniac":{"--jm-deep":"#4b1444","--jm-bottle":"#751f5a","--jm-neon":"#a13167","--jm-olive":"#dc6d81","--jm-pale":"#dcbebd","--jm-soft-olive":"#8d7681","--jm-glow-lime":"#45343c"},"ai-djiyata":{"--jm-deep":"#0f0069","--jm-bottle":"#4400b0","--jm-neon":"#a60df6","--jm-olive":"#ff8ffa","--jm-pale":"#f6dded","--jm-soft-olive":"#a793b1","--jm-glow-lime":"#4b3556"},"analizatora":{"--jm-deep":"#0e1e47","--jm-bottle":"#191d7c","--jm-neon":"#4b2bb3","--jm-olive":"#be78e8","--jm-pale":"#ebd7ec","--jm-soft-olive":"#858098","--jm-glow-lime":"#353143"},"diskordjiyata":{"--jm-deep":"#0a5675","--jm-bottle":"#0f57a7","--jm-neon":"#1c42da","--jm-olive":"#8f76f9","--jm-pale":"#e0d2ef","--jm-soft-olive":"#868ca3","--jm-glow-lime":"#3e445c"},"dizayner":{"--jm-deep":"#21005a","--jm-bottle":"#590193","--jm-neon":"#b50acf","--jm-olive":"#ff61d6","--jm-pale":"#eec3d6","--jm-soft-olive":"#95749a","--jm-glow-lime":"#462d49"},"geymara":{"--jm-deep":"#120774","--jm-bottle":"#0c23b4","--jm-neon":"#2676e8","--jm-olive":"#94e8fd","--jm-pale":"#def4f2","--jm-soft-olive":"#9aa4b3","--jm-glow-lime":"#3e4b5f"},"goladjiyata":{"--jm-deep":"#021002","--jm-bottle":"#0e3107","--jm-neon":"#2c6011","--jm-olive":"#93e618","--jm-pale":"#b5c574","--jm-soft-olive":"#4c5845","--jm-glow-lime":"#0f120d"},"hromadjiyata":{"--jm-deep":"#060b36","--jm-bottle":"#0b2960","--jm-neon":"#16608c","--jm-olive":"#33f0ed","--jm-pale":"#8cd2bc","--jm-soft-olive":"#596a73","--jm-glow-lime":"#222b31"},"izpitatelya":{"--jm-deep":"#143208","--jm-bottle":"#346810","--jm-neon":"#67a11f","--jm-olive":"#c9ec5e","--jm-pale":"#e1e5c1","--jm-soft-olive":"#7e8b6e","--jm-glow-lime":"#2d3424"},"kachestveniyat":{"--jm-deep":"#11198a","--jm-bottle":"#3418b6","--jm-neon":"#7b2ddc","--jm-olive":"#e182f4","--jm-pale":"#eed3ea","--jm-soft-olive":"#9a8fa7","--jm-glow-lime":"#584a6b"},"kasadjiyata":{"--jm-deep":"#021010","--jm-bottle":"#042820","--jm-neon":"#0f693d","--jm-olive":"#25f23f","--jm-pale":"#a3d898","--jm-soft-olive":"#4e655a","--jm-glow-lime":"#070b09"},"kodadjiyata":{"--jm-deep":"#091b18","--jm-bottle":"#133c2b","--jm-neon":"#236135","--jm-olive":"#47c23a","--jm-pale":"#95b77f","--jm-soft-olive":"#4f5d53","--jm-glow-lime":"#19201b"},"konveyera":{"--jm-deep":"#034e8c","--jm-bottle":"#058db1","--jm-neon":"#0fd5ca","--jm-olive":"#54ffb2","--jm-pale":"#a0e2b0","--jm-soft-olive":"#719694","--jm-glow-lime":"#3f6361"},"letopisetsa":{"--jm-deep":"#6c067f","--jm-bottle":"#be0ab3","--jm-neon":"#eb2ab0","--jm-olive":"#ff95b9","--jm-pale":"#f4dee0","--jm-soft-olive":"#b59cad","--jm-glow-lime":"#65415a"},"mobildjiyata":{"--jm-deep":"#040e0a","--jm-bottle":"#10371d","--jm-neon":"#226828","--jm-olive":"#6bce44","--jm-pale":"#b5c99b","--jm-soft-olive":"#566758","--jm-glow-lime":"#121813"},"nabludatelya":{"--jm-deep":"#111101","--jm-bottle":"#4b4403","--jm-neon":"#90760c","--jm-olive":"#ffbb3a","--jm-pale":"#e6ceb1","--jm-soft-olive":"#7d765c","--jm-glow-lime":"#1b1911"},"pravniyat-razbirach":{"--jm-deep":"#121505","--jm-bottle":"#3b4110","--jm-neon":"#6e6f20","--jm-olive":"#d5c140","--jm-pale":"#cabe97","--jm-soft-olive":"#696a57","--jm-glow-lime":"#1e1e17"},"prevodach":{"--jm-deep":"#391b4f","--jm-bottle":"#632671","--jm-neon":"#94388c","--jm-olive":"#cf699e","--jm-pale":"#ceabb3","--jm-soft-olive":"#847182","--jm-glow-lime":"#483946"},"printadjiyata":{"--jm-deep":"#502306","--jm-bottle":"#7b4009","--jm-neon":"#a66a13","--jm-olive":"#f9c73e","--jm-pale":"#dad096","--jm-soft-olive":"#817462","--jm-glow-lime":"#41382b"},"prodavacha":{"--jm-deep":"#004fa1","--jm-bottle":"#0033cb","--jm-neon":"#0b06f6","--jm-olive":"#a86cff","--jm-pale":"#dbb5eb","--jm-soft-olive":"#807fa3","--jm-glow-lime":"#454571"},"razbivacha":{"--jm-deep":"#0f0306","--jm-bottle":"#430b16","--jm-neon":"#7c1a20","--jm-olive":"#e55741","--jm-pale":"#d8b4a6","--jm-soft-olive":"#725b5c","--jm-glow-lime":"#1c1414"},"seo":{"--jm-deep":"#3a140c","--jm-bottle":"#6a2d17","--jm-neon":"#9e5428","--jm-olive":"#e2a666","--jm-pale":"#e1d5c0","--jm-soft-olive":"#8b7a71","--jm-glow-lime":"#39302a"},"siydara":{"--jm-deep":"#0e272f","--jm-bottle":"#1a5757","--jm-neon":"#2c826a","--jm-olive":"#58d081","--jm-pale":"#a6cea8","--jm-soft-olive":"#657873","--jm-glow-lime":"#26312e"},"skorostnika":{"--jm-deep":"#345a01","--jm-bottle":"#578202","--jm-neon":"#85aa0a","--jm-olive":"#eeff32","--jm-pale":"#dbd883","--jm-soft-olive":"#757d5c","--jm-glow-lime":"#3e442b"},"socialdjiyata":{"--jm-deep":"#99005a","--jm-bottle":"#c10054","--jm-neon":"#ec0442","--jm-olive":"#ff6165","--jm-pale":"#e9b2a7","--jm-soft-olive":"#9e7781","--jm-glow-lime":"#6c414c"},"tayniyat-agent":{"--jm-deep":"#451012","--jm-bottle":"#641c17","--jm-neon":"#843324","--jm-olive":"#d86e3f","--jm-pale":"#c29d83","--jm-soft-olive":"#6f5e5b","--jm-glow-lime":"#3c2f2c"},"treydara":{"--jm-deep":"#030f06","--jm-bottle":"#07250a","--jm-neon":"#216717","--jm-olive":"#84e13b","--jm-pale":"#cad9ab","--jm-soft-olive":"#576954","--jm-glow-lime":"#080a07"},"vps-adjiyata":{"--jm-deep":"#1b2c4d","--jm-bottle":"#2c5879","--jm-neon":"#4298a8","--jm-olive":"#8bd7c5","--jm-pale":"#dae9e1","--jm-soft-olive":"#889699","--jm-glow-lime":"#3b484a"}};
 /* MASCOT-INLINE:END */
 let mascotCleanup = null;
-function stopMascot() { cancelAnimationFrame(mascotReq); mascotReq = 0; if (mascotCleanup) { mascotCleanup(); mascotCleanup = null; } }
+let mascotToken = 0;
+function stopMascot() {
+  mascotToken++;                             // отменя всеки чакащ import() от предишно отваряне
+  cancelAnimationFrame(mascotReq); mascotReq = 0;
+  if (mascotCleanup) { mascotCleanup(); mascotCleanup = null; }
+}
+// 3D навсякъде вместо SVG (собственика, 2026-09-24). SVG-то остава ИСТИНСКИЯТ резерв — рисува се
+// първо, веднага, синхронно — и е това, което остава: без WebGL2, при reduced-motion, докато
+// ./mascot3d.js (ГЕНЕРИРАНО от tools/agents/mascot-theme.mjs, копие на mascot/cinematic) се тегли,
+// или ако рамките паднат твърде ниско (onLowFps по-долу). Никога повече от ЕДИН жив WebGL контекст:
+// stopMascot() по-горе винаги затваря предишния, преди да отвори нов.
 function startMascot(host, agent) {
   stopMascot();
   if (!host) return;
+  const token = mascotToken;
+  host.classList.remove("mascot-3d");
   // Маскотът е ЕДИН герой (mascot/, PR #162); различава се само по цвят. Геометрията е вградена
   // веднъж в MASCOT_SVG, а темата на агента идва от MASCOT_THEMES — генерирани от
   // tools/agents/mascot-theme.mjs и гейтвани срещу него. Затова тук няма нито един цвят и нито
@@ -16180,6 +16211,7 @@ function startMascot(host, agent) {
   svg.classList.add("jm-animated");           // включва bob/пулс/мигане/пискюл от пакета
   svg.setAttribute("aria-label", agent.name);
 
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // Погледът следи курсора през двете променливи, които пакетът предвижда — без ререндер и без
   // да пипаме SVG-то. Ограничаваме амплитудата: зениците трябва да се движат в окото, не в лицето.
   const MAXP = 7;
@@ -16191,12 +16223,33 @@ function startMascot(host, agent) {
     svg.style.setProperty("--jm-gaze-x", (dx / d * MAXP * k).toFixed(2) + "px");
     svg.style.setProperty("--jm-gaze-y", (dy / d * MAXP * k).toFixed(2) + "px");
   };
-  // Ако човекът е поискал по-малко движение, не закачаме следенето изобщо (пакетът спира и
-  // останалите анимации през своя media query).
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    window.addEventListener("mousemove", onMove);
-    mascotCleanup = () => window.removeEventListener("mousemove", onMove);
-  }
+  // Ако човекът е поискал по-малко движение, нито SVG-то следи курсора, нито пробваме 3D — оставаме
+  // на статичния резерв изцяло (пакетът и без това гаси анимацията си през своя media query).
+  if (reduced) return;
+  window.addEventListener("mousemove", onMove);
+  mascotCleanup = () => window.removeEventListener("mousemove", onMove);
+
+  import("./mascot3d.js").then((mod) => {
+    if (token !== mascotToken || !host.isConnected) return; // профилът е затворен/сменен междувременно
+    // SVG-то НЕ се маха от DOM-а — само се скрива с CSS — точно за да може watchdog-ът долу да
+    // разглоби WebGL контекста и веднага да покаже пак готовия резерв, без нов import()/fetch.
+    const backToSvg = () => {
+      if (token !== mascotToken) return;     // профилът вече е затворен/сменен — няма какво да връщаме
+      host.classList.remove("mascot-3d");
+      window.addEventListener("mousemove", onMove);
+      mascotCleanup = () => window.removeEventListener("mousemove", onMove);
+    };
+    const inst = mod.mount(host, {
+      accent: agent.accent,
+      quality: IS_TOUCH ? "low" : "auto",
+      reducedMotion: false,
+      onLowFps: () => { inst && inst.dispose(); backToSvg(); }, // рамките падат дори на най-ниско — разглобяваме WebGL, оставаме на резерва
+    });
+    if (!inst) return;                       // без WebGL2 — SVG-то си остава, нищо повече не правим
+    window.removeEventListener("mousemove", onMove);
+    host.classList.add("mascot-3d");
+    mascotCleanup = () => { inst.dispose(); host.classList.remove("mascot-3d"); };
+  }).catch(() => {});                        // мрежа/парс грешка — оставаме тихо на SVG резерва
 }
 /* ---------- чат с персоната на агента (офлайн, детерминиран) ---------- */
 let chatN = 0, chatToken = 0;

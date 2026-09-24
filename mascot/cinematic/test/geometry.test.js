@@ -10,7 +10,7 @@ import { buildBody, GROUND_Y } from '../src/body.js';
 import { buildFace, layout, EYE_Y } from '../src/face.js';
 import { buildHat, HAT_BOTTOM_Y } from '../src/accessories.js';
 
-const palette = { neon: '#5AB60D', olive: '#99E72A', softOlive: '#848D68', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521' };
+const palette = { neon: '#5AB60D', olive: '#99E72A', pale: '#C8DDA6', softOlive: '#848D68', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521' };
 
 function materials() {
   const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), core: coreGlowTexture(16) };

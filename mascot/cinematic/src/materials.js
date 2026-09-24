@@ -83,7 +83,7 @@ export function createMaterials(T, palette) {
     }),
     p.olive,
     0.3,
-    { top: '#8fe03a', bottom: '#4caf1a' },
+    { top: p.pale, bottom: p.neon },
   );
   const limb = jelly.clone();
   limb.thickness = 0.55;

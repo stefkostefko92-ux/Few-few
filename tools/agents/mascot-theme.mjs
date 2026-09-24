@@ -31,6 +31,11 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import
 const MASCOT = join(ROOT, "mascot");
 const OUT_DIR = join(ROOT, "agents-dashboard", "mascots");
 const CHECK = process.argv.includes("--check");
+// 3D навсякъде (собственика, 2026-09-24): таблото получава ГЕНЕРИРАНО копие на `mascot/cinematic`-ия
+// ESM бъндъл, никога ръчна редакция — самият пакет пази нулевата зависимост между продуктите,
+// затова просто копираме готовия артефакт, а не преимплементираме рендера тук.
+const EMBED_SRC = join(MASCOT, "cinematic", "dist", "mascot-embed.js");
+const EMBED_OUT = join(ROOT, "agents-dashboard", "mascot3d.js");
 
 // ── цвят ─────────────────────────────────────────────────────────────────────────────────────
 const hex2rgb = (h) => { const s = h.replace("#", ""); return [0, 2, 4].map((i) => parseInt(s.slice(i, i + 2), 16) / 255); };
@@ -302,6 +307,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.error("  Пусни: node tools/agents/mascot-theme.mjs");
       process.exit(1);
     }
+    // dist/ не се комитва (CI няма билд) — тогава се проверява само, че копието съществува.
+    if (!existsSync(EMBED_OUT)) {
+      console.error("\x1b[31m✗ липсва agents-dashboard/mascot3d.js\x1b[0m — пусни: cd mascot/cinematic && node build.mjs && node tools/agents/mascot-theme.mjs");
+      process.exit(1);
+    }
+    if (existsSync(EMBED_SRC) && readFileSync(EMBED_OUT, "utf8") !== readFileSync(EMBED_SRC, "utf8")) {
+      console.error("\x1b[31m✗ agents-dashboard/mascot3d.js е застоял спрямо mascot/cinematic/dist/mascot-embed.js\x1b[0m");
+      console.error("  Пусни: node tools/agents/mascot-theme.mjs");
+      process.exit(1);
+    }
     const missing = want.filter(([f]) => !existsSync(join(OUT_DIR, f))).map(([f]) => f);
     const stale = want.filter(([f, body]) => existsSync(join(OUT_DIR, f)) &&
       readFileSync(join(OUT_DIR, f), "utf8") !== body).map(([f]) => f);
@@ -319,6 +334,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   mkdirSync(OUT_DIR, { recursive: true });
   for (const [f, body] of want) writeFileSync(join(OUT_DIR, f), body);
+  if (existsSync(EMBED_SRC)) {
+    writeFileSync(EMBED_OUT, readFileSync(EMBED_SRC, "utf8"));
+  } else {
+    console.error("\x1b[33m⚠ mascot/cinematic/dist/mascot-embed.js липсва — пусни `cd mascot/cinematic && node build.mjs` първо; agents-dashboard/mascot3d.js НЕ е обновен.\x1b[0m");
+  }
   const html = readFileSync(HTML, "utf8");
   const next = withInlineBlock(html, block);
   if (next === html && !html.includes(MARK_START)) {

@@ -268,7 +268,7 @@ test("SVG-то се побира в кутията — иначе от геро�
 
 test("погледът се откача при затваряне — иначе всяко отваряне трупа слушател", () => {
   const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
-  assert.match(html, /function stopMascot\(\)[^\n]*mascotCleanup\(\)/, "stopMascot трябва да вика чистача");
+  assert.match(html, /function stopMascot\(\)\s*\{[^}]*?mascotCleanup\(\)/, "stopMascot трябва да вика чистача (вкл. dispose() на 3D)");
   assert.match(html, /mascotCleanup = \(\) => window\.removeEventListener\("mousemove"/);
 });
 

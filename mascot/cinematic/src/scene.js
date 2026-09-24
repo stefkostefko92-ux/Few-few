@@ -13,7 +13,7 @@ export const PALETTE = {
   softOlive: '#848D68', pale: '#C8DDA6', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521',
 };
 
-function addLights(scene) {
+function addLights(scene, p) {
   // Softer, off-axis key: the previous steep top-down angle plus a tight clearcoat was exactly
   // what burned a hard white disc into the crown under the hat. Lower angle, a touch less
   // intensity, and a much rougher clearcoat (materials.js) spread that highlight into a soft glint.
@@ -38,22 +38,25 @@ function addLights(scene) {
   rim.position.set(0.4, 1.3, -3.4);
   scene.add(rim);
 
-  const underglow = new THREE.PointLight(0x99e72a, 0.9, 4, 2);
+  // These four carry the accent: they are what makes the jelly itself glow, as opposed to the key/
+  // fill/rim above which stay neutral studio light. p.olive is the tinted body hue, p.pale its
+  // lightest stop, p.bottle its darkest — see palette.js.
+  const underglow = new THREE.PointLight(new THREE.Color(p.olive), 0.9, 4, 2);
   underglow.position.set(0, -0.9, 1.1);
   scene.add(underglow);
 
   // Soft fill lifting the lower-front half from underneath/in front — the brief's "мек вътрешен
   // fill отдолу-отпред" — so the belly/chin do not fall into shadow relative to the bright crown.
-  const underFill = new THREE.PointLight(0xcdf29a, 0.7, 5, 1.6);
+  const underFill = new THREE.PointLight(new THREE.Color(p.pale), 0.7, 5, 1.6);
   underFill.position.set(0, -0.4, 2.4);
   scene.add(underFill);
 
-  // Bright overhead top light so the crown/shoulders read lime, not olive-black.
-  const overhead = new THREE.DirectionalLight(0xeaffcf, 0.75);
+  // Bright overhead top light so the crown/shoulders read the accent, not olive-black.
+  const overhead = new THREE.DirectionalLight(new THREE.Color(p.pale), 0.75);
   overhead.position.set(0, 5, 1.2);
   scene.add(overhead);
 
-  scene.add(new THREE.HemisphereLight(0x3a5424, 0x0a1206, 0.6));
+  scene.add(new THREE.HemisphereLight(new THREE.Color(p.bottle), 0x0a1206, 0.6));
 }
 
 // A hand-authored soft studio environment instead of three/addons' RoomEnvironment: that preset's
@@ -62,7 +65,7 @@ function addLights(scene) {
 // unclipped hotspot that bloomed into a solid white disc over both eyes. A dim gradient sky plus
 // three soft rectangular panels gives the same "photographed, not flat-lit" read at a brightness
 // the tone mapper can actually resolve.
-function softStudioEnvironment(renderer) {
+function softStudioEnvironment(renderer, p) {
   const envScene = new THREE.Scene();
   const sky = new THREE.Mesh(
     new THREE.SphereGeometry(20, 16, 12),
@@ -83,7 +86,7 @@ function softStudioEnvironment(renderer) {
   };
   panel(-4, 5, 3, Math.PI * 0.15, 6, 6, 0xfff3d8, 0.7); // key, warm, upper-left
   panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 0xdfeee0, 0.3); // fill, frontal
-  panel(0, -1.5, -5, Math.PI, 6, 4, 0x5ab60d, 0.5); // rim/contra, green
+  panel(0, -1.5, -5, Math.PI, 6, 4, new THREE.Color(p.neon), 0.5); // rim/contra, tinted to the accent
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = pmrem.fromScene(envScene, 0.03).texture;
   sky.geometry.dispose();
@@ -91,10 +94,11 @@ function softStudioEnvironment(renderer) {
   return env;
 }
 
-export function buildScene(renderer) {
+export function buildScene(renderer, palette = PALETTE) {
+  const p = palette;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(PALETTE.bg);
-  scene.environment = softStudioEnvironment(renderer);
+  scene.background = new THREE.Color(p.bg);
+  scene.environment = softStudioEnvironment(renderer, p);
 
   const textures = {
     carbon: carbonTwillTextures(),
@@ -103,7 +107,7 @@ export function buildScene(renderer) {
     radial: radialTextures(),
     core: coreGlowTexture(),
   };
-  const materials = createMaterials(textures, PALETTE);
+  const materials = createMaterials(textures, p);
 
   const mascot = new THREE.Group();
   const body = buildBody(materials, textures);
@@ -138,7 +142,7 @@ export function buildScene(renderer) {
     scene.add(spark);
   }
 
-  addLights(scene);
+  addLights(scene, p);
 
   const pupils = [face.getObjectByName('pupilL'), face.getObjectByName('pupilR')];
   const eyelids = [face.getObjectByName('eyelidL'), face.getObjectByName('eyelidR')];
