@@ -78,6 +78,7 @@ src/
 locales/               bg.json (източник) · en.json · it.json — пълни огледала, гейтвани от теста
 views/                 EJS шаблони (partials/shell-*, admin/*, landing/index)
 public/                tokens.css (палитра + аврора, обща) · admin.css (панелът) · landing.css (витрината)
+                       · admin-views.css (прегледът на поста като в Instagram · списъците като карти под 660 px)
                        · admin.js (единственият скрипт, с nonce) · icons/*.svg · favicon.svg
                        · landing/ (перото, снимките на панела, изображението за споделяне)
                        · indexnow-key.txt (публичен знак за собственост, НЕ тайна)

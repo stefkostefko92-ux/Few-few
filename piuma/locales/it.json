@@ -252,7 +252,8 @@
     "empty": "Nessun post con questo filtro",
     "emptyHint": "Togli il filtro o scrivi una nuova bozza.",
     "newDraft": "Nuova bozza",
-    "allPosts": "Tutti i post"
+    "allPosts": "Tutti i post",
+    "noCaption": "(senza testo)"
   },
   "post": {
     "createdLine": "Creato da {who} · {date}",
@@ -295,7 +296,11 @@
     "saveAndLint": "Salva e ricontrolla",
     "container": "Contenitore",
     "mediaId": "IG media id",
-    "aiDraft": "Bozza AI"
+    "aiDraft": "Bozza AI",
+    "mediaAlt": "Il media del post",
+    "noPreview": "Video senza copertina — l’anteprima è nel file stesso",
+    "approveBlockedHint": "C’è un rilievo bloccante del lint — correggilo e salva prima di approvare.",
+    "ownDraftHint": "È una tua bozza — la approva un’altra persona («quattro occhi»)."
   },
   "form": {
     "brand": "Marchio",

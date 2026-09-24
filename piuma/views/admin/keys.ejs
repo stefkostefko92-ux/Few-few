@@ -32,17 +32,17 @@ PIUMA_KEY_SECRET=<%= created.secret %></div>
   </form>
 </section>
 
-<div class="table-wrap">
+<div class="table-wrap to-cards">
 <table><thead><tr><th><%= t('keys.name') %></th><th>ID</th><th><%= t('keys.scope') %></th><th><%= t('keys.brands') %></th><th>IP</th><th><%= t('keys.expires') %></th><th><%= t('keys.lastUsed') %></th><th><%= t('common.state') %></th><th></th></tr></thead><tbody>
 <% keys.forEach((k) => { %>
   <tr>
-    <td><strong><%= k.name %></strong><span class="sub-line"><%= t('keys.createdBy', { email: k.createdBy.email }) %></span></td>
-    <td class="mono"><%= k.id %></td>
-    <td class="mono"><%= k.scopes.join(' ') %></td>
-    <td><%= k.brandIds.length ? k.brandIds.length : t('common.all') %></td>
-    <td class="mono"><%= k.allowedIps.length ? k.allowedIps.join(', ') : t('common.all') %></td>
-    <td class="when"><%= k.expiresAt ? ui.date(k.expiresAt) : t('keys.noExpiry') %></td>
-    <td class="muted when"><%= k.lastUsedAt ? ui.relative(k.lastUsedAt) : t('common.never') %><% if (k.lastUsedIp) { %><span class="sub-line mono"><%= k.lastUsedIp %></span><% } %></td>
+    <td class="lead"><strong><%= k.name %></strong><span class="sub-line"><%= t('keys.createdBy', { email: k.createdBy.email }) %></span></td>
+    <td class="mono full" data-label="ID"><%= k.id %></td>
+    <td class="mono full" data-label="<%= t('keys.scope') %>"><%= k.scopes.join(' ') %></td>
+    <td data-label="<%= t('keys.brands') %>"><%= k.brandIds.length ? k.brandIds.length : t('common.all') %></td>
+    <td class="mono" data-label="IP"><%= k.allowedIps.length ? k.allowedIps.join(', ') : t('common.all') %></td>
+    <td class="when" data-label="<%= t('keys.expires') %>"><%= k.expiresAt ? ui.date(k.expiresAt) : t('keys.noExpiry') %></td>
+    <td class="muted when" data-label="<%= t('keys.lastUsed') %>"><%= k.lastUsedAt ? ui.relative(k.lastUsedAt) : t('common.never') %><% if (k.lastUsedIp) { %><span class="sub-line mono"><%= k.lastUsedIp %></span><% } %></td>
     <td><% if (k.revokedAt) { %><span class="chip critical"><%- icon('status-disabled', { class: 'ic-sm' }) %> <%= t('keys.revoked') %></span><% } else if (k.expiresAt && k.expiresAt < new Date()) { %><span class="chip critical"><%- icon('status-token-expired', { class: 'ic-sm' }) %> <%= t('keys.expired') %></span><% } else { %><span class="chip good"><%- icon('status-active', { class: 'ic-sm' }) %> <%= t('status.ACTIVE') %></span><% } %></td>
     <td><% if (!k.revokedAt) { %><form method="post" action="/admin/keys/<%= k.id %>/revoke" class="inline" data-confirm="<%= t('keys.revokeConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn danger small" type="submit"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('keys.revoke') %></button></form><% } %></td>
   </tr>

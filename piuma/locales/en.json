@@ -252,7 +252,8 @@
     "empty": "No posts match this filter",
     "emptyHint": "Clear the filter or write a new draft.",
     "newDraft": "New draft",
-    "allPosts": "All posts"
+    "allPosts": "All posts",
+    "noCaption": "(no caption)"
   },
   "post": {
     "createdLine": "Created by {who} · {date}",
@@ -295,7 +296,11 @@
     "saveAndLint": "Save and re-check",
     "container": "Container",
     "mediaId": "IG media id",
-    "aiDraft": "AI draft"
+    "aiDraft": "AI draft",
+    "mediaAlt": "The post’s media",
+    "noPreview": "Video without a cover — the preview is in the file itself",
+    "approveBlockedHint": "There is a blocking lint finding — fix it and save before you approve.",
+    "ownDraftHint": "This is your own draft — someone else approves it (“four eyes”)."
   },
   "form": {
     "brand": "Brand",
