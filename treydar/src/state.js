@@ -4,7 +4,8 @@ import { readFileSync, writeFileSync, mkdirSync, renameSync, linkSync, rmSync } 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const dataDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'data');
+// TREYDAR_DATA_DIR: тестовете пишат в /tmp, не в живото състояние до кода.
+const dataDir = process.env.TREYDAR_DATA_DIR || join(dirname(fileURLToPath(import.meta.url)), '..', 'data');
 try { mkdirSync(dataDir, { recursive: true }); } catch { /* ok */ }
 const stateFile = join(dataDir, 'state.json');
 

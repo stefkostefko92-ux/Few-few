@@ -58,16 +58,25 @@ async function tickSymbol({ ex, cfg, market, state, symbol, groups, equity, pric
     return;
   }
 
+  // Незащитена позиция → всеки tick опитва стопа наново.
+  if (hasPosition && state.positions[symbol]?.unprotected) {
+    const p = state.positions[symbol];
+    const qty = cfg.live ? baseTotal : p.qty;
+    await protectMulti(() => placeStopLoss({ ex, cfg, market, symbol, quantity: qty, stopPrice: p.stopPrice }), state, symbol);
+  }
+
   // Trailing stop (само нагоре).
-  if (hasPosition && cfg.useTrailing && state.positions[symbol]) {
+  if (hasPosition && cfg.useTrailing && state.positions[symbol] && !state.positions[symbol].unprotected) {
     const p = state.positions[symbol];
     const newStop = price - stopDistance(ctx, i, price);
     if (newStop > (p.stopPrice ?? 0) * 1.001) {
       log.info(`[${symbol}] trailing: стоп ${p.stopPrice.toFixed(2)} → ${newStop.toFixed(2)}`);
+      p.unprotected = true; // между отмяната и новия стоп позицията е гола
+      saveState(state);
       await cancelAllOpen({ ex, cfg, symbol });
       const trailQty = cfg.live ? baseTotal : p.qty;
-      await placeStopLoss({ ex, cfg, market, symbol, quantity: trailQty, stopPrice: newStop });
       p.stopPrice = newStop;
+      await protectMulti(() => placeStopLoss({ ex, cfg, market, symbol, quantity: trailQty, stopPrice: newStop }), state, symbol);
     }
   }
 
@@ -113,10 +122,31 @@ async function tickSymbol({ ex, cfg, market, state, symbol, groups, equity, pric
     log.info(`[${symbol}] ВХОД → ~${qty} @${price}, стоп @${stopPrice.toFixed(2)}`);
     const buy = await marketBuy({ ex, cfg, market, symbol, quantity: qty, price });
     const filled = buy.filled ?? qty;
-    if (filled > 0) await placeStopLoss({ ex, cfg, market, symbol, quantity: filled, stopPrice });
-    state.positions[symbol] = { qty: filled, entry: buy.average ?? price, stopPrice, riskPct: cfg.riskPctPerTrade };
+    if (!(filled > 0)) {
+      log.warn(`[${symbol}] покупката не се изпълни (filled 0) — няма позиция.`);
+      audit('entry.unfilled', { symbol, status: buy.status ?? null });
+      return;
+    }
+    // Позицията се записва ПРЕДИ стопа — отказан стоп не бива да я изтрие от портфейлните лимити.
+    state.positions[symbol] = { qty: filled, entry: buy.average ?? price, stopPrice, riskPct: cfg.riskPctPerTrade, unprotected: true };
     state.dayTradeCount = (state.dayTradeCount ?? 0) + 1;
+    saveState(state);
+    await protectMulti(() => placeStopLoss({ ex, cfg, market, symbol, quantity: filled, stopPrice }), state, symbol);
   }
+}
+
+// Като protect() в bot.js, но за позиция в state.positions[symbol].
+export async function protectMulti(place, state, symbol) {
+  const pos = state.positions[symbol];
+  try {
+    await place();
+    if (pos) delete pos.unprotected;
+  } catch (e) {
+    state.killed = true;
+    log.error(`⛔ [${symbol}] стопът НЕ е поставен (${e.message}) — позицията е без защита на борсата. KILL-SWITCH включен; повторен опит следващия tick. Провери ръчно.`);
+    audit('stop.failed', { symbol, error: String(e.message).slice(0, 200) });
+  }
+  saveState(state);
 }
 
 export async function runOnceMulti(ex, cfg, markets, state) {
