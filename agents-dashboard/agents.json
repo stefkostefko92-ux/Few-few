@@ -9532,7 +9532,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 138
+        "lessons": 159
       },
       "evolution": [
         {
@@ -9846,9 +9846,20 @@
           "date": "2026-09-23",
           "event": "v14.6 — учене",
           "detail": "Научи: bwip-js SVG рендерира текста на баркода като векторни font пътища (drawing-svg.js), не … (+7 още)"
+        },
+        {
+          "version": "16.7.0",
+          "date": "2026-09-24",
+          "event": "v16.7 — учене",
+          "detail": "Научи: vizitka/ (QR дигитална визитка) няма НИКАКВА PWA инфраструктура — нито manifest.webmani… (+20 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „vizitka/ (QR дигитална визитка) няма НИКАКВА PWA инфраструктура — нито manifest.webmani…\" (+20 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "quarantine",
