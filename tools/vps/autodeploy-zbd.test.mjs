@@ -114,6 +114,32 @@ for (const name of ["zabobovdol-20260901-000000.sql.gz.age", "zabobovdol-2026090
   });
 }
 
+test("FAIL CLOSED: бекъп в поддиректория или скрит файл също е следа; *.partial — не", () => {
+  for (const [rel, expectStop] of [["old/zbd.sql.gz.age", true], [".zbd-manual.dump", true], [".zabobovdol-x.sql.gz.partial", false]]) {
+    const L = layout();
+    try {
+      seedPrev(L, null);
+      const p = join(L.shared, "zabobovdol", "backups", rel);
+      mkdirSync(dirname(p), { recursive: true });
+      writeFileSync(p, "x");
+      const log = run(L, 'deploy_zabobovdol; echo "failed=$deploy_failed" >> "' + L.log + '"');
+      if (expectStop) assert.match(log, /НЕ генерирам нови тайни/, rel);
+      else assert.doesNotMatch(log, /НЕ генерирам нови тайни/, rel);
+    } finally { rmSync(L.base, { recursive: true, force: true }); }
+  }
+});
+
+test("FAIL CLOSED: спрян Docker демон (volume ls пада) → не се генерират нови тайни", () => {
+  const L = layout();
+  try {
+    seedPrev(L, null);
+    writeFileSync(join(L.bin, "docker"), `#!/bin/sh\n[ "$1" = volume ] && exit 1\n[ "$1" = compose ] && [ "$2" = version ] && exit 0\necho "docker $* @ $(pwd)" >> "${L.log}"\n`, { mode: 0o755 });
+    const log = run(L, 'deploy_zabobovdol; echo "failed=$deploy_failed" >> "' + L.log + '"');
+    assert.doesNotMatch(log, /setup-env/);
+    assert.match(log, /НЕ генерирам нови тайни/);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
 test("първа инсталация (нищо: без .env и без данни) → setup-env.sh е позволен", () => {
   const L = layout();
   try {

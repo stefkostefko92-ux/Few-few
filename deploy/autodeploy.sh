@@ -260,10 +260,17 @@ zbd_has_data() {
   # не се виждаше и скриптът генерираше нови тайни (хванато от autodeploy-zbd.test.mjs).
   # Всеки непразен видим файл е следа: backup-db.sh пише *.sql.gz.age / *.sql.gz.gpg, а тесен глоб
   # (.dump/.sql/.sql.gz) ги пропускаше → нови тайни при миграция (Разбивача, 2026-09-24).
-  # Скритите (.…partial) са незавършени записи и не се броят.
-  local f
-  for f in "$ZBD_BACKUPS"/*; do [ -f "$f" ] && [ -s "$f" ] && return 0; done
-  if command -v docker >/dev/null 2>&1 && docker volume ls -q 2>/dev/null | grep -q 'zabobovdol'; then return 0; fi
+  # Търси се рекурсивно и през симлинкове (поддиректории, скрити файлове); само *.partial
+  # (незавършен запис от backup-db.sh) не се брои (Разбивача, мисия 4).
+  if [ -d "$ZBD_BACKUPS" ] && [ -n "$(find -L "$ZBD_BACKUPS" -type f -size +0 ! -name '*.partial' -print -quit 2>/dev/null)" ]; then
+    return 0
+  fi
+  # Неуспешна проверка = „има данни“: спрян Docker демон не бива да води до нови тайни.
+  if command -v docker >/dev/null 2>&1; then
+    local vols
+    vols="$(docker volume ls -q 2>/dev/null)" || return 0
+    printf '%s\n' "$vols" | grep -q 'zabobovdol' && return 0
+  fi
   return 1
 }
 
