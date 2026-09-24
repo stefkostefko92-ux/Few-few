@@ -6275,7 +6275,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 188
+        "lessons": 192
       },
       "evolution": [
         {
