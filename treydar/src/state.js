@@ -35,6 +35,11 @@ export function loadState(file = stateFile) {
   try {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('не е обект');
+    // saveState винаги пише killed (DEFAULT се разгъва) — липсващо/небулево поле значи чужд или счупен файл,
+    // не „чисто състояние“. Иначе {} тихо забравя отворена позиция (Разбивача, 2026-09-24).
+    if (typeof parsed.killed !== 'boolean') throw new Error('killed липсва или не е булево');
+    if (parsed.position != null && typeof parsed.position !== 'object') throw new Error('position не е обект');
+    if (parsed.positions != null && (typeof parsed.positions !== 'object' || Array.isArray(parsed.positions))) throw new Error('positions не е обект');
     return { ...DEFAULT, ...parsed };
   } catch (e) {
     return corrupt(file, `повреден ${file}: ${e.message}`);
@@ -44,6 +49,9 @@ export function loadState(file = stateFile) {
 function corrupt(file, reason) {
   let kept = null;
   try { kept = `${file}.corrupt-${Date.now()}`; renameSync(file, kept); } catch { kept = null; }
+  // Затвореният kill-switch се записва ВЕДНАГА: иначе живее само в паметта и рестарт преди първия
+  // успешен tick вижда ENOENT → killed:false (Разбивача, 2026-09-24). Записът е атомарен.
+  try { saveState({ ...DEFAULT, killed: true }, file); } catch { /* ако и това не стане — поне паметта е затворена */ }
   return { ...DEFAULT, killed: true, stateError: reason, stateKept: kept };
 }
 
