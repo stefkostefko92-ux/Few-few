@@ -258,8 +258,11 @@ zbd_env_source() {
 zbd_has_data() {
   # Всеки шаблон поотделно: `ls a b c` пада, ако дори един няма съвпадение — тогава наличен .dump
   # не се виждаше и скриптът генерираше нови тайни (хванато от autodeploy-zbd.test.mjs).
+  # Всеки непразен видим файл е следа: backup-db.sh пише *.sql.gz.age / *.sql.gz.gpg, а тесен глоб
+  # (.dump/.sql/.sql.gz) ги пропускаше → нови тайни при миграция (Разбивача, 2026-09-24).
+  # Скритите (.…partial) са незавършени записи и не се броят.
   local f
-  for f in "$ZBD_BACKUPS"/*.dump "$ZBD_BACKUPS"/*.sql "$ZBD_BACKUPS"/*.sql.gz; do [ -e "$f" ] && return 0; done
+  for f in "$ZBD_BACKUPS"/*; do [ -f "$f" ] && [ -s "$f" ] && return 0; done
   if command -v docker >/dev/null 2>&1 && docker volume ls -q 2>/dev/null | grep -q 'zabobovdol'; then return 0; fi
   return 1
 }

@@ -100,6 +100,20 @@ test("FAIL CLOSED: .env липсва навсякъде, а има дъмп от
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });
 
+for (const name of ["zabobovdol-20260901-000000.sql.gz.age", "zabobovdol-20260901-000000.sql.gz.gpg", "zbd.dump.gz", "zbd.dump.1"]) {
+  test(`FAIL CLOSED: реален криптиран/ротиран бекъп (${name}) също спира генерирането на тайни`, () => {
+    const L = layout();
+    try {
+      seedPrev(L, null);
+      mkdirSync(join(L.shared, "zabobovdol", "backups"), { recursive: true });
+      writeFileSync(join(L.shared, "zabobovdol", "backups", name), "x");
+      const log = run(L, 'deploy_zabobovdol; echo "failed=$deploy_failed" >> "' + L.log + '"');
+      assert.doesNotMatch(log, /setup-env/, "нови тайни не се генерират");
+      assert.match(log, /НЕ генерирам нови тайни/);
+    } finally { rmSync(L.base, { recursive: true, force: true }); }
+  });
+}
+
 test("първа инсталация (нищо: без .env и без данни) → setup-env.sh е позволен", () => {
   const L = layout();
   try {
