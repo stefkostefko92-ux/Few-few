@@ -14752,7 +14752,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 193
+        "lessons": 204
       },
       "evolution": [
         {
@@ -14838,9 +14838,20 @@
           "date": "2026-09-24",
           "event": "v19.1 — учене",
           "detail": "Научи: zabobovdol и medqr тестовите пакети (node:test през tsx/node) минаха 3/3 пускания без f… (+21 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: treydar bot.js:127-133 и multibot.js:114-117 имат реален дефект: state.position (single… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „treydar bot.js:127-133 и multibot.js:114-117 имат реален дефект: state.position (single…\" (+10 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
