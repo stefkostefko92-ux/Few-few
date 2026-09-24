@@ -92,6 +92,9 @@ ZIP отпреди месец.
   Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
   за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
+  Само adblock: `sudo bash deploy/adblock-site.sh` — обвивка, която вика същия път с
+  `PROJECTS="adblock"` (през `fetch-deploy.sh`, или `autodeploy.sh` при подаден `ARCHIVE=`);
+  втора реализация вече няма, защото старата изостана от тази.
 - **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
   `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
   статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва
