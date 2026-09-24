@@ -19,7 +19,7 @@ llms.txt              AEO съдържание за AI асистенти
 robots.txt            + AI ботове; sitemap.xml; indexnow-key.txt (публичен по протокол)
 apple-touch-icon.png  180×180 върху кремав фон (iOS не поддържа SVG)
 nginx.conf            server блок със security headers + CSP
-deploy.sh             ръчен деплой на VPS-а (копира файловете, certbot, reload)
+deploy.sh             ръчен деплой на VPS-а (rsync allowlist, certbot, nginx -t с връщане при провал)
 .well-known/          security.txt
 print/                печатна А5 брошура (build → PDF/PNG, вградени шрифтове/QR)
 marketing/            вътрешни маркетинг документи (промоции) — НЕ се деплойват
@@ -39,5 +39,11 @@ marketing/            вътрешни маркетинг документи (п
   `prefers-reduced-motion` — не връщай безусловния вариант.
 - SEO промяна → `node tools/seo/indexnow.mjs https://evanita-bg.com`
   (ключът е на `/indexnow-key.txt` в web root-а).
+- **Никакъв `add_header` в `location`** в `nginx.conf` — отменя всички security хедъри от
+  `server`. Кешът е само с `expires`.
+- **Deny location-ите стоят ПРЕДИ кеш regex-ите** — regex-ите се проверяват по ред, печели първият.
+- **Никакви симлинкове в `evanitasport/`** (CI пада) — nginx е с `disable_symlinks`, rsync с `--no-links`.
+- Нов публичен файл в корена → добави го в allowlist-а на `deploy.sh` (иначе не се качва, а
+  `--delete-excluded` трие стари копия на сървъра).
 - Гейт: `node tools/qa/static-site-check.mjs evanitasport` (CI:
   `.github/workflows/evanitasport.yml`).
