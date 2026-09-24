@@ -4528,7 +4528,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 86
+        "lessons": 111
       },
       "evolution": [
         {
@@ -4650,9 +4650,20 @@
           "date": "2026-09-24",
           "event": "v14.5 — учене",
           "detail": "Научи: ospedalitrasparenti/site/index.html (началната страница, все още неизмерена в паметта —… (+23 още)"
+        },
+        {
+          "version": "17.0.0",
+          "date": "2026-09-24",
+          "event": "v17.0 — учене",
+          "detail": "Научи: zabobovdol root layout.tsx (src/app/layout.tsx:11) внася ChatWidget (350 реда, 'use cli… (+24 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol root layout.tsx (src/app/layout.tsx:11) внася ChatWidget (350 реда, 'use cli…\" (+24 още) · 3 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
