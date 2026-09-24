@@ -15251,8 +15251,10 @@ function iconInner(id) { return ICON[id] || ICON._default; }
    `ICON`/`iconInner` остават като резерв, ако маскотът липсва (напр. таблото е отворено само
    като index.html, без папката mascots/). */
 function iconSVG(id, stroke, sw) {
-  return `<img class="agico" src="./mascots/${encodeURIComponent(id)}-icon.svg" alt="" aria-hidden="true" loading="lazy"` +
-    ` onerror="this.replaceWith(Object.assign(document.createElement('span'),{innerHTML:iconFallback('${id}','${stroke}',${sw || 1.9})}))">`;
+  // 3D навсякъде (собственика, 2026-09-24): иконата е КАДЪР от 3D маскота (tools/agents/mascot-icons3d.mjs),
+  // не 28 живи WebGL контекста. Липсва ли кадърът → SVG иконата → линейният резерв.
+  return `<img class="agico" src="./mascots/${encodeURIComponent(id)}-icon3d.webp" alt="" aria-hidden="true" loading="lazy"` +
+    ` onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('-icon3d.webp','-icon.svg')}else this.replaceWith(Object.assign(document.createElement('span'),{innerHTML:iconFallback('${id}','${stroke}',${sw || 1.9})}))">`;
 }
 function iconFallback(id, stroke, sw) { return `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw || 1.9}" stroke-linecap="round" stroke-linejoin="round">${iconInner(id)}</svg>`; }
 

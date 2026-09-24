@@ -220,7 +220,8 @@ test("--check ПАДА, когато маскотът в mascot/ се смени
 
 test("таблото ползва маскота като облик на агента", () => {
   const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
-  assert.match(html, /mascots\/\$\{encodeURIComponent\(id\)\}-icon\.svg/, "iconSVG трябва да сочи маскота");
+  assert.match(html, /mascots\/\$\{encodeURIComponent\(id\)\}-icon3d\.webp/, "iconSVG трябва да сочи 3D кадъра на маскота");
+  assert.match(html, /replace\('-icon3d\.webp','-icon\.svg'\)/, "без кадър → SVG иконата");
   assert.match(html, /function iconFallback/, "резервният линеен вариант остава, ако папката липсва");
 });
 

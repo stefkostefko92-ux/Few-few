@@ -60,17 +60,19 @@ export function dashReader(ref = null, cwd = ROOT) {
   if (!ref) return {
     source: "работното дърво",
     read: (p) => readFileSync(join(cwd, "agents-dashboard", p), "utf8"),
+    readBuf: (p) => readFileSync(join(cwd, "agents-dashboard", p)),
     list: (d) => readdirSync(join(cwd, "agents-dashboard", d)),
   };
   return {
     source: `${ref.slice(0, 8)} (agents/memory)`,
     read: (p) => { const r = git(["show", `${ref}:agents-dashboard/${p}`], cwd); if (r == null) throw new Error(`няма agents-dashboard/${p} в ${ref}`); return r; },
+    readBuf: (p) => { const r = spawnSync("git", ["show", `${ref}:agents-dashboard/${p}`], { cwd, maxBuffer: 1 << 28 }); if (r.status !== 0) throw new Error(`няма agents-dashboard/${p} в ${ref}`); return r.stdout; },
     list: (d) => (git(["ls-tree", "--name-only", `${ref}:agents-dashboard/${d}`], cwd) || "").split("\n").filter(Boolean),
   };
 }
 
 const DOCS_TAG = '<script src="./docs.js"></script>';
-const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon.svg"';
+const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon3d.webp"';
 const IMG_SRC_INLINE = "src=\"${MASCOT_ICONS[id] || ''}\"";
 // 3D навсякъде (собственика, 2026-09-24): `mascot3d.js` е external-three ESM зареждан лениво с
 // `import("./mascot3d.js")` (agents-dashboard/index.html#startMascot) — в артифакта относителен
@@ -128,6 +130,12 @@ export function mascotDataUris(dir, reader = null) {
     // `encodeURIComponent`, не base64 — SVG-то остава четимо в изходния код, компресира се
     // по-добре, а кавичките са закодирани, значи не чупят атрибута.
     icons[f.replace(/-icon\.svg$/, "")] = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  }
+  // 3D кадърът (tools/agents/mascot-icons3d.mjs) има предимство; SVG-то остава за агент без кадър.
+  for (const f of reader ? reader.list("mascots") : readdirSync(dir)) {
+    if (!f.endsWith("-icon3d.webp")) continue;
+    const buf = reader ? reader.readBuf(`mascots/${f}`) : readFileSync(join(dir, f));
+    icons[f.replace(/-icon3d\.webp$/, "")] = `data:image/webp;base64,${buf.toString("base64")}`;
   }
   return icons;
 }

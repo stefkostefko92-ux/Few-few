@@ -122,3 +122,13 @@ test("реалният билд: 3D маскотът е вграден, отно
   assert.ok(html.includes("loadMascot3D()") && html.includes("window.__MASCOT3D__"));
   assert.ok(html.indexOf('type="importmap"') < html.indexOf("const MASCOT3D_SRC"), "importmap преди модула");
 });
+
+test("mascotDataUris: 3D кадърът (.webp) има предимство пред SVG иконата", () => {
+  const dir = mkdtempSync(join(tmpdir(), "m3d-"));
+  writeFileSync(join(dir, "a-icon.svg"), '<svg viewBox="0 0 8 8"/>');
+  writeFileSync(join(dir, "b-icon.svg"), '<svg viewBox="0 0 8 8"/>');
+  writeFileSync(join(dir, "b-icon3d.webp"), Buffer.from([82, 73, 70, 70]));
+  const icons = mascotDataUris(dir);
+  assert.match(icons.a, /^data:image\/svg\+xml,/, "без кадър → SVG");
+  assert.equal(icons.b, "data:image/webp;base64,UklGRg==", "с кадър → webp");
+});

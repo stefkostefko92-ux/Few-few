@@ -321,6 +321,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const stale = want.filter(([f, body]) => existsSync(join(OUT_DIR, f)) &&
       readFileSync(join(OUT_DIR, f), "utf8") !== body).map(([f]) => f);
     const known = new Set(want.map(([f]) => f));
+    // 3D кадрите имат свой генератор (mascot-icons3d.mjs, иска браузър + мрежа) — тук са законни,
+    // стига агентът да съществува; кадър на изтрит агент остава сираче.
+    for (const [f] of want) { const m = /^(.+)-icon\.svg$/.exec(f); if (m) known.add(`${m[1]}-icon3d.webp`); }
     const extra = existsSync(OUT_DIR) ? readdirSync(OUT_DIR).filter((f) => !known.has(f)) : [];
     if (missing.length || stale.length || extra.length) {
       if (missing.length) console.error(`  липсват: ${missing.slice(0, 6).join(", ")}${missing.length > 6 ? " …" : ""}`);
