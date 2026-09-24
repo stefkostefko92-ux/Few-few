@@ -39,7 +39,8 @@
     "landing:art": "node src/scripts/landing-art.mjs",
     "icons:build": "node src/scripts/build-icons.mjs",
     "landing:og": "node src/scripts/og.mjs",
-    "landing:shots": "node src/scripts/landing-shots.mjs"
+    "landing:shots": "node src/scripts/landing-shots.mjs",
+    "landing:variants": "node src/scripts/landing-variants.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

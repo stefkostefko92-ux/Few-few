@@ -66,6 +66,11 @@ body.lp {
 }
 
 /* ---------- горна лента ---------- */
+/* Котвите от менюто спират ПОД залепената лента, не зад нея — иначе заглавието на
+   секцията, към която скачаш, е скрито точно когато стигнеш до него. */
+html {
+  scroll-padding-top: 84px;
+}
 .lp-top {
   position: sticky;
   top: 0;
@@ -170,12 +175,14 @@ body.lp {
 }
 .lp h1 {
   margin: 0;
+  /* Редовете се изравняват, вместо последната дума да виси сама („—“ / „твоя.“). */
+  text-wrap: balance;
   font-size: clamp(38px, 5.4vw, 62px);
   line-height: 1.04;
   letter-spacing: -0.032em;
   font-weight: 680;
 }
-/* Втората половина на заглавието носи преливника — акцентът е върху „през Piuma“.
+/* Втората половина на заглавието носи преливника — акцентът е върху обещанието.
    Отделен ред, не продължение: в един поток пренасянето слепваше началото на второто
    изречение с края на първото и акцентът изглеждаше произволен.
    Подложката остава четима и без изрязване по текст (виж `@supports` по-долу). */
@@ -223,13 +230,13 @@ body.lp {
   color: var(--accent-2-lift);
 }
 .lp-hero-art {
-  display: grid;
-  place-items: center;
-}
-.lp-plume {
+  justify-self: center;
   width: 340px;
   /* Височината следва съотношението на файла (700×761) — иначе перото се сплесква. */
   height: 370px;
+  /* Фон, не <img>: скритият `<img>` пак се тегли, а скрит фон — не. Под 1000 px
+     перото е изключено и телефонът пести 193 KB, които никога не вижда. */
+  background: url('/static/landing/plume.webp') center / contain no-repeat;
   filter: drop-shadow(0 0 54px rgba(139, 92, 246, 0.4));
 }
 
@@ -288,6 +295,7 @@ body.lp {
 }
 .lp h2 {
   margin: 0;
+  text-wrap: balance;
   font-size: clamp(27px, 3.1vw, 36px);
   line-height: 1.16;
   letter-spacing: -0.024em;
@@ -422,6 +430,77 @@ body.lp {
   margin: 0;
   color: var(--text-2);
   font-size: 14.8px;
+}
+
+/* ---------- за кого ---------- */
+.lp-who {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 38px 0 0;
+}
+
+/* ---------- изводът: нарисуван с текст, нула байта картинка ---------- */
+.lp-verdict {
+  margin: 0;
+  padding: 24px 24px 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  box-shadow: var(--shadow);
+}
+.lp-verdict figcaption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lp-verdict dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.lp-verdict-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.lp-verdict-row.is-ready {
+  border-color: rgba(52, 224, 161, 0.3); /* същото като `.chip.good` — един зелен, не два */
+}
+.lp-verdict dt {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.lp-verdict dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  color: var(--text);
+  font-size: 15px;
+}
+.lp-verdict-why {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.lp-verdict-note {
+  margin: 14px 0 0;
+  color: var(--text-2);
+  font-size: 13.5px;
 }
 
 /* ---------- езици ---------- */
@@ -566,6 +645,16 @@ body.lp {
   background: var(--surface-3);
   text-decoration: none;
 }
+/* Тих бутон: за хората, които вече са вътре — не се бори с основния призив. */
+.lp .btn.ghost {
+  background: transparent;
+  border-color: var(--line);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.lp-actions-center {
+  justify-content: center;
+}
 .lp .btn.small {
   padding: 8px 14px;
   font-size: 14px;
@@ -684,11 +773,19 @@ body.lp {
   .lp-split-flip .lp-split-copy {
     order: 0;
   }
+  /* Три карти на две колони оставят сирак — по-добре една под друга. */
+  .lp-who {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .lp-nav {
     display: none;
   }
 }
 @media (max-width: 660px) {
+  /* Тук лентата е на два реда (езици + вход отдолу). */
+  html {
+    scroll-padding-top: 138px;
+  }
   .lp-wrap {
     padding: 0 16px;
   }
