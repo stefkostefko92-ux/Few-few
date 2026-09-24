@@ -14467,7 +14467,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 201
+        "lessons": 212
       },
       "evolution": [
         {
@@ -14541,9 +14541,20 @@
           "date": "2026-09-24",
           "event": "v19.1 — учене",
           "detail": "Научи: tools/ci/workflow-lint.mjs има regex бъг: jobsOf() консумира завършващия празен ред на … (+22 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: workflow-audit.mjs `no-path-filter` правилото не проверява тригера — flags security.yml… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „workflow-audit.mjs `no-path-filter` правилото не проверява тригера — flags security.yml…\" (+10 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
