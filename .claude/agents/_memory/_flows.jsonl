@@ -33,3 +33,5 @@
 {"t":"handoff","ts":"2026-09-21T11:49:03.218Z","id":"auto","from":"nabludatelya","to":"ai-djiyata","status":"наред"}
 {"t":"handoff","ts":"2026-09-21T11:49:42.635Z","id":"auto","from":"ai-djiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-21T11:49:45.012Z","id":"auto","from":"nabludatelya","to":"ai-djiyata","status":"наред"}
+{"t":"start","ts":"2026-09-24T10:50:25.913Z","id":"r2521ed2f","flow":"авто","lead":"siydara","auto":true}
+{"t":"handoff","ts":"2026-09-24T10:50:25.914Z","id":"r2521ed2f","from":"siydara","to":"ai-djiyata","status":"наред","run":"42e723f3"}
