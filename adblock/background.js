@@ -855,6 +855,35 @@ if (DEBUG_COUNTING) {
   });
 }
 
+// getMatchedRules е квотиран: 20 извиквания за 10 мин (MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL), а
+// тези извиквания не идват от user gesture. Без таван квотата се изчерпваше при нормално сърфиране,
+// грешката се гълташе и значката + статистиката тихо замръзваха (Тайния агент и Хромаджията,
+// 2026-09-24). Държим се под квотата; отложеното опресняване се изпълнява, щом се освободи място.
+const MATCHED_QUOTA = 18; // резерв от 2 за popup-а (там извикването е с user gesture)
+const MATCHED_WINDOW_MS = 10 * 60 * 1000;
+const matchedCalls = [];
+const pendingBadge = new Set();
+let pendingTimer = null;
+
+function takeMatchedToken(now = Date.now(), calls = matchedCalls) {
+  while (calls.length && now - calls[0] >= MATCHED_WINDOW_MS) calls.shift();
+  if (calls.length >= MATCHED_QUOTA) return false;
+  calls.push(now);
+  return true;
+}
+
+function deferBadge(tabId) {
+  pendingBadge.add(tabId);
+  if (pendingTimer) return;
+  const wait = Math.max(1000, MATCHED_WINDOW_MS - (Date.now() - matchedCalls[0]) + 50);
+  pendingTimer = setTimeout(() => {
+    pendingTimer = null;
+    const ids = [...pendingBadge];
+    pendingBadge.clear();
+    for (const id of ids) refreshBadge(id);
+  }, wait);
+}
+
 async function refreshBadge(tabId) {
   try {
     const { enabled } = await chrome.storage.local.get("enabled");
@@ -862,6 +891,7 @@ async function refreshBadge(tabId) {
       chrome.action.setBadgeText({ text: "", tabId });
       return;
     }
+    if (!takeMatchedToken()) return deferBadge(tabId);
     const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId });
     const count = info?.rulesMatchedInfo?.length || 0;
     if (!DEBUG_COUNTING) {
