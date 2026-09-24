@@ -34,6 +34,8 @@ x-app-env: &app-env
   IG_GRAPH_VERSION: ${IG_GRAPH_VERSION:-v24.0}
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   TOTP_ISSUER: ${TOTP_ISSUER:-Piuma}
+  # Къде води „Поискай достъп“ на витрината (страница за контакт или mailto:).
+  CONTACT_URL: ${CONTACT_URL:-https://carbonstealth.eu}
   # Кой изпращач има право да казва „истинският клиент е X" през X-Forwarded-For.
   # НЕ е `loopback`: портът е публикуван през Docker NAT, тоест приложението вижда като
   # източник шлюза на мрежата на Compose, а не 127.0.0.1 — с `loopback` заглавието се

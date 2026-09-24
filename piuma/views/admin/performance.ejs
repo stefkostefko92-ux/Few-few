@@ -112,18 +112,18 @@
 <% if (!performance.length) { %>
   <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('perf.noMetrics') %></strong><%= t('perf.noMetricsHint') %></div></div>
 <% } else { %>
-<div class="table-wrap">
+<div class="table-wrap to-cards">
 <table><thead><tr><th><%= t('common.kind') %></th><th><%= t('common.publication') %></th><th class="num"><%= t('perf.reach') %></th><th class="num"><%= t('perf.views') %></th><th class="num"><%= t('perf.interactions') %></th><th class="num"><%= t('perf.engagement') %></th><th><%= t('perf.publishedCol') %></th><th></th></tr></thead><tbody>
 <% performance.forEach((p, index) => { %>
   <% const kd = ui.kind(p.kind); %>
   <tr>
     <td><span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= t(kd.key) %></span></td>
-    <td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 64) %><%= p.caption.length > 64 ? '…' : '' %></a><% if (index === 0) { %><span class="sub-line"><%= t('perf.strongest') %></span><% } %></td>
-    <td class="num"><%= ui.num(p.reach) %></td>
-    <td class="num"><%= ui.num(p.views) %></td>
-    <td class="num"><%= ui.num(p.interactions) %></td>
-    <td class="num"><strong><%= p.engagementRate.toLocaleString(locale) %>%</strong></td>
-    <td class="muted when"><%= ui.date(p.publishedAt) %></td>
+    <td class="lead"><a href="/admin/posts/<%= p.id %>"><% if (p.caption) { %><%= p.caption.slice(0, 64) %><%= p.caption.length > 64 ? '…' : '' %><% } else { %><em class="muted"><%= t('posts.noCaption') %></em><% } %></a><% if (index === 0) { %><span class="sub-line"><%= t('perf.strongest') %></span><% } %></td>
+    <td class="num" data-label="<%= t('perf.reach') %>"><%= ui.num(p.reach) %></td>
+    <td class="num" data-label="<%= t('perf.views') %>"><%= ui.num(p.views) %></td>
+    <td class="num" data-label="<%= t('perf.interactions') %>"><%= ui.num(p.interactions) %></td>
+    <td class="num" data-label="<%= t('perf.engagement') %>"><strong><%= p.engagementRate.toLocaleString(locale) %>%</strong></td>
+    <td class="muted when" data-label="<%= t('perf.publishedCol') %>"><%= ui.date(p.publishedAt) %></td>
     <td><% if (p.permalink) { %><a class="btn ghost small" href="<%= p.permalink %>" target="_blank" rel="noopener noreferrer"><%- icon('external', { class: 'ic-sm' }) %> <%= t('common.instagram') %></a><% } %></td>
   </tr>
 <% }) %></tbody></table>

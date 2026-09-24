@@ -16,9 +16,15 @@
 <div class="grid2">
   <section>
     <h2><%- icon('metric-views') %> <%= t('post.preview') %></h2>
-    <div class="preview"><%= post.caption %>
-
-<%= post.hashtags.join(' ') %></div>
+    <% const still = post.kind === 'REELS' ? post.coverUrl : post.mediaUrl; %>
+    <figure class="ig<%= post.kind === 'REELS' ? ' tall' : '' %>">
+      <div class="ig-head"><span class="ig-avatar" aria-hidden="true"><%- icon('instagram', { class: 'ic-sm' }) %></span><strong><%= post.account ? '@' + post.account.username : post.brand.name %></strong></div>
+      <div class="ig-media">
+        <%- icon(kd.icon, { class: 'ic-xl' }) %>
+        <% if (still) { %><img src="<%= still %>" alt="<%= post.altText || t('post.mediaAlt') %>" width="1080" height="1350" decoding="async" referrerpolicy="no-referrer" data-fallback><% } else { %><span class="ig-note"><%= t('post.noPreview') %></span><% } %>
+      </div>
+      <figcaption class="ig-caption"><% if (post.caption) { %><%= post.caption %><% } else { %><em class="muted"><%= t('posts.noCaption') %></em><% } %><% if (post.hashtags.length) { %><span class="ig-tags"><%= post.hashtags.join(' ') %></span><% } %></figcaption>
+    </figure>
     <div class="stat-row mt-1">
       <span><%- icon(kd.icon, { class: 'ic-sm' }) %> <a href="<%= post.mediaUrl %>" target="_blank" rel="noopener noreferrer"><%= t('post.media') %></a></span>
       <% if (post.coverUrl) { %><span><%- icon('image', { class: 'ic-sm' }) %> <a href="<%= post.coverUrl %>" target="_blank" rel="noopener noreferrer"><%= t('post.cover') %></a></span><% } %>
@@ -39,16 +45,23 @@
     <% if (!findings.length) { %>
       <div class="panel"><div class="empty"><%- icon('status-approved', { class: 'ic-xl' }) %><strong><%= t('post.lintClean') %></strong><%= t('post.lintCleanHint') %></div></div>
     <% } else { %>
-    <div class="table-wrap"><table><tbody>
+    <div class="table-wrap to-cards"><table><tbody>
       <% findings.forEach((f) => { const sv = ui.severity(f.severity); %>
-      <tr><td class="shrink"><span class="chip <%= sv.tone %>"><%- icon(sv.icon, { class: 'ic-sm' }) %> <%= t(sv.key) %></span></td><td class="mono shrink"><%= f.rule %></td><td><%= f.message %></td></tr>
+      <tr><td class="shrink"><span class="chip <%= sv.tone %>"><%- icon(sv.icon, { class: 'ic-sm' }) %> <%= t(sv.key) %></span></td><td class="mono shrink"><%= f.rule %></td><td class="full"><%= f.message %></td></tr>
       <% }) %>
     </tbody></table></div>
     <% } %>
 
+    <% const ownDraft = post.createdByType === 'HUMAN' && post.createdById === currentUser.id; %>
+    <% const blocked = findings.some((f) => f.severity === 'HIGH'); %>
+    <% const canApprove = can('posts:approve'); %>
+    <% const hasActions = (post.status === 'DRAFT' && canApprove) || (post.status === 'APPROVED' && (canApprove || can('posts:schedule') || can('posts:publish'))) || (post.status === 'SCHEDULED' && can('posts:schedule')) || (post.status === 'FAILED' && can('posts:publish')); %>
+    <% if (hasActions) { %>
     <h2><%- icon('play') %> <%= t('common.actions') %></h2>
+    <% if (post.status === 'DRAFT' && can('posts:approve') && ownDraft) { %><p class="sub"><%- icon('users', { class: 'ic-sm' }) %> <%= t('post.ownDraftHint') %></p><% } %>
+    <% if (post.status === 'DRAFT' && can('posts:approve') && !ownDraft && blocked) { %><p class="sub"><%- icon('severity-high', { class: 'ic-sm' }) %> <%= t('post.approveBlockedHint') %></p><% } %>
     <div class="row">
-      <% if ((post.status === 'DRAFT') && can('posts:approve')) { %>
+      <% if (post.status === 'DRAFT' && can('posts:approve') && !ownDraft) { %>
         <form method="post" action="/admin/posts/<%= post.id %>/approve" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit"><%- icon('approve') %> <%= t('post.approve') %></button></form>
       <% } %>
       <% if ((post.status === 'DRAFT' || post.status === 'APPROVED') && can('posts:approve')) { %>
@@ -68,6 +81,7 @@
         <form method="post" action="/admin/posts/<%= post.id %>/retry" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%- icon('retry') %> <%= t('post.retry') %></button></form>
       <% } %>
     </div>
+    <% } %>
 
     <% const variants = Array.isArray(post.crossPostVariants) ? post.crossPostVariants : []; %>
     <% if (variants.length) { %>
@@ -93,9 +107,18 @@
         <div class="card"><div class="l"><%- icon('metric-reach', { class: 'ic-sm' }) %> <%= t('perf.reach') %></div><div class="n"><%= ui.num(latest.reach) %></div></div>
         <div class="card"><div class="l"><%- icon('metric-engaged', { class: 'ic-sm' }) %> <%= t('perf.interactions') %></div><div class="n"><%= ui.num(latest.totalInteractions) %></div></div>
       </div>
-      <div class="table-wrap"><table><thead><tr><th><%= t('post.snapshotFrom') %></th><th class="num"><%- icon('metric-likes', { class: 'ic-sm' }) %> <%= t('perf.likes') %></th><th class="num"><%- icon('metric-comments', { class: 'ic-sm' }) %> <%= t('perf.comments') %></th><th class="num"><%- icon('metric-saved', { class: 'ic-sm' }) %> <%= t('perf.saved') %></th><th class="num"><%- icon('metric-shares', { class: 'ic-sm' }) %> <%= t('perf.shares') %></th></tr></thead><tbody>
+      <div class="cards quad">
+        <div class="card"><div class="l"><%- icon('metric-likes', { class: 'ic-sm' }) %> <%= t('perf.likes') %></div><div class="n"><%= ui.num(latest.likes) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-comments', { class: 'ic-sm' }) %> <%= t('perf.comments') %></div><div class="n"><%= ui.num(latest.comments) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-saved', { class: 'ic-sm' }) %> <%= t('perf.saved') %></div><div class="n"><%= ui.num(latest.saved) %></div></div>
+        <div class="card"><div class="l"><%- icon('metric-shares', { class: 'ic-sm' }) %> <%= t('perf.shares') %></div><div class="n"><%= ui.num(latest.shares) %></div></div>
+      </div>
+      <p class="sub"><%= t('post.snapshotFrom') %> <%= ui.dateTime(latest.fetchedAt) %></p>
+      <% if (post.insights.length > 1) { %>
+      <div class="table-wrap compact"><table><thead><tr><th><%= t('post.snapshotFrom') %></th><th class="num"><%= t('perf.likes') %></th><th class="num"><%= t('perf.comments') %></th><th class="num"><%= t('perf.saved') %></th><th class="num"><%= t('perf.shares') %></th></tr></thead><tbody>
       <% post.insights.forEach((i) => { %><tr><td class="muted when"><%= ui.dateTime(i.fetchedAt) %></td><td class="num"><%= ui.num(i.likes) %></td><td class="num"><%= ui.num(i.comments) %></td><td class="num"><%= ui.num(i.saved) %></td><td class="num"><%= ui.num(i.shares) %></td></tr><% }) %>
       </tbody></table></div>
+      <% } %>
     <% } %>
     <% if (can('insights:view')) { %><form method="post" action="/admin/posts/<%= post.id %>/insights" class="inline block mt-1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('refresh', { class: 'ic-sm' }) %> <%= t('post.refreshInsights') %></button></form><% } %>
     <% } %>

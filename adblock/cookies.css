@@ -1,16 +1,19 @@
-/* Cookie / consent banners — three phases, driven by cookies.js:
-   html.tbab-cookies       cloak: the banner is not painted and not hit-testable,
+/* Cookie / consent banners — driven by cookies.js:
+   html.tbab-cookies       CLOAK: the banner is not painted and not hit-testable,
                            BUT keeps layout — so cookies.js can still find its
                            Reject/Accept button as "visible" and click it. A
                            clicked CMP tears down its own backdrop, blur and
-                           scroll lock; a display:none'd one never does (that was
-                           the "hidden banner, unusable page" bug).
-   html.tbab-cookies-hard  after the click window: whatever is left is removed
-                           from layout for good.
-   html.tbab-cookies-seen  a banner WAS found on this page: only then do we also
-                           kill backdrops and scroll locks — .modal-backdrop &
-                           co. are generic (Bootstrap) and must not be touched on
-                           pages that never showed a consent dialog. */
+                           scroll lock; a display:none'd one never does.
+                           A banner that could not be dismissed is removed from
+                           layout PER ELEMENT by cookies.js, HARD_MS after it
+                           first rendered (a page-wide class would also swallow
+                           banners that appear late, before we could click them).
+   html.tbab-cookies-seen  a banner WAS rendered on this page and we are inside the
+                           short cleanup window around it: only then are backdrops
+                           and scroll locks killed. .modal-backdrop & co. are
+                           generic (Bootstrap) — cookies.js drops this class when
+                           the window closes, so later, legitimate modals are left
+                           alone. */
 
 html.tbab-cookies #onetrust-banner-sdk,
 html.tbab-cookies #onetrust-consent-sdk,
@@ -45,6 +48,8 @@ html.tbab-cookies .termly-styles-root,
 html.tbab-cookies .cky-consent-container,
 html.tbab-cookies #cookie-consent-banner,
 html.tbab-cookies #gdpr-consent-tool-wrapper,
+html.tbab-cookies ytd-consent-bump-v2-lightbox,
+html.tbab-cookies [id^="sp_message_container_"],
 html.tbab-cookies [class*="cookie-consent"],
 html.tbab-cookies [class*="cookie-banner"],
 html.tbab-cookies [class*="cookie-notice"],
@@ -60,55 +65,8 @@ html.tbab-cookies [aria-describedby*="cookie" i] {
   pointer-events: none !important;
 }
 
-html.tbab-cookies-hard #onetrust-banner-sdk,
-html.tbab-cookies-hard #onetrust-consent-sdk,
-html.tbab-cookies-hard #CybotCookiebotDialog,
-html.tbab-cookies-hard #CybotCookiebotDialogBodyUnderlay,
-html.tbab-cookies-hard .qc-cmp2-container,
-html.tbab-cookies-hard .qc-cmp-cleanslate,
-html.tbab-cookies-hard #didomi-host,
-html.tbab-cookies-hard .didomi-popup-container,
-html.tbab-cookies-hard #usercentrics-root,
-html.tbab-cookies-hard .truste_overlay,
-html.tbab-cookies-hard .truste_box_overlay,
-html.tbab-cookies-hard #truste-consent-track,
-html.tbab-cookies-hard .cc-window,
-html.tbab-cookies-hard .cookie-consent,
-html.tbab-cookies-hard .cookie-banner,
-html.tbab-cookies-hard .cookie-notice,
-html.tbab-cookies-hard .cookie-notification,
-html.tbab-cookies-hard .cookies-popup,
-html.tbab-cookies-hard .cmp-banner,
-html.tbab-cookies-hard .gdpr-banner,
-html.tbab-cookies-hard .gdpr-consent,
-html.tbab-cookies-hard .cmpbox,
-html.tbab-cookies-hard .fc-consent-root,
-html.tbab-cookies-hard .cookiebanner,
-html.tbab-cookies-hard .cookie-law-info-bar,
-html.tbab-cookies-hard #cookie-law-info-bar,
-html.tbab-cookies-hard .cmplz-cookiebanner,
-html.tbab-cookies-hard .iubenda-cs-container,
-html.tbab-cookies-hard .osano-cm-window,
-html.tbab-cookies-hard .termly-styles-root,
-html.tbab-cookies-hard .cky-consent-container,
-html.tbab-cookies-hard #cookie-consent-banner,
-html.tbab-cookies-hard #gdpr-consent-tool-wrapper,
-html.tbab-cookies-hard [class*="cookie-consent"],
-html.tbab-cookies-hard [class*="cookie-banner"],
-html.tbab-cookies-hard [class*="cookie-notice"],
-html.tbab-cookies-hard [class*="consent-banner"],
-html.tbab-cookies-hard [class*="CookieConsent"],
-html.tbab-cookies-hard [id*="cookie-banner"],
-html.tbab-cookies-hard [id*="cookie-consent"],
-html.tbab-cookies-hard [id*="cookieConsent"],
-html.tbab-cookies-hard [aria-label*="cookie" i][role="dialog"],
-html.tbab-cookies-hard [aria-label*="consent" i][role="dialog"],
-html.tbab-cookies-hard [aria-describedby*="cookie" i] {
-  display: none !important;
-}
-
-/* Backdrops, veils and dark filters the banners leave behind — only on a page
-   where a consent banner was actually seen (.modal-backdrop is generic). */
+/* Backdrops, veils and dark filters the banners leave behind — only inside the
+   cleanup window (see above). Same list as BACKDROPS in cookies.js. */
 html.tbab-cookies-seen .modal-backdrop,
 html.tbab-cookies-seen .cookie-overlay,
 html.tbab-cookies-seen .cc-overlay,

@@ -150,17 +150,34 @@
   //      between us and a plain client; if that was the cause, ad blocking
   //      (client-side pruning) survives;
   //   2. reload as a clean client (bypass, same bounded path as enforcement).
-  // Not while bypassing (then a stall is the network's, not ours), not when
-  // paused/ended (nothing was asked to play), not offline.
+  // Only a STARTUP stall counts: the clip on this page never advanced at all.
+  // Mid-play buffering on a slow network is not ours to fix — and must never
+  // cost the user six hours of ads. Live streams are excluded (a waiting live
+  // edge looks exactly like a stall). Not while bypassing, not when paused /
+  // ended (nothing was asked to play), not offline. Stage 2 fires only if the
+  // stall comes back within STAGE2_WINDOW_MS of a stage-1 reload, i.e. when the
+  // flag-free client did not help either; a later incident starts at stage 1.
   const STALL_MS = 25 * 1000;
+  const STAGE2_WINDOW_MS = 3 * 60 * 1000;
   let stallSince = 0;
   let lastSeenTime = -1;
-  function stallWatch(video) {
-    if (!video || bgBypass || bypassReloaded) { stallSince = 0; return; }
-    const now = Date.now();
+  let lastSrc = "";
+  let advanced = false; // this clip has played on this page
+  function isLive(video, player) {
+    if (!isFinite(Number(video.duration))) return true;
+    try { if (player && player.classList.contains("ytp-live")) return true; } catch {}
+    return false;
+  }
+  function stallWatch(video, player) {
+    if (!video) { stallSince = 0; return; }
+    const src = String(video.currentSrc || video.src || "");
+    if (src !== lastSrc) { lastSrc = src; advanced = false; lastSeenTime = -1; stallSince = 0; }
     const t = Number(video.currentTime) || 0;
-    const progressing = t !== lastSeenTime;
+    const progressing = lastSeenTime >= 0 && t !== lastSeenTime;
     lastSeenTime = t;
+    if (progressing && video.paused === false) advanced = true;
+    if (bgBypass || bypassReloaded || advanced || isLive(video, player)) { stallSince = 0; return; }
+    const now = Date.now();
     const wantsPlay = video.paused === false && video.ended !== true;
     const starved = (video.readyState | 0) < 3; // below HAVE_FUTURE_DATA
     let online = true;
@@ -169,15 +186,18 @@
     if (!stallSince) { stallSince = now; return; }
     if (now - stallSince < STALL_MS) return;
     stallSince = 0;
-    let noFlags = false;
-    try { noFlags = sessionStorage.getItem("tbab_yt_noflags") === "1"; } catch {}
-    if (!noFlags) {
-      try { sessionStorage.setItem("tbab_yt_noflags", "1"); } catch { return; }
-      try { console.warn("Supreme AdBlock: YouTube playback stalled for 25s — reloading without request flags"); } catch {}
+    let stage1At = 0;
+    try { stage1At = Number(sessionStorage.getItem("tbab_yt_stage1_at") || 0) || 0; } catch {}
+    if (!stage1At || now - stage1At > STAGE2_WINDOW_MS) {
+      try {
+        sessionStorage.setItem("tbab_yt_noflags", "1"); // youtube_loader: next load without request flags
+        sessionStorage.setItem("tbab_yt_stage1_at", String(now));
+      } catch { return; } // cannot remember the stage → never reload (loop risk)
+      try { console.warn("Supreme AdBlock: YouTube clip did not start for 25s — reloading without request flags"); } catch {}
       try { location.reload(); } catch {}
       return;
     }
-    try { console.warn("Supreme AdBlock: YouTube playback stalled again — reloading as a clean client (bypass)"); } catch {}
+    try { console.warn("Supreme AdBlock: YouTube clip still did not start — reloading as a clean client (bypass)"); } catch {}
     tryBypass(now);
   }
 
@@ -215,7 +235,7 @@
       } catch {}
     }
 
-    if (!showing) stallWatch(video); // an ad being force-skipped is not a stall
+    if (!showing) stallWatch(video, player); // an ad being force-skipped is not a stall
 
     for (const sel of SKIP) {
       let nodes;

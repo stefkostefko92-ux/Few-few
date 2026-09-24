@@ -1237,10 +1237,13 @@ deploy_adblock() {
   # 1) Обслужвани файлове → www root. Копираме избрани файлове (без README/конфиг),
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
-  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt \
-           og.png favicon.svg favicon-48.png apple-touch-icon.png icon-512.png; do
+  # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
+  for f in index.html privacy.html robots.txt sitemap.xml llms.txt \
+           og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
   done
+  # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
+  rm -f "$ADBLOCK_WWW/favicon.svg"
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"
@@ -1258,20 +1261,36 @@ deploy_adblock() {
   if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
   ok "adblock файлове → $ADBLOCK_WWW"
 
-  # 1а) Ed25519 подпис на filters.json (разширението го проверява при ъпдейт).
-  # Ключът живее САМО на сървъра (виж adblock/server/README.md); без ключ —
-  # без подпис, разширението приема ъпдейта както досега.
-  if [ -f "$ADBLOCK_SIGNING_KEY" ]; then
-    if openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin \
-        -in "$ADBLOCK_WWW/filters.json" 2>/dev/null | base64 -w0 > "$ADBLOCK_WWW/filters.json.sig" \
-        && [ -s "$ADBLOCK_WWW/filters.json.sig" ]; then
-      chmod 644 "$ADBLOCK_WWW/filters.json.sig"
-      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json.sig"; fi
-      ok "adblock: filters.json подписан (filters.json.sig)"
+  # 1а) filters.json + Ed25519 подпис, публикувани като ДВОЙКА.
+  # Разширението (Chrome 137+) ИЗИСКВА валиден подпис: липсващ .sig → „no
+  # signature", стар .sig към нов filters.json → „bad signature" — и в двата случая
+  # всички live ъпдейти се отхвърлят, включително аварийният стоп
+  # (disableRequestFlags). Затова: подписваме в staging и публикуваме двойката
+  # чак след успешен подпис; без ключ или при провал СТАРАТА (съвпадаща) двойка
+  # остава на място. Ключът живее САМО на сървъра (adblock/server/README.md).
+  if [ -f "$d/filters.json" ]; then
+    local stage; stage="$(mktemp -d)"
+    cp "$d/filters.json" "$stage/filters.json"
+    if [ -f "$ADBLOCK_SIGNING_KEY" ] \
+       && openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin -in "$stage/filters.json" 2>/dev/null \
+            | base64 -w0 > "$stage/filters.json.sig" \
+       && [ -s "$stage/filters.json.sig" ]; then
+      install -m 644 "$stage/filters.json.sig" "$ADBLOCK_WWW/filters.json.sig.new"
+      install -m 644 "$stage/filters.json" "$ADBLOCK_WWW/filters.json.new"
+      mv -f "$ADBLOCK_WWW/filters.json.new" "$ADBLOCK_WWW/filters.json"
+      mv -f "$ADBLOCK_WWW/filters.json.sig.new" "$ADBLOCK_WWW/filters.json.sig"
+      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json" "$ADBLOCK_WWW/filters.json.sig"; fi
+      ok "adblock: filters.json + filters.json.sig публикувани като подписана двойка"
+    elif [ -f "$ADBLOCK_WWW/filters.json" ] && [ -f "$ADBLOCK_WWW/filters.json.sig" ]; then
+      warn "adblock: НЯМА подпис (ключ: $ADBLOCK_SIGNING_KEY) — оставям предишната подписана двойка filters.json/.sig; новият filters.json НЕ е публикуван."
+      deploy_failed=1
     else
+      install -m 644 "$stage/filters.json" "$ADBLOCK_WWW/filters.json"
       rm -f "$ADBLOCK_WWW/filters.json.sig"
-      warn "adblock: подписването провали — премахнах .sig, ъпдейтите вървят неподписани."
+      warn "adblock: НЯМА ключ за подпис ($ADBLOCK_SIGNING_KEY) — filters.json е публикуван НЕПОДПИСАН; Chrome 137+ ще отхвърля live ъпдейтите, докато не сложиш ключа и не деплойнеш пак."
+      deploy_failed=1
     fi
+    rm -rf "$stage"
   fi
 
   # 2) Уеб сървър. Предпочитаме Caddy (авто-TLS); на сървъри с Nginx (моделът на

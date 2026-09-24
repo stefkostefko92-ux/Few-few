@@ -6,115 +6,145 @@
   },
   "landing": {
     "meta": {
-      "title": "Piuma — an Instagram content engine with human approval",
-      "description": "A draft from a person or an agent, approval by a person, publishing via the official Instagram Platform API. Three languages, hash-chained audit, encrypted secrets.",
-      "keywords": "Piuma, Instagram automation, post scheduling, Instagram Platform API, content engine, Instagram Insights, Carbon Stealth",
+      "title": "Piuma — Instagram every week, under your control",
+      "description": "Piuma drafts your posts to your plan, learns from your own Instagram Insights what works and when, and publishes only once you approve. Data stays in the EU.",
+      "keywords": "Piuma, Instagram scheduling, Instagram management, social media for business, Instagram Insights, SMM agency, Carbon Stealth",
       "ogAlt": "Piuma — an Instagram content engine by Carbon Stealth VCC"
     },
     "nav": {
       "how": "How it works",
-      "panel": "The panel",
-      "autopilot": "Autopilot",
       "security": "Security",
       "faq": "Questions",
       "signIn": "Sign in",
       "toPanel": "Go to dashboard",
-      "skip": "Skip to content"
+      "skip": "Skip to content",
+      "who": "Who it’s for",
+      "learn": "How it learns"
     },
     "hero": {
-      "eyebrow": "Official Instagram Platform API",
-      "title": "Every draft goes through a person.",
-      "titleAccent": "Instagram goes through Piuma.",
-      "lead": "An agent or a person writes the draft. A person approves it in the panel. Only then does Piuma publish. There is no hidden path by which a draft reaches Instagram on its own.",
-      "ctaPrimary": "Sign in to the panel",
+      "eyebrow": "Official Instagram API · data in the EU",
+      "title": "Posts every week.",
+      "titleAccent": "The final say is yours.",
+      "lead": "Piuma drafts your posts to your plan, learns from your own Insights what works and when, and you just approve. Nothing reaches Instagram without a person.",
+      "ctaPrimary": "Request access",
       "ctaSecondary": "See how it works",
-      "note": "Accounts are connected through Meta's official OAuth. Piuma does not create accounts — Meta's terms forbid that, and a person does it by hand.",
+      "note": "You connect your account through Meta’s official sign-in and it stays yours. Piuma never sees your password and never creates profiles.",
       "shotAlt": "The Piuma dashboard: drafts awaiting review, upcoming posts, per-account quotas"
     },
     "proof": {
-      "reviewTitle": "approval by a person only",
-      "reviewBody": "The role is reviewer or above, the session is live, and your own draft is never approved by you.",
-      "langTitle": "three languages in the panel",
-      "langBody": "Bulgarian, English and Italian — full mirrors, not a partial translation.",
-      "auditTitle": "hash-chained audit",
-      "auditBody": "Every action carries an actor and an IP. Tampering with an old entry breaks the chain and shows."
+      "reviewTitle": "a person approves every post",
+      "reviewBody": "Drafts arrive ready, but nothing is published until someone on your team presses “Approve”.",
+      "label": "Why Piuma",
+      "learnTitle": "learns from your numbers",
+      "learnBody": "It looks at what earns engagement, and when, on your account — not at averages from the internet.",
+      "euTitle": "your data stays in the EU",
+      "euBody": "Our own server in Europe, encrypted tokens and a full log of who did what."
     },
     "how": {
-      "title": "Three steps, never a fourth",
-      "lead": "A post always travels the same road. There is no mode in which a step is skipped.",
-      "step1Title": "A draft is written",
-      "step1Body": "By a person in the panel or by an agent through a signed key. Both paths produce a draft — nothing more.",
-      "step2Title": "A person approves",
-      "step2Body": "The linter checks the text; a high-severity finding blocks approval and no route can step over it.",
-      "step3Title": "Piuma publishes",
-      "step3Body": "A queue with retries, the account's quota, and the result comes back to the panel with the reason for any refusal.",
-      "guardTitle": "And if the agent gets it wrong?",
-      "guardBody": "It cannot. No approval route exists for an agent key — the permission isn't restricted, it simply isn't there."
+      "title": "Three steps, no surprises",
+      "lead": "Every post takes the same path. There is no button that skips a step.",
+      "step1Title": "The draft is ready",
+      "step1Body": "You write it, a colleague does, or our agent does from the page’s plan. The result is always a draft — nothing more.",
+      "step2Title": "A person approves it",
+      "step2Body": "You review the text, the image and the time. Built-in checks stop empty or overlong captions, anything that looks like a password, and too many hashtags.",
+      "step3Title": "Piuma publishes it",
+      "step3Body": "At the scheduled time, through the official API, retrying on temporary errors. If Instagram refuses, you see the reason in the panel.",
+      "guardTitle": "What if the agent gets it wrong?",
+      "guardBody": "It can’t publish. Its key only reaches drafts — the path to approval simply doesn’t exist for it."
     },
     "panel": {
-      "title": "The panel is where a person decides",
-      "lead": "Everything in one load: what is waiting for review, what is scheduled, what failed and why.",
-      "point1": "State is a chip with an icon and a word — colour never carries meaning on its own.",
-      "point2": "Seven roles with clear rights; sessions live in the database and are revoked at once.",
-      "point3": "Two-factor sign-in with a code from an app (TOTP), no SMS.",
-      "point4": "Works with JavaScript off — the panel is server-rendered and depends on no script.",
+      "title": "Everything on one screen",
+      "lead": "What’s waiting for review, what’s scheduled, what went out and what failed — and why.",
+      "point1": "Clear statuses with an icon and a word — readable at a glance.",
+      "point2": "Seven roles — from viewer to owner. Everyone sees and does exactly their part.",
+      "point3": "Two-factor sign-in with an authenticator app — no SMS.",
+      "point4": "Works on your phone too — approve on the go.",
       "shotAlt": "The post list in Piuma with status chips: draft, approved, scheduled, published, rejected",
       "composeAlt": "Writing a draft in Piuma: by hand on the left, model suggestions on the right"
     },
     "autopilot": {
-      "title": "An autopilot that writes — but never publishes",
-      "lead": "For managed pages Piuma prepares drafts to plan once a week and reads Instagram Insights to know what worked. Approval stays human.",
-      "point1": "The plan is yours: how many posts, the share of Reels, the hours, the content pillars, what to avoid.",
-      "point2": "It draws only from the brand's media library — it invents no material.",
-      "point3": "Metrics are pulled overnight and shown as a 30-day trend.",
-      "shotAlt": "A 30-day trend in Piuma: followers, reach, views and engaged accounts"
+      "title": "An autopilot that learns — and doesn’t guess",
+      "lead": "Once a week Piuma prepares the drafts for the pages it manages and reads your own Instagram Insights: which time, format and topic earn more engagement. Approval stays human.",
+      "point1": "The plan is yours: how many posts, what share of Reels, which times and topics, what to avoid.",
+      "point2": "It only uses your photos and videos — it never invents material.",
+      "point3": "It recommends only once there’s enough data. Until then it says, honestly, “too early”.",
+      "shotAlt": "A 30-day trend in Piuma: followers, reach, views and engaged accounts",
+      "point4": "Ready-made caption variants for Facebook, TikTok, LinkedIn and X."
     },
     "security": {
-      "title": "Security is the foundation, not a layer on top",
-      "lead": "The product holds other people's Instagram accounts. That is why each of these is required, not optional.",
-      "item1Title": "Signed agent requests",
-      "item1Body": "An HMAC signature over method, path and body, a timestamp within ±300 s and a nonce against replay. The secret never travels.",
-      "item2Title": "Secrets encrypted at rest",
-      "item2Body": "Instagram tokens, TOTP and agent keys use AES-256-GCM and never reach a log.",
-      "item3Title": "An audit that cannot be rewritten",
-      "item3Body": "The chain of hashes makes a quiet edit of an old entry impossible.",
-      "item4Title": "Strict CSP and sessions in the database",
-      "item4Body": "Scripts only with a nonce, no inline style at all. Sessions slide for 7 days with a 30-day ceiling and are revoked at once.",
-      "item5Title": "Argon2id for passwords",
-      "item5Body": "No SMS second factor, no tokens in localStorage, a cookie with the __Host- prefix.",
-      "item6Title": "The data sits in the EU",
-      "item6Body": "Our own PostgreSQL on a European server. No hosted CMS between you and your accounts."
+      "title": "Security that doesn’t rely on good intentions",
+      "lead": "Piuma holds access to other people’s accounts. That’s why the protections are built into the code, not left to a setting.",
+      "item1Title": "The agent can’t publish",
+      "item1Body": "Its requests are signed and valid for minutes, and its key only reaches drafts.",
+      "item2Title": "Secrets are locked away",
+      "item2Body": "Instagram tokens and keys are encrypted (AES-256-GCM) and never end up in logs.",
+      "item3Title": "Nothing is erased quietly",
+      "item3Body": "Every action is recorded — who, what and from where. Tampering with an old entry breaks the chain and shows at once.",
+      "item4Title": "Two-factor sign-in",
+      "item4Body": "App codes (TOTP), passwords hashed with Argon2id, and sessions you can revoke instantly.",
+      "item5Title": "Permissions live in the role",
+      "item5Body": "Seven access levels. No one manages someone with an equal or higher role.",
+      "item6Title": "Data stays in the EU",
+      "item6Body": "Our own database on a European server — no hosted CMS or third-party platform in between."
     },
     "langs": {
-      "title": "The panel speaks the team's language",
-      "body": "Switch it from the bar and it stays remembered in the profile. Bulgarian is the source; English and Italian are full mirrors, and the test fails on a missing key."
+      "title": "The panel speaks the team’s language",
+      "body": "Bulgarian, English and Italian — pick one from the bar and the panel remembers it in your profile."
     },
     "faq": {
       "title": "Common questions",
       "q1": "Can Piuma create an Instagram account?",
-      "a1": "No. Meta's terms forbid automated account creation. The account is made by hand, switched to a professional one and connected through the official OAuth.",
+      "a1": "No. Meta’s terms forbid automated account creation. The account is made by hand, switched to a professional one and connected through the official OAuth.",
       "q2": "Can an agent publish on its own?",
-      "a2": "No. An agent key reaches a draft and no further. No approval route exists for such a key, so there is nothing to work around.",
+      "a2": "No. The agent only reaches drafts. Approving and publishing simply don’t exist for it — there’s nothing to get around.",
       "q3": "What happens if Instagram refuses a post?",
-      "a3": "The queue retries, and the reason is recorded on the post and shown in the panel together with the number of attempts.",
+      "a3": "Piuma retries on temporary errors, and the reason for the refusal is shown in the panel next to the post, together with the number of attempts.",
       "q4": "Where do the performance numbers come from?",
-      "a4": "From Instagram Insights, synced overnight for the account and for every published piece of media. Piuma invents no metrics.",
-      "q5": "Does it work without JavaScript?",
-      "a5": "Yes. The panel is server-rendered; the single script carries a nonce and adds convenience, not function.",
+      "a4": "From your own Instagram Insights, pulled every night. Piuma doesn’t invent metrics — and gives no recommendation until there’s enough data.",
+      "q5": "Won’t my account get blocked?",
+      "a5": "Piuma uses the official Instagram Platform API — the route Meta provides for publishing tools — and tracks the account’s publishing quota. It doesn’t automate logins, likes or follows.",
       "q6": "Who sees what?",
-      "a6": "Seven roles with different rights. Approval takes reviewer or above, and a draft is never approved by its own author."
+      "a6": "Seven roles with different permissions. Approval takes at least a reviewer, and authors can’t approve their own drafts.",
+      "q7": "Do I need technical skills?",
+      "a7": "No. You upload photos, set the plan and approve drafts in the panel. The server, updates and security are on us.",
+      "q8": "Does it work for several brands?",
+      "a8": "Yes. Each brand has its own plan, its own Instagram accounts and its own media library — all in the same panel."
     },
     "cta": {
-      "title": "Ready to sign in",
-      "body": "The panel lives at /admin. The first owner is created from the server's environment, once.",
-      "button": "Open the panel"
+      "title": "Let Instagram keep going while you work.",
+      "body": "Tell us which pages you run and how often you’d like to post — we’ll show you how Piuma fits your work.",
+      "button": "Request access",
+      "signIn": "Already have access? Sign in"
     },
     "footer": {
       "product": "An Instagram content engine with human approval.",
       "madeBy": "Created and Designed by Carbon Stealth VCC",
       "rights": "A Carbon Stealth VCC product.",
       "panel": "Panel",
-      "language": "Language"
+      "language": "Language",
+      "contact": "Contact"
+    },
+    "who": {
+      "title": "Who Piuma is for",
+      "lead": "For anyone who wants to show up on Instagram regularly without writing every post themselves — and without losing control.",
+      "smallTitle": "Small businesses",
+      "smallBody": "Café, shop, studio, salon. Upload your photos once, Piuma prepares the week, and you just review and approve.",
+      "agencyTitle": "Agencies and social media managers",
+      "agencyBody": "Many brands in one panel — each with its own plan, accounts and media library.",
+      "teamTitle": "Teams with rules",
+      "teamBody": "Tone of voice and off-limits topics are part of the plan. Seven roles, and a draft’s author can’t approve it alone."
+    },
+    "learn": {
+      "caption": "What a verdict looks like",
+      "whenLabel": "When",
+      "whenValue": "evening (19–23)",
+      "ready": "verdict",
+      "formatLabel": "Format",
+      "topicLabel": "Topic",
+      "early": "too early",
+      "formatWhy": "needs at least 6 posts of each format compared",
+      "topicWhy": "the difference is still within the noise",
+      "note": "A verdict appears only with a clear lead of at least 15%. The measure is engagement relative to reach — not raw reach, which grows with the account."
     }
   },
   "nav": {
@@ -222,7 +252,8 @@
     "empty": "No posts match this filter",
     "emptyHint": "Clear the filter or write a new draft.",
     "newDraft": "New draft",
-    "allPosts": "All posts"
+    "allPosts": "All posts",
+    "noCaption": "(no caption)"
   },
   "post": {
     "createdLine": "Created by {who} · {date}",
@@ -265,7 +296,11 @@
     "saveAndLint": "Save and re-check",
     "container": "Container",
     "mediaId": "IG media id",
-    "aiDraft": "AI draft"
+    "aiDraft": "AI draft",
+    "mediaAlt": "The post’s media",
+    "noPreview": "Video without a cover — the preview is in the file itself",
+    "approveBlockedHint": "There is a blocking lint finding — fix it and save before you approve.",
+    "ownDraftHint": "This is your own draft — someone else approves it (“four eyes”)."
   },
   "form": {
     "brand": "Brand",

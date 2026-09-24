@@ -204,10 +204,38 @@ function tick(t, video, seconds) {
   // стъпка 2: вече без флагове и пак спинър → bypass (чист клиент) през ограничения път
   const now = 40 * HOUR;
   const v = stalledVideo();
-  const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1" }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1", tbab_yt_stage1_at: String(now - 60 * 1000) }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
   t.load("youtube_skip.js");
   tick(t, v, 27);
-  ok("stall stage 2: bypass requested + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1 && t.session.tbab_yt_bypass_n === "1");
+  ok("stall stage 2 (within 3 min of stage 1): bypass requested + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1 && t.session.tbab_yt_bypass_n === "1");
+}
+{
+  // stage 1 was long ago → a new incident starts at stage 1 again (a reload, NOT a 6 h bypass)
+  const now = 40 * HOUR;
+  const v = stalledVideo();
+  const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1", tbab_yt_stage1_at: String(now - 20 * 60 * 1000) }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  tick(t, v, 27);
+  ok("old stage 1 (20 min ago): new incident → stage 1 reload, no bypass", t.sb.__reloads === 1 && t.messages.length === 0);
+}
+{
+  // live stream: a waiting live edge is not our stall
+  const now = 40 * HOUR;
+  const v = Object.assign(stalledVideo(), { duration: Infinity });
+  const t = ytTab({ now, storage: { enabled: true }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  tick(t, v, 40);
+  ok("live stream (duration Infinity): never reloaded", t.sb.__reloads === 0 && t.messages.length === 0);
+}
+{
+  // mid-play buffering: the clip already advanced on this page → not ours
+  const now = 40 * HOUR;
+  const v = stalledVideo();
+  const t = ytTab({ now, storage: { enabled: true }, els: { ".html5-video-player": player("playing-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  v.currentTime = 1; tick(t, v, 1); v.currentTime = 2; tick(t, v, 1); v.currentTime = 3; tick(t, v, 1);
+  tick(t, v, 40); // now frozen for 40 s (slow network)
+  ok("mid-play buffering after the clip advanced: never reloaded", t.sb.__reloads === 0 && t.messages.length === 0);
 }
 {
   // не е stall: напредва / на пауза / има бъдещи данни / bypass активен

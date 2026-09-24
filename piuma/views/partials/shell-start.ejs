@@ -27,4 +27,4 @@
     </div>
   </aside>
   <main>
-    <% if (flash) { %><div class="flash <%= flash.kind %>"><%- icon(flash.kind === 'ok' ? 'status-approved' : flash.kind === 'error' ? 'status-failed' : 'severity-info') %><span><%= flash.text %></span></div><% } %>
+    <% if (flash) { %><div class="flash <%= flash.kind %>"<%= flash.kind === 'error' ? '' : ' data-autohide' %>><%- icon(flash.kind === 'ok' ? 'status-approved' : flash.kind === 'error' ? 'status-failed' : 'severity-info') %><span><%= flash.text %></span></div><% } %>
