@@ -79,7 +79,11 @@ export async function listOwned(serverId, userId) {
   return {
     sparks: progress?.sparks || 0,
     activeId: progress?.activeCompanionId || null,
-    companions: rows.map((r, i) => ({ index: i + 1, ...r, ...publicCompanion(companionById(r.companionId), r.stage, season), nextStageAt: r.stage < MAX_STAGE ? STAGE_THRESHOLDS[r.stage] : null })),
+    // ВНИМАНИЕ (одит 24.09.2026): publicCompanion носи `id` = каталожния id
+    // („lime-blip“). Разпънат СЛЕД реда, той презаписваше id-то на притежанието и
+    // ботът пращаше каталожния id като ownedId → feed/activate/release/trade
+    // винаги връщаха NOT_OWNED. Каталожният отива в `companionId`, `id` е редът.
+    companions: rows.map((r, i) => ({ ...publicCompanion(companionById(r.companionId), r.stage, season), ...r, index: i + 1, nextStageAt: r.stage < MAX_STAGE ? STAGE_THRESHOLDS[r.stage] : null })),
   };
 }
 

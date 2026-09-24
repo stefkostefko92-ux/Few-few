@@ -85,21 +85,42 @@ describe("/daily — чисти правила", () => {
   });
 });
 
-describe("awardXp — ниво нагоре носи искри и пише атомарно", () => {
-  it("от 0 до 250 XP = ниво 1 (+10 искри), seasonXp и броячите се увеличават", async () => {
+describe("awardXp — атомарен increment, ниво с условен запис (без загубени XP)", () => {
+  // update връща реда СЛЕД increment-а: стартово XP + инкремента.
+  const incFrom = (startXp, level = 0) => async ({ data }) => progress({ xp: startXp + data.xp.increment, level });
+  it("от 0 до 250 XP = ниво 1 (+10 искри); XP е increment, не абсолютна стойност", async () => {
     prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
-    prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: data.xp, level: data.level }));
+    prismaMock.memberProgress.update.mockImplementationOnce(incFrom(0));
+    prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     const r = await xp.awardXp(SID, UID, 250, { messages: 3, voiceMinutes: 2, touchMessageXp: true });
-    expect(r).toMatchObject({ leveledUp: true, oldLevel: 0, level: 1, sparksAwarded: 10 });
+    expect(r).toMatchObject({ leveledUp: true, oldLevel: 0, level: 1, sparksAwarded: 10, xp: 250 });
     const data = prismaMock.memberProgress.update.mock.calls[0][0].data;
-    expect(data).toMatchObject({ xp: 250, level: 1, seasonXp: { increment: 250 }, sparks: { increment: 10 }, messages: { increment: 3 }, voiceMinutes: { increment: 2 } });
+    expect(data).toMatchObject({ xp: { increment: 250 }, seasonXp: { increment: 250 }, messages: { increment: 3 }, voiceMinutes: { increment: 2 } });
     expect(data.lastMessageXpAt).toBeInstanceOf(Date);
+    expect(prismaMock.memberProgress.updateMany.mock.calls[0][0]).toEqual({ where: { serverId: SID, userId: UID, level: 0 }, data: { level: 1, sparks: { increment: 10 } } });
   });
   it("прескачане на две нива събира искрите за всяко", async () => {
     prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
-    prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: data.xp, level: data.level }));
+    prismaMock.memberProgress.update.mockImplementationOnce(incFrom(0));
+    prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     const r = await xp.awardXp(SID, UID, 400); // ниво 2 = 255
     expect(r.level).toBe(2); expect(r.sparksAwarded).toBe(10 + 20);
+  });
+  it("без ниво нагоре — никакъв запис на нивото/искрите", async () => {
+    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
+    prismaMock.memberProgress.update.mockImplementationOnce(incFrom(10));
+    const r = await xp.awardXp(SID, UID, 5);
+    expect(r).toMatchObject({ leveledUp: false, xp: 15, level: 0 });
+    expect(prismaMock.memberProgress.updateMany).not.toHaveBeenCalled();
+  });
+  it("надпревара: друг запис вдигна нивото първи → четем наново и не плащаме искрите два пъти", async () => {
+    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
+    prismaMock.memberProgress.update.mockImplementationOnce(incFrom(90)); // 90+20 = 110 → ниво 1
+    prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 0 }); // другият го вдигна
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ xp: 110, level: 1 }));
+    const r = await xp.awardXp(SID, UID, 20);
+    expect(r).toMatchObject({ leveledUp: false, level: 1, xp: 110 });
+    expect(prismaMock.memberProgress.updateMany).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -119,7 +140,7 @@ describe("grantXpOnce — веднъж по ключ, само при включ
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ enabled: true });
     prismaMock.gameXpGrant.create.mockResolvedValueOnce({});
     prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ xp: 50 }));
-    prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: data.xp, level: data.level }));
+    prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: 50 + data.xp.increment }));
     const r = await xp.grantXpOnce(SID, UID, "giveaway:9", 10);
     expect(r.xp).toBe(60);
   });
@@ -138,7 +159,8 @@ describe("POST /api/bot/game/xp-batch", () => {
   it("смята XP от настройките и връща ролите за ниво при ниво нагоре", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ levelRoles: [{ level: 1, roleId: "444444444444444444" }, { level: 5, roleId: "555555555555555555" }], announceChannelId: "666666666666666666" }));
     prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ xp: 90 }));
-    prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: data.xp, level: data.level }));
+    prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: 90 + data.xp.increment }));
+    prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     const res = await request(app).post("/api/bot/game/xp-batch").send({ serverId: SID, entries: [{ userId: UID, messageXpEvents: 1, voiceMinutes: 0 }] });
     expect(res.status).toBe(200);
     expect(res.body.levelUps).toHaveLength(1);
@@ -241,5 +263,35 @@ describe("профилът показва активния спътник с и�
     expect(res.status).toBe(200);
     expect(res.body.activeCompanion).toMatchObject({ companionId: "lime-blip", name: "Blip", stage: 2, rarityEmoji: "⚪" });
     expect(res.body.activeCompanion.imageUrl).toMatch(/lime-blip-2\.jpg$/);
+  });
+});
+
+
+describe("регресии от одита 24.09.2026", () => {
+  it("PATCH артикул в магазина работи (рафинираната схема нямаше .partial() → 500) и пази правилото ROLE ⇒ roleId", async () => {
+    const item = { id: "it1", serverId: SID, name: "VIP", priceSparks: 100, type: "ROLE", roleId: "777777777777777777", durationDays: 30, stock: null, enabled: true, sortOrder: 0 };
+    prismaMock.shopItem.findFirst.mockResolvedValue(item);
+    prismaMock.shopItem.update.mockImplementationOnce(async ({ data }) => ({ ...item, ...data }));
+    const ok = await request(app).patch(`/api/game/${SID}/shop/it1`).send({ priceSparks: 250 });
+    expect(ok.status).toBe(200); expect(ok.body.priceSparks).toBe(250);
+    expect(prismaMock.shopItem.update.mock.calls[0][0].data).toEqual({ priceSparks: 250 }); // без инжектирани подразбирания
+    const bad = await request(app).patch(`/api/game/${SID}/shop/it1`).send({ roleId: null });
+    expect(bad.status).toBe(400);
+    expect(prismaMock.shopItem.update).toHaveBeenCalledTimes(1);
+  });
+  it("/daily при двоен клик: условният запис по lastDailyAt пуска само единия", async () => {
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
+    const last = new Date(Date.now() - 25 * 3600 * 1000);
+    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ lastDailyAt: last, streak: 2, sparks: 10 }));
+    prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 0 }); // другият клик вече записа
+    const res = await request(app).post("/api/bot/game/daily").send({ serverId: SID, userId: UID });
+    expect(res.status).toBe(429); expect(res.body.code).toBe("DAILY_COOLDOWN");
+    expect(prismaMock.memberProgress.updateMany.mock.calls[0][0].where).toEqual({ id: "mp1", lastDailyAt: last });
+  });
+  it("покупката е Serializable; сериализационен конфликт (P2034) → 409 BUSY, не 500", async () => {
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
+    prismaMock.$transaction.mockRejectedValueOnce(Object.assign(new Error("conflict"), { code: "P2034" }));
+    const res = await request(app).post(`/api/bot/game/shop/${SID}/buy`).send({ userId: UID, itemId: "it1" });
+    expect(res.status).toBe(409); expect(res.body.code).toBe("BUSY");
   });
 });

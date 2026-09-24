@@ -109,7 +109,7 @@ describe("trivia + wyr", () => {
     apiPost.mockResolvedValueOnce({ data: { ok: true, correct: false, winner: false, answer: 2 } });
     const i = ix("game:trivia:r1:1");
     await handleGameInteraction(i);
-    expect(apiPost).toHaveBeenCalledWith("/bot/game/trivia/r1/answer", { userId: UID, option: 1 });
+    expect(apiPost).toHaveBeenCalledWith("/bot/game/trivia/r1/answer", { userId: UID, option: 1, serverId: SID });
     expect(i.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: expect.anything() }));
     expect(i.update).not.toHaveBeenCalled();
     apiPost.mockRejectedValueOnce({ response: { status: 409, data: { error: "ALREADY_ANSWERED" } } });

@@ -65,9 +65,12 @@ router.patch("/game/trivia/:roundId/message", async (req, res, next) => {
 });
 
 router.post("/game/trivia/:roundId/answer", async (req, res, next) => {
-  const { userId, option } = req.body || {};
+  const { userId, option, serverId } = req.body || {};
   if (!SNOWFLAKE.test(String(userId)) || !Number.isInteger(option)) return bad(res, "userId and integer option required");
   try {
+    // Мулти-тенант: кръгът трябва да е от сървъра на бутона (одит 24.09.2026).
+    const round = SNOWFLAKE.test(String(serverId)) ? await prisma.triviaRound.findUnique({ where: { id: req.params.roundId }, select: { serverId: true } }) : null;
+    if (!round || round.serverId !== String(serverId)) return fail(res, { code: "ROUND_NOT_FOUND" });
     const out = await answerRound(req.params.roundId, String(userId), option);
     if (!out.ok) return fail(res, out);
     res.json(out);

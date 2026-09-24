@@ -67,7 +67,7 @@ describe("Улови", () => {
     apiPost.mockResolvedValueOnce({ data: { ok: true, companion: { name: "Blip" } } });
     const i = ix();
     await handleGameInteraction(i);
-    expect(apiPost).toHaveBeenCalledWith("/bot/game/spawn/sp1/catch", { userId: "333333333333333333" });
+    expect(apiPost).toHaveBeenCalledWith("/bot/game/spawn/sp1/catch", { userId: "333333333333333333", serverId: "222222222222222222" });
     expect(i.update).toHaveBeenCalled();
     expect(i.update.mock.calls[0][0].components).toEqual([]);
   });

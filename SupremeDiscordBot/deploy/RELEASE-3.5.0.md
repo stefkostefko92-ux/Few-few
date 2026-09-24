@@ -42,21 +42,30 @@ ls -la /var/backups/supreme-manual-*.gz   # ненулев размер!
 ```
 (`POSTGRES_USER`/`POSTGRES_DB` идват от `.env` на compose-а: `set -a; . /opt/few-few/shared/SupremeDiscordBot/.env; set +a` преди командата.)
 
-## 2. Деплой (каноничният поток — GitHub ZIP → autodeploy)
+## 2. Деплой (каноничният поток — `fetch-deploy.sh` → autodeploy)
+
+Сървърът сам сваля неизменяем архив за точен ref (`deploy/README.md`). Скриптът може
+още да го няма в текущия релийз, затова първият път се взима от самото репо:
 
 ```bash
-cd /root
-rm -rf Few-few-main Few-few.zip
-curl -fsSL -o Few-few.zip https://github.com/stefkostefko92-ux/Few-few/archive/refs/heads/main.zip
-unzip -q -o Few-few.zip
-SRC="$(ls -d /root/[Ff]ew-few-main | head -1)"
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo PROJECTS="SupremeDiscordBot" bash /root/deploy/fetch-deploy.sh
+```
+
+Следващите пъти: `sudo PROJECTS="SupremeDiscordBot" bash /opt/few-few/current/deploy/fetch-deploy.sh`.
+Преди сливане на PR-а (тест от клона): добави `REF=claude/discord-bot-audit-seo-p5edww`.
+
+Резервен път (сървърът няма изходяща мрежа към GitHub) — ръчно качен ZIP:
+```bash
+cd /root && unzip -q -o Few-few.zip && SRC="$(ls -d /root/[Ff]ew-few-* | head -1)"
 sudo ARCHIVE=/root/Few-few.zip PROJECTS="SupremeDiscordBot" bash "$SRC/deploy/autodeploy.sh"
 ```
 
 Ако магазинът съзнателно още не е конфигуриран и искаш `current` да мръдне въпреки това
 (играта и SEO страниците да са живи, продажбите — не):
 ```bash
-sudo ARCHIVE=/root/Few-few.zip PROJECTS="SupremeDiscordBot" SMOKE_ALLOW_BILLING_UNCONFIGURED=1 bash "$SRC/deploy/autodeploy.sh"
+sudo PROJECTS="SupremeDiscordBot" SMOKE_ALLOW_BILLING_UNCONFIGURED=1 bash /root/deploy/fetch-deploy.sh
 ```
 Само проверка 6 на smoke-а става бележка; базата, ботът, гардът, правните страници и
 играта остават твърди гейтове. Не оставяй така за постоянно — без SKU никой не може да купи.

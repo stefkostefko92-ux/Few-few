@@ -98,7 +98,11 @@ router.put("/:serverId/settings", requireServerAdmin, async (req, res, next) => 
 });
 
 // ─── Магазин (CRUD) ──────────────────────────────────────────────────────────
-const itemSchema = z.object({
+// Базата е ЧИСТ z.object — `.partial()` за PATCH иска обект, а в zod 3 рафинирана
+// схема (ZodEffects) няма `.partial()`: PATCH гърмеше с 500 при всяка редакция
+// (одит 24.09.2026). Правилото ROLE ⇒ roleId се проверява отделно — при PATCH
+// върху СЛЕТИЯ резултат (съществуващ артикул + промяната).
+const itemBase = z.object({
   name: z.string().min(1).max(80),
   description: z.string().max(300).nullable().optional(),
   priceSparks: z.number().int().min(1).max(1_000_000),
@@ -108,7 +112,11 @@ const itemSchema = z.object({
   stock: z.number().int().min(1).max(100000).nullable().optional(),
   enabled: z.boolean().default(true),
   sortOrder: z.number().int().min(0).max(1000).default(0),
-}).refine((i) => i.type !== "ROLE" || !!i.roleId, { message: "roleId is required for ROLE items", path: ["roleId"] });
+});
+const roleRule = (i) => i.type !== "ROLE" || !!i.roleId;
+const ROLE_RULE_ERROR = { error: { fieldErrors: { roleId: ["roleId is required for ROLE items"] }, formErrors: [] } };
+const itemSchema = itemBase.refine(roleRule, { message: "roleId is required for ROLE items", path: ["roleId"] });
+const itemPatchSchema = itemBase.partial();
 
 router.get("/:serverId/shop", requireServerAdmin, async (req, res, next) => {
   try {
@@ -143,11 +151,12 @@ router.post("/:serverId/shop", requireServerAdmin, async (req, res, next) => {
 
 router.patch("/:serverId/shop/:itemId", requireServerAdmin, async (req, res, next) => {
   const { serverId, itemId } = req.params;
-  const parsed = itemSchema.partial().safeParse(req.body);
+  const parsed = itemPatchSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   try {
     const existing = await prisma.shopItem.findFirst({ where: { id: itemId, serverId } });
     if (!existing) return res.status(404).json({ error: "Item not found" });
+    if (!roleRule({ ...existing, ...parsed.data })) return res.status(400).json(ROLE_RULE_ERROR);
     const item = await prisma.shopItem.update({ where: { id: itemId }, data: parsed.data });
     res.json(item);
   } catch (err) { next(err); }

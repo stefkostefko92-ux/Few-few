@@ -89,11 +89,15 @@ router.post("/game/daily", async (req, res, next) => {
       });
       const d = computeDaily(row, settings.dailySparks);
       if (!d.ok) return { ...d, sparksTotal: row.sparks, streak: row.streak };
-      const updated = await tx.memberProgress.update({
-        where: { id: row.id },
+      // Условно по видяното lastDailyAt: двоен клик / два процеса не взимат наградата
+      // два пъти (одит 24.09.2026 — предишният update по id беше безусловен).
+      const claimed = await tx.memberProgress.updateMany({
+        where: { id: row.id, lastDailyAt: row.lastDailyAt ?? null },
         data: { sparks: { increment: d.sparks }, streak: d.streak, lastDailyAt: new Date() },
       });
-      return { ...d, sparksTotal: updated.sparks };
+      if (claimed.count !== 1) return { ok: false, retryInMs: 24 * 3600 * 1000, sparksTotal: row.sparks, streak: row.streak };
+      const updated = await tx.memberProgress.findUnique({ where: { id: row.id }, select: { sparks: true } });
+      return { ...d, sparksTotal: updated?.sparks ?? row.sparks + d.sparks };
     });
     if (!result.ok) return res.status(429).json({ error: "Already claimed", code: "DAILY_COOLDOWN", retryInMs: result.retryInMs, streak: result.streak, sparksTotal: result.sparksTotal });
     // XP за дневния ритуал — отделно от искрите; може да вдигне ниво.
@@ -119,7 +123,7 @@ router.get("/game/profile/:serverId/:userId", async (req, res, next) => {
       : null;
     // Ботът показва име + картинка, не вътрешния id (одит 19.09.2026).
     const active = activeRow
-      ? { ...activeRow, ...publicCompanion(companionById(activeRow.companionId), activeRow.stage, await getCurrentSeason()) }
+      ? { ...publicCompanion(companionById(activeRow.companionId), activeRow.stage, await getCurrentSeason()), ...activeRow }
       : null;
     const nextDailyAt = row?.lastDailyAt ? new Date(new Date(row.lastDailyAt).getTime() + 24 * 3600 * 1000) : null;
     res.json({
@@ -202,6 +206,11 @@ router.post("/game/shop/:serverId/buy", async (req, res, next) => {
         data: { serverId, userId, itemId: item.id, priceSparks: item.priceSparks, expiresAt },
       });
       return { ok: true, purchase, item, sparksLeft: row.sparks - item.priceSparks };
+      // Serializable: броенето на продадените и записът са две стъпки — без това две
+      // едновременни покупки на последната бройка минаваха и двете (одит 24.09.2026).
+    }, { isolationLevel: "Serializable" }).catch((err) => {
+      if (err?.code === "P2034") return { error: "Another purchase is in progress — try again", code: "BUSY", status: 409 };
+      throw err;
     });
     if (out.error) return res.status(out.status).json(out);
     res.json(out);

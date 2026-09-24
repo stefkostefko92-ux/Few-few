@@ -73,7 +73,7 @@ async function catchSpawn(interaction, spawnId) {
   const lang = await resolveLang(interaction);
   let out;
   try {
-    ({ data: out } = await api.post(`/bot/game/spawn/${spawnId}/catch`, { userId: interaction.user.id }));
+    ({ data: out } = await api.post(`/bot/game/spawn/${spawnId}/catch`, { userId: interaction.user.id, serverId: interaction.guildId }));
   } catch (err) {
     const d = err?.response?.data || {};
     const map = { ALREADY_CAUGHT: "game.spawn.tooSlow", SPAWN_EXPIRED: "game.spawn.expired", SPAWN_NOT_FOUND: "game.spawn.expired", COLLECTION_FULL: "game.spawn.full" };
@@ -105,7 +105,7 @@ async function answerTrivia(interaction, roundId, option) {
   const lang = await resolveLang(interaction);
   let out;
   try {
-    ({ data: out } = await api.post(`/bot/game/trivia/${roundId}/answer`, { userId: interaction.user.id, option }));
+    ({ data: out } = await api.post(`/bot/game/trivia/${roundId}/answer`, { userId: interaction.user.id, option, serverId: interaction.guildId }));
   } catch (err) {
     const d = err?.response?.data || {};
     const map = { ALREADY_ANSWERED: "game.trivia.already", ROUND_CLOSED: "game.trivia.closed", ROUND_NOT_FOUND: "game.trivia.closed" };
@@ -136,7 +136,7 @@ async function resolveTrade(interaction, tradeId, accept) {
   const lang = await resolveLang(interaction);
   let out;
   try {
-    ({ data: out } = await api.post(`/bot/game/trade/${tradeId}/resolve`, { userId: interaction.user.id, accept }));
+    ({ data: out } = await api.post(`/bot/game/trade/${tradeId}/resolve`, { userId: interaction.user.id, accept, serverId: interaction.guildId }));
   } catch (err) {
     const d = err?.response?.data || {};
     const map = { NOT_RECIPIENT: "game.companion.tradeNotRecipient", TRADE_EXPIRED: "game.companion.tradeGone", TRADE_CLOSED: "game.companion.tradeGone", TRADE_NOT_FOUND: "game.companion.tradeGone", TRADE_STALE: "game.companion.tradeGone" };

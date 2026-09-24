@@ -24,6 +24,9 @@ export async function closeSeasonIfEnded(now = new Date(), season = null) {
     const claim = await prisma.gameSettings.updateMany({ where: { serverId: s.serverId, ...notYet }, data: { lastSeasonId: target.code } });
     if (claim.count !== 1) continue; // друг процес вече затвори този сървър
     await prisma.memberProgress.updateMany({ where: { serverId: s.serverId }, data: { seasonXp: 0 } });
+    // Сървър без нито един играч в сезона: нулирането е записано, обява няма
+    // (празен „топ 3“ в канала е шум — одит 24.09.2026).
+    if (!top.length) { closed++; continue; }
     try {
       const { notifyBot } = await import("../../services/botNotifier.js");
       await notifyBot("GAME_SEASON_END", { serverId: s.serverId, season: { id: target.code, name: target.name }, top, announceChannelId: s.announceChannelId || null });

@@ -15,6 +15,13 @@ const router = Router();
 router.use(requireBotSecret);
 const SNOWFLAKE = /^\d{17,20}$/;
 const bad = (res, msg) => res.status(400).json({ error: msg });
+// Мулти-тенант (одит 24.09.2026): id-то идва от бутон; ботът подава и guildId,
+// а тук се сверява, че записът е от същия сървър. Без serverId → 400.
+async function sameServer(model, id, serverId) {
+  if (!SNOWFLAKE.test(String(serverId))) return false;
+  const row = await prisma[model].findUnique({ where: { id }, select: { serverId: true } });
+  return !!row && row.serverId === String(serverId);
+}
 const fail = (res, out) => {
   const status = { SPAWN_ACTIVE: 409, SPAWN_TOO_SOON: 429, SPAWN_NOT_FOUND: 404, ALREADY_CAUGHT: 409, SPAWN_EXPIRED: 410, COLLECTION_FULL: 403,
     NOT_OWNED: 404, MAX_STAGE: 409, NOT_ENOUGH_SPARKS: 402, INVALID_AMOUNT: 400, SELF_TRADE: 400, TRADE_PENDING: 409, TRADE_NOT_FOUND: 404,
@@ -54,9 +61,10 @@ router.patch("/game/spawn/:id/message", async (req, res, next) => {
 });
 
 router.post("/game/spawn/:id/catch", async (req, res, next) => {
-  const { userId } = req.body || {};
+  const { userId, serverId } = req.body || {};
   if (!SNOWFLAKE.test(String(userId))) return bad(res, "userId required");
   try {
+    if (!(await sameServer("companionSpawn", req.params.id, serverId))) return fail(res, { code: "SPAWN_NOT_FOUND" });
     const out = await catchSpawn(req.params.id, String(userId));
     if (!out.ok) return fail(res, out);
     res.json(out);
@@ -108,9 +116,10 @@ router.post("/game/trade", async (req, res, next) => {
 });
 
 router.post("/game/trade/:id/resolve", async (req, res, next) => {
-  const { userId, accept } = req.body || {};
+  const { userId, accept, serverId } = req.body || {};
   if (!SNOWFLAKE.test(String(userId))) return bad(res, "userId required");
   try {
+    if (!(await sameServer("companionTrade", req.params.id, serverId))) return fail(res, { code: "TRADE_NOT_FOUND" });
     const out = await resolveTrade(req.params.id, String(userId), !!accept);
     if (!out.ok) return fail(res, out);
     res.json(out);

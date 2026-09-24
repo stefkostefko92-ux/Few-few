@@ -81,6 +81,35 @@ const FORBIDDEN = [
     /приоритетн[а-я]*\s+поддръжка/i,
   ]},
 
+  // ── Планове, които не се продават (одит 24.09.2026) ─────────────────────
+  // От 12.09.2026 продажбите са САМО през Discord: месечно, Premium и
+  // White-label, без годишни, без Agency, без пробен период (CLAUDE.md, billing.js).
+  // Лендингът и JSON-LD още рекламираха €49/€99 годишно и Agency 5/10.
+  { claim: "годишен план / Agency / пробен период / Stripe абонамент", contradicts: "lib/billing.js (Discord-only, monthly) + docs/DISCORD_MONETIZATION.md", patterns: [
+    /€\s?\d+(?:[.,]\d+)?\s*\/\s*(?:yr|year)\b/i,
+    /\d+\s*EUR\s*\/\s*year/i,
+    /Agency\s*(?:5|10)\b/,
+    /\b14-day\s+free\s+trial\b/i,
+    /Stripe\s+subscriptions/i,
+  ]},
+
+  // ── Отказ „от таблото“ — отказът е в Discord (Discord е продавачът) ──────
+  { claim: "отказ от таблото", contradicts: "docs/DISCORD_MONETIZATION.md (Discord → User Settings → Subscriptions)", patterns: [
+    /Cancel\s+anytime\s+from\s+the\s+dashboard/i,
+    /Откажете\s+се\s+по\s+всяко\s+време\s+от\s+таблото/i,
+    /Jederzeit\s+im\s+Dashboard\s+kündbar/i,
+    /Cancela\s+cuando\s+quieras\s+desde\s+el\s+panel/i,
+    /Annulez\s+à\s+tout\s+moment\s+depuis\s+le\s+tableau/i,
+    /Annulla\s+in\s+qualsiasi\s+momento\s+dalla\s+dashboard/i,
+    /Zeg\s+op\s+elk\s+moment\s+op\s+via\s+het\s+dashboard/i,
+    /Anuluj\s+w\s+dowolnym\s+momencie\s+z\s+panelu/i,
+  ]},
+
+  // ── Статус „всичко работи“ без измерване ─────────────────────────────────
+  { claim: "статично „All systems operational“", contradicts: "/status (живото измерване)", patterns: [
+    /All\s+systems\s+operational/i,
+  ]},
+
   // ── „Без телеметрия“ при жив Sentry ──────────────────────────────────────
   { claim: "нула телеметрия", contradicts: "PrivacyPage (Sentry — мониторинг на грешки)", patterns: [
     /no\s+telemetry/i,
@@ -114,6 +143,43 @@ describe("верните формулировки СА налице (не сме
     if (/99\.9%/.test(login)) {
       expect(login, "99.9% стои без уговорката, че не е договорен SLA")
         .toMatch(/not a contractual SLA/i);
+    }
+  });
+});
+
+describe("играта Server Season е на всяка начална страница с числата от premium.js (24.09.2026)", () => {
+  const premium = readFileSync(join(SRC, "..", "..", "backend", "src", "lib", "premium.js"), "utf8");
+  const lim = (block, key) => {
+    const b = premium.slice(premium.indexOf(`export const ${block} = {`), premium.indexOf("};", premium.indexOf(`export const ${block} = {`)));
+    return Number(b.match(new RegExp(`${key}:\\s*(\\d+)`))[1]);
+  };
+  it("сравнителният ред на английския лендинг съвпада с лимитите (роли · артикули · куестове)", () => {
+    const login = read("pages", "Login.jsx");
+    const row = login.match(/label="Server Season game"\s+free="([^"]+)"\s+premium="([^"]+)"/);
+    expect(row, "липсва ред Server Season game").toBeTruthy();
+    expect(row[1]).toContain(`${lim("BASE_LIMITS", "levelRoles")} level roles`);
+    expect(row[1]).toContain(`${lim("BASE_LIMITS", "shopItems")} shop items`);
+    expect(row[1]).toContain(`${lim("BASE_LIMITS", "activeQuests")} quest`);
+    expect(row[2]).toContain(`${lim("PREMIUM_LIMITS", "levelRoles")} roles`);
+    expect(row[2]).toContain(`${lim("PREMIUM_LIMITS", "shopItems")} items`);
+    expect(row[2]).toContain(`${lim("PREMIUM_LIMITS", "activeQuests")} quests`);
+  });
+  it("всяка преведена страница има плочка, секция и ред за играта със същите числа", () => {
+    const [bR, bS, bQ] = ["levelRoles", "shopItems", "activeQuests"].map((k) => lim("BASE_LIMITS", k));
+    const [pR, pS, pQ] = ["levelRoles", "shopItems", "activeQuests"].map((k) => lim("PREMIUM_LIMITS", k));
+    for (const [loc, t] of Object.entries(LANDING_TRANSLATIONS)) {
+      expect(t.features.some((f) => f.key === "game"), `${loc}: плочка`).toBe(true);
+      expect(t.game?.bullets?.length, `${loc}: секция`).toBeGreaterThanOrEqual(3);
+      const row = t.compare.rows.find((r) => /Server.?Season/.test(r[0]));
+      expect(row, `${loc}: ред в сравнението`).toBeTruthy();
+      const nums = (s) => (s.match(/\d+/g) || []).map(Number);
+      expect(nums(row[1]), `${loc}: Free`).toEqual([bR, bS, 1, bQ]);
+      expect(nums(row[2]), `${loc}: Premium`).toEqual([pR, pS, pQ]);
+    }
+  });
+  it("отказът е описан като стъпка в Discord на всяка локала", () => {
+    for (const [loc, t] of Object.entries(LANDING_TRANSLATIONS)) {
+      expect(JSON.stringify(t.faq), `${loc}: FAQ за отказ без Discord`).toMatch(/Discord/);
     }
   });
 });

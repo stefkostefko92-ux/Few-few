@@ -130,9 +130,16 @@ const FIX = {
   [`GET /api/analytics/${SID}/dashboard`]: {
     kpis: { ticketsOpened: { value: 12, deltaPct: 8 }, ticketsClosed: { value: 10, deltaPct: -3 },
       avgFirstResponseMin: 7, applications: { value: 4, deltaPct: 0 } },
-    live: { pendingApplications: 1, openTickets: 3 },
-    series: { tickets: Array.from({ length: 14 }, (_, i) => ({ date: `2026-08-${String(i + 1).padStart(2, "0")}`, opened: (i * 7) % 5, closed: (i * 3) % 4 })) },
-    topPanels: [{ name: "Support", count: 9 }, { name: "Reports", count: 3 }],
+    // Формата = routes/analytics.js GET /:serverId/dashboard (сверено 24.09.2026).
+    // Старият fixture носеше `series: { tickets }` (обект) и `topPanels` — таблото
+    // чупеше с „e.map is not a function“ в САМАТА проверка, невидимо, защото
+    // гейтът не гледаше екрана на ErrorBoundary.
+    days: 14,
+    live: { pendingApplications: 1, openTickets: 3, claimedTickets: 1 },
+    series: Array.from({ length: 14 }, (_, i) => ({ day: `2026-08-${String(i + 1).padStart(2, "0")}`, opened: (i * 7) % 5, closed: (i * 3) % 4 })),
+    distribution: [{ label: "Support", value: 9 }, { label: "Reports", value: 3 }],
+    recentTickets: [],
+    satisfaction: { avg: 4.6, count: 5 },
   },
   [`GET /api/panels/${SID}`]: [
     { id: "p1", name: "Support", title: "Отвори тикет", buttons: [], supportRoleIds: [roles[2].id], published: true },
@@ -147,13 +154,16 @@ const FIX = {
   [`GET /api/billing/${SID}`]: { provider: "discord", isPremium: true, plan: "agency10", source: "agency", agencyCovered: true, agencyOwnedByMe: true, discord: {}, stripe: { legacy: false, portalAvailable: false } },
 };
 
+// MP_DEBUG=1 печата коя заявка кой fixture получава (точно / по префикс / празно).
+const DEBUG = process.env.MP_DEBUG === "1";
 function fixtureFor(method, path) {
   const key = `${method} ${path}`;
-  if (FIX[key]) return FIX[key];
+  if (FIX[key]) { if (DEBUG) console.log(`    · ${key} → точен`); return FIX[key]; }
   for (const [k, v] of Object.entries(FIX)) {
     const [m, p] = k.split(" ");
-    if (m === method && path.startsWith(p)) return v;
+    if (m === method && path.startsWith(p)) { if (DEBUG) console.log(`    · ${key} → ПРЕФИКС ${k}`); return v; }
   }
+  if (DEBUG) console.log(`    · ${key} → празно (${method === "GET" ? "[]" : "{ok}"})`);
   return method === "GET" ? [] : { ok: true };
 }
 
@@ -220,13 +230,27 @@ for (const view of [
   const page = await ctx.newPage();
   const consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(String(e).split("\n")[0]));
+  // React ErrorBoundary ХВАЩА грешката при рендер — тя никога не става
+  // `pageerror`, само console.error. Точно така осемте начални страници
+  // показваха „Something went wrong“ (FeatureLinks без import), а проверката
+  // беше зелена (одит 24.09.2026). Слушаме и конзолата за ErrorBoundary/ReferenceError.
+  page.on("console", (m) => {
+    if (m.type() !== "error") return;
+    const txt = m.text();
+    if (/\[ErrorBoundary\]|ReferenceError|TypeError: .* is not a function/.test(txt)) consoleErrors.push(txt.split("\n")[0]);
+  });
 
   console.log(`\n── ${view.tag} ${view.viewport.width}×${view.viewport.height} ──`);
-  for (const { path, name } of PAGES) {
+  // MP_ONLY=overview,game — само тези страници (диагностика; пълният гейт е без него).
+  const ONLY = (process.env.MP_ONLY || "").split(",").filter(Boolean);
+  for (const { path, name } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
     // НЕ networkidle: refetchInterval-ите на React Query държат мрежата будна
     // и „idle" никога не идва — таймаут, който изглежда като счупена страница.
     await page.goto(base + path, { waitUntil: "load" }).catch((e) => note(false, `${name}: не зареди (${e.message.split("\n")[0]})`));
     await page.waitForTimeout(900); // данните от мока + анимациите на влизане
+    // Резервният екран на ErrorBoundary = страницата НЕ работи, каквото и да казва прелива.
+    const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body?.innerText || ""));
+    note(!crashed, `${name}: страницата рендерира (не екрана на ErrorBoundary)`);
     const over = await page.evaluate(() => {
       const el = document.documentElement;
       return { sw: el.scrollWidth, cw: el.clientWidth };

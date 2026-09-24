@@ -166,3 +166,15 @@ describe("размяна", () => {
     expect((await ops.proposeTrade("222222222222222222", "1", "1", "a", "b")).code).toBe("SELF_TRADE");
   });
 });
+
+
+describe("регресии от одита 24.09.2026", () => {
+  it("listOwned: id е на ПРИТЕЖАНИЕТО (за feed/activate/release/trade), каталожният е в companionId", async () => {
+    prismaMock.memberCompanion.findMany.mockResolvedValueOnce([{ id: "own_1", serverId: "222222222222222222", userId: "333333333333333333", companionId: "lime-blip", stage: 1, fed: 0, nickname: null }]);
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce({ activeCompanionId: "own_1", sparks: 5 });
+    prismaMock.gameSeason.findMany.mockResolvedValue([]);
+    const out = await ops.listOwned("222222222222222222", "333333333333333333");
+    expect(out.companions[0]).toMatchObject({ id: "own_1", companionId: "lime-blip", name: "Blip", index: 1 });
+    expect(out.activeId).toBe(out.companions[0].id);
+  });
+});

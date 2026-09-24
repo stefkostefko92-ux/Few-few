@@ -174,7 +174,7 @@ describe("Counting", () => {
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings({ countingCurrent: 99, countingHigh: 300 })).mockResolvedValueOnce({ enabled: true });
     prismaMock.gameSettings.updateMany.mockResolvedValueOnce({ count: 1 });
     prismaMock.memberProgress.upsert.mockResolvedValueOnce({ id: "mp", xp: 0, level: 0, sparks: 0 });
-    prismaMock.memberProgress.update.mockResolvedValueOnce({ xp: 15 });
+    prismaMock.memberProgress.update.mockResolvedValueOnce({ xp: 15, level: 0 });
     const m = await counting.applyCount(SID, UID, 100);
     expect(m).toMatchObject({ ok: true, milestone: true, xp: 15, record: false });
     expect(prismaMock.gameXpGrant.create).toHaveBeenCalledWith({ data: { serverId: SID, userId: UID, key: "counting:100", amount: 15 } });
@@ -238,7 +238,7 @@ describe("trivia", () => {
     prismaMock.triviaRound.updateMany.mockResolvedValueOnce({ count: 1 });
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ enabled: true });
     prismaMock.memberProgress.upsert.mockResolvedValue({ id: "mp", xp: 0, level: 0, sparks: 0 });
-    prismaMock.memberProgress.update.mockResolvedValue({ xp: 25 });
+    prismaMock.memberProgress.update.mockResolvedValue({ xp: 25, level: 0 });
     const win = await trivia.answerRound("r1", UID, 2);
     expect(win).toMatchObject({ ok: true, correct: true, winner: true, sparks: trivia.TRIVIA_SPARKS, xp: 25 });
     expect(prismaMock.triviaRound.updateMany.mock.calls[0][0].where).toEqual({ id: "r1", winnerId: null, closedAt: null });
@@ -294,5 +294,24 @@ describe("маршрути", () => {
     const ok = await request(app).post(`/api/game/${SID}/quests`).send({ type: "TICKETS_SLA", target: 20, days: 3 });
     expect(ok.status).toBe(201); expect(ok.body).toMatchObject({ type: "TICKETS_SLA", target: 20, rewardSparks: 150, status: "ACTIVE" });
     expect((await request(app).post(`/api/game/${SID}/quests`).send({ type: "NOPE", target: 20 })).status).toBe(400);
+  });
+});
+
+describe("мулти-тенант: id от бутон се сверява със сървъра (одит 24.09.2026)", () => {
+  it("trivia отговор с чужд/липсващ serverId → 404 ROUND_NOT_FOUND, нищо не се записва", async () => {
+    prismaMock.triviaRound.findUnique.mockResolvedValue({ serverId: "999999999999999999" });
+    let r = await request(app).post("/api/bot/game/trivia/r1/answer").send({ userId: UID, option: 1, serverId: SID });
+    expect(r.status).toBe(404); expect(r.body.error).toBe("ROUND_NOT_FOUND");
+    r = await request(app).post("/api/bot/game/trivia/r1/answer").send({ userId: UID, option: 1 });
+    expect(r.status).toBe(404);
+    expect(prismaMock.triviaAnswer.create).not.toHaveBeenCalled();
+  });
+  it("улавяне на поява от друг сървър → 404 SPAWN_NOT_FOUND", async () => {
+    const companionsRouter = (await import("../routes/bot_companions.js")).default;
+    const a = express(); a.use(express.json()); a.use("/api/bot", companionsRouter);
+    prismaMock.companionSpawn.findUnique.mockResolvedValue({ serverId: "999999999999999999" });
+    const r = await request(a).post("/api/bot/game/spawn/sp1/catch").send({ userId: UID, serverId: SID });
+    expect(r.status).toBe(404); expect(r.body.error).toBe("SPAWN_NOT_FOUND");
+    expect(prismaMock.companionSpawn.updateMany).not.toHaveBeenCalled();
   });
 });

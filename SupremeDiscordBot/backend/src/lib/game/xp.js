@@ -92,38 +92,47 @@ export async function getGameSettings(serverId) {
 }
 
 /**
- * Добавя XP (и сметнати искри при ниво нагоре). Атомарно през транзакция:
- * читаме реда, смятаме новото ниво, пишем. Връща какво се е случило, за да може
- * викащият (bot batch / събитие) да раздаде ролите и да обяви.
+ * Добавя XP (и сметнати искри при ниво нагоре). Връща какво се е случило, за да
+ * може викащият (bot batch / събитие) да раздаде ролите и да обяви.
+ *
+ * БЕЗ загубени записи при едновременност (одит 24.09.2026): предишната версия
+ * четеше реда и пишеше АБСОЛЮТНО `xp: row.xp + inc` — партидата от съобщения и
+ * едновременна награда (анкета, trivia, куест) се презаписваха и XP се губеше.
+ * Сега XP е атомарен `increment`, а нивото се вдига с условен updateMany по
+ * видяното ниво (само един победител плаща искрите; при загубена надпревара —
+ * повторно четене, до 3 опита).
  * @returns {Promise<{ userId:string, xp:number, level:number, oldLevel:number, leveledUp:boolean, sparksAwarded:number }>}
  */
 export async function awardXp(serverId, userId, amount, { messages = 0, voiceMinutes = 0, touchMessageXp = false } = {}) {
   const inc = Math.max(0, Math.floor(amount));
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.memberProgress.upsert({
-      where: { serverId_userId: { serverId, userId } },
-      update: {},
-      create: { serverId, userId },
-    });
-    const newXp = row.xp + inc;
-    const oldLevel = row.level;
-    const newLevel = levelFromXp(newXp);
+  const key = { serverId_userId: { serverId, userId } };
+  await prisma.memberProgress.upsert({ where: key, update: {}, create: { serverId, userId } });
+  let cur = await prisma.memberProgress.update({
+    where: key,
+    data: {
+      xp: { increment: inc },
+      seasonXp: { increment: inc },
+      messages: { increment: messages },
+      voiceMinutes: { increment: voiceMinutes },
+      ...(touchMessageXp ? { lastMessageXpAt: new Date() } : {}),
+    },
+  });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const oldLevel = cur.level;
+    const newLevel = levelFromXp(cur.xp);
+    if (newLevel <= oldLevel) return { userId, xp: cur.xp, level: oldLevel, oldLevel, leveledUp: false, sparksAwarded: 0 };
     let sparksAwarded = 0;
     for (let l = oldLevel + 1; l <= newLevel; l++) sparksAwarded += sparksForLevelUp(l);
-    const updated = await tx.memberProgress.update({
-      where: { id: row.id },
-      data: {
-        xp: newXp,
-        seasonXp: { increment: inc },
-        level: newLevel,
-        sparks: { increment: sparksAwarded },
-        messages: { increment: messages },
-        voiceMinutes: { increment: voiceMinutes },
-        ...(touchMessageXp ? { lastMessageXpAt: new Date() } : {}),
-      },
+    const won = await prisma.memberProgress.updateMany({
+      where: { serverId, userId, level: oldLevel },
+      data: { level: newLevel, sparks: { increment: sparksAwarded } },
     });
-    return { userId, xp: updated.xp, level: newLevel, oldLevel, leveledUp: newLevel > oldLevel, sparksAwarded };
-  });
+    if (won.count === 1) return { userId, xp: cur.xp, level: newLevel, oldLevel, leveledUp: true, sparksAwarded };
+    // Друг запис е вдигнал нивото междувременно — прочети наново и довърши разликата.
+    cur = await prisma.memberProgress.findUnique({ where: key });
+    if (!cur) break;
+  }
+  return { userId, xp: cur?.xp ?? inc, level: cur?.level ?? 0, oldLevel: cur?.level ?? 0, leveledUp: false, sparksAwarded: 0 };
 }
 
 /**
