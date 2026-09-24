@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf } from "../lib/usage.mjs";
+import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf, USAGE_RECORD_V } from "../lib/usage.mjs";
 import { LOCAL_REF, REMOTE_REF, pendingUsagePath, appendPendingUsage } from "../lib/memory-branch.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -37,13 +37,20 @@ function pricesAge(prices) {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   if (args.includes("--backfill")) {
     const dir = args[args.indexOf("--backfill") + 1];
-    const have = new Set(loadRecords().map((r) => r.id));
-    let n = 0;
+    // Запис от стара версия (преди дедупа по message.id — надут ~2.7×) се пресмята НАНОВО от
+    // транскрипта; parseLedger взема по-късния запис за същия id. Актуален запис не се пипа.
+    const have = new Map(loadRecords().map((r) => [r.id, r]));
+    let n = 0, redone = 0;
     for (const f of readdirSync(dir).filter((f) => /^agent-.*\.jsonl$/.test(f))) {
       const rec = summarizeTranscript(join(dir, f));
-      if (rec && !have.has(rec.id) && appendPendingUsage(ROOT, rec)) { n++; have.add(rec.id); }
+      if (!rec) continue;
+      const old = have.get(rec.id);
+      if (old && (old.v || 1) >= USAGE_RECORD_V) continue;
+      // eval етикетът се пази — иначе живата проверка би влязла в продукционните цифри.
+      if (old?.eval && !rec.eval) rec.eval = old.eval;
+      if (appendPendingUsage(ROOT, rec)) { n++; if (old) redone++; have.set(rec.id, rec); }
     }
-    console.log(`✓ внесени ${n} пускания в буфера — изпрати с: node tools/lib/memory-branch.mjs --sync --flush-usage`);
+    console.log(`✓ внесени ${n} пускания в буфера (${redone} пресметнати наново от стара версия) — изпрати с: node tools/lib/memory-branch.mjs --sync --flush-usage`);
     process.exit(0);
   }
   const all = loadRecords();
@@ -56,12 +63,24 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const firstCost = recs.reduce((s, r) => { const p = costParts({ ...r, cacheRead: 0, output: 0, input: 0, cacheWrite: r.startCtx || 0 }, prices); return s + (p ? p.cacheWrite : 0); }, 0);
   if (args.includes("--json")) { process.stdout.write(JSON.stringify({ ...a, startShare, firstCostShare: a.usd ? firstCost / a.usd : 0 }, null, 2) + "\n"); process.exit(0); }
   const age = pricesAge(prices);
+  // --check (съветващо, в гейта): само сигналите, без пълния доклад; винаги exit 0.
+  if (args.includes("--check")) {
+    const stale = all.filter((r) => (r.v || 1) < USAGE_RECORD_V).length;
+    const unpriced = recs.length - a.priced;
+    const notes = [];
+    if (!recs.length) notes.push("НЕИЗМЕРЕНО — няма записи за пускания");
+    if (stale) notes.push(`${stale} записа от стара версия (надути) — пусни --backfill <папка с транскриптите>`);
+    if (unpriced) notes.push(`${unpriced} пускания без цена в prices.json`);
+    if (age > (prices?.ttlDays || 45)) notes.push(`цените са сверени преди ${age} дни (срок ${prices?.ttlDays})`);
+    console.log(notes.length ? `▲ usage: ${notes.join(" · ")}` : `✓ usage: ${recs.length} пускания, всички поценени, цени на ${age} дни`);
+    process.exit(0);
+  }
   if (!recs.length) {
     console.log("▲ usage: НЕИЗМЕРЕНО — няма записи за пускания (буферът и клонът agents/memory са празни). Празно ≠ евтино.");
     process.exit(0);
   }
   const pct = (x) => `${Math.round(100 * x / (a.usd || 1))}%`;
-  console.log(`💸 Реална употреба — ${a.runs} пускания на агенти · ~$${a.usd.toFixed(0)} по цените на API`);
+  console.log(`💸 Реална употреба — ${a.priced} поценени пускания на агенти${a.runs > a.priced ? ` (+${a.runs - a.priced} без цена)` : ""} · ~$${a.usd.toFixed(0)} по цените на API`);
   console.log(`   къде: кеш-запис ${pct(a.parts.cacheWrite)} · кеш-четене ${pct(a.parts.cacheRead)} · изход ${pct(a.parts.output)} · вход ${pct(a.parts.input)}`);
   console.log(`   старт (системен промпт + дефиниция + доктрина + памет + задача): ${(100 * startShare).toFixed(1)}% от обработения вход · до ~${pct(firstCost)} от цената (горна граница: ако стартът се пише в кеша изцяло)`);
   console.log(`   ходове p50 ${a.turns.p50} · p90 ${a.turns.p90} · пускания с ≥60 хода: ${a.long.runs} (${pct(a.long.usd)} от цената)`);

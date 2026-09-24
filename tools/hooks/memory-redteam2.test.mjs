@@ -49,6 +49,10 @@ test("HIGH: usage брои всяко API съобщение ВЕДНЪЖ (ра�
   const u = { input_tokens: 10, cache_read_input_tokens: 1000, cache_creation_input_tokens: 100, output_tokens: 5 };
   writeFileSync(p, ["thinking", "text", "tool_use"].map((t) => JSON.stringify({ type: "assistant", message: { id: "msg_1", model: "claude-opus-4-8", usage: u, content: [{ type: t }] } })).join("\n"));
   const s = summarizeTranscript(p); assert.equal(s.turns, 1); assert.equal(s.cacheRead, 1000);
+  // AI-джията: output_tokens РАСТЕ ред по ред (стрийминг снимка) — взема се най-големият, не първият.
+  const q = join(d, "agent-y.jsonl");
+  writeFileSync(q, [5, 40, 120].map((o) => JSON.stringify({ type: "assistant", message: { id: "msg_2", model: "claude-opus-4-8", usage: { ...u, output_tokens: o }, content: [{ type: "text" }] } })).join("\n"));
+  const t = summarizeTranscript(q); assert.equal(t.turns, 1); assert.equal(t.output, 120); assert.equal(t.v, 2);
 });
 test("MED: дневникът на употреба отхвърля нечислови/отрицателни полета и __proto__", () => {
   const a = aggregate(parseLedger('{"id":"a","agent":"seo","model":"opus-4-8","turns":1,"input":"x","cacheRead":0,"cacheWrite":0,"output":0}'));

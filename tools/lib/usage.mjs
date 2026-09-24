@@ -52,6 +52,10 @@ function agentTypeOf(path, lines) {
   return "общ";
 }
 
+/** Версия на записа. 2 = дедуп по message.id с най-големия output (2026-09-24); записи с по-ниска
+ *  версия са надути ~2.7× и `usage-report --backfill` ги пресмята наново от транскрипта. */
+export const USAGE_RECORD_V = 2;
+
 /**
  * Сумира транскрипт на субагент в ЕДИН запис. Връща null при празен/нечетим транскрипт.
  * @param {string} path
@@ -62,10 +66,12 @@ export function summarizeTranscript(path, hint = {}) {
   try { lines = readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); } catch { return null; }
   let turns = 0, input = 0, cacheRead = 0, cacheWrite = 0, output = 0, tools = 0, resultBytes = 0, peakCtx = 0, startCtx = 0, model = "", effort = hint.effort || "";
   let t0 = "", t1 = "";
-  // Един API отговор се записва на НЯКОЛКО реда (thinking / text / tool_use) със СЪЩИЯ message.id и
-  // СЪЩИЯ usage. Без дедуп всеки ход се броеше 2–3 пъти — цената излизаше ~1.9× по-висока
-  // (Разбивача, 2026-09-24). Броим всеки message.id веднъж.
-  const seenMsg = new Set();
+  // Един API отговор се записва на НЯКОЛКО реда (thinking / text / tool_use) със СЪЩИЯ message.id.
+  // Входните броячи са еднакви, а output_tokens РАСТЕ ред по ред (стрийминг снимка). Без дедуп всеки
+  // ход се броеше 2–3 пъти (Разбивача); с дедуп по ПЪРВИЯ ред изходът излизаше 4.8× по-малък
+  // (AI-джията, 2026-09-24). Затова: един запис на message.id, взет с най-големия output_tokens.
+  const usages = new Map();
+  let anon = 0;
   for (const r of lines) {
     if (r.timestamp) { if (!t0) t0 = r.timestamp; t1 = r.timestamp; }
     if (!effort && typeof r.effort === "string") effort = r.effort;
@@ -76,7 +82,11 @@ export function summarizeTranscript(path, hint = {}) {
       else if (b?.type === "tool_result") resultBytes += Buffer.byteLength(typeof b.content === "string" ? b.content : JSON.stringify(b.content || ""));
     }
     const u = m.usage; if (!u) continue;
-    if (m.id) { if (seenMsg.has(m.id)) continue; seenMsg.add(m.id); }
+    const key = m.id || `anon-${anon++}`;
+    const prev = usages.get(key);
+    if (!prev || (u.output_tokens || 0) >= (prev.output_tokens || 0)) usages.set(key, u);
+  }
+  for (const u of usages.values()) {
     turns++;
     input += u.input_tokens || 0; cacheRead += u.cache_read_input_tokens || 0; cacheWrite += u.cache_creation_input_tokens || 0; output += u.output_tokens || 0;
     const ctx = (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
@@ -87,7 +97,7 @@ export function summarizeTranscript(path, hint = {}) {
   const id = createHash("sha1").update(basename(path)).digest("hex").slice(0, 10);
   const durationSec = t0 && t1 ? Math.round((Date.parse(t1) - Date.parse(t0)) / 1000) : null;
   return {
-    v: 1, id, ts: (t0 || new Date().toISOString()).slice(0, 16),
+    v: USAGE_RECORD_V, id, ts: (t0 || new Date().toISOString()).slice(0, 16),
     agent: hint.agentType || agentTypeOf(path, lines), model: model.replace(/^claude-/, "").replace(/-\d{8}$/, ""), effort: effort || null,
     turns, input, cacheRead, cacheWrite, output, tools, resultBytes, startCtx, peakCtx, durationSec,
   };
