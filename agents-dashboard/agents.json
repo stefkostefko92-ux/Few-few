@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 254
+        "lessons": 255
       },
       "evolution": [
         {
@@ -572,9 +572,20 @@
           "date": "2026-08-11",
           "event": "v18.2 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе… (+2 още)"
+        },
+        {
+          "version": "18.3.0",
+          "date": "2026-09-24",
+          "event": "v18.3 — учене",
+          "detail": "Научи: Caddy v2 НЕ пише HTTP access логове без директива `log` в сайт-блока; при включен лог ф…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Caddy v2 НЕ пише HTTP access логове без директива `log` в сайт-блока; при включен лог ф…\" · 2 в карантина"
+        },
         {
           "date": "2026-08-11",
           "type": "learning",
