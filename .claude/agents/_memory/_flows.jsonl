@@ -51,3 +51,10 @@
 {"t":"handoff","ts":"2026-09-24T11:57:56.651Z","id":"r7d1444c7","from":"3d-maniac","to":"ai-djiyata","status":"има бележки","run":"7041d61b"}
 {"t":"handoff","ts":"2026-09-24T11:58:24.519Z","id":"r7d1444c7","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"196366a9"}
 {"t":"handoff","ts":"2026-09-24T11:59:24.808Z","id":"r7d1444c7","from":"printadjiyata","to":"ai-djiyata","status":"наред","run":"f23c7f69"}
+{"t":"handoff","ts":"2026-09-24T12:00:03.169Z","id":"r7d1444c7","from":"nabludatelya","to":"ai-djiyata","status":"има бележки","run":"12e4229e"}
+{"t":"handoff","ts":"2026-09-24T12:01:10.136Z","id":"r7d1444c7","from":"socialdjiyata","to":"ai-djiyata","status":"има бележки","run":"d4baf69a"}
+{"t":"handoff","ts":"2026-09-24T12:01:51.915Z","id":"r7d1444c7","from":"analizatora","to":"ai-djiyata","status":"има бележки","run":"a94cb35f"}
+{"t":"handoff","ts":"2026-09-24T12:02:15.188Z","id":"r7d1444c7","from":"seo","to":"друг","status":"има бележки","run":"6715d4d3","toRaw":"orchestrator"}
+{"t":"handoff","ts":"2026-09-24T12:02:42.791Z","id":"r7d1444c7","from":"tayniyat-agent","to":"ai-djiyata","status":"блокер","run":"85fc273e"}
+{"t":"handoff","ts":"2026-09-24T12:03:47.860Z","id":"r7d1444c7","from":"dizayner","to":"ai-djiyata","status":"има бележки","run":"9ec2469b"}
+{"t":"handoff","ts":"2026-09-24T12:04:14.266Z","id":"r7d1444c7","from":"geymara","to":"ai-djiyata","status":"има бележки","run":"de7881f5"}
