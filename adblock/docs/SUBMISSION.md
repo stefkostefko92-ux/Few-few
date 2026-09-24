@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.0.3.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.0.4.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -74,9 +74,10 @@ via headless Chromium; see that script's header).
 - **declarativeNetRequest** — block ad/tracker network requests using bundled
   filter rules.
 - **declarativeNetRequestFeedback** — `declarativeNetRequest.getMatchedRules()`
-  for the active tab only, to render the per-tab blocked count in the popup and
-  on the toolbar badge. No URL is stored, logged or transmitted; the aggregate
-  is discarded when the popup closes.
+  for the active tab only, to render the per-tab blocked count on the toolbar
+  badge and, in the popup, how many requests each of our filter lists blocked on
+  the page. No URL is read, stored, logged or transmitted; the breakdown is
+  built on demand and discarded when the popup closes.
 - **storage** — save the user's settings and counters locally.
 - **alarms** — schedule the filter-list updates and the temporary-pause timer.
 - **contextMenus** — the right-click "Block an element here" entry.
@@ -125,7 +126,7 @@ via headless Chromium; see that script's header).
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.0.3.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.0.4.zip`.
 2. Refresh the listing (§3: description + the new feature bullets), replace the
    5 screenshots + promo tiles (§2).
 3. Re-check the **Privacy practices** tab (§4) and paste the permission
@@ -138,7 +139,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.0.3)
+- [ ] `manifest.json` and `package.json` versions match (5.0.4)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work

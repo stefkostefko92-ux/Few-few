@@ -1,19 +1,35 @@
 // Dismiss cookie / consent banners by clicking reject (or accept as a fallback),
-// then make sure the page is USABLE: no leftover backdrop, dark filter, blur,
-// scroll lock or `inert` — the things a consent manager only tears down when
-// its own button is pressed. Handles open shadow DOM, where many modern consent
-// managers live, and runs in every frame (Sourcepoint & co. render in an iframe).
+// then make sure the page is USABLE: no leftover backdrop, blur, scroll lock or
+// `inert` — the things a consent manager only tears down when its own button is
+// pressed. Handles open shadow DOM and runs in every frame (Sourcepoint & co.
+// render their dialog in an iframe).
 //
-// Order matters: cookies.css only CLOAKS a banner (visibility:hidden keeps its
-// layout) while we try to click its button — a display:none'd banner can never
-// be clicked, so the CMP never finishes and leaves the page dimmed and locked.
-// Only after the click window do leftovers get display:none, and the cleanup
-// below runs regardless of whether a click succeeded.
+// Three rules keep this from ever acting on anything that is not a consent
+// banner (all three were broken before 5.0.4):
+//  1. WHAT we click. Consent-manager-specific controls (#onetrust-…, .cmpbox…)
+//     name a CMP button and nothing else, so they are clicked wherever they
+//     appear. Everything generic — aria-label/title/test-id selectors and the
+//     "Accept"/"Decline"/"OK" text match — is ONLY looked for inside a consent
+//     root (consentRoots()). It used to run over the whole page, so it could
+//     accept a LinkedIn invitation, decline a Teams call or confirm an "OK"
+//     dialog in any web app.
+//  2. WHEN we clean up. unlock() only runs inside a short window around a real
+//     banner sighting or our own click, and the page-wide backdrop CSS is
+//     dropped when the window closes — a modal the user opens later is theirs.
+//  3. HOW we hide. cookies.css only CLOAKS a banner (visibility:hidden keeps its
+//     layout) so its button stays clickable; a banner we could not dismiss is
+//     removed from layout per element, HARD_MS after it first showed up — so a
+//     banner that appears late still gets its full click window.
 (function () {
+  "use strict";
   let active = false;
-  let bannerSeen = false;
-  let clicked = false;
-  let hardened = false;
+  let windowUntil = 0; // cleanup (unlock) is allowed until this timestamp
+  let finalizeTimer = 0;
+  let lastDeep = 0;
+  const HARD_MS = 4000;  // an undismissed banner leaves layout this long after it first rendered
+  const GRACE_MS = 6000; // cleanup keeps running this long after the last sighting / click
+  const firstSeen = new WeakMap();
+  const clickedEls = new WeakSet();
 
   // Same list as the first block of cookies.css (tests/cookies.test.mjs keeps
   // them in sync): what counts as "a consent banner is on this page".
@@ -27,6 +43,7 @@
     ".cookiebanner", ".cookie-law-info-bar", "#cookie-law-info-bar", ".cmplz-cookiebanner",
     ".iubenda-cs-container", ".osano-cm-window", ".termly-styles-root",
     ".cky-consent-container", "#cookie-consent-banner", "#gdpr-consent-tool-wrapper",
+    "ytd-consent-bump-v2-lightbox", "[id^=\"sp_message_container_\"]",
     "[class*=\"cookie-consent\"]", "[class*=\"cookie-banner\"]", "[class*=\"cookie-notice\"]",
     "[class*=\"consent-banner\"]", "[class*=\"CookieConsent\"]", "[id*=\"cookie-banner\"]",
     "[id*=\"cookie-consent\"]", "[id*=\"cookieConsent\"]",
@@ -34,7 +51,22 @@
     "[aria-describedby*=\"cookie\" i]",
   ];
 
-  const REJECT = [
+  // Same list as the html.tbab-cookies-seen backdrop block of cookies.css.
+  const BACKDROPS = [
+    ".modal-backdrop", ".cookie-overlay", ".cc-overlay", ".cc-backdrop", ".sp_veil",
+    ".sp_dialog_overlay", "#onetrust-pc-dark-filter", ".onetrust-pc-dark-filter",
+    ".didomi-popup-backdrop", ".fc-dialog-overlay", ".cky-overlay", ".cmplz-overlay",
+    ".iubenda-cs-overlay", ".osano-cm-dialog__backdrop", ".termly-overlay", ".cmpboxBG",
+    ".uc-overlay", ".usercentrics-overlay", ".tp-backdrop", ".gdpr-overlay",
+    ".cookie-modal-backdrop", ".cookiewall-overlay", ".cookie-wall-overlay", ".consent-overlay",
+    "[class*=\"cookie-overlay\"]", "[class*=\"cookie-backdrop\"]", "[class*=\"consent-overlay\"]",
+    "[class*=\"consent-backdrop\"]", "[id*=\"cookie-overlay\"]", "[id*=\"consent-overlay\"]",
+  ];
+
+  // Tier A — consent-manager-specific controls. Each one names a CMP button and
+  // nothing else, so it is safe to click wherever it is found (also inside a CMP
+  // iframe). NEVER add a generic selector here (tests/cookies.test.mjs guards it).
+  const REJECT_CMP = [
     "#onetrust-reject-all-handler",
     ".onetrust-close-btn-handler",
     "#CybotCookiebotDialogBodyButtonDecline",
@@ -46,28 +78,19 @@
     ".uc-deny-button",
     "#uc-btn-deny-banner",
     "button[data-testid='uc-deny-all-button']",
-    "[data-testid='reject-all-button']",
     "#truste-consent-required",
     ".truste-button2",
-    ".cc-deny",
     ".cookie-decline",
     ".cmpboxbtnno",
     ".cky-btn-reject",
     ".cmplz-deny",
     ".iubenda-cs-reject-btn",
     ".osano-cm-denyAll",
-    ".termly-reject-all",
     // Sourcepoint (Mediaset, many EU media sites), rendered inside an iframe
     ".sp_choice_type_13",
     ".sp_choice_type_REJECT_ALL",
-    "button[title='Continua senza accettare']",
-    "button[aria-label*='reject' i]",
-    "button[aria-label*='decline' i]",
-    "button[aria-label*='necessary' i]",
-    "button[title*='Rifiut' i]",
   ];
-
-  const ACCEPT = [
+  const ACCEPT_CMP = [
     "#onetrust-accept-btn-handler",
     "#CybotCookiebotDialogBodyButtonAccept",
     "#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll",
@@ -75,10 +98,7 @@
     "#didomi-notice-agree-button",
     ".uc-accept-button",
     "#uc-btn-accept-banner",
-    "[data-testid='accept-all-button']",
     ".truste-button1",
-    ".cc-allow",
-    ".cc-dismiss",
     ".cookie-accept",
     ".accept-cookies",
     ".cmpboxbtnyes",
@@ -86,110 +106,264 @@
     ".cmplz-accept",
     ".iubenda-cs-accept-btn",
     ".osano-cm-accept-all",
-    "button[aria-label*='accept' i]",
-    "button[aria-label*='agree' i]",
-    "button[aria-label*='allow' i]",
-    // Sourcepoint accept-all
     ".sp_choice_type_11",
     ".sp_choice_type_ACCEPT_ALL",
-    "button[title*='Accett' i]",
-    // Google / YouTube consent
-    "form[action*='consent'] button",
-    "button[jsname='b3VHJd']",
   ];
 
+  // Tier B — generic. On their own these match real application buttons, so
+  // they are ONLY searched inside a consent root.
+  const REJECT_GENERIC = [
+    "[data-testid='reject-all-button']",
+    ".cc-deny",
+    "button[title='Continua senza accettare']",
+    "button[aria-label*='reject' i]",
+    "button[aria-label*='decline' i]",
+    "button[aria-label*='necessary' i]",
+    "button[title*='Rifiut' i]",
+  ];
+  const ACCEPT_GENERIC = [
+    "[data-testid='accept-all-button']",
+    ".cc-allow",
+    ".cc-dismiss",
+    "button[aria-label*='accept' i]",
+    "button[aria-label*='agree' i]",
+    "button[title*='Accett' i]",
+    // Google consent dialog / consent.google.* page (a root only there)
+    "button[jsname='b3VHJd']",
+  ];
+  // NOT here, on purpose: `form[action*='consent'] button` (also matches OAuth
+  // consent screens — "Allow" access to your account) and
+  // `button[aria-label*='allow' i]` (OAuth / permission prompts).
+
   const REJECT_TEXT = [
-    "reject all", "reject", "decline", "disagree", "refuse", "necessary only",
-    "only necessary", "continua senza accettare", "rifiuta", "rifiuta tutto",
-    "отхвърли", "откажи", "само необходимите", "ablehnen", "alle ablehnen", "nur notwendige",
+    "reject all", "reject", "decline", "disagree", "refuse", "deny",
+    "necessary only", "only necessary", "essential only", "only essential",
+    "accept necessary", "accept only necessary", "use necessary cookies only",
+    "continue without accepting", "continua senza accettare", "rifiuta", "rifiuta tutto",
+    "solo necessari", "ablehnen", "alle ablehnen", "nur notwendige", "nur essenzielle",
+    "tout refuser", "refuser", "continuer sans accepter", "rechazar", "rechazar todo",
+    "отхвърли", "откажи", "отказвам", "само необходимите",
   ];
   const ACCEPT_TEXT = [
     "accept all", "accept", "agree", "i agree", "got it", "allow all", "ok",
-    "accetta", "accetta tutto", "acconsenti", "ho capito",
-    "приемам", "приеми", "разбрах", "akzeptieren", "alle akzeptieren", "zustimmen",
+    "accetta", "accetta tutto", "accetta tutti", "acconsenti", "ho capito",
+    "akzeptieren", "alle akzeptieren", "zustimmen", "einverstanden",
+    "tout accepter", "accepter", "aceptar", "aceptar todo",
+    "приемам", "приеми", "приеми всички", "разбрах", "съгласен съм",
   ];
+  const BUTTONS = "button, a[role='button'], [role='button'], input[type='button'], input[type='submit']";
+
+  // A dialog / fixed bar that TALKS about cookies is a consent root — every EU
+  // banner says "cookie" (it is the legal term in every language we target).
+  // "consent" / "privacy" alone is not enough: OAuth consent screens and
+  // terms-of-service updates use those words, and we must never accept either
+  // on the user's behalf.
+  const COOKIE_WORD_RE = /cookie|бисквитк|\bgdpr\b|\brgpd\b|\bdsgvo\b|\btcf\b/i;
+  // Authorization / sign-in / payment pages: the generic and text tiers are OFF there,
+  // whatever the page says (a hostile site can navigate the user to an OAuth
+  // "Allow" page whose app name contains "cookie"). CMP-specific controls stay.
+  const AUTH_PATH_RE = /\/(o\/)?oauth2?(\/|\b)|\/authori[sz]e\b|\/consent(\/|\b)|\/log-?in\b|\/sign-?in\b|\/sso\b|\/saml\b|\/openid\b|\/auth(\/|\b)|\/checkout\b|\/payments?\b|\/pay\b|\/billing\b|\/purchase\b/i;
+  const AUTH_HOST_RE = /^(accounts\.google\.[a-z.]+|login\.microsoftonline\.com|login\.live\.com|login\.windows\.net|appleid\.apple\.com|[a-z0-9-]+\.okta\.com|[a-z0-9-]+\.auth0\.com|(www\.)?paypal\.com|(auth|login|sso|id|accounts|checkout|pay|payment|payments|billing)\.[a-z0-9.-]+)$/i;
+  // Documents that ARE the consent UI: Google's consent pages and CMP iframes.
+  const CONSENT_PAGE_HOST_RE = /^consent\.(google\.[a-z.]+|youtube\.com)$/i;
+  const CMP_FRAME_HOST_RE = /(^|\.)(privacy-mgmt\.com|sp-prod\.net|trustarc\.com|truste\.com|consentmanager\.net|cookielaw\.org|onetrust\.com|usercentrics\.eu|cookiebot\.com|didomi\.io)$/i;
 
   // Classes consent managers (and the sites hosting them) put on <html>/<body>
   // to lock scrolling or dim the page while the dialog is open.
   const LOCK_CLASS_RE = /(^|[-_])(no|lock|locked|prevent|disable)[-_]?scroll(ing)?($|[-_])|scroll[-_]?(lock|locked|disabled|frozen)|modal[-_]?open|overflow[-_]?hidden|is[-_]?locked|body[-_]?lock(ed)?|(consent|cookie|cookies|gdpr|privacy|cmp|didomi|sp|cc|tp|ot|onetrust|uc|usercentrics|cky|osano|iubenda|cmplz|termly)[-_]?(popup|modal|message|dialog|banner|notice|wall)?[-_]?(open|active|shown|visible|showing)$|^(sp-message-open|didomi-popup-open|ot-overflow-hidden|onetrust-pc-open|cmp-modal-open|cc-modal-open|tp-modal-open|cky-modal-open|is-blurred|blurred|blur)$/i;
   const OVERLAY_NAME_RE = /overlay|backdrop|veil|scrim|dimmer|dim-layer|mask|curtain|blur|shade|dark-filter|darkfilter|cookie|consent|gdpr|cmp/i;
 
+  // ---- DOM helpers -----------------------------------------------------------
   // Query across the document and any open shadow roots.
   function deepQuery(selector, deep) {
+    return queryIn(document, selector, deep);
+  }
+  function queryIn(root, selector, deep) {
     const out = [];
-    const collect = (root) => {
-      let found;
-      try {
-        found = root.querySelectorAll(selector);
-      } catch {
-        return;
-      }
-      for (const el of found) out.push(el);
+    const collect = (r) => {
+      try { for (const el of r.querySelectorAll(selector)) out.push(el); } catch { return; }
       if (!deep) return;
-      for (const el of root.querySelectorAll("*")) {
-        if (el.shadowRoot) collect(el.shadowRoot);
-      }
+      try { for (const el of r.querySelectorAll("*")) if (el.shadowRoot) collect(el.shadowRoot); } catch {}
     };
-    collect(document);
+    if (root.shadowRoot) collect(root.shadowRoot);
+    collect(root);
     return out;
   }
-
-  // "Visible" = has layout. A banner cloaked by cookies.css (visibility:hidden)
-  // still has layout on purpose, so its buttons stay clickable here.
+  // "Rendered" = has boxes (true for a banner cloaked with visibility:hidden,
+  // false once it is display:none). offsetParent is useless here: it is null
+  // for position:fixed elements, which is what most banners are.
+  function rendered(el) {
+    try { return el.getClientRects().length > 0; } catch { return false; }
+  }
+  // A button is clickable when it has layout — cloaked banners keep theirs.
   function visible(el) {
-    return el && el.offsetParent !== null && el.getClientRects().length > 0;
+    return !!el && el.offsetParent !== null && rendered(el);
+  }
+  function cs(el) {
+    try { return getComputedStyle(el); } catch { return null; }
+  }
+  // First `max` characters of an element's text, without materialising the text
+  // of a huge subtree (a fixed full-page app wrapper can hold megabytes).
+  function textPrefix(el, max) {
+    let out = "";
+    const walk = (root, depth) => {
+      if (depth > 3) return false;
+      try {
+        const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+        let n = w.currentNode;
+        while (n) {
+          if (n.nodeType === 3) {
+            out += n.nodeValue;
+            if (out.length > max) return true;
+          } else if (n.shadowRoot && walk(n.shadowRoot, depth + 1)) return true;
+          n = w.nextNode();
+        }
+      } catch {}
+      return false;
+    };
+    const truncated = walk(el, 0);
+    return { text: out.slice(0, max), truncated };
+  }
+  function talksAboutCookies(el) {
+    const { text, truncated } = textPrefix(el, 6000);
+    if (truncated || text.trim().length < 20) return false; // a notice, not a whole page
+    return COOKIE_WORD_RE.test(text);
+  }
+  function authPage() {
+    return AUTH_HOST_RE.test(location.hostname) || AUTH_PATH_RE.test(location.pathname);
   }
 
-  function clickFirst(selectors, deep) {
+  // ---- Where generic clicks are allowed ---------------------------------------
+  function consentRoots(deep) {
+    const roots = [];
+    const add = (el) => { if (el && !roots.includes(el)) roots.push(el); };
+    const host = location.hostname;
+    let framed = false;
+    try { framed = window.top !== window; } catch { framed = true; }
+    if (CONSENT_PAGE_HOST_RE.test(host) || (framed && CMP_FRAME_HOST_RE.test(host))) {
+      add(document.body || document.documentElement);
+      return roots;
+    }
+    if (authPage()) return roots; // never generic-click on a sign-in / OAuth page
+    // A BANNERS match alone is not enough (`[aria-label*="consent" i][role="dialog"]`
+    // is also how OAuth consent dialogs are labelled): it must talk about cookies.
+    for (const sel of BANNERS) {
+      for (const el of deepQuery(sel, deep)) if (rendered(el) && talksAboutCookies(el)) add(el);
+    }
+
+    let cands = [];
+    try {
+      cands = Array.from(document.querySelectorAll(
+        "[role='dialog'], [role='alertdialog'], [aria-modal='true'], dialog[open], body > *, body > * > *"
+      )).slice(0, 400);
+    } catch {}
+    for (const el of cands) {
+      if (roots.some((r) => r === el || r.contains(el))) continue;
+      const dialogish = el.matches("[role='dialog'], [role='alertdialog'], [aria-modal='true'], dialog[open]");
+      if (!dialogish) {
+        const s = cs(el);
+        if (!s || (s.position !== "fixed" && s.position !== "sticky")) continue;
+      }
+      if (!rendered(el)) continue;
+      if (talksAboutCookies(el)) add(el);
+    }
+    return roots;
+  }
+
+  // ---- Clicking --------------------------------------------------------------
+  // A generic click must never submit a form (OAuth "Allow"/"Accept" screens
+  // post a CSRF-protected form — clicking it would grant the request) nor follow
+  // a link off the page. Only Google's own cookie-consent form is allowed.
+  function formOk(el) {
+    let f = null;
+    try { f = el.form || (el.closest && el.closest("form")); } catch { return false; }
+    if (!f) return true;
+    if (CONSENT_PAGE_HOST_RE.test(location.hostname)) return true;
+    try { return CONSENT_PAGE_HOST_RE.test(new URL(f.getAttribute("action") || "", location.href).hostname); } catch { return false; }
+  }
+  function anchorOk(el) {
+    try {
+      if (!el.matches("a[href]")) return true;
+      const h = (el.getAttribute("href") || "").trim();
+      return h === "" || h.startsWith("#") || /^javascript:\s*(void\s*\(?\s*0\s*\)?)?\s*;?\s*$/i.test(h);
+    } catch { return false; }
+  }
+  function tryClick(el, generic) {
+    if (clickedEls.has(el) || !visible(el)) return false;
+    if (generic && (!formOk(el) || !anchorOk(el))) return false;
+    try {
+      el.click();
+      clickedEls.add(el);
+      return true;
+    } catch { return false; }
+  }
+  function clickSelectorsIn(roots, selectors, deep, generic) {
     for (const sel of selectors) {
-      for (const el of deepQuery(sel, deep)) {
-        if (visible(el)) {
-          try {
-            el.click();
-            return true;
-          } catch {}
+      for (const root of roots) {
+        for (const el of queryIn(root, sel, deep)) if (tryClick(el, generic)) return true;
+      }
+    }
+    return false;
+  }
+  function norm(el) {
+    return (el.textContent || el.value || "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+  function clickTextIn(roots, words, deep) {
+    for (const root of roots) {
+      for (const b of queryIn(root, BUTTONS, deep)) {
+        const t = norm(b);
+        if (!t || t.length > 40) continue;
+        if (words.some((w) => t === w || t.startsWith(w))) {
+          if (tryClick(b, true)) return true;
         }
       }
     }
     return false;
   }
 
-  function clickByText(words, deep) {
-    const buttons = deepQuery("button, a[role='button'], [role='button'], input[type='button'], input[type='submit']", deep);
-    for (const b of buttons) {
-      const t = (b.textContent || b.value || "").trim().toLowerCase();
-      if (!t || t.length > 32 || !visible(b)) continue;
-      if (words.some((w) => t === w || t.startsWith(w))) {
-        try {
-          b.click();
-          return true;
-        } catch {}
-      }
-    }
-    return false;
-  }
-
-  function seeBanner(deep) {
-    if (bannerSeen) return true;
+  // ---- Banner lifecycle ------------------------------------------------------
+  // Track each rendered banner: the first sighting opens the cleanup window and
+  // schedules a pass for when its click window ends; a banner still rendered
+  // HARD_MS later (nothing we could click) is removed from layout.
+  function trackBanners(now, deep) {
+    let any = false;
     for (const sel of BANNERS) {
-      if (deepQuery(sel, deep).length) {
-        bannerSeen = true;
-        break;
+      for (const el of deepQuery(sel, deep)) {
+        if (el.dataset && el.dataset.tbabCookieHard) continue;
+        if (!rendered(el)) continue;
+        any = true;
+        const t0 = firstSeen.get(el);
+        if (t0 === undefined) {
+          firstSeen.set(el, now);
+          setTimeout(() => dismiss(true), HARD_MS + 60);
+        } else if (now - t0 >= HARD_MS) {
+          try {
+            el.style.setProperty("display", "none", "important");
+            el.dataset.tbabCookieHard = "1";
+          } catch {}
+        }
       }
     }
-    if (bannerSeen) {
-      try { document.documentElement.classList.add("tbab-cookies-seen"); } catch {}
-    }
-    return bannerSeen;
+    return any;
   }
 
-  // ---- Page usability cleanup ---------------------------------------------
-  // Only ever runs when a consent banner was seen on this page (or a consent
-  // button was clicked): every step below is also what a legitimate modal
-  // would need, and we must not touch those on unrelated pages.
-  function cs(el) {
-    try { return getComputedStyle(el); } catch { return null; }
+  function openWindow(now) {
+    windowUntil = Math.max(windowUntil, now + GRACE_MS);
+    try { document.documentElement.classList.add("tbab-cookies-seen"); } catch {}
+    clearTimeout(finalizeTimer);
+    finalizeTimer = setTimeout(finalize, windowUntil - now + 50);
   }
+
+  // Scroll lock removal is only safe on a page that has something to scroll: a
+  // full-screen app (maps, games) keeps html/body overflow:hidden by design and
+  // its content fits the viewport.
+  function scrollable() {
+    const h = window.innerHeight || document.documentElement.clientHeight || 0;
+    const sh = Math.max(document.documentElement.scrollHeight || 0, (document.body && document.body.scrollHeight) || 0);
+    return sh > h + 50;
+  }
+
+  // ---- Page usability cleanup ------------------------------------------------
   function viewport() {
     return { w: window.innerWidth || document.documentElement.clientWidth || 0, h: window.innerHeight || document.documentElement.clientHeight || 0 };
   }
@@ -205,6 +379,19 @@
       if ((el.textContent || "").trim().length > 40) return true;
       return !!el.querySelector("iframe, video, img, canvas, input, select, textarea, a[href], button, [role='button'], [contenteditable]");
     } catch { return true; }
+  }
+  function bgAlpha(s) {
+    const m = /rgba?\(([^)]+)\)/.exec(s.backgroundColor || "");
+    if (!m) return 0;
+    const p = m[1].split(",").map((x) => parseFloat(x));
+    return p.length === 4 ? p[3] : 1;
+  }
+  function interceptsCenter(el) {
+    const { w, h } = viewport();
+    try {
+      const hit = document.elementFromPoint(w / 2, h / 2);
+      return !!hit && (hit === el || el.contains(hit));
+    } catch { return false; }
   }
   function unlockScroll(el) {
     if (!el) return;
@@ -224,16 +411,31 @@
     try { el.removeAttribute("inert"); } catch {}
     try { if (el.getAttribute("aria-hidden") === "true") el.removeAttribute("aria-hidden"); } catch {}
   }
-  function unlock() {
-    if (!bannerSeen && !clicked) return;
+  function forceScrollIfLocked() {
+    if (!scrollable()) return;
+    for (const el of [document.documentElement, document.body]) {
+      const s = el && cs(el);
+      if (!s) continue;
+      if (s.overflowY === "hidden" || s.overflow === "hidden") {
+        try { el.style.setProperty("overflow", "auto", "important"); } catch {}
+      }
+      if (el === document.body && s.position === "fixed") {
+        try { el.style.setProperty("position", "static", "important"); } catch {}
+      }
+    }
+  }
+
+  function unlock(force) {
+    if (!force && Date.now() >= windowUntil) return;
     const html = document.documentElement;
     const body = document.body;
     unlockScroll(html);
     unlockScroll(body);
     if (!body) return;
 
-    // 1) Full-viewport fixed layers with no content of their own: backdrops,
-    //    veils, dark filters and blur layers (by name, or by looking like one).
+    // 1) Full-viewport fixed layers with no content of their own: a blur layer
+    //    (backdrop-filter) always; a dimming veil only when it actually sits on
+    //    top and swallows clicks, and looks like one (name or tinted background).
     let layers;
     try { layers = body.querySelectorAll("body > *, body > * > *"); } catch { layers = []; }
     for (const el of layers) {
@@ -244,10 +446,11 @@
       if (!s || (s.position !== "fixed" && s.position !== "absolute")) continue;
       if (s.display === "none" || s.visibility === "hidden") continue;
       if (!coversViewport(el, 0.9)) continue;
-      const name = id + " " + (typeof el.className === "string" ? el.className : "");
-      const looksLikeVeil = OVERLAY_NAME_RE.test(name) || (s.backdropFilter && s.backdropFilter !== "none");
-      if (!looksLikeVeil) continue;
       if (hasInteractiveContent(el)) continue;
+      const blurLayer = /blur\(/.test(s.backdropFilter || "") || /blur\(/.test(s.webkitBackdropFilter || "");
+      const name = id + " " + (typeof el.className === "string" ? el.className : "");
+      const veil = interceptsCenter(el) && (OVERLAY_NAME_RE.test(name) || bgAlpha(s) >= 0.1);
+      if (!blurLayer && !veil) continue;
       try {
         el.style.setProperty("display", "none", "important");
         el.dataset.tbabVeil = "1";
@@ -276,82 +479,119 @@
       } catch {}
     }
 
-    // 3) Scroll lock applied by stylesheet (class already removed above may not
-    //    be the one): if the page still cannot scroll, force it.
-    for (const el of [html, body]) {
-      const s = cs(el);
-      if (!s) continue;
-      if (s.overflowY === "hidden" || s.overflow === "hidden") {
-        try { el.style.setProperty("overflow", "auto", "important"); } catch {}
-      }
-      if (el === body && s.position === "fixed") {
-        try { el.style.setProperty("position", "static", "important"); } catch {}
+    // 3) Scroll lock applied by a stylesheet we could not strip.
+    forceScrollIfLocked();
+  }
+
+  // Window closed: last sweep, pin the leftovers that only our -seen CSS was
+  // hiding, then drop the class so later, legitimate modals are left alone.
+  function finalize() {
+    const now = Date.now();
+    if (now < windowUntil) {
+      clearTimeout(finalizeTimer);
+      finalizeTimer = setTimeout(finalize, windowUntil - now + 50);
+      return;
+    }
+    unlock(true);
+    for (const sel of BACKDROPS) {
+      for (const el of deepQuery(sel, false)) {
+        try {
+          el.style.setProperty("display", "none", "important");
+          el.dataset.tbabVeil = "1";
+        } catch {}
       }
     }
+    try { document.documentElement.classList.remove("tbab-cookies-seen"); } catch {}
+    forceScrollIfLocked();
   }
 
   function dismiss(deep) {
     if (!active) return;
-    seeBanner(deep);
-    const ok =
-      clickFirst(REJECT, deep) ||
-      clickFirst(ACCEPT, deep) ||
-      clickByText(REJECT_TEXT, deep) ||
-      clickByText(ACCEPT_TEXT, deep);
-    if (ok) {
-      clicked = true;
-      try { document.documentElement.classList.add("tbab-cookies-seen"); } catch {}
+    const now = Date.now();
+    if (trackBanners(now, deep)) openWindow(now);
+    const roots = consentRoots(deep);
+    const clicked =
+      clickSelectorsIn([document], REJECT_CMP, deep, false) ||
+      clickSelectorsIn(roots, REJECT_GENERIC, deep, true) ||
+      clickTextIn(roots, REJECT_TEXT, deep) ||
+      clickSelectorsIn([document], ACCEPT_CMP, deep, false) ||
+      clickSelectorsIn(roots, ACCEPT_GENERIC, deep, true) ||
+      clickTextIn(roots, ACCEPT_TEXT, deep);
+    if (clicked) {
+      openWindow(now);
       // Let the CMP finish its own teardown, then sweep what it left behind.
-      setTimeout(unlock, 350);
-      setTimeout(unlock, 1500);
+      setTimeout(() => unlock(false), 350);
+      setTimeout(() => unlock(false), 1500);
     }
-    unlock();
+    unlock(false);
   }
 
-  function harden() {
-    if (hardened || !active) return;
-    hardened = true;
-    try { document.documentElement.classList.add("tbab-cookies-hard"); } catch {}
-    unlock();
-  }
-
+  let wired = false;
   function enable() {
     active = true;
     document.documentElement.classList.add("tbab-cookies");
     dismiss(true);
+    if (wired) return; // observers / timers only once per page
+    wired = true;
 
-    // Light passes on DOM changes, throttled so busy pages stay smooth.
+    // Light passes on DOM changes, throttled so busy pages stay smooth. A pass
+    // goes deep (shadow roots) at most once a second, and only while a banner
+    // is around — shallow otherwise.
     let queued = false;
-    new MutationObserver(() => {
+    const onMutation = () => {
       if (queued) return;
       queued = true;
       setTimeout(() => {
         queued = false;
-        dismiss(false);
+        const now = Date.now();
+        const deep = now < windowUntil && now - lastDeep > 1000;
+        if (deep) lastDeep = now;
+        dismiss(deep);
       }, 400);
-    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "inert"] });
+    };
+    new MutationObserver(onMutation).observe(document.documentElement, { childList: true, subtree: true });
+    // Lock classes / inline styles / inert go on <html> and <body>; watching
+    // attributes page-wide would wake us on every animation frame.
+    const attrs = { attributes: true, attributeFilter: ["class", "style", "inert"] };
+    new MutationObserver(onMutation).observe(document.documentElement, attrs);
+    if (document.body) new MutationObserver(onMutation).observe(document.body, attrs);
 
-    // A few deeper passes catch shadow-DOM and late banners; after the click
-    // window whatever is still there is removed from layout for good.
+    // A few deep passes catch shadow-DOM and late banners (CMPs that load
+    // seconds after the page), then a sparse tail.
     let n = 0;
     const t = setInterval(() => {
-      if (!active || n++ > 10) { clearInterval(t); harden(); return; }
+      if (!active || n++ > 10) { clearInterval(t); return; }
       dismiss(true);
     }, 700);
-    setTimeout(harden, 4000);
+    for (const ms of [10000, 20000, 40000]) setTimeout(() => dismiss(true), ms);
   }
 
-  chrome.storage?.local.get(["enabled", "features"], (data) => {
-    if (data.enabled !== false && (data.features || {}).cookies !== false) enable();
-  });
+  function disable() {
+    active = false;
+    document.documentElement.classList.remove("tbab-cookies", "tbab-cookies-seen");
+  }
 
+  // Runs only when protection is on, the feature is on AND the site is not on
+  // the allowlist — re-evaluated on every storage change (the allowlist is the
+  // user's one per-site way out; it used to be ignored here).
+  const pageHost = location.hostname.replace(/^www\./, "");
+  const onList = (list) => (list || []).some((d) => pageHost === d || pageHost.endsWith("." + d));
+  const st = { enabled: true, feature: true, allowed: false };
+  function applyGate() {
+    const want = st.enabled && st.feature && !st.allowed;
+    if (want && !active) enable();
+    else if (!want && active) disable();
+  }
+  chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {
+    st.enabled = data.enabled !== false;
+    st.feature = (data.features || {}).cookies !== false;
+    st.allowed = onList(data.allowlist);
+    applyGate();
+  });
   chrome.storage?.onChanged.addListener((changes) => {
-    if (!changes.features) return;
-    const on = (changes.features.newValue || {}).cookies !== false;
-    if (on && !active) enable();
-    else if (!on) {
-      active = false;
-      document.documentElement.classList.remove("tbab-cookies", "tbab-cookies-hard", "tbab-cookies-seen");
-    }
+    if (changes.enabled) st.enabled = changes.enabled.newValue !== false;
+    if (changes.features) st.feature = (changes.features.newValue || {}).cookies !== false;
+    if (changes.allowlist) st.allowed = onList(changes.allowlist.newValue);
+    if (changes.enabled || changes.features || changes.allowlist) applyGate();
   });
 })();

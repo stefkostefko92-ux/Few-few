@@ -1,12 +1,18 @@
 const $ = (id) => document.getElementById(id);
 
+// A host exactly as Chrome and declarativeNetRequest see it: lowercase ASCII,
+// IDN converted to punycode (URL does that), no scheme / path / port / www.
+// "пример.бг" used to be stored raw — DNR rejects it, and because allowlist
+// rule updates are atomic, every later allowlist change silently failed too.
 function normalizeDomain(input) {
-  return (input || "")
-    .trim()
-    .toLowerCase()
-    .replace(/^https?:\/\//, "")
-    .replace(/^www\./, "")
-    .replace(/\/.*$/, "");
+  let s = (input || "").trim();
+  if (!s) return "";
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = "http://" + s;
+  try {
+    return new URL(s).hostname.replace(/^www\./, "").replace(/\.$/, "");
+  } catch {
+    return "";
+  }
 }
 
 function fmtData(mb) {
@@ -311,7 +317,7 @@ $("resetStats").addEventListener("click", () => {
 });
 
 // ---- Backup ----
-const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics"];
+const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters"];
 
 $("exportBtn").addEventListener("click", () => {
   chrome.storage.local.get(EXPORT_KEYS, (data) => {

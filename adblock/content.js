@@ -14,6 +14,7 @@
 (function () {
   let enabled = true;
   let cosmeticsOff = false; // per-site "no cosmetic filtering" (network blocking unaffected)
+  let allowed = false;       // site is on the allowlist: we do nothing here, on EVERY path
   let smartEnabled = true;
   let customSelectors = [];
   let procSelectors = [];
@@ -51,6 +52,9 @@
   };
   gate(true);
 
+  function classToken(t) {
+    return [`[class^='${t}']`, `[class*=' ${t}']`, `[class*='-${t}']`, `[class*='_${t}']`];
+  }
   const AD_SELECTORS = [
     "[id^='google_ads_']",
     "[id^='div-gpt-ad']",
@@ -58,19 +62,23 @@
     "[id*='banner-ad']",
     "[id*='adsense']",
     "[id*='dfp-']",
-    "[class*='ad-banner']",
-    "[class*='ad-container']",
-    "[class*='ad-wrapper']",
-    "[class*='ad-slot']",
-    "[class*='ad-unit']",
-    "[class*='ad-placeholder']",
-    "[class*='advertisement']",
-    "[class*='advert-']",
-    "[class*='sponsored']",
+    // Class names match as the START of a class token (or after "-"/"_"),
+    // never as a bare substring: `[class*='ad-container']` also hid
+    // thread-container, head-container, download-container, upload-container…
+    // on every site (forums, download pages), and `sponsored` hid "unsponsored".
+    ...classToken("ad-banner"),
+    ...classToken("ad-container"),
+    ...classToken("ad-wrapper"),
+    ...classToken("ad-slot"),
+    ...classToken("ad-unit"),
+    ...classToken("ad-placeholder"),
+    ...classToken("advertisement"),
+    ...classToken("advert-"),
+    ...classToken("sponsored"),
     "[class*='-sponsor']",
     "[class*='adsbygoogle']",
-    "[class*='dfp-']",
-    "[class*='gpt-ad']",
+    ...classToken("dfp-"),
+    ...classToken("gpt-ad"),
     "[class*='outbrain']",
     "[class*='taboola']",
     "[data-ad-slot]",
@@ -331,15 +339,20 @@
   }
 
   function hideEl(el) {
+    // Never the whole page: a picker click on empty space selects <body>/<html>
+    // (or an id on them), and hiding that blanks the site on every visit.
+    if (el === document.documentElement || el === document.body) return;
     if (el.dataset.tbabHidden || el.dataset.tbabUnhide) return;
     el.dataset.tbabHidden = "1";
     el.style.setProperty("display", "none", "important");
   }
 
   function hide(root = document) {
-    if (!enabled || cosmeticsOff) return;
+    if (!enabled || allowed || cosmeticsOff) return;
     applyUnhide();
-    for (const sel of AD_SELECTORS.concat(customSelectors)) {
+    // $generichide (EasyList) for this host: no generic cosmetics at all — the
+    // bundled AD_SELECTORS are generic too (Google sign-in, Ads Manager…).
+    for (const sel of (genericHideHost ? [] : AD_SELECTORS).concat(customSelectors)) {
       let nodes;
       try {
         nodes = root.querySelectorAll(sel);
@@ -357,11 +370,14 @@
         } else if (action.op === "remove") {
           if (!el.dataset.tbabUnhide) el.remove();
         } else if (action.op === "style") {
-          applyStyle(el, action.arg);
+          // No url()/image-set()/attr()/escapes: a cosmetic rule must not beacon.
+          if (SA_POLICY.styleOk(action.arg)) applyStyle(el, action.arg);
         } else if (action.op === "remove-attr") {
+          // Security-relevant attributes (sandbox, src, href, integrity…) are
+          // never stripped, whatever the rule's source (lists, live, My filters).
           const re = toRegex(action.arg);
           for (const a of (el.getAttributeNames ? el.getAttributeNames() : []))
-            if (re ? re.test(a) : a === action.arg.toLowerCase()) { try { el.removeAttribute(a); } catch {} }
+            if ((re ? re.test(a) : a === action.arg.toLowerCase()) && !SA_POLICY.ATTR_DENY.test(a)) { try { el.removeAttribute(a); } catch {} }
         } else if (action.op === "remove-class") {
           const re = toRegex(action.arg);
           for (const c of [...el.classList])
@@ -373,7 +389,7 @@
 
   // Collapse wrappers left empty after their only (ad) child is hidden.
   function collapseEmpty() {
-    if (!enabled || cosmeticsOff) return;
+    if (!enabled || allowed || cosmeticsOff) return;
     document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
       const p = el.parentElement;
       if (!p || p.children.length !== 1 || p.offsetHeight >= 5) return;
@@ -472,7 +488,7 @@
   }
 
   function smartScan() {
-    if (!enabled || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
+    if (!enabled || allowed || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
     const items = [];
     scanFrames(items);
     scanSticky(items);
@@ -552,7 +568,7 @@
       recomputeCosmeticsOff();
       if (cosmeticsOff) gate(false);
       smartEnabled = (data.features || {}).smart !== false;
-      const allowed = (data.allowlist || []).some(hostMatches);
+      allowed = (data.allowlist || []).some(hostMatches);
       pickerMap = data.customHidden || {};
       userText = data.userFilters || "";
       liveCosmetic = (data.liveConfig && data.liveConfig.cosmetic) || [];
@@ -586,7 +602,7 @@
       // Пре-проверяваме allowlist-а: включване на защитата не бива да пусне
       // генеричната козметика на allowlist-нат сайт.
       chrome.storage.local.get("allowlist", (d) => {
-        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        allowed = ((d && d.allowlist) || []).some(hostMatches);
         // Гейтът зачита и $generichide хоста, за да не върне генеричния CSS
         // при повторно включване без reload.
         // …и per-site „без козметика" — иначе повторното включване връща
@@ -606,14 +622,21 @@
       }
       recomputeCosmeticsOff();
       chrome.storage.local.get("allowlist", (d) => {
-        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        allowed = ((d && d.allowlist) || []).some(hostMatches);
         gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
         if (enabled && !allowed && !cosmeticsOff) hide();
       });
     }
+    if (changes.allowlist) {
+      const was = allowed;
+      allowed = (changes.allowlist.newValue || []).some(hostMatches);
+      gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
+      if (allowed && !was) revealHidden();              // just allowlisted: give the page back
+      else if (!allowed && was && enabled) { start(); hide(); }
+    }
     if (changes.features) {
       smartEnabled = (changes.features.newValue || {}).smart !== false;
-      if (enabled && smartEnabled) smartScan();
+      if (enabled && !allowed && smartEnabled) smartScan();
     }
     if (changes.customHidden || changes.userFilters || changes.liveConfig) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
@@ -623,7 +646,7 @@
         deliverScriptlets(changes.liveConfig.newValue);
       }
       rebuildSelectors();
-      if (enabled) hide();
+      if (enabled && !allowed) hide();
     }
   });
 

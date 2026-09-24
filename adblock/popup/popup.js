@@ -73,8 +73,8 @@ function load() {
   });
 }
 
-// "What was blocked on this page": our own matched rules for this tab, from
-// declarativeNetRequestFeedback (local, nothing leaves the device).
+// "What was blocked on this page": how many requests each filter list stopped
+// in this tab, from declarativeNetRequestFeedback (local, nothing leaves the device).
 function loadLog() {
   const list = $("logList");
   const empty = $("logEmpty");
@@ -90,15 +90,23 @@ function loadLog() {
     }
     count.textContent = String(res.total);
     empty.hidden = res.items.length > 0;
+    // Chrome reports WHICH rule matched, not the request URL (that exists only
+    // for unpacked builds) — so the log is an honest per-list breakdown.
+    const LIST_LABEL = {
+      easylist: () => "EasyList", easyprivacy: () => "EasyPrivacy",
+      core: () => t("logCore"), youtube: () => t("logYouTube"), params: () => t("logParams"),
+      malware: () => t("logMalware"), surrogates: () => t("logSurrogates"), privacy: () => t("logPrivacy"),
+      user: () => t("logUser"), live: () => t("logLive"),
+    };
     for (const it of res.items) {
       const li = document.createElement("li");
-      const host = document.createElement("span");
-      host.className = "host";
-      host.textContent = it.host;
-      const type = document.createElement("span");
-      type.className = "type";
-      type.textContent = it.type + (it.n > 1 ? " ×" + it.n : "");
-      li.append(host, type);
+      const name = document.createElement("span");
+      name.className = "host";
+      name.textContent = (LIST_LABEL[it.list] || LIST_LABEL.core)();
+      const n = document.createElement("span");
+      n.className = "type";
+      n.textContent = "×" + it.n;
+      li.append(name, n);
       list.appendChild(li);
     }
   });
