@@ -132,7 +132,7 @@ standalone + SOLIDWORKS plug-in — sweet spot за хибрид.
 - **Пример (съкратено):** „`scan.stl` → not watertight (3 дупки) → repair → `clean.stl` watertight ✔; deviation срещу ref: средно 0.08 mm, 96% в ±0.2 mm → готов за class-A surfacing с G2."
 
 ## v2.0 — полу-автоматичен scan→параметричен CAD
-- **Сегментация:** `python3 tools/3d/ransac_segment.py scan.ply` (RANSAC равнини → засява призматичните features). **Форма:** `python3 tools/3d/generate_mold.py part.step --ply 1.2 --draft 3` (offset/shell/draft чернова). **Deviation:** `clean_and_validate.py --deviation ref.stl`.
+- **Сегментация:** `python3 tools/3d/ransac_segment.py scan.ply` (RANSAC равнини → засява призматичните features). **Форма:** `python3 tools/3d/generate_mold.py part.step --open "<Z" --ply 1.2 --draft 3` (`--open` = лицето, отворено за layup — задължително) (offset/shell/draft чернова). **Deviation:** `clean_and_validate.py --deviation ref.stl`.
 - **AI scan→CAD:** cadrille (ICLR 2026) / CAD-Recode → **редактируем CadQuery код**; третирай като ЧЕРНОВА — одитирай топология/размери, не приемай сляпо.
 - **Планирано (L):** интеграция на cadrille pipeline; PyNite FEA скрининг. Никога структурна карбон част само на FEA скрининг — gate на deviation + ACP/физичен тест.
 

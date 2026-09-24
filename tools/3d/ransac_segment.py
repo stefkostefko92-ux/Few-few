@@ -18,7 +18,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("input")
     ap.add_argument("--max-planes", type=int, default=6)
-    ap.add_argument("--dist", type=float, default=0.4, help="RANSAC distance threshold (mm)")
+    ap.add_argument("--dist", type=float, default=0.4,
+                    help="RANSAC distance threshold (mm); при закръгления R≤5 mm ползвай ~0.01×R–0.05 mm, иначе фланецът се „изяжда“ в равнините")
+    ap.add_argument("--min-inliers", type=int, default=200, help="минимум точки за равнина (под това — край)")
     ap.add_argument("--out", help="оцветен PLY с намерените равнини")
     a = ap.parse_args()
 
@@ -29,7 +31,9 @@ def main():
         sys.exit("✘ Липсва open3d. Инсталирай: pip install open3d (виж tools/3d/requirements.txt)")
 
     geo = o3d.io.read_triangle_mesh(a.input)
-    if len(geo.vertices) == 0:
+    # Точков облак (PLY само с точки) се чете с върхове, но 0 триъгълника — тогава
+    # sample_points_uniformly гърми. Решава се по триъгълниците (3D Maniac, 2026-09-24).
+    if len(geo.triangles) == 0:
         pcd = o3d.io.read_point_cloud(a.input)
     else:
         pcd = geo.sample_points_uniformly(number_of_points=80000)
@@ -41,10 +45,10 @@ def main():
     colored = []
     rng = np.random.default_rng(42)
     for i in range(a.max_planes):
-        if len(rest.points) < 200:
+        if len(rest.points) < a.min_inliers:
             break
         model, inliers = rest.segment_plane(distance_threshold=a.dist, ransac_n=3, num_iterations=1000)
-        if len(inliers) < 200:
+        if len(inliers) < a.min_inliers:
             break
         a_, b_, c_, d_ = model
         plane = rest.select_by_index(inliers)
