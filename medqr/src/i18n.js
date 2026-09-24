@@ -92,6 +92,11 @@ const DICT = {
   'lang.bg': { bg: 'БГ', en: 'BG' },
   'lang.en': { bg: 'EN', en: 'EN' },
   'lang.switch': { bg: 'Език', en: 'Language' },
+  // ≥5 ключови думи, винаги „Carbon Stealth“ (правило на монорепото).
+  'meta.keywords': {
+    bg: 'спешен медицински профил, QR код за спешна помощ, NFC медицинска карта, алергии и лекарства, спешен контакт, MedQR, Carbon Stealth',
+    en: 'emergency medical profile, emergency QR code, NFC medical ID, allergies and medications, emergency contact, MedQR, Carbon Stealth',
+  },
   'og.image_alt': {
     bg: 'MedQR — спешен медицински профил с QR код',
     en: 'MedQR — emergency medical profile with a QR code',
