@@ -119,6 +119,31 @@ export function assertPublishable(html, embedded = {}) {
   return true;
 }
 
+/**
+ * Агенти, чиято последна версия в билда е ПОД тази в паметта (или липсват). Празен списък = наред.
+ * Инцидент 2026-09-24: композитен билд взе вградения FALLBACK от работния клон (v15 срещу v21 в
+ * паметта); сумата поуки съвпадаше, затова нищо не падна — артефактът показа флота 6 версии назад.
+ */
+export function versionRegressions(html, mem) {
+  const num = (v) => parseFloat(v);
+  const start = Math.max(0, html.indexOf("const FALLBACK"));
+  const ids = (mem.agents || mem).map((a) => a.id);
+  const pos = ids.map((id) => [id, html.slice(start).search(new RegExp(`"id":\\s*"${id}"`))]).filter(([, p]) => p >= 0).sort((a, b) => a[1] - b[1]);
+  const shown = {};
+  pos.forEach(([id, p], i) => {
+    const seg = html.slice(start + p, i + 1 < pos.length ? start + pos[i + 1][1] : undefined);
+    const vs = [...seg.matchAll(/"version":\s*"([0-9.]+)"/g)].map((m) => num(m[1]));
+    if (vs.length) shown[id] = Math.max(...vs);
+  });
+  const out = [];
+  for (const a of mem.agents || mem) {
+    const real = Math.max(0, ...(a.evolution || []).map((e) => num(e.version)));
+    if (!(a.id in shown)) out.push(`${a.id}: липсва в билда (паметта: ${real})`);
+    else if (shown[a.id] < real) out.push(`${a.id}: ${shown[a.id]} < ${real}`);
+  }
+  return out;
+}
+
 /** Целият билд. Връща готовия за публикуване текст + числата за доклада. */
 export function build(dash = DASH, reader = null) {
   const rd = reader || { read: (p) => readFileSync(join(dash, p), "utf8") };
@@ -159,6 +184,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const ref = flag("--ref") ?? memoryTip();
   const reader = dashReader(ref);
   const r = build(DASH, ref ? reader : null);
+  // Пазач: независимо откъде чете билдът, версиите не могат да са под върха на паметта.
+  const tip = memoryTip();
+  if (tip) {
+    const memJson = git(["show", `${tip}:agents-dashboard/agents.json`]);
+    const bad = memJson ? versionRegressions(r.html, JSON.parse(memJson)) : [];
+    if (bad.length) {
+      console.error(`\x1b[31m✗ билдът показва агентите ПОД паметта (${tip.slice(0, 8)}) — не публикувай:\x1b[0m\n  ${bad.join("\n  ")}`);
+      console.error("  Вграденият FALLBACK е застоял — вземи го от agents/memory (index.html), после билдни пак.");
+      process.exit(1);
+    }
+  }
   writeFileSync(out, r.html);
   console.log(`\x1b[32m✓\x1b[0m ${out} · ${(r.html.length / 1024 / 1024).toFixed(2)} MB · ${r.icons} маскота вградени`);
   console.log(`  източник: ${reader.source} · агенти: ${r.agents} · сума проверени поуки: ${r.lessons}`);

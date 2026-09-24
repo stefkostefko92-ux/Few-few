@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { build, stripDocumentWrapper, mascotDataUris, assertPublishable } from "./build-artifact.mjs";
+import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions } from "./build-artifact.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -81,4 +81,24 @@ test("MASCOT_ICONS се обявява ПРЕДИ първата си употр
   const { html } = build();
   assert.ok(html.indexOf("const MASCOT_ICONS") < html.indexOf("MASCOT_ICONS[id]"),
     "ръчният билд я слагаше след употребата — работеше по случайност, не по устройство");
+});
+
+// Реален инцидент (2026-09-24): композитен билд взе index.html от работния клон — вграденият FALLBACK
+// там спира на v15, а паметта е на v21. Артефактът показа агентите 6 версии назад. Числото на поуките
+// съвпадаше (sync-dashboard оправя само него), затова нищо не падна.
+test("ЗЪБИ: версиите в билда не могат да са под паметта (регресия на evolution)", () => {
+  const html = (v) => `const FALLBACK = {"agents":[{"id":"a","evolution":[{"version":"1.0.0"},{"version":"${v}"}]}]};`;
+  const mem = { agents: [{ id: "a", evolution: [{ version: "21.4.0" }] }] };
+  assert.deepEqual(versionRegressions(html("21.4.0"), mem), []);
+  assert.deepEqual(versionRegressions(html("22.0.0"), mem), [], "по-нова от паметта е наред");
+  const r = versionRegressions(html("15.6.0"), mem);
+  assert.equal(r.length, 1);
+  assert.match(r[0], /a: 15\.6 < 21\.4/);
+});
+
+test("versionRegressions: липсващ агент в билда също е регресия", () => {
+  const mem = { agents: [{ id: "a", evolution: [{ version: "1.0.0" }] }, { id: "b", evolution: [{ version: "2.0.0" }] }] };
+  const r = versionRegressions(`{"agents":[{"id":"a","evolution":[{"version":"1.0.0"}]}]}`, mem);
+  assert.equal(r.length, 1);
+  assert.match(r[0], /b: липсва/);
 });
