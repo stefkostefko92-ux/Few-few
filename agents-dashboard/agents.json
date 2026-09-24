@@ -4550,7 +4550,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 111
+        "lessons": 137
       },
       "evolution": [
         {
@@ -4678,9 +4678,20 @@
           "date": "2026-09-24",
           "event": "v17.0 — учене",
           "detail": "Научи: zabobovdol root layout.tsx (src/app/layout.tsx:11) внася ChatWidget (350 реда, 'use cli… (+24 още)"
+        },
+        {
+          "version": "19.6.0",
+          "date": "2026-09-24",
+          "event": "v19.6 — учене",
+          "detail": "Научи: medqr начална страница, реално пуснат Express сървър (не статичен снапшот) на localhost… (+25 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „medqr начална страница, реално пуснат Express сървър (не статичен снапшот) на localhost…\" (+25 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
