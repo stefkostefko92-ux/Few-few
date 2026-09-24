@@ -14680,7 +14680,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 179
+        "lessons": 203
       },
       "evolution": [
         {
@@ -14736,9 +14736,20 @@
           "date": "2026-09-24",
           "event": "v16.9 — учене",
           "detail": "Научи: medqr/README.md:109 твърди „npm test # 24 end-to-end проверки (smoke)“, но test/smoke.t… (+26 още)"
+        },
+        {
+          "version": "19.3.0",
+          "date": "2026-09-24",
+          "event": "v19.3 — учене",
+          "detail": "Научи: SupremeDiscordBot/README.md + CLAUDE.md команди, env таблици, docs/legal пътища и INVIT… (+23 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot/README.md + CLAUDE.md команди, env таблици, docs/legal пътища и INVIT…\" (+23 още) · 6 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
