@@ -154,6 +154,20 @@
       Визитката е публична (изключи за скриване)
     </label>
 
+    <label class="check">
+      <input type="checkbox" name="ai_discoverable" value="1"
+             <%= profile.ai_discoverable ? 'checked' : 'disabled' %>>
+      Намираема от AI асистенти (ChatGPT, Claude)
+      <span class="muted small">
+        <% if (profile.ai_discoverable) { %>
+          Потребителят е дал съгласие. Можеш да го ОТТЕГЛИШ (модерация), но не можеш да го
+          дадеш вместо него — затова полето е заключено, когато е изключено.
+        <% } else { %>
+          Потребителят не е дал съгласие. Съгласието се дава само от неговото табло.
+        <% } %>
+      </span>
+    </label>
+
     <button type="submit" class="btn btn-big">Запази промените</button>
   </form>
 </section>

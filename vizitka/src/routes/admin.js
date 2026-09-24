@@ -151,6 +151,7 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
         ...input.fields,
         type: input.type,
         is_public: input.isPublic,
+        ai_discoverable: profile.ai_discoverable ? input.aiDiscoverable : 0,
         theme: input.theme,
         accent: input.accent,
         avatar_shape: input.avatarShape,
@@ -161,6 +162,12 @@ router.post('/admin/profiles/:id', requireAdmin, csrfProtect, (req, res) => {
       // тихо изчезваше и формата показваше старите стойности от базата.
       { error, links: input.parsed.links }
     );
+
+  // Съгласието за AI конектора е на ПОТРЕБИТЕЛЯ: админът може да го ОТТЕГЛИ
+  // (модерация), но не може да го даде вместо него. Затова стойността от формата
+  // се и-ва с текущата — включване от админ панела е невъзможно по конструкция,
+  // а не по това дали някой е сложил поле във формата.
+  input.aiDiscoverable = profile.ai_discoverable ? input.aiDiscoverable : 0;
 
   // Същото правило като при бутона за видимост: админът не публикува визитка,
   // която потребителят сам е скрил.
