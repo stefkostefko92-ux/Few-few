@@ -14191,7 +14191,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 201
+        "lessons": 207
       },
       "evolution": [
         {
@@ -14277,9 +14277,20 @@
           "date": "2026-09-24",
           "event": "v19.6 — учене",
           "detail": "Научи: DNR лимити (живи константи): GUARANTEED_MINIMUM_STATIC_RULES 30000 за включените статич… (+27 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: Capacitor major версия определя targetSdk по подразбиране: 6 → 34, 7 → 35, 8 → 36 (Cap … (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Capacitor major версия определя targetSdk по подразбиране: 6 → 34, 7 → 35, 8 → 36 (Cap …\" (+5 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
