@@ -76,7 +76,7 @@ export function normalizeConfidence(raw) {
   return CONFIDENCE_SYNONYMS[s] || "unverified";
 }
 
-function parseLearn(block) {
+export function parseLearn(block) {
   const res = { agent: null, date: null, lessons: [] };
   let cur = null;
   for (const raw of block.split("\n")) {
@@ -92,7 +92,31 @@ function parseLearn(block) {
     else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
     else if (cur && (m = line.match(/^\s*re-?verify:\s*(\d{4}-\d{2}-\d{2}).*$/i))) cur.reverify = m[1].trim(); // #2 явен TTL за критичен факт
   }
+  if (!res.lessons.length) res.lessons = inlineLessons(block);
   return res;
+}
+
+// Резервен формат: поука като свободен булет с полетата в същия ред —
+// „- 2026-09-24: текст… confidence: verified; source: файл:ред“. Сийдъра предаде 25 проверени поуки
+// точно така (2026-09-24) и парсерът намери НУЛА — ученето тихо изчезна. Същите проверки важат
+// (тайна, инжекция, реален източник за verified), тук само се разчита формата.
+export function inlineLessons(block) {
+  const out = [], entries = [];
+  // Булет + редовете под него (полетата често продължават на следващ ред) = една поука.
+  for (const raw of block.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("- ")) entries.push(line.slice(2));
+    else if (line && entries.length && !/^(agent|date|lessons):/i.test(line)) entries[entries.length - 1] += " " + line;
+  }
+  for (const body of entries) {
+    if (!/\bconfidence:/i.test(body)) continue;
+    const text = body.split(/\s*\bconfidence:/i)[0].replace(/^\*{0,2}\d{4}-\d{2}-\d{2}\*{0,2}:\s*/, "").replace(/[\s.;,]+$/, "").trim();
+    const conf = (body.match(/\bconfidence:\s*([^;|]+)/i) || [])[1] || "";
+    const source = ((body.match(/\bsource:\s*(.+?)(?:;\s*scope:|$)/i) || [])[1] || "").trim();
+    const scope = ((body.match(/\bscope:\s*(.+)$/i) || [])[1] || "").trim();
+    if (text) out.push({ text, confidence: normalizeConfidence(conf.trim()), source, scope, reverify: "" });
+  }
+  return out;
 }
 
 
