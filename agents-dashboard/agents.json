@@ -3672,7 +3672,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 205
+        "lessons": 217
       },
       "evolution": [
         {
@@ -4106,9 +4106,20 @@
           "date": "2026-09-24",
           "event": "v18.8 — учене",
           "detail": "Научи: Minyor/src/app/layout.tsx:36-44 metadata.keywords масив (7 елемента) НЯМА „Carbon Steal… (+13 още)"
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-24",
+          "event": "v20.0 — учене",
+          "detail": "Научи: vizitka/src/seo.js:336-370 cardJsonLd() emits Person/Organization directly as a top-lev… (+11 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „vizitka/src/seo.js:336-370 cardJsonLd() emits Person/Organization directly as a top-lev…\" (+11 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
