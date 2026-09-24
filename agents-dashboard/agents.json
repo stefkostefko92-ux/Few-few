@@ -7567,6 +7567,11 @@
       ],
       "activity": [
         {
+          "date": "2026-09-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „tools/3d/clean_and_validate.py:58 вика m.nonzero_faces(), метод който НЕ съществува в t…\" (+24)"
+        },
+        {
           "date": "2026-09-23",
           "type": "learning",
           "summary": "Научи: „Listino KVS 2026 (IVA escl., EUR): QuickSurface Lite €480/anno solo subscription; Pro €…\" (+6 още) · 11 в карантина"
