@@ -26,11 +26,29 @@ const isTestFile = (f) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(basename(f));
 const USES_STRIPE = /(from\s+["']stripe["']|require\(\s*["']stripe["']\s*\)|\bstripe\.(checkout|webhooks|customers|subscriptions|paymentIntents|invoices)\b)/;
 // Дефиниция на webhook маршрут: app.post('/…webhook…', …) / router.all(…) / app.use('/…webhook…', …)
 const WEBHOOK_ROUTE = /\.(post|all|use)\(\s*["'`][^"'`]*webhook[^"'`]*["'`]/i;
+// Приемник без думата „webhook“ в пътя (/stripe/events, /ipn, /callback) се познава по съдържанието:
+// POST маршрут, който разклонява по типове Stripe събития. Иначе цялото семейство webhook правила
+// мълчеше (Разбивача, 2026-09-24).
+const ANY_POST = /\.(post|all)\(\s*["'`][^"'`]*["'`]/g;
+const STRIPE_EVENT = /["'`](checkout\.session|invoice|customer\.subscription|payment_intent|charge)\.[a-z_.]+["'`]/;
+const NEXT_ROUTE = /\n\s*(app|router)\.(get|post|put|patch|delete|all|use)\(/;
+function webhookStart(src) {
+  const named = src.search(WEBHOOK_ROUTE);
+  if (named >= 0) return named;
+  for (const m of src.matchAll(ANY_POST)) {
+    const rest = src.slice(m.index);
+    const end = rest.slice(1).search(NEXT_ROUTE);
+    if (STRIPE_EVENT.test(end < 0 ? rest : rest.slice(0, end + 1))) return m.index;
+  }
+  return -1;
+}
+const hasWebhook = (src) => webhookStart(src) >= 0;
 const handlerRegion = (src) => {
-  const m = WEBHOOK_ROUTE.exec(src);
-  if (!m) return null;
+  const at = webhookStart(src);
+  if (at < 0) return null;
+  const m = { index: at };
   const rest = src.slice(m.index);
-  const end = rest.slice(1).search(/\n\s*(app|router)\.(get|post|put|patch|delete|all|use)\(/);
+  const end = rest.slice(1).search(NEXT_ROUTE);
   return { start: m.index, text: end < 0 ? rest : rest.slice(0, end + 1) };
 };
 
@@ -39,8 +57,8 @@ const RULES = [
   {
     id: "webhook-no-verify",
     severity: "HIGH",
-    test: (src) => USES_STRIPE.test(src) && WEBHOOK_ROUTE.test(src) && !/\.webhooks\.constructEvent(Async)?\s*\(/.test(src),
-    line: (src) => firstLine(src, WEBHOOK_ROUTE),
+    test: (src) => USES_STRIPE.test(src) && hasWebhook(src) && !/\.webhooks\.constructEvent(Async)?\s*\(/.test(src),
+    line: (src) => lineOfIndex(src, webhookStart(src)),
     msg: "Stripe webhook маршрут без `stripe.webhooks.constructEvent(rawBody, sig, secret)` — всеки може да изпрати фалшиво събитие.",
   },
   {
@@ -53,14 +71,15 @@ const RULES = [
   {
     id: "client-amount",
     severity: "HIGH",
-    perLine: /(amount|unit_amount|price)\s*:\s*(req|request|ctx)\.(body|query|params)\./,
+    // Покрива и обвивки: Number(req.body.x), parseInt(...), Math.round(req.body.x * 100) (Разбивача, 2026-09-24).
+    perLine: /\b(amount|unit_amount|price)\s*:\s*[^,\n]{0,40}?\b(req|request|ctx)\.(body|query|params)\./,
     msg: "Сума/цена идва от клиента (req.body/query). Чети я от Stripe Price или сървърна конфигурация.",
   },
   {
     id: "grant-in-get-route",
     severity: "HIGH",
     // GET маршрут (обикновено целта на success_url), който записва достъп — отваря се без плащане.
-    perLine: /\.get\(\s*["'`][^"'`]*["'`][^\n]*\n(?:(?!\n\s*(?:app|router)\.)[\s\S]){0,600}?\b(premium|isPremium|entitle\w*|paid|plan|tier|active)\b\s*:\s*(true|["'`](premium|pro|paid|active)["'`])/i,
+    perLine: /\.get\(\s*["'`][^"'`]*["'`][^\n]*\n(?:(?!\n\s*(?:app|router)\.)[\s\S]){0,600}?(?:\b(premium|isPremium|entitle\w*|paid|plan|tier|active)\b\s*:\s*(true|["'`](premium|pro|paid|active)["'`])|\b(subscription_?status|subscriptionStatus|vip\w*|membership\w*)\b\s*:\s*["'`](premium|pro|paid|active|vip|member|trialing)["'`])/i,
     when: (m) => /update|upsert|create|save|set|grant/i.test(m[0]),
     msg: "GET маршрут записва платен достъп (обикновено целта на success_url) — отваря се без плащане. Давай достъп само в проверения webhook.",
   },
@@ -75,7 +94,7 @@ const RULES = [
     severity: "HIGH",
     test: (src) => {
       const j = src.search(/\.use\(\s*express\.json\(/);
-      const w = src.search(WEBHOOK_ROUTE);
+      const w = webhookStart(src);
       return USES_STRIPE.test(src) && j >= 0 && w > j && !/express\.raw\s*\(/.test(src);
     },
     line: (src) => lineOfIndex(src, src.search(/\.use\(\s*express\.json\(/)),
@@ -128,7 +147,7 @@ const RULES = [
   {
     id: "subscription-no-revoke",
     severity: "MED",
-    test: (src) => /mode\s*:\s*["'`]subscription["'`]/.test(src) && WEBHOOK_ROUTE.test(src) && !/customer\.subscription\.(deleted|updated)/.test(src),
+    test: (src) => /mode\s*:\s*["'`]subscription["'`]/.test(src) && hasWebhook(src) && !/customer\.subscription\.(deleted|updated)/.test(src),
     line: (src) => firstLine(src, /mode\s*:\s*["'`]subscription/),
     msg: "Абонамент без обработка на `customer.subscription.deleted`/`updated` — прекратеният или неплатен абонамент запазва достъпа.",
   },

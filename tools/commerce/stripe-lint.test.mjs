@@ -99,3 +99,12 @@ test("webhook-swallowed-error: погълната грешка в Next.js webhoo
   ].join("\n");
   assert.ok(!ids(express).includes("webhook-swallowed-error"), "празен catch извън webhook маршрута не е webhook");
 });
+
+test("заобикаляния (Разбивача, 2026-09-24): приемник без „webhook“ в пътя, сума в Number(), поле subscription_status", () => {
+  const evade = STRIPE + `app.post('/stripe/events', async (req, res) => {\n  const event = req.body;\n  if (event.type === 'checkout.session.completed') grantPro(event.data.object.customer);\n  res.sendStatus(200);\n});\napp.get('/success', async (req, res) => {\n  await db.users.update({ where: { id: req.query.u }, data: { subscription_status: 'pro' } });\n  res.send('ok');\n});\nexport const s = () => stripe.checkout.sessions.create({ line_items: [{ price_data: { currency: 'eur', unit_amount: Number(req.body.price) } }] });`;
+  const got = new Set(ids(evade));
+  for (const id of ["webhook-no-verify", "webhook-no-idempotency", "webhook-ack-without-await", "grant-in-get-route", "client-amount"]) assert.ok(got.has(id), `липсва ${id}`);
+  // Обикновен POST за създаване на checkout (без типове събития) не е приемник.
+  assert.ok(!ids(STRIPE + `app.post('/stripe/checkout', async (req, res) => {\n  const s = await stripe.checkout.sessions.create({ mode: 'payment', line_items: [{ price: PRICE_ID, quantity: 1 }] });\n  res.json({ url: s.url });\n});`).includes("webhook-no-verify"), "checkout POST не е webhook");
+  assert.ok(!ids(STRIPE + `const x = { amount: order.totalCents, note: req.body.note };`).includes("client-amount"), "сума от сървъра, друго поле от req");
+});
