@@ -268,7 +268,9 @@ export function checkDoD(uses, root) {
     .join("\n");
   const written = [
     ...uses.filter((u) => u.name === "Write" || u.name === "Edit").map((u) => String(u.input.file_path || "")),
-    ...bashWrites(bashCmds), // F3: и Bash-записите
+    // F3: и Bash-записите. Релативен път от Bash не знае cwd-то си: `cd /tmp/rb4 && … > B/x` не е
+    // продукт „B“. Броим го само ако първият сегмент е реална папка в корена (Разбивача, мисия 4).
+    ...bashWrites(bashCmds).filter((f) => f.startsWith("/") || !root || existsSync(join(root, f.replace(/^\.\//, "").split("/")[0]))),
   ].filter(Boolean);
   const violations = [];
   for (const r of RULES) {
