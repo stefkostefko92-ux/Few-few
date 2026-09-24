@@ -11129,7 +11129,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 213
+        "lessons": 220
       },
       "evolution": [
         {
@@ -11569,9 +11569,20 @@
           "date": "2026-09-24",
           "event": "v19.4 — учене",
           "detail": "Научи: Gaming/apps/web RenderCore (shared по 9 board-game сцени) спира рендера в скрит таб с `… (+19 още)"
+        },
+        {
+          "version": "20.1.0",
+          "date": "2026-09-24",
+          "event": "v20.1 — учене",
+          "detail": "Научи: ПОПРАВКА на предишна поука от тази сесия: MDN изрично казва 'requestAnimationFrame() ca… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „ПОПРАВКА на предишна поука от тази сесия: MDN изрично казва 'requestAnimationFrame() ca…\" (+6 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
