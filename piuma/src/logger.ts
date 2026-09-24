@@ -46,6 +46,42 @@ export const httpLogOptions = {
     return id;
   },
   serializers: {
-    req: (req: { url?: unknown }) => ({ ...req, url: stripQuery(req.url) }),
+    req: (req: { url?: unknown; headers?: unknown }) => {
+      // query се пропуска: пътят стига за разбор, а параметрите носят code/token.
+      const { query: _query, ...rest } = req as Record<string, unknown>;
+      return { ...rest, url: stripQuery(req.url), headers: pickHeaders(req.headers, REQ_HEADERS) };
+    },
+    res: (res: { headers?: unknown }) => {
+      const headers = pickHeaders(res.headers, RES_HEADERS);
+      if (typeof headers.location === 'string')
+        headers.location = stripQuery(headers.location) as string;
+      return { ...res, headers };
+    },
   },
 };
+
+/**
+ * Позитивен списък на хедърите, които стигат до лога. Черният списък в REDACT изпускаше всеки нов
+ * носител на тайна (proxy-authorization, x-api-key, Location с ?code=) — Разбивача, 2026-09-24.
+ */
+const REQ_HEADERS = [
+  'host',
+  'user-agent',
+  'content-type',
+  'content-length',
+  'accept',
+  'accept-language',
+  'x-request-id',
+  'x-forwarded-for',
+  'x-real-ip',
+];
+const RES_HEADERS = ['content-type', 'content-length', 'location', 'x-request-id', 'cache-control'];
+
+export function pickHeaders(headers: unknown, allow: readonly string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (!headers || typeof headers !== 'object') return out;
+  for (const [k, v] of Object.entries(headers as Record<string, unknown>)) {
+    if (allow.includes(k.toLowerCase())) out[k.toLowerCase()] = v;
+  }
+  return out;
+}

@@ -23,6 +23,7 @@ async function logLineFor(path: string, headers: Record<string, string>): Promis
   const server = createServer((req, res) => {
     mw(req, res);
     res.setHeader('Set-Cookie', 'piuma_sid=NEWSESSIONSECRET; HttpOnly');
+    res.setHeader('Location', '/next?code=LOCATIONSECRET');
     res.end('ok');
   });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
@@ -49,6 +50,21 @@ test('бисквитка, Set-Cookie и OAuth code не стигат до лог
   for (const secret of ['OAUTHSECRET123', 'SESSIONSECRET', 'NEWSESSIONSECRET', 'SIGSECRET']) {
     assert.ok(!line.includes(secret), `${secret} изтече в лога`);
   }
+});
+
+test('хедъри извън позитивния списък (proxy-authorization, x-api-key) и Location с code не изтичат', async () => {
+  const line = await logLineFor('/x', {
+    'proxy-authorization': 'Basic PROXYSECRET',
+    'x-api-key': 'APIKEYSECRET',
+    'X-Custom-Token': 'CUSTOMSECRET',
+    'user-agent': 'piuma-test',
+  });
+  for (const secret of ['PROXYSECRET', 'APIKEYSECRET', 'CUSTOMSECRET', 'LOCATIONSECRET']) {
+    assert.ok(!line.includes(secret), `${secret} изтече в лога`);
+  }
+  const rec = JSON.parse(line.trim().split('\n').pop() ?? '{}');
+  assert.equal(rec.req?.headers?.['user-agent'], 'piuma-test', 'безопасните хедъри остават');
+  assert.equal(rec.res?.headers?.location, '/next', 'Location без query');
 });
 
 test('req.id е UUID, а безопасен входящ X-Request-Id се запазва', async () => {
