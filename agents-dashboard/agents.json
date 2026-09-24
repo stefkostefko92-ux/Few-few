@@ -7329,7 +7329,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 176
+        "lessons": 186
       },
       "evolution": [
         {
@@ -7769,9 +7769,20 @@
           "date": "2026-09-24",
           "event": "v19.2 — учене",
           "detail": "Научи: generate_mold.py поправката е коректна — с --open \">Z\" офсетът е ЕДНОСТРАНЕН (bbox z 20… (+1 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: ICP без глобално подравняване (identity init, 15° ротация + транслация на ~100mm детайл… (+9 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „ICP без глобално подравняване (identity init, 15° ротация + транслация на ~100mm детайл…\" (+9 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
