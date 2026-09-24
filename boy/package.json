@@ -1,0 +1,30 @@
+{
+  "name": "boy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Двубой в Рейвънхолд — кинематографичен средновековен двубой в реално време в браузъра (WebGL, three.js): процедурни доспехи, огън, дъжд и 60 fps регулатор на резолюцията.",
+  "keywords": [
+    "Carbon Stealth",
+    "WebGL",
+    "three.js",
+    "средновековен двубой",
+    "рицари в доспехи",
+    "графика в реално време",
+    "процедурна анимация"
+  ],
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node build.mjs",
+    "lint": "node check.mjs",
+    "test": "node --test test/*.test.js",
+    "gate": "node check.mjs && node --test test/*.test.js && node build.mjs",
+    "smoke": "node build.mjs && node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright": "1.56.1",
+    "three": "0.186.0"
+  }
+}
