@@ -1,5 +1,6 @@
 // SEO: robots.txt, sitemap.xml и JSON-LD за публичните визитки.
 import db from './db.js';
+import { GUIDES } from './guides.js';
 
 // Данни на доставчика (импресум) — както в medqr.
 export const COMPANY = {
@@ -34,7 +35,7 @@ const postalAddress = {
 };
 
 // Дата на последна промяна на статичните страници (за sitemap lastmod).
-export const SITE_UPDATED = '2026-07-11';
+export const SITE_UPDATED = '2026-09-18';
 
 export function robotsTxt(base) {
   // Приватните/не-SEO пътища (RFC 9309: специфична група НЕ наследява правилата на `*`,
@@ -48,6 +49,7 @@ export function robotsTxt(base) {
     'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
     'Disallow: /p/*/wallet', // портфейл файлове (лични, не за индексиране)
     'Disallow: /v1/', // Apple Wallet update web service
+    'Disallow: /mcp', // конекторът за AI асистенти — крайна точка, не страница
   ];
   return [
     'User-agent: *',
@@ -79,6 +81,7 @@ export function llmsTxt(base) {
 ## Страници
 
 - [Начало](${base}/): какво е Vizitka, как работи, често задавани въпроси
+${GUIDES.map((g) => `- [${g.h1}](${base}/${g.slug}): ${g.description}`).join('\n')}
 - [Политика за поверителност](${base}/privacy): какви данни се обработват и защо
 - [Общи условия](${base}/terms): правила на услугата
 
@@ -87,6 +90,19 @@ export function llmsTxt(base) {
 - Публичните визитки живеят на ${base}/p/<адрес> — съдържанието им се управлява от
   собственика и е публично по негово решение.
 - Всяка визитка предлага vCard (.vcf) файл и QR код (PNG) на същия адрес.
+
+## Терминология (едно и също нещо, различни думи)
+
+- „дигитална визитка“ = „електронна визитка“ = „виртуална визитка“ = „онлайн визитка“
+  = „дигитална визитна картичка“ = „QR визитка“ = „визитка с QR код“.
+- vCard (.vcf) е файлът, с който контактът влиза в указателя на телефона.
+
+## Какво Vizitka НЕ прави (за да не се цитира погрешно)
+
+- Не е CRM и не събира контактите на сканиращите — брои се само общият брой преглеждания.
+- Не поддържа NFC чипове.
+- Един акаунт носи една визитка.
+- Не продава печат: печатните визитки се оформят и печатат от самия потребител през Мастилко.
 
 ## Контакт
 
@@ -101,6 +117,8 @@ const xmlEsc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 export function sitemapXml(base) {
   const urls = [
     { loc: `${base}/`, lastmod: SITE_UPDATED },
+    // Наръчникът — всяка страница носи собствената си дата на промяна, не общата.
+    ...GUIDES.map((g) => ({ loc: `${base}/${g.slug}`, lastmod: g.updated })),
     { loc: `${base}/privacy`, lastmod: SITE_UPDATED },
     { loc: `${base}/terms`, lastmod: SITE_UPDATED },
   ];
@@ -143,6 +161,17 @@ export const FAQ = [
     q: 'Мога ли временно да скрия визитката си?',
     a: 'Да. От таблото изключваш „Визитката е публична“ — адресът и QR кодът спират да показват данните ти, докато не я включиш отново.',
   },
+  // Следващите два въпроса са точно формулировките, с които хората търсят същото
+  // нещо с други думи („електронна“/„виртуална“, „трябва ли приложение“). Отговорът
+  // е кратък и самостоятелен — така се цитира от AI асистент, без да влачи контекст.
+  {
+    q: 'Каква е разликата между дигитална, електронна и виртуална визитка?',
+    a: 'Никаква — това са различни имена на едно и също: страница с контактите ти на постоянен адрес, отваряна с QR код или линк. Среща се и като „онлайн визитка“, „дигитална визитна картичка“ или „QR визитка“.',
+  },
+  {
+    q: 'Трябва ли приложение, за да се отвори визитката?',
+    a: 'Не. Камерата на телефона разпознава QR кода и отваря обикновена уеб страница — без инсталация и без регистрация от страна на посетителя. Работи и като обикновен линк в чат или имейл подпис.',
+  },
 ];
 
 // Entity-схема за самия сайт (WebSite + Organization + FAQPage) — за началната.
@@ -151,6 +180,46 @@ export const FAQ = [
 // Екранираме ги като \uXXXX — остава валиден JSON, но `</script>` breakout е невъзможен.
 const jsonLdSafe = (obj) =>
   JSON.stringify(obj).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+
+// Операторът като локален бизнес със седалище в Бобов дол, обслужващ цяла България —
+// силен GEO сигнал за търсачки и AI. Възелът се ПОВТАРЯ на всяка страница, не само на
+// началната: страница, която само сочи към `#organization`, оставя висяща препратка за
+// всеки, който чете точно нея (а точно така я четат AI асистентите и валидаторите).
+export function organizationNode(base) {
+  return {
+    '@type': ['Organization', 'LocalBusiness'],
+    '@id': `${base}/#organization`,
+    name: COMPANY.name,
+    url: COMPANY.url,
+    logo: `${base}/logo.png`,
+    image: `${base}/logo.png`,
+    email: COMPANY.email,
+    telephone: COMPANY.phone,
+    vatID: COMPANY.vat,
+    address: postalAddress,
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: COMPANY.geo.lat,
+      longitude: COMPANY.geo.lon,
+    },
+    areaServed: { '@type': 'Country', name: 'Bulgaria' },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      telephone: COMPANY.phone,
+      email: COMPANY.email,
+      contactType: 'customer support',
+      areaServed: 'BG',
+      availableLanguage: ['Bulgarian'],
+    },
+    knowsAbout: [
+      'дигитални визитки',
+      'електронни визитки',
+      'QR кодове',
+      'vCard контакти',
+      'уеб приложения',
+    ],
+  };
+}
 
 export function siteJsonLd(base) {
   return jsonLdSafe({
@@ -166,35 +235,7 @@ export function siteJsonLd(base) {
           'Дигитална визитка с постоянен QR код — професионален профил (личен или фирмен), който винаги е актуален.',
         publisher: { '@id': `${base}/#organization` },
       },
-      {
-        // Операторът като локален бизнес със седалище в Бобов дол, обслужващ
-        // цяла България — силен GEO сигнал за търсачки и AI.
-        '@type': ['Organization', 'LocalBusiness'],
-        '@id': `${base}/#organization`,
-        name: COMPANY.name,
-        url: COMPANY.url,
-        logo: `${base}/logo.png`,
-        image: `${base}/logo.png`,
-        email: COMPANY.email,
-        telephone: COMPANY.phone,
-        vatID: COMPANY.vat,
-        address: postalAddress,
-        geo: {
-          '@type': 'GeoCoordinates',
-          latitude: COMPANY.geo.lat,
-          longitude: COMPANY.geo.lon,
-        },
-        areaServed: { '@type': 'Country', name: 'Bulgaria' },
-        contactPoint: {
-          '@type': 'ContactPoint',
-          telephone: COMPANY.phone,
-          email: COMPANY.email,
-          contactType: 'customer support',
-          areaServed: 'BG',
-          availableLanguage: ['Bulgarian'],
-        },
-        knowsAbout: ['дигитални визитки', 'QR кодове', 'vCard контакти', 'уеб приложения'],
-      },
+      organizationNode(base),
       {
         // Самата услуга — безплатно уеб приложение, за да я разбират като продукт.
         '@type': 'WebApplication',
@@ -222,6 +263,74 @@ export function siteJsonLd(base) {
       },
     ],
   });
+}
+
+// JSON-LD за страница от наръчника: WebPage (свързана с #website и #organization,
+// не висящ възел) + троха + FAQPage със собствените ѝ въпроси + HowTo, когато
+// страницата е стъпкова. Богатите резултати за HowTo/FAQ са оттеглени през 2026 г. —
+// стойността днес е разбиране от AI асистентите, не звезди в SERP. Затова и нула
+// измислена схема: без aggregateRating, без Review, без Offer с цена, която не е цена.
+export function guideJsonLd(guide, base) {
+  const url = `${base}/${guide.slug}`;
+  const graph = [
+    {
+      '@type': ['WebPage', 'Article'],
+      '@id': `${url}#page`,
+      url,
+      name: guide.title,
+      headline: guide.h1,
+      description: guide.description,
+      inLanguage: 'bg',
+      dateModified: guide.updated,
+      isPartOf: { '@id': `${base}/#website` },
+      about: { '@id': `${base}/#app` },
+      publisher: { '@id': `${base}/#organization` },
+      author: { '@id': `${base}/#organization` },
+      keywords: guide.keywords.join(', '),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${url}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Начало', item: `${base}/` },
+        { '@type': 'ListItem', position: 2, name: guide.h1, item: url },
+      ],
+    },
+    // Пълният възел на организацията, не само препратка към него: страницата се чете
+    // и самостоятелно (AI асистент, валидатор), а тогава `{'@id': …#organization}` без
+    // определение е висяща препратка — и авторството/издателят изчезват.
+    organizationNode(base),
+  ];
+  if (guide.faq?.length) {
+    graph.push({
+      '@type': 'FAQPage',
+      '@id': `${url}#faq`,
+      mainEntity: guide.faq.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
+    });
+  }
+  if (guide.steps?.length) {
+    graph.push({
+      '@type': 'HowTo',
+      '@id': `${url}#howto`,
+      name: guide.h1,
+      description: guide.answer,
+      totalTime: 'PT5M',
+      // Услугата е безплатна — казваме го в схемата вместо да мълчим.
+      estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: '0' },
+      step: guide.steps.map((s, i) => ({
+        '@type': 'HowToStep',
+        position: i + 1,
+        name: s.name,
+        text: s.text,
+        url: `${url}#stapka-${i + 1}`,
+      })),
+    });
+  }
+  return jsonLdSafe({ '@context': 'https://schema.org', '@graph': graph });
 }
 
 // JSON-LD (schema.org Person/Organization + BreadcrumbList) за публичната визитка.

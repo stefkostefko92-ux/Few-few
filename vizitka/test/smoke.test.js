@@ -1,9 +1,11 @@
 // Smoke тест — пълният поток: регистрация → редакция → публична визитка → QR → vCard.
 // Стартира приложението на случаен порт с временна база (DATA_DIR).
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 process.env.NODE_ENV = 'test';
 process.env.DATA_DIR = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-test-'));
@@ -1131,6 +1133,166 @@ await test('портфейл: с включен Google бутонът се по�
   const res = await request('/p/ivan-testov/wallet/google');
   assert.equal(res.status, 302);
   assert.match(res.headers.get('location'), /^https:\/\/pay\.google\.com\/gp\/v\/save\//);
+});
+
+await test('визитката носи ≥5 ключови думи, една от които „Carbon Stealth"', async () => {
+  const html = await (await request('/p/ivan-testov')).text();
+  const meta = html.match(/<meta name="keywords" content="([^"]+)"/);
+  assert.ok(meta, 'липсва meta keywords');
+  const kw = meta[1].split(',').map((s) => s.trim());
+  assert.ok(kw.length >= 5, `само ${kw.length} ключови думи`);
+  assert.ok(kw.includes('Carbon Stealth'), 'липсва бранд атрибуцията „Carbon Stealth"');
+  assert.match(html, /<meta name="description" content="[^"]{20,}"/);
+});
+
+// ── Наръчник (SEO/GEO/AEO) ───────────────────────────────────────────────────
+// Съдържателните страници са отделен пазар за всяко намерение („дигитална визитка",
+// „визитка с QR код", „vCard"). Тестът пази това, което ги прави намираеми, и е
+// нарочно строг: страница без уникално заглавие/описание, без канонична връзка, с
+// по-малко от 5 ключови думи или без „Carbon Stealth" е нарушение на правило на
+// репото, не въпрос на вкус. Пази и от сираци — страница без връзка отникъде.
+const { GUIDES } = await import('../src/guides.js');
+
+await test('наръчник: всяка страница се отваря с уникално заглавие, описание и canonical', async () => {
+  assert.ok(GUIDES.length >= 5, 'наръчникът е под 5 страници');
+  const titles = new Set();
+  const descriptions = new Set();
+  for (const g of GUIDES) {
+    const res = await request(`/${g.slug}`);
+    assert.equal(res.status, 200, `/${g.slug} върна ${res.status}`);
+    const html = await res.text();
+    // Сравнение по низ, не по регулярен израз: заглавията носят скоби и точки
+    // („vCard (.vcf) …“), тоест като шаблон биха значели друго.
+    assert.ok(html.includes(`<h1>${g.h1}</h1>`), `/${g.slug}: липсва H1`);
+    assert.ok(
+      html.includes(`<link rel="canonical" href="${base}/${g.slug}">`),
+      `/${g.slug}: липсва/грешен canonical`
+    );
+    assert.match(html, /<meta name="robots" content="index,follow/, `/${g.slug}: не се индексира`);
+    // Отговор отпред (GEO/AEO): първият абзац е самият отговор, 40–60 думи.
+    const words = g.answer.split(/\s+/).length;
+    assert.ok(words >= 30 && words <= 70, `/${g.slug}: отговорът отпред е ${words} думи`);
+    assert.ok(html.includes(g.answer.slice(0, 60)), `/${g.slug}: отговорът не е в страницата`);
+    assert.ok(!titles.has(g.title), `/${g.slug}: повтарящо се заглавие`);
+    assert.ok(!descriptions.has(g.description), `/${g.slug}: повтарящо се описание`);
+    titles.add(g.title);
+    descriptions.add(g.description);
+    assert.ok(
+      g.description.length <= 200,
+      `/${g.slug}: описанието е ${g.description.length} знака`
+    );
+  }
+});
+
+await test('наръчник: ключови думи ≥5 и „Carbon Stealth" на всяка страница', async () => {
+  for (const g of GUIDES) {
+    assert.ok(g.keywords.length >= 5, `/${g.slug}: само ${g.keywords.length} ключови думи`);
+    assert.ok(g.keywords.includes('Carbon Stealth'), `/${g.slug}: липсва „Carbon Stealth"`);
+    const html = await (await request(`/${g.slug}`)).text();
+    const meta = html.match(/<meta name="keywords" content="([^"]+)"/);
+    assert.ok(meta, `/${g.slug}: липсва meta keywords`);
+    for (const kw of g.keywords) assert.ok(meta[1].includes(kw), `/${g.slug}: липсва „${kw}"`);
+  }
+});
+
+await test('наръчник: JSON-LD е валиден и свързан в графа (без висящи възли)', async () => {
+  for (const g of GUIDES) {
+    const html = await (await request(`/${g.slug}`)).text();
+    const block = html.match(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
+    assert.ok(block, `/${g.slug}: липсва JSON-LD`);
+    const data = JSON.parse(block[1]); // хвърля при счупен JSON — това е тестът
+    const types = data['@graph'].map((n) => [].concat(n['@type']).join('+'));
+    assert.ok(
+      types.some((t) => t.includes('WebPage')),
+      `/${g.slug}: липсва WebPage`
+    );
+    assert.ok(types.includes('BreadcrumbList'), `/${g.slug}: липсва троха`);
+    const page = data['@graph'][0];
+    assert.equal(page.isPartOf['@id'], `${base}/#website`); // свързан, не висящ
+    assert.equal(page.publisher['@id'], `${base}/#organization`);
+    // Издателят трябва да е ОПРЕДЕЛЕН на самата страница, не само посочен —
+    // иначе при четене на отделната страница препратката виси.
+    const org = data['@graph'].find((n) => n['@id'] === `${base}/#organization`);
+    assert.ok(org?.name, `/${g.slug}: висяща препратка към организацията`);
+    if (g.faq?.length) assert.ok(types.includes('FAQPage'), `/${g.slug}: липсва FAQPage`);
+    if (g.steps?.length) {
+      const howTo = data['@graph'].find((n) => n['@type'] === 'HowTo');
+      assert.ok(howTo, `/${g.slug}: липсва HowTo`);
+      assert.equal(howTo.step.length, g.steps.length);
+    }
+    // Нула измислена схема: рейтинг/ревю без реални отзиви е спам, не SEO.
+    assert.ok(!/aggregateRating|"Review"/.test(block[1]), `/${g.slug}: измислена схема`);
+  }
+});
+
+await test('наръчник: страниците са в sitemap, llms.txt, IndexNow и имат вътрешни връзки', async () => {
+  const sitemap = await (await request('/sitemap.xml')).text();
+  const llms = await (await request('/llms.txt')).text();
+  const home = await (await request('/')).text();
+  const { publicUrls } = await import('../src/indexnow.js');
+  const submitted = publicUrls(base);
+  for (const g of GUIDES) {
+    assert.ok(sitemap.includes(`<loc>${base}/${g.slug}</loc>`), `/${g.slug}: липсва в sitemap`);
+    assert.ok(sitemap.includes(`<lastmod>${g.updated}</lastmod>`), `/${g.slug}: липсва lastmod`);
+    assert.ok(llms.includes(`${base}/${g.slug}`), `/${g.slug}: липсва в llms.txt`);
+    assert.ok(submitted.includes(`${base}/${g.slug}`), `/${g.slug}: не се подава към IndexNow`);
+    assert.ok(home.includes(`href="/${g.slug}"`), `/${g.slug}: сирак — няма връзка от началната`);
+  }
+  // robots.txt не бива да ги спира.
+  const robots = await (await request('/robots.txt')).text();
+  for (const g of GUIDES) assert.ok(!robots.includes(`Disallow: /${g.slug}`));
+});
+
+// Регресия за реален провален деплой: в продукция принудителният редирект към
+// https стоеше ПРЕДИ /healthz, затова сондата на деплоя (http по loopback, без
+// X-Forwarded-Proto) получаваше 308 с тяло „Moved Permanently…“. Маркерът за
+// идентичност го няма, а curl без -L брои 3xx за успех → health гейтът обявяваше
+// живото приложение за чуждо и откатваше успешен деплой. Тестът дърпа сондата
+// точно като деплоя: чист HTTP, без следване на редирект.
+await test('здравната сонда работи и в продукция (200 с маркер, не 308 към https)', async () => {
+  const dataDir = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-prod-'));
+  // `new URL` вместо import.meta.dirname — то е от Node 20.11, а CI върви и на 20.x.
+  const fixture = fileURLToPath(new URL('fixtures/prod-server.mjs', import.meta.url));
+  const child = spawn(process.execPath, [fixture], {
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      DATA_DIR: dataDir,
+      PUBLIC_BASE_URL: 'https://vizitka-bg.com',
+      PRINT_API_SECRET: 'test-print-secret',
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  try {
+    const prodPort = await new Promise((resolve, reject) => {
+      let out = '';
+      const timer = setTimeout(() => reject(new Error(`prod сървърът не вдигна: ${out}`)), 15000);
+      child.stdout.on('data', (chunk) => {
+        out += chunk;
+        const m = out.match(/PORT=(\d+)/);
+        if (m) {
+          clearTimeout(timer);
+          resolve(Number(m[1]));
+        }
+      });
+      child.stderr.on('data', (chunk) => (out += chunk));
+      child.on('exit', (code) => {
+        clearTimeout(timer);
+        reject(new Error(`prod сървърът излезе с код ${code}: ${out}`));
+      });
+    });
+    const res = await fetch(`http://127.0.0.1:${prodPort}/healthz`, { redirect: 'manual' });
+    assert.equal(res.status, 200); // 308 значи, че редиректът пак е пред сондата
+    const body = await res.text();
+    assert.match(body, /"app":"vizitka"/); // точният маркер, който autodeploy търси
+    assert.match(body, /"db":"up"/);
+    // Останалите маршрути ПАК се качват на https — изключението е само за сондата.
+    const home = await fetch(`http://127.0.0.1:${prodPort}/`, { redirect: 'manual' });
+    assert.equal(home.status, 308);
+  } finally {
+    child.kill('SIGKILL');
+    fs.rmSync(dataDir, { recursive: true, force: true });
+  }
 });
 
 server.close();

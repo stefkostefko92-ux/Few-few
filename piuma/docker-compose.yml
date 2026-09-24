@@ -1,0 +1,108 @@
+# Piuma в продукция: база, Redis, приложение, работник.
+#
+# TLS-ът и публичният вход се пазят от nginx-а на ХОСТА (Let's Encrypt) — конфигът е
+# `deploy/nginx/piuma.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
+# Тук няма втори nginx: контейнер-прокси пред приложението не добавя нищо, а само
+# отдалечава адреса на клиента с още един скок.
+#
+# Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
+# Задължителни: POSTGRES_PASSWORD · TOKEN_ENC_KEY · IG_APP_ID · IG_APP_SECRET ·
+# IG_REDIRECT_URI · PUBLIC_BASE_URL. По избор: ANTHROPIC_API_KEY (без него автопилотът
+# не пише чернови), HTTP_PORT (по подразбиране 4310).
+name: piuma
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+x-app-env: &app-env
+  NODE_ENV: production
+  # Часовникът на публиката, не на машината. Поясите, от които се учи („вечер работи
+  # по-добре"), и планировчикът, който насрочва, четат ЕДИН И СЪЩ локален час — тръгне ли
+  # процесът на UTC срещу българска аудитория, изводът и насрочването се разминават с 2–3
+  # часа мълчаливо. Смени го, ако аудиторията на бранда е другаде.
+  TZ: ${TZ:-Europe/Sofia}
+  DATABASE_URL: postgresql://piuma:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/piuma
+  REDIS_URL: redis://redis:6379
+  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
+  TOKEN_ENC_KEY: ${TOKEN_ENC_KEY:?липсва TOKEN_ENC_KEY}
+  IG_APP_ID: ${IG_APP_ID:?липсва IG_APP_ID}
+  IG_APP_SECRET: ${IG_APP_SECRET:?липсва IG_APP_SECRET}
+  IG_REDIRECT_URI: ${IG_REDIRECT_URI:?липсва IG_REDIRECT_URI}
+  IG_GRAPH_VERSION: ${IG_GRAPH_VERSION:-v24.0}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  TOTP_ISSUER: ${TOTP_ISSUER:-Piuma}
+  # Кой изпращач има право да казва „истинският клиент е X" през X-Forwarded-For.
+  # НЕ е `loopback`: портът е публикуван през Docker NAT, тоест приложението вижда като
+  # източник шлюза на мрежата на Compose, а не 127.0.0.1 — с `loopback` заглавието се
+  # игнорира мълчаливо и одитът записва адреса на шлюза за всяко действие.
+  # `uniquelocal` = 10/8 + 172.16/12 + 192.168/16 (Express), не само 172.16/12: Docker
+  # раздава 172.17–172.31 и, щом свършат, минава на 192.168.x — на сървър с няколко
+  # Compose проекта това се случва, и тогава тесният CIDR би върнал стария дефект тихо.
+  # Опасност няма: портът е вързан за 127.0.0.1, значи единственият, който може да стигне
+  # дотук, е nginx-ът на хоста.
+  TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: piuma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
+      POSTGRES_DB: piuma
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U piuma -d piuma']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Nonce складът за агента е fail-closed: рестарт без persistence отваря наново
+    # прозореца за повторение, а опашката губи чакащи публикации.
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      PORT: '4310'
+    ports:
+      # Само на loopback — навън се стига единствено през nginx-а на хоста.
+      - '127.0.0.1:${HTTP_PORT:-4310}:4310'
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    logging: *logging
+
+  worker:
+    build: .
+    restart: unless-stopped
+    environment: *app-env
+    # Публикуване · подновяване на токени · чистене на сесии · Insights 04:30 · автопилот.
+    command: ['npm', 'run', 'worker']
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      app: { condition: service_started }
+    logging: *logging
+
+volumes:
+  db-data:
+  redis-data:

@@ -1269,6 +1269,9 @@ export const ENTRIES = [
   ['Твърде много отворени сесии', 'Too many open sessions', 'Troppe sessioni aperte'],
   ['Твърде много редове в ⟦0⟧', 'Too many lines in ⟦0⟧', 'Troppe righe in ⟦0⟧'],
   ['Твърде широки права: ⟦0⟧', 'Permissions too broad: ⟦0⟧', 'Permessi troppo ampi: ⟦0⟧'],
+  // PSI натиск (ядро): „some avg10 / avg300“. Рендва се само при налична /proc/pressure —
+  // затова обиколката го хвана чак сега.
+  ['⟦0⟧s: ⟦1⟧ · ⟦2⟧мин: ⟦3⟧', '⟦0⟧s: ⟦1⟧ · ⟦2⟧min: ⟦3⟧', '⟦0⟧s: ⟦1⟧ · ⟦2⟧min: ⟦3⟧'],
   // Одит на САМИЯ панел (posture.js · panelFindings).
   ['Панелът е без втори фактор', 'The panel has no second factor', 'Il pannello è senza secondo fattore'],
   // Смяна на парола (секция „Сигурност“ + маршрутът).

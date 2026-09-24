@@ -10,7 +10,8 @@ import { dirname, join } from 'node:path';
 import db from './db.js';
 import { attachUser, seedAdmins } from './auth.js';
 import { baseUrl } from './config.js';
-import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
+import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd, guideJsonLd } from './seo.js';
+import { GUIDES, guideBySlug } from './guides.js';
 import { activeBanners, clickBanner } from './banners.js';
 import { indexNowKey } from './indexnow.js';
 import { icon } from './icons.js';
@@ -19,6 +20,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
 import adminRoutes from './routes/admin.js';
 import walletRoutes from './routes/wallet.js';
+import mcpRoutes from './routes/mcp.js';
 
 seedAdmins(); // маркира конфигурираните ADMIN_EMAILS акаунти като админ
 
@@ -75,9 +77,19 @@ app.use(
 );
 
 // Принудителен HTTPS в продукция (зад прокси, по X-Forwarded-Proto).
+//
+// `/healthz` е ИЗКЛЮЧЕН и това не е удобство, а поправка на реален инцидент:
+// деплоят дърпа сондата на http://127.0.0.1:<PORT>/healthz (по loopback, преди
+// nginx, значи БЕЗ X-Forwarded-Proto → `req.secure` е false), затова тук получаваше
+// 308 към https. `curl` без `-L` брои 3xx за успех, тялото е „Moved Permanently…“,
+// маркерът за идентичност („"app":"vizitka"“) го няма → гейтът обявяваше ЖИВОТО
+// приложение за чуждо и откатваше успешен деплой. Сондата няма как да мине по
+// https: на 127.0.0.1 приложението говори само чист HTTP (TLS свършва в nginx).
+// Изключението е безопасно — отговорът е име на приложението и жива ли е базата,
+// нула лични данни, нула бисквитки, нула вход.
 if (prod) {
   app.use((req, res, next) => {
-    if (req.secure) return next();
+    if (req.secure || req.path === '/healthz') return next();
     res.redirect(308, `https://${req.headers.host}${req.originalUrl}`);
   });
 }
@@ -104,6 +116,7 @@ app.use((req, res, next) => {
   res.locals.siteBase = baseUrl(req);
   res.locals.icon = icon; // premium SVG иконки: <%- icon('phone') %>
   res.locals.assetVer = assetVer; // cache-busting за styles.css/app.js
+  res.locals.guides = GUIDES; // наръчникът във футъра — един източник, нула дрейф
   next();
 });
 
@@ -111,6 +124,7 @@ app.get('/', (req, res) =>
   res.render('home', {
     title: null,
     faq: FAQ,
+    guides: GUIDES,
     jsonLd: siteJsonLd(baseUrl(req)),
     banners: activeBanners('home'),
   })
@@ -150,8 +164,30 @@ app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(r
 if (indexNowKey()) {
   app.get(`/${indexNowKey()}.txt`, (req, res) => res.type('text/plain').send(indexNowKey()));
 }
+// Наръчникът: по една страница на намерение („дигитална визитка“, „визитка с QR код“,
+// „vCard“, „фирмена визитка“, „как да си направя“). Маршрутите се раждат от същия
+// масив, който храни sitemap-а, llms.txt и IndexNow — няма как да добавиш страница и
+// да забравиш да я подадеш. Регистрирани са ПРЕДИ рутерите с параметри, за да не ги
+// глътне някой `/:нещо`.
+for (const guide of GUIDES) {
+  app.get(`/${guide.slug}`, (req, res) =>
+    res.render('guide', {
+      title: guide.title,
+      guide,
+      related: (guide.related || []).map(guideBySlug).filter(Boolean),
+      jsonLd: guideJsonLd(guide, baseUrl(req)),
+      pageMeta: {
+        description: guide.description,
+        keywords: guide.keywords.join(', '),
+        url: `${baseUrl(req)}/${guide.slug}`,
+      },
+    })
+  );
+}
+
 app.get('/privacy', (req, res) => res.render('privacy', { title: 'Политика за поверителност' }));
 app.get('/terms', (req, res) => res.render('terms', { title: 'Общи условия' }));
+app.use(mcpRoutes);
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(adminRoutes);

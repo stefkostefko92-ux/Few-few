@@ -1,8 +1,9 @@
 ---
 name: deploy
 description: >-
-  Каноничният процес за разгръщане на продукт от монорепото на сървъра (Hetzner/ЕС) през
-  ръчно качен GitHub ZIP → `deploy/autodeploy.sh`. Ползвай ВИНАГИ когато потребителят споменава
+  Каноничният процес за разгръщане на продукт от монорепото на сървъра (Hetzner/ЕС):
+  `deploy/fetch-deploy.sh` (сървърът сам сваля архив за точен ref) → `deploy/autodeploy.sh`.
+  Ползвай ВИНАГИ когато потребителят споменава
   деплой, разгръщане, пускане в продукция, ъпдейт на сървъра, „качи новата версия", release,
   rollback или „защо не се вижда на живо" — дори без да казва изрично „deploy". Пази бекъп преди
   миграция, health-check и rollback; нищо разрушително без потвърждение; тайните остават на сървъра.
@@ -10,16 +11,32 @@ description: >-
 
 # Разгръщане на продукт (monorepo → Hetzner/ЕС)
 
-**Собственическа преференция (не я нарушавай):** GitHub ZIP се качва **ръчно** в `/root`, после
-всичко е автоматизирано. **Без `git pull` на кутията, без CI/CD push към продукцията.** Оркестрацията
-е `deploy/autodeploy.sh` (идемпотентен, monorepo-aware). Собственик на този конвейер = агентът **VPS-аджията**.
+**Собственическа преференция (не я нарушавай):** **без `git pull` на кутията, без CI/CD push към
+продукцията** — деплоят се пуска от човек, когато той реши. Репото е ПУБЛИЧНО, затова сървърът си
+взема **неизменяем архив за точен ref** сам (`deploy/fetch-deploy.sh`); ръчното качване на ZIP
+остава резервният път, когато кутията няма изходяща мрежа. Оркестрацията е `deploy/autodeploy.sh`
+(идемпотентен, monorepo-aware). Собственик на този конвейер = агентът **VPS-аджията**.
 
 ## Каноничен поток
 ```bash
+sudo bash /opt/few-few/current/deploy/fetch-deploy.sh            # main, всички конфигурирани проекти
+# само един продукт / друг ref:
+sudo PROJECTS="zabobovdol" bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=claude/<клон> PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+```
+Първият път скриптът още го няма на сървъра — взима се от самото репо:
+```bash
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo bash /root/deploy/fetch-deploy.sh
+```
+**`REF` по подразбиране е `main`.** Код, който живее само на клон, НЕ се разгръща с `REF=main` —
+или слей PR-а, или подай клона изрично. Проверù къде е кодът, преди да дадеш командата.
+
+Резервен път (кутия без мрежа към GitHub):
+```bash
 cd /root && unzip -o Few-few.zip >/dev/null
-sudo bash /root/few-few-*/deploy/autodeploy.sh            # всички конфигурирани проекти
-# или само един продукт:
-sudo PROJECTS="zabobovdol" bash /root/few-few-*/deploy/autodeploy.sh
+sudo bash /root/few-few-*/deploy/autodeploy.sh
 ```
 Скриптът разпакова timestamped release под `/opt/few-few/releases/`, пренася `.env` от текущия
 release (ако липсва в архива), симлинква бекъпите извън `releases/` (за да преживеят прочистването),

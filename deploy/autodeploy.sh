@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -118,6 +118,20 @@ SUPREME_ENV_FILES=".env backend/.env bot/.env frontend/.env"
 # сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# piuma (Piuma — Instagram контент-двигател; Docker Compose модел). Пет услуги:
+# postgres · redis · app · worker · вътрешен nginx. Навън стърчи САМО вътрешният
+# nginx, и то на 127.0.0.1:${HTTP_PORT:-4310} — TLS-ът се пази от nginx-а на хоста.
+# Тайните живеят в piuma/.env на сървъра (mode 600) и се пренасят при всеки деплой;
+# БЕЗ .env compose отказва да тръгне (`${VAR:?}`) — това е нарочно, а не пропуск:
+# Piuma държи Instagram токени и агентски ключове, тоест да се вдигне с изфабрикувани
+# тайни е по-лошо от това да не се вдигне. Портът се чете от .env (HTTP_PORT).
+PIUMA_HEALTH_URL_SET="${PIUMA_HEALTH_URL:+1}"
+PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
+# Каноничният дом на тайните — СТАБИЛЕН път извън releases/. При пръв деплой `current`
+# сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
+# инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
+PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1033,6 +1047,101 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3з) piuma — Docker Compose (app + worker + db + redis + вътрешен nginx) ───
+deploy_piuma() {
+  local d="$SRC/piuma"
+  [ -d "$d" ] || { warn "Няма piuma/ в архива — пропускам."; return; }
+  log "Разгръщам piuma (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай Docker Engine + compose plugin."
+
+  # Тайните живеят на СЪРВЪРА, не в архива. Ред: споделеният път (каноничен, оцелява
+  # всичко), после текущият release (за инсталация отпреди споделения път).
+  if [ ! -f "$d/.env" ]; then
+    if [ -f "$PIUMA_ENV" ]; then
+      cp -a "$PIUMA_ENV" "$d/.env"; ok "Пренесох piuma/.env от $PIUMA_ENV"
+    elif [ -f "$CURRENT_LINK/piuma/.env" ]; then
+      cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env от текущия release"
+    fi
+  fi
+  # За разлика от eternaltouch тук НЕ генерираме .env с случайни тайни. Piuma не може
+  # да работи с измислени IG_APP_ID/IG_APP_SECRET/IG_REDIRECT_URI — те идват от
+  # конзолата на Meta и няма как да се отгатнат. Полу-вдигнат панел, който държи
+  # токени, е по-лош изход от ясен отказ. Виж piuma/DEPLOY.md.
+  # Липсващ .env значи „този продукт още не е настроен на ТАЗИ машина" — пропускаме го
+  # като неразгърнат, не го обявяваме за провал: иначе добавянето на piuma в списъка по
+  # подразбиране би счупило `current` на всеки сървър, където още няма тайни.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма piuma/.env — пропускам piuma (не измислям тайни)."
+    warn "  Направи го веднъж по piuma/DEPLOY.md: install -m 600 … $PIUMA_ENV, после пусни скрипта пак."
+    return
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # Бекъп ПРЕДИ миграцията, щом базата вече върви (при пръв деплой няма какво). Стабилен
+  # път извън releases/ — до .env-а; пази последните 5. Провал на дъмпа спира piuma:
+  # миграция без бекъп е връщане назад без път назад.
+  local bk; bk="$(dirname "$PIUMA_ENV")/backups"
+  if [ -n "$( cd "$d" && docker compose ps -q db 2>/dev/null )" ]; then
+    mkdir -p "$bk"; chmod 700 "$bk"
+    if ( cd "$d" && docker compose exec -T db pg_dump -U piuma piuma | gzip > "$bk/pre-deploy-$TS.sql.gz" ); then
+      ok "piuma: бекъп преди миграция → $bk/pre-deploy-$TS.sql.gz ($(du -h "$bk/pre-deploy-$TS.sql.gz" | cut -f1))"
+      ls -t "$bk"/pre-deploy-*.sql.gz | tail -n +6 | xargs -r rm -f
+    else
+      rm -f "$bk/pre-deploy-$TS.sql.gz"
+      warn "piuma: бекъпът преди миграция се провали — не мигрирам без бекъп, пропускам piuma."
+      deploy_failed=1; return
+    fi
+  else
+    log "piuma: базата още не върви (пръв деплой) — няма какво да се бекъпва."
+  fi
+
+  # `( … ) || { … return; }` НЕ е украса — скриптът върви под `set -euo pipefail` и
+  # ненулев изход тук би убил ЦЕЛИЯ autodeploy, оставяйки следващите проекти неразгърнати.
+  ( cd "$d"
+    docker compose build
+    # Миграциите се прилагат от entrypoint-а (`prisma migrate deploy`, никога `db push`),
+    # затова тук няма отделна стъпка — app и worker тръгват само върху мигрирана схема.
+    docker compose up -d --remove-orphans
+  ) || { warn "piuma: docker compose се провали — старите контейнери остават както са."; deploy_failed=1; return; }
+
+  # Портът се чете от .env, освен ако PIUMA_HEALTH_URL не е зададен изрично.
+  local url="$PIUMA_HEALTH_URL"
+  if [ -z "${PIUMA_HEALTH_URL_SET:-}" ]; then
+    # `|| true` НЕ е украса: без реда HTTP_PORT grep връща 1, `pipefail` го изнася от
+    # тръбата и `set -e` убива целия autodeploy точно СЛЕД `compose up` — без health, без
+    # проверка на работника, без преместване на `current`, без следващите проекти.
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/health"
+  fi
+  health "$url" "piuma" || deploy_failed=1
+
+  # Работникът е ОТДЕЛЕН процес: панелът може да е напълно жив, докато публикуването,
+  # подновяването на токени, Insights и автопилотът са мъртви. Без тази проверка
+  # провалът е невидим до мига, в който одобрен пост просто не излиза.
+  # `ps -q` + `docker inspect`, не `ps --format '{{.State}}'`: Go шаблон във `--format` на
+  # `compose ps` има едва от Compose v2.21 — по-стар плъгин на сървъра би дал грешка, която
+  # тук се чете като „работникът не тича“.
+  local worker_id worker_state
+  worker_id="$( cd "$d" && docker compose ps -q worker 2>/dev/null | head -1 )" || worker_id=""
+  worker_state="$( [ -n "$worker_id" ] && docker inspect -f '{{.State.Status}}' "$worker_id" 2>/dev/null )" || worker_state=""
+  if [ "$worker_state" = "running" ]; then
+    ok "piuma: работникът тича (публикуване · токени · Insights · автопилот)."
+  else
+    warn "piuma: работникът НЕ тича (състояние: ${worker_state:-няма}) — одобрените постове няма да излязат."
+    warn "  Виж: cd $d && docker compose logs worker"
+    deploy_failed=1
+  fi
+
+  # Пръв деплой: няма нито един потребител, тоест панелът не може да се отвори.
+  # Собственикът НЕ се създава автоматично — паролата е работа на човек, не на скрипт.
+  local users
+  users="$( cd "$d" && docker compose exec -T db psql -U piuma -d piuma -tAc 'SELECT count(*) FROM "User"' 2>/dev/null | tr -dc '0-9' )" || users=""
+  if [ "$users" = "0" ]; then
+    warn "piuma: няма нито един потребител — създай собственика веднъж:"
+    warn "  cd $d && docker compose exec app npm run owner:create"
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -1255,18 +1364,35 @@ deploy_adblock() {
 # машина това може да е съвсем друго приложение (реален случай: ERP на 3100 даваше
 # зелено за vizitka и rollback-ът никога не се задействаше).
 health() {
-  local url="$1" name="$2" expect="${3:-}" i body
+  local url="$1" name="$2" expect="${3:-}" i out code body diag=""
   for i in 1 2 3 4 5 6 7 8 9 10; do
-    if body="$(curl -fsS --max-time 5 "$url" 2>/dev/null)"; then
-      if [ -z "$expect" ] || printf '%s' "$body" | grep -q "$expect"; then
-        ok "$name е жив ($url)"; return 0
-      fi
-      warn "$name: на $url отговаря ДРУГО приложение (липсва „$expect“) — портът е зает."
-      return 1
+    if out="$(curl -fsS --max-time 5 -w '\n%{http_code}' "$url" 2>/dev/null)"; then
+      code="${out##*$'\n'}"
+      body="${out%$'\n'*}"
+      if [ -z "$expect" ]; then ok "$name е жив ($url)"; return 0; fi
+      case "$code" in
+        2*)
+          if printf '%s' "$body" | grep -q "$expect"; then ok "$name е жив ($url)"; return 0; fi
+          diag="код $code без маркера „$expect“ — на порта отговаря ДРУГО приложение"
+          ;;
+        *)
+          # Реален инцидент: приложението пренасочваше /healthz с 308 към https
+          # (prod middleware пред маршрута), а `curl` без `-L` брои 3xx за успех.
+          # Тялото е „Moved Permanently…“, маркера го няма → гейтът обявяваше
+          # живото приложение за чуждо. 3xx НЕ е доказателство за живот.
+          diag="код $code (пренасочване) — сондата не стига до самото приложение"
+          ;;
+      esac
+    else
+      diag=""
     fi
     sleep 3
   done
-  warn "$name НЕ отговаря на $url"; return 1
+  # Присъдата е по КРАЯ на цикъла, не по първия отговор: докато новият процес
+  # вдига, порта го държи старият код (той маркера няма) — падането на първия
+  # мисматч обявяваше успешен деплой за провален.
+  if [ -n "$diag" ]; then warn "$name: $diag ($url)"; else warn "$name НЕ отговаря на $url"; fi
+  return 1
 }
 
 # IndexNow: уведомява Bing/Yandex/Seznam/Naver с един POST (api.indexnow.org
@@ -1299,6 +1425,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    piuma)      deploy_piuma ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;

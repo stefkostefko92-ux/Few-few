@@ -197,6 +197,17 @@
         Визитката е публична (изключи за временно скриване)
       </label>
 
+      <label class="check">
+        <input type="checkbox" name="ai_discoverable" value="1" <%= profile.ai_discoverable ? 'checked' : '' %>>
+        Разреши на AI асистентите (ChatGPT, Claude) да намират визитката ми
+        <span class="muted small">
+          Изключено по подразбиране. Включиш ли го, данните от визитката ти може да се
+          предават на OpenAI или Anthropic, когато техен потребител попита за теб —
+          но само докато визитката е публична. Изключваш по всяко време.
+          <a href="/konektor-chatgpt-claude">Как работи конекторът</a>
+        </span>
+      </label>
+
       <button type="submit" class="btn btn-big">Запази промените</button>
     </form>
   </div>

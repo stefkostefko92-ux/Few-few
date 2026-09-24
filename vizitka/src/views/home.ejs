@@ -2,7 +2,7 @@
 <% if (jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script><% } %>
 <section class="hero">
   <img src="/logo.png" alt="" class="hero-logo" width="409" height="211">
-  <h1>Твоята визитка.<br>Винаги актуална.</h1>
+  <h1>Твоята дигитална визитка.<br>Винаги актуална.</h1>
   <p class="lead">
     Vizitka е безплатна дигитална визитка с постоянен QR код: създаваш професионален профил —
     личен или фирмен — със снимка и контакти, а всеки, който сканира кода, вижда винаги
@@ -61,6 +61,16 @@
     <li>Получаваш личен адрес <code>vizitka…/p/твоето-име</code> и QR код за печат.</li>
     <li>Слагаш QR кода на визитката, витрината или подписа в имейла — готово.</li>
   </ol>
+</section>
+
+<section class="how guide-index">
+  <h2>Наръчник</h2>
+  <p>Кратки отговори на въпросите, с които хората стигат дотук:</p>
+  <ul>
+    <% for (const g of guides) { %>
+      <li><a href="/<%= g.slug %>"><%= g.h1 %></a> — <%= g.description %></li>
+    <% } %>
+  </ul>
 </section>
 
 <section class="faq">
