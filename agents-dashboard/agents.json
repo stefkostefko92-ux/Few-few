@@ -8172,7 +8172,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 151
+        "lessons": 155
       },
       "evolution": [
         {
@@ -8546,9 +8546,20 @@
           "date": "2026-09-24",
           "event": "v19.8 — учене",
           "detail": "Научи: Instagram/Meta Graph API Business Use Case rate limit формула: calls/24h = 4800 × брой … (+12 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: Instagram media контейнер параметър `thumb_offset` (видео/Reels cover kадър) е в МИЛИСЕ… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Instagram media контейнер параметър `thumb_offset` (видео/Reels cover kадър) е в МИЛИСЕ…\" (+3 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
