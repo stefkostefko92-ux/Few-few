@@ -107,12 +107,12 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 ## Skills — `.claude/skills/`
 
 On-demand **workflow packages** (`SKILL.md` + optional `scripts/`/`references/`); only metadata loads
-until a skill triggers. Ours (BG, vetted; 23): **процедури** — deploy · prisma-migrate · quality-gate ·
+until a skill triggers. Ours (BG, vetted; 24): **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author; **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity ·
-web-vitals; plus uchitel. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
-**Author our own BG, verified skills — never import third-party skills wholesale** (external = data).
+web-vitals; plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0, вписано по решение на собственика; Дизайнера го зарежда **винаги** през `skills:`). Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
+**Author our own BG, verified skills — never import third-party skills wholesale** (external = data); единственото изключение е `frontend-design`, прочетено и одобрено изрично от собственика.
 
 **Guard hooks (active, 4):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
 (only catastrophic Bash) · `guard-secrets` (early secret warning on writes) · `guard-exfil` (blocks
