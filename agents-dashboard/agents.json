@@ -5652,7 +5652,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 157
+        "lessons": 166
       },
       "evolution": [
         {
@@ -6032,9 +6032,20 @@
           "date": "2026-09-24",
           "event": "v19.3 — учене",
           "detail": "Научи: seed-easypay.ts:46 телефон EasyPay 0700 20 787 — потвърдено (официален контакт номер, р… (+4 още)"
+        },
+        {
+          "version": "20.2.0",
+          "date": "2026-09-24",
+          "event": "v20.2 — учене",
+          "detail": "Научи: ДЕФЕКТ (не поправян, само докладван): zabobovdol/prisma/seed-community.ts:82-83,89-90,9… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „ДЕФЕКТ (не поправян, само докладван): zabobovdol/prisma/seed-community.ts:82-83,89-90,9…\" (+8 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
