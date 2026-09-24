@@ -64,3 +64,10 @@
 {"t":"handoff","ts":"2026-09-24T12:09:47.654Z","id":"r643102d1","from":"hromadjiyata","to":"tayniyat-agent","status":"има бележки","run":"ed83f539"}
 {"t":"start","ts":"2026-09-24T12:11:54.081Z","id":"rf9a21179","flow":"авто","lead":"skorostnika","auto":true}
 {"t":"handoff","ts":"2026-09-24T12:11:54.081Z","id":"rf9a21179","from":"skorostnika","to":"vps-adjiyata","status":"има бележки","run":"a638a670"}
+{"t":"start","ts":"2026-09-24T12:13:29.230Z","id":"rc9d334ae","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-09-24T12:13:29.230Z","id":"rc9d334ae","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"37fc8cb6"}
+{"t":"start","ts":"2026-09-24T12:14:26.910Z","id":"r26faa276","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-09-24T12:14:26.910Z","id":"r26faa276","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки","run":"eac3daea"}
+{"t":"handoff","ts":"2026-09-24T12:15:42.279Z","id":"r26faa276","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"a08b09f7"}
+{"t":"handoff","ts":"2026-09-24T12:18:19.810Z","id":"r26faa276","from":"goladjiyata","to":"kodadjiyata","status":"има бележки","run":"6f500c89"}
+{"t":"handoff","ts":"2026-09-24T12:18:51.223Z","id":"r26faa276","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"36438232"}

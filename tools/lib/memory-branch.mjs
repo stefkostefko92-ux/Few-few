@@ -226,11 +226,14 @@ export function flushUsage(cwd, { message } = {}) {
     const base = publishBase(cwd);
     if (!base) return { ok: false, reason: "няма основа" };
     const cur = show(cwd, base, APPEND_ONLY[0]) || "";
-    const ids = new Set(cur.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l).id; } catch { return null; } }));
+    const ver = (l) => { try { const r = JSON.parse(l); return r && r.id ? { id: r.id, v: Number(r.v) || 1 } : null; } catch { return null; } };
+    const have = new Map();
+    for (const l of cur.split("\n").filter(Boolean)) { const m = ver(l); if (m) have.set(m.id, Math.max(have.get(m.id) || 0, m.v)); }
     // Агент, върнат от DoD гейта, спира втори път — ПОСЛЕДНИЯТ запис за същото пускане е пълният.
     const last = new Map();
-    for (const l of lines) { try { const id = JSON.parse(l).id; if (id) last.set(id, l); } catch { /* ignore */ } }
-    const add = [...last].filter(([id]) => !ids.has(id)).map(([, l]) => l);
+    for (const l of lines) { const m = ver(l); if (m) last.set(m.id, l); }
+    // Нов id → добавя се; същият id с по-висока версия (backfill) → добавя се поправен ред, четецът взима по-високата v.
+    const add = [...last].filter(([id, l]) => !have.has(id) || ver(l).v > have.get(id)).map(([, l]) => l);
     if (!add.length) { rmSync(p, { force: true }); return { ok: true, flushed: 0 }; }
     const content = (cur && !cur.endsWith("\n") ? cur + "\n" : cur) + add.join("\n") + "\n";
     const commit = commitFiles(cwd, base, { [APPEND_ONLY[0]]: content }, [base], message || `памет: употреба на ${add.length} пускания на агенти`);

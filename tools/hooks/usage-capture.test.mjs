@@ -136,3 +136,21 @@ test("артефактът НЕ се републикува заради зап�
     assert.equal(spawnSync(process.execPath, [ARTSYNC], { input: "{}", encoding: "utf8", env }).status, 0, "таблото не е пипано → без републикуване");
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });
+
+test("по-новата версия на записа печели, дори ако стар източник е прочетен по-късно", () => {
+  const recs = parseLedger('{"id":"a","v":2,"turns":5}', '{"id":"a","v":1,"turns":17}');
+  assert.equal(recs[0].turns, 5);
+});
+
+test("backfill: запис с по-висока версия за съществуващ id стига до дневника; същата версия — не", async () => {
+  const f = repo();
+  try {
+    const lib = await import(pathToFileURL(LIB).href + `?v=${++v}`);
+    const rec = { id: "runV", agent: "seo", model: "sonnet-5", turns: 1, input: 1, cacheRead: 0, cacheWrite: 0, output: 1 };
+    lib.appendPendingUsage(f.work, { ...rec, v: 1 }); assert.equal(lib.flushUsage(f.work).flushed, 1);
+    lib.appendPendingUsage(f.work, { ...rec, v: 1, output: 9 }); assert.equal(lib.flushUsage(f.work).flushed, 0, "същата версия не се дублира");
+    lib.appendPendingUsage(f.work, { ...rec, v: 2, output: 5 }); assert.equal(lib.flushUsage(f.work).flushed, 1, "по-висока версия се добавя");
+    const led = parseLedger(git(f.work, "show", "agents/memory:tools/agents/evals/usage.jsonl"));
+    assert.equal(led.find((r) => r.id === "runV").output, 5, "четецът взима v2");
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});

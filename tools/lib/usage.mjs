@@ -120,7 +120,14 @@ export function parseLedger(...texts) {
     if (!l.trim()) continue;
     // Последният запис побеждава: агент, върнат от DoD куката, спира пак със СЪЩИЯ транскрипт и
     // по-късният запис е пълният (първият е частичен — занижава ходове и цена).
-    try { const r = cleanRecord(JSON.parse(l)); if (r) byId.set(r.id, r); } catch { /* ignore */ }
+    // По-новата ВЕРСИЯ на записа печели независимо от реда на източниците (клон, работно дърво,
+    // буфер — по-стар източник, прочетен по-късно, иначе надписваше пресметнатия наново запис).
+    try {
+      const r = cleanRecord(JSON.parse(l));
+      if (!r) continue;
+      const prev = byId.get(r.id);
+      if (!prev || (r.v || 1) >= (prev.v || 1)) byId.set(r.id, r);
+    } catch { /* ignore */ }
   }
   return [...byId.values()];
 }
