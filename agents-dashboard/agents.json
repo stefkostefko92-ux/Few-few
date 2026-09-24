@@ -14258,7 +14258,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 178
+        "lessons": 201
       },
       "evolution": [
         {
@@ -14326,9 +14326,20 @@
           "date": "2026-09-24",
           "event": "v16.8 — учене",
           "detail": "Научи: cspos.yml (единственият продуктов workflow) няма `permissions:` блок изобщо — `grep -c … (+11 още)"
+        },
+        {
+          "version": "19.1.0",
+          "date": "2026-09-24",
+          "event": "v19.1 — учене",
+          "detail": "Научи: tools/ci/workflow-lint.mjs има regex бъг: jobsOf() консумира завършващия празен ред на … (+22 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „tools/ci/workflow-lint.mjs има regex бъг: jobsOf() консумира завършващия празен ред на …\" (+22 още) · 2 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
