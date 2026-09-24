@@ -228,7 +228,17 @@ if [ "$EXISTING_WH" -eq 0 ]; then
     -d description="Supreme Bot backend — подписан, идемпотентен по event.id")
   WH_SECRET=$(echo "$WH_JSON" | grep -o '"secret": *"whsec_[^"]*"' | sed 's/.*"\(whsec_[^"]*\)"/\1/')
   echo "  ✓ Webhook създаден."
-  echo "  ⚠ ЗАПИШИ СЕГА (показва се само веднъж): STRIPE_WEBHOOK_SECRET=${WH_SECRET}"
+  # Тайната НЕ минава през stdout (терминал/scrollback/tee към лог) — одит 24.09.2026.
+  # Записва се във файл само за собственика (600) и се печата само пътят + дължината.
+  if [ -z "$WH_SECRET" ]; then
+    echo "  ⚠ Не успях да извадя signing secret от отговора — вземи го от Dashboard → Webhooks → Reveal."
+  else
+    WH_SAVE_PATH="${STRIPE_WH_SAVE_PATH:-$HOME/.supreme-stripe-webhook-secret}"
+    ( umask 077 && printf 'STRIPE_WEBHOOK_SECRET=%s\n' "$WH_SECRET" > "$WH_SAVE_PATH" )
+    chmod 600 "$WH_SAVE_PATH"
+    echo "  ⚠ Signing secret (${#WH_SECRET} знака) е записан в $WH_SAVE_PATH (права 600, показва се само веднъж)."
+    echo "    Премести реда в backend/.env и изтрий файла: shred -u \"$WH_SAVE_PATH\""
+  fi
 else
   echo "  ✓ Webhook за $WH_URL вече съществува (signing secret: Dashboard → Webhooks → Reveal)."
 fi
@@ -248,7 +258,7 @@ fi
 echo ""
 echo "══ Готово. Попълни в backend/.env: ══"
 echo "  STRIPE_SECRET_KEY=<ключът, с който пусна скрипта>"
-echo "  STRIPE_WEBHOOK_SECRET=<whsec_... отгоре или от Dashboard>"
+echo "  STRIPE_WEBHOOK_SECRET=<от файла, посочен отгоре, или от Dashboard → Webhooks>"
 # При ценова промяна: старият id се добавя СЛЕД новия (запетая) — lib/premium.js
 # разпознава всички id-та от списъка (grandfather при подновяване), а за
 # checkout взима ПЪРВИЯ (новата цена).

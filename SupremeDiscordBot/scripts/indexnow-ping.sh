@@ -13,7 +13,8 @@
 #
 # Извиква се от deploy.sh / update.sh СЛЕД успешен health check. Fail-safe:
 # грешка тук никога не проваля деплоя (winner е живият сайт, ping-ът е бонус).
-set -u
+# deploy-check: allow-no-errexit — ping-ът е страничен ефект след успешен деплой; всеки провал се докладва и скриптът завършва с 0 (виж края), `-e` би го превърнал в провал на деплоя
+set -uo pipefail
 
 HOST="${INDEXNOW_HOST:-supremebot.carbonstealth.eu}"
 KEY="${INDEXNOW_KEY:-09d438d11f84037ca203486287865836}"
