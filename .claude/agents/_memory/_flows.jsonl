@@ -35,3 +35,6 @@
 {"t":"handoff","ts":"2026-09-21T11:49:45.012Z","id":"auto","from":"nabludatelya","to":"ai-djiyata","status":"наред"}
 {"t":"start","ts":"2026-09-24T10:50:25.913Z","id":"r2521ed2f","flow":"авто","lead":"siydara","auto":true}
 {"t":"handoff","ts":"2026-09-24T10:50:25.914Z","id":"r2521ed2f","from":"siydara","to":"ai-djiyata","status":"наред","run":"42e723f3"}
+{"t":"start","ts":"2026-09-24T10:51:52.868Z","id":"r34cb7908","flow":"авто","lead":"skorostnika","auto":true}
+{"t":"handoff","ts":"2026-09-24T10:51:52.868Z","id":"r34cb7908","from":"skorostnika","to":"vps-adjiyata","status":"има бележки","run":"9d308b72"}
+{"t":"handoff","ts":"2026-09-24T10:52:56.462Z","id":"r34cb7908","from":"siydara","to":"kodadjiyata","status":"наред","run":"08ae0ca0"}
