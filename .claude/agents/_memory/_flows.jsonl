@@ -107,3 +107,5 @@
 {"t":"handoff","ts":"2026-09-24T14:41:49.119Z","id":"rd9140d2b","from":"dizayner","to":"ai-djiyata","status":"наред","run":"e9c41d77"}
 {"t":"start","ts":"2026-09-24T15:06:56.738Z","id":"rdcffd3cb","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-09-24T15:06:56.738Z","id":"rdcffd3cb","from":"dizayner","to":"ai-djiyata","status":"наред","run":"551a4903"}
+{"t":"start","ts":"2026-09-24T15:16:31.228Z","id":"rf22b5369","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-09-24T15:16:31.229Z","id":"rf22b5369","from":"dizayner","to":"ai-djiyata","status":"наред","run":"551a4903"}
