@@ -1,19 +1,40 @@
 # adblock.carbonstealth.eu — static host for Supreme AdBlock.
-# Serves the live filter file, the privacy policy and a small landing page.
+# Serves the live filter file, the privacy policy and the landing page.
 # Caddy gets a TLS cert automatically. Drop this block into the server's Caddyfile
 # (or `import` it) and point the DNS A/AAAA record for the subdomain at the VPS.
+#
+# No `log` directive on purpose: Caddy then keeps NO access logs for this site —
+# the privacy policy (server/privacy.html) promises exactly that. Do not add one.
 
 adblock.carbonstealth.eu {
 	root * /var/www/adblock
 	encode zstd gzip
 
-	# Filter file: JSON, short cache so updates propagate within ~an hour.
-	@filters path /filters.json
+	# Security headers. No script-src/style-src in the CSP: the page uses one
+	# inline style and one inline script and loads nothing from third parties;
+	# what matters here is no framing (clickjacking), no <base> hijack, no plugins,
+	# no form posts.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'none'"
+		Permissions-Policy "browsing-topics=(), interest-cohort=(), camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	# Filter file + signature: short cache so updates propagate within ~an hour.
+	@filters path /filters.json /filters.json.sig
 	header @filters {
-		Content-Type application/json
 		Cache-Control "public, max-age=3600"
 		Access-Control-Allow-Origin "*"
 	}
+	@filtersjson path /filters.json
+	header @filtersjson Content-Type application/json
+
+	# Images change only with a release.
+	@assets path *.webp *.png
+	header @assets Cache-Control "public, max-age=604800"
 
 	# Pretty URL for the privacy policy (Web Store Privacy Policy URL).
 	@privacy path /privacy
