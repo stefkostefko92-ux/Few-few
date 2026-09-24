@@ -149,7 +149,10 @@ export const isRealSource = (src) => {
     /https?:\/\/[^/\s]*\.[^/\s.][^/\s]*/i.test(s) ||                       // пълен URL с хост-с-точка
     /(?:^|[\s(„"'])[a-z0-9-]+(?:\.[a-z0-9-]+)+\/[\w./-]*/i.test(s) ||      // хост+път БЕЗ схема (tita.bg/laws/427)
     /[\w./-]+\.[a-z]{1,5}:\d+/i.test(s) ||                                 // file.ext:line
-    /[\w-]+\/[\w./-]*\.(?:mjs|js|ts|tsx|jsx|json|md|prisma|ejs|html|css|lua|sh|ya?ml)/i.test(s) || // репо-път
+    /[\w-]+\/[\w./-]*\.(?:mjs|js|ts|tsx|jsx|json|md|prisma|ejs|html|css|lua|sh|ya?ml|py|toml|conf)/i.test(s) || // репо-път
+    // Пусната команда с изхода ѝ („python3 -c … → (percent, face_count…)“) — точно това е проверка.
+    // Без него 19 от 23 измерени поуки на 3D Maniac паднаха в Карантина (2026-09-24).
+    /^(?:python3?|pip3?|npx|npm|pnpm|node|bash|git|docker|openssl|sqlite3|psql|cargo|go|ruby|php|file:)\b[^\n]*?(?:→|->|=>)\s*\S/i.test(s) ||
     /(?:чл|ал|Прил|Регл|Дир|Наредба|ЗДДС|ЗЗП|ЗСч|ЗВЕРБ|GDPR|WCAG|§)\.?\s*№?\s*\d/i.test(s) ||     // правна цитация
     /(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)/i.test(s)
   );

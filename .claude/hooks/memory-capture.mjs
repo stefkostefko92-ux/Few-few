@@ -80,6 +80,8 @@ export function normalizeConfidence(raw) {
   return CONFIDENCE_SYNONYMS[s] || "unverified";
 }
 
+const unquote = (v) => { const t = String(v).trim(); return /^(["']).*\1$/.test(t) ? t.slice(1, -1).trim() : t; };
+
 export function parseLearn(block) {
   const res = { agent: null, date: null, lessons: [] };
   let cur = null;
@@ -92,8 +94,10 @@ export function parseLearn(block) {
     // nabludatelya/analizatora ползваха `lesson:` и поуките им бяха тихо изхвърлени).
     else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
     else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = normalizeConfidence(m[1]);
-    else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = m[1].trim();
-    else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
+    // Кавичките около стойността са YAML украса, не част от източника. Без махането им 19 от 23 проверени
+    // поуки на 3D Maniac (реални команди → изход) паднаха в Карантина като „без източник“ (2026-09-24).
+    else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = unquote(m[1]);
+    else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = unquote(m[1]);
     else if (cur && (m = line.match(/^\s*re-?verify:\s*(\d{4}-\d{2}-\d{2}).*$/i))) cur.reverify = m[1].trim(); // #2 явен TTL за критичен факт
   }
   if (!res.lessons.length) res.lessons = inlineLessons(block);

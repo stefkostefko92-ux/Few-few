@@ -42,3 +42,19 @@ test("форматът на файла памет („**дата:** текст _
   assert.equal(r.lessons[0].confidence, "verified");
   assert.equal(r.lessons[0].source, ".github/workflows/cspos.yml (1-15); node tools/ci/workflow-lint.mjs");
 });
+
+test("кавички около source/scope не правят реалния източник „фалшив“; команда → изход е източник", async () => {
+  const { sourceIsReal } = await import("../../.claude/hooks/memory-capture.mjs");
+  const r = parseLearn([
+    "agent: 3d-maniac",
+    "lessons:",
+    "  - text: simplify_quadric_decimation приема (percent, face_count, aggression)",
+    "    confidence: verified",
+    "    source: \"python3 -c 'import trimesh,inspect; print(inspect.signature(trimesh.Trimesh.simplify_quadric_decimation))' → (percent, face_count, aggression)\"",
+    "    scope: 'общо'",
+  ].join("\n"));
+  assert.equal(r.lessons[0].source.startsWith("python3 -c"), true);
+  assert.equal(r.lessons[0].scope, "общо");
+  assert.equal(sourceIsReal(r.lessons[0].source), true);
+  assert.equal(sourceIsReal("python3 script.py"), false, "команда без изход не е проверка");
+});
