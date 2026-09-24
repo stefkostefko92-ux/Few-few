@@ -10304,7 +10304,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 136
+        "lessons": 154
       },
       "evolution": [
         {
@@ -10618,9 +10618,20 @@
           "date": "2026-09-24",
           "event": "v16.7 — учене",
           "detail": "Научи: OrcaSlicer upstream machine профил \"Creality K2 Plus 0.4 nozzle.json\" задава printable_… (+24 още)"
+        },
+        {
+          "version": "18.5.0",
+          "date": "2026-09-24",
+          "event": "v18.5 — учене",
+          "detail": "Научи: build123d chamfer() на филтрирани долни ръбове (edges().filter_by_position(Axis.Z,0,0))… (+17 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „build123d chamfer() на филтрирани долни ръбове (edges().filter_by_position(Axis.Z,0,0))…\" (+17 още) · 8 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
