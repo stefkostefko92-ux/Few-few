@@ -241,12 +241,19 @@ try {
   await req(`/e/${rawProfile.emergency_token}`); // повторно отваряне
   await settle();
   assert.equal(notif(), 1, 'повторното отваряне не дублира известието');
-  // Link-preview бот (WhatsApp) не бива да задейства фалшиво „спешно" известие.
-  await fetch(`${base}/e/${rawProfile.emergency_token}`, {
+  // Link-preview бот (WhatsApp) не бива да задейства фалшиво „спешно" известие —
+  // но показът на данните се записва в журнала (UA е в ръцете на клиента).
+  const logged = () =>
+    db
+      .prepare('SELECT COUNT(*) c FROM access_log WHERE profile_id = ? AND user_agent = ?')
+      .get(rawProfile.id, 'WhatsApp/2.23 A').c;
+  const botRes = await fetch(`${base}/e/${rawProfile.emergency_token}`, {
     headers: { 'user-agent': 'WhatsApp/2.23 A' },
   });
+  assert.equal(botRes.status, 200);
   await settle();
   assert.equal(notif(), 1, 'бот за link-preview не задейства известие');
+  assert.equal(logged(), 1, 'показът при бот-UA също е в журнала');
   ok('близкият се уведомява при отваряне (без дублиране и без бот preview)');
 
   // 11в. Споделяне на местоположение (JSON + CSRF заглавие), с радиус на точност
