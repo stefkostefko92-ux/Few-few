@@ -12644,7 +12644,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 180
+        "lessons": 201
       },
       "evolution": [
         {
@@ -12976,9 +12976,20 @@
           "date": "2026-09-24",
           "event": "v17.9 — учене",
           "detail": "Научи: SupremeDiscordBot backend/src/routes/discordEntitlements.js entitlementShape носи `type… (+23 още)"
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-24",
+          "event": "v20.0 — учене",
+          "detail": "Научи: clientManager.js:36-56 SHARED_INTENTS и index.js:38-73 главните intents — при това чете… (+20 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „clientManager.js:36-56 SHARED_INTENTS и index.js:38-73 главните intents — при това чете…\" (+20 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
