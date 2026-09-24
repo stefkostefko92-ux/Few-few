@@ -15428,7 +15428,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 104
+        "lessons": 128
       },
       "evolution": [
         {
@@ -15472,9 +15472,20 @@
           "date": "2026-09-24",
           "event": "v20.0 — учене",
           "detail": "Научи: memory-capture носи СОБСТВЕН SECRET_RE, различен от каноничния tools/lib/secret-pattern… (+31 още)"
+        },
+        {
+          "version": "22.4.0",
+          "date": "2026-09-24",
+          "event": "v22.4 — учене",
+          "detail": "Научи: medqr спешният изглед показва данни (GDPR чл.9) БЕЗУСЛОВНО; само logAccess и notifyScan… (+23 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „medqr спешният изглед показва данни (GDPR чл.9) БЕЗУСЛОВНО; само logAccess и notifyScan…\" (+23 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
