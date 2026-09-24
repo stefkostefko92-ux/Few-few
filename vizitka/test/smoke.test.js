@@ -1117,6 +1117,64 @@ await test('портфейл (unit): Google save URL е подписан JWT с 
   const obj = payload.payload.genericObjects[0];
   assert.equal(obj.id, '3388000000000000000.999999'); // стабилен id, не слъг
   assert.equal(obj.barcode.value, `${base}/p/ivan-testov`);
+  // Един обект на визитка, много посетители го запазват → класът ТРЯБВА да
+  // позволява много притежатели. Полето е само на класа, не на обекта.
+  const cls = payload.payload.genericClasses[0];
+  assert.equal(cls.multipleDevicesAndHoldersAllowedStatus, 'MULTIPLE_HOLDERS');
+  assert.equal(obj.multipleDevicesAndHoldersAllowedStatus, undefined);
+  // Google изрязва логото в кръг — затова квадратното, не широкото.
+  assert.equal(obj.logo.sourceUri.uri, `${base}/wallet-logo.png`);
+  const png = fs.readFileSync(new URL('../public/wallet-logo.png', import.meta.url));
+  assert.equal(
+    png.readUInt32BE(16),
+    png.readUInt32BE(20),
+    'логото за портфейла трябва да е квадратно'
+  );
+  // Нула лични снимки на картата: Google Wallet не ги поддържа (правото на отказ
+  // от обработка на чувствителни данни). Снимката на профила не бива да стига дотук.
+  assert.ok(!JSON.stringify(obj).includes('/photo/'), 'личната снимка не бива да влиза в картата');
+});
+
+await test('портфейл (unit): класът на Google се създава предварително и идемпотентно', async () => {
+  // Подменяме fetch: тестът проверява РЕДА на заявките към Google, без мрежа.
+  const { ensureGoogleClass } = await import('../src/wallet/google.js');
+  const realFetch = globalThis.fetch;
+  const calls = [];
+  let classExists = false;
+  globalThis.fetch = async (url, opts = {}) => {
+    const method = opts.method || 'GET';
+    calls.push(`${method} ${String(url).replace(/^https:\/\/[^/]+/, '')}`);
+    const json = (status, body) =>
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'content-type': 'application/json' },
+      });
+    if (String(url).includes('oauth2.googleapis.com')) return json(200, { access_token: 'tok' });
+    if (method === 'GET') return classExists ? json(200, {}) : json(404, {});
+    if (method === 'POST') {
+      assert.equal(
+        JSON.parse(opts.body).multipleDevicesAndHoldersAllowedStatus,
+        'MULTIPLE_HOLDERS'
+      );
+      classExists = true;
+      return json(200, {});
+    }
+    if (method === 'PATCH') return json(200, {});
+    return json(500, {});
+  };
+  try {
+    assert.equal(await ensureGoogleClass(), 'created');
+    assert.equal(await ensureGoogleClass(), 'updated');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  const api = calls.filter((c) => !c.includes('/token'));
+  assert.deepEqual(api, [
+    'GET /walletobjects/v1/genericClass/3388000000000000000.vizitka_generic',
+    'POST /walletobjects/v1/genericClass',
+    'GET /walletobjects/v1/genericClass/3388000000000000000.vizitka_generic',
+    'PATCH /walletobjects/v1/genericClass/3388000000000000000.vizitka_generic',
+  ]);
 });
 
 await test('портфейл: с включен Google бутонът се показва и води към save линк', async () => {

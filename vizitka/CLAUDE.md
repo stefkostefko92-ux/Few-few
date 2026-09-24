@@ -158,6 +158,13 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   връща 404 (спира обновяването). `.pkpass` се кешира по (id, updated_at) и публичните
   портфейл маршрути са rate-limited (openssl spawn е скъп). Бутоните са локални SVG
   (`public/badge-*-wallet.svg`) — сменяй само с официалните артове при нужда.
+  **Google:** класът е с `multipleDevicesAndHoldersAllowedStatus: MULTIPLE_HOLDERS` (обектът е
+  ЕДИН на визитка, запазват го МНОГО посетители; полето е само на класа) и се създава
+  предварително с `npm run wallet:google-class` (Google го иска преди право за публикуване).
+  Логото на картата е квадратното `public/wallet-logo.png` (Google го изрязва в кръг) и
+  **никога** личната снимка. Правата на service account-а се дават с покана „Developer“ в
+  Pay & Wallet Console, не с IAM роля. **Apple:** безплатен път няма (платен Developer
+  Program; освобождаването е само за нефинансови/учебни/държавни) — виж `DEPLOY.md §7`.
 - **Реклами:** банерите се показват само на началната страница (`placement='home'`),
   НЕ върху потребителските визитки. First-party (без чужди тракери → без консент
   банер); всеки носи етикет „Реклама“ и `rel="sponsored"`. Управляват се от `/admin`
