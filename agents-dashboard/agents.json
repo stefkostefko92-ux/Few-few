@@ -15147,7 +15147,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 213
+        "lessons": 214
       },
       "evolution": [
         {
@@ -15209,9 +15209,20 @@
           "date": "2026-09-24",
           "event": "v20.2 — учене",
           "detail": "Научи: SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на дръжката, не readines… (+7 още)"
+        },
+        {
+          "version": "20.3.0",
+          "date": "2026-09-24",
+          "event": "v20.3 — учене",
+          "detail": "Научи: SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на връзката, не readines…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на връзката, не readines…\""
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
