@@ -148,7 +148,10 @@ try {
   const health = await req('/health');
   assert.equal(health.status, 200);
   assert.equal(health.headers.get('cache-control'), 'no-store');
-  ok('/health връща 200 без кеширане');
+  const hb = await health.json();
+  assert.equal(hb.app, 'medqr', 'маркер за идентичност за deploy гейта');
+  assert.equal(hb.ok, true);
+  ok('/health връща 200 без кеширане, с идентичност и проверка на базата');
 
   // 8б. Невалиден имейл за спешен контакт се отхвърля (защита от header injection)
   const badEmail = await req('/profile/edit', {
