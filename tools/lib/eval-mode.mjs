@@ -35,6 +35,9 @@ export function evalMode(cwd, now = Date.now()) {
     const m = JSON.parse(readFileSync(p, "utf8"));
     const until = Date.parse(m.until);
     if (!Number.isFinite(until) || until <= now) return null;
+    // Таванът важи и при ЧЕТЕНЕ: ръчно записан until=3000 спираше ученето на целия флот безсрочно
+    // (Разбивача, 2026-09-24). Твърде далечен край = повреден файл → режимът е изключен.
+    if (until > now + MAX_MINUTES * 60_000) return null;
     return { label: String(m.label || "eval").slice(0, 40), memory: m.memory === "off" ? "off" : "on", until: m.until };
   } catch { return null; }
 }

@@ -30,28 +30,31 @@ const LOCK_DIR = join(PROJECT_DIR, "agents-dashboard", ".sync.lock");
 
 function readStdin() { try { return readFileSync(0, "utf8"); } catch { return ""; } }
 
-function collectText(node, out) {
-  if (!node || typeof node !== "object") return;
-  if (Array.isArray(node)) { for (const n of node) collectText(n, out); return; }
-  for (const [k, v] of Object.entries(node)) {
-    if (k === "text" && typeof v === "string") out.push(v);
-    else if (v && typeof v === "object") collectText(v, out);
+// САМО текстът, който агентът е написал (assistant → content[].type === "text"). Преди се събираше всеки
+// „text“ възел в транскрипта, вкл. tool_result: прочетен файл/страница/issue с ```learn блок ставаше
+// „поука“ (Разбивача, 2026-09-24 — възпроизведено; LLM01). Недоверено съдържание е данни, не памет.
+export function assistantTexts(lines) {
+  const out = [];
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t) continue;
+    let o; try { o = JSON.parse(t); } catch { continue; }
+    const m = o?.message;
+    if (o?.type !== "assistant" || m?.role !== "assistant" || !Array.isArray(m.content)) continue;
+    for (const c of m.content) if (c?.type === "text" && typeof c.text === "string") out.push(c.text);
   }
+  return out;
 }
 
 function transcriptText(path) {
   if (!path || !existsSync(path)) return "";
-  const out = [];
-  for (const line of readFileSync(path, "utf8").split("\n")) {
-    const t = line.trim();
-    if (!t) continue;
-    try { collectText(JSON.parse(t), out); } catch { /* skip */ }
-  }
-  return out.join("\n");
+  return assistantTexts(readFileSync(path, "utf8").split("\n")).join("\n");
 }
 
-function lastLearnBlock(text) {
-  const re = /```learn\s*\n([\s\S]*?)```/g;
+// Оградата е на СОБСТВЕН ред (и отварящата, и затварящата): „```learn“ в средата на изречение (напр.
+// поука, която описва самата кука) иначе отрязваше блока и ученето изчезваше.
+export function lastLearnBlock(text) {
+  const re = /^[ \t]*```learn[ \t]*\n([\s\S]*?)^[ \t]*```[ \t]*$/gm;
   let m, last = null;
   while ((m = re.exec(text)) !== null) last = m[1];
   return last;
@@ -109,6 +112,10 @@ export function inlineLessons(block) {
     else if (line && entries.length && !/^(agent|date|lessons):/i.test(line)) entries[entries.length - 1] += " " + line;
   }
   for (const body of entries) {
+    // Форматът на самия файл памет: „**дата:** текст _(scope; confidence; source)_“. Конвейера и
+    // Принтаджията предадоха по 25 поуки точно така (2026-09-24) — пак НУЛА, пак тихо.
+    const e = body.match(/^\*\*\d{4}-\d{2}-\d{2}:\*\*\s*(.+?)\s*_\(([^;]+);\s*([^;]+);\s*(.+?)\)_\s*$/);
+    if (e) { out.push({ text: e[1].trim(), confidence: normalizeConfidence(e[3].trim()), source: e[4].trim().replace(/^["']|["']$/g, ""), scope: e[2].trim(), reverify: "" }); continue; }
     if (!/\bconfidence:/i.test(body)) continue;
     const text = body.split(/\s*\bconfidence:/i)[0].replace(/^\*{0,2}\d{4}-\d{2}-\d{2}\*{0,2}:\s*/, "").replace(/[\s.;,]+$/, "").trim();
     const conf = (body.match(/\bconfidence:\s*([^;|]+)/i) || [])[1] || "";
@@ -144,7 +151,10 @@ const INJECTION_RE = new RegExp(
     /(?:ignora|olvida)\s+(?:todas\s+las\s+)?(?:instrucciones|reglas)\s+(?:anteriores|previas)/u.source, // ES
     /(?:sei\s+(?:ora|adesso)|du\s+bist\s+(?:jetzt|nun)|ahora\s+eres)\s/u.source, // IT/DE/ES смяна на роля
     /(?:invia|manda|inoltra|sende|schicke|leite|env[ií]a)\b[^\n]{0,80}\b(?:a|an|zu)\s+https?:\/\//u.source, // IT/DE/ES exfil→URL
-    /[​-‏‪-‮⁦-⁩]/.source, // нулево-широки/bidi контролни знаци
+    /(?:ты\s+теперь|теперь\s+ты|игнорируй\s+(?:все\s+)?(?:предыдущие|прежние)\s+(?:инструкции|правила))/u.source, // RU
+    // Нулево-широки/bidi/невидими знаци — същият клас като INVISIBLE в guard-secrets (U+2060, U+FEFF,
+    // U+00AD, U+180E, U+3164, Tags). Преди: само U+200B-200F/202A-202E/2066-2069 → скрита инструкция минаваше.
+    /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFEFF\u{E0000}-\u{E007F}]/u.source,
   ].join("|"),
   "iu",
 );
@@ -170,6 +180,24 @@ import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs
 export { sourceIsReal };
 
 export { looksSecret, looksInjection };
+
+// Таван за поука (Разбивача: 20 000-знаков булет минаваше и раздуваше паметта). Най-дългата реална
+// поука към 2026-09-24 е ~3200 знака с метаданните — таванът е с резерв.
+export const MAX_TEXT = 2000, MAX_SOURCE = 600;
+
+// Бъдеща дата (`date: 2099-…`) изплуваше отровната поука най-отгоре при извличане (сортът е по дата).
+// Датата на поуката е най-много днешната; невалидна → днешната.
+export function clampDate(raw, today = new Date().toISOString().slice(0, 10)) {
+  const d = String(raw || "").trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !Number.isFinite(Date.parse(d))) return today;
+  return d > today ? today : d;
+}
+
+export function runnerMatches(runner, agent) {
+  const r = String(runner || "").trim();
+  if (!r) return true;
+  return r === agent;
+}
 
 function atomicWrite(file, content) {
   const tmp = `${file}.tmp.${process.pid}`;
@@ -256,8 +284,12 @@ function main() {
   if (!parsed.agent) process.exit(0);
   const file = join(MEM_DIR, `${parsed.agent}.md`);
   if (!existsSync(file)) process.exit(0); // не е от нашия списък — no-op
+  // Блокът пише само в паметта на агента, който РЕАЛНО е вървял. Иначе razbivacha (или прочетено
+  // съдържание) с `agent: kasadjiyata` тровеше чужда памет (Разбивача, 2026-09-24). Ръчен запис без
+  // agent_type (оркестраторът прихваща изгубени поуки) остава възможен.
+  if (!runnerMatches(payload.agent_type, parsed.agent)) process.exit(0);
 
-  const date = parsed.date || new Date().toISOString().slice(0, 10);
+  const date = clampDate(parsed.date);
   const working = readFileSync(file, "utf8");
   // Дедупът вижда И поуките, които чакат в agents/memory — иначе същата поука се публикува повторно.
   const pending = pendingLessons(PROJECT_DIR, parsed.agent, working);
@@ -266,6 +298,7 @@ function main() {
   const newV = [], newQ = [];
   for (const les of parsed.lessons) {
     if (!les.text || !les.source) continue; // източник или нищо
+    if (les.text.length > MAX_TEXT || les.source.length > MAX_SOURCE || String(les.scope).length > 200) continue; // таван: паметта не се раздува
     if (looksSecret(les.text) || looksSecret(les.source)) continue; // тайна → НЕ записвай (твърд дроп)
     if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // анти persistent injection
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).

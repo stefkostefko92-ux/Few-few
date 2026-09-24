@@ -28,3 +28,17 @@ test("каноничната схема има приоритет — резер
   assert.equal(r.lessons.length, 1);
   assert.equal(r.lessons[0].text, "канонична");
 });
+
+test("форматът на файла памет („**дата:** текст _(scope; confidence; source)_“) се разчита", () => {
+  const block = [
+    "agent: konveyera",
+    '- **2026-09-24:** cspos.yml няма `permissions:` блок. _(project; verified; ".github/workflows/cspos.yml (1-15); node tools/ci/workflow-lint.mjs")_',
+    "- **2026-09-24:** само мнение без скоби",
+  ].join("\n");
+  const r = parseLearn(block);
+  assert.equal(r.lessons.length, 1);
+  assert.equal(r.lessons[0].text, "cspos.yml няма `permissions:` блок.");
+  assert.equal(r.lessons[0].scope, "project");
+  assert.equal(r.lessons[0].confidence, "verified");
+  assert.equal(r.lessons[0].source, ".github/workflows/cspos.yml (1-15); node tools/ci/workflow-lint.mjs");
+});

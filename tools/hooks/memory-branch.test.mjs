@@ -192,7 +192,7 @@ test("4. кука → клон на паметта → следващият аг
     git(f.work, "checkout", "-q", "-b", "claude/task");
     const transcript = join(f.root, "t.jsonl");
     const block = "```learn\nagent: testagent\ndate: 2026-09-23\nlessons:\n  - text: поука от куката през клона на паметта\n    confidence: verified\n    source: https://web.dev/articles/lcp\n    scope: тест\n```";
-    writeFileSync(transcript, JSON.stringify({ message: { content: [{ type: "text", text: block }] } }) + "\n");
+    writeFileSync(transcript, JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: block }] } }) + "\n");
     const env = { ...process.env, ...ENV, CLAUDE_PROJECT_DIR: f.work, AGENT_MEMORY_SYNC: "0" };
     const c = spawnSync(process.execPath, [CAPTURE], { input: JSON.stringify({ transcript_path: transcript }), encoding: "utf8", env });
     assert.equal(c.status, 0, c.stderr);
