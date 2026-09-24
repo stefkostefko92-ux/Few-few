@@ -77,3 +77,10 @@
 {"t":"handoff","ts":"2026-09-24T12:30:09.532Z","id":"rddb6aed3","from":"treydara","to":"ai-djiyata","status":"има бележки","run":"ac14b29b"}
 {"t":"handoff","ts":"2026-09-24T12:30:31.490Z","id":"rddb6aed3","from":"tayniyat-agent","to":"ai-djiyata","status":"блокер","run":"bc5d28b8"}
 {"t":"handoff","ts":"2026-09-24T12:31:56.065Z","id":"rddb6aed3","from":"nabludatelya","to":"ai-djiyata","status":"има бележки","run":"71bca45a"}
+{"t":"handoff","ts":"2026-09-24T12:32:42.022Z","id":"rddb6aed3","from":"kasadjiyata","to":"ai-djiyata","status":"има бележки","run":"028f47c8"}
+{"t":"handoff","ts":"2026-09-24T12:36:30.768Z","id":"rddb6aed3","from":"konveyera","to":"ai-djiyata","status":"наред","run":"2b946345"}
+{"t":"handoff","ts":"2026-09-24T12:37:13.330Z","id":"rddb6aed3","from":"geymara","to":"ai-djiyata","status":"наред","run":"7b73fb6c"}
+{"t":"handoff","ts":"2026-09-24T12:38:00.199Z","id":"rddb6aed3","from":"printadjiyata","to":"ai-djiyata","status":"наред","run":"1f007836"}
+{"t":"handoff","ts":"2026-09-24T12:39:15.897Z","id":"rddb6aed3","from":"dizayner","to":"ai-djiyata","status":"наред","run":"014ce98c"}
+{"t":"handoff","ts":"2026-09-24T12:39:32.409Z","id":"rddb6aed3","from":"seo","to":"ai-djiyata","status":"наред","run":"f1d72753"}
+{"t":"handoff","ts":"2026-09-24T12:39:56.900Z","id":"rddb6aed3","from":"izpitatelya","to":"ai-djiyata","status":"наред","run":"12a813d0"}
