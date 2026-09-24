@@ -44,11 +44,14 @@ export function lintPost(post: LintablePost): LintFinding[] {
   if (caption.length === 0) {
     findings.push({ severity: 'HIGH', rule: 'caption-empty', message: 'Празен caption.' });
   }
-  if (caption.length > CAPTION_MAX) {
+  // Към Instagram отива caption + хаштаговете (services/publish.ts) — лимитът важи за целия низ,
+  // иначе черновата минава линта и пада едва при публикуване (Социалджията, 2026-09-24).
+  const sent = [post.caption, post.hashtags.join(' ')].filter(Boolean).join('\n\n');
+  if (sent.length > CAPTION_MAX) {
     findings.push({
       severity: 'HIGH',
       rule: 'caption-too-long',
-      message: `Caption е ${caption.length} знака при лимит ${CAPTION_MAX}.`,
+      message: `Caption с хаштаговете е ${sent.length} знака при лимит ${CAPTION_MAX}.`,
     });
   }
 

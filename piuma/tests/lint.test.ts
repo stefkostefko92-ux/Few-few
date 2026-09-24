@@ -28,6 +28,11 @@ test('caption над 2200 знака е блокиращ', () => {
   assert.ok(findings.some((f) => f.rule === 'caption-too-long' && f.severity === 'HIGH'));
 });
 
+test('caption под лимита, но с хаштаговете над 2200 знака, е блокиращ', () => {
+  const findings = lintPost(post({ caption: 'а'.repeat(2150), hashtags: ['#' + 'б'.repeat(60)] }));
+  assert.ok(findings.some((f) => f.rule === 'caption-too-long' && f.severity === 'HIGH'));
+});
+
 test('тайна в caption е блокираща', () => {
   const findings = lintPost(post({ caption: 'ключ sk-ant-api03-XXXXXXXXXXXX' }));
   assert.ok(hasBlockingFindings(findings));
