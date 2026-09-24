@@ -1,12 +1,9 @@
 </main>
 <footer class="footer">
   <p>© <%= new Date().getFullYear() %> Carbon Stealth VCC · <a href="https://carbonstealth.eu">carbonstealth.eu</a></p>
+  <%# Списъкът се ражда от src/guides.js — твърдият списък тук вече изостана веднъж. %>
   <nav class="footer-guides" aria-label="Наръчник">
-    <a href="/digitalna-vizitka">Какво е дигитална визитка</a> ·
-    <a href="/qr-vizitka">Визитка с QR код</a> ·
-    <a href="/firmena-vizitka">Фирмена визитка</a> ·
-    <a href="/vcard-vcf">vCard (.vcf)</a> ·
-    <a href="/kak-da-napravya-vizitka">Как да си направя визитка</a>
+    <% (typeof guides !== 'undefined' ? guides : []).forEach((g, i) => { %><%- i ? ' · ' : '' %><a href="/<%= g.slug %>"><%= g.navTitle %></a><% }) %>
   </nav>
   <p><a href="/privacy">Поверителност</a> · <a href="/terms">Общи условия</a> · <a href="/terms#impresum">Импресум</a></p>
 </footer>

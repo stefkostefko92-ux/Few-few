@@ -20,6 +20,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
 import adminRoutes from './routes/admin.js';
 import walletRoutes from './routes/wallet.js';
+import mcpRoutes from './routes/mcp.js';
 
 seedAdmins(); // маркира конфигурираните ADMIN_EMAILS акаунти като админ
 
@@ -115,6 +116,7 @@ app.use((req, res, next) => {
   res.locals.siteBase = baseUrl(req);
   res.locals.icon = icon; // premium SVG иконки: <%- icon('phone') %>
   res.locals.assetVer = assetVer; // cache-busting за styles.css/app.js
+  res.locals.guides = GUIDES; // наръчникът във футъра — един източник, нула дрейф
   next();
 });
 
@@ -185,6 +187,7 @@ for (const guide of GUIDES) {
 
 app.get('/privacy', (req, res) => res.render('privacy', { title: 'Политика за поверителност' }));
 app.get('/terms', (req, res) => res.render('terms', { title: 'Общи условия' }));
+app.use(mcpRoutes);
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(adminRoutes);
