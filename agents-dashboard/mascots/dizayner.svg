@@ -124,6 +124,23 @@
       <ellipse cx="254" cy="360" rx="150" ry="130" fill="url(#dizayner-full-jm-lattice-fade)"/>
     </mask>
 
+    <!--
+      Карбонова тъкан: класическият 2×2 twill шахматен мотив на карбоновото платно, завъртян на
+      45°, за да легнат ребрата диагонално (така четем „тъкан", не „шарка"). Цветовете остават в
+      зелено-маслиновото семейство (без черно/сиво) — материалът е карбон, но останал ВЪТРЕ в
+      желето, не отгоре като лепенка. По-видима от решетката нарочно: това Е новият подпис.
+    -->
+    <pattern id="dizayner-full-jm-twill" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="14" height="14" fill="none"/>
+      <rect width="7" height="7" fill="var(--jm-deep, #21005a)" opacity="0.4"/>
+      <rect x="7" y="7" width="7" height="7" fill="var(--jm-deep, #21005a)" opacity="0.4"/>
+      <rect x="7" y="0" width="7" height="7" fill="var(--jm-pale, #eec3d6)" opacity="0.16"/>
+      <rect x="0" y="7" width="7" height="7" fill="var(--jm-pale, #eec3d6)" opacity="0.16"/>
+    </pattern>
+    <mask id="dizayner-full-jm-twill-mask">
+      <ellipse cx="254" cy="292" rx="176" ry="204" fill="url(#dizayner-full-jm-lattice-fade)"/>
+    </mask>
+
     <clipPath id="dizayner-full-jm-clip">
       <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z"/>
     </clipPath>
@@ -221,9 +238,17 @@
       <ellipse class="jm-core" cx="254" cy="376" rx="150" ry="118" fill="url(#dizayner-full-jm-core)"/>
       <ellipse class="jm-core" cx="250" cy="404" rx="90" ry="58" fill="url(#dizayner-full-jm-core)" opacity="0.75"/>
 
-      <!-- Въглеродната решетка — подписът на бранда, вграден в материала. -->
+      <!-- Въглеродната решетка — фината подложка на бранда, вградена в материала. -->
       <g class="jm-lattice" mask="url(#dizayner-full-jm-lattice-mask)" opacity="0.3">
         <rect x="100" y="220" width="320" height="270" fill="url(#dizayner-full-jm-lattice)"/>
+      </g>
+
+      <!-- Карбонова тъкан — ГЛАВНИЯТ материален подпис, видим от пръв поглед: истинско 2×2 twill
+           платно, запечатано в желето. Диагонален лъч минава по нея веднъж на цикъл — „лъч по
+           карбон", не движение на самото тяло. -->
+      <g class="jm-carbon" mask="url(#dizayner-full-jm-twill-mask)">
+        <rect x="78" y="110" width="360" height="380" fill="url(#dizayner-full-jm-twill)"/>
+        <rect class="jm-carbon-sheen" x="-260" y="90" width="140" height="410" fill="url(#dizayner-full-jm-shimmer)" opacity="0.4" transform="skewX(-46)"/>
       </g>
 
       <!-- Каустики — неравномерна вътрешна плътност. -->
@@ -393,6 +418,10 @@
           <path d="M212 300L226 290" stroke-width="3.5"/>
           <path d="M322 300L336 290" stroke-width="3.5"/>
         </g>
+        <!-- Искрица в лявото стъкло: ЕДНА, не огледално по две — истинско фото има един ключов
+             отблясък, не лепенка на всяко стъкло. Формата е умалена версия на jm-sparkle (същият
+             знак, не нова украса), затова стъклото сякаш улавя мисълта на маскота. -->
+        <path class="jm-lens-spark" d="M196 239.6C196.6 244.1 197.6 245 201.8 246C197.6 247 196.6 247.9 196 252.4C195.4 247.9 194.4 247 190.2 246C194.4 245 195.4 244.1 196 239.6Z" fill="var(--jm-pale, #eec3d6)" opacity="0.85"/>
       </g>
 
       <!-- Усмивка с мек отблясък отдолу (устата е вдлъбнатина, не линия). -->

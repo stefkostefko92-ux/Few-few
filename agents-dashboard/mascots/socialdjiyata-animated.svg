@@ -126,6 +126,23 @@
       <ellipse cx="254" cy="360" rx="150" ry="130" fill="url(#socialdjiyata-animated-jm-lattice-fade)"/>
     </mask>
 
+    <!--
+      Карбонова тъкан: класическият 2×2 twill шахматен мотив на карбоновото платно, завъртян на
+      45°, за да легнат ребрата диагонално (така четем „тъкан", не „шарка"). Цветовете остават в
+      зелено-маслиновото семейство (без черно/сиво) — материалът е карбон, но останал ВЪТРЕ в
+      желето, не отгоре като лепенка. По-видима от решетката нарочно: това Е новият подпис.
+    -->
+    <pattern id="socialdjiyata-animated-jm-twill" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="14" height="14" fill="none"/>
+      <rect width="7" height="7" fill="var(--jm-deep, #99005a)" opacity="0.4"/>
+      <rect x="7" y="7" width="7" height="7" fill="var(--jm-deep, #99005a)" opacity="0.4"/>
+      <rect x="7" y="0" width="7" height="7" fill="var(--jm-pale, #e9b2a7)" opacity="0.16"/>
+      <rect x="0" y="7" width="7" height="7" fill="var(--jm-pale, #e9b2a7)" opacity="0.16"/>
+    </pattern>
+    <mask id="socialdjiyata-animated-jm-twill-mask">
+      <ellipse cx="254" cy="292" rx="176" ry="204" fill="url(#socialdjiyata-animated-jm-lattice-fade)"/>
+    </mask>
+
     <clipPath id="socialdjiyata-animated-jm-clip">
       <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z"/>
     </clipPath>
@@ -205,17 +222,25 @@
 
     /* Отблясък, който минава по гланца веднъж на цикъл. */
     .jm-animated .jm-shimmer { animation: jm-sweep 9s ease-in-out infinite; }
+    /* „Лъч по карбон" — отделен, по-бавен отблясък, диагонален по посоката на тъканта (45°), не по
+       посоката на гланца (14°): двете четат се като два различни материала, не като едно мигане. */
+    .jm-animated .jm-carbon-sheen { animation: jm-carbon-sweep 8s ease-in-out infinite 1.4s; }
 
     /* Искрите присветват разминато. */
     .jm-animated .jm-sparkle-a,
     .jm-animated .jm-sparkle-b,
-    .jm-animated .jm-sparkle-c {
+    .jm-animated .jm-sparkle-c,
+    .jm-animated .jm-lens-spark {
       transform-box: fill-box;
       transform-origin: center;
     }
     .jm-animated .jm-sparkle-a { animation: jm-twinkle 4.4s ease-in-out infinite; }
     .jm-animated .jm-sparkle-b { animation: jm-twinkle 5.6s ease-in-out infinite 1.1s; }
     .jm-animated .jm-sparkle-c { animation: jm-twinkle 6.8s ease-in-out infinite 2.3s; }
+    /* Искрицата в стъклото присветва точно СЛЕД мигването (5.2s цикъл на .jm-eyes, пикът на
+       затварянето е при 95%) — сякаш маскотът примигва и в същия миг му хрумва нещо. Отделен ритъм
+       (7.4s) пази двете анимации да не се подредят в постоянен такт, който би заприличал на строб. */
+    .jm-animated .jm-lens-spark { animation: jm-twinkle 7.4s ease-in-out infinite 2.8s; }
 
     @keyframes jm-bob {
       0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
@@ -246,6 +271,10 @@
       0%, 62% { transform: translateX(0) skewX(-14deg); }
       100% { transform: translateX(760px) skewX(-14deg); }
     }
+    @keyframes jm-carbon-sweep {
+      0%, 58% { transform: translateX(0) skewX(-46deg); }
+      100% { transform: translateX(700px) skewX(-46deg); }
+    }
     /* Оглеждане: две кратки „поглеждания" настрани, останалото време — право напред.
        Амплитудата е 5 единици от 512 — колкото да е живо, не да е кривогледо. */
     @keyframes jm-gaze {
@@ -272,9 +301,11 @@
       .jm-animated .jm-bubbles-mid,
       .jm-animated .jm-bubbles-far,
       .jm-animated .jm-shimmer,
+      .jm-animated .jm-carbon-sheen,
       .jm-animated .jm-sparkle-a,
       .jm-animated .jm-sparkle-b,
       .jm-animated .jm-sparkle-c,
+      .jm-animated .jm-lens-spark,
       .jm-animated .jm-pupils {
         animation: none !important;
       }
@@ -338,9 +369,17 @@
       <ellipse class="jm-core" cx="254" cy="376" rx="150" ry="118" fill="url(#socialdjiyata-animated-jm-core)"/>
       <ellipse class="jm-core" cx="250" cy="404" rx="90" ry="58" fill="url(#socialdjiyata-animated-jm-core)" opacity="0.75"/>
 
-      <!-- Въглеродната решетка — подписът на бранда, вграден в материала. -->
+      <!-- Въглеродната решетка — фината подложка на бранда, вградена в материала. -->
       <g class="jm-lattice" mask="url(#socialdjiyata-animated-jm-lattice-mask)" opacity="0.3">
         <rect x="100" y="220" width="320" height="270" fill="url(#socialdjiyata-animated-jm-lattice)"/>
+      </g>
+
+      <!-- Карбонова тъкан — ГЛАВНИЯТ материален подпис, видим от пръв поглед: истинско 2×2 twill
+           платно, запечатано в желето. Диагонален лъч минава по нея веднъж на цикъл — „лъч по
+           карбон", не движение на самото тяло. -->
+      <g class="jm-carbon" mask="url(#socialdjiyata-animated-jm-twill-mask)">
+        <rect x="78" y="110" width="360" height="380" fill="url(#socialdjiyata-animated-jm-twill)"/>
+        <rect class="jm-carbon-sheen" x="-260" y="90" width="140" height="410" fill="url(#socialdjiyata-animated-jm-shimmer)" opacity="0.4" transform="skewX(-46)"/>
       </g>
 
       <!-- Каустики — неравномерна вътрешна плътност. -->
@@ -510,6 +549,10 @@
           <path d="M212 300L226 290" stroke-width="3.5"/>
           <path d="M322 300L336 290" stroke-width="3.5"/>
         </g>
+        <!-- Искрица в лявото стъкло: ЕДНА, не огледално по две — истинско фото има един ключов
+             отблясък, не лепенка на всяко стъкло. Формата е умалена версия на jm-sparkle (същият
+             знак, не нова украса), затова стъклото сякаш улавя мисълта на маскота. -->
+        <path class="jm-lens-spark" d="M196 239.6C196.6 244.1 197.6 245 201.8 246C197.6 247 196.6 247.9 196 252.4C195.4 247.9 194.4 247 190.2 246C194.4 245 195.4 244.1 196 239.6Z" fill="var(--jm-pale, #e9b2a7)" opacity="0.85"/>
       </g>
 
       <!-- Усмивка с мек отблясък отдолу (устата е вдлъбнатина, не линия). -->

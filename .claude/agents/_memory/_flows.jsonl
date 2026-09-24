@@ -99,3 +99,5 @@
 {"t":"handoff","ts":"2026-09-24T14:13:50.628Z","id":"rfd326880","from":"dizayner","to":"ai-djiyata","status":"наред","run":"13c7cecc"}
 {"t":"start","ts":"2026-09-24T14:17:15.710Z","id":"re1d622c0","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-09-24T14:17:15.710Z","id":"re1d622c0","from":"dizayner","to":"ai-djiyata","status":"наред","run":"e0b9a773"}
+{"t":"start","ts":"2026-09-24T14:22:49.626Z","id":"r4bbf8e93","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-09-24T14:22:49.627Z","id":"r4bbf8e93","from":"dizayner","to":"ai-djiyata","status":"наред","run":"13c7cecc"}
