@@ -3672,7 +3672,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 191
+        "lessons": 205
       },
       "evolution": [
         {
@@ -4100,9 +4100,20 @@
           "date": "2026-09-24",
           "event": "v17.4 — учене",
           "detail": "Научи: Minyor (ФК Миньор) root layout metadata.keywords е масив от 7 елемента, но НЕ съдържа „… (+10 още)"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-09-24",
+          "event": "v18.8 — учене",
+          "detail": "Научи: Minyor/src/app/layout.tsx:36-44 metadata.keywords масив (7 елемента) НЯМА „Carbon Steal… (+13 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Minyor/src/app/layout.tsx:36-44 metadata.keywords масив (7 елемента) НЯМА „Carbon Steal…\" (+13 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
