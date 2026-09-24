@@ -19,6 +19,7 @@ import { parseFallback, replaceFallback } from "../../tools/lib/dashboard-fallba
 import { norm, addLessons, lessonIndex, lessonText, summarize, applyUpdate, countVerifiedText } from "../../tools/lib/memory-core.mjs";
 import { publishLessons, pendingLessons, isGitRepo } from "../../tools/lib/memory-branch.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -129,7 +130,10 @@ export function inlineLessons(block) {
 
 // Guardrail (flawlessness #10): НИКОГА тайна/ключ/токен в паметта — твърд гейт, не съвет.
 const SECRET_RE = /\b(?:sk|rk|pk)_(?:live|test|prod)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{35}|\b(?:ya29|AQ)\.[0-9A-Za-z_-]{20,}|(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqp):\/\/[^\s:@/]+:[^\s:@/]+@|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/;
-const looksSecret = (s) => SECRET_RE.test(String(s));
+// + КАНОНИЧНИЯТ списък (tools/lib/secret-patterns.mjs). Собственият SECRET_RE беше по-тесен —
+// sk-ant-…, github_pat_…, Discord bot token влизаха в паметта (Разбивача, мисия 2). Пазим и локалния
+// заради формите, които каноничният умишлено не блокира в рънтайм (JWT, DB URL с парола).
+const looksSecret = (s) => { const t = String(s); return SECRET_RE.test(t) || CREDENTIAL.some((p) => p.re.test(t)); };
 
 // Анти устойчива-инжекция (persistent prompt injection): паметта се ИНЖЕКТИРА в
 // контекста на всеки бъдещ старт (memory-preload) → зловреден сайт, който убеди агент
@@ -137,8 +141,8 @@ const looksSecret = (s) => SECRET_RE.test(String(s));
 // императиви за изпращане/изпълнение, смяна на роля/правила, exfil URL-и, скрити знаци.
 const INJECTION_RE = new RegExp(
   [
-    /(?:ignore|disregard|forget)\s+(?:all\s+)?(?:previous|prior|earlier|above)\s+(?:instructions?|rules?|context)/.source,
-    /(?:игнорирай|забрави|пренебрегни)\s+(?:всички\s+)?(?:предишн[\p{L}]*|горн[\p{L}]*|досегашн[\p{L}]*|тези|тукашн[\p{L}]*)\s+(?:инструкц[\p{L}]*|правил[\p{L}]*|указан[\p{L}]*)/u.source,
+    /(?:ignore|disregard|forget)\s+(?:all\s+)?(?:the\s+)?(?:previous|prior|earlier|above)\s+(?:instructions?|rules?|context)/.source,
+    /(?:игнорирай|забрави|пренебрегни)\s+(?:всички\s+)?(?:предишн[\p{L}]*|предходн[\p{L}]*|горн[\p{L}]*|досегашн[\p{L}]*|тези|тукашн[\p{L}]*)\s+(?:инструкц[\p{L}]*|правил[\p{L}]*|указан[\p{L}]*)/u.source,
     /you\s+are\s+(?:now|no\s+longer)\s/.source,
     /(?:ти\s+(?:вече\s+)?си|отсега\s+си)\s+(?:друг|нов)\s+(?:агент|асистент)/.source,
     /(?:винаги|always)\s+(?:изпращай|изпрати|прати|send|post|forward|exfiltrate)\b/.source,
@@ -151,14 +155,26 @@ const INJECTION_RE = new RegExp(
     /(?:ignora|olvida)\s+(?:todas\s+las\s+)?(?:instrucciones|reglas)\s+(?:anteriores|previas)/u.source, // ES
     /(?:sei\s+(?:ora|adesso)|du\s+bist\s+(?:jetzt|nun)|ahora\s+eres)\s/u.source, // IT/DE/ES смяна на роля
     /(?:invia|manda|inoltra|sende|schicke|leite|env[ií]a)\b[^\n]{0,80}\b(?:a|an|zu)\s+https?:\/\//u.source, // IT/DE/ES exfil→URL
-    /(?:ты\s+теперь|теперь\s+ты|игнорируй\s+(?:все\s+)?(?:предыдущие|прежние)\s+(?:инструкции|правила))/u.source, // RU
+    /(?:ты\s+теперь|теперь\s+ты|(?:игнорируй|забудь)\s+(?:все\s+)?(?:предыдущие|прежние)\s+(?:инструкции|правила))/u.source, // RU
+    /(?:ignore[zr]?|oublie[zr]?)\s+(?:toutes\s+)?les\s+(?:instructions|règles)\s+(?:précédentes|antérieures)/u.source, // FR
+    // Variation selectors след буква (не след емоджи) и supplementary VS — невидим носител на текст.
+    /[\p{L}][\uFE00-\uFE0F]|[\u{E0100}-\u{E01EF}]/u.source,
     // Нулево-широки/bidi/невидими знаци — същият клас като INVISIBLE в guard-secrets (U+2060, U+FEFF,
     // U+00AD, U+180E, U+3164, Tags). Преди: само U+200B-200F/202A-202E/2066-2069 → скрита инструкция минаваше.
     /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFEFF\u{E0000}-\u{E007F}]/u.source,
   ].join("|"),
   "iu",
 );
-const looksInjection = (s) => INJECTION_RE.test(String(s));
+// Нормализация преди проверката: NFKC сгъва fullwidth/стилизирани форми („ｉｇｎｏｒｅ“), а латинизираният
+// вариант хваща кирилски хомоглифи в английски фрази („іgnore“ с укр. і). Проверяваме и оригинала
+// (невидимите знаци), и двете нормализирани форми.
+const HOMOGLYPH = { а: "a", е: "e", о: "o", р: "p", с: "c", у: "y", х: "x", і: "i", ј: "j", ѕ: "s", ԁ: "d", ӏ: "l", һ: "h", ԛ: "q", ԝ: "w" };
+const latinize = (t) => t.replace(/[аеорсухіјѕԁӏһԛԝ]/g, (c) => HOMOGLYPH[c]);
+const looksInjection = (s) => {
+  const raw = String(s ?? "");
+  const n = raw.normalize("NFKC");
+  return INJECTION_RE.test(raw) || INJECTION_RE.test(n) || INJECTION_RE.test(latinize(n.toLowerCase()));
+};
 
 // „Verified" иска РЕАЛЕН източник. Синтактична проверка (не семантична — hook-ът не отваря URL-а);
 // curate + човек до push.
@@ -183,7 +199,7 @@ export { looksSecret, looksInjection };
 
 // Таван за поука (Разбивача: 20 000-знаков булет минаваше и раздуваше паметта). Най-дългата реална
 // поука към 2026-09-24 е ~3200 знака с метаданните — таванът е с резерв.
-export const MAX_TEXT = 2000, MAX_SOURCE = 600;
+export const MAX_TEXT = 2000, MAX_SOURCE = 600, MAX_LESSONS = 30;
 
 // Бъдеща дата (`date: 2099-…`) изплуваше отровната поука най-отгоре при извличане (сортът е по дата).
 // Датата на поуката е най-много днешната; невалидна → днешната.
@@ -296,16 +312,19 @@ function main() {
   const seen = lessonIndex(working, pending.length ? `## Проверени поуки\n${pending.join("\n")}\n` : "");
 
   const newV = [], newQ = [];
-  for (const les of parsed.lessons) {
+  // Таван на броя: един блок не може да наводни паметта (200 поуки = раздута памет + бум на версията).
+  for (const les of parsed.lessons.slice(0, MAX_LESSONS)) {
     if (!les.text || !les.source) continue; // източник или нищо
     if (les.text.length > MAX_TEXT || les.source.length > MAX_SOURCE || String(les.scope).length > 200) continue; // таван: паметта не се раздува
-    if (looksSecret(les.text) || looksSecret(les.source)) continue; // тайна → НЕ записвай (твърд дроп)
+    if (looksSecret(les.text) || looksSecret(les.source) || looksSecret(les.scope)) continue; // тайна → НЕ записвай (твърд дроп)
     if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // анти persistent injection
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).
     let confidence = String(les.confidence || "").toLowerCase();
     if (confidence === "verified" && !sourceIsReal(les.source)) confidence = "unverified";
     const entry = `- **${date}:** ${les.text} _(${les.scope || "общо"}; ${confidence}; ${les.source}${les.reverify ? `; re-verify: ${les.reverify}` : ""})_`;
-    if (seen.has(entry) || [...seen.exact].some((e) => e.includes(norm(les.text)))) continue;
+    // Само точен дубъл или същото тяло. Старата проверка „текстът е подниз на съществуващ ред“
+    // изхвърляше истински нови кратки поуки (Разбивача, мисия 2).
+    if (seen.has(entry)) continue;
     seen.exact.add(norm(entry));
     (confidence === "verified" ? newV : newQ).push(entry);
   }

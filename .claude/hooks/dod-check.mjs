@@ -87,16 +87,43 @@ const RESULT_MARKERS = [
   { name: "secret-scan", green: /secret-scan: чисто/, red: /secret-scan: \d+ възможни тайни/ },
 ];
 
-/** Гейт, чийто ПОСЛЕДЕН резултат в транскрипта е ЧЕРВЕН → работата не е „готова". */
+/**
+ * Изходът на всяко Bash извикване, сдвоен с командата му (по tool_use_id). Само Bash: „# fail 2“ в
+ * прочетен файл (Read) не е резултат от пуснат гейт.
+ */
+export function collectBashRuns(jsonl) {
+  const cmds = new Map(), out = [];
+  const text = (c) => typeof c === "string" ? c : Array.isArray(c) ? c.map(text).join("\n") : c && typeof c === "object" ? text(c.text ?? c.content ?? "") : "";
+  const walk = (o) => {
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) { o.forEach(walk); return; }
+    if (o.type === "tool_use" && o.name === "Bash" && o.id) cmds.set(o.id, String(o.input?.command || ""));
+    else if (o.type === "tool_result" && cmds.has(o.tool_use_id)) out.push({ cmd: cmds.get(o.tool_use_id), out: text(o.content) });
+    for (const v of Object.values(o)) walk(v);
+  };
+  for (const line of String(jsonl).split("\n")) { const t = line.trim(); if (!t) continue; try { walk(JSON.parse(t)); } catch { /* skip */ } }
+  return out;
+}
+
+const cmdKey = (c) => String(c || "").replace(/\s+/g, " ").trim();
+
+/**
+ * Гейт, чийто ПОСЛЕДЕН резултат е ЧЕРВЕН → работата не е „готова". Резултат = низ (стар формат) или
+ * { cmd, out }. При сдвоени резултати червеното на ЕДНА команда се изчиства само от по-късно зелено на
+ * СЪЩАТА команда — иначе `node --test b.test.mjs` (зелен) маскираше червения `a.test.mjs` (Разбивача, мисия 2).
+ * Поправка → повторно пускане на същата команда остава правилният поток.
+ */
 export function checkFailedGates(results) {
   const bad = [];
   for (const m of RESULT_MARKERS) {
-    let last = null;
+    const last = new Map();
     for (const r of results) {
-      if (m.red.test(r)) last = "red";
-      else if (m.green.test(r)) last = "green";
+      const out = typeof r === "string" ? r : String(r?.out ?? "");
+      const key = typeof r === "string" ? "" : cmdKey(r?.cmd);
+      if (m.red.test(out)) last.set(key, "red");
+      else if (m.green.test(out)) last.set(key, "green");
     }
-    if (last === "red") bad.push(m.name);
+    if ([...last.values()].includes("red")) bad.push(m.name);
   }
   if (!bad.length) return null;
   return {
@@ -233,7 +260,12 @@ export function appendHandoffToLedger(finalText, payload = {}, ledger = join(ROO
 // Чиста логика — тестваема: {violations:[{file, gate}]}. `root` за релативизиране на абсолютни пътища (F1).
 export function checkDoD(uses, root) {
   const bashCmds = uses.filter((u) => u.name === "Bash").map((u) => String(u.input.command || ""));
-  const bash = bashCmds.join("\n");
+  // Гейтът трябва да е ПУСНАТ, не споменат: `echo manifest-lint.mjs`, `printf`, `: …` и коментари не
+  // се броят (Разбивача, мисия 2). Сегментите се делят по ; && || | и нов ред.
+  const bashRun = bashCmds.flatMap((c) => c.split(/\n|;|&&|\|\||\|/))
+    .map((seg) => seg.trim())
+    .filter((seg) => seg && !/^(?:echo|printf|:|true|#)(?:\s|$)/.test(seg))
+    .join("\n");
   const written = [
     ...uses.filter((u) => u.name === "Write" || u.name === "Edit").map((u) => String(u.input.file_path || "")),
     ...bashWrites(bashCmds), // F3: и Bash-записите
@@ -241,7 +273,7 @@ export function checkDoD(uses, root) {
   const violations = [];
   for (const r of RULES) {
     const hits = written.filter((f) => r.wrote.test(f));
-    if (hits.length && !r.mustRun.test(bash)) violations.push({ files: [...new Set(hits)], gate: r.gate });
+    if (hits.length && !r.mustRun.test(bashRun)) violations.push({ files: [...new Set(hits)], gate: r.gate });
   }
   // Монорепо закон №1: писане в ≥2 продуктови папки в една задача = scope creep. (root → F1 фикс)
   const scope = checkScope(written, root);
@@ -269,7 +301,7 @@ function main() {
   try { if (!evalMode(ROOT)) appendHandoffToLedger(finalText, payload); } catch { /* дневникът е измерване, не гейт */ }
   // Гейт, ПУСНАТ но ЧЕРВЕН, дотук минаваше за изпълнен ангажимент. Отделен вид нарушение,
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
-  const fg = checkFailedGates(collectToolResults(jsonl));
+  const fg = checkFailedGates(collectBashRuns(jsonl));
   if (fg) violations.push({ ...fg, kind: "failed" });
   if (!violations.length) process.exit(0);
   const msg = violations.map((v) => v.kind === "failed"

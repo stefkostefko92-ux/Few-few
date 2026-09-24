@@ -62,6 +62,10 @@ export function summarizeTranscript(path, hint = {}) {
   try { lines = readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); } catch { return null; }
   let turns = 0, input = 0, cacheRead = 0, cacheWrite = 0, output = 0, tools = 0, resultBytes = 0, peakCtx = 0, startCtx = 0, model = "", effort = hint.effort || "";
   let t0 = "", t1 = "";
+  // Един API отговор се записва на НЯКОЛКО реда (thinking / text / tool_use) със СЪЩИЯ message.id и
+  // СЪЩИЯ usage. Без дедуп всеки ход се броеше 2–3 пъти — цената излизаше ~1.9× по-висока
+  // (Разбивача, 2026-09-24). Броим всеки message.id веднъж.
+  const seenMsg = new Set();
   for (const r of lines) {
     if (r.timestamp) { if (!t0) t0 = r.timestamp; t1 = r.timestamp; }
     if (!effort && typeof r.effort === "string") effort = r.effort;
@@ -72,6 +76,7 @@ export function summarizeTranscript(path, hint = {}) {
       else if (b?.type === "tool_result") resultBytes += Buffer.byteLength(typeof b.content === "string" ? b.content : JSON.stringify(b.content || ""));
     }
     const u = m.usage; if (!u) continue;
+    if (m.id) { if (seenMsg.has(m.id)) continue; seenMsg.add(m.id); }
     turns++;
     input += u.input_tokens || 0; cacheRead += u.cache_read_input_tokens || 0; cacheWrite += u.cache_creation_input_tokens || 0; output += u.output_tokens || 0;
     const ctx = (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
@@ -88,6 +93,16 @@ export function summarizeTranscript(path, hint = {}) {
   };
 }
 
+// Дневникът е данни от диска (и от клона agents/memory) — не им вярвай на формата. Нечислови или
+// отрицателни броячи правеха цената NaN, а агент „__proto__“ пишеше в прототипа на обекта.
+const NUM_FIELDS = ["turns", "input", "cacheRead", "cacheWrite", "output", "tools", "resultBytes", "startCtx", "peakCtx"];
+function cleanRecord(r) {
+  if (!r || typeof r !== "object" || typeof r.id !== "string" || !r.id) return null;
+  for (const k of NUM_FIELDS) if (k in r && !(Number.isFinite(r[k]) && r[k] >= 0)) return null;
+  for (const k of ["agent", "model"]) if (k in r && typeof r[k] !== "string") return null;
+  return r;
+}
+
 /** Чете записи от JSONL текст; дедуп по id — по-късният запис побеждава. */
 export function parseLedger(...texts) {
   const byId = new Map();
@@ -95,7 +110,7 @@ export function parseLedger(...texts) {
     if (!l.trim()) continue;
     // Последният запис побеждава: агент, върнат от DoD куката, спира пак със СЪЩИЯ транскрипт и
     // по-късният запис е пълният (първият е частичен — занижава ходове и цена).
-    try { const r = JSON.parse(l); if (r && r.id) byId.set(r.id, r); } catch { /* ignore */ }
+    try { const r = cleanRecord(JSON.parse(l)); if (r) byId.set(r.id, r); } catch { /* ignore */ }
   }
   return [...byId.values()];
 }
@@ -104,7 +119,7 @@ const q = (arr, p) => { if (!arr.length) return 0; const a = [...arr].sort((x, y
 
 /** Обобщение: цена по компонент, по модел, по агент, ходове p50/p90, дългите пускания. */
 export function aggregate(recs, prices = loadPrices()) {
-  const out = { runs: recs.length, usd: 0, parts: { cacheRead: 0, cacheWrite: 0, output: 0, input: 0 }, byModel: {}, byAgent: {}, turns: { p50: q(recs.map((r) => r.turns), 0.5), p90: q(recs.map((r) => r.turns), 0.9) }, long: { runs: 0, usd: 0 }, priced: 0 };
+  const out = { runs: recs.length, usd: 0, parts: { cacheRead: 0, cacheWrite: 0, output: 0, input: 0 }, byModel: Object.create(null), byAgent: Object.create(null), turns: { p50: q(recs.map((r) => r.turns), 0.5), p90: q(recs.map((r) => r.turns), 0.9) }, long: { runs: 0, usd: 0 }, priced: 0 };
   for (const r of recs) {
     const parts = costParts(r, prices); if (!parts) continue;
     const usd = parts.input + parts.cacheRead + parts.cacheWrite + parts.output;

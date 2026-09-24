@@ -38,3 +38,10 @@
 {"t":"start","ts":"2026-09-24T10:51:52.868Z","id":"r34cb7908","flow":"авто","lead":"skorostnika","auto":true}
 {"t":"handoff","ts":"2026-09-24T10:51:52.868Z","id":"r34cb7908","from":"skorostnika","to":"vps-adjiyata","status":"има бележки","run":"9d308b72"}
 {"t":"handoff","ts":"2026-09-24T10:52:56.462Z","id":"r34cb7908","from":"siydara","to":"kodadjiyata","status":"наред","run":"08ae0ca0"}
+{"t":"handoff","ts":"2026-09-24T10:54:01.007Z","id":"r34cb7908","from":"3d-maniac","to":"3d-maniac","status":"наред (мисията изпълнена; инструментите имат потвърдени дефекти, отбелязани по-долу, но НЕ ги поправих в репото — само read-only + `/tmp` копия по правило)","run":"9a9e58b5"}
+{"t":"handoff","ts":"2026-09-24T10:54:03.077Z","id":"r34cb7908","from":"siydara","to":"ai-djiyata","status":"наред","run":"614e66b5"}
+{"t":"handoff","ts":"2026-09-24T10:57:50.221Z","id":"r34cb7908","from":"kasadjiyata","to":"kodadjiyata","status":"има бележки","run":"baafbd5d"}
+{"t":"handoff","ts":"2026-09-24T10:57:56.956Z","id":"r34cb7908","from":"goladjiyata","to":"kodadjiyata","status":"има бележки","run":"cabc50fa"}
+{"t":"handoff","ts":"2026-09-24T10:58:30.134Z","id":"r34cb7908","from":"skorostnika","to":"vps-adjiyata","status":"има бележки","run":"f3963a3d"}
+{"t":"handoff","ts":"2026-09-24T10:58:49.298Z","id":"r34cb7908","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"4c0ce986"}
+{"t":"handoff","ts":"2026-09-24T11:01:22.090Z","id":"r34cb7908","from":"treydara","to":"kodadjiyata","status":"има бележки","run":"0ec6c2e5"}
