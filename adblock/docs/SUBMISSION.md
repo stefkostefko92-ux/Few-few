@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.1.1.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -142,7 +142,7 @@ via headless Chromium; see that script's header).
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.0.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.1.zip`.
 2. Refresh the listing (§3: description + the new feature bullets), replace the
    5 screenshots + promo tiles (§2).
 3. Re-check the **Privacy practices** tab (§4) and paste the permission
@@ -155,7 +155,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.0)
+- [ ] `manifest.json` and `package.json` versions match (5.1.1)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work

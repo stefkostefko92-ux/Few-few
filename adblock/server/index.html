@@ -181,6 +181,8 @@
   col.uscol{background:linear-gradient(180deg,rgba(0,229,255,.08),rgba(0,229,255,.02))}
   .yes{color:var(--green);font-size:19px} .no{color:var(--no);font-size:19px}
   .note{display:block;font-size:12px;color:var(--muted2);margin-top:3px}
+  tbody tr.usrow th,tbody tr.usrow td{color:var(--cream);background:rgba(0,229,255,.06);font-weight:700}
+  thead th a{color:inherit;text-decoration:underline;text-underline-offset:3px}
   .cmpnote{margin-top:14px;font-size:12.5px;color:var(--muted2);font-family:var(--mono);max-width:860px}
   @media(max-width:640px){
     table{min-width:0;font-size:13.5px}
@@ -266,7 +268,7 @@
       "screenshot": "https://adblock.carbonstealth.eu/popup-shot.webp",
       "downloadUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
       "installUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
-      "softwareVersion": "5.1.0",
+      "softwareVersion": "5.1.1",
       "datePublished": "2026-06-15",
       "dateModified": "2026-09-25",
       "inLanguage": ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "es-419", "et", "eu", "fa", "fi", "fil", "fr", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "ne", "nl", "no", "pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"],
@@ -389,7 +391,7 @@
           <a class="btn ghost" href="#why">Why it's different</a>
         </div>
         <p class="storenote">Free on the Chrome Web Store · Chrome, Edge &amp; Brave</p>
-        <p class="updated">Version 5.1.0 · updated 25 September 2026 · by Carbon Stealth</p>
+        <p class="updated">Version 5.1.1 · updated 25 September 2026 · by Carbon Stealth</p>
       </div>
       <figure class="shot">
         <img class="ghost-shield" src="/shield-380.webp" alt="" width="300" height="300" aria-hidden="true" />
@@ -456,6 +458,35 @@
         </table>
       </div>
       <p class="cmpnote reveal">Compared on 25 September 2026 with uBlock Origin Lite in its default mode, from its public <a href="https://github.com/uBlockOrigin/uBOL-home/wiki/Frequently-asked-questions-(FAQ)" target="_blank" rel="noopener">documentation</a>. Found something out of date? Tell us at <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> and we will correct it.</p>
+    </div>
+  </section>
+
+  <section class="blk" id="measured">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow">Measured, not claimed</p>
+        <h2>Two public tests, <span class="c">same conditions</span></h2>
+        <p class="lead">Every blocker got a fresh browser profile, its default settings and a minute to set itself up, then ran the same two public test pages twice. Both runs gave the same numbers. Higher is better.</p>
+      </div>
+      <div class="tablewrap reveal">
+        <table>
+          <caption class="sr">Results of two public ad-blocking tests, 25 September 2026</caption>
+          <thead><tr>
+            <th scope="col" style="text-align:left">Blocker (default settings)</th>
+            <th scope="col"><a href="https://adblock.turtlecute.org/" target="_blank" rel="noopener">Turtlecute</a><span class="note">ad &amp; tracker hosts blocked</span></th>
+            <th scope="col"><a href="https://adblock-tester.com/" target="_blank" rel="noopener">adblock-tester</a><span class="note">score out of 100</span></th>
+          </tr></thead>
+          <tbody>
+            <tr><th scope="row">No blocker</th><td>4 / 132</td><td>48</td></tr>
+            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1</th><td>118 / 132</td><td>95</td></tr>
+            <tr><th scope="row">uBlock Origin Lite</th><td>82 / 132</td><td>91</td></tr>
+            <tr><th scope="row">Ghostery</th><td>98 / 132</td><td>96</td></tr>
+            <tr><th scope="row">AdGuard</th><td>24–26 / 132</td><td>77</td></tr>
+            <tr><th scope="row">Adblock Plus</th><td>25–26 / 132</td><td>77</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cmpnote reveal">Measured on 25 September 2026 in headless Chromium with <code>tools/compare_blockers.mjs</code> (in our public repository — run it yourself). Ghostery scored one point higher on adblock-tester. AdGuard and Adblock Plus may do better with extra lists switched on or after a longer set-up; we report their defaults. Test pages change over time, so numbers from another day will differ.</p>
     </div>
   </section>
 
