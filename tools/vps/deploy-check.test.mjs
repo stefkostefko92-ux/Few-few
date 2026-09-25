@@ -168,3 +168,51 @@ test("реалният autodeploy.sh минава и това правило", a
   const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
   assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("cleanup-kills-script"));
 });
+
+// ── assign-kills-script ──────────────────────────────────────────────────────
+// Реален инцидент: липсващ /etc/vizitka/vizitka.env спираше ЦЕЛИЯ autodeploy в
+// блока КОНФИГУРАЦИЯ, без нито един ред изход, дори при PROJECTS="adblock".
+test("присвояване от конвейер със заглушен stderr без || true → HIGH assign-kills-script", () => {
+  const src = 'set -euo pipefail\nX="${X:-$(sed -n \'s/^PORT=//p\' /etc/x.env 2>/dev/null | head -1)}"\n';
+  assert.ok(lintShell(src, "deploy.sh").some((f) => f.code === "assign-kills-script" && f.sev === "HIGH"));
+});
+
+test("същото присвояване с || true → чисто", () => {
+  const src = 'set -euo pipefail\nX="${X:-$(sed -n \'s/^PORT=//p\' /etc/x.env 2>/dev/null | head -1 || true)}"\n';
+  assert.ok(!codes(lintShell(src, "deploy.sh")).has("assign-kills-script"));
+});
+
+test("local присвояване от конвейер → hit; без конвейер и без 2>/dev/null → не", () => {
+  const bad = 'set -euo pipefail\n  local p; p="$(grep -E \'^PORT=\' "$d/.env" 2>/dev/null | head -1)"\n';
+  const fine = 'set -euo pipefail\nver="$(node -p "require(\'./package.json\').version")"\n';
+  assert.ok(codes(lintShell(bad, "x.sh")).has("assign-kills-script"));
+  assert.ok(!codes(lintShell(fine, "x.sh")).has("assign-kills-script"));
+});
+
+test("без pipefail правилото не важи", () => {
+  const src = 'set -e\nX="$(sed -n p /etc/x.env 2>/dev/null | head -1)"\n';
+  assert.ok(!codes(lintShell(src, "x.sh")).has("assign-kills-script"));
+});
+
+test("реалният autodeploy.sh минава и това правило", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const { dirname, join } = await import("node:path");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf8");
+  assert.ok(!codes(lintShell(src, "deploy/autodeploy.sh")).has("assign-kills-script"));
+});
+
+test("блокът КОНФИГУРАЦИЯ оцелява без /etc/vizitka/vizitka.env (изпълнява се наистина)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { execFileSync } = await import("node:child_process");
+  const { fileURLToPath } = await import("node:url");
+  const { dirname, join } = await import("node:path");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf8").split("\n");
+  const end = src.findIndex((l) => l.startsWith("# ╚"));
+  assert.ok(end > 20, "намерен край на блока КОНФИГУРАЦИЯ");
+  const cfg = src.slice(0, end).join("\n") + '\necho __CONFIG_OK__\n';
+  const out = execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
+  assert.match(out, /__CONFIG_OK__/);
+});

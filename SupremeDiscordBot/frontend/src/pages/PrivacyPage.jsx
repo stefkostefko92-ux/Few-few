@@ -88,6 +88,13 @@ export default function PrivacyPage() {
                 <Td>Free: 30 days after closure. Premium: indefinite (or until deleted)</Td>
               </Tr>
               <Tr>
+                <Td>Verification attempts</Td>
+                <Td>Discord user ID, verification panel, outcome, captcha answer, timestamp</Td>
+                <Td>Human/age verification before roles are granted</Td>
+                <Td>Processed on behalf of the server operator (controller) under Art. 28 — typically Art. 6(1)(f)</Td>
+                <Td>90 days, then deleted automatically; immediately on request</Td>
+              </Tr>
+              <Tr>
                 <Td>Application form answers</Td>
                 <Td>Text answers submitted by Discord users in application forms</Td>
                 <Td>Provide application management feature</Td>
@@ -157,6 +164,10 @@ export default function PrivacyPage() {
         <p><strong>4.3 Access control.</strong> Access to production systems is restricted to
         authorised personnel on a need-to-know basis. Administrative actions are logged in the
         audit trail.</p>
+
+        <p><strong>4.3a Transcripts at rest.</strong> Ticket transcripts are encrypted
+        with AES-256-GCM before they are stored, in addition to disk-level encryption; bot tokens,
+        OAuth tokens, webhook secrets and two-factor secrets are encrypted the same way.</p>
 
         <p><strong>4.4 Payment data.</strong> We do not store credit card numbers or payment
         instrument details. Subscriptions are purchased through Discord's store, where Discord

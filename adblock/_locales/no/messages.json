@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokker annonser overalt: YouTube-videoannonser, bannere, popup-vinduer, sporere, cookie-varsler og anti-adblock-vegger. Gratis."
+  },
+  "byCarbon": {
+    "message": "av Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Slå beskyttelse av/på"
+  },
+  "protected": {
+    "message": "Beskyttet"
+  },
+  "paused": {
+    "message": "På pause"
+  },
+  "blockingHere": {
+    "message": "Blokkerer annonser på denne siden"
+  },
+  "protectionOff": {
+    "message": "Beskyttelsen er av"
+  },
+  "pause30": {
+    "message": "Pause i 30 minutter"
+  },
+  "pausedResume": {
+    "message": "På pause – fortsett nå ($1 min igjen)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blokkert"
+  },
+  "dataSaved": {
+    "message": "Data spart"
+  },
+  "timeSaved": {
+    "message": "Tid spart"
+  },
+  "thisSite": {
+    "message": "dette nettstedet"
+  },
+  "thisPage": {
+    "message": "denne siden"
+  },
+  "blockOnSite": {
+    "message": "Blokker annonser på dette nettstedet"
+  },
+  "blocking": {
+    "message": "Blokkerer"
+  },
+  "allowed": {
+    "message": "Tillatt"
+  },
+  "cosmetics": {
+    "message": "Skjul annonsefelt her"
+  },
+  "cosmeticsTitle": {
+    "message": "Kosmetisk filtrering på dette nettstedet (slå av hvis oppsettet blir ødelagt)"
+  },
+  "on": {
+    "message": "På"
+  },
+  "off": {
+    "message": "Av"
+  },
+  "blockedHere": {
+    "message": "Blokkert på denne siden"
+  },
+  "logEmpty": {
+    "message": "Ingenting er blokkert her ennå."
+  },
+  "logUnavailable": {
+    "message": "Loggen er ikke tilgjengelig akkurat nå (nettleserkvote) – prøv igjen om et minutt."
+  },
+  "logCore": {
+    "message": "Supreme-kjerneregler"
+  },
+  "logYouTube": {
+    "message": "YouTube-annonseregler"
+  },
+  "logParams": {
+    "message": "Sporingsparametere"
+  },
+  "logMalware": {
+    "message": "Skadevaredomener"
+  },
+  "logSurrogates": {
+    "message": "Nøytraliserte annonseskript"
+  },
+  "logPrivacy": {
+    "message": "Personvern"
+  },
+  "logUser": {
+    "message": "Mine filtre"
+  },
+  "logLive": {
+    "message": "Liveoppdateringer"
+  },
+  "hideElement": {
+    "message": "Skjul element"
+  },
+  "settings": {
+    "message": "Innstillinger"
+  },
+  "promoSub": {
+    "message": "Utstyr og verktøy, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Ann."
+  },
+  "support": {
+    "message": "Støtt"
+  },
+  "filtersCount": {
+    "message": "$1+ filtre",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Utseende"
+  },
+  "opt_extra_protection": {
+    "message": "Ekstra beskyttelse"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection-logg"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Tillatte nettsteder"
+  },
+  "opt_my_filters": {
+    "message": "Mine filtre"
+  },
+  "opt_hidden_elements": {
+    "message": "Skjulte elementer"
+  },
+  "opt_filter_updates": {
+    "message": "Filteroppdateringer"
+  },
+  "opt_engine_health": {
+    "message": "Motorstatus"
+  },
+  "opt_backup": {
+    "message": "Sikkerhetskopi"
+  },
+  "opt_support_development": {
+    "message": "Støtt utviklingen"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Synkroniser mellom enheter"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Blokkering av YouTube-annonser"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie- og samtykkebannere"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Omgåelse av anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Sponsede innlegg fra Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Fjern sporingsparametere"
+  },
+  "opt_malware_protection": {
+    "message": "Beskyttelse mot skadevare"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokker nettleser-API-er for annonsemålretting"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokker sporingsbeacons og kryptominere"
+  },
+  "opt_auto_update_filters": {
+    "message": "Oppdater filtre automatisk"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (mørkt) eller lyst"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Hold innstillinger, tillatte nettsteder og filtre synkronisert i alle Chrome-nettlesere du er logget på"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Fjerner videoannonser på YouTube. Slå av hvis videoer ikke spilles av."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Lukk «Godta cookies»-varsler automatisk"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Skjul «slå av annonseblokkeringen»-vegger og gjenopprett siden"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Skjul «Sponset»-innlegg på Facebook og Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Fjern utm_*, fbclid, gclid og andre klikk-ID-er fra lenkene du åpner"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokker kjente skadevaredomener (URLhaus-listen fra abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Slå av annonse-API-ene Google Topics, FLoC og Protected Audience på alle nettsteder"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Stopp hyperlenkerevisjon og beacon-pinger fra tredjeparter, fjern sporingscookies fra kjente annonseteknologisvar, og blokker kryptoutvinningsskript i nettleseren. Slå av hvis en funksjon på et nettsted som er avhengig av analyse, ikke fungerer som den skal."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Henter nye blokkeringsregler og YouTube-rettelser fra adblock.carbonstealth.eu omtrent to ganger om dagen. Bare data, ingen kode; forespørselen inneholder ingen identifikatorer eller nettlesingsdata."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Direktelogg over annonser fanget heuristisk (uten filterliste), nyeste først."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Abonnerte lister hentes som tekst (aldri som kode), holdes oppdatert daglig og ligger i de administrerte blokkene ovenfor. Fjern en liste for å fjerne reglene dens."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementer du har skjult manuelt med velgeren, gruppert etter nettsted."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Direkte diagnostikk – alt beregnes lokalt. Hvis noe er rødt, hjelper det som regel å trykke «Oppdater nå» eller laste inn utvidelsen på nytt."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock er gratis for alle. Hvis du vil bidra til å holde det vedlikeholdt, er donasjoner velkomne, men aldri påkrevd."
+  },
+  "opt_reset_statistics": {
+    "message": "Tilbakestill statistikk"
+  },
+  "opt_add": {
+    "message": "Legg til"
+  },
+  "opt_save_filters": {
+    "message": "Lagre filtre"
+  },
+  "opt_subscribe": {
+    "message": "Abonner"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Oppdater abonnementer nå"
+  },
+  "opt_update_now": {
+    "message": "Oppdater nå"
+  },
+  "opt_refresh": {
+    "message": "Last inn på nytt"
+  },
+  "opt_export_settings": {
+    "message": "Eksporter innstillinger"
+  },
+  "opt_import_settings": {
+    "message": "Importer innstillinger"
+  },
+  "opt_e_g_example_com": {
+    "message": "f.eks. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! eksempel\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Abonner på en filterliste-URL (f.eks. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Innstillinger for Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Innstillinger"
+  },
+  "opt_theme_light": {
+    "message": "Lyst"
+  },
+  "opt_badge_unique": {
+    "message": "unik"
+  },
+  "opt_smart_desc": {
+    "message": "Fanger annonser ingen filterliste kjenner ennå: rammer fra andre domener med samme størrelse som vanlige annonsefelt skjules straks, uten regler."
+  },
+  "opt_caught_so_far": {
+    "message": "fanget så langt."
+  },
+  "opt_allow_desc": {
+    "message": "Annonser blokkeres ikke på disse domenene."
+  },
+  "opt_fh_one": {
+    "message": "Én regel per linje."
+  },
+  "opt_fh_blocks": {
+    "message": "blokkerer et domene;"
+  },
+  "opt_fh_everywhere": {
+    "message": "skjuler et element overalt;"
+  },
+  "opt_fh_site": {
+    "message": "skjuler det bare på det nettstedet."
+  },
+  "opt_fh_comments": {
+    "message": "Linjer som starter med"
+  },
+  "opt_fh_comments2": {
+    "message": "er kommentarer."
+  },
+  "opt_donate": {
+    "message": "Doner via Revolut"
+  },
+  "opt_made_by": {
+    "message": "laget av Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Ingenting fanget heuristisk ennå."
+  },
+  "opt_empty_allow": {
+    "message": "Ingen tillatte nettsteder ennå."
+  },
+  "opt_empty_hidden": {
+    "message": "Ingenting skjult manuelt ennå."
+  },
+  "opt_empty_subs": {
+    "message": "Ingen abonnerte lister ennå."
+  },
+  "opt_no_sw": {
+    "message": "Ingen svar fra service workeren."
+  },
+  "opt_remove": {
+    "message": "Fjern"
+  },
+  "opt_filter_status": {
+    "message": "Filtersett v$1, oppdatert $2. Bare data – ingenting om deg sendes."
+  },
+  "opt_updating": {
+    "message": "Oppdaterer…"
+  },
+  "opt_updated": {
+    "message": "Oppdatert (v$1, $2 ekstra regler)"
+  },
+  "opt_update_failed": {
+    "message": "Oppdateringen mislyktes ($1)"
+  },
+  "opt_saved": {
+    "message": "Lagret ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 regler"
+  },
+  "opt_updated_ago": {
+    "message": "oppdatert $1"
+  },
+  "opt_not_fetched": {
+    "message": "ikke hentet ennå"
+  },
+  "opt_failed_colon": {
+    "message": "mislyktes: $1"
+  },
+  "opt_enter_https": {
+    "message": "Skriv inn en gyldig https://-URL"
+  },
+  "opt_fetching": {
+    "message": "Henter…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Abonnert: $1 regler ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Mislyktes ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Laster inn på nytt…"
+  },
+  "opt_refreshed": {
+    "message": "Lastet inn på nytt ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ugyldig innstillingsfil."
+  },
+  "opt_no_response": {
+    "message": "ingen svar"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock-motor"
+  },
+  "opt_h_rulesets": {
+    "message": "Statiske regelsett på"
+  },
+  "opt_h_live": {
+    "message": "Domener i direktefiltre"
+  },
+  "opt_h_last": {
+    "message": "Siste oppdatering"
+  },
+  "opt_h_sig": {
+    "message": "Signaturer på oppdateringer"
+  },
+  "opt_h_user": {
+    "message": "Mine filtre / regler for tillatte nettsteder"
+  },
+  "opt_h_popup": {
+    "message": "Innebygde verter for popup-annonser"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-omgåelse"
+  },
+  "opt_reason_frame": {
+    "message": "Ramme fra annet domene i annonsestørrelse"
+  },
+  "opt_reason_sticky": {
+    "message": "Fastlåst annonsebanner"
+  },
+  "logRegional": {
+    "message": "Regionale lister"
+  },
+  "logFocus": {
+    "message": "Fokusmodus"
+  },
+  "opt_filter_lists": {
+    "message": "Filterlister"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList og EasyPrivacy er alltid på. Listene nedenfor har åpne lisenser og er bygd inn i utvidelsen, så når du slår på en av dem, lastes ingenting ned – unntatt en liste som er merket som hentet fra forfatteren."
+  },
+  "opt_lists_core": {
+    "message": "Kjerne"
+  },
+  "opt_lists_regional": {
+    "message": "Regionale"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Listen for nettleserens språk slås på av seg selv. Legg til andre hvis du ofte leser nettsteder på andre språk."
+  },
+  "opt_focus_mode": {
+    "message": "Fokusmodus"
+  },
+  "opt_focus_desc": {
+    "message": "Skjul det som ikke er annonser, men som likevel er i veien. Alt her er av til du slår det på."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin-filtre"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Annonser, sporere, anti-adblock-rettelser og reparasjoner av nettsteder fra uBlock Origin-teamet."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowes liste"
+  },
+  "opt_list_plowe_desc": {
+    "message": "En mangeårig liste over annonse- og sporingsservere."
+  },
+  "opt_focus_social": {
+    "message": "Knapper og moduler fra sosiale medier"
+  },
+  "opt_focus_social_desc": {
+    "message": "Delingsknapper, liker-bokser og innebygde feeder."
+  },
+  "opt_focus_chat": {
+    "message": "Chat- og støttemoduler"
+  },
+  "opt_focus_chat_desc": {
+    "message": "De svevende chatboblene i hjørnet av siden."
+  },
+  "opt_focus_newsletters": {
+    "message": "Popup-vinduer for nyhetsbrev og registrering"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«Abonner på nyhetsbrevet vårt»-bokser og overlegg."
+  },
+  "opt_focus_notifications": {
+    "message": "Forespørsler om varsler"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "«Vil du tillate varsler?»-bokser som nettsteder viser før nettleseren spør."
+  },
+  "opt_focus_ai": {
+    "message": "Popup-vinduer fra KI-assistenter"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Chatbotbobler og paneler med KI-forslag som er lagt til på sider."
+  },
+  "opt_focus_other": {
+    "message": "Andre irritasjonsmomenter"
+  },
+  "opt_focus_other_desc": {
+    "message": "Fastlåste felt, «Åpne i appen»-bannere og lignende rot."
+  },
+  "opt_badge_lang": {
+    "message": "ditt språk"
+  },
+  "opt_badge_remote": {
+    "message": "fra forfatteren"
+  },
+  "opt_remote_hint": {
+    "message": "Ikke inkludert (ingen lisens til videredistribusjon): nettleseren din laster den ned fra $1 når du slår den på."
+  },
+  "opt_downloaded_from": {
+    "message": "Lastet ned fra $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome avviste denne kombinasjonen av lister ($1). Slå av noen."
+  },
+  "opt_badge_recommended": {
+    "message": "anbefalt for ditt språk"
+  },
+  "reportBroken": {
+    "message": "Virker ikke nettstedet? Fiks det eller si fra"
+  },
+  "rep_title": {
+    "message": "Virker noe ikke på dette nettstedet?"
+  },
+  "rep_fix_first": {
+    "message": "Fiks det nå"
+  },
+  "rep_site": {
+    "message": "Nettsted:"
+  },
+  "rep_fix_desc": {
+    "message": "De fleste problemer forsvinner med ett av disse valgene. Hvert valg gjelder bare dette nettstedet; fanen lastes inn på nytt."
+  },
+  "rep_fix_cosm": {
+    "message": "Slå av skjuling av elementer her"
+  },
+  "rep_fix_allow": {
+    "message": "Tillat annonser på dette nettstedet"
+  },
+  "rep_fix_pause": {
+    "message": "Sett på pause overalt i 30 minutter"
+  },
+  "rep_tell_us": {
+    "message": "Si fra til oss"
+  },
+  "rep_tell_desc": {
+    "message": "Vi fikser ødelagte nettsteder for alle gjennom den signerte filteroppdateringen, som regel innen et døgn. Utvidelsen sender ingenting: rapporten åpnes i ditt eget e-postprogram, og du ser hvert ord i den først."
+  },
+  "rep_what": {
+    "message": "Hva er galt? (valgfritt)"
+  },
+  "rep_what_ph": {
+    "message": "f.eks. videoen starter ikke, en hvit boks dekker artikkelen…"
+  },
+  "rep_full_url": {
+    "message": "Ta med hele sideadressen (ellers bare navnet på nettstedet)"
+  },
+  "rep_preview": {
+    "message": "Dette blir sendt"
+  },
+  "rep_send_mail": {
+    "message": "Send på e-post"
+  },
+  "rep_copy": {
+    "message": "Kopier rapport"
+  },
+  "rep_copied": {
+    "message": "Kopiert."
+  },
+  "rep_done_cosm": {
+    "message": "Skjuling av elementer er av på dette nettstedet. Lastet inn på nytt – er det fikset?"
+  },
+  "rep_done_allow": {
+    "message": "Annonser er tillatt på dette nettstedet. Lastet inn på nytt – er det fikset?"
+  },
+  "rep_done_pause": {
+    "message": "På pause i 30 minutter. Hvis nettstedet virker nå, si gjerne fra nedenfor."
+  },
+  "cookieRejections": {
+    "message": "Cookie-bannere avvist for deg: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts-hyllene, -fanen og -forslagene på YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "«Logg på med Google»-vinduer"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Kontovelgeren som dukker opp i hjørnet på mange nettsteder. Påloggingsknappene fungerer fortsatt."
+  },
+  "pickTip": {
+    "message": "Klikk på et element for å skjule det"
+  },
+  "pickZapTip": {
+    "message": "Klikk for å fjerne dette elementet (én gang)"
+  },
+  "pickEscCancel": {
+    "message": "for å avbryte"
+  },
+  "opt_notices": {
+    "message": "Lisenser for filterlistene"
+  }
+}

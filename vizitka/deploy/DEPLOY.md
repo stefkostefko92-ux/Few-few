@@ -3,7 +3,56 @@
 Еднократна подготовка на сървъра; след нея всеки деплой минава автоматично през
 `deploy/autodeploy.sh` от корена на репото (ръчно качен архив в `/root`).
 
-Приложението слуша само на `127.0.0.1:3100`; TLS и публичният вход са през nginx.
+Приложението слуша само на `127.0.0.1:3105`; TLS и публичният вход са през nginx.
+
+## Живо състояние и отклонения (чети преди деплой)
+
+Машината е споделена с други проекти. Затова:
+
+| Какво           | Стойност                                         | Защо                                                                                                                                             |
+| --------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PORT`          | **3105**                                         | 3100 е зает от `docker-proxy` на ERP. Ако vizitka тръгне на 3100, не вдига (`EADDRINUSE`) и nginx праща `vizitka-bg.com` към ЧУЖДОТО приложение. |
+| health check    | `http://127.0.0.1:$PORT/healthz`                 | Проверява и **името** на приложението. Само код 200 не доказва кой отговаря — точно затова счупен деплой минаваше за успешен.                    |
+| systemd drop-in | `deploy/systemd/vizitka.service.d/override.conf` | Вече е в репото (seccomp наказание EPERM вместо SIGSYS, `AF_NETLINK` за DNS, лимити). Не го пипай само на машината.                              |
+
+`server-setup.sh` вече **запазва** `PORT` между пусканията (както тайните) и слага
+реалния порт в nginx конфига. Преди го нулираше на 3100 при всяко пускане.
+
+**`/healthz` НЕ минава през принудителния https редирект** (`src/app.js`) и това не
+е удобство. Сондата удря по loopback, преди nginx, значи без `X-Forwarded-Proto` →
+`req.secure` е false → в продукция маршрутът връщаше **308** към https. `curl` без
+`-L` брои 3xx за успех, тялото е „Moved Permanently…“, маркера го няма, тоест гейтът
+обявяваше ЖИВОТО приложение за чуждо и откатваше успешен деплой:
+
+```
+⚠ vizitka: на http://127.0.0.1:3105/healthz отговаря ДРУГО приложение
+```
+
+По същата причина `health()` в `deploy/autodeploy.sh` вече изисква **2xx** (3xx не е
+доказателство за живот, а диагнозата казва кода) и съди по края на цикъла, не по
+първия отговор — докато новият процес вдига, порта го държи старият код, който
+маркера няма. Добавиш ли нов prod-only middleware, дръж го **след** `/healthz`.
+
+**Деплой на ЕДИН продукт** (иначе `autodeploy.sh` разгръща всички по подразбиране):
+
+```bash
+sudo PROJECTS="vizitka" bash /root/few-few-*/deploy/autodeploy.sh
+```
+
+**Ако включиш `www`:** nginx конфигът вече пренасочва `www` към голия домейн, но
+сертификатът трябва да покрива и двете имена:
+
+```bash
+certbot --nginx -d vizitka-bg.com -d www.vizitka-bg.com
+```
+
+**Админ акаунт.** Саморегистрацията с имейл от `ADMIN_EMAILS` е забранена (иначе
+първият, който познае адреса, става админ). Провизионира се от сървъра:
+
+```bash
+sudo -u vizitka DATA_DIR=/opt/vizitka/data npm --prefix /opt/vizitka run admin:add -- <имейл>
+# няма ли още такъв акаунт: ... run admin:add -- <имейл> --create
+```
 
 ## 0. Бърз път — еднократен bootstrap (препоръчано)
 
@@ -44,7 +93,7 @@ chown -R vizitka:vizitka /opt/vizitka
 ```bash
 cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
-PORT=3100
+PORT=3105
 PUBLIC_BASE_URL=https://vizitka-bg.com
 ADMIN_EMAILS=stefan.kostadinov16@gmail.com
 MASTILKO_URL=https://mastilko-bg.com
@@ -90,7 +139,7 @@ nginx -t && systemctl reload nginx
 HSTS/CSP ги задава самото приложение — не ги дублирай в nginx. Certbot подновява
 сертификата автоматично (systemd timer `certbot.timer`).
 
-Първо пускане: `systemctl start vizitka && curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3100/`
+Първо пускане: `systemctl start vizitka && curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3105/`
 трябва да върне `200`.
 
 ## 4. Бекъп (SQLite базата + качените снимки)
@@ -124,7 +173,7 @@ sudo PROJECTS="vizitka" bash deploy/autodeploy.sh   # само vizitka
 
 Скриптът прави: rsync на кода (без `data/`, `node_modules/`, `.env`) →
 `npm ci --omit=dev` → снимка на SQLite базата → `systemctl restart vizitka` →
-health check на `http://127.0.0.1:3100/` с автоматичен rollback при провал.
+health check на `http://127.0.0.1:3105/` с автоматичен rollback при провал.
 
 ## 6. Следпускови стъпки (SEO индексиране)
 
@@ -149,7 +198,19 @@ health check на `http://127.0.0.1:3100/` с автоматичен rollback п
 през API PATCH). И двете се активират само когато тайните са налични — иначе
 бутоните са скрити. Тайните са **файлове с права 600**, извън репото.
 
-**Apple Wallet** (изисква Apple Developer акаунт ~$99/год):
+**Apple Wallet** (изисква платен Apple Developer Program — 99 USD/год):
+
+> **Безплатен път няма** и това е проверено срещу Apple, не предположено: Pass Type ID и
+> сертификатът за подписване са само за платени членове, а освобождаването от таксата
+> е само за нефинансови организации, акредитирани учебни заведения и държавни органи —
+> изрично **не** за търговски дружества. Неподписан `.pkpass` iPhone просто отказва.
+> Услуги на трети страни с „безплатен план“ подписват със СВОЯ сертификат: издател на
+> картата става те, данните минават през тях (обработващ по чл. 28 ОРЗД, често извън
+> ЕС) — не пасва на нашата позиция.
+>
+> **Сметката обаче не е 99 USD само за Vizitka.** Една членска такса покрива целия екип
+> (Team ID): същият акаунт е нужен и за iOS приложението на MedQR в App Store
+> (`medqr/mobile`). Pass Type ID-то е само още един идентификатор под него.
 
 1. В Apple Developer → Identifiers създай **Pass Type ID** (напр.
    `pass.eu.carbonstealth.vizitka`), издай Pass signing сертификат и го експортирай.
@@ -174,19 +235,40 @@ health check на `http://127.0.0.1:3100/` с автоматичен rollback п
 > работи и стои актуална чрез QR-а към живия профил — просто полетата в самия пас не
 > се пушат при промяна.
 
-**Google Wallet** (безплатно):
+**Google Wallet** (безплатно — Google не взима такса за издаване на карти):
 
 1. Google Cloud → нов проект → включи **Google Wallet API**. Регистрирай се като
-   издател в [Google Wallet Console](https://pay.google.com/business/console) и вземи
-   **Issuer ID**.
-2. Създай **service account** с роля Wallet Object Issuer, свали JSON ключа:
+   издател в [Google Pay & Wallet Console](https://pay.google.com/business/console)
+   и вземи **Issuer ID**. Попълни и **Business profile** — без него не се дава право
+   за публикуване.
+2. Google Cloud → IAM → **Service accounts** → създай service account и свали JSON
+   ключа. **Правата НЕ се дават с IAM роля** (по-старата версия на този документ
+   беше грешна тук): копирай имейла на service account-а и в Pay & Wallet Console →
+   **Users → Invite a user** → постави го → ниво на достъп **Developer**. Без тази
+   покана API-то отказва и обновяването на картите тихо не работи.
    ```bash
    mkdir -p /etc/vizitka/google && chmod 700 /etc/vizitka/google
    mv service-account.json /etc/vizitka/google/service-account.json
    chown -R vizitka:vizitka /etc/vizitka/google && chmod 600 /etc/vizitka/google/*.json
    ```
-3. Задай `GOOGLE_WALLET_ISSUER_ID` и `GOOGLE_WALLET_SA_KEY` в `vizitka.env`.
-   Класът `<issuerId>.vizitka_generic` се създава автоматично при първото запазване.
+3. Задай `GOOGLE_WALLET_ISSUER_ID` и `GOOGLE_WALLET_SA_KEY` в `vizitka.env` и
+   `systemctl restart vizitka`.
+4. **Създай класа предварително** (Google го иска, ПРЕДИ да даде право за публикуване;
+   иначе класът се ражда чак при първото запазване, а в демо режим запазват само
+   тестови акаунти — кокошката и яйцето). Идемпотентно, пускай спокойно повторно:
+   ```bash
+   sudo node /opt/vizitka/scripts/wallet-google-class.mjs --env /etc/vizitka/vizitka.env
+   ```
+   Класът е с `MULTIPLE_HOLDERS`: обектът е един на визитка, а го запазват много
+   посетители — друга стойност пуска по един притежател.
+5. Pay & Wallet Console → **Google Wallet API → Request publishing access**. До
+   одобрението сметката е в **демо режим**: картите носят етикет „[TEST ONLY]“ и се
+   запазват само от акаунти, добавени като потребители/тестови. Скрийншоти вече не се
+   изискват.
+
+> Картата показва само **квадратното лого** на сайта (`public/wallet-logo.png`, 660×660 —
+> Google го изрязва в кръг) и **никога** личната снимка: Google Wallet не поддържа лични
+> изображения в картите.
 
 След `systemctl restart vizitka` бутоните „Добави в Apple Wallet" / „Запази в Google
 Wallet" се появяват на публичните визитки.

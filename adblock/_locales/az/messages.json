@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Reklamları hər yerdə bloklayır: YouTube reklamları, bannerlər, popaplar, izləyicilər, kuki sorğuları və anti-adblock divarları."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth tərəfindən"
+  },
+  "toggleProtection": {
+    "message": "Qorumanı aç/bağla"
+  },
+  "protected": {
+    "message": "Qorunur"
+  },
+  "paused": {
+    "message": "Fasilədə"
+  },
+  "blockingHere": {
+    "message": "Bu səhifədə reklamlar bloklanır"
+  },
+  "protectionOff": {
+    "message": "Qoruma söndürülüb"
+  },
+  "pause30": {
+    "message": "30 dəqiqəlik fasilə"
+  },
+  "pausedResume": {
+    "message": "Fasilədə, indi davam etdirin ($1 dəq qalıb)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Bloklanan"
+  },
+  "dataSaved": {
+    "message": "Trafik qənaəti"
+  },
+  "timeSaved": {
+    "message": "Vaxt qənaəti"
+  },
+  "thisSite": {
+    "message": "bu sayt"
+  },
+  "thisPage": {
+    "message": "bu səhifə"
+  },
+  "blockOnSite": {
+    "message": "Bu saytda reklamları blokla"
+  },
+  "blocking": {
+    "message": "Bloklanır"
+  },
+  "allowed": {
+    "message": "İcazəli"
+  },
+  "cosmetics": {
+    "message": "Reklamları burada gizlət"
+  },
+  "cosmeticsTitle": {
+    "message": "Bu saytda kosmetik filtrləmə (səhifə düzülüşü pozulursa, söndürün)"
+  },
+  "on": {
+    "message": "Açıq"
+  },
+  "off": {
+    "message": "Qapalı"
+  },
+  "blockedHere": {
+    "message": "Bu səhifədə bloklananlar"
+  },
+  "logEmpty": {
+    "message": "Burada hələ heç nə bloklanmayıb."
+  },
+  "logUnavailable": {
+    "message": "Jurnal hazırda əlçatan deyil (brauzer kvotası) — bir dəqiqədən sonra yenidən cəhd edin."
+  },
+  "logCore": {
+    "message": "Supreme əsas qaydaları"
+  },
+  "logYouTube": {
+    "message": "YouTube reklam qaydaları"
+  },
+  "logParams": {
+    "message": "İzləmə parametrləri"
+  },
+  "logMalware": {
+    "message": "Zərərli domenlər"
+  },
+  "logSurrogates": {
+    "message": "Söndürülmüş reklam skriptləri"
+  },
+  "logPrivacy": {
+    "message": "Məxfilik qoruması"
+  },
+  "logUser": {
+    "message": "Filtrlərim"
+  },
+  "logLive": {
+    "message": "Canlı yeniləmələr"
+  },
+  "hideElement": {
+    "message": "Elementi gizlət"
+  },
+  "settings": {
+    "message": "Ayarlar"
+  },
+  "promoSub": {
+    "message": "Avadanlıq və alətlər, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklam"
+  },
+  "support": {
+    "message": "Dəstək ol"
+  },
+  "filtersCount": {
+    "message": "$1+ filtr",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Görünüş"
+  },
+  "opt_extra_protection": {
+    "message": "Əlavə qoruma"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection jurnalı"
+  },
+  "opt_allowlisted_sites": {
+    "message": "İcazəli saytlar"
+  },
+  "opt_my_filters": {
+    "message": "Filtrlərim"
+  },
+  "opt_hidden_elements": {
+    "message": "Gizlədilmiş elementlər"
+  },
+  "opt_filter_updates": {
+    "message": "Filtr yeniləmələri"
+  },
+  "opt_engine_health": {
+    "message": "Mühərrikin vəziyyəti"
+  },
+  "opt_backup": {
+    "message": "Ehtiyat nüsxə"
+  },
+  "opt_support_development": {
+    "message": "İnkişafa dəstək olun"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Cihazlar arasında sinxronizasiya"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube reklamlarının bloklanması"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Kuki / razılıq bannerləri"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock divarlarından yan keçmə"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta sponsorlu paylaşımları"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "İzləmə parametrlərini sil"
+  },
+  "opt_malware_protection": {
+    "message": "Zərərli proqramlardan qoruma"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Reklam hədəfləmə brauzer API-lərini blokla"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "İzləmə mayaklarını və kriptomaynerləri blokla"
+  },
+  "opt_auto_update_filters": {
+    "message": "Filtrləri avtomatik yenilə"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tünd) və ya açıq"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Ayarları, icazəli siyahını və filtrləri daxil olduğunuz hər Chrome-da sinxron saxlayın"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube-da video reklamları silir. Videolar oynamırsa, söndürün."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "«Kukiləri qəbul et» sorğularını avtomatik bağlayır"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "«Reklam blokerinizi söndürün» divarlarını gizlədir və səhifəni bərpa edir"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook və Instagram-da «Sponsorlu» paylaşımları gizlədir"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Açdığınız keçidlərdən utm_*, fbclid, gclid və digər klik identifikatorlarını silir"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Məlum zərərli domenləri bloklayır (abuse.ch-in URLhaus siyahısı)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Hər saytda Google Topics, FLoC və Protected Audience reklam API-lərini söndürür"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Üçüncü tərəf keçid auditi / beacon pinqlərini dayandırır, məlum reklam texnologiyası cavablarından izləmə kukilərini silir və brauzerdə kriptomaynınq skriptlərini bloklayır. Saytın analitikadan asılı funksiyası düzgün işləmirsə, söndürün."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Yeni bloklama qaydalarını və YouTube düzəlişlərini gündə təxminən iki dəfə adblock.carbonstealth.eu ünvanından yükləyir. Yalnız data, kod yoxdur; sorğu heç bir identifikator və ya baxış məlumatı daşımır."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Evristik üsulla (filtr siyahısı olmadan) tutulan reklamların canlı jurnalı, ən yeniləri yuxarıda."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Abunə olunan siyahılar mətn kimi yüklənir (heç vaxt kod kimi yox), hər gün yenilənir və yuxarıdakı idarə olunan bloklarda saxlanılır. Siyahının qaydalarını ləğv etmək üçün siyahını silin."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Seçici ilə əl ilə gizlətdiyiniz elementlər, sayta görə qruplaşdırılıb."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Canlı diaqnostika — hər şey lokal hesablanır. Nəsə qırmızıdırsa, «İndi yenilə» və ya artırmanı yenidən yükləmək adətən problemi həll edir."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock hamı üçün pulsuzdur. Onun dəstəklənməsinə kömək etmək istəsəniz, ianələr xoşdur, amma heç vaxt məcburi deyil."
+  },
+  "opt_reset_statistics": {
+    "message": "Statistikanı sıfırla"
+  },
+  "opt_add": {
+    "message": "Əlavə et"
+  },
+  "opt_save_filters": {
+    "message": "Filtrləri yadda saxla"
+  },
+  "opt_subscribe": {
+    "message": "Abunə ol"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Abunələri indi yenilə"
+  },
+  "opt_update_now": {
+    "message": "İndi yenilə"
+  },
+  "opt_refresh": {
+    "message": "Təzələ"
+  },
+  "opt_export_settings": {
+    "message": "Ayarları ixrac et"
+  },
+  "opt_import_settings": {
+    "message": "Ayarları idxal et"
+  },
+  "opt_e_g_example_com": {
+    "message": "məs. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! nümunə\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Filtr siyahısı URL-inə abunə olun (məs. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock ayarları"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Ayarlar"
+  },
+  "opt_theme_light": {
+    "message": "Açıq"
+  },
+  "opt_badge_unique": {
+    "message": "unikal"
+  },
+  "opt_smart_desc": {
+    "message": "Heç bir filtr siyahısının hələ tanımadığı reklamları tutur: standart reklam yeri ölçüsündə olan başqa mənbəli çərçivələr qaydaya ehtiyac olmadan dərhal gizlədilir."
+  },
+  "opt_caught_so_far": {
+    "message": "indiyədək tutulub."
+  },
+  "opt_allow_desc": {
+    "message": "Bu domenlərdə reklamlar bloklanmır."
+  },
+  "opt_fh_one": {
+    "message": "Hər sətirdə bir qayda."
+  },
+  "opt_fh_blocks": {
+    "message": "domeni bloklayır;"
+  },
+  "opt_fh_everywhere": {
+    "message": "elementi hər yerdə gizlədir;"
+  },
+  "opt_fh_site": {
+    "message": "onu yalnız həmin saytda gizlədir."
+  },
+  "opt_fh_comments": {
+    "message": "Şərh sətirləri"
+  },
+  "opt_fh_comments2": {
+    "message": "ilə başlayır."
+  },
+  "opt_donate": {
+    "message": "Revolut ilə ianə et"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth tərəfindən hazırlanıb"
+  },
+  "opt_empty_smart": {
+    "message": "Hələ evristik üsulla heç nə tutulmayıb."
+  },
+  "opt_empty_allow": {
+    "message": "Hələ icazəli sayt yoxdur."
+  },
+  "opt_empty_hidden": {
+    "message": "Hələ əl ilə heç nə gizlədilməyib."
+  },
+  "opt_empty_subs": {
+    "message": "Hələ abunə olunan siyahı yoxdur."
+  },
+  "opt_no_sw": {
+    "message": "Service worker cavab vermir."
+  },
+  "opt_remove": {
+    "message": "Sil"
+  },
+  "opt_filter_status": {
+    "message": "Filtr dəsti v$1, yenilənib: $2. Yalnız data, sizin haqqınızda heç nə göndərilmir."
+  },
+  "opt_updating": {
+    "message": "Yenilənir…"
+  },
+  "opt_updated": {
+    "message": "Yeniləndi (v$1, $2 əlavə qayda)"
+  },
+  "opt_update_failed": {
+    "message": "Yeniləmə alınmadı ($1)"
+  },
+  "opt_saved": {
+    "message": "Yadda saxlanıldı ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 qayda"
+  },
+  "opt_updated_ago": {
+    "message": "yenilənib: $1"
+  },
+  "opt_not_fetched": {
+    "message": "hələ yüklənməyib"
+  },
+  "opt_failed_colon": {
+    "message": "xəta: $1"
+  },
+  "opt_enter_https": {
+    "message": "Düzgün https:// URL daxil edin"
+  },
+  "opt_fetching": {
+    "message": "Yüklənir…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Abunə olundu: $1 qayda ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Alınmadı ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Təzələnir…"
+  },
+  "opt_refreshed": {
+    "message": "Təzələndi ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Yanlış ayarlar faylı."
+  },
+  "opt_no_response": {
+    "message": "cavab yoxdur"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock mühərriki"
+  },
+  "opt_h_rulesets": {
+    "message": "Aktiv statik qayda dəstləri"
+  },
+  "opt_h_live": {
+    "message": "Canlı filtr domenləri"
+  },
+  "opt_h_last": {
+    "message": "Son yeniləmə"
+  },
+  "opt_h_sig": {
+    "message": "Yeniləmə imzaları"
+  },
+  "opt_h_user": {
+    "message": "Filtrlərim / icazə qaydaları"
+  },
+  "opt_h_popup": {
+    "message": "Daxili popap reklam hostları"
+  },
+  "opt_h_yt": {
+    "message": "YouTube yan keçməsi"
+  },
+  "opt_reason_frame": {
+    "message": "Reklam ölçüsündə başqa mənbəli çərçivə"
+  },
+  "opt_reason_sticky": {
+    "message": "Yapışqan reklam banneri"
+  },
+  "logRegional": {
+    "message": "Regional siyahılar"
+  },
+  "logFocus": {
+    "message": "Fokus rejimi"
+  },
+  "opt_filter_lists": {
+    "message": "Filtr siyahıları"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList və EasyPrivacy həmişə aktivdir. Aşağıdakı siyahılar artırmaya daxil edilmiş açıq lisenziyalı siyahılardır, ona görə birini aktivləşdirmək heç nə yükləmir — müəllifindən gəldiyi qeyd olunan siyahı istisna olmaqla."
+  },
+  "opt_lists_core": {
+    "message": "Əsas"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Brauzerinizin dili üçün siyahı avtomatik aktivləşir. Tez-tez başqa dillərdə saytlar oxuyursunuzsa, digərlərini də əlavə edin."
+  },
+  "opt_focus_mode": {
+    "message": "Fokus rejimi"
+  },
+  "opt_focus_desc": {
+    "message": "Reklam olmayan, amma yenə də mane olan şeyləri gizlədin. Buradakı hər şey siz aktivləşdirənə qədər söndürülüdür."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin filtrləri"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin komandasından reklamlar, izləyicilər, anti-adblock düzəlişləri və sayt təmirləri."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe siyahısı"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Reklam və izləmə serverlərinin uzunmüddətli siyahısı."
+  },
+  "opt_focus_social": {
+    "message": "Sosial media düymələri və vidjetləri"
+  },
+  "opt_focus_social_desc": {
+    "message": "Paylaşma düymələri, bəyənmə qutuları və daxil edilmiş lentlər."
+  },
+  "opt_focus_chat": {
+    "message": "Söhbət və dəstək vidjetləri"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Səhifənin küncündə üzən söhbət balonları."
+  },
+  "opt_focus_newsletters": {
+    "message": "Bülleten və qeydiyyat popapları"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«Bülletenimizə abunə olun» qutuları və örtükləri."
+  },
+  "opt_focus_notifications": {
+    "message": "Bildiriş sorğuları"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Brauzer soruşmazdan əvvəl saytların göstərdiyi «Bildirişlərə icazə verilsin?» qutuları."
+  },
+  "opt_focus_ai": {
+    "message": "Süni intellekt köməkçisi popapları"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Səhifələrə əlavə olunan çatbot balonları və süni intellekt təklif panelləri."
+  },
+  "opt_focus_other": {
+    "message": "Digər narahatedici elementlər"
+  },
+  "opt_focus_other_desc": {
+    "message": "Yapışqan zolaqlar, «Tətbiqdə aç» bannerləri və oxşar qarışıqlıq."
+  },
+  "opt_badge_lang": {
+    "message": "sizin diliniz"
+  },
+  "opt_badge_remote": {
+    "message": "müəllifindən"
+  },
+  "opt_remote_hint": {
+    "message": "Paketə daxil deyil (yenidən yaymaq üçün lisenziya yoxdur): aktivləşdirdiyiniz zaman brauzeriniz onu $1 ünvanından yükləyir."
+  },
+  "opt_downloaded_from": {
+    "message": "Yüklənmə mənbəyi: $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome bu siyahı kombinasiyasını rədd etdi ($1). Bəzilərini söndürün."
+  },
+  "opt_badge_recommended": {
+    "message": "diliniz üçün tövsiyə olunur"
+  },
+  "reportBroken": {
+    "message": "Sayt pozulub? Düzəldin və ya bizə bildirin"
+  },
+  "rep_title": {
+    "message": "Bu saytda nəsə işləmir?"
+  },
+  "rep_fix_first": {
+    "message": "İndi düzəldin"
+  },
+  "rep_site": {
+    "message": "Sayt:"
+  },
+  "rep_fix_desc": {
+    "message": "Əksər problemlər bunlardan biri ilə aradan qalxır. Hər biri yalnız bu sayta aiddir; vərəq yenidən yüklənir."
+  },
+  "rep_fix_cosm": {
+    "message": "Burada elementlərin gizlədilməsini söndür"
+  },
+  "rep_fix_allow": {
+    "message": "Bu saytda reklamlara icazə ver"
+  },
+  "rep_fix_pause": {
+    "message": "Hər yerdə 30 dəqiqəlik fasilə"
+  },
+  "rep_tell_us": {
+    "message": "Bizə bildirin"
+  },
+  "rep_tell_desc": {
+    "message": "Pozulmuş saytları imzalı filtr yeniləməsi ilə hamı üçün düzəldirik, adətən bir gün ərzində. Artırma heç nə göndərmir: hesabat öz e-poçt tətbiqinizdə açılır və onun hər sözünü əvvəlcə siz görürsünüz."
+  },
+  "rep_what": {
+    "message": "Problem nədir? (istəyə bağlı)"
+  },
+  "rep_what_ph": {
+    "message": "məs. video başlamır, ağ qutu məqaləni örtür…"
+  },
+  "rep_full_url": {
+    "message": "Səhifənin tam ünvanını əlavə et (əks halda yalnız saytın adı)"
+  },
+  "rep_preview": {
+    "message": "Nə göndəriləcək"
+  },
+  "rep_send_mail": {
+    "message": "E-poçtla göndər"
+  },
+  "rep_copy": {
+    "message": "Hesabatı kopyala"
+  },
+  "rep_copied": {
+    "message": "Kopyalandı."
+  },
+  "rep_done_cosm": {
+    "message": "Bu saytda elementlərin gizlədilməsi söndürüldü. Yenidən yükləndi — düzəldi?"
+  },
+  "rep_done_allow": {
+    "message": "Bu saytda reklamlara icazə verildi. Yenidən yükləndi — düzəldi?"
+  },
+  "rep_done_pause": {
+    "message": "30 dəqiqəlik fasilə. Sayt indi işləyirsə, lütfən, aşağıda bizə bildirin."
+  },
+  "cookieRejections": {
+    "message": "Sizin əvəzinizə rədd edilən kuki bannerləri: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube-da Shorts rəfləri, tabı və təklifləri."
+  },
+  "opt_focus_onetap": {
+    "message": "«Google ilə daxil olun» popapları"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Bir çox saytın küncündə görünən hesab seçicisi. Giriş düymələri işləməyə davam edir."
+  },
+  "pickTip": {
+    "message": "Gizlətmək üçün elementə klikləyin"
+  },
+  "pickZapTip": {
+    "message": "Bu elementi silmək üçün klikləyin (bir dəfə)"
+  },
+  "pickEscCancel": {
+    "message": "ilə ləğv edin"
+  },
+  "opt_notices": {
+    "message": "Filtr siyahılarının lisenziyaları"
+  }
+}

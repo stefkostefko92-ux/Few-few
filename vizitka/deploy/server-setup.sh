@@ -70,6 +70,11 @@ gen_hex() { node -e "console.log(require('crypto').randomBytes($1).toString('hex
 prev() { [[ -f "$ENV_FILE" ]] && sed -n "s/^$1=//p" "$ENV_FILE" | head -n1 || true; }
 PRINT_API_SECRET="$(prev PRINT_API_SECRET)"; PRINT_API_SECRET="${PRINT_API_SECRET:-$(gen_hex 32)}"
 INDEXNOW_KEY="$(prev INDEXNOW_KEY)";         INDEXNOW_KEY="${INDEXNOW_KEY:-$(gen_hex 16)}"
+# ПОРТЪТ също се пази между пусканията. Беше зачукан на 3100 и всяко повторно
+# пускане го нулираше — а живо vizitka слуша на 3105, защото 3100 е зает от друг
+# проект на машината. Резултат: услугата не вдига (EADDRINUSE) и nginx праща
+# vizitka-bg.com към ЧУЖДОТО приложение.
+PORT_VAL="$(prev PORT)"; PORT_VAL="${PORT_VAL:-${PORT:-3105}}"
 
 # Запази вече конфигурираните портфейл редове (коментирани или не) — идемпотентност.
 WALLET_LINES="$([[ -f "$ENV_FILE" ]] && grep -E '^#? *(APPLE_|GOOGLE_WALLET_)' "$ENV_FILE" || true)"
@@ -92,7 +97,7 @@ fi
 umask 077
 {
   echo "NODE_ENV=production"
-  echo "PORT=3100"
+  echo "PORT=$PORT_VAL"
   echo "PUBLIC_BASE_URL=https://$DOMAIN"
   echo "ADMIN_EMAILS=$ADMIN_EMAIL"
   echo "MASTILKO_URL=$MASTILKO_URL"
@@ -128,13 +133,21 @@ chown "$APP_USER:$APP_USER" "$ENV_FILE"
 # ── 3. systemd unit ──────────────────────────────────────────────────────────
 say "systemd unit"
 cp "$HERE/systemd/vizitka.service" /etc/systemd/system/vizitka.service
+# Drop-in отклоненията (seccomp наказание, netlink за DNS, лимити) — вече в репото,
+# за да не живеят само на диска на машината и да не изчезнат при следващ setup.
+if [ -d "$HERE/systemd/vizitka.service.d" ]; then
+  install -d -m 755 /etc/systemd/system/vizitka.service.d
+  cp "$HERE/systemd/vizitka.service.d/"*.conf /etc/systemd/system/vizitka.service.d/
+fi
 systemctl daemon-reload
 systemctl enable vizitka >/dev/null
 
 # ── 4. nginx vhost + TLS ─────────────────────────────────────────────────────
 say "nginx vhost + TLS (certbot)"
 # Ако домейнът е различен от vizitka-bg.com, подмени server_name.
-sed "s/vizitka-bg\.com/$DOMAIN/g" "$HERE/nginx/vizitka.conf" > /etc/nginx/sites-available/vizitka.conf
+sed -e "s/vizitka-bg\.com/$DOMAIN/g" \
+    -e "s|127\.0\.0\.1:3105|127.0.0.1:$PORT_VAL|g" \
+    "$HERE/nginx/vizitka.conf" > /etc/nginx/sites-available/vizitka.conf
 
 if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
   # Chicken-and-egg: пълният vhost сочи още несъществуващ сертификат и чупи `nginx -t`

@@ -6,115 +6,115 @@
       "id": "next",
       "npm": "next",
       "current": "16.3.5",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "react",
       "npm": "react",
       "current": "19.3.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "prisma",
       "npm": "prisma",
       "current": "8.0.0-rc.15",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "discord.js",
       "npm": "discord.js",
       "current": "14.27.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "three",
       "npm": "three",
       "current": "0.186.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "gsap",
       "npm": "gsap",
       "current": "3.15.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "pixi.js",
       "npm": "pixi.js",
-      "current": "8.20.1",
-      "checkedAt": "2026-09-14"
+      "current": "8.21.0",
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "animejs",
       "npm": "animejs",
       "current": "4.5.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "tailwindcss",
       "npm": "tailwindcss",
       "current": "4.3.3",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "typescript",
       "npm": "typescript",
       "current": "7.0.2",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "vite",
       "npm": "vite",
       "current": "8.3.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "vitest",
       "npm": "vitest",
-      "current": "5.0.0",
-      "checkedAt": "2026-09-14"
+      "current": "5.0.1",
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "ccxt",
       "npm": "ccxt",
       "current": "4.5.78",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "stripe-node",
       "npm": "stripe",
       "current": "22.6.2",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "express",
       "npm": "express",
       "current": "5.2.1",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "electron",
       "npm": "electron",
-      "current": "44.3.0",
-      "checkedAt": "2026-09-14"
+      "current": "44.4.3",
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "lighthouse",
       "npm": "lighthouse",
-      "current": "13.4.1",
-      "checkedAt": "2026-09-14"
+      "current": "13.5.0",
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "playwright",
       "npm": "playwright",
       "current": "1.63.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "axe-core",
       "npm": "axe-core",
       "current": "4.13.0",
-      "checkedAt": "2026-09-14"
+      "checkedAt": "2026-09-19"
     },
     {
       "id": "lighthouse-scoring",
@@ -145,9 +145,9 @@
       "id": "claude-models",
       "manual": true,
       "ttlDays": 30,
-      "current": "Claude 5: Fable 5 (claude-fable-5) · Opus 5 (claude-opus-5) · Sonnet 5 (claude-sonnet-5); предишни: Opus 4.8/4.7/4.6, Sonnet 4.6, Haiku 4.5. Opus 4.8: $5/$25 на 1M",
-      "checkedAt": "2026-07-29",
-      "source": "среда на сесията + https://docs.claude.com (сверявай при --refresh)"
+      "current": "Claude 5: Fable 5.1 (claude-fable-5-1) · Opus 5 (claude-opus-5) · Sonnet 5 (claude-sonnet-5) · Haiku 4.5 (claude-haiku-4-5-20251001). Цените НЕ са сверени днес — виж доктрината за разход в root CLAUDE.md.",
+      "checkedAt": "2026-09-19",
+      "source": "среда на сесията (обявен списък с модели и ID-та) + https://docs.claude.com"
     },
     {
       "id": "chrome-mv",

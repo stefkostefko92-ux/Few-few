@@ -23,13 +23,18 @@
   // Hand the live-update extras to youtube_main as inert JSON (data, not
   // code) via a <script type="application/json"> element: extra ad fields,
   // extra ad renderer names, request flags and the flags kill switch.
+  // Stall watchdog stage 1 (youtube_skip): this tab reloaded because playback
+  // never started → run youtube_main WITHOUT the request flags this time.
+  let noFlags = false;
+  try { noFlags = sessionStorage.getItem("tbab_yt_noflags") === "1"; } catch {}
+
   function passConfig(yt) {
-    if (!yt || typeof yt !== "object") return;
+    if (!yt || typeof yt !== "object") yt = {};
     const cfg = {
       adFields: Array.isArray(yt.adFields) ? yt.adFields.slice(0, 50) : [],
       adRenderers: Array.isArray(yt.adRenderers) ? yt.adRenderers.slice(0, 100) : [],
       requestFlags: Array.isArray(yt.requestFlags) ? yt.requestFlags.slice(0, 10) : [],
-      disableRequestFlags: yt.disableRequestFlags === true,
+      disableRequestFlags: yt.disableRequestFlags === true || noFlags,
     };
     if (
       !cfg.adFields.length && !cfg.adRenderers.length &&

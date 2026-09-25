@@ -49,12 +49,18 @@ export default function SheetPreview({
   const h = fixedHeight ? hPx : contentH;
 
   return (
-    <div ref={wrapRef} className="w-full">
+    // min-w-0 позволява на grid клетката да се свие под ширината на листа
+    // (иначе А4 = 794px издува колоната на телефон/таблет); overflow-hidden
+    // клипва при преходни изчисления на мащаба.
+    <div ref={wrapRef} className="sp-wrap w-full min-w-0 overflow-hidden">
       {/* @page е глобален; докато този лист е на екрана, задава ориентацията. */}
       {landscape && (
         <style>{"@media print{@page{size:A4 landscape;margin:0}}"}</style>
       )}
-      <div style={{ height: h * scale }} className="overflow-hidden">
+      {/* sp-wrap/sp-clip: при печат ги махаме с display:contents (globals.css),
+          за да падне скалирането и фиксираната височина и листовете да текат
+          един под друг — иначе няколко листа се застъпваха (виж @media print). */}
+      <div style={{ height: h * scale }} className="sp-clip overflow-hidden">
         <div
           className="print-area origin-top-left"
           style={{ transform: `scale(${scale})`, width: wPx }}
@@ -69,6 +75,33 @@ export default function SheetPreview({
             }}
           >
             {children}
+            {/* Резници за печатница — скрити, освен при клас .crop-on (виж
+                globals.css + PrintBar). Печатат се заедно с листа. */}
+            <div className="crop-marks" aria-hidden>
+              {(["tl", "tr", "bl", "br"] as const).map((corner) => {
+                const top = corner[0] === "t";
+                const left = corner[1] === "l";
+                const mark = "0.25mm solid #111";
+                return (
+                  <span
+                    key={corner}
+                    style={{
+                      position: "absolute",
+                      width: "6mm",
+                      height: "6mm",
+                      top: top ? 0 : undefined,
+                      bottom: top ? undefined : 0,
+                      left: left ? 0 : undefined,
+                      right: left ? undefined : 0,
+                      borderTop: top ? mark : undefined,
+                      borderBottom: top ? undefined : mark,
+                      borderLeft: left ? mark : undefined,
+                      borderRight: left ? undefined : mark,
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

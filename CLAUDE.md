@@ -27,7 +27,7 @@ file holds only what is true across all products. Keep it that way.
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
 | `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |
 | `vizitka/` | Vizitka — винаги актуална дигитална визитка (QR профил) | Express · EJS · SQLite · plain JS ESM | BG · vizitka-bg.com |
-| `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 15 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
+| `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 16 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
 | `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `evanitasport/` | Evanita Sport — дамско студио за Kangoo Jumps и силови тренировки (Дупница) | static HTML/CSS/JS · Nginx | BG · evanita-bg.com |
@@ -36,6 +36,7 @@ file holds only what is true across all products. Keep it that way.
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + „follow the money" разследване за финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · сайт + отчет за всяка SSN структура · счетоводни сигнали + разходни аномалии спрямо връстници · официални open data |
 | `mascot/` | Маскотът на Carbon Stealth — желирано телце с очила и академична шапка | SVG (3 нива на детайл) · генериран React компонент · plain JS ESM · нула зависимости | BG · бранд асет, **не** продукт с деплой · продуктите копират каквото ползват |
 | `vpsdash/` | Carbon Stealth VPS Dashboard — пълен контролен панел за сървъра (метрики, systemd, Docker, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал, агентски флот) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · federation между двата VPS · owner: VPS-аджията |
+| `piuma/` | Piuma — Instagram контент-двигател с админ панел (чернова → човешко одобрение → публикуване) + управлявани страници (автопилот по план + Instagram Insights) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · BullMQ + Redis · Argon2id + TOTP · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · витрина на `/` (нула JS, SEO/AEO пълен набор) · панел `/admin` (7 роли, 2FA, одит-верига, три езика) · агентът влиза с HMAC-подписани заявки, само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -292,8 +293,20 @@ non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal 
 
 ## Deployment — `deploy/`
 
-Canonical flow (owner preference): GitHub ZIP uploaded **manually** to `/root`,
-then fully automated — no `git pull` on the box, no CI/CD push.
+Canonical flow: the server fetches an **immutable archive for an exact ref** from the
+public repo and hands it to `autodeploy.sh`. Still **no `git pull` on the box** (no working
+tree, no `.git` to maintain) and **no CI/CD push** to production — the owner decides when.
+
+```bash
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo bash /root/deploy/fetch-deploy.sh                    # main, all configured products
+sudo REF=<клон|таг|SHA> PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+```
+
+`fetch-deploy.sh` downloads, verifies the archive really is this repo, keeps the last two
+downloads and passes `ARCHIVE=` explicitly to `autodeploy.sh`. Uploading a ZIP by hand
+still works and is the fallback when the box has no outbound network:
 
 ```bash
 cd /root && unzip -o Few-few.zip >/dev/null

@@ -81,7 +81,13 @@ const roles = Array.from({ length: 28 }, (_, i) => ({
   reason: i % 7 === 3 ? "above_bot" : null,
 }));
 const FIX = {
-  "GET /api/auth/me": { id: "u1", username: "stefan", role: "MAIN_OWNER", language: "en" },
+  "GET /api/auth/me": { id: "u1", username: "stefan", globalRole: "MAIN_OWNER", role: "MAIN_OWNER", language: "en", mfa: { enabled: true, required: true, enrollmentRequired: false, verifiedInSession: true } },
+  "GET /api/admin/system": { now: new Date().toISOString(), backend: { version: "3.4.0", node: "v22", uptimeSec: 100, env: "test" }, db: { ok: true, latencyMs: 1 }, redis: { ok: true, configured: true, latencyMs: 1 }, bot: { ok: true, gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 } }, migration: { latest: "20260823000000_v49_user_mfa", finishedAt: new Date().toISOString(), pending: 0 }, jobs: { dunning: { lastOk: new Date().toISOString(), lastFail: null } }, billing: { provider: "discord", discordConfigured: true, stripeLegacy: false }, webhooks: { failing: 1, items: [{ id: "w1", serverId: SID, name: "Zapier", failCount: 3, lastStatus: 500, lastDeliveryAt: new Date().toISOString(), enabled: true }] }, config: { mfaEnforced: true, adminIpAllowlist: { enabled: false, entries: 0 }, securityAlertsDm: true, transcriptEncryption: true, sentry: true, gemini: true, aiTrainingAttested: false, redisUrl: true, frontendUrl: "https://x", trustProxy: ["loopback"] } },
+  "GET /api/admin/security": { mfaEnforced: true, staff: [{ id: "u1", username: "stefan", globalRole: "MAIN_OWNER", mfaEnabled: true, mfaEnabledAt: new Date().toISOString(), backupCodesLeft: 9, sessions: 1, createdAt: new Date().toISOString() }, { id: "u2", username: "ana", globalRole: "SUPPORT_STAFF", mfaEnabled: false, mfaEnabledAt: null, backupCodesLeft: 0, sessions: 0, createdAt: new Date().toISOString() }], sessions: { total: 3 }, bruteForce: { blocked: [{ scope: "auth", key: "203.0.113.7", label: "203.0.113.x", failures: 9, blockedUntil: new Date(Date.now() + 60000).toISOString(), retryAfterSec: 60 }], trackedEntries: 4, redis: true, windowSec: 900, steps: [{ failures: 5, blockMs: 60000 }] }, apiKeys: { active: 1, revoked: 0, items: [{ id: "k1", serverId: SID, userId: "u1", name: "ci", keyPrefix: "sb_ab", scopes: ["tickets:read"], lastUsedAt: null, expiresAt: null, revokedAt: null, requestCount: 3, createdAt: new Date().toISOString() }] }, blacklisted: 0, events: [{ id: "e1", createdAt: new Date().toISOString(), action: "MFA_ENABLED", actor: { id: "u1", username: "stefan" }, targetId: "u1" }] },
+  "GET /api/admin/billing": { config: { provider: "discord", discord: { enabled: true, configured: true, storeUrl: "https://discord.com/application-directory/1/store" }, stripe: { purchasesEnabled: false, legacyManagement: false } }, discord: [{ id: SID, name: "T19C", plan: "premium", discordEntitlementId: "e1", discordSkuId: "s1", discordSubscriptionId: "x", discordSubscriptionStatus: 0, statusLabel: "active", discordCurrentPeriodEnd: new Date().toISOString(), premiumSince: new Date().toISOString() }], stripe: [], agencies: [], graceServers: 0, lastReconcileGrantAt: null },
+  "GET /api/admin/fleet": { withToken: [{ id: SID, name: "T19C", plan: "agency10", planSource: "stripe", customBotName: "T19 Bot", agencyId: "ag1", accessUntil: null }], bot: { gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 }, uptime: 100 } },
+  "GET /api/admin/dsr/requests": { requests: [{ id: "r1", createdAt: new Date().toISOString(), action: "DSR_ERASED", targetId: "123", actor: { id: "u1", username: "stefan" }, metadata: { scope: "identity", via: "bot" } }] },
+  "GET /api/auth/mfa/status": { enabled: false, enabledAt: null, required: false, enrollmentRequired: false, verifiedInSession: false, backupCodesLeft: 0, issuer: "Supreme Bot" },
   [`GET /api/servers/${SID}`]: {
     id: SID, name: "T19C", icon: null, plan: "agency10", isPremium: true, hasWhiteLabel: true,
     agencyCovered: true, agencySeatsUsed: 2, agencySeatLimit: 10,
@@ -163,6 +169,12 @@ const PAGES = [
   { path: `/dashboard/${SID}/apikeys`, name: "apikeys" },
   { path: `/dashboard/${SID}/applications`, name: "applications" },
   { path: `/dashboard/${SID}/commands`, name: "commands" },
+  { path: "/dashboard/security", name: "security" },
+  { path: "/dashboard/admin?tab=system", name: "admin-system" },
+  { path: "/dashboard/admin?tab=security", name: "admin-security" },
+  { path: "/dashboard/admin?tab=billing", name: "admin-billing" },
+  { path: "/dashboard/admin?tab=fleet", name: "admin-fleet" },
+  { path: "/dashboard/admin?tab=compliance", name: "admin-compliance" },
 ];
 
 // ─── Достъпност: axe-core върху РЕАЛНО рендерираните страници ───────────────
@@ -308,6 +320,39 @@ for (const view of [
       await page.screenshot({ path: join(SHOTS, `${view.tag}-role-picker-open.png`) });
     }
   } else note(false, `${view.tag}: бутонът „Add role…" липсва на Settings`);
+
+  // ─── Долният блок на страничната лента: името и менюто за език ──────────
+  // Собственикът, снимка 17.09.2026: името се режеше до една буква („Z"), а
+  // списъкът с езици — отляво („ски", „ch", „ol"). Причина: с четвъртата икона
+  // (Сигурност, 3.4.0) редът надхвърли 256px и flex сви името до 7px; менюто
+  // беше закачено right-0 към икона в левия край → left −49px. Статичният гейт
+  // не мери ширини, затова се мери тук — на двата размера.
+  // Банерът за бисквитки (fixed, z-100) иначе покрива долния блок на 390px и
+  // Playwright не може да кликне през него — записваме съгласие като реален
+  // втори визит (същият ключ и версия като CookieConsent.jsx).
+  await page.evaluate(() => { try { localStorage.setItem("supreme-bot-cookie-consent", JSON.stringify({ version: 1, timestamp: new Date().toISOString(), essential: true, analytics: false, marketing: false })); } catch {} });
+  await page.goto(`${base}/dashboard`, { waitUntil: "load" }).catch(() => {});
+  await page.waitForTimeout(900);
+  if (view.tag === "mobile") { await page.click('button[aria-controls="dashboard-sidebar"]').catch(() => {}); await page.waitForTimeout(300); }
+  const nameBox = await page.evaluate(() => {
+    const p = [...document.querySelectorAll("#dashboard-sidebar p")].find((x) => x.textContent.trim() === "stefan");
+    return p ? { clientWidth: p.clientWidth, scrollWidth: p.scrollWidth } : null;
+  });
+  if (!nameBox) note(false, `${view.tag}: името на потребителя липсва в лентата`);
+  else note(nameBox.scrollWidth <= nameBox.clientWidth, `${view.tag}: името не се реже (${nameBox.scrollWidth}/${nameBox.clientWidth}px)`);
+  const langBtn = page.locator("#dashboard-sidebar button[aria-haspopup=listbox]").first();
+  if (await langBtn.count()) {
+    await langBtn.click();
+    const menu = await page.locator("ul[role=listbox]").first().boundingBox().catch(() => null);
+    if (!menu) note(false, `${view.tag}: менюто за език не се отвори`);
+    else {
+      const vp = view.viewport;
+      const inside = menu.x >= -1 && menu.y >= -1 && menu.x + menu.width <= vp.width + 1 && menu.y + menu.height <= vp.height + 1;
+      note(inside, `${view.tag}: менюто за език е изцяло във viewport (x=${Math.round(menu.x)}, ${Math.round(menu.width)}px широко)`);
+      await page.screenshot({ path: join(SHOTS, `${view.tag}-language-menu-open.png`) });
+    }
+    await page.keyboard.press("Escape");
+  } else note(false, `${view.tag}: бутонът за език липсва в лентата`);
 
   if (consoleErrors.length) note(false, `${view.tag}: JS грешки: ${[...new Set(consoleErrors)].slice(0, 3).join(" · ")}`);
   await ctx.close();

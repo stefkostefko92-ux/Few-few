@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Lokar á auglýsingar alls staðar: YouTube-auglýsingar, borða, sprettiglugga, rekjara, kökuborða og anti-adblock-veggi. Ókeypis."
+  },
+  "byCarbon": {
+    "message": "frá Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Kveikja/slökkva á vörn"
+  },
+  "protected": {
+    "message": "Varið"
+  },
+  "paused": {
+    "message": "Í bið"
+  },
+  "blockingHere": {
+    "message": "Lokar á auglýsingar á þessari síðu"
+  },
+  "protectionOff": {
+    "message": "Slökkt er á vörn"
+  },
+  "pause30": {
+    "message": "Gera hlé í 30 mínútur"
+  },
+  "pausedResume": {
+    "message": "Í bið, halda áfram núna ($1 mín. eftir)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Útilokað"
+  },
+  "dataSaved": {
+    "message": "Gögn spöruð"
+  },
+  "timeSaved": {
+    "message": "Tími sparaður"
+  },
+  "thisSite": {
+    "message": "þetta vefsvæði"
+  },
+  "thisPage": {
+    "message": "þessi síða"
+  },
+  "blockOnSite": {
+    "message": "Loka á auglýsingar á þessu vefsvæði"
+  },
+  "blocking": {
+    "message": "Útilokar"
+  },
+  "allowed": {
+    "message": "Leyft"
+  },
+  "cosmetics": {
+    "message": "Fela auglýsingareiti hér"
+  },
+  "cosmeticsTitle": {
+    "message": "Útlitssíun á þessu vefsvæði (slökktu á henni ef útlit síðunnar raskast)"
+  },
+  "on": {
+    "message": "Á"
+  },
+  "off": {
+    "message": "Af"
+  },
+  "blockedHere": {
+    "message": "Útilokað á þessari síðu"
+  },
+  "logEmpty": {
+    "message": "Ekkert hefur verið útilokað hér enn."
+  },
+  "logUnavailable": {
+    "message": "Annállinn er ekki tiltækur í augnablikinu (kvóti vafrans) — reyndu aftur eftir mínútu."
+  },
+  "logCore": {
+    "message": "Kjarnareglur Supreme"
+  },
+  "logYouTube": {
+    "message": "YouTube-auglýsingar"
+  },
+  "logParams": {
+    "message": "Rakningarfæribreytur"
+  },
+  "logMalware": {
+    "message": "Spilliforritalén"
+  },
+  "logSurrogates": {
+    "message": "Óvirkjaðar auglýsingaskriftur"
+  },
+  "logPrivacy": {
+    "message": "Persónuvernd"
+  },
+  "logUser": {
+    "message": "Mínar síur"
+  },
+  "logLive": {
+    "message": "Beinar uppfærslur"
+  },
+  "hideElement": {
+    "message": "Fela einingu"
+  },
+  "settings": {
+    "message": "Stillingar"
+  },
+  "promoSub": {
+    "message": "Búnaður og verkfæri, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Augl."
+  },
+  "support": {
+    "message": "Styrkja"
+  },
+  "filtersCount": {
+    "message": "$1+ síur",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Útlit"
+  },
+  "opt_extra_protection": {
+    "message": "Aukin vörn"
+  },
+  "opt_smart_detection_log": {
+    "message": "Annáll Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Leyfð vefsvæði"
+  },
+  "opt_my_filters": {
+    "message": "Mínar síur"
+  },
+  "opt_hidden_elements": {
+    "message": "Faldar einingar"
+  },
+  "opt_filter_updates": {
+    "message": "Uppfærslur á síum"
+  },
+  "opt_engine_health": {
+    "message": "Staða vélarinnar"
+  },
+  "opt_backup": {
+    "message": "Öryggisafrit"
+  },
+  "opt_support_development": {
+    "message": "Styrkja þróunina"
+  },
+  "opt_theme": {
+    "message": "Þema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Samstilling milli tækja"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Útilokun YouTube-auglýsinga"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Borðar um vafrakökur / samþykki"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Sniðganga anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Kostaðar færslur frá Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Fjarlægja rakningarfæribreytur"
+  },
+  "opt_malware_protection": {
+    "message": "Vörn gegn spilliforritum"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Loka á API-viðmót vafra fyrir auglýsingamiðun"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Loka á rakningarvita og rafmyntagrafara"
+  },
+  "opt_auto_update_filters": {
+    "message": "Uppfæra síur sjálfkrafa"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (dökkt) eða ljóst"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Halda stillingum, leyfðum vefsvæðum og síum samstilltum í hverjum Chrome-vafra sem þú hefur skráð þig inn í"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Fjarlægir myndskeiðsauglýsingar á YouTube. Slökktu á þessu ef myndskeið spilast ekki."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Loka sjálfkrafa beiðnum um að „samþykkja vafrakökur“"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Fela veggi sem segja „slökktu á auglýsingavörninni“ og endurheimta síðuna"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Fela færslur merktar „Kostað“ á Facebook og Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Fjarlægja utm_*, fbclid, gclid og önnur smellaauðkenni úr tenglum sem þú opnar"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Loka á þekkt spilliforritalén (URLhaus-listi frá abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Slökkva á auglýsinga-API-viðmótunum Google Topics, FLoC og Protected Audience á öllum vefsvæðum"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Stöðva tengilendurskoðun og vitaköll frá þriðju aðilum, fjarlægja rakningarvafrakökur úr svörum þekktra auglýsingatæknikerfa og loka á rafmyntagraftarskriftur í vafranum. Slökktu á þessu ef eiginleiki vefsvæðis sem reiðir sig á greiningar hegðar sér undarlega."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Sækir nýjar útilokunarreglur og lagfæringar fyrir YouTube frá adblock.carbonstealth.eu um það bil tvisvar á dag. Aðeins gögn, enginn kóði; beiðnin ber engin auðkenni né vafragögn."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Rauntímaannáll yfir auglýsingar sem voru gripnar með snjallgreiningu (án síulista), nýjast efst."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Áskriftarlistar eru sóttir sem texti (aldrei kóði), uppfærðir daglega og eru geymdir í stýrðu blokkunum hér fyrir ofan. Fjarlægðu lista til að fella niður reglur hans."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Einingar sem þú faldir handvirkt með valtólinu, flokkaðar eftir vefsvæði."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Bein greining — allt er reiknað staðbundið. Ef eitthvað er rautt hjálpar yfirleitt að smella á „Uppfæra núna“ eða endurhlaða viðbótinni."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock er ókeypis fyrir alla. Ef þú vilt hjálpa til við að viðhalda því eru framlög vel þegin en aldrei skylda."
+  },
+  "opt_reset_statistics": {
+    "message": "Endurstilla tölfræði"
+  },
+  "opt_add": {
+    "message": "Bæta við"
+  },
+  "opt_save_filters": {
+    "message": "Vista síur"
+  },
+  "opt_subscribe": {
+    "message": "Gerast áskrifandi"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Uppfæra áskriftir núna"
+  },
+  "opt_update_now": {
+    "message": "Uppfæra núna"
+  },
+  "opt_refresh": {
+    "message": "Endurhlaða"
+  },
+  "opt_export_settings": {
+    "message": "Flytja út stillingar"
+  },
+  "opt_import_settings": {
+    "message": "Flytja inn stillingar"
+  },
+  "opt_e_g_example_com": {
+    "message": "t.d. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! dæmi\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Gerast áskrifandi að síulista með slóð (t.d. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Stillingar Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Stillingar"
+  },
+  "opt_theme_light": {
+    "message": "Ljóst"
+  },
+  "opt_badge_unique": {
+    "message": "einstakt"
+  },
+  "opt_smart_desc": {
+    "message": "Grípur auglýsingar sem enginn síulisti þekkir enn: rammar frá öðrum lénum í stærð hefðbundinna auglýsingareita eru faldir strax, engar reglur þarf."
+  },
+  "opt_caught_so_far": {
+    "message": "gripnar hingað til."
+  },
+  "opt_allow_desc": {
+    "message": "Ekki er lokað á auglýsingar á þessum lénum."
+  },
+  "opt_fh_one": {
+    "message": "Ein regla í hverri línu."
+  },
+  "opt_fh_blocks": {
+    "message": "lokar á lén;"
+  },
+  "opt_fh_everywhere": {
+    "message": "felur einingu alls staðar;"
+  },
+  "opt_fh_site": {
+    "message": "felur hana aðeins á því vefsvæði."
+  },
+  "opt_fh_comments": {
+    "message": "Línur sem byrja á"
+  },
+  "opt_fh_comments2": {
+    "message": "eru athugasemdir."
+  },
+  "opt_donate": {
+    "message": "Styrkja með Revolut"
+  },
+  "opt_made_by": {
+    "message": "gert af Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Ekkert gripið með snjallgreiningu enn."
+  },
+  "opt_empty_allow": {
+    "message": "Engin leyfð vefsvæði enn."
+  },
+  "opt_empty_hidden": {
+    "message": "Ekkert falið handvirkt enn."
+  },
+  "opt_empty_subs": {
+    "message": "Engir áskriftarlistar enn."
+  },
+  "opt_no_sw": {
+    "message": "Ekkert svar frá service worker."
+  },
+  "opt_remove": {
+    "message": "Fjarlægja"
+  },
+  "opt_filter_status": {
+    "message": "Síusett v$1, uppfært $2. Aðeins gögn, ekkert um þig er sent."
+  },
+  "opt_updating": {
+    "message": "Uppfæri…"
+  },
+  "opt_updated": {
+    "message": "Uppfært (v$1, $2 viðbótarreglur)"
+  },
+  "opt_update_failed": {
+    "message": "Uppfærsla mistókst ($1)"
+  },
+  "opt_saved": {
+    "message": "Vistað ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 reglur"
+  },
+  "opt_updated_ago": {
+    "message": "uppfært $1"
+  },
+  "opt_not_fetched": {
+    "message": "ekki sótt enn"
+  },
+  "opt_failed_colon": {
+    "message": "mistókst: $1"
+  },
+  "opt_enter_https": {
+    "message": "Sláðu inn gilda https://-slóð"
+  },
+  "opt_fetching": {
+    "message": "Sæki…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Áskrift virk: $1 reglur ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Mistókst ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Endurhleð…"
+  },
+  "opt_refreshed": {
+    "message": "Endurhlaðið ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ógild stillingaskrá."
+  },
+  "opt_no_response": {
+    "message": "ekkert svar"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock-vél"
+  },
+  "opt_h_rulesets": {
+    "message": "Virk föst reglusett"
+  },
+  "opt_h_live": {
+    "message": "Lén í beinum síum"
+  },
+  "opt_h_last": {
+    "message": "Síðasta uppfærsla"
+  },
+  "opt_h_sig": {
+    "message": "Undirritun uppfærslna"
+  },
+  "opt_h_user": {
+    "message": "Mínar síur / reglur leyfðra vefsvæða"
+  },
+  "opt_h_popup": {
+    "message": "Innbyggðir hýslar sprettigluggaauglýsinga"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-framhjáhlaup"
+  },
+  "opt_reason_frame": {
+    "message": "Rammi frá öðru léni í auglýsingastærð"
+  },
+  "opt_reason_sticky": {
+    "message": "Fastur auglýsingaborði"
+  },
+  "logRegional": {
+    "message": "Svæðisbundnir listar"
+  },
+  "logFocus": {
+    "message": "Fókushamur"
+  },
+  "opt_filter_lists": {
+    "message": "Síulistar"
+  },
+  "opt_lists_intro": {
+    "message": "Alltaf er kveikt á EasyList og EasyPrivacy. Listarnir hér fyrir neðan eru með opnu leyfi og innbyggðir í viðbótina, svo ekkert er sótt þegar þú kveikir á einum þeirra, nema á lista sem er merktur sem sóttur frá höfundi sínum."
+  },
+  "opt_lists_core": {
+    "message": "Kjarni"
+  },
+  "opt_lists_regional": {
+    "message": "Svæðisbundnir"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Listinn fyrir tungumál vafrans kveikir á sér sjálfur. Bættu við öðrum ef þú lest oft vefsvæði á öðrum tungumálum."
+  },
+  "opt_focus_mode": {
+    "message": "Fókushamur"
+  },
+  "opt_focus_desc": {
+    "message": "Feldu það sem er ekki auglýsing en er samt fyrir. Slökkt er á öllu hér þar til þú kveikir á því."
+  },
+  "opt_list_ubo": {
+    "message": "Síur uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Auglýsingar, rekjarar, lagfæringar gegn anti-adblock og viðgerðir á vefsvæðum frá uBlock Origin-teyminu."
+  },
+  "opt_list_plowe": {
+    "message": "Listi Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Rótgróinn listi yfir auglýsinga- og rakningarþjóna."
+  },
+  "opt_focus_social": {
+    "message": "Hnappar og græjur samfélagsmiðla"
+  },
+  "opt_focus_social_desc": {
+    "message": "Deilingarhnappar, „líkar við“-reitir og innfelld streymi."
+  },
+  "opt_focus_chat": {
+    "message": "Spjall- og aðstoðargræjur"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Fljótandi spjallbólurnar í horni síðunnar."
+  },
+  "opt_focus_newsletters": {
+    "message": "Sprettigluggar fyrir fréttabréf og skráningu"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Reitir og yfirlög á borð við „Skráðu þig á póstlistann okkar“."
+  },
+  "opt_focus_notifications": {
+    "message": "Beiðnir um tilkynningar"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Reitir á borð við „Leyfa tilkynningar?“ sem vefsvæði sýna áður en vafrinn spyr."
+  },
+  "opt_focus_ai": {
+    "message": "Sprettigluggar gervigreindaraðstoðar"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Spjallmennisbólur og tillögugluggar gervigreindar sem bætt er við síður."
+  },
+  "opt_focus_other": {
+    "message": "Annað áreiti"
+  },
+  "opt_focus_other_desc": {
+    "message": "Fastar stikur, borðar á borð við „Opna í appi“ og svipað drasl."
+  },
+  "opt_badge_lang": {
+    "message": "þitt tungumál"
+  },
+  "opt_badge_remote": {
+    "message": "frá höfundi"
+  },
+  "opt_remote_hint": {
+    "message": "Ekki innifalinn (ekkert leyfi til endurdreifingar): vafrinn þinn sækir hann frá $1 þegar þú kveikir á honum."
+  },
+  "opt_downloaded_from": {
+    "message": "Sótt frá $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome hafnaði þessari samsetningu lista ($1). Slökktu á einhverjum þeirra."
+  },
+  "opt_badge_recommended": {
+    "message": "mælt með fyrir þitt tungumál"
+  },
+  "reportBroken": {
+    "message": "Virkar vefsvæðið ekki? Lagaðu það eða láttu okkur vita"
+  },
+  "rep_title": {
+    "message": "Virkar eitthvað ekki á þessu vefsvæði?"
+  },
+  "rep_fix_first": {
+    "message": "Laga núna"
+  },
+  "rep_site": {
+    "message": "Vefsvæði:"
+  },
+  "rep_fix_desc": {
+    "message": "Flest vandamál hverfa með einhverju af þessu. Hvert atriði gildir aðeins fyrir þetta vefsvæði; flipinn endurhleðst."
+  },
+  "rep_fix_cosm": {
+    "message": "Slökkva á felingu eininga hér"
+  },
+  "rep_fix_allow": {
+    "message": "Leyfa auglýsingar á þessu vefsvæði"
+  },
+  "rep_fix_pause": {
+    "message": "Gera hlé alls staðar í 30 mínútur"
+  },
+  "rep_tell_us": {
+    "message": "Láta okkur vita"
+  },
+  "rep_tell_desc": {
+    "message": "Við lögum biluð vefsvæði fyrir alla með undirritaðri síuuppfærslu, yfirleitt innan sólarhrings. Viðbótin sendir ekkert: skýrslan opnast í þínu eigin tölvupóstforriti og þú sérð hvert orð hennar fyrst."
+  },
+  "rep_what": {
+    "message": "Hvað er að? (valfrjálst)"
+  },
+  "rep_what_ph": {
+    "message": "t.d. myndskeiðið fer ekki af stað, hvítur kassi hylur greinina…"
+  },
+  "rep_full_url": {
+    "message": "Hafa alla slóð síðunnar með (annars aðeins heiti vefsvæðisins)"
+  },
+  "rep_preview": {
+    "message": "Það sem verður sent"
+  },
+  "rep_send_mail": {
+    "message": "Senda með tölvupósti"
+  },
+  "rep_copy": {
+    "message": "Afrita skýrslu"
+  },
+  "rep_copied": {
+    "message": "Afritað."
+  },
+  "rep_done_cosm": {
+    "message": "Slökkt er á felingu eininga á þessu vefsvæði. Endurhlaðið — er það komið í lag?"
+  },
+  "rep_done_allow": {
+    "message": "Auglýsingar eru leyfðar á þessu vefsvæði. Endurhlaðið — er það komið í lag?"
+  },
+  "rep_done_pause": {
+    "message": "Í bið í 30 mínútur. Ef vefsvæðið virkar núna, láttu okkur þá vita hér fyrir neðan."
+  },
+  "cookieRejections": {
+    "message": "Vafrakökuborðum hafnað fyrir þig: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts-hillurnar, -flipinn og -tillögurnar á YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Sprettigluggar „Skrá inn með Google“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Reikningsvalið sem birtist í horni margra vefsvæða. Innskráningarhnapparnir virka áfram."
+  },
+  "pickTip": {
+    "message": "Smelltu á einingu til að fela hana"
+  },
+  "pickZapTip": {
+    "message": "Smelltu til að fjarlægja þessa einingu (einu sinni)"
+  },
+  "pickEscCancel": {
+    "message": "til að hætta við"
+  },
+  "opt_notices": {
+    "message": "Leyfi síulistanna"
+  }
+}

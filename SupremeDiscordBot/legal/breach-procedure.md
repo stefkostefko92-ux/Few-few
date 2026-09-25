@@ -142,6 +142,13 @@ Three categories:
    - Email to Customer's designated DPA contact within 48 hours
    - Per DPA Section 7 obligations
 
+4. **Discord notification — Required for any incident involving API Data (Discord Developer Terms §5(c), verified 2026-09-13)**
+   - Discord requires developers to "promptly notify us and provide us with requested information about any incidents of unauthorized access or use of any API Data or any incidents that are reasonably likely to compromise the security, confidentiality, or integrity of your systems"
+   - Channel: Discord Developer Support (https://dis.gd/contact → Developer Support), from the Team owner account; reference the Application ID
+   - Content: what API Data was affected (user IDs, message content, guild data), when, remediation started, contact person
+   - Keep Discord updated during remediation ("keeping us regularly updated") and preserve the correspondence in the breach register
+   - Runs in parallel with the CPDP clock — do not wait for the authority filing
+
 ### Phase 4 — Remediation and Follow-up (48+ hours)
 
 1. **Root cause remediation**

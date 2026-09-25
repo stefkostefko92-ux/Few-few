@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "I-block ang ads kahit saan: YouTube video ad, banner, pop-up, tracker, cookie prompt, anti-adblock wall. Libre, mabilis, pribado."
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "I-on/i-off ang proteksyon"
+  },
+  "protected": {
+    "message": "Protektado"
+  },
+  "paused": {
+    "message": "Naka-pause"
+  },
+  "blockingHere": {
+    "message": "Bina-block ang ads sa page na ito"
+  },
+  "protectionOff": {
+    "message": "Naka-off ang proteksyon"
+  },
+  "pause30": {
+    "message": "I-pause nang 30 minuto"
+  },
+  "pausedResume": {
+    "message": "Naka-pause, ituloy ngayon ($1m pa)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Na-block"
+  },
+  "dataSaved": {
+    "message": "Natipid na data"
+  },
+  "timeSaved": {
+    "message": "Natipid na oras"
+  },
+  "thisSite": {
+    "message": "site na ito"
+  },
+  "thisPage": {
+    "message": "page na ito"
+  },
+  "blockOnSite": {
+    "message": "I-block ang ads sa site na ito"
+  },
+  "blocking": {
+    "message": "Nagba-block"
+  },
+  "allowed": {
+    "message": "Pinayagan"
+  },
+  "cosmetics": {
+    "message": "Itago ang ad box dito"
+  },
+  "cosmeticsTitle": {
+    "message": "Cosmetic filtering sa site na ito (i-off kung masira ang layout)"
+  },
+  "on": {
+    "message": "On"
+  },
+  "off": {
+    "message": "Off"
+  },
+  "blockedHere": {
+    "message": "Na-block sa page na ito"
+  },
+  "logEmpty": {
+    "message": "Wala pang na-block dito."
+  },
+  "logUnavailable": {
+    "message": "Hindi available ang log ngayon (quota ng browser) — subukan ulit pagkalipas ng isang minuto."
+  },
+  "logCore": {
+    "message": "Core rules ng Supreme"
+  },
+  "logYouTube": {
+    "message": "Ad rules ng YouTube"
+  },
+  "logParams": {
+    "message": "Tracking parameters"
+  },
+  "logMalware": {
+    "message": "Malware domains"
+  },
+  "logSurrogates": {
+    "message": "Na-neutralize na ad script"
+  },
+  "logPrivacy": {
+    "message": "Proteksyon sa privacy"
+  },
+  "logUser": {
+    "message": "Aking filters"
+  },
+  "logLive": {
+    "message": "Live na update"
+  },
+  "hideElement": {
+    "message": "Itago ang element"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "promoSub": {
+    "message": "Gamit at tools, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Ad"
+  },
+  "support": {
+    "message": "Suportahan"
+  },
+  "filtersCount": {
+    "message": "$1+ filter",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Hitsura"
+  },
+  "opt_extra_protection": {
+    "message": "Dagdag na proteksyon"
+  },
+  "opt_smart_detection_log": {
+    "message": "Log ng Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Mga site sa allowlist"
+  },
+  "opt_my_filters": {
+    "message": "Aking mga filter"
+  },
+  "opt_hidden_elements": {
+    "message": "Mga nakatagong element"
+  },
+  "opt_filter_updates": {
+    "message": "Mga update ng filter"
+  },
+  "opt_engine_health": {
+    "message": "Kalagayan ng engine"
+  },
+  "opt_backup": {
+    "message": "Backup"
+  },
+  "opt_support_development": {
+    "message": "Suportahan ang development"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "I-sync sa lahat ng device"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Pag-block ng ads sa YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / consent banner"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Paglusot sa anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Mga sponsored post ng Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Alisin ang tracking parameters"
+  },
+  "opt_malware_protection": {
+    "message": "Proteksyon laban sa malware"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "I-block ang mga browser API para sa ad targeting"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "I-block ang tracking beacon at cryptominer"
+  },
+  "opt_auto_update_filters": {
+    "message": "Awtomatikong i-update ang mga filter"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (madilim) o maliwanag"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Panatilihing naka-sync ang settings, allowlist at mga filter sa bawat Chrome na pinag-sign in-an ninyo"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Alisin ang mga video ad sa YouTube. I-off kung ayaw mag-play ng mga video."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Awtomatikong isara ang mga prompt na “Tanggapin ang cookies”"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Itago ang mga wall na “i-disable ang inyong adblocker” at ibalik ang page"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Itago ang mga “Sponsored” na post sa Facebook at Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Tanggalin ang utm_*, fbclid, gclid at iba pang click identifier sa mga link na binubuksan ninyo"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "I-block ang mga kilalang malware domain (URLhaus list ng abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "I-disable ang mga ad API na Google Topics, FLoC at Protected Audience sa bawat site"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Pigilan ang third-party na hyperlink-auditing / beacon ping, tanggalin ang tracking cookies mula sa mga response ng kilalang ad-tech, at i-block ang mga cryptomining script sa browser. I-off kung may feature ng site na umaasa sa analytics na hindi gumagana nang tama."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Kumukuha ng mga bagong block rule at ayos para sa YouTube mula sa adblock.carbonstealth.eu mga dalawang beses sa isang araw. Data lang, walang code; walang dalang identifier o browsing data ang request."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Live na log ng mga ad na nahuli sa heuristic na paraan (walang filter list), pinakabago ang nasa itaas."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Kinukuha bilang text (hindi kailanman code) ang mga naka-subscribe na list, ina-update araw-araw, at nakalagay sa mga pinamamahalaang block sa itaas. Alisin ang isang list para tanggalin ang mga rule nito."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Mga element na manu-mano ninyong itinago gamit ang picker, naka-grupo ayon sa site."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Live na diagnostics — lokal na kinakalkula ang lahat. Kung may pula, kadalasang naaayos ito ng “I-update ngayon” o ng pag-reload ng extension."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Libre ang Supreme AdBlock para sa lahat. Kung gusto ninyong tumulong para patuloy itong mapanatili, malugod naming tinatanggap ang donasyon, pero hindi kailanman kinakailangan."
+  },
+  "opt_reset_statistics": {
+    "message": "I-reset ang statistics"
+  },
+  "opt_add": {
+    "message": "Idagdag"
+  },
+  "opt_save_filters": {
+    "message": "I-save ang mga filter"
+  },
+  "opt_subscribe": {
+    "message": "Mag-subscribe"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "I-refresh ang mga subscription ngayon"
+  },
+  "opt_update_now": {
+    "message": "I-update ngayon"
+  },
+  "opt_refresh": {
+    "message": "I-refresh"
+  },
+  "opt_export_settings": {
+    "message": "I-export ang settings"
+  },
+  "opt_import_settings": {
+    "message": "I-import ang settings"
+  },
+  "opt_e_g_example_com": {
+    "message": "hal. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Mag-subscribe sa URL ng filter list (hal. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Settings ng Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Settings"
+  },
+  "opt_theme_light": {
+    "message": "Maliwanag"
+  },
+  "opt_badge_unique": {
+    "message": "natatangi"
+  },
+  "opt_smart_desc": {
+    "message": "Nahuhuli ang mga ad na hindi pa alam ng anumang filter list: agad na itinatago ang mga cross-origin frame na kasinlaki ng karaniwang ad slot, walang kailangang rule."
+  },
+  "opt_caught_so_far": {
+    "message": "ang nahuli sa ngayon."
+  },
+  "opt_allow_desc": {
+    "message": "Hindi bina-block ang ads sa mga domain na ito."
+  },
+  "opt_fh_one": {
+    "message": "Isang rule bawat linya."
+  },
+  "opt_fh_blocks": {
+    "message": "ay nagba-block ng domain;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ay nagtatago ng element kahit saan;"
+  },
+  "opt_fh_site": {
+    "message": "ay nagtatago nito sa site na iyon lang."
+  },
+  "opt_fh_comments": {
+    "message": "Ang mga linyang nagsisimula sa"
+  },
+  "opt_fh_comments2": {
+    "message": "ay mga comment."
+  },
+  "opt_donate": {
+    "message": "Mag-donate sa Revolut"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Wala pang nahuli sa heuristic na paraan."
+  },
+  "opt_empty_allow": {
+    "message": "Wala pang site sa allowlist."
+  },
+  "opt_empty_hidden": {
+    "message": "Wala pang manu-manong itinago."
+  },
+  "opt_empty_subs": {
+    "message": "Wala pang naka-subscribe na list."
+  },
+  "opt_no_sw": {
+    "message": "Walang tugon mula sa service worker."
+  },
+  "opt_remove": {
+    "message": "Alisin"
+  },
+  "opt_filter_status": {
+    "message": "Filter set v$1, na-update $2. Data lang, walang ipinapadalang anuman tungkol sa inyo."
+  },
+  "opt_updating": {
+    "message": "Nag-a-update…"
+  },
+  "opt_updated": {
+    "message": "Na-update (v$1, $2 dagdag na rule)"
+  },
+  "opt_update_failed": {
+    "message": "Nabigo ang update ($1)"
+  },
+  "opt_saved": {
+    "message": "Na-save ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 rule"
+  },
+  "opt_updated_ago": {
+    "message": "na-update $1"
+  },
+  "opt_not_fetched": {
+    "message": "hindi pa nakukuha"
+  },
+  "opt_failed_colon": {
+    "message": "nabigo: $1"
+  },
+  "opt_enter_https": {
+    "message": "Maglagay ng valid na https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Kinukuha…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Naka-subscribe: $1 rule ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Nabigo ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Nire-refresh…"
+  },
+  "opt_refreshed": {
+    "message": "Na-refresh ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Hindi valid na settings file."
+  },
+  "opt_no_response": {
+    "message": "walang tugon"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock engine"
+  },
+  "opt_h_rulesets": {
+    "message": "Mga naka-on na static ruleset"
+  },
+  "opt_h_live": {
+    "message": "Mga live filter domain"
+  },
+  "opt_h_last": {
+    "message": "Huling update"
+  },
+  "opt_h_sig": {
+    "message": "Mga signature ng update"
+  },
+  "opt_h_user": {
+    "message": "Aking mga filter / mga rule ng allowlist"
+  },
+  "opt_h_popup": {
+    "message": "Mga built-in na popup-ad host"
+  },
+  "opt_h_yt": {
+    "message": "YouTube bypass"
+  },
+  "opt_reason_frame": {
+    "message": "Cross-origin frame na kasinlaki ng ad"
+  },
+  "opt_reason_sticky": {
+    "message": "Sticky na banner ad"
+  },
+  "logRegional": {
+    "message": "Regional lists"
+  },
+  "logFocus": {
+    "message": "Focus mode"
+  },
+  "opt_filter_lists": {
+    "message": "Mga filter list"
+  },
+  "opt_lists_intro": {
+    "message": "Laging naka-on ang EasyList at EasyPrivacy. Ang mga list sa ibaba ay open-licence list na naka-compile na sa extension, kaya walang dina-download kapag in-on ang isa, maliban sa list na may markang galing sa gumawa nito."
+  },
+  "opt_lists_core": {
+    "message": "Core"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Kusang nag-o-on ang list para sa wika ng inyong browser. Magdagdag ng iba kung madalas kayong magbasa ng mga site sa ibang wika."
+  },
+  "opt_focus_mode": {
+    "message": "Focus mode"
+  },
+  "opt_focus_desc": {
+    "message": "Itago ang mga hindi ad pero nakakaabala pa rin. Naka-off ang lahat dito hangga't hindi ninyo ito ino-on."
+  },
+  "opt_list_ubo": {
+    "message": "Mga filter ng uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Ads, tracker, ayos sa anti-adblock at pagkumpuni ng site mula sa uBlock Origin team."
+  },
+  "opt_list_plowe": {
+    "message": "List ni Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Matagal nang list ng mga ad at tracking server."
+  },
+  "opt_focus_social": {
+    "message": "Mga button at widget ng social media"
+  },
+  "opt_focus_social_desc": {
+    "message": "Mga share button, like box at naka-embed na feed."
+  },
+  "opt_focus_chat": {
+    "message": "Mga chat at support widget"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Ang mga lumulutang na chat bubble sa sulok ng page."
+  },
+  "opt_focus_newsletters": {
+    "message": "Mga pop-up ng newsletter at sign-up"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Mga box at overlay na “Mag-subscribe sa aming newsletter”."
+  },
+  "opt_focus_notifications": {
+    "message": "Mga prompt ng notification"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Mga box na “Payagan ang notifications?” na ipinapakita ng mga site bago magtanong ang browser."
+  },
+  "opt_focus_ai": {
+    "message": "Mga pop-up ng AI assistant"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Mga chatbot bubble at AI suggestion panel na idinagdag sa mga page."
+  },
+  "opt_focus_other": {
+    "message": "Iba pang nakakainis"
+  },
+  "opt_focus_other_desc": {
+    "message": "Mga sticky bar, banner na “buksan sa app” at katulad na kalat."
+  },
+  "opt_badge_lang": {
+    "message": "inyong wika"
+  },
+  "opt_badge_remote": {
+    "message": "mula sa gumawa nito"
+  },
+  "opt_remote_hint": {
+    "message": "Hindi kasama (walang lisensyang ipamahagi ito ulit): dina-download ito ng inyong browser mula sa $1 kapag in-on ninyo."
+  },
+  "opt_downloaded_from": {
+    "message": "Na-download mula sa $1"
+  },
+  "opt_lists_error": {
+    "message": "Tinanggihan ng Chrome ang kombinasyong ito ng mga list ($1). I-off ang ilan."
+  },
+  "opt_badge_recommended": {
+    "message": "inirerekomenda para sa inyong wika"
+  },
+  "reportBroken": {
+    "message": "Sira ang site? Ayusin o sabihin sa amin"
+  },
+  "rep_title": {
+    "message": "May sira ba sa site na ito?"
+  },
+  "rep_fix_first": {
+    "message": "Ayusin ngayon"
+  },
+  "rep_site": {
+    "message": "Site:"
+  },
+  "rep_fix_desc": {
+    "message": "Nawawala ang karamihan ng problema sa isa sa mga ito. Sa site na ito lang nalalapat ang bawat isa; magre-reload ang tab."
+  },
+  "rep_fix_cosm": {
+    "message": "I-off ang pagtatago ng element dito"
+  },
+  "rep_fix_allow": {
+    "message": "Payagan ang ads sa site na ito"
+  },
+  "rep_fix_pause": {
+    "message": "I-pause sa lahat ng site nang 30 minuto"
+  },
+  "rep_tell_us": {
+    "message": "Sabihin sa amin"
+  },
+  "rep_tell_desc": {
+    "message": "Inaayos namin ang mga sirang site para sa lahat sa pamamagitan ng signed filter update, kadalasan sa loob ng isang araw. Walang ipinapadala ang extension: bubukas ang report sa sarili ninyong email app, at makikita muna ninyo ang bawat salita nito."
+  },
+  "rep_what": {
+    "message": "Ano ang problema? (opsyonal)"
+  },
+  "rep_what_ph": {
+    "message": "hal. hindi nagsisimula ang video, may puting box na tumatakip sa artikulo…"
+  },
+  "rep_full_url": {
+    "message": "Isama ang buong address ng page (kung hindi, pangalan lang ng site)"
+  },
+  "rep_preview": {
+    "message": "Ang ipapadala"
+  },
+  "rep_send_mail": {
+    "message": "Ipadala sa email"
+  },
+  "rep_copy": {
+    "message": "Kopyahin ang report"
+  },
+  "rep_copied": {
+    "message": "Nakopya na."
+  },
+  "rep_done_cosm": {
+    "message": "Naka-off na ang pagtatago ng element sa site na ito. Na-reload na — ayos na ba?"
+  },
+  "rep_done_allow": {
+    "message": "Pinapayagan na ang ads sa site na ito. Na-reload na — ayos na ba?"
+  },
+  "rep_done_pause": {
+    "message": "Naka-pause nang 30 minuto. Kung gumagana na ang site, pakisabi sa amin sa ibaba."
+  },
+  "cookieRejections": {
+    "message": "Mga cookie banner na tinanggihan para sa inyo: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Ang mga Shorts shelf, tab at suhestiyon sa YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Mga pop-up na “Mag-sign in gamit ang Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Ang account picker na lumalabas sa sulok ng maraming site. Gumagana pa rin ang mga sign-in button."
+  },
+  "pickTip": {
+    "message": "Mag-click ng element para itago ito"
+  },
+  "pickZapTip": {
+    "message": "Mag-click para alisin ang element na ito (isang beses)"
+  },
+  "pickEscCancel": {
+    "message": "para kanselahin"
+  },
+  "opt_notices": {
+    "message": "Mga lisensya ng mga filter list"
+  }
+}

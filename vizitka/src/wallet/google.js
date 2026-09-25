@@ -27,9 +27,19 @@ function signRs256(header, payload, privateKey) {
 // Стабилен id по profile.id — не се чупи при смяна на слъг.
 const objectId = (id) => `${googleIssuerId()}.${String(id).replace(/[^\w.-]/g, '_')}`;
 
-// Дефиниция на класа (създава се при първото запазване през JWT).
-function genericClass() {
-  return { id: googleClassId(), classTemplateInfo: {} };
+// Дефиниция на класа.
+//
+// `MULTIPLE_HOLDERS` е задължително за нашия модел, не козметика: обектът е ЕДИН на
+// визитка (id по profile.id), а го запазват МНОГО посетители. Документацията на
+// Google не казва какво прави незададената стойност (само „unspecified preference“),
+// а другите стойности пускат по един притежател — тоест вторият човек, запазил
+// картата на Иван, рискува отказ. Полето е само на класа (GenericObject го няма).
+export function genericClass() {
+  return {
+    id: googleClassId(),
+    classTemplateInfo: {},
+    multipleDevicesAndHoldersAllowedStatus: 'MULTIPLE_HOLDERS',
+  };
 }
 
 // Обектът за конкретна визитка.
@@ -52,9 +62,15 @@ function genericObject(profile, base) {
   return {
     id: objectId(profile.id),
     classId: googleClassId(),
-    state: 'ACTIVE',
+    // Скрие ли собственикът визитката, картата се маркира изтекла — иначе
+    // обновяването продължаваше да разнася контактите по вече запазилите я
+    // устройства (Apple пътят го спазва през 404 на update услугата).
+    state: profile.is_public ? 'ACTIVE' : 'EXPIRED',
     hexBackgroundColor: cardBgHex(profile),
-    logo: { sourceUri: { uri: `${base}/logo.png` } },
+    // Квадратно лого: Google го показва изрязано в КРЪГ, а основното ни лого е
+    // 409×211 — в кръг губеше краищата. wallet-logo.png е 660×660 с полета, така че
+    // целият знак влиза в описаната окръжност.
+    logo: { sourceUri: { uri: `${base}/wallet-logo.png` } },
     cardTitle: { defaultValue: { language: 'bg', value: 'Vizitka' } },
     header: { defaultValue: { language: 'bg', value: profile.display_name } },
     ...(profile.headline
@@ -113,6 +129,29 @@ async function getAccessToken() {
   accessToken = j.access_token;
   accessAt = now;
   return accessToken;
+}
+
+// Създава класа ПРЕДВАРИТЕЛНО (или го обновява, ако вече го има). Google иска поне
+// един клас, преди да даде право за публикуване, а JWT-то го създава чак при първото
+// запазване — което в демо режим може да направи само тестов акаунт. Идемпотентно:
+// GET → 404 → POST (създай), иначе PATCH. Не разчитаме на кода за „вече съществува“
+// при POST, защото документацията не го описва.
+export async function ensureGoogleClass() {
+  if (!googleEnabled()) throw new Error('Google Wallet не е конфигуриран (ISSUER_ID/SA_KEY).');
+  const token = await getAccessToken();
+  const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+  const body = JSON.stringify(genericClass());
+  const url = `${API_BASE}/genericClass/${encodeURIComponent(googleClassId())}`;
+  const got = await fetch(url, { headers });
+  if (got.status === 404) {
+    const res = await fetch(`${API_BASE}/genericClass`, { method: 'POST', headers, body });
+    if (!res.ok) throw new Error(`Google: създаването на класа падна (${res.status}).`);
+    return 'created';
+  }
+  if (!got.ok) throw new Error(`Google: четенето на класа падна (${got.status}).`);
+  const res = await fetch(url, { method: 'PATCH', headers, body });
+  if (!res.ok) throw new Error(`Google: обновяването на класа падна (${res.status}).`);
+  return 'updated';
 }
 
 // Обновява вече запазения обект. Ако още не е запазван (404) — тихо пропуска.

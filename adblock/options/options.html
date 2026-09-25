@@ -6,14 +6,14 @@
   <script src="../theme.js"></script>
   <script src="../i18n.js"></script>
   <link rel="stylesheet" href="options.css" />
-  <title>Supreme AdBlock Settings</title>
+  <title data-i18n="opt_page_title">Supreme AdBlock Settings</title>
 </head>
 <body>
   <header>
     <img class="logo" src="../icons/icon48.png" alt="" width="30" height="30" />
     <div>
       <h1>Supreme AdBlock</h1>
-      <span class="tagline">Carbon Stealth Edition · Settings</span>
+      <span class="tagline" data-i18n="opt_tagline">Carbon Stealth Edition · Settings</span>
     </div>
   </header>
 
@@ -21,15 +21,15 @@
     <section class="card stat-grid">
       <div class="stat">
         <div class="stat-num" id="blockedTotal">0</div>
-        <div class="stat-lbl">Ads blocked</div>
+        <div class="stat-lbl" data-i18n="blocked">Ads blocked</div>
       </div>
       <div class="stat">
         <div class="stat-num" id="savedData">0</div>
-        <div class="stat-lbl">Data saved</div>
+        <div class="stat-lbl" data-i18n="dataSaved">Data saved</div>
       </div>
       <div class="stat">
         <div class="stat-num" id="savedTime">0</div>
-        <div class="stat-lbl">Time saved</div>
+        <div class="stat-lbl" data-i18n="timeSaved">Time saved</div>
       </div>
     </section>
     <button id="resetStats" class="btn ghost wide" data-i18n="opt_reset_statistics">Reset statistics</button>
@@ -43,7 +43,7 @@
         </div>
         <select id="theme" class="select">
           <option value="carbon">Carbon Stealth</option>
-          <option value="light">Light</option>
+          <option value="light" data-i18n="opt_theme_light">Light</option>
         </select>
       </label>
       <label class="row">
@@ -59,8 +59,8 @@
       <h2 data-i18n="opt_extra_protection">Extra protection</h2>
       <label class="row">
         <div>
-          <div class="row-title">Smart Detection <span class="badge-new">unique</span></div>
-          <div class="row-sub">Catches ads no filter list knows yet, cross-origin frames sized to standard ad slots are blocked on sight, no rules needed. <b id="smartCount">0</b> caught so far.</div>
+          <div class="row-title">Smart Detection <span class="badge-new" data-i18n="opt_badge_unique">unique</span></div>
+          <div class="row-sub"><span data-i18n="opt_smart_desc">Catches ads no filter list knows yet: cross-origin frames sized like standard ad slots are hidden on sight, no rules needed.</span> <b id="smartCount">0</b> <span data-i18n="opt_caught_so_far">caught so far.</span></div>
         </div>
         <label class="switch"><input type="checkbox" id="featSmart" /><span class="slider"></span></label>
       </label>
@@ -122,6 +122,24 @@
       </label>
     </section>
 
+    <section class="card" id="listsCard">
+      <h2 data-i18n="opt_filter_lists">Filter lists</h2>
+      <p class="row-sub" data-i18n="opt_lists_intro">EasyList and EasyPrivacy are always on. The lists below are open-licence lists compiled into the extension, so turning one on downloads nothing, except a list marked as coming from its author.</p>
+      <div id="listsError" class="lists-error" role="alert" hidden></div>
+      <h3 class="sub-h" data-i18n="opt_lists_core">Core</h3>
+      <div id="listsCore"></div>
+      <h3 class="sub-h" data-i18n="opt_lists_regional">Regional</h3>
+      <p class="row-sub" data-i18n="opt_lists_regional_desc">The list for your browser's language turns on by itself. Add others if you often read sites in other languages.</p>
+      <div id="listsRegional"></div>
+      <p class="row-sub notices"><a href="../THIRD_PARTY_NOTICES.txt" target="_blank" rel="noopener" data-i18n="opt_notices">Licences of the filter lists</a></p>
+    </section>
+
+    <section class="card" id="focusCard">
+      <h2 data-i18n="opt_focus_mode">Focus mode</h2>
+      <p class="row-sub" data-i18n="opt_focus_desc">Hide what is not an ad but still gets in the way. Everything here is off until you turn it on.</p>
+      <div id="listsFocus"></div>
+    </section>
+
     <section class="card">
       <h2 data-i18n="opt_smart_detection_log">Smart Detection log</h2>
       <p class="row-sub" data-i18n="opt_live_log_of_ads_caught_heuristically_no_">Live log of ads caught heuristically (no filter list), newest first.</p>
@@ -130,7 +148,7 @@
 
     <section class="card">
       <h2 data-i18n="opt_allowlisted_sites">Allowlisted sites</h2>
-      <p class="row-sub">Ads are <b>not</b> blocked on these domains.</p>
+      <p class="row-sub" data-i18n="opt_allow_desc">Ads are not blocked on these domains.</p>
       <div class="add-row">
         <input type="text" id="allowInput" placeholder="e.g. example.com" data-i18n-placeholder="opt_e_g_example_com" />
         <button id="allowAdd" class="btn" data-i18n="opt_add">Add</button>
@@ -141,10 +159,10 @@
     <section class="card">
       <h2 data-i18n="opt_my_filters">My filters</h2>
       <p class="row-sub">
-        One rule per line. <code>domain.com</code> blocks a domain;
-        <code>##.selector</code> hides an element everywhere;
-        <code>site.com##.selector</code> hides it only on that site.
-        Lines starting with <code>!</code> are comments.
+        <span data-i18n="opt_fh_one">One rule per line.</span> <code>domain.com</code> <span data-i18n="opt_fh_blocks">blocks a domain;</span>
+        <code>##.selector</code> <span data-i18n="opt_fh_everywhere">hides an element everywhere;</span>
+        <code>site.com##.selector</code> <span data-i18n="opt_fh_site">hides it only on that site.</span>
+        <span data-i18n="opt_fh_comments">Lines starting with</span> <code>!</code> <span data-i18n="opt_fh_comments2">are comments.</span>
       </p>
       <textarea id="userFilters" class="editor" spellcheck="false"
         placeholder="! example&#10;ads.example.com&#10;##.sticky-ad&#10;news.com##.promoted" data-i18n-placeholder="opt_example_10_ads_example_com_10_sticky_ad_"></textarea>
@@ -171,7 +189,7 @@
       <label class="row">
         <div>
           <div class="row-title" data-i18n="opt_auto_update_filters">Auto-update filters</div>
-          <div class="row-sub" id="updateStatus" data-i18n="opt_fetches_new_block_rules_and_youtube_fixe">Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent.</div>
+          <div class="row-sub" id="updateStatus" data-i18n="opt_fetches_new_block_rules_and_youtube_fixe">Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu about twice a day. Data only, no code; the request carries no identifiers or browsing data.</div>
         </div>
         <label class="switch"><input type="checkbox" id="autoUpdate" /><span class="slider"></span></label>
       </label>
@@ -198,7 +216,7 @@
     <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
       <div class="promo-text">
         <strong>Carbon Stealth</strong>
-        <span>Discover our gear and tools, carbonstealth.eu</span>
+        <span data-i18n="promoSub">Gear &amp; tools, carbonstealth.eu</span>
       </div>
       <span class="promo-go">→</span>
     </a>
@@ -206,11 +224,11 @@
     <section class="card donate">
       <h2 data-i18n="opt_support_development">Support development</h2>
       <p class="row-sub" data-i18n="opt_supreme_adblock_is_free_for_everyone_if_">Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
-      <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 Donate via Revolut</a>
+      <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 <span data-i18n="opt_donate">Donate via Revolut</span></a>
     </section>
   </main>
 
-  <footer>Supreme AdBlock v5.0.0 · made by Carbon Stealth</footer>
+  <footer>Supreme AdBlock v<span id="extVersion"></span> · <span data-i18n="opt_made_by">made by Carbon Stealth</span></footer>
 
   <script src="options.js"></script>
 </body>

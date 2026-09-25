@@ -451,3 +451,13 @@ test('смяната на парола е под sudo, само при запи�
   assert.equal(needsSudo('/api/auth/password', {}), false, 'няма GET, но правилото е „при запис“');
   assert.ok(PEER_DENY.some((rx) => rx.test('/api/auth/password')), 'съседът никога не сменя паролата на собственика');
 });
+
+test('SSH: „without-password“ е същото като „prohibit-password“', async () => {
+  const { sshFindings } = await import('../src/posture.js');
+  // Реален изход от `sshd -T` на Ubuntu 24.04. Старият правопис не се
+  // разпознаваше → нито предупреждение, нито „наред“ — а мълчанието се чете
+  // като одобрение.
+  const f = sshFindings('permitrootlogin without-password\n');
+  assert.equal(f.find((x) => x.id === 'ssh-root-key')?.ok, true);
+  assert.equal(f.some((x) => x.id === 'ssh-root'), false);
+});

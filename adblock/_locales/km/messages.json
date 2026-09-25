@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មវីដេអូ YouTube បដា ផ្ទាំងលោត កម្មវិធីតាមដាន និងផ្ទាំងខូគី។ ឥតគិតថ្លៃ រហ័ស និងឯកជន។"
+  },
+  "byCarbon": {
+    "message": "ដោយ Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "បើក/បិទការការពារ"
+  },
+  "protected": {
+    "message": "បានការពារ"
+  },
+  "paused": {
+    "message": "បានផ្អាក"
+  },
+  "blockingHere": {
+    "message": "កំពុងទប់ស្កាត់ពាណិជ្ជកម្មនៅទំព័រនេះ"
+  },
+  "protectionOff": {
+    "message": "ការការពារត្រូវបានបិទ"
+  },
+  "pause30": {
+    "message": "ផ្អាក 30 នាទី"
+  },
+  "pausedResume": {
+    "message": "បានផ្អាក បន្តឥឡូវនេះ (នៅសល់ $1 នាទី)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "បានទប់ស្កាត់"
+  },
+  "dataSaved": {
+    "message": "ទិន្នន័យបានសន្សំ"
+  },
+  "timeSaved": {
+    "message": "ពេលវេលាបានសន្សំ"
+  },
+  "thisSite": {
+    "message": "គេហទំព័រនេះ"
+  },
+  "thisPage": {
+    "message": "ទំព័រនេះ"
+  },
+  "blockOnSite": {
+    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មនៅគេហទំព័រនេះ"
+  },
+  "blocking": {
+    "message": "កំពុងទប់ស្កាត់"
+  },
+  "allowed": {
+    "message": "បានអនុញ្ញាត"
+  },
+  "cosmetics": {
+    "message": "លាក់ប្រអប់ពាណិជ្ជកម្ម"
+  },
+  "cosmeticsTitle": {
+    "message": "ការត្រងលាក់ធាតុនៅគេហទំព័រនេះ (បិទវា ប្រសិនបើប្លង់ខូច)"
+  },
+  "on": {
+    "message": "បើក"
+  },
+  "off": {
+    "message": "បិទ"
+  },
+  "blockedHere": {
+    "message": "បានទប់ស្កាត់នៅទំព័រនេះ"
+  },
+  "logEmpty": {
+    "message": "មិនទាន់មានអ្វីត្រូវបានទប់ស្កាត់នៅទីនេះនៅឡើយទេ។"
+  },
+  "logUnavailable": {
+    "message": "កំណត់ហេតុមិនអាចប្រើបានឥឡូវនេះ (កូតាកម្មវិធីរុករក) — សូមព្យាយាមម្ដងទៀតក្នុងរយៈពេលមួយនាទី។"
+  },
+  "logCore": {
+    "message": "ច្បាប់ស្នូល Supreme"
+  },
+  "logYouTube": {
+    "message": "ច្បាប់ពាណិជ្ជកម្ម YouTube"
+  },
+  "logParams": {
+    "message": "ប៉ារ៉ាម៉ែត្រតាមដាន"
+  },
+  "logMalware": {
+    "message": "ដែនមេរោគ"
+  },
+  "logSurrogates": {
+    "message": "ស្គ្រីបពាណិជ្ជកម្មដែលបានបន្សាប"
+  },
+  "logPrivacy": {
+    "message": "ការការពារឯកជនភាព"
+  },
+  "logUser": {
+    "message": "តម្រងរបស់ខ្ញុំ"
+  },
+  "logLive": {
+    "message": "បច្ចុប្បន្នភាពផ្ទាល់"
+  },
+  "hideElement": {
+    "message": "លាក់ធាតុ"
+  },
+  "settings": {
+    "message": "ការកំណត់"
+  },
+  "promoSub": {
+    "message": "ឧបករណ៍ និងគ្រឿងប្រើប្រាស់, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "ពាណិជ្ជកម្ម"
+  },
+  "support": {
+    "message": "គាំទ្រ"
+  },
+  "filtersCount": {
+    "message": "តម្រង $1+",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "រូបរាង"
+  },
+  "opt_extra_protection": {
+    "message": "ការការពារបន្ថែម"
+  },
+  "opt_smart_detection_log": {
+    "message": "កំណត់ហេតុ Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "គេហទំព័រក្នុងបញ្ជីអនុញ្ញាត"
+  },
+  "opt_my_filters": {
+    "message": "តម្រងរបស់ខ្ញុំ"
+  },
+  "opt_hidden_elements": {
+    "message": "ធាតុដែលបានលាក់"
+  },
+  "opt_filter_updates": {
+    "message": "បច្ចុប្បន្នភាពតម្រង"
+  },
+  "opt_engine_health": {
+    "message": "ស្ថានភាពម៉ាស៊ីន"
+  },
+  "opt_backup": {
+    "message": "ការបម្រុងទុក"
+  },
+  "opt_support_development": {
+    "message": "គាំទ្រការអភិវឌ្ឍ"
+  },
+  "opt_theme": {
+    "message": "រចនាប័ទ្ម"
+  },
+  "opt_sync_across_devices": {
+    "message": "ធ្វើសមកាលកម្មលើឧបករណ៍ទាំងអស់"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "ការទប់ស្កាត់ពាណិជ្ជកម្ម YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "បដាខូគី / ការយល់ព្រម"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "ការជៀសវាងប្រព័ន្ធប្រឆាំងការទប់ស្កាត់ពាណិជ្ជកម្ម"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "ការបង្ហោះដែលបានឧបត្ថម្ភរបស់ Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "លុបប៉ារ៉ាម៉ែត្រតាមដាន"
+  },
+  "opt_malware_protection": {
+    "message": "ការការពារមេរោគ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "ទប់ស្កាត់ API កម្មវិធីរុករកសម្រាប់ការកំណត់គោលដៅពាណិជ្ជកម្ម"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ទប់ស្កាត់សញ្ញាតាមដាន និងកម្មវិធីជីកគ្រីបតូ"
+  },
+  "opt_auto_update_filters": {
+    "message": "ធ្វើបច្ចុប្បន្នភាពតម្រងដោយស្វ័យប្រវត្តិ"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (ងងឹត) ឬភ្លឺ"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "រក្សាការកំណត់ បញ្ជីអនុញ្ញាត និងតម្រងឱ្យសមកាលកម្មនៅគ្រប់ Chrome ដែលអ្នកបានចូលគណនី"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "លុបពាណិជ្ជកម្មវីដេអូនៅលើ YouTube។ សូមបិទ ប្រសិនបើវីដេអូមិនចាក់។"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "បិទផ្ទាំង «ទទួលយកខូគី» ដោយស្វ័យប្រវត្តិ"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "លាក់ជញ្ជាំង «បិទកម្មវិធីទប់ស្កាត់ពាណិជ្ជកម្មរបស់អ្នក» ហើយស្ដារទំព័រឡើងវិញ"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "លាក់ការបង្ហោះ «បានឧបត្ថម្ភ» នៅលើ Facebook និង Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "ដក utm_*, fbclid, gclid និងលេខសម្គាល់ការចុចផ្សេងទៀតចេញពីតំណដែលអ្នកបើក"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "ទប់ស្កាត់ដែនមេរោគដែលគេស្គាល់ (បញ្ជី URLhaus ដោយ abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "បិទ API ពាណិជ្ជកម្ម Google Topics, FLoC និង Protected Audience នៅគ្រប់គេហទំព័រ"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "បញ្ឈប់សញ្ញាសវនកម្មតំណ / សញ្ញាតាមដានពីភាគីទីបី ដកខូគីតាមដានចេញពីការឆ្លើយតបរបស់ប្រព័ន្ធពាណិជ្ជកម្មដែលគេស្គាល់ និងទប់ស្កាត់ស្គ្រីបជីកគ្រីបតូក្នុងកម្មវិធីរុករក។ សូមបិទ ប្រសិនបើមុខងាររបស់គេហទំព័រដែលពឹងលើការវិភាគដំណើរការមិនប្រក្រតី។"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "ទាញយកច្បាប់ទប់ស្កាត់ថ្មី និងការជួសជុលសម្រាប់ YouTube ពី adblock.carbonstealth.eu ប្រហែលពីរដងក្នុងមួយថ្ងៃ។ ទិន្នន័យតែប៉ុណ្ណោះ គ្មានកូដ។ សំណើមិនមានលេខសម្គាល់ ឬទិន្នន័យរុករកណាមួយឡើយ។"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "កំណត់ហេតុផ្ទាល់នៃពាណិជ្ជកម្មដែលចាប់បានតាមវិធីហ៊ឺរីស្ទិក (គ្មានបញ្ជីតម្រង) ថ្មីបំផុតនៅខាងលើ។"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "បញ្ជីដែលបានជាវត្រូវបានទាញយកជាអត្ថបទ (មិនដែលជាកូដ) ធ្វើបច្ចុប្បន្នភាពរៀងរាល់ថ្ងៃ ហើយស្ថិតនៅក្នុងប្លុកដែលគ្រប់គ្រងខាងលើ។ លុបបញ្ជីណាមួយ ដើម្បីដកច្បាប់របស់វាចេញ។"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "ធាតុដែលអ្នកបានលាក់ដោយដៃជាមួយឧបករណ៍ជ្រើសរើស ដាក់ជាក្រុមតាមគេហទំព័រ។"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "ការវិនិច្ឆ័យផ្ទាល់ — អ្វីៗទាំងអស់ត្រូវបានគណនាក្នុងឧបករណ៍របស់អ្នក។ ប្រសិនបើមានអ្វីមួយជាពណ៌ក្រហម ការចុច «ធ្វើបច្ចុប្បន្នភាពឥឡូវ» ឬការផ្ទុកកម្មវិធីបន្ថែមឡើងវិញ ជាធម្មតាអាចដោះស្រាយបាន។"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ឥតគិតថ្លៃសម្រាប់មនុស្សគ្រប់គ្នា។ ប្រសិនបើអ្នកចង់ជួយថែទាំវា ការបរិច្ចាគត្រូវបានស្វាគមន៍ ប៉ុន្តែមិនដែលជាកាតព្វកិច្ចឡើយ។"
+  },
+  "opt_reset_statistics": {
+    "message": "កំណត់ស្ថិតិឡើងវិញ"
+  },
+  "opt_add": {
+    "message": "បន្ថែម"
+  },
+  "opt_save_filters": {
+    "message": "រក្សាទុកតម្រង"
+  },
+  "opt_subscribe": {
+    "message": "ជាវ"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "ផ្ទុកការជាវឡើងវិញឥឡូវ"
+  },
+  "opt_update_now": {
+    "message": "ធ្វើបច្ចុប្បន្នភាពឥឡូវ"
+  },
+  "opt_refresh": {
+    "message": "ផ្ទុកឡើងវិញ"
+  },
+  "opt_export_settings": {
+    "message": "នាំចេញការកំណត់"
+  },
+  "opt_import_settings": {
+    "message": "នាំចូលការកំណត់"
+  },
+  "opt_e_g_example_com": {
+    "message": "ឧ. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! ឧទាហរណ៍\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ជាវបញ្ជីតម្រងតាម URL (ឧ. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "ការកំណត់ Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · ការកំណត់"
+  },
+  "opt_theme_light": {
+    "message": "ភ្លឺ"
+  },
+  "opt_badge_unique": {
+    "message": "តែមួយគត់"
+  },
+  "opt_smart_desc": {
+    "message": "ចាប់ពាណិជ្ជកម្មដែលមិនទាន់មានបញ្ជីតម្រងណាស្គាល់៖ ស៊ុមពីប្រភពផ្សេងដែលមានទំហំដូចកន្លែងពាណិជ្ជកម្មស្តង់ដារ ត្រូវបានលាក់ភ្លាមៗ ដោយមិនត្រូវការច្បាប់។"
+  },
+  "opt_caught_so_far": {
+    "message": "ដែលចាប់បានរហូតមកដល់ពេលនេះ។"
+  },
+  "opt_allow_desc": {
+    "message": "ពាណិជ្ជកម្មមិនត្រូវបានទប់ស្កាត់នៅលើដែនទាំងនេះទេ។"
+  },
+  "opt_fh_one": {
+    "message": "ច្បាប់មួយក្នុងមួយបន្ទាត់។"
+  },
+  "opt_fh_blocks": {
+    "message": "ទប់ស្កាត់ដែនមួយ;"
+  },
+  "opt_fh_everywhere": {
+    "message": "លាក់ធាតុនៅគ្រប់ទីកន្លែង;"
+  },
+  "opt_fh_site": {
+    "message": "លាក់វាតែនៅគេហទំព័រនោះប៉ុណ្ណោះ។"
+  },
+  "opt_fh_comments": {
+    "message": "បន្ទាត់ដែលចាប់ផ្ដើមដោយ"
+  },
+  "opt_fh_comments2": {
+    "message": "គឺជាមតិយោបល់។"
+  },
+  "opt_donate": {
+    "message": "បរិច្ចាគតាម Revolut"
+  },
+  "opt_made_by": {
+    "message": "បង្កើតដោយ Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "មិនទាន់មានអ្វីចាប់បានតាមវិធីហ៊ឺរីស្ទិកនៅឡើយទេ។"
+  },
+  "opt_empty_allow": {
+    "message": "មិនទាន់មានគេហទំព័រក្នុងបញ្ជីអនុញ្ញាតនៅឡើយទេ។"
+  },
+  "opt_empty_hidden": {
+    "message": "មិនទាន់មានអ្វីត្រូវបានលាក់ដោយដៃនៅឡើយទេ។"
+  },
+  "opt_empty_subs": {
+    "message": "មិនទាន់មានបញ្ជីដែលបានជាវនៅឡើយទេ។"
+  },
+  "opt_no_sw": {
+    "message": "គ្មានការឆ្លើយតបពី service worker ទេ។"
+  },
+  "opt_remove": {
+    "message": "លុប"
+  },
+  "opt_filter_status": {
+    "message": "សំណុំតម្រង v$1 បានធ្វើបច្ចុប្បន្នភាព $2។ ទិន្នន័យតែប៉ុណ្ណោះ គ្មានអ្វីអំពីអ្នកត្រូវបានផ្ញើទេ។"
+  },
+  "opt_updating": {
+    "message": "កំពុងធ្វើបច្ចុប្បន្នភាព…"
+  },
+  "opt_updated": {
+    "message": "បានធ្វើបច្ចុប្បន្នភាព (v$1, ច្បាប់បន្ថែម $2)"
+  },
+  "opt_update_failed": {
+    "message": "ការធ្វើបច្ចុប្បន្នភាពបរាជ័យ ($1)"
+  },
+  "opt_saved": {
+    "message": "បានរក្សាទុក ✓"
+  },
+  "opt_rules_count": {
+    "message": "ច្បាប់ $1"
+  },
+  "opt_updated_ago": {
+    "message": "បានធ្វើបច្ចុប្បន្នភាព $1"
+  },
+  "opt_not_fetched": {
+    "message": "មិនទាន់បានទាញយក"
+  },
+  "opt_failed_colon": {
+    "message": "បរាជ័យ៖ $1"
+  },
+  "opt_enter_https": {
+    "message": "សូមបញ្ចូល URL https:// ដែលត្រឹមត្រូវ"
+  },
+  "opt_fetching": {
+    "message": "កំពុងទាញយក…"
+  },
+  "opt_subscribed_ok": {
+    "message": "បានជាវ៖ ច្បាប់ $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "បរាជ័យ ($1)"
+  },
+  "opt_refreshing": {
+    "message": "កំពុងផ្ទុកឡើងវិញ…"
+  },
+  "opt_refreshed": {
+    "message": "បានផ្ទុកឡើងវិញ ✓"
+  },
+  "opt_invalid_file": {
+    "message": "ឯកសារការកំណត់មិនត្រឹមត្រូវ។"
+  },
+  "opt_no_response": {
+    "message": "គ្មានការឆ្លើយតប"
+  },
+  "opt_h_engine": {
+    "message": "ម៉ាស៊ីនជៀសវាងប្រព័ន្ធប្រឆាំងការទប់ស្កាត់"
+  },
+  "opt_h_rulesets": {
+    "message": "សំណុំច្បាប់ថេរដែលបានបើក"
+  },
+  "opt_h_live": {
+    "message": "ដែនតម្រងផ្ទាល់"
+  },
+  "opt_h_last": {
+    "message": "បច្ចុប្បន្នភាពចុងក្រោយ"
+  },
+  "opt_h_sig": {
+    "message": "ហត្ថលេខាបច្ចុប្បន្នភាព"
+  },
+  "opt_h_user": {
+    "message": "តម្រងរបស់ខ្ញុំ / ច្បាប់បញ្ជីអនុញ្ញាត"
+  },
+  "opt_h_popup": {
+    "message": "ម៉ាស៊ីនមេពាណិជ្ជកម្មផ្ទាំងលោតដែលភ្ជាប់មកស្រាប់"
+  },
+  "opt_h_yt": {
+    "message": "ការជៀសវាង YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "ស៊ុមពីប្រភពផ្សេងដែលមានទំហំពាណិជ្ជកម្ម"
+  },
+  "opt_reason_sticky": {
+    "message": "បដាពាណិជ្ជកម្មជាប់អេក្រង់"
+  },
+  "logRegional": {
+    "message": "បញ្ជីតាមតំបន់"
+  },
+  "logFocus": {
+    "message": "របៀបផ្ដោតអារម្មណ៍"
+  },
+  "opt_filter_lists": {
+    "message": "បញ្ជីតម្រង"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList និង EasyPrivacy តែងតែបើក។ បញ្ជីខាងក្រោមជាបញ្ជីអាជ្ញាបណ្ណបើកចំហដែលបានបញ្ចូលក្នុងកម្មវិធីបន្ថែមរួចហើយ ដូច្នេះការបើកបញ្ជីណាមួយមិនទាញយកអ្វីទេ លើកលែងតែបញ្ជីដែលសម្គាល់ថាមកពីអ្នកនិពន្ធរបស់វា។"
+  },
+  "opt_lists_core": {
+    "message": "ស្នូល"
+  },
+  "opt_lists_regional": {
+    "message": "តាមតំបន់"
+  },
+  "opt_lists_regional_desc": {
+    "message": "បញ្ជីសម្រាប់ភាសានៃកម្មវិធីរុករករបស់អ្នកបើកដោយស្វ័យប្រវត្តិ។ សូមបន្ថែមបញ្ជីផ្សេងទៀត ប្រសិនបើអ្នកតែងអានគេហទំព័រជាភាសាផ្សេង។"
+  },
+  "opt_focus_mode": {
+    "message": "របៀបផ្ដោតអារម្មណ៍"
+  },
+  "opt_focus_desc": {
+    "message": "លាក់អ្វីដែលមិនមែនជាពាណិជ្ជកម្ម ប៉ុន្តែនៅតែរំខាន។ អ្វីៗនៅទីនេះបិទ រហូតដល់អ្នកបើកវា។"
+  },
+  "opt_list_ubo": {
+    "message": "តម្រង uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "ពាណិជ្ជកម្ម កម្មវិធីតាមដាន ការជួសជុលសម្រាប់ប្រព័ន្ធប្រឆាំងការទប់ស្កាត់ និងការជួសជុលគេហទំព័រ ពីក្រុម uBlock Origin។"
+  },
+  "opt_list_plowe": {
+    "message": "បញ្ជីរបស់ Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "បញ្ជីម៉ាស៊ីនមេពាណិជ្ជកម្ម និងតាមដានដែលមានតាំងពីយូរមកហើយ។"
+  },
+  "opt_focus_social": {
+    "message": "ប៊ូតុង និងវិដ្ជែតបណ្ដាញសង្គម"
+  },
+  "opt_focus_social_desc": {
+    "message": "ប៊ូតុងចែករំលែក ប្រអប់ចូលចិត្ត និងផ្ទាំងព័ត៌មានដែលបានបង្កប់។"
+  },
+  "opt_focus_chat": {
+    "message": "វិដ្ជែតជជែក និងជំនួយ"
+  },
+  "opt_focus_chat_desc": {
+    "message": "ពពុះជជែកអណ្ដែតនៅជ្រុងទំព័រ។"
+  },
+  "opt_focus_newsletters": {
+    "message": "ផ្ទាំងលោតព្រឹត្តិប័ត្រព័ត៌មាន និងការចុះឈ្មោះ"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "ប្រអប់ និងផ្ទាំងគ្រប «ជាវព្រឹត្តិប័ត្រព័ត៌មានរបស់យើង»។"
+  },
+  "opt_focus_notifications": {
+    "message": "សំណើការជូនដំណឹង"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "ប្រអប់ «អនុញ្ញាតការជូនដំណឹង?» ដែលគេហទំព័របង្ហាញ មុនពេលកម្មវិធីរុករកសួរ។"
+  },
+  "opt_focus_ai": {
+    "message": "ផ្ទាំងលោតជំនួយការ AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "ពពុះបូតជជែក និងផ្ទាំងការណែនាំ AI ដែលបានបន្ថែមទៅទំព័រ។"
+  },
+  "opt_focus_other": {
+    "message": "ការរំខានផ្សេងៗ"
+  },
+  "opt_focus_other_desc": {
+    "message": "របារជាប់អេក្រង់ បដា «បើកក្នុងកម្មវិធី» និងភាពរញ៉េរញ៉ៃស្រដៀងគ្នា។"
+  },
+  "opt_badge_lang": {
+    "message": "ភាសារបស់អ្នក"
+  },
+  "opt_badge_remote": {
+    "message": "ពីអ្នកនិពន្ធ"
+  },
+  "opt_remote_hint": {
+    "message": "មិនបានភ្ជាប់មកជាមួយ (គ្មានអាជ្ញាបណ្ណចែកចាយបន្ត)៖ កម្មវិធីរុករករបស់អ្នកទាញយកវាពី $1 នៅពេលអ្នកបើកវា។"
+  },
+  "opt_downloaded_from": {
+    "message": "ទាញយកពី $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome បានបដិសេធបន្សំបញ្ជីនេះ ($1)។ សូមបិទខ្លះ។"
+  },
+  "opt_badge_recommended": {
+    "message": "ណែនាំសម្រាប់ភាសារបស់អ្នក"
+  },
+  "reportBroken": {
+    "message": "គេហទំព័រខូច? ជួសជុលវា ឬប្រាប់យើង"
+  },
+  "rep_title": {
+    "message": "មានអ្វីខូចនៅលើគេហទំព័រនេះឬ?"
+  },
+  "rep_fix_first": {
+    "message": "ជួសជុលឥឡូវនេះ"
+  },
+  "rep_site": {
+    "message": "គេហទំព័រ៖"
+  },
+  "rep_fix_desc": {
+    "message": "បញ្ហាភាគច្រើនបាត់ទៅដោយជម្រើសមួយក្នុងចំណោមទាំងនេះ។ ជម្រើសនីមួយៗអនុវត្តតែលើគេហទំព័រនេះប៉ុណ្ណោះ ហើយផ្ទាំងនឹងផ្ទុកឡើងវិញ។"
+  },
+  "rep_fix_cosm": {
+    "message": "បិទការលាក់ធាតុនៅទីនេះ"
+  },
+  "rep_fix_allow": {
+    "message": "អនុញ្ញាតពាណិជ្ជកម្មនៅគេហទំព័រនេះ"
+  },
+  "rep_fix_pause": {
+    "message": "ផ្អាកគ្រប់ទីកន្លែងរយៈពេល 30 នាទី"
+  },
+  "rep_tell_us": {
+    "message": "ប្រាប់យើង"
+  },
+  "rep_tell_desc": {
+    "message": "យើងជួសជុលគេហទំព័រដែលខូចសម្រាប់អ្នកទាំងអស់គ្នា តាមរយៈបច្ចុប្បន្នភាពតម្រងដែលមានហត្ថលេខា ជាធម្មតាក្នុងរយៈពេលមួយថ្ងៃ។ កម្មវិធីបន្ថែមមិនផ្ញើអ្វីទេ៖ របាយការណ៍បើកក្នុងកម្មវិធីអ៊ីមែលផ្ទាល់ខ្លួនរបស់អ្នក ហើយអ្នកឃើញគ្រប់ពាក្យជាមុនសិន។"
+  },
+  "rep_what": {
+    "message": "មានបញ្ហាអ្វី? (ស្រេចចិត្ត)"
+  },
+  "rep_what_ph": {
+    "message": "ឧ. វីដេអូមិនចាប់ផ្ដើម ប្រអប់ពណ៌សបាំងអត្ថបទ…"
+  },
+  "rep_full_url": {
+    "message": "បញ្ចូលអាសយដ្ឋានពេញរបស់ទំព័រ (បើមិនដូច្នោះទេ មានតែឈ្មោះគេហទំព័រ)"
+  },
+  "rep_preview": {
+    "message": "អ្វីដែលនឹងត្រូវផ្ញើ"
+  },
+  "rep_send_mail": {
+    "message": "ផ្ញើតាមអ៊ីមែល"
+  },
+  "rep_copy": {
+    "message": "ចម្លងរបាយការណ៍"
+  },
+  "rep_copied": {
+    "message": "បានចម្លង។"
+  },
+  "rep_done_cosm": {
+    "message": "ការលាក់ធាតុត្រូវបានបិទនៅគេហទំព័រនេះ។ បានផ្ទុកឡើងវិញ — តើបានជួសជុលហើយឬនៅ?"
+  },
+  "rep_done_allow": {
+    "message": "ពាណិជ្ជកម្មត្រូវបានអនុញ្ញាតនៅគេហទំព័រនេះ។ បានផ្ទុកឡើងវិញ — តើបានជួសជុលហើយឬនៅ?"
+  },
+  "rep_done_pause": {
+    "message": "បានផ្អាក 30 នាទី។ ប្រសិនបើគេហទំព័រដំណើរការឥឡូវនេះ សូមប្រាប់យើងខាងក្រោម។"
+  },
+  "cookieRejections": {
+    "message": "បដាខូគីដែលបានបដិសេធជំនួសអ្នក៖ $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "ធ្នើ ផ្ទាំង និងការណែនាំ Shorts នៅលើ YouTube។"
+  },
+  "opt_focus_onetap": {
+    "message": "ផ្ទាំងលោត «ចូលគណនីដោយប្រើ Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "ផ្ទាំងជ្រើសរើសគណនីដែលលេចឡើងនៅជ្រុងនៃគេហទំព័រជាច្រើន។ ប៊ូតុងចូលគណនីនៅតែដំណើរការធម្មតា។"
+  },
+  "pickTip": {
+    "message": "ចុចលើធាតុណាមួយ ដើម្បីលាក់វា"
+  },
+  "pickZapTip": {
+    "message": "ចុច ដើម្បីលុបធាតុនេះ (ម្ដង)"
+  },
+  "pickEscCancel": {
+    "message": "ដើម្បីបោះបង់"
+  },
+  "opt_notices": {
+    "message": "អាជ្ញាបណ្ណនៃបញ្ជីតម្រង"
+  }
+}
