@@ -285,7 +285,7 @@ export default function Home(p) {
                 <img className={"h-screen" + (swap ? " swap" : "")} src={shot(pr.slug)} srcSet={shot(pr.slug, 480) + " 480w, " + shot(pr.slug) + " 960w"}
                   sizes="(max-width:900px) 92vw, 680px" width={960} height={600} alt={pr.name + ": " + pr.d[lang]} fetchpriority="high" decoding="async" />
               </a>
-              <figcaption><span><b>{pr.name}</b>, {pr.d[lang].charAt(0).toLowerCase() + pr.d[lang].slice(1)}</span><span>{pr.host}</span></figcaption>
+              <figcaption><span><b>{pr.name}</b>, {lang === "en" ? pr.d.en : pr.d[lang].charAt(0).toLowerCase() + pr.d[lang].slice(1)}</span><span>{pr.host}</span></figcaption>
               <div className="h-thumbs" role="group" aria-label={c.workH}>
                 {PROJECTS.map(function (x, i) {
                   return <button key={x.slug} type="button" aria-pressed={i === cur} aria-label={c.show + ": " + x.name} onClick={function () { pick(i); }}>
