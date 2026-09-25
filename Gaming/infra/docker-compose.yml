@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-aso}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aso}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env (autodeploy.sh го генерира)}
       POSTGRES_DB: ${POSTGRES_DB:-aso}
     volumes:
       - aso_pgdata:/var/lib/postgresql/data
@@ -48,7 +48,7 @@ services:
     environment:
       NODE_ENV: production
       API_PORT: 4500
-      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env (autodeploy.sh го генерира)}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
@@ -83,7 +83,7 @@ services:
       # Error tracking (enabled only when a DSN is set).
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
-      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?задай INTERNAL_API_SECRET в .env (autodeploy.sh го генерира)}
       # Reach the realtime node's in-memory room list (admin live-tables view).
       REALTIME_INTERNAL_URL: ${REALTIME_INTERNAL_URL:-http://realtime:4501}
     ports:
@@ -102,13 +102,13 @@ services:
     environment:
       NODE_ENV: production
       REALTIME_PORT: 4501
-      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env (autodeploy.sh го генерира)}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
       BOT_FALLBACK_SECONDS: ${BOT_FALLBACK_SECONDS:-8}
       API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4500}
-      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?задай INTERNAL_API_SECRET в .env (autodeploy.sh го генерира)}
     ports:
       - "127.0.0.1:${RT_HOST_PORT:-4501}:4501"
 
@@ -124,7 +124,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env (autodeploy.sh го генерира)}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
       REDIS_URL: redis://redis:6379
       SEASON_DAYS: ${SEASON_DAYS:-35}
 
