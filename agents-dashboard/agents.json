@@ -1162,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 407
+        "lessons": 410
       },
       "evolution": [
         {
@@ -1986,9 +1986,20 @@
           "date": "2026-09-25",
           "event": "v26.9 — учене",
           "detail": "Научи: Gaming/game-core: краят на мача при равенство дава победа на място/отбор 0 (`>=`/`?? 0`… (+1 още)"
+        },
+        {
+          "version": "27.2.0",
+          "date": "2026-09-25",
+          "event": "v27.2 — учене",
+          "detail": "Научи: Gaming rummy.ts layoffSplit е алчен (bestMeldSplit без оглед на долагане + grown.find п… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming rummy.ts layoffSplit е алчен (bestMeldSplit без оглед на долагане + grown.find п…\" (+2 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
