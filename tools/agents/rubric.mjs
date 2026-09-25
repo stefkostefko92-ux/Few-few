@@ -13,6 +13,7 @@
 // Скали (1–3): 1=ниско/локално/несигурно, 2=средно, 3=високо/широко/сигурно.
 
 // ── Рубрики (чисти функции; праговете са ФИКСИРАНИ, не „на око") ──
+import { emitJsonNow } from "../lib/emit.mjs";
 export const RUBRICS = {
   // Сигурност/коректност: тежест = exploitability × reach, модулирано от увереност.
   security(f) {
@@ -53,9 +54,9 @@ export function score(kind, factors) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const val = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : undefined; };
-  const run = (factors) => {
+  const run = async (factors) => {
     const kind = factors.kind || val("--kind");
-    try { const out = score(kind, factors); console.log(JSON.stringify(out)); process.exit(0); }
+    try { const out = score(kind, factors); await emitJsonNow(out, 0, 0); }
     catch (e) { console.error(e.message); process.exit(1); }
   };
   if (argv.includes("--stdin")) {

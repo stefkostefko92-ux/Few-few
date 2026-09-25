@@ -13,6 +13,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -91,11 +92,10 @@ const effortDiverging = rows.filter((r) => r.effortDiverges);
 const toSonnet = diverging.filter((r) => r.recommended === "sonnet").length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({
+  await emitJsonNow({
     policy: REASON, rows,
     diverging: diverging.length, effortDiverging: effortDiverging.length, applied: APPLY,
-  }, null, 2));
-  process.exit(0);
+  }, 0);
 }
 
 console.log(`\n🎛  Рутинг на модел + усилие по агент (${rows.length} агента)\n`);

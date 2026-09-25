@@ -1,0 +1,43 @@
+name: gaming
+
+on:
+  push:
+    paths:
+      - 'Gaming/**'
+      - '.github/workflows/gaming.yml'
+  pull_request:
+    paths:
+      - 'Gaming/**'
+      - '.github/workflows/gaming.yml'
+
+concurrency:
+  group: gaming-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: Gaming
+    steps:
+      - uses: actions/checkout@v4
+      # Продуктът декларира pnpm@10 в packageManager и има pnpm-lock.yaml — corepack го уважава.
+      # БЕЗ cache: pnpm — проверено в CI (run 30453590507): setup-node вика `pnpm store path`
+      # от КОРЕНА на монорепото, където няма package.json/packageManager → corepack не резолвва
+      # версия, пътят не съществува и post-стъпката проваля ЦЕЛИЯ job с Path Validation Error,
+      # въпреки зеления билд. Turbo кешът на продукта вече пази повечето време.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - run: pnpm test
+      - run: pnpm run build

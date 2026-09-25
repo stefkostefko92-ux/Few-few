@@ -14,3 +14,56 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+
+  # SupremeDiscordBot — три отделни npm пакета (backend/bot/frontend), всеки със свой lock.
+  # Групирани minor+patch за по-малко шум; major остава отделен PR (иска ръчен преглед).
+  - package-ecosystem: "npm"
+    directory: "/SupremeDiscordBot/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "supremediscordbot"
+
+  - package-ecosystem: "npm"
+    directory: "/SupremeDiscordBot/bot"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "supremediscordbot"
+
+  - package-ecosystem: "npm"
+    directory: "/SupremeDiscordBot/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "supremediscordbot"

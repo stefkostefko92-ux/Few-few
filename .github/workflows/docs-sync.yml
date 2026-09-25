@@ -1,0 +1,53 @@
+name: docs-sync
+
+# docs.js (таблото) е ГЕНЕРИРАН артефакт от всички CLAUDE.md. Докато се гейтваше в PR, всяка промяна
+# по CLAUDE.md в main правеше отворените PR-и червени — артефактът остарява спрямо СЛЯТОТО дърво
+# по-бързо, отколкото CI приключва (реално: 4 пъти за час от работа по vpsdash). Затова main сам
+# се лекува: тук регенерираме и комитваме docs.js, а в PR гейтът е само съветващ.
+#
+# БЕЗ безкраен цикъл по конструкция: тригерът слуша САМО CLAUDE.md (+ самия генератор), а комитът
+# пипа САМО agents-dashboard/docs.js — файл, който НЕ е в тригера. Значи собственият комит не
+# стартира ново пускане.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'CLAUDE.md'
+      - '**/CLAUDE.md'
+      - 'tools/docs/collect-claude-md.mjs'
+      - '.github/workflows/docs-sync.yml'
+
+concurrency:
+  group: docs-sync-main
+  cancel-in-progress: false # не отменяй: всяко пускане трябва да догони своята промяна
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # ЕДИНСТВЕНАТА job с право на запис — само за да върне регенерирания артефакт
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Регенерирай docs.js от реалните CLAUDE.md
+        run: node tools/docs/collect-claude-md.mjs
+
+      - name: Комитни, само ако наистина се е променил
+        run: |
+          if git diff --quiet -- agents-dashboard/docs.js; then
+            echo "docs.js вече е актуален — няма какво да се комитва."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add agents-dashboard/docs.js
+          git commit -m "chore(docs): регенериран docs.js след промяна по CLAUDE.md"
+          git push

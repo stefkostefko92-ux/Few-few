@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Блокирует рекламу везде: видеорекламу на YouTube, баннеры, всплывающие окна, трекеры, cookie-баннеры и антиадблок-стены. Бесплатно."
+  },
+  "byCarbon": {
+    "message": "от Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Включить или выключить защиту"
+  },
+  "protected": {
+    "message": "Защищено"
+  },
+  "paused": {
+    "message": "На паузе"
+  },
+  "blockingHere": {
+    "message": "Блокирует рекламу на этой странице"
+  },
+  "protectionOff": {
+    "message": "Защита выключена"
+  },
+  "pause30": {
+    "message": "Пауза на 30 минут"
+  },
+  "pausedResume": {
+    "message": "На паузе, возобновить сейчас (осталось $1 мин)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Заблокировано"
+  },
+  "dataSaved": {
+    "message": "Экономия данных"
+  },
+  "timeSaved": {
+    "message": "Экономия времени"
+  },
+  "thisSite": {
+    "message": "этот сайт"
+  },
+  "thisPage": {
+    "message": "эта страница"
+  },
+  "blockOnSite": {
+    "message": "Блокировать рекламу на этом сайте"
+  },
+  "blocking": {
+    "message": "Блокировка"
+  },
+  "allowed": {
+    "message": "Разрешено"
+  },
+  "cosmetics": {
+    "message": "Скрывать рекламу здесь"
+  },
+  "cosmeticsTitle": {
+    "message": "Скрывать рекламу на этом сайте (отключите, если ломается верстка страницы)"
+  },
+  "on": {
+    "message": "Вкл."
+  },
+  "off": {
+    "message": "Выкл."
+  },
+  "blockedHere": {
+    "message": "Заблокировано на этой странице"
+  },
+  "logEmpty": {
+    "message": "Здесь пока ничего не заблокировано."
+  },
+  "logUnavailable": {
+    "message": "Журнал сейчас недоступен (квота браузера) — попробуйте через минуту."
+  },
+  "logCore": {
+    "message": "Основные правила"
+  },
+  "logYouTube": {
+    "message": "Реклама на YouTube"
+  },
+  "logParams": {
+    "message": "Параметры отслеживания"
+  },
+  "logMalware": {
+    "message": "Вредоносные домены"
+  },
+  "logSurrogates": {
+    "message": "Обезвреженные рекламные скрипты"
+  },
+  "logPrivacy": {
+    "message": "Защита конфиденциальности"
+  },
+  "logUser": {
+    "message": "Мои фильтры"
+  },
+  "logLive": {
+    "message": "Онлайн-обновления"
+  },
+  "hideElement": {
+    "message": "Скрыть элемент"
+  },
+  "settings": {
+    "message": "Настройки"
+  },
+  "promoSub": {
+    "message": "Техника и инструменты, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Реклама"
+  },
+  "support": {
+    "message": "Поддержать"
+  },
+  "filtersCount": {
+    "message": "$1+ фильтров",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Внешний вид"
+  },
+  "opt_extra_protection": {
+    "message": "Дополнительная защита"
+  },
+  "opt_smart_detection_log": {
+    "message": "Журнал Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Сайты в списке разрешенных"
+  },
+  "opt_my_filters": {
+    "message": "Мои фильтры"
+  },
+  "opt_hidden_elements": {
+    "message": "Скрытые элементы"
+  },
+  "opt_filter_updates": {
+    "message": "Обновления фильтров"
+  },
+  "opt_engine_health": {
+    "message": "Состояние движка"
+  },
+  "opt_backup": {
+    "message": "Резервная копия"
+  },
+  "opt_support_development": {
+    "message": "Поддержать разработку"
+  },
+  "opt_theme": {
+    "message": "Тема"
+  },
+  "opt_sync_across_devices": {
+    "message": "Синхронизация между устройствами"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Блокировка рекламы на YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Баннеры cookie и согласия"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Обход антиадблока"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Реклама в соцсетях Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Удаление параметров отслеживания"
+  },
+  "opt_malware_protection": {
+    "message": "Защита от вредоносного ПО"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Блокировка браузерных API для таргетинга рекламы"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Блокировка следящих маяков и криптомайнеров"
+  },
+  "opt_auto_update_filters": {
+    "message": "Автообновление фильтров"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (темная) или светлая"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Синхронизировать настройки, список разрешенных и фильтры во всех браузерах Chrome, где вы вошли в аккаунт"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Удаляет видеорекламу на YouTube. Отключите, если видео не воспроизводится."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Автоматически закрывает запросы «Принять cookie»"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Скрывает стены «Отключите блокировщик рекламы» и восстанавливает страницу"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Скрывает публикации с пометкой «Реклама» в Facebook и Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Удаляет utm_*, fbclid, gclid и другие идентификаторы кликов из ссылок, которые вы открываете"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Блокирует известные вредоносные домены (список URLhaus от abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Отключает рекламные API Google Topics, FLoC и Protected Audience на всех сайтах"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Останавливает сторонние пинги аудита ссылок и маяки, удаляет следящие cookie из ответов известных рекламных сервисов и блокирует браузерные скрипты криптомайнинга. Отключите, если функция сайта, зависящая от аналитики, работает неправильно."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Загружает новые правила блокировки и исправления для YouTube с adblock.carbonstealth.eu примерно два раза в день. Только данные, без кода; запрос не содержит идентификаторов и данных о просмотре страниц."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Журнал рекламы, пойманной эвристически (без списка фильтров), в реальном времени; новые сверху."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Списки по подписке загружаются как текст (никогда как код), обновляются ежедневно и находятся в управляемых блоках выше. Удалите список, чтобы убрать его правила."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Элементы, которые вы скрыли вручную с помощью инструмента выбора, сгруппированные по сайтам."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Диагностика в реальном времени — всё вычисляется локально. Если что-то горит красным, обычно помогает «Обновить сейчас» или перезагрузка расширения."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock бесплатен для всех. Если хотите помочь в его поддержке, пожертвования приветствуются, но никогда не обязательны."
+  },
+  "opt_reset_statistics": {
+    "message": "Сбросить статистику"
+  },
+  "opt_add": {
+    "message": "Добавить"
+  },
+  "opt_save_filters": {
+    "message": "Сохранить фильтры"
+  },
+  "opt_subscribe": {
+    "message": "Подписаться"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Обновить подписки сейчас"
+  },
+  "opt_update_now": {
+    "message": "Обновить сейчас"
+  },
+  "opt_refresh": {
+    "message": "Обновить"
+  },
+  "opt_export_settings": {
+    "message": "Экспорт настроек"
+  },
+  "opt_import_settings": {
+    "message": "Импорт настроек"
+  },
+  "opt_e_g_example_com": {
+    "message": "например, example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! пример\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Подписаться на список фильтров по URL (например, https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Настройки Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Настройки"
+  },
+  "opt_theme_light": {
+    "message": "Светлая"
+  },
+  "opt_badge_unique": {
+    "message": "уникально"
+  },
+  "opt_smart_desc": {
+    "message": "Ловит рекламу, которую еще не знает ни один список фильтров: фреймы с других доменов размером со стандартный рекламный блок скрываются сразу, без всяких правил."
+  },
+  "opt_caught_so_far": {
+    "message": "поймано на данный момент."
+  },
+  "opt_allow_desc": {
+    "message": "На этих доменах реклама не блокируется."
+  },
+  "opt_fh_one": {
+    "message": "Одно правило на строку."
+  },
+  "opt_fh_blocks": {
+    "message": "блокирует домен;"
+  },
+  "opt_fh_everywhere": {
+    "message": "скрывает элемент везде;"
+  },
+  "opt_fh_site": {
+    "message": "скрывает его только на этом сайте."
+  },
+  "opt_fh_comments": {
+    "message": "Строки, начинающиеся с"
+  },
+  "opt_fh_comments2": {
+    "message": "— это комментарии."
+  },
+  "opt_donate": {
+    "message": "Пожертвовать через Revolut"
+  },
+  "opt_made_by": {
+    "message": "создано Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Эвристически пока ничего не поймано."
+  },
+  "opt_empty_allow": {
+    "message": "В списке разрешенных пока нет сайтов."
+  },
+  "opt_empty_hidden": {
+    "message": "Вручную пока ничего не скрыто."
+  },
+  "opt_empty_subs": {
+    "message": "Подписок на списки пока нет."
+  },
+  "opt_no_sw": {
+    "message": "Service worker не отвечает."
+  },
+  "opt_remove": {
+    "message": "Удалить"
+  },
+  "opt_filter_status": {
+    "message": "Набор фильтров v$1, обновлен $2. Только данные, о вас ничего не отправляется."
+  },
+  "opt_updating": {
+    "message": "Обновление…"
+  },
+  "opt_updated": {
+    "message": "Обновлено (v$1, дополнительных правил: $2)"
+  },
+  "opt_update_failed": {
+    "message": "Не удалось обновить ($1)"
+  },
+  "opt_saved": {
+    "message": "Сохранено ✓"
+  },
+  "opt_rules_count": {
+    "message": "правил: $1"
+  },
+  "opt_updated_ago": {
+    "message": "обновлено $1"
+  },
+  "opt_not_fetched": {
+    "message": "еще не загружен"
+  },
+  "opt_failed_colon": {
+    "message": "ошибка: $1"
+  },
+  "opt_enter_https": {
+    "message": "Введите корректный адрес https://"
+  },
+  "opt_fetching": {
+    "message": "Загрузка…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Подписка оформлена, правил: $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Ошибка ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Обновление…"
+  },
+  "opt_refreshed": {
+    "message": "Обновлено ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Недопустимый файл настроек."
+  },
+  "opt_no_response": {
+    "message": "нет ответа"
+  },
+  "opt_h_engine": {
+    "message": "Движок антиадблока"
+  },
+  "opt_h_rulesets": {
+    "message": "Включенные статические наборы правил"
+  },
+  "opt_h_live": {
+    "message": "Домены из онлайн-фильтров"
+  },
+  "opt_h_last": {
+    "message": "Последнее обновление"
+  },
+  "opt_h_sig": {
+    "message": "Подписи обновлений"
+  },
+  "opt_h_user": {
+    "message": "Мои фильтры / правила разрешений"
+  },
+  "opt_h_popup": {
+    "message": "Встроенные хосты всплывающей рекламы"
+  },
+  "opt_h_yt": {
+    "message": "Обход на YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Фрейм с другого домена размером с рекламу"
+  },
+  "opt_reason_sticky": {
+    "message": "Закрепленный рекламный баннер"
+  },
+  "logRegional": {
+    "message": "Региональные списки"
+  },
+  "logFocus": {
+    "message": "Режим фокуса"
+  },
+  "opt_filter_lists": {
+    "message": "Списки фильтров"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList и EasyPrivacy всегда включены. Списки ниже распространяются по открытым лицензиям и встроены в расширение, поэтому их включение ничего не загружает, кроме списка с пометкой, что он загружается от автора."
+  },
+  "opt_lists_core": {
+    "message": "Основные"
+  },
+  "opt_lists_regional": {
+    "message": "Региональные"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Список для языка вашего браузера включается автоматически. Добавьте другие, если часто читаете сайты на других языках."
+  },
+  "opt_focus_mode": {
+    "message": "Режим фокуса"
+  },
+  "opt_focus_desc": {
+    "message": "Скрывает то, что не является рекламой, но всё равно мешает. Здесь всё выключено, пока вы это не включите."
+  },
+  "opt_list_ubo": {
+    "message": "Фильтры uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Реклама, трекеры, обход антиадблока и исправления сайтов от команды uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Список Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Давно поддерживаемый список рекламных и следящих серверов."
+  },
+  "opt_focus_social": {
+    "message": "Кнопки и виджеты соцсетей"
+  },
+  "opt_focus_social_desc": {
+    "message": "Кнопки «Поделиться», блоки «Нравится» и встроенные ленты."
+  },
+  "opt_focus_chat": {
+    "message": "Виджеты чатов и поддержки"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Плавающие пузыри чата в углу страницы."
+  },
+  "opt_focus_newsletters": {
+    "message": "Всплывающие окна рассылок и регистрации"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Блоки и оверлеи «Подпишитесь на нашу рассылку»."
+  },
+  "opt_focus_notifications": {
+    "message": "Запросы на уведомления"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Блоки «Разрешить уведомления?», которые сайты показывают до того, как спросит браузер."
+  },
+  "opt_focus_ai": {
+    "message": "Всплывающие ИИ-ассистенты"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Пузыри чат-ботов и панели ИИ-подсказок, добавленные на страницы."
+  },
+  "opt_focus_other": {
+    "message": "Прочие раздражители"
+  },
+  "opt_focus_other_desc": {
+    "message": "Закрепленные панели, баннеры «Открыть в приложении» и прочий мусор."
+  },
+  "opt_badge_lang": {
+    "message": "ваш язык"
+  },
+  "opt_badge_remote": {
+    "message": "от автора"
+  },
+  "opt_remote_hint": {
+    "message": "Не встроен (нет лицензии на распространение): браузер загрузит его с $1, когда вы его включите."
+  },
+  "opt_downloaded_from": {
+    "message": "Загружается с $1, когда вы его включите"
+  },
+  "opt_lists_error": {
+    "message": "Chrome отклонил это сочетание списков ($1). Отключите некоторые."
+  },
+  "opt_badge_recommended": {
+    "message": "рекомендуется для вашего языка"
+  },
+  "reportBroken": {
+    "message": "Сайт сломался? Исправьте или сообщите нам"
+  },
+  "rep_title": {
+    "message": "Что-то не работает на этом сайте?"
+  },
+  "rep_fix_first": {
+    "message": "Исправить сейчас"
+  },
+  "rep_site": {
+    "message": "Сайт:"
+  },
+  "rep_fix_desc": {
+    "message": "Большинство проблем решается одним из этих действий. Каждое действует только на этом сайте; вкладка перезагрузится."
+  },
+  "rep_fix_cosm": {
+    "message": "Отключить скрытие элементов здесь"
+  },
+  "rep_fix_allow": {
+    "message": "Разрешить рекламу на этом сайте"
+  },
+  "rep_fix_pause": {
+    "message": "Пауза везде на 30 минут"
+  },
+  "rep_tell_us": {
+    "message": "Сообщить нам"
+  },
+  "rep_tell_desc": {
+    "message": "Мы исправляем сломанные сайты для всех через подписанное обновление фильтров, обычно в течение дня. Расширение ничего не отправляет: отчет открывается в вашей почтовой программе, и вы заранее видите каждое его слово."
+  },
+  "rep_what": {
+    "message": "Что не так? (необязательно)"
+  },
+  "rep_what_ph": {
+    "message": "например, видео не запускается, белый блок закрывает статью…"
+  },
+  "rep_full_url": {
+    "message": "Включить полный адрес страницы (иначе только имя сайта)"
+  },
+  "rep_preview": {
+    "message": "Что будет отправлено"
+  },
+  "rep_send_mail": {
+    "message": "Отправить по почте"
+  },
+  "rep_copy": {
+    "message": "Копировать отчет"
+  },
+  "rep_privacy": {
+    "message": "Как обрабатывается этот отчет: политика конфиденциальности"
+  },
+  "rep_copied": {
+    "message": "Скопировано."
+  },
+  "rep_done_cosm": {
+    "message": "Скрытие элементов на этом сайте отключено. Страница перезагружена — проблема решена?"
+  },
+  "rep_done_allow": {
+    "message": "Реклама на этом сайте разрешена. Страница перезагружена — проблема решена?"
+  },
+  "rep_done_pause": {
+    "message": "Пауза на 30 минут. Если сайт теперь работает, пожалуйста, сообщите нам ниже."
+  },
+  "cookieRejections": {
+    "message": "Баннеров cookie отклонено за вас: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Полки, вкладка и рекомендации Shorts на YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Окна «Войти с аккаунтом Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Выбор аккаунта, который появляется в углу многих сайтов. Кнопки входа продолжают работать."
+  },
+  "pickTip": {
+    "message": "Нажмите на элемент, чтобы скрыть его"
+  },
+  "pickZapTip": {
+    "message": "Нажмите, чтобы удалить этот элемент (однократно)"
+  },
+  "pickEscCancel": {
+    "message": "для отмены"
+  },
+  "opt_notices": {
+    "message": "Лицензии списков фильтров"
+  }
+}

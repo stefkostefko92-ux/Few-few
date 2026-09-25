@@ -1,11 +1,18 @@
 // bot/src/commands/help.js
-import { MessageFlags, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from "discord.js";
 import { COMMAND_CATALOG } from "../utils/commandsCatalog.js";
+import { BRAND } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+
+const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
+const SUPPORT_URL = process.env.SUPPORT_URL || "https://supremebot.carbonstealth.eu/support";
+const STATUS_URL = process.env.STATUS_URL || "https://supremebot.carbonstealth.eu/status";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("help")
     .setDescription("Show every command the bot supports and what it does.")
+    .setDescriptionLocalizations(CMD_DESC_L10N.help)
     .addStringOption((o) =>
       o.setName("category")
         .setDescription("Filter by category")
@@ -23,18 +30,26 @@ export default {
       if (!cat) {
         return interaction.reply({ content: "❌ Category not found.", flags: MessageFlags.Ephemeral });
       }
-      return interaction.reply({ embeds: [buildCategoryEmbed(cat)], components: [buildSelect(filterCategory)], flags: MessageFlags.Ephemeral });
+      return interaction.reply({ embeds: [buildCategoryEmbed(cat)], components: [buildSelect(filterCategory), buildLinkRow()], flags: MessageFlags.Ephemeral });
     }
 
     // Default: overview embed with all categories
-    return interaction.reply({ embeds: [buildOverviewEmbed()], components: [buildSelect()], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [buildOverviewEmbed()], components: [buildSelect(), buildLinkRow()], flags: MessageFlags.Ephemeral });
   },
 };
+
+function buildLinkRow() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Dashboard").setURL(DASHBOARD_URL),
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Support").setURL(SUPPORT_URL),
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Status").setURL(STATUS_URL),
+  );
+}
 
 function buildOverviewEmbed() {
   const embed = new EmbedBuilder()
     .setTitle("📖 Command Reference")
-    .setColor(0x00e5ff)
+    .setColor(BRAND)
     .setDescription(
       "Select a category below to see commands, or use `/help category:<name>`.\n\n" +
       "Everything you can do with slash commands is **also available via the dashboard** at your server's control panel."
@@ -60,7 +75,7 @@ function buildOverviewEmbed() {
 function buildCategoryEmbed(cat) {
   const embed = new EmbedBuilder()
     .setTitle(`${cat.icon} ${cat.category}`)
-    .setColor(0x00e5ff)
+    .setColor(BRAND)
     .setDescription(cat.description);
 
   (cat.commands || []).forEach((cmd) => {

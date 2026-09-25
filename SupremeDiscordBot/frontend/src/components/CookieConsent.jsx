@@ -18,6 +18,22 @@ export default function CookieConsent() {
     marketing: false,  // Future: if we add marketing
   });
 
+  // Повторно отваряне по желание на потребителя.
+  //
+  // ДЕФЕКТЪТ (Правният Разбирач, одит 07.08.2026): банерът се показваше САМО при
+  // липсващ или остарял запис. Веднъж решил, човекът нямаше как да си промени
+  // решението — а чл. 7(3) ОРЗД иска оттеглянето на съгласието да е толкова
+  // лесно, колкото даването му. Практическата експозиция беше ниска (реално
+  // нямаме неесенциални бисквитки), но правото не пита за това.
+  //
+  // Глобално събитие, не контекст: банерът живее над рутера, а връзката за
+  // отваряне е във футъра и в Политиката — по-евтино е от общо състояние.
+  useEffect(() => {
+    const reopen = () => { setShowPrefs(true); setShow(true); };
+    window.addEventListener("cookie-preferences", reopen);
+    return () => window.removeEventListener("cookie-preferences", reopen);
+  }, []);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem(CONSENT_KEY);
@@ -28,7 +44,11 @@ export default function CookieConsent() {
       const parsed = JSON.parse(stored);
       if (parsed.version !== CURRENT_VERSION) {
         setShow(true);
+        return;
       }
+      // Възстановяваме предишния избор, за да не изглежда „нулиран“ при
+      // повторно отваряне — това само по себе си е тъмен модел.
+      setPrefs((p) => ({ ...p, analytics: !!parsed.analytics, marketing: !!parsed.marketing }));
     } catch {
       setShow(true);
     }
@@ -145,6 +165,14 @@ function PrefRow({ label, description, checked, onChange, disabled }) {
       </div>
     </label>
   );
+}
+
+/**
+ * Отваря настройките за бисквитки отвсякъде — чл. 7(3) ОРЗД.
+ * Ползва се от футъра и от Политиката за бисквитки.
+ */
+export function openCookiePreferences() {
+  window.dispatchEvent(new CustomEvent("cookie-preferences"));
 }
 
 /**

@@ -29,13 +29,9 @@ export function usePremium() {
   });
 
   const isPremium = !!server?.isPremium;
-  const isTrial = !!server?.isTrial;
-  const trialDaysLeft = server?.trialDaysLeft || 0;
 
   return {
     isPremium,
-    isTrial,
-    trialDaysLeft,
     features: catalog?.features || {},
     limits: isPremium ? catalog?.premiumLimits : catalog?.baseLimits,
     baseLimits: catalog?.baseLimits,

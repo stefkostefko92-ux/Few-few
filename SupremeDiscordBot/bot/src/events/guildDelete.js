@@ -6,8 +6,16 @@ export default {
   name: "guildDelete",
   once: false,
   async execute(guild) {
-    // guild.available is false when Discord outage — skip logging
-    if (!guild.available) return;
+    // Гардът беше ОБЪРНАТ наопаки. Коментарът твърдеше „прескачаме при срив на
+    // Discord", но discord.js изобщо НЕ емитва guildDelete при срив: при
+    // data.unavailable маркира guild.available = false, емитва guildUnavailable
+    // и се връща (node_modules/discord.js/src/client/actions/GuildDelete.js:12-26).
+    //
+    // Значи проверката не пазеше от нищо, а внасяше тих пропуск: ако ботът бъде
+    // премахнат ДОКАТО guild-ът е маркиран като недостъпен, реалното премахване
+    // се прескачаше — botRemovedAt никога не се записваше, сървърът оставаше
+    // „активен" в таблото завинаги и (след v38) никога не се изчистваше.
+    // (Разбивача, 07.08.2026)
 
     console.log(`📤 Left guild: ${guild.name} (${guild.id})`);
     try {

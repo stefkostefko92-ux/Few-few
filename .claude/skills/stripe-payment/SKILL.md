@@ -28,7 +28,7 @@ description: >-
 
 ## Проверка
 ```bash
-# ако има: node tools/payments/stripe-lint.mjs <path>   (webhook verify, идемпотентност, без float пари)
+node tools/commerce/stripe-lint.mjs <path>   # webhook verify, идемпотентност, без float пари
 ```
 Тествай webhook с Stripe CLI (`stripe listen`/`trigger`); e2e на checkout → агентът **Изпитателят**;
 сигурностно ревю → **Кодаджията**. Пари = **цели центове, без float**.

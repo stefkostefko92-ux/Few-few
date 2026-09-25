@@ -101,7 +101,7 @@ re-review needed.
 bash tools/package.sh     # writes dist/supreme-adblock-<version>.zip
 node tools/build_filters.mjs      # refresh EasyList/EasyPrivacy/URLhaus rules
 python3 tools/generate_rules.py   # regenerate rules/ad_rules.json
-python3 tools/generate_icons.py   # regenerate icons/
+python3 tools/generate_icons.py   # regenerate icons/ + store art from store/brand/
 ```
 
 ## Notes
@@ -123,9 +123,10 @@ python3 tools/generate_icons.py   # regenerate icons/
 
 ## Privacy & license
 
-We collect nothing about you; no browsing data ever leaves your device. The
-only network request is the daily data-only filter update (see
-[PRIVACY.md](PRIVACY.md)). Released under the [MIT License](LICENSE).
+Your browsing data never leaves your device; there is no account, analytics or
+telemetry. The only automatic network request is the data-only filter update,
+about twice a day (see [PRIVACY.md](PRIVACY.md)). Released under the
+[MIT License](LICENSE).
 
 Made by [Carbon Stealth](https://carbonstealth.eu). Donations (optional):
 <https://revolut.me/vycanismajoris>.

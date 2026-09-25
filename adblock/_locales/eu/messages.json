@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokeatu iragarkiak nonahi: YouTube, bannerrak, laster-leihoak, jarraipen-elementuak, cookie-oharrak eta anti-adblock hesiak. Doan."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth-ek egina"
+  },
+  "toggleProtection": {
+    "message": "Aktibatu/desaktibatu babesa"
+  },
+  "protected": {
+    "message": "Babestuta"
+  },
+  "paused": {
+    "message": "Pausatuta"
+  },
+  "blockingHere": {
+    "message": "Orri honetako iragarkiak blokeatzen"
+  },
+  "protectionOff": {
+    "message": "Babesa desaktibatuta dago"
+  },
+  "pause30": {
+    "message": "Pausatu 30 minutuz"
+  },
+  "pausedResume": {
+    "message": "Pausatuta; berrekin orain ($1 min falta dira)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blokeatuak"
+  },
+  "dataSaved": {
+    "message": "Datu aurreztuak"
+  },
+  "timeSaved": {
+    "message": "Denbora aurreztua"
+  },
+  "thisSite": {
+    "message": "webgune hau"
+  },
+  "thisPage": {
+    "message": "orri hau"
+  },
+  "blockOnSite": {
+    "message": "Blokeatu webgune honetako iragarkiak"
+  },
+  "blocking": {
+    "message": "Blokeatzen"
+  },
+  "allowed": {
+    "message": "Baimenduta"
+  },
+  "cosmetics": {
+    "message": "Ezkutatu iragarkiak hemen"
+  },
+  "cosmeticsTitle": {
+    "message": "Ezkutatu iragarkiak webgune honetan (desaktibatu orriaren diseinua hausten bada)"
+  },
+  "on": {
+    "message": "Piztuta"
+  },
+  "off": {
+    "message": "Itzalita"
+  },
+  "blockedHere": {
+    "message": "Orri honetan blokeatuak"
+  },
+  "logEmpty": {
+    "message": "Oraindik ez da ezer blokeatu hemen."
+  },
+  "logUnavailable": {
+    "message": "Erregistroa ez dago erabilgarri une honetan (nabigatzailearen kuota) — saiatu berriro minutu bat barru."
+  },
+  "logCore": {
+    "message": "Supreme oinarri-arauak"
+  },
+  "logYouTube": {
+    "message": "YouTube iragarki-arauak"
+  },
+  "logParams": {
+    "message": "Jarraipen-parametroak"
+  },
+  "logMalware": {
+    "message": "Domeinu maltzurrak"
+  },
+  "logSurrogates": {
+    "message": "Script neutralizatuak"
+  },
+  "logPrivacy": {
+    "message": "Pribatutasun-babesa"
+  },
+  "logUser": {
+    "message": "Nire iragazkiak"
+  },
+  "logLive": {
+    "message": "Zuzeneko eguneratzeak"
+  },
+  "hideElement": {
+    "message": "Ezkutatu elementua"
+  },
+  "settings": {
+    "message": "Ezarpenak"
+  },
+  "promoSub": {
+    "message": "Tresnak eta ekipamendua, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Irag."
+  },
+  "support": {
+    "message": "Lagundu"
+  },
+  "filtersCount": {
+    "message": "$1+ iragazki",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Itxura"
+  },
+  "opt_extra_protection": {
+    "message": "Babes gehigarria"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection erregistroa"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Baimendutako webguneak"
+  },
+  "opt_my_filters": {
+    "message": "Nire iragazkiak"
+  },
+  "opt_hidden_elements": {
+    "message": "Ezkutatutako elementuak"
+  },
+  "opt_filter_updates": {
+    "message": "Iragazkien eguneratzeak"
+  },
+  "opt_engine_health": {
+    "message": "Motorraren egoera"
+  },
+  "opt_backup": {
+    "message": "Babeskopia"
+  },
+  "opt_support_development": {
+    "message": "Lagundu garapenean"
+  },
+  "opt_theme": {
+    "message": "Gaia"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinkronizatu gailuen artean"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTubeko iragarkien blokeoa"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / baimen bannerrak"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock saihestea"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Metaren argitalpen babestuak"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Kendu jarraipen-parametroak"
+  },
+  "opt_malware_protection": {
+    "message": "Malwarearen aurkako babesa"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokeatu iragarkiak xede hartzeko nabigatzaile-APIak"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokeatu jarraipen-seinaleak eta kriptomeatzariak"
+  },
+  "opt_auto_update_filters": {
+    "message": "Eguneratu iragazkiak automatikoki"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (iluna) edo argia"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Mantendu ezarpenak, baimendutako webguneak eta iragazkiak sinkronizatuta saioa hasita duzun Chrome guztietan"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTubeko bideo-iragarkiak kentzen ditu. Desaktibatu bideoak erreproduzitzen ez badira."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Itxi automatikoki «Onartu cookieak» oharrak"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Ezkutatu «desaktibatu zure iragarki-blokeatzailea» hesiak eta leheneratu orria"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Ezkutatu «Babestua» argitalpenak Facebook-en eta Instagram-en"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Kendu utm_*, fbclid, gclid eta beste klik-identifikatzaile batzuk irekitzen dituzun esteketatik"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokeatu malware-domeinu ezagunak (abuse.ch-ren URLhaus zerrenda)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Desgaitu Google Topics, FLoC eta Protected Audience iragarki-APIak webgune guztietan"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Geldiarazi hirugarrenen hiperesteka-auditoretzako eta beacon ping-ak, kendu jarraipen-cookieak iragarki-teknologia ezagunen erantzunetatik, eta blokeatu nabigatzaileko kriptomeatzaritza-scriptak. Desaktibatu analitiken mende dagoen webgune-funtzio batek gaizki funtzionatzen badu."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Blokeo-arau berriak eta YouTuberako konponketak deskargatzen ditu adblock.carbonstealth.eu-tik, egunean bitan gutxi gorabehera. Datuak soilik, koderik ez; eskaerak ez darama identifikatzailerik ezta nabigazio-daturik ere."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Heuristikoki harrapatutako iragarkien zuzeneko erregistroa (iragazki-zerrendarik gabe), berrienak lehenik."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Harpidetutako zerrendak testu gisa deskargatzen dira (inoiz ez kode gisa), egunero eguneratzen dira eta goiko bloke kudeatuetan daude. Kendu zerrenda bat haren arauak baztertzeko."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Hautatzailearekin eskuz ezkutatu dituzun elementuak, webgunearen arabera taldekatuta."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Zuzeneko diagnostikoa — dena lokalean kalkulatzen da. Zerbait gorri badago, «Eguneratu orain» sakatzeak edo gehigarria berriro kargatzeak konpontzen du normalean."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock doakoa da guztientzat. Mantentzen lagundu nahi baduzu, dohaintzak ongi etorriak dira, baina inoiz ez derrigorrezkoak."
+  },
+  "opt_reset_statistics": {
+    "message": "Berrezarri estatistikak"
+  },
+  "opt_add": {
+    "message": "Gehitu"
+  },
+  "opt_save_filters": {
+    "message": "Gorde iragazkiak"
+  },
+  "opt_subscribe": {
+    "message": "Harpidetu"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Freskatu harpidetzak orain"
+  },
+  "opt_update_now": {
+    "message": "Eguneratu orain"
+  },
+  "opt_refresh": {
+    "message": "Freskatu"
+  },
+  "opt_export_settings": {
+    "message": "Esportatu ezarpenak"
+  },
+  "opt_import_settings": {
+    "message": "Inportatu ezarpenak"
+  },
+  "opt_e_g_example_com": {
+    "message": "adib. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! adibidea\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Harpidetu iragazki-zerrenda baten URLra (adib. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock ezarpenak"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Ezarpenak"
+  },
+  "opt_theme_light": {
+    "message": "Argia"
+  },
+  "opt_badge_unique": {
+    "message": "bakarra"
+  },
+  "opt_smart_desc": {
+    "message": "Oraindik iragazki-zerrendek ezagutzen ez dituzten iragarkiak harrapatzen ditu: iragarki-leku estandarren tamainako beste domeinu batzuetako markoak berehala ezkutatzen dira, araurik gabe."
+  },
+  "opt_caught_so_far": {
+    "message": "harrapatuta orain arte."
+  },
+  "opt_allow_desc": {
+    "message": "Domeinu hauetan ez dira iragarkiak blokeatzen."
+  },
+  "opt_fh_one": {
+    "message": "Arau bat lerro bakoitzeko."
+  },
+  "opt_fh_blocks": {
+    "message": "domeinu bat blokeatzen du;"
+  },
+  "opt_fh_everywhere": {
+    "message": "elementu bat nonahi ezkutatzen du;"
+  },
+  "opt_fh_site": {
+    "message": "webgune horretan soilik ezkutatzen du."
+  },
+  "opt_fh_comments": {
+    "message": "Honela hasten diren lerroak:"
+  },
+  "opt_fh_comments2": {
+    "message": "iruzkinak dira."
+  },
+  "opt_donate": {
+    "message": "Egin dohaintza Revolut bidez"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth-ek egina"
+  },
+  "opt_empty_smart": {
+    "message": "Oraindik ez da ezer heuristikoki harrapatu."
+  },
+  "opt_empty_allow": {
+    "message": "Oraindik ez dago baimendutako webgunerik."
+  },
+  "opt_empty_hidden": {
+    "message": "Oraindik ez da ezer eskuz ezkutatu."
+  },
+  "opt_empty_subs": {
+    "message": "Oraindik ez dago harpidetutako zerrendarik."
+  },
+  "opt_no_sw": {
+    "message": "Service worker-ak ez du erantzun."
+  },
+  "opt_remove": {
+    "message": "Kendu"
+  },
+  "opt_filter_status": {
+    "message": "Iragazki-multzoa v$1, eguneratua: $2. Datuak soilik; ez da zuri buruzko ezer bidaltzen."
+  },
+  "opt_updating": {
+    "message": "Eguneratzen…"
+  },
+  "opt_updated": {
+    "message": "Eguneratuta (v$1, $2 arau gehigarri)"
+  },
+  "opt_update_failed": {
+    "message": "Eguneratzeak huts egin du ($1)"
+  },
+  "opt_saved": {
+    "message": "Gordeta ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 arau"
+  },
+  "opt_updated_ago": {
+    "message": "eguneratua: $1"
+  },
+  "opt_not_fetched": {
+    "message": "oraindik deskargatu gabe"
+  },
+  "opt_failed_colon": {
+    "message": "huts egin du: $1"
+  },
+  "opt_enter_https": {
+    "message": "Idatzi baliozko https:// URL bat"
+  },
+  "opt_fetching": {
+    "message": "Deskargatzen…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Harpidetuta: $1 arau ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Huts egin du ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Freskatzen…"
+  },
+  "opt_refreshed": {
+    "message": "Freskatuta ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ezarpen-fitxategi baliogabea."
+  },
+  "opt_no_response": {
+    "message": "erantzunik ez"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock motorra"
+  },
+  "opt_h_rulesets": {
+    "message": "Arau-multzo estatiko aktiboak"
+  },
+  "opt_h_live": {
+    "message": "Zuzeneko iragazkien domeinuak"
+  },
+  "opt_h_last": {
+    "message": "Azken eguneratzea"
+  },
+  "opt_h_sig": {
+    "message": "Eguneratzeen sinadurak"
+  },
+  "opt_h_user": {
+    "message": "Nire iragazkiak / baimendutako webguneen arauak"
+  },
+  "opt_h_popup": {
+    "message": "Laster-leiho iragarkien ostalari integratuak"
+  },
+  "opt_h_yt": {
+    "message": "YouTube saihesbidea"
+  },
+  "opt_reason_frame": {
+    "message": "Iragarki-tamainako beste domeinu bateko markoa"
+  },
+  "opt_reason_sticky": {
+    "message": "Banner iragarki finkoa"
+  },
+  "logRegional": {
+    "message": "Eskualdeko zerrendak"
+  },
+  "logFocus": {
+    "message": "Fokatze modua"
+  },
+  "opt_filter_lists": {
+    "message": "Iragazki-zerrendak"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList eta EasyPrivacy beti daude aktibatuta. Beheko zerrendak lizentzia irekikoak dira eta gehigarrian integratuta daude; beraz, bat aktibatzeak ez du ezer deskargatzen, bere egiletik datorrela markatuta dagoen zerrenda batean izan ezik."
+  },
+  "opt_lists_core": {
+    "message": "Oinarrizkoak"
+  },
+  "opt_lists_regional": {
+    "message": "Eskualdekoak"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Zure nabigatzailearen hizkuntzako zerrenda bere kabuz aktibatzen da. Gehitu beste batzuk beste hizkuntza batzuetako webguneak maiz irakurtzen badituzu."
+  },
+  "opt_focus_mode": {
+    "message": "Fokatze modua"
+  },
+  "opt_focus_desc": {
+    "message": "Ezkutatu iragarkiak ez direnak baina hala ere oztopatzen dutenak. Hemengo guztia desaktibatuta dago zuk aktibatu arte."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin iragazkiak"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin taldearen iragarki, jarraipen-elementu, anti-adblock konponketa eta webgune-konponketak."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Loweren zerrenda"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Iragarki- eta jarraipen-zerbitzarien aspaldiko zerrenda bat."
+  },
+  "opt_focus_social": {
+    "message": "Sare sozialetako botoiak eta trepetak"
+  },
+  "opt_focus_social_desc": {
+    "message": "Partekatzeko botoiak, «Atsegin dut» koadroak eta txertatutako jarioak."
+  },
+  "opt_focus_chat": {
+    "message": "Txat eta laguntza trepetak"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Orriaren izkinan flotatzen duten txat-burbuilak."
+  },
+  "opt_focus_newsletters": {
+    "message": "Buletin eta izen-emate laster-leihoak"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«Harpidetu gure buletinera» koadroak eta gainjarriak."
+  },
+  "opt_focus_notifications": {
+    "message": "Jakinarazpen-eskaerak"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Webguneek nabigatzaileak galdetu aurretik erakusten dituzten «Jakinarazpenak baimendu?» koadroak."
+  },
+  "opt_focus_ai": {
+    "message": "AA laguntzaileen laster-leihoak"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Orriei gehitutako txatbot-burbuilak eta AA iradokizun-panelak."
+  },
+  "opt_focus_other": {
+    "message": "Beste eragozpen batzuk"
+  },
+  "opt_focus_other_desc": {
+    "message": "Barra finkoak, «Ireki aplikazioan» bannerrak eta antzeko nahasmena."
+  },
+  "opt_badge_lang": {
+    "message": "zure hizkuntza"
+  },
+  "opt_badge_remote": {
+    "message": "egiletik"
+  },
+  "opt_remote_hint": {
+    "message": "Ez dago barneratuta (ez dago berriro banatzeko lizentziarik): zure nabigatzaileak $1 helbidetik deskargatzen du aktibatzen duzunean."
+  },
+  "opt_downloaded_from": {
+    "message": "$1 helbidetik deskargatzen da aktibatzen duzunean"
+  },
+  "opt_lists_error": {
+    "message": "Chromek zerrenden konbinazio hau baztertu du ($1). Desaktibatu batzuk."
+  },
+  "opt_badge_recommended": {
+    "message": "zure hizkuntzarako gomendatua"
+  },
+  "reportBroken": {
+    "message": "Webgunea hautsita? Konpondu edo esan iezaguzu"
+  },
+  "rep_title": {
+    "message": "Zerbait ez dabil webgune honetan?"
+  },
+  "rep_fix_first": {
+    "message": "Konpondu orain"
+  },
+  "rep_site": {
+    "message": "Webgunea:"
+  },
+  "rep_fix_desc": {
+    "message": "Arazo gehienak hauetako batekin desagertzen dira. Bakoitza webgune honi bakarrik aplikatzen zaio; fitxa berriro kargatzen da."
+  },
+  "rep_fix_cosm": {
+    "message": "Desaktibatu elementuak ezkutatzea hemen"
+  },
+  "rep_fix_allow": {
+    "message": "Baimendu iragarkiak webgune honetan"
+  },
+  "rep_fix_pause": {
+    "message": "Pausatu nonahi 30 minutuz"
+  },
+  "rep_tell_us": {
+    "message": "Esan iezaguzu"
+  },
+  "rep_tell_desc": {
+    "message": "Hautsitako webguneak guztientzat konpontzen ditugu sinatutako iragazki-eguneratzearen bidez, normalean egun batean. Gehigarriak ez du ezer bidaltzen: txostena zure posta-aplikazioan irekitzen da, eta haren hitz guztiak ikusiko dituzu aurretik."
+  },
+  "rep_what": {
+    "message": "Zer dago gaizki? (aukerakoa)"
+  },
+  "rep_what_ph": {
+    "message": "adib. bideoa ez da abiarazten, koadro zuri batek artikulua estaltzen du…"
+  },
+  "rep_full_url": {
+    "message": "Sartu orriaren helbide osoa (bestela, webgunearen izena soilik)"
+  },
+  "rep_preview": {
+    "message": "Zer bidaliko den"
+  },
+  "rep_send_mail": {
+    "message": "Bidali posta elektronikoz"
+  },
+  "rep_copy": {
+    "message": "Kopiatu txostena"
+  },
+  "rep_privacy": {
+    "message": "Nola kudeatzen den txosten hau: pribatutasun-politika"
+  },
+  "rep_copied": {
+    "message": "Kopiatuta."
+  },
+  "rep_done_cosm": {
+    "message": "Elementuak ezkutatzea desaktibatuta dago webgune honetan. Berriro kargatuta — konpondu da?"
+  },
+  "rep_done_allow": {
+    "message": "Iragarkiak baimenduta daude webgune honetan. Berriro kargatuta — konpondu da?"
+  },
+  "rep_done_pause": {
+    "message": "30 minutuz pausatuta. Webguneak orain funtzionatzen badu, esan iezaguzu behean, mesedez."
+  },
+  "cookieRejections": {
+    "message": "Zure ordez baztertutako cookie-bannerrak: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTubeko Shorts apalak, fitxa eta iradokizunak."
+  },
+  "opt_focus_onetap": {
+    "message": "«Hasi saioa Google-rekin» laster-leihoak"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Webgune askoren izkinan agertzen den kontu-hautatzailea. Saioa hasteko botoiek funtzionatzen jarraitzen dute."
+  },
+  "pickTip": {
+    "message": "Egin klik elementu batean ezkutatzeko"
+  },
+  "pickZapTip": {
+    "message": "Egin klik elementu hau kentzeko (behin)"
+  },
+  "pickEscCancel": {
+    "message": "uzteko"
+  },
+  "opt_notices": {
+    "message": "Iragazki-zerrenden lizentziak"
+  }
+}

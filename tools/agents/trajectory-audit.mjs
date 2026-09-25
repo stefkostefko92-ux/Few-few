@@ -13,13 +13,17 @@
 //   node tools/agents/trajectory-audit.mjs --check    # гейт (провалена траектория → exit 1)
 //   node tools/agents/trajectory-audit.mjs --json
 //
-// Празен дневник (runtime, git-ignored) → НЕ е провал: няма какво да се съди. Структурата на самите
-// trajectory блокове се гейтва отделно и ТВЪРДО от `evals/eval.mjs --check`.
+// Празен дневник (runtime, git-tracked но пълнен на живо от flow-ledger.mjs) → НЕ е провал за ТОЗИ
+// гейт: няма верига за съждение. Но „празно значи НЕИЗМЕРЕНО, не чисто" (CLAUDE.md) — затова
+// покритието се съди отделно с `--coverage`, а структурата на самите trajectory блокове се гейтва
+// ТВЪРДО от `evals/eval.mjs --check`. (Бел.: дневникът е git-tracked, НЕ git-ignored — беше
+// игнориран някога и trajectory гейтът беше зелен от слепота; вече е проследен.)
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreTrajectory } from "./evals/eval-lib.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -47,6 +51,67 @@ export function flowsFrom(rows) {
     for (const a of chain) if (a && a !== steps[steps.length - 1]) steps.push(a);
     return { ...f, steps };
   });
+}
+
+/**
+ * Каноничните потоци, декларирани в `_orchestration.md` (секция „Чести потоци").
+ * Форматът им е `- **Име на потока.** Lead: **агент**.` — четем името и водещия.
+ */
+export function canonicalFlows(md) {
+  const s = String(md || "");
+  const start = s.search(/^##\s*Чести потоци/m);
+  if (start < 0) return [];
+  const body = s.slice(start);
+  const end = body.slice(1).search(/^##\s/m);
+  const section = end >= 0 ? body.slice(0, end + 1) : body;
+  const out = [];
+  for (const m of section.matchAll(/^-\s+\*\*(.+?)\*\*\s*(?:\n|.)*?(?:Lead:\s*\*\*(.+?)\*\*)?/gm)) {
+    const name = m[1].replace(/\.$/, "").trim();
+    // Пропусни под-булетите (те нямат Lead и не са потоци, а бележки/тригери).
+    if (!name || /^(Тригери|Атакувана повърхност)/.test(name)) continue;
+    out.push({ name, lead: (m[2] || "").trim() || null });
+  }
+  return out;
+}
+
+/**
+ * Потоци, чийто ПЪТ е критичен: изходът може да е верен, а пътят пак да е дефект — защото е
+ * прескочил задължителна спирка (правен · фискален · сигурностен · платформен преглед). Точно там
+ * „верен изход по грешен път" струва пари, глоби или бан, затова тези задължително имат ground
+ * truth. Останалите потоци са едно-доменни и по-евтини при грешка — те се докладват, не гейтват.
+ */
+export const CRITICAL_FLOWS = [
+  "Пускане в продукция (zabobovdol)",
+  "Плащане/checkout/billing",
+  "Каса/фискал (CSPos)",
+  "Мобилно приложение/магазин",
+  "Платформено одобрение (Apple/Google/Meta)",
+  "Червен екип / pre-launch атака",
+  "Продуктова аналитика",
+];
+
+/**
+ * Покритие: кой каноничен поток има ground-truth път (traj- spec) и кой е бил РЕАЛНО минат.
+ * Това е антидотът срещу „зелено, защото сме слепи": празен дневник не е чисто, а неизмерено.
+ */
+export function coverage(flows, specs, ledgerFlows = []) {
+  const specFlows = new Set(specs.filter((s) => s && s.trajectory).map((s) => s.trajectory.flow || s.id));
+  const exercised = new Set(ledgerFlows.map((f) => f.flow));
+  const rows = flows.map((f) => ({
+    name: f.name, lead: f.lead,
+    hasSpec: [...specFlows].some((sf) => sf === f.name || f.name.startsWith(sf) || sf.startsWith(f.name)),
+    exercised: exercised.has(f.name),
+  }));
+  const missing = rows.filter((r) => !r.hasSpec).map((r) => r.name);
+  return {
+    total: rows.length,
+    withSpec: rows.filter((r) => r.hasSpec).length,
+    exercised: rows.filter((r) => r.exercised).length,
+    missing,
+    // Критичен поток без ground-truth път е ТВЪРД пропуск — гейтваме го.
+    criticalMissing: CRITICAL_FLOWS.filter((c) => missing.includes(c)),
+    rows,
+  };
 }
 
 /** Кой spec съди този поток: изрично `trajectory.flow`, иначе име на потока = id на spec-а. */
@@ -83,11 +148,47 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const specs = loadSpecs();
   const withTraj = specs.filter((s) => s.trajectory).length;
-  const { graded, failed } = auditTrajectories(readLedger(), specs);
+  const rows = readLedger();
+  const { graded, failed } = auditTrajectories(rows, specs);
+  // Покритието на критичните потоци се гейтва ВИНАГИ (не само при --coverage): празният дневник
+  // означава „нищо за съдене", но липсващ ground truth за паричен/правен поток е реален пропуск.
+  const orchFile = join(ROOT, ".claude", "agents", "_orchestration.md");
+  const covNow = existsSync(orchFile)
+    ? coverage(canonicalFlows(readFileSync(orchFile, "utf8")), specs, flowsFrom(rows))
+    : { criticalMissing: [], total: 0, withSpec: 0, exercised: 0, missing: [], rows: [] };
+
+  // --coverage: кой каноничен поток изобщо МОЖЕ да бъде съден. Празен дневник + липсващи spec-ове
+  // значи „неизмерено", не „чисто" — а зелен гейт върху неизмерено е точно лъжливото мерило,
+  // което гоним. Затова покритието се докладва отделно и явно.
+  if (argv.includes("--coverage")) {
+    const orchPath = join(ROOT, ".claude", "agents", "_orchestration.md");
+    const flows = existsSync(orchPath) ? canonicalFlows(readFileSync(orchPath, "utf8")) : [];
+    const cov = coverage(flows, specs, flowsFrom(rows));
+    if (argv.includes("--json")) { await emitJsonNow(cov, 0); }
+    const g = (s) => `\x1b[32m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, d = (s) => `\x1b[90m${s}\x1b[0m`;
+    const pct = cov.total ? Math.round((cov.withSpec / cov.total) * 100) : 0;
+    console.log(`\n🗺  Покритие на оркестрацията — ${cov.withSpec}/${cov.total} канонични потока с ground-truth път (${pct}%)\n`);
+    for (const r of cov.rows) {
+      const mark = r.hasSpec ? g("✓") : y("○");
+      const run = r.exercised ? d(" · минат") : d(" · неминат");
+      console.log(`  ${mark} ${r.name.padEnd(42)} ${d("lead: " + (r.lead || "—"))}${run}`);
+    }
+    console.log(`\n  ${g("✓")} = има traj- spec · ${y("○")} = НЯМА ground-truth път (пътят му не може да бъде съден)`);
+    console.log(`  Минати канонични потоци (обявени от оркестратора): ${cov.exercised}/${cov.total}` +
+      (cov.exercised === 0 ? d("  ← нито един поток не е обявен по име: гейтът е зелен, защото е СЛЯП, не защото е чисто") : ""));
+    // От 2026-09-23 куката записва ВСЯКА верига по заявка на потребителя (flow „авто", id от prompt_id).
+    // Те не се съдят по spec (името на потока е решение на оркестратора), но показват реалните пътища.
+    const auto = flowsFrom(rows).filter((f) => f.flow === "авто" && f.steps.length > 1);
+    const paths = new Map();
+    for (const f of auto) { const k = f.steps.join(" → "); paths.set(k, (paths.get(k) || 0) + 1); }
+    console.log(`  Реални вериги по заявка (авто): ${auto.length}` + (auto.length ? ` · ср. дължина ${(auto.reduce((s, f) => s + f.steps.length, 0) / auto.length).toFixed(1)}` : d("  ← още няма записана верига с поне две спирки")));
+    for (const [k, n] of [...paths].sort((a, b) => b[1] - a[1]).slice(0, 5)) console.log(d(`    ${n}× ${k}`));
+    console.log("");
+    process.exit(0);
+  }
 
   if (argv.includes("--json")) {
-    console.log(JSON.stringify({ specsWithTrajectory: withTraj, graded: graded.length, failed, all: graded }, null, 2));
-    process.exit(argv.includes("--check") && failed.length ? 1 : 0);
+    await emitJsonNow({ specsWithTrajectory: withTraj, graded: graded.length, failed, all: graded }, argv.includes("--check") && failed.length ? 1 : 0);
   }
 
   const green = (s) => `\x1b[32m${s}\x1b[0m`, red = (s) => `\x1b[31m${s}\x1b[0m`, dim = (s) => `\x1b[90m${s}\x1b[0m`;
@@ -105,6 +206,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   if (failed.length) console.log(`\n▲ ${failed.length} траектории се разминават с очаквания път — верен изход по грешен път пак е дефект.`);
   else if (graded.length) console.log(green("\n✓ всички записани вериги вървят по очаквания път."));
+  console.log(dim(`  Покритие: ${covNow.withSpec}/${covNow.total} канонични потока с ground-truth път (--coverage за детайли).`));
+  if (covNow.criticalMissing.length)
+    console.log(red(`✗ КРИТИЧНИ потоци без ground-truth път: ${covNow.criticalMissing.join(" · ")}`) +
+      dim("\n  Там прескочена спирка (правен/фискален/платформен преглед) струва пари, глоби или бан."));
   console.log("");
-  process.exit(argv.includes("--check") && failed.length ? 1 : 0);
+  process.exit(argv.includes("--check") && (failed.length || covNow.criticalMissing.length) ? 1 : 0);
 }

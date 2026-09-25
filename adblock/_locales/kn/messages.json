@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "YouTube ವೀಡಿಯೊ ಜಾಹೀರಾತುಗಳು, ಬ್ಯಾನರ್‌ಗಳು, ಪಾಪ್-ಅಪ್‌ಗಳು, ಟ್ರ್ಯಾಕರ್‌ಗಳು, ಕುಕೀ ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ. ಉಚಿತ, ಖಾಸಗಿ."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth ಅವರಿಂದ"
+  },
+  "toggleProtection": {
+    "message": "ರಕ್ಷಣೆ ಆನ್/ಆಫ್ ಮಾಡಿ"
+  },
+  "protected": {
+    "message": "ರಕ್ಷಿತ"
+  },
+  "paused": {
+    "message": "ವಿರಾಮದಲ್ಲಿದೆ"
+  },
+  "blockingHere": {
+    "message": "ಈ ಪುಟದಲ್ಲಿ ಜಾಹೀರಾತು ನಿರ್ಬಂಧಿಸಲಾಗುತ್ತಿದೆ"
+  },
+  "protectionOff": {
+    "message": "ರಕ್ಷಣೆ ಆಫ್ ಆಗಿದೆ"
+  },
+  "pause30": {
+    "message": "30 ನಿಮಿಷ ವಿರಾಮ"
+  },
+  "pausedResume": {
+    "message": "ವಿರಾಮದಲ್ಲಿದೆ, ಈಗ ಪುನರಾರಂಭಿಸಿ ($1 ನಿ. ಬಾಕಿ)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "ನಿರ್ಬಂಧಿತ"
+  },
+  "dataSaved": {
+    "message": "ಉಳಿಸಿದ ಡೇಟಾ"
+  },
+  "timeSaved": {
+    "message": "ಉಳಿಸಿದ ಸಮಯ"
+  },
+  "thisSite": {
+    "message": "ಈ ಸೈಟ್"
+  },
+  "thisPage": {
+    "message": "ಈ ಪುಟ"
+  },
+  "blockOnSite": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ಜಾಹೀರಾತುಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ"
+  },
+  "blocking": {
+    "message": "ನಿರ್ಬಂಧಿಸುತ್ತಿದೆ"
+  },
+  "allowed": {
+    "message": "ಅನುಮತಿಸಲಾಗಿದೆ"
+  },
+  "cosmetics": {
+    "message": "ಜಾಹೀರಾತು ಬಾಕ್ಸ್ ಮರೆಮಾಡಿ"
+  },
+  "cosmeticsTitle": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ಜಾಹೀರಾತು ಬಾಕ್ಸ್ ಮರೆಮಾಡಿ (ಪುಟದ ಲೇಔಟ್ ಹಾಳಾದರೆ ಆಫ್ ಮಾಡಿ)"
+  },
+  "on": {
+    "message": "ಆನ್"
+  },
+  "off": {
+    "message": "ಆಫ್"
+  },
+  "blockedHere": {
+    "message": "ಈ ಪುಟದಲ್ಲಿ ನಿರ್ಬಂಧಿಸಿದವು"
+  },
+  "logEmpty": {
+    "message": "ಇಲ್ಲಿ ಇನ್ನೂ ಏನನ್ನೂ ನಿರ್ಬಂಧಿಸಿಲ್ಲ."
+  },
+  "logUnavailable": {
+    "message": "ಲಾಗ್ ಈಗ ಲಭ್ಯವಿಲ್ಲ (ಬ್ರೌಸರ್ ಕೋಟಾ) — ಒಂದು ನಿಮಿಷದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
+  },
+  "logCore": {
+    "message": "ಮುಖ್ಯ ನಿಯಮಗಳು"
+  },
+  "logYouTube": {
+    "message": "YouTube ಜಾಹೀರಾತು ನಿಯಮಗಳು"
+  },
+  "logParams": {
+    "message": "ಟ್ರ್ಯಾಕಿಂಗ್ ಪ್ಯಾರಾಮೀಟರ್‌ಗಳು"
+  },
+  "logMalware": {
+    "message": "ಮಾಲ್‌ವೇರ್ ಡೊಮೇನ್‌ಗಳು"
+  },
+  "logSurrogates": {
+    "message": "ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ ಜಾಹೀರಾತು ಸ್ಕ್ರಿಪ್ಟ್‌ಗಳು"
+  },
+  "logPrivacy": {
+    "message": "ಗೌಪ್ಯತೆ ರಕ್ಷಣೆ"
+  },
+  "logUser": {
+    "message": "ನನ್ನ ಫಿಲ್ಟರ್‌ಗಳು"
+  },
+  "logLive": {
+    "message": "ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳು"
+  },
+  "hideElement": {
+    "message": "ಅಂಶವನ್ನು ಮರೆಮಾಡಿ"
+  },
+  "settings": {
+    "message": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು"
+  },
+  "promoSub": {
+    "message": "ಗೇರ್ & ಟೂಲ್‌ಗಳು, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "ಜಾಹೀರಾತು"
+  },
+  "support": {
+    "message": "ಬೆಂಬಲಿಸಿ"
+  },
+  "filtersCount": {
+    "message": "$1+ ಫಿಲ್ಟರ್‌ಗಳು",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "ಗೋಚರತೆ"
+  },
+  "opt_extra_protection": {
+    "message": "ಹೆಚ್ಚುವರಿ ರಕ್ಷಣೆ"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection ಲಾಗ್"
+  },
+  "opt_allowlisted_sites": {
+    "message": "ಅನುಮತಿ ಪಟ್ಟಿಯಲ್ಲಿರುವ ಸೈಟ್‌ಗಳು"
+  },
+  "opt_my_filters": {
+    "message": "ನನ್ನ ಫಿಲ್ಟರ್‌ಗಳು"
+  },
+  "opt_hidden_elements": {
+    "message": "ಮರೆಮಾಡಿದ ಅಂಶಗಳು"
+  },
+  "opt_filter_updates": {
+    "message": "ಫಿಲ್ಟರ್ ಅಪ್‌ಡೇಟ್‌ಗಳು"
+  },
+  "opt_engine_health": {
+    "message": "ಎಂಜಿನ್ ಸ್ಥಿತಿ"
+  },
+  "opt_backup": {
+    "message": "ಬ್ಯಾಕಪ್"
+  },
+  "opt_support_development": {
+    "message": "ಅಭಿವೃದ್ಧಿಗೆ ಬೆಂಬಲಿಸಿ"
+  },
+  "opt_theme": {
+    "message": "ಥೀಮ್"
+  },
+  "opt_sync_across_devices": {
+    "message": "ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube ಜಾಹೀರಾತು ನಿರ್ಬಂಧ"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "ಕುಕೀ / ಸಮ್ಮತಿ ಬ್ಯಾನರ್‌ಗಳು"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "ಆ್ಯಂಟಿ-ಆ್ಯಡ್‌ಬ್ಲಾಕ್ ಬೈಪಾಸ್"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta ಪ್ರಾಯೋಜಿತ ಪೋಸ್ಟ್‌ಗಳು"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ಟ್ರ್ಯಾಕಿಂಗ್ ಪ್ಯಾರಾಮೀಟರ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಿ"
+  },
+  "opt_malware_protection": {
+    "message": "ಮಾಲ್‌ವೇರ್ ರಕ್ಷಣೆ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "ಜಾಹೀರಾತು ಗುರಿಪಡಿಸುವ ಬ್ರೌಸರ್ API ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ಟ್ರ್ಯಾಕಿಂಗ್ ಬೀಕನ್‌ಗಳು & ಕ್ರಿಪ್ಟೋಮೈನರ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ"
+  },
+  "opt_auto_update_filters": {
+    "message": "ಫಿಲ್ಟರ್‌ಗಳ ಸ್ವಯಂ ಅಪ್‌ಡೇಟ್"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (ಡಾರ್ಕ್) ಅಥವಾ ಲೈಟ್"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "ನೀವು ಸೈನ್ ಇನ್ ಆಗಿರುವ ಪ್ರತಿಯೊಂದು Chrome ನಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳು, ಅನುಮತಿ ಪಟ್ಟಿ ಮತ್ತು ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಸಿಂಕ್‌ನಲ್ಲಿ ಇರಿಸುತ್ತದೆ"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube ನಲ್ಲಿ ವೀಡಿಯೊ ಜಾಹೀರಾತುಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ. ವೀಡಿಯೊಗಳು ಪ್ಲೇ ಆಗದಿದ್ದರೆ ಆಫ್ ಮಾಡಿ."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“ಕುಕೀಗಳನ್ನು ಸ್ವೀಕರಿಸಿ” ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮುಚ್ಚುತ್ತದೆ"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“ನಿಮ್ಮ ಆ್ಯಡ್‌ಬ್ಲಾಕರ್ ಆಫ್ ಮಾಡಿ” ಗೋಡೆಗಳನ್ನು ಮರೆಮಾಡಿ ಪುಟವನ್ನು ಮರುಸ್ಥಾಪಿಸುತ್ತದೆ"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook & Instagram ನಲ್ಲಿ “ಪ್ರಾಯೋಜಿತ” ಪೋಸ್ಟ್‌ಗಳನ್ನು ಮರೆಮಾಡುತ್ತದೆ"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "ನೀವು ತೆರೆಯುವ ಲಿಂಕ್‌ಗಳಿಂದ utm_*, fbclid, gclid ಮತ್ತು ಇತರ ಕ್ಲಿಕ್ ಗುರುತಿಸುವಿಕೆಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "ತಿಳಿದಿರುವ ಮಾಲ್‌ವೇರ್ ಡೊಮೇನ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ (abuse.ch ನ URLhaus ಪಟ್ಟಿ)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "ಪ್ರತಿ ಸೈಟ್‌ನಲ್ಲಿ Google Topics, FLoC ಮತ್ತು Protected Audience ಜಾಹೀರಾತು API ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "ಮೂರನೇ ವ್ಯಕ್ತಿಯ ಹೈಪರ್‌ಲಿಂಕ್ ಆಡಿಟಿಂಗ್ / ಬೀಕನ್ ಪಿಂಗ್‌ಗಳನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ, ತಿಳಿದಿರುವ ಆ್ಯಡ್-ಟೆಕ್ ಪ್ರತಿಕ್ರಿಯೆಗಳಿಂದ ಟ್ರ್ಯಾಕಿಂಗ್ ಕುಕೀಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ ಮತ್ತು ಬ್ರೌಸರ್ ಕ್ರಿಪ್ಟೋಮೈನಿಂಗ್ ಸ್ಕ್ರಿಪ್ಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ. ಅನಾಲಿಟಿಕ್ಸ್ ಅವಲಂಬಿತ ಸೈಟ್ ವೈಶಿಷ್ಟ್ಯ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡದಿದ್ದರೆ ಆಫ್ ಮಾಡಿ."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu ನಿಂದ ಹೊಸ ನಿರ್ಬಂಧ ನಿಯಮಗಳು ಮತ್ತು YouTube ಪರಿಹಾರಗಳನ್ನು ದಿನಕ್ಕೆ ಸುಮಾರು ಎರಡು ಬಾರಿ ಪಡೆಯುತ್ತದೆ. ಡೇಟಾ ಮಾತ್ರ, ಕೋಡ್ ಇಲ್ಲ; ವಿನಂತಿಯಲ್ಲಿ ಯಾವುದೇ ಗುರುತಿಸುವಿಕೆಗಳು ಅಥವಾ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ ಇರುವುದಿಲ್ಲ."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "ಹ್ಯೂರಿಸ್ಟಿಕ್ ಆಗಿ (ಫಿಲ್ಟರ್ ಪಟ್ಟಿ ಇಲ್ಲದೆ) ಹಿಡಿದ ಜಾಹೀರಾತುಗಳ ಲೈವ್ ಲಾಗ್, ಹೊಸವು ಮೊದಲು."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "ಚಂದಾದಾರರಾದ ಪಟ್ಟಿಗಳನ್ನು ಪಠ್ಯವಾಗಿ ಪಡೆಯಲಾಗುತ್ತದೆ (ಎಂದಿಗೂ ಕೋಡ್ ಆಗಿ ಅಲ್ಲ), ಪ್ರತಿದಿನ ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತವೆ ಮತ್ತು ಮೇಲಿನ ನಿರ್ವಹಿತ ಬ್ಲಾಕ್‌ಗಳಲ್ಲಿ ಇರುತ್ತವೆ. ಪಟ್ಟಿಯ ನಿಯಮಗಳನ್ನು ಕೈಬಿಡಲು ಆ ಪಟ್ಟಿಯನ್ನು ತೆಗೆದುಹಾಕಿ."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "ಪಿಕರ್ ಬಳಸಿ ನೀವು ಹಸ್ತಚಾಲಿತವಾಗಿ ಮರೆಮಾಡಿದ ಅಂಶಗಳು, ಸೈಟ್‌ವಾರು ಗುಂಪು ಮಾಡಲಾಗಿದೆ."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "ಲೈವ್ ಡಯಾಗ್ನಾಸ್ಟಿಕ್ಸ್ — ಎಲ್ಲವನ್ನೂ ಸ್ಥಳೀಯವಾಗಿಯೇ ಲೆಕ್ಕಹಾಕಲಾಗುತ್ತದೆ. ಏನಾದರೂ ಕೆಂಪು ಬಣ್ಣದಲ್ಲಿದ್ದರೆ, “ಈಗ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ” ಅಥವಾ ವಿಸ್ತರಣೆಯನ್ನು ಮರುಲೋಡ್ ಮಾಡುವುದು ಸಾಮಾನ್ಯವಾಗಿ ಸರಿಪಡಿಸುತ್ತದೆ."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ಎಲ್ಲರಿಗೂ ಉಚಿತ. ಇದರ ನಿರ್ವಹಣೆಗೆ ಸಹಾಯ ಮಾಡಲು ಬಯಸಿದರೆ, ದೇಣಿಗೆಗಳಿಗೆ ಸ್ವಾಗತ, ಆದರೆ ಎಂದಿಗೂ ಕಡ್ಡಾಯವಲ್ಲ."
+  },
+  "opt_reset_statistics": {
+    "message": "ಅಂಕಿಅಂಶಗಳನ್ನು ರೀಸೆಟ್ ಮಾಡಿ"
+  },
+  "opt_add": {
+    "message": "ಸೇರಿಸಿ"
+  },
+  "opt_save_filters": {
+    "message": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಉಳಿಸಿ"
+  },
+  "opt_subscribe": {
+    "message": "ಚಂದಾದಾರರಾಗಿ"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "ಚಂದಾದಾರಿಕೆಗಳನ್ನು ಈಗ ರಿಫ್ರೆಶ್ ಮಾಡಿ"
+  },
+  "opt_update_now": {
+    "message": "ಈಗ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"
+  },
+  "opt_refresh": {
+    "message": "ರಿಫ್ರೆಶ್ ಮಾಡಿ"
+  },
+  "opt_export_settings": {
+    "message": "ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಿ"
+  },
+  "opt_import_settings": {
+    "message": "ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿ"
+  },
+  "opt_e_g_example_com": {
+    "message": "ಉದಾ. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! ಉದಾಹರಣೆ\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ಫಿಲ್ಟರ್ ಪಟ್ಟಿಯ URL ಗೆ ಚಂದಾದಾರರಾಗಿ (ಉದಾ. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock ಸೆಟ್ಟಿಂಗ್‌ಗಳು"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · ಸೆಟ್ಟಿಂಗ್‌ಗಳು"
+  },
+  "opt_theme_light": {
+    "message": "ಲೈಟ್"
+  },
+  "opt_badge_unique": {
+    "message": "ವಿಶಿಷ್ಟ"
+  },
+  "opt_smart_desc": {
+    "message": "ಯಾವುದೇ ಫಿಲ್ಟರ್ ಪಟ್ಟಿಗೆ ಇನ್ನೂ ತಿಳಿಯದ ಜಾಹೀರಾತುಗಳನ್ನು ಹಿಡಿಯುತ್ತದೆ: ಪ್ರಮಾಣಿತ ಜಾಹೀರಾತು ಸ್ಲಾಟ್ ಗಾತ್ರದ ಕ್ರಾಸ್-ಒರಿಜಿನ್ ಫ್ರೇಮ್‌ಗಳನ್ನು ತಕ್ಷಣ ಮರೆಮಾಡಲಾಗುತ್ತದೆ, ನಿಯಮಗಳ ಅಗತ್ಯವಿಲ್ಲ."
+  },
+  "opt_caught_so_far": {
+    "message": "ಇದುವರೆಗೆ ಹಿಡಿಯಲಾಗಿದೆ."
+  },
+  "opt_allow_desc": {
+    "message": "ಈ ಡೊಮೇನ್‌ಗಳಲ್ಲಿ ಜಾಹೀರಾತುಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗುವುದಿಲ್ಲ."
+  },
+  "opt_fh_one": {
+    "message": "ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು ನಿಯಮ."
+  },
+  "opt_fh_blocks": {
+    "message": "ಒಂದು ಡೊಮೇನ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ಒಂದು ಅಂಶವನ್ನು ಎಲ್ಲೆಡೆ ಮರೆಮಾಡುತ್ತದೆ;"
+  },
+  "opt_fh_site": {
+    "message": "ಅದನ್ನು ಆ ಸೈಟ್‌ನಲ್ಲಿ ಮಾತ್ರ ಮರೆಮಾಡುತ್ತದೆ."
+  },
+  "opt_fh_comments": {
+    "message": "ಸಾಲಿನ ಆರಂಭದಲ್ಲಿ"
+  },
+  "opt_fh_comments2": {
+    "message": "ಇದ್ದರೆ, ಆ ಸಾಲು ಟಿಪ್ಪಣಿ."
+  },
+  "opt_donate": {
+    "message": "Revolut ಮೂಲಕ ದೇಣಿಗೆ ನೀಡಿ"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth ನಿರ್ಮಿಸಿದೆ"
+  },
+  "opt_empty_smart": {
+    "message": "ಹ್ಯೂರಿಸ್ಟಿಕ್ ಆಗಿ ಇನ್ನೂ ಏನೂ ಹಿಡಿದಿಲ್ಲ."
+  },
+  "opt_empty_allow": {
+    "message": "ಅನುಮತಿ ಪಟ್ಟಿಯಲ್ಲಿ ಇನ್ನೂ ಸೈಟ್‌ಗಳಿಲ್ಲ."
+  },
+  "opt_empty_hidden": {
+    "message": "ಹಸ್ತಚಾಲಿತವಾಗಿ ಇನ್ನೂ ಏನನ್ನೂ ಮರೆಮಾಡಿಲ್ಲ."
+  },
+  "opt_empty_subs": {
+    "message": "ಇನ್ನೂ ಚಂದಾದಾರರಾದ ಪಟ್ಟಿಗಳಿಲ್ಲ."
+  },
+  "opt_no_sw": {
+    "message": "service worker ನಿಂದ ಪ್ರತಿಕ್ರಿಯೆ ಇಲ್ಲ."
+  },
+  "opt_remove": {
+    "message": "ತೆಗೆದುಹಾಕಿ"
+  },
+  "opt_filter_status": {
+    "message": "ಫಿಲ್ಟರ್ ಸೆಟ್ v$1, $2 ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ. ಡೇಟಾ ಮಾತ್ರ, ನಿಮ್ಮ ಬಗ್ಗೆ ಏನನ್ನೂ ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ."
+  },
+  "opt_updating": {
+    "message": "ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತಿದೆ…"
+  },
+  "opt_updated": {
+    "message": "ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ (v$1, $2 ಹೆಚ್ಚುವರಿ ನಿಯಮಗಳು)"
+  },
+  "opt_update_failed": {
+    "message": "ಅಪ್‌ಡೇಟ್ ವಿಫಲವಾಗಿದೆ ($1)"
+  },
+  "opt_saved": {
+    "message": "ಉಳಿಸಲಾಗಿದೆ ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 ನಿಯಮಗಳು"
+  },
+  "opt_updated_ago": {
+    "message": "$1 ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ"
+  },
+  "opt_not_fetched": {
+    "message": "ಇನ್ನೂ ಪಡೆದಿಲ್ಲ"
+  },
+  "opt_failed_colon": {
+    "message": "ವಿಫಲವಾಗಿದೆ: $1"
+  },
+  "opt_enter_https": {
+    "message": "ಮಾನ್ಯವಾದ https:// URL ನಮೂದಿಸಿ"
+  },
+  "opt_fetching": {
+    "message": "ಪಡೆಯಲಾಗುತ್ತಿದೆ…"
+  },
+  "opt_subscribed_ok": {
+    "message": "ಚಂದಾದಾರರಾಗಿದ್ದೀರಿ: $1 ನಿಯಮಗಳು ✓"
+  },
+  "opt_failed_paren": {
+    "message": "ವಿಫಲವಾಗಿದೆ ($1)"
+  },
+  "opt_refreshing": {
+    "message": "ರಿಫ್ರೆಶ್ ಆಗುತ್ತಿದೆ…"
+  },
+  "opt_refreshed": {
+    "message": "ರಿಫ್ರೆಶ್ ಆಗಿದೆ ✓"
+  },
+  "opt_invalid_file": {
+    "message": "ಅಮಾನ್ಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಫೈಲ್."
+  },
+  "opt_no_response": {
+    "message": "ಪ್ರತಿಕ್ರಿಯೆ ಇಲ್ಲ"
+  },
+  "opt_h_engine": {
+    "message": "ಆ್ಯಂಟಿ-ಆ್ಯಡ್‌ಬ್ಲಾಕ್ ಎಂಜಿನ್"
+  },
+  "opt_h_rulesets": {
+    "message": "ಆನ್ ಆಗಿರುವ ಸ್ಥಿರ ನಿಯಮ ಸೆಟ್‌ಗಳು"
+  },
+  "opt_h_live": {
+    "message": "ಲೈವ್ ಫಿಲ್ಟರ್ ಡೊಮೇನ್‌ಗಳು"
+  },
+  "opt_h_last": {
+    "message": "ಕೊನೆಯ ಅಪ್‌ಡೇಟ್"
+  },
+  "opt_h_sig": {
+    "message": "ಅಪ್‌ಡೇಟ್ ಸಹಿಗಳು"
+  },
+  "opt_h_user": {
+    "message": "ನನ್ನ ಫಿಲ್ಟರ್‌ಗಳು / ಅನುಮತಿ ಪಟ್ಟಿ ನಿಯಮಗಳು"
+  },
+  "opt_h_popup": {
+    "message": "ಅಂತರ್ನಿರ್ಮಿತ ಪಾಪ್-ಅಪ್ ಜಾಹೀರಾತು ಹೋಸ್ಟ್‌ಗಳು"
+  },
+  "opt_h_yt": {
+    "message": "YouTube ಬೈಪಾಸ್"
+  },
+  "opt_reason_frame": {
+    "message": "ಜಾಹೀರಾತು ಗಾತ್ರದ ಕ್ರಾಸ್-ಒರಿಜಿನ್ ಫ್ರೇಮ್"
+  },
+  "opt_reason_sticky": {
+    "message": "ಸ್ಟಿಕಿ ಬ್ಯಾನರ್ ಜಾಹೀರಾತು"
+  },
+  "logRegional": {
+    "message": "ಪ್ರಾದೇಶಿಕ ಪಟ್ಟಿಗಳು"
+  },
+  "logFocus": {
+    "message": "ಫೋಕಸ್ ಮೋಡ್"
+  },
+  "opt_filter_lists": {
+    "message": "ಫಿಲ್ಟರ್ ಪಟ್ಟಿಗಳು"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ಮತ್ತು EasyPrivacy ಯಾವಾಗಲೂ ಆನ್ ಆಗಿರುತ್ತವೆ. ಕೆಳಗಿನ ಪಟ್ಟಿಗಳು ಮುಕ್ತ ಪರವಾನಗಿಯ ಪಟ್ಟಿಗಳಾಗಿದ್ದು ವಿಸ್ತರಣೆಯೊಳಗೇ ಸೇರಿಸಲ್ಪಟ್ಟಿವೆ, ಆದ್ದರಿಂದ ಒಂದನ್ನು ಆನ್ ಮಾಡಿದರೆ ಏನೂ ಡೌನ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ — ಅದರ ಲೇಖಕರಿಂದ ಬರುತ್ತದೆ ಎಂದು ಗುರುತಿಸಲಾದ ಪಟ್ಟಿಯನ್ನು ಹೊರತುಪಡಿಸಿ."
+  },
+  "opt_lists_core": {
+    "message": "ಮುಖ್ಯ"
+  },
+  "opt_lists_regional": {
+    "message": "ಪ್ರಾದೇಶಿಕ"
+  },
+  "opt_lists_regional_desc": {
+    "message": "ನಿಮ್ಮ ಬ್ರೌಸರ್ ಭಾಷೆಯ ಪಟ್ಟಿ ತಾನಾಗಿಯೇ ಆನ್ ಆಗುತ್ತದೆ. ನೀವು ಆಗಾಗ ಇತರ ಭಾಷೆಗಳ ಸೈಟ್‌ಗಳನ್ನು ಓದುತ್ತಿದ್ದರೆ, ಇತರ ಪಟ್ಟಿಗಳನ್ನು ಸೇರಿಸಿ."
+  },
+  "opt_focus_mode": {
+    "message": "ಫೋಕಸ್ ಮೋಡ್"
+  },
+  "opt_focus_desc": {
+    "message": "ಜಾಹೀರಾತು ಅಲ್ಲದಿದ್ದರೂ ಅಡ್ಡಿಯಾಗುವುದನ್ನು ಮರೆಮಾಡಿ. ನೀವು ಆನ್ ಮಾಡುವವರೆಗೆ ಇಲ್ಲಿರುವ ಎಲ್ಲವೂ ಆಫ್ ಆಗಿರುತ್ತದೆ."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin ಫಿಲ್ಟರ್‌ಗಳು"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin ತಂಡದಿಂದ ಜಾಹೀರಾತುಗಳು, ಟ್ರ್ಯಾಕರ್‌ಗಳು, ಆ್ಯಂಟಿ-ಆ್ಯಡ್‌ಬ್ಲಾಕ್ ಪರಿಹಾರಗಳು ಮತ್ತು ಸೈಟ್ ದುರಸ್ತಿಗಳು."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe ಅವರ ಪಟ್ಟಿ"
+  },
+  "opt_list_plowe_desc": {
+    "message": "ಜಾಹೀರಾತು ಮತ್ತು ಟ್ರ್ಯಾಕಿಂಗ್ ಸರ್ವರ್‌ಗಳ ದೀರ್ಘಕಾಲದ ಪಟ್ಟಿ."
+  },
+  "opt_focus_social": {
+    "message": "ಸಾಮಾಜಿಕ ಮಾಧ್ಯಮ ಬಟನ್‌ಗಳು ಮತ್ತು ವಿಜೆಟ್‌ಗಳು"
+  },
+  "opt_focus_social_desc": {
+    "message": "ಹಂಚಿಕೆ ಬಟನ್‌ಗಳು, ಲೈಕ್ ಬಾಕ್ಸ್‌ಗಳು ಮತ್ತು ಎಂಬೆಡ್ ಮಾಡಿದ ಫೀಡ್‌ಗಳು."
+  },
+  "opt_focus_chat": {
+    "message": "ಚಾಟ್ ಮತ್ತು ಸಹಾಯ ವಿಜೆಟ್‌ಗಳು"
+  },
+  "opt_focus_chat_desc": {
+    "message": "ಪುಟದ ಮೂಲೆಯಲ್ಲಿ ತೇಲುವ ಚಾಟ್ ಬಬಲ್‌ಗಳು."
+  },
+  "opt_focus_newsletters": {
+    "message": "ಸುದ್ದಿಪತ್ರ ಮತ್ತು ಸೈನ್-ಅಪ್ ಪಾಪ್-ಅಪ್‌ಗಳು"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“ನಮ್ಮ ಸುದ್ದಿಪತ್ರಕ್ಕೆ ಚಂದಾದಾರರಾಗಿ” ಬಾಕ್ಸ್‌ಗಳು ಮತ್ತು ಓವರ್‌ಲೇಗಳು."
+  },
+  "opt_focus_notifications": {
+    "message": "ಅಧಿಸೂಚನೆ ಪ್ರಾಂಪ್ಟ್‌ಗಳು"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "ಬ್ರೌಸರ್ ಕೇಳುವ ಮೊದಲೇ ಸೈಟ್‌ಗಳು ತೋರಿಸುವ “ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸುವುದೇ?” ಬಾಕ್ಸ್‌ಗಳು."
+  },
+  "opt_focus_ai": {
+    "message": "AI ಸಹಾಯಕ ಪಾಪ್-ಅಪ್‌ಗಳು"
+  },
+  "opt_focus_ai_desc": {
+    "message": "ಪುಟಗಳಿಗೆ ಸೇರಿಸಲಾದ ಚಾಟ್‌ಬಾಟ್ ಬಬಲ್‌ಗಳು ಮತ್ತು AI ಸಲಹೆ ಫಲಕಗಳು."
+  },
+  "opt_focus_other": {
+    "message": "ಇತರ ಕಿರಿಕಿರಿಗಳು"
+  },
+  "opt_focus_other_desc": {
+    "message": "ಸ್ಟಿಕಿ ಬಾರ್‌ಗಳು, “ಆ್ಯಪ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ” ಬ್ಯಾನರ್‌ಗಳು ಮತ್ತು ಅಂತಹ ಗೊಂದಲಗಳು."
+  },
+  "opt_badge_lang": {
+    "message": "ನಿಮ್ಮ ಭಾಷೆ"
+  },
+  "opt_badge_remote": {
+    "message": "ಲೇಖಕರಿಂದ"
+  },
+  "opt_remote_hint": {
+    "message": "ಪ್ಯಾಕೇಜ್‌ನಲ್ಲಿ ಸೇರಿಲ್ಲ (ಮರುವಿತರಣೆಗೆ ಪರವಾನಗಿ ಇಲ್ಲ): ನೀವು ಆನ್ ಮಾಡಿದಾಗ ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅದನ್ನು $1 ನಿಂದ ಡೌನ್‌ಲೋಡ್ ಮಾಡುತ್ತದೆ."
+  },
+  "opt_downloaded_from": {
+    "message": "ನೀವು ಆನ್ ಮಾಡಿದಾಗ $1 ನಿಂದ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತದೆ"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ಈ ಪಟ್ಟಿಗಳ ಸಂಯೋಜನೆಯನ್ನು ನಿರಾಕರಿಸಿದೆ ($1). ಕೆಲವನ್ನು ಆಫ್ ಮಾಡಿ."
+  },
+  "opt_badge_recommended": {
+    "message": "ನಿಮ್ಮ ಭಾಷೆಗೆ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ"
+  },
+  "reportBroken": {
+    "message": "ಸೈಟ್ ಹಾಳಾಗಿದೆಯೇ? ಸರಿಪಡಿಸಿ ಅಥವಾ ನಮಗೆ ತಿಳಿಸಿ"
+  },
+  "rep_title": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ಏನಾದರೂ ಹಾಳಾಗಿದೆಯೇ?"
+  },
+  "rep_fix_first": {
+    "message": "ಈಗಲೇ ಸರಿಪಡಿಸಿ"
+  },
+  "rep_site": {
+    "message": "ಸೈಟ್:"
+  },
+  "rep_fix_desc": {
+    "message": "ಹೆಚ್ಚಿನ ಸಮಸ್ಯೆಗಳು ಇವುಗಳಲ್ಲಿ ಒಂದರಿಂದ ಬಗೆಹರಿಯುತ್ತವೆ. ಪ್ರತಿಯೊಂದೂ ಈ ಸೈಟ್‌ಗೆ ಮಾತ್ರ ಅನ್ವಯಿಸುತ್ತದೆ; ಟ್ಯಾಬ್ ಮರುಲೋಡ್ ಆಗುತ್ತದೆ."
+  },
+  "rep_fix_cosm": {
+    "message": "ಇಲ್ಲಿ ಅಂಶಗಳನ್ನು ಮರೆಮಾಡುವುದನ್ನು ಆಫ್ ಮಾಡಿ"
+  },
+  "rep_fix_allow": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ಜಾಹೀರಾತುಗಳನ್ನು ಅನುಮತಿಸಿ"
+  },
+  "rep_fix_pause": {
+    "message": "ಎಲ್ಲೆಡೆ 30 ನಿಮಿಷ ವಿರಾಮ"
+  },
+  "rep_tell_us": {
+    "message": "ನಮಗೆ ತಿಳಿಸಿ"
+  },
+  "rep_tell_desc": {
+    "message": "ಸಹಿ ಮಾಡಿದ ಫಿಲ್ಟರ್ ಅಪ್‌ಡೇಟ್ ಮೂಲಕ ಹಾಳಾದ ಸೈಟ್‌ಗಳನ್ನು ಎಲ್ಲರಿಗೂ ಸರಿಪಡಿಸುತ್ತೇವೆ, ಸಾಮಾನ್ಯವಾಗಿ ಒಂದು ದಿನದೊಳಗೆ. ವಿಸ್ತರಣೆ ಏನನ್ನೂ ಕಳುಹಿಸುವುದಿಲ್ಲ: ವರದಿ ನಿಮ್ಮದೇ ಇಮೇಲ್ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ, ಅದರ ಪ್ರತಿಯೊಂದು ಪದವನ್ನು ನೀವು ಮೊದಲು ನೋಡುತ್ತೀರಿ."
+  },
+  "rep_what": {
+    "message": "ಏನು ತೊಂದರೆ? (ಐಚ್ಛಿಕ)"
+  },
+  "rep_what_ph": {
+    "message": "ಉದಾ. ವೀಡಿಯೊ ಪ್ರಾರಂಭವಾಗುತ್ತಿಲ್ಲ, ಬಿಳಿ ಬಾಕ್ಸ್ ಲೇಖನವನ್ನು ಮುಚ್ಚುತ್ತಿದೆ…"
+  },
+  "rep_full_url": {
+    "message": "ಪುಟದ ಪೂರ್ಣ ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ (ಇಲ್ಲದಿದ್ದರೆ ಸೈಟ್ ಹೆಸರು ಮಾತ್ರ)"
+  },
+  "rep_preview": {
+    "message": "ಏನನ್ನು ಕಳುಹಿಸಲಾಗುತ್ತದೆ"
+  },
+  "rep_send_mail": {
+    "message": "ಇಮೇಲ್ ಮೂಲಕ ಕಳುಹಿಸಿ"
+  },
+  "rep_copy": {
+    "message": "ವರದಿ ನಕಲಿಸಿ"
+  },
+  "rep_privacy": {
+    "message": "ಈ ವರದಿಯನ್ನು ಹೇಗೆ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ: ಗೌಪ್ಯತಾ ನೀತಿ"
+  },
+  "rep_copied": {
+    "message": "ನಕಲಿಸಲಾಗಿದೆ."
+  },
+  "rep_done_cosm": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ಅಂಶಗಳನ್ನು ಮರೆಮಾಡುವುದು ಆಫ್ ಆಗಿದೆ. ಮರುಲೋಡ್ ಆಗಿದೆ — ಸರಿಯಾಯಿತೇ?"
+  },
+  "rep_done_allow": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ಜಾಹೀರಾತುಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ. ಮರುಲೋಡ್ ಆಗಿದೆ — ಸರಿಯಾಯಿತೇ?"
+  },
+  "rep_done_pause": {
+    "message": "30 ನಿಮಿಷ ವಿರಾಮ. ಈಗ ಸೈಟ್ ಕೆಲಸ ಮಾಡಿದರೆ, ದಯವಿಟ್ಟು ಕೆಳಗೆ ನಮಗೆ ತಿಳಿಸಿ."
+  },
+  "cookieRejections": {
+    "message": "ನಿಮಗಾಗಿ ತಿರಸ್ಕರಿಸಿದ ಕುಕೀ ಬ್ಯಾನರ್‌ಗಳು: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube ನಲ್ಲಿ Shorts ಸಾಲುಗಳು, ಟ್ಯಾಬ್ ಮತ್ತು ಸಲಹೆಗಳು."
+  },
+  "opt_focus_onetap": {
+    "message": "“Google ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ” ಪಾಪ್-ಅಪ್‌ಗಳು"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "ಅನೇಕ ಸೈಟ್‌ಗಳ ಮೂಲೆಯಲ್ಲಿ ಕಾಣಿಸುವ ಖಾತೆ ಆಯ್ಕೆಗಾರ. ಸೈನ್-ಇನ್ ಬಟನ್‌ಗಳು ಕೆಲಸ ಮಾಡುತ್ತಲೇ ಇರುತ್ತವೆ."
+  },
+  "pickTip": {
+    "message": "ಮರೆಮಾಡಲು ಒಂದು ಅಂಶದ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ"
+  },
+  "pickZapTip": {
+    "message": "ಈ ಅಂಶವನ್ನು ತೆಗೆದುಹಾಕಲು ಕ್ಲಿಕ್ ಮಾಡಿ (ಒಮ್ಮೆ)"
+  },
+  "pickEscCancel": {
+    "message": "ರದ್ದುಮಾಡಲು"
+  },
+  "opt_notices": {
+    "message": "ಫಿಲ್ಟರ್ ಪಟ್ಟಿಗಳ ಪರವಾನಗಿಗಳು"
+  }
+}

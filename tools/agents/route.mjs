@@ -20,6 +20,7 @@
 //   echo "мигрирай Prisma схемата" | node tools/agents/route.mjs
 
 import { readFileSync } from "node:fs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
@@ -58,7 +59,7 @@ if (AGENT) {
 }
 
 const out = { task, agent: AGENT, model, effort, rationale: why, critique, note: "съвет за президента; per-invocation надстройка над per-agent default; критиката вдига, но НЕ сваля автоматично; без Haiku" };
-if (JSON_OUT) { console.log(JSON.stringify(out, null, 2)); process.exit(0); }
+if (JSON_OUT) { await emitJsonNow(out, 0); }
 if (!task) { console.log('Дай задача: node tools/agents/route.mjs [--agent <id>] "<описание>"'); process.exit(0); }
 console.log(`\n🧭 Рутинг по задача${AGENT ? ` · агент ${AGENT}` : ""}\n  задача: ${task}\n  → модел: ${model} · усилие: ${effort}\n  защо: ${why}`);
 if (critique && critique.nudge === "deescalate-candidate")

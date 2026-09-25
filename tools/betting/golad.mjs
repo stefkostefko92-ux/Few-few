@@ -11,6 +11,7 @@ import { readFileSync } from "node:fs";
 import { scoreMatrix, markets, topScores, lambdaFromRatings } from "./golad-model.mjs";
 import { devig, overround } from "./devig.mjs";
 import { blend, ev, kelly } from "./calibration.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
@@ -68,7 +69,7 @@ const out = {
   value,
 };
 
-if (JSON_OUT) { console.log(JSON.stringify(out, null, 2)); process.exit(0); }
+if (JSON_OUT) { await emitJsonNow(out, 0); }
 
 const pct = (x) => (x * 100).toFixed(1) + "%";
 console.log(`\n⚽ Голаджията · прецизен модел (λ_дом=${lambdaHome.toFixed(2)} λ_гост=${lambdaAway.toFixed(2)} · ρ=${rho} · DC)\n`);

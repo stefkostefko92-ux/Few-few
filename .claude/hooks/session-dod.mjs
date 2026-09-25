@@ -11,7 +11,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+// CLAUDE_PROJECT_DIR override (както в dod-check.mjs): без него хукът е структурно НЕТЕСТВАЕМ на
+// CLI ниво — тестът би трябвало да мутира реалното репо, за да види поведението. Харнесът подава
+// същата променлива, така че продукционното поведение е непроменено.
+const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 // Чиста логика — тестваема: git status --short редове → {dirty:[…], ok}.
 export function checkClean(statusLines) {

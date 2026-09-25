@@ -3,9 +3,9 @@
   "loops": [
     {
       "id": "health-sweep",
-      "description": "Периодичен ПЪЛЕН гейт на агентския слой — лови гниене/дрейф без триггер-push (path-филтрираният CI не покрива застой).",
+      "description": "Периодичен ПЪЛЕН гейт на агентския слой — лови гниене/дрейф без триггер-push (path-филтрираният CI не покрива застой). Съставът е в tools/agents/gate.mjs (един източник с agents.yml; преписан на две места гейт дрейфва — вече се беше случило).",
       "trigger": "schedule:weekly",
-      "command": "node tools/agents/oversee.mjs && node tools/agents/drift-lint.mjs && node tools/agents/evals/eval.mjs --check && node tools/agents/consistency-audit.mjs --check && node tools/agents/recovery-audit.mjs && node tools/agents/trajectory-audit.mjs --check && node tools/agents/coverage.mjs --json >/dev/null && node tools/skills/lint.mjs && node tools/agents/tools-audit.mjs && node tools/agents/def-freshness.mjs && node tools/agents/token-budget.mjs --check && node --test $(find tools -name '*.test.mjs')",
+      "command": "node tools/agents/gate.mjs && node tools/agents/defect-rate.mjs && node --test $(find tools -name '*.test.mjs')",
       "owner": "ai-djiyata",
       "autonomy": "L1",
       "escalation": "Провал → CI е червен + уведомление; НИЩО не се авто-поправя. Човек/AI-джията решава.",

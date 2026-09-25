@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // devig.mjs — обезмаржване (маха overround на буки → честни вероятности). Прецизността зависи от метода:
-// power универсално бие proportional (коригира favorite-longshot bias); Shin за insider-биас кросчек.
+// power бие proportional при favorite-longshot bias (Clarke, Kovalchik & Ingram 2017) и е разумна
+// РАБОТНА база, но НЕ е доказано ≥ Shin: Štrumbelj (2014, IJF) намира Shin по-точен от базовата
+// нормализация за всички двойки букмейкър/спорт. Затова `method` е параметър, а не догма —
+// сверявай двата на собствения си пазар (изборът мести EV с ~14 пр.п. при лонгшоти).
 // Вход: масив от десетични коефициенти (напр. [2.10, 3.40, 3.60] за 1/X/2). Изход: вероятности, Σ=1.
 
 // Проста (мултипликативна): дели implied на booksum. ОК за балансирани пазари; игнорира FL-bias.
@@ -51,7 +54,7 @@ export function overround(odds) {
   return odds.reduce((s, o) => s + 1 / o, 0) - 1;
 }
 
-// Удобен избор по име (power = препоръчаната база).
+// Удобен избор по име (power = работна база по подразбиране, НЕ доказано най-добра — виж горе).
 export function devig(odds, method = "power") {
   if (method === "proportional") return proportional(odds);
   if (method === "shin") return shin(odds);

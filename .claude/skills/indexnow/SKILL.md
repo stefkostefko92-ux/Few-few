@@ -22,10 +22,24 @@ description: >-
 ```bash
 node tools/seo/indexnow.mjs https://<live-domain>
 ```
-Изисква сайтът да е **деплойнат** с `indexnow-key.txt` в web root. Deploy hook-ът
-(`deploy/autodeploy.sh`) авто-пинга при всеки релийз за продукт с `INDEXNOW_<PROJ>` set —
-затова при обикновен деплой често не е нужно ръчно. Пусни ръчно при промяна на живо между релийзи
-(напр. публикуване на съдържание през админ панела).
+Изисква сайтът да е **деплойнат** с `indexnow-key.txt` в web root.
+
+**Ако ключът е на `<key>.txt`, а не на `indexnow-key.txt`** (така е при Supreme), горната команда
+пада с „Липсва валиден ключ" — подай го явно:
+```bash
+node tools/seo/indexnow.mjs https://<live-domain> \
+  --key-file <път до <key>.txt> --key-location https://<live-domain>/<key>.txt
+```
+> **Капанът, който струва деплой:** при SPA (`try_files … /index.html`) адресът
+> `/indexnow-key.txt` връща **200 с index.html**, не 404. Тоест „файлът отговаря" НЕ значи
+> „ключът е там" — проверявай съдържанието: `curl -s <url>/indexnow-key.txt` трябва да върне
+> само ключа. (Реален провал на Supreme, 07.08.2026.)
+
+`deploy/autodeploy.sh` пинга след здрав релийз за zabobovdol, SupremeDiscordBot, mastilko, ospedali и
+adblock — всеки по свой начин (общ ключ `INDEXNOW_<PROJ>` няма; проверено 2026-09-24). За останалите
+продукти пусни командата ръчно след релийз, засягащ откриваемостта; vizitka има и свой пинг в
+`vizitka/deploy/server-setup.sh`. Пусни ръчно и при промяна на живо между релийзи (напр. публикуване
+през админ панела).
 
 ## Google (отделно — НЕ поддържа IndexNow)
 Sitemap ping е спрян (2023). За Google:

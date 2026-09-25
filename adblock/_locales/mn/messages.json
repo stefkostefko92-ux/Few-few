@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Хаа сайгүй зар хаана: YouTube-ийн видео зар, баннер, гарч ирэх цонх, мөрдөгч, adblock-ийн эсрэг хана. Үнэгүй, хурдан, нууцлалтай."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth-ээс"
+  },
+  "toggleProtection": {
+    "message": "Хамгаалалтыг асаах/унтраах"
+  },
+  "protected": {
+    "message": "Хамгаалагдсан"
+  },
+  "paused": {
+    "message": "Түр зогссон"
+  },
+  "blockingHere": {
+    "message": "Энэ хуудсан дээрх зарыг хааж байна"
+  },
+  "protectionOff": {
+    "message": "Хамгаалалт унтраастай"
+  },
+  "pause30": {
+    "message": "30 минут түр зогсоох"
+  },
+  "pausedResume": {
+    "message": "Түр зогссон, одоо үргэлжлүүлэх ($1 мин үлдсэн)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Хаагдсан"
+  },
+  "dataSaved": {
+    "message": "Хэмнэсэн дата"
+  },
+  "timeSaved": {
+    "message": "Хэмнэсэн цаг"
+  },
+  "thisSite": {
+    "message": "энэ сайт"
+  },
+  "thisPage": {
+    "message": "энэ хуудас"
+  },
+  "blockOnSite": {
+    "message": "Энэ сайт дээр зар хаах"
+  },
+  "blocking": {
+    "message": "Хааж байна"
+  },
+  "allowed": {
+    "message": "Зөвшөөрсөн"
+  },
+  "cosmetics": {
+    "message": "Зарын хайрцгийг энд нуух"
+  },
+  "cosmeticsTitle": {
+    "message": "Энэ сайт дээр зарын хайрцгийг нуух (хуудасны бүтэц эвдэрвэл унтраана уу)"
+  },
+  "on": {
+    "message": "Асаалттай"
+  },
+  "off": {
+    "message": "Унтраалттай"
+  },
+  "blockedHere": {
+    "message": "Энэ хуудсан дээр хаагдсан"
+  },
+  "logEmpty": {
+    "message": "Энд одоогоор юу ч хаагдаагүй байна."
+  },
+  "logUnavailable": {
+    "message": "Бүртгэл одоогоор боломжгүй байна (хөтчийн квот) — нэг минутын дараа дахин оролдоно уу."
+  },
+  "logCore": {
+    "message": "Supreme-ийн үндсэн дүрэм"
+  },
+  "logYouTube": {
+    "message": "YouTube-ийн зарын дүрэм"
+  },
+  "logParams": {
+    "message": "Мөрдөх параметр"
+  },
+  "logMalware": {
+    "message": "Хортой домэйн"
+  },
+  "logSurrogates": {
+    "message": "Саармагжуулсан зарын скрипт"
+  },
+  "logPrivacy": {
+    "message": "Нууцлалын хамгаалалт"
+  },
+  "logUser": {
+    "message": "Миний шүүлтүүр"
+  },
+  "logLive": {
+    "message": "Шууд шинэчлэл"
+  },
+  "hideElement": {
+    "message": "Элемент нуух"
+  },
+  "settings": {
+    "message": "Тохиргоо"
+  },
+  "promoSub": {
+    "message": "Тоног төхөөрөмж, хэрэгсэл, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Зар"
+  },
+  "support": {
+    "message": "Дэмжих"
+  },
+  "filtersCount": {
+    "message": "$1+ шүүлтүүр",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Гадаад төрх"
+  },
+  "opt_extra_protection": {
+    "message": "Нэмэлт хамгаалалт"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection бүртгэл"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Зөвшөөрсөн сайтууд"
+  },
+  "opt_my_filters": {
+    "message": "Миний шүүлтүүрүүд"
+  },
+  "opt_hidden_elements": {
+    "message": "Нуусан элементүүд"
+  },
+  "opt_filter_updates": {
+    "message": "Шүүлтүүрийн шинэчлэл"
+  },
+  "opt_engine_health": {
+    "message": "Хөдөлгүүрийн төлөв"
+  },
+  "opt_backup": {
+    "message": "Нөөцлөл"
+  },
+  "opt_support_development": {
+    "message": "Хөгжүүлэлтийг дэмжих"
+  },
+  "opt_theme": {
+    "message": "Загвар"
+  },
+  "opt_sync_across_devices": {
+    "message": "Төхөөрөмжүүдийн хооронд синк хийх"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube-ийн зар хаах"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Күүки / зөвшөөрлийн баннер"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Adblock-ийн эсрэг ханыг тойрох"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta-гийн ивээн тэтгэсэн нийтлэлүүд"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Мөрдөх параметрүүдийг арилгах"
+  },
+  "opt_malware_protection": {
+    "message": "Хортой програмаас хамгаалах"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Зар чиглүүлэх хөтчийн API-г хаах"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Мөрдөх дохио болон крипто олборлогчдыг хаах"
+  },
+  "opt_auto_update_filters": {
+    "message": "Шүүлтүүрийг автоматаар шинэчлэх"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (бараан) эсвэл цайвар"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Тохиргоо, зөвшөөрсөн жагсаалт, шүүлтүүрээ нэвтэрсэн Chrome бүр дээрээ синк байлгах"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube дээрх видео зарыг арилгана. Видео тоглохгүй бол унтраана уу."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "«Күүки зөвшөөрөх» хүсэлтийг автоматаар хаах"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "«Зар хаагчаа унтраана уу» ханыг нууж, хуудсыг сэргээх"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook болон Instagram дээрх «Ивээн тэтгэсэн» нийтлэлийг нуух"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Таны нээж буй холбоосоос utm_*, fbclid, gclid болон бусад товшилтын танигчийг арилгах"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Мэдэгдэж буй хортой домэйнуудыг хаах (abuse.ch-ийн URLhaus жагсаалт)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Бүх сайт дээр Google Topics, FLoC болон Protected Audience зарын API-г идэвхгүй болгох"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Гуравдагч талын холбоосын аудит / beacon пингийг зогсоож, мэдэгдэж буй зарын технологийн хариунаас мөрдөх күүкийг арилгаж, хөтөч дэх крипто олборлох скриптийг хаана. Аналитикаас хамаардаг сайтын функц буруу ажиллавал унтраана уу."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu-ээс шинэ хаах дүрэм болон YouTube-ийн засварыг өдөрт хоёр орчим удаа татна. Зөвхөн өгөгдөл, код байхгүй; хүсэлт ямар ч танигч, хөтчийн өгөгдөл агуулахгүй."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Эвристик аргаар (шүүлтүүрийн жагсаалтгүйгээр) илрүүлсэн зарын шууд бүртгэл, хамгийн сүүлийнх нь эхэнд."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Бүртгүүлсэн жагсаалтуудыг текст хэлбэрээр (хэзээ ч код биш) татаж, өдөр бүр шинэчилж, дээрх удирдлагатай блокуудад хадгална. Жагсаалтын дүрмийг хасахын тулд жагсаалтыг устгана уу."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Сонгогч хэрэгслээр гараар нуусан элементүүд, сайтаар бүлэглэсэн."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Шууд оношилгоо — бүгдийг дотооддоо тооцоолно. Ямар нэг зүйл улаан байвал «Одоо шинэчлэх» эсвэл өргөтгөлийг дахин ачаалах нь ихэвчлэн асуудлыг засдаг."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock бүх хүнд үнэгүй. Хэрэв та үүнийг цаашид арчлахад туслахыг хүсвэл хандивыг баяртай хүлээн авна, гэхдээ хэзээ ч заавал биш."
+  },
+  "opt_reset_statistics": {
+    "message": "Статистикийг тэглэх"
+  },
+  "opt_add": {
+    "message": "Нэмэх"
+  },
+  "opt_save_filters": {
+    "message": "Шүүлтүүрийг хадгалах"
+  },
+  "opt_subscribe": {
+    "message": "Бүртгүүлэх"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Бүртгэлүүдийг одоо сэргээх"
+  },
+  "opt_update_now": {
+    "message": "Одоо шинэчлэх"
+  },
+  "opt_refresh": {
+    "message": "Сэргээх"
+  },
+  "opt_export_settings": {
+    "message": "Тохиргоог экспортлох"
+  },
+  "opt_import_settings": {
+    "message": "Тохиргоог импортлох"
+  },
+  "opt_e_g_example_com": {
+    "message": "жишээ нь example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! жишээ\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Шүүлтүүрийн жагсаалтын URL-д бүртгүүлэх (жишээ нь https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock-ийн тохиргоо"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Тохиргоо"
+  },
+  "opt_theme_light": {
+    "message": "Цайвар"
+  },
+  "opt_badge_unique": {
+    "message": "өвөрмөц"
+  },
+  "opt_smart_desc": {
+    "message": "Ямар ч шүүлтүүрийн жагсаалт одоохондоо мэдэхгүй байгаа зарыг барина: стандарт зарын талбайн хэмжээтэй, өөр домэйноос ирсэн фреймийг шууд нууна, дүрэм шаардлагагүй."
+  },
+  "opt_caught_so_far": {
+    "message": "одоогоор илрүүлсэн."
+  },
+  "opt_allow_desc": {
+    "message": "Эдгээр домэйн дээр зарыг хаахгүй."
+  },
+  "opt_fh_one": {
+    "message": "Мөр бүрт нэг дүрэм."
+  },
+  "opt_fh_blocks": {
+    "message": "домэйныг хаана;"
+  },
+  "opt_fh_everywhere": {
+    "message": "элементийг хаа сайгүй нууна;"
+  },
+  "opt_fh_site": {
+    "message": "зөвхөн тухайн сайт дээр нууна."
+  },
+  "opt_fh_comments": {
+    "message": "Эхэндээ"
+  },
+  "opt_fh_comments2": {
+    "message": "тэмдэгтэй мөрүүд нь тайлбар юм."
+  },
+  "opt_donate": {
+    "message": "Revolut-ээр хандив өгөх"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth бүтээв"
+  },
+  "opt_empty_smart": {
+    "message": "Эвристик аргаар одоогоор юу ч илрээгүй."
+  },
+  "opt_empty_allow": {
+    "message": "Одоогоор зөвшөөрсөн сайт алга."
+  },
+  "opt_empty_hidden": {
+    "message": "Одоогоор гараар юу ч нуугаагүй."
+  },
+  "opt_empty_subs": {
+    "message": "Одоогоор бүртгүүлсэн жагсаалт алга."
+  },
+  "opt_no_sw": {
+    "message": "Service worker-ээс хариу ирсэнгүй."
+  },
+  "opt_remove": {
+    "message": "Устгах"
+  },
+  "opt_filter_status": {
+    "message": "Шүүлтүүрийн багц v$1, шинэчилсэн $2. Зөвхөн өгөгдөл — таны тухай юу ч илгээдэггүй."
+  },
+  "opt_updating": {
+    "message": "Шинэчилж байна…"
+  },
+  "opt_updated": {
+    "message": "Шинэчиллээ (v$1, нэмэлт $2 дүрэм)"
+  },
+  "opt_update_failed": {
+    "message": "Шинэчилж чадсангүй ($1)"
+  },
+  "opt_saved": {
+    "message": "Хадгаллаа ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 дүрэм"
+  },
+  "opt_updated_ago": {
+    "message": "шинэчилсэн $1"
+  },
+  "opt_not_fetched": {
+    "message": "хараахан татаагүй"
+  },
+  "opt_failed_colon": {
+    "message": "алдаа: $1"
+  },
+  "opt_enter_https": {
+    "message": "Зөв https:// хаяг оруулна уу"
+  },
+  "opt_fetching": {
+    "message": "Татаж байна…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Бүртгүүллээ: $1 дүрэм ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Амжилтгүй ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Сэргээж байна…"
+  },
+  "opt_refreshed": {
+    "message": "Сэргээлээ ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Тохиргооны файл буруу байна."
+  },
+  "opt_no_response": {
+    "message": "хариу алга"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock тойрох хөдөлгүүр"
+  },
+  "opt_h_rulesets": {
+    "message": "Идэвхтэй статик дүрмийн багц"
+  },
+  "opt_h_live": {
+    "message": "Шууд шүүлтүүрийн домэйн"
+  },
+  "opt_h_last": {
+    "message": "Сүүлийн шинэчлэл"
+  },
+  "opt_h_sig": {
+    "message": "Шинэчлэлийн гарын үсэг"
+  },
+  "opt_h_user": {
+    "message": "Миний шүүлтүүр / зөвшөөрлийн дүрэм"
+  },
+  "opt_h_popup": {
+    "message": "Суулгасан попап зарын хостууд"
+  },
+  "opt_h_yt": {
+    "message": "YouTube тойрох"
+  },
+  "opt_reason_frame": {
+    "message": "Зарын хэмжээтэй, өөр домэйны фрейм"
+  },
+  "opt_reason_sticky": {
+    "message": "Наалдсан зарын баннер"
+  },
+  "logRegional": {
+    "message": "Бүс нутгийн жагсаалт"
+  },
+  "logFocus": {
+    "message": "Төвлөрөх горим"
+  },
+  "opt_filter_lists": {
+    "message": "Шүүлтүүрийн жагсаалт"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList болон EasyPrivacy үргэлж асаалттай. Доорх жагсаалтууд нээлттэй лицензтэй бөгөөд өргөтгөлд суулгагдсан тул аль нэгийг асаахад юу ч татагдахгүй; зөвхөн зохиогчоосоо ирдэг гэж тэмдэглэсэн жагсаалт үл хамаарна."
+  },
+  "opt_lists_core": {
+    "message": "Үндсэн"
+  },
+  "opt_lists_regional": {
+    "message": "Бүс нутгийн"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Таны хөтчийн хэлний жагсаалт өөрөө асна. Өөр хэлээр сайт байнга уншдаг бол бусдыг нэмнэ үү."
+  },
+  "opt_focus_mode": {
+    "message": "Төвлөрөх горим"
+  },
+  "opt_focus_desc": {
+    "message": "Зар биш ч саад болдог зүйлсийг нууна. Энд байгаа бүх зүйл таныг асаах хүртэл унтраастай."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin шүүлтүүр"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin багийн зар, мөрдөгч, anti-adblock засвар болон сайтын засварууд."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe-ийн жагсаалт"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Зар болон мөрдөх серверүүдийн олон жил хөтлөгдсөн жагсаалт."
+  },
+  "opt_focus_social": {
+    "message": "Сошиал медиагийн товч, виджет"
+  },
+  "opt_focus_social_desc": {
+    "message": "Хуваалцах товч, лайк хайрцаг, суулгасан фийд."
+  },
+  "opt_focus_chat": {
+    "message": "Чат болон тусламжийн виджет"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Хуудасны буланд хөвж буй чатын бөмбөлөг."
+  },
+  "opt_focus_newsletters": {
+    "message": "Мэдээллийн товхимол, бүртгэлийн попап"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«Манай мэдээллийн товхимолд бүртгүүлээрэй» хайрцаг, давхарга."
+  },
+  "opt_focus_notifications": {
+    "message": "Мэдэгдлийн хүсэлт"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Хөтөч асуухаас өмнө сайтуудын харуулдаг «Мэдэгдэл зөвшөөрөх үү?» хайрцаг."
+  },
+  "opt_focus_ai": {
+    "message": "AI туслахын попап"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Хуудсанд нэмэгдсэн чатбот бөмбөлөг, AI зөвлөмжийн самбар."
+  },
+  "opt_focus_other": {
+    "message": "Бусад төвөг учруулах зүйлс"
+  },
+  "opt_focus_other_desc": {
+    "message": "Наалдсан самбар, «Апп-д нээх» баннер болон түүнтэй төстэй хог."
+  },
+  "opt_badge_lang": {
+    "message": "таны хэл"
+  },
+  "opt_badge_remote": {
+    "message": "зохиогчоос"
+  },
+  "opt_remote_hint": {
+    "message": "Суулгаагүй (дахин түгээх лиценз байхгүй): таныг асаахад хөтөч тань үүнийг $1-ээс татна."
+  },
+  "opt_downloaded_from": {
+    "message": "Асаахад $1-ээс татагдана"
+  },
+  "opt_lists_error": {
+    "message": "Chrome энэ жагсаалтын хослолыг татгалзлаа ($1). Заримыг нь унтраана уу."
+  },
+  "opt_badge_recommended": {
+    "message": "таны хэлэнд санал болгож буй"
+  },
+  "reportBroken": {
+    "message": "Сайт эвдэрсэн үү? Засах эсвэл бидэнд мэдэгдэх"
+  },
+  "rep_title": {
+    "message": "Энэ сайт дээр ямар нэг зүйл эвдэрсэн үү?"
+  },
+  "rep_fix_first": {
+    "message": "Одоо засах"
+  },
+  "rep_site": {
+    "message": "Сайт:"
+  },
+  "rep_fix_desc": {
+    "message": "Ихэнх асуудал эдгээрийн аль нэгээр арилдаг. Тус бүр зөвхөн энэ сайтад үйлчилнэ; таб дахин ачаалагдана."
+  },
+  "rep_fix_cosm": {
+    "message": "Энд элемент нуухыг унтраах"
+  },
+  "rep_fix_allow": {
+    "message": "Энэ сайт дээр зар зөвшөөрөх"
+  },
+  "rep_fix_pause": {
+    "message": "Бүх газар 30 минут түр зогсоох"
+  },
+  "rep_tell_us": {
+    "message": "Бидэнд мэдэгдэх"
+  },
+  "rep_tell_desc": {
+    "message": "Бид эвдэрсэн сайтуудыг гарын үсэгтэй шүүлтүүрийн шинэчлэлээр бүх хүнд зориулж засдаг, ихэвчлэн нэг өдрийн дотор. Өргөтгөл юу ч илгээдэггүй: тайлан таны өөрийн имэйл аппад нээгдэх бөгөөд та үг бүрийг нь урьдчилан харна."
+  },
+  "rep_what": {
+    "message": "Юу нь буруу байна вэ? (заавал биш)"
+  },
+  "rep_what_ph": {
+    "message": "жишээ нь видео эхлэхгүй байна, цагаан хайрцаг нийтлэлийг халхалж байна…"
+  },
+  "rep_full_url": {
+    "message": "Хуудасны бүтэн хаягийг оруулах (эс бөгөөс зөвхөн сайтын нэр)"
+  },
+  "rep_preview": {
+    "message": "Юу илгээгдэх вэ"
+  },
+  "rep_send_mail": {
+    "message": "Имэйлээр илгээх"
+  },
+  "rep_copy": {
+    "message": "Тайланг хуулах"
+  },
+  "rep_privacy": {
+    "message": "Энэ мэдээллийг хэрхэн боловсруулдаг вэ: нууцлалын бодлого"
+  },
+  "rep_copied": {
+    "message": "Хууллаа."
+  },
+  "rep_done_cosm": {
+    "message": "Энэ сайт дээр элемент нуухыг унтраалаа. Дахин ачааллаа — засагдсан уу?"
+  },
+  "rep_done_allow": {
+    "message": "Энэ сайт дээр зарыг зөвшөөрлөө. Дахин ачааллаа — засагдсан уу?"
+  },
+  "rep_done_pause": {
+    "message": "30 минут түр зогслоо. Хэрэв сайт одоо ажиллаж байвал доор бидэнд мэдэгдэнэ үү."
+  },
+  "cookieRejections": {
+    "message": "Таны өмнөөс татгалзсан күүкийн баннер: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube дээрх Shorts-ийн тавиур, таб болон зөвлөмжүүд."
+  },
+  "opt_focus_onetap": {
+    "message": "«Google-ээр нэвтрэх» попап"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Олон сайтын буланд гарч ирдэг бүртгэл сонгогч. Нэвтрэх товчнууд хэвийн ажилласаар байна."
+  },
+  "pickTip": {
+    "message": "Нуух элемент дээр дарна уу"
+  },
+  "pickZapTip": {
+    "message": "Энэ элементийг устгахын тулд дарна уу (нэг удаа)"
+  },
+  "pickEscCancel": {
+    "message": "цуцлах"
+  },
+  "opt_notices": {
+    "message": "Шүүлтүүрийн жагсаалтын лиценз"
+  }
+}

@@ -14,6 +14,7 @@
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : ".";
 const JSON_OUT = process.argv.includes("--json");
@@ -25,8 +26,8 @@ const add = (sev, rule, file, line, msg) => findings.push({ sev, rule, file, lin
 
 if (!existsSync(WF_DIR)) {
   const out = { root: ROOT, workflows: 0, findings: [], note: "няма .github/workflows/" };
-  if (JSON_OUT) console.log(JSON.stringify(out, null, 2));
-  else console.log(`\n⚙  Конвейерът — не открих .github/workflows/ в ${ROOT}. (Нищо за одит.)`);
+  if (JSON_OUT) await emitJsonNow(out, 0);
+  console.log(`\n⚙  Конвейерът — не открих .github/workflows/ в ${ROOT}. (Нищо за одит.)`);
   process.exit(0);
 }
 
@@ -104,8 +105,7 @@ findings.sort((a, b) => order[a.sev] - order[b.sev] || a.file.localeCompare(b.fi
 const blockers = findings.filter(x => x.sev === "block").length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ root: ROOT, workflows: files.length, findings, summary: { blockers, warns: findings.filter(x => x.sev === "warn").length, infos: findings.filter(x => x.sev === "info").length } }, null, 2));
-  process.exit(STRICT && blockers ? 1 : 0);
+  await emitJsonNow({ root: ROOT, workflows: files.length, findings, summary: { blockers, warns: findings.filter(x => x.sev === "warn").length, infos: findings.filter(x => x.sev === "info").length } }, STRICT && blockers ? 1 : 0);
 }
 
 const icon = { block: "✗", warn: "▲", info: "·" };

@@ -9,6 +9,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const AGENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents");
 const JSON_OUT = process.argv.includes("--json");
@@ -41,7 +42,7 @@ for (const id of agentIds()) {
   rows.push({ id, tools, errs, warn });
 }
 
-if (JSON_OUT) { console.log(JSON.stringify({ agents: rows.length, hard, warns, rows }, null, 2)); process.exit(hard ? 1 : 0); }
+if (JSON_OUT) { await emitJsonNow({ agents: rows.length, hard, warns, rows }, hard ? 1 : 0); }
 const g = (s) => `\x1b[32m${s}\x1b[0m`, r = (s) => `\x1b[31m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, dim = (s) => `\x1b[90m${s}\x1b[0m`;
 console.log(`\n🔑  Одит за най-малки права — ${rows.length} агента\n`);
 for (const row of rows) {

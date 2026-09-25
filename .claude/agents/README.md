@@ -37,7 +37,11 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 | **Анализаторът** `analizatora.md` 📊        | **Product analytics & data (privacy-first)** at enterprise grade — answers *what users do, where they drop off, and whether a change worked — proven, not guessed.* **Tracking plan / event taxonomy** (Object-Action, typed properties, versioned data contract), **funnels/activation/retention/cohorts**, product **KPIs** (AARRR, North Star), **controlled experiments** (A/B, significance, power, no **peeking**, **Sample Ratio Mismatch**, A/A — the **Kohavi** canon), attribution, and **privacy-first** implementation (GDPR/ePrivacy, consent mode, server-side tagging, **zero PII**, pseudonymization, retention). Tools: **GA4** (post-UA), privacy/self-host (**Plausible/Umami/PostHog**), warehouse + SQL, metric definitions (one metric, one definition). `analytics-audit.mjs` flags tracking loaded without a consent check, likely PII in events, hardcoded analytics id, missing IP anonymization. **Distinct from SEO (discoverability), Продавача (payments), Наблюдателят (system health) & Правния Разбирач (the law) — Анализаторът owns behavior measurement.** Consent before tracking; no metric without a definition; correlation ≠ causation. |
 | **Разбивача** `razbivacha.md` 💥          | **Internal red team** at enterprise grade — **authorized, defensive** stress-testing of our own products and the agent fleet itself. Actively **attacks** (not passive review like Кодаджията): **prompt-injection** against agents, breaking invariants (fiscal/payment/access/security), edge cases, **adversarial verification** of findings (tries to *refute* before believing). Strictly our systems only; never third parties; never destructive/DoS/mass-targeting/exfil; coordinated disclosure. **Distinct from Кодаджията (passive bug review) & Изпитателя (functional tests) — Разбивача thinks like an attacker but serves the defense.** |
 | **Голаджията** `goladjiyata.md` ⚽         | **Football betting analyzer** at enterprise grade — **NOT a profit machine, NOT an advisor**. Pulls real match data (form, xG/xGA, lineups/injuries, odds, context) from live sources and **cites it — never invents a match, score or price**. Transparent math: attack/defense strength normalized to opponent (SoS/Elo) + recency time-decay → λ → **Poisson × Dixon-Coles** τ(ρ). Four inviolable rules: (1) **de-vig** (remove overround) before measuring value, (2) the **market is the anchor**, (3) **fractional Kelly** with a cap, (4) **calibration** (Brier/log-loss/CLV), not win-rate. Twin-in-spirit of **Трейдъра** (risk-first). Never guarantees profit; every output ends with a not-advice / 18+ / gambling-risk disclaimer. |
-All twenty-seven agents have reached at least **v10.0** — mastery — through genuine, source-verified learning
+| **Скоростника** `skorostnika.md` ⚡        | **Pre-launch performance auditing** — thinks like **PageSpeed Insights/Lighthouse**, but runs *before* the site is live. PageSpeed fetches the URL **from Google's servers**, so an unpublished site is unreachable **by design** — but the lab half of PageSpeed *is* Lighthouse, and Lighthouse is Chromium + measurement, which we reproduce locally. `tools/seo/prelaunch-audit.mjs <folder|URL>` measures **FCP · LCP · TBT · CLS** in real Chromium under the Lighthouse mobile profile (4× CPU throttle + ~Slow 4G) and scores them on the **published Lighthouse v10 log-normal curves** (p10 → 90, median → 50) with weights **FCP 10 · LCP 25 · TBT 30 · CLS 25** — Speed Index needs a filmstrip we don't capture, so the weights are **renormalized over what was measured** and the report says so. Returns impact-ordered advice (render-blocking, images without dimensions, missing compression, long tasks, `font-display`). **Never reports a score without the spread** (TBT measured 1003–1491 ms for the same site — a single run is noise with pretensions), **never presents lab data as field data** (CrUX needs 28 days of real users and cannot exist pre-launch), and verifies against the real PSI/CrUX after deploy via `tools/seo/cwv.mjs`. **Distinct from SEO (discoverability & ranking) — Скоростника chases *speed*, with numbers.** |
+All twenty-eight agents have reached at least **v10.0** — mastery — through genuine,
+source-verified learning (Скоростника, born 2026-07-29, crossed the threshold the same day:
+40 verified lessons from five live-source missions + real audits — vizitka 100/100,
+ospedali's heavy subpage exposed at 67/100 with a 6.4s TBT)
 (see the version scheme below). Each definition layers: an **operating contract** (v1.0 —
 source-or-silence, verify-before-asserting, confidence labels, self-check, stop-and-ask, Definition
 of Done); a **v1.1** worked example + competence boundary; a **v2.0** *instrumented-executor* block
@@ -64,7 +68,12 @@ deduping as it goes (works even for the read-only auditors that can't write file
 also **appending a learning entry to that agent's activity feed in the dashboard** (`agents.json` +
 the embedded FALLBACK in `index.html`, atomic write + lock) and **bumping the agent's version**
 (a `vX.Y — учене` timeline entry — verified learning level-ups the agent; quarantine and repeat lessons
-don't). **Version scheme (`bumpVersion` in `memory-capture.mjs`):** each verified lesson is +0.1 and
+don't). **Where it lands (2026-09-23):** not in the task branch — the hook commits to the dedicated
+`agents/memory` branch via git plumbing (the human's HEAD/index/worktree are never touched), a detached
+sync folds `main` in and pushes, and one standing PR `agents/memory` → `main` brings it home;
+`memory-preload` already reads pending lessons from that branch. Before this, 562 verified lessons sat
+in 32 task branches that new sessions never saw (`tools/agents/harvest-memory.mjs` recovered them).
+**Version scheme (`bumpVersion` in `tools/lib/memory-core.mjs`):** each verified lesson is +0.1 and
 **every 10 verified lessons roll into a +1 major** (6.9 → 7.0 → …); the version tracks verified-lesson
 count (≈ lessons ÷ 10), so **v10.0 = mastery** (≈100 verified lessons) is a *threshold, not a cap* — agents
 keep climbing past it as they learn (e.g. `ai-djiyata` is at **v15.0**, ~150 lessons). So the agents-lab page updates
@@ -120,8 +129,18 @@ registered in `.claude/settings.json`.
 Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
 scope `tools` to least privilege (read-only auditors: Правният Разбирач, SEO, Кодаджията; the
 rest may write files/run scripts); give the `description` crisp triggers so the agent
-auto-selects; add a worked example + competence boundary; bump the version + append an
-`evolution` entry in `agents-dashboard/agents.json` whenever you change a definition.
+auto-selects — **кратко „кога да ме викнеш“** (роля · отличителни думи за избор · „Различен от…“),
+≤600 знака, без „ #“ и „: “ (едноредов YAML: „ #“ е коментар и реже описанието); то стои в
+главната сесия на всеки ход, а знанието е в тялото — `oversee.mjs` гейтва и двете. Add a worked
+example + competence boundary; bump the version + append an `evolution` entry in
+`agents-dashboard/agents.json` whenever you change what the agent knows (метаданни като
+описание/`maxTurns` не са ново знание — версията брои научено).
+**Разхлабвай, не усилвай (модели 4.6+):** новите модели са проактивни и директни по
+подразбиране — при авторство/ъпгрейд НЕ добавяй „бъди старателен/агресивен/провери преди
+да приключиш" (причиняват свръх-многословност и ненужно tool-calling); замени „Default to
+using X" с „Use X when it helps", махни „If in doubt, use X". Ветеранската краткост е в
+`PROCEDURE.md` (инжектира се на всички) — не я преповтаряй в дефиницията.
+_(източник: Ръководство за Claude, Carbon Stealth юли 2026 §1.4, сверено срещу docs.claude.com)_
 
 ### Agents lab dashboard — `agents-dashboard/`
 

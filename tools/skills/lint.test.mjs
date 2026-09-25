@@ -34,3 +34,43 @@ test("всички наши skills минават lint (0 твърди)", () => 
     assert.deepEqual(res.errs, [], `${n}: ${res.errs.join("; ")}`);
   }
 });
+
+// --- Счупена препратка към инструмент от репото -----------------------------------
+// Дефектът, който това пази: линтът проверяваше само `scripts/` препратките, затова
+// `stripe-payment` цитираше `tools/payments/stripe-lint.mjs` (реално: `tools/commerce/…`) и
+// минаваше зелено. Skill, който вика несъществуващ инструмент, е счупен работен процес —
+// изпълняващият агент удря „No such file" насред процедурата, а линтът е казал „чисто".
+
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+
+function makeSkill(name, body) {
+  const base = mkdtempSync(join(tmpdir(), "skill-"));
+  const dir = join(base, name);
+  mkdirSync(dir, { recursive: true });
+  const front = `---\nname: ${name}\ndescription: Достатъчно дълго описание, за да мине прага на линта за тригер.\n---\n\n`;
+  writeFileSync(join(dir, "SKILL.md"), front + body);
+  return { dir, cleanup: () => rmSync(base, { recursive: true, force: true }) };
+}
+
+test("несъществуващ tools/ инструмент е ТВЪРД провал", () => {
+  const s = makeSkill("plateno", "Пусни `node tools/payments/stripe-lint.mjs <path>` преди доставка.");
+  try {
+    const r = lintSkill(s.dir, "plateno");
+    assert.ok(r.errs.some((e) => /несъществуващ инструмент/.test(e)), "трябва да е грешка, не съвет");
+    assert.ok(r.errs.some((e) => e.includes("tools/payments/stripe-lint.mjs")));
+  } finally { s.cleanup(); }
+});
+
+test("СЪЩЕСТВУВАЩ tools/ инструмент минава", () => {
+  const s = makeSkill("dobre", "Пусни `node tools/commerce/stripe-lint.mjs <path>` преди доставка.");
+  try { assert.deepEqual(lintSkill(s.dir, "dobre").errs, []); } finally { s.cleanup(); }
+});
+
+test("един счупен път се докладва веднъж, не на всяко споменаване", () => {
+  const s = makeSkill("dubli", "tools/nqma/x.mjs и пак tools/nqma/x.mjs и трети път tools/nqma/x.mjs");
+  try {
+    const errs = lintSkill(s.dir, "dubli").errs.filter((e) => e.includes("tools/nqma/x.mjs"));
+    assert.equal(errs.length, 1);
+  } finally { s.cleanup(); }
+});

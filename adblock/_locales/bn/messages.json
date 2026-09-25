@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "সব জায়গায় বিজ্ঞাপন ব্লক: YouTube ভিডিও বিজ্ঞাপন, ব্যানার, পপ-আপ, ট্র্যাকার ও অ্যান্টি-অ্যাডব্লক দেয়াল। বিনামূল্যে ও দ্রুত।"
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth দ্বারা"
+  },
+  "toggleProtection": {
+    "message": "সুরক্ষা চালু/বন্ধ করুন"
+  },
+  "protected": {
+    "message": "সুরক্ষিত"
+  },
+  "paused": {
+    "message": "বিরতিতে"
+  },
+  "blockingHere": {
+    "message": "এই পৃষ্ঠায় বিজ্ঞাপন ব্লক হচ্ছে"
+  },
+  "protectionOff": {
+    "message": "সুরক্ষা বন্ধ আছে"
+  },
+  "pause30": {
+    "message": "30 মিনিটের জন্য থামান"
+  },
+  "pausedResume": {
+    "message": "বিরতিতে আছে, এখনই আবার চালু করুন ($1 মিনিট বাকি)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "ব্লক করা"
+  },
+  "dataSaved": {
+    "message": "ডেটা সাশ্রয়"
+  },
+  "timeSaved": {
+    "message": "সময় সাশ্রয়"
+  },
+  "thisSite": {
+    "message": "এই সাইট"
+  },
+  "thisPage": {
+    "message": "এই পৃষ্ঠা"
+  },
+  "blockOnSite": {
+    "message": "এই সাইটে বিজ্ঞাপন ব্লক করুন"
+  },
+  "blocking": {
+    "message": "ব্লক হচ্ছে"
+  },
+  "allowed": {
+    "message": "অনুমোদিত"
+  },
+  "cosmetics": {
+    "message": "এখানে বিজ্ঞাপন লুকান"
+  },
+  "cosmeticsTitle": {
+    "message": "এই সাইটে বিজ্ঞাপন লুকান (পেজের লেআউট ভেঙে গেলে বন্ধ করুন)"
+  },
+  "on": {
+    "message": "চালু"
+  },
+  "off": {
+    "message": "বন্ধ"
+  },
+  "blockedHere": {
+    "message": "এই পৃষ্ঠায় ব্লক করা হয়েছে"
+  },
+  "logEmpty": {
+    "message": "এখানে এখনও কিছু ব্লক করা হয়নি।"
+  },
+  "logUnavailable": {
+    "message": "লগ এখন উপলব্ধ নয় (ব্রাউজারের কোটা) — এক মিনিট পরে আবার চেষ্টা করুন।"
+  },
+  "logCore": {
+    "message": "Supreme মূল নিয়ম"
+  },
+  "logYouTube": {
+    "message": "YouTube বিজ্ঞাপন নিয়ম"
+  },
+  "logParams": {
+    "message": "ট্র্যাকিং প্যারামিটার"
+  },
+  "logMalware": {
+    "message": "ম্যালওয়্যার ডোমেন"
+  },
+  "logSurrogates": {
+    "message": "নিষ্ক্রিয় বিজ্ঞাপন স্ক্রিপ্ট"
+  },
+  "logPrivacy": {
+    "message": "গোপনীয়তা সুরক্ষা"
+  },
+  "logUser": {
+    "message": "আমার ফিল্টার"
+  },
+  "logLive": {
+    "message": "লাইভ আপডেট"
+  },
+  "hideElement": {
+    "message": "এলিমেন্ট লুকান"
+  },
+  "settings": {
+    "message": "সেটিংস"
+  },
+  "promoSub": {
+    "message": "গ্যাজেট ও টুল, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "বিজ্ঞাপন"
+  },
+  "support": {
+    "message": "সমর্থন দিন"
+  },
+  "filtersCount": {
+    "message": "$1+ ফিল্টার",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "চেহারা"
+  },
+  "opt_extra_protection": {
+    "message": "অতিরিক্ত সুরক্ষা"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection লগ"
+  },
+  "opt_allowlisted_sites": {
+    "message": "অনুমোদিত তালিকার সাইট"
+  },
+  "opt_my_filters": {
+    "message": "আমার ফিল্টার"
+  },
+  "opt_hidden_elements": {
+    "message": "লুকানো এলিমেন্ট"
+  },
+  "opt_filter_updates": {
+    "message": "ফিল্টার আপডেট"
+  },
+  "opt_engine_health": {
+    "message": "ইঞ্জিনের অবস্থা"
+  },
+  "opt_backup": {
+    "message": "ব্যাকআপ"
+  },
+  "opt_support_development": {
+    "message": "উন্নয়নে সমর্থন দিন"
+  },
+  "opt_theme": {
+    "message": "থিম"
+  },
+  "opt_sync_across_devices": {
+    "message": "সব ডিভাইসে সিঙ্ক করুন"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube বিজ্ঞাপন ব্লকিং"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "কুকি / সম্মতির ব্যানার"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "অ্যান্টি-অ্যাডব্লক বাইপাস"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta-র স্পনসর করা পোস্ট"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ট্র্যাকিং প্যারামিটার সরান"
+  },
+  "opt_malware_protection": {
+    "message": "ম্যালওয়্যার থেকে সুরক্ষা"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "বিজ্ঞাপন-টার্গেটিং ব্রাউজার API ব্লক করুন"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ট্র্যাকিং বীকন ও ক্রিপ্টোমাইনার ব্লক করুন"
+  },
+  "opt_auto_update_filters": {
+    "message": "ফিল্টার স্বয়ংক্রিয়ভাবে আপডেট করুন"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (ডার্ক) বা লাইট"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "আপনি যেসব Chrome-এ সাইন ইন করেছেন, সেগুলিতে সেটিংস, অনুমোদিত তালিকা ও ফিল্টার সিঙ্ক রাখুন"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube-এ ভিডিও বিজ্ঞাপন সরান। ভিডিও না চললে এটি বন্ধ করুন।"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“কুকি গ্রহণ করুন” বার্তা স্বয়ংক্রিয়ভাবে বন্ধ করুন"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“আপনার অ্যাডব্লকার বন্ধ করুন” দেয়াল লুকান এবং পৃষ্ঠাটি আগের অবস্থায় ফেরান"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook ও Instagram-এ “স্পনসর করা” পোস্ট লুকান"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "আপনার খোলা লিঙ্ক থেকে utm_*, fbclid, gclid ও অন্যান্য ক্লিক শনাক্তকারী সরান"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "পরিচিত ম্যালওয়্যার ডোমেন ব্লক করুন (abuse.ch-এর URLhaus তালিকা)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "প্রতিটি সাইটে Google Topics, FLoC ও Protected Audience বিজ্ঞাপন API বন্ধ করুন"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "তৃতীয় পক্ষের হাইপারলিঙ্ক-অডিটিং / বীকন পিং থামান, পরিচিত অ্যাড-টেক প্রতিক্রিয়া থেকে ট্র্যাকিং কুকি সরান এবং ব্রাউজারে ক্রিপ্টোমাইনিং স্ক্রিপ্ট ব্লক করুন। কোনো সাইটের অ্যানালিটিক্স-নির্ভর ফিচার ঠিকমতো কাজ না করলে এটি বন্ধ করুন।"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "দিনে প্রায় দুবার adblock.carbonstealth.eu থেকে নতুন ব্লক নিয়ম ও YouTube সংশোধন আনে। শুধু ডেটা, কোনো কোড নয়; অনুরোধে কোনো শনাক্তকারী বা ব্রাউজিং ডেটা থাকে না।"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "হিউরিস্টিকভাবে ধরা বিজ্ঞাপনের লাইভ লগ (কোনো ফিল্টার তালিকা ছাড়া), নতুনগুলো সবার আগে।"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "সাবস্ক্রাইব করা তালিকাগুলো টেক্সট হিসেবে আনা হয় (কখনও কোড নয়), প্রতিদিন আপডেট হয় এবং উপরের পরিচালিত ব্লকে থাকে। কোনো তালিকার নিয়ম বাদ দিতে তালিকাটি সরান।"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "পিকার দিয়ে আপনি নিজে যে এলিমেন্টগুলো লুকিয়েছেন, সাইট অনুযায়ী সাজানো।"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "লাইভ ডায়াগনস্টিকস — সবকিছু স্থানীয়ভাবে গণনা করা হয়। কিছু লাল দেখালে “এখনই আপডেট করুন” বা এক্সটেনশন আবার লোড করলে সাধারণত ঠিক হয়ে যায়।"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock সবার জন্য বিনামূল্যে। এটি রক্ষণাবেক্ষণে সাহায্য করতে চাইলে দান স্বাগত, তবে কখনও বাধ্যতামূলক নয়।"
+  },
+  "opt_reset_statistics": {
+    "message": "পরিসংখ্যান রিসেট করুন"
+  },
+  "opt_add": {
+    "message": "যোগ করুন"
+  },
+  "opt_save_filters": {
+    "message": "ফিল্টার সেভ করুন"
+  },
+  "opt_subscribe": {
+    "message": "সাবস্ক্রাইব করুন"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "এখনই সাবস্ক্রিপশন রিফ্রেশ করুন"
+  },
+  "opt_update_now": {
+    "message": "এখনই আপডেট করুন"
+  },
+  "opt_refresh": {
+    "message": "রিফ্রেশ করুন"
+  },
+  "opt_export_settings": {
+    "message": "সেটিংস এক্সপোর্ট করুন"
+  },
+  "opt_import_settings": {
+    "message": "সেটিংস ইমপোর্ট করুন"
+  },
+  "opt_e_g_example_com": {
+    "message": "যেমন example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! উদাহরণ\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ফিল্টার তালিকার URL-এ সাবস্ক্রাইব করুন (যেমন https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock সেটিংস"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · সেটিংস"
+  },
+  "opt_theme_light": {
+    "message": "লাইট"
+  },
+  "opt_badge_unique": {
+    "message": "অনন্য"
+  },
+  "opt_smart_desc": {
+    "message": "যেসব বিজ্ঞাপন এখনও কোনো ফিল্টার তালিকা জানে না, সেগুলোও ধরে: স্ট্যান্ডার্ড বিজ্ঞাপন স্লটের মাপের অন্য ডোমেনের ফ্রেম দেখামাত্র লুকানো হয়, কোনো নিয়ম লাগে না।"
+  },
+  "opt_caught_so_far": {
+    "message": "এ পর্যন্ত ধরা পড়েছে।"
+  },
+  "opt_allow_desc": {
+    "message": "এই ডোমেনগুলোতে বিজ্ঞাপন ব্লক করা হয় না।"
+  },
+  "opt_fh_one": {
+    "message": "প্রতি লাইনে একটি নিয়ম।"
+  },
+  "opt_fh_blocks": {
+    "message": "একটি ডোমেন ব্লক করে;"
+  },
+  "opt_fh_everywhere": {
+    "message": "একটি এলিমেন্ট সব জায়গায় লুকায়;"
+  },
+  "opt_fh_site": {
+    "message": "এটি শুধু সেই সাইটে লুকায়।"
+  },
+  "opt_fh_comments": {
+    "message": "যে লাইনগুলো"
+  },
+  "opt_fh_comments2": {
+    "message": "দিয়ে শুরু হয়, সেগুলো মন্তব্য।"
+  },
+  "opt_donate": {
+    "message": "Revolut-এর মাধ্যমে দান করুন"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth-এর তৈরি"
+  },
+  "opt_empty_smart": {
+    "message": "হিউরিস্টিকভাবে এখনও কিছু ধরা পড়েনি।"
+  },
+  "opt_empty_allow": {
+    "message": "অনুমোদিত তালিকায় এখনও কোনো সাইট নেই।"
+  },
+  "opt_empty_hidden": {
+    "message": "এখনও নিজে কিছু লুকানো হয়নি।"
+  },
+  "opt_empty_subs": {
+    "message": "এখনও কোনো তালিকায় সাবস্ক্রাইব করা হয়নি।"
+  },
+  "opt_no_sw": {
+    "message": "সার্ভিস ওয়ার্কার থেকে কোনো সাড়া নেই।"
+  },
+  "opt_remove": {
+    "message": "সরান"
+  },
+  "opt_filter_status": {
+    "message": "ফিল্টার সেট v$1, আপডেট: $2। শুধু ডেটা — আপনার সম্পর্কে কিছুই পাঠানো হয় না।"
+  },
+  "opt_updating": {
+    "message": "আপডেট হচ্ছে…"
+  },
+  "opt_updated": {
+    "message": "আপডেট হয়েছে (v$1, $2টি অতিরিক্ত নিয়ম)"
+  },
+  "opt_update_failed": {
+    "message": "আপডেট ব্যর্থ হয়েছে ($1)"
+  },
+  "opt_saved": {
+    "message": "সেভ হয়েছে ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1টি নিয়ম"
+  },
+  "opt_updated_ago": {
+    "message": "আপডেট: $1"
+  },
+  "opt_not_fetched": {
+    "message": "এখনও আনা হয়নি"
+  },
+  "opt_failed_colon": {
+    "message": "ব্যর্থ: $1"
+  },
+  "opt_enter_https": {
+    "message": "একটি বৈধ https:// URL লিখুন"
+  },
+  "opt_fetching": {
+    "message": "আনা হচ্ছে…"
+  },
+  "opt_subscribed_ok": {
+    "message": "সাবস্ক্রাইব হয়েছে: $1টি নিয়ম ✓"
+  },
+  "opt_failed_paren": {
+    "message": "ব্যর্থ ($1)"
+  },
+  "opt_refreshing": {
+    "message": "রিফ্রেশ হচ্ছে…"
+  },
+  "opt_refreshed": {
+    "message": "রিফ্রেশ হয়েছে ✓"
+  },
+  "opt_invalid_file": {
+    "message": "সেটিংস ফাইলটি অবৈধ।"
+  },
+  "opt_no_response": {
+    "message": "কোনো সাড়া নেই"
+  },
+  "opt_h_engine": {
+    "message": "অ্যান্টি-অ্যাডব্লক ইঞ্জিন"
+  },
+  "opt_h_rulesets": {
+    "message": "চালু থাকা স্ট্যাটিক নিয়ম-সেট"
+  },
+  "opt_h_live": {
+    "message": "লাইভ ফিল্টার ডোমেন"
+  },
+  "opt_h_last": {
+    "message": "শেষ আপডেট"
+  },
+  "opt_h_sig": {
+    "message": "আপডেটের স্বাক্ষর"
+  },
+  "opt_h_user": {
+    "message": "আমার ফিল্টার / অনুমোদিত তালিকার নিয়ম"
+  },
+  "opt_h_popup": {
+    "message": "অন্তর্ভুক্ত পপ-আপ বিজ্ঞাপন হোস্ট"
+  },
+  "opt_h_yt": {
+    "message": "YouTube বাইপাস"
+  },
+  "opt_reason_frame": {
+    "message": "বিজ্ঞাপনের মাপের অন্য ডোমেনের ফ্রেম"
+  },
+  "opt_reason_sticky": {
+    "message": "আটকে থাকা বিজ্ঞাপন ব্যানার"
+  },
+  "logRegional": {
+    "message": "আঞ্চলিক তালিকা"
+  },
+  "logFocus": {
+    "message": "ফোকাস মোড"
+  },
+  "opt_filter_lists": {
+    "message": "ফিল্টার তালিকা"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ও EasyPrivacy সবসময় চালু থাকে। নিচের তালিকাগুলো খোলা লাইসেন্সের এবং এক্সটেনশনের মধ্যেই রয়েছে, তাই কোনোটি চালু করলে কিছুই ডাউনলোড হয় না — কেবল “লেখকের কাছ থেকে” চিহ্নিত তালিকা ছাড়া।"
+  },
+  "opt_lists_core": {
+    "message": "মূল"
+  },
+  "opt_lists_regional": {
+    "message": "আঞ্চলিক"
+  },
+  "opt_lists_regional_desc": {
+    "message": "আপনার ব্রাউজারের ভাষার তালিকাটি নিজে থেকেই চালু হয়। আপনি প্রায়ই অন্য ভাষার সাইট পড়লে আরও তালিকা যোগ করুন।"
+  },
+  "opt_focus_mode": {
+    "message": "ফোকাস মোড"
+  },
+  "opt_focus_desc": {
+    "message": "যা বিজ্ঞাপন নয় কিন্তু তবুও বাধা দেয়, তা লুকান। আপনি চালু না করা পর্যন্ত এখানকার সবকিছু বন্ধ থাকে।"
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin ফিল্টার"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin টিমের বিজ্ঞাপন, ট্র্যাকার, অ্যান্টি-অ্যাডব্লক সংশোধন ও সাইট মেরামত।"
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe-এর তালিকা"
+  },
+  "opt_list_plowe_desc": {
+    "message": "বিজ্ঞাপন ও ট্র্যাকিং সার্ভারের দীর্ঘদিনের একটি তালিকা।"
+  },
+  "opt_focus_social": {
+    "message": "সোশ্যাল মিডিয়া বোতাম ও উইজেট"
+  },
+  "opt_focus_social_desc": {
+    "message": "শেয়ার বোতাম, লাইক বক্স ও এমবেড করা ফিড।"
+  },
+  "opt_focus_chat": {
+    "message": "চ্যাট ও সহায়তা উইজেট"
+  },
+  "opt_focus_chat_desc": {
+    "message": "পৃষ্ঠার কোণে ভাসমান চ্যাট বাবল।"
+  },
+  "opt_focus_newsletters": {
+    "message": "নিউজলেটার ও সাইন-আপ পপ-আপ"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“আমাদের নিউজলেটারে সাবস্ক্রাইব করুন” বক্স ও ওভারলে।"
+  },
+  "opt_focus_notifications": {
+    "message": "বিজ্ঞপ্তির অনুরোধ"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "ব্রাউজার জিজ্ঞাসা করার আগে সাইটগুলো যে “বিজ্ঞপ্তির অনুমতি দেবেন?” বক্স দেখায়।"
+  },
+  "opt_focus_ai": {
+    "message": "AI সহকারীর পপ-আপ"
+  },
+  "opt_focus_ai_desc": {
+    "message": "পৃষ্ঠায় যোগ করা চ্যাটবট বাবল ও AI পরামর্শ প্যানেল।"
+  },
+  "opt_focus_other": {
+    "message": "অন্যান্য বিরক্তিকর জিনিস"
+  },
+  "opt_focus_other_desc": {
+    "message": "আটকে থাকা বার, “অ্যাপে খুলুন” ব্যানার ও এ ধরনের অন্যান্য জঞ্জাল।"
+  },
+  "opt_badge_lang": {
+    "message": "আপনার ভাষা"
+  },
+  "opt_badge_remote": {
+    "message": "লেখকের কাছ থেকে"
+  },
+  "opt_remote_hint": {
+    "message": "অন্তর্ভুক্ত নয় (পুনর্বণ্টনের লাইসেন্স নেই): চালু করলে আপনার ব্রাউজার এটি $1 থেকে ডাউনলোড করে।"
+  },
+  "opt_downloaded_from": {
+    "message": "চালু করলে $1 থেকে ডাউনলোড হয়"
+  },
+  "opt_lists_error": {
+    "message": "Chrome তালিকার এই সংমিশ্রণটি প্রত্যাখ্যান করেছে ($1)। কয়েকটি বন্ধ করুন।"
+  },
+  "opt_badge_recommended": {
+    "message": "আপনার ভাষার জন্য প্রস্তাবিত"
+  },
+  "reportBroken": {
+    "message": "সাইট ঠিকমতো চলছে না? ঠিক করুন বা আমাদের জানান"
+  },
+  "rep_title": {
+    "message": "এই সাইটে কিছু কাজ করছে না?"
+  },
+  "rep_fix_first": {
+    "message": "এখনই ঠিক করুন"
+  },
+  "rep_site": {
+    "message": "সাইট:"
+  },
+  "rep_fix_desc": {
+    "message": "বেশিরভাগ সমস্যা এর যেকোনো একটিতেই মিটে যায়। প্রতিটি শুধু এই সাইটে প্রযোজ্য; ট্যাবটি আবার লোড হয়।"
+  },
+  "rep_fix_cosm": {
+    "message": "এখানে এলিমেন্ট লুকানো বন্ধ করুন"
+  },
+  "rep_fix_allow": {
+    "message": "এই সাইটে বিজ্ঞাপনের অনুমতি দিন"
+  },
+  "rep_fix_pause": {
+    "message": "30 মিনিটের জন্য সব জায়গায় থামান"
+  },
+  "rep_tell_us": {
+    "message": "আমাদের জানান"
+  },
+  "rep_tell_desc": {
+    "message": "আমরা স্বাক্ষরিত ফিল্টার আপডেটের মাধ্যমে সবার জন্য ভাঙা সাইট ঠিক করি, সাধারণত এক দিনের মধ্যে। এক্সটেনশন কিছুই পাঠায় না: রিপোর্টটি আপনার নিজের ইমেল অ্যাপে খোলে এবং আপনি আগে এর প্রতিটি শব্দ দেখে নেন।"
+  },
+  "rep_what": {
+    "message": "কী সমস্যা? (ঐচ্ছিক)"
+  },
+  "rep_what_ph": {
+    "message": "যেমন ভিডিও শুরু হয় না, একটি সাদা বক্স লেখাটি ঢেকে দেয়…"
+  },
+  "rep_full_url": {
+    "message": "পৃষ্ঠার পুরো ঠিকানা যোগ করুন (না হলে শুধু সাইটের নাম)"
+  },
+  "rep_preview": {
+    "message": "কী পাঠানো হবে"
+  },
+  "rep_send_mail": {
+    "message": "ইমেলে পাঠান"
+  },
+  "rep_copy": {
+    "message": "রিপোর্ট কপি করুন"
+  },
+  "rep_privacy": {
+    "message": "এই রিপোর্ট কীভাবে পরিচালনা করা হয়: গোপনীয়তা নীতি"
+  },
+  "rep_copied": {
+    "message": "কপি হয়েছে।"
+  },
+  "rep_done_cosm": {
+    "message": "এই সাইটে এলিমেন্ট লুকানো বন্ধ। আবার লোড হয়েছে — ঠিক হয়েছে কি?"
+  },
+  "rep_done_allow": {
+    "message": "এই সাইটে বিজ্ঞাপনের অনুমতি আছে। আবার লোড হয়েছে — ঠিক হয়েছে কি?"
+  },
+  "rep_done_pause": {
+    "message": "30 মিনিটের জন্য থামানো হয়েছে। সাইটটি এখন কাজ করলে দয়া করে নিচে আমাদের জানান।"
+  },
+  "cookieRejections": {
+    "message": "আপনার হয়ে প্রত্যাখ্যান করা কুকি ব্যানার: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube-এ Shorts-এর সারি, ট্যাব ও সাজেশন।"
+  },
+  "opt_focus_onetap": {
+    "message": "“Google দিয়ে সাইন ইন করুন” পপ-আপ"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "অনেক সাইটের কোণে দেখা দেওয়া অ্যাকাউন্ট বাছাইয়ের বক্স। সাইন-ইন বোতামগুলো কাজ করতে থাকে।"
+  },
+  "pickTip": {
+    "message": "লুকাতে একটি এলিমেন্টে ক্লিক করুন"
+  },
+  "pickZapTip": {
+    "message": "এই এলিমেন্টটি সরাতে ক্লিক করুন (একবার)"
+  },
+  "pickEscCancel": {
+    "message": "চেপে বাতিল করুন"
+  },
+  "opt_notices": {
+    "message": "ফিল্টার তালিকার লাইসেন্স"
+  }
+}

@@ -12,6 +12,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const argv = process.argv.slice(2);
@@ -43,15 +44,15 @@ export function auditLoops(manifest, agentIds) {
   return { count: loops.length, byLevel: { L1: loops.filter((l) => l.autonomy === "L1").length, L2: loops.filter((l) => l.autonomy === "L2").length, L3: loops.filter((l) => l.autonomy === "L3").length }, errors };
 }
 
-function runCli() {
+async function runCli() {
   const manifest = JSON.parse(readFileSync(join(ROOT, "tools", "agents", "loops", "loops.json"), "utf8"));
   const aj = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
   const r = auditLoops(manifest, new Set(aj.agents.map((a) => a.id)));
-  if (JSON_OUT) { console.log(JSON.stringify(r, null, 2)); process.exit(r.errors.length ? 1 : 0); }
+  if (JSON_OUT) { await emitJsonNow(r, r.errors.length ? 1 : 0); }
   console.log(`\n🔁 Loop-audit — ${r.count} автоматизации (L1:${r.byLevel.L1} · L2:${r.byLevel.L2} · L3:${r.byLevel.L3})\n`);
   if (!r.errors.length) console.log("  ✓ всички loop-ове са readiness-годни (декларация + автономия-guardrails)\n");
   else { console.log(`  ✗ ${r.errors.length} проблема:`); r.errors.forEach((e) => console.log(`      ${e}`)); console.log(""); }
   process.exit(r.errors.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (import.meta.url === `file://${process.argv[1]}`) await runCli();

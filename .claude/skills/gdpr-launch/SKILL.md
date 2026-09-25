@@ -1,5 +1,6 @@
 ---
 name: gdpr-launch
+disallowed-tools: Write Edit
 description: >-
   Предпусков чеклист за правна изрядност на уеб продукт спрямо ЕС правото — GDPR, ePrivacy/бисквитки, DSA,
   достъпност (EAA/EN 301 549/WCAG 2.1 AA), импресум. Ползвай ВИНАГИ преди пускане в продукция, преди

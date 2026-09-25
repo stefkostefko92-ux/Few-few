@@ -1,0 +1,10 @@
+Supreme AdBlock blokuje reklamy wszędzie — reklamy wideo na YouTube, banery, wyskakujące okna i trackery — i nie śledzi tego, co robisz.
+
+• Reklamy na YouTube są zatrzymywane u źródła, więc filmy po prostu się odtwarzają.
+• Wbudowane są EasyList, EasyPrivacy i filtry uBlock Origin, a także lista dla Twojego języka (31 list regionalnych).
+• Banery cookies: rozszerzenie klika za Ciebie „Odrzuć”, usuwa pozostałe rozmycie i blokadę przewijania i nigdy nie klika przycisku logowania, OAuth ani płatności.
+• Tryb skupienia: ukrywa dymki czatu, wyskakujące okna newsletterów, prośby o powiadomienia, widżety społecznościowe, wyskakujących asystentów AI i YouTube Shorts.
+• Blokady adblocka i okna pop-under są neutralizowane.
+• Strona nie działa? Jedno kliknięcie ją naprawia — albo daj nam znać; nic nie zostanie wysłane, zanim tego nie zobaczysz.
+• Podpisane aktualizacje filtrów dwa razy dziennie: nowe sieci reklamowe są obsługiwane w ciągu kilku godzin, bez zdalnego kodu.
+• Bez konta, bez telemetrii, bez zbierania danych. Za darmo, z dobrowolną darowizną; w wyskakującym oknie widać jedną małą kartę z oznaczeniem „Reklama” dotyczącą Carbon Stealth, twórcy rozszerzenia.

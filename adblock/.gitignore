@@ -3,3 +3,5 @@ node_modules/
 *.zip
 .DS_Store
 __pycache__/
+_metadata/
+tools/promo/assets.js

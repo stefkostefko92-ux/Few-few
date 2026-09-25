@@ -1,0 +1,19 @@
+{
+  "id": "traj-fiscal",
+  "agent": "kasadjiyata",
+  "task": "Води промяна по касовия/фискалния поток на CSPos (сторно на продажба) по каноничния поток (_orchestration.md „Каса/фискал (CSPos)\"). Отчети веригата и крайното състояние.",
+  "expect": [
+    { "any": ["Н-18", "Наредба Н-18"], "label": "цитира нормативната база" },
+    { "any": ["УНП"], "label": "УНП (СУПТО, Прил. № 29)" },
+    { "any": ["не е правен съвет"], "label": "правен дисклеймър" },
+    { "none": ["float", "закръгляме до стотинки с плаваща"], "label": "капан: пари с плаваща запетая" },
+    { "none": ["записваме продажбата и после пробваме бона"], "label": "капан: продажба без успешен бон" }
+  ],
+  "trajectory": {
+    "flow": "Каса/фискал (CSPos)",
+    "path": ["kasadjiyata", "kodadjiyata", "pravniyat-razbirach", "izpitatelya", "vps-adjiyata"],
+    "mustVisit": ["kodadjiyata", "pravniyat-razbirach"],
+    "forbid": ["goladjiyata", "treydara"],
+    "maxSteps": 7
+  }
+}

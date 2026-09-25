@@ -17,9 +17,11 @@
 //   node tools/agents/drift-lint.mjs --strict    # гейтва и на съветите (нулев дрейф)
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets } from "./oversee-lib.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -105,7 +107,8 @@ function countConsistency() {
   const checkNum = (file, label, num) => { if (num != null && num !== N) hits.push({ file, what: label, detail: `казва ${num}, а са ${N}` }); };
   const claude = read("CLAUDE.md");
   checkNum("CLAUDE.md", "purpose-built subagents", (claude.match(/(\d+)\s+purpose-built subagents/) || [])[1] | 0 || null);
-  for (const m of claude.matchAll(/(\d+)\s+(?:агента|agents|subagents)\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum("CLAUDE.md", `„${m[0]}"`, n); }
+  // САМО латиница. Кирилският вариант тук беше МЪРТЪВ КЛОН (виж rosterClaims по-долу).
+  for (const m of claude.matchAll(/(\d+)\s+(?:agents|subagents)\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum("CLAUDE.md", `„${m[0]}“`, n); }
 
   const readme = read(".claude/agents/README.md");
   const enM = readme.match(/(twenty-\w+|thirty(?:-\w+)?)\s+agents/i);
@@ -114,27 +117,95 @@ function countConsistency() {
 
   const orch = read(".claude/agents/_orchestration.md");
   const bgM = orch.match(/(Двадесет|Тридесет)\s+и\s+(\S+?те)\s+агента/);
-  if (bgM) { const base = bgM[1].toLowerCase() === "тридесет" ? 30 : 20; const ones = BG_ONES[bgM[2].toLowerCase()]; if (ones != null) checkNum(".claude/agents/_orchestration.md", `„${bgM[0]}"`, base + ones); }
-  for (const m of orch.matchAll(/(\d+)\s+агента\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum(".claude/agents/_orchestration.md", `„${m[0]}"`, n); }
+  if (bgM) { const base = bgM[1].toLowerCase() === "тридесет" ? 30 : 20; const ones = BG_ONES[bgM[2].toLowerCase()]; if (ones != null) checkNum(".claude/agents/_orchestration.md", `„${bgM[0]}“`, base + ones); }
+
+  // 3) РОСТЕРНИ ТВЪРДЕНИЯ с определителен член, из ЦЕЛИЯ агентски слой (Кръг 12, 2026-08-04).
+  //
+  // Два реални дефекта наведнъж:
+  //  (а) `tools/memory/README.md:24` твърдеше „matcher = 10-те агента", а и двата matcher-а в
+  //      settings.json изброяват 28. Файлът не беше в обхвата — проверяваха се три твърдо изброени
+  //      документа (CLAUDE.md, agents/README.md, _orchestration.md), а ростерни твърдения има и другаде.
+  //  (б) по-лошото: българските клони СЪС `\b` бяха МЪРТВИ. В JS `\b` е ASCII-дефинирана, затова
+  //      след кирилско „агента" границата никога не се получава — `/(\d+)\s+агента\b/` не съвпада
+  //      НИКОГА. Тоест проверката отчиташе „бройката съвпада навсякъде" отчасти по слепота.
+  //      (Проверено на живо: с `\b` → 0 съвпадения; без `\b` → съвпада.)
+  //
+  // ЗАЩО ИМЕННО ОПРЕДЕЛИТЕЛЕН ЧЛЕН, а не широкото „N агента". Измерено върху 125-те .md файла на
+  // слоя: широкото правило дава 7 съвпадения, от които 6 са ФАЛШИВИ — исторически записи в паметта
+  // („е 20 агента", „дава 23 агента"), подмножества („от 3 агента", „от 4 агента"), праг в CLAUDE.md
+  // („шуми в 18 агента") и дори име на модел („Sonnet 4 subagents"). Определителният член („N-те
+  // агента") значи „ВСИЧКИТЕ N", тоест е ростерно твърдение — и дава точно 1 съвпадение: реалния
+  // дефект, нула ФП. Пореден случай от същия урок: свързването етикет↔стойност в проза е NLP-трудно,
+  // затова гейтваме тясната еднозначна форма, а не широката.
+  //
+  // `_memory/` е ИЗКЛЮЧЕНО: то е датирана хроника (легитимно е поука от юни да казва „тогава бяхме
+  // 20"), а дрейфът в паметта се пази от memoryDrift + memory-freshness.
+  for (const f of agentLayerDocs())
+    for (const c of rosterClaims(read(f))) checkNum(f, `„${c.label}“`, c.num);
+
+  // 4) Бройка и ростер на УМЕНИЯТА — каноничен = папките с SKILL.md.
+  let skillIds = [];
+  try { skillIds = readdirSync(join(ROOT, ".claude", "skills")).filter((d) => existsSync(join(ROOT, ".claude", "skills", d, "SKILL.md"))); } catch { /* */ }
+  for (const f of ["CLAUDE.md", "tools/agents/CLAUDE.md"]) hits.push(...skillRosterHits(read(f), skillIds, f));
 
   return { N, hits };
 }
 
-const broken = brokenPaths();
-const drift = memoryDrift();
-const cons = countConsistency();
+/** Твърдението „Ours (BG, vetted; N)“ + изброяването след него срещу реалните умения. Чист (тестваем).
+ *  Защо (2026-09-23): `razpit` живееше в .claude/skills/ от #164, а CLAUDE.md казваше „22“ и не го
+ *  изброяваше — главната сесия четеше списък, в който умението го нямаше. Бройката на агентите се
+ *  гейтваше, на уменията — не. */
+export function skillRosterHits(text, skillIds, file = "CLAUDE.md") {
+  const m = String(text).match(/Ours \(BG, vetted; (\d+)\)/);
+  if (!m) return [];
+  const out = [];
+  if (+m[1] !== skillIds.length) out.push({ file, what: "брой умения", detail: `казва ${m[1]}, а са ${skillIds.length}` });
+  const list = String(text).slice(m.index, m.index + 1200);
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const missing = skillIds.filter((s) => !new RegExp(`(^|[^a-z0-9-])${esc(s)}(?![a-z0-9-])`).test(list));
+  if (missing.length) out.push({ file, what: "ростер на уменията", detail: `не са изброени: ${missing.join(", ")}` });
+  return out;
+}
 
-if (JSON_OUT) { console.log(JSON.stringify({ brokenPaths: broken, memoryDrift: drift, countConsistency: cons.hits }, null, 2)); process.exit(broken.length || cons.hits.length ? 1 : 0); }
+/** Ростерни твърдения („всичките N агента") в текст. Чист — за да е тестваем срещу ИЗМЕРЕНИТЕ
+ *  фалшиви положителни, а не само срещу днешното състояние на репото. */
+export function rosterClaims(text) {
+  return [...String(text).matchAll(/(\d+)\s*-\s*те\s+(?:агента|субагента|подагента)/gu)]
+    .map((m) => ({ label: m[0], num: +m[1] }));
+}
 
-console.log(`\n🧭 Drift-lint на агентския слой\n`);
-if (!broken.length) console.log("  ✓ файлови референции: нула счупени пътища в дефинициите");
-else { console.log(`  ✗ ${broken.length} СЧУПЕНИ файлови референции (сочат несъществуващ път):`); for (const h of broken) console.log(`      ${h.file}: \`${h.path}\``); }
-if (!cons.hits.length) console.log(`  ✓ consistency: бройката/ростерът съвпадат навсякъде (${cons.N} агента)`);
-else { console.log(`  ✗ ${cons.hits.length} НЕсъответствия в бройката/ростера (каноничен = ${cons.N}):`); for (const h of cons.hits) console.log(`      ${h.file} · ${h.what}: ${h.detail}`); }
-if (!drift.length) console.log("  ✓ memory↔domain: нула чужди поуки в паметите");
-else { console.log(`  ⚠ ${drift.length} възможен memory↔domain дрейф (съвет — премести при собственика):`); for (const h of drift) console.log(`      ${h.agent} ← ${h.signal}: „${h.excerpt}…" (→ ${h.owner})`); }
+/** Проследените .md на агентския слой (без `_memory/` — хроника, не твърдение за днес). */
+function agentLayerDocs() {
+  try {
+    return execFileSync("git", ["ls-files", "*.md"], { cwd: ROOT, encoding: "utf8" })
+      .trim().split("\n")
+      .filter((f) => /^(CLAUDE\.md|\.claude\/|tools\/|agents-dashboard\/)/.test(f))
+      .filter((f) => !f.startsWith(".claude/agents/_memory/"));
+  } catch { return []; }   // без git (архив/tarball) — проверката просто няма какво да обходи
+}
 
-const hard = broken.length + cons.hits.length;
-const soft = drift.length;
-console.log(`\nИтог: ${hard} твърди · ${soft} съвети · ${hard || (STRICT && soft) ? "ДРЕЙФ" : "чисто"}\n`);
-process.exit(hard || (STRICT && soft) ? 1 : 0);
+// CLI guard: файлът вече ИЗНАСЯ `rosterClaims` за тестовете, значи се внася — а върхов код с
+// `process.exit` при import убива тест-рънъра и пакетът изглежда зелен, защото е СПРЯЛ.
+// (Точно класът, който `tools/lib/import-safety.test.mjs` гейтва.)
+async function main() {
+  const broken = brokenPaths();
+  const drift = memoryDrift();
+  const cons = countConsistency();
+
+  if (JSON_OUT) { await emitJsonNow({ brokenPaths: broken, memoryDrift: drift, countConsistency: cons.hits }, broken.length || cons.hits.length ? 1 : 0); }
+
+  console.log(`\n🧭 Drift-lint на агентския слой\n`);
+  if (!broken.length) console.log("  ✓ файлови референции: нула счупени пътища в дефинициите");
+  else { console.log(`  ✗ ${broken.length} СЧУПЕНИ файлови референции (сочат несъществуващ път):`); for (const h of broken) console.log(`      ${h.file}: \`${h.path}\``); }
+  if (!cons.hits.length) console.log(`  ✓ consistency: бройката/ростерът съвпадат навсякъде (${cons.N} агента)`);
+  else { console.log(`  ✗ ${cons.hits.length} НЕсъответствия в бройката/ростера (каноничен = ${cons.N}):`); for (const h of cons.hits) console.log(`      ${h.file} · ${h.what}: ${h.detail}`); }
+  if (!drift.length) console.log("  ✓ memory↔domain: нула чужди поуки в паметите");
+  else { console.log(`  ⚠ ${drift.length} възможен memory↔domain дрейф (съвет — премести при собственика):`); for (const h of drift) console.log(`      ${h.agent} ← ${h.signal}: „${h.excerpt}…“ (→ ${h.owner})`); }
+
+  const hard = broken.length + cons.hits.length;
+  const soft = drift.length;
+  console.log(`\nИтог: ${hard} твърди · ${soft} съвети · ${hard || (STRICT && soft) ? "ДРЕЙФ" : "чисто"}\n`);
+  process.exit(hard || (STRICT && soft) ? 1 : 0);
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) await main();

@@ -12,6 +12,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const AGENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents");
 const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
@@ -35,8 +36,8 @@ function agentIds() {
   return readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")).sort();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
-function runCli() {
+if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+async function runCli() {
 const rows = [];
 let overdue = 0, staleMarkers = 0, mentions = 0;
 for (const id of agentIds()) {
@@ -56,7 +57,7 @@ for (const id of agentIds()) {
   if (od.length || sm.length) rows.push({ id, overdue: od, staleMarkers: sm });
 }
 
-if (JSON_OUT) { console.log(JSON.stringify({ today: TODAY, overdue, staleMarkers, mentions, rows }, null, 2)); process.exit(overdue ? 1 : 0); }
+if (JSON_OUT) { await emitJsonNow({ today: TODAY, overdue, staleMarkers, mentions, rows }, overdue ? 1 : 0); }
 const r = (s) => `\x1b[31m${s}\x1b[0m`, y = (s) => `\x1b[33m${s}\x1b[0m`, dim = (s) => `\x1b[90m${s}\x1b[0m`, g = (s) => `\x1b[32m${s}\x1b[0m`;
 console.log(`\n🕗  Свежест на дефинициите (${TODAY})\n`);
 for (const row of rows) {

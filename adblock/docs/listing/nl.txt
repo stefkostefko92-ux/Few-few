@@ -1,0 +1,10 @@
+Supreme AdBlock blokkeert overal advertenties — YouTube-videoadvertenties, banners, pop-ups en trackers — zonder te volgen wat u doet.
+
+• YouTube-advertenties worden bij de bron tegengehouden, zodat video’s gewoon afspelen.
+• EasyList, EasyPrivacy en de uBlock Origin-filters zijn ingebouwd, plus de lijst voor uw taal (31 regionale lijsten).
+• Cookiebanners: de extensie klikt voor u op Weigeren, verwijdert de achtergebleven vervaging en scrollblokkering, en klikt nooit op een knop voor inloggen, OAuth of betalen.
+• Focusmodus: verberg chatbubbels, pop-ups voor nieuwsbrieven, meldingsverzoeken, sociale widgets, AI-pop-ups en YouTube Shorts.
+• Anti-adblockmuren en pop-unders worden geneutraliseerd.
+• Website kapot? Eén klik lost het op, of laat het ons weten — er wordt niets verzonden zonder dat u het eerst ziet.
+• Ondertekende filterupdates twee keer per dag: nieuwe advertentienetwerken worden binnen enkele uren aangepakt, zonder externe code.
+• Geen account, geen telemetrie, geen gegevensverzameling. Gratis, met een optionele donatie; de pop-up toont één klein kaartje, gemarkeerd als ‘Adv.’, voor Carbon Stealth, de maker.

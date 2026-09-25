@@ -50,15 +50,31 @@ const base = siteUrl.replace(/\/+$/, "");
 const host = new URL(base).host;
 const dryRun = args.includes("--dry-run");
 
+// Форматът на ключа по спецификацията на IndexNow: 8–128 знака, само букви,
+// цифри и тире. Едно определение, ползвано и при изтеглянето, и при проверката.
+const KEY_RE = /^[a-zA-Z0-9-]{8,128}$/;
+
 async function resolveKey() {
   if (getOpt("--key")) return getOpt("--key").trim();
   const kf = getOpt("--key-file");
   if (kf) return (await readFile(kf, "utf8")).trim();
   if (process.env.INDEXNOW_KEY) return process.env.INDEXNOW_KEY.trim();
-  // последен опит: изтегли конвенционалния файл от живия сайт
+  // последен опит: изтегли конвенционалния файл от живия сайт.
+  //
+  // ВНИМАНИЕ (реален деплой, 07.08.2026): при SPA с `try_files … /index.html`
+  // ТОЗИ адрес връща **200 с HTML**, а не 404 — тоест `r.ok` е вярно и въпреки
+  // това няма ключ. Supreme стои точно така: ключът е на `<key>.txt`, а
+  // `/indexnow-key.txt` дава index.html. Затова проверяваме СЪДЪРЖАНИЕТО и
+  // казваме какво е дошло — иначе съобщението обвинява „липсващ ключ" за файл,
+  // който всъщност е налице, само че на друг адрес.
   try {
     const r = await fetch(`${base}/indexnow-key.txt`, { cache: "no-store", signal: AbortSignal.timeout(10000) });
-    if (r.ok) return (await r.text()).trim();
+    if (r.ok) {
+      const body = (await r.text()).trim();
+      if (KEY_RE.test(body)) return body;
+      console.error(`  ↳ ${base}/indexnow-key.txt върна 200, но съдържанието не е ключ`);
+      console.error("    (типично за SPA fallback — всеки непознат път връща index.html).");
+    }
   } catch {
     /* няма */
   }
@@ -85,9 +101,11 @@ async function collectUrls(key) {
 }
 
 const key = await resolveKey();
-if (!key || !/^[a-zA-Z0-9-]{8,128}$/.test(key)) {
+if (!key || !KEY_RE.test(key)) {
   console.error("✘ Липсва валиден IndexNow ключ. Подай --key, --key-file, env INDEXNOW_KEY,");
   console.error("  или качи ключа на <siteUrl>/indexnow-key.txt. Нов ключ: node tools/seo/indexnow.mjs --gen-key");
+  console.error("  Ако ключът е на <siteUrl>/<key>.txt (схемата на Supreme), подай и двете:");
+  console.error("  --key-file <път до файла> --key-location https://<домейн>/<key>.txt");
   process.exit(1);
 }
 // По подразбиране ползваме фиксирания път /indexnow-key.txt (както zabobovdol),

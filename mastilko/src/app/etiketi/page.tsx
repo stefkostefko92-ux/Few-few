@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import LabelStudio from "@/components/studios/LabelStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
-const TITLE = "Безплатни етикети за печат";
+const TITLE = "Безплатни етикети за печат и стикери за буркани";
 const DESC =
   "Създай етикети за буркани, кутии и продукти — избираш размер, цвят и текст, принтираш цял лист А4. Безплатно, на български, без регистрация.";
 
@@ -47,6 +49,7 @@ export const metadata: Metadata = {
     "етикети за подправки",
     "принтиране на етикети",
     "QR етикети",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/etiketi" },
   ...pageMeta(TITLE, DESC, "/etiketi"),
@@ -56,8 +59,9 @@ export default function EtiketiPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">
-          🏷️ Етикети за печат
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/etiketi.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Етикети за печат
         </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „Етикети“ е безплатен инструмент за етикети за печат на български</strong>{" "}
@@ -70,6 +74,7 @@ export default function EtiketiPage() {
       </header>
       <LabelStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools current="/etiketi" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

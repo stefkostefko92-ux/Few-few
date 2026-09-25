@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "ბლოკავს რეკლამას: YouTube-ის ვიდეორეკლამებს, ბანერებს, ამომხტარ ფანჯრებს, ტრეკერებს, ქუქი-მოთხოვნებს და ანტი-ადბლოკ კედლებს."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth-ისგან"
+  },
+  "toggleProtection": {
+    "message": "დაცვის ჩართვა/გამორთვა"
+  },
+  "protected": {
+    "message": "დაცულია"
+  },
+  "paused": {
+    "message": "პაუზაზეა"
+  },
+  "blockingHere": {
+    "message": "ამ გვერდზე რეკლამა იბლოკება"
+  },
+  "protectionOff": {
+    "message": "დაცვა გამორთულია"
+  },
+  "pause30": {
+    "message": "პაუზა 30 წუთით"
+  },
+  "pausedResume": {
+    "message": "პაუზაზეა, განაახლეთ ახლა (დარჩა $1 წთ)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "დაბლოკილი"
+  },
+  "dataSaved": {
+    "message": "დაზოგილი ტრაფიკი"
+  },
+  "timeSaved": {
+    "message": "დაზოგილი დრო"
+  },
+  "thisSite": {
+    "message": "ეს საიტი"
+  },
+  "thisPage": {
+    "message": "ეს გვერდი"
+  },
+  "blockOnSite": {
+    "message": "რეკლამის დაბლოკვა ამ საიტზე"
+  },
+  "blocking": {
+    "message": "იბლოკება"
+  },
+  "allowed": {
+    "message": "დაშვებული"
+  },
+  "cosmetics": {
+    "message": "რეკლამის დამალვა აქ"
+  },
+  "cosmeticsTitle": {
+    "message": "რეკლამის დამალვა ამ საიტზე (გამორთეთ, თუ გვერდის განლაგება ირღვევა)"
+  },
+  "on": {
+    "message": "ჩართ."
+  },
+  "off": {
+    "message": "გამორთ."
+  },
+  "blockedHere": {
+    "message": "დაბლოკილია ამ გვერდზე"
+  },
+  "logEmpty": {
+    "message": "აქ ჯერ არაფერი დაბლოკილა."
+  },
+  "logUnavailable": {
+    "message": "ჟურნალი ახლა მიუწვდომელია (ბრაუზერის კვოტა) — სცადეთ ერთ წუთში."
+  },
+  "logCore": {
+    "message": "Supreme-ის ძირითადი წესები"
+  },
+  "logYouTube": {
+    "message": "YouTube-ის რეკლამები"
+  },
+  "logParams": {
+    "message": "თვალთვალის პარამეტრები"
+  },
+  "logMalware": {
+    "message": "მავნე დომენები"
+  },
+  "logSurrogates": {
+    "message": "რეკლამის გაუვნებლებული სკრიპტები"
+  },
+  "logPrivacy": {
+    "message": "კონფიდენციალურობის დაცვა"
+  },
+  "logUser": {
+    "message": "ჩემი ფილტრები"
+  },
+  "logLive": {
+    "message": "ონლაინ განახლებები"
+  },
+  "hideElement": {
+    "message": "ელემენტის დამალვა"
+  },
+  "settings": {
+    "message": "პარამეტრები"
+  },
+  "promoSub": {
+    "message": "აღჭურვილობა და ხელსაწყოები, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "რეკლამა"
+  },
+  "support": {
+    "message": "მხარდაჭერა"
+  },
+  "filtersCount": {
+    "message": "$1+ ფილტრი",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "იერსახე"
+  },
+  "opt_extra_protection": {
+    "message": "დამატებითი დაცვა"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection-ის ჟურნალი"
+  },
+  "opt_allowlisted_sites": {
+    "message": "დაშვებული საიტები"
+  },
+  "opt_my_filters": {
+    "message": "ჩემი ფილტრები"
+  },
+  "opt_hidden_elements": {
+    "message": "დამალული ელემენტები"
+  },
+  "opt_filter_updates": {
+    "message": "ფილტრების განახლება"
+  },
+  "opt_engine_health": {
+    "message": "ძრავის მდგომარეობა"
+  },
+  "opt_backup": {
+    "message": "სარეზერვო ასლი"
+  },
+  "opt_support_development": {
+    "message": "დაუჭირეთ მხარი განვითარებას"
+  },
+  "opt_theme": {
+    "message": "თემა"
+  },
+  "opt_sync_across_devices": {
+    "message": "სინქრონიზაცია მოწყობილობებს შორის"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube-ის რეკლამის დაბლოკვა"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "ქუქი / თანხმობის ბანერები"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "ანტი-ადბლოკ კედლების გვერდის ავლა"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta-ს სპონსორირებული პოსტები"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "თვალთვალის პარამეტრების წაშლა"
+  },
+  "opt_malware_protection": {
+    "message": "დაცვა მავნე პროგრამებისგან"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "რეკლამის თარგეთინგის ბრაუზერის API-ების დაბლოკვა"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "თვალთვალის შუქურებისა და კრიპტომაინერების დაბლოკვა"
+  },
+  "opt_auto_update_filters": {
+    "message": "ფილტრების ავტომატური განახლება"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (მუქი) ან ღია"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "პარამეტრების, დაშვებული საიტების სიისა და ფილტრების სინქრონიზაცია ყველა Chrome-ში, სადაც შესული ხართ"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "შლის ვიდეორეკლამებს YouTube-ზე. გამორთეთ, თუ ვიდეოები არ ირთვება."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "ავტომატურად ხურავს „ქუქი-ფაილების მიღების“ მოთხოვნებს"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "მალავს „გამორთეთ რეკლამის ბლოკერი“ კედლებს და აღადგენს გვერდს"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "მალავს „სპონსორირებულ“ პოსტებს Facebook-სა და Instagram-ზე"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "შლის utm_*, fbclid, gclid და სხვა დაწკაპუნების იდენტიფიკატორებს თქვენ მიერ გახსნილი ბმულებიდან"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "ბლოკავს ცნობილ მავნე დომენებს (abuse.ch-ის URLhaus სია)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "თიშავს Google Topics, FLoC და Protected Audience სარეკლამო API-ებს ყველა საიტზე"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "აჩერებს მესამე მხარის ბმულების აუდიტის / beacon პინგებს, შლის თვალთვალის ქუქი-ფაილებს ცნობილი სარეკლამო ტექნოლოგიების პასუხებიდან და ბლოკავს ბრაუზერში კრიპტომაინინგის სკრიპტებს. გამორთეთ, თუ საიტის ანალიტიკაზე დამოკიდებული ფუნქცია გაუმართავად მუშაობს."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "დღეში დაახლოებით ორჯერ იწერს ახალ დაბლოკვის წესებსა და YouTube-ის შესწორებებს adblock.carbonstealth.eu-დან. მხოლოდ მონაცემები, კოდი არა; მოთხოვნა არ შეიცავს იდენტიფიკატორებს ან დათვალიერების მონაცემებს."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "ევრისტიკულად (ფილტრების სიის გარეშე) დაჭერილი რეკლამების ცოცხალი ჟურნალი, უახლესი — პირველი."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "გამოწერილი სიები ტექსტად იწერება (არასდროს კოდად), ყოველდღე ახლდება და ინახება ზემოთ მოცემულ მართულ ბლოკებში. სიის წესების მოსაშორებლად წაშალეთ სია."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "ელემენტები, რომლებიც ხელით დამალეთ ამრჩევით, დაჯგუფებული საიტების მიხედვით."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "ცოცხალი დიაგნოსტიკა — ყველაფერი ლოკალურად გამოითვლება. თუ რამე წითელია, „განახლება ახლავე“ ან გაფართოების გადატვირთვა ჩვეულებრივ აგვარებს პრობლემას."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ყველასთვის უფასოა. თუ გსურთ, დაგვეხმაროთ მის მხარდაჭერაში, შემოწირულობა მისასალმებელია, მაგრამ არასდროს სავალდებულო."
+  },
+  "opt_reset_statistics": {
+    "message": "სტატისტიკის განულება"
+  },
+  "opt_add": {
+    "message": "დამატება"
+  },
+  "opt_save_filters": {
+    "message": "ფილტრების შენახვა"
+  },
+  "opt_subscribe": {
+    "message": "გამოწერა"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "გამოწერების განახლება ახლავე"
+  },
+  "opt_update_now": {
+    "message": "განახლება ახლავე"
+  },
+  "opt_refresh": {
+    "message": "განახლება"
+  },
+  "opt_export_settings": {
+    "message": "პარამეტრების ექსპორტი"
+  },
+  "opt_import_settings": {
+    "message": "პარამეტრების იმპორტი"
+  },
+  "opt_e_g_example_com": {
+    "message": "მაგ. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! მაგალითი\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ფილტრების სიის URL-ის გამოწერა (მაგ. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock-ის პარამეტრები"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · პარამეტრები"
+  },
+  "opt_theme_light": {
+    "message": "ღია"
+  },
+  "opt_badge_unique": {
+    "message": "უნიკალური"
+  },
+  "opt_smart_desc": {
+    "message": "იჭერს რეკლამებს, რომლებსაც ჯერ არცერთი ფილტრების სია არ იცნობს: სხვა წყაროდან ჩატვირთული, სტანდარტული სარეკლამო ადგილის ზომის ფრეიმები მაშინვე იმალება, წესების გარეშე."
+  },
+  "opt_caught_so_far": {
+    "message": "დაჭერილია აქამდე."
+  },
+  "opt_allow_desc": {
+    "message": "ამ დომენებზე რეკლამა არ იბლოკება."
+  },
+  "opt_fh_one": {
+    "message": "თითო წესი თითო სტრიქონზე."
+  },
+  "opt_fh_blocks": {
+    "message": "ბლოკავს დომენს;"
+  },
+  "opt_fh_everywhere": {
+    "message": "მალავს ელემენტს ყველგან;"
+  },
+  "opt_fh_site": {
+    "message": "მალავს მას მხოლოდ ამ საიტზე."
+  },
+  "opt_fh_comments": {
+    "message": "კომენტარის სტრიქონები იწყება"
+  },
+  "opt_fh_comments2": {
+    "message": "სიმბოლოთი."
+  },
+  "opt_donate": {
+    "message": "შემოწირულობა Revolut-ით"
+  },
+  "opt_made_by": {
+    "message": "შექმნილია Carbon Stealth-ის მიერ"
+  },
+  "opt_empty_smart": {
+    "message": "ევრისტიკულად ჯერ არაფერი დაჭერილა."
+  },
+  "opt_empty_allow": {
+    "message": "დაშვებული საიტები ჯერ არ არის."
+  },
+  "opt_empty_hidden": {
+    "message": "ხელით ჯერ არაფერი დამალულა."
+  },
+  "opt_empty_subs": {
+    "message": "გამოწერილი სიები ჯერ არ არის."
+  },
+  "opt_no_sw": {
+    "message": "Service worker არ პასუხობს."
+  },
+  "opt_remove": {
+    "message": "წაშლა"
+  },
+  "opt_filter_status": {
+    "message": "ფილტრების ნაკრები v$1, განახლდა $2. მხოლოდ მონაცემები — თქვენ შესახებ არაფერი იგზავნება."
+  },
+  "opt_updating": {
+    "message": "ახლდება…"
+  },
+  "opt_updated": {
+    "message": "განახლდა (v$1, $2 დამატებითი წესი)"
+  },
+  "opt_update_failed": {
+    "message": "განახლება ვერ მოხერხდა ($1)"
+  },
+  "opt_saved": {
+    "message": "შენახულია ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 წესი"
+  },
+  "opt_updated_ago": {
+    "message": "განახლდა $1"
+  },
+  "opt_not_fetched": {
+    "message": "ჯერ არ ჩამოტვირთულა"
+  },
+  "opt_failed_colon": {
+    "message": "შეცდომა: $1"
+  },
+  "opt_enter_https": {
+    "message": "შეიყვანეთ სწორი https:// URL"
+  },
+  "opt_fetching": {
+    "message": "იტვირთება…"
+  },
+  "opt_subscribed_ok": {
+    "message": "გამოწერილია: $1 წესი ✓"
+  },
+  "opt_failed_paren": {
+    "message": "ვერ მოხერხდა ($1)"
+  },
+  "opt_refreshing": {
+    "message": "ახლდება…"
+  },
+  "opt_refreshed": {
+    "message": "განახლდა ✓"
+  },
+  "opt_invalid_file": {
+    "message": "პარამეტრების ფაილი არასწორია."
+  },
+  "opt_no_response": {
+    "message": "პასუხი არ არის"
+  },
+  "opt_h_engine": {
+    "message": "ანტი-ადბლოკ ძრავა"
+  },
+  "opt_h_rulesets": {
+    "message": "ჩართული სტატიკური წესების ნაკრებები"
+  },
+  "opt_h_live": {
+    "message": "ცოცხალი ფილტრის დომენები"
+  },
+  "opt_h_last": {
+    "message": "ბოლო განახლება"
+  },
+  "opt_h_sig": {
+    "message": "განახლებების ხელმოწერები"
+  },
+  "opt_h_user": {
+    "message": "ჩემი ფილტრები / დაშვების წესები"
+  },
+  "opt_h_popup": {
+    "message": "ჩაშენებული ამომხტარი რეკლამის ჰოსტები"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-ის გვერდის ავლა"
+  },
+  "opt_reason_frame": {
+    "message": "რეკლამის ზომის ფრეიმი სხვა წყაროდან"
+  },
+  "opt_reason_sticky": {
+    "message": "მიმაგრებული სარეკლამო ბანერი"
+  },
+  "logRegional": {
+    "message": "რეგიონული სიები"
+  },
+  "logFocus": {
+    "message": "ფოკუსის რეჟიმი"
+  },
+  "opt_filter_lists": {
+    "message": "ფილტრების სიები"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList და EasyPrivacy ყოველთვის ჩართულია. ქვემოთ მოცემული სიები ღია ლიცენზიისაა და ჩაშენებულია გაფართოებაში, ამიტომ მათი ჩართვა არაფერს ჩამოტვირთავს — გარდა იმ სიისა, რომელიც მონიშნულია, როგორც ავტორისგან მომდინარე."
+  },
+  "opt_lists_core": {
+    "message": "ძირითადი"
+  },
+  "opt_lists_regional": {
+    "message": "რეგიონული"
+  },
+  "opt_lists_regional_desc": {
+    "message": "თქვენი ბრაუზერის ენის სია თავისით ირთვება. დაამატეთ სხვებიც, თუ ხშირად კითხულობთ საიტებს სხვა ენებზე."
+  },
+  "opt_focus_mode": {
+    "message": "ფოკუსის რეჟიმი"
+  },
+  "opt_focus_desc": {
+    "message": "დამალეთ ის, რაც რეკლამა არ არის, მაგრამ მაინც ხელს უშლის. აქ ყველაფერი გამორთულია, სანამ თავად არ ჩართავთ."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin-ის ფილტრები"
+  },
+  "opt_list_ubo_desc": {
+    "message": "რეკლამები, ტრეკერები, ანტი-ადბლოკ შესწორებები და საიტების გამართვა uBlock Origin-ის გუნდისგან."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe-ს სია"
+  },
+  "opt_list_plowe_desc": {
+    "message": "სარეკლამო და თვალთვალის სერვერების დიდი ხნის სია."
+  },
+  "opt_focus_social": {
+    "message": "სოციალური ქსელების ღილაკები და ვიჯეტები"
+  },
+  "opt_focus_social_desc": {
+    "message": "გაზიარების ღილაკები, მოწონების ბლოკები და ჩაშენებული არხები."
+  },
+  "opt_focus_chat": {
+    "message": "ჩატისა და მხარდაჭერის ვიჯეტები"
+  },
+  "opt_focus_chat_desc": {
+    "message": "გვერდის კუთხეში მოტივტივე ჩატის ბუშტები."
+  },
+  "opt_focus_newsletters": {
+    "message": "ბიულეტენისა და რეგისტრაციის ამომხტარი ფანჯრები"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "„გამოიწერეთ ჩვენი ბიულეტენი“ ტიპის ბლოკები და გადაფარვები."
+  },
+  "opt_focus_notifications": {
+    "message": "შეტყობინებების მოთხოვნები"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "„დაუშვებთ შეტყობინებებს?“ ტიპის ფანჯრები, რომლებსაც საიტები აჩვენებს, სანამ ბრაუზერი იკითხავს."
+  },
+  "opt_focus_ai": {
+    "message": "ხელოვნური ინტელექტის ასისტენტის ფანჯრები"
+  },
+  "opt_focus_ai_desc": {
+    "message": "გვერდებზე დამატებული ჩატბოტის ბუშტები და ხელოვნური ინტელექტის შეთავაზებების პანელები."
+  },
+  "opt_focus_other": {
+    "message": "სხვა შემაწუხებელი ელემენტები"
+  },
+  "opt_focus_other_desc": {
+    "message": "მიმაგრებული ზოლები, „გახსენით აპში“ ბანერები და მსგავსი ხმაური."
+  },
+  "opt_badge_lang": {
+    "message": "თქვენი ენა"
+  },
+  "opt_badge_remote": {
+    "message": "ავტორისგან"
+  },
+  "opt_remote_hint": {
+    "message": "არ არის ჩაშენებული (გავრცელების ლიცენზია არ გვაქვს): ჩართვისას თქვენი ბრაუზერი მას ჩამოტვირთავს აქედან: $1."
+  },
+  "opt_downloaded_from": {
+    "message": "ჩართვისას ჩამოიტვირთება აქედან: $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome-მა უარყო სიების ეს კომბინაცია ($1). გამორთეთ ზოგიერთი."
+  },
+  "opt_badge_recommended": {
+    "message": "რეკომენდებულია თქვენი ენისთვის"
+  },
+  "reportBroken": {
+    "message": "საიტი გაფუჭდა? გაასწორეთ ან შეგვატყობინეთ"
+  },
+  "rep_title": {
+    "message": "რამე არ მუშაობს ამ საიტზე?"
+  },
+  "rep_fix_first": {
+    "message": "გაასწორეთ ახლავე"
+  },
+  "rep_site": {
+    "message": "საიტი:"
+  },
+  "rep_fix_desc": {
+    "message": "პრობლემების უმეტესობა ერთ-ერთი ამით გვარდება. თითოეული მხოლოდ ამ საიტს ეხება; ჩანართი გადაიტვირთება."
+  },
+  "rep_fix_cosm": {
+    "message": "ელემენტების დამალვის გამორთვა აქ"
+  },
+  "rep_fix_allow": {
+    "message": "რეკლამის დაშვება ამ საიტზე"
+  },
+  "rep_fix_pause": {
+    "message": "პაუზა ყველგან 30 წუთით"
+  },
+  "rep_tell_us": {
+    "message": "შეგვატყობინეთ"
+  },
+  "rep_tell_desc": {
+    "message": "გაფუჭებულ საიტებს ყველასთვის ვასწორებთ ხელმოწერილი ფილტრების განახლებით, ჩვეულებრივ ერთ დღეში. გაფართოება არაფერს აგზავნის: ანგარიში იხსნება თქვენს ელფოსტის აპში და მის ყოველ სიტყვას ჯერ თქვენ ხედავთ."
+  },
+  "rep_what": {
+    "message": "რა არის არასწორად? (არასავალდებულო)"
+  },
+  "rep_what_ph": {
+    "message": "მაგ. ვიდეო არ ირთვება, სტატიას თეთრი ყუთი ფარავს…"
+  },
+  "rep_full_url": {
+    "message": "გვერდის სრული მისამართის დართვა (სხვა შემთხვევაში მხოლოდ საიტის სახელი)"
+  },
+  "rep_preview": {
+    "message": "რა გაიგზავნება"
+  },
+  "rep_send_mail": {
+    "message": "ელფოსტით გაგზავნა"
+  },
+  "rep_copy": {
+    "message": "ანგარიშის კოპირება"
+  },
+  "rep_privacy": {
+    "message": "როგორ მუშავდება ეს ანგარიში: კონფიდენციალურობის პოლიტიკა"
+  },
+  "rep_copied": {
+    "message": "დაკოპირდა."
+  },
+  "rep_done_cosm": {
+    "message": "ელემენტების დამალვა ამ საიტზე გამორთულია. გადაიტვირთა — გასწორდა?"
+  },
+  "rep_done_allow": {
+    "message": "რეკლამა ამ საიტზე დაშვებულია. გადაიტვირთა — გასწორდა?"
+  },
+  "rep_done_pause": {
+    "message": "პაუზა 30 წუთით. თუ საიტი ახლა მუშაობს, გთხოვთ, შეგვატყობინოთ ქვემოთ."
+  },
+  "cookieRejections": {
+    "message": "თქვენ ნაცვლად უარყოფილი ქუქი-ბანერები: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts-ის თაროები, ჩანართი და შეთავაზებები YouTube-ზე."
+  },
+  "opt_focus_onetap": {
+    "message": "„Google-ით შესვლის“ ფანჯრები"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "ანგარიშის ამრჩევი, რომელიც ბევრი საიტის კუთხეში ჩნდება. შესვლის ღილაკები კვლავ მუშაობს."
+  },
+  "pickTip": {
+    "message": "დააწკაპუნეთ ელემენტზე მის დასამალად"
+  },
+  "pickZapTip": {
+    "message": "დააწკაპუნეთ ამ ელემენტის წასაშლელად (ერთჯერადად)"
+  },
+  "pickEscCancel": {
+    "message": "— გაუქმება"
+  },
+  "opt_notices": {
+    "message": "ფილტრების სიების ლიცენზიები"
+  }
+}

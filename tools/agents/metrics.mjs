@@ -13,6 +13,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets } from "./oversee-lib.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const JSON_PATH = join(ROOT, "agents-dashboard", "agents.json");
@@ -73,7 +74,7 @@ try {
 
 const payload = { fleet, agents: per };
 if (WRITE) { writeFileSync(OUT, JSON.stringify(payload, null, 2)); if (!JSON_OUT) console.log(`✎ записан ${OUT.replace(ROOT + "/", "")}`); }
-if (JSON_OUT) { console.log(JSON.stringify(payload, null, 2)); process.exit(0); }
+if (JSON_OUT) { await emitJsonNow(payload, 0); }
 
 console.log(`\n📊  Метрики на флота (${TODAY})\n`);
 console.log(`  Поуки: ${totalLessons} общо · средно ${fleet.avgLessons}/агент · медиана ${fleet.medianLessons}`);

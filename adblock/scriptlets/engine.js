@@ -16,6 +16,21 @@
 (function () {
   "use strict";
 
+  // Captured before any page script or IMPL (json-prune) can wrap them.
+  var nativeParse = JSON.parse;
+  var nativeStringify = JSON.stringify;
+  var nativeSlice = Array.prototype.slice;
+  var nativeIsArray = Array.isArray;
+  var nativeHasOwn = Object.prototype.hasOwnProperty;
+  var nativeRAF = typeof requestAnimationFrame === "function" ? requestAnimationFrame : null;
+  var nativeTimer = typeof setTimeout === "function" ? setTimeout : null;
+
+  // ---- policy: the single source of truth (scriptlets/policy.js) -----------
+  // The build inlines policy.js here; the same file is loaded by the service
+  // worker (importScripts) and by the build/tests (node:vm). Names, argument
+  // grammar, dictionaries, selector/attr/tag/cookie rules, protected hosts.
+  /*__SCRIPTLET_POLICY__*/
+
   // ---- shared helpers -----------------------------------------------------
 
   // Turn a uBO-style needle into a RegExp. `/re/flags` → that regexp; a plain
@@ -28,13 +43,16 @@
     var m = /^\/(.+)\/([a-z]*)$/.exec(s);
     if (m) {
       var body = m[1];
-      var q = (body.match(/[*+]|\{\d/g) || []).length;
-      if (body.length > 200 || q > 2) return null;
-      // Reject a quantified group that also contains a quantifier — the classic
-      // catastrophic-backtracking shape like (a+)+ or (a*)* (q can be ≤2) — and a
-      // quantified group with an alternation, which overlaps like (a|a)+.
-      if (/\([^)]*[*+][^)]*\)[*+?]/.test(body)) return null;
-      if (/\([^)]*\|[^)]*\)[*+]/.test(body)) return null;
+      // ReDoS guard: cap length, cap quantifiers (INCLUDING "?") and reject ANY
+      // quantified group — (a+)+, (a|a)+, ((.)|(.))+, ((a|a)?)+, (.?){30} are
+      // all catastrophic and all end a group with a quantifier. Structural
+      // scans like /\([^)]*…\)/ are blind across nested ")" so we don't rely
+      // on them. Rejected patterns match NOTHING (see needleMatcher).
+      var q = (body.match(/[*+?]|\{\d/g) || []).length;
+      // q ≤ 1: two quantifiers already allow polynomial blowup (/.*.*=/ ≈ 4s
+      // on a 5k string) — parity with content.js.
+      if (body.length > 200 || q > 1) return null;
+      if (/\)[*+?{]/.test(body)) return null;
       try {
         return new RegExp(body, m[2].replace(/[^gimsuy]/g, ""));
       } catch (e) {
@@ -45,29 +63,6 @@
       return new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
     } catch (e) {
       return null;
-    }
-  }
-
-  // Resolve a uBO set-constant token to a concrete value. Only tokens from this
-  // fixed dictionary (plus plain integers) are ever produced by the build's
-  // validator, so a directive can never smuggle arbitrary code in as a "value".
-  function tokenValue(raw) {
-    switch (raw) {
-      case "false": return { ok: true, v: false };
-      case "true": return { ok: true, v: true };
-      case "null": return { ok: true, v: null };
-      case "undefined": return { ok: true, v: undefined };
-      case "noopFunc": return { ok: true, v: function () {} };
-      case "trueFunc": return { ok: true, v: function () { return true; } };
-      case "falseFunc": return { ok: true, v: function () { return false; } };
-      case "":
-      case "emptyStr": return { ok: true, v: "" };
-      case "emptyArr": return { ok: true, v: [] };
-      case "emptyObj": return { ok: true, v: {} };
-      case "''": return { ok: true, v: "" };
-      default:
-        if (/^-?\d+$/.test(raw)) return { ok: true, v: parseInt(raw, 10) };
-        return { ok: false };
     }
   }
 
@@ -109,12 +104,26 @@
     if (cur && typeof cur === "object") { try { delete cur[parts[parts.length - 1]]; } catch (e) {} }
   }
 
-  // Run fn now and on every DOM mutation (for DOM-touching scriptlets).
+  // Run fn now and on DOM mutations (for DOM-touching scriptlets). Mutation
+  // bursts are coalesced into one pass per animation frame (setTimeout when the
+  // tab is hidden and rAF is paused) using natives captured at start, so neither
+  // the page nor our own timer defusers can swallow the callback.
   function onEachMutation(fn) {
     var run = function () { try { fn(); } catch (e) {} };
+    var pending = false;
+    var go = function () { pending = false; run(); };
+    var schedule = function () {
+      if (pending) return;
+      pending = true;
+      try {
+        if (nativeRAF && document.visibilityState !== "hidden") nativeRAF.call(window, go);
+        else if (nativeTimer) nativeTimer.call(window, go, 50);
+        else go();
+      } catch (e) { go(); }
+    };
     run();
     try {
-      var mo = new MutationObserver(run);
+      var mo = new MutationObserver(schedule);
       var start = function () {
         if (document.documentElement) {
           mo.observe(document.documentElement, { subtree: true, childList: true, attributes: true });
@@ -129,11 +138,38 @@
   // A missing/empty needle matches everything; "!" inverts the result.
   function needleMatcher(raw) {
     var neg = typeof raw === "string" && raw.charAt(0) === "!";
-    var re = toReg(neg ? raw.slice(1) : raw);
+    var body = neg ? raw.slice(1) : raw;
+    var re = toReg(body);
+    // A needle that was REJECTED by the ReDoS guard must match nothing —
+    // never "everything" — or a bad regex would defuse every timer/listener.
+    if (body && !re) return function () { return false; };
     return function (str) {
       var m = re ? re.test(str) : true;
       return neg ? !m : m;
     };
+  }
+
+  // no-setTimeout-if / no-setInterval-if share one defuser: drop calls whose
+  // callback source matches `search` (and, if given, whose delay equals `delay`).
+  function defuseTimer(prop, search, delay) {
+    var match = needleMatcher(search);
+    var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
+    var orig = window[prop];
+    if (typeof orig !== "function") return;
+    window[prop] = function (fn, t) {
+      try {
+        var src = typeof fn === "function" ? fn.toString() : String(fn);
+        var mDelay = isNaN(wanted) || wanted === t;
+        if (match(src) && mDelay) return 0;
+      } catch (e) {}
+      return orig.apply(this, arguments);
+    };
+  }
+  // DOM-touching scriptlets: apply fn to every element matching sel, now and on mutation.
+  function forEachMatch(sel, fn) {
+    onEachMutation(function () {
+      document.querySelectorAll(sel).forEach(function (el) { try { fn(el); } catch (e) {} });
+    });
   }
 
   // ---- scriptlet implementations -----------------------------------------
@@ -143,15 +179,13 @@
     // set-constant(chain, value): pin window.<chain> to a constant from the
     // value dictionary; later writes are ignored (or preserved if identical).
     "set-constant": function (chain, rawValue) {
-      var t = tokenValue(rawValue);
+      var t = SA_POLICY.tokenValue(rawValue);
       if (!t.ok) return;
       var value = t.v;
       var parts = chain.split(".");
       (function define(owner, i) {
         var prop = parts[i];
         if (i === parts.length - 1) {
-          var cur;
-          try { cur = owner[prop]; } catch (e) {}
           try {
             Object.defineProperty(owner, prop, {
               get: function () { return value; },
@@ -215,7 +249,7 @@
     "abort-current-script": function (chain, search) {
       var r = resolve(chain);
       if (!r) return;
-      var re = toReg(search);
+      var match = needleMatcher(search);
       var val;
       try { val = r.owner[r.prop]; } catch (e) {}
       var msg = noise();
@@ -223,7 +257,7 @@
         Object.defineProperty(r.owner, r.prop, {
           get: function () {
             var s = document.currentScript;
-            if (s && s.tagName === "SCRIPT" && (!re || re.test(s.textContent || ""))) {
+            if (s && s.tagName === "SCRIPT" && match(s.textContent || "")) {
               throw new ReferenceError(msg);
             }
             return val;
@@ -237,42 +271,16 @@
     // no-setTimeout-if(search, delay): drop setTimeout calls whose callback
     // source matches `search` (and, if given, whose delay equals `delay`).
     // Leading "!" on search inverts the match.
-    "no-setTimeout-if": function (search, delay) {
-      var match = needleMatcher(search);
-      var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
-      var orig = window.setTimeout;
-      if (typeof orig !== "function") return;
-      window.setTimeout = function (fn, t) {
-        try {
-          var src = typeof fn === "function" ? fn.toString() : String(fn);
-          var mDelay = isNaN(wanted) || wanted === t;
-          if (match(src) && mDelay) return 0;
-        } catch (e) {}
-        return orig.apply(this, arguments);
-      };
-    },
+    "no-setTimeout-if": function (search, delay) { defuseTimer("setTimeout", search, delay); },
 
     // no-setInterval-if(search, delay): same as above for setInterval.
-    "no-setInterval-if": function (search, delay) {
-      var match = needleMatcher(search);
-      var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
-      var orig = window.setInterval;
-      if (typeof orig !== "function") return;
-      window.setInterval = function (fn, t) {
-        try {
-          var src = typeof fn === "function" ? fn.toString() : String(fn);
-          var mDelay = isNaN(wanted) || wanted === t;
-          if (match(src) && mDelay) return 0;
-        } catch (e) {}
-        return orig.apply(this, arguments);
-      };
-    },
+    "no-setInterval-if": function (search, delay) { defuseTimer("setInterval", search, delay); },
 
     // addEventListener-defuser(typeSearch, funcSearch): swallow addEventListener
     // registrations whose type and/or listener source match.
     "addEventListener-defuser": function (typeSearch, funcSearch) {
-      var reType = toReg(typeSearch);
-      var reFunc = toReg(funcSearch);
+      var mType = needleMatcher(typeSearch);
+      var mFunc = needleMatcher(funcSearch);
       var proto = window.EventTarget && EventTarget.prototype;
       if (!proto || typeof proto.addEventListener !== "function") return;
       var orig = proto.addEventListener;
@@ -281,7 +289,7 @@
           var ls = typeof listener === "function" ? listener.toString()
             : listener && typeof listener.handleEvent === "function" ? listener.handleEvent.toString()
             : String(listener);
-          if ((!reType || reType.test(String(type))) && (!reFunc || reFunc.test(ls))) return;
+          if (mType(String(type)) && mFunc(ls)) return;
         } catch (e) {}
         return orig.apply(this, arguments);
       };
@@ -334,19 +342,59 @@
       };
     },
 
+    // no-xhr-if(cond): the XMLHttpRequest twin of no-fetch-if — a matching request
+    // (URL needle / "method:X" / "*") is never sent and completes as an empty 200,
+    // which is what anti-adblock probes ("can I load ads.js?") are told.
+    "no-xhr-if": function (rawCond) {
+      var conds = rawCond ? String(rawCond).split(/\s+/).filter(Boolean) : [];
+      var X = window.XMLHttpRequest;
+      if (typeof X !== "function" || !X.prototype) return;
+      var P = X.prototype, origOpen = P.open, origSend = P.send;
+      var held = new WeakMap();
+      P.open = function (method, url) {
+        try {
+          var u = String(url);
+          var match = conds.length === 0 || conds.every(function (c) {
+            if (c === "*") return true;
+            if (c.indexOf("method:") === 0) return String(method).toLowerCase() === c.slice(7).toLowerCase();
+            var re = toReg(c);
+            return re ? re.test(u) : u.indexOf(c) >= 0;
+          });
+          if (match) held.set(this, u); else held.delete(this);
+        } catch (e) {}
+        return origOpen.apply(this, arguments);
+      };
+      P.send = function () {
+        if (!held.has(this)) return origSend.apply(this, arguments);
+        var xhr = this, u = held.get(this);
+        try {
+          var fixed = { readyState: 4, status: 200, statusText: "OK", response: "", responseText: "", responseURL: u };
+          for (var k in fixed) Object.defineProperty(xhr, k, { value: fixed[k], configurable: true });
+          setTimeout(function () {
+            try {
+              xhr.dispatchEvent(new Event("readystatechange"));
+              xhr.dispatchEvent(new ProgressEvent("load"));
+              xhr.dispatchEvent(new ProgressEvent("loadend"));
+            } catch (e) {}
+          }, 1);
+        } catch (e) {
+          return origSend.apply(this, arguments);
+        }
+      };
+    },
+
     // no-window-open-if(search): block window.open() for matching URLs (leading
     // "!" inverts). Neutralises pop-under / pop-up ad launchers.
     "no-window-open-if": function (rawSearch) {
-      var neg = typeof rawSearch === "string" && rawSearch.charAt(0) === "!";
-      var re = toReg(neg ? rawSearch.slice(1) : rawSearch);
+      // needleMatcher, not a hand-rolled copy: a needle REJECTED by the ReDoS
+      // guard must match nothing — a copy that mapped null→"match all" would
+      // block every window.open on the host.
+      var match = needleMatcher(rawSearch);
       var orig = window.open;
       if (typeof orig !== "function") return;
       window.open = function (url) {
         try {
-          var u = String(url || "");
-          var m = re ? re.test(u) : true;
-          if (neg) m = !m;
-          if (m) return null;
+          if (match(String(url || ""))) return null;
         } catch (e) {}
         return orig.apply(this, arguments);
       };
@@ -357,11 +405,8 @@
     "remove-attr": function (rawAttrs, selector) {
       var attrs = String(rawAttrs || "").split(/[\s,|]+/).filter(Boolean);
       if (!attrs.length) return;
-      var sel = selector || "[" + attrs.join("],[") + "]";
-      onEachMutation(function () {
-        document.querySelectorAll(sel).forEach(function (el) {
-          attrs.forEach(function (a) { try { el.removeAttribute(a); } catch (e) {} });
-        });
+      forEachMatch(selector || "[" + attrs.join("],[") + "]", function (el) {
+        attrs.forEach(function (a) { el.removeAttribute(a); });
       });
     },
 
@@ -370,12 +415,133 @@
     "remove-class": function (rawClasses, selector) {
       var classes = String(rawClasses || "").split(/[\s,|]+/).filter(Boolean);
       if (!classes.length) return;
-      var sel = selector || "." + classes.map(function (c) { return CSS.escape(c); }).join(",.");
-      onEachMutation(function () {
-        document.querySelectorAll(sel).forEach(function (el) {
-          classes.forEach(function (c) { try { el.classList.remove(c); } catch (e) {} });
-        });
+      forEachMatch(selector || "." + classes.map(function (c) { return CSS.escape(c); }).join(",."), function (el) {
+        classes.forEach(function (c) { el.classList.remove(c); });
       });
+    },
+
+    // href-sanitizer(selector, source): rewrite tracking/redirect links to
+    // their real destination. source = "text" (default: the link's visible URL
+    // text), "?param" (a query parameter of the href) or "[attr]" (another
+    // attribute). Only http(s) targets are accepted, so a link can never be
+    // pointed at javascript:/data: — this cleans links, it cannot inject them.
+    "href-sanitizer": function (selector, source) {
+      if (!selector) return;
+      var src = source || "text";
+      forEachMatch(selector, function (a) {
+        var href = a.getAttribute("href") || "";
+        var target = "";
+        if (src === "text") target = (a.textContent || "").trim();
+        else if (src.charAt(0) === "?") target = new URL(href, location.href).searchParams.get(src.slice(1)) || "";
+        else if (src.charAt(0) === "[" && src.slice(-1) === "]") target = a.getAttribute(src.slice(1, -1)) || "";
+        if (/^https?:\/\/[^\s"'<>]+$/.test(target) && target !== href) a.setAttribute("href", target);
+      });
+    },
+
+    // remove-node-text(nodeName, search): blank the text of matching nodes
+    // (e.g. "script" + a needle) as they appear. Best-effort in Chromium:
+    // parser-inserted inline scripts run before mutation records are
+    // delivered, so it is most effective for dynamically inserted nodes and
+    // non-script text. `search` is required (an empty needle would blank all).
+    "remove-node-text": function (nodeName, search) {
+      if (!nodeName || !search) return;
+      var tag = String(nodeName).toLowerCase();
+      var match = needleMatcher(search);
+      forEachMatch(tag, function (n) {
+        if (n.nodeType !== 1 || String(n.tagName).toLowerCase() !== tag) return;
+        if (n.textContent && match(n.textContent)) n.textContent = "";
+      });
+    },
+
+    // nowebrtc(): block RTCPeerConnection in this frame (stops WebRTC-based
+    // local-IP leaks / fingerprinting). Directive-scoped — only where listed,
+    // since it also disables legitimate calls on that page.
+    "nowebrtc": function () {
+      ["RTCPeerConnection", "webkitRTCPeerConnection"].forEach(function (n) {
+        try {
+          if (!(n in window)) return;
+          var blocked = function () { throw new Error("RTCPeerConnection is blocked"); };
+          Object.defineProperty(window, n, {
+            get: function () { return blocked; },
+            set: function () {},
+            configurable: false,
+          });
+        } catch (e) {}
+      });
+    },
+
+    // abort-on-stack-trace(chain, needle): throw when window.<chain> is read or
+    // written from a call stack matching `needle` (the caller's script URL /
+    // function name) — targets one detector script without touching others.
+    "abort-on-stack-trace": function (chain, needle) {
+      var r = resolve(chain);
+      if (!r || !needle) return;
+      var match = needleMatcher(needle);
+      var val;
+      try { val = r.owner[r.prop]; } catch (e) {}
+      var msg = noise();
+      var check = function () {
+        var st = "";
+        try {
+          // Drop our own frames (chrome-extension://…) so a needle can never
+          // match the engine itself and fire on every access.
+          st = String(new Error().stack || "").split("\n").filter(function (l) {
+            return l.indexOf("chrome-extension://") < 0;
+          }).join("\n");
+        } catch (e) {}
+        if (match(st)) throw new ReferenceError(msg);
+      };
+      try {
+        Object.defineProperty(r.owner, r.prop, {
+          get: function () { check(); return val; },
+          set: function (v) { check(); val = v; },
+          configurable: true,
+        });
+      } catch (e) {}
+    },
+
+    // set-cookie(name, value): set a first-party cookie ONLY if absent, with the
+    // value restricted to a fixed consent-style dictionary (true/false/accept/
+    // dismiss/…) or a small integer — used to pre-answer consent walls. Never
+    // overwrites an existing cookie (no session clobbering), path=/ only.
+    "set-cookie": function (name, value) {
+      if (!name || !SA_POLICY.COOKIE_NAME.test(String(name)) || SA_POLICY.COOKIE_NAME_DENY.test(String(name)) || !SA_POLICY.cookieValueOk(value)) return;
+      try {
+        var present = String(document.cookie).split(/;\s*/).some(function (c) {
+          return c.indexOf(name + "=") === 0;
+        });
+        if (present) return;
+        document.cookie = name + "=" + encodeURIComponent(String(value)) +
+          "; path=/; max-age=31536000; SameSite=Lax";
+      } catch (e) {}
+    },
+
+    // remove-cookie(needle): expire first-party cookies whose NAME matches the
+    // needle (now + at DOMContentLoaded), on every domain level. Baked-list
+    // only — the live channel refuses it (it can log a user out of a site).
+    "remove-cookie": function (needle) {
+      if (!needle) return;
+      var match = needleMatcher(needle);
+      var run = function () {
+        try {
+          var host = location.hostname;
+          var parts = host.split(".");
+          var exp = "; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; path=/";
+          String(document.cookie).split(/;\s*/).forEach(function (c) {
+            var i = c.indexOf("=");
+            var n = i < 0 ? c : c.slice(0, i);
+            if (!n || !match(n)) return;
+            document.cookie = n + "=" + exp;
+            for (var k = 0; k < parts.length - 1; k++) {
+              var d = nativeSlice.call(parts, k).join(".");
+              document.cookie = n + "=" + exp + "; domain=" + d;
+              document.cookie = n + "=" + exp + "; domain=." + d;
+            }
+          });
+        } catch (e) {}
+      };
+      run();
+      try { document.addEventListener("DOMContentLoaded", run, { once: true }); } catch (e) {}
     },
   };
 
@@ -383,6 +549,20 @@
   // Shape: { "": [[name, ...args]], "host.tld": [[name, ...args]] }. The ""
   // key holds global directives that run on every page.
   var MAP = /*__SCRIPTLET_MAP__*/{};
+  // uBlock Origin directives for THIS site come from a chunk script (scriptlets/
+  // ubo/cNN.js, DATA baked and validated at build time) that the service worker
+  // registers just before this file for that chunk's hosts — same registration,
+  // guaranteed order. Picked up and removed in this tick, before any page script
+  // exists; each entry is re-checked against the build profile of the policy.
+  var EXTRA = null;
+  try {
+    var chunkKey = "__tbabScriptletChunk";
+    var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
+    if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
+    delete document[chunkKey];
+  } catch (e) {}
+  // EasyList $popup domains (baked by the build): popunder/popup launchers.
+  var POPUP_HOSTS = /*__POPUP_HOSTS__*/[];
 
   // ---- bootstrap ----------------------------------------------------------
 
@@ -392,24 +572,128 @@
     var chain = [""]; // global bucket always runs
     if (host) {
       var parts = host.split(".");
-      for (var i = 0; i < parts.length - 1; i++) chain.push(parts.slice(i).join("."));
+      // nativeSlice: a page-replaced Array.prototype.slice must not corrupt the
+      // host chain (it would silently drop every live directive for this frame).
+      for (var i = 0; i < parts.length - 1; i++) chain.push(nativeSlice.call(parts, i).join("."));
     }
     return chain;
   }
 
   function runDirective(d) {
-    if (!Array.isArray(d) || !d.length) return;
+    if (!nativeIsArray(d) || !d.length) return;
     var name = d[0];
+    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return;
     var fn = IMPL[name];
     if (typeof fn !== "function") return;
-    try { fn.apply(null, d.slice(1)); } catch (e) {}
+    try { fn.apply(null, nativeSlice.call(d, 1)); } catch (e) {}
   }
 
+  // ---- live directives (Level 2) -----------------------------------------
+  // Delivered by our ISOLATED content script from the Ed25519-signed,
+  // anti-rollback filters.json as a JSON STRING on a DOM event (objects don't
+  // cross worlds). Re-validated HERE against the same rules as the service
+  // worker (name allowlist = IMPL keys, argument safety, set-constant
+  // dictionary, selector/attribute/tag policy) — the engine never trusts a
+  // DOM message blindly. Threat model, stated honestly: a page can dispatch
+  // the same event, but only with directives we already allow, only against
+  // ITSELF in its own frame — no privilege escalation, no code/network sink.
+  // A cooperating page CAN opt itself out (pre-apply + restore its own APIs);
+  // it cannot reach other frames or other sites. The channel is therefore for
+  // non-timing-critical directives; timing-critical ones are baked into MAP.
+  // Live directives always carry an explicit host and never run on core
+  // video/CDN hosts (YouTube has dedicated handling).
+  // Live profile of the single policy (see SA_POLICY above): selector/attr/tag
+  // rules, cookie-name denylist, remove-cookie refused. IMPL membership is
+  // re-checked here as belt and braces (IMPL keys == policy CANON, gated by tests).
+  function directiveOk(d) {
+    if (!nativeIsArray(d) || d.length < 1) return false;
+    var name = d[0];
+    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return false;
+    return SA_POLICY.validateDirective(name, nativeSlice.call(d, 1), true);
+  }
+  var liveSeen = Object.create(null);
+  function applyLive(raw) {
+    var items;
+    try { items = nativeParse(String(raw)); } catch (e) { return; }
+    if (!nativeIsArray(items)) return;
+    var chain = hostChain();
+    for (var p = 0; p < chain.length; p++) if (SA_POLICY.NEVER_LIVE.indexOf(chain[p]) >= 0) return;
+    for (var i = 0; i < items.length && i < SA_POLICY.LIVE_SCRIPTLET_MAX; i++) {
+      var it = items[i];
+      if (!it || typeof it !== "object") continue;
+      // Read once and materialise: a poisoned getter can't swap values between
+      // validation and execution.
+      var h = it.h, d = it.d;
+      if (typeof h !== "string" || h === "" || chain.indexOf(h) < 0) continue; // explicit host only
+      if (!nativeIsArray(d)) continue;
+      d = nativeSlice.call(d);   // native, so a page-replaced slice cannot split validate/execute
+      if (!directiveOk(d)) continue;
+      var key = nativeStringify(d);
+      if (liveSeen[key]) continue;                 // dedupe: re-delivery / replay
+      liveSeen[key] = true;
+      runDirective(d);
+    }
+  }
+  try {
+    // Capture listener on window: registered at document_start (before any
+    // page script), it fires before any document-level listener, and the page
+    // holds no reference to remove it. content.js dispatches on document; the
+    // capture phase runs regardless of `bubbles`.
+    window.addEventListener("sa-scriptlets", function (ev) {
+      try { applyLive(ev && ev.detail); } catch (e) {}
+    }, true);
+  } catch (e) {}
+
+  // ---- bootstrap: baked directives — LAST, once every helper above is
+  // initialised (var hoisting only hoists declarations; a helper used by an
+  // IMPL but assigned later would be undefined here). Same synchronous tick.
   try {
     var chain = hostChain();
+    // uBO exceptions (["#@", name, …args]) anywhere on the host chain cancel that
+    // directive for this page, including one inherited from a parent domain.
+    var skip = Object.create(null);
+    for (var k = 0; EXTRA && k < chain.length; k++) {
+      var ex = chain[k] && EXTRA[chain[k]];
+      if (ex && nativeIsArray(ex)) for (var y = 0; y < ex.length; y++) {
+        if (nativeIsArray(ex[y]) && ex[y][0] === "#@") skip[nativeSlice.call(ex[y], 1).join("\u0001")] = 1;
+      }
+    }
     for (var i = 0; i < chain.length; i++) {
       var list = MAP[chain[i]];
       if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
+      var extra = EXTRA && chain[i] && EXTRA[chain[i]];
+      if (extra && nativeIsArray(extra)) {
+        for (var x = 0; x < extra.length; x++) {
+          var ed = extra[x];
+          if (!nativeIsArray(ed) || !ed.length || ed[0] === "#@" || skip[ed.join("\u0001")]) continue;
+          if (SA_POLICY.validateDirective(ed[0], nativeSlice.call(ed, 1), false)) runDirective(ed);
+        }
+      }
+    }
+  } catch (e) {}
+  // ---- popup / popunder blocker ------------------------------------------
+  // window.open() to a known popup-ad host (EasyList $popup — the one class DNR
+  // cannot see) is refused. Same-host opens are always allowed (a site's own
+  // flows), only http(s) targets are judged, and any parse error falls through.
+  // Runs in the page's own frame with the page's privileges: no escalation.
+  try {
+    if (POPUP_HOSTS.length && typeof window.open === "function") {
+      var popupSet = Object.create(null);
+      for (var q = 0; q < POPUP_HOSTS.length; q++) popupSet[POPUP_HOSTS[q]] = 1;
+      var isPopupHost = function (h) {
+        var parts = h.split(".");
+        for (var s = 0; s < parts.length - 1; s++) if (popupSet[nativeSlice.call(parts, s).join(".")]) return true;
+        return false;
+      };
+      var nativeOpen = window.open;
+      window.open = function (url) {
+        try {
+          var u = new URL(String(url || ""), location.href);
+          if ((u.protocol === "http:" || u.protocol === "https:") && u.hostname !== location.hostname &&
+              isPopupHost(u.hostname.toLowerCase())) return null;
+        } catch (e) {}
+        return nativeOpen.apply(this, arguments);
+      };
     }
   } catch (e) {}
 })();

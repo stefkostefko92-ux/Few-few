@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "บล็อกโฆษณาวิดีโอ YouTube แบนเนอร์ ป๊อปอัป ตัวติดตาม การแจ้งเตือนคุกกี้ และกำแพงต่อต้านการบล็อกโฆษณา ฟรีและเป็นส่วนตัว"
+  },
+  "byCarbon": {
+    "message": "โดย Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "เปิด/ปิดการป้องกัน"
+  },
+  "protected": {
+    "message": "ป้องกันอยู่"
+  },
+  "paused": {
+    "message": "หยุดชั่วคราว"
+  },
+  "blockingHere": {
+    "message": "กำลังบล็อกโฆษณาในหน้านี้"
+  },
+  "protectionOff": {
+    "message": "ปิดการป้องกันอยู่"
+  },
+  "pause30": {
+    "message": "หยุด 30 นาที"
+  },
+  "pausedResume": {
+    "message": "หยุดชั่วคราว ทำงานต่อทันที (เหลือ $1 นาที)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "บล็อกแล้ว"
+  },
+  "dataSaved": {
+    "message": "ข้อมูลที่ประหยัด"
+  },
+  "timeSaved": {
+    "message": "เวลาที่ประหยัด"
+  },
+  "thisSite": {
+    "message": "เว็บไซต์นี้"
+  },
+  "thisPage": {
+    "message": "หน้านี้"
+  },
+  "blockOnSite": {
+    "message": "บล็อกโฆษณาในเว็บไซต์นี้"
+  },
+  "blocking": {
+    "message": "กำลังบล็อก"
+  },
+  "allowed": {
+    "message": "อนุญาต"
+  },
+  "cosmetics": {
+    "message": "ซ่อนกรอบโฆษณาที่นี่"
+  },
+  "cosmeticsTitle": {
+    "message": "ซ่อนกรอบโฆษณาในเว็บไซต์นี้ (ปิดหากเลย์เอาต์ของหน้าเสีย)"
+  },
+  "on": {
+    "message": "เปิด"
+  },
+  "off": {
+    "message": "ปิด"
+  },
+  "blockedHere": {
+    "message": "บล็อกแล้วในหน้านี้"
+  },
+  "logEmpty": {
+    "message": "ยังไม่มีสิ่งใดถูกบล็อกที่นี่"
+  },
+  "logUnavailable": {
+    "message": "บันทึกไม่พร้อมใช้งานในขณะนี้ (โควตาของเบราว์เซอร์) — โปรดลองอีกครั้งในอีกหนึ่งนาที"
+  },
+  "logCore": {
+    "message": "กฎหลักของ Supreme"
+  },
+  "logYouTube": {
+    "message": "กฎโฆษณา YouTube"
+  },
+  "logParams": {
+    "message": "พารามิเตอร์การติดตาม"
+  },
+  "logMalware": {
+    "message": "โดเมนมัลแวร์"
+  },
+  "logSurrogates": {
+    "message": "สคริปต์โฆษณาที่ถูกปิดการทำงาน"
+  },
+  "logPrivacy": {
+    "message": "การปกป้องความเป็นส่วนตัว"
+  },
+  "logUser": {
+    "message": "ตัวกรองของฉัน"
+  },
+  "logLive": {
+    "message": "อัปเดตสด"
+  },
+  "hideElement": {
+    "message": "ซ่อนองค์ประกอบ"
+  },
+  "settings": {
+    "message": "การตั้งค่า"
+  },
+  "promoSub": {
+    "message": "อุปกรณ์และเครื่องมือ, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "โฆษณา"
+  },
+  "support": {
+    "message": "สนับสนุน"
+  },
+  "filtersCount": {
+    "message": "$1+ ตัวกรอง",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "ลักษณะที่ปรากฏ"
+  },
+  "opt_extra_protection": {
+    "message": "การป้องกันเพิ่มเติม"
+  },
+  "opt_smart_detection_log": {
+    "message": "บันทึก Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "เว็บไซต์ในรายการที่อนุญาต"
+  },
+  "opt_my_filters": {
+    "message": "ตัวกรองของฉัน"
+  },
+  "opt_hidden_elements": {
+    "message": "องค์ประกอบที่ซ่อนไว้"
+  },
+  "opt_filter_updates": {
+    "message": "การอัปเดตตัวกรอง"
+  },
+  "opt_engine_health": {
+    "message": "สถานะเอนจิน"
+  },
+  "opt_backup": {
+    "message": "สำรองข้อมูล"
+  },
+  "opt_support_development": {
+    "message": "สนับสนุนการพัฒนา"
+  },
+  "opt_theme": {
+    "message": "ธีม"
+  },
+  "opt_sync_across_devices": {
+    "message": "ซิงค์ข้ามอุปกรณ์"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "บล็อกโฆษณา YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "แบนเนอร์คุกกี้ / ความยินยอม"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "ข้ามระบบต่อต้านตัวบล็อกโฆษณา"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "โพสต์ที่ได้รับการสนับสนุนของ Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ลบพารามิเตอร์การติดตาม"
+  },
+  "opt_malware_protection": {
+    "message": "การป้องกันมัลแวร์"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "บล็อก API ของเบราว์เซอร์สำหรับการกำหนดเป้าหมายโฆษณา"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "บล็อกบีคอนติดตามและตัวขุดคริปโต"
+  },
+  "opt_auto_update_filters": {
+    "message": "อัปเดตตัวกรองอัตโนมัติ"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (มืด) หรือสว่าง"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "ซิงค์การตั้งค่า รายการที่อนุญาต และตัวกรองในทุก Chrome ที่คุณลงชื่อเข้าใช้"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "ลบโฆษณาวิดีโอบน YouTube ปิดหากวิดีโอเล่นไม่ได้"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "ปิดข้อความ “ยอมรับคุกกี้” โดยอัตโนมัติ"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "ซ่อนกำแพง “ปิดตัวบล็อกโฆษณาของคุณ” และกู้คืนหน้าเว็บ"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "ซ่อนโพสต์ “ได้รับการสนับสนุน” บน Facebook และ Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "ลบ utm_*, fbclid, gclid และตัวระบุการคลิกอื่นๆ ออกจากลิงก์ที่คุณเปิด"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "บล็อกโดเมนมัลแวร์ที่รู้จัก (รายการ URLhaus โดย abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "ปิดใช้ API โฆษณา Google Topics, FLoC และ Protected Audience ในทุกเว็บไซต์"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "หยุดการตรวจสอบไฮเปอร์ลิงก์ / บีคอนพิงจากบุคคลที่สาม ลบคุกกี้ติดตามออกจากการตอบกลับของระบบโฆษณาที่รู้จัก และบล็อกสคริปต์ขุดคริปโตในเบราว์เซอร์ ปิดหากฟีเจอร์ของเว็บไซต์ที่ต้องอาศัยการวิเคราะห์ทำงานผิดปกติ"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "ดึงกฎการบล็อกใหม่และการแก้ไขสำหรับ YouTube จาก adblock.carbonstealth.eu ประมาณวันละสองครั้ง เป็นข้อมูลเท่านั้น ไม่มีโค้ด คำขอไม่มีตัวระบุหรือข้อมูลการท่องเว็บใดๆ"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "บันทึกสดของโฆษณาที่ตรวจจับได้ด้วยฮิวริสติก (ไม่ใช้รายการตัวกรอง) ใหม่สุดอยู่บนสุด"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "รายการที่สมัครรับจะถูกดึงมาเป็นข้อความ (ไม่ใช่โค้ด) อัปเดตทุกวัน และอยู่ในบล็อกที่จัดการด้านบน ลบรายการเพื่อยกเลิกกฎของรายการนั้น"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "องค์ประกอบที่คุณซ่อนเองด้วยเครื่องมือเลือก จัดกลุ่มตามเว็บไซต์"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "การวินิจฉัยสด — ทุกอย่างคำนวณในเครื่อง หากมีสิ่งใดเป็นสีแดง การกด “อัปเดตเลย” หรือโหลดส่วนขยายใหม่มักจะแก้ไขได้"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ใช้ได้ฟรีสำหรับทุกคน หากคุณต้องการช่วยดูแลให้โปรเจกต์นี้ดำเนินต่อไป ยินดีรับการบริจาค แต่ไม่บังคับเลย"
+  },
+  "opt_reset_statistics": {
+    "message": "รีเซ็ตสถิติ"
+  },
+  "opt_add": {
+    "message": "เพิ่ม"
+  },
+  "opt_save_filters": {
+    "message": "บันทึกตัวกรอง"
+  },
+  "opt_subscribe": {
+    "message": "สมัครรับ"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "รีเฟรชการสมัครรับเลย"
+  },
+  "opt_update_now": {
+    "message": "อัปเดตเลย"
+  },
+  "opt_refresh": {
+    "message": "รีเฟรช"
+  },
+  "opt_export_settings": {
+    "message": "ส่งออกการตั้งค่า"
+  },
+  "opt_import_settings": {
+    "message": "นำเข้าการตั้งค่า"
+  },
+  "opt_e_g_example_com": {
+    "message": "เช่น example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! ตัวอย่าง\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "สมัครรับรายการตัวกรองจาก URL (เช่น https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "การตั้งค่า Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · การตั้งค่า"
+  },
+  "opt_theme_light": {
+    "message": "สว่าง"
+  },
+  "opt_badge_unique": {
+    "message": "เฉพาะตัว"
+  },
+  "opt_smart_desc": {
+    "message": "จับโฆษณาที่ยังไม่มีรายการตัวกรองใดรู้จัก: เฟรมข้ามต้นทาง (cross-origin) ที่มีขนาดเท่าช่องโฆษณามาตรฐานจะถูกซ่อนทันที ไม่ต้องใช้กฎ"
+  },
+  "opt_caught_so_far": {
+    "message": "รายการที่จับได้จนถึงตอนนี้"
+  },
+  "opt_allow_desc": {
+    "message": "จะไม่บล็อกโฆษณาในโดเมนเหล่านี้"
+  },
+  "opt_fh_one": {
+    "message": "หนึ่งกฎต่อหนึ่งบรรทัด"
+  },
+  "opt_fh_blocks": {
+    "message": "บล็อกโดเมน;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ซ่อนองค์ประกอบในทุกที่;"
+  },
+  "opt_fh_site": {
+    "message": "ซ่อนเฉพาะในเว็บไซต์นั้น"
+  },
+  "opt_fh_comments": {
+    "message": "บรรทัดที่ขึ้นต้นด้วย"
+  },
+  "opt_fh_comments2": {
+    "message": "คือความคิดเห็น"
+  },
+  "opt_donate": {
+    "message": "บริจาคผ่าน Revolut"
+  },
+  "opt_made_by": {
+    "message": "สร้างโดย Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "ยังไม่มีสิ่งใดถูกจับได้ด้วยฮิวริสติก"
+  },
+  "opt_empty_allow": {
+    "message": "ยังไม่มีเว็บไซต์ในรายการที่อนุญาต"
+  },
+  "opt_empty_hidden": {
+    "message": "ยังไม่มีสิ่งใดที่ซ่อนเอง"
+  },
+  "opt_empty_subs": {
+    "message": "ยังไม่มีรายการที่สมัครรับ"
+  },
+  "opt_no_sw": {
+    "message": "ไม่มีการตอบสนองจาก service worker"
+  },
+  "opt_remove": {
+    "message": "นำออก"
+  },
+  "opt_filter_status": {
+    "message": "ชุดตัวกรอง v$1 อัปเดตเมื่อ $2 เป็นข้อมูลเท่านั้น ไม่มีการส่งข้อมูลใดๆ เกี่ยวกับคุณ"
+  },
+  "opt_updating": {
+    "message": "กำลังอัปเดต…"
+  },
+  "opt_updated": {
+    "message": "อัปเดตแล้ว (v$1, กฎเพิ่มเติม $2 รายการ)"
+  },
+  "opt_update_failed": {
+    "message": "อัปเดตไม่สำเร็จ ($1)"
+  },
+  "opt_saved": {
+    "message": "บันทึกแล้ว ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 กฎ"
+  },
+  "opt_updated_ago": {
+    "message": "อัปเดตเมื่อ $1"
+  },
+  "opt_not_fetched": {
+    "message": "ยังไม่ได้ดึงข้อมูล"
+  },
+  "opt_failed_colon": {
+    "message": "ล้มเหลว: $1"
+  },
+  "opt_enter_https": {
+    "message": "ป้อน URL https:// ที่ถูกต้อง"
+  },
+  "opt_fetching": {
+    "message": "กำลังดึงข้อมูล…"
+  },
+  "opt_subscribed_ok": {
+    "message": "สมัครรับแล้ว: $1 กฎ ✓"
+  },
+  "opt_failed_paren": {
+    "message": "ล้มเหลว ($1)"
+  },
+  "opt_refreshing": {
+    "message": "กำลังรีเฟรช…"
+  },
+  "opt_refreshed": {
+    "message": "รีเฟรชแล้ว ✓"
+  },
+  "opt_invalid_file": {
+    "message": "ไฟล์การตั้งค่าไม่ถูกต้อง"
+  },
+  "opt_no_response": {
+    "message": "ไม่มีการตอบสนอง"
+  },
+  "opt_h_engine": {
+    "message": "เอนจินรับมือระบบต่อต้านตัวบล็อกโฆษณา"
+  },
+  "opt_h_rulesets": {
+    "message": "ชุดกฎแบบคงที่ที่เปิดอยู่"
+  },
+  "opt_h_live": {
+    "message": "โดเมนตัวกรองสด"
+  },
+  "opt_h_last": {
+    "message": "อัปเดตล่าสุด"
+  },
+  "opt_h_sig": {
+    "message": "ลายเซ็นการอัปเดต"
+  },
+  "opt_h_user": {
+    "message": "ตัวกรองของฉัน / กฎรายการที่อนุญาต"
+  },
+  "opt_h_popup": {
+    "message": "โฮสต์โฆษณาป๊อปอัปที่ฝังไว้"
+  },
+  "opt_h_yt": {
+    "message": "ทางเลี่ยง YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "เฟรมข้ามต้นทางขนาดเท่าโฆษณา"
+  },
+  "opt_reason_sticky": {
+    "message": "แบนเนอร์โฆษณาแบบติดหน้าจอ"
+  },
+  "logRegional": {
+    "message": "รายการตามภูมิภาค"
+  },
+  "logFocus": {
+    "message": "โหมดโฟกัส"
+  },
+  "opt_filter_lists": {
+    "message": "รายการตัวกรอง"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList และ EasyPrivacy เปิดอยู่เสมอ รายการด้านล่างเป็นรายการสัญญาอนุญาตแบบเปิดที่รวมไว้ในส่วนขยายแล้ว การเปิดใช้จึงไม่ดาวน์โหลดอะไรเลย ยกเว้นรายการที่ระบุว่ามาจากผู้สร้างรายการนั้น"
+  },
+  "opt_lists_core": {
+    "message": "หลัก"
+  },
+  "opt_lists_regional": {
+    "message": "ตามภูมิภาค"
+  },
+  "opt_lists_regional_desc": {
+    "message": "รายการสำหรับภาษาของเบราว์เซอร์จะเปิดเอง เพิ่มรายการอื่นได้หากคุณอ่านเว็บไซต์ภาษาอื่นบ่อยๆ"
+  },
+  "opt_focus_mode": {
+    "message": "โหมดโฟกัส"
+  },
+  "opt_focus_desc": {
+    "message": "ซ่อนสิ่งที่ไม่ใช่โฆษณาแต่ยังเกะกะ ทุกอย่างในส่วนนี้ปิดอยู่จนกว่าคุณจะเปิด"
+  },
+  "opt_list_ubo": {
+    "message": "ตัวกรอง uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "โฆษณา ตัวติดตาม การแก้ระบบต่อต้านตัวบล็อกโฆษณา และการซ่อมเว็บไซต์ จากทีม uBlock Origin"
+  },
+  "opt_list_plowe": {
+    "message": "รายการของ Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "รายการเซิร์ฟเวอร์โฆษณาและการติดตามที่มีมายาวนาน"
+  },
+  "opt_focus_social": {
+    "message": "ปุ่มและวิดเจ็ตโซเชียลมีเดีย"
+  },
+  "opt_focus_social_desc": {
+    "message": "ปุ่มแชร์ กล่องกดถูกใจ และฟีดที่ฝังไว้"
+  },
+  "opt_focus_chat": {
+    "message": "วิดเจ็ตแชทและฝ่ายสนับสนุน"
+  },
+  "opt_focus_chat_desc": {
+    "message": "ฟองแชทที่ลอยอยู่ที่มุมหน้าเว็บ"
+  },
+  "opt_focus_newsletters": {
+    "message": "ป๊อปอัปจดหมายข่าวและการสมัคร"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "กล่องและหน้าต่างซ้อน “สมัครรับจดหมายข่าวของเรา”"
+  },
+  "opt_focus_notifications": {
+    "message": "คำขอการแจ้งเตือน"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "กล่อง “อนุญาตการแจ้งเตือนไหม” ที่เว็บไซต์แสดงก่อนเบราว์เซอร์จะถาม"
+  },
+  "opt_focus_ai": {
+    "message": "ป๊อปอัปผู้ช่วย AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "ฟองแชทบอทและแผงคำแนะนำ AI ที่ถูกเพิ่มลงในหน้าเว็บ"
+  },
+  "opt_focus_other": {
+    "message": "สิ่งรบกวนอื่นๆ"
+  },
+  "opt_focus_other_desc": {
+    "message": "แถบที่ติดหน้าจอ แบนเนอร์ “เปิดในแอป” และสิ่งเกะกะที่คล้ายกัน"
+  },
+  "opt_badge_lang": {
+    "message": "ภาษาของคุณ"
+  },
+  "opt_badge_remote": {
+    "message": "จากผู้สร้าง"
+  },
+  "opt_remote_hint": {
+    "message": "ไม่ได้รวมไว้ในแพ็กเกจ (ไม่มีสิทธิ์แจกจ่ายต่อ): เบราว์เซอร์ของคุณจะดาวน์โหลดจาก $1 เมื่อคุณเปิดใช้"
+  },
+  "opt_downloaded_from": {
+    "message": "ดาวน์โหลดจาก $1 เมื่อคุณเปิดใช้"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ปฏิเสธรายการชุดนี้ ($1) โปรดปิดบางรายการ"
+  },
+  "opt_badge_recommended": {
+    "message": "แนะนำสำหรับภาษาของคุณ"
+  },
+  "reportBroken": {
+    "message": "เว็บไซต์เสียหรือเปล่า แก้ไขเองหรือแจ้งเรา"
+  },
+  "rep_title": {
+    "message": "มีบางอย่างเสียในเว็บไซต์นี้หรือเปล่า"
+  },
+  "rep_fix_first": {
+    "message": "แก้ไขเลย"
+  },
+  "rep_site": {
+    "message": "เว็บไซต์:"
+  },
+  "rep_fix_desc": {
+    "message": "ปัญหาส่วนใหญ่หายไปด้วยตัวเลือกใดตัวเลือกหนึ่งต่อไปนี้ แต่ละตัวเลือกมีผลกับเว็บไซต์นี้เท่านั้น และแท็บจะโหลดใหม่"
+  },
+  "rep_fix_cosm": {
+    "message": "ปิดการซ่อนองค์ประกอบที่นี่"
+  },
+  "rep_fix_allow": {
+    "message": "อนุญาตโฆษณาในเว็บไซต์นี้"
+  },
+  "rep_fix_pause": {
+    "message": "หยุดทุกที่ 30 นาที"
+  },
+  "rep_tell_us": {
+    "message": "แจ้งเรา"
+  },
+  "rep_tell_desc": {
+    "message": "เราแก้ไขเว็บไซต์ที่เสียให้ทุกคนผ่านการอัปเดตตัวกรองที่มีลายเซ็น โดยปกติภายในหนึ่งวัน ส่วนขยายไม่ได้ส่งอะไรเลย: รายงานจะเปิดในแอปอีเมลของคุณเอง และคุณจะเห็นทุกคำก่อน"
+  },
+  "rep_what": {
+    "message": "มีปัญหาอะไร (ไม่บังคับ)"
+  },
+  "rep_what_ph": {
+    "message": "เช่น วิดีโอไม่เริ่มเล่น กล่องสีขาวบังบทความ…"
+  },
+  "rep_full_url": {
+    "message": "รวมที่อยู่เต็มของหน้า (มิฉะนั้นจะมีแค่ชื่อเว็บไซต์)"
+  },
+  "rep_preview": {
+    "message": "สิ่งที่จะถูกส่ง"
+  },
+  "rep_send_mail": {
+    "message": "ส่งทางอีเมล"
+  },
+  "rep_copy": {
+    "message": "คัดลอกรายงาน"
+  },
+  "rep_privacy": {
+    "message": "วิธีจัดการรายงานนี้: นโยบายความเป็นส่วนตัว"
+  },
+  "rep_copied": {
+    "message": "คัดลอกแล้ว"
+  },
+  "rep_done_cosm": {
+    "message": "ปิดการซ่อนองค์ประกอบในเว็บไซต์นี้แล้ว โหลดใหม่แล้ว — แก้ไขได้หรือยัง"
+  },
+  "rep_done_allow": {
+    "message": "อนุญาตโฆษณาในเว็บไซต์นี้แล้ว โหลดใหม่แล้ว — แก้ไขได้หรือยัง"
+  },
+  "rep_done_pause": {
+    "message": "หยุดชั่วคราว 30 นาทีแล้ว หากตอนนี้เว็บไซต์ใช้งานได้ โปรดแจ้งเราด้านล่าง"
+  },
+  "cookieRejections": {
+    "message": "แบนเนอร์คุกกี้ที่ปฏิเสธแทนคุณ: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "ชั้นวาง แท็บ และคำแนะนำ Shorts บน YouTube"
+  },
+  "opt_focus_onetap": {
+    "message": "ป๊อปอัป “ลงชื่อเข้าใช้ด้วย Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "ตัวเลือกบัญชีที่ปรากฏที่มุมของหลายเว็บไซต์ ปุ่มลงชื่อเข้าใช้ยังใช้งานได้ตามปกติ"
+  },
+  "pickTip": {
+    "message": "คลิกองค์ประกอบเพื่อซ่อน"
+  },
+  "pickZapTip": {
+    "message": "คลิกเพื่อลบองค์ประกอบนี้ (ครั้งเดียว)"
+  },
+  "pickEscCancel": {
+    "message": "เพื่อยกเลิก"
+  },
+  "opt_notices": {
+    "message": "สัญญาอนุญาตของรายการตัวกรอง"
+  }
+}

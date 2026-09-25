@@ -47,7 +47,8 @@ self.addEventListener('message', (e) => {
 });
 
 const STATIC_RE = /\.(?:css|js|woff2|svg|png|jpe?g|webmanifest)$/;
-const PRIVATE_RE = /^\/(sos|dashboard|e\/)/;
+// /i: сървърът приема и /E/<token> — същите данни, същият личен кеш (чисти се при изход).
+const PRIVATE_RE = /^\/(sos|dashboard|e\/)/i;
 
 // Записът в кеша задължително минава през waitUntil, за да не бъде прекъснат
 // преди да завърши (service worker-ът може да заспи след respondWith).

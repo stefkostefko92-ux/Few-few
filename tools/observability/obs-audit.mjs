@@ -10,6 +10,7 @@
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, relative, extname } from "node:path";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : ".";
 const JSON_OUT = process.argv.includes("--json");
@@ -68,8 +69,7 @@ findings.sort((a, b) => order[a.sev] - order[b.sev] || a.file.localeCompare(b.fi
 const blockers = findings.filter(x => x.sev === "block").length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ root: ROOT, filesScanned: files.length, servers: serverFiles.length, findings, summary: { blockers, warns: findings.filter(x => x.sev === "warn").length, infos: findings.filter(x => x.sev === "info").length } }, null, 2));
-  process.exit(STRICT && blockers ? 1 : 0);
+  await emitJsonNow({ root: ROOT, filesScanned: files.length, servers: serverFiles.length, findings, summary: { blockers, warns: findings.filter(x => x.sev === "warn").length, infos: findings.filter(x => x.sev === "info").length } }, STRICT && blockers ? 1 : 0);
 }
 const ic = { block: "✗", warn: "▲", info: "·" };
 console.log(`\n🔭  Наблюдателят — одит на наблюдаемостта (${files.length} кодови файла, ${serverFiles.length} сървъра)\n`);

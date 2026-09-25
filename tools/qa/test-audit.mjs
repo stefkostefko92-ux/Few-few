@@ -9,12 +9,13 @@
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, relative, extname, basename } from "node:path";
+import { isTestFile, TEST_EXT } from "../lib/audit-patterns.mjs";
+import { emitJsonNow } from "../lib/emit.mjs";
 
 const ROOT = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : ".";
 const JSON_OUT = process.argv.includes("--json");
 const STRICT = process.argv.includes("--strict");
 const SKIP = new Set(["node_modules", ".git", "dist", "build", ".next", "out", "coverage", "vendor", ".claude", "tools", "deploy", "agents-dashboard"]);
-const TEST_EXT = new Set([".js", ".ts", ".tsx", ".jsx", ".mjs", ".cjs"]);
 
 const findings = [];
 const add = (sev, rule, file, line, msg) => findings.push({ sev, rule, file: relative(ROOT, file) || file, line, msg });
@@ -31,7 +32,7 @@ function walk(dir, out) {
   let e; try { e = readdirSync(dir, { withFileTypes: true }); } catch { return; }
   for (const x of e) {
     if (x.isDirectory()) { if (!SKIP.has(x.name) && !x.name.startsWith(".")) walk(join(dir, x.name), out); }
-    else if (TEST_EXT.has(extname(x.name)) && /\.(test|spec)\.|(^|\/)__tests__\//.test(x.name)) out.push(join(dir, x.name));
+    else if (isTestFile(x.name)) out.push(join(dir, x.name));
   }
 }
 
@@ -61,6 +62,11 @@ for (const f of allTestFiles) {
   while ((m = skipRe.exec(t))) add("info", "test-skip", f, lineOf(t, m.index), "`.skip`/`xit` — пропуснат тест; карантинирай с билет, не оставяй тихо изключен завинаги.");
   const sleepRe = /waitForTimeout\s*\(|(?:await\s+)?(?:new\s+Promise[^;]*setTimeout)|\bsleep\s*\(/g;
   if (/playwright|@playwright|page\.|e2e/i.test(t)) while ((m = sleepRe.exec(t))) add("warn", "flaky-sleep", f, lineOf(t, m.index), "Чакане по време (`waitForTimeout`/`sleep`) в e2e → flaky. Чакай по състояние (web-first assertion / `waitForResponse`).");
+  // `networkidle` е СЪЩИЯТ клас грешка като sleep, но се пропускаше: чака 500ms тишина по мрежата,
+  // затова една шумна фонова заявка (analytics · SSE · long-poll · регистрация на PWA service worker)
+  // го държи до тайм-аут. Самият Playwright го обявява за discouraged.
+  const idleRe = /waitUntil\s*:\s*["'`]networkidle["'`]|waitForLoadState\s*\(\s*["'`]networkidle["'`]/g;
+  while ((m = idleRe.exec(t))) add("warn", "flaky-networkidle", f, lineOf(t, m.index), "`networkidle` е антипатърн (шумна фонова заявка го държи до тайм-аут). Чакай по конкретен елемент/assertion.");
 }
 
 const order = { block: 0, warn: 1, info: 2 };
@@ -68,8 +74,7 @@ findings.sort((a, b) => order[a.sev] - order[b.sev] || a.file.localeCompare(b.fi
 const blockers = findings.filter(x => x.sev === "block").length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ root: ROOT, products: products.length, testFiles: allTestFiles.length, findings, summary: { blockers, warns: findings.filter(x => x.sev === "warn").length, infos: findings.filter(x => x.sev === "info").length } }, null, 2));
-  process.exit(STRICT && blockers ? 1 : 0);
+  await emitJsonNow({ root: ROOT, products: products.length, testFiles: allTestFiles.length, findings, summary: { blockers, warns: findings.filter(x => x.sev === "warn").length, infos: findings.filter(x => x.sev === "info").length } }, STRICT && blockers ? 1 : 0);
 }
 const ic = { block: "✗", warn: "▲", info: "·" };
 console.log(`\n🧪  Изпитателят — тестов одит (${products.length} продукта, ${allTestFiles.length} тестови файла)\n`);

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import GramotaStudio from "@/components/studios/GramotaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни грамоти и сертификати за печат";
 const DESC =
-  "Направи грамота, сертификат или диплома на български — красив хоризонтален А4 шаблон с рамка. За училища, детски градини, клубове и фирми. Безплатно, без регистрация.";
+  "Направи грамота, сертификат или диплома на български — красив хоризонтален А4 шаблон с рамка. За училища, клубове и фирми. Безплатно, без регистрация.";
 
 const HOWTO = {
   name: "Как да направиш грамота",
@@ -41,6 +43,7 @@ export const metadata: Metadata = {
     "диплома за печат",
     "благодарствено писмо",
     "грамота за ученик",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/gramoti" },
   ...pageMeta(TITLE, DESC, "/gramoti"),
@@ -50,7 +53,10 @@ export default function GramotiPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">🏆 Грамоти и сертификати</h1>
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/gramoti.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Грамоти и сертификати
+        </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „Грамоти“ е безплатен инструмент за грамоти и сертификати за печат на български</strong>{" "}
           — красив хоризонтален А4 шаблон с рамка за училища, детски градини,
@@ -61,6 +67,7 @@ export default function GramotiPage() {
       </header>
       <GramotaStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools current="/gramoti" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

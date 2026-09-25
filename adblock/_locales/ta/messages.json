@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "YouTube வீடியோ விளம்பரங்கள், பேனர்கள், பாப்-அப்கள், டிராக்கர்கள், குக்கீ அறிவிப்புகளைத் தடுக்கிறது. இலவசம், தனிப்பட்டது."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth வழங்கும்"
+  },
+  "toggleProtection": {
+    "message": "பாதுகாப்பை இயக்கு/முடக்கு"
+  },
+  "protected": {
+    "message": "பாதுகாக்கப்பட்டது"
+  },
+  "paused": {
+    "message": "இடைநிறுத்தம்"
+  },
+  "blockingHere": {
+    "message": "இந்தப் பக்கத்தில் விளம்பரத் தடுப்பு"
+  },
+  "protectionOff": {
+    "message": "பாதுகாப்பு முடக்கப்பட்டுள்ளது"
+  },
+  "pause30": {
+    "message": "30 நிமிடம் இடைநிறுத்து"
+  },
+  "pausedResume": {
+    "message": "இடைநிறுத்தப்பட்டது, இப்போது தொடரவும் ($1 நிமி. மீதம்)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "தடுத்தவை"
+  },
+  "dataSaved": {
+    "message": "சேமித்த டேட்டா"
+  },
+  "timeSaved": {
+    "message": "சேமித்த நேரம்"
+  },
+  "thisSite": {
+    "message": "இந்தத் தளம்"
+  },
+  "thisPage": {
+    "message": "இந்தப் பக்கம்"
+  },
+  "blockOnSite": {
+    "message": "இந்தத் தளத்தில் விளம்பரங்களைத் தடு"
+  },
+  "blocking": {
+    "message": "தடுக்கிறது"
+  },
+  "allowed": {
+    "message": "அனுமதிக்கப்பட்டது"
+  },
+  "cosmetics": {
+    "message": "விளம்பரப் பெட்டிகளை மறை"
+  },
+  "cosmeticsTitle": {
+    "message": "இந்தத் தளத்தில் விளம்பரப் பெட்டிகளை மறை (பக்கத் தளவமைப்பு உடைந்தால் முடக்கவும்)"
+  },
+  "on": {
+    "message": "ஆன்"
+  },
+  "off": {
+    "message": "ஆஃப்"
+  },
+  "blockedHere": {
+    "message": "இந்தப் பக்கத்தில் தடுத்தவை"
+  },
+  "logEmpty": {
+    "message": "இங்கே இன்னும் எதுவும் தடுக்கப்படவில்லை."
+  },
+  "logUnavailable": {
+    "message": "பதிவு இப்போது கிடைக்கவில்லை (உலாவி வரம்பு) — ஒரு நிமிடம் கழித்து மீண்டும் முயலவும்."
+  },
+  "logCore": {
+    "message": "அடிப்படை விதிகள்"
+  },
+  "logYouTube": {
+    "message": "YouTube விளம்பர விதிகள்"
+  },
+  "logParams": {
+    "message": "கண்காணிப்பு அளவுருக்கள்"
+  },
+  "logMalware": {
+    "message": "தீம்பொருள் டொமைன்கள்"
+  },
+  "logSurrogates": {
+    "message": "முடக்கிய விளம்பர ஸ்கிரிப்ட்கள்"
+  },
+  "logPrivacy": {
+    "message": "தனியுரிமைப் பாதுகாப்பு"
+  },
+  "logUser": {
+    "message": "எனது வடிப்பான்கள்"
+  },
+  "logLive": {
+    "message": "நேரலைப் புதுப்பிப்புகள்"
+  },
+  "hideElement": {
+    "message": "உறுப்பை மறை"
+  },
+  "settings": {
+    "message": "அமைப்புகள்"
+  },
+  "promoSub": {
+    "message": "கருவிகள் & உபகரணங்கள், carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "விளம்பரம்"
+  },
+  "support": {
+    "message": "ஆதரியுங்கள்"
+  },
+  "filtersCount": {
+    "message": "$1+ வடிப்பான்கள்",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "தோற்றம்"
+  },
+  "opt_extra_protection": {
+    "message": "கூடுதல் பாதுகாப்பு"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection பதிவு"
+  },
+  "opt_allowlisted_sites": {
+    "message": "அனுமதிப் பட்டியலில் உள்ள தளங்கள்"
+  },
+  "opt_my_filters": {
+    "message": "எனது வடிப்பான்கள்"
+  },
+  "opt_hidden_elements": {
+    "message": "மறைக்கப்பட்ட உறுப்புகள்"
+  },
+  "opt_filter_updates": {
+    "message": "வடிப்பான் புதுப்பிப்புகள்"
+  },
+  "opt_engine_health": {
+    "message": "எஞ்சின் நிலை"
+  },
+  "opt_backup": {
+    "message": "காப்புப்பிரதி"
+  },
+  "opt_support_development": {
+    "message": "உருவாக்கத்தை ஆதரியுங்கள்"
+  },
+  "opt_theme": {
+    "message": "தீம்"
+  },
+  "opt_sync_across_devices": {
+    "message": "சாதனங்களுக்கு இடையே ஒத்திசை"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube விளம்பரத் தடுப்பு"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "குக்கீ / ஒப்புதல் பேனர்கள்"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "விளம்பரத் தடுப்பான் எதிர்ப்பைத் தவிர்த்தல்"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta ஸ்பான்சர் செய்த இடுகைகள்"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "கண்காணிப்பு அளவுருக்களை அகற்று"
+  },
+  "opt_malware_protection": {
+    "message": "தீம்பொருள் பாதுகாப்பு"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "விளம்பர இலக்கிடல் உலாவி API-களைத் தடு"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "கண்காணிப்பு பீக்கன்கள் & கிரிப்டோமைனர்களைத் தடு"
+  },
+  "opt_auto_update_filters": {
+    "message": "வடிப்பான்களைத் தானாகப் புதுப்பி"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (இருண்டது) அல்லது வெளிர்"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "நீங்கள் உள்நுழைந்துள்ள ஒவ்வொரு Chrome-இலும் அமைப்புகள், அனுமதிப் பட்டியல், வடிப்பான்களை ஒத்திசைவில் வைத்திருக்கும்"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube-இல் வீடியோ விளம்பரங்களை அகற்றும். வீடியோக்கள் இயங்காவிட்டால் முடக்கவும்."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“குக்கீகளை ஏற்கவும்” அறிவிப்புகளைத் தானாக மூடும்"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“உங்கள் விளம்பரத் தடுப்பானை முடக்கவும்” சுவர்களை மறைத்து பக்கத்தை மீட்டெடுக்கும்"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook & Instagram-இல் “ஸ்பான்சர் செய்யப்பட்டது” இடுகைகளை மறைக்கும்"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "நீங்கள் திறக்கும் இணைப்புகளிலிருந்து utm_*, fbclid, gclid மற்றும் பிற கிளிக் அடையாளங்காட்டிகளை நீக்கும்"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "அறியப்பட்ட தீம்பொருள் டொமைன்களைத் தடுக்கும் (abuse.ch வழங்கும் URLhaus பட்டியல்)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "ஒவ்வொரு தளத்திலும் Google Topics, FLoC, Protected Audience விளம்பர API-களை முடக்கும்"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "மூன்றாம் தரப்பு ஹைப்பர்லிங்க் தணிக்கை / பீக்கன் பிங்குகளை நிறுத்தும், அறியப்பட்ட விளம்பரத் தொழில்நுட்பப் பதில்களிலிருந்து கண்காணிப்பு குக்கீகளை நீக்கும், உலாவி கிரிப்டோமைனிங் ஸ்கிரிப்ட்களைத் தடுக்கும். பகுப்பாய்வைச் சார்ந்த ஒரு தள அம்சம் சரியாக இயங்காவிட்டால் முடக்கவும்."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu-இலிருந்து புதிய தடுப்பு விதிகளையும் YouTube திருத்தங்களையும் நாளுக்குச் சுமார் இருமுறை பெறும். தரவு மட்டுமே, குறியீடு இல்லை; கோரிக்கையில் அடையாளங்காட்டிகளோ உலாவல் தரவோ இருக்காது."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "ஊகமுறையில் (வடிப்பான் பட்டியல் இல்லாமல்) பிடிபட்ட விளம்பரங்களின் நேரலைப் பதிவு, புதியவை முதலில்."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "சந்தா செய்த பட்டியல்கள் உரையாகப் பெறப்படுகின்றன (ஒருபோதும் குறியீடாக அல்ல), தினமும் புதுப்பிக்கப்படுகின்றன, மேலே உள்ள நிர்வகிக்கப்படும் தொகுதிகளில் இருக்கும். ஒரு பட்டியலின் விதிகளை நீக்க அதை அகற்றவும்."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "தேர்வுக் கருவி மூலம் நீங்கள் கைமுறையாக மறைத்த உறுப்புகள், தளவாரியாகக் குழுவாக்கப்பட்டவை."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "நேரலைக் கண்டறிதல் — அனைத்தும் உள்ளூரிலேயே கணக்கிடப்படுகிறது. ஏதேனும் சிவப்பாக இருந்தால், “இப்போது புதுப்பி” அல்லது நீட்டிப்பை மீண்டும் ஏற்றுவது பொதுவாகச் சரிசெய்யும்."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock அனைவருக்கும் இலவசம். இதைப் பராமரிக்க உதவ விரும்பினால், நன்கொடைகள் வரவேற்கப்படுகின்றன, ஆனால் ஒருபோதும் கட்டாயமில்லை."
+  },
+  "opt_reset_statistics": {
+    "message": "புள்ளிவிவரங்களை மீட்டமை"
+  },
+  "opt_add": {
+    "message": "சேர்"
+  },
+  "opt_save_filters": {
+    "message": "வடிப்பான்களைச் சேமி"
+  },
+  "opt_subscribe": {
+    "message": "சந்தா செய்"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "சந்தாக்களை இப்போது புதுப்பி"
+  },
+  "opt_update_now": {
+    "message": "இப்போது புதுப்பி"
+  },
+  "opt_refresh": {
+    "message": "புதுப்பி"
+  },
+  "opt_export_settings": {
+    "message": "அமைப்புகளை ஏற்றுமதி செய்"
+  },
+  "opt_import_settings": {
+    "message": "அமைப்புகளை இறக்குமதி செய்"
+  },
+  "opt_e_g_example_com": {
+    "message": "எ.கா. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! எடுத்துக்காட்டு\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "வடிப்பான் பட்டியல் URL-க்குச் சந்தா செய்யவும் (எ.கா. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock அமைப்புகள்"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · அமைப்புகள்"
+  },
+  "opt_theme_light": {
+    "message": "வெளிர்"
+  },
+  "opt_badge_unique": {
+    "message": "தனித்துவமானது"
+  },
+  "opt_smart_desc": {
+    "message": "எந்த வடிப்பான் பட்டியலுக்கும் இன்னும் தெரியாத விளம்பரங்களைப் பிடிக்கும்: நிலையான விளம்பர இடங்களின் அளவிலுள்ள பிற-மூல ஃப்ரேம்கள் உடனே மறைக்கப்படும், விதிகள் தேவையில்லை."
+  },
+  "opt_caught_so_far": {
+    "message": "இதுவரை பிடிபட்டன."
+  },
+  "opt_allow_desc": {
+    "message": "இந்த டொமைன்களில் விளம்பரங்கள் தடுக்கப்படாது."
+  },
+  "opt_fh_one": {
+    "message": "ஒரு வரிக்கு ஒரு விதி."
+  },
+  "opt_fh_blocks": {
+    "message": "ஒரு டொமைனைத் தடுக்கும்;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ஓர் உறுப்பை எல்லா இடங்களிலும் மறைக்கும்;"
+  },
+  "opt_fh_site": {
+    "message": "அதை அந்தத் தளத்தில் மட்டும் மறைக்கும்."
+  },
+  "opt_fh_comments": {
+    "message": "வரியின் தொடக்கத்தில்"
+  },
+  "opt_fh_comments2": {
+    "message": "இருந்தால், அது குறிப்புரை."
+  },
+  "opt_donate": {
+    "message": "Revolut மூலம் நன்கொடை"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth உருவாக்கியது"
+  },
+  "opt_empty_smart": {
+    "message": "ஊகமுறையில் இன்னும் எதுவும் பிடிபடவில்லை."
+  },
+  "opt_empty_allow": {
+    "message": "அனுமதிப் பட்டியலில் இன்னும் தளங்கள் இல்லை."
+  },
+  "opt_empty_hidden": {
+    "message": "கைமுறையாக இன்னும் எதுவும் மறைக்கப்படவில்லை."
+  },
+  "opt_empty_subs": {
+    "message": "இன்னும் சந்தா செய்த பட்டியல்கள் இல்லை."
+  },
+  "opt_no_sw": {
+    "message": "service worker-இடமிருந்து பதில் இல்லை."
+  },
+  "opt_remove": {
+    "message": "அகற்று"
+  },
+  "opt_filter_status": {
+    "message": "வடிப்பான் தொகுப்பு v$1, $2 புதுப்பிக்கப்பட்டது. தரவு மட்டுமே, உங்களைப் பற்றி எதுவும் அனுப்பப்படாது."
+  },
+  "opt_updating": {
+    "message": "புதுப்பிக்கிறது…"
+  },
+  "opt_updated": {
+    "message": "புதுப்பிக்கப்பட்டது (v$1, $2 கூடுதல் விதிகள்)"
+  },
+  "opt_update_failed": {
+    "message": "புதுப்பிப்பு தோல்வி ($1)"
+  },
+  "opt_saved": {
+    "message": "சேமிக்கப்பட்டது ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 விதிகள்"
+  },
+  "opt_updated_ago": {
+    "message": "$1 புதுப்பிக்கப்பட்டது"
+  },
+  "opt_not_fetched": {
+    "message": "இன்னும் பெறப்படவில்லை"
+  },
+  "opt_failed_colon": {
+    "message": "தோல்வி: $1"
+  },
+  "opt_enter_https": {
+    "message": "சரியான https:// URL-ஐ உள்ளிடவும்"
+  },
+  "opt_fetching": {
+    "message": "பெறுகிறது…"
+  },
+  "opt_subscribed_ok": {
+    "message": "சந்தா செய்யப்பட்டது: $1 விதிகள் ✓"
+  },
+  "opt_failed_paren": {
+    "message": "தோல்வி ($1)"
+  },
+  "opt_refreshing": {
+    "message": "புதுப்பிக்கிறது…"
+  },
+  "opt_refreshed": {
+    "message": "புதுப்பிக்கப்பட்டது ✓"
+  },
+  "opt_invalid_file": {
+    "message": "தவறான அமைப்புகள் கோப்பு."
+  },
+  "opt_no_response": {
+    "message": "பதில் இல்லை"
+  },
+  "opt_h_engine": {
+    "message": "விளம்பரத் தடுப்பான் எதிர்ப்பைத் தவிர்க்கும் எஞ்சின்"
+  },
+  "opt_h_rulesets": {
+    "message": "இயக்கத்தில் உள்ள நிலையான விதித் தொகுப்புகள்"
+  },
+  "opt_h_live": {
+    "message": "நேரலை வடிப்பான் டொமைன்கள்"
+  },
+  "opt_h_last": {
+    "message": "கடைசிப் புதுப்பிப்பு"
+  },
+  "opt_h_sig": {
+    "message": "புதுப்பிப்புக் கையொப்பங்கள்"
+  },
+  "opt_h_user": {
+    "message": "எனது வடிப்பான்கள் / அனுமதிப் பட்டியல் விதிகள்"
+  },
+  "opt_h_popup": {
+    "message": "உள்ளமைந்த பாப்-அப் விளம்பர ஹோஸ்ட்கள்"
+  },
+  "opt_h_yt": {
+    "message": "YouTube புறவழி"
+  },
+  "opt_reason_frame": {
+    "message": "விளம்பர அளவிலான பிற-மூல ஃப்ரேம்"
+  },
+  "opt_reason_sticky": {
+    "message": "ஒட்டும் பேனர் விளம்பரம்"
+  },
+  "logRegional": {
+    "message": "பிராந்தியப் பட்டியல்கள்"
+  },
+  "logFocus": {
+    "message": "கவனப் பயன்முறை"
+  },
+  "opt_filter_lists": {
+    "message": "வடிப்பான் பட்டியல்கள்"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList, EasyPrivacy எப்போதும் இயக்கத்தில் இருக்கும். கீழே உள்ள பட்டியல்கள் திறந்த உரிமம் கொண்டவை, நீட்டிப்பினுள்ளேயே சேர்க்கப்பட்டவை; எனவே ஒன்றை இயக்கினால் எதுவும் பதிவிறக்கப்படாது — அதன் ஆசிரியரிடமிருந்து வருவதாகக் குறிக்கப்பட்ட பட்டியலைத் தவிர."
+  },
+  "opt_lists_core": {
+    "message": "அடிப்படை"
+  },
+  "opt_lists_regional": {
+    "message": "பிராந்திய"
+  },
+  "opt_lists_regional_desc": {
+    "message": "உங்கள் உலாவியின் மொழிக்கான பட்டியல் தானாகவே இயங்கும். பிற மொழித் தளங்களை அடிக்கடி படித்தால், வேறு பட்டியல்களையும் சேர்க்கவும்."
+  },
+  "opt_focus_mode": {
+    "message": "கவனப் பயன்முறை"
+  },
+  "opt_focus_desc": {
+    "message": "விளம்பரம் அல்லாத, ஆனால் இடையூறாக இருப்பவற்றை மறைக்கும். நீங்கள் இயக்கும் வரை இங்குள்ள அனைத்தும் முடக்கத்தில் இருக்கும்."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin வடிப்பான்கள்"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin குழுவிடமிருந்து: விளம்பரங்கள், டிராக்கர்கள், விளம்பரத் தடுப்பான் எதிர்ப்புக்கான திருத்தங்கள், தளச் சரிசெய்தல்கள்."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe-இன் பட்டியல்"
+  },
+  "opt_list_plowe_desc": {
+    "message": "விளம்பர மற்றும் கண்காணிப்புச் சேவையகங்களின் நீண்டகாலப் பட்டியல்."
+  },
+  "opt_focus_social": {
+    "message": "சமூக ஊடகப் பொத்தான்கள், விட்ஜெட்கள்"
+  },
+  "opt_focus_social_desc": {
+    "message": "பகிர்வுப் பொத்தான்கள், லைக் பெட்டிகள், உட்பொதிந்த ஃபீடுகள்."
+  },
+  "opt_focus_chat": {
+    "message": "அரட்டை, ஆதரவு விட்ஜெட்கள்"
+  },
+  "opt_focus_chat_desc": {
+    "message": "பக்கத்தின் மூலையில் மிதக்கும் அரட்டைக் குமிழ்கள்."
+  },
+  "opt_focus_newsletters": {
+    "message": "செய்திமடல், பதிவுசெய்தல் பாப்-அப்கள்"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“எங்கள் செய்திமடலுக்குச் சந்தா செய்யுங்கள்” பெட்டிகள், மேலடுக்குகள்."
+  },
+  "opt_focus_notifications": {
+    "message": "அறிவிப்புக் கோரிக்கைகள்"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "உலாவி கேட்பதற்கு முன்பே தளங்கள் காட்டும் “அறிவிப்புகளை அனுமதிக்கவா?” பெட்டிகள்."
+  },
+  "opt_focus_ai": {
+    "message": "AI உதவியாளர் பாப்-அப்கள்"
+  },
+  "opt_focus_ai_desc": {
+    "message": "பக்கங்களில் சேர்க்கப்படும் சாட்பாட் குமிழ்கள், AI பரிந்துரைப் பலகங்கள்."
+  },
+  "opt_focus_other": {
+    "message": "பிற தொல்லைகள்"
+  },
+  "opt_focus_other_desc": {
+    "message": "ஒட்டும் பட்டைகள், “ஆப்ஸில் திற” பேனர்கள் மற்றும் இதுபோன்ற குப்பைகள்."
+  },
+  "opt_badge_lang": {
+    "message": "உங்கள் மொழி"
+  },
+  "opt_badge_remote": {
+    "message": "ஆசிரியரிடமிருந்து"
+  },
+  "opt_remote_hint": {
+    "message": "தொகுப்பில் சேர்க்கப்படவில்லை (மறுவிநியோக உரிமம் இல்லை): நீங்கள் இயக்கும்போது உங்கள் உலாவி அதை $1-இலிருந்து பதிவிறக்கும்."
+  },
+  "opt_downloaded_from": {
+    "message": "நீங்கள் இயக்கும்போது $1-இலிருந்து பதிவிறக்கப்படும்"
+  },
+  "opt_lists_error": {
+    "message": "இந்தப் பட்டியல் சேர்க்கையை Chrome மறுத்தது ($1). சிலவற்றை முடக்கவும்."
+  },
+  "opt_badge_recommended": {
+    "message": "உங்கள் மொழிக்குப் பரிந்துரைக்கப்பட்டது"
+  },
+  "reportBroken": {
+    "message": "தளம் உடைந்ததா? சரிசெய்யுங்கள் அல்லது எங்களிடம் சொல்லுங்கள்"
+  },
+  "rep_title": {
+    "message": "இந்தத் தளத்தில் ஏதாவது உடைந்துள்ளதா?"
+  },
+  "rep_fix_first": {
+    "message": "இப்போதே சரிசெய்யுங்கள்"
+  },
+  "rep_site": {
+    "message": "தளம்:"
+  },
+  "rep_fix_desc": {
+    "message": "பெரும்பாலான சிக்கல்கள் இவற்றில் ஒன்றால் தீரும். ஒவ்வொன்றும் இந்தத் தளத்துக்கு மட்டுமே பொருந்தும்; தாவல் மீண்டும் ஏற்றப்படும்."
+  },
+  "rep_fix_cosm": {
+    "message": "இங்கே உறுப்புகளை மறைப்பதை முடக்கு"
+  },
+  "rep_fix_allow": {
+    "message": "இந்தத் தளத்தில் விளம்பரங்களை அனுமதி"
+  },
+  "rep_fix_pause": {
+    "message": "எல்லா இடங்களிலும் 30 நிமிடம் இடைநிறுத்து"
+  },
+  "rep_tell_us": {
+    "message": "எங்களிடம் சொல்லுங்கள்"
+  },
+  "rep_tell_desc": {
+    "message": "கையொப்பமிட்ட வடிப்பான் புதுப்பிப்பு மூலம் உடைந்த தளங்களை அனைவருக்கும் சரிசெய்கிறோம், பொதுவாக ஒரு நாளுக்குள். நீட்டிப்பு எதையும் அனுப்பாது: அறிக்கை உங்கள் சொந்த மின்னஞ்சல் ஆப்ஸில் திறக்கும், அதன் ஒவ்வொரு வார்த்தையையும் நீங்கள் முதலில் பார்க்கலாம்."
+  },
+  "rep_what": {
+    "message": "என்ன பிரச்சினை? (விருப்பத்தேர்வு)"
+  },
+  "rep_what_ph": {
+    "message": "எ.கா. வீடியோ தொடங்கவில்லை, ஒரு வெள்ளைப் பெட்டி கட்டுரையை மறைக்கிறது…"
+  },
+  "rep_full_url": {
+    "message": "பக்கத்தின் முழு முகவரியைச் சேர் (இல்லையெனில் தளப் பெயர் மட்டும்)"
+  },
+  "rep_preview": {
+    "message": "அனுப்பப்படுவது"
+  },
+  "rep_send_mail": {
+    "message": "மின்னஞ்சலில் அனுப்பு"
+  },
+  "rep_copy": {
+    "message": "அறிக்கையை நகலெடு"
+  },
+  "rep_privacy": {
+    "message": "இந்த அறிக்கை எவ்வாறு கையாளப்படுகிறது: தனியுரிமைக் கொள்கை"
+  },
+  "rep_copied": {
+    "message": "நகலெடுக்கப்பட்டது."
+  },
+  "rep_done_cosm": {
+    "message": "இந்தத் தளத்தில் உறுப்புகளை மறைத்தல் முடக்கப்பட்டது. மீண்டும் ஏற்றப்பட்டது — சரியாகிவிட்டதா?"
+  },
+  "rep_done_allow": {
+    "message": "இந்தத் தளத்தில் விளம்பரங்கள் அனுமதிக்கப்பட்டன. மீண்டும் ஏற்றப்பட்டது — சரியாகிவிட்டதா?"
+  },
+  "rep_done_pause": {
+    "message": "30 நிமிடம் இடைநிறுத்தப்பட்டது. இப்போது தளம் வேலை செய்தால், கீழே எங்களிடம் சொல்லுங்கள்."
+  },
+  "cookieRejections": {
+    "message": "உங்களுக்காக நிராகரித்த குக்கீ பேனர்கள்: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube-இல் Shorts வரிசைகள், தாவல், பரிந்துரைகள்."
+  },
+  "opt_focus_onetap": {
+    "message": "“Google மூலம் உள்நுழைக” பாப்-அப்கள்"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "பல தளங்களின் மூலையில் தோன்றும் கணக்குத் தேர்வி. உள்நுழைவுப் பொத்தான்கள் தொடர்ந்து வேலை செய்யும்."
+  },
+  "pickTip": {
+    "message": "மறைக்க ஓர் உறுப்பைக் கிளிக் செய்யவும்"
+  },
+  "pickZapTip": {
+    "message": "இந்த உறுப்பை அகற்ற கிளிக் செய்யவும் (ஒருமுறை)"
+  },
+  "pickEscCancel": {
+    "message": "ரத்துசெய்ய"
+  },
+  "opt_notices": {
+    "message": "வடிப்பான் பட்டியல்களின் உரிமங்கள்"
+  }
+}

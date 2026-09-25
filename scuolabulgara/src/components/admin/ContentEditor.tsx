@@ -39,7 +39,7 @@ function mutateArray(root: any, path: (string | number)[], fn: (arr: any[]) => v
   return next;
 }
 
-export default function ContentEditor({ contentKey, label, initial }: { contentKey: string; label: string; initial: Data }) {
+export default function ContentEditor({ contentKey, initial }: { contentKey: string; initial: Data }) {
   const [data, setData] = useState<Data>(initial);
   const [locale, setLocale] = useState<Locale>("it");
   const [status, setStatus] = useState<{ msg: string; cls: string }>({ msg: "", cls: "" });
@@ -111,9 +111,7 @@ export default function ContentEditor({ contentKey, label, initial }: { contentK
                 <b>#{i + 1}</b>
                 <button type="button" className="ad-btn ad-btn--danger" onClick={() => arr(path, (a) => a.splice(i, 1))}>Премахни</button>
               </div>
-              {isStrings
-                ? renderValue(item, [...path, i], keyName.replace(/s$/, ""))
-                : renderValue(item, [...path, i], keyName.replace(/s$/, ""))}
+              {renderValue(item, [...path, i], keyName.replace(/s$/, ""))}
             </div>
           ))}
         </div>

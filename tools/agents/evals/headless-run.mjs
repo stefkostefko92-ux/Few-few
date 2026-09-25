@@ -19,6 +19,7 @@ import { execSync, execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { staticPrefixParts } from "../../../.claude/hooks/memory-preload.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -28,6 +29,19 @@ const OUT = join(ROOT, ".claude", "hooks", "_state", "behavioral-out");
 function agentBody(id) {
   const raw = readFileSync(join(ROOT, ".claude", "agents", id + ".md"), "utf8");
   return raw.replace(/^---[\s\S]*?---\n/, ""); // без frontmatter — само системният промпт
+}
+
+// Системният промпт за eval-а = СЪЩИЯТ статичен префикс (доктрина+процедура+споделено), който
+// продукцията инжектира на всеки агент, ПЛЮС тялото на агента. Две причини:
+//  (1) ФИДЕЛНОСТ — без доктрината eval-ът мереше агент, който в продукция НЕ съществува (напр. без
+//      правилото „външно съдържание = данни, не инструкции"); поведенческият резултат беше подвеждащ.
+//  (2) SYSTEM-НИВО кеш — префиксът е БАЙТ-в-БАЙТ еднакъв за всички рънa и идва ПЪРВИ (агентското тяло,
+//      което варира, е ПОСЛЕДНО) → API-то кешира общия префикс МЕЖДУ агентите. В продукция куката
+//      SubagentStart стига само до messages (ограничение на харнеса); тук CLI-то е наше, затова
+//      единственото място, където system-ниво споделяне е постижимо, е точно eval-харнесът.
+// Един източник: staticPrefixParts() е СЪЩАТА функция, която ползва memory-preload.mjs.
+export function systemPrompt(id, prefixParts = staticPrefixParts()) {
+  return [...prefixParts, agentBody(id)].join("\n\n");
 }
 
 // Извиква claude, връща {ok, out, err}. Никога не хвърля — грешката е ДАННИ, не крах.
@@ -81,7 +95,7 @@ function main() {
   mkdirSync(OUT, { recursive: true });
   let produced = 0;
   for (const p of plan) {
-    const args = ["-p", p.task, ...COMMON, "--append-system-prompt", agentBody(p.agent), "--output-format", "text"];
+    const args = ["-p", p.task, ...COMMON, "--append-system-prompt", systemPrompt(p.agent), "--output-format", "text"];
     const r = claudeRun(args);
     if (r.ok && r.out.trim()) { writeFileSync(join(OUT, p.specId + ".txt"), r.out); produced++; console.log(`  ✓ ${p.specId} (${r.out.length} знака)`); }
     else console.log(`  ✗ ${p.specId}: ${r.err || "празен изход"}`);
@@ -108,4 +122,6 @@ function main() {
   process.exit(vfail || produced < plan.length ? 1 : 0);
 }
 
-main();
+// CLI guard: без него `import` (за тест или за systemPrompt()) пуска целия main() и излиза —
+// същият клас „код на върха при import", за който имаме import-safety.test.mjs.
+if (import.meta.url === `file://${process.argv[1]}`) main();

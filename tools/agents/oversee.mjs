@@ -25,10 +25,13 @@
 import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitJsonNow } from "../lib/emit.mjs";
 import {
-  STALE_DAYS, MERGE_THRESHOLD, TIME_SENSITIVE,
-  jaccard, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject,
+  MERGE_THRESHOLD, AGENT_DESC_MAX,
+  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
+  yamlPlainCut,
 } from "./oversee-lib.mjs";
+import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -114,9 +117,32 @@ for (const id of allIds) {
     const fm = (md.match(/^model:\s*(.+)$/m) || [])[1]?.trim() || null;
     const fe = (md.match(/^effort:\s*(.+)$/m) || [])[1]?.trim() || null;
     const jrec = aj.agents.find((a) => a.id === id) || {};
+    // Описанието е единственото, по което харнесът решава КОГА да делегира. `socialdjiyata` имаше
+    // „работа #1 е …“ — YAML го чете като коментар и агентът стигаше до рутинга с 57 от 645 знака.
+    const fdesc = (md.match(/^description:[ \t]*(.+)$/m) || [])[1];
+    if (fdesc) {
+      const cut = yamlPlainCut(fdesc);
+      if (cut !== -1) r.hard.push(`описанието се реже от YAML коментар („ #“) — харнесът вижда ${cut} от ${fdesc.trim().length} знака; махни „ #“ или цитирай стойността`);
+    }
     if (fm && jrec.model && fm !== jrec.model) r.hard.push(`модел разсинхрон: frontmatter=${fm} ≠ agents.json=${jrec.model}`);
     if (!fe) r.hard.push("липсва effort във frontmatter (рутинг на усилие)");
     else if (jrec.effort && fe !== jrec.effort) r.hard.push(`усилие разсинхрон: frontmatter=${fe} ≠ agents.json=${jrec.effort}`);
+
+    // Синхрон на ИНСТРУМЕНТИТЕ. Дълго беше негейтван и точно това обезсили инжекционния гейт:
+    // `prevodach` и `siydara` имаха WebFetch/WebSearch в дефиницията, но не и в `agents.json`,
+    // затова проверката за injection покритие ги смяташе за агенти без външна повърхност и
+    // рапортуваше „всички покрити". Разсинхронът в набора инструменти не е козметика — той мени
+    // кой се смята за изложен на недоверено съдържание.
+    const ft = (md.match(/^tools:\s*(.+)$/m) || [])[1];
+    if (ft) {
+      const defTools = ft.split(",").map((s) => s.trim()).filter(Boolean).sort();
+      const jsonTools = (Array.isArray(jrec.tools) ? jrec.tools : []).map((s) => String(s).trim()).filter(Boolean).sort();
+      if (jsonTools.length && defTools.join(",") !== jsonTools.join(",")) {
+        const onlyDef = defTools.filter((t) => !jsonTools.includes(t));
+        const onlyJson = jsonTools.filter((t) => !defTools.includes(t));
+        r.hard.push(`инструменти разсинхрон: само в дефиниция [${onlyDef.join(", ") || "—"}] · само в agents.json [${onlyJson.join(", ") || "—"}]`);
+      }
+    }
   }
 
   if (hasMem) {
@@ -130,22 +156,32 @@ for (const id of allIds) {
     const unsourced = verified.filter((b) => !hasSource(b));
     r.unsourced = unsourced.length;
     if (unsourced.length) r.warn.push(`${unsourced.length}/${verified.length} проверени поуки без цитиран източник (закон „източник или нищо")`);
-    // почти-дубли
+    // почти-дубли. Токенизираме ВЕДНЪЖ на поука, не на всяко сравнение: при m поуки двойките са
+    // m²/2, а `jaccard` токенизира и двата низа всеки път → ~m² токенизации вместо m. Броенето на
+    // двойки остава същото (не клъстери — „3 еднакви" са 3 двойки, не 1).
     let dup = 0;
-    for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccard(verified[i], verified[j]) >= MERGE_THRESHOLD) dup++;
+    const vSets = verified.map((b) => toks(b));
+    for (let i = 0; i < verified.length; i++) for (let j = i + 1; j < verified.length; j++) if (jaccardSets(vSets[i], vSets[j]) >= MERGE_THRESHOLD) dup++;
     r.dups = dup;
     if (dup) r.warn.push(`${dup} почти-дубли (Jaccard ≥${MERGE_THRESHOLD}) → curate --merge-dups`);
-    // застарели: време-чувствителни >STALE_DAYS, ИЛИ с явна минала „re-verify:" дата (#2)
+    // застарели: ЕДНА дефиниция — класовете на memory-freshness (гейтът), не отделна евристика.
+    // До 2026-09-09 тук стоеше „време-чувствителна поука >45 дни" (регекс за версия/година/latest),
+    // преписана и в curate.mjs — а гейтът съдеше по класове (наш код 90 · платформа 180 · рамка 365 ·
+    // стандарт 730 · без външен източник → не изтича). Двете дефиниции за едно понятие дадоха
+    // 3409/4031 (85%) „застарели" тук срещу 0 просрочени в гейта в един и същ ден. Същият клас
+    // дефект като source-parity/secret-parity: две истини за едно нещо произвеждат тих отпад.
+    // Изричен „re-verify: ДАТА" в поуката побеждава класа (както и в memory-freshness).
     let stale = 0;
     for (const b of verified) {
       const d = lessonDate(b);
       const rv = b.match(REVERIFY_RE);
       const explicitDue = rv && daysSince(rv[1], TODAY) > 0;
-      const implicitStale = d && TIME_SENSITIVE.test(b) && daysSince(d, TODAY) > STALE_DAYS;
+      const cls = classify(b);
+      const implicitStale = !rv && d && cls.days != null && daysSince(d, TODAY) > cls.days;
       if (explicitDue || implicitStale) stale++;
     }
     r.stale = stale;
-    if (stale) r.warn.push(`${stale}/${verified.length} застарели поуки (време-чувствителни >${STALE_DAYS}д или с минала re-verify дата)`);
+    if (stale) r.warn.push(`${stale}/${verified.length} просрочени поуки (по класовете на memory-freshness или с минала re-verify дата)`);
     // карантината надвишава проверените → самообучаващият цикъл затлачва (гейтът реже повече, отколкото минава)
     if (quarantine.length > verified.length) r.warn.push(`карантина (${quarantine.length}) надвишава проверените (${verified.length}) — цикълът затлачва`);
     // версия vs поуки (само сигнал; засетите на mastery агенти може да имат по-малко)
@@ -158,9 +194,19 @@ for (const id of allIds) {
   }
   // #4 постнота на дефиницията — историческите „## vX.Y" секции трябва да слизат в паметта/докове
   if (hasDef) {
-    const defLines = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8").split("\n").length;
+    const def = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8");
+    const defLines = def.split("\n").length;
     r.defLines = defLines;
     if (defLines > DEF_LINE_WARN) r.warn.push(`дефиниция ${defLines} реда (>${DEF_LINE_WARN}) — раздутото разрежда адхеренцията; премести исторически „vX.Y" секции в паметта/докове`);
+    if (repeatsLearnProtocol(def)) r.hard.push("дефиницията преповтаря цикъла за учене (```learn схема) — той живее само в _memory/PROCEDURE.md; остави един ред с доменния гейт за „verified“");
+    // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
+    const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];
+    if (desc == null) r.hard.push("липсва description във frontmatter (по него главната сесия избира агента)");
+    else {
+      const hz = plainScalarHazard(desc);
+      if (hz) r.hard.push(`описание — ${hz} (харнесът го чете като YAML)`);
+      if (desc.length > AGENT_DESC_MAX) r.hard.push(`описание ${desc.length} знака > ${AGENT_DESC_MAX} — стои в главната сесия на всеки ход; знанието е в тялото`);
+    }
   }
   if (r.hard.length) hardFails += r.hard.length;
   if (r.warn.length) warns += r.warn.length;
@@ -177,6 +223,8 @@ if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва обща
 const dupKey = (k) => { const seen = new Set(), dups = new Set(); for (const a of aj.agents) { const v = a[k]; if (v == null) continue; if (seen.has(v)) dups.add(v); else seen.add(v); } return [...dups]; };
 for (const acc of dupKey("accent")) { team.push({ level: "hard", msg: `дублиран accent „${acc}" при два агента — сменѝ единия` }); hardFails++; }
 for (const nm of dupKey("name")) { team.push({ level: "hard", msg: `дублирано име „${nm}" при два агента` }); hardFails++; }
+// Емоджито е втората визуална идентичност (таблото, README, tooltips) — дубъл = двама с едно лице.
+for (const e of dupKey("emoji")) { team.push({ level: "hard", msg: `дублирано емоджи „${e}" при два агента — сменѝ единия` }); hardFails++; }
 
 // --- тренд: сравни с предишна снимка (по избор) → регресии ---
 const trend = [];
@@ -207,8 +255,7 @@ if (snapshotArg) {
 }
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, null, 2));
-  process.exit(hardFails || (STRICT && warns) ? 1 : 0);
+  await emitJsonNow({ today: TODAY, agents: report, team, trend, summary: { agents: report.length, hardFails, warns, fallbackOk, securityDoctrine, procedureDoctrine } }, hardFails || (STRICT && warns) ? 1 : 0);
 }
 
 console.log(`\n🏛  Надзор над агентския екип — ${report.length} агента (${TODAY})\n`);

@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Αποκλείει διαφημίσεις παντού: βίντεο στο YouTube, banner, αναδυόμενα, ιχνηλάτες και τείχη anti-adblock. Δωρεάν και ιδιωτικό."
+  },
+  "byCarbon": {
+    "message": "από την Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Εναλλαγή προστασίας"
+  },
+  "protected": {
+    "message": "Προστατεύεται"
+  },
+  "paused": {
+    "message": "Σε παύση"
+  },
+  "blockingHere": {
+    "message": "Αποκλείει διαφημίσεις στη σελίδα"
+  },
+  "protectionOff": {
+    "message": "Η προστασία είναι ανενεργή"
+  },
+  "pause30": {
+    "message": "Παύση για 30 λεπτά"
+  },
+  "pausedResume": {
+    "message": "Σε παύση, συνέχεια τώρα (απομένουν $1 λ.)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Αποκλεισμοί"
+  },
+  "dataSaved": {
+    "message": "Εξοικ. δεδομένων"
+  },
+  "timeSaved": {
+    "message": "Εξοικ. χρόνου"
+  },
+  "thisSite": {
+    "message": "αυτός ο ιστότοπος"
+  },
+  "thisPage": {
+    "message": "αυτή η σελίδα"
+  },
+  "blockOnSite": {
+    "message": "Αποκλεισμός διαφημίσεων σε αυτόν τον ιστότοπο"
+  },
+  "blocking": {
+    "message": "Αποκλείει"
+  },
+  "allowed": {
+    "message": "Επιτρέπεται"
+  },
+  "cosmetics": {
+    "message": "Απόκρυψη διαφημίσεων εδώ"
+  },
+  "cosmeticsTitle": {
+    "message": "Απόκρυψη διαφημίσεων σε αυτόν τον ιστότοπο (απενεργοποιήστε το αν χαλάσει η διάταξη της σελίδας)"
+  },
+  "on": {
+    "message": "Ενεργό"
+  },
+  "off": {
+    "message": "Ανενεργό"
+  },
+  "blockedHere": {
+    "message": "Αποκλείστηκαν σε αυτή τη σελίδα"
+  },
+  "logEmpty": {
+    "message": "Δεν έχει αποκλειστεί τίποτα εδώ ακόμη."
+  },
+  "logUnavailable": {
+    "message": "Το αρχείο καταγραφής δεν είναι διαθέσιμο αυτή τη στιγμή (όριο του προγράμματος περιήγησης) — δοκιμάστε ξανά σε ένα λεπτό."
+  },
+  "logCore": {
+    "message": "Βασικοί κανόνες"
+  },
+  "logYouTube": {
+    "message": "Διαφημίσεις YouTube"
+  },
+  "logParams": {
+    "message": "Παράμετροι παρακολούθησης"
+  },
+  "logMalware": {
+    "message": "Κακόβουλοι τομείς"
+  },
+  "logSurrogates": {
+    "message": "Εξουδετερωμένα διαφημιστικά scripts"
+  },
+  "logPrivacy": {
+    "message": "Προστασία απορρήτου"
+  },
+  "logUser": {
+    "message": "Τα φίλτρα μου"
+  },
+  "logLive": {
+    "message": "Άμεσες ενημερώσεις"
+  },
+  "hideElement": {
+    "message": "Απόκρυψη στοιχείου"
+  },
+  "settings": {
+    "message": "Ρυθμίσεις"
+  },
+  "promoSub": {
+    "message": "Εξοπλισμός και εργαλεία, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Διαφήμιση"
+  },
+  "support": {
+    "message": "Στηρίξτε"
+  },
+  "filtersCount": {
+    "message": "$1+ φίλτρα",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Εμφάνιση"
+  },
+  "opt_extra_protection": {
+    "message": "Επιπλέον προστασία"
+  },
+  "opt_smart_detection_log": {
+    "message": "Αρχείο καταγραφής Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Ιστότοποι στη λίστα επιτρεπόμενων"
+  },
+  "opt_my_filters": {
+    "message": "Τα φίλτρα μου"
+  },
+  "opt_hidden_elements": {
+    "message": "Κρυμμένα στοιχεία"
+  },
+  "opt_filter_updates": {
+    "message": "Ενημερώσεις φίλτρων"
+  },
+  "opt_engine_health": {
+    "message": "Κατάσταση μηχανής"
+  },
+  "opt_backup": {
+    "message": "Αντίγραφο ασφαλείας"
+  },
+  "opt_support_development": {
+    "message": "Στηρίξτε την ανάπτυξη"
+  },
+  "opt_theme": {
+    "message": "Θέμα"
+  },
+  "opt_sync_across_devices": {
+    "message": "Συγχρονισμός μεταξύ συσκευών"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Αποκλεισμός διαφημίσεων στο YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Banner cookie / συγκατάθεσης"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Παράκαμψη anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Χορηγούμενες αναρτήσεις (Meta)"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Αφαίρεση παραμέτρων παρακολούθησης"
+  },
+  "opt_malware_protection": {
+    "message": "Προστασία από κακόβουλο λογισμικό"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Αποκλεισμός API του προγράμματος περιήγησης για στοχευμένες διαφημίσεις"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Αποκλεισμός σημάτων παρακολούθησης και κρυπτοεξορυκτών"
+  },
+  "opt_auto_update_filters": {
+    "message": "Αυτόματη ενημέρωση φίλτρων"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (σκούρο) ή ανοιχτόχρωμο"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Διατηρεί συγχρονισμένες τις ρυθμίσεις, τη λίστα επιτρεπόμενων και τα φίλτρα σε κάθε Chrome όπου έχετε συνδεθεί"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Αφαιρεί τις διαφημίσεις βίντεο στο YouTube. Απενεργοποιήστε το αν τα βίντεο δεν αναπαράγονται."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Κλείνει αυτόματα τα μηνύματα «Αποδοχή cookie»"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Κρύβει τα τείχη «απενεργοποιήστε το πρόγραμμα αποκλεισμού διαφημίσεων» και επαναφέρει τη σελίδα"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Κρύβει τις αναρτήσεις «Χορηγούμενη» στο Facebook και στο Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Αφαιρεί τα utm_*, fbclid, gclid και άλλα αναγνωριστικά κλικ από τους συνδέσμους που ανοίγετε"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Αποκλείει γνωστούς κακόβουλους τομείς (λίστα URLhaus της abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Απενεργοποιεί τα διαφημιστικά API Google Topics, FLoC και Protected Audience σε κάθε ιστότοπο"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Σταματά τα ping ελέγχου υπερσυνδέσμων / beacon τρίτων, αφαιρεί τα cookie παρακολούθησης από γνωστές αποκρίσεις ad-tech και αποκλείει τα scripts κρυπτοεξόρυξης στο πρόγραμμα περιήγησης. Απενεργοποιήστε το αν μια λειτουργία ιστότοπου που βασίζεται σε αναλυτικά στοιχεία δεν λειτουργεί σωστά."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Λαμβάνει νέους κανόνες αποκλεισμού και διορθώσεις για το YouTube από το adblock.carbonstealth.eu περίπου δύο φορές την ημέρα. Μόνο δεδομένα, όχι κώδικας· το αίτημα δεν περιέχει αναγνωριστικά ούτε δεδομένα περιήγησης."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Ζωντανό αρχείο διαφημίσεων που εντοπίστηκαν ευρετικά (χωρίς λίστα φίλτρων), οι νεότερες πρώτες."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Οι λίστες συνδρομής λαμβάνονται ως κείμενο (ποτέ ως κώδικας), ενημερώνονται καθημερινά και βρίσκονται στα διαχειριζόμενα μπλοκ παραπάνω. Αφαιρέστε μια λίστα για να καταργηθούν οι κανόνες της."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Στοιχεία που κρύψατε χειροκίνητα με το εργαλείο επιλογής, ομαδοποιημένα ανά ιστότοπο."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Ζωντανή διάγνωση — όλα υπολογίζονται τοπικά. Αν κάτι είναι κόκκινο, το «Ενημέρωση τώρα» ή η επαναφόρτωση της επέκτασης συνήθως το διορθώνει."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Το Supreme AdBlock είναι δωρεάν για όλους. Αν θέλετε να βοηθήσετε στη συντήρησή του, οι δωρεές είναι ευπρόσδεκτες, αλλά ποτέ υποχρεωτικές."
+  },
+  "opt_reset_statistics": {
+    "message": "Επαναφορά στατιστικών"
+  },
+  "opt_add": {
+    "message": "Προσθήκη"
+  },
+  "opt_save_filters": {
+    "message": "Αποθήκευση φίλτρων"
+  },
+  "opt_subscribe": {
+    "message": "Συνδρομή"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Ανανέωση συνδρομών τώρα"
+  },
+  "opt_update_now": {
+    "message": "Ενημέρωση τώρα"
+  },
+  "opt_refresh": {
+    "message": "Ανανέωση"
+  },
+  "opt_export_settings": {
+    "message": "Εξαγωγή ρυθμίσεων"
+  },
+  "opt_import_settings": {
+    "message": "Εισαγωγή ρυθμίσεων"
+  },
+  "opt_e_g_example_com": {
+    "message": "π.χ. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! παράδειγμα\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Εγγραφείτε σε URL λίστας φίλτρων (π.χ. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Ρυθμίσεις Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Ρυθμίσεις"
+  },
+  "opt_theme_light": {
+    "message": "Ανοιχτόχρωμο"
+  },
+  "opt_badge_unique": {
+    "message": "μοναδικό"
+  },
+  "opt_smart_desc": {
+    "message": "Εντοπίζει διαφημίσεις που καμία λίστα φίλτρων δεν γνωρίζει ακόμη: πλαίσια από άλλους τομείς με διαστάσεις τυπικών διαφημιστικών θέσεων κρύβονται αμέσως, χωρίς κανόνες."
+  },
+  "opt_caught_so_far": {
+    "message": "εντοπίστηκαν μέχρι τώρα."
+  },
+  "opt_allow_desc": {
+    "message": "Σε αυτούς τους τομείς οι διαφημίσεις δεν αποκλείονται."
+  },
+  "opt_fh_one": {
+    "message": "Ένας κανόνας ανά γραμμή."
+  },
+  "opt_fh_blocks": {
+    "message": "αποκλείει έναν τομέα·"
+  },
+  "opt_fh_everywhere": {
+    "message": "κρύβει ένα στοιχείο παντού·"
+  },
+  "opt_fh_site": {
+    "message": "το κρύβει μόνο σε αυτόν τον ιστότοπο."
+  },
+  "opt_fh_comments": {
+    "message": "Οι γραμμές που ξεκινούν με"
+  },
+  "opt_fh_comments2": {
+    "message": "είναι σχόλια."
+  },
+  "opt_donate": {
+    "message": "Δωρεά μέσω Revolut"
+  },
+  "opt_made_by": {
+    "message": "από την Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Δεν έχει εντοπιστεί τίποτα ευρετικά ακόμη."
+  },
+  "opt_empty_allow": {
+    "message": "Δεν υπάρχουν ακόμη ιστότοποι στη λίστα επιτρεπόμενων."
+  },
+  "opt_empty_hidden": {
+    "message": "Δεν έχει κρυφτεί τίποτα χειροκίνητα ακόμη."
+  },
+  "opt_empty_subs": {
+    "message": "Δεν υπάρχουν ακόμη λίστες συνδρομής."
+  },
+  "opt_no_sw": {
+    "message": "Καμία απόκριση από το service worker."
+  },
+  "opt_remove": {
+    "message": "Αφαίρεση"
+  },
+  "opt_filter_status": {
+    "message": "Σύνολο φίλτρων v$1, ενημερώθηκε $2. Μόνο δεδομένα, δεν αποστέλλεται τίποτα για εσάς."
+  },
+  "opt_updating": {
+    "message": "Ενημέρωση…"
+  },
+  "opt_updated": {
+    "message": "Ενημερώθηκε (v$1, $2 επιπλέον κανόνες)"
+  },
+  "opt_update_failed": {
+    "message": "Η ενημέρωση απέτυχε ($1)"
+  },
+  "opt_saved": {
+    "message": "Αποθηκεύτηκε ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 κανόνες"
+  },
+  "opt_updated_ago": {
+    "message": "ενημερώθηκε $1"
+  },
+  "opt_not_fetched": {
+    "message": "δεν έχει ληφθεί ακόμη"
+  },
+  "opt_failed_colon": {
+    "message": "αποτυχία: $1"
+  },
+  "opt_enter_https": {
+    "message": "Εισαγάγετε ένα έγκυρο URL https://"
+  },
+  "opt_fetching": {
+    "message": "Λήψη…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Εγγραφήκατε: $1 κανόνες ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Απέτυχε ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Ανανέωση…"
+  },
+  "opt_refreshed": {
+    "message": "Ανανεώθηκε ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Μη έγκυρο αρχείο ρυθμίσεων."
+  },
+  "opt_no_response": {
+    "message": "καμία απόκριση"
+  },
+  "opt_h_engine": {
+    "message": "Μηχανή anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Ενεργά στατικά σύνολα κανόνων"
+  },
+  "opt_h_live": {
+    "message": "Τομείς ζωντανών φίλτρων"
+  },
+  "opt_h_last": {
+    "message": "Τελευταία ενημέρωση"
+  },
+  "opt_h_sig": {
+    "message": "Υπογραφές ενημερώσεων"
+  },
+  "opt_h_user": {
+    "message": "Τα φίλτρα μου / κανόνες επιτρεπόμενων"
+  },
+  "opt_h_popup": {
+    "message": "Ενσωματωμένοι host αναδυόμενων διαφημίσεων"
+  },
+  "opt_h_yt": {
+    "message": "Παράκαμψη YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Πλαίσιο από άλλο τομέα με μέγεθος διαφήμισης"
+  },
+  "opt_reason_sticky": {
+    "message": "Σταθερό διαφημιστικό banner"
+  },
+  "logRegional": {
+    "message": "Τοπικές λίστες"
+  },
+  "logFocus": {
+    "message": "Εστίαση"
+  },
+  "opt_filter_lists": {
+    "message": "Λίστες φίλτρων"
+  },
+  "opt_lists_intro": {
+    "message": "Οι EasyList και EasyPrivacy είναι πάντα ενεργές. Οι παρακάτω λίστες έχουν ανοιχτή άδεια και είναι ενσωματωμένες στην επέκταση, οπότε η ενεργοποίησή τους δεν κατεβάζει τίποτα, εκτός από λίστα που επισημαίνεται ότι προέρχεται από τον δημιουργό της."
+  },
+  "opt_lists_core": {
+    "message": "Βασικές"
+  },
+  "opt_lists_regional": {
+    "message": "Τοπικές"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Η λίστα για τη γλώσσα του προγράμματος περιήγησής σας ενεργοποιείται μόνη της. Προσθέστε άλλες αν διαβάζετε συχνά ιστότοπους σε άλλες γλώσσες."
+  },
+  "opt_focus_mode": {
+    "message": "Λειτουργία εστίασης"
+  },
+  "opt_focus_desc": {
+    "message": "Κρύβει ό,τι δεν είναι διαφήμιση αλλά εξακολουθεί να ενοχλεί. Όλα εδώ είναι ανενεργά μέχρι να τα ενεργοποιήσετε."
+  },
+  "opt_list_ubo": {
+    "message": "Φίλτρα uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Διαφημίσεις, ιχνηλάτες, διορθώσεις anti-adblock και επιδιορθώσεις ιστοτόπων από την ομάδα του uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Λίστα του Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Μια μακροχρόνια λίστα διακομιστών διαφημίσεων και παρακολούθησης."
+  },
+  "opt_focus_social": {
+    "message": "Κουμπιά και widget κοινωνικών δικτύων"
+  },
+  "opt_focus_social_desc": {
+    "message": "Κουμπιά κοινοποίησης, πλαίσια «Μου αρέσει» και ενσωματωμένες ροές."
+  },
+  "opt_focus_chat": {
+    "message": "Widget συνομιλίας και υποστήριξης"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Τα αιωρούμενα συννεφάκια συνομιλίας στη γωνία της σελίδας."
+  },
+  "opt_focus_newsletters": {
+    "message": "Αναδυόμενα για ενημερωτικά δελτία και εγγραφές"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Πλαίσια και επικαλύψεις «Εγγραφείτε στο ενημερωτικό μας δελτίο»."
+  },
+  "opt_focus_notifications": {
+    "message": "Αιτήματα ειδοποιήσεων"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Πλαίσια «Να επιτρέπονται οι ειδοποιήσεις;» που δείχνουν οι ιστότοποι πριν ρωτήσει το πρόγραμμα περιήγησης."
+  },
+  "opt_focus_ai": {
+    "message": "Αναδυόμενοι βοηθοί AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Συννεφάκια chatbot και πάνελ προτάσεων AI που προστίθενται στις σελίδες."
+  },
+  "opt_focus_other": {
+    "message": "Άλλες ενοχλήσεις"
+  },
+  "opt_focus_other_desc": {
+    "message": "Σταθερές μπάρες, banner «Άνοιγμα στην εφαρμογή» και παρόμοια ακαταστασία."
+  },
+  "opt_badge_lang": {
+    "message": "η γλώσσα σας"
+  },
+  "opt_badge_remote": {
+    "message": "από τον δημιουργό"
+  },
+  "opt_remote_hint": {
+    "message": "Δεν είναι ενσωματωμένη (δεν υπάρχει άδεια αναδιανομής): το πρόγραμμα περιήγησής σας τη λαμβάνει από το $1 όταν την ενεργοποιήσετε."
+  },
+  "opt_downloaded_from": {
+    "message": "Λαμβάνεται από το $1 όταν την ενεργοποιήσετε"
+  },
+  "opt_lists_error": {
+    "message": "Το Chrome απέρριψε αυτόν τον συνδυασμό λιστών ($1). Απενεργοποιήστε κάποιες."
+  },
+  "opt_badge_recommended": {
+    "message": "προτείνεται για τη γλώσσα σας"
+  },
+  "reportBroken": {
+    "message": "Πρόβλημα στον ιστότοπο; Διορθώστε το ή πείτε μας"
+  },
+  "rep_title": {
+    "message": "Κάτι δεν λειτουργεί σε αυτόν τον ιστότοπο;"
+  },
+  "rep_fix_first": {
+    "message": "Διορθώστε το τώρα"
+  },
+  "rep_site": {
+    "message": "Ιστότοπος:"
+  },
+  "rep_fix_desc": {
+    "message": "Τα περισσότερα προβλήματα λύνονται με ένα από αυτά. Το καθένα ισχύει μόνο για αυτόν τον ιστότοπο· η καρτέλα επαναφορτώνεται."
+  },
+  "rep_fix_cosm": {
+    "message": "Απενεργοποίηση απόκρυψης στοιχείων εδώ"
+  },
+  "rep_fix_allow": {
+    "message": "Να επιτρέπονται διαφημίσεις σε αυτόν τον ιστότοπο"
+  },
+  "rep_fix_pause": {
+    "message": "Παύση παντού για 30 λεπτά"
+  },
+  "rep_tell_us": {
+    "message": "Πείτε μας"
+  },
+  "rep_tell_desc": {
+    "message": "Διορθώνουμε τους ιστότοπους με προβλήματα για όλους μέσω της υπογεγραμμένης ενημέρωσης φίλτρων, συνήθως μέσα σε μία ημέρα. Η επέκταση δεν στέλνει τίποτα: η αναφορά ανοίγει στη δική σας εφαρμογή email και βλέπετε πρώτα κάθε λέξη της."
+  },
+  "rep_what": {
+    "message": "Τι δεν πάει καλά; (προαιρετικό)"
+  },
+  "rep_what_ph": {
+    "message": "π.χ. το βίντεο δεν ξεκινά, ένα λευκό πλαίσιο καλύπτει το άρθρο…"
+  },
+  "rep_full_url": {
+    "message": "Συμπερίληψη πλήρους διεύθυνσης σελίδας (διαφορετικά μόνο το όνομα του ιστότοπου)"
+  },
+  "rep_preview": {
+    "message": "Τι θα σταλεί"
+  },
+  "rep_send_mail": {
+    "message": "Αποστολή με email"
+  },
+  "rep_copy": {
+    "message": "Αντιγραφή αναφοράς"
+  },
+  "rep_privacy": {
+    "message": "Πώς χειριζόμαστε αυτή την αναφορά: πολιτική απορρήτου"
+  },
+  "rep_copied": {
+    "message": "Αντιγράφηκε."
+  },
+  "rep_done_cosm": {
+    "message": "Η απόκρυψη στοιχείων είναι ανενεργή σε αυτόν τον ιστότοπο. Έγινε επαναφόρτωση — διορθώθηκε;"
+  },
+  "rep_done_allow": {
+    "message": "Οι διαφημίσεις επιτρέπονται σε αυτόν τον ιστότοπο. Έγινε επαναφόρτωση — διορθώθηκε;"
+  },
+  "rep_done_pause": {
+    "message": "Σε παύση για 30 λεπτά. Αν ο ιστότοπος λειτουργεί τώρα, παρακαλούμε πείτε μας παρακάτω."
+  },
+  "cookieRejections": {
+    "message": "Banner cookie που απορρίφθηκαν για εσάς: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Τα ράφια, η καρτέλα και οι προτάσεις Shorts στο YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Αναδυόμενα «Σύνδεση με Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Ο επιλογέας λογαριασμού που εμφανίζεται στη γωνία πολλών ιστοτόπων. Τα κουμπιά σύνδεσης συνεχίζουν να λειτουργούν."
+  },
+  "pickTip": {
+    "message": "Κάντε κλικ σε ένα στοιχείο για να το κρύψετε"
+  },
+  "pickZapTip": {
+    "message": "Κάντε κλικ για να αφαιρέσετε αυτό το στοιχείο (μία φορά)"
+  },
+  "pickEscCancel": {
+    "message": "για ακύρωση"
+  },
+  "opt_notices": {
+    "message": "Άδειες των λιστών φίλτρων"
+  }
+}

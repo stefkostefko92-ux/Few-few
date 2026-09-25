@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "يحظر الإعلانات وإعلانات YouTube واللافتات والنوافذ المنبثقة وأدوات التتبع ونوافذ ملفات تعريف الارتباط وجدران مكافحة الحظر. مجاني."
+  },
+  "byCarbon": {
+    "message": "من Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "تشغيل الحماية أو إيقافها"
+  },
+  "protected": {
+    "message": "محمي"
+  },
+  "paused": {
+    "message": "متوقف"
+  },
+  "blockingHere": {
+    "message": "يحظر الإعلانات في هذه الصفحة"
+  },
+  "protectionOff": {
+    "message": "الحماية متوقفة"
+  },
+  "pause30": {
+    "message": "إيقاف مؤقت لمدة 30 دقيقة"
+  },
+  "pausedResume": {
+    "message": "متوقف مؤقتًا، استئناف الآن (تبقّى $1 د)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "المحظورة"
+  },
+  "dataSaved": {
+    "message": "بيانات موفّرة"
+  },
+  "timeSaved": {
+    "message": "الوقت الموفّر"
+  },
+  "thisSite": {
+    "message": "هذا الموقع"
+  },
+  "thisPage": {
+    "message": "هذه الصفحة"
+  },
+  "blockOnSite": {
+    "message": "حظر الإعلانات على هذا الموقع"
+  },
+  "blocking": {
+    "message": "يحظر"
+  },
+  "allowed": {
+    "message": "مسموح"
+  },
+  "cosmetics": {
+    "message": "إخفاء خانات الإعلانات هنا"
+  },
+  "cosmeticsTitle": {
+    "message": "إخفاء خانات الإعلانات على هذا الموقع (أوقف هذا الخيار إذا تعطّل تنسيق الصفحة)"
+  },
+  "on": {
+    "message": "مفعّل"
+  },
+  "off": {
+    "message": "معطّل"
+  },
+  "blockedHere": {
+    "message": "المحظور في هذه الصفحة"
+  },
+  "logEmpty": {
+    "message": "لم يُحظر شيء هنا بعد."
+  },
+  "logUnavailable": {
+    "message": "السجل غير متاح حاليًا (حصة المتصفح) — حاول مرة أخرى بعد دقيقة."
+  },
+  "logCore": {
+    "message": "قواعد Supreme الأساسية"
+  },
+  "logYouTube": {
+    "message": "قواعد إعلانات YouTube"
+  },
+  "logParams": {
+    "message": "معلمات التتبع"
+  },
+  "logMalware": {
+    "message": "نطاقات البرامج الضارة"
+  },
+  "logSurrogates": {
+    "message": "نصوص إعلانية مُعطَّلة"
+  },
+  "logPrivacy": {
+    "message": "حماية الخصوصية"
+  },
+  "logUser": {
+    "message": "فلاتري"
+  },
+  "logLive": {
+    "message": "تحديثات مباشرة"
+  },
+  "hideElement": {
+    "message": "إخفاء عنصر"
+  },
+  "settings": {
+    "message": "الإعدادات"
+  },
+  "promoSub": {
+    "message": "معدات وأدوات، carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "إعلان"
+  },
+  "support": {
+    "message": "ادعمنا"
+  },
+  "filtersCount": {
+    "message": "أكثر من $1 فلتر",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "المظهر"
+  },
+  "opt_extra_protection": {
+    "message": "حماية إضافية"
+  },
+  "opt_smart_detection_log": {
+    "message": "سجل Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "المواقع المسموح بها"
+  },
+  "opt_my_filters": {
+    "message": "فلاتري"
+  },
+  "opt_hidden_elements": {
+    "message": "العناصر المخفية"
+  },
+  "opt_filter_updates": {
+    "message": "تحديثات الفلاتر"
+  },
+  "opt_engine_health": {
+    "message": "حالة المحرك"
+  },
+  "opt_backup": {
+    "message": "النسخ الاحتياطي"
+  },
+  "opt_support_development": {
+    "message": "ادعم التطوير"
+  },
+  "opt_theme": {
+    "message": "السمة"
+  },
+  "opt_sync_across_devices": {
+    "message": "المزامنة بين الأجهزة"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "حظر إعلانات YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "لافتات ملفات تعريف الارتباط / الموافقة"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "تجاوز مكافحة حظر الإعلانات"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "المنشورات المموَّلة على Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "إزالة معلمات التتبع"
+  },
+  "opt_malware_protection": {
+    "message": "الحماية من البرامج الضارة"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "حظر واجهات API في المتصفح المخصصة لاستهداف الإعلانات"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "حظر إشارات التتبع وبرامج تعدين العملات المشفرة"
+  },
+  "opt_auto_update_filters": {
+    "message": "التحديث التلقائي للفلاتر"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (داكن) أو فاتح"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "إبقاء الإعدادات وقائمة السماح والفلاتر متزامنة في كل متصفح Chrome سجّلت الدخول إليه"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "إزالة إعلانات الفيديو على YouTube. أوقف هذا الخيار إذا لم تعمل مقاطع الفيديو."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "إغلاق نوافذ «قبول ملفات تعريف الارتباط» تلقائيًا"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "إخفاء جدران «أوقف مانع الإعلانات» واستعادة الصفحة"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "إخفاء المنشورات «المموَّلة» على Facebook و Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "إزالة utm_* و fbclid و gclid وغيرها من معرّفات النقرات من الروابط التي تفتحها"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "حظر نطاقات البرامج الضارة المعروفة (قائمة URLhaus من abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "تعطيل واجهات API الإعلانية Google Topics و FLoC و Protected Audience في كل موقع"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "إيقاف طلبات تدقيق الروابط وإشارات التتبع من الأطراف الثالثة، وإزالة ملفات تعريف الارتباط الخاصة بالتتبع من ردود تقنيات الإعلانات المعروفة، وحظر نصوص تعدين العملات المشفرة في المتصفح. أوقف هذا الخيار إذا تعطّلت ميزة في موقع تعتمد على التحليلات."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "يجلب قواعد حظر جديدة وإصلاحات لـ YouTube من adblock.carbonstealth.eu نحو مرتين يوميًا. بيانات فقط بلا أي شيفرة؛ ولا يحمل الطلب أي معرّفات أو بيانات تصفح."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "سجل مباشر للإعلانات المرصودة بالاستدلال (دون قائمة فلاتر)، الأحدث أولًا."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "تُجلب القوائم المشترك فيها كنص (وليس كشيفرة أبدًا)، وتُحدَّث يوميًا، وتوجد في الكتل المُدارة أعلاه. أزل قائمة لإسقاط قواعدها."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "العناصر التي أخفيتها يدويًا بأداة التحديد، مجمّعة حسب الموقع."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "تشخيص مباشر — كل شيء يُحسب محليًا. إذا ظهر شيء باللون الأحمر، فعادةً ما يحل «تحديث الآن» أو إعادة تحميل الإضافة المشكلة."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock مجاني للجميع. إذا رغبت في المساعدة على استمرار صيانته، فالتبرعات مرحّب بها، لكنها ليست إلزامية أبدًا."
+  },
+  "opt_reset_statistics": {
+    "message": "إعادة ضبط الإحصاءات"
+  },
+  "opt_add": {
+    "message": "إضافة"
+  },
+  "opt_save_filters": {
+    "message": "حفظ الفلاتر"
+  },
+  "opt_subscribe": {
+    "message": "اشتراك"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "تحديث الاشتراكات الآن"
+  },
+  "opt_update_now": {
+    "message": "تحديث الآن"
+  },
+  "opt_refresh": {
+    "message": "تحديث"
+  },
+  "opt_export_settings": {
+    "message": "تصدير الإعدادات"
+  },
+  "opt_import_settings": {
+    "message": "استيراد الإعدادات"
+  },
+  "opt_e_g_example_com": {
+    "message": "مثال: example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! مثال\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "الاشتراك في رابط قائمة فلاتر (مثل https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "إعدادات Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · الإعدادات"
+  },
+  "opt_theme_light": {
+    "message": "فاتح"
+  },
+  "opt_badge_unique": {
+    "message": "فريد"
+  },
+  "opt_smart_desc": {
+    "message": "يرصد إعلانات لا تعرفها أي قائمة فلاتر بعد: الإطارات القادمة من نطاقات أخرى بأحجام خانات الإعلانات القياسية تُخفى فورًا، دون الحاجة إلى قواعد."
+  },
+  "opt_caught_so_far": {
+    "message": "تم رصدها حتى الآن."
+  },
+  "opt_allow_desc": {
+    "message": "لا تُحظر الإعلانات على هذه النطاقات."
+  },
+  "opt_fh_one": {
+    "message": "قاعدة واحدة في كل سطر."
+  },
+  "opt_fh_blocks": {
+    "message": "يحظر نطاقًا؛"
+  },
+  "opt_fh_everywhere": {
+    "message": "يخفي عنصرًا في كل مكان؛"
+  },
+  "opt_fh_site": {
+    "message": "يخفيه في ذلك الموقع فقط."
+  },
+  "opt_fh_comments": {
+    "message": "الأسطر التي تبدأ بـ"
+  },
+  "opt_fh_comments2": {
+    "message": "هي تعليقات."
+  },
+  "opt_donate": {
+    "message": "تبرّع عبر Revolut"
+  },
+  "opt_made_by": {
+    "message": "من صنع Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "لم يُرصد شيء بالاستدلال بعد."
+  },
+  "opt_empty_allow": {
+    "message": "لا توجد مواقع مسموح بها بعد."
+  },
+  "opt_empty_hidden": {
+    "message": "لم يُخفَ شيء يدويًا بعد."
+  },
+  "opt_empty_subs": {
+    "message": "لا توجد قوائم مشترك فيها بعد."
+  },
+  "opt_no_sw": {
+    "message": "لا استجابة من عامل الخدمة (service worker)."
+  },
+  "opt_remove": {
+    "message": "إزالة"
+  },
+  "opt_filter_status": {
+    "message": "مجموعة الفلاتر v$1، تم التحديث $2. بيانات فقط، ولا يُرسل أي شيء عنك."
+  },
+  "opt_updating": {
+    "message": "جارٍ التحديث…"
+  },
+  "opt_updated": {
+    "message": "تم التحديث (v$1، $2 قاعدة إضافية)"
+  },
+  "opt_update_failed": {
+    "message": "فشل التحديث ($1)"
+  },
+  "opt_saved": {
+    "message": "تم الحفظ ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 قاعدة"
+  },
+  "opt_updated_ago": {
+    "message": "تم التحديث $1"
+  },
+  "opt_not_fetched": {
+    "message": "لم يُجلب بعد"
+  },
+  "opt_failed_colon": {
+    "message": "فشل: $1"
+  },
+  "opt_enter_https": {
+    "message": "أدخل عنوان https:// صالحًا"
+  },
+  "opt_fetching": {
+    "message": "جارٍ الجلب…"
+  },
+  "opt_subscribed_ok": {
+    "message": "تم الاشتراك: $1 قاعدة ✓"
+  },
+  "opt_failed_paren": {
+    "message": "فشل ($1)"
+  },
+  "opt_refreshing": {
+    "message": "جارٍ التحديث…"
+  },
+  "opt_refreshed": {
+    "message": "تم التحديث ✓"
+  },
+  "opt_invalid_file": {
+    "message": "ملف إعدادات غير صالح."
+  },
+  "opt_no_response": {
+    "message": "لا استجابة"
+  },
+  "opt_h_engine": {
+    "message": "محرك مكافحة حظر الإعلانات"
+  },
+  "opt_h_rulesets": {
+    "message": "مجموعات القواعد الثابتة المفعّلة"
+  },
+  "opt_h_live": {
+    "message": "نطاقات الفلاتر المباشرة"
+  },
+  "opt_h_last": {
+    "message": "آخر تحديث"
+  },
+  "opt_h_sig": {
+    "message": "توقيعات التحديثات"
+  },
+  "opt_h_user": {
+    "message": "فلاتري / قواعد قائمة السماح"
+  },
+  "opt_h_popup": {
+    "message": "مضيفات الإعلانات المنبثقة المضمّنة"
+  },
+  "opt_h_yt": {
+    "message": "تجاوز YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "إطار من نطاق آخر بحجم إعلان"
+  },
+  "opt_reason_sticky": {
+    "message": "لافتة إعلانية ثابتة"
+  },
+  "logRegional": {
+    "message": "القوائم الإقليمية"
+  },
+  "logFocus": {
+    "message": "وضع التركيز"
+  },
+  "opt_filter_lists": {
+    "message": "قوائم الفلاتر"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList و EasyPrivacy مفعّلتان دائمًا. القوائم أدناه قوائم بتراخيص مفتوحة مدمجة في الإضافة، لذا فإن تفعيل إحداها لا ينزّل شيئًا، باستثناء القائمة المشار إلى أنها تأتي من مؤلفها."
+  },
+  "opt_lists_core": {
+    "message": "الأساسية"
+  },
+  "opt_lists_regional": {
+    "message": "الإقليمية"
+  },
+  "opt_lists_regional_desc": {
+    "message": "تُفعَّل القائمة الخاصة بلغة متصفحك تلقائيًا. أضف قوائم أخرى إذا كنت تقرأ كثيرًا مواقع بلغات أخرى."
+  },
+  "opt_focus_mode": {
+    "message": "وضع التركيز"
+  },
+  "opt_focus_desc": {
+    "message": "يخفي ما ليس إعلانًا لكنه يعترض طريقك مع ذلك. كل ما هنا متوقف حتى تفعّله."
+  },
+  "opt_list_ubo": {
+    "message": "فلاتر uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "إعلانات وأدوات تتبع وإصلاحات لمكافحة حظر الإعلانات وإصلاحات للمواقع من فريق uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "قائمة Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "قائمة عريقة لخوادم الإعلانات والتتبع."
+  },
+  "opt_focus_social": {
+    "message": "أزرار وأدوات وسائل التواصل الاجتماعي"
+  },
+  "opt_focus_social_desc": {
+    "message": "أزرار المشاركة ومربعات الإعجاب والخلاصات المضمّنة."
+  },
+  "opt_focus_chat": {
+    "message": "أدوات الدردشة والدعم"
+  },
+  "opt_focus_chat_desc": {
+    "message": "فقاعات الدردشة العائمة في زاوية الصفحة."
+  },
+  "opt_focus_newsletters": {
+    "message": "النوافذ المنبثقة للنشرات البريدية والتسجيل"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "مربعات وطبقات «اشترك في نشرتنا البريدية»."
+  },
+  "opt_focus_notifications": {
+    "message": "طلبات الإشعارات"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "مربعات «السماح بالإشعارات؟» التي تعرضها المواقع قبل أن يسألك المتصفح."
+  },
+  "opt_focus_ai": {
+    "message": "النوافذ المنبثقة لمساعدي الذكاء الاصطناعي"
+  },
+  "opt_focus_ai_desc": {
+    "message": "فقاعات روبوتات الدردشة ولوحات اقتراحات الذكاء الاصطناعي المضافة إلى الصفحات."
+  },
+  "opt_focus_other": {
+    "message": "مصادر إزعاج أخرى"
+  },
+  "opt_focus_other_desc": {
+    "message": "الأشرطة الثابتة ولافتات «افتح في التطبيق» وما شابهها من فوضى."
+  },
+  "opt_badge_lang": {
+    "message": "لغتك"
+  },
+  "opt_badge_remote": {
+    "message": "من مؤلفها"
+  },
+  "opt_remote_hint": {
+    "message": "غير مدمجة (لا يوجد ترخيص لإعادة توزيعها): ينزّلها متصفحك من $1 عند تفعيلها."
+  },
+  "opt_downloaded_from": {
+    "message": "تُنزَّل من $1 عند تفعيلها"
+  },
+  "opt_lists_error": {
+    "message": "رفض Chrome هذه المجموعة من القوائم ($1). أوقف بعضها."
+  },
+  "opt_badge_recommended": {
+    "message": "موصى بها للغتك"
+  },
+  "reportBroken": {
+    "message": "الموقع معطّل؟ أصلحه أو أخبرنا"
+  },
+  "rep_title": {
+    "message": "هل هناك خلل في هذا الموقع؟"
+  },
+  "rep_fix_first": {
+    "message": "أصلحه الآن"
+  },
+  "rep_site": {
+    "message": "الموقع:"
+  },
+  "rep_fix_desc": {
+    "message": "تختفي معظم المشكلات بأحد هذه الخيارات. كلٌّ منها يسري على هذا الموقع فقط، ويُعاد تحميل علامة التبويب."
+  },
+  "rep_fix_cosm": {
+    "message": "إيقاف إخفاء العناصر هنا"
+  },
+  "rep_fix_allow": {
+    "message": "السماح بالإعلانات على هذا الموقع"
+  },
+  "rep_fix_pause": {
+    "message": "إيقاف مؤقت في كل مكان لمدة 30 دقيقة"
+  },
+  "rep_tell_us": {
+    "message": "أخبرنا"
+  },
+  "rep_tell_desc": {
+    "message": "نُصلح المواقع المعطّلة للجميع عبر تحديث الفلاتر الموقَّع، عادةً خلال يوم. لا ترسل الإضافة أي شيء: يُفتح البلاغ في تطبيق البريد الإلكتروني الخاص بك، وترى كل كلمة فيه أولًا."
+  },
+  "rep_what": {
+    "message": "ما المشكلة؟ (اختياري)"
+  },
+  "rep_what_ph": {
+    "message": "مثال: الفيديو لا يبدأ، مربع أبيض يغطي المقال…"
+  },
+  "rep_full_url": {
+    "message": "تضمين عنوان الصفحة الكامل (وإلا فاسم الموقع فقط)"
+  },
+  "rep_preview": {
+    "message": "ما سيتم إرساله"
+  },
+  "rep_send_mail": {
+    "message": "إرسال بالبريد الإلكتروني"
+  },
+  "rep_copy": {
+    "message": "نسخ البلاغ"
+  },
+  "rep_privacy": {
+    "message": "كيف يُعالَج هذا البلاغ: سياسة الخصوصية"
+  },
+  "rep_copied": {
+    "message": "تم النسخ."
+  },
+  "rep_done_cosm": {
+    "message": "تم إيقاف إخفاء العناصر على هذا الموقع. أُعيد التحميل — هل حُلّت المشكلة؟"
+  },
+  "rep_done_allow": {
+    "message": "الإعلانات مسموح بها على هذا الموقع. أُعيد التحميل — هل حُلّت المشكلة؟"
+  },
+  "rep_done_pause": {
+    "message": "متوقف مؤقتًا لمدة 30 دقيقة. إذا كان الموقع يعمل الآن، فيُرجى إخبارنا أدناه."
+  },
+  "cookieRejections": {
+    "message": "لافتات ملفات تعريف الارتباط المرفوضة نيابةً عنك: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "رفوف Shorts وعلامة تبويبها واقتراحاتها على YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "نوافذ «تسجيل الدخول باستخدام Google» المنبثقة"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "أداة اختيار الحساب التي تظهر في زاوية كثير من المواقع. تظل أزرار تسجيل الدخول تعمل."
+  },
+  "pickTip": {
+    "message": "انقر على عنصر لإخفائه"
+  },
+  "pickZapTip": {
+    "message": "انقر لإزالة هذا العنصر (مرة واحدة)"
+  },
+  "pickEscCancel": {
+    "message": "للإلغاء"
+  },
+  "opt_notices": {
+    "message": "تراخيص قوائم الفلاتر"
+  }
+}
