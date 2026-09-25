@@ -57,7 +57,7 @@ var LANGS = {
     bg: "Carbon Stealth \u0435 \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u0430 \u0430\u0433\u0435\u043D\u0446\u0438\u044F \u0441 \u043F\u044A\u043B\u0435\u043D \u0441\u043F\u0435\u043A\u0442\u044A\u0440 \u043E\u0442 \u0443\u0441\u043B\u0443\u0433\u0438. \u0423\u0435\u0431 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F, \u043C\u0443\u043B\u0442\u0438\u043F\u043B\u0435\u0439\u044A\u0440 \u0438\u0433\u0440\u0438, IoT, PLC \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u0438\u0440\u0430\u043D\u0435 \u2014 \u043E\u0442 \u0411\u043E\u0431\u043E\u0432 \u0434\u043E\u043B \u0437\u0430 \u0446\u0435\u043B\u0438\u044F \u0441\u0432\u044F\u0442."
   },
   stat_1: { it: "PROGETTI COMPLETATI", en: "PROJECTS COMPLETED", bg: "\u0417\u0410\u0412\u042A\u0420\u0428\u0415\u041D\u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418" },
-  stat_2: { it: "CLIENTI SODDISFATTI", en: "SATISFIED CLIENTS", bg: "\u0414\u041E\u0412\u041E\u041B\u041D\u0418 \u041A\u041B\u0418\u0415\u041D\u0422\u0418" },
+  stat_2: { it: "PROGETTI ONLINE NEL PORTFOLIO", en: "LIVE PROJECTS IN THE PORTFOLIO", bg: "\u041F\u0420\u041E\u0415\u041A\u0422\u0418 \u041D\u0410 \u0416\u0418\u0412\u041E \u0412 \u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E\u0422\u041E" },
   stat_3: { it: "LINGUE", en: "LANGUAGES", bg: "\u0415\u0417\u0418\u041A\u0410" },
   stat_4: { it: "TEMPLATES USATI", en: "TEMPLATES USED", bg: "\u0428\u0410\u0411\u041B\u041E\u041D\u0418" },
   // ── SERVICES ──
@@ -179,8 +179,10 @@ function detectLang() {
     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
     if (tz.indexOf("Rome") > -1) return "it";    // Italy timezone
     if (tz.indexOf("Sofia") > -1) return "bg";   // Bulgaria timezone
-    return "en";                                   // Everywhere else
-  } catch (e) { return "en"; }
+    // Everywhere else: Italian — "/" is the Italian URL (hreflang="it"), and
+    // crawlers render from the US; EN/BG stay one click away and on /en/, /bg/.
+    return "it";
+  } catch (e) { return "it"; }
 }
 // Smooth scroll to section
 function scrollToId(id){var el=document.getElementById(id);if(el){var y=el.getBoundingClientRect().top+window.scrollY-70;window.scrollTo({top:y,behavior:"smooth"})}}
@@ -206,7 +208,7 @@ function detectLangByIP(callback) {
       var cc = (data.country_code || "").toUpperCase();
       if (cc === "IT") callback("it");
       else if (cc === "BG") callback("bg");
-      else if (cc) callback("en");
+      // any other country: keep Italian (the language of this URL)
       // no country code (rate limit / error) — keep timezone fallback
     })
     .catch(function() { /* keep timezone fallback */ });
@@ -1426,15 +1428,26 @@ const INK2 = "#7C868D";    // muted label/meta
 const WARN = "#FF6A3D";    // single warm "out-of-tolerance" signal, used rarely
 const LINE = "rgba(201,209,214,.08)"; // hairline furniture
 const EASE = "cubic-bezier(.22,1,.36,1)"; // one decisive ease-out, sitewide
-const DISP = "'Space Grotesk','SG-fallback','Inter Tight',-apple-system,sans-serif"; // neo-grotesque display voice
-const MONO = "'Space Mono','SM-fallback',ui-monospace,monospace"; // the instruments — dimensions, tolerances
+// Space Grotesk / Space Mono have no Cyrillic: Onest and JetBrains Mono (close in
+// shape, both with Cyrillic) sit right after them, so Bulgarian glyphs come from a
+// matching face instead of the Arial/Courier metric fallbacks.
+const DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,sans-serif"; // neo-grotesque display voice
+const MONO = "'Space Mono','JetBrains Mono','SM-fallback',ui-monospace,monospace"; // the instruments — dimensions, tolerances
 // Brushed-chrome fill for display type — the "CARBON" of the logo. Spread it
 // into a heading's inline style (inline colour would otherwise beat a class).
-const CHROME = {backgroundImage:"linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%)",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent",WebkitTextFillColor:"transparent"};
+const CHROME = {backgroundImage:"linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%)",backgroundSize:"100% 1lh",backgroundRepeat:"repeat-y",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent",WebkitTextFillColor:"transparent"};
 // Cyan halo behind a cyan-set line — the "STEALTH" of the logo.
 const CYAN_GLOW = {textShadow:"0 0 22px rgba(0,229,255,.38)"};
 // Primary action: the logo's ring glow, on a hairline button.
 const CTA_GLOW = {background:"rgba(0,229,255,.05)",boxShadow:"0 0 22px rgba(0,229,255,.22), inset 0 0 14px rgba(0,229,255,.06)"};
+// Where each of the 13 homepage services leads (same order as SRV_DATA).
+// Services without their own page point to the closest one; reverse
+// engineering scrolls to the Reverse Lab section.
+var SRV_LINKS = {
+  it: ["/servizi/sviluppo-siti-web/","/servizi/ecommerce/","/servizi/sviluppo-software/","/servizi/erp/","/servizi/app-mobile/","/servizi/sviluppo-software/","/servizi/seo/","/servizi/seo/","/servizi/seo/","/servizi/hosting/","/servizi/sviluppo-software/","/servizi/sviluppo-software/","#lab"],
+  en: ["/en/services/web-development/","/en/services/ecommerce/","/en/services/software-development/","/en/services/erp/","/en/services/mobile-apps/","/en/services/software-development/","/en/services/seo/","/en/services/seo/","/en/services/seo/","/en/services/hosting/","/en/services/software-development/","/en/services/software-development/","#lab"],
+  bg: ["/bg/uslugi/web-razrabotka/","/bg/uslugi/ecommerce/","/bg/uslugi/softuer/","/bg/uslugi/erp/","/bg/uslugi/mobilni-prilozheniya/","/bg/uslugi/softuer/","/bg/uslugi/seo/","/bg/uslugi/seo/","/bg/uslugi/seo/","/bg/uslugi/hosting/","/bg/uslugi/softuer/","/bg/uslugi/softuer/","#lab"],
+};
 // Euro amounts the way each language writes them: 1.890 € · 1,890 € · 1 890 €
 function fmtEur(n, l) {
   var s = String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, l === "it" ? "." : l === "en" ? "," : " ");
@@ -2883,8 +2896,8 @@ export default function App(){
       {showAdmin && <AdminPanel onClose={function(){setShowAdmin(false)}} />}
       <SEOInjector />
       <CaliperCursor />
-      <ScrollInstrument />
-      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(76px,10vh,104px);width:min(32vw,440px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}@media(max-width:1100px){.cs-price-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){.cs-price-grid{grid-template-columns:1fr!important}}"}</style>
+      <div className="cs-scroll-instr"><ScrollInstrument /></div>
+      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(72px,9vh,96px);width:min(28vw,380px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(min-width:861px){.cs-hero-h1{max-width:min(16ch,calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px))!important}}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}#footer a{min-height:24px;align-items:center}.cs-work-card{transition:border-color .25s}.cs-work-card:hover,.cs-work-card:focus-visible{border-color:rgba(0,229,255,.55)!important}.cs-srv-row:hover .cs-srv-t,.cs-srv-row:focus-visible .cs-srv-t{color:"+C+"}@media(max-width:768px){.cs-scroll-instr{display:none}.cs-contactbar{flex-direction:column;gap:10px!important}}@media(max-width:1100px){.cs-price-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){.cs-price-grid{grid-template-columns:1fr!important}}"}</style>
 
       {/* Engineering-drawing grid over a faint carbon weave — the logo's
           twill texture as the page ground, kept far below legibility noise */}
@@ -2895,9 +2908,6 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={80} height={34} fetchPriority="high" decoding="async" style={{height:34,width:80,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
         <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"none",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
-          <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{fps}FPS</span>
-          {bat!=="N/A"&&<span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{bat}</span>}
-          <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{time}</span>
           <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
             {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
           </div>
@@ -2907,7 +2917,7 @@ export default function App(){
 
       {/* MOBILE MENU OVERLAY */}
       <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
-        <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},"Close menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>\u2715</div>
+        <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},"Close menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>{"\u2715"}</div>
         <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={140} height={140} decoding="async" style={{height:140,width:140,marginBottom:4}}/>
         {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
         <a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} className="cs-mobile-menu-item" style={{fontSize:13,letterSpacing:".3em",color:C,padding:"14px 32px",border:"1px solid rgba("+CR+",.3)",minWidth:220,textAlign:"center",textDecoration:"none"}}>{t("nav_test")}</a>
@@ -2940,7 +2950,7 @@ export default function App(){
           </div>
 
           {/* Type is the hero - the single H1, keyword-forward, few words */}
-          <h1 style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,7vw,6.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
+          <h1 className="cs-hero-h1" style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,6vw,5.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
             {t("hero_title")}
           </h1>
 
@@ -2974,7 +2984,7 @@ export default function App(){
           <div style={{maxWidth:420,marginBottom:32,border:"1px solid rgba("+CR+",.14)",boxShadow:"0 0 32px rgba("+CR+",.08)",background:"#000",overflow:"hidden"}}>
             <img src="/brand/cs-poster.webp" alt="Carbon Stealth VCC — design, development, performance" width={1024} height={1024} loading="lazy" decoding="async" style={{display:"block",width:"100%",height:"auto"}}/>
           </div>
-          {[[t("stat_1"),"120+"],[t("stat_2"),"98%"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
+          {[[t("stat_1"),"50+"],[t("stat_2"),"10"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
             return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
               <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
               <span style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}>{item[1]}</span></div>})}
@@ -2994,22 +3004,16 @@ export default function App(){
         <ProximityText text={t("srv_title")} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:48,fontWeight:700},CHROME)}/>
 
         {(SRV_DATA[lang]||SRV_DATA.en).map(function(s,i){
-          return <div key={i} style={{display:"grid",gridTemplateColumns:"100px 1fr",gap:20,padding:"28px 0",borderBottom:"1px solid rgba(245,245,240,.08)",position:"relative"}}>
+          var href=(SRV_LINKS[lang]||SRV_LINKS.it)[i]||"#contact";
+          return <a key={i} href={href} className="cs-srv-row" style={{display:"grid",gridTemplateColumns:"100px 1fr",gap:20,padding:"28px 0",borderBottom:"1px solid rgba(245,245,240,.08)",position:"relative",textDecoration:"none",color:"inherit",cursor:"none"}}>
             <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"3.5rem",color:"rgba("+CR+",.06)",lineHeight:1,letterSpacing:"-.03em"}}>{s.n}</div>
             <div>
-              <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,color:"#C9D1D6"}}>{s.t}</div>
+              <div className="cs-srv-t" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,transition:"color .2s"}}>{s.t} <span aria-hidden="true" style={{color:C}}>{"\u2192"}</span></div>
               <div style={{fontSize:10,color:"#ddd",lineHeight:1.8,marginBottom:8}}>{s.d}</div>
               <div style={{fontSize:8,letterSpacing:".2em",color:C}}>{s.tags}</div>
             </div>
-          </div>})}
+          </a>})}
       </section>
-
-      {/* ═══ FULL-WIDTH BREAK TEXT ═══ */}
-      <div style={{position:"relative",zIndex:5,padding:"80px 0",overflow:"hidden"}}>
-        <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"clamp(4rem,18vw,18rem)",color:"rgba("+CR+",.04)",whiteSpace:"nowrap",transform:"translateX("+(parallaxFast*2)+"px)",lineHeight:.9,userSelect:"none"}}>
-          CARBON{"\u00b7"}STEALTH{"\u00b7"}VCC{"\u00b7"}CARBON{"\u00b7"}STEALTH{"\u00b7"}VCC
-        </div>
-      </div>
 
       {/* ═══════════════════════════════════════════
           PRICING — the portfolio price list, verbatim (src/pricing.json)
@@ -3025,14 +3029,14 @@ export default function App(){
             var ui=PRICING.ui[lang];
             return <div key={tier.id} style={{position:"relative",display:"flex",flexDirection:"column",padding:"24px 22px",border:"1px solid rgba("+CR+(tier.popular?",.6)":",.18)"),background:"rgba("+CR+",.02)",boxShadow:tier.popular?"0 0 28px rgba("+CR+",.12)":"none"}}>
               {tier.popular && <span style={{position:"absolute",top:-10,left:18,background:C,color:BASE,fontSize:9,letterSpacing:".2em",padding:"3px 10px",fontWeight:700}}>{ui.popular}</span>}
-              <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:6,textTransform:"uppercase"}}>{tier.tag[lang]}</div>
+              <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:6,textTransform:"uppercase",minHeight:"3.2em"}}>{tier.tag[lang]}</div>
               <div style={{fontFamily:HEAD,fontWeight:800,fontSize:"1.5rem",letterSpacing:"-.02em",color:INK,marginBottom:8}}>{tier.name[lang]}</div>
-              <p style={{fontSize:11,lineHeight:1.7,color:INK2,minHeight:"3.4em"}}>{tier.desc[lang]}</p>
+              <p style={{fontSize:11,lineHeight:1.7,color:INK2,minHeight:"6.8em"}}>{tier.desc[lang]}</p>
               <div style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price[lang],lang)}</div>
               <div style={{fontSize:10,color:INK2,lineHeight:1.6,marginBottom:14}}><s style={{color:"#8A949B"}}>{fmtEur(tier.market[lang],lang)}</s> {ui.market} {"·"} <b style={{color:C}}>{"−"}{tier.discount}% {ui.saving}</b></div>
               <ul style={{listStyle:"none",padding:0,margin:"0 0 14px",flex:1}}>{tier.features[lang].map(function(f){return <li key={f} style={{fontSize:11,lineHeight:1.6,paddingLeft:16,position:"relative",marginBottom:6,color:"#ccc"}}><span aria-hidden="true" style={{position:"absolute",left:0,color:C}}>{"✓"}</span>{f}</li>})}</ul>
               <div style={{fontSize:10,color:INK2,marginBottom:12}}>{ui.delivery}: {tier.days[0]}{"–"}{tier.days[1]} {ui.days}</div>
-              <div className="cs-cta" {...kb(function(){scrollToId("contact")},ui.choose)} style={Object.assign({textAlign:"center",fontFamily:MONO,fontSize:10,letterSpacing:".25em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"12px 16px",textTransform:"uppercase",cursor:"none"},CTA_GLOW)}>{ui.choose} {"→"}</div>
+              <div className="cs-cta" {...kb(function(){scrollToId("contact")},ui.choose)} style={Object.assign({textAlign:"center",fontFamily:MONO,fontSize:10,letterSpacing:".14em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"12px 12px",textTransform:"uppercase",cursor:"none"},CTA_GLOW)}>{ui.choose} {"→"}</div>
             </div>})}
         </div>
 
@@ -3047,12 +3051,6 @@ export default function App(){
         </div>
       </section>
 
-      {/* ═══ ASCII SCULPTURE ═══ */}
-      <section style={{position:"relative",zIndex:5,padding:"40px 20px 80px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
-        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20,textAlign:"center"}}>{lang==="it"?"// LA SCANSIONE — IL PEZZO FISICO, MISURATO NEL DIGITALE":lang==="bg"?"// \u0421\u041a\u0410\u041d\u042a\u0422 — \u0424\u0418\u0417\u0418\u0427\u0415\u0421\u041a\u0410\u0422\u0410 \u0427\u0410\u0421\u0422, \u0418\u0417\u041c\u0415\u0420\u0415\u041d\u0410 \u0412 \u0414\u0418\u0413\u0418\u0422\u0410\u041b\u041d\u041e\u0422\u041e":"// THE SCAN — A PHYSICAL PART, MEASURED INTO THE DIGITAL"}</div>
-        <ASCIISculpture />
-      </section>
-
       {/* ═══════════════════════════════════════════
           WORK — Split layout with massive type
           ═══════════════════════════════════════════ */}
@@ -3061,11 +3059,16 @@ export default function App(){
         <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em" style={CHROME}>{t("work_title")}</EchoText>
         <div style={{height:48}}/>
 
-        {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu"],["004","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu"],["005","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com"],["006","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it"],["007","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it"],["008","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com"],["009","MASTILKO","PRINT TOOLS","https://mastilko-bg.com"],["010","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it"]].map(function(w){
-          return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" style={{display:"grid",gridTemplateColumns:"60px 1fr auto",gap:16,padding:"16px 0",borderBottom:"1px solid rgba(245,245,240,.08)",cursor:"none",textDecoration:"none",color:"inherit"}}>
-            <span style={{fontSize:9,color:"#ccc",letterSpacing:".2em"}}>{w[0]}</span>
-            <Scr text={w[1]} style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em"}}/>
-            <span style={{fontSize:9,color:"#ccc",letterSpacing:".15em",textTransform:"uppercase"}}>{w[2]}</span></a>})}
+        {/* Real screenshots of each live project (public/work/, captured from the live sites) */}
+        <div className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["004","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["005","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["006","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["007","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["008","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["009","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"],["010","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"]].map(function(w){
+          return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" className="cs-work-card" style={{display:"flex",flexDirection:"column",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",cursor:"none",textDecoration:"none",color:"inherit",overflow:"hidden"}}>
+            <img src={"/work/"+w[4]+"-480.webp"} srcSet={"/work/"+w[4]+"-480.webp 480w, /work/"+w[4]+".webp 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
+            <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 16px 16px"}}>
+              <span style={{fontFamily:MONO,fontSize:9,color:INK2,letterSpacing:".2em"}}>{w[0]} {"\u00b7"} {w[2]}</span>
+              <span style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.05rem",textTransform:"uppercase",letterSpacing:"-.01em",color:INK}}>{w[1]} <span aria-hidden="true" style={{color:C}}>{"\u2197"}</span></span>
+            </div></a>})}
+        </div>
 
         {/* The full portfolio lives on its own subdomain — send people there */}
         <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:24,marginTop:40}}>
@@ -3118,15 +3121,15 @@ export default function App(){
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
           {[
-            {name:"Nexus Dominion",desc:"MMO browser game dark fantasy medievale. Gilde, dungeon, battaglie PvP ed economia gestita dai giocatori.",url:"https://nexus.carbonstealth.eu",tag:"GAMING"},
-            {name:"Treti Mart",desc:"Il marketplace bulgaro. Compra e vendi prodotti in Bulgaria con annunci gratuiti e pagamenti sicuri.",url:"https://tretimart.carbonstealth.eu",tag:"MARKETPLACE"},
-            {name:"CS ERP Demo",desc:"Demo live del sistema ERP. Prova moduli CRM, magazzino, contabilita e dashboard BI.",url:"https://erp.carbonstealth.eu",tag:"ERP"},
+            {name:"Nexus Dominion",desc:{it:"MMO browser dark fantasy medievale. Gilde, dungeon, battaglie PvP ed economia gestita dai giocatori.",en:"Medieval dark-fantasy browser MMO. Guilds, dungeons, PvP battles and a player-driven economy.",bg:"Средновековна dark fantasy браузър MMO игра. Гилдии, подземия, PvP битки и икономика, управлявана от играчите."},url:"https://nexus.carbonstealth.eu",tag:"GAMING"},
+            {name:"Treti Mart",desc:{it:"Il marketplace bulgaro. Compra e vendi prodotti in Bulgaria con annunci gratuiti e pagamenti sicuri.",en:"The Bulgarian marketplace. Buy and sell in Bulgaria with free listings and secure payments.",bg:"Българският маркетплейс. Купувай и продавай в България с безплатни обяви и сигурни плащания."},url:"https://tretimart.carbonstealth.eu",tag:"MARKETPLACE"},
+            {name:"CS ERP Demo",desc:{it:"Demo live del sistema ERP. Prova i moduli CRM, magazzino, contabilità e dashboard BI.",en:"Live demo of the ERP system. Try the CRM, warehouse, accounting and BI dashboard modules.",bg:"Демо на живо на ERP системата. Пробвай модулите CRM, склад, счетоводство и BI табло."},url:"https://erp.carbonstealth.eu",tag:"ERP"},
           ].map(function(p,i){
             return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.01)"}}>
               <div>
                 <div style={{fontSize:8,letterSpacing:".3em",color:C,marginBottom:8}}>{p.tag}</div>
                 <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",marginBottom:8,color:"#C9D1D6"}}>{p.name}</div>
-                <div style={{fontSize:10,color:"#ccc",lineHeight:1.8}}>{p.desc}</div>
+                <div style={{fontSize:10,color:"#ccc",lineHeight:1.8}}>{p.desc[lang]||p.desc.it}</div>
               </div>
               <div style={{fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba(245,245,240,.06)"}}>{p.url.replace("https://","")} {"\u2192"}</div>
             </a>
@@ -3156,16 +3159,6 @@ export default function App(){
           </div>
         </div>
 
-        {/* Carbon attribute strip — what a finished carbon part actually is.
-            Icons are lazy + explicitly sized so they can't shift layout. */}
-        <div className="cs-attr-strip" style={{marginTop:28,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(96px,1fr))",gap:2,border:"1px solid rgba(245,245,240,.06)"}}>
-          {[["carbon","lab_at1"],["leggero","lab_at2"],["resistenza","lab_at3"],["protezione","lab_at4"],["automotive","lab_at5"],["performance","lab_at6"],["installazione","lab_at7"]].map(function(a){
-            return <div key={a[0]} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:"18px 8px",borderRight:"1px solid rgba(245,245,240,.04)"}}>
-              <img src={"/icons/"+a[0]+".webp"} alt="" width={56} height={56} loading="lazy" decoding="async" style={{width:56,height:56,objectFit:"contain"}}/>
-              <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".18em",color:INK2,textTransform:"uppercase",textAlign:"center",lineHeight:1.5}}>{t(a[1])}</span>
-            </div>
-          })}
-        </div>
       </section>
 
       {/* ═══════════════════════════════════════════
@@ -3383,7 +3376,7 @@ export default function App(){
         </div>
 
         {/* CONTACT BAR */}
-        <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:24,alignItems:"center"}}>
+        <div className="cs-contactbar" style={{padding:"16px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:24,alignItems:"center"}}>
           <span style={{fontSize:9,color:"#ccc",letterSpacing:".1em"}}>{lang==="it"?"Sede Legale:":lang==="bg"?"\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435:":"Registered Office:"} ul. Samuil 3, Bobov Dol 2670, Bulgaria</span>
           <span style={{fontSize:9,color:"#ccc"}}>EIK BG208725180</span>
           <a href="tel:+393792969699" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>IT +39 379 296 9699</a>
@@ -3397,13 +3390,13 @@ export default function App(){
           <div style={{display:"flex",gap:16}}>
             <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Privacy":lang==="bg"?"\u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy"}</a>
             <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Cookie":lang==="bg"?"\u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438":"Cookies"}</a>
-            <a href={lang==="bg"?"/bg/termini/":lang==="en"?"/en/termini/":"/termini/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Termini":lang==="bg"?"\u0423\u0441\u043B\u043E\u0432\u0438\u044F":"Terms"}</a>
+            <a href={lang==="bg"?"/bg/usloviya/":lang==="en"?"/en/terms/":"/termini/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Termini":lang==="bg"?"\u0423\u0441\u043B\u043E\u0432\u0438\u044F":"Terms"}</a>
           </div>
         </div>
 
         {/* POWERED BY */}
         <div style={{padding:"10px 20px",textAlign:"center",borderTop:"1px solid rgba(245,245,240,.02)"}}>
-          <span style={{fontSize:7,color:"#7C868D",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} WEBGL {"\u00b7"} REVERSE ENGINEERING {"\u00b7"} 3D PRINTING {"\u00b7"} \u00b10.02MM</span>
+          <span style={{fontSize:7,color:"#7C868D",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} WEBGL {"\u00b7"} REVERSE ENGINEERING {"\u00b7"} 3D PRINTING {"\u00b7"} {"\u00b1"}0.02MM</span>
         </div>
       </footer>
 

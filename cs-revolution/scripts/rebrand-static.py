@@ -26,6 +26,8 @@ RULES = [
      'border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 1px 18px rgba(0,229,255,.1);padding:12px 20px;z-index:1000;'),
     ('<img src="/logo.png" alt="Carbon Stealth VCC" width="56" height="24"',
      '<img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30"'),
+    # the geo / service-city generators wrote the logo without dimensions (layout shift)
+    ('<img src="/logo.png" alt="Carbon Stealth VCC">', '<img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30">'),
 ]
 # Ценоразписът (scripts/generate-pricing.py) получава място в навигацията, точно преди
 # контактите. (пазач, какво, с какво): прилага се САМО ако пазачът липсва във файла —

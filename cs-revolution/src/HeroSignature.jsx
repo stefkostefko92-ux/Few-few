@@ -114,8 +114,8 @@ void main(){\n\
   float sweepX = fract(uTime * 0.035) * (aspect + 0.6) - (aspect * 0.5 + 0.3);\n\
   float sweep = lineAA(p.x - sweepX, 0.006);\n\
   float sweepFall = smoothstep(1.0, 0.0, abs(p.x - sweepX) * 3.0);\n\
-  col += uCyan * sweep * 0.55;\n\
-  col += uCyan * sweepFall * 0.018;\n\
+  col += uCyan * sweep * 0.16;\n\
+  col += uCyan * sweepFall * 0.008;\n\
 \n\
   // caliper measurement ring — tracks the pointer, tick gradations, crosshair\n\
   float md = length(p - m);\n\

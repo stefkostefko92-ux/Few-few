@@ -55,7 +55,7 @@ QC_JS = '''
   var form=document.getElementById('qc-form');
   if(!form)return;
   var out=document.getElementById('qc-result');
-  var PER_UNIT=100,INCLUDED=5,NUMLOC='__NUMLOC__';
+  var PER_UNIT=__PERUNIT__,INCLUDED=5,NUMLOC='__NUMLOC__';
   function fmt(n){return '€'+Math.round(n).toLocaleString(NUMLOC);}
   function r50(n){return Math.round(n/50)*50;}
   function calc(){
@@ -127,10 +127,10 @@ def quote_ui(lang, ui):
     s = L[lang]
     types = "".join(f'<option value="{b}">{name}</option>' for name, b in ui["types"])
     opts = "".join(f'<label class="opt"><input type="checkbox" value="{v}">{name}</label>' for name, v in ui["options"])
-    js = QC_JS.replace("__NUMLOC__", s["numloc"])
+    js = QC_JS.replace("__NUMLOC__", s["numloc"]).replace('__PERUNIT__', '120' if lang=='bg' else '100')
     return (f'<div class="tool"><form id="qc-form">'
-            f'<div class="fld"><label>{ui["type_label"]}</label><select id="qc-type">{types}</select></div>'
-            f'<div class="fld"><label>{ui["qty_label"]}</label><input type="number" id="qc-qty" min="1" value="5"></div>'
+            f'<div class="fld"><label for="qc-type">{ui["type_label"]}</label><select id="qc-type">{types}</select></div>'
+            f'<div class="fld"><label for="qc-qty">{ui["qty_label"]}</label><input type="number" id="qc-qty" min="1" value="5"></div>'
             f'<div class="fld"><label>{ui["options_label"]}</label><div class="opts">{opts}</div></div>'
             f'</form>'
             f'<div class="fld"><label>{ui["result_label"]}</label><div class="qc-res" id="qc-result">--</div>'
@@ -141,14 +141,14 @@ def meta_ui(lang, ui):
     topts = "".join(f'<option value="{v}">{lab}</option>' for v, lab in ui["type_options"])
     js = MT_JS.replace("__COPIED__", ui["copied"])
     return (f'<div class="tool"><form id="mt-form">'
-            f'<div class="fld"><label>{ui["title_label"]}</label><input type="text" id="mt-t" placeholder="{ui["ph_t"]}"></div>'
-            f'<div class="fld"><label>{ui["desc_label"]}</label><input type="text" id="mt-d" placeholder="{ui["ph_d"]}"></div>'
-            f'<div class="fld"><label>{ui["url_label"]}</label><input type="url" id="mt-u" placeholder="{ui["ph_u"]}"></div>'
-            f'<div class="fld"><label>{ui["image_label"]}</label><input type="url" id="mt-img" placeholder="{ui["ph_img"]}"></div>'
-            f'<div class="fld"><label>{ui["site_label"]}</label><input type="text" id="mt-site" placeholder="{ui["ph_site"]}"></div>'
-            f'<div class="fld"><label>{ui["type_label"]}</label><select id="mt-type">{topts}</select></div>'
+            f'<div class="fld"><label for="mt-t">{ui["title_label"]}</label><input type="text" id="mt-t" placeholder="{ui["ph_t"]}"></div>'
+            f'<div class="fld"><label for="mt-d">{ui["desc_label"]}</label><input type="text" id="mt-d" placeholder="{ui["ph_d"]}"></div>'
+            f'<div class="fld"><label for="mt-u">{ui["url_label"]}</label><input type="url" id="mt-u" placeholder="{ui["ph_u"]}"></div>'
+            f'<div class="fld"><label for="mt-img">{ui["image_label"]}</label><input type="url" id="mt-img" placeholder="{ui["ph_img"]}"></div>'
+            f'<div class="fld"><label for="mt-site">{ui["site_label"]}</label><input type="text" id="mt-site" placeholder="{ui["ph_site"]}"></div>'
+            f'<div class="fld"><label for="mt-type">{ui["type_label"]}</label><select id="mt-type">{topts}</select></div>'
             f'</form>'
-            f'<div class="fld"><div class="out-h"><label>{ui["output_label"]}</label>'
+            f'<div class="fld"><div class="out-h"><label for="mt-out">{ui["output_label"]}</label>'
             f'<button type="button" class="btn" id="mt-copy">{ui["copy"]}</button></div>'
             f'<textarea id="mt-out" readonly></textarea></div></div>' + js)
 
@@ -161,21 +161,21 @@ dict(key="quote",
  lang=dict(
   it=dict(
    title="Calcolatore Preventivo Sito Web Gratis | Carbon Stealth",
-   desc="Calcola gratis e in tempo reale il preventivo del tuo sito web, e-commerce o software. Scegli tipo, pagine e funzionalita e ottieni subito una stima di prezzo.",
+   desc="Calcola gratis e in tempo reale il preventivo del tuo sito web, e-commerce o software. Scegli tipo, pagine e funzionalità e ottieni subito una stima di prezzo.",
    h1="Calcolatore Preventivo Sito Web",
    intro='<p>Questo <strong>calcolatore di preventivo</strong> ti d&agrave; una stima immediata del costo del tuo sito web o software. Scegli il tipo di progetto, indica il numero di pagine o prodotti e seleziona le funzionalit&agrave; che ti servono: il prezzo stimato si aggiorna in tempo reale, direttamente nel browser e senza registrazione.</p>'
          '<p>Le stime si basano sui nostri prezzi reali di partenza: sito vetrina da €1.575 + IVA, e-commerce da €1.825 + IVA, software su misura da €2.000, app mobile da €3.000 ed ERP da €5.000. Per un preventivo esatto guarda i nostri servizi di <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a>, <a href="/servizi/ecommerce/">e-commerce</a> e <a href="/servizi/sviluppo-software/">software su misura</a>, oppure <a href="/contatti/">contattaci</a>.</p>',
    ui=dict(type_label="Tipo di progetto",
-     types=[("Sito vetrina",1890),("E-commerce",2190),("Software su misura",2000),("App mobile",3000),("ERP",5000)],
+     types=[("Sito vetrina",1575),("E-commerce",1825),("Software su misura",2000),("App mobile",3000),("ERP",5000)],
      qty_label="Numero di pagine / prodotti", options_label="Funzionalit&agrave; aggiuntive",
-     options=[("SEO",400),("Multilingua",350),("Blog",300),("Integrazione pagamenti",600),("Hosting gestito",350)],
+     options=[("SEO",242),("Multilingua",292),("Blog",100),("Integrazione pagamenti",600),("Hosting gestito",156)],
      result_label="Stima del preventivo",
-     note="Stima indicativa calcolata nel browser. Il preventivo esatto dipende dai dettagli del progetto.",
+     note="Stima indicativa calcolata nel browser. Il preventivo esatto dipende dai dettagli del progetto."+" Importi IVA esclusa: l'IVA non si applica solo alle aziende con partita IVA valida.",
      button="Richiedi preventivo esatto"),
    faqs=[
-    ("Come funziona il calcolatore di preventivo?", "Scegli il tipo di progetto, inserisci il numero di pagine o prodotti e spunta le funzionalita desiderate. Il calcolatore somma un prezzo base e degli incrementi e mostra una fascia di prezzo stimata, aggiornata in tempo reale."),
-    ("La stima e vincolante?", "No, e una stima indicativa per orientarti. Il preventivo esatto dipende dai dettagli del progetto e te lo forniamo gratuitamente entro 24 ore dopo una breve analisi delle tue esigenze."),
-    ("Quanto costa davvero un sito web?", "Un sito vetrina parte da €1.575 + IVA, un e-commerce da €1.825 + IVA e un software su misura da €2.000. Il prezzo finale dipende da pagine, funzionalita e integrazioni: usa il calcolatore per una prima stima realistica."),
+    ("Come funziona il calcolatore di preventivo?", "Scegli il tipo di progetto, inserisci il numero di pagine o prodotti e spunta le funzionalità desiderate. Il calcolatore somma un prezzo base e degli incrementi e mostra una fascia di prezzo stimata, aggiornata in tempo reale."),
+    ("La stima è vincolante?", "No, è una stima indicativa per orientarti. Il preventivo esatto dipende dai dettagli del progetto e te lo forniamo gratuitamente entro 24 ore dopo una breve analisi delle tue esigenze."),
+    ("Quanto costa davvero un sito web?", "Un sito vetrina parte da €1.575 + IVA, un e-commerce da €1.825 + IVA e un software su misura da €2.000. Il prezzo finale dipende da pagine, funzionalità e integrazioni: usa il calcolatore per una prima stima realistica."),
    ]),
   en=dict(
    title="Free Website Quote Calculator | Carbon Stealth",
@@ -184,11 +184,11 @@ dict(key="quote",
    intro='<p>This free <strong>quote calculator</strong> gives you an instant estimate of your website or software cost. Choose the project type, set the number of pages or products and select the features you need: the estimated price updates live, right in your browser and with no sign-up.</p>'
          '<p>The estimates are based on our real starting prices: brochure site from €1,575 + VAT, e-commerce from €1,825 + VAT, custom software from €2,000, mobile app from €3,000 and ERP from €5,000. For an exact quote see our <a href="/en/services/web-development/">web development</a>, <a href="/en/services/ecommerce/">e-commerce</a> and <a href="/en/services/software-development/">custom software</a> services, or <a href="/en/contact/">get in touch</a>.</p>',
    ui=dict(type_label="Project type",
-     types=[("Brochure website",1890),("E-commerce",2190),("Custom software",2000),("Mobile app",3000),("ERP",5000)],
+     types=[("Brochure website",1575),("E-commerce",1825),("Custom software",2000),("Mobile app",3000),("ERP",5000)],
      qty_label="Number of pages / products", options_label="Additional features",
-     options=[("SEO",400),("Multilingual",350),("Blog",300),("Payment integration",600),("Managed hosting",350)],
+     options=[("SEO",242),("Multilingual",292),("Blog",100),("Payment integration",600),("Managed hosting",156)],
      result_label="Estimated quote",
-     note="Indicative estimate calculated in your browser. The exact quote depends on your project details.",
+     note="Indicative estimate calculated in your browser. The exact quote depends on your project details."+" Amounts exclude VAT: VAT is waived only for companies with a valid VAT number.",
      button="Request an exact quote"),
    faqs=[
     ("How does the quote calculator work?", "Pick the project type, enter the number of pages or products and tick the features you want. The calculator adds a base price plus increments and shows an estimated price range that updates in real time."),
@@ -204,9 +204,9 @@ dict(key="quote",
    ui=dict(type_label="Тип проект",
      types=[("Визитен сайт",1890),("Онлайн магазин",2190),("Софтуер по поръчка",2000),("Мобилно приложение",3000),("ERP",5000)],
      qty_label="Брой страници / продукти", options_label="Допълнителни функции",
-     options=[("SEO",400),("Многоезичност",350),("Блог",300),("Интеграция на плащания",600),("Управляван хостинг",350)],
+     options=[("SEO",290),("Многоезичност",350),("Блог",120),("Интеграция на плащания",600),("Управляван хостинг",180)],
      result_label="Оценка на офертата",
-     note="Ориентировъчна оценка, изчислена в браузъра. Точната оферта зависи от детайлите на проекта.",
+     note="Ориентировъчна оценка, изчислена в браузъра. Точната оферта зависи от детайлите на проекта."+" Сумите са с включен 20% ДДС.",
      button="Заявете точна оферта"),
    faqs=[
     ("Как работи калкулаторът за оферта?", "Изберете типа проект, въведете броя страници или продукти и отметнете желаните функции. Калкулаторът събира базова цена и надбавки и показва ориентировъчен ценови диапазон, който се обновява в реално време."),
@@ -233,7 +233,7 @@ dict(key="meta",
    faqs=[
     ("Cosa sono i meta tag e a cosa servono?", "I meta tag descrivono la tua pagina a motori di ricerca e social network. Title e description influenzano come appari su Google; i tag Open Graph e Twitter controllano l'anteprima quando il link viene condiviso."),
     ("Come uso il codice generato?", "Copia tutto il blocco e incollalo dentro il tag head della tua pagina HTML. Aggiorna i valori per ogni pagina del sito con titolo, descrizione e URL corretti."),
-    ("Il generatore crea anche i dati strutturati?", "Si. Oltre ai meta tag genera uno snippet JSON-LD di tipo WebPage con l'organizzazione editrice, utile per aiutare Google a capire meglio la tua pagina."),
+    ("Il generatore crea anche i dati strutturati?", "Sì. Oltre ai meta tag genera uno snippet JSON-LD di tipo WebPage con l'organizzazione editrice, utile per aiutare Google a capire meglio la tua pagina."),
    ]),
   en=dict(
    title="Free Meta Tag and Open Graph Generator | Carbon Stealth",

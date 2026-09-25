@@ -535,7 +535,7 @@ def head_common(lang, title, desc, canon, alt_urls, og, locale, region, placenam
 def nav_html(lang):
     s = L[lang]
     links = "".join(f'<a href="{u}">{t}</a>' for u, t in s["nav"])
-    return f'<nav class="nav"><a href="{s["home"]}"><img src="/logo.png" alt="Carbon Stealth VCC"></a><div>{links}</div></nav>'
+    return f'<nav class="nav"><a href="{s["home"]}"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30"></a><div>{links}</div></nav>'
 
 # Ред „Risorse" в футъра (същият като в scripts/seo-footer-links.py) — вътрешни линкове към хъбовете
 FT_ROW = {

@@ -48,9 +48,9 @@ CITIES = [
    en="Burgas combines a major port, petrochemicals and southern Black Sea tourism. We develop e-commerce, corporate sites and logistics dashboards for companies in the region.",
    bg="Бургас съчетава голямо пристанище, нефтохимия и туризъм по южното Черноморие. Разработваме онлайн магазини, фирмени сайтове и логистични табла за компаниите в региона."),
   local=dict(
-   it="Per le attività stagionali di Burgas e Sunny Beach garantiamo lanci rapidi: un sito completo in 1-2 settimane, pronto prima della stagione estiva.",
-   en="For seasonal businesses in Burgas and Sunny Beach we guarantee fast launches: a complete website in 1-2 weeks, ready before the summer season.",
-   bg="За сезонния бизнес в Бургас и Слънчев бряг гарантираме бърз старт: завършен сайт за 1-2 седмици, готов преди летния сезон.")),
+   it="Per le attività stagionali di Burgas e Sunny Beach garantiamo lanci rapidi: un sito completo in 2-3 settimane, pronto prima della stagione estiva.",
+   en="For seasonal businesses in Burgas and Sunny Beach we guarantee fast launches: a complete website in 2-3 weeks, ready before the summer season.",
+   bg="За сезонния бизнес в Бургас и Слънчев бряг гарантираме бърз старт: завършен сайт за 2-3 седмици, готов преди летния сезон.")),
  dict(slug="ruse", country="BG", region="BG-18", lat=43.8356, lon=25.9657,
   name=dict(it="Ruse", en="Ruse", bg="Русе"),
   hook=dict(
@@ -239,7 +239,7 @@ L = {
   faq_onsite_IT=("Lavorate anche in presenza a {name}?", "Lavoriamo da remoto in tutta Italia con call in italiano in orario italiano (+39 379 296 9699); incontri in presenza organizzabili per progetti su misura."),
   faq_onsite_BG=("Lavorate anche in presenza a {name}?", "Sì: la nostra sede è a Bobov Dol, Bulgaria, e organizziamo incontri in presenza in tutto il paese. Supporto remoto quotidiano via call e chat."),
   faq_invoice=("Come funziona la fatturazione?", "Emettiamo regolare fattura UE con partita IVA bulgara (BG208725180): per le aziende italiane si applica il reverse charge. Pagamenti via bonifico, carta o Stripe."),
-  faq_timeline=("Quanto tempo serve per un sito web a {name}?", "Un sito vetrina richiede 1-2 settimane, un e-commerce 3-6 settimane, software ed ERP 2-6 mesi. Concordiamo una timeline precisa nel preventivo gratuito."),
+  faq_timeline=("Quanto tempo serve per un sito web a {name}?", "Un sito vetrina richiede 2-3 settimane, un e-commerce 3-5 settimane, software ed ERP 2-6 mesi. Concordiamo una timeline precisa nel preventivo gratuito."),
   faq_lang=("In che lingua lavorate con i clienti di {name}?", "Italiano, inglese e bulgaro. Tutta la comunicazione, la documentazione e l'assistenza sono nella lingua che preferisci."),
   ft_links=[("/privacy/", "Privacy"), ("/cookie/", "Cookie"), ("/termini/", "Termini")],
   hub_title="Dove Lavoriamo — Sviluppo Web in Italia e Bulgaria | Carbon Stealth",
@@ -271,7 +271,7 @@ L = {
   faq_onsite_IT=("Do you work on-site in {name}?", "We work remotely across Italy with calls in Italian during Italian business hours (+39 379 296 9699); on-site meetings can be arranged for larger projects."),
   faq_onsite_BG=("Do you work on-site in {name}?", "Yes — we are headquartered in Bobov Dol, Bulgaria, and arrange on-site meetings across the country. Day-to-day support is remote via calls and chat."),
   faq_invoice=("How does invoicing work?", "We issue standard EU invoices with our Bulgarian VAT number (BG208725180) — reverse charge applies for EU businesses. Payment by bank transfer, card or Stripe."),
-  faq_timeline=("How long does a website in {name} take?", "A company website takes 1-2 weeks, e-commerce 3-6 weeks, software and ERP 2-6 months. We agree a precise timeline in the free quote."),
+  faq_timeline=("How long does a website in {name} take?", "A company website takes 2-3 weeks, e-commerce 3-5 weeks, software and ERP 2-6 months. We agree a precise timeline in the free quote."),
   faq_lang=("What language do you work in with {name} clients?", "Italian, English and Bulgarian. All communication, documentation and support is in the language you prefer."),
   ft_links=[("/en/privacy/", "Privacy"), ("/en/cookie/", "Cookie"), ("/en/terms/", "Terms")],
   hub_title="Where We Work — Web Development in Italy and Bulgaria | Carbon Stealth",
@@ -303,7 +303,7 @@ L = {
   faq_onsite_IT=("Работите ли на място в {name}?", "Работим дистанционно в цяла Италия с разговори на италиански (+39 379 296 9699); срещи на място се организират за по-големи проекти."),
   faq_onsite_BG=("Работите ли на място в {name}?", "Да — седалището ни е в Бобов дол и организираме срещи на място в цялата страна. Ежедневната поддръжка е дистанционна по телефон и чат."),
   faq_invoice=("Как се издава фактура?", "Издаваме редовна фактура с български ДДС номер (BG208725180). Плащане по банков път, с карта или Stripe."),
-  faq_timeline=("За колко време се изработва сайт в {name}?", "Фирмен сайт отнема 1-2 седмици, онлайн магазин 3-6 седмици, софтуер и ERP 2-6 месеца. Договаряме точен срок в безплатната оферта."),
+  faq_timeline=("За колко време се изработва сайт в {name}?", "Фирмен сайт отнема 2-3 седмици, онлайн магазин 3-5 седмици, софтуер и ERP 2-6 месеца. Договаряме точен срок в безплатната оферта."),
   faq_lang=("На какъв език работите с клиенти от {name}?", "Италиански, английски и български. Цялата комуникация, документация и поддръжка са на езика, който предпочитате."),
   ft_links=[("/bg/privacy/", "Поверителност"), ("/bg/cookie/", "Бисквитки"), ("/bg/usloviya/", "Условия")],
   hub_title="Изработка на Сайт — Уеб Агенция за България и Италия | Carbon Stealth",
@@ -357,7 +357,7 @@ def head_common(lang, title, desc, canon, slugpath, og, locale, region, placenam
 def nav_html(lang):
     s = L[lang]
     links = "".join(f'<a href="{u}">{t}</a>' for u, t in s["nav"])
-    return f'<nav class="nav"><a href="{s["home"]}"><img src="/logo.png" alt="Carbon Stealth VCC"></a><div>{links}</div></nav>'
+    return f'<nav class="nav"><a href="{s["home"]}"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30"></a><div>{links}</div></nav>'
 
 # Ред „Risorse" в футъра (същият като в scripts/seo-footer-links.py) — вътрешни линкове към хъбовете
 FT_ROW = {

@@ -59,8 +59,8 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
   body="""<p>Nel 2026 un sito web professionale costa da <strong>€1.575 + IVA</strong> per un sito vetrina, da <strong>€1.825 + IVA</strong> per un e-commerce e da <strong>€2.000</strong> per un portale su misura. Il prezzo dipende dal numero di pagine, dalle funzionalit&agrave; richieste e da quanto lavoro grafico e di contenuti serve. Un template preconfezionato costa meno ma rende meno; un progetto costruito su misura costa di pi&ugrave; all'inizio e ripaga nel tempo con prestazioni e posizionamento migliori.</p>
 <h2>Prezzi per tipologia di sito</h2>
 <div class="ctbl"><table><thead><tr><th>Tipo di sito</th><th>Prezzo indicativo</th><th>Tempi</th><th>Per chi</th></tr></thead><tbody>
-<tr><td>Landing page singola</td><td>da €658 + IVA</td><td>3-7 giorni</td><td>Campagne, lancio prodotto</td></tr>
-<tr><td>Sito vetrina (5-8 pagine)</td><td>da €1.575 + IVA</td><td>1-2 settimane</td><td>Aziende, professionisti, studi</td></tr>
+<tr><td>Landing page singola</td><td>da €658 + IVA</td><td>5-7 giorni lavorativi</td><td>Campagne, lancio prodotto</td></tr>
+<tr><td>Sito vetrina (5-8 pagine)</td><td>da €1.575 + IVA</td><td>2-3 settimane</td><td>Aziende, professionisti, studi</td></tr>
 <tr><td>E-commerce</td><td>da €1.825 + IVA</td><td>3-6 settimane</td><td>Chi vende online</td></tr>
 <tr><td>Portale / software web</td><td>da €2.000</td><td>2-4 mesi</td><td>Gestionali, aree riservate, B2B</td></tr>
 </tbody></table></div>
@@ -77,9 +77,9 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 <p>Oltre alla realizzazione, un sito ha piccole spese fisse: il dominio (circa €10-15 l'anno), l'<a href="/servizi/hosting/">hosting cloud</a> (da €13/mese + IVA) e, se vuoi crescere sui motori di ricerca, un'attivit&agrave; di <a href="/servizi/seo/">SEO continuativa</a> (da €242/mese + IVA). Se invece devi vendere online, valuta prima se ti serve davvero un negozio: ne parliamo nella guida <a href="/blog/sito-vetrina-o-ecommerce/">sito vetrina o e-commerce</a>.</p>""",
   faqs=[
    ("Quanto costa un sito web semplice?", "Un sito vetrina professionale parte da €1.575 + IVA e include 5-8 pagine, design responsive, ottimizzazione SEO di base e modulo contatti. Una singola landing page parte da €1.575 + IVA."),
-   ("Perche i prezzi dei siti web variano cosi tanto?", "Perche cambiano il design (template o su misura), i contenuti (forniti o prodotti da noi), le funzionalita e il livello di ottimizzazione. Due siti con lo stesso numero di pagine possono costare il doppio l'uno dell'altro a seconda di questi fattori."),
+   ("Perché i prezzi dei siti web variano così tanto?", "Perché cambiano il design (template o su misura), i contenuti (forniti o prodotti da noi), le funzionalità e il livello di ottimizzazione. Due siti con lo stesso numero di pagine possono costare il doppio l'uno dell'altro a seconda di questi fattori."),
    ("Ci sono costi mensili dopo la consegna?", "Il sito e tuo, senza canoni obbligatori. Restano solo dominio (circa €10-15/anno) e hosting (da €13/mese + IVA). SEO e manutenzione evolutiva sono opzionali."),
-   ("Quanto tempo serve per avere il sito online?", "Un sito vetrina richiede 1-2 settimane, un e-commerce 3-6 settimane. Concordiamo una data precisa nel preventivo, gratuito e senza impegno entro 24 ore."),
+   ("Quanto tempo serve per avere il sito online?", "Un sito vetrina richiede 2-3 settimane, un e-commerce 3-5 settimane. Concordiamo una data precisa nel preventivo, gratuito e senza impegno entro 24 ore."),
   ]),
  en=dict(
   title="How Much Does a Website Cost in 2026? Real Prices | Carbon Stealth",
@@ -87,8 +87,8 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
   body="""<p>In 2026 a professional website costs from <strong>€1,575 + VAT</strong> for a brochure site, from <strong>€1,825 + VAT</strong> for an e-commerce store and from <strong>€2,000</strong> for a custom portal. The price depends on the number of pages, the features you need and how much design and content work is involved. An off-the-shelf template is cheaper but performs worse; a custom-built project costs more upfront and pays off over time through better performance and rankings.</p>
 <h2>Prices by type of website</h2>
 <div class="ctbl"><table><thead><tr><th>Type of site</th><th>Typical price</th><th>Timeline</th><th>Best for</th></tr></thead><tbody>
-<tr><td>Single landing page</td><td>from €658 + VAT</td><td>3-7 days</td><td>Campaigns, product launches</td></tr>
-<tr><td>Brochure site (5-8 pages)</td><td>from €1,575 + VAT</td><td>1-2 weeks</td><td>Companies, professionals, firms</td></tr>
+<tr><td>Single landing page</td><td>from €658 + VAT</td><td>5-7 working days</td><td>Campaigns, product launches</td></tr>
+<tr><td>Brochure site (5-8 pages)</td><td>from €1,575 + VAT</td><td>2-3 weeks</td><td>Companies, professionals, firms</td></tr>
 <tr><td>E-commerce</td><td>from €1,825 + VAT</td><td>3-6 weeks</td><td>Selling online</td></tr>
 <tr><td>Portal / web software</td><td>from €2,000</td><td>2-4 months</td><td>Dashboards, member areas, B2B</td></tr>
 </tbody></table></div>
@@ -107,7 +107,7 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
    ("How much does a simple website cost?", "A professional brochure site starts at €1,575 + VAT and includes 5-8 pages, responsive design, basic SEO and a contact form. A single landing page starts at €1,575 + VAT."),
    ("Why do website prices vary so much?", "Because design (template vs custom), content (supplied or produced by us), features and the level of optimization all differ. Two sites with the same page count can cost twice as much as each other depending on these factors."),
    ("Are there monthly costs after delivery?", "The site is yours, with no mandatory fees. Only the domain (around €10-15/year) and hosting (from €13/month + VAT) remain. SEO and ongoing maintenance are optional."),
-   ("How long does it take to get the site online?", "A brochure site takes 1-2 weeks, an e-commerce 3-6 weeks. We agree on a precise date in the quote, which is free and no-obligation within 24 hours."),
+   ("How long does it take to get the site online?", "A brochure site takes 2-3 weeks, an e-commerce 3-5 weeks. We agree on a precise date in the quote, which is free and no-obligation within 24 hours."),
   ]),
  bg=dict(
   title="Колко Струва Изработката на Сайт през 2026? | Carbon Stealth",
@@ -115,8 +115,8 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
   body="""<p>През 2026 професионален сайт струва от <strong>€1890 с ДДС</strong> за визитен сайт, от <strong>€2190 с ДДС</strong> за онлайн магазин и от <strong>€2000</strong> за портал по поръчка. Цената зависи от броя страници, нужните функционалности и колко работа по дизайна и съдържанието е необходима. Готовият шаблон е по-евтин, но носи по-малко резултати; проектът по поръчка струва повече в началото и се изплаща с времето чрез по-добра производителност и позиции в Google.</p>
 <h2>Цени по тип сайт</h2>
 <div class="ctbl"><table><thead><tr><th>Тип сайт</th><th>Ориентировъчна цена</th><th>Срок</th><th>За кого</th></tr></thead><tbody>
-<tr><td>Единична landing страница</td><td>от €790 с ДДС</td><td>3-7 дни</td><td>Кампании, старт на продукт</td></tr>
-<tr><td>Визитен сайт (5-8 страници)</td><td>от €1890 с ДДС</td><td>1-2 седмици</td><td>Фирми, специалисти, кантори</td></tr>
+<tr><td>Единична landing страница</td><td>от €790 с ДДС</td><td>5-7 работни дни</td><td>Кампании, старт на продукт</td></tr>
+<tr><td>Визитен сайт (5-8 страници)</td><td>от €1890 с ДДС</td><td>2-3 седмици</td><td>Фирми, специалисти, кантори</td></tr>
 <tr><td>Онлайн магазин</td><td>от €2190 с ДДС</td><td>3-6 седмици</td><td>Продажби онлайн</td></tr>
 <tr><td>Портал / уеб софтуер</td><td>от €2000</td><td>2-4 месеца</td><td>Табла, клиентски зони, B2B</td></tr>
 </tbody></table></div>
@@ -135,7 +135,7 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
    ("Колко струва прост сайт?", "Професионален визитен сайт започва от €1890 с ДДС и включва 5-8 страници, responsive дизайн, базово SEO и форма за контакт. Единична landing страница започва от €1890 с ДДС."),
    ("Защо цените на сайтовете се различават толкова?", "Защото се различават дизайнът (шаблон или по поръчка), съдържанието (ваше или изработено от нас), функционалностите и нивото на оптимизация. Два сайта с еднакъв брой страници могат да струват двойно един спрямо друг заради тези фактори."),
    ("Има ли месечни разходи след предаването?", "Сайтът е ваш, без задължителни такси. Остават само домейн (около €10-15/година) и хостинг (от €15/месец с ДДС). SEO и поддръжката са по избор."),
-   ("За колко време сайтът е онлайн?", "Визитен сайт отнема 1-2 седмици, онлайн магазин 3-6 седмици. Договаряме точна дата в офертата — безплатна и без ангажимент до 24 часа."),
+   ("За колко време сайтът е онлайн?", "Визитен сайт отнема 2-3 седмици, онлайн магазин 3-5 седмици. Договаряме точна дата в офертата — безплатна и без ангажимент до 24 часа."),
   ]),
 )),
 
@@ -164,7 +164,7 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
   faqs=[
    ("Quanto costa aprire un e-commerce da zero?", "Un e-commerce professionale parte da €1.825 + IVA con WooCommerce. Per cataloghi ampi, integrazioni con il gestionale o funzioni B2B, un progetto su misura parte da €3.000."),
    ("Quali sono i costi mensili di un e-commerce?", "Hosting da €13/mese + IVA, commissioni di pagamento dell'1,5-3% per transazione, eventuale abbonamento alla piattaforma e budget di marketing. Il dominio costa circa €10-15 l'anno."),
-   ("Meglio WooCommerce o Shopify per iniziare?", "Dipende. WooCommerce da piu controllo e nessun canone di piattaforma ma richiede manutenzione; Shopify e piu semplice ma ha un abbonamento e commissioni. Ne parliamo nella nostra guida dedicata."),
+   ("Meglio WooCommerce o Shopify per iniziare?", "Dipende. WooCommerce dà più controllo e nessun canone di piattaforma ma richiede manutenzione; Shopify è più semplice ma ha un abbonamento e commissioni. Ne parliamo nella nostra guida dedicata."),
    ("In quanto tempo si realizza un e-commerce?", "Un negozio standard richiede 3-6 settimane, un progetto su misura anche 2-3 mesi. Dipende dal numero di prodotti e dalle integrazioni necessarie."),
   ]),
  en=dict(
@@ -243,7 +243,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
 <p>Qualunque piattaforma tu scelga, il risultato dipende da come viene realizzato il negozio. Noi lavoriamo su entrambe: scopri il nostro <a href="/servizi/ecommerce/">servizio e-commerce</a>, leggi <a href="/blog/quanto-costa-ecommerce/">quanto costa un e-commerce</a> oppure <a href="/contatti/">scrivici</a> per un consiglio sul tuo caso.</p>""",
   faqs=[
    ("Meglio WooCommerce o Shopify nel 2026?", "WooCommerce se vuoi controllo totale, costi ricorrenti bassi e personalizzazione illimitata; Shopify se preferisci una soluzione gestita senza pensieri tecnici. La scelta dipende dal tuo modello di business, non da quale sia 'migliore'."),
-   ("Shopify costa piu di WooCommerce?", "Di solito si, sul lungo periodo. Shopify ha un canone mensile piu app a pagamento ed eventuali fee sulle transazioni. WooCommerce ha solo il costo dell'hosting, ma richiede manutenzione che ha comunque un valore."),
+   ("Shopify costa più di WooCommerce?", "Di solito si, sul lungo periodo. Shopify ha un canone mensile più app a pagamento ed eventuali fee sulle transazioni. WooCommerce ha solo il costo dell'hosting, ma richiede manutenzione che ha comunque un valore."),
    ("Posso passare da Shopify a WooCommerce?", "Si, la migrazione e possibile: si esportano prodotti, clienti e ordini e si ricostruisce il negozio su WooCommerce. Va pianificata con attenzione per non perdere posizionamento SEO."),
    ("Quale piattaforma e migliore per la SEO?", "Entrambe possono posizionarsi bene. WooCommerce offre controllo totale su URL, struttura e dati strutturati; Shopify e solido ma con qualche limite tecnico. Conta soprattutto come e ottimizzato il negozio."),
   ]),
@@ -301,7 +301,7 @@ dict(slug="woocommerce-vs-shopify", section="E-commerce", read=8, lang=dict(
 dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=dict(
  it=dict(
   title="Sito Vetrina o E-commerce? Come Scegliere nel 2026 | Carbon Stealth",
-  desc="Sito vetrina o e-commerce? Guida pratica per capire quale sito serve alla tua attivita, con differenze di costi, obiettivi e funzionalita.",
+  desc="Sito vetrina o e-commerce? Guida pratica per capire quale sito serve alla tua attività, con differenze di costi, obiettivi e funzionalità.",
   body="""<p>La regola &egrave; semplice: se vendi prodotti direttamente online ti serve un <strong>e-commerce</strong>; se vuoi presentare la tua attivit&agrave; e ricevere contatti o richieste di preventivo, basta un <strong>sito vetrina</strong>. Molte aziende spendono di pi&ugrave; del necessario aprendo un negozio quando in realt&agrave; il loro obiettivo &egrave; generare telefonate, prenotazioni o richieste, non transazioni.</p>
 <h2>Le differenze in sintesi</h2>
 <div class="ctbl"><table><thead><tr><th></th><th>Sito vetrina</th><th>E-commerce</th></tr></thead><tbody>
@@ -312,14 +312,14 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <tr><td>Ideale per</td><td>Studi, ristoranti, artigiani, B2B</td><td>Negozi, brand, produttori</td></tr>
 </tbody></table></div>
 <h2>Quando basta un sito vetrina</h2>
-<p>Un <a href="/servizi/sviluppo-siti-web/">sito vetrina</a> &egrave; perfetto per professionisti, ristoranti, studi medici, artigiani e aziende B2B che vendono su preventivo. Presenta servizi, portfolio e contatti, si posiziona su Google per le ricerche locali e trasforma i visitatori in richieste. Costa meno, si gestisce quasi da solo e si lancia in 1-2 settimane.</p>
+<p>Un <a href="/servizi/sviluppo-siti-web/">sito vetrina</a> &egrave; perfetto per professionisti, ristoranti, studi medici, artigiani e aziende B2B che vendono su preventivo. Presenta servizi, portfolio e contatti, si posiziona su Google per le ricerche locali e trasforma i visitatori in richieste. Costa meno, si gestisce quasi da solo e si lancia in 2-3 settimane.</p>
 <h2>Quando serve un e-commerce</h2>
 <p>Se vuoi incassare direttamente online, 24 ore su 24, ti serve un <a href="/servizi/ecommerce/">e-commerce</a> con catalogo, carrello e pagamenti. Richiede pi&ugrave; investimento iniziale e gestione continua (ordini, magazzino, spedizioni), ma apre un canale di vendita nuovo. Per orientarti sui numeri leggi <a href="/blog/quanto-costa-ecommerce/">quanto costa un e-commerce</a>.</p>
 <p>Una via di mezzo esiste: partire con un sito vetrina e aggiungere l'e-commerce in un secondo momento, quando il progetto &egrave; maturo. Se hai dubbi, <a href="/contatti/">raccontaci la tua attivit&agrave;</a> e ti diciamo onestamente cosa ti conviene.</p>""",
   faqs=[
-   ("Qual e la differenza tra sito vetrina ed e-commerce?", "Il sito vetrina presenta la tua attivita e genera contatti, senza vendere online. L'e-commerce permette di vendere prodotti direttamente con carrello e pagamenti. Cambiano obiettivo, costo e gestione."),
-   ("Costa di piu un e-commerce o un sito vetrina?", "L'e-commerce costa di piu: parte da €1.825 + IVA contro gli €1.575 + IVA di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina e piu economico e quasi automatico."),
-   ("Posso trasformare un sito vetrina in e-commerce?", "Si. Molte attivita partono con un sito vetrina e aggiungono la parte e-commerce quando sono pronte. Se il sito e costruito bene, l'estensione e semplice e non richiede di ripartire da zero."),
+   ("Qual e la differenza tra sito vetrina ed e-commerce?", "Il sito vetrina presenta la tua attività e genera contatti, senza vendere online. L'e-commerce permette di vendere prodotti direttamente con carrello e pagamenti. Cambiano obiettivo, costo e gestione."),
+   ("Costa di più un e-commerce o un sito vetrina?", "L'e-commerce costa di più: parte da €1.825 + IVA contro gli €1.575 + IVA di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina è più economico e quasi automatico."),
+   ("Posso trasformare un sito vetrina in e-commerce?", "Sì. Molte attività partono con un sito vetrina e aggiungono la parte e-commerce quando sono pronte. Se il sito e costruito bene, l'estensione e semplice e non richiede di ripartire da zero."),
    ("Ho un negozio fisico: mi serve un e-commerce?", "Non per forza. Se il tuo obiettivo e farti trovare e portare clienti in negozio, un sito vetrina con SEO locale spesso basta. L'e-commerce serve se vuoi vendere anche a distanza."),
   ]),
  en=dict(
@@ -335,7 +335,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <tr><td>Ideal for</td><td>Firms, restaurants, artisans, B2B</td><td>Shops, brands, manufacturers</td></tr>
 </tbody></table></div>
 <h2>When a brochure site is enough</h2>
-<p>A <a href="/en/services/web-development/">brochure site</a> is perfect for professionals, restaurants, clinics, artisans and B2B companies that sell on quote. It presents services, portfolio and contacts, ranks on Google for local searches and turns visitors into enquiries. It costs less, almost runs itself and launches in 1-2 weeks.</p>
+<p>A <a href="/en/services/web-development/">brochure site</a> is perfect for professionals, restaurants, clinics, artisans and B2B companies that sell on quote. It presents services, portfolio and contacts, ranks on Google for local searches and turns visitors into enquiries. It costs less, almost runs itself and launches in 2-3 weeks.</p>
 <h2>When you need an e-commerce</h2>
 <p>If you want to take payments directly online, around the clock, you need an <a href="/en/services/ecommerce/">e-commerce</a> with a catalog, cart and payments. It requires more upfront investment and ongoing management (orders, stock, shipping), but opens a new sales channel. To get a sense of the numbers, read <a href="/en/blog/quanto-costa-ecommerce/">how much an e-commerce costs</a>.</p>
 <p>There is a middle path: start with a brochure site and add e-commerce later, when the project is mature. If you're unsure, <a href="/en/contact/">tell us about your business</a> and we'll honestly say what suits you.</p>""",
@@ -358,7 +358,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <tr><td>Подходящ за</td><td>Кантори, ресторанти, занаятчии, B2B</td><td>Магазини, брандове, производители</td></tr>
 </tbody></table></div>
 <h2>Кога визитният сайт е достатъчен</h2>
-<p><a href="/bg/uslugi/web-razrabotka/">Визитният сайт</a> е идеален за специалисти, ресторанти, лекарски кабинети, занаятчии и B2B фирми, които продават по оферта. Представя услуги, портфолио и контакти, класира се в Google за локални търсения и превръща посетителите в запитвания. Струва по-малко, работи почти сам и се пуска за 1-2 седмици.</p>
+<p><a href="/bg/uslugi/web-razrabotka/">Визитният сайт</a> е идеален за специалисти, ресторанти, лекарски кабинети, занаятчии и B2B фирми, които продават по оферта. Представя услуги, портфолио и контакти, класира се в Google за локални търсения и превръща посетителите в запитвания. Струва по-малко, работи почти сам и се пуска за 2-3 седмици.</p>
 <h2>Кога ви трябва онлайн магазин</h2>
 <p>Ако искате да приемате плащания директно онлайн, денонощно, трябва ви <a href="/bg/uslugi/ecommerce/">онлайн магазин</a> с каталог, количка и плащания. Изисква повече начална инвестиция и постоянно управление (поръчки, склад, доставки), но отваря нов канал за продажби. За ориентир в числата прочетете <a href="/bg/blog/quanto-costa-ecommerce/">колко струва онлайн магазин</a>.</p>
 <p>Има и междинен път: започнете с визитен сайт и добавете магазина по-късно, когато проектът узрее. Ако се колебаете, <a href="/bg/kontakti/">разкажете ни за бизнеса си</a> и ще ви кажем честно кое ви подхожда.</p>""",
@@ -395,8 +395,8 @@ dict(slug="quanto-costa-app-mobile", section="Mobile Apps", read=7, lang=dict(
   faqs=[
    ("Quanto costa sviluppare un'app da zero?", "Un'app semplice cross-platform parte da €3.000. Con backend, account utente e notifiche si sale a €6.000+, mentre app complesse con pagamenti e geolocalizzazione superano i €12.000."),
    ("Meglio un'app nativa o cross-platform?", "Per la maggior parte dei progetti conviene il cross-platform (React Native, Flutter): un solo codice per iOS e Android, costi e tempi ridotti. La nativa serve solo quando servono prestazioni estreme o funzioni hardware avanzate."),
-   ("Ci sono costi dopo la pubblicazione dell'app?", "Si: l'account sviluppatore Apple costa 99€/anno e quello Google 25€ una tantum. Poi ci sono hosting del backend e aggiornamenti periodici per compatibilita e sicurezza."),
-   ("Mi serve davvero un'app o basta un sito?", "Spesso un sito ottimizzato per mobile o una web app basta e costa meno, perche non richiede download. L'app conviene quando servono notifiche push, uso offline o funzioni del dispositivo."),
+   ("Ci sono costi dopo la pubblicazione dell'app?", "Si: l'account sviluppatore Apple costa 99€/anno e quello Google 25€ una tantum. Poi ci sono hosting del backend e aggiornamenti periodici per compatibilità e sicurezza."),
+   ("Mi serve davvero un'app o basta un sito?", "Spesso un sito ottimizzato per mobile o una web app basta e costa meno, perché non richiede download. L'app conviene quando servono notifiche push, uso offline o funzioni del dispositivo."),
   ]),
  en=dict(
   title="How Much Does It Cost to Build an App in 2026? | Carbon Stealth",
@@ -455,8 +455,8 @@ dict(slug="quanto-costa-app-mobile", section="Mobile Apps", read=7, lang=dict(
 # 6 ─────────────────────────────────────────────────────────────
 dict(slug="cos-e-un-erp", section="ERP", read=8, lang=dict(
  it=dict(
-  title="Cos'e un ERP e Come Funziona: Guida Completa 2026 | Carbon Stealth",
-  desc="Cos'e un sistema ERP, come funziona e a cosa serve. Guida completa 2026 con moduli, vantaggi, costi e quando conviene davvero a una PMI.",
+  title="Cos'è un ERP e Come Funziona: Guida Completa 2026 | Carbon Stealth",
+  desc="Cos'è un sistema ERP, come funziona e a cosa serve. Guida completa 2026 con moduli, vantaggi, costi e quando conviene davvero a una PMI.",
   body="""<p>Un <strong>ERP</strong> (Enterprise Resource Planning) &egrave; un software che unifica in un'unica piattaforma i processi principali di un'azienda: contabilit&agrave;, magazzino, vendite, acquisti, produzione e risorse umane. Invece di avere dati sparsi tra fogli Excel e programmi separati, tutto vive in un sistema centrale dove ogni reparto lavora sugli stessi numeri aggiornati in tempo reale.</p>
 <h2>Come funziona un ERP</h2>
 <p>Un ERP &egrave; organizzato in <strong>moduli</strong>, ciascuno dedicato a un'area aziendale, tutti collegati allo stesso database. Quando registri una vendita, il sistema aggiorna automaticamente il magazzino, la contabilit&agrave; e le statistiche. Non serve reinserire lo stesso dato tre volte: lo scrivi una volta e viaggia dove serve. I moduli tipici sono:</p>
@@ -468,14 +468,14 @@ dict(slug="cos-e-un-erp", section="ERP", read=8, lang=dict(
 <li><strong>Produzione:</strong> distinte base, ordini di lavoro, avanzamento.</li>
 <li><strong>Risorse umane:</strong> anagrafica dipendenti, presenze, costi.</li>
 </ul>
-<h2>Perche conviene a una PMI</h2>
+<h2>Perché conviene a una PMI</h2>
 <p>Il vantaggio principale &egrave; avere una sola fonte di verit&agrave;: meno errori, meno lavoro manuale e visibilit&agrave; immediata sui margini e sulle scorte. Un ERP riduce gli errori di inventario, elimina la doppia digitazione e permette di decidere sui dati reali, non su stime. Per capire se sei pronto, leggi la nostra guida <a href="/blog/erp-per-pmi/">ERP per PMI: quando serve davvero</a>.</p>
 <h2>ERP pronto o su misura?</h2>
 <p>Gli ERP standard (come Odoo o SAP Business One) offrono molto subito ma vanno adattati; un <a href="/servizi/erp/">ERP su misura</a> costa da €5.000 e modella esattamente i tuoi processi, senza pagare moduli che non usi. La scelta dipende da quanto i tuoi flussi sono particolari. Spesso conviene integrare l'ERP con l'<a href="/servizi/ecommerce/">e-commerce</a> e i gestionali esistenti: <a href="/contatti/">parliamone</a> e valutiamo insieme la soluzione giusta.</p>""",
   faqs=[
-   ("Cosa significa ERP e a cosa serve?", "ERP sta per Enterprise Resource Planning. E un software che integra contabilita, magazzino, vendite, acquisti e produzione in un'unica piattaforma, cosi ogni reparto lavora sugli stessi dati aggiornati in tempo reale."),
-   ("Quanto costa un sistema ERP?", "Un ERP su misura per una PMI parte da €5.000. Le soluzioni standard hanno canoni per utente, mentre un ERP custom ha un costo iniziale piu alto ma nessun canone di licenza e processi disegnati sui tuoi."),
-   ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre di solito una singola area (per esempio la contabilita o il magazzino). Un ERP integra piu aree collegate tra loro nello stesso sistema, evitando dati duplicati e disallineati."),
+   ("Cosa significa ERP e a cosa serve?", "ERP sta per Enterprise Resource Planning. E un software che integra contabilità, magazzino, vendite, acquisti e produzione in un'unica piattaforma, così ogni reparto lavora sugli stessi dati aggiornati in tempo reale."),
+   ("Quanto costa un sistema ERP?", "Un ERP su misura per una PMI parte da €5.000. Le soluzioni standard hanno canoni per utente, mentre un ERP custom ha un costo iniziale più alto ma nessun canone di licenza e processi disegnati sui tuoi."),
+   ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre di solito una singola area (per esempio la contabilità o il magazzino). Un ERP integra più aree collegate tra loro nello stesso sistema, evitando dati duplicati e disallineati."),
    ("La mia PMI e troppo piccola per un ERP?", "No: esistono ERP dimensionati anche per piccole imprese con 5-20 utenti. Il segnale che serve e quando gestisci troppi dati su fogli Excel separati e fai molto lavoro manuale ripetitivo."),
   ]),
  en=dict(
@@ -547,9 +547,9 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>Non serve fare tutto subito. Un percorso realistico: settimana 1-2, analisi parole chiave e sistemazione tecnica del sito; settimana 3-6, ottimizzazione delle pagine di servizio e del profilo Google Business; da settimana 7 in poi, pubblicazione regolare di contenuti utili. La SEO d&agrave; frutti in 3-6 mesi, non in una settimana: la costanza vince.</p>
 <p>Puoi partire da solo con i fondamentali, oppure affidarti a chi lo fa di mestiere. Il nostro <a href="/servizi/seo/">servizio SEO</a> parte da €242/mese + IVA e include analisi, ottimizzazione e contenuti. Se stai anche costruendo il sito, leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per pianificare l'investimento complessivo.</p>""",
   faqs=[
-   ("Quanto costa la SEO per una piccola impresa?", "Un'attivita SEO professionale parte da €242/mese + IVA e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
-   ("In quanto tempo si vedono i risultati SEO?", "Di solito in 3-6 mesi per keyword competitive, prima per ricerche locali o di nicchia. La SEO e un investimento a medio termine: i risultati crescono e restano nel tempo, a differenza della pubblicita."),
-   ("Cos'e la SEO locale e a chi serve?", "E l'ottimizzazione per le ricerche legate a un luogo (es. 'parrucchiere Torino'). Serve a chi ha clienti sul territorio: negozi, ristoranti, studi e artigiani. Si basa su Google Business, recensioni e pagine locali."),
+   ("Quanto costa la SEO per una piccola impresa?", "Un'attività SEO professionale parte da €242/mese + IVA e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
+   ("In quanto tempo si vedono i risultati SEO?", "Di solito in 3-6 mesi per keyword competitive, prima per ricerche locali o di nicchia. La SEO e un investimento a medio termine: i risultati crescono e restano nel tempo, a differenza della pubblicità."),
+   ("Cos'è la SEO locale e a chi serve?", "E l'ottimizzazione per le ricerche legate a un luogo (es. 'parrucchiere Torino'). Serve a chi ha clienti sul territorio: negozi, ristoranti, studi e artigiani. Si basa su Google Business, recensioni e pagine locali."),
    ("Posso fare SEO da solo?", "Si, i fondamentali (parole chiave, titoli, Google Business, contenuti utili) sono alla portata di tutti. Per la parte tecnica avanzata e la strategia continuativa conviene farsi affiancare da un professionista."),
   ]),
  en=dict(
@@ -602,7 +602,7 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 dict(slug="core-web-vitals-guida", section="Web Development", read=7, lang=dict(
  it=dict(
   title="Core Web Vitals: Cosa Sono e Come Migliorarli 2026 | Carbon Stealth",
-  desc="Cosa sono i Core Web Vitals (LCP, INP, CLS), perche contano per la SEO e come migliorarli. Guida pratica 2026 con soglie e interventi concreti.",
+  desc="Cosa sono i Core Web Vitals (LCP, INP, CLS), perché contano per la SEO e come migliorarli. Guida pratica 2026 con soglie e interventi concreti.",
   body="""<p>I <strong>Core Web Vitals</strong> sono tre metriche con cui Google misura l'esperienza reale degli utenti su un sito: velocit&agrave; di caricamento, reattivit&agrave; e stabilit&agrave; visiva. Sono un fattore di posizionamento: a parit&agrave; di contenuto, un sito che li rispetta si posiziona meglio e trattiene di pi&ugrave; i visitatori. Migliorarli significa avere pi&ugrave; traffico e pi&ugrave; conversioni.</p>
 <h2>Le tre metriche e le soglie da rispettare</h2>
 <div class="ctbl"><table><thead><tr><th>Metrica</th><th>Cosa misura</th><th>Buono</th></tr></thead><tbody>
@@ -621,8 +621,8 @@ dict(slug="core-web-vitals-guida", section="Web Development", read=7, lang=dict(
 <p>Usa strumenti gratuiti come <strong>PageSpeed Insights</strong> e il report Core Web Vitals di <strong>Google Search Console</strong>, che mostra i dati reali dei tuoi utenti. Attenzione: i test in laboratorio e i dati sul campo possono differire, perch&eacute; dipendono da dispositivi e connessioni reali.</p>
 <p>Le prestazioni non sono un dettaglio tecnico: sono parte della SEO e dell'esperienza cliente. Le curiamo in ogni <a href="/servizi/sviluppo-siti-web/">sito che sviluppiamo</a>, sono decisive per un <a href="/servizi/ecommerce/">e-commerce</a> che converte e vanno di pari passo con la <a href="/blog/seo-per-piccole-imprese/">SEO per piccole imprese</a>. Se il tuo sito &egrave; lento, <a href="/contatti/">chiedici un'analisi</a>.</p>""",
   faqs=[
-   ("Cosa sono i Core Web Vitals?", "Sono tre metriche con cui Google misura l'esperienza utente di un sito: LCP (velocita di caricamento), INP (reattivita) e CLS (stabilita visiva). Insieme indicano quanto e veloce e piacevole navigare il sito."),
-   ("I Core Web Vitals influenzano la SEO?", "Si. Sono un fattore di posizionamento di Google: a parita di contenuto, un sito che rispetta le soglie tende a posizionarsi meglio e a trattenere di piu i visitatori, riducendo l'abbandono."),
+   ("Cosa sono i Core Web Vitals?", "Sono tre metriche con cui Google misura l'esperienza utente di un sito: LCP (velocità di caricamento), INP (reattivita) e CLS (stabilità visiva). Insieme indicano quanto e veloce e piacevole navigare il sito."),
+   ("I Core Web Vitals influenzano la SEO?", "Sì. Sono un fattore di posizionamento di Google: a parita di contenuto, un sito che rispetta le soglie tende a posizionarsi meglio e a trattenere di più i visitatori, riducendo l'abbandono."),
    ("Quali sono i valori ideali dei Core Web Vitals?", "LCP sotto 2,5 secondi, INP sotto 200 millisecondi e CLS sotto 0,1. Sopra queste soglie l'esperienza e considerata da migliorare o scadente."),
    ("Come posso misurare i Core Web Vitals del mio sito?", "Con strumenti gratuiti come Google PageSpeed Insights e il report Core Web Vitals di Google Search Console, che mostra i dati reali raccolti dai tuoi visitatori."),
   ]),
@@ -701,9 +701,9 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <p>L'app nativa vale l'investimento in pi&ugrave; quando servono prestazioni elevate, un uso intenso dell'hardware (fotocamera, NFC, sensori di movimento), notifiche push affidabili anche su iOS o un funzionamento offline complesso. &Egrave; il caso di app di gaming, strumenti sul campo, applicazioni che gestiscono grandi volumi di dati locali o che devono comparire negli store per una questione di credibilit&agrave; del brand.</p>
 <p>Nel dubbio, il nostro consiglio &egrave; partire dalla PWA e passare al nativo solo se emerge un limite reale. Approfondisci i costi nella guida <a href="/blog/quanto-costa-app-mobile/">quanto costa sviluppare un'app</a>, scopri il nostro <a href="/servizi/app-mobile/">servizio di sviluppo app</a> e lo <a href="/servizi/sviluppo-software/">sviluppo software su misura</a>, oppure <a href="/contatti/">raccontaci il tuo progetto</a> per un consiglio onesto.</p>""",
   faqs=[
-   ("Qual e la differenza tra app nativa e PWA?", "L'app nativa si installa dallo store ed e sviluppata per iOS e Android con accesso completo al dispositivo. La PWA e un sito web installabile dal browser che funziona come un'app, anche offline, ma con accesso hardware piu limitato."),
-   ("Una PWA costa meno di un'app nativa?", "Di solito si. Una PWA parte da circa €1.500 perche usa un solo progetto per tutte le piattaforme, mentre un'app nativa parte da €3.000 e cresce se servono versioni separate per iOS e Android."),
-   ("Le PWA funzionano su iPhone?", "Si, le PWA funzionano su iOS e si possono aggiungere alla schermata home. Alcune funzioni avanzate, come certe notifiche push, restano piu limitate rispetto ad Android o a un'app nativa."),
+   ("Qual e la differenza tra app nativa e PWA?", "L'app nativa si installa dallo store ed e sviluppata per iOS e Android con accesso completo al dispositivo. La PWA e un sito web installabile dal browser che funziona come un'app, anche offline, ma con accesso hardware più limitato."),
+   ("Una PWA costa meno di un'app nativa?", "Di solito si. Una PWA parte da circa €1.500 perché usa un solo progetto per tutte le piattaforme, mentre un'app nativa parte da €3.000 e cresce se servono versioni separate per iOS e Android."),
+   ("Le PWA funzionano su iPhone?", "Si, le PWA funzionano su iOS e si possono aggiungere alla schermata home. Alcune funzioni avanzate, come certe notifiche push, restano più limitate rispetto ad Android o a un'app nativa."),
    ("Meglio partire con una PWA o con un'app nativa?", "Per la maggior parte dei progetti conviene partire con una PWA: costa meno, raggiunge tutti subito e si aggiorna da sola. Si passa al nativo solo quando emerge un limite concreto di prestazioni o di hardware."),
   ]),
  en=dict(
@@ -781,10 +781,10 @@ dict(slug="migrazione-sito-senza-perdere-seo", section="SEO", read=8, lang=dict(
 <p>Nei giorni successivi al passaggio online tieni d'occhio Google Search Console: controlla le pagine in errore, verifica che la scansione proceda e osserva l'andamento delle impressioni. Un piccolo calo temporaneo &egrave; normale mentre Google rielabora il sito; se dopo due o tre settimane il traffico non torna, c'&egrave; un problema tecnico da correggere.</p>
 <p>Noi gestiamo la migrazione come parte del nostro lavoro di <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a> e di <a href="/servizi/seo/">SEO</a>, con particolare attenzione quando si cambia piattaforma, ad esempio in un progetto <a href="/blog/woocommerce-vs-shopify/">WooCommerce o Shopify</a>. Se stai per rifare il sito, <a href="/contatti/">parliamone prima</a>: un piano di redirect fatto bene vale mesi di posizionamento.</p>""",
   faqs=[
-   ("Perche un sito perde posizioni dopo il restyling?", "Nella maggior parte dei casi per la mancanza di redirect 301: i vecchi URL danno errore 404 e Google perde il collegamento con le pagine gia posizionate. Anche noindex, robots.txt e un sito piu lento possono causare cali."),
-   ("Cosa sono i redirect 301 e perche sono importanti?", "Un redirect 301 e un reindirizzamento permanente da un vecchio URL a uno nuovo. Trasferisce a Google il valore SEO accumulato dalla vecchia pagina, evitando che il posizionamento vada perso quando l'indirizzo cambia."),
+   ("Perché un sito perde posizioni dopo il restyling?", "Nella maggior parte dei casi per la mancanza di redirect 301: i vecchi URL danno errore 404 e Google perde il collegamento con le pagine già posizionate. Anche noindex, robots.txt e un sito più lento possono causare cali."),
+   ("Cosa sono i redirect 301 e perché sono importanti?", "Un redirect 301 e un reindirizzamento permanente da un vecchio URL a uno nuovo. Trasferisce a Google il valore SEO accumulato dalla vecchia pagina, evitando che il posizionamento vada perso quando l'indirizzo cambia."),
    ("Quanto tempo serve per recuperare il ranking dopo una migrazione?", "Un piccolo calo temporaneo e normale nei primi giorni. Con i redirect impostati bene, il traffico si stabilizza di solito entro due o tre settimane. Se non torna, c'e un problema tecnico da individuare."),
-   ("Posso cambiare piattaforma senza perdere la SEO?", "Si, anche cambiando CMS o passando da un e-commerce a un altro. Serve mappare gli URL, impostare i redirect 301 e conservare i contenuti che gia funzionano. La migrazione va pianificata prima del lancio, non dopo."),
+   ("Posso cambiare piattaforma senza perdere la SEO?", "Si, anche cambiando CMS o passando da un e-commerce a un altro. Serve mappare gli URL, impostare i redirect 301 e conservare i contenuti che già funzionano. La migrazione va pianificata prima del lancio, non dopo."),
   ]),
  en=dict(
   title="Redesign Your Site Without Losing SEO Rankings | Carbon Stealth",
@@ -867,8 +867,8 @@ dict(slug="sicurezza-sito-web-checklist", section="Web Development", read=8, lan
   faqs=[
    ("Come rendere sicuro un sito web?", "Con pochi accorgimenti costanti: HTTPS attivo su tutto il sito, CMS e plugin sempre aggiornati, backup automatici giornalieri, password forti con autenticazione a due fattori e protezione anti-spam sui form. Sono le stesse misure che fermano quasi tutti gli attacchi automatici."),
    ("Il certificato HTTPS e obbligatorio?", "Di fatto si. Senza HTTPS i browser mostrano un avviso di sito non sicuro, gli utenti se ne vanno e Google penalizza il posizionamento. Un certificato SSL e spesso incluso nell'hosting e va attivato su tutte le pagine."),
-   ("Ogni quanto vanno aggiornati plugin e CMS?", "Il prima possibile dopo il rilascio di un aggiornamento, soprattutto se corregge una falla di sicurezza. La maggior parte delle intrusioni sfrutta vulnerabilita gia note su software lasciato vecchio. Backup regolari permettono di aggiornare senza rischi."),
-   ("Cosa fare se il sito viene violato?", "Se hai un backup recente e testato, ripristini il sito in pochi minuti, poi individui e chiudi la falla usata dall'attaccante, aggiorni tutto e cambi le password. Senza backup, il recupero e molto piu lungo e costoso."),
+   ("Ogni quanto vanno aggiornati plugin e CMS?", "Il prima possibile dopo il rilascio di un aggiornamento, soprattutto se corregge una falla di sicurezza. La maggior parte delle intrusioni sfrutta vulnerabilita già note su software lasciato vecchio. Backup regolari permettono di aggiornare senza rischi."),
+   ("Cosa fare se il sito viene violato?", "Se hai un backup recente e testato, ripristini il sito in pochi minuti, poi individui e chiudi la falla usata dall'attaccante, aggiorni tutto e cambi le password. Senza backup, il recupero e molto più lungo e costoso."),
   ]),
  en=dict(
   title="Website Security: Complete 2026 Checklist | Carbon Stealth",
@@ -928,8 +928,8 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
   body="""<p>In genere un <strong>sito vetrina</strong> richiede da <strong>1 a 2 settimane</strong>, un <strong>e-commerce</strong> da <strong>3 a 6 settimane</strong> e un <strong>portale su misura</strong> da <strong>2 a 4 mesi</strong>. La variabile che pesa di pi&ugrave; non &egrave; il codice ma i contenuti: testi, foto e materiali. Un progetto con contenuti pronti procede in fretta; uno in cui bisogna scrivere tutto da zero richiede pi&ugrave; tempo, indipendentemente dalla bravura di chi sviluppa.</p>
 <h2>Tempistiche per tipo di progetto</h2>
 <div class="ctbl"><table><thead><tr><th>Progetto</th><th>Tempo indicativo</th><th>Cosa incide</th></tr></thead><tbody>
-<tr><td>Landing page</td><td>3-7 giorni</td><td>Un solo obiettivo, poche sezioni</td></tr>
-<tr><td>Sito vetrina (5-8 pagine)</td><td>1-2 settimane</td><td>Numero di pagine e contenuti</td></tr>
+<tr><td>Landing page</td><td>5-7 giorni lavorativi</td><td>Un solo obiettivo, poche sezioni</td></tr>
+<tr><td>Sito vetrina (5-8 pagine)</td><td>2-3 settimane</td><td>Numero di pagine e contenuti</td></tr>
 <tr><td>E-commerce</td><td>3-6 settimane</td><td>Catalogo, pagamenti, integrazioni</td></tr>
 <tr><td>Portale / software web</td><td>2-4 mesi</td><td>Funzioni su misura, aree riservate</td></tr>
 </tbody></table></div>
@@ -945,10 +945,10 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
 <p>A rallentare un progetto sono quasi sempre gli stessi fattori: contenuti forniti in ritardo, molti cicli di revisione e richieste che cambiano in corsa. Per andare veloce aiuta avere fin dall'inizio testi, logo e foto, un solo referente che approva e obiettivi chiari. Anche il budget conta sulle prestazioni finali, come spieghiamo nella guida <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a>.</p>
 <p>Nel preventivo concordiamo sempre una data di consegna precisa, che rispettiamo. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>, valuta un <a href="/servizi/ecommerce/">e-commerce</a> se vendi online e <a href="/contatti/">scrivici</a> per una stima sui tuoi tempi.</p>""",
   faqs=[
-   ("Quanto tempo serve per fare un sito web?", "Un sito vetrina richiede in genere 1-2 settimane, un e-commerce 3-6 settimane e un portale su misura 2-4 mesi. Il fattore che incide di piu sono i contenuti: con testi e foto pronti i tempi si riducono sensibilmente."),
-   ("Perche alcuni siti richiedono piu tempo di altri?", "Dipende dal numero di pagine, dalle funzioni richieste e soprattutto dai contenuti. Molti cicli di revisione e richieste che cambiano in corsa allungano i tempi piu di quanto si pensi, indipendentemente dallo sviluppo."),
-   ("Posso velocizzare la realizzazione del mio sito?", "Si: preparando in anticipo testi, logo e foto, nominando un solo referente che approva le bozze e definendo obiettivi chiari fin dall'inizio. Cosi si riducono le attese e i cicli di revisione."),
-   ("Fissate una data di consegna certa?", "Si. Nel preventivo indichiamo una data di consegna precisa e la rispettiamo. Eventuali ritardi derivano quasi sempre da contenuti forniti in ritardo o da modifiche richieste durante il progetto."),
+   ("Quanto tempo serve per fare un sito web?", "Un sito vetrina richiede in genere 2-3 settimane, un e-commerce 3-5 settimane e un portale su misura 2-4 mesi. Il fattore che incide di più sono i contenuti: con testi e foto pronti i tempi si riducono sensibilmente."),
+   ("Perché alcuni siti richiedono più tempo di altri?", "Dipende dal numero di pagine, dalle funzioni richieste e soprattutto dai contenuti. Molti cicli di revisione e richieste che cambiano in corsa allungano i tempi più di quanto si pensi, indipendentemente dallo sviluppo."),
+   ("Posso velocizzare la realizzazione del mio sito?", "Si: preparando in anticipo testi, logo e foto, nominando un solo referente che approva le bozze e definendo obiettivi chiari fin dall'inizio. Così si riducono le attese e i cicli di revisione."),
+   ("Fissate una data di consegna certa?", "Sì. Nel preventivo indichiamo una data di consegna precisa e la rispettiamo. Eventuali ritardi derivano quasi sempre da contenuti forniti in ritardo o da modifiche richieste durante il progetto."),
   ]),
  en=dict(
   title="How Long Does It Take to Build a Website? | Carbon Stealth",
@@ -956,8 +956,8 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
   body="""<p>As a rule a <strong>brochure site</strong> takes <strong>1 to 2 weeks</strong>, an <strong>e-commerce</strong> <strong>3 to 6 weeks</strong> and a <strong>custom portal</strong> <strong>2 to 4 months</strong>. The variable that weighs most isn't the code but the content: text, photos and materials. A project with content ready moves fast; one where everything has to be written from scratch takes longer, no matter how good the developer is.</p>
 <h2>Timelines by type of project</h2>
 <div class="ctbl"><table><thead><tr><th>Project</th><th>Typical time</th><th>What drives it</th></tr></thead><tbody>
-<tr><td>Landing page</td><td>3-7 days</td><td>A single goal, few sections</td></tr>
-<tr><td>Brochure site (5-8 pages)</td><td>1-2 weeks</td><td>Number of pages and content</td></tr>
+<tr><td>Landing page</td><td>5-7 working days</td><td>A single goal, few sections</td></tr>
+<tr><td>Brochure site (5-8 pages)</td><td>2-3 weeks</td><td>Number of pages and content</td></tr>
 <tr><td>E-commerce</td><td>3-6 weeks</td><td>Catalog, payments, integrations</td></tr>
 <tr><td>Portal / web software</td><td>2-4 months</td><td>Custom features, member areas</td></tr>
 </tbody></table></div>
@@ -973,7 +973,7 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
 <p>What slows a project down is almost always the same: content delivered late, many revision rounds and requirements that change mid-way. To move fast it helps to have text, logo and photos from the start, a single person who approves, and clear goals. Budget also affects the final result, as we explain in our guide on <a href="/en/blog/quanto-costa-sito-web/">how much a website costs</a>.</p>
 <p>In the quote we always agree on a precise delivery date, and we meet it. See our <a href="/en/services/web-development/">web development service</a>, consider an <a href="/en/services/ecommerce/">e-commerce</a> if you sell online, and <a href="/en/contact/">get in touch</a> for an estimate on your timeline.</p>""",
   faqs=[
-   ("How long does it take to build a website?", "A brochure site usually takes 1-2 weeks, an e-commerce 3-6 weeks and a custom portal 2-4 months. The biggest factor is content: with text and photos ready, timelines shorten noticeably."),
+   ("How long does it take to build a website?", "A brochure site usually takes 2-3 weeks, an e-commerce 3-5 weeks and a custom portal 2-4 months. The biggest factor is content: with text and photos ready, timelines shorten noticeably."),
    ("Why do some sites take longer than others?", "It depends on the number of pages, the features required and above all the content. Many revision rounds and requirements that change mid-way lengthen timelines more than people expect, regardless of the development itself."),
    ("Can I speed up the build of my site?", "Yes: by preparing text, logo and photos in advance, appointing a single person to approve drafts and setting clear goals from the start. That reduces waiting and revision cycles."),
    ("Do you set a firm delivery date?", "Yes. In the quote we state a precise delivery date and we meet it. Any delays almost always come from content delivered late or changes requested during the project."),
@@ -984,8 +984,8 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
   body="""<p>По правило <strong>визитният сайт</strong> отнема <strong>1 до 2 седмици</strong>, <strong>онлайн магазинът</strong> <strong>3 до 6 седмици</strong>, а <strong>порталът по поръчка</strong> <strong>2 до 4 месеца</strong>. Факторът с най-голяма тежест не е кодът, а съдържанието: текстове, снимки и материали. Проект с готово съдържание върви бързо; такъв, при който всичко се пише от нулата, отнема повече време, независимо колко добър е разработчикът.</p>
 <h2>Срокове по тип проект</h2>
 <div class="ctbl"><table><thead><tr><th>Проект</th><th>Ориентировъчно време</th><th>Какво влияе</th></tr></thead><tbody>
-<tr><td>Landing страница</td><td>3-7 дни</td><td>Една цел, малко секции</td></tr>
-<tr><td>Визитен сайт (5-8 страници)</td><td>1-2 седмици</td><td>Брой страници и съдържание</td></tr>
+<tr><td>Landing страница</td><td>5-7 работни дни</td><td>Една цел, малко секции</td></tr>
+<tr><td>Визитен сайт (5-8 страници)</td><td>2-3 седмици</td><td>Брой страници и съдържание</td></tr>
 <tr><td>Онлайн магазин</td><td>3-6 седмици</td><td>Каталог, плащания, интеграции</td></tr>
 <tr><td>Портал / уеб софтуер</td><td>2-4 месеца</td><td>Функции по поръчка, клиентски зони</td></tr>
 </tbody></table></div>
@@ -1001,7 +1001,7 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
 <p>Проектите се забавят почти винаги от едно и също: съдържание, предадено със закъснение, много цикли корекции и изисквания, които се променят в движение. За да върви бързо, помага да имате от самото начало текстове, лого и снимки, само едно лице, което одобрява, и ясни цели. Бюджетът също влияе на крайния резултат, както обясняваме в статията <a href="/bg/blog/quanto-costa-sito-web/">колко струва изработката на сайт</a>.</p>
 <p>В офертата винаги договаряме точна дата за предаване и я спазваме. Вижте нашата <a href="/bg/uslugi/web-razrabotka/">услуга за изработка на сайтове</a>, преценете <a href="/bg/uslugi/ecommerce/">онлайн магазин</a>, ако продавате онлайн, и <a href="/bg/kontakti/">ни пишете</a> за оценка на вашите срокове.</p>""",
   faqs=[
-   ("Колко време отнема изработката на сайт?", "Визитен сайт обикновено отнема 1-2 седмици, онлайн магазин 3-6 седмици, а портал по поръчка 2-4 месеца. Най-важният фактор е съдържанието: с готови текстове и снимки сроковете се съкращават осезаемо."),
+   ("Колко време отнема изработката на сайт?", "Визитен сайт обикновено отнема 2-3 седмици, онлайн магазин 3-5 седмици, а портал по поръчка 2-4 месеца. Най-важният фактор е съдържанието: с готови текстове и снимки сроковете се съкращават осезаемо."),
    ("Защо някои сайтове отнемат повече време от други?", "Зависи от броя страници, нужните функции и най-вече от съдържанието. Многото цикли корекции и променящите се в движение изисквания удължават сроковете повече, отколкото се очаква, независимо от самата разработка."),
    ("Мога ли да ускоря изработката на моя сайт?", "Да: като подготвите предварително текстове, лого и снимки, определите само едно лице, което одобрява макетите, и зададете ясни цели от самото начало. Така се намаляват изчакванията и циклите корекции."),
    ("Определяте ли точна дата за предаване?", "Да. В офертата посочваме точна дата за предаване и я спазваме. Евентуални забавяния почти винаги идват от съдържание, предадено със закъснение, или от промени, поискани по време на проекта."),
@@ -1012,7 +1012,7 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
 dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=dict(
  it=dict(
   title="Come Creare una Landing Page che Converte | Carbon Stealth",
-  desc="Come creare una landing page che converte: struttura, titolo, call to action, prova sociale e velocita. Gli elementi che trasformano i visitatori in clienti.",
+  desc="Come creare una landing page che converte: struttura, titolo, call to action, prova sociale e velocità. Gli elementi che trasformano i visitatori in clienti.",
   body="""<p>Una landing page che converte ha un solo obiettivo, un messaggio chiaro nei primi secondi e una <strong>call to action</strong> evidente e ripetuta. Non &egrave; una questione di grafica appariscente: converte la pagina che risponde subito alla domanda del visitatore, elimina le distrazioni e rende semplice il passo successivo. Meno scelte offri, pi&ugrave; azioni ottieni.</p>
 <h2>Gli elementi che fanno convertire</h2>
 <ul>
@@ -1035,10 +1035,10 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
 <p>La velocit&agrave; &egrave; parte della conversione: ogni secondo di attesa in pi&ugrave; fa perdere visitatori, per questo curiamo i <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a> anche sulle landing. Dopo il lancio, misura e migliora: cambia un titolo, sposta la call to action, prova un'immagine diversa e osserva i risultati. Una landing non &egrave; mai finita, si affina nel tempo.</p>
 <p>Una landing page ben fatta &egrave; il complemento naturale di una campagna e della <a href="/servizi/seo/">SEO</a>. La costruiamo come parte del nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a>, a partire da €1.575 + IVA. Se hai una campagna da lanciare, <a href="/contatti/">raccontacela</a> e la trasformiamo in una pagina che converte.</p>""",
   faqs=[
-   ("Cosa rende una landing page efficace?", "Un solo obiettivo, un titolo chiaro nei primi secondi e una call to action evidente e ripetuta. Contano piu la chiarezza del messaggio e la rimozione delle distrazioni che una grafica appariscente."),
+   ("Cosa rende una landing page efficace?", "Un solo obiettivo, un titolo chiaro nei primi secondi e una call to action evidente e ripetuta. Contano più la chiarezza del messaggio e la rimozione delle distrazioni che una grafica appariscente."),
    ("Quanto costa una landing page?", "Una landing page professionale parte da €1.575 + IVA. Il prezzo dipende dalla lunghezza, dai contenuti da produrre e dalle integrazioni, come moduli, pagamenti o strumenti di tracciamento delle conversioni."),
-   ("Quante call to action mettere in una landing page?", "Una sola azione, ripetuta piu volte lungo la pagina. Offrire troppe scelte diverse disperde l'attenzione e riduce le conversioni: meglio guidare il visitatore verso un unico passo chiaro."),
-   ("La velocita influenza le conversioni?", "Si, molto. Ogni secondo di caricamento in piu fa perdere visitatori prima ancora che leggano. Ottimizzare i Core Web Vitals di una landing e uno dei modi piu diretti per aumentare le conversioni."),
+   ("Quante call to action mettere in una landing page?", "Una sola azione, ripetuta più volte lungo la pagina. Offrire troppe scelte diverse disperde l'attenzione e riduce le conversioni: meglio guidare il visitatore verso un unico passo chiaro."),
+   ("La velocità influenza le conversioni?", "Si, molto. Ogni secondo di caricamento in più fa perdere visitatori prima ancora che leggano. Ottimizzare i Core Web Vitals di una landing e uno dei modi più diretti per aumentare le conversioni."),
   ]),
  en=dict(
   title="How to Build a Landing Page That Converts | Carbon Stealth",
@@ -1122,10 +1122,10 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <p>Quando i reparti crescono e gli stessi dati vengono digitati in pi&ugrave; programmi diversi, un <a href="/servizi/erp/">ERP</a> elimina le duplicazioni e d&agrave; una visione unica di vendite, magazzino, acquisti e contabilit&agrave;. Il segnale tipico &egrave; questo: passi pi&ugrave; tempo a far &laquo;quadrare&raquo; i numeri tra un file e l'altro che a lavorare. Ne parliamo in dettaglio nelle guide <a href="/blog/cos-e-un-erp/">cos'&egrave; un ERP</a> e <a href="/blog/erp-per-pmi/">ERP per PMI</a>.</p>
 <p>La scelta giusta dipende dalla tua organizzazione, non da quale sia pi&ugrave; &laquo;avanzato&raquo;. Spesso conviene partire da un gestionale ben fatto ed evolverlo verso un ERP quando serve davvero. <a href="/contatti/">Raccontaci come lavori oggi</a> e ti diciamo cosa ha senso per te.</p>""",
   faqs=[
-   ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre un'area specifica come fatturazione o magazzino, con dati separati. Un ERP integra piu aree in un unico sistema con dati condivisi, evitando doppie digitazioni e dando una visione d'insieme dell'azienda."),
-   ("Costa di piu un ERP o un gestionale?", "Un ERP costa di piu: parte da €5.000 contro i €2.000 di un software gestionale su misura. In cambio integra piu reparti e cresce con l'azienda, mentre il gestionale resta limitato a un singolo processo."),
-   ("Quando conviene passare da un gestionale a un ERP?", "Quando gli stessi dati vengono inseriti in piu programmi diversi e si perde tempo a farli quadrare tra loro. E il segnale che i processi sono cresciuti e serve un sistema unico e integrato."),
-   ("Posso partire da un gestionale ed evolvere verso un ERP?", "Si, ed e spesso la scelta piu sensata. Si parte da un gestionale ben progettato che copre l'area piu critica e si aggiungono moduli integrati man mano che l'azienda cresce, senza rifare tutto da zero."),
+   ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre un'area specifica come fatturazione o magazzino, con dati separati. Un ERP integra più aree in un unico sistema con dati condivisi, evitando doppie digitazioni e dando una visione d'insieme dell'azienda."),
+   ("Costa di più un ERP o un gestionale?", "Un ERP costa di più: parte da €5.000 contro i €2.000 di un software gestionale su misura. In cambio integra più reparti e cresce con l'azienda, mentre il gestionale resta limitato a un singolo processo."),
+   ("Quando conviene passare da un gestionale a un ERP?", "Quando gli stessi dati vengono inseriti in più programmi diversi e si perde tempo a farli quadrare tra loro. E il segnale che i processi sono cresciuti e serve un sistema unico e integrato."),
+   ("Posso partire da un gestionale ed evolvere verso un ERP?", "Si, ed e spesso la scelta più sensata. Si parte da un gestionale ben progettato che copre l'area più critica e si aggiungono moduli integrati man mano che l'azienda cresce, senza rifare tutto da zero."),
   ]),
  en=dict(
   title="ERP vs Basic Management Software: What to Choose | Carbon Stealth",
@@ -1194,10 +1194,10 @@ dict(slug="integrazione-pagamenti-online", section="E-commerce", read=8, lang=di
 <p>Per un <a href="/servizi/ecommerce/">e-commerce</a> standard, la combinazione Stripe + PayPal copre la stragrande maggioranza dei clienti. Se vendi in abbonamento o hai bisogno di logiche su misura, Stripe integrato in un <a href="/servizi/sviluppo-software/">software su misura</a> offre la massima flessibilit&agrave;. La scelta della piattaforma incide anche sulle commissioni, come spieghiamo nella guida <a href="/blog/woocommerce-vs-shopify/">WooCommerce vs Shopify</a>.</p>
 <p>Integriamo i pagamenti in modo sicuro su qualsiasi sito o e-commerce. Se vuoi iniziare a incassare online, <a href="/contatti/">scrivici</a>: valutiamo insieme i gateway giusti per il tuo caso.</p>""",
   faqs=[
-   ("Meglio Stripe o PayPal per un e-commerce?", "Conviene offrirli entrambi. Stripe e ideale per pagamenti con carta e abbonamenti, con un'esperienza integrata nel sito; PayPal aggiunge un metodo diffuso e di cui molti clienti si fidano. Piu metodi accetti, meno carrelli abbandoni."),
-   ("Quanto costano le commissioni sui pagamenti online?", "In genere tra l'1,5% e il 3% per transazione, a seconda del gateway e del tipo di carta. A questo puo aggiungersi una piccola quota fissa per operazione. Il bonifico SEPA ha commissioni piu basse ma incasso non immediato."),
-   ("Integrare i pagamenti e sicuro per i dati delle carte?", "Si. Con Stripe e PayPal i dati della carta non passano dal tuo server: la conformita PCI e gestita dal gateway. Devi comunque garantire HTTPS, software aggiornato e un hosting affidabile."),
-   ("Quali metodi di pagamento conviene offrire?", "Almeno carta (Stripe) e PayPal, che coprono la maggior parte dei clienti. Nel B2B puo essere utile il bonifico SEPA, mentre il contrassegno rassicura chi diffida ma comporta il rischio di resi e mancati ritiri."),
+   ("Meglio Stripe o PayPal per un e-commerce?", "Conviene offrirli entrambi. Stripe e ideale per pagamenti con carta e abbonamenti, con un'esperienza integrata nel sito; PayPal aggiunge un metodo diffuso e di cui molti clienti si fidano. Più metodi accetti, meno carrelli abbandoni."),
+   ("Quanto costano le commissioni sui pagamenti online?", "In genere tra l'1,5% e il 3% per transazione, a seconda del gateway e del tipo di carta. A questo può aggiungersi una piccola quota fissa per operazione. Il bonifico SEPA ha commissioni più basse ma incasso non immediato."),
+   ("Integrare i pagamenti e sicuro per i dati delle carte?", "Sì. Con Stripe e PayPal i dati della carta non passano dal tuo server: la conformita PCI e gestita dal gateway. Devi comunque garantire HTTPS, software aggiornato e un hosting affidabile."),
+   ("Quali metodi di pagamento conviene offrire?", "Almeno carta (Stripe) e PayPal, che coprono la maggior parte dei clienti. Nel B2B può essere utile il bonifico SEPA, mentre il contrassegno rassicura chi diffida ma comporta il rischio di resi e mancati ritiri."),
   ]),
  en=dict(
   title="Integrating Online Payments: Stripe, PayPal and Alternatives | Carbon Stealth",
@@ -1249,7 +1249,7 @@ dict(slug="integrazione-pagamenti-online", section="E-commerce", read=8, lang=di
 dict(slug="schema-markup-guida", section="SEO", read=8, lang=dict(
  it=dict(
   title="Schema Markup e Dati Strutturati: Guida Pratica | Carbon Stealth",
-  desc="Cos'e lo Schema markup, a cosa servono i dati strutturati e come usarli per ottenere risultati ricchi su Google e piu visibilita su AI e motori di ricerca.",
+  desc="Cos'è lo Schema markup, a cosa servono i dati strutturati e come usarli per ottenere risultati ricchi su Google e più visibilità su AI e motori di ricerca.",
   body="""<p>Lo <strong>Schema markup</strong> &egrave; un codice, in formato JSON-LD, che spiega ai motori di ricerca il significato dei contenuti di una pagina: se &egrave; un articolo, un prodotto, una FAQ o un'attivit&agrave; locale. Non cambia l'aspetto del sito per l'utente, ma aiuta Google a mostrare <strong>risultati ricchi</strong> (stelle, prezzi, domande, immagini) e rende i contenuti pi&ugrave; comprensibili anche agli assistenti AI. In breve: pi&ugrave; contesto dai, pi&ugrave; visibilit&agrave; ottieni.</p>
 <h2>I tipi di Schema pi&ugrave; utili</h2>
 <div class="ctbl"><table><thead><tr><th>Tipo</th><th>A cosa serve</th><th>Per chi</th></tr></thead><tbody>
@@ -1265,10 +1265,10 @@ dict(slug="schema-markup-guida", section="SEO", read=8, lang=dict(
 <p>I dati strutturati sono uno dei ponti tra la SEO classica e l'<a href="/blog/aeo-guida-completa/">ottimizzazione per i motori di risposta</a>: aiutano Google a generare risultati ricchi e forniscono ai modelli AI un contesto chiaro e affidabile su chi sei e cosa offri. Vanno di pari passo con le basi tecniche di un sito ben fatto, come spieghiamo nelle guide su <a href="/blog/react-seo-2026/">SEO per siti React</a> e <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>.</p>
 <p>Implementiamo dati strutturati corretti in ogni progetto di <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a> e come parte del nostro lavoro di <a href="/servizi/seo/">SEO</a>. Se vuoi capire se il tuo sito li sfrutta bene, <a href="/contatti/">chiedici un'analisi</a>.</p>""",
   faqs=[
-   ("Cos'e lo Schema markup?", "E un codice in formato JSON-LD che spiega ai motori di ricerca il significato dei contenuti di una pagina: se si tratta di un articolo, un prodotto, una FAQ o un'attivita locale. Aiuta Google a mostrare risultati ricchi e rende i contenuti piu comprensibili anche alle AI."),
-   ("I dati strutturati aiutano la SEO?", "Indirettamente si. Non sono un fattore di ranking diretto, ma permettono risultati ricchi (stelle, prezzi, FAQ) che aumentano la visibilita e i clic. Danno inoltre contesto ai motori di ricerca e agli assistenti AI su cosa offri."),
-   ("Che formato usare per lo Schema markup?", "Google raccomanda JSON-LD, uno script inserito nella pagina e separato dal contenuto visibile. E il formato piu semplice da implementare e mantenere rispetto ai vecchi microdata inseriti nell'HTML."),
-   ("Posso inserire recensioni o prezzi finti nello Schema?", "No. I dati strutturati devono descrivere cio che l'utente vede davvero sulla pagina. Marcare recensioni o prezzi inesistenti viola le linee guida di Google e puo portare a penalizzazioni invece che a vantaggi."),
+   ("Cos'è lo Schema markup?", "E un codice in formato JSON-LD che spiega ai motori di ricerca il significato dei contenuti di una pagina: se si tratta di un articolo, un prodotto, una FAQ o un'attività locale. Aiuta Google a mostrare risultati ricchi e rende i contenuti più comprensibili anche alle AI."),
+   ("I dati strutturati aiutano la SEO?", "Indirettamente si. Non sono un fattore di ranking diretto, ma permettono risultati ricchi (stelle, prezzi, FAQ) che aumentano la visibilità e i clic. Danno inoltre contesto ai motori di ricerca e agli assistenti AI su cosa offri."),
+   ("Che formato usare per lo Schema markup?", "Google raccomanda JSON-LD, uno script inserito nella pagina e separato dal contenuto visibile. E il formato più semplice da implementare e mantenere rispetto ai vecchi microdata inseriti nell'HTML."),
+   ("Posso inserire recensioni o prezzi finti nello Schema?", "No. I dati strutturati devono descrivere cio che l'utente vede davvero sulla pagina. Marcare recensioni o prezzi inesistenti viola le linee guida di Google e può portare a penalizzazioni invece che a vantaggi."),
   ]),
  en=dict(
   title="Schema Markup and Structured Data: A Practical Guide | Carbon Stealth",
@@ -1343,10 +1343,10 @@ dict(slug="come-scegliere-agenzia-web", section="Web Development", read=8, lang=
 <p>Chiedi sempre: il codice sar&agrave; mio? Cosa &egrave; incluso nel prezzo e cosa si paga a parte? Chi si occupa di aggiornamenti e sicurezza? Cosa succede se voglio cambiare fornitore in futuro? Le risposte a queste domande dicono pi&ugrave; di qualsiasi presentazione. Se stai anche valutando un rifacimento, leggi come <a href="/blog/migrazione-sito-senza-perdere-seo/">rifare il sito senza perdere il posizionamento</a>, e per orientarti sui costi guarda <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a>.</p>
 <p>Noi lavoriamo esattamente cos&igrave;: codice tuo, prezzi trasparenti, nessun vincolo. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> oppure <a href="/contatti/">raccontaci il tuo progetto</a> per un preventivo gratuito.</p>""",
   faqs=[
-   ("Come capisco se un'agenzia web e affidabile?", "Guarda tre cose: un portfolio di siti reali e verificabili online, la proprieta del codice a fine progetto e prezzi trasparenti senza canoni nascosti. Un'agenzia seria mostra i lavori, spiega cosa e incluso e mette tutto per iscritto."),
-   ("Il sito realizzato sara di mia proprieta?", "Con un'agenzia seria si. Il codice, il dominio e i contenuti restano tuoi, con accesso completo. Diffida di chi ti lega a un abbonamento obbligatorio solo per tenere online il tuo stesso sito."),
-   ("Un'agenzia puo garantirmi il primo posto su Google?", "No. Nessuno puo garantire una posizione precisa: dipende da concorrenza, contenuti e centinaia di fattori. La SEO e un lavoro continuo che migliora la visibilita nel tempo, non un risultato immediato garantito."),
-   ("Meglio un'agenzia o un freelance?", "Dipende dal progetto. Un freelance puo bastare per un sito semplice; un'agenzia offre piu competenze (design, sviluppo, SEO) e continuita nel tempo. Conta soprattutto la qualita del lavoro e la chiarezza degli accordi."),
+   ("Come capisco se un'agenzia web e affidabile?", "Guarda tre cose: un portfolio di siti reali e verificabili online, la proprietà del codice a fine progetto e prezzi trasparenti senza canoni nascosti. Un'agenzia seria mostra i lavori, spiega cosa e incluso e mette tutto per iscritto."),
+   ("Il sito realizzato sara di mia proprietà?", "Con un'agenzia seria si. Il codice, il dominio e i contenuti restano tuoi, con accesso completo. Diffida di chi ti lega a un abbonamento obbligatorio solo per tenere online il tuo stesso sito."),
+   ("Un'agenzia può garantirmi il primo posto su Google?", "No. Nessuno può garantire una posizione precisa: dipende da concorrenza, contenuti e centinaia di fattori. La SEO e un lavoro continuo che migliora la visibilità nel tempo, non un risultato immediato garantito."),
+   ("Meglio un'agenzia o un freelance?", "Dipende dal progetto. Un freelance può bastare per un sito semplice; un'agenzia offre più competenze (design, sviluppo, SEO) e continuita nel tempo. Conta soprattutto la qualità del lavoro e la chiarezza degli accordi."),
   ]),
  en=dict(
   title="How to Choose a Web Agency: 10 Criteria | Carbon Stealth",
@@ -1426,10 +1426,10 @@ dict(slug="google-business-profile-guida", section="SEO", read=7, lang=dict(
 <p>Google Business Profile e il sito lavorano insieme. La scheda porta traffico e chiamate, il sito conferma chi sei e approfondisce i servizi. Per rafforzare il segnale locale, cura la <a href="/blog/seo-per-piccole-imprese/">SEO per piccole imprese</a> e i <a href="/blog/schema-markup-guida/">dati strutturati</a> di tipo LocalBusiness, che aiutano Google a collegare sito e scheda. Un errore comune &egrave; avere dati diversi tra sito, scheda e social: mantienili sempre coerenti.</p>
 <p>Ottimizziamo la presenza locale come parte del nostro lavoro di <a href="/servizi/seo/">SEO</a>. Se vuoi farti trovare dai clienti della tua zona, <a href="/contatti/">scrivici</a> per un'analisi della tua scheda e del tuo sito.</p>""",
   faqs=[
-   ("Cos'e Google Business Profile?", "E lo strumento gratuito di Google (l'ex Google My Business) che fa comparire la tua attivita nelle ricerche locali e su Google Maps. Mostra nome, orari, recensioni, foto e contatti, e porta telefonate e visite senza costi pubblicitari."),
-   ("Come miglioro la posizione sulla mappa di Google?", "Completa ogni campo della scheda, scegli la categoria giusta, aggiungi foto reali, tieni gli orari aggiornati e raccogli recensioni autentiche nel tempo. Coerenza dei dati tra sito e scheda e recensioni costanti sono i fattori che pesano di piu."),
-   ("Le recensioni contano davvero per il posizionamento locale?", "Si, molto. Sono uno dei segnali locali piu forti, sia per il ranking sia per la fiducia dei clienti. Rispondi sempre, anche alle negative, e non comprare mai recensioni finte: Google le individua e puo penalizzare la scheda."),
-   ("Google Business Profile e gratuito?", "Si, e completamente gratuito. Servono solo tempo e costanza per tenerlo aggiornato. Un professionista puo aiutarti a configurarlo bene e a integrarlo con la SEO del sito per ottenere piu risultati."),
+   ("Cos'è Google Business Profile?", "E lo strumento gratuito di Google (l'ex Google My Business) che fa comparire la tua attività nelle ricerche locali e su Google Maps. Mostra nome, orari, recensioni, foto e contatti, e porta telefonate e visite senza costi pubblicitari."),
+   ("Come miglioro la posizione sulla mappa di Google?", "Completa ogni campo della scheda, scegli la categoria giusta, aggiungi foto reali, tieni gli orari aggiornati e raccogli recensioni autentiche nel tempo. Coerenza dei dati tra sito e scheda e recensioni costanti sono i fattori che pesano di più."),
+   ("Le recensioni contano davvero per il posizionamento locale?", "Si, molto. Sono uno dei segnali locali più forti, sia per il ranking sia per la fiducia dei clienti. Rispondi sempre, anche alle negative, e non comprare mai recensioni finte: Google le individua e può penalizzare la scheda."),
+   ("Google Business Profile e gratuito?", "Si, e completamente gratuito. Servono solo tempo e costanza per tenerlo aggiornato. Un professionista può aiutarti a configurarlo bene e a integrarlo con la SEO del sito per ottenere più risultati."),
   ]),
  en=dict(
   title="Google Business Profile: Get Found Locally | Carbon Stealth",
@@ -1499,10 +1499,10 @@ dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
 <p>Le formule variano: piani in abbonamento a canone mensile (da circa €39/mese) che includono aggiornamenti, backup e un monte ore per modifiche, oppure interventi a consumo pagati quando servono. L'abbonamento conviene se il sito &egrave; importante per il business e non vuoi sorprese; il &laquo;a consumo&raquo; va bene per siti semplici e statici. A questo si aggiunge sempre l'<a href="/servizi/hosting/">hosting</a>, che &egrave; la base su cui il sito vive.</p>
 <p>Offriamo manutenzione su tutti i siti che realizziamo e anche su siti esistenti. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> oppure <a href="/contatti/">scrivici</a> per un piano su misura per il tuo caso.</p>""",
   faqs=[
-   ("Perche un sito web ha bisogno di manutenzione?", "Perche software non aggiornato, backup mancanti e prestazioni in calo espongono il sito a rischi di sicurezza, downtime e perdita di posizioni su Google. La manutenzione tiene il sito sicuro, veloce e funzionante nel tempo, come i tagliandi di un'auto."),
+   ("Perché un sito web ha bisogno di manutenzione?", "Perché software non aggiornato, backup mancanti e prestazioni in calo espongono il sito a rischi di sicurezza, downtime e perdita di posizioni su Google. La manutenzione tiene il sito sicuro, veloce e funzionante nel tempo, come i tagliandi di un'auto."),
    ("Quanto costa la manutenzione di un sito web?", "Un piano in abbonamento parte in genere da circa €39/mese e include aggiornamenti, backup, controlli di sicurezza e un monte ore per piccole modifiche. In alternativa esistono interventi a consumo, pagati solo quando servono."),
-   ("Cosa succede se non faccio manutenzione?", "Aumentano i rischi: plugin vulnerabili diventano porte per gli attacchi, un guasto senza backup puo far perdere tutto e le prestazioni peggiorano danneggiando la SEO. Spesso il costo di rimettere a posto un sito trascurato supera quello della manutenzione."),
-   ("La manutenzione include anche le modifiche ai contenuti?", "Nei piani in abbonamento di solito e incluso un monte ore per piccole modifiche a testi, immagini e pagine. Interventi piu grandi, come nuove sezioni o funzionalita, si valutano a parte con un preventivo dedicato."),
+   ("Cosa succede se non faccio manutenzione?", "Aumentano i rischi: plugin vulnerabili diventano porte per gli attacchi, un guasto senza backup può far perdere tutto e le prestazioni peggiorano danneggiando la SEO. Spesso il costo di rimettere a posto un sito trascurato supera quello della manutenzione."),
+   ("La manutenzione include anche le modifiche ai contenuti?", "Nei piani in abbonamento di solito e incluso un monte ore per piccole modifiche a testi, immagini e pagine. Interventi più grandi, come nuove sezioni o funzionalità, si valutano a parte con un preventivo dedicato."),
   ]),
  en=dict(
   title="Website Maintenance: Why It Matters and What It Costs | Carbon Stealth",
@@ -1579,10 +1579,10 @@ dict(slug="velocizzare-wordpress", section="Web Development", read=8, lang=dict(
 <p>Google misura l'esperienza utente con i <a href="/blog/core-web-vitals-guida/">Core Web Vitals</a>, e un sito lento parte svantaggiato sia nel posizionamento sia nella conversione. La velocit&agrave; va di pari passo con la <a href="/blog/manutenzione-sito-web/">manutenzione</a>: un sito aggiornato e curato resta veloce nel tempo. Se dopo tutti gli interventi WordPress resta pesante, a volte la soluzione &egrave; ripensare l'impianto con codice pi&ugrave; snello, come facciamo nel nostro <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a>.</p>
 <p>Analizziamo e ottimizziamo la velocit&agrave; di siti WordPress esistenti. Se il tuo sito &egrave; lento e vuoi capire perch&eacute;, <a href="/contatti/">scrivici</a> per un'analisi delle prestazioni.</p>""",
   faqs=[
-   ("Come velocizzo un sito WordPress lento?", "Parti dai tre interventi a maggior impatto: un hosting di qualita, una cache ben configurata e immagini ottimizzate in WebP. Poi riduci i plugin, pulisci il database e valuta una CDN. Insieme risolvono la maggior parte dei problemi di lentezza."),
-   ("Quali plugin rallentano WordPress?", "Non e questione di singoli plugin, ma di quantita e qualita. Ogni plugin aggiunge codice e richieste: meglio pochi plugin ben fatti che decine attivi per abitudine. Page builder pesanti e plugin che caricano script su ogni pagina sono tra i piu impattanti."),
-   ("L'hosting influisce sulla velocita di WordPress?", "Moltissimo. Un hosting economico e sovraffollato e la causa piu comune di lentezza. Un hosting cloud dedicato, con risorse garantite e cache lato server, spesso migliora i tempi di caricamento piu di qualsiasi plugin."),
-   ("La velocita di WordPress influisce sulla SEO?", "Si. Google valuta l'esperienza utente con i Core Web Vitals e un sito lento parte svantaggiato nel posizionamento. Inoltre gli utenti abbandonano le pagine lente, riducendo conversioni e vendite."),
+   ("Come velocizzo un sito WordPress lento?", "Parti dai tre interventi a maggior impatto: un hosting di qualità, una cache ben configurata e immagini ottimizzate in WebP. Poi riduci i plugin, pulisci il database e valuta una CDN. Insieme risolvono la maggior parte dei problemi di lentezza."),
+   ("Quali plugin rallentano WordPress?", "Non e questione di singoli plugin, ma di quantità e qualità. Ogni plugin aggiunge codice e richieste: meglio pochi plugin ben fatti che decine attivi per abitudine. Page builder pesanti e plugin che caricano script su ogni pagina sono tra i più impattanti."),
+   ("L'hosting influisce sulla velocità di WordPress?", "Moltissimo. Un hosting economico e sovraffollato e la causa più comune di lentezza. Un hosting cloud dedicato, con risorse garantite e cache lato server, spesso migliora i tempi di caricamento più di qualsiasi plugin."),
+   ("La velocità di WordPress influisce sulla SEO?", "Sì. Google valuta l'esperienza utente con i Core Web Vitals e un sito lento parte svantaggiato nel posizionamento. Inoltre gli utenti abbandonano le pagine lente, riducendo conversioni e vendite."),
   ]),
  en=dict(
   title="How to Speed Up WordPress: A Practical Guide | Carbon Stealth",
@@ -1666,9 +1666,9 @@ dict(slug="gdpr-sito-web", section="Web Development", read=8, lang=dict(
 <p>Se vendi online, gli obblighi aumentano: gestisci dati di pagamento, indirizzi e ordini. La buona notizia &egrave; che affidando i pagamenti a gateway come Stripe e PayPal, come spieghiamo nella guida sull'<a href="/blog/integrazione-pagamenti-online/">integrazione dei pagamenti</a>, i dati delle carte non passano dal tuo server e gran parte della conformit&agrave; &egrave; gestita da loro. Restano a tuo carico privacy policy, consenso e sicurezza del sito.</p>
 <p>Costruiamo siti conformi fin dalla base, con cookie banner e gestione del consenso corretti, come parte del nostro <a href="/servizi/sviluppo-siti-web/">sviluppo siti web</a>. Se vuoi verificare se il tuo sito &egrave; in regola, <a href="/contatti/">scrivici</a> per un controllo tecnico.</p>""",
   faqs=[
-   ("Cosa serve per rendere un sito conforme al GDPR?", "Servono una privacy policy chiara, un cookie banner che raccolga il consenso prima di attivare i cookie non necessari, il consenso esplicito nei moduli che raccolgono dati e un trattamento sicuro delle informazioni. In sostanza: trasparenza su quali dati raccogli, perche e come."),
+   ("Cosa serve per rendere un sito conforme al GDPR?", "Servono una privacy policy chiara, un cookie banner che raccolga il consenso prima di attivare i cookie non necessari, il consenso esplicito nei moduli che raccolgono dati e un trattamento sicuro delle informazioni. In sostanza: trasparenza su quali dati raccogli, perché e come."),
    ("Il cookie banner e obbligatorio?", "Se il sito usa cookie non strettamente necessari (analytics, marketing, strumenti di terze parti), si. Il banner deve permettere di accettare, rifiutare e scegliere, e i cookie non necessari devono attivarsi solo dopo il consenso, non al caricamento della pagina."),
-   ("Un modulo di contatto deve rispettare il GDPR?", "Si. Chi raccoglie dati tramite un modulo deve informare l'utente su come verranno usati, con un link alla privacy policy e una casella di consenso non pre-spuntata. I dati vanno poi conservati e trattati in modo sicuro."),
+   ("Un modulo di contatto deve rispettare il GDPR?", "Sì. Chi raccoglie dati tramite un modulo deve informare l'utente su come verranno usati, con un link alla privacy policy e una casella di consenso non pre-spuntata. I dati vanno poi conservati e trattati in modo sicuro."),
    ("Questa guida sostituisce una consulenza legale?", "No. E una guida pratica per capire le basi tecniche della conformita. Per situazioni complesse o dubbi specifici e sempre consigliabile rivolgersi a un consulente legale o a un DPO."),
   ]),
  en=dict(
@@ -1744,10 +1744,10 @@ dict(slug="reverse-engineering-stampa-3d", section="3D Printing", read=7, lang=d
 <p>Oltre ai ricambi, lo stesso approccio serve per prototipare nuovi prodotti: dal modello CAD si arriva rapidamente a un pezzo fisico da testare, iterando il design a costi contenuti prima di una produzione pi&ugrave; ampia. Il modello digitale, inoltre, resta un asset riutilizzabile: si pu&ograve; modificare, migliorare o riprodurre in qualsiasi momento. Per progetti che richiedono anche gestione dati, cataloghi o integrazione con i processi aziendali, il pezzo fisico si affianca a un <a href="/servizi/sviluppo-software/">software su misura</a> o a un <a href="/servizi/erp/">ERP</a> per la digitalizzazione della produzione.</p>
 <p>Realizziamo reverse engineering, modellazione CAD e stampa 3D di ricambi e prototipi. Se hai un pezzo introvabile o un'idea da prototipare, <a href="/contatti/">scrivici</a> con una foto e le misure: valutiamo insieme la fattibilit&agrave;. Trovi altri lavori nel nostro <a href="/portfolio/">portfolio</a>.</p>""",
   faqs=[
-   ("Cos'e il reverse engineering di un ricambio?", "E il processo che ricostruisce un componente partendo dal pezzo originale, anche rotto: si misura o si scansiona, si crea un modello CAD preciso e lo si produce con stampa 3D o altre tecnologie. Serve quando il ricambio e fuori produzione o introvabile."),
-   ("Si puo ricreare un pezzo se ho solo quello rotto?", "Spesso si. Anche da un pezzo danneggiato si possono ricavare misure e geometrie sufficienti a ricostruire il modello CAD, correggendo l'usura e i difetti. Piu il pezzo e completo, piu preciso sara il risultato."),
-   ("Quali materiali si possono usare?", "Dipende dalla funzione del pezzo: plastiche tecniche e resine per molti ricambi e prototipi, materiali piu resistenti o metallo per componenti sotto sforzo. La scelta si fa in base a carico, temperatura e uso previsto."),
-   ("La stampa 3D e adatta anche alla prototipazione?", "Si, e uno degli usi principali. Permette di passare rapidamente dal modello CAD a un pezzo fisico da testare, iterando il design a costi contenuti prima di una produzione piu ampia, senza realizzare stampi costosi."),
+   ("Cos'è il reverse engineering di un ricambio?", "E il processo che ricostruisce un componente partendo dal pezzo originale, anche rotto: si misura o si scansiona, si crea un modello CAD preciso e lo si produce con stampa 3D o altre tecnologie. Serve quando il ricambio e fuori produzione o introvabile."),
+   ("Si può ricreare un pezzo se ho solo quello rotto?", "Spesso si. Anche da un pezzo danneggiato si possono ricavare misure e geometrie sufficienti a ricostruire il modello CAD, correggendo l'usura e i difetti. Più il pezzo e completo, più preciso sara il risultato."),
+   ("Quali materiali si possono usare?", "Dipende dalla funzione del pezzo: plastiche tecniche e resine per molti ricambi e prototipi, materiali più resistenti o metallo per componenti sotto sforzo. La scelta si fa in base a carico, temperatura e uso previsto."),
+   ("La stampa 3D e adatta anche alla prototipazione?", "Si, e uno degli usi principali. Permette di passare rapidamente dal modello CAD a un pezzo fisico da testare, iterando il design a costi contenuti prima di una produzione più ampia, senza realizzare stampi costosi."),
   ]),
  en=dict(
   title="Reverse Engineering and 3D Printing of Rare Spare Parts | Carbon Stealth",
@@ -1832,10 +1832,10 @@ dict(slug="email-marketing-pmi", section="Marketing", read=7, lang=dict(
 <p>Guarda poche metriche che contano: tasso di apertura (l'oggetto funziona?), tasso di clic (il contenuto interessa?) e disiscrizioni (stai inviando troppo o cose poco pertinenti?). Migliora un elemento alla volta. L'email marketing funziona meglio se integrato con il resto: un sito che porta iscritti grazie alla <a href="/blog/seo-per-piccole-imprese/">SEO</a> e, per chi vende, un <a href="/servizi/ecommerce/">e-commerce</a> collegato per automatizzare benvenuti e recuperi carrello.</p>
 <p>Aiutiamo le PMI a costruire un sistema che genera contatti e li trasforma in clienti. Se vuoi partire con l'email marketing e non sai da dove cominciare, <a href="/contatti/">scrivici</a>: valutiamo insieme il percorso pi&ugrave; adatto.</p>""",
   faqs=[
-   ("L'email marketing funziona ancora per le PMI?", "Si, e uno dei canali con il miglior ritorno, perche parla a persone che hanno gia scelto di ascoltarti. Non serve un grande budget: servono una lista costruita con il consenso, uno strumento adeguato ed email utili inviate con costanza."),
+   ("L'email marketing funziona ancora per le PMI?", "Si, e uno dei canali con il miglior ritorno, perché parla a persone che hanno già scelto di ascoltarti. Non serve un grande budget: servono una lista costruita con il consenso, uno strumento adeguato ed email utili inviate con costanza."),
    ("Come costruisco una lista email da zero?", "Con il consenso: form di iscrizione sul sito, newsletter, download di una risorsa utile in cambio dell'indirizzo. Mai comprare liste: sono contro il GDPR, danneggiano la reputazione e portano contatti che non ti conoscono."),
-   ("Quante email conviene inviare?", "Meglio poche email utili che tante irrilevanti. La frequenza giusta dipende dal settore e dal valore che offri: una newsletter regolare ma non invadente, piu invii mirati per offerte o novita. Tieni d'occhio le disiscrizioni per capire se stai esagerando."),
-   ("Serve uno strumento a pagamento per iniziare?", "Non subito. Molte piattaforme offrono piani gratuiti per liste piccole, sufficienti per partire. Crescendo conviene passare a un piano a pagamento per automazioni, segmentazione e statistiche piu avanzate."),
+   ("Quante email conviene inviare?", "Meglio poche email utili che tante irrilevanti. La frequenza giusta dipende dal settore e dal valore che offri: una newsletter regolare ma non invadente, più invii mirati per offerte o novità. Tieni d'occhio le disiscrizioni per capire se stai esagerando."),
+   ("Serve uno strumento a pagamento per iniziare?", "Non subito. Molte piattaforme offrono piani gratuiti per liste piccole, sufficienti per partire. Crescendo conviene passare a un piano a pagamento per automazioni, segmentazione e statistiche più avanzate."),
   ]),
  en=dict(
   title="Email Marketing for Small Businesses: Getting Started | Carbon Stealth",
@@ -1921,9 +1921,9 @@ dict(slug="contenuti-seo-come-scrivere", section="SEO", read=8, lang=dict(
 <p>Produciamo contenuti ottimizzati come parte del nostro lavoro di <a href="/servizi/seo/">SEO</a>. Se vuoi un piano editoriale che porti traffico qualificato, <a href="/contatti/">scrivici</a>: partiamo dalle domande che fanno i tuoi clienti.</p>""",
   faqs=[
    ("Come si scrive un contenuto che si posiziona su Google?", "Rispondendo meglio degli altri all'intento di ricerca: capisci cosa cerca davvero l'utente, dai la risposta principale subito, struttura il testo con titoli chiari, usa le parole chiave con naturalezza e aggiungi valore con esempi, tabelle e FAQ."),
-   ("Quante volte devo ripetere la parola chiave?", "Non esiste un numero magico. Usa il termine principale e le sue varianti in modo naturale, dove ha senso: titolo, introduzione, qualche h2 e nel corpo del testo. Il keyword stuffing, cioe ripeterla forzatamente, e controproducente e penalizzato."),
-   ("Quanto deve essere lungo un contenuto SEO?", "Quanto serve per rispondere bene all'intento, non una lunghezza fissa. Una risposta semplice puo bastare in poche centinaia di parole; un argomento complesso ne richiede di piu. Meglio un testo completo e utile che lungo e riempitivo."),
-   ("I contenuti SEO servono anche per le AI come ChatGPT?", "Si. Gli assistenti AI citano i contenuti chiari, ben strutturati e con risposte dirette. Scrivere answer-first, con FAQ e dati strutturati, aumenta la visibilita sia su Google sia sui motori di risposta."),
+   ("Quante volte devo ripetere la parola chiave?", "Non esiste un numero magico. Usa il termine principale e le sue varianti in modo naturale, dove ha senso: titolo, introduzione, qualche h2 e nel corpo del testo. Il keyword stuffing, cioè ripeterla forzatamente, e controproducente e penalizzato."),
+   ("Quanto deve essere lungo un contenuto SEO?", "Quanto serve per rispondere bene all'intento, non una lunghezza fissa. Una risposta semplice può bastare in poche centinaia di parole; un argomento complesso ne richiede di più. Meglio un testo completo e utile che lungo e riempitivo."),
+   ("I contenuti SEO servono anche per le AI come ChatGPT?", "Sì. Gli assistenti AI citano i contenuti chiari, ben strutturati e con risposte dirette. Scrivere answer-first, con FAQ e dati strutturati, aumenta la visibilità sia su Google sia sui motori di risposta."),
   ]),
  en=dict(
   title="How to Write SEO Content That Ranks | Carbon Stealth",
