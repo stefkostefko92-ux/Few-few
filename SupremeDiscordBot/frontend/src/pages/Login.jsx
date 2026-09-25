@@ -160,7 +160,7 @@ export default function Login() {
                 Everything, <span className="text-cs-cyan">integrated.</span>
               </h2>
               <p className="text-cs-muted max-w-2xl mx-auto">
-                Stop paying €5–20/month for 8 different bots that don't talk to each other.
+                Stop juggling 8 different bots that don't talk to each other — each with its own dashboard, permissions and support channel.
               </p>
             </div>
 

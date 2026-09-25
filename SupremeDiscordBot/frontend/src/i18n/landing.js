@@ -19,7 +19,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Безплатно завинаги в базовия план · Premium се плаща през Discord · Откажете по всяко време · Хостинг в ЕС, GDPR по дизайн",
     seePricing: "Вижте цените →",
     featuresHeading: "Всичко, интегрирано.",
-    featuresSub: "Спрете да плащате 5–20 €/месец за 8 различни бота, които не комуникират помежду си.",
+    featuresSub: "Спрете да жонглирате с 8 различни бота, които не комуникират помежду си — всеки със свой панел, права и поддръжка.",
     features: [
       { key: "ticket", title: "Тикет система", desc: "Неограничени тикети с панели, поемане, ескалация, преименуване, нива на приоритет, двустепенно затваряне и пълни архиви. Екипът може да отговаря директно от таблото." },
       { key: "forms", title: "Форми и кандидатури", desc: "Многостъпкови въпросници с валидация и разклоняване, преглед с причина за одобрение/отказ и личен канал за разговор с кандидата преди решението — пълна замяна на Appy.bot." },
@@ -111,7 +111,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Für immer kostenlos im Basis-Tarif · Premium-Abrechnung über Discord · Jederzeit kündbar · EU-Hosting, DSGVO-nativ",
     seePricing: "Preise ansehen →",
     featuresHeading: "Alles, integriert.",
-    featuresSub: "Schluss mit 5–20 € pro Monat für 8 verschiedene Bots, die nicht miteinander kommunizieren.",
+    featuresSub: "Schluss mit 8 verschiedenen Bots, die nicht miteinander kommunizieren — jeder mit eigenem Panel, eigenen Rechten und eigenem Support.",
     features: [
       { key: "ticket", title: "Ticketsystem", desc: "Unbegrenzte Tickets über Button-Panels — übernehmen, eskalieren, umbenennen, Prioritätsstufen, zweistufiges Schließen, vollständige Transkripte. Das Team antwortet direkt aus dem Dashboard." },
       { key: "forms", title: "Formulare & Bewerbungen", desc: "Mehrstufige Fragebögen mit Validierung und Verzweigung, Prüfung mit Begründung bei Zusage/Absage und ein privater Kanal mit der bewerbenden Person vor der Entscheidung — ersetzt Appy.bot vollständig." },
@@ -203,7 +203,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Gratis para siempre en el plan base · Premium se paga a través de Discord · Cancela cuando quieras · Alojado en la UE, RGPD nativo",
     seePricing: "Ver precios →",
     featuresHeading: "Todo, integrado.",
-    featuresSub: "Deja de pagar 5–20 €/mes por 8 bots distintos que no se comunican entre sí.",
+    featuresSub: "Deja de hacer malabares con 8 bots distintos que no se comunican entre sí — cada uno con su panel, sus permisos y su soporte.",
     features: [
       { key: "ticket", title: "Sistema de tickets", desc: "Tickets ilimitados con paneles de botones: reclamar, escalar, renombrar, niveles de prioridad, cierre en dos pasos y transcripciones completas. El equipo responde desde el panel." },
       { key: "forms", title: "Formularios y solicitudes", desc: "Cuestionarios de varios pasos con validación y ramificación, revisión con motivo de aprobación/rechazo y un canal privado con la persona candidata antes de decidir — sustituye por completo a Appy.bot." },
@@ -295,7 +295,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Gratuit pour toujours sur l'offre de base · Premium facturé via Discord · Annulable à tout moment · Hébergé dans l'UE, RGPD natif",
     seePricing: "Voir les tarifs →",
     featuresHeading: "Tout, intégré.",
-    featuresSub: "Arrêtez de payer 5 à 20 €/mois pour 8 bots différents qui ne communiquent pas entre eux.",
+    featuresSub: "Arrêtez de jongler entre 8 bots différents qui ne communiquent pas entre eux — chacun avec son panneau, ses permissions et son support.",
     features: [
       { key: "ticket", title: "Système de tickets", desc: "Tickets illimités via des panneaux à boutons : prise en charge, escalade, renommage, niveaux de priorité, fermeture en deux étapes et transcriptions complètes. L'équipe répond depuis le tableau de bord." },
       { key: "forms", title: "Formulaires & candidatures", desc: "Questionnaires multi-étapes avec validation et branchements, examen avec motif d'acceptation/refus et un salon privé avec la personne candidate avant la décision — remplace entièrement Appy.bot." },
@@ -387,7 +387,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Gratis per sempre nel piano base · Premium fatturato tramite Discord · Annulla quando vuoi · Hosting nell'UE, GDPR nativo",
     seePricing: "Vedi i prezzi →",
     featuresHeading: "Tutto, integrato.",
-    featuresSub: "Smetti di pagare 5–20 €/mese per 8 bot diversi che non comunicano tra loro.",
+    featuresSub: "Smetti di destreggiarti tra 8 bot diversi che non comunicano tra loro — ognuno con il suo pannello, i suoi permessi e il suo supporto.",
     features: [
       { key: "ticket", title: "Sistema di ticket", desc: "Ticket illimitati con pannelli a pulsanti: presa in carico, escalation, rinomina, livelli di priorità, chiusura in due passaggi e trascrizioni complete. Il team risponde dalla dashboard." },
       { key: "forms", title: "Moduli e candidature", desc: "Questionari a più passaggi con validazione e ramificazioni, revisione con motivazione di approvazione/rifiuto e un canale privato con chi si candida prima di decidere — sostituisce del tutto Appy.bot." },
@@ -479,7 +479,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Voor altijd gratis op het basisniveau · Premium gefactureerd via Discord · Altijd opzegbaar · EU-hosting, AVG-native",
     seePricing: "Bekijk prijzen →",
     featuresHeading: "Alles, geïntegreerd.",
-    featuresSub: "Stop met €5–20/maand betalen voor 8 verschillende bots die niet met elkaar praten.",
+    featuresSub: "Stop met jongleren met 8 verschillende bots die niet met elkaar praten — elk met een eigen paneel, eigen rechten en eigen support.",
     features: [
       { key: "ticket", title: "Ticketsysteem", desc: "Onbeperkte tickets via knoppanelen — claimen, escaleren, hernoemen, prioriteitsniveaus, sluiten in twee stappen en volledige transcripten. Het team antwoordt vanuit het dashboard." },
       { key: "forms", title: "Formulieren & sollicitaties", desc: "Meerstapsvragenlijsten met validatie en vertakking, beoordeling met reden bij goedkeuring/afwijzing en een privékanaal met de kandidaat vóór de beslissing — vervangt Appy.bot volledig." },
@@ -571,7 +571,7 @@ export const LANDING_TRANSLATIONS = {
     ctaNote: "Za darmo na zawsze w planie podstawowym · Premium rozliczane przez Discord · Anuluj w dowolnym momencie · Hosting w UE, RODO natywnie",
     seePricing: "Zobacz cennik →",
     featuresHeading: "Wszystko, zintegrowane.",
-    featuresSub: "Przestań płacić 5–20 €/mies. za 8 różnych botów, które się ze sobą nie komunikują.",
+    featuresSub: "Przestań żonglować 8 różnymi botami, które się ze sobą nie komunikują — każdy z własnym panelem, uprawnieniami i wsparciem.",
     features: [
       { key: "ticket", title: "System ticketów", desc: "Nielimitowane zgłoszenia przez panele z przyciskami — przejmowanie, eskalacja, zmiana nazwy, poziomy priorytetu, dwustopniowe zamykanie i pełne transkrypcje. Zespół odpowiada prosto z panelu." },
       { key: "forms", title: "Formularze i rekrutacje", desc: "Wieloetapowe formularze z walidacją i rozgałęzieniami, ocena z uzasadnieniem przyjęcia/odrzucenia oraz prywatny kanał z kandydatem przed decyzją — w pełni zastępuje Appy.bot." },

@@ -105,6 +105,13 @@ const FORBIDDEN = [
     /Anuluj\s+w\s+dowolnym\s+momencie\s+z\s+panelu/i,
   ]},
 
+  // ── Цени на чужди ботове, които не сме сверили (одит 24–25.09.2026) ───────
+  // „€5–20/month for 8 bots“ и списъкът с цени на конкуренти бяха недоказуеми;
+  // сверените сравнения живеят в /compare/* със източник и дата.
+  { claim: "непроверени цени на чужди ботове", contradicts: "/compare/* (сверени източници)", patterns: [
+    /€\s?5\s*[–-]\s*20/, /5\s*[–-]\s*20\s*€/, /5\s*à\s*20\s*€/, /Webhook\.io/, /Stickyboard/,
+  ]},
+
   // ── Статус „всичко работи“ без измерване ─────────────────────────────────
   { claim: "статично „All systems operational“", contradicts: "/status (живото измерване)", patterns: [
     /All\s+systems\s+operational/i,
