@@ -75,6 +75,12 @@ export default function ItemViewer3DHost(): React.ReactElement {
         if (cancelled) return;
         const mode = previewMode(entry);
         if (mode === 'icon') {
+          // boy няма 3D за този предмет — спри предишния rAF цикъл (пести GPU) и СКРИЙ canvas-а
+          // изрично; инак последният рендернат кадър остава видим зад/около голямата стара
+          // икона (виждано директно при пръстен — остатък от предишен манекен).
+          handleRef.current?.dispose({ keepRenderer: true });
+          handleRef.current = null;
+          if (canvasRef.current) canvasRef.current.style.display = 'none';
           setIconSrc(`/assets/icons/${resolveIconSlug(undefined, entry.category, entry.sub_type, entry.tier)}.jpg`);
           setStatus('ready');
           return;
@@ -121,6 +127,7 @@ export default function ItemViewer3DHost(): React.ReactElement {
       }
       const canvas = canvasRef.current;
       if (!canvas) return;
+      canvas.style.display = ''; // връща видимостта, ако предният отворен предмет беше 'icon' режим
 
       if (!rendererRef.current) {
         const forceWebGL = new URLSearchParams(location.search).has('webgl');

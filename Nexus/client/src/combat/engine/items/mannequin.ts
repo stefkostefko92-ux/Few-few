@@ -68,7 +68,7 @@ interface Assembled {
  *  на всяка категория в `themed` — само неговите FOCUS_PARTS mesh-ове се вземат от тонирания,
  *  останалото пада от неутралния. Двата (или повече) рицара споделят СЪЩИЯ style('A'|'B'), затова
  *  геометрията им съвпада бит-по-бит — сглобката е безшевна. */
-async function assembleKnight(themed: Record<string, CatalogEntry>, style: 'A' | 'B', focusOnly: boolean): Promise<Assembled> {
+async function assembleKnight(themed: Record<string, CatalogEntry>, style: 'A' | 'B', focusOnly: boolean, frameExtra: string[] = []): Promise<Assembled> {
   const base = await getBoyMaterials();
   const neutralKnight = buildKnight(base, style) as Knight;
   const rig = new Rig(neutralKnight);
@@ -92,9 +92,16 @@ async function assembleKnight(themed: Record<string, CatalogEntry>, style: 'A' |
       // Неутралният близнак на тази част не се показва — освободи го веднага.
       for (const [geo] of (neutralKnight.pieces as unknown as Record<string, [THREE.BufferGeometry, THREE.Material][]>)[name]) geo.dispose();
     }
-    const src = owner
+    let src = owner
       ? (themedKnights[owner].pieces as unknown as Record<string, [THREE.BufferGeometry, THREE.Material][]>)[name]
       : (neutralKnight.pieces as unknown as Record<string, [THREE.BufferGeometry, THREE.Material][]>)[name];
+    // Хундскул бацинетът (стил 'B') носи авентайл (мрежеста плоча, helmets.js) — драпира естествено
+    // върху раменете САМО когато шлемът реално е фокусът; иначе виси като плоска сива „яка" без
+    // шлем над нея (обратна връзка от прегледа). Маха се, точно както за самостоятелната икона
+    // (slots/helm.ts).
+    if (name === 'head' && owner !== 'helm') {
+      src = src.filter(([, mat]) => (mat as THREE.Material).name !== 'mail');
+    }
     for (const [geo, mat] of src) {
       const mesh = new THREE.Mesh(geo, mat);
       mesh.matrix.copy((neutralKnight.parts as unknown as Record<string, { matrix: THREE.Matrix4 }>)[name].matrix);
@@ -102,7 +109,7 @@ async function assembleKnight(themed: Record<string, CatalogEntry>, style: 'A' |
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       if (owner) mesh.userData.pieceCategory = owner;
-      if (focusOnly && !owner) mesh.userData.excludeFromFraming = true;
+      if (focusOnly && !owner && !frameExtra.includes(name)) mesh.userData.excludeFromFraming = true;
       group.add(mesh);
     }
   }
@@ -153,7 +160,10 @@ export async function buildMannequin(entry: CatalogEntry, rand: Rand): Promise<B
   const style: 'A' | 'B' = rand() < 0.5 ? 'A' : 'B';
   const isCloak = entry.category === 'cloak';
   const themed = isCloak ? {} : { [entry.category]: entry };
-  const { group, owned, rig } = await assembleKnight(themed, style, true);
+  // Броня: кадрирай от темето до бедрата (не само нагръдника) — включва глава+таз в РАМКАТА, без
+  // да ги тонира (остават неутрална база); иначе горе се отрязва главата.
+  const frameExtra = entry.category === 'armor' ? ['head', 'pelvis'] : [];
+  const { group, owned, rig } = await assembleKnight(themed, style, true, frameExtra);
 
   if (isCloak) {
     const base = await getBoyMaterials();
@@ -164,10 +174,11 @@ export async function buildMannequin(entry: CatalogEntry, rand: Rand): Promise<B
       if (mesh.isMesh) mesh.userData.excludeFromFraming = true;
     });
     attachCape(group, rig, base, entry.theme, rand, owned);
-    // Наметалото виси на ГЪРБА (истинските arming points, чест на chest.z<0) — фиксираната 3/4
-    // камера на студиото гледа ОТПРЕД, иначе тялото го закрива изцяло (виждано директно при
-    // прегледа). Завърти манекена на 180°, за да покаже гърба (и наметалото) на камерата.
-    group.rotation.y = Math.PI;
+    // Наметалото виси на ГЪРБА (истинските arming points, chest.z<0) — фиксираната 3/4 камера на
+    // студиото гледа ОТПРЕД, иначе тялото го закрива изцяло. Пълни 180° обаче гледат право в
+    // гърба — плоско, не личи че е наметало (нито раменете, нито падането на плата). 3/4 отзад
+    // (~145°) показва рамо + драпиране на плата едновременно.
+    group.rotation.y = THREE.MathUtils.degToRad(145);
   }
 
   group.position.y = 0; // манекенът стъпва на земята — без грим-компенсацията на самостоятелните икони

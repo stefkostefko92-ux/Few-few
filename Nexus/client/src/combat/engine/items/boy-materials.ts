@@ -58,6 +58,9 @@ export interface ItemTint {
   plate: string;
   trim: string;
   blade: string;
+  /** Кожа/плат тема (виж tint.ts) — маха metalness/clearcoat, вдига roughness на клонингите,
+   *  инак „Leather Helm" излиза полиран бронз (боя тонира само hue-а, не PBR отговора). */
+  nonMetal?: boolean;
 }
 
 export interface TintedItemMaterials {
@@ -76,6 +79,14 @@ const CLONED_KEYS = ['steelA', 'steelB', 'goldB', 'brass', 'blade', 'bladeDark']
  *  геометрия". */
 export function tintForItem(M: BoyMaterials, tint: ItemTint): TintedItemMaterials {
   const tinted = tintedMaterials(M, tint) as BoyMaterials;
+  if (tint.nonMetal) {
+    for (const key of CLONED_KEYS) {
+      const mat = tinted[key] as THREE.MeshPhysicalNodeMaterial;
+      mat.metalness = 0;
+      mat.roughness = Math.max(mat.roughness, 0.85);
+      mat.clearcoat = 0;
+    }
+  }
   return {
     M: tinted,
     dispose(): void {

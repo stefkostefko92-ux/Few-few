@@ -56,21 +56,24 @@ export function buildStudioScene(object: THREE.Object3D, opts: { envMap?: THREE.
     pivot.quaternion.setFromAxisAngle(VIEW_DIR, THREE.MathUtils.degToRad(opts.tiltDeg));
   }
 
-  const key = new THREE.DirectionalLight(0xffdfb0, 1.7);
+  const key = new THREE.DirectionalLight(0xffdfb0, 2.0);
   key.position.set(2.2, 2.6, 1.8);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0x8fb8ff, 0.55);
+  const fill = new THREE.DirectionalLight(0x8fb8ff, 0.7);
   fill.position.set(-2.4, 0.6, -1.2);
   scene.add(fill);
 
+  // Тъмни/тънки предмети (лък, жезъл — дърво/кожа, ниска albedo) се губеха на тъмния фон дори с
+  // ясна камера — вдигнат rim (силует-очертаваща контра светлина зад предмета) е точно фиксът:
+  // прави ръба видим независимо от базовия цвят на материала, четливо и на малък телефонен екран.
   const rimColor = new THREE.Color(RARITY_RIM[opts.rarity || 'common'] || RARITY_RIM.common);
-  const rimIntensity = opts.rarity === 'legendary' ? 1.9 : opts.rarity === 'epic' ? 1.55 : 1.0;
+  const rimIntensity = opts.rarity === 'legendary' ? 2.6 : opts.rarity === 'epic' ? 2.2 : 1.9;
   const rim = new THREE.DirectionalLight(rimColor, rimIntensity);
   rim.position.set(-0.6, 1.8, -2.4);
   scene.add(rim);
 
-  const hemi = new THREE.HemisphereLight(0x445566, 0x0a0806, 0.4);
+  const hemi = new THREE.HemisphereLight(0x445566, 0x0a0806, 0.55);
   scene.add(hemi);
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 20);
