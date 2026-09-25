@@ -47,3 +47,5 @@
 {"t":"handoff","ts":"2026-09-25T08:01:44.913Z","id":"auto","from":"tayniyat-agent","to":"prevodach","status":"блокер"}
 {"t":"handoff","ts":"2026-09-25T08:03:04.660Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:04:36.217Z","id":"auto","from":"tayniyat-agent","to":"човек (собственик); после pravniyat-razbirach · hromadjiyata · kodadjiyata · vps-adjiyata","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T08:05:00.179Z","id":"auto","from":"vps-adjiyata","to":"човек (собственикът)","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T08:05:03.621Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
