@@ -51,21 +51,20 @@ describe("landing · преводи", () => {
   });
 });
 
-describe("landing · икони", () => {
-  it("всеки ключ на функция има своя икона (иначе картата пада на Sparkles)", () => {
-    const src = read("pages", "LandingLocalized.jsx");
-    const block = src.match(/const FEATURE_ICONS = \{([\s\S]*?)\n\};/);
-    expect(block, "FEATURE_ICONS не е намерен — преименуван ли е?").toBeTruthy();
-    const mapped = [...block[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]);
-    for (const f of LANDING_TRANSLATIONS.bg.features) {
-      expect(mapped, `липсва икона за „${f.key}“`).toContain(f.key);
+describe("landing · всяка функция има място (редизайн 25.09.2026)", () => {
+  // Старият гейт пазеше иконите по ключ. В новия дизайн функциите живеят в
+  // канали (site/Landing.jsx → TOUR_CHANNELS), а играта — в своя секция. Същият
+  // риск в нова форма: функция без канал просто изчезва от страницата.
+  it("всеки ключ на функция (всички 8 езика) е в точно един канал или е играта", async () => {
+    const { TOUR_CHANNELS } = await import("../i18n/siteStrings.js");
+    const { LANDING_EN } = await import("../i18n/landingEn.js");
+    const placed = TOUR_CHANNELS.flatMap((c) => c.features);
+    expect(new Set(placed).size, "ключ в два канала").toBe(placed.length);
+    for (const t of [LANDING_EN, ...LOCALES.map((l) => LANDING_TRANSLATIONS[l])]) {
+      for (const f of t.features) {
+        expect(f.key === "game" || placed.includes(f.key), `${t.locale}: „${f.key}“ няма канал`).toBe(true);
+      }
     }
-  });
-
-  it("иконите се избират по КЛЮЧ, не по позиция (позиционният масив вече ни счупи)", () => {
-    const src = read("pages", "LandingLocalized.jsx");
-    expect(src).toContain("FEATURE_ICONS[f.key]");
-    expect(src).not.toMatch(/FEATURE_ICONS\[i\]/);
   });
 });
 
@@ -83,24 +82,30 @@ describe("landing · маркетингови твърдения", () => {
     }
   });
 
-  it("английската версия и визуалният блок казват същото", () => {
-    const login = read("pages", "Login.jsx");
-    expect(login).toContain("Eight bots. Eight bills.");
-    expect(login).toContain("One bot replaces eight.");
-    expect(login).toContain("Before · eight bots");
-    expect(login).not.toMatch(/\bsix bots\b/i);
+  it("английската версия казва същото (осем, не шест)", async () => {
+    const { LANDING_EN } = await import("../i18n/landingEn.js");
+    expect(LANDING_EN.h1a).toBe("Eight bots. Eight bills.");
+    expect(LANDING_EN.featuresSub).toMatch(EIGHT);
+    expect(JSON.stringify(LANDING_EN)).not.toMatch(/\bsix bots\b/i);
   });
 
-  it("визуалният блок изброява точно толкова бота, колкото твърди", () => {
-    const login = read("pages", "Login.jsx");
-    const chips = login.match(/const replaced = \[([\s\S]*?)\];/);
-    const funnel = login.match(/const funnelTops = \[([^\]]*)\];/);
-    expect(chips && funnel).toBeTruthy();
-    const chipCount = [...chips[1].matchAll(/label:/g)].length;
-    const flowCount = funnel[1].split(",").filter((x) => x.trim()).length;
-    expect(chipCount).toBe(8);
-    // По една крива на чип — иначе фунията рисува потоци от нищото.
-    expect(flowCount, "кривите на фунията не съвпадат с чиповете").toBe(chipCount);
+  it("демото в hero-то показва ИСТИНСКИТЕ текстове на бота (редизайн 25.09.2026)", async () => {
+    // Етикетът на AI отговора е изискване по AI Act чл. 50 — сайтът показва
+    // точно това, което членът ще види; сменят ли го в бота, гейтът пада.
+    const { SITE_STRINGS } = await import("../i18n/siteStrings.js");
+    const BOT = join(SRC, "..", "..", "bot", "src");
+    for (const [loc, st] of Object.entries(SITE_STRINGS)) {
+      const bot = readFileSync(join(BOT, "i18n", `${loc}.js`), "utf8");
+      for (const k of ["author", "title", "footer"]) {
+        const m = bot.match(new RegExp(`"ai\\.disclosure\\.${k}":\\s*"([^"]*)"`));
+        expect(m, `${loc}: ботът няма ai.disclosure.${k}`).toBeTruthy();
+        expect(st.demo.ai[k], `${loc}: ai.disclosure.${k}`).toBe(m[1]);
+      }
+    }
+    const ix = readFileSync(join(BOT, "events", "interactionCreate.js"), "utf8");
+    for (const label of ["Close", "Claim", "Transcript"]) expect(ix).toContain(`.setLabel("${label}")`);
+    const demo = read("site", "DiscordReplay.jsx");
+    for (const shown of ["🔒 Close", "👋 Claim", "📜 Transcript", "Ticket #0142"]) expect(demo).toContain(shown);
   });
 });
 

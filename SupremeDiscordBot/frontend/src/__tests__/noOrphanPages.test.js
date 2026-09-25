@@ -19,8 +19,13 @@ const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (...p) => readFileSync(join(SRC, ...p), "utf8");
 
 const app = read("App.jsx");
-const login = read("pages", "Login.jsx");             // „/" — английската начална
-const landing = read("pages", "LandingLocalized.jsx"); // /bg, /de, … (7 локала)
+// От редизайна (25.09.2026) двете начални страници рендерират ЕДИН компонент
+// (site/Landing.jsx), чийто футър е site/SiteChrome.jsx — връзките живеят там.
+const chrome = read("site", "SiteChrome.jsx");
+const landingCmp = read("site", "Landing.jsx");
+const login = read("pages", "Login.jsx") + "\n" + (read("pages", "Login.jsx").includes("<Landing ") ? landingCmp + chrome : "");
+const landing = read("pages", "LandingLocalized.jsx") + "\n" + (read("pages", "LandingLocalized.jsx").includes("<Landing ") ? landingCmp + chrome : "");
+const links = (src, r) => src.includes(`href="${r}"`) || src.includes(`["${r}"`);
 
 /** Публичните маршрути на съдържание, обявени в App.jsx. */
 const contentRoutes = [...app.matchAll(/path="(\/(?:guides|compare)\/[a-z0-9-]+)"/g)]
@@ -32,12 +37,12 @@ describe("нула осиротели публични страници", () => 
   });
 
   it("всяка се линква от английската начална страница", () => {
-    const missing = contentRoutes.filter((r) => !login.includes(`href="${r}"`));
+    const missing = contentRoutes.filter((r) => !links(login, r));
     expect(missing, `няма връзка от Login.jsx: ${missing.join(", ")}`).toEqual([]);
   });
 
   it("всяка се линква и от локализираните начални страници", () => {
-    const missing = contentRoutes.filter((r) => !landing.includes(`href="${r}"`));
+    const missing = contentRoutes.filter((r) => !links(landing, r));
     expect(missing, `няма връзка от LandingLocalized.jsx: ${missing.join(", ")}`).toEqual([]);
   });
 
@@ -53,8 +58,10 @@ describe("нула осиротели публични страници", () => 
     const pre = readFileSync(join(SRC, "..", "scripts", "prerender.mjs"), "utf8");
     const missing = contentRoutes.filter((r) => !pre.includes(r));
     expect(missing, `няма ги в pre-render снимката: ${missing.join(", ")}`).toEqual([]);
-    // Английският корен има свой, отделен блок — лесно се пропуска.
-    expect(pre, "английската снимка не вика guideLinks").toMatch(/guideLinks\(\{[\s\S]{0,400}heading:/);
+    // Английският корен минава през същия landingSnapshot (редизайн 25.09.2026),
+    // който вика guideLinks(t) — не отделно, ръчно поддържано копие.
+    expect(pre, "английската снимка не минава през landingSnapshot(LANDING_EN)").toMatch(/landingSnapshot\(LANDING_EN\)/);
+    expect(pre).toMatch(/function landingSnapshot\(t\)[\s\S]{0,2000}guideLinks\(t\)/);
   });
 
   it("етикетите съществуват на ВСИЧКИ локала, не само на български", () => {

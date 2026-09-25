@@ -50,6 +50,10 @@ const MARKETING_DATA = existsSync(join(SRC, "data"))
 const ALL_TEXT = [
   JSON.stringify(LANDING_TRANSLATIONS),
   read("pages", "Login.jsx"),
+  // Редизайн 25.09.2026: английският текст и новите низове на сайта живеят тук.
+  read("i18n", "landingEn.js"),
+  read("i18n", "siteStrings.js"),
+  ...readdirSync(join(SRC, "site")).filter((f) => f.endsWith(".jsx")).map((f) => read("site", f)),
   readFileSync(join(SRC, "..", "index.html"), "utf8"),   // JSON-LD + мета
   ...MARKETING,
   ...MARKETING_DATA,
@@ -63,7 +67,7 @@ const ALL_TEXT = [
 // клиенти), но описва плановете на 8 езика — затова само избрани твърдения
 // (`alsoDashboard`) се проверяват и в него.
 const DASHBOARD_TEXT = readdirSync(join(SRC, "i18n", "dashboard"))
-  .filter((f) => f.endsWith(".js")).map((f) => read("i18n", "dashboard", f)).join("\n");
+  .filter((f) => /^[a-z]{2}\.js$/.test(f)).map((f) => read("i18n", "dashboard", f)).join("\n");
 
 const FORBIDDEN = [
   // ── Абсолютно отрицание на трансфери извън ЕС ────────────────────────────
@@ -144,6 +148,7 @@ const FORBIDDEN = [
     /human[- ]in[- ]the[- ]loop/i,
     /staff (?:member )?reviews?,? (?:edits )?(?:and )?sends?/i,
     /AI never replies on its own/i,
+    /AI auto-replies draft/i,
     /reviewed by staff/i,
     /човек в процеса/i,
     /Mensch(?:en)? im Prozess/i,
@@ -192,7 +197,7 @@ describe("верните формулировки СА налице (не сме
   });
 
   it("целта за uptime е обозначена като НЕдоговорна", () => {
-    const login = read("pages", "Login.jsx");
+    const login = read("pages", "Login.jsx") + read("i18n", "landingEn.js");
     if (/99\.9%/.test(login)) {
       expect(login, "99.9% стои без уговорката, че не е договорен SLA")
         .toMatch(/not a contractual SLA/i);
@@ -206,10 +211,11 @@ describe("играта Server Season е на всяка начална стра�
     const b = premium.slice(premium.indexOf(`export const ${block} = {`), premium.indexOf("};", premium.indexOf(`export const ${block} = {`)));
     return Number(b.match(new RegExp(`${key}:\\s*(\\d+)`))[1]);
   };
-  it("сравнителният ред на английския лендинг съвпада с лимитите (роли · артикули · куестове)", () => {
-    const login = read("pages", "Login.jsx");
-    const row = login.match(/label="Server Season game"\s+free="([^"]+)"\s+premium="([^"]+)"/);
-    expect(row, "липсва ред Server Season game").toBeTruthy();
+  it("сравнителният ред на английския лендинг съвпада с лимитите (роли · артикули · куестове)", async () => {
+    const { LANDING_EN } = await import("../i18n/landingEn.js");
+    const found = LANDING_EN.compare.rows.find((r) => r[0] === "Server Season game");
+    expect(found, "липсва ред Server Season game").toBeTruthy();
+    const row = [null, found[1], found[2]];
     expect(row[1]).toContain(`${lim("BASE_LIMITS", "levelRoles")} level roles`);
     expect(row[1]).toContain(`${lim("BASE_LIMITS", "shopItems")} shop items`);
     expect(row[1]).toContain(`${lim("BASE_LIMITS", "activeQuests")} quest`);

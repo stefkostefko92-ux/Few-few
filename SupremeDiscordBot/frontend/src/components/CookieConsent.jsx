@@ -9,6 +9,11 @@ import { Cookie, X, Check } from "lucide-react";
 const CONSENT_KEY = "supreme-bot-cookie-consent";
 const CURRENT_VERSION = 1; // Bump this when privacy policy materially changes
 
+// Двата бутона — еднакви по тежест (EDPB 03/2022: отказът не бива да е по-труден
+// или по-незабележим от приемането).
+const BTN = "flex-1 min-w-[8.5rem] inline-flex items-center justify-center gap-1.5 min-h-[44px] rounded-lg border border-[#8C96A8]/50 bg-[#2B2D31] text-sm font-semibold text-[#DCE1E8] hover:border-[#DCE1E8]";
+const LINK = "w-full min-h-[40px] text-sm text-[#8C96A8] underline underline-offset-4 hover:text-[#DCE1E8]";
+
 export default function CookieConsent() {
   const [show, setShow] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
@@ -77,24 +82,26 @@ export default function CookieConsent() {
       role="dialog"
       aria-label="Cookie consent"
       aria-describedby="cookie-consent-description"
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-[100] cs-card !p-5 border-cs-cyan/40 shadow-2xl shadow-cs-cyan/20 bg-cs-bg/95 backdrop-blur-md"
+      // Редизайн 25.09.2026: спокоен панел в цветовете на сайта (графит + хром),
+      // без неонова рамка; „Приеми“ и „Откажи“ са равнозначни (без подбутване).
+      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[100] rounded-xl border border-[#2F3238] bg-[#1E1F22] p-5 text-[#DCE1E8] shadow-[0_18px_50px_-12px_rgba(0,0,0,0.7)]"
+      style={{ fontFamily: "Onest, 'Inter Tight', system-ui, sans-serif" }}
     >
-      <div className="flex items-start gap-3 mb-3">
-        <Cookie className="w-5 h-5 text-cs-cyan flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 mb-4">
+        <Cookie className="w-5 h-5 text-[#8C96A8] flex-shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1">
-          <h3 className="font-display font-bold text-sm text-cs-text mb-1">We use cookies</h3>
-          <p id="cookie-consent-description" className="text-xs text-cs-muted leading-relaxed">
-            We use essential cookies for authentication and session management.
-            No tracking, no ads.{" "}
-            <a href="/cookies" className="text-cs-cyan underline">
-              Read our Cookie Policy
+          <h3 className="font-semibold text-[15px] mb-1">Cookies</h3>
+          <p id="cookie-consent-description" className="text-sm text-[#8C96A8] leading-relaxed">
+            Only the essential cookies for signing in and keeping your session. No tracking, no ads.{" "}
+            <a href="/cookies" className="text-[#DCE1E8] underline underline-offset-2">
+              Cookie Policy
             </a>
           </p>
         </div>
       </div>
 
       {showPrefs && (
-        <div className="mb-4 space-y-2 border-t border-cs-border pt-3">
+        <div className="mb-4 space-y-3 border-t border-[#2F3238] pt-3">
           <PrefRow
             label="Essential cookies"
             description="Required for login, sessions, CSRF protection"
@@ -117,31 +124,19 @@ export default function CookieConsent() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        <button
-          onClick={acceptAll}
-          className="cs-btn-primary text-xs flex-1 min-w-[100px]"
-        >
-          <Check className="w-3.5 h-3.5" /> Accept all
+        <button type="button" onClick={acceptAll} className={BTN}>
+          <Check className="w-4 h-4" aria-hidden="true" /> Accept all
         </button>
-        <button
-          onClick={rejectNonEssential}
-          className="cs-btn-primary text-xs flex-1 min-w-[100px]"
-        >
+        <button type="button" onClick={rejectNonEssential} className={BTN}>
           Reject non-essential
         </button>
         {showPrefs ? (
-          <button
-            onClick={saveCustom}
-            className="cs-btn-ghost text-xs w-full"
-          >
+          <button type="button" onClick={saveCustom} className={LINK}>
             Save preferences
           </button>
         ) : (
-          <button
-            onClick={() => setShowPrefs(true)}
-            className="cs-btn-ghost text-xs w-full"
-          >
-            Customize
+          <button type="button" onClick={() => setShowPrefs(true)} className={LINK}>
+            Choose categories
           </button>
         )}
       </div>
@@ -157,11 +152,11 @@ function PrefRow({ label, description, checked, onChange, disabled }) {
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange?.(e.target.checked)}
-        className="mt-0.5 accent-cs-cyan"
+        className="mt-1 accent-[#8FE600]"
       />
       <div className="flex-1">
-        <div className="text-xs font-semibold text-cs-text">{label}{disabled && <span className="text-cs-dim ml-2">(required)</span>}</div>
-        <div className="text-[10px] text-cs-dim">{description}</div>
+        <div className="text-sm font-semibold">{label}{disabled && <span className="text-[#8C96A8] font-normal ml-2">(required)</span>}</div>
+        <div className="text-xs text-[#8C96A8]">{description}</div>
       </div>
     </label>
   );

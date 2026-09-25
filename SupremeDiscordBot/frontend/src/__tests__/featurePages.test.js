@@ -123,13 +123,20 @@ describe("страниците са свързани навсякъде, къд�
     expect(pre).toContain('from "../src/data/featurePages.js"');
     expect(pre).toContain("for (const p of FEATURE_PAGES)");
     expect(pre).toContain("featureJsonLd(p)");
-    expect((pre.match(/\$\{featureLinks\(/g) || []).length, "featureLinks в локализираната И в английската снимка").toBeGreaterThanOrEqual(2);
+    // Една функция за снимката на ВСИЧКИ 8 езика (редизайн 25.09.2026): featureLinks
+    // е вътре в landingSnapshot, а английският минава през нея.
+    expect(pre).toMatch(/function landingSnapshot\(t\)[\s\S]{0,2000}\$\{featureLinks\(/);
+    expect(pre).toMatch(/landingSnapshot\(LANDING_EN\)/);
   });
 
-  it("двете начални страници рендерират FeatureLinks (иначе страниците са сираци)", () => {
-    expect(read("pages", "Login.jsx")).toContain("<FeatureLinks");
-    expect(read("pages", "LandingLocalized.jsx")).toContain("<FeatureLinks");
-    expect(read("components", "FeatureLinks.jsx")).toContain("FEATURE_PAGES.map(");
+  it("двете начални страници стигат до всички страници с функции през общия футър (иначе са сираци)", () => {
+    // Редизайн 25.09.2026: двете рендерират site/Landing.jsx, чийто футър
+    // (site/SiteChrome.jsx) изброява ВСИЧКИ FEATURE_PAGES.
+    expect(read("pages", "Login.jsx")).toContain("<Landing ");
+    expect(read("pages", "LandingLocalized.jsx")).toContain("<Landing ");
+    expect(read("site", "Landing.jsx")).toContain("<SiteFooter");
+    expect(read("site", "SiteChrome.jsx")).toContain("FEATURE_PAGES.map(");
+    expect(read("site", "SiteChrome.jsx")).not.toMatch(/FEATURE_PAGES\.slice\(/);
     expect(read("components", "PublicPageLayout.jsx")).toContain('href="/features"');
   });
 

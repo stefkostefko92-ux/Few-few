@@ -6,7 +6,8 @@
 // (fallback), а излишен е мъртъв превод. Тестът лови и двете, преди да са се
 // натрупали. Пази и плейсхолдърите ({days}, {n}) да не изчезнат в превода.
 import { describe, it, expect } from "vitest";
-import { DASHBOARD_LOCALES, LANGUAGE_OPTIONS, DEFAULT_LOCALE } from "../i18n/dashboard";
+import { LANGUAGE_OPTIONS, DEFAULT_LOCALE, SUPPORTED_LOCALES } from "../i18n/dashboard";
+import { DASHBOARD_LOCALES } from "../i18n/dashboard/all";
 
 const CANON = DASHBOARD_LOCALES[DEFAULT_LOCALE];
 const CANON_KEYS = Object.keys(CANON).sort();
@@ -60,5 +61,17 @@ describe("dashboard i18n", () => {
       }
     }
     expect([...new Set(bad)]).toEqual([]);
+  });
+});
+
+describe("езиците на таблото не тежат на първото зареждане (редизайн 25.09.2026)", () => {
+  it("index.js внася статично САМО английския; другите — през динамичен import", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "i18n", "dashboard", "index.js"), "utf8");
+    const staticImports = [...src.matchAll(/^import\s+\w+\s+from\s+"\.\/(\w+)\.js"/gm)].map((m) => m[1]);
+    expect(staticImports).toEqual(["en"]);
+    expect(SUPPORTED_LOCALES.sort()).toEqual(Object.keys(DASHBOARD_LOCALES).sort());
   });
 });

@@ -311,11 +311,13 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 /* 1. Page container padding — scale down on mobile */
+/* Мобилните правила по-долу са за ТАБЛОТО. Публичният сайт (редизайн 25.09.2026)
+   има <main class="site-main"> със собствена типография — затова :not(.site-main). */
 @media (max-width: 640px) {
-  main .p-8 { padding: 1rem !important; }
-  main .p-6 { padding: 0.875rem !important; }
-  main .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
-  main .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+  main:not(.site-main) .p-8 { padding: 1rem !important; }
+  main:not(.site-main) .p-6 { padding: 0.875rem !important; }
+  main:not(.site-main) .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  main:not(.site-main) .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
 
   /* Решетките се решават в JSX-а (`grid-cols-1 sm:grid-cols-N`), НЕ тук.
      Едно време тук стоеше сляпо `grid-template-columns: 1fr !important` за
@@ -326,9 +328,9 @@
      на 2-3 колони. (Мобилен одит, 08.08.2026) */
 
   /* Flex rows become columns when they would overflow */
-  main .flex.items-center.justify-between.mb-8,
-  main .flex.items-center.justify-between.mb-6,
-  main .flex.items-center.justify-between {
+  main:not(.site-main) .flex.items-center.justify-between.mb-8,
+  main:not(.site-main) .flex.items-center.justify-between.mb-6,
+  main:not(.site-main) .flex.items-center.justify-between {
     flex-wrap: wrap;
     gap: 0.75rem;
   }
@@ -338,27 +340,27 @@
      спират да са колони и таблицата изглежда счупена, не тясна. Затова
      обвивката скролва (`overflow-x-auto` в JSX-а), таблицата си остава таблица,
      а не се пречупва само редът на ЗАГЛАВИЯТА. (Мобилен одит, 08.08.2026) */
-  main table { width: 100%; }
-  main table thead th { white-space: nowrap; }
+  main:not(.site-main) table { width: 100%; }
+  main:not(.site-main) table thead th { white-space: nowrap; }
 
   /* Cards full-width on mobile */
-  main .cs-card { padding: 1rem !important; }
+  main:not(.site-main) .cs-card { padding: 1rem !important; }
 
   /* Hide sidebar close button until drawer open — handled by Layout */
   /* Ensure hamburger doesn't overlap content */
-  main { padding-top: 3.5rem !important; }
+  main:not(.site-main) { padding-top: 3.5rem !important; }
 
   /* Typography — scale down headings */
-  main h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
-  main h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
-  main h3 { font-size: 1rem !important; line-height: 1.5rem !important; }
+  main:not(.site-main) h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
+  main:not(.site-main) h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+  main:not(.site-main) h3 { font-size: 1rem !important; line-height: 1.5rem !important; }
 
   /* Бутоните се СТЕСНЯВАТ, но не се смаляват.
      Правилото сваляше шрифта на 12px на телефон — тоест точно там, където се
      цели с пръст, а не с мишка, целта ставаше по-малка. Пазим ширината, но
      даваме височина за пръст: 44px е границата, под която уцелването се проваля
      (WCAG 2.5.8 иска 24px; 44px е това, което реално работи). */
-  main .cs-btn {
+  main:not(.site-main) .cs-btn {
     padding-left: 0.875rem !important;
     padding-right: 0.875rem !important;
     min-height: 44px;
@@ -370,20 +372,20 @@
      докосване на поле в таблото дърпаше оформлението и човек трябваше да свива
      с пръсти обратно. Това е усещането „сайтът не е за телефон", по-силно от
      всяко разместване. (Мобилен одит, 08.08.2026) */
-  main input.cs-input,
-  main select.cs-select,
-  main textarea.cs-textarea,
-  main input[type="text"],
-  main input[type="number"],
-  main input[type="password"],
-  main input[type="email"],
-  main input[type="search"] {
+  main:not(.site-main) input.cs-input,
+  main:not(.site-main) select.cs-select,
+  main:not(.site-main) textarea.cs-textarea,
+  main:not(.site-main) input[type="text"],
+  main:not(.site-main) input[type="number"],
+  main:not(.site-main) input[type="password"],
+  main:not(.site-main) input[type="email"],
+  main:not(.site-main) input[type="search"] {
     width: 100% !important;
     max-width: 100% !important;
     font-size: 16px !important;
   }
-  main input.cs-input,
-  main select.cs-select { min-height: 44px; }
+  main:not(.site-main) input.cs-input,
+  main:not(.site-main) select.cs-select { min-height: 44px; }
 
   /* Footer — stack links vertically when tight */
   footer .flex.items-center.gap-5 { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; }
@@ -391,15 +393,15 @@
 
 /* 2. Tablet range (641-1024px) — relax tight grids + narrow containers */
 @media (min-width: 641px) and (max-width: 1024px) {
-  main .grid.grid-cols-4 {
+  main:not(.site-main) .grid.grid-cols-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-  main .max-w-6xl,
-  main .max-w-5xl,
-  main .max-w-\[1600px\] {
+  main:not(.site-main) .max-w-6xl,
+  main:not(.site-main) .max-w-5xl,
+  main:not(.site-main) .max-w-\[1600px\] {
     max-width: 100% !important;
   }
-  main .p-8 { padding: 1.5rem !important; }
+  main:not(.site-main) .p-8 { padding: 1.5rem !important; }
 }
 
 /* 3. Prevent body horizontal scroll on any viewport */

@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
+import { LANDING_EN } from "../src/i18n/landingEn.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
@@ -164,8 +165,7 @@ function landingSnapshot(t) {
         t.compare.rows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
       }</tbody></table></section>`
     : "";
-  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>${esc(t.eyebrow)}</p>
+  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
     <p>${esc(t.sub)}</p>
     <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
@@ -225,80 +225,14 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   count++;
 }
 
-// 2) English root "/" — keep its rich @graph, add hreflang + crawlable snapshot.
-//    The English answer-content is derived from the FAQPage already embedded in
-//    the static @graph so the snapshot and structured data never drift.
+// 2) English root "/" — its rich @graph stays in index.html; hreflang + snapshot.
+//    От редизайна (25.09.2026) английският е ЕДИН от преводите (i18n/landingEn.js)
+//    и минава през същия landingSnapshot(). Ръчното копие тук се беше разминало:
+//    „One bot replaces six“ (навсякъде другаде е осем) и „White-label & Agency
+//    servers“ (Agency не се продава от v3.3) — точно в текста за обхождачите.
 {
-  const faqMatch = template.match(/"@type":\s*"FAQPage"[\s\S]*?"mainEntity":\s*(\[[\s\S]*?\])\s*}/);
-  let faqHtml = "";
-  if (faqMatch) {
-    try {
-      const entities = JSON.parse(faqMatch[1]);
-      faqHtml = entities.map(
-        (q) => `<div><h3>${esc(q.name)}</h3><p>${esc(q.acceptedAnswer?.text || "")}</p></div>`
-      ).join("");
-    } catch { /* leave faqHtml empty if parsing fails */ }
-  }
-  // English answer-content for the x-default root. Kept at parity with the
-  // localized snapshots (features + pricing + FAQ) so the most-important page
-  // is not the thinnest for AEO crawlers. Features mirror the SoftwareApplication
-  // featureList; pricing mirrors the enforced tiers (premium.js) and EUR offers.
-  const EN_FEATURES = [
-    ["Ticket system", "Unlimited tickets with button panels, claim, escalation, rename, two-step close and full HTML transcripts that survive channel deletion."],
-    ["Forms & applications", "Multi-step questionnaires with validation, logic branching and an approve/deny review workflow — a full Appy.bot replacement."],
-    ["Verification & anti-bot", "One-click button or math captcha, account-age requirements and brute-force protection."],
-    ["Polls & giveaways", "Live polls (up to 9 options) and giveaways with role requirements, scheduled end and re-roll."],
-    ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
-    ["AI auto-replies", "Optional automatic AI first reply to a new ticket, labelled as AI (EU AI Act Art. 50)."],
-    ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
-    ["White-label bot", "White-label & Agency servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
-  ];
-  const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
-  const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
-    + `<div><h3>Premium — €4.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li></ul></div>`
-    + `<div><h3>White-label — €9.99 / server / month</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
-    + `<p>All prices in EUR, VAT included · per server, monthly · sold and billed through the Discord store (Discord is the seller of record) · subscriptions renew automatically until cancelled.</p>`;
-  // Free-vs-Premium comparison — the most AI-citable, answer-first content.
-  // Rendered as a real <table> so non-JS AEO crawlers (ClaudeBot/GPTBot/Perplexity)
-  // can quote it; the SPA replaces it on mount. Mirrors the visible CompareRow table.
-  const compareRows = [
-    ["Ticket panels", "1", "50"],
-    ["Application forms", "2 (5 questions each)", "50 (50 questions each)"],
-    ["Form logic", "—", "Conditional branching + regex validation"],
-    ["Verification", "Button", "Button + math captcha + account-age gates"],
-    ["Ticket workflow", "Basic", "Claim · escalate · rename · round-robin"],
-    ["AI auto-replies", "—", "Automatic first reply, labelled as AI"],
-    ["White-label bot", "—", "Separate tier (White-label)"],
-    ["Webhooks", "—", "20 HMAC-signed integrations"],
-    ["Transcript retention", "30 days", "Unlimited"],
-    ["Price", "€0 forever", "€4.99/mo · billed through Discord"],
-  ];
-  const compareHtml = `<table><thead><tr><th>Capability</th><th>Free</th><th>Premium</th></tr></thead><tbody>${
-    compareRows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
-  }</tbody></table>`;
-  const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€4.99 per server per month, sold as a monthly subscription in the Discord store) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€9.99/month) adds a custom bot that runs under your own brand. Billing is per server and handled by Discord, so a small community can stay on Free while your main server runs Premium; cancel anytime in Discord; panels, forms and settings are kept, while transcripts of tickets closed more than 30 days ago are deleted once the server is back on Free.";
-  const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>One bot replaces six. Built in the EU.</p>
-    <h1>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform</h1>
-    <p>Eight bots. Eight bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
-    <section><h2>Free vs Premium</h2><p>${upsellPassage}</p>${compareHtml}</section>
-    <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
-    <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>
-    <section><h2>Frequently asked questions</h2>${faqHtml}</section>
-    ${guideLinks({
-      guides: {
-        heading: "Guides & comparisons",
-        panel: "Ticket panel & button setup",
-        best: "Choosing a Discord ticket bot",
-        gdpr: "GDPR for Discord bots",
-        vsTicketTool: "Supreme Bot vs Ticket Tool",
-        vsAppy: "Supreme Bot vs Appy",
-      },
-    })}
-    ${featureLinks("Features")}
-  </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
-  html = injectRoot(html, rootSnapshot);
+  html = injectRoot(html, landingSnapshot(LANDING_EN));
   writeRoute("/", html);
   count++;
 }
@@ -323,7 +257,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     } — dashboard-only<p>${esc(f.description)}</p></li>`).join("");
     return `<section><h2>${esc(cat.icon)} ${esc(cat.category)}</h2><p>${esc(cat.description)}</p><ul>${cmds}${dashOnly}</ul></section>`;
   }).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>${esc(title)}</h1>
     <p>Supreme Bot has ${totalCommands} slash commands across ${totalCategories} categories — tickets, panels, forms &amp; applications, verification, polls, giveaways, scheduled &amp; sticky messages, integrations, and server administration. Most features are also reachable from the web dashboard; this page is the full reference (the same list <code>/help</code> shows in Discord).</p>
     ${catHtml}
@@ -346,7 +280,7 @@ function compareSnapshot(d) {
   ).join("");
   const faq = d.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
   const sources = d.sourceUrls.map((u) => `<a href="${esc(u)}">${esc(u)}</a>`).join(", ");
-  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>Supreme Bot vs ${esc(d.competitor)}</h1>
     <p>${esc(d.answer)}</p>
     <p><small>Checked ${esc(CHECKED_DATE)} against ${sources}. Prices as published by each vendor, not converted.</small></p>
@@ -370,7 +304,7 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
   const criteria = d.criteria.map(
     (c) => `<div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p><p><strong>How Supreme Bot covers this:</strong> ${esc(c.supreme)}</p></div>`
   ).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>How to choose the best Discord ticket bot</h1>
     <p>${esc(d.answer)}</p>
     ${criteria}
@@ -388,7 +322,7 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
 {
   const d = GDPR_GUIDE;
   const sections = d.sections.map((s) => `<div><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></div>`).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>GDPR &amp; EU hosting for Discord communities</h1>
     <p>${esc(d.answer)}</p>
     ${sections}
@@ -410,7 +344,7 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
   ).join("");
   const layouts = d.layoutModes.map((m) => `<div><h3>${esc(m.name)}</h3><p>${esc(m.body)}</p></div>`).join("");
   const limits = d.limits.map(([c, v]) => `<tr><td>${esc(c)}</td><td>${esc(v)}</td></tr>`).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>Ticket panel &amp; button setup</h1>
     <p>${esc(d.answer)}</p>
     <section><h2>The panel message</h2><table><thead><tr><th>Option</th><th>What it does</th><th>Values</th></tr></thead><tbody>${optRows(d.panelOptions)}</tbody></table></section>
@@ -439,7 +373,7 @@ function featureSnapshot(p) {
   const tiers = p.tiers.map(([c, f, pr]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(pr)}</td></tr>`).join("");
   const faq = p.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
   const related = p.related.map((r) => `<li><a href="${r}">${esc(r)}</a></li>`).join("");
-  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <nav><a href="/">Supreme Bot</a> / <a href="${FEATURES_HUB.path}">Features</a> / ${esc(p.nav)}</nav>
     <h1>${esc(p.h1)}</h1>
     <p>${esc(p.answer)}</p>
@@ -454,7 +388,7 @@ function featureSnapshot(p) {
   const hubItems = FEATURE_PAGES.map(
     (p) => `<li><h2><a href="${p.path}">${esc(p.h1)}</a></h2><p>${esc(p.description)}</p></li>`
   ).join("");
-  const hubSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+  const hubSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>${esc(FEATURES_HUB.h1)}</h1>
     <p>${esc(FEATURES_HUB.answer)}</p>
     <ul>${hubItems}</ul>
@@ -485,7 +419,7 @@ const STATIC_ROUTES = {
 };
 for (const [path, [title, description]] of Object.entries(STATIC_ROUTES)) {
   let html = withHead(template, { title, description, path, lang: "en" });
-  html = injectRoot(html, `<div class="prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif"><h1>${esc(title)}</h1><p>${esc(description)}</p></div>`);
+  html = injectRoot(html, `<div class="prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif"><h1>${esc(title)}</h1><p>${esc(description)}</p></div>`);
   writeRoute(path, html);
   count++;
 }

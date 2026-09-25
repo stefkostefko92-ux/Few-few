@@ -51,6 +51,20 @@ export default {
           400: "#24301e", 500: "#141d10", 600: "#0d130b",
           700: "#070a06", 800: "#000000",
         },
+        // Публичният сайт (редизайн 25.09.2026, умението frontend-design).
+        // Хромът от буквите на логото върху графит; зеленото е САМО бранд и
+        // основният бутон, ember — само Premium. Таблото остава на cs-*.
+        site: {
+          graphite: "#16171B",   // основен фон
+          deep:     "#111215",   // футър и вдлъбнати зони
+          channel:  "#2B2D31",   // повърхностите от Discord
+          rail:     "#1E1F22",   // тъмната лента на Discord (заглавие на канал)
+          line:     "#2F3238",   // разделители
+          chrome:   "#DCE1E8",   // текст и заглавия
+          steel:    "#8C96A8",   // вторичен текст (6:1 върху graphite)
+          supreme:  "#8FE600",   // бранд + основен бутон
+          ember:    "#F0C24C",   // Premium
+        },
         accent: {
           cyan:   "#8fe600",
           blue:   "#8fe600",
@@ -64,6 +78,10 @@ export default {
         sans: ['"Inter Tight"', "Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
         mono: ['"Space Mono"', '"JetBrains Mono"', "Consolas", "monospace"],
         display: ['"Inter Tight"', "Inter", "sans-serif"],
+        // Публичният сайт: Tektur (ъгловат, ехо на изсеченото „SUPREME“) за
+        // заглавия, Onest за текста; и двата с кирилица и latin-ext (BG/PL/DE).
+        brand: ["Tektur", '"Inter Tight"', "system-ui", "sans-serif"],
+        body: ["Onest", '"Inter Tight"', "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
       letterSpacing: {
         "tight-2": "-0.02em",
