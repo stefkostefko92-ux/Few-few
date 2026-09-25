@@ -129,7 +129,7 @@ export default function Navbar(): React.ReactElement {
               {char?.current_title && <span style={{ color: 'var(--amethyst-1)', marginLeft: 4 }}>, {char.current_title}</span>}
             </div>
             <div className="sub">
-              {char ? `${char.class[0].toUpperCase() + char.class.slice(1)} · Lv ${char.level}` : t('navbar.unbound')}
+              {char ? `Lv ${char.level} ${char.class[0].toUpperCase() + char.class.slice(1)}` : t('navbar.unbound')}
             </div>
           </div>
           <IconChevron size={14} />

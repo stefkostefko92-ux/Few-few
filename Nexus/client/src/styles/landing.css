@@ -323,33 +323,17 @@
   100% { opacity: 1; transform: scale(1) rotate(0); }
 }
 
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 18px;
-  border: 1px solid var(--gold-3);
-  background: rgba(214,161,61,.08);
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--gold-1);
-  margin-bottom: 24px;
-  animation: fade-up .9s ease-out backwards;
-}
-.hero-eyebrow::before {
-  content: '';
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--gold-1);
-  box-shadow: 0 0 8px var(--gold-1);
-  animation: pulse-dot 1.8s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: .55; transform: scale(.8); }
+/* Замества старото .hero-eyebrow (ALL-CAPS чип с точки над заглавието) —
+   трите факта (браузър/безплатно/без инсталация) вече седят тихо ПОД CTA-то,
+   sentence case, Spectral италик, без pill/border/pulsing dot. */
+.hero-facts {
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(244,228,186,.65);
+  margin: 22px 0 0;
+  animation: fade-up 1s ease-out backwards;
+  animation-delay: .35s;
 }
 
 .hero-title {
@@ -377,11 +361,12 @@
 }
 
 .hero-subtitle {
-  font-size: clamp(16px, 2vw, 21px);
+  font-family: var(--font-read);
+  font-size: clamp(17px, 2vw, 22px);
   color: var(--text-2);
-  max-width: 780px;
+  max-width: 720px;
   margin: 0 auto 38px;
-  line-height: 1.6;
+  line-height: 1.7;
   animation: fade-up 1s ease-out backwards;
   animation-delay: .2s;
 }
@@ -401,11 +386,14 @@
   letter-spacing: .08em;
   border-radius: 12px;
 }
+/* Основният CTA е жар/стомана, не злато — златото на страницата остава
+   резервирано за богатство/рядкост (валута, legendary), действието получава
+   собствен акцент. Виж PLAN.md „Цвят". */
 .btn-hero.btn-primary {
-  background: linear-gradient(180deg, #fff1c2, #d6a13d 60%, #8a6620);
-  border: 1px solid var(--gold-3);
-  color: #181307;
-  box-shadow: 0 12px 40px rgba(214,161,61,.32), inset 0 1px 0 rgba(255,255,255,.35);
+  background: linear-gradient(180deg, #ffcf94, var(--ember-1) 55%, var(--crimson-2));
+  border: 1px solid var(--crimson-2);
+  color: #1c0904;
+  box-shadow: 0 12px 40px rgba(198,60,26,.38), inset 0 1px 0 rgba(255,255,255,.35);
   position: relative;
   overflow: hidden;
 }
@@ -419,7 +407,7 @@
 }
 .btn-hero.btn-primary:hover::after { transform: translateX(100%); }
 .btn-hero.btn-primary:hover {
-  box-shadow: 0 16px 56px rgba(214,161,61,.5), inset 0 1px 0 rgba(255,255,255,.4);
+  box-shadow: 0 16px 56px rgba(198,60,26,.5), inset 0 1px 0 rgba(255,255,255,.4);
   transform: translateY(-2px);
 }
 
@@ -499,29 +487,17 @@
   max-width: 1240px;
   margin: 0 auto;
 }
+/* .section-eyebrow — вече само за forge-band-copy (единствен кинематографичен
+   надпис на цялата страница, не повторен урок за всяко заглавие); центрираните
+   секции по-долу вече нямат етикет над h2, заглавието+lead-ът говорят сами. */
 .section-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .18em;
-  text-transform: uppercase;
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--gold-2);
-  margin-bottom: 14px;
-  text-align: center;
-  /* Тънка hairline рамка под eyebrow-а — „caption rule" от boy: маркира
-     всеки раздел като нова „сцена", не просто етикет. */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  margin-bottom: 10px;
 }
-.section-eyebrow::before,
-.section-eyebrow::after {
-  content: '';
-  width: 28px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(214,161,61,.5));
-}
-.section-eyebrow::after { background: linear-gradient(90deg, rgba(214,161,61,.5), transparent); }
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(34px, 5vw, 56px);
@@ -533,13 +509,22 @@
           background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+/* Хладен металик за „територия"-секциите (Guilds/World) — трети усет наред
+   със злато (престиж) и жар (действие), вместо всичко да е позлатено. */
+.section[data-tone="steel"] .section-title {
+  background: linear-gradient(180deg, #eef2f8, #7d90ab);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .section-lead {
   text-align: center;
-  font-size: 17px;
+  font-family: var(--font-read);
+  font-size: 18px;
   color: var(--text-2);
-  max-width: 760px;
+  max-width: 720px;
   margin: 0 auto 64px;
-  line-height: 1.65;
+  line-height: 1.75;
 }
 
 /* ===== Feature grid ===== */
@@ -552,7 +537,9 @@
 .feature-card {
   background: linear-gradient(180deg, rgba(22,26,35,.85), rgba(11,13,18,.85));
   border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
+  /* radius-md, не -lg: тези 12 карти са изброяване на възможности, не
+     витрина — по-тих радиус държи йерархията под class/set showcase-а. */
+  border-radius: var(--radius-md);
   padding: 28px;
   position: relative;
   overflow: hidden;
@@ -567,7 +554,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 1px;
   background: linear-gradient(135deg, rgba(214,161,61,.3), transparent 40%, transparent 60%, rgba(214,161,61,.2));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -610,7 +597,7 @@
   color: var(--gold-1);
   margin: 0 0 10px;
 }
-.feature-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.feature-desc { font-family: var(--font-read); font-size: 15px; color: var(--text-2); line-height: 1.65; }
 
 /* ===== Class showcase ===== */
 .class-grid {
@@ -704,7 +691,7 @@
 .set-card[data-rarity="epic"] .set-name { color: var(--rare-epic); }
 .set-card[data-rarity="legendary"] .set-name { color: var(--rare-legendary); }
 .set-card .set-tier { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; }
-.set-card .set-lore { font-size: 13px; color: var(--text-3); font-style: italic; margin-bottom: 14px; line-height: 1.6; }
+.set-card .set-lore { font-family: var(--font-read); font-size: 14px; color: var(--text-3); font-style: italic; margin-bottom: 14px; line-height: 1.65; }
 .set-card .set-bonuses { display: flex; flex-direction: column; gap: 6px; }
 .set-card .bonus-row {
   display: flex;
@@ -736,7 +723,7 @@
 .region-card {
   background: linear-gradient(180deg, rgba(22,26,35,.92), rgba(11,13,18,.92));
   border: 1px solid var(--border-2);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -779,7 +766,7 @@
   flex: 0 0 280px;
   background: linear-gradient(180deg, rgba(22,26,35,.85), rgba(11,13,18,.85));
   border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 22px;
   position: relative;
 }
@@ -800,7 +787,7 @@
   color: var(--gold-1);
   margin-bottom: 8px;
 }
-.roadmap-stop .detail { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+.roadmap-stop .detail { font-family: var(--font-read); font-size: 14px; color: var(--text-2); line-height: 1.6; }
 
 /* ===== Social proof ===== */
 .testimonial-grid {
@@ -811,7 +798,7 @@
 .testimonial {
   background: linear-gradient(180deg, rgba(22,26,35,.85), rgba(11,13,18,.85));
   border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 24px;
   position: relative;
 }
@@ -826,9 +813,10 @@
   line-height: 1;
 }
 .testimonial p {
-  font-size: 14px;
+  font-family: var(--font-read);
+  font-size: 15px;
   color: var(--text-2);
-  line-height: 1.65;
+  line-height: 1.7;
   margin: 16px 0 18px;
   position: relative;
   z-index: 2;
@@ -855,7 +843,10 @@
   z-index: 2;
   background: linear-gradient(135deg, rgba(214,161,61,.1), rgba(111,63,182,.08));
   border: 1px solid var(--gold-3);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-hero);
+  /* Единственото скосено ъгълче на цялата страница — печат на кралството,
+     не поредната заоблена карта (виж PLAN.md „Радиуси по йерархия"). */
+  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40px, 100% 100%, 0 100%);
   padding: 72px 32px;
   text-align: center;
   margin: 60px 36px 100px;
@@ -1323,11 +1314,6 @@
   max-width: 720px;
   margin: 24px auto 32px;
 }
-.hero-content .hero-eyebrow {
-  background: rgba(8,6,3,.55);
-  -webkit-backdrop-filter: blur(8px); /* iOS Safari иска префикса */
-  backdrop-filter: blur(8px);
-}
 .hero-credit {
   position: absolute;
   right: 24px;
@@ -1454,12 +1440,12 @@
   justify-content: center;
   gap: 12px;
 }
-.forge-band-copy .section-eyebrow { margin-bottom: 6px; justify-content: flex-start; text-align: left; }
-.forge-band-copy .section-eyebrow::before { display: none; }
+.forge-band-copy .section-eyebrow { margin-bottom: 6px; text-align: left; }
 .forge-band-copy .section-title { margin: 0 0 10px; }
 .forge-band-lead {
-  font-size: 16px;
-  line-height: 1.6;
+  font-family: var(--font-read);
+  font-size: 17px;
+  line-height: 1.65;
   color: var(--text-2);
   text-shadow: 0 2px 12px rgba(0,0,0,.6);
   max-width: 520px;

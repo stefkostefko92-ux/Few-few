@@ -143,7 +143,9 @@ export default function Sidebar(): React.ReactElement {
           <div className="sidebar-hero-meta">
             <div className="sidebar-hero-name">{char.name}</div>
             {(char as any).current_title && <div className="sidebar-hero-title">{(char as any).current_title}</div>}
-            <div className="sidebar-hero-class">{char.class.toUpperCase()} · LV {char.level}</div>
+            {/* Нивото вече седи като бадж върху аватара (sidebar-hero-lvl) —
+                тук само класът, без повторение и без средна точка. */}
+            <div className="sidebar-hero-class">{char.class}</div>
           </div>
         </div>
       )}

@@ -134,7 +134,6 @@ export default function Landing(): React.ReactElement {
           <div className="hero-logo" data-parallax="20">
             <Logo size={120} />
           </div>
-          <div className="hero-eyebrow">{t('landing.heroEyebrow')}</div>
           <h1 className="hero-title">
             <SplitText text="Nexus Dominion" />
             <em><SplitText text={t('landing.heroTagline')} /></em>
@@ -146,6 +145,10 @@ export default function Landing(): React.ReactElement {
             <Link to="/register" className="btn btn-primary btn-hero">{t('landing.heroCtaPlay')}</Link>
             <a href="#features" className="btn btn-hero">{t('landing.heroCtaHow')}</a>
           </div>
+          {/* Трите факта от старото eyebrow чипче (браузър/безплатно/без
+              инсталация) — вече без pill+среднa точка, просто тиха реплика
+              под CTA-то, в тона на диегетичния slate. */}
+          <p className="hero-facts" data-reveal>{t('landing.heroEyebrow')}</p>
           <div className="hero-credit">
             {t('landing.artBy', { author: 'John Martin · Yale Center for British Art' })} · <a href="/assets/bg/CREDITS.md" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
           </div>
@@ -164,7 +167,6 @@ export default function Landing(): React.ReactElement {
 
       {/* Features */}
       <section id="features" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.featuresEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.featuresTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.featuresLead')}
@@ -211,7 +213,6 @@ export default function Landing(): React.ReactElement {
 
       {/* Classes */}
       <section id="classes" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.classesEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.classesTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.classesLead')}
@@ -226,7 +227,6 @@ export default function Landing(): React.ReactElement {
 
       {/* Item Sets — имената на комплектите са игрови данни и не се превеждат. */}
       <section id="sets" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.setsEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.setsTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.setsLead')}
@@ -245,7 +245,6 @@ export default function Landing(): React.ReactElement {
 
       {/* Endgame loops */}
       <section id="endgame" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.endgameEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.endgameTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.endgameLead')}
@@ -308,8 +307,7 @@ export default function Landing(): React.ReactElement {
       </section>
 
       {/* Guilds */}
-      <section id="guilds" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.guildsEyebrow')}</div>
+      <section id="guilds" className="section" data-tone="steel">
         <h2 className="section-title" data-reveal>{t('landing.guildsTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.guildsLead')}
@@ -337,8 +335,7 @@ export default function Landing(): React.ReactElement {
       </section>
 
       {/* World — имената на регионите са игрови данни и не се превеждат. */}
-      <section id="world" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.worldEyebrow')}</div>
+      <section id="world" className="section" data-tone="steel">
         <h2 className="section-title" data-reveal>{t('landing.worldTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.worldLead')}
@@ -366,7 +363,6 @@ export default function Landing(): React.ReactElement {
 
       {/* Roadmap */}
       <section id="roadmap" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.roadmapEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.roadmapTitle')}</h2>
         <div className="roadmap-track" data-reveal>
           <RoadmapStop state="shipped" when={t('landing.whenShipped')} what={t('landing.rmCoreTitle')}>
