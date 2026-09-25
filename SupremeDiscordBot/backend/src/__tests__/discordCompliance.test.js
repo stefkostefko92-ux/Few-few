@@ -44,11 +44,17 @@ describe("Developer Terms §5(a) — политика за поверителн�
     const app = read("frontend/src/App.jsx");
     expect(app).toContain('path="/privacy"');
     expect(app).toContain('path="/terms"');
-    // Футърите на публичната страница и на таблото (index.html е SPA обвивка).
-    for (const f of ["frontend/src/pages/Login.jsx", "frontend/src/components/Layout.jsx"]) {
-      const src = read(f);
-      expect(src, f).toMatch(/(href|to)="\/privacy"/);
-      expect(src, f).toMatch(/(href|to)="\/terms"/);
+    // Футърът на таблото (index.html е SPA обвивка).
+    const layout = read("frontend/src/components/Layout.jsx");
+    expect(layout).toMatch(/(href|to)="\/privacy"/);
+    expect(layout).toMatch(/(href|to)="\/terms"/);
+    // Футърът на публичния сайт (редизайн 25.09.2026): един SiteFooter за лендинга
+    // и всички публични страници; връзките се строят от списък [href, етикет].
+    const chrome = read("frontend/src/site/SiteChrome.jsx");
+    expect(chrome).toMatch(/\["\/privacy",/);
+    expect(chrome).toMatch(/\["\/terms",/);
+    for (const f of ["frontend/src/site/Landing.jsx", "frontend/src/components/PublicPageLayout.jsx"]) {
+      expect(read(f), f).toMatch(/<SiteFooter\b/);
     }
   });
 });
@@ -168,7 +174,7 @@ describe("docs/DISCORD_VERIFICATION.md е сверен с кода", () => {
     const m = read("bot/src/utils/permissionCheck.js").match(/INVITE_PERMISSIONS_INT = (\d+)/);
     expect(m, "INVITE_PERMISSIONS_INT липсва").toBeTruthy();
     const n = m[1];
-    expect(read("frontend/src/pages/Login.jsx")).toContain(`permissions=${n}&`);
+    expect(read("frontend/src/site/SiteChrome.jsx")).toContain(`permissions=${n}&`);
     expect(read("docs/DISCORD_VERIFICATION.md")).toContain(`permissions=${n}`);
   });
 
