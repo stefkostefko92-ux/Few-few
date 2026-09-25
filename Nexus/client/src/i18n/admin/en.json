@@ -240,7 +240,9 @@
       "mp": "MP",
       "mp_max": "MP max",
       "current_title": "Title"
-    }
+    },
+    "dateOfBirth": "Date of birth",
+    "ageGateHint": "Same age check as registration (GDPR Art. 8)."
   },
   "purchases": {
     "title": "Orders",

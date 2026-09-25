@@ -141,8 +141,12 @@ app.use('/api/auth/reset',    sensitiveAuthLimiter);
 
 // Audit #12: admin routes get their own tighter limiter. A leaked
 // admin token shouldn't translate to unlimited gold-minting.
-const adminLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true });
-app.use('/api/admin', adminLimiter);
+// Четенето (опресняване на таблата/таблиците) и промените имат отделни
+// тавани: с един общ 60/мин нормалната работа в панела удряше 429.
+// Разрушителните действия имат и свой по-строг лимит в routes/admin.ts.
+const adminReadLimiter = rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, skip: (req) => req.method !== 'GET' });
+const adminWriteLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true, skip: (req) => req.method === 'GET' });
+app.use('/api/admin', adminReadLimiter, adminWriteLimiter);
 
 // Audit #11: the public /profile lookup is the username-enumeration
 // oracle when combined with /auth/forgot (which always returns 200).

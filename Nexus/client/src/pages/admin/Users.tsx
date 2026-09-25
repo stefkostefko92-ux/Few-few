@@ -294,9 +294,9 @@ function CreateUser({ onClose, onDone }: { onClose: () => void; onDone: () => vo
   const { t } = useAdminT();
   const toast = useStore((s) => s.toast);
   const confirm = useConfirm();
-  const [f, setF] = useState({ username: '', email: '', password: '', is_admin: false });
+  const [f, setF] = useState({ username: '', email: '', password: '', dateOfBirth: '', country: 'BG', is_admin: false });
   const [busy, setBusy] = useState(false);
-  const ok = /^[a-zA-Z0-9_]{3,20}$/.test(f.username) && /\S+@\S+\.\S+/.test(f.email) && f.password.length >= 8;
+  const ok = /^[a-zA-Z0-9_]{3,20}$/.test(f.username) && /\S+@\S+\.\S+/.test(f.email) && f.password.length >= 8 && /^\d{4}-\d{2}-\d{2}$/.test(f.dateOfBirth) && /^[A-Z]{2}$/.test(f.country);
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!ok) return;
@@ -319,6 +319,8 @@ function CreateUser({ onClose, onDone }: { onClose: () => void; onDone: () => vo
         <Field label={t('users.username')} wide>{(id) => <input id={id} value={f.username} maxLength={20} autoComplete="off" onChange={(e) => setF({ ...f, username: e.target.value })} />}</Field>
         <Field label={t('common.email')} wide>{(id) => <input id={id} type="email" value={f.email} autoComplete="off" onChange={(e) => setF({ ...f, email: e.target.value })} />}</Field>
         <Field label={t('users.password')} hint="≥ 8" wide>{(id) => <input id={id} type="password" value={f.password} autoComplete="new-password" onChange={(e) => setF({ ...f, password: e.target.value })} />}</Field>
+        <Field label={t('users.dateOfBirth')} hint={t('users.ageGateHint')}>{(id) => <input id={id} type="date" value={f.dateOfBirth} onChange={(e) => setF({ ...f, dateOfBirth: e.target.value })} />}</Field>
+        <Field label={t('users.country')}>{(id) => <input id={id} value={f.country} maxLength={2} autoComplete="off" onChange={(e) => setF({ ...f, country: e.target.value.toUpperCase() })} />}</Field>
         <label className="adm-check"><input type="checkbox" checked={f.is_admin} onChange={(e) => setF({ ...f, is_admin: e.target.checked })} /> {t('users.makeAdmin')}</label>
       </form>
     </Modal>

@@ -94,6 +94,7 @@ router.post('/create', (req, res) => {
     gloves: 'gloves',
     boots: 'boots',
     shield: 'offhand',
+    cloak: 'cloak',
   };
   const slugs = starterMap[cls as CharacterClass];
   const itemStmt = db.prepare('SELECT * FROM items WHERE slug = ?');

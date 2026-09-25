@@ -42,6 +42,7 @@ const slotForCategory: Record<string, string> = {
   boots: 'boots',
   ring: 'ring',
   amulet: 'amulet',
+  cloak: 'cloak',
 };
 
 router.post('/equip', (req, res) => {

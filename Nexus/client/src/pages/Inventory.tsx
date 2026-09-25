@@ -6,7 +6,7 @@ import type { InventoryItem } from '../lib/types';
 import Sprite, { spriteForItem } from '../components/Sprite';
 import '../styles/inventory.css';
 
-const SLOT_ORDER = ['weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
+const SLOT_ORDER = ['cloak', 'weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
 
 const CATEGORY_KEYS = ['all', 'weapon', 'armor', 'helm', 'shield', 'ring', 'amulet', 'potion'] as const;
 

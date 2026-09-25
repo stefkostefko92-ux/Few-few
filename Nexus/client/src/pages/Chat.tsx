@@ -165,7 +165,7 @@ export default function Chat(): React.ReactElement {
                     <button
                       title={t('chat.report', { defaultValue: 'Report message' })}
                       aria-label={t('chat.report', { defaultValue: 'Report message' })}
-                      onClick={() => setReport({ contentKind: 'chat', contentRef: `chat:${m.id}`, label: `Message from ${who}` })}
+                      onClick={() => setReport({ contentKind: 'chat', contentRef: `gchat:${m.id}`, label: `Message from ${who}` })}
                       style={{ background: 'none', border: 'none', color: 'var(--text-3,#7a7f8c)', cursor: 'pointer', fontSize: 12, padding: 2 }}
                     >⚑</button>
                   )}

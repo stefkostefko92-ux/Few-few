@@ -288,3 +288,18 @@ test('помощници: escapeLike, IP щит, обосновка по чл. 1
     assert.ok(st.body.includes(part), `обосновката съдържа „${part}“`);
   }
 });
+
+test('POST /users: акаунт от админ минава през същия age gate (GDPR чл. 8)', async () => {
+  // tok.admin2: лимитът за разрушителни действия (20/мин на админ) е изчерпан от горните тестове.
+  const base = { username: 'AgeGateUser', email: 'agegate@example.com', password: 'Xk29!mQz7#Vp' };
+  const missing = await call('POST', '/users', tok.admin2, base);
+  assert.equal(missing.status, 400, 'без дата на раждане/държава → 400');
+  const today = new Date();
+  const kid = `${today.getFullYear() - 10}-01-01`;
+  const under = await call('POST', '/users', tok.admin2, { ...base, dateOfBirth: kid, country: 'BG' });
+  assert.equal(under.status, 403, 'под 14 в BG → 403');
+  const ok = await call('POST', '/users', tok.admin2, { ...base, dateOfBirth: '1990-05-05', country: 'BG' });
+  assert.equal(ok.status, 201);
+  const row = getDb().prepare('SELECT date_of_birth, country FROM users WHERE id = ?').get(ok.json.id) as { date_of_birth: string; country: string };
+  assert.deepEqual(row, { date_of_birth: '1990-05-05', country: 'BG' });
+});

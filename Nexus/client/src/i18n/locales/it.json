@@ -256,7 +256,7 @@
     "step3Title": "Potenzia con l'oro",
     "step3Body": "Statistiche e abilità si potenziano con l'oro. Ogni potenziamento costa progressivamente di più: <b>5g → 10g → 15g → 20g…</b> per statistica. Vai su <charLink>Personaggio</charLink> e clicca +1 o +5 per investire. Ogni attributo scala sul proprio contatore.",
     "step4Title": "Migliora l'equipaggiamento",
-    "step4Body": "Il bottino cade dalle missioni. Vendi ciò che non ti serve e compra il resto dal <shopLink>Mercante</shopLink>. L'equipaggiamento occupa 8 slot; le rarità più alte brillano.",
+    "step4Body": "Il bottino cade dalle missioni. Vendi ciò che non ti serve e compra il resto dal <shopLink>Mercante</shopLink>. L'equipaggiamento occupa 9 slot; le rarità più alte brillano.",
     "step5Title": "Metti alla prova il tuo acciaio",
     "step5Body": "Quando sei pronto, entra nell'<arenaLink>Arena</arenaLink>. Il matchmaking ELO ti abbina ad avversari del tuo livello. Il punteggio sale e scende in base ai risultati.",
     "step6Title": "Riposa e recupera",
@@ -372,7 +372,7 @@
     "egAuctionTitle": "L'asta si chiude ogni ora",
     "egAuctionBody": "Un leggendario in vendita ogni ora, per tutto il server. Offerte solo in gemme; solo il vincitore se lo porta a casa. Non devi essere online allo scoccare dell'ora; il saldo è automatico.",
     "egMythicTitle": "Tier infiniti Mitico+",
-    "egMythicBody": "Hai ripulito un dungeon sceneggiato? Rientra sul percorso Mitico+. Le statistiche dei nemici scalano del 12% per tier, e ogni decimo tier garantisce un drop dal loot pool di tier 9. Cinque fallimenti consecutivi sbloccano per pietà il tier successivo, così la scalata non si blocca mai.",
+    "egMythicBody": "Hai ripulito un dungeon sceneggiato? Rientra sul percorso Mitico+. Le statistiche dei nemici scalano del 12% per tier, e il primo completamento di ogni decimo tier garantisce un drop dal loot pool di tier 9. Cinque fallimenti consecutivi sbloccano per pietà il tier successivo, così la scalata non si blocca mai.",
     "egEventsTitle": "Quattro eventi stagionali",
     "egEventsBody": "Frostmoot, Bloomtide, Sunhigh, Emberfall. Una finestra di un mese ciascuno. Uccidi la famiglia bersaglio della stagione per ottenere punti; riscattali dal venditore dell'evento per una cornice cosmetica, un avatar dipinto, una cavalcatura stagionale e un trofeo di stagione tier 9.",
     "forgeName": "La Forgia",
@@ -571,7 +571,7 @@
     "claimToast": "M+{{tier}} completato! +{{gold}}g · +{{xp}} XP{{drop}}",
     "title": "Dungeon Mythic+",
     "scaling": "Livelli infiniti. {{pct}}% di scala per livello.",
-    "description": "Completa un dungeon con trama per sbloccare il suo percorso Mythic+. Scegli un livello e affrontalo; ogni completamento sblocca il livello successivo. Cinque fallimenti consecutivi sbloccano per pietà il livello seguente, così la scalata non si ferma mai. Ogni decimo livello garantisce un drop dal loot pool di tier 9.",
+    "description": "Completa un dungeon con trama per sbloccare il suo percorso Mythic+. Scegli un livello e affrontalo; ogni completamento sblocca il livello successivo. Cinque fallimenti consecutivi sbloccano per pietà il livello seguente, così la scalata non si ferma mai. Il primo completamento di un livello paga il bonus pieno; le ripetizioni pagano le ricompense delle fasi. Il primo completamento di ogni decimo livello garantisce un drop dal loot pool di tier 9.",
     "lv": "Lv {{n}}",
     "bestTier": "Miglior M+",
     "stages": "Fasi",
@@ -941,6 +941,7 @@
     "subtitle": "{{equipped}} equipaggiati · {{bag}} nella borsa",
     "equipment": "Equipaggiamento",
     "slots": {
+      "cloak": "Mantello",
       "weapon": "Arma",
       "offhand": "Mano secondaria",
       "helm": "Elmo",
@@ -1545,5 +1546,10 @@
     "line4": "C’è una torre alla fine della strada. Scalala, e il reame imparerà il tuo nome.",
     "line5": "Benvenuto a Nexus.",
     "skipAria": "Salta l’introduzione"
+  },
+  "boot": {
+    "offlineTitle": "Il regno non risponde",
+    "offlineBody": "Il server è occupato o si sta riavviando. I tuoi progressi sono al sicuro.",
+    "retry": "Riprova"
   }
 }

@@ -485,7 +485,7 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
                 className="chat-report"
                 title={t('guild.chat.report', { defaultValue: 'Report message' })}
                 aria-label={t('guild.chat.report', { defaultValue: 'Report message' })}
-                onClick={() => setReport({ contentKind: 'chat', contentRef: `chat:${m.id}`, label: `Message from ${m.name}` })}
+                onClick={() => setReport({ contentKind: 'chat', contentRef: `guildchat:${m.id}`, label: `Message from ${m.name}` })}
                 style={{ background: 'none', border: 'none', color: 'var(--text-3, #7a7f8c)', cursor: 'pointer', fontSize: 13, padding: 4, alignSelf: 'center' }}
               >⚑</button>
             )}

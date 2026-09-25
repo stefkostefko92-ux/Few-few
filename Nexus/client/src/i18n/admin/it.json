@@ -240,7 +240,9 @@
       "mp": "Mana",
       "mp_max": "Mana max.",
       "current_title": "Titolo"
-    }
+    },
+    "dateOfBirth": "Data di nascita",
+    "ageGateHint": "Stesso controllo dell'età della registrazione (GDPR art. 8)."
   },
   "purchases": {
     "title": "Ordini",

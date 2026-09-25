@@ -58,6 +58,15 @@ const AGE_OF_DIGITAL_CONSENT: Record<string, number> = {
   default: 16,
 };
 
+/** Общ age gate (регистрация + акаунти, създадени от админ). null = разрешено. */
+export function ageGateError(dateOfBirth: string, country: string): { status: number; error: string } | null {
+  const minAge = AGE_OF_DIGITAL_CONSENT[country] ?? AGE_OF_DIGITAL_CONSENT.default;
+  const age = ageFromDob(dateOfBirth);
+  if (!Number.isFinite(age) || age < 0 || age > 130) return { status: 400, error: 'Invalid date of birth' };
+  if (age < minAge) return { status: 403, error: `Registration requires age ${minAge}+ in ${country}.` };
+  return null;
+}
+
 function ageFromDob(dob: string, now = new Date()): number {
   const d = new Date(dob);
   let age = now.getFullYear() - d.getFullYear();
@@ -95,14 +104,9 @@ router.post('/register', async (req, res) => {
   // POST would bypass it. We refuse the registration entirely below the
   // threshold instead of asking for parental consent (the operator does
   // not have the parental-consent infrastructure yet).
-  const minAge = AGE_OF_DIGITAL_CONSENT[country] ?? AGE_OF_DIGITAL_CONSENT.default;
-  const age = ageFromDob(dateOfBirth);
-  if (!Number.isFinite(age) || age < 0 || age > 130) {
-    res.status(400).json({ error: 'Invalid date of birth' });
-    return;
-  }
-  if (age < minAge) {
-    res.status(403).json({ error: `Registration requires age ${minAge}+ in ${country}.` });
+  const gate = ageGateError(dateOfBirth, country);
+  if (gate) {
+    res.status(gate.status).json({ error: gate.error });
     return;
   }
   const db = getDb();
@@ -122,7 +126,7 @@ router.post('/register', async (req, res) => {
   // fans it out to any configured webhook (incl. non-EU ones like Discord),
   // which would be an undeclared PII transfer. A one-way hash keeps the
   // event useful for support without leaking the address.
-  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email_hash: hashIdentifier(email), country, age } });
+  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email_hash: hashIdentifier(email), country, age: ageFromDob(dateOfBirth) } });
   res.status(201).json({ token, user: { id: uid, username, email, is_admin: 0 } });
 });
 

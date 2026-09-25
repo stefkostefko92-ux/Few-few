@@ -256,7 +256,7 @@
     "step3Title": "Upgrade with gold",
     "step3Body": "Stats and skills are gold-driven. Each upgrade costs progressively more: <b>5g → 10g → 15g → 20g…</b> per stat. Visit <charLink>Character</charLink> and click +1 or +5 to invest. Each attribute scales on its own counter.",
     "step4Title": "Upgrade your gear",
-    "step4Body": "Loot drops from quests. Sell what you don't need and buy the rest from the <shopLink>Merchant</shopLink>. Equipment goes in 8 slots; rarer rarities glow.",
+    "step4Body": "Loot drops from quests. Sell what you don't need and buy the rest from the <shopLink>Merchant</shopLink>. Equipment goes in 9 slots; rarer rarities glow.",
     "step5Title": "Test your steel",
     "step5Body": "When ready, enter the <arenaLink>Arena</arenaLink>. ELO matchmaking pairs you against opponents your level. Rating climbs and falls based on outcomes.",
     "step6Title": "Rest and recover",
@@ -372,7 +372,7 @@
     "egAuctionTitle": "Auction settles hourly",
     "egAuctionBody": "One legendary listed per hour, server-wide. Gem-bid only; only the winner takes it home. You don't have to be online when the hour rolls over; settlement is automatic.",
     "egMythicTitle": "Mythic+ endless tiers",
-    "egMythicBody": "Cleared a scripted dungeon? Re-enter on the Mythic+ track. Enemy stats scale 12% per tier, and every tenth tier guarantees a tier-9 loot-pool drop. Five consecutive failures pity-unlocks the next tier, so the climb never stalls.",
+    "egMythicBody": "Cleared a scripted dungeon? Re-enter on the Mythic+ track. Enemy stats scale 12% per tier, and the first clear of every tenth tier guarantees a tier-9 loot-pool drop. Five consecutive failures pity-unlocks the next tier, so the climb never stalls.",
     "egEventsTitle": "Four seasonal events",
     "egEventsBody": "Frostmoot, Bloomtide, Sunhigh, Emberfall. A month-long window each. Kill the season's target family for points; redeem at the event vendor for a cosmetic frame, a painted avatar, a season mount, and a tier-9 season trophy.",
     "forgeName": "The Forge",
@@ -571,7 +571,7 @@
     "claimToast": "M+{{tier}} cleared! +{{gold}}g · +{{xp}} XP{{drop}}",
     "title": "Mythic+ Dungeons",
     "scaling": "Endless tiers. {{pct}}% scaling per tier.",
-    "description": "Clear a scripted dungeon to unlock its Mythic+ track. Pick a tier and run it; each clear unlocks the next tier. Five consecutive failures pity-unlock the next tier so the climb never stalls. Every tenth tier guarantees a tier-9 loot-pool drop.",
+    "description": "Clear a scripted dungeon to unlock its Mythic+ track. Pick a tier and run it; each clear unlocks the next tier. Five consecutive failures pity-unlock the next tier so the climb never stalls. The first clear of a tier pays the full bonus; re-clears pay the stage rewards. The first clear of every tenth tier guarantees a tier-9 loot-pool drop.",
     "lv": "Lv {{n}}",
     "bestTier": "Best M+",
     "stages": "Stages",
@@ -941,6 +941,7 @@
     "subtitle": "{{equipped}} equipped · {{bag}} in bag",
     "equipment": "Equipment",
     "slots": {
+      "cloak": "Cloak",
       "weapon": "Weapon",
       "offhand": "Offhand",
       "helm": "Helm",
@@ -1545,5 +1546,10 @@
     "line4": "There is a tower at the end of the road. Climb it, and the realm learns your name.",
     "line5": "Welcome to Nexus.",
     "skipAria": "Skip intro narration"
+  },
+  "boot": {
+    "offlineTitle": "The realm is not answering",
+    "offlineBody": "The server is busy or restarting. Your progress is safe.",
+    "retry": "Try again"
   }
 }

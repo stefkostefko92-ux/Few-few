@@ -19,7 +19,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
 import { logFromRequest, isSafeWebhookUrl, deliver } from '../lib/logger';
-import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
+import { passwordRule, PASSWORD_BCRYPT_ROUNDS, ageGateError } from './auth';
 import { banUser, unbanUser, clientIp, clientHwid } from '../lib/bans';
 import { eraseUser } from '../lib/erasure';
 import { getAllSettings, setSetting, findSetting } from '../game/settings';
@@ -598,20 +598,25 @@ const createUserSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Use letters, numbers, underscores only'),
   email: z.string().trim().toLowerCase().email().max(200),
   password: passwordRule,
+  // GDPR чл. 8 — същият age gate като /register (иначе админ-акаунтите го заобикалят).
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of birth required'),
+  country: z.string().length(2).regex(/^[A-Z]{2}$/),
   is_admin: z.boolean().optional(),
 }).strict();
 
 router.post('/users', destructiveLimiter, async (req, res) => {
   const parse = createUserSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const { username, email, password, is_admin } = parse.data;
+  const { username, email, password, dateOfBirth, country, is_admin } = parse.data;
+  const gate = ageGateError(dateOfBirth, country);
+  if (gate) { res.status(gate.status).json({ error: gate.error }); return; }
   const db = getDb();
   const ex = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
   if (ex) { res.status(409).json({ error: 'Username or email already in use' }); return; }
   const hash = await bcrypt.hash(password, PASSWORD_BCRYPT_ROUNDS);
   const now = Date.now();
   try {
-    const info = db.prepare('INSERT INTO users (username, email, password_hash, created_at, last_seen_at, is_admin) VALUES (?, ?, ?, ?, ?, ?)').run(username, email, hash, now, now, is_admin ? 1 : 0);
+    const info = db.prepare('INSERT INTO users (username, email, password_hash, created_at, last_seen_at, is_admin, date_of_birth, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(username, email, hash, now, now, is_admin ? 1 : 0, dateOfBirth, country);
     const id = Number(info.lastInsertRowid);
     audit(req, res, { action: 'user_create', targetType: 'user', targetId: id, level: is_admin ? 'warn' : 'info', after: { username, is_admin: is_admin ? 1 : 0 } });
     res.status(201).json({ ok: true, id });
