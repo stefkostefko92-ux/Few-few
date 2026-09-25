@@ -16,7 +16,7 @@ const FLUSH_MS = 30 * 1000;
 const settingsCache = new Map();  // serverId → { settings, expiresAt }
 const cooldown = new Map();       // `${serverId}:${userId}` → last XP timestamp
 const pending = new Map();        // serverId → Map(userId → { messageXpEvents, voiceMinutes })
-const voiceJoined = new Map();    // `${serverId}:${userId}` → joinedAt ms
+const voiceJoined = new Map();    // `${serverId}:${userId}` → { guildId, userId } — кой е в глас (проба всяка минута)
 const spawnState = new Map();     // serverId → { events, lastAttemptAt }
 
 // ─── Спътници (етап 2): поява при активност ─────────────────────────────────
@@ -125,26 +125,44 @@ export async function postSpawn(channel, data, client) {
 }
 
 
-/** Гласови минути: старт при влизане, отчитане при излизане/преместване. AFK каналът не се брои. */
+/**
+ * Гласови минути — само АКТИВНО участие (одит на Разбивача 25.09.2026: минутите
+ * се броят от влизане до излизане → заглушен/без звук/сам в канала трупаше до
+ * 1440 мин на ден). Сега събитието само отбелязва кой е в глас, а всяка минута
+ * `tickVoiceXp` проверява ТЕКУЩОТО състояние: не в AFK канала, без заглушен
+ * микрофон/звук (сам или от модератор) и поне още един такъв човек в канала.
+ */
 export async function onVoiceForXp(oldState, newState) {
   const guild = newState.guild || oldState.guild;
   const member = newState.member || oldState.member;
   if (!guild?.id || !member || member.user?.bot) return;
   const key = `${guild.id}:${member.id}`;
-  const afk = guild.afkChannelId;
-  const wasIn = oldState.channelId && oldState.channelId !== afk;
-  const nowIn = newState.channelId && newState.channelId !== afk;
-  if (!wasIn && nowIn) { voiceJoined.set(key, Date.now()); return; }
-  if (wasIn && !nowIn) {
-    const joined = voiceJoined.get(key);
-    voiceJoined.delete(key);
-    if (!joined) return;
-    const minutes = Math.floor((Date.now() - joined) / 60000);
-    if (minutes <= 0) return;
-    const settings = await getGameSettings(guild.id);
-    if (!settings?.enabled) return;
-    bucket(guild.id, member.id).voiceMinutes += Math.min(minutes, 24 * 60);
+  const inVoice = newState.channelId && newState.channelId !== guild.afkChannelId;
+  // Клиентът, който е ВИДЯЛ събитието — white-label ботовете имат собствен кеш.
+  if (inVoice) voiceJoined.set(key, { guildId: guild.id, userId: member.id, client: newState.client || oldState.client || null });
+  else voiceJoined.delete(key);
+}
+
+const muted = (v) => !!(v?.selfDeaf || v?.serverDeaf || v?.selfMute || v?.serverMute);
+
+/** Една проба: +1 минута за всеки активен участник. Връща броя кредитирани. */
+export async function tickVoiceXp(client) {
+  let credited = 0;
+  for (const [key, { guildId, userId, client: seenBy }] of [...voiceJoined]) {
+    const guild = (seenBy || client)?.guilds?.cache?.get(guildId);
+    const vs = guild?.voiceStates?.cache?.get(userId);
+    if (!vs?.channelId || vs.channelId === guild.afkChannelId) { voiceJoined.delete(key); continue; }
+    if (muted(vs)) continue;
+    const others = (vs.channel?.members || new Map());
+    let active = 0;
+    for (const m of others.values()) if (!m.user?.bot && !muted(m.voice)) active++;
+    if (active < 2) continue; // сам (или само с ботове/заглушени) — не се брои
+    const settings = await getGameSettings(guildId);
+    if (!settings?.enabled) continue;
+    bucket(guildId, userId).voiceMinutes += 1;
+    credited++;
   }
+  return credited;
 }
 
 /** Изпраща натрупаното към backend-а и раздава ролите за ниво. */
@@ -168,10 +186,13 @@ export async function flushXp(client) {
 }
 
 let flushTimer = null;
+let voiceTimer = null;
 export function startXpFlusher(client) {
   if (flushTimer) return;
   flushTimer = setInterval(() => flushXp(client).catch(() => {}), FLUSH_MS);
   flushTimer.unref?.();
+  voiceTimer = setInterval(() => tickVoiceXp(client).catch(() => {}), 60_000);
+  voiceTimer.unref?.();
 }
 
 /** Дава натрупаните роли за ниво (само безопасни) и обявява, ако е включено. */

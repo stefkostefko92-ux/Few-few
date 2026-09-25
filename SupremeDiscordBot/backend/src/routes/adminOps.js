@@ -307,7 +307,7 @@ router.post("/game/season", requireMainOwner, stepUp, async (req, res, next) => 
   if (!code || !name || !startsAt || !endsAt) return res.status(400).json({ error: "code, name, startsAt и endsAt са задължителни" });
   try {
     const out = await createSeason({ code, name, startsAt, endsAt, companionIds });
-    if (!out.ok) return res.status(out.code === "DUPLICATE" || out.code === "OVERLAP" ? 409 : 400).json({ error: out.error, code: out.code });
+    if (!out.ok) return res.status(["DUPLICATE", "OVERLAP", "ENDED"].includes(out.code) ? 409 : 400).json({ error: out.error, code: out.code });
     await writeAudit({ actorId: req.user.id, action: "GAME_SEASON_CREATED", targetId: out.season.code, metadata: { name: out.season.name, startsAt: out.season.startsAt, endsAt: out.season.endsAt, companions: out.season.companionIds.length } });
     res.status(201).json(publicSeason(out.season));
   } catch (err) { next(err); }
@@ -318,7 +318,7 @@ router.put("/game/season/:code", requireMainOwner, stepUp, async (req, res, next
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   try {
     const out = await updateSeason(req.params.code, parsed.data);
-    if (!out.ok) return res.status(out.code === "NOT_FOUND" ? 404 : out.code === "OVERLAP" ? 409 : 400).json({ error: out.error, code: out.code });
+    if (!out.ok) return res.status(out.code === "NOT_FOUND" ? 404 : ["OVERLAP", "ENDED"].includes(out.code) ? 409 : 400).json({ error: out.error, code: out.code });
     await writeAudit({ actorId: req.user.id, action: "GAME_SEASON_UPDATED", targetId: out.season.code, metadata: { keys: Object.keys(parsed.data) } });
     res.json(publicSeason(out.season));
   } catch (err) { next(err); }

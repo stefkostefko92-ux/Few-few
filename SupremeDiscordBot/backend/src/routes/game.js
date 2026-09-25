@@ -92,6 +92,13 @@ router.put("/:serverId/settings", requireServerAdmin, async (req, res, next) => 
     if (data.triviaSchedule === "daily" && !tier.isPremium && current.triviaSchedule !== "daily") {
       return res.status(403).json({ error: "Daily trivia requires Premium", code: "PREMIUM_REQUIRED", feature: "game.kbTrivia" });
     }
+    // Включване след пауза: сезоните, свършили докато играта е била изключена,
+    // не се „затварят“ със закъснение (фалшива обява + нулиране на новото XP).
+    if (data.enabled === true && !current.enabled) {
+      const { latestEndedSeason } = await import("../lib/game/seasons.js");
+      const ended = await latestEndedSeason().catch(() => null);
+      if (ended) data.lastSeasonId = ended.code;
+    }
     const settings = await prisma.gameSettings.update({ where: { serverId }, data });
     await writeAudit({ actorId: req.user.id, action: "GAME_SETTINGS_UPDATED", targetId: serverId, metadata: { keys: Object.keys(data) } });
     // Ботът кешира настройките 60 s — кажи му да ги прочете наново.

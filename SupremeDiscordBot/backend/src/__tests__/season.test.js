@@ -120,3 +120,34 @@ describe("краят на сезона", () => {
     expect(mig).toContain('"game_seasons_code_key"');
   });
 });
+
+describe("затварянето е монотонно; приключил сезон не се пренаписва (червен екип 25.09.2026)", () => {
+  const S0 = { id: "x0", code: "S0", name: "S0", startsAt: new Date("2026-06-01T00:00:00Z"), endsAt: new Date("2026-07-01T00:00:00Z"), companionIds: [] };
+  it("сървър, затворил по-късен сезон, НЕ затваря по-ранен (удължен S2 → „последен приключил“ пак S0)", async () => {
+    prismaMock.gameSeason.findMany.mockResolvedValue([S0, S1]);
+    prismaMock.gameSettings.findMany.mockResolvedValueOnce([{ serverId: SID, announceChannelId: null, lastSeasonId: "S1" }]);
+    const out = await season.closeSeasonIfEnded(new Date("2026-10-01T00:00:00Z"), S0);
+    expect(out).toEqual({ closed: 0, ended: true, code: "S0" });
+    expect(prismaMock.gameSettings.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.memberProgress.updateMany).not.toHaveBeenCalled();
+  });
+  it("създаване на сезон, свършил в миналото → ENDED; смяна на датите на приключил → ENDED; край в миналото → ENDED", async () => {
+    const now = new Date("2026-10-01T00:00:00Z");
+    expect((await seasons.createSeason({ code: "S5", name: "retro", startsAt: "2026-07-02T00:00:00Z", endsAt: "2026-07-20T00:00:00Z" }, now)).code).toBe("ENDED");
+    prismaMock.gameSeason.findUnique.mockResolvedValueOnce(S0);
+    expect((await seasons.updateSeason("S0", { endsAt: "2026-11-01T00:00:00Z" }, now)).code).toBe("ENDED");
+    prismaMock.gameSeason.findUnique.mockResolvedValueOnce(S1);
+    expect((await seasons.updateSeason("S1", { endsAt: "2026-09-30T00:00:00Z" }, now)).code).toBe("ENDED");
+    prismaMock.gameSeason.findUnique.mockResolvedValueOnce(S0);
+    prismaMock.gameSeason.update.mockImplementationOnce(async ({ data }) => ({ ...S0, ...data }));
+    expect((await seasons.updateSeason("S0", { name: "Архив" }, now)).ok).toBe(true); // името на приключил — да
+  });
+  it("нов ред с настройки започва с последния приключил сезон (не го „затваря“ със закъснение)", async () => {
+    const { getGameSettings } = await import("../lib/game/xp.js");
+    prismaMock.gameSettings.findUnique.mockResolvedValueOnce(null);
+    prismaMock.gameSeason.findMany.mockResolvedValueOnce([{ ...S0 }]);
+    prismaMock.gameSettings.upsert.mockImplementationOnce(async ({ create }) => create);
+    const row = await getGameSettings(SID);
+    expect(row.lastSeasonId).toBe("S0");
+  });
+});

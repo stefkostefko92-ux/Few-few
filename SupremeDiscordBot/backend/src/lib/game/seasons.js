@@ -94,9 +94,12 @@ export function overlapping(rows, { startsAt, endsAt }, exceptCode = null) {
   return (rows || []).find((r) => r.code !== exceptCode && s < new Date(r.endsAt).getTime() && new Date(r.startsAt).getTime() < e) || null;
 }
 
-export async function createSeason({ code, name, startsAt, endsAt, companionIds = [] }) {
+export async function createSeason({ code, name, startsAt, endsAt, companionIds = [] }, now = new Date()) {
   const v = validateSeasonInput({ code, name, startsAt, endsAt, companionIds });
   if (!v.ok) return { ok: false, code: "INVALID", error: v.error };
+  // Сезон, който вече е свършил, би „затворил“ сървърите назад във времето
+  // (одит на Разбивача 25.09.2026: ретро сезон в паузата триеше XP-то).
+  if (new Date(endsAt) <= now) return { ok: false, code: "ENDED", error: "endsAt е в миналото — сезон може да се създаде само за бъдещ край" };
   const clash = overlapping(await listSeasons(), { startsAt, endsAt });
   if (clash) return { ok: false, code: "OVERLAP", error: `Застъпва се със сезон ${clash.code} (${new Date(clash.startsAt).toISOString().slice(0, 10)} → ${new Date(clash.endsAt).toISOString().slice(0, 10)})` };
   try {
@@ -109,12 +112,22 @@ export async function createSeason({ code, name, startsAt, endsAt, companionIds 
   }
 }
 
-export async function updateSeason(code, patch) {
+export async function updateSeason(code, patch, now = new Date()) {
   const existing = await prisma.gameSeason.findUnique({ where: { code } });
   if (!existing) return { ok: false, code: "NOT_FOUND", error: "Няма такъв сезон" };
+  // Приключил сезон вече е затворен по сървърите (класация обявена, XP нулирано).
+  // Удължаването му връщаше „последния приключил“ към предишния сезон и триеше
+  // XP-то наново (одит на Разбивача 25.09.2026) — за продължение се прави нов сезон.
+  const datesChange = patch.startsAt !== undefined || patch.endsAt !== undefined;
+  if (datesChange && new Date(existing.endsAt) <= now) {
+    return { ok: false, code: "ENDED", error: `Сезон ${code} е приключил — датите му не се сменят; създайте нов сезон` };
+  }
   const merged = { startsAt: patch.startsAt ?? existing.startsAt, endsAt: patch.endsAt ?? existing.endsAt, name: patch.name, companionIds: patch.companionIds };
   const v = validateSeasonInput(merged, { requireCode: false });
   if (!v.ok) return { ok: false, code: "INVALID", error: v.error };
+  if (patch.endsAt !== undefined && new Date(patch.endsAt) <= now) {
+    return { ok: false, code: "ENDED", error: "endsAt е в миналото — за край сега задайте момент след текущия" };
+  }
   const clash = overlapping(await listSeasons(), merged, code);
   if (clash) return { ok: false, code: "OVERLAP", error: `Застъпва се със сезон ${clash.code} (${new Date(clash.startsAt).toISOString().slice(0, 10)} → ${new Date(clash.endsAt).toISOString().slice(0, 10)})` };
   const data = {};

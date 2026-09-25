@@ -88,17 +88,55 @@ describe("XP от съобщения — охлаждане и партида, �
   });
 });
 
-describe("гласови минути", () => {
-  const guild = { id: "222222222222222222", afkChannelId: "999" };
-  const member = { id: "333333333333333333", user: { bot: false } };
-  it("влизане → излизане след 3 мин трупа 3 минути; AFK каналът не се брои", async () => {
+describe("гласови минути — само активно участие (одит на Разбивача 25.09.2026)", () => {
+  const G = "222222222222222222", U = "333333333333333333", V = "444444444444444444";
+  const voice = (over = {}) => ({ selfDeaf: false, serverDeaf: false, selfMute: false, serverMute: false, ...over });
+  const setup = ({ me = {}, other = {}, otherBot = false, alone = false, channelId = "100" } = {}) => {
+    const members = new Map([[U, { user: { bot: false }, voice: voice(me) }]]);
+    if (!alone) members.set(V, { user: { bot: otherBot }, voice: voice(other) });
+    const vs = { channelId, ...voice(me), channel: { members } };
+    const guild = { id: G, afkChannelId: "999", voiceStates: { cache: new Map([[U, vs]]) } };
+    return { client: { guilds: { cache: new Map([[G, guild]]) } }, guild };
+  };
+  const member = { id: U, user: { bot: false } };
+  const join = (guild, channelId = "100") => game.onVoiceForXp({ guild, member, channelId: null }, { guild, member, channelId });
+  const minutes = () => game.__test.pending.get(G)?.get(U)?.voiceMinutes || 0;
+
+  it("двама активни в канала → +1 минута на проба", async () => {
     apiGet.mockResolvedValue({ data: { enabled: true } });
-    await game.onVoiceForXp({ guild, member, channelId: null }, { guild, member, channelId: "100" });
-    game.__test.voiceJoined.set("222222222222222222:333333333333333333", Date.now() - 3 * 60_000 - 500);
-    await game.onVoiceForXp({ guild, member, channelId: "100" }, { guild, member, channelId: null });
-    expect(game.__test.pending.get("222222222222222222").get("333333333333333333").voiceMinutes).toBe(3);
-    await game.onVoiceForXp({ guild, member, channelId: null }, { guild, member, channelId: "999" });
+    const { client, guild } = setup();
+    await join(guild);
+    expect(await game.tickVoiceXp(client)).toBe(1);
+    await game.tickVoiceXp(client);
+    expect(minutes()).toBe(2);
+  });
+  it("заглушен микрофон, без звук, сам, само с бот или със заглушен човек → 0", async () => {
+    apiGet.mockResolvedValue({ data: { enabled: true } });
+    for (const opts of [{ me: { selfMute: true } }, { me: { selfDeaf: true } }, { me: { serverMute: true } }, { alone: true }, { otherBot: true }, { other: { selfDeaf: true } }]) {
+      game.__test.voiceJoined.clear(); game.__test.pending.clear();
+      const { client, guild } = setup(opts);
+      await join(guild);
+      expect(await game.tickVoiceXp(client), JSON.stringify(opts)).toBe(0);
+      expect(minutes()).toBe(0);
+    }
+  });
+  it("събитие от white-label клиент → пробата гледа НЕГОВИЯ кеш, не главния", async () => {
+    apiGet.mockResolvedValue({ data: { enabled: true } });
+    const { client: brand, guild } = setup();
+    await game.onVoiceForXp({ guild, member, channelId: null, client: brand }, { guild, member, channelId: "100", client: brand });
+    const main = { guilds: { cache: new Map() } };
+    expect(await game.tickVoiceXp(main)).toBe(1);
+  });
+  it("AFK каналът и излизането спират броенето; изключена игра → 0", async () => {
+    const { client, guild } = setup();
+    await join(guild, "999");
     expect(game.__test.voiceJoined.size).toBe(0);
+    await join(guild);
+    await game.onVoiceForXp({ guild, member, channelId: "100" }, { guild, member, channelId: null });
+    expect(game.__test.voiceJoined.size).toBe(0);
+    await join(guild);
+    apiGet.mockResolvedValue({ data: { enabled: false } });
+    expect(await game.tickVoiceXp(client)).toBe(0);
   });
 });
 

@@ -88,7 +88,11 @@ export function computeDaily(prev, baseSparks, now = new Date()) {
 export async function getGameSettings(serverId) {
   const existing = await prisma.gameSettings.findUnique({ where: { serverId } });
   if (existing) return existing;
-  return prisma.gameSettings.upsert({ where: { serverId }, update: {}, create: { serverId } });
+  // Сървър, който идва СЛЕД края на сезон, не го „затваря“ (фалшива обява за
+  // сезон, в който не е играл, и нулиране на XP-то от новия — одит на Кодаджията 25.09.2026).
+  const { latestEndedSeason } = await import("./seasons.js");
+  const ended = await latestEndedSeason().catch(() => null);
+  return prisma.gameSettings.upsert({ where: { serverId }, update: {}, create: { serverId, lastSeasonId: ended?.code ?? null } });
 }
 
 /**
