@@ -1,0 +1,291 @@
+Supreme AdBlock — third-party filter lists
+
+The extension's code is MIT (see LICENSE). Its rules are derived from the lists
+below, each under its own licence. What we changed: the rules were converted to
+Chrome's declarativeNetRequest format and to CSS; duplicates, rules the browser
+cannot express, rules our safety policy refuses (for example ones touching sign-in
+or payment fields) and rules over a per-list size cap were left out. Nothing was
+added to a list's own rules. The unmodified source of each list is at the URL
+given below as of the date shown (the SHA-256 identifies the exact text); on
+request we send a copy: info@carbonstealth.eu. The conversion tools are public:
+https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock/tools
+
+EasyList
+  Licence: GPL-3.0 or CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: The EasyList authors — https://easylist.to/
+  Source: https://easylist.to/easylist/easylist.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 6afc9dd6a7f31c5b8c4dee948447e187c6274a01cc3e1927edf72d85e4f0f860
+
+EasyPrivacy
+  Licence: GPL-3.0 or CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: The EasyList authors — https://easylist.to/
+  Source: https://easylist.to/easylist/easyprivacy.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): f3ca9a3f8f8f66132fad4934c2950dcea29db214e3055c696b9b28f18ec7c9e1
+
+URLhaus (abuse.ch)
+  Licence: CC0 1.0 — full text: licenses/CC0-1.0.txt
+  Authors / homepage: https://urlhaus.abuse.ch/
+  Source: https://urlhaus.abuse.ch/downloads/hostfile/
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 3358cf3641978e5c27319cbd9d2f6e9ca470a0158a5990ccec4fd9718ee4b66f
+
+uBlock Origin filters
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/uBlockOrigin/uAssets
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 94cb0f51c69b379c04406a1b83820757775653a60b5e3aecaf4d8ba1f3dd0ac6
+
+Peter Lowe's ad and tracking server list
+  Licence: © Peter Lowe (redistribution permitted)
+  Authors / homepage: https://pgl.yoyo.org/adservers/
+  Source: https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): f0d77eb627ea65e7cac41e8f829270db6266dabaf86936f798bab42594703c22
+
+Social media buttons and widgets
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/gh-pages/thirdparties/easylist-social.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 1f615e65a7fc9c4670ade5f4df20fa0850864578d2aabcbf2b4a3637244709f7
+
+Chat and support widgets
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/gh-pages/thirdparties/easylist-chat.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 5e4c3d1c97b2ed87f377b729ce5ca32a84a6aa35e83cb5bda28e67cf8cd7551f
+
+Newsletter and sign-up pop-ups
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/gh-pages/thirdparties/easylist-newsletters.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 0360e8525912d241ee7955d037f287f9620ed300c81281b716b69e547493ae6e
+
+Notification permission prompts
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/gh-pages/thirdparties/easylist-notifications.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): a20180343408e6456eb1e63296f8996a7260823e0bad26fa2c4a02d9c5da414a
+
+AI assistant pop-ups and suggestions
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/gh-pages/thirdparties/easylist-ai.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 179ce876877e9bc29b29cb64531a933103a7a9d05baeadb0c466de3a581ad97d
+
+Other annoyances (sticky bars, app banners)
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://raw.githubusercontent.com/uBlockOrigin/uAssets/gh-pages/thirdparties/easylist-annoyances.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 7761e57ab06a1ad6a99879de26be3bda2ee716814af582c8ec08f263302d0b47
+
+Albanian
+  Licence: Unlicense — full text: licenses/Unlicense.txt
+  Authors / homepage: https://github.com/AnXh3L0/blocklist
+  Source: https://raw.githubusercontent.com/AnXh3L0/blocklist/master/albanian-easylist-addition/Albania.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 9424cee466e41d66bacb5e3e1269e27b63a83100ad30f931d1a7b95052945c82
+
+Liste AR (Arabic)
+  Licence: CC BY-SA 3.0 — full text: licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://forums.lanik.us/viewforum.php?f=98
+  Source: https://easylist-downloads.adblockplus.org/Liste_AR.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): ed256bb028551d62cb0baae2da5e72166d864715f882dccc36566d3fe277264b
+
+AdGuard Chinese
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/224.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): a51dd3f060962e7f7fe7a286ccfe76cd56249e79ed48856d111f0c1db06bef49
+
+EasyList Czech and Slovak
+  Licence: CC BY-SA 4.0 — full text: licenses/CC-BY-SA-4.0.txt
+  Authors / homepage: https://github.com/tomasko126/easylistczechandslovak
+  Source: https://raw.githubusercontent.com/tomasko126/easylistczechandslovak/master/filters.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 84fe1c3069e01e6449e81c28d5d95d9dcb81c1e6794f2ba86b639c96e94f185a
+
+EasyList Germany
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://easylist.to/easylistgermany/easylistgermany.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 6cde93e9c2d9dcbf21480628a50fbdecb348a9905d1ac742eccca67eb28a49c9
+
+Estonian
+  Licence: CC0 1.0 — full text: licenses/CC0-1.0.txt
+  Authors / homepage: https://ubo-et.lepik.io/
+  Source: https://ubo-et.lepik.io/list.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 3c66cad9e9cec0f998f04b602bbbcb79c3ecf5370fe656af08d67267e6ae9657
+
+Finnish
+  Licence: Unlicense — full text: licenses/Unlicense.txt
+  Authors / homepage: https://github.com/finnish-easylist-addition/finnish-easylist-addition
+  Source: https://raw.githubusercontent.com/finnish-easylist-addition/finnish-easylist-addition/gh-pages/Finland_adb.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 77363f41d58cdb82940d2ea15702f700113f1554485c94c1856380255442ca9f
+
+AdGuard French
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/16.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 4393593073ab2906632280c7ef263320c48765b68eb8ffcce28e80148f023836
+
+Greek AdBlock
+  Licence: CC BY-SA 4.0 — full text: licenses/CC-BY-SA-4.0.txt
+  Authors / homepage: https://github.com/kargig/greek-adblockplus-filter
+  Source: https://www.void.gr/kargig/void-gr-filters.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 9d21b95472f67c0bcc03da65f5691d55706c87cff887a21767c056ccd16ef9ac
+
+hufilter (Hungarian)
+  Licence: CC BY 4.0 — full text: licenses/CC-BY-4.0.txt
+  Authors / homepage: https://github.com/hufilter/hufilter
+  Source: https://cdn.jsdelivr.net/gh/hufilter/hufilter@gh-pages/hufilter-ublock.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 773b8de9331f8a65b162dc573c422e529d46576ce178acd9b3b385b877037414
+
+ABPindo (Indonesian)
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://github.com/ABPindo/indonesianadblockrules
+  Source: https://raw.githubusercontent.com/ABPindo/indonesianadblockrules/master/subscriptions/abpindo.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 3335e4394a1b01f5068e869abeff0182e87002e01a63238d35a20885118443e0
+
+IndianList
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://github.com/mediumkreation/IndianList
+  Source: https://easylist-downloads.adblockplus.org/indianlist.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 9c77b8e649e86d68aa76f6d2b6700a41c70a1b58fe8a9ad73c61621089200fc8
+
+PersianBlocker
+  Licence: AGPL-3.0 — full text: licenses/AGPL-3.0-only.txt
+  Authors / homepage: https://codeberg.org/KhodeKiaa/PersianBlocker
+  Source: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlocker.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 1c41df19b83ebb0df81b47937fd6c4087383632471ba44be9cf2cf8ec5fed7c4
+
+Icelandic (Brave)
+  Licence: MPL-2.0 — full text: licenses/MPL-2.0.txt
+  Authors / homepage: https://github.com/brave/adblock-lists
+  Source: https://raw.githubusercontent.com/brave/adblock-lists/master/custom/is.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 7da1c4ab5bd42eedd6268948e81007bafb6d9f94816e8c5811180b816ea78409
+
+EasyList Hebrew
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://github.com/easylist/EasyListHebrew
+  Source: https://raw.githubusercontent.com/easylist/EasyListHebrew/master/EasyListHebrew.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): e4f271c732587f09f7f739aaa8a48067a560fe36dfcd4096daa2ca3ebc1f4e45
+
+EasyList Italy
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://easylist-downloads.adblockplus.org/easylistitaly.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 447eff3a78f16e2ace148bea662034cc5969f37466b0c8423f366c38af8ae959
+
+AdGuard Japanese
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/7.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 19b5450e9457b23f5d726a43ab93b41dc2eede4627183c382015130dd752ab2a
+
+List-KR (Korean)
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/FilteringDev/filterslists-KO
+  Source: https://cdn.jsdelivr.net/npm/@filteringdev/filterslists-ko@latest/dist/filterslist-uBlockOrigin-classic.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 7f98a08e9905bf3babf2822c36c9f4bafb05f1f168b4010c5171820c2139d74f
+
+EasyList Lithuania
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/EasyList-Lithuania/easylist_lithuania
+  Source: https://raw.githubusercontent.com/EasyList-Lithuania/easylist_lithuania/master/easylistlithuania.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 3dd3a33621504aa2ed4d64c48e4b060e343f8501b66792fd1d8ef02667434ecf
+
+Latvian List
+  Licence: CC BY-SA 4.0 — full text: licenses/CC-BY-SA-4.0.txt
+  Authors / homepage: https://github.com/Latvian-List/adblock-latvian
+  Source: https://raw.githubusercontent.com/Latvian-List/adblock-latvian/master/lists/latvian-list.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 976330ff32923dd0e23f48c07a878f946e6faa5be52c07922be5ca8c87a56021
+
+Macedonian
+  Licence: MIT — full text: licenses/MIT-Macedonian-adBlock-Filters.txt
+  Authors / homepage: https://github.com/DeepSpaceHarbor/Macedonian-adBlock-Filters
+  Source: https://raw.githubusercontent.com/DeepSpaceHarbor/Macedonian-adBlock-Filters/master/Filters
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 263d5a03b254fb04d7f395c0480f1a6c54e794804575d68b4be970f357a135dc
+
+AdGuard Dutch
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/8.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 29419d092706aba98041cdb29a5ab7d21e04b480a6103527503f80db7be7b32d
+
+ROad-Block (Romanian)
+  Licence: MIT — full text: licenses/MIT-ROad-Block.txt
+  Authors / homepage: https://github.com/tcptomato/ROad-Block
+  Source: https://raw.githubusercontent.com/tcptomato/ROad-Block/master/road-block-filters-light.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 529d952b1a260313531320c67759cc941ecc417185a94edb6a1245cd0e128760
+
+AdGuard Russian
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/1.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): da6d016d0a02ce8b26d892832a39d8ca81f190cda7b530155d3b79e746b6de36
+
+EasyList Spanish + AdGuard Spanish/Portuguese
+  Licence: GPL-3.0 / CC BY-SA 3.0 — full text: licenses/GPL-3.0-only.txt, licenses/CC-BY-SA-3.0.txt
+  Authors / homepage: https://easylist.to/
+  Source: https://easylist-downloads.adblockplus.org/easylistspanish.txt
+  Source: https://filters.adtidy.org/extension/ublock/filters/9.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 9cbf38fc66b8e7bfe14e70e2b786e5768799670f565dffb6fea638a8603da8b3
+
+Slovenian List
+  Licence: Unlicense — full text: licenses/Unlicense.txt
+  Authors / homepage: https://github.com/betterwebleon/slovenian-list
+  Source: https://raw.githubusercontent.com/betterwebleon/slovenian-list/master/filters.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 371924043ec588e9aff7a66c68e30a7088897208bc390295afb2c61a45e8de95
+
+Frellwit's Swedish list
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/lassekongo83/Frellwits-filter-lists
+  Source: https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Filter.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): d40596644da4d3cd73700155a8261e92d6c2435d95ac2fdda5bbdd9558dca881
+
+EasyList Thailand
+  Licence: Apache-2.0 — full text: licenses/Apache-2.0.txt
+  Authors / homepage: https://github.com/easylist-thailand/easylist-thailand
+  Source: https://raw.githubusercontent.com/easylist-thailand/easylist-thailand/master/subscription/easylist-thailand.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): d206667075d76dd44ccca2e2a5b5e3d91939246b98341f72cde2d3bbba9ac517
+
+AdGuard Turkish
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/13.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 2bf98d659fa1aa2279e6f8a8ce2723beddc676c38df063a70bbfc57c02a941ca
+
+AdGuard Ukrainian
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/AdguardTeam/AdguardFilters
+  Source: https://filters.adtidy.org/extension/ublock/filters/23.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 3d7034dee9fb13f178b680dfc31b80a4d83b6c6a423a0d8b357bf7c87c81701a
+
+ABPVN (Vietnamese)
+  Licence: GPL-3.0 — full text: licenses/GPL-3.0-only.txt
+  Authors / homepage: https://github.com/abpvn/abpvn
+  Source: https://raw.githubusercontent.com/abpvn/abpvn/master/filter/abpvn_ublock.txt
+  Retrieved 2026-09-25 · SHA-256 of the text as downloaded (with its !#include files): 5721b522b20b781d96245af14d92fe7fe35872701d9d251015b7c0b650cb32b9
+
+Not bundled — your browser downloads these from their authors only when you turn
+them on, and converts them on your device:
+
+Bulgarian Adblock list
+  Licence: no licence stated
+  Authors / homepage: https://stanev.org/abp/
+  Source: https://stanev.org/abp/adblock_bg.txt
+
+Polish Filters (Oficjalne Polskie Filtry)
+  Licence: CC BY-NC-SA 4.0
+  Authors / homepage: https://github.com/MajkiIT/polish-ads-filter
+  Source: https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/adblock.txt
+
+Dandelion Sprout's Nordic filters
+  Licence: Dandelicence
+  Authors / homepage: https://github.com/DandelionSprout/adfilt
+  Source: https://raw.githubusercontent.com/DandelionSprout/adfilt/master/NorwegianList.txt
+
+Dandelion Sprout's Serbo-Croatian filters
+  Licence: Dandelicence
+  Authors / homepage: https://github.com/DandelionSprout/adfilt
+  Source: https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SerboCroatianList.txt

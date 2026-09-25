@@ -42,7 +42,9 @@ export function buildPassJson(profile, base) {
     organizationName: 'Vizitka',
     serialNumber: String(profile.id), // стабилен — не се чупи при смяна на слъг
     description: `Визитка на ${profile.display_name}`,
-    logoText: profile.company || 'Vizitka',
+    // Мястото до логото е на издателя (нашата марка), не на потребителя — фирмата му
+    // вече е в secondaryFields.
+    logoText: 'Vizitka',
     foregroundColor: 'rgb(255, 255, 255)',
     labelColor: 'rgba(255, 255, 255, 0.75)',
     backgroundColor: rgbCss(bg),

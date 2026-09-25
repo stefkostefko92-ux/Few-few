@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "табела за врата",
     "пази се от кучето табелка",
     "надпис за печат",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/tabelki" },
   ...pageMeta(TITLE, DESC, "/tabelki"),

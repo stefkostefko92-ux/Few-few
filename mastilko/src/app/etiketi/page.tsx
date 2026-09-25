@@ -49,6 +49,7 @@ export const metadata: Metadata = {
     "етикети за подправки",
     "принтиране на етикети",
     "QR етикети",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/etiketi" },
   ...pageMeta(TITLE, DESC, "/etiketi"),

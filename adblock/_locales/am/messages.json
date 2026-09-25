@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "ማስታወቂያዎችን በሁሉም ቦታ ያግዳል፦ የYouTube ቪዲዮ ማስታወቂያዎች፣ ሰንደቆች፣ ብቅ-ባዮች፣ መከታተያዎች እና የፀረ-ማስታወቂያ-አጋጅ ግድግዳዎች። ነፃ እና ፈጣን።"
+  },
+  "byCarbon": {
+    "message": "በCarbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "ጥበቃን ያብሩ/ያጥፉ"
+  },
+  "protected": {
+    "message": "የተጠበቀ"
+  },
+  "paused": {
+    "message": "ቆሟል"
+  },
+  "blockingHere": {
+    "message": "በዚህ ገጽ ላይ ማስታወቂያዎችን እያገደ ነው"
+  },
+  "protectionOff": {
+    "message": "ጥበቃ ጠፍቷል"
+  },
+  "pause30": {
+    "message": "ለ30 ደቂቃ ያቁሙ"
+  },
+  "pausedResume": {
+    "message": "ቆሟል፣ አሁን ይቀጥሉ ($1 ደቂቃ ቀርቷል)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "የታገዱ"
+  },
+  "dataSaved": {
+    "message": "የተቆጠበ ውሂብ"
+  },
+  "timeSaved": {
+    "message": "የተቆጠበ ጊዜ"
+  },
+  "thisSite": {
+    "message": "ይህ ጣቢያ"
+  },
+  "thisPage": {
+    "message": "ይህ ገጽ"
+  },
+  "blockOnSite": {
+    "message": "በዚህ ጣቢያ ላይ ማስታወቂያዎችን ያግዱ"
+  },
+  "blocking": {
+    "message": "በማገድ ላይ"
+  },
+  "allowed": {
+    "message": "ተፈቅዷል"
+  },
+  "cosmetics": {
+    "message": "እዚህ የማስታወቂያ ሳጥኖችን ይደብቁ"
+  },
+  "cosmeticsTitle": {
+    "message": "በዚህ ጣቢያ ላይ የማስታወቂያ ሳጥኖችን ይደብቁ (የገጹ አቀማመጥ ከተበላሸ ያጥፉት)"
+  },
+  "on": {
+    "message": "በርቷል"
+  },
+  "off": {
+    "message": "ጠፍቷል"
+  },
+  "blockedHere": {
+    "message": "በዚህ ገጽ ላይ የታገዱ"
+  },
+  "logEmpty": {
+    "message": "እዚህ እስካሁን ምንም አልታገደም።"
+  },
+  "logUnavailable": {
+    "message": "ምዝግብ ማስታወሻው አሁን አይገኝም (የአሳሽ ኮታ) — ከአንድ ደቂቃ በኋላ እንደገና ይሞክሩ።"
+  },
+  "logCore": {
+    "message": "የSupreme ዋና ደንቦች"
+  },
+  "logYouTube": {
+    "message": "የYouTube ማስታወቂያ ደንቦች"
+  },
+  "logParams": {
+    "message": "የመከታተያ ግቤቶች"
+  },
+  "logMalware": {
+    "message": "የተንኮል-አዘል ጎራዎች"
+  },
+  "logSurrogates": {
+    "message": "የተሰናከሉ የማስታወቂያ ስክሪፕቶች"
+  },
+  "logPrivacy": {
+    "message": "የግላዊነት ጥበቃ"
+  },
+  "logUser": {
+    "message": "የእኔ ማጣሪያዎች"
+  },
+  "logLive": {
+    "message": "ቀጥታ ዝማኔዎች"
+  },
+  "hideElement": {
+    "message": "አባል ይደብቁ"
+  },
+  "settings": {
+    "message": "ቅንብሮች"
+  },
+  "promoSub": {
+    "message": "መሣሪያዎች እና መገልገያዎች፣ carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "ማስታወቂያ"
+  },
+  "support": {
+    "message": "ይደግፉ"
+  },
+  "filtersCount": {
+    "message": "$1+ ማጣሪያዎች",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "መልክ"
+  },
+  "opt_extra_protection": {
+    "message": "ተጨማሪ ጥበቃ"
+  },
+  "opt_smart_detection_log": {
+    "message": "የSmart Detection ምዝግብ"
+  },
+  "opt_allowlisted_sites": {
+    "message": "የተፈቀዱ ጣቢያዎች"
+  },
+  "opt_my_filters": {
+    "message": "የእኔ ማጣሪያዎች"
+  },
+  "opt_hidden_elements": {
+    "message": "የተደበቁ አባሎች"
+  },
+  "opt_filter_updates": {
+    "message": "የማጣሪያ ዝማኔዎች"
+  },
+  "opt_engine_health": {
+    "message": "የሞተሩ ጤንነት"
+  },
+  "opt_backup": {
+    "message": "ምትኬ"
+  },
+  "opt_support_development": {
+    "message": "ልማቱን ይደግፉ"
+  },
+  "opt_theme": {
+    "message": "ገጽታ"
+  },
+  "opt_sync_across_devices": {
+    "message": "በመሣሪያዎች መካከል ማስመር"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "የYouTube ማስታወቂያ ማገድ"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "የኩኪ / የፈቃድ ሰንደቆች"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "የፀረ-ማስታወቂያ-አጋጅ ግድግዳዎችን ማለፍ"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "የMeta ስፖንሰር የተደረጉ ልጥፎች"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "የመከታተያ ግቤቶችን ማስወገድ"
+  },
+  "opt_malware_protection": {
+    "message": "ከተንኮል-አዘል ሶፍትዌር ጥበቃ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "ለማስታወቂያ ማነጣጠሪያ የሚውሉ የአሳሽ APIዎችን ማገድ"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "የመከታተያ ምልክቶችን እና የክሪፕቶ ማዕድን አውጪዎችን ማገድ"
+  },
+  "opt_auto_update_filters": {
+    "message": "ማጣሪያዎችን በራስ-ሰር ማዘመን"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (ጨለማ) ወይም ብርሃን"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "በገቡበት እያንዳንዱ Chrome ላይ ቅንብሮችን፣ የተፈቀዱ ዝርዝርን እና ማጣሪያዎችን ያስምሩ"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "በYouTube ላይ የቪዲዮ ማስታወቂያዎችን ያስወግዳል። ቪዲዮዎች ካልተጫወቱ ያጥፉት።"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "የ«ኩኪዎችን ተቀበል» ጥያቄዎችን በራስ-ሰር ይዘጋል"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "የ«ማስታወቂያ አጋጅዎን ያሰናክሉ» ግድግዳዎችን ይደብቃል እና ገጹን ይመልሳል"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "በFacebook እና Instagram ላይ «ስፖንሰር የተደረገ» ልጥፎችን ይደብቃል"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "utm_*፣ fbclid፣ gclid እና ሌሎች የጠቅታ መለያዎችን ከሚከፍቷቸው አገናኞች ያስወግዳል"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "የታወቁ ተንኮል-አዘል ጎራዎችን ያግዳል (የabuse.ch URLhaus ዝርዝር)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "በሁሉም ጣቢያ ላይ የGoogle Topics፣ FLoC እና Protected Audience ማስታወቂያ APIዎችን ያሰናክላል"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "የሶስተኛ ወገን የአገናኝ ኦዲት / beacon ፒንጎችን ያቆማል፣ ከታወቁ የማስታወቂያ ቴክኖሎጂ ምላሾች የመከታተያ ኩኪዎችን ያስወግዳል፣ እና በአሳሹ ውስጥ የክሪፕቶ ማዕድን ስክሪፕቶችን ያግዳል። በትንታኔ ላይ የሚመሠረት የአንድ ጣቢያ ባህሪ በትክክል ካልሠራ ያጥፉት።"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "አዳዲስ የማገጃ ደንቦችን እና የYouTube ማስተካከያዎችን ከadblock.carbonstealth.eu በቀን ሁለት ጊዜ ገደማ ያመጣል። ውሂብ ብቻ፣ ኮድ የለም፤ ጥያቄው ምንም መለያ ወይም የአሰሳ ውሂብ አይይዝም።"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "በግምታዊ ዘዴ (ያለ ማጣሪያ ዝርዝር) የተያዙ ማስታወቂያዎች ቀጥታ ምዝግብ፣ አዲሱ መጀመሪያ።"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "የተመዘገቡባቸው ዝርዝሮች እንደ ጽሑፍ ይመጣሉ (በፍጹም እንደ ኮድ አይደለም)፣ በየቀኑ ይዘመናሉ፣ እና ከላይ ባሉት የሚተዳደሩ ክፍሎች ውስጥ ይቀመጣሉ። የአንድን ዝርዝር ደንቦች ለመሰረዝ ዝርዝሩን ያስወግዱ።"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "በመምረጫ መሣሪያው በእጅ የደበቋቸው አባሎች፣ በጣቢያ ተመድበው።"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "ቀጥታ ምርመራ — ሁሉም ነገር በአካባቢው ይሰላል። የሆነ ነገር ቀይ ከሆነ፣ «አሁን ያዘምኑ» ወይም ቅጥያውን እንደገና መጫን ብዙውን ጊዜ ያስተካክለዋል።"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ለሁሉም ነፃ ነው። እንክብካቤው እንዲቀጥል ማገዝ ከፈለጉ፣ ልገሳዎች በደስታ ይቀበላሉ፤ ግን በፍጹም ግዴታ አይደሉም።"
+  },
+  "opt_reset_statistics": {
+    "message": "ስታቲስቲክስን ዳግም ያስጀምሩ"
+  },
+  "opt_add": {
+    "message": "ያክሉ"
+  },
+  "opt_save_filters": {
+    "message": "ማጣሪያዎችን ያስቀምጡ"
+  },
+  "opt_subscribe": {
+    "message": "ይመዝገቡ"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "ምዝገባዎችን አሁን ያድሱ"
+  },
+  "opt_update_now": {
+    "message": "አሁን ያዘምኑ"
+  },
+  "opt_refresh": {
+    "message": "ያድሱ"
+  },
+  "opt_export_settings": {
+    "message": "ቅንብሮችን ወደ ውጭ ይላኩ"
+  },
+  "opt_import_settings": {
+    "message": "ቅንብሮችን ያስመጡ"
+  },
+  "opt_e_g_example_com": {
+    "message": "ለምሳሌ example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! ምሳሌ\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ለማጣሪያ ዝርዝር URL ይመዝገቡ (ለምሳሌ https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "የSupreme AdBlock ቅንብሮች"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · ቅንብሮች"
+  },
+  "opt_theme_light": {
+    "message": "ብርሃን"
+  },
+  "opt_badge_unique": {
+    "message": "ልዩ"
+  },
+  "opt_smart_desc": {
+    "message": "ማንኛውም የማጣሪያ ዝርዝር እስካሁን የማያውቃቸውን ማስታወቂያዎች ይይዛል፦ የመደበኛ የማስታወቂያ ቦታ መጠን ያላቸው ከሌላ ጎራ የመጡ ፍሬሞች ወዲያውኑ ይደበቃሉ፣ ደንብ አያስፈልግም።"
+  },
+  "opt_caught_so_far": {
+    "message": "እስካሁን ተይዘዋል።"
+  },
+  "opt_allow_desc": {
+    "message": "በእነዚህ ጎራዎች ላይ ማስታወቂያዎች አይታገዱም።"
+  },
+  "opt_fh_one": {
+    "message": "በአንድ መስመር አንድ ደንብ።"
+  },
+  "opt_fh_blocks": {
+    "message": "ጎራን ያግዳል፤"
+  },
+  "opt_fh_everywhere": {
+    "message": "አባልን በሁሉም ቦታ ይደብቃል፤"
+  },
+  "opt_fh_site": {
+    "message": "በዚያ ጣቢያ ላይ ብቻ ይደብቀዋል።"
+  },
+  "opt_fh_comments": {
+    "message": "መጀመሪያቸው ላይ"
+  },
+  "opt_fh_comments2": {
+    "message": "ያላቸው መስመሮች አስተያየቶች ናቸው።"
+  },
+  "opt_donate": {
+    "message": "በRevolut ይለግሱ"
+  },
+  "opt_made_by": {
+    "message": "በCarbon Stealth የተሠራ"
+  },
+  "opt_empty_smart": {
+    "message": "እስካሁን በግምታዊ ዘዴ ምንም አልተያዘም።"
+  },
+  "opt_empty_allow": {
+    "message": "እስካሁን የተፈቀዱ ጣቢያዎች የሉም።"
+  },
+  "opt_empty_hidden": {
+    "message": "እስካሁን በእጅ የተደበቀ ነገር የለም።"
+  },
+  "opt_empty_subs": {
+    "message": "እስካሁን የተመዘገቡባቸው ዝርዝሮች የሉም።"
+  },
+  "opt_no_sw": {
+    "message": "ከservice worker ምንም ምላሽ የለም።"
+  },
+  "opt_remove": {
+    "message": "ያስወግዱ"
+  },
+  "opt_filter_status": {
+    "message": "የማጣሪያ ስብስብ v$1፣ የተዘመነው $2። ውሂብ ብቻ፣ ስለእርስዎ ምንም አይላክም።"
+  },
+  "opt_updating": {
+    "message": "በማዘመን ላይ…"
+  },
+  "opt_updated": {
+    "message": "ተዘምኗል (v$1፣ $2 ተጨማሪ ደንቦች)"
+  },
+  "opt_update_failed": {
+    "message": "ማዘመን አልተሳካም ($1)"
+  },
+  "opt_saved": {
+    "message": "ተቀምጧል ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 ደንቦች"
+  },
+  "opt_updated_ago": {
+    "message": "የተዘመነው $1"
+  },
+  "opt_not_fetched": {
+    "message": "ገና አልመጣም"
+  },
+  "opt_failed_colon": {
+    "message": "አልተሳካም፦ $1"
+  },
+  "opt_enter_https": {
+    "message": "የሚሰራ https:// URL ያስገቡ"
+  },
+  "opt_fetching": {
+    "message": "በማምጣት ላይ…"
+  },
+  "opt_subscribed_ok": {
+    "message": "ተመዝግቧል፦ $1 ደንቦች ✓"
+  },
+  "opt_failed_paren": {
+    "message": "አልተሳካም ($1)"
+  },
+  "opt_refreshing": {
+    "message": "በማደስ ላይ…"
+  },
+  "opt_refreshed": {
+    "message": "ታድሷል ✓"
+  },
+  "opt_invalid_file": {
+    "message": "ልክ ያልሆነ የቅንብሮች ፋይል።"
+  },
+  "opt_no_response": {
+    "message": "ምላሽ የለም"
+  },
+  "opt_h_engine": {
+    "message": "የፀረ-ማስታወቂያ-አጋጅ ማለፊያ ሞተር"
+  },
+  "opt_h_rulesets": {
+    "message": "የበሩ ቋሚ የደንብ ስብስቦች"
+  },
+  "opt_h_live": {
+    "message": "የቀጥታ ማጣሪያ ጎራዎች"
+  },
+  "opt_h_last": {
+    "message": "የመጨረሻ ዝማኔ"
+  },
+  "opt_h_sig": {
+    "message": "የዝማኔ ፊርማዎች"
+  },
+  "opt_h_user": {
+    "message": "የእኔ ማጣሪያዎች / የተፈቀዱ ዝርዝር ደንቦች"
+  },
+  "opt_h_popup": {
+    "message": "አብሮ የተካተቱ የብቅ-ባይ ማስታወቂያ አስተናጋጆች"
+  },
+  "opt_h_yt": {
+    "message": "የYouTube ማለፊያ"
+  },
+  "opt_reason_frame": {
+    "message": "የማስታወቂያ መጠን ያለው ከሌላ ጎራ የመጣ ፍሬም"
+  },
+  "opt_reason_sticky": {
+    "message": "ተጣባቂ የማስታወቂያ ሰንደቅ"
+  },
+  "logRegional": {
+    "message": "ክልላዊ ዝርዝሮች"
+  },
+  "logFocus": {
+    "message": "የትኩረት ሁነታ"
+  },
+  "opt_filter_lists": {
+    "message": "የማጣሪያ ዝርዝሮች"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList እና EasyPrivacy ሁልጊዜ በርተዋል። ከታች ያሉት ዝርዝሮች ክፍት ፈቃድ ያላቸው እና በቅጥያው ውስጥ የተካተቱ ናቸው፤ ስለዚህ አንዱን ማብራት ምንም አያወርድም፣ ከደራሲው እንደሚመጣ ምልክት ከተደረገበት ዝርዝር በስተቀር።"
+  },
+  "opt_lists_core": {
+    "message": "ዋና"
+  },
+  "opt_lists_regional": {
+    "message": "ክልላዊ"
+  },
+  "opt_lists_regional_desc": {
+    "message": "የአሳሽዎ ቋንቋ ዝርዝር በራሱ ይበራል። በሌሎች ቋንቋዎች ያሉ ጣቢያዎችን ብዙ ጊዜ የሚያነቡ ከሆነ ሌሎችን ያክሉ።"
+  },
+  "opt_focus_mode": {
+    "message": "የትኩረት ሁነታ"
+  },
+  "opt_focus_desc": {
+    "message": "ማስታወቂያ ያልሆኑ ግን አሁንም የሚረብሹ ነገሮችን ይደብቃል። እዚህ ያለው ሁሉ እርስዎ እስኪያበሩት ድረስ ጠፍቷል።"
+  },
+  "opt_list_ubo": {
+    "message": "የuBlock Origin ማጣሪያዎች"
+  },
+  "opt_list_ubo_desc": {
+    "message": "ከuBlock Origin ቡድን የመጡ ማስታወቂያዎች፣ መከታተያዎች፣ የፀረ-ማስታወቂያ-አጋጅ ማስተካከያዎች እና የጣቢያ ጥገናዎች።"
+  },
+  "opt_list_plowe": {
+    "message": "የPeter Lowe ዝርዝር"
+  },
+  "opt_list_plowe_desc": {
+    "message": "የማስታወቂያ እና የመከታተያ አገልጋዮች የረጅም ጊዜ ዝርዝር።"
+  },
+  "opt_focus_social": {
+    "message": "የማኅበራዊ ሚዲያ አዝራሮች እና ዊጀቶች"
+  },
+  "opt_focus_social_desc": {
+    "message": "የማጋሪያ አዝራሮች፣ የመውደድ ሳጥኖች እና የተካተቱ ምግቦች።"
+  },
+  "opt_focus_chat": {
+    "message": "የውይይት እና የድጋፍ ዊጀቶች"
+  },
+  "opt_focus_chat_desc": {
+    "message": "በገጹ ጥግ ላይ የሚንሳፈፉ የውይይት አረፋዎች።"
+  },
+  "opt_focus_newsletters": {
+    "message": "የጋዜጣ እና የምዝገባ ብቅ-ባዮች"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«ለጋዜጣችን ይመዝገቡ» ሳጥኖች እና ተደራቢዎች።"
+  },
+  "opt_focus_notifications": {
+    "message": "የማሳወቂያ ጥያቄዎች"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "አሳሹ ከመጠየቁ በፊት ጣቢያዎች የሚያሳዩት «ማሳወቂያዎችን ይፈቅዳሉ?» ሳጥኖች።"
+  },
+  "opt_focus_ai": {
+    "message": "የAI ረዳት ብቅ-ባዮች"
+  },
+  "opt_focus_ai_desc": {
+    "message": "በገጾች ላይ የሚታከሉ የቻትቦት አረፋዎች እና የAI ጥቆማ ፓነሎች።"
+  },
+  "opt_focus_other": {
+    "message": "ሌሎች የሚረብሹ ነገሮች"
+  },
+  "opt_focus_other_desc": {
+    "message": "ተጣባቂ አሞሌዎች፣ «በመተግበሪያ ውስጥ ክፈት» ሰንደቆች እና ተመሳሳይ ግርግሮች።"
+  },
+  "opt_badge_lang": {
+    "message": "የእርስዎ ቋንቋ"
+  },
+  "opt_badge_remote": {
+    "message": "ከደራሲው"
+  },
+  "opt_remote_hint": {
+    "message": "አልተካተተም (እንደገና ለማሰራጨት ፈቃድ የለም)፦ ሲያበሩት አሳሽዎ ከ$1 ያወርደዋል።"
+  },
+  "opt_downloaded_from": {
+    "message": "ሲያበሩት ከ$1 ይወርዳል"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ይህን የዝርዝሮች ጥምረት አልተቀበለም ($1)። አንዳንዶቹን ያጥፉ።"
+  },
+  "opt_badge_recommended": {
+    "message": "ለቋንቋዎ የሚመከር"
+  },
+  "reportBroken": {
+    "message": "ጣቢያው ተበላሽቷል? ያስተካክሉት ወይም ይንገሩን"
+  },
+  "rep_title": {
+    "message": "በዚህ ጣቢያ ላይ የሆነ ነገር ተበላሽቷል?"
+  },
+  "rep_fix_first": {
+    "message": "አሁን ያስተካክሉት"
+  },
+  "rep_site": {
+    "message": "ጣቢያ፦"
+  },
+  "rep_fix_desc": {
+    "message": "አብዛኞቹ ችግሮች ከእነዚህ በአንዱ ይፈታሉ። እያንዳንዱ ለዚህ ጣቢያ ብቻ ይሠራል፤ ትሩ እንደገና ይጫናል።"
+  },
+  "rep_fix_cosm": {
+    "message": "እዚህ አባሎችን መደበቅን ያጥፉ"
+  },
+  "rep_fix_allow": {
+    "message": "በዚህ ጣቢያ ላይ ማስታወቂያዎችን ይፍቀዱ"
+  },
+  "rep_fix_pause": {
+    "message": "በሁሉም ቦታ ለ30 ደቂቃ ያቁሙ"
+  },
+  "rep_tell_us": {
+    "message": "ይንገሩን"
+  },
+  "rep_tell_desc": {
+    "message": "የተበላሹ ጣቢያዎችን ለሁሉም በተፈረመው የማጣሪያ ዝማኔ እናስተካክላለን፣ ብዙውን ጊዜ በአንድ ቀን ውስጥ። ቅጥያው ምንም አይልክም፦ ሪፖርቱ በራስዎ የኢሜይል መተግበሪያ ውስጥ ይከፈታል፣ እና እያንዳንዱን ቃል አስቀድመው ያያሉ።"
+  },
+  "rep_what": {
+    "message": "ምን ችግር አለ? (አማራጭ)"
+  },
+  "rep_what_ph": {
+    "message": "ለምሳሌ ቪዲዮው አይጀምርም፣ ነጭ ሳጥን ጽሑፉን ይሸፍናል…"
+  },
+  "rep_full_url": {
+    "message": "ሙሉውን የገጽ አድራሻ ያካትቱ (ካልሆነ የጣቢያው ስም ብቻ)"
+  },
+  "rep_preview": {
+    "message": "የሚላከው"
+  },
+  "rep_send_mail": {
+    "message": "በኢሜይል ይላኩ"
+  },
+  "rep_copy": {
+    "message": "ሪፖርቱን ይቅዱ"
+  },
+  "rep_privacy": {
+    "message": "ይህ ሪፖርት እንዴት እንደሚስተናገድ፦ የግላዊነት መመሪያ"
+  },
+  "rep_copied": {
+    "message": "ተቀድቷል።"
+  },
+  "rep_done_cosm": {
+    "message": "በዚህ ጣቢያ ላይ አባሎችን መደበቅ ጠፍቷል። እንደገና ተጭኗል — ተስተካክሏል?"
+  },
+  "rep_done_allow": {
+    "message": "በዚህ ጣቢያ ላይ ማስታወቂያዎች ተፈቅደዋል። እንደገና ተጭኗል — ተስተካክሏል?"
+  },
+  "rep_done_pause": {
+    "message": "ለ30 ደቂቃ ቆሟል። ጣቢያው አሁን የሚሠራ ከሆነ፣ እባክዎ ከታች ይንገሩን።"
+  },
+  "cookieRejections": {
+    "message": "በእርስዎ ምትክ ውድቅ የተደረጉ የኩኪ ሰንደቆች፦ $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "በYouTube ላይ ያሉ የShorts መደርደሪያዎች፣ ትር እና ጥቆማዎች።"
+  },
+  "opt_focus_onetap": {
+    "message": "«በGoogle ይግቡ» ብቅ-ባዮች"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "በብዙ ጣቢያዎች ጥግ ላይ የሚታየው የመለያ መምረጫ። የመግቢያ አዝራሮቹ መሥራታቸውን ይቀጥላሉ።"
+  },
+  "pickTip": {
+    "message": "ለመደበቅ አንድ አባል ጠቅ ያድርጉ"
+  },
+  "pickZapTip": {
+    "message": "ይህን አባል ለማስወገድ ጠቅ ያድርጉ (አንድ ጊዜ)"
+  },
+  "pickEscCancel": {
+    "message": "ለመሰረዝ"
+  },
+  "opt_notices": {
+    "message": "የማጣሪያ ዝርዝሮቹ ፈቃዶች"
+  }
+}

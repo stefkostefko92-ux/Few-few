@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "диплома за печат",
     "благодарствено писмо",
     "грамота за ученик",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/gramoti" },
   ...pageMeta(TITLE, DESC, "/gramoti"),

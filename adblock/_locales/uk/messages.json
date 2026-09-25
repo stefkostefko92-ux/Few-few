@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Блокує рекламу скрізь: відеорекламу на YouTube, банери, спливаючі вікна, трекери, cookie-банери та антиадблок-стіни. Безкоштовно."
+  },
+  "byCarbon": {
+    "message": "від Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Увімкнути або вимкнути захист"
+  },
+  "protected": {
+    "message": "Захищено"
+  },
+  "paused": {
+    "message": "На паузі"
+  },
+  "blockingHere": {
+    "message": "Блокує рекламу на цій сторінці"
+  },
+  "protectionOff": {
+    "message": "Захист вимкнено"
+  },
+  "pause30": {
+    "message": "Пауза на 30 хвилин"
+  },
+  "pausedResume": {
+    "message": "На паузі, відновити зараз (залишилося $1 хв)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Заблоковано"
+  },
+  "dataSaved": {
+    "message": "Економія даних"
+  },
+  "timeSaved": {
+    "message": "Економія часу"
+  },
+  "thisSite": {
+    "message": "цей сайт"
+  },
+  "thisPage": {
+    "message": "ця сторінка"
+  },
+  "blockOnSite": {
+    "message": "Блокувати рекламу на цьому сайті"
+  },
+  "blocking": {
+    "message": "Блокування"
+  },
+  "allowed": {
+    "message": "Дозволено"
+  },
+  "cosmetics": {
+    "message": "Ховати рекламу тут"
+  },
+  "cosmeticsTitle": {
+    "message": "Ховати рекламу на цьому сайті (вимкніть, якщо ламається макет сторінки)"
+  },
+  "on": {
+    "message": "Увімк."
+  },
+  "off": {
+    "message": "Вимк."
+  },
+  "blockedHere": {
+    "message": "Заблоковано на цій сторінці"
+  },
+  "logEmpty": {
+    "message": "Тут поки нічого не заблоковано."
+  },
+  "logUnavailable": {
+    "message": "Журнал зараз недоступний (квота браузера) — спробуйте за хвилину."
+  },
+  "logCore": {
+    "message": "Основні правила"
+  },
+  "logYouTube": {
+    "message": "Реклама на YouTube"
+  },
+  "logParams": {
+    "message": "Параметри стеження"
+  },
+  "logMalware": {
+    "message": "Шкідливі домени"
+  },
+  "logSurrogates": {
+    "message": "Знешкоджені рекламні скрипти"
+  },
+  "logPrivacy": {
+    "message": "Захист приватності"
+  },
+  "logUser": {
+    "message": "Мої фільтри"
+  },
+  "logLive": {
+    "message": "Живі оновлення"
+  },
+  "hideElement": {
+    "message": "Приховати елемент"
+  },
+  "settings": {
+    "message": "Налаштування"
+  },
+  "promoSub": {
+    "message": "Техніка й інструменти, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Реклама"
+  },
+  "support": {
+    "message": "Підтримати"
+  },
+  "filtersCount": {
+    "message": "$1+ фільтрів",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Зовнішній вигляд"
+  },
+  "opt_extra_protection": {
+    "message": "Додатковий захист"
+  },
+  "opt_smart_detection_log": {
+    "message": "Журнал Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Сайти в списку дозволених"
+  },
+  "opt_my_filters": {
+    "message": "Мої фільтри"
+  },
+  "opt_hidden_elements": {
+    "message": "Приховані елементи"
+  },
+  "opt_filter_updates": {
+    "message": "Оновлення фільтрів"
+  },
+  "opt_engine_health": {
+    "message": "Стан рушія"
+  },
+  "opt_backup": {
+    "message": "Резервна копія"
+  },
+  "opt_support_development": {
+    "message": "Підтримати розробку"
+  },
+  "opt_theme": {
+    "message": "Тема"
+  },
+  "opt_sync_across_devices": {
+    "message": "Синхронізація між пристроями"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Блокування реклами на YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Банери cookie та згоди"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Обхід антиадблока"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Реклама в соцмережах Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Видалення параметрів стеження"
+  },
+  "opt_malware_protection": {
+    "message": "Захист від шкідливого ПЗ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Блокування браузерних API для рекламного таргетингу"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Блокування маячків стеження та криптомайнерів"
+  },
+  "opt_auto_update_filters": {
+    "message": "Автооновлення фільтрів"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (темна) або світла"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Синхронізувати налаштування, список дозволених і фільтри в усіх браузерах Chrome, у які ви ввійшли"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Видаляє відеорекламу на YouTube. Вимкніть, якщо відео не відтворюються."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Автоматично закриває запити «Прийняти файли cookie»"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Приховує стіни «Вимкніть блокувальник реклами» і відновлює сторінку"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Приховує дописи з позначкою «Реклама» у Facebook та Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Видаляє utm_*, fbclid, gclid та інші ідентифікатори кліків із посилань, які ви відкриваєте"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Блокує відомі шкідливі домени (список URLhaus від abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Вимикає рекламні API Google Topics, FLoC і Protected Audience на всіх сайтах"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Зупиняє сторонні пінги аудиту посилань і маячки, видаляє файли cookie стеження з відповідей відомих рекламних сервісів і блокує браузерні скрипти криптомайнінгу. Вимкніть, якщо функція сайту, що залежить від аналітики, працює некоректно."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Завантажує нові правила блокування та виправлення для YouTube з adblock.carbonstealth.eu приблизно двічі на день. Лише дані, без коду; запит не містить ідентифікаторів чи даних про перегляд сторінок."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Журнал реклами, виявленої евристично (без списку фільтрів), у реальному часі; найновіші зверху."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Списки за підпискою завантажуються як текст (ніколи як код), щодня оновлюються й містяться в керованих блоках вище. Видаліть список, щоб прибрати його правила."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Елементи, які ви приховали вручну за допомогою інструмента вибору, згруповані за сайтами."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Діагностика в реальному часі — усе обчислюється локально. Якщо щось світиться червоним, зазвичай допомагає «Оновити зараз» або перезавантаження розширення."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock безкоштовний для всіх. Якщо хочете допомогти з його підтримкою, пожертви вітаються, але ніколи не обов’язкові."
+  },
+  "opt_reset_statistics": {
+    "message": "Скинути статистику"
+  },
+  "opt_add": {
+    "message": "Додати"
+  },
+  "opt_save_filters": {
+    "message": "Зберегти фільтри"
+  },
+  "opt_subscribe": {
+    "message": "Підписатися"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Оновити підписки зараз"
+  },
+  "opt_update_now": {
+    "message": "Оновити зараз"
+  },
+  "opt_refresh": {
+    "message": "Оновити"
+  },
+  "opt_export_settings": {
+    "message": "Експорт налаштувань"
+  },
+  "opt_import_settings": {
+    "message": "Імпорт налаштувань"
+  },
+  "opt_e_g_example_com": {
+    "message": "наприклад, example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! приклад\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Підписатися на список фільтрів за URL (наприклад, https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Налаштування Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Налаштування"
+  },
+  "opt_theme_light": {
+    "message": "Світла"
+  },
+  "opt_badge_unique": {
+    "message": "унікально"
+  },
+  "opt_smart_desc": {
+    "message": "Ловить рекламу, якої ще не знає жоден список фільтрів: фрейми з інших доменів розміром зі стандартний рекламний блок приховуються одразу, без жодних правил."
+  },
+  "opt_caught_so_far": {
+    "message": "виявлено на цей момент."
+  },
+  "opt_allow_desc": {
+    "message": "На цих доменах реклама не блокується."
+  },
+  "opt_fh_one": {
+    "message": "Одне правило на рядок."
+  },
+  "opt_fh_blocks": {
+    "message": "блокує домен;"
+  },
+  "opt_fh_everywhere": {
+    "message": "приховує елемент скрізь;"
+  },
+  "opt_fh_site": {
+    "message": "приховує його лише на цьому сайті."
+  },
+  "opt_fh_comments": {
+    "message": "Рядки, що починаються з"
+  },
+  "opt_fh_comments2": {
+    "message": "— це коментарі."
+  },
+  "opt_donate": {
+    "message": "Пожертвувати через Revolut"
+  },
+  "opt_made_by": {
+    "message": "створено Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Евристично поки нічого не виявлено."
+  },
+  "opt_empty_allow": {
+    "message": "У списку дозволених поки немає сайтів."
+  },
+  "opt_empty_hidden": {
+    "message": "Вручну поки нічого не приховано."
+  },
+  "opt_empty_subs": {
+    "message": "Підписок на списки поки немає."
+  },
+  "opt_no_sw": {
+    "message": "Service worker не відповідає."
+  },
+  "opt_remove": {
+    "message": "Видалити"
+  },
+  "opt_filter_status": {
+    "message": "Набір фільтрів v$1, оновлено $2. Лише дані, про вас нічого не надсилається."
+  },
+  "opt_updating": {
+    "message": "Оновлення…"
+  },
+  "opt_updated": {
+    "message": "Оновлено (v$1, додаткових правил: $2)"
+  },
+  "opt_update_failed": {
+    "message": "Не вдалося оновити ($1)"
+  },
+  "opt_saved": {
+    "message": "Збережено ✓"
+  },
+  "opt_rules_count": {
+    "message": "правил: $1"
+  },
+  "opt_updated_ago": {
+    "message": "оновлено $1"
+  },
+  "opt_not_fetched": {
+    "message": "ще не завантажено"
+  },
+  "opt_failed_colon": {
+    "message": "помилка: $1"
+  },
+  "opt_enter_https": {
+    "message": "Введіть дійсну адресу https://"
+  },
+  "opt_fetching": {
+    "message": "Завантаження…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Підписано, правил: $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Помилка ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Оновлення…"
+  },
+  "opt_refreshed": {
+    "message": "Оновлено ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Недійсний файл налаштувань."
+  },
+  "opt_no_response": {
+    "message": "немає відповіді"
+  },
+  "opt_h_engine": {
+    "message": "Рушій антиадблока"
+  },
+  "opt_h_rulesets": {
+    "message": "Увімкнені статичні набори правил"
+  },
+  "opt_h_live": {
+    "message": "Домени з онлайн-фільтрів"
+  },
+  "opt_h_last": {
+    "message": "Останнє оновлення"
+  },
+  "opt_h_sig": {
+    "message": "Підписи оновлень"
+  },
+  "opt_h_user": {
+    "message": "Мої фільтри / правила дозволів"
+  },
+  "opt_h_popup": {
+    "message": "Вбудовані хости спливаючої реклами"
+  },
+  "opt_h_yt": {
+    "message": "Обхід на YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Фрейм з іншого домену розміром із рекламу"
+  },
+  "opt_reason_sticky": {
+    "message": "Закріплений рекламний банер"
+  },
+  "logRegional": {
+    "message": "Регіональні списки"
+  },
+  "logFocus": {
+    "message": "Режим фокусу"
+  },
+  "opt_filter_lists": {
+    "message": "Списки фільтрів"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList та EasyPrivacy завжди увімкнені. Списки нижче мають відкриті ліцензії та вбудовані в розширення, тож їх увімкнення нічого не завантажує, окрім списку з позначкою, що він надходить від автора."
+  },
+  "opt_lists_core": {
+    "message": "Основні"
+  },
+  "opt_lists_regional": {
+    "message": "Регіональні"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Список для мови вашого браузера вмикається автоматично. Додайте інші, якщо часто читаєте сайти іншими мовами."
+  },
+  "opt_focus_mode": {
+    "message": "Режим фокусу"
+  },
+  "opt_focus_desc": {
+    "message": "Приховує те, що не є рекламою, але все одно заважає. Тут усе вимкнено, доки ви це не ввімкнете."
+  },
+  "opt_list_ubo": {
+    "message": "Фільтри uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Реклама, трекери, обхід антиадблока та виправлення сайтів від команди uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Список Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Давній список рекламних серверів і серверів стеження."
+  },
+  "opt_focus_social": {
+    "message": "Кнопки та віджети соцмереж"
+  },
+  "opt_focus_social_desc": {
+    "message": "Кнопки «Поділитися», блоки «Подобається» та вбудовані стрічки."
+  },
+  "opt_focus_chat": {
+    "message": "Віджети чатів і підтримки"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Плаваючі бульбашки чату в куті сторінки."
+  },
+  "opt_focus_newsletters": {
+    "message": "Спливаючі вікна розсилок і реєстрації"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Блоки й накладки «Підпишіться на нашу розсилку»."
+  },
+  "opt_focus_notifications": {
+    "message": "Запити на сповіщення"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Блоки «Дозволити сповіщення?», які сайти показують раніше, ніж запитає браузер."
+  },
+  "opt_focus_ai": {
+    "message": "Спливаючі ШІ-асистенти"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Бульбашки чат-ботів і панелі ШІ-підказок, додані на сторінки."
+  },
+  "opt_focus_other": {
+    "message": "Інші подразники"
+  },
+  "opt_focus_other_desc": {
+    "message": "Закріплені панелі, банери «Відкрити в застосунку» та подібний мотлох."
+  },
+  "opt_badge_lang": {
+    "message": "ваша мова"
+  },
+  "opt_badge_remote": {
+    "message": "від автора"
+  },
+  "opt_remote_hint": {
+    "message": "Не вбудовано (немає ліцензії на поширення): браузер завантажить його з $1, коли ви його ввімкнете."
+  },
+  "opt_downloaded_from": {
+    "message": "Завантажується з $1, коли ви його ввімкнете"
+  },
+  "opt_lists_error": {
+    "message": "Chrome відхилив цю комбінацію списків ($1). Вимкніть деякі."
+  },
+  "opt_badge_recommended": {
+    "message": "рекомендовано для вашої мови"
+  },
+  "reportBroken": {
+    "message": "Сайт зламався? Виправте або повідомте нам"
+  },
+  "rep_title": {
+    "message": "Щось не працює на цьому сайті?"
+  },
+  "rep_fix_first": {
+    "message": "Виправити зараз"
+  },
+  "rep_site": {
+    "message": "Сайт:"
+  },
+  "rep_fix_desc": {
+    "message": "Більшість проблем зникає після однієї з цих дій. Кожна діє лише на цьому сайті; вкладка перезавантажиться."
+  },
+  "rep_fix_cosm": {
+    "message": "Вимкнути приховування елементів тут"
+  },
+  "rep_fix_allow": {
+    "message": "Дозволити рекламу на цьому сайті"
+  },
+  "rep_fix_pause": {
+    "message": "Пауза всюди на 30 хвилин"
+  },
+  "rep_tell_us": {
+    "message": "Повідомити нам"
+  },
+  "rep_tell_desc": {
+    "message": "Ми виправляємо зламані сайти для всіх через підписане оновлення фільтрів, зазвичай протягом дня. Розширення нічого не надсилає: звіт відкривається у вашій поштовій програмі, і ви заздалегідь бачите кожне його слово."
+  },
+  "rep_what": {
+    "message": "Що не так? (необов’язково)"
+  },
+  "rep_what_ph": {
+    "message": "наприклад, відео не запускається, біле поле закриває статтю…"
+  },
+  "rep_full_url": {
+    "message": "Додати повну адресу сторінки (інакше лише назву сайту)"
+  },
+  "rep_preview": {
+    "message": "Що буде надіслано"
+  },
+  "rep_send_mail": {
+    "message": "Надіслати електронною поштою"
+  },
+  "rep_copy": {
+    "message": "Копіювати звіт"
+  },
+  "rep_privacy": {
+    "message": "Як обробляється цей звіт: політика конфіденційності"
+  },
+  "rep_copied": {
+    "message": "Скопійовано."
+  },
+  "rep_done_cosm": {
+    "message": "Приховування елементів на цьому сайті вимкнено. Сторінку перезавантажено — проблему вирішено?"
+  },
+  "rep_done_allow": {
+    "message": "Рекламу на цьому сайті дозволено. Сторінку перезавантажено — проблему вирішено?"
+  },
+  "rep_done_pause": {
+    "message": "Пауза на 30 хвилин. Якщо сайт тепер працює, будь ласка, повідомте нам нижче."
+  },
+  "cookieRejections": {
+    "message": "Банерів cookie відхилено за вас: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Полиці, вкладка й рекомендації Shorts на YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Вікна «Увійти через Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Вибір облікового запису, що з’являється в куті багатьох сайтів. Кнопки входу й далі працюють."
+  },
+  "pickTip": {
+    "message": "Натисніть на елемент, щоб приховати його"
+  },
+  "pickZapTip": {
+    "message": "Натисніть, щоб видалити цей елемент (одноразово)"
+  },
+  "pickEscCancel": {
+    "message": "для скасування"
+  },
+  "opt_notices": {
+    "message": "Ліцензії списків фільтрів"
+  }
+}

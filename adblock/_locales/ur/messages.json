@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "ہر جگہ اشتہارات بلاک کرتا ہے: YouTube ویڈیو اشتہارات، بینرز، پاپ اپس، ٹریکرز اور اینٹی ایڈبلاک دیواریں۔ مفت اور تیز۔"
+  },
+  "byCarbon": {
+    "message": "منجانب Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "تحفظ آن/آف کریں"
+  },
+  "protected": {
+    "message": "محفوظ"
+  },
+  "paused": {
+    "message": "موقوف"
+  },
+  "blockingHere": {
+    "message": "اس صفحے پر اشتہارات بلاک ہو رہے ہیں"
+  },
+  "protectionOff": {
+    "message": "تحفظ بند ہے"
+  },
+  "pause30": {
+    "message": "30 منٹ کے لیے روکیں"
+  },
+  "pausedResume": {
+    "message": "موقوف، ابھی دوبارہ شروع کریں ($1 منٹ باقی)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "بلاک شدہ"
+  },
+  "dataSaved": {
+    "message": "بچایا گیا ڈیٹا"
+  },
+  "timeSaved": {
+    "message": "بچایا گیا وقت"
+  },
+  "thisSite": {
+    "message": "یہ سائٹ"
+  },
+  "thisPage": {
+    "message": "یہ صفحہ"
+  },
+  "blockOnSite": {
+    "message": "اس سائٹ پر اشتہارات بلاک کریں"
+  },
+  "blocking": {
+    "message": "بلاکنگ"
+  },
+  "allowed": {
+    "message": "اجازت ہے"
+  },
+  "cosmetics": {
+    "message": "یہاں اشتہاری خانے چھپائیں"
+  },
+  "cosmeticsTitle": {
+    "message": "اس سائٹ پر اشتہاری خانے چھپائیں (اگر صفحے کی ترتیب خراب ہو تو اسے بند کریں)"
+  },
+  "on": {
+    "message": "آن"
+  },
+  "off": {
+    "message": "آف"
+  },
+  "blockedHere": {
+    "message": "اس صفحے پر بلاک شدہ"
+  },
+  "logEmpty": {
+    "message": "یہاں ابھی تک کچھ بلاک نہیں ہوا۔"
+  },
+  "logUnavailable": {
+    "message": "لاگ اس وقت دستیاب نہیں (براؤزر کوٹا) — ایک منٹ بعد دوبارہ کوشش کریں۔"
+  },
+  "logCore": {
+    "message": "Supreme کے بنیادی اصول"
+  },
+  "logYouTube": {
+    "message": "YouTube اشتہاری اصول"
+  },
+  "logParams": {
+    "message": "ٹریکنگ پیرامیٹرز"
+  },
+  "logMalware": {
+    "message": "میلویئر ڈومینز"
+  },
+  "logSurrogates": {
+    "message": "ناکارہ اشتہاری اسکرپٹس"
+  },
+  "logPrivacy": {
+    "message": "رازداری کا تحفظ"
+  },
+  "logUser": {
+    "message": "میرے فلٹرز"
+  },
+  "logLive": {
+    "message": "لائیو اپ ڈیٹس"
+  },
+  "hideElement": {
+    "message": "عنصر چھپائیں"
+  },
+  "settings": {
+    "message": "ترتیبات"
+  },
+  "promoSub": {
+    "message": "آلات اور ٹولز، carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "اشتہار"
+  },
+  "support": {
+    "message": "تعاون"
+  },
+  "filtersCount": {
+    "message": "$1+ فلٹرز",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "ظاہری شکل"
+  },
+  "opt_extra_protection": {
+    "message": "اضافی تحفظ"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection لاگ"
+  },
+  "opt_allowlisted_sites": {
+    "message": "اجازت یافتہ سائٹس"
+  },
+  "opt_my_filters": {
+    "message": "میرے فلٹرز"
+  },
+  "opt_hidden_elements": {
+    "message": "چھپائے گئے عناصر"
+  },
+  "opt_filter_updates": {
+    "message": "فلٹر اپ ڈیٹس"
+  },
+  "opt_engine_health": {
+    "message": "انجن کی حالت"
+  },
+  "opt_backup": {
+    "message": "بیک اپ"
+  },
+  "opt_support_development": {
+    "message": "ترقی میں تعاون کریں"
+  },
+  "opt_theme": {
+    "message": "تھیم"
+  },
+  "opt_sync_across_devices": {
+    "message": "آلات کے درمیان مطابقت پذیری"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube اشتہارات کی بلاکنگ"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "کوکی / رضامندی بینرز"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "اینٹی ایڈبلاک دیواروں کو بائی پاس کرنا"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta کی سپانسر شدہ پوسٹس"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ٹریکنگ پیرامیٹرز ہٹائیں"
+  },
+  "opt_malware_protection": {
+    "message": "میلویئر سے تحفظ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "اشتہاری ٹارگٹنگ والے براؤزر APIs بلاک کریں"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ٹریکنگ بیکنز اور کرپٹو مائنرز بلاک کریں"
+  },
+  "opt_auto_update_filters": {
+    "message": "فلٹرز خودکار طور پر اپ ڈیٹ کریں"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (ڈارک) یا لائٹ"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "ترتیبات، اجازت کی فہرست اور فلٹرز کو ہر اس Chrome میں ہم آہنگ رکھیں جس میں آپ سائن ان ہیں"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube پر ویڈیو اشتہارات ہٹاتا ہے۔ اگر ویڈیوز نہ چلیں تو اسے بند کر دیں۔"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“کوکیز قبول کریں” والے پیغامات خودکار طور پر بند کریں"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“اپنا ایڈ بلاکر بند کریں” والی دیواریں چھپائیں اور صفحہ بحال کریں"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook اور Instagram پر “سپانسر شدہ” پوسٹس چھپائیں"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "آپ کے کھولے گئے لنکس سے utm_*، fbclid، gclid اور دیگر کلک شناخت کنندگان ہٹائیں"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "معروف میلویئر ڈومینز بلاک کریں (abuse.ch کی URLhaus فہرست)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "ہر سائٹ پر Google Topics، FLoC اور Protected Audience اشتہاری APIs غیر فعال کریں"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "تیسرے فریق کے ہائپر لنک آڈیٹنگ / بیکن پنگز روکتا ہے، معروف ایڈ ٹیک جوابات سے ٹریکنگ کوکیز ہٹاتا ہے، اور براؤزر میں کرپٹو مائننگ اسکرپٹس بلاک کرتا ہے۔ اگر کسی سائٹ کی اینالیٹکس پر منحصر کوئی خصوصیت ٹھیک کام نہ کرے تو اسے بند کر دیں۔"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu سے دن میں تقریباً دو بار نئے بلاکنگ اصول اور YouTube کے حل حاصل کرتا ہے۔ صرف ڈیٹا، کوئی کوڈ نہیں؛ درخواست میں کوئی شناخت کنندہ یا براؤزنگ ڈیٹا شامل نہیں ہوتا۔"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "اندازے (ہیورسٹک) سے پکڑے گئے اشتہارات کا لائیو لاگ (بغیر فلٹر فہرست کے)، تازہ ترین پہلے۔"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "سبسکرائب کی گئی فہرستیں متن کے طور پر حاصل کی جاتی ہیں (کبھی کوڈ کے طور پر نہیں)، روزانہ اپ ڈیٹ ہوتی ہیں اور اوپر دیے گئے منظم بلاکس میں رہتی ہیں۔ کسی فہرست کے اصول ختم کرنے کے لیے اسے ہٹا دیں۔"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "وہ عناصر جو آپ نے انتخاب کے ٹول سے دستی طور پر چھپائے، سائٹ کے لحاظ سے گروپ کیے گئے۔"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "لائیو تشخیص — سب کچھ مقامی طور پر حساب کیا جاتا ہے۔ اگر کچھ سرخ ہو تو عموماً “ابھی اپ ڈیٹ کریں” یا ایکسٹینشن کو دوبارہ لوڈ کرنے سے مسئلہ حل ہو جاتا ہے۔"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock سب کے لیے مفت ہے۔ اگر آپ اس کی دیکھ بھال جاری رکھنے میں مدد کرنا چاہیں تو عطیات کا خیرمقدم ہے، مگر یہ کبھی لازمی نہیں۔"
+  },
+  "opt_reset_statistics": {
+    "message": "اعداد و شمار ری سیٹ کریں"
+  },
+  "opt_add": {
+    "message": "شامل کریں"
+  },
+  "opt_save_filters": {
+    "message": "فلٹرز محفوظ کریں"
+  },
+  "opt_subscribe": {
+    "message": "سبسکرائب کریں"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "سبسکرپشنز ابھی ریفریش کریں"
+  },
+  "opt_update_now": {
+    "message": "ابھی اپ ڈیٹ کریں"
+  },
+  "opt_refresh": {
+    "message": "ریفریش کریں"
+  },
+  "opt_export_settings": {
+    "message": "ترتیبات برآمد کریں"
+  },
+  "opt_import_settings": {
+    "message": "ترتیبات درآمد کریں"
+  },
+  "opt_e_g_example_com": {
+    "message": "مثلاً example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! مثال\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "فلٹر فہرست کا URL سبسکرائب کریں (مثلاً https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock کی ترتیبات"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · ترتیبات"
+  },
+  "opt_theme_light": {
+    "message": "لائٹ"
+  },
+  "opt_badge_unique": {
+    "message": "منفرد"
+  },
+  "opt_smart_desc": {
+    "message": "ایسے اشتہارات پکڑتا ہے جنہیں ابھی کوئی فلٹر فہرست نہیں جانتی: دوسرے ڈومینز کے وہ فریم جن کا سائز معیاری اشتہاری جگہ جیسا ہو، فوراً چھپا دیے جاتے ہیں، کسی اصول کی ضرورت نہیں۔"
+  },
+  "opt_caught_so_far": {
+    "message": "اب تک پکڑے گئے۔"
+  },
+  "opt_allow_desc": {
+    "message": "ان ڈومینز پر اشتہارات بلاک نہیں کیے جاتے۔"
+  },
+  "opt_fh_one": {
+    "message": "ہر سطر میں ایک اصول۔"
+  },
+  "opt_fh_blocks": {
+    "message": "ایک ڈومین بلاک کرتا ہے؛"
+  },
+  "opt_fh_everywhere": {
+    "message": "ایک عنصر کو ہر جگہ چھپاتا ہے؛"
+  },
+  "opt_fh_site": {
+    "message": "اسے صرف اسی سائٹ پر چھپاتا ہے۔"
+  },
+  "opt_fh_comments": {
+    "message": "جو سطریں"
+  },
+  "opt_fh_comments2": {
+    "message": "سے شروع ہوں، وہ تبصرے ہیں۔"
+  },
+  "opt_donate": {
+    "message": "Revolut کے ذریعے عطیہ دیں"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth کی تیار کردہ"
+  },
+  "opt_empty_smart": {
+    "message": "ابھی تک اندازے سے کچھ نہیں پکڑا گیا۔"
+  },
+  "opt_empty_allow": {
+    "message": "ابھی تک کوئی اجازت یافتہ سائٹ نہیں۔"
+  },
+  "opt_empty_hidden": {
+    "message": "ابھی تک دستی طور پر کچھ نہیں چھپایا گیا۔"
+  },
+  "opt_empty_subs": {
+    "message": "ابھی تک کوئی سبسکرائب شدہ فہرست نہیں۔"
+  },
+  "opt_no_sw": {
+    "message": "service worker سے کوئی جواب نہیں ملا۔"
+  },
+  "opt_remove": {
+    "message": "ہٹائیں"
+  },
+  "opt_filter_status": {
+    "message": "فلٹر سیٹ v$1، اپ ڈیٹ $2۔ صرف ڈیٹا، آپ کے بارے میں کچھ نہیں بھیجا جاتا۔"
+  },
+  "opt_updating": {
+    "message": "اپ ڈیٹ ہو رہا ہے…"
+  },
+  "opt_updated": {
+    "message": "اپ ڈیٹ ہو گیا (v$1، $2 اضافی اصول)"
+  },
+  "opt_update_failed": {
+    "message": "اپ ڈیٹ ناکام ($1)"
+  },
+  "opt_saved": {
+    "message": "محفوظ ہو گیا ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 اصول"
+  },
+  "opt_updated_ago": {
+    "message": "اپ ڈیٹ $1"
+  },
+  "opt_not_fetched": {
+    "message": "ابھی حاصل نہیں کیا گیا"
+  },
+  "opt_failed_colon": {
+    "message": "ناکام: $1"
+  },
+  "opt_enter_https": {
+    "message": "درست https:// URL درج کریں"
+  },
+  "opt_fetching": {
+    "message": "حاصل کیا جا رہا ہے…"
+  },
+  "opt_subscribed_ok": {
+    "message": "سبسکرائب ہو گیا: $1 اصول ✓"
+  },
+  "opt_failed_paren": {
+    "message": "ناکام ($1)"
+  },
+  "opt_refreshing": {
+    "message": "ریفریش ہو رہا ہے…"
+  },
+  "opt_refreshed": {
+    "message": "ریفریش ہو گیا ✓"
+  },
+  "opt_invalid_file": {
+    "message": "ترتیبات کی فائل درست نہیں۔"
+  },
+  "opt_no_response": {
+    "message": "کوئی جواب نہیں"
+  },
+  "opt_h_engine": {
+    "message": "اینٹی ایڈبلاک انجن"
+  },
+  "opt_h_rulesets": {
+    "message": "فعال جامد اصول سیٹس"
+  },
+  "opt_h_live": {
+    "message": "لائیو فلٹر ڈومینز"
+  },
+  "opt_h_last": {
+    "message": "آخری اپ ڈیٹ"
+  },
+  "opt_h_sig": {
+    "message": "اپ ڈیٹ کے دستخط"
+  },
+  "opt_h_user": {
+    "message": "میرے فلٹرز / اجازت کی فہرست کے اصول"
+  },
+  "opt_h_popup": {
+    "message": "پہلے سے شامل پاپ اپ اشتہاری ہوسٹس"
+  },
+  "opt_h_yt": {
+    "message": "YouTube بائی پاس"
+  },
+  "opt_reason_frame": {
+    "message": "دوسرے ڈومین کا اشتہار کے سائز کا فریم"
+  },
+  "opt_reason_sticky": {
+    "message": "چپکا ہوا اشتہاری بینر"
+  },
+  "logRegional": {
+    "message": "علاقائی فہرستیں"
+  },
+  "logFocus": {
+    "message": "فوکس موڈ"
+  },
+  "opt_filter_lists": {
+    "message": "فلٹر فہرستیں"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList اور EasyPrivacy ہمیشہ آن رہتی ہیں۔ نیچے دی گئی فہرستیں کھلے لائسنس والی ہیں اور ایکسٹینشن میں شامل ہیں، اس لیے کسی کو آن کرنے سے کچھ ڈاؤن لوڈ نہیں ہوتا، سوائے اس فہرست کے جس پر اس کے مصنف کی طرف سے آنے کا نشان لگا ہو۔"
+  },
+  "opt_lists_core": {
+    "message": "بنیادی"
+  },
+  "opt_lists_regional": {
+    "message": "علاقائی"
+  },
+  "opt_lists_regional_desc": {
+    "message": "آپ کے براؤزر کی زبان کی فہرست خود بخود آن ہو جاتی ہے۔ اگر آپ اکثر دوسری زبانوں کی سائٹس پڑھتے ہیں تو دیگر فہرستیں بھی شامل کریں۔"
+  },
+  "opt_focus_mode": {
+    "message": "فوکس موڈ"
+  },
+  "opt_focus_desc": {
+    "message": "وہ چیزیں چھپاتا ہے جو اشتہار نہیں مگر پھر بھی رکاوٹ بنتی ہیں۔ یہاں سب کچھ اس وقت تک بند رہتا ہے جب تک آپ اسے آن نہ کریں۔"
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin فلٹرز"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin ٹیم کی جانب سے اشتہارات، ٹریکرز، اینٹی ایڈبلاک حل اور سائٹس کی مرمت۔"
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe کی فہرست"
+  },
+  "opt_list_plowe_desc": {
+    "message": "اشتہاری اور ٹریکنگ سرورز کی ایک پرانی اور مسلسل برقرار فہرست۔"
+  },
+  "opt_focus_social": {
+    "message": "سوشل میڈیا بٹن اور وجیٹس"
+  },
+  "opt_focus_social_desc": {
+    "message": "شیئر بٹن، لائیک باکس اور ایمبیڈ کی گئی فیڈز۔"
+  },
+  "opt_focus_chat": {
+    "message": "چیٹ اور سپورٹ وجیٹس"
+  },
+  "opt_focus_chat_desc": {
+    "message": "صفحے کے کونے میں تیرتے چیٹ ببلز۔"
+  },
+  "opt_focus_newsletters": {
+    "message": "نیوز لیٹر اور سائن اپ پاپ اپس"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“ہمارے نیوز لیٹر کو سبسکرائب کریں” والے باکس اور اوورلیز۔"
+  },
+  "opt_focus_notifications": {
+    "message": "اطلاعات کی درخواستیں"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "“اطلاعات کی اجازت دیں؟” والے باکس جو سائٹس براؤزر کے پوچھنے سے پہلے دکھاتی ہیں۔"
+  },
+  "opt_focus_ai": {
+    "message": "AI اسسٹنٹ پاپ اپس"
+  },
+  "opt_focus_ai_desc": {
+    "message": "صفحات میں شامل کیے گئے چیٹ بوٹ ببلز اور AI تجاویز کے پینلز۔"
+  },
+  "opt_focus_other": {
+    "message": "دیگر پریشان کن چیزیں"
+  },
+  "opt_focus_other_desc": {
+    "message": "چپکی ہوئی پٹیاں، “ایپ میں کھولیں” بینرز اور اسی طرح کی بے ترتیبی۔"
+  },
+  "opt_badge_lang": {
+    "message": "آپ کی زبان"
+  },
+  "opt_badge_remote": {
+    "message": "مصنف کی طرف سے"
+  },
+  "opt_remote_hint": {
+    "message": "شامل نہیں (دوبارہ تقسیم کا لائسنس نہیں): جب آپ اسے آن کرتے ہیں تو آپ کا براؤزر اسے $1 سے ڈاؤن لوڈ کرتا ہے۔"
+  },
+  "opt_downloaded_from": {
+    "message": "آن کرنے پر $1 سے ڈاؤن لوڈ ہوتی ہے"
+  },
+  "opt_lists_error": {
+    "message": "Chrome نے فہرستوں کا یہ مجموعہ مسترد کر دیا ($1)۔ کچھ کو بند کریں۔"
+  },
+  "opt_badge_recommended": {
+    "message": "آپ کی زبان کے لیے تجویز کردہ"
+  },
+  "reportBroken": {
+    "message": "سائٹ خراب ہے؟ ٹھیک کریں یا ہمیں بتائیں"
+  },
+  "rep_title": {
+    "message": "اس سائٹ پر کچھ خراب ہے؟"
+  },
+  "rep_fix_first": {
+    "message": "ابھی ٹھیک کریں"
+  },
+  "rep_site": {
+    "message": "سائٹ:"
+  },
+  "rep_fix_desc": {
+    "message": "زیادہ تر مسائل ان میں سے کسی ایک سے حل ہو جاتے ہیں۔ ہر ایک صرف اسی سائٹ پر لاگو ہوتا ہے؛ ٹیب دوبارہ لوڈ ہوتا ہے۔"
+  },
+  "rep_fix_cosm": {
+    "message": "یہاں عناصر چھپانا بند کریں"
+  },
+  "rep_fix_allow": {
+    "message": "اس سائٹ پر اشتہارات کی اجازت دیں"
+  },
+  "rep_fix_pause": {
+    "message": "ہر جگہ 30 منٹ کے لیے روکیں"
+  },
+  "rep_tell_us": {
+    "message": "ہمیں بتائیں"
+  },
+  "rep_tell_desc": {
+    "message": "ہم دستخط شدہ فلٹر اپ ڈیٹ کے ذریعے سب کے لیے خراب سائٹس ٹھیک کرتے ہیں، عموماً ایک دن کے اندر۔ ایکسٹینشن کچھ نہیں بھیجتی: رپورٹ آپ کی اپنی ای میل ایپ میں کھلتی ہے، اور آپ پہلے اس کا ہر لفظ دیکھتے ہیں۔"
+  },
+  "rep_what": {
+    "message": "کیا مسئلہ ہے؟ (اختیاری)"
+  },
+  "rep_what_ph": {
+    "message": "مثلاً ویڈیو شروع نہیں ہوتی، ایک سفید باکس مضمون کو ڈھانپ لیتا ہے…"
+  },
+  "rep_full_url": {
+    "message": "صفحے کا مکمل پتہ شامل کریں (ورنہ صرف سائٹ کا نام)"
+  },
+  "rep_preview": {
+    "message": "کیا بھیجا جائے گا"
+  },
+  "rep_send_mail": {
+    "message": "ای میل سے بھیجیں"
+  },
+  "rep_copy": {
+    "message": "رپورٹ کاپی کریں"
+  },
+  "rep_privacy": {
+    "message": "اس رپورٹ کو کیسے سنبھالا جاتا ہے: رازداری کی پالیسی"
+  },
+  "rep_copied": {
+    "message": "کاپی ہو گئی۔"
+  },
+  "rep_done_cosm": {
+    "message": "اس سائٹ پر عناصر چھپانا بند ہے۔ دوبارہ لوڈ ہو گیا — کیا مسئلہ حل ہو گیا؟"
+  },
+  "rep_done_allow": {
+    "message": "اس سائٹ پر اشتہارات کی اجازت ہے۔ دوبارہ لوڈ ہو گیا — کیا مسئلہ حل ہو گیا؟"
+  },
+  "rep_done_pause": {
+    "message": "30 منٹ کے لیے روک دیا گیا۔ اگر سائٹ اب کام کر رہی ہے تو براہ کرم نیچے ہمیں بتائیں۔"
+  },
+  "cookieRejections": {
+    "message": "آپ کی جانب سے مسترد کیے گئے کوکی بینرز: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube پر Shorts کے شیلف، ٹیب اور تجاویز۔"
+  },
+  "opt_focus_onetap": {
+    "message": "“Google کے ساتھ سائن ان کریں” پاپ اپس"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "اکاؤنٹ منتخب کرنے والا خانہ جو کئی سائٹس کے کونے میں ظاہر ہوتا ہے۔ سائن ان بٹن کام کرتے رہتے ہیں۔"
+  },
+  "pickTip": {
+    "message": "چھپانے کے لیے کسی عنصر پر کلک کریں"
+  },
+  "pickZapTip": {
+    "message": "یہ عنصر ہٹانے کے لیے کلک کریں (ایک بار)"
+  },
+  "pickEscCancel": {
+    "message": "منسوخ کرنے کے لیے"
+  },
+  "opt_notices": {
+    "message": "فلٹر فہرستوں کے لائسنس"
+  }
+}

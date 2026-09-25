@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "обява за уроци",
     "обява за квартира",
     "обява шаблон",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/obyava" },
   ...pageMeta(TITLE, DESC, "/obyava"),

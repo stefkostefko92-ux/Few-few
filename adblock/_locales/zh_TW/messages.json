@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "隨處封鎖廣告：YouTube 影片廣告、橫幅、彈出式視窗、追蹤器、Cookie 提示和反廣告封鎖牆。免費、快速、保護隱私。"
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "開啟/關閉防護"
+  },
+  "protected": {
+    "message": "已受保護"
+  },
+  "paused": {
+    "message": "已暫停"
+  },
+  "blockingHere": {
+    "message": "正在封鎖這個網頁的廣告"
+  },
+  "protectionOff": {
+    "message": "防護已關閉"
+  },
+  "pause30": {
+    "message": "暫停 30 分鐘"
+  },
+  "pausedResume": {
+    "message": "已暫停，立即恢復（剩餘 $1 分鐘）",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "已封鎖"
+  },
+  "dataSaved": {
+    "message": "節省的數據用量"
+  },
+  "timeSaved": {
+    "message": "節省的時間"
+  },
+  "thisSite": {
+    "message": "這個網站"
+  },
+  "thisPage": {
+    "message": "這個網頁"
+  },
+  "blockOnSite": {
+    "message": "在這個網站上封鎖廣告"
+  },
+  "blocking": {
+    "message": "封鎖中"
+  },
+  "allowed": {
+    "message": "已允許"
+  },
+  "cosmetics": {
+    "message": "隱藏這裡的廣告框"
+  },
+  "cosmeticsTitle": {
+    "message": "隱藏這個網站上的廣告框（如果版面跑掉，請關閉）"
+  },
+  "on": {
+    "message": "開"
+  },
+  "off": {
+    "message": "關"
+  },
+  "blockedHere": {
+    "message": "這個網頁上已封鎖的項目"
+  },
+  "logEmpty": {
+    "message": "這個網頁還沒有封鎖任何項目。"
+  },
+  "logUnavailable": {
+    "message": "目前無法顯示記錄（瀏覽器配額限制），請一分鐘後再試一次。"
+  },
+  "logCore": {
+    "message": "Supreme 核心規則"
+  },
+  "logYouTube": {
+    "message": "YouTube 廣告規則"
+  },
+  "logParams": {
+    "message": "追蹤參數"
+  },
+  "logMalware": {
+    "message": "惡意軟體網域"
+  },
+  "logSurrogates": {
+    "message": "已中和的廣告指令碼"
+  },
+  "logPrivacy": {
+    "message": "隱私保護"
+  },
+  "logUser": {
+    "message": "我的過濾規則"
+  },
+  "logLive": {
+    "message": "即時更新"
+  },
+  "hideElement": {
+    "message": "隱藏元素"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "promoSub": {
+    "message": "裝備與工具，carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "廣告"
+  },
+  "support": {
+    "message": "支持"
+  },
+  "filtersCount": {
+    "message": "$1+ 條過濾規則",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "外觀"
+  },
+  "opt_extra_protection": {
+    "message": "額外防護"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection 記錄"
+  },
+  "opt_allowlisted_sites": {
+    "message": "允許清單中的網站"
+  },
+  "opt_my_filters": {
+    "message": "我的過濾規則"
+  },
+  "opt_hidden_elements": {
+    "message": "已隱藏的元素"
+  },
+  "opt_filter_updates": {
+    "message": "過濾規則更新"
+  },
+  "opt_engine_health": {
+    "message": "引擎狀態"
+  },
+  "opt_backup": {
+    "message": "備份"
+  },
+  "opt_support_development": {
+    "message": "支持開發"
+  },
+  "opt_theme": {
+    "message": "主題"
+  },
+  "opt_sync_across_devices": {
+    "message": "在裝置間同步"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube 廣告封鎖"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / 同意橫幅"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "略過反廣告封鎖"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta 贊助貼文"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "移除追蹤參數"
+  },
+  "opt_malware_protection": {
+    "message": "惡意軟體防護"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "封鎖用於廣告鎖定的瀏覽器 API"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "封鎖追蹤信標和加密貨幣挖礦"
+  },
+  "opt_auto_update_filters": {
+    "message": "自動更新過濾規則"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth（深色）或淺色"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "在您登入的每個 Chrome 上同步設定、允許清單和過濾規則"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "移除 YouTube 上的影片廣告。如果影片無法播放，請關閉此項。"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "自動關閉「接受 Cookie」提示"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "隱藏「請停用廣告封鎖程式」牆並還原網頁"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "隱藏 Facebook 和 Instagram 上的「贊助」貼文"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "從您開啟的連結中移除 utm_*、fbclid、gclid 等點擊識別碼"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "封鎖已知的惡意軟體網域（abuse.ch 的 URLhaus 清單）"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "在所有網站上停用 Google 的 Topics、FLoC 和 Protected Audience 廣告 API"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "阻止第三方超連結稽核/信標 ping，從已知廣告技術伺服器的回應中移除追蹤 Cookie，並封鎖瀏覽器中的加密貨幣挖礦指令碼。如果某個網站依賴流量分析的功能出現異常，請關閉此項。"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "每天約兩次從 adblock.carbonstealth.eu 取得新的封鎖規則和 YouTube 修正。只取得資料，不含程式碼；要求中不包含任何識別碼或瀏覽資料。"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "以啟發式方法（不依賴過濾清單）攔截到的廣告即時記錄，最新的顯示在最前面。"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "已訂閱的清單以文字形式取得（絕不是程式碼），每天保持更新，並存放在上方的受管理區塊中。移除清單即可刪除其規則。"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "您用元素選取工具手動隱藏的元素，依網站分組。"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "即時診斷，所有項目都在本機計算。如果有紅色項目，按一下「立即更新」或重新載入擴充功能，通常就能解決。"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock 對所有人免費。如果您願意協助它持續維護，歡迎捐款，但絕非必要。"
+  },
+  "opt_reset_statistics": {
+    "message": "重設統計資料"
+  },
+  "opt_add": {
+    "message": "新增"
+  },
+  "opt_save_filters": {
+    "message": "儲存過濾規則"
+  },
+  "opt_subscribe": {
+    "message": "訂閱"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "立即重新整理訂閱"
+  },
+  "opt_update_now": {
+    "message": "立即更新"
+  },
+  "opt_refresh": {
+    "message": "重新整理"
+  },
+  "opt_export_settings": {
+    "message": "匯出設定"
+  },
+  "opt_import_settings": {
+    "message": "匯入設定"
+  },
+  "opt_e_g_example_com": {
+    "message": "例如 example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "訂閱過濾清單網址（例如 https://…/list.txt）"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock 設定"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · 設定"
+  },
+  "opt_theme_light": {
+    "message": "淺色"
+  },
+  "opt_badge_unique": {
+    "message": "獨家"
+  },
+  "opt_smart_desc": {
+    "message": "攔截任何過濾清單都還沒收錄的廣告：尺寸與標準廣告版位相同的跨來源框架會立即隱藏，不需要規則。"
+  },
+  "opt_caught_so_far": {
+    "message": "個廣告已被攔截。"
+  },
+  "opt_allow_desc": {
+    "message": "在這些網域上不封鎖廣告。"
+  },
+  "opt_fh_one": {
+    "message": "每行一條規則。"
+  },
+  "opt_fh_blocks": {
+    "message": "封鎖一個網域；"
+  },
+  "opt_fh_everywhere": {
+    "message": "在所有網站上隱藏元素；"
+  },
+  "opt_fh_site": {
+    "message": "僅在該網站上隱藏。"
+  },
+  "opt_fh_comments": {
+    "message": "以"
+  },
+  "opt_fh_comments2": {
+    "message": "開頭的行是註解。"
+  },
+  "opt_donate": {
+    "message": "透過 Revolut 捐款"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "還沒有以啟發式方法攔截到任何廣告。"
+  },
+  "opt_empty_allow": {
+    "message": "允許清單中還沒有網站。"
+  },
+  "opt_empty_hidden": {
+    "message": "還沒有手動隱藏的項目。"
+  },
+  "opt_empty_subs": {
+    "message": "還沒有訂閱的清單。"
+  },
+  "opt_no_sw": {
+    "message": "Service Worker 沒有回應。"
+  },
+  "opt_remove": {
+    "message": "移除"
+  },
+  "opt_filter_status": {
+    "message": "過濾規則集 v$1，$2更新。只傳輸資料，不會傳送任何關於您的資訊。"
+  },
+  "opt_updating": {
+    "message": "正在更新…"
+  },
+  "opt_updated": {
+    "message": "已更新（v$1，額外規則 $2 條）"
+  },
+  "opt_update_failed": {
+    "message": "更新失敗（$1）"
+  },
+  "opt_saved": {
+    "message": "已儲存 ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 條規則"
+  },
+  "opt_updated_ago": {
+    "message": "$1更新"
+  },
+  "opt_not_fetched": {
+    "message": "尚未取得"
+  },
+  "opt_failed_colon": {
+    "message": "失敗：$1"
+  },
+  "opt_enter_https": {
+    "message": "請輸入有效的 https:// 網址"
+  },
+  "opt_fetching": {
+    "message": "正在取得…"
+  },
+  "opt_subscribed_ok": {
+    "message": "已訂閱：$1 條規則 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "失敗（$1）"
+  },
+  "opt_refreshing": {
+    "message": "正在重新整理…"
+  },
+  "opt_refreshed": {
+    "message": "已重新整理 ✓"
+  },
+  "opt_invalid_file": {
+    "message": "設定檔無效。"
+  },
+  "opt_no_response": {
+    "message": "沒有回應"
+  },
+  "opt_h_engine": {
+    "message": "反廣告封鎖引擎"
+  },
+  "opt_h_rulesets": {
+    "message": "已啟用的靜態規則集"
+  },
+  "opt_h_live": {
+    "message": "即時過濾網域"
+  },
+  "opt_h_last": {
+    "message": "上次更新"
+  },
+  "opt_h_sig": {
+    "message": "更新簽章"
+  },
+  "opt_h_user": {
+    "message": "我的過濾規則 / 允許清單規則"
+  },
+  "opt_h_popup": {
+    "message": "內建彈出式廣告主機"
+  },
+  "opt_h_yt": {
+    "message": "YouTube 略過機制"
+  },
+  "opt_reason_frame": {
+    "message": "廣告尺寸的跨來源框架"
+  },
+  "opt_reason_sticky": {
+    "message": "固定式橫幅廣告"
+  },
+  "logRegional": {
+    "message": "地區清單"
+  },
+  "logFocus": {
+    "message": "專注模式"
+  },
+  "opt_filter_lists": {
+    "message": "過濾清單"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList 和 EasyPrivacy 一律開啟。下方清單都是開放授權清單，已編入擴充功能，因此開啟時不會下載任何內容，標示為來自作者的清單除外。"
+  },
+  "opt_lists_core": {
+    "message": "核心"
+  },
+  "opt_lists_regional": {
+    "message": "地區"
+  },
+  "opt_lists_regional_desc": {
+    "message": "與您瀏覽器語言相符的清單會自動開啟。如果您常看其他語言的網站，可以加入相應的清單。"
+  },
+  "opt_focus_mode": {
+    "message": "專注模式"
+  },
+  "opt_focus_desc": {
+    "message": "隱藏那些不是廣告卻依然礙事的內容。這裡的所有項目在您開啟前都是關閉的。"
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin 過濾規則"
+  },
+  "opt_list_ubo_desc": {
+    "message": "來自 uBlock Origin 團隊的廣告、追蹤器、反廣告封鎖修正和網站修復規則。"
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe 的清單"
+  },
+  "opt_list_plowe_desc": {
+    "message": "一份長期維護的廣告和追蹤伺服器清單。"
+  },
+  "opt_focus_social": {
+    "message": "社群媒體按鈕和小工具"
+  },
+  "opt_focus_social_desc": {
+    "message": "分享按鈕、按讚方塊和嵌入的動態。"
+  },
+  "opt_focus_chat": {
+    "message": "聊天和客服小工具"
+  },
+  "opt_focus_chat_desc": {
+    "message": "網頁角落浮動的聊天泡泡。"
+  },
+  "opt_focus_newsletters": {
+    "message": "電子報和註冊彈出式視窗"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "「訂閱我們的電子報」方塊和覆蓋畫面。"
+  },
+  "opt_focus_notifications": {
+    "message": "通知要求提示"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "網站在瀏覽器詢問之前先顯示的「要允許通知嗎？」方塊。"
+  },
+  "opt_focus_ai": {
+    "message": "AI 助理彈出式視窗"
+  },
+  "opt_focus_ai_desc": {
+    "message": "加在網頁上的聊天機器人泡泡和 AI 建議面板。"
+  },
+  "opt_focus_other": {
+    "message": "其他干擾內容"
+  },
+  "opt_focus_other_desc": {
+    "message": "固定列、「在應用程式中開啟」橫幅以及類似的雜亂內容。"
+  },
+  "opt_badge_lang": {
+    "message": "您的語言"
+  },
+  "opt_badge_remote": {
+    "message": "來自作者"
+  },
+  "opt_remote_hint": {
+    "message": "未內建（沒有再散布授權）：開啟後，您的瀏覽器會從 $1 下載。"
+  },
+  "opt_downloaded_from": {
+    "message": "開啟後從 $1 下載"
+  },
+  "opt_lists_error": {
+    "message": "Chrome 拒絕了這個清單組合（$1）。請關閉其中幾個。"
+  },
+  "opt_badge_recommended": {
+    "message": "推薦用於您的語言"
+  },
+  "reportBroken": {
+    "message": "網站顯示異常？修正或告訴我們"
+  },
+  "rep_title": {
+    "message": "這個網站有問題嗎？"
+  },
+  "rep_fix_first": {
+    "message": "立即修正"
+  },
+  "rep_site": {
+    "message": "網站："
+  },
+  "rep_fix_desc": {
+    "message": "大多數問題只要使用下列其中一項就能解決。每一項只套用到這個網站，分頁會重新載入。"
+  },
+  "rep_fix_cosm": {
+    "message": "在這裡關閉元素隱藏"
+  },
+  "rep_fix_allow": {
+    "message": "允許這個網站顯示廣告"
+  },
+  "rep_fix_pause": {
+    "message": "在所有網站暫停 30 分鐘"
+  },
+  "rep_tell_us": {
+    "message": "告訴我們"
+  },
+  "rep_tell_desc": {
+    "message": "我們會透過已簽署的過濾規則更新為所有人修正有問題的網站，通常在一天內完成。擴充功能不會傳送任何內容：回報會在您自己的電子郵件應用程式中開啟，您可以先看到其中的每一個字。"
+  },
+  "rep_what": {
+    "message": "出了什麼問題？（選填）"
+  },
+  "rep_what_ph": {
+    "message": "例如：影片無法開始播放、白色方塊擋住了文章…"
+  },
+  "rep_full_url": {
+    "message": "包含完整的網頁網址（否則只包含網站名稱）"
+  },
+  "rep_preview": {
+    "message": "將傳送的內容"
+  },
+  "rep_send_mail": {
+    "message": "透過電子郵件傳送"
+  },
+  "rep_copy": {
+    "message": "複製回報"
+  },
+  "rep_privacy": {
+    "message": "此報告的處理方式：隱私權政策"
+  },
+  "rep_copied": {
+    "message": "已複製。"
+  },
+  "rep_done_cosm": {
+    "message": "已在這個網站關閉元素隱藏並重新載入。問題解決了嗎？"
+  },
+  "rep_done_allow": {
+    "message": "已允許這個網站顯示廣告並重新載入。問題解決了嗎？"
+  },
+  "rep_done_pause": {
+    "message": "已暫停 30 分鐘。如果網站現在正常了，請在下方告訴我們。"
+  },
+  "cookieRejections": {
+    "message": "已為您拒絕的 Cookie 橫幅：$1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube 上的 Shorts 區塊、分頁和推薦內容。"
+  },
+  "opt_focus_onetap": {
+    "message": "「使用 Google 帳戶登入」彈出式視窗"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "許多網站角落出現的帳戶選擇框。登入按鈕仍可正常使用。"
+  },
+  "pickTip": {
+    "message": "按一下要隱藏的元素"
+  },
+  "pickZapTip": {
+    "message": "按一下即可移除這個元素（僅一次）"
+  },
+  "pickEscCancel": {
+    "message": "鍵取消"
+  },
+  "opt_notices": {
+    "message": "過濾清單的授權條款"
+  }
+}

@@ -42,6 +42,7 @@ export const metadata: Metadata = {
     "QR код за WiFi парола",
     "wifi табелка",
     "QR парола за интернет",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/wifi" },
   ...pageMeta(TITLE, DESC, "/wifi"),

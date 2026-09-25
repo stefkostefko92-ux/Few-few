@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "покана за сватба",
     "детска покана шаблон",
     "покана образец",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/pokani" },
   ...pageMeta(TITLE, DESC, "/pokani"),

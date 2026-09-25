@@ -1,7 +1,29 @@
 // token-budget.test.mjs — оценителят на токен-бюджета (CI auto-discover).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { estTokens, computeBudget, PREFIX_TOKEN_WARN, PREFIX_TOKEN_HARD } from "./token-budget.mjs";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { estTokens, computeBudget, PREFIX_TOKEN_WARN, PREFIX_TOKEN_HARD, ROOT_DOC_TOKEN_HARD } from "./token-budget.mjs";
+
+const CLI = join(dirname(fileURLToPath(import.meta.url)), "token-budget.mjs");
+
+test("коренният CLAUDE.md: днес под тавана, а раздут → --check пада (и в --json)", () => {
+  const { rootDocTokens, descTokens } = computeBudget();
+  assert.ok(rootDocTokens > 0 && rootDocTokens <= ROOT_DOC_TOKEN_HARD, `коренът ~${rootDocTokens} т > ${ROOT_DOC_TOKEN_HARD} — премести доктрина надолу`);
+  assert.ok(descTokens > 0, "описанията на агентите се броят");
+  const d = mkdtempSync(join(tmpdir(), "tb-root-"));
+  try {
+    const fat = join(d, "CLAUDE.md");
+    writeFileSync(fat, "доктрина на агентския слой в корена ".repeat(400)); // ~5.7k т
+    const env = { ...process.env, TOKEN_BUDGET_ROOT_DOC: fat };
+    assert.equal(spawnSync(process.execPath, [CLI, "--check"], { env, encoding: "utf8" }).status, 1, "раздут корен → провал");
+    assert.equal(spawnSync(process.execPath, [CLI, "--check", "--json"], { env, encoding: "utf8", maxBuffer: 64 << 20 }).status, 1, "същата присъда и в --json");
+    assert.equal(spawnSync(process.execPath, [CLI, "--check"], { encoding: "utf8" }).status, 0, "днешният корен минава");
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
 
 test("estTokens: празно → 0; расте с дължината; кирилицата тежи повече от латиницата", () => {
   assert.equal(estTokens(""), 0);

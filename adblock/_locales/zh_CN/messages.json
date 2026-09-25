@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "随处拦截广告：YouTube 视频广告、横幅、弹出式窗口、跟踪器、Cookie 提示和反广告拦截墙。免费、快速、保护隐私。"
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "开启/关闭保护"
+  },
+  "protected": {
+    "message": "已保护"
+  },
+  "paused": {
+    "message": "已暂停"
+  },
+  "blockingHere": {
+    "message": "正在拦截此页面的广告"
+  },
+  "protectionOff": {
+    "message": "保护已关闭"
+  },
+  "pause30": {
+    "message": "暂停 30 分钟"
+  },
+  "pausedResume": {
+    "message": "已暂停，立即恢复（剩余 $1 分钟）",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "已拦截"
+  },
+  "dataSaved": {
+    "message": "节省的流量"
+  },
+  "timeSaved": {
+    "message": "节省的时间"
+  },
+  "thisSite": {
+    "message": "此网站"
+  },
+  "thisPage": {
+    "message": "此页面"
+  },
+  "blockOnSite": {
+    "message": "在此网站上拦截广告"
+  },
+  "blocking": {
+    "message": "拦截中"
+  },
+  "allowed": {
+    "message": "已允许"
+  },
+  "cosmetics": {
+    "message": "隐藏此处的广告框"
+  },
+  "cosmeticsTitle": {
+    "message": "隐藏此网站上的广告框（如果页面布局错乱，请关闭）"
+  },
+  "on": {
+    "message": "开"
+  },
+  "off": {
+    "message": "关"
+  },
+  "blockedHere": {
+    "message": "此页面上已拦截的内容"
+  },
+  "logEmpty": {
+    "message": "此页面尚未拦截任何内容。"
+  },
+  "logUnavailable": {
+    "message": "暂时无法显示日志（浏览器配额限制），请一分钟后重试。"
+  },
+  "logCore": {
+    "message": "Supreme 核心规则"
+  },
+  "logYouTube": {
+    "message": "YouTube 广告规则"
+  },
+  "logParams": {
+    "message": "跟踪参数"
+  },
+  "logMalware": {
+    "message": "恶意软件域名"
+  },
+  "logSurrogates": {
+    "message": "已中和的广告脚本"
+  },
+  "logPrivacy": {
+    "message": "隐私保护"
+  },
+  "logUser": {
+    "message": "我的过滤规则"
+  },
+  "logLive": {
+    "message": "实时更新"
+  },
+  "hideElement": {
+    "message": "隐藏元素"
+  },
+  "settings": {
+    "message": "设置"
+  },
+  "promoSub": {
+    "message": "装备与工具，carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "广告"
+  },
+  "support": {
+    "message": "支持"
+  },
+  "filtersCount": {
+    "message": "$1+ 条过滤规则",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "外观"
+  },
+  "opt_extra_protection": {
+    "message": "额外保护"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection 日志"
+  },
+  "opt_allowlisted_sites": {
+    "message": "允许列表中的网站"
+  },
+  "opt_my_filters": {
+    "message": "我的过滤规则"
+  },
+  "opt_hidden_elements": {
+    "message": "已隐藏的元素"
+  },
+  "opt_filter_updates": {
+    "message": "过滤规则更新"
+  },
+  "opt_engine_health": {
+    "message": "引擎状态"
+  },
+  "opt_backup": {
+    "message": "备份"
+  },
+  "opt_support_development": {
+    "message": "支持开发"
+  },
+  "opt_theme": {
+    "message": "主题"
+  },
+  "opt_sync_across_devices": {
+    "message": "跨设备同步"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube 广告拦截"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / 同意横幅"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "绕过反广告拦截"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta 赞助帖子"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "移除跟踪参数"
+  },
+  "opt_malware_protection": {
+    "message": "恶意软件防护"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "拦截用于广告定向的浏览器 API"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "拦截跟踪信标和加密货币挖矿"
+  },
+  "opt_auto_update_filters": {
+    "message": "自动更新过滤规则"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth（深色）或浅色"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "在您登录的每个 Chrome 上同步设置、允许列表和过滤规则"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "移除 YouTube 上的视频广告。如果视频无法播放，请关闭此项。"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "自动关闭“接受 Cookie”提示"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "隐藏“请停用广告拦截器”墙并恢复页面"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "隐藏 Facebook 和 Instagram 上的“赞助”帖子"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "从您打开的链接中去除 utm_*、fbclid、gclid 等点击标识符"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "拦截已知的恶意软件域名（abuse.ch 的 URLhaus 列表）"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "在所有网站上停用 Google 的 Topics、FLoC 和 Protected Audience 广告 API"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "阻止第三方超链接审核/信标 ping，从已知广告技术服务器的响应中去除跟踪 Cookie，并拦截浏览器中的加密货币挖矿脚本。如果某个网站依赖统计分析的功能出现异常，请关闭此项。"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "每天约两次从 adblock.carbonstealth.eu 获取新的拦截规则和 YouTube 修复。仅获取数据，不含代码；请求中不包含任何标识符或浏览数据。"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "通过启发式方法（不依赖过滤规则列表）捕获的广告的实时日志，最新的在前。"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "已订阅的列表以文本形式获取（绝不是代码），每天保持更新，并存放在上方的托管区块中。移除列表即可删除其规则。"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "您用元素选择器手动隐藏的元素，按网站分组。"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "实时诊断，所有内容均在本地计算。如果有红色项，点击“立即更新”或重新加载扩展程序通常即可解决。"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock 对所有人免费。如果您愿意帮助它持续维护，欢迎捐赠，但绝非必需。"
+  },
+  "opt_reset_statistics": {
+    "message": "重置统计数据"
+  },
+  "opt_add": {
+    "message": "添加"
+  },
+  "opt_save_filters": {
+    "message": "保存过滤规则"
+  },
+  "opt_subscribe": {
+    "message": "订阅"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "立即刷新订阅"
+  },
+  "opt_update_now": {
+    "message": "立即更新"
+  },
+  "opt_refresh": {
+    "message": "刷新"
+  },
+  "opt_export_settings": {
+    "message": "导出设置"
+  },
+  "opt_import_settings": {
+    "message": "导入设置"
+  },
+  "opt_e_g_example_com": {
+    "message": "例如 example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "订阅过滤规则列表网址（例如 https://…/list.txt）"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock 设置"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · 设置"
+  },
+  "opt_theme_light": {
+    "message": "浅色"
+  },
+  "opt_badge_unique": {
+    "message": "独有"
+  },
+  "opt_smart_desc": {
+    "message": "捕获任何过滤规则列表都尚未收录的广告：尺寸与标准广告位相同的跨源框架会被立即隐藏，无需规则。"
+  },
+  "opt_caught_so_far": {
+    "message": "个广告已被捕获。"
+  },
+  "opt_allow_desc": {
+    "message": "在这些域名上不拦截广告。"
+  },
+  "opt_fh_one": {
+    "message": "每行一条规则。"
+  },
+  "opt_fh_blocks": {
+    "message": "拦截一个域名；"
+  },
+  "opt_fh_everywhere": {
+    "message": "在所有网站上隐藏元素；"
+  },
+  "opt_fh_site": {
+    "message": "仅在该网站上隐藏。"
+  },
+  "opt_fh_comments": {
+    "message": "以"
+  },
+  "opt_fh_comments2": {
+    "message": "开头的行为注释。"
+  },
+  "opt_donate": {
+    "message": "通过 Revolut 捐赠"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "尚未通过启发式方法捕获任何广告。"
+  },
+  "opt_empty_allow": {
+    "message": "允许列表中还没有网站。"
+  },
+  "opt_empty_hidden": {
+    "message": "还没有手动隐藏的内容。"
+  },
+  "opt_empty_subs": {
+    "message": "还没有订阅的列表。"
+  },
+  "opt_no_sw": {
+    "message": "Service Worker 没有响应。"
+  },
+  "opt_remove": {
+    "message": "移除"
+  },
+  "opt_filter_status": {
+    "message": "过滤规则集 v$1，$2更新。仅传输数据，不会发送任何关于您的信息。"
+  },
+  "opt_updating": {
+    "message": "正在更新…"
+  },
+  "opt_updated": {
+    "message": "已更新（v$1，额外规则 $2 条）"
+  },
+  "opt_update_failed": {
+    "message": "更新失败（$1）"
+  },
+  "opt_saved": {
+    "message": "已保存 ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 条规则"
+  },
+  "opt_updated_ago": {
+    "message": "$1更新"
+  },
+  "opt_not_fetched": {
+    "message": "尚未获取"
+  },
+  "opt_failed_colon": {
+    "message": "失败：$1"
+  },
+  "opt_enter_https": {
+    "message": "请输入有效的 https:// 网址"
+  },
+  "opt_fetching": {
+    "message": "正在获取…"
+  },
+  "opt_subscribed_ok": {
+    "message": "已订阅：$1 条规则 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "失败（$1）"
+  },
+  "opt_refreshing": {
+    "message": "正在刷新…"
+  },
+  "opt_refreshed": {
+    "message": "已刷新 ✓"
+  },
+  "opt_invalid_file": {
+    "message": "设置文件无效。"
+  },
+  "opt_no_response": {
+    "message": "无响应"
+  },
+  "opt_h_engine": {
+    "message": "反广告拦截引擎"
+  },
+  "opt_h_rulesets": {
+    "message": "已启用的静态规则集"
+  },
+  "opt_h_live": {
+    "message": "实时过滤域名"
+  },
+  "opt_h_last": {
+    "message": "上次更新"
+  },
+  "opt_h_sig": {
+    "message": "更新签名"
+  },
+  "opt_h_user": {
+    "message": "我的过滤规则 / 允许列表规则"
+  },
+  "opt_h_popup": {
+    "message": "内置弹出式广告主机"
+  },
+  "opt_h_yt": {
+    "message": "YouTube 绕过"
+  },
+  "opt_reason_frame": {
+    "message": "广告尺寸的跨源框架"
+  },
+  "opt_reason_sticky": {
+    "message": "固定横幅广告"
+  },
+  "logRegional": {
+    "message": "地区列表"
+  },
+  "logFocus": {
+    "message": "专注模式"
+  },
+  "opt_filter_lists": {
+    "message": "过滤规则列表"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList 和 EasyPrivacy 始终开启。以下列表均为开放许可列表，已编入扩展程序，因此开启它们不会下载任何内容，标记为来自作者的列表除外。"
+  },
+  "opt_lists_core": {
+    "message": "核心"
+  },
+  "opt_lists_regional": {
+    "message": "地区"
+  },
+  "opt_lists_regional_desc": {
+    "message": "与您的浏览器语言对应的列表会自动开启。如果您经常浏览其他语言的网站，可以添加相应列表。"
+  },
+  "opt_focus_mode": {
+    "message": "专注模式"
+  },
+  "opt_focus_desc": {
+    "message": "隐藏那些不是广告但仍会碍事的内容。此处所有选项默认关闭，需要您手动开启。"
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin 过滤规则"
+  },
+  "opt_list_ubo_desc": {
+    "message": "来自 uBlock Origin 团队的广告、跟踪器、反广告拦截修复和网站修复规则。"
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe 的列表"
+  },
+  "opt_list_plowe_desc": {
+    "message": "一份长期维护的广告和跟踪服务器列表。"
+  },
+  "opt_focus_social": {
+    "message": "社交媒体按钮和小部件"
+  },
+  "opt_focus_social_desc": {
+    "message": "分享按钮、点赞框和嵌入的动态。"
+  },
+  "opt_focus_chat": {
+    "message": "聊天和客服小部件"
+  },
+  "opt_focus_chat_desc": {
+    "message": "页面角落里悬浮的聊天气泡。"
+  },
+  "opt_focus_newsletters": {
+    "message": "新闻通讯和注册弹窗"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“订阅我们的新闻通讯”框和浮层。"
+  },
+  "opt_focus_notifications": {
+    "message": "通知请求提示"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "网站在浏览器询问之前先显示的“允许通知吗？”框。"
+  },
+  "opt_focus_ai": {
+    "message": "AI 助手弹窗"
+  },
+  "opt_focus_ai_desc": {
+    "message": "页面中添加的聊天机器人气泡和 AI 建议面板。"
+  },
+  "opt_focus_other": {
+    "message": "其他干扰内容"
+  },
+  "opt_focus_other_desc": {
+    "message": "固定栏、“在应用中打开”横幅以及类似的杂乱内容。"
+  },
+  "opt_badge_lang": {
+    "message": "您的语言"
+  },
+  "opt_badge_remote": {
+    "message": "来自作者"
+  },
+  "opt_remote_hint": {
+    "message": "未内置（没有再分发许可）：开启后，您的浏览器会从 $1 下载。"
+  },
+  "opt_downloaded_from": {
+    "message": "开启后从 $1 下载"
+  },
+  "opt_lists_error": {
+    "message": "Chrome 拒绝了此列表组合（$1）。请关闭其中一些。"
+  },
+  "opt_badge_recommended": {
+    "message": "推荐用于您的语言"
+  },
+  "reportBroken": {
+    "message": "网站显示异常？修复或告诉我们"
+  },
+  "rep_title": {
+    "message": "此网站出现问题了吗？"
+  },
+  "rep_fix_first": {
+    "message": "立即修复"
+  },
+  "rep_site": {
+    "message": "网站："
+  },
+  "rep_fix_desc": {
+    "message": "大多数问题用下面其中一项即可解决。每一项仅适用于此网站，标签页会重新加载。"
+  },
+  "rep_fix_cosm": {
+    "message": "在此关闭元素隐藏"
+  },
+  "rep_fix_allow": {
+    "message": "允许此网站显示广告"
+  },
+  "rep_fix_pause": {
+    "message": "在所有网站暂停 30 分钟"
+  },
+  "rep_tell_us": {
+    "message": "告诉我们"
+  },
+  "rep_tell_desc": {
+    "message": "我们会通过已签名的过滤规则更新为所有人修复出问题的网站，通常在一天内完成。扩展程序不会发送任何内容：报告会在您自己的电子邮件应用中打开，您可以先看到其中的每一个字。"
+  },
+  "rep_what": {
+    "message": "出了什么问题？（可选）"
+  },
+  "rep_what_ph": {
+    "message": "例如：视频无法开始播放、白色方框遮住了文章…"
+  },
+  "rep_full_url": {
+    "message": "包含完整的页面地址（否则仅包含网站名称）"
+  },
+  "rep_preview": {
+    "message": "将发送的内容"
+  },
+  "rep_send_mail": {
+    "message": "通过电子邮件发送"
+  },
+  "rep_copy": {
+    "message": "复制报告"
+  },
+  "rep_privacy": {
+    "message": "此报告的处理方式：隐私政策"
+  },
+  "rep_copied": {
+    "message": "已复制。"
+  },
+  "rep_done_cosm": {
+    "message": "已在此网站关闭元素隐藏并重新加载。问题解决了吗？"
+  },
+  "rep_done_allow": {
+    "message": "已允许此网站显示广告并重新加载。问题解决了吗？"
+  },
+  "rep_done_pause": {
+    "message": "已暂停 30 分钟。如果网站现在正常了，请在下方告诉我们。"
+  },
+  "cookieRejections": {
+    "message": "已为您拒绝的 Cookie 横幅：$1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube 上的 Shorts 板块、标签页和推荐。"
+  },
+  "opt_focus_onetap": {
+    "message": "“使用 Google 账号登录”弹窗"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "许多网站角落里出现的账号选择框。登录按钮仍可正常使用。"
+  },
+  "pickTip": {
+    "message": "点击要隐藏的元素"
+  },
+  "pickZapTip": {
+    "message": "点击以移除此元素（仅一次）"
+  },
+  "pickEscCancel": {
+    "message": "键取消"
+  },
+  "opt_notices": {
+    "message": "过滤规则列表的许可证"
+  }
+}

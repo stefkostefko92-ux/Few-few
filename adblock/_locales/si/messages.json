@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "සෑම තැනකම දැන්වීම් අවහිර කරයි: YouTube වීඩියෝ දැන්වීම්, බැනර, උත්පතන, ලුහුබඳින්නන් සහ ඇඩ්බ්ලොක් විරෝධී බාධක. නොමිලේ සහ පෞද්ගලික."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth විසින්"
+  },
+  "toggleProtection": {
+    "message": "ආරක්ෂාව සක්‍රිය/අක්‍රිය කරන්න"
+  },
+  "protected": {
+    "message": "ආරක්ෂිතයි"
+  },
+  "paused": {
+    "message": "විරාමයේ"
+  },
+  "blockingHere": {
+    "message": "මෙම පිටුවේ දැන්වීම් අවහිර කරයි"
+  },
+  "protectionOff": {
+    "message": "ආරක්ෂාව අක්‍රියයි"
+  },
+  "pause30": {
+    "message": "මිනිත්තු 30ක් විරාම කරන්න"
+  },
+  "pausedResume": {
+    "message": "විරාමයේ — දැන් නැවත අරඹන්න (මිනිත්තු $1ක් ඉතිරියි)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "අවහිර කළ"
+  },
+  "dataSaved": {
+    "message": "ඉතිරි වූ දත්ත"
+  },
+  "timeSaved": {
+    "message": "ඉතිරි වූ කාලය"
+  },
+  "thisSite": {
+    "message": "මෙම අඩවිය"
+  },
+  "thisPage": {
+    "message": "මෙම පිටුව"
+  },
+  "blockOnSite": {
+    "message": "මෙම අඩවියේ දැන්වීම් අවහිර කරන්න"
+  },
+  "blocking": {
+    "message": "අවහිර කරයි"
+  },
+  "allowed": {
+    "message": "ඉඩ දී ඇත"
+  },
+  "cosmetics": {
+    "message": "මෙහි දැන්වීම් සඟවන්න"
+  },
+  "cosmeticsTitle": {
+    "message": "මෙම අඩවියේ දැන්වීම් සඟවන්න (පිටුවේ පිරිසැලසුම කැඩේ නම් අක්‍රිය කරන්න)"
+  },
+  "on": {
+    "message": "සක්‍රිය"
+  },
+  "off": {
+    "message": "අක්‍රිය"
+  },
+  "blockedHere": {
+    "message": "මෙම පිටුවේ අවහිර කළ"
+  },
+  "logEmpty": {
+    "message": "මෙහි තවම කිසිවක් අවහිර කර නැත."
+  },
+  "logUnavailable": {
+    "message": "ලොගය දැන් ලබා ගත නොහැක (බ්‍රවුසර කෝටාව) — මිනිත්තුවකින් නැවත උත්සාහ කරන්න."
+  },
+  "logCore": {
+    "message": "Supreme මූලික නීති"
+  },
+  "logYouTube": {
+    "message": "YouTube දැන්වීම් නීති"
+  },
+  "logParams": {
+    "message": "ලුහුබැඳීමේ පරාමිති"
+  },
+  "logMalware": {
+    "message": "අනිෂ්ට වසම්"
+  },
+  "logSurrogates": {
+    "message": "උදාසීන කළ දැන්වීම් ස්ක්‍රිප්ට්"
+  },
+  "logPrivacy": {
+    "message": "පෞද්ගලිකත්ව ආරක්ෂාව"
+  },
+  "logUser": {
+    "message": "මගේ පෙරහන්"
+  },
+  "logLive": {
+    "message": "සජීවී යාවත්කාලීන"
+  },
+  "hideElement": {
+    "message": "මූලාංගය සඟවන්න"
+  },
+  "settings": {
+    "message": "සැකසීම්"
+  },
+  "promoSub": {
+    "message": "උපාංග සහ මෙවලම්, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "දැන්වීම"
+  },
+  "support": {
+    "message": "සහාය වන්න"
+  },
+  "filtersCount": {
+    "message": "$1+ පෙරහන්",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "පෙනුම"
+  },
+  "opt_extra_protection": {
+    "message": "අමතර ආරක්ෂාව"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection ලොගය"
+  },
+  "opt_allowlisted_sites": {
+    "message": "ඉඩ දුන් ලැයිස්තුවේ අඩවි"
+  },
+  "opt_my_filters": {
+    "message": "මගේ පෙරහන්"
+  },
+  "opt_hidden_elements": {
+    "message": "සැඟවූ මූලාංග"
+  },
+  "opt_filter_updates": {
+    "message": "පෙරහන් යාවත්කාලීන"
+  },
+  "opt_engine_health": {
+    "message": "එන්ජිමේ තත්ත්වය"
+  },
+  "opt_backup": {
+    "message": "උපස්ථය"
+  },
+  "opt_support_development": {
+    "message": "සංවර්ධනයට සහාය වන්න"
+  },
+  "opt_theme": {
+    "message": "තේමාව"
+  },
+  "opt_sync_across_devices": {
+    "message": "උපාංග හරහා සමමුහුර්ත කරන්න"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube දැන්වීම් අවහිර කිරීම"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "කුකී / කැමැත්ත බැනර"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "ඇඩ්බ්ලොක් විරෝධී බාධක මඟහැරීම"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta අනුග්‍රහය ලත් පළ කිරීම්"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ලුහුබැඳීමේ පරාමිති ඉවත් කරන්න"
+  },
+  "opt_malware_protection": {
+    "message": "අනිෂ්ට මෘදුකාංග ආරක්ෂාව"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "දැන්වීම් ඉලක්ක කරන බ්‍රවුසර API අවහිර කරන්න"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ලුහුබැඳීමේ බීකන් සහ ක්‍රිප්ටෝ කැණීම් අවහිර කරන්න"
+  },
+  "opt_auto_update_filters": {
+    "message": "පෙරහන් ස්වයංක්‍රීයව යාවත්කාලීන කරන්න"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (අඳුරු) හෝ ආලෝකමත්"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "ඔබ පුරනය වී ඇති සෑම Chrome එකකම සැකසීම්, ඉඩ දුන් ලැයිස්තුව සහ පෙරහන් සමමුහුර්තව තබන්න"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube හි වීඩියෝ දැන්වීම් ඉවත් කරන්න. වීඩියෝ ධාවනය නොවේ නම් මෙය අක්‍රිය කරන්න."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“කුකී පිළිගන්න” විමසුම් ස්වයංක්‍රීයව වසන්න"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“ඔබේ ඇඩ්බ්ලොකරය අක්‍රිය කරන්න” බාධක සඟවා පිටුව යථා තත්ත්වයට පත් කරන්න"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook සහ Instagram හි “අනුග්‍රහය ලත්” පළ කිරීම් සඟවන්න"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "ඔබ විවෘත කරන සබැඳිවලින් utm_*, fbclid, gclid සහ වෙනත් ක්ලික් හඳුනාගැනුම් ඉවත් කරන්න"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "දන්නා අනිෂ්ට වසම් අවහිර කරන්න (abuse.ch හි URLhaus ලැයිස්තුව)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "සෑම අඩවියකම Google Topics, FLoC සහ Protected Audience දැන්වීම් API අක්‍රිය කරන්න"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "තෙවන පාර්‍ශ්ව අධිසබැඳි-විගණන / බීකන් පිං නවත්වන්න, දන්නා දැන්වීම් තාක්ෂණ ප්‍රතිචාරවලින් ලුහුබැඳීමේ කුකී ඉවත් කරන්න, සහ බ්‍රවුසරයේ ක්‍රිප්ටෝ කැණීම් ස්ක්‍රිප්ට් අවහිර කරන්න. අඩවියක විශ්ලේෂණ මත රඳා පවතින විශේෂාංගයක් වැරදි ලෙස ක්‍රියා කරන්නේ නම් මෙය අක්‍රිය කරන්න."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu වෙතින් දිනකට දෙවරක් පමණ නව අවහිර කිරීමේ නීති සහ YouTube නිවැරදි කිරීම් ලබා ගනී. දත්ත පමණි, කේතයක් නැත; ඉල්ලීමේ කිසිදු හඳුනාගැනුමක් හෝ බ්‍රවුසින් දත්තයක් නොමැත."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "පෙරහන් ලැයිස්තුවක් නොමැතිව අනුමාන ක්‍රමයෙන් අල්ලා ගත් දැන්වීම්වල සජීවී ලොගය, නවතම ඒවා මුලින්."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "දායක වූ ලැයිස්තු පෙළ ලෙස ලබා ගනී (කිසි විටෙක කේතය ලෙස නොවේ), දිනපතා යාවත්කාලීන වේ, සහ ඉහත කළමනාකරණය කළ කොටස්වල පවතී. ලැයිස්තුවක නීති ඉවත් කිරීමට එම ලැයිස්තුව ඉවත් කරන්න."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "තෝරනය භාවිතයෙන් ඔබ අතින් සැඟවූ මූලාංග, අඩවිය අනුව සමූහගත කර ඇත."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "සජීවී දෝෂ නිර්ණය — සියල්ල ගණනය කරන්නේ ස්ථානීයවය. යමක් රතු නම්, “දැන් යාවත්කාලීන කරන්න” හෝ දිගුව යළි පූරණය කිරීම සාමාන්‍යයෙන් එය නිවැරදි කරයි."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock සැමට නොමිලේ ලැබේ. එය නඩත්තු කිරීමට උදව් කිරීමට ඔබ කැමති නම්, පරිත්‍යාග සාදරයෙන් පිළිගනිමු; ඒවා කිසි විටෙක අනිවාර්ය නොවේ."
+  },
+  "opt_reset_statistics": {
+    "message": "සංඛ්‍යාලේඛන යළි සකසන්න"
+  },
+  "opt_add": {
+    "message": "එක් කරන්න"
+  },
+  "opt_save_filters": {
+    "message": "පෙරහන් සුරකින්න"
+  },
+  "opt_subscribe": {
+    "message": "දායක වන්න"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "දායකත්ව දැන් නැවුම් කරන්න"
+  },
+  "opt_update_now": {
+    "message": "දැන් යාවත්කාලීන කරන්න"
+  },
+  "opt_refresh": {
+    "message": "නැවුම් කරන්න"
+  },
+  "opt_export_settings": {
+    "message": "සැකසීම් අපනයනය කරන්න"
+  },
+  "opt_import_settings": {
+    "message": "සැකසීම් ආයාත කරන්න"
+  },
+  "opt_e_g_example_com": {
+    "message": "උදා. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! උදාහරණය\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "පෙරහන් ලැයිස්තු URL එකකට දායක වන්න (උදා. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock සැකසීම්"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · සැකසීම්"
+  },
+  "opt_theme_light": {
+    "message": "ආලෝකමත්"
+  },
+  "opt_badge_unique": {
+    "message": "අද්විතීය"
+  },
+  "opt_smart_desc": {
+    "message": "කිසිදු පෙරහන් ලැයිස්තුවක් තවම නොදන්නා දැන්වීම් අල්ලා ගනී: සම්මත දැන්වීම් ඉඩක ප්‍රමාණයේ වෙනත් වසම්වල රාමු දුටු සැණින් සඟවයි, නීති අවශ්‍ය නැත."
+  },
+  "opt_caught_so_far": {
+    "message": "මෙතෙක් අල්ලා ගෙන ඇත."
+  },
+  "opt_allow_desc": {
+    "message": "මෙම වසම්වල දැන්වීම් අවහිර නොකෙරේ."
+  },
+  "opt_fh_one": {
+    "message": "එක් පේළියකට එක් නීතියක්."
+  },
+  "opt_fh_blocks": {
+    "message": "වසමක් අවහිර කරයි;"
+  },
+  "opt_fh_everywhere": {
+    "message": "මූලාංගයක් සෑම තැනකම සඟවයි;"
+  },
+  "opt_fh_site": {
+    "message": "එය එම අඩවියේ පමණක් සඟවයි."
+  },
+  "opt_fh_comments": {
+    "message": "මුලට"
+  },
+  "opt_fh_comments2": {
+    "message": "ඇති පේළි අදහස් දැක්වීම් වේ."
+  },
+  "opt_donate": {
+    "message": "Revolut හරහා පරිත්‍යාග කරන්න"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth විසින් නිමවන ලදී"
+  },
+  "opt_empty_smart": {
+    "message": "අනුමාන ක්‍රමයෙන් තවම කිසිවක් අල්ලා ගෙන නැත."
+  },
+  "opt_empty_allow": {
+    "message": "ඉඩ දුන් ලැයිස්තුවේ තවම අඩවි නැත."
+  },
+  "opt_empty_hidden": {
+    "message": "තවම අතින් කිසිවක් සඟවා නැත."
+  },
+  "opt_empty_subs": {
+    "message": "තවම දායක වූ ලැයිස්තු නැත."
+  },
+  "opt_no_sw": {
+    "message": "service worker වෙතින් ප්‍රතිචාරයක් නැත."
+  },
+  "opt_remove": {
+    "message": "ඉවත් කරන්න"
+  },
+  "opt_filter_status": {
+    "message": "පෙරහන් කට්ටලය v$1, යාවත්කාලීන: $2. දත්ත පමණි — ඔබ ගැන කිසිවක් යවනු නොලැබේ."
+  },
+  "opt_updating": {
+    "message": "යාවත්කාලීන වෙමින්…"
+  },
+  "opt_updated": {
+    "message": "යාවත්කාලීන විය (v$1, අමතර නීති $2)"
+  },
+  "opt_update_failed": {
+    "message": "යාවත්කාලීන කිරීම අසමත් විය ($1)"
+  },
+  "opt_saved": {
+    "message": "සුරැකිණි ✓"
+  },
+  "opt_rules_count": {
+    "message": "නීති $1"
+  },
+  "opt_updated_ago": {
+    "message": "යාවත්කාලීන: $1"
+  },
+  "opt_not_fetched": {
+    "message": "තවම ලබා ගෙන නැත"
+  },
+  "opt_failed_colon": {
+    "message": "අසමත්: $1"
+  },
+  "opt_enter_https": {
+    "message": "වලංගු https:// URL එකක් ඇතුළත් කරන්න"
+  },
+  "opt_fetching": {
+    "message": "ලබා ගනිමින්…"
+  },
+  "opt_subscribed_ok": {
+    "message": "දායක විය: නීති $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "අසමත් විය ($1)"
+  },
+  "opt_refreshing": {
+    "message": "නැවුම් වෙමින්…"
+  },
+  "opt_refreshed": {
+    "message": "නැවුම් විය ✓"
+  },
+  "opt_invalid_file": {
+    "message": "වලංගු නොවන සැකසීම් ගොනුවකි."
+  },
+  "opt_no_response": {
+    "message": "ප්‍රතිචාරයක් නැත"
+  },
+  "opt_h_engine": {
+    "message": "ඇඩ්බ්ලොක් විරෝධී එන්ජිම"
+  },
+  "opt_h_rulesets": {
+    "message": "සක්‍රිය ස්ථිතික නීති කට්ටල"
+  },
+  "opt_h_live": {
+    "message": "සජීවී පෙරහන් වසම්"
+  },
+  "opt_h_last": {
+    "message": "අවසන් යාවත්කාලීනය"
+  },
+  "opt_h_sig": {
+    "message": "යාවත්කාලීන අත්සන්"
+  },
+  "opt_h_user": {
+    "message": "මගේ පෙරහන් / ඉඩ දුන් ලැයිස්තු නීති"
+  },
+  "opt_h_popup": {
+    "message": "ඇතුළත් කළ උත්පතන දැන්වීම් ධාරක"
+  },
+  "opt_h_yt": {
+    "message": "YouTube මඟහැරීම"
+  },
+  "opt_reason_frame": {
+    "message": "දැන්වීම් ප්‍රමාණයේ වෙනත් වසමක රාමුවක්"
+  },
+  "opt_reason_sticky": {
+    "message": "ඇලෙන දැන්වීම් බැනරයක්"
+  },
+  "logRegional": {
+    "message": "කලාපීය ලැයිස්තු"
+  },
+  "logFocus": {
+    "message": "අවධාන මාදිලිය"
+  },
+  "opt_filter_lists": {
+    "message": "පෙරහන් ලැයිස්තු"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList සහ EasyPrivacy සැමවිටම සක්‍රියයි. පහත ලැයිස්තු විවෘත බලපත්‍ර සහිත ඒවා වන අතර දිගුව තුළම ඇතුළත් කර ඇත, එබැවින් එකක් සක්‍රිය කිරීමෙන් කිසිවක් බාගත නොවේ — “එහි කතුවරයාගෙන්” ලෙස සලකුණු කළ ලැයිස්තුවක් හැර."
+  },
+  "opt_lists_core": {
+    "message": "මූලික"
+  },
+  "opt_lists_regional": {
+    "message": "කලාපීය"
+  },
+  "opt_lists_regional_desc": {
+    "message": "ඔබේ බ්‍රවුසරයේ භාෂාවට අදාළ ලැයිස්තුව ස්වයංක්‍රීයව සක්‍රිය වේ. ඔබ බොහෝ විට වෙනත් භාෂාවලින් අඩවි කියවන්නේ නම් තවත් ලැයිස්තු එක් කරන්න."
+  },
+  "opt_focus_mode": {
+    "message": "අවධාන මාදිලිය"
+  },
+  "opt_focus_desc": {
+    "message": "දැන්වීමක් නොවුණත් බාධා කරන දේ සඟවන්න. ඔබ සක්‍රිය කරන තුරු මෙහි සියල්ල අක්‍රියයි."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin පෙරහන්"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin කණ්ඩායමෙන් දැන්වීම්, ලුහුබඳින්නන්, ඇඩ්බ්ලොක් විරෝධී නිවැරදි කිරීම් සහ අඩවි අලුත්වැඩියා."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe ගේ ලැයිස්තුව"
+  },
+  "opt_list_plowe_desc": {
+    "message": "දැන්වීම් සහ ලුහුබැඳීමේ සේවාදායකවල දිගුකාලීන ලැයිස්තුවක්."
+  },
+  "opt_focus_social": {
+    "message": "සමාජ මාධ්‍ය බොත්තම් සහ විජට්"
+  },
+  "opt_focus_social_desc": {
+    "message": "බෙදාගැනීමේ බොත්තම්, කැමති කොටු සහ කාවැද්දූ සංග්‍රහ."
+  },
+  "opt_focus_chat": {
+    "message": "කතාබස් සහ සහාය විජට්"
+  },
+  "opt_focus_chat_desc": {
+    "message": "පිටුවේ කෙළවරේ පාවෙන කතාබස් බුබුළු."
+  },
+  "opt_focus_newsletters": {
+    "message": "පුවත් ලිපි සහ ලියාපදිංචි උත්පතන"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“අපගේ පුවත් ලිපියට දායක වන්න” කොටු සහ ආවරණ."
+  },
+  "opt_focus_notifications": {
+    "message": "දැනුම්දීම් ඉල්ලීම්"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "බ්‍රවුසරය විමසීමට පෙර අඩවි පෙන්වන “දැනුම්දීම්වලට ඉඩ දෙන්නද?” කොටු."
+  },
+  "opt_focus_ai": {
+    "message": "AI සහායක උත්පතන"
+  },
+  "opt_focus_ai_desc": {
+    "message": "පිටුවලට එක් කළ චැට්බොට් බුබුළු සහ AI යෝජනා පුවරු."
+  },
+  "opt_focus_other": {
+    "message": "වෙනත් කරදර"
+  },
+  "opt_focus_other_desc": {
+    "message": "ඇලෙන තීරු, “යෙදුමේ විවෘත කරන්න” බැනර සහ එවැනි අනවශ්‍ය දේ."
+  },
+  "opt_badge_lang": {
+    "message": "ඔබේ භාෂාව"
+  },
+  "opt_badge_remote": {
+    "message": "එහි කතුවරයාගෙන්"
+  },
+  "opt_remote_hint": {
+    "message": "ඇතුළත් කර නැත (නැවත බෙදාහැරීමට බලපත්‍රයක් නැත): ඔබ එය සක්‍රිය කළ විට ඔබේ බ්‍රවුසරය එය $1 වෙතින් බාගත කරයි."
+  },
+  "opt_downloaded_from": {
+    "message": "ඔබ සක්‍රිය කළ විට $1 වෙතින් බාගත කෙරේ"
+  },
+  "opt_lists_error": {
+    "message": "Chrome මෙම ලැයිස්තු සංයෝජනය ප්‍රතික්ෂේප කළේය ($1). සමහරක් අක්‍රිය කරන්න."
+  },
+  "opt_badge_recommended": {
+    "message": "ඔබේ භාෂාවට නිර්දේශිතයි"
+  },
+  "reportBroken": {
+    "message": "අඩවිය කැඩී ද? එය නිවැරදි කරන්න හෝ අපට කියන්න"
+  },
+  "rep_title": {
+    "message": "මෙම අඩවියේ යමක් නිසි ලෙස ක්‍රියා නොකරයිද?"
+  },
+  "rep_fix_first": {
+    "message": "දැන් නිවැරදි කරන්න"
+  },
+  "rep_site": {
+    "message": "අඩවිය:"
+  },
+  "rep_fix_desc": {
+    "message": "බොහෝ ගැටලු මේවායින් එකකින් විසඳේ. එක් එක් විකල්පය මෙම අඩවියට පමණක් අදාළයි; ටැබය යළි පූරණය වේ."
+  },
+  "rep_fix_cosm": {
+    "message": "මෙහි මූලාංග සැඟවීම අක්‍රිය කරන්න"
+  },
+  "rep_fix_allow": {
+    "message": "මෙම අඩවියේ දැන්වීම්වලට ඉඩ දෙන්න"
+  },
+  "rep_fix_pause": {
+    "message": "සෑම තැනකම මිනිත්තු 30ක් විරාම කරන්න"
+  },
+  "rep_tell_us": {
+    "message": "අපට කියන්න"
+  },
+  "rep_tell_desc": {
+    "message": "අත්සන් කළ පෙරහන් යාවත්කාලීනය හරහා අපි සැමට කැඩුණු අඩවි නිවැරදි කරමු, සාමාන්‍යයෙන් දිනක් ඇතුළත. දිගුව කිසිවක් යවන්නේ නැත: වාර්තාව ඔබේම ඊමේල් යෙදුමේ විවෘත වන අතර, ඔබ එහි සෑම වචනයක්ම පළමුව දකිනු ඇත."
+  },
+  "rep_what": {
+    "message": "වැරැද්ද කුමක්ද? (විකල්ප)"
+  },
+  "rep_what_ph": {
+    "message": "උදා. වීඩියෝව ආරම්භ නොවේ, සුදු කොටුවක් ලිපිය වසයි…"
+  },
+  "rep_full_url": {
+    "message": "පිටුවේ සම්පූර්ණ ලිපිනය ඇතුළත් කරන්න (නැතහොත් අඩවියේ නම පමණි)"
+  },
+  "rep_preview": {
+    "message": "යවනු ලබන දේ"
+  },
+  "rep_send_mail": {
+    "message": "ඊමේල් මගින් යවන්න"
+  },
+  "rep_copy": {
+    "message": "වාර්තාව පිටපත් කරන්න"
+  },
+  "rep_privacy": {
+    "message": "මෙම වාර්තාව හසුරුවන ආකාරය: රහස්‍යතා ප්‍රතිපත්තිය"
+  },
+  "rep_copied": {
+    "message": "පිටපත් කළා."
+  },
+  "rep_done_cosm": {
+    "message": "මෙම අඩවියේ මූලාංග සැඟවීම අක්‍රියයි. යළි පූරණය කළා — දැන් හරිද?"
+  },
+  "rep_done_allow": {
+    "message": "මෙම අඩවියේ දැන්වීම්වලට ඉඩ දී ඇත. යළි පූරණය කළා — දැන් හරිද?"
+  },
+  "rep_done_pause": {
+    "message": "මිනිත්තු 30ක් විරාම කළා. අඩවිය දැන් ක්‍රියා කරයි නම්, කරුණාකර පහතින් අපට කියන්න."
+  },
+  "cookieRejections": {
+    "message": "ඔබ වෙනුවෙන් ප්‍රතික්ෂේප කළ කුකී බැනර: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube හි Shorts රාක්ක, ටැබය සහ යෝජනා."
+  },
+  "opt_focus_onetap": {
+    "message": "“Google සමඟ පුරන්න” උත්පතන"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "බොහෝ අඩවිවල කෙළවරේ දිස්වන ගිණුම් තේරීමේ කොටුව. පුරනය වීමේ බොත්තම් දිගටම ක්‍රියා කරයි."
+  },
+  "pickTip": {
+    "message": "සැඟවීමට මූලාංගයක් ක්ලික් කරන්න"
+  },
+  "pickZapTip": {
+    "message": "මෙම මූලාංගය ඉවත් කිරීමට ක්ලික් කරන්න (එක් වරක්)"
+  },
+  "pickEscCancel": {
+    "message": "ඔබා අවලංගු කරන්න"
+  },
+  "opt_notices": {
+    "message": "පෙරහන් ලැයිස්තුවල බලපත්‍ර"
+  }
+}

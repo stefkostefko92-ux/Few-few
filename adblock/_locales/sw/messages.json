@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Huzuia matangazo popote: matangazo ya video ya YouTube, mabango, madirisha ibukizi, vifuatiliaji na kuta za anti-adblock. Bure."
+  },
+  "byCarbon": {
+    "message": "na Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Washa au zima ulinzi"
+  },
+  "protected": {
+    "message": "Imelindwa"
+  },
+  "paused": {
+    "message": "Imesitishwa"
+  },
+  "blockingHere": {
+    "message": "Inazuia matangazo kwenye ukurasa huu"
+  },
+  "protectionOff": {
+    "message": "Ulinzi umezimwa"
+  },
+  "pause30": {
+    "message": "Sitisha kwa dakika 30"
+  },
+  "pausedResume": {
+    "message": "Imesitishwa, endelea sasa (zimebaki dakika $1)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Yamezuiwa"
+  },
+  "dataSaved": {
+    "message": "Data uliyookoa"
+  },
+  "timeSaved": {
+    "message": "Muda uliookoa"
+  },
+  "thisSite": {
+    "message": "tovuti hii"
+  },
+  "thisPage": {
+    "message": "ukurasa huu"
+  },
+  "blockOnSite": {
+    "message": "Zuia matangazo kwenye tovuti hii"
+  },
+  "blocking": {
+    "message": "Inazuia"
+  },
+  "allowed": {
+    "message": "Imeruhusiwa"
+  },
+  "cosmetics": {
+    "message": "Ficha nafasi za matangazo"
+  },
+  "cosmeticsTitle": {
+    "message": "Ficha nafasi za matangazo kwenye tovuti hii (zima ikiwa mpangilio wa ukurasa unaharibika)"
+  },
+  "on": {
+    "message": "Imewashwa"
+  },
+  "off": {
+    "message": "Imezimwa"
+  },
+  "blockedHere": {
+    "message": "Yaliyozuiwa kwenye ukurasa huu"
+  },
+  "logEmpty": {
+    "message": "Bado hakuna kilichozuiwa hapa."
+  },
+  "logUnavailable": {
+    "message": "Kumbukumbu haipatikani kwa sasa (kikomo cha kivinjari) — jaribu tena baada ya dakika moja."
+  },
+  "logCore": {
+    "message": "Kanuni kuu za Supreme"
+  },
+  "logYouTube": {
+    "message": "Matangazo ya YouTube"
+  },
+  "logParams": {
+    "message": "Vigezo vya ufuatiliaji"
+  },
+  "logMalware": {
+    "message": "Vikoa hasidi"
+  },
+  "logSurrogates": {
+    "message": "Hati za matangazo zilizozimwa"
+  },
+  "logPrivacy": {
+    "message": "Ulinzi wa faragha"
+  },
+  "logUser": {
+    "message": "Vichujio vyangu"
+  },
+  "logLive": {
+    "message": "Masasisho hai"
+  },
+  "hideElement": {
+    "message": "Ficha kipengele"
+  },
+  "settings": {
+    "message": "Mipangilio"
+  },
+  "promoSub": {
+    "message": "Vifaa na zana, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Tangazo"
+  },
+  "support": {
+    "message": "Changia"
+  },
+  "filtersCount": {
+    "message": "Vichujio $1+",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Mwonekano"
+  },
+  "opt_extra_protection": {
+    "message": "Ulinzi wa ziada"
+  },
+  "opt_smart_detection_log": {
+    "message": "Kumbukumbu ya Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Tovuti zilizoruhusiwa"
+  },
+  "opt_my_filters": {
+    "message": "Vichujio vyangu"
+  },
+  "opt_hidden_elements": {
+    "message": "Vipengele vilivyofichwa"
+  },
+  "opt_filter_updates": {
+    "message": "Masasisho ya vichujio"
+  },
+  "opt_engine_health": {
+    "message": "Hali ya injini"
+  },
+  "opt_backup": {
+    "message": "Hifadhi nakala"
+  },
+  "opt_support_development": {
+    "message": "Changia maendeleo"
+  },
+  "opt_theme": {
+    "message": "Mandhari"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sawazisha kwenye vifaa vyote"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Kuzuia matangazo ya YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Mabango ya vidakuzi / idhini"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Kukwepa kuta za anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Machapisho yaliyofadhiliwa ya Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Ondoa vigezo vya ufuatiliaji"
+  },
+  "opt_malware_protection": {
+    "message": "Ulinzi dhidi ya programu hasidi"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Zuia API za kivinjari za kulenga matangazo"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Zuia ishara za ufuatiliaji na programu za kuchimba sarafu za kidijitali"
+  },
+  "opt_auto_update_filters": {
+    "message": "Sasisha vichujio kiotomatiki"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (giza) au angavu"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Sawazisha mipangilio, orodha ya zinazoruhusiwa na vichujio kwenye kila Chrome ambayo umeingia katika akaunti"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Huondoa matangazo ya video kwenye YouTube. Zima ikiwa video hazichezi."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Funga kiotomatiki maombi ya “Kubali vidakuzi”"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Ficha kuta za “zima kizuia matangazo chako” na urejeshe ukurasa"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Ficha machapisho ya “Yaliyofadhiliwa” kwenye Facebook na Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Ondoa utm_*, fbclid, gclid na vitambulisho vingine vya kubofya kwenye viungo unavyofungua"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Zuia vikoa hasidi vinavyojulikana (orodha ya URLhaus ya abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Zima API za matangazo za Google Topics, FLoC na Protected Audience kwenye kila tovuti"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Husimamisha ping za ukaguzi wa viungo / beacon za wahusika wengine, huondoa vidakuzi vya ufuatiliaji kwenye majibu yanayojulikana ya teknolojia ya matangazo, na huzuia hati za kuchimba sarafu za kidijitali kwenye kivinjari. Zima ikiwa kipengele cha tovuti kinachotegemea takwimu hakifanyi kazi vizuri."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Hupakua kanuni mpya za kuzuia na marekebisho ya YouTube kutoka adblock.carbonstealth.eu takriban mara mbili kwa siku. Data pekee, hakuna msimbo; ombi halibebi vitambulisho wala data ya kuvinjari."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Kumbukumbu hai ya matangazo yaliyonaswa kwa kukisia (bila orodha ya vichujio), mapya kwanza."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Orodha ulizojisajili hupakuliwa kama maandishi (kamwe si msimbo), husasishwa kila siku, na hukaa kwenye sehemu zinazodhibitiwa hapo juu. Ondoa orodha ili kuondoa kanuni zake."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Vipengele ulivyoficha mwenyewe kwa kiteuzi, vimepangwa kwa tovuti."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Uchunguzi wa moja kwa moja — kila kitu hukokotolewa kwenye kifaa chako. Ikiwa kitu ni chekundu, “Sasisha sasa” au kupakia upya kiendelezi kwa kawaida hurekebisha tatizo."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ni bure kwa kila mtu. Ikiwa ungependa kusaidia kiendelee kutunzwa, michango inakaribishwa, lakini si lazima kamwe."
+  },
+  "opt_reset_statistics": {
+    "message": "Weka upya takwimu"
+  },
+  "opt_add": {
+    "message": "Ongeza"
+  },
+  "opt_save_filters": {
+    "message": "Hifadhi vichujio"
+  },
+  "opt_subscribe": {
+    "message": "Jisajili"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Onyesha upya usajili sasa"
+  },
+  "opt_update_now": {
+    "message": "Sasisha sasa"
+  },
+  "opt_refresh": {
+    "message": "Onyesha upya"
+  },
+  "opt_export_settings": {
+    "message": "Hamisha mipangilio"
+  },
+  "opt_import_settings": {
+    "message": "Leta mipangilio"
+  },
+  "opt_e_g_example_com": {
+    "message": "k.m. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! mfano\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Jisajili kwenye URL ya orodha ya vichujio (k.m. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Mipangilio ya Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Mipangilio"
+  },
+  "opt_theme_light": {
+    "message": "Angavu"
+  },
+  "opt_badge_unique": {
+    "message": "ya kipekee"
+  },
+  "opt_smart_desc": {
+    "message": "Hunasa matangazo ambayo bado hakuna orodha ya vichujio inayoyajua: fremu kutoka vikoa vingine zenye ukubwa wa nafasi za kawaida za matangazo hufichwa papo hapo, bila kuhitaji kanuni."
+  },
+  "opt_caught_so_far": {
+    "message": "yamenaswa hadi sasa."
+  },
+  "opt_allow_desc": {
+    "message": "Matangazo hayazuiwi kwenye vikoa hivi."
+  },
+  "opt_fh_one": {
+    "message": "Kanuni moja kwa kila mstari."
+  },
+  "opt_fh_blocks": {
+    "message": "huzuia kikoa;"
+  },
+  "opt_fh_everywhere": {
+    "message": "huficha kipengele kila mahali;"
+  },
+  "opt_fh_site": {
+    "message": "hukificha kwenye tovuti hiyo tu."
+  },
+  "opt_fh_comments": {
+    "message": "Mistari inayoanza na"
+  },
+  "opt_fh_comments2": {
+    "message": "ni maoni."
+  },
+  "opt_donate": {
+    "message": "Changia kupitia Revolut"
+  },
+  "opt_made_by": {
+    "message": "imetengenezwa na Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Bado hakuna kilichonaswa kwa kukisia."
+  },
+  "opt_empty_allow": {
+    "message": "Bado hakuna tovuti zilizoruhusiwa."
+  },
+  "opt_empty_hidden": {
+    "message": "Bado hakuna kilichofichwa kwa mkono."
+  },
+  "opt_empty_subs": {
+    "message": "Bado hakuna orodha ulizojisajili."
+  },
+  "opt_no_sw": {
+    "message": "Hakuna jibu kutoka kwa service worker."
+  },
+  "opt_remove": {
+    "message": "Ondoa"
+  },
+  "opt_filter_status": {
+    "message": "Seti ya vichujio v$1, imesasishwa $2. Data pekee, hakuna chochote kukuhusu kinachotumwa."
+  },
+  "opt_updating": {
+    "message": "Inasasisha…"
+  },
+  "opt_updated": {
+    "message": "Imesasishwa (v$1, kanuni $2 za ziada)"
+  },
+  "opt_update_failed": {
+    "message": "Imeshindwa kusasisha ($1)"
+  },
+  "opt_saved": {
+    "message": "Imehifadhiwa ✓"
+  },
+  "opt_rules_count": {
+    "message": "Kanuni $1"
+  },
+  "opt_updated_ago": {
+    "message": "imesasishwa $1"
+  },
+  "opt_not_fetched": {
+    "message": "bado haijapakuliwa"
+  },
+  "opt_failed_colon": {
+    "message": "imeshindwa: $1"
+  },
+  "opt_enter_https": {
+    "message": "Weka URL sahihi ya https://"
+  },
+  "opt_fetching": {
+    "message": "Inapakua…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Umejisajili: kanuni $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Imeshindwa ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Inaonyesha upya…"
+  },
+  "opt_refreshed": {
+    "message": "Imeonyeshwa upya ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Faili ya mipangilio si sahihi."
+  },
+  "opt_no_response": {
+    "message": "hakuna jibu"
+  },
+  "opt_h_engine": {
+    "message": "Injini ya kukwepa anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Seti za kanuni tuli zilizowashwa"
+  },
+  "opt_h_live": {
+    "message": "Vikoa vya vichujio hai"
+  },
+  "opt_h_last": {
+    "message": "Sasisho la mwisho"
+  },
+  "opt_h_sig": {
+    "message": "Sahihi za masasisho"
+  },
+  "opt_h_user": {
+    "message": "Vichujio vyangu / kanuni za zinazoruhusiwa"
+  },
+  "opt_h_popup": {
+    "message": "Seva za matangazo ibukizi zilizojumuishwa"
+  },
+  "opt_h_yt": {
+    "message": "Ukwepaji wa YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Fremu ya kikoa kingine yenye ukubwa wa tangazo"
+  },
+  "opt_reason_sticky": {
+    "message": "Bango la tangazo linalonata"
+  },
+  "logRegional": {
+    "message": "Orodha za kikanda"
+  },
+  "logFocus": {
+    "message": "Hali ya umakini"
+  },
+  "opt_filter_lists": {
+    "message": "Orodha za vichujio"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList na EasyPrivacy huwa zimewashwa kila wakati. Orodha zilizo hapa chini ni za leseni huria na zimejumuishwa kwenye kiendelezi, kwa hivyo kuwasha mojawapo hakupakui chochote, isipokuwa orodha iliyowekwa alama kuwa inatoka kwa mwandishi wake."
+  },
+  "opt_lists_core": {
+    "message": "Msingi"
+  },
+  "opt_lists_regional": {
+    "message": "Kikanda"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Orodha ya lugha ya kivinjari chako huwashwa yenyewe. Ongeza nyingine ikiwa mara nyingi unasoma tovuti za lugha nyingine."
+  },
+  "opt_focus_mode": {
+    "message": "Hali ya umakini"
+  },
+  "opt_focus_desc": {
+    "message": "Ficha visivyo matangazo lakini bado vinasumbua. Kila kitu hapa kimezimwa hadi utakapokiwasha."
+  },
+  "opt_list_ubo": {
+    "message": "Vichujio vya uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Matangazo, vifuatiliaji, marekebisho ya anti-adblock na ukarabati wa tovuti kutoka kwa timu ya uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Orodha ya Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Orodha ya muda mrefu ya seva za matangazo na ufuatiliaji."
+  },
+  "opt_focus_social": {
+    "message": "Vitufe na wijeti za mitandao ya kijamii"
+  },
+  "opt_focus_social_desc": {
+    "message": "Vitufe vya kushiriki, visanduku vya kupenda na milisho iliyopachikwa."
+  },
+  "opt_focus_chat": {
+    "message": "Wijeti za gumzo na usaidizi"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Viputo vya gumzo vinavyoelea kwenye kona ya ukurasa."
+  },
+  "opt_focus_newsletters": {
+    "message": "Madirisha ibukizi ya majarida na usajili"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Visanduku na tabaka za “Jisajili kupokea jarida letu”."
+  },
+  "opt_focus_notifications": {
+    "message": "Maombi ya arifa"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Visanduku vya “Ruhusu arifa?” ambavyo tovuti huonyesha kabla kivinjari hakijauliza."
+  },
+  "opt_focus_ai": {
+    "message": "Madirisha ibukizi ya wasaidizi wa AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Viputo vya chatbot na paneli za mapendekezo ya AI zilizoongezwa kwenye kurasa."
+  },
+  "opt_focus_other": {
+    "message": "Kero nyingine"
+  },
+  "opt_focus_other_desc": {
+    "message": "Mistari inayonata, mabango ya “fungua kwenye programu” na msongamano kama huo."
+  },
+  "opt_badge_lang": {
+    "message": "lugha yako"
+  },
+  "opt_badge_remote": {
+    "message": "kutoka kwa mwandishi"
+  },
+  "opt_remote_hint": {
+    "message": "Haijajumuishwa (hakuna leseni ya kuisambaza upya): kivinjari chako huipakua kutoka $1 unapoiwasha."
+  },
+  "opt_downloaded_from": {
+    "message": "Hupakuliwa kutoka $1 unapoiwasha"
+  },
+  "opt_lists_error": {
+    "message": "Chrome imekataa mchanganyiko huu wa orodha ($1). Zima baadhi yake."
+  },
+  "opt_badge_recommended": {
+    "message": "inapendekezwa kwa lugha yako"
+  },
+  "reportBroken": {
+    "message": "Tovuti ina hitilafu? Irekebishe au tuambie"
+  },
+  "rep_title": {
+    "message": "Kuna kitu kimeharibika kwenye tovuti hii?"
+  },
+  "rep_fix_first": {
+    "message": "Irekebishe sasa"
+  },
+  "rep_site": {
+    "message": "Tovuti:"
+  },
+  "rep_fix_desc": {
+    "message": "Matatizo mengi hutoweka kwa mojawapo ya haya. Kila moja linatumika kwenye tovuti hii pekee; kichupo kitapakiwa upya."
+  },
+  "rep_fix_cosm": {
+    "message": "Zima ufichaji wa vipengele hapa"
+  },
+  "rep_fix_allow": {
+    "message": "Ruhusu matangazo kwenye tovuti hii"
+  },
+  "rep_fix_pause": {
+    "message": "Sitisha kila mahali kwa dakika 30"
+  },
+  "rep_tell_us": {
+    "message": "Tuambie"
+  },
+  "rep_tell_desc": {
+    "message": "Tunarekebisha tovuti zenye hitilafu kwa ajili ya kila mtu kupitia sasisho la vichujio lililotiwa sahihi, kwa kawaida ndani ya siku moja. Kiendelezi hakitumi chochote: ripoti hufunguka kwenye programu yako ya barua pepe, na unaona kila neno lake kwanza."
+  },
+  "rep_what": {
+    "message": "Tatizo ni nini? (si lazima)"
+  },
+  "rep_what_ph": {
+    "message": "k.m. video haianzi, kisanduku cheupe kinafunika makala…"
+  },
+  "rep_full_url": {
+    "message": "Jumuisha anwani kamili ya ukurasa (vinginevyo jina la tovuti pekee)"
+  },
+  "rep_preview": {
+    "message": "Kitakachotumwa"
+  },
+  "rep_send_mail": {
+    "message": "Tuma kwa barua pepe"
+  },
+  "rep_copy": {
+    "message": "Nakili ripoti"
+  },
+  "rep_privacy": {
+    "message": "Jinsi ripoti hii inavyoshughulikiwa: sera ya faragha"
+  },
+  "rep_copied": {
+    "message": "Imenakiliwa."
+  },
+  "rep_done_cosm": {
+    "message": "Ufichaji wa vipengele umezimwa kwenye tovuti hii. Imepakiwa upya — je, tatizo limetatuliwa?"
+  },
+  "rep_done_allow": {
+    "message": "Matangazo yameruhusiwa kwenye tovuti hii. Imepakiwa upya — je, tatizo limetatuliwa?"
+  },
+  "rep_done_pause": {
+    "message": "Imesitishwa kwa dakika 30. Ikiwa tovuti inafanya kazi sasa, tafadhali tuambie hapa chini."
+  },
+  "cookieRejections": {
+    "message": "Mabango ya vidakuzi yaliyokataliwa kwa niaba yako: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Rafu, kichupo na mapendekezo ya Shorts kwenye YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Madirisha ibukizi ya “Ingia ukitumia Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Kiteuzi cha akaunti kinachotokea kwenye kona ya tovuti nyingi. Vitufe vya kuingia vinaendelea kufanya kazi."
+  },
+  "pickTip": {
+    "message": "Bofya kipengele ili ukifiche"
+  },
+  "pickZapTip": {
+    "message": "Bofya ili uondoe kipengele hiki (mara moja)"
+  },
+  "pickEscCancel": {
+    "message": "ili kughairi"
+  },
+  "opt_notices": {
+    "message": "Leseni za orodha za vichujio"
+  }
+}

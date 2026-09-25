@@ -1,0 +1,10 @@
+Supreme AdBlock blockerar annonser överallt – YouTube-videoannonser, banners, popup-fönster och spårare – utan att hålla koll på vad du gör.
+
+• YouTube-annonser stoppas vid källan, så videor spelas upp direkt.
+• EasyList, EasyPrivacy och uBlock Origin-filtren är inbyggda, plus listan för ditt språk (31 regionala listor).
+• Cookie-banners: tillägget trycker på Avvisa åt dig, tar bort kvarvarande oskärpa och scrollspärr och trycker aldrig på en knapp för inloggning, OAuth eller betalning.
+• Fokusläge: dölj chattbubblor, popup-fönster för nyhetsbrev, förfrågningar om aviseringar, sociala widgetar, AI-popupar och YouTube Shorts.
+• Anti-adblock-väggar och pop-unders neutraliseras.
+• Fungerar inte webbplatsen? Ett klick åtgärdar det, eller berätta för oss – ingenting skickas utan att du ser det först.
+• Signerade filteruppdateringar två gånger om dagen: nya annonsnätverk hanteras inom några timmar, utan fjärrkod.
+• Inget konto, ingen telemetri, ingen datainsamling. Gratis, med en valfri donation; popup-fönstret visar ett litet kort, märkt ”Ann.”, för Carbon Stealth, som har gjort tillägget.
