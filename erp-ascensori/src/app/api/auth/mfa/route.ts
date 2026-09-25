@@ -13,12 +13,13 @@ import { scriviAudit } from "@/lib/audit";
 import {
   generaSegreto,
   uriOtpauth,
-  verifica,
+  passoValido,
   generaCodiciRecupero,
 } from "@/lib/totp";
 import { hashCodiciRecupero } from "@/lib/mfa";
 import { mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
+import { consenti, LIMITI } from "@/lib/rate-limit";
 
 /** Подготовка: нова тайна + URI за QR. Още НЕ включва втория фактор. */
 export const GET = gestito(async () => {
@@ -47,6 +48,10 @@ const schemaAttiva = z.object({ codice: z.string().trim().min(6).max(10) });
 /** Включване след потвърждение с код. Връща резервните кодове ВЕДНЪЖ. */
 export const POST = gestito(async (req) => {
   const s = await richiedeSessione();
+  // Честота и тук: сесията е нужна, но откраднатата сесия е точно случаят, в
+  // който някой би пробвал кодове без край, за да върже СВОЕ устройство.
+  if (!consenti(`mfa:${s.sub}`, 10, LIMITI.finestraMs))
+    throw new ErroreHttp(429, "Troppe richieste: riprovare più tardi");
   const { codice } = await corpoValidato(req, schemaAttiva);
 
   const u = await prisma.user.findUniqueOrThrow({
@@ -57,7 +62,8 @@ export const POST = gestito(async (req) => {
     throw new ErroreHttp(409, "Verifica in due passaggi già attiva");
   if (!u.totpSegreto)
     throw new ErroreHttp(409, "Avviare prima la configurazione");
-  if (!verifica(u.totpSegreto, codice))
+  const passo = passoValido(u.totpSegreto, codice);
+  if (passo === null)
     throw new ErroreHttp(
       400,
       "Codice non valido: verificare l'orario del dispositivo",
@@ -68,6 +74,8 @@ export const POST = gestito(async (req) => {
     where: { id: s.sub },
     data: {
       totpAttivo: true,
+      // Кодът за включване е изразходван: същият код не отваря и вход.
+      totpUltimoPasso: passo,
       codiciRecupero: await hashCodiciRecupero(codici),
     },
   });
@@ -107,7 +115,12 @@ export const DELETE = gestito(async (req) => {
 
   await prisma.user.update({
     where: { id: s.sub },
-    data: { totpAttivo: false, totpSegreto: null, codiciRecupero: [] },
+    data: {
+      totpAttivo: false,
+      totpSegreto: null,
+      totpUltimoPasso: null,
+      codiciRecupero: [],
+    },
   });
   // Изключването на втория фактор е промяна в сигурността: всички други
   // устройства падат.

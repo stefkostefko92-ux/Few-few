@@ -89,10 +89,13 @@ describe("втори фактор", () => {
     assert.equal(male.status === 400 || male.status === 200, true);
     if (male.status === 200) return; // 000000 случайно е верният код
 
+    // Точно този код, не преизчислен: на границата на стъпката новото
+    // изчисление би дало кода на СЛЕДВАЩАТА стъпка — тоест не повторение.
+    const codiceAttivazione = codiceTotp(setup.dati.segreto);
     const attiva = await u.sessione.post<{ codiciRecupero: string[] }>(
       "/api/auth/mfa",
       {
-        codice: codiceTotp(setup.dati.segreto),
+        codice: codiceAttivazione,
       },
     );
     assert.equal(attiva.status, 200, JSON.stringify(attiva.dati));
@@ -102,14 +105,62 @@ describe("втори фактор", () => {
     const senza = new Sessione();
     assert.equal(await senza.entra(u.email), 428);
 
-    // Вход с код минава.
+    // Кодът за включване е ИЗРАЗХОДВАН: същият код не отваря и вход.
+    const stesso = new Sessione();
+    const ripetuto = await stesso.richiesta("POST", "/api/auth/login", {
+      email: u.email,
+      password: PASSWORD,
+      codice: codiceAttivazione,
+    });
+    assert.equal(ripetuto.status, 401, "codice riutilizzato accettato");
+
+    // Кодът на СЛЕДВАЩАТА стъпка (в прозореца ±1) минава — веднъж.
+    const successivo = codiceTotp(setup.dati.segreto, Date.now() + 30_000);
     const con = new Sessione();
     const r = await con.richiesta("POST", "/api/auth/login", {
       email: u.email,
       password: PASSWORD,
-      codice: codiceTotp(setup.dati.segreto),
+      codice: successivo,
     });
     assert.equal(r.status, 200);
+    const ancora = await new Sessione().richiesta("POST", "/api/auth/login", {
+      email: u.email,
+      password: PASSWORD,
+      codice: successivo,
+    });
+    assert.equal(ancora.status, 401, "stesso codice accettato due volte");
+  });
+
+  test("грешни кодове на втория фактор ЗАКЛЮЧВАТ акаунта като грешна парола", async () => {
+    // Находка на червения екип: грешният код само увеличаваше брояча и НИКОГА
+    // не записваше блокада — щом паролата е известна, 6-цифреният код се
+    // налучкваше без край.
+    const u = await nuovoUtente();
+    const setup = await u.sessione.get<{ segreto: string }>("/api/auth/mfa");
+    const attiva = await u.sessione.post("/api/auth/mfa", {
+      codice: codiceTotp(setup.dati.segreto),
+    });
+    assert.equal(attiva.status, 200);
+    const giusto = codiceTotp(setup.dati.segreto, Date.now() + 30_000);
+    const sbagliato = giusto === "123456" ? "654321" : "123456";
+
+    const stati: number[] = [];
+    for (let i = 0; i < 5; i++) {
+      const r = await new Sessione().richiesta("POST", "/api/auth/login", {
+        email: u.email,
+        password: PASSWORD,
+        codice: sbagliato,
+      });
+      stati.push(r.status);
+    }
+    assert.deepEqual(stati, [401, 401, 401, 401, 423]);
+    // Блокиран: и верният код вече не отваря.
+    const dopo = await new Sessione().richiesta("POST", "/api/auth/login", {
+      email: u.email,
+      password: PASSWORD,
+      codice: giusto,
+    });
+    assert.equal(dopo.status, 423);
   });
 
   test("резервният код работи ВЕДНЪЖ", async () => {

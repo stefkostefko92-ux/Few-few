@@ -83,18 +83,46 @@ describe("блокада при поредни неуспехи", () => {
     }
   });
 
-  test("непознат имейл дава същото съобщение като грешна парола", async () => {
-    const s = new Sessione();
-    const ignoto = await s.post<{ error: string }>("/api/auth/login", {
-      email: `${unico("ignoto").toLowerCase()}@test.local`,
-      password: "каквото и да е",
-    });
-    assert.equal(ignoto.status, 401);
-    assert.equal(
-      ignoto.dati.error,
-      "Credenziali non valide",
-      "без изброяване на акаунти",
+  test("непознат имейл дава СЪЩИЯ отговор като грешна парола — и при блокадата", async () => {
+    // Преди непознатият имейл получаваше голото „Credenziali non valide", а
+    // истинският — „…Tentativi rimasti: 4": тялото казваше кой акаунт
+    // съществува. Сега и двата вървят по една и съща стълба до 423.
+    const u = await nuovoUtente();
+    const ignoto = `${unico("ignoto").toLowerCase()}@test.local`;
+    const risposte = async (email: string) => {
+      const out: string[] = [];
+      for (let i = 0; i < 6; i++) {
+        const r = await new Sessione().post<{ error: string }>(
+          "/api/auth/login",
+          { email, password: "sbagliata-di-proposito" },
+        );
+        out.push(`${r.status} ${r.dati.error}`);
+      }
+      return out;
+    };
+    const vero = await risposte(u.email);
+    const finto = await risposte(ignoto);
+    assert.deepEqual(finto, vero, "la risposta distingue gli account");
+    assert.match(
+      vero[0],
+      /^401 Credenziali non valide\. Tentativi rimasti: 4$/,
     );
+    assert.match(vero[4], /^423 /);
+  });
+
+  test("регистърът на имейла не дава отделен брояч", async () => {
+    const u = await nuovoUtente();
+    const r = await new Sessione().post<{ error: string }>("/api/auth/login", {
+      email: `  ${u.email.toUpperCase()}  `,
+      password: "sbagliata-di-proposito",
+    });
+    const r2 = await new Sessione().post<{ error: string }>("/api/auth/login", {
+      email: u.email,
+      password: "sbagliata-di-proposito",
+    });
+    // Същият акаунт: вторият опит вижда брояча от първия.
+    assert.match(r.dati.error, /Tentativi rimasti: 4$/);
+    assert.match(r2.dati.error, /Tentativi rimasti: 3$/);
   });
 });
 
@@ -136,11 +164,27 @@ describe("сесия", () => {
       200,
       "подновяването минава",
     );
+    // В прозореца за паралелни табове старият токен НЕ дава нови бисквитки.
+    const subito = await vecchia.post<{ giaRinnovata?: boolean }>(
+      "/api/auth/refresh",
+    );
+    assert.equal(subito.status, 200);
+    assert.equal(subito.dati.giaRinnovata, true);
+
+    // След прозореца (в пакета е 1,5 s) повторната употреба е КРАЖБА: сесията
+    // пада изцяло — и за законния клиент, който държи новия токен.
+    await new Promise((r) => setTimeout(r, 1_700));
     assert.equal(
       (await vecchia.post("/api/auth/refresh")).status,
       401,
       "старият refresh token трябва да е обезсилен от ротацията",
     );
+    assert.equal(
+      (await s.post("/api/auth/refresh")).status,
+      401,
+      "riuso del token: la sessione doveva essere revocata",
+    );
+    assert.equal((await s.get("/api/me")).status, 401);
   });
 
   test("деактивиран потребител губи достъп веднага, без да чака изтичане", async () => {

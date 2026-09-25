@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   codice,
   verifica,
+  passoValido,
+  passoNuovo,
   base32Codifica,
   base32Decodifica,
   generaSegreto,
@@ -110,4 +112,31 @@ test("шест цифри и прозорец от един интервал", (
   // прихванат код, по-тесен къса при часовник с няколко секунди разлика.
   assert.equal(CIFRE, 6);
   assert.equal(FINESTRA, 1);
+});
+
+test("passoValido връща стъпката, на която съвпада кодът — и null извън прозореца", () => {
+  const segreto = generaSegreto();
+  const t = 1_800_000_000_000;
+  const passo = Math.floor(t / 1000 / PASSO_SECONDI);
+  assert.equal(passoValido(segreto, codice(segreto, t), t), passo);
+  // Кодът от предишната стъпка още е в прозореца — и се познава като предишен.
+  assert.equal(
+    passoValido(segreto, codice(segreto, t - PASSO_SECONDI * 1000), t),
+    passo - 1,
+  );
+  assert.equal(
+    passoValido(segreto, codice(segreto, t - 3 * PASSO_SECONDI * 1000), t),
+    null,
+  );
+  assert.equal(passoValido(segreto, "12345", t), null);
+});
+
+test("passoNuovo: една стъпка = един вход, повторението се отказва", () => {
+  assert.equal(passoNuovo(100, null), true);
+  assert.equal(passoNuovo(100, undefined), true);
+  assert.equal(passoNuovo(101, 100), true);
+  // Същата и по-старата стъпка — повторна употреба на надникнат код.
+  assert.equal(passoNuovo(100, 100), false);
+  assert.equal(passoNuovo(99, 100), false);
+  assert.equal(passoNuovo(null, null), false);
 });

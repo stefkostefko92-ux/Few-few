@@ -25,10 +25,19 @@ export interface Sessione {
   ruolo: Ruolo;
   nome: string;
   tenantId: string | null;
+  /** Редът в `sessioni_attive`, от който е издаден токенът. По него изход,
+   *  „прекрати всички сесии" и смяна на парола спират и access token-а — иначе
+   *  той живееше до изтичането си (15 мин) след всяко от трите. */
+  sid?: string;
 }
 
 export async function creaAccessToken(s: Sessione): Promise<string> {
-  return new SignJWT({ ruolo: s.ruolo, nome: s.nome, tenantId: s.tenantId })
+  return new SignJWT({
+    ruolo: s.ruolo,
+    nome: s.nome,
+    tenantId: s.tenantId,
+    sid: s.sid,
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(s.sub)
     .setIssuedAt()
@@ -48,6 +57,7 @@ export async function sessioneCorrente(): Promise<Sessione | null> {
       ruolo: payload.ruolo,
       nome: typeof payload.nome === "string" ? payload.nome : "",
       tenantId: typeof payload.tenantId === "string" ? payload.tenantId : null,
+      sid: typeof payload.sid === "string" ? payload.sid : undefined,
     };
   } catch {
     return null;
@@ -107,10 +117,26 @@ export class ErroreHttp extends Error {
   }
 }
 
-/** Изисква валидна сесия; хвърля 401. */
+/**
+ * Изисква валидна сесия; хвърля 401.
+ *
+ * Подписът на JWT НЕ стига: проверява се и че редът в `sessioni_attive` е
+ * жив. Токен без `sid` (издаден преди тази проверка) се отказва — клиентът
+ * подновява и получава нов, вече вързан за сесия.
+ */
 export async function richiedeSessione(): Promise<Sessione> {
   const s = await sessioneCorrente();
-  if (!s) throw new ErroreHttp(401, "Non autenticato");
+  if (!s || !s.sid) throw new ErroreHttp(401, "Non autenticato");
+  const viva = await prisma.sessioneAttiva.findFirst({
+    where: {
+      id: s.sid,
+      utenteId: s.sub,
+      revocataAt: null,
+      scadenza: { gt: new Date() },
+    },
+    select: { id: true },
+  });
+  if (!viva) throw new ErroreHttp(401, "Sessione terminata");
   return s;
 }
 

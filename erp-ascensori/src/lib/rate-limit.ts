@@ -30,6 +30,23 @@ export function azzeraPerTest(): void {
   finestre.clear();
 }
 
+/**
+ * Таван на броя ключове в паметта.
+ *
+ * Ключът идва и от ВХОДА (имейл при вход, хеш на токен при подновяване):
+ * поток от измислени имейли иначе расте Map-а без край — отказ на услуга по
+ * памет. При пълна таблица първо се чистят изтеклите; ако пак е пълна, НОВ
+ * ключ се ОТКАЗВА (fail closed). Изхвърлянето на най-стария би било по-лошо:
+ * атакуващият запълва таблицата и така НУЛИРА брояча на жертвата.
+ */
+export const MAX_CHIAVI = numero(process.env.RATE_LIMIT_MAX_CHIAVI, 100_000);
+
+function spazioPerNuova(ora: number): boolean {
+  if (finestre.size < MAX_CHIAVI) return true;
+  for (const [k, f] of finestre) if (f.resetAt <= ora) finestre.delete(k);
+  return finestre.size < MAX_CHIAVI;
+}
+
 /** Връща true, ако заявката Е позволена; false при надвишена честота. */
 export function consenti(
   chiave: string,
@@ -39,12 +56,38 @@ export function consenti(
   const ora = Date.now();
   const f = finestre.get(chiave);
   if (!f || f.resetAt <= ora) {
+    if (!f && !spazioPerNuova(ora)) return false;
     finestre.set(chiave, { count: 1, resetAt: ora + finestraMs });
     return true;
   }
   if (f.count >= limite) return false;
   f.count += 1;
   return true;
+}
+
+/**
+ * Брои събитие и връща поредния му номер в прозореца (1, 2, …).
+ *
+ * За неуспехи, при които няма ред в базата — непознат имейл при вход. Там
+ * броячът в паметта ИМИТИРА блокадата на истинския акаунт, за да не издава
+ * отговорът кой имейл съществува. Пълна таблица връща `Infinity`: отказ.
+ */
+export function incrementa(chiave: string, finestraMs: number): number {
+  const ora = Date.now();
+  const f = finestre.get(chiave);
+  if (!f || f.resetAt <= ora) {
+    if (!f && !spazioPerNuova(ora)) return Number.POSITIVE_INFINITY;
+    finestre.set(chiave, { count: 1, resetAt: ora + finestraMs });
+    return 1;
+  }
+  f.count += 1;
+  return f.count;
+}
+
+/** Колко събития има в прозореца, без да брои ново. */
+export function conteggio(chiave: string): number {
+  const f = finestre.get(chiave);
+  return f && f.resetAt > Date.now() ? f.count : 0;
 }
 
 // Периодично чистене, за да не расте паметта.

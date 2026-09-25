@@ -19,8 +19,8 @@ export async function apriSessione(
   token: string,
   contesto: { userAgent?: string | null; ip?: string | null },
   db: Db = prisma,
-): Promise<void> {
-  await db.sessioneAttiva.create({
+): Promise<string> {
+  const { id } = await db.sessioneAttiva.create({
     data: {
       utenteId,
       tokenHash: hashRefresh(token),
@@ -29,6 +29,7 @@ export async function apriSessione(
       ip: contesto.ip ?? null,
       scadenza: refreshScadenza(),
     },
+    select: { id: true },
   });
 
   // Без таван всеки вход добавя ред завинаги: списъкът става безполезен, а
@@ -44,6 +45,7 @@ export async function apriSessione(
       where: { id: { in: attive.map((a) => a.id) } },
       data: { revocataAt: new Date() },
     });
+  return id;
 }
 
 /** Намира ЖИВА сесия по токен. Изтеклата и отменената не се броят. */
@@ -69,18 +71,46 @@ export async function trovaSessione(token: string) {
   });
 }
 
-/** Ротация: старият токен се отменя, новият заема мястото му в СЪЩИЯ ред. */
+/**
+ * Ротация: старият токен се отменя, новият заема мястото му в СЪЩИЯ ред.
+ *
+ * УСЛОВНА — по стария хеш. Две паралелни подновявания със същия токен дават
+ * една ротация, не две (иначе второто би „изгубило" първия нов токен). Връща
+ * false, ако някой вече е ротирал. Старият хеш остава в `tokenPrecedenteHash`
+ * — по него се познава повторна употреба (`sessioneDaTokenPrecedente`).
+ */
 export async function ruotaSessione(
   sessioneId: string,
+  vecchioToken: string,
   nuovoToken: string,
   db: Db = prisma,
-): Promise<void> {
-  await db.sessioneAttiva.update({
-    where: { id: sessioneId },
+): Promise<boolean> {
+  const vecchio = hashRefresh(vecchioToken);
+  const { count } = await db.sessioneAttiva.updateMany({
+    where: { id: sessioneId, tokenHash: vecchio, revocataAt: null },
     data: {
       tokenHash: hashRefresh(nuovoToken),
+      tokenPrecedenteHash: vecchio,
+      ruotataAt: new Date(),
       ultimoUso: new Date(),
       scadenza: refreshScadenza(),
+    },
+  });
+  return count === 1;
+}
+
+/**
+ * Жива сесия, чийто ПРЕДИШЕН токен е подаденият — тоест токенът вече е бил
+ * ротиран. Законният клиент държи новия; старият в чужди ръце е кражба.
+ */
+export async function sessioneDaTokenPrecedente(token: string) {
+  return prisma.sessioneAttiva.findFirst({
+    where: { tokenPrecedenteHash: hashRefresh(token), revocataAt: null },
+    select: {
+      id: true,
+      utenteId: true,
+      ruotataAt: true,
+      utente: { select: { tenantId: true } },
     },
   });
 }

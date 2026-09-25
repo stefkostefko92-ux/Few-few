@@ -10,7 +10,7 @@
 
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { sessioneCorrente } from "@/lib/auth";
+import { richiedeSessione } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
 
 export default async function Pagina({
@@ -19,10 +19,10 @@ export default async function Pagina({
   params: Promise<{ matricola: string }>;
 }) {
   const { matricola } = await params;
-  const s = await sessioneCorrente();
   // Неавтентикиран → вход, с връщане обратно тук след това. Стикерът е публичен
   // предмет: всеки може да го снима, значи страницата НЕ бива да издава нищо
-  // без сесия.
+  // без ЖИВА сесия — и отменената (изход, „прекрати всички") не се брои.
+  const s = await richiedeSessione().catch(() => null);
   if (!s) redirect(`/login?da=${encodeURIComponent(`/i/${matricola}`)}`);
 
   const impianto = await prisma.impianto.findFirst({

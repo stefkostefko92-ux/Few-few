@@ -380,6 +380,10 @@ model User {
   /// фактор, и точно затова той е ДОПЪЛНЕНИЕ към паролата, не заместител.
   totpSegreto        String?
   totpAttivo         Boolean   @default(false)
+  /// Последната ПРИЕТА стъпка на TOTP (брояч от 30 s). Код от същата или по-
+  /// стара стъпка се отказва: иначе подслушан или надникнат код върши работа
+  /// още до 90 s (прозорецът ±1) — повторна употреба, не втори фактор.
+  totpUltimoPasso    Int?
   /// Резервни кодове (bcrypt хешове). Без тях загубен телефон = загубен акаунт,
   /// а единственият изход би бил администраторска вратичка около мярката.
   codiciRecupero     String[]  @default([])
@@ -407,22 +411,28 @@ model User {
 /// компютър мълчаливо изхвърляше първия, никой не можеше да види откъде е
 /// влизано, а „прекрати всички сесии" при уволнен служител не съществуваше.
 model SessioneAttiva {
-  id         String    @id @default(uuid()) @db.Uuid
-  utenteId   String    @db.Uuid
+  id                  String    @id @default(uuid()) @db.Uuid
+  utenteId            String    @db.Uuid
   /// SHA-256 на refresh token-а — самият токен не се пази никъде.
-  tokenHash  String    @unique
+  tokenHash           String    @unique
   /// Груб отпечатък на устройството, за да е разпознаваемо в списъка.
-  userAgent  String?
-  ip         String?
-  ultimoUso  DateTime  @default(now())
-  scadenza   DateTime
-  revocataAt DateTime?
-  createdAt  DateTime  @default(now())
+  userAgent           String?
+  ip                  String?
+  ultimoUso           DateTime  @default(now())
+  scadenza            DateTime
+  revocataAt          DateTime?
+  /// Хешът ПРЕДИ последната ротация. Ако той пристигне отново, токенът е
+  /// изтекъл към някой друг (законният клиент вече държи новия): сесията се
+  /// отменя изцяло — RFC 6819 § 5.2.2.3, refresh token rotation.
+  tokenPrecedenteHash String?
+  ruotataAt           DateTime?
+  createdAt           DateTime  @default(now())
 
   utente User @relation(fields: [utenteId], references: [id], onDelete: Cascade)
 
   @@index([utenteId, revocataAt])
   @@index([scadenza])
+  @@index([tokenPrecedenteHash])
   @@map("sessioni_attive")
 }
 
@@ -1364,9 +1374,9 @@ model VoceFattura {
 
 // Транспортни документи по D.P.R. 472/1996.
 model Ddt {
-  id                String   @id @default(uuid()) @db.Uuid
+  id                String    @id @default(uuid()) @db.Uuid
   numero            String
-  data              DateTime @default(now())
+  data              DateTime  @default(now())
   causale           String?
   destinatario      String?
   indirizzoConsegna String?
@@ -1379,18 +1389,18 @@ model Ddt {
   /// презумпцията за прехвърляне на собствеността по чл. 1, ал. 2 не се държи.
   /// Стенен час в Италия (`TZ=Europe/Rome` е пинована и в образа, и в Compose).
   inizioTrasporto   DateTime?
-  ordineLavoroId    String?  @db.Uuid
+  ordineLavoroId    String?   @db.Uuid
   /// Фактурата, която е обхванала тази доставка (отложено фактуриране).
   ///
   /// Един DDT се фактурира НАЙ-МНОГО веднъж; една фактура покрива много DDT.
   /// От тази връзка се извежда и типът на документа за SDI: наличието на
   /// съпровождащи документи ПРАВИ фактурата отложена (TD24). Отделно поле
   /// „differita" би било втора истина, която някой ден ще се разминава с тази.
-  fatturaId         String?  @db.Uuid
+  fatturaId         String?   @db.Uuid
   note              String?
-  tenantId          String?  @db.Uuid // изолация по фирма (мулти-инсталация)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  tenantId          String?   @db.Uuid // изолация по фирма (мулти-инсталация)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   ordineLavoro OrdineLavoro?        @relation(fields: [ordineLavoroId], references: [id])
   fattura      Fattura?             @relation(fields: [fatturaId], references: [id])

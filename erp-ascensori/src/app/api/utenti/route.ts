@@ -26,7 +26,9 @@ const SELEZIONE_SICURA = {
 } as const;
 
 const schemaCreate = z.object({
-  email: z.string().trim().email().max(200),
+  // Минуски: входът търси без оглед на регистъра, а „Mario@" и „mario@" като
+  // два акаунта биха направили кой от двата се отваря въпрос на случайност.
+  email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(1).max(200),
   nome: z.string().trim().min(1).max(100),
   cognome: z.string().trim().min(1).max(100),

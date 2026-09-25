@@ -86,27 +86,56 @@ export function codice(segretoBase32: string, perMs = Date.now()): string {
 }
 
 /**
- * Проверява подадения код в прозореца ±FINESTRA.
+ * Проверява подадения код в прозореца ±FINESTRA и връща СТЪПКАТА, на която
+ * съвпада (брояч от 30 s), или null.
+ *
+ * Стъпката е нужна срещу повторна употреба: извикващият пази последната приета
+ * и отказва код от същата или по-стара (`passoNuovo`). Иначе един надникнат
+ * код върши работа до 90 s.
  *
  * Сравнението е с постоянно време: обикновеното `===` върху низове излиза
  * рано при първата различна цифра и издава колко от кода е познат.
  */
-export function verifica(
+export function passoValido(
   segretoBase32: string,
   fornito: string,
   perMs = Date.now(),
-): boolean {
+): number | null {
   const pulito = fornito.replace(/\s/g, "");
-  if (!/^\d{6}$/.test(pulito)) return false;
+  if (!/^\d{6}$/.test(pulito)) return null;
   const atteso = Buffer.from(pulito, "utf8");
+  const base = Math.floor(perMs / 1000 / PASSO_SECONDI);
+  let trovato: number | null = null;
+  // Всички стъпки се сравняват, без ранен изход — времето не издава коя е.
   for (let d = -FINESTRA; d <= FINESTRA; d++) {
     const c = Buffer.from(
       codice(segretoBase32, perMs + d * PASSO_SECONDI * 1000),
       "utf8",
     );
-    if (c.length === atteso.length && timingSafeEqual(c, atteso)) return true;
+    if (c.length === atteso.length && timingSafeEqual(c, atteso))
+      trovato ??= base + d;
   }
-  return false;
+  return trovato;
+}
+
+/** Вярно, ако кодът е валиден в прозореца. Без памет — само за потвърждение. */
+export function verifica(
+  segretoBase32: string,
+  fornito: string,
+  perMs = Date.now(),
+): boolean {
+  return passoValido(segretoBase32, fornito, perMs) !== null;
+}
+
+/**
+ * Приема стъпката само ако е ПО-НОВА от последната приета. Една стъпка = един
+ * вход: вторият вход със същия код е повторна употреба, не втори фактор.
+ */
+export function passoNuovo(
+  passo: number | null,
+  ultimo: number | null | undefined,
+): boolean {
+  return passo !== null && (ultimo == null || passo > ultimo);
 }
 
 /** URI за QR кода, който приложението сканира. */
