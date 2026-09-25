@@ -74,6 +74,9 @@ ok("bg: cosmetic guards (form/password/cc/universal) applied", cfg.cosmetic.join
 const names = cfg.scriptlets.map((s) => s.h + ":" + s.d.join(","));
 ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/protected/proto/trusted dropped",
   names.length === 2 && names.includes("example.com:abort-on-property-read,adBlock") && names.includes("s.com:set-cookie,c,accepted"));
+ok("bg: safeSelector refuses stylesheet escapes and the page itself as target",
+  [".x{background:url(//t.example/b)}", ".y;", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
+  ["body.x .ad", ".ad-body", "html .ad", "#bodyx", ".tbody-ad"].every((x) => bg.safeSelector(x)));
 ok("bg: safeSelector policy", bg.safeSelector(".ad-slot") && !bg.safeSelector("[type^=pass]") && !bg.safeSelector("div") && !bg.safeSelector(":not(#x)"));
 ok("bg: parseUserDomains never blocks protected hosts", bg.parseUserDomains("||ads.x.com^\nyoutube.com\n! c\nnot a domain").join() === "ads.x.com");
 

@@ -24,6 +24,7 @@ async function getRuleCounts() {
 
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const YT_BYPASS_RULE_ID = 70000; // YouTube session bypass (allowAllRequests); below every sync range
+const PAUSE_RULE_ID = 69999;      // off / paused: one allowAllRequests rule above everything (dynamic rules too)
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
 const ALLOW_RULE_MAX = 5000;     // cap: allowlist ids must stay below LIVE_RULE_BASE (same cap as import)
@@ -358,6 +359,7 @@ async function applyState() {
     console.warn("ruleset toggle failed", e);
     try { await chrome.storage.local.set({ listsError: String((e && e.message) || e) }); } catch {}
   }
+  await setPauseRule(!on);
   syncRemoteLists(on).catch(() => {});
   await syncScriptlets(on);
   chrome.action.setBadgeBackgroundColor({ color: on ? "#00838f" : "#5a5a5a" });
@@ -451,6 +453,22 @@ async function doSyncScriptlets(on) {
     // means NO scriptlets on any page until the next applyState.
     try { await chrome.storage.local.set({ scriptletsError: String((e && e.message) || e) }); } catch {}
     try { chrome.alarms.create("scriptlets-retry", { delayInMinutes: 1 }); } catch {}
+  }
+}
+
+// Off / paused: static rulesets are switched off above, but DYNAMIC rules (live
+// channel, "My filters", author-hosted lists) are not rulesets — without this rule
+// they kept blocking during a pause. One allowAllRequests rule above every other
+// priority lets each page and everything it loads through while off.
+async function setPauseRule(paused) {
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [PAUSE_RULE_ID],
+      addRules: paused ? [{ id: PAUSE_RULE_ID, priority: 30000, action: { type: "allowAllRequests" },
+        condition: { resourceTypes: ["main_frame", "sub_frame"] } }] : [],
+    });
+  } catch (e) {
+    console.warn("pause rule update failed", e);
   }
 }
 
@@ -1079,7 +1097,7 @@ if (DEBUG_COUNTING) {
     const id = info?.rule?.ruleId;
     // Don't count allow rules: the allowlist range and the YouTube bypass rule.
     // Live block rules (≥ LIVE_RULE_BASE) DO count.
-    if ((id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE) || id === YT_BYPASS_RULE_ID) return;
+    if ((id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE) || id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID) return;
     record(1, SIZE_BY_TYPE[info?.request?.type] ?? BLENDED_SIZE);
   });
 }
@@ -1113,7 +1131,7 @@ chrome.tabs.onRemoved.addListener((tabId) => tabMatched.delete(tabId));
 function logListKey(rule) {
   const rs = rule.rulesetId, id = rule.ruleId;
   if (rs === "_dynamic") {
-    if (id === YT_BYPASS_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
+    if (id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
     if (id >= REMOTE_RULE_BASE) return "lists";
     if (id >= LIVE_RULE_BASE) return "live";
     if (id >= USER_BLOCK_BASE) return "user";
@@ -1166,7 +1184,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const fromExtensionPage = typeof sender.url === "string" && sender.url.startsWith(EXT_ORIGIN);
   if (!fromExtensionPage && !CONTENT_MESSAGES.has(msg.type)) return;
   // A content script speaks for its own page only — never trust msg.host from it.
-  const senderHost = fromExtensionPage ? null : hostFromUrl(sender.url || "");
+  // about:blank / blob: / data: frames have no host in their URL: use the origin
+  // they inherit; failing that, a content script gets "" — never msg.host.
+  const senderHost = fromExtensionPage ? null : hostFromUrl(sender.url || "") || hostFromUrl(sender.origin || "") || "";
+  const claimedHost = (h) => (fromExtensionPage && typeof h === "string" ? h.trim().toLowerCase() : "");
   switch (msg.type) {
     case "toggle":
       // A manual toggle cancels any active timed pause.
@@ -1438,7 +1459,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         const map = data.customHidden || {};
         // The picker's own page decides the host (not msg.host), and the
         // selector passes the same policy as imports and the live channel.
-        const host = senderHost || (typeof msg.host === "string" ? msg.host.toLowerCase() : "");
+        const host = fromExtensionPage ? claimedHost(msg.host) : senderHost;
         const selector = typeof msg.selector === "string" ? msg.selector.trim() : "";
         if (!isHost(host) || !safeSelector(selector)) return sendResponse({ ok: false });
         map[host] = map[host] || [];
@@ -1493,7 +1514,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "smartHit": {
       const items = Array.isArray(msg.items) ? msg.items : [];
-      if (items.length) recordSmart(senderHost || msg.host || "", items);
+      if (items.length) recordSmart(fromExtensionPage ? claimedHost(msg.host) : senderHost, items);
       return false;
     }
 
@@ -1506,7 +1527,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return false;
 
     case "getCosmetic":
-      cosmeticFor(senderHost || msg.host || "").then((r) => {
+      cosmeticFor(fromExtensionPage ? claimedHost(msg.host) : senderHost).then((r) => {
         const css = r.css || [];
         delete r.css;
         sendResponse(r);

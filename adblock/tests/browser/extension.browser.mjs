@@ -54,6 +54,7 @@ const PAGES = {
       <button class="iubenda-cs-reject-btn" onclick="__clicks.push('pay')">Rifiuta e abbonati</button>
       <button class="iubenda-cs-accept-btn" onclick="__clicks.push('accept')">Accetta</button></div>
   </body></html>`,
+  "/pause": `<!doctype html><html><body><script>window.__loaded=false;</script><script src="/pausetest.js"></script></body></html>`,
   "/focus": `<!doctype html><html><body><ytd-reel-shelf-renderer id="shorts">shorts shelf</ytd-reel-shelf-renderer><ytd-video-renderer id="video">a normal video</ytd-video-renderer></body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
     <script>window.__clicks=[];</script>
@@ -62,6 +63,7 @@ const PAGES = {
   </body></html>`,
 };
 const server = http.createServer((req, res) => {
+  if (req.url.startsWith("/pausetest.js")) { res.setHeader("content-type", "text/javascript"); return res.end("window.__loaded=true;"); }
   const html = PAGES[req.url.split("?")[0]];
   if (!html) { res.statusCode = 404; return res.end(); }
   res.setHeader("content-type", "text/html"); res.end(html);
@@ -228,6 +230,19 @@ try {
     ok("report: 'turn off element hiding here' applies to that site", (await sw.evaluate(async () => (await chrome.storage.local.get("noCosmetics")).noCosmetics || [])).includes("127.0.0.1"));
     await sw.evaluate(async () => chrome.storage.local.set({ noCosmetics: [] }));
     await rep.close(); await site.close();
+  }
+
+  // ---- a pause pauses EVERYTHING, dynamic rules included (they kept blocking) ----
+  {
+    const loaded = async () => { const pp = await ctx.newPage(); await pp.goto(origin + "/pause"); await pp.waitForTimeout(400); const v = await pp.evaluate(() => window.__loaded); await pp.close(); return v; };
+    await sw.evaluate(() => chrome.declarativeNetRequest.updateDynamicRules({ addRules: [{ id: 80999, priority: 1, action: { type: "block" }, condition: { urlFilter: "/pausetest.js", resourceTypes: ["script"] } }] }));
+    const before = await loaded();
+    await sw.evaluate(() => pauseFor(1));
+    const during = await loaded();
+    await sw.evaluate(() => resumeNow());
+    const after = await loaded();
+    await sw.evaluate(() => chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [80999] }));
+    ok(`pause: a dynamic block rule stops blocking while paused and blocks again after (before ${before}, paused ${during}, after ${after})`, before === false && during === true && after === false);
   }
 
   // ---- cookies.js honours the allowlist (it used to ignore it) ----

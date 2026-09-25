@@ -108,6 +108,9 @@ var SA_POLICY = (function () {
   var FORM_TARGET = /(^|[\s>+~,(])(input|button|select|textarea|form|label|fieldset|option)([\s>+~,.:\[)#]|$)/i;
   var FORM_ATTR = /\[\s*(type|name|autocomplete|placeholder|id|class|aria-label)\s*[*^$|~]?=\s*["']?[^\]"']*?(pass|pwd|\bpin\b|secret|token|cc-|cvc|cvv|otp|ssn|iban|login|user|email|tel\b|card[-_ ]?num)/i;
   var UNIVERSAL = /(^|[\s>+~,(])\*(?![=\]])/;
+  // The page itself as the TARGET (last compound): `body.x`, `html > body:not(.a)`,
+  // `.a, body` — hiding it blanks the site. Ancestors (`body.x .ad`) stay fine.
+  var PAGE_TARGET = /(^|,|[\s>+~])\s*(html|body|:root)(?![\w-])[^\s>+~,]*\s*(,|$)/i;
 
   // Attributes whose removal downgrades page security/semantics; tags that are
   // never a legitimate remove-node-text target.
@@ -176,6 +179,11 @@ var SA_POLICY = (function () {
     if (s.length < 3 || s.length > 400 || UNSAFE_SELECTORS.indexOf(s.toLowerCase()) >= 0) return false;
     if (FORM_TARGET.test(s) || FORM_ATTR.test(s)) return false;
     if (UNIVERSAL.test(s) || s.charAt(0) === ":") return false;
+    // Selectors end up inside a stylesheet block (`html[data-tbab-on]{…}`): a
+    // brace, semicolon or comment would let list data write declarations of its
+    // own (`url()` beacons) or swallow the rules after it.
+    if (/[{};]|\/\*|\*\//.test(s)) return false;
+    if (PAGE_TARGET.test(s)) return false;
     if (!proceduralOk(s)) return false;
     return true;
   }
