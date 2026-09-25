@@ -164,13 +164,16 @@ export default function HomePage() {
       <BannerZone placement="home" />
       {/* Херо */}
       <section className="relative overflow-hidden">
+        {/* Петната са в светлите тонове на палитрата; в тъмна тема ги
+            приглушаваме — на телефон светлото петно минаваше зад бутона
+            „Визитки“ и светлият му текст падаше до 1.1:1 контраст. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-med-pale blur-3xl"
+          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-med-pale blur-3xl dark:opacity-15"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-tera-pale blur-3xl"
+          className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-tera-pale blur-3xl dark:opacity-15"
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 text-center sm:pt-20">
           <Logo priority className="mx-auto h-36 w-36 sm:h-44 sm:w-44" />

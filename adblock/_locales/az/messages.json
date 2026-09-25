@@ -62,7 +62,7 @@
     "message": "Reklamları burada gizlət"
   },
   "cosmeticsTitle": {
-    "message": "Bu saytda kosmetik filtrləmə (səhifə düzülüşü pozulursa, söndürün)"
+    "message": "Bu saytda reklamları gizlət (səhifə düzülüşü pozulursa, söndürün)"
   },
   "on": {
     "message": "Açıq"
@@ -502,7 +502,7 @@
     "message": "Paketə daxil deyil (yenidən yaymaq üçün lisenziya yoxdur): aktivləşdirdiyiniz zaman brauzeriniz onu $1 ünvanından yükləyir."
   },
   "opt_downloaded_from": {
-    "message": "Yüklənmə mənbəyi: $1"
+    "message": "Aktivləşdirdiyiniz zaman $1 ünvanından yüklənir"
   },
   "opt_lists_error": {
     "message": "Chrome bu siyahı kombinasiyasını rədd etdi ($1). Bəzilərini söndürün."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Hesabatı kopyala"
+  },
+  "rep_privacy": {
+    "message": "Bu hesabat necə emal olunur: məxfilik siyasəti"
   },
   "rep_copied": {
     "message": "Kopyalandı."

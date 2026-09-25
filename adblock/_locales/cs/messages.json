@@ -62,7 +62,7 @@
     "message": "Skrýt zde reklamní plochy"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetické filtrování na tomto webu (vypněte, pokud se rozpadá rozvržení)"
+    "message": "Skrýt reklamní plochy na tomto webu (vypněte, pokud se rozpadá rozvržení stránky)"
   },
   "on": {
     "message": "Zap."
@@ -502,7 +502,7 @@
     "message": "Není součástí balíčku (chybí licence k šíření): prohlížeč ho stáhne z $1, když ho zapnete."
   },
   "opt_downloaded_from": {
-    "message": "Stahováno z $1"
+    "message": "Stáhne se z $1, když ho zapnete"
   },
   "opt_lists_error": {
     "message": "Chrome tuto kombinaci seznamů odmítl ($1). Některé vypněte."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopírovat hlášení"
+  },
+  "rep_privacy": {
+    "message": "Jak se s tímto hlášením zachází: zásady ochrany soukromí"
   },
   "rep_copied": {
     "message": "Zkopírováno."

@@ -58,12 +58,14 @@ export function robotsTxt(base) {
     '',
     // AI-обучаващи ботове: търсещите/извличащите са добре дошли (видимост в AI
     // отговори), но обучението върху личните профили спираме — лични данни.
-    ...['GPTBot', 'ClaudeBot', 'CCBot', 'Google-Extended'].flatMap((bot) => [
-      `User-agent: ${bot}`,
-      'Disallow: /p/',
-      ...disallow,
-      '',
-    ]),
+    ...[
+      'GPTBot',
+      'ClaudeBot',
+      'CCBot',
+      'Google-Extended',
+      'Applebot-Extended',
+      'Meta-ExternalAgent',
+    ].flatMap((bot) => [`User-agent: ${bot}`, 'Disallow: /p/', ...disallow, '']),
     `Sitemap: ${base}/sitemap.xml`,
     '',
   ].join('\n');
@@ -289,6 +291,8 @@ export function siteJsonLd(base) {
 // страницата е стъпкова. Богатите резултати за HowTo/FAQ са оттеглени през 2026 г. —
 // стойността днес е разбиране от AI асистентите, не звезди в SERP. Затова и нула
 // измислена схема: без aggregateRating, без Review, без Offer с цена, която не е цена.
+const stripTags = (s) => String(s).replace(/<[^>]+>/g, '');
+
 export function guideJsonLd(guide, base) {
   const url = `${base}/${guide.slug}`;
   const graph = [
@@ -300,7 +304,9 @@ export function guideJsonLd(guide, base) {
       headline: guide.h1,
       description: guide.description,
       inLanguage: 'bg',
+      datePublished: guide.published,
       dateModified: guide.updated,
+      image: `${base}/og-default.png`,
       isPartOf: { '@id': `${base}/#website` },
       about: { '@id': `${base}/#app` },
       publisher: { '@id': `${base}/#organization` },
@@ -336,7 +342,7 @@ export function guideJsonLd(guide, base) {
       '@type': 'HowTo',
       '@id': `${url}#howto`,
       name: guide.h1,
-      description: guide.answer,
+      description: stripTags(guide.answer),
       totalTime: 'PT5M',
       // Услугата е безплатна — казваме го в схемата вместо да мълчим.
       estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: '0' },
@@ -344,7 +350,9 @@ export function guideJsonLd(guide, base) {
         '@type': 'HowToStep',
         position: i + 1,
         name: s.name,
-        text: s.text,
+        // Текстовете в guides.js носят малко разметка (<code>, връзки) — в схемата
+        // тя излизаше буквално („\u003ccode\u003e“).
+        text: stripTags(s.text),
         url: `${url}#stapka-${i + 1}`,
       })),
     });

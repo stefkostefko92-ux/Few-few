@@ -23,6 +23,7 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, domainToASCII } from "node:url";
 import { runInNewContext } from "node:vm";
+import { createHash } from "node:crypto";
 import { genericCss } from "./generic_css.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -94,13 +95,41 @@ async function fetchText(url, depth = 0) {
     for (const line of text.split("\n")) {
       const m = /^!#include\s+(\S+)\s*$/.exec(line.trim());
       if (!m || /^[a-z]+:/i.test(m[1]) || m[1].includes("..")) { parts.push(line); continue; }
-      parts.push(await fetchText(new URL(m[1], url).href, depth + 1));
+      const inc = new URL(m[1], url);
+      // `//other.host/x` or `\\other.host` resolve to ANOTHER host — whose licence we never checked
+      if (inc.origin !== new URL(url).origin) { parts.push(line); continue; }
+      parts.push(await fetchText(inc.href, depth + 1));
     }
     text = parts.join("\n");
   }
   return text;
 }
 
+// Global uBO XHR redirects to ad networks (||doubleclick.net^$xhr,redirect=noop.txt,
+// ||pagead2.googlesyndication.com^$xhr,redirect=noop.js) exist to fool anti-adblock
+// detectors — and a detector's bait is always a REAL ad resource (adsbygoogle.js, gpt.js,
+// /pagead/id, /gampad/…). The redirect keeps working for exactly those paths; every other
+// request to the ad network stays BLOCKED (EasyList/our rules), as an ad blocker's should.
+// Site-specific redirects (with initiatorDomains) are left alone.
+const BAIT_NETS = new Set(["doubleclick.net", "googlesyndication.com", "pagead2.googlesyndication.com"]);
+const BAIT_PATHS = "^https?://[^/]+/(pagead/|tag/js/|gampad/|gpt/|ddm/|instream/|adsid/)";
+export function narrowBaitRedirects(rules) {
+  let next = rules.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+  const out = [];
+  for (const r of rules) {
+    const c = r.condition || {};
+    if (r.action.type === "redirect" && !c.initiatorDomains && !c.urlFilter && !c.regexFilter && (c.requestDomains || []).some((d) => BAIT_NETS.has(d))) {
+      const bait = c.requestDomains.filter((d) => BAIT_NETS.has(d)), rest = c.requestDomains.filter((d) => !BAIT_NETS.has(d));
+      if (rest.length) out.push({ ...r, condition: { ...c, requestDomains: rest } });
+      out.push({ ...r, id: rest.length ? next++ : r.id, condition: { ...c, requestDomains: bait, regexFilter: BAIT_PATHS } });
+      continue;
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+const RAW_TEXT = new Map(); // id → text exactly as downloaded (for the notices' SHA-256)
 async function listText(entry) {
   // Built-in Focus items: a few selectors of our own (MIT), no download.
   if (entry.selectors) return entry.selectors.map((x) => "##" + x).join("\n");
@@ -110,6 +139,7 @@ async function listText(entry) {
   }
   const texts = [];
   for (const u of entry.urls) texts.push(await fetchText(u));
+  RAW_TEXT.set(entry.id, texts.join("\n"));
   return preprocess(texts.join("\n"));
 }
 
@@ -207,6 +237,7 @@ for (const entry of CATALOG) {
   };
   if (entry.delivery === "remote") {
     meta.url = entry.urls[0];
+    meta.slot = entry.slot; // fixed dynamic-rule slot: never reuse one for another list
     listCatalog.push(meta);
     continue;
   }
@@ -217,7 +248,8 @@ for (const entry of CATALOG) {
   for (const b of ownBad) BADFILTER.add(b);
   if (entry.format === "hosts") text = hostsToAbp(text);
   PATTERN_CAP["list_" + entry.id] = LIST_PATTERN_CAP;
-  const { rules, skipped } = convertList(text, "list_" + entry.id, entry.group === "core");
+  const conv = convertList(text, "list_" + entry.id, entry.group === "core");
+  const rules = narrowBaitRedirects(conv.rules), skipped = conv.skipped;
   for (const b of ownBad) BADFILTER.delete(b);
   // A list with no network rules (built-in selectors) gets no ruleset at all.
   meta.ruleset = rules.length > 0;
@@ -228,7 +260,7 @@ for (const entry of CATALOG) {
   for (const d of [...cos.unhide.keys()].sort()) unh[d] = [...cos.unhide.get(d)].sort();
   const gen = [...cos.generic].sort();
   writeFileSync(join(OUT, "rules", `cosmetic_${entry.id}.json`), JSON.stringify({
-    css: gen.length ? genericCss(gen) : "",
+    css: gen.length ? genericCss(gen, 500, `${entry.title} (${entry.license})`) : "",
     specific: spec, unhide: unh, genericHide: [...collectGenericHide(text)].sort(),
   }));
   // uBO scriptlets (`host##+js(...)`) → scriptlets/list_ubo.txt: DATA for
@@ -249,8 +281,19 @@ for (const entry of CATALOG) {
       if (hosts.length) js.push(hosts.join(",") + line.slice(i));
     }
     const kept = js.filter((l) => { const i = l.indexOf("##+js("); return !l.slice(0, i).split(",").some((h) => exc.has(h + "\u0000" + l.slice(i + 2))); });
+    // An exception on a SUBDOMAIN (job.mt.de#@#+js(x)) must also cancel the
+    // parent's directive (mt.de##+js(x)) there — the engine walks the whole
+    // host chain. Those exceptions travel with the data as `#@#+js` lines.
+    const onHost = new Set();
+    for (const l of kept) { const i = l.indexOf("##+js("); for (const h of l.slice(0, i).split(",")) onHost.add(h + "\u0000" + l.slice(i + 2)); }
+    const excLines = [];
+    for (const k of exc) {
+      const [h, d] = k.split("\u0000");
+      const parts = h.split(".");
+      for (let p = 1; p < parts.length - 1; p++) if (onHost.has(parts.slice(p).join(".") + "\u0000" + d)) { excLines.push(h + "#@#" + d); break; }
+    }
     writeFileSync(join(OUT, "scriptlets", "list_ubo.txt"),
-      "! GENERATED by tools/build_filters.mjs from the uBlock Origin filters (GPL-3.0) — DATA, not code.\n" + [...new Set(kept)].join("\n") + "\n");
+      "! GENERATED by tools/build_filters.mjs from the uBlock Origin filters (GPL-3.0) — DATA, not code.\n" + [...new Set(kept)].concat(excLines.sort()).join("\n") + "\n");
     console.log(`ubo scriptlets: ${kept.length} директиви → scriptlets/list_ubo.txt`);
   }
   meta.network = rules.length;
@@ -263,23 +306,57 @@ for (const entry of CATALOG) {
 writeFileSync(join(OUT, "rules", "lists.json"), JSON.stringify(listCatalog, null, 1) + "\n");
 
 // THIRD_PARTY_NOTICES.txt (ships in the package): attribution + licence of every
-// list whose rules we redistribute — CC BY-SA / GPL / MIT / MPL ask for it.
+// list whose rules we redistribute, what we changed, where the unmodified source
+// came from (URL + date + SHA-256) and the licence texts in licenses/ — CC BY-SA,
+// GPL/AGPL, MPL, Apache and MIT all ask for some of this.
+function licenceFiles(e) {
+  const l = e.license || "", f = [];
+  if (/\bAGPL-3\.0/.test(l)) f.push("licenses/AGPL-3.0-only.txt");
+  else if (/\bGPL-3\.0/.test(l)) f.push("licenses/GPL-3.0-only.txt");
+  if (/CC BY-SA 3\.0/.test(l)) f.push("licenses/CC-BY-SA-3.0.txt");
+  if (/CC BY-SA 4\.0/.test(l)) f.push("licenses/CC-BY-SA-4.0.txt");
+  if (/CC BY 4\.0/.test(l)) f.push("licenses/CC-BY-4.0.txt");
+  if (/CC0/.test(l)) f.push("licenses/CC0-1.0.txt");
+  if (/Unlicense/.test(l)) f.push("licenses/Unlicense.txt");
+  if (/MPL-2\.0/.test(l)) f.push("licenses/MPL-2.0.txt");
+  if (/Apache-2\.0/.test(l)) f.push("licenses/Apache-2.0.txt");
+  if (e.id === "reg-mk") f.push("licenses/MIT-Macedonian-adBlock-Filters.txt");
+  if (e.id === "reg-ro") f.push("licenses/MIT-ROad-Block.txt");
+  return f;
+}
 if (OUT === ROOT) {
+  const sha = (t) => (t ? createHash("sha256").update(t).digest("hex") : "n/a");
+  const day = new Date().toISOString().slice(0, 10);
   const bundled = CATALOG.filter((e) => e.delivery === "bundled" && !e.selectors);
+  const block = (title, license, files, homepage, urls, text) => [
+    title,
+    "  Licence: " + license + (files.length ? " — full text: " + files.join(", ") : ""),
+    "  Authors / homepage: " + homepage,
+    ...urls.map((u) => "  Source: " + u),
+    "  Retrieved " + day + " · SHA-256 of the text as downloaded (with its !#include files): " + sha(text),
+    "",
+  ];
   const lines = [
     "Supreme AdBlock — third-party filter lists",
     "",
-    "The extension's rules are compiled from these lists (converted to Chrome's",
-    "declarativeNetRequest format and CSS; content otherwise unchanged). Each list",
-    "keeps its own licence; the extension's code is MIT (see LICENSE).",
+    "The extension's code is MIT (see LICENSE). Its rules are derived from the lists",
+    "below, each under its own licence. What we changed: the rules were converted to",
+    "Chrome's declarativeNetRequest format and to CSS; duplicates, rules the browser",
+    "cannot express, rules our safety policy refuses (for example ones touching sign-in",
+    "or payment fields) and rules over a per-list size cap were left out. Nothing was",
+    "added to a list's own rules. The unmodified source of each list is at the URL",
+    "given below as of the date shown (the SHA-256 identifies the exact text); on",
+    "request we send a copy: info@carbonstealth.eu. The conversion tools are public:",
+    "https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock/tools",
     "",
-    "EasyList, EasyPrivacy — © The EasyList authors — GPL-3.0 or CC BY-SA 3.0 — https://easylist.to/",
-    "URLhaus (abuse.ch) — CC0 — https://urlhaus.abuse.ch/",
-    ...bundled.map((e) => `${e.title} — ${e.license} — ${e.homepage}`),
+    ...block("EasyList", "GPL-3.0 or CC BY-SA 3.0", ["licenses/GPL-3.0-only.txt", "licenses/CC-BY-SA-3.0.txt"], "The EasyList authors — https://easylist.to/", [SOURCES.easylist], el),
+    ...block("EasyPrivacy", "GPL-3.0 or CC BY-SA 3.0", ["licenses/GPL-3.0-only.txt", "licenses/CC-BY-SA-3.0.txt"], "The EasyList authors — https://easylist.to/", [SOURCES.easyprivacy], ep),
+    ...block("URLhaus (abuse.ch)", "CC0 1.0", ["licenses/CC0-1.0.txt"], "https://urlhaus.abuse.ch/", [SOURCES.urlhaus], uh),
+    ...bundled.flatMap((e) => block(e.title, e.license, licenceFiles(e), e.homepage, e.urls || [], RAW_TEXT.get(e.id))),
+    "Not bundled — your browser downloads these from their authors only when you turn",
+    "them on, and converts them on your device:",
     "",
-    "Not bundled (downloaded from their author only when you turn them on):",
-    ...CATALOG.filter((e) => e.delivery === "remote").map((e) => `${e.title} — ${e.license} — ${e.homepage}`),
-    "",
+    ...CATALOG.filter((e) => e.delivery === "remote").flatMap((e) => [e.title, "  Licence: " + e.license, "  Authors / homepage: " + e.homepage, "  Source: " + e.urls[0], ""]),
   ];
   writeFileSync(join(ROOT, "THIRD_PARTY_NOTICES.txt"), lines.join("\n"));
 }

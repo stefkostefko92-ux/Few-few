@@ -62,7 +62,7 @@
     "message": "Ficha nafasi za matangazo"
   },
   "cosmeticsTitle": {
-    "message": "Uchujaji wa mwonekano kwenye tovuti hii (zima ikiwa mpangilio wa ukurasa unaharibika)"
+    "message": "Ficha nafasi za matangazo kwenye tovuti hii (zima ikiwa mpangilio wa ukurasa unaharibika)"
   },
   "on": {
     "message": "Imewashwa"
@@ -502,7 +502,7 @@
     "message": "Haijajumuishwa (hakuna leseni ya kuisambaza upya): kivinjari chako huipakua kutoka $1 unapoiwasha."
   },
   "opt_downloaded_from": {
-    "message": "Imepakuliwa kutoka $1"
+    "message": "Hupakuliwa kutoka $1 unapoiwasha"
   },
   "opt_lists_error": {
     "message": "Chrome imekataa mchanganyiko huu wa orodha ($1). Zima baadhi yake."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Nakili ripoti"
+  },
+  "rep_privacy": {
+    "message": "Jinsi ripoti hii inavyoshughulikiwa: sera ya faragha"
   },
   "rep_copied": {
     "message": "Imenakiliwa."

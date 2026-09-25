@@ -62,7 +62,7 @@
     "message": "Slėpti reklamas čia"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetinis filtravimas šioje svetainėje (išjunkite, jei sugenda išdėstymas)"
+    "message": "Slėpti reklamas šioje svetainėje (išjunkite, jei sugenda puslapio išdėstymas)"
   },
   "on": {
     "message": "Įj."
@@ -502,7 +502,7 @@
     "message": "Neįtrauktas (nėra licencijos platinti): naršyklė jį atsisiunčia iš $1, kai jį įjungiate."
   },
   "opt_downloaded_from": {
-    "message": "Atsisiunčiama iš $1"
+    "message": "Atsisiunčiama iš $1, kai jį įjungiate"
   },
   "opt_lists_error": {
     "message": "Chrome atmetė šį sąrašų derinį ($1). Kai kuriuos išjunkite."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopijuoti pranešimą"
+  },
+  "rep_privacy": {
+    "message": "Kaip tvarkomas šis pranešimas: privatumo politika"
   },
   "rep_copied": {
     "message": "Nukopijuota."

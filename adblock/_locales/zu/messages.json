@@ -62,7 +62,7 @@
     "message": "Fihla izikhangiso lapha"
   },
   "cosmeticsTitle": {
-    "message": "Ukuhlunga kokubukeka kule sayithi (kuvale uma isakhiwo sekhasi siphuka)"
+    "message": "Fihla izikhangiso kule sayithi (kuvale uma isakhiwo sekhasi siphuka)"
   },
   "on": {
     "message": "Vuliwe"
@@ -502,7 +502,7 @@
     "message": "Akufakiwe (ayikho ilayisensi yokuluphinda lusakazwe): isiphequluli sakho silulanda ku-$1 uma uluvula."
   },
   "opt_downloaded_from": {
-    "message": "Kulandwe ku-$1"
+    "message": "Kulandwa ku-$1 uma ukuvula"
   },
   "opt_lists_error": {
     "message": "I-Chrome yenqabe lokhu kuhlanganiswa kwezinhlu ($1). Vala ezinye."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopisha umbiko"
+  },
+  "rep_privacy": {
+    "message": "Indlela lo mbiko ophathwa ngayo: inqubomgomo yobumfihlo"
   },
   "rep_copied": {
     "message": "Kukopishiwe."

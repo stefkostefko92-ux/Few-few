@@ -1,10 +1,10 @@
 Mae Supreme AdBlock yn rhwystro hysbysebion ym mhobman — hysbysebion fideo YouTube, baneri, llamlenni a thracwyr — heb wylio beth rydych chi’n ei wneud.
 
 • Mae hysbysebion YouTube yn cael eu hatal wrth y ffynhonnell, felly mae fideos yn chwarae heb drafferth.
-• Mae EasyList, EasyPrivacy a hidlyddion uBlock Origin wedi’u cynnwys, ynghyd â’r rhestr ar gyfer eich iaith (33 rhestr ranbarthol).
+• Mae EasyList, EasyPrivacy a hidlyddion uBlock Origin wedi’u cynnwys, ynghyd â’r rhestr ar gyfer eich iaith (31 rhestr ranbarthol).
 • Baneri cwcis: mae’n pwyso Gwrthod ar eich rhan, yn clirio’r niwlio a’r cloi sgrolio sy’n weddill, a byth yn pwyso botwm mewngofnodi, OAuth na thalu.
 • Modd ffocws: cuddiwch swigod sgwrsio, llamlenni cylchlythyrau, ceisiadau hysbysiadau, teclynnau cymdeithasol, llamlenni AI a YouTube Shorts.
 • Mae waliau anti-adblock a pop-unders yn cael eu niwtraleiddio.
 • Gwefan wedi torri? Mae un clic yn ei thrwsio, neu dywedwch wrthym — does dim yn cael ei anfon heb i chi ei weld yn gyntaf.
 • Diweddariadau hidlo wedi’u llofnodi ddwywaith y dydd: mae rhwydweithiau hysbysebu newydd yn cael eu trin o fewn oriau, heb god o bell.
-• Dim cyfrif, dim telemetreg, dim casglu data. Am ddim, gyda rhodd ddewisol.
+• Dim cyfrif, dim telemetreg, dim casglu data. Am ddim, gyda rhodd ddewisol; mae’r ffenestr naid yn dangos un cerdyn bach, wedi’i labelu “Hysb.”, ar gyfer Carbon Stealth, y gwneuthurwr.

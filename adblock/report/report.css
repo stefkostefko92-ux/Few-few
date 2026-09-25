@@ -9,6 +9,7 @@ main { max-width: 720px; }
 }
 .check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; }
 .preview {
+  unicode-bidi: plaintext; /* each line takes its own direction (Arabic labels + Latin URLs) */
   margin-top: 6px; padding: 12px; border-radius: 8px; border: 1px solid var(--line);
   background: var(--panel-2); color: var(--muted); font-size: 12px; white-space: pre-wrap; word-break: break-word;
 }

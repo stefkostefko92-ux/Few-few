@@ -62,7 +62,7 @@
     "message": "여기서 광고 영역 숨기기"
   },
   "cosmeticsTitle": {
-    "message": "이 사이트의 요소 숨김 필터(레이아웃이 깨지면 끄세요)"
+    "message": "이 사이트에서 광고 영역 숨기기(페이지 레이아웃이 깨지면 끄세요)"
   },
   "on": {
     "message": "켜짐"
@@ -119,7 +119,7 @@
     "message": "후원"
   },
   "filtersCount": {
-    "message": "필터 $1+개",
+    "message": "필터 $1개 이상",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -502,7 +502,7 @@
     "message": "포함되어 있지 않습니다(재배포 라이선스 없음). 켜면 브라우저가 $1에서 다운로드합니다."
   },
   "opt_downloaded_from": {
-    "message": "다운로드 위치: $1"
+    "message": "켜면 $1에서 다운로드됩니다"
   },
   "opt_lists_error": {
     "message": "Chrome에서 이 목록 조합을 거부했습니다($1). 일부를 끄세요."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "신고 내용 복사"
+  },
+  "rep_privacy": {
+    "message": "이 신고 내용의 처리 방식: 개인정보처리방침"
   },
   "rep_copied": {
     "message": "복사했습니다."

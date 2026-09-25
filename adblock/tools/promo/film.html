@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Supreme AdBlock — promo film</title>
+<meta name="keywords" content="Supreme AdBlock, Carbon Stealth, ad blocker, promo film, lightning" />
+<!-- Промо клип 1920×1080, кадър по кадър (render.mjs вика window.renderAt(t) и снима).
+     Езикът на кадъра е този на „Двубой в Рейвънхолд“ (boy/): буря, осветена отвътре,
+     шапка с REC и тайм-код, надпис с черта, финален кадър с кредит; цветовете са нашите. -->
+<link rel="stylesheet" href="../../dist/promo/fonts/fonts.css" />
+<style>
+  :root {
+    --ink: #040507; --cream: #f2efe6; --dim: rgba(242, 239, 230, 0.62); --hair: rgba(242, 239, 230, 0.18);
+    --cyan: #00e5ff; --cyan2: #00b8d4;
+    --display: "Archivo", "Liberation Sans", sans-serif;
+    --body: "Alegreya Sans SC", "Liberation Sans", sans-serif;
+    --mono: "Martian Mono", "DejaVu Sans Mono", monospace;
+  }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--ink); color: var(--cream); -webkit-font-smoothing: antialiased; }
+  #bg { position: fixed; inset: 0;
+    background: radial-gradient(1400px 900px at 72% 14%, rgba(0, 229, 255, 0.07), transparent 60%),
+      radial-gradient(1200px 800px at 8% 110%, rgba(0, 255, 136, 0.035), transparent 60%), var(--ink); }
+  #grid { position: fixed; inset: -66px; opacity: 0.35;
+    background-image: radial-gradient(rgba(0, 229, 255, 0.09) 1px, transparent 1.4px),
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 22px 22px, 66px 66px, 66px 66px;
+    -webkit-mask-image: radial-gradient(circle at 70% 20%, #000 0%, transparent 75%); }
+  .scene { position: fixed; inset: 0; opacity: 0; }
+  .in { will-change: opacity, transform, filter; }
+  .cap { position: absolute; left: 150px; top: 50%; transform: translateY(-50%); width: 860px; }
+  .eyebrow { margin: 0 0 22px; font: 300 15px/1.2 var(--mono); letter-spacing: 0.26em; text-transform: uppercase; color: var(--cyan); }
+  .term { margin: 0; font: 800 78px/0.98 var(--display); letter-spacing: -0.01em; text-wrap: balance; text-shadow: 0 2px 30px rgba(0, 0, 0, 0.7); }
+  .term .c { color: var(--cyan); }
+  .rule { width: 96px; height: 2px; margin: 30px 0 22px; background: var(--cyan); box-shadow: 0 0 14px rgba(0, 229, 255, 0.6); }
+  .gloss { margin: 0; font: 500 27px/1.35 var(--body); letter-spacing: 0.1em; color: var(--dim); max-width: 780px; }
+  .fine { margin-top: 26px; font: 300 13px/1.7 var(--mono); letter-spacing: 0.08em; color: var(--dim); }
+  .visual { position: absolute; right: 190px; top: 50%; transform: translateY(-50%); }
+  .shot { display: block; height: 880px; width: auto; border-radius: 22px;
+    box-shadow: 0 50px 120px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 229, 255, 0.1), 0 0 90px rgba(0, 229, 255, 0.08); }
+  .pz { transform-origin: 50% 50%; }
+  .panelwrap { transform: scale(1.62); transform-origin: 100% 50%; font-family: "Liberation Sans", sans-serif; color: #f5f5f0; }
+  /* title */
+  .title { position: absolute; left: 150px; top: 50%; transform: translateY(-52%); }
+  .title h1 { margin: 0; font: 900 196px/0.86 var(--display); letter-spacing: -0.02em; text-transform: uppercase; }
+  .title h1 .c { color: var(--cyan); }
+  .title .gloss { margin-top: 34px; }
+  /* bars */
+  .bars { position: absolute; right: 170px; top: 50%; transform: translateY(-50%); width: 760px; }
+  .bar { display: grid; grid-template-columns: 250px 1fr 110px; align-items: center; gap: 22px; margin: 0 0 26px; }
+  .bar .n { font: 500 24px/1 var(--body); letter-spacing: 0.08em; color: var(--dim); text-align: right; }
+  .bar .v { font: 400 26px/1 var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+  .bar .track { height: 26px; background: rgba(242, 239, 230, 0.06); border: 1px solid var(--hair); }
+  .bar .fill { height: 100%; width: 0; background: linear-gradient(90deg, rgba(242, 239, 230, 0.35), rgba(242, 239, 230, 0.55)); }
+  .bar.us .n, .bar.us .v { color: var(--cream); font-weight: 700; }
+  .bar.us .fill { background: linear-gradient(90deg, var(--cyan2), var(--cyan)); box-shadow: 0 0 26px rgba(0, 229, 255, 0.55); }
+  .bars .axis { margin: 6px 0 0 272px; font: 300 13px/1.4 var(--mono); letter-spacing: 0.1em; color: var(--dim); }
+  /* end card */
+  .end { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+  .end img { width: 210px; height: 210px; filter: drop-shadow(0 0 40px rgba(0, 229, 255, 0.45)); }
+  .end h2 { margin: 18px 0 16px; font: 900 124px/0.9 var(--display); letter-spacing: -0.015em; }
+  .end h2 .c { color: var(--cyan); }
+  .end .line { margin: 0; font: 500 30px/1.3 var(--body); letter-spacing: 0.14em; color: var(--cream); }
+  .end .url { margin: 26px 0 0; font: 400 24px/1 var(--mono); letter-spacing: 0.06em; color: var(--cyan); }
+  .end .credit { margin: 44px 0 0; font: 300 14px/1.6 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+  /* film furniture, as in boy/ */
+  .slate { position: fixed; top: 40px; right: 48px; display: grid; justify-items: end; gap: 8px; font: 300 13px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); font-variant-numeric: tabular-nums; z-index: 70; }
+  .slate .rec { color: var(--cream); }
+  .slate .rec::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); vertical-align: 1px; }
+  .brand { position: fixed; top: 36px; left: 48px; display: flex; align-items: center; gap: 14px; font: 300 13px/1.2 var(--mono); letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); z-index: 70; }
+  .brand img { width: 34px; height: 34px; filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.4)); }
+  .foot { position: fixed; left: 48px; bottom: 40px; font: 300 12px/1.2 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); z-index: 70; }
+  #storm { position: fixed; inset: 0; width: 1920px; height: 1080px; z-index: 61; mix-blend-mode: screen; pointer-events: none; }
+  #vig { position: fixed; inset: 0; z-index: 64; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%); }
+  #grain { position: fixed; inset: 0; width: 1920px; height: 1080px; z-index: 65; opacity: 0.055; mix-blend-mode: overlay; pointer-events: none; }
+  #black { position: fixed; inset: 0; z-index: 80; background: #000; opacity: 1; }
+</style>
+</head>
+<body>
+  <div id="bg"></div><div id="grid"></div>
+
+  <section class="scene" id="s0">
+    <div class="title">
+      <p class="eyebrow in" data-d="0.4">Carbon Stealth presents</p>
+      <h1 class="in" id="t0" data-d="1.37" data-dur="0.35">Supreme<br /><span class="c">AdBlock</span></h1>
+      <p class="gloss in" data-d="2.2">The web, without the noise.</p>
+    </div>
+  </section>
+
+  <section class="scene" id="s1">
+    <div class="cap">
+      <p class="eyebrow in" data-d="0.35">01 — YouTube</p>
+      <h2 class="term in" data-d="0.5">Ads stopped <span class="c">at the source.</span></h2>
+      <div class="rule in" data-d="0.75"></div>
+      <p class="gloss in" data-d="0.9">No fake buffering. No black player. Videos simply play.</p>
+    </div>
+    <div class="visual in" data-d="0.2"><img class="shot pz" id="popYT" alt="" /></div>
+  </section>
+
+  <section class="scene" id="s2">
+    <div class="cap">
+      <p class="eyebrow in" data-d="0.35">02 — Smart Detection</p>
+      <h2 class="term in" data-d="0.5">Catches ads <span class="c">no list knows yet.</span></h2>
+      <div class="rule in" data-d="0.75"></div>
+      <p class="gloss in" data-d="0.9">Found by their shape, not by a rule — and you see why.</p>
+    </div>
+    <div class="visual in" data-d="0.2"><div class="panelwrap"><div class="pz" id="smart"></div></div></div>
+  </section>
+
+  <section class="scene" id="s3">
+    <div class="cap">
+      <p class="eyebrow in" data-d="0.35">03 — Your language, your focus</p>
+      <h2 class="term in" data-d="0.5">31 regional lists. <span class="c">70 languages.</span></h2>
+      <div class="rule in" data-d="0.75"></div>
+      <p class="gloss in" data-d="0.9">Focus mode hides chat pop-ups, newsletter walls and Shorts.</p>
+    </div>
+    <div class="visual in" data-d="0.2"><div class="panelwrap"><div class="pz" id="lists"></div></div></div>
+  </section>
+
+  <section class="scene" id="s4">
+    <div class="cap" style="width:700px">
+      <p class="eyebrow in" data-d="0.35">04 — Measured, not claimed</p>
+      <h2 class="term in" data-d="0.5">130 of 132 <span class="c">blocked.</span></h2>
+      <div class="rule in" data-d="0.75"></div>
+      <p class="gloss in" data-d="0.9">Ad and tracker hosts on a public test page, same conditions for every blocker.</p>
+      <p class="fine in" data-d="1.1">adblock.turtlecute.org · 25 Sep 2026<br />default settings · fresh profile · two identical runs</p>
+    </div>
+    <div class="bars in" data-d="0.3" id="bars"></div>
+  </section>
+
+  <section class="scene" id="s5">
+    <div class="cap">
+      <p class="eyebrow in" data-d="0.35">05 — Private by design</p>
+      <h2 class="term in" data-d="0.5">No account. <span class="c">No telemetry.</span></h2>
+      <div class="rule in" data-d="0.75"></div>
+      <p class="gloss in" data-d="0.9">Signed filter updates twice a day — data, never code.</p>
+    </div>
+    <div class="visual in" data-d="0.2"><img class="shot pz" id="popLog" alt="" /></div>
+  </section>
+
+  <section class="scene" id="s6">
+    <div class="end"><div>
+      <img class="in" data-d="0.12" data-dur="0.4" src="../../server/shield-380.webp" alt="" />
+      <h2 class="in" data-d="0.35">Supreme <span class="c">AdBlock</span></h2>
+      <p class="line in" data-d="0.8">Free for Chrome · Edge · Brave</p>
+      <p class="url in" data-d="1.2">adblock.carbonstealth.eu</p>
+      <p class="credit in" data-d="1.8">Created and Designed by Carbon Stealth VCC</p>
+    </div></div>
+  </section>
+
+  <div class="brand"><img src="../../server/shield-96.webp" alt="" />Carbon Stealth</div>
+  <div class="slate"><span>Supreme AdBlock · <b id="ver" style="font-weight:300">5.1</b></span><span class="rec" id="tc">00:00:00:00</span></div>
+  <div class="foot">Free · No account · No telemetry</div>
+  <div id="vig"></div>
+  <canvas id="grain" width="960" height="540"></canvas>
+  <div id="black"></div>
+
+<script src="assets.js"></script>
+<script>
+  // A deterministic clock: the renderer sets the time; nothing here reads the real one.
+  (function () {
+    var s = 0x5a17a3;
+    Math.random = function () { s |= 0; s = (s + 0x6d2b79f5) | 0; var t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    window.__now = 0; window.__q = [];
+    performance.now = function () { return window.__now; };
+    window.requestAnimationFrame = function (cb) { window.__q.push(cb); return window.__q.length; };
+    window.cancelAnimationFrame = function () {};
+  })();
+</script>
+<script id="storm-src">/*__STORM__*/</script>
+<script>
+(function () {
+  "use strict";
+  var TL = window.PROMO_TIMELINE, A = window.PROMO_ASSETS;
+  var st = document.createElement("style"); st.textContent = A.css; document.head.appendChild(st);
+  document.getElementById("popYT").src = A.popupYT;
+  document.getElementById("popLog").src = A.popupLog;
+  document.getElementById("smart").innerHTML = A.smart;
+  document.getElementById("lists").innerHTML = A.lists;
+  var DATA = [["Supreme AdBlock", 130, 1], ["Ghostery", 98], ["uBlock Origin Lite", 82], ["AdGuard", 26], ["Adblock Plus", 26], ["No blocker", 4]];
+  var bars = document.getElementById("bars");
+  DATA.forEach(function (d) {
+    var row = document.createElement("div"); row.className = "bar" + (d[2] ? " us" : "");
+    row.innerHTML = '<span class="n"></span><span class="track"><span class="fill" style="display:block"></span></span><span class="v"></span>';
+    row.querySelector(".n").textContent = d[0]; bars.appendChild(row);
+  });
+  var axis = document.createElement("p"); axis.className = "axis"; axis.textContent = "hosts blocked of 132 · higher is better"; bars.appendChild(axis);
+
+  var storm = glStorm(null);
+  document.body.insertBefore(storm.el, document.getElementById("vig"));
+  storm.el.style.visibility = "visible";
+  window.__amb = 0.16; // the storm is always there, faintly: clouds and rain between strikes
+  storm.kick();
+
+  var clamp = function (x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
+  var ease = function (x) { x = clamp(x); return 1 - Math.pow(1 - x, 3); };
+  var smooth = function (x) { x = clamp(x); return x * x * (3 - 2 * x); };
+  var env = function (t) { return t < 0 ? 0 : Math.exp(-t / 0.07) + (t > 0.16 ? 0.7 * Math.exp(-(t - 0.16) / 0.09) : 0); };
+  var scenes = [].slice.call(document.querySelectorAll(".scene"));
+  var fired = {};
+  var grain = document.getElementById("grain").getContext("2d"), gimg = grain.createImageData(960, 540);
+  var tc = document.getElementById("tc"), black = document.getElementById("black");
+  var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+
+  window.renderAt = function (t) {
+    window.__now = t * 1000;
+    var S = TL.scenes;
+    scenes.forEach(function (el, i) {
+      var a = S[i], b = S[i + 1], lt = t - a;
+      var fade = smooth((t - a) / 0.3) * (1 - smooth((t - (b - 0.3)) / 0.3));
+      if (i === scenes.length - 1) fade = smooth((t - a) / 0.3);
+      el.style.opacity = fade;
+      if (fade <= 0) return;
+      [].forEach.call(el.querySelectorAll(".in"), function (n) {
+        var d = +n.dataset.d || 0, dur = +n.dataset.dur || 0.9, p = ease((lt - d) / dur);
+        n.style.opacity = p;
+        var base = n.classList.contains("visual") || n.classList.contains("bars") ? "translateY(-50%) " : "";
+        n.style.transform = base + "translateY(" + ((1 - p) * 30).toFixed(2) + "px)";
+        n.style.filter = p < 1 ? "blur(" + ((1 - p) * 8).toFixed(2) + "px)" : "none";
+      });
+      [].forEach.call(el.querySelectorAll(".pz"), function (n) { n.style.transform = "scale(" + (1 + 0.05 * clamp(lt / (b - a))).toFixed(4) + ")"; });
+    });
+    // the title is revealed BY the return stroke, and glows with it
+    var g = env(t - 1.37);
+    document.getElementById("t0").style.textShadow = "0 0 " + (20 + 60 * g).toFixed(1) + "px rgba(0,229,255," + (0.25 + 0.5 * Math.min(1, g)).toFixed(3) + ")";
+    // measured bars
+    var lt4 = t - S[4];
+    [].forEach.call(bars.querySelectorAll(".bar"), function (row, i) {
+      var p = ease((lt4 - 0.7 - i * 0.14) / 1.5);
+      row.querySelector(".fill").style.width = (DATA[i][1] / 132 * 100 * p).toFixed(2) + "%";
+      row.querySelector(".v").textContent = Math.round(DATA[i][1] * p);
+    });
+    // strikes at the cuts
+    TL.strikes.forEach(function (s, i) { if (!fired[i] && t >= s.t) { fired[i] = true; storm.strike(s.p, s.x, s.y); } });
+    var q = window.__q; window.__q = []; q.forEach(function (cb) { cb(window.__now); });
+    // fade from and to black; film grain; timecode
+    black.style.opacity = Math.max(1 - smooth(t / 0.9), smooth((t - (TL.duration - 1.4)) / 1.2));
+    var d = gimg.data;
+    for (var k = 0; k < d.length; k += 4) { var v = Math.random() * 255; d[k] = d[k + 1] = d[k + 2] = v; d[k + 3] = 255; }
+    grain.putImageData(gimg, 0, 0);
+    var fr = Math.floor(t * TL.fps + 1e-6), sec = Math.floor(fr / TL.fps);
+    tc.textContent = "00:" + pad(Math.floor(sec / 60)) + ":" + pad(sec % 60) + ":" + pad(fr % TL.fps);
+    return true;
+  };
+  window.__ready = true;
+})();
+</script>
+</body>
+</html>

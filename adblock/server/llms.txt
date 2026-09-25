@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.1.0 (25 September 2026)
+- Current version: 5.1.2 (25 September 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
@@ -18,7 +18,7 @@
 
 - YouTube: the player request itself is flagged ad-free (isInlinePlaybackNoAd) and remaining ad fields are removed from responses; feed and search ads are removed too. It never blocks YouTube's video servers. If YouTube refuses playback on a flagged account, the extension steps aside for that session so videos still play.
 - Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set, uBlock filters (on by default) and Peter Lowe's list — 60,000+ rules on by default; tracking-parameter stripping (utm_*, fbclid, gclid); optional URLhaus malware-domain protection; third-party tracking cookies and beacons blocked.
-- Regional lists: 33 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
+- Regional lists: 31 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
 - Focus mode: optional switches hide social widgets, chat pop-ups, newsletter and notification prompts, AI assistant pop-ups, "sign in with Google" prompts and short-video shelves (YouTube Shorts, Reels).
 - Signed updates: filter data (domains, CSS selectors, scriptlet directives) refreshes about twice a day, Ed25519-signed and version-locked. Only data is downloaded, never code.
 - Anti-adblock: a scriptlet engine with 19 named routines (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) runs before page scripts.
@@ -31,11 +31,17 @@
 
 ## Privacy
 
-Browsing data never leaves the device. The only automatic network request is the filter update (about twice a day); like any download it reaches the EU server with the user's IP address, and those requests are not logged. Optional sync uses the user's own browser account.
+Browsing data never leaves the device. The only automatic network request to us is the filter update (about twice a day; lists the user adds refresh from their own address); like any download it reaches the EU server with the user's IP address, and those requests are not logged. Optional sync uses the user's own browser account.
 
 ## Compared with uBlock Origin Lite
 
-Both are free, Manifest V3, with EasyList and EasyPrivacy and no telemetry. uBlock Origin Lite's rules update with each extension release; Supreme AdBlock also updates signed filter data twice a day and adds list-free Smart Detection, a dedicated YouTube pipeline and cookie-banner handling.
+Both are free, Manifest V3, with EasyList and EasyPrivacy and no telemetry. uBlock Origin Lite's built-in rules update with each extension release (since June 2026 it can also subscribe to external lists); Supreme AdBlock also updates signed filter data twice a day and adds list-free Smart Detection, a dedicated YouTube pipeline and cookie-banner handling.
+
+## Measured results (25 September 2026)
+
+Same conditions for every blocker (fresh profile, default settings, 60 s set-up, headless Chromium, two identical runs; tools/compare_blockers.mjs):
+- adblock.turtlecute.org (hosts blocked of 132): Supreme AdBlock 130, Ghostery 98, uBlock Origin Lite 82, AdGuard 24–26, Adblock Plus 25–26, no blocker 4.
+- adblock-tester.com (score of 100): Ghostery 96, Supreme AdBlock 95, uBlock Origin Lite 91, AdGuard 77, Adblock Plus 77, no blocker 48.
 
 ## Common questions
 
@@ -45,4 +51,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 25 September 2026 (version 5.1.0)._
+_Last updated: 25 September 2026 (version 5.1.2)._

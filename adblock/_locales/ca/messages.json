@@ -62,7 +62,7 @@
     "message": "Amaga els anuncis aquí"
   },
   "cosmeticsTitle": {
-    "message": "Filtratge cosmètic en aquest lloc (desactiveu-lo si la pàgina es desquadra)"
+    "message": "Amaga els anuncis en aquest lloc (desactiveu-ho si la pàgina es desquadra)"
   },
   "on": {
     "message": "Sí"
@@ -502,7 +502,7 @@
     "message": "No inclosa (sense llicència per redistribuir-la): el navegador la baixa de $1 quan l’activeu."
   },
   "opt_downloaded_from": {
-    "message": "Baixada de $1"
+    "message": "Es baixa de $1 quan l’activeu"
   },
   "opt_lists_error": {
     "message": "Chrome ha rebutjat aquesta combinació de llistes ($1). Desactiveu-ne algunes."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copia l’informe"
+  },
+  "rep_privacy": {
+    "message": "Com es tracta aquest informe: política de privadesa"
   },
   "rep_copied": {
     "message": "S’ha copiat."

@@ -62,7 +62,7 @@
     "message": "Ocultar anúncios aqui"
   },
   "cosmeticsTitle": {
-    "message": "Filtragem cosmética neste site (desative se o layout quebrar)"
+    "message": "Ocultar anúncios neste site (desative se o layout da página quebrar)"
   },
   "on": {
     "message": "Sim"
@@ -304,7 +304,7 @@
     "message": "oculta um elemento em todos os sites;"
   },
   "opt_fh_site": {
-    "message": "oculta só nesse site."
+    "message": "oculta-o só nesse site."
   },
   "opt_fh_comments": {
     "message": "Linhas que começam com"
@@ -400,7 +400,7 @@
     "message": "Última atualização"
   },
   "opt_h_sig": {
-    "message": "Assinaturas das atualizações"
+    "message": "Assinaturas digitais das atualizações"
   },
   "opt_h_user": {
     "message": "Meus filtros / regras de permissão"
@@ -502,7 +502,7 @@
     "message": "Não incluída (sem licença para redistribuí-la): seu navegador a baixa de $1 quando você a ativa."
   },
   "opt_downloaded_from": {
-    "message": "Baixada de $1"
+    "message": "É baixada de $1 quando você a ativa"
   },
   "opt_lists_error": {
     "message": "O Chrome recusou esta combinação de listas ($1). Desative algumas."
@@ -538,7 +538,7 @@
     "message": "Avise-nos"
   },
   "rep_tell_desc": {
-    "message": "Corrigimos sites com problemas para todos por meio da atualização assinada dos filtros, geralmente em até um dia. A extensão não envia nada: o relatório abre no seu próprio app de e-mail, e você vê cada palavra antes."
+    "message": "Corrigimos sites com problemas para todos por meio da atualização dos filtros com assinatura digital, geralmente em até um dia. A extensão não envia nada: o relatório abre no seu próprio app de e-mail, e você vê cada palavra antes."
   },
   "rep_what": {
     "message": "O que está errado? (opcional)"
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copiar relatório"
+  },
+  "rep_privacy": {
+    "message": "Como este relatório é tratado: política de privacidade"
   },
   "rep_copied": {
     "message": "Copiado."

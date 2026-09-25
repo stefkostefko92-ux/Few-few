@@ -62,7 +62,7 @@
     "message": "隐藏此处的广告框"
   },
   "cosmeticsTitle": {
-    "message": "此网站的元素隐藏过滤（如果页面布局错乱，请关闭）"
+    "message": "隐藏此网站上的广告框（如果页面布局错乱，请关闭）"
   },
   "on": {
     "message": "开"
@@ -337,7 +337,7 @@
     "message": "移除"
   },
   "opt_filter_status": {
-    "message": "过滤规则集 v$1，更新于$2。仅传输数据，不会发送任何关于您的信息。"
+    "message": "过滤规则集 v$1，$2更新。仅传输数据，不会发送任何关于您的信息。"
   },
   "opt_updating": {
     "message": "正在更新…"
@@ -355,7 +355,7 @@
     "message": "$1 条规则"
   },
   "opt_updated_ago": {
-    "message": "更新于$1"
+    "message": "$1更新"
   },
   "opt_not_fetched": {
     "message": "尚未获取"
@@ -502,7 +502,7 @@
     "message": "未内置（没有再分发许可）：开启后，您的浏览器会从 $1 下载。"
   },
   "opt_downloaded_from": {
-    "message": "下载自 $1"
+    "message": "开启后从 $1 下载"
   },
   "opt_lists_error": {
     "message": "Chrome 拒绝了此列表组合（$1）。请关闭其中一些。"
@@ -558,6 +558,9 @@
   "rep_copy": {
     "message": "复制报告"
   },
+  "rep_privacy": {
+    "message": "此报告的处理方式：隐私政策"
+  },
   "rep_copied": {
     "message": "已复制。"
   },
@@ -595,6 +598,6 @@
     "message": "键取消"
   },
   "opt_notices": {
-    "message": "过滤器列表的许可证"
+    "message": "过滤规则列表的许可证"
   }
 }

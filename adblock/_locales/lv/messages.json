@@ -62,7 +62,7 @@
     "message": "Paslēpt reklāmas šeit"
   },
   "cosmeticsTitle": {
-    "message": "Kosmētiskā filtrēšana šajā vietnē (izslēdziet, ja izkārtojums sabojājas)"
+    "message": "Paslēpt reklāmas šajā vietnē (izslēdziet, ja lapas izkārtojums sabojājas)"
   },
   "on": {
     "message": "Iesl."
@@ -502,7 +502,7 @@
     "message": "Nav iebūvēts (nav licences to izplatīt): pārlūks to lejupielādē no $1, kad to ieslēdzat."
   },
   "opt_downloaded_from": {
-    "message": "Lejupielādēts no $1"
+    "message": "Tiek lejupielādēts no $1, kad to ieslēdzat"
   },
   "opt_lists_error": {
     "message": "Chrome noraidīja šo sarakstu kombināciju ($1). Izslēdziet dažus."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopēt ziņojumu"
+  },
+  "rep_privacy": {
+    "message": "Kā tiek apstrādāts šis ziņojums: privātuma politika"
   },
   "rep_copied": {
     "message": "Nokopēts."

@@ -62,7 +62,7 @@
     "message": "Sakrij reklame ovdje"
   },
   "cosmeticsTitle": {
-    "message": "Kozmetičko filtriranje na ovom sajtu (isključite ako se raspored pokvari)"
+    "message": "Sakrij reklame na ovom sajtu (isključite ako se raspored stranice pokvari)"
   },
   "on": {
     "message": "Uklj."
@@ -502,7 +502,7 @@
     "message": "Nije ugrađena (nema licence za redistribuciju): preglednik je preuzima sa $1 kada je uključite."
   },
   "opt_downloaded_from": {
-    "message": "Preuzima se sa $1"
+    "message": "Preuzima se sa $1 kada je uključite"
   },
   "opt_lists_error": {
     "message": "Chrome je odbio ovu kombinaciju lista ($1). Isključite neke."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopiraj prijavu"
+  },
+  "rep_privacy": {
+    "message": "Kako se ovaj izvještaj obrađuje: politika privatnosti"
   },
   "rep_copied": {
     "message": "Kopirano."

@@ -62,7 +62,7 @@
     "message": "Piilota mainokset tässä"
   },
   "cosmeticsTitle": {
-    "message": "Kosmeettinen suodatus tällä sivustolla (poista käytöstä, jos asettelu hajoaa)"
+    "message": "Piilota mainokset tällä sivustolla (poista käytöstä, jos sivun asettelu hajoaa)"
   },
   "on": {
     "message": "Päällä"
@@ -502,7 +502,7 @@
     "message": "Ei sisälly laajennukseen (ei lupaa levittää sitä): selaimesi lataa sen osoitteesta $1, kun otat sen käyttöön."
   },
   "opt_downloaded_from": {
-    "message": "Ladataan osoitteesta $1"
+    "message": "Ladataan osoitteesta $1, kun otat sen käyttöön"
   },
   "opt_lists_error": {
     "message": "Chrome hylkäsi tämän luetteloyhdistelmän ($1). Poista joitakin käytöstä."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopioi raportti"
+  },
+  "rep_privacy": {
+    "message": "Miten tätä ilmoitusta käsitellään: tietosuojakäytäntö"
   },
   "rep_copied": {
     "message": "Kopioitu."

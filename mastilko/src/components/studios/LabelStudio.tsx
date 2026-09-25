@@ -4,6 +4,7 @@ import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import FitHeight from "@/components/FitHeight";
 import FitText from "@/components/FitText";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
@@ -167,7 +168,7 @@ export default function LabelStudio() {
   const qrSize = Math.min(preset.h, preset.w) * 0.6;
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -481,7 +482,10 @@ export default function LabelStudio() {
                   justifyContent: "center",
                   gap: "2mm",
                   textAlign: "center",
-                  padding: "4% 6%",
+                  // Поле спрямо ЕТИКЕТА: „4% 6%“ при абсолютна клетка се смяташе
+                  // от ширината на целия лист (≈ 8 mm отгоре/отдолу) — на мини
+                  // етикет 38 × 21 оставаха ~4 mm за текста.
+                  padding: `${(preset.w * 0.04).toFixed(2)}mm ${(preset.w * 0.06).toFixed(2)}mm`,
                   overflow: "hidden",
                 }}
               >
@@ -498,7 +502,11 @@ export default function LabelStudio() {
                     }}
                   />
                 )}
-                <div
+                {/* FitHeight: дълъг текст на малък етикет се режеше отгоре и
+                    отдолу (клетката е overflow:hidden) — сега се смалява. */}
+                <FitHeight
+                  watch={`${content.text1}|${content.text2}|${content.num}|${preset.id}|${qrSize}|${s.barcode}|${JSON.stringify(s.fonts ?? {})}|${s.leading}`}
+                  scale={s.textScale ?? 1}
                   style={{
                     position: "relative",
                     display: "flex",
@@ -506,6 +514,7 @@ export default function LabelStudio() {
                     alignItems: "center",
                     justifyContent: "center",
                     minWidth: 0,
+                    maxHeight: "100%",
                   }}
                 >
                   <FitText
@@ -545,7 +554,7 @@ export default function LabelStudio() {
                       style={{ marginTop: "1mm", width: "92%", height: `${Math.min(preset.h * 0.42, 14)}mm` }}
                     />
                   )}
-                </div>
+                </FitHeight>
               </div>
             );
           })}

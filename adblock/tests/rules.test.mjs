@@ -53,7 +53,16 @@ ok("rules: every bundled list has its cosmetics file", catalog.filter((e) => e.d
 const noticesPath = join(ROOT, "THIRD_PARTY_NOTICES.txt");
 const notices = existsSync(noticesPath) ? readFileSync(noticesPath, "utf8") : "";
 ok("notices: THIRD_PARTY_NOTICES.txt names every bundled list with its licence",
-  !!notices && JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists.filter((e) => e.delivery === "bundled" && !e.selectors).every((e) => notices.includes(`${e.title} — ${e.license}`)));
+  !!notices && JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists.filter((e) => e.delivery === "bundled" && !e.selectors).every((e) => notices.includes(`${e.title}\n  Licence: ${e.license}`)));
+{
+  const files = [...notices.matchAll(/licenses\/[\w.-]+\.txt/g)].map((m) => m[0]);
+  ok("notices: every licence text it points to ships in licenses/ (GPL/CC BY-SA/MPL/Apache/MIT ask for it)", files.length > 10 && files.every((f) => existsSync(join(ROOT, f))));
+  ok("notices: says what was changed and where the unmodified source is", /What we changed/.test(notices) && /SHA-256/.test(notices) && !/content otherwise unchanged/.test(notices));
+}
+{
+  const slots = catalog.filter((e) => e.delivery === "remote").map((e) => e.slot);
+  ok("rules: every author-hosted list owns a fixed, unique dynamic-rule slot (0..3)", slots.every((n) => Number.isInteger(n) && n >= 0 && n < 4) && new Set(slots).size === slots.length);
+}
 ok("rules: remote lists carry an https URL and are never bundled", catalog.filter((e) => e.delivery === "remote").every((e) => /^https:\/\//.test(e.url) && !manIds.includes("list_" + e.id)));
 ok("manifest: MV3, CSP strict, scripting present, no externally_connectable",
   manifest.manifest_version === 3 && /script-src 'self'/.test(manifest.content_security_policy?.extension_pages || "") &&
@@ -61,7 +70,7 @@ ok("manifest: MV3, CSP strict, scripting present, no externally_connectable",
 ok("package: scriptlets/main.js exists (dynamically registered, must ship)", existsSync(join(ROOT, "scriptlets", "main.js")));
 
 // service worker: sanitizeConfig / safeSelector
-const bg = loadBackground();
+const bg = loadBackground({ exports: "remoteRuleSafe" });
 const cfg = bg.sanitizeConfig({ version: 7, blockDomains: ["||ads.example.com^", "youtube.com", "bad host"], cosmetic: [".ad", "input[type=password]", "[autocomplete*=cc-]", "html *", ".sponsored-box"],
   scriptlets: [
     { h: "Example.com", n: "aopr", a: ["adBlock"] }, { h: "", n: "set", a: ["x", "true"] },
@@ -74,6 +83,9 @@ ok("bg: cosmetic guards (form/password/cc/universal) applied", cfg.cosmetic.join
 const names = cfg.scriptlets.map((s) => s.h + ":" + s.d.join(","));
 ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/protected/proto/trusted dropped",
   names.length === 2 && names.includes("example.com:abort-on-property-read,adBlock") && names.includes("s.com:set-cookie,c,accepted"));
+ok("bg: safeSelector refuses stylesheet escapes and the page itself as target",
+  [".x{background:url(//t.example/b)}", ".y;", ".ad\\", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
+  ["body.x .ad", ".ad-body", "html .ad", "#bodyx", ".tbody-ad"].every((x) => bg.safeSelector(x)));
 ok("bg: safeSelector policy", bg.safeSelector(".ad-slot") && !bg.safeSelector("[type^=pass]") && !bg.safeSelector("div") && !bg.safeSelector(":not(#x)"));
 ok("bg: parseUserDomains never blocks protected hosts", bg.parseUserDomains("||ads.x.com^\nyoutube.com\n! c\nnot a domain").join() === "ads.x.com");
 
@@ -97,5 +109,30 @@ const countsJson = JSON.parse(readFileSync(join(ROOT, "rules", "counts.json"), "
 ok("counts.json carries popupHosts == popup_hosts.json length (health card reads it)", countsJson.popupHosts === popupHosts.length && popupHosts.length > 0);
 ok("popup hosts: >1000 clean domains from EasyList $popup, none protected", popupHosts.length > 1000 && popupHosts.every((h) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h)) && !popupHosts.some((h) => /(^|\.)(youtube|google|googleapis|gstatic)\.com$/.test(h)));
 ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "scriptlets", "main.js"), "utf8").includes(JSON.stringify(popupHosts.slice(0, 3)).slice(0, -1)));
+
+// Author-hosted lists are unsigned third-party data: only plain block/allow survive.
+{
+  const r = (type, cond = {}) => ({ id: 1, priority: 1, action: { type, redirect: type === "redirect" ? { extensionPath: "/resources/noop.js" } : undefined }, condition: { urlFilter: "||x.com^", ...cond } });
+  ok("remote lists: block/allow kept; redirect, modifyHeaders, allowAllRequests, main_frame dropped",
+    bg.remoteRuleSafe(r("block")) && bg.remoteRuleSafe(r("allow")) && bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image", "main_frame"] })) &&
+    !bg.remoteRuleSafe(r("redirect")) && !bg.remoteRuleSafe(r("modifyHeaders")) && !bg.remoteRuleSafe(r("allowAllRequests")) &&
+    !bg.remoteRuleSafe(r("block", { resourceTypes: ["main_frame"] })) && !bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image"] })));
+}
+
+// Anti-adblock bait: the global uBO XHR redirects to ad networks keep working only for
+// real ad resources (what detectors fetch); anything else to those networks is blocked.
+{
+  const ubo = JSON.parse(readFileSync(join(ROOT, "rules", "list_ubo.json"), "utf8"));
+  const nets = /(^|\.)(doubleclick\.net|googlesyndication\.com)$/;
+  const global = ubo.filter((r) => r.action.type === "redirect" && !r.condition.initiatorDomains && (r.condition.requestDomains || []).some((d) => nets.test(d)));
+  const re = global.length ? new RegExp(global[0].condition.regexFilter || "$^") : null;
+  ok("ubo: global ad-network XHR redirects are narrowed to bait paths (adsbygoogle.js, gpt.js, /pagead/id)",
+    global.length > 0 && global.every((r) => r.condition.regexFilter && r.condition.requestDomains.every((d) => nets.test(d))) &&
+    re.test("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js") && re.test("https://securepubads.g.doubleclick.net/tag/js/gpt.js") &&
+    !re.test("https://stats.g.doubleclick.net/fakepage.html"));
+  const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8")).find((r) => r.id === 238);
+  ok("ad_rules: third-party tracker rule covers ads.youtube.com, Yahoo/Yandex/X/Huawei ad hosts — never first-party",
+    ad.condition.domainType === "thirdParty" && ["ads.youtube.com", "gemini.yahoo.com", "adtech.yahooinc.com", "metrika.yandex.ru", "ads-api.twitter.com", "grs.hicloud.com"].every((d) => ad.condition.requestDomains.includes(d)));
+}
 
 done();

@@ -64,7 +64,7 @@
     "message": "Hide ad boxes here"
   },
   "cosmeticsTitle": {
-    "message": "Cosmetic filtering on this site (turn off if the layout breaks)"
+    "message": "Hide ad boxes on this site (turn it off if the page layout breaks)"
   },
   "on": {
     "message": "On"
@@ -201,13 +201,13 @@
     "message": "Remove video ads on YouTube. Turn off if videos won't play."
   },
   "opt_automatically_dismiss_accept_cookies_pro": {
-    "message": "Automatically dismiss \"Accept cookies\" prompts"
+    "message": "Automatically dismiss “Accept cookies” prompts"
   },
   "opt_hide_disable_your_adblocker_walls_and_re": {
-    "message": "Hide \"disable your adblocker\" walls and restore the page"
+    "message": "Hide “disable your adblocker” walls and restore the page"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Hide \"Sponsored\" posts on Facebook & Instagram"
+    "message": "Hide “Sponsored” posts on Facebook & Instagram"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Strip utm_*, fbclid, gclid and other click identifiers from the links you open"
@@ -234,7 +234,7 @@
     "message": "Elements you hid manually with the picker, grouped by site."
   },
   "opt_live_diagnostics_everything_is_computed_": {
-    "message": "Live diagnostics — everything is computed locally. If something is red, \"Update now\" or reloading the extension usually fixes it."
+    "message": "Live diagnostics — everything is computed locally. If something is red, “Update now” or reloading the extension usually fixes it."
   },
   "opt_supreme_adblock_is_free_for_everyone_if_": {
     "message": "Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required."
@@ -504,7 +504,7 @@
     "message": "Not bundled (no licence to redistribute it): your browser downloads it from $1 when you turn it on."
   },
   "opt_downloaded_from": {
-    "message": "Downloaded from $1"
+    "message": "Downloads from $1 when you turn it on"
   },
   "opt_lists_error": {
     "message": "Chrome refused this combination of lists ($1). Turn some off."
@@ -559,6 +559,9 @@
   },
   "rep_copy": {
     "message": "Copy report"
+  },
+  "rep_privacy": {
+    "message": "How this report is handled: privacy policy"
   },
   "rep_copied": {
     "message": "Copied."

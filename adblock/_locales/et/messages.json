@@ -62,7 +62,7 @@
     "message": "Peida siin reklaamikastid"
   },
   "cosmeticsTitle": {
-    "message": "Kosmeetiline filtreerimine sellel saidil (lülitage välja, kui paigutus läheb katki)"
+    "message": "Peida sellel saidil reklaamikastid (lülitage välja, kui lehe paigutus läheb katki)"
   },
   "on": {
     "message": "Sees"
@@ -502,7 +502,7 @@
     "message": "Pole kaasas (puudub litsents levitamiseks): brauser laadib selle sisselülitamisel alla aadressilt $1."
   },
   "opt_downloaded_from": {
-    "message": "Laaditud aadressilt $1"
+    "message": "Laaditakse sisselülitamisel alla aadressilt $1"
   },
   "opt_lists_error": {
     "message": "Chrome keeldus sellest loendite kombinatsioonist ($1). Lülitage mõned välja."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopeeri teade"
+  },
+  "rep_privacy": {
+    "message": "Kuidas seda teadet käsitletakse: privaatsuspoliitika"
   },
   "rep_copied": {
     "message": "Kopeeritud."
