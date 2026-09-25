@@ -2,7 +2,7 @@
 // [x, y] points without a closing duplicate. Outer loops run counter-clockwise and holes clockwise,
 // so the material always lies on the left of every edge.
 
-export const ARC_STEP = Math.PI / 36; // 5° per segment on holes and rounded slot ends
+export const ARC_STEP = Math.PI / 90; // 2° per segment on holes and rounded slot ends
 
 export function signedArea(loop) {
   let a = 0;

@@ -34,7 +34,7 @@ const loopDirection = (loop, a, b) => {
 
 // opts: t thickness, r inner bend radius (default t), K neutral-fibre factor, bevel edge
 // bevel, segs segments per 90°, relief { w, d } relief notch size.
-export function sheet({ t, r = t, K = 0.42, bevel = 0.5, segs = 12, relief = { w: 1.5, d: 1.5 } }) {
+export function sheet({ t, r = t, K = 0.42, bevel = 0.5, segs = 24, relief = { w: 1.5, d: 1.5 } }) {
   const faces = new Map();
   const bends = [];
   const api = {
@@ -58,14 +58,17 @@ export function sheet({ t, r = t, K = 0.42, bevel = 0.5, segs = 12, relief = { w
       // Working state per face: loop + flags in local coordinates, frame and flat-pattern map.
       const state = new Map();
       const root = faces.get(roots[0]);
-      state.set(root.name, { loop: root.outline, flags: root.outline.map(() => null), holes: root.holes, frame: rootFrame, flat: (x, y) => [x, y] });
+      state.set(root.name, { loop: root.outline, flags: root.outline.map(() => null), holes: root.holes, frame: rootFrame, flat: (x, y) => [x, y], toLocal: (p) => p });
       const strips = [];
       const order = [root.name];
       for (let q = 0; q < order.length; q++) {
         const P = state.get(order[q]);
         for (const bd of bends.filter((b) => b.parent === order[q])) {
-          const sign = loopDirection(P.loop, bd.from, bd.to);
-          const [a, b] = sign > 0 ? [bd.from, bd.to] : [bd.to, bd.from];
+          // from/to are drawn in the parent's own (designer) coordinates, like its outline.
+          const from = P.toLocal(bd.from);
+          const to = P.toLocal(bd.to);
+          const sign = loopDirection(P.loop, from, to);
+          const [a, b] = sign > 0 ? [from, to] : [to, from];
           const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
           const e2 = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
           const n2 = [e2[1], -e2[0]];
@@ -90,6 +93,7 @@ export function sheet({ t, r = t, K = 0.42, bevel = 0.5, segs = 12, relief = { w
             holes: cHoles,
             frame: childFrame(geo, { t, r, up: bd.up }),
             flat: (x, y) => flatAt(x, BA + y - sb),
+            toLocal,
           });
           order.push(C.name);
         }

@@ -29,21 +29,24 @@ export const toDisplay = (hdr, P) =>
     return vec4(clamp(srgb, 0, 1), 1);
   })();
 
-// Scene pass with the G-buffer the screen-space passes need; returns the AO-lit HDR image.
-function sceneGraph(scene, camera, P, keep) {
+// Scene pass with the G-buffer the screen-space passes need; returns the AO-lit HDR image. Stills
+// skip the velocity target (TRAA only) and take half the AO samples per frame: the accumulation
+// averages the rotating AO noise over its frames anyway.
+function sceneGraph(scene, camera, P, keep, { still = false } = {}) {
   const scenePass = keep(pass(scene, camera, { samples: 0 }));
-  scenePass.setMRT(mrt({ output, normal: vec4(packNormalToRGB(normalView), 1), velocity: vec4(velocity, 0, 1) }));
+  const normal = vec4(packNormalToRGB(normalView), 1);
+  scenePass.setMRT(still ? mrt({ output, normal }) : mrt({ output, normal, velocity: vec4(velocity, 0, 1) }));
   scenePass.getTexture('normal').type = THREE.UnsignedByteType;
   const color = scenePass.getTextureNode('output');
   const depth = scenePass.getTextureNode('depth');
   const packed = scenePass.getTextureNode('normal');
-  const normal = sample((st) => unpackRGBToNormal(packed.sample(st).rgb));
-  const occ = keep(ao(depth, normal, camera));
+  const normalAt = sample((st) => unpackRGBToNormal(packed.sample(st).rgb));
+  const occ = keep(ao(depth, normalAt, camera));
   occ.radius.value = 0.07;
   occ.distanceExponent.value = 1;
   occ.thickness.value = 1;
   occ.scale.value = 1.8;
-  occ.samples.value = 16;
+  occ.samples.value = still ? 8 : 16;
   occ.useTemporalFiltering = true;
   // GTAO rotates its noise by frameId, but frameId advances once per renderer.render() call (a
   // pipeline makes several), so the pattern would repeat. It gets its own counter, advanced once
@@ -58,7 +61,7 @@ function sceneGraph(scene, camera, P, keep) {
     return r;
   };
   // Edge-aware denoise of the raw GTAO (depth, normal and luma stops keep the contact lines).
-  const clean = keep(denoise(occ.getTextureNode(), depth, normal, camera));
+  const clean = keep(denoise(occ.getTextureNode(), depth, normalAt, camera));
   clean.radius.value = 6;
   clean.depthPhi.value = 8;
   clean.normalPhi.value = 6;
@@ -66,7 +69,7 @@ function sceneGraph(scene, camera, P, keep) {
   const shade = mix(float(1), aoValue, P.ao);
   // showAO = 1 displays the occlusion buffer alone (tuning aid).
   const lit = mix(vec4(color.rgb.mul(shade), color.a), vec4(vec3(aoValue), 1), P.showAO);
-  return { lit, depth, velocity: scenePass.getTextureNode('velocity'), advance: () => tick++ };
+  return { lit, depth, velocity: still ? null : scenePass.getTextureNode('velocity'), advance: () => tick++ };
 }
 
 // Real-time view: TRAA converges the image whenever the camera rests.
@@ -92,6 +95,11 @@ export function createInteractive(renderer, scene, camera, P) {
   };
 }
 
+// The node system renders each pass once per animation frame (NodeFrame.frameId advances in the
+// renderer's animation loop, whose callback runs before ours), so every accumulated sample waits
+// for a frame of its own; otherwise all samples would repeat the first one.
+const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => resolve()));
+
 // WebGPU pads read-back rows to 256 bytes; callers always get tightly packed RGBA rows.
 function packRows(px, w, h) {
   const row = w * 4;
@@ -107,7 +115,7 @@ function packRows(px, w, h) {
 export function createPhoto(renderer, scene, camera, P) {
   const owned = [];
   const keep = (n) => (owned.push(n), n);
-  const g = sceneGraph(scene, camera, P, keep);
+  const g = sceneGraph(scene, camera, P, keep, { still: true });
   const pipe = new THREE.RenderPipeline(renderer);
   pipe.outputColorTransform = false;
   pipe.outputNode = g.lit;
@@ -147,6 +155,7 @@ export function createPhoto(renderer, scene, camera, P) {
       for (let b = 0; b < batches; b++) {
         for (let i = 0; i < 16; i++) {
           await onFrame(b * 16 + i);
+          await nextFrame();
           g.advance();
           renderer.setRenderTarget(frame);
           pipe.render();

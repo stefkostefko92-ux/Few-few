@@ -59,3 +59,28 @@ for (const item of CATALOG) {
     }
   });
 }
+
+// SU and SD arms carry a flange folded down along their straight side, 30 mm deep from the arm's
+// top, from the wall flange to the arm end (pp. 20-38). Built in the wall frame: y up, z out.
+const APRON_SIDE = { SU: 220, 'SD 150': 90, 'SD 220': 160 };
+for (const item of CATALOG.filter((i) => i.family === 'SU' || i.family === 'SD')) {
+  test(`${item.code}: stiffening flange under the arm, 30 mm deep, wall flange to arm end`, () => {
+    const mb = item.build().build();
+    assert.ok(mb.faces.some((f) => f.name === 'apron'));
+    const side = APRON_SIDE[item.family === 'SU' ? 'SU' : item.code.split(' ').slice(0, 2).join(' ')];
+    const Lp = Number(item.code.split(' ')[2]);
+    let low = Infinity;
+    let near = Infinity;
+    let far = -Infinity;
+    for (let i = 0; i < mb.pos.length; i += 3) {
+      const [x, y, z] = [mb.pos[i], mb.pos[i + 1], mb.pos[i + 2]];
+      if (x < side - 5.001 || x > side + 1e-6 || y > 54 || z < 5.25) continue; // not the wall flange
+      low = Math.min(low, y);
+      near = Math.min(near, z);
+      far = Math.max(far, z);
+    }
+    assert.ok(Math.abs(low - 35) < 1e-6, `bottom edge at y = ${low}`);
+    assert.ok(near > 5 && near < 6, `reaches the wall flange (z = ${near})`);
+    assert.ok(Math.abs(far - Lp) < 1e-6, `runs to the arm end (z = ${far})`);
+  });
+}

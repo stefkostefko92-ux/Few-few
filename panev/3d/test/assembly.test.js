@@ -57,3 +57,10 @@ test('whatever is staged stands centred on the floor, in either hand', () => {
     }
   }
 });
+
+test('guide assemblies slide over the range printed on their catalogue page', () => {
+  for (const [code, range] of [['SU 220 160', [45, 155]], ['SU 220 200', [45, 215]], ['SD 220 160', [50, 155]], ['SC 60 200', [45, 213]], ['SC 80 220', [45, 255]]]) {
+    const a = assemblyFor(CATALOG.find((i) => i.code === code), M);
+    assert.deepEqual(a.range, range, code);
+  }
+});

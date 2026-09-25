@@ -11,7 +11,7 @@ import { halton } from './sampling.js';
 // view and returns the function that restarts it.
 export function createStills(ctx) {
   const { renderer, scene, camera, controls, P, studio, state } = ctx;
-  return async function photo({ width = 1600, height = 1200, frames = 48, softness = 0.4 } = {}) {
+  return async function photo({ width = 1600, height = 1200, frames = 48, softness = 0.15 } = {}) {
     const resume = ctx.pause();
     const keep = { pr: renderer.getPixelRatio(), size: renderer.getSize(new THREE.Vector2()), aspect: camera.aspect, pos: camera.position.clone(), room: scene.environmentRotation.clone() };
     // Framed on the pose on show: an assembly's live box excludes the rest of its adjustment range.
@@ -20,6 +20,13 @@ export function createStills(ctx) {
     const radius = box.getBoundingSphere(new THREE.Sphere()).radius;
     const dir = camera.position.clone().sub(controls.target);
     const az = aimRoom(scene, dir);
+    // The shadow's softness comes from moving the key across its softbox between frames, so the
+    // still needs only a light VSM blur on a smaller map (the full blur dominated the frame cost).
+    const shadow = studio.key.shadow;
+    const live = { size: shadow.mapSize.clone(), samples: shadow.blurSamples, radius: shadow.radius };
+    shadow.mapSize.set(1024, 1024);
+    shadow.blurSamples = 4;
+    shadow.radius = 4;
     let shot = null;
     try {
       renderer.setPixelRatio(1);
@@ -35,6 +42,9 @@ export function createStills(ctx) {
       });
     } finally {
       shot?.dispose();
+      shadow.mapSize.copy(live.size);
+      shadow.blurSamples = live.samples;
+      shadow.radius = live.radius;
       camera.clearViewOffset();
       scene.environmentRotation.copy(keep.room);
       aimKey(studio.key, state.box.getCenter(new THREE.Vector3()), state.radius, state.azimuth);

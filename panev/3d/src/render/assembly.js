@@ -37,6 +37,15 @@ for (const [sg, sup] of [['SG 80 150', 'SU 220 160'], ['SG 80 170', 'SU 220 180'
 
 export const partnerOf = (item) => (PAIRS[item.code] ? byId(PAIRS[item.code]) : null);
 
+// Adjustment range printed on each guide-support page ("Range regolazione", pp. 20-54), mm.
+const RANGES = {
+  'SU 220 160': [45, 155], 'SU 220 180': [45, 195], 'SU 220 200': [45, 215],
+  'SD 150 160': [45, 155], 'SD 150 180': [45, 195], 'SD 150 200': [45, 215],
+  'SD 220 160': [50, 155], 'SD 220 180': [45, 195], 'SD 220 200': [45, 215],
+  'SC 50 200': [45, 210], 'SC 60 200': [45, 213], 'SC 80 200': [45, 215], 'SC 90 200': [45, 215],
+  'SC 50 220': [45, 235], 'SC 60 220': [45, 235], 'SC 80 220': [45, 255], 'SC 90 220': [45, 235],
+};
+
 const mesh = (geo, mats) => {
   const m = new THREE.Mesh(geo, mats);
   m.castShadow = true;
@@ -111,7 +120,7 @@ function guideAssembly(supItem, sgItem, M) {
   const moving = new THREE.Group();
   group.add(moving);
   const sc = arm.kind === 'SC';
-  const range = sc ? [45, arm.L + 15] : [45, arm.Lp - 5];
+  const range = RANGES[supItem.code];
   const set = (d) => {
     moving.clear();
     const D = Math.max(range[0], Math.min(range[1], d));

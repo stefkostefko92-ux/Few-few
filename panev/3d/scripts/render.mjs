@@ -1,6 +1,6 @@
 // Batch stills through the page's photo mode in Chromium, written as PNG + WebP.
 //   node scripts/render.mjs [--codes=A-65-170-7,SU-220-160] [--mode=assembly] [--adjust=<value>]
-//     [--size=1600x1200] [--frames=48] [--out=dist/renders] [--png=<dir>] [--hand=DX] [--look=studio]
+//     [--size=1600x1200] [--frames=32] [--out=dist/renders] [--png=<dir>] [--hand=DX] [--look=studio]
 //     [--webgl]
 // Parts are named by their id; assemblies "<first>+<second>" (A before B, support before SG), and
 // without --codes every catalogue pairing is rendered once.
@@ -15,7 +15,7 @@ import { partnerOf } from '../src/render/assembly.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, '').split('=')).map(([k, v]) => [k, v ?? true]));
 const [W, H] = String(args.size || '1600x1200').split('x').map(Number);
-const frames = Number(args.frames || 48);
+const frames = Number(args.frames || 32);
 const out = path.resolve(ROOT, args.out || 'dist/renders');
 const pngOut = path.resolve(ROOT, args.png || args.out || 'dist/renders');
 const assembly = args.mode === 'assembly';

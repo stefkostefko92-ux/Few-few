@@ -17,9 +17,9 @@ export function boltGeometry(length, { d = 10, af = 16, head = 6.4 } = {}) {
   const headG = hexPrism(af, head, 0.9);
   headG.computeVertexNormals();
   headG.translate(0, length, 0);
-  const shank = new THREE.CylinderGeometry(d / 2 - 0.15, d / 2 - 0.15, length, 32, 1, true);
+  const shank = new THREE.CylinderGeometry(d / 2 - 0.15, d / 2 - 0.15, length, 64, 1, true);
   shank.translate(0, length / 2, 0);
-  const tipG = new THREE.CylinderGeometry(d / 2 - 0.15, d / 2 - 1, 1, 32);
+  const tipG = new THREE.CylinderGeometry(d / 2 - 0.15, d / 2 - 1, 1, 64);
   tipG.translate(0, -0.5, 0);
   return merge([headG, shank.toNonIndexed(), tipG.toNonIndexed()]);
 }
@@ -36,14 +36,14 @@ export function nutGeometry({ af = 16, h = 8, d = 10 } = {}) {
   const hole = new THREE.Path();
   hole.absarc(0, 0, d / 2 - 0.4, 0, Math.PI * 2, true);
   shape.holes.push(hole);
-  const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.5, bevelSegments: 2, curveSegments: 24 });
+  const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.5, bevelSegments: 3, curveSegments: 48 });
   g.rotateX(-Math.PI / 2);
   return g;
 }
 
 export function washerGeometry({ od = 20, id = 10.5, t = 2 } = {}) {
   const pts = [new THREE.Vector2(id / 2, 0), new THREE.Vector2(od / 2 - 0.3, 0), new THREE.Vector2(od / 2, 0.3), new THREE.Vector2(od / 2, t - 0.3), new THREE.Vector2(od / 2 - 0.3, t), new THREE.Vector2(id / 2, t), new THREE.Vector2(id / 2, 0)];
-  return new THREE.LatheGeometry(pts, 40).toNonIndexed();
+  return new THREE.LatheGeometry(pts, 72).toNonIndexed();
 }
 
 // T-section guide rail (≈ T50): foot 50 x 5, blade 5 thick standing 45 on it, small root
@@ -62,7 +62,7 @@ export function railGeometry(length) {
   s.quadraticCurveTo(-2.5, 5, -2.5 - f, 5);
   s.lineTo(-25, 5);
   s.closePath();
-  const g = new THREE.ExtrudeGeometry(s, { depth: length, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 1, curveSegments: 6 });
+  const g = new THREE.ExtrudeGeometry(s, { depth: length, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 2, curveSegments: 16 });
   g.rotateX(-Math.PI / 2);
   return g;
 }

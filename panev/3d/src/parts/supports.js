@@ -1,5 +1,6 @@
 // Counterweight-guide supports (sections 02-04): SU (universal), SD (offset) and SC (sliding).
-// Each is a wall flange 65 mm high with the plate folded off its top edge into the shaft.
+// Each is a wall flange 65 mm high with the plate folded off its top edge into the shaft; the SU
+// and SD arms also carry a stiffening flange folded down along their straight side.
 // Plate outlines come from the dimensioned assembly plans (pp. 21-55), flange slots from the
 // isometric drawings. Root face = wall flange in (x along the wall, y up to the mould line at 65).
 import { sheet } from '../geo/part.js';
@@ -7,6 +8,9 @@ import { rect, slotX, slotY, circle } from '../geo/path.js';
 
 const H = 65; // flange height to the plate's top surface
 const ANCHOR = 12;
+// Stiffening flange folded down along the arm's straight side, 30 mm from the arm's top: drawn
+// on every SU and SD isometric and plan (pp. 20-38; 40 px of a 65 mm = 87 px flange).
+const APRON = 30;
 
 // Plate outlines in (x along the wall, y out from the wall), arm last. Lp = arm length.
 const PLATES = {
@@ -18,13 +22,23 @@ const PLATES = {
 // SU 220 Lp, SD 150 Lp, SD 220 Lp — 5 mm plate.
 export function supportArm(kind, Lp) {
   const k = PLATES[kind];
-  const p = sheet({ t: 5, bevel: 0.6 });
+  const t = 5;
+  const p = sheet({ t, bevel: 0.6 });
   const flangeSlots = k.slots.map(([x0, x1]) => slotX(x0, x1, H / 2, ANCHOR));
   p.face('flange', { outline: rect(0, 0, k.flange, H), holes: flangeSlots });
   const xc = (k.arm[0] + k.arm[1]) / 2;
   const mid = (Lp + 15) / 2;
   p.face('plate', { outline: k.outline(Lp), holes: [slotY(xc, 25, mid - 5, 10), slotY(xc, mid + 5, Lp - 10, 10)] });
   p.bend('flange', 'plate', { from: [0, H], to: [k.span, H], dir: 'up' });
+  // The apron starts just past the wall flange's bend (a 1.5 mm tab and a 1.5 mm relief notch at
+  // the corner, setback r + t = 10); below that bend zone it reaches back to 0.5 mm off the wall
+  // flange, so it reads as closing against it, as drawn.
+  const sb = 2 * t;
+  const y0 = sb + 3;
+  const reach = y0 - t - 0.5;
+  const len = Lp - y0;
+  p.face('apron', { outline: [[0, 0], [len, 0], [len, APRON], [-reach, APRON], [-reach, sb + 1], [0, sb + 1]] });
+  p.bend('plate', 'apron', { from: [k.arm[1], y0], to: [k.arm[1], Lp], dir: 'up' });
   return p;
 }
 
