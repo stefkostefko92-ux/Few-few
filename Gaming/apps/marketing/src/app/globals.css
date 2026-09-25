@@ -7,6 +7,18 @@
   --felt-700: #2b1f14;
   --charcoal-900: #0a0705;
   --ember-300: #ffb066;
+  /* Рейвънхолд (лендинг и общи): опушен дъб, пергамент, месинг, сукно */
+  --oak-950: #15110d;
+  --oak-900: #211912;
+  --parchment: #ecdfc4;
+  --muted: #b1a184;
+  --brass: #c8a15a;
+  --brass-soft: #e2c68c;
+  --felt: #1f4d39;
+  --line: rgba(200, 161, 90, 0.28);
+  --line-soft: rgba(200, 161, 90, 0.12);
+  --font-display: "Alegreya", "Georgia", "Times New Roman", serif;
+  --font-body: "Alegreya Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --brass-400: #d9b25f;
   --brass-300: #e7c87b;
   --brass-100: #f4e3b6;
@@ -26,9 +38,10 @@
 }
 
 body {
-  background-color: var(--charcoal-900);
-  color: var(--ink-100);
-  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  background-color: var(--oak-950);
+  color: var(--parchment);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -55,9 +68,10 @@ body::before {
 h1,
 h2,
 h3 {
-  font-family: "Playfair Display", "PT Serif", Georgia, serif;
-  color: var(--brass-300);
-  line-height: 1.2;
+  font-family: var(--font-display);
+  color: var(--parchment);
+  line-height: 1.15;
+  text-wrap: balance;
 }
 
 a {
@@ -86,8 +100,8 @@ a:hover {
   background: linear-gradient(to bottom, var(--brass-300), var(--brass-400));
   color: var(--charcoal-900);
   font-weight: 700;
-  padding: 0.75rem 1.5rem;
-  border-radius: 14px;
+  padding: 0.7rem 1.4rem;
+  border-radius: 6px;
 }
 .cta:hover {
   color: var(--charcoal-900);
@@ -125,8 +139,9 @@ a:hover {
   flex-wrap: wrap;
 }
 .hdr-brand {
-  font-family: "Playfair Display", serif;
-  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
   color: var(--brass-300);
 }
 .hdr-nav {
