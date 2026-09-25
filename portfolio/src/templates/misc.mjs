@@ -4,15 +4,15 @@ import { PROJECTS } from "../projects.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { VERTICALS, verticalPath } from "../verticals/index.mjs";
-import { siteNav, siteFooter, HUB_FONTS, BRAND_BG } from "./hub.mjs";
+import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 import { TIERS, ADDONS, fmt, shown, net } from "../pricing.mjs";
 
 export function renderLegal(lang) {
   const ui = I18N[lang], path = PATHS.legal[lang];
   return join([
     head({ lang, title: ui.meta.legalTitle, description: ui.meta.legalDesc, keywords: ui.meta.legalKeywords, path, paths: PATHS.legal, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, noindex: false, extra: jsonLd({ "@context": "https://schema.org", "@type": "WebPage", url: SITE + path, name: ui.legal.title, inLanguage: lang, publisher: ORG }) }),
-    `<body class="hub">`, siteNav(lang, ui, PATHS.legal),
-    `<main id="main" class="section legal" style="padding-top:140px"><div class="wrap" style="max-width:820px"><div class="tag">${esc(ui.nav.legal)}</div><h1 class="h2">${esc(ui.legal.title)}</h1>${ui.legal.sections.map((s) => `<h2>${esc(s.t)}</h2>${s.p.map((p) => `<p>${esc(p)}</p>`).join("")}`).join("")}</div></main>`,
+    `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.legal),
+    `<main id="main" class="section legal" style="padding-top:140px"><div class="wrap" style="max-width:820px"><div class="tag">// ${esc(ui.nav.legal)}</div><h1 class="h2">${esc(ui.legal.title)}</h1>${ui.legal.sections.map((s) => `<h2>${esc(s.t)}</h2>${s.p.map((p) => `<p>${esc(p)}</p>`).join("")}`).join("")}</div></main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script>`, `</body></html>`,
   ]);
 }
@@ -35,7 +35,7 @@ ${LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${PATHS.h
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <meta name="theme-color" content="${BRAND_BG}">
-<link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07070a;color:#c2b9a7;font:400 17px/1.6 'Alegreya Sans',system-ui,sans-serif}nav{display:grid;gap:10px;text-align:center}h1{margin:0 0 24px}a{color:#ebe2ce;border:1px solid rgba(235,226,206,.42);border-radius:2px;padding:12px 28px;text-decoration:none;font-weight:500}a:hover{border-color:#ebe2ce;background:rgba(235,226,206,.07)}</style>
+<link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#ccc;font:400 12px/1.8 'Space Mono',monospace;letter-spacing:.02em}nav{display:grid;gap:8px;text-align:center}h1{font:900 clamp(2.4rem,9vw,6rem)/1 'Inter Tight',sans-serif;color:#00e5ff;letter-spacing:-.05em;text-shadow:0 0 40px rgba(0,229,255,.3);margin-bottom:24px}a{color:#00e5ff;border:1px solid rgba(0,229,255,.4);padding:12px 28px;text-decoration:none;text-transform:uppercase;letter-spacing:.15em;font-size:11px}a:hover{background:#00e5ff;color:#000}</style>
 <script>(function(){var s={bg:1,en:1,it:1},l;try{l=localStorage.getItem("cs-lang")}catch(e){}l=l||(navigator.language||"bg").slice(0,2).toLowerCase();location.replace("/"+(s[l]?l:"bg")+"/")})();</script>
 </head>
 <body><div><h1><picture><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="Carbon Stealth VCC" width="320" height="320" style="width:clamp(120px,30vw,200px);height:auto"></picture></h1><nav aria-label="Language">${links}</nav></div></body>
@@ -43,7 +43,7 @@ ${LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${PATHS.h
 }
 
 export function renderNotFound() {
-  const rows = LANGS.map((l) => `<p lang="${l}"><strong>${esc(I18N[l].notFound.title)}.</strong> ${esc(I18N[l].notFound.p)} <a href="${PATHS.hub[l]}">${esc(I18N[l].notFound.cta)}</a></p>`).join("");
+  const rows = LANGS.map((l) => `<p lang="${l}"><strong>${esc(I18N[l].notFound.title)}.</strong> ${esc(I18N[l].notFound.p)} <a href="${PATHS.hub[l]}">${esc(I18N[l].notFound.cta)} →</a></p>`).join("");
   return `<!doctype html>
 <html lang="bg">
 <head>
@@ -54,7 +54,7 @@ export function renderNotFound() {
 <meta name="keywords" content="Carbon Stealth, 404, страница не е намерена, page not found, pagina non trovata">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07070a;color:#c2b9a7;font:400 17px/1.6 'Alegreya Sans',system-ui,sans-serif;padding:24px;text-align:center}h1{font:800 clamp(80px,20vw,160px)/1 'Alegreya',Georgia,serif;margin:0 0 12px;color:#c9a24a}a{color:#ff8a3d;text-decoration:underline;text-underline-offset:3px}p{max-width:52ch;margin:10px auto}strong{color:#ebe2ce}</style>
+<link rel="stylesheet" href="/assets/fonts/brand.css"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#ccc;font:400 12px/1.9 'Space Mono',monospace;padding:24px;text-align:center;letter-spacing:.02em}h1{font:900 clamp(80px,20vw,160px)/1 'Inter Tight',sans-serif;margin:0;color:#00e5ff;letter-spacing:-.05em;text-shadow:0 0 40px rgba(0,229,255,.3)}a{color:#00e5ff}p{max-width:52ch;margin:10px auto}strong{color:#f5f5f0}</style>
 </head>
 <body><div><h1>404</h1>${rows}</div></body>
 </html>`;

@@ -131,7 +131,7 @@ export function renderDemo(lang, demo) {
   const photos = photosOf(demo.id);
   const og = ogPath(lang, demo) || (photos?.slots.hero ? `/img/${demo.id}/hero.webp` : undefined); // OG = самото демо (tools/og.mjs), иначе hero снимката
   return join([
-    head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: demo.keywords[lang], path, paths, fonts: [...th.fonts, "inter-tight", "brand"], css: ["/assets/demo.css", "/assets/premium.css"], themeColor: th.bg, ogImage: og, extra: themeCss(th) + schema(lang, demo, t, path, photos) }),
+    head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: demo.keywords[lang], path, paths, fonts: [...th.fonts, "brand"], css: ["/assets/demo.css", "/assets/premium.css"], themeColor: th.bg, ogImage: og, extra: themeCss(th) + schema(lang, demo, t, path, photos) }),
     `<body class="demo mode-${th.mode}" data-i18n="${esc(JSON.stringify({ tryColor: c.widget.tryColor }))}"${t.catalog ? ` data-shop="${esc(JSON.stringify({ currency: "€", format: lang === "en" ? "pre" : "post", freeFrom: t.catalog.freeFrom, shipping: t.catalog.shipping, added: c.shop.added, remove: c.shop.remove, free: c.shop.free }))}"` : ""}>`,
     demoBar(lang, demo, ui),
     nav(t, c, t.phone, !!photos),

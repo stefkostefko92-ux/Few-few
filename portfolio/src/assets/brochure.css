@@ -1,6 +1,6 @@
 /* brochure.css — брошура А5 (148×210 mm), 6 страници. На екран: страниците една под друга върху сиво;
    при печат/PDF: @page A5 без полета, всяка секция = една страница. Шрифтовете са нашите (brand.css). */
-:root{--cyan:#00c2d8;--cyan-ink:#007a8a;--ink:#0b0b0c;--muted:#5a5f66;--line:#d9dde3;--display:'Alegreya Sans',system-ui,sans-serif;--mono:'Alegreya Sans SC','Alegreya Sans',system-ui,sans-serif}
+:root{--cyan:#00c2d8;--cyan-ink:#007a8a;--ink:#0b0b0c;--muted:#5a5f66;--line:#d9dde3;--display:'Inter Tight',system-ui,sans-serif;--mono:'Space Mono',ui-monospace,monospace}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{background:#2a2c31;font:400 9.5pt/1.45 var(--display);color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:14px;padding:70px 12px 40px}

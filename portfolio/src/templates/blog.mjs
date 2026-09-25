@@ -3,7 +3,7 @@
 import { esc, join, head, jsonLd, ICON, ORG, PATHS, SITE, LANGS, BRAND_URL } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { ARTICLES, AUTHOR } from "../blog/index.mjs";
-import { siteNav, siteFooter, contact, HUB_FONTS, BRAND_BG } from "./hub.mjs";
+import { siteNav, siteFooter, boot, contact, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 
 export const articlePath = (lang, a) => `${PATHS.blog[lang]}${a.slug[lang]}/`;
 export const feedPath = (lang) => `${PATHS.blog[lang]}feed.xml`;
@@ -13,7 +13,7 @@ const minutes = (t) => Math.max(2, Math.round(words(t) / 180));
 
 function card(lang, a, ui) {
   const t = a.t[lang], b = ui.blog;
-  return `<article class="cell post"><a class="post-cover" href="${articlePath(lang, a)}" aria-label="${esc(t.title)}"><img src="${a.cover}" alt="" width="960" height="600" loading="lazy" decoding="async"></a><div class="post-meta"><span class="cat"><time datetime="${a.date}">${dateFmt(a.date, lang)}</time> · ${minutes(t)} ${esc(b.minutes)}</span><h2><a href="${articlePath(lang, a)}">${esc(t.title)}</a></h2><p>${esc(t.desc)}</p><a class="open" href="${articlePath(lang, a)}">${esc(b.read)} →</a></div></article>`;
+  return `<article class="cell post reveal" data-cursor><a class="post-cover" href="${articlePath(lang, a)}" aria-label="${esc(t.title)}"><img src="${a.cover}" alt="" width="960" height="600" loading="lazy" decoding="async"></a><div class="post-meta"><span class="cat"><time datetime="${a.date}">${dateFmt(a.date, lang)}</time> · ${minutes(t)} ${esc(b.minutes)}</span><h2><a href="${articlePath(lang, a)}">${esc(t.title)}</a></h2><p>${esc(t.desc)}</p><a class="open" href="${articlePath(lang, a)}">${esc(b.read)} →</a></div></article>`;
 }
 
 export function renderBlogIndex(lang) {
@@ -25,8 +25,8 @@ export function renderBlogIndex(lang) {
   ] });
   return join([
     head({ lang, title: b.title, description: b.desc, keywords: b.keywords, path, paths: PATHS.blog, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, extra: schema }),
-    `<body class="hub">`, siteNav(lang, ui, PATHS.blog),
-    `<main id="main"><section class="section" style="padding-top:140px"><div class="wrap"><div class="tag">${esc(b.eyebrow)} · <a href="${feedPath(lang)}">${esc(b.rss)}</a></div><h1 class="h2">${b.h1}</h1><p class="lede">${esc(b.lede)}</p><div class="grid1 posts">${list.map((a) => card(lang, a, ui)).join("")}</div></div></section>`,
+    `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.blog),
+    `<main id="main"><section class="section" style="padding-top:140px"><div class="wrap"><div class="tag reveal">// ${esc(b.eyebrow)} · <a href="${feedPath(lang)}">${esc(b.rss)}</a></div><h1 class="h2 reveal">${b.h1}</h1><p class="lede reveal">${esc(b.lede)}</p><div class="grid1 posts">${list.map((a) => card(lang, a, ui)).join("")}</div></div></section>`,
     contact(lang, ui), `</main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script>`, `</body></html>`,
   ]);
@@ -43,8 +43,8 @@ export function renderArticle(lang, a) {
   ] });
   return join([
     head({ lang, title: t.metaTitle, description: t.metaDesc, keywords: a.keywords[lang], path, paths, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, ogImage: a.cover, extra: schema }),
-    `<body class="hub">`, siteNav(lang, ui, PATHS.blog),
-    `<main id="main"><article class="section post-page" style="padding-top:140px"><div class="wrap" style="max-width:820px"><nav class="crumbs" aria-label="breadcrumb"><a href="${PATHS.hub[lang]}">Portfolio</a> / <a href="${PATHS.blog[lang]}">${esc(b.eyebrow)}</a></nav><h1 class="post-title">${esc(t.title)}</h1><p class="post-dates hud"><span>${esc(b.published)}: <time datetime="${a.date}">${dateFmt(a.date, lang)}</time></span><span>${esc(b.updated)}: <time datetime="${a.updated}">${dateFmt(a.updated, lang)}</time></span><span>${minutes(t)} ${esc(b.minutes)}</span></p><p class="post-lede">${esc(t.lede)}</p><img class="post-cover-img" src="${a.cover}" alt="" width="960" height="600" decoding="async"><div class="post-body">${t.sections.map((s) => `<h2>${esc(s.h)}</h2>${s.p.map((p) => `<p>${esc(p)}</p>`).join("")}`).join("")}</div><aside class="post-author"><div class="tag">${esc(b.author)}</div><strong>${esc(AUTHOR.name)}</strong><p>${esc(b.authorBio)}</p><a href="${BRAND_URL}" target="_blank" rel="noopener">carbonstealth.eu ↗</a></aside><section class="post-sources"><div class="tag">${esc(b.sources)}</div><ol class="sources">${a.sources.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ol></section><p class="post-cta"><a class="btn btn-solid" href="${PATHS.quote[lang]}">${esc(ui.quote.eyebrow)}</a> <a class="btn" href="${PATHS.blog[lang]}">${esc(b.back)}</a></p></div></article><section class="section alt"><div class="wrap"><div class="tag">${esc(b.more)}</div><div class="grid1 posts">${others.map((x) => card(lang, x, ui)).join("")}</div></div></section></main>`,
+    `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.blog),
+    `<main id="main"><article class="section post-page" style="padding-top:140px"><div class="wrap" style="max-width:820px"><nav class="crumbs tag" aria-label="breadcrumb"><a href="${PATHS.hub[lang]}">Portfolio</a> / <a href="${PATHS.blog[lang]}">${esc(b.eyebrow)}</a></nav><h1 class="post-title">${esc(t.title)}</h1><p class="post-dates hud"><span>${esc(b.published)}: <time datetime="${a.date}">${dateFmt(a.date, lang)}</time></span><span>${esc(b.updated)}: <time datetime="${a.updated}">${dateFmt(a.updated, lang)}</time></span><span>${minutes(t)} ${esc(b.minutes)}</span></p><p class="post-lede">${esc(t.lede)}</p><img class="post-cover-img" src="${a.cover}" alt="" width="960" height="600" decoding="async"><div class="post-body">${t.sections.map((s) => `<h2>${esc(s.h)}</h2>${s.p.map((p) => `<p>${esc(p)}</p>`).join("")}`).join("")}</div><aside class="post-author"><div class="tag">// ${esc(b.author)}</div><strong>${esc(AUTHOR.name)}</strong><p>${esc(b.authorBio)}</p><a href="${BRAND_URL}" target="_blank" rel="noopener">carbonstealth.eu ↗</a></aside><section class="post-sources"><div class="tag">// ${esc(b.sources)}</div><ol class="sources">${a.sources.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ol></section><p class="post-cta"><a class="btn btn-solid" href="${PATHS.quote[lang]}" data-magnetic>${esc(ui.quote.eyebrow)} ${ICON.arrow}</a> <a class="btn" href="${PATHS.blog[lang]}">${esc(b.back)}</a></p></div></article><section class="section alt"><div class="wrap"><div class="tag">// ${esc(b.more)}</div><div class="grid1 posts">${others.map((x) => card(lang, x, ui)).join("")}</div></div></section></main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script>`, `</body></html>`,
   ]);
 }

@@ -1,8 +1,7 @@
-// hub.mjs — началната страница във визията на „Двубой в Рейвънхолд“ (boy/): бурята в hero-то е единственото
-// шумно нещо; под нея — тиха програма: демотата като кадри с надпис, реалните проекти, процесът като римски
-// глави, „защо", ценоразпис, въпроси и контактът като краен надпис. Общите части (nav/footer/contact/ghost)
-// се ползват и от цените, правната, блога и вертикалите.
-import { esc, join, head, credit, jsonLd, ORG, PATHS, demoPath, SITE, LANGS, BRAND_EMAIL, BRAND_URL, BROCHURE_PDF } from "../lib/html.mjs";
+// hub.mjs — началната страница в дизайн езика на carbonstealth.eu (HUD брутализъм): boot, canvas
+// hero с магнитно заглавие, тикер, демота като 1px решетка с живи прегледи, процес като номерирани
+// редове, „защо", цени, контакт. Общи части (nav/footer/contact/boot/ghost) се ползват и от цените/правната.
+import { esc, join, head, credit, jsonLd, ICON, ORG, PATHS, demoPath, SITE, LANGS, BRAND_EMAIL, BRAND_URL, BROCHURE_PDF } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { DEMO_ICONS } from "./icons.mjs";
@@ -30,30 +29,49 @@ export const HUB_FONTS = ["brand"];
 export const BRAND_BG = "#000000";
 const CONTACT_URL = { bg: `${BRAND_URL}/bg/contact/`, en: `${BRAND_URL}/en/contact/`, it: `${BRAND_URL}/contact/` };
 
-/** Заглавие на секция (името е историческо — ехо копията и boot екранът отпаднаха с новата визия). */
-export const ghost = (html) => `<h2 class="h2">${html}</h2>`;
+/** Ghost/Echo заглавие: 5 cyan копия зад плътния текст (aria-label = чистият текст). */
+export function ghost(html) {
+  const plain = html.replace(/<[^>]+>/g, "");
+  return `<h2 class="h2 reveal" aria-label="${esc(plain)}">${[1, 2, 3, 4, 5].map((n) => `<span class="ghost ghost-${n}" aria-hidden="true">${plain}</span>`).join("")}<span class="real">${html}</span></h2>`;
+}
+
+/** BIOS POST boot екран — редовете се пълнят от site.js с реални данни от Navigator API. */
+export function boot(ui) {
+  return `<div class="boot" id="boot" aria-hidden="true" data-n="${DEMOS.length}"><i class="boot-corner tl"></i><i class="boot-corner tr"></i><i class="boot-corner bl"></i><i class="boot-corner br"></i><div class="boot-scan"></div><picture class="boot-cs"><source srcset="/mark.webp" type="image/webp"><img src="/mark.png" alt="" width="320" height="320" decoding="async" fetchpriority="high"></picture><div class="boot-list hud"></div><div class="hud"><span style="animation:cs-blink 1s infinite">●</span> ${esc(ui.brand.boot)}</div></div>`;
+}
 
 const logo = (extra = "") => `<picture><source srcset="/logo.webp" type="image/webp"><img class="logo" src="/logo.png" alt="Carbon Stealth VCC" width="673" height="160"${extra}></picture>`;
 
 export function siteNav(lang, ui, current) {
   const links = [[`${PATHS.hub[lang]}#demos`, ui.nav.demos], [PATHS.projects[lang], ui.nav.projects], [`${PATHS.hub[lang]}#process`, ui.nav.process], [PATHS.vertical[lang], ui.nav.vertical], [PATHS.pricing[lang], ui.nav.pricing], [PATHS.quote[lang], ui.nav.quoteNav], [PATHS.blog[lang], ui.nav.blogNav], [`${PATHS.hub[lang]}#contact`, ui.nav.contact]];
   const langs = LANGS.map((l) => `<a href="${current[l]}" hreflang="${l}" lang="${l}"${l === lang ? ' aria-current="page"' : ""}>${I18N[l].short}</a>`).join("");
-  return `<a class="cs-skip" href="#main">${esc(ui.nav.demos)}</a><header class="nav"><a href="${PATHS.hub[lang]}" aria-label="Carbon Stealth VCC">${logo()}</a><nav class="nav-links" aria-label="Menu">${links.map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join("")}</nav><div class="nav-right"><button type="button" class="fx-toggle" data-fx-toggle data-on="${esc(ui.nav.pauseOn)}" aria-pressed="false">${esc(ui.nav.pause)}</button><nav class="langs" aria-label="Language">${langs}</nav><button class="burger" aria-expanded="false" aria-controls="menu" aria-label="${esc(ui.nav.menu)}">≡</button></div></header><nav id="menu" class="mobile-menu" aria-label="Menu">${links.map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join("")}<button type="button" class="fx-toggle fx-mobile" data-fx-toggle data-on="${esc(ui.nav.pauseOn)}" aria-pressed="false">${esc(ui.nav.pause)}</button></nav>`;
+  return `<a class="cs-skip" href="#main">${esc(ui.nav.demos)} ↓</a><header class="nav"><a href="${PATHS.hub[lang]}" aria-label="Carbon Stealth VCC">${logo()}</a><nav class="nav-links" aria-label="Menu">${links.map(([h, l]) => `<a href="${h}" data-scramble>${esc(l)}</a>`).join("")}</nav><div class="nav-right"><button type="button" class="fx-toggle hud" data-fx-toggle data-on="${esc(ui.nav.pauseOn)}" aria-pressed="false">${esc(ui.nav.pause)}</button><span class="hud fps"><i>●</i><span id="fps">60 FPS</span></span><nav class="langs" aria-label="Language">${langs}</nav><button class="burger" aria-expanded="false" aria-controls="menu" aria-label="${esc(ui.nav.menu)}">≡</button></div></header><nav id="menu" class="mobile-menu" aria-label="Menu">${links.map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join("")}<button type="button" class="fx-toggle hud fx-mobile" data-fx-toggle data-on="${esc(ui.nav.pauseOn)}" aria-pressed="false">${esc(ui.nav.pause)}</button></nav>`;
 }
 
 export function siteFooter(lang, ui) {
   const b = ui.brand;
-  return `<footer class="foot"><div class="wrap"><div class="foot-grid"><div>${logo(' loading="lazy"')}<p class="desc">${esc(b.desc)}</p></div><div><h2 class="foot-h">${esc(b.cols.demos)}</h2><ul>${DEMOS.map((d) => `<li><a href="${demoPath(lang, d)}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</a></li>`).join("")}</ul></div><div><h2 class="foot-h">${esc(b.cols.company)}</h2><ul>${b.company.map(([h, l]) => `<li><a href="${h}"${h.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${esc(l)}</a></li>`).join("")}<li><a href="${PATHS.projects[lang]}">${esc(ui.nav.projects)}</a></li><li><a href="${PATHS.admin[lang]}">${esc(ui.admin.eyebrow)}</a></li><li><a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)}</a></li><li><a href="${PATHS.quote[lang]}">${esc(ui.nav.quoteNav)}</a></li><li><a href="${PATHS.hosting[lang]}">${esc(ui.nav.hostingNav)}</a></li><li><a href="${PATHS.blog[lang]}">${esc(ui.nav.blogNav)}</a></li><li><a href="${PATHS.local[lang]}">${esc(ui.local.eyebrow)}</a></li><li><a href="${PATHS.vertical[lang]}">${esc(ui.vertical.eyebrow)}</a></li></ul></div><div><h2 class="foot-h">${esc(b.cols.legal)}</h2><ul><li><a href="${PATHS.legal[lang]}">${esc(ui.footer.legal)}</a></li><li><a href="${PATHS.a11y[lang]}">${esc(ui.nav.a11y)}</a></li><li><a href="${BROCHURE_PDF[lang]}" download>${esc(ui.nav.brochure)} · PDF A5</a></li><li><a href="/llms.txt">llms.txt</a></li><li><a href="/sitemap.xml">sitemap.xml</a></li></ul></div></div><div class="badges">${b.badges.map((x) => `<span>${esc(x)}</span>`).join("")}</div><div class="impressum"><div>${esc(b.impressum)}</div><div>© ${new Date().getFullYear()} Carbon Stealth VCC · ${esc(ui.footer.rights)} ${esc(ui.footer.built)}</div>${credit(lang)}</div></div></footer>`;
+  return `<footer class="foot"><div class="wrap"><div class="foot-grid"><div>${logo(' loading="lazy"')}<p class="desc">${esc(b.desc)}</p></div><div><h2 class="foot-h">${esc(b.cols.demos)}</h2><ul>${DEMOS.map((d) => `<li><a href="${demoPath(lang, d)}">${esc(d.t[lang].name)} · ${esc(d.t[lang].category)}</a></li>`).join("")}</ul></div><div><h2 class="foot-h">${esc(b.cols.company)}</h2><ul>${b.company.map(([h, l]) => `<li><a href="${h}"${h.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${esc(l)}</a></li>`).join("")}<li><a href="${PATHS.projects[lang]}">${esc(ui.nav.projects)}</a></li><li><a href="${PATHS.admin[lang]}">${esc(ui.admin.eyebrow)}</a></li><li><a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)}</a></li><li><a href="${PATHS.quote[lang]}">${esc(ui.nav.quoteNav)}</a></li><li><a href="${PATHS.hosting[lang]}">${esc(ui.nav.hostingNav)}</a></li><li><a href="${PATHS.blog[lang]}">${esc(ui.nav.blogNav)}</a></li><li><a href="${PATHS.local[lang]}">${esc(ui.local.eyebrow)}</a></li><li><a href="${PATHS.vertical[lang]}">${esc(ui.vertical.eyebrow)}</a></li></ul></div><div><h2 class="foot-h">${esc(b.cols.legal)}</h2><ul><li><a href="${PATHS.legal[lang]}">${esc(ui.footer.legal)}</a></li><li><a href="${PATHS.a11y[lang]}">${esc(ui.nav.a11y)}</a></li><li><a href="${BROCHURE_PDF[lang]}" download>${esc(ui.nav.brochure)} · PDF A5</a></li><li><a href="/llms.txt">llms.txt</a></li><li><a href="/sitemap.xml">sitemap.xml</a></li></ul></div></div><div class="badges hud">${b.badges.map((x) => `<span>${esc(x)}</span>`).join("")}</div><div class="impressum"><div>${esc(b.impressum)}</div><div>© ${new Date().getFullYear()} Carbon Stealth VCC · ${esc(ui.footer.rights)} ${esc(ui.footer.built)}</div>${credit(lang)}</div></div></footer>`;
 }
 
-/** Hero: бурята (hero.js върху #hero-canvas, CSS кадър отдолу) и надпис на филмов кадър долу вляво. */
+/** Заглавието буква по буква (магнитно отблъскване в site.js); <em> частта е cyan. */
+function letters(title) {
+  return title.split(/(<em>[\s\S]*?<\/em>)/).map((part) => {
+    const em = part.startsWith("<em>");
+    const text = part.replace(/<\/?em>/g, "");
+    // Думите са неделими (inline-block букви иначе се чупят по средата на дума).
+    return text.split(" ").map((word) => (word ? `<span class="w">${[...word].map((ch) => `<span class="l"${em ? ' style="color:var(--cyan)"' : ""}>${esc(ch)}</span>`).join("")}</span>` : "")).join(" ");
+  }).join("");
+}
+
 function hero(ui) {
-  return `<section class="hero" id="top"><canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas><div class="wrap"><p class="tag">${esc(ui.hero.eyebrow)}</p><h1>${ui.hero.title}</h1><p class="hero-desc">${esc(ui.hero.lede)}</p><div class="cta-row"><a class="btn btn-solid" href="#demos">${esc(ui.hero.ctaDemos)}</a><a class="btn" href="${PATHS.pricing[ui.code]}">${esc(ui.hero.ctaPricing)}</a></div>${ui.hero.proof ? `<p class="hero-proof">${esc(ui.hero.proof)}</p>` : ""}<ul class="stats">${ui.hero.stats.map((s) => `<li><b>${esc(s.n)}</b>${esc(s.l)}</li>`).join("")}</ul></div></section>`;
+  return `<section class="hero" id="top"><canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas><div class="hero-scan" aria-hidden="true"><i></i></div><div class="wrap"><div class="tag">${esc(ui.hero.eyebrow)}</div><h1 aria-label="${esc(ui.hero.title.replace(/<[^>]+>/g, ""))}">${letters(ui.hero.title)}</h1><p class="hero-sub">${esc(ui.demos.eyebrow)} · BG · EN · IT</p><p class="hero-desc">${esc(ui.hero.lede)}</p><div class="cta-row"><a class="btn btn-solid" href="#demos" data-magnetic>${esc(ui.hero.ctaDemos)} ${ICON.arrow}</a><a class="btn" href="${PATHS.pricing[ui.code]}" data-magnetic>${esc(ui.hero.ctaPricing)}</a></div>${ui.hero.proof ? `<p class="hero-proof">${esc(ui.hero.proof)}</p>` : ""}<ul class="stats">${ui.hero.stats.map((s) => `<li><b>${esc(s.n)}</b><span>${esc(s.l)}</span></li>`).join("")}</ul></div><div class="hud hud-l">${esc(ui.brand.hudLeft)}</div><div class="hud hud-r">${esc(ui.brand.hudRight)}</div></section>`;
 }
 
-function demoCard(lang, demo, ui) {
+const ticker = (ui) => `<div class="ticker" tabindex="0" aria-label="ticker"><div class="ticker-track"><span>${esc(ui.brand.ticker)}</span><span>${esc(ui.brand.ticker)}</span></div></div>`;
+
+function demoCard(lang, demo, ui, i) {
   const t = demo.t[lang], th = demo.theme, href = demoPath(lang, demo);
-  return `<article class="demo-card" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}"><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span>${previewShot(lang, demo, t.name)}<span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><span class="cat">${esc(t.category)}</span><h3>${esc(t.name)}</h3><span class="inc">${esc(ui.demos.includes[t.hero.widget.kind] || "")}. ${esc(ui.demos.includes.always)}</span>${labBadge(demo.id, ui)}<span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span><div class="demo-actions"><a class="open" href="${href}">${esc(ui.brand.open)}</a><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button></div><a class="v-link" href="${verticalPath(lang, demo)}">${esc(ui.vertical.priceFor.replace("{business}", t.category.charAt(0).toLowerCase() + t.category.slice(1)))}</a></div></article>`;
+  return `<article class="cell demo-card reveal" style="--c-bg:${th.bg};--c-accent:${th.accent};--c-text:${th.text};--c-surface:${th.surface}" data-cursor><a class="demo-cover" href="${href}" data-preview="${href}" aria-label="${esc(ui.demos.open)}: ${esc(t.name)}"><span class="cover-art" aria-hidden="true">${DEMO_ICONS[demo.icon]}<span class="cover-name" style="font-family:${th.display}">${esc(t.name)}</span></span>${previewShot(lang, demo, t.name)}<span class="live" aria-hidden="true">${esc(ui.brand.live)}</span></a><div class="demo-meta"><div><span class="mono-num">${String(i + 1).padStart(3, "0")}</span> <span class="cat">${esc(t.category)}</span>${labBadge(demo.id, ui)}<h3 data-scramble>${esc(t.name)}</h3><span class="inc">${esc(ui.demos.includes[t.hero.widget.kind] || "")} · ${esc(ui.demos.includes.always)}</span><span class="sw" aria-hidden="true"><i style="background:${th.bg}"></i><i style="background:${th.accent}"></i><i style="background:${th.accent2}"></i><i style="background:${th.text}"></i></span></div><div class="demo-actions"><button class="dev-btn" type="button" data-device="${href}" data-name="${esc(t.name)}">${esc(ui.brand.preview)}</button><a class="open" href="${href}">${esc(ui.brand.open)}</a></div></div><a class="v-link" href="${verticalPath(lang, demo)}">${esc(ui.vertical.priceFor.replace("{business}", t.category.charAt(0).toLowerCase() + t.category.slice(1)))}</a></article>`;
 }
 
 /** Модал „преглед на устройства": iframe на демото в десктоп · таблет · телефон рамка (site.js). */
@@ -63,27 +81,25 @@ function devModal(ui) {
 }
 
 function demos(lang, ui) {
-  return `<section class="section" id="demos"><div class="wrap"><p class="tag">${esc(ui.demos.eyebrow)}</p>${ghost(ui.demos.title)}<p class="lede">${esc(ui.demos.lede)}</p><div class="reel">${DEMOS.map((d) => demoCard(lang, d, ui)).join("")}</div><p class="more"><a class="btn" href="${PATHS.vertical[lang]}">${esc(ui.vertical.eyebrow)}</a><a class="btn" href="${PATHS.admin[lang]}">${esc(ui.admin.eyebrow)}</a></p></div></section>${devModal(ui)}`;
+  return `<section class="section" id="demos"><div class="wrap"><div class="tag reveal">// ${esc(ui.demos.eyebrow)}</div>${ghost(ui.demos.title)}<p class="lede reveal">${esc(ui.demos.lede)}</p><div class="grid1">${DEMOS.map((d, i) => demoCard(lang, d, ui, i)).join("")}</div><p class="more reveal"><a class="btn btn-solid" href="${PATHS.vertical[lang]}" data-magnetic>${esc(ui.vertical.eyebrow)} ${ICON.arrow}</a> <a class="btn" href="${PATHS.admin[lang]}" data-magnetic>${esc(ui.admin.eyebrow)} ${ICON.arrow}</a></p></div></section>${devModal(ui)}`;
 }
 
 /** Реалните проекти (6 от 10 в хъба, всичките на /proekti/) — доказателството, че демотата не са само демота. */
 function projects(lang, ui) {
   const p = ui.projects;
-  return `<section class="section alt" id="projects"><div class="wrap"><p class="tag">${esc(p.eyebrow)}</p>${ghost(p.title)}<p class="lede">${esc(p.lede)}</p><div class="grid1 projects">${PROJECTS.slice(0, 6).map((pr, i) => projectCard(lang, pr, ui, i, false)).join("")}</div><p class="more"><a class="btn" href="${PATHS.projects[lang]}">${esc(p.all)}</a></p></div></section>`;
+  return `<section class="section alt" id="projects"><div class="wrap"><div class="tag reveal">// ${esc(p.eyebrow)}</div>${ghost(p.title)}<p class="lede reveal">${esc(p.lede)}</p><div class="grid1 projects">${PROJECTS.slice(0, 6).map((pr, i) => projectCard(lang, pr, ui, i, false)).join("")}</div><p class="more reveal"><a class="btn" href="${PATHS.projects[lang]}" data-magnetic>${esc(p.all)} ${ICON.arrow}</a></p></div></section>`;
 }
 
-/** Процесът е истинска последователност → римски глави (като главите на boy), единствените номера на сайта. */
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 function process(ui) {
-  return `<section class="section" id="process"><div class="wrap"><p class="tag">${esc(ui.process.eyebrow)}</p>${ghost(ui.process.title)}<ol class="chapters">${ui.process.steps.map((s, i) => `<li><span class="num" aria-hidden="true">${ROMAN[i]}</span><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p></li>`).join("")}</ol></div></section>`;
+  return `<section class="section alt" id="process"><div class="wrap"><div class="tag reveal">// ${esc(ui.process.eyebrow)}</div>${ghost(ui.process.title)}<div class="rows">${ui.process.steps.map((s, i) => `<div class="row reveal" data-cursor><span class="mono-num">0${i + 1}</span><h3 data-scramble>${esc(s.t)}</h3><p>${esc(s.d)}</p></div>`).join("")}</div></div></section>`;
 }
 
 function why(ui) {
-  return `<section class="section alt" id="why"><div class="wrap"><p class="tag">${esc(ui.why.eyebrow)}</p>${ghost(ui.why.title)}<div class="grid1" style="margin-top:48px">${ui.why.items.map((i) => `<article class="cell"><h3>${esc(i.t)}</h3><p>${esc(i.d)}</p></article>`).join("")}</div></div></section>`;
+  return `<section class="section" id="why"><div class="wrap"><div class="tag reveal">// ${esc(ui.why.eyebrow)}</div>${ghost(ui.why.title)}<div class="grid1" style="margin-top:48px">${ui.why.items.map((i, n) => `<article class="cell reveal" data-cursor><span class="ic">${ICON[i.icon]}</span><span class="mono-num">0${n + 1}</span><h3 data-scramble>${esc(i.t)}</h3><p>${esc(i.d)}</p></article>`).join("")}</div></div></section>`;
 }
 
 function pricingTeaser(lang, ui) {
-  return `<section class="section" id="pricing"><div class="wrap"><p class="tag">${esc(ui.pricingTeaser.eyebrow)}</p>${ghost(tx(ui.pricingTeaser.title, lang))}<p class="lede">${esc(ui.pricingTeaser.lede)}</p><div class="mini">${TIERS.map((t) => `<a class="${t.popular ? "pop" : ""}" href="${PATHS.pricing[lang]}#${t.id}"><span>${esc(ui.pricing.tiers[t.id].name)}<small>${t.popular ? `${esc(ui.pricing.popular)}. ` : ""}${esc(ui.pricing.tiers[t.id].tag)}</small></span><b>${money(shown(t.price, lang), lang)}</b></a>`).join("")}</div><p class="more"><a class="btn" href="${PATHS.pricing[lang]}">${esc(ui.pricingTeaser.cta)}</a><a class="btn" href="${PATHS.quote[lang]}">${esc(ui.quote.eyebrow)}</a></p></div></section>`;
+  return `<section class="section alt" id="pricing"><div class="wrap"><div class="tag reveal">// ${esc(ui.pricingTeaser.eyebrow)}</div>${ghost(tx(ui.pricingTeaser.title, lang))}<p class="lede reveal">${esc(ui.pricingTeaser.lede)}</p><div class="mini reveal">${TIERS.map((t) => `<a class="${t.popular ? "pop" : ""}" href="${PATHS.pricing[lang]}#${t.id}" data-cursor><span>${esc(ui.pricing.tiers[t.id].name)} — ${esc(ui.pricing.tiers[t.id].tag)}</span><b>${money(shown(t.price, lang), lang)}</b></a>`).join("")}</div><p style="margin-top:32px"><a class="btn" href="${PATHS.pricing[lang]}" data-magnetic>${esc(ui.pricingTeaser.cta)} ${ICON.arrow}</a> <a class="btn" href="${PATHS.quote[lang]}">${esc(ui.quote.eyebrow)} ${ICON.arrow}</a></p></div></section>`;
 }
 
 // Формата праща POST /api/contact (api/server.mjs зад Nginx). С JS — fetch + съобщение на място; без JS —
@@ -97,12 +113,12 @@ function contactForm(lang, ui) {
 <label class="c-msg"><span>${esc(f.message)}</span><textarea name="message" required minlength="10" maxlength="2000" rows="5" placeholder="${esc(f.messagePh)}"></textarea></label>
 <label class="c-consent"><input type="checkbox" name="consent" value="on" required><span>${consent}</span></label>
 <div class="c-hp" aria-hidden="true"><label>${esc(f.hp)}<input name="website" tabindex="-1" autocomplete="off"></label></div>
-<div class="cta-row"><button class="btn btn-solid" type="submit">${esc(f.send)}</button><a class="btn" href="mailto:${BRAND_EMAIL}">${esc(ui.contact.email)}</a></div>
+<div class="cta-row"><button class="btn btn-solid" type="submit" data-magnetic>${ICON.mail} ${esc(f.send)}</button><a class="btn" href="mailto:${BRAND_EMAIL}" data-magnetic>${esc(ui.contact.email)} ${ICON.arrow}</a></div>
 <p class="c-status" role="status" aria-live="polite"></p></form>`;
 }
 
 export function contact(lang, ui, title = ui.contact.title, lede = ui.contact.lede) {
-  return `<section class="section alt" id="contact"><div class="wrap"><div class="contact-box"><p class="tag">${esc(ui.contact.eyebrow)}</p><h2 class="contact-title">${title}</h2><p class="lede">${esc(lede)}</p>${contactForm(lang, ui)}<p class="contact-where">${esc(ui.contact.where)}. <a href="${CONTACT_URL[lang]}" target="_blank" rel="noopener">${esc(ui.contact.site)}</a></p></div></div></section>`;
+  return `<section class="section" id="contact"><div class="wrap"><div class="contact-box reveal"><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i><div class="tag">// ${esc(ui.contact.eyebrow)}</div><h2 class="contact-title">${title}</h2><p class="lede">${esc(lede)}</p>${contactForm(lang, ui)}<p class="hud" style="margin-top:28px">${esc(ui.contact.where)} · <a href="${CONTACT_URL[lang]}" target="_blank" rel="noopener">${esc(ui.contact.site)}</a></p></div></div></section>`;
 }
 
 function schema(lang, ui, path) {
@@ -118,15 +134,15 @@ function schema(lang, ui, path) {
 /** Въпроси и отговори (AEO): същият текст е във FAQPage схемата; отговорът е в първото изречение. */
 function faqSection(lang, ui) {
   const f = ui.faq;
-  return `<section class="section" id="faq"><div class="wrap" style="max-width:860px"><p class="tag">${esc(f.eyebrow)}</p>${ghost(f.title)}<div style="height:28px"></div>${f.items.map((it, i) => `<details class="faq"${i === 0 ? " open" : ""}><summary><h3>${esc(tx(it.q, lang))}</h3></summary><p class="faq-a">${esc(tx(it.a, lang))}</p></details>`).join("")}</div></section>`;
+  return `<section class="section alt" id="faq"><div class="wrap" style="max-width:860px"><div class="tag reveal">// ${esc(f.eyebrow)}</div>${ghost(f.title)}<div style="height:28px"></div>${f.items.map((it, i) => `<details class="faq"${i === 0 ? " open" : ""}><summary><h3>${esc(tx(it.q, lang))}</h3></summary><p style="padding:0 0 18px;font-size:12px;line-height:1.9;color:var(--text-2)">${esc(tx(it.a, lang))}</p></details>`).join("")}</div></section>`;
 }
 
 export function renderHub(lang) {
   const ui = I18N[lang], path = PATHS.hub[lang];
   return join([
     head({ lang, title: ui.meta.hubTitle, description: ui.meta.hubDesc, keywords: ui.meta.hubKeywords, path, paths: PATHS.hub, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, extra: schema(lang, ui, path) }),
-    `<body class="hub">`, siteNav(lang, ui, PATHS.hub),
-    `<main id="main">`, hero(ui), demos(lang, ui), projects(lang, ui), process(ui), why(ui), pricingTeaser(lang, ui), faqSection(lang, ui), contact(lang, ui), `</main>`,
+    `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.hub),
+    `<main id="main">`, hero(ui), ticker(ui), demos(lang, ui), projects(lang, ui), `<div class="divider"></div>`, process(ui), why(ui), pricingTeaser(lang, ui), faqSection(lang, ui), contact(lang, ui), `</main>`,
     siteFooter(lang, ui),
     `<script src="/assets/site.js" defer></script><script src="/assets/raven.js" defer></script><script src="/assets/hero.js" defer></script>`,
     `</body></html>`,

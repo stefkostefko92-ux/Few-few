@@ -32,16 +32,16 @@ p{margin:0 0 14px}
 .btn-ghost:hover{border-color:var(--accent)}
 .btn-nav{padding:11px 16px;background:var(--text);color:var(--bg)}
 
-/* Carbon Stealth demo bar — бранд лентата във визията на хъба (Рейвънхолд: мастило · пергамент · жарава) */
-.cs-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px clamp(12px,3vw,32px);background:#07070a;color:#c2b9a7;font:400 15px/1.2 'Alegreya Sans',system-ui,sans-serif;border-bottom:1px solid rgba(201,162,74,.4)}
-.cs-mark{flex:none;display:block;line-height:0}.cs-mark img{width:24px;height:24px}
-.cs-back{color:#ebe2ce;white-space:nowrap;display:inline-block;padding:7px 0;text-decoration:underline;text-decoration-color:rgba(235,226,206,.3);text-underline-offset:4px}
-.cs-hint{flex:1;color:#948c7d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 15px/1.2 'Alegreya Sans SC','Alegreya Sans',system-ui,sans-serif}
-.cs-langs{display:flex;gap:10px}
-.cs-langs a{padding:6px 4px;min-width:30px;text-align:center;font:500 15px/1 'Alegreya Sans SC','Alegreya Sans',system-ui,sans-serif;color:#948c7d;border-bottom:1px solid transparent}
-.cs-langs a[aria-current]{color:#c9a24a;border-bottom-color:#c9a24a}
-.cs-want{background:#ff8a3d;color:#160a02;padding:8px 14px;border-radius:2px;font-weight:500;white-space:nowrap;transition:background .2s}
-.cs-want:hover{background:#ffac72}
+/* Carbon Stealth demo bar — бранд езикът на carbonstealth.eu (черно · cyan · Space Mono) */
+.cs-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px clamp(12px,3vw,32px);background:#000;color:#ccc;font:400 11px/1 'Space Mono',ui-monospace,monospace;letter-spacing:.08em;border-bottom:1px solid rgba(0,229,255,.2)}
+.cs-mark{flex:none;display:block;line-height:0}.cs-mark img{width:24px;height:24px;filter:drop-shadow(0 0 6px rgba(0,229,255,.35))}
+.cs-back{color:#00e5ff;white-space:nowrap;text-transform:uppercase;font-size:10px;letter-spacing:.15em;display:inline-block;padding:7px 0}
+.cs-hint{flex:1;color:#00e5ff;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;letter-spacing:.3em;text-transform:uppercase}
+.cs-langs{display:flex;gap:2px}
+.cs-langs a{padding:6px 8px;font-size:10px;color:#00e5ff;border:1px solid rgba(0,229,255,.4);text-transform:uppercase;letter-spacing:.1em}
+.cs-langs a[aria-current]{background:#00e5ff;color:#000}
+.cs-want{background:#00e5ff;color:#000;padding:8px 14px;font-size:10px;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap;transition:background .3s}
+.cs-want:hover{background:#f5f5f0}
 .progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:70;pointer-events:none}
 .progress i{display:block;height:100%;width:100%;background:var(--accent);transform:scaleX(0);transform-origin:0 50%}
 
