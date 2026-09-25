@@ -1,10 +1,10 @@
 Supreme AdBlock bloquea os anuncios en todas partes —anuncios de vídeo de YouTube, báners, xanelas emerxentes e rastrexadores— sen vixiar o que fai.
 
 • Os anuncios de YouTube detéñense na orixe, así que os vídeos simplemente se reproducen.
-• Inclúe EasyList, EasyPrivacy e os filtros de uBlock Origin, ademais da lista do seu idioma (33 listas rexionais).
+• Inclúe EasyList, EasyPrivacy e os filtros de uBlock Origin, ademais da lista do seu idioma (31 listas rexionais).
 • Avisos de cookies: preme «Rexeitar» por vostede, elimina o desenfoque e o bloqueo do desprazamento que quedan, e nunca preme un botón de inicio de sesión, OAuth ou pagamento.
 • Modo Foco: oculte burbullas de chat, xanelas de boletíns, solicitudes de notificacións, widgets sociais, xanelas de IA e YouTube Shorts.
 • Os muros anti-adblock e os pop-unders quedan neutralizados.
 • O sitio non funciona? Un clic arránxao, ou avísenos: non se envía nada sen que vostede o vexa antes.
 • Actualizacións de filtros asinadas dúas veces ao día: as novas redes publicitarias trátanse en poucas horas, sen código remoto.
-• Sen conta, sen telemetría, sen recollida de datos. Gratuíto, cunha doazón opcional.
+• Sen conta, sen telemetría, sen recollida de datos. Gratuíto, cunha doazón opcional; a xanela emerxente mostra unha pequena tarxeta, marcada como «Anuncio», de Carbon Stealth, o creador.

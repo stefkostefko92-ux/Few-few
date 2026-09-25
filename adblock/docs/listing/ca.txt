@@ -1,10 +1,10 @@
 Supreme AdBlock bloqueja els anuncis a tot arreu —anuncis de vídeo de YouTube, bàners, finestres emergents i rastrejadors— sense vigilar què feu.
 
 • Els anuncis de YouTube s’aturen a l’origen, de manera que els vídeos simplement es reprodueixen.
-• Inclou EasyList, EasyPrivacy i els filtres d’uBlock Origin, a més de la llista de la vostra llengua (33 llistes regionals).
+• Inclou EasyList, EasyPrivacy i els filtres d’uBlock Origin, a més de la llista de la vostra llengua (31 llistes regionals).
 • Avisos de galetes: prem «Rebutja» per vós, elimina el desenfocament i el bloqueig del desplaçament que queden, i mai no prem cap botó d’inici de sessió, OAuth o pagament.
 • Mode Focus: amagueu bombolles de xat, finestres de butlletins, sol·licituds de notificacions, ginys socials, finestres d’IA i YouTube Shorts.
 • Els murs anti-adblock i els pop-unders queden neutralitzats.
 • El lloc no funciona? Un clic ho arregla, o feu-nos-ho saber: no s’envia res sense que ho vegeu abans.
 • Actualitzacions de filtres signades dues vegades al dia: les noves xarxes publicitàries es cobreixen en poques hores, sense codi remot.
-• Sense compte, sense telemetria, sense recollida de dades. Gratuït, amb donatiu opcional.
+• Sense compte, sense telemetria, sense recollida de dades. Gratuït, amb donatiu opcional; la finestra emergent mostra una petita targeta, marcada com a «Anunci», de Carbon Stealth, el creador.

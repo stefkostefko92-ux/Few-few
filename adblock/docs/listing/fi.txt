@@ -1,10 +1,10 @@
 Supreme AdBlock estää mainokset kaikkialla – YouTuben videomainokset, bannerit, ponnahdusikkunat ja seurannan – tarkkailematta, mitä teet.
 
 • YouTube-mainokset pysäytetään jo lähteellä, joten videot yksinkertaisesti toistuvat.
-• EasyList, EasyPrivacy ja uBlock Origin -suodattimet ovat sisäänrakennettuja, samoin kielesi luettelo (33 alueellista luetteloa).
+• EasyList, EasyPrivacy ja uBlock Origin -suodattimet ovat sisäänrakennettuja, samoin kielesi luettelo (31 alueellista luetteloa).
 • Evästebannerit: se painaa puolestasi ”Hylkää”, poistaa jäljelle jääneen sumennuksen ja vierityksen eston eikä koskaan paina kirjautumis-, OAuth- tai maksupainiketta.
 • Keskittymistila: piilota chat-kuplat, uutiskirjeikkunat, ilmoituskehotteet, sosiaalisen median widgetit, tekoälyikkunat ja YouTube Shorts.
 • Anti-adblock-muurit ja pop-under-ikkunat neutraloidaan.
 • Sivusto rikki? Yksi klikkaus korjaa sen, tai kerro meille – mitään ei lähetetä ilman, että näet sen ensin.
 • Allekirjoitetut suodatinpäivitykset kahdesti päivässä: uudet mainosverkostot käsitellään tunneissa, ilman etäkoodia.
-• Ei tiliä, ei telemetriaa, ei tiedonkeruuta. Ilmainen, ja halutessasi voit lahjoittaa.
+• Ei tiliä, ei telemetriaa, ei tiedonkeruuta. Ilmainen, ja halutessasi voit lahjoittaa; ponnahdusikkunassa näkyy yksi pieni kortti, merkintänä ”Mainos”, tekijästä Carbon Stealthista.

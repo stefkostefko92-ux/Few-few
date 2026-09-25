@@ -1,10 +1,10 @@
 Bina-block ng Supreme AdBlock ang ads kahit saan — mga video ad sa YouTube, banner, pop-up at tracker — nang hindi binabantayan ang ginagawa ninyo.
 
 • Pinipigilan ang ads sa YouTube mula mismo sa pinagmulan, kaya tuloy-tuloy lang ang pag-play ng mga video.
-• Built-in ang EasyList, EasyPrivacy at ang mga filter ng uBlock Origin, kasama ang list para sa inyong wika (33 regional list).
+• Built-in ang EasyList, EasyPrivacy at ang mga filter ng uBlock Origin, kasama ang list para sa inyong wika (31 regional list).
 • Cookie banner: pinipindot nito ang Reject para sa inyo, inaalis ang natirang blur at scroll lock, at hindi kailanman pumipindot ng sign-in, OAuth o payment button.
 • Focus mode: itago ang mga chat bubble, newsletter pop-up, prompt ng notification, social widget, AI pop-up at YouTube Shorts.
 • Nine-neutralize ang mga anti-adblock wall at pop-under.
 • Sira ang site? Isang click lang para maayos, o sabihin sa amin — walang ipinapadala hangga't hindi ninyo muna nakikita.
 • Signed na filter update dalawang beses sa isang araw: napapangasiwaan ang mga bagong ad network sa loob ng ilang oras, walang remote code.
-• Walang account, walang telemetry, walang pangongolekta ng data. Libre, may opsyonal na donasyon.
+• Walang account, walang telemetry, walang pangongolekta ng data. Libre, may opsyonal na donasyon; may isang maliit na card sa popup, na may label na “Ad”, para sa Carbon Stealth, ang gumawa nito.
