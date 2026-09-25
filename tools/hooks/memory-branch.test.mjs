@@ -221,3 +221,17 @@ test("4м. МУТАЦИЯ: preload без чакащите поуки — сле
     assert.doesNotMatch(out, /чакаща поука в клона/, "мутантът не вижда поуката — точно дефектът");
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });
+
+// Реален инцидент (2026-09-25): сгъване на main в паметта свали версиите на 4 агента (напр. dizayner
+// 20.1 → 19.8, kodadjiyata 39.2 → 39.1) — основата беше main, чийто agents.json идваше от чуждо сливане с
+// по-стара история, а от паметта се пренасяха само НОВИТЕ поуки. Версия никога не пада при сгъване.
+test("keepHigherVersions: при сгъване версията на агент не пада под тази в паметта", async () => {
+  const { keepHigherVersions } = await lib();
+  const ev = (...vs) => vs.map((v) => ({ version: v, date: "2026-09-25", event: `v${v}` }));
+  const result = { agents: [{ id: "a", evolution: ev("19.0.0", "19.8.0") }, { id: "b", evolution: ev("5.0.0") }] };
+  const memory = { agents: [{ id: "a", evolution: ev("19.0.0", "20.0.0", "20.1.0") }, { id: "b", evolution: ev("4.9.0") }] };
+  assert.equal(keepHigherVersions(result, memory), true, "има промяна");
+  assert.equal(result.agents[0].evolution.at(-1).version, "20.1.0", "по-високата история на паметта печели");
+  assert.equal(result.agents[1].evolution.at(-1).version, "5.0.0", "по-високата в основата също се пази");
+  assert.equal(keepHigherVersions(result, memory), false, "идемпотентно");
+});

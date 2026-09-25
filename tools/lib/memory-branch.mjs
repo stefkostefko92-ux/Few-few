@@ -194,12 +194,46 @@ function appendOnlyUnion(cwd, base, other) {
   return files;
 }
 
+const lastVer = (a) => parseFloat(a?.evolution?.at?.(-1)?.version) || 0;
+/**
+ * Версия никога не пада при обединяване: за всеки агент, чиято история в `other` стига по-високо,
+ * взимаме нея. Инцидент 2026-09-25 — сгъване на main (с agents.json от чуждо сливане) свали 4 агента.
+ * Мутира `result`; връща дали е сменено нещо.
+ */
+export function keepHigherVersions(result, other) {
+  let ch = false;
+  for (const o of other?.agents || []) {
+    const r = (result?.agents || []).find((x) => x.id === o.id);
+    if (r && lastVer(o) > lastVer(r)) { r.evolution = o.evolution; ch = true; }
+  }
+  return ch;
+}
+
+/** agents.json + FALLBACK на обединението, изравнени по по-високата история от `other`. */
+function monotonicDashboard(cwd, base, other, files) {
+  const oJson = show(cwd, other, DASH_JSON);
+  const rJson = files[DASH_JSON] ?? show(cwd, base, DASH_JSON);
+  try {
+    if (oJson && rJson) {
+      const r = JSON.parse(rJson);
+      if (keepHigherVersions(r, JSON.parse(oJson))) files[DASH_JSON] = JSON.stringify(r, null, 2) + "\n";
+    }
+  } catch { /* повредено табло → поуките пак се пазят */ }
+  const oHtml = show(cwd, other, DASH_HTML);
+  const rHtml = files[DASH_HTML] ?? show(cwd, base, DASH_HTML);
+  try {
+    const rf = rHtml && parseFallback(rHtml), of = oHtml && parseFallback(oHtml);
+    if (rf && of && keepHigherVersions(rf, of)) files[DASH_HTML] = replaceFallback(rHtml, rf);
+  } catch { /* ignore */ }
+}
+
 /** Обединява `other` в `base` по съдържание: дървото на base + поуките, които other е добавил след общия им предшественик. */
 function unionCommit(cwd, base, other, message, date) {
   const since = mergeBase(cwd, base, other);
   const lessons = addedSince(cwd, other, since);
   const { files } = applyLessons(cwd, base, lessons, date);
   Object.assign(files, appendOnlyUnion(cwd, base, other));
+  monotonicDashboard(cwd, base, other, files);
   return commitFiles(cwd, base, files, [other, base], message);
 }
 
