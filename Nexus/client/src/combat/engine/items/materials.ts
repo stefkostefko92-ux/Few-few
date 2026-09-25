@@ -14,18 +14,18 @@ interface FamilyBase {
 
 const FAMILY_BASE: Record<Family, FamilyBase> = {
   leather:   { metalness: 0, roughness: 0.95 },
-  mail:      { metalness: 1, roughness: 0.7 },
-  plate:     { metalness: 1, roughness: 0.35, clearcoat: 0.5 },
+  mail:      { metalness: 1, roughness: 0.55 },
+  plate:     { metalness: 1, roughness: 0.22, clearcoat: 0.7 },
   cloth:     { metalness: 0, roughness: 0.85, sheen: 0.7, sheenRoughness: 0.5 },
   bone:      { metalness: 0, roughness: 0.55 },
   crystal:   { metalness: 0.1, roughness: 0.15, clearcoat: 0.9 },
   void:      { metalness: 0.2, roughness: 0.4 },
-  celestial: { metalness: 0.4, roughness: 0.25, clearcoat: 0.6 },
-  infernal:  { metalness: 0.3, roughness: 0.5 },
+  celestial: { metalness: 0.6, roughness: 0.16, clearcoat: 0.8 },
+  infernal:  { metalness: 0.35, roughness: 0.45 },
   verdant:   { metalness: 0, roughness: 0.7, sheen: 0.3, sheenRoughness: 0.6 },
-  shadow:    { metalness: 0.3, roughness: 0.6 },
-  arcane:    { metalness: 0.2, roughness: 0.3, clearcoat: 0.4 },
-  storm:     { metalness: 0.85, roughness: 0.3, clearcoat: 0.3 },
+  shadow:    { metalness: 0.35, roughness: 0.5 },
+  arcane:    { metalness: 0.25, roughness: 0.26, clearcoat: 0.5 },
+  storm:     { metalness: 0.9, roughness: 0.2, clearcoat: 0.5 },
   frost:     { metalness: 0.1, roughness: 0.2, clearcoat: 0.7 },
 };
 
@@ -61,7 +61,10 @@ export function themeMaterial(theme: ItemTheme, role: Role): THREE.MeshPhysicalN
     params.sheenRoughness = base.sheenRoughness;
   }
   const m = new THREE.MeshPhysicalNodeMaterial(params);
-  const glowStrength = adj.glow * (role === 'trim' ? 1 : 0.4);
+  // Само trim свети (руни/кант/декорации) — primary/secondary носят basecolor-а на темата
+  // непроменен, иначе тъмните семейства (shadow/void primary често near-black) избеляват към
+  // топъл крем цвят и цялата тема се губи.
+  const glowStrength = role === 'trim' ? adj.glow : 0;
   if (glowStrength > 0 && theme.emissive) {
     const pulse = sin(time.mul(1.6)).mul(0.25).add(0.75).clamp(0, 1);
     m.emissiveNode = color(new THREE.Color(theme.emissive)).mul(pulse).mul(glowStrength * 2.2);
@@ -86,13 +89,4 @@ export function decalMaterial(theme: ItemTheme, map: THREE.Texture): THREE.MeshP
     m.emissiveNode = color(new THREE.Color(theme.emissive)).mul(pulse).mul(1.4);
   }
   return m;
-}
-
-/** Ореол на редкостта — тънка допълнителна obвивка, добавена само за rare+; не е дублирано на
- *  finish=glowing логиката (различна цел: редкост, не материал). */
-export function rarityHalo(rarity: string): THREE.MeshBasicNodeMaterial | null {
-  const HALO: Record<string, string> = { epic: '#c294ff', legendary: '#ffd34d' };
-  const hex = HALO[rarity];
-  if (!hex) return null;
-  return new THREE.MeshBasicNodeMaterial({ color: new THREE.Color(hex), transparent: true, opacity: 0.16, side: THREE.BackSide, depthWrite: false });
 }

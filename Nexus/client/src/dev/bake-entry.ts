@@ -26,7 +26,14 @@ async function main(): Promise<void> {
   const res = await fetch('/assets/items3d/catalog.json');
   const catalog: CatalogEntry[] = res.ok ? await res.json() : [];
 
+  // Renderer-ът пръв — студийната сцена иска envMap (PMREM) от него за реални отражения по
+  // metalness/roughness материалите (иначе плочата/ризницата изглеждат мъртви, плоски цветове).
+  const canvas = document.getElementById('c') as HTMLCanvasElement;
+  const forceWebGL = params.has('webgl') || true; // headless Chromium here = software WebGL2, see task notes
+  const { renderer, envMap } = await createRenderer(canvas, { forceWebGL, alpha: true });
+
   let target: THREE.Object3D;
+  let rarity: string | undefined;
   if (params.has('multi')) {
     const picks = catalog.filter((e) => e.set_slug).slice(0, 5);
     const root = new THREE.Group();
@@ -44,16 +51,17 @@ async function main(): Promise<void> {
       slug, name: slug, category: 'weapon', tier: 1, rarity: 'common',
       theme: fallbackTheme({ tier: 1, rarity: 'common', category: 'weapon' }),
     } as CatalogEntry;
+    rarity = entry.rarity;
     target = buildItem(entry).object;
   }
 
-  const studio = buildStudioScene(target);
+  const studio = buildStudioScene(target, { envMap, rarity });
 
-  const canvas = document.getElementById('c') as HTMLCanvasElement;
-  const forceWebGL = params.has('webgl') || true; // headless Chromium here = software WebGL2, see task notes
-  const { renderer } = await createRenderer(canvas, { forceWebGL, alpha: true });
+  // Рендер на 3x резолюция → downsample до 256 (supersample AA — софтуерният WebGL renderer
+  // тук няма надежден MSAA под тежки сцени, downsample-ът компенсира назъбването).
+  const SS = 768;
   renderer.setPixelRatio(1);
-  renderer.setSize(512, 512, false);
+  renderer.setSize(SS, SS, false);
   studio.camera.aspect = 1;
   studio.camera.updateProjectionMatrix();
 
@@ -65,9 +73,10 @@ async function main(): Promise<void> {
   out.width = 256;
   out.height = 256;
   const ctx = out.getContext('2d');
+  if (ctx) ctx.imageSmoothingQuality = 'high';
   ctx?.clearRect(0, 0, 256, 256);
-  ctx?.drawImage(canvas, 0, 0, 256, 256);
-  window.__bakeWebp = ctx ? out.toDataURL('image/webp', 0.92) : '';
+  ctx?.drawImage(canvas, 0, 0, SS, SS, 0, 0, 256, 256);
+  window.__bakeWebp = ctx ? out.toDataURL('image/webp', 0.94) : '';
   window.__bakeReady = true;
 }
 

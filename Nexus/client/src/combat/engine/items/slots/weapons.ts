@@ -53,26 +53,36 @@ function dagger(M: Record<Role, THREE.Material>, rand: Rand): THREE.Object3D {
   return g;
 }
 
+// Класически брадвен профил: два „рога" (връх/пета) + изпъкнало острие навън, вдлъбната
+// вътрешна страна към дръжката — веднага се чете като брадва, не като знаменце.
+function axeHead(): THREE.Shape {
+  const head = new THREE.Shape();
+  head.moveTo(0.01, -0.11);
+  head.quadraticCurveTo(0.06, -0.135, 0.11, -0.105);
+  head.quadraticCurveTo(0.26, -0.045, 0.285, 0.045);
+  head.quadraticCurveTo(0.26, 0.135, 0.11, 0.16);
+  head.quadraticCurveTo(0.06, 0.185, 0.01, 0.15);
+  head.quadraticCurveTo(0.05, 0.02, 0.01, -0.11);
+  head.closePath();
+  return head;
+}
+
 function axe(M: Record<Role, THREE.Material>, tier: number, rand: Rand): THREE.Object3D {
   const g = new THREE.Group();
-  const haftLen = 0.55 + (tier >= 6 ? 0.15 : 0);
-  g.add(mesh(grip(haftLen, 0.013), M.primary));
-  const head = new THREE.Shape();
-  head.moveTo(0, -0.06);
-  head.quadraticCurveTo(0.14, -0.02, 0.16, 0.06);
-  head.quadraticCurveTo(0.1, 0.1, 0, 0.08);
-  head.closePath();
-  const headMesh = mesh(xf(extrudedBlade(head, 0.03), [0, haftLen / 2 - 0.05, 0], [0, 0, 0]), M.trim);
-  g.add(headMesh);
+  const haftLen = 0.58 + (tier >= 6 ? 0.16 : 0);
+  g.add(mesh(grip(haftLen, 0.014), M.primary));
+  const headY = haftLen / 2 - 0.08;
+  g.add(mesh(xf(extrudedBlade(axeHead(), 0.032), [0, headY, 0]), M.trim));
   if (rand() > 0.5) {
     const back = new THREE.Shape();
-    back.moveTo(0, -0.06);
-    back.quadraticCurveTo(-0.1, -0.02, -0.1, 0.05);
-    back.quadraticCurveTo(-0.06, 0.08, 0, 0.08);
+    back.moveTo(-0.01, -0.07);
+    back.quadraticCurveTo(-0.12, -0.03, -0.13, 0.02);
+    back.quadraticCurveTo(-0.1, 0.08, -0.01, 0.07);
     back.closePath();
-    g.add(mesh(xf(extrudedBlade(back, 0.03), [0, haftLen / 2 - 0.05, 0]), M.trim));
+    g.add(mesh(xf(extrudedBlade(back, 0.032), [0, headY, 0]), M.trim));
   }
-  g.add(mesh(xf(new THREE.SphereGeometry(0.018, 10, 8), [0, -haftLen / 2, 0]), M.secondary));
+  g.add(mesh(xf(new THREE.CylinderGeometry(0.017, 0.017, 0.05, 10), [0, headY, 0], [Math.PI / 2, 0, 0]), M.secondary));
+  g.add(mesh(xf(new THREE.SphereGeometry(0.02, 10, 8), [0, -haftLen / 2, 0]), M.secondary));
   return g;
 }
 

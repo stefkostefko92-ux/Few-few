@@ -98,7 +98,10 @@ export default function ItemViewer3DHost(): React.ReactElement {
       }
       if (cancelled) return;
 
-      const studio: StudioScene = renderScene.buildStudioScene(sceneRoot);
+      const studio: StudioScene = renderScene.buildStudioScene(sceneRoot, {
+        envMap: rendererRef.current.envMap,
+        rarity: target.kind === 'item' ? target.rarity : undefined,
+      });
       handleRef.current?.dispose({ keepRenderer: true });
       handleRef.current = renderScene.mountInteractiveViewer(canvas, rendererRef.current.renderer, studio, { autoRotate: true });
       setStatus('ready');

@@ -15,7 +15,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const GENERATOR_VERSION = 3; // ↑ при промяна на geometry/materials/motif — пресвежава всички икони
+const GENERATOR_VERSION = 7; // ↑ при промяна на geometry/materials/motif — пресвежава всички икони
 
 const ROOT = path.join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const CATALOG_PATH = path.join(ROOT, 'public', 'assets', 'items3d', 'catalog.json');

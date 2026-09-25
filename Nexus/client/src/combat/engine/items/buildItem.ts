@@ -3,7 +3,7 @@
 // (1) изпечени икони (bake-item-icons.mjs), (2) живия 3D преглед (ItemViewer3D), и по-късно
 // (3) обличане на боец в новия бой — затова връща чист THREE.Object3D + dispose(), без React/DOM.
 import * as THREE from 'three/webgpu';
-import { buildRoleSet, decalMaterial, rarityHalo } from './materials';
+import { buildRoleSet, decalMaterial } from './materials';
 import { buildMotifTexture } from './motifTexture';
 import { rngFor } from './rng';
 import { buildHelm } from './slots/helm';
@@ -90,27 +90,13 @@ export function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): BuiltI
   group.add(piece);
 
   if (decal && entry.theme.motif !== 'plain') {
-    if (entry.category === 'armor' && entry.theme.family !== 'cloth') attachDecalPlate(group, M, entry, rand, [0, 0.02, 0.035], [0.14, 0.12]);
+    if (entry.category === 'armor' && entry.theme.family !== 'cloth') attachDecalPlate(group, M, entry, rand, [0, 0.13, 0.095], [0.13, 0.11]);
     if (entry.category === 'helm') attachDecalPlate(group, M, entry, rand, [0, 0.1, 0.115], [0.09, 0.06]);
   }
 
-  const halo = rarityHalo(entry.rarity);
-  if (halo) {
-    const box = new THREE.Box3().setFromObject(group);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-    const r = Math.max(size.x, size.y, size.z) * 0.62 + 0.02;
-    const haloMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 2), halo);
-    haloMesh.position.copy(center);
-    // Изключен от bounding-box кадрирането (renderScene.frameCamera/refit) — иначе ореолът на
-    // редкостта (по-голям от самия предмет) избутва камерата назад и предметът изглежда като
-    // цветно кръгче с еле видим силует вътре.
-    haloMesh.userData.excludeFromFraming = true;
-    group.add(haloMesh);
-  }
-
+  // Редкостта вече се чете от тониран rim light (buildStudioScene(object, {rarity})), не от
+  // плътен геометричен ореол — icosahedron-ът на предишна версия избутваше камерата назад и
+  // предметът изглеждаше като малко петно в цветно кръгче.
   normalizePivot(group);
 
   return {
