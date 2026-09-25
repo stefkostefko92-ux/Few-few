@@ -126,6 +126,9 @@ export default function CompilaConAi({
           }),
         ),
       );
+    } catch {
+      // Мрежата, не сървърът — иначе „Lettura…" остава завинаги.
+      setErrore("Connessione non riuscita: verificare la rete e riprovare.");
     } finally {
       setInCorso(false);
     }

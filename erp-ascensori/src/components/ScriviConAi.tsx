@@ -88,6 +88,10 @@ export default function ScriviConAi({
         return;
       }
       setProposta(d.testo ?? "");
+    } catch {
+      // Мрежата, не сървърът: без това бутонът остава в „Generazione…"
+      // завинаги и операторът не разбира дали да чака.
+      setErrore("Connessione non riuscita: verificare la rete e riprovare.");
     } finally {
       setInCorso(false);
     }
@@ -129,7 +133,7 @@ export default function ScriviConAi({
         className="input min-h-20 py-2"
         maxLength={MAX_INGRESSO}
         value={appunti}
-        placeholder="cambio fune trazione 8mm, 2 tecnici, 3 ore, impianto fermo"
+        placeholder="cambio fune di trazione 8 mm, impianto fermo"
         onChange={(e) => setAppunti(e.target.value)}
       />
 
@@ -140,7 +144,7 @@ export default function ScriviConAi({
           disabled={inCorso || appunti.trim().length < 3}
           onClick={() => void genera()}
         >
-          {inCorso ? "Composizione…" : "Componi"}
+          {inCorso ? "Generazione…" : "Genera proposta"}
         </button>
         <button
           type="button"
@@ -171,7 +175,7 @@ export default function ScriviConAi({
             <IcoNota />
             <span>
               Testo proposto da {stato.fornitore}: rileggerlo prima di salvare.
-              Il documento resta di chi lo firma.
+              La responsabilità del contenuto resta di chi firma il documento.
             </span>
           </p>
           {/* Предложението е РЕДАКТИРУЕМО. Текст „вземи или остави" кара

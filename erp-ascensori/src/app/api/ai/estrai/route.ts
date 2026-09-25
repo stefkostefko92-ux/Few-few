@@ -61,19 +61,8 @@ export const GET = gestito(async () => {
 
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
-  const c = configAi();
-  if (c.effettivo === "off")
-    return errore(
-      503,
-      "Assistente AI non configurato. Va abilitato dall'amministratore di sistema (variabili AI_PROVIDER e AI_API_KEY).",
-    );
 
-  if (!consenti(`ai:${s.sub}`, LIMITE_ORARIO, 60 * 60_000))
-    return errore(
-      429,
-      "Troppe letture con l'AI: riprovare fra qualche minuto.",
-    );
-
+  // Входът — ПРЕДИ „изключено": същата причина като в `/api/ai/testo`.
   const form = await req.formData().catch(() => null);
   if (!form)
     return errore(400, "Richiesta non valida: attesa multipart/form-data");
@@ -88,6 +77,16 @@ export const POST = gestito(async (req) => {
   // разширение. Един списък разрешени формати за целия продукт.
   const esitoFile = validaAllegato(dati, dati.byteLength);
   if ("errore" in esitoFile) return errore(422, esitoFile.errore);
+
+  const c = configAi();
+  if (c.effettivo === "off")
+    return errore(
+      503,
+      "Assistente AI non configurato. Va abilitato dall'amministratore di sistema (variabili AI_PROVIDER e AI_API_KEY).",
+    );
+
+  if (!consenti(`ai:${s.sub}`, LIMITE_ORARIO, 60 * 60_000))
+    return errore(429, "Troppe letture con l'AI: riprovare più tardi.");
 
   const m = MODULI_AI[modulo];
   let risposta: string;

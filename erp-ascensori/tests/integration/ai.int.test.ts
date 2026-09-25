@@ -85,7 +85,7 @@ describe("изключената функция се държи прилично
   test("проверките на входа СЕ ПРАВЯТ и когато е изключена", async () => {
     // Иначе включването на функцията утре би отворило дупки, които днес никой
     // не е тествал.
-    assert.equal((await estrai(operatore, PDF, "users")).status, 503);
+    assert.equal((await estrai(operatore, PDF, "users")).status, 400);
   });
 });
 
@@ -93,7 +93,7 @@ describe("проверки на входа", () => {
   test("непознат модул се отказва", async () => {
     // Проверява се, че НЕ се приема свободно име: то би отишло в указанието.
     const r = await estrai(operatore, PDF, "../../etc/passwd");
-    assert.ok(r.status === 400 || r.status === 503, `получено ${r.status}`);
+    assert.equal(r.status, 400);
   });
 
   test("липсващ файл се отказва", async () => {
@@ -104,6 +104,6 @@ describe("проверки на входа", () => {
       headers: { Cookie: operatore.cookieHeader() },
       body: form,
     });
-    assert.ok(res.status === 400 || res.status === 503);
+    assert.equal(res.status, 400);
   });
 });

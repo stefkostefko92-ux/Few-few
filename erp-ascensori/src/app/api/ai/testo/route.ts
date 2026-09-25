@@ -60,16 +60,11 @@ export const GET = gestito(async () => {
 
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
-  const c = configAi();
-  if (c.effettivo === "off")
-    return errore(
-      503,
-      "Assistente AI non configurato. Va abilitato dall'amministratore di sistema (variabili AI_PROVIDER e AI_API_KEY).",
-    );
 
-  if (!consenti(`ai:${s.sub}`, LIMITE_ORARIO, 60 * 60_000))
-    return errore(429, "Troppe richieste all'AI: riprovare fra qualche minuto.");
-
+  // ВХОДЪТ СЕ ПРОВЕРЯВА ПРЕДИ „ИЗКЛЮЧЕНО". Иначе при изключена функция всяка
+  // заявка — и непозната задача, и празна бележка — дава 503, проверките
+  // никога не се изпълняват в тестовата среда, и в деня на включването
+  // тръгват непроверени.
   const corpo = (await req.json().catch(() => null)) as {
     compito?: unknown;
     appunti?: unknown;
@@ -90,6 +85,16 @@ export const POST = gestito(async (req) => {
       413,
       `Appunti troppo lunghi: massimo ${MAX_INGRESSO} caratteri.`,
     );
+
+  const c = configAi();
+  if (c.effettivo === "off")
+    return errore(
+      503,
+      "Assistente AI non configurato. Va abilitato dall'amministratore di sistema (variabili AI_PROVIDER e AI_API_KEY).",
+    );
+
+  if (!consenti(`ai:${s.sub}`, LIMITE_ORARIO, 60 * 60_000))
+    return errore(429, "Troppe richieste all'AI: riprovare più tardi.");
 
   const t = COMPITI_TESTO[compito];
   let risposta: string;
@@ -132,6 +137,6 @@ export const POST = gestito(async (req) => {
     testo,
     fornitore: c.etichettaFornitore,
     avvertenza:
-      "Testo proposto da un modello linguistico: rileggerlo prima di salvare. Il documento resta di chi lo firma.",
+      "Testo proposto da un modello linguistico: rileggerlo prima di salvare. La responsabilità del contenuto resta di chi firma il documento.",
   });
 });
