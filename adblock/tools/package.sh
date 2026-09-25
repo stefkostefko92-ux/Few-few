@@ -61,3 +61,28 @@ const evalHits = zipFiles.filter(z => z.endsWith(".js")).filter(z => /\beval\s*\
 if (evalHits.length) { console.error("eval/new Function in package:", evalHits); process.exit(1); }
 console.log("Package contains every manifest-referenced file; no dev trees; no eval/new Function.");
 NODE
+
+# ---- Firefox (AMO) variant ----------------------------------------------------
+# Same files; only the manifest differs: Firefox MV3 runs the background as an
+# event page (background.scripts — no service worker, no importScripts, so the two
+# shared classic scripts are listed first), needs a Gecko id, has world:"MAIN"
+# scripting from 128, and AMO asks for the data-collection declaration ("none").
+ff_out="dist/supreme-adblock-$ver-firefox.zip"
+rm -f "$ff_out"
+ff_tmp="$(mktemp -d)"
+trap 'rm -rf "$ff_tmp"' EXIT
+unzip -q "$out" -d "$ff_tmp"
+node - "$ff_tmp/manifest.json" <<'NODE'
+const fs = require("fs");
+const p = process.argv[2];
+const m = JSON.parse(fs.readFileSync(p, "utf8"));
+m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "background.js"] };
+m.browser_specific_settings = {
+  gecko: { id: "supreme-adblock@carbonstealth.eu", strict_min_version: "128.0", data_collection_permissions: { required: ["none"] } },
+};
+delete m.minimum_chrome_version;
+m.web_accessible_resources = (m.web_accessible_resources || []).map((w) => { const c = { ...w }; delete c.use_dynamic_url; return c; });
+fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
+NODE
+(cd "$ff_tmp" && zip -r -X -D -q "$OLDPWD/$ff_out" .)
+echo "Built $ff_out"

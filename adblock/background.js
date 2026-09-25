@@ -3,7 +3,9 @@
 // Single source of the scriptlet/selector policy (shared with the engine and the
 // build). Classic worker → synchronous importScripts; if it ever fails the
 // live-config path throws and the update is rejected (fail-closed).
-importScripts("scriptlets/policy.js", "lib/abp2dnr.js");
+// Firefox (MV3 event page) has no importScripts: its manifest lists the same two
+// files before this one (tools/package.sh builds that variant).
+if (typeof importScripts === "function") importScripts("scriptlets/policy.js", "lib/abp2dnr.js");
 
 const RULESET_IDS = ["ad_rules", "youtube_rules", "easylist", "easyprivacy", "removeparam", "urlhaus", "surrogates", "headers", "privacy"];
 
@@ -1186,6 +1188,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           // getMatchedRules says WHICH RULE matched (ruleset + id), never the
           // request URL — that exists only in unpacked builds. So the honest
           // log is per list: "EasyPrivacy ×12, EasyList ×7, YouTube ×3…".
+          // Firefox has no getMatchedRules: say so, the popup hides the log.
+          if (typeof chrome.declarativeNetRequest.getMatchedRules !== "function") return sendResponse({ ok: false, reason: "unsupported" });
           const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
           const agg = new Map();
           let total = 0;

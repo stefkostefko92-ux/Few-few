@@ -150,3 +150,34 @@ so this is an **update of the existing item**, not a new one:
 Review usually takes a few days. To ship an update: bump the version in
 `manifest.json` + `package.json`, rebuild, upload. Day-to-day fixes (new ad
 networks, YouTube DOM changes) go into `filters.json` — no re-review needed.
+
+## 8. Microsoft Edge Add-ons
+
+The **same zip** as Chrome (`dist/supreme-adblock-<version>.zip`) — Edge runs Chromium MV3.
+
+1. Partner Center → <https://partner.microsoft.com/dashboard/microsoftedge/> → **Create new extension** → upload the zip.
+2. Availability: Public, all markets.
+3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/#faq`.
+4. Store listings: Edge asks for a listing **per language packaged in `_locales`**. Use the
+   per-language descriptions in `docs/STORE_LISTING.md`; the English one where a language
+   has none yet. Screenshots: the same 1280×800 files as Chrome.
+5. Notes for certification: paste the reviewer note from §5 (MAIN-world scriptlets, remote
+   rules = data) — Edge reviews the same things Chrome does.
+
+## 9. Firefox Add-ons (AMO)
+
+`bash tools/package.sh` also builds `dist/supreme-adblock-<version>-firefox.zip`: the same
+files, only the manifest differs (event-page background with the two shared classic scripts
+listed first, Gecko id `supreme-adblock@carbonstealth.eu`, Firefox 128+ for MAIN-world
+scripting, `data_collection_permissions: none`).
+
+Check before upload: `npx web-ext@8 lint --source-dir <unzipped firefox zip>` — expected:
+0 errors; warnings only for `getMatchedRules` (not in Firefox: the popup hides the per-list
+log there) and "coin miner" hits in EasyPrivacy/AdGuard French (they are **block** rules for
+miner domains — say so in the reviewer notes).
+
+1. <https://addons.mozilla.org/developers/> → **Submit a New Add-on** → On this site.
+2. Upload the Firefox zip. Source code: AMO may ask for it because `scriptlets/main.js` and
+   `scriptlets/ubo/*` are generated — upload the repository's `adblock/` folder and point to
+   `node tools/build_scriptlets.mjs` (no minification, no bundler).
+3. Privacy policy, homepage, support: as above. Data collection: none.

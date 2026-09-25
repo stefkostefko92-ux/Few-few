@@ -92,6 +92,7 @@ function loadLog() {
   if (currentTabId == null) return;
   chrome.runtime.sendMessage({ type: "getTabLog", tabId: currentTabId }, (res) => {
     list.innerHTML = "";
+    if (res && res.reason === "unsupported") { $("logBox").hidden = true; return; } // Firefox: no getMatchedRules
     if (!res || !res.ok) {
       empty.textContent = res && res.reason === "quota" ? t("logUnavailable") : empty.textContent;
       empty.hidden = false;

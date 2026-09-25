@@ -586,5 +586,14 @@
   },
   "opt_focus_onetap_desc": {
     "message": "Il selettore di account che compare nell'angolo di molti siti. I pulsanti di accesso continuano a funzionare."
+  },
+  "pickTip": {
+    "message": "Fai clic su un elemento per nasconderlo"
+  },
+  "pickZapTip": {
+    "message": "Fai clic per rimuovere l'elemento (una volta)"
+  },
+  "pickEscCancel": {
+    "message": "per annullare"
   }
 }

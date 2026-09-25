@@ -586,5 +586,14 @@
   },
   "opt_focus_onetap_desc": {
     "message": "The account picker that appears in the corner of many sites. The sign-in buttons keep working."
+  },
+  "pickTip": {
+    "message": "Click an element to hide it"
+  },
+  "pickZapTip": {
+    "message": "Click to remove this element (once)"
+  },
+  "pickEscCancel": {
+    "message": "to cancel"
   }
 }

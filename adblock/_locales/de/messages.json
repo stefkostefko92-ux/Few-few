@@ -586,5 +586,14 @@
   },
   "opt_focus_onetap_desc": {
     "message": "Die Kontoauswahl, die in der Ecke vieler Seiten erscheint. Die Anmelde-Buttons funktionieren weiter."
+  },
+  "pickTip": {
+    "message": "Klicken Sie auf ein Element, um es auszublenden"
+  },
+  "pickZapTip": {
+    "message": "Klicken, um das Element (einmalig) zu entfernen"
+  },
+  "pickEscCancel": {
+    "message": "zum Abbrechen"
   }
 }
