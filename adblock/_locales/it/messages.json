@@ -418,5 +418,98 @@
   },
   "opt_reason_sticky": {
     "message": "Banner pubblicitario fisso"
+  },
+  "logRegional": {
+    "message": "Liste regionali"
+  },
+  "logFocus": {
+    "message": "Modalità Focus"
+  },
+  "opt_filter_lists": {
+    "message": "Liste di filtri"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ed EasyPrivacy sono sempre attive. Le liste qui sotto hanno una licenza aperta e sono incluse nell'estensione: attivarle non scarica nulla, tranne le liste indicate come fornite dal loro autore."
+  },
+  "opt_lists_core": {
+    "message": "Principali"
+  },
+  "opt_lists_regional": {
+    "message": "Regionali"
+  },
+  "opt_lists_regional_desc": {
+    "message": "La lista per la lingua del browser si attiva da sola. Aggiungine altre se leggi spesso siti in altre lingue."
+  },
+  "opt_focus_mode": {
+    "message": "Modalità Focus"
+  },
+  "opt_focus_desc": {
+    "message": "Nasconde ciò che non è pubblicità ma dà comunque fastidio. Tutto è disattivato finché non lo attivi."
+  },
+  "opt_list_ubo": {
+    "message": "Filtri di uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Annunci, tracker, correzioni anti-adblock e riparazioni dei siti dal team di uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Lista di Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Una lista storica di server pubblicitari e di tracciamento."
+  },
+  "opt_focus_social": {
+    "message": "Pulsanti e widget dei social"
+  },
+  "opt_focus_social_desc": {
+    "message": "Pulsanti di condivisione, riquadri «Mi piace» e feed incorporati."
+  },
+  "opt_focus_chat": {
+    "message": "Chat e widget di assistenza"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Le bolle di chat fluttuanti nell'angolo della pagina."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pop-up di newsletter e iscrizione"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Riquadri e sovrapposizioni «Iscriviti alla newsletter»."
+  },
+  "opt_focus_notifications": {
+    "message": "Richieste di notifiche"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "I riquadri «Consentire le notifiche?» che i siti mostrano prima della richiesta del browser."
+  },
+  "opt_focus_ai": {
+    "message": "Pop-up di assistenti IA"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bolle di chatbot e pannelli di suggerimenti IA aggiunti alle pagine."
+  },
+  "opt_focus_other": {
+    "message": "Altri elementi fastidiosi"
+  },
+  "opt_focus_other_desc": {
+    "message": "Barre fisse, banner «apri nell'app» e simili."
+  },
+  "opt_badge_lang": {
+    "message": "la tua lingua"
+  },
+  "opt_badge_remote": {
+    "message": "dall'autore"
+  },
+  "opt_remote_hint": {
+    "message": "Non incluso (nessuna licenza di ridistribuzione): il browser lo scarica da $1 quando lo attivi."
+  },
+  "opt_downloaded_from": {
+    "message": "Scaricata da $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ha rifiutato questa combinazione di liste ($1). Disattivane alcune."
+  },
+  "opt_badge_recommended": {
+    "message": "consigliata per la tua lingua"
   }
 }

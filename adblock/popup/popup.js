@@ -102,6 +102,8 @@ function loadLog() {
       core: () => t("logCore"), youtube: () => t("logYouTube"), params: () => t("logParams"),
       malware: () => t("logMalware"), surrogates: () => t("logSurrogates"), privacy: () => t("logPrivacy"),
       user: () => t("logUser"), live: () => t("logLive"),
+      ubo: () => "uBlock Origin", plowe: () => "Peter Lowe", regional: () => t("logRegional"),
+      focus: () => t("logFocus"), lists: () => t("logRegional"),
     };
     for (const it of res.items) {
       const li = document.createElement("li");

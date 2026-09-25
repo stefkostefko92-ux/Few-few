@@ -396,3 +396,42 @@ footer {
   font-size: 12px;
   padding-bottom: 20px;
 }
+
+/* Filter lists / Focus mode */
+.sub-h {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 18px 0 4px;
+}
+.lists-error {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ff5a5a;
+  color: #ff5a5a;
+  font-size: 12.5px;
+}
+.badge-lang,
+.badge-remote {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  vertical-align: 1px;
+}
+.badge-lang {
+  background: var(--accent);
+  color: #001a1f;
+}
+.badge-remote {
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.row-sub a {
+  color: var(--accent-2);
+}

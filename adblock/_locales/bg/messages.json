@@ -418,5 +418,98 @@
   },
   "opt_reason_sticky": {
     "message": "Залепнал рекламен банер"
+  },
+  "logRegional": {
+    "message": "Регионални листи"
+  },
+  "logFocus": {
+    "message": "Режим „Фокус“"
+  },
+  "opt_filter_lists": {
+    "message": "Филтър-листи"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList и EasyPrivacy са винаги включени. Листите по-долу са с отворен лиценз и са вградени в разширението — включването им не сваля нищо, освен при лист, отбелязан като идващ от автора си."
+  },
+  "opt_lists_core": {
+    "message": "Основни"
+  },
+  "opt_lists_regional": {
+    "message": "Регионални"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Листът за езика на браузъра се включва сам. Добавете други, ако често четете сайтове на други езици."
+  },
+  "opt_focus_mode": {
+    "message": "Режим „Фокус“"
+  },
+  "opt_focus_desc": {
+    "message": "Скрива това, което не е реклама, но пак пречи. Всичко тук е изключено, докато не го включите."
+  },
+  "opt_list_ubo": {
+    "message": "Филтрите на uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Реклами, тракери, поправки срещу anti-adblock и поправки на сайтове от екипа на uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Листът на Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Дългогодишен списък с рекламни и проследяващи сървъри."
+  },
+  "opt_focus_social": {
+    "message": "Бутони и джаджи на социални мрежи"
+  },
+  "opt_focus_social_desc": {
+    "message": "Бутони за споделяне, кутии „Харесай“ и вградени потоци."
+  },
+  "opt_focus_chat": {
+    "message": "Чат и джаджи за поддръжка"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Плаващите чат балончета в ъгъла на страницата."
+  },
+  "opt_focus_newsletters": {
+    "message": "Прозорци за бюлетини и абонамент"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Кутии и наслагвания „Абонирайте се за бюлетина ни“."
+  },
+  "opt_focus_notifications": {
+    "message": "Покани за известия"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Кутиите „Разрешете известия?“, които сайтовете показват преди браузъра да попита."
+  },
+  "opt_focus_ai": {
+    "message": "Изскачащи AI асистенти"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Чатбот балончета и панели с AI предложения, добавени към страниците."
+  },
+  "opt_focus_other": {
+    "message": "Други досадни елементи"
+  },
+  "opt_focus_other_desc": {
+    "message": "Залепнали ленти, банери „Отвори в приложението“ и подобни."
+  },
+  "opt_badge_lang": {
+    "message": "вашият език"
+  },
+  "opt_badge_remote": {
+    "message": "от автора"
+  },
+  "opt_remote_hint": {
+    "message": "Не е вграден (няма лиценз за разпространение): браузърът ви го сваля от $1, когато го включите."
+  },
+  "opt_downloaded_from": {
+    "message": "Сваля се от $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome отказа тази комбинация от листи ($1). Изключете някои."
+  },
+  "opt_badge_recommended": {
+    "message": "препоръчан за вашия език"
   }
 }

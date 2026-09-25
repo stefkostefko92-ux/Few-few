@@ -3,7 +3,7 @@
 // Single source of the scriptlet/selector policy (shared with the engine and the
 // build). Classic worker → synchronous importScripts; if it ever fails the
 // live-config path throws and the update is rejected (fail-closed).
-importScripts("scriptlets/policy.js");
+importScripts("scriptlets/policy.js", "lib/abp2dnr.js");
 
 const RULESET_IDS = ["ad_rules", "youtube_rules", "easylist", "easyprivacy", "removeparam", "urlhaus", "surrogates", "headers", "privacy"];
 
@@ -143,13 +143,14 @@ const DEFAULTS = {
   liveUpdated: 0,
   subscriptions: [],   // [{ url, added, fetched, count, error }] — filter lists refreshed daily (text, never code)
   noCosmetics: [],     // hosts where cosmetic (element-hiding) filtering is off; network blocking stays
+  lists: {},           // { listId: true|false } — only explicit choices; the rest follow rules/lists.json defaults
 };
 
 // Settings mirrored to chrome.storage.sync when cross-device sync is on.
 // NOT `enabled`: on/off and a timed pause are per device — the pause's resume
 // alarm lives on the device that paused, so a synced `enabled:false` left the
 // OTHER device switched off with nothing to turn it back on.
-const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics"];
+const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists"];
 
 // Hosts as Chrome/DNR see them: lowercase ASCII (IDN as punycode), IPv4 or a
 // single label (localhost). One malformed entry used to make the WHOLE
@@ -309,7 +310,7 @@ chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
   if (a.name === "config-update") fetchLiveConfig();
   if (a.name === "scriptlets-retry") syncScriptlets();
-  if (a.name === "subs-refresh") refreshAllSubscriptions();
+  if (a.name === "subs-refresh") { refreshAllSubscriptions(); syncRemoteLists(undefined, true); }
   if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false));
 });
 
@@ -334,17 +335,26 @@ async function applyState() {
   if (on && f.malware === true) enable.push("urlhaus");
   if (on && f.topics !== false) enable.push("headers");
   if (on && f.privacy !== false) enable.push("privacy");
+  // Filter lists (rules/lists.json): each bundled list is its own static ruleset.
+  const { catalog, on: listsOn } = await listState();
+  if (on) for (const e of catalog) if (e.delivery === "bundled" && listsOn.has(e.id)) enable.push("list_" + e.id);
   // every bundled ruleset is in exactly one of the two lists — by construction
-  const disable = RULESET_IDS.filter((id) => !enable.includes(id));
+  const all = RULESET_IDS.concat(catalog.filter((e) => e.delivery === "bundled").map((e) => "list_" + e.id));
+  const disable = all.filter((id) => !enable.includes(id));
 
   try {
     await chrome.declarativeNetRequest.updateEnabledRulesets({
       enableRulesetIds: enable,
       disableRulesetIds: disable,
     });
+    await chrome.storage.local.set({ listsError: "" });
   } catch (e) {
+    // Atomic: nothing changed. The usual cause is Chrome's static-rule quota
+    // (too many lists on at once) — shown in Settings, never silent.
     console.warn("ruleset toggle failed", e);
+    try { await chrome.storage.local.set({ listsError: String((e && e.message) || e) }); } catch {}
   }
+  syncRemoteLists(on).catch(() => {});
   await syncScriptlets(on);
   chrome.action.setBadgeBackgroundColor({ color: on ? "#00838f" : "#5a5a5a" });
 }
@@ -357,6 +367,7 @@ async function applyState() {
 // dynamically (not in the manifest) so we can honour the global on/off toggle
 // and skip allowlisted sites. `world:"MAIN"` needs Chrome 111+ (min is 121).
 const SCRIPTLET_SCRIPT_ID = "sa-scriptlets";
+const UBO_CHUNK_PREFIX = "sa-ubo-";
 
 // Serialise register/unregister so a fast on/off/on burst (alarm + message
 // racing through applyState) can't interleave the awaits and leave the engine
@@ -375,8 +386,9 @@ async function doSyncScriptlets(on) {
   }
   // Always clear first so a re-register can't throw "already registered".
   try {
-    const existing = await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPTLET_SCRIPT_ID] });
-    if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: [SCRIPTLET_SCRIPT_ID] });
+    const existing = (await chrome.scripting.getRegisteredContentScripts())
+      .map((c) => c.id).filter((id) => id === SCRIPTLET_SCRIPT_ID || id.startsWith(UBO_CHUNK_PREFIX));
+    if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: existing });
   } catch (e) {}
   if (!on) return;
 
@@ -387,6 +399,30 @@ async function doSyncScriptlets(on) {
     excludeMatches.push(`*://${d}/*`);
     if (!isIPv4(d) && d.includes(".")) excludeMatches.push(`*://*.${d}/*`);
   }
+
+  // uBlock Origin directives: DATA chunks (scriptlets/ubo/cNN.js) registered
+  // right before main.js, only on their own hosts; main.js alone everywhere else.
+  // A host belongs to exactly one chunk (grouped by its last two labels), so no
+  // page gets the engine twice.
+  const uboScripts = [];
+  const uboPatterns = [];
+  try {
+    const { on: listsOn } = await listState();
+    if (listsOn.has("ubo")) {
+      const index = await (await fetch(chrome.runtime.getURL("scriptlets/ubo_index.json"))).json();
+      for (const c of index) {
+        const m = /c(\d+)\.js$/.exec(c.file);
+        const matches = c.hosts.filter((h) => HOST_RE.test(h)).map((h) => `*://*.${h}/*`);
+        if (!m || !matches.length) continue;
+        uboPatterns.push(...matches);
+        uboScripts.push({
+          id: UBO_CHUNK_PREFIX + m[1], matches, js: [c.file, "scriptlets/main.js"],
+          runAt: "document_start", allFrames: true, world: "MAIN", persistAcrossSessions: true,
+          ...(excludeMatches.length ? { excludeMatches } : {}),
+        });
+      }
+    }
+  } catch (e) { console.warn("uBO scriptlet chunks unavailable", e); }
 
   const script = {
     id: SCRIPTLET_SCRIPT_ID,
@@ -400,10 +436,10 @@ async function doSyncScriptlets(on) {
     // excludeMatches. We rely on injection without a live service worker.
     persistAcrossSessions: true,
   };
-  if (excludeMatches.length) script.excludeMatches = excludeMatches;
+  if (excludeMatches.length || uboPatterns.length) script.excludeMatches = excludeMatches.concat(uboPatterns);
 
   try {
-    await chrome.scripting.registerContentScripts([script]);
+    await chrome.scripting.registerContentScripts([script, ...uboScripts]);
     try { await chrome.storage.local.set({ scriptletsError: "" }); } catch {}
   } catch (e) {
     console.warn("scriptlet registration failed", e);
@@ -551,7 +587,8 @@ function sanitizeConfig(cfg) {
 
 async function syncLiveRules(domains = []) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
-  const removeRuleIds = existing.filter((r) => r.id >= LIVE_RULE_BASE).map((r) => r.id);
+  // Live range only: remote filter lists live above REMOTE_RULE_BASE.
+  const removeRuleIds = existing.filter((r) => r.id >= LIVE_RULE_BASE && r.id < REMOTE_RULE_BASE).map((r) => r.id);
   const addRules = domainBlockRules(domains, LIVE_RULE_BASE, LIVE_RULE_MAX);
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
@@ -829,7 +866,146 @@ async function cosmeticFor(host) {
   // прилагането на глобалния генеричен CSS тук.
   const ghSet = genericHide.length ? new Set(genericHide) : null;
   const genericHideHere = ghSet ? chain.some((d) => ghSet.has(d)) : false;
-  return { hide, unhide: show, genericHide: genericHideHere };
+  const lists = await listCosmeticFor(host, chain);
+  return {
+    hide: hide.concat(lists.hide), unhide: show.concat(lists.unhide),
+    genericHide: genericHideHere || lists.genericHide, css: genericHideHere ? [] : lists.css,
+  };
+}
+
+// ---- Filter lists (uBO, regional, Focus) ------------------------------------
+// rules/lists.json (generated by tools/build_filters.mjs from tools/lists.json):
+// id, group, default (on | off | lang), delivery (bundled | remote), langs…
+// Stored `lists` holds only the user's explicit choices; everything else follows
+// the default — a regional list is on when the browser speaks its language.
+let listCatalogCache = null;
+async function getListCatalog() {
+  if (listCatalogCache) return listCatalogCache;
+  try {
+    const res = await fetch(chrome.runtime.getURL("rules/lists.json"));
+    listCatalogCache = await res.json();
+  } catch {
+    listCatalogCache = [];
+  }
+  return listCatalogCache;
+}
+function uiLangs() {
+  try {
+    const l = chrome.i18n.getUILanguage().toLowerCase().replace("_", "-");
+    return [l, l.split("-")[0]];
+  } catch { return ["en"]; }
+}
+function listDefaultOn(e) {
+  if (e.default === "on") return true;
+  if (e.default === "lang") { const ls = uiLangs(); return (e.langs || []).some((x) => ls.includes(x)); }
+  return false;
+}
+async function listState() {
+  const catalog = await getListCatalog();
+  const { lists = {} } = await chrome.storage.local.get("lists");
+  const on = new Set();
+  for (const e of catalog) {
+    const v = typeof lists[e.id] === "boolean" ? lists[e.id] : listDefaultOn(e);
+    if (v) on.add(e.id);
+  }
+  return { catalog, on, prefs: lists };
+}
+
+// Remote lists: not bundled (no licence to redistribute them) — the user's browser
+// downloads them from their author when the user turns them on, and they are
+// converted by the SAME converter as the bundled ones (lib/abp2dnr.js) into
+// dynamic rules. Each gets its own id slot; cosmetics are kept in storage.
+const REMOTE_RULE_BASE = 200000;
+const REMOTE_SLOT = 6000;          // ids per remote list
+const REMOTE_RULE_MAX = 5000;      // rules per remote list (dynamic budget: 30k)
+const REMOTE_MAX_AGE = 20 * 3600 * 1000;
+let remoteChain = Promise.resolve();
+function syncRemoteLists(enabled, force) {
+  remoteChain = remoteChain.then(() => doSyncRemoteLists(enabled, force)).catch((e) => console.warn("remote lists", e));
+  return remoteChain;
+}
+async function doSyncRemoteLists(enabled, force) {
+  const { catalog, on } = await listState();
+  const remote = catalog.filter((e) => e.delivery === "remote");
+  if (enabled === undefined) enabled = (await chrome.storage.local.get("enabled")).enabled !== false;
+  const existing = await chrome.declarativeNetRequest.getDynamicRules();
+  for (let slot = 0; slot < remote.length; slot++) {
+    const e = remote[slot];
+    const base = REMOTE_RULE_BASE + slot * REMOTE_SLOT;
+    const key = "remoteList_" + e.id;
+    const mine = existing.filter((r) => r.id >= base && r.id < base + REMOTE_SLOT).map((r) => r.id);
+    if (!on.has(e.id)) {
+      if (mine.length) await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: mine });
+      await chrome.storage.local.remove(key);
+      remoteCosmetic.delete(e.id);
+      continue;
+    }
+    const stored = (await chrome.storage.local.get(key))[key];
+    if (!force && stored && Date.now() - (stored.fetched || 0) < REMOTE_MAX_AGE && (mine.length || !stored.network)) continue;
+    try {
+      const A = self.ABP2DNR;
+      const text = A.preprocess(await fetchListText(e.url));
+      const conv = A.convertList(text, "remote_" + e.id, { cap: REMOTE_RULE_MAX, badfilter: new Set(A.badfiltersOf(text)), popups: null });
+      const rules = conv.rules.slice(0, REMOTE_RULE_MAX).map((r, i) => Object.assign(r, { id: base + i }));
+      await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: mine, addRules: rules });
+      const cos = A.convertCosmetic(text);
+      const spec = {}, unh = {};
+      for (const [d, set] of cos.specific) spec[d] = [...set].filter(safeSelector).slice(0, 200);
+      for (const [d, set] of cos.unhide) unh[d] = [...set].slice(0, 200);
+      const generic = [...cos.generic].filter(safeSelector).slice(0, 20000);
+      const data = {
+        fetched: Date.now(), error: "", network: rules.length,
+        css: generic.length ? "html[data-tbab-on]{\n" + generic.map((x) => x + "{display:none!important}").join("\n") + "\n}\n" : "",
+        specific: spec, unhide: unh, genericHide: [...A.collectGenericHide(text)],
+      };
+      await chrome.storage.local.set({ [key]: data });
+      remoteCosmetic.set(e.id, data);
+    } catch (err) {
+      const prev = stored || {};
+      await chrome.storage.local.set({ [key]: Object.assign({}, prev, { error: String((err && err.message) || err), fetched: prev.fetched || 0, tried: Date.now() }) });
+    }
+  }
+}
+
+// Cosmetics per list: bundled → rules/cosmetic_<id>.json (lazy, cached);
+// remote → storage. Site-specific selectors go to content.js with the EasyList
+// ones; each list's generic CSS is inserted into the page as a user stylesheet
+// (gated by html[data-tbab-on] exactly like cosmetic_generic.css).
+const bundledCosmetic = new Map();
+const remoteCosmetic = new Map();
+async function listCosmetic(e) {
+  if (e.delivery === "remote") {
+    if (!remoteCosmetic.has(e.id)) {
+      const key = "remoteList_" + e.id;
+      remoteCosmetic.set(e.id, (await chrome.storage.local.get(key))[key] || null);
+    }
+    return remoteCosmetic.get(e.id);
+  }
+  if (!bundledCosmetic.has(e.id)) {
+    try {
+      const res = await fetch(chrome.runtime.getURL(`rules/cosmetic_${e.id}.json`));
+      bundledCosmetic.set(e.id, await res.json());
+    } catch { bundledCosmetic.set(e.id, null); }
+  }
+  return bundledCosmetic.get(e.id);
+}
+async function listCosmeticFor(host, chain) {
+  const { catalog, on } = await listState();
+  const hide = [], show = [], css = [];
+  let genericHide = false;
+  for (const e of catalog) {
+    if (!on.has(e.id)) continue;
+    const c = await listCosmetic(e);
+    if (!c) continue;
+    for (const d of chain) {
+      if (c.specific && c.specific[d]) hide.push(...c.specific[d]);
+      if (c.unhide && c.unhide[d]) show.push(...c.unhide[d]);
+    }
+    const gh = (c.genericHide || []).length && chain.some((d) => c.genericHide.includes(d));
+    if (gh) genericHide = true;
+    else if (c.css) css.push(c.css);
+  }
+  return { hide, unhide: show, css, genericHide };
 }
 
 // blocked-request counters
@@ -920,11 +1096,16 @@ function logListKey(rule) {
   const rs = rule.rulesetId, id = rule.ruleId;
   if (rs === "_dynamic") {
     if (id === YT_BYPASS_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
+    if (id >= REMOTE_RULE_BASE) return "lists";
     if (id >= LIVE_RULE_BASE) return "live";
     if (id >= USER_BLOCK_BASE) return "user";
     return "user";
   }
   if (rs === "_session") return "user";
+  if (rs === "list_ubo") return "ubo";
+  if (rs === "list_plowe") return "plowe";
+  if (rs.startsWith("list_reg-")) return "regional";
+  if (rs.startsWith("list_focus-")) return "focus";
   return ({ ad_rules: "core", youtube_rules: "youtube", easylist: "easylist", easyprivacy: "easyprivacy",
     removeparam: "params", urlhaus: "malware", surrogates: "surrogates", headers: "privacy", privacy: "privacy" })[rs] || "core";
 }
@@ -1056,6 +1237,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         try {
           for (const r of await chrome.declarativeNetRequest.getDynamicRules()) {
             if (r.id === YT_BYPASS_RULE_ID) out.dynamic.ytBypass = true;
+            else if (r.id >= REMOTE_RULE_BASE) continue; // counted as dynamic.remote below
             else if (r.id >= LIVE_RULE_BASE) out.dynamic.live += (r.condition.requestDomains || []).length || 1;
             else if (r.id >= ALLOW_RULE_BASE) out.dynamic.allow++;
             else if (r.id >= USER_BLOCK_BASE) out.dynamic.user += (r.condition.requestDomains || []).length || 1;
@@ -1070,6 +1252,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         } catch {}
         try { out.ed25519 = await canVerifyEd25519(); } catch {}
         try { out.popupHosts = (await getRuleCounts()).popupHosts || 0; } catch {}
+        try {
+          const { catalog, on } = await listState();
+          out.lists = catalog.filter((e) => on.has(e.id)).map((e) => e.id);
+          out.listsError = (await chrome.storage.local.get("listsError")).listsError || "";
+          out.dynamic.remote = 0;
+          for (const r of await chrome.declarativeNetRequest.getDynamicRules()) if (r.id >= REMOTE_RULE_BASE) out.dynamic.remote++;
+        } catch {}
         sendResponse(out);
       })();
       return true;
@@ -1164,6 +1353,41 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
       return true;
 
+    case "getLists":
+      (async () => {
+        const { catalog, on, prefs } = await listState();
+        const keys = catalog.filter((e) => e.delivery === "remote").map((e) => "remoteList_" + e.id);
+        const st = await chrome.storage.local.get(keys.concat(["listsError"]));
+        sendResponse({
+          lang: uiLangs()[1], error: st.listsError || "",
+          lists: catalog.map((e) => {
+            const r = st["remoteList_" + e.id];
+            return Object.assign({}, e, {
+              on: on.has(e.id), explicit: typeof prefs[e.id] === "boolean", defaultOn: listDefaultOn(e),
+              // an author-hosted list in the browser's language is RECOMMENDED, not
+              // switched on: turning it on makes the browser contact a third party.
+              langMatch: (e.langs || []).some((x) => uiLangs().includes(x)),
+              fetched: r ? r.fetched || 0 : 0, remoteError: r ? r.error || "" : "", remoteRules: r ? r.network || 0 : 0,
+            });
+          }),
+        });
+      })();
+      return true;
+
+    case "setList":
+      (async () => {
+        const catalog = await getListCatalog();
+        if (!catalog.some((e) => e.id === msg.id) || typeof msg.on !== "boolean") return sendResponse({ ok: false });
+        const { lists = {} } = await chrome.storage.local.get("lists");
+        lists[msg.id] = msg.on;
+        await chrome.storage.local.set({ lists });
+        await applyState();
+        await remoteChain; // a remote list is downloaded before we answer
+        const { listsError = "" } = await chrome.storage.local.get("listsError");
+        sendResponse({ ok: !listsError, error: listsError });
+      })();
+      return true;
+
     case "setFeatures":
       chrome.storage.local.set({ features: msg.features }, async () => {
         await applyState(); // youtube ruleset follows the youtube toggle
@@ -1247,7 +1471,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 
     case "getCosmetic":
-      cosmeticFor(senderHost || msg.host || "").then((r) => sendResponse(r));
+      cosmeticFor(senderHost || msg.host || "").then((r) => {
+        const css = r.css || [];
+        delete r.css;
+        sendResponse(r);
+        // Lists' generic CSS: a user stylesheet (page CSP cannot block it), main
+        // frame only — the same scope as the bundled cosmetic_generic.css.
+        if (css.length && sender.tab && sender.tab.id >= 0 && !sender.frameId) {
+          chrome.scripting.insertCSS({ target: { tabId: sender.tab.id, frameIds: [0] }, css: css.join("\n"), origin: "USER" }).catch(() => {});
+        }
+      });
       return true;
 
     case "setUserFilters":

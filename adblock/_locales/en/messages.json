@@ -418,5 +418,98 @@
   },
   "opt_reason_sticky": {
     "message": "Sticky banner ad"
+  },
+  "logRegional": {
+    "message": "Regional lists"
+  },
+  "logFocus": {
+    "message": "Focus mode"
+  },
+  "opt_filter_lists": {
+    "message": "Filter lists"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList and EasyPrivacy are always on. The lists below are open-licence lists compiled into the extension, so turning one on downloads nothing, except a list marked as coming from its author."
+  },
+  "opt_lists_core": {
+    "message": "Core"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "The list for your browser's language turns on by itself. Add others if you often read sites in other languages."
+  },
+  "opt_focus_mode": {
+    "message": "Focus mode"
+  },
+  "opt_focus_desc": {
+    "message": "Hide what is not an ad but still gets in the way. Everything here is off until you turn it on."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin filters"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Ads, trackers, anti-adblock fixes and site repairs from the uBlock Origin team."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe's list"
+  },
+  "opt_list_plowe_desc": {
+    "message": "A long-running list of ad and tracking servers."
+  },
+  "opt_focus_social": {
+    "message": "Social media buttons and widgets"
+  },
+  "opt_focus_social_desc": {
+    "message": "Share buttons, like boxes and embedded feeds."
+  },
+  "opt_focus_chat": {
+    "message": "Chat and support widgets"
+  },
+  "opt_focus_chat_desc": {
+    "message": "The floating chat bubbles in the corner of the page."
+  },
+  "opt_focus_newsletters": {
+    "message": "Newsletter and sign-up pop-ups"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“Subscribe to our newsletter” boxes and overlays."
+  },
+  "opt_focus_notifications": {
+    "message": "Notification prompts"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "“Allow notifications?” boxes that sites show before the browser asks."
+  },
+  "opt_focus_ai": {
+    "message": "AI assistant pop-ups"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Chatbot bubbles and AI suggestion panels added to pages."
+  },
+  "opt_focus_other": {
+    "message": "Other annoyances"
+  },
+  "opt_focus_other_desc": {
+    "message": "Sticky bars, “open in app” banners and similar clutter."
+  },
+  "opt_badge_lang": {
+    "message": "your language"
+  },
+  "opt_badge_remote": {
+    "message": "from its author"
+  },
+  "opt_remote_hint": {
+    "message": "Not bundled (no licence to redistribute it): your browser downloads it from $1 when you turn it on."
+  },
+  "opt_downloaded_from": {
+    "message": "Downloaded from $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome refused this combination of lists ($1). Turn some off."
+  },
+  "opt_badge_recommended": {
+    "message": "recommended for your language"
   }
 }

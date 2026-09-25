@@ -33,7 +33,7 @@ const copies = [
 for (const [name, src, res] of copies) ok(`${name}: no local copy of the policy tables`, res.every((r) => !r.test(src)));
 ok("engine.js carries the /*__SCRIPTLET_POLICY__*/ marker", engine.includes("/*__SCRIPTLET_POLICY__*/"));
 ok("shipped main.js has policy.js inlined (SA_POLICY defined, marker consumed)", main.includes("var SA_POLICY = (function () {") && !main.includes("/*__SCRIPTLET_POLICY__*/"));
-ok("background.js loads policy via importScripts (classic SW)", /importScripts\("scriptlets\/policy\.js"\)/.test(bg));
+ok("background.js loads policy (then the shared converter) via importScripts (classic SW)", /importScripts\("scriptlets\/policy\.js", "lib\/abp2dnr\.js"\)/.test(bg));
 
 // 3) IMPL keys == canonical names
 const impl = [...engine.matchAll(/^ {4}"([\w-]+)": function/gm)].map((m) => m[1]).sort().join("|");

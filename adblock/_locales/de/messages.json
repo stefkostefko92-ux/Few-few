@@ -418,5 +418,98 @@
   },
   "opt_reason_sticky": {
     "message": "Fixiertes Werbebanner"
+  },
+  "logRegional": {
+    "message": "Regionale Listen"
+  },
+  "logFocus": {
+    "message": "Fokusmodus"
+  },
+  "opt_filter_lists": {
+    "message": "Filterlisten"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList und EasyPrivacy sind immer aktiv. Die Listen unten stehen unter offenen Lizenzen und sind in die Erweiterung eingebaut – beim Einschalten wird nichts heruntergeladen, außer bei Listen, die als „vom Autor“ gekennzeichnet sind."
+  },
+  "opt_lists_core": {
+    "message": "Basis"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Die Liste für die Sprache Ihres Browsers schaltet sich selbst ein. Fügen Sie weitere hinzu, wenn Sie oft Seiten in anderen Sprachen lesen."
+  },
+  "opt_focus_mode": {
+    "message": "Fokusmodus"
+  },
+  "opt_focus_desc": {
+    "message": "Blendet aus, was keine Werbung ist, aber trotzdem stört. Alles hier ist aus, bis Sie es einschalten."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock-Origin-Filter"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Werbung, Tracker, Anti-Adblock-Korrekturen und Website-Reparaturen vom uBlock-Origin-Team."
+  },
+  "opt_list_plowe": {
+    "message": "Liste von Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Eine langjährige Liste von Werbe- und Tracking-Servern."
+  },
+  "opt_focus_social": {
+    "message": "Social-Media-Buttons und -Widgets"
+  },
+  "opt_focus_social_desc": {
+    "message": "Teilen-Buttons, Like-Boxen und eingebettete Feeds."
+  },
+  "opt_focus_chat": {
+    "message": "Chat- und Support-Widgets"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Die schwebenden Chat-Blasen in der Ecke der Seite."
+  },
+  "opt_focus_newsletters": {
+    "message": "Newsletter- und Anmelde-Pop-ups"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "„Abonnieren Sie unseren Newsletter“-Boxen und Overlays."
+  },
+  "opt_focus_notifications": {
+    "message": "Benachrichtigungs-Aufforderungen"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "„Benachrichtigungen erlauben?“-Boxen, die Seiten zeigen, bevor der Browser fragt."
+  },
+  "opt_focus_ai": {
+    "message": "KI-Assistenten-Pop-ups"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Chatbot-Blasen und KI-Vorschlagsfelder auf Webseiten."
+  },
+  "opt_focus_other": {
+    "message": "Sonstige Störungen"
+  },
+  "opt_focus_other_desc": {
+    "message": "Klebende Leisten, „In der App öffnen“-Banner und Ähnliches."
+  },
+  "opt_badge_lang": {
+    "message": "Ihre Sprache"
+  },
+  "opt_badge_remote": {
+    "message": "vom Autor"
+  },
+  "opt_remote_hint": {
+    "message": "Nicht eingebaut (keine Lizenz zur Weitergabe): Ihr Browser lädt sie von $1, wenn Sie sie einschalten."
+  },
+  "opt_downloaded_from": {
+    "message": "Wird von $1 geladen"
+  },
+  "opt_lists_error": {
+    "message": "Chrome hat diese Kombination von Listen abgelehnt ($1). Schalten Sie einige aus."
+  },
+  "opt_badge_recommended": {
+    "message": "empfohlen für Ihre Sprache"
   }
 }
