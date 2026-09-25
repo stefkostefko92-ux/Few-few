@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "месечен календар",
     "стенен календар",
     "календар pdf",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/kalendar" },
   ...pageMeta(TITLE, DESC, "/kalendar"),

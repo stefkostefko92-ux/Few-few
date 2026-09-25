@@ -123,7 +123,7 @@ export default function PokanaStudio() {
   const trimmed = allNames.length - names.length;
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-3 p-5">
           <span className="field-label">Повод</span>
@@ -181,7 +181,7 @@ export default function PokanaStudio() {
               onChange={(e) => set({ foldLine: e.target.checked })} className="h-4 w-4 accent-tera" />
             Линия за сгъване (сгъната картичка)
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-2">
             <FontPicker label="Шрифт: заглавие" value={s.fonts?.heading} allowDefault
               onChange={(id) => set({ fonts: { ...s.fonts, heading: id } })} />
             <FontPicker label="Шрифт: повод" value={s.fonts?.who} allowDefault

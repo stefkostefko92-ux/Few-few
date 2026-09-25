@@ -58,7 +58,7 @@ export default function ObyavaStudio() {
   const tabCapMm = ((fringeH - 6) / (Math.max(1, s.contact.length) * 0.62)).toFixed(2);
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
           <div>

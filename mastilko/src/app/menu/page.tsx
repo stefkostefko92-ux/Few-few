@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "меню за ресторант",
     "ценоразпис за печат",
     "меню шаблон",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/menu" },
   ...pageMeta(TITLE, DESC, "/menu"),
