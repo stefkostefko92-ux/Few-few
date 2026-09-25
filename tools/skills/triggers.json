@@ -2,6 +2,17 @@
   "$note": "Тригер-корпус за уменията. Наръчникът на Anthropic слага задействането ПЪРВО в списъка с тестове: умение, което не се вдига навреме, е нула, колкото и добро да е тялото му. За всяко умение: `should` = очевидна формулировка, перифраза и косвена („не казвам името, но това е случаят\"), `shouldNot` = съседна тема, която НЕ бива да го вдига. Проверява се от tools/skills/trigger-check.mjs.",
   "$граница": "Това НЕ симулира реалното задействане на Claude — то не е наблюдаемо оттук. Мери РАЗЛИЧИМОСТТА на описанията: дали формулировката води до правилното умение по-силно, отколкото до всяко друго. Точно за това служи `description` според наръчника. Провал = две описания се препокриват, не че Claude ще сбърка.",
   "skills": {
+    "academy-guide": {
+      "should": [
+        "how do I get started with Claude projects",
+        "teach me how to use Claude artifacts",
+        "training materials to roll out Claude to my team"
+      ],
+      "shouldNot": [
+        "deploy the game server",
+        "fix this failing unit test"
+      ]
+    },
     "agent-eval": {
       "should": [
         "пусни евал на агента след промяна в дефиницията",
@@ -11,6 +22,50 @@
       "shouldNot": [
         "напиши e2e тест за формата за плащане",
         "измери скоростта на страницата"
+      ]
+    },
+    "algorithmic-art": {
+      "should": [
+        "направи генеративно изкуство с p5.js",
+        "искам частици и потоци като изкуство с код",
+        "generative art with flow fields"
+      ],
+      "shouldNot": [
+        "оправи CSS на формата за вход",
+        "направи плакат в PDF"
+      ]
+    },
+    "api-claude": {
+      "should": [
+        "кой модел на Claude да ползвам и колко струва",
+        "добави кеширане на промптове в Anthropic SDK",
+        "build an agent with tool use on the Claude API"
+      ],
+      "shouldNot": [
+        "интегрирай OpenAI GPT в проекта",
+        "свържи Gemini API"
+      ]
+    },
+    "brand-guidelines": {
+      "should": [
+        "оформи документа във визуалната идентичност на Anthropic",
+        "ползвай цветовете и шрифтовете на Anthropic",
+        "apply Anthropic brand colors to this deck"
+      ],
+      "shouldNot": [
+        "избери палитра за нашия лендинг",
+        "направи тема за слайдовете"
+      ]
+    },
+    "canvas-design": {
+      "should": [
+        "направи плакат за турнира",
+        "постер като PNG за събитието",
+        "статичен дизайн в PDF"
+      ],
+      "shouldNot": [
+        "анимиран GIF за Slack",
+        "генеративно изкуство с p5.js"
       ]
     },
     "commit-pr": {
@@ -44,6 +99,17 @@
       "shouldNot": [
         "настрой GitHub Actions workflow",
         "напиши changelog за релийза"
+      ]
+    },
+    "discernment-nudge": {
+      "should": [
+        "draft a proposal and recommendations for the plan",
+        "give me an estimate and projections for next quarter",
+        "analysis of this data I may act on"
+      ],
+      "shouldNot": [
+        "format this table as CSV",
+        "convert this file to PDF"
       ]
     },
     "fiscal-bg": {
@@ -101,6 +167,17 @@
         "мигрирай схемата на базата"
       ]
     },
+    "internal-comms": {
+      "should": [
+        "напиши статус репорт за седмицата",
+        "отчет за инцидент след срива",
+        "бюлетин за екипа"
+      ],
+      "shouldNot": [
+        "напиши политика за поверителност",
+        "преведи текста на италиански"
+      ]
+    },
     "keywords-seo": {
       "should": [
         "добави ключови думи на новата страница",
@@ -110,6 +187,17 @@
       "shouldNot": [
         "подай URL-ите през IndexNow",
         "провери контраста на цветовете"
+      ]
+    },
+    "mcp-builder": {
+      "should": [
+        "направи MCP сървър за нашето API",
+        "искам MCP сървър за външна услуга",
+        "build an MCP server in TypeScript"
+      ],
+      "shouldNot": [
+        "добави Stripe плащане",
+        "настрой Discord бот"
       ]
     },
     "motion-a11y": {
@@ -211,6 +299,28 @@
         "напиши документация за екипа"
       ]
     },
+    "skill-creator": {
+      "should": [
+        "създай ново умение и измери задействането му",
+        "подобри умение, което не се задейства",
+        "run evals to benchmark a skill"
+      ],
+      "shouldNot": [
+        "напиши тест за двигателя на шаха",
+        "обнови агента Кодаджията"
+      ]
+    },
+    "slack-gif-creator": {
+      "should": [
+        "направи анимиран GIF за Slack",
+        "GIF за Slack канала на екипа",
+        "make me a GIF for Slack"
+      ],
+      "shouldNot": [
+        "направи плакат в PDF",
+        "оптимизирай изображенията на сайта"
+      ]
+    },
     "stripe-payment": {
       "should": [
         "добави абонамент през Stripe",
@@ -231,6 +341,17 @@
       "shouldNot": [
         "напиши нов e2e тест за потока",
         "прегледай кода за дублиране"
+      ]
+    },
+    "theme-factory": {
+      "should": [
+        "направи тема за слайдовете",
+        "избери цветове и шрифтове за документа",
+        "тема за лендинг страница с готови палитри"
+      ],
+      "shouldNot": [
+        "провери контраста за достъпност",
+        "напиши статус репорт"
       ]
     },
     "uchitel": {
@@ -255,6 +376,17 @@
         "добави анимация на заглавието"
       ]
     },
+    "web-artifacts-builder": {
+      "should": [
+        "сложен HTML артефакт с React и shadcn/ui",
+        "артефакт с Tailwind и няколко компонента",
+        "build a claude.ai artifact with routing"
+      ],
+      "shouldNot": [
+        "лендинг страница в Next.js",
+        "тествай формата с Playwright"
+      ]
+    },
     "web-vitals": {
       "should": [
         "страницата е бавна, оправи я",
@@ -264,6 +396,17 @@
       "shouldNot": [
         "добави ключови думи за търсачките",
         "провери контраста за достъпност"
+      ]
+    },
+    "webapp-testing": {
+      "should": [
+        "тествай локалното уеб приложение с Playwright",
+        "направи скрийншоти и виж логове от браузъра",
+        "debug the frontend UI behavior locally"
+      ],
+      "shouldNot": [
+        "напиши unit тест за функцията",
+        "измери LCP на страницата"
       ]
     }
   }
