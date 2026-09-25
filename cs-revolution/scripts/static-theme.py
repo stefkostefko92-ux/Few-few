@@ -23,7 +23,11 @@ import glob
 import os
 import re
 
-FONTS = '<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'  # self-hosted (scripts/self-host-fonts.py)
+FONTS = ('<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'
+         # the two faces every page paints first: fetched with the CSS, so the swap lands before first paint (CLS)
+         '<link id="cs-theme-fonts-pre" rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-latin-ecea81.woff2" crossorigin>'
+         '<link id="cs-theme-fonts-pre2" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-e04b1d.woff2" crossorigin>'
+         '<link id="cs-theme-fonts-pre3" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-0319ea.woff2" crossorigin>')  # self-hosted (scripts/self-host-fonts.py)
 JS_FLAG = '<script id="cs-js-flag">document.documentElement.classList.add("js")</script>'
 
 DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,sans-serif"
@@ -47,7 +51,7 @@ h1{{font-family:{DISP}!important;font-weight:600!important;letter-spacing:-.02em
 h2,h3,.faq-q,.tier h3,.card h3{{font-family:{DISP}!important;text-wrap:balance}}
 h2{{letter-spacing:.02em!important}}
 a{{color:var(--cs-c)}}
-.w p a,.w li a,.faq-a a,.seo-body p a,.seo-body li a{{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}}
+.w p a,.w li a,.faq-a a,.seo-body p a,.seo-body li a{{text-decoration:underline!important;text-decoration-thickness:1px;text-underline-offset:3px}}
 .w .cta,.w .btn,.w a.cta{{text-decoration:none}}
 .card,.tier,.cell,.addon,.vat article,.cta-box,details,.tag-list a,.sect a{{border-radius:2px!important}}
 .cta{{background:rgba(0,229,255,.05);box-shadow:0 0 22px rgba(0,229,255,.22),inset 0 0 14px rgba(0,229,255,.06);transition:box-shadow .3s,background .3s}}
@@ -124,7 +128,7 @@ NEEDS_FOOTER = {"privacy", "cookie", "termini", "terms", "usloviya", "404.html"}
 BLOG_HUBS = {"public/blog/index.html", "public/en/blog/index.html", "public/bg/blog/index.html"}
 SKIP = {"public/offline.html", "public/status/index.html"}  # the status page is its own dashboard
 
-STRIP = [re.compile(r'<link id="cs-theme-fonts"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
+STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
          re.compile(r'<style id="cs-theme">.*?</style>', re.S), re.compile(r'<script id="cs-nav-js">.*?</script>', re.S),
          re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S)]
 
