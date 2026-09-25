@@ -284,7 +284,8 @@ export default function Inventory(): React.ReactElement {
                 {t('inventory.actions.list')}
               </button>
             )}
-            {!actions.item.equipped && (
+            {/* Купеното с гемове не се продава на търговеца (сървърът го отказва) — без мъртъв бутон. */}
+            {!actions.item.equipped && !actions.item.gem_bought && (
               <button className="danger" onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, t('inventory.toasts.soldFor', { price: actions.item.sell_price }))}>
                 {t('inventory.actions.sell', { price: actions.item.sell_price })}
               </button>
