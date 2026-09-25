@@ -6,10 +6,14 @@
 // чл. 13 D.P.R. 162/1999 ще бъде забелязан.
 
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, Notifica } from "@prisma/client";
 import { log, descriviErrore } from "@/lib/log";
 import { invia } from "@/lib/posta/smtp";
-import { configSmtp, ErrorePosta } from "@/lib/posta/messaggio";
+import {
+  configSmtp,
+  ErrorePosta,
+  type ConfigSmtp,
+} from "@/lib/posta/messaggio";
 import {
   destinatari,
   prossimoTentativo,
@@ -92,11 +96,57 @@ export interface EsitoInvii {
 }
 
 /**
+ * Колко дълго едно заето известие е невидимо за друг пуск.
+ *
+ * Трябва да е ПОВЕЧЕ от най-лошото време на едно пращане: свързване + ~10
+ * стъпки по 20 s ≈ 220 s. Ако процесът умре насред пращането, наемът изтича
+ * и известието се опитва пак — „поне веднъж", не „точно веднъж", и това е
+ * честното обещание, когато получателят е чужд сървър.
+ */
+const NOLEGGIO_MS = 10 * 60_000;
+
+/** Зависимостите на изпращача — подменими само в интеграционния тест. */
+export interface DipendenzeInvio {
+  config?: ConfigSmtp | null;
+  invia?: typeof invia;
+}
+
+/**
+ * Заема ЕДНО чакащо известие, чието време е дошло.
+ *
+ * ЗАЩО ПО ЕДНО И ЗАЩО С НАЕМ. Първата версия четеше пакета с обикновен
+ * `findMany`: два едновременни пуска (cron + ръчен) виждаха едни и същи редове
+ * и пращаха едно писмо ДВА пъти. `FOR UPDATE SKIP LOCKED` дава реда на един
+ * пуск, а преместеното `prossimoTentativo` го скрива от всеки следващ, докато
+ * този не приключи. По едно — защото наемът на цял пакет от 50 би трябвало да
+ * покрие 50 бавни релета.
+ */
+async function prendiUna(): Promise<Notifica | null> {
+  return prisma.$transaction(async (tx) => {
+    const [r] = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM notifiche
+      WHERE stato = 'IN_ATTESA' AND "prossimoTentativo" <= now()
+      ORDER BY "prossimoTentativo" ASC
+      LIMIT 1
+      FOR UPDATE SKIP LOCKED
+    `;
+    if (!r) return null;
+    return tx.notifica.update({
+      where: { id: r.id },
+      data: { prossimoTentativo: new Date(Date.now() + NOLEGGIO_MS) },
+    });
+  });
+}
+
+/**
  * Праща чакащите, чието време е дошло.
  *
- * Взима ограничен пакет: една заседнала опашка не бива да държи процеса минути.
+ * Взима ограничен брой: една заседнала опашка не бива да държи процеса минути.
  */
-export async function inviaInAttesa(limite = 50): Promise<EsitoInvii> {
+export async function inviaInAttesa(
+  limite = 50,
+  dip: DipendenzeInvio = {},
+): Promise<EsitoInvii> {
   const esito: EsitoInvii = {
     tentate: 0,
     riuscite: 0,
@@ -105,7 +155,8 @@ export async function inviaInAttesa(limite = 50): Promise<EsitoInvii> {
     smtpAssente: false,
   };
 
-  const c = configSmtp();
+  const c = dip.config === undefined ? configSmtp() : dip.config;
+  const manda = dip.invia ?? invia;
   if (!c) {
     // ФУНКЦИЯТА Е ИЗКЛЮЧЕНА, НЕ СЧУПЕНА. Не празним опашката и не бележим
     // редовете като неуспешни: щом утре SMTP се конфигурира, чакащите тръгват.
@@ -121,17 +172,12 @@ export async function inviaInAttesa(limite = 50): Promise<EsitoInvii> {
     return esito;
   }
 
-  const ora = new Date();
-  const righe = await prisma.notifica.findMany({
-    where: { stato: "IN_ATTESA", prossimoTentativo: { lte: ora } },
-    orderBy: { prossimoTentativo: "asc" },
-    take: limite,
-  });
-
-  for (const n of righe) {
+  while (esito.tentate < limite) {
+    const n = await prendiUna();
+    if (!n) break;
     esito.tentate++;
     try {
-      await invia(c, { a: n.destinatario, oggetto: n.oggetto, testo: n.corpo });
+      await manda(c, { a: n.destinatario, oggetto: n.oggetto, testo: n.corpo });
       await prisma.notifica.update({
         where: { id: n.id },
         data: {
@@ -179,7 +225,9 @@ export async function inviaInAttesa(limite = 50): Promise<EsitoInvii> {
  * доставката на webhook-ите е проследена.
  */
 export async function inviaInAttesaTracciato(limite = 50): Promise<EsitoInvii> {
-  const run = await prisma.automatismoRun.create({ data: { nome: "notifiche" } });
+  const run = await prisma.automatismoRun.create({
+    data: { nome: "notifiche" },
+  });
   const inizio = Date.now();
   try {
     const esito = await inviaInAttesa(limite);

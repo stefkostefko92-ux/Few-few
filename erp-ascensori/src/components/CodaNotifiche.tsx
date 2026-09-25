@@ -33,15 +33,16 @@ interface Esito {
 
 const ETICHETTA_TIPO: Record<string, string> = {
   SCADENZA_IMPIANTO: "Scadenza impianto",
-  SCADENZA_AUTOMEZZO: "Automezzo",
+  SCADENZA_AUTOMEZZO: "Scadenza automezzo",
   FATTURA_SCADUTA: "Fattura scaduta",
   PREVENTIVO_SCADUTO: "Preventivo scaduto",
 };
 
 const ETICHETTA_STATO: Record<Riga["stato"], string> = {
   IN_ATTESA: "in coda",
-  INVIATA: "inviata",
-  FALLITA: "non inviata",
+  // „avviso" е от мъжки род.
+  INVIATA: "inviato",
+  FALLITA: "non inviato",
 };
 
 export default function CodaNotifiche() {
@@ -78,7 +79,7 @@ export default function CodaNotifiche() {
           <IcoNota />
           <span>
             Server di posta non configurato: gli avvisi restano in coda e non
-            vanno persi, ma nessuno parte. Servono le variabili{" "}
+            vanno persi, ma nessuno viene inviato. Servono le variabili{" "}
             <code className="font-mono">SMTP_HOST</code> e{" "}
             <code className="font-mono">SMTP_MITTENTE</code> sul server.
           </span>
@@ -94,7 +95,7 @@ export default function CodaNotifiche() {
           <span>
             {d.fallite} {d.fallite === 1 ? "avviso" : "avvisi"} non{" "}
             {d.fallite === 1 ? "recapitato" : "recapitati"} dopo tutti i
-            tentativi: di norma l&apos;indirizzo è sbagliato.
+            tentativi: verificare l&apos;indirizzo e la configurazione SMTP.
           </span>
         </div>
       )}
@@ -102,8 +103,8 @@ export default function CodaNotifiche() {
       {d.righe.length === 0 ? (
         <p className="flex items-start gap-2 text-sm text-text-3">
           <IcoIntegro />
-          Nessun avviso: o non ci sono scadenze in soglia, o la funzione non è
-          attiva in Dati aziendali.
+          Nessun avviso: non ci sono scadenze entro le soglie, oppure la
+          funzione non è attiva in Dati aziendali.
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -119,7 +120,10 @@ export default function CodaNotifiche() {
             </thead>
             <tbody>
               {d.righe.map((r) => (
-                <tr key={r.id} className="border-b border-border/60 last:border-0">
+                <tr
+                  key={r.id}
+                  className="border-b border-border/60 last:border-0"
+                >
                   <td className="py-2 pr-3 text-text-2">
                     {ETICHETTA_TIPO[r.tipo] ?? r.tipo}
                   </td>
@@ -141,7 +145,8 @@ export default function CodaNotifiche() {
                     </span>
                     {r.stato !== "INVIATA" && r.tentativi > 0 && (
                       <span className="ml-1 text-xs text-text-3">
-                        ({r.tentativi} tent.)
+                        ({r.tentativi}{" "}
+                        {r.tentativi === 1 ? "tentativo" : "tentativi"})
                       </span>
                     )}
                     {/* Причината се показва: „не е изпратено" без „защо" праща

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
+import { haPermesso } from "@/lib/roles";
 import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica } from "@/lib/audit-dettagli";
 
@@ -51,7 +52,18 @@ export const GET = gestito(async () => {
   const d = await prisma.datiAzienda.findFirst({
     where: { tenantId: s.tenantId ?? null },
   });
-  return ok(d ?? {});
+  if (!d) return ok({});
+  // С ИЗКЛЮЧЕНИЕ на получателите на известията. Те НЕ са на документите —
+  // това са вътрешни адреси на хора, а опашката, която ги носи, вече е ADMIN+
+  // (`/api/notifiche`). Същото правило, приложено на второто място, където
+  // стои същото поле.
+  if (!haPermesso(s.ruolo, "ADMIN")) {
+    const pubblici: Partial<typeof d> = { ...d };
+    delete pubblici.emailAvvisi;
+    delete pubblici.avvisiAttivi;
+    return ok(pubblici);
+  }
+  return ok(d);
 });
 
 export const PUT = gestito(async (req) => {

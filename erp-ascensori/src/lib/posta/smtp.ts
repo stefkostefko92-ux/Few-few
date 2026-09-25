@@ -32,66 +32,125 @@ import {
   type Messaggio,
 } from "@/lib/posta/messaggio";
 
-export * from "@/lib/posta/messaggio";
+interface Risposta {
+  codice: number;
+  testo: string;
+}
 
 interface Conversazione {
   scrivi: (v: string) => void;
-  leggi: () => Promise<{ codice: number; testo: string }>;
+  leggi: () => Promise<Risposta>;
   chiudi: () => void;
+  /** След STARTTLS: разговорът продължава по шифрования сокет. */
   aggiornaSocket: (s: Socket | TLSSocket) => void;
 }
 
 /** Таймаут за всяка стъпка. Мъртво реле не бива да държи автоматизма. */
 const TIMEOUT_MS = 20_000;
 
-function conversazione(iniziale: Socket | TLSSocket): Conversazione {
+/**
+ * Чакане с таймер, който се ЧИСТИ.
+ *
+ * Първата версия оставяше таймера на всяка стъпка да тече и след успешния
+ * отговор. Двайсет секунди по-късно той проверяваше СПОДЕЛЕНОТО „чакащо“ —
+ * което вече принадлежеше на следващата стъпка — и го нулираше: следващият
+ * отговор пристигаше и нямаше на кого да се даде. `invia` висеше завинаги, а
+ * цикълът на автоматизмите е последователен, тоест спираха и сроковете в 06:00.
+ */
+function conTimeout<T>(
+  p: Promise<T>,
+  ms: number,
+  messaggio: string,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const scadenza = new Promise<never>((_, rej) => {
+    timer = setTimeout(() => rej(new Error(messaggio)), ms);
+    timer.unref?.();
+  });
+  return Promise.race([p, scadenza]).finally(() => clearTimeout(timer));
+}
+
+function conversazione(
+  iniziale: Socket | TLSSocket,
+  timeoutMs: number,
+): Conversazione {
   let socket = iniziale;
   let buffer = "";
-  let attesa: ((v: { codice: number; testo: string }) => void) | null = null;
-  let rifiuta: ((e: Error) => void) | null = null;
+  /** Пълни отговори, пристигнали преди някой да ги е поискал. */
+  const pronte: Risposta[] = [];
+  /** Кой чака СЕГА. Една стъпка чака наведнъж — SMTP без pipelining. */
+  let attesa: { res: (r: Risposta) => void; rej: (e: Error) => void } | null =
+    null;
+  /** Връзката е паднала: всяко следващо четене отказва веднага. */
+  let rotta: Error | null = null;
+
+  const suDati = (chunk: string) => {
+    buffer += chunk;
+    // Отговорът е ЦЯЛ, когато последният му ред е завършен (CRLF) и има
+    // интервал след кода: „250 OK". Междинните редове имат тире —
+    // „250-PIPELINING". Без проверката за CRLF парче „250 O“ минаваше за
+    // пълен отговор, а остатъкът „K“ се лепеше към следващия.
+    if (!buffer.endsWith("\r\n")) return;
+    const righe = buffer.split("\r\n").filter(Boolean);
+    const ultima = righe[righe.length - 1];
+    if (!ultima || !/^\d{3} /.test(ultima)) return;
+    const r = { codice: Number(ultima.slice(0, 3)), testo: buffer };
+    buffer = "";
+    if (attesa) {
+      const a = attesa;
+      attesa = null;
+      a.res(r);
+    } else pronte.push(r);
+  };
+  const suRottura = (e: Error) => {
+    rotta ??= e;
+    if (attesa) {
+      const a = attesa;
+      attesa = null;
+      a.rej(rotta);
+    }
+  };
+  // Затворената връзка отказва ВЕДНАГА, не след двайсет секунди таймаут.
+  const suChiusura = () =>
+    suRottura(new Error("connessione interrotta dal server"));
 
   function collega(s: Socket | TLSSocket) {
     s.setEncoding("utf8");
-    s.on("data", (chunk: string) => {
-      buffer += chunk;
-      // Последният ред на отговора има интервал след кода: „250 OK".
-      // Междинните имат тире: „250-PIPELINING". Без това разграничение
-      // клиентът приема първия ред на EHLO за целия отговор.
-      const righe = buffer.split("\r\n").filter(Boolean);
-      const ultima = righe[righe.length - 1];
-      if (!ultima || !/^\d{3} /.test(ultima)) return;
-      const testo = buffer;
-      buffer = "";
-      const codice = Number(ultima.slice(0, 3));
-      attesa?.({ codice, testo });
-      attesa = null;
-      rifiuta = null;
-    });
-    s.on("error", (e: Error) => {
-      rifiuta?.(e);
-      attesa = null;
-      rifiuta = null;
-    });
+    s.on("data", suDati);
+    s.on("error", suRottura);
+    s.on("close", suChiusura);
+  }
+  function scollega(s: Socket | TLSSocket) {
+    // След STARTTLS суровият сокет носи ШИФРОВАНИ байтове. Оставен закачен,
+    // слушателят им би ги лепил в буфера като „отговор“ на сървъра.
+    s.off("data", suDati);
+    s.off("error", suRottura);
+    s.off("close", suChiusura);
   }
 
   collega(socket);
 
   return {
-    scrivi: (v) => socket.write(v + "\r\n"),
-    leggi: () =>
-      new Promise((res, rej) => {
-        attesa = res;
-        rifiuta = rej;
-        setTimeout(() => {
-          if (attesa) {
-            attesa = null;
-            rifiuta = null;
-            rej(new Error("timeout SMTP"));
-          }
-        }, TIMEOUT_MS).unref?.();
-      }),
+    scrivi: (v) => {
+      socket.write(v + "\r\n");
+    },
+    leggi: () => {
+      const gia = pronte.shift();
+      if (gia) return Promise.resolve(gia);
+      if (rotta) return Promise.reject(rotta);
+      const p = new Promise<Risposta>((res, rej) => {
+        attesa = { res, rej };
+      });
+      return conTimeout(p, timeoutMs, "timeout SMTP").catch((e: Error) => {
+        // Таймаутът освобождава мястото — иначе закъснял отговор би се дал на
+        // следващо четене, което чака нещо съвсем друго.
+        attesa = null;
+        throw e;
+      });
+    },
     chiudi: () => socket.destroy(),
     aggiornaSocket: (s) => {
+      scollega(socket);
       socket = s;
       buffer = "";
       collega(s);
@@ -128,17 +187,20 @@ export async function invia(c: ConfigSmtp, m: Messaggio): Promise<void> {
     throw new ErrorePosta(0, "Indirizzo del mittente non valido", false);
 
   const socket: Socket | TLSSocket = c.tlsDiretto
-    ? tlsConnect({ host: c.host, port: c.porta, servername: c.host })
+    ? tlsConnect({ host: c.host, port: c.porta, servername: c.host, ca: c.ca })
     : createConnection({ host: c.host, port: c.porta });
 
-  const conv = conversazione(socket);
+  const attesaMax = c.timeoutMs ?? TIMEOUT_MS;
+  const conv = conversazione(socket, attesaMax);
   try {
-    await new Promise<void>((res, rej) => {
-      socket.once(c.tlsDiretto ? "secureConnect" : "connect", () => res());
-      socket.once("error", rej);
-      setTimeout(() => rej(new Error("timeout di connessione")), TIMEOUT_MS)
-        .unref?.();
-    });
+    await conTimeout(
+      new Promise<void>((res, rej) => {
+        socket.once(c.tlsDiretto ? "secureConnect" : "connect", () => res());
+        socket.once("error", rej);
+      }),
+      attesaMax,
+      "timeout di connessione",
+    );
 
     esigi(await conv.leggi(), [220], "saluto");
 
@@ -157,11 +219,21 @@ export async function invia(c: ConfigSmtp, m: Messaggio): Promise<void> {
         );
       conv.scrivi("STARTTLS");
       esigi(await conv.leggi(), [220], "STARTTLS");
-      const sicuro = tlsConnect({ socket: socket as Socket, servername: c.host });
-      await new Promise<void>((res, rej) => {
-        sicuro.once("secureConnect", () => res());
-        sicuro.once("error", rej);
+      const sicuro = tlsConnect({
+        socket: socket as Socket,
+        servername: c.host,
+        ca: c.ca,
       });
+      // Ръкостискането също има таван: реле, което приема STARTTLS и после
+      // замлъква, иначе държи процеса без край.
+      await conTimeout(
+        new Promise<void>((res, rej) => {
+          sicuro.once("secureConnect", () => res());
+          sicuro.once("error", rej);
+        }),
+        attesaMax,
+        "timeout nella negoziazione TLS",
+      );
       conv.aggiornaSocket(sicuro);
       conv.scrivi(`EHLO ${dominioMittente(c.mittente)}`);
       esigi(await conv.leggi(), [250], "EHLO dopo STARTTLS");
@@ -185,9 +257,13 @@ export async function invia(c: ConfigSmtp, m: Messaggio): Promise<void> {
     conv.scrivi(proteggiPunti(componi(c, m)) + "\r\n.");
     esigi(await conv.leggi(), [250], "invio");
 
+    // Чакаме „221" преди да затворим. Унищожен веднага след `write`, сокетът
+    // изхвърля буферираната команда и QUIT никога не стига до релето —
+    // писмото вече е прието, но разговорът се води прекъснат. Грешка тук не
+    // проваля пращането: „250" по-горе е това, което има значение.
     conv.scrivi("QUIT");
+    await conv.leggi().catch(() => undefined);
   } finally {
     conv.chiudi();
   }
 }
-

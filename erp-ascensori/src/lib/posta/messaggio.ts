@@ -16,6 +16,18 @@ export interface ConfigSmtp {
   /** Подателят: адресът, който получателят вижда. */
   mittente: string;
   nomeMittente: string;
+  /**
+   * Таван на всяка стъпка в милисекунди. По подразбиране 20 s.
+   *
+   * В обкръжението не се задава — съществува, за да може тестът за мъртво реле
+   * да не чака по двайсет секунди на стъпка.
+   */
+  timeoutMs?: number;
+  /**
+   * Сертификатите, на които вярваме, освен системните. Само за тестовия стенд
+   * със самоподписан сертификат; в продукция остава празно.
+   */
+  ca?: string;
 }
 
 export class ErrorePosta extends Error {
@@ -61,6 +73,21 @@ export function codificaIntestazione(v: string): string {
 }
 
 /**
+ * Името пред адреса в `From:`.
+ *
+ * Без кавички то чупи заглавието: „Rossi, Bianchi & C. S.r.l." има запетая, а
+ * запетаята в `From:` разделя АДРЕСИ — получателят вижда двама податели или
+ * отказ. RFC 5322 иска quoted-string, когато името съдържа „специални" знаци.
+ * Не-ASCII името минава през RFC 2047 и кавички не иска.
+ */
+export function nomeVisualizzato(v: string): string {
+  const pulito = sanifica(v);
+  if (!/^[\x20-\x7e]*$/.test(pulito)) return codificaIntestazione(pulito);
+  if (!/[()<>[\]:;@\\,."]/.test(pulito)) return pulito;
+  return `"${pulito.replace(/["\\]/g, "\\$&")}"`;
+}
+
+/**
  * Точка в началото на ред затваря DATA — затова се удвоява (RFC 5321, 4.5.2).
  *
  * Пропуснато, текстът се реже точно на реда, който започва с точка. Рядко —
@@ -89,7 +116,7 @@ export function dominioMittente(indirizzo: string): string {
  */
 export function componi(c: ConfigSmtp, m: Messaggio): string {
   const intestazioni = [
-    `From: ${codificaIntestazione(c.nomeMittente)} <${c.mittente}>`,
+    `From: ${nomeVisualizzato(c.nomeMittente)} <${c.mittente}>`,
     `To: <${m.a}>`,
     `Subject: ${codificaIntestazione(m.oggetto)}`,
     "MIME-Version: 1.0",

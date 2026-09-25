@@ -135,6 +135,36 @@ groups:
             La coda si riempie e nessuno riceve gli avvisi. Le scadenze
             normative continuano a decorrere (art. 13 D.P.R. 162/1999).
 
+      - alert: ErpNotificheNonRecapitate
+        # СИМПТОМЪТ, КОЙТО DEAD-MAN-ЪТ НЕ ВИЖДА. При мъртво реле пускът на
+        # `npm run notifiche` завършва „OK" — просто всяко писмо се проваля и
+        # чака следващия опит. `ErpNotificheFerme` мълчи; опашката расте.
+        # Две часа: над най-дългото изчакване между опитите (6 ч таван, но
+        # първите опити са на 5/15/45 мин). Само при конфигуриран SMTP — иначе
+        # празната конфигурация би звъняла вечно.
+        expr: >-
+          erp_notifiche_in_attesa_eta_secondi > 7200
+          and on() erp_smtp_configurato == 1
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: un avviso di scadenza attende da oltre 2 ore"
+          description: >-
+            Il server di posta rifiuta o non risponde. Controllare la coda in
+            Integrazioni: il motivo dell'ultimo tentativo è indicato per riga.
+
+      - alert: ErpNotificheAbbandonate
+        # Изчерпани опити = писмо, което никога няма да стигне. Почти винаги е
+        # сгрешен адрес в „Dati aziendali" — човек трябва да го поправи.
+        expr: erp_notifiche_fallite_24h > 0
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "ERP: avvisi di scadenza non recapitati nelle ultime 24 ore"
+          description: "Verificare gli indirizzi in Dati aziendali e la configurazione SMTP."
+
       - alert: ErpAutomatismiFermi
         # Остава като мрежа за случаите, в които изобщо НИЩО не минава.
         expr: erp_automatismi_eta_secondi > 93600 or erp_automatismi_eta_secondi == -1

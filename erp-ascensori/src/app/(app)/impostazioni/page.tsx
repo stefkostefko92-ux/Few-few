@@ -46,7 +46,7 @@ const CAMPI: {
     label: "E-mail per gli avvisi di scadenza",
     largo: true,
     aiuto:
-      "Uno o più indirizzi separati da virgola. Ricevono gli avvisi alle soglie di 90, 60 e 30 giorni, il passaggio in rosso di un automezzo, le fatture scadute e i preventivi decaduti. Conviene l'indirizzo del responsabile tecnico, non la casella generica.",
+      "Uno o più indirizzi separati da virgola. Ricevono gli avvisi alle soglie di 90, 60 e 30 giorni, il passaggio in rosso di un automezzo, le fatture scadute e i preventivi scaduti. Si consiglia l'indirizzo del responsabile tecnico, non la casella generica.",
   },
 ];
 
@@ -103,7 +103,7 @@ export default function Pagina() {
       setEsito(
         ok
           ? { tipo: "ok", testo: "Dati salvati." }
-          : { tipo: "errore", testo: r.error ?? "Errore di salvataggio" },
+          : { tipo: "errore", testo: r.error ?? "Errore di salvataggio." },
       );
       if (ok) void carica();
     } finally {
@@ -168,7 +168,7 @@ export default function Pagina() {
                 .map((m) => CAMPI.find((c) => c.name === m)?.label)
                 .join(", ")}
             </strong>
-            . Senza questi dati il file XML viene rifiutato dallo SDI e la
+            . Senza questi dati il file XML viene rifiutato dallo SdI e la
             fattura risulta non emessa.
           </span>
         </div>
@@ -221,9 +221,9 @@ export default function Pagina() {
               </span>
               <span className="block text-xs text-text-3">
                 Il gestionale mette gli avvisi in coda; l&apos;invio parte da un
-                automatismo separato. Nel messaggio finiscono matricola, tipo di
-                scadenza, data e un collegamento — mai nomi di persone né
-                importi.
+                automatismo separato. Nel messaggio finiscono matricola o targa,
+                tipo di scadenza, data, numero del documento e un collegamento —
+                mai nomi di persone né importi.
               </span>
             </span>
           </label>

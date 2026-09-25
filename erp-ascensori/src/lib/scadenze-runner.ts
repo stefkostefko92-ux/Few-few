@@ -7,6 +7,7 @@ import type { Prisma } from "@prisma/client";
 import { sogliePendenti, statoAutomezzo } from "@/lib/scadenze-logic";
 import { log, descriviErrore } from "@/lib/log";
 import { basePubblica } from "@/lib/qr";
+import { TIPO_SCADENZA } from "@/lib/enum-labels";
 import {
   accoda,
   impostazioniAvvisi,
@@ -75,23 +76,41 @@ export async function controllaScadenzeTracciato(
   }
 }
 
+/** Какво изтича на автомобила — етикетът върви в писмото, не суровият ключ. */
+const VOCE_AUTOMEZZO = {
+  revisione: "Revisione",
+  assicurazione: "Assicurazione",
+  tagliando: "Tagliando",
+} as const;
+
 export async function controllaScadenze(
   oggi = new Date(),
 ): Promise<EsitoControllo> {
   let notificheScadenze = 0;
-
-  // Известията се СЪБИРАТ по фирма и се записват накрая, наведнъж.
-  //
-  // Защо не ред по ред: настройките („включено ли е, кой получава") са една
-  // заявка на фирма, а автоматизмът минава през стотици записа. Кешът и
-  // групирането свеждат това до един въпрос на фирма за целия пуск.
-  const perTenant = new Map<string, { tenantId: string | null; modelli: Modello[] }>();
+  let avvisiAccodati = 0;
   const app = basePubblica();
-  function aggiungi(tenantId: string | null, m: Modello) {
-    const k = tenantId ?? "-";
-    const gia = perTenant.get(k) ?? { tenantId, modelli: [] };
-    gia.modelli.push(m);
-    perTenant.set(k, gia);
+  // Настройките („включено ли е, кой получава") са една заявка на фирма;
+  // автоматизмът минава през стотици записа на шепа фирми.
+  const cache = new Map<string, ImpostazioniAvvisi>();
+
+  /**
+   * Смяната на състоянието и известието за нея — ЗАЕДНО или никак.
+   *
+   * Първата версия вдигаше флага, а известията записваше накрая, наведнъж и
+   * извън транзакция. Паднал процес между двете оставяше флаг „известено" без
+   * известие — тоест срокът по чл. 13 D.P.R. 162/1999 минаваше мълчаливо, а
+   * следващият пуск нямаше вече какво да вдигне.
+   */
+  async function insieme(
+    tenantId: string | null,
+    modelli: Modello[],
+    cambio: (tx: Prisma.TransactionClient) => Promise<unknown>,
+  ): Promise<void> {
+    const imp = await impostazioniAvvisi(tenantId, cache);
+    avvisiAccodati += await prisma.$transaction(async (tx) => {
+      await cambio(tx);
+      return accoda(modelli, tenantId, imp, tx);
+    });
   }
 
   // 1) Законови срокове на импиантите — флаговете се вдигат еднократно
@@ -102,30 +121,30 @@ export async function controllaScadenze(
   for (const s of scadenze) {
     const soglie = sogliePendenti(s, oggi);
     if (soglie.length === 0) continue;
-    await prisma.scadenzaImpianto.update({
-      where: { id: s.id },
-      data: {
-        notificato90: s.notificato90 || soglie.includes(90),
-        notificato60: s.notificato60 || soglie.includes(60),
-        notificato30: s.notificato30 || soglie.includes(30),
-      },
-    });
     notificheScadenze += soglie.length;
     // Един праг = едно известие. При първи пуск върху стара база могат да
     // паднат и трите наведнъж — това е вярно: срокът наистина е на 30 дни.
-    for (const soglia of soglie)
-      aggiungi(
-        s.tenantId,
-        modelloScadenzaImpianto({
-          scadenzaId: s.id,
-          matricola: s.impianto.matricola,
-          tipo: s.tipo,
-          scadenza: s.dataScadenza,
-          soglia,
-          impiantoId: s.impiantoId,
-          appUrl: app,
-        }),
-      );
+    const modelli = soglie.map((soglia) =>
+      modelloScadenzaImpianto({
+        scadenzaId: s.id,
+        matricola: s.impianto.matricola,
+        tipo: TIPO_SCADENZA[s.tipo] ?? s.tipo,
+        scadenza: s.dataScadenza,
+        soglia,
+        impiantoId: s.impiantoId,
+        appUrl: app,
+      }),
+    );
+    await insieme(s.tenantId, modelli, (tx) =>
+      tx.scadenzaImpianto.update({
+        where: { id: s.id },
+        data: {
+          notificato90: s.notificato90 || soglie.includes(90),
+          notificato60: s.notificato60 || soglie.includes(60),
+          notificato30: s.notificato30 || soglie.includes(30),
+        },
+      }),
+    );
   }
 
   // 2) Цветен статус на автопарка
@@ -134,32 +153,42 @@ export async function controllaScadenze(
     where: { attivo: true },
   });
   for (const a of automezzi) {
-    const date = [
-      a.scadenzaRevisione,
-      a.scadenzaAssicurazione,
-      a.scadenzaTagliando,
-    ].filter((d): d is Date => d !== null);
     const stato = statoAutomezzo(
       [a.scadenzaRevisione, a.scadenzaAssicurazione, a.scadenzaTagliando],
       oggi,
     );
-    if (stato !== a.stato) {
-      await prisma.automezzo.update({ where: { id: a.id }, data: { stato } });
-      automezziAggiornati++;
-      // Известие САМО при влизане в червено. „Giallo" е планиране и се вижда
-      // на таблото; писмо на всяка смяна на цвета учи човека да ги трие.
-      if (stato === "rosso" && date.length)
-        aggiungi(
-          a.tenantId,
-          modelloScadenzaAutomezzo({
-            automezzoId: a.id,
-            targa: a.targa,
-            stato,
-            scadenza: new Date(Math.min(...date.map((d) => d.getTime()))),
-            appUrl: app,
-          }),
-        );
-    }
+    if (stato === a.stato) continue;
+    automezziAggiornati++;
+    // Известие САМО при влизане в червено. „Giallo" е планиране и се вижда
+    // на таблото; писмо на всяка смяна на цвета учи човека да ги трие.
+    const voci = (
+      [
+        ["revisione", a.scadenzaRevisione],
+        ["assicurazione", a.scadenzaAssicurazione],
+        ["tagliando", a.scadenzaTagliando],
+      ] as const
+    ).filter(
+      (v): v is readonly [keyof typeof VOCE_AUTOMEZZO, Date] => v[1] !== null,
+    );
+    const prima = voci.reduce<(typeof voci)[number] | null>(
+      (min, v) => (!min || v[1] < min[1] ? v : min),
+      null,
+    );
+    const modelli =
+      stato === "rosso" && prima
+        ? [
+            modelloScadenzaAutomezzo({
+              automezzoId: a.id,
+              targa: a.targa,
+              voce: VOCE_AUTOMEZZO[prima[0]],
+              scadenza: prima[1],
+              appUrl: app,
+            }),
+          ]
+        : [];
+    await insieme(a.tenantId, modelli, (tx) =>
+      tx.automezzo.update({ where: { id: a.id }, data: { stato } }),
+    );
   }
 
   // 3) Preventivi: изпратени и извън validitaGiorni → SCADUTO
@@ -171,64 +200,68 @@ export async function controllaScadenze(
     const limite = new Date(
       p.createdAt.getTime() + p.validitaGiorni * 86_400_000,
     );
-    if (limite < oggi) {
-      await prisma.preventivo.update({
-        where: { id: p.id },
-        data: { stato: "SCADUTO" },
-      });
-      preventiviScaduti++;
-      aggiungi(
-        p.tenantId,
+    if (limite >= oggi) continue;
+    preventiviScaduti++;
+    await insieme(
+      p.tenantId,
+      [
         modelloPreventivoScaduto({
           preventivoId: p.id,
           numero: p.numero,
           appUrl: app,
         }),
-      );
-    }
+      ],
+      // Условието е и в `where`: оферта, приета между четенето и записа, не
+      // бива да стане „изтекла" и да тръгне писмо за нея.
+      (tx) =>
+        tx.preventivo.updateMany({
+          where: { id: p.id, stato: "INVIATO" },
+          data: { stato: "SCADUTO" },
+        }),
+    );
   }
 
   // 4) Fatture: просрочен падеж → SCADUTA
   //
-  // Прочитаме ги ПРЕДИ смяната на статуса, защото след `updateMany` условието
-  // вече не пасва и няма от какво да се съставят известията. Пакетната смяна
-  // остава пакетна — един ред по ред обхожда цялата таблица.
-  const daScadere: Prisma.FatturaWhereInput = {
-    stato: { in: ["EMESSA", "INVIATA"] },
-    dataScadenza: { lt: oggi },
-  };
+  // Една по една, всяка със своето известие в своята транзакция — и с
+  // условието в `where`: фактура, платена между четенето и записа, не бива да
+  // получи писмо „просрочена".
   const scadute = await prisma.fattura.findMany({
-    where: daScadere,
-    select: {
-      id: true,
-      numero: true,
-      dataScadenza: true,
-      tenantId: true,
+    where: {
+      stato: { in: ["EMESSA", "INVIATA"] },
+      dataScadenza: { lt: oggi },
     },
+    select: { id: true, numero: true, dataScadenza: true, tenantId: true },
   });
-  const { count: fattureScadute } = await prisma.fattura.updateMany({
-    where: daScadere,
-    data: { stato: "SCADUTA" },
-  });
-  for (const f of scadute)
-    if (f.dataScadenza)
-      aggiungi(
-        f.tenantId,
-        modelloFatturaScaduta({
-          fatturaId: f.id,
-          numero: f.numero,
-          scadenza: f.dataScadenza,
-          appUrl: app,
-        }),
-      );
-
-  // 5) Опашката. Изпращането е ДРУГ процес (`npm run notifiche`): паднало
-  // пощенско реле не бива да проваля вдигането на самите срокове.
-  let avvisiAccodati = 0;
-  const cache = new Map<string, ImpostazioniAvvisi>();
-  for (const { tenantId, modelli } of perTenant.values()) {
-    const imp = await impostazioniAvvisi(tenantId, cache);
-    avvisiAccodati += await accoda(modelli, tenantId, imp);
+  let fattureScadute = 0;
+  for (const f of scadute) {
+    let cambiata = 0;
+    await insieme(
+      f.tenantId,
+      f.dataScadenza
+        ? [
+            modelloFatturaScaduta({
+              fatturaId: f.id,
+              numero: f.numero,
+              scadenza: f.dataScadenza,
+              appUrl: app,
+            }),
+          ]
+        : [],
+      async (tx) => {
+        const r = await tx.fattura.updateMany({
+          where: { id: f.id, stato: { in: ["EMESSA", "INVIATA"] } },
+          data: { stato: "SCADUTA" },
+        });
+        cambiata = r.count;
+        // Нищо не се е сменило → и известие няма: хвърлянето връща
+        // транзакцията, включително `accoda`.
+        if (!cambiata) throw new NienteDaFare();
+      },
+    ).catch((e) => {
+      if (!(e instanceof NienteDaFare)) throw e;
+    });
+    fattureScadute += cambiata;
   }
 
   return {
@@ -239,3 +272,6 @@ export async function controllaScadenze(
     avvisiAccodati,
   };
 }
+
+/** Сигнал „вече не е за смяна" — връща транзакцията без грешка навън. */
+class NienteDaFare extends Error {}

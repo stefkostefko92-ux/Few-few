@@ -41,7 +41,9 @@ function dataIt(d: Date): string {
 }
 
 function piede(url: string, percorso: string): string {
-  return `\n\nApri la scheda: ${url}${percorso}\n\n—\nMessaggio automatico del gestionale ERP Ascensori. Non rispondere a questo indirizzo.`;
+  // Безлично, не с „ти": писмото отива при администратор на кооперация или в
+  // офиса на фирмата — регистърът на търговско писмо, не на приложение.
+  return `\n\nScheda nel gestionale: ${url}${percorso}\n\n—\nMessaggio generato automaticamente dal gestionale ERP Ascensori. Si prega di non rispondere.`;
 }
 
 /**
@@ -80,23 +82,27 @@ export function modelloScadenzaImpianto(v: {
  * автомобил влезе в червено — след като документите са били подновени и после
  * пак са изтекли — уникалният индекс би сметнал известието за дубликат и то
  * НЯМАШЕ ДА ТРЪГНЕ. Подновяването сменя датата, значи сменя и ключа.
+ *
+ * Писмото казва КОЙ срок изтича. Първата версия пишеше „Stato del mezzo:
+ * rosso" — вътрешен код, — без да казва дали е застраховката (без която колата
+ * не бива да излиза) или обслужването.
  */
 export function modelloScadenzaAutomezzo(v: {
   automezzoId: string;
   targa: string;
-  stato: string;
+  /** Италианският етикет на най-близкия срок: „Assicurazione", „Revisione"… */
+  voce: string;
   scadenza: Date;
   appUrl: string;
 }): Modello {
   return {
     tipo: "SCADENZA_AUTOMEZZO",
     chiave: `scadenza-automezzo:${v.automezzoId}:${v.scadenza.toISOString().slice(0, 10)}`,
-    oggetto: `Automezzo ${v.targa} — scadenza il ${dataIt(v.scadenza)}`,
+    oggetto: `Automezzo ${v.targa} — ${v.voce.toLowerCase()} in scadenza il ${dataIt(v.scadenza)}`,
     corpo:
       `Automezzo ${v.targa}\n` +
-      `Prima scadenza utile: ${dataIt(v.scadenza)}\n` +
-      `Stato del mezzo: ${v.stato}\n\n` +
-      "Un mezzo con revisione o assicurazione scaduta non può circolare." +
+      `Scadenza più vicina: ${v.voce}, ${dataIt(v.scadenza)}\n\n` +
+      "Con revisione o assicurazione scadute il mezzo non deve circolare." +
       piede(v.appUrl, `/automezzi`),
   };
 }

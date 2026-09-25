@@ -16,6 +16,7 @@ import { esporta, type MetricaExtra } from "@/lib/metriche";
 import { rlsAttiva } from "@/lib/rls";
 import { archivioScrivibile } from "@/lib/allegati/archivio";
 import { log, descriviErrore } from "@/lib/log";
+import { configSmtp } from "@/lib/posta/messaggio";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,6 +45,8 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
     sdiSenzaEsito,
     sdiRinvioVicino,
     archivio,
+    notificaPiuVecchia,
+    notificheFallite,
   ] = await Promise.all([
     prisma.ordineLavoro.count({
       where: { stato: { in: ["EMESSO", "CONFERMATO", "IN_LAVORO"] } },
@@ -83,9 +86,46 @@ async function daBaseDati(): Promise<MetricaExtra[]> {
       },
     }),
     archivioScrivibile(),
+    // МЪРТВОТО РЕЛЕ НЕ СЕ ВИЖДА В DEAD-MAN-А: пускът завършва „OK", дори
+    // когато всяко писмо се проваля. Затова се мери СИМПТОМЪТ — колко отдавна
+    // чака най-старото известие — а не дали процесът е минал.
+    prisma.notifica.findFirst({
+      where: { stato: "IN_ATTESA" },
+      orderBy: { createdAt: "asc" },
+      select: { createdAt: true },
+    }),
+    prisma.notifica.count({
+      where: {
+        stato: "FALLITA",
+        updatedAt: { gte: new Date(ora.getTime() - 86_400_000) },
+      },
+    }),
   ]);
 
   return [
+    {
+      nome: "erp_smtp_configurato",
+      aiuto: "1 se il server di posta per gli avvisi è configurato",
+      tipo: "gauge",
+      valore: configSmtp() ? 1 : 0,
+    },
+    {
+      nome: "erp_notifiche_in_attesa_eta_secondi",
+      aiuto:
+        "Secondi da quando attende l'avviso più vecchio in coda (-1 = coda vuota)",
+      tipo: "gauge",
+      valore: notificaPiuVecchia
+        ? Math.floor(
+            (ora.getTime() - notificaPiuVecchia.createdAt.getTime()) / 1000,
+          )
+        : -1,
+    },
+    {
+      nome: "erp_notifiche_fallite_24h",
+      aiuto: "Avvisi abbandonati dopo tutti i tentativi nelle ultime 24 ore",
+      tipo: "gauge",
+      valore: notificheFallite,
+    },
     {
       nome: "erp_ordini_aperti",
       aiuto: "Ordini di lavoro non chiusi",
