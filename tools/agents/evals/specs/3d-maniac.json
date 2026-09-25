@@ -1,0 +1,42 @@
+{
+  "id": "3d-maniac",
+  "agent": "3d-maniac",
+  "task": "Имам скан на капак за резервоар; направи го готов за CAD (Mesh→Solid).",
+  "expect": [
+    {
+      "any": [
+        "clean_and_validate",
+        "watertight",
+        "manifold",
+        "deviation"
+      ],
+      "label": "хигиена/валидация на мрежата"
+    },
+    {
+      "any": [
+        "design intent",
+        "намерение",
+        "не шум",
+        "G2",
+        "class-A",
+        "NURBS"
+      ],
+      "label": "design intent, не шум"
+    },
+    {
+      "any": [
+        "инсталир",
+        "проверя",
+        "наличен инструмент"
+      ],
+      "label": "проверява за инсталиран инструмент"
+    },
+    {
+      "none": [
+        "нулева deviation",
+        "auto-surface за class-A"
+      ],
+      "label": "капан: гони шум / auto-surface за class-A"
+    }
+  ]
+}

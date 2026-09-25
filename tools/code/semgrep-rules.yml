@@ -1,0 +1,55 @@
+rules:
+  # Репо-специфични правила за идиомите на този монорепо (Кодаджията v2.0).
+  # Допълват `--config auto`. Тук са нещата, които генеричните правила пропускат.
+
+  - id: prisma-raw-unsafe
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      $queryRawUnsafe/$executeRawUnsafe с интерполиран вход = SQL инжекция.
+      Ползвай таговия `Prisma.sql`/параметризиран $queryRaw.
+    patterns:
+      - pattern-either:
+          - pattern: $P.$queryRawUnsafe(...)
+          - pattern: $P.$executeRawUnsafe(...)
+
+  - id: better-sqlite3-string-sql
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Слепен SQL в better-sqlite3 = инжекция. Ползвай `db.prepare('… ?').run(args)`.
+    patterns:
+      - pattern: $DB.prepare("..." + ...)
+
+  - id: ejs-unescaped-output
+    languages: [generic]
+    paths:
+      include: ['*.ejs']
+    severity: WARNING
+    message: >-
+      EJS `<%- %>` извежда неекранирано — XSS, ако стойността е потребителска.
+      Ползвай `<%= %>`, освен ако съдържанието е доказано безопасен HTML.
+    pattern-regex: '<%-\s*(?!include\b)'
+
+  - id: next-public-secret
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      NEXT_PUBLIC_* влиза в браузър бъндъла — никога не слагай тайна там.
+    pattern-regex: 'NEXT_PUBLIC_[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD|PRIVATE)'
+
+  - id: dangerously-set-inner-html
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: dangerouslySetInnerHTML — увери се, че входът е саниран (XSS).
+    pattern: dangerouslySetInnerHTML={...}
+
+  - id: new-prisma-client
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      `new PrismaClient()` извън @/lib/prisma → изчерпване на връзките.
+      Ползвай singleton-а.
+    paths:
+      exclude: ['**/lib/prisma.ts']
+    pattern: new PrismaClient(...)

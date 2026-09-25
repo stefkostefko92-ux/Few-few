@@ -1,0 +1,10 @@
+# Инструменти за tools/3d/clean_and_validate.py
+trimesh>=4.0          # задължително (I/O, repair, watertight/manifold, deviation)
+numpy>=1.26
+# По избор — по-силно почистване и реконструкция:
+#   pip install pymeshlab     # quadric decimation, close holes, Screened Poisson
+#   pip install open3d        # point cloud → mesh (Poisson/BPA), ICP подравняване
+# Параметричен CAD изход (по избор):
+#   pip install cadquery      # или: pip install build123d
+#
+# Бърз старт:  pip install -r tools/3d/requirements.txt

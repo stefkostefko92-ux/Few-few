@@ -1,0 +1,27 @@
+# Лек мониторинг за един VPS (VPS-аджията v2.0) — Beszel (метрики) + Uptime Kuma
+# (външни health probe-и + алерти). 50× по-леко от Prometheus+Grafana+Loki за 2 апа.
+#   docker compose -f docker-compose.monitoring.yml up -d
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    restart: unless-stopped
+    ports: ["127.0.0.1:8090:8090"]   # зад reverse proxy; не публично
+    volumes: ["./beszel_data:/beszel_data"]
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      PORT: "45876"
+      KEY: "${BESZEL_KEY:?виж Beszel UI за публичния ключ}"
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock:ro"]
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    ports: ["127.0.0.1:3001:3001"]   # зад reverse proxy
+    volumes: ["./kuma_data:/app/data"]
+# Алерти: Uptime Kuma → Telegram/имейл при HTTP != 200 на
+#   https://zabobovdol.carbonstealth.eu/ и https://medqr.carbonstealth.eu/
+# Тайните (BESZEL_KEY, токени) идват от .env с mode 600, не от репото.

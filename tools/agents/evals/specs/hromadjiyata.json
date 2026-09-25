@@ -1,0 +1,41 @@
+{
+  "id": "hromadjiyata",
+  "agent": "hromadjiyata",
+  "task": "Направи Chrome разширение, което маркира ключови думи на страница.",
+  "expect": [
+    {
+      "any": [
+        "Manifest V3",
+        "MV3",
+        "manifest_version"
+      ],
+      "label": "Manifest V3"
+    },
+    {
+      "any": [
+        "content script",
+        "content_scripts"
+      ],
+      "label": "content script"
+    },
+    {
+      "any": [
+        "activeTab",
+        "least",
+        "минимални права",
+        "минимални permissions"
+      ],
+      "label": "least-privilege права"
+    },
+    {
+      "none": [
+        "MV2",
+        "manifest_version 2",
+        "remote code",
+        "отдалечен код",
+        "<all_urls> без нужда"
+      ],
+      "label": "капан: MV2 / широки права / remote code"
+    }
+  ]
+}

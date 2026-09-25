@@ -1,0 +1,11 @@
+{
+  "id": "ai-djiyata-cc",
+  "agent": "ai-djiyata",
+  "task": "Проектирай нов Claude Code hook, който твърдо блокира опасно действие, и обясни как ще пакетираме флота като plugin. Кои са капаните?",
+  "expect": [
+    { "any": ["exit 2", "изход 2", "код 2"], "label": "знае: твърд блок = exit 2 (1 е не-блокиращо)" },
+    { "any": ["stop_hook_active", "anti-loop", "щит срещу цикъл", "fail-open"], "label": "anti-loop/fail-open дисциплина" },
+    { "any": ["не носят hooks", "hooks не се поддържат", "паметта остава проектна", "plugin.json"], "label": "знае plugin ограничението (без hooks в plugin-агенти)" },
+    { "none": ["exit 1 блокира", "код 1 блокира"], "label": "капан: бърка exit 1 с блокиращ" }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "traj-prod-release",
+  "agent": "vps-adjiyata",
+  "task": "Води пускането на zabobovdol в продукция по каноничния поток (_orchestration.md „Пускане в продукция\"). Отчети веригата и крайното състояние.",
+  "expect": [
+    {
+      "any": [
+        "blue/green",
+        "blue-green",
+        "health",
+        "здрав"
+      ],
+      "label": "деплой с health-check, не сляпо"
+    },
+    {
+      "any": [
+        "rollback",
+        "връщане",
+        "откат"
+      ],
+      "label": "план за откат"
+    },
+    {
+      "any": [
+        "ПРЕДАВАНЕ",
+        "Към:"
+      ],
+      "label": "типизиран HANDOFF блок"
+    },
+    {
+      "none": [
+        "деплойнах директно в main без гейт",
+        "пропуснах правния преглед"
+      ],
+      "label": "капан: прескочен гейт"
+    }
+  ],
+  "trajectory": {
+    "flow": "Пускане в продукция (zabobovdol)",
+    "path": [
+      "pravniyat-razbirach",
+      "kodadjiyata",
+      "seo",
+      "skorostnika",
+      "izpitatelya",
+      "vps-adjiyata",
+      "nabludatelya"
+    ],
+    "mustVisit": [
+      "pravniyat-razbirach",
+      "izpitatelya"
+    ],
+    "maxSteps": 9
+  }
+}
