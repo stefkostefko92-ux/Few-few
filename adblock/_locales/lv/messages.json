@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Bloķē reklāmas visur: YouTube video reklāmas, banerus, uznirstošos logus, izsekotājus un anti-adblock sienas. Bezmaksas."
+  },
+  "byCarbon": {
+    "message": "no Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Ieslēgt/izslēgt aizsardzību"
+  },
+  "protected": {
+    "message": "Aizsargāts"
+  },
+  "paused": {
+    "message": "Apturēts"
+  },
+  "blockingHere": {
+    "message": "Bloķē reklāmas šajā lapā"
+  },
+  "protectionOff": {
+    "message": "Aizsardzība ir izslēgta"
+  },
+  "pause30": {
+    "message": "Apturēt uz 30 minūtēm"
+  },
+  "pausedResume": {
+    "message": "Apturēts, atsākt tagad (atlikušas $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Bloķēts"
+  },
+  "dataSaved": {
+    "message": "Ietaupīti dati"
+  },
+  "timeSaved": {
+    "message": "Ietaupīts laiks"
+  },
+  "thisSite": {
+    "message": "šī vietne"
+  },
+  "thisPage": {
+    "message": "šī lapa"
+  },
+  "blockOnSite": {
+    "message": "Bloķēt reklāmas šajā vietnē"
+  },
+  "blocking": {
+    "message": "Bloķē"
+  },
+  "allowed": {
+    "message": "Atļauts"
+  },
+  "cosmetics": {
+    "message": "Paslēpt reklāmas šeit"
+  },
+  "cosmeticsTitle": {
+    "message": "Paslēpt reklāmas šajā vietnē (izslēdziet, ja lapas izkārtojums sabojājas)"
+  },
+  "on": {
+    "message": "Iesl."
+  },
+  "off": {
+    "message": "Izsl."
+  },
+  "blockedHere": {
+    "message": "Bloķēts šajā lapā"
+  },
+  "logEmpty": {
+    "message": "Šeit vēl nekas nav bloķēts."
+  },
+  "logUnavailable": {
+    "message": "Žurnāls pašlaik nav pieejams (pārlūka kvota) — mēģiniet vēlreiz pēc minūtes."
+  },
+  "logCore": {
+    "message": "Pamatnoteikumi"
+  },
+  "logYouTube": {
+    "message": "YouTube reklāmas"
+  },
+  "logParams": {
+    "message": "Izsekošanas parametri"
+  },
+  "logMalware": {
+    "message": "Ļaunprātīgi domēni"
+  },
+  "logSurrogates": {
+    "message": "Neitralizēti reklāmu skripti"
+  },
+  "logPrivacy": {
+    "message": "Privātuma aizsardzība"
+  },
+  "logUser": {
+    "message": "Mani filtri"
+  },
+  "logLive": {
+    "message": "Tiešie atjauninājumi"
+  },
+  "hideElement": {
+    "message": "Paslēpt elementu"
+  },
+  "settings": {
+    "message": "Iestatījumi"
+  },
+  "promoSub": {
+    "message": "Aprīkojums un rīki, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklāma"
+  },
+  "support": {
+    "message": "Atbalstīt"
+  },
+  "filtersCount": {
+    "message": "$1+ filtri",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Izskats"
+  },
+  "opt_extra_protection": {
+    "message": "Papildu aizsardzība"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection žurnāls"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Atļautās vietnes"
+  },
+  "opt_my_filters": {
+    "message": "Mani filtri"
+  },
+  "opt_hidden_elements": {
+    "message": "Paslēptie elementi"
+  },
+  "opt_filter_updates": {
+    "message": "Filtru atjauninājumi"
+  },
+  "opt_engine_health": {
+    "message": "Dzinēja stāvoklis"
+  },
+  "opt_backup": {
+    "message": "Dublējums"
+  },
+  "opt_support_development": {
+    "message": "Atbalstīt izstrādi"
+  },
+  "opt_theme": {
+    "message": "Motīvs"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinhronizācija starp ierīcēm"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube reklāmu bloķēšana"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Sīkdatņu / piekrišanas paziņojumi"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock sienu apiešana"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta sponsorētās ziņas"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Izsekošanas parametru noņemšana"
+  },
+  "opt_malware_protection": {
+    "message": "Aizsardzība pret ļaunprogrammatūru"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Bloķēt pārlūka API reklāmu mērķēšanai"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Bloķēt izsekošanas signālus un kriptovalūtu ieguvējus"
+  },
+  "opt_auto_update_filters": {
+    "message": "Automātiski atjaunināt filtrus"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tumšs) vai gaišs"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Uztur iestatījumus, atļauto sarakstu un filtrus sinhronizētus katrā Chrome, kurā esat pierakstījies"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Noņem video reklāmas pakalpojumā YouTube. Izslēdziet, ja video netiek atskaņoti."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Automātiski aizver uzvednes „Pieņemt sīkdatnes“"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Paslēpj sienas „atspējojiet reklāmu bloķētāju“ un atjauno lapu"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Paslēpj ziņas „Sponsorēts“ Facebook un Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Noņem utm_*, fbclid, gclid un citus klikšķu identifikatorus no saitēm, kuras atverat"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Bloķē zināmus ļaunprātīgus domēnus (abuse.ch URLhaus saraksts)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Atspējo Google Topics, FLoC un Protected Audience reklāmu API katrā vietnē"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Aptur trešo pušu hipersaišu audita / signālu (beacon) pingus, noņem izsekošanas sīkdatnes no zināmām reklāmas tehnoloģiju atbildēm un bloķē kriptovalūtu ieguves skriptus pārlūkā. Izslēdziet, ja kāda vietnes funkcija, kas atkarīga no analītikas, darbojas nepareizi."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Apmēram divreiz dienā ielādē jaunus bloķēšanas noteikumus un YouTube labojumus no adblock.carbonstealth.eu. Tikai dati, bez koda; pieprasījumā nav identifikatoru vai pārlūkošanas datu."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Heiristiski notverto reklāmu tiešais žurnāls (bez filtru saraksta), jaunākās vispirms."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Abonētie saraksti tiek ielādēti kā teksts (nekad kā kods), katru dienu atjaunināti un atrodas iepriekš redzamajos pārvaldītajos blokos. Noņemiet sarakstu, lai atmestu tā noteikumus."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementi, kurus paslēpāt manuāli ar atlasītāju, grupēti pēc vietnes."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Tiešā diagnostika — viss tiek aprēķināts lokāli. Ja kaut kas ir sarkans, parasti palīdz „Atjaunināt tūlīt“ vai paplašinājuma atkārtota ielāde."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock ir bezmaksas visiem. Ja vēlaties palīdzēt to uzturēt, ziedojumi ir laipni gaidīti, bet nekad nav obligāti."
+  },
+  "opt_reset_statistics": {
+    "message": "Atiestatīt statistiku"
+  },
+  "opt_add": {
+    "message": "Pievienot"
+  },
+  "opt_save_filters": {
+    "message": "Saglabāt filtrus"
+  },
+  "opt_subscribe": {
+    "message": "Abonēt"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Atsvaidzināt abonementus tūlīt"
+  },
+  "opt_update_now": {
+    "message": "Atjaunināt tūlīt"
+  },
+  "opt_refresh": {
+    "message": "Atsvaidzināt"
+  },
+  "opt_export_settings": {
+    "message": "Eksportēt iestatījumus"
+  },
+  "opt_import_settings": {
+    "message": "Importēt iestatījumus"
+  },
+  "opt_e_g_example_com": {
+    "message": "piem., example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! piemērs\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Abonēt filtru saraksta URL (piem., https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock iestatījumi"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Iestatījumi"
+  },
+  "opt_theme_light": {
+    "message": "Gaišs"
+  },
+  "opt_badge_unique": {
+    "message": "unikāls"
+  },
+  "opt_smart_desc": {
+    "message": "Notver reklāmas, kuras vēl nezina neviens filtru saraksts: citu domēnu rāmji standarta reklāmas laukumu izmērā tiek uzreiz paslēpti, bez noteikumiem."
+  },
+  "opt_caught_so_far": {
+    "message": "notverts līdz šim."
+  },
+  "opt_allow_desc": {
+    "message": "Šajos domēnos reklāmas netiek bloķētas."
+  },
+  "opt_fh_one": {
+    "message": "Viens noteikums katrā rindā."
+  },
+  "opt_fh_blocks": {
+    "message": "bloķē domēnu;"
+  },
+  "opt_fh_everywhere": {
+    "message": "paslēpj elementu visur;"
+  },
+  "opt_fh_site": {
+    "message": "paslēpj to tikai šajā vietnē."
+  },
+  "opt_fh_comments": {
+    "message": "Rindas, kas sākas ar"
+  },
+  "opt_fh_comments2": {
+    "message": "ir komentāri."
+  },
+  "opt_donate": {
+    "message": "Ziedot, izmantojot Revolut"
+  },
+  "opt_made_by": {
+    "message": "izstrādājis Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Heiristiski vēl nekas nav notverts."
+  },
+  "opt_empty_allow": {
+    "message": "Atļauto vietņu vēl nav."
+  },
+  "opt_empty_hidden": {
+    "message": "Manuāli vēl nekas nav paslēpts."
+  },
+  "opt_empty_subs": {
+    "message": "Abonētu sarakstu vēl nav."
+  },
+  "opt_no_sw": {
+    "message": "Nav atbildes no service worker."
+  },
+  "opt_remove": {
+    "message": "Noņemt"
+  },
+  "opt_filter_status": {
+    "message": "Filtru kopa v$1, atjaunināta $2. Tikai dati, nekas par jums netiek sūtīts."
+  },
+  "opt_updating": {
+    "message": "Atjaunina…"
+  },
+  "opt_updated": {
+    "message": "Atjaunināts (v$1, papildu noteikumi: $2)"
+  },
+  "opt_update_failed": {
+    "message": "Atjaunināšana neizdevās ($1)"
+  },
+  "opt_saved": {
+    "message": "Saglabāts ✓"
+  },
+  "opt_rules_count": {
+    "message": "noteikumi: $1"
+  },
+  "opt_updated_ago": {
+    "message": "atjaunināts $1"
+  },
+  "opt_not_fetched": {
+    "message": "vēl nav ielādēts"
+  },
+  "opt_failed_colon": {
+    "message": "kļūda: $1"
+  },
+  "opt_enter_https": {
+    "message": "Ievadiet derīgu https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Ielādē…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Abonēts, noteikumi: $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Neizdevās ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Atsvaidzina…"
+  },
+  "opt_refreshed": {
+    "message": "Atsvaidzināts ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Nederīgs iestatījumu fails."
+  },
+  "opt_no_response": {
+    "message": "nav atbildes"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock dzinējs"
+  },
+  "opt_h_rulesets": {
+    "message": "Ieslēgtās statiskās noteikumu kopas"
+  },
+  "opt_h_live": {
+    "message": "Tiešo filtru domēni"
+  },
+  "opt_h_last": {
+    "message": "Pēdējais atjauninājums"
+  },
+  "opt_h_sig": {
+    "message": "Atjauninājumu paraksti"
+  },
+  "opt_h_user": {
+    "message": "Mani filtri / atļaušanas noteikumi"
+  },
+  "opt_h_popup": {
+    "message": "Iebūvētie uznirstošo reklāmu resursdatori"
+  },
+  "opt_h_yt": {
+    "message": "YouTube apiešana"
+  },
+  "opt_reason_frame": {
+    "message": "Cita domēna rāmis reklāmas izmērā"
+  },
+  "opt_reason_sticky": {
+    "message": "Piestiprināts reklāmas baneris"
+  },
+  "logRegional": {
+    "message": "Reģionālie saraksti"
+  },
+  "logFocus": {
+    "message": "Fokusa režīms"
+  },
+  "opt_filter_lists": {
+    "message": "Filtru saraksti"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList un EasyPrivacy vienmēr ir ieslēgti. Tālāk esošie saraksti ir ar atvērtu licenci un iebūvēti paplašinājumā, tāpēc to ieslēgšana neko nelejupielādē, izņemot sarakstu, kas atzīmēts kā iegūts no tā autora."
+  },
+  "opt_lists_core": {
+    "message": "Pamata"
+  },
+  "opt_lists_regional": {
+    "message": "Reģionālie"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Jūsu pārlūka valodas saraksts ieslēdzas pats. Pievienojiet citus, ja bieži lasāt vietnes citās valodās."
+  },
+  "opt_focus_mode": {
+    "message": "Fokusa režīms"
+  },
+  "opt_focus_desc": {
+    "message": "Paslēpj to, kas nav reklāma, bet tomēr traucē. Viss šeit ir izslēgts, līdz jūs to ieslēdzat."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin filtri"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Reklāmas, izsekotāji, anti-adblock labojumi un vietņu labojumi no uBlock Origin komandas."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe saraksts"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Ilggadējs reklāmu un izsekošanas serveru saraksts."
+  },
+  "opt_focus_social": {
+    "message": "Sociālo tīklu pogas un logrīki"
+  },
+  "opt_focus_social_desc": {
+    "message": "Kopīgošanas pogas, „Patīk“ lodziņi un iegultas plūsmas."
+  },
+  "opt_focus_chat": {
+    "message": "Tērzēšanas un atbalsta logrīki"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Peldošie tērzēšanas burbuļi lapas stūrī."
+  },
+  "opt_focus_newsletters": {
+    "message": "Jaunumu vēstuļu un reģistrācijas uznirstošie logi"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Lodziņi un pārklājumi „Abonējiet mūsu jaunumu vēstuli“."
+  },
+  "opt_focus_notifications": {
+    "message": "Paziņojumu pieprasījumi"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Lodziņi „Atļaut paziņojumus?“, ko vietnes rāda, pirms pārlūks jautā."
+  },
+  "opt_focus_ai": {
+    "message": "Uznirstošie AI asistenti"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Tērzēšanas robotu burbuļi un AI ieteikumu paneļi, kas pievienoti lapām."
+  },
+  "opt_focus_other": {
+    "message": "Citi traucēkļi"
+  },
+  "opt_focus_other_desc": {
+    "message": "Piestiprinātas joslas, „Atvērt lietotnē“ baneri un līdzīgs juceklis."
+  },
+  "opt_badge_lang": {
+    "message": "jūsu valoda"
+  },
+  "opt_badge_remote": {
+    "message": "no autora"
+  },
+  "opt_remote_hint": {
+    "message": "Nav iebūvēts (nav licences to izplatīt): pārlūks to lejupielādē no $1, kad to ieslēdzat."
+  },
+  "opt_downloaded_from": {
+    "message": "Tiek lejupielādēts no $1, kad to ieslēdzat"
+  },
+  "opt_lists_error": {
+    "message": "Chrome noraidīja šo sarakstu kombināciju ($1). Izslēdziet dažus."
+  },
+  "opt_badge_recommended": {
+    "message": "ieteicams jūsu valodai"
+  },
+  "reportBroken": {
+    "message": "Vietne nedarbojas? Salabojiet vai pastāstiet mums"
+  },
+  "rep_title": {
+    "message": "Kaut kas nedarbojas šajā vietnē?"
+  },
+  "rep_fix_first": {
+    "message": "Salabojiet tūlīt"
+  },
+  "rep_site": {
+    "message": "Vietne:"
+  },
+  "rep_fix_desc": {
+    "message": "Lielākā daļa problēmu pazūd ar kādu no šiem. Katrs attiecas tikai uz šo vietni; cilne tiek pārlādēta."
+  },
+  "rep_fix_cosm": {
+    "message": "Izslēgt elementu slēpšanu šeit"
+  },
+  "rep_fix_allow": {
+    "message": "Atļaut reklāmas šajā vietnē"
+  },
+  "rep_fix_pause": {
+    "message": "Apturēt visur uz 30 minūtēm"
+  },
+  "rep_tell_us": {
+    "message": "Pastāstiet mums"
+  },
+  "rep_tell_desc": {
+    "message": "Nestrādājošas vietnes mēs salabojam visiem ar parakstītu filtru atjauninājumu, parasti vienas dienas laikā. Paplašinājums neko nesūta: ziņojums atveras jūsu e-pasta lietotnē, un jūs vispirms redzat katru tā vārdu."
+  },
+  "rep_what": {
+    "message": "Kas nav kārtībā? (neobligāti)"
+  },
+  "rep_what_ph": {
+    "message": "piem., video nesākas, balts lodziņš aizsedz rakstu…"
+  },
+  "rep_full_url": {
+    "message": "Iekļaut pilnu lapas adresi (citādi tikai vietnes nosaukumu)"
+  },
+  "rep_preview": {
+    "message": "Kas tiks nosūtīts"
+  },
+  "rep_send_mail": {
+    "message": "Sūtīt pa e-pastu"
+  },
+  "rep_copy": {
+    "message": "Kopēt ziņojumu"
+  },
+  "rep_privacy": {
+    "message": "Kā tiek apstrādāts šis ziņojums: privātuma politika"
+  },
+  "rep_copied": {
+    "message": "Nokopēts."
+  },
+  "rep_done_cosm": {
+    "message": "Elementu slēpšana šajā vietnē ir izslēgta. Pārlādēts — vai salabots?"
+  },
+  "rep_done_allow": {
+    "message": "Reklāmas šajā vietnē ir atļautas. Pārlādēts — vai salabots?"
+  },
+  "rep_done_pause": {
+    "message": "Apturēts uz 30 minūtēm. Ja vietne tagad darbojas, lūdzu, pastāstiet mums zemāk."
+  },
+  "cookieRejections": {
+    "message": "Jūsu vietā noraidīti sīkdatņu paziņojumi: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts plaukti, cilne un ieteikumi pakalpojumā YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Uznirstošie logi „Pierakstīties ar Google“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Konta atlasītājs, kas parādās daudzu vietņu stūrī. Pierakstīšanās pogas turpina darboties."
+  },
+  "pickTip": {
+    "message": "Noklikšķiniet uz elementa, lai to paslēptu"
+  },
+  "pickZapTip": {
+    "message": "Noklikšķiniet, lai noņemtu šo elementu (vienreiz)"
+  },
+  "pickEscCancel": {
+    "message": "— atcelt"
+  },
+  "opt_notices": {
+    "message": "Filtru sarakstu licences"
+  }
+}

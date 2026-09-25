@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "5.0.6",
+  "version": "5.1.1",
   "description": "__MSG_extDescription__",
   "author": "Carbon Stealth",
   "homepage_url": "https://carbonstealth.eu",
@@ -212,6 +212,201 @@
         "id": "privacy",
         "enabled": true,
         "path": "rules/privacy.json"
+      },
+      {
+        "id": "list_ubo",
+        "enabled": false,
+        "path": "rules/list_ubo.json"
+      },
+      {
+        "id": "list_plowe",
+        "enabled": false,
+        "path": "rules/list_plowe.json"
+      },
+      {
+        "id": "list_focus-social",
+        "enabled": false,
+        "path": "rules/list_focus-social.json"
+      },
+      {
+        "id": "list_focus-chat",
+        "enabled": false,
+        "path": "rules/list_focus-chat.json"
+      },
+      {
+        "id": "list_focus-newsletters",
+        "enabled": false,
+        "path": "rules/list_focus-newsletters.json"
+      },
+      {
+        "id": "list_focus-notifications",
+        "enabled": false,
+        "path": "rules/list_focus-notifications.json"
+      },
+      {
+        "id": "list_focus-ai",
+        "enabled": false,
+        "path": "rules/list_focus-ai.json"
+      },
+      {
+        "id": "list_focus-other",
+        "enabled": false,
+        "path": "rules/list_focus-other.json"
+      },
+      {
+        "id": "list_reg-sq",
+        "enabled": false,
+        "path": "rules/list_reg-sq.json"
+      },
+      {
+        "id": "list_reg-ar",
+        "enabled": false,
+        "path": "rules/list_reg-ar.json"
+      },
+      {
+        "id": "list_reg-zh",
+        "enabled": false,
+        "path": "rules/list_reg-zh.json"
+      },
+      {
+        "id": "list_reg-cs",
+        "enabled": false,
+        "path": "rules/list_reg-cs.json"
+      },
+      {
+        "id": "list_reg-de",
+        "enabled": false,
+        "path": "rules/list_reg-de.json"
+      },
+      {
+        "id": "list_reg-et",
+        "enabled": false,
+        "path": "rules/list_reg-et.json"
+      },
+      {
+        "id": "list_reg-fi",
+        "enabled": false,
+        "path": "rules/list_reg-fi.json"
+      },
+      {
+        "id": "list_reg-fr",
+        "enabled": false,
+        "path": "rules/list_reg-fr.json"
+      },
+      {
+        "id": "list_reg-el",
+        "enabled": false,
+        "path": "rules/list_reg-el.json"
+      },
+      {
+        "id": "list_reg-hu",
+        "enabled": false,
+        "path": "rules/list_reg-hu.json"
+      },
+      {
+        "id": "list_reg-id",
+        "enabled": false,
+        "path": "rules/list_reg-id.json"
+      },
+      {
+        "id": "list_reg-in",
+        "enabled": false,
+        "path": "rules/list_reg-in.json"
+      },
+      {
+        "id": "list_reg-fa",
+        "enabled": false,
+        "path": "rules/list_reg-fa.json"
+      },
+      {
+        "id": "list_reg-is",
+        "enabled": false,
+        "path": "rules/list_reg-is.json"
+      },
+      {
+        "id": "list_reg-he",
+        "enabled": false,
+        "path": "rules/list_reg-he.json"
+      },
+      {
+        "id": "list_reg-it",
+        "enabled": false,
+        "path": "rules/list_reg-it.json"
+      },
+      {
+        "id": "list_reg-ja",
+        "enabled": false,
+        "path": "rules/list_reg-ja.json"
+      },
+      {
+        "id": "list_reg-ko",
+        "enabled": false,
+        "path": "rules/list_reg-ko.json"
+      },
+      {
+        "id": "list_reg-lt",
+        "enabled": false,
+        "path": "rules/list_reg-lt.json"
+      },
+      {
+        "id": "list_reg-lv",
+        "enabled": false,
+        "path": "rules/list_reg-lv.json"
+      },
+      {
+        "id": "list_reg-mk",
+        "enabled": false,
+        "path": "rules/list_reg-mk.json"
+      },
+      {
+        "id": "list_reg-nl",
+        "enabled": false,
+        "path": "rules/list_reg-nl.json"
+      },
+      {
+        "id": "list_reg-ro",
+        "enabled": false,
+        "path": "rules/list_reg-ro.json"
+      },
+      {
+        "id": "list_reg-ru",
+        "enabled": false,
+        "path": "rules/list_reg-ru.json"
+      },
+      {
+        "id": "list_reg-es",
+        "enabled": false,
+        "path": "rules/list_reg-es.json"
+      },
+      {
+        "id": "list_reg-sl",
+        "enabled": false,
+        "path": "rules/list_reg-sl.json"
+      },
+      {
+        "id": "list_reg-sv",
+        "enabled": false,
+        "path": "rules/list_reg-sv.json"
+      },
+      {
+        "id": "list_reg-th",
+        "enabled": false,
+        "path": "rules/list_reg-th.json"
+      },
+      {
+        "id": "list_reg-tr",
+        "enabled": false,
+        "path": "rules/list_reg-tr.json"
+      },
+      {
+        "id": "list_reg-uk",
+        "enabled": false,
+        "path": "rules/list_reg-uk.json"
+      },
+      {
+        "id": "list_reg-vi",
+        "enabled": false,
+        "path": "rules/list_reg-vi.json"
       }
     ]
   }

@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokuje reklamy všude: videoreklamy na YouTube, bannery, vyskakovací okna, trackery, cookie lišty a anti-adblock zdi. Zdarma."
+  },
+  "byCarbon": {
+    "message": "od Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Zapnout nebo vypnout ochranu"
+  },
+  "protected": {
+    "message": "Chráněno"
+  },
+  "paused": {
+    "message": "Pozastaveno"
+  },
+  "blockingHere": {
+    "message": "Blokuje reklamy na této stránce"
+  },
+  "protectionOff": {
+    "message": "Ochrana je vypnutá"
+  },
+  "pause30": {
+    "message": "Pozastavit na 30 minut"
+  },
+  "pausedResume": {
+    "message": "Pozastaveno, obnovit hned (zbývá $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blokováno"
+  },
+  "dataSaved": {
+    "message": "Ušetřená data"
+  },
+  "timeSaved": {
+    "message": "Ušetřený čas"
+  },
+  "thisSite": {
+    "message": "tento web"
+  },
+  "thisPage": {
+    "message": "tato stránka"
+  },
+  "blockOnSite": {
+    "message": "Blokovat reklamy na tomto webu"
+  },
+  "blocking": {
+    "message": "Blokování"
+  },
+  "allowed": {
+    "message": "Povoleno"
+  },
+  "cosmetics": {
+    "message": "Skrýt zde reklamní plochy"
+  },
+  "cosmeticsTitle": {
+    "message": "Skrýt reklamní plochy na tomto webu (vypněte, pokud se rozpadá rozvržení stránky)"
+  },
+  "on": {
+    "message": "Zap."
+  },
+  "off": {
+    "message": "Vyp."
+  },
+  "blockedHere": {
+    "message": "Blokováno na této stránce"
+  },
+  "logEmpty": {
+    "message": "Zatím tu nebylo nic zablokováno."
+  },
+  "logUnavailable": {
+    "message": "Záznam teď není k dispozici (kvóta prohlížeče) — zkuste to znovu za minutu."
+  },
+  "logCore": {
+    "message": "Základní pravidla"
+  },
+  "logYouTube": {
+    "message": "Reklamy na YouTube"
+  },
+  "logParams": {
+    "message": "Sledovací parametry"
+  },
+  "logMalware": {
+    "message": "Škodlivé domény"
+  },
+  "logSurrogates": {
+    "message": "Zneškodněné reklamní skripty"
+  },
+  "logPrivacy": {
+    "message": "Ochrana soukromí"
+  },
+  "logUser": {
+    "message": "Moje filtry"
+  },
+  "logLive": {
+    "message": "Živé aktualizace"
+  },
+  "hideElement": {
+    "message": "Skrýt prvek"
+  },
+  "settings": {
+    "message": "Nastavení"
+  },
+  "promoSub": {
+    "message": "Vybavení a nástroje, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklama"
+  },
+  "support": {
+    "message": "Podpořit"
+  },
+  "filtersCount": {
+    "message": "$1+ filtrů",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Vzhled"
+  },
+  "opt_extra_protection": {
+    "message": "Rozšířená ochrana"
+  },
+  "opt_smart_detection_log": {
+    "message": "Záznam Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Weby na seznamu povolených"
+  },
+  "opt_my_filters": {
+    "message": "Moje filtry"
+  },
+  "opt_hidden_elements": {
+    "message": "Skryté prvky"
+  },
+  "opt_filter_updates": {
+    "message": "Aktualizace filtrů"
+  },
+  "opt_engine_health": {
+    "message": "Stav jádra"
+  },
+  "opt_backup": {
+    "message": "Záloha"
+  },
+  "opt_support_development": {
+    "message": "Podpořit vývoj"
+  },
+  "opt_theme": {
+    "message": "Motiv"
+  },
+  "opt_sync_across_devices": {
+    "message": "Synchronizace mezi zařízeními"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Blokování reklam na YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie lišty a žádosti o souhlas"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Obcházení anti-adblocku"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Sponzorované příspěvky v sítích Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Odstraňovat sledovací parametry"
+  },
+  "opt_malware_protection": {
+    "message": "Ochrana před malwarem"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokovat API prohlížeče pro cílení reklam"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokovat sledovací beacony a těžbu kryptoměn"
+  },
+  "opt_auto_update_filters": {
+    "message": "Automaticky aktualizovat filtry"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tmavý) nebo světlý"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Synchronizovat nastavení, seznam povolených a filtry ve všech prohlížečích Chrome, ve kterých jste přihlášeni"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Odstraňuje videoreklamy na YouTube. Pokud se videa nepřehrávají, vypněte to."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Automaticky zavírá výzvy „Přijmout cookies“"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Skrývá zdi „Vypněte blokování reklam“ a obnovuje stránku"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Skrývá příspěvky „Sponzorováno“ na Facebooku a Instagramu"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Odstraňuje utm_*, fbclid, gclid a další identifikátory kliknutí z odkazů, které otevíráte"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokuje známé škodlivé domény (seznam URLhaus od abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Vypíná reklamní API Google Topics, FLoC a Protected Audience na všech webech"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Zastavuje pingy auditu hypertextových odkazů a beacony třetích stran, odstraňuje sledovací cookies z odpovědí známých reklamních služeb a blokuje skripty pro těžbu kryptoměn v prohlížeči. Vypněte, pokud se funkce webu závislá na analytice chová nesprávně."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Stahuje nová pravidla blokování a opravy pro YouTube z adblock.carbonstealth.eu zhruba dvakrát denně. Pouze data, žádný kód; požadavek neobsahuje žádné identifikátory ani údaje o prohlížení."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Živý záznam reklam zachycených heuristicky (bez seznamu filtrů), nejnovější nahoře."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Odebírané seznamy se stahují jako text (nikdy jako kód), denně se aktualizují a nacházejí se ve spravovaných blocích výše. Odebráním seznamu odstraníte jeho pravidla."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Prvky, které jste ručně skryli pomocí výběru prvků, seskupené podle webu."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Živá diagnostika — vše se počítá lokálně. Pokud něco svítí červeně, obvykle pomůže „Aktualizovat nyní“ nebo opětovné načtení rozšíření."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock je zdarma pro všechny. Pokud chcete pomoci s jeho údržbou, dary jsou vítány, nikdy však nejsou povinné."
+  },
+  "opt_reset_statistics": {
+    "message": "Vynulovat statistiky"
+  },
+  "opt_add": {
+    "message": "Přidat"
+  },
+  "opt_save_filters": {
+    "message": "Uložit filtry"
+  },
+  "opt_subscribe": {
+    "message": "Odebírat"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Obnovit odběry nyní"
+  },
+  "opt_update_now": {
+    "message": "Aktualizovat nyní"
+  },
+  "opt_refresh": {
+    "message": "Obnovit"
+  },
+  "opt_export_settings": {
+    "message": "Exportovat nastavení"
+  },
+  "opt_import_settings": {
+    "message": "Importovat nastavení"
+  },
+  "opt_e_g_example_com": {
+    "message": "např. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! příklad\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Odebírat seznam filtrů z URL (např. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Nastavení Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Nastavení"
+  },
+  "opt_theme_light": {
+    "message": "Světlý"
+  },
+  "opt_badge_unique": {
+    "message": "unikátní"
+  },
+  "opt_smart_desc": {
+    "message": "Zachytí reklamy, které zatím nezná žádný seznam filtrů: rámce z cizích domén o velikosti standardních reklamních ploch se skryjí okamžitě, bez jakýchkoli pravidel."
+  },
+  "opt_caught_so_far": {
+    "message": "dosud zachyceno."
+  },
+  "opt_allow_desc": {
+    "message": "Na těchto doménách se reklamy neblokují."
+  },
+  "opt_fh_one": {
+    "message": "Jedno pravidlo na řádek."
+  },
+  "opt_fh_blocks": {
+    "message": "blokuje doménu;"
+  },
+  "opt_fh_everywhere": {
+    "message": "skryje prvek všude;"
+  },
+  "opt_fh_site": {
+    "message": "ho skryje jen na daném webu."
+  },
+  "opt_fh_comments": {
+    "message": "Řádky začínající znakem"
+  },
+  "opt_fh_comments2": {
+    "message": "jsou komentáře."
+  },
+  "opt_donate": {
+    "message": "Přispět přes Revolut"
+  },
+  "opt_made_by": {
+    "message": "vytvořila společnost Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Heuristicky zatím nebylo nic zachyceno."
+  },
+  "opt_empty_allow": {
+    "message": "Na seznamu povolených zatím nejsou žádné weby."
+  },
+  "opt_empty_hidden": {
+    "message": "Ručně zatím nebylo nic skryto."
+  },
+  "opt_empty_subs": {
+    "message": "Zatím neodebíráte žádné seznamy."
+  },
+  "opt_no_sw": {
+    "message": "Service worker neodpovídá."
+  },
+  "opt_remove": {
+    "message": "Odebrat"
+  },
+  "opt_filter_status": {
+    "message": "Sada filtrů v$1, aktualizováno $2. Pouze data, nic o vás se neodesílá."
+  },
+  "opt_updating": {
+    "message": "Aktualizace…"
+  },
+  "opt_updated": {
+    "message": "Aktualizováno (v$1, další pravidla: $2)"
+  },
+  "opt_update_failed": {
+    "message": "Aktualizace selhala ($1)"
+  },
+  "opt_saved": {
+    "message": "Uloženo ✓"
+  },
+  "opt_rules_count": {
+    "message": "pravidla: $1"
+  },
+  "opt_updated_ago": {
+    "message": "aktualizováno $1"
+  },
+  "opt_not_fetched": {
+    "message": "zatím nestaženo"
+  },
+  "opt_failed_colon": {
+    "message": "chyba: $1"
+  },
+  "opt_enter_https": {
+    "message": "Zadejte platnou adresu https://"
+  },
+  "opt_fetching": {
+    "message": "Stahování…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Odběr přidán, pravidla: $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Chyba ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Obnovování…"
+  },
+  "opt_refreshed": {
+    "message": "Obnoveno ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Neplatný soubor s nastavením."
+  },
+  "opt_no_response": {
+    "message": "bez odpovědi"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock jádro"
+  },
+  "opt_h_rulesets": {
+    "message": "Zapnuté statické sady pravidel"
+  },
+  "opt_h_live": {
+    "message": "Domény z živých filtrů"
+  },
+  "opt_h_last": {
+    "message": "Poslední aktualizace"
+  },
+  "opt_h_sig": {
+    "message": "Podpisy aktualizací"
+  },
+  "opt_h_user": {
+    "message": "Moje filtry / pravidla povolení"
+  },
+  "opt_h_popup": {
+    "message": "Vestavěné domény vyskakovacích reklam"
+  },
+  "opt_h_yt": {
+    "message": "Obcházení na YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Rámec z cizí domény o velikosti reklamy"
+  },
+  "opt_reason_sticky": {
+    "message": "Přilepený reklamní banner"
+  },
+  "logRegional": {
+    "message": "Regionální seznamy"
+  },
+  "logFocus": {
+    "message": "Režim soustředění"
+  },
+  "opt_filter_lists": {
+    "message": "Seznamy filtrů"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList a EasyPrivacy jsou vždy zapnuté. Seznamy níže mají otevřenou licenci a jsou zabudované v rozšíření, takže jejich zapnutí nic nestahuje, kromě seznamu označeného jako stahovaný od autora."
+  },
+  "opt_lists_core": {
+    "message": "Základní"
+  },
+  "opt_lists_regional": {
+    "message": "Regionální"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Seznam pro jazyk vašeho prohlížeče se zapne sám. Přidejte další, pokud často čtete weby v jiných jazycích."
+  },
+  "opt_focus_mode": {
+    "message": "Režim soustředění"
+  },
+  "opt_focus_desc": {
+    "message": "Skryje to, co není reklama, ale stejně překáží. Vše zde je vypnuté, dokud to nezapnete."
+  },
+  "opt_list_ubo": {
+    "message": "Filtry uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Reklamy, trackery, obcházení anti-adblocku a opravy webů od týmu uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Seznam Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Dlouholetý seznam reklamních a sledovacích serverů."
+  },
+  "opt_focus_social": {
+    "message": "Tlačítka a widgety sociálních sítí"
+  },
+  "opt_focus_social_desc": {
+    "message": "Tlačítka pro sdílení, pole „To se mi líbí“ a vložené kanály."
+  },
+  "opt_focus_chat": {
+    "message": "Widgety chatu a podpory"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Plovoucí bubliny chatu v rohu stránky."
+  },
+  "opt_focus_newsletters": {
+    "message": "Vyskakovací okna newsletterů a registrací"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Pole a překryvy „Přihlaste se k odběru newsletteru“."
+  },
+  "opt_focus_notifications": {
+    "message": "Výzvy k oznámením"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Okna „Povolit oznámení?“, která weby zobrazují dřív, než se zeptá prohlížeč."
+  },
+  "opt_focus_ai": {
+    "message": "Vyskakovací AI asistenti"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bubliny chatbotů a panely s návrhy AI přidané na stránky."
+  },
+  "opt_focus_other": {
+    "message": "Další rušivé prvky"
+  },
+  "opt_focus_other_desc": {
+    "message": "Přilepené lišty, bannery „Otevřít v aplikaci“ a podobný nepořádek."
+  },
+  "opt_badge_lang": {
+    "message": "váš jazyk"
+  },
+  "opt_badge_remote": {
+    "message": "od autora"
+  },
+  "opt_remote_hint": {
+    "message": "Není součástí balíčku (chybí licence k šíření): prohlížeč ho stáhne z $1, když ho zapnete."
+  },
+  "opt_downloaded_from": {
+    "message": "Stáhne se z $1, když ho zapnete"
+  },
+  "opt_lists_error": {
+    "message": "Chrome tuto kombinaci seznamů odmítl ($1). Některé vypněte."
+  },
+  "opt_badge_recommended": {
+    "message": "doporučeno pro váš jazyk"
+  },
+  "reportBroken": {
+    "message": "Nefunguje web? Opravte to, nebo nám dejte vědět"
+  },
+  "rep_title": {
+    "message": "Něco na tomto webu nefunguje?"
+  },
+  "rep_fix_first": {
+    "message": "Opravit hned"
+  },
+  "rep_site": {
+    "message": "Web:"
+  },
+  "rep_fix_desc": {
+    "message": "Většina problémů zmizí po jedné z těchto možností. Každá platí jen pro tento web; karta se znovu načte."
+  },
+  "rep_fix_cosm": {
+    "message": "Vypnout zde skrývání prvků"
+  },
+  "rep_fix_allow": {
+    "message": "Povolit reklamy na tomto webu"
+  },
+  "rep_fix_pause": {
+    "message": "Pozastavit všude na 30 minut"
+  },
+  "rep_tell_us": {
+    "message": "Dejte nám vědět"
+  },
+  "rep_tell_desc": {
+    "message": "Nefunkční weby opravujeme pro všechny prostřednictvím podepsané aktualizace filtrů, obvykle do jednoho dne. Rozšíření nic neodesílá: hlášení se otevře ve vaší e-mailové aplikaci a každé jeho slovo nejdřív uvidíte."
+  },
+  "rep_what": {
+    "message": "Co je špatně? (nepovinné)"
+  },
+  "rep_what_ph": {
+    "message": "např. video se nespustí, bílý rámeček zakrývá článek…"
+  },
+  "rep_full_url": {
+    "message": "Připojit celou adresu stránky (jinak jen název webu)"
+  },
+  "rep_preview": {
+    "message": "Co bude odesláno"
+  },
+  "rep_send_mail": {
+    "message": "Odeslat e-mailem"
+  },
+  "rep_copy": {
+    "message": "Kopírovat hlášení"
+  },
+  "rep_privacy": {
+    "message": "Jak se s tímto hlášením zachází: zásady ochrany soukromí"
+  },
+  "rep_copied": {
+    "message": "Zkopírováno."
+  },
+  "rep_done_cosm": {
+    "message": "Skrývání prvků je na tomto webu vypnuto. Znovu načteno — je to opravené?"
+  },
+  "rep_done_allow": {
+    "message": "Reklamy jsou na tomto webu povoleny. Znovu načteno — je to opravené?"
+  },
+  "rep_done_pause": {
+    "message": "Pozastaveno na 30 minut. Pokud web nyní funguje, dejte nám prosím vědět níže."
+  },
+  "cookieRejections": {
+    "message": "Cookie lišty odmítnuté za vás: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Police, karta a návrhy Shorts na YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Okna „Přihlásit se přes Google“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Výběr účtu, který se objevuje v rohu mnoha webů. Tlačítka pro přihlášení fungují dál."
+  },
+  "pickTip": {
+    "message": "Kliknutím na prvek ho skryjete"
+  },
+  "pickZapTip": {
+    "message": "Kliknutím tento prvek odstraníte (jednorázově)"
+  },
+  "pickEscCancel": {
+    "message": "pro zrušení"
+  },
+  "opt_notices": {
+    "message": "Licence seznamů filtrů"
+  }
+}

@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Bllokon reklamat kudo: reklamat video në YouTube, banerat, dritaret kërcyese, gjurmuesit dhe muret anti-adblock. Falas."
+  },
+  "byCarbon": {
+    "message": "nga Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Aktivizo/çaktivizo mbrojtjen"
+  },
+  "protected": {
+    "message": "I mbrojtur"
+  },
+  "paused": {
+    "message": "Në pauzë"
+  },
+  "blockingHere": {
+    "message": "Bllokon reklamat në këtë faqe"
+  },
+  "protectionOff": {
+    "message": "Mbrojtja është joaktive"
+  },
+  "pause30": {
+    "message": "Pauzë për 30 minuta"
+  },
+  "pausedResume": {
+    "message": "Në pauzë, rifillo tani (edhe $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Bllokuar"
+  },
+  "dataSaved": {
+    "message": "Të dhëna të kursyera"
+  },
+  "timeSaved": {
+    "message": "Kohë e kursyer"
+  },
+  "thisSite": {
+    "message": "ky sajt"
+  },
+  "thisPage": {
+    "message": "kjo faqe"
+  },
+  "blockOnSite": {
+    "message": "Blloko reklamat në këtë sajt"
+  },
+  "blocking": {
+    "message": "Bllokon"
+  },
+  "allowed": {
+    "message": "Lejuar"
+  },
+  "cosmetics": {
+    "message": "Fshih reklamat këtu"
+  },
+  "cosmeticsTitle": {
+    "message": "Fshih reklamat në këtë sajt (çaktivizojeni nëse prishet struktura e faqes)"
+  },
+  "on": {
+    "message": "Aktiv"
+  },
+  "off": {
+    "message": "Joaktiv"
+  },
+  "blockedHere": {
+    "message": "Të bllokuara në këtë faqe"
+  },
+  "logEmpty": {
+    "message": "Ende nuk është bllokuar asgjë këtu."
+  },
+  "logUnavailable": {
+    "message": "Regjistri nuk është i disponueshëm tani (kuota e shfletuesit) — provoni përsëri pas një minute."
+  },
+  "logCore": {
+    "message": "Rregullat bazë"
+  },
+  "logYouTube": {
+    "message": "Reklamat në YouTube"
+  },
+  "logParams": {
+    "message": "Parametrat e gjurmimit"
+  },
+  "logMalware": {
+    "message": "Domene keqdashëse"
+  },
+  "logSurrogates": {
+    "message": "Skripte reklame të neutralizuara"
+  },
+  "logPrivacy": {
+    "message": "Mbrojtja e privatësisë"
+  },
+  "logUser": {
+    "message": "Filtrat e mi"
+  },
+  "logLive": {
+    "message": "Përditësime live"
+  },
+  "hideElement": {
+    "message": "Fshih elementin"
+  },
+  "settings": {
+    "message": "Cilësimet"
+  },
+  "promoSub": {
+    "message": "Pajisje dhe mjete, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklamë"
+  },
+  "support": {
+    "message": "Mbështetni"
+  },
+  "filtersCount": {
+    "message": "$1+ filtra",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Pamja"
+  },
+  "opt_extra_protection": {
+    "message": "Mbrojtje shtesë"
+  },
+  "opt_smart_detection_log": {
+    "message": "Regjistri i Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Sajtet në listën e lejimeve"
+  },
+  "opt_my_filters": {
+    "message": "Filtrat e mi"
+  },
+  "opt_hidden_elements": {
+    "message": "Elementet e fshehura"
+  },
+  "opt_filter_updates": {
+    "message": "Përditësimi i filtrave"
+  },
+  "opt_engine_health": {
+    "message": "Gjendja e motorit"
+  },
+  "opt_backup": {
+    "message": "Kopje rezervë"
+  },
+  "opt_support_development": {
+    "message": "Mbështetni zhvillimin"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinkronizimi mes pajisjeve"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Bllokimi i reklamave në YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Banerat e kukive / pëlqimit"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anashkalimi i mureve anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Postimet e sponsorizuara (Meta)"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Heqja e parametrave të gjurmimit"
+  },
+  "opt_malware_protection": {
+    "message": "Mbrojtja nga programet keqdashëse"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Bllokimi i API-ve të shfletuesit për synimin e reklamave"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Bllokimi i sinjaleve gjurmuese dhe kriptominerëve"
+  },
+  "opt_auto_update_filters": {
+    "message": "Përditësimi automatik i filtrave"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (e errët) ose e çelët"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Mban të sinkronizuara cilësimet, listën e lejimeve dhe filtrat në çdo Chrome ku jeni identifikuar"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Heq reklamat video në YouTube. Çaktivizojeni nëse videot nuk luhen."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Mbyll automatikisht kërkesat «Prano kukit»"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Fsheh muret «çaktivizoni bllokuesin e reklamave» dhe e rikthen faqen"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Fsheh postimet «E sponsorizuar» në Facebook dhe Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Heq utm_*, fbclid, gclid dhe identifikues të tjerë klikimesh nga lidhjet që hapni"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Bllokon domene të njohura keqdashëse (lista URLhaus nga abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Çaktivizon API-të e reklamave Google Topics, FLoC dhe Protected Audience në çdo sajt"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Ndalon ping-et e auditimit të hiperlidhjeve dhe sinjalet gjurmuese nga palët e treta, heq kukit gjurmuese nga përgjigjet e njohura ad-tech dhe bllokon skriptet e kriptominimit në shfletues. Çaktivizojeni nëse një funksion i sajtit që varet nga analitika nuk punon siç duhet."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Shkarkon rregulla të reja bllokimi dhe rregullime për YouTube nga adblock.carbonstealth.eu rreth dy herë në ditë. Vetëm të dhëna, pa kod; kërkesa nuk mbart identifikues apo të dhëna shfletimi."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Regjistër i drejtpërdrejtë i reklamave të kapura në mënyrë heuristike (pa listë filtrash), më të rejat në krye."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Listat e abonuara shkarkohen si tekst (asnjëherë si kod), përditësohen çdo ditë dhe ndodhen te blloqet e menaxhuara më sipër. Hiqni një listë për të hequr rregullat e saj."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementet që keni fshehur manualisht me zgjedhësin, të grupuara sipas sajtit."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnostikim i drejtpërdrejtë — gjithçka llogaritet lokalisht. Nëse diçka është e kuqe, «Përditëso tani» ose ringarkimi i shtesës zakonisht e rregullon."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock është falas për të gjithë. Nëse dëshironi të ndihmoni në mirëmbajtjen e tij, dhurimet janë të mirëpritura, por kurrë të detyrueshme."
+  },
+  "opt_reset_statistics": {
+    "message": "Rivendos statistikat"
+  },
+  "opt_add": {
+    "message": "Shto"
+  },
+  "opt_save_filters": {
+    "message": "Ruaj filtrat"
+  },
+  "opt_subscribe": {
+    "message": "Abonohu"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Rifresko abonimet tani"
+  },
+  "opt_update_now": {
+    "message": "Përditëso tani"
+  },
+  "opt_refresh": {
+    "message": "Rifresko"
+  },
+  "opt_export_settings": {
+    "message": "Eksporto cilësimet"
+  },
+  "opt_import_settings": {
+    "message": "Importo cilësimet"
+  },
+  "opt_e_g_example_com": {
+    "message": "p.sh. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! shembull\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Abonohuni në URL-në e një liste filtrash (p.sh. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Cilësimet e Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Cilësimet"
+  },
+  "opt_theme_light": {
+    "message": "E çelët"
+  },
+  "opt_badge_unique": {
+    "message": "unike"
+  },
+  "opt_smart_desc": {
+    "message": "Kap reklamat që asnjë listë filtrash nuk i njeh ende: kornizat nga domene të tjera me madhësi të hapësirave standarde reklamash fshihen menjëherë, pa rregulla."
+  },
+  "opt_caught_so_far": {
+    "message": "të kapura deri tani."
+  },
+  "opt_allow_desc": {
+    "message": "Në këto domene reklamat nuk bllokohen."
+  },
+  "opt_fh_one": {
+    "message": "Një rregull për rresht."
+  },
+  "opt_fh_blocks": {
+    "message": "bllokon një domen;"
+  },
+  "opt_fh_everywhere": {
+    "message": "fsheh një element kudo;"
+  },
+  "opt_fh_site": {
+    "message": "e fsheh vetëm në atë sajt."
+  },
+  "opt_fh_comments": {
+    "message": "Rreshtat që fillojnë me"
+  },
+  "opt_fh_comments2": {
+    "message": "janë komente."
+  },
+  "opt_donate": {
+    "message": "Dhuroni përmes Revolut"
+  },
+  "opt_made_by": {
+    "message": "krijuar nga Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Ende nuk është kapur asgjë në mënyrë heuristike."
+  },
+  "opt_empty_allow": {
+    "message": "Ende nuk ka sajte në listën e lejimeve."
+  },
+  "opt_empty_hidden": {
+    "message": "Ende nuk është fshehur asgjë manualisht."
+  },
+  "opt_empty_subs": {
+    "message": "Ende nuk ka lista të abonuara."
+  },
+  "opt_no_sw": {
+    "message": "Asnjë përgjigje nga service worker."
+  },
+  "opt_remove": {
+    "message": "Hiq"
+  },
+  "opt_filter_status": {
+    "message": "Grupi i filtrave v$1, përditësuar $2. Vetëm të dhëna, asgjë për ju nuk dërgohet."
+  },
+  "opt_updating": {
+    "message": "Po përditësohet…"
+  },
+  "opt_updated": {
+    "message": "U përditësua (v$1, $2 rregulla shtesë)"
+  },
+  "opt_update_failed": {
+    "message": "Përditësimi dështoi ($1)"
+  },
+  "opt_saved": {
+    "message": "U ruajt ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 rregulla"
+  },
+  "opt_updated_ago": {
+    "message": "përditësuar $1"
+  },
+  "opt_not_fetched": {
+    "message": "ende i pashkarkuar"
+  },
+  "opt_failed_colon": {
+    "message": "dështoi: $1"
+  },
+  "opt_enter_https": {
+    "message": "Vendosni një URL të vlefshme https://"
+  },
+  "opt_fetching": {
+    "message": "Po shkarkohet…"
+  },
+  "opt_subscribed_ok": {
+    "message": "U abonua: $1 rregulla ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Dështoi ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Po rifreskohet…"
+  },
+  "opt_refreshed": {
+    "message": "U rifreskua ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Skedar i pavlefshëm cilësimesh."
+  },
+  "opt_no_response": {
+    "message": "asnjë përgjigje"
+  },
+  "opt_h_engine": {
+    "message": "Motori anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Grupet statike të rregullave aktive"
+  },
+  "opt_h_live": {
+    "message": "Domene nga filtrat e drejtpërdrejtë"
+  },
+  "opt_h_last": {
+    "message": "Përditësimi i fundit"
+  },
+  "opt_h_sig": {
+    "message": "Nënshkrimet e përditësimeve"
+  },
+  "opt_h_user": {
+    "message": "Filtrat e mi / rregullat e lejimeve"
+  },
+  "opt_h_popup": {
+    "message": "Hostet e integruara të reklamave kërcyese"
+  },
+  "opt_h_yt": {
+    "message": "Anashkalimi në YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Kornizë nga domen tjetër me madhësi reklame"
+  },
+  "opt_reason_sticky": {
+    "message": "Baner reklame ngjitës"
+  },
+  "logRegional": {
+    "message": "Listat rajonale"
+  },
+  "logFocus": {
+    "message": "Modaliteti Fokus"
+  },
+  "opt_filter_lists": {
+    "message": "Listat e filtrave"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList dhe EasyPrivacy janë gjithmonë aktive. Listat më poshtë kanë licencë të hapur dhe janë të integruara në shtesë, ndaj aktivizimi i tyre nuk shkarkon asgjë, përveç një liste të shënuar si e ardhur nga autori i saj."
+  },
+  "opt_lists_core": {
+    "message": "Bazë"
+  },
+  "opt_lists_regional": {
+    "message": "Rajonale"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Lista për gjuhën e shfletuesit tuaj aktivizohet vetë. Shtoni të tjera nëse lexoni shpesh sajte në gjuhë të tjera."
+  },
+  "opt_focus_mode": {
+    "message": "Modaliteti Fokus"
+  },
+  "opt_focus_desc": {
+    "message": "Fsheh atë që nuk është reklamë, por gjithsesi ju pengon. Gjithçka këtu është joaktive derisa ta aktivizoni."
+  },
+  "opt_list_ubo": {
+    "message": "Filtrat e uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Reklama, gjurmues, rregullime kundër anti-adblock dhe riparime sajtesh nga ekipi i uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Lista e Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Një listë jetëgjatë serverësh reklamash dhe gjurmimi."
+  },
+  "opt_focus_social": {
+    "message": "Butonat dhe widget-et e rrjeteve sociale"
+  },
+  "opt_focus_social_desc": {
+    "message": "Butonat e shpërndarjes, kutitë «Pëlqej» dhe burimet e ngulitura."
+  },
+  "opt_focus_chat": {
+    "message": "Widget-et e bisedës dhe mbështetjes"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Flluskat lundruese të bisedës në cep të faqes."
+  },
+  "opt_focus_newsletters": {
+    "message": "Dritaret kërcyese të buletineve dhe regjistrimit"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Kutitë dhe mbulesat «Abonohuni në buletinin tonë»."
+  },
+  "opt_focus_notifications": {
+    "message": "Kërkesat për njoftime"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Kutitë «Të lejohen njoftimet?» që sajtet shfaqin para se të pyesë shfletuesi."
+  },
+  "opt_focus_ai": {
+    "message": "Dritaret kërcyese të asistentëve AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Flluska chatbot-esh dhe panele me sugjerime AI të shtuara në faqe."
+  },
+  "opt_focus_other": {
+    "message": "Bezdi të tjera"
+  },
+  "opt_focus_other_desc": {
+    "message": "Shirita ngjitës, banera «Hape në aplikacion» dhe rrëmujë të ngjashme."
+  },
+  "opt_badge_lang": {
+    "message": "gjuha juaj"
+  },
+  "opt_badge_remote": {
+    "message": "nga autori"
+  },
+  "opt_remote_hint": {
+    "message": "Nuk është e integruar (pa licencë rishpërndarjeje): shfletuesi juaj e shkarkon nga $1 kur e aktivizoni."
+  },
+  "opt_downloaded_from": {
+    "message": "Shkarkohet nga $1 kur e aktivizoni"
+  },
+  "opt_lists_error": {
+    "message": "Chrome e refuzoi këtë kombinim listash ($1). Çaktivizoni disa."
+  },
+  "opt_badge_recommended": {
+    "message": "e rekomanduar për gjuhën tuaj"
+  },
+  "reportBroken": {
+    "message": "Sajti nuk punon? Rregullojeni ose na tregoni"
+  },
+  "rep_title": {
+    "message": "Diçka nuk punon në këtë sajt?"
+  },
+  "rep_fix_first": {
+    "message": "Rregullojeni tani"
+  },
+  "rep_site": {
+    "message": "Sajti:"
+  },
+  "rep_fix_desc": {
+    "message": "Shumica e problemeve zhduken me një nga këto. Secili vlen vetëm për këtë sajt; skeda ringarkohet."
+  },
+  "rep_fix_cosm": {
+    "message": "Çaktivizo fshehjen e elementeve këtu"
+  },
+  "rep_fix_allow": {
+    "message": "Lejo reklamat në këtë sajt"
+  },
+  "rep_fix_pause": {
+    "message": "Pauzë kudo për 30 minuta"
+  },
+  "rep_tell_us": {
+    "message": "Na tregoni"
+  },
+  "rep_tell_desc": {
+    "message": "I rregullojmë sajtet që nuk punojnë për të gjithë përmes përditësimit të nënshkruar të filtrave, zakonisht brenda një dite. Shtesa nuk dërgon asgjë: raporti hapet në aplikacionin tuaj të email-it dhe e shihni çdo fjalë të tij më parë."
+  },
+  "rep_what": {
+    "message": "Çfarë nuk shkon? (opsionale)"
+  },
+  "rep_what_ph": {
+    "message": "p.sh. videoja nuk nis, një kuti e bardhë mbulon artikullin…"
+  },
+  "rep_full_url": {
+    "message": "Përfshi adresën e plotë të faqes (përndryshe vetëm emrin e sajtit)"
+  },
+  "rep_preview": {
+    "message": "Çfarë do të dërgohet"
+  },
+  "rep_send_mail": {
+    "message": "Dërgo me email"
+  },
+  "rep_copy": {
+    "message": "Kopjo raportin"
+  },
+  "rep_privacy": {
+    "message": "Si trajtohet ky raport: politika e privatësisë"
+  },
+  "rep_copied": {
+    "message": "U kopjua."
+  },
+  "rep_done_cosm": {
+    "message": "Fshehja e elementeve është çaktivizuar në këtë sajt. U ringarkua — a u rregullua?"
+  },
+  "rep_done_allow": {
+    "message": "Reklamat lejohen në këtë sajt. U ringarkua — a u rregullua?"
+  },
+  "rep_done_pause": {
+    "message": "Në pauzë për 30 minuta. Nëse sajti punon tani, ju lutemi na tregoni më poshtë."
+  },
+  "cookieRejections": {
+    "message": "Banera kukish të refuzuar për ju: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Raftet, skeda dhe sugjerimet e Shorts në YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Dritaret kërcyese «Identifikohu me Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Zgjedhësi i llogarisë që shfaqet në cep të shumë sajteve. Butonat e identifikimit vazhdojnë të punojnë."
+  },
+  "pickTip": {
+    "message": "Klikoni një element për ta fshehur"
+  },
+  "pickZapTip": {
+    "message": "Klikoni për ta hequr këtë element (një herë)"
+  },
+  "pickEscCancel": {
+    "message": "për ta anuluar"
+  },
+  "opt_notices": {
+    "message": "Licencat e listave të filtrave"
+  }
+}

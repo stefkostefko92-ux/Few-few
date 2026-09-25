@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Estää mainokset kaikkialla: YouTuben videomainokset, bannerit, ponnahdusikkunat, seurannan, evästekyselyt ja mainosestomuurit."
+  },
+  "byCarbon": {
+    "message": "tekijä: Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Suojaus päälle/pois"
+  },
+  "protected": {
+    "message": "Suojattu"
+  },
+  "paused": {
+    "message": "Tauolla"
+  },
+  "blockingHere": {
+    "message": "Estää mainokset tällä sivulla"
+  },
+  "protectionOff": {
+    "message": "Suojaus on pois päältä"
+  },
+  "pause30": {
+    "message": "Tauko 30 minuutiksi"
+  },
+  "pausedResume": {
+    "message": "Tauolla, jatka nyt ($1 min jäljellä)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Estetty"
+  },
+  "dataSaved": {
+    "message": "Säästetty data"
+  },
+  "timeSaved": {
+    "message": "Säästetty aika"
+  },
+  "thisSite": {
+    "message": "tämä sivusto"
+  },
+  "thisPage": {
+    "message": "tämä sivu"
+  },
+  "blockOnSite": {
+    "message": "Estä mainokset tällä sivustolla"
+  },
+  "blocking": {
+    "message": "Estetään"
+  },
+  "allowed": {
+    "message": "Sallittu"
+  },
+  "cosmetics": {
+    "message": "Piilota mainokset tässä"
+  },
+  "cosmeticsTitle": {
+    "message": "Piilota mainokset tällä sivustolla (poista käytöstä, jos sivun asettelu hajoaa)"
+  },
+  "on": {
+    "message": "Päällä"
+  },
+  "off": {
+    "message": "Pois"
+  },
+  "blockedHere": {
+    "message": "Estetty tällä sivulla"
+  },
+  "logEmpty": {
+    "message": "Täällä ei ole vielä estetty mitään."
+  },
+  "logUnavailable": {
+    "message": "Loki ei ole juuri nyt käytettävissä (selaimen kiintiö) – yritä uudelleen minuutin kuluttua."
+  },
+  "logCore": {
+    "message": "Supremen perussäännöt"
+  },
+  "logYouTube": {
+    "message": "YouTube-mainossäännöt"
+  },
+  "logParams": {
+    "message": "Seurantaparametrit"
+  },
+  "logMalware": {
+    "message": "Haittaohjelmasivustot"
+  },
+  "logSurrogates": {
+    "message": "Neutraloidut mainosskriptit"
+  },
+  "logPrivacy": {
+    "message": "Yksityisyyden suoja"
+  },
+  "logUser": {
+    "message": "Omat suodattimet"
+  },
+  "logLive": {
+    "message": "Live-päivitykset"
+  },
+  "hideElement": {
+    "message": "Piilota elementti"
+  },
+  "settings": {
+    "message": "Asetukset"
+  },
+  "promoSub": {
+    "message": "Laitteet ja työkalut, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Mainos"
+  },
+  "support": {
+    "message": "Tue"
+  },
+  "filtersCount": {
+    "message": "$1+ suodatinta",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Ulkoasu"
+  },
+  "opt_extra_protection": {
+    "message": "Lisäsuojaus"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection -loki"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Sallitut sivustot"
+  },
+  "opt_my_filters": {
+    "message": "Omat suodattimet"
+  },
+  "opt_hidden_elements": {
+    "message": "Piilotetut elementit"
+  },
+  "opt_filter_updates": {
+    "message": "Suodatinpäivitykset"
+  },
+  "opt_engine_health": {
+    "message": "Moottorin tila"
+  },
+  "opt_backup": {
+    "message": "Varmuuskopio"
+  },
+  "opt_support_development": {
+    "message": "Tue kehitystä"
+  },
+  "opt_theme": {
+    "message": "Teema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Synkronointi laitteiden välillä"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube-mainosten esto"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Eväste- ja suostumusbannerit"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock-muurien ohitus"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Metan sponsoroidut julkaisut"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Poista seurantaparametrit"
+  },
+  "opt_malware_protection": {
+    "message": "Haittaohjelmasuojaus"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Estä mainosten kohdentamisen selain-API:t"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Estä seurantamajakat ja kryptolouhijat"
+  },
+  "opt_auto_update_filters": {
+    "message": "Päivitä suodattimet automaattisesti"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tumma) tai vaalea"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Pidä asetukset, sallittujen luettelo ja suodattimet synkronoituina kaikissa Chromeissa, joihin olet kirjautunut"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Poistaa YouTuben videomainokset. Poista käytöstä, jos videot eivät toistu."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Sulkee automaattisesti ”Hyväksy evästeet” -kyselyt"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Piilottaa ”poista mainosesto käytöstä” -muurit ja palauttaa sivun"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Piilottaa ”Sponsoroitu”-julkaisut Facebookissa ja Instagramissa"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Poistaa utm_*-, fbclid-, gclid- ja muut klikkaustunnisteet avaamistasi linkeistä"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Estää tunnetut haittaohjelmien verkkotunnukset (abuse.ch:n URLhaus-luettelo)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Poistaa käytöstä Google Topics-, FLoC- ja Protected Audience -mainosrajapinnat kaikilla sivustoilla"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Pysäyttää kolmansien osapuolten hyperlinkkien seurantapingit (hyperlink auditing / beacon), poistaa seurantaevästeet tunnettujen mainosteknologiapalvelujen vastauksista ja estää selaimessa toimivat kryptolouhintaskriptit. Poista käytöstä, jos sivuston analytiikasta riippuva toiminto ei toimi oikein."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Hakee uudet estosäännöt ja YouTube-korjaukset osoitteesta adblock.carbonstealth.eu noin kaksi kertaa päivässä. Vain dataa, ei koodia; pyyntö ei sisällä tunnisteita eikä selaustietoja."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Reaaliaikainen loki heuristisesti tunnistetuista mainoksista (ilman suodatinluetteloa), uusimmat ensin."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Tilatut luettelot haetaan tekstinä (ei koskaan koodina), päivitetään päivittäin ja ne sijaitsevat yllä olevissa hallituissa lohkoissa. Poista luettelo, niin sen säännöt poistuvat."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementit, jotka olet piilottanut käsin valitsimella, sivustoittain ryhmiteltynä."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Reaaliaikainen diagnostiikka – kaikki lasketaan paikallisesti. Jos jokin on punaisena, ”Päivitä nyt” tai laajennuksen uudelleenlataus yleensä korjaa sen."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock on ilmainen kaikille. Jos haluat auttaa sen ylläpidossa, lahjoitukset ovat tervetulleita mutta eivät koskaan pakollisia."
+  },
+  "opt_reset_statistics": {
+    "message": "Nollaa tilastot"
+  },
+  "opt_add": {
+    "message": "Lisää"
+  },
+  "opt_save_filters": {
+    "message": "Tallenna suodattimet"
+  },
+  "opt_subscribe": {
+    "message": "Tilaa"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Päivitä tilaukset nyt"
+  },
+  "opt_update_now": {
+    "message": "Päivitä nyt"
+  },
+  "opt_refresh": {
+    "message": "Päivitä"
+  },
+  "opt_export_settings": {
+    "message": "Vie asetukset"
+  },
+  "opt_import_settings": {
+    "message": "Tuo asetukset"
+  },
+  "opt_e_g_example_com": {
+    "message": "esim. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! esimerkki\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Tilaa suodatinluettelo URL-osoitteesta (esim. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlockin asetukset"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Asetukset"
+  },
+  "opt_theme_light": {
+    "message": "Vaalea"
+  },
+  "opt_badge_unique": {
+    "message": "ainutlaatuinen"
+  },
+  "opt_smart_desc": {
+    "message": "Tunnistaa mainokset, joita mikään suodatinluettelo ei vielä tunne: vakiomainospaikan kokoiset kehykset toisesta alkuperästä piilotetaan heti, ilman sääntöjä."
+  },
+  "opt_caught_so_far": {
+    "message": "tunnistettu tähän mennessä."
+  },
+  "opt_allow_desc": {
+    "message": "Mainoksia ei estetä näillä verkkotunnuksilla."
+  },
+  "opt_fh_one": {
+    "message": "Yksi sääntö riviä kohden."
+  },
+  "opt_fh_blocks": {
+    "message": "estää verkkotunnuksen;"
+  },
+  "opt_fh_everywhere": {
+    "message": "piilottaa elementin kaikkialla;"
+  },
+  "opt_fh_site": {
+    "message": "piilottaa sen vain kyseisellä sivustolla."
+  },
+  "opt_fh_comments": {
+    "message": "Rivit, jotka alkavat merkillä"
+  },
+  "opt_fh_comments2": {
+    "message": "ovat kommentteja."
+  },
+  "opt_donate": {
+    "message": "Lahjoita Revolutilla"
+  },
+  "opt_made_by": {
+    "message": "tekijä: Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Heuristisesti ei ole vielä tunnistettu mitään."
+  },
+  "opt_empty_allow": {
+    "message": "Sallittuja sivustoja ei vielä ole."
+  },
+  "opt_empty_hidden": {
+    "message": "Mitään ei ole vielä piilotettu käsin."
+  },
+  "opt_empty_subs": {
+    "message": "Tilattuja luetteloita ei vielä ole."
+  },
+  "opt_no_sw": {
+    "message": "Service worker ei vastaa."
+  },
+  "opt_remove": {
+    "message": "Poista"
+  },
+  "opt_filter_status": {
+    "message": "Suodatinjoukko v$1, päivitetty $2. Vain dataa, sinusta ei lähetetä mitään."
+  },
+  "opt_updating": {
+    "message": "Päivitetään…"
+  },
+  "opt_updated": {
+    "message": "Päivitetty (v$1, $2 lisäsääntöä)"
+  },
+  "opt_update_failed": {
+    "message": "Päivitys epäonnistui ($1)"
+  },
+  "opt_saved": {
+    "message": "Tallennettu ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 sääntöä"
+  },
+  "opt_updated_ago": {
+    "message": "päivitetty $1"
+  },
+  "opt_not_fetched": {
+    "message": "ei vielä haettu"
+  },
+  "opt_failed_colon": {
+    "message": "epäonnistui: $1"
+  },
+  "opt_enter_https": {
+    "message": "Anna kelvollinen https://-osoite"
+  },
+  "opt_fetching": {
+    "message": "Haetaan…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Tilattu: $1 sääntöä ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Epäonnistui ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Päivitetään…"
+  },
+  "opt_refreshed": {
+    "message": "Päivitetty ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Virheellinen asetustiedosto."
+  },
+  "opt_no_response": {
+    "message": "ei vastausta"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock-moottori"
+  },
+  "opt_h_rulesets": {
+    "message": "Käytössä olevat staattiset sääntöjoukot"
+  },
+  "opt_h_live": {
+    "message": "Live-suodattimien verkkotunnukset"
+  },
+  "opt_h_last": {
+    "message": "Viimeisin päivitys"
+  },
+  "opt_h_sig": {
+    "message": "Päivitysten allekirjoitukset"
+  },
+  "opt_h_user": {
+    "message": "Omat suodattimet / sallittujen säännöt"
+  },
+  "opt_h_popup": {
+    "message": "Sisäänrakennetut ponnahdusmainosten palvelimet"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-ohitus"
+  },
+  "opt_reason_frame": {
+    "message": "Mainoksen kokoinen kehys toisesta alkuperästä"
+  },
+  "opt_reason_sticky": {
+    "message": "Kiinteä mainosbanneri"
+  },
+  "logRegional": {
+    "message": "Alueelliset luettelot"
+  },
+  "logFocus": {
+    "message": "Keskittymistila"
+  },
+  "opt_filter_lists": {
+    "message": "Suodatinluettelot"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ja EasyPrivacy ovat aina käytössä. Alla olevat luettelot ovat avoimesti lisensoituja ja sisältyvät laajennukseen, joten niiden ottaminen käyttöön ei lataa mitään – paitsi jos luettelon kohdalla lukee, että se tulee tekijältään."
+  },
+  "opt_lists_core": {
+    "message": "Perus"
+  },
+  "opt_lists_regional": {
+    "message": "Alueelliset"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Selaimesi kielen luettelo otetaan käyttöön automaattisesti. Lisää muita, jos luet usein sivustoja muilla kielillä."
+  },
+  "opt_focus_mode": {
+    "message": "Keskittymistila"
+  },
+  "opt_focus_desc": {
+    "message": "Piilota se, mikä ei ole mainos mutta on silti tiellä. Kaikki täällä on pois päältä, kunnes otat sen käyttöön."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin -suodattimet"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Mainokset, seurannat, anti-adblock-korjaukset ja sivustokorjaukset uBlock Origin -tiimiltä."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowen luettelo"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Pitkäikäinen luettelo mainos- ja seurantapalvelimista."
+  },
+  "opt_focus_social": {
+    "message": "Sosiaalisen median painikkeet ja widgetit"
+  },
+  "opt_focus_social_desc": {
+    "message": "Jakopainikkeet, tykkäysruudut ja upotetut syötteet."
+  },
+  "opt_focus_chat": {
+    "message": "Chat- ja tukiwidgetit"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Sivun kulmassa kelluvat chat-kuplat."
+  },
+  "opt_focus_newsletters": {
+    "message": "Uutiskirje- ja rekisteröitymisikkunat"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "”Tilaa uutiskirjeemme” -ruudut ja peittokuvat."
+  },
+  "opt_focus_notifications": {
+    "message": "Ilmoituskehotteet"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "”Salli ilmoitukset?” -ruudut, joita sivustot näyttävät ennen kuin selain kysyy."
+  },
+  "opt_focus_ai": {
+    "message": "Tekoälyavustajien ponnahdusikkunat"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Sivuille lisätyt chatbot-kuplat ja tekoälyn ehdotuspaneelit."
+  },
+  "opt_focus_other": {
+    "message": "Muut häiriötekijät"
+  },
+  "opt_focus_other_desc": {
+    "message": "Kiinteät palkit, ”Avaa sovelluksessa” -bannerit ja muu vastaava sotku."
+  },
+  "opt_badge_lang": {
+    "message": "sinun kielesi"
+  },
+  "opt_badge_remote": {
+    "message": "tekijältään"
+  },
+  "opt_remote_hint": {
+    "message": "Ei sisälly laajennukseen (ei lupaa levittää sitä): selaimesi lataa sen osoitteesta $1, kun otat sen käyttöön."
+  },
+  "opt_downloaded_from": {
+    "message": "Ladataan osoitteesta $1, kun otat sen käyttöön"
+  },
+  "opt_lists_error": {
+    "message": "Chrome hylkäsi tämän luetteloyhdistelmän ($1). Poista joitakin käytöstä."
+  },
+  "opt_badge_recommended": {
+    "message": "suositeltu kielellesi"
+  },
+  "reportBroken": {
+    "message": "Sivusto rikki? Korjaa tai kerro meille"
+  },
+  "rep_title": {
+    "message": "Toimiiko jokin väärin tällä sivustolla?"
+  },
+  "rep_fix_first": {
+    "message": "Korjaa nyt"
+  },
+  "rep_site": {
+    "message": "Sivusto:"
+  },
+  "rep_fix_desc": {
+    "message": "Useimmat ongelmat poistuvat jollakin näistä. Jokainen koskee vain tätä sivustoa; välilehti latautuu uudelleen."
+  },
+  "rep_fix_cosm": {
+    "message": "Poista elementtien piilotus käytöstä täällä"
+  },
+  "rep_fix_allow": {
+    "message": "Salli mainokset tällä sivustolla"
+  },
+  "rep_fix_pause": {
+    "message": "Tauko kaikkialla 30 minuutiksi"
+  },
+  "rep_tell_us": {
+    "message": "Kerro meille"
+  },
+  "rep_tell_desc": {
+    "message": "Korjaamme rikkinäiset sivustot kaikille allekirjoitetun suodatinpäivityksen kautta, yleensä vuorokauden sisällä. Laajennus ei lähetä mitään: raportti avautuu omassa sähköpostisovelluksessasi, ja näet sen jokaisen sanan ensin."
+  },
+  "rep_what": {
+    "message": "Mikä on vialla? (valinnainen)"
+  },
+  "rep_what_ph": {
+    "message": "esim. video ei käynnisty, valkoinen laatikko peittää artikkelin…"
+  },
+  "rep_full_url": {
+    "message": "Liitä sivun koko osoite (muuten vain sivuston nimi)"
+  },
+  "rep_preview": {
+    "message": "Mitä lähetetään"
+  },
+  "rep_send_mail": {
+    "message": "Lähetä sähköpostilla"
+  },
+  "rep_copy": {
+    "message": "Kopioi raportti"
+  },
+  "rep_privacy": {
+    "message": "Miten tätä ilmoitusta käsitellään: tietosuojakäytäntö"
+  },
+  "rep_copied": {
+    "message": "Kopioitu."
+  },
+  "rep_done_cosm": {
+    "message": "Elementtien piilotus on pois päältä tällä sivustolla. Ladattu uudelleen – korjaantuiko?"
+  },
+  "rep_done_allow": {
+    "message": "Mainokset sallitaan tällä sivustolla. Ladattu uudelleen – korjaantuiko?"
+  },
+  "rep_done_pause": {
+    "message": "Tauolla 30 minuuttia. Jos sivusto toimii nyt, kerro siitä meille alla."
+  },
+  "cookieRejections": {
+    "message": "Puolestasi hylätyt evästebannerit: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts-hyllyt, -välilehti ja -ehdotukset YouTubessa."
+  },
+  "opt_focus_onetap": {
+    "message": "”Kirjaudu Google-tilillä” -ikkunat"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Tilinvalitsin, joka ilmestyy monien sivustojen kulmaan. Kirjautumispainikkeet toimivat edelleen."
+  },
+  "pickTip": {
+    "message": "Piilota elementti klikkaamalla sitä"
+  },
+  "pickZapTip": {
+    "message": "Poista tämä elementti klikkaamalla (kerran)"
+  },
+  "pickEscCancel": {
+    "message": "peruuttaa"
+  },
+  "opt_notices": {
+    "message": "Suodatinluetteloiden lisenssit"
+  }
+}

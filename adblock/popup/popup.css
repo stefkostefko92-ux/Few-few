@@ -127,7 +127,7 @@ summary:focus-visible,
 .thumb {
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -164,7 +164,8 @@ summary:focus-visible,
 .hero::before {
   content: "";
   position: absolute;
-  inset: 0 auto 0 0;
+  inset-block: 0;
+  inset-inline-start: 0;
   width: 3px;
   background: linear-gradient(var(--good), var(--accent-2));
 }
@@ -463,3 +464,26 @@ summary:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 0.001ms !important; }
 }
+
+/* "Site broken?" — a quiet text button under the actions */
+.report-link {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(100% - 24px); margin: 8px 12px 0; padding: 6px;
+  border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer;
+}
+.report-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.report-link:hover, .report-link:focus-visible { color: var(--text); text-decoration: underline; }
+
+/* Cookie banners we said no to */
+.rejections {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: -2px 12px 10px; font-size: 11.5px; color: var(--muted);
+}
+.rejections svg { width: 14px; height: 14px; fill: none; stroke: var(--accent-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rejections b { color: var(--text); }
+
+/* An element with [hidden] stays hidden even when a class gives it display:flex. */
+[hidden] { display: none !important; }
+/* Right-to-left (ar, he, fa, ur): switches slide the other way, the chevron flips. */
+[dir="rtl"] .switch input:checked + .track .thumb { transform: translateX(-18px); }
+[dir="rtl"] .switch.sm input:checked + .track .thumb { transform: translateX(-16px); }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Supreme AdBlock — Free Ad Blocker for Chrome by Carbon Stealth</title>
-<meta name="description" content="Free ad blocker for Chrome by Carbon Stealth. Stops YouTube ads at the source, blocks trackers, pop-unders and cookie walls, updates its filters twice a day. No account, no telemetry." />
+<meta name="description" content="Free Chrome ad blocker by Carbon Stealth: stops YouTube ads at the source, blocks trackers, pop-unders and cookie walls. 70 languages, no telemetry." />
 <meta name="keywords" content="Supreme AdBlock, Carbon Stealth, ad blocker for Chrome, free ad blocker, YouTube ad blocker, Manifest V3 ad blocker, block trackers, cookie banner blocker, pop-up blocker, privacy extension, EasyList, uBlock Origin Lite alternative" />
 <meta name="author" content="Carbon Stealth" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -181,6 +181,8 @@
   col.uscol{background:linear-gradient(180deg,rgba(0,229,255,.08),rgba(0,229,255,.02))}
   .yes{color:var(--green);font-size:19px} .no{color:var(--no);font-size:19px}
   .note{display:block;font-size:12px;color:var(--muted2);margin-top:3px}
+  tbody tr.usrow th,tbody tr.usrow td{color:var(--cream);background:rgba(0,229,255,.06);font-weight:700}
+  thead th a{color:inherit;text-decoration:underline;text-underline-offset:3px}
   .cmpnote{margin-top:14px;font-size:12.5px;color:var(--muted2);font-family:var(--mono);max-width:860px}
   @media(max-width:640px){
     table{min-width:0;font-size:13.5px}
@@ -266,24 +268,27 @@
       "screenshot": "https://adblock.carbonstealth.eu/popup-shot.webp",
       "downloadUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
       "installUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
-      "softwareVersion": "5.0.6",
+      "softwareVersion": "5.1.1",
       "datePublished": "2026-06-15",
       "dateModified": "2026-09-25",
-      "inLanguage": ["en", "bg", "it", "de"],
+      "inLanguage": ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "es-419", "et", "eu", "fa", "fi", "fil", "fr", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "ne", "nl", "no", "pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"],
       "isAccessibleForFree": true,
       "license": "https://opensource.org/license/mit",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
       "featureList": [
         "Stops YouTube video ads at the source (the player request is flagged ad-free)",
-        "EasyList and EasyPrivacy built in (40,000+ rules)",
+        "EasyList, EasyPrivacy and the uBlock Origin filters built in (60,000+ rules)",
+        "31 regional filter lists; the one for the browser's language turns on by itself",
+        "Focus mode: hide chat, newsletter, notification, social and AI pop-ups and YouTube Shorts",
+        "A repair page for broken sites: one-click fixes, reports only through the user's own email",
         "Filter data updated twice a day, Ed25519-signed, no remote code",
         "Cookie and consent banners: rejects when possible, never presses a sign-in, OAuth or payment button",
         "Pop-under blocker (2,700+ known pop-up ad hosts refused at window.open)",
-        "Anti-adblock scriptlet engine (18 named routines)",
+        "Anti-adblock scriptlet engine (19 named routines)",
         "Smart Detection: list-free detection of ad-sized frames",
         "Procedural cosmetic filters and filter-list subscriptions",
         "Per-site controls and a per-page breakdown of what each list blocked",
-        "Interface in English, Bulgarian, Italian and German",
+        "Interface in 70 languages",
         "No account, no analytics, no telemetry"
       ],
       "publisher": { "@id": "https://carbonstealth.eu/#org" }
@@ -303,7 +308,8 @@
         "addressCountry": "BG"
       },
       "logo": { "@type": "ImageObject", "url": "https://adblock.carbonstealth.eu/icon-512.png", "width": 512, "height": 512 },
-      "sameAs": ["https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk", "https://carbonstealth.eu"]
+      "sameAs": ["https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk", "https://carbonstealth.eu", "https://github.com/stefkostefko92-ux/Few-few"],
+      "knowsAbout": ["Ad blocking", "Browser extensions", "Chrome Manifest V3", "Online privacy", "GDPR"]
     },
     {
       "@type": "WebSite",
@@ -332,8 +338,9 @@
       "mainEntity": [
         { "@type": "Question", "name": "Is Supreme AdBlock free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Supreme AdBlock is free, with no account and no paid tier. Donations are optional and never required." } },
         { "@type": "Question", "name": "Does it block YouTube ads?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The player request itself is flagged ad-free, so video ads are not delivered, and ads in the feed and search are removed too. If YouTube refuses to play on a flagged account, the extension steps aside for that session so videos still play." } },
-        { "@type": "Question", "name": "Does it collect my data?", "acceptedAnswer": { "@type": "Answer", "text": "Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request is the filter update, about twice a day; like any download it reaches our EU server with your IP address, and that request is not logged." } },
-        { "@type": "Question", "name": "Will it break websites?", "acceptedAnswer": { "@type": "Answer", "text": "Rarely. If a site misbehaves, one click in the popup fixes it: allow the site, or keep network blocking and switch off only element hiding for that site." } },
+        { "@type": "Question", "name": "Does it collect my data?", "acceptedAnswer": { "@type": "Answer", "text": "Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged." } },
+        { "@type": "Question", "name": "Will it break websites?", "acceptedAnswer": { "@type": "Answer", "text": "Rarely. If a site misbehaves, choose Site broken? in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it." } },
+        { "@type": "Question", "name": "Which languages does it speak?", "acceptedAnswer": { "@type": "Answer", "text": "The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on." } },
         { "@type": "Question", "name": "How does it handle cookie banners?", "acceptedAnswer": { "@type": "Answer", "text": "It presses the banner's own Reject button when there is one, and Accept only when there is no other way to close it, then clears any leftover dimmed background or scroll lock. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form. You can switch it off in Settings." } },
         { "@type": "Question", "name": "Is it an alternative to uBlock Origin or AdGuard?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, as a Chrome extension. Like uBlock Origin Lite it is built on Manifest V3 with EasyList and EasyPrivacy; it adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. AdGuard's desktop apps filter the whole system, which no browser extension can do." } },
         { "@type": "Question", "name": "Which browsers are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Google Chrome and other Chromium browsers such as Microsoft Edge and Brave, version 121 or newer, installed from the Chrome Web Store." } },
@@ -375,7 +382,7 @@
       <div>
         <p class="kicker">Free ad blocker for Chrome</p>
         <h1>Supreme<br /><span class="c">AdBlock</span></h1>
-        <p class="sub">YouTube ads stopped <b>at the source</b>, EasyList &amp; EasyPrivacy built in, and filter data that <b>updates itself twice a day</b> — signed, never code. Cookie walls, pop-unders and trackers handled too.</p>
+        <p class="sub">YouTube ads stopped <b>at the source</b>, EasyList, EasyPrivacy and the uBlock Origin filters built in — plus the list for your language — and filter data that <b>updates itself twice a day</b>, signed, never code. Cookie walls, pop-unders and trackers handled too.</p>
         <ul class="trust" aria-label="At a glance">
           <li>No account</li><li>No telemetry</li><li>Signed updates</li><li>Free</li>
         </ul>
@@ -384,7 +391,7 @@
           <a class="btn ghost" href="#why">Why it's different</a>
         </div>
         <p class="storenote">Free on the Chrome Web Store · Chrome, Edge &amp; Brave</p>
-        <p class="updated">Version 5.0.6 · updated 25 September 2026 · by Carbon Stealth</p>
+        <p class="updated">Version 5.1.1 · updated 25 September 2026 · by Carbon Stealth</p>
       </div>
       <figure class="shot">
         <img class="ghost-shield" src="/shield-380.webp" alt="" width="300" height="300" aria-hidden="true" />
@@ -397,7 +404,7 @@
 
   <div class="band">
     <div class="row">
-      <div class="stat"><div class="n">40,000+</div><div class="l">Filter rules built in</div></div>
+      <div class="stat"><div class="n">60,000+</div><div class="l">Filter rules built in</div></div>
       <div class="stat"><div class="n">0</div><div class="l">Bytes of browsing data sent</div></div>
       <div class="stat"><div class="n">2×</div><div class="l">Signed updates a day</div></div>
       <div class="stat"><div class="n">€0</div><div class="l">Free · no paid tier</div></div>
@@ -415,11 +422,11 @@
         <article class="card reason reveal"><h3>Built for Chrome's current platform</h3><p>Manifest V3 removed the old way of blocking requests. Supreme AdBlock was written on the new API from the first line — no workaround on borrowed time.</p></article>
         <article class="card reason reveal"><h3>YouTube ads stopped at the source</h3><p>We never block YouTube's video servers, which is what makes other setups stall or fake-buffer. The player request itself asks for no ads, and ad slots are stripped from the response.</p></article>
         <article class="card reason reveal"><h3>Protection that never goes stale</h3><p>Ad networks rotate domains daily; a store review takes days. Our filter data refreshes twice a day, Ed25519-signed and version-locked — a new ad network is handled in hours.</p></article>
-        <article class="card reason reveal"><h3>No remote code, enforced</h3><p>The engine ships inside the package. Updates are data only — hostnames, selectors and directives from a fixed list of 18 named routines, checked twice before anything runs.</p></article>
+        <article class="card reason reveal"><h3>No remote code, enforced</h3><p>The engine ships inside the package. Updates are data only — hostnames, selectors and directives from a fixed list of 19 named routines, checked twice before anything runs.</p></article>
         <article class="card reason reveal"><h3>You can read every line</h3><p>Nothing is minified or obfuscated: unzip the extension and the code you audit is exactly the code that runs. MIT licensed.</p></article>
         <article class="card reason reveal"><h3>Your browsing stays on your device</h3><p>No account, no analytics, no telemetry. We take no money from advertisers and run no "acceptable ads" scheme — nothing is quietly unblocked.</p></article>
         <article class="card reason reveal"><h3>It reaches what rules can't</h3><p>Pop-unders are refused at <code>window.open</code> for 2,700+ known hosts, anti-adblock walls are neutralised, and brand-new ad slots are caught by their shape.</p></article>
-        <article class="card reason reveal"><h3>A broken site is one click away from fixed</h3><p>Allow the site, or keep network blocking and switch off only element hiding for it — per site, from the popup, no config file.</p></article>
+        <article class="card reason reveal"><h3>A broken site is one click away from fixed</h3><p>A repair page offers the fixes first — switch off element hiding there, allow the site, pause — and a report you send from your own email, after reading every word.</p></article>
         <article class="card reason reveal"><h3>Cookie walls, handled carefully</h3><p>It presses Reject when a banner offers it and clears the leftover blur and scroll lock — and it never presses a sign-in, OAuth or payment button.</p></article>
       </div>
     </div>
@@ -445,12 +452,41 @@
             <tr><th scope="row">Free, no account</th><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span></td><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span></td></tr>
             <tr><th scope="row">EasyList + EasyPrivacy built in</th><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span></td><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span></td></tr>
             <tr><th scope="row">No telemetry</th><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span></td><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span></td></tr>
-            <tr><th scope="row">Filter updates between store releases</th><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span><span class="note">signed data, twice a day</span></td><td><span class="no" aria-hidden="true">✕</span><span class="sr">No</span><span class="note">rules ship with each release</span></td></tr>
+            <tr><th scope="row">Built-in rules updated between store releases</th><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span><span class="note">signed data, twice a day</span></td><td><span class="no" aria-hidden="true">✕</span><span class="sr">No</span><span class="note">built-in rules ship with each release; external lists can be added (since June 2026)</span></td></tr>
             <tr><th scope="row">List-free detection of unknown ad frames</th><td><span class="yes" aria-hidden="true">✓</span><span class="sr">Yes</span><span class="note">Smart Detection</span></td><td><span class="no" aria-hidden="true">✕</span><span class="sr">No</span><span class="note">filter lists only</span></td></tr>
           </tbody>
         </table>
       </div>
-      <p class="cmpnote reveal">Compared on 24 September 2026 with uBlock Origin Lite in its default mode, from its public <a href="https://github.com/uBlockOrigin/uBOL-home/wiki/Frequently-asked-questions-(FAQ)" target="_blank" rel="noopener">documentation</a>. Found something out of date? Tell us at <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> and we will correct it.</p>
+      <p class="cmpnote reveal">Compared on 25 September 2026 with uBlock Origin Lite in its default mode, from its public <a href="https://github.com/uBlockOrigin/uBOL-home/wiki/Frequently-asked-questions-(FAQ)" target="_blank" rel="noopener">documentation</a>. Found something out of date? Tell us at <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> and we will correct it.</p>
+    </div>
+  </section>
+
+  <section class="blk" id="measured">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow">Measured, not claimed</p>
+        <h2>Two public tests, <span class="c">same conditions</span></h2>
+        <p class="lead">Every blocker got a fresh browser profile, its default settings and a minute to set itself up, then ran the same two public test pages twice. Both runs gave the same numbers. Higher is better.</p>
+      </div>
+      <div class="tablewrap reveal">
+        <table>
+          <caption class="sr">Results of two public ad-blocking tests, 25 September 2026</caption>
+          <thead><tr>
+            <th scope="col" style="text-align:left">Blocker (default settings)</th>
+            <th scope="col"><a href="https://adblock.turtlecute.org/" target="_blank" rel="noopener">Turtlecute</a><span class="note">ad &amp; tracker hosts blocked</span></th>
+            <th scope="col"><a href="https://adblock-tester.com/" target="_blank" rel="noopener">adblock-tester</a><span class="note">score out of 100</span></th>
+          </tr></thead>
+          <tbody>
+            <tr><th scope="row">No blocker</th><td>4 / 132</td><td>48</td></tr>
+            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1</th><td>118 / 132</td><td>95</td></tr>
+            <tr><th scope="row">uBlock Origin Lite</th><td>82 / 132</td><td>91</td></tr>
+            <tr><th scope="row">Ghostery</th><td>98 / 132</td><td>96</td></tr>
+            <tr><th scope="row">AdGuard</th><td>24–26 / 132</td><td>77</td></tr>
+            <tr><th scope="row">Adblock Plus</th><td>25–26 / 132</td><td>77</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cmpnote reveal">Measured on 25 September 2026 in headless Chromium with <code>tools/compare_blockers.mjs</code> (in our public repository — run it yourself). Ghostery scored one point higher on adblock-tester. AdGuard and Adblock Plus may do better with extra lists switched on or after a longer set-up; we report their defaults. Test pages change over time, so numbers from another day will differ.</p>
     </div>
   </section>
 
@@ -462,17 +498,18 @@
       </div>
       <ul class="checks">
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div><div><b>YouTube at the source</b><span>Video, feed and search ads — without the fake-buffering slowdown.</span></div></li>
-        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><div><b>40,000+ rules</b><span>EasyList and EasyPrivacy compiled into the engine, plus our own set.</span></div></li>
+        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><div><b>60,000+ rules, 36 lists</b><span>EasyList, EasyPrivacy and the uBlock Origin filters, plus 31 regional lists — the one for your language turns on by itself.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><div><b>Signed updates</b><span>Twice a day, Ed25519-verified, data only — no store re-review needed.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="8" cy="15" r="1.2"/></svg></div><div><b>Cookie banners</b><span>Rejects when it can, clears leftover blur and scroll locks, never presses a sign-in or payment button.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M9 13l6 4M15 13l-6 4"/></svg></div><div><b>Pop-under blocker</b><span>2,700+ known pop-up ad hosts can no longer open windows behind your back.</span></div></li>
-        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M13 8l-4 6h3l-1 4 4-6h-3z"/></svg></div><div><b>Anti-adblock scriptlets</b><span>18 named routines neutralise "disable your adblocker" walls before the page's own scripts run.</span></div></li>
+        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M13 8l-4 6h3l-1 4 4-6h-3z"/></svg></div><div><b>Anti-adblock scriptlets</b><span>19 named routines neutralise "disable your adblocker" walls before the page's own scripts run.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg></div><div><b>Smart Detection</b><span>Catches cross-origin frames sized like ad slots, even when no list knows them yet.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.2 1.2M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.2-1.2"/></svg></div><div><b>Clean links</b><span>Tracking parameters (utm_*, fbclid, gclid…) stripped; third-party tracking cookies and beacons blocked.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg></div><div><b>Your own filters</b><span>Element picker, procedural selectors (:has-text, :upward, :xpath…) and list subscriptions by URL.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg></div><div><b>See what was blocked</b><span>A per-page breakdown of what each list stopped, plus an engine health card in Settings.</span></div></li>
         <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div><b>Private by design</b><span>No account, no analytics; optional sync goes to your own browser account, never to us.</span></div></li>
-        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h12M9 3v2c0 4-3 7-6 8M5 9c1 2 3 3.5 6 4.5M13 21l4-10 4 10M14.5 17.5h5"/></svg></div><div><b>Four languages</b><span>English, Bulgarian, Italian and German — the interface follows your browser.</span></div></li>
+        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div><div><b>Focus mode</b><span>Hide chat bubbles, newsletter pop-ups, notification prompts, social widgets, AI pop-ups, “Sign in with Google” prompts and YouTube Shorts.</span></div></li>
+        <li class="reveal"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h12M9 3v2c0 4-3 7-6 8M5 9c1 2 3 3.5 6 4.5M13 21l4-10 4 10M14.5 17.5h5"/></svg></div><div><b>70 languages</b><span>The interface follows your browser's language.</span></div></li>
       </ul>
     </div>
   </section>
@@ -496,11 +533,24 @@
         </div>
         <div class="item reveal">
           <h3>What "signed updates, no remote code" means</h3>
-          <p>Chrome forbids extensions from downloading code — and rightly so. Supreme AdBlock downloads only <b>data</b>: domain names, CSS selectors and scriptlet directives whose names must come from a fixed list of 18 routines already in the package. The file is signed with an Ed25519 key that never leaves our server, and a newer signed version can never be replaced by an older one.</p>
+          <p>Chrome forbids extensions from downloading code — and rightly so. Supreme AdBlock downloads only <b>data</b>: domain names, CSS selectors and scriptlet directives whose names must come from a fixed list of 19 routines already in the package. The file is signed with an Ed25519 key that never leaves our server, and a newer signed version can never be replaced by an older one.</p>
+        </div>
+        <div class="item reveal">
+          <h3>Filter lists for your language</h3>
+          <p>Ads are local, so a single English list misses a lot of them. Supreme AdBlock ships 31 regional lists — from Arabic and Chinese to Ukrainian and Vietnamese — and the one that matches your browser's language turns on by itself. You can switch any of them on or off in Settings, each with its licence and a link to its authors.</p>
+          <p>Four lists (Bulgarian, Polish, Nordic, Croatian) are not ours to redistribute, so they are not in the package. Turn one on and your browser downloads it from its author, and the extension converts it on your device — as data, never as code.</p>
+        </div>
+        <div class="item reveal">
+          <h3>Focus mode: fewer distractions, not just fewer ads</h3>
+          <p>Settings has a Focus section with separate switches for chat bubbles, newsletter pop-ups, "allow notifications" prompts, social widgets, AI-assistant pop-ups, "Sign in with Google" prompts and short-video shelves such as YouTube Shorts. All are off until you turn them on.</p>
+        </div>
+        <div class="item reveal">
+          <h3>When a site breaks: the repair page</h3>
+          <p>Open the popup and choose <b>Site broken?</b>. The repair page offers the fixes that usually work — turn off element hiding for that site, allow the site, or pause for 30 minutes — and reloads the tab for you. If it is still broken, it prepares a short report e-mail that you read and send yourself. The extension never sends anything on its own, and the full page address is included only if you tick the box.</p>
         </div>
         <div class="item reveal">
           <h3>Supreme AdBlock vs uBlock Origin</h3>
-          <p>uBlock Origin is excellent. In Chrome today it ships as uBlock Origin Lite, whose filter rules update with each extension release. Supreme AdBlock adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. Happy with uBO Lite? Keep it. Want faster list updates and YouTube handled for you? Give Supreme AdBlock a try.</p>
+          <p>uBlock Origin is excellent. In Chrome today it ships as uBlock Origin Lite, whose built-in rules update with each extension release (since June 2026 it can also subscribe to external lists). Supreme AdBlock adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. Happy with uBO Lite? Keep it. Want faster list updates and YouTube handled for you? Give Supreme AdBlock a try.</p>
         </div>
         <div class="item reveal">
           <h3>Supreme AdBlock vs AdGuard</h3>
@@ -532,8 +582,9 @@
       <div class="faq">
         <div class="card reveal"><h3>Is Supreme AdBlock free?</h3><p>Yes. Supreme AdBlock is free, with no account and no paid tier. Donations are optional and never required.</p></div>
         <div class="card reveal"><h3>Does it block YouTube ads?</h3><p>Yes. The player request itself is flagged ad-free, so video ads are not delivered, and ads in the feed and search are removed too. If YouTube refuses to play on a flagged account, the extension steps aside for that session so videos still play.</p></div>
-        <div class="card reveal"><h3>Does it collect my data?</h3><p>Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request is the filter update, about twice a day; like any download it reaches our EU server with your IP address, and that request is not logged. Details in the <a href="/privacy">privacy policy</a>.</p></div>
-        <div class="card reveal"><h3>Will it break websites?</h3><p>Rarely. If a site misbehaves, one click in the popup fixes it: allow the site, or keep network blocking and switch off only element hiding for that site.</p></div>
+        <div class="card reveal"><h3>Does it collect my data?</h3><p>Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged. Details in the <a href="/privacy">privacy policy</a>.</p></div>
+        <div class="card reveal"><h3>Will it break websites?</h3><p>Rarely. If a site misbehaves, choose <b>Site broken?</b> in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it.</p></div>
+        <div class="card reveal"><h3>Which languages does it speak?</h3><p>The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on.</p></div>
         <div class="card reveal"><h3>How does it handle cookie banners?</h3><p>It presses the banner's own Reject button when there is one, and Accept only when there is no other way to close it, then clears any leftover dimmed background or scroll lock. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form. You can switch it off in Settings.</p></div>
         <div class="card reveal"><h3>Is it an alternative to uBlock Origin or AdGuard?</h3><p>Yes, as a Chrome extension. Like uBlock Origin Lite it is built on Manifest V3 with EasyList and EasyPrivacy; it adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. AdGuard's desktop apps filter the whole system, which no browser extension can do.</p></div>
         <div class="card reveal"><h3>Which browsers are supported?</h3><p>Google Chrome and other Chromium browsers such as Microsoft Edge and Brave, version 121 or newer, installed from the Chrome Web Store.</p></div>
