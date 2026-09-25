@@ -1,0 +1,5 @@
+# Raw scan data (≈92 MB) — re-download from WeTransfer, see SOURCE.md
+Aletta v1 (1).stl
+*.raw.stl
+__pycache__/
+*.pyc
