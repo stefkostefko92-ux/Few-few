@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** Блокът ПРЕДАВАНЕ се гейтва от dod-check.mjs: Статус е само „наред | има бележки | блокер“ (не „находки“) и полето „Изход/артефакт:“ е задължително. _(global; verified; "Stop hook feedback от .claude/hooks/dod-check.mjs в тази сесия")_
 - **2026-09-25:** adblock popup: етикетите на метриките са 9px главни букви в колона от ~83px (body 320px, 3 колони) — непренасяема дума над ~12 знака прелива; .site-id span се реже с многоточие (ellipsis) след ~26 знака. _(adblock; verified; "/home/user/Few-few/adblock/popup/popup.css:47,236-262,288")_
 - **2026-09-25:** Chrome manifest description (__MSG_extDescription__) е с лимит 132 знака — затова преводите на extDescription режат функции; при превод брой знаците и пази всяка изброена функция. _(chrome-extensions; verified; "https://developer.chrome.com/docs/extensions/reference/manifest/description")_
 - **2026-09-25:** adblock/i18n.js задава <html lang> с getUILanguage().slice(0, 2) — fil става fi (фински), zh_TW става zh; lang трябва да е пълният BCP47 код. _(adblock; verified; "/home/user/Few-few/adblock/i18n.js:22")_
