@@ -42,6 +42,15 @@ type BridgeAction =
 const STRAIN_GLYPH: Record<Strain, string> = { C: "♣", D: "♦", H: "♥", S: "♠", NT: "NT" };
 const STRAINS: Strain[] = ["C", "D", "H", "S", "NT"];
 
+/** Bid chip ink per strain: suit colour (four-colour aware), NT in black. */
+const BID_INK: Record<Strain, string> = {
+  C: "var(--suit-club)",
+  D: "var(--suit-diamond)",
+  H: "var(--suit-heart)",
+  S: "var(--suit-spade)",
+  NT: "var(--suit-black)",
+};
+
 export function BridgeView({ title }: { title: string }) {
   const { t } = useTranslation();
   const m = useMatch<BridgeState, BridgeAction>("BRIDGE");
@@ -142,10 +151,10 @@ export function BridgeView({ title }: { title: string }) {
                         disabled={!bid}
                         onClick={() => bid && m.send(bid)}
                         className="aso-bridge-bid"
-                        style={{
-                          color:
-                            strain === "H" || strain === "D" ? "var(--suit-red)" : "var(--ink-100)",
-                        }}
+                        // Suit colours on the ivory bid chip (per suit, so the four-colour
+                        // deck applies here too). It used --ink-100 for ♣/♠/NT: near-white
+                        // on ivory, i.e. those bids were invisible.
+                        style={{ color: BID_INK[strain] }}
                       >
                         {level}
                         {STRAIN_GLYPH[strain]}
