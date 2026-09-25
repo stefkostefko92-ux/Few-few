@@ -16,6 +16,7 @@ const OUT = join(DIR, "..", "galaxy.js");
 const ORDER = [
   "config.js",
   "hash.js",
+  "labels.js",
   "glsl-noise.js",
   "glsl-galaxy.js",
   "shaders.js",
@@ -38,7 +39,7 @@ function strip(src, file) {
 export function bundle() {
   const parts = ORDER.map((f) => `// ---- ${f} ----\n${strip(readFileSync(join(SRC, f), "utf8"), f)}`);
   const body = parts.join("\n\n");
-  return `// galaxy.js — ГЕНЕРИРАН от galaxy/build.mjs (galaxy/src/*.js). Не редактирай на ръка.\n(function(){\n"use strict";\n${body}\nwindow.Galaxy = { createGalaxy, createBackdrop, separateLabels };\n})();\n`;
+  return `// galaxy.js — ГЕНЕРИРАН от galaxy/build.mjs (galaxy/src/*.js). Не редактирай на ръка.\n(function(){\n"use strict";\n${body}\nwindow.Galaxy = { createGalaxy, createBackdrop, separateLabels, layoutLabels, rectToCapsule };\n})();\n`;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

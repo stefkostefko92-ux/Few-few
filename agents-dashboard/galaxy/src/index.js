@@ -9,6 +9,7 @@ import { buildDustField, buildAmbientNebulae } from "./backdrop-field.js";
 import { drawGalaxyPhoto, drawAmbientNebulae, drawFineDust } from "./backdrop-draw.js";
 import { spawnMeteor, stepAndDrawMeteors } from "./meteors.js";
 import { separateLabels } from "./hash.js";
+import { layoutLabels, rectToCapsule } from "./labels.js";
 
 export function createGalaxy(canvas) {
   const pipeline = createPipeline(canvas);
@@ -75,4 +76,4 @@ export function createBackdrop(seed = 1) {
   return { drawPhoto, drawDust, drawStructure, stepMeteors };
 }
 
-export { separateLabels };
+export { separateLabels, layoutLabels, rectToCapsule };

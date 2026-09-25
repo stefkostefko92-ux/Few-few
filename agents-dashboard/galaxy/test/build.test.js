@@ -20,9 +20,9 @@ test("bundle() генерира синтактично валиден класи
   }
 });
 
-test("bundle() излага window.Galaxy с трите публични функции", () => {
+test("bundle() излага window.Galaxy с петте публични функции", () => {
   const src = bundle();
-  assert.match(src, /window\.Galaxy = \{ createGalaxy, createBackdrop, separateLabels \};/);
+  assert.match(src, /window\.Galaxy = \{ createGalaxy, createBackdrop, separateLabels, layoutLabels, rectToCapsule \};/);
 });
 
 test("bundle() не съдържа неразрешен export/import (изтекъл ESM синтаксис)", () => {

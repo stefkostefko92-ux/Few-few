@@ -58,22 +58,31 @@ function mulberry32(seed) {
  * Раздалечава етикети (кръгове с радиус r около {x,y}) с проста релаксация, за да не се
  * застъпват — детерминистично (същия вход → същия изход), спира до `iterations` или при сходимост.
  * items: [{x, y, r}] — мутира и връща новия масив от позиции (без да променя оригиналните обекти).
+ *
+ * `weights[i]` (по избор, паралелен масив на items) — по-тежък елемент се мести по-малко
+ * (greedy-по-приоритет ефект: президентът/фокусираният агент почти не мърда, останалите поглъщат
+ * преместването). Без weights → 50/50 бутане, същото поведение като преди (тестовете по-долу
+ * разчитат на това).
  */
-function separateLabels(items, iterations = 24, padding = 4) {
-  const pts = items.map((it) => ({ x: it.x, y: it.y, r: it.r }));
+function separateLabels(items, iterations = 24, padding = 4, weights) {
+  const pts = items.map((it, i) => ({ x: it.x, y: it.y, r: it.r, w: weights ? Math.max(1e-6, weights[i]) : 1 }));
   for (let iter = 0; iter < iterations; iter++) {
     let moved = false;
     for (let i = 0; i < pts.length; i++) {
       for (let j = i + 1; j < pts.length; j++) {
         const a = pts[i], b = pts[j];
-        const dx = b.x - a.x, dy = b.y - a.y;
+        let dx = b.x - a.x, dy = b.y - a.y;
+        // напълно съвпадащи центрове (dx=dy=0) нямат посока за бутане — hash21/hash22 дават
+        // ДЕТЕРМИНИСТИЧЕН (не Math.random) ъгъл по индексите, за да не заседне двойката на място.
+        if (dx === 0 && dy === 0) { const ang = hash21(i + 0.5, j + 0.5) * 6.2831853; dx = Math.cos(ang) * 1e-3; dy = Math.sin(ang) * 1e-3; }
         const dist = Math.hypot(dx, dy) || 0.0001;
         const minDist = a.r + b.r + padding;
         if (dist < minDist) {
-          const push = (minDist - dist) / 2;
+          const need = minDist - dist, wsum = a.w + b.w;
+          const pushA = need * (b.w / wsum), pushB = need * (a.w / wsum);
           const nx = dx / dist, ny = dy / dist;
-          a.x -= nx * push; a.y -= ny * push;
-          b.x += nx * push; b.y += ny * push;
+          a.x -= nx * pushA; a.y -= ny * pushA;
+          b.x += nx * pushB; b.y += ny * pushB;
           moved = true;
         }
       }
@@ -81,6 +90,88 @@ function separateLabels(items, iterations = 24, padding = 4) {
     if (!moved) break;
   }
   return pts;
+}
+
+// ---- labels.js ----
+// labels.js — подрежда правоъгълните етикети на звездите-агенти БЕЗ застъпване, структурно (не
+// с по-малък шрифт). Собственикова заявка, 2026-09-25: „струпването на етикетите на телефон" —
+// решено с алгоритъм, не с намаляване на четимостта.
+//
+// Обвива separateLabels (hash.js): всеки правоъгълен етикет се вписва в кръг (полу-диагонал +
+// подложка). Щом два кръга НЕ се застъпват (dist(центрове) ≥ r1+r2), то и правоъгълниците вътре
+// в тях НЕ се застъпват по никоя ос — кръгът е достатъчно (не само необходимо) условие, защото
+// половин-диагоналът винаги ≥ половин-ширината/височината на своя правоъгълник. Това дава ТВЪРДА
+// гаранция „нула застъпващи се правоъгълника", проверима с чист JS тест (виж test/labels.test.js).
+//
+// `weight` по-висок → етикетът се мести по-малко (президентът/фокусираният агент остава близо до
+// звездата си; по-нископриоритетните поглъщат преместването) — greedy-по-приоритет без отделен
+// проход по подредба.
+
+/**
+ * items: [{x, y, w, h, weight}] — x,y = идеалният център на етикета (обикновено под звездата),
+ * w,h = размер на правоъгълника в CSS пиксели. viewport: {width, height}.
+ * Връща [{x, y}] — новия център на всеки етикет, гарантирано без застъпване и изцяло във viewport
+ * (с 2px поле от ръба).
+ */
+/**
+ * `obstacleRects` (по избор): [{x, y, w, h}] — непреместваеми ПРАВОЪГЪЛНИ зони в DOM-координати
+ * (точно каквото връща `getBoundingClientRect()` — виж index.html labelObstacles()): заглавната
+ * кутия, лентата с търсачка+превключвател, статистиката „Флотилия". Реалните HUD кутии са широки и
+ * НИСКИ — една-единствена обиколена кръгова зона (полу-диагонал) би била грубо преразмерена (голям
+ * „мъртъв" периметър над/под кутията, в който залепва раздалечаващата релаксация — реален бъг,
+ * хванат от собствения тест с реалните DOM размери на 390/360, виж test/labels.test.js), затова
+ * всеки правоъгълник се покрива с ВЕРИГА от по-малки, плътно съседни кръгове (капсула — радиус ≈
+ * половин височина, стъпка между центровете ≈ 1.6×радиус, застъпват се за пълно покритие) — доста
+ * по-тясно вписване около реалната форма, повече свободно пространство за етикетите да заобиколят.
+ * Все едно кръговете са поредните „етикети", но с практически безкрайно тегло (не мърдат, а бутат).
+ * Best-effort подобрение (не твърда гаранция като „нула застъпване между етикети"): ако пречката
+ * е по-голяма от свободното пространство във viewport-а около нея (патологичен случай — рядко в
+ * практиката), етикетът може да остане частично зад ръба ѝ, но НИКОГА не излиза извън viewport-а и
+ * никога не се застъпва с друг етикет — тези две гаранции са твърди и винаги важат.
+ */
+function layoutLabels(items, viewport, iterations = 40, padding = 6, obstacleRects = []) {
+  if (!items.length) return [];
+  const weights = items.map((it) => Math.max(0.35, it.weight || 1));
+  const r = items.map((it) => Math.hypot(it.w, it.h) / 2 + padding / 2);
+  const marX = items.map((it) => Math.min(it.w / 2 + 2, viewport.width / 2));
+  const marY = items.map((it) => Math.min(it.h / 2 + 2, viewport.height / 2));
+  let pts = items.map((it) => ({ x: it.x, y: it.y }));
+  const obstacles = obstacleRects.flatMap((rect) => rectToCapsule(rect, padding));
+  const obW = obstacles.map(() => 1e6); // практически безкрайно тегло → етикетите поглъщат ~цялото бутане
+  // Клампването в ръбовете на viewport-а МОЖЕ да върне два вече раздалечени етикета обратно
+  // един до друг (и двата притеглени към същия ъгъл) — затова редуваме „раздалечи → клампни"
+  // в няколко рунда (не еднократно накрая), докато не се сходи: всеки следващ separateLabels
+  // вижда позициите СЛЕД клампването и довърта остатъчното застъпване.
+  const ROUNDS = 16;
+  for (let round = 0; round < ROUNDS; round++) {
+    const circles = [...pts.map((p, i) => ({ x: p.x, y: p.y, r: r[i] })), ...obstacles];
+    const solved = separateLabels(circles, iterations, padding, [...weights, ...obW]);
+    pts = solved.slice(0, items.length).map((p, i) => ({ x: clamp(p.x, marX[i], viewport.width - marX[i]), y: clamp(p.y, marY[i], viewport.height - marY[i]) }));
+  }
+  return pts;
+}
+
+/** Покрива правоъгълник {x,y,w,h} (x,y = горен-ляв ъгъл, DOM конвенция) с верига плътно съседни
+ * кръгове по по-дългата ос — капсулно приближение, доказано по-плътно от една обиколена окръжност
+ * за широки/ниски HUD елементи (виж коментара на layoutLabels по-горе). Изнесена функция, за да е
+ * пряко тестваема (test/labels.test.js) без да минава през целия separateLabels пайплайн. */
+function rectToCapsule(rect, padding = 6) {
+  const short = Math.min(rect.w, rect.h), long = Math.max(rect.w, rect.h);
+  const rad = short / 2 + padding / 2;
+  const n = Math.max(1, Math.ceil(long / (rad * 1.6)) + (long > rad * 1.6 ? 1 : 0));
+  const horizontal = rect.w >= rect.h;
+  const circles = [];
+  for (let i = 0; i < n; i++) {
+    const t = n === 1 ? 0.5 : i / (n - 1);
+    const cx = horizontal ? rect.x + rect.w * t : rect.x + rect.w / 2;
+    const cy = horizontal ? rect.y + rect.h / 2 : rect.y + rect.h * t;
+    circles.push({ x: cx, y: cy, r: rad });
+  }
+  return circles;
+}
+
+function clamp(v, lo, hi) {
+  return lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v));
 }
 
 // ---- glsl-noise.js ----
@@ -112,7 +203,23 @@ vec3 blackbody(float t){
 // собственика, решаващ кръг: структурираната спираловидна мъглявина/bulge/HII опит СЕ ВЪРНА към
 // изпитаната наситена мъглявина в shaders.js — виж бележката там; PSF/диафракционните лъчи тук
 // останаха, изрично одобрени като подобрение.) Изисква GLSL_NOISE (hash/blackbody) в контекста.
+//
+// РЕШАВАЩ КРЪГ (собственика, 2026-09-25 — „вдигни качеството на детайлите на самите звезди"):
+// PSF-ът мина от единична степенна крива (една „пухкава" сфера) на Moffat профил ядро+ореол
+// (реален телескопски point-spread function модел — виж Moffat 1969/Trujillo 2001), диафракционните
+// лъчи получиха фина хроматична дисперсия САМО на върховете на най-ярките звезди (физически: синьото
+// се разсейва повече от червеното при дифракция от апертура), а скинтилацията стана по-фина
+// (по-малка амплитуда) — вече е и по-бавна de facto, защото e функция на споделеното `t` (виж
+// GALAXY_TIME_SCALE в index.html). Всичко е resolution-independent (изчислено per-pixel в
+// фрагмент-шейдъра) → остро на всеки DPR, никога размазано/пикселизирано при zoom.
 const GLSL_GALAXY = `
+// Moffat PSF: I(r) = (1 + (r/alpha)^2)^-beta — по-физически вярна форма на звезда от гладко power-law
+// или Gaussian: тесен, стръмен пик (ядро) + дълги, бавно затихващи крила (ореол), точно както реална
+// оптика/атмосферно размазване разпределя енергия. Комбинираме тясно ядро (голямо beta, малко alpha)
+// с широк ореол (малко beta, голямо alpha) — двукомпонентен PSF, стандартна техника в photometry.
+float moffat(float r, float alpha, float beta){
+  return pow(1.0 + (r*r)/(alpha*alpha), -beta);
+}
 // Диафракционни лъчи тип JWST (6 хексагонални + 2 вертикални — сборът "6+2" от собственика):
 // апроксимация без отделен pass — тесен ексpоненциален гребен покрай няколко фиксирани оси,
 // приложен САМО на горния процентил ярки звезди (bMag>threshold), физически смисъл: дифракция
@@ -129,6 +236,12 @@ float spikeGlow(vec2 d, float size){
   }
   return s;
 }
+// Хроматично разцепена версия — само за спайковете на най-ярките звезди (собственикова заявка):
+// синьото разсейва малко по-надалеч от червеното (size*1.045 vs *0.965), давайки фин цветен ръб
+// само към връховете на лъчите; ядрото (близо до d=0) остава практически бяло във всички канали.
+vec3 spikeGlowRGB(vec2 d, float size){
+  return vec3(spikeGlow(d, size*0.965), spikeGlow(d, size), spikeGlow(d, size*1.045));
+}
 vec3 starLayer(vec2 uv, float seed, float cells, float twT, float brightThresh){
   vec2 guv = uv*cells; vec2 id = floor(guv); vec2 gv = fract(guv)-0.5; vec3 col = vec3(0.0);
   for (int y=-1;y<=1;y++) for (int x=-1;x<=1;x++) {
@@ -137,12 +250,21 @@ vec3 starLayer(vec2 uv, float seed, float cells, float twT, float brightThresh){
     vec2 jitter = (h-0.5)*0.86; vec2 d = gv - off - jitter;
     float bMag = pow(hash21(cid+seed+7.7), 3.2);
     float size = mix(0.018, 0.075, bMag);
-    float glow = pow(size/(length(d)+0.0018), 1.55) * present;
-    float tw = twT > -0.5 ? (0.78 + 0.22*sin(twT*6.0 + h.x*44.0)) : 1.0;
+    float r = length(d);
+    float core = moffat(r, size*0.5, 4.5);
+    float halo = moffat(r, size*2.4, 1.5) * 0.45;
+    float glow = (core + halo) * present;
+    // фина скинтилация: малка амплитуда (реалистично трептене, не мигане); честотата се влачи от
+    // споделеното време (GALAXY_TIME_SCALE в index.html го забавя накуп с всичко останало).
+    float tw = twT > -0.5 ? (0.88 + 0.12*sin(twT*6.0 + h.x*44.0)) : 1.0;
     vec3 starCol = blackbody(hash21(cid+seed+3.3));
     col += starCol * glow * bMag * tw;
     float spikeAmt = smoothstep(brightThresh, 1.0, bMag) * present;
-    if (spikeAmt > 0.0) col += starCol * spikeGlow(d, size) * spikeAmt * 0.6 * tw;
+    if (spikeAmt > 0.0) {
+      float chromAmt = smoothstep(0.97, 1.0, bMag); // хроматичен ръб само за горния ~3% ярки
+      vec3 sc = mix(vec3(spikeGlow(d, size)), spikeGlowRGB(d, size), chromAmt);
+      col += starCol * sc * spikeAmt * 0.6 * tw;
+    }
   }
   return col;
 }
@@ -597,6 +719,7 @@ function stepAndDrawMeteors(ctx, meteors, W, H) {
 
 
 
+
 function createGalaxy(canvas) {
   const pipeline = createPipeline(canvas);
   if (!pipeline.ready) return { ready: false };
@@ -661,5 +784,5 @@ function createBackdrop(seed = 1) {
 
   return { drawPhoto, drawDust, drawStructure, stepMeteors };
 }
-window.Galaxy = { createGalaxy, createBackdrop, separateLabels };
+window.Galaxy = { createGalaxy, createBackdrop, separateLabels, layoutLabels, rectToCapsule };
 })();

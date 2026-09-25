@@ -2,7 +2,23 @@
 // собственика, решаващ кръг: структурираната спираловидна мъглявина/bulge/HII опит СЕ ВЪРНА към
 // изпитаната наситена мъглявина в shaders.js — виж бележката там; PSF/диафракционните лъчи тук
 // останаха, изрично одобрени като подобрение.) Изисква GLSL_NOISE (hash/blackbody) в контекста.
+//
+// РЕШАВАЩ КРЪГ (собственика, 2026-09-25 — „вдигни качеството на детайлите на самите звезди"):
+// PSF-ът мина от единична степенна крива (една „пухкава" сфера) на Moffat профил ядро+ореол
+// (реален телескопски point-spread function модел — виж Moffat 1969/Trujillo 2001), диафракционните
+// лъчи получиха фина хроматична дисперсия САМО на върховете на най-ярките звезди (физически: синьото
+// се разсейва повече от червеното при дифракция от апертура), а скинтилацията стана по-фина
+// (по-малка амплитуда) — вече е и по-бавна de facto, защото e функция на споделеното `t` (виж
+// GALAXY_TIME_SCALE в index.html). Всичко е resolution-independent (изчислено per-pixel в
+// фрагмент-шейдъра) → остро на всеки DPR, никога размазано/пикселизирано при zoom.
 export const GLSL_GALAXY = `
+// Moffat PSF: I(r) = (1 + (r/alpha)^2)^-beta — по-физически вярна форма на звезда от гладко power-law
+// или Gaussian: тесен, стръмен пик (ядро) + дълги, бавно затихващи крила (ореол), точно както реална
+// оптика/атмосферно размазване разпределя енергия. Комбинираме тясно ядро (голямо beta, малко alpha)
+// с широк ореол (малко beta, голямо alpha) — двукомпонентен PSF, стандартна техника в photometry.
+float moffat(float r, float alpha, float beta){
+  return pow(1.0 + (r*r)/(alpha*alpha), -beta);
+}
 // Диафракционни лъчи тип JWST (6 хексагонални + 2 вертикални — сборът "6+2" от собственика):
 // апроксимация без отделен pass — тесен ексpоненциален гребен покрай няколко фиксирани оси,
 // приложен САМО на горния процентил ярки звезди (bMag>threshold), физически смисъл: дифракция
@@ -19,6 +35,12 @@ float spikeGlow(vec2 d, float size){
   }
   return s;
 }
+// Хроматично разцепена версия — само за спайковете на най-ярките звезди (собственикова заявка):
+// синьото разсейва малко по-надалеч от червеното (size*1.045 vs *0.965), давайки фин цветен ръб
+// само към връховете на лъчите; ядрото (близо до d=0) остава практически бяло във всички канали.
+vec3 spikeGlowRGB(vec2 d, float size){
+  return vec3(spikeGlow(d, size*0.965), spikeGlow(d, size), spikeGlow(d, size*1.045));
+}
 vec3 starLayer(vec2 uv, float seed, float cells, float twT, float brightThresh){
   vec2 guv = uv*cells; vec2 id = floor(guv); vec2 gv = fract(guv)-0.5; vec3 col = vec3(0.0);
   for (int y=-1;y<=1;y++) for (int x=-1;x<=1;x++) {
@@ -27,12 +49,21 @@ vec3 starLayer(vec2 uv, float seed, float cells, float twT, float brightThresh){
     vec2 jitter = (h-0.5)*0.86; vec2 d = gv - off - jitter;
     float bMag = pow(hash21(cid+seed+7.7), 3.2);
     float size = mix(0.018, 0.075, bMag);
-    float glow = pow(size/(length(d)+0.0018), 1.55) * present;
-    float tw = twT > -0.5 ? (0.78 + 0.22*sin(twT*6.0 + h.x*44.0)) : 1.0;
+    float r = length(d);
+    float core = moffat(r, size*0.5, 4.5);
+    float halo = moffat(r, size*2.4, 1.5) * 0.45;
+    float glow = (core + halo) * present;
+    // фина скинтилация: малка амплитуда (реалистично трептене, не мигане); честотата се влачи от
+    // споделеното време (GALAXY_TIME_SCALE в index.html го забавя накуп с всичко останало).
+    float tw = twT > -0.5 ? (0.88 + 0.12*sin(twT*6.0 + h.x*44.0)) : 1.0;
     vec3 starCol = blackbody(hash21(cid+seed+3.3));
     col += starCol * glow * bMag * tw;
     float spikeAmt = smoothstep(brightThresh, 1.0, bMag) * present;
-    if (spikeAmt > 0.0) col += starCol * spikeGlow(d, size) * spikeAmt * 0.6 * tw;
+    if (spikeAmt > 0.0) {
+      float chromAmt = smoothstep(0.97, 1.0, bMag); // хроматичен ръб само за горния ~3% ярки
+      vec3 sc = mix(vec3(spikeGlow(d, size)), spikeGlowRGB(d, size), chromAmt);
+      col += starCol * sc * spikeAmt * 0.6 * tw;
+    }
   }
   return col;
 }

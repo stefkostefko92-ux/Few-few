@@ -168,6 +168,17 @@
   .ptraits .en i { position: absolute; left: 0; bottom: 0; height: 2px; border-radius: 2px; }
   body.altview .brand, body.altview .live, body.altview .hint, body.altview .credit { display: none; }
   @media (max-width: 640px) { .brand p { display: none; } .hint { display: none; } .search input { width: 104px; } .hud { padding: 12px; } .live { left: 12px; bottom: 14px; } .credit { font-size: 9.5px; } }
+  /* Телефон (собственика, 2026-09-25, кръг 2): заглавната кутия НЕ бива да заема половин екран —
+     един ред, съкратен с елипсис (не JS-съкращаване на текста — SEO/четците на екрана продължават
+     да виждат пълното заглавие). Статистиката „Флотилия" — един компактен ред от 4 чипа, не 3+1. */
+  @media (max-width: 480px) {
+    .brand { padding: 7px 11px; max-width: 54vw; }
+    .brand h1 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .live { left: 10px; bottom: 10px; gap: 5px; }
+    .chip { padding: 6px 8px; min-width: 0; border-radius: 9px; }
+    .chip b { font-size: 14px; }
+    .chip span { font-size: 7.5px; letter-spacing: .4px; }
+  }
   @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
 </style>
 <!-- 3D навсякъде (собственика, 2026-09-24): mascot3d.js (ГЕНЕРИРАНО, вижте MASCOT-INLINE по-долу и
@@ -15317,7 +15328,19 @@ function drawNeb(time) {
   galaxy.render({ time, gx: gxN(), gy: gyN(), reducedMotion: RM, captureFromCanvas: cv, bloomSkip: galaxy.quality.state.tier < 2 ? 1 : 2 });
 }
 let W = 0, H = 0, DPR = 1, nodes = [], particles = [];
+// ЕДНА константа управлява темпото на ЦЯЛАТА галактика (собственика, 2026-09-25: „забави движението
+// на звездите… спокойно, величествено"). `t` захранва: gal (въртене), орбитите/бобването на звездите-
+// агенти (nodePos, drawStar), мигането им (tw в drawStar) И споделения GLSL `uT` (drawNeb(t) →
+// galaxy.render → pipeline.js → shaders.js/glsl-galaxy.js: дрейфа на мъглявината, паралакс-члена
+// `uT*0.010`, скинтилацията на фоновите звезди) плюс дрейфа/трептенето на амбиентната мъглявина и
+// финия прах (backdrop-draw.js, също взима `t`). Скалирайки САМО тук, забавяме всичко изброено
+// накуп — БЕЗ да пипаме прекия отговор на потребителското плъзгане (spin/gal при drag остава 1:1,
+// вижте pointermove по-долу). 1 = предишното темпо; 1/3 ≈ поръчаното „~3× по-бавно".
+const GALAXY_TIME_SCALE = 1 / 3;
 let gal = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false, locate = null;
+// опашка от етикети за текущия кадър — пълни се в drawStar(), подрежда се/рисува се накуп в
+// drawLabels() (виж хедъра на функцията) — точно решава застъпването на етикетите на телефон.
+let labelQueue = [];
 let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
 let warp = null;
 // Фоновият 2D слой (снимка + тъмни прашни ленти + амбиентни мъглявини + фин прах + метеори) живее
@@ -15510,7 +15533,7 @@ function loop(ts) {
   if (ts && nebLastTs) nebAdaptQuality(ts - nebLastTs);
   nebLastTs = ts || nebLastTs;
   if (view !== "sky") { ctx.clearRect(0, 0, W, H); return; }
-  t += 0.016; if (!RM) { gal += 0.0006 + spin; spin *= 0.95; if (Math.abs(spin) < 1e-6) spin = 0; }
+  t += 0.016 * GALAXY_TIME_SCALE; if (!RM) { gal += 0.0006 * GALAXY_TIME_SCALE + spin; spin *= 0.95; if (Math.abs(spin) < 1e-6) spin = 0; }
   drawNeb(RM ? 1.0 : t);
   const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.46;
   drawGalaxy(cx, cy, R);
@@ -15543,7 +15566,9 @@ function loop(ts) {
   }
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
 
+  labelQueue.length = 0;
   for (const nd of nodes) drawStar(nd);
+  drawLabels();
   drawTrail();
 
   cv.classList.toggle("pointer", !!hovered && !dragging);
@@ -15630,19 +15655,67 @@ function drawStar(nd) {
   }
   ctx.globalAlpha = 1;
 
-  // етикет: четим при всякакъв фон (тъмен halo зад текста, не само shadowBlur), извън най-външния
-  // пръстен; на тъч устройства — само президентът и фокусираната/докоснатата звезда (по-малко трупане)
+  // етикет: НЕ се рисува тук — вкарва се в опашка КАТО КАНДИДАТ (всички, и на телефон — виж по-долу
+  // защо) и се подрежда БЕЗ застъпване от drawLabels() (веднъж, след като всички звезди са си
+  // получили позициите за кадъра — виж loop()). Дали кандидатът реално се РИСУВА на телефон, решава
+  // drawLabels() СЛЕД layoutLabels(): президентът/фокусираната звезда — винаги; останалите — само
+  // ако layoutLabels ги е побрал БЛИЗО до звездата им (собственика, 2026-09-25, кръг 2: „покажи
+  // етикети само за президента + агентите, които се побират до звездата си; останалите — при
+  // докосване"). Кандидатстват всички ТУК (не само prez/focused), за да може layoutLabels реално да
+  // прецени кой е „изолиран" (малко изместване) срещу кой е в трупаница (голямо изместване → скрит).
   const la = Math.min(1, (nd.prez ? 0.92 : 0.62) * dim + hoverT * 0.6);
-  const showLabel = la > 0.06 && (!IS_TOUCH || nd.prez || hoverT > 0.12);
+  const showLabel = la > 0.06;
   if (showLabel) {
     const fs = nd.prez ? 13 : 11;
-    ctx.font = (nd.prez ? "600 " : "500 ") + fs + "px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = (nd.prez ? "600 " : "500 ") + fs + "px system-ui";
     const ly = nd.y + Math.max(base * 1.55, ringMaxR + 9) + (nd.prez ? 15 : 11);
     const label = shortName(nd.a.name), tw3 = ctx.measureText(label).width;
-    ctx.globalAlpha = Math.min(1, la * 1.15);
+    // тегло по приоритет: президентът почти не мърда; по-важните/по-развитите агенти (по-голям
+    // радиус на звездата) поглъщат по-малко преместване от по-дребните — greedy-по-приоритет.
+    const weight = nd.prez ? 8 : (hoverT > 0.5 ? 5 : 1 + base / 8);
+    labelQueue.push({ ax: nd.x, ay: nd.y, x: nd.x, y: ly, w: tw3 + 12, h: fs + 8, weight, font: ctx.font, bold: nd.prez, label, alpha: Math.min(1, la * 1.15), prez: nd.prez, focused: hoverT > 0.12 });
+  }
+}
+// подрежда цялата опашка от етикети накуп (layoutLabels, galaxy/src/labels.js — вижте
+// „струпването на етикетите на телефон" в собственикова заявка 2026-09-25) и ги рисува НАД
+// звездите (по-четимо от преди, когато по-късно рисувана звезда затулваше етикет отгоре).
+//
+// На телефон (mobileUI): етикет, който layoutLabels трябва да измести с >MOBILE_HIDE_DIST от
+// звездата си, се СКРИВА изцяло (не спагети водеща линия през целия екран) — собственика,
+// 2026-09-25, кръг 2: „ако етикетът трябва да се отмести на >~48px — не го показвай на телефон".
+// Президентът и активно докоснатата/фокусираната звезда са изключение (винаги видими — точно те
+// трябват на потребителя в момента) — showLabel() вече ги маркира с prez/focused.
+const MOBILE_HIDE_DIST = 48;
+// непреместваеми препятствия за подредбата: заглавната кутия, лентата с търсачка+превключвател
+// (.tools) и статистиката „Флотилия" (#live) стоят фиксирани НАД канваса (виж CSS .hud/.live) —
+// етикетите не бива да свършват зад тях (контраст/четимост). 3× getBoundingClientRect, нищо скъпо.
+function labelObstacles() {
+  const out = [];
+  for (const el of [document.querySelector(".hud .brand"), document.querySelector(".hud .tools"), document.getElementById("live")]) {
+    if (!el) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) continue;
+    out.push({ x: r.left, y: r.top, w: r.width, h: r.height }); // layoutLabels ги превръща в плътна кръгова „капсула" (rectToCapsule, labels.js)
+  }
+  return out;
+}
+function drawLabels() {
+  if (!labelQueue.length) return;
+  const mobileUI = IS_TOUCH || W < 480;
+  const items = labelQueue.map(q => ({ x: q.x, y: q.y, w: q.w, h: q.h, weight: q.weight }));
+  const solved = (window.Galaxy && window.Galaxy.layoutLabels) ? window.Galaxy.layoutLabels(items, { width: W, height: H }, undefined, undefined, labelObstacles()) : items;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (let i = 0; i < labelQueue.length; i++) {
+    const q = labelQueue[i], p = solved[i], disp = Math.hypot(p.x - q.x, p.y - q.y);
+    if (mobileUI && disp > MOBILE_HIDE_DIST && !q.prez && !q.focused) continue;
+    if (disp > q.h * 0.5) {
+      ctx.save(); ctx.strokeStyle = "rgba(210,224,244,.4)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(q.ax, q.ay); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.restore();
+    }
+    ctx.font = q.font; ctx.globalAlpha = q.alpha;
     ctx.fillStyle = "rgba(5,7,12,.62)"; ctx.beginPath();
-    ctx.roundRect(nd.x - tw3 / 2 - 6, ly - fs / 2 - 4, tw3 + 12, fs + 8, 6); ctx.fill();
-    ctx.fillStyle = "#eef4fb"; ctx.fillText(label, nd.x, ly);
+    ctx.roundRect(p.x - q.w / 2, p.y - q.h / 2, q.w, q.h, 6); ctx.fill();
+    ctx.fillStyle = "#eef4fb"; ctx.fillText(q.label, p.x, p.y);
     ctx.globalAlpha = 1;
   }
 }
