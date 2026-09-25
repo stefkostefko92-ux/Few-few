@@ -102,3 +102,19 @@ export const DROP_RATES = {
   quest:   0.35,     // only when a quest has a monster kill objective
   mythicplus_stage: 0.10,
 } as const;
+
+/**
+ * Еднократна (уникална) награда: вписва предмета само ако героят НЕ го
+ * притежава в НИКАКВО състояние (чанта, екипиран, обявен на пазара, в
+ * гилдийния трезор). Връща true, ако е дадено. Ползва се от APEX дропа и от
+ * item_reward на куестовете — преди куестът даваше предмета на всяко
+ * повторение, а APEX проверката пропускаше обявените (listed) копия.
+ */
+export function grantUniqueItem(db: ReturnType<typeof getDb>, characterId: number, slug: string): boolean {
+  const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(slug) as { id: number } | undefined;
+  if (!item) return false;
+  const owned = db.prepare('SELECT 1 FROM inventory WHERE character_id = ? AND item_id = ? LIMIT 1').get(characterId, item.id);
+  if (owned) return false;
+  db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(characterId, item.id);
+  return true;
+}

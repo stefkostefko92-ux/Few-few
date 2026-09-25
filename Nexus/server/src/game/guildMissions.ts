@@ -24,6 +24,9 @@ export const GUILD_MISSIONS: GuildMissionDef[] = [
   { key: 'tower_floors', label: 'Climb tower floors',       target: 60,  reward_gold: 6000 },
 ];
 
+/** Минимален стаж в гилдията за дял от наградата на мисия. */
+export const MISSION_TENURE_MS = 24 * 3_600_000;
+
 /** Текущият седмичен индекс (UTC). */
 export function currentWeekIndex(now = Date.now()): number {
   return Math.floor(now / (7 * 86_400_000));
@@ -71,8 +74,12 @@ export function trackGuildMission(
          WHERE guild_id = ? AND week_key = ? AND mission_key = ? AND rewarded = 0 AND progress >= ?`,
       ).run(guildId, week, key, def.target);
       if (claimed.changes !== 1) return;
-      const members = db.prepare('SELECT character_id FROM guild_members WHERE guild_id = ?').all(guildId) as
-        { character_id: number }[];
+      // Анти guild-hop (одит): наградата отива само на членове с поне
+      // MISSION_TENURE_MS стаж — иначе герой можеше да се присъедини към
+      // гилдия на 299/300 убийства, да прибере 4–6k злато, да напусне и да
+      // повтори в следващата гилдия същата седмица.
+      const members = db.prepare('SELECT character_id FROM guild_members WHERE guild_id = ? AND joined_at <= ?')
+        .all(guildId, now - MISSION_TENURE_MS) as { character_id: number }[];
       for (const m of members) {
         db.prepare('UPDATE characters SET gold = gold + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?')
           .run(def.reward_gold, def.reward_gold, m.character_id);

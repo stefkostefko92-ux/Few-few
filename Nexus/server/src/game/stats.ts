@@ -233,8 +233,21 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   // споделя тежестта. Така DEX не е 4-в-1 (щети+dodge+crit+speed), а dodge
   // става реален и за защитни/WIS билдове. DEX коефициентът е леко намален
   // (0.005→0.004), компенсиран от WIS.
-  const dodge_chance = Math.min(0.45, dex * 0.004 + wis * 0.002 + ch.skill_stealth * 0.004 + dodgeBonus);
-  const crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);
+  //
+  // Баланс одит (класов паритет, мерен с __tests__/balanceHarness.ts): за
+  // ranger/rogue основният стат (DEX) дава щети + crit + dodge + speed, а STR
+  // (warrior) и INT (mage) — само щети. При равно злато магът губеше 80–100%
+  // от двубоите на всяко ниво, а warrior 50–98% срещу DEX класовете на
+  // lv 25–100. „Ловкостта" (agility) за crit/dodge вече е max(DEX, основния
+  // стат на класа) — всеки клас получава същия пакет от основния си стат,
+  // а DEX-билд warrior/mage не губи нищо (max ≥ dex). Speed (инициатива)
+  // остава чисто DEX.
+  // Маговете нямаха никакъв път умение→crit (sword/bow дават 0.003/т): сега
+  // тяхното оръжейно умение (staff/magic) дава същото.
+  const agility = Math.max(dex, ch.class === 'warrior' ? str : ch.class === 'mage' ? int_ : 0);
+  const critSkill = ch.skill_sword + ch.skill_bow + (ch.class === 'mage' ? Math.max(ch.skill_staff, ch.skill_magic) : 0);
+  const dodge_chance = Math.min(0.45, agility * 0.004 + wis * 0.002 + ch.skill_stealth * 0.004 + dodgeBonus);
+  const crit_chance = Math.min(0.5, agility * 0.004 + critSkill * 0.003 + 0.03 + critBonus);
   const speed = 5 + Math.round(dex * 0.4);
   // Ребаланс: CHA вече не е мъртъв стат (сумираше се, но не влизаше в нито
   // едно бойно число). Става стат за СИЛА НА КРИТА (crit damage) — базовите

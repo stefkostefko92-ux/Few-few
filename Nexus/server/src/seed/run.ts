@@ -8,14 +8,17 @@ import { generateExtendedDummies } from './dummies_extended';
 
 function seed(): void {
   const db = getDb();
-  // INSERT OR REPLACE on items/monsters deletes+reinserts rows; with foreign
-  // keys ON, any existing inventory row that references an item would block
-  // the whole transaction. Disable FK enforcement for the duration of the
-  // re-seed so it's safe to run on a live DB that already has players.
+  // Сийдът е UPSERT по slug (виж по-долу) — id-тата се запазват. FK
+  // проверката остава изключена за времето на ре-сийда като предпазна мрежа
+  // за живи бази с играчи.
   db.pragma('foreign_keys = OFF');
   console.log('Seeding items...');
+  // UPSERT по slug (не INSERT OR REPLACE): REPLACE трие реда и вписва нов
+  // с НОВ id → всеки inventory.item_id към пре-сийднат предмет оставаше
+  // осиротял (JOIN-овете го губят — играчът „губи" предмета). ON CONFLICT
+  // DO UPDATE запазва id-то и обновява само стойностите.
   const insertItem = db.prepare(`
-    INSERT OR REPLACE INTO items (
+    INSERT INTO items (
       slug, name, category, sub_type, tier, rarity, level_req, class_req,
       atk_min, atk_max, defense, hp_bonus, mp_bonus,
       str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus,
@@ -26,6 +29,15 @@ function seed(): void {
       @str_bonus, @dex_bonus, @con_bonus, @int_bonus, @cha_bonus, @wis_bonus,
       @heal_hp, @heal_mp, @buy_price, @sell_price, @icon, @description
     )
+    ON CONFLICT(slug) DO UPDATE SET
+      name = excluded.name, category = excluded.category, sub_type = excluded.sub_type, tier = excluded.tier,
+      rarity = excluded.rarity, level_req = excluded.level_req, class_req = excluded.class_req,
+      atk_min = excluded.atk_min, atk_max = excluded.atk_max, defense = excluded.defense,
+      hp_bonus = excluded.hp_bonus, mp_bonus = excluded.mp_bonus,
+      str_bonus = excluded.str_bonus, dex_bonus = excluded.dex_bonus, con_bonus = excluded.con_bonus,
+      int_bonus = excluded.int_bonus, cha_bonus = excluded.cha_bonus, wis_bonus = excluded.wis_bonus,
+      heal_hp = excluded.heal_hp, heal_mp = excluded.heal_mp, buy_price = excluded.buy_price,
+      sell_price = excluded.sell_price, icon = excluded.icon, description = excluded.description
   `);
   const txItem = db.transaction((items: any[]) => {
     for (const it of items) {
@@ -41,11 +53,16 @@ function seed(): void {
 
   console.log('Seeding monsters...');
   const insertMonster = db.prepare(`
-    INSERT OR REPLACE INTO monsters (
+    INSERT INTO monsters (
       slug, name, level, hp, atk_min, atk_max, defense, speed, xp_reward, gold_min, gold_max, sprite, family, region
     ) VALUES (
       @slug, @name, @level, @hp, @atk_min, @atk_max, @defense, @speed, @xp_reward, @gold_min, @gold_max, @sprite, @family, @region
     )
+    ON CONFLICT(slug) DO UPDATE SET
+      name = excluded.name, level = excluded.level, hp = excluded.hp, atk_min = excluded.atk_min,
+      atk_max = excluded.atk_max, defense = excluded.defense, speed = excluded.speed,
+      xp_reward = excluded.xp_reward, gold_min = excluded.gold_min, gold_max = excluded.gold_max,
+      sprite = excluded.sprite, family = excluded.family, region = excluded.region
   `);
   const txMonster = db.transaction((mons: any[]) => {
     for (const m of mons) insertMonster.run(m);
@@ -54,14 +71,21 @@ function seed(): void {
   console.log(`Inserted ${MONSTER_SEED.length} monsters.`);
 
   console.log('Seeding quests...');
+  // quest_log.quest_id сочи quests.id — същата причина за UPSERT.
   const insertQuest = db.prepare(`
-    INSERT OR REPLACE INTO quests (
+    INSERT INTO quests (
       slug, title, region, level_req, energy_cost, duration_sec, intro, narrative,
       monster_slug, xp_reward, gold_reward, item_reward, success_text, failure_text
     ) VALUES (
       @slug, @title, @region, @level_req, @energy_cost, @duration_sec, @intro, @narrative,
       @monster_slug, @xp_reward, @gold_reward, @item_reward, @success_text, @failure_text
     )
+    ON CONFLICT(slug) DO UPDATE SET
+      title = excluded.title, region = excluded.region, level_req = excluded.level_req,
+      energy_cost = excluded.energy_cost, duration_sec = excluded.duration_sec, intro = excluded.intro,
+      narrative = excluded.narrative, monster_slug = excluded.monster_slug, xp_reward = excluded.xp_reward,
+      gold_reward = excluded.gold_reward, item_reward = excluded.item_reward,
+      success_text = excluded.success_text, failure_text = excluded.failure_text
   `);
   const txQuest = db.transaction((qs: any[]) => {
     for (const q of qs) insertQuest.run(q);
@@ -100,7 +124,10 @@ function seed(): void {
   const insertEquip = db.prepare(
     "INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 1, ?)",
   );
-  const clearEquip = db.prepare('DELETE FROM inventory WHERE character_id = ?');
+  // Само ЕКИПИРАНИТЕ редове: първият NPC е и вендорът на high-tier обявите
+  // (по-долу) — пълното триене изтриваше обявените му предмети при всеки
+  // ре-сийд и оставяше „мъртви" активни обяви.
+  const clearEquip = db.prepare('DELETE FROM inventory WHERE character_id = ? AND equipped = 1');
   const now = Date.now();
   let npcCount = 0;
   const txDummies = db.transaction((dummies: any[]) => {
@@ -231,7 +258,7 @@ function seed(): void {
       const wins = Math.floor(battles * (0.45 + Math.random() * 0.3));
       const losses = Math.max(0, battles - wins);
       const created_at = Date.now() - e.joined_days_ago * 86_400_000;
-      insertExt.run({
+      const extIns = insertExt.run({
         name: e.name, class: e.class, level: e.level,
         gold: 50 + Math.floor(e.level * 20 * Math.random()),
         hp_max, mp_max,
@@ -245,6 +272,11 @@ function seed(): void {
         rating: e.rating, wins, losses, now: Date.now(), created_at,
         bio: e.bio,
       });
+      // Кит и пазарни обяви САМО при първо вписване: INSERT OR IGNORE
+      // прескача съществуващ герой, но кодът по-долу се изпълняваше при
+      // всеки ре-сийд → натрупваше дублирани ЕКИПИРАНИ предмети (броните се
+      // сумират в deriveStats → арена противниците се надуваха) и нови обяви.
+      if (extIns.changes !== 1) continue;
       const row = db.prepare('SELECT id FROM characters WHERE name = ?').get(e.name) as { id: number } | undefined;
       if (!row) continue;
       const kit = KIT[e.gear_tier][e.class] || [];
@@ -288,7 +320,11 @@ function seed(): void {
         AND sell_price > 0
     `).all() as any[];
     let posted = 0;
+    // Идемпотентно: ре-сийдът не бива да трупа нови обяви/инвентар при
+    // вендора всеки път (преди +85 обяви на всяко пускане).
+    const already = db.prepare("SELECT 1 FROM marketplace_listings WHERE seller_id = ? AND item_id = ? AND status = 'active' LIMIT 1");
     for (const item of sellable) {
+      if (already.get(vendor.id, item.id)) continue;
       const invInfo = insertExtraInv.run(vendor.id, item.id, 1);
       const invId = invInfo.lastInsertRowid as number;
       // Mark-up over sell price so the auction is a profit-margin sink

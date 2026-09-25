@@ -1,4 +1,4 @@
-export const MONSTER_SEED = [
+const RAW_MONSTER_SEED = [
   // ===== Whispering Woods (lvl 1-5) =====
   { slug: 'forest_rat', name: 'Forest Rat', level: 1, hp: 18, atk_min: 2, atk_max: 4, defense: 0, speed: 6, xp_reward: 4, gold_min: 1, gold_max: 3, sprite: 'rat', family: 'beast', region: 'whispering_woods' },
   { slug: 'wild_boar', name: 'Wild Boar', level: 2, hp: 30, atk_min: 3, atk_max: 6, defense: 1, speed: 5, xp_reward: 8, gold_min: 2, gold_max: 5, sprite: 'boar', family: 'beast', region: 'whispering_woods' },
@@ -243,6 +243,32 @@ export const MONSTER_SEED = [
   { slug: 'firstlight_unwritten_flame', name: "The Unwritten Flame", level: 499, hp: 40307, atk_min: 1859, atk_max: 2943, defense: 672, speed: 5, xp_reward: 716, gold_min: 3992, gold_max: 6986, sprite: 'witch', family: 'elemental', region: 'first_light' },
   { slug: 'firstlight_apex_aurelion', name: "Aurelion, the First Light", level: 500, hp: 68381, atk_min: 2417, atk_max: 3829, defense: 878, speed: 6, xp_reward: 4248, gold_min: 16000, gold_max: 28000, sprite: 'titan', family: 'magic', region: 'first_light' },
 ];
+
+/* =========================================================================
+ * Endgame крива (баланс одит). Ръчно въведените банди растат линейно
+ * (hp ≈ 77–81·L, atk ≈ 4.5–4.8·L), а героите на lv 291+ получават T10–T12
+ * екипировка + сетове, които скалират по-стръмно. Симулацията (детерминистичен
+ * харнес, бюджети ×0.25/×0.5/×1) показа, че СЛЕД lv ~291 всеки следващ регион
+ * е ПО-ЛЕСЕН от предишния (остатъчно HP при вход 36% → 75%, победа 100%,
+ * APEX-ите от lv 380 нагоре ≥ 90% на своето ниво). Над ENDGAME_CURVE_FROM
+ * hp и атаката на чудовищата растат с ENDGAME_CURVE_SLOPE на 100 нива, за да
+ * е входът на всеки endgame регион поне толкова труден, колкото предишният.
+ * Наградите (XP/злато) не се пипат — те са закотвени в темпото.
+ * ======================================================================= */
+export const ENDGAME_CURVE_FROM = 261;
+export const ENDGAME_CURVE_SLOPE = 0.3;
+
+export function endgameMonsterMult(level: number): number {
+  return level <= ENDGAME_CURVE_FROM ? 1 : 1 + (ENDGAME_CURVE_SLOPE * (level - ENDGAME_CURVE_FROM)) / 100;
+}
+
+function withEndgameCurve<M extends { level: number; hp: number; atk_min: number; atk_max: number }>(m: M): M {
+  const f = endgameMonsterMult(m.level);
+  if (f === 1) return m;
+  return { ...m, hp: Math.round(m.hp * f), atk_min: Math.round(m.atk_min * f), atk_max: Math.round(m.atk_max * f) };
+}
+
+export const MONSTER_SEED = RAW_MONSTER_SEED.map(withEndgameCurve);
 
 /* =========================================================================
  * REGION_BANDS retained as metadata for hunting.ts (region gates +

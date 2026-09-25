@@ -2,6 +2,10 @@
 
 import { MONSTER_SEED } from './monsters';
 import { tierForEffectiveLevel } from '../game/drops';
+import { paceXpForKill } from '../game/progression';
+
+/** Дневният XP бонус на band подземие = толкова pace-убийства на средното му ниво. */
+export const DUNGEON_XP_PACE_KILLS = 24;
 
 export interface DungeonStage {
   monster_slug: string;
@@ -86,7 +90,13 @@ function generateBandDungeons(): DungeonDef[] {
         { monster_slug: s3.slug, narration: `${s3.name} guards the inner hall.` },
         { monster_slug: s4.slug, narration: `${s4.name} waits at the heart of ${b.name}.` },
       ],
-      xp_bonus: Math.round(2000 * Math.pow(midLevel / 25, 1.3)),
+      // Баланс (одит): беше 2000·(mid/25)^1.3 — експонент 1.3 срещу стъпка на
+      // нивото ~L^0.7, затова дневният бонус растеше от ~3.7 нива (lv 34) до
+      // ~12 нива (lv 335) на подземие, а сборът на всички дневни подземия на
+      // lv 300 = ~55 нива/ден (≈21 ч лов). Сега бонусът е закотвен в темпото:
+      // DUNGEON_XP_PACE_KILLS убийства на средното ниво (~3 нива) — еднаква
+      // относителна стойност на всяко ниво.
+      xp_bonus: Math.round(DUNGEON_XP_PACE_KILLS * paceXpForKill(midLevel)),
       gold_bonus: Math.round(800 * Math.pow(midLevel / 25, 1.25)),
       loot_pool: lootByTier(tier),
     });

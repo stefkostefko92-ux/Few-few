@@ -22,6 +22,8 @@ import { pushToChars } from '../lib/stream';
 import { missionsForGuild } from '../game/guildMissions';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
+import { loadEquipped } from '../game/equipment';
+import { applyXp } from '../game/progression';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 
 const router = Router();
@@ -677,18 +679,10 @@ router.post('/wars/fight', (req, res) => {
   }
 
   // Build actors
+  // Същият loader като арената/лова (enchants + маунт + add-ons) — преди
+  // войната четеше само items.* и пропускаше forge бонусите и маунта.
   function loadActor(c: Character) {
-    const equipped = db
-      .prepare(
-        `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-         JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-      )
-      .all(c.id) as any[];
-    const eqList = equipped.map((row) => ({
-      item: row as Item,
-      entry: { id: row.inv_id, character_id: c.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
-    }));
-    const derived = deriveStats(c, eqList);
+    const derived = deriveStats(c, loadEquipped(c.id));
     return { actor: buildHeroActor(c, derived, derived.hp_max), derived };
   }
   const hero = loadActor(char).actor;
@@ -780,17 +774,7 @@ router.post('/dungeon/attack', (req, res) => {
   if (!boss) { res.status(500).json({ error: 'Boss missing' }); return; }
 
   // Compute hero damage by averaging combat 1v1 result against a scaled boss segment
-  const equipped = db
-    .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-    )
-    .all(char.id) as any[];
-  const eqList = equipped.map((row) => ({
-    item: row as Item,
-    entry: { id: row.inv_id, character_id: char.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
-  }));
-  const derived = deriveStats(char, eqList);
+  const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, char.hp);
 
   const segHp = Math.min(run.boss_hp, Math.floor(derived.hp_max * 1.5));
@@ -834,8 +818,15 @@ router.post('/dungeon/attack', (req, res) => {
         const xpReward = 200 + boss.level * 40;
         const goldReward = 100 + boss.level * 20;
         for (const m of members) {
-          db.prepare('UPDATE characters SET xp = xp + ?, gold = gold + ?, total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?')
-            .run(xpReward, goldReward, xpReward, goldReward, m.character_id);
+          // applyXp (не суров `xp = xp + ?`) — иначе нивото/HP растежът
+          // изоставаха до следващата XP награда от друг източник.
+          const mc = db.prepare('SELECT * FROM characters WHERE id = ?').get(m.character_id) as Character | undefined;
+          if (!mc) continue;
+          applyXp(mc, xpReward);
+          db.prepare(
+            `UPDATE characters SET xp = ?, level = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = gold + ?,
+               total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?`,
+          ).run(mc.xp, mc.level, mc.hp_max, mc.mp_max, mc.hp, mc.mp, goldReward, xpReward, goldReward, m.character_id);
         }
         db.prepare('UPDATE guilds SET xp = xp + ?, gold = gold + ? WHERE id = ?').run(2000, 500, g.guild.id);
         return { cleared: true, newBossHp: 0 };

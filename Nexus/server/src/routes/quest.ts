@@ -2,13 +2,14 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp, paceXpForKill } from '../game/progression';
+import { applyXp } from '../game/progression';
+import { questBaseXp, questBaseGold, questCombatXp, questLossPenalty } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
-import { grantDrop, DROP_RATES } from '../game/drops';
+import { grantDrop, grantUniqueItem, DROP_RATES } from '../game/drops';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
@@ -22,8 +23,16 @@ router.get('/', (req, res) => {
   const lvl = char?.level ?? 1;
   const quests = db
     .prepare('SELECT * FROM quests WHERE level_req <= ? ORDER BY level_req ASC, region ASC')
-    .all(lvl + 1);
-  res.json({ quests });
+    .all(lvl + 1) as Quest[];
+  // Показваме ЕФЕКТИВНИТЕ награди (след пейс/злато клампа), за да съвпада
+  // числото в клиента с това, което /start реално плаща. Същата JSON форма.
+  const monStmt = db.prepare('SELECT level, xp_reward, gold_min, gold_max FROM monsters WHERE slug = ?');
+  res.json({
+    quests: quests.map((q) => {
+      const m = q.monster_slug ? (monStmt.get(q.monster_slug) as Monster | undefined) : undefined;
+      return { ...q, xp_reward: questBaseXp(q), gold_reward: questBaseGold(q, m) };
+    }),
+  });
 });
 
 const startSchema = z.object({ questSlug: z.string() });
@@ -69,8 +78,9 @@ router.post('/start', (req, res) => {
   // If no monster, this is a story/skill quest
   if (!monster) {
     const success = Math.random() < 0.8;
-    const baseXp = success ? quest.xp_reward : Math.floor(quest.xp_reward * 0.3);
-    const baseGold = success ? quest.gold_reward : 0;
+    const designXp = questBaseXp(quest);
+    const baseXp = success ? designXp : Math.floor(designXp * 0.3);
+    const baseGold = success ? questBaseGold(quest, null) : 0;
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);
     const xpGain = r.xp;
     const goldGain = r.gold;
@@ -135,10 +145,10 @@ router.post('/start', (req, res) => {
   if (result.winner === 'hero') {
     // Pace-clamp the monster's (act-1-inflated) raw xp_reward like hunting
     // does, so a repeatable combat quest can't out-earn the pacing target.
-    // The quest's own xp_reward is a designed payout and stays intact.
-    const monsterXp = Math.min(Math.round(paceXpForKill(monster.level) * 1.8), monster.xp_reward);
-    const baseXp = quest.xp_reward + monsterXp;
-    const baseGold = quest.gold_reward + Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
+    // Куест-частта е клампната до 3× pace на входното ниво (game/rewardFormulas):
+    // act-1 seed-ът (shadowfell 3000 XP = 30× pace) се фармеше на всяко ниво.
+    const baseXp = questCombatXp(quest, monster);
+    const baseGold = questBaseGold(quest, monster) + Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);
     xpGain = r.xp;
     goldGain = r.gold;
@@ -148,16 +158,17 @@ router.post('/start', (req, res) => {
     // (legendary turn-in quests use this). Otherwise kill quests roll
     // the unified 35% Tower/Arena/Hunt drop path so the player who
     // turns in a region quest reliably leaves with a piece of gear.
+    // Експлойт (одит): куестовете са повторяеми, а item_reward се даваше на
+    // ВСЯКО повторение (60%) без проверка за притежание → легендарният
+    // Dragonbane (sell 5000g) се печаташе на всеки ~6.5 мин. Сега наградата
+    // е еднократна като APEX дропа: ако героят вече притежава предмета (в
+    // чантата, екипиран, обявен или в гилдийния трезор), падаме на общия дроп.
+    let rewardGranted = false;
     if (quest.item_reward && Math.random() < 0.6) {
-      itemRewardSlug = quest.item_reward;
-      const item = db.prepare('SELECT * FROM items WHERE slug = ?').get(itemRewardSlug) as Item | undefined;
-      if (item) {
-        db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(
-          char.id,
-          item.id,
-        );
-      }
-    } else if (quest.monster_slug && Math.random() < DROP_RATES.quest) {
+      rewardGranted = grantUniqueItem(db, char.id, quest.item_reward);
+      if (rewardGranted) itemRewardSlug = quest.item_reward;
+    }
+    if (!rewardGranted && quest.monster_slug && Math.random() < DROP_RATES.quest) {
       const drop = grantDrop(char.id, char.level, char.class || '', monster.level);
       if (drop.slug) itemRewardSlug = drop.slug;
       if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
@@ -165,9 +176,10 @@ router.post('/start', (req, res) => {
   }
   char.hp = Math.max(1, result.hpAfter > 0 ? result.hpAfter : 1);
   // Loss penalty: -10% gold (min 0)
+  // Загуба: −10% злато, но не повече от наградата на куеста — преди губеше
+  // 10% от ЦЯЛОТО състояние (милиони на endgame) срещу залог от ~3k.
   if (result.winner === 'foe') {
-    const penalty = Math.min(char.gold, Math.floor(char.gold * 0.1));
-    char.gold -= penalty;
+    char.gold -= questLossPenalty(char.gold, quest);
   }
   setCooldown(char.id, 'quest');
   db.prepare(

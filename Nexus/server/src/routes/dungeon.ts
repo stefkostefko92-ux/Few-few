@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp, paceXpForKill } from '../game/progression';
+import { applyXp } from '../game/progression';
+import { dungeonStageReward } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
@@ -147,8 +148,7 @@ router.post('/advance', (req, res) => {
     // Pace-clamp per-stage XP the same way hunting does, so a dungeon stage
     // can't hand out a monster's raw (act-1-inflated) xp_reward. The big
     // once-per-lock completion bonus is where the dungeon payoff lives.
-    const stageXp = Math.min(Math.round(paceXpForKill(monster.level) * 1.8), Math.floor(monster.xp_reward * 1.5));
-    const stageGold = Math.floor((monster.gold_min + monster.gold_max) / 2);
+    const { xp: stageXp, gold: stageGold } = dungeonStageReward(monster);
     const newStage = run.stage + 1;
     const items = JSON.parse(run.items_json || '[]') as string[];
     // 25% chance for a random shop-style item from the loot pool mid-run

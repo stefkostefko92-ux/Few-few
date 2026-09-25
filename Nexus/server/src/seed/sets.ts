@@ -59,9 +59,9 @@ export const ITEM_SETS: SetDef[] = [
     lore:
       'Standard issue for the Iron Watch — the kingdom-conscripted infantry who patrol the bridges and tollroads.',
     pieces: ['chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'steel_longsword'],
-    bonus_2: { hp_bonus: 25, str_bonus: 2 },
-    bonus_4: { hp_bonus: 55, defense_bonus: 6, str_bonus: 3 },
-    bonus_6: { hp_bonus: 100, defense_bonus: 12, str_bonus: 5, atk_bonus: 4 },
+    bonus_2: { hp_bonus: 25, atk_bonus: 1 },
+    bonus_4: { hp_bonus: 55, defense_bonus: 6, atk_bonus: 2 },
+    bonus_6: { hp_bonus: 100, defense_bonus: 12, atk_bonus: 7 },
   },
   {
     slug: 'sylvan_marshal',
@@ -110,8 +110,8 @@ export const ITEM_SETS: SetDef[] = [
     lore:
       'Forged in the molten kilns of the Ember Spires. Armour that the Lava Titans cannot fully crush.',
     pieces: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'flameblade'],
-    bonus_2: { hp_bonus: 80, str_bonus: 4 },
-    bonus_4: { hp_bonus: 180, defense_bonus: 18, str_bonus: 6, atk_bonus: 8 },
+    bonus_2: { hp_bonus: 80, atk_bonus: 2 },
+    bonus_4: { hp_bonus: 180, defense_bonus: 18, atk_bonus: 11 },
   },
   {
     slug: 'voidshard',
