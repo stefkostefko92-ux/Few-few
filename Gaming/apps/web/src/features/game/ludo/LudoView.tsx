@@ -203,7 +203,6 @@ export function LudoView({ title }: { title: string }) {
                 borderRadius: 16,
                 overflow: "hidden",
                 lineHeight: 0,
-                boxShadow: "0 16px 40px -16px rgba(0,0,0,.7)",
               }}
             >
               <canvas

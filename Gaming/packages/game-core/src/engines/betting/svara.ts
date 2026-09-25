@@ -227,10 +227,12 @@ export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
   },
 
   score(state): SeatScore[] {
-    const winner = state.winner ?? 0;
+    // Класиране по чипове: единствен лидер → "win"; няколко с равен максимум →
+    // "draw" за тях (победител няма); всички останали → "loss".
+    const top = topSeats(state);
     return state.hands.map((_, seat) => ({
       seat,
-      result: seat === winner ? "win" : "loss",
+      result: !top.includes(seat) ? "loss" : top.length === 1 ? "win" : "draw",
       points: state.chips[seat] ?? 0,
     }));
   },
@@ -354,9 +356,11 @@ function continueFromShowdown(
   const next = clone(state);
   const events: SvaraEvent[] = [];
   if (next.svaraSeats && next.svaraSeats.length > 0) {
-    // Неравните с достатъчно чипове решават (по ред) дали да се включат.
+    // Неравните с достатъчно чипове решават дали да се включат — по реда на
+    // хода: по часовниковата стрелка, започвайки от мястото след раздаващия.
     const eligible: Seat[] = [];
-    for (let s = 0; s < next.seats; s++) {
+    for (let i = 1; i <= next.seats; i++) {
+      const s = (next.dealer + i) % next.seats;
       if (next.svaraSeats.includes(s)) continue;
       if ((next.chips[s] ?? 0) >= next.svaraFee) eligible.push(s);
     }
@@ -412,13 +416,12 @@ function endMatchOrNextHand(
   for (let s = 0; s < next.seats; s++) if ((next.chips[s] ?? 0) >= ANTE) alive.push(s);
 
   if (alive.length <= 1 || next.handNo >= MAX_HANDS_SVARA) {
-    let winner: Seat = alive[0] ?? 0;
-    for (let s = 0; s < next.seats; s++) {
-      if ((next.chips[s] ?? 0) > (next.chips[winner] ?? 0)) winner = s as Seat;
-    }
-    next.winner = winner;
+    // Победител е единственият с най-много чипове; при равенство на върха
+    // победител няма (winner = null) — score() дава "draw" на равните.
+    const top = topSeats(next);
+    next.winner = top.length === 1 ? top[0]! : null;
     next.done = true;
-    events.push({ type: "MATCH", seat: winner });
+    if (next.winner !== null) events.push({ type: "MATCH", seat: next.winner });
     return;
   }
   if (pauseForReveal) {
@@ -480,6 +483,14 @@ function dealSvaraHand(next: SvaraState, rng: SeededRng, events: SvaraEvent[]): 
   next.svaraJoined = [];
   next.winner = null;
   events.push({ type: "HAND", handNo: next.handNo });
+}
+
+/** Местата с най-много чипове (повече от едно = равенство на върха). */
+function topSeats(state: SvaraState): Seat[] {
+  const max = Math.max(...state.chips.slice(0, state.seats));
+  const out: Seat[] = [];
+  for (let s = 0; s < state.seats; s++) if ((state.chips[s] ?? 0) === max) out.push(s);
+  return out;
 }
 
 function activeSeats(state: SvaraState): Seat[] {

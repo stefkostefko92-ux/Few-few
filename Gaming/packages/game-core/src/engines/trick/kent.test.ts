@@ -88,7 +88,9 @@ describe("kent engine — сигнал, Купе, Стоп", () => {
     expect(kentEngine.legalActions(s, 0).some((a) => a.type === "SIGNAL")).toBe(true);
     const afterSignal = apply(s, { type: "SIGNAL", seat: 0 });
     expect(afterSignal.signaled[0]).toBe(true);
-    expect(afterSignal.turn).toBe(1);
+    // Знакът не е ход: ходът остава у сигнализиращия (после SWAP/PASS).
+    expect(afterSignal.turn).toBe(0);
+    expect(kentEngine.legalActions(afterSignal, 0).some((a) => a.type === "SIGNAL")).toBe(false);
     // Партньорът (място 2) вижда знака и вика „Купе!".
     const atPartner = { ...afterSignal, turn: 2 as const };
     const after = apply(atPartner, { type: "CALL_KUPE", seat: 2 });
@@ -155,16 +157,80 @@ describe("kent engine — сигнал, Купе, Стоп", () => {
   });
 });
 
+describe("kent engine — тайният знак не изтича по страничен канал", () => {
+  const kentHands = [
+    ["AS", "AH", "AD", "AC"],
+    ["KS", "KH", "QD", "JC"],
+    ["QS", "QH", "KD", "JH"],
+    ["JS", "JD", "KC", "QC"],
+  ];
+  const opponentView = (st: KentState, events: KentEvent[], seat: number) =>
+    JSON.stringify({
+      state: kentEngine.redact(st, seat),
+      legal: kentEngine.legalActions(st, seat),
+      events: events.map((e) => kentEngine.redactEvent!(e, seat)).filter((e) => e !== null),
+    });
+
+  it("изгледът на противника (redact + redactEvent + legalActions) е идентичен преди и след SIGNAL", () => {
+    const s = craft({ hands: kentHands, turn: 0 });
+    const { state: after, events } = step(s, { type: "SIGNAL", seat: 0 });
+    for (const opp of [1, 3]) {
+      expect(opponentView(after, events, opp)).toBe(opponentView(s, [], opp));
+    }
+    // Ход, брояч на ходове, серия пасове и център — непроменени.
+    expect(after.turn).toBe(s.turn);
+    expect(after.moves).toBe(s.moves);
+    expect(after.passStreak).toBe(s.passStreak);
+    expect(after.center).toEqual(s.center);
+    // Партньорът обаче вижда и събитието, и флага.
+    expect(opponentView(after, events, 2)).not.toBe(opponentView(s, [], 2));
+  });
+
+  it("противникът не може да различи SIGNAL+PASS от чист PASS (СТОП не е „гарантиран“)", () => {
+    const s = craft({ hands: kentHands, turn: 0 });
+    // Път А: знак, после пас. Път Б: само пас (без знак).
+    const a1 = step(s, { type: "SIGNAL", seat: 0 });
+    const a2 = step(a1.state, { type: "PASS" });
+    const b = step(s, { type: "PASS" });
+    for (const opp of [1, 3]) {
+      const viewA = opponentView(a2.state, [...a1.events, ...a2.events], opp);
+      const viewB = opponentView(b.state, b.events, opp);
+      expect(viewA).toBe(viewB);
+    }
+    // Противникът на ход (1) има едни и същи възможности и в двата случая.
+    expect(kentEngine.legalActions(a2.state, 1)).toEqual(kentEngine.legalActions(b.state, 1));
+  });
+});
+
 describe("kent engine — мач и инварианти", () => {
-  it("plays full random matches to a decisive winning team (terminates)", () => {
+  it("plays full random matches to termination (win/loss by team, или „draw“ при равенство на тавана)", () => {
     for (let g = 0; g < 12; g++) {
       const { state, terminal } = playRandom(kentEngine, { seed: `m${g}`, botSeed: `b${g}`, seats: 4 });
       expect(terminal).toBe(true);
       const score = kentEngine.score(state);
+      if (state.winningTeam === null) {
+        expect(state.matchScore[0]).toBe(state.matchScore[1]);
+        expect(score.every((x) => x.result === "draw")).toBe(true);
+        continue;
+      }
       expect(score.filter((x) => x.result === "win")).toHaveLength(2);
-      const w = state.winningTeam!;
+      const w = state.winningTeam;
       expect(state.matchScore[w] >= KENT_TARGET || state.round >= 40 || state.moves >= 20_000).toBe(true);
     }
+  });
+
+  it("при таван и равен резултат score връща „draw“ за всички (не печели отбор 0)", () => {
+    // Последен кръг (MAX_ROUNDS), тестето празно → 4 паса = REDEAL на тавана → край.
+    let s = craft({ round: 40, deck: [], matchScore: [1, 1], turn: 0, passStreak: 0 });
+    for (let i = 0; i < 4; i++) s = apply(s, { type: "PASS" });
+    expect(s.done).toBe(true);
+    expect(s.winningTeam).toBeNull();
+    expect(kentEngine.score(s).every((x) => x.result === "draw")).toBe(true);
+    // Неравен резултат на тавана → решаващ (печели водещият).
+    let t = craft({ round: 40, deck: [], matchScore: [1, 2], turn: 0, passStreak: 0 });
+    for (let i = 0; i < 4; i++) t = apply(t, { type: "PASS" });
+    expect(t.winningTeam).toBe(1);
+    expect(kentEngine.score(t).filter((x) => x.result === "win").map((x) => x.seat)).toEqual([1, 3]);
   });
 
   it("the heuristic bot only proposes legal actions", () => {

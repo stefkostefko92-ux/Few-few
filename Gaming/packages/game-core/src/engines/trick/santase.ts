@@ -25,7 +25,8 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  * able; if void of the led suit, must play a trump.
  *
  * Closed-stock penalty enforced (§4.2): if the closer fails to reach 66, the
- * opponent wins 2 game points (3 if the closer had taken no trick when closing).
+ * opponent wins 2 game points (3 if the OPPONENT had taken no trick at the moment
+ * of closing — `oppHadTrickAtClose`), and never less than a normal win would give.
  * If neither side reaches 66 in open play, the last trick's winner takes the
  * deal at 1 game point.
  */
@@ -105,9 +106,13 @@ function hasMarriagePartner(hand: Card[], card: Card): boolean {
   return hand.includes(partner);
 }
 
-/** Standard game points for a normal win, by the loser's card points. */
-function normalGamePoints(loserPoints: number): number {
-  return loserPoints === 0 ? 3 : loserPoints < 33 ? 2 : 1;
+/**
+ * Standard game points for a normal win. „Шварц" (3) е, когато губещият НЕ Е ВЗЕЛ
+ * НИТО ЕДНА ВЗЯТКА — не когато има 0 точки: взятка 9+9 носи 0 точки, но е взятка
+ * (→ 2). Иначе 2 под 33 точки („ярма"), 1 от 33 нагоре.
+ */
+function normalGamePoints(loserPoints: number, loserTookTrick: boolean): number {
+  return !loserTookTrick ? 3 : loserPoints < 33 ? 2 : 1;
 }
 
 /** Мачът се играе до 11 точки (раздаванията носят 1/2/3). */
@@ -167,7 +172,8 @@ function finish(
   events: SantaseEvent[],
   rng: SeededRng,
 ): { state: SantaseState; events: SantaseEvent[] } {
-  return settle(state, winner, normalGamePoints(state.points[other(winner)] ?? 0), events, rng);
+  const loser = other(winner);
+  return settle(state, winner, normalGamePoints(state.points[loser] ?? 0, state.wonTrick[loser] ?? false), events, rng);
 }
 
 /**
@@ -189,7 +195,8 @@ function finishClosed(
   // Closer failed → opponent wins with a penalty.
   // 3 точки, ако противникът е бил без взятка при затварянето; иначе 2.
   const penalty = state.oppHadTrickAtClose ? 2 : 3;
-  return settle(state, opp, Math.max(penalty, normalGamePoints(state.points[closer] ?? 0)), events, rng);
+  const normal = normalGamePoints(state.points[closer] ?? 0, state.wonTrick[closer] ?? false);
+  return settle(state, opp, Math.max(penalty, normal), events, rng);
 }
 
 export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent> = {

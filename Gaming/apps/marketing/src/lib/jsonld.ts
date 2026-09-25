@@ -54,7 +54,6 @@ export function webAppLd(): Json {
     operatingSystem: "Any (web browser)",
     browserRequirements: "Requires JavaScript. Modern browser.",
     inLanguage: SITE.locales,
-    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", availability: "https://schema.org/InStock" },
     publisher: { "@type": "Organization", name: SITE.org.legalName, url: SITE.org.url },
   };
 }
@@ -114,7 +113,6 @@ export function videoGameLd(game: GameContent): Json {
     gamePlatform: "Web browser",
     applicationCategory: "Game",
     operatingSystem: "Any (web browser)",
-    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", availability: "https://schema.org/InStock" },
     publisher: { "@type": "Organization", name: SITE.org.legalName, url: SITE.org.url },
   };
 }

@@ -230,6 +230,69 @@ describe("rummy knock showdown", () => {
   });
 });
 
+describe("rummy оптимално долагане (не алчно)", () => {
+  const discardState = (knocker: string[], defender: string[]) =>
+    makeState({
+      hands: [knocker, defender],
+      stock: Array.from({ length: 20 }, (_, i) => `X${i}`),
+      discard: ["QC"],
+      turn: 0,
+      phase: "DISCARD",
+    });
+
+  it("случай A: защитаващият се разбива своя серия, за да долепи — undercut", () => {
+    // Чукащият (след 9♠): T-J-Q♥ + K-K-K, мъртви A♣ 2♣ 3♦ 4♠ = 10.
+    // Алчно: защитаващият се мелдва 7-8-9♥ + 2-2-2 → 7♠ 7♦ A♠ A♦ = 16, нищо не
+    // се долепя → печели чукащият. Оптимално: 7-7-7 + 2-2-2, после 9♥ и (верижно)
+    // 8♥ към T-J-Q♥ → остават A♠ A♦ = 2 → undercut за защитаващия се.
+    const s = discardState(
+      ["TH", "JH", "QH", "KS", "KD", "KC", "AC", "2C", "3D", "4S", "9S"],
+      ["7H", "7S", "7D", "8H", "9H", "2S", "2D", "2H", "AS", "AD"],
+    );
+    const { state } = rummyEngine.reduce(s, { type: "KNOCK", card: "9S" }, rng());
+    const sd = state.showdown!;
+    expect(sd.deadwood).toEqual([10, 2]);
+    expect([...sd.layoffs].sort()).toEqual(["8H", "9H"]);
+    expect([...sd.unmatched[1]].sort()).toEqual(["AD", "AS"]);
+    expect(sd.undercut).toBe(true);
+    expect(sd.winner).toBe(1);
+    expect(sd.points).toBe(8 + 25);
+    // Редът на долагане е легален ред на игра: първо 9♥ (до T♥), после 8♥.
+    expect(sd.layoffs).toEqual(["9H", "8H"]);
+  });
+
+  it("случай B: верижното долагане изпреварва алчния избор на цел", () => {
+    // Чукащият (след K♠): 8-8-8 + 5-6-7♥, мъртви A♣ 2♣ 3♦ 4♠ = 10.
+    // Алчно 8♥ отива към сета от осмици и 9♥ остава блокирана (19 точки);
+    // оптимално 8♥ удължава 5-6-7♥, а после и 9♥ → остават A♠ A♦ = 2.
+    const s = discardState(
+      ["8S", "8D", "8C", "5H", "6H", "7H", "AC", "2C", "3D", "4S", "KS"],
+      ["8H", "9H", "JS", "JD", "JC", "2S", "2D", "2H", "AS", "AD"],
+    );
+    const { state } = rummyEngine.reduce(s, { type: "KNOCK", card: "KS" }, rng());
+    const sd = state.showdown!;
+    expect(sd.deadwood).toEqual([10, 2]);
+    expect(sd.layoffs).toEqual(["8H", "9H"]);
+    expect(sd.undercut).toBe(true);
+    expect(sd.winner).toBe(1);
+  });
+
+  it("една карта се долепя само към една комбинация", () => {
+    // 7♥ пасва и на сета от седмици, и на 4-5-6♥ — но се брои веднъж.
+    expect(deadwoodAfterLayoff(["7H", "KD"], [["7S", "7D", "7C"], ["4H", "5H", "6H"]])).toBe(10);
+  });
+
+  it("пълното търсене е бързо (< 50 ms) при много възможни удължения", () => {
+    const t0 = performance.now();
+    const res = deadwoodAfterLayoff(
+      ["2H", "3H", "4H", "8H", "9H", "TH", "4S", "3S", "8S", "9S", "TS"],
+      [["5H", "6H", "7H"], ["5S", "6S", "7S"], ["QC", "QD", "QS"]],
+    );
+    expect(res).toBe(0);
+    expect(performance.now() - t0).toBeLessThan(50);
+  });
+});
+
 describe("rummy dead hand (two stock cards left, no knock)", () => {
   it("awards no points and redeals with the same first player", () => {
     const s = makeState({

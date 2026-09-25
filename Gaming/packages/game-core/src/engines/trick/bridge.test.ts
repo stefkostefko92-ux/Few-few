@@ -91,7 +91,10 @@ describe("bridge doubling", () => {
       if (!terminal) continue;
       reachedTerminal++;
       const score = bridgeEngine.score(state);
-      expect(score.filter((x) => x.result === "win")).toHaveLength(2);
+      // Двама победители — или (при равни точки на тавана) реми за четиримата.
+      const wins = score.filter((x) => x.result === "win").length;
+      const draws = score.filter((x) => x.result === "draw").length;
+      expect(wins === 2 || draws === 4).toBe(true);
       expect(state.gamesWon[0] >= 2 || state.gamesWon[1] >= 2 || state.dealNo >= 16).toBe(true);
     }
     expect(reachedTerminal).toBeGreaterThan(0);
@@ -203,18 +206,73 @@ describe("bridge rubber scoring", () => {
       if (s.gamesWon[0] + s.gamesWon[1] > 0) sawGameWin = true;
     }
     expect(bridgeEngine.isTerminal(s)).toBe(true);
+    // Law 77 при тавана: 300 за един спечелен гейм + 100 за частичен резултат.
+    const law77 = (t: 0 | 1): number =>
+      s.gamesWon[0] >= 2 || s.gamesWon[1] >= 2
+        ? 0
+        : (s.gamesWon[t] === 1 ? 300 : 0) + (s.belowLine[t] > 0 ? 100 : 0);
     const winner = s.winningTeam!;
     const loser = (1 - winner) as 0 | 1;
-    // Defenders never receive a hidden bonus — their total is exactly the sum.
-    expect(s.matchPoints[loser]).toBe(summed[loser]);
-    // The winner's ONLY extra over the per-deal sum is the rubber bonus, and only
-    // if the rubber was decided by two games (else the cap ended it: extra 0).
+    // Defenders never receive a hidden bonus — their total is the sum (+ Law 77).
+    expect(s.matchPoints[loser]).toBe(summed[loser] + law77(loser));
+    // The winner's ONLY extra over the per-deal sum is the rubber bonus when the
+    // rubber was decided by two games; at the cap it is exactly Law 77.
     const extra = s.matchPoints[winner as 0 | 1] - summed[winner as 0 | 1];
     if (s.gamesWon[winner as 0 | 1] >= 2) {
       expect([500, 700]).toContain(extra);
     } else {
-      expect(extra).toBe(0);
+      expect(extra).toBe(law77(winner as 0 | 1));
     }
     expect(sawGameWin || s.dealNo >= 16).toBe(true);
+  });
+});
+
+describe("bridge таван от 16 раздавания (недовършен робер)", () => {
+  /** Последната (13-а) взятка на 16-ото раздаване: отбор 1 играе 1♣ с 7 взети
+   *  взятки; декларатор е място 1 (dummy = място 3), място 1 води A♠. */
+  const lastTrickOfDeal16 = (): BridgeState => ({
+    ...init("law77"),
+    phase: "PLAY",
+    dealNo: 16,
+    hands: [["2D"], ["AS"], ["3D"], ["4D"]],
+    dealer: 0,
+    leader: 1,
+    turn: 1,
+    trick: [],
+    bidLevel: 1,
+    bidStrain: "C",
+    lastBidder: 1,
+    declarer: 1,
+    passes: 3,
+    trump: "C",
+    contractLevel: 1,
+    doubled: 0,
+    tricksWon: [5, 7],
+    belowLine: [0, 0],
+    gamesWon: [1, 0],
+    vulnerable: [true, false],
+    matchPoints: [100, 150],
+  });
+
+  it("Law 77: +300 за един гейм, +100 за частичен резултат — преди сравнението", () => {
+    // Отбор 1 изпълнява 1♣ +1: 20 под линията + 20 надвзятка → 150 + 40 = 190,
+    // плюс 100 за частичния резултат = 290. Отбор 0: 100 + 300 за гейма = 400.
+    const s = advance(lastTrickOfDeal16(), (x) => x.done);
+    expect(s.done).toBe(true);
+    expect(s.lastDeal).toMatchObject({ declarer: 1, made: true, tricks: 8 });
+    expect(s.belowLine).toEqual([0, 20]);
+    expect(s.matchPoints).toEqual([400, 290]);
+    expect(s.winningTeam).toBe(0);
+    expect(bridgeEngine.score(s).map((x) => x.result)).toEqual(["win", "loss", "win", "loss"]);
+  });
+
+  it("16 раздавания само пасове → равни точки → реми за четиримата", () => {
+    let s = init("all-pass");
+    for (let i = 0; i < 200 && !s.done; i++) s = bridgeEngine.reduce(s, { type: "PASS" }, rng).state;
+    expect(s.done).toBe(true);
+    expect(s.dealNo).toBe(16);
+    expect(s.matchPoints).toEqual([0, 0]);
+    expect(s.winningTeam).toBe(null);
+    expect(bridgeEngine.score(s).map((x) => x.result)).toEqual(["draw", "draw", "draw", "draw"]);
   });
 });

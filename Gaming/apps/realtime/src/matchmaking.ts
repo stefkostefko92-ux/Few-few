@@ -5,6 +5,7 @@ import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
 import {
   DEFAULT_BOT_DIFFICULTY,
   MAGNAT_PRESETS,
+  SOCKET_EVENTS,
   STARTING_MMR,
   buyInFor,
   isBotDifficulty,
@@ -127,6 +128,10 @@ export class Matchmaker {
 
   /** Launch a match from an assembled lobby (host pressed start). Returns id. */
   async startFromLobby(lobby: Lobby): Promise<string> {
+    const members = lobby.slots.flatMap((s) => (s.userId && !s.isBot ? [s.userId] : []));
+    if (!(await this.allAffordBuyIn(members, lobby.game, [lobby.hostUserId]))) {
+      throw new Error("buy-in not covered");
+    }
     const seed = generateSeed();
     const match = await prisma.match.create({
       data: { game: lobby.game, mode: lobby.mode, seed },
@@ -194,6 +199,23 @@ export class Matchmaker {
     if (buyIn === undefined) return true;
     const u = await prisma.user.findUnique({ where: { id: userId }, select: { chips: true } });
     return Number(u?.chips ?? 0n) >= buyIn;
+  }
+
+  /**
+   * Buy-in gate for EVERY way onto a betting table, not just the ranked queue:
+   * lobby starts and friend invites used to seat players without it, and with
+   * the wallet clamp a 0-chip account played Свара with no downside (minting
+   * chips). Returns true if everyone can cover the stake; otherwise tells each
+   * affected player (and `notify` extras, e.g. the host) and returns false.
+   */
+  private async allAffordBuyIn(userIds: string[], game: GameKey, notify: string[] = []): Promise<boolean> {
+    const short: string[] = [];
+    for (const id of userIds) if (!(await this.affordsBuyIn(id, game))) short.push(id);
+    if (short.length === 0) return true;
+    const msg = { code: "insufficient_chips", message: "Някой на масата няма достатъчно чипове за залога" };
+    for (const id of new Set([...short, ...notify])) this.io.to(`u:${id}`).emit(SOCKET_EVENTS.ERROR, msg);
+    logger.info({ game, short: short.length }, "betting table refused: buy-in not covered");
+    return false;
   }
 
   /** True if the user currently sits in any matchmaking queue. */
@@ -337,6 +359,7 @@ export class Matchmaker {
     if (free.length === 0) return null;
     const seats = Math.max(2, seatsFor(game));
     const humans = free.slice(0, seats);
+    if (!(await this.allAffordBuyIn(humans, game))) return null;
     const q: QueueDesc = { game, mode: "private" };
     // Pull each invitee out of EVERY queue (not just `private`) so the leader
     // can't also match them from the ranked queue into a second live match.

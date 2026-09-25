@@ -40,6 +40,97 @@ describe("dice Yahtzee bonus", () => {
   });
 });
 
+describe("dice правило „Жокер“ (Hasbro)", () => {
+  const scoreActs = (s: DiceState) =>
+    diceEngine
+      .legalActions(s, 0)
+      .flatMap((a) => (a.type === "SCORE" ? [a.category] : []))
+      .sort();
+  const joker = (over: Partial<Record<Category, number>>): DiceState => ({
+    ...diceEngine.init({ seats: 2 }, new SeededRng("j")),
+    dice: [3, 3, 3, 3, 3],
+    rolledThisTurn: true,
+    scores: [over, {}],
+  });
+  const allLower = { threeKind: 0, fourKind: 0, fullHouse: 0, smallStraight: 0, largeStraight: 0, chance: 0 };
+
+  it("свободна съответна горна кутия → само тя е законна (при Покер = 50)", () => {
+    const s = joker({ yahtzee: 50 });
+    expect(scoreActs(s)).toEqual(["threes"]);
+    expect(roomAccepts(s, 0, { type: "SCORE", category: "fullHouse" })).toBe(false);
+    expect(() =>
+      diceEngine.reduce(s, { type: "SCORE", category: "chance" }, new SeededRng("j")),
+    ).toThrow();
+    const out = diceEngine.reduce(s, { type: "SCORE", category: "threes" }, new SeededRng("j"));
+    expect(out.state.scores[0]!.threes).toBe(15);
+    expect(out.state.bonusYahtzee[0]).toBe(100);
+  });
+
+  it("свободна съответна горна кутия → задължителна и при Покер = 0, без бонус", () => {
+    const s = joker({ yahtzee: 0 });
+    expect(scoreActs(s)).toEqual(["threes"]);
+    const out = diceEngine.reduce(s, { type: "SCORE", category: "threes" }, new SeededRng("j"));
+    expect(out.state.bonusYahtzee[0]).toBe(0);
+    expect(out.events.some((e) => e.type === "YAHTZEE_BONUS")).toBe(false);
+  });
+
+  it("горната е заета → свободните долни с жокер-точки (Фул 25, кенти 30/40, сума)", () => {
+    const base = { yahtzee: 50, threes: 9 };
+    expect(scoreActs(joker(base))).toEqual(
+      ["chance", "fourKind", "fullHouse", "largeStraight", "smallStraight", "threeKind"].sort(),
+    );
+    const cases: Array<[Category, number]> = [
+      ["fullHouse", 25],
+      ["smallStraight", 30],
+      ["largeStraight", 40],
+      ["threeKind", 15],
+      ["fourKind", 15],
+      ["chance", 15],
+    ];
+    for (const [cat, pts] of cases) {
+      const out = diceEngine.reduce(joker(base), { type: "SCORE", category: cat }, new SeededRng("j"));
+      expect(out.state.scores[0]![cat]).toBe(pts);
+      expect(out.state.bonusYahtzee[0]).toBe(100);
+    }
+    // Горна кутия за друго лице не е позволена, докато има свободна долна.
+    expect(roomAccepts(joker(base), 0, { type: "SCORE", category: "sixes" })).toBe(false);
+  });
+
+  it("жокер при Покер = 0: Фул пак е 25, но без +100", () => {
+    const out = diceEngine.reduce(
+      joker({ yahtzee: 0, threes: 9 }),
+      { type: "SCORE", category: "fullHouse" },
+      new SeededRng("j"),
+    );
+    expect(out.state.scores[0]!.fullHouse).toBe(25);
+    expect(out.state.bonusYahtzee[0]).toBe(0);
+  });
+
+  it("горната и всички долни са заети → 0 в свободна горна кутия", () => {
+    const s = joker({ yahtzee: 50, threes: 9, ...allLower, sixes: 18 });
+    expect(scoreActs(s)).toEqual(["fives", "fours", "ones", "twos"]);
+    const out = diceEngine.reduce(s, { type: "SCORE", category: "fives" }, new SeededRng("j"));
+    expect(out.state.scores[0]!.fives).toBe(0);
+    expect(out.state.bonusYahtzee[0]).toBe(100);
+  });
+
+  it("първи Покер (кутията празна) — без жокер, всички свободни кутии", () => {
+    const s = joker({});
+    expect(scoreActs(s)).toEqual([...CATEGORIES].sort());
+    // Без жокер Фул за пет еднакви е 0.
+    const out = diceEngine.reduce(s, { type: "SCORE", category: "fullHouse" }, new SeededRng("j"));
+    expect(out.state.scores[0]!.fullHouse).toBe(0);
+  });
+
+  it("ботът спазва жокер-реда", () => {
+    const s = joker({ yahtzee: 50, threes: 9 });
+    const a = diceEngine.bot!({ ...s, rerollsLeft: 0 }, 0, new SeededRng("b"));
+    expect(a).toEqual({ type: "SCORE", category: "largeStraight" }); // 40 е най-много
+    const forced = diceEngine.bot!({ ...joker({ yahtzee: 50 }), rerollsLeft: 0 }, 0, new SeededRng("b"));
+    expect(forced).toEqual({ type: "SCORE", category: "threes" });
+  });
+});
+
 /** A mid-turn state: `seat` to act, dice rolled, given rerolls left. */
 function rolled(dice: number[], opts: Partial<DiceState> = {}): DiceState {
   return {

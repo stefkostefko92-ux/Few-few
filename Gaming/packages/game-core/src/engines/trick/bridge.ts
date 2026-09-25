@@ -379,7 +379,12 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
   },
 
   score(state): SeatScore[] {
-    const winTeam = state.winningTeam ?? (state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1);
+    const [p0, p1] = state.matchPoints;
+    const winTeam = state.winningTeam ?? (p0 === p1 ? null : p0 > p1 ? 0 : 1);
+    // Равни точки без победител → реми и за четиримата.
+    if (winTeam === null) {
+      return [0, 1, 2, 3].map((seat) => ({ seat, result: "draw", points: state.matchPoints[team(seat as Seat)] }));
+    }
     return [0, 1, 2, 3].map((seat) => ({
       seat,
       result: team(seat as Seat) === winTeam ? "win" : "loss",
@@ -475,8 +480,20 @@ function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): 
  *  passed-out (all-pass) path and the post-scoring path. */
 function redealOrEnd(state: BridgeState, events: BridgeEvent[], rng: SeededRng): void {
   if (state.dealNo >= MAX_DEALS_BRIDGE) {
-    state.winningTeam = state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1;
+    // Law 77 (недовършен робер): отбор с един спечелен гейм получава 300, а
+    // отбор с частичен резултат в недовършения гейм — 100. `belowLine` се нулира
+    // при всеки спечелен гейм, значи > 0 = частичен резултат в текущия гейм.
+    for (const t of [0, 1] as const) {
+      if (state.gamesWon[t] === 1) state.matchPoints[t] += 300;
+      if (state.belowLine[t] > 0) state.matchPoints[t] += 100;
+    }
     state.done = true;
+    // При равни точки победител няма — реми (score() връща "draw" за всички).
+    if (state.matchPoints[0] === state.matchPoints[1]) {
+      state.winningTeam = null;
+      return;
+    }
+    state.winningTeam = state.matchPoints[0] > state.matchPoints[1] ? 0 : 1;
     events.push({ type: "MATCH", team: state.winningTeam });
     return;
   }

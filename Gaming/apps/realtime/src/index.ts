@@ -359,6 +359,10 @@ async function main(): Promise<void> {
         .findUnique({ where: { id: parsed.data.matchId }, include: { players: true } })
         .then((match) => {
           if (!match?.endedAt || match.players.length === 0) return; // live elsewhere / unknown
+          // Only a participant may read the verdict: match ids are guessable
+          // enough that this fallback leaked other tables' results, MMR and
+          // chip deltas to anyone who asked.
+          if (!match.players.some((p) => p.userId === userId)) return;
           io.to(userRoom(userId)).emit(SOCKET_EVENTS.GAME_OVER, {
             matchId: match.id,
             score: match.players.map((p) => ({ seat: p.seat, result: p.result ?? "draw" })),

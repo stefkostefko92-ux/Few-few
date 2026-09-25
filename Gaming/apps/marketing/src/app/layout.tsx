@@ -1,4 +1,13 @@
 import type { Metadata, Viewport } from "next";
+// Самостоятелно хоствани шрифтове (без външен CDN): Alegreya за заглавия, Alegreya
+// Sans за текст — и двата с кирилица. Преди CSS-ът искаше Playfair/Manrope, но те
+// никъде не се зареждаха и браузърът тихо падаше на Georgia/системния шрифт.
+import "@fontsource/alegreya/700.css";
+import "@fontsource/alegreya/800.css";
+import "@fontsource/alegreya/400-italic.css";
+import "@fontsource/alegreya-sans/400.css";
+import "@fontsource/alegreya-sans/500.css";
+import "@fontsource/alegreya-sans/700.css";
 import "./globals.css";
 import { SITE } from "../lib/site";
 import { JsonLd } from "../components/JsonLd";
@@ -28,9 +37,10 @@ export const metadata: Metadata = {
     "табла",
     "билярд онлайн",
     "снукър онлайн",
-    "тексас холдем",
+    "магнат онлайн",
     "браузърни игри",
-    "безплатни игри",
+    "игри на маса онлайн",
+    "Carbon Stealth",
   ],
   authors: [{ name: SITE.org.legalName, url: SITE.org.url }],
   creator: SITE.org.legalName,

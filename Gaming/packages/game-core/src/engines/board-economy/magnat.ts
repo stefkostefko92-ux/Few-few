@@ -52,8 +52,14 @@ const JAIL_FINE = 50;
 const tile = (i: number): Tile => BOARD[i]!;
 const houseCost = (i: number): number => HOUSE_COST_BY_GROUP[tile(i).group] ?? 0;
 const mortgageValue = (i: number): number => Math.floor(tile(i).price / 2);
-const unmortgageCost = (i: number): number => Math.ceil(mortgageValue(i) * 1.1);
+/** 10% лихва върху ипотеката, закръглена нагоре — в цели числа (`* 1.1` даваше
+ *  220.00000000000003 → 221 при 12 от 28 имота). */
+const mortgageInterest = (i: number): number => Math.ceil(mortgageValue(i) / 10);
+const unmortgageCost = (i: number): number => mortgageValue(i) + mortgageInterest(i);
 const baseRent = (i: number): number => Math.max(1, Math.round(tile(i).price / 10));
+/** Индексите на картите „Излизане от затвора“ във всяко тесте. */
+const CHANCE_GOJF = CHANCE.findIndex((c) => c.effect.kind === "gojf");
+const CHEST_GOJF = CHEST.findIndex((c) => c.effect.kind === "gojf");
 
 function ownsGroup(s: MagnatState, seat: Seat, group: number): boolean {
   return GROUP_TILES[group]!.every((i) => s.owner[i] === seat);
@@ -76,6 +82,23 @@ function hotelsBuilt(s: MagnatState): number {
   let n = 0;
   for (let i = 0; i < BOARD_SIZE; i++) if (s.houses[i]! === 5) n++;
   return n;
+}
+
+/**
+ * Продава едно ниво сгради на `i` (собственикът получава половин цена за всяка
+ * сграда) и връща сумата. Хотел се разваля на 4 къщи само ако банката има 4
+ * свободни къщи (HOUSE_LIMIT); иначе остават толкова къщи, колкото банката може
+ * да даде (до 0), а останалите се продават наведнъж — лимитът никога не се надхвърля.
+ */
+function sellLevel(s: MagnatState, i: number): number {
+  const half = Math.floor(houseCost(i) / 2);
+  if (s.houses[i]! === 5) {
+    const keep = Math.max(0, Math.min(4, HOUSE_LIMIT - housesBuilt(s)));
+    s.houses[i] = keep;
+    return half * (5 - keep); // хотелът + къщите, които банката не може да върне
+  }
+  s.houses[i]!--;
+  return half;
 }
 
 function rentFor(s: MagnatState, i: number, diceSum: number): number {
@@ -154,8 +177,7 @@ function autoLiquidate(s: MagnatState, debtor: Seat, target: number): void {
       if (s.owner[i] === debtor && s.houses[i]! > 0 && (best < 0 || s.houses[i]! > s.houses[best]!)) best = i;
     }
     if (best < 0) break;
-    s.houses[best]!--;
-    s.cash[debtor]! += Math.floor(houseCost(best) / 2);
+    s.cash[debtor]! += sellLevel(s, best);
   }
   guard = 0;
   while (s.cash[debtor]! < target && guard++ < 500) {
@@ -187,6 +209,7 @@ function charge(s: MagnatState, debtor: Seat, amount: number, creditor: Seat | n
   const to = creditor;
   if (to !== null) s.cash[to]! += s.cash[debtor]!;
   s.cash[debtor]! = 0;
+  const mortgagedIn: number[] = []; // ипотекирани имоти, минаващи към кредитора
   for (let i = 0; i < BOARD_SIZE; i++) {
     if (s.owner[i] !== debtor) continue;
     if (to !== null) {
@@ -196,6 +219,7 @@ function charge(s: MagnatState, debtor: Seat, amount: number, creditor: Seat | n
         s.houses[i]! = 0;
       }
       s.owner[i] = to;
+      if (s.mortgaged[i]) mortgagedIn.push(i);
     } else {
       s.owner[i] = -1;
       s.houses[i]! = 0;
@@ -204,8 +228,49 @@ function charge(s: MagnatState, debtor: Seat, amount: number, creditor: Seat | n
   }
   s.bankrupt[debtor] = true;
   s.inJail[debtor] = false;
+  // Картите „Излизане от затвора“ на фалиралия се връщат на дъното на тестетата.
+  while (s.gojf[debtor]! > 0) returnGojf(s, debtor);
   events.push({ type: "BANKRUPT", seat: debtor, to });
   pushLog(s, `${BOARD[s.pos[debtor]!]!.name}: играч ${debtor + 1} банкрутира`);
+  if (to !== null) chargeTransferInterest(s, to, mortgagedIn, events);
+}
+
+/**
+ * Ипотекиран имот, минал към играч (фалит или сделка): получателят веднага
+ * плаща 10% лихва на банката (класическо правило); по-късно откупува на пълна
+ * цена. Недостиг → обичайният механизъм на `charge` (ликвидация, после фалит).
+ */
+function chargeTransferInterest(s: MagnatState, to: Seat, tiles: number[], events: MagnatEvent[]): void {
+  const due = tiles.reduce((n, i) => n + (s.mortgaged[i] ? mortgageInterest(i) : 0), 0);
+  if (due <= 0) return;
+  pushLog(s, `Играч ${to + 1} плаща ${due} лихва за ипотекирани имоти`);
+  charge(s, to, due, null, events);
+}
+
+/* ── карти „Излизане от затвора“: извън тестето, докато са у играч ──────── */
+/** Изважда изтеглената карта (индекс `card`) от тестето; следващата остава на върха. */
+function takeFromDeck(deck: number[], ptr: number, card: number): number {
+  const at = deck.indexOf(card);
+  if (at < 0) return ptr;
+  const top = ptr % deck.length;
+  deck.splice(at, 1);
+  if (deck.length === 0) return 0;
+  return (at < top ? top - 1 : top) % deck.length;
+}
+/** Връща карта на дъното на тестето (последна преди текущия връх). */
+function putOnBottom(deck: number[], ptr: number, card: number): number {
+  if (deck.includes(card)) return ptr;
+  const top = deck.length === 0 ? 0 : ptr % deck.length;
+  deck.splice(top, 0, card);
+  return top + 1;
+}
+/** Играчът предава една карта „Излизане от затвора“ обратно в липсващото тесте. */
+function returnGojf(s: MagnatState, seat: Seat): void {
+  if (s.gojf[seat]! <= 0) return;
+  s.gojf[seat]!--;
+  // Картите са взаимозаменяеми — връща се в тестето, от което липсва.
+  if (!s.chance.includes(CHANCE_GOJF)) s.chancePtr = putOnBottom(s.chance, s.chancePtr, CHANCE_GOJF);
+  else if (!s.chest.includes(CHEST_GOJF)) s.chestPtr = putOnBottom(s.chest, s.chestPtr, CHEST_GOJF);
 }
 
 function sendToJail(s: MagnatState, seat: Seat, events: MagnatEvent[]): void {
@@ -326,6 +391,9 @@ function applyTrade(s: MagnatState, events: MagnatEvent[]): void {
     s.cash[t.to]! += t.give.cash - t.want.cash;
     events.push({ type: "TRADE_DONE", from: t.from, to: t.to });
     pushLog(s, `Сделка: играч ${t.from + 1} ↔ играч ${t.to + 1}`);
+    // 10% лихва за всеки получен ипотекиран имот (може да доведе до фалит).
+    chargeTransferInterest(s, t.to, t.give.tiles, events);
+    chargeTransferInterest(s, t.from, t.want.tiles, events);
   } else {
     events.push({ type: "TRADE_REJECTED", from: t.from, to: t.to });
   }
@@ -333,6 +401,10 @@ function applyTrade(s: MagnatState, events: MagnatEvent[]): void {
   s.trade = null;
   s.turn = resume;
   s.phase = "MANAGE";
+  // Фалит от лихвата: фалиралият предложител не може да продължи хода си;
+  // ако е останал един платежоспособен играч — край на играта.
+  if (s.bankrupt[resume]) endTurn(s);
+  else checkEnd(s);
 }
 
 function clone(s: MagnatState): MagnatState {
@@ -415,7 +487,10 @@ function applyCard(s: MagnatState, seat: Seat, card: Card, events: MagnatEvent[]
       sendToJail(s, seat, events);
       return { jailed: true };
     case "gojf":
+      // Картата остава у играча и излиза от тестето, докато не я използва.
       s.gojf[seat]!++;
+      if (card === CHANCE[CHANCE_GOJF]) s.chancePtr = takeFromDeck(s.chance, s.chancePtr, CHANCE_GOJF);
+      else s.chestPtr = takeFromDeck(s.chest, s.chestPtr, CHEST_GOJF);
       return { jailed: false };
     case "collectEach":
       for (const o of activeSeats(s)) if (o !== seat) charge(s, o, eff.amount, seat, events);
@@ -502,6 +577,19 @@ function afterResolve(s: MagnatState, jailed: boolean): void {
   s.phase = s.pendingBuy !== null ? "BUY" : "MANAGE";
 }
 
+/** Фазите на собствения ход, в които играчът управлява имотите си. */
+const ownTurnPhase = (s: MagnatState): boolean => s.phase === "ROLL" || s.phase === "BUY" || s.phase === "MANAGE";
+
+/** BUILD/SELL/MORTGAGE/UNMORTGAGE — позволени във всяка фаза на собствения ход. */
+function pushManage(s: MagnatState, seat: Seat, acts: MagnatAction[]): void {
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    if (canBuild(s, seat, i)) acts.push({ type: "BUILD", tile: i });
+    if (canSell(s, seat, i)) acts.push({ type: "SELL", tile: i });
+    if (canMortgage(s, seat, i)) acts.push({ type: "MORTGAGE", tile: i });
+    if (canUnmortgage(s, seat, i)) acts.push({ type: "UNMORTGAGE", tile: i });
+  }
+}
+
 /* ── engine ─────────────────────────────────────────────────────────────── */
 export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = {
   init(opts: InitOpts, rng: SeededRng): MagnatState {
@@ -550,17 +638,20 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
     if (state.done || seat !== state.turn || state.bankrupt[seat]) return [];
     const s = state;
     if (s.phase === "ROLL") {
+      const acts: MagnatAction[] = [{ type: "ROLL" }];
       if (s.inJail[seat]) {
-        const acts: MagnatAction[] = [{ type: "ROLL" }];
         if (s.cash[seat]! >= JAIL_FINE) acts.push({ type: "JAIL_PAY" });
         if (s.gojf[seat]! > 0) acts.push({ type: "JAIL_CARD" });
-        return acts;
       }
-      return [{ type: "ROLL" }];
+      // Класическо правило: управление на имотите по всяко време на своя ход
+      // (напр. ипотека, за да събереш гаранцията за затвора).
+      pushManage(s, seat, acts);
+      return acts;
     }
     if (s.phase === "BUY") {
       const acts: MagnatAction[] = [{ type: "DECLINE" }];
       if (s.pendingBuy !== null && s.cash[seat]! >= tile(s.pendingBuy).price) acts.unshift({ type: "BUY" });
+      pushManage(s, seat, acts); // напр. ипотека, за да събереш цената на имота
       return acts;
     }
     if (s.phase === "AUCTION" && s.auction) {
@@ -577,12 +668,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
     if (s.phase !== "MANAGE") return [];
     // MANAGE
     const acts: MagnatAction[] = [{ type: "END" }];
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      if (canBuild(s, seat, i)) acts.push({ type: "BUILD", tile: i });
-      if (canSell(s, seat, i)) acts.push({ type: "SELL", tile: i });
-      if (canMortgage(s, seat, i)) acts.push({ type: "MORTGAGE", tile: i });
-      if (canUnmortgage(s, seat, i)) acts.push({ type: "UNMORTGAGE", tile: i });
-    }
+    pushManage(s, seat, acts);
     return acts;
   },
 
@@ -643,7 +729,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
         if (s.phase !== "ROLL" || !s.inJail[seat] || s.gojf[seat]! <= 0) {
           throw new IllegalActionError("No release card");
         }
-        s.gojf[seat]!--;
+        returnGojf(s, seat); // картата се връща на дъното на тестето
         s.inJail[seat] = false;
         s.jailTurns[seat] = 0;
         return finish();
@@ -668,6 +754,13 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
               // Third failed attempt: pay the fine and move on the rolled sum.
               feeToBank(s, seat, JAIL_FINE, events);
               events.push({ type: "JAIL_FEE", seat, amount: JAIL_FINE });
+              if (s.bankrupt[seat]) {
+                // Фалит от таксата: край на хода, без движение (преди фалиралият
+                // вървеше, теглеше карта, прибираше пота и минаваше през Старт).
+                s.jailTurns[seat] = 0;
+                endTurn(s);
+                return finish();
+              }
               pushLog(s, `Играч ${seat + 1} плаща ${JAIL_FINE} и излиза от затвора`);
               s.inJail[seat] = false;
               s.jailTurns[seat] = 0;
@@ -795,25 +888,24 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
         return finish();
       }
       case "BUILD": {
-        if (s.phase !== "MANAGE" || !canBuild(s, seat, action.tile)) throw new IllegalActionError("Cannot build");
+        if (!ownTurnPhase(s) || !canBuild(s, seat, action.tile)) throw new IllegalActionError("Cannot build");
         s.cash[seat]! -= houseCost(action.tile);
         s.houses[action.tile]!++;
         return finish();
       }
       case "SELL": {
-        if (s.phase !== "MANAGE" || !canSell(s, seat, action.tile)) throw new IllegalActionError("Cannot sell");
-        s.houses[action.tile]!--;
-        s.cash[seat]! += Math.floor(houseCost(action.tile) / 2);
+        if (!ownTurnPhase(s) || !canSell(s, seat, action.tile)) throw new IllegalActionError("Cannot sell");
+        s.cash[seat]! += sellLevel(s, action.tile);
         return finish();
       }
       case "MORTGAGE": {
-        if (s.phase !== "MANAGE" || !canMortgage(s, seat, action.tile)) throw new IllegalActionError("Cannot mortgage");
+        if (!ownTurnPhase(s) || !canMortgage(s, seat, action.tile)) throw new IllegalActionError("Cannot mortgage");
         s.mortgaged[action.tile] = true;
         s.cash[seat]! += mortgageValue(action.tile);
         return finish();
       }
       case "UNMORTGAGE": {
-        if (s.phase !== "MANAGE" || !canUnmortgage(s, seat, action.tile)) {
+        if (!ownTurnPhase(s) || !canUnmortgage(s, seat, action.tile)) {
           throw new IllegalActionError("Cannot unmortgage");
         }
         s.cash[seat]! -= unmortgageCost(action.tile);
@@ -885,7 +977,9 @@ export function magnatBot(s: MagnatState, seat: Seat, rng: SeededRng): MagnatAct
   if (s.phase === "TRADE" && s.trade && seat === s.trade.to) {
     // accept only clearly favourable offers (value in ≥ value out + small margin).
     const valueOf = (b: typeof s.trade.give) => b.cash + b.tiles.reduce((n, i) => n + tile(i).price, 0);
-    const incoming = valueOf(s.trade.give); // what `to` receives
+    // получените ипотекирани имоти струват и 10% лихва към банката веднага
+    const interest = s.trade.give.tiles.reduce((n, i) => n + (s.mortgaged[i] ? mortgageInterest(i) : 0), 0);
+    const incoming = valueOf(s.trade.give) - interest; // what `to` receives
     const outgoing = valueOf(s.trade.want); // what `to` gives up
     if (incoming >= outgoing * 1.1 && cash >= s.trade.want.cash) return { type: "TRADE_ACCEPT" };
     return { type: "TRADE_DECLINE" };

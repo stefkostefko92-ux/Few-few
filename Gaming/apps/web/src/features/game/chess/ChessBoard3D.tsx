@@ -107,7 +107,6 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
         borderRadius: "16px",
         overflow: "hidden",
         lineHeight: 0,
-        boxShadow: "0 16px 40px -16px rgba(0,0,0,.7)",
       }}
     >
       <canvas

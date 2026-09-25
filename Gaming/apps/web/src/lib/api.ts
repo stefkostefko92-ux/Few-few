@@ -48,7 +48,9 @@ export class ApiError extends Error {
 /** One in-flight refresh at a time — concurrent 401s all await the same call. */
 let refreshing: Promise<boolean> | null = null;
 
-async function tryRefresh(): Promise<boolean> {
+/** Rotate the access cookie from the refresh cookie (single-flight). Also used by
+ *  the socket to re-authenticate a rejected reconnect. */
+export async function tryRefresh(): Promise<boolean> {
   refreshing ??= fetch("/api/auth/refresh", { method: "POST", credentials: "include" })
     .then((r) => r.ok)
     .catch(() => false)
@@ -57,6 +59,18 @@ async function tryRefresh(): Promise<boolean> {
     });
   return refreshing;
 }
+
+/** Endpoints that must never trigger a refresh-and-replay (credentials flow). */
+const NO_REFRESH = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh",
+  "/auth/logout",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/verify-email",
+  "/auth/resend-verification",
+]);
 
 async function request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -67,8 +81,10 @@ async function request<T>(path: string, init?: RequestInit, retried = false): Pr
 
   // The access cookie lives ~15 min: rotate it from the refresh cookie and
   // replay ONCE, so long sessions (admin panel, shop tabs) never dead-end in
-  // silent 401s. Auth routes themselves are exempt (refresh loops).
-  if (res.status === 401 && !retried && !path.startsWith("/auth/")) {
+  // silent 401s. Only the credential endpoints are exempt — NOT the whole
+  // /auth/ prefix: that also caught /auth/me, so every return visit after
+  // 15 min bounced to /login despite a valid 30-day refresh cookie.
+  if (res.status === 401 && !retried && !NO_REFRESH.has(path.split("?")[0] ?? path)) {
     if (await tryRefresh()) return request<T>(path, init, true);
   }
 

@@ -5,6 +5,7 @@
  * its existing click-to-move logic. Render-on-demand (rAF only while the dice
  * tumble) and honours prefers-reduced-motion.
  */
+import { upgradeMaterial } from "../gl/baked.js";
 import {
   AmbientLight,
   BoxGeometry,
@@ -200,6 +201,7 @@ export class BackgammonScene {
     const woodN = woodNormal();
     woodN.repeat.set(6, 1);
     const woodMat = new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.6, 0.6), roughness: 0.5, metalness: 0.08 });
+    upgradeMaterial(woodMat, "walnut", { repeat: [6, 1], albedo: true, roughness: 0.9, normalScale: 0.8, onReady: () => this.core.invalidate() });
     const frame = new Mesh(new BoxGeometry(W + 2 * RAIL, 0.7, D + 2 * RAIL), woodMat);
     frame.position.y = -0.35;
     frame.receiveShadow = true;
@@ -208,15 +210,14 @@ export class BackgammonScene {
     // felt bed with a visible weave (was a dead-flat green plane)
     const feltN = clothNormal();
     feltN.repeat.set(30, 18);
-    const bed = new Mesh(
-      new BoxGeometry(W, 0.12, D),
-      new MeshStandardMaterial({
-        color: new Color("#17452c"),
-        roughness: 0.92,
-        normalMap: feltN,
-        normalScale: new Vector2(0.35, 0.35),
-      }),
-    );
+    const feltMat = new MeshStandardMaterial({
+      color: new Color("#17452c"),
+      roughness: 0.92,
+      normalMap: feltN,
+      normalScale: new Vector2(0.35, 0.35),
+    });
+    upgradeMaterial(feltMat, "felt", { repeat: [15, 9], normalScale: 0.5, onReady: () => this.core.invalidate() });
+    const bed = new Mesh(new BoxGeometry(W, 0.12, D), feltMat);
     bed.position.y = 0.02;
     bed.receiveShadow = true;
     this.scene.add(bed);
@@ -236,6 +237,7 @@ export class BackgammonScene {
       clearcoat: 0.6,
       clearcoatRoughness: 0.2,
     });
+    upgradeMaterial(brass, "brass", { repeat: [1, 1], metalness: true, ao: 0.4, onReady: () => this.core.invalidate() });
     for (const sx of [-1, 1]) {
       for (const sz of [-1, 1]) {
         const corner = new Mesh(new BoxGeometry(0.55, 0.1, 0.55), brass);

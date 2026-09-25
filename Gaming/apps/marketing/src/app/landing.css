@@ -1,522 +1,473 @@
-/* ─── Landing page: cinematic "premium nocturnal tabletop" ─────────────────
-   Self-contained (no Tailwind); pairs with globals.css tokens. */
+/* ─── Начална страница — клубът в залата на Рейвънхолд ────────────────────
+   Подравнено вляво, редакторско. Смелото е на едно място: заглавието като ъгъл
+   на асо пика. Всичко около него е тихо: без плочки с числа, без емоджита, без
+   една и съща карта навсякъде. Токени — в globals.css. Един свят (тъмна зала)
+   по избор; фонът и цветовете са зададени изрично. */
 
-/* HERO — spotlit stage with a felt floor and drifting brass motes. */
-.lp-hero {
+:root {
+  --t-meta: 0.875rem; /* 14 */
+  --t-body: 1.125rem; /* 18 */
+  --t-lead: 1.3125rem; /* 21 */
+  --t-h3: 1.5rem; /* 24 */
+  --t-h2: 2.25rem; /* 36 */
+  --t-display: clamp(4.5rem, 12vw, 7.5rem); /* 72 → 120 */
+}
+
+.hall,
+.roster,
+.craft,
+.reasons,
+.referee,
+.steps,
+.questions,
+.last-call {
+  padding-inline: max(1.25rem, calc((100vw - 1160px) / 2));
+}
+
+/* ── Залата ────────────────────────────────────────────────────────────── */
+.hall {
   position: relative;
-  overflow: hidden;
   isolation: isolate;
-  padding: 7rem 1.25rem 5rem;
-  text-align: center;
-  background:
-    radial-gradient(60% 50% at 50% 0%, rgba(255, 240, 205, 0.12), transparent 60%),
-    radial-gradient(90% 70% at 50% 120%, rgba(31, 90, 64, 0.35), transparent 60%),
-    linear-gradient(180deg, #05201600 0%, #0a1d15 60%, #060807 100%);
-}
-/* overhead light shaft */
-.lp-hero::before {
-  content: "";
-  position: absolute;
-  top: -10%;
-  left: 50%;
-  width: 52%;
-  height: 70%;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(255, 244, 214, 0.14), transparent 72%);
-  clip-path: polygon(40% 0, 60% 0, 86% 100%, 14% 100%);
-  filter: blur(20px);
-  z-index: -1;
-  pointer-events: none;
-}
-/* felt vignette floor */
-.lp-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(70% 60% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
-  z-index: -1;
-  pointer-events: none;
-}
-
-.lp-eyebrow {
-  display: inline-block;
-  font-size: 0.78rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--brass-300);
-  border: 1px solid rgba(217, 178, 95, 0.3);
-  border-radius: 999px;
-  padding: 6px 16px;
-  margin-bottom: 1.75rem;
-  background: rgba(11, 14, 13, 0.4);
-}
-.lp-title {
-  font-size: clamp(3rem, 9vw, 6rem);
-  line-height: 1;
-  letter-spacing: 0.04em;
-  background: linear-gradient(180deg, var(--brass-100), var(--brass-400));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 6px 40px rgba(217, 178, 95, 0.25);
-}
-.lp-sub {
-  font-size: clamp(1.1rem, 3vw, 1.5rem);
-  color: var(--ink-100);
-  margin-top: 1rem;
-  font-family: var(--font-display, serif);
-}
-.lp-lead {
-  max-width: 600px;
-  margin: 1.25rem auto 2.25rem;
-  color: var(--ink-300);
-  font-size: 1.05rem;
-}
-.lp-cta-row {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.cta-lg {
-  font-size: 1.1rem;
-  padding: 0.95rem 2rem;
-  box-shadow: 0 10px 30px -8px rgba(217, 178, 95, 0.5);
-}
-.cta-ghost {
-  display: inline-block;
-  padding: 0.95rem 2rem;
-  border-radius: 14px;
-  border: 1px solid rgba(217, 178, 95, 0.35);
-  color: var(--ink-100);
-  font-weight: 600;
-}
-.cta-ghost:hover {
-  color: var(--brass-100);
-  border-color: var(--brass-300);
-}
-
-/* floating brass motes */
-.lp-mote {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--brass-300);
-  box-shadow: 0 0 8px var(--brass-300);
-  opacity: 0.5;
-  animation: lp-float 9s ease-in-out infinite;
-  z-index: -1;
-}
-@keyframes lp-float {
-  0%, 100% { transform: translateY(0); opacity: 0.2; }
-  50% { transform: translateY(-26px); opacity: 0.6; }
-}
-
-/* hero card fan motif */
-.lp-fan {
-  margin: 3rem auto 0;
-  display: flex;
-  justify-content: center;
-  perspective: 900px;
-  max-width: 100%;
-}
-/* shrink the fan on very small phones so it never causes horizontal scroll */
-@media (max-width: 400px) {
-  .lp-fan-card {
-    width: 62px;
-    height: 88px;
-    margin-left: -22px;
-  }
-}
-.lp-fan-card {
-  position: relative;
-  width: 84px;
-  height: 118px;
-  margin-left: -28px;
-  border-radius: 11px;
-  /* warm ivory face with a soft top-left sheen */
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 42%),
-    radial-gradient(130% 100% at 28% 0%, #fffdf7, #f3ead4 62%, #e6d8bb);
-  /* milled-brass rim + lift */
-  box-shadow:
-    0 0 0 1px rgba(120, 92, 38, 0.5),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.65),
-    inset 0 0 0 3px rgba(217, 178, 95, 0.55),
-    0 16px 30px -10px rgba(0, 0, 0, 0.75);
-  font-family: var(--font-display, serif);
-  transform-origin: bottom center;
-  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.3s ease;
   overflow: hidden;
+  padding-block: clamp(3rem, 7vw, 5.5rem) clamp(3rem, 6vw, 4.5rem);
 }
-/* glossy highlight sweep across the face (under the pips) */
-.lp-fan-card::after {
-  content: "";
+.hall__wall {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.4) 50%, transparent 62%);
-  opacity: 0.35;
-  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(40% 70% at 0% 30%, rgba(217, 115, 58, 0.22), transparent 70%),
+    linear-gradient(90deg, rgba(21, 17, 13, 0.55), rgba(21, 17, 13, 0.92) 55%),
+    url("/stone.webp") center / 360px repeat;
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+  mask-image: linear-gradient(180deg, #000 70%, transparent);
 }
-.lp-fan-card:first-child { margin-left: 0; }
-.lp-fan-card.red { color: var(--suit-red); }
-.lp-fan-card.black { color: var(--suit-black); }
-
-.lp-fan-idx {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 0.8;
-  font-weight: 800;
-}
-.lp-fan-idx b { font-size: 1rem; }
-.lp-fan-idx i { font-size: 0.82rem; font-style: normal; margin-top: 1px; }
-.lp-fan-idx--tl { top: 7px; left: 8px; }
-.lp-fan-idx--br { bottom: 7px; right: 8px; transform: rotate(180deg); }
-.lp-fan-pip {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+.hall__inner {
   display: grid;
-  place-items: center;
-  font-size: 3rem;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
 }
-.lp-fan-card.red { color: #c0241f; }
-.lp-fan-card.black { color: #1b1b22; }
 
-/* STATS band */
-.lp-stats {
+/* Заглавието — ъгълът на асо пика: рангът „А“ над знака ♠, после думата. */
+.ace {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(0.8rem, 2vw, 1.4rem);
+  margin: 0;
+  color: var(--parchment);
+}
+.ace__index {
+  display: grid;
+  justify-items: center;
+  line-height: 0.82;
+  padding-top: 0.35em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--brass);
+}
+.ace__rank {
+  font-size: clamp(2rem, 5vw, 3.1rem);
+}
+.ace__pip {
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  margin-top: 0.12em;
+}
+.ace__word {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--t-display);
+  line-height: 0.86;
+  letter-spacing: 0.02em;
+}
+.hall__tagline {
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-h3);
+  color: var(--brass-soft);
+}
+.hall__lead {
+  margin-top: 1rem;
+  max-width: 34rem;
+  color: var(--muted);
+  font-size: var(--t-body);
+}
+.hall__actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 2.5rem;
-  padding: 2.5rem 1.25rem;
-  border-top: 1px solid rgba(217, 178, 95, 0.1);
-  border-bottom: 1px solid rgba(217, 178, 95, 0.1);
-  background: rgba(11, 14, 13, 0.4);
+  align-items: center;
+  gap: 1rem 1.75rem;
+  margin-top: 2rem;
 }
-.lp-stat {
-  text-align: center;
+.hall__table {
+  margin: 0;
 }
-.lp-stat-num {
-  font-family: var(--font-display, serif);
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--brass-300);
-}
-.lp-stat-label {
-  color: var(--ink-muted);
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-}
-
-/* SECTION heads */
-.lp-section {
-  padding: 4.5rem 1.25rem;
-}
-.lp-section--alt {
-  background: rgba(11, 14, 13, 0.35);
-  border-top: 1px solid rgba(217, 178, 95, 0.08);
-  border-bottom: 1px solid rgba(217, 178, 95, 0.08);
-}
-.lp-section h2 {
-  text-align: center;
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
-  margin-bottom: 0.5rem;
-}
-.lp-section .lp-section-sub {
-  text-align: center;
-  color: var(--ink-muted);
-  max-width: 540px;
-  margin: 0 auto 2.5rem;
-}
-
-/* FEATURES grid */
-.lp-features {
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  max-width: 1080px;
-  margin: 0 auto;
-}
-.lp-feature {
-  padding: 1.75rem;
-  border-radius: var(--r-panel);
-  background: rgba(18, 48, 38, 0.55);
-  border: 1px solid rgba(217, 178, 95, 0.14);
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-.lp-feature:hover {
-  transform: translateY(-4px);
-  border-color: rgba(217, 178, 95, 0.4);
-}
-.lp-feature-icon {
-  font-size: 1.8rem;
-  margin-bottom: 0.75rem;
-}
-.lp-feature h3 {
-  font-size: 1.2rem;
-  color: var(--ink-100);
-}
-.lp-feature p {
-  color: var(--ink-300);
-  margin-top: 0.5rem;
-  font-size: 0.95rem;
-}
-
-/* STEPS */
-.lp-steps {
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  max-width: 980px;
-  margin: 0 auto;
-}
-.lp-step {
-  text-align: center;
-  padding: 1.5rem;
-}
-.lp-step-num {
-  width: 46px;
-  height: 46px;
-  margin: 0 auto 1rem;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display, serif);
-  font-weight: 700;
-  color: var(--charcoal-900);
-  background: linear-gradient(135deg, var(--brass-300), var(--brass-400));
-}
-
-/* GAMES showcase */
-.lp-games {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  max-width: 1080px;
-  margin: 0 auto;
-}
-.lp-game {
+.hall__table img {
   display: block;
-  padding: 1.4rem;
-  border-radius: 16px;
-  background: linear-gradient(160deg, rgba(24, 64, 47, 0.6), rgba(12, 31, 23, 0.7));
-  border: 1px solid rgba(217, 178, 95, 0.14);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.9);
 }
-.lp-game:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.7);
-  border-color: rgba(217, 178, 95, 0.4);
-}
-.lp-game-glyph {
-  font-size: 1.6rem;
-  color: var(--brass-300);
-}
-.lp-game h3 {
-  font-size: 1.15rem;
-  color: var(--ink-100);
-  margin-top: 0.4rem;
-}
-.lp-game .muted {
-  font-size: 0.8rem;
-}
-.lp-games-more {
-  margin-top: 2.25rem;
-  text-align: center;
+.hall__table figcaption {
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
 }
 
-/* FAQ accordion (AEO) */
-.lp-faq {
-  max-width: 760px;
-  margin: 0 auto;
+/* бутони */
+.cta-lg {
+  font-size: 1.08rem;
+  padding: 0.9rem 1.9rem;
+  border-radius: 6px;
+  transition: filter 0.2s ease;
+}
+.link-arrow {
+  color: var(--parchment);
+  font-weight: 500;
+  border-bottom: 1px solid var(--brass);
+  padding-bottom: 2px;
+}
+.link-arrow:hover {
+  color: var(--brass-soft);
+}
+.cta:focus-visible,
+.link-arrow:focus-visible,
+.roster__filter button:focus-visible,
+.seat:focus-visible,
+.questions summary:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+}
+
+/* ── общи заглавия на секциите — вляво, спокойно ───────────────────────── */
+.roster h2,
+.craft h2,
+.reasons h2,
+.referee h2,
+.steps h2,
+.questions h2,
+.last-call h2 {
+  font-size: var(--t-h2);
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+/* ── Масите в клуба ────────────────────────────────────────────────────── */
+.roster {
+  padding-block: 3rem 1rem;
+}
+.roster__head {
   display: grid;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+.roster__head p {
+  color: var(--muted);
+  max-width: 40rem;
+}
+.roster__filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-top: 0.75rem;
+}
+.roster__filter button {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 0.25rem 0;
+  cursor: pointer;
+}
+.roster__filter button:hover {
+  color: var(--parchment);
+}
+.roster__filter button[aria-pressed="true"] {
+  color: var(--parchment);
+  border-bottom-color: var(--brass);
+}
+.roster__groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem clamp(2rem, 5vw, 4rem);
+}
+.roster__group h3 {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 700;
+  color: var(--brass-soft);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.roster__group ul {
+  list-style: none;
+}
+.seat {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 0.6rem;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--parchment);
+}
+.seat img {
+  display: block;
+  width: 96px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.seat:hover {
+  color: var(--parchment);
+}
+.seat:hover .seat__name {
+  color: var(--brass-soft);
+}
+.seat__name {
+  font-family: var(--font-display);
+  font-size: var(--t-lead);
+  font-weight: 700;
+}
+.seat__meta {
+  display: grid;
+  justify-items: end;
+  font-size: var(--t-meta);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Как е направено ───────────────────────────────────────────────────── */
+.craft {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+  padding-block: 5rem 0;
+}
+.craft__text p {
+  margin-top: 0.9rem;
+  color: var(--muted);
+  max-width: 34rem;
+}
+.craft__shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
-.lp-faq-item {
-  border-radius: 14px;
-  border: 1px solid rgba(217, 178, 95, 0.14);
-  background: rgba(18, 48, 38, 0.45);
-  overflow: hidden;
-  transition: border-color 0.2s ease;
+.craft__shots img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
 }
-.lp-faq-item[open] {
-  border-color: rgba(217, 178, 95, 0.4);
+.craft__shots img:last-child {
+  margin-top: 2.5rem;
 }
-.lp-faq-item summary {
-  cursor: pointer;
+
+/* ── Защо тук — списък с определения, не кутии ─────────────────────────── */
+.reasons {
+  padding-block: 5rem 0;
+}
+.reasons dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem clamp(2rem, 5vw, 4rem);
+  margin-top: 1.75rem;
+}
+.reasons dt {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 700;
+  color: var(--parchment);
+}
+.reasons dd {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  max-width: 32rem;
+}
+
+/* ── Сървърът е съдията — единственият отделен панел (сукното на масата) ── */
+.referee {
+  margin-top: 5rem;
+  padding-block: 3rem;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35)),
+    var(--felt);
+  border-block: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.referee h2 {
+  color: var(--parchment);
+}
+.referee p {
+  margin-top: 0.8rem;
+  max-width: 40rem;
+  color: #d6ccb4;
+}
+.referee ul {
   list-style: none;
-  padding: 1.1rem 1.35rem;
-  font-weight: 600;
-  color: var(--ink-100);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 2rem;
+  margin-top: 1.5rem;
 }
-.lp-faq-item summary::-webkit-details-marker {
+.referee li {
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(236, 223, 196, 0.25);
+  color: var(--parchment);
+}
+
+/* ── Стъпки — истинска последователност ─────────────────────────────────── */
+.steps {
+  padding-block: 5rem 0;
+}
+.steps ol {
+  list-style: none;
+  counter-reset: step;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem clamp(2rem, 4vw, 3rem);
+  margin-top: 1.75rem;
+}
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+  gap: 0.3rem;
+}
+.steps li::before {
+  content: counter(step);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--brass);
+}
+.steps strong {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  color: var(--parchment);
+}
+.steps span {
+  color: var(--muted);
+}
+
+/* ── Въпроси ───────────────────────────────────────────────────────────── */
+.questions {
+  padding-block: 5rem 0;
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+}
+.questions > div {
+  width: 100%;
+  max-width: 48rem;
+  border-top: 1px solid var(--line);
+}
+.questions details {
+  border-bottom: 1px solid var(--line);
+}
+.questions summary {
+  list-style: none;
+  cursor: pointer;
+  position: relative;
+  padding: 1rem 2rem 1rem 0;
+  font-weight: 500;
+  font-size: var(--t-body);
+  color: var(--parchment);
+}
+.questions summary::-webkit-details-marker {
   display: none;
 }
-.lp-faq-item summary::after {
+.questions summary::after {
   content: "+";
-  color: var(--brass-300);
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--brass);
   font-size: 1.4rem;
-  line-height: 1;
   transition: transform 0.2s ease;
 }
-.lp-faq-item[open] summary::after {
-  transform: rotate(45deg);
+.questions details[open] summary::after {
+  transform: translateY(-50%) rotate(45deg);
 }
-.lp-faq-item p {
-  padding: 0 1.35rem 1.2rem;
-  color: var(--ink-300);
-  margin: 0;
-  font-size: 0.95rem;
+.questions details p {
+  padding-bottom: 1.1rem;
+  color: var(--muted);
+  max-width: 42rem;
 }
 
-/* trust / closing CTA */
-.lp-final {
-  text-align: center;
-  padding: 5rem 1.25rem;
-  background: radial-gradient(60% 80% at 50% 0%, rgba(217, 178, 95, 0.08), transparent 60%);
+/* ── Финал ─────────────────────────────────────────────────────────────── */
+.last-call {
+  margin-top: 5rem;
+  padding-block: 4rem 4.5rem;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  border-top: 1px solid var(--line);
+  background: radial-gradient(40% 90% at 0% 100%, rgba(217, 115, 58, 0.16), transparent 70%);
 }
-.lp-final h2 {
-  font-size: clamp(2rem, 6vw, 3.2rem);
-}
-.lp-trust {
+.last-call p {
   display: flex;
-  gap: 1.5rem;
-  justify-content: center;
   flex-wrap: wrap;
-  margin: 1.5rem auto 2.25rem;
-  color: var(--ink-muted);
-  font-size: 0.9rem;
-}
-.lp-trust span::before {
-  content: "✓ ";
-  color: var(--win);
+  gap: 0.35rem 1.6rem;
+  font-size: var(--t-meta);
+  color: var(--muted);
 }
 
-/* ─── Entrance + scroll-reveal animations ──────────────────────────────────
-   Hero elements animate in on load with a stagger. Sections/cards reveal on
-   scroll via a scroll-timeline — guarded by @supports so browsers without it
-   (and reduced-motion users) simply show the content, never hide it. */
-
-@keyframes lp-rise {
-  from { opacity: 0; transform: translateY(22px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── Движение: един момент — кадърът от масата се „раздава“ веднъж и сяда на
+   мястото си като карта, сложена на масата. Текстът е в покой от първия кадър. */
+@keyframes deal {
+  from { opacity: 0; transform: translate(6%, -5%) rotate(5deg); }
+  to { opacity: 1; transform: none; }
+}
+.hall__table img {
+  animation: deal 0.9s cubic-bezier(0.2, 0.8, 0.25, 1) 0.1s both;
 }
 
-.lp-eyebrow,
-.lp-title,
-.lp-sub,
-.lp-lead,
-.lp-cta-row,
-.lp-fan {
-  animation: lp-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-}
-.lp-title { animation-delay: 0.06s; }
-.lp-sub { animation-delay: 0.14s; }
-.lp-lead { animation-delay: 0.22s; }
-.lp-cta-row { animation-delay: 0.3s; }
-.lp-fan { animation-delay: 0.4s; }
-
-/* richer hover micro-interactions */
-.lp-feature,
-.lp-game {
-  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
-}
-.lp-feature:hover { transform: translateY(-6px) scale(1.015); }
-.lp-game:hover { transform: translateY(-6px) scale(1.02); }
-.lp-fan-card:hover { transform: translateY(-12px) rotate(0deg) scale(1.06) !important; z-index: 2; }
-.cta-lg { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.cta-lg:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -8px rgba(217, 178, 95, 0.6); }
-
-/* scroll-reveal for the lower sections (progressive enhancement only) */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .lp-stats,
-    .lp-section h2,
-    .lp-section .lp-section-sub,
-    .lp-feature,
-    .lp-step,
-    .lp-game,
-    .lp-faq-item,
-    .lp-final h2,
-    .lp-trust {
-      animation: lp-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 26%;
-    }
+/* ── Отзивчивост ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hall__inner,
+  .craft {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .roster__groups,
+  .reasons dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .referee ul,
+  .steps ol {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-
-/* ─── Cinematic hero ambiance ──────────────────────────────────────────────
-   A slowly drifting golden aurora behind the hero, a moving sheen across the
-   wordmark, a swaying light shaft and glowing brass motes. */
-.lp-hero {
-  background:
-    radial-gradient(40% 36% at 22% 18%, rgba(217, 178, 95, 0.16), transparent 70%),
-    radial-gradient(46% 40% at 80% 24%, rgba(56, 142, 96, 0.18), transparent 70%),
-    radial-gradient(60% 50% at 50% 0%, rgba(255, 240, 205, 0.12), transparent 60%),
-    radial-gradient(90% 70% at 50% 120%, rgba(31, 90, 64, 0.35), transparent 60%),
-    linear-gradient(180deg, #05201600 0%, #0a1d15 60%, #060807 100%);
-  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%, 100% 100%;
-  animation: lp-aurora 22s ease-in-out infinite alternate;
-}
-@keyframes lp-aurora {
-  0% { background-position: 0% 0%, 100% 0%, 0 0, 0 0, 0 0; }
-  100% { background-position: 60% 40%, 30% 60%, 0 0, 0 0, 0 0; }
-}
-.lp-hero::before {
-  animation: lp-shaft 11s ease-in-out infinite alternate;
-  transform-origin: 50% 0;
-}
-@keyframes lp-shaft {
-  0% { transform: translateX(-50%) rotate(-2.5deg); opacity: 0.85; }
-  100% { transform: translateX(-50%) rotate(2.5deg); opacity: 1; }
-}
-
-/* golden sheen travelling across the wordmark */
-.lp-title {
-  background: linear-gradient(
-    110deg,
-    var(--brass-300) 0%,
-    var(--brass-100) 18%,
-    #fff7e2 30%,
-    var(--brass-100) 42%,
-    var(--brass-400) 70%,
-    var(--brass-300) 100%
-  );
-  background-size: 260% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation:
-    lp-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.06s both,
-    lp-sheen 7s ease-in-out 0.8s infinite;
-}
-@keyframes lp-sheen {
-  0%, 100% { background-position: 0% 0; }
-  50% { background-position: 100% 0; }
-}
-
-/* glowier, livelier motes */
-.lp-mote {
-  width: 5px;
-  height: 5px;
-  box-shadow: 0 0 12px 2px var(--brass-300);
-  opacity: 0.55;
+@media (max-width: 480px) {
+  .seat {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+  }
+  .seat img {
+    width: 72px;
+    height: 45px;
+  }
+  .seat__name {
+    font-size: 1.1rem;
+  }
+  .craft__shots img:last-child {
+    margin-top: 1.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-mote { animation: none; }
-  .lp-hero, .lp-hero::before { animation: none; }
-  .lp-eyebrow, .lp-title, .lp-sub, .lp-lead, .lp-cta-row, .lp-fan { animation: none; }
+  .hall__table img {
+    animation: none;
+  }
 }

@@ -13,6 +13,11 @@ import { resolveDeclarations, type DeclMode, type Declaration } from "./declarat
  * Белот — пълните български правила (§4.1). 32 карти (7…A), 4 играчи в два
  * отбора {0,2} срещу {1,3}. Server-authoritative; чуждите ръце са скрити.
  *
+ * РАЗДАВАНЕ (български стандарт): по 5 карти (3+2, започва вляво от раздаващия);
+ * останалите 12 чакат в скрития `talon`. След успешно наддаване се дораздават
+ * още по 3 (същият ред) → по 8 карти; чак тогава се обявяват терци/карета.
+ * При 4 паса — ново раздаване (пак по 5).
+ *
  * НАДДАВАНЕ: започва вляво от раздаващия. Всеки казва „пас" или обявява
  * ПО-ВИСОК договор от текущия: ♣ < ♦ < ♥ < ♠ < Без коз < Всичко коз.
  * Противниците могат да обявят КОНТРА (x2), а отборът на договора — РЕКОНТРА
@@ -73,6 +78,9 @@ export interface DealSummary {
 export interface BeloteState {
   phase: "BID" | "PLAY";
   hands: Card[][];
+  /** Недораздадените 12 карти по време на наддаването (празно в играта).
+   *  Никой не ги вижда — `redact` ги крие за всички места. */
+  talon: Card[];
   dealer: Seat;
   turn: Seat;
   leader: Seat;
@@ -210,14 +218,38 @@ function legalCards(state: BeloteState, seat: Seat): Card[] {
   return trumps;
 }
 
-function dealHands(rng: SeededRng): Card[][] {
+/** Първо раздаване: по 3, после по 2 на всеки (от мястото вляво от раздаващия);
+ *  останалите 12 карти остават в талона до края на наддаването. */
+function dealFirstFive(rng: SeededRng, dealer: Seat): { hands: Card[][]; talon: Card[] } {
   const deck = rng.shuffle(buildDeck(RANKS));
-  return [deck.slice(0, 8), deck.slice(8, 16), deck.slice(16, 24), deck.slice(24, 32)];
+  const hands: Card[][] = [[], [], [], []];
+  let i = 0;
+  for (const n of [3, 2]) {
+    for (let k = 1; k <= 4; k++) {
+      const s = (dealer + k) % 4;
+      hands[s]!.push(...deck.slice(i, i + n));
+      i += n;
+    }
+  }
+  return { hands, talon: deck.slice(i) };
+}
+
+/** Дораздаване след договор: още по 3 на всеки, в същия ред. */
+function dealRemainingThree(state: BeloteState): void {
+  let i = 0;
+  for (let k = 1; k <= 4; k++) {
+    const s = (state.dealer + k) % 4;
+    state.hands[s]!.push(...state.talon.slice(i, i + 3));
+    i += 3;
+  }
+  state.talon = [];
 }
 
 /** Reset per-deal fields and deal the next hand (dealer already rotated). */
 function freshDeal(state: BeloteState, rng: SeededRng): void {
-  state.hands = dealHands(rng);
+  const dealt = dealFirstFive(rng, state.dealer);
+  state.hands = dealt.hands;
+  state.talon = dealt.talon;
   state.phase = "BID";
   state.contract = null;
   state.trump = null;
@@ -237,6 +269,8 @@ function freshDeal(state: BeloteState, rng: SeededRng): void {
 }
 
 function startPlay(state: BeloteState, events: BeloteEvent[]): void {
+  // Договорът е ясен → дораздаваме по 3 и ЧАК ТОГАВА се разрешават обявите.
+  dealRemainingThree(state);
   state.phase = "PLAY";
   const contract = state.contract!;
   state.trump = contract === "NT" || contract === "AT" ? null : contract;
@@ -365,9 +399,11 @@ function bidStrength(hand: Card[], contract: Contract): number {
 export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = {
   init(_opts: InitOpts, rng: SeededRng): BeloteState {
     const dealer: Seat = 0;
+    const dealt = dealFirstFive(rng, dealer);
     const state: BeloteState = {
       phase: "BID",
-      hands: dealHands(rng),
+      hands: dealt.hands,
+      talon: dealt.talon,
       dealer,
       turn: next4(dealer),
       leader: next4(dealer),
@@ -429,6 +465,7 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
     const next: BeloteState = {
       ...state,
       hands: state.hands.map((h) => h.slice()),
+      talon: state.talon.slice(),
       trick: state.trick.slice(),
       teamPoints: [state.teamPoints[0], state.teamPoints[1]],
       tricksTaken: [state.tricksTaken[0], state.tricksTaken[1]],
@@ -555,7 +592,10 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
       for (const c of CONTRACT_ORDER.slice(from)) {
         const s = bidStrength(hand, c);
         // NT/AT only on genuinely strong hands (two jacks / two nines класа).
-        const threshold = c === "AT" ? 66 : c === "NT" ? 52 : 46;
+        // Праговете са за 8 карти; при наддаване се вижда само ръка от 5 →
+        // скалираме пропорционално, иначе ботът почти винаги би пасувал.
+        const base = c === "AT" ? 66 : c === "NT" ? 52 : 46;
+        const threshold = Math.round((base * hand.length) / 8);
         if (s >= threshold) return { type: "BID", contract: c };
       }
       return { type: "PASS" };
@@ -599,6 +639,8 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
 
   redact(state, seat) {
     const hands = state.hands.map((h, i) => (i === seat ? h.slice() : hiddenLike(h)));
-    return { ...state, hands };
+    // Талонът е скрит за ВСИЧКИ (включително раздаващия) — само бройката е видима.
+    const talon = hiddenLike(state.talon);
+    return { ...state, hands, talon };
   },
 };

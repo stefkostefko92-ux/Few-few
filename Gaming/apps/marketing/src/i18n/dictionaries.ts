@@ -37,12 +37,12 @@ export interface Dict {
     lead: string;
     playNow: string;
     browseGames: string;
-    stats: { games: string; languages: string; tablesOpen: string; toStart: string };
-    statValues: { toStart: string };
+    /** Ред с факти под заглавието (без плочки с големи числа). */
+    facts: string[];
     features: {
       heading: string;
       sub: string;
-      items: { icon: string; title: string; text: string }[];
+      items: { title: string; text: string }[];
     };
     steps: {
       heading: string;
@@ -57,6 +57,11 @@ export interface Dict {
       cta: string;
     };
     breadcrumbHome: string;
+    /** Рейвънхолд лендинг: чипове в героя, категории, витрина на масите, честна игра. */
+    hero: { chips: string[]; shotAlts: [string, string, string]; badge: string };
+    cats: { all: string; cards: string; board: string; cue: string; party: string };
+    showcase: { eyebrow: string; heading: string; text: string; points: { title: string; text: string }[]; shotAlt: string };
+    fair: { eyebrow: string; heading: string; text: string; points: string[] };
   };
   games: {
     breadcrumb: string;
@@ -121,27 +126,24 @@ const bg: Dict = {
     privacy: "Поверителност",
     cookies: "Бисквитки",
     responsible: "Отговорна игра",
-    disclaimer: "Социална игра — не е хазарт за реални пари. Само за 18+.",
+    disclaimer: "Социална игра за забавление. Само за 18+.",
     credit: "Created and Designed by Carbon Stealth VCC",
   },
   langSwitcher: { label: "Език" },
   home: {
     eyebrow: "Премиум клуб за игри",
-    lead: "21 класически игри на карти, маса, кий спортове и настолни в реално време. Белот, Сантасе, Шах, Табла, билярд и снукър — срещу приятели и ботове, безплатно, направо в браузъра.",
+    lead: "21 класически игри на карти, маса, кий спортове и настолни в реално време. Белот, Сантасе, Шах, Табла, билярд и снукър — срещу приятели и ботове, направо в браузъра.",
     playNow: "Играй сега",
     browseGames: "Разгледай игрите",
-    stats: { games: "игри", languages: "езика", tablesOpen: "маси отворени", toStart: "за да започнеш" },
-    statValues: { toStart: "0 € / 0 лв." },
+    facts: ["21 игри", "3 езика", "маси денонощно", "без изтегляне"],
     features: {
       heading: "Защо АСО",
       sub: "Класиката, която обичаш — с качеството, което заслужава.",
       items: [
-        { icon: "🃏", title: "21 истинска игра", text: "Белот с обяви, Сантасе, Шах, Табла, билярд и снукър — пълни правила, не опростени." },
-        { icon: "⚡", title: "Реално време", text: "Мигновен мултиплейър със server-authoritative логика — без лаг, без измами." },
-        { icon: "🎯", title: "Реалистична физика", text: "Билярдът и снукърът ползват детерминирана 2D физика с прицелване и анимация на удара." },
-        { icon: "🤖", title: "Умни ботове", text: "Няма съперник? Влизаш веднага срещу бот, който се цели и вкарва — и продължаваш да играеш." },
-        { icon: "🏆", title: "Класации и сезони", text: "ELO рейтинг за всяка игра, дневни мисии, сезони и постижения." },
-        { icon: "🛡️", title: "Честна игра", text: "Без „плати, за да печелиш“. Игрите със залог са само с виртуални чипове." },
+        { title: "Правилата са пълни", text: "Белот с наддаване на пет карти и обяви, Сантасе до 66, снукър с фалове и свободна топка. Нищо не е опростено." },
+        { title: "Сървърът води играта", text: "Всеки ход се проверява на сървъра и всеки играч получава само своите карти." },
+        { title: "Ботове на три нива", text: "Няма свободен съперник? Сядаш веднага срещу бот — лесен, нормален или труден." },
+        { title: "Класации и сезони", text: "Рейтинг за всяка игра, дневни мисии, сезони и постижения." },
       ],
     },
     steps: {
@@ -150,17 +152,40 @@ const bg: Dict = {
       items: [
         { title: "Влез за секунди", text: "С имейл, Google или Facebook — без дълги формуляри." },
         { title: "Избери игра", text: "21 заглавие, всяко с матчмейкинг по ниво." },
-        { title: "Играй и се изкачвай", text: "Печели чипове, нива и място в класацията." },
+        { title: "Играй и се изкачвай", text: "Трупай нива, постижения и място в класацията." },
       ],
     },
-    games: { heading: "Игрите", sub: "Всяка с пълни правила и собствена премиум маса.", minutesShort: "мин", viewAll: "Виж всички игри" },
+    games: { heading: "Игрите", sub: "21 игри с пълните им правила. Избери маса и играй направо в браузъра.", minutesShort: "мин", viewAll: "Виж всички игри" },
     faq: { heading: "Често задавани въпроси", sub: "Бързи отговори, преди да седнеш на масата.", allQuestions: "Всички въпроси" },
     final: {
       heading: "Масата те чака.",
-      trust: ["Безплатно за старт", "Без хазарт за реални пари", "Играй на всяко устройство"],
-      cta: "Влез и играй",
+      trust: ["Без изтегляне", "Телефон, таблет или компютър", "Само за 18+"],
+      cta: "Играй сега",
     },
     breadcrumbHome: "Начало",
+    hero: {
+      chips: ["Без изтегляне", "На всяко устройство", "Социална игра · 18+"],
+      shotAlts: ["Магнат — 3D дъска със средновековен град", "Белот — маса в замъка", "Снукър — 3D маса с физика"],
+      badge: "Живи маси",
+    },
+    cats: { all: "Всички", cards: "Карти", board: "Настолни", cue: "Билярд", party: "Бързи" },
+    showcase: {
+      eyebrow: "Изработено с внимание",
+      heading: "Как изглеждат масите",
+      text: "Всяка игра се играе в залата на замък под светлината на факли. Орехът, сукното, месингът и камъкът са истински материали, изпечени за сцената, не картинки.",
+      points: [
+        { title: "3D маси", text: "Шах, Табла, Дама, Не се сърди човече, билярд и Магнат в пълно 3D." },
+        { title: "Пълни правила", text: "Белот с 5 + 3 карти и обяви, Сантасе до 66, снукър с фалове и свободна топка — без опростявания." },
+        { title: "Навсякъде", text: "Телефон, таблет или компютър — направо в браузъра." },
+      ],
+      shotAlt: "Магнат — средновековният град расте с всяка построена къща",
+    },
+    fair: {
+      eyebrow: "Честна игра",
+      heading: "Сървърът е съдията",
+      text: "Всеки ход се проверява по правилата на сървъра, а тестетата и заровете се генерират криптографски — клиентът не може да ги пипне.",
+      points: ["Тестетата и заровете — криптографски случайни", "Всеки ход — проверен на сървъра", "Чуждите карти никога не стигат до браузъра ти"],
+    },
   },
   games: {
     breadcrumb: "Игри",
@@ -197,7 +222,7 @@ const bg: Dict = {
   },
   og: {
     eyebrow: "Премиум клуб за игри",
-    footer: "21 игри · 3 езика · безплатно в браузъра",
+    footer: "21 игри · 3 езика · направо в браузъра",
   },
   breadcrumbs: {
     home: "Начало",
@@ -221,27 +246,24 @@ const en: Dict = {
     privacy: "Privacy",
     cookies: "Cookies",
     responsible: "Responsible play",
-    disclaimer: "Social game — not real-money gambling. 18+ only.",
+    disclaimer: "A social game for fun. 18+ only.",
     credit: "Created and Designed by Carbon Stealth VCC",
   },
   langSwitcher: { label: "Language" },
   home: {
     eyebrow: "A premium games club",
-    lead: "21 classic card, table, cue-sport and board games in real time. Belote, Santase, Chess, Backgammon, pool and snooker — against friends and bots, free, right in your browser.",
+    lead: "21 classic card, table, cue-sport and board games in real time. Belote, Santase, Chess, Backgammon, pool and snooker — against friends and bots, right in your browser.",
     playNow: "Play now",
     browseGames: "Browse the games",
-    stats: { games: "games", languages: "languages", tablesOpen: "tables open", toStart: "to get started" },
-    statValues: { toStart: "€0 / 0 BGN" },
+    facts: ["21 games", "3 languages", "tables open around the clock", "no download"],
     features: {
       heading: "Why АСО",
       sub: "The classics you love — with the quality they deserve.",
       items: [
-        { icon: "🃏", title: "21 real games", text: "Belote with declarations, Santase, Chess, Backgammon, pool and snooker — full rules, not simplified." },
-        { icon: "⚡", title: "Real time", text: "Instant multiplayer with server-authoritative logic — no lag, no cheating." },
-        { icon: "🎯", title: "Realistic physics", text: "Pool and snooker use deterministic 2D physics with aiming and a shot animation." },
-        { icon: "🤖", title: "Smart bots", text: "No opponent? Jump straight into a match against a bot that aims and pots — and keep playing." },
-        { icon: "🏆", title: "Rankings and seasons", text: "An ELO rating for every game, daily missions, seasons and achievements." },
-        { icon: "🛡️", title: "Fair play", text: "No “pay to win”. Wager games use virtual chips only." },
+        { title: "Complete rules", text: "Belote bid on five cards with declarations, Santase to 66, snooker with fouls and free ball. Nothing is simplified." },
+        { title: "The server runs the game", text: "Every move is checked on the server, and each player receives only their own cards." },
+        { title: "Bots at three levels", text: "No opponent free? Sit down against a bot right away — easy, normal or hard." },
+        { title: "Rankings and seasons", text: "A rating for every game, daily missions, seasons and achievements." },
       ],
     },
     steps: {
@@ -250,17 +272,40 @@ const en: Dict = {
       items: [
         { title: "Sign in seconds", text: "With email, Google or Facebook — no long forms." },
         { title: "Pick a game", text: "21 titles, each with skill-based matchmaking." },
-        { title: "Play and climb", text: "Win chips, levels and a place on the leaderboard." },
+        { title: "Play and climb", text: "Earn levels, achievements and a place on the leaderboard." },
       ],
     },
-    games: { heading: "The games", sub: "Each with full rules and its own premium table.", minutesShort: "min", viewAll: "See all games" },
+    games: { heading: "The games", sub: "21 games with their full rules. Pick a table and play right in your browser.", minutesShort: "min", viewAll: "See all games" },
     faq: { heading: "Frequently asked questions", sub: "Quick answers before you take a seat.", allQuestions: "All questions" },
     final: {
       heading: "The table is waiting.",
-      trust: ["Free to start", "No real-money gambling", "Play on any device"],
-      cta: "Sign in and play",
+      trust: ["No download", "Phone, tablet or computer", "18+ only"],
+      cta: "Play now",
     },
     breadcrumbHome: "Home",
+    hero: {
+      chips: ["No download", "On any device", "Social play · 18+"],
+      shotAlts: ["Magnat — 3D board with a medieval town", "Belote — a table in the castle hall", "Snooker — 3D table with real physics"],
+      badge: "Live tables",
+    },
+    cats: { all: "All", cards: "Cards", board: "Board", cue: "Cue sports", party: "Quick" },
+    showcase: {
+      eyebrow: "Crafted with care",
+      heading: "What the tables look like",
+      text: "Every game is played in a torch-lit castle hall. The walnut, felt, brass and stone are real baked materials, not flat pictures.",
+      points: [
+        { title: "3D tables", text: "Chess, Backgammon, Draughts, Ludo, pool and Magnat in full 3D." },
+        { title: "Full rules", text: "Belote dealt 5 + 3 with declarations, Santase to 66, snooker with fouls and free ball — nothing simplified." },
+        { title: "Anywhere", text: "Phone, tablet or computer — right in your browser." },
+      ],
+      shotAlt: "Magnat — the medieval town grows with every house you build",
+    },
+    fair: {
+      eyebrow: "Fair play",
+      heading: "The server is the referee",
+      text: "Every move is checked against the rules on the server, and decks and dice are generated cryptographically — the client can't touch them.",
+      points: ["Cryptographically random decks and dice", "Every move validated on the server", "Other players' cards never reach your browser"],
+    },
   },
   games: {
     breadcrumb: "Games",
@@ -297,7 +342,7 @@ const en: Dict = {
   },
   og: {
     eyebrow: "A premium games club",
-    footer: "21 games · 3 languages · free in your browser",
+    footer: "21 games · 3 languages · right in your browser",
   },
   breadcrumbs: {
     home: "Home",
@@ -321,27 +366,24 @@ const it: Dict = {
     privacy: "Privacy",
     cookies: "Cookie",
     responsible: "Gioco responsabile",
-    disclaimer: "Gioco sociale — non è gioco d'azzardo con denaro reale. Solo 18+.",
+    disclaimer: "Gioco sociale per divertimento. Solo 18+.",
     credit: "Created and Designed by Carbon Stealth VCC",
   },
   langSwitcher: { label: "Lingua" },
   home: {
     eyebrow: "Un club di giochi premium",
-    lead: "21 giochi classici di carte, da tavolo, sport di stecca e da tavoliere in tempo reale. Belote, Santase, Scacchi, Backgammon, biliardo e snooker — contro amici e bot, gratis, direttamente nel browser.",
+    lead: "21 giochi classici di carte, da tavolo, sport di stecca e da tavoliere in tempo reale. Belote, Santase, Scacchi, Backgammon, biliardo e snooker — contro amici e bot, direttamente nel browser.",
     playNow: "Gioca ora",
     browseGames: "Esplora i giochi",
-    stats: { games: "giochi", languages: "lingue", tablesOpen: "tavoli aperti", toStart: "per iniziare" },
-    statValues: { toStart: "€0 / 0 BGN" },
+    facts: ["21 giochi", "3 lingue", "tavoli aperti giorno e notte", "senza download"],
     features: {
       heading: "Perché АСО",
       sub: "I classici che ami — con la qualità che meritano.",
       items: [
-        { icon: "🃏", title: "21 giochi veri", text: "Belote con dichiarazioni, Santase, Scacchi, Backgammon, biliardo e snooker — regole complete, non semplificate." },
-        { icon: "⚡", title: "Tempo reale", text: "Multiplayer istantaneo con logica server-authoritative — senza lag, senza imbrogli." },
-        { icon: "🎯", title: "Fisica realistica", text: "Biliardo e snooker usano una fisica 2D deterministica con mira e animazione del tiro." },
-        { icon: "🤖", title: "Bot intelligenti", text: "Nessun avversario? Entri subito contro un bot che mira e imbuca — e continui a giocare." },
-        { icon: "🏆", title: "Classifiche e stagioni", text: "Punteggio ELO per ogni gioco, missioni giornaliere, stagioni e obiettivi." },
-        { icon: "🛡️", title: "Gioco corretto", text: "Niente “paga per vincere”. I giochi con puntate usano solo fiches virtuali." },
+        { title: "Regole complete", text: "Belote con asta su cinque carte e dichiarazioni, Santase a 66, snooker con falli e palla libera. Niente è semplificato." },
+        { title: "Il server guida il gioco", text: "Ogni mossa è verificata sul server e ogni giocatore riceve solo le proprie carte." },
+        { title: "Bot a tre livelli", text: "Nessun avversario libero? Siediti subito contro un bot — facile, normale o difficile." },
+        { title: "Classifiche e stagioni", text: "Un punteggio per ogni gioco, missioni giornaliere, stagioni e obiettivi." },
       ],
     },
     steps: {
@@ -350,17 +392,40 @@ const it: Dict = {
       items: [
         { title: "Entra in pochi secondi", text: "Con email, Google o Facebook — senza moduli lunghi." },
         { title: "Scegli un gioco", text: "21 titoli, ciascuno con matchmaking per livello." },
-        { title: "Gioca e scala la classifica", text: "Vinci fiches, livelli e un posto in classifica." },
+        { title: "Gioca e scala la classifica", text: "Ottieni livelli, obiettivi e un posto in classifica." },
       ],
     },
-    games: { heading: "I giochi", sub: "Ognuno con regole complete e il proprio tavolo premium.", minutesShort: "min", viewAll: "Vedi tutti i giochi" },
+    games: { heading: "I giochi", sub: "21 giochi con le regole complete. Scegli un tavolo e gioca direttamente nel browser.", minutesShort: "min", viewAll: "Vedi tutti i giochi" },
     faq: { heading: "Domande frequenti", sub: "Risposte rapide prima di sederti al tavolo.", allQuestions: "Tutte le domande" },
     final: {
       heading: "Il tavolo ti aspetta.",
-      trust: ["Gratis per iniziare", "Niente gioco d'azzardo con denaro reale", "Gioca su qualsiasi dispositivo"],
-      cta: "Entra e gioca",
+      trust: ["Senza download", "Telefono, tablet o computer", "Solo 18+"],
+      cta: "Gioca ora",
     },
     breadcrumbHome: "Home",
+    hero: {
+      chips: ["Senza download", "Su ogni dispositivo", "Gioco sociale · 18+"],
+      shotAlts: ["Magnat — tabellone 3D con una città medievale", "Belote — un tavolo nella sala del castello", "Snooker — tavolo 3D con fisica reale"],
+      badge: "Tavoli dal vivo",
+    },
+    cats: { all: "Tutti", cards: "Carte", board: "Da tavolo", cue: "Biliardo", party: "Veloci" },
+    showcase: {
+      eyebrow: "Fatto con cura",
+      heading: "Come sono i tavoli",
+      text: "Ogni gioco si gioca nella sala di un castello illuminata dalle torce. Noce, panno, ottone e pietra sono materiali reali preparati per la scena, non immagini piatte.",
+      points: [
+        { title: "Tavoli 3D", text: "Scacchi, Backgammon, Dama, Ludo, biliardo e Magnat in pieno 3D." },
+        { title: "Regole complete", text: "Belote con 5 + 3 carte e dichiarazioni, Santase a 66, snooker con falli e palla libera — senza semplificazioni." },
+        { title: "Ovunque", text: "Telefono, tablet o computer — direttamente nel browser." },
+      ],
+      shotAlt: "Magnat — la città medievale cresce con ogni casa costruita",
+    },
+    fair: {
+      eyebrow: "Gioco leale",
+      heading: "Il server è l'arbitro",
+      text: "Ogni mossa è verificata dal server secondo le regole, e mazzi e dadi sono generati in modo crittografico — il client non può toccarli.",
+      points: ["Mazzi e dadi casuali in modo crittografico", "Ogni mossa verificata sul server", "Le carte degli altri non arrivano mai al tuo browser"],
+    },
   },
   games: {
     breadcrumb: "Giochi",
@@ -397,7 +462,7 @@ const it: Dict = {
   },
   og: {
     eyebrow: "Un club di giochi premium",
-    footer: "21 giochi · 3 lingue · gratis nel browser",
+    footer: "21 giochi · 3 lingue · direttamente nel browser",
   },
   breadcrumbs: {
     home: "Home",

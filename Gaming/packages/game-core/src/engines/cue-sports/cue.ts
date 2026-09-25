@@ -1,4 +1,5 @@
 import type { GameEngine, Seat } from "../../kernel/contract.js";
+import type { SeededRng } from "../../kernel/rng.js";
 import {
   runShot,
   TABLE,
@@ -43,14 +44,31 @@ export interface CueStateExtras {
    *  A legal shot resets that seat's counter; a value of 2 is the warning. */
   fouls?: [number, number];
   /** Snooker: the last stroke was a "foul and a miss" — the striker fouled
-   *  without first contacting a ball "on". Surfaced so the referee/host can
-   *  offer the standard replay option (see note in rulesSnooker). */
+   *  without first contacting a ball "on" although a ball "on" was in view. */
   miss?: boolean;
+  /** Snooker (WPBSA 3.13): след фал входящият играч избира — удря сам (SHOOT)
+   *  или кара нарушителя да играе пак (PASS). */
+  foulChoice?: boolean;
+  /** Snooker (WPBSA 3.14): при „фал и пропуск“ — разположението ПРЕДИ удара,
+   *  за да може входящият да поиска топките да се върнат и нарушителят да
+   *  повтори (REPLAY). null/липсва, когато няма пропуск. */
+  missReplay?: SnookerSnapshot | null;
 }
 export type CueStateX = CueState & CueStateExtras;
 
-/** SHOOT may carry a 9-ball push-out declaration; PASS declines a push-out. */
-export type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" };
+/** Снимка на масата преди удара за повторение след „фал и пропуск“. */
+export interface SnookerSnapshot {
+  balls: Ball[];
+  expect: CueState["expect"];
+  freeColour: boolean;
+  freeBall: boolean;
+  ballInHand: boolean;
+}
+
+/** SHOOT may carry a 9-ball push-out declaration; PASS declines a push-out
+ *  (9-ball) or, in snooker, makes the offender play again after a foul;
+ *  REPLAY (snooker, after a miss) puts the balls back for the offender. */
+export type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" } | { type: "REPLAY" };
 
 type ShotRes = ReturnType<typeof runShot>;
 
@@ -82,7 +100,8 @@ function initial(variant: CueVariant): CueStateX {
     balls,
     turn: 0,
     phase: "PLAY",
-    ballInHand: variant !== "SNOOKER", // pool breaks with cue-in-hand behind the line
+    // Пулът разбива от ръка зад линията; снукърът — от ръка в „D“.
+    ballInHand: true,
     groups: [null, null],
     open: true,
     scores: [0, 0],
@@ -93,6 +112,8 @@ function initial(variant: CueVariant): CueStateX {
     lastShot: null,
     fouls: [0, 0],
     miss: false,
+    foulChoice: false,
+    missReplay: null,
   };
 }
 
@@ -126,6 +147,32 @@ function respot(balls: Ball[], id: number, spot: [number, number]): void {
   b.y = y;
 }
 
+/** Snooker: повторно поставяне на цветна (WPBSA 3.4). Собственият спот, ако е
+ *  свободен; иначе най-високият свободен спот (черна → розова → … → жълта);
+ *  ако всички са заети — възможно най-близо до своя спот по линията към
+ *  горния борд (+x), после назад. */
+function respotColour(balls: Ball[], id: number): void {
+  const own = SNOOKER_SPOTS[id];
+  if (!own) return;
+  if (placementOk(balls, own[0], own[1], id)) {
+    respot(balls, id, own);
+    return;
+  }
+  for (const s of [7, 6, 5, 4, 3, 2]) {
+    const sp = SNOOKER_SPOTS[s]!;
+    if (placementOk(balls, sp[0], sp[1], id)) {
+      respot(balls, id, sp);
+      return;
+    }
+  }
+  respot(balls, id, own);
+}
+
+/** Връща няколко цветни наведнъж — по-високата стойност има предимство за спота. */
+function respotColours(balls: Ball[], ids: number[]): void {
+  for (const c of [...ids].sort((a, b) => b - a)) respotColour(balls, c);
+}
+
 /** Place the cue ball at a default spot (used after a scratch). */
 function placeCue(balls: Ball[], spot: [number, number]): void {
   const cue = balls.find((b) => b.id === 0);
@@ -140,6 +187,32 @@ function placeCue(balls: Ball[], spot: [number, number]): void {
   cue.y = y;
 }
 
+/** Свободни точки вътре в „D“ — центърът на базовата линия, после концентрични
+ *  полукръгове зад нея (x ≤ BAULK_X). Детерминиран ред. */
+function dCandidates(): [number, number][] {
+  const out: [number, number][] = [D_SPOT];
+  for (let rr = R; rr <= D_RADIUS - 1e-9; rr += R / 2) {
+    for (let k = 0; k <= 16; k++) {
+      const a = Math.PI / 2 + (k / 16) * Math.PI; // лявата половина → зад базовата линия
+      out.push([BAULK_X + rr * Math.cos(a), TABLE.h / 2 + rr * Math.sin(a)]);
+    }
+  }
+  return out.filter(([x, y]) => inBaulkD(x, y));
+}
+const D_CANDIDATES = dCandidates();
+
+/** Snooker: бялата в ръка — първата свободна точка ВЪТРЕ в „D“. */
+function placeCueInD(balls: Ball[]): void {
+  const cue = balls.find((b) => b.id === 0);
+  if (!cue) return;
+  cue.potted = false;
+  cue.vx = 0;
+  cue.vy = 0;
+  const spot = D_CANDIDATES.find(([x, y]) => placementOk(balls, x, y, 0)) ?? D_SPOT;
+  cue.x = spot[0];
+  cue.y = spot[1];
+}
+
 interface Outcome {
   foul: boolean;
   /** Machine code translated by the client (i18n key `cue.foul.<code>`), or a
@@ -149,7 +222,13 @@ interface Outcome {
   winner: Seat | null;
   points: number; // awarded this shot (snooker: to shooter, or to opponent if foul)
   pointsToOpponent: boolean;
+  /** Pool: фал БЕЗ бяла в ръка (8-ball незаконно разбиване — входящият приема
+   *  масата както е, WPA). */
+  noBallInHand?: boolean;
 }
+
+/** WPA: законно разбиване = вкарана топка или ≥4 обектни топки до борд. */
+const illegalBreak = (r: ShotRes): boolean => r.potted.length === 0 && r.cushionBalls < 4;
 
 // ── Per-variant rules ────────────────────────────────────────────────────────
 
@@ -163,7 +242,11 @@ function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes): Outcome {
   const group: Group = state.groups[shooter] ?? null;
   const open = state.open;
 
-  const onEight = !open && group !== null && myGroupBalls(group).every((id) => !live(balls).some((b) => b.id === id));
+  // „На осмицата ли е“ се решава от масата ПРЕДИ удара (WPA): последната своя
+  // топка + осмицата в един удар е загуба, не победа; удар първо в осмицата,
+  // докато имаш своя топка на масата, е фал — дори тя да вкара последната ти.
+  const onEight =
+    !open && group !== null && myGroupBalls(group).every((id) => !live(state.balls).some((b) => b.id === id));
   const firstHitEight = r.firstContact === 8;
   const noRail = pottedObj.length === 0 && !r.cushionAfterContact && r.firstContact !== null;
 
@@ -187,9 +270,16 @@ function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes): Outcome {
   // groups, and on an open table only the 8 is an illegal first contact.
   let foul = false;
   let reason = "";
+  let noBallInHand = false;
   if (r.cueScratch) {
     foul = true;
     reason = "scratch";
+  } else if (breakShot && illegalBreak(r)) {
+    // WPA 3.3: незаконно разбиване е фал; от опциите на входящия играч
+    // прилагаме „приема масата както е“ (без бяла в ръка, без нов рак).
+    foul = true;
+    reason = "illegalBreak";
+    noBallInHand = true;
   } else if (r.firstContact === null) {
     foul = true;
     reason = "noContact";
@@ -219,10 +309,13 @@ function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes): Outcome {
   return {
     foul,
     reason: foul ? reason : eightPotted && breakShot ? "eightBreakRespot" : pottedMine ? "continues" : "",
-    continueTurn: pottedMine,
+    // WPA: осмица при разбиване се връща на спота и разбиващият продължава
+    // (освен при фал).
+    continueTurn: pottedMine || (eightPotted && breakShot && !foul),
     winner: null,
     points: 0,
     pointsToOpponent: false,
+    noBallInHand,
   };
 }
 
@@ -243,7 +336,7 @@ function rulesNineBall(
     // Push-out (the shot right after the break, declared by the shooter): no
     // lowest-ball or rail requirement — only a scratch fouls. The 9 comes back
     // if potted; other balls stay down. The opponent then plays or passes back.
-    if (ninePotted) respot(balls, 9, SNOOKER_SPOTS[6]!);
+    if (ninePotted) respot(balls, 9, FOOT_SPOT);
     if (r.cueScratch) {
       return { foul: true, reason: "scratch", continueTurn: false, winner: null, points: 0, pointsToOpponent: false };
     }
@@ -269,6 +362,10 @@ function rulesNineBall(
   } else if (r.firstContact !== lowestBefore) {
     foul = true;
     reason = "lowestFirst";
+  } else if (state.shotNo === 0 && illegalBreak(r)) {
+    // WPA 9-ball 1.5: незаконно разбиване → фал, входящият е с бяла в ръка.
+    foul = true;
+    reason = "illegalBreak";
   } else if (noRail) {
     foul = true;
     reason = "noRail";
@@ -277,7 +374,7 @@ function rulesNineBall(
   if (ninePotted && !foul) {
     return { foul: false, reason: "nineWin", continueTurn: false, winner: shooter, points: 0, pointsToOpponent: false };
   }
-  if (ninePotted && foul) respot(balls, 9, SNOOKER_SPOTS[6]!); // re-spot the 9 at the foot
+  if (ninePotted && foul) respot(balls, 9, FOOT_SPOT); // 9-ката се връща на foot spot (върха на рака)
 
   const pottedAny = !foul && r.potted.length > 0;
   return {
@@ -298,8 +395,16 @@ type SnookerOutcome = Outcome & {
   freeBallNext?: boolean;
   /** Force ball-in-hand for the incoming striker (re-spotted black). */
   cueInHand?: boolean;
-  /** "Foul and a miss": the striker fouled without first hitting a ball "on". */
+  /** "Foul and a miss": the striker fouled without first hitting a ball "on"
+   *  although one was in view. */
   miss?: boolean;
+  /** Кой играе следващия удар, когато не е просто противникът (жребий при
+   *  повторна черна). */
+  nextTurn?: Seat;
+  /** Фал, след който входящият играч има избор (играе / нарушителят пак). */
+  choice?: boolean;
+  /** Съобщение за клиента, различно от кода на фала (FOUL събитието пази кода). */
+  message?: string;
 };
 
 /** Balls "on" for the incoming striker after a foul: reds while any remain,
@@ -313,20 +418,26 @@ function ballsOn(balls: Ball[]): Ball[] {
   return colours.filter((b) => b.id === lo);
 }
 
-/** Straight-line visibility: can the cue reach the centre or either edge of
- *  `t` without another ball blocking the corridor? (coarse, cushions ignored) */
-function canSee(balls: Ball[], cue: Ball, t: Ball): boolean {
+/** Праволинейна видимост на точката на `t`, отместена на `off` перпендикулярно
+ *  на линията бяла→топка (грубо, без бордове). */
+function edgeClear(balls: Ball[], cue: Ball, t: Ball, off: number): boolean {
   const dx = t.x - cue.x;
   const dy = t.y - cue.y;
   const d = Math.hypot(dx, dy);
   if (d < 1e-6) return true;
   const px = -dy / d;
   const py = dx / d;
-  for (const off of [0, 1.8 * R, -1.8 * R]) {
-    if (pathClear(balls, cue.x, cue.y, t.x + px * off, t.y + py * off, [t.id])) return true;
-  }
-  return false;
+  return pathClear(balls, cue.x, cue.y, t.x + px * off, t.y + py * off, [t.id]);
 }
+
+/** WPBSA 2.(snookered): играчът НЕ е снукериран за свободна топка, ако може да
+ *  удари по права линия И двата крайни ръба на поне една топка на ход. */
+const canHitBothEdges = (balls: Ball[], cue: Ball, t: Ball): boolean =>
+  edgeClear(balls, cue, t, 1.8 * R) && edgeClear(balls, cue, t, -1.8 * R);
+
+/** Може ли бялата да стигне ПОНЕ част от `t` по права линия (за „пропуск“). */
+const canHitAnyPart = (balls: Ball[], cue: Ball, t: Ball): boolean =>
+  [0, 1.8 * R, -1.8 * R].some((off) => edgeClear(balls, cue, t, off));
 
 /** After a foul: is the incoming striker snookered on every ball "on"? */
 function snookeredAfterFoul(balls: Ball[]): boolean {
@@ -334,16 +445,19 @@ function snookeredAfterFoul(balls: Ball[]): boolean {
   if (!cue) return false;
   const on = ballsOn(balls);
   if (!on.length) return false;
-  return !on.some((t) => canSee(balls, cue, t));
+  return !on.some((t) => canHitBothEdges(balls, cue, t));
 }
 
-function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutcome {
+type SnookerMode = "red" | "choice" | "end";
+
+function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes, before: Ball[], rng: SeededRng): SnookerOutcome {
   const shooter = state.turn;
   const redsLeft = state.balls.some((b) => isRed(b.id) && !b.potted);
   const expect = state.expect ?? "red";
   // "Colour of choice" right after the striker potted the last red.
   const freeColour = state.freeColour === true && !redsLeft && expect === "colour";
-  // Free ball: a foul left this striker snookered — any first contact is "on".
+  // Free ball: a foul left this striker snookered — the first contact is the
+  // nominated ball (acts as the ball "on").
   const freeBall = state.freeBall === true;
   const pottedReds = r.potted.filter(isRed);
   const pottedColours = r.potted.filter(isColour);
@@ -351,8 +465,17 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
 
   const coloursLeft = [2, 3, 4, 5, 6, 7].filter((id) => state.balls.some((b) => b.id === id && !b.potted));
   const lowestColour = coloursLeft.length ? Math.min(...coloursLeft) : 7;
-  // Value of the ball "on" — every foul costs at least max(4, ballOn).
-  const ballOn = expect === "red" ? 1 : !redsLeft && !freeColour ? lowestColour : 4;
+  // Само черната на масата (вкл. повторно поставена черна): първият резултат
+  // ИЛИ фал приключва фрейма (WPBSA).
+  const onlyBlack = !redsLeft && coloursLeft.length === 1 && coloursLeft[0] === 7;
+  // red — на червена; choice — цветна по избор (след червена / след последната
+  // червена); end — крайна фаза, цветните по ред.
+  const mode: SnookerMode = redsLeft ? (expect === "colour" ? "choice" : "red") : freeColour ? "choice" : "end";
+
+  // Стойност на топката на ход — всеки фал струва поне max(4, ballOn). При
+  // цветна по избор топката на ход е първо ударената цветна (номинацията).
+  const ballOn =
+    mode === "red" ? 1 : mode === "end" ? lowestColour : fc !== null && isColour(fc) && !freeBall ? value(fc) : 4;
 
   let foul = false;
   let reason = "";
@@ -366,14 +489,24 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
   if (r.cueScratch) setFoul("scratch", 4);
   if (fc === null) setFoul("noContact", 4);
 
-  if (freeBall) {
-    // Any first contact counts as the ball "on"; only scratch/no-contact foul.
-  } else if (freeColour || (redsLeft && expect === "colour")) {
-    // A colour of choice: any colour may be struck / potted (one at a time).
+  if (freeBall && mode !== "choice") {
+    // Свободна топка = първо ударената. Законно се вкарват само тя и топката
+    // на ход (на червени — свободната важи за червена, заедно с червените).
+    for (const c of pottedColours) {
+      if (c === fc) continue;
+      if (mode === "end" && c === lowestColour) continue;
+      setFoul("wrongPot", value(c));
+    }
+  } else if (mode === "choice") {
+    // A colour of choice: any colour may be struck / potted (one at a time) —
+    // but the potted colour must be the one struck first.
     if (fc !== null && !isColour(fc)) setFoul("needColour", 4);
     if (pottedReds.length) setFoul("redPotted", 4);
     if (pottedColours.length > 1) setFoul("multiColour", Math.max(...pottedColours.map(value)));
-  } else if (!redsLeft && expect === "colour") {
+    else if (pottedColours.length === 1 && fc !== null && isColour(fc) && pottedColours[0] !== fc) {
+      setFoul("wrongPot", value(pottedColours[0]!));
+    }
+  } else if (mode === "end") {
     // End-game: no reds — colours in ascending order.
     if (fc !== null && fc !== lowestColour) setFoul("wrongBall", Math.max(4, value(fc)));
     if (pottedReds.length) setFoul("wrongPot", 4);
@@ -385,29 +518,70 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
   }
 
   if (foul) {
-    // "Foul and a miss": did the striker first contact a ball that was "on"?
-    // (Mirrors the ball-on branches above.) If not, a referee calls a miss and
-    // the opponent may ask for a replay. NOTE: a *full* replay-from-position is
-    // out of scope here — it needs a new incoming-player choice action plus a
-    // stored pre-shot layout, which reaches into the shared action/wire type,
-    // the realtime host and the view (all outside this engine's ownership). We
-    // therefore only DETECT the miss and surface it via `state.miss` (+ the
-    // FOUL event); the standard "play again from the same position" option is
-    // left for the host/UI to offer on top of this flag.
+    // Наказанието е по-високото от топката на ход и всяка вкарана при фала
+    // топка (свободната топка носи стойността на топката на ход).
+    for (const c of pottedColours) if (!(freeBall && c === fc)) foulValue = Math.max(foulValue, value(c));
+
+    // "Foul and a miss": first contact was not a ball "on" although one was
+    // in straight-line view from the pre-shot cue position.
+    let on: Ball[];
     let hitBallOn: boolean;
-    if (freeBall) hitBallOn = fc !== null;
-    else if (freeColour || (redsLeft && expect === "colour")) hitBallOn = fc !== null && isColour(fc);
-    else if (!redsLeft && expect === "colour") hitBallOn = fc === lowestColour;
-    else hitBallOn = fc !== null && isRed(fc);
-    const miss = !hitBallOn;
+    if (freeBall) {
+      on = live(before).filter((b) => b.id !== 0);
+      hitBallOn = fc !== null;
+    } else if (mode === "choice") {
+      on = live(before).filter((b) => isColour(b.id));
+      hitBallOn = fc !== null && isColour(fc);
+    } else if (mode === "end") {
+      on = live(before).filter((b) => b.id === lowestColour);
+      hitBallOn = fc === lowestColour;
+    } else {
+      on = live(before).filter((b) => isRed(b.id));
+      hitBallOn = fc !== null && isRed(fc);
+    }
+    const preCue = before.find((b) => b.id === 0 && !b.potted);
+    const couldHit = !!preCue && on.some((t) => canHitAnyPart(before, preCue, t));
+    const miss = !hitBallOn && couldHit;
 
     // Every colour potted on a foul stroke returns to its spot (reds stay
     // down, unscored) — the frame must keep its full ball set.
-    for (const c of pottedColours) respot(balls, c, SNOOKER_SPOTS[c]!);
+    respotColours(balls, pottedColours);
+
+    if (onlyBlack) {
+      // Само черната: фалът приключва фрейма — точките отиват при противника,
+      // печели водещият; при равенство — повторна черна и жребий.
+      const s0 = state.scores[0] + (shooter === 1 ? foulValue : 0);
+      const s1 = state.scores[1] + (shooter === 0 ? foulValue : 0);
+      if (s0 !== s1) {
+        return {
+          foul: true,
+          reason,
+          continueTurn: false,
+          winner: s0 > s1 ? 0 : 1,
+          points: foulValue,
+          pointsToOpponent: true,
+        };
+      }
+      respotColour(balls, 7);
+      placeCueInD(balls);
+      return {
+        foul: true,
+        reason,
+        message: "respotBlack",
+        continueTurn: false,
+        winner: null,
+        points: foulValue,
+        pointsToOpponent: true,
+        nextExpect: "colour",
+        cueInHand: true,
+        nextTurn: rng.int(2),
+      };
+    }
+
     let freeBallNext = false;
     if (r.cueScratch) {
-      // Ball-in-hand: default D spot; the striker may re-place within the D.
-      placeCue(balls, D_SPOT);
+      // Ball-in-hand: първата свободна точка в „D“; входящият може да я мести в D.
+      placeCueInD(balls);
     } else {
       // Snookered on all balls "on" after the foul → the incoming striker
       // gets a free ball.
@@ -422,6 +596,7 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
       pointsToOpponent: true,
       freeBallNext,
       miss,
+      choice: true,
     };
   }
 
@@ -431,45 +606,43 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
   let nextExpect: "red" | "colour" = expect;
   let pottedSomething = false;
 
-  if (freeBall && expect === "red") {
-    // Free ball while on reds: every pot counts as a red; colours come back up.
+  if (freeBall && mode === "red") {
+    // Свободна топка на червени: тя важи за червена — всяка вкарана (тя +
+    // червените) носи по 1 т.; свободната цветна се връща на спота.
     pts += pottedReds.length + pottedColours.length;
-    for (const c of pottedColours) respot(balls, c, SNOOKER_SPOTS[c]!);
+    respotColours(balls, pottedColours);
     if (r.potted.length > 0) {
       pottedSomething = true;
       nextExpect = "colour";
     }
-  } else if (freeBall && !redsLeft && !freeColour && expect === "colour") {
-    // Free ball in the end-game: any colour pots for the ball-on's value; the
-    // ball on itself stays down, other colours are re-spotted.
-    for (const c of pottedColours) {
+  } else if (freeBall && mode === "end") {
+    // Свободна топка в крайната фаза: свободната и/или топката на ход носят
+    // стойността на топката на ход ВЕДНЪЖ; свободната се връща на спота,
+    // топката на ход остава долу.
+    if (pottedColours.length) {
       pts += value(lowestColour);
-      if (c !== lowestColour) respot(balls, c, SNOOKER_SPOTS[c]!);
+      pottedSomething = true;
     }
-    if (pottedColours.length) pottedSomething = true;
-  } else if (freeColour) {
-    // Colour of choice after the last red: scores its own value and returns.
+    respotColours(
+      balls,
+      pottedColours.filter((c) => c !== lowestColour),
+    );
+  } else if (mode === "choice") {
+    // Цветна по избор (след червена или след последната червена): носи
+    // стойността си и се връща на спота.
     if (pottedColours.length === 1) {
       const c = pottedColours[0]!;
       pts += value(c);
       pottedSomething = true;
-      respot(balls, c, SNOOKER_SPOTS[c]!);
+      respotColour(balls, c);
     }
-    nextExpect = "colour";
-  } else if (redsLeft && expect === "red") {
+    nextExpect = redsLeft ? "red" : "colour";
+  } else if (mode === "red") {
     pts += pottedReds.length;
     if (pottedReds.length > 0) {
       pottedSomething = true;
       nextExpect = "colour";
     }
-  } else if (redsLeft && expect === "colour") {
-    if (pottedColours.length === 1) {
-      const c = pottedColours[0]!;
-      pts += value(c);
-      pottedSomething = true;
-      respot(balls, c, SNOOKER_SPOTS[c]!); // colours come back up while reds remain
-    }
-    nextExpect = "red";
   } else if (pottedColours.length === 1) {
     // end-game colours (no reds) — they stay down.
     pts += value(pottedColours[0]!);
@@ -486,10 +659,10 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
     const s0 = state.scores[0] + (shooter === 0 ? pts : 0);
     const s1 = state.scores[1] + (shooter === 1 ? pts : 0);
     if (s0 === s1) {
-      // A frame can't end level: re-spot the black, ball-in-hand from the D,
-      // and play on until someone pots it (or fouls).
-      respot(balls, 7, SNOOKER_SPOTS[7]!);
-      placeCue(balls, D_SPOT);
+      // A frame can't end level: re-spot the black, ball-in-hand from the D;
+      // кой играе първи се решава с жребий (WPBSA 3.4(c)).
+      respotColour(balls, 7);
+      placeCueInD(balls);
       return {
         foul: false,
         reason: "respotBlack",
@@ -499,6 +672,7 @@ function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutco
         pointsToOpponent: false,
         nextExpect: "colour",
         cueInHand: true,
+        nextTurn: rng.int(2),
       };
     }
     const winner: Seat = s0 > s1 ? 0 : 1;
@@ -580,6 +754,75 @@ function candidateShots(state: CueStateX): CueAction[] {
   const targets = legalTargets(state);
   if (!cue || targets.length === 0) return [{ type: "SHOOT", angle: 0, power: 0.6 }];
 
+  // Пул, разбиване: силно в рака. Ботът проиграва детерминиран малък набор
+  // разбивания (позиция зад линията × отместване от върха) и предлага
+  // законните (WPA: вкарана топка или ≥4 топки до борд, без бялата в джоб).
+  if (state.variant !== "SNOOKER" && state.shotNo === 0) {
+    const apex = targets.reduce((n, b) => (b.x < n.x ? b : n));
+    const legal: CueAction[] = [];
+    for (const cy of [0.5, 0.35, 0.65, 0.25, 0.75]) {
+      for (const d of [0, 0.01, -0.01, 0.02, -0.02]) {
+        const cx = 0.35;
+        if (!placementOk(state.balls, cx, cy, 0)) continue;
+        const angle = Math.atan2(apex.y + d - cy, apex.x - cx);
+        const layout = state.balls.map((b) => (b.id === 0 ? { ...b, x: cx, y: cy, potted: false } : b));
+        const res = runShot(layout, { angle, power: 1 });
+        if (!res.cueScratch && !illegalBreak(res)) legal.push({ type: "SHOOT", angle, power: 1, cueX: cx, cueY: cy });
+        if (legal.length >= 3) return legal;
+      }
+    }
+    if (legal.length) return legal;
+    return [{ type: "SHOOT", angle: Math.atan2(apex.y - cue.y, apex.x - cue.x), power: 1 }];
+  }
+
+  // Снукър, бяла в ръка: ботът избира позиция ВЪТРЕ в „D“ (валидира се).
+  const inHandD = state.variant === "SNOOKER" && state.ballInHand;
+  const spots: [number, number][] = inHandD
+    ? D_CANDIDATES.filter(([x, y]) => placementOk(state.balls, x, y, 0))
+    : [[cue.x, cue.y]];
+  if (spots.length === 0) return [{ type: "SHOOT", angle: 0, power: 0.6 }]; // невъзможно на практика
+  const at = (cx: number, cy: number): Partial<CueAction> => (inHandD ? { cueX: cx, cueY: cy } : {});
+
+  const ranked: { a: CueAction; score: number }[] = [];
+  for (const [cx, cy] of spots) {
+    for (const s of scoredShots(state.balls, cx, cy, targets)) {
+      ranked.push({ a: { type: "SHOOT", angle: s.angle, power: Math.max(0.22, s.power), ...at(cx, cy) }, score: s.score });
+    }
+  }
+  ranked.sort((x, y) => y.score - x.score);
+  // Безопасност/контакт към най-близката законна топка — винаги в резерва.
+  const [sx, sy] = spots[0]!;
+  const t = nearest(targets, sx, sy);
+  const safety: CueAction = { type: "SHOOT", angle: Math.atan2(t.y - sy, t.x - sx), power: 0.5, ...at(sx, sy) };
+  return pickSafe(state.balls, [...ranked.map((x) => x.a), safety]);
+}
+
+/** Проиграва първите няколко кандидата и предпочита тези, при които бялата
+ *  не пада и удря топка — иначе детерминиран бот може да повтаря един и същ
+ *  фал (напр. влизане от „D“) безкрайно. */
+function pickSafe(balls: Ball[], cands: CueAction[]): CueAction[] {
+  const ok: CueAction[] = [];
+  for (const a of cands.slice(0, 8)) {
+    const layout = a.cueX !== undefined && a.cueY !== undefined
+      ? balls.map((b) => (b.id === 0 ? { ...b, x: a.cueX!, y: a.cueY!, potted: false } : b))
+      : balls;
+    const res = runShot(layout, { angle: a.angle, power: a.power });
+    if (!res.cueScratch && res.firstContact !== null) ok.push(a);
+    if (ok.length >= 3) break;
+  }
+  return ok.length ? ok : cands.slice(0, 3);
+}
+
+const nearest = (targets: Ball[], x: number, y: number): Ball =>
+  targets.reduce((n, b) => (Math.hypot(b.x - x, b.y - y) < Math.hypot(n.x - x, n.y - y) ? b : n));
+
+/** Ghost-ball удари от точка (cx, cy), подредени по оценка (най-добрият първи). */
+function scoredShots(
+  balls: Ball[],
+  cx: number,
+  cy: number,
+  targets: Ball[],
+): { angle: number; power: number; score: number }[] {
   const shots: { angle: number; power: number; score: number }[] = [];
   for (const tb of targets) {
     for (const [px, py] of POOL_POCKETS) {
@@ -591,27 +834,20 @@ function candidateShots(state: CueStateX): CueAction[] {
       const uy = tpy / tpDist;
       const gx = tb.x - ux * 2 * R;
       const gy = tb.y - uy * 2 * R;
-      const cgx = gx - cue.x;
-      const cgy = gy - cue.y;
+      const cgx = gx - cx;
+      const cgy = gy - cy;
       const cgDist = Math.hypot(cgx, cgy);
       if (cgDist < 1e-6) continue;
       const cutCos = (cgx / cgDist) * ux + (cgy / cgDist) * uy; // 1 = dead straight
       if (cutCos <= 0.2) continue; // cut too thin to make
-      if (!pathClear(state.balls, cue.x, cue.y, gx, gy, [tb.id])) continue;
+      if (!pathClear(balls, cx, cy, gx, gy, [tb.id])) continue;
       const power = Math.min(1, 0.42 + (cgDist + tpDist) * 0.17 + (1 - cutCos) * 0.22);
       const score = cutCos * 2 - tpDist * 0.12 - cgDist * 0.06;
       shots.push({ angle: Math.atan2(cgy, cgx), power, score });
     }
   }
   shots.sort((a, b) => b.score - a.score);
-  if (shots.length === 0) {
-    // No clean pot — roll toward the nearest legal target (a safety/contact).
-    const t = targets.reduce((n, b) =>
-      Math.hypot(b.x - cue.x, b.y - cue.y) < Math.hypot(n.x - cue.x, n.y - cue.y) ? b : n,
-    );
-    return [{ type: "SHOOT", angle: Math.atan2(t.y - cue.y, t.x - cue.x), power: 0.5 }];
-  }
-  return shots.slice(0, 3).map((s) => ({ type: "SHOOT", angle: s.angle, power: Math.max(0.22, s.power) }));
+  return shots;
 }
 
 // ── Engine factory ───────────────────────────────────────────────────────────
@@ -629,10 +865,20 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
       if (state.phase === "DONE" || seat !== state.turn) return false;
       if (!action) return false;
       // 9-ball: PASS hands a push-out back to the player who pushed.
-      if (action.type === "PASS") return variant === "NINEBALL" && state.pushDecision === true;
+      // Snooker: PASS = „нарушителят да играе пак“ след фал (WPBSA 3.13).
+      if (action.type === "PASS") {
+        return (
+          (variant === "NINEBALL" && state.pushDecision === true) ||
+          (variant === "SNOOKER" && state.foulChoice === true)
+        );
+      }
+      // Snooker: REPLAY = „върни топките, нарушителят повтаря“ след пропуск (3.14).
+      if (action.type === "REPLAY") {
+        return variant === "SNOOKER" && state.foulChoice === true && !!state.missReplay;
+      }
       if (action.type !== "SHOOT") return false;
-      if (!Number.isFinite(action.angle)) return false;
-      if (!(action.power > 0) || action.power > 1) return false;
+      if (typeof action.angle !== "number" || !Number.isFinite(action.angle)) return false;
+      if (typeof action.power !== "number" || !(action.power > 0) || action.power > 1) return false;
       // A push-out may only be declared on the shot right after the break.
       if (action.pushOut === true && !(variant === "NINEBALL" && state.pushAvail === true)) return false;
       if (action.cueX !== undefined || action.cueY !== undefined) {
@@ -644,15 +890,55 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         // Snooker: in-hand only from the "D"; pool: break from behind the line.
         if (variant === "SNOOKER" && !inBaulkD(x, y)) return false;
         if (variant !== "SNOOKER" && state.shotNo === 0 && x > HEAD_STRING_X) return false;
+      } else if (variant === "SNOOKER" && state.ballInHand) {
+        // Удар от ръка без изрично поставяне: бялата трябва вече да е в „D“.
+        const cue = state.balls.find((b) => b.id === 0);
+        if (!cue || cue.potted || !inBaulkD(cue.x, cue.y) || !placementOk(state.balls, cue.x, cue.y, 0)) return false;
       }
       return true;
     },
 
-    reduce(state, action) {
+    reduce(state, action, rng) {
       // 9-ball PASS: the opponent declines to play after a push-out — the shot
       // goes back to the pusher. No physics, no new shot to animate.
-      if (action.type === "PASS") {
+      if (action.type === "PASS" && variant !== "SNOOKER") {
         const next: CueStateX = { ...state, turn: other(state.turn), pushDecision: false, message: "", lastShotMs: 0 };
+        return { state: next, events: [] };
+      }
+      // Snooker PASS: нарушителят играе пак от масата както е. Свободната топка
+      // се оттегля (WPBSA 3.12); бялата в ръка (след влизане) остава.
+      if (action.type === "PASS") {
+        const next: CueStateX = {
+          ...state,
+          turn: other(state.turn),
+          foulChoice: false,
+          missReplay: null,
+          miss: false,
+          freeBall: false,
+          message: "playAgain",
+          lastShotMs: 0,
+        };
+        return { state: next, events: [] };
+      }
+      // Snooker REPLAY: топките се връщат както бяха преди удара с пропуска и
+      // нарушителят повтаря. Наказателните точки остават.
+      if (action.type === "REPLAY") {
+        const snap = state.missReplay;
+        if (!snap) return { state, events: [] };
+        const next: CueStateX = {
+          ...state,
+          balls: cloneAll(snap.balls),
+          expect: snap.expect,
+          freeColour: snap.freeColour,
+          freeBall: snap.freeBall,
+          ballInHand: snap.ballInHand,
+          turn: other(state.turn),
+          foulChoice: false,
+          missReplay: null,
+          miss: false,
+          message: "missReplay",
+          lastShotMs: 0,
+        };
         return { state: next, events: [] };
       }
 
@@ -686,7 +972,7 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
       const out =
         variant === "EIGHTBALL" ? rulesEightBall(state, balls, r)
         : variant === "NINEBALL" ? rulesNineBall(state, balls, r, pushOut)
-        : rulesSnooker(state, balls, r);
+        : rulesSnooker(state, balls, r, before, rng);
 
       events.push({
         type: "SHOT",
@@ -711,7 +997,7 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         // Real-time animation length (frames play back at 60 fps) — the
         // realtime host paces bots / the turn clock with it.
         lastShotMs: Math.round((r.frames.length * 1000) / 60),
-        message: out.reason,
+        message: (out as SnookerOutcome).message ?? out.reason,
       };
 
       // 8-ball group assignment side-effect (legal shots only — a foul keeps
@@ -727,7 +1013,8 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
 
       // 9-ball push-out bookkeeping.
       if (variant === "NINEBALL") {
-        next.pushAvail = state.shotNo === 0 && out.winner === null;
+        // Push-out само след ЗАКОННО разбиване (WPA 9-ball 1.6).
+        next.pushAvail = state.shotNo === 0 && out.winner === null && out.reason !== "illegalBreak";
         next.pushDecision = (out as { pushed?: boolean }).pushed === true && out.winner === null;
       }
 
@@ -736,12 +1023,16 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
       // rack. Any legal (non-foul) stroke resets that seat's counter; a count
       // of 2 is the warning the opponent is owed before the deciding foul.
       let threeFoulWin: Seat | null = null;
+      let twoFoulsWarn = false;
       if (variant === "NINEBALL") {
         const fouls: [number, number] = [state.fouls?.[0] ?? 0, state.fouls?.[1] ?? 0];
         const s = shooter as 0 | 1;
         if (out.foul) {
           fouls[s] += 1;
           if (fouls[s] >= 3) threeFoulWin = other(shooter);
+          // WPA: след втория пореден фал играчът трябва да бъде предупреден
+          // (събитието се добавя след FOUL по-долу).
+          else if (fouls[s] === 2) twoFoulsWarn = true;
         } else {
           fouls[s] = 0;
         }
@@ -765,9 +1056,23 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         next.expect = redsLeftNow ? (so.nextExpect ?? "red") : "colour";
         next.freeColour = so.freeColourNext === true;
         next.freeBall = so.freeBallNext === true;
-        next.miss = so.miss === true; // "foul and a miss" flag for the referee/host
+        next.miss = so.miss === true; // "foul and a miss"
+        // След фал входящият избира: играе / нарушителят пак / (при пропуск)
+        // върни топките. Всеки нов удар изчиства избора.
+        next.foulChoice = so.choice === true && out.winner === null;
+        next.missReplay =
+          next.foulChoice && so.miss === true
+            ? {
+                balls: cloneAll(before),
+                expect: state.expect,
+                freeColour: state.freeColour === true,
+                freeBall: state.freeBall === true,
+                ballInHand: state.ballInHand,
+              }
+            : null;
       } else if (out.foul) {
         events.push({ type: "FOUL", seat: shooter, reason: out.reason });
+        if (twoFoulsWarn) events.push({ type: "WARNING", seat: shooter, reason: "twoFouls" });
       }
 
       // Turn / ball-in-hand / winner. A 9-ball three-foul loss overrides the
@@ -782,9 +1087,11 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         next.turn = shooter;
         next.ballInHand = false;
       } else {
-        next.turn = other(shooter);
+        next.turn = (out as SnookerOutcome).nextTurn ?? other(shooter);
         next.ballInHand =
-          variant !== "SNOOKER" ? out.foul : r.cueScratch || (out as SnookerOutcome).cueInHand === true;
+          variant !== "SNOOKER"
+            ? out.foul && out.noBallInHand !== true
+            : r.cueScratch || (out as SnookerOutcome).cueInHand === true;
       }
 
       return { state: next, events };

@@ -150,4 +150,59 @@ describe("santase engine", () => {
     // If seat 0 failed the close, opponent (seat 1) wins with a 2-3 penalty.
     if (winner.seat === 1) expect(winner.points).toBeGreaterThanOrEqual(2);
   });
+
+  it("шварц (3) е само при нула взятки: губещ с една взятка за 0 точки (9+9) → 2, не 3", () => {
+    // Фаза 2 (празно тесте, няма коз отгоре). Място 0 е на 60 и печели с AH.
+    const base: SantaseState = {
+      ...init(),
+      hands: [["AH", "9S"], ["JH", "9C"]],
+      stock: [],
+      trumpCard: null,
+      trump: "S",
+      trick: [],
+      turn: 0,
+      leader: 0,
+      closed: false,
+      closedBy: null,
+      pendingMarriage: [0, 0],
+    };
+    const play = (st: SantaseState) => {
+      const rng = new SeededRng("schwarz");
+      const a = santaseEngine.reduce(st, { type: "PLAY", card: "AH" }, rng).state;
+      return santaseEngine.reduce(a, { type: "PLAY", card: "JH" }, rng).state;
+    };
+    // Губещият (място 1) е взел взятка 9+9 = 0 точки → не е шварц.
+    const tookZero = play({ ...base, points: [60, 0], wonTrick: [true, true] });
+    expect(tookZero.lastDealWinner).toBe(0);
+    expect(tookZero.gamePoints).toBe(2);
+    // Контрола: без нито една взятка → шварц, 3.
+    const noTrick = play({ ...base, points: [60, 0], wonTrick: [true, false] });
+    expect(noTrick.lastDealWinner).toBe(0);
+    expect(noTrick.gamePoints).toBe(3);
+  });
+
+  it("провалено затваряне: наказанието никога не е шварц само заради 0 точки на затворилия с взятка", () => {
+    // Затворилият (0) е с 0 точки, но с взятка (9+9); противникът е имал взятка при затварянето.
+    const base: SantaseState = {
+      ...init(),
+      hands: [["9H"], ["AH"]],
+      stock: [],
+      trumpCard: null,
+      trump: "S",
+      trick: [],
+      turn: 0,
+      leader: 0,
+      closed: true,
+      closedBy: 0,
+      oppHadTrickAtClose: true,
+      points: [0, 40],
+      wonTrick: [true, true],
+      pendingMarriage: [0, 0],
+    };
+    const rng = new SeededRng("closed");
+    const a = santaseEngine.reduce(base, { type: "PLAY", card: "9H" }, rng).state;
+    const b = santaseEngine.reduce(a, { type: "PLAY", card: "AH" }, rng).state;
+    expect(b.lastDealWinner).toBe(1);
+    expect(b.gamePoints).toBe(2);
+  });
 });

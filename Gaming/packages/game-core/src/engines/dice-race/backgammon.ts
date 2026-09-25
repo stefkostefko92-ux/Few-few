@@ -165,7 +165,10 @@ function rawMoves(s: BackgammonState): Array<{ from: number | "BAR"; die: number
   return out;
 }
 
-/** Apply one move to a shallow board copy for max-dice lookahead (own pieces). */
+/** Apply one move to a board copy for max-dice lookahead. Ползва СЪЩАТА логика
+ *  като реалния ход (`placeAt`): ударът по чужд самотен пул го праща на бара —
+ *  иначе сборът давал 0 и ударилият пул „изчезвал“, а правилото за максимален
+ *  брой зарове / по-големия зар се смятало по грешна позиция. */
 function simulate(
   s: BackgammonState,
   mv: { from: number | "BAR"; die: number },
@@ -174,13 +177,12 @@ function simulate(
   const seat = s.turn as 0 | 1;
   if (mv.from === "BAR") {
     next.bar[seat] -= 1;
-    const entry = barEntry(seat, mv.die);
-    next.points[entry] = (next.points[entry] ?? 0) + (seat === WHITE ? 1 : -1);
+    placeAt(next, barEntry(seat, mv.die), seat);
   } else {
-    next.points[mv.from] = (next.points[mv.from] ?? 0) + (seat === WHITE ? -1 : 1);
+    removeFromPoint(next, mv.from, seat);
     const dest = destOf(seat, mv.from, mv.die);
     if (dest === "OFF") next.off[seat] += 1;
-    else next.points[dest] = (next.points[dest] ?? 0) + (seat === WHITE ? 1 : -1);
+    else placeAt(next, dest, seat);
   }
   const di = next.remaining.indexOf(mv.die);
   if (di >= 0) next.remaining.splice(di, 1);

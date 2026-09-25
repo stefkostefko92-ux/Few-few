@@ -25,10 +25,15 @@ import {
   PMREMGenerator,
   type Scene,
   Vector2,
+  Vector3,
   WebGLRenderer,
 } from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { HallEnvironment } from "../ravenhold/hallEnvironment";
+import { HALATION_TINTS, RavenGradeShader, makeGradeTime, ravenGradeNode, vignetteStrength } from "../ravenhold/grade3d";
+
+type GradeUniforms = { uTime: { value: number }; uVignette: { value: number }; uAspect: { value: number } };
+import { useSettings } from "../../../lib/settings";
 import {
   type AAMode,
   type GfxControllable,
@@ -50,40 +55,6 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 export type { AAMode, GfxParams };
 
-/**
- * Gentle post vignette — the final couture touch on every 3D board. It runs in
- * display (sRGB) space after tone-mapping/AA, so it only darkens the extreme
- * corners toward the focal centre; the plateau (`offset`) keeps the board and
- * pieces at full brightness. Static (no animation → no strobe), and floored so
- * it can never crush the image to black. Alpha is preserved untouched.
- */
-const VignetteShader = {
-  uniforms: {
-    tDiffuse: { value: null as unknown },
-    offset: { value: 1.06 }, // radial reach — larger = tighter corner falloff
-    darkness: { value: 0.78 }, // corner multiplier floor (1 = no vignette)
-  },
-  vertexShader: /* glsl */ `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }`,
-  fragmentShader: /* glsl */ `
-    uniform sampler2D tDiffuse;
-    uniform float offset;
-    uniform float darkness;
-    varying vec2 vUv;
-    void main() {
-      vec4 texel = texture2D(tDiffuse, vUv);
-      vec2 uv = (vUv - 0.5) * vec2(offset);
-      // smooth radial falloff: full brightness across the centre plateau,
-      // easing to the darkness floor only in the far corners.
-      float d = dot(uv, uv);
-      float vig = mix(darkness, 1.0, smoothstep(0.62, 0.16, d));
-      gl_FragColor = vec4(texel.rgb * vig, texel.a);
-    }`,
-};
 
 export interface RenderCoreOpts {
   canvas: HTMLCanvasElement;
@@ -142,7 +113,10 @@ export class RenderCore implements GfxControllable {
     this.onFrame = opts.onFrame;
     this.params = opts.params ?? defaultGfxParams();
     if (opts.exposure !== undefined && !opts.params) this.params.exposure = opts.exposure;
-    if (opts.background) this.scene.background = new Color(opts.background);
+    // Рейвънхолд: every board is drawn on a TRANSPARENT canvas, so the live
+    // castle hall behind the stage shows around it (a per-scene backdrop colour
+    // used to leave a flat navy box). An equipped cosmetic may still set one.
+    this.scene.background = opts.background ? new Color(opts.background) : null;
     this.ready = this.init(opts);
   }
 
@@ -170,6 +144,7 @@ export class RenderCore implements GfxControllable {
       this.renderer = new WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: true });
     }
 
+    (this.renderer as { setClearColor: (c: number, a: number) => void }).setClearColor(0x000000, 0);
     const h = this.width * this.ratio;
     this.renderer.setPixelRatio(Math.min(this.params.pixelRatio, globalThis.devicePixelRatio || 1));
     this.renderer.setSize(this.width, h, false);
@@ -238,7 +213,10 @@ export class RenderCore implements GfxControllable {
           /* fall through to procedural */
         }
       }
-      const env = this.pmrem.fromScene(new RoomEnvironment(), 0.04);
+      // Рейвънхолд: the pieces reflect the firelit castle hall, not a studio.
+      const hall = new HallEnvironment();
+      const env = this.pmrem.fromScene(hall, 0.04);
+      hall.dispose();
       this.scene.environment = env.texture;
       this.envTex = env;
       this.scene.environmentIntensity = this.params.environment;
@@ -291,31 +269,41 @@ export class RenderCore implements GfxControllable {
       }
       if (params.bloom.enabled) {
         bloomPass = new UnrealBloomPass(new Vector2(w, h), params.bloom.strength, params.bloom.radius, params.bloom.threshold);
+        // Рейвънхолд: топла филмова халация около пламъците и месинга (boy/src/post-lens.js).
+        HALATION_TINTS.forEach(([r, g, b], i) => bloomPass!.bloomTintColors[i]?.set(r, g, b));
         add(bloomPass);
       }
       add(new OutputPass());
       if (params.aa === "SMAA") add(new SMAAPass());
-      // Vignette runs dead-last, in display space, so it frames the finished
-      // image without touching the AO/bloom/tone math upstream.
-      if (params.vignette.enabled) {
-        vignettePass = new ShaderPass(VignetteShader);
-        const vu = vignettePass.uniforms as { offset: { value: number }; darkness: { value: number } };
-        vu.offset.value = params.vignette.offset;
-        vu.darkness.value = params.vignette.darkness;
-        add(vignettePass);
-      } else {
-        vignettePass = null;
-      }
+      // Рейвънхолд grade runs dead-last, in display space (after ACES + sRGB):
+      // vignette, split tone, S-curve and film grain — the look of `boy`.
+      vignettePass = new ShaderPass(RavenGradeShader);
+      applyGrade();
+      add(vignettePass);
       composer.setSize(w, h);
+    };
+    const applyGrade = () => {
+      if (!vignettePass) return;
+      const u = vignettePass.uniforms as GradeUniforms;
+      u.uVignette.value = params.vignette.enabled ? vignetteStrength(params.vignette.darkness) : 0;
+      u.uAspect.value = w / Math.max(1, h);
     };
     build();
 
     return {
-      render: () => composer.render(),
+      render: () => {
+        if (vignettePass) {
+          // Grain moves with time; frozen for reduced motion (static frame).
+          const t = useSettings.getState().reducedMotion ? 3.7 : performance.now() / 1000;
+          (vignettePass.uniforms as GradeUniforms).uTime.value = t;
+        }
+        composer.render();
+      },
       setSize: (nw, nh) => {
         w = nw;
         h = nh;
         composer.setSize(nw, nh);
+        applyGrade();
       },
       applyLive: () => {
         if (bloomPass) {
@@ -325,11 +313,7 @@ export class RenderCore implements GfxControllable {
         }
         const g = gtaoPass as unknown as { updateGtaoMaterial?: (p: object) => void } | null;
         g?.updateGtaoMaterial?.({ radius: params.ao.radius });
-        if (vignettePass) {
-          const vu = vignettePass.uniforms as { offset: { value: number }; darkness: { value: number } };
-          vu.offset.value = params.vignette.offset;
-          vu.darkness.value = params.vignette.darkness;
-        }
+        applyGrade();
       },
       rebuild: () => {
         for (const p of passes) p.dispose?.();
@@ -398,17 +382,27 @@ export class RenderCore implements GfxControllable {
       }
       if (params.bloom.enabled) {
         bloomNode = bloom(node, params.bloom.strength, params.bloom.radius, params.bloom.threshold);
+        (bloomNode as unknown as { bloomTintColors: Vector3[] }).bloomTintColors = HALATION_TINTS.map(([r, g, b]) => new Vector3(r, g, b));
         node = (node as { add: (x: unknown) => unknown }).add(bloomNode);
       }
+      // Рейвънхолд grade in display space: tone-map + sRGB explicitly with
+      // renderOutput, then boy's split tone / S-curve / grain / vignette.
+      (post as { outputColorTransform?: boolean }).outputColorTransform = false;
+      const vig = params.vignette.enabled ? vignetteStrength(params.vignette.darkness) : 0;
+      node = ravenGradeNode(tsl, tsl.renderOutput(node as never) as never, gradeTime, 0.035, vig);
       (post as { outputNode: unknown }).outputNode = node;
       (post as { needsUpdate?: boolean }).needsUpdate = true;
     };
+    const gradeTime = makeGradeTime(tsl);
     build();
 
     return {
       // PostProcessing.render() drives the node graph; it must be used inside the
       // animation loop instead of renderer.render() (per the WebGPU PostProcessing API).
-      render: () => post.render(),
+      render: () => {
+        gradeTime.value = useSettings.getState().reducedMotion ? 3.7 : performance.now() / 1000;
+        post.render();
+      },
       setSize: () => {
         /* PostProcessing tracks the renderer size automatically. */
       },

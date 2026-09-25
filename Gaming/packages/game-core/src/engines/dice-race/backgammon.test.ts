@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { IllegalActionError } from "../../kernel/contract.js";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
 import { backgammonEngine, type BackgammonState } from "./backgammon.js";
@@ -106,6 +107,59 @@ describe("backgammon engine", () => {
     const actions = backgammonEngine.legalActions(s, 0);
     expect(actions.length).toBeGreaterThan(0);
     expect(actions.every((a) => a.type === "MOVE" && a.die === 5)).toBe(true);
+  });
+
+  describe("max-dice lookahead вижда удара (регресия: simulate без placeAt)", () => {
+    const moveState = (dice: [number, number]): BackgammonState => ({
+      points: new Array(24).fill(0),
+      bar: [0, 0],
+      off: [13, 0],
+      turn: 0,
+      phase: "MOVE",
+      dice,
+      remaining: [...dice],
+      cube: 1,
+      cubeOwner: null,
+      winner: null,
+    });
+
+    it("A: ударът 20→18 с 2-ката е единственият път към два зара", () => {
+      // Бели (към 0): пул на 20 и на 10. Черни: самотен пул на 18, блокади на 15, 5, 3.
+      // 20→18 удря, после 18→13 с 5-ицата; 10→8 оставя 5-ицата неизиграема.
+      const s = moveState([5, 2]);
+      s.points[20] = 1;
+      s.points[10] = 1;
+      s.points[18] = -1;
+      s.points[15] = -2;
+      s.points[5] = -2;
+      s.points[3] = -2;
+      const rng = new SeededRng("hit-a");
+      expect(backgammonEngine.legalActions(s, 0)).toEqual([{ type: "MOVE", from: 20, die: 2 }]);
+      expect(() => backgammonEngine.reduce(s, { type: "MOVE", from: 10, die: 2 }, rng)).toThrow(
+        IllegalActionError,
+      );
+      const r = backgammonEngine.reduce(s, { type: "MOVE", from: 20, die: 2 }, rng);
+      expect(r.state.bar[1]).toBe(1); // черният пул е ударен
+      expect(r.state.points[18]).toBe(1);
+      expect(backgammonEngine.legalActions(r.state, 0)).toEqual([{ type: "MOVE", from: 18, die: 5 }]);
+      const r2 = backgammonEngine.reduce(r.state, { type: "MOVE", from: 18, die: 5 }, rng);
+      expect(r2.state.points[13]).toBe(1);
+      expect(r2.state.turn).toBe(1);
+    });
+
+    it("B: само един зар е изиграем → задължителна е по-голямата 6-ица", () => {
+      // Бели: пул на 11 и на 0. Черни: самотен пул на 8, блокада на 2. Зарове [3,6].
+      // 11→8 (удар) оставя 6-ицата блокирана; 11→5 оставя 3-ката неизиграема.
+      const s = moveState([3, 6]);
+      s.points[11] = 1;
+      s.points[0] = 1;
+      s.points[8] = -1;
+      s.points[2] = -2;
+      expect(backgammonEngine.legalActions(s, 0)).toEqual([{ type: "MOVE", from: 11, die: 6 }]);
+      expect(() =>
+        backgammonEngine.reduce(s, { type: "MOVE", from: 11, die: 3 }, new SeededRng("hit-b")),
+      ).toThrow(IllegalActionError);
+    });
   });
 
   describe("gammon / backgammon scoring", () => {

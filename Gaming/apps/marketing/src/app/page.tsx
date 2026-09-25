@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import type { GameKey } from "@aso/shared";
 import { LocaleLink as Link } from "../components/LocaleLink";
 import { SITE } from "../lib/site";
 import { SITE_FAQ } from "../content/faq";
@@ -9,196 +11,223 @@ import { useLocale, useT } from "../i18n/I18nProvider";
 import { localizedGames, localizedSiteFaq } from "../i18n/content";
 import "./landing.css";
 
-const FAN = [
-  { r: "A", s: "♠", c: "black", rot: -16 },
-  { r: "K", s: "♥", c: "red", rot: -8 },
-  { r: "Q", s: "♦", c: "red", rot: 0 },
-  { r: "J", s: "♣", c: "black", rot: 8 },
-  { r: "10", s: "♠", c: "black", rot: 16 },
-];
+/**
+ * Начална страница — клубът в залата на Рейвънхолд. Заглавието е наредено като
+ * ъгъла на асо пика (буква + знак), игрите са списъкът на масите в клуба с кадър
+ * от истинската маса, брой играчи и минути. Подравнено вляво, без плочки с
+ * числа и без емоджита.
+ *
+ * Без пари: страницата не споменава цени, залози, чипове или хазарт. Въпросите
+ * за тях живеят на /faq (и в правните страници), не тук — нито в текста, нито в
+ * JSON-LD на тази страница.
+ */
 
-/** Per-game glyph for the showcase cards — gives each title its own identity. */
-const GAME_GLYPH: Record<string, string> = {
-  BELOTE: "♠",
-  SANTASE: "♥",
-  CHESS: "♞",
-  BACKGAMMON: "⚅",
-  SVARA: "♣",
-  EIGHTBALL: "🎱",
-  NINEBALL: "⑨",
-  SNOOKER: "🔴",
-  WAR: "⚔",
-  GOFISH: "🐟",
-  KENT: "♤",
-  DRAUGHTS: "⛀",
-  LUDO: "🎲",
-  RUMMY: "🃏",
-  DOMINO: "🁫",
-  BRIDGE: "♢",
-  BATTLESHIP: "⚓",
-  DICE: "⚄",
-  BINGO: "🔵",
-  WORDS: "✍",
+type Cat = "cards" | "board" | "cue" | "party";
+
+const CATEGORY: Record<GameKey, Cat> = {
+  BELOTE: "cards",
+  SANTASE: "cards",
+  SVARA: "cards",
+  WAR: "cards",
+  GOFISH: "cards",
+  KENT: "cards",
+  RUMMY: "cards",
+  BRIDGE: "cards",
+  CHESS: "board",
+  BACKGAMMON: "board",
+  DRAUGHTS: "board",
+  LUDO: "board",
+  DOMINO: "board",
+  MAGNAT: "board",
+  DICE: "board",
+  EIGHTBALL: "cue",
+  NINEBALL: "cue",
+  SNOOKER: "cue",
+  BATTLESHIP: "party",
+  BINGO: "party",
+  WORDS: "party",
 };
+const CATS: Cat[] = ["cards", "board", "cue", "party"];
+
+/** Въпросите за цена и хазарт (индекси 1 и 2) не са за началната страница. */
+const HOME_FAQ = [0, 3, 4, 5, 6, 7];
+
+const shot = (key: string) => `/shots/${key.toLowerCase()}.webp`;
 
 export default function Home() {
   const t = useT();
   const locale = useLocale();
   const games = localizedGames(locale);
+  const [cat, setCat] = useState<Cat | "all">("all");
+  const faq = localizedSiteFaq(locale);
 
   return (
     <>
-      {/* JSON-LD stays in the canonical BG source of truth (SEO). */}
-      <JsonLd data={[breadcrumbLd([{ name: "Начало", url: `${SITE.url}/` }]), siteFaqLd(SITE_FAQ)]} />
+      <JsonLd
+        data={[
+          breadcrumbLd([{ name: "Начало", url: `${SITE.url}/` }]),
+          siteFaqLd(HOME_FAQ.map((i) => SITE_FAQ[i]!)),
+        ]}
+      />
 
-      {/* HERO */}
-      <section className="lp-hero">
-        <span className="lp-mote" style={{ left: "18%", top: "30%" }} />
-        <span className="lp-mote" style={{ left: "76%", top: "22%", animationDelay: "1.5s" }} />
-        <span className="lp-mote" style={{ left: "60%", top: "55%", animationDelay: "3s" }} />
-        <span className="lp-mote" style={{ left: "30%", top: "60%", animationDelay: "4.5s" }} />
+      {/* ── Залата: заглавие-асо + истинската маса ──────────────────────── */}
+      <section className="hall">
+        <div className="hall__wall" aria-hidden />
+        <div className="hall__inner">
+          <div className="hall__copy">
+            <h1 className="ace" aria-label={`${SITE.name} — ${SITE.tagline}`}>
+              <span className="ace__index" aria-hidden>
+                <span className="ace__rank">А</span>
+                <span className="ace__pip">♠</span>
+              </span>
+              <span className="ace__word" aria-hidden>
+                {SITE.name}
+              </span>
+            </h1>
+            <p className="hall__tagline">{SITE.tagline}</p>
+            <p className="hall__lead">{t.home.lead}</p>
+            <div className="hall__actions">
+              <a className="cta cta-lg" href={SITE.playUrl}>
+                {t.home.playNow}
+              </a>
+              <Link className="link-arrow" href="/games/">
+                {t.home.browseGames}
+              </Link>
+            </div>
+          </div>
 
-        <span className="lp-eyebrow">{t.home.eyebrow}</span>
-        <h1 className="lp-title">{SITE.name}</h1>
-        <p className="lp-sub">{SITE.tagline}</p>
-        <p className="lp-lead">{t.home.lead}</p>
-        <div className="lp-cta-row">
-          <a className="cta cta-lg" href={SITE.playUrl}>
-            {t.home.playNow}
-          </a>
-          <Link className="cta-ghost" href="/games/">
-            {t.home.browseGames}
-          </Link>
+          <figure className="hall__table">
+            <img
+              src="/shots/magnat-lg.webp"
+              srcSet="/shots/magnat.webp 640w, /shots/magnat-lg.webp 1200w"
+              sizes="(max-width: 900px) 92vw, 640px"
+              alt={t.home.hero.shotAlts[0]}
+              width={1200}
+              height={750}
+              fetchPriority="high"
+              decoding="async"
+            />
+            <figcaption>{t.home.showcase.shotAlt}</figcaption>
+          </figure>
         </div>
+      </section>
 
-        <div className="lp-fan" aria-hidden>
-          {FAN.map((c, i) => (
-            <span
-              key={i}
-              className={`lp-fan-card ${c.c}`}
-              style={{ transform: `rotate(${c.rot}deg) translateY(${Math.abs(c.rot) * 0.4}px)` }}
-            >
-              <span className="lp-fan-idx lp-fan-idx--tl">
-                <b>{c.r}</b>
-                <i>{c.s}</i>
-              </span>
-              <span className="lp-fan-pip">{c.s}</span>
-              <span className="lp-fan-idx lp-fan-idx--br">
-                <b>{c.r}</b>
-                <i>{c.s}</i>
-              </span>
-            </span>
+      {/* ── Масите в клуба ───────────────────────────────────────────────── */}
+      <section className="roster" aria-labelledby="roster-h">
+        <header className="roster__head">
+          <h2 id="roster-h">{t.home.games.heading}</h2>
+          <p>{t.home.games.sub}</p>
+          <div className="roster__filter" role="group" aria-label={t.home.games.heading}>
+            {(["all", ...CATS] as const).map((c) => (
+              <button key={c} type="button" aria-pressed={cat === c} onClick={() => setCat(c)}>
+                {t.home.cats[c]}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        <div className="roster__groups">
+          {CATS.filter((c) => cat === "all" || cat === c).map((c) => (
+            <div key={c} className="roster__group">
+              <h3>{t.home.cats[c]}</h3>
+              <ul>
+                {games
+                  .filter((g) => CATEGORY[g.key] === c)
+                  .map((g) => (
+                    <li key={g.key}>
+                      <Link href={`/games/${g.slug}/`} className="seat">
+                        <img src={shot(g.key)} alt="" width={640} height={400} loading="lazy" decoding="async" />
+                        <span className="seat__name">{g.title}</span>
+                        <span className="seat__meta">
+                          <span>{g.players}</span>
+                          <span>
+                            {g.durationMin} {t.home.games.minutesShort}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* STATS */}
-      <div className="lp-stats">
-        <div className="lp-stat">
-          <div className="lp-stat-num">21</div>
-          <div className="lp-stat-label">{t.home.stats.games}</div>
+      {/* ── Как е направено ─────────────────────────────────────────────── */}
+      <section className="craft">
+        <div className="craft__text">
+          <h2>{t.home.showcase.heading}</h2>
+          <p>{t.home.showcase.text}</p>
         </div>
-        <div className="lp-stat">
-          <div className="lp-stat-num">3</div>
-          <div className="lp-stat-label">{t.home.stats.languages}</div>
+        <div className="craft__shots">
+          <img src={shot("BELOTE")} alt={t.home.hero.shotAlts[1]} width={640} height={400} loading="lazy" decoding="async" />
+          <img src={shot("SNOOKER")} alt={t.home.hero.shotAlts[2]} width={640} height={400} loading="lazy" decoding="async" />
         </div>
-        <div className="lp-stat">
-          <div className="lp-stat-num">24/7</div>
-          <div className="lp-stat-label">{t.home.stats.tablesOpen}</div>
-        </div>
-        <div className="lp-stat">
-          <div className="lp-stat-num">{t.home.statValues.toStart}</div>
-          <div className="lp-stat-label">{t.home.stats.toStart}</div>
-        </div>
-      </div>
+      </section>
 
-      {/* FEATURES */}
-      <section className="lp-section">
-        <h2>{t.home.features.heading}</h2>
-        <p className="lp-section-sub">{t.home.features.sub}</p>
-        <div className="lp-features">
+      {/* ── Защо тук ────────────────────────────────────────────────────── */}
+      <section className="reasons" aria-labelledby="reasons-h">
+        <h2 id="reasons-h">{t.home.features.heading}</h2>
+        <dl>
           {t.home.features.items.map((f) => (
-            <div key={f.title} className="lp-feature">
-              <div className="lp-feature-icon" aria-hidden>
-                {f.icon}
-              </div>
-              <h3>{f.title}</h3>
-              <p>{f.text}</p>
+            <div key={f.title}>
+              <dt>{f.title}</dt>
+              <dd>{f.text}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="lp-section lp-section--alt">
-        <h2>{t.home.steps.heading}</h2>
-        <p className="lp-section-sub">{t.home.steps.sub}</p>
-        <div className="lp-steps">
-          {t.home.steps.items.map((s, i) => (
-            <div key={s.title} className="lp-step">
-              <div className="lp-step-num">{i + 1}</div>
-              <h3 style={{ color: "var(--ink-100)" }}>{s.title}</h3>
-              <p className="muted" style={{ marginTop: ".4rem" }}>
-                {s.text}
-              </p>
-            </div>
+      {/* ── Сървърът е съдията ──────────────────────────────────────────── */}
+      <section className="referee">
+        <h2>{t.home.fair.heading}</h2>
+        <p>{t.home.fair.text}</p>
+        <ul>
+          {t.home.fair.points.map((p) => (
+            <li key={p}>{p}</li>
           ))}
-        </div>
+        </ul>
       </section>
 
-      {/* GAMES */}
-      <section className="lp-section">
-        <h2>{t.home.games.heading}</h2>
-        <p className="lp-section-sub">{t.home.games.sub}</p>
-        <div className="lp-games">
-          {games.slice(0, 12).map((g) => (
-            <Link key={g.key} href={`/games/${g.slug}/`} className="lp-game">
-              <div className="lp-game-glyph" aria-hidden>
-                {GAME_GLYPH[g.key] ?? "♠"}
-              </div>
-              <h3>{g.title}</h3>
-              <p className="muted">
-                {g.players} · {g.durationMin} {t.home.games.minutesShort}
-              </p>
-            </Link>
+      {/* ── Как се сяда на масата (истинска последователност) ───────────── */}
+      <section className="steps" aria-labelledby="steps-h">
+        <h2 id="steps-h">{t.home.steps.heading}</h2>
+        <ol>
+          {t.home.steps.items.map((s) => (
+            <li key={s.title}>
+              <strong>{s.title}</strong>
+              <span>{s.text}</span>
+            </li>
           ))}
-        </div>
-        <div className="lp-games-more">
-          <Link className="cta-ghost" href="/games/">
-            {t.home.games.viewAll}
-          </Link>
-        </div>
+        </ol>
       </section>
 
-      {/* FAQ (AEO) */}
-      <section className="lp-section lp-section--alt">
-        <h2>{t.home.faq.heading}</h2>
-        <p className="lp-section-sub">{t.home.faq.sub}</p>
-        <div className="lp-faq">
-          {localizedSiteFaq(locale)
-            .slice(0, 6)
+      {/* ── Въпроси (AEO) ───────────────────────────────────────────────── */}
+      <section className="questions" aria-labelledby="faq-h">
+        <h2 id="faq-h">{t.home.faq.heading}</h2>
+        <div>
+          {HOME_FAQ.map((i) => faq[i])
+            .filter((f): f is NonNullable<typeof f> => Boolean(f))
             .map((f) => (
-              <details key={f.question} className="lp-faq-item">
+              <details key={f.question}>
                 <summary>{f.question}</summary>
                 <p>{f.answer}</p>
               </details>
             ))}
         </div>
-        <div className="lp-games-more">
-          <Link className="cta-ghost" href="/faq/">
-            {t.home.faq.allQuestions}
-          </Link>
-        </div>
+        <Link className="link-arrow" href="/faq/">
+          {t.home.faq.allQuestions}
+        </Link>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="lp-final">
+      {/* ── Финал ───────────────────────────────────────────────────────── */}
+      <section className="last-call">
         <h2>{t.home.final.heading}</h2>
-        <div className="lp-trust">
+        <p>
           {t.home.final.trust.map((s) => (
             <span key={s}>{s}</span>
           ))}
-        </div>
+        </p>
         <a className="cta cta-lg" href={SITE.playUrl}>
           {t.home.final.cta}
         </a>

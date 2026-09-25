@@ -37,6 +37,7 @@ import {
   Vector3,
 } from "three";
 import { TABLE, type CueVariant } from "@aso/shared";
+import { upgradeMaterial } from "../gl/baked.js";
 import { clothNormal, disposeObject, woodNormal, woodTexture } from "../gl/helpers.js";
 import { RenderCore } from "../gl/render.js";
 
@@ -284,6 +285,8 @@ export class GLTable {
         sheenRoughness: 0.8,
       }),
     );
+    // Цветът на сукното идва от feltTexture (кожата на масата); изпеченото дава тъкан и грапавост.
+    upgradeMaterial(felt.material as MeshPhysicalMaterial, "felt", { repeat: [10, 5], normalScale: 0.35, onReady: () => this.core.invalidate() });
     felt.position.y = -0.02;
     felt.receiveShadow = true;
     this.staticLayer.add(felt);
@@ -300,12 +303,15 @@ export class GLTable {
       roughness: 0.42,
       metalness: 0.08,
     });
+    upgradeMaterial(woodMat, "walnut", { repeat: [4, 1], albedo: true, roughness: 0.85, normalScale: 0.7, onReady: () => this.core.invalidate() });
+    const sideMat = woodMat.clone();
+    upgradeMaterial(sideMat, "walnut", { repeat: [4, 1], rotate: true, albedo: true, roughness: 0.85, normalScale: 0.7, onReady: () => this.core.invalidate() });
     const railH = 0.07;
     const oW = W + 2 * RAIL;
     const oH = H + 2 * RAIL;
     // four rail bars
     const bar = (w: number, d: number, x: number, z: number) => {
-      const m = new Mesh(new BoxGeometry(w, railH, d), woodMat);
+      const m = new Mesh(new BoxGeometry(w, railH, d), w < d ? sideMat : woodMat);
       m.position.set(x, railH / 2 - 0.01, z);
       m.castShadow = true;
       m.receiveShadow = true;
@@ -370,6 +376,8 @@ export class GLTable {
     }
 
     // pockets: a dark well + brass rim at each of the six positions
+    const rimMat = new MeshStandardMaterial({ color: 0x8a6a34, roughness: 0.35, metalness: 0.85 });
+    upgradeMaterial(rimMat, "brass", { repeat: [3, 1], metalness: true, ao: 0.4, onReady: () => this.core.invalidate() });
     for (const [px, py] of POCKETS) {
       const g = new Group();
       g.position.set(wx(px), 0, wz(py));
@@ -388,7 +396,7 @@ export class GLTable {
       g.add(ring);
       const brass = new Mesh(
         new TorusGeometry(TABLE.pocketR * 1.12, TABLE.pocketR * 0.12, 10, 28),
-        new MeshStandardMaterial({ color: 0x8a6a34, roughness: 0.35, metalness: 0.85 }),
+        rimMat,
       );
       brass.rotation.x = -Math.PI / 2;
       brass.position.y = 0.012;

@@ -7,6 +7,7 @@ import { getSocket } from "../../../lib/socket";
 import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import { WinConfetti } from "./WinConfetti";
 import { PlayingCard } from "../cards/PlayingCard";
+import { RulesButton } from "../GameHelp";
 import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
 
@@ -25,8 +26,10 @@ export function SceneHeader({ title }: { title: string }) {
   }, [armed]);
   const live = useMatchStore.getState().phase === "playing";
   return (
-    <div className="mb-4 flex items-center justify-between">
+    <div className="mb-4 flex items-center justify-between gap-3">
       <h1 className="text-3xl text-brass-300">{title}</h1>
+      <div className="flex items-center gap-2">
+      <RulesButton />
       <Button
         variant="ghost"
         className={armed ? "!text-loss" : undefined}
@@ -46,6 +49,7 @@ export function SceneHeader({ title }: { title: string }) {
       >
         {armed ? t("game.leaveConfirm") : t("game.leave")}
       </Button>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuthStore, useCosmeticsStore } from "../lib/store";
@@ -8,7 +8,6 @@ import { ResetPassword } from "../features/auth/ResetPassword";
 import { VerifyEmail } from "../features/auth/VerifyEmail";
 import { Lobby } from "../features/lobby/Lobby";
 import { RoomsPage } from "../features/lobby/RoomsPage";
-import { GameView } from "../features/game/GameView";
 import { Shop } from "../features/shop/Shop";
 import { Leaderboard } from "../features/leaderboard/Leaderboard";
 import { CardGallery } from "../features/game/cards/CardGallery";
@@ -21,6 +20,10 @@ import { RequireRole } from "./RequireRole";
 import { AdminPanel } from "../features/admin/AdminPanel";
 import { AccountPage } from "../features/account/AccountPage";
 import { FriendsPage } from "../features/social/FriendsPage";
+
+// Game tables (hall shader, 3D cores, per-game views) load only when a table
+// is opened — never on /login or the lobby.
+const GameView = lazy(() => import("../features/game/GameView").then((m) => ({ default: m.GameView })));
 
 export function App() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -69,7 +72,14 @@ export function App() {
           <Route element={<Layout />}>
             <Route index element={<Lobby />} />
             <Route path="rooms" element={<RoomsPage />} />
-            <Route path="play/:game" element={<GameView />} />
+            <Route
+              path="play/:game"
+              element={
+                <Suspense fallback={null}>
+                  <GameView />
+                </Suspense>
+              }
+            />
             <Route path="shop" element={<Shop />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="friends" element={<FriendsPage />} />

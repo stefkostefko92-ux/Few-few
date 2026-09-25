@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 273
+        "lessons": 284
       },
       "evolution": [
         {
@@ -1162,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 388
+        "lessons": 421
       },
       "evolution": [
         {
@@ -1980,9 +1980,97 @@
           "date": "2026-09-25",
           "event": "v26.7 — учене",
           "detail": "Научи: adblock: uBO `host#@#+js(...)` изключенията в build_filters.mjs махат директивата само …"
+        },
+        {
+          "version": "26.9.0",
+          "date": "2026-09-25",
+          "event": "v26.9 — учене",
+          "detail": "Научи: Gaming/game-core: краят на мача при равенство дава победа на място/отбор 0 (`>=`/`?? 0`… (+1 още)"
+        },
+        {
+          "version": "27.2.0",
+          "date": "2026-09-25",
+          "event": "v27.2 — учене",
+          "detail": "Научи: Gaming rummy.ts layoffSplit е алчен (bestMeldSplit без оглед на долагане + grown.find п… (+2 още)"
+        },
+        {
+          "version": "27.3.0",
+          "date": "2026-09-25",
+          "event": "v27.3 — учене",
+          "detail": "Научи: Изходът на Кодаджията трябва да завършва с блок „## ПРЕДАВАНЕ“ (От/Към/Статус/Находки/И…"
+        },
+        {
+          "version": "27.5.0",
+          "date": "2026-09-25",
+          "event": "v27.5 — учене",
+          "detail": "Научи: Gaming backgammon: lookahead-симулацията (simulate) трябва да прилага удара като реални… (+1 още)"
+        },
+        {
+          "version": "27.7.0",
+          "date": "2026-09-25",
+          "event": "v27.7 — учене",
+          "detail": "Научи: Gaming: текстът с правилата в играта идва от packages/shared/src/gameRules.ts (rulesFor… (+1 още)"
+        },
+        {
+          "version": "27.9.0",
+          "date": "2026-09-25",
+          "event": "v27.9 — учене",
+          "detail": "Научи: Gaming Дама: draughts.ts маха взетия пул след всеки скок (board[move.captured]=null) → … (+1 още)"
+        },
+        {
+          "version": "28.1.0",
+          "date": "2026-09-25",
+          "event": "v28.1 — учене",
+          "detail": "Научи: Gaming/ Кент: SIGNAL е отделен ход — redactEvent го скрива, но turn се мести без промян… (+1 още)"
+        },
+        {
+          "version": "28.3.0",
+          "date": "2026-09-25",
+          "event": "v28.3 — учене",
+          "detail": "Научи: Gaming cue-sports: правилни бъгове се доказват детерминистично с brute-force по ъгъл/си… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming cue-sports: правилни бъгове се доказват детерминистично с brute-force по ъгъл/си…\" (+1 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming/ Кент: SIGNAL е отделен ход — redactEvent го скрива, но turn се мести без промян…\" (+1 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming Дама: draughts.ts маха взетия пул след всеки скок (board[move.captured]=null) → …\" (+1 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming: текстът с правилата в играта идва от packages/shared/src/gameRules.ts (rulesFor…\" (+1 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming backgammon: lookahead-симулацията (simulate) трябва да прилага удара като реални…\" (+1 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Изходът на Кодаджията трябва да завършва с блок „## ПРЕДАВАНЕ“ (От/Към/Статус/Находки/И…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming rummy.ts layoffSplit е алчен (bestMeldSplit без оглед на долагане + grown.find п…\" (+2 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming/game-core: краят на мача при равенство дава победа на място/отбор 0 (`>=`/`?? 0`…\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
@@ -4829,7 +4917,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 174
+        "lessons": 177
       },
       "evolution": [
         {
@@ -5317,9 +5405,31 @@
           "date": "2026-09-25",
           "event": "v19.7 — учене",
           "detail": "Научи: dod-check.mjs отхвърля ПРЕДАВАНЕ, ако която и да е находка е без `файл:ред` (или URL) —…"
+        },
+        {
+          "version": "19.9.0",
+          "date": "2026-09-25",
+          "event": "v19.9 — учене",
+          "detail": "Научи: Gaming маркетинг: EN/IT преводите се наслагват върху BG по индекс (howTo/faq map по i) … (+1 още)"
+        },
+        {
+          "version": "20.0.0",
+          "date": "2026-09-25",
+          "event": "v20.0 — учене",
+          "detail": "Научи: handoff.mjs чете всяко поле на ПРЕДАВАНЕ само от СЪЩИЯ ред (regex `^...Находки:\\\\s*(.*)…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „handoff.mjs чете всяко поле на ПРЕДАВАНЕ само от СЪЩИЯ ред (regex `^...Находки:\\\\s*(.*)…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming маркетинг: EN/IT преводите се наслагват върху BG по индекс (howTo/faq map по i) …\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
@@ -6560,7 +6670,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 198
+        "lessons": 203
       },
       "evolution": [
         {
@@ -14483,7 +14593,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 171
+        "lessons": 174
       },
       "evolution": [
         {
