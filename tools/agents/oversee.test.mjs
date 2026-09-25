@@ -11,7 +11,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   hasSource, tailHasSource, jaccard, sectionBullets, extractBalancedObject,
-  daysSince, lessonDate, norm, MERGE_THRESHOLD,
+  daysSince, lessonDate, norm, MERGE_THRESHOLD, yamlPlainCut,
 } from "./oversee-lib.mjs";
 
 test("tailHasSource: последният ;-сегмент е източникът", () => {
@@ -100,4 +100,14 @@ test("lessonDate: вади датата от **YYYY-MM-DD:**", () => {
 
 test("norm: маха **, кавички, trailing _(…)_ и свива интервали", () => {
   assert.equal(norm('**Факт**   с   кавички „x“ _(a; b; c)_'), "факт с кавички x");
+});
+
+test("yamlPlainCut: „ #“ в нецитирано описание го реже; цитирано/блоково/без интервал — не", () => {
+  assert.equal(yamlPlainCut("Социалджията — работа #1 е обхват"), "Социалджията — работа".length);
+  assert.equal(yamlPlainCut("a\t# b"), 1);
+  assert.equal(yamlPlainCut("работа №1 е обхват"), -1);
+  assert.equal(yamlPlainCut("C#, F# и хаштаг#без интервал преди"), -1);
+  assert.equal(yamlPlainCut('"работа #1 в кавички"'), -1);
+  assert.equal(yamlPlainCut("'работа #1 в апострофи'"), -1);
+  assert.equal(yamlPlainCut(">-"), -1);
 });

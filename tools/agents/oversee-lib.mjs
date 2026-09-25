@@ -179,3 +179,14 @@ export function extractBalancedObject(str, marker) {
   }
   return null;
 }
+
+// YAML коментар в НЕцитирана едноредова стойност: „ #“ (или таб + #) реже стойността там.
+// Харнесът чете frontmatter като YAML, тоест `description: работа #1 е …` стига до него като
+// „работа“ — рутингът вижда осакатено описание и не знае кога да делегира. Цитирана стойност
+// (' или ") и блоков скалар (> или |) не се режат. Връща видимата дължина или -1, ако няма срез.
+export function yamlPlainCut(value) {
+  const v = String(value).trim();
+  if (!v || v[0] === "'" || v[0] === '"' || v[0] === ">" || v[0] === "|") return -1;
+  const m = v.match(/[ \t]#/);
+  return m ? v.slice(0, m.index).trimEnd().length : -1;
+}
