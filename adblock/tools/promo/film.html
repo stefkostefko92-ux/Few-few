@@ -119,7 +119,7 @@
   <section class="scene" id="s4">
     <div class="cap" style="width:700px">
       <p class="eyebrow in" data-d="0.35">04 — Measured, not claimed</p>
-      <h2 class="term in" data-d="0.5">118 of 132 <span class="c">blocked.</span></h2>
+      <h2 class="term in" data-d="0.5">130 of 132 <span class="c">blocked.</span></h2>
       <div class="rule in" data-d="0.75"></div>
       <p class="gloss in" data-d="0.9">Ad and tracker hosts on a public test page, same conditions for every blocker.</p>
       <p class="fine in" data-d="1.1">adblock.turtlecute.org · 25 Sep 2026<br />default settings · fresh profile · two identical runs</p>
@@ -148,7 +148,7 @@
   </section>
 
   <div class="brand"><img src="../../server/shield-96.webp" alt="" />Carbon Stealth</div>
-  <div class="slate"><span>Supreme AdBlock · 5.1.1</span><span class="rec" id="tc">00:00:00:00</span></div>
+  <div class="slate"><span>Supreme AdBlock · <b id="ver" style="font-weight:300">5.1</b></span><span class="rec" id="tc">00:00:00:00</span></div>
   <div class="foot">Free · No account · No telemetry</div>
   <div id="vig"></div>
   <canvas id="grain" width="960" height="540"></canvas>
@@ -176,7 +176,7 @@
   document.getElementById("popLog").src = A.popupLog;
   document.getElementById("smart").innerHTML = A.smart;
   document.getElementById("lists").innerHTML = A.lists;
-  var DATA = [["Supreme AdBlock", 118, 1], ["Ghostery", 98], ["uBlock Origin Lite", 82], ["AdGuard", 26], ["Adblock Plus", 26], ["No blocker", 4]];
+  var DATA = [["Supreme AdBlock", 130, 1], ["Ghostery", 98], ["uBlock Origin Lite", 82], ["AdGuard", 26], ["Adblock Plus", 26], ["No blocker", 4]];
   var bars = document.getElementById("bars");
   DATA.forEach(function (d) {
     var row = document.createElement("div"); row.className = "bar" + (d[2] ? " us" : "");

@@ -47,7 +47,8 @@ patch("preserveDrawingBuffer: false", "preserveDrawingBuffer: true");
 patch("var dt = Math.min(0.05, now - (frame.p || now));", "F = Math.max(F, window.__amb || 0);\n      var dt = Math.min(0.05, now - (frame.p || now));");
 patch("if (!strikes.length && !sparks.length) {", "if (!strikes.length && !sparks.length && !(window.__amb > 0)) {");
 patch("      el: cv,\n", "      el: cv,\n      kick: function () { if (!running) { running = true; requestAnimationFrame(frame); } },\n");
-const film = readFileSync(join(HERE, "film.html"), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\n" + storm);
+const film = readFileSync(join(HERE, "film.html"), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\n" + storm)
+  .replace('<b id="ver" style="font-weight:300">5.1</b>', () => `<b id="ver" style="font-weight:300">${ver}</b>`);
 
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".webp": "image/webp", ".png": "image/png", ".woff2": "font/woff2" };
 const srv = http.createServer((q, r) => {
@@ -91,8 +92,8 @@ let ffmpeg = process.env.FFMPEG;
 if (!ffmpeg) ffmpeg = execFileSync("python3", ["-c", "import imageio_ffmpeg as f; print(f.get_ffmpeg_exe())"]).toString().trim();
 const mp4 = join(ROOT, "dist", `supreme-adblock-promo-${ver}.mp4`);
 execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-framerate", String(TL.fps), "-i", join(FR, "%05d.jpg"), "-i", wav,
-  "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(TL.fps),
+  "-c:v", "libx264", "-preset", "slow", "-tune", "grain", "-crf", "19", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(TL.fps),
   "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", "-shortest", mp4], { stdio: "inherit" });
 const thumb = join(ROOT, "dist", `supreme-adblock-promo-${ver}-thumb.png`);
-execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-i", join(FR, `${String(Math.round(3.2 * TL.fps)).padStart(5, "0")}.jpg`), "-vf", "scale=1280:720", thumb], { stdio: "inherit" });
+execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-i", join(FR, `${String(Math.round(2.3 * TL.fps)).padStart(5, "0")}.jpg`), "-vf", "scale=1280:720", thumb], { stdio: "inherit" });
 console.log("→", mp4, "\n→", thumb);
