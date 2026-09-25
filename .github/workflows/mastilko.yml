@@ -36,3 +36,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # Уязвимости в зависимостите. Без тази стъпка два RCE advisory-та срещу
+      # next@16.3.0 и три high транзитивни стояха месец незабелязани — гейтът
+      # беше зелен, защото никой не питаше. `--omit=dev` гледа това, което
+      # реално тръгва на сървъра (деплоят прунва dev зависимостите).
+      - name: npm audit (production зависимости)
+        run: npm audit --omit=dev --audit-level=high

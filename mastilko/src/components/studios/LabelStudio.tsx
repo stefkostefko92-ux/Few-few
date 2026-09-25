@@ -2,15 +2,22 @@
 
 import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import FitText from "@/components/FitText";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Barcode from "@/components/Barcode";
+import Icon from "@/components/Icon";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
+
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface LabelState extends StyleState {
   presetId: string;
@@ -27,6 +34,14 @@ interface LabelState extends StyleState {
   qrUrl: string;
   cutLines: boolean;
   aiDesc: string;
+  /** Начеван лист: пропусни първите N клетки (вече използвани етикети). */
+  skipCells: number;
+  /** Баркод върху всеки етикет. */
+  barcode: boolean;
+  /** Формат на баркода. */
+  barcodeType: "CODE128" | "EAN13" | "EAN8" | "UPC";
+  /** Стойност на баркода. */
+  barcodeValue: string;
 }
 
 // Валидация на качен проект-файл: грешен тип стойност иначе сменя правилно
@@ -44,6 +59,10 @@ const ProjectSchema = z
     qrUrl: z.string().max(300),
     cutLines: z.boolean(),
     aiDesc: z.string().max(300),
+    skipCells: z.number().int().min(0).max(200),
+    barcode: z.boolean(),
+    barcodeType: z.enum(["CODE128", "EAN13", "EAN8", "UPC"]),
+    barcodeValue: z.string().max(48),
   })
   .partial();
 
@@ -59,6 +78,10 @@ const INITIAL: LabelState = {
   qrUrl: "",
   cutLines: true,
   aiDesc: "",
+  skipCells: 0,
+  barcode: false,
+  barcodeType: "CODE128",
+  barcodeValue: "",
 };
 
 interface CellContent {
@@ -93,8 +116,11 @@ export default function LabelStudio() {
     s.mode === "list"
       ? s.listText.split("\n").map((l) => l.trim()).filter(Boolean)
       : [];
-  const usedCells = s.mode === "list" ? Math.min(listLines.length, grid.total) : grid.total;
-  const overflow = s.mode === "list" ? Math.max(0, listLines.length - grid.total) : 0;
+  // Начеван лист: първите N клетки са вече изразходвани → печатаме от N нататък.
+  const skip = Math.min(s.skipCells ?? 0, Math.max(0, grid.total - 1));
+  const capacity = grid.total - skip;
+  const usedCells = s.mode === "list" ? Math.min(listLines.length, capacity) : capacity;
+  const overflow = s.mode === "list" ? Math.max(0, listLines.length - capacity) : 0;
 
   const qrText = s.qrUrl.trim()
     ? /^https?:\/\//i.test(s.qrUrl.trim())
@@ -102,14 +128,46 @@ export default function LabelStudio() {
       : `https://${s.qrUrl.trim()}`
     : "";
   // Един QR за целия лист — не по един на клетка.
-  const qrSrc = useQrDataUrl(qrText);
+  const qrSrc = useQrDataUrl(qrText, s.qrColor ? qrSafeColor(theme.accent) : undefined);
+
+  // Експорт на контурите (cut lines) като A4 SVG в mm — за режещо плоте
+  // (Cricut/Silhouette): печаташ листа, после машината реже по същите позиции.
+  function downloadCutSvg() {
+    const parts: string[] = [];
+    for (let i = 0; i < grid.total; i++) {
+      const ci = i - skip;
+      if (ci < 0) continue;
+      if (!cellContent(s, listLines, ci)) continue;
+      const col = i % grid.cols;
+      const row = Math.floor(i / grid.cols);
+      const x = grid.offsetX + col * (preset.w + grid.gapX);
+      const y = grid.offsetY + row * (preset.h + grid.gapY);
+      const cx = (x + preset.w / 2).toFixed(2);
+      const cy = (y + preset.h / 2).toFixed(2);
+      const stroke = `fill="none" stroke="#000" stroke-width="0.1"`;
+      if (preset.shape === "circle") {
+        parts.push(`<circle cx="${cx}" cy="${cy}" r="${(preset.w / 2).toFixed(2)}" ${stroke}/>`);
+      } else if (preset.shape === "round") {
+        parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${(preset.w / 2).toFixed(2)}" ry="${(preset.h / 2).toFixed(2)}" ${stroke}/>`);
+      } else {
+        parts.push(`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${preset.w}" height="${preset.h}" rx="2.5" ${stroke}/>`);
+      }
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">${parts.join("")}</svg>`;
+    const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mastilko-rezhi.svg";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   const radius =
     preset.shape === "circle" ? "50%" : preset.shape === "round" ? "50% / 45%" : "2.5mm";
   const qrSize = Math.min(preset.h, preset.w) * 0.6;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -127,12 +185,12 @@ export default function LabelStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} hideBorder />
 
           <fieldset>
             <legend className="field-label">Съдържание</legend>
             <div className="flex gap-2">
-              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "same" ? "border-tera bg-tera-pale/60" : "border-ink/10"}`}>
+              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "same" ? "border-tera bg-tera-pale/60 dark:bg-white/10 vivid:bg-white/10" : "border-ink/10"}`}>
                 <input
                   type="radio"
                   name="label-mode"
@@ -142,7 +200,7 @@ export default function LabelStudio() {
                 />
                 Еднакви
               </label>
-              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "list" ? "border-tera bg-tera-pale/60" : "border-ink/10"}`}>
+              <label className={`flex-1 cursor-pointer rounded-xl border-2 px-3 py-2 text-center text-sm font-semibold ${s.mode === "list" ? "border-tera bg-tera-pale/60 dark:bg-white/10 vivid:bg-white/10" : "border-ink/10"}`}>
                 <input
                   type="radio"
                   name="label-mode"
@@ -201,6 +259,26 @@ export default function LabelStudio() {
                   </strong>
                 )}
               </p>
+              <button
+                type="button"
+                className="btn-secondary mt-2 text-sm"
+                onClick={() => set({
+                  listText: [
+                    "Математика | Име Фамилия",
+                    "Български език и литература | Име Фамилия",
+                    "Английски език | Име Фамилия",
+                    "История | Име Фамилия",
+                    "География | Име Фамилия",
+                    "Биология | Име Фамилия",
+                    "Химия | Име Фамилия",
+                    "Физика | Име Фамилия",
+                    "Информатика | Име Фамилия",
+                    "Физическо възпитание | Име Фамилия",
+                  ].join("\n"),
+                })}
+              >
+                Попълни ученически предмети
+              </button>
             </div>
           )}
 
@@ -242,6 +320,17 @@ export default function LabelStudio() {
             <p className="mt-1 text-xs text-ink-faint">
               Генерира се в твоя браузър — нищо не се изпраща навън.
             </p>
+            {s.qrUrl.trim() && (
+              <label className="mt-2 flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={!!s.qrColor}
+                  onChange={(e) => set({ qrColor: e.target.checked })}
+                  className="h-4 w-4 accent-tera"
+                />
+                QR в акцентния цвят (ако е скенируем)
+              </label>
+            )}
           </div>
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
@@ -253,11 +342,83 @@ export default function LabelStudio() {
             />
             Пунктирани линии за рязане
           </label>
+
+          <div>
+            <label htmlFor="skip-cells" className="field-label">
+              Начеван лист — пропусни първите клетки
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                id="skip-cells"
+                type="range"
+                min={0}
+                max={Math.max(0, grid.total - 1)}
+                step={1}
+                value={skip}
+                onChange={(e) => set({ skipCells: Number(e.target.value) })}
+                className="h-4 flex-1 accent-tera"
+              />
+              <span className="tabular-nums text-sm font-semibold text-ink-soft">{skip}</span>
+            </div>
+            <p className="mt-1 text-xs text-ink-faint">
+              Ползвал си вече част от листа със стикери? Печатаме от следващата
+              свободна клетка — нищо не се хаби. Остават {capacity} свободни.
+            </p>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+              <input
+                type="checkbox"
+                checked={s.barcode}
+                onChange={(e) => set({ barcode: e.target.checked })}
+                className="h-4 w-4 accent-tera"
+              />
+              Баркод (за продукти/цени)
+            </label>
+            {s.barcode && (
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[auto_1fr]">
+                <select
+                  className="field-input !w-auto"
+                  value={s.barcodeType}
+                  onChange={(e) => set({ barcodeType: e.target.value as LabelState["barcodeType"] })}
+                  aria-label="Формат на баркода"
+                >
+                  <option value="CODE128">Code 128</option>
+                  <option value="EAN13">EAN-13</option>
+                  <option value="EAN8">EAN-8</option>
+                  <option value="UPC">UPC-A</option>
+                </select>
+                <input
+                  className="field-input"
+                  maxLength={48}
+                  value={s.barcodeValue}
+                  onChange={(e) => set({ barcodeValue: e.target.value })}
+                  placeholder={s.barcodeType === "CODE128" ? "напр. ABC-12345" : "напр. 3800000000001"}
+                  aria-label="Стойност на баркода"
+                />
+                <p className="text-xs text-ink-faint sm:col-span-2">
+                  EAN-13 иска 12–13 цифри, EAN-8 — 7–8, UPC — 11–12. Кодът се
+                  генерира в браузъра; при невалидна стойност не се показва.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-ink/10 pt-3">
+            <button type="button" className="btn-secondary text-sm" onClick={downloadCutSvg}>
+              <Icon name="download" className="h-4 w-4" /> Свали SVG за рязане (Cricut/Silhouette)
+            </button>
+            <p className="mt-1 text-xs text-ink-faint">
+              Контурите на етикетите като SVG в mm — зареждаш го в машината за
+              рязане (print-then-cut) на същите позиции като разпечатката.
+            </p>
+          </div>
         </div>
 
         <div className="card-warm space-y-3 p-5">
           <label htmlFor="aiDesc" className="field-label">
-            ✨ Не ти хрумва текст? Опиши за какво е етикетът:
+            <Icon name="sparkles" className="mr-1 h-4 w-4 align-[-3px]" /> Не ти хрумва текст? Опиши за какво е етикетът:
           </label>
           <input
             id="aiDesc"
@@ -280,7 +441,7 @@ export default function LabelStudio() {
 
         <ProjectFile
           state={s}
-          filename="mastilko-etiketi"
+          filename="mastilko-etiketi" storageKey="mastilko-labels"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>
@@ -292,7 +453,8 @@ export default function LabelStudio() {
         />
         <SheetPreview style={fontVars(s)}>
           {Array.from({ length: grid.total }).map((_, i) => {
-            const content = cellContent(s, listLines, i);
+            const ci = i - skip;
+            const content = ci < 0 ? null : cellContent(s, listLines, ci);
             if (!content) return null;
             const col = i % grid.cols;
             const row = Math.floor(i / grid.cols);
@@ -307,7 +469,7 @@ export default function LabelStudio() {
                   top: `${top}mm`,
                   width: `${preset.w}mm`,
                   height: `${preset.h}mm`,
-                  background: theme.bg,
+                  background: sheetBg(s, theme),
                   color: theme.fg,
                   borderRadius: radius,
                   border: s.cutLines
@@ -323,7 +485,7 @@ export default function LabelStudio() {
                   overflow: "hidden",
                 }}
               >
-                <BackgroundDecor decor={s.decor} color={theme.accent} />
+                <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
                 {qrSrc && (
                   <QrImage
                     src={qrSrc}
@@ -346,20 +508,17 @@ export default function LabelStudio() {
                     minWidth: 0,
                   }}
                 >
-                  <span
-                    style={{
-                      fontWeight: 800,
-                      fontSize: `${Math.min(preset.h * 0.2, 9)}mm`,
-                      lineHeight: 1.15,
-                    }}
-                  >
-                    {content.text1 || "…"}
-                  </span>
+                  <FitText
+                    text={content.text1 || "…"}
+                    fontSize={fs(Math.min(preset.h * 0.2, 9))}
+                    watch={s.textScale}
+                    style={{ fontWeight: 800, lineHeight: 1.15 }}
+                  />
                   {content.text2 && (
                     <span
                       style={{
                         marginTop: "1mm",
-                        fontSize: `${Math.min(preset.h * 0.12, 5)}mm`,
+                        fontSize: fs(Math.min(preset.h * 0.12, 5)),
                         opacity: 0.85,
                       }}
                     >
@@ -370,13 +529,21 @@ export default function LabelStudio() {
                     <span
                       style={{
                         marginTop: "0.8mm",
-                        fontSize: `${Math.min(preset.h * 0.11, 4.5)}mm`,
+                        fontSize: fs(Math.min(preset.h * 0.11, 4.5)),
                         fontWeight: 700,
                         color: theme.accent,
                       }}
                     >
                       № {content.num}
                     </span>
+                  )}
+                  {s.barcode && s.barcodeValue.trim() && (
+                    <Barcode
+                      value={s.barcodeValue}
+                      format={s.barcodeType}
+                      color={theme.fg}
+                      style={{ marginTop: "1mm", width: "92%", height: `${Math.min(preset.h * 0.42, 14)}mm` }}
+                    />
                   )}
                 </div>
               </div>

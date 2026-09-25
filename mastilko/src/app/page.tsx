@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Logo from "@/components/Logo";
+import Icon from "@/components/Icon";
 import BannerZone from "@/components/BannerZone";
 import { PUBLISHER, POSTAL_ADDRESS, ID, SITE_URL } from "@/lib/site";
 
@@ -8,10 +10,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const TOOLS = [
+const TOOLS: Array<{
+  href: string;
+  emoji: string;
+  icon?: string;
+  title: string;
+  text: string;
+  accent: string;
+}> = [
   {
     href: "/etiketi",
     emoji: "🏷️",
+    icon: "/icons/etiketi.webp",
     title: "Етикети",
     text: "За буркани, кутии, тетрадки, продукти. Избираш размер и цвят, пишеш текста — цял лист А4, готов за рязане.",
     accent: "bg-tera-pale text-tera-dark",
@@ -19,6 +29,7 @@ const TOOLS = [
   {
     href: "/vizitki",
     emoji: "💼",
+    icon: "/icons/vizitki.webp",
     title: "Визитки",
     text: "Стандартни 90 × 54 mm, топли шаблони, 10 визитки на лист. Име, телефон, имейл — и си готов за срещата.",
     accent: "bg-med-pale text-med-dark",
@@ -26,6 +37,7 @@ const TOOLS = [
   {
     href: "/cv",
     emoji: "📄",
+    icon: "/icons/cv.webp",
     title: "Автобиография (CV)",
     text: "Модерен, класически или Europass шаблон. Попълваш стъпка по стъпка, а AI помага с описанията.",
     accent: "bg-gora-pale text-gora-dark",
@@ -33,6 +45,7 @@ const TOOLS = [
   {
     href: "/pismo",
     emoji: "✉️",
+    icon: "/icons/pismo.webp",
     title: "Мотивационно писмо",
     text: "Най-трудната част от кандидатстването — AI пише чернова по 2–3 неща за теб, ти я правиш своя.",
     accent: "bg-paper-deep text-ink-soft",
@@ -40,6 +53,7 @@ const TOOLS = [
   {
     href: "/gramoti",
     emoji: "🏆",
+    icon: "/icons/gramoti.webp",
     title: "Грамоти и сертификати",
     text: "За училища, клубове и фирми — красива грамота на хоризонтален А4 с рамка. Попълваш за кого и за какво.",
     accent: "bg-med-pale text-med-dark",
@@ -47,6 +61,7 @@ const TOOLS = [
   {
     href: "/wifi",
     emoji: "📶",
+    icon: "/icons/wifi.webp",
     title: "WiFi стикер с QR",
     text: "Гостите сканират кода и телефонът се свързва сам, без парола. За кафенета, къщи за гости и офиси.",
     accent: "bg-tera-pale text-tera-dark",
@@ -54,6 +69,7 @@ const TOOLS = [
   {
     href: "/pokani",
     emoji: "🎉",
+    icon: "/icons/pokani.webp",
     title: "Покани и картички",
     text: "За рожден ден, кръщене, сватба или юбилей — топъл шаблон, 2 покани на лист А4, готови за рязане.",
     accent: "bg-gora-pale text-gora-dark",
@@ -61,9 +77,58 @@ const TOOLS = [
   {
     href: "/tabelki",
     emoji: "🪧",
+    icon: "/icons/tabelki.webp",
     title: "Табелки и надписи",
     text: "„Отворено/Затворено“, работно време, надпис за врата. Готови заготовки, избираш цвят, принтираш на А4.",
     accent: "bg-paper-deep text-ink-soft",
+  },
+  {
+    href: "/badzhove",
+    emoji: "🎟️",
+    icon: "/icons/vizitki.webp",
+    title: "Баджове за събития",
+    text: "За конференции и събития — цял списък гости наведнъж (име, роля, фирма, лого, QR). Серийна изработка от таблица.",
+    accent: "bg-med-pale text-med-dark",
+  },
+  {
+    href: "/obyava",
+    emoji: "📢",
+    icon: "/icons/tabelki.webp",
+    title: "Обява с ресни",
+    text: "Класическата обява с откъсващи се телефончета — за уроци, квартира, услуги. Печаташ, залепваш, хората късат номера.",
+    accent: "bg-gora-pale text-gora-dark",
+  },
+  {
+    href: "/vaucheri",
+    emoji: "🎁",
+    icon: "/icons/pokani.webp",
+    title: "Ваучери и талони",
+    text: "Подаръчни ваучери и талони за отстъпка с уникален код и QR — цяла серия наведнъж. За салони, кафенета и магазини.",
+    accent: "bg-tera-pale text-tera-dark",
+  },
+  {
+    href: "/kalendar",
+    emoji: "📅",
+    icon: "/icons/gramoti.webp",
+    title: "Календар за печат",
+    text: "Месечен календар на български с официалните празници (вкл. Великден) — за стена или бюро, всеки месец на лист А4.",
+    accent: "bg-med-pale text-med-dark",
+  },
+  {
+    href: "/menu",
+    emoji: "🍽️",
+    icon: "/icons/etiketi.webp",
+    title: "Меню и ценоразпис",
+    text: "За кафене, бар или ресторант — раздели, продукти и цени с точкова линия, готово за печат на А4.",
+    accent: "bg-gora-pale text-gora-dark",
+  },
+  {
+    href: "/dokumentni-snimki",
+    emoji: "🪪",
+    icon: "/icons/cv.webp",
+    title: "Снимки за документи",
+    text: "Снимки за лична карта, паспорт и виза (35×45 mm) — качваш, изрязваш и печаташ цял лист. Всичко в браузъра.",
+    accent: "bg-med-pale text-med-dark",
   },
 ];
 
@@ -108,7 +173,7 @@ export default function HomePage() {
           className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-tera-pale blur-3xl"
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 text-center sm:pt-20">
-          <Logo priority className="mx-auto h-36 w-36 drop-shadow-lg sm:h-44 sm:w-44" />
+          <Logo priority className="mx-auto h-36 w-36 sm:h-44 sm:w-44" />
           <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
             Етикети, визитки и CV —{" "}
             <span className="text-tera">топло и безплатно</span>
@@ -120,13 +185,16 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/etiketi" className="btn-primary">
-              🏷️ Направи етикети
+              <Image src="/icons/etiketi.webp" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              Направи етикети
             </Link>
             <Link href="/vizitki" className="btn-secondary">
-              💼 Визитки
+              <Image src="/icons/vizitki.webp" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              Визитки
             </Link>
             <Link href="/cv" className="btn-secondary">
-              📄 CV
+              <Image src="/icons/cv.webp" alt="" width={32} height={32} unoptimized className="-ml-1 h-6 w-6 object-contain" aria-hidden />
+              CV
             </Link>
           </div>
         </div>
@@ -135,13 +203,16 @@ export default function HomePage() {
       {/* Отговор-отпред: какво е Мастилко (за хора, търсачки и AI асистенти) */}
       <section className="mx-auto max-w-3xl px-4 pb-12">
         <p className="card-warm p-5 text-center text-ink-soft">
-          <strong className="text-ink">Мастилко е безплатен онлайн инструмент на български</strong>{" "}
-          за създаване на етикети за печат (11 стандартни размера, вкл. 70 × 36 mm,
-          със списъци, номерация и QR код), визитки (90 × 54 mm, 10 на лист, с
-          vCard QR), автобиографии (вкл. Europass), мотивационни писма, грамоти
-          и сертификати, покани, табелки и надписи, както и WiFi стикери с QR
-          код. Работи в браузъра, без регистрация; резултатът се принтира на А4
-          с точни размери в милиметри или се запазва като PDF.
+          <strong className="text-ink">Мастилко е безплатен онлайн инструмент на български с 14 образеца за печат</strong>{" "}
+          — етикети (11 стандартни размера, вкл. 70 × 36 mm, със списъци,
+          номерация и QR код), визитки (90 × 54 mm, 10 на лист, с vCard QR),
+          автобиографии (вкл. Europass), мотивационни писма, грамоти и
+          сертификати, покани и картички, табелки и надписи, WiFi стикери с QR,
+          баджове за събития, обяви с откъсващи се телефончета, подаръчни
+          ваучери и талони, календари с българските празници, менюта и
+          ценоразписи, както и снимки за документи (35 × 45 mm). Работи в
+          браузъра, без регистрация; резултатът се принтира на А4 с точни
+          размери в милиметри или се запазва като PDF.
         </p>
       </section>
 
@@ -154,12 +225,24 @@ export default function HomePage() {
               href={t.href}
               className="card-warm group flex flex-col p-6 transition hover:-translate-y-1 hover:shadow-lift"
             >
-              <span
-                className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${t.accent}`}
-                aria-hidden
-              >
-                {t.emoji}
-              </span>
+              {t.icon ? (
+                <Image
+                  src={t.icon}
+                  alt=""
+                  width={88}
+                  height={88}
+                  unoptimized
+                  className="h-16 w-16 object-contain drop-shadow-sm transition group-hover:scale-105"
+                  aria-hidden
+                />
+              ) : (
+                <span
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${t.accent}`}
+                  aria-hidden
+                >
+                  {t.emoji}
+                </span>
+              )}
               <h2 className="font-display mt-4 text-2xl font-bold">{t.title}</h2>
               <p className="mt-2 flex-1 text-ink-soft">{t.text}</p>
               <span className="mt-4 font-semibold text-tera-dark transition group-hover:translate-x-1">
@@ -192,7 +275,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4">
         <div className="card-warm relative overflow-hidden bg-gradient-to-br from-white/90 to-med-pale/70 p-8 sm:p-10">
           <h2 className="font-display text-3xl font-bold">
-            ✨ Малко магия от Gemini — безплатно
+            <Icon name="sparkles" className="mr-1 h-7 w-7 align-[-4px] text-med-dark" /> Малко магия от Gemini — безплатно
           </h2>
           <p className="mt-3 max-w-2xl text-ink-soft">
             Не ти хрумва текст за етикета? Трябва ти слоган за визитката или
@@ -201,6 +284,22 @@ export default function HomePage() {
             ти избираш кой да остане. Твоят текст се изпраща само когато ти
             поискаш.
           </p>
+        </div>
+      </section>
+
+      {/* Конектор за ChatGPT и Claude */}
+      <section className="mx-auto mt-8 max-w-6xl px-4">
+        <div className="card-warm flex flex-col gap-4 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+          <div>
+            <h2 className="font-display text-2xl font-bold">Ползвай Мастилко направо от ChatGPT и Claude</h2>
+            <p className="mt-2 max-w-2xl text-ink-soft">
+              Добави Мастилко като MCP конектор и кажи на асистента „направи ми
+              етикети за буркани“ — той сглобява листа и ти връща готов линк за печат.
+            </p>
+          </div>
+          <Link href="/konektor" className="btn-primary shrink-0 justify-center">
+            Как се добавя →
+          </Link>
         </div>
       </section>
 
@@ -282,6 +381,12 @@ export default function HomePage() {
                   "покани",
                   "табелки и надписи",
                   "WiFi QR код",
+                  "баджове за събития",
+                  "обява с ресни",
+                  "подаръчни ваучери",
+                  "календар за печат",
+                  "меню и ценоразпис",
+                  "снимки за документи",
                 ],
               },
               {
@@ -311,11 +416,35 @@ export default function HomePage() {
                   "Покани и картички",
                   "Табелки и надписи",
                   "WiFi стикер с QR",
+                  "Баджове за събития",
+                  "Обява с откъсващи се телефончета",
+                  "Подаръчни ваучери и талони",
+                  "Календар за печат с българските празници",
+                  "Меню и ценоразпис",
+                  "Снимки за документи (35 × 45 mm)",
                 ],
                 description:
-                  "Безплатно създаване на етикети за печат, визитки, автобиографии (CV, вкл. Europass), мотивационни писма, грамоти, покани, табелки и WiFi QR стикери на български език, направо в браузъра.",
+                  "Безплатно създаване на етикети за печат, визитки, автобиографии (CV, вкл. Europass), мотивационни писма, грамоти, покани, табелки, WiFi QR стикери, баджове, обяви с ресни, подаръчни ваучери, календари, менюта и снимки за документи на български език, направо в браузъра.",
                 isPartOf: { "@id": ID.site },
                 publisher: { "@id": ID.org },
+              },
+              {
+                // Изричен списък на 14-те инструмента. Всеки има собствена
+                // страница с пълен `WebApplication` възел; тук е ЕДНО място,
+                // от което търсачка или AI асистент изброява какво предлага
+                // сайтът, без да обхожда всичките 14 адреса.
+                "@type": "ItemList",
+                "@id": `${SITE_URL}/#instrumenti`,
+                name: "Инструменти на Мастилко",
+                numberOfItems: TOOLS.length,
+                itemListOrder: "https://schema.org/ItemListUnordered",
+                itemListElement: TOOLS.map((t, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  name: t.title,
+                  description: t.text,
+                  url: `${SITE_URL}${t.href}`,
+                })),
               },
               {
                 "@type": "FAQPage",
