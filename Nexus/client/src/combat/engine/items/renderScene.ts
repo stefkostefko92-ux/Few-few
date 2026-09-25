@@ -39,9 +39,25 @@ export function buildStudioScene(object: THREE.Object3D): StudioScene {
   return { scene, camera, pivot };
 }
 
+/** Box3 по видимите мрежи, БЕЗ тези маркирани `userData.excludeFromFraming` (ореолът на
+ *  редкостта е нарочно по-голям от предмета — иначе бута камерата назад и предметът се губи). */
+function boundingBoxForFraming(object: THREE.Object3D): THREE.Box3 {
+  const box = new THREE.Box3();
+  const childBox = new THREE.Box3();
+  object.updateWorldMatrix(true, true);
+  object.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.geometry || mesh.userData.excludeFromFraming) return;
+    childBox.setFromObject(mesh);
+    box.union(childBox);
+  });
+  if (box.isEmpty()) box.setFromObject(object);
+  return box;
+}
+
 /** Позиционира камерата на 3/4 ракурс, кадрирана точно по bounding sphere на предмета. */
 export function frameCamera(camera: THREE.PerspectiveCamera, object: THREE.Object3D, margin = 1.12): void {
-  const box = new THREE.Box3().setFromObject(object);
+  const box = boundingBoxForFraming(object);
   const sphere = new THREE.Sphere();
   box.getBoundingSphere(sphere);
   const r = Math.max(sphere.radius, 0.02);
@@ -197,7 +213,7 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
     setAutoRotate(on: boolean): void { autoRotate = on && !reducedMotion; },
     resize,
     refit(object: THREE.Object3D, margin = 1.35): void {
-      const box = new THREE.Box3().setFromObject(object);
+      const box = boundingBoxForFraming(object);
       const sphere = new THREE.Sphere();
       box.getBoundingSphere(sphere);
       const r = Math.max(sphere.radius, 0.02);

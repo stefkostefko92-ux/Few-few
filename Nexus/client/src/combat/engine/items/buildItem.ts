@@ -104,6 +104,10 @@ export function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): BuiltI
     const r = Math.max(size.x, size.y, size.z) * 0.62 + 0.02;
     const haloMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 2), halo);
     haloMesh.position.copy(center);
+    // Изключен от bounding-box кадрирането (renderScene.frameCamera/refit) — иначе ореолът на
+    // редкостта (по-голям от самия предмет) избутва камерата назад и предметът изглежда като
+    // цветно кръгче с еле видим силует вътре.
+    haloMesh.userData.excludeFromFraming = true;
     group.add(haloMesh);
   }
 
