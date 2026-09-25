@@ -6522,7 +6522,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 192
+        "lessons": 195
       },
       "evolution": [
         {
@@ -14005,11 +14005,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-<<<<<<< HEAD
-        "lessons": 167
-=======
-        "lessons": 168
->>>>>>> c8227621c (auto: tayniyat-agent научи — памет + версия + табло)
+        "lessons": 175
       },
       "evolution": [
         {
@@ -14091,28 +14087,28 @@
           "detail": "Научи: Два платформени срока от 31.08.2026 вече са ИЗМИНАЛИ: (1) Chrome Web Store премахна вси…"
         },
         {
-<<<<<<< HEAD
           "version": "16.2.0",
           "date": "2026-09-25",
           "event": "v16.2 — учене",
           "detail": "Научи: CWS MV3 изискванията забраняват 'Building an interpreter to run complex commands fetche… (+5 още)"
-=======
+        },
+        {
           "version": "16.3.0",
           "date": "2026-09-25",
           "event": "v16.3 — учене",
           "detail": "Научи: CWS MV3 remote code забранява и „interpreter to run complex commands fetched from a rem… (+6 още)"
->>>>>>> c8227621c (auto: tayniyat-agent научи — памет + версия + табло)
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-<<<<<<< HEAD
           "summary": "Научи: „CWS MV3 изискванията забраняват 'Building an interpreter to run complex commands fetche…\" (+5 още)"
-=======
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
           "summary": "Научи: „CWS MV3 remote code забранява и „interpreter to run complex commands fetched from a rem…\" (+6 още)"
->>>>>>> c8227621c (auto: tayniyat-agent научи — памет + версия + табло)
         },
         {
           "date": "2026-09-25",
