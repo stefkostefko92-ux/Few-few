@@ -65,6 +65,8 @@ router.get('/p/:slug', (req, res) => {
     );
   res.render('card', {
     title: profile.display_name,
+    // Темата се носи и от <body>, за да оцвети страницата около картата.
+    bodyClass: `card-theme ${profile.accent ? 'custom-accent' : `theme-${profile.theme}`}`,
     profile,
     links: getLinks(profile.id),
     accentCss: accentCss(profile.accent),

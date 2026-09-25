@@ -1260,6 +1260,39 @@ await test('съдържанието не отрича NFC, щом таблот�
     assert.ok(!denial.test(doc.text), `корпусът на конектора (${doc.id}) отрича NFC`);
 });
 
+// Регресия за изискване на собственика: темата оцветява ЦЯЛАТА страница, не само
+// картата. На телефон картата заема екрана и пропускът не личи — на лаптоп ~60% от
+// екрана оставаше неутрално сив. Проверката е по класа на <body>, защото оттам
+// фонът и бутонът в менюто вземат цветовете на темата.
+await test('темата оцветява цялата страница (body носи темата), и със собствен цвят', async () => {
+  const before = db
+    .prepare(
+      "SELECT theme, accent, is_public, hidden_by_admin FROM profiles WHERE slug = 'ivan-testov'"
+    )
+    .get();
+  db.prepare("UPDATE profiles SET theme = 'emerald', accent = '' WHERE slug = 'ivan-testov'").run();
+  db.prepare(
+    "UPDATE profiles SET is_public = 1, hidden_by_admin = 0 WHERE slug = 'ivan-testov'"
+  ).run();
+  let html = await (await fetch(`${base}/p/ivan-testov`)).text();
+  assert.match(html, /<body class="card-theme theme-emerald">/, 'страницата не носи темата');
+  const css = fs.readFileSync(new URL('../public/styles.css', import.meta.url), 'utf8');
+  for (const id of ['blue', 'emerald', 'sunset', 'ocean', 'graphite', 'rose'])
+    assert.match(css, new RegExp(`body\\.theme-${id}\\s*\\{`), `липсва body.theme-${id}`);
+  assert.match(css, /body\.card-theme\s*\{/, 'липсва фонът на страницата по тема');
+
+  db.prepare("UPDATE profiles SET accent = '#b45309' WHERE slug = 'ivan-testov'").run();
+  html = await (await fetch(`${base}/p/ivan-testov`)).text();
+  assert.match(html, /<body class="card-theme custom-accent">/);
+  assert.match(html, /body\.custom-accent\{/, 'собственият цвят не стига до страницата');
+  // Другите страници НЕ носят тема — тя е само за визитката.
+  assert.doesNotMatch(await (await fetch(`${base}/`)).text(), /card-theme/);
+  // Връщаме състоянието — следващите тестове разчитат на него.
+  db.prepare(
+    "UPDATE profiles SET theme = @theme, accent = @accent, is_public = @is_public, hidden_by_admin = @hidden_by_admin WHERE slug = 'ivan-testov'"
+  ).run(before);
+});
+
 // ── Наръчник (SEO/GEO/AEO) ───────────────────────────────────────────────────
 // Съдържателните страници са отделен пазар за всяко намерение („дигитална визитка",
 // „визитка с QR код", „vCard"). Тестът пази това, което ги прави намираеми, и е
