@@ -1,10 +1,10 @@
 Supreme AdBlock nə etdiyinizi izləmədən reklamları hər yerdə bloklayır — YouTube video reklamları, bannerlər, popaplar və izləyicilər.
 
 • YouTube reklamları mənbədə dayandırılır, ona görə videolar sadəcə oynayır.
-• EasyList, EasyPrivacy və uBlock Origin filtrləri daxildir, üstəlik diliniz üçün siyahı (33 regional siyahı).
+• EasyList, EasyPrivacy və uBlock Origin filtrləri daxildir, üstəlik diliniz üçün siyahı (31 regional siyahı).
 • Kuki bannerləri: sizin əvəzinizə «Rədd et» düyməsini basır, qalan bulanıqlığı və sürüşdürmə kilidini təmizləyir, giriş, OAuth və ya ödəniş düyməsini heç vaxt basmır.
 • Fokus rejimi: söhbət balonlarını, bülleten popaplarını, bildiriş sorğularını, sosial vidjetləri, süni intellekt popaplarını və YouTube Shorts-u gizlədin.
 • Anti-adblock divarları və pop-under pəncərələri zərərsizləşdirilir.
 • Sayt pozulub? Bir klik düzəldir, ya da bizə bildirin — siz görmədən heç nə göndərilmir.
 • Gündə iki dəfə imzalı filtr yeniləmələri: yeni reklam şəbəkələri saatlar ərzində həll olunur, uzaq kod olmadan.
-• Hesab yoxdur, telemetriya yoxdur, məlumat toplanmır. Pulsuzdur, istəyə bağlı ianə imkanı ilə.
+• Hesab yoxdur, telemetriya yoxdur, məlumat toplanmır. Pulsuzdur, istəyə bağlı ianə imkanı ilə; popap pəncərəsində yaradıcı Carbon Stealth üçün «Reklam» işarəli bir kiçik kart göstərilir.

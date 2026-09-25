@@ -62,7 +62,7 @@
     "message": "隱藏這裡的廣告框"
   },
   "cosmeticsTitle": {
-    "message": "這個網站的元素隱藏過濾（如果版面跑掉，請關閉）"
+    "message": "隱藏這個網站上的廣告框（如果版面跑掉，請關閉）"
   },
   "on": {
     "message": "開"
@@ -337,7 +337,7 @@
     "message": "移除"
   },
   "opt_filter_status": {
-    "message": "過濾規則集 v$1，更新於$2。只傳輸資料，不會傳送任何關於您的資訊。"
+    "message": "過濾規則集 v$1，$2更新。只傳輸資料，不會傳送任何關於您的資訊。"
   },
   "opt_updating": {
     "message": "正在更新…"
@@ -355,7 +355,7 @@
     "message": "$1 條規則"
   },
   "opt_updated_ago": {
-    "message": "更新於$1"
+    "message": "$1更新"
   },
   "opt_not_fetched": {
     "message": "尚未取得"
@@ -502,7 +502,7 @@
     "message": "未內建（沒有再散布授權）：開啟後，您的瀏覽器會從 $1 下載。"
   },
   "opt_downloaded_from": {
-    "message": "下載自 $1"
+    "message": "開啟後從 $1 下載"
   },
   "opt_lists_error": {
     "message": "Chrome 拒絕了這個清單組合（$1）。請關閉其中幾個。"
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "複製回報"
+  },
+  "rep_privacy": {
+    "message": "此報告的處理方式：隱私權政策"
   },
   "rep_copied": {
     "message": "已複製。"

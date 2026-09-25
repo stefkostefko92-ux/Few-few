@@ -5,9 +5,10 @@ _Last updated: 25 September 2026 · applies to the Supreme AdBlock browser exten
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
 **In short:** your browsing data never leaves your device. The extension has no
-account, no analytics and no telemetry. The only automatic network request is a
+account, no analytics and no telemetry. The only automatic network request to us is a
 filter update about twice a day; like any download it reaches our server with
-your IP address, and we do not log it.
+your IP address, and we do not log it. Lists you choose to add (a subscription,
+or a regional list from its author) are also refreshed from their own address.
 
 ## Who is responsible
 
@@ -91,7 +92,10 @@ We process IP addresses only transiently, to deliver filter updates and this
 website securely — our legitimate interest under **Art. 6(1)(f) GDPR**. We do
 not profile you, combine this data with anything else, sell it or share it. The
 only recipient is our hosting provider in the European Union, acting on our
-behalf. We do not transfer personal data outside the EU/EEA. If you enable sync,
+behalf. We do not transfer personal data outside the EU/EEA. If you turn on a list
+hosted on raw.githubusercontent.com (GitHub, Inc., USA), your browser contacts
+that server directly, as it would for any web page — we are not a party to that
+request, and GitHub processes it under its own privacy statement. If you enable sync,
 your browser vendor processes your synced settings under its own terms, at your
 choice.
 

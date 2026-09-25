@@ -62,7 +62,7 @@
     "message": "Ezkutatu iragarkiak hemen"
   },
   "cosmeticsTitle": {
-    "message": "Iragazki kosmetikoa webgune honetan (desaktibatu diseinua hausten bada)"
+    "message": "Ezkutatu iragarkiak webgune honetan (desaktibatu orriaren diseinua hausten bada)"
   },
   "on": {
     "message": "Piztuta"
@@ -502,7 +502,7 @@
     "message": "Ez dago barneratuta (ez dago berriro banatzeko lizentziarik): zure nabigatzaileak $1 helbidetik deskargatzen du aktibatzen duzunean."
   },
   "opt_downloaded_from": {
-    "message": "Hemendik deskargatua: $1"
+    "message": "$1 helbidetik deskargatzen da aktibatzen duzunean"
   },
   "opt_lists_error": {
     "message": "Chromek zerrenden konbinazio hau baztertu du ($1). Desaktibatu batzuk."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopiatu txostena"
+  },
+  "rep_privacy": {
+    "message": "Nola kudeatzen den txosten hau: pribatutasun-politika"
   },
   "rep_copied": {
     "message": "Kopiatuta."

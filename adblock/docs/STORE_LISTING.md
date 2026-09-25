@@ -16,7 +16,7 @@ Supreme AdBlock keeps the web clean and fast, without watching what you do.
 - Blocks YouTube video ads (pre-roll & mid-roll) at the source, plus feed
   and search ads
 - EasyList, EasyPrivacy and the uBlock Origin filters built in, plus the list for
-  your language — 33 regional lists, the one for your browser's language on by itself
+  your language — 31 regional lists, the one for your browser's language on by itself
 - Removes banners, pop-ups, pop-unders and native "recommended" ads
 - Hides sponsored posts on Facebook & Instagram
 - Stops trackers and behavioural analytics
@@ -67,8 +67,10 @@ package. What arrives over the network is data only: hostnames, CSS selectors
 and directives drawn from a fixed list of 19 named routines, re-checked twice
 before anything runs. No eval, no Function(), no script fetched from a server.
 
-You can read every line. There is no build step and nothing is minified: unzip
-the extension and the code you audit is exactly the code that runs. MIT licensed.
+You can read every line. No bundler, no minifier: unzip the extension and the
+code you audit is exactly the code that runs; the few generated files (rule sets,
+scriptlet data) are readable and rebuilt by public scripts. Code MIT licensed;
+the bundled filter lists keep their own licences (listed in the package).
 
 Your browsing data never leaves your device. No account, no analytics, no telemetry, no
 "anonymous usage statistics". We take no money from advertisers and run no
@@ -113,7 +115,7 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 - Чисти проследяващите параметри (utm_*, fbclid, gclid, …) от линковете
 - Опционална защита от зловреден софтуер (списък URLhaus)
 - Обработва банерите за бисквитки: натиска „Отхвърли“, когато го има, маха останалия блър и заключения скрол и никога не натиска бутон за вход, OAuth или плащане
-- Филтрите на uBlock Origin и 33 регионални листа — този за езика на браузъра се включва сам
+- Филтрите на uBlock Origin и 31 регионални листа — този за езика на браузъра се включва сам
 - Режим „Фокус“: скрива чат балончета, прозорци за бюлетини, покани за известия, социални джаджи, AI прозорци, „Вход с Google“ и YouTube Shorts
 - Сайтът е счупен? Страница за поправка с едно кликване — или ни кажете; нищо не се изпраща, без първо да го видите
 - Запазва страниците използваеми, когато детектор на адблокър се опита да ги счупи
@@ -160,7 +162,7 @@ Supreme AdBlock mantiene il web pulito e veloce, senza osservare cosa fai.
 - Elimina i parametri di tracciamento (utm_*, fbclid, gclid, …) dai link
 - Protezione antimalware opzionale (lista URLhaus)
 - Gestisce i banner dei cookie: preme «Rifiuta» quando c'è, toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento
-- I filtri di uBlock Origin e 33 liste regionali: quella per la lingua del browser si attiva da sola
+- I filtri di uBlock Origin e 31 liste regionali: quella per la lingua del browser si attiva da sola
 - Modalità Focus: nasconde bolle di chat, pop-up delle newsletter, richieste di notifiche, widget social, pop-up IA, «Accedi con Google» e YouTube Shorts
 - Sito rotto? Una pagina di riparazione lo sistema con un clic, oppure segnalacelo: nulla viene inviato senza che tu lo veda prima
 - Mantiene le pagine utilizzabili quando un rilevatore di adblock prova a romperle
@@ -207,7 +209,7 @@ Supreme AdBlock hält das Web sauber und schnell, ohne zu beobachten, was Sie tu
 - Entfernt Tracking-Parameter (utm_*, fbclid, gclid, …) aus Links
 - Optionaler Malware-Schutz (URLhaus-Liste)
 - Behandelt Cookie-Banner: drückt „Ablehnen“, wenn angeboten, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche
-- Die uBlock-Origin-Filter und 33 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
+- Die uBlock-Origin-Filter und 31 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
 - Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, Social-Widgets, KI-Pop-ups, „Mit Google anmelden“ und YouTube Shorts aus
 - Seite kaputt? Eine Reparaturseite behebt es mit einem Klick – oder melden Sie es uns; nichts wird gesendet, ohne dass Sie es vorher sehen
 - Hält Seiten nutzbar, wenn ein Adblock-Detektor sie zu stören versucht
@@ -242,22 +244,18 @@ Sie sehen, was es getan hat. Pro Seite, wie viel jede Filterliste blockiert hat,
 100 % kostenlos. Kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
 
 ## Privacy
-Single purpose: block advertisements and trackers on the pages you visit.
-The extension collects no personal data. Apart from a filter list you may choose to import by URL, the only network request is a daily
-data-only filter update from adblock.carbonstealth.eu (no user data sent, no
-code executed).
+Single purpose: content blocker — blocks ads, trackers and page annoyances (pop-ups,
+cookie prompts, distracting widgets) on the pages you visit.
+The extension collects no personal data. The only automatic request to us is a
+data-only filter update from adblock.carbonstealth.eu about twice a day (no user
+data sent, no code executed). Lists the user chooses to add — a subscription by
+URL, or one of four regional lists hosted by their authors — are fetched from
+their own address. Full text and the permission justifications: docs/SUBMISSION.md.
 
 Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 
 ## Permission justifications
-- declarativeNetRequest: block ad and tracker requests using filter rules.
-- declarativeNetRequestFeedback: getMatchedRules() for the active tab only, to render the per-tab blocked count on the toolbar badge and, in the popup, how many requests each of our filter lists blocked on the page; no URL is read, stored, logged or transmitted, and the breakdown is built on demand and discarded when the popup closes.
-- storage: save your settings and counters locally.
-- alarms: schedule the filter updates and the temporary-pause timer.
-- contextMenus: the right-click "Block an element here" entry.
-- scripting: inject a small, locally-bundled ad-neutralising script (anti-adblock scriptlet) into the page at document start; it runs from the package, fetches and executes no remote code.
-- host permissions (<all_urls>): apply blocking and cosmetic filtering on the
-  pages you browse; all processing is local.
+See docs/SUBMISSION.md §5 (the single source; the store kit is built from it).
 
 ## Support / homepage
-https://carbonstealth.eu
+https://adblock.carbonstealth.eu/#faq

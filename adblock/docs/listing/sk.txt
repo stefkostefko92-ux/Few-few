@@ -1,10 +1,10 @@
 Supreme AdBlock blokuje reklamy všade — videoreklamy na YouTube, bannery, vyskakovacie okná a sledovače — a nesleduje, čo robíte.
 
 • Reklamy na YouTube sa zastavia už pri zdroji, takže sa videá jednoducho prehrajú.
-• Obsahuje EasyList, EasyPrivacy a filtre uBlock Origin a k tomu zoznam pre váš jazyk (33 regionálnych zoznamov).
+• Obsahuje EasyList, EasyPrivacy a filtre uBlock Origin a k tomu zoznam pre váš jazyk (31 regionálnych zoznamov).
 • Cookie lišty: stlačí za vás „Odmietnuť“, odstráni zvyšné rozmazanie a zámok posúvania a nikdy nestlačí tlačidlo na prihlásenie, OAuth ani platbu.
 • Režim sústredenia: skryje bubliny chatu, vyskakovacie okná newsletterov, výzvy na upozornenia, sociálne widgety, vyskakovacích AI asistentov a YouTube Shorts.
 • Anti-adblock steny a pop-under okná sú zneškodnené.
 • Web nefunguje? Jedno kliknutie ho opraví — alebo nám dajte vedieť; nič sa neodošle, kým to sami neuvidíte.
 • Podpísané aktualizácie filtrov dvakrát denne: nové reklamné siete sú vyriešené v priebehu niekoľkých hodín, bez vzdialeného kódu.
-• Žiadny účet, žiadna telemetria, žiadny zber údajov. Zadarmo, s dobrovoľným príspevkom.
+• Žiadny účet, žiadna telemetria, žiadny zber údajov. Zadarmo, s dobrovoľným príspevkom; vyskakovacie okno zobrazuje jednu malú kartu s označením „Reklama“ pre Carbon Stealth, autora rozšírenia.

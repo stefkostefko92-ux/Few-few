@@ -105,7 +105,7 @@ export default function PismoStudio() {
   const contact = [s.phone, s.email].filter(Boolean).join(" · ");
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
       {/* Контроли */}
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
@@ -252,7 +252,10 @@ export default function PismoStudio() {
                   transform: "rotate(-30deg)",
                   fontFamily: "var(--font-display)",
                   fontWeight: 800,
-                  fontSize: "40mm",
+                  // Надписът лежи по диагонал под −30° → в А4 има ~220 mm
+                  // път (210 / cos 30° минус поле). С фиксирани 40 mm
+                  // „ПОВЕРИТЕЛНО“ излизаше извън листа от двете страни.
+                  fontSize: `${Math.min(40, 220 / (WATERMARKS[s.watermark]!.length * 0.85)).toFixed(1)}mm`,
                   letterSpacing: "0.08em",
                   color: "rgba(46,38,32,0.07)",
                   whiteSpace: "nowrap",

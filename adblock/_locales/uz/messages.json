@@ -62,7 +62,7 @@
     "message": "Bu yerda reklama yashirish"
   },
   "cosmeticsTitle": {
-    "message": "Bu saytda kosmetik filtrlash (sahifa tuzilishi buzilsa, oʻchirib qoʻying)"
+    "message": "Bu saytda reklamani yashirish (sahifa tuzilishi buzilsa, oʻchirib qoʻying)"
   },
   "on": {
     "message": "Yoniq"
@@ -502,7 +502,7 @@
     "message": "Kengaytmaga kiritilmagan (tarqatish litsenziyasi yoʻq): uni yoqqaningizda brauzeringiz $1 manzilidan yuklab oladi."
   },
   "opt_downloaded_from": {
-    "message": "Yuklab olish manbasi: $1"
+    "message": "Yoqqaningizda $1 manzilidan yuklab olinadi"
   },
   "opt_lists_error": {
     "message": "Chrome bu roʻyxatlar birikmasini rad etdi ($1). Ayrimlarini oʻchiring."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Hisobotdan nusxa olish"
+  },
+  "rep_privacy": {
+    "message": "Bu hisobot qanday koʻrib chiqiladi: maxfiylik siyosati"
   },
   "rep_copied": {
     "message": "Nusxa olindi."

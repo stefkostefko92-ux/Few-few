@@ -49,6 +49,7 @@ export const metadata: Metadata = {
     "визитка vCard",
     "шаблони за визитки",
     "визитки 90x54",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/vizitki" },
   ...pageMeta(TITLE, DESC, "/vizitki"),

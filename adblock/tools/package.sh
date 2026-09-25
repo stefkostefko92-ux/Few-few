@@ -21,7 +21,7 @@ node tools/build_scriptlets.mjs --check
 # -D: no directory entries — nothing for an extractor to trip on, Chrome does not need them.
 zip -r -X -D "$out" . \
   -x '.git/*' '_metadata/*' 'node_modules/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
-     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' 'rules/popup_hosts.json' 'tests/*' \
+     'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/list_ubo.txt' 'scriptlets/scriptlet_meta.json' 'rules/popup_hosts.json' 'tests/*' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
 
@@ -47,6 +47,7 @@ refs.add("scriptlets/policy.js"); // importScripts() in the service worker
 refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
 refs.add("report/report.html");   // opened from the popup
 refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it
+refs.add("licenses/*");            // the licence texts the notices point to
 const zipFiles = zip.split("\n").filter(Boolean);
 const has = (f) => f.endsWith("/*")
   ? zipFiles.some(z => z.startsWith(f.slice(0, -1)) && z !== f.slice(0, -1)) // glob: поне 1 файл с този префикс
@@ -89,3 +90,17 @@ fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
 NODE
 (cd "$ff_tmp" && zip -r -X -D -q "$OLDPWD/$ff_out" .)
 echo "Built $ff_out"
+
+# Source archive for AMO (generated files need their source): the COMMITTED tree of
+# adblock/ via git archive — never the working folder (dist/, _metadata/, local edits).
+src_out="dist/supreme-adblock-$ver-source.zip"
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  rm -f "$src_out"
+  prefix="$(git rev-parse --show-prefix)"
+  git -C "$(git rev-parse --show-toplevel)" archive --format=zip -o "$PWD/$src_out" "HEAD:${prefix%/}"
+  if [ -n "$(git status --porcelain -- . 2>/dev/null | grep -v '^??' )" ]; then
+    echo "Built $src_out (NOTE: from HEAD — uncommitted changes in adblock/ are not in it)"
+  else
+    echo "Built $src_out"
+  fi
+fi

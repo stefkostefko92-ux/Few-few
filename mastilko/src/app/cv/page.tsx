@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "CV за работа",
     "безплатно CV",
     "автобиография PDF",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/cv" },
   ...pageMeta(TITLE, DESC, "/cv"),

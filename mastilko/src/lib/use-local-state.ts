@@ -15,10 +15,15 @@ export function useLocalState<T extends object>(
   key: string,
   initial: T,
   parse?: (raw: unknown) => Partial<T>,
+  /** Подразбирания, зависещи от момента (напр. текущият месец). Прилагат се
+   *  само при първо посещение — без запис и без споделен линк. В `initial` не
+   *  може: той се рендира и на сървъра, а там „днес“ е денят на билда. */
+  fresh?: () => Partial<T>,
 ) {
   const [state, setState] = useState<T>(initial);
   const initialRef = useRef(initial);
   const parseRef = useRef(parse);
+  const freshRef = useRef(fresh);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -75,9 +80,13 @@ export function useLocalState<T extends object>(
       // отказал, или линкът е невалиден → зареждаме неговия запис както обикновено
     }
     let raw: string | null = null;
+    let restored = false;
     try {
       raw = localStorage.getItem(key);
-      if (raw) setState({ ...initialRef.current, ...clean(JSON.parse(raw)) });
+      if (raw) {
+        setState({ ...initialRef.current, ...clean(JSON.parse(raw)) });
+        restored = true;
+      }
     } catch {
       // Повреден или несъвместим запис (например след затягане на схемата).
       // Започваме начисто, НО първо го местим в копията: иначе ефектът долу
@@ -89,6 +98,9 @@ export function useLocalState<T extends object>(
           /* пълно/забранено хранилище → няма къде да го спасим */
         }
       }
+    }
+    if (!restored && freshRef.current) {
+      setState({ ...initialRef.current, ...freshRef.current() });
     }
     loaded.current = true;
   }, [key]);

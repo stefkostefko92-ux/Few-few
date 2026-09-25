@@ -106,10 +106,14 @@ function bake(engine, lines, { quiet = false } = {}) {
   let dropped = 0;
   for (const line of lines) {
     if (!line.trim() || line.trim().startsWith("!")) continue;
-    const parsed = parseLine(line);
+    // `host#@#+js(…)` (uBO data only): an exception, validated like a directive,
+    // baked as ["#@", name, …args] — the engine then skips that directive for
+    // this host even when it comes from a parent domain.
+    const isExc = line.includes("#@#+js(");
+    const parsed = parseLine(isExc ? line.replace("#@#+js(", "##+js(") : line);
     if (!parsed) { dropped++; if (!quiet) console.warn("  drop:", line.trim()); continue; }
     for (const h of parsed.hosts) {
-      (map[h] = map[h] || []).push(parsed.directive);
+      (map[h] = map[h] || []).push(isExc ? ["#@"].concat(parsed.directive) : parsed.directive);
     }
     kept++;
   }

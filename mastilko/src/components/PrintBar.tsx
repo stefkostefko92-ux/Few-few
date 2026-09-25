@@ -18,8 +18,11 @@ export default function PrintBar({ summary }: Props) {
   }, [crop]);
 
   return (
-    <div className="no-print card-warm flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
+    // flex-wrap, не „sm:flex-row“: лентата живее и в тясна колона (таблет,
+    // двуколонно), където екранът е широк, а мястото — не; там бутонът
+    // излизаше извън страницата.
+    <div className="no-print card-warm flex flex-wrap items-center justify-between gap-3 p-4">
+      <div className="min-w-0 flex-[1_1_16rem]">
         <p className="font-semibold">{summary}</p>
         <p className="text-sm text-ink-soft">
           В прозореца за печат избери <strong>мащаб 100%</strong> и{" "}
@@ -38,7 +41,7 @@ export default function PrintBar({ summary }: Props) {
           </label>
         </div>
       </div>
-      <button type="button" onClick={() => window.print()} className="btn-primary shrink-0">
+      <button type="button" onClick={() => window.print()} className="btn-primary w-full shrink-0 justify-center sm:w-auto">
         <Icon name="print" /> Принтирай / запази PDF
       </button>
     </div>

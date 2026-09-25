@@ -40,7 +40,7 @@
     "message": "Blockiert"
   },
   "dataSaved": {
-    "message": "Gespartes Datenvolumen"
+    "message": "Gesparte Daten"
   },
   "timeSaved": {
     "message": "Gesparte Zeit"
@@ -55,7 +55,7 @@
     "message": "Werbung auf dieser Website blockieren"
   },
   "blocking": {
-    "message": "Blockiert"
+    "message": "Blockierung an"
   },
   "allowed": {
     "message": "Erlaubt"
@@ -64,7 +64,7 @@
     "message": "Werbung hier ausblenden"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetische Filterung auf dieser Website (ausschalten, wenn das Layout kaputtgeht)"
+    "message": "Werbung auf dieser Website ausblenden (ausschalten, wenn das Seitenlayout kaputtgeht)"
   },
   "on": {
     "message": "Ein"
@@ -79,7 +79,7 @@
     "message": "Hier wurde noch nichts blockiert."
   },
   "logUnavailable": {
-    "message": "Protokoll derzeit nicht verfügbar (Browser-Kontingent) — versuchen Sie es in einer Minute erneut."
+    "message": "Protokoll derzeit nicht verfügbar (Browser-Kontingent) – versuchen Sie es in einer Minute erneut."
   },
   "logCore": {
     "message": "Kernregeln"
@@ -234,7 +234,7 @@
     "message": "Elemente, die Sie manuell mit dem Auswahlwerkzeug ausgeblendet haben, nach Website gruppiert."
   },
   "opt_live_diagnostics_everything_is_computed_": {
-    "message": "Live-Diagnose — alles wird lokal berechnet. Ist etwas rot, hilft meist „Jetzt aktualisieren“ oder ein Neuladen der Erweiterung."
+    "message": "Live-Diagnose – alles wird lokal berechnet. Ist etwas rot, hilft meist „Jetzt aktualisieren“ oder ein Neuladen der Erweiterung."
   },
   "opt_supreme_adblock_is_free_for_everyone_if_": {
     "message": "Supreme AdBlock ist für alle kostenlos. Wenn Sie zur Pflege beitragen möchten, sind Spenden willkommen, aber nie erforderlich."
@@ -324,7 +324,7 @@
     "message": "Noch nichts heuristisch erkannt."
   },
   "opt_empty_allow": {
-    "message": "Noch keine Websites auf der Positivliste."
+    "message": "Noch keine Websites auf der Erlaubnisliste."
   },
   "opt_empty_hidden": {
     "message": "Noch nichts manuell ausgeblendet."
@@ -405,7 +405,7 @@
     "message": "Signaturen der Updates"
   },
   "opt_h_user": {
-    "message": "Eigene Filter / Positivliste-Regeln"
+    "message": "Meine Filter / Regeln der Erlaubnisliste"
   },
   "opt_h_popup": {
     "message": "Integrierte Pop-up-Hosts"
@@ -438,7 +438,7 @@
     "message": "Regional"
   },
   "opt_lists_regional_desc": {
-    "message": "Die Liste für die Sprache Ihres Browsers schaltet sich selbst ein. Fügen Sie weitere hinzu, wenn Sie oft Seiten in anderen Sprachen lesen."
+    "message": "Die Liste für die Sprache Ihres Browsers schaltet sich selbst ein. Fügen Sie weitere hinzu, wenn Sie oft Websites in anderen Sprachen lesen."
   },
   "opt_focus_mode": {
     "message": "Fokusmodus"
@@ -480,7 +480,7 @@
     "message": "Benachrichtigungs-Aufforderungen"
   },
   "opt_focus_notifications_desc": {
-    "message": "„Benachrichtigungen erlauben?“-Boxen, die Seiten zeigen, bevor der Browser fragt."
+    "message": "„Benachrichtigungen erlauben?“-Boxen, die Websites zeigen, bevor der Browser fragt."
   },
   "opt_focus_ai": {
     "message": "KI-Assistenten-Pop-ups"
@@ -492,7 +492,7 @@
     "message": "Sonstige Störungen"
   },
   "opt_focus_other_desc": {
-    "message": "Klebende Leisten, „In der App öffnen“-Banner und Ähnliches."
+    "message": "Fixierte Leisten, „In der App öffnen“-Banner und Ähnliches."
   },
   "opt_badge_lang": {
     "message": "Ihre Sprache"
@@ -504,7 +504,7 @@
     "message": "Nicht eingebaut (keine Lizenz zur Weitergabe): Ihr Browser lädt sie von $1, wenn Sie sie einschalten."
   },
   "opt_downloaded_from": {
-    "message": "Wird von $1 geladen"
+    "message": "Wird von $1 geladen, wenn Sie sie einschalten"
   },
   "opt_lists_error": {
     "message": "Chrome hat diese Kombination von Listen abgelehnt ($1). Schalten Sie einige aus."
@@ -513,25 +513,25 @@
     "message": "empfohlen für Ihre Sprache"
   },
   "reportBroken": {
-    "message": "Seite kaputt? Beheben oder melden"
+    "message": "Website kaputt? Beheben oder melden"
   },
   "rep_title": {
-    "message": "Funktioniert etwas auf dieser Seite nicht?"
+    "message": "Funktioniert etwas auf dieser Website nicht?"
   },
   "rep_fix_first": {
     "message": "Jetzt beheben"
   },
   "rep_site": {
-    "message": "Seite:"
+    "message": "Website:"
   },
   "rep_fix_desc": {
-    "message": "Die meisten Probleme verschwinden mit einer dieser Optionen. Jede gilt nur für diese Seite; der Tab wird neu geladen."
+    "message": "Die meisten Probleme verschwinden mit einer dieser Optionen. Jede gilt nur für diese Website; der Tab wird neu geladen."
   },
   "rep_fix_cosm": {
     "message": "Element-Ausblendung hier ausschalten"
   },
   "rep_fix_allow": {
-    "message": "Werbung auf dieser Seite erlauben"
+    "message": "Werbung auf dieser Website erlauben"
   },
   "rep_fix_pause": {
     "message": "Überall 30 Minuten pausieren"
@@ -540,7 +540,7 @@
     "message": "Melden Sie es uns"
   },
   "rep_tell_desc": {
-    "message": "Wir reparieren kaputte Seiten für alle über das signierte Filter-Update, meist innerhalb eines Tages. Die Erweiterung sendet nichts: Der Bericht öffnet sich in Ihrem eigenen E-Mail-Programm, und Sie sehen vorher jedes Wort."
+    "message": "Wir reparieren kaputte Websites für alle über das signierte Filter-Update, meist innerhalb eines Tages. Die Erweiterung sendet nichts: Der Bericht öffnet sich in Ihrem eigenen E-Mail-Programm, und Sie sehen vorher jedes Wort."
   },
   "rep_what": {
     "message": "Was stimmt nicht? (optional)"
@@ -560,17 +560,20 @@
   "rep_copy": {
     "message": "Bericht kopieren"
   },
+  "rep_privacy": {
+    "message": "Wie mit diesem Bericht umgegangen wird: Datenschutzerklärung"
+  },
   "rep_copied": {
     "message": "Kopiert."
   },
   "rep_done_cosm": {
-    "message": "Element-Ausblendung ist auf dieser Seite aus. Neu geladen – ist es behoben?"
+    "message": "Element-Ausblendung ist auf dieser Website aus. Neu geladen – ist es behoben?"
   },
   "rep_done_allow": {
-    "message": "Werbung ist auf dieser Seite erlaubt. Neu geladen – ist es behoben?"
+    "message": "Werbung ist auf dieser Website erlaubt. Neu geladen – ist es behoben?"
   },
   "rep_done_pause": {
-    "message": "30 Minuten pausiert. Wenn die Seite jetzt funktioniert, melden Sie es uns bitte unten."
+    "message": "30 Minuten pausiert. Wenn die Website jetzt funktioniert, melden Sie es uns bitte unten."
   },
   "cookieRejections": {
     "message": "Für Sie abgelehnte Cookie-Banner: $1"
@@ -585,7 +588,7 @@
     "message": "„Mit Google anmelden“-Pop-ups"
   },
   "opt_focus_onetap_desc": {
-    "message": "Die Kontoauswahl, die in der Ecke vieler Seiten erscheint. Die Anmelde-Buttons funktionieren weiter."
+    "message": "Die Kontoauswahl, die in der Ecke vieler Websites erscheint. Die Anmelde-Buttons funktionieren weiter."
   },
   "pickTip": {
     "message": "Klicken Sie auf ein Element, um es auszublenden"
