@@ -17,10 +17,11 @@ import { createAudio } from './audio.js';
 import { createHud } from './hud.js';
 import { createEvents } from './events.js';
 import { timeScaleAt, recompileTimeline } from './timeline.js';
-import { CAPTIONS, CHAPTERS, setChoreography, resetChoreography } from './choreo.js';
+import { CAPTIONS, CHAPTERS, EVENTS, setChoreography, resetChoreography } from './choreo.js';
 import { DURATION, MOON_DIR, setDuration } from './config.js';
 import { reportFrame } from './hud-report.js';
 import { acceptIdentitySwizzle } from './gpu-compat.js';
+import { installDevHooks } from './dev-hooks.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
@@ -262,6 +263,7 @@ export async function bootDuel(canvas, opts = {}) {
     });
   }
   renderer.setAnimationLoop(frame);
+  installDevHooks(clock, events, () => EVENTS);
 
   return {
     dispose() {

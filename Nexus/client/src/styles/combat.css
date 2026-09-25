@@ -225,6 +225,16 @@
   .duel-hud { width: min(220px, 56vw); padding: 8px 10px; }
   .duel-hud-name { font-size: 11px; }
 }
+/* Долу-дясно (огледално на hero-hud долу-ляво) — горе-дясно вече е заето от foe-hud; преди
+   бяха горе-дясно и покриваха името/HP на противника (реален бъг). */
+.duel-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 8;
+  display: flex;
+  gap: 6px;
+}
 
 /* ===== Battlefield (легаси — премахнато в 4a.3, реда пази combat-log/combat-result CSS) ===== */
 .combat-field {
@@ -610,15 +620,22 @@
 .hit-stop * { animation-play-state: paused !important; }
 
 /* ===== Combat log ===== */
+/* 4a.3-fix: беше position:relative — вътре в .combat-stage (само absolute деца заемат
+   пространство) това го изтласкваше на СЪВСЕМ горния ръб, върху foe-hud/контролите (реален
+   бъг, докладван при преглед). Закотвен горе (над hero-hud/controls реда), never overlapping. */
 .combat-log {
-  position: relative;
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 118px;
   z-index: 7;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .65), rgba(0, 0, 0, .85));
-  border-top: 1px solid rgba(255, 255, 255, .05);
-  padding: 16px 28px;
-  max-height: 200px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .8));
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-height: 120px;
   overflow-y: auto;
-  font-size: 14px;
+  font-size: 13px;
 }
 .combat-log .line {
   padding: 6px 0;

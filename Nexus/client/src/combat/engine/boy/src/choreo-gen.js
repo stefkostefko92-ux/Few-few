@@ -10,6 +10,7 @@
 // 4a.4/4a.5. Печелившият получава опашката от оригиналния A_KEYS (disarm/kneel на другия),
 // губещият — опашката от B_KEYS: двете локални рамки са симетрични по конструкция.
 import { GUARD_POSES } from './choreo.js';
+import { buildGeneratedShots } from './shot-builder.js';
 
 const { A_REST, A_VOMTAG, A_OCHS, A_PFLUG, A_POINT_DOWN, B_REST, B_GUARD, B_HIGH, SH_REST, SH_GUARD } = GUARD_POSES;
 
@@ -75,6 +76,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
 
   let t = APPROACH;
   let ti = 0;
+  const shotBeats = [];
   for (const round of rounds) {
     const attackerSlot = round.attacker === 'hero' ? 'A' : 'B';
     const defenderSlot = attackerSlot === 'A' ? 'B' : 'A';
@@ -139,6 +141,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
     advPulse.push([returnT, 0]);
     if (!crit) B_SHIELD.push({ t: returnT, sh: SH_GUARD });
 
+    shotBeats.push({ t0: t, t1: returnT, crit });
     t = returnT;
     ti += 1;
   }
@@ -217,7 +220,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
     { t: APPROACH + (t - APPROACH) * 0.35, k: 'ch2' },
     { t: Math.max(APPROACH, t - 1.5), k: 'ch3' },
   ];
-  const shots = buildGeneratedShots(APPROACH, t, duration);
+  const shots = buildGeneratedShots(APPROACH, shotBeats, t, duration);
 
   return { A_KEYS, B_KEYS, B_SHIELD, ROOT_KEYS, A_ADV, B_ADV, B_KNEEL, BREATH, B_LOOK_DOWN, TIME_SCALE, EVENTS, CAPTIONS, CHAPTERS, duration, shots };
 }
@@ -237,28 +240,4 @@ function buildTimeScale(rounds, approach, beat, critHold, duration) {
   }
   k.push([duration, 1]);
   return k;
-}
-
-// Опростен генериран списък кадри (без фиксираните KRONE/BLOCK точки на демото) — широк план
-// на приближаването, редуващи се кадри "през рамо" на нападателя за всеки рунд, финален pull-back.
-function buildGeneratedShots(approach, lastRoundEnd, duration) {
-  const ease = (u) => u * u * (3 - 2 * u);
-  return [
-    { t0: 0, t1: approach, fn: (u, S) => ({ pos: S.P(6.5 - 3 * ease(u), 6.4 - 2 * ease(u), 10 - 3 * ease(u)), target: S.P(0, 1.2, 0), fov: 40, focus: 'C', fstop: 5.6, hand: 0.2 }) },
-    { t0: approach, t1: lastRoundEnd, fn: (u, S) => {
-      const flip = Math.floor(u * 40) % 2 === 0;
-      const from = flip ? S.A : S.B;
-      const to = flip ? S.B : S.A;
-      return {
-        pos: from.root.pos.clone().addScaledVector(S.u, flip ? -1.1 : 1.1).addScaledVector(S.v, 0.6).add({ x: 0, y: 1.75, z: 0 }),
-        target: to.rig.w.head.clone(),
-        fov: 36, focus: flip ? 'B' : 'A', fstop: 2.2, hand: 0.5,
-      };
-    } },
-    { t0: lastRoundEnd, t1: duration, fn: (u, S) => {
-      const k = ease(Math.min(1, u * 1.1));
-      const off = S.v.clone().multiplyScalar(2.4 + 4 * k).addScaledVector(S.u, -1.1 - 2 * k);
-      return { pos: S.C.clone().add(off).add({ x: 0, y: 1.5 + 3 * k, z: 0 }), target: S.C.clone().add({ x: 0, y: 1.0, z: 0 }), fov: 38, focus: 'C', fstop: 4, hand: 0.25 };
-    } },
-  ];
 }

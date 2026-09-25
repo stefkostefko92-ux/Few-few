@@ -20,6 +20,10 @@ interface Props {
   reward?: Reward;
   onReplay?: () => void;
   onClose?: () => void;
+  /** Извиква се ЕДНОКРАТНО, когато анимацията реално свърши (не при монтиране!) — страницата
+      трябва да пази СВОЯ резултатен панел (badges, "Hunt again"...) скрит до този момент,
+      иначе издава изхода преди боят да е изигран (докладван реален бъг при преглед). */
+  onDone?: () => void;
   introTitle?: string;
   speedMs?: number;
   region?: string;
@@ -55,12 +59,12 @@ function popFor(round: CombatRound, targetMaxHp: number): { text: string; kind: 
  * конвейер (CombatScene3D/CombatCanvas/CinematicOverlay/спрайтове) е премахнат; BoyDuelStage
  * (rounds/victory) движи реалния бой, а тук само реагираме на onImpact — ТОЧНО в кадъра на
  * удара, не по отделен таймер — за да паднат HP лентите/числото на щетата синхронно с рендера.
- * Публичният интерфейс (props) е непроменен спрямо предишната версия — 7-те страници, които
- * монтират CombatScene, не се пипат.
+ * Публичният интерфейс (props) е разширен само с незадължителен onDone (виж 4a.3-fix по-долу)
+ * — 7-те страници продължават да работят без промяна, ако не го подадат.
  */
 export default function CombatScene(props: Props): React.ReactElement {
   const {
-    hero, foe, rounds, victory, reward, onReplay, onClose, introTitle,
+    hero, foe, rounds, victory, reward, onReplay, onClose, onDone, introTitle,
     region = 'whispering_woods',
   } = props;
 
@@ -117,6 +121,7 @@ export default function CombatScene(props: Props): React.ReactElement {
       setFoeHp(last.foeHp);
     }
     setDone(true);
+    onDone?.();
   }
 
   function setSpeed(label: '0.5' | '1' | '2') {
@@ -192,7 +197,9 @@ export default function CombatScene(props: Props): React.ReactElement {
           <div style={{ position: 'absolute', top: 8, left: 28, right: 28, height: 2, background: 'rgba(255,255,255,.06)', zIndex: 7 }}>
             <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, var(--gold-2), var(--gold-1))', transition: 'width .4s ease' }} />
           </div>
-          <div style={{ position: 'absolute', top: 14, right: 28, zIndex: 8, display: 'flex', gap: 6 }}>
+          {/* Контролите са долу-ляво (не горе-дясно) — foe-hud заема горе-дясно и бутоните
+              покриваха името/HP на противника на 402×874 (реален бъг, докладван при преглед). */}
+          <div className="duel-controls">
             <button className={`btn btn-sm${speedLabel === '0.5' ? ' btn-primary' : ''}`} onClick={() => setSpeed('0.5')} title="Slow">½×</button>
             <button className={`btn btn-sm${speedLabel === '1' ? ' btn-primary' : ''}`} onClick={() => setSpeed('1')} title="Normal">1×</button>
             <button className={`btn btn-sm${speedLabel === '2' ? ' btn-primary' : ''}`} onClick={() => setSpeed('2')} title="Fast">2×</button>
