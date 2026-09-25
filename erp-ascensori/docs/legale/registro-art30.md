@@ -52,7 +52,7 @@ interessati, solo la mappa dei trattamenti)*
 9. *(eventuale, se attivata)* **Avvisi di scadenza per posta elettronica** —
    invio, agli indirizzi indicati dal titolare, di un messaggio contenente
    matricola dell'impianto, tipo e data della scadenza, numero del documento e
-   un collegamento al gestionale. **Non contiene dati identificativi di persone
+   un collegamento al gestionale. **Non contiene dati identificativi diretti di persone
    fisiche**: la minimizzazione è una proprietà del testo, verificata da test
    automatici, non una promessa organizzativa.
 
@@ -140,12 +140,20 @@ coda locale.
    101/2018.
 
    **Oggi è una persona sola**, che è anche il legale rappresentante. Le
-   registrazioni degli accessi richieste dal Provvedimento sono soddisfatte dal
-   registro immodificabile del gestionale: completezza e inalterabilità sono
-   garantite dalla firma HMAC concatenata, la conservazione è di sei mesi per
-   gli eventi di accesso — il minimo richiesto. La **verifica annuale**, invece,
-   non può essere indipendente finché la persona è una sola: il limite è
-   dichiarato in [`nomine.md`](nomine.md) § 7 con le due strade per superarlo.
+   registrazioni degli accessi richieste dal Provvedimento (punto 4.5)
+   riguardano gli **accessi logici dell'amministratore ai sistemi** — sistema
+   operativo del server (SSH, `sudo`) e DBMS — e devono essere conservate in
+   modo che l'amministratore stesso non possa alterarle. Il registro delle
+   operazioni del gestionale **non** le sostituisce: registra ciò che accade
+   nell'applicazione, e chi ha accesso amministrativo al server può agire sotto
+   l'applicazione. Misura adottata: registrazione delle connessioni a PostgreSQL
+   (`log_connections`, `log_disconnections`) e degli accessi SSH/`sudo`,
+   **inoltrate a un archivio esterno al server** non modificabile
+   dall'amministratore e conservate per almeno sei mesi; l'archivio di
+   destinazione è indicato in [`nomine.md`](nomine.md) § 3. La **verifica
+   annuale**, invece, non può essere indipendente finché la persona è una sola:
+   il limite è dichiarato in [`nomine.md`](nomine.md) § 7 con le due strade per
+   superarlo.
 
 3. **Aggiornamento.** Il registro va aggiornato entro 30 giorni da: nuovo
    cliente, cessazione di un cliente, nuovo sub-responsabile, nuova categoria di

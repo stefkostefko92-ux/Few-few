@@ -101,10 +101,12 @@ modelli di intelligenza artificiale e **non** ne effettua profilazione.
 
 ## 4. Riservatezza (art. 28 par. 3 lett. b)
 
-4.1 Il personale del Responsabile autorizzato al trattamento è vincolato a un
-obbligo di riservatezza contrattuale che sopravvive alla cessazione del
-rapporto, ed è designato per iscritto ai sensi dell'art. 29 GDPR e
-dell'art. 2-quaterdecies D.Lgs. 196/2003.
+4.1 Le persone fisiche che trattano i dati sotto l'autorità del Responsabile
+sono vincolate a un obbligo di riservatezza contrattuale che sopravvive alla
+cessazione del rapporto e sono autorizzate per iscritto ai sensi dell'art. 29
+GDPR e dell'art. 2-quaterdecies, comma 2, D.Lgs. 196/2003. Il legale
+rappresentante del Responsabile, attraverso il quale il Responsabile stesso
+agisce, è vincolato dagli obblighi del presente accordo in quanto suo organo.
 
 4.2 L'accesso è concesso secondo il principio del minimo privilegio e solo alle
 persone che ne hanno effettiva necessità. Le persone con privilegi di
@@ -138,19 +140,26 @@ l'assistenza sono interamente nell'Unione europea. Un eventuale trasferimento
 futuro richiede un idoneo strumento ai sensi del Capo V e la preventiva
 comunicazione al Titolare.
 
-5.5 **Funzione facoltativa di intelligenza artificiale.** Il Servizio include
-una funzione, **disattivata per impostazione predefinita**, che sottopone a un
-fornitore di modelli linguistici un documento caricato dall'utente per proporre
-la compilazione di campi. Se il Titolare la attiva:
+5.5 **Funzioni facoltative di intelligenza artificiale.** Il Servizio include
+due funzioni, **disattivate per impostazione predefinita**, che si attivano
+insieme: «Compila da un documento», che sottopone a un fornitore di modelli
+linguistici un documento caricato dall'utente per proporre la compilazione di
+campi, e «Scrivi con l'AI», che gli sottopone gli appunti scritti
+dall'operatore per proporre una descrizione o un riepilogo. Se il Titolare le
+attiva:
 
-- il fornitore del modello diventa **sub-responsabile** e va inserito nella
-  tabella dell'art. 5.2 con la relativa ubicazione;
+- il fornitore del modello **non è sub-responsabile del Responsabile**: è un
+  responsabile del trattamento **nominato direttamente dal Titolare**, con cui
+  il Titolare ha il proprio contratto, e va indicato nel registro del Titolare
+  ai sensi dell'art. 30 par. 1 GDPR, con l'eventuale trasferimento verso paesi
+  terzi e la relativa garanzia ai sensi del Capo V;
 - la chiave e il contratto con tale fornitore sono **del Titolare**: la
   funzione si attiva inserendo la chiave del Titolare nella configurazione
   della sua installazione. Il Responsabile non stipula alcun contratto con il
   fornitore del modello per conto del Titolare e non ne sopporta il costo;
 - nessun contenuto trasmesso viene registrato dal Servizio: nel registro delle
-  operazioni restano il fatto dell'invio e l'impronta del file, non il testo.
+  operazioni restano il fatto dell'invio e l'impronta del file o il numero di
+  caratteri, non il testo.
 
 Finché la funzione resta disattivata, il presente comma non produce effetti.
 
@@ -250,7 +259,7 @@ entro **30 giorni**, il Responsabile:
 Responsabile procede alla cancellazione, previo ulteriore avviso scritto.
 
 9.3 La cancellazione riguarda anche i backup, secondo il ciclo di rotazione
-degli stessi e comunque entro **«N» giorni**.
+degli stessi e comunque entro **31 giorni**.
 
 9.4 Restano esclusi i dati che il Responsabile è tenuto a conservare per obbligo
 di legge; su di essi continuano ad applicarsi gli obblighi del presente accordo.
@@ -292,9 +301,8 @@ utilizzabili solo per la finalità di controllo.
 
 | | Titolare | Responsabile |
 |---|---|---|
-| Referente privacy | «nome» | «nome» |
+| Referente privacy | «nome» | «nome e cognome» — legale rappresentante, unico amministratore di sistema |
 | E-mail | «…» | «…» |
-| Referente privacy | «…» | «nome e cognome» — legale rappresentante, unico amministratore di sistema |
 | PEC | «…» | «…» |
 | Notifiche di violazione | «…» | «…» |
 

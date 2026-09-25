@@ -18,13 +18,16 @@
 | Amministratore di sistema | същият | Provv. Garante 27.11.2008 |
 | Autorizzato ex art. 29 | **никой** — още няма нает човек | чл. 29 ОРЗД |
 
-**Документ А НЕ се подписва за собственика, и това не е пропуск.** Чл. 29 ОРЗД
-говори за лица, които действат „под ръководството" на администратора или
-обработващия. Законният представител не действа под ръководството на дружеството
-— той Е неговият орган. Самоназначение по чл. 29 е документ, в който едно и също
-лице дава указания на себе си; юридически той не добавя нищо, а на проверка
-изглежда като неразбиране на нормата. Документ А остава като **бланка за първия
-нает или външен сътрудник** и се подписва в деня, в който такъв получи достъп.
+**Документ А НЕ се подписва за собственика, и това не е пропуск.** Точният
+прочит (поправен след прегледа): чл. 29 ОРЗД **продължава да обвързва** самия
+обработващ — дружеството действа чрез законния си представител и задълженията
+по чл. 29 са негови. Това, което отпада, е **писменото упълномощаване** по
+чл. 2-quaterdecies, ал. 2 от Codice: то е инструментът, с който обработващият
+възлага операции на ДРУГИ физически лица под свое ръководство. Законният
+представител не е такова лице — той е органът, чрез който дружеството действа;
+упълномощаване, в което едно и също лице възлага на себе си, не добавя нищо.
+Документ А остава като **бланка за първия нает или външен сътрудник** и се
+подписва в деня, в който такъв получи достъп.
 
 **Документ Б се подписва.** Тук положението е обратното: задължението по
 Provv. Garante 27.11.2008 тежи върху ДЕЙНОСТТА (системно администриране на
@@ -38,6 +41,15 @@ Provv. Garante 27.11.2008 тежи върху ДЕЙНОСТТА (системн
 > Нашият прочит е, че **формалното назначение отпада, а придружаващите
 > задължения — не**. Затова документът е попълнен и подписан: подписан документ,
 > който се окаже излишен, не вреди; липсващ, който се окаже дължим, е глоба.
+>
+> **И второ, свързано.** В FAQ на Garante към Provvedimento (т. 3) се приема,
+> че мерките не се прилагат, когато функциите на системен администратор се
+> изпълняват пряко от **титуляра** (администратора на данните). **Не се
+> позоваваме на това изключение:** ние сме **обработващ** (responsabile), не
+> титуляр — данните са на клиентите ни, и изключението е написано за
+> администратор, който администрира собствените си системи. Юристът да
+> потвърди дали прочитът е верен, или изключението се разпростира и върху
+> обработващ, чийто законен представител е единственият администратор.
 
 ---
 
@@ -144,15 +156,29 @@ isolamento. Lo stato effettivo è verificabile su `GET /api/readyz`, campo
 
 ## 3. Registrazione degli accessi
 
-Gli accessi dell'amministratore di sistema sono registrati. Le registrazioni:
+Gli accessi logici dell'amministratore di sistema **ai sistemi** — sistema
+operativo del server (SSH, `sudo`) e database (connessioni e disconnessioni
+PostgreSQL) — sono registrati. Le registrazioni:
 
 - hanno caratteristiche di **completezza, inalterabilità e verificabilità**;
 - comprendono i riferimenti temporali e la descrizione dell'evento;
-- sono conservate per un periodo **non inferiore a sei mesi**.
+- sono conservate per un periodo **non inferiore a sei mesi**;
+- sono **inoltrate a un archivio esterno al server**, che l'amministratore non
+  può modificare né cancellare: «indicare l'archivio di destinazione».
 
-Il registro delle operazioni del gestionale, firmato con HMAC concatenato, non
-prevede alcuna rotta di modifica o cancellazione e la sua integrità è
-verificabile crittograficamente su richiesta.
+Il registro delle operazioni del gestionale, firmato con HMAC concatenato,
+**non sostituisce** queste registrazioni: documenta le operazioni
+nell'applicazione, mentre il Provvedimento riguarda gli accessi ai sistemi, al
+di sotto dell'applicazione, dove l'amministratore ha i privilegi per alterare
+qualsiasi registro locale.
+
+> **Решение на човек, отворено.** Къде отиват записите: друга машина (напр.
+> вторият VPS), хранилище с обект-заключване (WORM) или услуга за логове в ЕС.
+> Изискването е едно — администраторът да не може да ги промени. PostgreSQL
+> записите се включват в `docker-compose.yml` (`log_connections`,
+> `log_disconnections`); SSH/`sudo` идват от `journald`/`auth.log` на хоста.
+> До решението записите съществуват, но стоят на същата машина — тоест
+> условието за неизменимост **не е изпълнено**.
 
 ## 4. Verifica annuale
 
@@ -167,8 +193,11 @@ tecniche e di sicurezza. L'esito è documentato agli atti.
 ## 5. Trasparenza verso i clienti
 
 L'elenco degli amministratori di sistema che possono accedere ai dati di un
-cliente è **comunicato al cliente su sua richiesta**, in adempimento
-dell'art. 28 par. 3 lett. h GDPR.
+cliente è **consegnato al cliente alla sottoscrizione dell'accordo ex art. 28
+GDPR** e a ogni variazione, oltre che su sua richiesta: il Provvedimento
+(punto 4.3) chiede al titolare di conoscere gli amministratori di sistema dei
+servizi affidati all'esterno, e il titolare non può conoscerli se non glieli
+comunichiamo (art. 28 par. 3 lett. h GDPR).
 
 ## 6. Cessazione
 

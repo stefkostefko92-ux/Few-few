@@ -212,15 +212,18 @@ prevale il DPA.
 
 ## 13. Trattamento dei dati e intelligenza artificiale
 
-13.1 La funzione di compilazione assistita è **disattivata per impostazione
-predefinita**. La sua attivazione richiede accordo scritto e comporta
-l'applicazione dell'art. 5.5 del DPA.
+13.1 Le funzioni assistite — «Compila da un documento» e «Scrivi con l'AI» —
+sono **disattivate per impostazione predefinita**. La loro attivazione richiede
+accordo scritto e comporta l'applicazione dell'art. 5.5 del DPA.
 
-13.2 Il Fornitore non è fornitore di sistemi di intelligenza artificiale ai
-sensi del Regolamento (UE) 2024/1689: il modello linguistico è di un terzo, il
-Software si limita a inoltrargli un documento su richiesta espressa
-dell'utente e a **proporre** valori, che l'utente accetta o rifiuta. Nulla è
-scritto automaticamente.
+13.2 Il modello linguistico è di un terzo, scelto e contrattualizzato dal
+Cliente. Il Software gli inoltra un documento o un testo solo su richiesta
+espressa dell'utente e si limita a **proporre** valori o testi, che l'utente
+accetta, modifica o rifiuta; nulla è scritto automaticamente. Le Parti
+ritengono, sulla base di tale configurazione, che il Software non rientri tra i
+sistemi ad alto rischio del Regolamento (UE) 2024/1689; la qualificazione dei
+ruoli ai sensi del Regolamento resta soggetta alle linee guida della
+Commissione e sarà rivista al loro aggiornamento.
 
 ## 14. Legge applicabile e foro
 
