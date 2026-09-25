@@ -41,6 +41,9 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         rule_resources в manifest-а) + build_scriptlets.mjs (+ uBO scriptlet-и на 64 парчета
                         по хост в scriptlets/ubo/) + генератори + package.sh (Chrome + Firefox zip)
                         + compare_blockers.mjs (публични тестове срещу конкурентите — числата за landing-а)
+                        + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
+                        бурята идва от server/index.html, popup/панелите от store генератора, звукът е
+                        генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
 tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
