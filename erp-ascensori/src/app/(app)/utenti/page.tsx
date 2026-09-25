@@ -99,6 +99,8 @@ export default function Pagina() {
   }, [carica]);
 
   const master = io?.ruolo === "MASTER";
+  // Колоната „Azienda“ — само ако има фирми: в еднофирмена инсталация е цялата „—“.
+  const conAziende = master && aziende.length > 0;
   const nomeAzienda = (id: string | null) =>
     id === null
       ? "—"
@@ -147,14 +149,64 @@ export default function Pagina() {
         />
       </div>
 
-      <div className="card relative overflow-x-auto">
+      {/* Под `sm` — карти: в таблицата действията оставаха зад
+          хоризонтален скрол, тоест „Sicurezza" не се виждаше на телефон. */}
+      <ul className="space-y-3 sm:hidden">
+        {visibili.map((u) => (
+          <li key={u.id} className="card p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium text-text-1">
+                  {u.cognome} {u.nome}
+                  {u.id === io?.id && (
+                    <span className="ml-2 text-xs font-normal text-text-3">
+                      (tu)
+                    </span>
+                  )}
+                </p>
+                <p className="break-all text-sm text-text-2">{u.email}</p>
+                <p className="mt-1 text-xs text-text-3">
+                  {RUOLO_LABEL[u.ruolo]}
+                  {conAziende ? ` · ${nomeAzienda(u.tenantId)}` : ""}
+                  {" · 2FA "}
+                  {u.totpAttivo ? "attiva" : "non attiva"}
+                  {u.aiConsentita ? "" : " · AI disattivata"}
+                </p>
+              </div>
+              <StatoUtente u={u} />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                className="btn-secondary h-8 px-3 text-xs"
+                onClick={() => setModale(u)}
+              >
+                Modifica
+              </button>
+              <button
+                className="btn-secondary h-8 px-3 text-xs"
+                onClick={() => setReset(u)}
+              >
+                Password
+              </button>
+              <button
+                className="btn-secondary h-8 px-3 text-xs"
+                onClick={() => setSicurezza(u)}
+              >
+                Sicurezza
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="card relative hidden overflow-x-auto sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
               <th className="px-3 py-2.5">Nominativo</th>
               <th className="px-3 py-2.5">Email</th>
               <th className="px-3 py-2.5">Ruolo</th>
-              {master && <th className="px-3 py-2.5">Azienda</th>}
+              {conAziende && <th className="px-3 py-2.5">Azienda</th>}
               <th className="px-3 py-2.5">Stato</th>
               <th className="px-3 py-2.5">2FA</th>
               <th className="px-3 py-2.5">AI</th>
@@ -176,29 +228,19 @@ export default function Pagina() {
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-text-2">{u.email}</td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-text-2">
+                  {u.email}
+                </td>
                 <td className="px-3 py-2.5">{RUOLO_LABEL[u.ruolo]}</td>
-                {master && (
+                {conAziende && (
                   <td className="px-3 py-2.5 text-text-2">
                     {nomeAzienda(u.tenantId)}
                   </td>
                 )}
                 <td className="px-3 py-2.5">
-                  {bloccato(u) ? (
-                    <span className="rounded-sm bg-danger-subtle px-2 py-0.5 text-xs font-medium text-danger-text">
-                      Bloccato
-                    </span>
-                  ) : u.attivo ? (
-                    <span className="rounded-sm bg-success-subtle px-2 py-0.5 text-xs font-medium text-success-text">
-                      Attivo
-                    </span>
-                  ) : (
-                    <span className="rounded-sm bg-surface-3 px-2 py-0.5 text-xs font-medium text-text-3">
-                      Sospeso
-                    </span>
-                  )}
+                  <StatoUtente u={u} />
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="whitespace-nowrap px-3 py-2.5">
                   {u.totpAttivo ? (
                     <span className="text-success-text">Attiva</span>
                   ) : PRIVILEGIATI.includes(u.ruolo) ? (
@@ -214,7 +256,7 @@ export default function Pagina() {
                     <span className="text-text-3">Disattivata</span>
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-text-2">
+                <td className="whitespace-nowrap px-3 py-2.5 text-text-2">
                   {dataOraIt(u.ultimoAccesso)}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-right">
@@ -241,12 +283,12 @@ export default function Pagina() {
             ))}
           </tbody>
         </table>
-        {visibili.length === 0 && (
-          <p className="px-3 py-6 text-center text-sm text-text-3">
-            Nessun utente corrisponde alla ricerca.
-          </p>
-        )}
       </div>
+      {visibili.length === 0 && (
+        <p className="px-3 py-6 text-center text-sm text-text-3">
+          Nessun utente corrisponde alla ricerca.
+        </p>
+      )}
 
       {modale && (
         <FormUtente
@@ -277,6 +319,24 @@ export default function Pagina() {
         />
       )}
     </div>
+  );
+}
+
+function StatoUtente({ u }: { u: Utente }) {
+  if (bloccato(u))
+    return (
+      <span className="whitespace-nowrap rounded-sm bg-danger-subtle px-2 py-0.5 text-xs font-medium text-danger-text">
+        Bloccato
+      </span>
+    );
+  return u.attivo ? (
+    <span className="whitespace-nowrap rounded-sm bg-success-subtle px-2 py-0.5 text-xs font-medium text-success-text">
+      Attivo
+    </span>
+  ) : (
+    <span className="whitespace-nowrap rounded-sm bg-surface-3 px-2 py-0.5 text-xs font-medium text-text-3">
+      Sospeso
+    </span>
   );
 }
 
@@ -328,19 +388,19 @@ function SicurezzaUtente({
       aperto
       onChiudi={onChiudi}
     >
-      <dl className="mb-5 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <dl className="mb-5 grid grid-cols-1 gap-x-4 gap-y-0.5 text-sm sm:grid-cols-2 sm:gap-y-2">
         <dt className="text-text-3">Email</dt>
-        <dd className="break-all text-text-1">{utente.email}</dd>
+        <dd className="mb-2 break-all text-text-1 sm:mb-0">{utente.email}</dd>
         <dt className="text-text-3">Tentativi falliti</dt>
-        <dd className="text-text-1">{utente.tentativi}</dd>
+        <dd className="mb-2 text-text-1 sm:mb-0">{utente.tentativi}</dd>
         <dt className="text-text-3">Blocco</dt>
-        <dd className="text-text-1">
+        <dd className="mb-2 text-text-1 sm:mb-0">
           {bloccato(utente)
             ? `fino alle ${dataOraIt(utente.bloccatoFino)}`
             : "nessuno"}
         </dd>
         <dt className="text-text-3">Verifica in due passaggi</dt>
-        <dd className="text-text-1">
+        <dd className="mb-2 text-text-1 sm:mb-0">
           {utente.totpAttivo ? "attiva" : "non attiva"}
         </dd>
       </dl>

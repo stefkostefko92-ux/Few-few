@@ -75,6 +75,7 @@ const PAGINE = [
   ["29-aziende", "/aziende"],
   ["30-sicurezza", "/sicurezza"],
   ["31-amministrazione", "/amministrazione"],
+  ["32-utente-sicurezza", "/utenti", { clicca: "Sicurezza" }],
 ];
 
 let server;
@@ -124,6 +125,11 @@ async function scatta(page, nome, percorso, opzioni = {}) {
     await page.waitForLoadState("networkidle");
   } else {
     await page.goto(BASE + percorso, { waitUntil: "networkidle" });
+  }
+  // Диалог: снимката е на ОТВОРЕНИЯ диалог — затворен той не съществува.
+  if (opzioni.clicca) {
+    await page.getByRole("button", { name: opzioni.clicca }).first().click();
+    await page.getByRole("dialog").waitFor();
   }
   // Малко въздух за графиките (Recharts анимира при монтиране).
   await sleep(900);
@@ -244,6 +250,11 @@ async function main() {
     ["m9-sicurezza", "/sicurezza"],
     ["m10-amministrazione", "/amministrazione"],
     ["m11-utenti", "/utenti"],
+    ["m11a-utente-sicurezza", "/utenti", { clicca: "Sicurezza" }],
+    ["m12-audit", "/audit"],
+    ["m13-integrazioni", "/integrazioni"],
+    ["m14-privacy", "/privacy"],
+    ["m15-impostazioni", "/impostazioni"],
   ])
     await scatta(tel, nome, percorso, opzioni);
   await mobile.close();

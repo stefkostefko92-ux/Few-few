@@ -104,6 +104,14 @@ export default function Pagina() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Бутонът е ПРЕДИ празната зона за статус: иначе на телефон тя
+              отместваше бутона с празнина. */}
+          <button
+            className="btn-secondary"
+            onClick={() => void verificaIntegrita()}
+          >
+            Verifica integrità
+          </button>
           {/* Резултатът от проверката на целостта е критичен и идва асинхронно —
               без `aria-live` потребител на екранен четец не научава за него. */}
           <span
@@ -127,12 +135,6 @@ export default function Pagina() {
               </span>
             )}
           </span>
-          <button
-            className="btn-secondary"
-            onClick={() => void verificaIntegrita()}
-          >
-            Verifica integrità
-          </button>
         </div>
       </div>
 

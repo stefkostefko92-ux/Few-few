@@ -593,77 +593,62 @@ function SezioneAutomatismi({
         Girano da soli (cron sul server). Qui l&apos;ultima esecuzione e, dove
         previsto, l&apos;avvio manuale: resta tracciato come quello automatico.
       </p>
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-text-3">
-              <th className="py-2 pr-3">Automatismo</th>
-              <th className="py-2 pr-3">Ultima esecuzione</th>
-              <th className="py-2 pr-3">Esito</th>
-              <th className="py-2 pr-3">Ultimo successo</th>
-              <th className="py-2 text-right">Azione</th>
-            </tr>
-          </thead>
-          <tbody>
-            {righe.map((r) => {
-              const meta = AUTOMATISMI[r.nome];
-              const url =
-                meta?.avvio && (meta.soloMaster ? master : avvioManuale)
-                  ? meta.avvio
-                  : null;
-              return (
-                <tr
-                  key={r.nome}
-                  className="border-b border-border last:border-0"
+      {/* Списък, не таблица: на телефон колоната с бутона оставаше зад
+          хоризонтален скрол — тоест „Avvia ora" не се виждаше изобщо. */}
+      <ul className="mt-4 divide-y divide-border">
+        {righe.map((r) => {
+          const meta = AUTOMATISMI[r.nome];
+          const url =
+            meta?.avvio && (meta.soloMaster ? master : avvioManuale)
+              ? meta.avvio
+              : null;
+          return (
+            <li
+              key={r.nome}
+              className="flex flex-wrap items-center justify-between gap-3 py-3"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text-1">
+                  {meta?.titolo ?? r.nome}
+                  <span className="ml-2 text-xs font-normal text-text-3">
+                    {meta?.cadenza}
+                  </span>
+                </p>
+                <p className="mt-0.5 text-xs text-text-2">
+                  Ultima esecuzione:{" "}
+                  {r.ultimo ? dataOraIt(r.ultimo.iniziatoAt) : "mai"}
+                  {" · "}
+                  {!r.ultimo ? (
+                    <span className="text-text-3">nessun esito</span>
+                  ) : r.ultimo.esito === "OK" ? (
+                    <span className="text-success-text">riuscita</span>
+                  ) : r.ultimo.esito === "ERRORE" ? (
+                    <span className="text-danger-text">
+                      errore{r.ultimo.errore ? ` (${r.ultimo.errore})` : ""}
+                    </span>
+                  ) : (
+                    <span>in corso</span>
+                  )}
+                  {" · "}
+                  Ultimo successo: {r.ultimoOk ? dataOraIt(r.ultimoOk) : "mai"}
+                </p>
+              </div>
+              {url ? (
+                <button
+                  type="button"
+                  className="btn-secondary h-8 px-3 text-xs"
+                  disabled={inCorso !== null}
+                  onClick={() => void avvia(r.nome, url)}
                 >
-                  <td className="py-2.5 pr-3">
-                    <span className="font-medium text-text-1">
-                      {meta?.titolo ?? r.nome}
-                    </span>
-                    <span className="block text-xs text-text-3">
-                      {meta?.cadenza}
-                    </span>
-                  </td>
-                  <td className="py-2.5 pr-3 text-text-2">
-                    {r.ultimo ? dataOraIt(r.ultimo.iniziatoAt) : "mai"}
-                  </td>
-                  <td className="py-2.5 pr-3">
-                    {!r.ultimo ? (
-                      <span className="text-text-3">—</span>
-                    ) : r.ultimo.esito === "OK" ? (
-                      <span className="text-success-text">Riuscito</span>
-                    ) : r.ultimo.esito === "ERRORE" ? (
-                      <span className="text-danger-text">
-                        Errore
-                        {r.ultimo.errore ? ` (${r.ultimo.errore})` : ""}
-                      </span>
-                    ) : (
-                      <span className="text-text-2">In corso</span>
-                    )}
-                  </td>
-                  <td className="py-2.5 pr-3 text-text-2">
-                    {r.ultimoOk ? dataOraIt(r.ultimoOk) : "mai"}
-                  </td>
-                  <td className="py-2.5 text-right">
-                    {url ? (
-                      <button
-                        type="button"
-                        className="btn-secondary h-7 px-2 text-xs"
-                        disabled={inCorso !== null}
-                        onClick={() => void avvia(r.nome, url)}
-                      >
-                        {inCorso === r.nome ? "In corso…" : "Avvia ora"}
-                      </button>
-                    ) : (
-                      <span className="text-xs text-text-3">automatico</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  {inCorso === r.nome ? "In corso…" : "Avvia ora"}
+                </button>
+              ) : (
+                <span className="text-xs text-text-3">solo automatico</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
