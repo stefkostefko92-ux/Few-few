@@ -688,7 +688,10 @@
       "wrongPot": "Foul: wrong ball potted.",
       "cleared": "Table cleared!",
       "respotBlack": "Tie — the black is re-spotted.",
-      "threeFoul": "Three consecutive fouls — loss of rack."
+      "threeFoul": "Three consecutive fouls — loss of rack.",
+      "illegalBreak": "Foul: illegal break — no ball potted and fewer than four balls to a rail.",
+      "playAgain": "The offender plays again.",
+      "missReplay": "Foul and a miss — balls replaced, the offender plays again."
     },
     "pushOut": "Push-out",
     "pushPass": "Pass back",
@@ -696,7 +699,13 @@
     "expectFreeColour": "target: colour of choice",
     "expectBall": "target: ball",
     "placeHintD": "inside the \"D\" only",
-    "placeHintBreak": "behind the head string"
+    "placeHintBreak": "behind the head string",
+    "twoFouls": "Warning: two consecutive fouls — a third loses the rack.",
+    "twoFoulsOpp": "Your opponent is on two consecutive fouls.",
+    "miss": "foul and a miss",
+    "foulChoice": "Opponent fouled — play on or make them play again.",
+    "playAgain": "Make them play again",
+    "replay": "Replace the balls"
   },
   "net": {
     "reconnecting": "Connection lost — reconnecting…"

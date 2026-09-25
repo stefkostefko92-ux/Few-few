@@ -218,6 +218,39 @@ describe("СВАРА — showdown, разкриване и продължава�
   });
 });
 
+describe("СВАРА — край на мача при равни чипове", () => {
+  it("равен максимум чипове [510,510,480] → [draw, draw, loss], без победител", () => {
+    const pre = mk({
+      hands: [["AH", "KH", "QH"], ["7S", "8D", "9C"], ["8S", "9D", "TC"]],
+      chips: [480, 510, 480],
+      pot: 30,
+      handNo: MAX_HANDS_SVARA,
+      turn: 2,
+      acted: [true, true, false],
+    });
+    const { state, events } = svaraEngine.reduce(pre, { type: "CALL" }, rng());
+    expect(state.done).toBe(true);
+    expect(state.chips).toEqual([510, 510, 480]);
+    expect(state.winner).toBe(null);
+    expect(events.some((e) => e.type === "MATCH")).toBe(false);
+    expect(svaraEngine.score(state).map((x) => x.result)).toEqual(["draw", "draw", "loss"]);
+  });
+
+  it("при равни чипове НЕ печели по-ниското място (2 играчи → реми)", () => {
+    const pre = mk({
+      hands: [["7S", "8D", "9C"], ["AH", "KH", "QH"]],
+      chips: [500, 480],
+      pot: 20,
+      handNo: MAX_HANDS_SVARA,
+      turn: 1,
+      acted: [true, false],
+    });
+    const { state } = svaraEngine.reduce(pre, { type: "CALL" }, rng());
+    expect(state.chips).toEqual([500, 500]);
+    expect(svaraEngine.score(state).map((x) => x.result)).toEqual(["draw", "draw"]);
+  });
+});
+
 describe("СВАРА — механиката 'свара' при равенство", () => {
   const tiedState = () =>
     mk({
@@ -272,6 +305,24 @@ describe("СВАРА — механиката 'свара' при равенст
     expect(state.folded).toEqual([false, false, false]); // включен в под-играта
     expect(state.hands[2]).toHaveLength(3);
     expect(state.phase).toBe("BETTING");
+  });
+
+  it("изборът JOIN/SKIP върви по реда на хода — от мястото след раздаващия", () => {
+    // Раздаващ 2; равни са местата 1 и 2 → първо решава място 3, после място 0.
+    const pre = mk({
+      hands: [["7H", "8S", "9D"], ["AH", "KH", "QH"], ["AS", "KS", "QS"], ["8H", "9S", "TD"]],
+      dealer: 2,
+      turn: 3,
+      acted: [true, true, true, false],
+    });
+    const paused = svaraEngine.reduce(pre, { type: "CALL" }, rng()).state;
+    expect(paused.svaraSeats).toEqual([1, 2]);
+    const joinPhase = svaraEngine.reduce(paused, { type: "CONTINUE" }, rng()).state;
+    expect(joinPhase.phase).toBe("SVARA");
+    expect(joinPhase.svaraPending).toEqual([3, 0]);
+    expect(joinPhase.turn).toBe(3);
+    const after = svaraEngine.reduce(joinPhase, { type: "SKIP" }, rng()).state;
+    expect(after.turn).toBe(0);
   });
 
   it("SKIP оставя неравния извън под-играта", () => {

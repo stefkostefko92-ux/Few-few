@@ -688,7 +688,10 @@
       "wrongPot": "Fallo: palla sbagliata in buca.",
       "cleared": "Tavolo ripulito!",
       "respotBlack": "Parità — la nera torna sul punto.",
-      "threeFoul": "Tre falli consecutivi — perdi il frame."
+      "threeFoul": "Tre falli consecutivi — perdi il frame.",
+      "illegalBreak": "Fallo: spaccata irregolare — nessuna palla in buca e meno di quattro palle a sponda.",
+      "playAgain": "Chi ha commesso fallo gioca di nuovo.",
+      "missReplay": "Fallo e mancato — palle riposizionate, chi ha commesso fallo ripete."
     },
     "pushOut": "Push-out",
     "pushPass": "Restituisci il tiro",
@@ -696,7 +699,13 @@
     "expectFreeColour": "obiettivo: colorata a scelta",
     "expectBall": "obiettivo: palla",
     "placeHintD": "solo nel semicerchio \"D\"",
-    "placeHintBreak": "dietro la linea"
+    "placeHintBreak": "dietro la linea",
+    "twoFouls": "Attenzione: due falli consecutivi — il terzo fa perdere il frame.",
+    "twoFoulsOpp": "L'avversario è a due falli consecutivi.",
+    "miss": "fallo e mancato",
+    "foulChoice": "Fallo dell'avversario — gioca o fallo rigiocare.",
+    "playAgain": "Fallo rigiocare",
+    "replay": "Riposiziona le palle"
   },
   "net": {
     "reconnecting": "Connessione persa — riconnessione…"

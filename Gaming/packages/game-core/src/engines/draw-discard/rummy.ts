@@ -20,7 +20,8 @@ import { buildDeck, hiddenLike, RANKS_52, rankOf, suitOf, type Card } from "../c
  *
  * Lay-offs supported (§4.11): on a knock (not gin), the defender lays off any
  * deadwood that extends the knocker's melds — chained, so 8♥ then 9♥ both fit
- * onto 5-6-7♥. When only two stock cards remain and nobody knocked, the hand
+ * onto 5-6-7♥ — избирайки подредбата и долепванията, които МИНИМИЗИРАТ
+ * мъртвите му точки (пълно търсене, виж `layoffSplit`). When only two stock cards remain and nobody knocked, the hand
  * is DEAD: no points, redeal with the same first player. Deals repeat into a
  * running match to 100 points; final scoring adds a 25-point line bonus per
  * won deal and doubles a shutout. Big Gin (31, knock with 11 cards) and the
@@ -485,47 +486,92 @@ export function meldsOf(hand: Card[]): Card[][] {
   return bestMeldSplit(hand).melds;
 }
 
-/** Can `card` extend one meld (set: 4th of the rank; run: adjacent low/high)? */
-function extendsOne(card: Card, meld: Card[]): boolean {
-  const r0 = rankOf(meld[0]!);
-  if (meld.every((mc) => rankOf(mc) === r0)) return rankOf(card) === r0;
-  if (suitOf(card) !== suitOf(meld[0]!)) return false;
-  const vals = meld.map(ord);
-  const cv = ord(card);
-  return cv === Math.min(...vals) - 1 || cv === Math.max(...vals) + 1;
-}
-
 export interface LayoffSplit extends MeldSplit {
   /** Defender cards laid off onto (grown copies of) the knocker's melds. */
   laidOff: Card[];
 }
 
 /**
- * Defender's position after laying off onto the knocker's melds (§4.11):
- * deadwood that extends a knocker meld moves onto it, and lay-offs CHAIN —
- * after 8♥ joins 5-6-7♥ the run reaches 8, so 9♥ lays off too (fixpoint).
- * Lay-offs do not change the knocker's own count.
+ * Всички начини защитаващият се да долепи карти към ЕДНА комбинация на
+ * чукащия, като битмаски върху `def` (0 = нищо). Сет: четвъртата карта от ранга
+ * (ако сетът е от 3). Серия: непрекъснато удължение надолу И/ИЛИ нагоре от
+ * картите на защитаващия се — точно това е веригата (8♥ удължава 5-6-7♥ и
+ * отваря място за 9♥). Масивът е подреден така, че долепванията вървят навън
+ * от комбинацията — редът на `laidOff` е легален ред на игра.
  */
-export function layoffSplit(defenderHand: Card[], knockerMelds: Card[][]): LayoffSplit {
-  const split = bestMeldSplit(defenderHand);
-  const grown = knockerMelds.map((m) => m.slice());
-  const remaining = split.unmatched.slice();
-  const laidOff: Card[] = [];
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (let i = remaining.length - 1; i >= 0; i--) {
-      const c = remaining[i]!;
-      const target = grown.find((m) => extendsOne(c, m));
-      if (!target) continue;
-      target.push(c);
-      laidOff.push(c);
-      remaining.splice(i, 1);
-      changed = true;
+function extensionOptions(def: Card[], meld: Card[]): { mask: number; cards: Card[] }[] {
+  const out: { mask: number; cards: Card[] }[] = [{ mask: 0, cards: [] }];
+  const r0 = rankOf(meld[0]!);
+  if (meld.every((mc) => rankOf(mc) === r0)) {
+    if (meld.length >= 4) return out;
+    def.forEach((c, i) => {
+      if (rankOf(c) === r0) out.push({ mask: 1 << i, cards: [c] });
+    });
+    return out;
+  }
+  const suit = suitOf(meld[0]!);
+  const vals = meld.map(ord);
+  const idxAt = (v: number): number => def.findIndex((c) => suitOf(c) === suit && ord(c) === v);
+  // Непрекъснати вериги от карти на защитаващия се под и над серията.
+  const below: number[] = [];
+  for (let v = Math.min(...vals) - 1, i = idxAt(v); i >= 0; v--, i = idxAt(v)) below.push(i);
+  const above: number[] = [];
+  for (let v = Math.max(...vals) + 1, i = idxAt(v); i >= 0; v++, i = idxAt(v)) above.push(i);
+  for (let a = 0; a <= below.length; a++) {
+    for (let b = 0; b <= above.length; b++) {
+      if (a === 0 && b === 0) continue;
+      const idxs = [...below.slice(0, a), ...above.slice(0, b)];
+      out.push({ mask: idxs.reduce((m, i) => m | (1 << i), 0), cards: idxs.map((i) => def[i]!) });
     }
   }
-  const deadwood = remaining.reduce((s, c) => s + deadwoodValue(rankOf(c)), 0);
-  return { melds: split.melds, unmatched: remaining, deadwood, laidOff };
+  return out;
+}
+
+/**
+ * Defender's position after laying off onto the knocker's melds (§4.11).
+ * ОПТИМАЛНО, не алчно: защитаващият се подрежда ръката си в комбинации и долага
+ * мъртвите си карти така, че да МИНИМИЗИРА своите мъртви точки. Затова търсим
+ * пълно по всички начини за долагане към всяка комбинация на чукащия
+ * (вкл. верижно — 8♥ върху 5-6-7♥ позволява и 9♥), а остатъкът се подрежда
+ * оптимално с `bestMeldSplit` (мемоизирано по маска на остатъка). Така
+ * защитаващият се може да разбие собствена серия 7-8-9♥, за да долепи 9♥ и 8♥
+ * към Т-J-Q♥ и да запази сет 7-7-7. Ръцете са ≤ 11 карти, комбинациите на
+ * чукащия ≤ 3 — търсенето е няколко стотин листа. Lay-offs do not change the
+ * knocker's own count.
+ */
+export function layoffSplit(defenderHand: Card[], knockerMelds: Card[][]): LayoffSplit {
+  const options = knockerMelds.map((m) => extensionOptions(defenderHand, m));
+  const full = (1 << defenderHand.length) - 1;
+  const memo = new Map<number, MeldSplit>();
+  const splitOf = (mask: number): MeldSplit => {
+    let hit = memo.get(mask);
+    if (!hit) {
+      hit = bestMeldSplit(defenderHand.filter((_, i) => (mask & (1 << i)) !== 0));
+      memo.set(mask, hit);
+    }
+    return hit;
+  };
+
+  let best: LayoffSplit | null = null;
+  const pick: Card[][] = [];
+  const go = (k: number, used: number): void => {
+    if (k === options.length) {
+      const split = splitOf(full & ~used);
+      // При равни мъртви точки остава първото намерено (най-малко долепвания).
+      if (best === null || split.deadwood < best.deadwood) {
+        best = { ...split, laidOff: pick.flat() };
+      }
+      return;
+    }
+    for (const opt of options[k]!) {
+      if ((opt.mask & used) !== 0) continue; // една карта — само към една комбинация
+      pick.push(opt.cards);
+      go(k + 1, used | opt.mask);
+      pick.pop();
+    }
+  };
+  go(0, 0);
+  return best ?? { ...bestMeldSplit(defenderHand), laidOff: [] };
 }
 
 /** Defender's deadwood after lay-offs (kept for tests/back-compat). */

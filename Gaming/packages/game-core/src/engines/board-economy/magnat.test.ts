@@ -501,3 +501,305 @@ describe("МАГНАТ — heuristic bot", () => {
     expect(magnatBot(s, 0, new SeededRng("b"))).toEqual({ type: "DECLINE" });
   });
 });
+
+/* ── поправки по правилата (одит) ───────────────────────────────────────── */
+const ownables = BOARD.map((_, i) => i).filter((i) => ["prop", "station", "utility"].includes(BOARD[i]!.type));
+const sumCash = (s: MagnatState) => s.cash.reduce((n, c) => n + c, 0);
+const diceOf = (events: MagnatEvent[]) =>
+  events.find((e): e is Extract<MagnatEvent, { type: "ROLL" }> => e.type === "ROLL")!.dice;
+
+describe("МАГНАТ — фалит при третия опит в затвора", () => {
+  it("фалиралият не се мести, не тегли карта и никой не печели пари извън таксата", () => {
+    let checked = 0;
+    for (let k = 0; k < 200 && checked < 20; k++) {
+      const base = magnatEngine.init({ seats: 3, config: { freeParkingPot: true } }, new SeededRng("jb"));
+      const s: MagnatState = {
+        ...base,
+        turn: 0,
+        phase: "ROLL",
+        inJail: [true, false, false],
+        jailTurns: [2, 0, 0],
+        pos: [10, 5, 20],
+        cash: [10, 1000, 1000],
+        pot: 300,
+      };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`jb-${k}`));
+      const [d1, d2] = diceOf(events);
+      if (d1 === d2) continue;
+      checked++;
+      expect(state.bankrupt[0]).toBe(true);
+      expect(state.pos[0]).toBe(10); // без движение
+      expect(state.cash).toEqual([0, 1000, 1000]); // таксата към банката — никой друг не печели/губи
+      expect(state.pot).toBe(300); // потът не е прибран (и не расте от неплатена такса)
+      expect(events.some((e) => e.type === "MOVE" || e.type === "CARD" || e.type === "POT")).toBe(false);
+      expect(state.turn).toBe(1);
+      expect(state.phase).toBe("ROLL");
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+});
+
+describe("МАГНАТ — откупуване на ипотека (цели числа)", () => {
+  it("цената е стойност + 10% закръглени нагоре за всеки имот", () => {
+    for (const i of ownables) {
+      const owner = new Array<number>(40).fill(-1);
+      const mortgaged = new Array<boolean>(40).fill(false);
+      owner[i] = 0;
+      mortgaged[i] = true;
+      const s: MagnatState = { ...init(2), owner, mortgaged, phase: "MANAGE", turn: 0, cash: [2000, 1500] };
+      const { state } = magnatEngine.reduce(s, { type: "UNMORTGAGE", tile: i }, new SeededRng("u"));
+      const mv = Math.floor(BOARD[i]!.price / 2);
+      const paid = 2000 - state.cash[0]!;
+      expect(Number.isInteger(paid)).toBe(true);
+      expect(paid).toBe(mv + Math.ceil(mv / 10));
+    }
+    // 200 * 1.1 = 220.00000000000003 → старият код взимаше 221
+    const owner = new Array<number>(40).fill(-1);
+    const mortgaged = new Array<boolean>(40).fill(false);
+    owner[39] = 0;
+    mortgaged[39] = true;
+    const s: MagnatState = { ...init(2), owner, mortgaged, phase: "MANAGE", turn: 0, cash: [2000, 1500] };
+    expect(magnatEngine.reduce(s, { type: "UNMORTGAGE", tile: 39 }, new SeededRng("u")).state.cash[0]).toBe(2000 - 220);
+  });
+});
+
+describe("МАГНАТ — управление на имотите по всяко време на своя ход", () => {
+  it("затворник с 40 в брой може да ипотекира, после да плати гаранцията", () => {
+    const owner = new Array<number>(40).fill(-1);
+    owner[1] = 0;
+    const s: MagnatState = { ...init(2), owner, turn: 0, phase: "ROLL", inJail: [true, false], cash: [40, 1500] };
+    const acts = magnatEngine.legalActions(s, 0);
+    expect(acts).toContainEqual({ type: "MORTGAGE", tile: 1 });
+    expect(acts.some((a) => a.type === "JAIL_PAY")).toBe(false);
+    expect(magnatEngine.validate!(s, 0, { type: "MORTGAGE", tile: 1 })).toBe(true);
+    const { state } = magnatEngine.reduce(s, { type: "MORTGAGE", tile: 1 }, new SeededRng("m"));
+    expect(state.phase).toBe("ROLL"); // фазата не се сменя
+    expect(state.inJail[0]).toBe(true);
+    expect(state.cash[0]).toBe(40 + 30);
+    expect(magnatEngine.legalActions(state, 0)).toContainEqual({ type: "JAIL_PAY" });
+  });
+
+  it("в BUY с недостиг: ипотека → BUY става възможно", () => {
+    const owner = new Array<number>(40).fill(-1);
+    owner[5] = 0; // гара, ипотечна стойност 100
+    const s: MagnatState = { ...init(2), owner, turn: 0, phase: "BUY", pendingBuy: 39, cash: [300, 1500] };
+    const acts = magnatEngine.legalActions(s, 0);
+    expect(acts.some((a) => a.type === "BUY")).toBe(false);
+    expect(acts).toContainEqual({ type: "MORTGAGE", tile: 5 });
+    const mid = magnatEngine.reduce(s, { type: "MORTGAGE", tile: 5 }, new SeededRng("m")).state;
+    expect(mid.phase).toBe("BUY");
+    expect(mid.pendingBuy).toBe(39);
+    expect(magnatEngine.legalActions(mid, 0)).toContainEqual({ type: "BUY" });
+    const done = magnatEngine.reduce(mid, { type: "BUY" }, new SeededRng("b")).state;
+    expect(done.owner[39]).toBe(0);
+    expect(done.cash[0]).toBe(0);
+  });
+
+  it("не предлага управление на чужд ход", () => {
+    const owner = new Array<number>(40).fill(-1);
+    owner[1] = 1;
+    const s: MagnatState = { ...init(2), owner, turn: 0, phase: "ROLL" };
+    expect(magnatEngine.legalActions(s, 1)).toEqual([]);
+    expect(magnatEngine.validate!(s, 1, { type: "MORTGAGE", tile: 1 })).toBe(false);
+  });
+});
+
+describe("МАГНАТ — карта „Излизане от затвора“ извън тестето", () => {
+  const GOJF_CHANCE = 3; // CHANCE[3]
+
+  it("изтеглената карта излиза от тестето и се връща на дъното при употреба", () => {
+    for (let k = 0; k < 300; k++) {
+      const base = init(2);
+      const s: MagnatState = { ...base, chance: [GOJF_CHANCE, 0, 1, 4], chancePtr: 0 };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`gj-${k}`));
+      const move = events.find((e): e is Extract<MagnatEvent, { type: "MOVE" }> => e.type === "MOVE");
+      if (move?.to !== 7) continue;
+      expect(state.gojf[0]).toBe(1);
+      expect(state.chance).not.toContain(GOJF_CHANCE);
+      expect(state.chance[state.chancePtr % state.chance.length]).toBe(0); // следващата е същата
+      // използване → картата отива на дъното (последна преди текущия връх)
+      const jailed: MagnatState = { ...state, phase: "ROLL", inJail: [true, false], turn: 0, extraRoll: false };
+      const used = magnatEngine.reduce(jailed, { type: "JAIL_CARD" }, new SeededRng("u")).state;
+      expect(used.gojf[0]).toBe(0);
+      expect(used.chance).toHaveLength(4);
+      const order = Array.from({ length: 4 }, (_, j) => used.chance[(used.chancePtr + j) % 4]);
+      expect(order).toEqual([0, 1, 4, GOJF_CHANCE]);
+      return;
+    }
+    throw new Error("no landing on Късмет (tile 7) in 300 seeds");
+  });
+
+  it("при фалит на притежателя картата се връща в тестето", () => {
+    for (let k = 0; k < 100; k++) {
+      const base = init(2);
+      const s: MagnatState = {
+        ...base,
+        turn: 0,
+        phase: "ROLL",
+        inJail: [true, false],
+        jailTurns: [2, 0],
+        cash: [10, 1000],
+        gojf: [1, 0],
+        chance: [0, 1, 2, 4, 5, 6, 7], // CHANCE[3] е у играч 0
+      };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`gb-${k}`));
+      const [d1, d2] = diceOf(events);
+      if (d1 === d2) continue;
+      expect(state.bankrupt[0]).toBe(true);
+      expect(state.gojf[0]).toBe(0);
+      expect(state.chance).toContain(GOJF_CHANCE);
+      expect(state.chance).toHaveLength(8);
+      return;
+    }
+    throw new Error("no non-doubles roll");
+  });
+});
+
+describe("МАГНАТ — развалянето на хотел спазва лимита на къщите", () => {
+  function hotels(otherHouses: number): MagnatState {
+    const base = init(2);
+    const owner = base.owner.slice();
+    owner[1] = 0;
+    owner[3] = 0;
+    const houses = new Array<number>(40).fill(0);
+    houses[1] = 5;
+    houses[3] = 5;
+    let left = otherHouses;
+    for (const i of [6, 8, 9, 11, 13, 14, 16, 18]) {
+      houses[i] = Math.min(4, left);
+      left -= houses[i]!;
+    }
+    return { ...base, owner, houses, phase: "MANAGE", turn: 0, cash: [0, 1500] };
+  }
+  const built = (s: MagnatState) => s.houses.reduce((n, h) => n + (h >= 1 && h <= 4 ? h : 0), 0);
+
+  it("без свободни къщи хотелът се продава изцяло (5 × половин цена)", () => {
+    const s = hotels(32);
+    const { state } = magnatEngine.reduce(s, { type: "SELL", tile: 1 }, new SeededRng("s"));
+    expect(state.houses[1]).toBe(0);
+    expect(state.cash[0]).toBe(5 * 25);
+    expect(built(state)).toBeLessThanOrEqual(32);
+  });
+
+  it("с 2 свободни къщи остават 2 къщи", () => {
+    const s = hotels(30);
+    const { state } = magnatEngine.reduce(s, { type: "SELL", tile: 1 }, new SeededRng("s"));
+    expect(state.houses[1]).toBe(2);
+    expect(state.cash[0]).toBe(3 * 25);
+    expect(built(state)).toBe(32);
+  });
+
+  it("с достатъчно къщи хотелът става 4 къщи", () => {
+    const { state } = magnatEngine.reduce(hotels(0), { type: "SELL", tile: 1 }, new SeededRng("s"));
+    expect(state.houses[1]).toBe(4);
+    expect(state.cash[0]).toBe(25);
+  });
+
+  it("автоматичната ликвидация при дълг също не надхвърля лимита", () => {
+    for (let k = 0; k < 100; k++) {
+      const s: MagnatState = { ...hotels(32), phase: "ROLL", inJail: [true, false], jailTurns: [2, 0] };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`al-${k}`));
+      const [d1, d2] = diceOf(events);
+      if (d1 === d2) continue;
+      expect(built(state)).toBeLessThanOrEqual(32);
+      expect(state.houses[1]).toBe(0); // хотелът продаден изцяло: 125 ≥ 50
+      return;
+    }
+    throw new Error("no non-doubles roll");
+  });
+});
+
+describe("МАГНАТ — 10% лихва при прехвърляне на ипотекиран имот", () => {
+  it("по сделка: получателят плаща 10% от ипотечната стойност на банката", () => {
+    const base = init(2);
+    const owner = base.owner.slice();
+    const mortgaged = base.mortgaged.slice();
+    owner[39] = 0;
+    mortgaged[39] = true; // ипотечна стойност 200 → лихва 20
+    const s: MagnatState = { ...base, owner, mortgaged, phase: "MANAGE", turn: 0, cash: [1000, 1000] };
+    const offered = magnatEngine.reduce(
+      s,
+      { type: "TRADE_OFFER", to: 1, give: { cash: 0, tiles: [39] }, want: { cash: 100, tiles: [] } },
+      new SeededRng("t"),
+    ).state;
+    const done = magnatEngine.reduce(offered, { type: "TRADE_ACCEPT" }, new SeededRng("t")).state;
+    expect(done.owner[39]).toBe(1);
+    expect(done.mortgaged[39]).toBe(true); // остава ипотекиран — откупува се по-късно на пълна цена
+    expect(done.cash).toEqual([1100, 1000 - 100 - 20]);
+  });
+
+  it("при фалит към кредитор: кредиторът плаща лихвата", () => {
+    const owned = new Set([3, 5, 6, 8, 9, 11, 12]);
+    for (let k = 0; k < 300; k++) {
+      const base = init(2);
+      const owner = base.owner.map((_, i) => (owned.has(i) ? 1 : -1));
+      owner[1] = 0;
+      const mortgaged = base.mortgaged.slice();
+      mortgaged[1] = true; // ипотечна стойност 30 → лихва 3
+      const s: MagnatState = { ...base, owner, mortgaged, turn: 0, phase: "ROLL", cash: [0, 1000] };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`bi-${k}`));
+      const move = events.find((e): e is Extract<MagnatEvent, { type: "MOVE" }> => e.type === "MOVE")!;
+      if (!owned.has(move.to)) continue;
+      expect(state.bankrupt[0]).toBe(true);
+      expect(state.owner[1]).toBe(1);
+      expect(state.mortgaged[1]).toBe(true);
+      expect(state.cash[1]).toBe(1000 - 3);
+      return;
+    }
+    throw new Error("no landing on an owned tile");
+  });
+
+  it("при фалит към банката: без лихва, имотът е свободен и неипотекиран", () => {
+    // третият опит в затвора с 10 в брой → фалит към банката
+    for (let k = 0; k < 100; k++) {
+      const base = init(2);
+      const owner = base.owner.slice();
+      const mortgaged = base.mortgaged.slice();
+      owner[1] = 0;
+      mortgaged[1] = true;
+      const s: MagnatState = {
+        ...base, owner, mortgaged, turn: 0, phase: "ROLL", inJail: [true, false], jailTurns: [2, 0], cash: [10, 1000],
+      };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`bb-${k}`));
+      const [d1, d2] = diceOf(events);
+      if (d1 === d2) continue;
+      expect(state.bankrupt[0]).toBe(true);
+      expect(state.owner[1]).toBe(-1);
+      expect(state.mortgaged[1]).toBe(false);
+      expect(sumCash(state)).toBe(1000);
+      return;
+    }
+    throw new Error("no non-doubles roll");
+  });
+});
+
+describe("МАГНАТ — симулация с бота: инварианти", () => {
+  it("200 пълни игри свършват; лимити, карти и пари са последователни", () => {
+    for (let g = 0; g < 200; g++) {
+      const seats = 2 + (g % 5);
+      const rng = new SeededRng(`sim-${g}`);
+      let s = magnatEngine.init({ seats, config: { freeParkingPot: g % 2 === 0 } }, new SeededRng(`simi-${g}`));
+      let steps = 0;
+      while (!magnatEngine.isTerminal(s) && steps++ < 100_000) {
+        const action = magnatBot(s, s.turn, rng);
+        expect(action).not.toBeNull();
+        s = magnatEngine.reduce(s, action as MagnatAction, rng).state;
+        const houses = s.houses.reduce((n, h) => n + (h >= 1 && h <= 4 ? h : 0), 0);
+        const hotelsN = s.houses.filter((h) => h === 5).length;
+        if (houses > 32 || hotelsN > 12) throw new Error(`limit g=${g}`);
+        const gojfHeld = s.gojf.reduce((n, c) => n + c, 0);
+        if (gojfHeld + (s.chance.includes(3) ? 1 : 0) + (s.chest.includes(5) ? 1 : 0) !== 2) {
+          throw new Error(`gojf g=${g}`);
+        }
+        for (let p = 0; p < seats; p++) {
+          if (!Number.isInteger(s.cash[p]) || s.cash[p]! < 0) throw new Error(`cash g=${g}`);
+          if (s.bankrupt[p] && (s.cash[p] !== 0 || s.owner.includes(p) || s.gojf[p] !== 0)) {
+            throw new Error(`bankrupt estate g=${g}`);
+          }
+        }
+      }
+      expect(magnatEngine.isTerminal(s)).toBe(true);
+      expect(magnatEngine.score(s).filter((x) => x.result === "win")).toHaveLength(1);
+    }
+  });
+});

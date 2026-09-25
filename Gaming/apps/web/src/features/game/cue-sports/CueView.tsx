@@ -20,8 +20,16 @@ type CueStateX = CueState & {
   pushDecision?: boolean;
   freeColour?: boolean;
   freeBall?: boolean;
+  /** 9-ball: поредни фалове по място (2 = предупреждение). */
+  fouls?: [number, number];
+  /** Snooker: „фал и пропуск“ при последния удар. */
+  miss?: boolean;
+  /** Snooker: след фал входящият избира — играе / нарушителят пак. */
+  foulChoice?: boolean;
+  /** Snooker: при пропуск — може да поиска топките да се върнат. */
+  missReplay?: unknown;
 };
-type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" };
+type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" } | { type: "REPLAY" };
 
 const POCKETS: [number, number][] = [
   [0, 0],
@@ -150,6 +158,8 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const ballInHand = !!state && state.ballInHand && myTurn;
   const pushAvail = game === "NINEBALL" && !!state?.pushAvail;
   const pushDecision = game === "NINEBALL" && !!state?.pushDecision;
+  const foulChoice = game === "SNOOKER" && !!state?.foulChoice;
+  const canReplay = foulChoice && !!state?.missReplay;
 
   // A fresh shot / turn change drops any armed push-out declaration.
   useEffect(() => {
@@ -201,6 +211,20 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     );
   }
 
+  // Snooker: първата свободна точка в „D“ (същият ред като в двигателя) — за
+  // удар от ръка, без играчът изрично да е поставил бялата.
+  function autoDSpot(): { x: number; y: number } | null {
+    const cands: [number, number][] = [[BAULK_X, TABLE.h / 2]];
+    for (let rr = TABLE.ballR; rr <= D_RADIUS - 1e-9; rr += TABLE.ballR / 2) {
+      for (let k = 0; k <= 16; k++) {
+        const a = Math.PI / 2 + (k / 16) * Math.PI;
+        cands.push([BAULK_X + rr * Math.cos(a), TABLE.h / 2 + rr * Math.sin(a)]);
+      }
+    }
+    const hit = cands.find(([x, y]) => placementOk(x, y));
+    return hit ? { x: hit[0], y: hit[1] } : null;
+  }
+
   function onClick(e: React.PointerEvent) {
     const p = toTable(e);
     if (p) placeAt(p);
@@ -209,9 +233,15 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   function shoot() {
     if (!myTurn) return;
     const action: CueAction & { pushOut?: boolean } = { type: "SHOOT", angle, power };
-    if (placedCue) {
-      action.cueX = placedCue.x;
-      action.cueY = placedCue.y;
+    // Snooker, бяла в ръка без поставяне: ако бялата не е на валидно място в
+    // „D“, ползваме автоматично първата свободна точка в „D“.
+    const cur = state?.balls.find((b) => b.id === 0 && !b.potted);
+    const place =
+      placedCue ??
+      (game === "SNOOKER" && ballInHand && !(cur && placementOk(cur.x, cur.y)) ? autoDSpot() : null);
+    if (place) {
+      action.cueX = place.x;
+      action.cueY = place.y;
     }
     if (pushArmed && pushAvail) action.pushOut = true;
     m.send(action);
@@ -294,6 +324,15 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     if (game === "NINEBALL" && state.phase === "PLAY") {
       const next = state.balls.filter((b) => !b.potted && b.id > 0).reduce((lo, b) => Math.min(lo, b.id), 10);
       if (next < 10) hintParts.push(`${t("cue.expectBall")} ${next}`);
+      // WPA: предупреждение за играча на два поредни фала.
+      const fouls = state.fouls ?? [0, 0];
+      if (fouls[seat === 1 ? 1 : 0] === 2) hintParts.push(t("cue.twoFouls"));
+      if (fouls[seat === 1 ? 0 : 1] === 2) hintParts.push(t("cue.twoFoulsOpp"));
+    }
+    // Snooker: „фал и пропуск“ + изборът на входящия играч.
+    if (game === "SNOOKER" && state.phase === "PLAY") {
+      if (state.miss) hintParts.push(t("cue.miss"));
+      if (foulChoice && myTurn) hintParts.push(t("cue.foulChoice"));
     }
     if (msgText) hintParts.push(msgText);
   }
@@ -470,6 +509,16 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
               {myTurn && pushDecision ? (
                 <Button variant="ghost" onClick={() => m.send({ type: "PASS" })}>
                   {t("cue.pushPass")}
+                </Button>
+              ) : null}
+              {myTurn && foulChoice ? (
+                <Button variant="ghost" onClick={() => m.send({ type: "PASS" })}>
+                  {t("cue.playAgain")}
+                </Button>
+              ) : null}
+              {myTurn && canReplay ? (
+                <Button variant="ghost" onClick={() => m.send({ type: "REPLAY" })}>
+                  {t("cue.replay")}
                 </Button>
               ) : null}
             </div>

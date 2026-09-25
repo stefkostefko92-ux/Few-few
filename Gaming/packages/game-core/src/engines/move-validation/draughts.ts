@@ -19,8 +19,12 @@ import type { SeededRng } from "../../kernel/rng.js";
  *     capture exists (then the turn passes).
  *   - A man that lands on the crowning row MID-CHAIN keeps capturing as a man
  *     (international rule); it is crowned only when its move ENDS there.
- *   - 80 quiet plies (no capture) end the game: material advantage wins
- *     (king = 2), equal material is a draw.
+ *   - „Турски удар“: взетите пулове ОСТАВАТ на дъската до края на целия ход
+ *     (`pending`) — не могат да се вземат повторно, дамката не минава през тях,
+ *     и се махат всички наведнъж, когато веригата свърши.
+ *   - Реми (международно правило): 25 последователни хода на всяка страна
+ *     (50 полухода) само с дамки, без вземане и без ход на обикновен пул;
+ *     както и трикратно повторение на позицията (същата дъска, същият на ход).
  *
  * Board: 64 cells indexed 0..63 (row*8+col). Seat 0 = white (moves up, toward
  * row 0), seat 1 = black (moves down). Only dark squares hold pieces.
@@ -35,8 +39,18 @@ export interface DraughtsState {
   chainFrom: number | null;
   winner: Seat | null;
   done: boolean;
-  noCaptureMoves: number; // for draw-ish stalemate cap
+  /** Последователни полуходове само с дамки без вземане; нулира се от всяко
+   *  вземане и от всеки ход на обикновен пул. 50 (25 на страна) → реми. */
+  noCaptureMoves: number;
+  /** Взети в текущата верига пулове — още на дъската, махат се в края й. */
+  pending?: number[];
+  /** Ключове на позициите след последния необратим ход (вземане / ход на
+   *  пул) — за трикратното повторение. */
+  positions?: string[];
 }
+
+/** 25 хода на всяка страна само с дамки → реми. */
+export const KING_ONLY_DRAW_PLIES = 50;
 
 export type DraughtsAction = { type: "MOVE"; from: number; to: number };
 export type DraughtsEvent =
@@ -76,8 +90,14 @@ interface Move {
   captured: number | null;
 }
 
-/** Capture jumps available from a single square (men: both directions; kings: flying). */
-function capturesFrom(board: Piece[], i: number, seat: Seat): Move[] {
+/** Позицията за трикратното повторение: дъската + кой е на ход. */
+const positionKey = (board: Piece[], turn: Seat): string =>
+  `${board.map((p) => p ?? ".").join("")}|${turn}`;
+
+/** Capture jumps available from a single square (men: both directions; kings:
+ *  flying). Пуловете в `pending` още стоят на дъската: блокират пътя и не могат
+ *  да бъдат взети втори път („турски удар“). */
+function capturesFrom(board: Piece[], i: number, seat: Seat, pending: readonly number[] = []): Move[] {
   const out: Move[] = [];
   const p = board[i];
   if (owner(p) !== seat) return out;
@@ -95,6 +115,7 @@ function capturesFrom(board: Piece[], i: number, seat: Seat): Move[] {
         }
         if (!inBounds(r1, c1) || owner(board[idx(r1, c1)]) === seat) continue;
         const mid = idx(r1, c1);
+        if (pending.includes(mid)) continue; // вече взет — стена, не жертва
         let r2 = r1 + dr;
         let c2 = c1 + dc;
         while (inBounds(r2, c2) && board[idx(r2, c2)] === null) {
@@ -109,7 +130,12 @@ function capturesFrom(board: Piece[], i: number, seat: Seat): Move[] {
         if (!inBounds(lr, lc)) continue;
         const mid = idx(r + dr, c + dc);
         const midOwner = owner(board[mid]);
-        if (midOwner !== null && midOwner !== seat && board[idx(lr, lc)] === null) {
+        if (
+          midOwner !== null &&
+          midOwner !== seat &&
+          !pending.includes(mid) &&
+          board[idx(lr, lc)] === null
+        ) {
           out.push({ from: i, to: idx(lr, lc), captured: mid });
         }
       }
@@ -151,15 +177,21 @@ function stepsFrom(board: Piece[], i: number, seat: Seat): Move[] {
 }
 
 /** Total pieces removed by the maximal chain that STARTS with capture `m`. */
-function captureChainLen(board: Piece[], m: Move, seat: Seat): number {
-  return 1 + chainDepth(applied(board, m, seat), m.to, seat);
+function captureChainLen(board: Piece[], pending: readonly number[], m: Move, seat: Seat): number {
+  const r = applied(board, pending, m, seat);
+  return 1 + (r.ends ? 0 : chainDepth(r.board, r.pending, m.to, seat));
 }
 
 /** Keep only the captures that begin a MAXIMUM-length chain (the majority /
  *  maximum-capture rule required by international/Bulgarian draughts). */
-function maximalCaptures(board: Piece[], captures: Move[], seat: Seat): Move[] {
+function maximalCaptures(
+  board: Piece[],
+  pending: readonly number[],
+  captures: Move[],
+  seat: Seat,
+): Move[] {
   if (captures.length <= 1) return captures;
-  const lens = captures.map((c) => captureChainLen(board, c, seat));
+  const lens = captures.map((c) => captureChainLen(board, pending, c, seat));
   const max = Math.max(...lens);
   return captures.filter((_, i) => lens[i] === max);
 }
@@ -170,8 +202,15 @@ function maximalCaptures(board: Piece[], captures: Move[], seat: Seat): Move[] {
  * pieces (maximum-capture rule). Mid-chain (chainFrom set) restricts to that
  * piece's maximal continuation captures.
  */
-function legalMovesForSeat(board: Piece[], seat: Seat, chainFrom: number | null): Move[] {
-  if (chainFrom !== null) return maximalCaptures(board, capturesFrom(board, chainFrom, seat), seat);
+function legalMovesForSeat(
+  board: Piece[],
+  seat: Seat,
+  chainFrom: number | null,
+  pending: readonly number[] = [],
+): Move[] {
+  if (chainFrom !== null) {
+    return maximalCaptures(board, pending, capturesFrom(board, chainFrom, seat, pending), seat);
+  }
   const captures: Move[] = [];
   const all: Move[] = [];
   for (let i = 0; i < 64; i++) {
@@ -179,30 +218,49 @@ function legalMovesForSeat(board: Piece[], seat: Seat, chainFrom: number | null)
     captures.push(...capturesFrom(board, i, seat));
     all.push(...stepsFrom(board, i, seat));
   }
-  return captures.length > 0 ? maximalCaptures(board, captures, seat) : all;
+  return captures.length > 0 ? maximalCaptures(board, [], captures, seat) : all;
 }
 
-/** Apply a move to a board copy, mirroring reduce's crowning rule (bot/eval helper). */
-function applied(board: Piece[], move: Move, seat: Seat): Piece[] {
+interface Applied {
+  board: Piece[];
+  /** Взетите пулове, които още чакат махане (празно, ако ходът е свършил). */
+  pending: number[];
+  /** Ходът свършва тук (няма продължение на веригата). */
+  ends: boolean;
+}
+
+/**
+ * Прилага един скок/ход върху копие — ЕДИНСТВЕНОТО място с логиката, ползвано
+ * от reduce, генерирането на вземания и бота. Взетият пул влиза в `pending` и
+ * остава на дъската; ако веригата свършва, всички чакащи се махат наведнъж и
+ * пулът се превръща в дамка само ако ходът завършва на последния ред.
+ */
+function applied(board: Piece[], pending: readonly number[], move: Move, seat: Seat): Applied {
   const b = board.slice();
   const p = b[move.from]!;
   b[move.from] = null;
   b[move.to] = p;
-  if (move.captured !== null) b[move.captured] = null;
-  const [tr] = rc(move.to);
-  const endsHere = move.captured === null || capturesFrom(b, move.to, seat).length === 0;
-  if (endsHere) {
-    if (p === "w" && tr === 0) b[move.to] = "W";
-    else if (p === "b" && tr === 7) b[move.to] = "B";
-  }
+  if (move.captured === null) return { board: crown(b, move.to, p), pending: [], ends: true };
+  const next = [...pending, move.captured];
+  if (capturesFrom(b, move.to, seat, next).length > 0) return { board: b, pending: next, ends: false };
+  for (const cell of next) b[cell] = null; // край на веригата — махаме всички взети
+  return { board: crown(b, move.to, p), pending: [], ends: true };
+}
+
+/** Превръщане в дамка при край на хода на последния ред. */
+function crown(b: Piece[], at: number, p: Piece): Piece[] {
+  const [tr] = rc(at);
+  if (p === "w" && tr === 0) b[at] = "W";
+  else if (p === "b" && tr === 7) b[at] = "B";
   return b;
 }
 
-/** Greedy longest capture chain starting from a square (bot heuristic). */
-function chainDepth(board: Piece[], from: number, seat: Seat): number {
+/** Longest capture chain continuing from a square (взетите в `pending` не се броят повторно). */
+function chainDepth(board: Piece[], pending: readonly number[], from: number, seat: Seat): number {
   let best = 0;
-  for (const c of capturesFrom(board, from, seat)) {
-    const d = 1 + chainDepth(applied(board, c, seat), c.to, seat);
+  for (const c of capturesFrom(board, from, seat, pending)) {
+    const r = applied(board, pending, c, seat);
+    const d = 1 + (r.ends ? 0 : chainDepth(r.board, r.pending, c.to, seat));
     if (d > best) best = d;
   }
   return best;
@@ -210,12 +268,22 @@ function chainDepth(board: Piece[], from: number, seat: Seat): number {
 
 export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsEvent> = {
   init(_opts: InitOpts): DraughtsState {
-    return { board: startBoard(), turn: 0, chainFrom: null, winner: null, done: false, noCaptureMoves: 0 };
+    const board = startBoard();
+    return {
+      board,
+      turn: 0,
+      chainFrom: null,
+      winner: null,
+      done: false,
+      noCaptureMoves: 0,
+      pending: [],
+      positions: [positionKey(board, 0)],
+    };
   },
 
   legalActions(state, seat) {
     if (state.done || seat !== state.turn) return [];
-    return legalMovesForSeat(state.board, seat, state.chainFrom).map((m) => ({
+    return legalMovesForSeat(state.board, seat, state.chainFrom, state.pending ?? []).map((m) => ({
       type: "MOVE" as const,
       from: m.from,
       to: m.to,
@@ -226,51 +294,45 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
     if (state.done) throw new IllegalActionError("Game over");
     if (action.type !== "MOVE") throw new IllegalActionError("Only MOVE");
     const seat = state.turn;
-    const legal = legalMovesForSeat(state.board, seat, state.chainFrom);
+    const pending = state.pending ?? [];
+    const legal = legalMovesForSeat(state.board, seat, state.chainFrom, pending);
     const move = legal.find((m) => m.from === action.from && m.to === action.to);
     if (!move) throw new IllegalActionError(`Illegal move ${action.from}->${action.to}`);
 
-    const board = state.board.slice();
     const events: DraughtsEvent[] = [];
-    const piece = board[move.from]!;
-    board[move.from] = null;
-    board[move.to] = piece;
-    if (move.captured !== null) board[move.captured] = null;
-    events.push({ type: "MOVE", seat, from: move.from, to: move.to, captured: move.captured });
-
+    const piece = state.board[move.from]!;
     // Chain first: a man passing through the crowning row mid-capture keeps
     // capturing as a man (international rule) — it crowns only when the move
-    // ENDS there.
-    let chainFrom: number | null = null;
-    if (move.captured !== null && capturesFrom(board, move.to, seat).length > 0) {
-      chainFrom = move.to;
-    }
+    // ENDS there. Взетите пулове стоят на дъската до края на веригата.
+    const r = applied(state.board, pending, move, seat);
+    const board = r.board;
+    events.push({ type: "MOVE", seat, from: move.from, to: move.to, captured: move.captured });
 
-    // Promotion (only when the move ends here).
-    const [tr] = rc(move.to);
-    if (chainFrom === null) {
-      if (piece === "w" && tr === 0) {
-        board[move.to] = "W";
-        events.push({ type: "KING", seat, at: move.to });
-      } else if (piece === "b" && tr === 7) {
-        board[move.to] = "B";
-        events.push({ type: "KING", seat, at: move.to });
-      }
-    }
-
-    if (chainFrom !== null) {
-      // Same player keeps the turn to continue capturing; no win/stalemate check
+    if (!r.ends) {
+      // Same player keeps the turn to continue capturing; no win/draw check
       // mid-chain (board not yet handed over).
-      return { state: { ...state, board, chainFrom, noCaptureMoves: 0 }, events };
+      return {
+        state: { ...state, board, chainFrom: move.to, pending: r.pending, noCaptureMoves: 0 },
+        events,
+      };
     }
+    if (!isKing(piece) && isKing(board[move.to])) events.push({ type: "KING", seat, at: move.to });
 
-    const noCaptureMoves = move.captured === null ? state.noCaptureMoves + 1 : 0;
+    // Броячът за реми: само ходове с дамка без вземане; вземане или ход на
+    // обикновен пул го нулират (и правят позицията необратима за повторението).
+    const irreversible = move.captured !== null || !isKing(piece);
+    const noCaptureMoves = irreversible ? 0 : state.noCaptureMoves + 1;
+    const turn: Seat = seat === 0 ? 1 : 0;
+    const key = positionKey(board, turn);
+    const positions = irreversible ? [key] : [...(state.positions ?? []), key];
     const next: DraughtsState = {
       ...state,
       board,
-      turn: seat === 0 ? 1 : 0,
+      turn,
       chainFrom: null,
+      pending: [],
       noCaptureMoves,
+      positions,
     };
 
     // Win if opponent has no pieces or no legal moves.
@@ -280,17 +342,11 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
       events.push({ type: "WIN", seat });
       return { state: { ...next, winner: seat, done: true }, events };
     }
-    if (noCaptureMoves >= 80) {
-      // Quiet-game cap: material advantage wins, equal material is a draw.
-      const m0 = pieceCount(board, 0);
-      const m1 = pieceCount(board, 1);
-      if (m0 === m1) {
-        events.push({ type: "DRAW" });
-        return { state: { ...next, winner: null, done: true }, events };
-      }
-      const winner: Seat = m0 > m1 ? 0 : 1;
-      events.push({ type: "WIN", seat: winner });
-      return { state: { ...next, winner, done: true }, events };
+    // Реми: 25 хода на страна само с дамки, или трикратно повторение.
+    const repeats = positions.filter((k) => k === key).length;
+    if (noCaptureMoves >= KING_ONLY_DRAW_PLIES || repeats >= 3) {
+      events.push({ type: "DRAW" });
+      return { state: { ...next, winner: null, done: true }, events };
     }
     return { state: next, events };
   },
@@ -315,23 +371,26 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
   /** Greedy heuristic: longest capture chain, avoid landing under fire, crown. */
   bot(state, seat, rng: SeededRng) {
     if (state.done || state.turn !== seat) return null;
-    const moves = legalMovesForSeat(state.board, seat, state.chainFrom);
+    const pending = state.pending ?? [];
+    const moves = legalMovesForSeat(state.board, seat, state.chainFrom, pending);
     if (moves.length === 0) return null;
     const opp: Seat = seat === 0 ? 1 : 0;
     let best: Move[] = [];
     let bestScore = -Infinity;
     for (const mv of moves) {
-      const after = applied(state.board, mv, seat);
+      const r = applied(state.board, pending, mv, seat);
+      const after = r.board;
       let score = 0;
-      if (mv.captured !== null) score += 12 * (1 + chainDepth(after, mv.to, seat));
+      if (mv.captured !== null) {
+        score += 12 * (1 + (r.ends ? 0 : chainDepth(after, r.pending, mv.to, seat)));
+      }
       if (!isKing(state.board[mv.from]) && isKing(after[mv.to])) score += 6; // crowning
-      const chains = mv.captured !== null && capturesFrom(after, mv.to, seat).length > 0;
-      if (!chains) {
+      if (r.ends) {
         // Turn would pass — how much can the opponent take back?
         let threat = 0;
         for (let i = 0; i < 64; i++) {
           if (owner(after[i]) !== opp) continue;
-          const d = chainDepth(after, i, opp);
+          const d = chainDepth(after, [], i, opp);
           if (d > threat) threat = d;
         }
         score -= 10 * threat;
@@ -354,9 +413,3 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
 
   redact: (s) => s, // open information
 };
-
-function pieceCount(board: Piece[], seat: Seat): number {
-  let n = 0;
-  for (const p of board) if (owner(p) === seat) n += isKing(p) ? 2 : 1;
-  return n;
-}

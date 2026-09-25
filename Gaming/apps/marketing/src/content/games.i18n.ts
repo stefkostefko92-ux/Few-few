@@ -19,22 +19,35 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       summary:
         "Play Belote online for free — the classic Bulgarian 2 vs 2 card game in real time.",
       intro:
-        "Belote is the beloved Bulgarian trick-taking game for four players in two teams. The goal is for your team to score more points through tricks and declarations.",
+        "Belote is the beloved Bulgarian trick-taking game for four players in two teams. The goal is for your team to score more points from tricks and declarations; the match is played to 151 points.",
       howTo: [
-        { name: "The deal", text: "The 32-card deck is dealt 8 cards to each player." },
-        { name: "Bidding", text: "In turn, each player names a trump suit or passes; the first bid sets the contract." },
-        { name: "Playing tricks", text: "Follow the suit of the first card; if you can't, trump it when possible." },
-        { name: "Scoring", text: "Cards have point values; the last trick is worth +10. The bidding team must reach 82+." },
+        {
+          name: "The deal",
+          text: "From a 32-card deck each player gets 5 cards (3 + 2); after the bidding, 3 more are dealt to each — everyone plays with 8.",
+        },
+        {
+          name: "Bidding",
+          text: "You bid a suit (♣ < ♦ < ♥ < ♠), No Trumps or All Trumps, with double and redouble; three passes close the bidding, and four passes mean a redeal.",
+        },
+        {
+          name: "Playing tricks",
+          text: "Follow suit; if you can't, you must trump (unless your partner is winning the trick), and in trumps you must play a higher trump if you can.",
+        },
+        {
+          name: "Scoring",
+          text: "Declarations (tierce, fifty, hundred, four of a kind, belote) are added to the trick points, and the last trick is worth +10. The contracting team must score more than the opponents, or it goes \"inside\".",
+        },
       ],
       faq: [
         {
           question: "How do you play Belote?",
           answer:
-            "Belote is played by four people in two teams with a 32-card deck; you follow suit, trump when you can't, and collect points from tricks and declarations.",
+            "Belote is played by four people in two teams with a 32-card deck: you bid for trumps, follow suit, trump when you can't and collect points from tricks and declarations — the match is played to 151.",
         },
         {
           question: "How many cards are dealt in Belote?",
-          answer: "Eight cards are dealt to each of the four players.",
+          answer:
+            "First each player is dealt 5 cards (3 + 2) and the bidding takes place, then 3 more are dealt to each — every player plays with 8 cards.",
         },
         {
           question: "Is Belote free to play on АСО?",
@@ -47,17 +60,29 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Santase (Sixty-Six) online — the fast two-player card game with trumps and declarations.",
       intro:
-        "Santase (also known as Sixty-Six) is an intimate two-player game with a 24-card deck, a trump suit and marriages (king-and-queen declarations).",
+        "Santase (also known as Sixty-Six) is a two-player game with a 24-card deck, a face-up trump and marriages of \"twenty\" and \"forty\" (king and queen of the same suit). The match is played to 11 game points.",
       howTo: [
-        { name: "The deal", text: "Each player gets 6 cards; one card sets the trump, the rest form the stock." },
-        { name: "Play", text: "While the stock is still open, you aren't required to follow suit." },
-        { name: "Declarations", text: "A king and queen of the same suit scores 20 points (40 in trump) after you've won a trick." },
-        { name: "Goal", text: "The first player to reach 66 points wins the game." },
+        {
+          name: "The deal",
+          text: "Each player gets 6 cards; one card is turned up to set the trump and the rest form the stock. After each trick you both draw — the winner first.",
+        },
+        {
+          name: "Play",
+          text: "While the stock is open, you don't have to follow suit; once you close it or it runs out, you must follow suit and trump.",
+        },
+        {
+          name: "Declarations",
+          text: "A king and queen of the same suit, declared when you lead, score 20 points (40 in trumps); the points count once you've won a trick.",
+        },
+        {
+          name: "Goal",
+          text: "The first to reach 66 points wins the hand — 1, 2 or 3 game points depending on the opponent's score; the match is played to 11.",
+        },
       ],
       faq: [
         {
           question: "Why is Santase called Sixty-Six?",
-          answer: "Because the goal is to score 66 points before your opponent — that's where the game's second name comes from.",
+          answer: "Because the goal is to score 66 points in a hand before your opponent — that's where the game's second name comes from.",
         },
         {
           question: "How many cards is Santase played with?",
@@ -73,7 +98,10 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         "Chess is the two-player strategy game. The goal is to put your opponent's king in checkmate.",
       howTo: [
         { name: "Setup", text: "Each side starts with 16 pieces on an 8×8 board." },
-        { name: "Moves", text: "Every piece moves by its own rules; White moves first." },
+        {
+          name: "Moves",
+          text: "Every piece moves by its own rules; White moves first. There are also special moves — castling, en passant and pawn promotion.",
+        },
         { name: "Checkmate", text: "Attack the king so that no legal move can save it." },
       ],
       faq: [
@@ -93,11 +121,17 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Backgammon online — the classic dice-and-checkers game for two.",
       intro:
-        "Backgammon is a two-player dice race. You bear off all your checkers before your opponent to win.",
+        "Backgammon is a two-player dice race. You bring all 15 of your checkers into your home board and bear them off before your opponent to win.",
       howTo: [
-        { name: "Rolling", text: "You roll two dice and move your checkers according to the numbers shown." },
-        { name: "Hitting", text: "A lone opponent checker can be hit and sent back to the bar." },
-        { name: "Bearing off", text: "Once all your checkers are in your home board, you start removing them." },
+        {
+          name: "Rolling",
+          text: "You roll two dice and move your checkers according to the numbers shown; doubles are played four times.",
+        },
+        {
+          name: "Hitting",
+          text: "A lone opponent checker can be hit — it goes to the bar and must re-enter before that player moves any other checker.",
+        },
+        { name: "Bearing off", text: "Once all your checkers are in your home board, you start bearing them off." },
       ],
       faq: [
         {
@@ -115,9 +149,12 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       intro:
         "Svara is a fast bluffing and betting game played with virtual chips. It's a social game — not real-money gambling.",
       howTo: [
-        { name: "The deal", text: "Each player gets 3 cards after an opening bet (the ante)." },
+        { name: "The deal", text: "Each player posts an opening bet (the ante) and gets 3 cards from a 7-to-ace deck." },
         { name: "Betting", text: "You take turns calling, raising or folding until the bets are even." },
-        { name: "Showdown", text: "The strongest three-card hand wins the whole pot of virtual chips." },
+        {
+          name: "Showdown",
+          text: "The strongest hand wins — the sum of cards of one suit or one rank, with the 7♣ as a wild card; if the best hands tie, a \"svara\" is played.",
+        },
       ],
       faq: [
         {
@@ -133,18 +170,27 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       summary:
         "Play 8-ball pool online for free — realistic physics, aiming and shooting right in the browser.",
       intro:
-        "Eight-ball is the most popular pool game. One player pockets the solids (1–7), the other the stripes (9–15); whoever clears their group and legally pockets the black 8-ball wins.",
+        "Eight-ball is the most popular pool game. One player pockets the solids (1–7), the other the stripes (9–15); whoever clears their group and then pockets the black 8-ball on a legal shot wins.",
       howTo: [
-        { name: "The break", text: "The first player breaks the rack with the cue ball." },
-        { name: "Groups", text: "After the first ball is pocketed, solids vs stripes are assigned." },
-        { name: "Aiming", text: "Aim with the guide line, set your power and shoot." },
-        { name: "Winning", text: "Clear your group and legally pocket the 8-ball to win." },
+        {
+          name: "The break",
+          text: "The break must be legal — a ball pocketed or at least 4 balls driven to a rail; an 8-ball pocketed on the break is re-spotted.",
+        },
+        { name: "Groups", text: "Your group (solids or stripes) is set by the first legally pocketed ball." },
+        {
+          name: "Aiming",
+          text: "Aim with the guide line, set your power and shoot; first hit one of your own balls, then a ball must be pocketed or reach a rail.",
+        },
+        {
+          name: "Winning",
+          text: "Clear your group and pocket the 8-ball last; pocketing it early or on a foul (including a scratch) loses the game.",
+        },
       ],
       faq: [
         {
           question: "How do you play 8-ball pool?",
           answer:
-            "You pocket the balls in your group (solids or stripes), then the black 8-ball at the end; a foul gives your opponent ball in hand.",
+            "You pocket the balls in your group (solids or stripes), then the black 8-ball at the end — no need to call the pocket; a foul gives your opponent ball in hand anywhere, and pocketing the 8-ball early loses.",
         },
         {
           question: "Is the pool physics realistic?",
@@ -161,15 +207,21 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       intro:
         "Nine-ball is a fast pool game with balls 1 through 9. You always hit the lowest ball on the table first; whoever pockets the 9-ball on a legal shot wins the game.",
       howTo: [
-        { name: "Order", text: "Always make first contact with the lowest-numbered ball on the table." },
-        { name: "Continuing", text: "Pocket a ball legally and you keep shooting." },
-        { name: "Winning", text: "Pocket the 9-ball on a legal shot to win." },
+        {
+          name: "Order",
+          text: "First contact is always with the lowest-numbered ball on the table; then a ball must be pocketed or reach a rail.",
+        },
+        { name: "Continuing", text: "Pocket a ball on a legal shot and you keep shooting — in any pocket." },
+        {
+          name: "Winning",
+          text: "The 9-ball pocketed on a legal shot (even on a combination or the break) wins at once; three fouls in a row lose the game.",
+        },
       ],
       faq: [
         {
           question: "What's the difference between 8-ball and 9-ball?",
           answer:
-            "In 9-ball there are no groups — you hit the lowest ball first and win by pocketing the 9-ball.",
+            "In 9-ball there are no groups — you always hit the lowest ball first and win as soon as you pocket the 9-ball on a legal shot, even on a combination.",
         },
       ],
     },
@@ -178,12 +230,15 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play snooker online for free — the classic of red and colored balls with scoring.",
       intro:
-        "Snooker is played with 15 reds and 6 colors on a large table. You alternate a red and a color; the colors return to their spots while reds remain. The player with more points wins.",
+        "Snooker is played with 15 reds and 6 colors on a large table. You alternate a red and a color; the colors return to their spots while reds remain. The player with more points in the frame wins.",
       howTo: [
-        { name: "Alternating", text: "Pot a red (1 point), then a color (2–7 points)." },
+        { name: "Alternating", text: "Pot a red (1 point), then a color of your choice (2–7 points)." },
         { name: "Re-spotting", text: "The colors return to their spots as long as reds remain on the table." },
         { name: "Endgame", text: "With no reds left, the colors are potted in order — from yellow to black." },
-        { name: "Points", text: "A foul gives points to your opponent; the player with more points wins." },
+        {
+          name: "Points",
+          text: "A foul gives your opponent at least 4 points (or the value of the ball involved, if higher); the player with more points wins.",
+        },
       ],
       faq: [
         {
@@ -201,11 +256,26 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       intro:
         "Magnat is a premium economic board game in the \"roll and move\" tradition — an original theme of Bulgarian cities, with no third-party intellectual property. You go around the board, buy cities and stations, build houses and hotels and collect rent until your opponents go bankrupt. All \"currency\" is virtual and applies only to that match — a social game, not real-money gambling. The board is fully 3D with an isometric view.",
       howTo: [
-        { name: "Roll the dice", text: "On your turn you roll two dice and move your token forward; on doubles you roll again." },
-        { name: "Buy property", text: "Land on a free city, station or utility and you can buy it or decline." },
-        { name: "Collect rent", text: "When an opponent lands on your property, they pay rent — higher with a full color group and built houses." },
-        { name: "Build and develop", text: "With a full group you build houses evenly, then a hotel; mortgage when you need cash." },
-        { name: "Win", text: "The last solvent player wins, or the one with the greatest wealth when the turn limit is reached." },
+        {
+          name: "Roll the dice",
+          text: "On your turn you roll two dice and move your token forward; on doubles you roll again, and three doubles in a row send you to jail. Passing Start pays 200.",
+        },
+        {
+          name: "Buy property",
+          text: "Land on a free city, station or utility and you can buy it; if you decline, the property goes to auction.",
+        },
+        {
+          name: "Collect rent",
+          text: "When an opponent lands on your property, they pay rent — doubled for a complete set and higher still with houses and a hotel; a mortgaged property earns no rent.",
+        },
+        {
+          name: "Build and develop",
+          text: "With a complete set you build houses evenly, then a hotel; you can mortgage and sell on your turn, and lifting a mortgage costs +10%.",
+        },
+        {
+          name: "Win",
+          text: "A player who can't pay goes bankrupt; the last player standing wins, or the richest one when the turn limit is reached.",
+        },
       ],
       faq: [
         {
@@ -238,22 +308,29 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play War online for free — the fast two-player card game where the higher card wins.",
       intro:
-        "War is the simplest two-player card game — entirely down to luck. The deck is split evenly and each player flips one card; the higher one takes both.",
+        "War is the simplest two-player card game — almost entirely down to luck. The deck is split evenly and each player flips one card; the higher one takes both.",
       howTo: [
         { name: "The deal", text: "The deck is split into two equal piles — one for each player." },
         { name: "The duel", text: "Both players flip their top card; the higher one wins both cards." },
-        { name: "War", text: "On a tie, each player puts down several cards and a new duel decides who takes everything." },
-        { name: "Winning", text: "The player who collects all the cards wins." },
+        {
+          name: "War",
+          text: "On a tie, the player on turn chooses a battle (3 cards face down + 1 face up) or a skirmish (1 face down + 1 face up); another tie extends the war.",
+        },
+        {
+          name: "Winning",
+          text: "Three wins in a row earn a \"raid\" — one extra card from your opponent; the player who collects all the cards wins.",
+        },
       ],
       faq: [
         {
           question: "How do you play the card game War?",
           answer:
-            "War is played by two people: you split the deck evenly and flip a card each — the higher one takes both; on a tie a \"war\" is declared with extra cards.",
+            "War is played by two people: you split the deck evenly and flip a card each — the higher one takes both; on a tie a \"war\" breaks out — a battle or a skirmish with face-down cards.",
         },
         {
           question: "Is there any strategy in War?",
-          answer: "No — War is purely a game of luck, which makes it fast and well suited to beginners and children.",
+          answer:
+            "Hardly — War is mostly a game of luck; the only choice is between a battle and a skirmish when a war breaks out, which makes it fast and well suited to beginners and children.",
         },
       ],
     },
@@ -262,18 +339,30 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2–4",
       summary: "Play \"Go Fish\" online — the fun card game where you collect sets of four.",
       intro:
-        "\"Go Fish\" is a light family card game. You ask opponents for cards to collect sets of the same rank, and if they don't have any — you fish from the pile.",
+        "\"Go Fish\" is a light family card game. You ask opponents for cards to collect sets of four of the same rank, and if they don't have any — you go fish in the ocean.",
       howTo: [
-        { name: "The deal", text: "Each player gets several cards; the rest form the \"ocean\" in the middle." },
-        { name: "Asking", text: "On your turn you ask an opponent for a specific rank of card that you already hold." },
-        { name: "Go fish", text: "If they don't have the card you asked for, you draw one from the pile." },
-        { name: "Sets", text: "Collect four of a rank and you set them aside; the player with the most sets wins." },
+        {
+          name: "The deal",
+          text: "With two players each gets 7 cards, with three or four — 5; the rest form the \"ocean\".",
+        },
+        {
+          name: "Asking",
+          text: "On your turn you ask a specific player for a rank you already hold; if they have it, they hand over all those cards and you go again.",
+        },
+        {
+          name: "Go fish",
+          text: "If they don't have it, you draw from the ocean; if you draw exactly the rank you asked for, you go again, otherwise the turn passes on.",
+        },
+        {
+          name: "Sets",
+          text: "Four cards of one rank are laid down automatically as a set; once all 13 sets are down, the player with the most wins.",
+        },
       ],
       faq: [
         {
           question: "How do you play \"Go Fish\"?",
           answer:
-            "You ask opponents for cards of a rank you already hold in order to collect sets of four; if they don't have any, you draw a card from the pile — the player with the most collected sets wins.",
+            "You ask a specific player for cards of a rank you already hold in order to collect sets of four; if they have none, you draw a card from the ocean — the player with the most collected sets wins.",
         },
       ],
     },
@@ -282,18 +371,28 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "4",
       summary: "Play Kent (Coup) online — the team card game with signals between partners.",
       intro:
-        "Kent (Coup) is a lively team card game for four players in two teams. The goal is to collect four matching cards and secretly signal your partner before your opponents catch on.",
+        "Kent (Coup) is a lively team card game for four players in two teams. The goal is to collect four of a kind and use a secret sign to cue your partner to call \"Coup!\" before your opponents catch on. The match is played to 3 points.",
       howTo: [
-        { name: "Goal", text: "Each team races to be the first to collect a \"kent\" — four cards of one rank." },
-        { name: "Passing", text: "Cards circulate until someone collects a set of four." },
-        { name: "Signal", text: "The one who collects secretly signals their partner by a prearranged sign." },
-        { name: "Coup", text: "The partner calls \"Coup!\" at exactly the right moment to win the point for the team." },
+        { name: "Goal", text: "Everyone holds 4 cards, and each team races to be the first to collect four of a kind." },
+        {
+          name: "Swapping",
+          text: "There are 4 face-up cards in the center; on your turn you swap one of your cards for a center card or pass, and when all four players pass in a row, the center cards are replaced.",
+        },
+        { name: "Signal", text: "Once you have four of a kind, you give your partner a secret sign — only they can see it." },
+        {
+          name: "Coup",
+          text: "Your partner calls \"Coup!\" and if you hold four of a kind, your team wins a point; a wrong \"Coup!\" gives the point to the opponents.",
+        },
+        {
+          name: "Stop",
+          text: "If you suspect the opponents have four of a kind, call \"Stop!\" — if you're right, the point is yours; if you're wrong, it's theirs.",
+        },
       ],
       faq: [
         {
           question: "How do you play Kent?",
           answer:
-            "Kent is played by four people in two teams: you collect four matching cards and secretly signal your partner, who must call \"Coup\" before the opponents do.",
+            "Kent is played by four people in two teams: you swap cards with the center until you collect four of a kind, give your partner a secret sign and they call \"Coup!\", while against the opponents you can call \"Stop!\" — the match is played to 3 points.",
         },
       ],
     },
@@ -302,22 +401,28 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Draughts (Checkers) online against players and bots — the classic on an 8×8 board in real time.",
       intro:
-        "Draughts (Checkers) is a two-player strategy game on an 8×8 board. You move your pieces diagonally, jump over and capture your opponent's, and once you reach the last row you become a king.",
+        "Draughts (Checkers) is a two-player strategy game played under international rules on an 8×8 board. You move your pieces diagonally, jump over and capture your opponent's, and a piece that reaches the last row becomes a flying king.",
       howTo: [
-        { name: "Move", text: "You move one piece diagonally forward by one square." },
-        { name: "Capturing", text: "Jump over an adjacent enemy piece to an empty square and you capture it — captures are mandatory." },
-        { name: "King", text: "When a piece reaches the last row it becomes a king and can also move backward." },
-        { name: "Winning", text: "You win when your opponent is left with no moves or no pieces." },
+        { name: "Move", text: "You move one piece diagonally forward by one square; White starts." },
+        {
+          name: "Capturing",
+          text: "Capturing is mandatory — always with the longest possible sequence; ordinary pieces also capture backward, and captured pieces are removed at the end of the move.",
+        },
+        {
+          name: "King",
+          text: "A piece whose move ends on the last row becomes a king; it's a \"flying\" king — it moves and captures along a whole diagonal.",
+        },
+        { name: "Winning", text: "You win when your opponent is left with no pieces or no legal move." },
       ],
       faq: [
         {
           question: "How do you play Draughts?",
           answer:
-            "Draughts is played on an 8×8 board: you move pieces diagonally, jump over your opponent's to capture them, and on the last row a piece becomes a king — whoever takes all of the other's pieces wins.",
+            "Draughts is played on an 8×8 board under international rules: you move pieces diagonally, capturing is mandatory with the longest sequence, and on the last row a piece becomes a flying king — whoever captures or blocks all of the other's pieces wins.",
         },
         {
           question: "Is capturing mandatory in Draughts?",
-          answer: "Yes — if you have the chance to capture an enemy piece, you're obliged to do it.",
+          answer: "Yes — if you can capture an enemy piece, you must, and you must take the sequence that captures the most pieces.",
         },
       ],
     },
@@ -326,18 +431,30 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2–4",
       summary: "Play \"Ludo\" online — the classic with a die and tokens in real 3D.",
       intro:
-        "\"Ludo\" is the beloved family dice game for up to four players. You get your tokens out of the house, go around the board and are the first to bring all four home. The board is fully 3D.",
+        "\"Ludo\" is the beloved family dice game for up to four players. You get your tokens out of the base, go around the board and are the first to bring all four into the finish. The board is fully 3D.",
       howTo: [
-        { name: "Start", text: "You roll the die; a six gets a token out of the house onto the track." },
-        { name: "Movement", text: "You move a token forward by as many squares as the die shows." },
-        { name: "Capturing", text: "Land on a square with an opponent's token and you send it back to its house." },
-        { name: "Coming home", text: "Take a token all the way around the loop and you bring it home; the first to bring in all four wins." },
+        {
+          name: "Start",
+          text: "You need a \"6\" to get a token out of the base; a \"6\" also gives an extra roll, and while all your tokens are in the base you get up to three tries.",
+        },
+        {
+          name: "Movement",
+          text: "You move a token forward by as many squares as the die shows; two of your tokens on one square form a blockade that no one can pass.",
+        },
+        {
+          name: "Capturing",
+          text: "Land on a square with a lone opponent token and you send it back to its base — except on the safe squares (the start squares and the marked ones).",
+        },
+        {
+          name: "Coming home",
+          text: "You can only enter your colored finish with an exact roll; the first to bring all four tokens home wins.",
+        },
       ],
       faq: [
         {
           question: "How do you play \"Ludo\"?",
           answer:
-            "You roll a die, get a token out with a six, move it around the board according to the die and try to capture the others' tokens — the player who's first to bring all four of their tokens home wins.",
+            "You roll a die, get a token out with a \"6\", move it around the board according to the die and capture lone opponent tokens outside the safe squares — the player who's first to bring all four tokens into the finish with an exact roll wins.",
         },
         {
           question: "Is the board really 3D?",
@@ -348,20 +465,26 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
     RUMMY: {
       title: "Rummy",
       players: "2",
-      summary: "Play Rummy online — the classic card game of building runs and sets.",
+      summary: "Play Rummy (Gin Rummy) online — the classic card game of building runs and sets.",
       intro:
-        "Rummy is a two-player card game where you arrange cards into combinations — runs of one suit and sets of the same rank. You draw and discard a card each turn until you've arranged your hand.",
+        "Rummy on АСО is played by Gin Rummy rules — a card game for two. You arrange your 10 cards into runs of one suit and sets of the same rank and aim to be left with as little deadwood as possible. The match is played to 100.",
       howTo: [
-        { name: "Drawing", text: "On your turn you draw a card from the deck or from the discard pile." },
-        { name: "Melding", text: "You arrange cards into runs (3+ of one suit) or sets (3–4 of one rank)." },
+        { name: "Drawing", text: "Each player has 10 cards; on your turn you draw from the stock or take the top discard." },
+        {
+          name: "Melding",
+          text: "A run = 3+ consecutive cards of one suit (ace is low); a set = 3–4 cards of one rank. Cards outside them are deadwood: ace 1, face cards 10, others face value.",
+        },
         { name: "Discarding", text: "You finish your turn by discarding one card." },
-        { name: "Going out", text: "Arrange your whole hand into combinations and you go out and win the round." },
+        {
+          name: "Knocking",
+          text: "Once your deadwood is 10 or less, you can knock; \"gin\" is knocking with no deadwood at all. Your opponent lays off their deadwood on your melds (except after gin).",
+        },
       ],
       faq: [
         {
           question: "How do you play Rummy?",
           answer:
-            "In Rummy you draw and discard one card per turn until you arrange your hand into runs of one suit and sets of the same rank — the first to arrange everything wins.",
+            "Rummy on АСО is Gin Rummy for two: you draw and discard a card each turn, build runs and sets, and knock when your deadwood is 10 or less. The knocker scores the difference (+25 for gin); if the opponent has less or equal deadwood, it's an undercut and they score the difference +25.",
         },
       ],
     },
@@ -370,18 +493,27 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2–4",
       summary: "Play Dominoes online for free — the classic with tiles where you match equal numbers.",
       intro:
-        "Dominoes is a tile game for two to four players. You take turns placing tiles so their touching ends match by number, and you aim to be the first to play all your tiles.",
+        "Dominoes is a tile game (double-six, draw variant) for two to four players. You place tiles so their touching ends match by number and aim to be the first to play all your tiles; the match is played to 100 points.",
       howTo: [
-        { name: "The deal", text: "Each player draws several tiles; the rest stay in the \"boneyard\"." },
-        { name: "Placing", text: "You attach a tile to the chain only if the numbers on the touching ends match." },
-        { name: "Drawing", text: "If you have no suitable tile, you draw from the boneyard or pass." },
-        { name: "Winning", text: "The player who's first to run out of tiles wins, or has the fewest points in a block." },
+        {
+          name: "The deal",
+          text: "With two players each draws 7 tiles, with three or four — 5; the rest stay in the \"boneyard\". The first hand is opened by whoever holds the highest double.",
+        },
+        { name: "Placing", text: "You attach a tile to one of the open ends only if the numbers match." },
+        {
+          name: "Drawing",
+          text: "If you have no suitable tile, you draw from the boneyard until you can play; passing is allowed only when the boneyard is empty.",
+        },
+        {
+          name: "Winning",
+          text: "Play your last tile and you score the points left in the other hands; in a blocked game the lowest total wins.",
+        },
       ],
       faq: [
         {
           question: "How do you play Dominoes?",
           answer:
-            "You take turns placing tiles so the touching ends show equal numbers; if you have no move, you draw from the boneyard — the player who's first to play all their tiles wins.",
+            "You take turns placing tiles so the touching ends show equal numbers; if you have no move, you draw from the boneyard until you can play — the first to play all their tiles scores the points left in the other hands, and the match is played to 100.",
         },
       ],
     },
@@ -390,18 +522,30 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "4",
       summary: "Play Bridge online — the intellectual team card game with bidding and tricks.",
       intro:
-        "Bridge is the classic trick-taking game for four players in two teams. First you bid for a contract, then you play it out — one partner becomes the \"dummy\" and their cards are played face up.",
+        "Bridge (rubber bridge) is the classic trick-taking game for four players in two teams. First you bid for a contract, then you play it out — the declarer's partner's hand (the \"dummy\") is laid face up and played by the declarer. The team that wins 2 games takes the rubber.",
       howTo: [
-        { name: "Bidding", text: "You declare a contract — how many tricks and in which trump your team takes on." },
-        { name: "Dummy", text: "The declarer's partner reveals their cards and they're played face up." },
-        { name: "Play", text: "You follow the suit of the first card; the strongest card or trump takes the trick." },
-        { name: "Scoring", text: "Make your contract and you score points; failure gives points to your opponent." },
+        {
+          name: "Bidding",
+          text: "You bid for a contract — the number of tricks above 6 plus a trump suit or no trumps; double and redouble apply only to the opponents' bid, and three passes close the auction.",
+        },
+        {
+          name: "Dummy",
+          text: "The declarer is the first player of the side to name the contract's strain; after the opening lead, their partner's hand is laid face up and the declarer plays it.",
+        },
+        {
+          name: "Play",
+          text: "Follow suit; the trick is won by the highest trump or the highest card of the suit led.",
+        },
+        {
+          name: "Scoring",
+          text: "A made contract scores below the line (game is 100), overtricks and bonuses above the line; a failed contract gives points to the defenders.",
+        },
       ],
       faq: [
         {
           question: "How do you play Bridge?",
           answer:
-            "Bridge is played by four people in two teams: you bid for a contract, then play out the tricks with an exposed \"dummy\" — the goal is to make the tricks you bid.",
+            "Bridge is played by four people in two teams: you bid for a contract, then play out the tricks with the exposed \"dummy\" — the goal is to make your contract and win the rubber (2 games).",
         },
         {
           question: "Is Bridge hard for beginners?",
@@ -414,10 +558,16 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Battleship online — the classic where you guess and sink your opponent's hidden fleet.",
       intro:
-        "Battleship is a guessing game for two. You secretly place your ships on a grid, then take turns firing at coordinates until one player sinks the other's entire fleet.",
+        "Battleship is a guessing game for two. Your fleet is placed on a grid automatically and in secret, then you take turns firing at coordinates until one player sinks the other's entire fleet.",
       howTo: [
-        { name: "Placement", text: "You place your ships secretly on your own grid." },
-        { name: "Firing", text: "On your turn you pick a square on your opponent's grid — \"hit\" or \"miss\"." },
+        {
+          name: "Placement",
+          text: "The fleet (1 ship of 4, 2 of 3, 3 of 2 and 4 of 1 square) is placed automatically and in secret; ships never touch, not even diagonally.",
+        },
+        {
+          name: "Firing",
+          text: "On your turn you pick a square on your opponent's grid — \"hit\" or \"miss\"; a hit gives you another shot.",
+        },
         { name: "Sinking", text: "Hit all the squares of a given ship and it's sunk." },
         { name: "Winning", text: "The player who's first to sink the opponent's entire fleet wins." },
       ],
@@ -425,67 +575,85 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         {
           question: "How do you play Battleship?",
           answer:
-            "You secretly place your fleet on a grid and take turns with your opponent firing at coordinates — whoever's first to sink all the enemy ships wins.",
+            "Your fleet is placed on a grid automatically and in secret, and you take turns with your opponent firing at coordinates — a hit earns another shot, and whoever's first to sink all the enemy ships wins.",
         },
       ],
     },
     DICE: {
       title: "Dice Poker",
-      players: "1–4",
-      summary: "Play Dice Poker (Yahtzee-style) online — roll five dice and build combinations for points.",
+      players: "2–4",
+      summary: "Play Dice Poker (Yahtzee-style) online — roll five dice and fill 13 categories for points.",
       intro:
-        "Dice poker is a game with five dice in which, after up to three rolls, you build combinations — straights, full house, four of a kind — and record points on the scorecard. The highest total wins.",
+        "Dice poker is a Yahtzee-style game with five dice: each turn you roll up to three times and score the result in one of 13 categories — from ones to sixes, full house, straights, five of a kind and chance. The highest total wins.",
       howTo: [
-        { name: "Rolling", text: "You roll the five dice and can keep some of them for up to two more rolls." },
-        { name: "Combinations", text: "You aim for combinations like three of a kind, four of a kind, full house, small and large straight." },
-        { name: "Scoring", text: "Each turn you record your result in one box on the scorecard." },
-        { name: "Winning", text: "Once the scorecard is filled, the player with the most points wins." },
+        { name: "Rolling", text: "You roll the five dice up to three times, keeping any dice you choose between rolls." },
+        {
+          name: "Categories",
+          text: "Upper (ones–sixes) — the sum of the matching dice, with a +35 bonus at 63+; lower — three of a kind, four of a kind, full house 25, small straight 30, large straight 40, five of a kind 50 and chance.",
+        },
+        {
+          name: "Scoring",
+          text: "After rolling you must score the result in one empty category — even for zero.",
+        },
+        { name: "Winning", text: "After 13 rounds the player with the highest total wins; a tie is a draw." },
       ],
       faq: [
         {
           question: "How do you play Dice Poker?",
           answer:
-            "You roll five dice up to three times per turn, try to collect combinations like four of a kind or a full house and record points — the player with the highest total wins.",
+            "You roll five dice up to three times per turn and score the result in one of 13 categories (full house, straights, five of a kind and more) — after 13 rounds the player with the highest total wins.",
         },
       ],
     },
     BINGO: {
       title: "Bingo",
-      players: "many",
-      summary: "Play Bingo online for free — numbers are drawn while you mark your card on the way to a win.",
+      players: "2–6",
+      summary: "Play Bingo online for free — numbers are drawn, your card marks itself, and a full line wins.",
       intro:
-        "Bingo is a game of luck for many players. You have a card of numbers; as numbers are drawn, you mark them and call \"Bingo!\" once you complete a winning pattern.",
+        "Bingo is a game of luck for 2 to 6 players. You have a 5×5 card with numbers from 1 to 75 and a free space in the center; drawn numbers are marked automatically, and the first to complete a full line wins.",
       howTo: [
-        { name: "Card", text: "You get a card with a grid of random numbers." },
-        { name: "Drawing", text: "Numbers are drawn one by one and marked automatically." },
-        { name: "Pattern", text: "You aim for a winning pattern — a row, column, diagonal or the whole card." },
-        { name: "Bingo", text: "The first to complete the pattern wins the round." },
+        {
+          name: "Card",
+          text: "You get a 5×5 card with numbers 1–75 (column B 1–15, I 16–30, N 31–45, G 46–60, O 61–75) and a free space in the center.",
+        },
+        {
+          name: "Drawing",
+          text: "Numbers are drawn at random one by one and marked on your card automatically.",
+        },
+        { name: "Line", text: "The goal is a full line — a row, a column or a diagonal." },
+        { name: "Bingo", text: "The first with a full line wins; if several players get bingo at once, they all win." },
       ],
       faq: [
         {
           question: "How do you play Bingo?",
           answer:
-            "You have a card of numbers; numbers are drawn and you mark them, and you win once you're the first to complete the agreed pattern — a row, column, diagonal or the whole card.",
+            "You have a 5×5 card of numbers; numbers are drawn and marked automatically, and you win once you're the first to complete a full line — a row, a column or a diagonal.",
         },
       ],
     },
     WORDS: {
       title: "Words",
-      players: "2",
-      summary: "Play \"Words\" online — the word game where you arrange letters into words and points on the board.",
+      players: "2–4",
+      summary: "Play \"Words\" online — the word chain game where each word starts with the last letter of the previous one.",
       intro:
-        "\"Words\" is a word game for two on a board of letters. You arrange letter tiles into crossing words and rack up points from the letter values and the bonus squares.",
+        "\"Words\" is a word chain game for 2 to 4 players. Each new word must start with the last letter of the previous one; everyone has 3 lives, and the last player left in the game wins.",
       howTo: [
-        { name: "Letters", text: "You draw letter tiles, each with its own point value." },
-        { name: "Building", text: "You arrange words on the board — horizontally or vertically, connecting to ones already placed." },
-        { name: "Bonuses", text: "Double/triple letter or word squares multiply your points." },
-        { name: "Winning", text: "The player with the most points when the tiles run out wins." },
+        {
+          name: "Chain",
+          text: "The game starts with a word; each next word must start with the last letter of the previous one.",
+        },
+        { name: "Valid word", text: "The word must be in the dictionary and not already used in the game." },
+        {
+          name: "Lives",
+          text: "A wrong word or a pass costs you one of your three lives; a pass brings a new word to continue from.",
+        },
+        { name: "Winning", text: "A player with no lives left is out; the last one standing wins." },
       ],
       faq: [
         {
           question: "How do you play \"Words\"?",
           answer:
-            "You arrange letter tiles into crossing words on the board and score points based on the letters and the bonus squares — the player with the highest score at the end wins.",
+            "In turn, each player says a dictionary word that starts with the last letter of the previous one and hasn't been used yet; a mistake or a pass costs one of your 3 lives — the last player standing wins.",
         },
       ],
     },
@@ -497,22 +665,35 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       summary:
         "Gioca a Belote online gratis — il classico gioco di carte bulgaro 2 contro 2 in tempo reale.",
       intro:
-        "Belote è l'amato gioco di prese bulgaro per quattro giocatori in due squadre. L'obiettivo è far sì che la tua squadra raccolga più punti tramite prese e dichiarazioni.",
+        "Belote è l'amato gioco di prese bulgaro per quattro giocatori in due squadre. L'obiettivo è far sì che la tua squadra raccolga più punti con prese e dichiarazioni; la partita si gioca a 151 punti.",
       howTo: [
-        { name: "La distribuzione", text: "Il mazzo di 32 carte viene distribuito 8 carte a ciascun giocatore." },
-        { name: "La dichiarazione", text: "A turno, ogni giocatore dichiara un seme di briscola o passa; la prima dichiarazione determina il contratto." },
-        { name: "Gioco delle prese", text: "Segui il seme della prima carta; se non puoi, tagli con la briscola quando è possibile." },
-        { name: "Punteggio", text: "Le carte hanno valori in punti; l'ultima presa vale +10. La squadra che ha dichiarato deve raggiungere almeno 82." },
+        {
+          name: "La distribuzione",
+          text: "Da un mazzo di 32 carte ciascuno riceve 5 carte (3 + 2); dopo la licitazione se ne distribuiscono altre 3 a testa — ognuno gioca con 8.",
+        },
+        {
+          name: "La licitazione",
+          text: "Si licita un seme (♣ < ♦ < ♥ < ♠), Senza atout o Tutto atout, con contro e surcontro; tre passi chiudono la licitazione, quattro passi portano a una nuova distribuzione.",
+        },
+        {
+          name: "Gioco delle prese",
+          text: "Rispondi al seme; se non puoi, sei obbligato a tagliare con la briscola (salvo che la presa sia del tuo compagno) e, se si gioca briscola, a superare con una briscola più alta, se puoi.",
+        },
+        {
+          name: "Punteggio",
+          text: "Ai punti delle prese si aggiungono le dichiarazioni (terza, cinquanta, cento, quattro carte uguali, belote) e l'ultima presa vale +10. La squadra del contratto deve fare più punti degli avversari, altrimenti va «dentro».",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Belote?",
           answer:
-            "Belote si gioca in quattro in due squadre con un mazzo di 32 carte; segui il seme, tagli con la briscola quando non puoi e raccogli punti da prese e dichiarazioni.",
+            "Belote si gioca in quattro in due squadre con un mazzo di 32 carte: si licita la briscola, si risponde al seme, si taglia quando non si può rispondere e si raccolgono punti da prese e dichiarazioni — la partita è a 151.",
         },
         {
           question: "Quante carte si distribuiscono a Belote?",
-          answer: "Si distribuiscono 8 carte a ciascuno dei quattro giocatori.",
+          answer:
+            "Prima si distribuiscono 5 carte a testa (3 + 2) e si licita, poi se ne aggiungono altre 3 — ogni giocatore gioca con 8 carte.",
         },
         {
           question: "Belote è gratis su АСО?",
@@ -525,17 +706,29 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Santase (Sessantasei) online — il rapido gioco di carte per due con briscola e dichiarazioni.",
       intro:
-        "Santase (noto anche come Sessantasei) è un intimo gioco per due con un mazzo di 24 carte, una briscola e dichiarazioni (coppie di re e regina).",
+        "Santase (noto anche come Sessantasei) è un gioco per due con un mazzo di 24 carte, una briscola scoperta e le dichiarazioni «venti» e «quaranta» (re e donna dello stesso seme). La partita si gioca a 11 punti partita.",
       howTo: [
-        { name: "La distribuzione", text: "Ogni giocatore riceve 6 carte; una carta determina la briscola, le altre formano il tallone." },
-        { name: "Gioco", text: "Finché il tallone è aperto, non sei obbligato a seguire il seme." },
-        { name: "Dichiarazioni", text: "Re e regina dello stesso seme valgono 20 punti (40 in briscola) dopo aver vinto una presa." },
-        { name: "Obiettivo", text: "Il primo a raggiungere 66 punti vince la partita." },
+        {
+          name: "La distribuzione",
+          text: "Ogni giocatore riceve 6 carte; una carta si scopre e determina la briscola, le altre formano il tallone. Dopo ogni presa si pesca — prima chi l'ha vinta.",
+        },
+        {
+          name: "Gioco",
+          text: "Finché il tallone è aperto non sei obbligato a rispondere al seme; quando lo chiudi o finisce, devi rispondere al seme e tagliare.",
+        },
+        {
+          name: "Dichiarazioni",
+          text: "Re e donna dello stesso seme, dichiarati quando sei di mano, valgono 20 punti (40 in briscola); i punti contano non appena vinci una presa.",
+        },
+        {
+          name: "Obiettivo",
+          text: "Il primo a raggiungere 66 punti vince la mano — 1, 2 o 3 punti partita in base al punteggio dell'avversario; la partita è a 11.",
+        },
       ],
       faq: [
         {
           question: "Perché Santase si chiama Sessantasei?",
-          answer: "Perché l'obiettivo è raccogliere 66 punti prima dell'avversario — da qui viene il secondo nome del gioco.",
+          answer: "Perché l'obiettivo è raccogliere 66 punti nella mano prima dell'avversario — da qui viene il secondo nome del gioco.",
         },
         {
           question: "Con quante carte si gioca a Santase?",
@@ -551,7 +744,10 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         "Gli scacchi sono il gioco di strategia per due. L'obiettivo è dare scacco matto al re dell'avversario.",
       howTo: [
         { name: "Disposizione", text: "Ogni schieramento inizia con 16 pezzi su una scacchiera 8×8." },
-        { name: "Mosse", text: "Ogni pezzo si muove secondo le proprie regole; il Bianco muove per primo." },
+        {
+          name: "Mosse",
+          text: "Ogni pezzo si muove secondo le proprie regole; il Bianco muove per primo. Ci sono anche mosse speciali — arrocco, presa en passant e promozione del pedone.",
+        },
         { name: "Scacco matto", text: "Attacca il re in modo che nessuna mossa legale possa salvarlo." },
       ],
       faq: [
@@ -571,11 +767,17 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Backgammon online — il classico gioco di dadi e pedine per due.",
       intro:
-        "Il backgammon è una corsa con i dadi per due. Porti fuori tutte le tue pedine prima dell'avversario per vincere.",
+        "Il backgammon è una corsa con i dadi per due. Porti tutte le tue 15 pedine nella tua casa e le fai uscire dalla tavola prima dell'avversario per vincere.",
       howTo: [
-        { name: "Lancio", text: "Lanci due dadi e muovi le pedine in base ai numeri usciti." },
-        { name: "Colpire", text: "Una pedina avversaria isolata può essere colpita e rimandata alla barra." },
-        { name: "Uscita", text: "Quando tutte le tue pedine sono nella tua casa, inizi a toglierle dalla tavola." },
+        {
+          name: "Lancio",
+          text: "Lanci due dadi e muovi le pedine in base ai numeri usciti; un doppio si gioca quattro volte.",
+        },
+        {
+          name: "Colpire",
+          text: "Una pedina avversaria isolata può essere colpita — va sulla barra e deve rientrare prima che il suo giocatore muova altre pedine.",
+        },
+        { name: "Uscita", text: "Quando tutte le tue pedine sono nella tua casa, inizi a farle uscire dalla tavola." },
       ],
       faq: [
         {
@@ -593,9 +795,15 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       intro:
         "Svara è un rapido gioco di bluff e puntate con fiches virtuali. È un gioco sociale — non è gioco d'azzardo con denaro reale.",
       howTo: [
-        { name: "La distribuzione", text: "Ogni giocatore riceve 3 carte dopo una puntata iniziale (l'ante)." },
+        {
+          name: "La distribuzione",
+          text: "Ogni giocatore versa una puntata iniziale (l'ante) e riceve 3 carte da un mazzo dal 7 all'asso.",
+        },
         { name: "Puntate", text: "Ci si alterna tra vedere, rilanciare o passare finché le puntate non si pareggiano." },
-        { name: "Showdown", text: "Il tris di carte più forte vince l'intero piatto di fiches virtuali." },
+        {
+          name: "Showdown",
+          text: "Vince la mano più forte — la somma delle carte di uno stesso seme o di uno stesso valore, con il 7♣ come jolly; se le mani migliori sono pari, si gioca la «svara».",
+        },
       ],
       faq: [
         {
@@ -611,18 +819,27 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       summary:
         "Gioca a biliardo palla 8 online gratis — fisica realistica, mira e tiro direttamente nel browser.",
       intro:
-        "Il biliardo a 8 palle (eight-ball) è il gioco di pool più popolare. Un giocatore imbuca le palle piene (1–7), l'altro quelle a strisce (9–15); chi libera il proprio gruppo e imbuca regolarmente la palla nera numero 8 vince.",
+        "Il biliardo a 8 palle (eight-ball) è il gioco di pool più popolare. Un giocatore imbuca le palle piene (1–7), l'altro quelle a strisce (9–15); chi libera il proprio gruppo e poi imbuca la palla nera numero 8 con un tiro regolare vince.",
       howTo: [
-        { name: "L'apertura", text: "Il primo giocatore spacca il rack con la palla battente." },
-        { name: "Gruppi", text: "Dopo la prima palla imbucata si assegnano piene e strisce." },
-        { name: "Mira", text: "Mira con la linea guida, regola la potenza e tira." },
-        { name: "Vittoria", text: "Libera il tuo gruppo e imbuca regolarmente la palla 8 per vincere." },
+        {
+          name: "L'apertura",
+          text: "La spaccata deve essere regolare — una palla in buca o almeno 4 palle che toccano la sponda; la palla 8 imbucata in apertura torna sul suo punto.",
+        },
+        { name: "Gruppi", text: "Il tuo gruppo (piene o strisce) è deciso dalla prima palla imbucata regolarmente." },
+        {
+          name: "Mira",
+          text: "Mira con la linea guida, regola la potenza e tira; prima colpisci una palla del tuo gruppo, poi una palla deve andare in buca o toccare una sponda.",
+        },
+        {
+          name: "Vittoria",
+          text: "Libera il tuo gruppo e imbuca la palla 8 per ultima; se la imbuchi prima del tempo o con un fallo (anche con la bianca in buca), perdi.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a biliardo palla 8?",
           answer:
-            "Imbuchi le palle del tuo gruppo (piene o a strisce) e alla fine la palla nera numero 8; un fallo dà all'avversario palla in mano.",
+            "Imbuchi le palle del tuo gruppo (piene o a strisce) e alla fine la palla nera numero 8 — senza dover chiamare la buca; un fallo dà all'avversario palla in mano ovunque, e la palla 8 imbucata prima del tempo fa perdere.",
         },
         {
           question: "La fisica del biliardo è realistica?",
@@ -637,17 +854,23 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       summary:
         "Gioca a biliardo palla 9 online gratis — pool dinamico in cui colpisci per prima la palla più bassa.",
       intro:
-        "Il nine-ball è un rapido gioco di pool con le palle da 1 a 9. Colpisci sempre per prima la palla più bassa disponibile; chi imbuca la palla 9 con un tiro regolare vince la partita.",
+        "Il nine-ball è un rapido gioco di pool con le palle da 1 a 9. Colpisci sempre per prima la palla più bassa sul tavolo; chi imbuca la palla 9 con un tiro regolare vince la partita.",
       howTo: [
-        { name: "Ordine", text: "Stabilisci sempre il primo contatto con la palla dal numero più basso sul tavolo." },
-        { name: "Continuazione", text: "Se imbuchi una palla regolarmente, continui a giocare." },
-        { name: "Vittoria", text: "Imbuca la palla 9 con un tiro regolare per vincere." },
+        {
+          name: "Ordine",
+          text: "Il primo contatto è sempre con la palla dal numero più basso sul tavolo; poi una palla deve andare in buca o toccare una sponda.",
+        },
+        { name: "Continuazione", text: "Se imbuchi una palla con un tiro regolare, continui a giocare — in qualsiasi buca." },
+        {
+          name: "Vittoria",
+          text: "La palla 9 imbucata con un tiro regolare (anche di combinazione o in apertura) vince subito; tre falli consecutivi fanno perdere.",
+        },
       ],
       faq: [
         {
           question: "Qual è la differenza tra palla 8 e palla 9?",
           answer:
-            "Nella palla 9 non ci sono gruppi — colpisci per prima la palla più bassa e vinci imbucando la palla 9.",
+            "Nella palla 9 non ci sono gruppi — colpisci sempre per prima la palla più bassa e vinci non appena imbuchi la palla 9 con un tiro regolare, anche di combinazione.",
         },
       ],
     },
@@ -656,12 +879,15 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a snooker online gratis — il classico con palle rosse e colorate e punteggio.",
       intro:
-        "Lo snooker si gioca con 15 palle rosse e 6 colorate su un tavolo grande. Alterni una rossa e una colorata; le colorate tornano sui loro punti finché ci sono rosse. Vince il giocatore con più punti.",
+        "Lo snooker si gioca con 15 palle rosse e 6 colorate su un tavolo grande. Alterni una rossa e una colorata; le colorate tornano sul loro spot finché ci sono rosse. Vince il giocatore con più punti nel frame.",
       howTo: [
-        { name: "Alternanza", text: "Imbuca una rossa (1 punto), poi una colorata (2–7 punti)." },
-        { name: "Riposizionamento", text: "Le colorate tornano sui loro punti finché restano rosse sul tavolo." },
-        { name: "Finale", text: "Senza più rosse, le colorate si imbucano in ordine — dal giallo al nero." },
-        { name: "Punti", text: "Un fallo dà punti all'avversario; vince il giocatore con più punti." },
+        { name: "Alternanza", text: "Imbuca una rossa (1 punto), poi una colorata a scelta (2–7 punti)." },
+        { name: "Riposizionamento", text: "Le colorate tornano sul loro spot finché restano rosse sul tavolo." },
+        { name: "Finale", text: "Senza più rosse, le colorate si imbucano in ordine — dalla gialla alla nera." },
+        {
+          name: "Punti",
+          text: "Un fallo dà all'avversario almeno 4 punti (o il valore della palla coinvolta, se maggiore); vince il giocatore con più punti.",
+        },
       ],
       faq: [
         {
@@ -677,13 +903,28 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       summary:
         "Magnat è un gioco da tavolo economico ambientato nelle città bulgare — compra immobili, costruisci e fai fallire i rivali in 3D nel browser.",
       intro:
-        "Magnat è un gioco da tavolo economico premium nella tradizione del \"tira e muovi\" — un tema originale di città bulgare, senza proprietà intellettuale di terzi. Giri intorno al tabellone, compri città e stazioni, costruisci case e alberghi e riscuoti l'affitto finché gli avversari falliscono. Tutta la \"valuta\" è virtuale e vale solo per quella partita — un gioco sociale, non gioco d'azzardo con denaro reale. Il tabellone è completamente 3D con vista isometrica.",
+        "Magnat è un gioco da tavolo economico premium nella tradizione del «tira e muovi» — un tema originale di città bulgare, senza proprietà intellettuale di terzi. Giri intorno al tabellone, compri città e stazioni, costruisci case e alberghi e riscuoti l'affitto finché gli avversari falliscono. Tutta la «valuta» è virtuale e vale solo per quella partita — un gioco sociale, non gioco d'azzardo con denaro reale. Il tabellone è completamente 3D con vista isometrica.",
       howTo: [
-        { name: "Lancia i dadi", text: "Al tuo turno lanci due dadi e muovi la pedina in avanti; con un doppio rilanci." },
-        { name: "Compra immobili", text: "Se ti fermi su una città, stazione o servizio libero, puoi comprarlo o rifiutare." },
-        { name: "Riscuoti l'affitto", text: "Se un avversario si ferma su un tuo immobile, paga l'affitto — più alto con un gruppo di colore completo e case costruite." },
-        { name: "Costruisci e sviluppa", text: "Con un gruppo completo costruisci case in modo uniforme, poi un albergo; ipoteca quando hai bisogno di contanti." },
-        { name: "Vinci", text: "Vince l'ultimo giocatore solvente, o quello con la maggiore ricchezza al raggiungimento del limite di turni." },
+        {
+          name: "Lancia i dadi",
+          text: "Al tuo turno lanci due dadi e muovi la pedina in avanti; con un doppio rilanci, e tre doppi di fila ti mandano in prigione. Passare dalla Partenza vale 200.",
+        },
+        {
+          name: "Compra immobili",
+          text: "Se ti fermi su una città, stazione o società di servizi libera, puoi comprarla; se rinunci, l'immobile va all'asta.",
+        },
+        {
+          name: "Riscuoti l'affitto",
+          text: "Se un avversario si ferma su un tuo immobile, paga l'affitto — doppio con un gruppo completo e ancora più alto con case e albergo; un immobile ipotecato non rende affitto.",
+        },
+        {
+          name: "Costruisci e sviluppa",
+          text: "Con un gruppo completo costruisci case in modo uniforme, poi un albergo; al tuo turno puoi ipotecare e vendere, e riscattare un'ipoteca costa il 10% in più.",
+        },
+        {
+          name: "Vinci",
+          text: "Chi non può pagare fallisce; vince l'ultimo giocatore rimasto in gioco, o il più ricco al raggiungimento del limite di turni.",
+        },
       ],
       faq: [
         {
@@ -716,42 +957,61 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Guerra online gratis — il rapido gioco di carte per due in cui la carta più alta vince.",
       intro:
-        "Guerra è il più semplice gioco di carte per due — interamente basato sulla fortuna. Il mazzo si divide a metà e ognuno gira una carta; la più alta vince entrambe.",
+        "Guerra è il più semplice gioco di carte per due — quasi interamente basato sulla fortuna. Il mazzo si divide a metà e ognuno gira una carta; la più alta vince entrambe.",
       howTo: [
         { name: "La distribuzione", text: "Il mazzo si divide in due mazzetti uguali — uno per ciascun giocatore." },
         { name: "Il duello", text: "Entrambi girano la carta in cima; la più alta vince le due carte." },
-        { name: "Guerra", text: "In caso di parità, ognuno mette giù alcune carte e un nuovo duello decide chi prende tutto." },
-        { name: "Vittoria", text: "Vince il giocatore che raccoglie tutte le carte." },
+        {
+          name: "Guerra",
+          text: "In caso di parità, chi è di turno sceglie una battaglia (3 carte coperte + 1 scoperta) o una scaramuccia (1 coperta + 1 scoperta); un'altra parità prolunga la guerra.",
+        },
+        {
+          name: "Vittoria",
+          text: "Tre vittorie di fila danno diritto a una «razzia» — una carta in più dall'avversario; vince il giocatore che raccoglie tutte le carte.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Guerra con le carte?",
           answer:
-            "Guerra si gioca in due: dividete il mazzo a metà e girate una carta ciascuno — la più alta prende entrambe; in caso di parità si dichiara \"guerra\" con carte aggiuntive.",
+            "Guerra si gioca in due: dividete il mazzo a metà e girate una carta ciascuno — la più alta prende entrambe; in caso di parità scoppia la «guerra» — una battaglia o una scaramuccia con carte coperte.",
         },
         {
           question: "C'è strategia in Guerra?",
-          answer: "No — Guerra è interamente un gioco di fortuna, il che lo rende rapido e adatto a principianti e bambini.",
+          answer:
+            "Quasi nessuna — Guerra è soprattutto un gioco di fortuna; l'unica scelta è tra battaglia e scaramuccia quando scoppia una guerra, il che lo rende rapido e adatto a principianti e bambini.",
         },
       ],
     },
     GOFISH: {
       title: "Pesca (Go Fish)",
       players: "2–4",
-      summary: "Gioca a \"Pesca\" (Go Fish) online — il divertente gioco di carte in cui raccogli gruppi di quattro.",
+      summary: "Gioca a «Pesca» (Go Fish) online — il divertente gioco di carte in cui raccogli gruppi di quattro.",
       intro:
-        "\"Pesca\" (Go Fish) è un leggero gioco di carte per famiglie. Chiedi carte agli avversari per raccogliere gruppi dello stesso valore, e se non ne hanno — peschi dal mazzo.",
+        "«Pesca» (Go Fish) è un leggero gioco di carte per famiglie. Chiedi carte agli avversari per raccogliere gruppi di quattro carte dello stesso valore, e se non ne hanno — peschi dal mare.",
       howTo: [
-        { name: "La distribuzione", text: "Ogni giocatore riceve alcune carte; le altre formano il \"mare\" al centro." },
-        { name: "La richiesta", text: "Al tuo turno chiedi a un avversario una carta di un valore che già possiedi." },
-        { name: "Pesca", text: "Se non ha la carta richiesta, peschi una carta dal mazzo." },
-        { name: "Gruppi", text: "Se raccogli quattro carte dello stesso valore, le metti da parte; vince chi ha più gruppi." },
+        {
+          name: "La distribuzione",
+          text: "In due ognuno riceve 7 carte, in tre o quattro 5; le altre formano il «mare».",
+        },
+        {
+          name: "La richiesta",
+          text: "Al tuo turno chiedi a un giocatore preciso un valore che già possiedi; se ce l'ha, ti dà tutte quelle carte e giochi ancora.",
+        },
+        {
+          name: "Pesca",
+          text: "Se non ce l'ha, peschi dal mare; se peschi proprio il valore richiesto giochi ancora, altrimenti il turno passa.",
+        },
+        {
+          name: "Gruppi",
+          text: "Quattro carte dello stesso valore si calano automaticamente come gruppo; quando tutti i 13 gruppi sono calati, vince chi ne ha di più.",
+        },
       ],
       faq: [
         {
-          question: "Come si gioca a \"Pesca\"?",
+          question: "Come si gioca a «Pesca»?",
           answer:
-            "Chiedi agli avversari carte di un valore che hai già per raccogliere gruppi di quattro; se non ne hanno, peschi una carta dal mazzo — vince il giocatore con più gruppi raccolti.",
+            "Chiedi a un giocatore preciso carte di un valore che hai già per raccogliere gruppi di quattro; se non ne ha, peschi una carta dal mare — vince il giocatore con più gruppi raccolti.",
         },
       ],
     },
@@ -760,86 +1020,129 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "4",
       summary: "Gioca a Kent (Coup) online — il gioco di carte a squadre con segnali tra i compagni.",
       intro:
-        "Kent (Coup) è un vivace gioco di carte a squadre per quattro giocatori in due squadre. L'obiettivo è raccogliere quattro carte uguali e segnalarlo di nascosto al compagno prima che gli avversari se ne accorgano.",
+        "Kent (Coup) è un vivace gioco di carte per quattro giocatori in due squadre. L'obiettivo è raccogliere quattro carte dello stesso valore e, con un segnale segreto, far gridare «Coup!» al compagno prima che gli avversari se ne accorgano. La partita si gioca a 3 punti.",
       howTo: [
-        { name: "Obiettivo", text: "Ogni squadra cerca di essere la prima a raccogliere un \"kent\" — quattro carte dello stesso valore." },
-        { name: "Scambio", text: "Le carte circolano finché qualcuno non raccoglie un quartetto." },
-        { name: "Segnale", text: "Chi raccoglie le carte segnala di nascosto al compagno con un segno concordato in anticipo." },
-        { name: "Coup", text: "Il compagno grida \"Coup!\" nel momento giusto per vincere il punto per la squadra." },
+        {
+          name: "Obiettivo",
+          text: "Ognuno tiene 4 carte e ogni squadra cerca di essere la prima a riunire quattro carte dello stesso valore.",
+        },
+        {
+          name: "Scambio",
+          text: "Al centro ci sono 4 carte scoperte; al tuo turno scambi una tua carta con una del centro o passi, e quando tutti e quattro passano di fila le carte del centro vengono sostituite.",
+        },
+        {
+          name: "Segnale",
+          text: "Quando hai quattro carte uguali, fai al compagno un segnale segreto — lo vede solo lui.",
+        },
+        {
+          name: "Coup",
+          text: "Il compagno grida «Coup!» e, se hai davvero quattro carte uguali, la squadra vince un punto; un «Coup!» sbagliato dà il punto agli avversari.",
+        },
+        {
+          name: "Stop",
+          text: "Se sospetti che gli avversari abbiano quattro carte uguali, grida «Stop!» — se hai ragione il punto è vostro, se sbagli è loro.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Kent?",
           answer:
-            "Kent si gioca in quattro in due squadre: raccogli quattro carte uguali e segnali di nascosto al compagno, che deve gridare \"Coup\" prima degli avversari.",
+            "Kent si gioca in quattro in due squadre: scambi carte con il centro finché non riunisci quattro carte uguali, fai un segnale segreto al compagno e lui grida «Coup!», mentre contro gli avversari puoi gridare «Stop!» — la partita è a 3 punti.",
         },
       ],
     },
     DRAUGHTS: {
       title: "Dama",
       players: "2",
-      summary: "Gioca a Dama online contro giocatori e bot — il classico su tavoliere 8×8 in tempo reale.",
+      summary: "Gioca a Dama online contro giocatori e bot — il classico su damiera 8×8 in tempo reale.",
       intro:
-        "La dama è un gioco di strategia per due su un tavoliere 8×8. Muovi le tue pedine in diagonale, scavalchi e catturi quelle dell'avversario, e una volta raggiunta l'ultima fila diventi dama.",
+        "La dama è un gioco di strategia per due con regole internazionali su damiera 8×8. Muovi le tue pedine in diagonale, scavalchi e catturi quelle dell'avversario, e una pedina che raggiunge l'ultima riga diventa una dama volante.",
       howTo: [
-        { name: "Mossa", text: "Muovi una pedina in diagonale in avanti di una casella." },
-        { name: "Cattura", text: "Se scavalchi una pedina avversaria adiacente verso una casella vuota, la catturi — le catture sono obbligatorie." },
-        { name: "Dama", text: "Quando una pedina raggiunge l'ultima fila, diventa dama e si muove anche all'indietro." },
-        { name: "Vittoria", text: "Vinci quando l'avversario resta senza mosse o senza pedine." },
+        { name: "Mossa", text: "Muovi una pedina in diagonale in avanti di una casella; inizia il Bianco." },
+        {
+          name: "Cattura",
+          text: "La presa è obbligatoria — sempre con la sequenza più lunga possibile; le pedine semplici catturano anche all'indietro e i pezzi presi si tolgono alla fine della mossa.",
+        },
+        {
+          name: "Dama",
+          text: "Una pedina che termina la mossa sull'ultima riga diventa dama; è una dama «volante» — si muove e cattura lungo un'intera diagonale.",
+        },
+        { name: "Vittoria", text: "Vinci quando l'avversario resta senza pedine o senza mosse possibili." },
       ],
       faq: [
         {
           question: "Come si gioca a Dama?",
           answer:
-            "La dama si gioca su un tavoliere 8×8: muovi le pedine in diagonale, scavalchi quelle dell'avversario per catturarle, e all'ultima fila la pedina diventa dama — vince chi cattura tutte le pedine dell'altro.",
+            "La dama si gioca su una damiera 8×8 con regole internazionali: muovi le pedine in diagonale, la presa è obbligatoria con la sequenza più lunga e all'ultima riga la pedina diventa una dama volante — vince chi cattura o blocca tutte le pedine dell'altro.",
         },
         {
           question: "La cattura è obbligatoria a Dama?",
-          answer: "Sì — se hai la possibilità di catturare una pedina avversaria, sei obbligato a farlo.",
+          answer: "Sì — se puoi catturare una pedina avversaria sei obbligato a farlo, e con la sequenza che cattura più pezzi.",
         },
       ],
     },
     LUDO: {
       title: "Ludo",
       players: "2–4",
-      summary: "Gioca a \"Ludo\" online — il classico con dado e pedine in vero 3D.",
+      summary: "Gioca a «Ludo» online — il classico con dado e pedine in vero 3D.",
       intro:
-        "\"Ludo\" è l'amato gioco di dadi per famiglie fino a quattro giocatori. Fai uscire le pedine dalla casa, giri intorno al tabellone e sei il primo a riportarne a casa tutte e quattro. Il tabellone è completamente 3D.",
+        "«Ludo» è l'amato gioco di dadi per famiglie fino a quattro giocatori. Fai uscire le pedine dalla base, giri intorno al tabellone e sei il primo a portarle tutte e quattro all'arrivo. Il tabellone è completamente 3D.",
       howTo: [
-        { name: "Partenza", text: "Lanci il dado; un sei fa uscire una pedina dalla casa sul percorso." },
-        { name: "Movimento", text: "Muovi una pedina in avanti di tante caselle quante ne mostra il dado." },
-        { name: "Mangiare", text: "Se ti fermi su una casella con una pedina avversaria, la rimandi nella sua casa." },
-        { name: "Rientro", text: "Se porti una pedina lungo tutto il giro, la fai entrare a casa; vince chi per primo ne riporta tutte e quattro." },
+        {
+          name: "Partenza",
+          text: "Serve un «6» per far uscire una pedina dalla base; il «6» dà anche un lancio in più, e finché tutte le tue pedine sono nella base hai fino a tre tentativi.",
+        },
+        {
+          name: "Movimento",
+          text: "Muovi una pedina in avanti di tante caselle quante ne mostra il dado; due tue pedine sulla stessa casella formano un blocco che nessuno può superare.",
+        },
+        {
+          name: "Mangiare",
+          text: "Se ti fermi su una casella con una pedina avversaria isolata, la rimandi alla sua base — tranne sulle caselle protette (quelle di partenza e quelle segnate).",
+        },
+        {
+          name: "Rientro",
+          text: "Nell'arrivo del tuo colore si entra solo con il numero esatto; vince chi per primo porta a casa tutte e quattro le pedine.",
+        },
       ],
       faq: [
         {
-          question: "Come si gioca a \"Ludo\"?",
+          question: "Come si gioca a «Ludo»?",
           answer:
-            "Lanci il dado, con un sei fai uscire una pedina, la muovi sul tabellone in base al dado e cerchi di mangiare le pedine altrui — vince il giocatore che per primo riporta a casa tutte e quattro le sue pedine.",
+            "Lanci il dado, con un «6» fai uscire una pedina, la muovi sul tabellone in base al dado e mangi le pedine avversarie isolate fuori dalle caselle protette — vince il giocatore che per primo porta all'arrivo tutte e quattro le sue pedine con il numero esatto.",
         },
         {
           question: "Il tabellone è davvero 3D?",
-          answer: "Sì — \"Ludo\" su АСО si gioca su un vero tabellone 3D con pedine tridimensionali, un dado che rotola e illuminazione realistica.",
+          answer: "Sì — «Ludo» su АСО si gioca su un vero tabellone 3D con pedine tridimensionali, un dado che rotola e illuminazione realistica.",
         },
       ],
     },
     RUMMY: {
       title: "Ramino",
       players: "2",
-      summary: "Gioca a Ramino online — il classico gioco di carte in cui componi sequenze e tris.",
+      summary: "Gioca a Ramino (Gin Rummy) online — il classico gioco di carte in cui componi scale e combinazioni.",
       intro:
-        "Il ramino è un gioco di carte per due in cui disponi le carte in combinazioni — sequenze dello stesso seme e gruppi dello stesso valore. Peschi e scarti una carta a ogni turno finché non sistemi la tua mano.",
+        "Il ramino su АСО si gioca con le regole del Gin Rummy — un gioco di carte per due. Disponi le tue 10 carte in scale dello stesso seme e combinazioni dello stesso valore e cerchi di restare con meno punti morti possibile. La partita si gioca a 100.",
       howTo: [
-        { name: "Pesca", text: "Al tuo turno peschi una carta dal mazzo o dalla pila degli scarti." },
-        { name: "Combinazioni", text: "Disponi le carte in sequenze (3+ dello stesso seme) o gruppi (3–4 dello stesso valore)." },
+        {
+          name: "Pesca",
+          text: "Ognuno ha 10 carte; al tuo turno peschi dal mazzo o prendi la carta in cima agli scarti.",
+        },
+        {
+          name: "Combinazioni",
+          text: "Scala = 3+ carte consecutive dello stesso seme (l'asso è basso); combinazione = 3–4 carte dello stesso valore. Le carte fuori sono punti morti: asso 1, figure 10, le altre il loro valore.",
+        },
         { name: "Scarto", text: "Concludi il turno scartando una carta." },
-        { name: "Chiusura", text: "Se sistemi tutta la mano in combinazioni, chiudi e vinci il round." },
+        {
+          name: "Bussare",
+          text: "Quando i tuoi punti morti sono 10 o meno puoi «bussare»; «gin» è bussare senza carte morte. L'avversario attacca le sue carte morte alle tue combinazioni (tranne dopo il gin).",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Ramino?",
           answer:
-            "Nel ramino peschi e scarti una carta per turno finché non sistemi la mano in sequenze dello stesso seme e gruppi dello stesso valore — vince il primo a sistemare tutto.",
+            "Il ramino su АСО è Gin Rummy per due: peschi e scarti una carta per turno, componi scale e combinazioni e bussi quando i tuoi punti morti sono 10 o meno. Chi bussa guadagna la differenza (+25 per il gin); se l'avversario ha punti morti minori o uguali, è un «undercut» e guadagna lui la differenza +25.",
         },
       ],
     },
@@ -848,18 +1151,27 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2–4",
       summary: "Gioca a Domino online gratis — il classico con le tessere in cui colleghi numeri uguali.",
       intro:
-        "Il domino è un gioco con le tessere per due a quattro giocatori. Ci si alterna posando tessere in modo che le estremità accostate corrispondano per numero, e si cerca di essere i primi a giocare tutte le proprie tessere.",
+        "Il domino è un gioco con le tessere (doppio sei, con pesca) per due a quattro giocatori. Posi tessere in modo che le estremità accostate corrispondano per numero e cerchi di essere il primo a giocarle tutte; la partita si gioca a 100 punti.",
       howTo: [
-        { name: "La distribuzione", text: "Ogni giocatore pesca alcune tessere; le altre restano nel \"tallone\"." },
-        { name: "Posa", text: "Accosti una tessera alla catena solo se i numeri alle estremità corrispondono." },
-        { name: "Pesca", text: "Se non hai una tessera adatta, peschi dal tallone o passi." },
-        { name: "Vittoria", text: "Vince il giocatore che per primo resta senza tessere, o che ha meno punti in caso di blocco." },
+        {
+          name: "La distribuzione",
+          text: "In due ognuno pesca 7 tessere, in tre o quattro 5; le altre restano nel «tallone». La prima mano la apre chi ha il doppio più alto.",
+        },
+        { name: "Posa", text: "Accosti una tessera a una delle estremità aperte solo se i numeri corrispondono." },
+        {
+          name: "Pesca",
+          text: "Se non hai una tessera adatta, peschi dal tallone finché non puoi giocare; si può passare solo a tallone vuoto.",
+        },
+        {
+          name: "Vittoria",
+          text: "Se giochi l'ultima tessera, guadagni i punti rimasti in mano agli altri; se il gioco si blocca, vince la somma più bassa.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Domino?",
           answer:
-            "Ci si alterna posando tessere in modo che le estremità accostate mostrino numeri uguali; se non hai una mossa, peschi dal tallone — vince il giocatore che per primo gioca tutte le sue tessere.",
+            "Ci si alterna posando tessere in modo che le estremità accostate mostrino numeri uguali; se non hai una mossa, peschi dal tallone finché non puoi giocare — chi per primo gioca tutte le sue tessere guadagna i punti rimasti agli altri, e la partita è a 100.",
         },
       ],
     },
@@ -868,18 +1180,30 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "4",
       summary: "Gioca a Bridge online — l'intellettuale gioco di carte a squadre con licitazione e prese.",
       intro:
-        "Il bridge è il classico gioco di prese per quattro giocatori in due squadre. Prima licitate un contratto, poi lo giocate — un compagno diventa il \"morto\" e le sue carte si giocano scoperte.",
+        "Il bridge (rubber bridge) è il classico gioco di prese per quattro giocatori in due squadre. Prima licitate un contratto, poi lo giocate — la mano del compagno del dichiarante (il «morto») viene scoperta e la gioca il dichiarante. Vince il rubber la squadra che si aggiudica 2 manche.",
       howTo: [
-        { name: "Licitazione", text: "Dichiarate un contratto — quante prese e in quale briscola si impegna la vostra squadra." },
-        { name: "Il morto", text: "Il compagno del dichiarante scopre le sue carte e vengono giocate a carte scoperte." },
-        { name: "Gioco", text: "Segui il seme della prima carta; la carta più forte o la briscola prende la presa." },
-        { name: "Punteggio", text: "Se realizzi il contratto, guadagni punti; il fallimento dà punti all'avversario." },
+        {
+          name: "Licitazione",
+          text: "Licitate un contratto — il numero di prese oltre le 6 e un seme di atout o senza atout; contro e surcontro valgono solo sulla licita avversaria, e tre passi chiudono la licitazione.",
+        },
+        {
+          name: "Il morto",
+          text: "Il dichiarante è il primo della coppia ad aver nominato la denominazione del contratto; dopo l'attacco, la mano del suo compagno viene scoperta e la gioca il dichiarante.",
+        },
+        {
+          name: "Gioco",
+          text: "Rispondi al seme; la presa la vince l'atout più alto o la carta più alta del seme di uscita.",
+        },
+        {
+          name: "Punteggio",
+          text: "Un contratto mantenuto segna sotto la linea (la manche è 100), prese in più e premi sopra la linea; un contratto non mantenuto dà punti alla difesa.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Bridge?",
           answer:
-            "Il bridge si gioca in quattro in due squadre: licitate un contratto, poi giocate le prese con un \"morto\" scoperto — l'obiettivo è realizzare le prese dichiarate.",
+            "Il bridge si gioca in quattro in due squadre: licitate un contratto, poi giocate le prese con il «morto» scoperto — l'obiettivo è mantenere il contratto e vincere il rubber (2 manche).",
         },
         {
           question: "Il Bridge è difficile per i principianti?",
@@ -892,10 +1216,16 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Battaglia navale online — il classico in cui indovini e affondi la flotta nascosta dell'avversario.",
       intro:
-        "La battaglia navale è un gioco di intuizione per due. Disponi di nascosto le tue navi su una griglia, poi ci si alterna sparando a delle coordinate finché uno affonda l'intera flotta dell'altro.",
+        "La battaglia navale è un gioco di intuizione per due. La tua flotta viene disposta sulla griglia in automatico e in segreto, poi ci si alterna sparando a delle coordinate finché uno affonda l'intera flotta dell'altro.",
       howTo: [
-        { name: "Disposizione", text: "Disponi le tue navi di nascosto sulla tua griglia." },
-        { name: "Tiro", text: "Al tuo turno scegli una casella sulla griglia dell'avversario — \"colpito\" o \"mancato\"." },
+        {
+          name: "Disposizione",
+          text: "La flotta (1 nave da 4, 2 da 3, 3 da 2 e 4 da 1 casella) viene disposta in automatico e in segreto; le navi non si toccano, nemmeno in diagonale.",
+        },
+        {
+          name: "Tiro",
+          text: "Al tuo turno scegli una casella sulla griglia dell'avversario — «colpito» o «acqua»; se colpisci, tiri ancora.",
+        },
         { name: "Affondamento", text: "Se colpisci tutte le caselle di una nave, è affondata." },
         { name: "Vittoria", text: "Vince il giocatore che per primo affonda l'intera flotta dell'avversario." },
       ],
@@ -903,67 +1233,85 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         {
           question: "Come si gioca a Battaglia navale?",
           answer:
-            "Disponi di nascosto la tua flotta su una griglia e ti alterni con l'avversario sparando a delle coordinate — vince chi per primo affonda tutte le navi nemiche.",
+            "La tua flotta viene disposta sulla griglia in automatico e in segreto e ti alterni con l'avversario sparando a delle coordinate — ogni colpo a segno ti dà un altro tiro, e vince chi per primo affonda tutte le navi nemiche.",
         },
       ],
     },
     DICE: {
       title: "Poker dei dadi",
-      players: "1–4",
-      summary: "Gioca a Poker dei dadi (stile Yahtzee) online — lanci cinque dadi e componi combinazioni per fare punti.",
+      players: "2–4",
+      summary: "Gioca a Poker dei dadi (stile Yahtzee) online — lanci cinque dadi e riempi 13 categorie per fare punti.",
       intro:
-        "Il poker dei dadi è un gioco con cinque dadi in cui, dopo un massimo di tre lanci, componi combinazioni — scale, full, poker — e segni i punti sulla tabella. Vince il punteggio totale più alto.",
+        "Il poker dei dadi è un gioco con cinque dadi in stile Yahtzee: a ogni turno lanci fino a tre volte e segni il risultato in una delle 13 categorie — dagli uno ai sei, full, scale, cinque uguali e chance. Vince il punteggio totale più alto.",
       howTo: [
-        { name: "Lancio", text: "Lanci i cinque dadi e puoi tenerne alcuni per altri due lanci al massimo." },
-        { name: "Combinazioni", text: "Punti a combinazioni come tris, poker, full, scala piccola e scala grande." },
-        { name: "Registrazione", text: "A ogni turno segni il risultato in una casella della tabella." },
-        { name: "Vittoria", text: "Una volta riempita la tabella, vince il giocatore con più punti." },
+        { name: "Lancio", text: "Lanci i cinque dadi fino a tre volte, tenendo quelli che scegli tra un lancio e l'altro." },
+        {
+          name: "Categorie",
+          text: "Superiori (uno–sei) — la somma dei dadi corrispondenti, con bonus +35 a quota 63+; inferiori — tris, quattro uguali, full 25, scala piccola 30, scala grande 40, cinque uguali 50 e chance.",
+        },
+        {
+          name: "Registrazione",
+          text: "Dopo i lanci devi segnare il risultato in una categoria libera — anche con zero.",
+        },
+        { name: "Vittoria", text: "Dopo 13 turni vince il giocatore con il totale più alto; la parità è un pareggio." },
       ],
       faq: [
         {
           question: "Come si gioca a Poker dei dadi?",
           answer:
-            "Lanci cinque dadi fino a tre volte per turno, cerchi di raccogliere combinazioni come poker o full e segni i punti — vince il giocatore con il punteggio totale più alto.",
+            "Lanci cinque dadi fino a tre volte per turno e segni il risultato in una delle 13 categorie (full, scale, cinque uguali e altre) — dopo 13 turni vince il giocatore con il totale più alto.",
         },
       ],
     },
     BINGO: {
       title: "Bingo",
-      players: "molti",
-      summary: "Gioca a Bingo online gratis — vengono estratti numeri e tu segni la tua cartella fino alla vittoria.",
+      players: "2–6",
+      summary: "Gioca a Bingo online gratis — vengono estratti numeri, la cartella si segna da sola e una linea completa vince.",
       intro:
-        "Il bingo è un gioco di fortuna per molti giocatori. Hai una cartella con dei numeri; man mano che i numeri vengono estratti, li segni e gridi \"Bingo!\" quando completi uno schema vincente.",
+        "Il bingo è un gioco di fortuna per 2 a 6 giocatori. Hai una cartella 5×5 con numeri da 1 a 75 e una casella libera al centro; i numeri estratti si segnano in automatico, e vince il primo che completa una linea.",
       howTo: [
-        { name: "Cartella", text: "Ricevi una cartella con una griglia di numeri casuali." },
-        { name: "Estrazione", text: "I numeri vengono estratti uno a uno e segnati automaticamente." },
-        { name: "Schema", text: "Punti a uno schema vincente — una riga, una colonna, una diagonale o l'intera cartella." },
-        { name: "Bingo", text: "Il primo che completa lo schema vince il round." },
+        {
+          name: "Cartella",
+          text: "Ricevi una cartella 5×5 con numeri 1–75 (colonna B 1–15, I 16–30, N 31–45, G 46–60, O 61–75) e una casella libera al centro.",
+        },
+        {
+          name: "Estrazione",
+          text: "I numeri vengono estratti a caso uno alla volta e segnati sulla tua cartella in automatico.",
+        },
+        { name: "Linea", text: "L'obiettivo è una linea completa — una riga, una colonna o una diagonale." },
+        { name: "Bingo", text: "Vince il primo con una linea completa; se più giocatori fanno bingo insieme, vincono tutti." },
       ],
       faq: [
         {
           question: "Come si gioca a Bingo?",
           answer:
-            "Hai una cartella con dei numeri; vengono estratti numeri che segni, e vinci quando per primo completi lo schema concordato — una riga, una colonna, una diagonale o l'intera cartella.",
+            "Hai una cartella 5×5 con dei numeri; i numeri estratti si segnano in automatico e vinci quando per primo completi una linea — una riga, una colonna o una diagonale.",
         },
       ],
     },
     WORDS: {
       title: "Words",
-      players: "2",
-      summary: "Gioca a \"Words\" online — il gioco di parole in cui componi lettere in parole e punti sul tabellone.",
+      players: "2–4",
+      summary: "Gioca a «Words» online — la catena di parole in cui ogni parola inizia con l'ultima lettera della precedente.",
       intro:
-        "\"Words\" è un gioco di parole per due su un tabellone di lettere. Disponi le tessere con le lettere in parole che si incrociano e accumuli punti dal valore delle lettere e dalle caselle bonus.",
+        "«Words» è un gioco a catena di parole per 2 a 4 giocatori. Ogni nuova parola deve iniziare con l'ultima lettera della precedente; ognuno ha 3 vite, e vince l'ultimo giocatore rimasto in gioco.",
       howTo: [
-        { name: "Lettere", text: "Peschi tessere con lettere, ognuna con il proprio valore in punti." },
-        { name: "Composizione", text: "Disponi parole sul tabellone — in orizzontale o in verticale, collegandole a quelle già posate." },
-        { name: "Bonus", text: "Le caselle a lettera doppia/tripla o parola moltiplicano i tuoi punti." },
-        { name: "Vittoria", text: "Vince il giocatore con più punti quando le tessere finiscono." },
+        {
+          name: "Catena",
+          text: "Il gioco parte da una parola; ogni parola successiva deve iniziare con l'ultima lettera della precedente.",
+        },
+        { name: "Parola valida", text: "La parola deve essere nel dizionario e non già usata nella partita." },
+        {
+          name: "Vite",
+          text: "Una parola sbagliata o un passo ti costa una delle tue tre vite; il passo porta una nuova parola da cui ripartire.",
+        },
+        { name: "Vittoria", text: "Chi resta senza vite è eliminato; vince l'ultimo rimasto." },
       ],
       faq: [
         {
-          question: "Come si gioca a \"Words\"?",
+          question: "Come si gioca a «Words»?",
           answer:
-            "Disponi le tessere con le lettere in parole incrociate sul tabellone e fai punti in base alle lettere e alle caselle bonus — vince il giocatore con il punteggio più alto alla fine.",
+            "A turno ognuno dice una parola del dizionario che inizia con l'ultima lettera della precedente e non è già stata usata; un errore o un passo costa una delle 3 vite — vince l'ultimo giocatore rimasto.",
         },
       ],
     },

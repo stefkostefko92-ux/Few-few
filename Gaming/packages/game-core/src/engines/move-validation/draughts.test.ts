@@ -9,6 +9,8 @@ const empty = (): DraughtsState => ({
   winner: null,
   done: false,
   noCaptureMoves: 0,
+  pending: [],
+  positions: [],
 });
 
 const idx = (r: number, c: number) => r * 8 + c;
@@ -152,29 +154,122 @@ describe("draughts mid-chain crowning (international rule)", () => {
   });
 });
 
-describe("draughts quiet-game cap", () => {
-  it("draws when the 80-ply no-capture cap hits with equal material", () => {
+describe("draughts „турски удар“ (взетите остават до края на хода)", () => {
+  it("дамката не минава през вече взет пул и не се обръща да вземе още", () => {
     const s = empty();
-    s.board[idx(5, 0)] = "w";
-    s.board[idx(2, 7)] = "b";
-    s.noCaptureMoves = 79;
-    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 0), to: idx(4, 1) }, rng());
-    expect(r.state.done).toBe(true);
-    expect(r.state.winner).toBeNull();
-    expect(r.events.some((e) => e.type === "DRAW")).toBe(true);
-    const score = draughtsEngine.score(r.state);
-    expect(score.every((x) => x.result === "draw")).toBe(true);
+    s.board[idx(4, 3)] = "W";
+    s.board[idx(2, 5)] = "b";
+    s.board[idx(6, 1)] = "b";
+    s.board[idx(0, 1)] = "b";
+    // Всички вземания са дълги 1 → и трите приземявания са законни.
+    const acts = draughtsEngine.legalActions(s, 0);
+    for (const to of [idx(1, 6), idx(0, 7), idx(7, 0)]) {
+      expect(acts).toContainEqual({ type: "MOVE", from: idx(4, 3), to });
+    }
+    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(4, 3), to: idx(1, 6) }, rng());
+    // Без продължение (1,6)->(7,0) през взетия (2,5): ходът свършва, пулът се маха.
+    expect(r.state.chainFrom).toBeNull();
+    expect(r.state.turn).toBe(1);
+    expect(r.state.board[idx(2, 5)]).toBeNull();
+    expect(r.state.board[idx(6, 1)]).toBe("b");
+    expect(r.state.pending).toEqual([]);
   });
 
-  it("awards the material leader when the cap hits unevenly", () => {
+  it("законно вземане с пул не се изключва от надуто „максимално“ вземане", () => {
+    const s = empty();
+    s.board[idx(4, 3)] = "W";
+    s.board[idx(2, 5)] = "b";
+    s.board[idx(6, 1)] = "b";
+    s.board[idx(0, 1)] = "b";
+    s.board[idx(6, 5)] = "w";
+    s.board[idx(5, 6)] = "b";
+    expect(draughtsEngine.legalActions(s, 0)).toContainEqual({
+      type: "MOVE",
+      from: idx(6, 5),
+      to: idx(4, 7),
+    });
+  });
+
+  it("мид-верига взетият пул стои на дъската и блокира; махат се всички накрая", () => {
     const s = empty();
     s.board[idx(5, 0)] = "w";
-    s.board[idx(5, 4)] = "w";
-    s.board[idx(2, 7)] = "b";
-    s.noCaptureMoves = 79;
-    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 0), to: idx(4, 1) }, rng());
+    s.board[idx(4, 1)] = "b";
+    s.board[idx(2, 3)] = "b";
+    const r1 = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 0), to: idx(3, 2) }, rng());
+    expect(r1.state.board[idx(4, 1)]).toBe("b"); // още на дъската
+    expect(r1.state.pending).toEqual([idx(4, 1)]);
+    // Пулът не може да скочи обратно през взетия (4,1).
+    expect(draughtsEngine.legalActions(r1.state, 0)).toEqual([
+      { type: "MOVE", from: idx(3, 2), to: idx(1, 4) },
+    ]);
+    const r2 = draughtsEngine.reduce(r1.state, { type: "MOVE", from: idx(3, 2), to: idx(1, 4) }, rng());
+    expect(r2.state.board[idx(4, 1)]).toBeNull();
+    expect(r2.state.board[idx(2, 3)]).toBeNull();
+    expect(r2.state.pending).toEqual([]);
+  });
+});
+
+describe("draughts реми", () => {
+  it("25 хода на страна (50 полухода) само с дамки → реми, не победа по материал", () => {
+    const s = empty();
+    s.board[idx(7, 0)] = "W";
+    s.board[idx(5, 4)] = "W"; // бял материал повече — без значение
+    s.board[idx(0, 7)] = "B";
+    s.noCaptureMoves = 49;
+    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(7, 0), to: idx(6, 1) }, rng());
     expect(r.state.done).toBe(true);
-    expect(r.state.winner).toBe(0);
+    expect(r.state.winner).toBeNull();
+    expect(r.events).toContainEqual({ type: "DRAW" });
+    expect(draughtsEngine.score(r.state).every((x) => x.result === "draw")).toBe(true);
+  });
+
+  it("ход на обикновен пул нулира брояча (без реми)", () => {
+    const s = empty();
+    s.board[idx(5, 0)] = "w";
+    s.board[idx(0, 7)] = "B";
+    s.noCaptureMoves = 49;
+    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 0), to: idx(4, 1) }, rng());
+    expect(r.state.done).toBe(false);
+    expect(r.state.noCaptureMoves).toBe(0);
+  });
+
+  it("вземане нулира брояча", () => {
+    const s = empty();
+    s.board[idx(7, 0)] = "W";
+    s.board[idx(5, 2)] = "b";
+    s.board[idx(0, 7)] = "B";
+    s.noCaptureMoves = 49;
+    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(7, 0), to: idx(4, 3) }, rng());
+    expect(r.state.done).toBe(false);
+    expect(r.state.noCaptureMoves).toBe(0);
+  });
+
+  it("трикратно повторение на позицията → реми", () => {
+    // Дамките са на ръбовете, без обща диагонал с празно поле зад — няма вземания.
+    const s = empty();
+    s.board[idx(7, 6)] = "W";
+    s.board[idx(0, 1)] = "B";
+    const seq = [
+      [idx(7, 6), idx(6, 7)],
+      [idx(0, 1), idx(1, 0)],
+      [idx(6, 7), idx(7, 6)],
+      [idx(1, 0), idx(0, 1)],
+    ] as const;
+    let last = s;
+    // Позицията след 1-вия полуход (черни на ход) се повтаря на 5-ия и 9-ия →
+    // третото ѝ появяване (9-ият полуход) е реми, не по-рано.
+    for (let i = 0; i < 9; i++) {
+      const [from, to] = seq[i % 4]!;
+      expect(last.done).toBe(false);
+      last = draughtsEngine.reduce(last, { type: "MOVE", from, to }, rng()).state;
+    }
+    expect(last.done).toBe(true);
+    expect(last.winner).toBeNull();
+  });
+
+  it("не предлага действия, различни от MOVE (клиентът няма бутони за реми)", () => {
+    const s = draughtsEngine.init({ seats: 2 }, rng());
+    expect(draughtsEngine.legalActions(s, 0).every((a) => a.type === "MOVE")).toBe(true);
   });
 });
 

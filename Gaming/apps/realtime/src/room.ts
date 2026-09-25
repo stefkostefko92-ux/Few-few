@@ -205,8 +205,11 @@ export class GameRoom {
       });
       return;
     }
+    // Keep the running deadline: a hidden move (e.g. Кент's SIGNAL) must not
+    // visibly reset the clock that the other seats see.
+    const prevEndsAt = this.turnEndsAt;
     this.clearTurnTimer();
-    this.applyReduce(action);
+    this.applyReduce(action, prevEndsAt);
     void this.runBots();
   }
 
@@ -354,7 +357,16 @@ export class GameRoom {
     void this.finish(this.withLivePoints(score));
   }
 
-  private applyReduce(action: unknown): void {
+  /**
+   * Apply one action and fan out the result. Returns true for a HIDDEN move:
+   * every event was redacted away for at least one seat and the same seat is
+   * still on turn (e.g. Кент's secret SIGNAL). Such a move must be invisible to
+   * those seats — no empty GAME_EVENTS packet, no GAME_STATE re-send, no reset
+   * turn deadline — or the side channel itself would leak the secret.
+   */
+  private applyReduce(action: unknown, prevEndsAt = 0): boolean {
+    const prevState = this.state;
+    const prevSeat = this.currentSeat()?.seat ?? null;
     let result: { state: unknown; events: unknown };
     try {
       result = this.engine.reduce(this.state, action, this.rng);
@@ -362,35 +374,66 @@ export class GameRoom {
       // An illegal/stale action must never crash the node (it would kill every
       // live match here). Log and ignore — the authoritative state is unchanged.
       logger.warn({ err, matchId: this.matchId }, "engine.reduce threw; ignoring action");
-      return;
+      if (prevEndsAt) this.rearmUntil(prevEndsAt);
+      return false;
     }
     const { state, events } = result;
     this.state = state;
     this.ply++;
+    const all = events as unknown[];
+    // Seats for which the engine filtered out EVERY event of this move.
+    const blind = new Set<number>();
     for (const s of this.seats) {
-      if (s.userId) {
-        // Per-seat event redaction (e.g. Кент's secret SIGNAL reaches only the
-        // partner). Engines without the hook broadcast events verbatim.
-        const forSeat = this.engine.redactEvent
-          ? (events as unknown[])
-              .map((ev) => this.engine.redactEvent!(ev as never, s.seat))
-              .filter((ev) => ev !== null)
-          : events;
-        this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.GAME_EVENTS, {
-          matchId: this.matchId,
-          events: forSeat,
-        });
-      }
+      // Per-seat event redaction (e.g. Кент's secret SIGNAL reaches only the
+      // partner). Engines without the hook broadcast events verbatim.
+      const forSeat = this.engine.redactEvent
+        ? all.map((ev) => this.engine.redactEvent!(ev as never, s.seat)).filter((ev) => ev !== null)
+        : all;
+      if (all.length > 0 && forSeat.length === 0) blind.add(s.seat);
+      // Never send an empty packet: its mere arrival would be a signal.
+      if (!s.userId || forSeat.length === 0) continue;
+      this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.GAME_EVENTS, {
+        matchId: this.matchId,
+        events: forSeat,
+      });
     }
     if (this.engine.isTerminal(this.state)) {
       this.clearTurnTimer();
       this.broadcastState();
       void this.finish();
-    } else {
+      return false;
+    }
+    const hidden = blind.size > 0 && (this.currentSeat()?.seat ?? null) === prevSeat;
+    if (!hidden) {
       // Arm before broadcasting so the state carries the fresh turn deadline.
       this.armTurnTimer();
       this.broadcastState();
+      return false;
     }
+    // Hidden move: the same seat keeps its ORIGINAL deadline, and seats that saw
+    // nothing get no GAME_STATE either — unless their redacted view really
+    // changed (then correctness wins; the engine's tests guard against that).
+    if (prevEndsAt) this.rearmUntil(prevEndsAt);
+    for (const s of this.seats) {
+      if (!blind.has(s.seat)) {
+        this.sendStateTo(s);
+        continue;
+      }
+      const before = stable(this.engine.redact(prevState, s.seat));
+      const after = stable(this.engine.redact(this.state, s.seat));
+      if (before !== after) this.sendStateTo(s);
+    }
+    return true;
+  }
+
+  /** Re-arm the current seat's clock to an EXISTING absolute deadline. */
+  private rearmUntil(endsAt: number): void {
+    this.clearTurnTimer();
+    if (this.done) return;
+    const seat = this.currentSeat();
+    if (!seat || this.isBotDriven(seat)) return;
+    this.turnEndsAt = endsAt;
+    this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), Math.max(0, endsAt - Date.now()));
   }
 
   /** Drive consecutive bot turns until a human must act or the game ends.
@@ -399,6 +442,9 @@ export class GameRoom {
   private async runBots(): Promise<void> {
     if (this.botLoopRunning) return;
     this.botLoopRunning = true;
+    // After a hidden move the same bot acts again with NO extra pause — a longer
+    // gap before its visible move would itself reveal the secret (timing channel).
+    let skipDelay = false;
     try {
       while (!this.done && !this.engine.isTerminal(this.state)) {
         const seat = this.currentSeat();
@@ -412,7 +458,8 @@ export class GameRoom {
         const cueState = this.state as { lastShotMs?: number; shotNo?: number };
         const animMs = isCue ? cueState.lastShotMs ?? ((cueState.shotNo ?? 0) > 0 ? 3500 : 0) : 0;
         const botDelay = isCue ? Math.max(2000 + Math.floor(Math.random() * 1000), animMs + 800) : 350;
-        await new Promise((r) => setTimeout(r, botDelay));
+        if (!skipDelay) await new Promise((r) => setTimeout(r, botDelay));
+        skipDelay = false;
         if (this.done || this.engine.isTerminal(this.state)) break;
         // Recompute against the CURRENT state after the await (it may have moved
         // on, e.g. the player reclaimed), and only act if still AI-driven.
@@ -420,7 +467,7 @@ export class GameRoom {
         if (!now || !this.isBotDriven(now) || now.seat !== seat.seat) continue;
         const action = (now.bot ?? this.fallbackBot).pick(this.engine, this.state, now.seat);
         if (action === null) break;
-        this.applyReduce(action);
+        skipDelay = this.applyReduce(action);
       }
     } finally {
       this.botLoopRunning = false;

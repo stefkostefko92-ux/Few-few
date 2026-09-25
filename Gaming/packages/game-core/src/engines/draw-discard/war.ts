@@ -22,7 +22,8 @@ import { buildDeck, hiddenLike, RANK_VALUE, RANKS_52, rankOf, type Card } from "
  * deck, so comebacks and hot streaks actually swing the match.
  *
  * Fully determined by the shuffle plus the FIGHT/SKIRMISH choices. A flip cap
- * guarantees termination; if reached, the player holding more cards wins.
+ * guarantees termination; if reached, the player holding more cards wins —
+ * при равен брой карти (26:26) мачът е реми.
  */
 
 export interface WarState {
@@ -122,7 +123,16 @@ export const warEngine: GameEngine<WarState, WarAction, WarEvent> = {
   },
 
   score(state): SeatScore[] {
-    const winner = state.winner ?? (state.hands[0]!.length >= state.hands[1]!.length ? 0 : 1);
+    const n0 = state.hands[0]!.length;
+    const n1 = state.hands[1]!.length;
+    // Без победител и с равен брой карти (напр. 26:26 на тавана) → реми.
+    if (state.winner === null && n0 === n1) {
+      return [
+        { seat: 0, result: "draw", points: 0 },
+        { seat: 1, result: "draw", points: 0 },
+      ];
+    }
+    const winner = state.winner ?? (n0 > n1 ? 0 : 1);
     const loser: Seat = winner === 0 ? 1 : 0;
     return [
       { seat: winner, result: "win", points: 1 },
@@ -214,12 +224,16 @@ function awardPile(
     return finish(next, hands[0]!.length === 0 ? 1 : 0, events);
   }
   if (flips >= MAX_FLIPS) {
-    return finish(next, hands[0]!.length >= hands[1]!.length ? 0 : 1, events);
+    const n0 = hands[0]!.length;
+    const n1 = hands[1]!.length;
+    // Таван: печели държащият повече карти; при равенство победител няма — реми.
+    return finish(next, n0 === n1 ? null : n0 > n1 ? 0 : 1, events);
   }
   return { state: next, events };
 }
 
-function finish(state: WarState, winner: Seat, events: WarEvent[]): { state: WarState; events: WarEvent[] } {
-  events.push({ type: "WIN", seat: winner });
+/** Край на мача; `winner === null` = реми (без WIN събитие). */
+function finish(state: WarState, winner: Seat | null, events: WarEvent[]): { state: WarState; events: WarEvent[] } {
+  if (winner !== null) events.push({ type: "WIN", seat: winner });
   return { state: { ...state, winner, done: true, phase: "FLIP" }, events };
 }

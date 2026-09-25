@@ -39,6 +39,9 @@ export interface ShotResult {
   firstContact: number | null;
   /** A cushion was struck (by any ball) after the first ball-ball contact. */
   cushionAfterContact: boolean;
+  /** Брой РАЗЛИЧНИ обектни топки (не бялата), ударили борд по време на удара —
+   *  нужен за законното разбиване в пула (WPA: ≥4 топки до борд или вкарана топка). */
+  cushionBalls: number;
   /** Sampled positions over time for client-side animation (60 fps). */
   frames: Frame[];
 }
@@ -97,6 +100,7 @@ export function runShot(balls: readonly Ball[], shot: Shot): ShotResult {
   let cueScratch = false;
   let firstContact: number | null = null;
   let cushionAfterContact = false;
+  const railed = new Set<number>(); // обектни топки, докоснали борд
   const frames: Frame[] = [];
   const r = TABLE.ballR;
 
@@ -126,6 +130,7 @@ export function runShot(balls: readonly Ball[], shot: Shot): ShotResult {
         continue;
       }
       // Cushions (reflect; pockets already captured at the rails).
+      if (b.id !== 0 && (b.x < r || b.x > TABLE.w - r || b.y < r || b.y > TABLE.h - r)) railed.add(b.id);
       if (b.x < r) {
         b.x = r;
         b.vx = -b.vx * CUSHION_REST;
@@ -215,7 +220,7 @@ export function runShot(balls: readonly Ball[], shot: Shot): ShotResult {
     b.vx = 0;
     b.vy = 0;
   }
-  return { finalBalls: bs, potted, cueScratch, firstContact, cushionAfterContact, frames };
+  return { finalBalls: bs, potted, cueScratch, firstContact, cushionAfterContact, cushionBalls: railed.size, frames };
 }
 
 /** Place a ball at rest. */
@@ -259,4 +264,6 @@ export type CueEvent =
   | { type: "SHOT"; seat: number; angle: number; power: number; before: Ball[]; potted: number[]; cueScratch: boolean }
   | { type: "FOUL"; seat: number; reason: string }
   | { type: "POINTS"; seat: number; points: number }
+  /** Предупреждение към играча (напр. 9-ball „twoFouls“ — трети пореден фал губи рака). */
+  | { type: "WARNING"; seat: number; reason: string }
   | { type: "WIN"; seat: number };
