@@ -152,7 +152,9 @@ function OverviewTab({ data }) {
           <Field label={t("game.trivia.schedule")}>
             <select className="cs-select" value={form.triviaSchedule} onChange={set("triviaSchedule")}>
               <option value="">{t("game.trivia.off")}</option>
-              <option value="daily">{t("game.trivia.daily")}</option>
+              {/* Дневната trivia е Premium (backend връща 403) — заключена предварително,
+                  вместо да пусне заявка и да покаже грешка (одит 25.09.2026). */}
+              <option value="daily" disabled={!data.isPremium}>{t("game.trivia.daily")}{data.isPremium ? "" : " · Premium"}</option>
               <option value="weekly">{t("game.trivia.weekly")}</option>
             </select>
           </Field>

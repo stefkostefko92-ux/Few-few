@@ -675,7 +675,11 @@ cron.schedule("11 * * * *", job("game-trivia", async () => {
 
 // Етап 4: краят на сезона (веднъж на сървър, идемпотентно по lastSeasonId) —
 // топ 3 по сезонно XP към бота за обява, seasonXp → 0; нива/искри/спътници остават.
-cron.schedule("23 4 * * *", job("game-season", async () => {
+// На всеки 5 минути, не веднъж дневно (одит 25.09.2026): нулирането трие и XP-то,
+// натрупано в НОВИЯ сезон между края на стария и пускането на задачата — при
+// 04:23 това бяха до 4 часа игра. Сега прозорецът е ≤ 5 min; когато всички сървъри
+// са затворени, задачата е една заявка за сезоните + празен findMany.
+cron.schedule("*/5 * * * *", job("game-season", async () => {
   const { closeSeasonIfEnded } = await import("../lib/game/season.js");
   const r = await closeSeasonIfEnded();
   if (r.closed) await jobHeartbeat("game-season", r);

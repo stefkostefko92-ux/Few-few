@@ -143,6 +143,7 @@ export default {
   "game.shop.empty": "Магазинът е празен — администраторите добавят артикули от таблото → Игра → Магазин.",
   "game.shop.days": "{{days}} дни",
   "game.shop.left": "остават {{n}}",
+  "game.shop.more": "…и още {{n}} — изберете ги от менюто отдолу.",
   "game.shop.balance": "Твоят баланс: ✨ {{sparks}}",
   "game.shop.pick": "Избери артикул за покупка…",
   "game.shop.cancelled": "Покупката е отказана.",

@@ -145,6 +145,7 @@ export default {
   "game.shop.empty": "La boutique est vide — les admins ajoutent des articles dans le tableau de bord → Jeu → Boutique.",
   "game.shop.days": "{{days}} jours",
   "game.shop.left": "{{n}} restants",
+  "game.shop.more": "…et {{n}} de plus — choisis-les dans le menu ci-dessous.",
   "game.shop.balance": "Ton solde : ✨ {{sparks}}",
   "game.shop.pick": "Choisis un article à acheter…",
   "game.shop.cancelled": "Achat annulé.",

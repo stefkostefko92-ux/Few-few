@@ -13,7 +13,7 @@ export async function handleGameInteraction(interaction) {
   const id = interaction.customId;
   if (interaction.isButton() && id.startsWith("game:trivia:")) { const [, , roundId, opt] = id.split(":"); return answerTrivia(interaction, roundId, Number(opt)); }
   if (interaction.isButton() && id.startsWith("game:wyr:")) return voteWyr(interaction, id.split(":")[2]);
-  if (interaction.isStringSelectMenu() && id === "game:shop") return confirmPurchase(interaction, interaction.values[0]);
+  if (interaction.isStringSelectMenu() && /^game:shop(?::\d+)?$/.test(id)) return confirmPurchase(interaction, interaction.values[0]);
   if (interaction.isButton() && id.startsWith("game:buy:")) return buyItem(interaction, id.split(":")[2]);
   if (interaction.isButton() && id.startsWith("game:catch:")) return catchSpawn(interaction, id.split(":")[2]);
   if (interaction.isButton() && id.startsWith("game:release:")) return releaseCompanion(interaction, id.split(":")[2]);
@@ -76,7 +76,7 @@ async function catchSpawn(interaction, spawnId) {
     ({ data: out } = await api.post(`/bot/game/spawn/${spawnId}/catch`, { userId: interaction.user.id, serverId: interaction.guildId }));
   } catch (err) {
     const d = err?.response?.data || {};
-    const map = { ALREADY_CAUGHT: "game.spawn.tooSlow", SPAWN_EXPIRED: "game.spawn.expired", SPAWN_NOT_FOUND: "game.spawn.expired", COLLECTION_FULL: "game.spawn.full" };
+    const map = { ALREADY_CAUGHT: "game.spawn.tooSlow", SPAWN_EXPIRED: "game.spawn.expired", SPAWN_NOT_FOUND: "game.spawn.expired", COLLECTION_FULL: "game.spawn.full", GAME_DISABLED: "game.disabled" };
     const key = map[d.error || d.code];
     return interaction.reply({ content: key ? t(key, lang, { limit: d.limit ?? 1 }) : friendlyError(err, interaction).content, flags: MessageFlags.Ephemeral });
   }
@@ -139,7 +139,7 @@ async function resolveTrade(interaction, tradeId, accept) {
     ({ data: out } = await api.post(`/bot/game/trade/${tradeId}/resolve`, { userId: interaction.user.id, accept, serverId: interaction.guildId }));
   } catch (err) {
     const d = err?.response?.data || {};
-    const map = { NOT_RECIPIENT: "game.companion.tradeNotRecipient", TRADE_EXPIRED: "game.companion.tradeGone", TRADE_CLOSED: "game.companion.tradeGone", TRADE_NOT_FOUND: "game.companion.tradeGone", TRADE_STALE: "game.companion.tradeGone" };
+    const map = { NOT_RECIPIENT: "game.companion.tradeNotRecipient", TRADE_EXPIRED: "game.companion.tradeGone", TRADE_CLOSED: "game.companion.tradeGone", TRADE_NOT_FOUND: "game.companion.tradeGone", TRADE_STALE: "game.companion.tradeGone", GAME_DISABLED: "game.disabled" };
     const key = map[d.error || d.code];
     return interaction.reply({ content: key ? t(key, lang) : friendlyError(err, interaction).content, flags: MessageFlags.Ephemeral });
   }

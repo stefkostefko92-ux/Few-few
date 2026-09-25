@@ -145,6 +145,7 @@ export default {
   "game.shop.empty": "De winkel is leeg — admins voegen items toe in het dashboard → Spel → Winkel.",
   "game.shop.days": "{{days}} dagen",
   "game.shop.left": "nog {{n}}",
+  "game.shop.more": "…en nog {{n}} — kies ze in het menu hieronder.",
   "game.shop.balance": "Je saldo: ✨ {{sparks}}",
   "game.shop.pick": "Kies een item om te kopen…",
   "game.shop.cancelled": "Aankoop geannuleerd.",

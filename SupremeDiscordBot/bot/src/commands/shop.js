@@ -10,28 +10,48 @@ import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
+// Лимити на Discord: embed description ≤ 4096 знака, select меню ≤ 25 опции,
+// ≤ 5 реда компоненти. Premium позволява 50 артикула (premium.js) — затова до ДВЕ
+// менюта (2 × 25) и описание, отрязано под лимита (одит 25.09.2026: при 50
+// артикула с описания /shop връщаше грешка от Discord, а 26–50 не се купуваха).
+export const SHOP_DESC_MAX = 3900;
 export function buildShopMessage(items, sparks, lang) {
   const embed = new EmbedBuilder().setColor(BRAND).setTitle(t("game.shop.title", lang));
   if (!items.length) {
     embed.setDescription(t("game.shop.empty", lang));
     return { embeds: [embed], components: [] };
   }
-  embed.setDescription(items.map((i) => {
+  const blocks = items.map((i) => {
     const bits = [`**${i.name}** — ✨ ${i.priceSparks}`];
     if (i.durationDays) bits.push(t("game.shop.days", lang, { days: i.durationDays }));
     if (i.stockLeft != null) bits.push(t("game.shop.left", lang, { n: i.stockLeft }));
-    return `${bits.join(" · ")}${i.description ? `\n${i.description}` : ""}`;
-  }).join("\n\n"));
+    const desc = i.description ? `\n${i.description.length > 160 ? `${i.description.slice(0, 159)}…` : i.description}` : "";
+    return `${bits.join(" · ")}${desc}`;
+  });
+  let text = "";
+  let shown = 0;
+  for (const b of blocks) {
+    const next = text ? `${text}\n\n${b}` : b;
+    if (next.length > SHOP_DESC_MAX) break;
+    text = next; shown++;
+  }
+  if (shown < blocks.length) text += `\n\n${t("game.shop.more", lang, { n: blocks.length - shown })}`;
+  embed.setDescription(text);
   embed.setFooter({ text: t("game.shop.balance", lang, { sparks }) });
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId("game:shop")
-    .setPlaceholder(t("game.shop.pick", lang))
-    .addOptions(items.slice(0, 25).map((i) => ({
-      label: i.name.slice(0, 100),
-      description: `✨ ${i.priceSparks}${i.durationDays ? ` · ${i.durationDays}d` : ""}`.slice(0, 100),
-      value: i.id,
-    })));
-  return { embeds: [embed], components: [new ActionRowBuilder().addComponents(menu)] };
+  const rows = [];
+  for (let page = 0; page * 25 < Math.min(items.length, 50); page++) {
+    const chunk = items.slice(page * 25, page * 25 + 25);
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId(page === 0 ? "game:shop" : `game:shop:${page + 1}`)
+      .setPlaceholder(page === 0 ? t("game.shop.pick", lang) : `${t("game.shop.pick", lang)} (${page * 25 + 1}–${page * 25 + chunk.length})`)
+      .addOptions(chunk.map((i) => ({
+        label: i.name.slice(0, 100),
+        description: `✨ ${i.priceSparks}${i.durationDays ? ` · ${i.durationDays}d` : ""}`.slice(0, 100),
+        value: i.id,
+      })));
+    rows.push(new ActionRowBuilder().addComponents(menu));
+  }
+  return { embeds: [embed], components: rows };
 }
 
 export default {

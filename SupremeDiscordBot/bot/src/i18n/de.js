@@ -145,6 +145,7 @@ export default {
   "game.shop.empty": "Der Shop ist leer — Admins fügen Artikel im Dashboard → Spiel → Shop hinzu.",
   "game.shop.days": "{{days}} Tage",
   "game.shop.left": "noch {{n}}",
+  "game.shop.more": "…und {{n}} weitere — wähle sie im Menü unten.",
   "game.shop.balance": "Dein Guthaben: ✨ {{sparks}}",
   "game.shop.pick": "Wähle einen Artikel…",
   "game.shop.cancelled": "Kauf abgebrochen.",

@@ -84,9 +84,21 @@ export function validateSeasonInput({ code, name, startsAt, endsAt, companionIds
   return { ok: true };
 }
 
+/**
+ * Сезоните не бива да се застъпват (одит 25.09.2026): при застъпване краят на
+ * стария сезон нулира сезонното XP, вече натрупано в новия. Границите може да
+ * се допират (край на S1 = старт на S2).
+ */
+export function overlapping(rows, { startsAt, endsAt }, exceptCode = null) {
+  const s = new Date(startsAt).getTime(), e = new Date(endsAt).getTime();
+  return (rows || []).find((r) => r.code !== exceptCode && s < new Date(r.endsAt).getTime() && new Date(r.startsAt).getTime() < e) || null;
+}
+
 export async function createSeason({ code, name, startsAt, endsAt, companionIds = [] }) {
   const v = validateSeasonInput({ code, name, startsAt, endsAt, companionIds });
   if (!v.ok) return { ok: false, code: "INVALID", error: v.error };
+  const clash = overlapping(await listSeasons(), { startsAt, endsAt });
+  if (clash) return { ok: false, code: "OVERLAP", error: `Застъпва се със сезон ${clash.code} (${new Date(clash.startsAt).toISOString().slice(0, 10)} → ${new Date(clash.endsAt).toISOString().slice(0, 10)})` };
   try {
     const row = await prisma.gameSeason.create({ data: { code, name: name.trim(), startsAt: new Date(startsAt), endsAt: new Date(endsAt), companionIds } });
     invalidateSeasonCache();
@@ -103,6 +115,8 @@ export async function updateSeason(code, patch) {
   const merged = { startsAt: patch.startsAt ?? existing.startsAt, endsAt: patch.endsAt ?? existing.endsAt, name: patch.name, companionIds: patch.companionIds };
   const v = validateSeasonInput(merged, { requireCode: false });
   if (!v.ok) return { ok: false, code: "INVALID", error: v.error };
+  const clash = overlapping(await listSeasons(), merged, code);
+  if (clash) return { ok: false, code: "OVERLAP", error: `Застъпва се със сезон ${clash.code} (${new Date(clash.startsAt).toISOString().slice(0, 10)} → ${new Date(clash.endsAt).toISOString().slice(0, 10)})` };
   const data = {};
   if (patch.name !== undefined) data.name = patch.name.trim();
   if (patch.startsAt !== undefined) data.startsAt = new Date(patch.startsAt);

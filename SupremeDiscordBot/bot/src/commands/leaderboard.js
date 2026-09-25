@@ -1,6 +1,6 @@
 // bot/src/commands/leaderboard.js
 // v50 — Server Season: топ 10 по XP (по подразбиране), искри или сезонно XP.
-import { MessageFlags, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { t, resolveLang } from "../i18n/index.js";
 import { friendlyError } from "../utils/friendlyError.js";
@@ -27,7 +27,7 @@ export default {
     } catch (err) {
       return interaction.editReply(friendlyError(err, interaction));
     }
-    if (!data.rows?.length) return interaction.editReply({ content: t("game.leaderboard.empty", lang), flags: MessageFlags.Ephemeral });
+    if (!data.rows?.length) return interaction.editReply({ content: t("game.leaderboard.empty", lang) }); // defer е публичен — editReply не може да го направи личен
     const lines = data.rows.map((r, i) => {
       const value = by === "sparks" ? `✨ ${r.sparks}` : by === "seasonXp" ? `${r.seasonXp} XP` : `${t("game.leaderboard.level", lang, { level: r.level })} · ${r.xp} XP`;
       return `${MEDALS[i] || `**${i + 1}.**`} <@${r.userId}> — ${value}`;

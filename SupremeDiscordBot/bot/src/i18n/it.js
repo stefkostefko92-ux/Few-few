@@ -143,6 +143,7 @@ export default {
   "game.shop.empty": "Il negozio è vuoto — gli admin aggiungono articoli dalla dashboard → Gioco → Negozio.",
   "game.shop.days": "{{days}} giorni",
   "game.shop.left": "ne restano {{n}}",
+  "game.shop.more": "…e altri {{n}} — sceglili dal menu qui sotto.",
   "game.shop.balance": "Il tuo saldo: ✨ {{sparks}}",
   "game.shop.pick": "Scegli un articolo da comprare…",
   "game.shop.cancelled": "Acquisto annullato.",

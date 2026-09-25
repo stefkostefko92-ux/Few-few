@@ -136,3 +136,16 @@ describe("обявата „ниво нагоре“ минава през i18n 
     expect(send).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("магазинът спазва лимитите на Discord (одит 25.09.2026)", () => {
+  it("50 артикула с дълги описания: описание ≤ 4096, две менюта по 25, всички 50 купуеми", async () => {
+    const { buildShopMessage } = await import("../commands/shop.js");
+    const items = Array.from({ length: 50 }, (_, i) => ({ id: `it${i}`, name: `Item ${i}`, priceSparks: 10 + i, description: "x".repeat(300), durationDays: 7, stockLeft: null }));
+    const m = buildShopMessage(items, 100, "en");
+    expect(m.embeds[0].toJSON().description.length).toBeLessThanOrEqual(4096);
+    expect(m.embeds[0].toJSON().description).toMatch(/more/);
+    const menus = m.components.map((r) => r.toJSON().components[0]);
+    expect(menus.map((x) => x.custom_id)).toEqual(["game:shop", "game:shop:2"]);
+    expect(menus.flatMap((x) => x.options.map((o) => o.value))).toHaveLength(50);
+  });
+});

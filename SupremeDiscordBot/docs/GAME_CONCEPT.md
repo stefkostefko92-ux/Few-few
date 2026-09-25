@@ -147,7 +147,7 @@ Discord [App Discovery: Content Requirements Policy](https://support-dev.discord
 | 3 ✅ | Седмични сървърни куестове (ротация, цел по играчи, лента за напредък, награди за всеки принесъл + сандък), Counting (само в обявения канал), trivia (60 проверени въпроса; Premium: от базата знания), `/wyr`, `/tod` | `lib/game/quests.js`, `questOps.js`, `counting.js`, `trivia.js`, `data/triviaBank.js`, `bot/src/utils/minigames.js`, `bot/src/data/partyBanks.js` |
 | 4 ✅ | Сезони от админ конзолата (`game_seasons`: код, име, дати, сезонни спътници); краят на сезона: топ 3 → обява, `seasonXp` → 0, нива/искри/спътници остават; `docs/DISCORD_VERIFICATION.md` §3.1 (Counting като 4-та употреба на Message Content); `/features/discord-leveling-game` (SEO/AEO) | `lib/game/seasons.js`, `season.js`, `routes/adminOps.js` (Season), scheduler `game-season`, `frontend/src/data/featurePages.js` |
 
-Scheduler: `game-shop-expiry` (*/15), `game-quests` (:07), `game-trivia` (:11), `game-season` (04:23). GDPR: `/privacy info|delete` покрива всички игрови редове (`lib/dsr.js`), 30-дневната чистка на напуснал сървър — `jobs/dataRetention.js`.
+Scheduler: `game-shop-expiry` (*/15), `game-quests` (:07), `game-trivia` (:11), `game-season` (*/5 — нулирането трие ≤ 5 min от XP-то на новия сезон; сезоните не се застъпват). GDPR: `/privacy info|delete` покрива всички игрови редове (`lib/dsr.js`), 30-дневната чистка на напуснал сървър — `jobs/dataRetention.js`.
 
 **Отклонения от концепцията (съзнателни):**
 - **Trivia от базата знания е без AI** — въпросът се сглобява локално („коя статия отговаря на: <откъс>“ + 4 заглавия), нищо не отива към модел, затова гейтът `AI_REPLY_TRAINING_ATTESTED` не се прилага тук (той пази съдържание от обучение на модели; модел няма).
@@ -156,4 +156,5 @@ Scheduler: `game-shop-expiry` (*/15), `game-quests` (:07), `game-trivia` (:11), 
 - **Куест `TICKETS_SLA` не е в автоматичната ротация** — има смисъл само при панели със SLA; операторът го пуска ръчно от таблото.
 - **Сандъкът** дава спътник само на най-големия принос (при свободен слот), всички останали принесли — искри; „шанс за спътник за всички“ би раздул колекциите на Free (1 слот).
 - **`/wyr` и `/tod` са Premium** (както в таблицата §5), не Free — банките са наши, SFW, 13+.
+- **Размяната е и за Free** (§5 я води като Premium): при 1 слот размяната е едно-за-едно и не разширява колекцията, а пази социалния слой, заради който играта съществува. Premium разликата остава в слотовете, редкостите и сезонните спътници.
 - **Сезоните се управляват от админ конзолата** (таб „Season“ → `routes/adminOps.js`, `lib/game/seasons.js`, таблица `game_seasons`): код, име, старт/край и кои спътници са сезонни. Текущ = най-новият започнал сезон; нов сезон става текущ на своя старт, а предишният се затваря от нощната задача след края си. Промяната е MAIN_OWNER + свеж втори фактор (засяга всички сървъри). Празна таблица → S1 се записва автоматично при първо четене (`DEFAULT_SEASON` е само seed).

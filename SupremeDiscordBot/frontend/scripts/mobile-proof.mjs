@@ -210,6 +210,14 @@ const AXE_SRC = readFileSync(new URL("../node_modules/axe-core/axe.min.js", impo
 
 const failures = [];
 const note = (ok, msg) => { console.log(`  ${ok ? "✓" : "✗"} ${msg}`); if (!ok) failures.push(msg); };
+// Снимките са за човешко око, не критерий на гейта. `page.screenshot` чака
+// document.fonts.ready и понякога виси („waiting for fonts to load“) — неуловената
+// грешка убиваше ЦЕЛИЯ скрипт насред обиколката (одит 25.09.2026). Сега: ограничено
+// чакане на шрифтовете, после снимка; провал = предупреждение, не срив и не ✗.
+async function shot(page, file) {
+  await page.evaluate(() => Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 3000))])).catch(() => {});
+  await page.screenshot({ path: file, timeout: 15_000 }).catch((e) => console.log(`  · снимката ${file.split("/").pop()} пропусната (${e.message.split("\n")[0]})`));
+}
 
 const browser = await launch();
 const srv = await serveDist();
@@ -221,6 +229,12 @@ for (const view of [
   { tag: "desktop", viewport: { width: 1280, height: 800 } },
 ]) {
   const ctx = await browser.newContext({ ...view, tag: undefined });
+  // Външни заявки (аватари от cdn.discordapp.com в тестовите данни, шрифтове,
+  // CDN-и) минаваха през мрежата и `page.goto(waitUntil: "load")` ги чакаше —
+  // при бавна мрежа случайна страница удряше 30-секундния таймаут (одит
+  // 25.09.2026: всяко пускане пропадаше на различна страница). Проверката мери
+  // ОФОРМЛЕНИЕТО и JS грешките на нашия код — чуждите ресурси се прекъсват.
+  await ctx.route((url) => !/^(127\.0\.0\.1|localhost)$/.test(url.hostname), (route) => route.abort());
   await ctx.route("**/api/**", async (route) => {
     const req = route.request();
     const url = new URL(req.url());
@@ -246,7 +260,12 @@ for (const view of [
   for (const { path, name } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
     // НЕ networkidle: refetchInterval-ите на React Query държат мрежата будна
     // и „idle" никога не идва — таймаут, който изглежда като счупена страница.
-    await page.goto(base + path, { waitUntil: "load" }).catch((e) => note(false, `${name}: не зареди (${e.message.split("\n")[0]})`));
+    // domcontentloaded + ограничено чакане на `load`: проверката мери оформлението и
+    // JS грешките на НАШИЯ код, не кога браузърът е приключил със всичко. Със
+    // `waitUntil: "load"` случайна страница удряше 30 s таймаут в дълго пускане
+    // (одит 25.09.2026) — фалшив провал, който учи хората да игнорират гейта.
+    const nav = await page.goto(base + path, { waitUntil: "domcontentloaded" }).catch((e) => { note(false, `${name}: не зареди (${e.message.split("\n")[0]})`); return null; });
+    if (nav) await page.waitForLoadState("load", { timeout: 10_000 }).catch(() => {});
     await page.waitForTimeout(900); // данните от мока + анимациите на влизане
     // Резервният екран на ErrorBoundary = страницата НЕ работи, каквото и да казва прелива.
     const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body?.innerText || ""));
@@ -321,7 +340,7 @@ for (const view of [
     });
     note(sticking.length === 0,
       `${name}: нула хоризонтални преливи в контейнерите${sticking.length ? " → " + sticking.join(" · ") : ""}`);
-    await page.screenshot({ path: join(SHOTS, `${view.tag}-${name}.png`) });
+    await shot(page, join(SHOTS, `${view.tag}-${name}.png`));
   }
 
   // ─── Порталът на ролите: отвори и премери ────────────────────────────────
@@ -353,7 +372,7 @@ for (const view of [
       const inside = box.x >= -1 && box.y >= -1 && box.x + box.width <= vp.width + 1 && box.y + box.height <= vp.height + 1;
       note(inside, `${view.tag}: списъкът с роли е изцяло във viewport (${Math.round(box.y)}+${Math.round(box.height)} от ${vp.height})`);
       note(box.height >= 150, `${view.tag}: списъкът е използваем на височина (${Math.round(box.height)}px)`);
-      await page.screenshot({ path: join(SHOTS, `${view.tag}-role-picker-open.png`) });
+      await shot(page, join(SHOTS, `${view.tag}-role-picker-open.png`));
     }
   } else note(false, `${view.tag}: бутонът „Add role…" липсва на Settings`);
 
@@ -385,7 +404,7 @@ for (const view of [
       const vp = view.viewport;
       const inside = menu.x >= -1 && menu.y >= -1 && menu.x + menu.width <= vp.width + 1 && menu.y + menu.height <= vp.height + 1;
       note(inside, `${view.tag}: менюто за език е изцяло във viewport (x=${Math.round(menu.x)}, ${Math.round(menu.width)}px широко)`);
-      await page.screenshot({ path: join(SHOTS, `${view.tag}-language-menu-open.png`) });
+      await shot(page, join(SHOTS, `${view.tag}-language-menu-open.png`));
     }
     await page.keyboard.press("Escape");
   } else note(false, `${view.tag}: бутонът за език липсва в лентата`);

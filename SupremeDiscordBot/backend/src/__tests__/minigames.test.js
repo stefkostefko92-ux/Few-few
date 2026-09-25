@@ -284,6 +284,12 @@ describe("маршрути", () => {
     const ok = await request(app).put(`/api/game/${SID}/settings`).send({ triviaSchedule: "weekly" });
     expect(ok.status).toBe(200); expect(ok.body.triviaSchedule).toBe("weekly");
   });
+  it("сървър, свален от Premium със запазено daily, пак може да записва настройките (одит 25.09.2026)", async () => {
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ triviaSchedule: "daily" }));
+    prismaMock.gameSettings.update.mockImplementation(async ({ data }) => ({ ...settings({ triviaSchedule: "daily" }), ...data }));
+    const r = await request(app).put(`/api/game/${SID}/settings`).send({ triviaSchedule: "daily", xpPerMessage: 20 });
+    expect(r.status).toBe(200); expect(r.body.xpPerMessage).toBe(20);
+  });
   it("POST /api/game/:id/quests — лимит по tier (Free: 1) → 403 LIMIT_REACHED; валиден → 201", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
     prismaMock.serverQuest.count.mockResolvedValueOnce(1);
@@ -313,5 +319,19 @@ describe("мулти-тенант: id от бутон се сверява със
     const r = await request(a).post("/api/bot/game/spawn/sp1/catch").send({ userId: UID, serverId: SID });
     expect(r.status).toBe(404); expect(r.body.error).toBe("SPAWN_NOT_FOUND");
     expect(prismaMock.companionSpawn.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("изключена игра спира и спътниците (одит 25.09.2026)", () => {
+  it("хранене/размяна при изключена игра → 403 GAME_DISABLED, нищо не се пипа", async () => {
+    const companionsRouter = (await import("../routes/bot_companions.js")).default;
+    const a = express(); a.use(express.json()); a.use("/api/bot", companionsRouter);
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ enabled: false }));
+    let r = await request(a).post(`/api/bot/game/companions/${SID}/${UID}/feed`).send({ ownedId: "own_1", sparks: 5 });
+    expect(r.status).toBe(403); expect(r.body.code).toBe("GAME_DISABLED");
+    r = await request(a).post("/api/bot/game/trade").send({ serverId: SID, fromUserId: UID, toUserId: UID2, fromOwnedId: "a", toOwnedId: "b" });
+    expect(r.status).toBe(403);
+    expect(prismaMock.memberProgress.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.companionTrade.create).not.toHaveBeenCalled();
   });
 });

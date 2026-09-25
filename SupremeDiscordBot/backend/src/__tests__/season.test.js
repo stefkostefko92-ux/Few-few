@@ -63,6 +63,25 @@ describe("сезоните в базата", () => {
   });
 });
 
+describe("сезоните не се застъпват (одит 25.09.2026)", () => {
+  it("нов сезон, който се застъпва, → OVERLAP; допиращ се (край S1 = старт S2) минава", async () => {
+    prismaMock.gameSeason.findMany.mockResolvedValue([S1]);
+    const bad = await seasons.createSeason({ code: "S2", name: "x", startsAt: "2026-12-01T00:00:00Z", endsAt: "2027-03-01T00:00:00Z" });
+    expect(bad).toMatchObject({ ok: false, code: "OVERLAP" });
+    expect(prismaMock.gameSeason.create).not.toHaveBeenCalled();
+    prismaMock.gameSeason.create.mockImplementationOnce(async ({ data }) => ({ id: "x2", ...data }));
+    const ok = await seasons.createSeason({ code: "S2", name: "x", startsAt: "2026-12-14T00:00:00Z", endsAt: "2027-03-14T00:00:00Z" });
+    expect(ok.ok).toBe(true);
+  });
+  it("удължаване на S1 върху вече създадения S2 → OVERLAP; промяна на самия S1 без застъпване минава", async () => {
+    prismaMock.gameSeason.findMany.mockResolvedValue([S2, S1]);
+    prismaMock.gameSeason.findUnique.mockResolvedValue(S1);
+    expect((await seasons.updateSeason("S1", { endsAt: "2027-01-01T00:00:00Z" })).code).toBe("OVERLAP");
+    prismaMock.gameSeason.update.mockImplementationOnce(async ({ data }) => ({ ...S1, ...data }));
+    expect((await seasons.updateSeason("S1", { name: "Renamed" })).ok).toBe(true);
+  });
+});
+
 describe("краят на сезона", () => {
   it("преди края на последния сезон — нищо (нито четене на сървъри, нито писане)", async () => {
     prismaMock.gameSeason.findMany.mockResolvedValueOnce([S1]);

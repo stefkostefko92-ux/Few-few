@@ -22,6 +22,15 @@ async function sameServer(model, id, serverId) {
   const row = await prisma[model].findUnique({ where: { id }, select: { serverId: true } });
   return !!row && row.serverId === String(serverId);
 }
+// Изключена игра спира и спътниците, не само XP/магазина (одит 25.09.2026):
+// досега улавяне, хранене, активиране, освобождаване и размяна минаваха и след
+// като админът изключи играта.
+async function gameOff(res, serverId) {
+  const s = await getGameSettings(serverId);
+  if (s?.enabled) return false;
+  res.status(403).json({ error: "GAME_DISABLED", code: "GAME_DISABLED" });
+  return true;
+}
 const fail = (res, out) => {
   const status = { SPAWN_ACTIVE: 409, SPAWN_TOO_SOON: 429, SPAWN_NOT_FOUND: 404, ALREADY_CAUGHT: 409, SPAWN_EXPIRED: 410, COLLECTION_FULL: 403,
     NOT_OWNED: 404, MAX_STAGE: 409, NOT_ENOUGH_SPARKS: 402, INVALID_AMOUNT: 400, SELF_TRADE: 400, TRADE_PENDING: 409, TRADE_NOT_FOUND: 404,
@@ -65,6 +74,7 @@ router.post("/game/spawn/:id/catch", async (req, res, next) => {
   if (!SNOWFLAKE.test(String(userId))) return bad(res, "userId required");
   try {
     if (!(await sameServer("companionSpawn", req.params.id, serverId))) return fail(res, { code: "SPAWN_NOT_FOUND" });
+    if (await gameOff(res, serverId)) return;
     const out = await catchSpawn(req.params.id, String(userId));
     if (!out.ok) return fail(res, out);
     res.json(out);
@@ -79,6 +89,7 @@ router.post("/game/companions/:serverId/:userId/feed", async (req, res, next) =>
   const { ownedId, sparks } = req.body || {};
   if (typeof ownedId !== "string") return bad(res, "ownedId required");
   try {
+    if (await gameOff(res, req.params.serverId)) return;
     const out = await feedCompanion(req.params.serverId, req.params.userId, ownedId, sparks);
     if (!out.ok) return fail(res, out);
     res.json(out);
@@ -89,6 +100,7 @@ router.post("/game/companions/:serverId/:userId/activate", async (req, res, next
   const { ownedId } = req.body || {};
   if (typeof ownedId !== "string") return bad(res, "ownedId required");
   try {
+    if (await gameOff(res, req.params.serverId)) return;
     const out = await activateCompanion(req.params.serverId, req.params.userId, ownedId);
     if (!out.ok) return fail(res, out);
     res.json(out);
@@ -99,6 +111,7 @@ router.post("/game/companions/:serverId/:userId/release", async (req, res, next)
   const { ownedId } = req.body || {};
   if (typeof ownedId !== "string") return bad(res, "ownedId required");
   try {
+    if (await gameOff(res, req.params.serverId)) return;
     const out = await releaseCompanion(req.params.serverId, req.params.userId, ownedId);
     if (!out.ok) return fail(res, out);
     res.json(out);
@@ -109,6 +122,7 @@ router.post("/game/trade", async (req, res, next) => {
   const { serverId, fromUserId, toUserId, fromOwnedId, toOwnedId } = req.body || {};
   if (![serverId, fromUserId, toUserId].every((x) => SNOWFLAKE.test(String(x))) || typeof fromOwnedId !== "string" || typeof toOwnedId !== "string") return bad(res, "invalid trade");
   try {
+    if (await gameOff(res, serverId)) return;
     const out = await proposeTrade(serverId, fromUserId, toUserId, fromOwnedId, toOwnedId);
     if (!out.ok) return fail(res, out);
     res.status(201).json(out);
@@ -120,6 +134,7 @@ router.post("/game/trade/:id/resolve", async (req, res, next) => {
   if (!SNOWFLAKE.test(String(userId))) return bad(res, "userId required");
   try {
     if (!(await sameServer("companionTrade", req.params.id, serverId))) return fail(res, { code: "TRADE_NOT_FOUND" });
+    if (await gameOff(res, serverId)) return;
     const out = await resolveTrade(req.params.id, String(userId), !!accept);
     if (!out.ok) return fail(res, out);
     res.json(out);

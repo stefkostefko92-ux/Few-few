@@ -84,11 +84,14 @@ router.put("/:serverId/settings", requireServerAdmin, async (req, res, next) => 
       }
       data.levelRoles = [...data.levelRoles].sort((a, b) => a.level - b.level);
     }
+    const current = await getGameSettings(serverId); // гарантира реда
     // Дневна trivia е Premium (concept §5); Free пада на седмична, не мълчи.
-    if (data.triviaSchedule === "daily" && !tier.isPremium) {
+    // Отказваме само ПРЕМИНАВАНЕ към daily: сървър, свален от Premium, пази старото
+    // `daily` (scheduleDue го третира като седмично) и формата го праща обратно при
+    // всеки запис — иначе такъв сървър не можеше да запише НИЩО (одит 25.09.2026).
+    if (data.triviaSchedule === "daily" && !tier.isPremium && current.triviaSchedule !== "daily") {
       return res.status(403).json({ error: "Daily trivia requires Premium", code: "PREMIUM_REQUIRED", feature: "game.kbTrivia" });
     }
-    await getGameSettings(serverId); // гарантира реда
     const settings = await prisma.gameSettings.update({ where: { serverId }, data });
     await writeAudit({ actorId: req.user.id, action: "GAME_SETTINGS_UPDATED", targetId: serverId, metadata: { keys: Object.keys(data) } });
     // Ботът кешира настройките 60 s — кажи му да ги прочете наново.
