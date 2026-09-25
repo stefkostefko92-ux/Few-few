@@ -1118,7 +1118,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 382
+        "lessons": 384
       },
       "evolution": [
         {
@@ -1918,9 +1918,20 @@
           "date": "2026-09-25",
           "event": "v26.4 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира по точното име на полето „Следваща стъпка:“ — „Следващата …"
+        },
+        {
+          "version": "26.6.0",
+          "date": "2026-09-25",
+          "event": "v26.6 — учене",
+          "detail": "Научи: SupremeDiscordBot v50: ShopPurchase не пази roleId, а FK към ShopItem е ON DELETE CASCA… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot v50: ShopPurchase не пази roleId, а FK към ShopItem е ON DELETE CASCA…\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
