@@ -44,7 +44,9 @@ PAYLOAD=$(cat <<JSON
 JSON
 )
 
-HTTP_CODE=$(curl -sS -o /tmp/indexnow-response.txt -w "%{http_code}" \
+# Собствен временен файл (не фиксиран /tmp път, в който root пише — symlink атака).
+RESP="$(mktemp)"; trap 'rm -f "$RESP"' EXIT
+HTTP_CODE=$(curl -sS -o "$RESP" -w "%{http_code}" \
   -X POST "https://api.indexnow.org/indexnow" \
   -H "Content-Type: application/json; charset=utf-8" \
   --max-time 15 \
@@ -56,6 +58,6 @@ if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "202" ]; then
   echo "[indexnow] ✓ ${COUNT} URL-а подадени към Bing/Yandex/Seznam/Naver (HTTP ${HTTP_CODE})"
 else
   echo "[indexnow] ⚠ ping неуспешен (HTTP ${HTTP_CODE}) — не блокира деплоя."
-  [ -s /tmp/indexnow-response.txt ] && head -3 /tmp/indexnow-response.txt
+  [ -s "$RESP" ] && head -3 "$RESP"
 fi
 exit 0

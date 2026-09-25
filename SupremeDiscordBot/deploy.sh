@@ -84,7 +84,11 @@ docker compose exec -T bot node src/deploy-commands.js && \
 # Автоматично при всеки deploy — свежото съдържание се индексира веднага.
 # Fail-safe: неуспешен ping не проваля деплоя.
 echo -e "\n${YELLOW}[5/5] Notifying search engines (IndexNow)...${NC}"
-bash "$(dirname "$0")/scripts/indexnow-ping.sh" || true
+if [ "${SUPREME_SKIP_INDEXNOW:-0}" = "1" ]; then
+  echo "  (пропуснато — autodeploy.sh подава след зелен smoke)"
+else
+  bash "$(dirname "$0")/scripts/indexnow-ping.sh" || true
+fi
 
 echo -e "\n${BLUE}═══════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}  ✅ Supreme Bot is live!${NC}"

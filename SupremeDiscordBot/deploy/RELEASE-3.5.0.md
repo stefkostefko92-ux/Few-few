@@ -18,7 +18,10 @@ Admin → **Season**, 13 страници `/features/*`, готовите отг
 ## 1. Env промени (на сървъра, преди autodeploy)
 
 Файловете живеят в `/opt/few-few/shared/SupremeDiscordBot/` (mode 600) и се копират във
-всеки нов релийз (поправката от #233). Редактирай ТАМ, не в `current/`.
+всеки нов релийз. Редактирай ТАМ. (До 3.5.0 `autodeploy.sh` копираше безусловно
+`current/` → `shared/` преди деплоя и прясна редакция в `shared/` се губеше, ако
+`current/SupremeDiscordBot/backend/.env` съществува. Сега печели по-пресният файл —
+безопасно е на което и да е от двете места; `shared/` е каноничното.)
 
 ```bash
 # backend/.env — задължително за 3.5.0
@@ -30,17 +33,19 @@ DISCORD_SKU_WHITELABEL="<SKU id>"
 
 Проверка без да печаташ тайни:
 ```bash
-sudo grep -cE '^(FRONTEND_URL|DISCORD_SKU_PREMIUM|DISCORD_SKU_WHITELABEL)=' /opt/few-few/shared/SupremeDiscordBot/backend/.env   # очаквано: 3
+sudo grep -cE '^(FRONTEND_URL|DISCORD_SKU_PREMIUM|DISCORD_SKU_WHITELABEL)=.+' /opt/few-few/shared/SupremeDiscordBot/backend/.env   # очаквано: 3 (празна стойност не се брои)
 sudo grep -E '^FRONTEND_URL=' /opt/few-few/shared/SupremeDiscordBot/backend/.env                                                # реалният домейн, не YOUR_DOMAIN
 ```
 
-Ръчен бекъп както винаги (v50 добавя 13 таблици, но бекъпът е правило, не избор):
+Бекъп: `autodeploy.sh` сам прави дъмп ПРЕДИ миграцията (`/var/backups/supreme/pre-deploy-*.dump`,
+600 в папка 700) и **спира деплоя**, ако дъмпът се провали или е подозрително малък.
+Допълнителен ръчен — криптиран и проверен, със същия скрипт като дневния таймер:
 ```bash
-cd /opt/few-few/current/SupremeDiscordBot && docker compose exec -T postgres \
-  pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > /var/backups/supreme-manual-$(date +%F-%H%M).sql.gz
-ls -la /var/backups/supreme-manual-*.gz   # ненулев размер!
+sudo /usr/local/sbin/supreme-backup-postgres
+sudo ls -la /var/backups/supreme/ | tail -3     # нов supreme-*.dump.gpg, ненулев размер
 ```
-(`POSTGRES_USER`/`POSTGRES_DB` идват от `.env` на compose-а: `set -a; . /opt/few-few/shared/SupremeDiscordBot/.env; set +a` преди командата.)
+(Не ползвай `pg_dump … | gzip > …` на ръка: без `umask 077` файлът е четим от всички,
+а без `pipefail` провален дъмп оставя ~20-байтов gzip, който „има размер“.)
 
 ## 2. Деплой (каноничният поток — `fetch-deploy.sh` → autodeploy)
 
@@ -54,11 +59,13 @@ sudo PROJECTS="SupremeDiscordBot" bash /root/deploy/fetch-deploy.sh
 ```
 
 Следващите пъти: `sudo PROJECTS="SupremeDiscordBot" bash /opt/few-few/current/deploy/fetch-deploy.sh`.
-Преди сливане на PR-а (тест от клона): добави `REF=claude/discord-bot-audit-seo-p5edww`.
+**Препоръчително — точен комит, не клон:** `REF=<пълен SHA>` (клонът и `main` се местят;
+SHA-то гарантира, че на сървъра отива точно прегледаният код). Преди сливане на PR-а:
+`REF=<SHA на последния комит в claude/discord-bot-audit-seo-p5edww>`.
 
 Резервен път (сървърът няма изходяща мрежа към GitHub) — ръчно качен ZIP:
 ```bash
-cd /root && unzip -q -o Few-few.zip && SRC="$(ls -d /root/[Ff]ew-few-* | head -1)"
+cd /root && unzip -q -o Few-few.zip && SRC="/root/$(unzip -Z1 /root/Few-few.zip | head -1 | cut -d/ -f1)"   # папката ОТ ТОЗИ архив
 sudo ARCHIVE=/root/Few-few.zip PROJECTS="SupremeDiscordBot" bash "$SRC/deploy/autodeploy.sh"
 ```
 
@@ -76,7 +83,8 @@ sudo PROJECTS="SupremeDiscordBot" SMOKE_ALLOW_BILLING_UNCONFIGURED=1 bash /root/
   `member_progress`, `game_xp_grants`, `shop_items`, `shop_purchases`, `member_companions`,
   `companion_spawns`, `companion_trades`, `server_quests`, `quest_contributions`,
   `trivia_rounds`, `trivia_answers`), нищо по съществуващите. `db:deploy` я прилага
-  автоматично. Rollback на кода без връщане на базата е безопасен (таблиците просто стоят).
+  автоматично. Rollback на кода без връщане на базата е възможен — виж §5 (иска една
+  env промяна: проверката на схемата в стария entrypoint вижда 13-те таблици като разлика).
 - Сезонът S1 („First Light“, 21.09–14.12.2026) се записва сам при първо четене на каталога.
 - Ботът регистрира 9-те нови команди при старт (SHA на дефинициите → един PUT); Discord ги
   показва до ~1 час. Ръчно: `docker compose exec bot npm run deploy-commands`.
@@ -88,7 +96,7 @@ sudo PROJECTS="SupremeDiscordBot" SMOKE_ALLOW_BILLING_UNCONFIGURED=1 bash /root/
 ```bash
 cd /opt/few-few/current/SupremeDiscordBot && docker compose ps               # всички healthy
 docker compose logs --tail=80 backend | grep -iE "v50|migrat|error"          # миграцията е минала, нула error
-bash deploy/smoke.sh                                                         # 10 проверки, вкл. #9 (картинки + страница на играта)
+bash deploy/smoke.sh    # от НОВИЯ release (ако current не е мръднал — пътят е в изхода на autodeploy); проверява съдържание, не само 200
 docker compose exec -T backend node scripts/game-smoke.mjs                   # каталог 60 · сезон S1 · картинки към FRONTEND_URL
 docker compose exec -T backend node scripts/game-smoke.mjs <ID на тестов сървър>   # + настройки/куестове на сървъра
 ```
@@ -100,9 +108,10 @@ docker compose exec -T backend node scripts/game-smoke.mjs <ID на тестов
    поява/улавяне, куест, Counting, trivia, `/privacy info|delete`). Чак след него включваш
    играта в реални сървъри.
 
-SEO (13 нови страници + sitemap): `autodeploy.sh` подава всички URL-и от sitemap-а към
-IndexNow автоматично след деплоя (`supreme_ping_indexnow` → `scripts/indexnow-ping.sh`,
-ключът е `public/09d438d11f84037ca203486287865836.txt`). Ръчно при нужда:
+SEO (13 нови страници + sitemap): `autodeploy.sh` подава URL-ите към IndexNow **само след
+зелен smoke** (`supreme_ping_indexnow` → `tools/seo/indexnow.mjs`; ключът е
+`public/09d438d11f84037ca203486287865836.txt`); `deploy.sh`, викан от autodeploy, вече не
+пинга преди health. Ръчно при нужда:
 `cd /opt/few-few/current/SupremeDiscordBot && bash scripts/indexnow-ping.sh`. Google не
 поддържа IndexNow — sitemap-ът се самооткрива; Search Console по желание (`tools/seo/gsc.mjs`).
 
@@ -116,7 +125,30 @@ IndexNow автоматично след деплоя (`supreme_ping_indexnow` �
 
 ## 5. Rollback план
 
-`current` сочи новия релийз едва след успешен health + smoke. При проблем: върни симлинка към
-предишния релийз + `docker compose up -d`. v50 е адитивна — старият код не вижда новите
-таблици и работи. Внимание: при откат към 3.4.0 играта изчезва от Discord (командите остават
-регистрирани до следващия старт на бота, но отговарят с грешка) — казвай на операторите.
+`current` се мести към новия релийз едва след зелен health + smoke. **Внимание:**
+контейнерите се сменят на място още в `deploy.sh`, преди smoke-а — ако smoke падне,
+продукцията вероятно вече върви на кода на 3.5.0, а `current` още сочи 3.4.0 (Supreme
+няма автоматичен откат; `autodeploy.sh` печата точната команда за връщане).
+
+Откат към 3.4.0 (проверено срещу Postgres 16: разликата е САМО 13-те таблици на v50 + FK):
+
+1. Старият entrypoint сравнява живата база със своя `schema.prisma` и би спрял backend-а в
+   цикъл от рестарти. Разликата е безопасна (излишни таблици), затова временно добави ред
+   `SKIP_SCHEMA_CHECK=1` в `/opt/few-few/shared/SupremeDiscordBot/backend/.env` (с редактор).
+2. Пълен деплой на стария release — той пресъздава ОБРАЗИТЕ. Само `docker compose up -d`
+   след смяна на симлинка ползва пак образите на 3.5.0 (имената им не зависят от release-а):
+   ```bash
+   OLD="$(readlink -f /opt/few-few/current)"      # 3.4.0, ако current не е мръднал
+   sudo RELEASE_DIR="$OLD" PROJECTS="SupremeDiscordBot" bash "$OLD/deploy/autodeploy.sh"
+   ```
+3. При следващия деплой на 3.5.0+ махни реда `SKIP_SCHEMA_CHECK=1` — от 3.5.0 нататък
+   entrypoint-ът сам различава „само излишни таблици“ от истинско разминаване.
+
+При откат към 3.4.0 играта изчезва от Discord (командите остават регистрирани до следващия
+старт на бота, но отговарят с грешка) — кажи на операторите.
+
+**Внимание за другите продукти на същия сървър:** деплой с `PROJECTS="SupremeDiscordBot"`
+мести `current` в release, в който НЯМА `.env` на продукти без `shared/` (например
+`eternaltouch/`, `zabobovdol/`). При следващия им деплой `autodeploy.sh` би генерирал нови
+тайни. Ако вървят на тази машина, провери, че техните `.env` са в
+`/opt/few-few/shared/<продукт>/`, преди да деплойваш само Supreme.

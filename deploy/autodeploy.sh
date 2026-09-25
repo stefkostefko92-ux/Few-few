@@ -752,7 +752,9 @@ deploy_supreme() {
     # Собственият deploy.sh: проверява .env-ите, билдва, вдига, чака backend health
     # (миграциите се пускат автоматично в backend entrypoint-а) и регистрира
     # slash командите. Ако нещо липсва, той се проваля с ясна грешка.
-    bash deploy.sh
+    # IndexNow се подава от ТОЗИ скрипт, и то само след зелен smoke — не от
+    # deploy.sh преди health (одит на VPS-аджията 25.09.2026).
+    SUPREME_SKIP_INDEXNOW=1 bash deploy.sh
   ) || { warn "SupremeDiscordBot: deploy.sh се провали."; deploy_failed=1; supreme_rollback_hint "$d"; return; }
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
@@ -764,6 +766,7 @@ deploy_supreme() {
     # (Одит, 07.08.2026)
     if bash "$d/deploy/smoke.sh"; then
       ok "SupremeDiscordBot: smoke мина"
+      supreme_ping_indexnow "$d"   # търсачките — само към работещ release
     else
       warn "SupremeDiscordBot: smoke ПАДНА — деплоят е горе, но нещо не работи."
       deploy_failed=1
@@ -771,7 +774,6 @@ deploy_supreme() {
     fi
     supreme_install_backup_timer "$d"
     supreme_install_restore_drill_timer "$d"
-    supreme_ping_indexnow "$d"
   else
     deploy_failed=1
     supreme_rollback_hint "$d"
@@ -787,14 +789,20 @@ deploy_supreme() {
 #
 # (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
 supreme_rollback_hint() {
-  local prev
-  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p || true)"
+  # Работещият release е този, към който сочи `current` — при провал на Supreme
+  # `current` НЕ се мести. Преди тук стоеше „вторият най-нов release“ (грешен при
+  # повторен опит), път без вложената папка на архива и без PROJECTS — командата
+  # щеше да върне назад и останалите продукти (одит на VPS-аджията 25.09.2026).
+  local live
+  live="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
-  if [ -n "$prev" ]; then
-    warn "Предишен release: ${prev%/}"
-    warn "Откат на КОДА:  RELEASE_DIR='${prev%/}' bash '${prev%/}/deploy/autodeploy.sh'"
+  if [ -n "$live" ] && [ -f "$live/deploy/autodeploy.sh" ]; then
+    warn "Работещ release (current): $live"
+    warn "Откат на КОДА:  sudo RELEASE_DIR='$live' PROJECTS='SupremeDiscordBot' bash '$live/deploy/autodeploy.sh'"
+    warn "Ако старият код е преди v3.5.0 и базата вече е мигрирана до v50: първо"
+    warn "  SKIP_SCHEMA_CHECK=1 в $SUPREME_ENV_DIR/backend/.env (разликата е само 13 излишни таблици)."
   else
-    warn "Няма предишен release — това е първият деплой."
+    warn "Няма работещ release в $CURRENT_LINK — това е първият деплой."
   fi
   warn "ВНИМАНИЕ: миграциите вече са приложени. Ако новата схема е несъвместима"
   warn "със стария код, първо провери 'npx prisma migrate status' в backend контейнера."
@@ -855,17 +863,18 @@ UNIT
 }
 
 # Откъде да пренесем .env файловете на Supreme — ТРИ източника, по ред на доверие:
-#   1) $CURRENT_LINK/SupremeDiscordBot — там ги редактира човекът (документите
-#      сочат „backend/.env на сървъра" = текущия release), значи е най-пресният;
-#   2) $SUPREME_ENV_DIR — огледалото от последния пробег на този скрипт (оцелява
-#      местене на `current` от друг продукт и чистене на releases);
+#   1) $SUPREME_ENV_DIR — каноничното копие; преди всеки пробег в него се слива
+#      по-пресният файл от current (редакцията може да е и на двете места);
+#   2) $CURRENT_LINK/SupremeDiscordBot — ако shared още не съществува;
 #   3) най-новият release под $RELEASES_DIR, който ги има — резерва за сървър,
 #      деплойван само със стария скрипт (преди shared да съществува).
 # Критерий за „има ги" е backend/.env — той е задължителен и никога не се
 # генерира. Печата ПЪТ, не съдържание; при нищо намерено връща 1.
 supreme_env_source() {
   local cand
-  for cand in "$CURRENT_LINK/SupremeDiscordBot" "$SUPREME_ENV_DIR"; do
+  # shared ПЪРВО: огледалото преди всеки пробег (supreme_persist_env от current)
+  # вече е слело по-пресния от двата файла там — shared е каноничното копие.
+  for cand in "$SUPREME_ENV_DIR" "$CURRENT_LINK/SupremeDiscordBot"; do
     if [ -f "$cand/backend/.env" ]; then printf '%s\n' "$cand"; return 0; fi
   done
   # releases/<TS>/<корен-от-ZIP>/SupremeDiscordBot/backend/.env → 5 нива; сортът по
@@ -884,7 +893,11 @@ supreme_persist_env() {
   install -d -m 700 "$SUPREME_ENV_DIR" "$SUPREME_ENV_DIR/backend" "$SUPREME_ENV_DIR/bot" "$SUPREME_ENV_DIR/frontend"
   for f in $SUPREME_ENV_FILES; do
     [ -f "$from/$f" ] || continue
-    if ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f"; then
+    # По-ПРЕСНИЯТ печели (одит на VPS-аджията 25.09.2026): бележките за 3.5.0
+    # казват „редактирай в shared/“, старите — „в current/“. Безусловното копие
+    # current → shared триеше прясна редакция в shared (напр. SKU-тата) със
+    # старото копие. `cp -a` пази mtime, затова огледалото не се „осъвременява“.
+    if [ ! -f "$SUPREME_ENV_DIR/$f" ] || { ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f" && [ "$from/$f" -nt "$SUPREME_ENV_DIR/$f" ]; }; then
       cp -a "$from/$f" "$SUPREME_ENV_DIR/$f"
     fi
     chmod 600 "$SUPREME_ENV_DIR/$f"

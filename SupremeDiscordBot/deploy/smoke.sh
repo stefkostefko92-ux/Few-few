@@ -42,6 +42,13 @@ note() { printf '  \033[33m·\033[0m %s\n' "$1"; }
 # ненулево — старото `|| echo "000"` добавяше ВТОРО „000" и изходът беше „000000".
 code() { curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 body() { curl -s --max-time "$TIMEOUT" "$1" 2>/dev/null || echo ""; }
+# nginx на фронтенда има SPA fallback (`try_files … /index.html`): ЛИПСВАЩ файл
+# или страница връща 200 с index.html. Затова 200 не доказва нищо за статичен
+# файл или пререндирана страница (одит на VPS-аджията 25.09.2026) — сверяваме
+# СЪДЪРЖАНИЕТО: пререндираната страница носи собствения си canonical, файлът —
+# своя Content-Type / подпис.
+ctype() { curl -s -o /dev/null -w '%{content_type}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
+prerendered() { body "$BASE$1" | grep -q "<link rel=\"canonical\" href=\"[^\"]*$1\""; }
 
 echo "── Smoke: $BASE ──"
 
@@ -53,8 +60,8 @@ if [ "$c" = "200" ]; then
   else bad "фронтендът връща 200, но без React корен — счупен билд?"; fi
   # Билдът пререндира 19 маршрута; липсата им значи, че prerender стъпката е
   # пропаднала тихо и SEO-то е нула.
-  if [ "$(code "$BASE/terms")" = "200" ]; then ok "статичните маршрути са пререндирани"
-  else bad "/terms не се отдава — prerender стъпката е пропаднала"; fi
+  if prerendered /terms; then ok "статичните маршрути са пререндирани"
+  else bad "/terms не носи собствения си canonical — prerender стъпката е пропаднала (SPA fallback)"; fi
 else
   bad "фронтендът върна $c"
 fi
@@ -144,26 +151,29 @@ else note "Stripe статус върна $c"; fi
 # Импресум/условия недостъпни = правен проблем, не UX дребулия.
 legal_ok=1
 for p in /privacy /cookies /eula /accessibility; do
-  [ "$(code "$BASE$p")" = "200" ] || { bad "$p не се отдава"; legal_ok=0; }
+  prerendered "$p" || { bad "$p не се отдава като собствена страница"; legal_ok=0; }
 done
 [ "$legal_ok" = "1" ] && ok "правните страници се отдават"
 
 # ─── 8. SEO артефактите са на място ─────────────────────────────────────────
-for f in /robots.txt /sitemap.xml /llms.txt; do
-  [ "$(code "$BASE$f")" = "200" ] || bad "$f липсва"
-done
-[ "$(code "$BASE/robots.txt")" = "200" ] && ok "robots/sitemap/llms са на място"
+seo_ok=1
+body "$BASE/robots.txt"  | grep -qi '^User-agent:'  || { bad "/robots.txt липсва (SPA fallback)"; seo_ok=0; }
+body "$BASE/sitemap.xml" | grep -q '<urlset'       || { bad "/sitemap.xml липсва (SPA fallback)"; seo_ok=0; }
+body "$BASE/llms.txt"    | grep -q '^# Supreme Bot' || { bad "/llms.txt липсва (SPA fallback)"; seo_ok=0; }
+[ "$seo_ok" = "1" ] && ok "robots/sitemap/llms са на място"
 
 # ─── 9. Играта (v50): картинките на спътниците и страницата ѝ се отдават ─────
 # Discord embed-ите сочат $FRONTEND_URL/game/companions/<id>-<stage>.jpg — ако
 # nginx не ги отдава (липсваща public/ папка в билда), всяка поява е без
 # картинка, а никой тест в CI не гледа живия сървър. Проверяваме един файл от
 # каталога (lime-blip е първият common) и SEO страницата на функцията.
-c=$(code "$BASE/game/companions/lime-blip-1.jpg")
-if [ "$c" = "200" ]; then ok "картинките на спътниците се отдават"
-else bad "/game/companions/lime-blip-1.jpg върна $c — embed-ите на играта са без картинки (public/game липсва в билда?)"; fi
-if [ "$(code "$BASE/features/discord-leveling-game")" = "200" ]; then ok "страницата на играта е пререндирана"
-else bad "/features/discord-leveling-game не се отдава"; fi
+t=$(ctype "$BASE/game/companions/lime-blip-1.jpg")
+case "$t" in
+  image/jpeg*) ok "картинките на спътниците се отдават" ;;
+  *) bad "/game/companions/lime-blip-1.jpg върна „${t:-нищо}“, не image/jpeg — embed-ите на играта са без картинки (public/game липсва в билда?)" ;;
+esac
+if prerendered /features/discord-leveling-game; then ok "страницата на играта е пререндирана"
+else bad "/features/discord-leveling-game не е пререндирана (SPA fallback)"; fi
 
 echo
 if [ "$fail" -eq 0 ]; then
