@@ -79,6 +79,7 @@ export default function Landing(): React.ReactElement {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', loc.description);
   }, []);
+
   return (
     <div className="landing">
       {showIntro && <CinematicIntro onDone={() => setShowIntro(false)} />}
@@ -103,27 +104,31 @@ export default function Landing(): React.ReactElement {
         </div>
       </header>
 
-      {/* HERO — full-bleed video background instead of SVG sprites.
-          Drone aerial of Rhuddlan Castle (CC BY-SA 4.0, Wikimedia
-          Commons; see /assets/video/CREDITS.md). poster fallback for
-          autoplay-restricted iOS. */}
+      {/* HERO — „The Bard“, John Martin (1817), обществено достояние
+          (/assets/bg/CREDITS.md). Заменя дрон видеото на Rhuddlan: в кадъра
+          имаше модерен град и коли, които не се изрязваха. Статично <img> =
+          по-бърз LCP от видео; бавното приближаване е CSS (спира при
+          prefers-reduced-motion). */}
       <section className="hero hero-video">
-        <video
-          className="hero-video-bg"
-          src="/assets/video/hero.mp4"
-          poster="/assets/video/hero-poster.jpg"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
+        <img
+          className="hero-video-bg hero-painting"
+          src="/assets/bg/default.jpg"
+          alt=""
           aria-hidden
-        >
-          <source src="/assets/video/hero.webm" type="video/webm" />
-          <source src="/assets/video/hero.mp4"  type="video/mp4" />
-        </video>
+          fetchPriority="high"
+          decoding="async"
+        />
         <div className="hero-video-shade" aria-hidden />
         <div className="hero-video-vignette" aria-hidden />
+        {/* boy-език: лека мъгла по хоризонта + филмово зърно + "film slate"
+            HUD етикет (моно, hairline рамка) — кинематографичен слой без
+            тежко WebGL (CSS/SVG само, нулево влияние върху LCP). */}
+        <div className="hero-mist" aria-hidden />
+        <div className="hero-grain" aria-hidden />
+        <div className="hero-slate" aria-hidden>
+          <span className="rec">{t('landing.slateLive')}</span>
+          <span>{t('landing.slateShot')}</span>
+        </div>
 
         <div className="hero-content">
           <div className="hero-logo" data-parallax="20">
@@ -142,7 +147,7 @@ export default function Landing(): React.ReactElement {
             <a href="#features" className="btn btn-hero">{t('landing.heroCtaHow')}</a>
           </div>
           <div className="hero-credit">
-            {t('landing.footageBy', { author: 'Llywelyn2000' })} · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>
+            {t('landing.artBy', { author: 'John Martin · Yale Center for British Art' })} · <a href="/assets/bg/CREDITS.md" target="_blank" rel="noreferrer">Public domain</a>
           </div>
         </div>
       </section>
@@ -174,7 +179,7 @@ export default function Landing(): React.ReactElement {
           <FeatureCard iconSrc="/assets/icons/dagger-t4.jpg" title={t('landing.featQuestsTitle')}>
             {t('landing.featQuestsBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title={t('landing.featDungeonsTitle')}>
+          <FeatureCard iconSrc="/assets/icons/mace-t6.jpg" title={t('landing.featDungeonsTitle')}>
             {t('landing.featDungeonsBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/cloak-t8.jpg" title={t('landing.featCosmeticsTitle')}>
@@ -189,10 +194,10 @@ export default function Landing(): React.ReactElement {
           <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.featArenaTitle')}>
             {t('landing.featArenaBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title={t('landing.featDailyTitle')}>
+          <FeatureCard iconSrc="/assets/icons/potion-green.jpg" title={t('landing.featDailyTitle')}>
             {t('landing.featDailyBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title={t('landing.featWheelTitle')}>
+          <FeatureCard iconSrc="/assets/icons/potion-purple.jpg" title={t('landing.featWheelTitle')}>
             {t('landing.featWheelBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.featAchievementsTitle')}>
@@ -246,49 +251,49 @@ export default function Landing(): React.ReactElement {
           {t('landing.endgameLead')}
         </p>
         <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title={t('landing.egRealmBossTitle')}>
+          <FeatureCard iconSrc="/assets/icons/axe-t10.jpg" title={t('landing.egRealmBossTitle')}>
             {t('landing.egRealmBossBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title={t('landing.egFactionTitle')}>
+          <FeatureCard iconSrc="/assets/icons/boots-t6.jpg" title={t('landing.egFactionTitle')}>
             {t('landing.egFactionBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.egApexTitle')}>
             {t('landing.egApexBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title={t('landing.egTowerTitle')}>
+          <FeatureCard iconSrc="/assets/icons/staff-t8.jpg" title={t('landing.egTowerTitle')}>
             {t('landing.egTowerBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.egCacheTitle')}>
             {t('landing.egCacheBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title={t('landing.egAuctionTitle')}>
+          <FeatureCard iconSrc="/assets/icons/ring-t9.jpg" title={t('landing.egAuctionTitle')}>
             {t('landing.egAuctionBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title={t('landing.egMythicTitle')}>
+          <FeatureCard iconSrc="/assets/icons/axe-t9.jpg" title={t('landing.egMythicTitle')}>
             {t('landing.egMythicBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title={t('landing.egEventsTitle')}>
+          <FeatureCard iconSrc="/assets/icons/potion-red.jpg" title={t('landing.egEventsTitle')}>
             {t('landing.egEventsBody')}
           </FeatureCard>
         </div>
       </section>
 
       {/* Mid-page rhythm break — second cinematic plate.
-          Working blacksmith at Möhkö Ironworks (CC BY 3.0, Wikimedia
-          Commons; see /assets/video/CREDITS.md). 21:9 stripe so it
-          reads as a band, not a second hero. Looped, muted, no audio
-          decoded. */}
+          БЪГ (докладван визуално): предишният клип показваше модерен мъж с
+          тениска в тухлена работилница — чупи потапянето в средновековния
+          сетинг. Заменено с "The Forge of Vulcan" (Диего Веласкес, 1630,
+          Museo del Prado) — платно с обществено достояние, вече в репото
+          (/assets/icons/icon-anvil.jpg, виж CREDITS.md), тематично точно за
+          раздел "The Forge". 21:9 лента, статично изображение — по-леко от
+          видео и без риск от нов „модерен“ кадър при loop. */}
       <section className="forge-band" aria-label={t('landing.forgeName')}>
-        <video
+        <img
           className="forge-band-bg"
-          src="/assets/video/forge.mp4"
-          poster="/assets/video/forge-poster.jpg"
-          autoPlay loop muted playsInline preload="metadata"
+          src="/assets/icons/icon-anvil.jpg"
+          alt=""
+          loading="lazy"
           aria-hidden
-        >
-          <source src="/assets/video/forge.webm" type="video/webm" />
-          <source src="/assets/video/forge.mp4"  type="video/mp4" />
-        </video>
+        />
         <div className="forge-band-shade" aria-hidden />
         <div className="forge-band-copy">
           <div className="section-eyebrow">{t('landing.forgeName')}</div>
@@ -297,7 +302,7 @@ export default function Landing(): React.ReactElement {
             {t('landing.forgeLead')}
           </p>
           <div className="forge-band-credit">
-            {t('landing.footageBy', { author: 'Antti Makkonen' })} · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>
+            {t('landing.artBy', { author: 'Diego Velázquez · Museo del Prado' })} · <a href="https://commons.wikimedia.org/wiki/Category:La_Fragua_de_Vulcano" target="_blank" rel="noreferrer">Public domain</a>
           </div>
         </div>
       </section>
@@ -319,13 +324,13 @@ export default function Landing(): React.ReactElement {
           <FeatureCard iconSrc="/assets/icons/axe-t7.jpg" title={t('landing.gWarsTitle')}>
             {t('landing.gWarsBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title={t('landing.gRaidsTitle')}>
+          <FeatureCard iconSrc="/assets/icons/mace-t8.jpg" title={t('landing.gRaidsTitle')}>
             {t('landing.gRaidsBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/shield-t10.jpg" title={t('landing.gCrestTitle')}>
             {t('landing.gCrestBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title={t('landing.gTreasuryTitle')}>
+          <FeatureCard iconSrc="/assets/icons/gem-t9.jpg" title={t('landing.gTreasuryTitle')}>
             {t('landing.gTreasuryBody')}
           </FeatureCard>
         </div>

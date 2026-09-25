@@ -83,7 +83,7 @@ export default function Logo({ size = 64, withWordmark = false, className }: Pro
       </svg>
 
       {withWordmark && (
-        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
+        <div className="nd-logo-wordmark" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
           <span
             style={{
               fontFamily: 'var(--font-display)',

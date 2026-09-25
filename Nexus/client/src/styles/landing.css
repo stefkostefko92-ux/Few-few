@@ -50,10 +50,19 @@
    corner pulsing forever (the cursor is never actually there); with
    reduce-motion the pulse alone is a vestibular trigger. */
 @media (hover: hover) and (pointer: fine) {
+  /* БЪГ (докладван визуално): златен кръг, залепнал в ъгъл (0,0) на всяка
+     снимка. Причина: реjoin нямаше JS, който да го мести — чист CSS
+     псевдо-елемент на top:0/left:0 завинаги, докато `cursor:none` крие
+     истинския показалец. LandingEffects.tsx вече пише --cursor-x/--cursor-y
+     при mousemove (виж по-долу); тук четем тези променливи и пазим кръга
+     невидим (opacity:0), докато не дойде първото движение (класът
+     .cursor-active го добавя JS-ът). На тъч устройства медия-заявката горе
+     изобщо не рендира правилото. */
   .landing::after {
     content: '';
     position: fixed;
-    top: 0; left: 0;
+    top: var(--cursor-y, 50%);
+    left: var(--cursor-x, 50%);
     width: 26px; height: 26px;
     border-radius: 50%;
     border: 1.5px solid rgba(214,161,61,.7);
@@ -61,6 +70,13 @@
     pointer-events: none;
     z-index: 9999;
     transform: translate(-50%, -50%);
+    opacity: 0;
+    /* animation-та тук НЕ бива — running keyframe анимация винаги
+       печели над статичната opacity:0 декларация (CSS каскада не важи за
+       анимирани свойства), затова пулсът се пуска чак с .cursor-active. */
+  }
+  .landing.cursor-active::after {
+    opacity: 1;
     animation: reticle-pulse 1.6s ease-in-out infinite;
   }
 }
@@ -181,8 +197,17 @@
   z-index: 5;
 }
 
-/* Hero title fancy split-letter reveal */
-.hero-title .word { display: inline-block; overflow: hidden; }
+/* Hero title fancy split-letter reveal.
+   БЪГ (докладван визуално): зад всяка дума имаше видим тъмен правоъгълник.
+   Причина: .word е inline-block с overflow:hidden, ВЪТРЕ в елемент с
+   background-clip:text + filter:drop-shadow на предшественика (.hero-title).
+   Chromium/WebKit промотират overflow:hidden кутията в собствен compositing
+   слой заради filter-а на родителя — резултатът е плътен правоъгълник вместо
+   истински прозрачен текст. Потвърдено на живо (виж доклада — desk-0-hero.png/
+   mob-0-hero.png) и възпроизведено локално със скрийншот на .hero-title.
+   Премахнат overflow:hidden (буквите пак се плъзгат нагоре с opacity+translateY,
+   просто без маска-изрязване преди старта на анимацията). */
+.hero-title .word { display: inline-block; }
 .hero-title .letter {
   display: inline-block;
   animation: letter-reveal .8s cubic-bezier(.2,.8,.2,1) backwards;
@@ -242,6 +267,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 36px;
+  /* Notch/Dynamic Island в landscape/PWA — виж globals.css --safe-top. */
+  padding-top: calc(18px + var(--safe-top));
+  padding-left: max(36px, var(--safe-left));
+  padding-right: max(36px, var(--safe-right));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background: rgba(5,6,9,.78);
@@ -276,9 +305,15 @@
   text-align: center;
 }
 
+/* flex + fit-content: като inline-flex емблемата делеше един ред с
+   .hero-eyebrow (седеше вляво от него, не над него). position: relative
+   държи ::after блясъка в рамките на емблемата — иначе се разпъваше през
+   цялото .hero-content като диагонален лъч. */
 .hero-logo {
-  display: inline-flex;
-  margin-bottom: 28px;
+  position: relative;
+  display: flex;
+  width: fit-content;
+  margin: 0 auto 28px;
   animation: hero-logo-in 1.2s cubic-bezier(.3,.8,.2,1) backwards;
   filter: drop-shadow(0 12px 48px rgba(214,161,61,.45));
 }
@@ -443,6 +478,7 @@
   color: var(--gold-1);
   text-shadow: 0 0 24px rgba(214,161,61,.4);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 .stat-pill .label {
   font-size: 10px;
@@ -471,7 +507,21 @@
   color: var(--gold-2);
   margin-bottom: 14px;
   text-align: center;
+  /* Тънка hairline рамка под eyebrow-а — „caption rule" от boy: маркира
+     всеки раздел като нова „сцена", не просто етикет. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
+.section-eyebrow::before,
+.section-eyebrow::after {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(214,161,61,.5));
+}
+.section-eyebrow::after { background: linear-gradient(90deg, rgba(214,161,61,.5), transparent); }
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(34px, 5vw, 56px);
@@ -897,6 +947,24 @@
 @media (max-width: 700px) {
   .landing-nav { padding: 14px 20px; }
   .landing-nav-links { display: none; }
+  /* БЪГ (докладван визуално, mob-0-hero.png): SIGN IN / PLAY FREE се
+     пренасяха на по 2 реда, навбарът изглеждаше претъпкан. На 402px
+     логото+wordmark + езиков превключвател + 2 бутона не се събират на
+     един ред с пълните им desktop отстояния — свиваме ги. */
+  .landing-nav { flex-wrap: nowrap; gap: 8px; }
+  /* !important задължително — Logo.tsx слага display:flex inline (React
+     style prop), който вика по-висок приоритет от външен CSS клас. */
+  .landing-nav .nd-logo-wordmark { display: none !important; }
+  .landing-nav-cta { gap: 6px; flex-wrap: nowrap; }
+  .landing-nav-cta .lang-selector { padding: 1px; gap: 1px; }
+  .landing-nav-cta .lang-btn { padding: 9px 7px; font-size: .64rem; min-height: 36px; }
+  .landing-nav-cta .btn {
+    padding: 10px 12px;
+    font-size: 12px;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    min-height: 44px; /* тъч цел ≥44px (WCAG 2.5.5/2.5.8) */
+  }
   .hero { padding: 60px 20px; }
   .hero-fighters { display: none; }
   .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 22px 20px; }
@@ -1118,12 +1186,13 @@
 /* =========================================================================
    HERO REWORK — video background replaces the SVG fighters trio.
    ========================================================================= */
+/* min-height вместо фиксирана височина: съдържанието (~950px) е по-високо
+   от 92vh на лаптоп/телефон и центрирането го избутваше над горния ръб —
+   емблемата оставаше под навбара. */
 .hero-video {
   position: relative;
-  min-height: 720px;
-  height: 92vh;
-  max-height: 1100px;
-  padding: 0;
+  min-height: max(720px, 92vh);
+  padding: 48px 0 72px;
   max-width: none;
   overflow: hidden;
   display: flex;
@@ -1137,9 +1206,19 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 38%;
+  /* „The Bard“ е портретна — кадрираме замъка на скалата и планините
+     (горната лява третина); нощен грейд в езика на boy. */
+  object-position: 22% 26%;
+  transform-origin: 30% 30%;
   z-index: 0;
-  filter: contrast(1.05) saturate(.86) brightness(.78);
+  filter: contrast(1.1) saturate(.7) brightness(.62) sepia(.18) hue-rotate(-6deg);
+  animation: hero-painting-drift 38s ease-in-out infinite alternate;
+}
+/* Бавно кинематографично приближаване (Ken Burns) — ~0.4%/s, далеч под
+   прага за вестибуларен дискомфорт; изключено при reduced-motion. */
+@keyframes hero-painting-drift {
+  from { transform: scale(1.04) translate3d(0, 0, 0); }
+  to   { transform: scale(1.14) translate3d(-1.5%, 1%, 0); }
 }
 .hero-video-shade {
   position: absolute;
@@ -1163,6 +1242,70 @@
   pointer-events: none;
   box-shadow: inset 0 0 240px 60px rgba(0,0,0,.7);
 }
+
+/* ===== boy-език в хероя: мъгла, филмово зърно, "film slate" HUD =====
+   Само CSS/SVG data-URI — нулев допълнителен HTTP заявка, нулево влияние
+   върху LCP (застава над вече заредения poster/видео слой). */
+.hero-mist {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(180,190,200,.10) 55%, rgba(200,208,216,.16) 100%);
+  filter: blur(6px);
+  animation: hero-mist-drift 26s ease-in-out infinite alternate;
+}
+@keyframes hero-mist-drift {
+  from { transform: translateX(-2%) scaleY(1); opacity: .8; }
+  to   { transform: translateX(2%) scaleY(1.08); opacity: 1; }
+}
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: .05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+/* Мото-баджа „slate" (Shot/Rec) — боен HUD език на boy, тук за атмосфера. */
+.hero-slate {
+  position: absolute;
+  top: calc(20px + var(--safe-top, 0px));
+  right: max(20px, var(--safe-right, 0px));
+  z-index: 4;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(235,226,206,.18);
+  background: rgba(7,7,10,.4);
+  font: 300 10px/1.2 var(--font-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(235,226,206,.75);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.hero-slate .rec { color: #ffe9b5; }
+.hero-slate .rec::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--ember-1, #ffb159);
+  box-shadow: 0 0 8px var(--ember-1, #ffb159);
+  vertical-align: 1px;
+}
+@media (max-width: 700px) {
+  .hero-slate { display: none; } /* тесен viewport — приоритет на заглавието, не на декорацията */
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-mist { animation: none; }
+}
+
 .hero-content {
   position: relative;
   z-index: 3;
@@ -1207,7 +1350,7 @@
    its rules are inert; leaving them keeps git diff tight. */
 
 @media (max-width: 800px) {
-  .hero-video { height: 78vh; min-height: 560px; }
+  .hero-video { min-height: max(560px, 78vh); padding: 32px 0 56px; }
   .hero-content { padding-top: 24px; }
   .hero-credit { right: 12px; bottom: 10px; font-size: 10px; }
 }
@@ -1238,7 +1381,12 @@
   object-fit: cover;
   object-position: center 18%;
   display: block;
-  filter: saturate(.92) contrast(1.04);
+  /* БЪГ (докладван визуално): rogue.jpg е черно-бяла гравюра в изходника,
+     другите три класа са цветни платна — рамките изглеждаха несъвместими.
+     Общ топъл сепия грейд върху ВСИЧКИ четири ги обединява в една палитра
+     (и съвпада с кинематографичния "филмов грейд" език на boy) — сивата
+     гравюра получава същия тон вместо да стърчи като изключение. */
+  filter: sepia(.4) saturate(1.05) contrast(1.08) brightness(.94);
   transition: transform .6s ease;
 }
 .class-card:hover .class-portrait-frame img { transform: scale(1.04); }
@@ -1306,7 +1454,8 @@
   justify-content: center;
   gap: 12px;
 }
-.forge-band-copy .section-eyebrow { margin-bottom: 6px; }
+.forge-band-copy .section-eyebrow { margin-bottom: 6px; justify-content: flex-start; text-align: left; }
+.forge-band-copy .section-eyebrow::before { display: none; }
 .forge-band-copy .section-title { margin: 0 0 10px; }
 .forge-band-lead {
   font-size: 16px;
