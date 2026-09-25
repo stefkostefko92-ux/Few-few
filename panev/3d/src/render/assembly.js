@@ -75,14 +75,19 @@ function doorAssembly(aItem, bItem, M) {
 
 // Rail with two clamp plates bolted through the SG flange slots. `face` = SG flange outer
 // surface point at the rail centre, `out` = unit normal of that face, `along` = rail foot width.
+// Built once: the slider re-places the rail and clamps many times a second.
+let railGeo = null;
+let clampGeo = null;
+
 function railOn(parent, M, face, out, along) {
   const hw = M.hw;
-  const rail = mesh(railGeometry(RAIL), M.rail);
+  railGeo ??= railGeometry(RAIL);
+  clampGeo ??= new THREE.BoxGeometry(22, 34, 5);
+  const rail = mesh(railGeo, M.rail);
   const y0 = SUPPORT_H + SG_FLANGE / 2 - RAIL / 2;
   rail.position.copy(face).setY(y0);
   rail.lookAt(rail.position.clone().add(out.clone().negate()));
   parent.add(rail);
-  const clampGeo = new THREE.BoxGeometry(22, 34, 5);
   for (const side of [-1, 1]) {
     const c = face.clone().addScaledVector(along, side * 31).addScaledVector(out, 5);
     const clamp = mesh(clampGeo, hw);

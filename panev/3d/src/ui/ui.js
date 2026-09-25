@@ -18,6 +18,7 @@ const PHOTO = { width: 2048, height: 1536, frames: 32 };
 const groupOf = (item) => (item.page >= 61 ? 'special' : item.family);
 
 export function createUI(api) {
+  const autoLang = pickLang('');
   let lang = pickLang();
   let t = strings(lang);
   const buttons = new Map();
@@ -108,7 +109,7 @@ export function createUI(api) {
     put('hand', s.hand, 'DX');
     put('mode', s.mode, 'part');
     put('look', api.look, 'studio');
-    put('lang', lang, 'it');
+    put('lang', lang, autoLang);
     history.replaceState(null, '', `${location.pathname}?${q}`);
   }
 
@@ -154,6 +155,8 @@ export function createUI(api) {
 
   async function takePhoto(button) {
     const busy = $('busy');
+    const frozen = [$('list'), $('tools'), $('info')];
+    frozen.forEach((e) => (e.inert = true));
     button.disabled = true;
     busy.textContent = t.developing;
     busy.hidden = false;
@@ -174,6 +177,7 @@ export function createUI(api) {
         busy.hidden = true;
       }, 5000);
     } finally {
+      frozen.forEach((e) => (e.inert = false));
       button.disabled = false;
     }
   }
