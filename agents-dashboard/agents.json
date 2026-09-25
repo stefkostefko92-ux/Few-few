@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 270
+        "lessons": 271
       },
       "evolution": [
         {
@@ -596,9 +596,20 @@
           "date": "2026-09-25",
           "event": "v19.0 — учене",
           "detail": "Научи: uBlock Origin Lite: built-in rulesets update only with extension releases, BUT a June 2… (+1 още)"
+        },
+        {
+          "version": "19.1.0",
+          "date": "2026-09-25",
+          "event": "v19.1 — учене",
+          "detail": "Научи: HANDOFF валидаторът (tools/agents/handoff.mjs:55) чете само ЕДИН ред „Находки: …“ — нах…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „HANDOFF валидаторът (tools/agents/handoff.mjs:55) чете само ЕДИН ред „Находки: …“ — нах…\""
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
