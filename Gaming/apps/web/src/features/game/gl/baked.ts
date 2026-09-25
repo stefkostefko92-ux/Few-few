@@ -22,7 +22,7 @@ import {
   type MeshStandardMaterial,
 } from "three";
 
-export type BakedName = "walnut" | "felt" | "brass";
+export type BakedName = "walnut" | "felt" | "brass" | "stone" | "roof" | "plaster";
 type MapKind = "albedo" | "normal" | "orm";
 
 const URLS: Record<BakedName, Partial<Record<MapKind, string>>> = {
@@ -39,6 +39,23 @@ const URLS: Record<BakedName, Partial<Record<MapKind, string>>> = {
   brass: {
     normal: new URL("./tex/brass_normal.webp", import.meta.url).href,
     orm: new URL("./tex/brass_orm.webp", import.meta.url).href,
+  },
+  // Сградите на Магнат: дялан камък (от `wall` на boy), покривни плочи и варова мазилка.
+  // Албедото на плочите и мазилката е светло — материалът ги оцветява (шисти/глина, охра).
+  stone: {
+    albedo: new URL("./tex/stone_albedo.webp", import.meta.url).href,
+    normal: new URL("./tex/stone_normal.webp", import.meta.url).href,
+    orm: new URL("./tex/stone_orm.webp", import.meta.url).href,
+  },
+  roof: {
+    albedo: new URL("./tex/roof_albedo.webp", import.meta.url).href,
+    normal: new URL("./tex/roof_normal.webp", import.meta.url).href,
+    orm: new URL("./tex/roof_orm.webp", import.meta.url).href,
+  },
+  plaster: {
+    albedo: new URL("./tex/plaster_albedo.webp", import.meta.url).href,
+    normal: new URL("./tex/plaster_normal.webp", import.meta.url).href,
+    orm: new URL("./tex/plaster_orm.webp", import.meta.url).href,
   },
 };
 

@@ -24,7 +24,7 @@ export const HALATION_TINTS: ReadonlyArray<readonly [number, number, number]> = 
 ];
 
 /** Хроматична аберация на лещата в ъглите (boy: P.ca). 0 = изкл. */
-export const LENS_CA = 0.0025;
+export const LENS_CA = 0.001; // по-силно разцепва ярките прозорци в дъга по краищата
 
 export const RavenGradeShader = {
   uniforms: {

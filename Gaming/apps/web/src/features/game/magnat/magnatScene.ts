@@ -9,12 +9,12 @@
  * on demand (rAF only while tokens move) so a static board costs no idle GPU.
  */
 import { upgradeMaterial } from "../gl/baked.js";
+import { BuildingKit } from "./buildings.js";
 import {
   AmbientLight,
   BoxGeometry,
   CanvasTexture,
   Color,
-  ConeGeometry,
   DirectionalLight,
   Euler,
   Group,
@@ -22,7 +22,6 @@ import {
   LatheGeometry,
   LinearFilter,
   Mesh,
-  MeshPhysicalMaterial,
   MeshStandardMaterial,
   type Object3D,
   PerspectiveCamera,
@@ -32,7 +31,6 @@ import {
   Scene,
   SRGBColorSpace,
   type Texture,
-  TextureLoader,
   Vector2,
   Vector3,
 } from "three";
@@ -71,6 +69,7 @@ const HOP_MS = 145; // per-tile token hop
 const HOP_H = 0.7; // hop arc height
 const DICE_MS = 760; // dice tumble
 const POP_MS = 340; // house build pop-in
+const BUILDING_SCALE = 1.2; // средновековните сгради са по-ниски от старите кули — малко по-едри, за да се четат
 const TOKEN_Y = 0.5;
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
@@ -425,22 +424,16 @@ export class MagnatScene {
   private lastFrame = 0;
   private reduceMotion = false;
   private houseGroups: (Group | null)[] = new Array(BOARD_SIZE).fill(null);
-  private houseCount: number[] = new Array(BOARD_SIZE).fill(-1);
   private ownerStuds: (Mesh | null)[] = new Array(BOARD_SIZE).fill(null);
   private dice: Mesh[] = [];
   private baseMat?: MeshStandardMaterial;
-  // Shared building materials (CC0 photo facades + structural). Created once per
-  // scene; reused across every tower so disposal only ever frees geometry.
-  private matOffice!: MeshPhysicalMaterial;
-  private matGlass!: MeshPhysicalMaterial;
-  private matConcrete = new MeshStandardMaterial({ color: new Color("#9a958c"), roughness: 0.85, metalness: 0.1 });
-  private matSteel = new MeshStandardMaterial({ color: new Color("#8a8f96"), roughness: 0.4, metalness: 0.85 });
-  private matCrown = new MeshPhysicalMaterial({ color: new Color("#ecca73"), metalness: 0.9, roughness: 0.16, clearcoat: 0.7 });
+  // Рейвънхолд: средновековните сгради (buildings.ts) делят едни материали за цялата сцена.
+  private kit = new BuildingKit(() => this.core?.invalidate());
+  private houseKey: string[] = new Array(BOARD_SIZE).fill("");
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.maxAniso = 8; // per-device cap is applied automatically by the renderer
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    this.loadFacadeMaterials();
     // opaque felt background (post-processing doesn't carry CSS transparency)
     this.scene.background = new Color("#0e2c1c");
 
@@ -551,10 +544,10 @@ export class MagnatScene {
       this.housePops = this.housePops.filter((p) => {
         const t = (now - p.born) / POP_MS;
         if (t >= 1) {
-          p.g.scale.setScalar(1);
+          p.g.scale.setScalar(BUILDING_SCALE);
           return false;
         }
-        p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
+        p.g.scale.setScalar(BUILDING_SCALE * Math.max(0.01, easeOutBack(t)));
         return true;
       });
     }
@@ -765,7 +758,7 @@ export class MagnatScene {
           stud.position.set(p.x + inX * T * 0.32, 0.62, p.z + inZ * T * 0.32);
         }
       }
-      this.syncHouses(i, state.houses[i]!);
+      this.syncHouses(i, state.houses[i]!, owner);
     }
 
     this.syncDice(state.dice);
@@ -795,139 +788,11 @@ export class MagnatScene {
     };
   }
 
-  /**
-   * Load the CC0 photo facade sets (ambientCG, public-domain) into two shared
-   * physical materials: a modern concrete/glass office and a glass skyscraper
-   * with an emission map so its windows glow. Textures stream in (same-origin
-   * static assets) and a render is requested as each arrives.
-   */
-  private loadFacadeMaterials(): void {
-    const base = `${import.meta.env.BASE_URL}textures/magnat/`;
-    const loader = new TextureLoader();
-    const tex = (file: string, srgb = false): Texture => {
-      const t = loader.load(base + file, () => this.core?.invalidate());
-      if (srgb) t.colorSpace = SRGBColorSpace;
-      t.wrapS = t.wrapT = RepeatWrapping;
-      t.anisotropy = this.maxAniso;
-      return t;
-    };
-    this.matOffice = new MeshPhysicalMaterial({
-      map: tex("office_color.jpg", true),
-      normalMap: tex("office_normal.jpg"),
-      roughnessMap: tex("office_rough.jpg"),
-      color: new Color("#cfc9bd"),
-      metalness: 0.15,
-      roughness: 1,
-      normalScale: new Vector2(0.8, 0.8),
-      envMapIntensity: 1.0,
-    });
-    this.matGlass = new MeshPhysicalMaterial({
-      map: tex("glass_color.jpg", true),
-      normalMap: tex("glass_normal.jpg"),
-      roughnessMap: tex("glass_rough.jpg"),
-      emissiveMap: tex("glass_emission.jpg", true),
-      emissive: new Color("#ffeccb"),
-      // Above the 1.35 bloom threshold so lit windows glow softly at dusk
-      // (2.2+ halos the whole ring — 40 towers bleed onto the tiles).
-      emissiveIntensity: 1.9,
-      color: new Color("#2b3440"),
-      metalness: 0.9,
-      roughness: 1,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.35,
-      normalScale: new Vector2(0.7, 0.7),
-      envMapIntensity: 1.3,
-    });
-  }
-
-  /** A box whose UVs map the facade photo so one modelled floor covers one
-   *  photo floor. Each facade photo holds a different number of floors/window
-   *  columns, so the caller passes the fractional repeats directly. */
-  private facadeBox(w: number, h: number, d: number, repX: number, repY: number): BoxGeometry {
-    const geo = new BoxGeometry(w, h, d);
-    const uv = geo.attributes.uv!;
-    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * repX, uv.getY(i) * repY);
-    uv.needsUpdate = true;
-    return geo;
-  }
-
-  /**
-   * A realistic high-rise for a developed property: a concrete podium, one or
-   * two photo-textured glazed shafts (taller ones step back for a real skyline
-   * silhouette) with parapets, a rooftop plant + antenna on tall towers, and a
-   * gold landmark crown for hotels. Height grows with the development level.
-   */
-  private buildTower(count: number, hotel: boolean): Group {
-    const g = new Group();
-    // Tempered skyline: tall enough to read as development, short enough that
-    // the near edge never walls off the board (was 5·7·9·11·13 at 0.34/floor).
-    const floors = hotel ? 10 : 2 + count * 2; // 4 · 6 · 8 · 10 · (hotel 10)
-    const floorH = 0.3;
-    const w = hotel ? 1.16 : 0.98;
-    const d = hotel ? 1.16 : 0.92;
-    const glassy = hotel || count >= 2;
-    const facade = glassy ? this.matGlass : this.matOffice;
-    // Floors/window-columns held by one texture tile: the office photo shows
-    // ~6.5 floors × 7 columns, the glass high-rise photo ~40 floors × 26
-    // columns. Mapping modelled floors onto photo floors keeps windows at real
-    // scale — integer per-2-floor repeats turned the glass into micro-stripes.
-    const texFloors = glassy ? 40 : 6.5;
-    const texCols = glassy ? 26 : 7;
-
-    // podium / lobby
-    const podH = 0.4;
-    const podium = new Mesh(new BoxGeometry(w * 1.08, podH, d * 1.08), this.matConcrete);
-    podium.position.y = podH / 2;
-    podium.castShadow = podium.receiveShadow = true;
-    g.add(podium);
-
-    const stepped = hotel || count >= 3;
-    const lowerFloors = stepped ? Math.ceil(floors * 0.62) : floors;
-    const upperFloors = floors - lowerFloors;
-
-    const shaft = (fl: number, ww: number, dd: number, y0: number): number => {
-      const h = fl * floorH;
-      const cols = Math.max(3, Math.round(ww * 7)); // ~7 window columns per unit width
-      const box = new Mesh(this.facadeBox(ww, h, dd, cols / texCols, fl / texFloors), facade);
-      box.position.y = y0 + h / 2;
-      box.castShadow = box.receiveShadow = true;
-      g.add(box);
-      const cap = new Mesh(new BoxGeometry(ww * 1.05, 0.12, dd * 1.05), this.matConcrete);
-      cap.position.y = y0 + h + 0.06;
-      cap.castShadow = true;
-      g.add(cap);
-      return y0 + h + 0.12;
-    };
-
-    let y = podH;
-    y = shaft(lowerFloors, w, d, y);
-    if (upperFloors > 0) y = shaft(upperFloors, w * 0.72, d * 0.72, y);
-
-    // rooftop plant + antenna on taller towers
-    if (floors >= 7 || hotel) {
-      const mech = new Mesh(new BoxGeometry(w * 0.36, 0.26, d * 0.36), this.matConcrete);
-      mech.position.set(-w * 0.16, y + 0.13, -d * 0.1);
-      mech.castShadow = true;
-      g.add(mech);
-      const antenna = new Mesh(new BoxGeometry(0.05, hotel ? 1.1 : 0.7, 0.05), this.matSteel);
-      antenna.position.set(w * 0.16, y + (hotel ? 0.55 : 0.35), d * 0.1);
-      antenna.castShadow = true;
-      g.add(antenna);
-    }
-    // hotel landmark crown
-    if (hotel) {
-      const crown = new Mesh(new ConeGeometry(w * 0.4, 0.8, 4), this.matCrown);
-      crown.rotation.y = Math.PI / 4;
-      crown.position.y = y + 0.4;
-      crown.castShadow = true;
-      g.add(crown);
-    }
-    return g;
-  }
-
-  private syncHouses(i: number, count: number): void {
-    if (this.houseCount[i] === count) return; // only rebuild when it changed
-    this.houseCount[i] = count;
+  private syncHouses(i: number, count: number, owner: number): void {
+    const color = PLAYER_COLORS[Math.max(0, owner) % PLAYER_COLORS.length]!;
+    const key = `${count}:${color}`; // знамето следва собственика (търговия/фалит)
+    if (this.houseKey[i] === key) return; // only rebuild when it changed
+    this.houseKey[i] = key;
     if (this.houseGroups[i]) {
       // free only the old buildings' geometry — facade/structural materials are
       // shared across every tower and live for the scene's lifetime.
@@ -937,13 +802,15 @@ export class MagnatScene {
     }
     if (count <= 0) return;
     const p = this.place[i]!;
-    const hotel = count >= 5;
-    const g = this.buildTower(count, hotel);
+    const g = this.kit.build(count, color, i + 1);
 
     // seat the tower toward the inner edge so the tile's name/price stays visible
     const inX = p.side === 3 ? -1 : p.side === 1 ? 1 : 0;
     const inZ = p.side === 0 ? -1 : p.side === 2 ? 1 : 0;
     g.position.set(p.x + inX * 0.45, 0.5, p.z + inZ * 0.45);
+    // лицето (вратата, знамето) гледа навън от дъската — към играчите
+    g.rotation.y = p.side === 0 ? 0 : p.side === 2 ? Math.PI : p.side === 1 ? -Math.PI / 2 : Math.PI / 2;
+    g.scale.setScalar(BUILDING_SCALE);
     this.scene.add(g);
     this.houseGroups[i] = g;
     if (!this.reduceMotion) {
@@ -997,10 +864,7 @@ export class MagnatScene {
     this.core.dispose();
     disposeObject(this.scene);
     this.pawnGeo.dispose();
-    // shared building materials aren't always attached to the live scene graph
-    for (const m of [this.matOffice, this.matGlass, this.matConcrete, this.matSteel, this.matCrown]) {
-      for (const v of Object.values(m ?? {})) if (v && (v as Texture).isTexture) (v as Texture).dispose();
-      m?.dispose();
-    }
+    // общите материали на сградите не винаги са закачени в живата сцена
+    this.kit.dispose();
   }
 }
