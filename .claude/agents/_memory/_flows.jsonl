@@ -34,3 +34,8 @@
 {"t":"handoff","ts":"2026-09-25T05:32:56.300Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T05:33:20.843Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:47:34.244Z","id":"auto","from":"diskordjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:50:05.096Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:50:31.048Z","id":"auto","from":"vps-adjiyata","to":"човек","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T07:52:48.627Z","id":"auto","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:54:05.928Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:54:25.873Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
