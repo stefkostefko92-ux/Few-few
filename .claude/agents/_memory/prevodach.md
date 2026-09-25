@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** Блокът ПРЕДАВАНЕ изисква полета От:, Към:, Статус: (само наред | има бележки | блокер), Изход/артефакт:, и находки с файл:ред + етикет на увереност — свободен статус проваля dod-check. _(fleet; verified; ".claude/hooks/dod-check.mjs (Stop hook feedback, 2026-09-25)")_
+- **2026-09-25:** Nexus: имената на регионите са преведени в world.regions.<slug>.name (bg/it); в UI, който показва slug на регион, ползвай този ключ с defaultValue вместо твърд EN речник или slug.replace. _(Nexus; verified; "/home/user/Few-few/Nexus/client/src/i18n/locales/bg.json:1485-1556")_
 - **2026-09-25:** Капан: t('key', { defaultValue: `…${x}…` }) с JS шаблон вгражда стойността в default-а и преводът никога не получава числата — използвай {{x}} плейсхолдър + подай x като опция (намерено в Nexus Daily.tsx weekly.claimed). _(i18next; verified; "/home/user/Few-few/Nexus/client/src/pages/Daily.tsx:194")_
 - **2026-09-25:** Nexus: имената на регионите са преведени в world.regions.<slug>.name (bg/it); в UI, който показва slug на регион (чат канали, дневни куестове), ползвай този ключ с defaultValue вместо твърд EN речник или slug.replace. _(Nexus; verified; "/home/user/Few-few/Nexus/client/src/i18n/locales/bg.json:1485-1556")_
 - **2026-09-25:** Nexus IT локалът е на неформално 'tu' (напр. profile.renamed 'Ora ti chiami') — геймърски регистър; не въвеждай Lei в нови ключове. _(Nexus; verified; "/home/user/Few-few/Nexus/client/src/i18n/locales/it.json:1104")_
