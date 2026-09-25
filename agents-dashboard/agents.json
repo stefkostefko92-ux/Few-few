@@ -4741,7 +4741,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 155
+        "lessons": 157
       },
       "evolution": [
         {
@@ -5163,9 +5163,20 @@
           "date": "2026-09-25",
           "event": "v17.8 — учене",
           "detail": "Научи: Без Bash паритетът на Chrome _locales се проверява с Grep: count на '\\\"message\\\":', на …"
+        },
+        {
+          "version": "18.0.0",
+          "date": "2026-09-25",
+          "event": "v18.0 — учене",
+          "detail": "Научи: Без Bash паритетът на Chrome _locales се проверява с Grep: count на '\\\"message\\\":', на … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Без Bash паритетът на Chrome _locales се проверява с Grep: count на '\\\"message\\\":', на …\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
