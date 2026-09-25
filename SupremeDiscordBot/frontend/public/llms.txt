@@ -68,7 +68,7 @@ GDPR-native data handling.
 
 ## Compliance and infrastructure
 
-- [GDPR Privacy Settings](https://supremebot.carbonstealth.eu/dashboard/privacy-settings): Self-service data export (Articles 15+20), account deletion (Article 17), consent withdrawal (Article 7.3)
+- [Privacy Policy](https://supremebot.carbonstealth.eu/privacy): Data controller, sub-processors and transfers, retention, and your rights — self-service data export (Articles 15+20), account deletion (Article 17) and consent withdrawal (Article 7.3) are in the dashboard after sign-in and via the `/privacy` bot command
 - [Robots policy](https://supremebot.carbonstealth.eu/robots.txt): AI crawler permissions (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended allowed; CCBot and Bytespider blocked)
 - [Sitemap](https://supremebot.carbonstealth.eu/sitemap.xml): Complete URL inventory with last-modified dates
 
