@@ -41,8 +41,32 @@ export function lintShell(src, rel) {
   // стига до CI/journalctl. Първата версия не различаваше двете и обяви точно
   // този запис за изтичане. Затова редът се брои за нарушение САМО ако НЯМА
   // пренасочване към файл — или ако пренасочва към самия stdout/stderr.
-  const LOGS_A_SECRET =
-    /(echo|printf|cat)\s+[^\n]*(SECRET|PASSWORD|TOKEN|API_KEY|PRIVATE_KEY|_KEY)\b/i;
+  //
+  // СТОЙНОСТ, не ДУМА (одит 24.09.2026): първата версия хващаше самата дума —
+  // „Fill in ENCRYPTION_KEY, SESSION_SECRET…“, „check BOT_TOKEN“, „rejects invalid
+  // bearer token“ бяха „изтичания“, а 4 от 5 находки в SupremeDiscordBot/ бяха
+  // такъв шум. Шумът заглушава истинското: сред тях стоеше реален ред, който
+  // печаташе `STRIPE_WEBHOOK_SECRET=${WH_SECRET}`. Сега ред се брои, само ако
+  // печата СТОЙНОСТ: (а) разгъва тайно наречена променлива ($DB_PASSWORD,
+  // ${WH_SECRET}, $secret_value); (б) `ИМЕ=` на тайна, последвано от %s/$…
+  // (`printf "API_KEY=%s" "$k"`); (в) `cat` на файл с тайно име. Шестте
+  // закотвени изтичания в deploy-check.test.mjs остават хванати.
+  // Без гола дума PASS: тя хваща брояча `$pass` в smoke тестовете (pass/fail).
+  const SECRET_WORD = "(?:SECRET|PASSWORD|PASSWD|TOKEN|API_KEY|PRIVATE_KEY|_KEY)";
+  const PRINTS = /\b(echo|printf|cat)\b/;
+  const EXPANDS_SECRET = new RegExp(`\\$\\{?[A-Za-z_]*${SECRET_WORD}[A-Za-z_]*`, "i");
+  const NAME_EQ_VALUE = new RegExp(`${SECRET_WORD}[A-Za-z_]*=\\s*(?:%s|\\$)`, "i");
+  const CATS_SECRET_FILE = new RegExp(`\\bcat\\s+[^\\n|;&]*${SECRET_WORD}`, "i");
+  // Гледаме САМО аргументите СЛЕД командата за печат: `WH_SECRET=$(echo "$json" | …)`
+  // е присвояване (изходът се улавя), не печат — „ИМЕ=“ е ПРЕДИ echo.
+  const LOGS_A_SECRET = {
+    test: (l) => {
+      const m = PRINTS.exec(l);
+      if (!m) return false;
+      const args = l.slice(m.index);
+      return EXPANDS_SECRET.test(args) || NAME_EQ_VALUE.test(args) || CATS_SECRET_FILE.test(args);
+    },
+  };
   const REDIRECT_TO_FILE = />>?\s*("?\$?\{?[A-Za-z_./][^\n|&]*)/;
   const REDIRECT_TO_STD = />>?\s*("?\/dev\/(stdout|stderr|fd\/[12])"?|&[12])/;
   // Група `{ … } > file` / `( … ) > file`: пренасочването стои на ЗАТВАРЯЩИЯ ред,

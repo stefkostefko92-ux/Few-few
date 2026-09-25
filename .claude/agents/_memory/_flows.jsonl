@@ -109,6 +109,10 @@
 {"t":"handoff","ts":"2026-09-24T15:06:56.738Z","id":"rdcffd3cb","from":"dizayner","to":"ai-djiyata","status":"наред","run":"551a4903"}
 {"t":"start","ts":"2026-09-24T15:16:31.228Z","id":"rf22b5369","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-09-24T15:16:31.229Z","id":"rf22b5369","from":"dizayner","to":"ai-djiyata","status":"наред","run":"551a4903"}
+{"t":"handoff","ts":"2026-09-24T15:53:29.221Z","id":"auto","from":"hromadjiyata","to":"човек","status":"наред"}
+{"t":"handoff","ts":"2026-09-24T15:54:45.668Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер"}
+{"t":"handoff","ts":"2026-09-24T15:56:33.848Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-24T16:00:18.720Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
 {"t":"start","ts":"2026-09-24T16:26:46.963Z","id":"r7c056d00","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-09-24T16:26:46.963Z","id":"r7c056d00","from":"dizayner","to":"човек","status":"има бележки","run":"720b6b70"}
 {"t":"start","ts":"2026-09-24T16:38:50.278Z","id":"r43d269c2","flow":"авто","lead":"dizayner","auto":true}
@@ -117,15 +121,11 @@
 {"t":"handoff","ts":"2026-09-25T04:56:30.324Z","id":"rf0185c53","from":"ai-djiyata","to":"човек","status":"блокер","run":"6f3c7dcc"}
 {"t":"start","ts":"2026-09-25T05:10:23.695Z","id":"r33ddab77","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-09-25T05:10:23.695Z","id":"r33ddab77","from":"dizayner","to":"ai-djiyata","status":"наред, готово за преглед (не комитнато)","run":"eaf7e901"}
-{"t":"start","ts":"2026-09-25T05:36:00.533Z","id":"r5b556e94","flow":"авто","lead":"dizayner","auto":true}
-{"t":"handoff","ts":"2026-09-25T05:36:00.533Z","id":"r5b556e94","from":"dizayner","to":"човек","status":"има бележки","run":"7fc7ce46"}
-{"t":"handoff","ts":"2026-09-24T15:53:29.221Z","id":"auto","from":"hromadjiyata","to":"човек","status":"наред"}
-{"t":"handoff","ts":"2026-09-24T15:54:45.668Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер"}
-{"t":"handoff","ts":"2026-09-24T15:56:33.848Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
-{"t":"handoff","ts":"2026-09-24T16:00:18.720Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T05:31:58.772Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T05:32:56.300Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T05:33:20.843Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
+{"t":"start","ts":"2026-09-25T05:36:00.533Z","id":"r5b556e94","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-09-25T05:36:00.533Z","id":"r5b556e94","from":"dizayner","to":"човек","status":"има бележки","run":"7fc7ce46"}
 {"t":"handoff","ts":"2026-09-25T07:23:34.596Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:27:29.643Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:27:50.584Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
@@ -134,18 +134,24 @@
 {"t":"handoff","ts":"2026-09-25T07:34:25.501Z","id":"auto","from":"prevodach","to":"ai-djiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:34:35.925Z","id":"auto","from":"prevodach","to":"ai-djiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:47:10.525Z","id":"auto","from":"konveyera","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:47:34.244Z","id":"auto","from":"diskordjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:47:54.390Z","id":"auto","from":"seo","to":"pravniyat-razbirach","status":"наред (само предложения за подобрение по видимост, нищо счупено, нищо блокиращо)."}
 {"t":"handoff","ts":"2026-09-25T07:48:37.992Z","id":"auto","from":"друг","to":"kodadjiyata","status":"наред (само четене, анализ завършен; нищо не е приложено/комитнато)","fromRaw":"Изпитателя"}
 {"t":"handoff","ts":"2026-09-25T07:49:16.990Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:49:18.105Z","id":"auto","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:50:05.096Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:50:31.048Z","id":"auto","from":"vps-adjiyata","to":"човек","status":"блокер"}
 {"t":"handoff","ts":"2026-09-25T07:51:55.948Z","id":"auto","from":"vps-adjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:52:19.825Z","id":"auto","from":"pravniyat-razbirach","to":"seo","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T07:52:48.627Z","id":"auto","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:53:11.100Z","id":"auto","from":"tayniyat-agent","to":"kodadjiyata","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T07:54:05.928Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:54:25.873Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:59:32.287Z","id":"auto","from":"seo","to":"човека","status":"има бележки"}
-{"t":"handoff","ts":"2026-09-25T08:02:18.638Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер (само Piuma — пускане и Meta App Review); Мастилко, Визитка и AdBlock — има бележки"}
-{"t":"handoff","ts":"2026-09-25T08:02:22.932Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"блокер"}
 {"t":"handoff","ts":"2026-09-25T08:00:18.030Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:01:44.913Z","id":"auto","from":"tayniyat-agent","to":"prevodach","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T08:02:18.638Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер (само Piuma — пускане и Meta App Review); Мастилко, Визитка и AdBlock — има бележки"}
+{"t":"handoff","ts":"2026-09-25T08:02:22.932Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"блокер"}
 {"t":"handoff","ts":"2026-09-25T08:03:04.660Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:04:36.217Z","id":"auto","from":"tayniyat-agent","to":"човек (собственик); после pravniyat-razbirach · hromadjiyata · kodadjiyata · vps-adjiyata","status":"блокер"}
 {"t":"handoff","ts":"2026-09-25T08:05:00.179Z","id":"auto","from":"vps-adjiyata","to":"човек (собственикът)","status":"има бележки"}

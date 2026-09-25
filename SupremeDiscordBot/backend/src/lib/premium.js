@@ -88,6 +88,12 @@ export const PREMIUM_FEATURES = {
   "data.csvExport":            { label: "CSV Export",                  category: "Data" },
   "data.longRetention":        { label: "Unlimited Transcript Retention", category: "Data" },
   "data.panelDuplicate":       { label: "Duplicate Panels",            category: "Data" },
+  // v50 — Server Season (играта)
+  "game.shop50":               { label: "50 Shop Items",               category: "Game" },
+  "game.levelRolesUnlimited":  { label: "Unlimited Level Roles",       category: "Game" },
+  "game.companionsFull":       { label: "Full Companion Collection",   category: "Game" },
+  "game.quests3":              { label: "3 Active Server Quests",      category: "Game" },
+  "game.kbTrivia":             { label: "Knowledge Base Trivia",       category: "Game" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -105,6 +111,11 @@ export const BASE_LIMITS = {
   transcriptRetentionDays: 30,
   kbArticles:         3, // v32 — Knowledge Base
   reactionRoleMessages: 2, // v33 — Reaction Roles
+  // v50 — Server Season
+  shopItems:          5,
+  levelRoles:         5,
+  companionSlots:     1,
+  activeQuests:       1,
 };
 
 export const PREMIUM_LIMITS = {
@@ -119,6 +130,11 @@ export const PREMIUM_LIMITS = {
   transcriptRetentionDays: null, // null = forever
   kbArticles:         50, // v32 — Knowledge Base
   reactionRoleMessages: 25, // v33 — Reaction Roles
+  // v50 — Server Season
+  shopItems:          50,
+  levelRoles:         100,
+  companionSlots:     1000,
+  activeQuests:       3,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

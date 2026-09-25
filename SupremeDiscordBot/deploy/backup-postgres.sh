@@ -73,7 +73,10 @@ fi
 
 pg_in() {  # изпълнява команда ВЪТРЕ в postgres контейнера (stdin/stdout прозрачни)
   if [ "$PG_MODE" = "compose" ]; then
-    ( cd "$COMPOSE_DIR" && docker compose exec -T "$PG_SERVICE" "$@" )
+    # Кодът на изход се връща ИЗРИЧНО (същото поведение, но видимо): провал на
+    # pg_dump/psql трябва да стигне до викащия (pipefail → die „НЕ ротирам“),
+    # а не да зависи от това дали subshell-ът е последна команда във функцията.
+    ( cd "$COMPOSE_DIR" && docker compose exec -T "$PG_SERVICE" "$@" ) || return $?
   else
     docker exec -i "$PG_CONTAINER" "$@"
   fi
