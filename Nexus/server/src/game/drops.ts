@@ -1,4 +1,5 @@
 import { getDb } from '../db';
+import { ITEM_SEED } from '../seed/items';
 
 /**
  * Unified drop helper. Every system that grants a random item (hunt,
@@ -116,6 +117,43 @@ export function grantDrop(
   db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')")
     .run(characterId, picked.id);
   return { slug: picked.slug, duplicate: false, refundGold: 0, itemId: picked.id };
+}
+
+/* ───────────── лут на подземията (loot_pool) по класа на героя ───────────── */
+
+type LootMeta = { set_slug: string; class_req: string };
+const LOOT_META = new Map<string, LootMeta>(
+  (ITEM_SEED as { slug: string; set_slug?: string; class_req?: string }[])
+    .map((i) => [i.slug, { set_slug: i.set_slug || '', class_req: i.class_req || '' }]),
+);
+
+/** Може ли героят от класа `cls` да ползва предмета (class_req '' = всички). */
+export function lootClassOk(slug: string, cls: string): boolean {
+  const req = LOOT_META.get(slug)?.class_req ?? '';
+  return !req || req === (cls || '');
+}
+
+/**
+ * Един предмет от loot_pool на подземие / Mythic+ milestone, съобразен с
+ * класа. Преди се теглеше равномерно от целия пул, в който ~3/4 от сет
+ * частите бяха на ЧУЖДИ класове (4 класови сета × 6 части) → героят
+ * получаваше неекипируем предмет ~3 от 4 пъти.
+ *
+ * Честотата НЕ се променя: извикващият пак решава дали изобщо има дроп,
+ * а тук дялът „сет част ↔ общ предмет" е същият като на суровия пул
+ * (сет части / всички). Сменя се само кой сет предмет — вече от своя клас
+ * или универсален. Празна кофа → другата (дроп не се губи).
+ */
+export function pickClassLoot(pool: readonly string[], cls: string, rand: () => number = Math.random): string | null {
+  if (!pool.length) return null;
+  const setPart = pool.filter((s) => LOOT_META.get(s)?.set_slug);
+  const generic = pool.filter((s) => !LOOT_META.get(s)?.set_slug && lootClassOk(s, cls));
+  const ownSet = setPart.filter((s) => lootClassOk(s, cls));
+  const wantSet = rand() < setPart.length / pool.length;
+  let bucket = wantSet ? ownSet : generic;
+  if (!bucket.length) bucket = wantSet ? generic : ownSet;
+  if (!bucket.length) return null;
+  return bucket[Math.floor(rand() * bucket.length)] ?? bucket[0];
 }
 
 /** Unified drop probabilities by source. Tuned so the drop-per-hour

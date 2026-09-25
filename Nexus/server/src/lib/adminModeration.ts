@@ -12,9 +12,10 @@
  * канал за контакт + извънсъдебно (чл. 21) и съдебно обжалване.
  */
 import type Database from 'better-sqlite3';
+import { sendMail } from './email';
 
 export type Ground = 'terms' | 'illegal';
-type Lang = 'en' | 'bg' | 'it';
+export type Lang = 'en' | 'bg' | 'it';
 
 export interface Statement {
   subject: string;
@@ -117,4 +118,89 @@ export function deliverStatement(
   db.prepare('INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)')
     .run(characterId, 'Trust & Safety', st.subject, st.body, Date.now());
   return st;
+}
+
+/* ═════════════ DSA чл. 16(5) — уведомяване на ПОДАТЕЛЯ на сигнала ═════════════
+ * „Доставчикът… уведомява без ненужно забавяне физическото или юридическото
+ * лице за своето решение по отношение на информацията, за която се отнася
+ * сигналът, като предоставя информация за възможностите за защита." Досега
+ * решението се пишеше само в dsa_notices и подателят не научаваше нищо.
+ * Изпраща се, ако подателят е оставил имейл; езикът е по държавата от
+ * подаването (BG → bg, IT → it, иначе en). Преводите са ръчни, не машинни.
+ */
+const N: Record<Lang, {
+  subject: (id: number) => string; hello: string; actioned: string; rejected: string;
+  decision: string; automated: string; redress: string; footer: string;
+}> = {
+  en: {
+    subject: (id) => `Decision on your notice #${id} — Nexus Dominion`,
+    hello: 'Hello,',
+    actioned: 'We reviewed your notice and took action against the reported content.',
+    rejected: 'We reviewed your notice and decided not to take action against the reported content.',
+    decision: 'Decision',
+    automated: 'The decision was taken by a human moderator; no automated means were used.',
+    redress: 'If you disagree, reply to this message quoting the reference above and we will look at it again. You may also turn to a certified out-of-court dispute settlement body (EU Digital Services Act, Art. 21) or seek redress before the courts.',
+    footer: 'Nexus Dominion · Carbon Stealth VCC — notice-and-action under the EU Digital Services Act (Art. 16).',
+  },
+  bg: {
+    subject: (id) => `Решение по вашия сигнал №${id} — Nexus Dominion`,
+    hello: 'Здравейте,',
+    actioned: 'Прегледахме сигнала ви и предприехме действие срещу съдържанието, за което се отнася.',
+    rejected: 'Прегледахме сигнала ви и решихме да не предприемаме действие срещу съдържанието, за което се отнася.',
+    decision: 'Решение',
+    automated: 'Решението е взето от модератор (човек); не са използвани автоматизирани средства.',
+    redress: 'Ако не сте съгласни, отговорете на това писмо, като посочите номера по-горе, и ще го прегледаме отново. Можете също да се обърнете към сертифициран орган за извънсъдебно решаване на спорове (Акт за цифровите услуги на ЕС, чл. 21) или към съда.',
+    footer: 'Nexus Dominion · Carbon Stealth VCC — механизъм за сигнали по Акта за цифровите услуги на ЕС (чл. 16).',
+  },
+  it: {
+    subject: (id) => `Decisione sulla tua segnalazione n. ${id} — Nexus Dominion`,
+    hello: 'Buongiorno,',
+    actioned: 'Abbiamo esaminato la tua segnalazione e siamo intervenuti sul contenuto segnalato.',
+    rejected: 'Abbiamo esaminato la tua segnalazione e abbiamo deciso di non intervenire sul contenuto segnalato.',
+    decision: 'Decisione',
+    automated: 'La decisione è stata presa da un moderatore umano; non sono stati usati strumenti automatizzati.',
+    redress: 'Se non sei d’accordo, rispondi a questa email indicando il numero sopra e la riesamineremo. Puoi anche rivolgerti a un organismo certificato di risoluzione extragiudiziale delle controversie (Regolamento UE sui servizi digitali, art. 21) o all’autorità giudiziaria.',
+    footer: 'Nexus Dominion · Carbon Stealth VCC — meccanismo di segnalazione ai sensi del Regolamento UE sui servizi digitali (art. 16).',
+  },
+};
+
+/** Писмото до подателя (чиста функция — тестваема). */
+export function buildNoticeDecisionMail(opts: { noticeId: number; outcome: 'actioned' | 'rejected'; decision: string; lang: Lang }): { subject: string; text: string; lang: Lang } {
+  const t = N[opts.lang];
+  const text = [
+    t.hello,
+    '',
+    opts.outcome === 'actioned' ? t.actioned : t.rejected,
+    `${t.decision}: ${opts.decision}`,
+    t.automated,
+    '',
+    t.redress,
+    '',
+    '—',
+    t.footer,
+  ].join('\n');
+  return { subject: t.subject(opts.noticeId), text, lang: opts.lang };
+}
+
+/**
+ * Уведомява подателя на сигнала за решението (чл. 16(5)). Извиква се СЛЕД
+ * като решението е записано. Best-effort: без имейл → нищо; SMTP не е
+ * конфигуриран → лог; никога не хвърля. Връща дали писмото е изпратено и
+ * отбелязва notifier_notified_at при успех.
+ */
+export async function notifyNoticeDecision(db: Database.Database, noticeId: number): Promise<boolean> {
+  try {
+    const n = db.prepare('SELECT id, status, decision, notifier_email, ip_country FROM dsa_notices WHERE id = ?').get(noticeId) as
+      | { id: number; status: string; decision: string | null; notifier_email: string | null; ip_country: string | null } | undefined;
+    if (!n || !n.notifier_email || (n.status !== 'actioned' && n.status !== 'rejected')) return false;
+    const mail = buildNoticeDecisionMail({
+      noticeId: n.id, outcome: n.status, decision: n.decision || '—', lang: langForCountry(n.ip_country),
+    });
+    const sent = await sendMail({ to: n.notifier_email, subject: mail.subject, text: mail.text });
+    if (sent) db.prepare('UPDATE dsa_notices SET notifier_notified_at = ? WHERE id = ?').run(Date.now(), n.id);
+    return sent;
+  } catch (err: any) {
+    console.warn(`[dsa] уведомяването на подателя (сигнал ${noticeId}) се провали: ${err?.message || err}`);
+    return false;
+  }
 }

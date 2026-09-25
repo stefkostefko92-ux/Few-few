@@ -11,7 +11,7 @@
  *   8. Set slugs on items -> sets exist
  *   9. Realm boss drop slugs minted on boot
  *  10. Tier/level_req sanity on items
- *  11. Item sets: unique pieces exist, legacy pieces exist, every piece is obtainable
+ *  11. Item sets: unique pieces exist, each piece in exactly one set, every piece is obtainable
  */
 import { MONSTER_SEED, REGION_BANDS } from '../src/seed/monsters';
 import { ITEM_SEED } from '../src/seed/items';
@@ -162,7 +162,6 @@ for (const s of ITEM_SETS) {
     owner.set(p, s.slug);
     if (itemSources(p).length === 0) fail(`set ${s.slug} piece ${p} has no acquisition source`);
   }
-  for (const l of s.legacy_pieces ?? []) if (!itemSlugs.has(l)) fail(`set ${s.slug} legacy piece missing (deleted?): ${l}`);
 }
 if (failures === qFails) ok(`all ${ITEM_SETS.length} sets: unique, existing and obtainable pieces`);
 

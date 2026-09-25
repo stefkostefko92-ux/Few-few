@@ -1,5 +1,5 @@
 import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
-import { ITEM_SETS, setMembers, type SetBonus, type SetDef } from '../seed/sets';
+import { ITEM_SETS, findSetForItem, type SetBonus, type SetDef } from '../seed/sets';
 import { loadGuildBuffsForCharacter } from './guild';
 
 export interface SetBonusSummary {
@@ -43,18 +43,19 @@ export function classWeaponSkill(cls: CharacterClass, sub: string, ch: Character
   return 0;
 }
 
-/** Count equipped pieces per set. Броят се уникалните части И legacy_pieces
- *  (общите предмети, които бяха части ПРЕДИ преработката на сетовете) — така
- *  никой, който ги носи, не губи бонус. Таван = броя уникални части. */
+/** Брой носени части на сет. Брои се САМО уникалната част на сета — общите
+ *  предмети не принадлежат на никой сет, а всяка част е точно в един сет
+ *  (findSetForItem), така че един предмет никога не „храни" два сета.
+ *  Дублирани носени копия на една част се броят веднъж. */
 function computeSetCounts(equipped: { item: Item }[]): Map<string, number> {
   const counts = new Map<string, number>();
-  // For each equipped item, find sets it belongs to.
-  const equippedSlugs = new Set(equipped.map((e) => e.item.slug));
-  for (const set of ITEM_SETS) {
-    let matched = 0;
-    for (const slug of setMembers(set)) if (equippedSlugs.has(slug)) matched++;
-    matched = Math.min(matched, set.pieces.length);
-    if (matched > 0) counts.set(set.slug, matched);
+  const seen = new Set<string>();
+  for (const e of equipped) {
+    const slug = e.item.slug;
+    if (seen.has(slug)) continue;
+    seen.add(slug);
+    const set = findSetForItem(slug);
+    if (set) counts.set(set.slug, (counts.get(set.slug) ?? 0) + 1);
   }
   return counts;
 }

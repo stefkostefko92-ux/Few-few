@@ -22,11 +22,11 @@ import { logFromRequest, isSafeWebhookUrl, deliver } from '../lib/logger';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS, ageGateError } from './auth';
 import { banUser, unbanUser, clientIp, clientHwid } from '../lib/bans';
 import { eraseUser } from '../lib/erasure';
-import { getAllSettings, setSetting, findSetting } from '../game/settings';
+import { getAllSettings, setSetting, findSetting, settingBounds, validateSettingValue } from '../game/settings';
 import {
   audit, parseId, parseQuery, pageQuery, pageMeta, escapeLike, ipIsShielded,
 } from '../lib/adminKit';
-import { deliverStatement, type Ground } from '../lib/adminModeration';
+import { deliverStatement, notifyNoticeDecision, type Ground } from '../lib/adminModeration';
 
 const router = Router();
 router.use(authRequired, adminRequired);
@@ -678,25 +678,9 @@ router.post('/broadcast', destructiveLimiter, (req, res) => {
 /* =========================================================
    Game settings (runtime knobs) — с граници по ключ
    ========================================================= */
-const SETTING_BOUNDS: Record<string, [number, number]> = {
-  stat_upgrade_base_cost: [0, 1_000_000],
-  rename_cost_gold: [0, 1_000_000_000],
-  rename_cooldown_hours: [0, 8760],
-  guild_create_cost_gold: [0, 1_000_000_000],
-  market_fee_pct: [0, 50],
-  market_max_price: [1, 1e12],
-  energy_regen_minutes: [1, 1440],
-  energy_max_default: [1, 999],
-  xp_curve_multiplier: [0.1, 10],
-  crit_multiplier: [1, 10],
-  base_miss_chance: [0, 1],
-  block_chance: [0, 1],
-  block_damage_pct: [0, 1],
-  login_rate_max_per_min: [1, 1000],
-};
-
 router.get('/settings', (_req, res) => {
-  const settings = getAllSettings().map((s) => ({ ...s, bounds: SETTING_BOUNDS[s.def.key] ?? null }));
+  // Границите идват от самото описание (game/settings.ts) — един източник.
+  const settings = getAllSettings().map((s) => ({ ...s, bounds: settingBounds(s.def) }));
   res.json({ settings });
 });
 
@@ -708,25 +692,9 @@ router.put('/settings/:key', (req, res) => {
   if (!def) { res.status(404).json({ error: 'Unknown setting' }); return; }
   const parse = settingPutSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  let v: string | number | boolean = parse.data.value;
-  if (def.type === 'int' || def.type === 'float') {
-    const n = typeof v === 'string' && v.trim() === '' ? NaN : Number(v);
-    if (!Number.isFinite(n) || (def.type === 'int' && !Number.isInteger(n))) {
-      res.status(400).json({ error: def.type === 'int' ? 'Integer required' : 'Number required' }); return;
-    }
-    const b = SETTING_BOUNDS[key];
-    if (b && (n < b[0] || n > b[1])) { res.status(400).json({ error: `Value must be between ${b[0]} and ${b[1]}` }); return; }
-    v = n;
-  } else if (def.type === 'bool') {
-    if (![true, false, 'true', 'false', 1, 0, '1', '0'].includes(v as never)) { res.status(400).json({ error: 'Boolean required' }); return; }
-    v = v === true || v === 'true' || v === 1 || v === '1';
-  } else {
-    v = String(v).trim();
-    if (key === 'allowed_countries') {
-      v = v.toUpperCase().replace(/\s+/g, '');
-      if (!/^[A-Z]{2}(,[A-Z]{2})*$/.test(v)) { res.status(400).json({ error: 'Use comma-separated ISO-2 codes, e.g. BG,IT' }); return; }
-    }
-  }
+  const checked = validateSettingValue(def, parse.data.value);
+  if (!checked.ok) { res.status(400).json({ error: checked.error }); return; }
+  const v = checked.value;
   const before = getAllSettings().find((s) => s.def.key === key)?.value;
   setSetting(key, v, req.auth!.uid);
   audit(req, res, { action: 'setting_update', targetType: 'setting', level: def.group === 'security' ? 'warn' : 'info', before: { [key]: before }, after: { [key]: v }, message: `Setting ${key} changed` });
@@ -1151,6 +1119,9 @@ router.post('/moderation/takedown', destructiveLimiter, (req, res) => {
     message: `Takedown: ${outcome.detail}`,
     meta: { reason, ground, notified: outcome.notified, noticeId: noticeId ?? null, author_character_id: outcome.before!.authorCharId },
   });
+  // Чл. 16(5): подателят на сигнала научава решението (след записа, извън
+  // транзакцията; best-effort — SMTP забавяне не бави админа).
+  if (noticeId) void notifyNoticeDecision(db, noticeId);
   res.json({ ok: true, kind, targetId, detail: outcome.detail, notified: outcome.notified });
 });
 
@@ -1235,6 +1206,7 @@ router.post('/moderation/dsa/:id/reject', (req, res) => {
   db.prepare(`UPDATE dsa_notices SET status = 'rejected', decision = ?, decided_at = ? WHERE id = ? AND status = 'open'`)
     .run(parse.data.decision, Date.now(), id);
   audit(req, res, { category: 'moderation', action: 'dsa_reject', targetType: 'dsa_notice', targetId: id, before: { status: 'open' }, after: { status: 'rejected', decision: parse.data.decision } });
+  void notifyNoticeDecision(db, id); // чл. 16(5) — и отказът се съобщава на подателя
   res.json({ ok: true, id });
 });
 

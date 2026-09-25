@@ -6,6 +6,7 @@ import { applyXp } from '../game/progression';
 import { huntKillXp } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
@@ -24,8 +25,7 @@ import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
 // APEX boss → signature legendary (само оттук). Модулна константа — ползва
-// се и от XP клампа (APEX е изключен от него: премийната XP награда е
-// умишлена, виж по-долу).
+// се и от XP клампа (APEX има свой, по-висок таван — APEX_XP_PACE_MULT).
 const APEX_DROPS: Record<string, string> = {
   // Mid-tier (lv 50-200)
   'emberreach_apex_khalad':     'khalad_fang',
@@ -138,7 +138,7 @@ router.post('/hunt', (req, res) => {
     dodge_chance: 0.03,
     sprite: monster.sprite,
   };
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
 
   let xpGain = 0;
   let goldGain = 0;
@@ -148,13 +148,13 @@ router.post('/hunt', (req, res) => {
   // загуба (нулира комбото), затова се вика извън victory клона.
   const momentum: Momentum = applyHuntMomentum(db, char.id, result.winner === 'hero');
   if (result.winner === 'hero') {
-    // Баланс: изглаждане на XP кривата при раздаване. Seed數ните на
+    // Баланс: изглаждане на XP кривата при раздаване. Seed стойностите на
     // act-1 (lv≤25) са ~10x над темпа, а на expansion (lv26+) — на темпа
     // → „XP стена" на 26 (левелването пада 10x за едно ниво). Клампваме
     // per-kill XP в лента около целта ~8 убийства/ниво, изведена от
     // реалната крива (xpForLevel), вместо да пренаписваме стотици seed реда.
-    // APEX боссовете са ИЗКЛЮЧЕНИ от клампа — големият им xp_reward е
-    // умишлена премия (веднъж на регион), не seed аномалия.
+    // APEX боссовете имат собствен, по-висок таван (3× pace —
+    // rewardFormulas.ts → APEX_XP_PACE_MULT): премия, но не 5×.
     const baseXp = huntKillXp(monster.level, monster.xp_reward, !!APEX_DROPS[monster.slug]);
     const baseGold = Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);

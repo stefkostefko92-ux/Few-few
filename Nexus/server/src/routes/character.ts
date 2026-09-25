@@ -3,9 +3,10 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { classBaseStats, regenerateEnergy } from '../game/progression';
+import { getSetting } from '../game/settings';
 import { deriveStats } from '../game/stats';
 import { loadEquipped } from '../game/equipment';
-import { STAT_KEYS, parseCounts, nextUpgradeCost, batchCost, type StatKey } from '../game/upgrade';
+import { STAT_KEYS, parseCounts, nextUpgradeCost, batchCost, upgradeBaseCost, type StatKey } from '../game/upgrade';
 import type { Character, CharacterClass, InventoryEntry, Item } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 import { checkText } from '../lib/textFilter';
@@ -56,8 +57,10 @@ router.post('/create', (req, res) => {
       strength, dexterity, constitution, intelligence, charisma, wisdom,
       skill_sword, skill_axe, skill_bow, skill_staff, skill_magic, skill_stealth,
       energy, energy_max, energy_updated_at, arena_rating, wins, losses, created_at
-    ) VALUES (?, ?, ?, ?, ?, 1, 0, 50, 0, 0, 80, 80, 20, 20, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 100, 100, ?, 1000, 0, 0, ?)
+    ) VALUES (?, ?, ?, ?, ?, 1, 0, 50, 0, 0, 80, 80, 20, 20, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1000, 0, 0, ?)
   `);
+  // Начален таван на енергията — админ настройка energy_max_default.
+  const energyMax = getSetting<number>('energy_max_default');
   const result = stmt.run(
     req.auth!.uid,
     name,
@@ -76,6 +79,8 @@ router.post('/create', (req, res) => {
     base.skill_staff ?? 0,
     base.skill_magic ?? 0,
     base.skill_stealth ?? 0,
+    energyMax,
+    energyMax,
     now,
     now,
   );
@@ -143,7 +148,7 @@ router.get('/me', (req, res) => {
     res.status(404).json({ error: 'No character. Create one first.' });
     return;
   }
-  regenerateEnergy(char);
+  regenerateEnergy(char, Date.now(), getSetting<number>('energy_regen_minutes') * 60_000);
   // HP rework: out of combat, the hero is always at full health. HP only
   // matters during combat (the combat scene drives its own in-fight HP via
   // rounds_json). Persisting full HP here means players never need potions
@@ -192,13 +197,14 @@ router.get('/upgrade-costs', (req, res) => {
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const counts = parseCounts((char as any).stat_upgrades);
+  const base = upgradeBaseCost();
   const costs: Record<string, { current_value: number; upgrades: number; next_cost: number }> = {};
   for (const key of STAT_KEYS) {
     const upgrades = counts[key] || 0;
     costs[key] = {
       current_value: (char as any)[key],
       upgrades,
-      next_cost: nextUpgradeCost(upgrades),
+      next_cost: nextUpgradeCost(upgrades, base),
     };
   }
   res.json({ costs, gold: char.gold });
@@ -231,7 +237,8 @@ router.post('/upgrade-stat', (req, res) => {
   // huge click on +10 stats in their first 10 minutes of play.
   const want = Math.min(parse.data.count, Math.max(1, char.level));
   const currentCount = counts[stat] || 0;
-  const totalCost = batchCost(currentCount, want);
+  const base = upgradeBaseCost();
+  const totalCost = batchCost(currentCount, want, base);
   if (char.gold < totalCost) {
     res.status(400).json({ error: `Not enough gold. Need ${totalCost}g.` });
     return;
@@ -244,9 +251,12 @@ router.post('/upgrade-stat', (req, res) => {
   const updated = db
     .prepare(
       `UPDATE characters SET ${stat} = ${stat} + ?, gold = gold - ?, stat_upgrades = ?
-       WHERE id = ? AND gold >= ?`,
+       WHERE id = ? AND gold >= ? AND stat_upgrades IS ?`,
     )
-    .run(want, totalCost, JSON.stringify(counts), char.id, totalCost);
+    // CAS и върху stat_upgrades: две паралелни вдигания на РАЗЛИЧНИ статове
+    // пишеха JSON-а от една и съща стара снимка → броячът на единия се
+    // губеше и следващите му вдигания ставаха по-евтини.
+    .run(want, totalCost, JSON.stringify(counts), char.id, totalCost, (char as any).stat_upgrades ?? null);
   if (updated.changes !== 1) {
     res.status(400).json({ error: 'Gold balance changed — please retry.' });
     return;
@@ -265,7 +275,7 @@ router.post('/upgrade-stat', (req, res) => {
     gold_spent: totalCost,
     new_value: (char as any)[stat] + want,
     new_upgrades: currentCount + want,
-    next_cost: nextUpgradeCost(currentCount + want),
+    next_cost: nextUpgradeCost(currentCount + want, base),
     gold_remaining: char.gold - totalCost,
   });
 });

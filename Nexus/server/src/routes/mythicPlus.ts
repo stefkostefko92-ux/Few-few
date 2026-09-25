@@ -5,9 +5,11 @@ import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
+import { pickClassLoot } from '../game/drops';
 import { DUNGEONS } from '../seed/dungeons';
 import { logFromRequest } from '../lib/logger';
 import { mythicPlusReward, MYTHIC_TIER_SCALE } from '../game/rewardFormulas';
@@ -136,7 +138,7 @@ router.post('/strike', (req, res) => {
   };
   const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, char.hp);
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
   try {
     const out = db.transaction(() => {
       if (result.winner === 'hero') {
@@ -207,8 +209,11 @@ router.post('/claim', (req, res) => {
       // за 72k злато при търговеца на всеки ~8.5 мин).
       let milestoneDrop: string | null = null;
       if (reward.firstClear && tier > 0 && tier % 10 === 0 && dungeon.loot_pool.length > 0) {
-        milestoneDrop = dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)];
-        const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(milestoneDrop) as { id: number } | undefined;
+        // Съобразено с класа (game/drops.ts → pickClassLoot): своя/универсален сет.
+        milestoneDrop = pickClassLoot(dungeon.loot_pool, char.class);
+        const item = milestoneDrop
+          ? db.prepare('SELECT id FROM items WHERE slug = ?').get(milestoneDrop) as { id: number } | undefined
+          : undefined;
         if (item) db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
       }
       // Best-tier bookkeeping; reset fails on success.

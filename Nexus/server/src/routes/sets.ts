@@ -9,7 +9,7 @@ router.use(authRequired);
 
 router.get('/', (_req, res) => {
   const db = getDb();
-  const slugs = [...new Set(ITEM_SETS.flatMap((s) => [...s.pieces, ...(s.legacy_pieces ?? [])]))];
+  const slugs = [...new Set(ITEM_SETS.flatMap((s) => s.pieces))];
   const placeholders = slugs.map(() => '?').join(',');
   const items = db
     .prepare(`SELECT slug, name, category, sub_type, tier, rarity, level_req, class_req, icon FROM items WHERE slug IN (${placeholders})`)
@@ -25,10 +25,8 @@ router.get('/', (_req, res) => {
       class_focus: s.class_focus || null,
       lore: s.lore,
       pieces: s.pieces.map(piece),
-      // Адитивни полета (преработка на сетовете): визуалната тема (договор
-      // с 3D иконите) и старите общи предмети, които още се броят за сета.
+      // Визуалната тема (договор с 3D иконите). Сетът = само уникалните части.
       theme: s.theme,
-      legacy_pieces: (s.legacy_pieces ?? []).map((slug) => bySlug.get(slug) || { slug, missing: true }),
       bonus_2: s.bonus_2 || null,
       bonus_4: s.bonus_4 || null,
       bonus_6: s.bonus_6 || null,

@@ -10,9 +10,12 @@
  *  • Всеки сет има СОБСТВЕНИ части. Ранните 8 сета (wayfarer … mythwoven)
  *    преди деляха общите leather/chain/plate/cloth предмети — сега всеки има
  *    свой `kit` (генерира се в seed/setPieces.ts по кривата на тира).
- *  • Старите общи предмети стават `legacy_pieces`: продължават да се броят
- *    за СЪЩИЯ сет като преди (играч, който днес ги носи, не губи бонус). Нищо
- *    не е изтрито.
+ *  • Сетът се състои САМО от своите уникални части. Старите общи предмети
+ *    (leather_*, chain_*, plate_*, cloth_*, elven_bow …) НЕ се броят за
+ *    никакъв сет — преди броенето им като „legacy" ги правеше членове на
+ *    няколко сета едновременно (leather → wayfarer + sylvan + nightveil;
+ *    chain ръкавици+ботуши → легендарният mythwoven 2-част още на lv 5).
+ *    Тестова фаза, без реални играчи → без обратна съвместимост.
  *  • Нова матрица: по един класов сет за всеки клас (warrior/ranger/mage/rogue)
  *    на всеки тир 1–12. Универсалните сетове (wayfarer, mythwoven, elite …
  *    primordial) остават.
@@ -77,12 +80,6 @@ export interface SetDef {
   lore: string;
   /** Уникалните части на сета (slug-ове). Никой slug не е в два сета. */
   pieces: string[];
-  /**
-   * Обратна съвместимост: общите предмети, които ПРЕДИ преработката бяха
-   * части на сета. Броят се за същия сет (stats.ts → setMembers), за да не
-   * загуби бонус никой, който ги носи. Не се показват като „части".
-   */
-  legacy_pieces?: string[];
   /** Собствените части, генерирани в seed/setPieces.ts (липсва при сетовете
    *  от generic tier екипировка — elite … primordial). */
   kit?: KitPiece[];
@@ -120,8 +117,8 @@ export function kitPieceSlug(setSlug: string, p: KitPiece): string {
  * Бюджет на пълния 6-частов бонус по тир — изведен от съществуващите
  * универсални сетове (elite T4 … primordial T12: сумарно hp/def/str/atk при
  * 6 части), за да се мащабират класовите сетове като тях. T3/T4 са
- * калибрирани спрямо историческите sunforged/voidshard (ръчни бонуси, които
- * не бива да падат), за да няма класов дисбаланс на lv 30–130.
+ * калибрирани с харнеса (режим „sets"), за да няма класов дисбаланс на
+ * lv 30–130.
  */
 const BONUS_BUDGET: Record<number, { hp: number; def: number; stat: number; atk: number }> = {
   1: { hp: 40, def: 4, stat: 3, atk: 2 },
@@ -230,8 +227,6 @@ interface ClassSetSpec {
   /** Имена по слот, ако се различават от „<prefix> <noun>". */
   names?: Partial<Record<Exclude<KitSlot, 'weapon'>, string>>;
   rarity?: SetRarity;
-  legacy?: string[];
-  bonuses?: Pick<SetDef, 'bonus_2' | 'bonus_4' | 'bonus_6'>;
 }
 
 function classSet(s: ClassSetSpec): SetDef {
@@ -247,7 +242,6 @@ function classSet(s: ClassSetSpec): SetDef {
     { slot: 'weapon', weapon: s.weapon[0], name: s.weapon[1] },
   ];
   const gen = classSetBonuses(s.cls, s.tier);
-  const b = s.bonuses ?? {};
   return {
     slug: s.slug,
     name: s.name,
@@ -257,14 +251,12 @@ function classSet(s: ClassSetSpec): SetDef {
     lore: s.lore,
     kit,
     pieces: kit.map((p) => kitPieceSlug(s.slug, p)),
-    ...(s.legacy ? { legacy_pieces: s.legacy } : {}),
     level_req: SET_LEVEL_REQ[s.tier],
     theme: s.theme,
-    // Ръчно зададените (исторически) прагове се пазят; липсващите се
-    // допълват от шаблона (адитивно — никой не губи бонус).
-    bonus_2: b.bonus_2 ?? gen.bonus_2,
-    bonus_4: b.bonus_4 ?? gen.bonus_4,
-    bonus_6: b.bonus_6 ?? gen.bonus_6,
+    // Всички класови сетове — от шаблона по бюджета на тира (без ръчни
+    // „исторически" прагове: те съществуваха само за обратна съвместимост
+    // със старите legacy комплекти, които вече не се броят).
+    ...gen,
   };
 }
 
@@ -276,7 +268,6 @@ interface UniversalKitSpec {
   lore: string;
   theme: SetTheme;
   kit: KitPiece[];
-  legacy: string[];
   bonus_2?: SetBonus;
   bonus_4?: SetBonus;
   bonus_6?: SetBonus;
@@ -286,7 +277,6 @@ function universalKitSet(s: UniversalKitSpec): SetDef {
     slug: s.slug, name: s.name, tier: s.tier, rarity: s.rarity, lore: s.lore,
     kit: s.kit,
     pieces: s.kit.map((p) => kitPieceSlug(s.slug, p)),
-    legacy_pieces: s.legacy,
     level_req: SET_LEVEL_REQ[s.tier],
     theme: s.theme,
     bonus_2: s.bonus_2, bonus_4: s.bonus_4, bonus_6: s.bonus_6,
@@ -312,7 +302,6 @@ export const ITEM_SETS: SetDef[] = [
       { slot: 'boots', name: "Wayfarer's Boots" },
       { slot: 'cloak', name: "Wayfarer's Cloak" },
     ],
-    legacy: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots'],
     bonus_2: { hp_bonus: 8, dex_bonus: 1 },
     bonus_4: { hp_bonus: 18, dex_bonus: 2, defense_bonus: 2 },
   }),
@@ -352,12 +341,6 @@ export const ITEM_SETS: SetDef[] = [
     theme: { family: 'mail', primary: '#8a8f96', secondary: '#3b4a5a', trim: '#b08d57', motif: 'rivets', finish: 'worn' },
     weapon: ['sword', 'Ironguard Longsword'],
     names: { armor: 'Ironguard Hauberk', boots: 'Ironguard Greaves', shield: 'Ironguard Kite Shield' },
-    legacy: ['chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'steel_longsword'],
-    bonuses: {
-      bonus_2: { hp_bonus: 25, atk_bonus: 1 },
-      bonus_4: { hp_bonus: 55, defense_bonus: 6, atk_bonus: 2 },
-      bonus_6: { hp_bonus: 100, defense_bonus: 12, atk_bonus: 7 },
-    },
   }),
   classSet({
     slug: 'sylvan_marshal', name: 'Sylvan Marshal', prefix: "Sylvan Marshal's", tier: 2, cls: 'ranger',
@@ -365,11 +348,6 @@ export const ITEM_SETS: SetDef[] = [
       'Forest-dyed leathers worn by the marshals who walk the Whispering Woods and the high paths of Mistmoor.',
     theme: { family: 'verdant', primary: '#3f6b35', secondary: '#8b6b3e', trim: '#c9b458', motif: 'feathers', finish: 'matte' },
     weapon: ['bow', "Sylvan Marshal's Longbow"],
-    legacy: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'elven_bow'],
-    bonuses: {
-      bonus_2: { dex_bonus: 3, crit_bonus: 0.03 },
-      bonus_4: { dex_bonus: 5, dodge_bonus: 0.04, atk_bonus: 3 },
-    },
   }),
   classSet({
     slug: 'arcane_conclave', name: 'Arcane Conclave', prefix: 'Conclave', tier: 2, cls: 'mage',
@@ -378,11 +356,6 @@ export const ITEM_SETS: SetDef[] = [
     theme: { family: 'cloth', primary: '#3b4fa0', secondary: '#d9d2c0', trim: '#c0a060', motif: 'runes', finish: 'matte' },
     weapon: ['staff', 'Conclave Staff'],
     names: { helm: 'Conclave Hood' },
-    legacy: ['cloth_hood', 'cloth_robe', 'cloth_gloves', 'cloth_shoes', 'sapphire_staff'],
-    bonuses: {
-      bonus_2: { mp_bonus: 25, int_bonus: 3 },
-      bonus_4: { mp_bonus: 50, int_bonus: 5, wis_bonus: 3 },
-    },
   }),
   classSet({
     slug: 'nightveil', name: 'Nightveil', prefix: 'Nightveil', tier: 2, cls: 'rogue',
@@ -391,11 +364,6 @@ export const ITEM_SETS: SetDef[] = [
     theme: { family: 'shadow', primary: '#26262e', secondary: '#4b3b5c', trim: '#8a8a96', motif: 'plain', finish: 'matte' },
     weapon: ['dagger', 'Nightveil Dagger'],
     names: { helm: 'Nightveil Hood' },
-    legacy: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'rusty_dagger'],
-    bonuses: {
-      bonus_2: { dex_bonus: 3, dodge_bonus: 0.04 },
-      bonus_4: { dex_bonus: 5, crit_bonus: 0.05, atk_bonus: 3 },
-    },
   }),
 
   /* ===== Tier 3 — Rare adventurer sets (lv 30) ===== */
@@ -406,11 +374,6 @@ export const ITEM_SETS: SetDef[] = [
     theme: { family: 'plate', primary: '#c26a1e', secondary: '#5a2a14', trim: '#f2c14e', emissive: '#ff7a1a', motif: 'flames', finish: 'polished' },
     weapon: ['sword', 'Sunforged Blade'],
     names: { helm: 'Sunforged Greathelm', shield: 'Sunforged Aegis' },
-    legacy: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'flameblade'],
-    bonuses: {
-      bonus_2: { hp_bonus: 80, atk_bonus: 2 },
-      bonus_4: { hp_bonus: 180, defense_bonus: 18, atk_bonus: 11 },
-    },
   }),
   classSet({
     slug: 'ashfeather', name: 'Ashfeather Stalker', prefix: 'Ashfeather', tier: 3, cls: 'ranger',
@@ -440,15 +403,6 @@ export const ITEM_SETS: SetDef[] = [
     theme: { family: 'void', primary: '#2a1740', secondary: '#0d0d16', trim: '#9b7fd4', emissive: '#b36bff', motif: 'spikes', finish: 'enameled' },
     weapon: ['staff', 'Voidshard Staff'],
     names: { helm: 'Voidshard Cowl' },
-    legacy: ['cloth_hood', 'mage_robe', 'cloth_gloves', 'cloth_shoes', 'archmage_staff', 'amulet_of_warding'],
-    bonuses: {
-      // Исторически бонуси + адитивно HP/DEF на 4/6 (преработката): без тях
-      // магът губеше класовия паритет на T4 (харнес, режим „sets"). Само се
-      // добавя; 2-частовият праг е непроменен (lv 1 cloth legacy не се пипа).
-      bonus_2: { mp_bonus: 60, int_bonus: 6 },
-      bonus_4: { mp_bonus: 120, int_bonus: 10, wis_bonus: 8, atk_bonus: 8, hp_bonus: 200, defense_bonus: 14 },
-      bonus_6: { mp_bonus: 220, int_bonus: 16, wis_bonus: 14, atk_bonus: 16, crit_bonus: 0.08, hp_bonus: 260, defense_bonus: 20 },
-    },
   }),
   classSet({
     slug: 'hammerhand', name: 'Hammerhand Bulwark', prefix: 'Hammerhand', tier: 4, cls: 'warrior',
@@ -487,7 +441,6 @@ export const ITEM_SETS: SetDef[] = [
       { slot: 'cloak', name: 'Mythwoven Mantle' },
       { slot: 'shield', name: 'Mythwoven Sunshield' },
     ],
-    legacy: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'dragonbane', 'ring_of_power'],
     bonus_2: { hp_bonus: 150, str_bonus: 6 },
     bonus_4: { hp_bonus: 320, defense_bonus: 24, str_bonus: 10, atk_bonus: 14 },
     bonus_6: { hp_bonus: 600, defense_bonus: 50, str_bonus: 18, atk_bonus: 30, crit_bonus: 0.1, dodge_bonus: 0.05 },
@@ -832,19 +785,13 @@ export const TIER_THEMES: Record<number, SetTheme> = {
   12: { family: 'crystal', primary: '#24433f', secondary: '#d6ebe5', trim: '#f0cd80', emissive: '#6ee8cf', motif: 'plain', finish: 'glowing' },
 };
 
-/** Всички предмети, които се броят за сета: уникалните части + legacy. */
-export function setMembers(set: SetDef): string[] {
-  return set.legacy_pieces ? [...set.pieces, ...set.legacy_pieces] : set.pieces;
-}
+/** Част → сет. Всяка част принадлежи на ТОЧНО един сет (тестове + verify-content). */
+const PIECE_OWNER = new Map<string, SetDef>();
+for (const s of ITEM_SETS) for (const p of s.pieces) PIECE_OWNER.set(p, s);
 
-/** Сетът, чиято УНИКАЛНА част е предметът (legacy не се броят тук). */
+/** Сетът, чиято част е предметът (или undefined — общ предмет извън сет). */
 export function findSetForItem(slug: string): SetDef | undefined {
-  return ITEM_SETS.find((s) => s.pieces.includes(slug));
-}
-
-/** Всички сетове, за които предметът се брои (вкл. legacy). */
-export function findSetsCountingItem(slug: string): SetDef[] {
-  return ITEM_SETS.filter((s) => setMembers(s).includes(slug));
+  return PIECE_OWNER.get(slug);
 }
 
 /** Собствените (генерирани) части на всички сетове от даден тир. */

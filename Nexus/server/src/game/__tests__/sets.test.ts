@@ -1,5 +1,5 @@
 // Регресионни тестове за преработката на сетовете (уникални части, класова
-// матрица 4×12, обратна съвместимост, източници, крива, 3D тема).
+// матрица 4×12, без legacy броене, източници, крива, 3D тема).
 // Изолирана in-memory база — задай ПРЕДИ първия getDb(); роутерът се зарежда
 // динамично в before() (виж admin.test.ts).
 process.env.DB_PATH = ':memory:';
@@ -14,7 +14,7 @@ import { signToken } from '../../middleware/auth';
 import { ITEM_SEED } from '../../seed/items';
 import { DUNGEONS } from '../../seed/dungeons';
 import {
-  ITEM_SETS, TIER_THEMES, SET_LEVEL_REQ, setMembers,
+  ITEM_SETS, TIER_THEMES, SET_LEVEL_REQ, findSetForItem,
   type SetBonus, type SetDef, type ThemeFamily, type ThemeMotif, type ThemeFinish,
 } from '../../seed/sets';
 import { SET_SELL_PRICE } from '../../seed/setPieces';
@@ -53,10 +53,10 @@ test('всеки сет има ≥ 4 уникални части; никоя ч�
       owner.set(p, s.slug);
     }
   }
-  // Уникалните части не са legacy на друг сет (legacy са само общите предмети).
-  for (const s of ITEM_SETS) for (const l of s.legacy_pieces ?? []) {
-    assert.ok(!owner.has(l), `legacy ${l} на ${s.slug} е уникална част на ${owner.get(l)}`);
-  }
+  // findSetForItem връща точно собственика; нищо извън частите няма сет.
+  for (const [p, o] of owner) assert.equal(findSetForItem(p)?.slug, o, `${p}: грешен собственик`);
+  for (const it of ITEMS) if (!owner.has(it.slug)) assert.equal(findSetForItem(it.slug), undefined, `${it.slug} не е част, а има сет`);
+  assert.ok(ITEM_SETS.every((s) => !('legacy_pieces' in s)), 'legacy_pieces е премахнато');
   const slugs = ITEMS.map((i) => i.slug);
   assert.equal(new Set(slugs).size, slugs.length, 'дублиран slug в ITEM_SEED');
 });
@@ -81,7 +81,7 @@ test('генерираните части носят set_slug, клас и ор�
     }
     for (const c of ['helm', 'armor', 'gloves', 'boots']) assert.ok(cats.has(c), `${s.slug} няма ${c}`);
   }
-  // Общите предмети остават без set_slug (вкл. legacy и elite … primordial).
+  // Общите предмети остават без set_slug (вкл. elite … primordial).
   for (const it of ITEMS) if (!KIT_SETS.some((s) => s.pieces.includes(it.slug))) assert.ok(!it.set_slug, `${it.slug} има set_slug`);
 });
 
@@ -235,38 +235,7 @@ test('подземията: сет частите в loot_pool са от тир�
   }
 });
 
-/* ═════════════════ 4. обратна съвместимост ═════════════════ */
-
-/** Снимка ПРЕДИ преработката (части + бонуси) — буквално копие. */
-const OLD: { slug: string; pieces: string[]; b: (SetBonus | undefined)[] }[] = [
-  { slug: 'wayfarer', pieces: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots'], b: [{ hp_bonus: 8, dex_bonus: 1 }, { hp_bonus: 18, dex_bonus: 2, defense_bonus: 2 }] },
-  { slug: 'ironguard', pieces: ['chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'steel_longsword'], b: [{ hp_bonus: 25, atk_bonus: 1 }, { hp_bonus: 55, defense_bonus: 6, atk_bonus: 2 }, { hp_bonus: 100, defense_bonus: 12, atk_bonus: 7 }] },
-  { slug: 'sylvan_marshal', pieces: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'elven_bow'], b: [{ dex_bonus: 3, crit_bonus: 0.03 }, { dex_bonus: 5, dodge_bonus: 0.04, atk_bonus: 3 }] },
-  { slug: 'arcane_conclave', pieces: ['cloth_hood', 'cloth_robe', 'cloth_gloves', 'cloth_shoes', 'sapphire_staff'], b: [{ mp_bonus: 25, int_bonus: 3 }, { mp_bonus: 50, int_bonus: 5, wis_bonus: 3 }] },
-  { slug: 'nightveil', pieces: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'rusty_dagger'], b: [{ dex_bonus: 3, dodge_bonus: 0.04 }, { dex_bonus: 5, crit_bonus: 0.05, atk_bonus: 3 }] },
-  { slug: 'sunforged', pieces: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'flameblade'], b: [{ hp_bonus: 80, atk_bonus: 2 }, { hp_bonus: 180, defense_bonus: 18, atk_bonus: 11 }] },
-  { slug: 'voidshard', pieces: ['cloth_hood', 'mage_robe', 'cloth_gloves', 'cloth_shoes', 'archmage_staff', 'amulet_of_warding'], b: [{ mp_bonus: 60, int_bonus: 6 }, { mp_bonus: 120, int_bonus: 10, wis_bonus: 8, atk_bonus: 8 }, { mp_bonus: 220, int_bonus: 16, wis_bonus: 14, atk_bonus: 16, crit_bonus: 0.08 }] },
-  { slug: 'mythwoven', pieces: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'dragonbane', 'ring_of_power'], b: [{ hp_bonus: 150, str_bonus: 6 }, { hp_bonus: 320, defense_bonus: 24, str_bonus: 10, atk_bonus: 14 }, { hp_bonus: 600, defense_bonus: 50, str_bonus: 18, atk_bonus: 30, crit_bonus: 0.1, dodge_bonus: 0.05 }] },
-];
-
-test('обратна съвместимост: всеки стар член на сет още съществува и се брои за същия сет', () => {
-  for (const o of OLD) {
-    const s = ITEM_SETS.find((x) => x.slug === o.slug)!;
-    for (const p of o.pieces) {
-      assert.ok(bySlug.has(p), `${p} е изтрит`);
-      assert.ok(setMembers(s).includes(p), `${p} вече не се брои за ${s.slug}`);
-    }
-    assert.ok(s.pieces.length >= o.pieces.length, `${s.slug}: таванът (${s.pieces.length}) реже старите ${o.pieces.length}`);
-    // Бонусите на всеки праг: нито едно поле не е намаляло.
-    [s.bonus_2, s.bonus_4, s.bonus_6].forEach((nb, i) => {
-      const ob = o.b[i];
-      if (!ob) return;
-      assert.ok(nb, `${s.slug}: праг ${(i + 1) * 2} изчезна`);
-      for (const [k, v] of Object.entries(ob)) assert.ok(((nb as any)[k] ?? 0) >= v, `${s.slug} bonus_${(i + 1) * 2}.${k} ${(nb as any)[k]} < ${v}`);
-    });
-  }
-});
-
+/* ═════════════════ 4. общите предмети НЕ са членове на сет ═════════════════ */
 function npc(cls: Character['class'], level = 30): Character {
   return {
     id: 1, user_id: 1, is_npc: 1, name: 'T', class: cls, gender: 'male', portrait: 'x',
@@ -282,48 +251,42 @@ function wear(slugs: string[]): { item: Item; entry: InventoryEntry }[] {
     entry: { id: idx + 1, character_id: 1, item_id: idx + 1, quantity: 1, equipped: 1, slot: '' } as InventoryEntry,
   }));
 }
-/** Старият алгоритъм (буквално): брой носени от старите части → активни прагове. */
-function oldActive(slugs: string[]): Map<string, number> {
-  const eq = new Set(slugs);
-  const m = new Map<string, number>();
-  for (const o of OLD) {
-    const n = o.pieces.filter((p) => eq.has(p)).length;
-    const th = [2, 4, 6].filter((t, i) => n >= t && o.b[i]).length;
-    if (th) m.set(o.slug, th);
-  }
-  return m;
-}
+/** Бившите „legacy" комплекти — общи предмети, които преди се броеха за
+ *  няколко сета едновременно (leather → wayfarer+sylvan+nightveil; chain
+ *  ръкавици+ботуши → mythwoven 2-част на lv 5). */
+const EX_LEGACY: Record<string, string[]> = {
+  leather: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'elven_bow'],
+  chain: ['chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'steel_longsword'],
+  plate: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'flameblade', 'ring_of_power'],
+  cloth: ['cloth_hood', 'mage_robe', 'cloth_gloves', 'cloth_shoes', 'archmage_staff', 'amulet_of_warding'],
+  mythwoven_chain: ['chain_gloves', 'chain_boots'],
+  rogue_leather: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'rusty_dagger'],
+};
 
-test('обратна съвместимост: днешните legacy комплекти пазят ВСИЧКИ активни бонуси (deriveStats)', () => {
-  const loadouts: Record<string, string[]> = {
-    leather: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'elven_bow'],
-    chain: ['chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'steel_longsword'],
-    plate: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'flameblade', 'ring_of_power'],
-    cloth: ['cloth_hood', 'mage_robe', 'cloth_gloves', 'cloth_shoes', 'archmage_staff', 'amulet_of_warding'],
-    mythwoven_legacy: ['plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'dragonbane', 'ring_of_power'],
-    rogue_leather: ['leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'rusty_dagger'],
-  };
-  for (const [name, slugs] of Object.entries(loadouts)) {
-    const d = deriveStats(npc('warrior'), wear(slugs));
-    const now = new Map(d.active_sets.map((a) => [a.set_slug, a.bonuses_active.length]));
-    for (const [set, th] of oldActive(slugs)) {
-      assert.ok((now.get(set) ?? 0) >= th, `${name}: ${set} имаше ${th} прага, сега ${now.get(set) ?? 0}`);
-    }
+test('нито един общ предмет не активира бонус на сет (вкл. бившите legacy комплекти)', () => {
+  for (const [name, slugs] of Object.entries(EX_LEGACY)) {
+    for (const s of slugs) assert.ok(bySlug.has(s), `${s} липсва`);
+    const d = deriveStats(npc('warrior', 5), wear(slugs));
+    assert.deepEqual(d.active_sets, [], `${name}: активни ${d.active_sets.map((a) => a.set_slug)}`);
+  }
+  // Всички общи (извън сет) предмети от един слот и тир, носени заедно — нула сетове.
+  const common = ITEMS.filter((i) => !findSetForItem(i.slug) && ['helm', 'armor', 'gloves', 'boots', 'shield', 'cloak', 'weapon', 'ring', 'amulet'].includes(i.category));
+  for (let t = 1; t <= 12; t++) {
+    const bySlot = new Map<string, string>();
+    for (const i of common) if (i.tier === t && !bySlot.has(i.category)) bySlot.set(i.category, i.slug);
+    const d = deriveStats(npc('warrior', 500), wear([...bySlot.values()]));
+    assert.deepEqual(d.active_sets, [], `T${t} общи: ${d.active_sets.map((a) => a.set_slug)}`);
   }
 });
 
-test('обратна съвместимост: legacy + нови части се сумират (смесен комплект), таванът = броя части', () => {
-  // 2 legacy chain + 2 нови ironguard → 4 части на Ironguard.
+test('смесен комплект: общи + части на сет → броят се само частите; дублирана част се брои веднъж', () => {
   const mixed = deriveStats(npc('warrior'), wear(['chain_helm', 'chain_armor', 'ironguard_gloves', 'ironguard_boots']));
-  const ig = mixed.active_sets.find((a) => a.set_slug === 'ironguard')!;
-  assert.equal(ig.pieces_equipped, 4);
-  // Mythwoven: 6 нови + legacy оръжие + пръстен → 8 съвпадения, но таван 6.
+  assert.deepEqual(mixed.active_sets.map((a) => [a.set_slug, a.pieces_equipped]), [['ironguard', 2]]);
+  const dup = deriveStats(npc('warrior'), wear(['ironguard_gloves', 'ironguard_gloves', 'ironguard_boots', 'ironguard_boots']));
+  assert.equal(dup.active_sets[0].pieces_equipped, 2);
   const full = ITEM_SETS.find((s) => s.slug === 'mythwoven')!.pieces;
-  const mw = deriveStats(npc('warrior'), wear([...full, 'dragonbane', 'ring_of_power']))
-    .active_sets.find((a) => a.set_slug === 'mythwoven')!;
-  assert.equal(mw.pieces_equipped, 6);
-  assert.equal(mw.pieces_total, 6);
-  assert.equal(mw.bonuses_active.length, 3);
+  const mw = deriveStats(npc('warrior'), wear([...full, 'dragonbane', 'ring_of_power'])).active_sets;
+  assert.deepEqual(mw.map((a) => [a.set_slug, a.pieces_equipped, a.bonuses_active.length]), [['mythwoven', 6, 3]]);
 });
 
 test('пълен нов класов сет дава 2/4/6 и само своя сет (без „чужди" бонуси)', () => {
@@ -367,8 +330,6 @@ test('класовите бонуси растат с тира (бойна ст�
   for (const cls of CLASSES) {
     const chain = ITEM_SETS.filter((s) => s.class_focus === cls && s.tier >= 3).sort((a, b) => a.tier - b.tier);
     const key = ({ warrior: 'str_bonus', ranger: 'dex_bonus', mage: 'int_bonus', rogue: 'dex_bonus' } as const)[cls];
-    // Исторически сетове (voidshard) разпределят бюджета различно (INT вместо
-    // HP), затова се сравнява бойната стойност, не поле по поле.
     const value = (s: SetDef) => cum(s, 'hp_bonus') / 4 + cum(s, 'defense_bonus') + cum(s, key) * 3 + cum(s, 'atk_bonus') * 2 + cum(s, 'wis_bonus');
     for (let k = 1; k < chain.length; k++) {
       assert.ok(value(chain[k]) >= value(chain[k - 1]), `${chain[k].slug} ${value(chain[k])} < ${chain[k - 1].slug} ${value(chain[k - 1])}`);
@@ -407,7 +368,7 @@ test('тема: валидна, различима между сетовете, 
   for (let t = 1; t <= 12; t++) check(`tierThemes[${t}]`, TIER_THEMES[t]);
 });
 
-/* ═════════════════ 7. /api/sets (адитивно: theme + legacy + източници) ═════════════════ */
+/* ═════════════════ 7. /api/sets (theme + източници, без legacy) ═════════════════ */
 
 let server: Server;
 let base = '';
@@ -424,7 +385,7 @@ before(async () => {
 });
 after(() => { server?.close(); });
 
-test('/api/sets връща theme, legacy_pieces и източници на всяка част (старите полета непроменени)', async () => {
+test('/api/sets връща theme и източници на всяка част; без legacy_pieces', async () => {
   const r = await fetch(`${base}/api/sets`, { headers: { Authorization: `Bearer ${token}` } });
   assert.equal(r.status, 200);
   const j = await r.json() as any;
@@ -437,7 +398,6 @@ test('/api/sets връща theme, legacy_pieces и източници на вс�
       assert.ok(p.sources.length > 0, `${p.slug}: няма източници`);
     }
   }
-  const ig = j.sets.find((s: any) => s.slug === 'ironguard');
-  assert.deepEqual(ig.legacy_pieces.map((p: any) => p.slug), ['chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'steel_longsword']);
+  for (const s of j.sets) assert.ok(!('legacy_pieces' in s), `${s.slug}: legacy_pieces в API-то`);
   assert.equal(Object.keys(j.tier_themes).length, 12);
 });

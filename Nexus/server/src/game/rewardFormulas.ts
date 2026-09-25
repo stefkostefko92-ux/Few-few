@@ -8,10 +8,22 @@ import { paceXpForKill } from './progression';
 
 /* ───────────── Лов ───────────── */
 
-/** Per-kill XP: клампнат в темпова лента 0.6×–1.8× pace; APEX е изключен
- *  (премийната награда е умишлена). */
+/**
+ * APEX XP таван: × pace на нивото на боса. Seed-ът дава ~5× pace. Мерено с
+ * харнеса (фаза 2 + този одит): с пълен класов сет APEX-ът се печели 50–98%
+ * на своето ниво, а се среща с APEX_ENCOUNTER_CHANCE (20%) само в ±3 нива →
+ * при 5× ловът в прозореца даваше ~1.6× XP/ч (≈ +4 нива на регион, ×16
+ * региона) — отделно от уникалния легендарен предмет и 20× фракционната
+ * репутация, които са истинската награда на боса. 3× пази APEX-а най-
+ * доходното единично убийство (над 1.8× тавана на обикновените), но
+ * прозорецът пада до ~1.3×.
+ */
+export const APEX_XP_PACE_MULT = 3;
+
+/** Per-kill XP: клампнат в темпова лента 0.6×–1.8× pace; APEX — до
+ *  APEX_XP_PACE_MULT × pace (премийна, но ограничена награда). */
 export function huntKillXp(monsterLevel: number, seedXp: number, isApex: boolean): number {
-  if (isApex) return seedXp;
+  if (isApex) return Math.min(seedXp, Math.round(paceXpForKill(monsterLevel) * APEX_XP_PACE_MULT));
   const pace = paceXpForKill(monsterLevel);
   return Math.max(Math.round(pace * 0.6), Math.min(Math.round(pace * 1.8), seedXp));
 }

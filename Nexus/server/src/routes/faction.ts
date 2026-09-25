@@ -130,7 +130,7 @@ router.get('/', (req, res) => {
 /** Faction vendor: each tier unlocks one piece of stock. Stock is
  *  hand-built rather than reading from items table so we can label
  *  each entry with the unlocking tier. */
-const VENDOR_STOCK: Record<string, Array<{ slug: string; tier: number; gold: number; gems: number; note: string }>> = {
+export const VENDOR_STOCK: Record<string, Array<{ slug: string; tier: number; gold: number; gems: number; note: string }>> = {
   iron_watch: [
     { slug: 'elite_armor_4',    tier: 1, gold: 1200, gems: 0,  note: 'Quartermaster discount on standard plate.' },
     { slug: 'elite_helm_4',     tier: 1, gold: 1200, gems: 0,  note: '' },
@@ -194,7 +194,13 @@ router.post('/:slug/vendor/buy', (req, res) => {
       }
       const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(itemSlug) as { id: number } | undefined;
       if (!item) { const e: any = new Error('Item missing from catalog'); e.clientSafe = true; e.status = 500; throw e; }
-      db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+      // Гем-оферта → soul_bound (без пазар/размяна/дарение) + gem_bought (без
+      // NPC продажба). Иначе caethra_crown за 300 гема се продаваше за 240 000
+      // злато — конвертор премиум валута → злато. Злато-офертите остават
+      // обикновени предмети (злато → предмет → по-малко злато е загуба).
+      const gemOffer = offer.gems > 0 ? 1 : 0;
+      db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound, gem_bought) VALUES (?, ?, 1, 0, '', ?, ?)")
+        .run(char.id, item.id, gemOffer, gemOffer);
     }).immediate();
     logFromRequest(req, {
       category: 'inventory', action: 'faction_buy',

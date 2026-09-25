@@ -6,6 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import { getSetting } from './game/settings';
 
 import authRoutes from './routes/auth';
 import characterRoutes from './routes/character';
@@ -127,7 +128,9 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-const authLimiter = rateLimit({ windowMs: 60_000, max: 20 });
+// Лимитът е админ настройка (login_rate_max_per_min) — чете се при всяка
+// заявка (кеширано), затова промяна в панела важи веднага.
+const authLimiter = rateLimit({ windowMs: 60_000, limit: () => getSetting<number>('login_rate_max_per_min') });
 app.use('/api/auth', authLimiter);
 
 // Tighter per-IP throttling on the abuse-prone auth endpoints. /register

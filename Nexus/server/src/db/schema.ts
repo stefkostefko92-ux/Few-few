@@ -524,6 +524,10 @@ export function applySchema(db: Database.Database): void {
   if (!invHave.has('soul_bound')) db.exec(`ALTER TABLE inventory ADD COLUMN soul_bound INTEGER NOT NULL DEFAULT 0`);
   if (!invHave.has('listed')) db.exec(`ALTER TABLE inventory ADD COLUMN listed INTEGER NOT NULL DEFAULT 0`);
   if (!invHave.has('vaulted_guild_id')) db.exec(`ALTER TABLE inventory ADD COLUMN vaulted_guild_id INTEGER NOT NULL DEFAULT 0`);
+  // Купено с ГЕМОВЕ (фракционен вендор, аукцион, маунт) → не се продава на
+  // NPC търговеца. Иначе гем → предмет → злато беше конвертор на премиум
+  // валутата (напр. caethra_crown: 300 гема → 240 000 злато).
+  if (!invHave.has('gem_bought')) db.exec(`ALTER TABLE inventory ADD COLUMN gem_bought INTEGER NOT NULL DEFAULT 0`);
 
   // Dir. 2011/83/EU Art. 16(m) consent capture on the purchase row. The
   // server replays consent_text in a chargeback dispute; consent_at is

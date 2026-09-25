@@ -6,6 +6,7 @@ import { applyXp } from '../game/progression';
 import { arenaReward, arenaInBracket, ARENA_BRACKET } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
@@ -93,7 +94,7 @@ router.post('/challenge', (req, res) => {
   foe.sprite = opp.class;
   foe.hp = foe.hp_max;
 
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
 
   // Rating change (simple ELO-ish)
   const expected = 1 / (1 + Math.pow(10, (opp.arena_rating - char.arena_rating) / 400));

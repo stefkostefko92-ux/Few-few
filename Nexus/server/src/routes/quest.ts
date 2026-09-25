@@ -6,6 +6,7 @@ import { applyXp } from '../game/progression';
 import { questBaseXp, questBaseGold, questCombatXp, questLossPenalty } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
@@ -135,7 +136,7 @@ router.post('/start', (req, res) => {
     dodge_chance: 0.04,
     sprite: monster.sprite,
   };
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
   result.hpAfter = result.hero.hp;
 
   let xpGain = 0;

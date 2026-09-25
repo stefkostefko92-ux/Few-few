@@ -24,7 +24,12 @@ const RAW_MONSTER_SEED = [
   { slug: 'lava_titan', name: 'Lava Titan', level: 22, hp: 920, atk_min: 50, atk_max: 80, defense: 20, speed: 4, xp_reward: 520, gold_min: 100, gold_max: 180, sprite: 'titan', family: 'giant', region: 'ashen_wastes' },
 
   // ===== Shadowfell ridge (lv 24-25) — the first end-of-act-1 boss =====
-  { slug: 'shadow_lord', name: 'The Shadow Lord', level: 25, hp: 1500, atk_min: 70, atk_max: 110, defense: 25, speed: 8, xp_reward: 900, gold_min: 250, gold_max: 400, sprite: 'shadowlord', family: 'demon', region: 'shadowfell' },
+  // Баланс: беше 1500 HP / 70-110 — изглеждаше „на кривата" само защото
+  // референтният герой на lv 24 трупаше бонусите на ТРИ legacy сета от
+  // общите plate/chain части (sunforged + mythwoven + ironguard). Без това
+  // броене вход lv 24 = 11% победи; сега ~75% (магазин) / 99% (класов сет),
+  // под lv 26 емберийския imp (1566 / 63-99), както подобава на lv 25.
+  { slug: 'shadow_lord', name: 'The Shadow Lord', level: 25, hp: 1300, atk_min: 55, atk_max: 88, defense: 22, speed: 8, xp_reward: 900, gold_min: 250, gold_max: 400, sprite: 'shadowlord', family: 'demon', region: 'shadowfell' },
 
   // =====================================================================
 

@@ -3,13 +3,14 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import {
-  GUILD_CREATE_COST,
+  guildCreateCost,
   GUILD_CREATE_LEVEL_REQ,
   GUILD_TRACKS,
   MEMBER_SLOTS_BY_LEVEL,
   MEMBER_SLOT_TIER_XP,
   MEMBER_SLOT_TIER_GEMS,
   computeBuffs,
+  detachFromGuild,
   loadGuildLevels,
   trackUpgradeCost,
 } from '../game/guild';
@@ -21,6 +22,7 @@ import { notify } from '../lib/notify';
 import { pushToChars } from '../lib/stream';
 import { missionsForGuild } from '../game/guildMissions';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { loadEquipped } from '../game/equipment';
 import { applyXp } from '../game/progression';
@@ -167,6 +169,7 @@ router.post('/create', (req, res) => {
     res.status(400).json({ error: `Requires level ${GUILD_CREATE_LEVEL_REQ}` });
     return;
   }
+  const GUILD_CREATE_COST = guildCreateCost();
   if (char.gold < GUILD_CREATE_COST) {
     res.status(400).json({ error: `Founding a guild costs ${GUILD_CREATE_COST} gold.` });
     return;
@@ -178,17 +181,24 @@ router.post('/create', (req, res) => {
   }
   const now = Date.now();
   try {
-    const info = db
-      .prepare(
-        `INSERT INTO guilds (name, tag, motto, description, level, xp, member_slots, gold, crest_color, leader_id, created_at)
-         VALUES (?, ?, ?, '', 1, 0, ?, 0, ?, ?, ?)`,
-      )
-      .run(parse.data.name, parse.data.tag, parse.data.motto, MEMBER_SLOTS_BY_LEVEL[1], parse.data.crest_color, char.id, now);
-    const guildId = info.lastInsertRowid as number;
-    db.prepare(`INSERT INTO guild_members (guild_id, character_id, role, joined_at) VALUES (?, ?, 'leader', ?)`).run(
-      guildId, char.id, now,
-    );
-    db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ?').run(GUILD_CREATE_COST, char.id);
+    // Една транзакция + CAS на златото: преди златото се сваляше без
+    // проверка извън транзакция (паралелни заявки → отрицателно злато или
+    // гилдия без платена такса при грешка след INSERT).
+    const guildId = db.transaction(() => {
+      const paid = db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?').run(GUILD_CREATE_COST, char.id, GUILD_CREATE_COST);
+      if (paid.changes !== 1) throw new Error(`Founding a guild costs ${GUILD_CREATE_COST} gold.`);
+      const info = db
+        .prepare(
+          `INSERT INTO guilds (name, tag, motto, description, level, xp, member_slots, gold, crest_color, leader_id, created_at)
+           VALUES (?, ?, ?, '', 1, 0, ?, 0, ?, ?, ?)`,
+        )
+        .run(parse.data.name, parse.data.tag, parse.data.motto, MEMBER_SLOTS_BY_LEVEL[1], parse.data.crest_color, char.id, now);
+      const id = info.lastInsertRowid as number;
+      db.prepare(`INSERT INTO guild_members (guild_id, character_id, role, joined_at) VALUES (?, ?, 'leader', ?)`).run(
+        id, char.id, now,
+      );
+      return id;
+    }).immediate();
     res.json({ ok: true, guild_id: guildId });
   } catch (e: any) {
     if (String(e.message).includes('UNIQUE')) {
@@ -205,24 +215,11 @@ router.post('/leave', (req, res) => {
   const db = getDb();
   const g = getCharGuild(char.id);
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
-  if (g.role === 'leader') {
-    // Promote highest-contributing officer/member or disband
-    const successor = db
-      .prepare(
-        `SELECT character_id FROM guild_members WHERE guild_id = ? AND character_id != ?
-         ORDER BY (role = 'officer') DESC, contribution DESC LIMIT 1`,
-      )
-      .get(g.guild.id, char.id) as { character_id: number } | undefined;
-    if (successor) {
-      db.prepare(`UPDATE guild_members SET role = 'leader' WHERE character_id = ?`).run(successor.character_id);
-      db.prepare(`UPDATE guilds SET leader_id = ? WHERE id = ?`).run(successor.character_id, g.guild.id);
-    } else {
-      // Last man standing — disband the guild
-      db.prepare('DELETE FROM guilds WHERE id = ?').run(g.guild.id);
-    }
-  }
-  db.prepare('DELETE FROM guild_members WHERE character_id = ?').run(char.id);
-  res.json({ ok: true });
+  // Общ helper (game/guild.ts): наследник по ранг → стаж, празна гилдия се
+  // разпуска и трезорът ѝ се връща на притежателите. Един път и за
+  // изтриване на герой/акаунт.
+  const out = db.transaction(() => detachFromGuild(db, char.id)).immediate();
+  res.json({ ok: true, disbanded: out.disbanded, new_leader_id: out.newLeaderId });
 });
 
 /* ===== Invitations ===== */
@@ -691,7 +688,7 @@ router.post('/wars/fight', (req, res) => {
   foeActor.side = 'foe';
   foeActor.sprite = enemy.class;
 
-  const result = simulateCombat(hero, foeActor);
+  const result = simulateCombat(hero, foeActor, liveCombatTuning());
 
   // Apply outcomes
   const isWin = result.winner === 'hero';
@@ -782,7 +779,7 @@ router.post('/dungeon/attack', (req, res) => {
     name: boss.name, side: 'foe' as const, level: boss.level, hp: segHp, hp_max: segHp,
     atk_min: boss.atk_min, atk_max: boss.atk_max, defense: 8, speed: 6, crit_chance: 0.1, dodge_chance: 0.02, sprite: 'titan',
   };
-  const result = simulateCombat(hero, segFoe);
+  const result = simulateCombat(hero, segFoe, liveCombatTuning());
   const damageDealt = segFoe.hp_max - result.foe.hp;
 
   // Audit (backend round): the previous flow read boss_hp + cleared_at,
