@@ -18,7 +18,7 @@
 
 - YouTube: the player request itself is flagged ad-free (isInlinePlaybackNoAd) and remaining ad fields are removed from responses; feed and search ads are removed too. It never blocks YouTube's video servers. If YouTube refuses playback on a flagged account, the extension steps aside for that session so videos still play.
 - Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set, uBlock filters (on by default) and Peter Lowe's list — 60,000+ rules on by default; tracking-parameter stripping (utm_*, fbclid, gclid); optional URLhaus malware-domain protection; third-party tracking cookies and beacons blocked.
-- Regional lists: 33 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
+- Regional lists: 31 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
 - Focus mode: optional switches hide social widgets, chat pop-ups, newsletter and notification prompts, AI assistant pop-ups, "sign in with Google" prompts and short-video shelves (YouTube Shorts, Reels).
 - Signed updates: filter data (domains, CSS selectors, scriptlet directives) refreshes about twice a day, Ed25519-signed and version-locked. Only data is downloaded, never code.
 - Anti-adblock: a scriptlet engine with 19 named routines (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) runs before page scripts.
@@ -31,11 +31,11 @@
 
 ## Privacy
 
-Browsing data never leaves the device. The only automatic network request is the filter update (about twice a day); like any download it reaches the EU server with the user's IP address, and those requests are not logged. Optional sync uses the user's own browser account.
+Browsing data never leaves the device. The only automatic network request to us is the filter update (about twice a day; lists the user adds refresh from their own address); like any download it reaches the EU server with the user's IP address, and those requests are not logged. Optional sync uses the user's own browser account.
 
 ## Compared with uBlock Origin Lite
 
-Both are free, Manifest V3, with EasyList and EasyPrivacy and no telemetry. uBlock Origin Lite's rules update with each extension release; Supreme AdBlock also updates signed filter data twice a day and adds list-free Smart Detection, a dedicated YouTube pipeline and cookie-banner handling.
+Both are free, Manifest V3, with EasyList and EasyPrivacy and no telemetry. uBlock Origin Lite's built-in rules update with each extension release (since June 2026 it can also subscribe to external lists); Supreme AdBlock also updates signed filter data twice a day and adds list-free Smart Detection, a dedicated YouTube pipeline and cookie-banner handling.
 
 ## Common questions
 

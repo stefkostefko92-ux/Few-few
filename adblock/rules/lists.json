@@ -583,7 +583,7 @@
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
   "network": 1481,
-  "cosmetic": 9901
+  "cosmetic": 9903
  },
  {
   "id": "reg-uk",
@@ -612,8 +612,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/abpvn/abpvn",
   "ruleset": true,
-  "network": 298,
-  "cosmetic": 824
+  "network": 297,
+  "cosmetic": 821
  },
  {
   "id": "reg-bg",

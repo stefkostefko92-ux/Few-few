@@ -53,7 +53,12 @@ ok("rules: every bundled list has its cosmetics file", catalog.filter((e) => e.d
 const noticesPath = join(ROOT, "THIRD_PARTY_NOTICES.txt");
 const notices = existsSync(noticesPath) ? readFileSync(noticesPath, "utf8") : "";
 ok("notices: THIRD_PARTY_NOTICES.txt names every bundled list with its licence",
-  !!notices && JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists.filter((e) => e.delivery === "bundled" && !e.selectors).every((e) => notices.includes(`${e.title} — ${e.license}`)));
+  !!notices && JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists.filter((e) => e.delivery === "bundled" && !e.selectors).every((e) => notices.includes(`${e.title}\n  Licence: ${e.license}`)));
+{
+  const files = [...notices.matchAll(/licenses\/[\w.-]+\.txt/g)].map((m) => m[0]);
+  ok("notices: every licence text it points to ships in licenses/ (GPL/CC BY-SA/MPL/Apache/MIT ask for it)", files.length > 10 && files.every((f) => existsSync(join(ROOT, f))));
+  ok("notices: says what was changed and where the unmodified source is", /What we changed/.test(notices) && /SHA-256/.test(notices) && !/content otherwise unchanged/.test(notices));
+}
 {
   const slots = catalog.filter((e) => e.delivery === "remote").map((e) => e.slot);
   ok("rules: every author-hosted list owns a fixed, unique dynamic-rule slot (0..3)", slots.every((n) => Number.isInteger(n) && n >= 0 && n < 4) && new Set(slots).size === slots.length);

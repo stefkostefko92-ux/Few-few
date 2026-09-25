@@ -201,7 +201,7 @@ def features_panel():
   <div class="card"><h3>Filter lists</h3>
     <div class="row"><div><div class="t">uBlock Origin filters</div><div class="d">GPL-3.0 · 17,073 rules</div></div><div class="mini"></div></div>
     <div class="row"><div><div class="t">French <span class="badge">your language</span></div><div class="d">AdGuard French · 4,917 rules</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">+ 32 more regional lists</div><div class="d">Arabic to Vietnamese, one switch each</div></div><div class="mini off"></div></div>
+    <div class="row"><div><div class="t">+ 30 more regional lists</div><div class="d">Arabic to Vietnamese, one switch each</div></div><div class="mini off"></div></div>
   </div>
   <div class="card"><h3>Focus mode</h3>
     <div class="row"><div><div class="t">Chat bubbles</div><div class="d">Support and sales chat pop-ups</div></div><div class="mini"></div></div>
@@ -240,7 +240,7 @@ SLIDES = [
      smartlog_panel()),
     ("Your language · your focus",
      'Local ads, <span class="c">local lists</span>',
-     "33 regional lists built in — the one for your language turns on by itself. Focus mode hides chat bubbles, pop-ups and Shorts.",
+     "31 regional lists built in — the one for your language turns on by itself. Focus mode hides chat bubbles, pop-ups and Shorts.",
      ["70 interface languages", "Site broken? One-click fixes", "Element picker & custom filters", "Allow ads on sites you support"],
      features_panel()),
     ("Private by design",

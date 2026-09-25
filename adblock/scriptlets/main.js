@@ -916,6 +916,15 @@ var SA_POLICY = (function () {
   // IMPL but assigned later would be undefined here). Same synchronous tick.
   try {
     var chain = hostChain();
+    // uBO exceptions (["#@", name, …args]) anywhere on the host chain cancel that
+    // directive for this page, including one inherited from a parent domain.
+    var skip = Object.create(null);
+    for (var k = 0; EXTRA && k < chain.length; k++) {
+      var ex = chain[k] && EXTRA[chain[k]];
+      if (ex && nativeIsArray(ex)) for (var y = 0; y < ex.length; y++) {
+        if (nativeIsArray(ex[y]) && ex[y][0] === "#@") skip[nativeSlice.call(ex[y], 1).join("\u0001")] = 1;
+      }
+    }
     for (var i = 0; i < chain.length; i++) {
       var list = MAP[chain[i]];
       if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
@@ -923,7 +932,8 @@ var SA_POLICY = (function () {
       if (extra && nativeIsArray(extra)) {
         for (var x = 0; x < extra.length; x++) {
           var ed = extra[x];
-          if (nativeIsArray(ed) && ed.length && SA_POLICY.validateDirective(ed[0], nativeSlice.call(ed, 1), false)) runDirective(ed);
+          if (!nativeIsArray(ed) || !ed.length || ed[0] === "#@" || skip[ed.join("\u0001")]) continue;
+          if (SA_POLICY.validateDirective(ed[0], nativeSlice.call(ed, 1), false)) runDirective(ed);
         }
       }
     }

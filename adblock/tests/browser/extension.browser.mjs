@@ -252,6 +252,11 @@ try {
   await p2.waitForTimeout(2500);
   const c1 = await p2.evaluate(() => ({ clicks: window.__clicks.slice(), cloak: document.documentElement.classList.contains("tbab-cookies") }));
   ok("allowlisted site: cookie banner NOT touched (no click, no cloak)", c1.clicks.length === 0 && !c1.cloak);
+  {
+    const pa = await ctx.newPage(); await pa.goto(origin + "/cosmetic"); await pa.waitForTimeout(800);
+    ok("allowlisted site: the static content.css ad classes (.ad-container) are shown too", await pa.evaluate(() => getComputedStyle(document.getElementById("ad")).display) !== "none");
+    await pa.close();
+  }
   await setStore({ allowlist: [] });
   await p2.waitForTimeout(2500);
   const c2 = await p2.evaluate(() => window.__clicks.slice());

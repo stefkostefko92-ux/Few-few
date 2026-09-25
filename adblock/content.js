@@ -179,7 +179,8 @@
     }
   };
   // Капваме тествания текст, за да ограничим backtracking върху дълъг textContent.
-  const textOf = (el) => (el.textContent || "").slice(0, 20000);
+  // 4 000 chars: a single unanchored quantifier is O(n²) on a hostile text.
+  const textOf = (el) => (el.textContent || "").slice(0, 4000);
 
   function xpathAll(expr, ctx) {
     const out = [];
@@ -751,6 +752,14 @@
         smartScan();
       }, Math.max(0, 500 - (Date.now() - lastSmart)));
     };
+    let fullTimer = 0;
+    let lastFull = 0;
+    const fullSoon = () => {
+      if (fullTimer) return;
+      const wait = Math.max(0, 250 - (Date.now() - lastFull));
+      if (!wait) { lastFull = Date.now(); hide(); return; }
+      fullTimer = setTimeout(() => { fullTimer = 0; lastFull = Date.now(); hide(); }, wait);
+    };
     new MutationObserver((records) => {
       if (!enabled) return;
       let added = false;
@@ -786,7 +795,9 @@
         fullPass = false;
         const attrs = attrTargets;
         attrTargets = new WeakSet();
-        if (full) hide();
+        // procedural / #@# rules need the whole page: at most one full pass per
+        // 250 ms (trailing), never one per animation frame on a busy page
+        if (full || procSelectors.length || unhideSelectors.length) fullSoon();
         else hideAdded(nodes, attrs);
         smartSoon();
       });
