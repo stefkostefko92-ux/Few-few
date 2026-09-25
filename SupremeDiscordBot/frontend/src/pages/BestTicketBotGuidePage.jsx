@@ -9,7 +9,7 @@ import { BEST_TICKET_BOT_GUIDE as d } from "../data/growthContent";
 
 export default function BestTicketBotGuidePage() {
   return (
-    <PublicPageLayout crumb="guides / best ticket bot">
+    <PublicPageLayout crumb="Guides / Best ticket bot">
       <Seo
         title={d.title}
         description={d.description}

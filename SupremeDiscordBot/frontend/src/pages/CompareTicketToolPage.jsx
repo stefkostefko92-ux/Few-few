@@ -13,7 +13,7 @@ const d = TICKET_TOOL_COMPARE;
 
 export default function CompareTicketToolPage() {
   return (
-    <PublicPageLayout crumb="compare / ticket tool">
+    <PublicPageLayout crumb="Compare / Ticket Tool">
       <Seo
         title={d.title}
         description={d.description}

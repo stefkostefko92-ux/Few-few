@@ -9,7 +9,7 @@ import { GDPR_GUIDE as d } from "../data/growthContent";
 
 export default function GdprDiscordBotGuidePage() {
   return (
-    <PublicPageLayout crumb="guides / gdpr & eu hosting">
+    <PublicPageLayout crumb="Guides / GDPR & EU hosting">
       <Seo
         title={d.title}
         description={d.description}

@@ -506,9 +506,13 @@
   <!-- MICROSOFT / TILE                                                -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <meta name="msapplication-TileColor" content="#8fe600" />
-    <!-- Шрифтът на заглавията пристига преди първото рисуване — иначе то се
-         пренарежда при смяната (CLS). Кирилицата се добавя от prerender за /bg. -->
+    <!-- Шрифтовете на сайта пристигат преди първото рисуване: Tektur — иначе
+         заглавието се пренарежда при смяната (CLS); Onest (текст 400, бутони 600)
+         — иначе с font-display: optional първото посещение остава на системния
+         шрифт. Кирилицата се добавя от prerender за /bg. -->
     <link rel="preload" href="/fonts/tektur-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/onest-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/onest-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
   </head>
 <body>
   <!-- No-JS fallback for search engines that don't render SPA content well.

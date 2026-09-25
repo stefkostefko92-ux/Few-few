@@ -13,7 +13,7 @@ const d = APPY_COMPARE;
 
 export default function CompareAppyPage() {
   return (
-    <PublicPageLayout crumb="compare / appy bot">
+    <PublicPageLayout crumb="Compare / Appy">
       <Seo
         title={d.title}
         description={d.description}

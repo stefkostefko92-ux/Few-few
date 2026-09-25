@@ -40,7 +40,7 @@ function OptionTable({ rows }) {
 
 export default function PanelSetupGuidePage() {
   return (
-    <PublicPageLayout crumb="guides / ticket panel setup">
+    <PublicPageLayout crumb="Guides / Ticket panel setup">
       <Seo
         title={d.title}
         description={d.description}

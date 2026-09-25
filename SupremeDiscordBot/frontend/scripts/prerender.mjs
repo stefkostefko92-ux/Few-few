@@ -235,8 +235,21 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   let html = withHead(template, {
     title: t.title, description: t.description, path: landingPath(locale), lang: locale,
   });
-  const cyr = locale === "bg" ? `\n  <link rel="preload" href="/fonts/tektur-cyrillic-700-normal.woff2" as="font" type="font/woff2" crossorigin />` : "";
-  html = injectHead(html, `  ${hreflangCluster()}\n  ${landingJsonLd(locale, t)}${cyr}`);
+  // Кирилицата (/bg) се preload-ва ПРЕДИ латиницата, JS и CSS — иначе на бавна
+  // мрежа Onest пристигаше само за латинските думи и абзацът излизаше в два
+  // шрифта (font-display: optional). Измерено 25.09.2026, телефон 4× + бавен 4G.
+  if (locale === "bg") {
+    const anchor = '<link rel="preload" href="/fonts/tektur-latin-700-normal.woff2"';
+    if (!html.includes(anchor)) throw new Error("prerender: липсва preload-ът на Tektur в index.html");
+    // Onest е optional (закъснял = никога за това зареждане), Tektur е swap
+    // (закъснял = просто се сменя) — затова Onest е преди латинския Tektur.
+    const cyr = ["tektur-cyrillic-700", "onest-cyrillic-400", "onest-cyrillic-600", "onest-latin-400", "onest-latin-600"]
+      .map((f) => `<link rel="preload" href="/fonts/${f}-normal.woff2" as="font" type="font/woff2" crossorigin />\n    `).join("");
+    html = html
+      .replace(/\s*<link rel="preload" href="\/fonts\/onest-latin-[46]00-normal\.woff2"[^>]*>/g, "")
+      .replace(anchor, cyr + anchor);
+  }
+  html = injectHead(html, `  ${hreflangCluster()}\n  ${landingJsonLd(locale, t)}`);
   html = injectRoot(html, landingSnapshot(t));
   writeRoute(landingPath(locale), html);
   count++;

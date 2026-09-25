@@ -64,7 +64,7 @@ function Related({ paths }) {
 
 export function FeaturesHubPage() {
   return (
-    <PublicPageLayout crumb="features">
+    <PublicPageLayout crumb="Features">
       <Seo title={FEATURES_HUB.title} description={FEATURES_HUB.description} path={FEATURES_HUB.path} keywords={FEATURES_HUB.keywords} jsonLd={hubJsonLd()} />
       <div className="cs-card mb-8">
         <h1 className="text-2xl font-bold text-cs-text flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function FeaturePage() {
   const page = featureBySlug(slug);
   if (!page) return <NotFoundPage />;
   return (
-    <PublicPageLayout crumb={`features / ${page.nav.toLowerCase()}`}>
+    <PublicPageLayout crumb={`Features / ${page.nav}`}>
       <Seo title={page.title} description={page.description} path={page.path} keywords={page.keywords} jsonLd={featureJsonLd(page)} />
 
       {/* ═══ Отговор отпред (AEO) ═══ */}
