@@ -60,3 +60,9 @@
 {"t":"handoff","ts":"2026-09-25T08:11:17.294Z","id":"auto","from":"izpitatelya","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:17:45.566Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:20:37.061Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:56:57.150Z","id":"auto","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:56:58.835Z","id":"auto","from":"diskordjiyata","to":"ai-djiyata","status":"наред (одит завършен, без промени по файлове/комити/push)"}
+{"t":"handoff","ts":"2026-09-25T07:57:23.617Z","id":"auto","from":"hromadjiyata","to":"човек","status":"наред"}
+{"t":"handoff","ts":"2026-09-25T07:57:24.437Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:58:55.920Z","id":"auto","from":"vps-adjiyata","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T08:02:43.550Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}

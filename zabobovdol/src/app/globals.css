@@ -64,7 +64,7 @@ h4,
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
   }
   .btn-primary {
     @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800 hover:shadow;
@@ -77,11 +77,11 @@ h4,
   }
 
   .card {
-    @apply rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md;
+    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg;
   }
 
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand-500;
+    @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand-500;
   }
   .label {
     @apply mb-1 block text-sm font-medium text-slate-700;
@@ -354,6 +354,39 @@ html.dark header .btn-secondary {
    текстът вече е светъл (от общите правила) и става четим. */
 html.dark .page-hero {
   background-image: linear-gradient(to bottom right, #1c2742, #0f172a 60%, #0f172a);
+}
+
+/* Класове с прозрачност (bg-x/50) и hover: варианти са ДРУГИ имена на класове,
+   затова тъмните правила по-горе не ги хващат — светъл фон оставаше под светъл
+   текст (празният рекламен слот ~2.6:1, при hover ~1.1:1). */
+html.dark .bg-brand-50\/50,
+html.dark .hover\:bg-brand-50:hover {
+  background-color: #1c2742;
+}
+html.dark .hover\:bg-brand-100:hover {
+  background-color: #243044;
+}
+html.dark .border-slate-200\/70,
+html.dark .border-slate-200\/80 {
+  border-color: #334155;
+}
+
+/* Лента за достъпност — свита/разгъната без примигване. Класът `a11y-min` на
+   <html> се слага ПРЕДИ първото рисуване от вградения скрипт в layout.tsx
+   (на телефон — по подразбиране), затова лентата никога не се рисува
+   разгърната, за да се свие след хидратацията. */
+.a11y-when-min {
+  display: none;
+}
+html.a11y-min .a11y-when-min {
+  display: inline;
+}
+html.a11y-min .a11y-when-open,
+html.a11y-min .a11y-controls {
+  display: none;
+}
+html.a11y-min .a11y-chevron {
+  transform: none;
 }
 
 /* Минимални цели за докосване ПО ПОДРАЗБИРАНЕ (WCAG 2.5.5/2.5.8) — без да се

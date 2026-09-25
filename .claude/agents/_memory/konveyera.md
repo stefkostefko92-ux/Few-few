@@ -9,6 +9,8 @@
 Специалност: **CI/CD и GitHub автоматизация** — бързи, зелени, сигурни конвейери за монорепото.
 Версии на actions и лимити са време-чувствителни → потвърждавай на живо преди цитиране.
 ## Проверени поуки (verified)
+- **2026-09-25:** /repos/{o}/{r}/actions/permissions изисква admin auth дори на публично repo — през нашия agent proxy връща 403 от самия proxy (agentproxy policy), не от GitHub; не е сигнал за GitHub-грешка _(konveyera; verified; "curl https://api.github.com/repos/.../actions/permissions -> 403 'Access to this GitHub Actions path is not permitted through this proxy'")_
+- **2026-09-25:** runner_id:0 + runner_name:\"\" + 0 billable ms + steps:[] на ВСЕКИ workflow/клон едновременно = account-level GitHub Actions ограничение (billing/abuse/disabled), не repo YAML бъг — потвърждава се чрез /actions/runs/{id}/jobs и /timing, не изисква auth _(shared; verified; "api.github.com/repos/stefkostefko92-ux/Few-few/actions/runs/36109957845/jobs + /timing, 2026-09-25")_
 
 - **2026-07-16 (пресверена 2026-08-04):** Точните безплатни минути/множители за частни repo и лимитите на actions cache се менят периодично → не цитирай числа без жива проверка на billing страницата в момента на задачата. _("actions billing/лимити; verified; https://docs.github.com/en/billing/managing-billing-for-github-actions (проверен на живо днес))_
 - **2026-07-16 (пресверена 2026-08-04):** Дали текущият `.github/workflows/security.yml` в това репо ползва точните версии/стъпки, описани в CLAUDE.md, трябва да се провери в самия файл преди твърдение — CLAUDE.md описва намерението, не гарантира текущия YAML. _("репо security.yml актуалност; verified; .github/workflows/security.yml:34-47,49-69)_

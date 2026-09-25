@@ -31,7 +31,7 @@ export async function SiteFooter() {
     getPlayStoreUrl(),
   ]);
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-white">
+    <footer className="mt-16 border-t border-slate-200 bg-slate-50">
       <div className="container-content py-10">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
@@ -49,13 +49,13 @@ export async function SiteFooter() {
             <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
               Раздели
             </h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-4 space-y-2.5 text-base">
               {PRIMARY_NAV.map((i) => (
                 <li key={i.href}>
-                  <Link href={i.href} className="text-slate-700 hover:text-brand-700">
+                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
                     {i.label}
                   </Link>
                 </li>
@@ -63,13 +63,13 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
               Информация
             </h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-4 space-y-2.5 text-base">
               {FOOTER_NAV.map((i) => (
                 <li key={i.href}>
-                  <Link href={i.href} className="text-slate-700 hover:text-brand-700">
+                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
                     {i.label}
                   </Link>
                 </li>
@@ -77,10 +77,10 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
               Спешни телефони
             </h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-4 space-y-2.5 text-base">
               {SITE.emergency.map((e) => (
                 <li key={e.phone} className="text-slate-700">
                   {e.label}:{" "}
@@ -158,7 +158,7 @@ export async function SiteFooter() {
               {SITE.company.tradeName}
             </a>
             <br />
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-600">
               {SITE.company.legalName} · ЕИК {SITE.company.eik} · ДДС №{" "}
               {SITE.company.vat}
             </span>

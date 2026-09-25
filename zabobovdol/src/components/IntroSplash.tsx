@@ -18,42 +18,31 @@ export function IntroSplash() {
   const [visitorNo, setVisitorNo] = useState<number | null>(null);
   const [reduce, setReduce] = useState(false);
   const skipRef = useRef<HTMLButtonElement>(null);
+  const countedRef = useRef(false);
 
   // При „по-малко движение“ показваме екрана съвсем кратко и без анимирана
   // лента — за хора с вестибуларна чувствителност и за да не бави достъпа.
   const seconds = reduce ? 1.5 : SITE.intro.seconds;
 
-  // Истински брояч на посетителите: всеки браузър получава пореден номер
-  // веднъж и го запомня, за да не надува брояча при всяко зареждане.
+  // Брояч на посетителите: увеличава се при ВСЯКО зареждане на сайта.
+  // Компонентът стои в общия layout, затова ефектът се изпълнява веднъж на
+  // пълно зареждане — вътрешните навигации (App Router) не го пускат пак.
   useEffect(() => {
     if (isAdmin) return;
-    const KEY = "zbd_visitor_no";
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem(KEY);
-    } catch {
-      /* localStorage недостъпен */
-    }
-    if (stored && Number(stored) > 0) {
-      setVisitorNo(Number(stored));
-      return;
-    }
-    let cancelled = false;
+    // В разработка StrictMode вика ефекта два пъти; пазачът спира двойното
+    // броене. Флаг „отказано“ при cleanup тук НЕ бива да има: единствената
+    // заявка идва от първото изпълнение, чийто cleanup StrictMode вика веднага —
+    // отговорът щеше да се хвърли и номерът никога да не се покаже (в базата
+    // пак расте). setState след демонтиране е безвреден в React 18+.
+    if (countedRef.current) return;
+    countedRef.current = true;
     fetch("/api/visit", { method: "POST" })
       .then((r) => r.json())
       .then((d) => {
-        if (cancelled || !d?.ok || typeof d.n !== "number") return;
+        if (!d?.ok || typeof d.n !== "number") return;
         setVisitorNo(d.n);
-        try {
-          localStorage.setItem(KEY, String(d.n));
-        } catch {
-          /* пренебрегваме */
-        }
       })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
   }, [isAdmin]);
 
   useEffect(() => {
@@ -141,10 +130,12 @@ export function IntroSplash() {
         {SITE.name} · {SITE.geo.city}
       </p>
 
-      {/* Истински брояч на посетителите */}
+      {/* Брояч на посещенията. Брои ВСЯКО зареждане (и презарежданията),
+          затова надписът е „посещение“, не „посетител“ — иначе числото
+          изглежда като брой хора, какъвто не е. */}
       {visitorNo !== null && (
         <p className="splash-text mt-6 text-lg text-brand-50">
-          Вие сте посетител номер{" "}
+          Посещение номер{" "}
           <span className="font-extrabold text-gold-300">
             {new Intl.NumberFormat("bg-BG").format(visitorNo)}
           </span>

@@ -715,10 +715,21 @@ deploy_mastilko() {
     "$MASTILKO_DIR/public/sw.js" 2>/dev/null || warn "sw.js: версията не е пренаписана"
   chown -R mastilko:mastilko "$MASTILKO_DIR"
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
+  # `|| { … return; }` НЕ е украса: под `set -euo pipefail` паднал билд убиваше
+  # ЦЕЛИЯ autodeploy (следващите продукти не се разгръщаха), а mastilko оставаше
+  # с новия код, но без билд. Сега връщаме предишния код и продължаваме.
   ( cd "$MASTILKO_DIR" \
     && sudo -u mastilko npm ci \
     && sudo -u mastilko npm run build \
-    && sudo -u mastilko npm prune --omit=dev )
+    && sudo -u mastilko npm prune --omit=dev ) || {
+    deploy_failed=1
+    warn "mastilko билд провал — връщам предишния код (услугата не е рестартирана)."
+    if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
+      chown -R mastilko:mastilko "$MASTILKO_DIR"
+    fi
+    return
+  }
   # ReadWritePaths в unit-а изисква пътищата да съществуват при старт.
   # data/ пази JSON-а на рекламните банери — НЕ се трие при деплой (rsync
   # exclude), за да оцелее между версиите като .env.

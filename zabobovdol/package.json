@@ -73,7 +73,6 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
     "jose": "^5.9.6",
