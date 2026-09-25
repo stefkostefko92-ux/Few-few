@@ -1140,7 +1140,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 383
+        "lessons": 384
       },
       "evolution": [
         {
@@ -1946,9 +1946,20 @@
           "date": "2026-09-25",
           "event": "v26.5 — учене",
           "detail": "Научи: BullMQ attempts>1 е мъртво, ако процесорът сменя статуса на FAILED преди rethrow, а сле…"
+        },
+        {
+          "version": "26.6.0",
+          "date": "2026-09-25",
+          "event": "v26.6 — учене",
+          "detail": "Научи: handoff.mjs чете всяко поле само до края на реда — „Находки:“ последвано от списък на н…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „handoff.mjs чете всяко поле само до края на реда — „Находки:“ последвано от списък на н…\""
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
