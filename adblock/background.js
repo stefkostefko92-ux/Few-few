@@ -922,6 +922,19 @@ async function listState() {
 const REMOTE_RULE_BASE = 200000;
 const REMOTE_SLOT = 6000;          // ids per remote list
 const REMOTE_RULE_MAX = 5000;      // rules per remote list (dynamic budget: 30k)
+// An author-hosted list is unsigned third-party DATA: from it we take only plain
+// block/allow rules. No redirect/modifyHeaders (they share Chrome's 5 000 "unsafe"
+// dynamic budget and could rewrite requests), no allowAllRequests (would switch
+// blocking off for whole sites) and never a rule that touches the page itself.
+function remoteRuleSafe(r) {
+  if (!r || !r.action || (r.action.type !== "block" && r.action.type !== "allow")) return false;
+  const c = r.condition || {};
+  // (no resourceTypes → Chrome's default already leaves main_frame out; the
+  // converter adds main_frame to excludedResourceTypes for $~type block rules)
+  if ((c.resourceTypes || []).includes("main_frame")) return false;
+  if (r.action.type === "block" && c.excludedResourceTypes && !c.excludedResourceTypes.includes("main_frame")) return false;
+  return true;
+}
 const REMOTE_MAX_AGE = 20 * 3600 * 1000;
 let remoteChain = Promise.resolve();
 function syncRemoteLists(enabled, force) {
@@ -950,7 +963,7 @@ async function doSyncRemoteLists(enabled, force) {
       const A = self.ABP2DNR;
       const text = A.preprocess(await fetchListText(e.url));
       const conv = A.convertList(text, "remote_" + e.id, { cap: REMOTE_RULE_MAX, badfilter: new Set(A.badfiltersOf(text)), popups: null });
-      const rules = conv.rules.slice(0, REMOTE_RULE_MAX).map((r, i) => Object.assign(r, { id: base + i }));
+      const rules = conv.rules.filter(remoteRuleSafe).slice(0, REMOTE_RULE_MAX).map((r, i) => Object.assign(r, { id: base + i }));
       await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: mine, addRules: rules });
       const cos = A.convertCosmetic(text);
       const spec = {}, unh = {};

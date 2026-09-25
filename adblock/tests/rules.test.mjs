@@ -61,7 +61,7 @@ ok("manifest: MV3, CSP strict, scripting present, no externally_connectable",
 ok("package: scriptlets/main.js exists (dynamically registered, must ship)", existsSync(join(ROOT, "scriptlets", "main.js")));
 
 // service worker: sanitizeConfig / safeSelector
-const bg = loadBackground();
+const bg = loadBackground({ exports: "remoteRuleSafe" });
 const cfg = bg.sanitizeConfig({ version: 7, blockDomains: ["||ads.example.com^", "youtube.com", "bad host"], cosmetic: [".ad", "input[type=password]", "[autocomplete*=cc-]", "html *", ".sponsored-box"],
   scriptlets: [
     { h: "Example.com", n: "aopr", a: ["adBlock"] }, { h: "", n: "set", a: ["x", "true"] },
@@ -97,5 +97,14 @@ const countsJson = JSON.parse(readFileSync(join(ROOT, "rules", "counts.json"), "
 ok("counts.json carries popupHosts == popup_hosts.json length (health card reads it)", countsJson.popupHosts === popupHosts.length && popupHosts.length > 0);
 ok("popup hosts: >1000 clean domains from EasyList $popup, none protected", popupHosts.length > 1000 && popupHosts.every((h) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h)) && !popupHosts.some((h) => /(^|\.)(youtube|google|googleapis|gstatic)\.com$/.test(h)));
 ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "scriptlets", "main.js"), "utf8").includes(JSON.stringify(popupHosts.slice(0, 3)).slice(0, -1)));
+
+// Author-hosted lists are unsigned third-party data: only plain block/allow survive.
+{
+  const r = (type, cond = {}) => ({ id: 1, priority: 1, action: { type, redirect: type === "redirect" ? { extensionPath: "/resources/noop.js" } : undefined }, condition: { urlFilter: "||x.com^", ...cond } });
+  ok("remote lists: block/allow kept; redirect, modifyHeaders, allowAllRequests, main_frame dropped",
+    bg.remoteRuleSafe(r("block")) && bg.remoteRuleSafe(r("allow")) && bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image", "main_frame"] })) &&
+    !bg.remoteRuleSafe(r("redirect")) && !bg.remoteRuleSafe(r("modifyHeaders")) && !bg.remoteRuleSafe(r("allowAllRequests")) &&
+    !bg.remoteRuleSafe(r("block", { resourceTypes: ["main_frame"] })) && !bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image"] })));
+}
 
 done();
