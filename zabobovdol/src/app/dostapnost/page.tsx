@@ -58,8 +58,8 @@ function Tool({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+    <div className="flex gap-4 rounded-md border border-slate-200 bg-white p-5">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-brand-50 text-brand-700">
         <Icon className="h-6 w-6" aria-hidden />
       </span>
       <div>
@@ -117,7 +117,7 @@ export default function AccessibilityPage() {
         </section>
 
         {/* За хора с увреден слух */}
-        <section className="rounded-2xl border border-brand-200 bg-brand-50 p-6">
+        <section className="rounded-md border border-brand-200 bg-brand-50 p-6">
           <div className="flex items-center gap-2">
             <Ear className="h-6 w-6 text-brand-700" aria-hidden />
             <h2 className="text-2xl font-bold text-slate-900">
@@ -157,7 +157,7 @@ export default function AccessibilityPage() {
         </section>
 
         {/* 112 за хора с увреден слух/говор */}
-        <section className="rounded-2xl border border-crimson-200 bg-crimson-50 p-6">
+        <section className="rounded-md border border-crimson-200 bg-crimson-50 p-6">
           <div className="flex items-center gap-2">
             <Phone className="h-6 w-6 text-crimson-700" aria-hidden />
             <h2 className="text-2xl font-bold text-slate-900">
@@ -198,7 +198,7 @@ export default function AccessibilityPage() {
         {/* Формална Декларация за достъпност по Закона за изискванията за
             достъпност на продуктите и услугите (транспониращ Директива (ЕС)
             2019/882 — EAA) и EN 301 549 / WCAG 2.1. */}
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <section className="rounded-md border border-slate-200 bg-slate-50 p-6">
           <h2 className="text-2xl font-bold text-slate-900">
             Декларация за достъпност
           </h2>

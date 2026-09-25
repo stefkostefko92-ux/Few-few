@@ -26,7 +26,7 @@ export function EuroConverter() {
   };
 
   return (
-    <section className="rounded-2xl border-2 border-brand-200 bg-white p-6 shadow-sm">
+    <section className="rounded-md border-2 border-brand-200 bg-white p-6">
       <h2 className="flex items-center gap-2 font-display text-xl font-bold text-slate-900">
         <ArrowRightLeft className="h-6 w-6 text-brand-700" aria-hidden />
         Бърз конвертор: евро ↔ левове

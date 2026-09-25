@@ -100,10 +100,10 @@ export default function HowToUsePage() {
           {STEPS.map((s, i) => (
             <li
               key={s.title}
-              className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              className="flex gap-4 rounded-md border border-slate-200 bg-white p-5"
             >
               <div className="flex shrink-0 flex-col items-center">
-                <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-100 text-brand-700">
+                <span className="grid h-12 w-12 place-items-center rounded-md bg-brand-100 text-brand-700">
                   <s.icon className="h-6 w-6" aria-hidden />
                 </span>
                 <span className="mt-2 text-sm font-bold text-slate-600">{i + 1}</span>
@@ -117,7 +117,7 @@ export default function HowToUsePage() {
         </ol>
 
         {/* Спешно */}
-        <section className="rounded-2xl border-2 border-crimson-200 bg-crimson-50 p-6">
+        <section className="rounded-md border-2 border-crimson-200 bg-crimson-50 p-6">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
             <HeartPulse className="h-6 w-6 text-crimson-600" aria-hidden />
             При спешност
@@ -137,7 +137,7 @@ export default function HowToUsePage() {
         </section>
 
         {/* Спокойствие */}
-        <section className="rounded-2xl bg-brand-50 p-6">
+        <section className="rounded-md bg-brand-50 p-6">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
             <Hand className="h-6 w-6 text-brand-700" aria-hidden />
             Спокойно — нищо не може да се обърка

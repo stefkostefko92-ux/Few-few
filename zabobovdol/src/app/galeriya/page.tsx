@@ -51,7 +51,7 @@ export default async function GalleryPage() {
             {photos.map((p) => (
               <figure
                 key={p.id}
-                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                className="overflow-hidden rounded-md border border-slate-200 bg-white"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

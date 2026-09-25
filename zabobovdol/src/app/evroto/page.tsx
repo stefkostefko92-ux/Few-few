@@ -76,7 +76,7 @@ export default async function EuroPage() {
           {FACTS.map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.title} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+              <div key={f.title} className="rounded-md border border-brand-200 bg-brand-50 p-5">
                 <Icon className="h-7 w-7 text-brand-700" aria-hidden />
                 <div className="mt-2 font-display text-lg font-bold text-slate-900">{f.title}</div>
                 <p className="mt-1 text-sm text-slate-700">{f.text}</p>
@@ -101,7 +101,7 @@ export default async function EuroPage() {
                   width={390}
                   height={720}
                   loading="lazy"
-                  className="mx-auto w-full max-w-[220px] rounded-2xl border border-slate-200 shadow-sm"
+                  className="mx-auto w-full max-w-[220px] rounded-md border border-slate-200"
                 />
                 <figcaption className="mt-2 text-sm font-medium text-slate-700">
                   {v.caption}
@@ -116,7 +116,7 @@ export default async function EuroPage() {
         </section>
 
         {/* Предупреждение за измами */}
-        <section className="rounded-2xl border border-crimson-200 bg-crimson-50 p-6">
+        <section className="rounded-md border border-crimson-200 bg-crimson-50 p-6">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-crimson-700" aria-hidden />
             <div>
@@ -146,7 +146,7 @@ export default async function EuroPage() {
                 <article
                   key={i.id}
                   id={i.slug}
-                  className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                  className="rounded-md border border-slate-200 bg-white p-5"
                 >
                   <h3 className="flex gap-2 font-display text-lg font-bold text-slate-900">
                     <span className="text-brand-600">{idx + 1}.</span>
@@ -164,7 +164,7 @@ export default async function EuroPage() {
                       width={390}
                       height={720}
                       loading="lazy"
-                      className="mt-3 w-full max-w-[240px] rounded-2xl border border-slate-200 shadow-sm"
+                      className="mt-3 w-full max-w-[240px] rounded-md border border-slate-200"
                     />
                   ))}
                   {i.steps && (
@@ -190,7 +190,7 @@ export default async function EuroPage() {
           <PrintButton variant="secondary" label="Принтирай тази страница" />
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
+        <section className="rounded-md border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
           <div className="font-semibold text-slate-800">Официални източници (за проверка):</div>
           <ul className="mt-2 space-y-1">
             <li>

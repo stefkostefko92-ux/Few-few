@@ -115,9 +115,9 @@ export default async function CityPage() {
           {FACTS.map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div key={f.label} className="rounded-md border border-slate-200 bg-white p-5">
                 <Icon className="h-6 w-6 text-brand-700" aria-hidden />
-                <div className="mt-2 text-xs uppercase tracking-wide text-slate-600">{f.label}</div>
+                <div className="mt-2 text-sm text-slate-600">{f.label}</div>
                 <div className="mt-0.5 font-semibold text-slate-900">{f.value}</div>
               </div>
             );
@@ -170,7 +170,7 @@ export default async function CityPage() {
         <Section id="zabelezhitelnosti" title="Забележителности и природа" icon={TreePine}>
           <div className="grid gap-4 sm:grid-cols-2">
             {LANDMARKS.map((l) => (
-              <div key={l.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div key={l.title} className="rounded-md border border-slate-200 bg-white p-5">
                 <h3 className="font-display text-lg font-bold text-slate-900">{l.title}</h3>
                 <p className="mt-1 text-sm text-slate-600">{l.text}</p>
               </div>
@@ -195,7 +195,7 @@ export default async function CityPage() {
             хора от целия град.
           </p>
           {churchServices ? (
-            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-4">
               <h3 className="font-semibold text-slate-900">Часове на службите</h3>
               <div className="mt-1">
                 <Prose html={renderMarkdown(churchServices)} />
@@ -215,7 +215,7 @@ export default async function CityPage() {
 
         <Section id="karta" title="Карта на града" icon={MapPin}>
           <p>Намерете лесно улици, институции и спирки на картата:</p>
-          <div className="mt-3 overflow-hidden rounded-xl border border-slate-200">
+          <div className="mt-3 overflow-hidden rounded-md border border-slate-200">
             <iframe
               title="Карта на Бобов дол"
               className="h-80 w-full"
@@ -252,7 +252,7 @@ export default async function CityPage() {
         </Section>
 
         {/* Бързи връзки */}
-        <section className="rounded-2xl border border-brand-200 bg-brand-50 p-6">
+        <section className="rounded-md border border-brand-200 bg-brand-50 p-6">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
             <BookOpen className="h-6 w-6 text-brand-700" aria-hidden />
             Научете повече за града

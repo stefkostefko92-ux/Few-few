@@ -29,7 +29,7 @@ export default async function WasteSchedulePage() {
       />
 
       <div className="container-content space-y-8 py-10">
-        <section className="rounded-2xl border-2 border-brand-200 bg-brand-50 p-6">
+        <section className="rounded-md border-2 border-brand-200 bg-brand-50 p-6">
           <div className="flex items-center gap-2">
             <Factory className="h-6 w-6 text-brand-700" aria-hidden />
             <h2 className="text-2xl font-bold text-slate-900">Дни на извозване</h2>
@@ -50,7 +50,7 @@ export default async function WasteSchedulePage() {
           </p>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-md border border-slate-200 bg-white p-6">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
             <Megaphone className="h-5 w-5 text-brand-700" aria-hidden />
             Видяхте нерегламентирано сметище?
@@ -59,7 +59,7 @@ export default async function WasteSchedulePage() {
             Подайте сигнал със снимка и местоположение — общината ще го разчисти.
           </p>
           <Link href="/smetishta" className="btn-primary mt-3 inline-flex">
-            Подай сигнал за сметище →
+            Подай сигнал за сметище
           </Link>
         </section>
 

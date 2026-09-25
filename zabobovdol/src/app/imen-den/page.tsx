@@ -50,7 +50,7 @@ export default async function NameDayPage({
 
       <div className="container-content space-y-10 py-10">
         {/* Днес */}
-        <section className="rounded-2xl border-2 border-brand-200 bg-brand-50 p-6">
+        <section className="rounded-md border-2 border-brand-200 bg-brand-50 p-6">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-6 w-6 text-brand-700" aria-hidden />
             <h2 className="text-2xl font-bold text-slate-900">
@@ -120,12 +120,12 @@ export default async function NameDayPage({
           {upcoming.length === 0 ? (
             <EmptyState title="Няма отбелязани дни в следващия месец." />
           ) : (
-            <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <ul className="divide-y divide-slate-200 overflow-hidden rounded-md border border-slate-200 bg-white">
               {upcoming.map((d) => (
                 <li key={`${d.month}-${d.day}`} className="flex gap-4 p-4">
                   <div className="w-16 shrink-0 text-center">
                     <div className="text-2xl font-bold text-brand-700">{d.day}</div>
-                    <div className="text-xs uppercase text-slate-600">{MONTHS[d.month - 1]}</div>
+                    <div className="text-sm text-slate-600">{MONTHS[d.month - 1]}</div>
                   </div>
                   <div className="min-w-0">
                     {d.feasts.length > 0 && (

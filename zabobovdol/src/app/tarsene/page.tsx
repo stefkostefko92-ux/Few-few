@@ -62,7 +62,7 @@ export default async function SearchPage({
             {results.map((r, i) => (
               <li key={i}>
                 <Link href={r.url} className="card block">
-                  <div className="text-xs uppercase tracking-wide text-brand-600">
+                  <div className="text-sm text-brand-600">
                     {TYPE_LABEL[r.type]}
                   </div>
                   <div className="text-lg font-semibold text-slate-900">

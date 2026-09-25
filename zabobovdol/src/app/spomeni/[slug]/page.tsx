@@ -55,7 +55,7 @@ export default async function MemoryPage({
         {m.imageUrl && (
           <div className="mt-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={m.imageUrl} alt={m.title} className="w-full rounded-xl" loading="lazy" />
+            <img src={m.imageUrl} alt={m.title} className="w-full rounded-md" loading="lazy" />
           </div>
         )}
         <div className="mt-4">

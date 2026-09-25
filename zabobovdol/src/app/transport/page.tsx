@@ -61,7 +61,7 @@ export default async function TransportPage() {
           <p className="mb-5 text-sm text-slate-600">Превозвач: {BUS.carrier}</p>
           <div className="grid gap-4 md:grid-cols-2">
             {BUS.directions.map((d) => (
-              <div key={d.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div key={d.title} className="rounded-md border border-slate-200 bg-white p-5">
                 <h3 className="flex items-center gap-2 font-display text-lg font-bold text-slate-900">
                   <Bus className="h-5 w-5 text-brand-700" aria-hidden />
                   {d.title}
@@ -120,7 +120,7 @@ export default async function TransportPage() {
         </section>
 
         {/* Споделено пътуване */}
-        <section className="rounded-2xl border border-gold-200 bg-gold-50 p-6">
+        <section className="rounded-md border border-gold-200 bg-gold-50 p-6">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-display text-xl font-bold text-slate-900">
@@ -149,7 +149,7 @@ export default async function TransportPage() {
               ["t-povikam-taksi", "Как да повикам такси по телефона"],
             ].map(([slug, label]) => (
               <Link key={slug} href={`/kak-da/${slug}`} className="card text-sm font-medium text-slate-800">
-                {label} →
+                {label}
               </Link>
             ))}
           </div>

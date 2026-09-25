@@ -103,7 +103,7 @@ export default async function ScamProtectionPage() {
               {alerts.map((a) => {
                 const s = SEVERITY[a.severity] ?? SEVERITY.warning;
                 return (
-                  <article key={a.id} className={"rounded-xl border p-5 " + s.box}>
+                  <article key={a.id} className={"rounded-md border p-5 " + s.box}>
                     <div className="flex items-start gap-3">
                       <AlertTriangle
                         className="mt-0.5 h-6 w-6 shrink-0 text-slate-700"
@@ -145,8 +145,8 @@ export default async function ScamProtectionPage() {
             {GOLDEN_RULES.map((r) => {
               const Icon = r.icon;
               return (
-                <div key={r.title} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                <div key={r.title} className="flex gap-4 rounded-md border border-slate-200 bg-white p-5">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-brand-50 text-brand-700">
                     <Icon className="h-6 w-6" aria-hidden />
                   </span>
                   <div>
@@ -160,7 +160,7 @@ export default async function ScamProtectionPage() {
         </section>
 
         {/* Какво да направя, ако вече съм измамен */}
-        <section className="rounded-2xl border border-crimson-200 bg-crimson-50 p-6">
+        <section className="rounded-md border border-crimson-200 bg-crimson-50 p-6">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-6 w-6 text-crimson-700" aria-hidden />
             <h2 className="text-2xl font-bold text-slate-900">

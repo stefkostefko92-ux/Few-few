@@ -19,7 +19,7 @@ export function TaxEstimator() {
   const yearly = valid ? (base * rate) / 1000 : 0;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6">
+    <div className="rounded-md border border-slate-200 bg-white p-6">
       <h2 className="text-xl font-bold text-slate-900">Ориентировъчен калкулатор</h2>
       <p className="mt-1 text-sm text-slate-600">
         Годишен данък/такса = данъчна оценка × ставка. Въведете числата от съобщението си.

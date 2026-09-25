@@ -77,9 +77,9 @@ export default async function OutagesPage() {
               const u = UTILS[o.utility] ?? UTILS.ELECTRICITY;
               const Icon = u.icon;
               return (
-                <article key={o.id} className={"rounded-xl border p-5 " + u.box}>
+                <article key={o.id} className={"rounded-md border p-5 " + u.box}>
                   <div className="flex items-start gap-3">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/70 text-slate-700">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-white/70 text-slate-700">
                       <Icon className="h-6 w-6" aria-hidden />
                     </span>
                     <div className="min-w-0">
@@ -122,7 +122,7 @@ export default async function OutagesPage() {
           </div>
         )}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-md border border-slate-200 bg-white p-6">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-brand-700" aria-hidden />
             <h2 className="text-lg font-bold text-slate-900">При авария — на кого да звънна</h2>

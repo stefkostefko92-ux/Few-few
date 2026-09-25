@@ -91,17 +91,17 @@ export default async function TransparencyPage() {
             {/* Ключови показатели */}
             <section>
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="rounded-md border border-slate-200 bg-white p-5">
                   <Banknote className="h-7 w-7 text-brand-700" aria-hidden />
                   <div className="mt-2 text-3xl font-extrabold text-slate-900">{t.totalValue}</div>
                   <div className="text-sm text-slate-600">Обща стойност на договорите</div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="rounded-md border border-slate-200 bg-white p-5">
                   <FileText className="h-7 w-7 text-brand-700" aria-hidden />
                   <div className="mt-2 text-3xl font-extrabold text-slate-900">{t.contractsCount}</div>
                   <div className="text-sm text-slate-600">Брой договори</div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="rounded-md border border-slate-200 bg-white p-5">
                   <CalendarRange className="h-7 w-7 text-brand-700" aria-hidden />
                   <div className="mt-2 text-lg font-bold text-slate-900">{t.period}</div>
                   <div className="text-sm text-slate-600">Период на данните</div>
@@ -116,7 +116,7 @@ export default async function TransparencyPage() {
                   <Building2 className="h-6 w-6 text-brand-700" aria-hidden />
                   Кои фирми печелят най-много
                 </h2>
-                <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <div className="overflow-x-auto rounded-md border border-slate-200 bg-white">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-600">
                       <tr>
@@ -150,7 +150,7 @@ export default async function TransparencyPage() {
                   <ListChecks className="h-6 w-6 text-brand-700" aria-hidden />
                   За какво се харчи
                 </h2>
-                <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <div className="overflow-x-auto rounded-md border border-slate-200 bg-white">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-600">
                       <tr>
@@ -174,7 +174,7 @@ export default async function TransparencyPage() {
             )}
 
             {/* Източник и връзка към живите данни */}
-            <section className="rounded-2xl border border-brand-200 bg-brand-50 p-6">
+            <section className="rounded-md border border-brand-200 bg-brand-50 p-6">
               <div className="flex items-center gap-2">
                 <Info className="h-5 w-5 text-brand-700" aria-hidden />
                 <h2 className="text-lg font-bold text-slate-900">Източник на данните</h2>

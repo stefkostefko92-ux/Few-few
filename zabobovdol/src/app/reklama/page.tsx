@@ -88,8 +88,8 @@ export default async function ReklamaPage() {
 
           {/* Ценова карта */}
           <aside>
-            <div className="rounded-2xl border border-brand-200 bg-brand-50 p-6 text-center">
-              <div className="text-sm font-medium uppercase tracking-wide text-brand-700">
+            <div className="rounded-md border border-brand-200 bg-brand-50 p-6 text-center">
+              <div className="text-sm font-medium text-brand-700">
                 Рекламен банер
               </div>
               <div className="mt-2 text-4xl font-extrabold text-slate-900">
@@ -132,7 +132,7 @@ export default async function ReklamaPage() {
             Оставете трите си имена и данни за връзка. Ще се свържем с Вас и ще
             подготвим банера.
           </p>
-          <div className="mt-5 max-w-2xl rounded-xl border border-slate-200 bg-white p-6">
+          <div className="mt-5 max-w-2xl rounded-md border border-slate-200 bg-white p-6">
             <AdRequestForm paymentUrl={ad.revolutUrl} price={ad.priceEur} />
           </div>
         </section>

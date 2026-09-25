@@ -28,7 +28,7 @@ export async function ScamBanner() {
           {alert.title}
           {alert.summary ? ` — ${alert.summary}` : ""}
           <span className="ml-1 whitespace-nowrap font-semibold underline">
-            Виж как да се пазите →
+            Вижте как да се пазите
           </span>
         </span>
       </div>

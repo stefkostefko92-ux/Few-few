@@ -109,10 +109,10 @@ export default async function AidPage() {
             return (
               <section
                 key={t.title}
-                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+                className="rounded-md border border-slate-200 bg-white p-6"
               >
                 <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-brand-50 text-brand-700">
                     <Icon className="h-6 w-6" aria-hidden />
                   </span>
                   <h2 className="font-display text-xl font-bold text-slate-900">{t.title}</h2>
@@ -131,7 +131,7 @@ export default async function AidPage() {
         </div>
 
         {/* Важни телефони */}
-        <section className="rounded-2xl border border-brand-200 bg-brand-50 p-6">
+        <section className="rounded-md border border-brand-200 bg-brand-50 p-6">
           <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
             <Phone className="h-6 w-6 text-brand-700" aria-hidden />
             Към кого да се обърна

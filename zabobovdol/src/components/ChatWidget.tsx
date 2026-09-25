@@ -289,10 +289,10 @@ export function ChatWidget() {
                       <Link
                         key={s.url}
                         href={s.url}
-                        className="block font-medium text-brand-700 hover:underline"
+                        className="block font-medium text-brand-800 underline decoration-brand-300 underline-offset-2 hover:decoration-brand-800"
                         onClick={() => setOpen(false)}
                       >
-                        → {s.title}
+                        {s.title}
                       </Link>
                     ))}
                   </div>

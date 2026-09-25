@@ -264,7 +264,7 @@ export default function HistoryPage() {
         </article>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <nav className="rounded-xl border border-slate-200 bg-white p-5 text-sm" aria-label="Съдържание">
+          <nav className="rounded-md border border-slate-200 bg-white p-5 text-sm" aria-label="Съдържание">
             <div className="mb-2 font-semibold text-slate-900">Съдържание</div>
             <ul className="space-y-1.5">
               {[
@@ -290,7 +290,7 @@ export default function HistoryPage() {
             </ul>
           </nav>
 
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mt-4 rounded-md border border-slate-200 bg-white p-5">
             <div className="mb-3 font-semibold text-slate-900">Кратка хронология</div>
             <ol className="space-y-2 text-sm">
               {TIMELINE.map((t) => (

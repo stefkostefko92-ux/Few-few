@@ -110,7 +110,7 @@ export default async function FaqPage({
                     width={390}
                     height={720}
                     loading="lazy"
-                    className="w-full max-w-[300px] rounded-2xl border border-slate-200 shadow-sm"
+                    className="w-full max-w-[300px] rounded-md border border-slate-200"
                   />
                 ))}
               </div>

@@ -48,7 +48,7 @@ export default function TaxDeadlinesPage() {
             {DEADLINES.map((d) => (
               <li
                 key={d.when}
-                className={`flex gap-4 rounded-xl border p-4 ${
+                className={`flex gap-4 rounded-md border p-4 ${
                   d.highlight ? "border-gold-300 bg-gold-50" : "border-slate-200 bg-white"
                 }`}
               >
@@ -81,7 +81,7 @@ export default function TaxDeadlinesPage() {
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
             {PAY_WAYS.map((p) => (
-              <div key={p.title} className="rounded-xl border border-slate-200 bg-white p-5">
+              <div key={p.title} className="rounded-md border border-slate-200 bg-white p-5">
                 <h3 className="font-bold text-slate-900">{p.title}</h3>
                 <p className="mt-1 text-sm text-slate-600">{p.text}</p>
               </div>

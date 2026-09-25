@@ -44,7 +44,7 @@ export function BannerCard({ banner }: { banner: BannerData }) {
     <div
       className={
         "flex h-40 flex-col justify-center rounded-lg p-4 text-white " +
-        (hasCustom ? "" : "bg-gradient-to-br from-brand-700 to-brand-900")
+        (hasCustom ? "" : "bg-brand-800")
       }
       style={hasCustom ? { backgroundColor: banner.bgColor } : undefined}
     >
@@ -68,8 +68,8 @@ export function BannerCard({ banner }: { banner: BannerData }) {
   );
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-sm transition hover:shadow-md">
-      <span className="absolute right-2 top-2 z-10 rounded bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+    <div className="group relative overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition">
+      <span className="absolute right-2 top-2 z-10 rounded bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
         Реклама
       </span>
       {external ? (
@@ -90,13 +90,13 @@ export function BannerEmptySlot() {
   return (
     <Link
       href="/reklama"
-      className="group flex h-44 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-brand-200 bg-brand-50/50 p-4 text-center transition hover:border-brand-400 hover:bg-brand-50"
+      className="group flex h-44 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-brand-200 bg-brand-50/50 p-4 text-center transition hover:border-brand-400 hover:bg-brand-50"
     >
-      <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand-600 shadow-sm transition group-hover:bg-brand-600 group-hover:text-white">
+      <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand-600 transition group-hover:bg-brand-600 group-hover:text-white">
         <Store className="h-6 w-6" aria-hidden />
       </span>
       <span className="text-base font-semibold text-slate-800">Вашата реклама тук</span>
-      <span className="text-sm text-slate-600">само 20€ на месец →</span>
+      <span className="text-sm text-slate-600">само 20€ на месец</span>
     </Link>
   );
 }

@@ -32,7 +32,7 @@ export default async function DutyPharmacyPage() {
   const others = health.filter((s) => !/аптек/i.test(s.name));
 
   const card = (s: (typeof health)[number]) => (
-    <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div key={s.id} className="rounded-md border border-slate-200 bg-white p-5">
       <h3 className="font-display text-lg font-bold text-slate-900">{s.name}</h3>
       {s.description && <p className="mt-1 text-sm text-slate-600">{s.description}</p>}
       <div className="mt-3 space-y-1.5 text-sm text-slate-700">
@@ -104,7 +104,7 @@ export default async function DutyPharmacyPage() {
 
       <div className="container-content space-y-10 py-10">
         {/* Текущо дежурство (редактира се от админ панела) */}
-        <section className="rounded-2xl border-2 border-brand-200 bg-brand-50 p-6">
+        <section className="rounded-md border-2 border-brand-200 bg-brand-50 p-6">
           <div className="flex items-center gap-2">
             <Cross className="h-6 w-6 text-crimson-600" aria-hidden />
             <h2 className="text-2xl font-bold text-slate-900">Дежурно в момента</h2>
@@ -159,7 +159,7 @@ export default async function DutyPharmacyPage() {
         <p className="text-sm text-slate-600">
           Виж и всички{" "}
           <Link href="/uslugi?cat=HEALTH" className="font-medium text-brand-700 hover:underline">
-            здравни услуги и телефони →
+            здравни услуги и телефони
           </Link>
         </p>
       </div>

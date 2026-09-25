@@ -17,7 +17,7 @@ export function AdRequestForm({
 
   if (state.ok) {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-5">
+      <div className="rounded-md border border-green-200 bg-green-50 p-5">
         <p className="text-slate-800">
           Благодарим! Получихме заявката Ви. <strong>Първо ще се свържем с Вас</strong>,
           за да уточним текста, изображението и линка на рекламата.

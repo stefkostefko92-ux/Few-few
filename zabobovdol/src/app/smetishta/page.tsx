@@ -71,7 +71,7 @@ export default async function DumpReportsPage() {
                 return (
                   <article
                     key={r.id}
-                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                    className="rounded-md border border-slate-200 bg-white p-5"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="flex items-start gap-2 font-display text-lg font-bold text-slate-900">
