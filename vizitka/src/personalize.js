@@ -48,7 +48,8 @@ function tint(h, t) {
 export function accentCss(accent) {
   if (!accent) return '';
   return (
-    `.vcard.custom-accent{` +
+    // И за <body> на страницата — темата оцветява ЦЯЛАТА страница, не само картата.
+    `.vcard.custom-accent,body.custom-accent{` +
     `--t-a:${accent};` +
     `--t-b:${darken(accent)};` +
     `--t-accent:${accent};` +
