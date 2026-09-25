@@ -125,21 +125,3 @@ export function radialTextures(size = 128) {
   return dataTexture(A, size, size, false);
 }
 
-// Sparse pit noise used only as the emissive mask for the jelly's inner glow core, so the glow
-// breathes with faint internal structure instead of a flat sphere.
-export function coreGlowTexture(size = 64) {
-  const n = size * size;
-  const A = new Uint8Array(n * 4);
-  const rand = rng(4);
-  const nz = new Noise2(4);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const i = y * size + x;
-      const v = 0.6 + 0.4 * nz.fbm((x / size) * 6, (y / size) * 6, 6, 4);
-      A[i * 4] = A[i * 4 + 1] = A[i * 4 + 2] = Math.min(255, v * 255);
-      A[i * 4 + 3] = 255;
-    }
-  }
-  void rand;
-  return dataTexture(A, size, size, false);
-}

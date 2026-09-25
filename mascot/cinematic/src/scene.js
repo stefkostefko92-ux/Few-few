@@ -3,7 +3,7 @@
 // body.js/face.js/accessories.js — this module only places and moves what they build.
 import * as THREE from 'three';
 import { createMaterials, jellyMotion } from './materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, coreGlowTexture, irisTextures } from './textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures } from './textures.js';
 import { buildBody, GROUND_Y } from './body.js';
 import { buildFace } from './face.js';
 import { buildHat, buildBow, BOW_Y, BOW_Z } from './accessories.js';
@@ -108,7 +108,6 @@ export function buildScene(renderer, palette = PALETTE) {
     satin: satinTextures(),
     felt: feltTextures(),
     radial: radialTextures(),
-    core: coreGlowTexture(),
     iris: irisTextures(),
   };
   const materials = createMaterials(textures, p);

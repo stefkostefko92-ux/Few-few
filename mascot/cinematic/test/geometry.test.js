@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { createMaterials } from '../src/materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, coreGlowTexture, irisTextures } from '../src/textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures } from '../src/textures.js';
 import { bodyRadiusAtY, TOP_OF_HEAD_Y } from '../src/profile.js';
 import { buildBody, GROUND_Y } from '../src/body.js';
 import { buildFace, layout, EYE_Y, BROW_Y } from '../src/face.js';
@@ -13,7 +13,7 @@ import { buildHat, HAT_BOTTOM_Y, WING_W, WING_DEPTH } from '../src/accessories.j
 const palette = { neon: '#5AB60D', olive: '#99E72A', pale: '#C8DDA6', softOlive: '#848D68', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521' };
 
 function materials() {
-  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), core: coreGlowTexture(16), iris: irisTextures(32) };
+  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), iris: irisTextures(32) };
   return createMaterials(T, palette);
 }
 
@@ -71,6 +71,17 @@ test('brows hug the forehead surface — they do not float above the silhouette 
 
 test('defect: the bow tie wings are pillowed satin, not a flat wafer plate', () => {
   assert.ok(WING_DEPTH / WING_W >= 0.15, `wing thickness (${WING_DEPTH}) must be at least 15% of its width (${WING_W})`);
+});
+
+test('defect: no discrete "glow core" mesh — any alpha-cutoff sphere reads as a burnt hotspot through transmissive jelly', () => {
+  // The regression this guards: a MeshBasicMaterial sphere, however deep or dim, still has a hard
+  // edge — through transmission=1 jelly that edge reads as a burnt dot (worst right under the bow
+  // tie). The inner glow must come only from the jelly material's own emissive, never a mesh.
+  const body = buildBody(materials(), {});
+  const names = [];
+  body.traverse((o) => o.name && names.push(o.name));
+  assert.ok(!names.includes('core'), 'body must not contain a mesh named "core"');
+  assert.ok(!Object.keys(materials()).includes('coreGlow'), 'materials must not expose a coreGlow material');
 });
 
 test('defect #5: every foot rests exactly on the ground plane', () => {

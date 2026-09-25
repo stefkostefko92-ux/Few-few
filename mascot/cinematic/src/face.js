@@ -43,11 +43,17 @@ function glassesRing(sign, materials) {
   const ring = new THREE.Mesh(new THREE.TorusGeometry(RING_R, TUBE_R, 20, 72, Math.PI * 2), materials.acetate);
   const lensMesh = new THREE.Mesh(new THREE.CircleGeometry(RING_R * 0.94, 40), materials.lens);
   lensMesh.position.z = L.lensZ - L.ringZ;
+  // A soft, rounded, upper-left softbox catchlight painted directly on the lens — see materials.js
+  // `catchlight`. Additive + a soft radial falloff, so it brightens the glass without ever hiding
+  // the iris/pupil sitting behind it.
+  const catchlight = new THREE.Mesh(new THREE.PlaneGeometry(RING_R * 0.55, RING_R * 0.32), materials.catchlight);
+  catchlight.position.set(-RING_R * 0.33, RING_R * 0.36, L.lensZ - L.ringZ + 0.008);
+  catchlight.rotation.z = 0.3;
   const temple = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.3, 10), materials.acetate);
   temple.rotation.z = Math.PI / 2;
   temple.rotation.y = sign * -0.18; // fans back along the curve of the head, not straight out
   temple.position.set(sign * (RING_R + 0.12), 0, -0.08);
-  g.add(ring, lensMesh, temple);
+  g.add(ring, lensMesh, catchlight, temple);
   g.position.set(sign * EYE_X, EYE_Y, L.ringZ);
   g.name = `glassesRing${sign > 0 ? 'R' : 'L'}`;
   return g;
@@ -113,9 +119,9 @@ function brow(sign, materials) {
     new THREE.Vector3(0.045, 0.016, 0.002),
     new THREE.Vector3(0.1, -0.012, 0),
   ]);
-  const geo = new THREE.TubeGeometry(curve, 20, 0.03, 10, false);
+  const geo = new THREE.TubeGeometry(curve, 20, 0.037, 10, false);
   const b = new THREE.Mesh(geo, materials.acetate);
-  b.scale.set(1, 0.58, 1); // flattens the round tube into a painted band with soft rounded caps
+  b.scale.set(1, 0.62, 1); // flattens the round tube into a painted band with soft rounded caps
   b.position.set(sign * EYE_X, BROW_Y, z0);
   b.rotation.y = -sign * 0.16; // slight inward cant toward the nose bridge, like a lifted brow
   b.castShadow = true;

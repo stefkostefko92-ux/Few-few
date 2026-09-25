@@ -117,3 +117,5 @@
 {"t":"handoff","ts":"2026-09-25T04:56:30.324Z","id":"rf0185c53","from":"ai-djiyata","to":"човек","status":"блокер","run":"6f3c7dcc"}
 {"t":"start","ts":"2026-09-25T05:10:23.695Z","id":"r33ddab77","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-09-25T05:10:23.695Z","id":"r33ddab77","from":"dizayner","to":"ai-djiyata","status":"наред, готово за преглед (не комитнато)","run":"eaf7e901"}
+{"t":"start","ts":"2026-09-25T05:36:00.533Z","id":"r5b556e94","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-09-25T05:36:00.533Z","id":"r5b556e94","from":"dizayner","to":"човек","status":"има бележки","run":"7fc7ce46"}

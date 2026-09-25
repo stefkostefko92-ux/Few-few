@@ -576,8 +576,8 @@ function createMaterials(T, palette) {
       attenuationDistance: 2.2,
       // almost no self-absorption — the gradient tint carries the color now
       emissive: new THREE6.Color(p.olive),
-      emissiveIntensity: 0.05,
-      // faint constant inner glow, on top of the rim Fresnel term
+      emissiveIntensity: 0.075,
+      // faint constant inner glow, evenly across the body — no discrete core mesh
       envMapIntensity: 0.85,
       side: THREE6.DoubleSide
     }),
@@ -591,10 +591,10 @@ function createMaterials(T, palette) {
   limb.normalMap = T.carbon.normalMap;
   limb.onBeforeCompile = jelly.onBeforeCompile;
   const fabric = new THREE6.MeshStandardMaterial({ name: "fabric", color: 658442, roughnessMap: T.carbon.roughnessMap, normalMap: T.carbon.normalMap, normalScale: v2(0.4), roughness: 1, metalness: 0.04 });
-  const coreGlow = new THREE6.MeshBasicMaterial({ name: "core", color: p.olive, map: T.core, toneMapped: false, transparent: true, opacity: 0.4 });
   const acetate = new THREE6.MeshPhysicalMaterial({ name: "acetate", color: p.ink, roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.35, envMapIntensity: 0.5, specularIntensity: 0.4 });
-  const lens = new THREE6.MeshPhysicalMaterial({ name: "lens", color: 16777215, transmission: 0.95, roughness: 0.1, ior: 1.5, thickness: 0.05, envMapIntensity: 0.16, clearcoat: 0.5, clearcoatRoughness: 0.1 });
-  const sclera = new THREE6.MeshPhysicalMaterial({ name: "sclera", color: p.eye, roughness: 0.32, envMapIntensity: 0.2, clearcoat: 0.7, clearcoatRoughness: 0.12 });
+  const lens = lensGlassMaterial(p);
+  const catchlight = new THREE6.MeshBasicMaterial({ name: "catchlight", map: T.radial, color: 16777215, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE6.AdditiveBlending });
+  const sclera = new THREE6.MeshPhysicalMaterial({ name: "sclera", color: p.eye, roughness: 0.32, envMapIntensity: 0.2, clearcoat: 0.22, clearcoatRoughness: 0.3 });
   const iris = new THREE6.MeshStandardMaterial({
     name: "iris",
     color: p.inkSoft,
@@ -616,7 +616,40 @@ function createMaterials(T, palette) {
   const ground = new THREE6.ShadowMaterial({ opacity: 0.48 });
   const glow = new THREE6.MeshBasicMaterial({ color: p.olive, map: T.radial, transparent: true, opacity: 0.4, depthWrite: false });
   const caustic = causticMaterial(p);
-  return { jelly, limb, fabric, coreGlow, acetate, lens, sclera, iris, inkPaint, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow, caustic };
+  return { jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow, caustic };
+}
+function lensGlassMaterial(p) {
+  return new THREE6.ShaderMaterial({
+    name: "lens",
+    transparent: true,
+    depthWrite: false,
+    uniforms: { uColor: { value: new THREE6.Color(15989736) }, uRim: { value: new THREE6.Color(p.pale) } },
+    vertexShader: (
+      /* glsl */
+      `
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        vN = normalize(normalMatrix * normal);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`
+    ),
+    fragmentShader: (
+      /* glsl */
+      `
+      uniform vec3 uColor;
+      uniform vec3 uRim;
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        float fres = pow(1.0 - max(dot(vV, normalize(vN)), 0.0), 3.2);
+        vec3 col = uColor + uRim * fres * 0.7;
+        gl_FragColor = vec4(col, 0.05 + fres * 0.55);
+      }`
+    )
+  });
 }
 function causticMaterial(p) {
   return new THREE6.ShaderMaterial({
@@ -869,22 +902,6 @@ function radialTextures(size = 128) {
   }
   return dataTexture(A, size, size, false);
 }
-function coreGlowTexture(size = 64) {
-  const n = size * size;
-  const A = new Uint8Array(n * 4);
-  const rand = rng(4);
-  const nz = new Noise2(4);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const i = y * size + x;
-      const v = 0.6 + 0.4 * nz.fbm(x / size * 6, y / size * 6, 6, 4);
-      A[i * 4] = A[i * 4 + 1] = A[i * 4 + 2] = Math.min(255, v * 255);
-      A[i * 4 + 3] = 255;
-    }
-  }
-  void rand;
-  return dataTexture(A, size, size, false);
-}
 
 // src/body.js
 import * as THREE8 from "three";
@@ -994,10 +1011,6 @@ function buildBody(materials, textures) {
   fabric.scale.set(1, 1.22, 0.52);
   fabric.position.set(0, -0.02, 0.02);
   group.add(fabric);
-  const core = new THREE8.Mesh(new THREE8.SphereGeometry(0.42, 20, 16), materials.coreGlow);
-  core.scale.set(0.8, 1, 0.6);
-  core.position.set(0, -0.22, -0.22);
-  group.add(core);
   const bubbleGeo = new THREE8.SphereGeometry(1, 10, 8);
   const rand = rng(42);
   for (let i = 0; i < 14; i++) {
@@ -1056,11 +1069,14 @@ function glassesRing(sign, materials) {
   const ring = new THREE9.Mesh(new THREE9.TorusGeometry(RING_R, TUBE_R, 20, 72, Math.PI * 2), materials.acetate);
   const lensMesh = new THREE9.Mesh(new THREE9.CircleGeometry(RING_R * 0.94, 40), materials.lens);
   lensMesh.position.z = L.lensZ - L.ringZ;
+  const catchlight = new THREE9.Mesh(new THREE9.PlaneGeometry(RING_R * 0.55, RING_R * 0.32), materials.catchlight);
+  catchlight.position.set(-RING_R * 0.33, RING_R * 0.36, L.lensZ - L.ringZ + 8e-3);
+  catchlight.rotation.z = 0.3;
   const temple = new THREE9.Mesh(new THREE9.CylinderGeometry(0.018, 0.018, 0.3, 10), materials.acetate);
   temple.rotation.z = Math.PI / 2;
   temple.rotation.y = sign * -0.18;
   temple.position.set(sign * (RING_R + 0.12), 0, -0.08);
-  g.add(ring, lensMesh, temple);
+  g.add(ring, lensMesh, catchlight, temple);
   g.position.set(sign * EYE_X, EYE_Y, L.ringZ);
   g.name = `glassesRing${sign > 0 ? "R" : "L"}`;
   return g;
@@ -1114,9 +1130,9 @@ function brow(sign, materials) {
     new THREE9.Vector3(0.045, 0.016, 2e-3),
     new THREE9.Vector3(0.1, -0.012, 0)
   ]);
-  const geo = new THREE9.TubeGeometry(curve, 20, 0.03, 10, false);
+  const geo = new THREE9.TubeGeometry(curve, 20, 0.037, 10, false);
   const b = new THREE9.Mesh(geo, materials.acetate);
-  b.scale.set(1, 0.58, 1);
+  b.scale.set(1, 0.62, 1);
   b.position.set(sign * EYE_X, BROW_Y, z0);
   b.rotation.y = -sign * 0.16;
   b.castShadow = true;
@@ -1365,7 +1381,6 @@ function buildScene(renderer, palette = PALETTE) {
     satin: satinTextures(),
     felt: feltTextures(),
     radial: radialTextures(),
-    core: coreGlowTexture(),
     iris: irisTextures()
   };
   const materials = createMaterials(textures, p);

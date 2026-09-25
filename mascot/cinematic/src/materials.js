@@ -77,7 +77,7 @@ export function createMaterials(T, palette) {
       attenuationColor: new THREE.Color(p.olive),
       attenuationDistance: 2.2, // almost no self-absorption — the gradient tint carries the color now
       emissive: new THREE.Color(p.olive),
-      emissiveIntensity: 0.05, // faint constant inner glow, on top of the rim Fresnel term
+      emissiveIntensity: 0.075, // faint constant inner glow, evenly across the body — no discrete core mesh
       envMapIntensity: 0.85,
       side: THREE.DoubleSide,
     }),
@@ -92,16 +92,18 @@ export function createMaterials(T, palette) {
   limb.onBeforeCompile = jelly.onBeforeCompile;
 
   const fabric = new THREE.MeshStandardMaterial({ name: 'fabric', color: 0x0a0c0a, roughnessMap: T.carbon.roughnessMap, normalMap: T.carbon.normalMap, normalScale: v2(0.4), roughness: 1, metalness: 0.04 });
-  const coreGlow = new THREE.MeshBasicMaterial({ name: 'core', color: p.olive, map: T.core, toneMapped: false, transparent: true, opacity: 0.4 });
 
   // Lacquered acetate: soft, distributed specular instead of a razor clearcoat, so a bright key
   // light does not blow the rim into a single white triangle (the old "broken glasses" look).
   const acetate = new THREE.MeshPhysicalMaterial({ name: 'acetate', color: p.ink, roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.35, envMapIntensity: 0.5, specularIntensity: 0.4 });
-  const lens = new THREE.MeshPhysicalMaterial({ name: 'lens', color: 0xffffff, transmission: 0.95, roughness: 0.1, ior: 1.5, thickness: 0.05, envMapIntensity: 0.16, clearcoat: 0.5, clearcoatRoughness: 0.1 });
+  const lens = lensGlassMaterial(p);
+  // A painted-on softbox catchlight for the lens (face.js): a controllable soft rounded highlight
+  // instead of whatever hard-edged shape our 3-flat-panel environment happens to reflect there.
+  const catchlight = new THREE.MeshBasicMaterial({ name: 'catchlight', map: T.radial, color: 0xffffff, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending });
 
   // Wet-eye read: a real clearcoat layer over the sclera, not just a rougher diffuse — a moist eye
   // has its own thin, glossy tear-film highlight separate from the lens' own reflection.
-  const sclera = new THREE.MeshPhysicalMaterial({ name: 'sclera', color: p.eye, roughness: 0.32, envMapIntensity: 0.2, clearcoat: 0.7, clearcoatRoughness: 0.12 });
+  const sclera = new THREE.MeshPhysicalMaterial({ name: 'sclera', color: p.eye, roughness: 0.32, envMapIntensity: 0.2, clearcoat: 0.22, clearcoatRoughness: 0.3 });
   const iris = new THREE.MeshStandardMaterial({
     name: 'iris', color: p.inkSoft, roughness: 0.4, envMapIntensity: 0.22,
     normalMap: T.iris.normalMap, normalScale: v2(0.6), roughnessMap: T.iris.roughnessMap,
@@ -124,7 +126,42 @@ export function createMaterials(T, palette) {
   const glow = new THREE.MeshBasicMaterial({ color: p.olive, map: T.radial, transparent: true, opacity: 0.4, depthWrite: false });
   const caustic = causticMaterial(p);
 
-  return { jelly, limb, fabric, coreGlow, acetate, lens, sclera, iris, inkPaint, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow, caustic };
+  return { jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow, caustic };
+}
+
+// The lens: a small unlit fresnel shader instead of a lit `transparent`/`transmission` material —
+// both of those reacted to the studio's five-plus lights and washed the whole disc bright white,
+// hiding the iris/pupil behind it, and `transmission` additionally sampled the black void past the
+// head's own silhouette as a dark wedge INSIDE the lens (never an environment reflection — see the
+// git history on this file). Fully unlit removes both failure modes at the source: alpha stays low
+// dead-on (the eye reads clearly through it) and only rises toward the rim (a real Fresnel term,
+// not scene geometry) — the separate `catchlight` quad supplies the soft upper-left softbox glint.
+function lensGlassMaterial(p) {
+  return new THREE.ShaderMaterial({
+    name: 'lens',
+    transparent: true,
+    depthWrite: false,
+    uniforms: { uColor: { value: new THREE.Color(0xf3fbe8) }, uRim: { value: new THREE.Color(p.pale) } },
+    vertexShader: /* glsl */ `
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        vN = normalize(normalMatrix * normal);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform vec3 uRim;
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        float fres = pow(1.0 - max(dot(vV, normalize(vN)), 0.0), 3.2);
+        vec3 col = uColor + uRim * fres * 0.7;
+        gl_FragColor = vec4(col, 0.05 + fres * 0.55);
+      }`,
+  });
 }
 
 // Floor caustics: the pool of light a transmissive body actually throws on the ground beneath it —

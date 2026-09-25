@@ -80,13 +80,11 @@ export function buildBody(materials, textures) {
   fabric.position.set(0, -0.02, 0.02);
   group.add(fabric);
 
-  // Sits deep enough (well behind the front surface, in -z) and dim enough to read as an ambient
-  // inner glow filtering through the jelly — pushed forward and too bright it instead punched
-  // through the translucent front as a hard, "burnt" green dot, worst right under the bow tie.
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), materials.coreGlow);
-  core.scale.set(0.8, 1.0, 0.6);
-  core.position.set(0, -0.22, -0.22);
-  group.add(core);
+  // No discrete "glow core" mesh: any alpha-cutoff sphere, however dim or deep, still has an edge —
+  // through transmission=1 jelly that edge reads as a hard dot (the "burnt" spot the brief flagged,
+  // worst right under the bow tie). The living inner light instead comes only from the jelly
+  // material's own body-wide emissive gradient (materials.js `withRimGlow`) — no point, no edge,
+  // just the material glowing evenly from within, brighter at the rim.
 
   const bubbleGeo = new THREE.SphereGeometry(1, 10, 8);
   const rand = rng(42);
