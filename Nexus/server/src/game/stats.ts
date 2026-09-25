@@ -1,6 +1,22 @@
 import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
 import { ITEM_SETS, findSetForItem, type SetBonus, type SetDef } from '../seed/sets';
 import { loadGuildBuffsForCharacter } from './guild';
+import { ITEM_SEED } from '../seed/items';
+import { nextTierRef, type CurveItem } from './itemCurve';
+
+const WYRMSONG_CLIMB_MAX = 200;
+const climbCapByLevel = new Map<number, number>();
+/** Бонус atk_max на Wyrmsong: +1.2/етаж, таван 200 И таван по нивото —
+ *  общото оръжие на следващия тир (≤ кривата на уникатите, +0%). */
+export function wyrmsongClimb(level: number, towerBestFloor: number, baseAtkMax: number): number {
+  let refMax = climbCapByLevel.get(level);
+  if (refMax === undefined) {
+    refMax = nextTierRef(ITEM_SEED as unknown as CurveItem[], 'weapon', level)?.primary ?? 0;
+    climbCapByLevel.set(level, refMax);
+  }
+  const byLevel = Math.max(0, refMax - baseAtkMax);
+  return Math.max(0, Math.min(WYRMSONG_CLIMB_MAX, Math.floor(Math.max(0, towerBestFloor) * 1.2), byLevel));
+}
 
 export interface SetBonusSummary {
   set_slug: string;
@@ -127,14 +143,13 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
       atkMin = item.atk_min + (e.atk_min || 0);
       atkMax = item.atk_max + (e.atk_max || 0);
       weaponSub = item.sub_type;
-      // Audit (balance tuning #10): Wyrmsong promises "strikes harder
-      // the higher you climb" but used to ship as a static lv-18 sword
-      // — at lv 25+ a veteran sword outclassed it. Scale its atk_max
-      // with the player's best tower floor so the description matches
-      // reality: +1.2 atk_max per floor cleared, capped at +200 so it
-      // doesn't completely overshadow tier-10 drops.
+      // Wyrmsong („strikes harder the higher you climb") расте с етажа на
+      // кулата, но растежът е ограничен и от НИВОТО на героя: най-много до
+      // общото оръжие на следващия тир (game/itemCurve.ts). Преди +1.2/етаж
+      // до +200 без оглед на нивото → висок етаж на lv 20–60 даваше
+      // оръжие над следващия тир (кривата на уникатите).
       if (item.slug === 'wyrmsong_blade') {
-        const climb = Math.min(200, Math.floor(((ch as any).tower_best_floor || 0) * 1.2));
+        const climb = wyrmsongClimb(ch.level, (ch as any).tower_best_floor || 0, item.atk_max);
         atkMin += Math.floor(climb * 0.6);
         atkMax += climb;
       }

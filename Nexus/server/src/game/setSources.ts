@@ -4,7 +4,8 @@
  * разминат с реалността:
  *
  *   shop                  — buy_price > 0 (routes/shop.ts показва всичко такова)
- *   drop:T<n>             — grantDrop (лов · кула · арена · куест), game/drops.ts:
+ *   drop:T<n>             — grantDrop (лов · кула · арена · куест), game/drops.ts
+ *                           (без уникатите — те имат собствен източник):
  *                           tier = tierForEffectiveLevel(ниво на противника);
  *                           собствените части на сет идват от сет клона
  *                           (SET_DROP_SHARE), общите — от generic клона
@@ -23,7 +24,7 @@ const EQUIP = new Set(['weapon', 'armor', 'helm', 'shield', 'gloves', 'boots', '
 /** Най-високото ниво на противник/герой, което играта генерира днес. */
 export const MAX_CONTENT_LEVEL = 500;
 
-type SeedRow = { slug: string; category: string; tier: number; level_req: number; buy_price: number };
+type SeedRow = { slug: string; category: string; tier: number; level_req: number; buy_price: number; set_slug?: string };
 const bySlug = new Map((ITEM_SEED as SeedRow[]).map((i) => [i.slug, i]));
 
 /** Има ли ниво на противника ≤ MAX_CONTENT_LEVEL, което мапва към този tier. */
@@ -42,7 +43,10 @@ function build(): Map<string, string[]> {
   };
   for (const it of bySlug.values()) {
     if (it.buy_price > 0) add(it.slug, 'shop');
-    if (EQUIP.has(it.category) && it.level_req <= MAX_CONTENT_LEVEL && tierReachable(it.tier)) add(it.slug, `drop:T${it.tier}`);
+    // Случаен дроп: общата екипировка (магазинна) и собствените части на
+    // сетовете — уникатите (buy_price 0, без сет) НЕ са в пула (game/drops.ts).
+    const droppable = it.buy_price > 0 || !!it.set_slug;
+    if (droppable && EQUIP.has(it.category) && it.level_req <= MAX_CONTENT_LEVEL && tierReachable(it.tier)) add(it.slug, `drop:T${it.tier}`);
   }
   for (const d of DUNGEONS) {
     for (const slug of d.loot_pool) {

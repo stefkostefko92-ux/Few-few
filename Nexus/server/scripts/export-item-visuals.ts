@@ -15,15 +15,16 @@
  * визуално са общи предмети на тира си.
  *
  * Детерминистично: без БД. Предметите, които маршрутите създават при първо
- * ползване (сезонни трофеи, realm boss, Tower of Trials), са описани в
- * RUNTIME_EQUIPABLES; скриптът проверява, че всеки slug още съществува в
- * съответния файл, иначе пада (без тих дрейф).
+ * ползване (сезонни трофеи, realm boss, Tower of Trials), идват от
+ * seed/runtimeItems.ts — същите редове, които маршрутите вписват (без
+ * ръчно копие → без дрейф на тир/ниво).
  */
 /* eslint-disable no-console */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { ITEM_SEED } from '../src/seed/items';
 import { ITEM_SETS, TIER_THEMES, type SetTheme } from '../src/seed/sets';
+import { RUNTIME_ITEM_SEED } from '../src/seed/runtimeItems';
 
 const EQUIP = ['weapon', 'shield', 'helm', 'armor', 'gloves', 'boots', 'cloak', 'ring', 'amulet'] as const;
 const ROOT = join(__dirname, '..');
@@ -33,23 +34,6 @@ interface Row {
   slug: string; name: string; category: string; sub_type: string; tier: number; rarity: string;
   class_req: string; set_slug: string | null; theme: SetTheme; icon: string; level_req: number;
 }
-
-/** Екипируеми предмети, които маршрутите вписват в БД при първо ползване. */
-const RUNTIME_EQUIPABLES: { file: string; slug: string; name: string; category: string; sub_type: string; tier: number; rarity: string; level_req: number }[] = [
-  { file: 'src/routes/events.ts', slug: 'season_trophy_frostmoot', name: 'Frostmoot Ledger of the Hunt', category: 'amulet', sub_type: '', tier: 9, rarity: 'legendary', level_req: 220 },
-  { file: 'src/routes/events.ts', slug: 'season_trophy_bloomtide', name: "Bloomtide Hunter's Wreath", category: 'cloak', sub_type: '', tier: 9, rarity: 'legendary', level_req: 220 },
-  { file: 'src/routes/events.ts', slug: 'season_trophy_sunhigh', name: 'Sunhigh Ember-Crown', category: 'helm', sub_type: '', tier: 9, rarity: 'legendary', level_req: 220 },
-  { file: 'src/routes/events.ts', slug: 'season_trophy_emberfall', name: "Emberfall Reaper's Ring", category: 'ring', sub_type: '', tier: 9, rarity: 'legendary', level_req: 220 },
-  { file: 'src/routes/realmBoss.ts', slug: 'realm_thalion_crown', name: 'Sunless Crown of Thalion', category: 'helm', sub_type: '', tier: 10, rarity: 'legendary', level_req: 250 },
-  { file: 'src/routes/realmBoss.ts', slug: 'realm_vethryx_scale', name: 'Spine-of-Sky Scaleplate', category: 'armor', sub_type: '', tier: 10, rarity: 'legendary', level_req: 250 },
-  { file: 'src/routes/realmBoss.ts', slug: 'realm_orsis_pendant', name: 'Drowned-God Pendant of Orsis', category: 'amulet', sub_type: '', tier: 10, rarity: 'legendary', level_req: 250 },
-  { file: 'src/routes/realmBoss.ts', slug: 'realm_kallosh_grimoire', name: "Kallosh's Marrow Grimoire", category: 'weapon', sub_type: 'staff', tier: 10, rarity: 'legendary', level_req: 250 },
-  { file: 'src/routes/realmBoss.ts', slug: 'realm_dawn_unmaker_ash', name: 'Ash of the Dawn-Unmaker', category: 'cloak', sub_type: '', tier: 10, rarity: 'legendary', level_req: 250 },
-  { file: 'src/routes/realmBoss.ts', slug: 'realm_unnamed_sigil', name: "The Sigil That Wasn't Named", category: 'ring', sub_type: '', tier: 10, rarity: 'legendary', level_req: 250 },
-  { file: 'src/routes/trialCache.ts', slug: 'trial_crown', name: 'Trial Crown', category: 'helm', sub_type: '', tier: 5, rarity: 'epic', level_req: 12 },
-  { file: 'src/routes/trialCache.ts', slug: 'trial_aegis', name: 'Trial Aegis', category: 'armor', sub_type: '', tier: 5, rarity: 'epic', level_req: 15 },
-  { file: 'src/routes/trialCache.ts', slug: 'wyrmsong_blade', name: 'Wyrmsong', category: 'weapon', sub_type: 'sword', tier: 5, rarity: 'legendary', level_req: 18 },
-];
 
 function main(): void {
   const setOf = new Map<string, (typeof ITEM_SETS)[number]>();
@@ -71,14 +55,13 @@ function main(): void {
     });
     seen.add(it.slug);
   }
-  for (const r of RUNTIME_EQUIPABLES) {
-    const src = readFileSync(join(ROOT, r.file), 'utf8');
-    if (!src.includes(`'${r.slug}'`)) throw new Error(`${r.slug} вече не е в ${r.file} — обнови RUNTIME_EQUIPABLES`);
-    if (seen.has(r.slug)) continue;
+  for (const r of RUNTIME_ITEM_SEED) {
+    if (!(EQUIP as readonly string[]).includes(r.category)) continue;
+    if (seen.has(r.slug)) throw new Error(`${r.slug} е и в ITEM_SEED, и в RUNTIME_ITEM_SEED`);
     rows.push({
       slug: r.slug, name: r.name, category: r.category, sub_type: r.sub_type, tier: r.tier, rarity: r.rarity,
-      class_req: '', set_slug: null, theme: TIER_THEMES[r.tier],
-      icon: r.category === 'weapon' ? r.sub_type : r.category, level_req: r.level_req,
+      class_req: r.class_req, set_slug: null, theme: TIER_THEMES[r.tier],
+      icon: r.icon || r.category, level_req: r.level_req,
     });
   }
   for (const r of rows) if (!r.theme) throw new Error(`${r.slug}: няма тема (tier ${r.tier})`);

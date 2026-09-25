@@ -144,10 +144,11 @@ test('уникатите извън магазина се продават по 
     if (it.buy_price > 0 || !EQUIP.includes(it.category)) continue;
     assert.ok(it.sell_price <= SET_SELL_PRICE[it.tier], `${it.slug}: sell ${it.sell_price} > крива T${it.tier} ${SET_SELL_PRICE[it.tier]}`);
   }
-  assert.equal(bySlug.get('caethra_crown')!.sell_price, SET_SELL_PRICE[9]);
+  // caethra_crown (lv 260) е в лентата T8 (tierForEffectiveLevel) → кривата на T8.
+  assert.equal(bySlug.get('caethra_crown')!.sell_price, SET_SELL_PRICE[8]);
 });
 
-test('фракционен вендор: гем-покупка е обвързана и непродаваема; купи→продай не печели злато', async () => {
+test('фракционен вендор: само злато (без P2W), купи→продай не печели злато', async () => {
   const { VENDOR_STOCK } = await import('../../routes/faction');
   const { uid, token } = mkUser();
   const cid = mkChar(uid, 'mage', 300, 1_000_000);
@@ -157,26 +158,21 @@ test('фракционен вендор: гем-покупка е обвърза
   }
   for (const [faction, stock] of Object.entries(VENDOR_STOCK)) {
     for (const offer of stock) {
+      assert.ok(!('gems' in offer), `${offer.slug}: гем-цена на фракционния вендор`);
       const goldBefore = goldOf(cid);
       const b = await call('POST', `/api/faction/${faction}/vendor/buy`, token, { slug: offer.slug });
       assert.equal(b.status, 200, `${offer.slug}: ${JSON.stringify(b.json)}`);
+      assert.equal(goldOf(cid), goldBefore - offer.gold, `${offer.slug}: цената не е удържана в злато`);
       const inv = db.prepare(`SELECT inv.id, inv.soul_bound, inv.gem_bought FROM inventory inv JOIN items i ON i.id = inv.item_id
                               WHERE inv.character_id = ? AND i.slug = ? ORDER BY inv.id DESC LIMIT 1`).get(cid, offer.slug) as { id: number; soul_bound: number; gem_bought: number };
+      assert.equal(inv.gem_bought, 0, `${offer.slug}: gem_bought`);
       const s = await call('POST', '/api/inventory/sell', token, { inventoryId: inv.id });
-      if (offer.gems > 0) {
-        assert.equal(inv.gem_bought, 1, `${offer.slug}: gem_bought`);
-        assert.equal(inv.soul_bound, 1, `${offer.slug}: soul_bound (без пазар/размяна)`);
-        assert.equal(s.status, 400, `${offer.slug}: гем-предметът се продаде`);
-        assert.equal(goldOf(cid), goldBefore, `${offer.slug}: гем→злато`);
-      } else {
-        assert.equal(s.status, 200);
-        assert.ok(goldOf(cid) < goldBefore, `${offer.slug}: купи ${offer.gold} → продай печели злато`);
-      }
+      assert.equal(s.status, 200);
+      assert.ok(goldOf(cid) < goldBefore, `${offer.slug}: купи ${offer.gold} → продай печели злато`);
     }
   }
+  assert.equal((db.prepare('SELECT gems FROM characters WHERE id = ?').get(cid) as { gems: number }).gems, 10000, 'вендорът взе гемове');
 });
-
-/* ═════════════ 4. маунтове ═════════════ */
 
 test('маунтове: цена, CDR и бойни статове растат монотонно с tier-а', async () => {
   const { MOUNTS } = await import('../../routes/mount');

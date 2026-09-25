@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { getDb } from '../db';
 import { ITEM_SEED } from './items';
+import { RUNTIME_ITEM_SEED } from './runtimeItems';
 import { MONSTER_SEED } from './monsters';
 import { QUEST_SEED } from './quests';
 import { DUMMY_SEED } from './dummies';
@@ -53,7 +54,10 @@ function seed(): void {
     }
   });
   txItem(ITEM_SEED);
-  console.log(`Inserted ${ITEM_SEED.length} items.`);
+  // Уникатите, които маршрутите създават при първо ползване (сезонни трофеи,
+  // realm boss, Trials) — пресийдът опреснява и техните статове (по кривата).
+  txItem(RUNTIME_ITEM_SEED);
+  console.log(`Inserted ${ITEM_SEED.length} items (+${RUNTIME_ITEM_SEED.length} runtime uniques).`);
 
   console.log('Seeding monsters...');
   const insertMonster = db.prepare(`

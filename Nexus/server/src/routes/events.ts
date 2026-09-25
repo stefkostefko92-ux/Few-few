@@ -3,12 +3,13 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { logFromRequest } from '../lib/logger';
 import type { Character } from '../types/domain';
+import { SEASON_TROPHY_ITEMS, ensureRuntimeItems } from '../seed/runtimeItems';
 
 /**
  * Seasonal events — four UTC windows per year. While a season is active
  * every hunt-kill against a season-tagged enemy family pays season
  * points. Points redeem at the event vendor for cosmetic-only rewards
- * (frames, avatars, mounts) plus a single tier-9 equipment trophy
+ * (frames, avatars, mounts) plus a single tier-7 (lv 220) equipment trophy
  * unique to each season.
  *
  * Window dates are fixed UTC, so the active season is derived from
@@ -43,7 +44,7 @@ export const SEASONS: SeasonDef[] = [
       { slug: 'cosmetic_frame_frostmoot', name: 'Frostmoot Wreath frame', kind: 'frame',   cost: 250,  flavor: 'Carved hawthorn rimmed in silver.' },
       { slug: 'cosmetic_avatar_frostmoot', name: 'Mid-Winter Hunter avatar', kind: 'avatar', cost: 400, flavor: 'Painted in the colours of the Frostmoot procession.' },
       { slug: 'cosmetic_mount_frostmoot', name: 'Frostmoot Direstag mount', kind: 'mount',   cost: 1200, flavor: 'Antlers the size of greatswords. Tame, mostly.' },
-      { slug: 'season_trophy_frostmoot', name: 'Frostmoot Ledger of the Hunt', kind: 'trophy', cost: 800, flavor: 'A T9 amulet, season-locked.' },
+      { slug: 'season_trophy_frostmoot', name: 'Frostmoot Ledger of the Hunt', kind: 'trophy', cost: 800, flavor: 'A T7 amulet, season-locked.' },
     ],
   },
   {
@@ -55,7 +56,7 @@ export const SEASONS: SeasonDef[] = [
       { slug: 'cosmetic_frame_bloomtide', name: 'Bloomtide Garland frame',   kind: 'frame',  cost: 250,  flavor: 'Petals and hawthorn thorn.' },
       { slug: 'cosmetic_avatar_bloomtide', name: 'Spring Marshal avatar',    kind: 'avatar', cost: 400,  flavor: 'Sashed green, eyes bright.' },
       { slug: 'cosmetic_mount_bloomtide', name: 'Bloomtide Wolf-Mare mount', kind: 'mount',  cost: 1200, flavor: 'Half pelt, half temper.' },
-      { slug: 'season_trophy_bloomtide', name: "Bloomtide Hunter's Wreath",  kind: 'trophy', cost: 800,  flavor: 'A T9 cloak, season-locked.' },
+      { slug: 'season_trophy_bloomtide', name: "Bloomtide Hunter's Wreath",  kind: 'trophy', cost: 800,  flavor: 'A T7 cloak, season-locked.' },
     ],
   },
   {
@@ -67,7 +68,7 @@ export const SEASONS: SeasonDef[] = [
       { slug: 'cosmetic_frame_sunhigh', name: 'Sunhigh Halo frame',          kind: 'frame',  cost: 250,  flavor: 'A summer corona, gold on gold.' },
       { slug: 'cosmetic_avatar_sunhigh', name: 'Sunhigh Pyromancer avatar',  kind: 'avatar', cost: 400,  flavor: 'Burnt sienna, no apology.' },
       { slug: 'cosmetic_mount_sunhigh', name: 'Sunhigh Ember-Drake mount',   kind: 'mount',  cost: 1200, flavor: 'A young drake with too many opinions.' },
-      { slug: 'season_trophy_sunhigh', name: "Sunhigh Ember-Crown",          kind: 'trophy', cost: 800,  flavor: 'A T9 helm, season-locked.' },
+      { slug: 'season_trophy_sunhigh', name: "Sunhigh Ember-Crown",          kind: 'trophy', cost: 800,  flavor: 'A T7 helm, season-locked.' },
     ],
   },
   {
@@ -79,7 +80,7 @@ export const SEASONS: SeasonDef[] = [
       { slug: 'cosmetic_frame_emberfall', name: 'Emberfall Ash-Halo frame',   kind: 'frame',  cost: 250,  flavor: 'Charred laurel, copper rivets.' },
       { slug: 'cosmetic_avatar_emberfall', name: 'Emberfall Reaper avatar',   kind: 'avatar', cost: 400,  flavor: 'Hood up, hand out.' },
       { slug: 'cosmetic_mount_emberfall', name: 'Emberfall Nightmare mount',  kind: 'mount',  cost: 1200, flavor: "A revenant horse that walks the line." },
-      { slug: 'season_trophy_emberfall', name: "Emberfall Reaper's Ring",     kind: 'trophy', cost: 800,  flavor: 'A T9 ring, season-locked.' },
+      { slug: 'season_trophy_emberfall', name: "Emberfall Reaper's Ring",     kind: 'trophy', cost: 800,  flavor: 'A T7 ring, season-locked.' },
     ],
   },
 ];
@@ -102,34 +103,24 @@ export function currentSeason(now = new Date()): { def: SeasonDef; season_key: s
 function ensureSeasonItems(s: SeasonDef) {
   const db = getDb();
   for (const r of s.rewards) {
-    const have = db.prepare('SELECT 1 FROM items WHERE slug = ?').get(r.slug);
-    if (have) continue;
     if (r.kind === 'trophy') {
-      // Map trophy kind by season — fixed in the SeasonDef flavor text.
-      const map: Record<string, { cat: string; sub: string; def: number; hp: number; mp: number; stat: number }> = {
-        season_trophy_frostmoot:  { cat: 'amulet', sub: '',     def: 60, hp: 280, mp: 220, stat: 18 },
-        season_trophy_bloomtide:  { cat: 'cloak',  sub: '',     def: 72, hp: 320, mp: 180, stat: 18 },
-        season_trophy_sunhigh:    { cat: 'helm',   sub: '',     def: 95, hp: 300, mp: 150, stat: 20 },
-        season_trophy_emberfall:  { cat: 'ring',   sub: '',     def: 40, hp: 260, mp: 200, stat: 20 },
-      };
-      const m = map[r.slug]!;
-      db.prepare(
-        `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-           atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-           int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-         VALUES (?, ?, ?, ?, 9, 'legendary', 220, '', 0, 0, ?, ?, ?, ?, 0, ?, ?, 0, ?, 0, 0, 0, 0, ?, ?, '')`,
-      ).run(r.slug, r.name, m.cat, m.sub, m.def, m.hp, m.mp, m.stat, m.stat, m.stat, m.stat, m.cat, r.flavor);
-    } else {
-      // Cosmetics — handled by a "cosmetic" category with no combat
-      // bonuses. The profile page renders frame/avatar/mount slots from
-      // these item slugs.
-      db.prepare(
-        `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-           atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-           int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-         VALUES (?, ?, 'cosmetic', ?, 5, 'rare', 1, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?, '')`,
-      ).run(r.slug, r.name, r.kind, r.kind, r.flavor);
+      // Статовете на трофея живеят в seed/runtimeItems.ts (по кривата,
+      // game/itemCurve.ts); UPSERT веднъж на процес → стар ред се опреснява.
+      const row = SEASON_TROPHY_ITEMS.find((t) => t.slug === r.slug);
+      if (!row) throw new Error(`season trophy ${r.slug} missing in seed/runtimeItems.ts`);
+      ensureRuntimeItems(db, [row]);
+      continue;
     }
+    if (db.prepare('SELECT 1 FROM items WHERE slug = ?').get(r.slug)) continue;
+    // Cosmetics — handled by a "cosmetic" category with no combat
+    // bonuses. The profile page renders frame/avatar/mount slots from
+    // these item slugs.
+    db.prepare(
+      `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
+         atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
+         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
+       VALUES (?, ?, 'cosmetic', ?, 5, 'rare', 1, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?, '')`,
+    ).run(r.slug, r.name, r.kind, r.kind, r.flavor);
   }
 }
 

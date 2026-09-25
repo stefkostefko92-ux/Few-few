@@ -129,29 +129,40 @@ router.get('/', (req, res) => {
 
 /** Faction vendor: each tier unlocks one piece of stock. Stock is
  *  hand-built rather than reading from items table so we can label
- *  each entry with the unlocking tier. */
-export const VENDOR_STOCK: Record<string, Array<{ slug: string; tier: number; gold: number; gems: number; note: string }>> = {
+ *  each entry with the unlocking tier.
+ *
+ *  Без „плати, за да спечелиш": ВСИЧКО с боен ефект се купува със ЗЛАТО —
+ *  рангът във фракцията е спечеленият гейт. Преди Honoured/Exalted
+ *  уникатите бяха само за гемове (премиум валута) и ~2× над кривата.
+ *  Цените продължават прогресията на тира (×~2.7–2.8): 1200 → 3200 → 9000
+ *  → 25 000 → 70 000. Предметите са по кривата на уникатите
+ *  (game/itemCurve.ts); по-високият ранг отключва по-високото ниво. Всяка
+ *  цена > продажната (купи→продай винаги е на загуба; econFixes.test.ts). */
+export const FACTION_TIER_GOLD: Record<number, number> = { 1: 1200, 2: 3200, 3: 9000, 4: 25_000, 5: 70_000 };
+export interface VendorOffer { slug: string; tier: number; gold: number; note: string }
+const vendorOffer = (slug: string, tier: number, note = ''): VendorOffer => ({ slug, tier, gold: FACTION_TIER_GOLD[tier], note });
+export const VENDOR_STOCK: Record<string, VendorOffer[]> = {
   iron_watch: [
-    { slug: 'elite_armor_4',    tier: 1, gold: 1200, gems: 0,  note: 'Quartermaster discount on standard plate.' },
-    { slug: 'elite_helm_4',     tier: 1, gold: 1200, gems: 0,  note: '' },
-    { slug: 'adept_armor_5',    tier: 2, gold: 3200, gems: 0,  note: 'Reserved for sworn members.' },
-    { slug: 'mythic_armor_6',   tier: 3, gold: 9000, gems: 0,  note: 'Plate of the King\'s Own.' },
-    { slug: 'sunken_king_trident', tier: 4, gold: 0,  gems: 80, note: 'Exalted-only — gem-priced.' },
-    { slug: 'gorvak_mace',      tier: 5, gold: 0,    gems: 200, note: 'Exalted-only — only awarded to the most committed sword.' },
+    vendorOffer('elite_armor_4', 1, 'Quartermaster discount on standard plate.'),
+    vendorOffer('elite_helm_4', 1),
+    vendorOffer('adept_armor_5', 2, 'Reserved for sworn members.'),
+    vendorOffer('mythic_armor_6', 3, 'Plate of the King\'s Own.'),
+    vendorOffer('gorvak_mace', 4, 'Honoured-only — only awarded to the most committed sword.'),
+    vendorOffer('sunken_king_trident', 5, 'Exalted-only.'),
   ],
   conclave: [
-    { slug: 'elite_staff_4',    tier: 1, gold: 1200, gems: 0,  note: 'Apprentice stipend.' },
-    { slug: 'adept_staff_5',    tier: 2, gold: 3200, gems: 0,  note: '' },
-    { slug: 'mythic_staff_6',   tier: 3, gold: 9000, gems: 0,  note: 'The deans noticed you.' },
-    { slug: 'vex_staff',        tier: 4, gold: 0,    gems: 100, note: 'Exalted-only.' },
-    { slug: 'caethra_crown',    tier: 5, gold: 0,    gems: 300, note: 'Exalted-only — the dean would advise against this.' },
+    vendorOffer('elite_staff_4', 1, 'Apprentice stipend.'),
+    vendorOffer('adept_staff_5', 2),
+    vendorOffer('mythic_staff_6', 3, 'The deans noticed you.'),
+    vendorOffer('vex_staff', 4, 'Honoured-only.'),
+    vendorOffer('caethra_crown', 5, 'Exalted-only — the dean would advise against this.'),
   ],
   wyrmkin: [
-    { slug: 'elite_axe_4',      tier: 1, gold: 1200, gems: 0,  note: 'Clan welcome-axe.' },
-    { slug: 'adept_axe_5',      tier: 2, gold: 3200, gems: 0,  note: '' },
-    { slug: 'mythic_axe_6',     tier: 3, gold: 9000, gems: 0,  note: 'Cleavebreaker, clan-cast.' },
-    { slug: 'khalad_fang',      tier: 4, gold: 0,    gems: 100, note: 'Exalted-only.' },
-    { slug: 'snowtooth_axe',    tier: 5, gold: 0,    gems: 250, note: 'Exalted-only — taken from a rival clan.' },
+    vendorOffer('elite_axe_4', 1, 'Clan welcome-axe.'),
+    vendorOffer('adept_axe_5', 2),
+    vendorOffer('mythic_axe_6', 3, 'Cleavebreaker, clan-cast.'),
+    vendorOffer('khalad_fang', 4, 'Honoured-only.'),
+    vendorOffer('snowtooth_axe', 5, 'Exalted-only — taken from a rival clan.'),
   ],
 };
 
@@ -184,29 +195,20 @@ router.post('/:slug/vendor/buy', (req, res) => {
       const rep = row?.rep || 0;
       const t = tierFor(rep);
       if (t.tier < offer.tier) { const e: any = new Error(`Need ${FACTION_TIERS.find(x => x.tier === offer.tier)?.name || 'higher'} reputation.`); e.clientSafe = true; e.status = 403; throw e; }
-      if (offer.gold > 0) {
-        const dec = db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?').run(offer.gold, char.id, offer.gold);
-        if (dec.changes !== 1) { const e: any = new Error(`Need ${offer.gold}g.`); e.clientSafe = true; e.status = 400; throw e; }
-      }
-      if (offer.gems > 0) {
-        const dec = db.prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?').run(offer.gems, offer.gems, char.id, offer.gems);
-        if (dec.changes !== 1) { const e: any = new Error(`Need ${offer.gems} gems.`); e.clientSafe = true; e.status = 400; throw e; }
-      }
+      const dec = db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?').run(offer.gold, char.id, offer.gold);
+      if (dec.changes !== 1) { const e: any = new Error(`Need ${offer.gold}g.`); e.clientSafe = true; e.status = 400; throw e; }
       const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(itemSlug) as { id: number } | undefined;
       if (!item) { const e: any = new Error('Item missing from catalog'); e.clientSafe = true; e.status = 500; throw e; }
-      // Гем-оферта → soul_bound (без пазар/размяна/дарение) + gem_bought (без
-      // NPC продажба). Иначе caethra_crown за 300 гема се продаваше за 240 000
-      // злато — конвертор премиум валута → злато. Злато-офертите остават
-      // обикновени предмети (злато → предмет → по-малко злато е загуба).
-      const gemOffer = offer.gems > 0 ? 1 : 0;
-      db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound, gem_bought) VALUES (?, ?, 1, 0, '', ?, ?)")
-        .run(char.id, item.id, gemOffer, gemOffer);
+      // Само злато → обикновен предмет (като APEX дропа на същия уникат):
+      // злато → предмет → по-малко злато е загуба, гем→злато конвертор няма.
+      db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')")
+        .run(char.id, item.id);
     }).immediate();
     logFromRequest(req, {
       category: 'inventory', action: 'faction_buy',
       character_id: char.id,
       message: `${char.name} bought ${offer.slug} from ${slug} vendor`,
-      meta: { faction: slug, item: offer.slug, gold: offer.gold, gems: offer.gems },
+      meta: { faction: slug, item: offer.slug, gold: offer.gold },
     });
     res.json({ ok: true });
   } catch (e: any) {

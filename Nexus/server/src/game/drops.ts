@@ -57,7 +57,11 @@ function dropWhere(branch: DropBranch): string {
        AND category IN ${DROP_CATEGORIES}
        AND level_req <= ?
        AND (class_req = '' OR class_req = ?)
-       AND ${branch === 'set' ? "set_slug != ''" : "set_slug = ''"}`;
+       AND ${branch === 'set' ? "set_slug != ''" : "set_slug = '' AND buy_price > 0"}`;
+  // Generic клонът е САМО общата (магазинна) екипировка. Уникатите (buy_price 0,
+  // извън сет: APEX трофеи, realm boss, сезонни трофеи, Trials, куест уникати)
+  // имат собствен източник — преди падаха и от случаен дроп на тира си
+  // („само от боса"/„season-locked" не беше вярно).
 }
 
 /** Всички slug-ове, които даден клон може да изтегли (за тестове/източници). */
