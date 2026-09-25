@@ -62,7 +62,7 @@
     "message": "Reclame hier verbergen"
   },
   "cosmeticsTitle": {
-    "message": "Cosmetische filtering op deze website (schakel dit uit als de opmaak niet meer klopt)"
+    "message": "Reclame op deze website verbergen (schakel dit uit als de opmaak van de pagina niet meer klopt)"
   },
   "on": {
     "message": "Aan"
@@ -502,7 +502,7 @@
     "message": "Niet meegeleverd (geen licentie om te herdistribueren): uw browser downloadt hem van $1 wanneer u hem inschakelt."
   },
   "opt_downloaded_from": {
-    "message": "Gedownload van $1"
+    "message": "Wordt van $1 gedownload wanneer u hem inschakelt"
   },
   "opt_lists_error": {
     "message": "Chrome heeft deze combinatie van lijsten geweigerd ($1). Schakel er enkele uit."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Rapport kopiëren"
+  },
+  "rep_privacy": {
+    "message": "Hoe dit rapport wordt behandeld: privacybeleid"
   },
   "rep_copied": {
     "message": "Gekopieerd."

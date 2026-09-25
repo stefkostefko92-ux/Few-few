@@ -62,6 +62,7 @@ export const metadata: Metadata = {
     "етикети с ChatGPT",
     "визитки с AI",
     "MCP сървър български",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/konektor" },
   ...pageMeta(TITLE, DESC, "/konektor"),

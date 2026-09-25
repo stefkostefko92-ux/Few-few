@@ -1,10 +1,10 @@
 Supreme AdBlock chặn quảng cáo ở khắp mọi nơi — quảng cáo video YouTube, biểu ngữ, cửa sổ bật lên và trình theo dõi — mà không theo dõi những gì bạn làm.
 
 • Quảng cáo YouTube bị chặn ngay từ nguồn, nên video cứ thế phát.
-• Tích hợp sẵn EasyList, EasyPrivacy và bộ lọc uBlock Origin, cùng danh sách cho ngôn ngữ của bạn (33 danh sách khu vực).
+• Tích hợp sẵn EasyList, EasyPrivacy và bộ lọc uBlock Origin, cùng danh sách cho ngôn ngữ của bạn (31 danh sách khu vực).
 • Biểu ngữ cookie: tự nhấn Từ chối thay bạn, xóa lớp làm mờ và khóa cuộn còn sót lại, và không bao giờ nhấn nút đăng nhập, OAuth hay thanh toán.
 • Chế độ tập trung: ẩn bong bóng trò chuyện, cửa sổ bật lên đăng ký bản tin, lời nhắc thông báo, tiện ích mạng xã hội, cửa sổ bật lên AI và YouTube Shorts.
 • Vô hiệu hóa tường chống chặn quảng cáo và quảng cáo pop-under.
 • Trang web bị lỗi? Một cú nhấp là sửa được, hoặc báo cho chúng tôi — không gì được gửi đi khi bạn chưa xem trước.
 • Cập nhật bộ lọc có chữ ký hai lần mỗi ngày: mạng quảng cáo mới được xử lý trong vài giờ, không có mã từ xa.
-• Không cần tài khoản, không đo từ xa, không thu thập dữ liệu. Miễn phí, có thể ủng hộ tùy ý.
+• Không cần tài khoản, không đo từ xa, không thu thập dữ liệu. Miễn phí, có thể ủng hộ tùy ý; cửa sổ bật lên hiển thị một thẻ nhỏ gắn nhãn “Quảng cáo” về Carbon Stealth, nhà phát triển.

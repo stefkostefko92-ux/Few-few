@@ -62,7 +62,7 @@
     "message": "Masquer les pubs ici"
   },
   "cosmeticsTitle": {
-    "message": "Filtrage cosmétique sur ce site (à désactiver si la mise en page se casse)"
+    "message": "Masquer les pubs sur ce site (à désactiver si la mise en page se casse)"
   },
   "on": {
     "message": "Oui"
@@ -502,7 +502,7 @@
     "message": "Non intégrée (pas de licence pour la redistribuer) : votre navigateur la télécharge depuis $1 lorsque vous l’activez."
   },
   "opt_downloaded_from": {
-    "message": "Téléchargée depuis $1"
+    "message": "Se télécharge depuis $1 lorsque vous l’activez"
   },
   "opt_lists_error": {
     "message": "Chrome a refusé cette combinaison de listes ($1). Désactivez-en quelques-unes."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copier le rapport"
+  },
+  "rep_privacy": {
+    "message": "Comment ce rapport est traité : politique de confidentialité"
   },
   "rep_copied": {
     "message": "Copié."

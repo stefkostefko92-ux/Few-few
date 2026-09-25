@@ -27,12 +27,12 @@ export default function FitText({ text, fontSize, style, watch }: Props) {
     const el = ref.current;
     if (!el) return;
     const fit = () => {
-      // Мерим без пренасяне по букви: преливът = някоя дума не се събира.
-      el.style.fontSize = fontSize;
-      el.style.overflowWrap = "normal";
+      // Само четене, когато няма смаляване: запис в стила + четене веднага
+      // кара браузъра да преизчислява оформлението за всеки етикет (66 на
+      // лист) при всеки клавиш. Пишем само ако размерът трябва да се смени.
+      if (el.style.fontSize !== fontSize) el.style.fontSize = fontSize;
       const ratio = el.scrollWidth > el.clientWidth + 1 ? el.clientWidth / el.scrollWidth : 1;
       if (ratio < 1) el.style.fontSize = `calc(${fontSize} * ${(ratio * 0.98).toFixed(3)})`;
-      el.style.overflowWrap = "anywhere";
     };
     fit();
     // Уеб шрифтът може да дойде след първото мерене — премери тогава.
@@ -48,7 +48,7 @@ export default function FitText({ text, fontSize, style, watch }: Props) {
       ref={ref}
       // maxWidth/minWidth: като flex елемент блокът иначе расте до широчината
       // на думата и преливът не се вижда в clientWidth.
-      style={{ ...style, fontSize, maxWidth: style?.maxWidth ?? "100%", minWidth: 0, overflowWrap: "anywhere" }}
+      style={{ ...style, fontSize, maxWidth: style?.maxWidth ?? "100%", minWidth: 0 }}
     >
       {text}
     </div>

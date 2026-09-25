@@ -1,10 +1,10 @@
 A Supreme AdBlock mindenhol blokkolja a hirdetéseket – YouTube-videóreklámokat, bannereket, felugró ablakokat és nyomkövetőket –, anélkül hogy figyelné, mit csinál.
 
 • A YouTube-reklámokat már a forrásnál megállítja, így a videók egyszerűen lejátszódnak.
-• Beépített EasyList, EasyPrivacy és uBlock Origin szűrők, valamint az Ön nyelvének listája (33 regionális lista).
+• Beépített EasyList, EasyPrivacy és uBlock Origin szűrők, valamint az Ön nyelvének listája (31 regionális lista).
 • Cookie-sávok: megnyomja Ön helyett az Elutasítás gombot, eltünteti a visszamaradt elmosást és görgetészárat, és soha nem nyom meg bejelentkezési, OAuth- vagy fizetési gombot.
 • Fókusz mód: elrejti a csevegőbuborékokat, hírlevél-felugrókat, értesítési kéréseket, közösségi widgeteket, MI-felugrókat és a YouTube Shortsot.
 • Az anti-adblock falakat és a pop-under ablakokat semlegesíti.
 • Hibás a webhely? Egy kattintás megjavítja, vagy szóljon nekünk – semmi sem megy el anélkül, hogy előbb látná.
 • Aláírt szűrőfrissítések naponta kétszer: az új hirdetési hálózatokat órákon belül kezeli, távoli kód nélkül.
-• Nincs fiók, nincs telemetria, nincs adatgyűjtés. Ingyenes, önkéntes adományozási lehetőséggel.
+• Nincs fiók, nincs telemetria, nincs adatgyűjtés. Ingyenes, önkéntes adományozási lehetőséggel; a felugró ablakban egyetlen kis kártya látható „Reklám” jelöléssel a készítőről, a Carbon Stealthről.

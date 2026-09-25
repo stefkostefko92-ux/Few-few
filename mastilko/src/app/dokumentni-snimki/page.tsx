@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "35x45 снимка",
     "снимка за виза",
     "биометрична снимка",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/dokumentni-snimki" },
   ...pageMeta(TITLE, DESC, "/dokumentni-snimki"),

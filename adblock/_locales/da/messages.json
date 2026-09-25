@@ -62,7 +62,7 @@
     "message": "Skjul annoncefelter her"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetisk filtrering på dette websted (slå fra, hvis layoutet går i stykker)"
+    "message": "Skjul annoncefelter på dette websted (slå fra, hvis sidens layout går i stykker)"
   },
   "on": {
     "message": "Til"
@@ -502,7 +502,7 @@
     "message": "Ikke inkluderet (ingen licens til videredistribution): din browser downloader den fra $1, når du slår den til."
   },
   "opt_downloaded_from": {
-    "message": "Downloadet fra $1"
+    "message": "Downloades fra $1, når du slår den til"
   },
   "opt_lists_error": {
     "message": "Chrome afviste denne kombination af lister ($1). Slå nogle fra."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopiér rapport"
+  },
+  "rep_privacy": {
+    "message": "Sådan behandles denne rapport: privatlivspolitik"
   },
   "rep_copied": {
     "message": "Kopieret."

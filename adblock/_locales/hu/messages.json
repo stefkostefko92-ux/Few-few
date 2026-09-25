@@ -62,7 +62,7 @@
     "message": "Hirdetések elrejtése itt"
   },
   "cosmeticsTitle": {
-    "message": "Kozmetikai szűrés ezen a webhelyen (kapcsolja ki, ha az elrendezés szétesik)"
+    "message": "Hirdetések elrejtése ezen a webhelyen (kapcsolja ki, ha az oldal elrendezése szétesik)"
   },
   "on": {
     "message": "Be"
@@ -502,7 +502,7 @@
     "message": "Nincs beépítve (nincs licenc a továbbterjesztéséhez): bekapcsoláskor a böngésző innen tölti le: $1."
   },
   "opt_downloaded_from": {
-    "message": "Letöltve innen: $1"
+    "message": "Bekapcsoláskor innen töltődik le: $1"
   },
   "opt_lists_error": {
     "message": "A Chrome elutasította ezt a listakombinációt ($1). Kapcsoljon ki néhányat."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Jelentés másolása"
+  },
+  "rep_privacy": {
+    "message": "Hogyan kezeljük ezt a jelentést: adatvédelmi irányelvek"
   },
   "rep_copied": {
     "message": "Másolva."

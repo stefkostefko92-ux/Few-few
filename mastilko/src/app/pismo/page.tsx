@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     "как да напиша мотивационно писмо",
     "придружително писмо",
     "мотивационно писмо шаблон",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/pismo" },
   ...pageMeta(TITLE, DESC, "/pismo"),

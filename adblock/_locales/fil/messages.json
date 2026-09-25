@@ -62,7 +62,7 @@
     "message": "Itago ang ad box dito"
   },
   "cosmeticsTitle": {
-    "message": "Cosmetic filtering sa site na ito (i-off kung masira ang layout)"
+    "message": "Itago ang mga ad box sa site na ito (i-off kung masira ang layout ng page)"
   },
   "on": {
     "message": "On"
@@ -502,7 +502,7 @@
     "message": "Hindi kasama (walang lisensyang ipamahagi ito ulit): dina-download ito ng inyong browser mula sa $1 kapag in-on ninyo."
   },
   "opt_downloaded_from": {
-    "message": "Na-download mula sa $1"
+    "message": "Dina-download mula sa $1 kapag in-on ninyo"
   },
   "opt_lists_error": {
     "message": "Tinanggihan ng Chrome ang kombinasyong ito ng mga list ($1). I-off ang ilan."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopyahin ang report"
+  },
+  "rep_privacy": {
+    "message": "Paano pinangangasiwaan ang ulat na ito: patakaran sa privacy"
   },
   "rep_copied": {
     "message": "Nakopya na."

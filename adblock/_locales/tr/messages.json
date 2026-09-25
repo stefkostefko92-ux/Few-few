@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklamları her yerde engeller: YouTube reklamları, banner'lar, pop-up'lar, izleyiciler, çerez uyarıları, anti-adblock duvarları."
+    "message": "Ücretsiz reklam engelleyici: YouTube reklamları, banner'lar, pop-up'lar, izleyiciler, çerez uyarıları, anti-adblock duvarları."
   },
   "byCarbon": {
     "message": "Carbon Stealth tarafından"
@@ -15,7 +15,7 @@
     "message": "Korunuyor"
   },
   "paused": {
-    "message": "Beklemede"
+    "message": "Duraklatıldı"
   },
   "blockingHere": {
     "message": "Bu sayfada reklamlar engelleniyor"
@@ -62,7 +62,7 @@
     "message": "Reklamları burada gizle"
   },
   "cosmeticsTitle": {
-    "message": "Bu sitede kozmetik filtreleme (sayfa düzeni bozulursa kapatın)"
+    "message": "Bu sitede reklamları gizle (sayfa düzeni bozulursa kapatın)"
   },
   "on": {
     "message": "Açık"
@@ -190,7 +190,7 @@
     "message": "Filtreleri otomatik güncelle"
   },
   "opt_carbon_stealth_dark_or_light": {
-    "message": "Carbon Stealth (koyu) veya açık"
+    "message": "Carbon Stealth (koyu) veya açık renk"
   },
   "opt_keep_settings_allowlist_and_filters_in_s": {
     "message": "Ayarları, izin verilenler listesini ve filtreleri oturum açtığınız her Chrome'da senkronize tutun"
@@ -280,7 +280,7 @@
     "message": "Carbon Stealth Edition · Ayarlar"
   },
   "opt_theme_light": {
-    "message": "Açık"
+    "message": "Açık renk"
   },
   "opt_badge_unique": {
     "message": "benzersiz"
@@ -415,7 +415,7 @@
     "message": "Reklam boyutunda farklı kaynaklı çerçeve"
   },
   "opt_reason_sticky": {
-    "message": "Yapışkan reklam banner'ı"
+    "message": "Sabit reklam banner'ı"
   },
   "logRegional": {
     "message": "Bölgesel listeler"
@@ -442,7 +442,7 @@
     "message": "Odak modu"
   },
   "opt_focus_desc": {
-    "message": "Reklam olmayan ama yine de engel olan şeyleri gizleyin. Buradaki her şey siz açana kadar kapalıdır."
+    "message": "Reklam olmayan ama yine de engel olan şeyleri gizler. Buradaki her şey siz açana kadar kapalıdır."
   },
   "opt_list_ubo": {
     "message": "uBlock Origin filtreleri"
@@ -490,7 +490,7 @@
     "message": "Diğer rahatsız ediciler"
   },
   "opt_focus_other_desc": {
-    "message": "Yapışkan çubuklar, “Uygulamada aç” banner'ları ve benzeri kalabalık."
+    "message": "Sabit çubuklar, “Uygulamada aç” banner'ları ve benzeri kalabalık."
   },
   "opt_badge_lang": {
     "message": "diliniz"
@@ -502,7 +502,7 @@
     "message": "Pakete dahil değildir (yeniden dağıtım lisansı yok): açtığınızda tarayıcınız onu $1 adresinden indirir."
   },
   "opt_downloaded_from": {
-    "message": "İndirildiği yer: $1"
+    "message": "Açtığınızda $1 adresinden indirilir"
   },
   "opt_lists_error": {
     "message": "Chrome bu liste kombinasyonunu reddetti ($1). Bazılarını kapatın."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Raporu kopyala"
+  },
+  "rep_privacy": {
+    "message": "Bu rapor nasıl işlenir: gizlilik politikası"
   },
   "rep_copied": {
     "message": "Kopyalandı."

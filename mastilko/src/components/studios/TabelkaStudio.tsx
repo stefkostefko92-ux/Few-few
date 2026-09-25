@@ -72,7 +72,7 @@ export default function TabelkaStudio() {
   const titleMm = Math.min(s.title.length > 20 ? 18 : 26, usable / (longestWord * 0.8));
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-3 p-5">
           <span className="field-label">Готови табелки</span>

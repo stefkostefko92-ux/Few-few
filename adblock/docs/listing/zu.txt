@@ -1,10 +1,10 @@
 I-Supreme AdBlock ivimba izikhangiso yonke indawo — izikhangiso zevidiyo ze-YouTube, amabhena, ama-pop-up nabalandeleli — ngaphandle kokubheka lokho okwenzayo.
 
 • Izikhangiso ze-YouTube zimiswa emthonjeni, ngakho amavidiyo avele adlale.
-• I-EasyList, i-EasyPrivacy nezihlungi ze-uBlock Origin kwakhelwe ngaphakathi, kanye nohlu lolimi lwakho (izinhlu zesifunda ezingu-33).
+• I-EasyList, i-EasyPrivacy nezihlungi ze-uBlock Origin kwakhelwe ngaphakathi, kanye nohlu lolimi lwakho (izinhlu zesifunda ezingu-31).
 • Amabhena amakhukhi: icindezela u-“Nqaba” esikhundleni sakho, isuse ukufiphala nokukhiywa kokuskrola okusele, futhi ayilokothi icindezele inkinobho yokungena, ye-OAuth noma yokukhokha.
 • Imodi yokugxila: fihla amabhamuza engxoxo, ama-pop-up ezincwadi zezindaba, izicelo zezaziso, amawijethi ezinkundla zokuxhumana, ama-pop-up e-AI ne-YouTube Shorts.
 • Izindonga ze-anti-adblock nama-pop-under ayakhutshazwa.
 • Isayithi yonakele? Ukuchofoza okukodwa kuyayilungisa, noma usitshele — akukho okuthunyelwayo ungakakuboni kuqala.
 • Izibuyekezo zezihlungi ezisayiniwe kabili ngosuku: amanethiwekhi amasha ezikhangiso asingathwa phakathi namahora, ngaphandle kwekhodi evela kude.
-• Ayikho i-akhawunti, ayikho i-telemetry, akuqoqwa datha. Mahhala, ngomnikelo ozithandela wona.
+• Ayikho i-akhawunti, ayikho i-telemetry, akuqoqwa datha. Mahhala, ngomnikelo ozithandela wona; i-pop-up ibonisa ikhadi elilodwa elincane elinelebula elithi “Isikhangiso” le-Carbon Stealth, umenzi.

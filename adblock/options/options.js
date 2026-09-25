@@ -155,7 +155,7 @@ function listRow(e) {
     title.appendChild(b);
     if (e.on && e.remoteError) meta.push(L("opt_failed_colon", "failed: " + e.remoteError, [e.remoteError]));
     else if (e.on && e.fetched) meta.push(L("opt_rules_count", e.remoteRules + " rules", [e.remoteRules.toLocaleString(UI_LANG)]) + " · " + L("opt_updated_ago", "updated " + ago(e.fetched), [ago(e.fetched)]));
-    else meta.push(L("opt_downloaded_from", "Downloaded from " + host, [host]));
+    else meta.push(L("opt_downloaded_from", "Downloads from " + host + " when you turn it on", [host]));
   } else if (typeof e.network === "number") {
     meta.push(L("opt_rules_count", e.network + " rules", [e.network.toLocaleString(UI_LANG)]));
   }

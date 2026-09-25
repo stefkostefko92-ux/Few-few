@@ -62,7 +62,7 @@
     "message": "Cuddio hysbysebion yma"
   },
   "cosmeticsTitle": {
-    "message": "Hidlo cosmetig ar y wefan hon (diffoddwch os yw’r cynllun yn torri)"
+    "message": "Cuddio hysbysebion ar y wefan hon (diffoddwch os yw cynllun y dudalen yn torri)"
   },
   "on": {
     "message": "Ymlaen"
@@ -502,7 +502,7 @@
     "message": "Heb ei chynnwys (dim trwydded i’w hailddosbarthu): mae eich porwr yn ei llwytho i lawr o $1 pan fyddwch yn ei throi ymlaen."
   },
   "opt_downloaded_from": {
-    "message": "Wedi’i llwytho i lawr o $1"
+    "message": "Caiff ei llwytho i lawr o $1 pan fyddwch yn ei throi ymlaen"
   },
   "opt_lists_error": {
     "message": "Gwrthododd Chrome y cyfuniad hwn o restrau ($1). Diffoddwch rai."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copïo’r adroddiad"
+  },
+  "rep_privacy": {
+    "message": "Sut mae’r adroddiad hwn yn cael ei drin: polisi preifatrwydd"
   },
   "rep_copied": {
     "message": "Copïwyd."

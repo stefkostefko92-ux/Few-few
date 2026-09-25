@@ -41,7 +41,9 @@ const ProjectSchema = z
   .partial();
 
 export default function CalendarStudio() {
-  const [s, setS] = useLocalState<CalState>("mastilko-calendar", INITIAL, (r) => ProjectSchema.parse(r));
+  // Първо посещение → текущият месец (не твърдо зададения януари 2026).
+  const [s, setS] = useLocalState<CalState>("mastilko-calendar", INITIAL, (r) => ProjectSchema.parse(r),
+    () => ({ year: new Date().getFullYear(), month: new Date().getMonth() }));
   const theme = resolveTheme(s);
   // Календарът има ДВА различни случая наведнъж:
   //  • акцентен текст върху листа (заглавието на месеца, съботата и неделята)
@@ -62,7 +64,7 @@ export default function CalendarStudio() {
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
           <div className="grid grid-cols-2 gap-2">

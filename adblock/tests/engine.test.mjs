@@ -188,4 +188,17 @@ const g = globalThis;
   ok("acs: throws for matching inline script, passes for others", threw && win.adConfig && win.adConfig.on === true);
 }
 
+// ---------- uBO data chunk: a SUBDOMAIN exception cancels the parent's directive ----------
+{
+  const chunk = { "mt.de": [["no-setTimeout-if", ".call(null)", "10"]], "job.mt.de": [["#@", "no-setTimeout-if", ".call(null)", "10"]] };
+  const run = (host) => {
+    const { win } = makeWorld(host);
+    Object.defineProperty(globalThis.document, "__tbabScriptletChunk", { value: chunk, configurable: true });
+    loadEngine();
+    return win.setTimeout(function () { (function () {}).call(null); }, 10);
+  };
+  ok("uBO chunk: parent directive applies on mt.de and www.mt.de", run("mt.de") === 0 && run("www.mt.de") === 0);
+  ok("uBO chunk: job.mt.de#@#+js cancels it there (and on its subdomains)", run("job.mt.de") === 42 && run("a.job.mt.de") === 42);
+}
+
 done();
