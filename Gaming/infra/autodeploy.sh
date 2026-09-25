@@ -283,6 +283,9 @@ cat <<TIP
 Полезно:
   • Логове:        docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env logs -f api
   • Статус:        docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env ps
-  • OWNER роля:    регистрирай се на сайта с ${OWNER_EMAIL} → ставаш OWNER автоматично
-                   (BOOTSTRAP_OWNER_EMAIL в .env; иначе ръчно през psql).
+  • OWNER роля:    регистрирай се на сайта с ${OWNER_EMAIL} ВЕДНАГА след деплоя, после
+                   docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env restart api
+                   и влез наново → OWNER (повишаването става при старта на api;
+                   BOOTSTRAP_OWNER_EMAIL в .env). Ако имейлът е „зает“ — някой те е
+                   изпреварил: НЕ рестартирай, изтрий акаунта през psql.
 TIP
