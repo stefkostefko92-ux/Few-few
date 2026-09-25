@@ -8,6 +8,7 @@
   "title": "uBlock Origin filters",
   "license": "GPL-3.0",
   "homepage": "https://github.com/uBlockOrigin/uAssets",
+  "ruleset": true,
   "network": 6901,
   "cosmetic": 10172
  },
@@ -20,6 +21,7 @@
   "title": "Peter Lowe's ad and tracking server list",
   "license": "© Peter Lowe (redistribution permitted)",
   "homepage": "https://pgl.yoyo.org/adservers/",
+  "ruleset": true,
   "network": 4,
   "cosmetic": 0
  },
@@ -32,6 +34,7 @@
   "title": "Social media buttons and widgets",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 592,
   "cosmetic": 17115
  },
@@ -44,6 +47,7 @@
   "title": "Chat and support widgets",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 67,
   "cosmetic": 36
  },
@@ -56,6 +60,7 @@
   "title": "Newsletter and sign-up pop-ups",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 165,
   "cosmetic": 9112
  },
@@ -68,6 +73,7 @@
   "title": "Notification permission prompts",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 290,
   "cosmetic": 1961
  },
@@ -80,6 +86,7 @@
   "title": "AI assistant pop-ups and suggestions",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 10,
   "cosmetic": 297
  },
@@ -92,8 +99,35 @@
   "title": "Other annoyances (sticky bars, app banners)",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 425,
   "cosmetic": 4249
+ },
+ {
+  "id": "focus-shorts",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "YouTube Shorts",
+  "license": "Supreme AdBlock (MIT)",
+  "homepage": "https://adblock.carbonstealth.eu/",
+  "ruleset": false,
+  "network": 0,
+  "cosmetic": 12
+ },
+ {
+  "id": "focus-onetap",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "“Sign in with Google” pop-ups",
+  "license": "Supreme AdBlock (MIT)",
+  "homepage": "https://adblock.carbonstealth.eu/",
+  "ruleset": false,
+  "network": 0,
+  "cosmetic": 3
  },
  {
   "id": "reg-sq",
@@ -106,6 +140,7 @@
   "title": "Albanian",
   "license": "Unlicense",
   "homepage": "https://github.com/AnXh3L0/blocklist",
+  "ruleset": true,
   "network": 28,
   "cosmetic": 253
  },
@@ -120,6 +155,7 @@
   "title": "Liste AR (Arabic)",
   "license": "CC BY-SA 3.0",
   "homepage": "https://forums.lanik.us/viewforum.php?f=98",
+  "ruleset": true,
   "network": 885,
   "cosmetic": 665
  },
@@ -134,6 +170,7 @@
   "title": "AdGuard Chinese",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 6823,
   "cosmetic": 10555
  },
@@ -149,6 +186,7 @@
   "title": "EasyList Czech and Slovak",
   "license": "CC BY-SA 4.0",
   "homepage": "https://github.com/tomasko126/easylistczechandslovak",
+  "ruleset": true,
   "network": 140,
   "cosmetic": 454
  },
@@ -163,6 +201,7 @@
   "title": "EasyList Germany",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 1835,
   "cosmetic": 6002
  },
@@ -177,6 +216,7 @@
   "title": "Estonian",
   "license": "CC0 1.0",
   "homepage": "https://ubo-et.lepik.io/",
+  "ruleset": true,
   "network": 70,
   "cosmetic": 193
  },
@@ -191,6 +231,7 @@
   "title": "Finnish",
   "license": "Unlicense",
   "homepage": "https://github.com/finnish-easylist-addition/finnish-easylist-addition",
+  "ruleset": true,
   "network": 175,
   "cosmetic": 1515
  },
@@ -205,6 +246,7 @@
   "title": "AdGuard French",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 4917,
   "cosmetic": 5169
  },
@@ -219,6 +261,7 @@
   "title": "Greek AdBlock",
   "license": "CC BY-SA 4.0",
   "homepage": "https://github.com/kargig/greek-adblockplus-filter",
+  "ruleset": true,
   "network": 443,
   "cosmetic": 765
  },
@@ -233,6 +276,7 @@
   "title": "hufilter (Hungarian)",
   "license": "CC BY 4.0",
   "homepage": "https://github.com/hufilter/hufilter",
+  "ruleset": true,
   "network": 240,
   "cosmetic": 1778
  },
@@ -248,6 +292,7 @@
   "title": "ABPindo (Indonesian)",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://github.com/ABPindo/indonesianadblockrules",
+  "ruleset": true,
   "network": 3216,
   "cosmetic": 6490
  },
@@ -272,6 +317,7 @@
   "title": "IndianList",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://github.com/mediumkreation/IndianList",
+  "ruleset": true,
   "network": 5281,
   "cosmetic": 11074
  },
@@ -286,6 +332,7 @@
   "title": "PersianBlocker",
   "license": "AGPL-3.0",
   "homepage": "https://codeberg.org/KhodeKiaa/PersianBlocker",
+  "ruleset": true,
   "network": 714,
   "cosmetic": 1098
  },
@@ -300,6 +347,7 @@
   "title": "Icelandic (Brave)",
   "license": "MPL-2.0",
   "homepage": "https://github.com/brave/adblock-lists",
+  "ruleset": true,
   "network": 11,
   "cosmetic": 69
  },
@@ -314,6 +362,7 @@
   "title": "EasyList Hebrew",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://github.com/easylist/EasyListHebrew",
+  "ruleset": true,
   "network": 289,
   "cosmetic": 1307
  },
@@ -328,6 +377,7 @@
   "title": "EasyList Italy",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 1055,
   "cosmetic": 5188
  },
@@ -342,6 +392,7 @@
   "title": "AdGuard Japanese",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 1935,
   "cosmetic": 13794
  },
@@ -356,6 +407,7 @@
   "title": "List-KR (Korean)",
   "license": "GPL-3.0",
   "homepage": "https://github.com/FilteringDev/filterslists-KO",
+  "ruleset": true,
   "network": 974,
   "cosmetic": 2287
  },
@@ -370,6 +422,7 @@
   "title": "EasyList Lithuania",
   "license": "GPL-3.0",
   "homepage": "https://github.com/EasyList-Lithuania/easylist_lithuania",
+  "ruleset": true,
   "network": 521,
   "cosmetic": 664
  },
@@ -384,6 +437,7 @@
   "title": "Latvian List",
   "license": "CC BY-SA 4.0",
   "homepage": "https://github.com/Latvian-List/adblock-latvian",
+  "ruleset": true,
   "network": 156,
   "cosmetic": 234
  },
@@ -398,6 +452,7 @@
   "title": "Macedonian",
   "license": "MIT",
   "homepage": "https://github.com/DeepSpaceHarbor/Macedonian-adBlock-Filters",
+  "ruleset": true,
   "network": 142,
   "cosmetic": 502
  },
@@ -414,6 +469,7 @@
   "title": "AdGuard Dutch",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 528,
   "cosmetic": 2068
  },
@@ -428,6 +484,7 @@
   "title": "ROad-Block (Romanian)",
   "license": "MIT",
   "homepage": "https://github.com/tcptomato/ROad-Block",
+  "ruleset": true,
   "network": 469,
   "cosmetic": 1364
  },
@@ -445,6 +502,7 @@
   "title": "AdGuard Russian",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 5451,
   "cosmetic": 14271
  },
@@ -463,6 +521,7 @@
   "title": "EasyList Spanish + AdGuard Spanish/Portuguese",
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
+  "ruleset": true,
   "network": 1670,
   "cosmetic": 7704
  },
@@ -477,6 +536,7 @@
   "title": "Slovenian List",
   "license": "Unlicense",
   "homepage": "https://github.com/betterwebleon/slovenian-list",
+  "ruleset": true,
   "network": 80,
   "cosmetic": 441
  },
@@ -491,6 +551,7 @@
   "title": "Frellwit's Swedish list",
   "license": "GPL-3.0",
   "homepage": "https://github.com/lassekongo83/Frellwits-filter-lists",
+  "ruleset": true,
   "network": 1421,
   "cosmetic": 3350
  },
@@ -505,6 +566,7 @@
   "title": "EasyList Thailand",
   "license": "Apache-2.0",
   "homepage": "https://github.com/easylist-thailand/easylist-thailand",
+  "ruleset": true,
   "network": 151,
   "cosmetic": 716
  },
@@ -519,6 +581,7 @@
   "title": "AdGuard Turkish",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 1481,
   "cosmetic": 9901
  },
@@ -533,6 +596,7 @@
   "title": "AdGuard Ukrainian",
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
   "network": 2816,
   "cosmetic": 3388
  },
@@ -547,6 +611,7 @@
   "title": "ABPVN (Vietnamese)",
   "license": "GPL-3.0",
   "homepage": "https://github.com/abpvn/abpvn",
+  "ruleset": true,
   "network": 298,
   "cosmetic": 824
  },

@@ -511,5 +511,80 @@
   },
   "opt_badge_recommended": {
     "message": "recommended for your language"
+  },
+  "reportBroken": {
+    "message": "Site broken? Fix it or tell us"
+  },
+  "rep_title": {
+    "message": "Something broken on this site?"
+  },
+  "rep_fix_first": {
+    "message": "Fix it now"
+  },
+  "rep_site": {
+    "message": "Site:"
+  },
+  "rep_fix_desc": {
+    "message": "Most problems go away with one of these. Each one applies to this site only; the tab reloads."
+  },
+  "rep_fix_cosm": {
+    "message": "Turn off element hiding here"
+  },
+  "rep_fix_allow": {
+    "message": "Allow ads on this site"
+  },
+  "rep_fix_pause": {
+    "message": "Pause everywhere for 30 minutes"
+  },
+  "rep_tell_us": {
+    "message": "Tell us"
+  },
+  "rep_tell_desc": {
+    "message": "We fix broken sites for everyone through the signed filter update, usually within a day. Nothing is sent by the extension: the report opens in your own email app, and you see every word of it first."
+  },
+  "rep_what": {
+    "message": "What is wrong? (optional)"
+  },
+  "rep_what_ph": {
+    "message": "e.g. the video does not start, a white box covers the article…"
+  },
+  "rep_full_url": {
+    "message": "Include the full page address (only the site name otherwise)"
+  },
+  "rep_preview": {
+    "message": "What will be sent"
+  },
+  "rep_send_mail": {
+    "message": "Send by email"
+  },
+  "rep_copy": {
+    "message": "Copy report"
+  },
+  "rep_copied": {
+    "message": "Copied."
+  },
+  "rep_done_cosm": {
+    "message": "Element hiding is off on this site. Reloaded — is it fixed?"
+  },
+  "rep_done_allow": {
+    "message": "Ads are allowed on this site. Reloaded — is it fixed?"
+  },
+  "rep_done_pause": {
+    "message": "Paused for 30 minutes. If the site works now, please tell us below."
+  },
+  "cookieRejections": {
+    "message": "Cookie banners rejected for you: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "The Shorts shelves, tab and suggestions on YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "“Sign in with Google” pop-ups"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "The account picker that appears in the corner of many sites. The sign-in buttons keep working."
   }
 }

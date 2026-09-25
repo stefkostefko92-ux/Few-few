@@ -54,6 +54,7 @@ const PAGES = {
       <button class="iubenda-cs-reject-btn" onclick="__clicks.push('pay')">Rifiuta e abbonati</button>
       <button class="iubenda-cs-accept-btn" onclick="__clicks.push('accept')">Accetta</button></div>
   </body></html>`,
+  "/focus": `<!doctype html><html><body><ytd-reel-shelf-renderer id="shorts">shorts shelf</ytd-reel-shelf-renderer><ytd-video-renderer id="video">a normal video</ytd-video-renderer></body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
     <script>window.__clicks=[];</script>
     <div id="onetrust-consent-sdk" style="position:fixed;left:0;right:0;bottom:0;background:#fff"><div id="onetrust-banner-sdk"><p>We use cookies</p>
@@ -191,6 +192,43 @@ try {
   ok("late: wall revealed by a class change → removed", !lt.wall2);
   ok("late: cookie banner revealed by a style change → rejected", lt.clicks === "reject");
   await p6.close();
+
+  // ---- Focus mode (built-in selectors) + the cookie-rejection counter ----
+  {
+    await sw.evaluate(async () => { await chrome.storage.local.set({ lists: { "focus-shorts": true } }); await applyState(); });
+    const f = await ctx.newPage();
+    await f.goto(origin + "/focus");
+    await f.waitForTimeout(1200);
+    const fr = await f.evaluate(() => ({ shorts: getComputedStyle(document.getElementById("shorts")).display, video: getComputedStyle(document.getElementById("video")).display }));
+    ok("Focus mode: YouTube Shorts shelf hidden, a normal video stays", fr.shorts === "none" && fr.video !== "none");
+    await sw.evaluate(async () => { await chrome.storage.local.set({ lists: {}, cookieRejections: 0 }); await applyState(); });
+    await f.goto(origin + "/cookie");
+    await f.waitForTimeout(2500);
+    ok("cookie banner rejected → counter +1 (a number, no site list)", (await sw.evaluate(async () => (await chrome.storage.local.get("cookieRejections")).cookieRejections)) === 1);
+    await f.close();
+  }
+
+  // ---- "Site broken?" report page: fixes first, nothing sent by the extension ----
+  {
+    const site = await ctx.newPage();
+    await site.goto(origin + "/cosmetic?secret=1");
+    const tabId = await sw.evaluate(async () => (await chrome.tabs.query({ url: "http://127.0.0.1/*" }))[0].id);
+    const extId = sw.url().split("/")[2];
+    const rep = await ctx.newPage();
+    await rep.goto(`chrome-extension://${extId}/report/report.html?tab=${tabId}`);
+    await rep.waitForTimeout(1200);
+    const r = await rep.evaluate(() => ({ host: document.getElementById("host").textContent, preview: document.getElementById("preview").textContent, mail: document.getElementById("sendMail").href }));
+    ok("report: shows the site of the tab it was opened for", r.host === "127.0.0.1");
+    ok("report: by default only the site name — never the full address (query strings can be private)", r.preview.includes("Site: 127.0.0.1") && !r.preview.includes("secret=1"));
+    ok("report: sent through the user's own mail app (mailto), not by the extension", r.mail.startsWith("mailto:info@carbonstealth.eu?subject="));
+    await rep.click("#fullUrl");
+    ok("report: the full address only when the user ticks it", (await rep.evaluate(() => document.getElementById("preview").textContent)).includes("secret=1"));
+    await rep.click("#fixCosm");
+    await rep.waitForTimeout(800);
+    ok("report: 'turn off element hiding here' applies to that site", (await sw.evaluate(async () => (await chrome.storage.local.get("noCosmetics")).noCosmetics || [])).includes("127.0.0.1"));
+    await sw.evaluate(async () => chrome.storage.local.set({ noCosmetics: [] }));
+    await rep.close(); await site.close();
+  }
 
   // ---- cookies.js honours the allowlist (it used to ignore it) ----
   await setStore({ allowlist: ["127.0.0.1"] });

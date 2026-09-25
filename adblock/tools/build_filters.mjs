@@ -102,6 +102,8 @@ async function fetchText(url, depth = 0) {
 }
 
 async function listText(entry) {
+  // Built-in Focus items: a few selectors of our own (MIT), no download.
+  if (entry.selectors) return entry.selectors.map((x) => "##" + x).join("\n");
   if (localDir) {
     const p = join(localDir, entry.id + ".txt");
     return existsSync(p) ? readFileSync(p, "utf-8") : null; // тестове: без мрежа
@@ -217,7 +219,9 @@ for (const entry of CATALOG) {
   PATTERN_CAP["list_" + entry.id] = LIST_PATTERN_CAP;
   const { rules, skipped } = convertList(text, "list_" + entry.id, entry.group === "core");
   for (const b of ownBad) BADFILTER.delete(b);
-  writeFileSync(join(OUT, "rules", `list_${entry.id}.json`), JSON.stringify(rules));
+  // A list with no network rules (built-in selectors) gets no ruleset at all.
+  meta.ruleset = rules.length > 0;
+  if (meta.ruleset) writeFileSync(join(OUT, "rules", `list_${entry.id}.json`), JSON.stringify(rules));
   const cos = convertCosmetic(text);
   const spec = {}, unh = {};
   for (const d of [...cos.specific.keys()].sort()) spec[d] = [...cos.specific.get(d)].sort();
@@ -252,7 +256,7 @@ for (const entry of CATALOG) {
   meta.network = rules.length;
   meta.cosmetic = gen.length + Object.values(spec).reduce((n, v) => n + v.length, 0);
   listCatalog.push(meta);
-  manifestRulesets.push({ id: "list_" + entry.id, enabled: false, path: `rules/list_${entry.id}.json` });
+  if (meta.ruleset) manifestRulesets.push({ id: "list_" + entry.id, enabled: false, path: `rules/list_${entry.id}.json` });
   counts["list_" + entry.id] = rules.length;
   console.log(`${entry.id}: ${rules.length} DNR правила, ${meta.cosmetic} козметични (пропуснати ${skipped})`);
 }

@@ -53,6 +53,10 @@ function load() {
       if (!res) return;
       toggle.checked = res.enabled;
       blockedTotal.textContent = res.blockedTotal.toLocaleString(UI_LANG);
+      if (res.cookieRejections > 0) {
+        $("rejText").textContent = t("cookieRejections", [res.cookieRejections.toLocaleString(UI_LANG)]);
+        $("rejLine").hidden = false;
+      }
       savedData.textContent = fmtData(res.saved.mb);
       savedTime.textContent = fmtTime(res.saved.seconds);
       setStatus(res.enabled);
@@ -61,6 +65,7 @@ function load() {
       renderPause(res.pausedUntil || 0);
 
       currentHost = res.host;
+      $("reportBtn").hidden = !currentHost;
       if (currentHost) {
         siteHost.textContent = currentHost;
         allowToggle.checked = !res.allowed;
@@ -185,3 +190,8 @@ $("pickBtn").addEventListener("click", () => {
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
 document.addEventListener("DOMContentLoaded", load);
+
+$("reportBtn").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
+  window.close();
+});

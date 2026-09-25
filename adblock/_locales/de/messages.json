@@ -511,5 +511,80 @@
   },
   "opt_badge_recommended": {
     "message": "empfohlen für Ihre Sprache"
+  },
+  "reportBroken": {
+    "message": "Seite kaputt? Beheben oder melden"
+  },
+  "rep_title": {
+    "message": "Funktioniert etwas auf dieser Seite nicht?"
+  },
+  "rep_fix_first": {
+    "message": "Jetzt beheben"
+  },
+  "rep_site": {
+    "message": "Seite:"
+  },
+  "rep_fix_desc": {
+    "message": "Die meisten Probleme verschwinden mit einer dieser Optionen. Jede gilt nur für diese Seite; der Tab wird neu geladen."
+  },
+  "rep_fix_cosm": {
+    "message": "Element-Ausblendung hier ausschalten"
+  },
+  "rep_fix_allow": {
+    "message": "Werbung auf dieser Seite erlauben"
+  },
+  "rep_fix_pause": {
+    "message": "Überall 30 Minuten pausieren"
+  },
+  "rep_tell_us": {
+    "message": "Melden Sie es uns"
+  },
+  "rep_tell_desc": {
+    "message": "Wir reparieren kaputte Seiten für alle über das signierte Filter-Update, meist innerhalb eines Tages. Die Erweiterung sendet nichts: Der Bericht öffnet sich in Ihrem eigenen E-Mail-Programm, und Sie sehen vorher jedes Wort."
+  },
+  "rep_what": {
+    "message": "Was stimmt nicht? (optional)"
+  },
+  "rep_what_ph": {
+    "message": "z. B. das Video startet nicht, ein weißer Kasten verdeckt den Artikel…"
+  },
+  "rep_full_url": {
+    "message": "Vollständige Seitenadresse mitsenden (sonst nur der Name der Website)"
+  },
+  "rep_preview": {
+    "message": "Was gesendet wird"
+  },
+  "rep_send_mail": {
+    "message": "Per E-Mail senden"
+  },
+  "rep_copy": {
+    "message": "Bericht kopieren"
+  },
+  "rep_copied": {
+    "message": "Kopiert."
+  },
+  "rep_done_cosm": {
+    "message": "Element-Ausblendung ist auf dieser Seite aus. Neu geladen – ist es behoben?"
+  },
+  "rep_done_allow": {
+    "message": "Werbung ist auf dieser Seite erlaubt. Neu geladen – ist es behoben?"
+  },
+  "rep_done_pause": {
+    "message": "30 Minuten pausiert. Wenn die Seite jetzt funktioniert, melden Sie es uns bitte unten."
+  },
+  "cookieRejections": {
+    "message": "Für Sie abgelehnte Cookie-Banner: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Die Shorts-Regale, der Tab und die Vorschläge auf YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "„Mit Google anmelden“-Pop-ups"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Die Kontoauswahl, die in der Ecke vieler Seiten erscheint. Die Anmelde-Buttons funktionieren weiter."
   }
 }

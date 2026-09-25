@@ -110,6 +110,45 @@
       ]
     },
     {
+      "id": "focus-shorts",
+      "group": "focus",
+      "default": "off",
+      "delivery": "bundled",
+      "format": "abp",
+      "title": "YouTube Shorts",
+      "license": "Supreme AdBlock (MIT)",
+      "homepage": "https://adblock.carbonstealth.eu/",
+      "selectors": [
+        "ytd-reel-shelf-renderer",
+        "ytd-rich-shelf-renderer[is-shorts]",
+        "ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])",
+        "ytd-guide-entry-renderer:has(a[title=\"Shorts\"])",
+        "ytd-mini-guide-entry-renderer[aria-label=\"Shorts\"]",
+        "ytd-video-renderer:has(a[href^=\"/shorts/\"])",
+        "ytd-grid-video-renderer:has(a[href^=\"/shorts/\"])",
+        "ytd-rich-item-renderer:has(a[href^=\"/shorts/\"])",
+        "yt-tab-shape[tab-title=\"Shorts\"]",
+        "ytm-reel-shelf-renderer",
+        "ytm-shorts-lockup-view-model",
+        "ytm-pivot-bar-item-renderer:has(.pivot-shorts)"
+      ]
+    },
+    {
+      "id": "focus-onetap",
+      "group": "focus",
+      "default": "off",
+      "delivery": "bundled",
+      "format": "abp",
+      "title": "“Sign in with Google” pop-ups",
+      "license": "Supreme AdBlock (MIT)",
+      "homepage": "https://adblock.carbonstealth.eu/",
+      "selectors": [
+        "#credential_picker_container",
+        "#credential_picker_iframe",
+        "iframe[src^=\"https://accounts.google.com/gsi/iframe\"]"
+      ]
+    },
+    {
       "id": "reg-sq",
       "group": "regional",
       "default": "lang",

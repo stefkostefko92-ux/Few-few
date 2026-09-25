@@ -463,3 +463,20 @@ summary:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 0.001ms !important; }
 }
+
+/* "Site broken?" — a quiet text button under the actions */
+.report-link {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(100% - 24px); margin: 8px 12px 0; padding: 6px;
+  border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer;
+}
+.report-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.report-link:hover, .report-link:focus-visible { color: var(--text); text-decoration: underline; }
+
+/* Cookie banners we said no to */
+.rejections {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: -2px 12px 10px; font-size: 11.5px; color: var(--muted);
+}
+.rejections svg { width: 14px; height: 14px; fill: none; stroke: var(--accent-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rejections b { color: var(--text); }

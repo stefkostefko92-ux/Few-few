@@ -112,6 +112,8 @@ const LIST_TEXT = {
   "focus-newsletters": ["opt_focus_newsletters", "Newsletter and sign-up pop-ups", "opt_focus_newsletters_desc", "“Subscribe to our newsletter” boxes and overlays."],
   "focus-notifications": ["opt_focus_notifications", "Notification prompts", "opt_focus_notifications_desc", "“Allow notifications?” boxes that sites show before the browser asks."],
   "focus-ai": ["opt_focus_ai", "AI assistant pop-ups", "opt_focus_ai_desc", "Chatbot bubbles and AI suggestion panels added to pages."],
+  "focus-shorts": ["opt_focus_shorts", "YouTube Shorts", "opt_focus_shorts_desc", "The Shorts shelves, tab and suggestions on YouTube."],
+  "focus-onetap": ["opt_focus_onetap", "“Sign in with Google” pop-ups", "opt_focus_onetap_desc", "The account picker that appears in the corner of many sites. The sign-in buttons keep working."],
   "focus-other": ["opt_focus_other", "Other annoyances", "opt_focus_other_desc", "Sticky bars, “open in app” banners and similar clutter."],
 };
 let langNames = null;

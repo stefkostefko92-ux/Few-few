@@ -144,6 +144,7 @@ const DEFAULTS = {
   subscriptions: [],   // [{ url, added, fetched, count, error }] — filter lists refreshed daily (text, never code)
   noCosmetics: [],     // hosts where cosmetic (element-hiding) filtering is off; network blocking stays
   lists: {},           // { listId: true|false } — only explicit choices; the rest follow rules/lists.json defaults
+  cookieRejections: 0, // how many times cookies.js pressed a banner's Reject — a count, no sites
 };
 
 // Settings mirrored to chrome.storage.sync when cross-device sync is on.
@@ -337,9 +338,10 @@ async function applyState() {
   if (on && f.privacy !== false) enable.push("privacy");
   // Filter lists (rules/lists.json): each bundled list is its own static ruleset.
   const { catalog, on: listsOn } = await listState();
-  if (on) for (const e of catalog) if (e.delivery === "bundled" && listsOn.has(e.id)) enable.push("list_" + e.id);
+  const withRuleset = (e) => e.delivery === "bundled" && e.ruleset !== false;
+  if (on) for (const e of catalog) if (withRuleset(e) && listsOn.has(e.id)) enable.push("list_" + e.id);
   // every bundled ruleset is in exactly one of the two lists — by construction
-  const all = RULESET_IDS.concat(catalog.filter((e) => e.delivery === "bundled").map((e) => "list_" + e.id));
+  const all = RULESET_IDS.concat(catalog.filter(withRuleset).map((e) => "list_" + e.id));
   const disable = all.filter((id) => !enable.includes(id));
 
   try {
@@ -1010,6 +1012,7 @@ async function listCosmeticFor(host, chain) {
 
 // blocked-request counters
 const tabMatched = new Map();
+let statsChain = Promise.resolve();
 let pendingCount = 0;
 let pendingBytes = 0;
 let flushTimer = null;
@@ -1138,7 +1141,7 @@ function savedStats(bytes, count) {
 // subscriptions, filters, import, logs of other tabs, …) only from our own
 // extension pages (popup / options): Chrome's threat model treats content-script
 // messages as untrusted — a compromised renderer of any site can send them.
-const CONTENT_MESSAGES = new Set(["smartHit", "getCosmetic", "saveCustomSelector", "ytBypass"]);
+const CONTENT_MESSAGES = new Set(["smartHit", "getCosmetic", "saveCustomSelector", "ytBypass", "cookieRejected"]);
 const EXT_ORIGIN = chrome.runtime.getURL("");
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -1266,7 +1269,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1283,6 +1286,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             (rc.ad_rules || 0) + (rc.youtube_rules || 0) + (rc.easylist || 0) +
             (rc.easyprivacy || 0) + (rc.removeparam || 0) + (rc.urlhaus || 0) +
             (rc.cosmeticGeneric || 0) + (rc.cosmeticSpecific || 0) + (rc.privacy || 0);
+          // + the filter lists that are on (their network and cosmetic rules)
+          let fromLists = 0;
+          try {
+            const { catalog, on } = await listState();
+            for (const e of catalog) if (on.has(e.id)) fromLists += (e.network || 0) + (e.cosmetic || 0);
+          } catch {}
           sendResponse({
             enabled: data.enabled !== false,
             blockedTotal,
@@ -1290,7 +1299,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             allowlist: data.allowlist || [],
             features: data.features || DEFAULTS.features,
             theme: data.theme || "carbon",
-            filterCount: bundled + (live?.blockDomains?.length || 0),
+            filterCount: bundled + fromLists + (live?.blockDomains?.length || 0),
+            cookieRejections: data.cookieRejections || 0,
             smartBlocked: data.smartBlocked || 0,
             sync: !!data.sync,
             pausedUntil: data.pausedUntil || 0,
@@ -1469,6 +1479,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (items.length) recordSmart(senderHost || msg.host || "", items);
       return false;
     }
+
+    case "cookieRejected":
+      // One per page at most (cookies.js), serialised with the stats writes.
+      statsChain = statsChain.then(async () => {
+        const { cookieRejections = 0 } = await chrome.storage.local.get("cookieRejections");
+        await chrome.storage.local.set({ cookieRejections: cookieRejections + 1 });
+      }).catch(() => {});
+      return false;
 
     case "getCosmetic":
       cosmeticFor(senderHost || msg.host || "").then((r) => {

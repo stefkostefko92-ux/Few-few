@@ -36,7 +36,7 @@ const manIds = manifest.declarative_net_request.rule_resources.map((r) => r.id);
 // Filter lists: one ruleset per bundled list in rules/lists.json, named list_<id>,
 // enabled at runtime (never in the manifest) — the code derives them from the catalog.
 const catalog = JSON.parse(readFileSync(join(ROOT, "rules", "lists.json"), "utf8"));
-const listIds = catalog.filter((e) => e.delivery === "bundled").map((e) => "list_" + e.id);
+const listIds = catalog.filter((e) => e.delivery === "bundled" && e.ruleset !== false).map((e) => "list_" + e.id);
 ok("rules: RULESET_IDS (code) + list_<id> (catalog) ↔ manifest rule_resources in sync",
   [...codeIds, ...listIds].sort().join() === [...manIds].sort().join());
 ok("rules: list rulesets are off in the manifest (the service worker decides)",
@@ -44,8 +44,8 @@ ok("rules: list rulesets are off in the manifest (the service worker decides)",
 // Default budget: what a new user gets — manifest-enabled + default-on lists + the
 // largest regional list the browser language can switch on. Chrome guarantees 30k.
 const size = (id) => JSON.parse(readFileSync(join(ROOT, "rules", id.replace(/^list_/, "list_") + ".json"), "utf8")).length;
-const defaultOn = catalog.filter((e) => e.delivery === "bundled" && e.default === "on").reduce((n, e) => n + size("list_" + e.id), 0);
-const worstLang = Math.max(0, ...catalog.filter((e) => e.delivery === "bundled" && e.default === "lang").map((e) => size("list_" + e.id)));
+const defaultOn = catalog.filter((e) => e.delivery === "bundled" && e.ruleset !== false && e.default === "on").reduce((n, e) => n + size("list_" + e.id), 0);
+const worstLang = Math.max(0, ...catalog.filter((e) => e.delivery === "bundled" && e.ruleset !== false && e.default === "lang").map((e) => size("list_" + e.id)));
 ok(`rules: default static budget ${enabledTotal} + ${defaultOn} (default lists) + ${worstLang} (largest regional) < 30000`, enabledTotal + defaultOn + worstLang < 30000);
 ok("rules: every bundled list has its cosmetics file", catalog.filter((e) => e.delivery === "bundled").every((e) => { try { readFileSync(join(ROOT, "rules", `cosmetic_${e.id}.json`)); return true; } catch { return false; } }));
 ok("rules: remote lists carry an https URL and are never bundled", catalog.filter((e) => e.delivery === "remote").every((e) => /^https:\/\//.test(e.url) && !manIds.includes("list_" + e.id)));
