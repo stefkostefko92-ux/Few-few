@@ -169,6 +169,15 @@ export const CMD_DESC_L10N = {
     nl: "De actieve serverquests en jouw bijdrage",
     pl: "Aktywne misje serwera i Twój wkład",
   },
+  spawn: {
+    bg: "Пусни спътник в канал сега (Управление на сървъра)",
+    de: "Lass jetzt einen Begleiter in einem Kanal erscheinen (Server verwalten)",
+    "es-ES": "Haz aparecer un compañero en un canal ahora (Gestionar servidor)",
+    fr: "Fais apparaître un compagnon dans un salon maintenant (Gérer le serveur)",
+    it: "Fai apparire ora un compagno in un canale (Gestire il server)",
+    nl: "Laat nu een metgezel verschijnen in een kanaal (Server beheren)",
+    pl: "Przywołaj teraz towarzysza na kanale (Zarządzanie serwerem)",
+  },
   trivia: {
     bg: "Пусни trivia кръг в този канал сега (Управление на сървъра)",
     de: "Starte jetzt eine Trivia-Runde in diesem Kanal (Server verwalten)",

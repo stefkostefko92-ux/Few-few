@@ -351,3 +351,36 @@ describe("изключена игра спира и спътниците (оди
     expect(prismaMock.companionTrade.create).not.toHaveBeenCalled();
   });
 });
+
+describe("ръчна поява /spawn — маршрутът", () => {
+  it("изключена игра → 403 GAME_DISABLED; невалиден companionId → 400; нищо не се създава", async () => {
+    const companionsRouter = (await import("../routes/bot_companions.js")).default;
+    const a = express(); a.use(express.json()); a.use("/api/bot", companionsRouter);
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ enabled: false }));
+    let r = await request(a).post("/api/bot/game/spawn/manual").send({ serverId: SID, channelId: SID });
+    expect(r.status).toBe(403); expect(r.body.code).toBe("GAME_DISABLED");
+    r = await request(a).post("/api/bot/game/spawn/manual").send({ serverId: SID, channelId: SID, companionId: "<script>" });
+    expect(r.status).toBe(400);
+    expect(prismaMock.companionSpawn.create).not.toHaveBeenCalled();
+  });
+  it("включена игра с изключени автоматични появи → ръчната минава (201)", async () => {
+    const companionsRouter = (await import("../routes/bot_companions.js")).default;
+    const a = express(); a.use(express.json()); a.use("/api/bot", companionsRouter);
+    prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ enabled: true, spawnEnabled: false }));
+    prismaMock.companionSpawn.findFirst.mockResolvedValue(null);
+    prismaMock.companionSpawn.create.mockImplementation(async ({ data }) => ({ id: "sp9", ...data }));
+    const r = await request(a).post("/api/bot/game/spawn/manual").send({ serverId: SID, channelId: SID, companionId: "lime-blip" });
+    expect(r.status).toBe(201);
+    expect(r.body.spawn.companionId).toBe("lime-blip");
+    const auto = await request(a).post("/api/bot/game/spawn").send({ serverId: SID, channelId: SID });
+    expect(auto.status).toBe(403); expect(auto.body.error).toBe("SPAWN_DISABLED");
+  });
+  it("списъкът за autocomplete: Free → само common/uncommon", async () => {
+    const companionsRouter = (await import("../routes/bot_companions.js")).default;
+    const a = express(); a.use(express.json()); a.use("/api/bot", companionsRouter);
+    const r = await request(a).get(`/api/bot/game/companions/spawnable/${SID}`);
+    expect(r.status).toBe(200);
+    expect(r.body.companions.length).toBeGreaterThan(0);
+    expect(r.body.companions.every((c) => ["common", "uncommon"].includes(c.rarity))).toBe(true);
+  });
+});

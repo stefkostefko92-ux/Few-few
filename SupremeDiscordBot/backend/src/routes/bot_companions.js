@@ -5,7 +5,8 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { getGameSettings } from "../lib/game/xp.js";
-import { COMPANIONS, publicCompanion, companionById } from "../lib/game/companions.js";
+import { COMPANIONS, publicCompanion, companionById, spawnableCompanions } from "../lib/game/companions.js";
+import { getServerTier } from "../lib/premium.js";
 import {
   createSpawn, catchSpawn, listOwned, feedCompanion, activateCompanion, releaseCompanion, proposeTrade, resolveTrade,
 } from "../lib/game/companionOps.js";
@@ -32,7 +33,7 @@ async function gameOff(res, serverId) {
   return true;
 }
 const fail = (res, out) => {
-  const status = { SPAWN_ACTIVE: 409, SPAWN_TOO_SOON: 429, SPAWN_NOT_FOUND: 404, ALREADY_CAUGHT: 409, SPAWN_EXPIRED: 410, COLLECTION_FULL: 403,
+  const status = { UNKNOWN_COMPANION: 404, COMPANION_NOT_ALLOWED: 403, SPAWN_ACTIVE: 409, SPAWN_TOO_SOON: 429, SPAWN_NOT_FOUND: 404, ALREADY_CAUGHT: 409, SPAWN_EXPIRED: 410, COLLECTION_FULL: 403,
     NOT_OWNED: 404, MAX_STAGE: 409, NOT_ENOUGH_SPARKS: 402, INVALID_AMOUNT: 400, SELF_TRADE: 400, TRADE_PENDING: 409, TRADE_NOT_FOUND: 404,
     TRADE_CLOSED: 409, TRADE_EXPIRED: 410, NOT_RECIPIENT: 403, TRADE_STALE: 409 }[out.code] || 400;
   return res.status(status).json({ error: out.code, ...out });
@@ -57,6 +58,32 @@ router.post("/game/spawn", async (req, res, next) => {
     const out = await createSpawn(serverId, channelId);
     if (!out.ok) return fail(res, out);
     res.status(201).json(out);
+  } catch (err) { next(err); }
+});
+
+// Ръчна поява (`/spawn`, Manage Server — правото се проверява в бота, тук идва
+// само с x-bot-secret). Иска включена игра, но НЕ и автоматичните появи или
+// списъка с канали: админът избира канала съзнателно.
+const COMPANION_ID = /^[a-z0-9-]{1,64}$/;
+router.post("/game/spawn/manual", async (req, res, next) => {
+  const { serverId, channelId, companionId } = req.body || {};
+  if (!SNOWFLAKE.test(String(serverId)) || !SNOWFLAKE.test(String(channelId))) return bad(res, "serverId and channelId required");
+  if (companionId != null && !COMPANION_ID.test(String(companionId))) return bad(res, "invalid companionId");
+  try {
+    if (await gameOff(res, serverId)) return;
+    const out = await createSpawn(serverId, channelId, { manual: true, companionId: companionId ? String(companionId) : null });
+    if (!out.ok) return fail(res, out);
+    res.status(201).json(out);
+  } catch (err) { next(err); }
+});
+
+// Кои спътници може да пусне този сървър на ръка (autocomplete на `/spawn`).
+router.get("/game/companions/spawnable/:serverId", async (req, res, next) => {
+  if (!SNOWFLAKE.test(String(req.params.serverId))) return bad(res, "serverId required");
+  try {
+    const [tier, season] = await Promise.all([getServerTier(req.params.serverId), getCurrentSeason()]);
+    const list = spawnableCompanions({ isPremium: !!tier.isPremium, season });
+    res.json({ companions: list.map((c) => publicCompanion(c, 1, season)) });
   } catch (err) { next(err); }
 });
 

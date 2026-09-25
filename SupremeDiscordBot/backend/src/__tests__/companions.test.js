@@ -86,6 +86,53 @@ describe("поява", () => {
   });
 });
 
+describe("ръчна поява (/spawn)", () => {
+  const now = new Date("2026-09-18T12:00:00Z");
+  const SID = "222222222222222222";
+  it("прескача паузата, но НЕ и живата поява", async () => {
+    prismaMock.companionSpawn.findFirst.mockResolvedValueOnce({ caughtById: null, expiresAt: new Date(now.getTime() + 60_000), createdAt: now });
+    expect((await ops.createSpawn(SID, "1", { now, manual: true })).code).toBe("SPAWN_ACTIVE");
+    // Уловена преди минута: автоматичната чака интервала, ръчната — не.
+    const recent = { caughtById: "9", expiresAt: now, createdAt: new Date(now.getTime() - 60_000) };
+    prismaMock.companionSpawn.findFirst.mockResolvedValueOnce(recent);
+    expect((await ops.createSpawn(SID, "1", { now })).code).toBe("SPAWN_TOO_SOON");
+    prismaMock.companionSpawn.findFirst.mockResolvedValueOnce(recent);
+    prismaMock.companionSpawn.create.mockImplementationOnce(async ({ data }) => ({ id: "sp2", ...data }));
+    const out = await ops.createSpawn(SID, "1", { now, manual: true });
+    expect(out.ok).toBe(true);
+    expect(out.spawn.expiresAt.getTime() - now.getTime()).toBe(cat.SPAWN_TTL_MS);
+  });
+  it("избран спътник: точно той; Free не може rare+; непознат → UNKNOWN_COMPANION", async () => {
+    prismaMock.companionSpawn.findFirst.mockResolvedValue(null);
+    prismaMock.companionSpawn.create.mockImplementation(async ({ data }) => ({ id: "sp3", ...data }));
+    const common = cat.COMPANIONS.find((c) => c.rarity === "common");
+    const rare = cat.COMPANIONS.find((c) => c.rarity === "rare");
+    const ok = await ops.createSpawn(SID, "1", { now, manual: true, companionId: common.id });
+    expect(ok.ok).toBe(true);
+    expect(ok.spawn.companionId).toBe(common.id);
+    expect((await ops.createSpawn(SID, "1", { now, manual: true, companionId: rare.id })).code).toBe("COMPANION_NOT_ALLOWED");
+    expect((await ops.createSpawn(SID, "1", { now, manual: true, companionId: "no-such-thing" })).code).toBe("UNKNOWN_COMPANION");
+    premium.getServerTier.mockResolvedValueOnce({ plan: "premium", isPremium: true, limits: {} });
+    const prem = await ops.createSpawn(SID, "1", { now, manual: true, companionId: rare.id });
+    expect(prem.ok).toBe(true);
+    expect(prem.spawn.companionId).toBe(rare.id);
+    prismaMock.companionSpawn.findFirst.mockReset();
+    prismaMock.companionSpawn.create.mockReset();
+  });
+  it("списъкът за ръчна поява следва плана и сезона", () => {
+    const S = cat.DEFAULT_SEASON;
+    const inSeason = new Date("2026-10-01T00:00:00Z");
+    const outOfSeason = new Date("2027-06-01T00:00:00Z");
+    const free = cat.spawnableCompanions({ isPremium: false, now: inSeason, season: S });
+    expect(free.length).toBe(40);
+    expect(free.every((c) => ["common", "uncommon"].includes(c.rarity))).toBe(true);
+    expect(cat.spawnableCompanions({ isPremium: true, now: inSeason, season: S })).toHaveLength(60);
+    const off = cat.spawnableCompanions({ isPremium: true, now: outOfSeason, season: S });
+    expect(off).toHaveLength(56);
+    expect(off.some((c) => cat.isSeasonal(c.id, S))).toBe(false);
+  });
+});
+
 describe("улавяне — първият печели", () => {
   const spawn = { id: "sp1", serverId: "222222222222222222", companionId: "lime-blip", caughtById: null, expiresAt: new Date(Date.now() + 60_000) };
   it("условният update върна 0 реда → ALREADY_CAUGHT, нищо не се създава", async () => {

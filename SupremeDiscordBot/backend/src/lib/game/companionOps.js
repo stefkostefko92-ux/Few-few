@@ -6,7 +6,7 @@
 import { prisma } from "../prisma.js";
 import { getServerTier } from "../premium.js";
 import {
-  companionById, pickSpawn, publicCompanion, isSeasonal, stageForFed, STAGE_THRESHOLDS, MAX_STAGE, SPAWN_TTL_MS, SPAWN_MIN_INTERVAL_MS,
+  companionById, pickSpawn, spawnableCompanions, publicCompanion, isSeasonal, stageForFed, STAGE_THRESHOLDS, MAX_STAGE, SPAWN_TTL_MS, SPAWN_MIN_INTERVAL_MS,
 } from "./companions.js";
 import { getCurrentSeason } from "./seasons.js";
 import { ensureProgress } from "./xp.js";
@@ -18,17 +18,28 @@ async function pub(c, stage) {
   return publicCompanion(c, stage, await getCurrentSeason());
 }
 
-/** Създава поява за канал, ако няма жива и е минал минималният интервал. */
-export async function createSpawn(serverId, channelId, { now = new Date(), rand } = {}) {
+/**
+ * Създава поява за канал, ако няма жива и е минал минималният интервал.
+ * `manual` (админ през `/spawn`): прескача интервала, но НЕ и живата поява —
+ * една поява на сървър остава правилото, иначе ръчните появи стават спам.
+ * `companionId` (по избор): точно този спътник, ако планът и сезонът го позволяват.
+ */
+export async function createSpawn(serverId, channelId, { now = new Date(), rand, manual = false, companionId = null } = {}) {
   const tier = await getServerTier(serverId);
   const last = await prisma.companionSpawn.findFirst({ where: { serverId }, orderBy: { createdAt: "desc" } });
   if (last) {
     const alive = !last.caughtById && new Date(last.expiresAt) > now;
     if (alive) return { ok: false, code: "SPAWN_ACTIVE" };
-    if (now.getTime() - new Date(last.createdAt).getTime() < SPAWN_MIN_INTERVAL_MS) return { ok: false, code: "SPAWN_TOO_SOON" };
+    if (!manual && now.getTime() - new Date(last.createdAt).getTime() < SPAWN_MIN_INTERVAL_MS) return { ok: false, code: "SPAWN_TOO_SOON" };
   }
   const season = await getCurrentSeason({ now });
-  const c = pickSpawn({ isPremium: !!tier.isPremium, now, rand, season });
+  let c;
+  if (companionId) {
+    c = spawnableCompanions({ isPremium: !!tier.isPremium, now, season }).find((x) => x.id === companionId);
+    if (!c) return { ok: false, code: companionById(companionId) ? "COMPANION_NOT_ALLOWED" : "UNKNOWN_COMPANION" };
+  } else {
+    c = pickSpawn({ isPremium: !!tier.isPremium, now, rand, season });
+  }
   const spawn = await prisma.companionSpawn.create({
     data: { serverId, channelId, companionId: c.id, expiresAt: new Date(now.getTime() + SPAWN_TTL_MS) },
   });

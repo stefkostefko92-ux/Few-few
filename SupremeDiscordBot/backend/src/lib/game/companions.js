@@ -150,6 +150,16 @@ export function isSeasonal(companionId, season = null) {
 }
 
 /**
+ * Спътниците, които админ може да пусне на ръка (`/spawn`): същите правила като
+ * жребия — Free само common/uncommon, сезонните само докато сезонът е активен.
+ * Ръчната поява не бива да е задна врата към редкости, които планът не дава.
+ */
+export function spawnableCompanions({ isPremium = false, now = new Date(), season = null } = {}) {
+  const active = seasonActive(now, season);
+  return COMPANIONS.filter((c) => (isPremium || FREE_RARITIES.includes(c.rarity)) && (active || !isSeasonal(c.id, season)));
+}
+
+/**
  * Избира спътник за поява: първо редкост по тегло (Free: само common/uncommon),
  * после равномерно между спътниците с тази редкост. Сезонните (по `season`) се
  * появяват само докато сезонът е активен; без подаден сезон — никога (fail-closed).

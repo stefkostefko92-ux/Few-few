@@ -311,7 +311,7 @@ docker compose exec bot     npm test
 | `/premium status/custombot/export` | Premium commands |
 | `/daily`, `/profile`, `/leaderboard`, `/shop` | Server Season: daily sparks, level card, top 10, server shop |
 | `/companion list/info/feed/activate/release/trade` | Server Season: companion collection |
-| `/quest`, `/trivia`, `/wyr`, `/tod` | Server Season: server quests, trivia round (Manage Server), party commands (Premium) |
+| `/quest`, `/trivia`, `/spawn`, `/wyr`, `/tod` | Server Season: server quests, trivia round and manual companion spawn (Manage Server), party commands (Premium) |
 
 ---
 
