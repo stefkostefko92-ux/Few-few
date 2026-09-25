@@ -116,6 +116,17 @@ describe("улавяне — първият печели", () => {
   });
 });
 
+describe("улавяне — лимитът и вътре в транзакцията (червен екип 25.09.2026)", () => {
+  it("друго улавяне е напълнило колекцията между проверките → COLLECTION_FULL, появата НЕ се маркира", async () => {
+    prismaMock.companionSpawn.findUnique.mockResolvedValueOnce({ id: "sp2", serverId: "222222222222222222", companionId: "lime-blip", caughtById: null, expiresAt: new Date(Date.now() + 60000) });
+    prismaMock.memberCompanion.count.mockResolvedValueOnce(0).mockResolvedValueOnce(1); // отвън 0, в транзакцията 1
+    const out = await ops.catchSpawn("sp2", "333333333333333333");
+    expect(out.code).toBe("COLLECTION_FULL");
+    expect(prismaMock.companionSpawn.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.memberProgress.update.mock.calls[0][0].where).toEqual({ serverId_userId: { serverId: "222222222222222222", userId: "333333333333333333" } }); // заключването на реда
+  });
+});
+
 describe("хранене", () => {
   it("недостатъчно искри → NOT_ENOUGH_SPARKS без промяна; иначе fed расте и формата се качва на прага", async () => {
     prismaMock.memberCompanion.findFirst.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 1, fed: 80 });

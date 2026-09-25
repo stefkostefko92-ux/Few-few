@@ -108,7 +108,7 @@ async function answerTrivia(interaction, roundId, option) {
     ({ data: out } = await api.post(`/bot/game/trivia/${roundId}/answer`, { userId: interaction.user.id, option, serverId: interaction.guildId }));
   } catch (err) {
     const d = err?.response?.data || {};
-    const map = { ALREADY_ANSWERED: "game.trivia.already", ROUND_CLOSED: "game.trivia.closed", ROUND_NOT_FOUND: "game.trivia.closed" };
+    const map = { ALREADY_ANSWERED: "game.trivia.already", ROUND_CLOSED: "game.trivia.closed", ROUND_NOT_FOUND: "game.trivia.closed", GAME_DISABLED: "game.disabled" };
     const key = map[d.error];
     return interaction.reply({ content: key ? t(key, lang) : friendlyError(err, interaction).content, flags: MessageFlags.Ephemeral });
   }

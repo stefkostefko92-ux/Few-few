@@ -84,6 +84,18 @@ export function computeDaily(prev, baseSparks, now = new Date()) {
 }
 
 // ─── Записи в базата ─────────────────────────────────────────────────────────
+/**
+ * Гарантира реда с напредъка и го връща. INSERT … ON CONFLICT DO NOTHING
+ * (createMany + skipDuplicates), не `upsert`: Prisma пуска upsert като
+ * SELECT + INSERT и две едновременни първи събития за нов играч даваха P2002
+ * (червен екип 25.09.2026) — а в транзакция това проваля цялата транзакция.
+ * @param {object} db  prisma или tx
+ */
+export async function ensureProgress(db, serverId, userId) {
+  await db.memberProgress.createMany({ data: [{ serverId, userId }], skipDuplicates: true });
+  return db.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } } });
+}
+
 /** Настройките на играта за сървър — създава реда с подразбиранията, ако липсва. */
 export async function getGameSettings(serverId) {
   const existing = await prisma.gameSettings.findUnique({ where: { serverId } });
@@ -92,7 +104,8 @@ export async function getGameSettings(serverId) {
   // сезон, в който не е играл, и нулиране на XP-то от новия — одит на Кодаджията 25.09.2026).
   const { latestEndedSeason } = await import("./seasons.js");
   const ended = await latestEndedSeason().catch(() => null);
-  return prisma.gameSettings.upsert({ where: { serverId }, update: {}, create: { serverId, lastSeasonId: ended?.code ?? null } });
+  await prisma.gameSettings.createMany({ data: [{ serverId, lastSeasonId: ended?.code ?? null }], skipDuplicates: true });
+  return prisma.gameSettings.findUnique({ where: { serverId } });
 }
 
 /**
@@ -110,7 +123,7 @@ export async function getGameSettings(serverId) {
 export async function awardXp(serverId, userId, amount, { messages = 0, voiceMinutes = 0, touchMessageXp = false } = {}) {
   const inc = Math.max(0, Math.floor(amount));
   const key = { serverId_userId: { serverId, userId } };
-  await prisma.memberProgress.upsert({ where: key, update: {}, create: { serverId, userId } });
+  await ensureProgress(prisma, serverId, userId);
   let cur = await prisma.memberProgress.update({
     where: key,
     data: {

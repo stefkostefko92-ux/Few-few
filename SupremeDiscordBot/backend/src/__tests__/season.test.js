@@ -29,10 +29,10 @@ describe("сезоните в базата", () => {
   });
   it("празна таблица → записва S1 по подразбиране (upsert по code) и го връща; после кешира", async () => {
     prismaMock.gameSeason.findMany.mockResolvedValueOnce([]);
-    prismaMock.gameSeason.upsert.mockImplementationOnce(async ({ create }) => ({ id: "seed", ...create }));
+    prismaMock.gameSeason.findUnique.mockImplementationOnce(async () => ({ id: "seed", ...prismaMock.gameSeason.createMany.mock.calls[0][0].data[0] }));
     const cur = await seasons.getCurrentSeason({ now: new Date("2026-10-01T00:00:00Z") });
     expect(cur.code).toBe(DEFAULT_SEASON.code);
-    expect(prismaMock.gameSeason.upsert.mock.calls[0][0].where).toEqual({ code: "S1" });
+    expect(prismaMock.gameSeason.createMany.mock.calls[0][0]).toMatchObject({ data: [{ code: "S1" }], skipDuplicates: true });
     expect(cur.companionIds).toEqual([...DEFAULT_SEASON.companionIds]);
     await seasons.getCurrentSeason();
     expect(prismaMock.gameSeason.findMany).toHaveBeenCalledTimes(1); // кеш
@@ -146,8 +146,8 @@ describe("затварянето е монотонно; приключил се�
     const { getGameSettings } = await import("../lib/game/xp.js");
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(null);
     prismaMock.gameSeason.findMany.mockResolvedValueOnce([{ ...S0 }]);
-    prismaMock.gameSettings.upsert.mockImplementationOnce(async ({ create }) => create);
-    const row = await getGameSettings(SID);
-    expect(row.lastSeasonId).toBe("S0");
+    prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ serverId: SID, lastSeasonId: "S0" });
+    await getGameSettings(SID);
+    expect(prismaMock.gameSettings.createMany).toHaveBeenCalledWith({ data: [{ serverId: SID, lastSeasonId: "S0" }], skipDuplicates: true });
   });
 });

@@ -9,6 +9,7 @@ import {
   companionById, pickSpawn, publicCompanion, isSeasonal, stageForFed, STAGE_THRESHOLDS, MAX_STAGE, SPAWN_TTL_MS, SPAWN_MIN_INTERVAL_MS,
 } from "./companions.js";
 import { getCurrentSeason } from "./seasons.js";
+import { ensureProgress } from "./xp.js";
 
 export const TRADE_TTL_MS = 10 * 60 * 1000;
 
@@ -49,6 +50,13 @@ export async function catchSpawn(spawnId, userId, { now = new Date() } = {}) {
   if (owned >= tier.limits.companionSlots) return { ok: false, code: "COLLECTION_FULL", limit: tier.limits.companionSlots };
   const season = await getCurrentSeason({ now });
   return prisma.$transaction(async (tx) => {
+    // Лимитът на колекцията — и ВЪТРЕ в транзакцията, след заключване на реда
+    // на играча: две едновременни улавяния на различни появи минаваха и двете
+    // горната проверка и надхвърляха Free лимита (червен екип 25.09.2026).
+    await ensureProgress(tx, spawn.serverId, userId);
+    await tx.memberProgress.update({ where: { serverId_userId: { serverId: spawn.serverId, userId } }, data: { updatedAt: now } }); // заключва реда
+    const ownedNow = await tx.memberCompanion.count({ where: { serverId: spawn.serverId, userId } });
+    if (ownedNow >= tier.limits.companionSlots) return { ok: false, code: "COLLECTION_FULL", limit: tier.limits.companionSlots };
     const r = await tx.companionSpawn.updateMany({
       where: { id: spawnId, caughtById: null, expiresAt: { gt: now } },
       data: { caughtById: userId, caughtAt: now },
@@ -58,12 +66,7 @@ export async function catchSpawn(spawnId, userId, { now = new Date() } = {}) {
     const owned = await tx.memberCompanion.create({
       data: { serverId: spawn.serverId, userId, companionId: spawn.companionId, seasonId: isSeasonal(spawn.companionId, season) ? season.code : null },
     });
-    // Първият уловен става активен автоматично.
-    await tx.memberProgress.upsert({
-      where: { serverId_userId: { serverId: spawn.serverId, userId } },
-      update: {},
-      create: { serverId: spawn.serverId, userId, activeCompanionId: owned.id },
-    });
+    // Първият уловен става активен автоматично (редът вече е гарантиран горе).
     await tx.memberProgress.updateMany({ where: { serverId: spawn.serverId, userId, activeCompanionId: null }, data: { activeCompanionId: owned.id } });
     return { ok: true, owned, companion: publicCompanion(c, 1, season) };
   });
@@ -114,11 +117,8 @@ export async function feedCompanion(serverId, userId, ownedId, sparks) {
 export async function activateCompanion(serverId, userId, ownedId) {
   const owned = await prisma.memberCompanion.findFirst({ where: { id: ownedId, serverId, userId } });
   if (!owned) return { ok: false, code: "NOT_OWNED" };
-  await prisma.memberProgress.upsert({
-    where: { serverId_userId: { serverId, userId } },
-    update: { activeCompanionId: owned.id },
-    create: { serverId, userId, activeCompanionId: owned.id },
-  });
+  await ensureProgress(prisma, serverId, userId);
+  await prisma.memberProgress.update({ where: { serverId_userId: { serverId, userId } }, data: { activeCompanionId: owned.id } });
   return { ok: true, owned, companion: await pub(companionById(owned.companionId), owned.stage) };
 }
 

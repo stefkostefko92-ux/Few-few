@@ -9,7 +9,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";
 import {
-  getGameSettings, awardXp, computeDaily, levelProgress, rolesForLevel, DAILY_XP,
+  getGameSettings, awardXp, computeDaily, levelProgress, rolesForLevel, DAILY_XP, ensureProgress,
 } from "../lib/game/xp.js";
 import { contribute } from "../lib/game/questOps.js";
 import { companionById, publicCompanion } from "../lib/game/companions.js";
@@ -84,9 +84,7 @@ router.post("/game/daily", async (req, res, next) => {
     const settings = await getGameSettings(serverId);
     if (!settings.enabled) return res.status(403).json({ error: "Game disabled", code: "GAME_DISABLED" });
     const result = await prisma.$transaction(async (tx) => {
-      const row = await tx.memberProgress.upsert({
-        where: { serverId_userId: { serverId, userId } }, update: {}, create: { serverId, userId },
-      });
+      const row = await ensureProgress(tx, serverId, userId);
       const d = computeDaily(row, settings.dailySparks);
       if (!d.ok) return { ...d, sparksTotal: row.sparks, streak: row.streak };
       // Условно по видяното lastDailyAt: двоен клик / два процеса не взимат наградата
@@ -189,9 +187,7 @@ router.post("/game/shop/:serverId/buy", async (req, res, next) => {
         const sold = await tx.shopPurchase.count({ where: { itemId: item.id } });
         if (sold >= item.stock) return { error: "Sold out", code: "SOLD_OUT", status: 409 };
       }
-      const row = await tx.memberProgress.upsert({
-        where: { serverId_userId: { serverId, userId } }, update: {}, create: { serverId, userId },
-      });
+      const row = await ensureProgress(tx, serverId, userId);
       if (row.sparks < item.priceSparks) {
         return { error: "Not enough sparks", code: "NOT_ENOUGH_SPARKS", status: 402, sparks: row.sparks, price: item.priceSparks };
       }

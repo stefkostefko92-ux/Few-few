@@ -11,7 +11,7 @@
 // или от scheduler-а при изтичане.
 import { prisma } from "../prisma.js";
 import { getServerTier } from "../premium.js";
-import { getGameSettings, grantXpOnce, XP_REWARDS } from "./xp.js";
+import { getGameSettings, grantXpOnce, XP_REWARDS, ensureProgress } from "./xp.js";
 import { TRIVIA_BANK } from "../../data/triviaBank.js";
 
 export const TRIVIA_TTL_MS = 10 * 60 * 1000;
@@ -96,6 +96,10 @@ export async function createRound(serverId, channelId, { source = "BANK", now = 
 export async function answerRound(roundId, userId, option, now = new Date()) {
   const round = await prisma.triviaRound.findUnique({ where: { id: roundId } });
   if (!round) return { ok: false, code: "ROUND_NOT_FOUND" };
+  // Изключена игра не плаща (червен екип 25.09.2026: отворен рунд продължаваше
+  // да раздава искри и XP след изключването).
+  const settings = await getGameSettings(round.serverId);
+  if (!settings?.enabled) return { ok: false, code: "GAME_DISABLED" };
   if (round.closedAt || round.expiresAt <= now) return { ok: false, code: "ROUND_CLOSED", answer: round.answer };
   const opt = Number(option);
   if (!Number.isInteger(opt) || opt < 0 || opt >= round.options.length) return { ok: false, code: "INVALID_OPTION" };
@@ -109,11 +113,8 @@ export async function answerRound(roundId, userId, option, now = new Date()) {
   if (!correct) return { ok: true, correct: false, winner: false, answer: round.answer };
   const won = await prisma.triviaRound.updateMany({ where: { id: roundId, winnerId: null, closedAt: null }, data: { winnerId: userId, closedAt: now } });
   if (won.count !== 1) return { ok: true, correct: true, winner: false, answer: round.answer };
-  await prisma.memberProgress.upsert({
-    where: { serverId_userId: { serverId: round.serverId, userId } },
-    update: { sparks: { increment: TRIVIA_SPARKS } },
-    create: { serverId: round.serverId, userId, sparks: TRIVIA_SPARKS },
-  });
+  await ensureProgress(prisma, round.serverId, userId);
+  await prisma.memberProgress.update({ where: { serverId_userId: { serverId: round.serverId, userId } }, data: { sparks: { increment: TRIVIA_SPARKS } } });
   await grantXpOnce(round.serverId, userId, `trivia:${roundId}`, XP_REWARDS.TRIVIA_WIN).catch(() => null);
   return { ok: true, correct: true, winner: true, answer: round.answer, sparks: TRIVIA_SPARKS, xp: XP_REWARDS.TRIVIA_WIN };
 }

@@ -7,7 +7,7 @@
 import { prisma } from "../prisma.js";
 import { getServerTier } from "../premium.js";
 import { createWithinLimit } from "../withinLimit.js";
-import { getGameSettings } from "./xp.js";
+import { getGameSettings, ensureProgress } from "./xp.js";
 import { pickSpawn, publicCompanion } from "./companions.js";
 import { getCurrentSeason } from "./seasons.js";
 import { QUEST_TYPES, QUEST_DURATION_MS, questTypeForWeek, targetFor, splitRewards, publicQuest } from "./quests.js";
@@ -112,11 +112,8 @@ export async function rewardQuest(quest) {
   const contributions = (await prisma.questContribution.findMany({ where: { questId: quest.id }, orderBy: { amount: "desc" } })) || [];
   const { rewards, topUserId } = splitRewards(contributions, quest.rewardSparks);
   for (const r of rewards) {
-    await prisma.memberProgress.upsert({
-      where: { serverId_userId: { serverId: quest.serverId, userId: r.userId } },
-      update: { sparks: { increment: r.sparks } },
-      create: { serverId: quest.serverId, userId: r.userId, sparks: r.sparks },
-    });
+    await ensureProgress(prisma, quest.serverId, r.userId);
+    await prisma.memberProgress.update({ where: { serverId_userId: { serverId: quest.serverId, userId: r.userId } }, data: { sparks: { increment: r.sparks } } });
   }
   let chest = null;
   if (topUserId) {

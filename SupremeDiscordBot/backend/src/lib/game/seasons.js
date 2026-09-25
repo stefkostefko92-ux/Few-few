@@ -46,11 +46,13 @@ export async function getCurrentSeason({ now = new Date(), fresh = false } = {})
   if (!rows.length) {
     let seeded = null;
     try {
-      seeded = await prisma.gameSeason.upsert({
-        where: { code: DEFAULT_SEASON.code },
-        update: {},
-        create: { code: DEFAULT_SEASON.code, name: DEFAULT_SEASON.name, startsAt: new Date(DEFAULT_SEASON.startsAt), endsAt: new Date(DEFAULT_SEASON.endsAt), companionIds: [...DEFAULT_SEASON.companionIds] },
+      // ON CONFLICT DO NOTHING, не upsert: едновременните първи четения давали
+      // P2002 в лога (проверено срещу Postgres 16, 25.09.2026).
+      await prisma.gameSeason.createMany({
+        data: [{ code: DEFAULT_SEASON.code, name: DEFAULT_SEASON.name, startsAt: new Date(DEFAULT_SEASON.startsAt), endsAt: new Date(DEFAULT_SEASON.endsAt), companionIds: [...DEFAULT_SEASON.companionIds] }],
+        skipDuplicates: true,
       });
+      seeded = await prisma.gameSeason.findUnique({ where: { code: DEFAULT_SEASON.code } });
     } catch { /* надпревара при първо четене или недостъпна база → seed-ът в паметта */ }
     rows = [seeded || { ...DEFAULT_SEASON, startsAt: new Date(DEFAULT_SEASON.startsAt), endsAt: new Date(DEFAULT_SEASON.endsAt), companionIds: [...DEFAULT_SEASON.companionIds] }];
   }

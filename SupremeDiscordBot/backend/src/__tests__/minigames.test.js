@@ -99,7 +99,7 @@ describe("принос и завършване", () => {
     expect(c.rewards.map((r) => r.sparks)).toEqual([200, 100]);
     expect(c.chest).toMatchObject({ userId: UID2, sparks: 200 });
     expect(["common", "uncommon"]).toContain(c.chest.companion.rarity); // Free: без rare+
-    expect(prismaMock.memberProgress.upsert).toHaveBeenCalledTimes(2);
+    expect(prismaMock.memberProgress.createMany).toHaveBeenCalledTimes(2); // ensureProgress, без надпревара (P2002)
     expect(prismaMock.memberCompanion.create).toHaveBeenCalledTimes(1);
     expect(notifyBot).toHaveBeenCalledWith("GAME_QUEST", expect.objectContaining({ event: "COMPLETED" }));
   });
@@ -110,7 +110,7 @@ describe("принос и завършване", () => {
     const out = await ops.contribute(SID, "MESSAGES", [{ userId: UID, amount: 4 }]);
     expect(out.completed).toEqual([]);
     expect(prismaMock.questContribution.findMany).not.toHaveBeenCalled();
-    expect(prismaMock.memberProgress.upsert).not.toHaveBeenCalled();
+    expect(prismaMock.memberProgress.createMany).not.toHaveBeenCalled();
   });
   it("пълна колекция → сандъкът е без спътник; rewardedAt вече зададен → нищо повторно", async () => {
     prismaMock.serverQuest.updateMany.mockResolvedValueOnce({ count: 1 });
@@ -173,7 +173,7 @@ describe("Counting", () => {
     // 100: grantXpOnce → settings enabled, ключ counting:100, XP 15
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings({ countingCurrent: 99, countingHigh: 300 })).mockResolvedValueOnce({ enabled: true });
     prismaMock.gameSettings.updateMany.mockResolvedValueOnce({ count: 1 });
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce({ id: "mp", xp: 0, level: 0, sparks: 0 });
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce({ id: "mp", xp: 0, level: 0, sparks: 0 });
     prismaMock.memberProgress.update.mockResolvedValueOnce({ xp: 15, level: 0 });
     const m = await counting.applyCount(SID, UID, 100);
     expect(m).toMatchObject({ ok: true, milestone: true, xp: 15, record: false });
@@ -227,9 +227,17 @@ describe("trivia", () => {
     expect(prem.round.source).toBe("KB");
     expect(prem.round.expiresAt.getTime() - Date.now()).toBeGreaterThan(trivia.TRIVIA_TTL_MS - 5000);
   });
+  it("изключена игра → отворен рунд не приема отговори и не плаща (червен екип 25.09.2026)", async () => {
+    prismaMock.triviaRound.findUnique.mockResolvedValueOnce({ id: "r1", serverId: SID, options: ["a", "b"], answer: 1, expiresAt: new Date(Date.now() + 60000), closedAt: null });
+    prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ serverId: SID, enabled: false });
+    expect((await trivia.answerRound("r1", UID, 1)).code).toBe("GAME_DISABLED");
+    expect(prismaMock.triviaAnswer.create).not.toHaveBeenCalled();
+    expect(prismaMock.memberProgress.update).not.toHaveBeenCalled();
+  });
   it("отговори: един на човек (P2002), грешен, първият верен печели (условен winnerId), вторият верен закъснява, затворен", async () => {
     const round = { id: "r1", serverId: SID, options: ["a", "b", "c", "d"], answer: 2, expiresAt: new Date(Date.now() + 60000), closedAt: null };
     prismaMock.triviaRound.findUnique.mockResolvedValue(round);
+    prismaMock.gameSettings.findUnique.mockResolvedValue({ enabled: true }); // изрично, не наследено от предишен тест
     prismaMock.triviaAnswer.create.mockRejectedValueOnce({ code: "P2002" });
     expect((await trivia.answerRound("r1", UID, 2)).code).toBe("ALREADY_ANSWERED");
     prismaMock.triviaAnswer.create.mockResolvedValue({});
@@ -237,7 +245,7 @@ describe("trivia", () => {
     expect((await trivia.answerRound("r1", UID, 9)).code).toBe("INVALID_OPTION");
     prismaMock.triviaRound.updateMany.mockResolvedValueOnce({ count: 1 });
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ enabled: true });
-    prismaMock.memberProgress.upsert.mockResolvedValue({ id: "mp", xp: 0, level: 0, sparks: 0 });
+    prismaMock.memberProgress.findUnique.mockResolvedValue({ id: "mp", xp: 0, level: 0, sparks: 0 });
     prismaMock.memberProgress.update.mockResolvedValue({ xp: 25, level: 0 });
     const win = await trivia.answerRound("r1", UID, 2);
     expect(win).toMatchObject({ ok: true, correct: true, winner: true, sparks: trivia.TRIVIA_SPARKS, xp: 25 });

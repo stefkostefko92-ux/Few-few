@@ -89,7 +89,7 @@ describe("awardXp — атомарен increment, ниво с условен з�
   // update връща реда СЛЕД increment-а: стартово XP + инкремента.
   const incFrom = (startXp, level = 0) => async ({ data }) => progress({ xp: startXp + data.xp.increment, level });
   it("от 0 до 250 XP = ниво 1 (+10 искри); XP е increment, не абсолютна стойност", async () => {
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress());
     prismaMock.memberProgress.update.mockImplementationOnce(incFrom(0));
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     const r = await xp.awardXp(SID, UID, 250, { messages: 3, voiceMinutes: 2, touchMessageXp: true });
@@ -100,21 +100,21 @@ describe("awardXp — атомарен increment, ниво с условен з�
     expect(prismaMock.memberProgress.updateMany.mock.calls[0][0]).toEqual({ where: { serverId: SID, userId: UID, level: 0 }, data: { level: 1, sparks: { increment: 10 } } });
   });
   it("прескачане на две нива събира искрите за всяко", async () => {
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress());
     prismaMock.memberProgress.update.mockImplementationOnce(incFrom(0));
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     const r = await xp.awardXp(SID, UID, 400); // ниво 2 = 255
     expect(r.level).toBe(2); expect(r.sparksAwarded).toBe(10 + 20);
   });
   it("без ниво нагоре — никакъв запис на нивото/искрите", async () => {
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress());
     prismaMock.memberProgress.update.mockImplementationOnce(incFrom(10));
     const r = await xp.awardXp(SID, UID, 5);
     expect(r).toMatchObject({ leveledUp: false, xp: 15, level: 0 });
     expect(prismaMock.memberProgress.updateMany).not.toHaveBeenCalled();
   });
   it("надпревара: друг запис вдигна нивото първи → четем наново и не плащаме искрите два пъти", async () => {
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress());
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress());
     prismaMock.memberProgress.update.mockImplementationOnce(incFrom(90)); // 90+20 = 110 → ниво 1
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 0 }); // другият го вдигна
     prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ xp: 110, level: 1 }));
@@ -134,12 +134,12 @@ describe("grantXpOnce — веднъж по ключ, само при включ
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ enabled: true });
     prismaMock.gameXpGrant.create.mockRejectedValueOnce(Object.assign(new Error("dup"), { code: "P2002" }));
     expect(await xp.grantXpOnce(SID, UID, "poll:1", 5)).toBeNull();
-    expect(prismaMock.memberProgress.upsert).not.toHaveBeenCalled();
+    expect(prismaMock.memberProgress.createMany).not.toHaveBeenCalled();
   });
   it("нов ключ → награждава", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce({ enabled: true });
     prismaMock.gameXpGrant.create.mockResolvedValueOnce({});
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ xp: 50 }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ xp: 50 }));
     prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: 50 + data.xp.increment }));
     const r = await xp.grantXpOnce(SID, UID, "giveaway:9", 10);
     expect(r.xp).toBe(60);
@@ -158,7 +158,7 @@ describe("SLA XP за staff", () => {
 describe("POST /api/bot/game/xp-batch", () => {
   it("смята XP от настройките и връща ролите за ниво при ниво нагоре", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ levelRoles: [{ level: 1, roleId: "444444444444444444" }, { level: 5, roleId: "555555555555555555" }], announceChannelId: "666666666666666666" }));
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ xp: 90 }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ xp: 90 }));
     prismaMock.memberProgress.update.mockImplementationOnce(async ({ data }) => progress({ xp: 90 + data.xp.increment }));
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     const res = await request(app).post("/api/bot/game/xp-batch").send({ serverId: SID, entries: [{ userId: UID, messageXpEvents: 1, voiceMinutes: 0 }] });
@@ -171,7 +171,7 @@ describe("POST /api/bot/game/xp-batch", () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings({ enabled: false }));
     const res = await request(app).post("/api/bot/game/xp-batch").send({ serverId: SID, entries: [{ userId: UID, messageXpEvents: 5 }] });
     expect(res.body).toEqual({ enabled: false, levelUps: [] });
-    expect(prismaMock.memberProgress.upsert).not.toHaveBeenCalled();
+    expect(prismaMock.memberProgress.createMany).not.toHaveBeenCalled();
   });
   it("невалиден snowflake → 400", async () => {
     const res = await request(app).post("/api/bot/game/xp-batch").send({ serverId: "abc", entries: [] });
@@ -184,7 +184,7 @@ describe("POST /api/bot/game/shop/:serverId/buy — една транзакци�
   it("недостатъчно искри → 402 и нищо не се вади", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
     prismaMock.shopItem.findFirst.mockResolvedValueOnce(item);
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ sparks: 40 }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ sparks: 40 }));
     const res = await request(app).post(`/api/bot/game/shop/${SID}/buy`).send({ userId: UID, itemId: "it1" });
     expect(res.status).toBe(402); expect(res.body.code).toBe("NOT_ENOUGH_SPARKS");
     expect(prismaMock.shopPurchase.create).not.toHaveBeenCalled();
@@ -192,7 +192,7 @@ describe("POST /api/bot/game/shop/:serverId/buy — една транзакци�
   it("успех: условен decrement (sparks ≥ цена), покупка с expiresAt", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
     prismaMock.shopItem.findFirst.mockResolvedValueOnce(item);
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ sparks: 150 }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ sparks: 150 }));
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
     prismaMock.shopPurchase.create.mockImplementationOnce(async ({ data }) => ({ id: "p1", ...data }));
     const res = await request(app).post(`/api/bot/game/shop/${SID}/buy`).send({ userId: UID, itemId: "it1" });
@@ -205,7 +205,7 @@ describe("POST /api/bot/game/shop/:serverId/buy — една транзакци�
   it("двоен клик: условният decrement връща 0 реда → 402, без покупка", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
     prismaMock.shopItem.findFirst.mockResolvedValueOnce(item);
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ sparks: 150 }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ sparks: 150 }));
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 0 });
     const res = await request(app).post(`/api/bot/game/shop/${SID}/buy`).send({ userId: UID, itemId: "it1" });
     expect(res.status).toBe(402);
@@ -282,7 +282,7 @@ describe("регресии от одита 24.09.2026", () => {
   it("/daily при двоен клик: условният запис по lastDailyAt пуска само единия", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValue(settings());
     const last = new Date(Date.now() - 25 * 3600 * 1000);
-    prismaMock.memberProgress.upsert.mockResolvedValueOnce(progress({ lastDailyAt: last, streak: 2, sparks: 10 }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce(progress({ lastDailyAt: last, streak: 2, sparks: 10 }));
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 0 }); // другият клик вече записа
     const res = await request(app).post("/api/bot/game/daily").send({ serverId: SID, userId: UID });
     expect(res.status).toBe(429); expect(res.body.code).toBe("DAILY_COOLDOWN");
