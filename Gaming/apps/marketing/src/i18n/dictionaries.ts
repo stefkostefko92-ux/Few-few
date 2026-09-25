@@ -57,6 +57,11 @@ export interface Dict {
       cta: string;
     };
     breadcrumbHome: string;
+    /** Рейвънхолд лендинг: чипове в героя, категории, витрина на масите, честна игра. */
+    hero: { chips: string[]; shotAlts: [string, string, string]; badge: string };
+    cats: { all: string; cards: string; board: string; cue: string; party: string };
+    showcase: { eyebrow: string; heading: string; text: string; points: { title: string; text: string }[]; shotAlt: string };
+    fair: { eyebrow: string; heading: string; text: string; points: string[] };
   };
   games: {
     breadcrumb: string;
@@ -161,6 +166,29 @@ const bg: Dict = {
       cta: "Влез и играй",
     },
     breadcrumbHome: "Начало",
+    hero: {
+      chips: ["Безплатно", "Без изтегляне", "Социална игра · 18+"],
+      shotAlts: ["Магнат — 3D дъска със средновековен град", "Белот — маса в замъка", "Снукър — 3D маса с физика"],
+      badge: "Живи маси",
+    },
+    cats: { all: "Всички", cards: "Карти", board: "Настолни", cue: "Билярд", party: "Бързи" },
+    showcase: {
+      eyebrow: "Изработено с внимание",
+      heading: "Маси, в които искаш да седнеш",
+      text: "Всяка игра се играе в залата на замък под светлината на факли. Орехът, сукното, месингът и камъкът са истински материали, изпечени за сцената, не картинки.",
+      points: [
+        { title: "3D маси", text: "Шах, Табла, Дама, Не се сърди човече, билярд и Магнат в пълно 3D." },
+        { title: "Пълни правила", text: "Белот с 5 + 3 карти и обяви, Сантасе до 66, снукър с фалове и свободна топка — без опростявания." },
+        { title: "Навсякъде", text: "Телефон, таблет или компютър — направо в браузъра." },
+      ],
+      shotAlt: "Магнат — средновековният град расте с всяка построена къща",
+    },
+    fair: {
+      eyebrow: "Честна игра",
+      heading: "Сървърът е съдията",
+      text: "Всеки ход се проверява по правилата на сървъра, а тестетата и заровете се генерират криптографски — клиентът не може да ги пипне.",
+      points: ["Тестетата и заровете — криптографски случайни", "Всеки ход — проверен на сървъра", "Чуждите карти никога не стигат до браузъра ти", "Само виртуални чипове — без реални пари"],
+    },
   },
   games: {
     breadcrumb: "Игри",
@@ -261,6 +289,29 @@ const en: Dict = {
       cta: "Sign in and play",
     },
     breadcrumbHome: "Home",
+    hero: {
+      chips: ["Free", "No download", "Social play · 18+"],
+      shotAlts: ["Magnat — 3D board with a medieval town", "Belote — a table in the castle hall", "Snooker — 3D table with real physics"],
+      badge: "Live tables",
+    },
+    cats: { all: "All", cards: "Cards", board: "Board", cue: "Cue sports", party: "Quick" },
+    showcase: {
+      eyebrow: "Crafted with care",
+      heading: "Tables you want to sit at",
+      text: "Every game is played in a torch-lit castle hall. The walnut, felt, brass and stone are real baked materials, not flat pictures.",
+      points: [
+        { title: "3D tables", text: "Chess, Backgammon, Draughts, Ludo, pool and Magnat in full 3D." },
+        { title: "Full rules", text: "Belote dealt 5 + 3 with declarations, Santase to 66, snooker with fouls and free ball — nothing simplified." },
+        { title: "Anywhere", text: "Phone, tablet or computer — right in your browser." },
+      ],
+      shotAlt: "Magnat — the medieval town grows with every house you build",
+    },
+    fair: {
+      eyebrow: "Fair play",
+      heading: "The server is the referee",
+      text: "Every move is checked against the rules on the server, and decks and dice are generated cryptographically — the client can't touch them.",
+      points: ["Cryptographically random decks and dice", "Every move validated on the server", "Other players' cards never reach your browser", "Virtual chips only — no real money"],
+    },
   },
   games: {
     breadcrumb: "Games",
@@ -361,6 +412,29 @@ const it: Dict = {
       cta: "Entra e gioca",
     },
     breadcrumbHome: "Home",
+    hero: {
+      chips: ["Gratis", "Senza download", "Gioco sociale · 18+"],
+      shotAlts: ["Magnat — tabellone 3D con una città medievale", "Belote — un tavolo nella sala del castello", "Snooker — tavolo 3D con fisica reale"],
+      badge: "Tavoli dal vivo",
+    },
+    cats: { all: "Tutti", cards: "Carte", board: "Da tavolo", cue: "Biliardo", party: "Veloci" },
+    showcase: {
+      eyebrow: "Fatto con cura",
+      heading: "Tavoli a cui vuoi sederti",
+      text: "Ogni gioco si gioca nella sala di un castello illuminata dalle torce. Noce, panno, ottone e pietra sono materiali reali preparati per la scena, non immagini piatte.",
+      points: [
+        { title: "Tavoli 3D", text: "Scacchi, Backgammon, Dama, Ludo, biliardo e Magnat in pieno 3D." },
+        { title: "Regole complete", text: "Belote con 5 + 3 carte e dichiarazioni, Santase a 66, snooker con falli e palla libera — senza semplificazioni." },
+        { title: "Ovunque", text: "Telefono, tablet o computer — direttamente nel browser." },
+      ],
+      shotAlt: "Magnat — la città medievale cresce con ogni casa costruita",
+    },
+    fair: {
+      eyebrow: "Gioco leale",
+      heading: "Il server è l'arbitro",
+      text: "Ogni mossa è verificata dal server secondo le regole, e mazzi e dadi sono generati in modo crittografico — il client non può toccarli.",
+      points: ["Mazzi e dadi casuali in modo crittografico", "Ogni mossa verificata sul server", "Le carte degli altri non arrivano mai al tuo browser", "Solo chip virtuali — niente soldi veri"],
+    },
   },
   games: {
     breadcrumb: "Giochi",
