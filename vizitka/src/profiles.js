@@ -76,6 +76,9 @@ export function saveProfileEdit(profileId, input) {
        address = @address, bio = @bio, facebook = @facebook, instagram = @instagram,
        linkedin = @linkedin, is_public = @is_public, theme = @theme, accent = @accent,
        avatar_shape = @avatar_shape, font = @font, ai_discoverable = @ai_discoverable,
+       -- Дясната страна чете СТАРИТЕ стойности: датата се сменя само при реална промяна.
+       ai_consent_at = CASE WHEN ai_discoverable != @ai_discoverable
+                            THEN datetime('now') ELSE ai_consent_at END,
        updated_at = datetime('now')
      WHERE id = @id`
   ).run({

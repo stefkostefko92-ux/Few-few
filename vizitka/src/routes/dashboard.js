@@ -67,6 +67,9 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
         ...input.fields,
         type: input.type,
         is_public: input.isPublic,
+        // Подаденото, не стойността от базата: иначе махната отметка за AI се
+        // връща отметната при грешка и следващото „Запази“ я дава наново (чл. 7(3)).
+        ai_discoverable: input.aiDiscoverable,
         theme: input.theme,
         accent: input.accent,
         avatar_shape: input.avatarShape,

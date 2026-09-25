@@ -79,6 +79,10 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 - Small promo tile 440×280: `promo_small_440x280.png`
 - Marquee 1400×560: `marquee_1400x560.png` (по избор)
 
+## 2b. Store listing → Promo video (YouTube)
+
+Качи `supreme-adblock-promo-{ver}.mp4` в YouTube (Public или Unlisted), заглавие „Supreme AdBlock — free ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 43 s, 1080p, със звук; числата в него са измерените на 25.09.2026 (adblock.turtlecute.org).
+
 ## 3. Store listing → Additional languages
 
 Готово описание за ВСЕКИ от 70-те езика е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
@@ -161,6 +165,9 @@ for i in range(1, 6):
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}.zip", KIT / f"supreme-adblock-{ver}.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-firefox.zip", KIT / f"supreme-adblock-{ver}-firefox.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-source.zip", KIT / f"supreme-adblock-{ver}-source.zip")
+for extra in (f"supreme-adblock-promo-{ver}.mp4", f"supreme-adblock-promo-{ver}-thumb.png"):
+    if (A / "dist" / extra).exists():
+        shutil.copy2(A / "dist" / extra, KIT / extra)
 shutil.rmtree(KIT / "listing", ignore_errors=True)
 shutil.copytree(A / "docs" / "listing", KIT / "listing")
 
