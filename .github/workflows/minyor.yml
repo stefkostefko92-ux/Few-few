@@ -29,7 +29,7 @@ jobs:
       AUTH_SECRET: ci_secret_at_least_32_characters_long_xxxxx
       NEXT_PUBLIC_SITE_URL: https://minyor.carbonstealth.eu
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 20

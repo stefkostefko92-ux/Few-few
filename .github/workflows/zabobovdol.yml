@@ -30,7 +30,7 @@ jobs:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
       NEXT_PUBLIC_SITE_URL: https://zabobovdol.carbonstealth.eu
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
