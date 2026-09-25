@@ -8,11 +8,13 @@
 // инструкцията да го пусне). Щит срещу цикъл: при stop_hook_active → exit 0 (само предупреждение).
 // Fail-open: всяка грешка на hook-а → exit 0 (никога не заклещваме агент заради счупен hook).
 
-import { readFileSync , appendFileSync } from "node:fs";
+import { readFileSync , appendFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
 import { validateHandoff, knownAgentIds } from "../../tools/agents/handoff.mjs";
+import { evalMode } from "../../tools/lib/eval-mode.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -85,16 +87,43 @@ const RESULT_MARKERS = [
   { name: "secret-scan", green: /secret-scan: чисто/, red: /secret-scan: \d+ възможни тайни/ },
 ];
 
-/** Гейт, чийто ПОСЛЕДЕН резултат в транскрипта е ЧЕРВЕН → работата не е „готова". */
+/**
+ * Изходът на всяко Bash извикване, сдвоен с командата му (по tool_use_id). Само Bash: „# fail 2“ в
+ * прочетен файл (Read) не е резултат от пуснат гейт.
+ */
+export function collectBashRuns(jsonl) {
+  const cmds = new Map(), out = [];
+  const text = (c) => typeof c === "string" ? c : Array.isArray(c) ? c.map(text).join("\n") : c && typeof c === "object" ? text(c.text ?? c.content ?? "") : "";
+  const walk = (o) => {
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) { o.forEach(walk); return; }
+    if (o.type === "tool_use" && o.name === "Bash" && o.id) cmds.set(o.id, String(o.input?.command || ""));
+    else if (o.type === "tool_result" && cmds.has(o.tool_use_id)) out.push({ cmd: cmds.get(o.tool_use_id), out: text(o.content) });
+    for (const v of Object.values(o)) walk(v);
+  };
+  for (const line of String(jsonl).split("\n")) { const t = line.trim(); if (!t) continue; try { walk(JSON.parse(t)); } catch { /* skip */ } }
+  return out;
+}
+
+const cmdKey = (c) => String(c || "").replace(/\s+/g, " ").trim();
+
+/**
+ * Гейт, чийто ПОСЛЕДЕН резултат е ЧЕРВЕН → работата не е „готова". Резултат = низ (стар формат) или
+ * { cmd, out }. При сдвоени резултати червеното на ЕДНА команда се изчиства само от по-късно зелено на
+ * СЪЩАТА команда — иначе `node --test b.test.mjs` (зелен) маскираше червения `a.test.mjs` (Разбивача, мисия 2).
+ * Поправка → повторно пускане на същата команда остава правилният поток.
+ */
 export function checkFailedGates(results) {
   const bad = [];
   for (const m of RESULT_MARKERS) {
-    let last = null;
+    const last = new Map();
     for (const r of results) {
-      if (m.red.test(r)) last = "red";
-      else if (m.green.test(r)) last = "green";
+      const out = typeof r === "string" ? r : String(r?.out ?? "");
+      const key = typeof r === "string" ? "" : cmdKey(r?.cmd);
+      if (m.red.test(out)) last.set(key, "red");
+      else if (m.green.test(out)) last.set(key, "green");
     }
-    if (last === "red") bad.push(m.name);
+    if ([...last.values()].includes("red")) bad.push(m.name);
   }
   if (!bad.length) return null;
   return {
@@ -186,10 +215,21 @@ function loadRoster() {
   return (_roster = { byId, byName });
 }
 
-// Записва ЕДИН „handoff" ред в _flows.jsonl от вече валидирания блок ПРЕДАВАНЕ. Съзнателно НЕ пише
-// „start"/„close" — те са решение на Президента; тук се лови само реалната стъпка на предаване.
+// Верига = всички агенти, пуснати за ЕДНА заявка на потребителя. Харнесът подава `prompt_id` при
+// SubagentStop (проба на живо 2026-09-23) — естествената граница на веригата. Дотогава всеки запис
+// носеше `id: "auto"` без „start", а trajectory-audit сглобява вериги САМО от поток със „start" —
+// затова 35 реални предавания се четяха като 0 минати вериги.
+export function chainIdOf(payload = {}) {
+  const p = String(payload.prompt_id || "");
+  return p ? "r" + createHash("sha1").update(p).digest("hex").slice(0, 8) : "auto";
+}
+const runIdOf = (payload = {}) => payload.agent_id ? createHash("sha1").update(String(payload.agent_id)).digest("hex").slice(0, 8) : "";
+
+// Записва ЕДИН „handoff" ред в _flows.jsonl от вече валидирания блок ПРЕДАВАНЕ, плюс „start" за нова
+// верига (lead = първият агент по заявката; flow = „авто" — името на каноничен поток е решение на
+// оркестратора, не на куката: грешно отгатнато име би съдило веригата по чужд spec).
 // Форматът е ИДЕНТИЧЕН с flow-ledger.mjs (t/ts/id/from/to/status), за да няма два несъвместими писача.
-export function appendHandoffToLedger(finalText, payload = {}) {
+export function appendHandoffToLedger(finalText, payload = {}, ledger = join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl")) {
   const parsed = validateHandoff(String(finalText || ""), { agentIds: null, requireBlock: true });
   if (!parsed || !parsed.ok || !parsed.fields) return false;
   // Полетата идват от handoff.mjs с ЛАТИНСКИ ключове (from/to/status), не с българските етикети —
@@ -199,26 +239,43 @@ export function appendHandoffToLedger(finalText, payload = {}) {
   const to = normalizeActor(String(f.to || ""));
   const status = String(f.status || "").trim();
   if (!from || !to) return false;
-  const rec = { t: "handoff", ts: new Date().toISOString(), id: "auto", from, to, status };
+  const id = chainIdOf(payload), run = runIdOf(payload);
+  let rows = [];
+  try { if (existsSync(ledger)) rows = readFileSync(ledger, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); } catch { /* ignore */ }
+  // Агент, върнат от DoD гейта, спира втори път — същото пускане не е нова стъпка.
+  if (run && rows.some((r) => r.t === "handoff" && r.id === id && r.run === run)) return false;
+  const out = [];
+  if (id !== "auto" && !rows.some((r) => r.t === "start" && r.id === id))
+    out.push({ t: "start", ts: new Date().toISOString(), id, flow: "авто", lead: from, auto: true });
+  const rec = { t: "handoff", ts: new Date().toISOString(), id, from, to, status };
+  if (run) rec.run = run;
   // Видимост кое НЕ е резолвнало — иначе „друг" изглежда като нормален участник.
   if (from === "друг") rec.fromRaw = String(f.from || "").slice(0, 80);
   if (to === "друг") rec.toRaw = String(f.to || "").slice(0, 80);
-  appendFileSync(join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl"), JSON.stringify(rec) + "\n");
+  out.push(rec);
+  appendFileSync(ledger, out.map((r) => JSON.stringify(r)).join("\n") + "\n");
   return true;
 }
 
 // Чиста логика — тестваема: {violations:[{file, gate}]}. `root` за релативизиране на абсолютни пътища (F1).
 export function checkDoD(uses, root) {
   const bashCmds = uses.filter((u) => u.name === "Bash").map((u) => String(u.input.command || ""));
-  const bash = bashCmds.join("\n");
+  // Гейтът трябва да е ПУСНАТ, не споменат: `echo manifest-lint.mjs`, `printf`, `: …` и коментари не
+  // се броят (Разбивача, мисия 2). Сегментите се делят по ; && || | и нов ред.
+  const bashRun = bashCmds.flatMap((c) => c.split(/\n|;|&&|\|\||\|/))
+    .map((seg) => seg.trim())
+    .filter((seg) => seg && !/^(?:echo|printf|:|true|#)(?:\s|$)/.test(seg))
+    .join("\n");
   const written = [
     ...uses.filter((u) => u.name === "Write" || u.name === "Edit").map((u) => String(u.input.file_path || "")),
-    ...bashWrites(bashCmds), // F3: и Bash-записите
+    // F3: и Bash-записите. Релативен път от Bash не знае cwd-то си: `cd /tmp/rb4 && … > B/x` не е
+    // продукт „B“. Броим го само ако първият сегмент е реална папка в корена (Разбивача, мисия 4).
+    ...bashWrites(bashCmds).filter((f) => f.startsWith("/") || !root || existsSync(join(root, f.replace(/^\.\//, "").split("/")[0]))),
   ].filter(Boolean);
   const violations = [];
   for (const r of RULES) {
     const hits = written.filter((f) => r.wrote.test(f));
-    if (hits.length && !r.mustRun.test(bash)) violations.push({ files: [...new Set(hits)], gate: r.gate });
+    if (hits.length && !r.mustRun.test(bashRun)) violations.push({ files: [...new Set(hits)], gate: r.gate });
   }
   // Монорепо закон №1: писане в ≥2 продуктови папки в една задача = scope creep. (root → F1 фикс)
   const scope = checkScope(written, root);
@@ -242,10 +299,11 @@ function main() {
   // trajectory гейтът нямаше какво да съди („празно значи НЕИЗМЕРЕНО, не чисто" — CLAUDE.md).
   // Куката вече ВАЛИДИРА блока ПРЕДАВАНЕ тук, значи има и данните: записваме ги, докато работата
   // тече. Fail-open и без тайни — само идентификатори и статус.
-  try { appendHandoffToLedger(finalText, payload); } catch { /* дневникът е измерване, не гейт */ }
+  // Жива проверка: веригата е изкуствена → не влиза в проследения дневник (_flows.jsonl).
+  try { if (!evalMode(ROOT)) appendHandoffToLedger(finalText, payload); } catch { /* дневникът е измерване, не гейт */ }
   // Гейт, ПУСНАТ но ЧЕРВЕН, дотук минаваше за изпълнен ангажимент. Отделен вид нарушение,
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
-  const fg = checkFailedGates(collectToolResults(jsonl));
+  const fg = checkFailedGates(collectBashRuns(jsonl));
   if (fg) violations.push({ ...fg, kind: "failed" });
   if (!violations.length) process.exit(0);
   const msg = violations.map((v) => v.kind === "failed"

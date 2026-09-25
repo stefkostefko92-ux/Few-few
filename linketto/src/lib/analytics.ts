@@ -1,6 +1,8 @@
 // Помощни чисти функции за таба „Детайлни аналитики". Агрегациите идват от
 // БД (page.tsx), а тук е логиката без странични ефекти — тества се директно.
 
+import { isLocale } from "../i18n/locales";
+
 export interface DayRow {
   day: string | Date;
   views: number;
@@ -14,7 +16,7 @@ export interface DayPoint {
 }
 
 function toISODate(value: string | Date): string {
-  const d = typeof value === 'string' ? new Date(value) : value;
+  const d = typeof value === "string" ? new Date(value) : value;
   return d.toISOString().slice(0, 10);
 }
 
@@ -67,4 +69,16 @@ export function seriesMax(series: readonly DayPoint[]): number {
 export function conversionRate(views: number, sales: number): number {
   if (views <= 0) return 0;
   return Math.round((sales / views) * 1000) / 10; // 1 знак след запетаята
+}
+
+// Измеренията на ClickEvent идват от URL/хедър — в базата влиза само краен
+// речник, иначе произволен низ се появява в разбивките по език/държава.
+export function localeOf(hl: string | null): string | undefined {
+  return hl && isLocale(hl) ? hl : undefined;
+}
+
+// ISO-3166 alpha-2; Cloudflare праща и XX (няма данни) и T1 (Tor).
+export function countryOf(cc: string | null): string | undefined {
+  const v = (cc ?? "").trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(v) && v !== "XX" && v !== "T1" ? v : undefined;
 }

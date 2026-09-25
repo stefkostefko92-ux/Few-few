@@ -38,6 +38,16 @@ export function findSecret(content) {
   return null;
 }
 
+/** Пътят на записания файл за всеки инструмент (Write/Edit: file_path · NotebookEdit: notebook_path). */
+export const fileOf = (ti = {}) => ti.file_path || ti.notebook_path || "";
+
+/** Записаното съдържание за всеки инструмент: Write → content · Edit → new_string ·
+ *  NotebookEdit → new_source · MultiEdit → edits[].new_string. Чиста, тестваема функция. */
+export function contentOf(ti = {}) {
+  return ti.content ?? ti.new_string ?? ti.new_source ??
+    (Array.isArray(ti.edits) ? ti.edits.map((e) => e?.new_string ?? "").join("\n") : "");
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
@@ -45,9 +55,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     try {
       const payload = JSON.parse(buf || "{}");
       const ti = payload?.tool_input || {};
-      const file = ti.file_path || "";
+      // Кръг 2 (2026-09-09): NotebookEdit пише в `notebook_path`/`new_source`, MultiEdit в `edits[]` —
+      // куката четеше само Write/Edit полетата, значи тайна в бележник или в мулти-редакция минаваше
+      // (проба: изход 0). Тук четем всички форми; matcher-ът в settings.json включва и двата инструмента.
+      const file = fileOf(ti);
       if (file && SKIP_PATH.test(file)) process.exit(0);
-      const content = ti.content ?? ti.new_string ?? "";
+      const content = contentOf(ti);
       const hit = findSecret(content);
       if (hit) {
         process.stderr.write(`⚠️  guard-secrets: възможен ${hit} в ${file || "записания файл"}. Махни го (тайните живеят само на сървъра, mode 600) ПРЕДИ commit. Пусни: node tools/security/secret-scan.mjs\n`);

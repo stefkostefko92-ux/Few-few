@@ -220,7 +220,8 @@ test("--check ПАДА, когато маскотът в mascot/ се смени
 
 test("таблото ползва маскота като облик на агента", () => {
   const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
-  assert.match(html, /mascots\/\$\{encodeURIComponent\(id\)\}-icon\.svg/, "iconSVG трябва да сочи маскота");
+  assert.match(html, /mascots\/\$\{encodeURIComponent\(id\)\}-icon3d\.webp/, "iconSVG трябва да сочи 3D кадъра на маскота");
+  assert.match(html, /replace\('-icon3d\.webp','-icon\.svg'\)/, "без кадър → SVG иконата");
   assert.match(html, /function iconFallback/, "резервният линеен вариант остава, ако папката липсва");
 });
 
@@ -268,7 +269,7 @@ test("SVG-то се побира в кутията — иначе от геро�
 
 test("погледът се откача при затваряне — иначе всяко отваряне трупа слушател", () => {
   const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
-  assert.match(html, /function stopMascot\(\)[^\n]*mascotCleanup\(\)/, "stopMascot трябва да вика чистача");
+  assert.match(html, /function stopMascot\(\)\s*\{[^}]*?mascotCleanup\(\)/, "stopMascot трябва да вика чистача (вкл. dispose() на 3D)");
   assert.match(html, /mascotCleanup = \(\) => window\.removeEventListener\("mousemove"/);
 });
 
@@ -295,4 +296,11 @@ test("проверката е в състава на гейта и е задъл
   assert.match(gate, /mascot-theme\.mjs/);
   const rec = gate.slice(gate.indexOf('id: "mascots"'));
   assert.ok(!/required:\s*false/.test(rec.slice(0, rec.indexOf("}"))));
+});
+
+test("профилът: резервът е 3D кадърът, не старият SVG (SVG само ако и кадърът липсва)", () => {
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  assert.match(html, /-portrait3d\.webp`/, "startMascot зарежда 3D портрета");
+  assert.match(html, /\.mascot\.mascot-still svg[^{]*\{\s*display:\s*none/, "при зареден кадър SVG-то се крие");
+  for (const a of agents()) assert.ok(existsSync(join(DIR, `${a.id}-portrait3d.webp`)), `липсва портрет: ${a.id}`);
 });
