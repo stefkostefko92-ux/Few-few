@@ -436,6 +436,14 @@ html.dark .hover\:bg-brand-50:hover {
 html.dark .hover\:bg-brand-100:hover {
   background-color: #243044;
 }
+/* Значки върху светъл фон („Затворено сега“, „Реклама“) — фонът им също
+   трябва да потъмнее, иначе светлият текст остава върху светло (~1.2:1). */
+html.dark .bg-slate-200 {
+  background-color: #334155;
+}
+html.dark .bg-white\/85 {
+  background-color: rgba(30, 41, 59, 0.92);
+}
 html.dark .border-slate-200\/70,
 html.dark .border-slate-200\/80 {
   border-color: #334155;

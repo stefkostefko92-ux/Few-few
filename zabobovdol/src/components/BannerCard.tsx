@@ -69,7 +69,7 @@ export function BannerCard({ banner }: { banner: BannerData }) {
 
   return (
     <div className="group relative overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition">
-      <span className="absolute right-2 top-2 z-10 rounded bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+      <span className="absolute right-2 top-2 z-10 rounded bg-white/85 px-1.5 py-0.5 text-xs font-semibold text-slate-700">
         Реклама
       </span>
       {external ? (
