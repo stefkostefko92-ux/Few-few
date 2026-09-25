@@ -140,6 +140,8 @@ export default function CombatScene(props: Props): React.ReactElement {
         embedded
         onImpact={handleImpact}
         onEnd={handleEnd}
+        heroClass={hero.class}
+        region={region}
       />
 
       {showIntro && (

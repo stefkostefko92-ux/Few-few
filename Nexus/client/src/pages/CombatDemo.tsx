@@ -10,6 +10,9 @@ import type { CombatActor, CombatRound } from '../lib/types';
  * `?gen=1` — генериран двубой от примерни рундове (choreo-gen.js) през голия BoyDuelStage.
  * `?scene=1` — ЦЯЛАТА CombatScene.tsx (HP ленти, число на щетата, лог, контроли, резултатен
  * екран) — точно каквото виждат Hunting/Arena/Dungeons/... `&lose=1` показва поражение.
+ * `&class=warrior|ranger|mage|rogue` (само с `scene=1`) — 4a.4 клас-тон на героя.
+ * `&region=whispering_woods|mistmoor_hills|crystal_caverns|ashen_wastes|shadowfell` — 4a.4 тема
+ * на противника (loadout.js); по подразбиране whispering_woods (виж CombatScene.tsx).
  *
  * Достъпен само през /demo/combat (dev или ?debug=1) — виж App.tsx.
  */
@@ -50,15 +53,19 @@ export default function CombatDemo(): React.ReactElement {
   const quick = params.get('quick');
   if (params.get('scene') === '1') {
     const rounds = quick && QUICK[quick] ? [QUICK[quick]] : lose ? LOSE_ROUNDS : SAMPLE_ROUNDS;
+    const cls = params.get('class') as CombatActor['class'] | null;
+    const hero = cls ? { ...DEMO_HERO, class: cls } : DEMO_HERO;
+    const region = params.get('region') || undefined;
     return (
       <div style={{ width: '100vw', height: '100vh', position: 'fixed', inset: 0 }}>
         <CombatScene
-          hero={DEMO_HERO}
+          hero={hero}
           foe={DEMO_FOE}
           rounds={rounds}
           victory={!lose}
           reward={lose ? undefined : { xp: 120, gold: 40 }}
-          introTitle={`${DEMO_HERO.name}  vs  ${DEMO_FOE.name}`}
+          introTitle={`${hero.name}  vs  ${DEMO_FOE.name}`}
+          region={region}
         />
       </div>
     );

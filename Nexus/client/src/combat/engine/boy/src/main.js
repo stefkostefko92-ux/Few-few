@@ -22,6 +22,7 @@ import { reportFrame } from './hud-report.js';
 import { acceptIdentitySwizzle } from './gpu-compat.js';
 import { installDevHooks } from './dev-hooks.js';
 import { mobileGrade } from './mobile-grade.js';
+import { classLoadout, foeLoadout } from './loadout.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
@@ -63,13 +64,12 @@ export async function bootDuel(canvas, opts = {}) {
     acceptIdentitySwizzle();
     renderer = new THREE.WebGPURenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
     await renderer.init();
-  } catch {
-    hud.fatal();
-    return { dispose() {} };
-  }
+  } catch { hud.fatal(); return { dispose() {} }; }
   if (bailIfAborted()) return { dispose() {} };
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
-  const W = await buildWorld(renderer, hud, quality);
+  // 4a.4: клас-специфичен тон по opts.heroClass, тема на противника по opts.region — виж
+  // loadout.js за защо е само материал, не нова геометрия.
+  const W = await buildWorld(renderer, hud, quality, { heroTint: classLoadout(opts.heroClass), foeTint: foeLoadout(opts.region) });
   if (bailIfAborted()) return { dispose() {} };
   const { scene, camera, A, B, fx } = W;
   const pipe = createPipeline(renderer, W);

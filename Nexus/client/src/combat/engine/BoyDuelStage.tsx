@@ -22,6 +22,10 @@ interface Props {
   onImpact?: (ev: ImpactEvent) => void;
   /** true в CombatScene.tsx — крие вградения chrome на boy (заглавие/лента/endcard/controls). */
   embedded?: boolean;
+  /** 4a.4: клас-специфичен тон на оръжие/броня на героя (loadout.js). */
+  heroClass?: 'warrior' | 'ranger' | 'mage' | 'rogue' | null;
+  /** 4a.4: тема на противника по регион (loadout.js). */
+  region?: string;
 }
 
 export interface BoyDuelHandle {
@@ -38,7 +42,7 @@ export interface BoyDuelHandle {
  * ½×/1×/2×/прескочи контроли на CombatScene.tsx (вграденият chrome на boy е скрит — виж
  * boy-hud.css `.embedded`).
  */
-const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded }, ref) => {
+const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region }, ref) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const bootRef = useRef<BootHandle | null>(null);
 
@@ -66,7 +70,7 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
     const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory) : undefined;
     // Литерален relative specifier (не динамична променлива) — нужно е Vite/Rollup да го
     // открие статично и да го изнесе в собствен lazy chunk.
-    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal })).then((h) => {
+    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region })).then((h) => {
       if (controller.signal.aborted) { h.dispose(); return; }
       bootRef.current = h;
     });
@@ -76,7 +80,7 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
       bootRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rounds, victory, loop]);
+  }, [rounds, victory, loop, heroClass, region]);
 
   return <div className={`boy-duel-root${embedded ? ' embedded' : ''}`} ref={rootRef} />;
 });

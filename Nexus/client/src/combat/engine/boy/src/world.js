@@ -20,6 +20,7 @@ import { createBreath } from './atmos.js';
 import { installFog } from './fog.js';
 import { setNoise, U } from './tsl.js';
 import { QUALITY } from './quality.js';
+import { tintedMaterials } from './loadout.js';
 
 export const FX_LAYER = 1;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -45,7 +46,10 @@ function makeLights(scene, quality) {
 // Budget per set: the courtyard floor and walls fill the frame and get the hero resolution.
 const textureBudget = (q) => ({ default: q.texSize, cobble: q.texHero, wall: q.texHero });
 
-export async function buildWorld(renderer, hud, quality) {
+// 4a.4: loadout = { heroTint, foeTint } (виж loadout.js — clone-and-tint на steelA/steelB/
+// goldB/brass/blade/bladeDark, само за клас-специфичните материали; всичко останало от M
+// остава СПОДЕЛЕНО между двамата бойци и сцената, точно както в оригинала на boy).
+export async function buildWorld(renderer, hud, quality, loadout = {}) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.NoToneMapping;
@@ -90,11 +94,13 @@ export async function buildWorld(renderer, hud, quality) {
   scene.add(fires.group, rain.group, fx.group, breath.mesh);
   const lights = makeLights(scene, quality);
 
-  const knightA = buildKnight(M, 'A');
-  const knightB = buildKnight(M, 'B');
-  const swordA = longsword(M);
-  const swordB = armingSword(M);
-  const shieldB = heaterShield(M);
+  const heroM = tintedMaterials(M, loadout.heroTint);
+  const foeM = tintedMaterials(M, loadout.foeTint);
+  const knightA = buildKnight(heroM, 'A');
+  const knightB = buildKnight(foeM, 'B');
+  const swordA = longsword(heroM);
+  const swordB = armingSword(foeM);
+  const shieldB = heaterShield(foeM);
   const batcher = new RigidBatcher();
   for (const k of [knightA, knightB]) for (const name of Object.keys(k.pieces)) batcher.add(k.parts[name], k.pieces[name]);
   batcher.add(swordA.part, swordA.pieces);
