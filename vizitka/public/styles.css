@@ -1223,6 +1223,32 @@ legend {
   margin: 0.3rem 0;
 }
 
+/* Секцията за MCP конектора на началната. Преизползва .how и .link-box. */
+.ai-connector h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ai-connector .link-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+.ai-connector .link-box label {
+  flex-basis: 100%;
+}
+.ai-connector .link-box input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.ai-connector .ai-steps {
+  padding-left: 1.2rem;
+  line-height: 1.6;
+}
+
 /* Наръчник (съдържателните страници) — ляга върху .legal контейнера. */
 .guide .lead {
   font-size: 1.05rem;

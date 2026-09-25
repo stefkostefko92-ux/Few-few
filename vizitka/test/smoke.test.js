@@ -998,6 +998,26 @@ await test('SEO: JSON-LD екранира </script> (без HTML-инжекци�
   assert.doesNotMatch(siteJsonLd('https://vizitka-bg.com'), /<\/script>/i);
 });
 
+await test('SEO: визитката е ProfilePage със свързан граф, без висящи препратки', async () => {
+  const { cardJsonLd } = await import('../src/seo.js');
+  const url = 'https://vizitka-bg.com/p/ivan';
+  const graph = JSON.parse(
+    cardJsonLd(
+      { display_name: 'Иван', slug: 'ivan', type: 'personal', updated_at: '2026-09-25 10:00:00' },
+      url,
+      'https://vizitka-bg.com'
+    )
+  )['@graph'];
+  const byId = new Map(graph.filter((n) => n['@id']).map((n) => [n['@id'], n]));
+  const page = graph.find((n) => n['@type'] === 'ProfilePage');
+  assert.ok(page, 'липсва ProfilePage');
+  assert.equal(page.mainEntity['@id'], `${url}#person`);
+  assert.equal(page.dateModified, '2026-09-25T10:00:00Z', 'ISO 8601 с изрична зона');
+  // Всяка препратка трябва да сочи към възел, ОПРЕДЕЛЕН на същата страница.
+  for (const ref of [page.mainEntity, page.isPartOf, page.breadcrumb])
+    assert.ok(byId.has(ref['@id']), `висяща препратка: ${ref['@id']}`);
+});
+
 await test('IndexNow: publicUrls съдържа статичните + публичните визитки', async () => {
   const { publicUrls } = await import('../src/indexnow.js');
   const urls = publicUrls('https://vizitka-bg.com');
@@ -1201,6 +1221,43 @@ await test('визитката носи ≥5 ключови думи, една �
   assert.ok(kw.length >= 5, `само ${kw.length} ключови думи`);
   assert.ok(kw.includes('Carbon Stealth'), 'липсва бранд атрибуцията „Carbon Stealth"');
   assert.match(html, /<meta name="description" content="[^"]{20,}"/);
+});
+
+await test('началната показва MCP конектора с адрес, който може да се копира', async () => {
+  const html = await (await request('/')).text();
+  assert.match(html, /id="ai-konektor"/, 'секцията за конектора липсва');
+  assert.ok(html.includes(`value="${base}/mcp"`), 'адресът на конектора трябва да е пълен URL');
+  assert.match(html, /data-copy="#mcp-url"/, 'бутонът за копиране липсва');
+  assert.match(html, /href="\/konektor-chatgpt-claude"/);
+  // AI асистентите четат llms.txt — там също трябва да разберат, че могат да ни свържат.
+  const llms = await (await request('/llms.txt')).text();
+  assert.ok(llms.includes(`${base}/mcp`), 'llms.txt не казва къде е конекторът');
+  // featureList обещава само работещото без настройка — портфейлите са зад ключове.
+  const ld = JSON.parse(
+    html.match(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/)[1]
+  );
+  const app = ld['@graph'].find((n) => n['@type'] === 'WebApplication');
+  assert.ok(app.featureList.some((f) => /MCP/.test(f)));
+  assert.ok(!app.featureList.some((f) => /Wallet|портфейл/i.test(f)));
+});
+
+// Регресия за РЕАЛНА грешка: наръчникът (и оттам llms.txt и корпусът на конектора)
+// твърдеше „не поддържаме NFC“, а таблото има блок за запис в NFC чип. Съдържание,
+// което лъже за продукта, е по-лошо от липсващо — особено когато го цитират AI асистенти.
+const GUIDES_FOR_CLAIMS = (await import('../src/guides.js')).GUIDES.map((g) => g.slug);
+await test('съдържанието не отрича NFC, щом таблото го предлага', async () => {
+  const dash = fs.readFileSync(new URL('../src/views/dashboard.ejs', import.meta.url), 'utf8');
+  assert.match(dash, /NFC карта/, 'предпоставката на теста: таблото предлага NFC');
+  const denial = /не поддържа(ме)? NFC|не, засега не/i;
+  const llms = await (await request('/llms.txt')).text();
+  assert.ok(!denial.test(llms), 'llms.txt отрича NFC');
+  for (const g of GUIDES_FOR_CLAIMS) {
+    const html = await (await request(`/${g}`)).text();
+    assert.ok(!denial.test(html), `/${g} отрича NFC`);
+  }
+  const { buildCorpus } = await import('../src/mcp/corpus.js');
+  for (const doc of buildCorpus(base))
+    assert.ok(!denial.test(doc.text), `корпусът на конектора (${doc.id}) отрича NFC`);
 });
 
 // ── Наръчник (SEO/GEO/AEO) ───────────────────────────────────────────────────
