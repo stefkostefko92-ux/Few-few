@@ -200,7 +200,8 @@ router.get("/:serverId/purchases", requireServerAdmin, async (req, res, next) =>
       take: limit,
       include: { item: { select: { name: true, type: true, roleId: true } } },
     });
-    res.json(rows);
+    // Изтрит артикул (itemId → NULL) се показва по снимката от покупката.
+    res.json(rows.map((r) => ({ ...r, item: r.item || { name: r.itemName, type: r.itemType, roleId: r.roleId } })));
   } catch (err) { next(err); }
 });
 

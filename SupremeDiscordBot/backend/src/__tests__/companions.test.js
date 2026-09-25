@@ -125,10 +125,16 @@ describe("хранене", () => {
     expect(no.code).toBe("NOT_ENOUGH_SPARKS"); expect(prismaMock.memberCompanion.update).not.toHaveBeenCalled();
     prismaMock.memberCompanion.findFirst.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 1, fed: 80 });
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
-    prismaMock.memberCompanion.update.mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", ...data }));
+    // Базата прилага increment върху ТЕКУЩАТА стойност (друго хранене е вдигнало
+    // fed на 100 междувременно) — резултатът трябва да е 150, не 80+50.
+    prismaMock.memberCompanion.update
+      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", stage: 1, fed: 100 + data.fed.increment }))
+      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", fed: 150, ...data }));
     prismaMock.memberProgress.findUnique.mockResolvedValueOnce({ sparks: 10 });
     const yes = await ops.feedCompanion("222222222222222222", "333333333333333333", "mc1", 50);
     expect(yes).toMatchObject({ ok: true, evolved: true, stage: 2, sparksLeft: 10 });
+    expect(yes.owned.fed).toBe(150);
+    expect(prismaMock.memberCompanion.update.mock.calls[0][0].data).toEqual({ fed: { increment: 50 } }); // одит 25.09.2026: не абсолютна стойност
     expect(prismaMock.memberProgress.updateMany.mock.calls[1][0].where.sparks).toEqual({ gte: 50 });
   });
   it("крайна форма → MAX_STAGE; невалидна сума → INVALID_AMOUNT", async () => {

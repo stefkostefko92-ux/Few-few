@@ -109,7 +109,10 @@ CREATE TABLE "shop_purchases" (
     "id" TEXT NOT NULL,
     "serverId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "itemId" TEXT NOT NULL,
+    "itemId" TEXT,
+    "itemName" TEXT NOT NULL DEFAULT '',
+    "itemType" TEXT NOT NULL DEFAULT 'ROLE',
+    "roleId" TEXT,
     "priceSparks" INTEGER NOT NULL,
     "expiresAt" TIMESTAMP(3),
     "revokedAt" TIMESTAMP(3),
@@ -255,6 +258,9 @@ CREATE INDEX "shop_purchases_expiresAt_idx" ON "shop_purchases"("expiresAt");
 CREATE INDEX "shop_purchases_userId_idx" ON "shop_purchases"("userId");
 
 -- CreateIndex
+CREATE INDEX "shop_purchases_serverId_userId_roleId_idx" ON "shop_purchases"("serverId", "userId", "roleId");
+
+-- CreateIndex
 CREATE INDEX "member_companions_serverId_userId_idx" ON "member_companions"("serverId", "userId");
 
 -- CreateIndex
@@ -324,7 +330,7 @@ ALTER TABLE "shop_items" ADD CONSTRAINT "shop_items_serverId_fkey" FOREIGN KEY (
 ALTER TABLE "shop_purchases" ADD CONSTRAINT "shop_purchases_serverId_fkey" FOREIGN KEY ("serverId") REFERENCES "servers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "shop_purchases" ADD CONSTRAINT "shop_purchases_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "shop_items"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "shop_purchases" ADD CONSTRAINT "shop_purchases_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "shop_items"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "member_companions" ADD CONSTRAINT "member_companions_serverId_fkey" FOREIGN KEY ("serverId") REFERENCES "servers"("id") ON DELETE CASCADE ON UPDATE CASCADE;

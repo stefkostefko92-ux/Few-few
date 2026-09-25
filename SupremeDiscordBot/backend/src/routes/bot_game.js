@@ -203,7 +203,7 @@ router.post("/game/shop/:serverId/buy", async (req, res, next) => {
       if (dec.count !== 1) return { error: "Not enough sparks", code: "NOT_ENOUGH_SPARKS", status: 402 };
       const expiresAt = item.durationDays ? new Date(Date.now() + item.durationDays * 86_400_000) : null;
       const purchase = await tx.shopPurchase.create({
-        data: { serverId, userId, itemId: item.id, priceSparks: item.priceSparks, expiresAt },
+        data: { serverId, userId, itemId: item.id, itemName: item.name, itemType: item.type, roleId: item.type === "ROLE" ? item.roleId : null, priceSparks: item.priceSparks, expiresAt },
       });
       return { ok: true, purchase, item, sparksLeft: row.sparks - item.priceSparks };
       // Serializable: броенето на продадените и записът са две стъпки — без това две

@@ -100,9 +100,12 @@ export async function feedCompanion(serverId, userId, ownedId, sparks) {
       const p = await tx.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { sparks: true } });
       return { ok: false, code: "NOT_ENOUGH_SPARKS", sparks: p?.sparks || 0 };
     }
-    const fed = owned.fed + amount;
-    const stage = stageForFed(fed);
-    const updated = await tx.memberCompanion.update({ where: { id: owned.id }, data: { fed, stage } });
+    // fed се ВДИГА атомарно, не се пише като абсолютна стойност: при две
+    // едновременни хранения и двете четяха един и същ `owned.fed`, второто
+    // презаписваше първото и платените искри изгаряха (одит на Кодаджията 25.09.2026).
+    const bumped = await tx.memberCompanion.update({ where: { id: owned.id }, data: { fed: { increment: amount } } });
+    const stage = Math.max(bumped.stage, stageForFed(bumped.fed));
+    const updated = stage === bumped.stage ? bumped : await tx.memberCompanion.update({ where: { id: owned.id }, data: { stage } });
     const p = await tx.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { sparks: true } });
     return { ok: true, owned: updated, evolved: stage > owned.stage, stage, sparksLeft: p?.sparks || 0, companion: await pub(companionById(owned.companionId), stage) };
   });

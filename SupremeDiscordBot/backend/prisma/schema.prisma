@@ -1203,18 +1203,25 @@ model ShopPurchase {
   id          String    @id @default(cuid())
   serverId    String
   userId      String
-  itemId      String
+  // Снимка на артикула в момента на покупката (одит на Кодаджията 25.09.2026):
+  // изтичането маха ролята, която Е ДАДЕНА, не текущата роля на артикула, а
+  // изтрит артикул вече не изтрива покупките (преди CASCADE → вечна роля).
+  itemId      String?
+  itemName    String    @default("")
+  itemType    String    @default("ROLE")
+  roleId      String?
   priceSparks Int
   expiresAt   DateTime? // временна роля — ботът я маха след изтичане (scheduler)
   revokedAt   DateTime?
   createdAt   DateTime  @default(now())
 
-  server Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  item   ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  server Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  item   ShopItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
 
   @@index([serverId, userId])
   @@index([expiresAt])
   @@index([userId])
+  @@index([serverId, userId, roleId])
   @@map("shop_purchases")
 }
 
