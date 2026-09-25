@@ -143,7 +143,7 @@ main {
   margin-bottom: 0.5rem;
 }
 .hero h1 {
-  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-size: clamp(1.75rem, 6vw, 3.2rem);
   line-height: 1.15;
   margin: 0 0 1rem;
 }
@@ -155,6 +155,7 @@ main {
 }
 .features {
   display: grid;
+  /* 6 плочки: на широк екран 3+3 (при auto-fit петата/шестата висяха сами на ред). */
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
   margin: 2rem 0;
@@ -217,6 +218,7 @@ input[type='email'],
 input[type='password'],
 input[type='tel'],
 input[type='url'],
+input[type='search'],
 select,
 textarea {
   width: 100%;
@@ -897,9 +899,11 @@ body.theme-rose {
   position: absolute;
   top: 6px;
   left: 6px;
-  background: rgba(17, 24, 39, 0.6);
+  /* 0.78 плътност: и върху бял банер белият текст остава ≥ 9:1 (при 0.6 беше ~4.8). */
+  background: rgba(17, 24, 39, 0.78);
   color: #fff;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 1px 6px;
@@ -1333,4 +1337,136 @@ body.theme-rose {
   margin: 0 auto 0.4rem;
   max-width: 44rem;
   line-height: 1.8;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.9rem;
+}
+/* Разделителят е украса, не текст — не пада в началото на реда при пренасяне. */
+.footer-guides a + a::before {
+  content: '·';
+  margin-right: 0.9rem;
+  margin-left: -0.45rem;
+  color: var(--muted);
+  display: inline-block;
+}
+
+/* ── Поправки от визуалния одит ────────────────────────────────────────────────
+   Всяка е намерена с измерване в истински Chromium (DevTools емулация на 320/375/
+   768/1280), не на око. */
+
+/* Отметките бяха 13×13 px — на телефон почти неуцелими. */
+.check input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+  vertical-align: -4px;
+}
+
+/* Сивият текст върху оцветения фон на визитката падаше до 4.3:1 (нормата е 4.5:1) —
+   регресия от темата на цялата страница. По-тъмното сиво дава ≥ 6:1 на всички теми. */
+body.card-theme {
+  --muted: #4b5563;
+}
+
+/* Печат: текстът до QR кода не можеше да се свие (flex без min-width: 0) и на 320 px
+   страницата се разширяваше до 371 px. */
+.print-preview > div {
+  min-width: 0;
+}
+.print-preview p {
+  overflow-wrap: anywhere;
+}
+
+/* Дълги думи („поверителност“ в H1) и адреси не бива да разширяват страницата. */
+.legal,
+.vcard-body,
+.print-card {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 700px) {
+  /* iOS увеличава страницата, щом фокусираш поле с шрифт < 16 px — а всички бяха
+     15.2 px (търсачката в админа — 13.3 px). */
+  input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']),
+  select {
+    min-height: 44px;
+  }
+  .check input[type='checkbox'] {
+    width: 24px;
+    height: 24px;
+  }
+  input[type='file'] {
+    font-size: 15px;
+    padding: 0.45rem 0;
+  }
+  /* Цели за пръст: връзките във футъра и трохата бяха високи 16 px. */
+  .footer-guides a,
+  .footer p a,
+  .crumbs a {
+    display: inline-block;
+    padding: 6px 2px;
+  }
+  details > summary {
+    padding: 0.4rem 0;
+  }
+  /* По-тесни полета на правните страници — думата „поверителност“ в H1 не се събираше
+     на 320 px. */
+  .legal {
+    padding: 1.2rem 1rem;
+  }
+  .legal h1 {
+    font-size: clamp(1.45rem, 7vw, 2rem);
+  }
+}
+
+@media (max-width: 380px) {
+  /* Админското меню (3 връзки) не се събираше на 320 px и „Изход“ падаше на втори ред. */
+  .nav {
+    padding: 0.6rem 0.75rem;
+  }
+  .nav nav {
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .nav nav .link-btn {
+    font-size: inherit;
+  }
+  /* По-малкият шрифт не бива да сваля целта под 24 px (WCAG 2.5.8). */
+  .nav nav a,
+  .nav nav .link-btn {
+    display: inline-block;
+    padding-block: 5px;
+  }
+  .print-preview {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (min-width: 700px) {
+  .features {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* Заглавието на формите за вход/регистрация беше 32 px и се чупеше на два реда. */
+.auth-card h1 {
+  font-size: clamp(1.5rem, 6.5vw, 1.9rem);
+  line-height: 1.2;
+  margin-top: 0;
+}
+@media (max-width: 700px) {
+  .footer-guides a + a::before {
+    display: none;
+  }
+}
+
+/* Връзка + препинателен знак след нея — точката не пада сама на нов ред. */
+.nowrap {
+  white-space: nowrap;
 }

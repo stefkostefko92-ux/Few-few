@@ -23,7 +23,7 @@
         let ok = false;
         try {
           ok = document.execCommand('copy');
-        } catch (e) {
+        } catch {
           ok = false;
         }
         say(ok ? 'Копирано!' : 'Маркирано — копирай с Ctrl+C');
