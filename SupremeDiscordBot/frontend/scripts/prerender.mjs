@@ -21,6 +21,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
 import { LANDING_EN } from "../src/i18n/landingEn.js";
+import { SITE_STRINGS } from "../src/i18n/siteStrings.js";
+import { HEADER, HERO } from "../src/site/heroClasses.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
@@ -146,8 +148,24 @@ function guideLinks(t) {
   return items ? `<nav><h2>${esc(t.guides.heading)}</h2><ul>${items}</ul></nav>` : "";
 }
 
+// ─── Стилизираното hero (редизайн 25.09.2026) ──────────────────────────────
+// Същите класове като site/Landing.jsx и site/SiteChrome.jsx (heroClasses.js):
+// дизайнът се вижда преди JS, React го подменя с идентичен елемент. Обгръщащият
+// min-h-screen държи обикновения текст за обхождачите под сгъвката.
+function heroSnapshot(t, locale) {
+  const nav = SITE_STRINGS[locale]?.nav || SITE_STRINGS.en.nav;
+  const home = locale === "en" ? "/" : landingPath(locale);
+  const links = [["features", nav.features], ["game", nav.game], ["pricing", nav.pricing], ["faq", nav.faq]]
+    .map(([id, label]) => `<a href="#${id}">${esc(label)}</a>`).join("");
+  const notes = String(t.ctaNote || "").split(/\s+·\s+/).filter(Boolean).map((c) => `<li>${esc(c)}</li>`).join("");
+  return `<div class="site min-h-screen" lang="${locale}">
+  <header class="relative z-20"><div class="${HEADER.bar}"><a href="${home}" class="${HEADER.brand}"><img src="/logo-emblem.png" alt="" width="36" height="36" class="w-9 h-9"><span class="${HEADER.name}">Supreme Bot</span></a><nav class="${HEADER.nav}">${links}</nav><div class="${HEADER.actions}"><a href="/api/auth/login" class="${HEADER.signIn}">${esc(nav.signIn)}</a></div></div><nav class="${HEADER.mobileNav}">${links}</nav></header>
+  <section class="${HERO.section}"><div class="${HERO.col}"><h1 class="${HERO.h1}">${esc(t.h1a)}<br>${esc(t.h1b)}</h1><p class="${HERO.sub}">${esc(t.sub)}</p><div class="${HERO.ctaRow}"><a href="/api/auth/login" class="site-btn">${esc(t.cta)}</a><a href="#pricing" class="site-btn-quiet">${esc(String(t.seePricing || "").replace(/\s*→\s*$/, ""))}</a></div><ul class="${HERO.notes}">${notes}</ul></div></section>
+</div>`;
+}
+
 // ─── content snapshot from a landing translation object ──────────────────────
-function landingSnapshot(t) {
+function landingSnapshot(t, locale = t.locale) {
   const features = t.features.map(
     (f) => `<li><h3>${esc(f.title)}</h3><p>${esc(f.desc)}</p></li>`
   ).join("");
@@ -165,9 +183,7 @@ function landingSnapshot(t) {
         t.compare.rows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
       }</tbody></table></section>`
     : "";
-  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
-    <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
-    <p>${esc(t.sub)}</p>
+  return `${heroSnapshot(t, locale)}<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}
@@ -219,7 +235,8 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   let html = withHead(template, {
     title: t.title, description: t.description, path: landingPath(locale), lang: locale,
   });
-  html = injectHead(html, `  ${hreflangCluster()}\n  ${landingJsonLd(locale, t)}`);
+  const cyr = locale === "bg" ? `\n  <link rel="preload" href="/fonts/tektur-cyrillic-700-normal.woff2" as="font" type="font/woff2" crossorigin />` : "";
+  html = injectHead(html, `  ${hreflangCluster()}\n  ${landingJsonLd(locale, t)}${cyr}`);
   html = injectRoot(html, landingSnapshot(t));
   writeRoute(landingPath(locale), html);
   count++;

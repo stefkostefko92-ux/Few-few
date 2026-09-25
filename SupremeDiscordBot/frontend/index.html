@@ -506,18 +506,19 @@
   <!-- MICROSOFT / TILE                                                -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <meta name="msapplication-TileColor" content="#8fe600" />
-</head>
+    <!-- Шрифтът на заглавията пристига преди първото рисуване — иначе то се
+         пренарежда при смяната (CLS). Кирилицата се добавя от prerender за /bg. -->
+    <link rel="preload" href="/fonts/tektur-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
 <body>
   <!-- No-JS fallback for search engines that don't render SPA content well.
        Contains the key facts in plain HTML for crawlers + accessibility. -->
   <noscript>
-    <div style="max-width:720px;margin:48px auto;padding:24px;background:#000;color:#f0f0eb;border:1px solid #8fe600;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-      <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
-      <p>Supreme Bot is a multi-tenant Discord bot management dashboard by Carbon Stealth VCC. It requires JavaScript to run.</p>
-      <p>Features include ticket panels, logic-branching application forms, AI auto-replies, white-label bots, and per-server subscriptions billed through Discord.</p>
-      <p>Visit <a href="https://carbonstealth.eu" style="color:#8fe600;">carbonstealth.eu</a> for more Carbon Stealth products.</p>
-      <p>Contact: discord@carbonstealth.eu</p>
-    </div>
+    <!-- Редизайн 25.09.2026: без второ заглавие h1 (съдържанието на страницата вече е
+         в #root от prerender) и в тона на сайта — един тих ред, не неонова кутия. -->
+    <p style="margin:0;padding:10px 16px;background:#111215;color:#8c96a8;border-bottom:1px solid #2f3238;font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;text-align:center">
+      The Supreme Bot dashboard needs JavaScript; this page is readable without it. Contact: <a href="mailto:discord@carbonstealth.eu" style="color:#dce1e8">discord@carbonstealth.eu</a>
+    </p>
   </noscript>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>

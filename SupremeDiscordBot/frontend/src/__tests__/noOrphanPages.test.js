@@ -61,7 +61,7 @@ describe("нула осиротели публични страници", () => 
     // Английският корен минава през същия landingSnapshot (редизайн 25.09.2026),
     // който вика guideLinks(t) — не отделно, ръчно поддържано копие.
     expect(pre, "английската снимка не минава през landingSnapshot(LANDING_EN)").toMatch(/landingSnapshot\(LANDING_EN\)/);
-    expect(pre).toMatch(/function landingSnapshot\(t\)[\s\S]{0,2000}guideLinks\(t\)/);
+    expect(pre).toMatch(/function landingSnapshot\(t\b[^)]*\)[\s\S]{0,2000}guideLinks\(t\)/);
   });
 
   it("етикетите съществуват на ВСИЧКИ локала, не само на български", () => {

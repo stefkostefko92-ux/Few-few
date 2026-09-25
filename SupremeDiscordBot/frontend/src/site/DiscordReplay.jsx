@@ -48,9 +48,13 @@ export default function DiscordReplay({ d }) {
           <span className="font-semibold text-site-chrome">ticket-0142</span>
         </div>
 
-        <div className="px-4 py-4 space-y-4 min-h-[27rem] sm:min-h-[25rem] text-[14.5px] leading-[1.45]">
-          {shown >= 1 && (
-            <Msg who="Supreme" app avatar="bot" time={`${d.today} 19:42`}>
+        {/* Всички съобщения са в DOM-а от начало (visibility: hidden, докато им дойде
+            редът): височината е крайната от първия кадър → нула CLS на всяка ширина
+            (измерено 25.09.2026: при min-height последното съобщение местеше
+            страницата на телефон — CLS 0.098). */}
+        <div className="relative px-4 py-4 space-y-4 text-[14.5px] leading-[1.45]">
+          {(
+            <Msg on={shown >= 1} who="Supreme" app avatar="bot" time={`${d.today} 19:42`}>
               <Embed bar="#8fe600" title="Ticket #0142" footer="Support · Ticket ID: 7f3a9c21">
                 {d.welcome}
               </Embed>
@@ -61,36 +65,35 @@ export default function DiscordReplay({ d }) {
               </div>
             </Msg>
           )}
-          {shown >= 2 && (
-            <Msg who={d.member} avatar="member" time={`${d.today} 19:42`}>
+          {(
+            <Msg on={shown >= 2} who={d.member} avatar="member" time={`${d.today} 19:42`}>
               <p className="text-[#dbdee1]">{d.memberMsg}</p>
             </Msg>
           )}
-          {shown >= 3 && (
-            <Msg who="Supreme" app avatar="bot" time={`${d.today} 19:42`}>
+          {(
+            <Msg on={shown >= 3} who="Supreme" app avatar="bot" time={`${d.today} 19:42`}>
               <Embed bar="#5865f2" author={d.ai.author} title={d.ai.title} footer={d.ai.footer}>
                 {d.aiMsg}
               </Embed>
             </Msg>
           )}
-          {shown >= 4 && (
-            <Msg who={d.staff} staff avatar="staff" time={`${d.today} 19:43`}>
+          {(
+            <Msg on={shown >= 4} who={d.staff} staff avatar="staff" time={`${d.today} 19:43`}>
               <p className="text-[#dbdee1]">{d.staffMsg}</p>
             </Msg>
           )}
           {typing && (
-            <div className="flex items-center gap-2 pl-12 text-site-steel text-[13px]">
+            <div className="absolute left-4 bottom-2 flex items-center gap-2 pl-12 text-site-steel text-[13px] bg-site-channel/90 pr-2 rounded">
               <span className="site-typing inline-flex gap-1"><span>•</span><span>•</span><span>•</span></span>
               <span>{d.typing}</span>
             </div>
           )}
         </div>
       </div>
-      {shown >= STEPS && (
-        <button type="button" onClick={replay} className="mt-3 text-sm text-site-steel hover:text-site-chrome underline decoration-site-line underline-offset-4">
-          {d.replay}
-        </button>
-      )}
+      <button type="button" onClick={replay} tabIndex={shown >= STEPS ? 0 : -1} aria-hidden={shown < STEPS}
+        className={`mt-3 text-sm text-site-steel hover:text-site-chrome underline decoration-site-line underline-offset-4 ${shown >= STEPS ? "" : "invisible"}`}>
+        {d.replay}
+      </button>
     </figure>
   );
 }
@@ -101,9 +104,9 @@ const AVATAR = {
   staff: "bg-[#3b5bdb]",
 };
 
-function Msg({ who, app, staff, avatar, time, children }) {
+function Msg({ on, who, app, staff, avatar, time, children }) {
   return (
-    <div className="site-msg-in flex gap-3">
+    <div className={`flex gap-3 ${on ? "site-msg-in" : "invisible"}`}>
       <div className={`w-9 h-9 rounded-full flex-shrink-0 grid place-items-center overflow-hidden ${AVATAR[avatar]}`}>
         {avatar === "bot"
           ? <img src="/logo-emblem.png" alt="" width="36" height="36" className="w-9 h-9 object-cover" />

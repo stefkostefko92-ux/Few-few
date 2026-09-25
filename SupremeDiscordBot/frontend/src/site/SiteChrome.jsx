@@ -3,6 +3,7 @@
 // лендинга на 8 езика и за страниците с функции, сравнения, ръководства и
 // правни текстове. Таблото (приложението след вход) има своя обвивка.
 import { FEATURE_PAGES, FEATURES_HUB } from "../data/featurePages";
+import { HEADER } from "./heroClasses";
 import "./site.css";
 
 export const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
@@ -33,22 +34,22 @@ export function SiteHeader({ nav, home = "/", onLanding = false }) {
   return (
     <header className="relative z-20">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 site-btn">{nav.skip}</a>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-        <a href={home} className="flex items-center gap-2.5 min-w-0">
+      <div className={HEADER.bar}>
+        <a href={home} className={HEADER.brand}>
           <img src="/logo-emblem.png" alt="" width="36" height="36" className="w-9 h-9" />
-          <span className="site-h font-bold text-lg text-site-chrome whitespace-nowrap">Supreme Bot</span>
+          <span className={HEADER.name}>Supreme Bot</span>
         </a>
-        <nav aria-label="Primary" className="hidden md:flex items-center gap-7 text-[15px] text-site-steel">
+        <nav aria-label="Primary" className={HEADER.nav}>
           {links.map(([id, label]) => <a key={id} href={at(id)} className="no-underline hover:text-site-chrome hover:underline underline-offset-4">{label}</a>)}
         </nav>
-        <div className="flex items-center gap-3 sm:gap-5">
-          <button type="button" onClick={signIn} className="text-[15px] font-medium text-site-chrome hover:text-white whitespace-nowrap">{nav.signIn}</button>
-          <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center h-10 px-4 rounded-lg border border-site-line text-[15px] font-medium text-site-chrome hover:border-site-steel whitespace-nowrap">
+        <div className={HEADER.actions}>
+          <button type="button" onClick={signIn} className={HEADER.signIn}>{nav.signIn}</button>
+          <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer" className={HEADER.invite}>
             {nav.invite}
           </a>
         </div>
       </div>
-      <nav aria-label="Primary (mobile)" className="md:hidden max-w-6xl mx-auto px-4 pb-2 flex gap-5 overflow-x-auto text-[15px] text-site-steel">
+      <nav aria-label="Primary (mobile)" className={HEADER.mobileNav}>
         {links.map(([id, label]) => <a key={id} href={at(id)} className="py-2 whitespace-nowrap hover:text-site-chrome">{label}</a>)}
       </nav>
     </header>

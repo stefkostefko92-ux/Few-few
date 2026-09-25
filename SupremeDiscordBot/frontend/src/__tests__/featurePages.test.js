@@ -125,7 +125,7 @@ describe("страниците са свързани навсякъде, къд�
     expect(pre).toContain("featureJsonLd(p)");
     // Една функция за снимката на ВСИЧКИ 8 езика (редизайн 25.09.2026): featureLinks
     // е вътре в landingSnapshot, а английският минава през нея.
-    expect(pre).toMatch(/function landingSnapshot\(t\)[\s\S]{0,2000}\$\{featureLinks\(/);
+    expect(pre).toMatch(/function landingSnapshot\(t\b[^)]*\)[\s\S]{0,2000}\$\{featureLinks\(/);
     expect(pre).toMatch(/landingSnapshot\(LANDING_EN\)/);
   });
 

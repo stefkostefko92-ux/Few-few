@@ -15,6 +15,7 @@ import { SiteHeader, SiteFooter, DiscordMark, signIn } from "./SiteChrome";
 import DiscordReplay from "./DiscordReplay";
 import { SHOWCASE_COMPANIONS } from "../components/GameShowcase";
 import { TOUR_CHANNELS } from "../i18n/siteStrings";
+import { HERO } from "./heroClasses";
 
 const noArrow = (s = "") => s.replace(/\s*→\s*$/, "");
 const clauses = (s = "") => s.split(/\s+·\s+/).filter(Boolean);
@@ -46,13 +47,13 @@ export default function Landing({ t, s, locale, home, authError = null }) {
 
 function Hero({ t, s, authError }) {
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-14 pb-20 sm:pb-28 grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-14 items-start">
-      <div className="lg:pt-8">
+    <section className={HERO.section}>
+      <div className={HERO.col}>
         {/* LCP елементът: обикновен текст, без анимация, в един цвят. */}
-        <h1 className="site-h font-bold text-site-chrome text-[2.6rem] leading-[1.02] sm:text-6xl xl:text-[4.4rem]">
+        <h1 className={HERO.h1}>
           {t.h1a}<br />{t.h1b}
         </h1>
-        <p className="mt-6 text-lg sm:text-xl text-site-steel leading-relaxed max-w-[34rem]">{t.sub}</p>
+        <p className={HERO.sub}>{t.sub}</p>
 
         {authError && (
           <p role="alert" className="mt-6 max-w-[34rem] rounded-lg border border-[#da373c]/60 bg-[#da373c]/10 px-4 py-3 text-site-chrome">
@@ -60,14 +61,17 @@ function Hero({ t, s, authError }) {
           </p>
         )}
 
-        <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+        {/* Телефон: връзката винаги под бутона. С flex-wrap двете ту се събираха
+            на един ред, ту не — според ширината на шрифта в момента → CLS 0.098
+            (измерено 25.09.2026). */}
+        <div className={HERO.ctaRow}>
           <button type="button" onClick={signIn} className="site-btn">
             <DiscordMark />
             <span>{t.cta}</span>
           </button>
           <a href="#pricing" className="site-btn-quiet">{noArrow(t.seePricing)}</a>
         </div>
-        <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-site-steel">
+        <ul className={HERO.notes}>
           {clauses(t.ctaNote).map((c) => (
             <li key={c} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-site-supreme" aria-hidden="true" />{c}</li>
           ))}
