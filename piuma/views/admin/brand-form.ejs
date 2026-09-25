@@ -16,7 +16,7 @@
     <div class="stack">
       <label><%= t('brandForm.name') %><input name="name" required minlength="2" value="<%= brand ? brand.name : '' %>"></label>
       <div class="grid2">
-        <label><%= t('brandForm.slug') %> <span class="hint"><%= t('brandForm.slugHint') %></span><input name="slug" required pattern="[a-z0-9-]{2,40}" value="<%= brand ? brand.slug : '' %>"></label>
+        <label><%= t('brandForm.slug') %> <span class="hint"><%= t('brandForm.slugHint') %></span><input name="slug" required pattern="[a-z0-9\-]{2,40}" value="<%= brand ? brand.slug : '' %>"></label>
         <label><%= t('brands.language') %> <span class="hint"><%= t('brandForm.languageHint') %></span><input name="language" required value="<%= brand ? brand.language : 'bg' %>"></label>
       </div>
       <label><%= t('brandForm.website') %><input type="url" name="websiteUrl" value="<%= brand && brand.websiteUrl ? brand.websiteUrl : '' %>"></label>

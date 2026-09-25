@@ -84,7 +84,7 @@ src/
 locales/               bg.json (източник) · en.json · it.json — пълни огледала, гейтвани от теста
 views/                 EJS шаблони (partials/shell-*, admin/*, landing/index)
 public/                tokens.css (палитра + аврора на панела) · admin.css (панелът) · landing.css (витрината — своя палитра „lp-“, без аврора)
-                       · admin-views.css (прегледът на поста като в Instagram · списъците като карти под 660 px)
+                       · admin-views.css (прегледът на поста като в Instagram · списъците стават карти под 1100 px ширина на ТАБЛИЦАТА — container query, не екрана)
                        · fonts/ (Literata 600 + 500 курсив, кирилица/латиница, OFL — само за заглавията на витрината)
                        · admin.js (единственият скрипт, с nonce) · icons/*.svg · favicon.svg
                        · landing/ (перото, снимките на панела, изображението за споделяне)

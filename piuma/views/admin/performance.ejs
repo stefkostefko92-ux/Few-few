@@ -113,7 +113,7 @@
   <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('perf.noMetrics') %></strong><%= t('perf.noMetricsHint') %></div></div>
 <% } else { %>
 <div class="table-wrap to-cards">
-<table><thead><tr><th><%= t('common.kind') %></th><th><%= t('common.publication') %></th><th class="num"><%= t('perf.reach') %></th><th class="num"><%= t('perf.views') %></th><th class="num"><%= t('perf.interactions') %></th><th class="num"><%= t('perf.engagement') %></th><th><%= t('perf.publishedCol') %></th><th></th></tr></thead><tbody>
+<table><thead><tr><th><%= t('common.kind') %></th><th><%= t('common.publication') %></th><th class="num"><%= t('perf.reach') %></th><th class="num"><%= t('perf.views') %></th><th class="num"><%= t('perf.interactions') %></th><th class="num"><%= t('perf.engagement') %></th><th><%= t('perf.publishedCol') %></th><th><span class="sr-only"><%= t('common.actions') %></span></th></tr></thead><tbody>
 <% performance.forEach((p, index) => { %>
   <% const kd = ui.kind(p.kind); %>
   <tr>

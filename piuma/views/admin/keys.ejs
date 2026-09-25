@@ -33,11 +33,10 @@ PIUMA_KEY_SECRET=<%= created.secret %></div>
 </section>
 
 <div class="table-wrap to-cards">
-<table><thead><tr><th><%= t('keys.name') %></th><th>ID</th><th><%= t('keys.scope') %></th><th><%= t('keys.brands') %></th><th>IP</th><th><%= t('keys.expires') %></th><th><%= t('keys.lastUsed') %></th><th><%= t('common.state') %></th><th></th></tr></thead><tbody>
+<table><thead><tr><th><%= t('keys.name') %></th><th><%= t('keys.scope') %></th><th><%= t('keys.brands') %></th><th>IP</th><th><%= t('keys.expires') %></th><th><%= t('keys.lastUsed') %></th><th><%= t('common.state') %></th><th><span class="sr-only"><%= t('common.actions') %></span></th></tr></thead><tbody>
 <% keys.forEach((k) => { %>
   <tr>
-    <td class="lead"><strong><%= k.name %></strong><span class="sub-line"><%= t('keys.createdBy', { email: k.createdBy.email }) %></span></td>
-    <td class="mono full" data-label="ID"><%= k.id %></td>
+    <td class="lead"><strong><%= k.name %></strong><span class="sub-line mono"><%= k.id %></span><span class="sub-line"><%= t('keys.createdBy', { email: k.createdBy.email }) %></span></td>
     <td class="mono full" data-label="<%= t('keys.scope') %>"><%= k.scopes.join(' ') %></td>
     <td data-label="<%= t('keys.brands') %>"><%= k.brandIds.length ? k.brandIds.length : t('common.all') %></td>
     <td class="mono" data-label="IP"><%= k.allowedIps.length ? k.allowedIps.join(', ') : t('common.all') %></td>
@@ -47,7 +46,7 @@ PIUMA_KEY_SECRET=<%= created.secret %></div>
     <td><% if (!k.revokedAt) { %><form method="post" action="/admin/keys/<%= k.id %>/revoke" class="inline" data-confirm="<%= t('keys.revokeConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn danger small" type="submit"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('keys.revoke') %></button></form><% } %></td>
   </tr>
 <% }) %>
-<% if (!keys.length) { %><tr><td colspan="9"><div class="empty"><%- icon('key', { class: 'ic-xl' }) %><strong><%= t('keys.empty') %></strong><%= t('keys.emptyHint') %></div></td></tr><% } %>
+<% if (!keys.length) { %><tr><td colspan="8"><div class="empty"><%- icon('key', { class: 'ic-xl' }) %><strong><%= t('keys.empty') %></strong><%= t('keys.emptyHint') %></div></td></tr><% } %>
 </tbody></table>
 </div>
 <%- include('../partials/shell-end') %>

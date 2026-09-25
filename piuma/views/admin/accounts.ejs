@@ -11,7 +11,7 @@
   <h2><%- icon('instagram') %> <%= t('accounts.connect') %></h2>
   <form method="post" action="/admin/accounts/connect" class="row">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <select name="brandId" required class="field-lg"><option value=""><%= t('accounts.chooseBrand') %></option><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %> (<%= b.slug %>)</option><% }) %></select>
+    <select name="brandId" required class="field-lg" aria-label="<%= t('accounts.chooseBrand') %>"><option value=""><%= t('accounts.chooseBrand') %></option><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %> (<%= b.slug %>)</option><% }) %></select>
     <button class="btn primary" type="submit"><%- icon('external') %> <%= t('accounts.toInstagram') %></button>
   </form>
   <p class="sub"><%= t('accounts.connectHint') %></p>
