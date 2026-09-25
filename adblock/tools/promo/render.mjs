@@ -91,8 +91,8 @@ let ffmpeg = process.env.FFMPEG;
 if (!ffmpeg) ffmpeg = execFileSync("python3", ["-c", "import imageio_ffmpeg as f; print(f.get_ffmpeg_exe())"]).toString().trim();
 const mp4 = join(ROOT, "dist", `supreme-adblock-promo-${ver}.mp4`);
 execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-framerate", String(TL.fps), "-i", join(FR, "%05d.jpg"), "-i", wav,
-  "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(TL.fps),
+  "-c:v", "libx264", "-preset", "slow", "-tune", "grain", "-crf", "19", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(TL.fps),
   "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", "-shortest", mp4], { stdio: "inherit" });
 const thumb = join(ROOT, "dist", `supreme-adblock-promo-${ver}-thumb.png`);
-execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-i", join(FR, `${String(Math.round(3.2 * TL.fps)).padStart(5, "0")}.jpg`), "-vf", "scale=1280:720", thumb], { stdio: "inherit" });
+execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-i", join(FR, `${String(Math.round(2.3 * TL.fps)).padStart(5, "0")}.jpg`), "-vf", "scale=1280:720", thumb], { stdio: "inherit" });
 console.log("→", mp4, "\n→", thumb);
