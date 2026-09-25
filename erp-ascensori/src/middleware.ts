@@ -68,7 +68,24 @@ function conCsp(req: NextRequest): NextResponse {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname.startsWith("/api")) return NextResponse.next();
+  if (pathname.startsWith("/api")) {
+    // ЗАЯВКА ОТ ЧУЖД САЙТ НЕ СТИГА ДО API-ТО. Браузърът казва откъде идва
+    // заявката (`Sec-Fetch-Site`) и сайтът не може да го подправи. SameSite=Lax
+    // пази POST, но пуска бисквитката при навигация с GET — а има GET с
+    // последствия (изнасянето на XML за SdI изразходва прогресивния номер).
+    // Сървър-към-сървър клиенти (публичното API с ключ) не пращат хедъра и
+    // минават; „none" е адрес, въведен от самия човек.
+    const sito = req.headers.get("sec-fetch-site");
+    if (
+      (sito === "cross-site" || sito === "same-site") &&
+      !pathname.startsWith("/api/pubblica/")
+    )
+      return NextResponse.json(
+        { error: "Richiesta da un sito esterno non consentita" },
+        { status: 403 },
+      );
+    return NextResponse.next();
+  }
 
   if (
     PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||

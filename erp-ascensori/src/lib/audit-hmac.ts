@@ -118,3 +118,38 @@ export function verificaConRotazione(
     return { valida: true, conChiavePrecedente: true };
   return { valida: false, conChiavePrecedente: false };
 }
+
+/**
+ * Подпис на котвата — последното звено на веригата за една фирма.
+ *
+ * Отделен от подписа на редовете (префикс „ancora"), за да не може подписът на
+ * ред да мине за подпис на котва. Сравнението при проверка е с постоянно време.
+ */
+export function firmaAncora(
+  chiaveTenant: string,
+  seq: bigint,
+  hmac: string,
+  chiave: string,
+): string {
+  return createHmac("sha256", chiave)
+    .update(JSON.stringify(["ancora", chiaveTenant, seq.toString(), hmac]))
+    .digest("hex");
+}
+
+export function verificaAncora(
+  chiaveTenant: string,
+  seq: bigint,
+  hmac: string,
+  firma: string,
+  chiavi: { corrente: string; precedente?: string | null },
+): boolean {
+  const confronta = (k: string) => {
+    const atteso = Buffer.from(firmaAncora(chiaveTenant, seq, hmac, k), "utf8");
+    const dato = Buffer.from(firma, "utf8");
+    return atteso.length === dato.length && timingSafeEqual(atteso, dato);
+  };
+  return (
+    confronta(chiavi.corrente) ||
+    (!!chiavi.precedente && confronta(chiavi.precedente))
+  );
+}

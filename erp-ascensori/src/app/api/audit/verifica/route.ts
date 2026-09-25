@@ -11,7 +11,11 @@ import { prisma } from "@/lib/prisma";
 import { ok, errore, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
-import { verificaConRotazione, type VersioneFirma } from "@/lib/audit-hmac";
+import {
+  verificaConRotazione,
+  type VersioneFirma,
+  verificaAncora,
+} from "@/lib/audit-hmac";
 import { chiaveAudit, chiaveAuditPrecedente } from "@/lib/audit";
 
 const schema = z.object({
@@ -91,11 +95,66 @@ export const POST = gestito(async (req) => {
     ultimoPerTenant.set(chiaveTenant, r.hmac);
   }
 
+  // ── Котвата: докъде ТРЯБВА да стига веригата ─────────────────────────────
+  // Звената ловят изтрит ред ПО СРЕДАТА; изтритите ПОСЛЕДНИ редове не оставят
+  // счупено звено. Котвата (подписана с ключа, обновявана заедно с всяко
+  // вписване) казва кой е последният ред. Двете неща се четат в ЕДНА снимка —
+  // иначе вписване между двете заявки изглежда като отрязана опашка.
+  const chiavi = s.ruolo === "MASTER" ? null : [s.tenantId ?? ""];
+  const codaTroncata: string[] = [];
+  const ancoraAlterata: string[] = [];
+  const ancoraAssente: string[] = [];
+  const [ancore, ultimiPerTenant] = await prisma.$transaction(
+    [
+      prisma.auditAncora.findMany({
+        where: chiavi ? { chiave: { in: chiavi } } : {},
+      }),
+      prisma.$queryRaw<{ chiave: string; seq: bigint; hmac: string }[]>`
+        SELECT DISTINCT ON (COALESCE("tenantId"::text, ''))
+               COALESCE("tenantId"::text, '') AS chiave, seq, hmac
+        FROM audit_log
+        ORDER BY COALESCE("tenantId"::text, ''), seq DESC`,
+    ],
+    { isolationLevel: "RepeatableRead" },
+  );
+  const ultimo = new Map(ultimiPerTenant.map((u) => [u.chiave, u]));
+  const nome = (k: string) => (k === "" ? "installazione" : k);
+  for (const a of ancore) {
+    if (
+      !verificaAncora(a.chiave, a.seq, a.hmac, a.firma, {
+        corrente: chiave,
+        precedente,
+      })
+    ) {
+      ancoraAlterata.push(nome(a.chiave));
+      continue;
+    }
+    const u = ultimo.get(a.chiave);
+    if (!u || u.seq !== a.seq || u.hmac !== a.hmac)
+      codaTroncata.push(nome(a.chiave));
+  }
+  // Фирма с редове, но без котва: или инсталация отпреди котвата (изчезва
+  // при първото вписване), или изтрита котва. Казва се на глас, но не се
+  // обявява за нарушение — отговорът не може да различи двете.
+  for (const k of ultimo.keys())
+    if (
+      (chiavi === null || chiavi.includes(k)) &&
+      !ancore.some((a) => a.chiave === k)
+    )
+      ancoraAssente.push(nome(k));
+
   return ok({
     controllate: righe.length,
     corrotte,
     catenaRotta,
     conChiaveVecchia,
-    integro: corrotte.length === 0 && catenaRotta.length === 0,
+    codaTroncata,
+    ancoraAlterata,
+    ancoraAssente,
+    integro:
+      corrotte.length === 0 &&
+      catenaRotta.length === 0 &&
+      codaTroncata.length === 0 &&
+      ancoraAlterata.length === 0,
   });
 });

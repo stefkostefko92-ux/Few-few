@@ -9,6 +9,8 @@ import {
   VERSIONE_CORRENTE,
   canonico,
   serializzaStabile,
+  firmaAncora,
+  verificaAncora,
 } from "../audit-hmac";
 
 const CHIAVE = "test-chiave-hmac-abbastanza-lunga-32+";
@@ -218,4 +220,28 @@ test("каноничният вид на реда включва всичко п
   // пренапише с друг произход, без подписът да се промени.
   assert.ok(c.includes(riga.ip!));
   assert.ok(c.includes(riga.userAgent!));
+});
+
+test("котвата: подписът върви с фирмата, поредния номер и звеното — и само с тях", () => {
+  const f = firmaAncora("", 42n, "abc", CHIAVE);
+  assert.equal(verificaAncora("", 42n, "abc", f, { corrente: CHIAVE }), true);
+  // Друга позиция, друго звено, друга фирма — подписът не става.
+  assert.equal(verificaAncora("", 41n, "abc", f, { corrente: CHIAVE }), false);
+  assert.equal(verificaAncora("", 42n, "abd", f, { corrente: CHIAVE }), false);
+  assert.equal(
+    verificaAncora("t1", 42n, "abc", f, { corrente: CHIAVE }),
+    false,
+  );
+  // При ротация на ключа старата котва се приема с предишния ключ.
+  assert.equal(
+    verificaAncora("", 42n, "abc", f, {
+      corrente: "altra-chiave-abbastanza-lunga-32+",
+      precedente: CHIAVE,
+    }),
+    true,
+  );
+  assert.equal(
+    verificaAncora("", 42n, "abc", "corta", { corrente: CHIAVE }),
+    false,
+  );
 });

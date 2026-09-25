@@ -1,6 +1,7 @@
 // Потребител: промяна (ADMIN), окончателно изтриване — САМО MASTER (документация).
 // Спиране/пускане = PUT { attivo }: блокира достъпа без загуба на историята.
 
+import { dettagliModifica } from "@/lib/audit-dettagli";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
@@ -84,10 +85,9 @@ export const PUT = gestito(async (req, ctx) => {
     azione: "UPDATE",
     entita: "users",
     entitaId: id,
-    dettagli: {
-      prima: { ruolo: prima.ruolo, attivo: prima.attivo },
-      dopo: data,
-    },
+    // Имената на сменените полета + стойностите от белия списък (роля,
+    // активност) — не и имената и имейлите: неизменимият регистър живее години.
+    dettagli: dettagliModifica(prima, { ...prima, ...data }),
     utenteId: s.sub,
     tenantId: s.tenantId,
   });
@@ -108,7 +108,8 @@ export const DELETE = gestito(async (_req, ctx) => {
     azione: "DELETE",
     entita: "users",
     entitaId: id,
-    dettagli: { prima: { email: prima.email, ruolo: prima.ruolo } },
+    // Без имейла — виж създаването: регистърът не бива да пази лични стойности.
+    dettagli: { prima: { ruolo: prima.ruolo } },
     utenteId: s.sub,
     tenantId: s.tenantId,
   });

@@ -2,7 +2,7 @@
 import { headers } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { firmaAudit, VERSIONE_CORRENTE } from "@/lib/audit-hmac";
+import { firmaAudit, VERSIONE_CORRENTE, firmaAncora } from "@/lib/audit-hmac";
 import { ipClient } from "@/lib/ip-client";
 
 export type AzioneAudit =
@@ -83,7 +83,8 @@ export async function scriviAudit(
     });
     const rigaFirmata = { ...riga, hmacPrecedente: ultimo?.hmac ?? null };
 
-    await tx.auditLog.create({
+    const creato = await tx.auditLog.create({
+      select: { seq: true, hmac: true },
       data: {
         ...riga,
         hmacPrecedente: rigaFirmata.hmacPrecedente,
@@ -96,6 +97,20 @@ export async function scriviAudit(
           riga.dettagli === null ? undefined : (riga.dettagli as object),
         hmac: firmaAudit(rigaFirmata, chiaveAudit()),
       },
+    });
+
+    // КОТВАТА — в същата транзакция и под същата ключалка: казва докъде стига
+    // веригата. Без нея изтритите ПОСЛЕДНИ редове не оставят счупено звено.
+    const chiaveTenant = tenantId ?? "";
+    const ancora = {
+      seq: creato.seq,
+      hmac: creato.hmac,
+      firma: firmaAncora(chiaveTenant, creato.seq, creato.hmac, chiaveAudit()),
+    };
+    await tx.auditAncora.upsert({
+      where: { chiave: chiaveTenant },
+      create: { chiave: chiaveTenant, ...ancora },
+      update: ancora,
     });
   };
 

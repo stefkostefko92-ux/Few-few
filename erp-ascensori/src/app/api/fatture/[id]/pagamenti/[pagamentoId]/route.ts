@@ -22,6 +22,9 @@ export const DELETE = gestito(async (_req, ctx) => {
       select: { id: true },
     });
     if (!f) throw new ErroreHttp(404, "Fattura non trovata");
+    // Същата ключалка като при вписването: изтриване и вписване едновременно
+    // иначе сумират върху различни снимки и едното изчезва от сбора.
+    await tx.$queryRaw`SELECT 1 FROM "fatture" WHERE id = ${id}::uuid FOR UPDATE`;
     const p = await tx.pagamento.findFirst({
       where: { id: pagamentoId, fatturaId: id },
     });

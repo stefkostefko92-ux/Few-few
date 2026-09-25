@@ -43,6 +43,17 @@ export const POST = gestito(async (req, ctx) => {
       select: { id: true, stato: true, numero: true },
     });
     if (!f) throw new ErroreHttp(404, "Fattura non trovata");
+    // ЗАКЛЮЧВАНЕ НА РЕДА ПРЕДИ СУМИРАНЕТО. При READ COMMITTED две паралелни
+    // плащания сумират, без да се виждат едно друго, и второто записва стария
+    // сбор — напълно платена фактура остава „частично". С ключалката второто
+    // чака първото и сумира вече с него.
+    await tx.$queryRaw`SELECT 1 FROM "fatture" WHERE id = ${id}::uuid FOR UPDATE`;
+    const statoPrima = (
+      await tx.fattura.findUniqueOrThrow({
+        where: { id },
+        select: { statoPagamento: true },
+      })
+    ).statoPagamento;
     // По чернова не се плаща: документът още не е издаден.
     if (f.stato === "BOZZA")
       throw new ErroreHttp(
@@ -73,8 +84,9 @@ export const POST = gestito(async (req, ctx) => {
       },
     });
     // Външното счетоводство се интересува от пълното плащане; частичните са
-    // наша кухня, докато не се съберат.
-    if (fattura.statoPagamento === "PAGATA")
+    // наша кухня, докато не се съберат. САМО при ПРЕХОДА към платена: плащане
+    // по вече платена (надплащане) не праща „платена" втори път.
+    if (statoPrima !== "PAGATA" && fattura.statoPagamento === "PAGATA")
       await emettiEvento(
         "fattura.pagata",
         {

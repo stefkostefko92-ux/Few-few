@@ -112,7 +112,9 @@ export const POST = gestito(async (req) => {
     azione: "CREATE",
     entita: "users",
     entitaId: creato.id,
-    dettagli: { dopo: { email: data.email, ruolo: data.ruolo ?? "OPERATORE" } },
+    // Без имейла: одитът живее години, а акаунтът се познава по `entitaId`.
+    // Лична стойност в неизменим регистър не може да бъде заличена по чл. 17.
+    dettagli: { dopo: { ruolo: data.ruolo ?? "OPERATORE" } },
     utenteId: s.sub,
     tenantId: s.tenantId,
   });

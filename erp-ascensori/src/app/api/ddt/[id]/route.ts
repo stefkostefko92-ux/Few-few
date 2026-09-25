@@ -59,7 +59,15 @@ export const PUT = gestito(async (req, ctx) => {
   });
   if (!prima) throw new ErroreHttp(404, "DDT non trovato");
   esigiScollegato(prima);
-  const dopo = await prisma.ddt.update({ where: { id }, data, include });
+  // УСЛОВЕН запис: проверката „не е закачен към фактура" и записът са една
+  // операция. Иначе между тях `/api/fatture/[id]/ddt` закача DDT-то и промяната
+  // влиза в документ, който вече трябва да е замразен.
+  const { count } = await prisma.ddt.updateMany({
+    where: { id, ...filtroTenant(s), fatturaId: null },
+    data,
+  });
+  if (count === 0) throw new ErroreHttp(409, DDT_BLOCCATO);
+  const dopo = await prisma.ddt.findUniqueOrThrow({ where: { id }, include });
   await scriviAudit({
     azione: "UPDATE",
     entita: "ddt",
@@ -82,7 +90,10 @@ export const DELETE = gestito(async (_req, ctx) => {
   });
   if (!prima) throw new ErroreHttp(404, "DDT non trovato");
   esigiScollegato(prima);
-  await prisma.ddt.delete({ where: { id } });
+  const { count } = await prisma.ddt.deleteMany({
+    where: { id, ...filtroTenant(s), fatturaId: null },
+  });
+  if (count === 0) throw new ErroreHttp(409, DDT_BLOCCATO);
   await scriviAudit({
     azione: "DELETE",
     entita: "ddt",
